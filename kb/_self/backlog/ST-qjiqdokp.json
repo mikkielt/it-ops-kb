@@ -1,0 +1,27 @@
+{
+  "id": "ST-qjiqdokp",
+  "kind": "story",
+  "title": "multi run --manager session runs a headless orchestrator session as the scenario's operator",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The --manager session knob that gate g1 of ST-ovfyfksp named works in a real and a replayed run instead of refusing with exit 2 (review of SP-5y4ut64g, gate g5 of ST-ovfyfksp changed).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, shutil, subprocess, tempfile\nsys.path.insert(0, \"_tools\")\nT = tempfile.mkdtemp()\nB = os.path.join(T, \"bin\"); os.mkdir(B)\nopen(os.path.join(B, \"claude\"), \"w\").write(\"#!/bin/sh\\nexit 1\\n\")\nos.chmod(os.path.join(B, \"claude\"), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ[\"PATH\"])\ndef bench(*a):\n    return subprocess.run([sys.executable, \"_tools/benchmarks.py\", *a], capture_output=True, text=True, env=ENV, timeout=1800)\ndef clean(*dirs):\n    import bench_multi\n    for d in dirs:\n        shutil.rmtree(bench_multi.clone_path(d, 1).parent, ignore_errors=True)\n    shutil.rmtree(T, ignore_errors=True)\nimport json\nd = os.path.join(T, \"s\")\ntry:\n    r = bench(\"multi\", \"run\", \"lookups\", \"--manager\", \"session\", \"--replay\", \"--dir\", d)\n    assert r.returncode == 0, (r.returncode, r.stdout[-300:], r.stderr[-300:])\n    assert len([x for x in open(os.path.join(d, \"results.jsonl\")) if x.strip()]) == 4\nfinally:\n    clean(d)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_multi.py",
+    "_tools/benchmarks.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-5y4ut64g review"
+  ]
+}

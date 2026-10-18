@@ -79,7 +79,7 @@
       },
       "class": "design",
       "answer": "Scenario multi, record the start sha, case the scenario, arm concurrent or sequential then the knob values, per-agent metrics as AGENT/METRIC beside the run's, delta arm written at record time from the file's pair, rows replaced by record case and arm, the run's wall_s the first start to the last end",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -96,7 +96,7 @@
       },
       "class": "design",
       "answer": "claims are the store rows but session leases, conflicts are keys held in more than one store plus dup_of events",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -113,7 +113,7 @@
       },
       "class": "design",
       "answer": "dup_facts from the fact lines each agent's commits added on the bare (agents told apart by a git author address multi setup sets per clone), rebase_s from the HEAD reflog of each clone, land_stops from the land steps of the lines, right from the lookup answer a line now holds",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g4",
@@ -130,7 +130,7 @@
       },
       "class": "design",
       "answer": "Refuse with exit 2 naming --out",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g5",
@@ -147,7 +147,7 @@
       },
       "class": "design",
       "answer": "A bench:multi marker that renders a sentence saying no run is recorded and that report --check does not count as an empty marker",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

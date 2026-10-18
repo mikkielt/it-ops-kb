@@ -1,0 +1,27 @@
+{
+  "id": "BG-ua2xnodn",
+  "kind": "bug",
+  "title": "multi record writes failed agents' zero figures into the run rows and deltas and records no failure count",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "multi record counts each failed agent (budget, error, timeout) in a failures metric and leaves its zero tokens, cost and wall time out of the run's totals and the deltas (review of SP-5y4ut64g).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, shutil, subprocess, tempfile\nsys.path.insert(0, \"_tools\")\nT = tempfile.mkdtemp()\nB = os.path.join(T, \"bin\"); os.mkdir(B)\nopen(os.path.join(B, \"claude\"), \"w\").write(\"#!/bin/sh\\nexit 1\\n\")\nos.chmod(os.path.join(B, \"claude\"), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ[\"PATH\"])\ndef bench(*a):\n    return subprocess.run([sys.executable, \"_tools/benchmarks.py\", *a], capture_output=True, text=True, env=ENV, timeout=1800)\ndef clean(*dirs):\n    import bench_multi\n    for d in dirs:\n        shutil.rmtree(bench_multi.clone_path(d, 1).parent, ignore_errors=True)\n    shutil.rmtree(T, ignore_errors=True)\nimport csv\nd = os.path.join(T, \"cap\"); o = os.path.join(T, \"rows.csv\")\ntry:\n    bench(\"multi\", \"run\", \"lookups\", \"--replay\", \"--max-usd\", \"0.0001\", \"--dir\", d)\n    r = bench(\"multi\", \"record\", \"--dir\", d, \"--out\", o)\n    assert r.returncode == 0, (r.returncode, r.stderr[-400:])\n    m = {x[\"metric\"] for x in csv.DictReader(open(o, encoding=\"utf-8\"))}\n    assert any(\"fail\" in k for k in m), (\"no failure metric in\", sorted(m)[:20])\nfinally:\n    clean(d)\n"
+    ]
+  },
+  "touches": [
+    "_tools/bench_multi.py",
+    "_tools/benchmarks.py",
+    "kb/_self/tools.md",
+    "_tools/bench_report.py"
+  ],
+  "links": [
+    "parked: SP-5y4ut64g review"
+  ]
+}

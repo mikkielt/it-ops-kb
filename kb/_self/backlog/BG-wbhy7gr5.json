@@ -1,0 +1,24 @@
+{
+  "id": "BG-wbhy7gr5",
+  "kind": "bug",
+  "title": "kbgit.py sync routes code-lane paths to a code/<id> branch even when backlog.json sets lane_module to empty",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "With lane_module \"\" in backlog.json, kg_lane.lane_plan treats every commit as content, as bl_base, bl_land and kb/_self/backlog.md say an empty value means (review of SP-5y4ut64g, found by ST-dj4bgo4s's worker).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport json, os, shutil, subprocess, tempfile\nhere = os.getcwd()\nT = tempfile.mkdtemp()\ng = lambda *a: subprocess.run([\"git\", \"-C\", T, *a], capture_output=True, text=True, check=True).stdout.strip()\ntry:\n    g(\"init\", \"-q\", \"-b\", \"main\"); g(\"config\", \"user.email\", \"a@example.com\"); g(\"config\", \"user.name\", \"a\")\n    cfg = json.load(open(os.path.join(here, \"backlog.json\"), encoding=\"utf-8\"))\n    cfg[\"lane_module\"] = \"\"\n    json.dump(cfg, open(os.path.join(T, \"backlog.json\"), \"w\"))\n    g(\"add\", \"-A\"); g(\"commit\", \"-qm\", \"base\")\n    up = g(\"rev-parse\", \"HEAD\")\n    os.makedirs(os.path.join(T, \"_tools\")); open(os.path.join(T, \"_tools\", \"x.py\"), \"w\").write(\"X = 1\\n\")\n    g(\"add\", \"-A\"); g(\"commit\", \"-qm\", \"feat: x\", \"-m\", \"KB-Work: ST-aaaaaaaa\")\n    sys.path.insert(0, os.path.join(here, \"_tools\"))\n    import kg_lane, kblane\n    lane, branch = kg_lane.lane_plan(T, up, \"HEAD\")\n    assert lane == kblane.CONTENT and branch is None, (\"lane_module empty but routed\", lane, branch)\nfinally:\n    shutil.rmtree(T, ignore_errors=True)\n"
+    ]
+  },
+  "touches": [
+    "_tools/kg_lane.py",
+    "kb/_self/git.md"
+  ],
+  "links": [
+    "parked: SP-5y4ut64g review"
+  ]
+}

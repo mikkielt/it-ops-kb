@@ -1,0 +1,26 @@
+{
+  "id": "BG-ifcqf4t3",
+  "kind": "bug",
+  "title": "multi run --tools files and kb restrict an agent with --allowedTools, which bypassPermissions ignores",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A multi run agent's tool set (--tools files, --tools kb) is restricted with claude's --tools list, not --allowedTools under --permission-mode bypassPermissions, so the files agent has only Read, Grep and Glob (review of SP-5y4ut64g, gate g3 of ST-ykdwo7a3 changed).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, shutil, subprocess, tempfile\nsys.path.insert(0, \"_tools\")\nT = tempfile.mkdtemp()\nB = os.path.join(T, \"bin\"); os.mkdir(B)\nopen(os.path.join(B, \"claude\"), \"w\").write(\"#!/bin/sh\\nexit 1\\n\")\nos.chmod(os.path.join(B, \"claude\"), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ[\"PATH\"])\ndef bench(*a):\n    return subprocess.run([sys.executable, \"_tools/benchmarks.py\", *a], capture_output=True, text=True, env=ENV, timeout=1800)\ndef clean(*dirs):\n    import bench_multi\n    for d in dirs:\n        shutil.rmtree(bench_multi.clone_path(d, 1).parent, ignore_errors=True)\n    shutil.rmtree(T, ignore_errors=True)\ntry:\n    r = bench(\"multi\", \"run\", \"lookups\", \"--dry-run\", \"--tools\", \"files\", \"--dir\", os.path.join(T, \"none\"))\n    assert r.returncode == 0, r.stderr[-400:]\n    assert \"--allowedTools\" not in r.stdout, \"the files agent is limited by --allowedTools, which bypassPermissions ignores\"\nfinally:\n    clean()\n"
+    ]
+  },
+  "touches": [
+    "_tools/bench_multi.py",
+    "_tools/benchmarks.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-5y4ut64g review"
+  ]
+}

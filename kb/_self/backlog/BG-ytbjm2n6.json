@@ -1,0 +1,26 @@
+{
+  "id": "BG-ytbjm2n6",
+  "kind": "bug",
+  "title": "multi run reuses a DIR that holds a finished run with no reset, so the sequential run of the delta pair fails its code agents",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "A second multi run in a DIR that holds a finished run either resets the sandbox (bare, planted items, coord stores, spend) or refuses the DIR, so `mixed --replay` then `mixed --replay --sequential` on one --dir gives two runs with no failure (review of SP-5y4ut64g, gate g7 of ST-ovfyfksp changed).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, shutil, subprocess, tempfile\nsys.path.insert(0, \"_tools\")\nT = tempfile.mkdtemp()\nB = os.path.join(T, \"bin\"); os.mkdir(B)\nopen(os.path.join(B, \"claude\"), \"w\").write(\"#!/bin/sh\\nexit 1\\n\")\nos.chmod(os.path.join(B, \"claude\"), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ[\"PATH\"])\ndef bench(*a):\n    return subprocess.run([sys.executable, \"_tools/benchmarks.py\", *a], capture_output=True, text=True, env=ENV, timeout=1800)\ndef clean(*dirs):\n    import bench_multi\n    for d in dirs:\n        shutil.rmtree(bench_multi.clone_path(d, 1).parent, ignore_errors=True)\n    shutil.rmtree(T, ignore_errors=True)\nimport json\nd = os.path.join(T, \"m\")\ntry:\n    a = bench(\"multi\", \"run\", \"mixed\", \"--replay\", \"--dir\", d)\n    b = bench(\"multi\", \"run\", \"mixed\", \"--replay\", \"--sequential\", \"--dir\", d)\n    L = [json.loads(x) for x in open(os.path.join(d, \"results.jsonl\"), encoding=\"utf-8\") if x.strip()]\n    bad = [(x.get(\"agent\"), x.get(\"failure\")) for x in L if x.get(\"failure\")]\n    assert b.returncode == 2 or not bad, (\"second run in a used DIR: exit\", b.returncode, bad[:4])\nfinally:\n    clean(d)\n"
+    ]
+  },
+  "touches": [
+    "_tools/bench_multi.py",
+    "_tools/benchmarks.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-5y4ut64g review"
+  ]
+}

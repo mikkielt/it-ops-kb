@@ -104,7 +104,7 @@
       },
       "class": "design",
       "answer": "The operator's steps claim, dispatch and land in the agent's clone, the worker started by backlog.py dispatch through a claude wrapper in DIR/bin that adds the session settings, the agent's mcp-config and the dollar cap",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -138,7 +138,7 @@
       },
       "class": "design",
       "answer": "With agent_bench.result_of over the stream after defaulting the result event's missing keys (bench_multi.filled), so a short stream parses as a full one",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g5",
@@ -154,8 +154,8 @@
         "Start a headless orchestrator session as one more agent with the role manager": "ST-ovfyfksp"
       },
       "class": "design",
-      "answer": "Refuse it with exit 2 and say the harness code starts the agents; only --manager code runs",
-      "by": "agent"
+      "answer": "Refuse it with exit 2 for now, as built; the working --manager session knob that g1 named is a parked story of the SP-5y4ut64g review",
+      "by": "operator"
     },
     {
       "id": "g6",
@@ -172,7 +172,7 @@
       },
       "class": "design",
       "answer": "steps lists what the harness did for the agent, commit is the clone's HEAD at the end, land is landed, the step land stopped at or timeout, wall_s is the session's, and the exit is 1 when an agent failed or a code item did not land",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g7",
@@ -188,8 +188,8 @@
         "Always rebuild the sandbox and truncate results.jsonl": "ST-ovfyfksp"
       },
       "class": "design",
-      "answer": "Reuse it when its scenario, coord mode and agent count match this run's, else refuse; the lines of the run are appended to the DIR's results.jsonl and its recorded spend counts against --max-usd",
-      "by": "agent"
+      "answer": "Reset the sandbox (bare, planted items, coord stores, spend) or refuse a DIR that holds a finished run; reuse with no reset breaks the sequential run of the delta pair; the change is a parked bug of the SP-5y4ut64g review",
+      "by": "operator"
     }
   ],
   "links": [

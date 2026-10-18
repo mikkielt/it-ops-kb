@@ -1,0 +1,27 @@
+{
+  "id": "ST-2uunao4n",
+  "kind": "story",
+  "title": "multi record refuses a replay's rows for the real results file even when --out names it",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A replay's rows never reach kb/_self/reports/benchmarks.csv: multi record refuses a replay whose --out resolves to the results file, as it refuses one with no --out (review of SP-5y4ut64g).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, shutil, subprocess, tempfile\nsys.path.insert(0, \"_tools\")\nT = tempfile.mkdtemp()\nB = os.path.join(T, \"bin\"); os.mkdir(B)\nopen(os.path.join(B, \"claude\"), \"w\").write(\"#!/bin/sh\\nexit 1\\n\")\nos.chmod(os.path.join(B, \"claude\"), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ[\"PATH\"])\ndef bench(*a):\n    return subprocess.run([sys.executable, \"_tools/benchmarks.py\", *a], capture_output=True, text=True, env=ENV, timeout=1800)\ndef clean(*dirs):\n    import bench_multi\n    for d in dirs:\n        shutil.rmtree(bench_multi.clone_path(d, 1).parent, ignore_errors=True)\n    shutil.rmtree(T, ignore_errors=True)\nimport hashlib\nsrc = \"kb/_self/reports/benchmarks.csv\"\nsha = lambda: hashlib.sha256(open(src, \"rb\").read()).hexdigest()\nfirst = sha()\nd = os.path.join(T, \"r\")\ntry:\n    bench(\"multi\", \"run\", \"lookups\", \"--replay\", \"--dir\", d)\n    r = bench(\"multi\", \"record\", \"--dir\", d, \"--out\", os.path.abspath(src))\n    changed = sha() != first\n    if changed:\n        subprocess.run([\"git\", \"checkout\", \"--\", src], check=True)\n    assert r.returncode == 2 and not changed, (r.returncode, changed)\nfinally:\n    clean(d)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_multi.py",
+    "_tools/benchmarks.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-5y4ut64g review"
+  ]
+}

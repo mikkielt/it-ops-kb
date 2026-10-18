@@ -95,7 +95,7 @@
       },
       "class": "design",
       "answer": "clones under the scratch directory in a directory of their own for each DIR; stores DIR/coord/coord.sqlite (shared) and DIR/coord/agentN/coord.sqlite (isolated)",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g4",
@@ -112,7 +112,7 @@
       },
       "class": "design",
       "answer": "one base commit on the sandbox bare that empties lane_module in backlog.json",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g5",

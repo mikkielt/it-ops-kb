@@ -96,7 +96,7 @@
       },
       "class": "design",
       "answer": "Ten full-sentence pool rows of ten domains, each asked by two lookup agents; research on pip; mixed research on pip and cmd, two planted code items adding one small stdlib module each under examples/multi-bench, and the last five of the ten rows for its lookup agent",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -112,8 +112,8 @@
         "Every role on sonnet-5-5 and the lookup agent at effort high": "ST-ykdwo7a3"
       },
       "class": "design",
-      "answer": "Models lookup haiku-5-5, research sonnet-5-5, code sonnet-5-5, manager sonnet-5-5; stagger 0, coord shared, pack budget 1200 (kb_pack's default), tools kb, manager code; a lookup agent runs with no effort flag, 40 turns and 3 dollars, its files tools being Read Grep Glob with the kb server disallowed",
-      "by": "agent"
+      "answer": "Defaults as built (models lookup haiku-5-5, research and code sonnet-5-5, manager sonnet-5-5; stagger 0, coord shared, pack budget 1200, tools kb, manager code; lookup agent no effort flag, 40 turns, 3 dollars), but the files tool set is restricted with claude's --tools list, not --allowedTools under bypassPermissions; the change is a parked bug of the SP-5y4ut64g review",
+      "by": "operator"
     },
     {
       "id": "g4",
@@ -130,7 +130,7 @@
       },
       "class": "design",
       "answer": "A lookup question is the run-weighted mean of its model's pool cells at the default effort (session shape where recorded), a research agent the mean cost of all repro area runs with a stopped one at zero, a code agent 1.00 dollar; a model with no recorded cell is scaled from sonnet-5-5 by the ratio of first-tier input list prices in bench_core.PRICE; a manager session costs one lookup question",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g5",
@@ -147,7 +147,7 @@
       },
       "class": "design",
       "answer": "multi run without --dry-run refuses with exit 2 (it only plans); multi setup takes --scenario, which plants each code agent's item in the base commit and defaults --agents to the scenario's agent count",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [
