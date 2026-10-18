@@ -2,7 +2,7 @@
   "id": "ST-hp5cccy7",
   "kind": "story",
   "title": "kbask.py asks and answers through coord and runs one capped read-only remediation per alert",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-w6amecjt",
   "priority": "P2",
@@ -179,5 +179,45 @@
     }
   ],
   "notes": "Plan 2026-10-18 (operator interview): you start it by hand; kbmon stays read-only and kbask is the one writer of asks. Caps: --max-budget-usd 0.5 --max-turns 30 --model sonnet, --permission-mode dontAsk (claude -p denies what would prompt, agents/headless-agent-runtimes.md:23, DOC S1800; the budget is an estimate a run can pass, :52, DOC S1824). The checks put a fake claude first on PATH, so no check makes a paid model call; the paid path is the operator's first real run.",
-  "claimed_by": "orch-r20"
+  "evidence": {
+    "commit": "12f29437691ffaab49dc26fe109f5e065f6ff7e4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\nimport re\nA40='A'*40\nSEC=['-----BEGIN '+'PRIVATE KEY-----','AK'+'IA'+'Q'*16,'gh'+'p_'+'b'*36,'github'+'_pat_'+'c'*22,'gl'+'pat-'+'d'*20,'gl'+'rt-'+'e'*20,'xo'+'xb-'+'f'*10,'sk-'+'ant-'+'g'*20,'sk-'+'h'*32,'Account'+'Key='+A40,'x?s'+'ig='+'i'*30,'ey'+'J'+'j'*10+'.ey'+'J'+'k'*10+'.'+'l'*10,'pass'+'word = \"'+'m'*9+'\"','api'+'_key='+'n7Qz'*6,'/Users/'+'zofia.nowak/x']\nTAILS=['PRIVATE KEY','Q'*16,'b'*36,'c'*22,'d'*20,'e'*20,'f'*10,'g'*20,'h'*32,A40,'i'*30,'j'*10,'m'*9,'n7Qz'*6,'zofia.nowak']\nIDS=[x for x in SEC if re.fullmatch(r'[A-Za-z0-9_.:/#@-]{1,120}',x)]\ndef leaks(t): return [x[:6] for x in TAILS if x in t]\n\nD=tempfile.mkdtemp();st=os.path.join(D,'c.sqlite');E=dict(os.environ,KB_COORD_STORE=st)\np=s.run([sys.executable,'_tools/kbask.py','ask','ST-aaaaaaaa','is the gate red '+' '.join(SEC)],capture_output=True,text=True,env=E,timeout=60)\nif p.returncode!=0: fail('ask exit %s: %s'%(p.returncode,(p.stdout+p.stderr)[-300:]))\nev=json.loads(s.run([sys.executable,'_tools/coord.py','wait','--since','0','--timeout','1'],capture_output=True,text=True,env=E).stdout).get('events',[])\na=[e for e in ev if e.get('kind')=='ask' and e.get('fields',e).get('to')=='ST-aaaaaaaa']\nif not a: fail('no ask event: %r'%ev)\nref=a[-1].get('fields',a[-1]).get('ref','')\nv=json.loads(s.run([sys.executable,'_tools/coord.py','get',ref],capture_output=True,text=True,env=E).stdout).get('value','')\nif 'is the gate red' not in v: fail('question value %r'%v[:80])\nhit=leaks(v+p.stdout+p.stderr)\nif hit: fail('planted secrets kept: %s'%hit)\nprint('ok: ask redacted into its put value and posted')\n"
+        ],
+        "exit": 0,
+        "sha256": "e3c661d93c1b8a32"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\n\nD=tempfile.mkdtemp();st=os.path.join(D,'c.sqlite');E=dict(os.environ,KB_COORD_STORE=st)\np=s.run([sys.executable,'_tools/kbask.py','answer','A1','fixed by a rerun','--state','completed'],capture_output=True,text=True,env=E,timeout=60)\nif p.returncode!=0: fail('answer exit %s: %s'%(p.returncode,(p.stdout+p.stderr)[-300:]))\nev=json.loads(s.run([sys.executable,'_tools/coord.py','wait','--since','0','--timeout','1'],capture_output=True,text=True,env=E).stdout).get('events',[])\na=[e for e in ev if e.get('kind')=='answer']\nf=a[-1].get('fields',a[-1]) if a else {}\nif f.get('id')!='A1' or f.get('state')!='completed': fail('answer event %r'%a)\nv=json.loads(s.run([sys.executable,'_tools/coord.py','get',f.get('ref','')],capture_output=True,text=True,env=E).stdout).get('value','')\nif v!='fixed by a rerun': fail('answer value %r'%v)\nprint('ok: answer posted with its state and value')\n"
+        ],
+        "exit": 0,
+        "sha256": "d8db1fc96e319eac"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\nH=tempfile.mkdtemp();QE=dict(os.environ,CLAUDE_PLUGIN_DATA=H,CLAUDE_PLUGIN_ROOT=os.getcwd())\nB=tempfile.mkdtemp();LOG=os.path.join(B,'argv.json');fc=os.path.join(B,'claude')\nopen(fc,'w').write('#!'+sys.executable+'\\nimport json,sys,time\\nd={\"argv\":sys.argv[1:],\"stdin\":sys.stdin.read()}\\nopen(%r,\"w\").write(json.dumps(d))\\ntime.sleep(4)\\nprint(json.dumps({\"type\":\"result\",\"subtype\":\"success\",\"session_id\":\"00000000-0000-0000-0000-0000000000aa\",\"result\":\"diagnosis: planted; proposed: python3 _tools/querylog.py check\",\"total_cost_usd\":0.01}))\\n'%LOG)\nos.chmod(fc,0o755)\ndef ask(*a,env=None,t=120):\n    return s.run([sys.executable,'_tools/kbask.py',*a],capture_output=True,text=True,env=env,timeout=t)\ndef events(env):\n    r=s.run([sys.executable,'_tools/coord.py','wait','--since','0','--timeout','1'],capture_output=True,text=True,env=env,timeout=60)\n    try: return json.loads(r.stdout).get('events',[])\n    except ValueError: return []\ndef flags_ok(argv):\n    need=[('--agent','kb-observer'),('--model','sonnet'),('--max-budget-usd','0.5'),('--max-turns','30'),('--permission-mode','dontAsk')]\n    miss=[a for a,v in need if not any(argv[i]==a and argv[i+1]==v for i in range(len(argv)-1))]\n    if '-p' not in argv: miss.append('-p')\n    if '--allowedTools' not in argv: miss.append('--allowedTools')\n    return miss\n\nq=os.path.join(H,'querylog');os.makedirs(q,exist_ok=True)\nsys.path.insert(0,'_tools');import ql_deliver\nsay=ql_deliver.logged(q,out=lambda t:None);say('  gate querylog.py check: FAILED (exit 1): zqx-planted-reason');say('apply --push: kbgit.py sync exit 1; nothing pushed')\nst=os.path.join(tempfile.mkdtemp(),'c.sqlite');E=dict(QE,KB_COORD_STORE=st,PATH=B+os.pathsep+os.environ['PATH'])\np=ask('remediate','querylog.delivery',env=E)\nif p.returncode!=0: fail('remediate exit %s: %s'%(p.returncode,(p.stdout+p.stderr)[-300:]))\nans=[];t0=time.time()\nwhile time.time()-t0<90 and not ans:\n    ans=[e for e in events(E) if e.get('kind')=='answer'];time.sleep(1)\nif not ans: fail('no answer event after the session ended')\nif not os.path.exists(LOG): fail('the fake claude was not run')\nd=json.load(open(LOG));miss=flags_ok(d['argv'])\nif miss: fail('session flags missing: %r'%miss)\nif 'querylog.delivery' not in d['stdin'] or 'zqx-planted-reason' in d['stdin']+' '.join(d['argv']): fail('prompt names no alert id or holds alert text')\nf=ans[-1].get('fields',ans[-1]);v=json.loads(s.run([sys.executable,'_tools/coord.py','get',f.get('ref','')],capture_output=True,text=True,env=E).stdout).get('value','')\nif 'diagnosis: planted' not in v: fail('answer value %r'%v[:80])\no=k('--once','--store',st,env=dict(E,COLUMNS='120',LINES='200',NO_COLOR='1')).stdout\nif not any(' ask ' in x for x in o.splitlines()) or not any(' answer ' in x for x in o.splitlines()): fail('the log tail lacks the ask or the answer')\nprint('ok: capped read-only session, ids-only prompt, answer posted and shown in the log tail')\n"
+        ],
+        "exit": 0,
+        "sha256": "51275aa454f25086"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\nH=tempfile.mkdtemp();QE=dict(os.environ,CLAUDE_PLUGIN_DATA=H,CLAUDE_PLUGIN_ROOT=os.getcwd())\nB=tempfile.mkdtemp();LOG=os.path.join(B,'argv.json');fc=os.path.join(B,'claude')\nopen(fc,'w').write('#!'+sys.executable+'\\nimport json,sys,time\\nd={\"argv\":sys.argv[1:],\"stdin\":sys.stdin.read()}\\nopen(%r,\"w\").write(json.dumps(d))\\ntime.sleep(4)\\nprint(json.dumps({\"type\":\"result\",\"subtype\":\"success\",\"session_id\":\"00000000-0000-0000-0000-0000000000aa\",\"result\":\"diagnosis: planted; proposed: python3 _tools/querylog.py check\",\"total_cost_usd\":0.01}))\\n'%LOG)\nos.chmod(fc,0o755)\ndef ask(*a,env=None,t=120):\n    return s.run([sys.executable,'_tools/kbask.py',*a],capture_output=True,text=True,env=env,timeout=t)\ndef events(env):\n    r=s.run([sys.executable,'_tools/coord.py','wait','--since','0','--timeout','1'],capture_output=True,text=True,env=env,timeout=60)\n    try: return json.loads(r.stdout).get('events',[])\n    except ValueError: return []\n\nst=os.path.join(tempfile.mkdtemp(),'c.sqlite');E=dict(QE,KB_COORD_STORE=st,PATH=B+os.pathsep+os.environ['PATH'])\na=ask('remediate','querylog.delivery',env=E);b=ask('remediate','querylog.delivery',env=E)\nif a.returncode!=0: fail('first remediate exit %s: %s'%(a.returncode,(a.stdout+a.stderr)[-200:]))\nif b.returncode!=1: fail('second remediate of the same alert exit %s'%b.returncode)\nprint('ok: a second remediation of the same alert exits 1')\n"
+        ],
+        "exit": 0,
+        "sha256": "623564938211d1d0"
+      }
+    ]
+  }
 }
