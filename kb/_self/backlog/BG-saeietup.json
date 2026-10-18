@@ -2,7 +2,7 @@
   "id": "BG-saeietup",
   "kind": "bug",
   "title": "redact keeps the tail of an escaped-JSON secret value after a nested escaped quote",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5xnbspyp",
   "priority": "P2",
   "rank": 0,
@@ -46,5 +46,6 @@
   "links": [
     "parked: SP-g4mwrwsv review"
   ],
-  "notes": "Plan 2026-10-17: repro and check fail on origin/main 3dba0ef83 (the tail bkePass12345x stays at both levels); the near-miss under a title key stays whole today and must stay so. Knowledge: public/security/secret-shapes-in-text.md:55 (RFC 8259 escapes)."
+  "notes": "Plan 2026-10-17: repro and check fail on origin/main 3dba0ef83 (the tail bkePass12345x stays at both levels); the near-miss under a title key stays whole today and must stay so. Knowledge: public/security/secret-shapes-in-text.md:55 (RFC 8259 escapes).",
+  "claimed_by": "orch-r13"
 }
