@@ -60,7 +60,9 @@
         "the last apply outcome of distill.log as one delivery row, timed by the log's last write when it stands last, else untimed (--:--:--) and sorted first": "ST-d2ekxwvd",
         "the newest query log commit on origin/main as a pushed row at its commit time, no failed outcomes": "ST-d2ekxwvd"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "the last apply outcome of distill.log as one delivery row, timed by the log's last write when it stands last, else untimed (--:--:--) and sorted first",
+      "by": "operator"
     },
     {
       "id": "g2",
