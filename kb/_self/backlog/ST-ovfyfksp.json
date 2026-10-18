@@ -63,7 +63,8 @@
   "touches": [
     "_tools/bench_multi.py",
     "_tools/benchmarks.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
   ],
   "depends_on": [
     "ST-ykdwo7a3"
