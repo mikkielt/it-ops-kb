@@ -2,7 +2,7 @@
   "id": "ST-kio3rfoh",
   "kind": "story",
   "title": "Research sprint goal: Concurrent work keeps its claims, research, landings and secrets apart: fitness checks the harness runs",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-7s6uubs7",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,19 @@
   "touches": [
     "kb/public/**"
   ],
-  "claimed_by": "orch-r21"
+  "evidence": {
+    "commit": "bc99e008269bcb0e5784bd791a0fb1b2b684e898",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-kio3rfoh"
+        ],
+        "exit": 0,
+        "sha256": "23626656fbf28835"
+      }
+    ]
+  }
 }
