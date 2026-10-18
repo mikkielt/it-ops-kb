@@ -2,7 +2,7 @@
   "id": "ST-fnoo6q5l",
   "kind": "story",
   "title": "The sync gate runs backlog.py check when a tracked file is deleted or renamed",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-kbrxa4c4",
   "priority": "P2",
   "rank": 0,
@@ -40,5 +40,6 @@
   "links": [
     "parked: SP-noqsd4hj close"
   ],
-  "notes": "Retrospective finding of SP-noqsd4hj, filed by the orchestrator acting as operator. Plan 2026-10-17: the check fails on origin/main 3dba0ef83 (gate_needs gives backlog None for a gone path). The old check read only git.md. Fitness test it blocks (EP-gzr4mmkm): a content sprint lands on headless Sonnet with no operator step beyond its gates. Knowledge: public/gitlab/git-history-queries.md:24 (--name-only, --name-status)."
+  "notes": "Retrospective finding of SP-noqsd4hj, filed by the orchestrator acting as operator. Plan 2026-10-17: the check fails on origin/main 3dba0ef83 (gate_needs gives backlog None for a gone path). The old check read only git.md. Fitness test it blocks (EP-gzr4mmkm): a content sprint lands on headless Sonnet with no operator step beyond its gates. Knowledge: public/gitlab/git-history-queries.md:24 (--name-only, --name-status).",
+  "claimed_by": "orch-r14"
 }
