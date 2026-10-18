@@ -2,7 +2,7 @@
   "id": "ST-kb74yzac",
   "kind": "story",
   "title": "multi check names duplicate research when the coord store is shared and measures it when isolated",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-giqleoy2",
   "sprint": "SP-7s6uubs7",
   "priority": "P2",
