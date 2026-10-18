@@ -203,7 +203,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `gitlab/git-commit-paths-and-symlinks` | P3 | complete | `gitlab/git-commit-paths-and-symlinks.md` | 7 |
 | `gitlab/git-history-queries` | P3 | complete | `gitlab/git-history-queries.md` | 8 |
 | `gitlab/git-refs` | P3 | complete | `gitlab/git-refs.md` | 3 |
-| `gitlab/git-test-repositories` | P3 | complete | `gitlab/git-test-repositories.md` | 52 |
+| `gitlab/git-test-repositories` | P3 | complete | `gitlab/git-test-repositories.md` | 53 |
 | `gitlab/git-trailers-and-hooks` | P3 | complete | `gitlab/git-trailers-and-hooks.md` | 14 |
 | `gitlab/github-branch-rules-and-auto-merge` | P3 | complete | `gitlab/github-branch-rules-and-auto-merge.md` | 18 |
 | `gitlab/hosted-runners-windows` | P3 | complete | `gitlab/hosted-runners-windows.md` | 5 |
@@ -336,7 +336,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `python/stdlib-datetime-iso-week` | P3 | complete | `python/stdlib-datetime-iso-week.md` | 1 |
 | `python/stdlib-os-loadavg` | P3 | partial | `python/stdlib-os-loadavg.md` | 7 |
 | `python/stdlib-urllib-errors` | P3 | partial | `python/stdlib-urllib-errors.md` | 5 |
-| `python/stdlib-windows-portability` | P3 | partial | `python/stdlib-windows-portability.md` | 26 |
+| `python/stdlib-windows-portability` | P3 | partial | `python/stdlib-windows-portability.md` | 29 |
 | `python/testcontainers-postgres-pytest` | P3 | partial | `python/testcontainers-postgres-pytest.md` | 15 |
 | `python/typer-cli` | P3 | partial | `python/typer-cli.md` | 16 |
 | `python/uv-windows-install` | P3 | partial | `python/uv-windows-install.md` | 3 |

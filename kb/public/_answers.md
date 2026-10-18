@@ -4066,3 +4066,14 @@ _Agent: kb-research_
 - See security/secret-shapes-in-text.md, mcp/authorization.md.
 
 _Agent: kb-research_
+
+## QK-line-boundaries-str-splitlines-split-bytes. Which line boundaries does Python's `str.splitlines` split at and how does `bytes.splitlines` differ; what does `git rebase --abort` restore, and which state files show a rebase in progress?
+- `str.splitlines()` splits at `\n`, `\r`, `\r\n`, `\v`, `\f`, `\x1c`, `\x1d`, `\x1e`, `\x85`, `U+2028` and `U+2029`, a superset of universal newlines. [DOC S-5qbsemqm]
+- `bytes.splitlines()` splits at ASCII line boundaries only; the implementation tests `\n` and `\r` (a `\r\n` pair is one break), so form feed, `\x85` and the other controls stay inside a line. [DOC S-5qbsemqm; CODE S-7ctlvynr, S-inakn5ad]
+- `git rebase --abort` resets `HEAD` to the branch the rebase started on (to where `HEAD` was, for a detached start) with a hard reset, which discards index and working tree changes, then deletes the rebase state, `REBASE_HEAD` and `AUTO_MERGE`, and applies an `--autostash` entry back. [DOC S-7kl4eeso; CODE S-sx4rosvv]
+- A rebase in progress shows as the directory `rebase-merge/` (merge backend; `rebase-merge/interactive` for an interactive one) or `rebase-apply/` (apply backend; with `rebase-apply/applying` it is an `am` session), in the worktree's own git directory. [CODE S-xa64ec2e, S-sx4rosvv]
+- Conclusion: a tool that splits text records by line must choose `split("\n")` or `splitlines()` knowingly, since the second breaks at eight more characters on `str` than on `bytes`; a tool that must know whether a worktree is mid-rebase stats `rebase-merge` and `rebase-apply` in that worktree's git directory, and `--abort` is the way back to the starting state, `--quit` is not. [DER S-5qbsemqm, S-7ctlvynr, S-7kl4eeso, S-xa64ec2e]
+- Open: no live probe of `--abort` or of the state directories was run; the answer rests on the pinned v2.55.0 documentation and code. [UNK]
+- See python/stdlib-windows-portability.md, gitlab/git-test-repositories.md.
+
+_Agent: kb-research_

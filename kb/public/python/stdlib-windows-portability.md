@@ -2,8 +2,8 @@
 topic: python/stdlib-windows-portability
 priority: P3
 applies_to: "CPython 3.14.7 documentation (release tag); stdlib behaviour on Windows versus POSIX for detached processes, file locks, text files and interpreter names"
-retrieved_utc: 2026-10-13
-sources: [S-vfd5kpka, S-hlwenztu, S-kyzwo2d6, S-2cf7ptty, S-dabwnzz5, S-ew7mucsg, S-oavxfpsn, S-f5bnvamj, S-ntbllsvy, S-sjuwcuhk, S-6bobcclf, S-e4zz24dq, S-ttcgrkbl, S-obrkrr52, S-hjy5rcb2, S743, S-5brdhqgo, S-jwv5eevl, S-ymqlfpgy, S-ujjrcinq, S-t5ahy22o, S-qz6kfi4i, S-qo63gfo7, S-edjp43o7, S-oqrlzkwe, S-ip5ugdeb]
+retrieved_utc: 2026-10-18
+sources: [S-vfd5kpka, S-hlwenztu, S-kyzwo2d6, S-2cf7ptty, S-dabwnzz5, S-ew7mucsg, S-oavxfpsn, S-f5bnvamj, S-ntbllsvy, S-sjuwcuhk, S-6bobcclf, S-e4zz24dq, S-ttcgrkbl, S-obrkrr52, S-hjy5rcb2, S743, S-5brdhqgo, S-jwv5eevl, S-ymqlfpgy, S-ujjrcinq, S-t5ahy22o, S-qz6kfi4i, S-qo63gfo7, S-edjp43o7, S-oqrlzkwe, S-ip5ugdeb, S-5qbsemqm, S-7ctlvynr, S-inakn5ad]
 status: partial
 ---
 
@@ -70,6 +70,14 @@ commands are `python` and `py`; `python3` exists only as a compatibility alias.
 - In text mode without `encoding`, `open()` uses the locale encoding from `locale.getencoding()`, which is platform dependent. [DOC S-ntbllsvy]
 - When writing with `newline=None` (the default), each `\n` becomes `os.linesep`; with `newline=''` or `'\n'` no translation happens. [DOC S-ntbllsvy]
 - A tool whose files must be identical on every OS opens them with `encoding="utf-8"` and writes with `newline="\n"`; otherwise Windows writes `\r\n` and a locale code page such as cp1252. [DER S-ntbllsvy: default encoding and newline translation above]
+
+### Splitting text into lines: `str.splitlines` and `bytes.splitlines`
+- `str.splitlines()` breaks at these line boundaries, "a superset of universal newlines": `\n`, `\r`, `\r\n`, `\v` (`\x0b`), `\f` (`\x0c`), `\x1c`, `\x1d`, `\x1e`, `\x85` (U+0085, Next Line), `U+2028` (Line Separator) and `U+2029` (Paragraph Separator); `\v` and `\f` were added in 3.2. [DOC S-5qbsemqm]
+- Line breaks stay out of the result unless `keepends` is true; unlike `split('\n')`, `splitlines()` returns `[]` for the empty string and a terminal line break adds no empty last element (`"One line\n".splitlines()` is `['One line']`, `'Two lines\n'.split('\n')` is `['Two lines', '']`). [DOC S-5qbsemqm]
+- `bytes.splitlines()` and `bytearray.splitlines()` break "at ASCII line boundaries" by the universal-newlines approach, and the page's example splits `\n`, `\r` and `\r\n` only; it does not list the other characters, and the empty-input and terminal-break rules are the same as for `str`. [DOC S-5qbsemqm]
+- In the implementation the `bytes` method uses the shared splitting template with `STRINGLIB_ISLINEBREAK(x)` defined as `x == '\n' || x == '\r'`, and `bytesobject.c` includes that definition file before `stringlib/split.h`, so a `bytes` value splits only at `\n`, `\r` and `\r\n` (a `\r` followed by `\n` is one break); `\x0b`, `\x0c`, `\x1c` to `\x1e` and `\x85` do not split it. [CODE S-7ctlvynr: Objects/stringlib/stringdefs.h#STRINGLIB_ISLINEBREAK; CODE S-inakn5ad: Objects/bytesobject.c#STRINGLIB_MUTABLE, the includes of stringdefs.h and split.h]
+- Run on CPython 3.13.2 (not 3.14.7) with the string `'a\x0bb\x0cc\x1cd\x1de\x1ef\x85gU+2028hU+2029i\r\nj'`, `str.splitlines()` returned ten items `a` to `j` (every listed boundary split, `\r\n` once), while the same bytes without the two Unicode separators (they have no Latin-1 byte), encoded as Latin-1, gave `[b'a\x0bb\x0cc\x1cd\x1de\x1ef\x85ghi', b'j']`: only `\r\n` split it. [DER S-5qbsemqm, S-7ctlvynr: the two tables above, checked by the local run]
+- So a tool that splits a file's text into records one per line, and must not break a record at a form feed, a `\x85` or a Unicode line separator that its data may hold, splits with `split("\n")` or splits the `bytes` before decoding (that splits only at `\n`, `\r` and `\r\n`); `str.splitlines()` on decoded text splits at all of them. [DER S-5qbsemqm, S-7ctlvynr: the `str` boundary list against the `bytes` one]
 
 ### Interpreter names on Windows
 - With the Python install manager, the `python`, `py` and `pymanager` commands are available; `py` is recommended where several runtimes exist, and the versioned aliases (`python3.14.exe`) need an optional `PATH` entry. [DOC S-sjuwcuhk]

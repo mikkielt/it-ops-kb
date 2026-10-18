@@ -8253,8 +8253,12 @@ f6180b076942,gitlab/git-refs.md,S-xahbgevi,unlocated:no-match,,,,,2026-10-10
 006e83bdd2fd,gitlab/git-test-repositories.md,S-k2jlpd4u,located,,bare;git;clon,a07103fb2ee80d89,,2026-10-15
 01e0ab8b9b9c,gitlab/git-test-repositories.md,S-f5whqkwk,located,,explicit;ignor;pushurl;git;remot,a68cd15d9f79f109,"If a remote has an explicit pushurl, Git will ignore this setting for that remote.",2026-10-15
 02213c124346,gitlab/git-test-repositories.md,S-lr3jwdq2,unlocated:no-match,,,,,2026-10-10
+0248ac4e917e,gitlab/git-test-repositories.md,S-sx4rosvv,unlocated:no-match,,,,,2026-10-18
+0248ac4e917e,gitlab/git-test-repositories.md,S-xa64ec2e,unlocated:no-match,,,,,2026-10-18
 02a75c353b39,gitlab/git-test-repositories.md,S-b6uvvu45,unlocated:no-match,,,,,2026-10-10
 05de2821029a,gitlab/git-test-repositories.md,S-vmz33l7n,located,,cherry;cherry-pick;pick;revert;other;command;git,82f0f3b1586da257,and other commands such as git revert and git cherry-pick.,2026-10-17
+06dc606393f4,gitlab/git-test-repositories.md,S-tx5lxmr3,unlocated:no-match,,,,,2026-10-18
+06dc606393f4,gitlab/git-test-repositories.md,S-xa64ec2e,unlocated:no-match,,,,,2026-10-18
 087d2832a96b,gitlab/git-test-repositories.md,S-kzv2kznr,located,,writ;repository;file;git;config,42f9519b9ba6635b,For writing options: write to the repository .git/config file.,2026-10-10
 087d2832a96b,gitlab/git-test-repositories.md,S-miw74ti3,unlocated:no-match,,,,,2026-10-10
 087d2832a96b,gitlab/git-test-repositories.md,S-waqn37nq,unlocated:no-match,,,,,2026-10-10
@@ -8318,6 +8322,7 @@ f6180b076942,gitlab/git-refs.md,S-xahbgevi,unlocated:no-match,,,,,2026-10-10
 676e1adf1f66,gitlab/git-test-repositories.md,S-rscocily,unlocated:no-match,,,,,2026-10-10
 684c5cac2640,gitlab/git-test-repositories.md,S-7kl4eeso,located,,copy;full;file;each;work;backend;merg,78b6edd9bca386b4,"The 'merge' backend works with a full copy of each relevant file,",2026-10-17
 6c78926ae843,gitlab/git-test-repositories.md,S-lr3jwdq2,unlocated:no-match,,,,,2026-10-10
+6e0d4f1e1b95,gitlab/git-test-repositories.md,S-sx4rosvv,unlocated:no-match,,,,,2026-10-18
 6e8cbe172453,gitlab/git-test-repositories.md,S-zflhytlw,unlocated:no-match,,,,,2026-10-10
 6fc77e684957,gitlab/git-test-repositories.md,S-2u6tfn4r,unlocated:no-match,,,,,2026-10-10
 71403960e7f3,gitlab/git-test-repositories.md,S-k2jlpd4u,unlocated:no-match,,,,,2026-10-10
@@ -8397,6 +8402,7 @@ e745c3bf4f0b,gitlab/git-test-repositories.md,S-waqn37nq,unlocated:no-match,,,,,2
 eb2ddc9d186f,gitlab/git-test-repositories.md,S-kzv2kznr,located,,git_config_key_;git_config_value_;process;git_config_count;count;pair;environment;key,7fe6ce6b91b2b6d6,"If GITCONFIGCOUNT is set to a positive number, all environment pairs GITCONFIGKEY<n> and GITCONFIGVALUE<n> up to that number will be added to the process's runtime",2026-10-10
 f16950d5443d,gitlab/git-test-repositories.md,S-y5k6dlda,unlocated:no-match,,,,,2026-10-10
 f3c796d9d1bb,gitlab/git-test-repositories.md,S-fqaj6jn5,unlocated:no-match,,,,,2026-10-10
+f4233169ff3f,gitlab/git-test-repositories.md,S-7kl4eeso,located,,abort;original;reset;head;branch;rebas,8101159b51202f95,Abort the rebase operation and reset HEAD to the original branch.,2026-10-18
 f65096690ab7,gitlab/git-test-repositories.md,S-ali5r4n7,located,,delet;git,a7ad9c6a30eddef7,ret |= deletegitdir(wt->id);,2026-10-13
 f9e69d474f69,gitlab/git-test-repositories.md,S-j4qkzgvv,located,,mark;upstream;remote-track;track;default;commit-ish;ish;commit,ef83b97725ae6d28,"mark it as ""upstream"" from the new branch. This is the default if <commit-ish> is a remote-tracking branch.",2026-10-10
 06baff0476f2,gitlab/git-trailers-and-hooks.md,S-l6s4hfqp,unlocated:no-match,,,,,2026-10-10
@@ -13269,6 +13275,8 @@ dc0ca92d51fb,python/stdlib-urllib-errors.md,S-kudz6dke,unlocated:no-match,,,,,20
 24dbcc644cea,python/stdlib-windows-portability.md,S-2cf7ptty,located,iOS Manual Pages,ebusy;mount;point;system;file;directory,edb442bed1f63d82,The directory to be removed is the mount point for a mounted file system,2026-10-13
 2e36ec81198d,python/stdlib-windows-portability.md,S-ymqlfpgy,located,Process Creation Flags (WinBase.h) - Win32 apps | Microsoft Learn > Flags,0x00000008;alloc;allocconsol;later;cannot;detach;inherit;parent,c8edecc05947dcc5,"- DETACHED\PROCESS<br>- 0x00000008 | For console processes, the new process does not inherit its parent's console (the default). The new process can call the AllocConsole",2026-10-10
 2e3c045e3719,python/stdlib-windows-portability.md,S-qz6kfi4i,located,SetCurrentDirectory function (winbase.h) - Win32 apps | Microsoft Learn > Remarks,colon;driv;each;letter;made;singl;designator;disk,b55a461a34dda75d,"Each process has a single current directory made up of two parts: A disk designator that is either a drive letter followed by a colon,",2026-10-10
+2ef98f7eca87,python/stdlib-windows-portability.md,S-5qbsemqm,unlocated:no-match,,,,,2026-10-18
+2ef98f7eca87,python/stdlib-windows-portability.md,S-7ctlvynr,unlocated:no-match,,,,,2026-10-18
 31ba4df98441,python/stdlib-windows-portability.md,S-ttcgrkbl,located,System Error Codes (0-499) (WinError.h) - Win32 apps | Microsoft Learn,0x20;shar;violation;becaus;being;another;access;process,e99a1c025e9f3989,ERROR\SHARING\VIOLATION 32 (0x20) The process cannot access the file because it is being used by another process.,2026-10-10
 3d447ce98192,python/stdlib-windows-portability.md,S-qz6kfi4i,unlocated:no-match,,,,,2026-10-10
 3d447ce98192,python/stdlib-windows-portability.md,S-ttcgrkbl,unlocated:no-match,,,,,2026-10-10
@@ -13279,6 +13287,7 @@ dc0ca92d51fb,python/stdlib-urllib-errors.md,S-kudz6dke,unlocated:no-match,,,,,20
 435ad9b80880,python/stdlib-windows-portability.md,S-f5bnvamj,unlocated:no-match,,,,,2026-10-10
 458d3c95b8f1,python/stdlib-windows-portability.md,S-e4zz24dq,located,Command prompt line string limitation - Windows Client | Microsoft Learn > More information > Examples,even;ignor;longer;though;win32;inherit;parameter;character,40b4a82adf1ec26e,"In a batch file, the total length of the following command line after you expand the parameters can't contain more than 8191 characters: ExecutableFile.exe parameter1",2026-10-10
 48a9a2602af2,python/stdlib-windows-portability.md,S-kyzwo2d6,located,getcwd(3) — Linux manual page > ERRORS top,enoent;unlink;work;directory;current,ff0cdc2176f5a196,The current working directory has been unlinked,2026-10-13
+4b7bbfbef00c,python/stdlib-windows-portability.md,S-5qbsemqm,located,do a signed reduction modulo 2**sys.hash_info.width,terminal;break;line;empty;result;return;string,35de6ab383f3ca11,"returns an empty list for the empty string, and a terminal line break does not result in an extra line",2026-10-18
 56cfa90089ea,python/stdlib-windows-portability.md,S-ip5ugdeb,located,Hard Links and Junctions - Win32 apps | Microsoft Learn > Hard links,driv;exampl;map;network;ethel;ethel.txt;lucy;lucy.txt,531ab5e115e9baf7,"For example, in a system where C: and D: are local drives and Z: is a network drive mapped to \\fred\share, the following references are",2026-10-10
 5724a9258ee0,python/stdlib-windows-portability.md,S-sjuwcuhk,unlocated:no-match,,,,,2026-10-12
 57c19c5865d4,python/stdlib-windows-portability.md,S-oavxfpsn,located,,wasi;unix;modul,4be45b3d5a7180da,".. availability:: Unix, not WASI. All functions in this module take a file descriptor fd as their first",2026-10-10
@@ -13288,16 +13297,22 @@ dc0ca92d51fb,python/stdlib-urllib-errors.md,S-kudz6dke,unlocated:no-match,,,,,20
 5ce2042281ca,python/stdlib-windows-portability.md,S-sjuwcuhk,unlocated:no-match,,,,,2026-10-12
 6648c8869eb9,python/stdlib-windows-portability.md,S-oqrlzkwe,located,CreateHardLinkW function (winbase.h) - Win32 apps | Microsoft Learn > Remarks,server;support;window;function;creat;hard;link,0822071be3f761ab,"Symbolic link behavior-If the path points to a symbolic link, the function creates a hard link to the symbolic link. In Windows 8 and Windows",2026-10-10
 6bc94643544b,python/stdlib-windows-portability.md,S-dabwnzz5,located,,3.1;process_group;group;posix;process,c3a67b2d0de60f11,.. availability:: POSIX .. versionchanged:: 3.11 processgroup was added.,2026-10-10
+71c39692a049,python/stdlib-windows-portability.md,S-5qbsemqm,located,do a signed reduction modulo 2**sys.hash_info.width,superset;universal;boundary;newlin,afbf5dd85aa00f01,"In particular, the boundaries are a superset of",2026-10-18
 71f0f18d8ba0,python/stdlib-windows-portability.md,S-dabwnzz5,unlocated:no-match,,,,,2026-10-10
 7a3195cba863,python/stdlib-windows-portability.md,S-ujjrcinq,unlocated:no-match,,,,,2026-10-10
 7a3195cba863,python/stdlib-windows-portability.md,S-ymqlfpgy,located,Process Creation Flags (WinBase.h) - Win32 apps | Microsoft Learn > Flags,breakaway;chang;job;limit;object;must;child;detach,b1fdcf3827912ec6,- CREATE\BREAKAWAY\FROM\JOB<br>- 0x01000000 | The child processes of a process associated with a job are not associated with the job. If the calling process is,2026-10-10
 804f4f510217,python/stdlib-windows-portability.md,S-qo63gfo7,located,errno — Standard errno system symbols¶,cross;cross-devic;errno.exdev;exdev;link;devic;errno,bbbacbec30995b0e,errno.EXDEV¶ Cross-device link,2026-10-10
 83b5addfb215,python/stdlib-windows-portability.md,S-ymqlfpgy,located,Process Creation Flags (WinBase.h) - Win32 apps | Microsoft Learn > Flags,0x0000020;break;ctrl;generat;generateconsolectrlevent;identifier;return;send,4da325595263111d,- CREATE\NEW\PROCESS\GROUP<br>- 0x00000200 | The new process is the root process of a new process group. The process group includes all processes that are descendants,2026-10-10
+83be52e4724e,python/stdlib-windows-portability.md,S-7ctlvynr,unlocated:no-match,,,,,2026-10-18
+83be52e4724e,python/stdlib-windows-portability.md,S-inakn5ad,unlocated:no-match,,,,,2026-10-18
+854e3e32e006,python/stdlib-windows-portability.md,S-5qbsemqm,unlocated:no-match,,,,,2026-10-18
+854e3e32e006,python/stdlib-windows-portability.md,S-7ctlvynr,unlocated:no-match,,,,,2026-10-18
 8645f250365d,python/stdlib-windows-portability.md,S-2cf7ptty,unlocated:no-match,,,,,2026-10-13
 8645f250365d,python/stdlib-windows-portability.md,S-kyzwo2d6,unlocated:no-match,,,,,2026-10-13
 8645f250365d,python/stdlib-windows-portability.md,S-vfd5kpka,unlocated:no-match,,,,,2026-10-13
 91406b95a1ed,python/stdlib-windows-portability.md,S-ujjrcinq,unlocated:no-match,,,,,2026-10-10
 91406b95a1ed,python/stdlib-windows-portability.md,S-ymqlfpgy,unlocated:no-match,,,,,2026-10-10
+92883a3e46cd,python/stdlib-windows-portability.md,S-5qbsemqm,located,do a signed reduction modulo 2**sys.hash_info.width,boundary;break;line;ascii;list,30f5bc9e27552fc4,breaking at ASCII line boundaries,2026-10-18
 93523914709a,python/stdlib-windows-portability.md,S-ujjrcinq,located,Job Objects - Win32 apps | Microsoft Learn > Managing Job Objects,destroy;kill;last;clos;handl;limit;associat;object,2e0378c24c526c85,"However, if the job has the JOB\OBJECT\LIMIT\KILL\ON\JOB\CLOSE flag specified, closing the last job object handle terminates all associated processes and then destroys the job object",2026-10-10
 945cf42fde93,python/stdlib-windows-portability.md,S-5brdhqgo,located,os — Miscellaneous operating system interfaces¶,thereof;inaccessibl;invalid;subclass;oserror;modul;operat;accept,3187314fa1ef2188,"All functions in this module raise OSError (or subclasses thereof) in the case of invalid or inaccessible file names and paths, or other arguments that",2026-10-10
 998b479205ed,python/stdlib-windows-portability.md,S-qz6kfi4i,located,SetCurrentDirectory function (winbase.h) - Win32 apps | Microsoft Learn > Remarks,delet;execut;lock;moved;prevent;renam;whil;being,0623f6e4edacd421,"The current directory for a process is locked while the process is executing. That prevents the directory from being deleted, moved, or renamed.",2026-10-10
