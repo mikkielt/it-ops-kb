@@ -1,0 +1,29 @@
+{
+  "id": "ST-ks7w4sam",
+  "kind": "story",
+  "title": "A gate whose option names origin/main as what a panel reads is not classed push",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the gate classifier classes push only an option that pushes, publishes or changes a remote; an option that names origin/main as a read source (a count of what origin/main lacks) keeps class design; the classifier still fails closed on a real push",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0,'_tools');import bl_authority as a\ng={'id':'g1','question':'Which entries does the querylog panel count as not yet delivered?','options':['run files of the local store that origin/main lacks (0 in mode local)','spool rows whose entry the local store holds']}\nc=a.class_reasons({'touches':['_tools/mon_querylog.py']},g);print(c);sys.exit(1 if c[0]=='push' else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md"
+  ],
+  "relates_to": [
+    "ST-dfauycuq"
+  ],
+  "links": [
+    "parked: SP-v4yih547 close"
+  ],
+  "notes": "SP-v4yih547 close: ST-go6vdmnt g1 and ST-d2ekxwvd g1, both display choices, were classed push by 'origin' and made blocking, so each took an operator round. Narrowing the classifier is the operator's call (operator-only authority); related ST-dfauycuq (erase classed delete)."
+}

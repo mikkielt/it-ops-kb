@@ -1,0 +1,26 @@
+{
+  "id": "ST-lxrttrwy",
+  "kind": "story",
+  "title": "A planned count or sum check plants the same row in each source it joins and asserts the exact figure",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the sprint skill's plan step 6 says a check of a count, total or cost that a panel or report joins from several sources (spool and store, spool and committed rows) plants one row present in both and asserts the exact figure, not its type",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('skills/sprint/SKILL.md',encoding='utf-8').read()\nok='present in both' in t or 'exact figure' in t\nprint('plan names joined-count checks:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-v4yih547 close"
+  ],
+  "notes": "SP-v4yih547 close: ST-go6vdmnt check 0 only type-checked usage_today, so the double count of a distilled prompt (BG-mey6jwew) passed; ST-n5d72sm3 planted spool rows only, so committed-row ordering (BG-gkocrnfw) passed. Both found by the review."
+}

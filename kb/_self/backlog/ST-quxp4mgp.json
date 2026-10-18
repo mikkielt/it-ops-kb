@@ -1,0 +1,26 @@
+{
+  "id": "ST-quxp4mgp",
+  "kind": "story",
+  "title": "A resume brief for a worker restates the landing's own checks before its next commit",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the sprint skill's run step says the orchestrator's resume request (claude -p --resume) to a worker restates worker rule 4: run land_stale, land_eval and land_lint before each new commit, Self-Reviewed named again for a doc the new commit's paths map to",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('skills/sprint/SKILL.md',encoding='utf-8').read()\nimport re\nok=bool(re.search(r'resume[^.]*(land_stale|rule 4)',t))\nprint('resume restates the landing checks:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-v4yih547 close"
+  ],
+  "notes": "SP-v4yih547 close: ST-bhvh6jh6's resumed worker committed a mon_view.py revert after its Self-Reviewed commit, and land stopped at step stale for kb/_self/code.md; the orchestrator's narrow resume brief did not ask for the landing checks."
+}

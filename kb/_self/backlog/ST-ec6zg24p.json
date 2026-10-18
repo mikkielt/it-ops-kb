@@ -1,0 +1,26 @@
+{
+  "id": "ST-ec6zg24p",
+  "kind": "story",
+  "title": "kbmon's tools.md row names the panels by pointer, so parallel panel stories stop conflicting on one table row",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/tools.md's kbmon row describes the command and points to kb/_self/monitoring.md for each panel's content, so stories that add or change different panels edit different sections of monitoring.md and do not conflict on one tools.md line",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,re\nt=open('kb/_self/tools.md',encoding='utf-8').read()\nrow=next(l for l in t.splitlines() if l.startswith('| `python3 _tools/kbmon.py'))\nn=len(re.findall(r'the \\w+ panel gives',row));print('panels described in the row:',n);sys.exit(0 if n==0 else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/tools.md",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-v4yih547 close"
+  ],
+  "notes": "SP-v4yih547 close: four of six parallel kbmon landings (ST-iogk4rdb, ST-go6vdmnt, ST-bhvh6jh6, ST-d2ekxwvd) stopped or were pre-rebased for a conflict in the same tools.md row (and twice in monitoring.md's section order), each resolved by hand keeping both sides."
+}

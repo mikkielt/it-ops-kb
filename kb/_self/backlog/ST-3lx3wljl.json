@@ -1,0 +1,26 @@
+{
+  "id": "ST-3lx3wljl",
+  "kind": "story",
+  "title": "The kb-sprint plan step says checks run under NO_COLOR=1, so a terminal-view check drops it in its child",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the sprint skill's plan step 6 says a check or repro runs under bl_base.colourless_env (NO_COLOR=1, no FORCE_COLOR), so a check of a colour or live terminal view removes NO_COLOR in the child it starts, and precheck runs each check in that same environment",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('skills/sprint/SKILL.md',encoding='utf-8').read()\nok='NO_COLOR' in t and 'colourless_env' in t\nprint('plan names the check environment:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-v4yih547 close"
+  ],
+  "notes": "SP-v4yih547 close: ST-bhvh6jh6's pty checks 0 and 1 passed by hand and in the worker's runs, then land stopped at step checks: the live view does not redraw under NO_COLOR, which colourless_env sets. The orchestrator fixed the checks on the work branch."
+}
