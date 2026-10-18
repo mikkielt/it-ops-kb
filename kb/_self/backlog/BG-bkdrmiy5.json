@@ -2,7 +2,7 @@
   "id": "BG-bkdrmiy5",
   "kind": "bug",
   "title": "kbmon's live view cuts the log tail at the bottom, so on a short terminal the newest rows are the ones dropped",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-v4yih547",
   "priority": "P2",
   "rank": 0,
@@ -39,5 +39,18 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "orch-r18"
+  "evidence": {
+    "commit": "253d280ea08ca0b6ce25e7b348e7d4a1be862305",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import mon_view;snap={'taken':'2026-10-18T10:00:00Z','alerts':[],'panels':{'log':{'state':'ok','seconds':0.1,'data':{'events':[{'ts':'2026-10-18T10:00:0%dZ'%i,'source':'ops','event':'land.step','subject':'ST-aaaaaaaa','fields':{},'warn':False} for i in range(9)],'problems':[]}}}};t=mon_view.render_text(snap,height=8);sys.exit(0 if '10:00:08' in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
