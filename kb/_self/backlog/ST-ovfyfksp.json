@@ -119,7 +119,9 @@
         "Once before any agent starts, in the first code agent's clone, synced to the bare with kbgit.py sync --push; a gate a worker leaves open on its branch is answered after its session, before land": "ST-ovfyfksp",
         "Only when a worker leaves a gate open, during the run": "ST-ovfyfksp"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "Once before any agent starts, in the first code agent's clone, synced to the bare with kbgit.py sync --push; a gate a worker leaves open on its branch is answered after its session, before land",
+      "by": "operator"
     },
     {
       "id": "g4",
