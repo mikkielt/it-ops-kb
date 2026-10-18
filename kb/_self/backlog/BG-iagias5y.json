@@ -55,7 +55,9 @@
         "shlex-split": "BG-iagias5y",
         "regex-outside-quotes": "BG-iagias5y"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "own-scan",
+      "by": "operator"
     }
   ],
   "links": [
