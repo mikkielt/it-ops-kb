@@ -37,7 +37,7 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 6. Find the files this work changed, against the commit it started from, not against `main` (a branch made from another branch, or a `main` that moved on, would otherwise show other people's changes as yours):
    - base: the `--base REV` argument if given (the user knows the start, e.g. `--base chore/kb-tools-hardening`); else, when the branch tracks a different branch (`git rev-parse --abbrev-ref @{upstream}` is not `origin/<this branch>`), `git merge-base HEAD @{upstream}`; else `git merge-base HEAD origin/main`. Say which rule picked it; if none applies (no upstream, no `origin/main`), ask.
    - changed: `git diff --name-only <base>` (committed and uncommitted together), plus untracked files from `git status --short`.
-   - Run the lint on the changed topic paths too, as `python3 .claude/skills/kb-verify/lint.py --base <base> <changed topic paths>`, and name the base and the files in the report.
+   - Run the lint on the changed topic paths too, as `python3 .claude/skills/kb-verify/lint.py --base <base> <changed topic paths>`, and name the base and the files in the report. Where the base is a ref of the current branch's history, `lint.py --changed <base>` finds those paths itself, as the landing's list: from the merge base of `<base>` and `HEAD` to the working tree.
 7. The kb's own docs against the same base:
    - `python3 _tools/selfdoc.py check`: `problems=0`, else a `kb/_self/map.csv` row is missing (a new tool, skill or `kb/_self/` doc) or names a removed file.
    - `python3 _tools/selfdoc.py stale --since <base>`: `stale=0`, else each listed doc describes a file this work changed and was not updated with it; the fix is `/kb-self --since <base>`.
