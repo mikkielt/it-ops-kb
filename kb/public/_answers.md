@@ -4077,3 +4077,14 @@ _Agent: kb-research_
 - See python/stdlib-windows-portability.md, gitlab/git-test-repositories.md.
 
 _Agent: kb-research_
+
+## QK-coord-server-lock-hardening-sqlite-begin. For a small coordination server and lock files: when does SQLite's `BEGIN IMMEDIATE` take the write lock and how long does a busy timeout wait, is a POSIX inode number unique only while its file exists, does Python's `http.server` read a request body only when the handler reads `rfile`, and what does `socket.settimeout` accept and raise?
+- `BEGIN IMMEDIATE` starts the write transaction at the `BEGIN` and may fail with `SQLITE_BUSY` when another connection's write transaction is active; the busy timeout is a handler that sleeps until at least `ms` milliseconds have accumulated and then lets `SQLITE_BUSY` through, and SQLite skips the handler where waiting could deadlock. [DOC S-b4zlktyl, S-5vbo75zy, S-mvz475h7]
+- POSIX.1-2024 says file identities (`st_dev` with `st_ino`) are unique at any one time and "can be reused for different files" over time, the inode number after the last unlink and the space being freed. [DOC S-7my6ujm5]
+- `BaseHTTPRequestHandler` reads only the request line and the headers before it calls `do_<METHOD>`; the body stays in `rfile` until handler code reads it. [DOC S-rs27i36t; CODE S-hqcmecwc]
+- `socket.settimeout` takes a nonnegative real number or `None`; a negative number raises `ValueError`, and a number whose nanoseconds exceed the signed 64-bit range (about 9.22e9 seconds), `inf` included, raises `OverflowError`; NaN raises `ValueError`. [DOC S-j5cbrmig; CODE S-kli6pbvd, S-cddhnbl6]
+- Conclusion: a writer that must wait for its turn begins `IMMEDIATE`, so it sleeps up to the timeout and then fails with no transaction open, where a read-then-write upgrade can fail at once; a lock holder that judges its lock file by inode number alone can be fooled by a reused number once a stale lock was cleared, so it also checks a token it wrote; a handler can refuse from the headers but must close a keep-alive connection or read the body, or the unread bytes are parsed as the next request; a command-line `--timeout` is checked for range, with `OverflowError` and `ValueError` caught, before it reaches `settimeout`. [DER S-b4zlktyl, S-5vbo75zy, S-mvz475h7, S-7my6ujm5, S-hqcmecwc, S-kli6pbvd, S-cddhnbl6: the probes in the three articles]
+- Open: WAL mode and Linux were not probed; what a client sees when the server closes with an unread body is not stated by the Python pages. [UNK]
+- See python/stdlib-sqlite3-csv.md, agents/shared-state-concurrency.md, python/stdlib-argparse-json.md.
+
+_Agent: kb-research_

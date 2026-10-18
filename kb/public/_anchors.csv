@@ -3312,6 +3312,8 @@ f20dc33b7082,agents/shared-ner-service.md,S-hocpkynn,located,,export;inferenc;ne
 103d5dff6b1d,agents/shared-state-concurrency.md,S-jnn4ww4t,located,,match;none;header,6521c8dbbb28d705,"if headers.ifNoneMatch == """" {",2026-10-15
 11a42747583c,agents/shared-state-concurrency.md,S-ntlmfsuw,unlocated:no-match,,,,,2026-10-15
 11a42747583c,agents/shared-state-concurrency.md,S-zv2dqsow,located,Fetch a batch and acknowledge each message > Next steps​,key;key-valu;valu;stream,9ac9bdc6a036d47f,Key-Value deep dive - durable key-value store on JetStream,2026-10-15
+12ee80f86815,agents/shared-state-concurrency.md,S-7my6ujm5,unlocated:no-match,,,,,2026-10-18
+143319be4706,agents/shared-state-concurrency.md,S-7my6ujm5,located,NAME > SYNOPSIS > DESCRIPTION,identity;st_ino;st_dev;ino;dev;file,3b0c0e8807cfb20c,A file identity is uniquely determined by the combination of stdev and stino.,2026-10-18
 1575048186ec,agents/shared-state-concurrency.md,S-srqpsf7c,located,Shared key > Remarks,activ;leas,e93a14f54c046323,"When a lease is active, the lease ID must be included in the request for any of the following operations",2026-10-15
 15a7ea814484,agents/shared-state-concurrency.md,S-5lu6lddr,located,,few;minus;within;drift;hold;millisecond;work;exclusion,1d57299486922fe2,it is guaranteed only as long as the client holding the lock terminates its work within the lock validity time,2026-10-15
 1a2479bb0002,agents/shared-state-concurrency.md,S-qdltospe,located,How to prevent object overwrites with conditional writes > How to prevent object overwrites based on key names,suspend;unversion;version-suspend;version;copy;if-none-match;none;key,97b092a3577801e9,"if you upload or copy an object with an identical key name in an unversioned or version-suspended bucket, the object is overwritten.",2026-10-15
@@ -3348,6 +3350,7 @@ f20dc33b7082,agents/shared-ner-service.md,S-hocpkynn,located,,export;inferenc;ne
 479bf17c6f35,agents/shared-state-concurrency.md,S-a3umo362,located,Related Pages,if-match;if-modified-sinc;if-none-match;if-unmodified-sinc;match;modifi;none;sinc,75973a92f8502fce,"S3 Conditional Operations - If-Match, If-None-Match, If-Modified-Since, If-Unmodified-Since",2026-10-15
 4c6a8051ee6d,agents/shared-state-concurrency.md,S-2fthx3xp,located,Manage concurrency in Blob Storage - Azure Storage | Microsoft Learn,wins;writer;last,54e0e22313983d09,"If you don't explicitly specify a strategy, then by default the last writer wins.",2026-10-15
 4f9761d21b8f,agents/shared-state-concurrency.md,S-2fthx3xp,located,Manage concurrency in Blob Storage - Azure Storage | Microsoft Learn > Optimistic concurrency,differ;again;fetch;current;if-match;precondition;fail;match,7dd231d71b247929,"If the blob's current ETag value differs from the ETag value specified in the If-Match conditional header provided on the request, then Azure Storage returns",2026-10-14
+595f67fe9971,agents/shared-state-concurrency.md,S-7my6ujm5,unlocated:no-match,,,,,2026-10-18
 5c7776c73ba5,agents/shared-state-concurrency.md,S-2fthx3xp,located,Manage concurrency in Blob Storage - Azure Storage | Microsoft Learn,wins;writer;last;optimistic;pessimistic;strategy;concurrency,3b0025ebbb87f718,"You can opt to use either optimistic or pessimistic concurrency models to manage access to blobs and containers. If you don't explicitly specify a strategy,",2026-10-14
 5d6dc1653d54,agents/shared-state-concurrency.md,S-75jmw3lf,located,,spac;trim,ba172824c9857d15,"if strings.TrimSpace(right) == """" {",2026-10-15
 61d11e6d2d90,agents/shared-state-concurrency.md,S-qdltospe,located,How to prevent object overwrites with conditional writes > Conditional write behavior,may;retri;conflict;putobject;put;upload;conditional;object,bdc36550737d6e0c,"When using conditional writes with PutObject, uploads may be retried after receiving a 409 Conflict error.",2026-10-15
@@ -3381,6 +3384,7 @@ f20dc33b7082,agents/shared-ner-service.md,S-hocpkynn,located,,export;inferenc;ne
 9e199e74225d,agents/shared-state-concurrency.md,S-oa3slfgh,unlocated:no-match,,,,,2026-10-15
 9e199e74225d,agents/shared-state-concurrency.md,S-opdaj4dk,unlocated:no-match,,,,,2026-10-15
 9e199e74225d,agents/shared-state-concurrency.md,S-ukfteilx,unlocated:no-match,,,,,2026-10-15
+a198cd8d3e0b,agents/shared-state-concurrency.md,S-7my6ujm5,unlocated:no-match,,,,,2026-10-18
 a267eaa8aa94,agents/shared-state-concurrency.md,S-qdltospe,located,How to prevent object overwrites with conditional writes > How to prevent object overwrites based on key names > Note,apply;current;version;if-none-match;none;header;bucket;match,18edf93db69a9ecc,The HTTP If-None-Match header only applies to the current version of an object in a version bucket.,2026-10-15
 a46449990bd4,agents/shared-state-concurrency.md,S-vseohdra,located,,longer;maintain;repository,f658c7fe1852c013,THIS REPOSITORY IS NO LONGER MAINTAINED.,2026-10-15
 a82ca500b39f,agents/shared-state-concurrency.md,S-2fthx3xp,located,Manage concurrency in Blob Storage - Azure Storage | Microsoft Learn > Pessimistic concurrency for blobs,enforc;exclusiv;read;writ;client;leas,3b8c9baa6c1c61d1,"When a lease exists, Azure Storage enforces exclusive access to write operations for the lease holder. However, ensuring exclusivity for read operations requires the developer",2026-10-14
@@ -3410,6 +3414,7 @@ d3f244144e7f,agents/shared-state-concurrency.md,S-eoyz3p4t,unlocated:no-match,,,
 d3f244144e7f,agents/shared-state-concurrency.md,S-zv2dqsow,unlocated:no-match,,,,,2026-10-15
 d5559e61457e,agents/shared-state-concurrency.md,S-6hgplow2,located,etcd API > Lease API > Keep alives,leasekeepaliv;refresh;aliv;keep;stream;leas,78b78467ba284c55,Leases are refreshed using a bi-directional stream created with the LeaseKeepAlive API call.,2026-10-15
 d8ddfc5819cc,agents/shared-state-concurrency.md,S-srqpsf7c,located,Shared key > Remarks > Lease states,being;minut;wait;befor;grant;relea;new;one,1eff97869706bea8,"If a lease expires rather than being explicitly released, a client might need to wait up to one minute before a new lease can be",2026-10-14
+de9436924256,agents/shared-state-concurrency.md,S-7my6ujm5,located,NAME > SYNOPSIS > DESCRIPTION,freed;occupi;spac;unlink;reus;last;st_ino;st_dev,1c752ea3371202cf,the stino value can be reused after the last link to a file is unlinked and the space occupied by the file has been freed,2026-10-18
 df83b98271e2,agents/shared-state-concurrency.md,S-2fthx3xp,located,Manage concurrency in Blob Storage - Azure Storage | Microsoft Learn,insert;list;within;isolation;partition;snapshot;return;read,ad36cce6fba4b52f,"Azure Storage was designed to embrace a strong consistency model that guarantees that after the service performs an insert or update operation, subsequent read or",2026-10-14
 e124cf342f9a,agents/shared-state-concurrency.md,S-v7s32e7q,located,Security Deep Dive > The three parts of security​,deni;everyth;grant;admit;else;subscrib;publish;subject,b0725e07ad37deca,a user can publish and subscribe only to the subjects you grant it; the server denies everything else.,2026-10-15
 e3736868b835,agents/shared-state-concurrency.md,S-523ddbfr,located,Object Store,latest;keep;metadata;stor;object,10750ea66d5dc268,"The Object Store keeps large chunked files and only the latest metadata per object,",2026-10-15
@@ -13082,10 +13087,13 @@ db3d6a81dd43,python/ruff.md,S-yfbe6ete,unlocated:no-match,,,,,2026-10-10
 0a15f869a39b,python/stdlib-argparse-json.md,S-36yy3wcx,located,end first line with \ to avoid the empty line!,3.4;appear;most;end;max;max_lin;none;added,bccfd9152186c88e,"(default: None) If not None, then the output will contain at most maxlines lines, with placeholder appearing at the end of the output. Added in",2026-10-10
 14a29f3310a6,python/stdlib-argparse-json.md,S-zzvrhdyd,unlocated:no-match,,,,,2026-10-10
 1bf7f1b06d5b,python/stdlib-argparse-json.md,S-w47ijsvq,unlocated:no-match,,,,,2026-10-10
+1d415994f725,python/stdlib-argparse-json.md,S-hqcmecwc,located,Examine the headers and look for a Connection directive.,rfil;pars;header;http,89367131d83074a1,"self.headers = http.client.parseheaders(self.rfile,",2026-10-18
 21c43f554ef8,python/stdlib-argparse-json.md,S-zzvrhdyd,unlocated:no-match,,,,,2026-10-10
 234ee60b2afd,python/stdlib-argparse-json.md,S-zzvrhdyd,located,,sort_key;ensure_ascii;encoder;ensur;separator;sort;ascii;keys,c3f7da7ef7d639bb,".. class:: JSONEncoder(, skipkeys=False, ensureascii=True, checkcircular=True, allownan=True, sortkeys=False, indent=None, separators=None, default=None) Extensible JSON encoder for Python data structures.",2026-10-10
 25a618d65a28,python/stdlib-argparse-json.md,S-rs27i36t,located,,obtain;server_address;port;address;server;http,3fdea34dc71a7b17,The HTTP server's port number obtained from serveraddress.,2026-10-16
 25a618d65a28,python/stdlib-argparse-json.md,S-uj2rumru,located,,arbitrary;select;unus;mean;port,0e79f0e6b6ae81a3,Port 0 means to select an arbitrary unused port,2026-10-16
+2766331fc707,python/stdlib-argparse-json.md,S-5x4j2vvx,unlocated:no-match,,,,,2026-10-18
+2766331fc707,python/stdlib-argparse-json.md,S-hqcmecwc,unlocated:no-match,,,,,2026-10-18
 29052f6aaef1,python/stdlib-argparse-json.md,S-6gpxsapp,located,NAME > SYNOPSIS > DESCRIPTION,modifi;named;argument;environment;env;utility,8af41212579d91a8,"The env utility shall obtain the current environment, modify it according to its arguments, then invoke the utility named by the utility operand with the",2026-10-10
 2b607f001558,python/stdlib-argparse-json.md,S-uj2rumru,unlocated:no-match,,,,,2026-10-10
 2cc84cceb82a,python/stdlib-argparse-json.md,S-36yy3wcx,unlocated:no-match,,,,,2026-10-10
@@ -13101,6 +13109,9 @@ db3d6a81dd43,python/ruff.md,S-yfbe6ete,unlocated:no-match,,,,,2026-10-10
 5b1662d2307a,python/stdlib-argparse-json.md,S-glgntdsx,unlocated:no-match,,,,,2026-10-10
 5b1662d2307a,python/stdlib-argparse-json.md,S-reb2jhbs,unlocated:no-match,,,,,2026-10-10
 5c7ebfba98f0,python/stdlib-argparse-json.md,S-zzvrhdyd,located,,001f;quotation;revers;solidus;except;mark;escap;ensure_ascii,150d6fa1acb9e85e,"If ensureascii is false, all characters will be output as-is, except for the characters that must be escaped: quotation mark, reverse solidus, and the control",2026-10-10
+60ded9a666d3,python/stdlib-argparse-json.md,S-cddhnbl6,located,"error ""PyTime_t is not a two's complement integer type""",timestamp;out;rang;pytime_t;time,bf81b504fdffa712,timestamp out of range for C PyTimet,2026-10-18
+61c4b84aaa3d,python/stdlib-argparse-json.md,S-hqcmecwc,located,Examine the headers and look for an Expect directive,unauthoriz;reject;overrid;request,f4650cf0cdb3e3b0,"You can behave differently (for example, reject unauthorized requests) by overriding this method.",2026-10-18
+65eaa1e641f2,python/stdlib-argparse-json.md,S-j5cbrmig,located,"Append data, ignoring any truncated integers at the end.",express;nonnegativ;real;second;none;number;valu,e78ad5cd06ab94d8,can be a nonnegative real number expressing seconds,2026-10-18
 66dae32e81b9,python/stdlib-argparse-json.md,S-lcvgoknn,unlocated:no-match,,,,,2026-10-10
 66dae32e81b9,python/stdlib-argparse-json.md,S-lyf4dv2j,unlocated:no-match,,,,,2026-10-10
 6912285691b4,python/stdlib-argparse-json.md,S-zzvrhdyd,unlocated:no-match,,,,,2026-10-10
@@ -13113,16 +13124,25 @@ db3d6a81dd43,python/ruff.md,S-yfbe6ete,unlocated:no-match,,,,,2026-10-10
 8812368e37dc,python/stdlib-argparse-json.md,S-36yy3wcx,located,end first line with \ to avoid the empty line!,themselv;broken;may;some;longer;fals;word;width,d9a1583db2f60b84,"it is false, long words will not be broken, and some lines may be longer than width. (Long words will be put on a line",2026-10-10
 88ac3e37fdd8,python/stdlib-argparse-json.md,S-36yy3wcx,located,textwrap — Text wrapping and filling¶,max;max_lin;break_long_word;placeholder;break;sentenc;fals;fill,e499309824e34479,"textwrap.fill(text, width=70, , initialindent='', subsequentindent='', expandtabs=True, replacewhitespace=True, fixsentenceendings=False, breaklongwords=True, dropwhitespace=True, breakonhyphens=True, tabsize=8, maxlines=None, placeholder=' [...]')¶",2026-10-10
 88f86d6a2cb6,python/stdlib-argparse-json.md,S-w47ijsvq,unlocated:no-match,,,,,2026-10-10
+8c837f6a06ae,python/stdlib-argparse-json.md,S-kli6pbvd,located,endif,rang;out;valu;timeout;error,029765b9c4238500,"PyErrSetString(PyExcValueError, ""Timeout value out of range"");",2026-10-18
 9598f9dc035f,python/stdlib-argparse-json.md,S-w47ijsvq,located,,3.1;add_mutually_exclusive_group;3.14;add_argument_group;rais;mutually;exception;exclusiv,c5ed4bb7833bc263,.. deprecated-removed:: 3.11 3.14 Calling :meth:addargumentgroup or :meth:addmutuallyexclusivegroup on a mutually exclusive group now raises an exception.,2026-10-10
+9899a4a235e5,python/stdlib-argparse-json.md,S-rs27i36t,located,,read;ready;start;data;optional;input;stream;base,203bb856e91fbdb8,ready to read from the start of the optional input data,2026-10-18
 9c0881f4f39a,python/stdlib-argparse-json.md,S-zzvrhdyd,located,,basis;compar;day;day-to-day;regression;test;serialization;key,e9cbe333cc61ff5c,"If sortkeys is true (default: False), then the output of dictionaries will be sorted by key; this is useful for regression tests to ensure that",2026-10-10
+aa4573455cbe,python/stdlib-argparse-json.md,S-cddhnbl6,unlocated:no-match,,,,,2026-10-18
+aa4573455cbe,python/stdlib-argparse-json.md,S-j5cbrmig,unlocated:no-match,,,,,2026-10-18
+aa4573455cbe,python/stdlib-argparse-json.md,S-kli6pbvd,unlocated:no-match,,,,,2026-10-18
 afbc1dfce0fa,python/stdlib-argparse-json.md,S-zzvrhdyd,unlocated:no-match,,,,,2026-10-10
 b8a19c42ff98,python/stdlib-argparse-json.md,S-36yy3wcx,unlocated:no-match,,,,,2026-10-10
+baf76d1ac87b,python/stdlib-argparse-json.md,S-5x4j2vvx,located,the local error ECONNABORTED.,rfil;clos,9b50d6445569aa12,self.rfile.close(),2026-10-18
+baf76d1ac87b,python/stdlib-argparse-json.md,S-hqcmecwc,located,Send the error response with a status line and headers.,protocol_version;1.1;protocol;version;http,622931354506fb10,"if versionnumber >= (1, 1) and self.protocolversion >= ""HTTP/1.1"":",2026-10-18
 bd3d99c9c658,python/stdlib-argparse-json.md,S-lyf4dv2j,located,do a signed reduction modulo 2**sys.hash_info.width > Text Sequence Type — str¶ > String Methods¶,str.encod;utf;utf-8;strict;encod;default;error;str,9233cebb5164a181,"str.encode(encoding='utf-8', errors='strict')¶ Return the string encoded to bytes. encoding defaults to 'utf-8';",2026-10-10
 c6e16d2530a8,python/stdlib-argparse-json.md,S-lcvgoknn,unlocated:no-match,,,,,2026-10-10
 dc53cdee4d75,python/stdlib-argparse-json.md,S-glgntdsx,unlocated:no-match,,,,,2026-10-10
 e372b01b06ee,python/stdlib-argparse-json.md,S-w47ijsvq,unlocated:no-match,,,,,2026-10-10
 e8ea9daaaa45,python/stdlib-argparse-json.md,S-36yy3wcx,located,textwrap — Text wrapping and filling¶,effect;collap;befor;chang;drop_whitespac;tabsiz;expand_tab;replace_whitespac,ba89bd8b0ac0bf6b,"collapsed before the text is passed to the TextWrapper fill() function, so changing the value of tabsize, expandtabs, dropwhitespace, and replacewhitespace will have no effect.",2026-10-10
 ea430eb664dc,python/stdlib-argparse-json.md,S-reb2jhbs,located,3.7.5 Exit Status ¶,child;creat;fatal;process;found;signal;bash;command,6c866190ffb6384b,"When a command terminates on a fatal signal whose number is N, Bash uses the value 128+N as the exit status. If a command is",2026-10-10
+ea4b18f1701b,python/stdlib-argparse-json.md,S-hqcmecwc,unlocated:no-match,,,,,2026-10-18
+ea4b18f1701b,python/stdlib-argparse-json.md,S-rs27i36t,unlocated:no-match,,,,,2026-10-18
 f0204437b781,python/stdlib-argparse-json.md,S-rs27i36t,unlocated:no-match,,,,,2026-10-16
 f0204437b781,python/stdlib-argparse-json.md,S-uj2rumru,unlocated:no-match,,,,,2026-10-16
 f77d52c2e37f,python/stdlib-argparse-json.md,S-w47ijsvq,unlocated:no-match,,,,,2026-10-10
@@ -13195,6 +13215,10 @@ dc5551876f2c,python/stdlib-os-loadavg.md,S-pfq6vvwq,located,,last;minut;over;sam
 1847a2e66d14,python/stdlib-sqlite3-csv.md,S-vc2lihhb,unlocated:no-match,,,,,2026-10-10
 1fe1f7c6967b,python/stdlib-sqlite3-csv.md,S-utoe3wfw,unlocated:no-match,,,,,2026-10-10
 21c6c6917b7d,python/stdlib-sqlite3-csv.md,S-utoe3wfw,unlocated:no-match,,,,,2026-10-10
+273037b023ec,python/stdlib-sqlite3-csv.md,S-5vbo75zy,unlocated:no-match,,,,,2026-10-18
+273037b023ec,python/stdlib-sqlite3-csv.md,S-b4zlktyl,unlocated:no-match,,,,,2026-10-18
+273037b023ec,python/stdlib-sqlite3-csv.md,S-mvz475h7,unlocated:no-match,,,,,2026-10-18
+273037b023ec,python/stdlib-sqlite3-csv.md,S-rle6nqpc,unlocated:no-match,,,,,2026-10-18
 2a6244381c96,python/stdlib-sqlite3-csv.md,S-rle6nqpc,unlocated:no-match,,,,,2026-10-10
 3f8e7fa631e3,python/stdlib-sqlite3-csv.md,S-rle6nqpc,located,,keyword-only;3.15;becom;keyword;python,60b61453742bbbdd,They will become keyword-only parameters in Python 3.15.,2026-10-16
 49f1bb4968de,python/stdlib-sqlite3-csv.md,S-rle6nqpc,unlocated:no-match,,,,,2026-10-10
@@ -13223,7 +13247,11 @@ d45836739086,python/stdlib-sqlite3-csv.md,S-b4zlktyl,located,2. Transactions > 2
 d6c86cbfcc38,python/stdlib-sqlite3-csv.md,S-5vbo75zy,located,SQLite C Interface > Set A Busy Timeout,time;sleep;handler;busy,b36e520bb2118ea5,This routine sets a busy handler that sleeps for a specified amount of time when a table is locked.,2026-10-16
 d8823c0713f2,python/stdlib-sqlite3-csv.md,S-utoe3wfw,unlocated:no-match,,,,,2026-10-10
 e389e569c485,python/stdlib-sqlite3-csv.md,S-rle6nqpc,unlocated:no-match,,,,,2026-10-10
+e6a7ed701982,python/stdlib-sqlite3-csv.md,S-mvz475h7,located,SQLite C Interface > Register A Callback To Handle SQLITE_BUSY Errors,encounter;immediately;upon;null;sqlite_busy;return;lock;callback,96450f9263b758de,"If the busy callback is NULL, then SQLITEBUSY is returned immediately upon encountering the lock.",2026-10-18
 e925faea0bad,python/stdlib-sqlite3-csv.md,S-xq53ipsf,unlocated:no-match,,,,,2026-10-10
+ef83677bd97f,python/stdlib-sqlite3-csv.md,S-5vbo75zy,unlocated:no-match,,,,,2026-10-18
+ef83677bd97f,python/stdlib-sqlite3-csv.md,S-b4zlktyl,unlocated:no-match,,,,,2026-10-18
+ef83677bd97f,python/stdlib-sqlite3-csv.md,S-mvz475h7,unlocated:no-match,,,,,2026-10-18
 f0da535aa346,python/stdlib-sqlite3-csv.md,S-utoe3wfw,unlocated:no-match,,,,,2026-10-10
 f0da535aa346,python/stdlib-sqlite3-csv.md,S-xq53ipsf,unlocated:no-match,,,,,2026-10-10
 f0df580248e3,python/stdlib-sqlite3-csv.md,S-utoe3wfw,unlocated:no-match,,,,,2026-10-10

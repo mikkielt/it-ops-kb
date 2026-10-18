@@ -2,8 +2,8 @@
 topic: python/stdlib-sqlite3-csv
 priority: P2
 applies_to: [python, csv, sqlite3]
-retrieved_utc: 2026-10-16
-sources: [S-utoe3wfw, S-rle6nqpc, S-syrr7enn, S-xq53ipsf, S-vc2lihhb, S-nnljaqtm, S-b4zlktyl, S-232dvyc5, S-5vbo75zy]
+retrieved_utc: 2026-10-18
+sources: [S-utoe3wfw, S-rle6nqpc, S-syrr7enn, S-xq53ipsf, S-vc2lihhb, S-nnljaqtm, S-b4zlktyl, S-232dvyc5, S-5vbo75zy, S-mvz475h7]
 status: complete
 ---
 
@@ -150,6 +150,20 @@ module's implicit `BEGIN` before a `DELETE` opens.
 - Python's `sqlite3.connect(timeout=5.0)` is that wait in seconds: how long the connection waits before raising
   `OperationalError` when a table is locked by another connection's open modifying transaction. Positional use of `timeout` is
   deprecated since 3.13 and becomes keyword-only in 3.15. [DOC S-rle6nqpc]
+- A connection has no busy handler by default (the callback is `NULL`), so it returns `SQLITE_BUSY` "immediately upon encountering the
+  lock"; a handler that returns non-zero makes SQLite try again, and one that returns 0 ends the attempt with `SQLITE_BUSY`. The page
+  adds that a handler is not guaranteed to run: where waiting could deadlock (one process holding a read lock it is promoting to a
+  reserved lock while another holds a reserved lock it is promoting to an exclusive one), SQLite returns `SQLITE_BUSY` to the first
+  process instead of calling the handler. [DOC S-mvz475h7]
+- One probe (Python 3.13.2, SQLite 3.45.3, macOS, 2026-10-18, rollback-journal mode, both connections `isolation_level=None`): while
+  one connection held a `BEGIN IMMEDIATE`, a second connection's `BEGIN IMMEDIATE` raised `OperationalError: database is locked` after
+  about 0.0 s with `timeout=0`, 0.34 s with `timeout=0.3` and 1.07 s with `timeout=1.0`, and left `in_transaction` `False`; a
+  connection that had begun a `DEFERRED` transaction and read, then ran an `INSERT` while the other held its `BEGIN IMMEDIATE`, raised
+  the same error after about 0.0 s with `timeout=5`. WAL mode and other versions were not run. [DER S-b4zlktyl, S-5vbo75zy, S-mvz475h7, S-rle6nqpc: probe read against the documented lock and busy-handler rules]
+- So `BEGIN IMMEDIATE` asks for the write lock at the `BEGIN` itself, before any data statement, and the busy timeout is the wait for
+  it: sleeps add up to at least the timeout, then the error, with no transaction open. A write that follows an earlier read in a
+  `DEFERRED` transaction asks for the lock late and can fail at once whatever the timeout, so a writer that must wait for its turn
+  begins `IMMEDIATE`. [DER S-b4zlktyl, S-5vbo75zy, S-mvz475h7: the documented moment of the lock, the sleep rule and the deadlock exception, with the probe above]
 - WAL mode (`PRAGMA journal_mode=WAL`) lets readers and a writer run at the same time, but "there can only be one writer at a time";
   a query can still return `SQLITE_BUSY` in WAL mode when another connection holds the database in exclusive locking mode, while
   the last connection cleans up the WAL files, or during crash recovery. [DOC S-232dvyc5]

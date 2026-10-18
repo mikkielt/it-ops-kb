@@ -54,7 +54,7 @@ agents/onnx-runtime-rust-ort,P3,partial,agents/onnx-runtime-rust-ort.md,44
 agents/peer-state-sync,P3,complete,agents/peer-state-sync.md,17
 agents/policy-as-code,P3,partial,agents/policy-as-code.md,22
 agents/repository-ingestion,P3,complete,agents/repository-ingestion.md,4
-agents/shared-state-concurrency,P3,partial,agents/shared-state-concurrency.md,33
+agents/shared-state-concurrency,P3,partial,agents/shared-state-concurrency.md,34
 agents/test-suite-size-and-agent-overengineering,P3,partial,agents/test-suite-size-and-agent-overengineering.md,17
 agents/typescript-module-resolution,P3,complete,agents/typescript-module-resolution.md,9
 agents/typescript-native-compiler,P3,partial,agents/typescript-native-compiler.md,6
@@ -314,7 +314,7 @@ privacy/spacy-pipeline-pinning,P3,partial,privacy/spacy-pipeline-pinning.md,27
 python/pytest,P2,complete,python/pytest.md,15
 python/pytest-xdist,P2,complete,python/pytest-xdist.md,11
 python/ruff,P2,complete,python/ruff.md,13
-python/stdlib-sqlite3-csv,P2,complete,python/stdlib-sqlite3-csv.md,9
+python/stdlib-sqlite3-csv,P2,complete,python/stdlib-sqlite3-csv.md,10
 python/uv-projects,P2,complete,python/uv-projects.md,15
 python/version-lifecycle,P2,complete,python/version-lifecycle.md;python/version-lifecycle.csv,8
 python/alembic-migrations,P3,partial,python/alembic-migrations.md,13
@@ -325,7 +325,7 @@ python/maturin-pyo3-wheels,P3,partial,python/maturin-pyo3-wheels.md,13
 python/mypy-strict,P3,partial,python/mypy-strict.md,8
 python/percentile-nearest-rank,P3,partial,python/percentile-nearest-rank.md,4
 python/sqlalchemy-asyncio-asyncpg,P3,complete,python/sqlalchemy-asyncio-asyncpg.md,8
-python/stdlib-argparse-json,P3,complete,python/stdlib-argparse-json.md,10
+python/stdlib-argparse-json,P3,complete,python/stdlib-argparse-json.md,15
 python/stdlib-cprofile-pstats,P3,partial,python/stdlib-cprofile-pstats.md,4
 python/stdlib-datetime-iso-week,P3,complete,python/stdlib-datetime-iso-week.md,1
 python/stdlib-os-loadavg,P3,partial,python/stdlib-os-loadavg.md,7

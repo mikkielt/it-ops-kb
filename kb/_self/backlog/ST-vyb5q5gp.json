@@ -21,6 +21,25 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which article takes the http.server and socket.settimeout facts, which the goal does not name (it names python/stdlib-sqlite3-csv and the shared-state concurrency article)? Reason for the recommendation: the facts are about Python's http.server and socket, and python/stdlib-argparse-json already holds the http.server and socketserver facts.",
+      "options": [
+        "python/stdlib-argparse-json",
+        "agents/shared-state-concurrency"
+      ],
+      "recommendation": "python/stdlib-argparse-json",
+      "do": {
+        "python/stdlib-argparse-json": "ST-vyb5q5gp",
+        "agents/shared-state-concurrency": "ST-vyb5q5gp"
+      },
+      "class": "design",
+      "answer": "python/stdlib-argparse-json",
+      "by": "agent"
+    }
+  ],
   "notes": "Plan 2026-10-17: rag.py pack on the tree of 3dba0ef83: the BEGIN IMMEDIATE and http.server questions come back good on lines that do not answer them (sqlite3 autocommit, MCP headers), the inode and settimeout questions weak, so all four are researched. Knowledge by item: BG-kalkmokl reads (1), BG-blw4edp4 reads (2), BG-ih3awckg reads (3), BG-gmaaoumg reads (4); the hook items, BG-bqvcba5e and BG-caynvdnv change the kb's own coord rules and need no outside facts.",
   "claimed_by": "orch-r15"
 }

@@ -2,8 +2,8 @@
 topic: agents/shared-state-concurrency
 priority: P3
 applies_to: "Concurrency control for state several agents write: Amazon S3 conditional writes, Azure Blob Storage ETags and leases, Redis distributed locks (Redlock), LangGraph PostgresStore; self-hosted MinIO, Garage and SeaweedFS conditional writes, NATS JetStream key-value, Valkey without persistence, etcd leases and transactions; docs read 2026-10-14 and 2026-10-15"
-retrieved_utc: 2026-10-16
-sources: [S-qdltospe, S-4qurlvvy, S-4oanvdmr, S-2fthx3xp, S-srqpsf7c, S-5lu6lddr, S-f3dlrjtw, S-26trg6rj, S-ukfteilx, S-opdaj4dk, S-oa3slfgh, S-a3umo362, S-ntlmfsuw, S-zv2dqsow, S-ulnpjwb7, S-pheyvvix, S-x3firlbx, S-eoyz3p4t, S-6hgplow2, S-vseohdra, S-75jmw3lf, S-s7uvhjek, S-3l6vhq2q, S-jnn4ww4t, S-bayxg4xz, S-523ddbfr, S-v7s32e7q, S-gxbtrq7d, S704, S718, S-onc3gpse, S2157, S-bisz7fay]
+retrieved_utc: 2026-10-18
+sources: [S-7my6ujm5, S-qdltospe, S-4qurlvvy, S-4oanvdmr, S-2fthx3xp, S-srqpsf7c, S-5lu6lddr, S-f3dlrjtw, S-26trg6rj, S-ukfteilx, S-opdaj4dk, S-oa3slfgh, S-a3umo362, S-ntlmfsuw, S-zv2dqsow, S-ulnpjwb7, S-pheyvvix, S-x3firlbx, S-eoyz3p4t, S-6hgplow2, S-vseohdra, S-75jmw3lf, S-s7uvhjek, S-3l6vhq2q, S-jnn4ww4t, S-bayxg4xz, S-523ddbfr, S-v7s32e7q, S-gxbtrq7d, S704, S718, S-onc3gpse, S2157, S-bisz7fay]
 status: partial
 ---
 
@@ -261,6 +261,23 @@ status: partial
   page. [DER S-6hgplow2: absence of a holder check on the page]
 - Leases are refreshed over a bidirectional `LeaseKeepAlive` stream, and each response returns the
   lease's remaining TTL. [DOC S-6hgplow2]
+
+### Lock files on one machine: inode numbers
+- POSIX.1-2024 says a file's identity is the pair `st_dev` and `st_ino`: at any given time distinct files have distinct pairs and
+  hard links to one file share one. [DOC S-7my6ujm5]
+- The same page says "Over time, these file identities can be reused for different files": the `st_ino` value "can be reused after the
+  last link to a file is unlinked and the space occupied by the file has been freed", and `st_dev` can be reused after a file system is
+  unmounted and another mounted. [DOC S-7my6ujm5]
+- So an inode number names a file only while that file exists. The text sets no delay before a freed number may be handed out and
+  no rule that it is not, so a file created right after another was unlinked may carry the same number; an implementation may or may
+  not do so. [DER S-7my6ujm5: reuse permitted after unlink and free, no minimum interval stated]
+- One probe (macOS 26.5, arm64, a directory on the local disk, 2026-10-18): a file created, its `st_ino` read, unlinked, and another
+  file of the same name created at once got a different number in all 200 rounds. No reuse seen there says nothing for another file
+  system or operating system; Linux was not run. [DER S-7my6ujm5: probe read against the reuse rule]
+- A lock holder that decides "this lock file is still mine" by `st_ino` alone can therefore be wrong after another process cleared a
+  stale lock and created its own: on a system that reuses the number, the new file looks like the old one. A check that adds a value
+  only the holder wrote into the file (a random token or its pid and start time) and compares the pair `st_dev`, `st_ino` together with
+  it does not rely on a number staying unique. [DER S-7my6ujm5: identity is unique only while the file exists; the token is our addition]
 
 ### How it fits
 - An agent that updates shared state in object storage reads the object with its ETag and writes
