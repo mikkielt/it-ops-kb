@@ -61,7 +61,9 @@
         "read the sides from the index": "BG-dg4eptu4",
         "always keep the added newline": "BG-dg4eptu4"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "read the sides from the index",
+      "by": "operator"
     }
   ],
   "links": [
