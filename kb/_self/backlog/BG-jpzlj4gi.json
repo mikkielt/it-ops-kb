@@ -2,7 +2,7 @@
   "id": "BG-jpzlj4gi",
   "kind": "bug",
   "title": "kbask's observer session is not read-only: it loads the project's and the user's allow rules and the project's hooks",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-w6amecjt",
   "priority": "P1",
   "rank": 0,
@@ -43,5 +43,18 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "orch-r20"
+  "evidence": {
+    "commit": "4dbd65054e721144129b8ad84ea57f2a466d6baa",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\ndef fail(m):\n    print(m);sys.exit(1)\nB=tempfile.mkdtemp();LOG=os.path.join(B,'argv.json');fc=os.path.join(B,'claude')\nopen(fc,'w').write('#!'+sys.executable+'\\nimport json,sys\\nd={\"argv\":sys.argv[1:],\"stdin\":sys.stdin.read()}\\nopen(%r,\"w\").write(json.dumps(d))\\nprint(json.dumps({\"type\":\"result\",\"subtype\":\"success\",\"session_id\":\"00000000-0000-0000-0000-0000000000aa\",\"result\":\"diagnosis: planted\",\"total_cost_usd\":0.01}))\\n'%LOG)\nos.chmod(fc,0o755)\nH=tempfile.mkdtemp();st=os.path.join(H,'c.sqlite')\nE=dict(os.environ,CLAUDE_PLUGIN_DATA=H,CLAUDE_PLUGIN_ROOT=os.getcwd(),KB_COORD_STORE=st,PATH=B+os.pathsep+os.environ['PATH'])\np=s.run([sys.executable,'_tools/kbask.py','summary','what runs','--wait'],capture_output=True,text=True,env=E,timeout=120)\nif not os.path.exists(LOG): fail('the fake claude was not run: %s'%(p.stdout+p.stderr)[-300:])\nif p.returncode!=0: fail('summary --wait exit %s: %s'%(p.returncode,(p.stdout+p.stderr)[-300:]))\nargv=json.load(open(LOG))['argv']\ndef val(flag):\n    return argv[argv.index(flag)+1] if flag in argv and argv.index(flag)+1<len(argv) else None\nsrc=val('--setting-sources')\nsrcs={'user','project','local'} if src is None else {x.strip() for x in src.split(',') if x.strip()}\nfiles={'user':os.path.expanduser('~/.claude/settings.json'),'project':'.claude/settings.json','local':'.claude/settings.local.json'}\nrules=[];hooks=[]\nfor k in sorted(srcs):\n    try: d=json.load(open(files[k]))\n    except (OSError,ValueError): continue\n    rules+=d.get('permissions',{}).get('allow',[])\n    if d.get('hooks') and k!='user': hooks.append(k)\nif '--allowedTools' in argv:\n    rules+=argv[argv.index('--allowedTools')+1:]\ntools=val('--tools')\nbash=tools is None or 'Bash' in [t.strip() for t in tools.replace(',',' ').split()]\nWRITES=['git push origin HEAD','git add x','git commit -m x','git reset --hard','python3 _tools/backlog.py claim ST-aaaaaaaa','python3 _tools/kbgit.py sync --push','sed -i s/a/b/ f']\ndef admits(rule,cmd):\n    if not (rule.startswith('Bash(') and rule.endswith(')')): return False\n    r=rule[5:-1]\n    for suf in (':*',' *','*'):\n        if r.endswith(suf): r=r[:-len(suf)];return cmd==r or cmd.startswith(r+' ') or (suf=='*' and cmd.startswith(r))\n    return cmd==r\nbad=sorted({c for c in WRITES for r in rules if bash and admits(r,c)})\nif bad or hooks:\n    fail('the observer session is not read-only: sources %s load; writes it may run under dontAsk: %s; project hooks from: %s'%(sorted(srcs),bad,hooks))\nprint('ok: the observer session loads no allow rule that admits a write and no project hooks')\n"
+        ],
+        "exit": 0,
+        "sha256": "6b42ed0a5804d098"
+      }
+    ]
+  }
 }
