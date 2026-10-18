@@ -174,6 +174,22 @@ def worker_rules(root, iid, branch, turns=None):
     return out
 
 
+def self_eval_rules(bl, iid):
+    """The brief's rule for an item whose touches name a kb/_self doc (bl_plan.shared_doc), as a list of 0 or 1 lines: the
+    worker runs the `_self` lookup eval before it reports and gives its `noted=` count against `NOTED_BASELINE`, so a
+    reword that pushes a tested row's answer words out of the pack excerpt is fixed on its branch, not at `land`'s
+    `rag.py eval` step. [] where no touch names such a doc."""
+    if not any(shared_doc(g) for g in dict.fromkeys(scope(bl, iid))):
+        return []
+    return ["Your touches name a `kb/_self` doc: once its edits are committed and before your report, run "
+            "`python3 _tools/rag.py eval --root _self` and give in your report its `questions=`/`passed=` line and its "
+            "`noted=` count against `NOTED_BASELINE` (in `_tools/rag.py`). A failed row or a `noted=` above the baseline "
+            "(each row printed as `NOTED <id>`) means your reword moved a tested row's answer words out of the pack "
+            "excerpt, as a longer line does for every line under it: shorten or move the text, commit, run it again. "
+            "`land` runs this eval and stops on it, so fix it here. If your harness refuses the command for the word "
+            "`eval`, say so in the report."]
+
+
 def report_line(root):
     """The brief's report instruction for the project at ROOT: `tests.py` and `selfdoc.py` results only where it has
     those tools, else the project's own checks' result."""
@@ -479,7 +495,7 @@ def compose_brief(bl, iid, known=(), probe=None, turns=None, known_suite=()):
     kf = known_failures(bl, known, known_suite)
     out += (kf + ["A failure listed here gets no new bug; a failure not named here is yours to file as a bug."]) if kf else \
         ["None known to the orchestrator. A failure you meet is yours to file as a bug."]
-    out += ["", "## Fixed rules", *[f"- {r}" for r in worker_rules(bl.root, iid, branch, turns)], "",
+    out += ["", "## Fixed rules", *[f"- {r}" for r in (*worker_rules(bl.root, iid, branch, turns), *self_eval_rules(bl, iid))], "",
             "## Rules of the docs your touches map to", *rules_section(bl, iid), "",
             "## Report", report_line(bl.root)]
     return "\n".join(out) + "\n"
