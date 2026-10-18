@@ -112,6 +112,7 @@ allow/deny controls, and `claude/hooks.md` for hook event/field semantics that a
 | `${CLAUDE_PLUGIN_DATA}` | env var | persistent per-plugin dir, survives updates |
 | `extraKnownMarketplaces` / `enabledPlugins` | managed or `.claude/settings.json` | force-register marketplace / force-enable-or-block plugins |
 | `strictKnownMarketplaces` / `blockedMarketplaces` | managed only | allowlist / denylist of marketplace sources |
+| `hooks/register.js` (a hooks module) | plugin root | a plugin of function hooks that can draw a pane or a band; see `claude/mods.md` |
 
 ## Examples
 - SNIPPET: Minimal manifest and marketplace entry; context: Claude Code 2.1.281; checked: syntax [DOC S-3xyywfcr: `name`/`version`/`description`/`author` fields, `author.name` required and `author.email` optional]

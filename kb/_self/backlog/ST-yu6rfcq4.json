@@ -21,6 +21,25 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where do the research findings live: two new topics (claude/mods for the mods, claude/terminal-split-pane for tmux, WezTerm and Windows Terminal), or extensions of existing articles?",
+      "options": [
+        "two new topics in the claude domain",
+        "extend plugins.md and skills-and-subagents.md"
+      ],
+      "recommendation": "two new topics in the claude domain",
+      "do": {
+        "two new topics in the claude domain": "ST-yu6rfcq4",
+        "extend plugins.md and skills-and-subagents.md": "ST-yu6rfcq4"
+      },
+      "class": "design",
+      "answer": "two new topics in the claude domain",
+      "by": "agent"
+    }
+  ],
   "notes": "Plan 2026-10-19 (discovery session with the operator). Questions to answer as kb facts, kb first, live docs for the gaps: (1) Claude Code mods: a plugin of function hooks, pane and band, ui.render bodyColumns and a width change, $.ui.open seating (144 columns unasked), $.process.run (timeout, Windows), $.clock.every, $.ui.toast, $.session.append user-role rows the model reads and the person does not see, session.start isInteractive for -p and the SDK, auto-load from a project's .claude/skills/<name> folder, the early-access status; the kb has no mods article (kb_pack 2026-10-19 coverage none for 'plugin live pane or band'), live docs code.claude.com/docs/en/plugins/mods/*. (2) WezTerm: wezterm cli split-pane (--right, --percent, --cwd, -- PROG, WEZTERM_PANE), its release files per OS and their checksum files, vendor docs wezterm.org. (3) Windows Terminal wt split-pane (-V, -d, --size, commandline), Microsoft Learn windows/terminal/command-line-arguments. (4) tmux split-window -d -h -l -c and pane titles, tmux manual. Measured in the session: hook output facts already in public/claude/hooks.md:82-87,163 and statusline.md:22,36,40,49.",
   "claimed_by": "orch-r23"
 }

@@ -156,9 +156,11 @@ claude/settings-and-scopes,P2,partial,claude/settings-and-scopes.md;claude/setti
 claude/skills-and-subagents,P2,complete,claude/skills-and-subagents.md;claude/skills-and-subagents.csv,10
 claude/cross-session-messaging,P3,complete,claude/cross-session-messaging.md,14
 claude/large-codebases,P3,complete,claude/large-codebases.md,7
+claude/mods,P3,partial,claude/mods.md,10
 claude/parallel-sessions,P3,partial,claude/parallel-sessions.md,11
 claude/powershell-tool,P3,partial,claude/powershell-tool.md,6
 claude/statusline,P3,complete,claude/statusline.md,3
+claude/terminal-split-pane,P3,partial,claude/terminal-split-pane.md,7
 defender/machine-resource,P1,complete,defender/machine-resource.md;defender/machine-properties.csv,9
 defender/mde-onboarding,P1,complete,defender/mde-onboarding.md,23
 defender/permissions-limits,P1,complete,defender/permissions-limits.md,6

@@ -938,3 +938,11 @@ opentelemetry-exporter-prometheus,logs/otel-python-sdk
 opentelemetry-exporter-otlp-json-http,logs/otel-python-sdk
 OTEL_METRIC_EXPORT_INTERVAL,logs/otel-python-sdk
 OTEL_EXPORTER_PROMETHEUS_PORT,logs/otel-python-sdk
+$.ui.open,claude/mods
+ui.render,claude/mods
+bodyColumns,claude/mods
+CLAUDE_CODE_ENABLE_FUNCTION_HOOKS,claude/mods
+wezterm cli split-pane,claude/terminal-split-pane
+WEZTERM_PANE,claude/terminal-split-pane
+split-window,claude/terminal-split-pane
+TMUX_PANE,claude/terminal-split-pane

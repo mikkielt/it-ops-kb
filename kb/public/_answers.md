@@ -4150,3 +4150,15 @@ _Agent: kb-research_
 - See agents/api-tokens-issue-and-store.md, agents/shared-state-concurrency.md, agents/coordination-messages.md, agents/peer-state-sync.md.
 
 _Agent: kb-research_
+
+## QK-claude-code-mod-terminal-pane-show. How can a Claude Code mod or a terminal pane show a live monitor beside the chat, and how can the agent get a tiny receipt of it?
+- A mod draws a pane beside the transcript (wide fullscreen terminal) or above the prompt, or a band above the prompt, with a `ui.render` hook filtered on `Pane` or `AbovePrompt`, and keeps it live with `$.clock.every` plus `$.ui.invalidate`; Claude Code does not redraw on a timer by itself. [DOC S-y5j64svc, S-sao3dfcq]
+- A pane the mod opens by itself appears only from 144 terminal columns (110 after the user opened it once), and `$.ui.open` returns `isPlaced` and a `reason` when it waits; `$.ui.toast` is the documented way to say something is available. [DOC S-y5j64svc, S-mvuodgli]
+- Mods are on by default from Claude Code 2.1.287; the hooks run in `claude -p` and the Agent SDK, but nothing is drawn there; a project folder under `.claude/skills/<name>/` with a `.claude-plugin/plugin.json` loads as a plugin after workspace trust. [DOC S-oawin5n2, S-hvuk3dqt, S-toe7z3kj]
+- Text only the model reads goes in a `prompt.submit` hook's `context`; `$.prompt.submit` starts a turn and `$.session.send` messages another session. [DOC S-4vxgduip, S-sao3dfcq]
+- Outside Claude Code, `tmux split-window`, `wezterm cli split-pane` and `wt split-pane` each start a program in a new pane beside the caller; tmux and WezTerm name the caller's pane by `TMUX_PANE` and `WEZTERM_PANE`, and the Windows Terminal pages name none. [DOC S-3gv2hqon, S-ul3bejly, S-jrp4n5ie, S-fsgzj2gz]
+- Conclusion: a live view beside the chat is either a mod pane (interactive terminal, Desktop or VS Code only, with a 144-column rule for a pane that opens by itself) or a pane of the terminal that hosts the session, started by one command per terminal; the agent's receipt is a short `context` line or a `$.prompt.submit` turn, since the pages do not document a hidden `$.session.append` row. [DER S-y5j64svc, S-4vxgduip, S-3gv2hqon, S-ul3bejly, S-fsgzj2gz: the pane, context and split commands as documented]
+- Open: the role and visibility of a `$.session.append` row, `isInteractive` for `claude -p`, `$.process.run` on Windows, which side `wt split-pane -V` uses and whether a project-scope mod loads its hooks module (`_gaps.md`, claude/mods and claude/terminal-split-pane). [UNK]
+- See claude/mods.md, claude/terminal-split-pane.md, claude/statusline.md, claude/hooks.md.
+
+_Agent: kb-research_
