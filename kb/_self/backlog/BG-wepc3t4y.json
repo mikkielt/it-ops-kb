@@ -30,6 +30,23 @@
   "depends_on": [
     "BG-4xuulmms"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does coord_hook.renew_if_due keep the RETRY_SECONDS backoff of a failed fresh claim?",
+      "options": [
+        "a separate claim_after timestamp in the state file",
+        "reuse lease_until as the next-try time"
+      ],
+      "recommendation": "a separate claim_after timestamp in the state file",
+      "do": {
+        "a separate claim_after timestamp in the state file": "BG-wepc3t4y",
+        "reuse lease_until as the next-try time": "BG-wepc3t4y"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-4cc36epy review"
   ],
