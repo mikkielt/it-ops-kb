@@ -71,6 +71,6 @@
   "links": [
     "parked: SP-yyjwfjtc review"
   ],
-  "notes": "Plan 2026-10-17: the check fails on origin/main 3dba0ef83 only on its three prose lines; its five planted credentials, 'password: sunshine' among them, are replaced today and must stay so. Narrowed: the BEGIN-line clause is out, the cut-off key rule is a leak guard. Knowledge: the goal research story's link reference definition facts and public/security/secret-shapes-in-text.md:24 (a Bearer or Basic credential has no minimum length, so the scheme word marks it).",
+  "notes": "Plan 2026-10-17: the check fails on origin/main 3dba0ef83 only on its three prose lines; its five planted credentials, 'password: sunshine' among them, are replaced today and must stay so. Narrowed: the BEGIN-line clause is out, the cut-off key rule is a leak guard. Knowledge: the goal research story's link reference definition facts and public/security/secret-shapes-in-text.md:24 (a Bearer or Basic credential has no minimum length, so the scheme word marks it). Orchestrator 2026-10-18 (operator delegate): g2 answered with the nine-word option, not the recommendation: the gate is class secrets on a leak guard, and the operator's policy takes the conservative option there; the nine words cover every prose line of the goal's check, and a smaller allow list lets fewer real values through.",
   "claimed_by": "orch-r13"
 }
