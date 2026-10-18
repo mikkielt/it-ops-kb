@@ -66,7 +66,7 @@
       },
       "class": "design",
       "answer": "keep the cut at the width and change the check",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "redraw",
@@ -83,7 +83,7 @@
       },
       "class": "delete",
       "answer": "every redraw starts with the erase sequences, as every frame does",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "slice",
@@ -100,7 +100,7 @@
       },
       "class": "design",
       "answer": "SIGWINCH flag every 0.1 s, Windows size read every 0.25 s",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Planner 2026-10-18: check 2 (--once, --json and a piped live view stay plain) passes before the work by design: it pins the modes the goal says stay unchanged. The Windows polling path cannot run on this macOS host; the worker proves it by a run of the polling function on a planted size sequence, reported in its notes. Orchestrator 2026-10-18: checks 0 and 1 drop NO_COLOR in the pty child: a check runs under bl_base.colourless_env (NO_COLOR=1), where the live view by design does not redraw, so land refused both at step checks.",

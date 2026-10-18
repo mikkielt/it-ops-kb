@@ -1,0 +1,25 @@
+{
+  "id": "BG-tp4birqb",
+  "kind": "bug",
+  "title": "kbmon's delivery alert has an empty or moving since: distill.log's last write, not the refusal's start",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "the delivery alert's since is the time the refusal began (the query log's undelivered_since or the refused run's own time) and stays the same while later lines are written",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess as s,sys,tempfile\nH=tempfile.mkdtemp();E=dict(os.environ,CLAUDE_PLUGIN_DATA=H,CLAUDE_PLUGIN_ROOT=os.getcwd(),NO_COLOR='1')\nq=os.path.join(H,'querylog');os.makedirs(q,exist_ok=True)\nsys.path.insert(0,'_tools');import ql_deliver\nsay=ql_deliver.logged(q,out=lambda t:None)\ndef k(*a): return s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=E,timeout=120)\nsay('apply --push: refused: planted');say('distill: nothing to write')\na=json.loads(k('--json','--panel','querylog').stdout).get('alerts',[])\nprint(a);sys.exit(0 if a and a[0].get('since') else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/mon_querylog.py",
+    "_tools/ql_report.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-v4yih547 review"
+  ]
+}

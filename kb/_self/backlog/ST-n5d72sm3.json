@@ -72,7 +72,7 @@
       },
       "class": "design",
       "answer": "written only: the text view colours whole rows by gutter, so the state word is not coloured",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -88,8 +88,8 @@
         "only those younger than a limit": "ST-n5d72sm3"
       },
       "class": "design",
-      "answer": "yes, every one, newest first: the goal names no age limit",
-      "by": "agent"
+      "answer": "only landings of items still open in the backlog, committed rows kept in write order; fixed by BG-gkocrnfw",
+      "by": "operator"
     }
   ],
   "notes": "Plan 2026-10-18: backlog.py's readers (bl_view, bl_base.Backlog) are imported, not changed: every bl_ module is an agents-rule path. Data: sprints [{id, state, items {status: n}, next, waiting [{item, gate}]}], landings [{item, step, since}]. No outside facts: the backlog and its ops rows are the kb's own. Layout of the sprint panel (operator's spec): one row per sprint: id, state padded to 10 (active in green), then `4/11 done · next ST-… · counts by status`, or `not started`, or `waits on start gate`; then `landing` rows: item, step, since.",

@@ -91,8 +91,8 @@
         "the day's usage rows of the spool only": "ST-go6vdmnt"
       },
       "class": "design",
-      "answer": "the day's usage rows of the spool plus the local store's usage sidecars of the day's runs, once per prompt",
-      "by": "agent"
+      "answer": "the day's usage rows of the spool plus the local store's usage sidecars of the day's runs, each prompt once; the dedupe is fixed by BG-mey6jwew",
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -109,7 +109,7 @@
       },
       "class": "design",
       "answer": "the distill.log's last write, on the outcome that stands last in the log only",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "knowledge": {

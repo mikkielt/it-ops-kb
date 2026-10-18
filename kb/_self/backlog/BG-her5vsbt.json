@@ -1,0 +1,25 @@
+{
+  "id": "BG-her5vsbt",
+  "kind": "bug",
+  "title": "kbmon's host panel puts the ceiling bars on one row from 100 columns, but the row needs about 108",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "the host panel joins the three ceiling bars on one row only where the joined row fits the width, so the last-run bar and its percentage are never cut",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\nsys.path.insert(0,'_tools');import mon_view\ns={'schema':1,'taken':'t','alerts':[],'panels':{'host':{'state':'ok','seconds':0,'data':{'load':[1,2,3],'cores':4,'suite_lock':None,'main_lock':None,'ceiling':{'max_ids':120,'max_files':15,'max_seconds':29,'ids':25,'files':9,'last_run_s':24.6}}}}}\nrows=[l for l in mon_view.render_text(s,False,102).splitlines() if '%' in l];print(rows)\nsys.exit(1 if any(l.rstrip().endswith('\\u2026') for l in rows) else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/mon_host.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-v4yih547 review"
+  ],
+  "notes": "SP-v4yih547 review: the review changed ST-iogk4rdb g4 to this fix."
+}

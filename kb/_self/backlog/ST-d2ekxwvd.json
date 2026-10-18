@@ -79,7 +79,7 @@
       },
       "class": "design",
       "answer": "UTC like the header, the newest 100 rows of all sources together",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -96,7 +96,7 @@
       },
       "class": "querylog",
       "answer": "a subject from the event's id-like key, then the fields whose value is a number or an id-shaped word that redact leaves unchanged; a source that fails is a problems row",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Layout of the log tail (operator's spec): title `log  {state}  {secs}s`, then the newest lines, oldest first, at column 2: `{HH:MM:SS} {source padded to 8} {event} {subject} {key=value …}` (e.g. `14:02:07 coord    claim ST-aaaaaaaa holder=w1 ttl=600`); warning lines take the `! ` gutter and yellow. Plan 2026-10-18: the operator's layout ends every frame with this log tail. kbmon --events (sprint SP-qvlnptiw) reads the same rows through mon_log's reader rather than a second one.",

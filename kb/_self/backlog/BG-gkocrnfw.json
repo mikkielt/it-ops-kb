@@ -1,0 +1,27 @@
+{
+  "id": "BG-gkocrnfw",
+  "kind": "bug",
+  "title": "kbmon's sprint panel lists done and long-gone items as landings in progress",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "the sprint panel lists as in progress only a landing of an item still open in the backlog whose newest land.step has no later land.end, committed rows of one millisecond kept in their write order",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess as s,sys,tempfile\nE=dict(os.environ,CLAUDE_PLUGIN_DATA=tempfile.mkdtemp(),CLAUDE_PLUGIN_ROOT=os.getcwd())\nd=json.loads(s.run([sys.executable,'_tools/kbmon.py','--json','--panel','sprint'],capture_output=True,text=True,env=E,timeout=120).stdout)\nL=d['panels']['sprint']['data'].get('landings',[])\ndef gone(i):\n    f='kb/_self/backlog/%s.json'%i\n    return not os.path.exists(f) or json.load(open(f)).get('status') in ('done','dropped')\nbad=[x['item'] for x in L if gone(x['item'])];print(len(L),'landings,',len(bad),'done or gone');sys.exit(1 if bad else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/mon_sprint.py",
+    "_tools/mon_log.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-v4yih547 review"
+  ],
+  "notes": "SP-v4yih547 review: committed ops rows sort by (ts,id), so a land.step verify sharing a millisecond with land.end sorts after it and the landing stays open (6 done items); about 1,436 old rows with no land.end name no backlog item. The review changed ST-n5d72sm3 g2 to this fix."
+}

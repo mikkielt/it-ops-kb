@@ -1,0 +1,25 @@
+{
+  "id": "BG-q7bi7h4c",
+  "kind": "bug",
+  "title": "kbmon names no gate for a delivery refused for want of rights: PUSH_FAILED does not match it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "a delivery refused for want of rights shows that reason in the querylog panel's outcome and the alert, not 'no gate named' or an older line",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess as s,sys,tempfile\nH=tempfile.mkdtemp();E=dict(os.environ,CLAUDE_PLUGIN_DATA=H,CLAUDE_PLUGIN_ROOT=os.getcwd(),NO_COLOR='1')\nq=os.path.join(H,'querylog');os.makedirs(q,exist_ok=True)\nsys.path.insert(0,'_tools');import ql_deliver\nsay=ql_deliver.logged(q,out=lambda t:None)\ndef k(*a): return s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=E,timeout=120)\nsay('apply --push: pushed abc to origin/main');say('apply --push: the push was refused for want of rights (x)')\nt=k('--json','--panel','querylog').stdout;print(t[-300:]);sys.exit(1 if 'no gate named' in t else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/mon_querylog.py",
+    "_tools/ql_report.py",
+    "_tools/bl_land.py"
+  ],
+  "links": [
+    "parked: SP-v4yih547 review"
+  ]
+}

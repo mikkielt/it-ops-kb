@@ -1,0 +1,26 @@
+{
+  "id": "BG-t54wqmgd",
+  "kind": "bug",
+  "title": "kbmon's delivery alert clears on a later locked or waiting apply line that delivered nothing",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "the querylog delivery alert stays until an apply outcome that delivered (pushed or nothing to push), as bl_land.last_push_failure reads it; a locked or waiting line leaves it standing",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess as s,sys,tempfile\nH=tempfile.mkdtemp();E=dict(os.environ,CLAUDE_PLUGIN_DATA=H,CLAUDE_PLUGIN_ROOT=os.getcwd(),NO_COLOR='1')\nq=os.path.join(H,'querylog');os.makedirs(q,exist_ok=True)\nsys.path.insert(0,'_tools');import ql_deliver\nsay=ql_deliver.logged(q,out=lambda t:None)\ndef k(*a): return s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=E,timeout=120)\nsay('  gate querylog.py check: FAILED (exit 1): planted problem');say('apply --push: kbgit.py sync exit 1; nothing pushed')\nsay('apply --push: another distill or push holds the lock')\np=k('--once','--panel','querylog')\nprint(p.returncode,p.stdout[:120]);sys.exit(0 if p.returncode==1 and p.stdout.startswith('!! ALERT') else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/mon_querylog.py",
+    "_tools/ql_report.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-v4yih547 review"
+  ]
+}

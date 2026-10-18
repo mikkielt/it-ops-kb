@@ -84,7 +84,7 @@
       },
       "class": "design",
       "answer": "the newest passing full test.run row of the ops rows",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -101,7 +101,7 @@
       },
       "class": "design",
       "answer": "a gutter flag: yellow from 80%, red from 100%, no colour under 80%",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -118,7 +118,7 @@
       },
       "class": "design",
       "answer": "no holder (null)",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g4",
@@ -134,8 +134,8 @@
         "always three aligned rows, each with its own colour": "ST-iogk4rdb"
       },
       "class": "design",
-      "answer": "one shared row from 100 columns, coloured by the worst bar, else three aligned rows",
-      "by": "agent"
+      "answer": "one shared row only where the joined row fits the width, else three aligned rows; the threshold is fixed by BG-her5vsbt",
+      "by": "operator"
     }
   ],
   "knowledge": {
