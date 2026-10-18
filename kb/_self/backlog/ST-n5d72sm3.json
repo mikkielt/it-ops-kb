@@ -56,6 +56,40 @@
       "class": "design",
       "answer": "every sprint with its state: active first, then approved, then planned",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How is the active state of a sprint row marked in the sprint panel?",
+      "options": [
+        "written only: the text view colours whole rows by gutter, so the state word is not coloured",
+        "green state word: mon_view.py learns per-run colour for panel rows"
+      ],
+      "recommendation": "written only: the text view colours whole rows by gutter, so the state word is not coloured",
+      "do": {
+        "written only: the text view colours whole rows by gutter, so the state word is not coloured": "ST-n5d72sm3",
+        "green state word: mon_view.py learns per-run colour for panel rows": "ST-n5d72sm3"
+      },
+      "class": "design",
+      "answer": "written only: the text view colours whole rows by gutter, so the state word is not coloured",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Does the sprint panel list a landing whose newest land.step is old and has no land.end?",
+      "options": [
+        "yes, every one, newest first: the goal names no age limit",
+        "only those younger than a limit"
+      ],
+      "recommendation": "yes, every one, newest first: the goal names no age limit",
+      "do": {
+        "yes, every one, newest first: the goal names no age limit": "ST-n5d72sm3",
+        "only those younger than a limit": "ST-n5d72sm3"
+      },
+      "class": "design",
+      "answer": "yes, every one, newest first: the goal names no age limit",
+      "by": "agent"
     }
   ],
   "notes": "Plan 2026-10-18: backlog.py's readers (bl_view, bl_base.Backlog) are imported, not changed: every bl_ module is an agents-rule path. Data: sprints [{id, state, items {status: n}, next, waiting [{item, gate}]}], landings [{item, step, since}]. No outside facts: the backlog and its ops rows are the kb's own. Layout of the sprint panel (operator's spec): one row per sprint: id, state padded to 10 (active in green), then `4/11 done · next ST-… · counts by status`, or `not started`, or `waits on start gate`; then `landing` rows: item, step, since.",
