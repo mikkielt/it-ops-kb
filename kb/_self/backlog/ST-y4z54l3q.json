@@ -2,7 +2,7 @@
   "id": "ST-y4z54l3q",
   "kind": "story",
   "title": "multi record writes per-agent rows, run metrics and deltas against the baseline and the report renders them",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-giqleoy2",
   "sprint": "SP-5y4ut64g",
   "priority": "P2",

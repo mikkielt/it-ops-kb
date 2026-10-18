@@ -2,7 +2,7 @@
   "id": "SP-5y4ut64g",
   "kind": "sprint",
   "title": "A multi-agent benchmark harness runs every scenario on a sandbox and proves itself by a free replay",
-  "status": "planned",
+  "status": "active",
   "goal": "benchmarks.py multi builds a sandbox whose agents share one bare origin and a coord store shared or per agent, and leaves the real origin and kb untouched; the frozen scenario inputs and knobs give each run a plan and a cost estimate with no model call; multi run starts the agents of a scenario at once or one at a time, acts as their operator and records each agent's input, output, cache read and cache write, wall time and cost; a replay of every scenario runs with no model call; multi record and the report write the per-scenario tables and the deltas against the baseline",
   "gates": [
     {

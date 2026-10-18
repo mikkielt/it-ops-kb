@@ -2,7 +2,7 @@
   "id": "ST-dj4bgo4s",
   "kind": "story",
   "title": "multi run --replay runs every scenario with scripted agents and no model call",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-giqleoy2",
   "sprint": "SP-5y4ut64g",
   "priority": "P2",
