@@ -2,7 +2,7 @@
   "id": "ST-mkkliik3",
   "kind": "story",
   "title": "Review sprint: A multi-agent benchmark harness runs every scenario on a sandbox and proves itself by a free replay",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5y4ut64g",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-r16"
+  "evidence": {
+    "commit": "a4b40652deab324c44d995f1ec7aebf4fea7b38a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "76e13b8c8f77fb4d"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "efcbd49ded7a15bd"
+      }
+    ]
+  }
 }
