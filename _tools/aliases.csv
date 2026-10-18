@@ -228,3 +228,5 @@ durable object,durable objects
 durable objects,durable objects
 managed agents,claude managed agents
 claude managed agents,claude managed agents
+spool,agent
+agent,agent

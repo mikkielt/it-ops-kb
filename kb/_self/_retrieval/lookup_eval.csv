@@ -381,3 +381,4 @@ EV-provider-read-cache-seven-days,How long does provider.py read keep a fetched 
 EV-provider-read-exit-not-text,When does provider.py read exit with 1?,tools.md,good,no,"is not text (a PDF or other binary: left to the Read tool)",
 SQ-worker-test-not-critical,may a worker add a test for a component that is not critical,code.md,good,yes,A test exists only for a critical component,kb-item:work
 SQ-kb-self-doc-shared-two-items,"does a kb/_self doc shared by two items' touches order them, can they run in parallel",backlog.md,good,yes,landing's rebase merges their,
+SQ-pack-coverage-verdict-good-weak-none,how is the pack coverage verdict good weak none decided from key words,tools.md,good,yes,best article matches under 60,
