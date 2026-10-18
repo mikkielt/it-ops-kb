@@ -63,6 +63,57 @@
       "class": "design",
       "answer": "a process whose command name is claude: headless in a worker worktree on work/<id>, else interactive",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Does the sessions panel read the forge for the mr-dead signal of backlog.py stalled?",
+      "options": [
+        "no: the panel starts no network request, so mr-dead is never read",
+        "yes: one forge read for each claimed item"
+      ],
+      "recommendation": "no: the panel starts no network request, so mr-dead is never read",
+      "do": {
+        "no: the panel starts no network request, so mr-dead is never read": "ST-jokdpvsi",
+        "yes: one forge read for each claimed item": "ST-jokdpvsi"
+      },
+      "class": "design",
+      "answer": "no: the panel starts no network request, so mr-dead is never read",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does the panel show a process's checkout and a worktree's path?",
+      "options": [
+        "relative to the clone: . for the clone, the path under it, else the directory name",
+        "the directory name alone, as backlog.py procs prints it"
+      ],
+      "recommendation": "relative to the clone: . for the clone, the path under it, else the directory name",
+      "do": {
+        "relative to the clone: . for the clone, the path under it, else the directory name": "ST-jokdpvsi",
+        "the directory name alone, as backlog.py procs prints it": "ST-jokdpvsi"
+      },
+      "class": "design",
+      "answer": "relative to the clone: . for the clone, the path under it, else the directory name",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Which stalled items does the panel list, and what do other processes show as session?",
+      "options": [
+        "only items with a signal; a process that is no claude one has null session and item",
+        "also items with only an unknown signal; a non-claude process shows session none"
+      ],
+      "recommendation": "only items with a signal; a process that is no claude one has null session and item",
+      "do": {
+        "only items with a signal; a process that is no claude one has null session and item": "ST-jokdpvsi",
+        "also items with only an unknown signal; a non-claude process shows session none": "ST-jokdpvsi"
+      },
+      "class": "design",
+      "answer": "only items with a signal; a process that is no claude one has null session and item",
+      "by": "agent"
     }
   ],
   "knowledge": {
