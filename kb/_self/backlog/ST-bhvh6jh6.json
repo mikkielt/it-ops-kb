@@ -1,0 +1,25 @@
+{
+  "id": "ST-bhvh6jh6",
+  "kind": "story",
+  "title": "kbmon's live view redraws to the terminal's new size as soon as the window is resized",
+  "status": "todo",
+  "sprint": "SP-v4yih547",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "Operator feedback 2026-10-18: \"I need it resizing progressively with terminal window\". Today the live view reads shutil.get_terminal_size only when a frame is due (every --interval seconds, default 5), so after a resize the old frame wraps or is cut until the next refresh. The live view redraws the last snapshot at the new width and height right after a resize, without re-reading the panels: on POSIX on SIGWINCH, on Windows (no SIGWINCH) by polling the size a few times a second between refreshes; a shrink clears the screen first so no stale text is left; --once, --json and a pipe are unchanged.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,pty,sys,time,struct,fcntl,termios,signal,select,json,tempfile,subprocess\nsnap=tempfile.NamedTemporaryFile(\"w\",suffix=\".json\",delete=False)\nsubprocess.run([sys.executable,\"_tools/kbmon.py\",\"--json\",\"--panel\",\"kb\"],stdout=snap,stderr=subprocess.DEVNULL); snap.close()\ndef setsz(fd,r,c): fcntl.ioctl(fd,termios.TIOCSWINSZ,struct.pack(\"HHHH\",r,c,0,0))\npid,fd=pty.fork()\nif pid==0:\n    os.execvp(sys.executable,[sys.executable,\"_tools/kbmon.py\",\"--from-snapshot\",snap.name,\"--interval\",\"30\",\"--count\",\"3\"])\nsetsz(fd,24,60)\nbuf=b\"\";t=time.time()\nwhile time.time()-t<4:\n    r,_,_=select.select([fd],[],[],0.2)\n    if r:\n        try: buf+=os.read(fd,65536)\n        except OSError: break\n    if b\"kbmon\" in buf and time.time()-t>1.5: break\nsetsz(fd,40,140); os.kill(pid,signal.SIGWINCH)\nbuf2=b\"\";t=time.time()\nwhile time.time()-t<2:\n    r,_,_=select.select([fd],[],[],0.2)\n    if r:\n        try: buf2+=os.read(fd,65536)\n        except OSError: break\nos.kill(pid,signal.SIGTERM)\nimport re\nlines=re.sub(rb\"\\x1b\\[[0-9;?]*[A-Za-z]\",b\"\\n\",buf2).split(b\"\\n\")\nw=max((len(l.rstrip()) for l in lines),default=0)\nprint(\"widest line after resize:\",w)\nsys.exit(0 if w>60 else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbmon.py",
+    "_tools/mon_view.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ]
+}
