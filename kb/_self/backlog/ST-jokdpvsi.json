@@ -2,7 +2,7 @@
   "id": "ST-jokdpvsi",
   "kind": "story",
   "title": "kbmon sessions panel: Claude Code sessions, worktrees with branches, dispatch runs, stalled items, orphans",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-5gph7fh6",
   "priority": "P2",
@@ -71,5 +71,6 @@
       "python/stdlib-windows-portability"
     ]
   },
-  "notes": "Plan 2026-10-18: bl_procs reads only a process's command name, never its command line, so headless and interactive are told by the checkout. The planted check names a symlink claude to the interpreter; ps shows it as ./claude on this macOS host (tried 2026-10-18). Data: procs [{pid, age_s, class, checkout, session, item}], worktrees [{path, branch}], stalled [{item, signals}] or absent where the root has no backlog. Layout of the sessions panel (operator's spec): table (pid, age, class, session, item, checkout), an orphan row takes `! `; then `worktrees` (path  branch, joined by ` · `) and `stalled` (a `! ` row: item, then reasons)."
+  "notes": "Plan 2026-10-18: bl_procs reads only a process's command name, never its command line, so headless and interactive are told by the checkout. The planted check names a symlink claude to the interpreter; ps shows it as ./claude on this macOS host (tried 2026-10-18). Data: procs [{pid, age_s, class, checkout, session, item}], worktrees [{path, branch}], stalled [{item, signals}] or absent where the root has no backlog. Layout of the sessions panel (operator's spec): table (pid, age, class, session, item, checkout), an orphan row takes `! `; then `worktrees` (path  branch, joined by ` · `) and `stalled` (a `! ` row: item, then reasons).",
+  "claimed_by": "orch-r17"
 }
