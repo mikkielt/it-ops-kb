@@ -1818,36 +1818,66 @@ def merge_line_hunks(base, ours, theirs):
     return "".join(out + words["b"][at:])
 
 
-CONFLICT_HUNK = re.compile(r"^<<<<<<< [^\n]*\n(.*?)^\|\|\|\|\|\|\| [^\n]*\n(.*?)^=======\n(.*?)^>>>>>>> [^\n]*\n",
+CONFLICT_HUNK = re.compile(r"^<<<<<<< [^\n]*\n(.*?)^\|\|\|\|\|\|\| [^\n]*\n(.*?)^=======\r?\n(.*?)^>>>>>>> [^\n]*\n",
                            re.M | re.S)
 
 
-def merged_doc_hunks(text):
+def merged_doc_hunks(text, final_newline=True):
     """(TEXT with each diff3 conflict hunk merged line by line, the merged lines), or None when a hunk's sides do not
-    hold the same number of lines or one line's words clash. A text with no hunk is None."""
+    hold the same number of lines or one line's words clash. A text with no hunk is None. Lines end at a line feed
+    only, so a carriage return stays on its line and a U+2028, U+0085 or form feed inside one never splits it. FINAL_NEWLINE says whether
+    the doc's sides end in a newline (git writes one after the last conflict line either way): False takes the
+    one it added off a hunk at the end of TEXT, None (the sides differ) refuses such a hunk."""
     merged = []
+    ends = []
 
     def one(m):
-        ours, base, theirs = (part.splitlines() for part in m.groups())
+        ours, base, theirs = (part.split("\n")[:-1] for part in m.groups())
         if not base or not len(base) == len(ours) == len(theirs):
             raise ValueError("not line for line")
         lines = [merge_line_hunks(*trio) for trio in zip(base, ours, theirs)]
         if None in lines:
             raise ValueError("same words")
+        if m.end() == len(text):
+            if final_newline is None:
+                raise ValueError("final newline differs")
+            ends.append(final_newline)
         merged.extend(lines)
         return "".join(line + "\n" for line in lines)
     try:
         out = CONFLICT_HUNK.sub(one, text)
     except ValueError:
         return None
+    if ends == [False]:
+        out = out[:-1]
     return (out, merged) if merged and not re.search(r"^(<<<<<<<|=======|>>>>>>>)", out, re.M) else None
+
+
+def stages_end_in_newline(root, name):
+    """True when every side of the conflicted file NAME in the index (base, ours, theirs; a side the file lacks is
+    skipped) ends in a newline, False when none does, None when they differ or no side can be read."""
+    ends = []
+    for stage in (1, 2, 3):
+        p = subprocess.run(["git", "show", f":{stage}:{name}"], cwd=root, capture_output=True)
+        if p.returncode == 0 and p.stdout:
+            ends.append(p.stdout.endswith(b"\n"))
+    return ends[0] if ends and len(set(ends)) == 1 else None
+
+
+def read_whole_doc(path):
+    """PATH's text exactly as stored (no newline translation), or None when it is not UTF-8."""
+    try:
+        return path.read_bytes().decode("utf-8")
+    except UnicodeDecodeError:
+        return None
 
 
 def rebase_merging_doc_rows(root, upstream, branch, onto=None):
     """`git rebase UPSTREAM BRANCH` (`--onto ONTO` with it): where it stops only on kb/_self/*.md lines both sides
     changed at different words (a table row, a one-line paragraph), the lines are merged word by word keeping both
-    sides, said, and the rebase continues. A conflict on the same words or in another file is aborted, nothing changed;
-    the process returned is the failed one."""
+    sides, said, and the rebase continues. A conflict on the same words or in another file, or a doc that is not
+    UTF-8, is aborted, nothing changed; the process returned is the failed one. A merged doc keeps every byte
+    outside the merged words (its line endings and whether it ends in a newline)."""
     def git_run(*args):
         return subprocess.run(["git", "-c", "merge.conflictStyle=diff3", "-c", "core.editor=true", *args], cwd=root,
                               capture_output=True, text=True, encoding="utf-8", errors="replace",
@@ -1857,8 +1887,8 @@ def rebase_merging_doc_rows(root, upstream, branch, onto=None):
         files = git_run("diff", "--name-only", "--diff-filter=U").stdout.split()
         fixed = {}
         for name in files:
-            path = Path(root) / name
-            result = merged_doc_hunks(path.read_text(encoding="utf-8")) if DOC_ROW_FILE.match(name) else None
+            text = read_whole_doc(Path(root) / name) if DOC_ROW_FILE.match(name) else None
+            result = None if text is None else merged_doc_hunks(text, stages_end_in_newline(root, name))
             if result is None:
                 break
             fixed[name] = result
