@@ -13084,19 +13084,26 @@ c296240f351b,python/ruff.md,S-s3ytflwh,unlocated:no-match,,,,,2026-10-10
 ceaa701e94db,python/ruff.md,S-y3zhzpmv,unlocated:no-match,,,,,2026-10-10
 d87d46ddf760,python/ruff.md,S-7e63teyx,located,,graph;map;import,3b6d9ab482c400b1,"use ruffgraph::{ Direction, ImportMap, ModuleDb, ModuleImports, ResolverEnvironment, resolvesearchpaths,",2026-10-10
 db3d6a81dd43,python/ruff.md,S-yfbe6ete,unlocated:no-match,,,,,2026-10-10
+0563e804e7cb,python/stdlib-argparse-json.md,S-a3h5eijf,unlocated:no-match,,,,,2026-10-18
+0563e804e7cb,python/stdlib-argparse-json.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-18
+0563e804e7cb,python/stdlib-argparse-json.md,S-jqewtaii,unlocated:no-match,,,,,2026-10-18
 057793372ef8,python/stdlib-argparse-json.md,S-lcvgoknn,located,Unicode HOWTO¶ > Introduction to Unicode¶ > Encodings¶,thre;each;between;four;two;represent;valu;sequenc,c4915425a02e7ec2,"If the code point is < 128, it's represented by the corresponding byte value. If the code point is >= 128, it's turned into a",2026-10-10
 0a15f869a39b,python/stdlib-argparse-json.md,S-36yy3wcx,located,end first line with \ to avoid the empty line!,3.4;appear;most;end;max;max_lin;none;added,bccfd9152186c88e,"(default: None) If not None, then the output will contain at most maxlines lines, with placeholder appearing at the end of the output. Added in",2026-10-10
+0e495da1da4f,python/stdlib-argparse-json.md,S-a3h5eijf,located,only query if necessary,sys.__stdout__.fileno;__stdout__;os.get_terminal_siz;stdout;get_terminal_siz;fileno;terminal;size,cb2285396e2d5db6,size = os.getterminalsize(sys.stdout.fileno()),2026-10-18
 14a29f3310a6,python/stdlib-argparse-json.md,S-zzvrhdyd,unlocated:no-match,,,,,2026-10-10
 1bf7f1b06d5b,python/stdlib-argparse-json.md,S-w47ijsvq,unlocated:no-match,,,,,2026-10-10
 1d415994f725,python/stdlib-argparse-json.md,S-hqcmecwc,located,Examine the headers and look for a Connection directive.,rfil;pars;header;http,89367131d83074a1,"self.headers = http.client.parseheaders(self.rfile,",2026-10-18
 21c43f554ef8,python/stdlib-argparse-json.md,S-zzvrhdyd,unlocated:no-match,,,,,2026-10-10
+228b2987bc16,python/stdlib-argparse-json.md,S-ew7mucsg,located,,connect;terminal;oserror;descriptor;file,d77ecdac9d8778c2,"If the file descriptor is not connected to a terminal, an",2026-10-18
 234ee60b2afd,python/stdlib-argparse-json.md,S-zzvrhdyd,located,,sort_key;ensure_ascii;encoder;ensur;separator;sort;ascii;keys,c3f7da7ef7d639bb,".. class:: JSONEncoder(, skipkeys=False, ensureascii=True, checkcircular=True, allownan=True, sortkeys=False, indent=None, separators=None, default=None) Extensible JSON encoder for Python data structures.",2026-10-10
 25a618d65a28,python/stdlib-argparse-json.md,S-rs27i36t,located,,obtain;server_address;port;address;server;http,3fdea34dc71a7b17,The HTTP server's port number obtained from serveraddress.,2026-10-16
 25a618d65a28,python/stdlib-argparse-json.md,S-uj2rumru,located,,arbitrary;select;unus;mean;port,0e79f0e6b6ae81a3,Port 0 means to select an arbitrary unused port,2026-10-16
+266ec9c193dc,python/stdlib-argparse-json.md,S-kvldeb34,located,- The executor that owns the worker has been shutdown.,none;shutdown,68bdc8349ebffe0b,if shutdown or executor is None or executor.shutdown:,2026-10-18
 2766331fc707,python/stdlib-argparse-json.md,S-5x4j2vvx,unlocated:no-match,,,,,2026-10-18
 2766331fc707,python/stdlib-argparse-json.md,S-hqcmecwc,unlocated:no-match,,,,,2026-10-18
 29052f6aaef1,python/stdlib-argparse-json.md,S-6gpxsapp,located,NAME > SYNOPSIS > DESCRIPTION,modifi;named;argument;environment;env;utility,8af41212579d91a8,"The env utility shall obtain the current environment, modify it according to its arguments, then invoke the utility named by the utility operand with the",2026-10-10
 2b607f001558,python/stdlib-argparse-json.md,S-uj2rumru,unlocated:no-match,,,,,2026-10-10
+2c278c885d0c,python/stdlib-argparse-json.md,S-prllewm6,located,the single worker thread is already waiting for wait_on_future().,enqueu;join;exit;befor;threadpoolexecutor;interpreter;thread;pool,939cd7114948ce6c,All threads enqueued to ThreadPoolExecutor will be joined before the interpreter can exit,2026-10-18
 2cc84cceb82a,python/stdlib-argparse-json.md,S-36yy3wcx,unlocated:no-match,,,,,2026-10-10
 3097ad37d97d,python/stdlib-argparse-json.md,S-rs27i36t,located,,production;recommend;http.server;server;http,d25d9e09d94a95d5,is not recommended for production.,2026-10-16
 3352cc2a7d10,python/stdlib-argparse-json.md,S-w47ijsvq,located,,least;add_mutually_exclusive_group;mutually;exclusiv;allow;one;requir;group,59ba3c107ba55740,"PROG: error: argument --bar: not allowed with argument --foo The :meth:addmutuallyexclusivegroup method also accepts a required argument, to indicate that at least one of the",2026-10-10
@@ -13106,9 +13113,13 @@ db3d6a81dd43,python/ruff.md,S-yfbe6ete,unlocated:no-match,,,,,2026-10-10
 463b5f1812cf,python/stdlib-argparse-json.md,S-w47ijsvq,unlocated:no-match,,,,,2026-10-10
 4bcaa61d1893,python/stdlib-argparse-json.md,S-w47ijsvq,unlocated:no-match,,,,,2026-10-10
 4bcaa61d1893,python/stdlib-argparse-json.md,S-zzvrhdyd,unlocated:no-match,,,,,2026-10-10
+57d68d17b971,python/stdlib-argparse-json.md,S-fp4roe5t,unlocated:no-match,,,,,2026-10-18
+57d68d17b971,python/stdlib-argparse-json.md,S-kvldeb34,unlocated:no-match,,,,,2026-10-18
+57d68d17b971,python/stdlib-argparse-json.md,S-prllewm6,unlocated:no-match,,,,,2026-10-18
 5838c5610829,python/stdlib-argparse-json.md,S-w47ijsvq,located,,argumentparser.exit;terminat;sys.stder;stder;status;sys;exit;print,25341084911a30e6,".. method:: ArgumentParser.exit(status=0, message=None) This method terminates the program, exiting with the specified status and, if given, it prints a message to :data:sys.stderr before that.",2026-10-10
 5b1662d2307a,python/stdlib-argparse-json.md,S-glgntdsx,unlocated:no-match,,,,,2026-10-10
 5b1662d2307a,python/stdlib-argparse-json.md,S-reb2jhbs,unlocated:no-match,,,,,2026-10-10
+5c46ea6e8574,python/stdlib-argparse-json.md,S-jqewtaii,located,,defin;column;line,de170038bd2ae6f2,"When COLUMNS or LINES is not defined, which is the common case,",2026-10-18
 5c7ebfba98f0,python/stdlib-argparse-json.md,S-zzvrhdyd,located,,001f;quotation;revers;solidus;except;mark;escap;ensure_ascii,150d6fa1acb9e85e,"If ensureascii is false, all characters will be output as-is, except for the characters that must be escaped: quotation mark, reverse solidus, and the control",2026-10-10
 60ded9a666d3,python/stdlib-argparse-json.md,S-cddhnbl6,located,"error ""PyTime_t is not a two's complement integer type""",timestamp;out;rang;pytime_t;time,bf81b504fdffa712,timestamp out of range for C PyTimet,2026-10-18
 61c4b84aaa3d,python/stdlib-argparse-json.md,S-hqcmecwc,located,Examine the headers and look for an Expect directive,unauthoriz;reject;overrid;request,f4650cf0cdb3e3b0,"You can behave differently (for example, reject unauthorized requests) by overriding this method.",2026-10-18
@@ -13117,6 +13128,9 @@ db3d6a81dd43,python/ruff.md,S-yfbe6ete,unlocated:no-match,,,,,2026-10-10
 66dae32e81b9,python/stdlib-argparse-json.md,S-lyf4dv2j,unlocated:no-match,,,,,2026-10-10
 6912285691b4,python/stdlib-argparse-json.md,S-zzvrhdyd,unlocated:no-match,,,,,2026-10-10
 6a3e42c70a61,python/stdlib-argparse-json.md,S-glgntdsx,located,repeat a command 100 times > 2.6.5 Field Splitting > 2.9 Shell Commands > 2.9.1 Simple Commands > 2.9.1.4 Command Search and Execution,search;fail;messag;writ;one;error;status;utility,d58819dcc5c59090,"If the search is unsuccessful, the command shall fail with an exit status of 127 and the shell shall write an error message. If the",2026-10-10
+6f18c8cde910,python/stdlib-argparse-json.md,S-fp4roe5t,unlocated:no-match,,,,,2026-10-18
+6f18c8cde910,python/stdlib-argparse-json.md,S-kvldeb34,unlocated:no-match,,,,,2026-10-18
+6f18c8cde910,python/stdlib-argparse-json.md,S-prllewm6,unlocated:no-match,,,,,2026-10-18
 77c0b52e4abb,python/stdlib-argparse-json.md,S-6gpxsapp,unlocated:no-match,,,,,2026-10-10
 77c0b52e4abb,python/stdlib-argparse-json.md,S-glgntdsx,unlocated:no-match,,,,,2026-10-10
 7ab6f69e20b0,python/stdlib-argparse-json.md,S-uj2rumru,located,socketserver — A framework for network servers¶,exit;fals;default;until;threadingmixin;mix;thread,8725b9e55cb8b755,the default is False meaning that Python will not exit until all threads created by ThreadingMixIn have exited,2026-10-16
@@ -13125,10 +13139,14 @@ db3d6a81dd43,python/ruff.md,S-yfbe6ete,unlocated:no-match,,,,,2026-10-10
 8812368e37dc,python/stdlib-argparse-json.md,S-36yy3wcx,located,end first line with \ to avoid the empty line!,themselv;broken;may;some;longer;fals;word;width,d9a1583db2f60b84,"it is false, long words will not be broken, and some lines may be longer than width. (Long words will be put on a line",2026-10-10
 88ac3e37fdd8,python/stdlib-argparse-json.md,S-36yy3wcx,located,textwrap — Text wrapping and filling¶,max;max_lin;break_long_word;placeholder;break;sentenc;fals;fill,e499309824e34479,"textwrap.fill(text, width=70, , initialindent='', subsequentindent='', expandtabs=True, replacewhitespace=True, fixsentenceendings=False, breaklongwords=True, dropwhitespace=True, breakonhyphens=True, tabsize=8, maxlines=None, placeholder=' [...]')¶",2026-10-10
 88f86d6a2cb6,python/stdlib-argparse-json.md,S-w47ijsvq,unlocated:no-match,,,,,2026-10-10
+8a6354b677d4,python/stdlib-argparse-json.md,S-a3h5eijf,unlocated:no-match,,,,,2026-10-18
+8a6354b677d4,python/stdlib-argparse-json.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-18
+8a6354b677d4,python/stdlib-argparse-json.md,S-jqewtaii,unlocated:no-match,,,,,2026-10-18
 8c837f6a06ae,python/stdlib-argparse-json.md,S-kli6pbvd,located,endif,rang;out;valu;timeout;error,029765b9c4238500,"PyErrSetString(PyExcValueError, ""Timeout value out of range"");",2026-10-18
 9598f9dc035f,python/stdlib-argparse-json.md,S-w47ijsvq,located,,3.1;add_mutually_exclusive_group;3.14;add_argument_group;rais;mutually;exception;exclusiv,c5ed4bb7833bc263,.. deprecated-removed:: 3.11 3.14 Calling :meth:addargumentgroup or :meth:addmutuallyexclusivegroup on a mutually exclusive group now raises an exception.,2026-10-10
 9899a4a235e5,python/stdlib-argparse-json.md,S-rs27i36t,located,,read;ready;start;data;optional;input;stream;base,203bb856e91fbdb8,ready to read from the start of the optional input data,2026-10-18
 9c0881f4f39a,python/stdlib-argparse-json.md,S-zzvrhdyd,located,,basis;compar;day;day-to-day;regression;test;serialization;key,e9cbe333cc61ff5c,"If sortkeys is true (default: False), then the output of dictionaries will be sorted by key; this is useful for regression tests to ensure that",2026-10-10
+a39eb0440048,python/stdlib-argparse-json.md,S-fp4roe5t,located,Wait for all threads to finish,entir;left;program;exit;daemon;python;thread,903c69b1ebcdd461,the entire Python program exits when only daemon threads are left,2026-10-18
 aa4573455cbe,python/stdlib-argparse-json.md,S-cddhnbl6,unlocated:no-match,,,,,2026-10-18
 aa4573455cbe,python/stdlib-argparse-json.md,S-j5cbrmig,unlocated:no-match,,,,,2026-10-18
 aa4573455cbe,python/stdlib-argparse-json.md,S-kli6pbvd,unlocated:no-match,,,,,2026-10-18
@@ -13147,6 +13165,7 @@ ea4b18f1701b,python/stdlib-argparse-json.md,S-rs27i36t,unlocated:no-match,,,,,20
 f0204437b781,python/stdlib-argparse-json.md,S-rs27i36t,unlocated:no-match,,,,,2026-10-16
 f0204437b781,python/stdlib-argparse-json.md,S-uj2rumru,unlocated:no-match,,,,,2026-10-16
 f77d52c2e37f,python/stdlib-argparse-json.md,S-w47ijsvq,unlocated:no-match,,,,,2026-10-10
+ff7b6d241cd0,python/stdlib-argparse-json.md,S-kvldeb34,located,See bpo-39812 for context.,_register_atexit;threading._register_atexit;atexit;_python_exit;python;exit;register;thread,93431c2ab6d224cf,threading.registeratexit(pythonexit),2026-10-18
 017367010a43,python/stdlib-cprofile-pstats.md,S-5y7wwygh,unlocated:no-match,,,,,2026-10-10
 1b6e99be1bac,python/stdlib-cprofile-pstats.md,S-4ydukkiy,unlocated:no-match,,,,,2026-10-10
 1b6e99be1bac,python/stdlib-cprofile-pstats.md,S-tkdyngyx,unlocated:no-match,,,,,2026-10-10
@@ -13294,6 +13313,11 @@ dc0ca92d51fb,python/stdlib-urllib-errors.md,S-kudz6dke,unlocated:no-match,,,,,20
 0aab8a1afd6b,python/stdlib-windows-portability.md,S-ntbllsvy,located,,getencod;locale.getencod;dependent;platform;encod;text;mode;local,651fe98993252eed,"In text mode, if encoding is not specified the encoding used is platform-dependent: :func:locale.getencoding is called to get the current locale encoding.",2026-10-10
 0c37e66a63be,python/stdlib-windows-portability.md,S-sjuwcuhk,located,,accidental;catch;posix;widely;meant;uses;recommend;command,106a4fcebae4fe35,"catch accidental uses of the typical POSIX command on Windows, but is not meant to be widely used or recommended.",2026-10-12
 0e0b4c186190,python/stdlib-windows-portability.md,S-t5ahy22o,located,RemoveDirectoryA function (fileapi.h) - Win32 apps | Microsoft Learn > Remarks,creat;createdirectory;found;posix;whil;fail;handl;open,983d479ca2375644,The use of POSIX delete causes the directory to be deleted while handles remain open. Subsequent calls to CreateDirectory to open the directory fail with,2026-10-10
+101c180f2336,python/stdlib-windows-portability.md,S-4a5xeg5l,unlocated:no-match,,,,,2026-10-18
+101c180f2336,python/stdlib-windows-portability.md,S-ctjl4gek,unlocated:no-match,,,,,2026-10-18
+101c180f2336,python/stdlib-windows-portability.md,S-iv3usyoz,unlocated:no-match,,,,,2026-10-18
+101c180f2336,python/stdlib-windows-portability.md,S-kkrnrh7n,located,SetConsoleMode function - Windows Console | Microsoft Learn > Parameters,page;print;stat;whil;off;reach;sequenc;flag,16de7ed0e9ca4aab,"DISABLE\NEWLINE\AUTO\RETURN 0x0008 | When writing with WriteFile or WriteConsole, this adds an additional state to end-of-line wrapping that can delay the cursor move and buffer",2026-10-18
+101c180f2336,python/stdlib-windows-portability.md,S-qvjkxdub,unlocated:no-match,,,,,2026-10-18
 1372d5a7463a,python/stdlib-windows-portability.md,S-ujjrcinq,located,Job Objects - Win32 apps | Microsoft Learn > Managing Processes in Jobs,createprocess;default;child;creat;associat;process;job,67fae0aedbc84ddd,"After a process is associated with a job, by default any child processes it creates using CreateProcess are also associated with the job.",2026-10-10
 13d1074fbd9b,python/stdlib-windows-portability.md,S-ew7mucsg,located,,excl;o_creat;o_excl;creat,c838c5394ac23386,OCREAT OEXCL,2026-10-14
 1ac5ae214581,python/stdlib-windows-portability.md,S-hjy5rcb2,located,IsProcessInJob function (jobapi.h) - Win32 apps | Microsoft Learn > Remarks,cannot;name;queryinformationjobobject;null;object;query;information;handl,2cb69d80923f82e7,"An application cannot obtain a handle to the job object in which it is running unless it has the name of the job object. However,",2026-10-10
@@ -13307,20 +13331,30 @@ dc0ca92d51fb,python/stdlib-urllib-errors.md,S-kudz6dke,unlocated:no-match,,,,,20
 2ef98f7eca87,python/stdlib-windows-portability.md,S-5qbsemqm,unlocated:no-match,,,,,2026-10-18
 2ef98f7eca87,python/stdlib-windows-portability.md,S-7ctlvynr,unlocated:no-match,,,,,2026-10-18
 31ba4df98441,python/stdlib-windows-portability.md,S-ttcgrkbl,located,System Error Codes (0-499) (WinError.h) - Win32 apps | Microsoft Learn,0x20;shar;violation;becaus;being;another;access;process,e99a1c025e9f3989,ERROR\SHARING\VIOLATION 32 (0x20) The process cannot access the file because it is being used by another process.,2026-10-10
+3afe97cf7c30,python/stdlib-windows-portability.md,S-j6wqryzp,located,,row;column;position;default;cursor,b46411127caed7f7,"Cursor Position [row;column] (default = [1,1]) (CUP).",2026-10-18
 3d447ce98192,python/stdlib-windows-portability.md,S-qz6kfi4i,unlocated:no-match,,,,,2026-10-10
 3d447ce98192,python/stdlib-windows-portability.md,S-ttcgrkbl,unlocated:no-match,,,,,2026-10-10
 3eb33d55bdf0,python/stdlib-windows-portability.md,S-6bobcclf,unlocated:no-match,,,,,2026-10-10
 3eb33d55bdf0,python/stdlib-windows-portability.md,S-qz6kfi4i,unlocated:no-match,,,,,2026-10-10
 3eb33d55bdf0,python/stdlib-windows-portability.md,S-t5ahy22o,unlocated:no-match,,,,,2026-10-10
+3f05cec08a31,python/stdlib-windows-portability.md,S-qvjkxdub,located,Console Virtual Terminal Sequences - Windows Console | Microsoft Learn > Alternate Screen Buffer,scrollback;entir;without;modify;content;them;start;affect,8f1ac5d8b0cb5cb7,"\Nix style applications often utilize an alternate screen buffer, so that they can modify the entire contents of the buffer, without affecting the application that",2026-10-18
 403465dd38db,python/stdlib-windows-portability.md,S-dabwnzz5,located,,setsid;session;start_new_session;start;new;posix;call;true,79cac77bff5379a1,If startnewsession is true the setsid() system call will be made in the child process prior to the execution of the subprocess. .. availability:: POSIX,2026-10-10
+4125803ce58e,python/stdlib-windows-portability.md,S-kkrnrh7n,located,SetConsoleMode function - Windows Console | Microsoft Learn > Parameters,both;default;output;enabl;mode,79a595672a60f49b,"When a screen buffer is created, both output modes are enabled by default.",2026-10-18
+4125803ce58e,python/stdlib-windows-portability.md,S-qvjkxdub,located,Console Virtual Terminal Sequences - Windows Console | Microsoft Learn,suggest;sampl;way;enabl,211b63d07f673e4f,A sample of the suggested way to enable virtual terminal behaviors is included at the end of this document.,2026-10-18
 435ad9b80880,python/stdlib-windows-portability.md,S-f5bnvamj,unlocated:no-match,,,,,2026-10-10
 458d3c95b8f1,python/stdlib-windows-portability.md,S-e4zz24dq,located,Command prompt line string limitation - Windows Client | Microsoft Learn > More information > Examples,even;ignor;longer;though;win32;inherit;parameter;character,40b4a82adf1ec26e,"In a batch file, the total length of the following command line after you expand the parameters can't contain more than 8191 characters: ExecutableFile.exe parameter1",2026-10-10
+46151bc688e3,python/stdlib-windows-portability.md,S-j6wqryzp,located,,saved;eras;line;xterm,f6b9fdf4f4e0cfb3,"Erase Saved Lines, xterm.",2026-10-18
 48a9a2602af2,python/stdlib-windows-portability.md,S-kyzwo2d6,located,getcwd(3) — Linux manual page > ERRORS top,enoent;unlink;work;directory;current,ff0cdc2176f5a196,The current working directory has been unlinked,2026-10-13
+48e799e029cc,python/stdlib-windows-portability.md,S-kkrnrh7n,located,SetConsoleMode function - Windows Console | Microsoft Learn > Parameters,control;sequenc;terminal;virtual;process;output;enabl;consol,5d3e2c66a9328bcf,It should be enabled when using control sequences,2026-10-18
 4b7bbfbef00c,python/stdlib-windows-portability.md,S-5qbsemqm,located,do a signed reduction modulo 2**sys.hash_info.width,terminal;break;line;empty;result;return;string,35de6ab383f3ca11,"returns an empty list for the empty string, and a terminal line break does not result in an extra line",2026-10-18
 56cfa90089ea,python/stdlib-windows-portability.md,S-ip5ugdeb,located,Hard Links and Junctions - Win32 apps | Microsoft Learn > Hard links,driv;exampl;map;network;ethel;ethel.txt;lucy;lucy.txt,531ab5e115e9baf7,"For example, in a system where C: and D: are local drives and Z: is a network drive mapped to \\fred\share, the following references are",2026-10-10
+5706021dc9de,python/stdlib-windows-portability.md,S-4a5xeg5l,located,mixin will work in context of those fields existing,_supports_virtual_terminal;nt._supports_virtual_terminal;support;terminal;virtual,6e8415a73660fcfb,if not nt.supportsvirtualterminal():,2026-10-18
+5706021dc9de,python/stdlib-windows-portability.md,S-ctjl4gek,located,endif,enable_virtual_terminal_process;virtual;enabl;terminal;mode;process;return,c76e7ec0246b03e2,return PyBoolFromLong(mode & ENABLEVIRTUALTERMINALPROCESSING);,2026-10-18
+5706021dc9de,python/stdlib-windows-portability.md,S-iv3usyoz,located,define WIN32_LEAN_AND_MEAN,writeconsolew;writ;handl;consol,aab4a03551a4c66a,"res = WriteConsoleW(handle, wbuf, wlen, &n, NULL);",2026-10-18
 5724a9258ee0,python/stdlib-windows-portability.md,S-sjuwcuhk,unlocated:no-match,,,,,2026-10-12
 57c19c5865d4,python/stdlib-windows-portability.md,S-oavxfpsn,located,,wasi;unix;modul,4be45b3d5a7180da,".. availability:: Unix, not WASI. All functions in this module take a file descriptor fd as their first",2026-10-10
 59300f9d3f51,python/stdlib-windows-portability.md,S-sjuwcuhk,located,,official;omit;releas;tag;start;may,caa24ead2d62073f,"For compatibility, the V: may be omitted in cases where the tag refers to an official release and starts with",2026-10-12
+5b277ddc9a9f,python/stdlib-windows-portability.md,S-qvjkxdub,located,Console Virtual Terminal Sequences - Windows Console | Microsoft Learn > Text Modification,replac;eras;display;spac;viewport;current;text;line,825c85101da356df,ESC [ &lt;n&gt; J | ED | Erase in Display | Replace all text in the current viewport/screen specified by &lt;n&gt; with space characters ESC,2026-10-18
 5b974aabd403,python/stdlib-windows-portability.md,S-ew7mucsg,located,,fileexistserror;already;mkdir;exist;rais;error;directory;file,e460b7968a6e23bd,".. function:: mkdir(path, mode=0o777, , dirfd=None) Create a directory named path with numeric mode mode. If the directory already exists, :exc:FileExistsError is raised.",2026-10-14
 5be915ea9759,python/stdlib-windows-portability.md,S-edjp43o7,located,NAME > SYNOPSIS > DESCRIPTION > ERRORS,exdev;between;different;support;entry;system;named;implementation,178c896d063b5be3,[EXDEV] The file named by path1 and the directory in which the directory entry named by path2 is to be created are on different file,2026-10-10
 5ce2042281ca,python/stdlib-windows-portability.md,S-sjuwcuhk,unlocated:no-match,,,,,2026-10-12
@@ -13371,6 +13405,7 @@ b605e6c9fd2f,python/stdlib-windows-portability.md,S-oavxfpsn,unlocated:no-match,
 bc123c55f20b,python/stdlib-windows-portability.md,S-obrkrr52,located,JOBOBJECT_BASIC_LIMIT_INFORMATION (winnt.h) - Win32 apps | Microsoft Learn > Members,0x0000200;kill;last;clos;handl;terminat;caus;associat,40683d094c248ca8,- JOB\OBJECT\LIMIT\KILL\ON\JOB\CLOSE<br>- 0x00002000 | Causes all processes associated with the job to terminate when the last handle to the job is closed. <br>This limit requires,2026-10-10
 c317c96bc805,python/stdlib-windows-portability.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-14
 c8b748540c6a,python/stdlib-windows-portability.md,S-dabwnzz5,located,,os.kill;create_new_consol;ignor;kill;consol;creat;new;subprocess,3f35ea195dfb4b39,This flag is necessary for using :func:os.kill on the subprocess. This flag is ignored if :data:CREATENEWCONSOLE is specified.,2026-10-10
+c912e6ebde4f,python/stdlib-windows-portability.md,S-qvjkxdub,located,Console Virtual Terminal Sequences - Windows Console | Microsoft Learn > Cursor Positioning,0x5b;0x1b;start;parameter;csi;sequenc;esc,8151de70a1b27532,All CSI sequences start with ESC (0x1B) followed by [ (left bracket,2026-10-18
 d56521463bda,python/stdlib-windows-portability.md,S-ntbllsvy,unlocated:no-match,,,,,2026-10-10
 d7a42ce41019,python/stdlib-windows-portability.md,S-6bobcclf,unlocated:no-match,,,,,2026-10-10
 d7a42ce41019,python/stdlib-windows-portability.md,S-dabwnzz5,unlocated:no-match,,,,,2026-10-10
@@ -13379,6 +13414,10 @@ d8f968b5eb03,python/stdlib-windows-portability.md,S-dabwnzz5,unlocated:no-match,
 de7bd78973b9,python/stdlib-windows-portability.md,S743,unlocated:no-match,,,,,2026-10-12
 de7bd78973b9,python/stdlib-windows-portability.md,S-hjy5rcb2,unlocated:no-match,,,,,2026-10-10
 de7bd78973b9,python/stdlib-windows-portability.md,S-obrkrr52,unlocated:no-match,,,,,2026-10-10
+e0108039c6ea,python/stdlib-windows-portability.md,S-kkrnrh7n,located,SetConsoleMode function - Windows Console | Microsoft Learn > Parameters,0x0004;movement;written;cursor;sequenc;writeconsol;writefil;flag,996f17f3b2a5867f,"ENABLE\VIRTUAL\TERMINAL\PROCESSING 0x0004 | When writing with WriteFile or WriteConsole, characters are parsed for VT100 and similar control character sequences that control cursor movement, color/font mode,",2026-10-18
+e0108039c6ea,python/stdlib-windows-portability.md,S-qvjkxdub,located,Console Virtual Terminal Sequences - Windows Console | Microsoft Learn > Output Sequences,intercept;host;written;stream;flag;process;setconsolemod;handl,e3d3a73fe8e4e2ac,intercepted by the console host when written into the output stream,2026-10-18
+e819053647dd,python/stdlib-windows-portability.md,S-j6wqryzp,unlocated:no-match,,,,,2026-10-18
+e819053647dd,python/stdlib-windows-portability.md,S-qvjkxdub,unlocated:no-match,,,,,2026-10-18
 e90124b1d293,python/stdlib-windows-portability.md,S-dabwnzz5,unlocated:no-match,,,,,2026-10-10
 e909fa2f5021,python/stdlib-windows-portability.md,S-dabwnzz5,located,,create_new_consol;cannot;parent;inherit;consol;3.7;creat;valu,f306f01f431f3e13,will not inherit its parent's console. This value cannot be used with CREATENEWCONSOLE. .. versionadded:: 3.7,2026-10-10
 ee20cc2bf97c,python/stdlib-windows-portability.md,S-5brdhqgo,unlocated:no-match,,,,,2026-10-10

@@ -3,7 +3,7 @@ topic: python/stdlib-windows-portability
 priority: P3
 applies_to: "CPython 3.14.7 documentation (release tag); stdlib behaviour on Windows versus POSIX for detached processes, file locks, text files and interpreter names"
 retrieved_utc: 2026-10-18
-sources: [S-vfd5kpka, S-hlwenztu, S-kyzwo2d6, S-2cf7ptty, S-dabwnzz5, S-ew7mucsg, S-oavxfpsn, S-f5bnvamj, S-ntbllsvy, S-sjuwcuhk, S-6bobcclf, S-e4zz24dq, S-ttcgrkbl, S-obrkrr52, S-hjy5rcb2, S743, S-5brdhqgo, S-jwv5eevl, S-ymqlfpgy, S-ujjrcinq, S-t5ahy22o, S-qz6kfi4i, S-qo63gfo7, S-edjp43o7, S-oqrlzkwe, S-ip5ugdeb, S-5qbsemqm, S-7ctlvynr, S-inakn5ad]
+sources: [S-vfd5kpka, S-hlwenztu, S-kyzwo2d6, S-2cf7ptty, S-dabwnzz5, S-ew7mucsg, S-oavxfpsn, S-f5bnvamj, S-ntbllsvy, S-sjuwcuhk, S-6bobcclf, S-e4zz24dq, S-ttcgrkbl, S-obrkrr52, S-hjy5rcb2, S743, S-5brdhqgo, S-jwv5eevl, S-ymqlfpgy, S-ujjrcinq, S-t5ahy22o, S-qz6kfi4i, S-qo63gfo7, S-edjp43o7, S-oqrlzkwe, S-ip5ugdeb, S-5qbsemqm, S-7ctlvynr, S-inakn5ad, S-qvjkxdub, S-kkrnrh7n, S-j6wqryzp, S-iv3usyoz, S-ctjl4gek, S-4a5xeg5l]
 status: partial
 ---
 
@@ -16,7 +16,9 @@ on the other. `fcntl` is Unix-only, so a lock that works everywhere uses what bo
 `O_CREAT | O_EXCL`, or `os.mkdir`, which fails when the directory exists; `msvcrt.locking` is the Windows-only
 byte-range lock. `open()` in text mode picks the locale encoding and translates `\n` to `os.linesep` unless told
 otherwise, so every read and write passes `encoding="utf-8"` and writes `newline="\n"`. On Windows the documented
-commands are `python` and `py`; `python3` exists only as a compatibility alias.
+commands are `python` and `py`; `python3` exists only as a compatibility alias. Escape sequences printed to the Windows
+console act only when `ENABLE_VIRTUAL_TERMINAL_PROCESSING` is set on the screen buffer, which CPython reads but does not
+set; `ESC [ H` then `ESC [ 2 J` homes the cursor and erases the display.
 
 ## Facts
 ### Detached processes
@@ -111,6 +113,20 @@ commands are `python` and `py`; `python3` exists only as a compatibility alias.
 - So a cache keyed on files' modification times (`st_mtime_ns`) still matches after a `copytree` with the default `copy2`, but not after a plain `shutil.copy`, which leaves them out; a key that must survive a copy at another path hashes the files' content and their paths relative to the root instead. [DER S-jwv5eevl: copy2 keeps the times, copy does not]
 - Open: what modification time a fresh `git clone` or `git worktree add` gives the files it checks out is not stated on a git page the kb cites. [UNK: see `_gaps.md`]
 - Open: the Windows error number (`winerror` or `errno`) that `os.link` raises when the two paths are on different volumes, or on a filesystem other than NTFS, is not stated on the `os` page or on the Win32 pages, which say only that the function fails and `GetLastError` has the code. [UNK: see `_gaps.md`]
+
+### Console escape sequences (ANSI/VT output on the Windows console)
+- The console host intercepts the VT sequences (cursor movement, colour and the rest) written to the output stream only "if the ENABLE_VIRTUAL_TERMINAL_PROCESSING flag is set on the screen buffer handle" with `SetConsoleMode`; the flag is 0x0004, and `WriteFile` and `WriteConsole` are the writes it applies to. [DOC S-qvjkxdub, S-kkrnrh7n]
+- `SetConsoleMode` says `ENABLE_PROCESSED_OUTPUT` "should be enabled when using control sequences" and must be set with `ENABLE_VIRTUAL_TERMINAL_PROCESSING`; the mode belongs to one screen buffer, since "setting the output modes of one screen buffer does not affect the output modes of other screen buffers". [DOC S-kkrnrh7n]
+- The suggested way to turn the flag on, in the page's own samples, is `GetConsoleMode` on the standard output handle, OR the flag into the mode and `SetConsoleMode` back, failing when either call fails; neither page says the flag is already on in a new console, and its output-mode sentence "both output modes are enabled by default" precedes a table of five output flags. [DOC S-qvjkxdub, S-kkrnrh7n]
+- CPython 3.14.7 does not set the flag in the two files read: the Windows console writer in `winconsoleio.c` writes with `WriteConsoleW`, and neither it nor `posixmodule.c` calls `SetConsoleMode`. Its colour check `_colorize.can_colorize` on `win32` returns false unless `nt._supports_virtual_terminal()` is true, and that function only reads the standard error handle's mode and returns whether `ENABLE_VIRTUAL_TERMINAL_PROCESSING` is in it. [CODE S-iv3usyoz: Modules/_io/winconsoleio.c#_io__WindowsConsoleIO_write_impl; S-ctjl4gek: Modules/posixmodule.c#os__supports_virtual_terminal_impl; S-4a5xeg5l: Lib/_colorize.py#can_colorize]
+- So `print("\x1b[...")` on Windows reaches the console as characters, and CPython leaves it to the program, or to whatever started the console, to have turned processing on: a tool that prints escape sequences calls `GetConsoleMode`/`SetConsoleMode` itself (through `ctypes`, standard library) or checks the flag first, and writes none when stdout is not a console. What a console host does with a sequence while the flag is off, and which console hosts and Windows versions start with it on, are not stated on the pages read. [DER S-qvjkxdub, S-kkrnrh7n, S-iv3usyoz, S-ctjl4gek, S-4a5xeg5l: flag set by the caller; CPython reads, never sets it]
+- Every CSI sequence starts with ESC (0x1B) then `[` (0x5B), which is `"\x1b["` in a Python string. `ESC [ <y> ; <x> H` (CUP, Cursor Position) moves the cursor to row `<y>`, column `<x>` of the viewport; the page's rule for the cursor sequences is that an omitted or 0 parameter "will be treated as a 1", and the cursor stays inside the viewport. [DOC S-qvjkxdub]
+- xterm's control-sequence list gives the same default: `CSI Ps ; Ps H` is "Cursor Position [row;column] (default = [1,1])". So `ESC [ H`, with no parameters, puts the cursor at the top left. [DOC S-j6wqryzp]
+- `ESC [ <n> J` (ED, Erase in Display) replaces the text of the current viewport with spaces: 0 from the cursor (inclusive) to the end of the display, 1 from the start up to and including the cursor, 2 the whole display; `ESC [ <n> K` (EL) does the same for the cursor's line. The page lists only 0, 1 and 2 and does not say that ED moves the cursor. [DOC S-qvjkxdub]
+- xterm lists a fourth ED value, `Ps = 3  -> Erase Saved Lines, xterm`, which the Windows page does not list. [DOC S-j6wqryzp]
+- So the sequence that clears the screen and starts a redraw at the top left is `ESC [ H` plus `ESC [ 2 J` (`"\x1b[H\x1b[2J"`), the two together because ED 2 is not documented to move the cursor and CUP does not erase; `ESC [ 2 J` alone erases but leaves the cursor where it was. [DER S-qvjkxdub, S-j6wqryzp: CUP default 1;1, ED 2, no cursor move stated for ED]
+- A full-screen program can switch to the alternate screen buffer with `ESC [ ? 1 0 4 9 h`, "so that they can modify the entire contents of the buffer, without affecting the application that started them"; the alternate buffer is the window's size, with no scrollback. [DOC S-qvjkxdub]
+- Open: whether the Windows console honours `ESC [ 3 J` (xterm's erase of saved lines) is not stated on the page read; the flag's default per console host and Windows version, and the effect of the sequences with the flag off, are not stated either; no Windows host was available to probe them. [UNK: see `_gaps.md`]
 
 ## Reference
 | Need | POSIX | Windows | Source |

@@ -4099,3 +4099,14 @@ _Agent: kb-research_
 - See agents/agent-caching.md, gitlab/git-trailers-and-hooks.md, claude/parallel-sessions.md, claude/messages-api.md.
 
 _Agent: kb-research_
+
+## QK-windows-console-honour-ansi-escape-sequences. Does the Windows console honour ANSI escape sequences from Python `print`, does the interpreter wait at exit for a `ThreadPoolExecutor`'s threads and for a daemon thread, which sequences home the cursor and erase the screen, and how does `shutil.get_terminal_size` find the width when standard output is a pipe?
+- The Windows console host acts on VT sequences only when `ENABLE_VIRTUAL_TERMINAL_PROCESSING` (0x0004) is set on the screen buffer handle with `SetConsoleMode`; CPython 3.14.7 reads that flag (`os._supports_virtual_terminal`, used by its colour check) and does not set it in the files read. [DOC S-qvjkxdub, S-kkrnrh7n]
+- `ThreadPoolExecutor` threads "will be joined before the interpreter can exit"; the entire program exits when only daemon threads are left. A probe on macOS: a 2 s task kept the process alive 2.0 s, a daemon thread 0.0 s. [DOC S-prllewm6, S-fp4roe5t]
+- `ESC [ H` is Cursor Position with the default 1;1 and `ESC [ 2 J` erases the whole display; neither does the other's job. [DOC S-qvjkxdub, S-j6wqryzp]
+- `shutil.get_terminal_size` uses `COLUMNS` and `LINES` when positive, else queries `sys.__stdout__`, and returns the fallback (80 by 24) when that raises `OSError`, as a pipe does. [DOC S-jqewtaii, S-ew7mucsg]
+- Conclusion: a tool that prints escape sequences on Windows enables the mode itself or checks it first and prints `"\x1b[H\x1b[2J"` to home and clear; an exit that must not wait for a slow probe uses a `daemon=True` thread, since `ThreadPoolExecutor` has no daemon option and `shutdown(wait=False)` does not shorten the exit wait; width from a pipe is the fallback unless `COLUMNS` is set. [DER S-qvjkxdub, S-kkrnrh7n, S-prllewm6, S-fp4roe5t, S-kvldeb34, S-jqewtaii, S-a3h5eijf: facts above and the probes in python/stdlib-argparse-json.md]
+- Open: the flag's default per console host and Windows version, whether `ESC [ 3 J` works there, and the pipe and thread behaviour on a Windows host were not probed (`_gaps.md`, python/stdlib-windows-portability, python/stdlib-argparse-json). [UNK]
+- See python/stdlib-windows-portability.md, python/stdlib-argparse-json.md.
+
+_Agent: kb-research_

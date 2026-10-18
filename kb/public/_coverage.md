@@ -331,12 +331,12 @@ Every topic of this root with its priority (the research order, not importance),
 | `python/mypy-strict` | P3 | partial | `python/mypy-strict.md` | 8 |
 | `python/percentile-nearest-rank` | P3 | partial | `python/percentile-nearest-rank.md` | 4 |
 | `python/sqlalchemy-asyncio-asyncpg` | P3 | complete | `python/sqlalchemy-asyncio-asyncpg.md` | 8 |
-| `python/stdlib-argparse-json` | P3 | complete | `python/stdlib-argparse-json.md` | 15 |
+| `python/stdlib-argparse-json` | P3 | complete | `python/stdlib-argparse-json.md` | 21 |
 | `python/stdlib-cprofile-pstats` | P3 | partial | `python/stdlib-cprofile-pstats.md` | 4 |
 | `python/stdlib-datetime-iso-week` | P3 | complete | `python/stdlib-datetime-iso-week.md` | 1 |
 | `python/stdlib-os-loadavg` | P3 | partial | `python/stdlib-os-loadavg.md` | 7 |
 | `python/stdlib-urllib-errors` | P3 | partial | `python/stdlib-urllib-errors.md` | 5 |
-| `python/stdlib-windows-portability` | P3 | partial | `python/stdlib-windows-portability.md` | 29 |
+| `python/stdlib-windows-portability` | P3 | partial | `python/stdlib-windows-portability.md` | 35 |
 | `python/testcontainers-postgres-pytest` | P3 | partial | `python/testcontainers-postgres-pytest.md` | 15 |
 | `python/typer-cli` | P3 | partial | `python/typer-cli.md` | 16 |
 | `python/uv-windows-install` | P3 | partial | `python/uv-windows-install.md` | 3 |
