@@ -33,7 +33,7 @@ holder, and a claim of a key that holds no live lease (one a `put` made included
 revision as they were. A row no `put` wrote has nothing to keep, so the end of its lease removes it and the key is
 absent. The token is shown once, to the claimer; `get`,
 `list` and a refused claim never print it. Every write runs in one `BEGIN IMMEDIATE` transaction, so two processes
-racing on one key serialise on SQLite's lock and exactly one wins; a writer waits up to 30 seconds for the lock.
+racing on one key serialise on SQLite's lock and exactly one wins; a writer waits up to 30 seconds for the lock and reads the time (a lease's start, an expiry's test, an event's `at`) once it holds it, so a lease runs its full length from the moment it was taken.
 
 A claim made with `--budget USD` carries the budget the operator approved for the item its key names. `list` prints,
 beside each live claim, `budget_usd` (null without one), `spend_usd` (what the query log's work sidecars hold for the
@@ -226,7 +226,7 @@ def holder_name(args):
     return holder
 
 
-def claim(args, now):
+def claim(args, clock):
     holder = holder_name(args)
     if not FIELD_VALUE.fullmatch(args.key):
         raise Refused({"ok": False, "error": f"a claim's key is an id of 1 to 120 characters of letters, digits and _ . : / # @ -, not {args.key[:40]!r}"}, 2)
@@ -237,6 +237,7 @@ def claim(args, now):
             raise Refused({"ok": False, "key": args.key, "error": f"--budget is for a claim of a backlog item id, not {args.key[:40]!r}"}, 2)
     token = secrets.token_hex(16)
     with Tx(args.store) as con:
+        now = clock()
         row = live_row(con, args.key, now)
         if row is not None and row["holder"] is not None:
             raise Refused({"ok": False, "key": args.key, "holder": row["holder"], "revision": row["revision"],
@@ -259,16 +260,18 @@ def held_by(con, key, token, now):
     return row
 
 
-def renew(args, now):
+def renew(args, clock):
     with Tx(args.store) as con:
+        now = clock()
         row = held_by(con, args.key, args.token, now)
         ttl = args.ttl if args.ttl is not None else row["ttl"]
         con.execute("UPDATE entries SET ttl = ?, expires = ? WHERE key = ?", (ttl, now + ttl, args.key))
     return {"ok": True, "key": args.key, "holder": row["holder"], "ttl": ttl, "expires": round(now + ttl, 3)}
 
 
-def release(args, now):
+def release(args, clock):
     with Tx(args.store) as con:
+        now = clock()
         row = held_by(con, args.key, args.token, now)
         if row["value"] is None:
             con.execute("DELETE FROM entries WHERE key = ?", (args.key,))
@@ -277,8 +280,9 @@ def release(args, now):
     return {"ok": True, "key": args.key, "holder": row["holder"], "released": True}
 
 
-def get(args, now):
+def get(args, clock):
     con = connect(args.store)
+    now = clock()
     try:
         con.execute(SCHEMA)
         row = con.execute(f"SELECT {PUBLIC} FROM entries WHERE key = :key AND {LIVE}", {"key": args.key, "now": now}).fetchone()
@@ -289,8 +293,9 @@ def get(args, now):
     return {"ok": True, **row_json(row)}
 
 
-def put(args, now):
+def put(args, clock):
     with Tx(args.store) as con:
+        now = clock()
         if args.token is not None:
             row = held_by(con, args.key, args.token, now)
         else:
@@ -325,8 +330,9 @@ def budget_view(key, budget):
     return {"budget_usd": budget, "spend_usd": spend, "over_budget": spend > budget}
 
 
-def listing(args, now):
+def listing(args, clock):
     con = connect(args.store)
+    now = clock()
     try:
         ensure_schema(con)
         rows = con.execute(f"SELECT {PUBLIC}, CASE WHEN expires > :now THEN budget END AS budget FROM entries "
@@ -380,7 +386,7 @@ def event_json(row):
     return {"seq": row["seq"], "kind": row["kind"], "fields": json.loads(row["fields"]), "at": round(row["at"], 3)}
 
 
-def post(args, now):
+def post(args, clock):
     if args.kind not in KINDS:
         raise Refused({"ok": False, "error": f"unknown kind {args.kind[:40]!r}: one of {', '.join(KINDS)}"}, 2)
     fields = parse_fields(args.field, args.kind)
@@ -389,11 +395,11 @@ def post(args, now):
         fields["operator"] = args.operator
     with Tx(args.store) as con:
         seq = con.execute("INSERT INTO events (kind, fields, at) VALUES (?, ?, ?)",
-                          (args.kind, json.dumps(fields, sort_keys=True, ensure_ascii=False), now)).lastrowid
+                          (args.kind, json.dumps(fields, sort_keys=True, ensure_ascii=False), clock())).lastrowid
     return {"ok": True, "seq": seq, "kind": args.kind, "fields": fields}
 
 
-def wait(args, now):
+def wait(args, _clock):
     """Events after --since, held until one arrives or --timeout passes. Behind `serve`, args.recheck says whether the
     caller's token still names its operator: asked about once a second and before any reply, and a revoked caller
     gets Revoked, not an event."""
@@ -430,9 +436,10 @@ def one_line(text, limit=80):
     return re.sub(r"[\x00-\x1f\x7f-\x9f]", "", re.sub(r"\s+", "_", str(text)))[:limit]
 
 
-def digest(args, now):
+def digest(args, clock):
     """The live intents and claims that overlap the keys, newest first, as at most N lines of text (no JSON)."""
     con = connect(args.store)
+    now = clock()
     try:
         ensure_schema(con)
         claims = con.execute("SELECT key, holder, ttl, expires, budget FROM entries WHERE holder IS NOT NULL AND expires > ?", (now,)).fetchall()
@@ -518,7 +525,7 @@ def research_key(topic, term):
     return f"{RESEARCH}{topic}:{term}"
 
 
-def dedup(args, now):
+def dedup(args, clock):
     """Claim the lack terms of the question's pack that no overlapping live claim covers; name the claims that do.
     A claim on the same anchor topic overlaps when it shares at least half of the smaller lack-set's terms."""
     holder = holder_name(args)
@@ -526,6 +533,7 @@ def dedup(args, now):
     token = secrets.token_hex(16)
     overlapping, covered, own, taken, others = [], set(), set(), [], []
     with Tx(args.store) as con:
+        now = clock()
         end_leases(con, now)
         theirs, holders = {}, {}
         for row in con.execute("SELECT key, holder FROM entries WHERE holder IS NOT NULL AND substr(key, 1, ?) = ? ORDER BY key",
@@ -661,10 +669,12 @@ COMMANDS = {"claim": claim, "renew": renew, "release": release, "get": get, "put
             "post": post, "digest": digest, "wait": wait, "dedup": dedup}
 
 
-def run(args, now):
-    """One parsed command on args.store: its body and exit code."""
+def run(args, clock):
+    """One parsed command on args.store: its body and exit code. CLOCK is the function that gives the time in seconds;
+    a write command calls it inside its transaction, after the wait for the store's write lock, so a lease runs from
+    the time it was granted."""
     try:
-        return COMMANDS[args.command](args, now), 0
+        return COMMANDS[args.command](args, clock), 0
     except Refused as refused:
         return refused.body, refused.code
 
@@ -775,7 +785,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             args.store, args.operator = self.server.store, operator
             header = self.headers.get("Authorization")
             args.recheck = lambda: authenticate(self.server.keys, header) == operator
-            body, code = run(args, time.time())
+            body, code = run(args, time.time)
         except Revoked:
             return self.refuse(401, "unknown or revoked token", [("WWW-Authenticate", "Bearer")])
         except Refused as refused:
@@ -971,7 +981,7 @@ def main(argv=None):
     if args.command == "serve":
         return serve(args)
     try:
-        body, code = run(args, time.time())
+        body, code = run(args, time.time)
     except sqlite3.Error as error:
         print(f"coord.py: store {args.store}: {error}", file=sys.stderr)
         return 2
