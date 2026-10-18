@@ -2,7 +2,7 @@
   "id": "ST-ovfyfksp",
   "kind": "story",
   "title": "multi run starts a scenario's agents at once or one at a time and acts as their operator",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-giqleoy2",
   "sprint": "SP-5y4ut64g",
   "priority": "P2",
@@ -99,5 +99,6 @@
     "_tools/bl_land.py",
     "_tools/bench_core.py"
   ],
-  "notes": "Reuses bench_core.stream_run (agent_bench.execute's parse of the stream) and bench_repro's area_record shape for the lines. The --manager session knob runs a headless orchestrator session in the sandbox's main clone as one more agent with the role manager, so its own tokens and cost are recorded. Sessions run with bench_repro.SETTINGS (gitkraken and caveman off) and the clone's own --mcp-config."
+  "notes": "Reuses bench_core.stream_run (agent_bench.execute's parse of the stream) and bench_repro's area_record shape for the lines. The --manager session knob runs a headless orchestrator session in the sandbox's main clone as one more agent with the role manager, so its own tokens and cost are recorded. Sessions run with bench_repro.SETTINGS (gitkraken and caveman off) and the clone's own --mcp-config.",
+  "claimed_by": "orch-r16"
 }
