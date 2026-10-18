@@ -2,7 +2,7 @@
   "id": "BG-blw4edp4",
   "kind": "bug",
   "title": "ledger_lock's holder judges its own lock by inode number alone, so after a stale clear a reused inode lets it remove the next writer's live lock",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-fp3hxl6q",
   "priority": "P2",
   "rank": 0,
@@ -39,5 +39,6 @@
   "links": [
     "parked: SP-6jfnx5i3 review"
   ],
-  "notes": "Plan 2026-10-17: the repro fails on origin/main 3dba0ef83 (the next writer's lock is removed after an inode reuse). Value: cross-agent coordination, the operator's second theme of 2026-10-17; a parallel research session reads these digests."
+  "notes": "Plan 2026-10-17: the repro fails on origin/main 3dba0ef83 (the next writer's lock is removed after an inode reuse). Value: cross-agent coordination, the operator's second theme of 2026-10-17; a parallel research session reads these digests.",
+  "claimed_by": "orch-r15"
 }
