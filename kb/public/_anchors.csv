@@ -14566,7 +14566,6 @@ edf3ba9209a3,security/script-and-code-signing.md,S-5kvx24wm,unlocated:no-match,,
 1910dabaf0ea,security/secret-shapes-in-text.md,S-imedhmhc,located,Configuring environment variables for the AWS CLI > AWS CLI supported environment variables > Endpoint precedence > Endpoint precedence > Note > Note,secret;key;access,63defc708ec72b3c,Specifies the secret key associated with the access key.,2026-10-17
 19e0c3a695a0,security/secret-shapes-in-text.md,S-4rjxcq6v,unlocated:no-match,,,,,2026-10-17
 1c1c5d52aa49,security/secret-shapes-in-text.md,S-neu52zjd,located,,mandatory;implement;tls;specification,4462b6997a1d5784,TLS is mandatory to implement and use with this specification,2026-10-18
-1efc27be7a1d,security/secret-shapes-in-text.md,S-4tr3garn,located,,text;line;armor;header,4b32b4fb691bd635,An Armor Header Line consists of the appropriate header line text,2026-10-18
 202ce7936a3c,security/secret-shapes-in-text.md,S-bs6jgunr,located,,bookmark;log;browser;stor,6722be61efde53b4,"displayed by browsers, stored in clear text bookmarks, and logged by",2026-10-17
 2201f9a5d104,security/secret-shapes-in-text.md,S-3mhhoprh,unlocated:no-match,,,,,2026-10-17
 2201f9a5d104,security/secret-shapes-in-text.md,S-4rjxcq6v,unlocated:no-match,,,,,2026-10-17
@@ -14588,6 +14587,7 @@ edf3ba9209a3,security/script-and-code-signing.md,S-5kvx24wm,unlocated:no-match,,
 61bc7378ef16,security/secret-shapes-in-text.md,S-jkdywrys,located,Inlines > Code spans,nonempty;start;character,c851cb094a277ca3,a nonempty sequence of characters that does not start with <,2026-10-18
 6249c827b504,security/secret-shapes-in-text.md,S-bs6jgunr,located,,pct;pct-encod;sub;sub-delim;userinfo;delim;unreserv;encod,dd1233d4c3857212,"userinfo = ( unreserved / pct-encoded / sub-delims / "":"" )",2026-10-17
 6a3f067c39c8,security/secret-shapes-in-text.md,S-4tr3garn,located,,base64;character;data,46bab043b3951a12,While there is a limit of 76 characters for the base64 data,2026-10-18
+7065106a3e2a,security/secret-shapes-in-text.md,S-4tr3garn,located,,text;line;armor;header,4b32b4fb691bd635,An Armor Header Line consists of the appropriate header line text,2026-10-18
 735897e1f715,security/secret-shapes-in-text.md,S-neu52zjd,located,,b64token;credential;bearer,9efae23b9f45be66,"credentials = ""Bearer"" 1SP b64token",2026-10-17
 7f7d41ebea7e,security/secret-shapes-in-text.md,S-4rjxcq6v,located,,two-character;two;escap;character,bfed420790298ed2,there are two-character sequence escape representations of some popular characters,2026-10-17
 843f306a867a,security/secret-shapes-in-text.md,S-cr2wj4s2,located,,1.1;legacy;file;begin;format;privat;ssh;key,4e665e17c8745e73,"#define LEGACYBEGIN ""SSH PRIVATE KEY FILE FORMAT 1.1\n""",2026-10-17
@@ -14613,7 +14613,6 @@ c040c2172f40,security/secret-shapes-in-text.md,S-jkdywrys,located,baz,further;oc
 c21136929828,security/secret-shapes-in-text.md,S-neu52zjd,located,,alway;equivalent;making;transport;security;tls;must;client,d7ab0ea1637caa94,Clients MUST always use TLS [RFC5246] (https) or equivalent transport security when making requests with bearer tokens.,2026-10-18
 c21ac2b4f9f0,security/secret-shapes-in-text.md,S-wct3uoax,located,,proxy-authorization;authorization;credential;proxy,26eae1d063b1a64c,Proxy-Authorization = credentials,2026-10-17
 c8a65d388a02,security/secret-shapes-in-text.md,S-xnlryf7y,located,SqlConnection.ConnectionString Property > Remarks,semicolon;enclo;quot;contain;doubl;singl;mark;quotation,c057866af5cf5b13,"To include values that contain a semicolon, single-quote character, or double-quote character, the value must be enclosed in double quotation marks.",2026-10-17
-ccf8baba9745,security/secret-shapes-in-text.md,S-vstqd426,located,,begin;privat;key,97b15364089fb494,-----BEGIN EC PRIVATE KEY-----,2026-10-18
 cf62ff529a1b,security/secret-shapes-in-text.md,S-spzetxhy,unlocated:no-match,,,,,2026-10-17
 d67e80c3c5a2,security/secret-shapes-in-text.md,S-bs6jgunr,located,,pchar;pct;pct-encod;sub;sub-delim;delim;unreserv;encod,4d391ff96d154632,"pchar = unreserved / pct-encoded / sub-delims / "":"" / ""@""",2026-10-17
 d886d27ba5f5,security/secret-shapes-in-text.md,S-k57sryj7,located,SQL Server connection string entity definition | Microsoft Learn > Pattern,7-128;aren;forward;slash;combination;isn;mark;quotation,b5c4ac867e4a0238,"any character that isn't a dollar sign ($), percent symbol (%), greater than symbol (&gt;), at symbol (@), quotation mark (""), semicolon (;), left brace([),",2026-10-17
@@ -14634,6 +14633,7 @@ eb02f630315a,security/secret-shapes-in-text.md,S-k57sryj7,unlocated:no-match,,,,
 eb91dfb2c4e1,security/secret-shapes-in-text.md,S-bs6jgunr,located,,deprecat;password;userinfo;user,eb7754875181d9f0,"Use of the format ""user:password"" in the userinfo field is deprecated",2026-10-17
 f00450897f1a,security/secret-shapes-in-text.md,S-jkdywrys,located,baz,interrupt;cannot;definition;paragraph,3ca0d7ea9eff3295,A link reference definition cannot interrupt a paragraph.,2026-10-18
 f0e30ccd16ed,security/secret-shapes-in-text.md,S-wct3uoax,located,,token68,192408c803e484f7,The token68 syntax allows the 66 unreserved URI characters,2026-10-17
+f0fe1c511c69,security/secret-shapes-in-text.md,S-vstqd426,located,,begin;privat;key,97b15364089fb494,BEGIN EC PRIVATE KEY,2026-10-18
 f51dc2814d92,security/secret-shapes-in-text.md,S-neu52zjd,unlocated:no-match,,,,,2026-10-18
 f61d0fbfa2ef,security/secret-shapes-in-text.md,S-k57sryj7,located,SQL Server connection string entity definition | Microsoft Learn > Keywords > CEP\_PasswordPlaceHolder,hyphen;asterisk;digit;letter,428f8e4966b33b33,"Any combination of 1-200 characters that are upper- or lowercase letters, digits, an asterisk (\), hyphen (-), underline (\), or whitespace character",2026-10-17
 faeea1ce6997,security/secret-shapes-in-text.md,S-neu52zjd,located,,chain;validat;certificat;tls;protect;client;request;resourc,37c9b036b0b2f8ce,The client MUST validate the TLS certificate chain when making requests to protected resources.,2026-10-18
