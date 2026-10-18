@@ -2,7 +2,7 @@
   "id": "ST-6f6nfbqv",
   "kind": "story",
   "title": "Research sprint goal: redact leaves no part of a secret in escaped JSON and never eats ordinary prose",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5xnbspyp",
   "goal_research": true,
   "priority": "P1",
@@ -41,5 +41,19 @@
     }
   ],
   "notes": "Plan 2026-10-17: rag.py pack on the tree of 3dba0ef83: the JSON escape question is good (public/security/secret-shapes-in-text.md:55, RFC 8259 section 7), so it is not asked again; the link reference definition question is none, and the RFC 6750 question is good only on mcp/authorization.md lines that do not say TLS, so both are researched. Knowledge by item: BG-my67pcip and ST-3m5sjibd read the link reference definition facts (the prose shapes redact must keep whole); BG-gikebecb reads the RFC 6750 TLS facts; BG-saeietup reads the RFC 8259 escape fact already in the kb; ST-qwrhatjh researches its own private key labels.",
-  "claimed_by": "orch-r13"
+  "evidence": {
+    "commit": "87fa4f2169617b9a0d613f5ca0469131a5362b4f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-6f6nfbqv"
+        ],
+        "exit": 0,
+        "sha256": "57cdbf3a414538dc"
+      }
+    ]
+  }
 }
