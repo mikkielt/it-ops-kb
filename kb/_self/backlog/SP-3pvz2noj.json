@@ -1,0 +1,20 @@
+{
+  "id": "SP-3pvz2noj",
+  "kind": "sprint",
+  "title": "The paid multi-agent runs measure concurrency, dedup, cache reuse, model choice, pack budget and kb tools",
+  "status": "planned",
+  "goal": "the multi-agent scenarios run as the operator sized them, concurrent and one at a time with each knob, and their rows, deltas and fitness check results are recorded in benchmarks.csv and the report; kb/_self/token-efficiency.md states the conclusions those numbers support, each citing its report section",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}

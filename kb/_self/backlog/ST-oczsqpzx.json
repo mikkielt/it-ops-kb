@@ -1,0 +1,41 @@
+{
+  "id": "ST-oczsqpzx",
+  "kind": "story",
+  "title": "kb/_self/token-efficiency.md states what the multi-agent runs show",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "sprint": "SP-3pvz2noj",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/_self/token-efficiency.md gains a section Concurrent agents stating the conclusions the multi rows support on concurrency against the sequential baseline, coord dedup, prompt-cache reuse, Haiku against Sonnet and Opus per role, the pack budget and kb tools against reading files; each conclusion cites the section of the benchmarks report it rests on",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\n\nimport re\nt = open(\"kb/_self/token-efficiency.md\", encoding=\"utf-8\").read()\nm = re.search(r\"^## Concurrent agents\\n(.*?)(?=^## |\\Z)\", t, re.S | re.M)\nassert m, \"no section Concurrent agents\"\ns = m.group(1)\nfor w in (\"sequential baseline\", \"dedup\", \"cache\", \"Haiku\", \"pack budget\", \"reading files\"):\n    assert w in s, w\nassert s.count(\"reports/benchmarks.md\") >= 3, \"the conclusions cite no report section\"\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/_self/token-efficiency.md gains a section Concurrent agents stating the conclusions the multi rows support on concurrency against the sequential baseline, coord dedup, prompt-cache reuse, Haiku against Sonnet and Opus per role, the pack budget and kb tools against reading files",
+      "check": 0
+    },
+    {
+      "clause": "each conclusion cites the section of the benchmarks report it rests on",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-xjtqwdtq"
+  ],
+  "links": [
+    "kb/_self/token-efficiency.md",
+    "kb/_self/reports/benchmarks.md"
+  ],
+  "notes": "Conclusions only from the recorded rows; a knob the operator's answer left out is named as not measured."
+}

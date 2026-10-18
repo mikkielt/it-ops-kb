@@ -1,0 +1,74 @@
+{
+  "id": "ST-b2k5y46l",
+  "kind": "story",
+  "title": "benchmarks.py multi setup builds a sandbox whose agents share one bare origin and a coord store shared or per agent",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "sprint": "SP-5y4ut64g",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "benchmarks.py multi setup --agents N --coord shared|isolated --dir DIR builds DIR/origin.git, a bare copy of one pinned commit, plus N agent clones whose only remote is that bare, each with its own mcp-config, its query log off and a KB_COORD_STORE that is the one store of DIR under shared and the agent's own under isolated, reusing bench_repro's instance helpers; multi probe builds a two-agent sandbox in a temporary directory, lands one _gaps.md commit from each clone on the bare through kbgit.py sync --push (the second after a rebase) and exits 0 only when both are on the bare's main, neither reached the clone's own origin/main ref and the stores follow --coord in both modes; setup --dry-run prints each agent's clone, mcp-config and KB_COORD_STORE path and creates nothing",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\n\nimport os, subprocess, sys, tempfile\nT = tempfile.mkdtemp()\nB = os.path.join(T, \"bin\"); os.mkdir(B)\nMARK = os.path.join(T, \"claude-was-started\")\nopen(os.path.join(B, \"claude\"), \"w\").write(\"#!/bin/sh\\necho started >> \" + MARK + \"\\nexit 1\\n\")\nos.chmod(os.path.join(B, \"claude\"), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ[\"PATH\"])\ndef bench(*a, ok=(0,), timeout=1200):\n    r = subprocess.run([sys.executable, \"_tools/benchmarks.py\", *a], capture_output=True, text=True, env=ENV, timeout=timeout)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-600:], r.stderr[-600:])\n    return r\n\nbench(\"multi\", \"probe\", timeout=1800)\nassert not os.path.exists(MARK), \"the probe started claude\"\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\n\nimport os, subprocess, sys, tempfile\nT = tempfile.mkdtemp()\nB = os.path.join(T, \"bin\"); os.mkdir(B)\nMARK = os.path.join(T, \"claude-was-started\")\nopen(os.path.join(B, \"claude\"), \"w\").write(\"#!/bin/sh\\necho started >> \" + MARK + \"\\nexit 1\\n\")\nos.chmod(os.path.join(B, \"claude\"), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ[\"PATH\"])\ndef bench(*a, ok=(0,), timeout=1200):\n    r = subprocess.run([sys.executable, \"_tools/benchmarks.py\", *a], capture_output=True, text=True, env=ENV, timeout=timeout)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-600:], r.stderr[-600:])\n    return r\n\nimport re\nd = os.path.join(T, \"sb\")\nfor coord, n in ((\"shared\", 1), (\"isolated\", 3)):\n    r = bench(\"multi\", \"setup\", \"--agents\", \"3\", \"--coord\", coord, \"--dir\", d, \"--dry-run\")\n    assert not os.path.exists(d), \"--dry-run created the sandbox\"\n    stores = set(re.findall(r\"KB_COORD_STORE (\\S+)\", r.stdout))\n    assert len(stores) == n, (coord, stores, r.stdout[-600:])\n    assert len(re.findall(r\"mcp-config (\\S+)\", r.stdout)) == 3, r.stdout[-600:]\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "benchmarks.py multi setup --agents N --coord shared|isolated --dir DIR builds DIR/origin.git, a bare copy of one pinned commit, plus N agent clones whose only remote is that bare, each with its own mcp-config, its query log off and a KB_COORD_STORE that is the one store of DIR under shared and the agent's own under isolated, reusing bench_repro's instance helpers",
+      "check": 0
+    },
+    {
+      "clause": "multi probe builds a two-agent sandbox in a temporary directory, lands one _gaps.md commit from each clone on the bare through kbgit.py sync --push (the second after a rebase) and exits 0 only when both are on the bare's main, neither reached the clone's own origin/main ref and the stores follow --coord in both modes",
+      "check": 0
+    },
+    {
+      "clause": "setup --dry-run prints each agent's clone, mcp-config and KB_COORD_STORE path and creates nothing",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/bench_multi.py",
+    "_tools/benchmarks.py",
+    "kb/_self/tools.md",
+    "kb/_self/map.csv"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "In the sandbox, how does a code agent's item land?",
+      "options": [
+        "on the sandbox bare as content: the sandbox's backlog.json names no code lane",
+        "through the code lane with a local merge stand-in"
+      ],
+      "recommendation": "on the sandbox bare as content: the sandbox's backlog.json names no code lane",
+      "do": {
+        "on the sandbox bare as content: the sandbox's backlog.json names no code lane": "ST-b2k5y46l",
+        "through the code lane with a local merge stand-in": "ST-b2k5y46l"
+      },
+      "class": "design",
+      "answer": "on the sandbox bare as content: the sandbox's backlog.json names no code lane",
+      "by": "operator"
+    }
+  ],
+  "links": [
+    "kb/_self/tools.md",
+    "kb/_self/reports/research-repro.md",
+    "_tools/bench_repro.py",
+    "kb/_self/backlog.md",
+    "_tools/coord.py"
+  ],
+  "notes": "Extends bench_repro (setup, instance_env, mcp_config, LEAKY_ENV, reset_clone): repro gives each instance its own bare, this sandbox gives every agent one shared bare, so claims, rebases and landing stops between agents are real. The coord store knob is KB_COORD_STORE (coord.py and its hook read it), so no coord.py change; coord.py is held by SP-5xnbspyp and SP-fp3hxl6q. No network: the probe reads the clone's own origin/main ref, never a fetch."
+}

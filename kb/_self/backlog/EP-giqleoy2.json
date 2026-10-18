@@ -1,0 +1,38 @@
+{
+  "id": "EP-giqleoy2",
+  "kind": "epic",
+  "title": "Concurrent agent work is benchmarked: lookups, same-topic research and mixed work against a one-at-a-time baseline",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/_self/reports/benchmarks.csv holds rows of the scenario multi for concurrent lookups, same-topic research with coord dedup on and off, and mixed research, code and lookup work, each against the same work run one at a time, with per-agent and total input, output, cache read and cache write, wall time, cost, duplicate work, coord claims and conflicts, landing stops and answer quality, and the deltas of each knob (coord dedup, prompt-cache reuse, model per role, pack budget, kb tools against reading files); the runs come from a harness in the benchmark tools that acts as the operator on a sandbox (no change to real kb content or main) and whose replay mode makes no model call; the same harness runs the fitness checks of concurrent work (no lost claim, no duplicate research, no landing stop, no secret crossing agents) in place of new tests.py tests",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "report",
+        "--check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,sys;c={x['case'] for x in csv.DictReader(open('kb/_self/reports/benchmarks.csv',encoding='utf-8')) if x['scenario']=='multi'};print(sorted(c));sys.exit(0 if {'lookups','research','mixed'}<=c else 1)"
+      ]
+    }
+  ],
+  "relates_to": [
+    "EP-4nl2jr4q"
+  ],
+  "links": [
+    "kb/_self/reports/research-repro.md",
+    "kb/_self/reports/benchmarks.md",
+    "kb/_self/tools.md",
+    "_tools/bench_repro.py",
+    "_tools/coord.py",
+    "kb/_self/_decisions.csv"
+  ],
+  "notes": "Operator request 2026-10-18, verbatim: \"plan benchmark and comprehensive tests sprints done by AI manager acting as human operator. I need scenarios of few concurrent searches, work on similar topic, mixed (some agents research, some introduce code changes, etc) to check token-efficiency, speed, cost optimizations etc\". Built on bench_repro.py (instances of a pinned commit, concurrent headless sessions, results.jsonl, record, compare), bench_core.py (PRICE, stream_run, merge_rows), bench_pool.py and agent_bench.py (lookup scoring), bench_lookup.s_files_headless (files arm), bench_report.py, coord.py (KB_COORD_STORE picks the store; dedup), backlog.py dispatch, land and cost. The harness is the operator: it starts the agents, answers their gates by recommendation and lands their items, on a sandbox whose one bare origin every agent's clone shares, so claims and landing stops are real and nothing reaches the real origin or kb. Scenarios: lookups (4 agents x 5 questions, 10 distinct), research (3 agents, one area, dedup on and off), mixed (2 research, 2 code items, 1 lookup agent), baseline (the same work one at a time). Knobs against the baseline: coord store shared or per agent, simultaneous or staggered start (prompt-cache reuse), model per role, pack budget, kb tools or reading files. Test policy (D-6kei5o2z, D-2tq4fhgs): the comprehensive checks are scenario-based end-to-end fitness checks the harness runs, not tests.py tests; nothing touches _tools/tests_ceiling.json. Planning estimate inputs (recorded rows): pool sonnet-5-5:default 0.147 USD per lookup, haiku-5-5 0.0085, opus-5-5 0.236; repro 2.83 USD and 573 s per research area (63 areas); one code item about 1.0 USD on Sonnet 5.5 (ST-w2if4brd usage rows at bench_core.PRICE)."
+}

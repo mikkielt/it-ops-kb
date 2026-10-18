@@ -1,0 +1,102 @@
+{
+  "id": "ST-ovfyfksp",
+  "kind": "story",
+  "title": "multi run starts a scenario's agents at once or one at a time and acts as their operator",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "sprint": "SP-5y4ut64g",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "multi run SCENARIO --dir DIR builds the scenario's sandbox in DIR when DIR holds none and starts every agent at once, one thread each, in its own clone with its role's prompt, model and knobs, a lookup agent asking its questions in one session; with --sequential each agent starts only after the one before it ended; the harness acts as the operator: it answers each open gate of a sandbox item by its recommendation (backlog.py answer --by operator in the sandbox, synced to the bare) and lands each code agent's item through backlog.py dispatch and land in the sandbox, recording the land result; it appends one json line per agent to DIR/results.jsonl with role, item, input_tokens, output_tokens, cache_read_tokens, cache_write_tokens, cost, turns, tool_calls, wall_s, started, ended, steps, commit and land; --max-usd starts no agent once the recorded spend plus the agent's estimate would pass it and records that agent with the failure budget",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\n\nimport json, os, subprocess, sys, tempfile\nT = tempfile.mkdtemp()\nB = os.path.join(T, \"bin\"); os.mkdir(B)\nSTARTS = os.path.join(T, \"starts\")\nopen(os.path.join(B, \"claude\"), \"w\").write(\n    \"#!\" + sys.executable + \"\\nimport json, sys, time\\nsys.stdin.read()\\nopen(\" + repr(STARTS) + \", 'a').write(repr(time.time()) + chr(10))\\n\"\n    \"time.sleep(2)\\nprint(json.dumps({'type': 'result', 'subtype': 'success', 'is_error': False, 'total_cost_usd': 0.01,\"\n    \" 'num_turns': 1, 'result': 'ok', 'usage': {'input_tokens': 11, 'output_tokens': 7,\"\n    \" 'cache_creation_input_tokens': 101, 'cache_read_input_tokens': 1009}}))\\n\")\nos.chmod(os.path.join(B, \"claude\"), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ[\"PATH\"])\ndef bench(*a, ok=(0,), timeout=1200):\n    r = subprocess.run([sys.executable, \"_tools/benchmarks.py\", *a], capture_output=True, text=True, env=ENV, timeout=timeout)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-600:], r.stderr[-600:])\n    return r\ndef lines(d):\n    return [json.loads(x) for x in open(os.path.join(d, \"results.jsonl\"), encoding=\"utf-8\") if x.strip()]\ndef starts():\n    return sorted(float(x) for x in open(STARTS) if x.strip())\n\nd = os.path.join(T, \"c\")\nbench(\"multi\", \"run\", \"lookups\", \"--dir\", d)\nL = lines(d)\nassert len(L) == 4, len(L)\nfor x in L:\n    got = (x[\"input_tokens\"], x[\"output_tokens\"], x[\"cache_write_tokens\"], x[\"cache_read_tokens\"])\n    assert got == (11, 7, 101, 1009), x\n    assert x[\"wall_s\"] >= 2 and x[\"role\"] == \"lookup\", x\ns = starts()\nassert len(s) == 4 and s[-1] - s[0] < 2, (\"the agents did not start at once\", s)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\n\nimport json, os, subprocess, sys, tempfile\nT = tempfile.mkdtemp()\nB = os.path.join(T, \"bin\"); os.mkdir(B)\nSTARTS = os.path.join(T, \"starts\")\nopen(os.path.join(B, \"claude\"), \"w\").write(\n    \"#!\" + sys.executable + \"\\nimport json, sys, time\\nsys.stdin.read()\\nopen(\" + repr(STARTS) + \", 'a').write(repr(time.time()) + chr(10))\\n\"\n    \"time.sleep(2)\\nprint(json.dumps({'type': 'result', 'subtype': 'success', 'is_error': False, 'total_cost_usd': 0.01,\"\n    \" 'num_turns': 1, 'result': 'ok', 'usage': {'input_tokens': 11, 'output_tokens': 7,\"\n    \" 'cache_creation_input_tokens': 101, 'cache_read_input_tokens': 1009}}))\\n\")\nos.chmod(os.path.join(B, \"claude\"), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ[\"PATH\"])\ndef bench(*a, ok=(0,), timeout=1200):\n    r = subprocess.run([sys.executable, \"_tools/benchmarks.py\", *a], capture_output=True, text=True, env=ENV, timeout=timeout)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-600:], r.stderr[-600:])\n    return r\ndef lines(d):\n    return [json.loads(x) for x in open(os.path.join(d, \"results.jsonl\"), encoding=\"utf-8\") if x.strip()]\ndef starts():\n    return sorted(float(x) for x in open(STARTS) if x.strip())\n\nd = os.path.join(T, \"s\")\nbench(\"multi\", \"run\", \"lookups\", \"--sequential\", \"--dir\", d)\nassert len(lines(d)) == 4\ns = starts()\nassert len(s) == 4 and all(b - a >= 1.9 for a, b in zip(s, s[1:])), (\"an agent started before the one before it ended\", s)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\n\nimport json, os, subprocess, sys, tempfile\nT = tempfile.mkdtemp()\nB = os.path.join(T, \"bin\"); os.mkdir(B)\nSTARTS = os.path.join(T, \"starts\")\nopen(os.path.join(B, \"claude\"), \"w\").write(\n    \"#!\" + sys.executable + \"\\nimport json, sys, time\\nsys.stdin.read()\\nopen(\" + repr(STARTS) + \", 'a').write(repr(time.time()) + chr(10))\\n\"\n    \"time.sleep(2)\\nprint(json.dumps({'type': 'result', 'subtype': 'success', 'is_error': False, 'total_cost_usd': 0.01,\"\n    \" 'num_turns': 1, 'result': 'ok', 'usage': {'input_tokens': 11, 'output_tokens': 7,\"\n    \" 'cache_creation_input_tokens': 101, 'cache_read_input_tokens': 1009}}))\\n\")\nos.chmod(os.path.join(B, \"claude\"), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ[\"PATH\"])\ndef bench(*a, ok=(0,), timeout=1200):\n    r = subprocess.run([sys.executable, \"_tools/benchmarks.py\", *a], capture_output=True, text=True, env=ENV, timeout=timeout)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-600:], r.stderr[-600:])\n    return r\ndef lines(d):\n    return [json.loads(x) for x in open(os.path.join(d, \"results.jsonl\"), encoding=\"utf-8\") if x.strip()]\ndef starts():\n    return sorted(float(x) for x in open(STARTS) if x.strip())\n\nd = os.path.join(T, \"m\")\nbench(\"multi\", \"run\", \"mixed\", \"--dir\", d, ok=(0, 1))\nbare = os.path.join(d, \"origin.git\")\nnames = subprocess.run([\"git\", \"--git-dir\", bare, \"ls-tree\", \"--name-only\", \"main\", \"kb/_self/backlog/\"],\n                       capture_output=True, text=True, check=True).stdout.split()\ncodes = [x[\"item\"] for x in lines(d) if x[\"role\"] == \"code\"]\nassert len(codes) == 2, codes\ngated = 0\nfor item in codes:\n    j = json.loads(subprocess.run([\"git\", \"--git-dir\", bare, \"show\", \"main:kb/_self/backlog/\" + item + \".json\"],\n                                  capture_output=True, text=True, check=True).stdout)\n    for g in j.get(\"gates\", []):\n        gated += 1\n        assert g.get(\"answer\") == g[\"recommendation\"] and g.get(\"by\") == \"operator\", (item, g)\nassert gated, \"no planted code item carries a gate\"\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\n\nimport json, os, subprocess, sys, tempfile\nT = tempfile.mkdtemp()\nB = os.path.join(T, \"bin\"); os.mkdir(B)\nSTARTS = os.path.join(T, \"starts\")\nopen(os.path.join(B, \"claude\"), \"w\").write(\n    \"#!\" + sys.executable + \"\\nimport json, sys, time\\nsys.stdin.read()\\nopen(\" + repr(STARTS) + \", 'a').write(repr(time.time()) + chr(10))\\n\"\n    \"time.sleep(2)\\nprint(json.dumps({'type': 'result', 'subtype': 'success', 'is_error': False, 'total_cost_usd': 0.01,\"\n    \" 'num_turns': 1, 'result': 'ok', 'usage': {'input_tokens': 11, 'output_tokens': 7,\"\n    \" 'cache_creation_input_tokens': 101, 'cache_read_input_tokens': 1009}}))\\n\")\nos.chmod(os.path.join(B, \"claude\"), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ[\"PATH\"])\ndef bench(*a, ok=(0,), timeout=1200):\n    r = subprocess.run([sys.executable, \"_tools/benchmarks.py\", *a], capture_output=True, text=True, env=ENV, timeout=timeout)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-600:], r.stderr[-600:])\n    return r\ndef lines(d):\n    return [json.loads(x) for x in open(os.path.join(d, \"results.jsonl\"), encoding=\"utf-8\") if x.strip()]\ndef starts():\n    return sorted(float(x) for x in open(STARTS) if x.strip())\n\nd = os.path.join(T, \"cap\")\nbench(\"multi\", \"run\", \"lookups\", \"--max-usd\", \"0.01\", \"--dir\", d, ok=(0, 1))\nassert not os.path.exists(STARTS), \"an agent started past the cap\"\nL = lines(d)\nassert len(L) == 4 and all(x[\"failure\"] == \"budget\" for x in L), L\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "multi run SCENARIO --dir DIR builds the scenario's sandbox in DIR when DIR holds none and starts every agent at once, one thread each, in its own clone with its role's prompt, model and knobs, a lookup agent asking its questions in one session",
+      "check": 0
+    },
+    {
+      "clause": "with --sequential each agent starts only after the one before it ended",
+      "check": 1
+    },
+    {
+      "clause": "the harness acts as the operator: it answers each open gate of a sandbox item by its recommendation (backlog.py answer --by operator in the sandbox, synced to the bare) and lands each code agent's item through backlog.py dispatch and land in the sandbox, recording the land result",
+      "check": 2
+    },
+    {
+      "clause": "it appends one json line per agent to DIR/results.jsonl with role, item, input_tokens, output_tokens, cache_read_tokens, cache_write_tokens, cost, turns, tool_calls, wall_s, started, ended, steps, commit and land",
+      "check": 0
+    },
+    {
+      "clause": "--max-usd starts no agent once the recorded spend plus the agent's estimate would pass it and records that agent with the failure budget",
+      "check": 3
+    }
+  ],
+  "touches": [
+    "_tools/bench_multi.py",
+    "_tools/benchmarks.py",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-ykdwo7a3"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Who acts as the operator of a run?",
+      "options": [
+        "the harness code by default, a headless orchestrator session as the --manager session knob",
+        "the harness code only",
+        "a headless orchestrator session only"
+      ],
+      "recommendation": "the harness code by default, a headless orchestrator session as the --manager session knob",
+      "do": {
+        "the harness code by default, a headless orchestrator session as the --manager session knob": "ST-ovfyfksp",
+        "the harness code only": "ST-ovfyfksp",
+        "a headless orchestrator session only": "ST-ovfyfksp"
+      },
+      "class": "design",
+      "answer": "the harness code by default, a headless orchestrator session as the --manager session knob",
+      "by": "operator"
+    }
+  ],
+  "links": [
+    "kb/_self/tools.md",
+    "kb/_self/reports/research-repro.md",
+    "_tools/bench_repro.py",
+    "kb/_self/backlog.md",
+    "_tools/bl_dispatch.py",
+    "_tools/bl_land.py",
+    "_tools/bench_core.py"
+  ],
+  "notes": "Reuses bench_core.stream_run (agent_bench.execute's parse of the stream) and bench_repro's area_record shape for the lines. The --manager session knob runs a headless orchestrator session in the sandbox's main clone as one more agent with the role manager, so its own tokens and cost are recorded. Sessions run with bench_repro.SETTINGS (gitkraken and caveman off) and the clone's own --mcp-config."
+}

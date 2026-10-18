@@ -1,0 +1,74 @@
+{
+  "id": "ST-y4z54l3q",
+  "kind": "story",
+  "title": "multi record writes per-agent rows, run metrics and deltas against the baseline and the report renders them",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "sprint": "SP-5y4ut64g",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "multi record --dir DIR [--out FILE] merges into FILE (default the benchmarks results file) rows of the scenario multi, case the scenario, arm concurrent or sequential with the knob values; per agent and in total: input, out, cache_read, cache_write, cost, wall_s and turns; per run: dup_facts (bench_repro's claim match across agents), claims and claim_conflicts from the sandbox coord store, land_stops, rebase_s, right (lookup answers scored as agent_bench scores them) plus eval_passed (the area's frozen questions on the sandbox bare's main); a row whose arm starts with delta holds, per metric, the concurrent run's value minus the sequential run's of the same scenario; bench_report.multi_tables(rows) renders the per-scenario tables and deltas that benchmarks.py report writes in a section of kb/_self/reports/benchmarks.md; a replay's rows reach only --out",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\n\nimport os, subprocess, sys, tempfile\nT = tempfile.mkdtemp()\nB = os.path.join(T, \"bin\"); os.mkdir(B)\nMARK = os.path.join(T, \"claude-was-started\")\nopen(os.path.join(B, \"claude\"), \"w\").write(\"#!/bin/sh\\necho started >> \" + MARK + \"\\nexit 1\\n\")\nos.chmod(os.path.join(B, \"claude\"), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ[\"PATH\"])\ndef bench(*a, ok=(0,), timeout=1200):\n    r = subprocess.run([sys.executable, \"_tools/benchmarks.py\", *a], capture_output=True, text=True, env=ENV, timeout=timeout)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-600:], r.stderr[-600:])\n    return r\n\nimport csv, hashlib\nsys.path.insert(0, \"_tools\")\nimport bench_report\nsha = lambda: hashlib.sha256(open(\"kb/_self/reports/benchmarks.csv\", \"rb\").read()).hexdigest()\nfirst = sha()\nout = os.path.join(T, \"rows.csv\")\nfor seq in ([], [\"--sequential\"]):\n    d = os.path.join(T, \"m\" + (\"-seq\" if seq else \"\"))\n    bench(\"multi\", \"run\", \"mixed\", \"--replay\", \"--dir\", d, *seq)\n    bench(\"multi\", \"record\", \"--dir\", d, \"--out\", out)\nm = [r for r in csv.DictReader(open(out, encoding=\"utf-8\")) if r[\"scenario\"] == \"multi\"]\narms = {r[\"arm\"] for r in m}\nassert any(a.startswith(\"concurrent\") for a in arms) and any(a.startswith(\"sequential\") for a in arms), arms\nassert any(a.startswith(\"delta\") for a in arms), arms\nneed = {\"input\", \"out\", \"cache_read\", \"cache_write\", \"cost\", \"wall_s\", \"turns\", \"dup_facts\", \"claims\", \"claim_conflicts\",\n        \"land_stops\", \"rebase_s\", \"right\", \"eval_passed\"}\nassert need <= {r[\"metric\"] for r in m}, sorted(need - {r[\"metric\"] for r in m})\nmd = bench_report.multi_tables(m)\nassert \"| mixed\" in md and \"delta\" in md, md[:600]\nassert sha() == first, \"a replay's rows reached the results file\"\nassert not os.path.exists(MARK), \"a replay started claude\"\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "report",
+        "--check"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "multi record --dir DIR [--out FILE] merges into FILE (default the benchmarks results file) rows of the scenario multi, case the scenario, arm concurrent or sequential with the knob values",
+      "check": 0
+    },
+    {
+      "clause": "per agent and in total: input, out, cache_read, cache_write, cost, wall_s and turns",
+      "check": 0
+    },
+    {
+      "clause": "per run: dup_facts (bench_repro's claim match across agents), claims and claim_conflicts from the sandbox coord store, land_stops, rebase_s, right (lookup answers scored as agent_bench scores them) plus eval_passed (the area's frozen questions on the sandbox bare's main)",
+      "check": 0
+    },
+    {
+      "clause": "a row whose arm starts with delta holds, per metric, the concurrent run's value minus the sequential run's of the same scenario",
+      "check": 0
+    },
+    {
+      "clause": "bench_report.multi_tables(rows) renders the per-scenario tables and deltas that benchmarks.py report writes in a section of kb/_self/reports/benchmarks.md",
+      "check": 0
+    },
+    {
+      "clause": "a replay's rows reach only --out",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/bench_multi.py",
+    "_tools/benchmarks.py",
+    "kb/_self/tools.md",
+    "_tools/bench_report.py",
+    "kb/_self/reports/benchmarks.md",
+    "README.md"
+  ],
+  "depends_on": [
+    "ST-dj4bgo4s"
+  ],
+  "links": [
+    "kb/_self/tools.md",
+    "kb/_self/reports/research-repro.md",
+    "_tools/bench_repro.py",
+    "kb/_self/backlog.md",
+    "_tools/bench_report.py",
+    "kb/_self/reports/benchmarks.csv"
+  ],
+  "notes": "One record per run as bench_report's other sections: the generated tables, never hand-written numbers. The sprint is proven by a dry run: this story's check replays the mixed scenario at once and one at a time and records both into a temporary --out. Its second check, report --check, passes before the work by design: a guard that the new section keeps the report and README in step with the rows."
+}

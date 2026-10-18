@@ -1,0 +1,90 @@
+{
+  "id": "ST-xjtqwdtq",
+  "kind": "story",
+  "title": "The multi-agent scenarios are measured in paid runs as the operator sized them",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "sprint": "SP-3pvz2noj",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "once the operator answers the paid-run gate, the scenarios lookups, research and mixed run as answered, at once and with --sequential, with each knob run the answer keeps; multi check runs on each paid run and its failures are recorded as check_failures rows; multi record merges each run's rows and deltas into kb/_self/reports/benchmarks.csv; the report's multi section and README's figures are regenerated from those rows",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\n\nimport csv, sys\nm = [x for x in csv.DictReader(open(\"kb/_self/reports/benchmarks.csv\", encoding=\"utf-8\"))\n     if x[\"scenario\"] == \"multi\" and x[\"date\"] > \"2026-10-18\"]\ncases = {x[\"case\"] for x in m}\narms = {x[\"arm\"] for x in m}\nprint(sorted(cases), sorted(arms)[:20])\nassert {\"lookups\", \"research\", \"mixed\"} <= cases, cases\nassert any(a.startswith(\"concurrent\") for a in arms) and any(a.startswith(\"sequential\") for a in arms), arms\nassert any(a.startswith(\"delta\") for a in arms), arms\nassert any(x[\"metric\"] == \"check_failures\" for x in m), \"no fitness check result recorded\"\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "report",
+        "--check"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "once the operator answers the paid-run gate, the scenarios lookups, research and mixed run as answered, at once and with --sequential, with each knob run the answer keeps",
+      "check": 0
+    },
+    {
+      "clause": "multi check runs on each paid run and its failures are recorded as check_failures rows",
+      "check": 0
+    },
+    {
+      "clause": "multi record merges each run's rows and deltas into kb/_self/reports/benchmarks.csv",
+      "check": 0
+    },
+    {
+      "clause": "the report's multi section and README's figures are regenerated from those rows",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/benchmarks.csv",
+    "kb/_self/reports/benchmarks.md",
+    "README.md"
+  ],
+  "depends_on": [
+    "ST-y4z54l3q",
+    "ST-2hooit6y"
+  ],
+  "gates": [
+    {
+      "id": "spend",
+      "kind": "blocking",
+      "question": "Spend for the paid multi-agent runs; the operator answers this gate, an orchestrator leaves it open. Run as sized: 2 reps of 15 runs, 30 runs, about 157 USD, about 6 h one after another. Smaller sample: 1 rep of 12 runs without the Opus, reading-files and manager-session runs, about 58 USD, about 2.5 h. Estimated from the recorded rows' means at bench_core.PRICE (this item's notes) and printed again by multi run --dry-run before the runs.",
+      "options": [
+        "run as sized",
+        "run a smaller sample",
+        "do not run"
+      ],
+      "recommendation": "run a smaller sample",
+      "do": {
+        "run as sized": "ST-xjtqwdtq",
+        "run a smaller sample": "ST-xjtqwdtq",
+        "do not run": [
+          "python3",
+          "_tools/backlog.py",
+          "move",
+          "ST-xjtqwdtq",
+          "--sprint",
+          "none"
+        ]
+      },
+      "class": "design"
+    }
+  ],
+  "links": [
+    "kb/_self/tools.md",
+    "kb/_self/reports/research-repro.md",
+    "_tools/bench_repro.py",
+    "kb/_self/backlog.md",
+    "kb/_self/reports/benchmarks.csv",
+    "kb/public/claude/models.csv"
+  ],
+  "notes": "Sizing (kb/_self/backlog.md, Plan): no estimate from a dry run yet, since multi run --dry-run comes with SP-5y4ut64g; once it lands, the planner runs it with the answered flags and records here the command, run count, sequential runtime and spend before this sprint's start gate. Planning estimate (recorded rows' means at bench_core.PRICE), per rep: concurrent lookups 2.94 USD (20 questions x 0.147 Sonnet), research 8.48 (3 areas x 2.83), mixed 8.39 (2 areas, 2 code items x about 1.0, 5 questions); the sequential baseline the same 19.81; knob runs: dedup off 8.48, staggered start 2.94, Haiku lookups 0.17, Opus lookups 4.72, Haiku research about 1.0 (no recorded row), pack budget 600 and 2400 5.88, reading files about 4.41 (1.5x the kb arm, no recorded row), an orchestrator session as manager about 11.39 (mixed plus about 3, no recorded row): 78.61 USD and 15 runs per rep, about 2.9 h one after another (573 s per area, 28 s per question, about 900 s per code item, no recorded row). Run as sized: 2 reps, 30 runs, about 157 USD, about 6 h. Smaller sample: 1 rep without the Opus, reading-files and manager-session runs, 12 runs, about 58 USD, about 2.5 h. Caps: --max-usd per run at its estimate plus 25 percent; research agents at --area-usd 8 as repro."
+}
