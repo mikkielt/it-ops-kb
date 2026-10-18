@@ -26,5 +26,5 @@
   "links": [
     "parked: SP-v4yih547 review"
   ],
-  "notes": "SP-v4yih547 review: about 145k ops rows, 0.8 s per read; --json took 6.0 s for host, sprint and log and 7.7 s for kb against the 10 s default timeout on this host."
+  "notes": "SP-v4yih547 review: about 145k ops rows, 0.8 s per read; --json took 6.0 s for host, sprint and log and 7.7 s for kb against the 10 s default timeout on this host. BG-wyz54vd5 (2026-10-19): mon_base.snapshot now reads bl_stall.ops_rows once per snapshot for the kb, sessions, host, sprint and log panels (mon_base.OpsMemo), so this item's check passes (ops_rows calls 1) and its goal is met by that commit; close it as done once BG-wyz54vd5 lands."
 }
