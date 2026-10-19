@@ -90,7 +90,9 @@
         "git merge-tree and commit-tree, so the working tree and index are untouched (git 2.38 or later); branch contribute/REMOTE by default, reset when it exists; main and any checked-out branch refused": "ST-6c5xgv5a",
         "a temporary checkout and git cherry-pick, branch reset the same way": "ST-6c5xgv5a"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "git merge-tree and commit-tree, so the working tree and index are untouched (git 2.38 or later); branch contribute/REMOTE by default, reset when it exists; main and any checked-out branch refused",
+      "by": "operator"
     }
   ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): kbgit.py has no contribute command. Facts: public/gitlab/multi-repository-layouts.md (forks and visibility). ",
