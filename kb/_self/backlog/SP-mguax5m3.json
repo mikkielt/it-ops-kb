@@ -1,0 +1,22 @@
+{
+  "id": "SP-mguax5m3",
+  "kind": "sprint",
+  "title": "Writing to a team's remote root, and the plugin host's roots",
+  "status": "planned",
+  "goal": "kbroot.py push commits nothing it did not make, pushes a submodule root's commits to the root's own remote and then commits the superproject's gitlink bump, and refuses a fetch root as read-only; install-hooks sets push.recurseSubmodules=check so a superproject push that names an unpushed root commit is refused; in a plugin host fetch roots resolve into CLAUDE_PLUGIN_DATA/roots/<name>; kbroot.py fetch --hook, run at SessionStart, fetches stale fetch roots within a bounded time and prints only failures; the /kb-ingest skill writes a team's facts into its submodule root and pushes it with kbroot.py push",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

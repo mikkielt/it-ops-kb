@@ -1,0 +1,13 @@
+{
+  "id": "EP-eocmyqdx",
+  "kind": "epic",
+  "title": "An organization shares the kb across teams: roots in other repositories, private knowledge kept private, each change attributed",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A clone's roots are local directories or remote roots named by pointer files in kb/_roots/ (a submodule or a fetched clone, each pinned or following a branch, owned by a team); rag.py, kb_pack and the MCP server answer from the roots they can read and report the rest, so a team without access to a root still works; a team writes to its remote root and pushes it before the superproject moves; the publish guard and the leak scan know the internal roots of the registry, and kbgit.py contribute gives shared-root changes back without private names; commits carry a computed KB-Teams trailer, a shared coord server scopes keys by team and names each event's team and operator; the plugin host resolves fetch roots into its plugin data. Design: kb/_self/design.md, Teams and organizations; facts: public/gitlab/multi-repository-layouts.md, QK-team-roots-and-agent-identity.",
+  "relates_to": [
+    "EP-4fawjprq"
+  ],
+  "notes": "Run order: SP-s2svf5a6 (registry, tolerant resolution, fetch and submodule roots), SP-mguax5m3 (writing remote roots, plugin host), SP-qinvdomv (publish and leak guards, contribute), SP-46k7sw57 (team field, KB-Teams, team-scoped coord). Draft outside sprints: ST-jekvrrjp (query log delivery of rows naming an internal root; its gate g-ql is the operator's). Design: kb/_self/design.md, Teams and organizations. Facts: public/gitlab/multi-repository-layouts.md, public/gitlab/commit-signing-and-provenance.md (GitHub machine identities), public/agents/a2a-protocol.md (signed and extended cards), QK-team-roots-and-agent-identity in public/_answers.md. Relates to EP-4fawjprq: the plugin case (B3, B4) is one more host-project capability; its open bugs BG-cwitx4zn, BG-urlbsgsr and BG-cmvwrpbr are about the backlog tool in a host and are not changed here."
+}

@@ -1,0 +1,25 @@
+{
+  "id": "ST-rmlxvpok",
+  "kind": "story",
+  "title": "Research sprint goal: Private stays private: the publish guard and the leak scan know remote roots, and contribute gives shared changes back",
+  "status": "draft",
+  "sprint": "SP-qinvdomv",
+  "goal_research": true,
+  "priority": "P1",
+  "rank": 0,
+  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "researched",
+        "ST-rmlxvpok"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ],
+  "notes": "Open questions: (1) git cherry-pick and git rebase --onto for a branch rebuilt from selected commits; (2) a merge request from a fork into an upstream project on GitLab and a pull request on GitHub, and what the upstream sees of the fork's private history; (3) what git transfers of a submodule gitlink to a remote that cannot read the submodule."
+}

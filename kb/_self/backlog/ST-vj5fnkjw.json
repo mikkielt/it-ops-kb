@@ -1,0 +1,59 @@
+{
+  "id": "ST-vj5fnkjw",
+  "kind": "story",
+  "title": "coord.py serve scopes keys by team: key files <keys>/<team>/<operator>, team-named events and holders",
+  "status": "draft",
+  "parent": "EP-eocmyqdx",
+  "sprint": "SP-46k7sw57",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "coord.py serve reads key files as <keys>/<team>/<operator> beside flat <keys>/<operator> files; a caller's claim or put of a key under another team's team/<name>/ prefix is refused, exit 1, while its own team's keys and every other key stay open; events carry operator <team>/<operator> and a served claim's holder starts with it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, shutil, subprocess, tempfile, json\nT = tempfile.mkdtemp()\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_\", \"CLAUDE\"))}\nENV.update(GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\", KB_LIVE_DOCS=\"0\", KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"),\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\ndef run(*a, env=None, cwd=None):\n    return subprocess.run([sys.executable, *a], capture_output=True, text=True, env=env or ENV, cwd=cwd, timeout=300)\ndef art(root_dir, rel, title, fact, sid):\n    p = os.path.join(root_dir, rel); os.makedirs(os.path.dirname(p), exist_ok=True)\n    topic = rel[:-3]\n    open(p, \"w\").write(f\"---\\ntopic: {topic}\\npriority: P3\\napplies_to: \\\"x\\\"\\nretrieved_utc: 2026-10-19\\nsources: [{sid}]\\nstatus: complete\\n---\\n\\n# {title}\\n\\n## Summary\\n{fact}\\n\\n## Facts\\n- {fact} [DOC {sid}]\\n\\n## Reference\\n\\n## Examples\\n\")\ndef make_root(path, name, prefix, vis, sid, rel, title, fact):\n    os.makedirs(path, exist_ok=True)\n    open(os.path.join(path, \"_root.md\"), \"w\").write(f\"---\\nroot: {name}\\nid_prefix: {prefix}\\nvisibility: {vis}\\ndescription: {name}\\n---\\n\\n# {name}\\n\")\n    open(os.path.join(path, \"_sources.csv\"), \"w\").write(\"id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by\\n\"\n        f\"{sid},https://example.com/{name},{name} doc,Example,MIT,copy,2026-10-19,v1,,,\\n\")\n    art(path, rel, title, fact, sid)\n# C: a throwaway clone made of this checkout's tools and a planted kb with a public root\nC = os.path.join(T, \"clone\")\nshutil.copytree(\"_tools\", os.path.join(C, \"_tools\"), ignore=shutil.ignore_patterns(\"__pycache__\", \"*.pyc\", \"fixtures\"))\nmake_root(os.path.join(C, \"kb\", \"public\"), \"public\", \"S\", \"public\", \"S-aaaaaaaa\", \"planted/win32-packaging.md\", \"Win32 apps\",\n          \"Intune deploys Win32 apps packaged with the content prep tool\")\nos.makedirs(os.path.join(C, \"kb\", \"_self\"), exist_ok=True)\ng(\"init\", \"-q\", \"-b\", \"main\", C, cwd=T); g(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C)\n# O: a team's knowledge repository as a local bare repository\nTS, O = os.path.join(T, \"team-src\"), os.path.join(T, \"team-a.git\")\nmake_root(TS, \"team-a\", \"TA\", \"internal\", \"TA-aaaaaaaa\", \"mdm/enrolment.md\", \"Enrolment runbook\",\n          \"Team A enrols kiosks through the PL-SRV-0042 enrolment profile\")\ng(\"init\", \"-q\", \"-b\", \"main\", TS, cwd=T); g(\"add\", \"-A\", cwd=TS); g(\"commit\", \"-qm\", \"team\", cwd=TS)\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T); g(\"push\", \"-q\", O, \"main\", cwd=TS)\nTOOLS = os.path.join(C, \"_tools\")\ndef pointer(name, prefix, url, access=\"fetch\", vis=\"internal\", team=None, pin=\"\", ref=\"main\"):\n    os.makedirs(os.path.join(C, \"kb\", \"_roots\"), exist_ok=True)\n    open(os.path.join(C, \"kb\", \"_roots\", name + \".md\"), \"w\").write(\n        f\"---\\nroot: {name}\\nid_prefix: {prefix}\\nvisibility: {vis}\\nteam: {team or name}\\nurl: {url}\\nref: {ref}\\npin: {pin}\\naccess: {access}\\ndescription: {name}\\n---\\n\")\ndef team_commit(text, msg):\n    art(TS, \"mdm/enrolment.md\", \"Enrolment runbook\", text, \"TA-aaaaaaaa\")\n    g(\"commit\", \"-qam\", msg, cwd=TS); g(\"push\", \"-q\", O, \"main\", cwd=TS)\n    return g(\"rev-parse\", \"HEAD\", cwd=TS).strip()\nFILEOK = dict(ENV, GIT_CONFIG_COUNT=\"1\", GIT_CONFIG_KEY_0=\"protocol.file.allow\", GIT_CONFIG_VALUE_0=\"always\")\nPACK = lambda q, env=None: run(os.path.join(TOOLS, \"rag.py\"), \"pack\", q, env=env)\nKQ = \"team a enrols kiosks enrolment profile\"\n\nimport time\nK = os.path.join(T, \"keys\")\nfor rel, tok in ((\"team-a/jan\", \"tok-a-0123456789abcdef\"), (\"team-b/ola\", \"tok-b-0123456789abcdef\"), (\"solo\", \"tok-s-0123456789abcdef\")):\n    p = os.path.join(K, rel); os.makedirs(os.path.dirname(p), exist_ok=True); open(p, \"w\").write(tok + \"\\n\"); os.chmod(p, 0o600)\n    kf = os.path.join(T, rel.replace(\"/\", \"_\") + \".key\"); open(kf, \"w\").write(tok + \"\\n\"); os.chmod(kf, 0o600)\nS = os.path.join(T, \"served.sqlite\")\nP = subprocess.Popen([sys.executable, \"_tools/coord.py\", \"--store\", S, \"serve\", \"--bind\", \"127.0.0.1:0\", \"--keys\", K], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=ENV)\ntry:\n    url = P.stdout.readline().strip().split()[-1]\n    def c(key, *a):\n        r = run(\"_tools/coord.py\", \"--url\", url, \"--key-file\", os.path.join(T, key + \".key\"), *a)\n        return r.returncode, json.loads(r.stdout or \"{}\")\n    code, b = c(\"team-a_jan\", \"claim\", \"team/team-a/x\", \"--ttl\", \"60\", \"--holder\", \"w1\")\n    assert code == 0, (\"a team-a operator cannot claim its own team key\", code, b)\n    code, b = c(\"team-a_jan\", \"get\", \"team/team-a/x\")\n    assert b.get(\"holder\", \"\").startswith(\"team-a/jan\"), (\"the holder does not name team and operator\", b)\n    code, b = c(\"team-b_ola\", \"claim\", \"team/team-a/y\", \"--ttl\", \"60\")\n    assert code == 1, (\"a team-b operator may claim a team-a key\", code, b)\n    code, b = c(\"team-b_ola\", \"claim\", \"research:public/planted/win32-packaging:ime\", \"--ttl\", \"60\")\n    assert code == 0, (\"a shared key is refused\", code, b)\n    code, b = c(\"solo\", \"claim\", \"research:public/x:y\", \"--ttl\", \"60\")\n    assert code == 0, (\"a flat key file no longer works\", code, b)\n    code, b = c(\"team-a_jan\", \"post\", \"--kind\", \"heartbeat\", \"--field\", \"item=ST-aaaaaaaa\")\n    code, b = c(\"team-a_jan\", \"wait\", \"--since\", \"0\", \"--timeout\", \"1\")\n    ops = [e.get(\"fields\", e).get(\"operator\") for e in b.get(\"events\", [])]\n    assert \"team-a/jan\" in ops, (\"events do not carry operator team-a/jan\", b)\nfinally:\n    P.kill()\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "coord.py serve reads key files as <keys>/<team>/<operator> beside flat <keys>/<operator> files",
+      "check": 0
+    },
+    {
+      "clause": "a caller's claim or put of a key under another team's team/<name>/ prefix is refused, exit 1, while its own team's keys and every other key stay open",
+      "check": 0
+    },
+    {
+      "clause": "events carry operator <team>/<operator> and a served claim's holder starts with it",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/coord.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "gates": [
+    {
+      "id": "g-scope",
+      "kind": "blocking",
+      "question": "How does a shared coord server keep teams apart?",
+      "options": [
+        "key files <keys>/<team>/<operator>; a caller writes keys under team/<its team>/ and shared keys, never under another team's team/<name>/; events and holders carry <team>/<operator>; flat key files keep working as operators with no team",
+        "one server per team only: no code change, documented in tools.md"
+      ],
+      "recommendation": "key files <keys>/<team>/<operator>; a caller writes keys under team/<its team>/ and shared keys, never under another team's team/<name>/; events and holders carry <team>/<operator>; flat key files keep working as operators with no team",
+      "do": {
+        "key files <keys>/<team>/<operator>; a caller writes keys under team/<its team>/ and shared keys, never under another team's team/<name>/; events and holders carry <team>/<operator>; flat key files keep working as operators with no team": "ST-vj5fnkjw",
+        "one server per team only: no code change, documented in tools.md": "ST-vj5fnkjw"
+      },
+      "class": "design",
+      "answer": "key files <keys>/<team>/<operator>; a caller writes keys under team/<its team>/ and shared keys, never under another team's team/<name>/; events and holders carry <team>/<operator>; flat key files keep working as operators with no team",
+      "by": "operator"
+    }
+  ],
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): a key file in a subdirectory of --keys is not read, so its caller gets 401 (exit 2). "
+}

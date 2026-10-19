@@ -1,0 +1,43 @@
+{
+  "id": "ST-jekvrrjp",
+  "kind": "story",
+  "title": "A query log row that names an internal root is delivered only as the operator's answer says",
+  "status": "draft",
+  "parent": "EP-eocmyqdx",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The query log's delivery reads the qualified paths a row already holds and, for a row naming an internal root, does what gate g-ql answers; no recorded field is added or removed",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0, '_tools'); import ql_deliver; assert hasattr(ql_deliver, 'internal_root_rows'), 'no internal_root_rows in ql_deliver'"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_deliver.py",
+    "kb/_self/querylog.md"
+  ],
+  "gates": [
+    {
+      "id": "g-ql",
+      "kind": "blocking",
+      "question": "Is a query log row whose pack or paths name an internal root delivered to the shared store?",
+      "options": [
+        "kept in the local spool and never delivered to the shared store",
+        "delivered to the shared store as today",
+        "delivered to the internal root's own repository"
+      ],
+      "recommendation": "kept in the local spool and never delivered to the shared store",
+      "do": {
+        "kept in the local spool and never delivered to the shared store": "ST-jekvrrjp",
+        "delivered to the shared store as today": "ST-jekvrrjp",
+        "delivered to the internal root's own repository": "ST-jekvrrjp"
+      },
+      "class": "querylog"
+    }
+  ],
+  "notes": "Draft, outside any sprint: what the query log delivers is the operator's call (query-log recording), so gate g-ql stays open for the operator. The rows already hold qualified paths (<root>/<path>), so no new field is needed. The check is a placeholder to replace when the item is planned into a sprint: a planted spool with one row naming an internal root and one naming public, run through the delivery's dry run. Design: kb/_self/design.md, Teams and organizations."
+}

@@ -1,0 +1,25 @@
+{
+  "id": "ST-wqmekh3d",
+  "kind": "story",
+  "title": "Research sprint goal: Roots in other repositories: pointer files in kb/_roots, fetched or submodule roots, a missing root reported and never fatal",
+  "status": "draft",
+  "sprint": "SP-s2svf5a6",
+  "goal_research": true,
+  "priority": "P1",
+  "rank": 0,
+  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "researched",
+        "ST-wqmekh3d"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ],
+  "notes": "Open questions (kb first: public/gitlab/multi-repository-layouts.md; then live docs): (1) GIT_TERMINAL_PROMPT and credential helpers: how a tool's git clone fails at once instead of prompting, on macOS, Linux and Git for Windows; (2) git submodule status and git config --file .gitmodules output forms a tool reads; (3) what git submodule update prints and exits with on an HTTP 401/403 or SSH denial (gap in multi-repository-layouts); (4) Windows: path length and case rules for _cache/roots/<name> and kb/<name> submodules."
+}

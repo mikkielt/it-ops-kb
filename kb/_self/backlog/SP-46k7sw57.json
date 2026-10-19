@@ -1,0 +1,22 @@
+{
+  "id": "SP-46k7sw57",
+  "kind": "sprint",
+  "title": "Each change names its team and operator: a team field, the KB-Teams trailer, team-scoped coord",
+  "status": "planned",
+  "goal": "A root's _root.md or pointer names its owning team, which check.py validates and kbroot.py list and kb_status show; the commit hook adds a computed KB-Teams trailer for the roots a commit changes and check-trailers accepts it; coord.py serve reads key files as <keys>/<team>/<operator>, stamps events and claim holders with <team>/<operator> and refuses a caller's write under another team's team/<name>/ keys; plugin.md says which identity a person, a headless runner and a fetch root use",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

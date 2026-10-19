@@ -1,0 +1,56 @@
+{
+  "id": "ST-vruwai2i",
+  "kind": "story",
+  "title": "kbgit.py publish refuses an internal root's pointer file and the gitlink of an internal root",
+  "status": "draft",
+  "parent": "EP-eocmyqdx",
+  "sprint": "SP-qinvdomv",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbgit.py publish (and --dry-run) refuses a commit that adds or changes kb/_roots/<name>.md of a root whose pointer says visibility internal, and one that adds or moves the gitlink of such a root, naming each path; a public root's pointer is not refused; _tools/test_publish_e2e.py gains at most one planted-failure case for it and passes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, shutil, subprocess, tempfile, json\nT = tempfile.mkdtemp()\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_\", \"CLAUDE\"))}\nENV.update(GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\", KB_LIVE_DOCS=\"0\", KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"),\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\ndef run(*a, env=None, cwd=None):\n    return subprocess.run([sys.executable, *a], capture_output=True, text=True, env=env or ENV, cwd=cwd, timeout=300)\ndef art(root_dir, rel, title, fact, sid):\n    p = os.path.join(root_dir, rel); os.makedirs(os.path.dirname(p), exist_ok=True)\n    topic = rel[:-3]\n    open(p, \"w\").write(f\"---\\ntopic: {topic}\\npriority: P3\\napplies_to: \\\"x\\\"\\nretrieved_utc: 2026-10-19\\nsources: [{sid}]\\nstatus: complete\\n---\\n\\n# {title}\\n\\n## Summary\\n{fact}\\n\\n## Facts\\n- {fact} [DOC {sid}]\\n\\n## Reference\\n\\n## Examples\\n\")\ndef make_root(path, name, prefix, vis, sid, rel, title, fact):\n    os.makedirs(path, exist_ok=True)\n    open(os.path.join(path, \"_root.md\"), \"w\").write(f\"---\\nroot: {name}\\nid_prefix: {prefix}\\nvisibility: {vis}\\ndescription: {name}\\n---\\n\\n# {name}\\n\")\n    open(os.path.join(path, \"_sources.csv\"), \"w\").write(\"id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by\\n\"\n        f\"{sid},https://example.com/{name},{name} doc,Example,MIT,copy,2026-10-19,v1,,,\\n\")\n    art(path, rel, title, fact, sid)\n# C: a throwaway clone made of this checkout's tools and a planted kb with a public root\nC = os.path.join(T, \"clone\")\nshutil.copytree(\"_tools\", os.path.join(C, \"_tools\"), ignore=shutil.ignore_patterns(\"__pycache__\", \"*.pyc\", \"fixtures\"))\nmake_root(os.path.join(C, \"kb\", \"public\"), \"public\", \"S\", \"public\", \"S-aaaaaaaa\", \"planted/win32-packaging.md\", \"Win32 apps\",\n          \"Intune deploys Win32 apps packaged with the content prep tool\")\nos.makedirs(os.path.join(C, \"kb\", \"_self\"), exist_ok=True)\ng(\"init\", \"-q\", \"-b\", \"main\", C, cwd=T); g(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C)\n# O: a team's knowledge repository as a local bare repository\nTS, O = os.path.join(T, \"team-src\"), os.path.join(T, \"team-a.git\")\nmake_root(TS, \"team-a\", \"TA\", \"internal\", \"TA-aaaaaaaa\", \"mdm/enrolment.md\", \"Enrolment runbook\",\n          \"Team A enrols kiosks through the PL-SRV-0042 enrolment profile\")\ng(\"init\", \"-q\", \"-b\", \"main\", TS, cwd=T); g(\"add\", \"-A\", cwd=TS); g(\"commit\", \"-qm\", \"team\", cwd=TS)\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T); g(\"push\", \"-q\", O, \"main\", cwd=TS)\nTOOLS = os.path.join(C, \"_tools\")\ndef pointer(name, prefix, url, access=\"fetch\", vis=\"internal\", team=None, pin=\"\", ref=\"main\"):\n    os.makedirs(os.path.join(C, \"kb\", \"_roots\"), exist_ok=True)\n    open(os.path.join(C, \"kb\", \"_roots\", name + \".md\"), \"w\").write(\n        f\"---\\nroot: {name}\\nid_prefix: {prefix}\\nvisibility: {vis}\\nteam: {team or name}\\nurl: {url}\\nref: {ref}\\npin: {pin}\\naccess: {access}\\ndescription: {name}\\n---\\n\")\ndef team_commit(text, msg):\n    art(TS, \"mdm/enrolment.md\", \"Enrolment runbook\", text, \"TA-aaaaaaaa\")\n    g(\"commit\", \"-qam\", msg, cwd=TS); g(\"push\", \"-q\", O, \"main\", cwd=TS)\n    return g(\"rev-parse\", \"HEAD\", cwd=TS).strip()\nFILEOK = dict(ENV, GIT_CONFIG_COUNT=\"1\", GIT_CONFIG_KEY_0=\"protocol.file.allow\", GIT_CONFIG_VALUE_0=\"always\")\nPACK = lambda q, env=None: run(os.path.join(TOOLS, \"rag.py\"), \"pack\", q, env=env)\nKQ = \"team a enrols kiosks enrolment profile\"\n\nINT, PUB = os.path.join(T, \"int.git\"), os.path.join(T, \"pub.git\")\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", INT, cwd=T); g(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", PUB, cwd=T)\ng(\"remote\", \"add\", \"origin\", INT, cwd=C); g(\"remote\", \"add\", \"pub\", PUB, cwd=C); g(\"config\", \"kb.publishRemote\", \"pub\", cwd=C)\npointer(\"team-a\", \"TA\", \"https://kb.team-a.test/team-a/kb.git\")\npointer(\"shared-b\", \"SB\", \"https://kb.shared.test/b/kb.git\", vis=\"public\")\nsubprocess.run([\"git\", \"submodule\", \"add\", \"-q\", O, \"kb/team-c\"], cwd=C, env=FILEOK, check=True, capture_output=True)\npointer(\"team-c\", \"TC\", O, access=\"submodule\")\ng(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"pointers\", cwd=C); g(\"push\", \"-q\", \"origin\", \"main\", cwd=C)\nr = run(os.path.join(TOOLS, \"kbgit.py\"), \"publish\", \"--dry-run\", cwd=C); out = r.stdout + r.stderr\nassert r.returncode == 1 and \"kb/_roots/team-a.md\" in out, (\"publish does not refuse an internal pointer file\", out[-900:])\nassert any(\"kb/team-c\" in l and \"kb/_roots/team-c.md\" not in l for l in out.splitlines()), (\"publish does not refuse the gitlink of an internal root\", out[-900:])\nassert \"kb/_roots/shared-b.md\" not in out, (\"publish refuses a public root's pointer\", out[-900:])\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_publish_e2e.py"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbgit.py publish (and --dry-run) refuses a commit that adds or changes kb/_roots/<name>.md of a root whose pointer says visibility internal",
+      "check": 0
+    },
+    {
+      "clause": "one that adds or moves the gitlink of such a root, naming each path",
+      "check": 0
+    },
+    {
+      "clause": "a public root's pointer is not refused",
+      "check": 0
+    },
+    {
+      "clause": "_tools/test_publish_e2e.py gains at most one planted-failure case for it and passes",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/kbpublic.py",
+    "_tools/test_publish_e2e.py",
+    "kb/_self/git.md",
+    "kb/_self/code.md",
+    "kb/_roots/**"
+  ],
+  "depends_on": [
+    "ST-pdtcxbap"
+  ],
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): publish --dry-run in a planted clone with an internal pointer and an internal submodule root refuses only for the CI verdict. A publish guard is a critical component: one planted-failure case in the existing test file. "
+}

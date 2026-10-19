@@ -1,0 +1,40 @@
+{
+  "id": "ST-swyzul5z",
+  "kind": "story",
+  "title": "The kb-add-root skill offers a remote root: add-remote, the access method and fetch",
+  "status": "draft",
+  "parent": "EP-eocmyqdx",
+  "sprint": "SP-s2svf5a6",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The kb-add-root skill asks where a new root is kept (a directory here, a fetch root or a submodule root in the team's own repository) and runs kbroot.py add-remote and kbroot.py fetch for a remote one; plugin.md section 6 says the same",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, shutil, subprocess, tempfile, json\nT = tempfile.mkdtemp()\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_\", \"CLAUDE\"))}\nENV.update(GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\", KB_LIVE_DOCS=\"0\", KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"),\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\ndef run(*a, env=None, cwd=None):\n    return subprocess.run([sys.executable, *a], capture_output=True, text=True, env=env or ENV, cwd=cwd, timeout=300)\ndef art(root_dir, rel, title, fact, sid):\n    p = os.path.join(root_dir, rel); os.makedirs(os.path.dirname(p), exist_ok=True)\n    topic = rel[:-3]\n    open(p, \"w\").write(f\"---\\ntopic: {topic}\\npriority: P3\\napplies_to: \\\"x\\\"\\nretrieved_utc: 2026-10-19\\nsources: [{sid}]\\nstatus: complete\\n---\\n\\n# {title}\\n\\n## Summary\\n{fact}\\n\\n## Facts\\n- {fact} [DOC {sid}]\\n\\n## Reference\\n\\n## Examples\\n\")\ndef make_root(path, name, prefix, vis, sid, rel, title, fact):\n    os.makedirs(path, exist_ok=True)\n    open(os.path.join(path, \"_root.md\"), \"w\").write(f\"---\\nroot: {name}\\nid_prefix: {prefix}\\nvisibility: {vis}\\ndescription: {name}\\n---\\n\\n# {name}\\n\")\n    open(os.path.join(path, \"_sources.csv\"), \"w\").write(\"id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by\\n\"\n        f\"{sid},https://example.com/{name},{name} doc,Example,MIT,copy,2026-10-19,v1,,,\\n\")\n    art(path, rel, title, fact, sid)\n# C: a throwaway clone made of this checkout's tools and a planted kb with a public root\nC = os.path.join(T, \"clone\")\nshutil.copytree(\"_tools\", os.path.join(C, \"_tools\"), ignore=shutil.ignore_patterns(\"__pycache__\", \"*.pyc\", \"fixtures\"))\nmake_root(os.path.join(C, \"kb\", \"public\"), \"public\", \"S\", \"public\", \"S-aaaaaaaa\", \"planted/win32-packaging.md\", \"Win32 apps\",\n          \"Intune deploys Win32 apps packaged with the content prep tool\")\nos.makedirs(os.path.join(C, \"kb\", \"_self\"), exist_ok=True)\ng(\"init\", \"-q\", \"-b\", \"main\", C, cwd=T); g(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C)\n# O: a team's knowledge repository as a local bare repository\nTS, O = os.path.join(T, \"team-src\"), os.path.join(T, \"team-a.git\")\nmake_root(TS, \"team-a\", \"TA\", \"internal\", \"TA-aaaaaaaa\", \"mdm/enrolment.md\", \"Enrolment runbook\",\n          \"Team A enrols kiosks through the PL-SRV-0042 enrolment profile\")\ng(\"init\", \"-q\", \"-b\", \"main\", TS, cwd=T); g(\"add\", \"-A\", cwd=TS); g(\"commit\", \"-qm\", \"team\", cwd=TS)\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T); g(\"push\", \"-q\", O, \"main\", cwd=TS)\nTOOLS = os.path.join(C, \"_tools\")\ndef pointer(name, prefix, url, access=\"fetch\", vis=\"internal\", team=None, pin=\"\", ref=\"main\"):\n    os.makedirs(os.path.join(C, \"kb\", \"_roots\"), exist_ok=True)\n    open(os.path.join(C, \"kb\", \"_roots\", name + \".md\"), \"w\").write(\n        f\"---\\nroot: {name}\\nid_prefix: {prefix}\\nvisibility: {vis}\\nteam: {team or name}\\nurl: {url}\\nref: {ref}\\npin: {pin}\\naccess: {access}\\ndescription: {name}\\n---\\n\")\ndef team_commit(text, msg):\n    art(TS, \"mdm/enrolment.md\", \"Enrolment runbook\", text, \"TA-aaaaaaaa\")\n    g(\"commit\", \"-qam\", msg, cwd=TS); g(\"push\", \"-q\", O, \"main\", cwd=TS)\n    return g(\"rev-parse\", \"HEAD\", cwd=TS).strip()\nFILEOK = dict(ENV, GIT_CONFIG_COUNT=\"1\", GIT_CONFIG_KEY_0=\"protocol.file.allow\", GIT_CONFIG_VALUE_0=\"always\")\nPACK = lambda q, env=None: run(os.path.join(TOOLS, \"rag.py\"), \"pack\", q, env=env)\nKQ = \"team a enrols kiosks enrolment profile\"\n\ns = open(\".claude/skills/kb-add-root/SKILL.md\", encoding=\"utf-8\").read()\nfor w in (\"kbroot.py add-remote\", \"kbroot.py fetch\", \"--access\"):\n    assert w in s, (\"the kb-add-root skill does not name\", w)\nr = run(\"_tools/kbroot.py\", \"add-remote\", \"-h\"); assert r.returncode == 0 and \"--access\" in r.stdout, (\"kbroot.py add-remote -h\", r.returncode)\nr = run(\"_tools/kbroot.py\", \"fetch\", \"-h\"); assert r.returncode == 0 and \"--pin\" in r.stdout, (\"kbroot.py fetch -h\", r.returncode)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "The kb-add-root skill asks where a new root is kept (a directory here, a fetch root or a submodule root in the team's own repository) and runs kbroot.py add-remote and kbroot.py fetch for a remote one",
+      "check": 0
+    },
+    {
+      "clause": "plugin.md section 6 says the same",
+      "check": 0
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-add-root/SKILL.md",
+    "kb/_self/plugin.md",
+    "kb/_self/maintaining.md",
+    "AGENTS.md"
+  ],
+  "depends_on": [
+    "ST-pdtcxbap"
+  ],
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): the skill knows only kbroot.py add. "
+}

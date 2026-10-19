@@ -1,0 +1,22 @@
+{
+  "id": "SP-qinvdomv",
+  "kind": "sprint",
+  "title": "Private stays private: the publish guard and the leak scan know remote roots, and contribute gives shared changes back",
+  "status": "planned",
+  "goal": "kbgit.py publish refuses an internal root's pointer file and the gitlink of an internal root; the tracked-file leak scan refuses an internal root's source ids, its pointer url host and its qualified paths in public roots, the tools and the docs; kbgit.py contribute builds a local branch at the upstream main with only the commits that touch shared roots or tools and hold none of the private names, names each commit it left out and why, and pushes nothing; the /kb-add-root skill and plugin.md's contributing steps name contribute",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

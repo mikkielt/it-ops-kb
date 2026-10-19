@@ -1,0 +1,25 @@
+{
+  "id": "ST-jtqn3d7f",
+  "kind": "story",
+  "title": "Research sprint goal: Writing to a team's remote root, and the plugin host's roots",
+  "status": "draft",
+  "sprint": "SP-mguax5m3",
+  "goal_research": true,
+  "priority": "P1",
+  "rank": 0,
+  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "researched",
+        "ST-jtqn3d7f"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ],
+  "notes": "Open questions: (1) git push.recurseSubmodules check and on-demand semantics (git-config, git-push at v2.55.0); (2) what Claude Code does with a marketplace repository holding a submodule a user cannot read, and whether CLAUDE_PLUGIN_DATA survives plugin updates (claude/plugins.md); (3) SessionStart hook timeouts and async hooks (claude/hooks.md); (4) git clone --filter for a fetch root on GitLab and GitHub."
+}

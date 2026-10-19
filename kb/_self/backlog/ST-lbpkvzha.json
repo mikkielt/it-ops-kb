@@ -1,0 +1,25 @@
+{
+  "id": "ST-lbpkvzha",
+  "kind": "story",
+  "title": "Research sprint goal: Each change names its team and operator: a team field, the KB-Teams trailer, team-scoped coord",
+  "status": "draft",
+  "sprint": "SP-46k7sw57",
+  "goal_research": true,
+  "priority": "P1",
+  "rank": 0,
+  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "researched",
+        "ST-lbpkvzha"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ],
+  "notes": "Open questions: (1) git interpret-trailers configuration for a computed trailer (trailer.<key>.*); (2) bearer key files and scopes in MCP authorization and OAuth (mcp/authorization.md) as a model for team scopes in coord; (3) the author and committer a GitHub App installation token gives a commit pushed over git (gap in commit-signing-and-provenance)."
+}

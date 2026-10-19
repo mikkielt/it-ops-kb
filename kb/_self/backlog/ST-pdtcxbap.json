@@ -1,0 +1,49 @@
+{
+  "id": "ST-pdtcxbap",
+  "kind": "story",
+  "title": "kbroot.py add-remote --access submodule checks a root out as a git submodule, and a clone without it lists the root as missing",
+  "status": "draft",
+  "parent": "EP-eocmyqdx",
+  "sprint": "SP-s2svf5a6",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbroot.py add-remote --access submodule runs git submodule add at kb/<name> and writes its pointer; the lookups serve a checked-out submodule root; in a clone whose submodule is not initialised kbroot.py list shows the root missing with a submodule reason; a reader who cannot clone the submodule still runs rag.py pack on the other roots",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, shutil, subprocess, tempfile, json\nT = tempfile.mkdtemp()\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_\", \"CLAUDE\"))}\nENV.update(GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\", KB_LIVE_DOCS=\"0\", KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"),\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\ndef run(*a, env=None, cwd=None):\n    return subprocess.run([sys.executable, *a], capture_output=True, text=True, env=env or ENV, cwd=cwd, timeout=300)\ndef art(root_dir, rel, title, fact, sid):\n    p = os.path.join(root_dir, rel); os.makedirs(os.path.dirname(p), exist_ok=True)\n    topic = rel[:-3]\n    open(p, \"w\").write(f\"---\\ntopic: {topic}\\npriority: P3\\napplies_to: \\\"x\\\"\\nretrieved_utc: 2026-10-19\\nsources: [{sid}]\\nstatus: complete\\n---\\n\\n# {title}\\n\\n## Summary\\n{fact}\\n\\n## Facts\\n- {fact} [DOC {sid}]\\n\\n## Reference\\n\\n## Examples\\n\")\ndef make_root(path, name, prefix, vis, sid, rel, title, fact):\n    os.makedirs(path, exist_ok=True)\n    open(os.path.join(path, \"_root.md\"), \"w\").write(f\"---\\nroot: {name}\\nid_prefix: {prefix}\\nvisibility: {vis}\\ndescription: {name}\\n---\\n\\n# {name}\\n\")\n    open(os.path.join(path, \"_sources.csv\"), \"w\").write(\"id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by\\n\"\n        f\"{sid},https://example.com/{name},{name} doc,Example,MIT,copy,2026-10-19,v1,,,\\n\")\n    art(path, rel, title, fact, sid)\n# C: a throwaway clone made of this checkout's tools and a planted kb with a public root\nC = os.path.join(T, \"clone\")\nshutil.copytree(\"_tools\", os.path.join(C, \"_tools\"), ignore=shutil.ignore_patterns(\"__pycache__\", \"*.pyc\", \"fixtures\"))\nmake_root(os.path.join(C, \"kb\", \"public\"), \"public\", \"S\", \"public\", \"S-aaaaaaaa\", \"planted/win32-packaging.md\", \"Win32 apps\",\n          \"Intune deploys Win32 apps packaged with the content prep tool\")\nos.makedirs(os.path.join(C, \"kb\", \"_self\"), exist_ok=True)\ng(\"init\", \"-q\", \"-b\", \"main\", C, cwd=T); g(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C)\n# O: a team's knowledge repository as a local bare repository\nTS, O = os.path.join(T, \"team-src\"), os.path.join(T, \"team-a.git\")\nmake_root(TS, \"team-a\", \"TA\", \"internal\", \"TA-aaaaaaaa\", \"mdm/enrolment.md\", \"Enrolment runbook\",\n          \"Team A enrols kiosks through the PL-SRV-0042 enrolment profile\")\ng(\"init\", \"-q\", \"-b\", \"main\", TS, cwd=T); g(\"add\", \"-A\", cwd=TS); g(\"commit\", \"-qm\", \"team\", cwd=TS)\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T); g(\"push\", \"-q\", O, \"main\", cwd=TS)\nTOOLS = os.path.join(C, \"_tools\")\ndef pointer(name, prefix, url, access=\"fetch\", vis=\"internal\", team=None, pin=\"\", ref=\"main\"):\n    os.makedirs(os.path.join(C, \"kb\", \"_roots\"), exist_ok=True)\n    open(os.path.join(C, \"kb\", \"_roots\", name + \".md\"), \"w\").write(\n        f\"---\\nroot: {name}\\nid_prefix: {prefix}\\nvisibility: {vis}\\nteam: {team or name}\\nurl: {url}\\nref: {ref}\\npin: {pin}\\naccess: {access}\\ndescription: {name}\\n---\\n\")\ndef team_commit(text, msg):\n    art(TS, \"mdm/enrolment.md\", \"Enrolment runbook\", text, \"TA-aaaaaaaa\")\n    g(\"commit\", \"-qam\", msg, cwd=TS); g(\"push\", \"-q\", O, \"main\", cwd=TS)\n    return g(\"rev-parse\", \"HEAD\", cwd=TS).strip()\nFILEOK = dict(ENV, GIT_CONFIG_COUNT=\"1\", GIT_CONFIG_KEY_0=\"protocol.file.allow\", GIT_CONFIG_VALUE_0=\"always\")\nPACK = lambda q, env=None: run(os.path.join(TOOLS, \"rag.py\"), \"pack\", q, env=env)\nKQ = \"team a enrols kiosks enrolment profile\"\n\nr = run(os.path.join(TOOLS, \"kbroot.py\"), \"add-remote\", \"team-a\", \"--url\", O, \"--prefix\", \"TA\", \"--team\", \"team-a\", \"--access\", \"submodule\", env=FILEOK, cwd=C)\nassert r.returncode == 0 and os.path.isfile(os.path.join(C, \"kb\", \"team-a\", \"_root.md\")), (\"add-remote --access submodule did not check the root out at kb/team-a\", r.returncode, r.stderr[-400:])\nassert \"kb/team-a\" in open(os.path.join(C, \".gitmodules\")).read(), \"no .gitmodules entry\"\nr = PACK(KQ); assert \"team-a/mdm/enrolment.md\" in r.stdout, (\"pack does not serve the submodule root\", r.stdout[-400:])\ng(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"team-a root\", cwd=C)\nSUP = os.path.join(T, \"sup.git\"); g(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", SUP, cwd=T); g(\"push\", \"-q\", SUP, \"main\", cwd=C)\nC2 = os.path.join(T, \"reader\"); g(\"clone\", \"-q\", SUP, C2, cwd=T)\nr = run(os.path.join(C2, \"_tools\", \"kbroot.py\"), \"list\")\nline = [l for l in r.stdout.splitlines() if l.startswith(\"team-a\")]\nassert r.returncode == 0 and line and \"missing\" in line[0] and \"submodule\" in line[0], (\"an uninitialised submodule root is not missing with its reason\", r.stdout)\nos.rename(O, O + \".gone\")\nsubprocess.run([\"git\", \"submodule\", \"update\", \"--init\"], cwd=C2, env=FILEOK, capture_output=True)\nr = run(os.path.join(C2, \"_tools\", \"rag.py\"), \"pack\", \"intune win32 apps content prep tool\")\nassert r.returncode == 0 and \"public/planted/win32-packaging.md\" in r.stdout, (\"a reader without access to the submodule root cannot use the public root\", r.returncode, r.stderr[-300:])\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbroot.py add-remote --access submodule runs git submodule add at kb/<name> and writes its pointer",
+      "check": 0
+    },
+    {
+      "clause": "the lookups serve a checked-out submodule root",
+      "check": 0
+    },
+    {
+      "clause": "in a clone whose submodule is not initialised kbroot.py list shows the root missing with a submodule reason",
+      "check": 0
+    },
+    {
+      "clause": "a reader who cannot clone the submodule still runs rag.py pack on the other roots",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/kbroot.py",
+    "_tools/kbcommon.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/plugin.md"
+  ],
+  "depends_on": [
+    "ST-5dd64ykv"
+  ],
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): no add-remote. Facts: public/gitlab/multi-repository-layouts.md (a superproject clone exits 0 while git submodule update --init exits 1 for an unreachable root; a local-path submodule needs protocol.file.allow=always, which the check sets through GIT_CONFIG_COUNT). "
+}
