@@ -2,7 +2,7 @@
   "id": "BG-lgjpfifx",
   "kind": "bug",
   "title": "The report's multi table leaves out the check_failures metric that multi record writes",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3pvz2noj",
   "priority": "P2",
   "rank": 0,
@@ -43,5 +43,18 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "orch-r32"
+  "evidence": {
+    "commit": "5c8a147253db3a4c78c989bb62d2077f9cc5b992",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, '_tools'); import bench_report; assert 'check_failures' in bench_report.MULTI_METRICS"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
