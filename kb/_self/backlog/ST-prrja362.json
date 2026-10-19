@@ -4,6 +4,7 @@
   "title": "multi check refuses a run whose canaries, coord store or output it cannot read instead of passing it",
   "status": "draft",
   "parent": "EP-giqleoy2",
+  "sprint": "SP-p46hofrg",
   "priority": "P2",
   "rank": 0,
   "goal": "multi check --dir DIR exits 2 naming what it could not read when an agent's canary file, the coord store or the output logs are missing, so a moved or cleaned sandbox is not passed vacuously",

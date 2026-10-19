@@ -1,0 +1,53 @@
+{
+  "id": "ST-kx6qdtkv",
+  "kind": "story",
+  "title": "multi run coord: a structured-coordination scenario of overlapping work, a refused claim and an answered ask, measured under coord shared against isolated",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "sprint": "SP-p46hofrg",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "multi run coord runs a scenario whose inputs in kb/_self/reports/multi_bench.csv give two code agents the same item, two research agents overlapping topics and one agent a question it asks another through kbask.py ask, which the other answers with kbask.py answer; its --dry-run names the shared item, the overlapping topics and the asking and asked agents under --coord shared and --coord isolated; and multi record writes for each run claims, claim_refused, conflicts_resolved, asks_answered, dup_facts, dup_commits and wasted_tokens, the tokens of an agent whose claim was refused or whose work another agent had already done",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport re, subprocess, sys\nfor co in (\"shared\", \"isolated\"):\n    r = subprocess.run([sys.executable, \"_tools/benchmarks.py\", \"multi\", \"run\", \"coord\", \"--dry-run\", \"--coord\", co], capture_output=True, text=True)\n    assert r.returncode == 0, (\"multi run coord --dry-run --coord\", co, r.returncode, (r.stdout + r.stderr)[-300:])\n    items = re.findall(r\"^agent \\S+: code, .*?item (\\S+)\", r.stdout, re.M)\n    assert len(items) >= 2 and len(set(items)) == 1, (\"no two code agents share one item\", co, items)\n    areas = re.findall(r\"^agent \\S+: research, .*?area (\\S+)\", r.stdout, re.M)\n    assert len(areas) >= 2, (\"fewer than two research agents\", co, areas)\n    assert \"kbask\" in r.stdout and re.search(r\"\\bask\", r.stdout), (\"the dry run names no agent that asks another\", co)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport csv, os, shutil, subprocess, sys, tempfile\nT = tempfile.mkdtemp(); d = os.path.join(T, \"m\"); out = os.path.join(T, \"b.csv\")\ndef bench(*a):\n    return subprocess.run([sys.executable, \"_tools/benchmarks.py\", *a], capture_output=True, text=True, timeout=1800)\ntry:\n    r = bench(\"multi\", \"run\", \"coord\", \"--replay\", \"--dir\", d)\n    assert r.returncode == 0, (\"multi run coord --replay\", r.returncode, (r.stdout + r.stderr)[-300:])\n    r = bench(\"multi\", \"record\", \"--dir\", d, \"--out\", out)\n    assert r.returncode == 0, (\"multi record\", (r.stdout + r.stderr)[-300:])\n    m = {row[\"metric\"] for row in csv.DictReader(open(out, encoding=\"utf-8\")) if row[\"case\"] == \"coord\"}\n    miss = {\"claims\", \"claim_refused\", \"conflicts_resolved\", \"asks_answered\", \"dup_facts\", \"dup_commits\", \"wasted_tokens\"} - m\n    assert not miss, (\"multi record writes no coord row of\", sorted(miss))\nfinally:\n    bench(\"multi\", \"remove\", \"--dir\", d)\n    shutil.rmtree(T, ignore_errors=True)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "multi run coord runs a scenario whose inputs in kb/_self/reports/multi_bench.csv give two code agents the same item, two research agents overlapping topics and one agent a question it asks another through kbask.py ask, which the other answers with kbask.py answer",
+      "check": 0
+    },
+    {
+      "clause": "its --dry-run names the shared item, the overlapping topics and the asking and asked agents under --coord shared and --coord isolated",
+      "check": 0
+    },
+    {
+      "clause": "and multi record writes for each run claims, claim_refused, conflicts_resolved, asks_answered, dup_facts, dup_commits and wasted_tokens, the tokens of an agent whose claim was refused or whose work another agent had already done",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/bench_multi.py",
+    "_tools/benchmarks.py",
+    "kb/_self/reports/multi_bench.csv",
+    "kb/_self/tools.md",
+    "kb/_self/reports/modules.md"
+  ],
+  "depends_on": [
+    "ST-uo23fwho",
+    "ST-prrja362"
+  ],
+  "notes": "Premise run 2026-10-19 on 7079b184a: multi run coord --dry-run and --replay exit 2, 'no scenario coord; one of lookups, research, mixed'. Open design choices for the worker, recorded as provisional gates: how the second code agent meets the shared item (its own claim through backlog.py claim in its clone, refused once the first claim lands on the shared bare, is the recommended reading of 'refused claim'), which agent asks whom, and what counts as a conflict resolved. Overlap: SP-ipeewrlv ST-y53hvh64 and SP-2uljwgho ST-hvpdkmit also touch _tools/bench_multi.py; held serializes them."
+}

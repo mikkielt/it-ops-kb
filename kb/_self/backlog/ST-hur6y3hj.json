@@ -1,0 +1,68 @@
+{
+  "id": "ST-hur6y3hj",
+  "kind": "story",
+  "title": "multi fitness proves deduplication and structured coordination with scripted agents: research and coord cases under coord shared and isolated",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "sprint": "SP-p46hofrg",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "the scripted research agent of bench_replay.py takes the real coord path, KB_COORD_HOLDER, coord.py dedup with --topic, its claims, fact_added events and release, and the scripted agents of the coord scenario claim the shared item, ask through kbask.py ask and answer through kbask.py answer; multi fitness --case NAME runs only the named cases, and each case's line prints its measures as name=value; the case research-shared passes only when the run's dedup_hits are at least one and dup_facts is 0, and coord-shared only when its claim_refused and asks_answered are each at least one and dup_facts is 0; and research-isolated and coord-isolated pass only when dup_facts is at least one",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport re, subprocess, sys\nr = subprocess.run([sys.executable, \"_tools/benchmarks.py\", \"multi\", \"fitness\", \"--case\", \"research-shared\", \"--case\", \"research-isolated\"], capture_output=True, text=True, timeout=3000)\nassert r.returncode == 0, (\"multi fitness research cases\", r.returncode, (r.stdout + r.stderr)[-400:])\nassert \"research-concurrent\" not in r.stdout, \"--case ran other cases too\"\ndef m(case):\n    ln = [l for l in r.stdout.splitlines() if l.startswith(\"ok: \" + case + \":\")]\n    assert ln, (\"case did not run and pass\", case, r.stdout[-400:])\n    return {k: int(v) for k, v in re.findall(r\"(\\w+)=(\\d+)\", ln[0])}\ns, i = m(\"research-shared\"), m(\"research-isolated\")\nassert s.get(\"dedup_hits\", 0) >= 1 and s.get(\"dup_facts\") == 0, (\"research-shared measures\", s)\nassert i.get(\"dup_facts\", 0) >= 1, (\"research-isolated measures\", i)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport re, subprocess, sys\nr = subprocess.run([sys.executable, \"_tools/benchmarks.py\", \"multi\", \"fitness\", \"--case\", \"coord-shared\", \"--case\", \"coord-isolated\"], capture_output=True, text=True, timeout=3000)\nassert r.returncode == 0, (\"multi fitness coord cases\", r.returncode, (r.stdout + r.stderr)[-400:])\ndef m(case):\n    ln = [l for l in r.stdout.splitlines() if l.startswith(\"ok: \" + case + \":\")]\n    assert ln, (\"case did not run and pass\", case, r.stdout[-400:])\n    return {k: int(v) for k, v in re.findall(r\"(\\w+)=(\\d+)\", ln[0])}\ns, i = m(\"coord-shared\"), m(\"coord-isolated\")\nassert s.get(\"claim_refused\", 0) >= 1 and s.get(\"asks_answered\", 0) >= 1 and s.get(\"dup_facts\") == 0, (\"coord-shared measures\", s)\nassert i.get(\"dup_facts\", 0) >= 1, (\"coord-isolated measures\", i)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the scripted research agent of bench_replay.py takes the real coord path, KB_COORD_HOLDER, coord.py dedup with --topic, its claims, fact_added events and release",
+      "check": 0
+    },
+    {
+      "clause": "the scripted agents of the coord scenario claim the shared item, ask through kbask.py ask and answer through kbask.py answer",
+      "check": 1
+    },
+    {
+      "clause": "multi fitness --case NAME runs only the named cases",
+      "check": 0
+    },
+    {
+      "clause": "each case's line prints its measures as name=value",
+      "check": 0
+    },
+    {
+      "clause": "the case research-shared passes only when the run's dedup_hits are at least one and dup_facts is 0",
+      "check": 0
+    },
+    {
+      "clause": "coord-shared only when its claim_refused and asks_answered are each at least one and dup_facts is 0",
+      "check": 1
+    },
+    {
+      "clause": "and research-isolated and coord-isolated pass only when dup_facts is at least one",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/bench_replay.py",
+    "_tools/bench_multi.py",
+    "_tools/benchmarks.py",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-kx6qdtkv",
+    "ST-prrja362"
+  ],
+  "notes": "Premise run 2026-10-19 on 7079b184a: multi fitness --case is unknown (exit 2). bench_replay.py's research agent today claims research:replay:HOLDER by hand and posts its own claim and release events, so the fitness pass reads hand-posted events, not the coord path real agents take (the ST-eo3a7erb finding)."
+}

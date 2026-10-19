@@ -1,0 +1,67 @@
+{
+  "id": "ST-uo23fwho",
+  "kind": "story",
+  "title": "multi run gives each agent its own coord holder and counts its claims, refused claims, dedup hits and skipped lack terms from the store's events",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "sprint": "SP-p46hofrg",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "agent_env (bench_multi.py) sets KB_COORD_HOLDER to agentN for agent N; coord_counts reads the store's events, not the rows left after the run, and returns a dict with claims, refused, dedup_hits and skipped_terms, and the same keys per holder under agents; and multi record writes claims, claim_refused, dedup_hits and skipped_terms rows for each run and agent beside claim_conflicts",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport bench_multi\nh = bench_multi.agent_env(tempfile.mkdtemp(), \"shared\", 2).get(\"KB_COORD_HOLDER\")\nassert h == \"agent2\", (\"agent 2 has no coord holder of its own\", h)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, subprocess, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport bench_multi\ns = os.path.join(tempfile.mkdtemp(), \"c.sqlite\")\ndef c(*a):\n    return subprocess.run([sys.executable, \"_tools/coord.py\", \"--store\", s, *a], capture_output=True, text=True)\nimport json\nt = json.loads(c(\"claim\", \"research:public/ad/x:t\", \"--ttl\", \"60\", \"--holder\", \"agent1\").stdout)[\"token\"]\nassert c(\"claim\", \"research:public/ad/x:t\", \"--ttl\", \"60\", \"--holder\", \"agent2\").returncode != 0\nassert c(\"release\", \"research:public/ad/x:t\", \"--token\", t).returncode == 0\nm = {\"agents\": [{\"agent\": \"research-1\", \"n\": 1, \"coord_store\": s}, {\"agent\": \"research-2\", \"n\": 2, \"coord_store\": s}]}\nr = bench_multi.coord_counts(m)\nassert isinstance(r, dict), (\"coord_counts returns no dict\", r)\nassert r.get(\"claims\") == 1 and r.get(\"refused\") == 1, (\"a released claim and a refused claim are not counted\", r)\na = r.get(\"agents\", {})\nassert a.get(\"agent1\", {}).get(\"claims\") == 1 and a.get(\"agent2\", {}).get(\"refused\") == 1, (\"no counts per holder\", a)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport csv, os, shutil, subprocess, sys, tempfile\nT = tempfile.mkdtemp(); d = os.path.join(T, \"m\"); out = os.path.join(T, \"b.csv\")\ndef bench(*a):\n    return subprocess.run([sys.executable, \"_tools/benchmarks.py\", *a], capture_output=True, text=True, timeout=1800)\ntry:\n    r = bench(\"multi\", \"run\", \"research\", \"--replay\", \"--dir\", d)\n    assert r.returncode == 0, (\"premise: the replay did not run\", r.stdout[-300:], r.stderr[-300:])\n    r = bench(\"multi\", \"record\", \"--dir\", d, \"--out\", out)\n    assert r.returncode == 0, (\"multi record\", r.stdout[-300:], r.stderr[-300:])\n    m = {row[\"metric\"] for row in csv.DictReader(open(out, encoding=\"utf-8\")) if row[\"scenario\"] == \"multi\"}\n    miss = {\"claims\", \"claim_refused\", \"dedup_hits\", \"skipped_terms\"} - m\n    assert not miss, (\"multi record writes no row of\", sorted(miss))\nfinally:\n    bench(\"multi\", \"remove\", \"--dir\", d)\n    shutil.rmtree(T, ignore_errors=True)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "agent_env (bench_multi.py) sets KB_COORD_HOLDER to agentN for agent N",
+      "check": 0
+    },
+    {
+      "clause": "coord_counts reads the store's events, not the rows left after the run",
+      "check": 1
+    },
+    {
+      "clause": "returns a dict with claims, refused, dedup_hits and skipped_terms",
+      "check": 1
+    },
+    {
+      "clause": "the same keys per holder under agents",
+      "check": 1
+    },
+    {
+      "clause": "and multi record writes claims, claim_refused, dedup_hits and skipped_terms rows for each run and agent beside claim_conflicts",
+      "check": 2
+    }
+  ],
+  "touches": [
+    "_tools/bench_multi.py",
+    "_tools/benchmarks.py",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-eo3a7erb",
+    "ST-tslkou63",
+    "ST-prrja362"
+  ],
+  "notes": "Premise run 2026-10-19 on 7079b184a (precheck): agent_env gives agent 2 no KB_COORD_HOLDER (None); coord_counts on a planted store with one claim released and one refused returns (0, 0), a tuple; a research --replay run recorded with multi record --out writes no claim_refused, dedup_hits or skipped_terms row."
+}

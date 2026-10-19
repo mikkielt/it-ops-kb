@@ -1,0 +1,96 @@
+{
+  "id": "ST-tslkou63",
+  "kind": "story",
+  "title": "coord.py dedup sees another agent's claim on the same area: the holder is the agent's own, the topic is the article it writes, and a question with no lack term still claims its topic",
+  "status": "draft",
+  "parent": "EP-fxrzbuza",
+  "sprint": "SP-p46hofrg",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "with no --holder, coord.py takes the holder from KB_COORD_HOLDER; coord.py dedup treats a live claim under its own holder name as its own only when --token names that claim's token, so a second session that picked the same name sees the claim as an overlap; dedup --topic PATH anchors the claim on PATH instead of the pack's first article, and a question whose pack names no lack term claims the topic as a whole, which overlaps every later dedup on that topic; and step 0 of /kb-research passes --topic with the article path it will write and leaves --holder to KB_COORD_HOLDER when that is set",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport json, os, subprocess, sys, tempfile\ns = os.path.join(tempfile.mkdtemp(), \"c.sqlite\")\nenv = dict(os.environ, KB_COORD_HOLDER=\"agent7\")\nr = subprocess.run([sys.executable, \"_tools/coord.py\", \"--store\", s, \"claim\", \"research:public/ad/x:t\", \"--ttl\", \"60\"], capture_output=True, text=True, env=env)\nassert r.returncode == 0, r.stdout\nh = json.loads(r.stdout)[\"holder\"]\nassert h == \"agent7\", (\"with no --holder the holder is not KB_COORD_HOLDER\", h)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport json, os, subprocess, sys, tempfile\ns = os.path.join(tempfile.mkdtemp(), \"c.sqlite\")\nQ = \"pip: requirements files and constraints, hash-checking mode, index and mirror options, wheels and source builds, caching, and dependency resolution behaviour\"\ndef d(*a):\n    r = subprocess.run([sys.executable, \"_tools/coord.py\", \"--store\", s, \"dedup\", Q, *a], capture_output=True, text=True)\n    assert r.returncode == 0, (\"dedup exit\", r.returncode, r.stdout, r.stderr[-300:])\n    return json.loads(r.stdout)\na = d(\"--holder\", \"kb-research-pip\")\nassert a[\"claimed\"], (\"premise: the question claims no lack term\", a)\nb = d(\"--holder\", \"kb-research-pip\")\nassert b[\"overlaps\"] and not b[\"uncovered\"], (\"a second session under the same holder name, with no --token, researches the claimed terms again\", b)\nc = d(\"--holder\", \"kb-research-pip\", \"--token\", a[\"token\"])\nassert not c[\"overlaps\"], (\"the holder with its own token is told its claim overlaps\", c)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport json, os, subprocess, sys, tempfile\ns = os.path.join(tempfile.mkdtemp(), \"c.sqlite\")\nT = \"public/python/pip-requirements-constraints-hashes\"\ndef d(q, h):\n    r = subprocess.run([sys.executable, \"_tools/coord.py\", \"--store\", s, \"dedup\", q, \"--holder\", h, \"--topic\", T], capture_output=True, text=True)\n    assert r.returncode == 0, (\"dedup --topic exit\", r.returncode, r.stdout, r.stderr[-300:])\n    return json.loads(r.stdout)\na = d(\"pip requirements files constraints hash-checking mode index mirror options wheels source builds caching dependency resolution\", \"agent1\")\nassert a[\"topic\"] == T and a[\"claimed\"], (\"a question with no lack term claims nothing for the topic --topic names\", a)\nb = d(\"pip: requirements files and constraints, hash-checking mode, index and mirror options, wheels and source builds, caching, and dependency resolution behaviour\", \"agent2\")\nassert b[\"overlaps\"] and not b[\"claimed\"], (\"a differently worded dedup on the same --topic does not see the whole-topic claim\", b)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport re\nt = open(\".claude/skills/kb-research/SKILL.md\", encoding=\"utf-8\").read()\ns = t.split(\"## 0. Dedup\", 1)[1].split(\"\\n## \", 1)[0]\nassert \"--topic\" in s, \"step 0 of /kb-research does not pass --topic\"\nassert \"KB_COORD_HOLDER\" in s, \"step 0 of /kb-research does not leave --holder to KB_COORD_HOLDER\""
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "with no --holder, coord.py takes the holder from KB_COORD_HOLDER",
+      "check": 0
+    },
+    {
+      "clause": "coord.py dedup treats a live claim under its own holder name as its own only when --token names that claim's token, so a second session that picked the same name sees the claim as an overlap",
+      "check": 1
+    },
+    {
+      "clause": "dedup --topic PATH anchors the claim on PATH instead of the pack's first article",
+      "check": 2
+    },
+    {
+      "clause": "a question whose pack names no lack term claims the topic as a whole, which overlaps every later dedup on that topic",
+      "check": 2
+    },
+    {
+      "clause": "and step 0 of /kb-research passes --topic with the article path it will write and leaves --holder to KB_COORD_HOLDER when that is set",
+      "check": 3
+    }
+  ],
+  "touches": [
+    "_tools/coord.py",
+    ".claude/skills/kb-research/SKILL.md",
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-eo3a7erb"
+  ],
+  "gates": [
+    {
+      "id": "own",
+      "kind": "blocking",
+      "question": "How does coord.py dedup tell its own earlier claim from another session's claim under the same holder name (today: by name alone, so two agents that both picked kb-research-pip each research the same terms)?",
+      "options": [
+        "own only with proof: a same-name claim is an overlap unless the call passes the lease key its earlier dedup printed",
+        "refuse a holder name another live claim already uses",
+        "keep by name and rely on KB_COORD_HOLDER being unique"
+      ],
+      "recommendation": "own only with proof: a same-name claim is an overlap unless the call passes the lease key its earlier dedup printed",
+      "do": {
+        "own only with proof: a same-name claim is an overlap unless the call passes the lease key its earlier dedup printed": "ST-tslkou63",
+        "refuse a holder name another live claim already uses": "ST-tslkou63",
+        "keep by name and rely on KB_COORD_HOLDER being unique": "ST-tslkou63"
+      },
+      "class": "agents-rule",
+      "answer": "own only with proof: a same-name claim is an overlap unless the call passes the lease key its earlier dedup printed",
+      "by": "operator"
+    }
+  ],
+  "notes": "Premise runs 2026-10-19 on origin/main 7079b184a. (1) Transcripts of the SP-3pvz2noj research runs (~/.claude/projects/*bench-multi-*): every kb-arm research agent did run coord.py dedup from /kb-research step 0 with KB_COORD_STORE set, but picked its own --holder text: in sandbox 858a5dbd agents 1 and 2 both used kb-research-pip, so agent 1's dedup counted agent 2's four claims as its own (claimed [], uncovered all four, overlaps []) and researched them again. Reproduced on a planted store: a second dedup under the same holder name gets claimed [] and uncovered all terms, a third holder gets the overlap. (2) coord.fingerprint on four wordings of the same pip area: topics public/gitlab/package-registries and public/privacy/spacy-pipeline-pinning, lack terms 0, 3, 0 and 4; in most runs agents 1 and 2 got terms [] and claimed nothing. Checks 1-3 fail on main (holder anonymous; same-name dedup claims nothing and sees no overlap; --topic unknown, exit 2); check 4 fails (step 0 names neither --topic nor KB_COORD_HOLDER)."
+}

@@ -1,0 +1,37 @@
+{
+  "id": "ST-sn25w6jm",
+  "kind": "story",
+  "title": "token-efficiency.md says whether coord dedup cuts duplicate facts and tokens, by how much and with what spread, from the paid shared and isolated records",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "sprint": "SP-p46hofrg",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "the dedup bullet of kb/_self/token-efficiency.md \"Concurrent agents\" replaces \"Coord dedup is not shown to work\" with what the new research and coord records show under coord shared against isolated: dup_facts, dedup_hits, claim_refused, asks_answered, tokens and USD per arm, each as the range of its two records; and it says whether dedup cut duplicate facts and tokens and by how much, or that the gap sits inside the spread, citing the benchmarks report's section \"Agents at once against agents one at a time\"",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport re\nt = open(\"kb/_self/token-efficiency.md\", encoding=\"utf-8\").read()\ns = t.split(\"## Concurrent agents\", 1)[1].split(\"\\n## \", 1)[0]\nb = [l for l in s.splitlines() if l.startswith(\"- **\") and \"dedup\" in l.lower()]\nassert b, \"no dedup bullet in Concurrent agents\"\nassert \"not shown to work\" not in b[0], \"the dedup bullet still says it is not shown to work\"\nfor w in (\"dedup_hits\", \"dup_facts\", \"isolated\", \"shared\", \"coord\", \"benchmarks.md\"):\n    assert w in b[0], (\"the dedup bullet does not name\", w)\nassert len(re.findall(r\"\\d[\\d,.]*-[\\d,.]*\\d\", b[0])) >= 2, \"the dedup bullet gives no range of two records\""
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the dedup bullet of kb/_self/token-efficiency.md \"Concurrent agents\" replaces \"Coord dedup is not shown to work\" with what the new research and coord records show under coord shared against isolated: dup_facts, dedup_hits, claim_refused, asks_answered, tokens and USD per arm, each as the range of its two records",
+      "check": 0
+    },
+    {
+      "clause": "and it says whether dedup cut duplicate facts and tokens and by how much, or that the gap sits inside the spread, citing the benchmarks report's section \"Agents at once against agents one at a time\"",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-ix3lknus"
+  ],
+  "notes": "Premise 2026-10-19: the Concurrent agents section of kb/_self/token-efficiency.md says 'Coord dedup is not shown to work' (claims and claim_conflicts 0 in every row). Overlap: many planned sprints (SP-ttgcpf7o, SP-gea4jifz, SP-tsb23kev, SP-46k7sw57, SP-v64egscn, SP-jplczvj2, SP-s2svf5a6, SP-mguax5m3, SP-ipeewrlv) have items touching this file; this item edits only the dedup bullet, rebase keeping both sides."
+}

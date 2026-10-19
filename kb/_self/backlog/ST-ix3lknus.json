@@ -1,0 +1,69 @@
+{
+  "id": "ST-ix3lknus",
+  "kind": "story",
+  "title": "A paid multi run measures research dedup and the coord scenario under coord shared against isolated, two records each, within 75 USD",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "sprint": "SP-p46hofrg",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "multi run research and multi run coord each run twice under --coord shared and twice under --coord isolated, with --model research=haiku-5-5,lookup=haiku-5-5 and --max-usd 12 per run, stopping once the sprint's recorded spend would pass 75 USD; multi record writes their rows, dedup_hits, claim_refused, asks_answered, dup_facts and wasted_tokens among them, into kb/_self/reports/benchmarks.csv; and benchmarks.py report regenerates kb/_self/reports/benchmarks.md and README.md so report --check passes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport collections, csv\nrecs = collections.defaultdict(set)\nfor r in csv.DictReader(open(\"kb/_self/reports/benchmarks.csv\", encoding=\"utf-8\")):\n    if r[\"scenario\"] == \"multi\" and r[\"metric\"] == \"dedup_hits\" and r[\"arm\"].startswith(\"concurrent\"):\n        co = \"shared\" if \"coord=shared\" in r[\"arm\"] else \"isolated\" if \"coord=isolated\" in r[\"arm\"] else \"\"\n        recs[(r[\"case\"], co)].add((r[\"record\"], r[\"note\"].rsplit(\"run started\", 1)[-1]))\nneed = {(c, o): len(recs[(c, o)]) for c in (\"research\", \"coord\") for o in (\"shared\", \"isolated\") if len(recs[(c, o)]) < 2}\nassert not need, (\"fewer than two recorded runs with dedup_hits\", need)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport subprocess\nr = subprocess.run([sys.executable, '_tools/benchmarks.py', 'report', '--check'], capture_output=True, text=True)\nassert r.returncode == 0, ('report --check', (r.stdout + r.stderr)[-300:])\nt = open('kb/_self/reports/benchmarks.md', encoding='utf-8').read()\nassert 'dedup_hits' in t and 'coord=isolated' in t, 'the report shows no dedup_hits or coord=isolated figure'\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "multi run research and multi run coord each run twice under --coord shared and twice under --coord isolated, with --model research=haiku-5-5,lookup=haiku-5-5 and --max-usd 12 per run, stopping once the sprint's recorded spend would pass 75 USD",
+      "check": 0
+    },
+    {
+      "clause": "multi record writes their rows, dedup_hits, claim_refused, asks_answered, dup_facts and wasted_tokens among them, into kb/_self/reports/benchmarks.csv",
+      "check": 0
+    },
+    {
+      "clause": "and benchmarks.py report regenerates kb/_self/reports/benchmarks.md and README.md so report --check passes",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/benchmarks.csv",
+    "kb/_self/reports/benchmarks.md",
+    "README.md"
+  ],
+  "depends_on": [
+    "ST-hur6y3hj"
+  ],
+  "gates": [
+    {
+      "id": "spend",
+      "kind": "blocking",
+      "question": "Paid sizing of the dedup and coord measurement: 8 runs (research and coord, coord shared and isolated, 2 records each), research and lookup roles on Haiku 5.5, code role on Sonnet 5.5. Harness estimate (bench_core.PRICE x recorded means): research on Haiku 0.42 USD a run, which understated the measured Haiku research records of SP-3pvz2noj (3.40 and 6.21 USD) about 8 to 15 times; sized from the larger record instead: research 4 x 6.21 = 24.84 USD, coord scenario 4 x about 6.17 (two Haiku researchers about 4.14, two Sonnet code agents 2 x 1.00 by the harness figure, one Haiku asker about 0.03) = 24.68 USD, total about 49.52 USD. Per-run --max-usd 12; the sprint's spend stop is 75 USD. Run as sized, or a smaller sample?",
+      "options": [
+        "run as sized",
+        "a smaller sample that fits 75 USD"
+      ],
+      "recommendation": "run as sized",
+      "do": {
+        "run as sized": "ST-ix3lknus",
+        "a smaller sample that fits 75 USD": "ST-ix3lknus"
+      },
+      "class": "design",
+      "answer": "run as sized: about 49.52 USD is at most the 75 USD stop; --max-usd 12 per run; on the operator's request of 2026-10-19: \"ensure that agent deduplication and structured coordination is tested as well\"",
+      "by": "operator"
+    }
+  ],
+  "notes": "Dry-run estimates 2026-10-19 on 7079b184a (benchmarks.py multi run research --dry-run): Sonnet research 8.48 USD a run (3 x 2.83), --model research=haiku-5-5 0.42 USD a run (3 x 0.14, price ratio 0.05), mixed 7.68 USD; the coord scenario has no estimate until ST-kx6qdtkv adds it. Measured SP-3pvz2noj records: Haiku research 3.40 and 6.21 USD (usd metric), Sonnet research 11.18-12.49 USD, mixed 4.70-4.76 USD. The harness estimate understates Haiku research 8-15 times (SP-yjfiemha works on estimates), so the spend gate sizes from the larger measured record: about 49.52 USD for 8 runs, at most the 75 USD stop. Rerun the dry run of both scenarios before the first paid run and stop if the measured spend so far plus the next run's sizing passes 75 USD."
+}
