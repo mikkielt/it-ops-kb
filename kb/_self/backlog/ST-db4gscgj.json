@@ -94,7 +94,9 @@
         "the checkout's own item files, source checkout, no behind count and no done times (so no ETA)": "ST-db4gscgj",
         "no sprint rows: the panel is an error": "ST-db4gscgj"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "the checkout's own item files, source checkout, no behind count and no done times (so no ETA)",
+      "by": "operator"
     },
     {
       "id": "g2",
