@@ -1,0 +1,20 @@
+{
+  "id": "SP-3trnelzv",
+  "kind": "sprint",
+  "title": "A team clone deploys from the public copy: busy-host ceiling at setup, fetch-only upstream, local fixes and backlog provenance",
+  "status": "planned",
+  "goal": "kb-setup asks the operator for the clone's test ceiling profile, usual or busy, where busy multiplies each platform's max_seconds by 15 in that clone only; an agent session cannot write the ceiling file or a decision row directly; the ceiling refusal names the route an operator in an IDE integrated terminal takes; a clone names the public GitHub copy as a fetch-only upstream remote that every push to it refuses; kbgit.py upstream brings the upstream main into the clone's integration main by a written policy that lists each local commit changing an upstream-owned path; every backlog item records its provenance so items arriving from upstream are told apart from items the clone filed; kb_mcp.py registers the kb servers for a workspace directory above the clone with no hand-written .mcp.json",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
