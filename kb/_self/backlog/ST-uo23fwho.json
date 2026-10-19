@@ -2,7 +2,7 @@
   "id": "ST-uo23fwho",
   "kind": "story",
   "title": "multi run gives each agent its own coord holder and counts its claims, refused claims, dedup hits and skipped lack terms from the store's events",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-giqleoy2",
   "sprint": "SP-p46hofrg",
   "priority": "P1",
@@ -63,5 +63,6 @@
     "ST-tslkou63",
     "ST-prrja362"
   ],
-  "notes": "Premise run 2026-10-19 on 7079b184a (precheck): agent_env gives agent 2 no KB_COORD_HOLDER (None); coord_counts on a planted store with one claim released and one refused returns (0, 0), a tuple; a research --replay run recorded with multi record --out writes no claim_refused, dedup_hits or skipped_terms row."
+  "notes": "Premise run 2026-10-19 on 7079b184a (precheck): agent_env gives agent 2 no KB_COORD_HOLDER (None); coord_counts on a planted store with one claim released and one refused returns (0, 0), a tuple; a research --replay run recorded with multi record --out writes no claim_refused, dedup_hits or skipped_terms row.",
+  "claimed_by": "orch-r61"
 }
