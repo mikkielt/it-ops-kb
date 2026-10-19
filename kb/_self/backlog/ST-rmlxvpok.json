@@ -2,7 +2,7 @@
   "id": "ST-rmlxvpok",
   "kind": "story",
   "title": "Research sprint goal: Private stays private: the publish guard and the leak scan know remote roots, and contribute gives shared changes back",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qinvdomv",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,19 @@
     "kb/public/**"
   ],
   "notes": "Open questions: (1) git cherry-pick and git rebase --onto for a branch rebuilt from selected commits; (2) a merge request from a fork into an upstream project on GitLab and a pull request on GitHub, and what the upstream sees of the fork's private history; (3) what git transfers of a submodule gitlink to a remote that cannot read the submodule.",
-  "claimed_by": "orch-r36"
+  "evidence": {
+    "commit": "cb24ff33d421ba1eaa85a7fbfa36865239df77d5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-rmlxvpok"
+        ],
+        "exit": 0,
+        "sha256": "8960623fba1a5254"
+      }
+    ]
+  }
 }
