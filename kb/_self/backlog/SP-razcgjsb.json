@@ -1,0 +1,20 @@
+{
+  "id": "SP-razcgjsb",
+  "kind": "sprint",
+  "title": "kbmon says what each session is doing, under a readable label",
+  "status": "planned",
+  "goal": "each Claude Code session of the clone shows as one line with its label, role, sprint and short item title, current step, elapsed time, last activity and spend when known, built from coord, the dispatch records, the ops rows, the item files and its checkout; a model summary of a session comes only on request through kbask summary, capped; coord holders and session keys show one short label per session, the same in every panel, while a planted secret is still redacted; a live detached worker or benchmark run is not called an orphan",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
