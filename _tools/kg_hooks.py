@@ -377,6 +377,14 @@ def hook_prepare(args):
             f.write("merge" if len(parents) > 1 else (parents[0] if parents else "root"))
 
 
+def session_operator():
+    """The operator id (kbwho.operator) for the KB-Operator trailer of a commit made in an agent session
+    (bl_authority.in_agent_session), else None: a commit made outside one carries none, and neither does one whose
+    id kbwho cannot give."""
+    import bl_authority, kbwho  # noqa: PLC0415 - at call time: the hook script runs once for each commit
+    return (kbwho.operator().get("id") or None) if bl_authority.in_agent_session() else None
+
+
 def hook_commit_msg(args):
     mark, base = git_path(AMEND_MARK), None
     if mark and os.path.exists(mark):
@@ -398,7 +406,7 @@ def hook_commit_msg(args):
     if verified and not valid_date(verified):
         print(f"kbgit.py: KB_VERIFIED={verified!r} is not YYYY-MM-DD; not added", file=sys.stderr)
         verified = None
-    new = apply_trailers(msg, compute(base, INDEX), verified)
+    new = apply_trailers(msg, compute(base, INDEX), verified, session_operator())
     if new != msg:
         with open(args[0], "w", encoding="utf-8", newline="") as f:
             f.write(new)

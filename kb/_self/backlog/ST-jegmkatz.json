@@ -55,6 +55,21 @@
       "class": "push",
       "answer": "each commit made in an agent session, beside KB-Teams",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does check-trailers judge a KB-Operator value, and what does the hook do to an existing KB-Operator line on an amend outside an agent session?",
+      "options": [
+        "accept one line shaped like an operator id (kbwho's id shape), refuse any other value; an amend outside an agent session leaves the line",
+        "refuse only a value that holds an at-sign; an amend outside an agent session drops the line"
+      ],
+      "recommendation": "accept one line shaped like an operator id (kbwho's id shape), refuse any other value; an amend outside an agent session leaves the line",
+      "do": {
+        "accept one line shaped like an operator id (kbwho's id shape), refuse any other value; an amend outside an agent session leaves the line": "ST-jegmkatz",
+        "refuse only a value that holds an at-sign; an amend outside an agent session drops the line": "ST-jegmkatz"
+      },
+      "class": "push"
     }
   ],
   "notes": "Premise (2026-10-19): in a planted clone with the hooks installed, a commit made with CLAUDECODE=1 and KB_OPERATOR set gets no KB-Operator trailer. Builds on ST-smr7z3vn (the KB-Teams trailer) in the same hook and trailer code; an agent session is told by bl_authority.in_agent_session (CLAUDECODE). Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and .claude/hooks with its own coord store and a stub claude on PATH; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations; facts: public/claude/ci-and-headless.md:124-127, public/claude/otel-monitoring.md:51-53, QK-claude-code-session-learn-email-account. Addresses in checks are built at run time; docs and items use the placeholder jan.kowalski only.",
