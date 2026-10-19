@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "Findings 2026-10-19: kb already answers pricing (S2131), cache entry timing and scope (S2130), subagent and alias model rules, --max-budget-usd, --tools, strict-mcp-config. New: claude/cli-flags.csv row --disable-slash-commands (S1824, S2157); _gaps.md entries (topic claude/ci-and-headless) on an empty --setting-sources value, the web search fee in total_cost_usd, and the concurrent claude -p limit of a subscription login; answer QK-kb-live-docs-say-concurrency-prompt. Committed items needing the gaps: ST-xjtqwdtq (bare arm dollar figure is a lower bound until the fee gap is closed), ST-fnj6hllh (bare twin isolation), ST-oczsqpzx (conclusions on cache reuse need staggered or sequential rows). No outside facts needed beyond these.",
   "claimed_by": "orch-r32"
 }

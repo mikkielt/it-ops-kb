@@ -4188,3 +4188,17 @@ _Agent: kb-research_
 - See python/ps-process-cpu.md, python/stdlib-os-loadavg.md.
 
 _Agent: kb-research_
+
+## QK-kb-live-docs-say-concurrency-prompt. What do the kb and the live docs say on concurrency, prompt-cache reuse, model choice, web search cost and bare-session isolation for a benchmark of kb agents against bare agents?
+- Prompt cache: "a cache entry only becomes available after the first response begins", so agents started at once on an identical prefix read nothing from each other at the start and each pays the cache-write price; entries live at least 5 minutes (standard) or 1 hour (extended), refreshed on each hit. [DOC S2130]
+- Cache scope is the organization and, on the Claude API, the workspace; a Claude Code subscription session keeps the cache one hour, a session on an API key five minutes by default. [DOC S2130, S2132]
+- Model choice: list prices per million tokens differ by a factor of 40 between Haiku 5.5 ($0.10 input, $0.50 output up to 100,000 tokens) and Opus 5.5 ($4 input, $20 output), with Sonnet 5.5 at $2 and $10; a cache read costs $0.10 on Sonnet 5.5 and Haiku 4.5, $0.20 on Opus 5.5 and $0.01 on Haiku 5.5. [DOC S2131]
+- Web search on the Claude API costs $10 per 1,000 searches on top of token costs; `total_cost_usd` is a client-side estimate, and the cost-tracking page says only that per-request fees such as web search are not multiplied by the data-residency rate. [DOC S2131, S-isqfh6pr]
+- `--max-budget-usd` counts subagent spend and may be passed by a run; `--tools` restricts built-in tools, not MCP tools; `--disable-slash-commands` disables all skills and commands; `--setting-sources` limits the settings sources. [DOC S1824, S1863, S2157]
+- The Agent SDK reads managed settings, `~/.claude.json` and auto memory whatever `settingSources` says, and claude.ai connectors of a claude.ai login unless `strictMcpConfig`, `disableClaudeAiConnectors` or `ENABLE_CLAUDEAI_MCP_SERVERS=false` is set. [DOC S-hfho3uwe]
+- A dynamic workflow runs up to 16 agents at once by default and stops at 1,000 agents per run. [DOC S-qulnsg4e]
+- Conclusion: a benchmark that starts its kb agents and their bare twins at once measures neither cache reuse (the siblings write, none reads) nor a saving from a warm start; the cache effect shows only in a staggered or sequential start, and the model comparison must price cache reads per model. A bare twin priced from its four token counts leaves out any web search fee, whose presence in `total_cost_usd` the docs do not state, so its dollar figure is a lower bound and its token counts are the like-for-like figure. A twin's isolation rests on `--strict-mcp-config`, a settings-source limit and a fresh directory, because auto memory of the working directory and the global config are read whatever the settings sources say. [DER S2130, S2131, S-isqfh6pr, S1824, S-hfho3uwe]
+- Open: whether `--setting-sources ""` is accepted and loads nothing, whether the web search fee is in `total_cost_usd`, and how many concurrent `claude -p` processes a subscription login takes. [UNK]
+- See agents/agent-caching.md, claude/ci-and-headless.md, claude/cli-flags.csv, claude/settings-and-scopes.md, claude/parallel-sessions.md.
+
+_Agent: kb-research_
