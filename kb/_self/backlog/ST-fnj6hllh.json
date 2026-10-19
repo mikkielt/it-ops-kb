@@ -2,7 +2,7 @@
   "id": "ST-fnj6hllh",
   "kind": "story",
   "title": "multi run --bare runs a bare twin of each agent at the same time, with none of the kb's tooling",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-giqleoy2",
   "sprint": "SP-3pvz2noj",
   "priority": "P2",
@@ -168,5 +168,27 @@
     }
   ],
   "notes": "Operator request 2026-10-19, verbatim: \"give the benchmark that will run today a parallel run of bare agents doing similar work -- need to compare token and dollar efficiency\". Design (planned 2026-10-19): one twin per kb agent, started with it (concurrent: all kb agents and all twins at once; --sequential: kb agent N and its twin together, pair after pair), so both arms see the same host load. The twin has no kb tooling: no kb MCP server, no project or user settings, hooks, skills, plugin or coord store, no kb articles in its directory; web tools stay so it can look things up. The dollar figure is priced from the four usage counts with bench_core.PRICE for both arms (the session's own cost stays in `cost`). Gates score and arm answered by the operator's delegate with their recommendations (unattended overnight run, operator policy). Premise, run 2026-10-19 on origin/main: `benchmarks.py multi run lookups --dry-run --bare` exits 2 (unrecognized argument --bare): no bare arm exists. Spend: none, the checks run --dry-run and --replay only.",
-  "claimed_by": "orch-r32"
+  "evidence": {
+    "commit": "17b85c54a3fe2c669f5eb141cc9e0461ae6c7768",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\n\nimport csv, json, os, re, shlex, shutil, subprocess, sys, tempfile\nT = tempfile.mkdtemp()\nB = os.path.join(T, \"bin\"); os.mkdir(B)\nMARK = os.path.join(T, \"claude-was-started\")\nopen(os.path.join(B, \"claude\"), \"w\").write(\"#!/bin/sh\\necho started >> \" + MARK + \"\\nexit 1\\n\")\nos.chmod(os.path.join(B, \"claude\"), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ[\"PATH\"])\ndef bench(*a, ok=(0,), timeout=1800):\n    r = subprocess.run([sys.executable, \"_tools/benchmarks.py\", *a], capture_output=True, text=True, env=ENV, timeout=timeout)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-800:], r.stderr[-800:])\n    return r\n\nTOOLS = {\"Read\", \"Grep\", \"Glob\", \"Bash\", \"Edit\", \"Write\", \"WebSearch\", \"WebFetch\"}\ndef flag(v, f):\n    return v[v.index(f) + 1] if f in v else None\nfor s in (\"lookups\", \"research\", \"mixed\"):\n    out = bench(\"multi\", \"run\", s, \"--dry-run\", \"--bare\", \"--dir\", os.path.join(T, \"d\")).stdout\n    lines = out.splitlines()\n    kb = [shlex.split(l.split(\"argv:\", 1)[1]) for l in lines if l.strip().startswith(\"argv:\")]\n    bare = [shlex.split(l.split(\"bare argv:\", 1)[1]) for l in lines if \"bare argv:\" in l]\n    assert bare and len(bare) == len(kb), (s, len(kb), len(bare), out[-800:])\n    for k, v in zip(kb, bare):\n        assert flag(v, \"--setting-sources\") == \"\", (s, v)\n        assert json.loads(flag(v, \"--settings\") or \"{}\").get(\"disableAllHooks\") is True, (s, v)\n        assert \"--strict-mcp-config\" in v and \"--mcp-config\" not in v and \"--plugin-dir\" not in v, (s, v)\n        assert not any(\"mcp__\" in x for x in v), (s, v)\n        assert set(re.split(r\"[ ,]+\", flag(v, \"--tools\") or \"\")) == TOOLS, (s, flag(v, \"--tools\"))\n        assert flag(v, \"--model\") == flag(k, \"--model\") and flag(v, \"--max-turns\") == flag(k, \"--max-turns\"), (s, k, v)\n        assert flag(v, \"--max-budget-usd\"), (s, v)\n        if flag(k, \"--max-budget-usd\"):\n            assert flag(v, \"--max-budget-usd\") == flag(k, \"--max-budget-usd\"), (s, k, v)\n    assert re.search(r\"estimate: \\$[\\d.]+ kb \\+ \\$[\\d.]+ bare = \\$[\\d.]+\", out), (s, out[-600:])\n    if s == \"lookups\":\n        assert any(\"bare estimate\" in l and \"web-\" in l for l in lines), out[-800:]\nassert not os.path.exists(MARK), \"a dry run started claude\"\nprint(\"dry runs ok\")\n"
+        ],
+        "exit": 0,
+        "sha256": "4d616da1ccc6da02"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\n\nimport csv, json, os, re, shlex, shutil, subprocess, sys, tempfile\nT = tempfile.mkdtemp()\nB = os.path.join(T, \"bin\"); os.mkdir(B)\nMARK = os.path.join(T, \"claude-was-started\")\nopen(os.path.join(B, \"claude\"), \"w\").write(\"#!/bin/sh\\necho started >> \" + MARK + \"\\nexit 1\\n\")\nos.chmod(os.path.join(B, \"claude\"), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ[\"PATH\"])\ndef bench(*a, ok=(0,), timeout=1800):\n    r = subprocess.run([sys.executable, \"_tools/benchmarks.py\", *a], capture_output=True, text=True, env=ENV, timeout=timeout)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-800:], r.stderr[-800:])\n    return r\n\nD, F = os.path.join(T, \"r\"), os.path.join(T, \"rows.csv\")\ntry:\n    bench(\"multi\", \"run\", \"mixed\", \"--replay\", \"--bare\", \"--dir\", D, timeout=3600)\n    bench(\"multi\", \"record\", \"--dir\", D, \"--out\", F)\n    rows = list(csv.DictReader(open(F, encoding=\"utf-8\")))\n    bare = [r for r in rows if r[\"arm\"].startswith(\"bare \")]\n    kb = [r for r in rows if r[\"arm\"].split(\" \")[0] in (\"concurrent\", \"sequential\")]\n    assert bare and kb, sorted({r[\"arm\"] for r in rows})\n    assert {r[\"arm\"][5:] for r in bare} == {r[\"arm\"] for r in kb}, \"a bare arm is not named after its kb twin's arm\"\n    need = {\"input\", \"out\", \"cache_read\", \"cache_write\", \"usd\", \"wall_s\"}\n    for side, sel, quality in ((\"kb\", kb, {\"right\", \"asked\", \"items_passed\", \"items\", \"facts_verified\"}),\n                               (\"bare\", bare, {\"right\", \"asked\", \"items_passed\", \"items\", \"facts_matched\", \"facts_verified\"})):\n        m = {r[\"metric\"] for r in sel}\n        assert need | quality <= m, (side, sorted(need | quality - m))\n        assert any(x.endswith(\"/usd\") and \"/\" in x for x in m) and any(x.endswith(\"/cache_write\") for x in m), (side, \"no per-agent rows\")\n    with open(os.path.join(D, \"results.jsonl\"), encoding=\"utf-8\") as f:\n        lines = [json.loads(x) for x in f if x.strip()]\n    assert any(x.get(\"arm\") == \"bare\" for x in lines) and any(x.get(\"arm\", \"kb\") == \"kb\" for x in lines), \"results.jsonl names no arm\"\nfinally:\n    bench(\"multi\", \"remove\", \"--dir\", D, ok=(0, 1))\nassert not os.path.exists(D) or not os.listdir(D), \"multi remove left the sandbox\"\nassert not os.path.exists(MARK), \"the replay started claude\"\nprint(\"replay ok\")\n"
+        ],
+        "exit": 0,
+        "sha256": "c1aa3d7e3228041e"
+      }
+    ]
+  }
 }
