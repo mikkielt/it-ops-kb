@@ -38,8 +38,7 @@
   ],
   "depends_on": [
     "ST-6iu2xb23",
-    "ST-smr7z3vn",
-    "ST-tmvkydpf"
+    "ST-smr7z3vn"
   ],
   "gates": [
     {
