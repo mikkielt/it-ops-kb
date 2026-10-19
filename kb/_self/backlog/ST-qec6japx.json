@@ -2,7 +2,7 @@
   "id": "ST-qec6japx",
   "kind": "story",
   "title": "Research sprint goal: The paid multi-agent runs measure concurrency, dedup, cache reuse, model choice, pack budget and kb tools",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3pvz2noj",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orch-r32"
 }
