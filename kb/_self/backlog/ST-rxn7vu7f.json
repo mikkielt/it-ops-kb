@@ -1,0 +1,29 @@
+{
+  "id": "ST-rxn7vu7f",
+  "kind": "story",
+  "title": "Each backlog item records its provenance, and a clone with an upstream shows only its own items unless asked for all",
+  "status": "draft",
+  "sprint": "SP-3trnelzv",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "backlog.py new records in each item it writes the clone it was filed in; in a clone whose git config names kb.upstreamRemote an item that arrived from the upstream main is marked upstream; list, next, horizon and sprint planning show only the clone's own items unless --all is given; claim, set and done refuse an upstream item there; backlog.md says how provenance is read",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile\nB=os.path.abspath('_tools/backlog.py');t=tempfile.mkdtemp();u=os.path.join(t,'up');c=os.path.join(t,'team')\ng=lambda d,*a:s.run(['git','-C',d,*a],capture_output=True,text=True)\nb=lambda d,*a:s.run([sys.executable,B,'--root',d,*a],capture_output=True,text=True)\nos.makedirs(u);g(u,'init','-q','-b','main');open(os.path.join(u,'backlog.json'),'w').write(json.dumps({'item_dir':'items'}))\nb(u,'new','story','--title','upstream planted item');g(u,'add','-A');g(u,'-c','user.name=t','-c','user.email=t@example.com','commit','-qm','up')\ns.run(['git','clone','-q',u,c]);g(c,'remote','rename','origin','upstream');g(c,'config','kb.upstreamRemote','upstream');g(c,'config','kb.scope','team')\nb(c,'new','story','--title','team planted item')\no=b(c,'list').stdout;a=b(c,'list','--all').stdout\nok='team planted item' in o and 'upstream planted item' not in o and 'upstream planted item' in a\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_base.py",
+    "_tools/bl_items.py",
+    "_tools/bl_view.py",
+    "_tools/bl_plan.py",
+    "_tools/bl_check.py",
+    "_tools/bl_cli.py",
+    "_tools/backlog.py",
+    "kb/_self/backlog.md"
+  ]
+}
