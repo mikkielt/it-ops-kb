@@ -97,6 +97,74 @@
       "class": "design",
       "answer": "bare rows take arm `bare <the kb arm>`, the kb rows keep their arm and read as kb",
       "by": "operator"
+    },
+    {
+      "id": "usd",
+      "kind": "provisional",
+      "question": "How is a result line's USD priced from its four token counts?",
+      "options": [
+        "the price tier of the mean prompt of a turn, a cache write at the billing surface's rate, a cache read at the tier's list price",
+        "the first price tier of the model for every count"
+      ],
+      "recommendation": "the price tier of the mean prompt of a turn, a cache write at the billing surface's rate, a cache read at the tier's list price",
+      "do": {
+        "the price tier of the mean prompt of a turn, a cache write at the billing surface's rate, a cache read at the tier's list price": "ST-fnj6hllh",
+        "the first price tier of the model for every count": "ST-fnj6hllh"
+      },
+      "class": "design",
+      "answer": "the price tier of the mean prompt of a turn, a cache write at the billing surface's rate, a cache read at the tier's list price",
+      "by": "agent"
+    },
+    {
+      "id": "effort",
+      "kind": "provisional",
+      "question": "At which effort does a bare twin run, given the goal's argv names no --effort flag?",
+      "options": [
+        "the model's default effort (no --effort flag), as the lookup kb agents run",
+        "effort high, as the kb research and code agents run"
+      ],
+      "recommendation": "the model's default effort (no --effort flag), as the lookup kb agents run",
+      "do": {
+        "the model's default effort (no --effort flag), as the lookup kb agents run": "ST-fnj6hllh",
+        "effort high, as the kb research and code agents run": "ST-fnj6hllh"
+      },
+      "class": "design",
+      "answer": "the model's default effort (no --effort flag), as the lookup kb agents run",
+      "by": "agent"
+    },
+    {
+      "id": "twin-exit",
+      "kind": "provisional",
+      "question": "Does a bare twin that failed (timeout, turns, budget, error) make multi run exit 1?",
+      "options": [
+        "no: the run's exit follows the kb agents, a failed twin is named in the summary and its line",
+        "yes: a failed twin counts as a failed agent"
+      ],
+      "recommendation": "no: the run's exit follows the kb agents, a failed twin is named in the summary and its line",
+      "do": {
+        "no: the run's exit follows the kb agents, a failed twin is named in the summary and its line": "ST-fnj6hllh",
+        "yes: a failed twin counts as a failed agent": "ST-fnj6hllh"
+      },
+      "class": "design",
+      "answer": "no: the run's exit follows the kb agents, a failed twin is named in the summary and its line",
+      "by": "agent"
+    },
+    {
+      "id": "kb-item-check",
+      "kind": "provisional",
+      "question": "Where does the check of a kb code agent's planted item run to give its items_passed?",
+      "options": [
+        "in a checkout of the item's touched files on the sandbox bare's main, where the code agent's change landed",
+        "in a full checkout of the sandbox bare's main"
+      ],
+      "recommendation": "in a checkout of the item's touched files on the sandbox bare's main, where the code agent's change landed",
+      "do": {
+        "in a checkout of the item's touched files on the sandbox bare's main, where the code agent's change landed": "ST-fnj6hllh",
+        "in a full checkout of the sandbox bare's main": "ST-fnj6hllh"
+      },
+      "class": "design",
+      "answer": "in a checkout of the item's touched files on the sandbox bare's main, where the code agent's change landed",
+      "by": "agent"
     }
   ],
   "notes": "Operator request 2026-10-19, verbatim: \"give the benchmark that will run today a parallel run of bare agents doing similar work -- need to compare token and dollar efficiency\". Design (planned 2026-10-19): one twin per kb agent, started with it (concurrent: all kb agents and all twins at once; --sequential: kb agent N and its twin together, pair after pair), so both arms see the same host load. The twin has no kb tooling: no kb MCP server, no project or user settings, hooks, skills, plugin or coord store, no kb articles in its directory; web tools stay so it can look things up. The dollar figure is priced from the four usage counts with bench_core.PRICE for both arms (the session's own cost stays in `cost`). Gates score and arm answered by the operator's delegate with their recommendations (unattended overnight run, operator policy). Premise, run 2026-10-19 on origin/main: `benchmarks.py multi run lookups --dry-run --bare` exits 2 (unrecognized argument --bare): no bare arm exists. Spend: none, the checks run --dry-run and --replay only.",

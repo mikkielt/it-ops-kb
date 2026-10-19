@@ -13,6 +13,10 @@ for that term to an article, commits and syncs it, and holds its claim a few sec
 write one fact: the faults `benchmarks.py multi check` finds. `--plant leak-output` (a lookup agent), `leak-commit` and
 `leak-event` (research agents) make an agent write the canary of another agent, which the file named by the variable
 MULTI_LEAK_CANARY_FILE holds, to its result text, to the planted `_gaps.md` entry it commits and syncs, or to a coord event it posts.
+The roles `bare-lookup`, `bare-research` and `bare-code` stand in for the bare twins of `multi run --bare`, which have no kb
+tooling: `bare-lookup` runs nothing, `bare-research` writes NOTES.md in the current directory (the sandbox of the twin), and
+`bare-code [--title T] [--touch PATH]... [--check JSON]` writes the planted files of the touches, runs the check and commits them with
+plain git, with no `KB-Work` trailer.
 It prints one stream-json result
 event with the planted `--usage` (the four token counts and the turns) and `--cost`, and the commands it ran as `steps`;
 the exit is 1 and the event an error when a command failed. The harness (bench_multi.py) reads the event as it reads a
@@ -194,7 +198,32 @@ def code(a, steps):
     run(["git", "commit", "-q", "-m", f"feat: {item['title']}\n\nKB-Work: {iid}"], steps)
 
 
-ROLES = {"lookup": lookup, "research": research, "code": code}
+def bare_lookup(a, steps):
+    """A bare lookup twin: no command to run (it answers from the web, which a replay does not reach)."""
+
+
+def bare_research(a, steps):
+    """A bare research twin: its notes in NOTES.md of the current directory, a line for the area and no source url."""
+    steps.append("write NOTES.md")
+    Path("NOTES.md").write_text(f"- A planted note of a replayed bare research twin on {a.area}.\n", encoding="utf-8", newline="\n")
+
+
+def bare_code(a, steps):
+    """A bare code twin: the planted file of each touch, the check run and one plain `git commit` of the touches."""
+    for touch in a.touch:
+        if touch not in PLANTED_CODE:
+            raise Failed(f"no planted change for {touch}")
+        path = Path(touch)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(PLANTED_CODE[touch], encoding="utf-8", newline="\n")
+    if a.check:
+        run(json.loads(a.check), steps, "item check: " + shlex.join(json.loads(a.check))[:80])
+    run(["git", "add", "--", *a.touch], steps)
+    run(["git", "commit", "-q", "-m", f"feat: {a.title}"], steps)
+
+
+ROLES = {"lookup": lookup, "research": research, "code": code, "bare-lookup": bare_lookup, "bare-research": bare_research,
+         "bare-code": bare_code}
 
 
 def main(argv=None):
@@ -206,6 +235,9 @@ def main(argv=None):
     ap.add_argument("--budget", type=int, default=1200)
     ap.add_argument("--area", default="")
     ap.add_argument("--holder", default="agent")
+    ap.add_argument("--title", default="a planted change", help="bare-code: the commit's subject")
+    ap.add_argument("--touch", action="append", default=[], help="bare-code: a file to write")
+    ap.add_argument("--check", default="", help="bare-code: the item's check, a json argv")
     ap.add_argument("--plant", choices=PLANTS, default="", help="a fault the role makes on purpose")
     a = ap.parse_args(argv)
     usage, steps, t, shown = json.loads(a.usage), [], time.time(), ""
