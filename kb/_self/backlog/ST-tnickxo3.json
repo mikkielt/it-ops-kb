@@ -28,6 +28,25 @@
     "kb/_self/code.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which fetch failures does land run again, and how often?",
+      "options": [
+        "any failed git fetch of land, once more at once (FETCH_RETRIES = 1)",
+        "only a timeout or an ssh refusal, matched on git's message",
+        "every failed fetch twice, after a pause"
+      ],
+      "recommendation": "any failed git fetch of land, once more at once (FETCH_RETRIES = 1)",
+      "do": {
+        "any failed git fetch of land, once more at once (FETCH_RETRIES = 1)": "ST-tnickxo3",
+        "only a timeout or an ssh refusal, matched on git's message": "ST-tnickxo3",
+        "every failed fetch twice, after a pause": "ST-tnickxo3"
+      },
+      "class": "secrets"
+    }
+  ],
   "links": [
     "parked: SP-qvlnptiw close"
   ],

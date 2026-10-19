@@ -826,6 +826,7 @@ def land_push():
 
 
 LAND_TAIL = 30  # output lines shown of a step that passed (sync's report is shown whole)
+FETCH_RETRIES = 1  # times land runs a failed git fetch again (a refused key, a timeout) before it stops at that step
 
 
 # land's ops rows (kb/_self/querylog.md, ops events): a `land.step` row per step, a `land.end` row at every end, and
@@ -1109,8 +1110,28 @@ def land_git_network(root, step, *args):
         raise land_stop(step, str(e)) from None
 
 
+def land_git_fetch(root, step, *args):
+    """A git fetch through land_git_network, run again FETCH_RETRIES times after a failure (a refused key, a timeout:
+    the two that stopped landings at step fetch and passed when run again minutes later); the last failure is the
+    result, a timeout the last one's land_stop."""
+    for attempt in range(FETCH_RETRIES + 1):
+        last = attempt == FETCH_RETRIES
+        try:
+            p = land_git_network(root, step, *args)
+        except Refused as e:
+            if last:
+                raise
+            say(f"land: git fetch failed ({e}); running it again")
+            continue
+        if p.returncode == 0 or last:
+            return p
+        say(f"land: git fetch failed ({(p.stderr or p.stdout).strip()}); running it again")
+
+
 def land_git(root, step, *args):
-    if args and args[0] in ("fetch", "push", "ls-remote"):
+    if args and args[0] == "fetch":
+        p = land_git_fetch(root, step, *args)
+    elif args and args[0] in ("push", "ls-remote"):
         p = land_git_network(root, step, *args)
     else:
         p = subprocess.run(["git", *args], cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace")
