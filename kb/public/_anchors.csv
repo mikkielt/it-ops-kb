@@ -1330,6 +1330,9 @@ ffb4f9547412,agents/content-safety-prompt-shields.md,S-zlqf57iu,located,Prompt S
 4f1462054802,agents/coordination-messages.md,S-qdxfqzln,located,Orchestrate teams of Claude Code sessions > Limitations,whether;lead;task;teammat,7400313d4d2add1d,check whether the work is actually done and update the task status manually,2026-10-19
 4fa876094b1e,agents/coordination-messages.md,S-qdxfqzln,located,Orchestrate teams of Claude Code sessions > Limitations,dependent;mark;sometim;status;block;fail;complet;task,ce7bec590db82d7d,"teammates sometimes fail to mark tasks as completed, which blocks dependent tasks",2026-10-19
 53ee4222722b,agents/coordination-messages.md,S1935,located,Writing effective tools for agents — with agents > Principles for writing effective tools > Returning meaningful context from your tools,response_format;control;allow;enum;detail;whether;concis;format,623ca9dbebd8f9eb,"allowing your agent to control whether tools return ""concise"" or ""detailed"" responses",2026-10-16
+5f1abc98135b,agents/coordination-messages.md,S1855,unlocated:no-match,,,,,2026-10-16
+5f1abc98135b,agents/coordination-messages.md,S1921,unlocated:no-match,,,,,2026-10-16
+5f1abc98135b,agents/coordination-messages.md,S-wf2dmtu6,unlocated:no-match,,,,,2026-10-16
 628b526c1b7d,agents/coordination-messages.md,S1921,located,How we built our multi-agent research system > Benefits of a multi-agent system > Effective evaluation of agents,accuracy;against;completeness;criteria;factual;rubric;reasonabl;efficiency,8b86d12f5e267e62,tool efficiency (did it use the right tools a reasonable number of times?),2026-10-19
 649358166c25,agents/coordination-messages.md,S2132,unlocated:no-match,,,,,2026-10-16
 649358166c25,agents/coordination-messages.md,S2157,unlocated:no-match,,,,,2026-10-16
