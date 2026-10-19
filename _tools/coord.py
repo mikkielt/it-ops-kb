@@ -49,8 +49,9 @@ handle) and free text is refused. `post` numbers events 1, 2, 3 ... in the store
 for events past N and prints `events`, `last` (the highest sequence it returned, else N) and `timed_out`; a wait whose
 S passes with no event exits 0 with `timed_out` true, and a post from any other process on the same store wakes it.
 
-Two kinds carry a session's plan: `intent` (fields session, item, topic, touch; at least one of item, topic and touch;
-item and topic hold a comma-separated list of ids, touch of globs with * and ?, up to 120 characters) and `progress`
+Two kinds carry a session's plan: `intent` (fields session, item, topic, touch, operator; at least one of item, topic and touch;
+item and topic hold a comma-separated list of ids, touch of globs with * and ?, up to 120 characters; operator is the id of
+the operator the session runs for, which a server's own `operator` field replaces) and `progress`
 (fields item and state, state one of working, blocked, done). Two kinds carry a question and its reply between
 agents: `ask` (fields id, to, ref: to is a session, item or agent id, or `any`; ref is the coord key whose `put` value
 holds the question) and `answer` (fields id, state, ref: state is one of working, input-required, completed, failed,
@@ -98,7 +99,7 @@ with the body {"argv": [the command and its arguments]}; the server answers 401 
 files hold) and runs the command on its store otherwise, answering {"code": N, "body": ...}, where code and body are
 what the command would have printed and exited with; a `wait` checks the token again once a second and before it
 replies, and answers 401 instead of an event when the file is gone. The server adds the operator's name as the field `operator` to
-each event it records (a client cannot set it) and never serves `--store`. `wait` is a long-poll: the request is held
+each event it records (a client's own `operator` field on an intent is replaced by it) and never serves `--store`. `wait` is a long-poll: the request is held
 until an event arrives or S seconds pass. The request carries the token in the clear over plain http, so reach a server
 beyond loopback through a TLS front end (an https URL is accepted): a plain http --url whose host is not loopback, and a
 `serve --bind` host that is not loopback, exit 2 naming plain http and TLS, unless the global flag --plain-http is given
@@ -144,7 +145,7 @@ EVENTS_SCHEMA = (
     "seq INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, fields TEXT NOT NULL, at REAL NOT NULL)"
 )
 KINDS = ("claim", "release", "dedup", "fact_added", "gap_opened", "dup_of", "lesson", "heartbeat", "intent", "progress", "ask", "answer")
-KIND_FIELDS = {"intent": ("session", "item", "topic", "touch"), "progress": ("item", "state"),
+KIND_FIELDS = {"intent": ("session", "item", "topic", "touch", "operator"), "progress": ("item", "state"),
                "ask": ("id", "to", "ref"), "answer": ("id", "state", "ref")}
 STATES = ("working", "blocked", "done")
 ANSWER_STATES = ("working", "input-required", "completed", "failed", "rejected")  # A2A's task states

@@ -7,12 +7,13 @@ one client of the coordination protocol (`kb/_self/tools.md`, coord.py): every c
 command, and the hook adds no state of its own beyond the lease token coord.py shows only once.
 
   SessionStart    takes the presence lease `session/<session id>` (renewed when this session still holds it), posts an
-                  `intent` with fields session and item (the item of a `work/<id>` branch and the items this session
-                  claimed earlier; not again after /compact), then prints the `coord.py digest` lines for those items
+                  `intent` with fields session, item and operator (the item of a `work/<id>` branch and the items this
+                  session claimed earlier; the operator id `kbwho.operator()` gives, left out when it has none; not again
+                  after /compact), then prints the `coord.py digest` lines for those items
   PreToolUse Bash a command that runs `backlog.py claim ID` (text that only holds the words, as a commit message, an
                   echo, a grep pattern or a heredoc does, is no claim): the digest lines for ID, then an intent for ID
-                  (topic backlog-claim, which the worker dispatched on `work/ID` skips at its SessionStart), so the
-                  session's claimed items are announced too; any other command only renews the lease when it is due
+                  (topic backlog-claim, which the worker dispatched on `work/ID` skips at its SessionStart; it carries the
+                  operator field too), so the session's claimed items are announced too; any other command only renews the lease when it is due
                   (below)
   PreToolUse Skill a `/kb-research` start Claude made: the digest lines for this session's items
   UserPromptExpansion a `/kb-research` the person typed, which bypasses PreToolUse: the same lines
@@ -249,9 +250,24 @@ def renew_if_due(sid, state):
     save(sid, state)
 
 
+def operator_id():
+    """The session's operator id (kbwho.operator(), never an email), else None; a coord server's own operator field
+    replaces it in the event."""
+    try:
+        sys.path.insert(0, os.path.join(HOME, "_tools"))
+        import kbwho
+        oid = kbwho.operator().get("id")
+    except Exception:
+        return None
+    return oid if oid and not UNSAFE.search(oid) else None
+
+
 def announce(sid, items, topic=None):
     if items:
         extra = ["--field", "topic=" + topic] if topic else []
+        oid = operator_id()
+        if oid:
+            extra += ["--field", "operator=" + oid]
         coord("post", "--kind", "intent", "--field", "session=" + sid, "--field", "item=" + ",".join(items)[:120], *extra)
 
 
