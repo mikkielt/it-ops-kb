@@ -75,20 +75,53 @@ def done_commits(root):
     return out
 
 
-def follows(bl, left, files):
-    """{id: [ids]} for each open item of LEFT (in the sprint's order): the open items it depends on or that come before it
-    in that order with touches that meet its own (bl_plan.touches_meet over FILES, the tracked files), in that order."""
+def touch_meeter(files):
+    """meet(a, b): bl_plan.touches_meet(a, b, FILES()) with each tracked file matched once per glob, not once per pair: the
+    pair's direct match first (touches_meet over no files), then, for two globs, whether one tracked file that is no
+    kb/_self doc (bl_plan.shared_doc) matches both. A literal touch needs no file: a file it names matches the other glob
+    only where the direct match already says so. Verdicts are kept per pair."""
+    import bl_base
     import bl_plan
-    deps = {i: bl_plan.dependencies(bl, i) for i in left}
-    mine = {i: [t for t in bl.items[i].get("touches") or [] if isinstance(t, str) and t] for i in left}
+    docs = {}
+    matched = {}
+    met = {}
+
+    def hits(t):
+        if t not in matched:
+            if not docs:
+                docs["files"] = [f for f in files() if not bl_plan.shared_doc(f)]
+            rx = bl_base.glob_re(t)
+            matched[t] = {f for f in docs["files"] if rx.match(f)}
+        return matched[t]
+
+    def meet(a, b):
+        key = (a, b) if a <= b else (b, a)  # touches_meet reads the pair the same either way
+        if key not in met:
+            ra, rb = bl_plan.resolved_touch(a), bl_plan.resolved_touch(b)
+            met[key] = bl_plan.touches_meet(ra, rb, []) or (
+                bool(re.search(r"[*?]", ra) and re.search(r"[*?]", rb) and not bl_plan.shared_doc(ra)
+                     and not bl_plan.shared_doc(rb) and bl_base.within_repository(ra, rb, [""]) is not None
+                     and hits(ra) & hits(rb)))
+        return met[key]
+
+    return meet
+
+
+def follows(bl, left, meet):
+    """{id: [ids]} for each of the first OPEN_KEPT open items of LEFT (in the sprint's order, the ones the panel keeps): the
+    open items it depends on or that come before it in that order with touches that meet its own (MEET, touch_meeter over
+    the tracked files), in that order."""
+    import bl_plan
+    mine = {i: [t for t in bl.items[i].get("touches") or [] if isinstance(t, str) and t] for i in left[:OPEN_KEPT]}
     out = {}
-    for n, i in enumerate(left):
-        out[i] = [j for k, j in enumerate(left) if j != i and (j in deps[i] or (k < n and any(
-            bl_plan.touches_meet(a, b, files) for a in mine[i] for b in mine[j])))]
+    for n, i in enumerate(left[:OPEN_KEPT]):
+        deps = bl_plan.dependencies(bl, i)
+        out[i] = [j for k, j in enumerate(left) if j != i and (j in deps or (k < n and any(
+            meet(a, b) for a in mine[i] for b in mine[j])))]
     return out
 
 
-def sprint_row(bl, sid, state, done_at, claimed, files):
+def sprint_row(bl, sid, state, done_at, claimed, meet):
     import bl_base
     import bl_view
     import mon_eta
@@ -101,14 +134,14 @@ def sprint_row(bl, sid, state, done_at, claimed, files):
     waiting = [{"item": i, "gate": g["id"]} for i in holders for g in bl_base.open_gates(bl.items[i])]
     nxt = bl_view.ready(bl, sid) if state == "active" else []
     left = sorted((i for i in items if bl.items[i].get("status") not in ("done", "dropped")), key=bl.order_key)
-    after = follows(bl, left, files())
+    after = follows(bl, left, meet)
     open_items = [{"id": i, "title": str(bl.items[i].get("title") or ""), "status": str(bl.items[i].get("status")),
-                   "kind": mon_eta.kind_of(bl.items[i]), "claimed": claimed.get(i), "after": after[i]} for i in left]
+                   "kind": mon_eta.kind_of(bl.items[i]), "claimed": claimed.get(i), "after": after[i]} for i in left[:OPEN_KEPT]]
     times = sorted(done_at[i] for i in items if i in done_at)[-DONE_KEPT:]
     review = sorted(done_at[i] for i in items if bl.items[i].get("review") and i in done_at)
     return {"id": sid, "title": str(bl.items[sid].get("title") or ""), "state": state, "items": counts,
             "next": nxt[0] if nxt else None, "next_title": str(bl.items[nxt[0]].get("title") or "") if nxt else None,
-            "open": open_items[:OPEN_KEPT], "done_at": times, "review_done": review[-1] if review else None,
+            "open": open_items, "done_at": times, "review_done": review[-1] if review else None,
             "waiting": waiting}
 
 
@@ -127,11 +160,12 @@ def sprints(root):
             tracked.extend(bl_plan.touch_files(bl.root))
         return tracked
 
+    meet = touch_meeter(files)
     rows = []
     for sid, sp in sorted(bl.items.items()):
         state = sprint_state(sp, bl_plan.start_approved) if sp.get("kind") == "sprint" else None
         if state:
-            rows.append(sprint_row(bl, sid, state, done_at, eta["claimed"], files))
+            rows.append(sprint_row(bl, sid, state, done_at, eta["claimed"], meet))
     rows.sort(key=lambda r: SPRINT_STATES.index(r["state"]))  # stable: ids stay in order within a state
     return {"sprints": rows, "source": source, "behind": behind, "history": eta["history"]}
 

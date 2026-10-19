@@ -29,6 +29,25 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does mon_sprint.follows get under the panel timeout with the same result?",
+      "options": [
+        "Kept items only, files expanded once per glob, pair verdicts kept",
+        "Active sprints only, other sprints' after left empty"
+      ],
+      "recommendation": "Kept items only, files expanded once per glob, pair verdicts kept",
+      "do": {
+        "Kept items only, files expanded once per glob, pair verdicts kept": "BG-jemfbkjs",
+        "Active sprints only, other sprints' after left empty": "BG-jemfbkjs"
+      },
+      "class": "design",
+      "answer": "Kept items only, files expanded once per glob, pair verdicts kept",
+      "by": "agent"
+    }
+  ],
   "notes": "Orchestrator 2026-10-19: a regression of this sprint's ST-trhzzeku (mon_sprint.follows). Measured on this host: kbmon.py --status sprints --timeout 60 took 7.0 s wall on origin/main 8f7133f9d (before ST-trhzzeku) and 21.3 s on 5eda43997 (after). It blocks ST-po5rwymx's kb_monitor_status check, so it is S1 in this sprint. Keep follows' result the same (ST-trhzzeku's check must still pass): memoize the touch-pair verdicts or expand each touch's files once, inside mon_sprint.py. Orchestrator 2026-10-19: title reworded to drop the word the repro matches, which the open item's own title echoed into the panel's next and left lines (a self-echo, not slowness).",
   "claimed_by": "orch-r33"
 }
