@@ -102,6 +102,6 @@
     "_tools/coord.py",
     "kb/_self/_decisions.csv"
   ],
-  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): a fitness check the harness runs on replays and on paid runs, not a tests.py test; no test file and no change to _tools/tests_ceiling.json.",
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): a fitness check the harness runs on replays and on paid runs, not a tests.py test; no test file and no change to _tools/tests_ceiling.json. Landing: kb/_self/code.md read against the multi check change (no new module, bench_replay.py still imports no project module) and found still correct.",
   "claimed_by": "orch-r21"
 }
