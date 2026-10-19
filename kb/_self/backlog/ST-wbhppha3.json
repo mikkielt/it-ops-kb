@@ -74,7 +74,7 @@
       },
       "class": "design",
       "answer": "root, id_prefix and access are required with url; visibility defaults to internal; team, ref, pin and description are optional, a pin must be a commit hash",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -91,7 +91,7 @@
       },
       "class": "design",
       "answer": "the root or the earlier pointer (by name) keeps it; the later pointer is listed missing with the clash and check.py names its file",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19, this checkout): kbroot.py list in a planted clone with kb/_roots/team-a.md prints only the public row; check.py says nothing of the pointers. ",

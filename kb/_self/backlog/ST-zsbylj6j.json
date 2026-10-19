@@ -83,7 +83,7 @@
       },
       "class": "design",
       "answer": "a NAME.fetch-error file beside the clone in the roots cache, removed by the next successful fetch",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
