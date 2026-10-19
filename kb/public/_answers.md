@@ -4172,7 +4172,7 @@ _Agent: kb-research_
 - A submodule is a separate repository each reader clones with their own access, and the gitsubmodules page names access control as a use; a superproject clone does not recurse by default. A subtree, a sparse checkout and a partial clone hold or trim one repository's objects and control no access. [DOC S-tzjw5vut, S-hvg7hx3q, S-dhea6atb]
 - A GitLab fork may be more restrictive than its upstream; a GitHub fork of a public repository stays public, so a private team root beside a public upstream on GitHub is a separate repository. [DOC S-p6qwirq5, S-nhku2azk]
 - Conclusion: one repository per team root, pinned from the shared repository as a submodule or named by a pointer file that is resolved at use time, lets each team read only what its credentials reach, while the shared root still clones and serves without it. Attribution needs one stable name per operator and per machine identity (a bot or app account, a key file per operator for a coord server) carried the same way in commits, coord events and telemetry. [DER S-tzjw5vut, S-vvarw4uu, S-cfpw3yy4, S744]
-- Open: what `git submodule update` does when the forge refuses the credential (401, 403, an SSH denial), and the author a commit pushed with a GitHub App token carries. [UNK]
+- Open: what `git submodule update` does when a real forge refuses the credential (401, 403, an SSH denial; stand-in runs on macOS are in QK-tool-read-pinned-submodule-root-fail, 2026-10-19), and the author a commit pushed with a GitHub App token carries. [UNK]
 - See gitlab/multi-repository-layouts.md, gitlab/commit-signing-and-provenance.md, gitlab/deploy-keys-and-tokens.md, entra/agent-id.md, agents/a2a-protocol.md, mcp/authorization.md, claude/otel-monitoring.md.
 
 _Agent: kb-research_
@@ -4231,5 +4231,15 @@ _Agent: kb-research_
 - Conclusion: a claim tool can default its holder to `CLAUDE_CODE_SESSION_ID` in a headless main session, and a harness that counts duplicated research has no published metric to borrow: the count (repeated searches or fetched pages across agents) is this kb's own measure. [DER S745, S1921, S-qdxfqzln, S718]
 - Open: the skill, `--settings`, `--strict-mcp-config` and project hooks together in one run; a subagent's value of the variable; a published measure of duplication between agents. [UNK]
 - See claude/ci-and-headless.md, claude/hooks.md, agents/coordination-messages.md, mcp/tasks-extension.md.
+
+_Agent: kb-research_
+
+## QK-tool-read-pinned-submodule-root-fail. How does a tool read a pinned submodule root and fail at once without a prompt when a git clone or submodule update is refused, and what limits apply on Windows?
+- `git submodule status` prints one line a submodule with a `-` (not initialised), `+` (checked-out commit differs from the index) or `U` (conflicts) prefix; `.gitmodules` holds `submodule.<name>.path` and `.url`, and `git config --get-regexp` is deprecated for `git config get --all --show-names --regexp`. [DOC S-vvarw4uu, S-bhnnr3li, S-kzv2kznr]
+- `GIT_TERMINAL_PROMPT=0` stops git prompting on the terminal; `GIT_ASKPASS` and `core.askPass` name a program that answers instead; GCM's `GCM_INTERACTIVE=0` or `credential.interactive false` returns an error instead of a prompt. [DOC S-dcbs6vpj, S-53fmero7, S-zflhytlw, S-6mfmfuft, S-thoitei2]
+- Windows limits a path to 260 characters unless long paths are enabled, and its file system is case-insensitive by default unless a directory is flagged. [DOC S1591, S-gt67rjc2]
+- Conclusion: a probe on git 2.50.1 (macOS) with stand-in servers saw `git clone` exit 128 and `git submodule update --init` exit 1 after two attempts, with no prompt, for a 401, a 403 and an SSH refusal, and `git submodule status` stayed exit 0 with a `-` line, so a tool reports a root as missing from the update's exit and the status prefix and never needs to treat it as fatal; root names should be lowercase and short for Windows. [DER S-dcbs6vpj, S-vvarw4uu, S1591, S-gt67rjc2]
+- Open: a real forge's refusal, Windows and Linux runs, GCM or a credential helper present, whether GCM honours `GIT_TERMINAL_PROMPT`, `core.longpaths` against a deep submodule path. [UNK]
+- See gitlab/multi-repository-layouts.md, gitlab/git-test-repositories.md.
 
 _Agent: kb-research_
