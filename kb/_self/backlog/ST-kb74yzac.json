@@ -2,7 +2,7 @@
   "id": "ST-kb74yzac",
   "kind": "story",
   "title": "multi check names duplicate research when the coord store is shared and measures it when isolated",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-giqleoy2",
   "sprint": "SP-7s6uubs7",
   "priority": "P2",
@@ -48,5 +48,6 @@
     "_tools/coord.py",
     "kb/_self/_decisions.csv"
   ],
-  "notes": "Matches facts as bench_repro.compare does (claim, SAME_CLAIM) and dedup claims by coord.py's research:TOPIC:TERM keys, read from the sandbox store with coord.py list and its events. A fitness check, not a tests.py test (D-6kei5o2z, D-2tq4fhgs)."
+  "notes": "Matches facts as bench_repro.compare does (claim, SAME_CLAIM) and dedup claims by coord.py's research:TOPIC:TERM keys, read from the sandbox store with coord.py list and its events. A fitness check, not a tests.py test (D-6kei5o2z, D-2tq4fhgs).",
+  "claimed_by": "orch-r21"
 }
