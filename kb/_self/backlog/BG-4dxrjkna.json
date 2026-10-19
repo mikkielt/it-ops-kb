@@ -2,7 +2,7 @@
   "id": "BG-4dxrjkna",
   "kind": "bug",
   "title": "The private-name leak scan fails open: a registry that does not load (two roots with one id prefix) gives no private pattern, and file_hits passes every private name",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-yjugq5c2",
   "priority": "P2",
@@ -43,6 +43,19 @@
   "links": [
     "parked: SP-qinvdomv review"
   ],
-  "claimed_by": "orch-r39",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "ccf2a5398766072732f105222931c50c3d8c9c75",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, sys, tempfile\nd = tempfile.mkdtemp(); dirs = []\nfor name, pre in ((\"team-x\", \"TX\"), (\"team-y\", \"TY\"), (\"team-dup\", \"TX\")):\n    r = os.path.join(d, name); os.makedirs(r); dirs.append(r)\n    open(os.path.join(r, \"_root.md\"), \"w\").write(f\"---\\nroot: {name}\\nid_prefix: {pre}\\nvisibility: internal\\n---\\n\\n# {name}\\n\")\nos.environ[\"KB_ROOTS\"] = os.pathsep.join(dirs)\nsys.path.insert(0, \"_tools\")\nimport kbpublic\ntry:\n    h = kbpublic.file_hits(\"README.md\", \"see TY-\" + \"k3f7q2zd and team-y/mdm/x.md\", {})\nexcept Exception as e:\n    print(\"refused:\", type(e).__name__); sys.exit(0)\nprint(h); sys.exit(0 if h else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "895f244ea2d98531"
+      }
+    ]
+  }
 }
