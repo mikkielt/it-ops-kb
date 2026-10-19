@@ -2,7 +2,7 @@
   "id": "ST-ju37ir2m",
   "kind": "story",
   "title": "The horizon hook says when the checkout is behind origin/main",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-tsb23kev",
   "priority": "P2",
   "rank": 0,
@@ -39,5 +39,7 @@
     "kb/_self/code.md",
     "kb/_self/tools.md"
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): the main checkout lagging origin/main: on 2026-10-18 it was 868 commits behind, so its hooks ran old code and the query log delivery stalled; on 2026-10-19 it was 19 behind. The hook only reports; the fast-forward stays the operator's. Premise: the first check fails (no lag line). Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+  "notes": "operator request 2026-10-19 (housekeeping batch): the main checkout lagging origin/main: on 2026-10-18 it was 868 commits behind, so its hooks ran old code and the query log delivery stalled; on 2026-10-19 it was 19 behind. The hook only reports; the fast-forward stays the operator's. Premise: the first check fails (no lag line). Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
+  "claimed_by": "orch-r102",
+  "operator": "op-f618a13e"
 }
