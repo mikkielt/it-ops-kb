@@ -2,7 +2,7 @@
   "id": "BG-hia2m3hg",
   "kind": "bug",
   "title": "kbgit.py contribute crashes on the five-field history_changes, leaves out every commit with an attribution trailer and prints a left-out commit's private subject",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-qinvdomv",
   "priority": "P1",
@@ -34,5 +34,6 @@
     "_tools/kg_contrib.py",
     "kb/_self/git.md"
   ],
-  "notes": "Filed by the SP-qinvdomv review (gaps 1, 2, 5). ST-vruwai2i made kbpublic.history_changes return five fields after ST-6c5xgv5a landed; kg_contrib.py:31,63,87,91,94 still unpack four, so contribute and ST-6c5xgv5a's own check fail on main. The review changed ST-6c5xgv5a gate g1: the message check reads only the registry's private names and secrets (kbcommon.leak_hits with no allowlist flags the attribution trailer's email, 116 of the last 200 commits carry it), the added lines keep every leak-scan shape; a message hit names the commit by hash only (the subject echo printed the private id). Premise run 2026-10-19 on main f24dc409b: repro exits 1 with ValueError: too many values to unpack (expected 4) at kg_contrib.py:63."
+  "notes": "Filed by the SP-qinvdomv review (gaps 1, 2, 5). ST-vruwai2i made kbpublic.history_changes return five fields after ST-6c5xgv5a landed; kg_contrib.py:31,63,87,91,94 still unpack four, so contribute and ST-6c5xgv5a's own check fail on main. The review changed ST-6c5xgv5a gate g1: the message check reads only the registry's private names and secrets (kbcommon.leak_hits with no allowlist flags the attribution trailer's email, 116 of the last 200 commits carry it), the added lines keep every leak-scan shape; a message hit names the commit by hash only (the subject echo printed the private id). Premise run 2026-10-19 on main f24dc409b: repro exits 1 with ValueError: too many values to unpack (expected 4) at kg_contrib.py:63.",
+  "claimed_by": "orch-r36"
 }
