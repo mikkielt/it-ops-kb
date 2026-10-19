@@ -90,6 +90,21 @@
       "class": "agents-rule",
       "answer": "own only with proof: a same-name claim is an overlap unless the call passes the lease key its earlier dedup printed",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How is a whole-topic research claim keyed and reported when the pack names no lack term?",
+      "options": [
+        "key research:TOPIC:* and list it in claimed, uncovered stays empty",
+        "key research:TOPIC:* and list * in uncovered"
+      ],
+      "recommendation": "key research:TOPIC:* and list it in claimed, uncovered stays empty",
+      "do": {
+        "key research:TOPIC:* and list it in claimed, uncovered stays empty": "ST-tslkou63",
+        "key research:TOPIC:* and list * in uncovered": "ST-tslkou63"
+      },
+      "class": "agents-rule"
     }
   ],
   "notes": "Premise runs 2026-10-19 on origin/main 7079b184a. (1) Transcripts of the SP-3pvz2noj research runs (~/.claude/projects/*bench-multi-*): every kb-arm research agent did run coord.py dedup from /kb-research step 0 with KB_COORD_STORE set, but picked its own --holder text: in sandbox 858a5dbd agents 1 and 2 both used kb-research-pip, so agent 1's dedup counted agent 2's four claims as its own (claimed [], uncovered all four, overlaps []) and researched them again. Reproduced on a planted store: a second dedup under the same holder name gets claimed [] and uncovered all terms, a third holder gets the overlap. (2) coord.fingerprint on four wordings of the same pip area: topics public/gitlab/package-registries and public/privacy/spacy-pipeline-pinning, lack terms 0, 3, 0 and 4; in most runs agents 1 and 2 got terms [] and claimed nothing. Checks 1-3 fail on main (holder anonymous; same-name dedup claims nothing and sees no overlap; --topic unknown, exit 2); check 4 fails (step 0 names neither --topic nor KB_COORD_HOLDER).",

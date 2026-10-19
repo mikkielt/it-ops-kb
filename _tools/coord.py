@@ -20,7 +20,8 @@
                                                      live intents and claims that overlap a key K (repeatable)
   coord.py wait --since N --timeout S                print the events after sequence N, blocking until one arrives or
                                                      S seconds pass
-  coord.py dedup QUESTION [--holder NAME] [--ttl S]  claim the question's lack terms that no overlapping live claim
+  coord.py dedup QUESTION [--holder NAME] [--topic PATH] [--token T] [--ttl S]
+                                                     claim the question's lack terms that no overlapping live claim
                                                      covers (local store only, not through --url)
 
 The store is one SQLite file: `--store PATH` (before or after the command), else the environment variable
@@ -69,9 +70,13 @@ lease `session/ID` and any other key leave none. `dedup` leaves a `claim` event 
 
 `dedup` runs `rag.py pack QUESTION` and takes its fingerprint: the anchor topic (the first article's path without `.md`,
 else `unanchored`) and the terms of its `kb lacks:` lines, lowercased and mapped to their canonical form by
-`_tools/aliases.csv` and each root's `_retrieval/aliases.csv`. A live claim of another holder (a `research:TOPIC:TERM` key;
-the same holder under a name other than `anonymous` is itself, never an overlap) overlaps when it is on the same topic and
-shares at least half of the smaller of the two term sets; the shared terms count as covered. In one transaction `dedup`
+`_tools/aliases.csv` and each root's `_retrieval/aliases.csv`; `--topic PATH` anchors the claim on the article PATH (without
+`.md`) instead. A live claim of another holder (a `research:TOPIC:TERM` key) overlaps when it is on the same topic and
+shares at least half of the smaller of the two term sets; the shared terms count as covered. A claim under the caller's own
+holder name is its own only when `--token` is that claim's token (the one an earlier `dedup` printed): the same name from a
+session that holds no such token is another holder. A question whose pack names no lack term claims the topic as a whole
+(`research:TOPIC:*`, listed in `claimed` with `uncovered` empty): it overlaps every other holder's claim on the topic, and
+another holder's whole-topic claim covers every term of a later question on it. In one transaction `dedup`
 claims every term not covered (one lease, one token, shown once, for the keys in `claimed`) and prints `topic`, `terms`,
 `uncovered`, `overlaps` (each: `holder`, `topic`, shared `terms`), `held` (each uncovered term another live claim
 already holds, below the overlap threshold: `term`, `holder`; `dedup` claims no key a live claim holds), `claimed`,
@@ -94,6 +99,8 @@ until an event arrives or S seconds pass. The request carries the token in the c
 beyond loopback through a TLS front end (an https URL is accepted): a plain http --url whose host is not loopback, and a
 `serve --bind` host that is not loopback, exit 2 naming plain http and TLS, unless the global flag --plain-http is given
 before the command (`coord.py --plain-http serve ...`; `--plain-http --url ... --key-file ...`).
+
+Without `--holder`, `claim` and `dedup` take the holder from the environment variable KB_COORD_HOLDER, else `anonymous`.
 
 Exit codes: 0 done; 1 the command's condition failed (key held, wrong or expired token, revision moved, key
 absent); 2 a bad argument, no store, or a server that refuses (401) or cannot be reached.
@@ -121,6 +128,8 @@ HERE = Path(__file__).resolve().parent
 BUSY_SECONDS = 30
 PACK_SECONDS = 120
 RESEARCH = "research:"  # a research claim's key: research:<anchor topic>:<lack term>
+WHOLE = "*"  # the term of a research claim on a topic as a whole: research:<anchor topic>:*
+HOLDER_ENV = "KB_COORD_HOLDER"
 DEDUP_SECONDS = 3600
 SCHEMA = (
     "CREATE TABLE IF NOT EXISTS entries ("
@@ -232,7 +241,8 @@ def take(con, key, holder, token, ttl, now, budget=None):
 
 
 def holder_name(args):
-    """The claim's --holder, else `anonymous`: an id like an event's field value, so a digest line never carries free text."""
+    """The claim's --holder, else `anonymous`: an id like an event's field value, so a digest line never carries free text.
+    `main` fills a missing --holder of a local command from KB_COORD_HOLDER; a server never reads its own environment."""
     holder = args.holder or "anonymous"
     if not FIELD_VALUE.fullmatch(holder):
         raise Refused({"ok": False, "error": f"--holder is an id of 1 to 120 characters of letters, digits and _ . : / # @ -, not {holder[:40]!r}"}, 2)
@@ -550,9 +560,18 @@ def alias_map():
     return out
 
 
-def fingerprint(question):
+def topic_path(text):
+    """A --topic path as the anchor topic: without `.md`, an id of 1 to 120 characters with no `:` (a research key splits there)."""
+    topic = text[:-3] if text.endswith(".md") else text
+    if not FIELD_VALUE.fullmatch(topic) or ":" in topic:
+        raise argparse.ArgumentTypeError("must be an article path of letters, digits and _ . / # @ -, up to 120 characters")
+    return topic
+
+
+def fingerprint(question, topic=None):
     """(anchor topic, lack terms) of the question's pack: the first article's path without `.md` (`unanchored` when
-    the pack names none) and the words of its `kb lacks:` lines, lowercased and mapped to their canonical alias."""
+    the pack names none; TOPIC, when given, instead of either) and the words of its `kb lacks:` lines, lowercased and
+    mapped to their canonical alias."""
     pack = HERE / "rag.py"
     try:
         p = subprocess.run([sys.executable, str(pack), "pack", question, "--format", "concise", "--budget", "300"],
@@ -570,7 +589,8 @@ def fingerprint(question):
             word = names.get(word, word)
             if word and word != "-" and word not in terms:
                 terms.append(word)
-    return (article.group(1) if article else "unanchored"), terms
+    found = article.group(1) if article else "unanchored"
+    return (topic or found), terms
 
 
 def research_key(topic, term):
@@ -579,32 +599,42 @@ def research_key(topic, term):
 
 def dedup(args, clock):
     """Claim the lack terms of the question's pack that no overlapping live claim covers; name the claims that do.
-    A claim on the same anchor topic overlaps when it shares at least half of the smaller lack-set's terms."""
+    A claim on the same anchor topic overlaps when it shares at least half of the smaller lack-set's terms. A pack with
+    no lack term claims the topic as a whole (the term WHOLE), which overlaps every other holder's claim on the topic,
+    and a whole-topic claim of another holder covers every term. A live claim under the caller's own holder name is its
+    own only when --token is that claim's token: the same name from another session is an overlap."""
     holder = holder_name(args)
-    topic, terms = fingerprint(args.question)
+    topic, terms = fingerprint(args.question, args.topic)
     token = secrets.token_hex(16)
     overlapping, covered, own, taken, others = [], set(), set(), [], []
     with Tx(args.store) as con:
         now = clock()
         end_leases(con, now)
         theirs, holders = {}, {}
-        for row in con.execute("SELECT key, holder FROM entries WHERE holder IS NOT NULL AND substr(key, 1, ?) = ? ORDER BY key",
+        for row in con.execute("SELECT key, holder, token FROM entries WHERE holder IS NOT NULL AND substr(key, 1, ?) = ? ORDER BY key",
                                (len(RESEARCH), RESEARCH)):
             their_topic, _colon, term = row["key"][len(RESEARCH):].partition(":")
             if their_topic != topic:
                 continue
-            if row["holder"] == holder and holder != "anonymous":
+            if row["holder"] == holder and args.token and row["token"] == args.token:
                 own.add(term)
             else:
                 theirs.setdefault(row["holder"], set()).add(term)
                 holders.setdefault(term, row["holder"])
         for who, held in sorted(theirs.items(), key=lambda pair: str(pair[0])):
-            shared = [t for t in terms if t in held]
-            if shared and len(shared) * 2 >= min(len(terms), len(held)):
-                covered.update(shared)
-                overlapping.append({"holder": who, "topic": topic, "terms": shared})
+            if not terms:
+                overlapping.append({"holder": who, "topic": topic, "terms": sorted(held)})
+            elif WHOLE in held:
+                covered.update(terms)
+                overlapping.append({"holder": who, "topic": topic, "terms": list(terms)})
+            else:
+                shared = [t for t in terms if t in held]
+                if shared and len(shared) * 2 >= min(len(terms), len(held)):
+                    covered.update(shared)
+                    overlapping.append({"holder": who, "topic": topic, "terms": shared})
         uncovered = [t for t in terms if t not in covered]
-        for term in uncovered:
+        wanted = uncovered if terms else ([] if overlapping or WHOLE in own else [WHOLE])
+        for term in wanted:
             if term in holders:
                 others.append({"term": term, "holder": holders[term]})
             elif term not in own:
@@ -613,8 +643,9 @@ def dedup(args, clock):
                 add_event(con, args, "claim", {"key": taken[-1], "holder": holder}, now)
         add_event(con, args, "dedup", {
             "holder": holder, "topic": topic, "terms": term_list(terms),
-            "claimed": term_list(t for t in uncovered if research_key(topic, t) in taken),
-            "overlapping": term_list(sorted(covered)), "held": term_list(o["term"] for o in others)}, now)
+            "claimed": term_list(t for t in wanted if research_key(topic, t) in taken),
+            "overlapping": term_list(sorted(covered or {t for o in overlapping for t in o["terms"]})),
+            "held": term_list(o["term"] for o in others)}, now)
         last = con.execute("SELECT COALESCE(MAX(seq), 0) FROM events").fetchone()[0]
     body = {"ok": True, "topic": topic, "holder": holder, "terms": terms, "uncovered": uncovered, "overlaps": overlapping,
             "held": others, "claimed": taken, "ttl": args.ttl, "seq": last}
@@ -686,7 +717,7 @@ def build_parser(parser_class=argparse.ArgumentParser, remote=False):
     p = sub.add_parser("claim", parents=parents)
     p.add_argument("key")
     p.add_argument("--ttl", type=positive, required=True, help="lease length in seconds")
-    p.add_argument("--holder", help="name shown to a second claimer (default anonymous)")
+    p.add_argument("--holder", help=f"name shown to a second claimer (else {HOLDER_ENV}, else anonymous)")
     p.add_argument("--budget", type=positive, help="USD the operator approved for the claimed item (KEY is its id)")
     p = sub.add_parser("renew", parents=parents)
     p.add_argument("key")
@@ -716,7 +747,9 @@ def build_parser(parser_class=argparse.ArgumentParser, remote=False):
     if not remote:
         p = sub.add_parser("dedup", parents=parents)
         p.add_argument("question")
-        p.add_argument("--holder", help="name shown to a later question that overlaps this one (default anonymous)")
+        p.add_argument("--holder", help=f"name shown to a later question that overlaps this one (else {HOLDER_ENV}, else anonymous)")
+        p.add_argument("--topic", type=topic_path, help="the article path to anchor the claim on, instead of the pack's first article")
+        p.add_argument("--token", type=token, help="the token an earlier dedup printed: its claims under --holder are yours, not an overlap")
         p.add_argument("--ttl", type=positive, default=DEDUP_SECONDS, help=f"lease length in seconds (default {DEDUP_SECONDS})")
         p = sub.add_parser("serve", parents=parents)
         p.add_argument("--bind", required=True, metavar="[HOST:]PORT", help="host (default 127.0.0.1) and port (0: a free one)")
@@ -1030,8 +1063,16 @@ def main(argv=None):
         if not (named.url and named.key_file):
             print("coord.py: --url and --key-file go together", file=sys.stderr)
             return 2
+        try:
+            sent = build_parser(QuietParser, True).parse_args(rest)
+        except Refused:
+            sent = None
+        if sent is not None and sent.command == "claim" and not sent.holder and os.environ.get(HOLDER_ENV):
+            rest = [*rest, "--holder", os.environ[HOLDER_ENV]]
         return send(named.url, named.key_file, rest, named.plain_http)
     args = build_parser().parse_args(argv)
+    if args.command in ("claim", "dedup") and not args.holder:
+        args.holder = os.environ.get(HOLDER_ENV)
     args.store = getattr(args, "store", None) or os.environ.get("KB_COORD_STORE") or default_store()
     if not args.store:
         print("coord.py: no store: pass --store PATH or set KB_COORD_STORE (this script's directory is in no git "
