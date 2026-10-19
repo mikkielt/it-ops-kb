@@ -247,10 +247,68 @@ MULTI_METRICS = ("input", "out", "cache_read", "cache_write", "cost", "wall_s", 
 MULTI_AGENT_METRICS = ("input", "out", "cache_read", "cache_write", "cost", "wall_s", "turns", "right", "eval_passed")  # an agent's
 
 
+TOKEN_PARTS = ("input", "out", "cache_read", "cache_write")  # summed to one run's tokens
+PER_UNIT = (("correct answer", "right"), ("verified fact", "facts_verified"), ("passing item", "items_passed"))  # name, count metric
+NO_DATA = "no data"
+
+
+def _measure(vals, kind, count=None):
+    """One arm's figure from its run metrics `vals`: `tokens` (the four token metrics summed) or `usd` (`usd`, else
+    `cost`), divided by the metric `count` when given; None (no data) when a row it needs is missing or the count is 0."""
+    if kind == "tokens":
+        top = sum(vals[m] for m in TOKEN_PARTS) if all(m in vals for m in TOKEN_PARTS) else None
+    else:
+        top = vals.get("usd", vals.get("cost"))
+    if count is None or top is None:
+        return top
+    return top / vals[count] if vals.get(count) else None
+
+
+def _show(kind, x, signed=False):
+    if x is None:
+        return NO_DATA
+    sign = ("+" if x > 0 else "-" if x < 0 else "") if signed else ("-" if x < 0 else "")
+    return sign + (f"{abs(x):,.0f}" if kind == "tokens" else f"${abs(x):.4f}")
+
+
+def compare_table(run):
+    """The kb arm against its bare twin (the arm `bare ` and the kb arm's label) of each record and knob set of one case:
+    per measure (tokens and USD, in all and per correct answer, verified fact and passing item the case has rows for) the
+    kb arm's figure, the bare arm's and kb minus bare with its direction; `no data` where no row (or a count of 0) is
+    behind a figure. The `delta` arms are differences, not arms, and are left out."""
+    got, order = {}, []
+    for r in run:
+        arm = r["arm"]
+        if arm.split(" ")[0] == "delta" or not _isnum(r["value"]):
+            continue
+        side, label = ("bare", arm[5:]) if arm.startswith("bare ") else ("kb", arm)
+        if (r["record"], label) not in got:
+            order.append((r["record"], label))
+        got.setdefault((r["record"], label), {"kb": {}, "bare": {}})[side][r["metric"]] = float(r["value"])
+    if not got:
+        return ""
+    units = [(n, c) for n, c in PER_UNIT if any(c in s for g in got.values() for s in g.values())]
+    measures = [("tokens", "tokens", None), ("USD", "usd", None)]
+    for name, count in units:
+        measures += [(f"tokens per {name}", "tokens", count), (f"USD per {name}", "usd", count)]
+    out = ["| record | arm | measure | kb | bare | kb minus bare |", "|---|---|---|---|---|---|"]
+    for key in order:
+        for name, kind, count in measures:
+            a, b = (_measure(got[key][s], kind, count) for s in ("kb", "bare"))
+            if a is None or b is None:
+                diff = NO_DATA
+            else:
+                d = a - b
+                diff = f"{_show(kind, d, True)} ({'kb lower' if d < 0 else 'kb higher' if d > 0 else 'equal'})"
+            out.append(f"| {key[0]} | {key[1]} | {name} | {_show(kind, a)} | {_show(kind, b)} | {diff} |")
+    return "\n".join(out)
+
+
 def multi_tables(rows):
     """The tables of the scenario `multi` (benchmarks.py multi record): per case (a scenario of the multi-agent
-    benchmark), a table of the run's metrics with a line for each arm (concurrent, sequential, then the delta of the two) and,
-    when the rows hold per-agent metrics (`AGENT/METRIC`), a table of the agents; cells as in `table`."""
+    benchmark), a table of the run's metrics with a line for each arm (concurrent, sequential, then the delta of the two),
+    the table of the kb arm against its bare twin (`compare_table`) and, when the rows hold per-agent metrics
+    (`AGENT/METRIC`), a table of the agents; cells as in `table`."""
     mine = sorted((r for r in rows if r["scenario"] == "multi"),
                   key=lambda r: MULTI_HEADS.index(r["arm"].split(" ")[0]) if r["arm"].split(" ")[0] in MULTI_HEADS else len(MULTI_HEADS))
     if not mine:
@@ -262,6 +320,8 @@ def multi_tables(rows):
                   for r in mine if r["case"] == case and "/" in r["metric"]]
         have = lambda mm, rr: [m for m in mm if any(r["metric"] == m for r in rr)]  # noqa: E731
         out += [f"#### {case}", "", table(run, "multi", have(MULTI_METRICS, run), cases=[case]), ""]
+        if compare_table(run):
+            out += [f"The kb agents against their bare twins in {case}:", "", compare_table(run), ""]
         if agents:
             names = list(dict.fromkeys(r["case"] for r in agents))
             out += [f"Per agent of {case}:", "",
