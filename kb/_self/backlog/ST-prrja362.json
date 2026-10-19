@@ -22,6 +22,25 @@
     "_tools/benchmarks.py",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which files must multi check find before it checks: every manifest coord store, or only the store of each agent that is no lookup (and every kb agent's output log unless it failed on budget)?",
+      "options": [
+        "every store",
+        "only non-lookup agents' stores"
+      ],
+      "recommendation": "only non-lookup agents' stores",
+      "do": {
+        "every store": "ST-prrja362",
+        "only non-lookup agents' stores": "ST-prrja362"
+      },
+      "class": "design",
+      "answer": "only non-lookup agents' stores",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-7s6uubs7 review"
   ],
