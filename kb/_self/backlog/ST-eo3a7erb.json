@@ -2,7 +2,7 @@
   "id": "ST-eo3a7erb",
   "kind": "story",
   "title": "coord.py claim, dedup and release leave the events a harness counts: a real research agent's claim window, a refused claim and a dedup's result",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-giqleoy2",
   "sprint": "SP-p46hofrg",
   "priority": "P2",
@@ -71,5 +71,6 @@
   "links": [
     "parked: SP-7s6uubs7 review"
   ],
-  "notes": "Review of SP-7s6uubs7, S2: coord.py claim and release post no events and a released row is deleted, so only the replay's hand-posted events make the duplicate-research check fire (bench_multi.py claim_windows). Premise run 2026-10-19 on origin/main 7079b184a: two coord.py dedup calls and a third holder on a planted store posted no event at all (sqlite3 events table empty), and the check below fails with 'a claimed and released research key leaves no claim window'. Cause of claims=0 in every SP-3pvz2noj row: coord_counts reads entries after the run, and release deletes a released row, so a claim the agents made and released (sandbox 3c0dfd52 agent3, 51188732 agent3, 858a5dbd agent2 and agent3: four research keys each, released) counts 0."
+  "notes": "Review of SP-7s6uubs7, S2: coord.py claim and release post no events and a released row is deleted, so only the replay's hand-posted events make the duplicate-research check fire (bench_multi.py claim_windows). Premise run 2026-10-19 on origin/main 7079b184a: two coord.py dedup calls and a third holder on a planted store posted no event at all (sqlite3 events table empty), and the check below fails with 'a claimed and released research key leaves no claim window'. Cause of claims=0 in every SP-3pvz2noj row: coord_counts reads entries after the run, and release deletes a released row, so a claim the agents made and released (sandbox 3c0dfd52 agent3, 51188732 agent3, 858a5dbd agent2 and agent3: four research keys each, released) counts 0.",
+  "claimed_by": "orch-r61"
 }
