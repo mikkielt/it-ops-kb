@@ -59,7 +59,8 @@ def screens():
     drop = lambda rx: re.compile(rx.replace("\\b", ""))  # noqa: E731
     folded = [f"(?:{p[4:]})" for p in kbcommon.SECRETS if p.startswith("(?i)")]
     return ([drop(p) for p in kbcommon.SECRETS if not p.startswith("(?i)")], drop("|".join(folded)) if folded else None,
-            [drop(x) for x in (kbcommon.LEAK_HOME, kbcommon.LEAK_IPV4, kbcommon.LEAK_EMAIL, kbcommon.LEAK_GUID)])
+            [drop(x) for x in (kbcommon.LEAK_HOME, kbcommon.LEAK_IPV4, kbcommon.LEAK_EMAIL, kbcommon.LEAK_GUID)]
+            + [rx for _, rx in kbcommon._private_patterns()])
 
 
 def candidate(t, vendored):
@@ -88,6 +89,7 @@ def scan():
     the verdict, so the test and the guards agree."""
     allow, pins = allowlist(), pinned()
     internal = tuple(kbcommon.repo_rel(".", r.path) + "/" for r in kbcommon.roots() if r.visibility != "public")
+    internal += tuple(kbcommon.repo_rel(p.path, kbcommon.HOME) for p in kbcommon.pointers() if p.visibility != "public")
     secrets = re.compile(kbcommon.secrets_rx())
     out = []
     for f in tracked():
@@ -135,6 +137,21 @@ def test_scan_reports_each_planted_leak_and_honours_the_allowlist_and_webfetch_h
     assert kbpublic.file_hits("notes.md", ok, {}) == []
     allow = kbpublic.parse_allowlist("\n".join(f"{k} {v}  # reviewed" for k, v in values.items() if k != "home"))
     assert [k for k, _ in kbpublic.file_hits("notes.md", " ".join(values.values()), allow)] == ["home"]
+    # the private names of an internal root and its pointer (a registry planted in a temporary directory): a source id with
+    # its prefix, a qualified path and the pointer's url host and path are refused, a bare root name is not
+    team = tmp_path / "team"
+    team.mkdir()
+    (team / kbcommon.ROOT_FILE).write_text("---\nroot: team-z\nid_prefix: TZ\nvisibility: internal\n---\n", encoding="utf-8")
+    monkeypatch.setenv("KB_ROOTS", str(team))
+    monkeypatch.setattr(kbcommon, "_ROOTS", [])
+    monkeypatch.setattr(kbcommon, "_MISSING", [])
+    monkeypatch.setattr(kbcommon, "_pointer_files", lambda: [str(tmp_path / "team-y.md")])
+    (tmp_path / "team-y.md").write_text("---\nroot: team-y\nid_prefix: TY\nvisibility: internal\nurl: https://" + "kb.team-y"
+                                        + ".test/team-y/kb.git\naccess: fetch\n---\n", encoding="utf-8")
+    private = "TZ-k3f7q2zd TY-k3f7q2zd team-z/mdm/x.md kb.team-y.test team-y/kb"
+    got = [v for _, v in kbcommon.leak_hits(private)]
+    assert all(any(w in v for v in got) for w in private.split()), got
+    assert kbcommon.leak_hits("S-k3f7q2zd on corp.example.com, public/mdm/x.md; team-z owns it") == []
     # vendor exports are read for secrets only
     assert [k for k, _ in kbpublic.file_hits("kb/x/artifacts/a.txt", " ".join(values.values()), {})] == ["secret"]
     # the PreToolUse guard on WebFetch (kb_hook.webfetch_deny): a host the routes table routes away from WebFetch is
