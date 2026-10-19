@@ -43,7 +43,9 @@
   ],
   "depends_on": [
     "ST-xjtqwdtq",
-    "ST-pbspqgvw"
+    "ST-pbspqgvw",
+    "BG-e2hfeycb",
+    "BG-lgjpfifx"
   ],
   "links": [
     "kb/_self/token-efficiency.md",
