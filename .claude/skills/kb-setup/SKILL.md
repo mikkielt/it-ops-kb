@@ -5,7 +5,7 @@ description: Use when the it-ops-kb clone is fresh, a check or MCP server fails 
 
 # Set up it-ops-kb
 
-Work from the repository root. Change no kb content (the only changes are the local git setting in step 3, the local-scope MCP servers in step 4 and the per-user query log file in step 5). Do every step even if an earlier one fails, then report.
+Work from the repository root. Change no kb content (the only changes are the local git setting in step 3, the local-scope MCP servers in step 4, the per-user query log file in step 5 and the optional per-user WezTerm in step 7). Do every step even if an earlier one fails, then report.
 
 Read this section of the `kb/_self/` docs first, not the whole doc (`selfdoc.py section` prints the section under a heading with its line numbers). Nothing is committed and no kb content is written, so no other section is needed; the commands are spelled out in the steps below:
 - `python3 _tools/selfdoc.py section maintaining "Setup (first session in a fresh clone)"`
@@ -76,9 +76,14 @@ claude mcp add --scope user --transport http github-repos-ro https://api.githubc
 ```
 Never ask for the token or put it in a repo file.
 
-## 7. Do not
+## 7. Optional WezTerm (ask first)
+WezTerm is an optional terminal that shows `kbmon` live in a pane beside the chat. It is not a critical dependency: nothing in the kb needs it, and `/kb-setup` passes without it. Print the pin with `python3 _tools/install_wezterm.py --plan`, say that, and ask with AskUserQuestion whether to install it.
+- Yes: run `python3 _tools/install_wezterm.py --yes`. It downloads the pinned release for this OS, refuses a file whose SHA-256 is not the pin (exit 1, nothing installed), installs it for this user only and prints the path to start it by; it changes no PATH and no shell profile. Exit 3: a WezTerm is already at the target and nothing changed; rerun with `--replace` only on their answer. Exit 2: this OS or CPU has no pinned file; report it and go on.
+- No, or no answer (a headless run): install nothing and quote the saved text, word for word, from `python3 _tools/install_wezterm.py --declined`. Report the step as SKIPPED, not FAIL.
+
+## 8. Do not
 - Run `fetch.py --diff` without a selection, or `--verify`/`--refresh`. They are long network jobs that write state. A first baseline is the user's decision.
 - Commit anything.
 
-## 8. Report
-End with a short table: step, result (PASS/FAIL/SKIPPED), evidence (last output line or error). Include the query log's mode and research setting as the person chose them. Then list what the user must do (e.g. approve servers, install Python). Then point to the other skills: `/kb-lookup`, `/kb-review-workspace`, `/kb-gap`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-census`, `/kb-verify`, `/kb-git-sync`.
+## 9. Report
+End with a short table: step, result (PASS/FAIL/SKIPPED), evidence (last output line or error). Include the query log's mode and research setting as the person chose them, and whether WezTerm was installed or declined. Then list what the user must do (e.g. approve servers, install Python). Then point to the other skills: `/kb-lookup`, `/kb-review-workspace`, `/kb-gap`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-census`, `/kb-verify`, `/kb-git-sync`.
