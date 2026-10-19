@@ -1833,13 +1833,26 @@ def isolation_problems(root, results, out):
     return problems
 
 
+def check_found(root, manifest, results, lines, out=print):
+    """What `check` names about the finished run in DIR: ([problem line], [duplicate research line], whether the coord stores are shared).
+    The duplicates are problems only in a shared run; an isolated run counts them. `out` takes the isolation check's `ok` line."""
+    bare = origin_path(root)
+    found = coord_losses(root, manifest, bare) + backlog_losses(manifest, lines, bare) + landing_stops(manifest, lines, bare)
+    found += canary_leaks(root, manifest, lines)
+    found += isolation_problems(root, results, out)
+    dups = duplicate_research(root, manifest, lines)
+    shared = manifest.get("coord") == "shared"
+    return found + (dups if shared else []), dups, shared
+
+
 def check(root=None, out=print):
     """`multi check`: read the finished run in DIR (results.jsonl, the sandbox's coord store, the clones' planted backlog
     items, the bare's main, the agents' output logs and canaries) and name each lost claim (`coord_losses`, `backlog_losses`),
     each landing stop (`landing_stops`), each canary found outside its owner (`canary_leaks`) and each leak of the kb's tooling into a bare twin
     (`isolation_problems`: a line with the word isolation). Returns 1 when it names any, else 0; raises Refused when DIR holds no run or an agent has not ended."""
     root = (Path(root) if root else default_dir()).resolve()
-    lines = latest_lines(bench_repro.read_results(root / RUN_RESULTS))
+    results = bench_repro.read_results(root / RUN_RESULTS)
+    lines = latest_lines(results)
     if not lines:
         raise Refused(f"{root / RUN_RESULTS} holds no result line: nothing to check")
     if not (root / MANIFEST).is_file():
@@ -1848,13 +1861,7 @@ def check(root=None, out=print):
     if unended:
         raise Refused(f"agent(s) {', '.join(unended)} have no end stamp: the run is not finished")
     manifest = json.loads((root / MANIFEST).read_text(encoding="utf-8"))
-    bare = origin_path(root)
-    found = coord_losses(root, manifest, bare) + backlog_losses(manifest, lines, bare) + landing_stops(manifest, lines, bare)
-    found += canary_leaks(root, manifest, lines)
-    found += isolation_problems(root, bench_repro.read_results(root / RUN_RESULTS), out)
-    dups = duplicate_research(root, manifest, lines)
-    shared = manifest.get("coord") == "shared"
-    found += dups if shared else []
+    found, dups, shared = check_found(root, manifest, results, lines, out)
     for ln in found + ([] if shared else [f"{ln} (counted: the agents' stores are isolated)" for ln in dups]):
         out(ln)
     out(f"multi check: {len(lines)} agent(s) of scenario {lines[0]['scenario']}, " + (f"{len(found)} problem(s) named" if found else (
@@ -2231,7 +2238,8 @@ def delta_rows(rows):
 def record(root=None, file=None, out=print):
     """`multi record`: merge the lines of DIR/results.jsonl (the newest of each agent) into the results file `file` (default
     kb/_self/reports/benchmarks.csv) as the scenario `multi`: record the first 7 characters of DIR's start commit, case the
-    scenario, arm `concurrent` or `sequential` with the knob values, and the metrics of `run_values`; then, for the record,
+    scenario, arm `concurrent` or `sequential` with the knob values, and the metrics of `run_values` with `check_failures`, the number of
+    problems `check` names about the finished run (left out while an agent has no end stamp); then, for the record,
     case and knob values that a concurrent and a sequential arm share, the rows of the arm `delta ...` (`delta_rows`). It
     replaces the rows of the same record, case and arm. The lines of a replay reach only `file`, which they then need. The same
     lines again change nothing. The twins' lines (arm `bare`) make the rows of the arm `bare ` and the kb arm (`twin_values`). Returns
@@ -2252,9 +2260,12 @@ def record(root=None, file=None, out=print):
     date = min((r["started"][:10] for r in lines if r.get("started")), default="")
     note = f"start {rev}; sandbox of {len(manifest['agents'])} agent(s)" + ("; replay: scripted agents, no model call" if replay else "")
     models = ",".join(sorted({r.get("model") or "" for r in lines} - {""}))
+    values = run_values(root, manifest, lines)
+    if all(r.get("ended") for r in lines):
+        values["check_failures"] = len(check_found(root, manifest, results, lines, lambda ln: None)[0])
     new = [{"scenario": SCENARIO, "record": rev[:7], "date": date, "commit": rev[:7], "claude_code": "", "kb_topics": "",
             "case": lines[0]["scenario"], "arm": arm, "model": models, "metric": metric, "value": value, "runs": 1, "note": note}
-           for metric, value in run_values(root, manifest, lines).items()]
+           for metric, value in values.items()]
     if twins:
         twin_models = ",".join(sorted({t.get("model") or "" for t in twins} - {""}))
         new += [{**new[0], "arm": f"{BARE} {arm}", "model": twin_models, "metric": metric, "value": value,
