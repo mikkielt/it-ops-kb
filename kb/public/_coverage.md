@@ -157,7 +157,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `claude/agent-sdk` | P2 | complete | `claude/agent-sdk.md`, `claude/agent-sdk-options.csv` | 12 |
 | `claude/ci-and-headless` | P2 | partial | `claude/ci-and-headless.md` | 25 |
 | `claude/enterprise-admin` | P2 | complete | `claude/enterprise-admin.md` | 13 |
-| `claude/plugins` | P2 | complete | `claude/plugins.md`, `claude/plugins.csv` | 16 |
+| `claude/plugins` | P2 | complete | `claude/plugins.md`, `claude/plugins.csv` | 18 |
 | `claude/settings-and-scopes` | P2 | partial | `claude/settings-and-scopes.md`, `claude/settings-keys.csv`, `claude/env-vars.csv` | 18 |
 | `claude/skills-and-subagents` | P2 | complete | `claude/skills-and-subagents.md`, `claude/skills-and-subagents.csv` | 10 |
 | `claude/cross-session-messaging` | P3 | complete | `claude/cross-session-messaging.md` | 14 |
@@ -213,7 +213,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `gitlab/jira-issue-keys-in-commits` | P3 | partial | `gitlab/jira-issue-keys-in-commits.md` | 3 |
 | `gitlab/job-log-timestamps` | P3 | complete | `gitlab/job-log-timestamps.md` | 6 |
 | `gitlab/multi-project-pipelines` | P3 | complete | `gitlab/multi-project-pipelines.md` | 5 |
-| `gitlab/multi-repository-layouts` | P3 | partial | `gitlab/multi-repository-layouts.md` | 23 |
+| `gitlab/multi-repository-layouts` | P3 | partial | `gitlab/multi-repository-layouts.md` | 33 |
 | `gitlab/package-registries` | P3 | partial | `gitlab/package-registries.md` | 11 |
 | `gitlab/project-settings-api` | P3 | complete | `gitlab/project-settings-api.md` | 7 |
 | `gitlab/repository-mirroring` | P3 | complete | `gitlab/repository-mirroring.md` | 9 |

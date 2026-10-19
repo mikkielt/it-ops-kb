@@ -4243,3 +4243,15 @@ _Agent: kb-research_
 - See gitlab/multi-repository-layouts.md, gitlab/git-test-repositories.md.
 
 _Agent: kb-research_
+
+## QK-git-claude-code-facts-team-remote. What do git, GitLab, GitHub and Claude Code document for pushing to a team's remote root and for the plugin host's roots: push.recurseSubmodules, an unreadable marketplace submodule, CLAUDE_PLUGIN_DATA, SessionStart timeouts and async hooks, and git clone --filter?
+- `push.recurseSubmodules=check` (or `--recurse-submodules=check`) aborts a push, non-zero, when a submodule commit changed in the pushed revisions is on no remote of the submodule; `on-demand` pushes the changed submodules first and aborts if it cannot; `only` pushes only the submodules; unset is `no`, or `on-demand` when `submodule.recurse` is true. [DOC S-l6s4hfqp, S-ph2mlwwa]
+- The v2.55.0 source runs the check after the `pre-push` hook and before refs are sent, also under `--dry-run`, skips a submodule that is not cloned or lacks the commit, and has `on-demand` push the submodule to the superproject's remote name and refspecs; probes on git 2.50.1 saw exit 128 with the refusal text for `check`, a pushed submodule and superproject for `on-demand`, and exit 128 when the submodule's remote has another name or no branch of that name exists. [CODE S-mvqt325m, S-5obxyibm]
+- Claude Code runs git for a marketplace with prompts off and the machine's own credentials; a background update that would need a prompt fails quietly and keeps the existing checkout; `${CLAUDE_PLUGIN_DATA}` "survives updates". The docs say nothing of a submodule the user cannot read; the 2.1.295 entry says only submodules that hold plugin files are fetched. [DOC S-pelzabjq, S-i7if5i7z, S-hvuk3dqt]
+- A `SessionStart` hook delays Claude's first response and a prompt sent meanwhile; its `timeout` defaults to 600 seconds and a hook cancelled at it loses its output; an `async` command hook has no enforced `timeout`, reports to Claude on the next turn and is killed at teardown of a `-p` run. [DOC S743]
+- `git clone --filter` needs `uploadpack.allowFilter` on the server, otherwise git warns `filtering not recognized by server, ignoring` and exits 0; GitLab documents `blob:limit`, `blob:none --sparse` and `GIT_CLONE_EXTRA_FLAGS`; GitHub's support rests on a 2020 blog post and a GHES 3.21 page. [DOC S-7gx5uugz, S-zniasdly, S-oewizkwq, S-lwtajpn7]
+- Conclusion: a superproject push cannot be trusted to carry a team root's commits unless the team root is pushed to its own remote first (or `on-demand` matches remote name and branch), `check` protects only a writer whose submodule is cloned, and a SessionStart fetch that must show failures to the person is a synchronous hook with its own bound. [DER S-l6s4hfqp, S-mvqt325m, S743]
+- Open: a real forge's refusal for `check`, what Claude Code does with an unreadable marketplace submodule, the visible effect of a timed-out `SessionStart` hook, github.com's current partial clone documentation. [UNK]
+- See gitlab/multi-repository-layouts.md, claude/plugins.md, claude/hooks.md.
+
+_Agent: kb-research_
