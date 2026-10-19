@@ -1,0 +1,20 @@
+{
+  "id": "SP-yjugq5c2",
+  "kind": "sprint",
+  "title": "Operator identities stay pseudonymous where they leave the clone: the KB-Operator trailer, publish and export guards",
+  "status": "planned",
+  "goal": "the commit hook adds KB-Operator with the operator id to each commit made in an agent session, beside KB-Teams, and check-trailers accepts an id there and refuses an email address; kbgit.py publish refuses a commit whose message or trailers hold an email address other than a noreply or placeholder one; kbmon's OpenTelemetry export names the operator by kb.operator.id and drops an email-shaped resource attribute; the public home's handling of git author emails and an operator field in the query log follow the operator's answers",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
