@@ -2,7 +2,7 @@
   "id": "BG-cs7uxn7a",
   "kind": "bug",
   "title": "multi fitness case coord-land-stop fails at random: the land-stop plant sits on code-1 while code-2 races it for the same item's claim",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-p46hofrg",
   "priority": "P1",
   "rank": 0,
@@ -31,5 +31,6 @@
     "_tools/bench_multi.py",
     "kb/_self/tools.md",
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "orch-r61"
 }
