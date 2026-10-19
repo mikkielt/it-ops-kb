@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """The kb's roots (stdlib only): list them, or add one beside kb/public.
 
-  kbroot.py list                         name, id prefix, visibility, articles, sources and path of every root
+  kbroot.py list                         name, id prefix, visibility, articles, sources and path of every root, then a
+                                         row `missing` with its reason for each pointer whose root is not here
   kbroot.py add NAME --prefix P [--visibility internal|public] [--description TEXT]
                                          create kb/NAME/: its _root.md, empty ledgers with their headers, a coverage
                                          page with the table markers, _retrieval/ with empty data tables, and empty
@@ -12,6 +13,9 @@ upstream facts, and a team adds its own roots (its systems, its repositories, it
 NAME: lowercase letters, digits and `-`. P: 1-4 capital letters, not taken by another root and not one of
 kbcommon.RESERVED_PREFIXES. `internal` (the default) exempts the root from the placeholders-only rule; `public`
 keeps it (AGENTS.md, "Agent conduct").
+
+A root in another repository is named by a pointer file kb/_roots/<name>.md (kbcommon.py): `list` shows one whose
+root is not on disk as `missing` and exits 0; `add` refuses a name or prefix a pointer holds.
 
 Exit: 0 done, 2 refused (bad name or prefix, taken, or the directory exists).
 """
@@ -59,7 +63,10 @@ def cmd_list():
             n_src = 0
         where = os.path.relpath(r.path, kbcommon.HOME) if r.path.startswith(kbcommon.HOME + os.sep) else r.path
         print(f"{r.name}\tprefix={r.id_prefix}\t{r.visibility}\tarticles={n_art}\tsources={n_src}\t{where}")
-    print(f"roots={len(roots)}")
+    missing = kbcommon.missing_roots()
+    for m in missing:
+        print(f"{m.name}\tprefix={m.id_prefix or '?'}\t{m.visibility or '?'}\tmissing\t{m.reason}\t{os.path.relpath(m.path, kbcommon.HOME)}")
+    print(f"roots={len(roots)}" + (f" missing={len(missing)}" if missing else ""))
     return 0
 
 
@@ -77,10 +84,10 @@ def cmd_add(a):
     except kbcommon.RootError as e:
         print("refused: fix the existing roots first:", e)
         return 2
-    for r in roots:
+    for r in [*roots, *kbcommon.missing_roots()]:  # a pointer keeps its name and prefix whether or not its root is here
         if r.name == name or r.id_prefix == prefix:
-            print(f"refused: root {r.name} ({r.path}) already has the {'name' if r.name == name else 'id prefix'} "
-                  f"{name if r.name == name else prefix!r}")
+            print(f"refused: root {r.name} ({getattr(r, 'path', '')}) already has the "
+                  f"{'name' if r.name == name else 'id prefix'} {name if r.name == name else prefix!r}")
             return 2
     d = os.path.join(kbcommon.KB_DIR, name)
     if os.path.exists(d):
