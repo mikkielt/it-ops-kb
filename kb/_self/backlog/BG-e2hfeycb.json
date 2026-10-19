@@ -2,7 +2,7 @@
   "id": "BG-e2hfeycb",
   "kind": "bug",
   "title": "multi record replaces the rows of an earlier rep that ran at the same start commit with the same case and knobs",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3pvz2noj",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,6 @@
   "depends_on": [
     "ST-xjtqwdtq"
   ],
-  "notes": "In SP-3pvz2noj (operator delegate 2026-10-19): the 28 run DIRs stay under the orchestrator's scratch (/private/tmp/kb-r32-runs) until this lands; the fix re-records them all."
+  "notes": "In SP-3pvz2noj (operator delegate 2026-10-19): the 28 run DIRs stay under the orchestrator's scratch (/private/tmp/kb-r32-runs) until this lands; the fix re-records them all.",
+  "claimed_by": "orch-r32"
 }
