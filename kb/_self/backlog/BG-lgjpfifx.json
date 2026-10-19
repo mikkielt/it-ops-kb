@@ -24,5 +24,24 @@
     "ST-xjtqwdtq",
     "BG-e2hfeycb"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does check_failures sit among MULTI_METRICS?",
+      "options": [
+        "last",
+        "beside claim_conflicts"
+      ],
+      "recommendation": "last",
+      "do": {
+        "last": "BG-lgjpfifx",
+        "beside claim_conflicts": "BG-lgjpfifx"
+      },
+      "class": "design",
+      "answer": "last",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "orch-r32"
 }

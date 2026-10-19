@@ -243,7 +243,7 @@ def spend_table(rows):
 
 MULTI_HEADS = ("concurrent", "sequential", "delta")  # the first word of an arm of the scenario `multi` (bench_multi.HEADS)
 MULTI_METRICS = ("input", "out", "cache_read", "cache_write", "cost", "wall_s", "turns", "dup_facts", "claims", "claim_conflicts",
-                 "land_stops", "rebase_s", "right", "asked", "eval_passed", "eval_total")  # the run's, in this order
+                 "land_stops", "rebase_s", "right", "asked", "eval_passed", "eval_total", "check_failures")  # the run's, in this order
 MULTI_AGENT_METRICS = ("input", "out", "cache_read", "cache_write", "cost", "wall_s", "turns", "right", "eval_passed")  # an agent's
 
 
