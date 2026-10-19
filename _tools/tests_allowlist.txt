@@ -60,6 +60,9 @@ secret  password="password"  # ldap3 bind documentation sample (S1208)
 secret  password="E52CAC67419A9A224A3B108F3FA6CB6D:8846F7EAEE8FB117AD06BDD830B7586C"  # ldap3 NTLM sample: the well-known LM:NT hash of the word "password" (S1208)
 secret  secret: "kq4gihvszzgn1p0r"  # Kubernetes Secret documentation sample value (S1729)
 
+# armor line quoted without key material in pushed history of the secret-shapes article and the public anchors ledger
+secret  -----BEGIN EC PRIVATE KEY-----  # RFC 5915 armor line of an EC private key, a label with no key material (security/secret-shapes-in-text.md, _anchors.csv, source S-vstqd426)
+
 # synthetic ids in the query-log usage code and its tests (all-zero or repeated-digit stand-ins, not real sessions or entries)
 guid  00000000-0000-4000-8000-000000000000  # stand-in entry id to read a usage record with usage_line (_tools/ql_store.py)
 guid  00000000-0000-4000-8000-000000000001  # made-up row id in a backlog item's repro command (kb/_self/backlog/BG-nf6gcqsz.json, commit e9a7d0bc)
