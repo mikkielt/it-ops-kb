@@ -38,8 +38,11 @@ BASE_MESSAGE = "chore: sandbox base commit, backlog.json with no code lane"
 CLAIM_KEY = "multi-probe"  # the key the probe's two agents claim in turn
 INPUTS = "kb/_self/reports/multi_bench.csv"  # the frozen inputs of the scenarios, one row per agent and input
 INPUT_COLUMNS = ("scenario", "agent", "role", "input")
-SCENARIOS = ("lookups", "research", "mixed")
+SCENARIOS = ("lookups", "research", "mixed", "coord")
 ROLES = ("lookup", "research", "code")
+ASK_ROW = re.compile(r"ask (\S+): (.+)", re.S)  # a row after an agent's first of a code or research agent: the agent asks TARGET (an agent of the scenario) QUESTION
+ASK_WAIT = 10  # seconds an agent that is asked waits for the ask, after its own work, when the agents run at once
+ASK_ANSWER = "{agent} holds {what} and finishes it; leave it to {agent}."  # the text an asked agent answers with
 SPEC_KEYS = ("title", "goal", "touches", "check", "gate")  # the keys of a code agent's input, an item spec in json
 ITEM_DIR = "kb/_self/backlog"  # where setup writes a planted item: bl_base's item_dir of this project
 TOOL_SETS = {"kb": ["mcp__kb"], "files": ["Read", "Grep", "Glob"]}  # --tools: the lookup agent's tools
@@ -253,7 +256,7 @@ def setup(count, coord, root=None, start=None, dry_run=False, out=print, scenari
         lock_dir(root, n).mkdir(parents=True, exist_ok=True)
         store_path(root, coord, n).parent.mkdir(parents=True, exist_ok=True)
     manifest = {"rev": sha, "base": base, "coord": coord, "bare": str(bare), "scenario": scenario,
-                "items": {agent: iid for agent, iid, _ in items}, "agents": [
+                "items": item_ids(scenario) if scenario else {}, "agents": [
         {"n": n, "clone": str(clone_path(root, n)), "mcp_config": str(mcp_path(root, n)),
          "coord_store": str(store_path(root, coord, n)), "lock_dir": str(lock_dir(root, n))} for n in range(1, count + 1)]}
     (root / MANIFEST).write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8", newline="\n")
@@ -464,13 +467,23 @@ def spec_problems(spec):
     return out + [f"unknown key {k}" for k in spec if k not in SPEC_KEYS]
 
 
+def ask_of(text):
+    """(target agent, question) of an ask row's input (`ask TARGET: QUESTION`), None for any other input."""
+    m = ASK_ROW.fullmatch(text.strip())
+    return (m.group(1), m.group(2).strip()) if m else None
+
+
 def input_problems(rows, questions, areas):
     """One line per row whose scenario, role or input does not resolve: a lookup's input is the id of a pool or evaluation
-    row (`questions`), a research agent's the area of a brief (`areas`), a code agent's an item spec (`spec_problems`); an
-    agent named under two roles is one too."""
-    out, roles = [], {}
+    row (`questions`), a research agent's the area of a brief (`areas`), a code agent's an item spec (`spec_problems`); the
+    row of a code or research agent after its first may be an ask (`ask_of`) of another agent of the scenario; an
+    agent named under two roles is a problem too."""
+    out, roles, seen = [], {}, set()
+    names = {(r["scenario"], r["agent"]) for r in rows}
     for n, r in enumerate(rows, 1):
         label = f"row {n} ({r['scenario']}/{r['agent']}, {r['role']})"
+        first = (r["scenario"], r["agent"]) not in seen
+        seen.add((r["scenario"], r["agent"]))
         if r["scenario"] not in SCENARIOS:
             out.append(f"{label}: scenario is none of {', '.join(SCENARIOS)}")
         if not r["agent"].strip():
@@ -479,6 +492,12 @@ def input_problems(rows, questions, areas):
             out.append(f"{label}: the agent has another role in an earlier row")
         if r["role"] not in ROLES:
             out.append(f"{label}: role is none of {', '.join(ROLES)}")
+        elif r["role"] != "lookup" and ask_of(r["input"]):
+            target = ask_of(r["input"])[0]
+            if first:
+                out.append(f"{label}: an ask is not the agent's first row")
+            if target == r["agent"] or (r["scenario"], target) not in names:
+                out.append(f"{label}: the ask names {target!r}, no other agent of the scenario")
         elif r["role"] == "lookup" and r["input"] not in questions:
             out.append(f"{label}: input {r['input']!r} is the id of no row of {bench_pool.PUBLIC_FILE} or {bench_pool.EVAL_FILE}")
         elif r["role"] == "research" and r["input"] not in areas:
@@ -546,16 +565,26 @@ def item_of(spec, iid, sprint=None):
                        "recommendation": gate["recommendation"], "do": {o: iid for o in gate["options"]}, "class": "design"}]}
 
 
-def planted(scenario, rows=None):
-    """[(agent, item id, item)] of the code agents of `scenario`: the items `setup --scenario` plants."""
-    out = []
+def item_ids(scenario, rows=None):
+    """{agent: item id} of the code agents of `scenario`: agents whose first input is one item spec share the item of the first of them."""
+    out, first = {}, {}
     for a in agents_of(rows if rows is not None else load_inputs(), scenario):
         if a["role"] == "code":
+            out[a["agent"]] = item_id(scenario, first.setdefault(a["inputs"][0], a["agent"]))
+    return out
+
+
+def planted(scenario, rows=None):
+    """[(agent, item id, item)] of the items `setup --scenario` plants, one for each distinct item spec of the code agents of
+    `scenario` (the first agent that holds it names it; `item_ids` has every agent's)."""
+    out, rows = [], rows if rows is not None else load_inputs()
+    ids = item_ids(scenario, rows)
+    for a in agents_of(rows, scenario):
+        if a["role"] == "code" and item_id(scenario, a["agent"]) == ids[a["agent"]]:
             spec = spec_of(a["inputs"][0])
             if isinstance(spec, str) or spec_problems(spec):
                 raise Refused(f"the item spec of {scenario}/{a['agent']} does not resolve: python3 _tools/benchmarks.py multi inputs")
-            iid = item_id(scenario, a["agent"])
-            out.append((a["agent"], iid, item_of(spec, iid, sprint_id(scenario))))
+            out.append((a["agent"], ids[a["agent"]], item_of(spec, ids[a["agent"]], sprint_id(scenario))))
     return out
 
 
@@ -711,7 +740,7 @@ def agent_plan(agent, scenario, n, root, knobs, models, means, questions, briefs
         plan["area"] = agent["inputs"][0]
     else:
         spec = spec_of(agent["inputs"][0])
-        iid = item_id(scenario, agent["agent"])
+        iid = item_ids(scenario)[agent["agent"]]
         plan["item"] = iid
         plan["argv"] = dispatch_argv(root, n, iid, model, d["max_turns"])
         plan["prompt"] = f"the brief `backlog.py brief {iid}` prints, on the stdin of the worker `dispatch` starts\n"
@@ -720,6 +749,46 @@ def agent_plan(agent, scenario, n, root, knobs, models, means, questions, briefs
             f" x {price_ratio(mid):.3g} (the input price ratio)" if mid != RECORDED_MODEL else "")
         plan["what"] = f"item {iid} ({spec['title']}), touches {', '.join(spec['touches'])}"
     return plan
+
+
+def link_asks(plans, agents):
+    """Give each plan the asks its agent's input rows hold (`ask_of`, rows after the first of a code or research agent): `asks` of
+    {to, n, question} on the asking agent's plan, and `asked_by` (the asking agents' names) on the plan of the agent asked."""
+    by_name = {p["agent"]: p for p in plans}
+    for plan, agent in zip(plans, agents):
+        plan["asks"] = []
+        plan.setdefault("asked_by", [])
+        for text in agent["inputs"][1:] if agent["role"] != "lookup" else []:
+            target, question = ask_of(text) or (None, None)
+            if target in by_name:
+                plan["asks"].append({"to": target, "n": by_name[target]["n"], "question": question})
+                by_name[target].setdefault("asked_by", []).append(plan["agent"])
+
+
+def shape_lines(plans, coord):
+    """The lines that say what a scenario of structured coordination sets up and what `coord` does to it: the item two code
+    agents share, the areas the research agents overlap on and each ask (who asks whom, through kbask.py ask and kbask.py answer);
+    [] for a scenario with none of them."""
+    out, items = [], {}
+    for p in plans:
+        if p["role"] == "code":
+            items.setdefault(p["item"], []).append(p["agent"])
+    shared = {iid: names for iid, names in items.items() if len(names) > 1}
+    areas = [p for p in plans if p["role"] == "research"]
+    asks = [(p["agent"], a["to"], a["question"]) for p in plans for a in p.get("asks", [])]
+    for iid, names in shared.items():
+        out.append(f"shared item: {iid} is the item of {' and '.join(names)}")
+    if (shared or asks) and len(areas) > 1:
+        out.append(f"overlapping topics: {', '.join(p['area'] for p in areas)} ({' and '.join(p['agent'] for p in areas)}, whose `coord.py dedup` "
+                   "claims the lack terms the topics share)")
+    for who, to, question in asks:
+        out.append(f"ask: {who} asks {to} through kbask.py ask: {question}; {to} answers it with kbask.py answer")
+    if shared or asks:
+        out.append("coord shared: one store, so the second claim of the item is refused (dup_of), the research agents' dedup sees each other's "
+                   "claims and the agent asked finds the ask in the store" if coord == "shared" else
+                   "coord isolated: a store for each agent, so every agent claims the item and works on it, the research agents dedup alone and "
+                   "the agent asked finds no ask in its own store")
+    return out
 
 
 def bare_path(root, n):
@@ -879,6 +948,7 @@ def run(scenario, root=None, dry_run=False, knobs=None, out=print):
     recorded = read_rows(RESULTS)
     means = recorded_means(recorded)
     plans = [agent_plan(a, scenario, n, root, k, models, means, questions, briefs) for n, a in enumerate(agents, 1)]
+    link_asks(plans, agents)
     if k["bare"]:
         for p, a in zip(plans, agents):
             p["twin"] = twin_plan(p, a, root, recorded, briefs)
@@ -909,11 +979,17 @@ def run(scenario, root=None, dry_run=False, knobs=None, out=print):
         total += one
     else:
         out("manager: code (this tool starts the sessions and answers the gates)")
+    for ln in shape_lines(plans, k["coord"]):
+        out(ln)
     for p in plans:
         out(f"agent {p['agent']}: {p['role']}, model {p['model']} ({p['mid']}), {p['what']}")
         out(f"  argv: {shlex.join(p['argv'])}")
         out(f"  KB_COORD_STORE {p['store']}")
         out(f"  estimate {money(p['usd'])}: {p['basis']}")
+        for a in p.get("asks", []):
+            out(f"  asks {a['to']} through kbask.py ask: {a['question']}")
+        if p.get("asked_by"):
+            out(f"  answers the ask of {', '.join(p['asked_by'])} with kbask.py answer")
         if p.get("plant"):
             out(f"  plant: {p['plant']}")
         for ln in p["prompt"].splitlines()[:3]:
@@ -1082,8 +1158,8 @@ def operator_pass(root, coord, manifest, plans, out, replay=False):
         return {}
     a = manifest["agents"][codes[0]["n"] - 1]
     clone, env = Path(a["clone"]), agent_env(root, coord, a["n"])
-    steps = {p["item"]: answer_gates(clone, clone, json.loads((clone / ITEM_DIR / f"{p['item']}.json").read_text(encoding="utf-8")), env)
-             for p in codes}
+    steps = {iid: answer_gates(clone, clone, json.loads((clone / ITEM_DIR / f"{iid}.json").read_text(encoding="utf-8")), env)
+             for iid in dict.fromkeys(p["item"] for p in codes)}  # an item two agents share is answered once
     if any(steps.values()) and sync_push(root, coord, a, out, replay):
         raise Refused("the operator's gate answers did not reach the bare: kbgit.py sync --push stopped")
     return steps
@@ -1179,12 +1255,101 @@ def merge_request(root, branch, tries=5):
         shutil.rmtree(work, ignore_errors=True)
 
 
+def kbask(plan, ctx, *args):
+    """`kbask.py` of the agent's clone with `args`, under the agent's environment (its coord store): its stdout. Raises Refused on a non-zero exit."""
+    clone = ctx.clone(plan)
+    p = sh([sys.executable, str(clone / "_tools" / "kbask.py"), *args], clone, ctx.env(plan))
+    if p.returncode:
+        raise Refused(f"kbask.py {args[0]} exited {p.returncode}: {(p.stdout + p.stderr).strip()[-300:]}")
+    return p.stdout
+
+
+def post_asks(plan, ctx, rec):
+    """Each ask of the agent's plan (`link_asks`): `kbask.py ask HOLDER QUESTION` to the holder name of the agent asked, in the asking
+    agent's own store, which is the agent asked's under shared and no one else's under isolated."""
+    for a in plan.get("asks", []):
+        kbask(plan, ctx, "ask", holder_of(a["n"]), a["question"])
+        rec["steps"].append(f"asked {a['to']} through kbask.py ask")
+
+
+def open_asks(path, holder):
+    """The ids of the asks of the store at `path` that name `holder` (or `any`) and no answer of the store has: oldest first."""
+    asks, answered = [], set()
+    for _seq, kind, text in store_events(path):
+        try:
+            fields = json.loads(text)
+        except ValueError:
+            continue
+        if kind == "ask" and fields.get("to") in (holder, "any"):
+            asks.append(fields.get("id"))
+        elif kind == "answer":
+            answered.add(fields.get("id"))
+    return [i for i in asks if i not in answered]
+
+
+def answer_asks(plan, ctx, rec):
+    """The asks the agent was asked (`asked_by` of its plan), answered with `kbask.py answer` once its own work ended: it looks in its own
+    store, for up to ASK_WAIT seconds when the agents run at once (an agent that ran before the asking one found nothing and says nothing)."""
+    want, holder = len(plan.get("asked_by", [])), holder_of(plan["n"])
+    given, deadline = 0, time.time() + (0 if ctx.k["sequential"] else ASK_WAIT)
+    what = f"item {plan['item']}" if plan["role"] == "code" else f"the area {plan.get('area', '')}"
+    while given < want:
+        for ask_id in open_asks(plan["store"], holder):
+            kbask(plan, ctx, "answer", ask_id, ASK_ANSWER.format(agent=plan["agent"], what=what))
+            rec["steps"].append("answered an ask through kbask.py answer")
+            given += 1
+        if given >= want or time.time() >= deadline:
+            return
+        time.sleep(0.5)
+
+
+def claim_body(text):
+    """The json object a `coord.py claim` printed, {} when it printed none."""
+    body = json_of(text)
+    return body if isinstance(body, dict) else {}
+
+
+def skip_agent(rec, why):
+    """Record that an agent does no work: it asks and finishes with no session (its line has `skipped` and `land` skipped)."""
+    rec["skipped"], rec["land"] = why, "skipped"
+    rec["started"] = rec["started"] or utc_now()
+    rec["steps"].append("skipped: " + why)
+
+
 def code_agent(plan, ctx, rec):
-    """A code agent, the operator's side of it: claim the item, `dispatch` its worker in the clone, answer the gates the worker
+    """A code agent: claim the item's key in the agent's coord store (`coord.py claim ITEM`, refused when another agent holds it under
+    shared, and not tried for an item already done on the bare's main); the agent whose claim is refused or whose item is done does no
+    work (`skip_agent`); any ask of its plan is posted (`post_asks`); the others do the work (`work_code`) and release the claim."""
+    clone, env, iid = ctx.clone(plan), ctx.env(plan), plan["item"]
+    rec["steps"] += ctx.gate_steps.get(iid, [])
+    token = ""
+    if item_state(clone, iid)[0] in ("done", "dropped"):
+        skip_agent(rec, "the item is already done on the bare's main")
+    else:
+        p = sh([sys.executable, str(clone / "_tools" / "coord.py"), "claim", iid, "--ttl", str(STEP_TIMEOUT), "--holder", holder_of(plan["n"])], clone, env)
+        if p.returncode == 0:
+            token = claim_body(p.stdout).get("token", "")
+            rec["steps"].append("coord claim")
+        elif p.returncode == 1:
+            skip_agent(rec, f"the claim of {iid} is refused: held by {claim_body(p.stdout).get('holder', 'another agent')}")
+        else:
+            raise Refused(f"coord claim of {iid} exited {p.returncode}: {(p.stdout + p.stderr).strip()[-300:]}")
+    post_asks(plan, ctx, rec)
+    if rec.get("skipped"):
+        return
+    try:
+        work_code(plan, ctx, rec)
+    finally:
+        if token:
+            sh([sys.executable, str(clone / "_tools" / "coord.py"), "release", iid, "--token", token], clone, env)
+            rec["steps"].append("coord release")
+
+
+def work_code(plan, ctx, rec):
+    """A code agent's work, the operator's side of it: claim the item, `dispatch` its worker in the clone, answer the gates the worker
     left open, `land` the item; a land that left the code on its `code/<id>` branch (sync --push routes a code-lane path there)
     is followed by the merge request (`merge_request`) and a second land. Fills `rec` (the session's fields are the worker's)."""
     clone, env, iid, steps = ctx.clone(plan), ctx.env(plan), plan["item"], rec["steps"]
-    steps += ctx.gate_steps.get(iid, [])
     p = sh(backlog_cmd(clone, "claim", iid, "--by", f"multi-agent{plan['n']}", "--commit"), clone, env)
     if p.returncode:
         raise Refused(f"claim of {iid} exited {p.returncode}: {(p.stdout + p.stderr).strip()[-300:]}")
@@ -1226,7 +1391,11 @@ def code_agent(plan, ctx, rec):
         steps.append("land: " + rec["land"])
         if rec["land"] == "ok" or attempt == 2 or not branch_exists(ctx.root, branch):
             break
-        merge_request(ctx.root, branch)  # sync --push put the code on a branch; the forge's merge request is the operator's
+        try:
+            merge_request(ctx.root, branch)  # sync --push put the code on a branch; the forge's merge request is the operator's
+        except Refused as e:  # two agents' code of one item: the branch is the other agent's, and its merge does not apply
+            steps.append(f"merge of {branch} refused: {str(e)[:200]}")
+            break
         steps.append(f"merged {branch} into main")
     if rec["land"] != "ok":
         rec["land_detail"] = (lout + "\n" + lerr).strip()[-600:]
@@ -1236,6 +1405,7 @@ def code_agent(plan, ctx, rec):
 def session_agent(plan, ctx, rec):
     """A lookup or research agent: one session in the agent's clone with its prompt, argv and environment."""
     clone, env = ctx.clone(plan), ctx.env(plan)
+    post_asks(plan, ctx, rec)
     rec["started"] = utc_now()
     t = time.time()
     r = run_session(plan["argv"], plan["prompt"], clone, env, ctx.timeout, lambda *streams: write_output(ctx.root, plan["n"], *streams))
@@ -1429,6 +1599,8 @@ class Context:
             return rec
         try:
             (twin_agent if twin else code_agent if plan["role"] == "code" else session_agent)(plan, self, rec)
+            if not twin:
+                answer_asks(plan, self, rec)
         except Exception as e:  # noqa: BLE001 - a harness error is the agent's line, never the run's end
             rec.update(failure="error", subtype="error", error=f"harness: {e}"[:300])
             rec["started"] = rec["started"] or utc_now()
@@ -1509,7 +1681,7 @@ def execute(scenario, root, k, plans, out):
             twins = [f.result() for f in bare]
     score_twins(ctx, recs, twins, out)
     on_purpose = {p["agent"] for p in plans if p.get("plant")}  # a planted fault is `multi check`'s to name, not a failed run
-    failed = [r for r in recs if (r["failure"] or (r["role"] == "code" and r["land"] != "ok")) and r["agent"] not in on_purpose]
+    failed = [r for r in recs if (r["failure"] or (r["role"] == "code" and r["land"] != "ok" and not r.get("skipped"))) and r["agent"] not in on_purpose]
     out(f"multi run {scenario}: {len(recs) - len(failed)} of {len(recs)} agent(s) finished" + ("" if not failed else f", {len(failed)} failed: "
         + ", ".join(f"{r['agent']} ({r['failure'] or r['land']})" for r in failed)) + f", ${ctx.budget.spent:.2f} recorded in {path}")
     if twins:
@@ -1848,7 +2020,7 @@ def unreadable(root, manifest, lines):
     claiming = {r["n"] for r in lines if r.get("role") != "lookup"}  # a lookup agent makes no claim, so a run of lookups leaves no store
     stores = sorted({a["coord_store"] for a in manifest["agents"] if a["n"] in claiming and not Path(a["coord_store"]).is_file()})
     missing += [f"the coord store {Path(s)}" for s in stores]
-    logs = [r["agent"] for r in lines if r.get("n") and r.get("failure") != "budget" and not (root / OUTPUT_DIR / f"agent{r['n']}.log").is_file()]
+    logs = [r["agent"] for r in lines if r.get("n") and r.get("failure") != "budget" and not r.get("skipped") and not (root / OUTPUT_DIR / f"agent{r['n']}.log").is_file()]
     if logs:
         missing.append(f"the output log of {', '.join(logs)} ({root / OUTPUT_DIR}/agentN.log)")
     return missing
@@ -2034,14 +2206,23 @@ def added_facts(bare, base, email):
     return facts
 
 
-def dup_facts(root, manifest, lines):
-    """How many facts two agents of the run wrote as one claim: the pairs bench_repro.match_facts finds in the facts each
-    agent added on the bare, over every two agents."""
+def dup_fact_pairs(root, manifest, lines):
+    """[(agent, agent, the one whose fact came later)] of the pairs of facts two agents of the run wrote as one claim: the pairs
+    bench_repro.match_facts finds in the facts each agent added on the bare, over every two agents (the later fact is the one with
+    the later commit, the agent of the higher number when the commits' seconds are the same)."""
     bare = origin_path(root)
     added = {r["agent"]: added_facts(bare, manifest["base"], agent_email(r["n"])) for r in lines if r.get("n")}
-    names = list(added)
-    return sum(len(bench_repro.match_facts(added[a], added[b])) for i, a in enumerate(names) for b in names[i + 1:]
-               if added[a] and added[b])
+    names, out = list(added), []
+    for i, a in enumerate(names):
+        for b in names[i + 1:]:
+            for x, y in bench_repro.match_facts(added[a], added[b]) if added[a] and added[b] else ():
+                out.append((a, b, b if added[b][y]["at"] >= added[a][x]["at"] else a))
+    return out
+
+
+def dup_facts(root, manifest, lines):
+    """How many facts two agents of the run wrote as one claim (`dup_fact_pairs`)."""
+    return len(dup_fact_pairs(root, manifest, lines))
 
 
 COUNT_KEYS = ("claims", "refused", "dedup_hits", "skipped_terms")  # what coord_counts counts, for the run and for each holder
@@ -2089,6 +2270,104 @@ def coord_counts(manifest):
                     add(holder, "dedup_hits")
                 add(holder, "skipped_terms", len(term_set(fields.get("terms")) - term_set(fields.get("claimed"))))
     return {**total, "conflicts": sum(len(v) - 1 for v in keys.values()) + total["refused"], "agents": agents}
+
+
+TOKEN_KEYS = ("input_tokens", "output_tokens", "cache_write_tokens", "cache_read_tokens")  # the counts of a line that make its tokens
+
+
+def ask_counts(manifest):
+    """(asks, answered) of the coordination stores of the run (each file once): the `ask` events, and those whose id an `answer` event of
+    the same store (state completed) answers; an ask posted in an isolated store is no other agent's to answer."""
+    asks = answered = 0
+    seen = set()
+    for a in manifest["agents"]:
+        path = a["coord_store"]
+        if path in seen or not Path(path).is_file():
+            continue
+        seen.add(path)
+        ids, done = [], set()
+        for _seq, kind, text in store_events(path):
+            try:
+                fields = json.loads(text)
+            except ValueError:
+                continue
+            if kind == "ask":
+                ids.append(fields.get("id"))
+            elif kind == "answer" and fields.get("state") == "completed":
+                done.add(fields.get("id"))
+        asks += len(ids)
+        answered += sum(1 for i in ids if i in done)
+    return asks, answered
+
+
+def key_claimants(manifest):
+    """{key: {agent number: ...}} of the keys the stores' events show more than one agent wanting: the agents named as holder by a `claim`
+    or a `dup_of` event (a refused claim), over every store of the run; a key one agent alone claimed is left out."""
+    got, seen = {}, set()
+    for a in manifest["agents"]:
+        path = a["coord_store"]
+        if path in seen or not Path(path).is_file():
+            continue
+        seen.add(path)
+        for _seq, kind, text in store_events(path):
+            try:
+                fields = json.loads(text)
+            except ValueError:
+                continue
+            m = HOLDER_AGENT.search(fields.get("holder") or "")
+            if kind in ("claim", "dup_of") and m:
+                got.setdefault(fields.get("key"), set()).add(int(m.group(1)))
+    return {key: ns for key, ns in got.items() if len(ns) > 1}
+
+
+def item_workers(manifest, lines):
+    """{item id: [agent, ...]} of the agents that wrote work for a planted item, the first to end first: an agent with a commit that
+    names the item and is no backlog chore, on any ref of its own clone (the work of an agent whose land stopped is there too)."""
+    out = {}
+    for agent, iid in sorted(manifest.get("items", {}).items()):
+        line = next((r for r in lines if r["agent"] == agent), None)
+        if not line or not line.get("n") or line.get("skipped"):
+            continue
+        p = sh(["git", "log", "--all", "--fixed-strings", f"--author=<{agent_email(line['n'])}>", f"--grep={iid}", "--format=%s"],
+               manifest["agents"][line["n"] - 1]["clone"], os.environ)
+        if any(not ln.startswith("chore(backlog): ") for ln in p.stdout.splitlines()):
+            out.setdefault(iid, []).append(line)
+    return {iid: [r["agent"] for r in sorted(got, key=lambda r: (stamp(r.get("ended")) or 0, r["n"]))] for iid, got in out.items()}
+
+
+def dup_commits(workers):
+    """How many commits of work an item got beyond the first agent's: for each item, the agents that wrote work for it less one."""
+    return sum(max(0, len(agents) - 1) for agents in workers.values())
+
+
+def worked_key(root, manifest, key, n, agent, workers):
+    """True when agent N (`agent`) wrote work for `key`: for a backlog item id a commit that names it (`workers`), for a research key
+    `research:TOPIC:TERM` a fact it added to the article of TOPIC that holds TERM (any fact for `*`)."""
+    if key.startswith(RESEARCH):
+        topic, _, term = key[len(RESEARCH):].partition(":")
+        return any(f["path"] == topic + ".md" and (term == "*" or term in f["text"].lower())
+                   for f in added_facts(origin_path(root), manifest["base"], agent_email(n)))
+    return agent in workers.get(key, [])
+
+
+def conflicts_resolved(root, manifest, lines, workers):
+    """How many of the keys more than one agent wanted (`key_claimants`) were worked by at most one of them: a conflict the
+    coordination settled, whether by refusing the second claim or by the agents leaving the work to one."""
+    names = {r["n"]: r["agent"] for r in lines if r.get("n")}
+    return sum(1 for key, ns in key_claimants(manifest).items()
+               if sum(worked_key(root, manifest, key, n, names[n], workers) for n in ns if n in names) <= 1)
+
+
+def wasted_tokens(root, manifest, lines, counts, workers):
+    """The tokens (the four counts of TOKEN_KEYS) of the agents whose claim was refused, whose work on an item another agent had
+    already written (`item_workers`, all but the first to end) or whose fact another agent wrote as one claim (`dup_fact_pairs`, the later
+    fact), each agent once."""
+    by_n = {r["n"]: r for r in lines if r.get("n")}
+    wasted = {by_n[int(m.group(1))]["agent"] for holder, got in counts["agents"].items() if got["refused"]
+              for m in [HOLDER_AGENT.search(holder)] if m and int(m.group(1)) in by_n}
+    wasted |= {agent for agents in workers.values() for agent in agents[1:]}
+    wasted |= {later for _a, _b, later in dup_fact_pairs(root, manifest, lines)}
+    return sum(r.get(k) or 0 for r in lines if r["agent"] in wasted for k in TOKEN_KEYS)
 
 
 def land_stops(lines):
@@ -2186,8 +2465,8 @@ def frozen_counts(root, manifest, scenario, lines):
 def run_values(root, manifest, lines):
     """{metric: value} of one run: each agent's AGENT_METRICS as `AGENT/METRIC` and the run's, the run's wall seconds its own
     (`run_wall`), then dup_facts, claims, claim_refused, dedup_hits, skipped_terms (each also per agent, by its holder name
-    `agentN`), claim_conflicts, land_stops, rebase_s, right and asked (lookup agents), eval_passed
-    and eval_total (research agents with a frozen question)."""
+    `agentN`), claim_conflicts, conflicts_resolved, asks, asks_answered (`ask_counts`), dup_commits, wasted_tokens, land_stops, rebase_s,
+    right and asked (lookup agents), eval_passed and eval_total (research agents with a frozen question)."""
     values, total = {}, {m: 0 for m, _ in AGENT_METRICS}
     lines = [{**r, "usd": usd_of(r)} for r in lines]
     for r in lines:
@@ -2197,7 +2476,10 @@ def run_values(root, manifest, lines):
     total["wall_s"] = run_wall(lines)
     values.update({m: number(v) for m, v in total.items()})
     counts = coord_counts(manifest)
+    asks, workers = ask_counts(manifest), item_workers(manifest, lines)
     values.update(dup_facts=dup_facts(root, manifest, lines), claims=counts["claims"], claim_refused=counts["refused"],
+                  conflicts_resolved=conflicts_resolved(root, manifest, lines, workers), asks=asks[0], asks_answered=asks[1],
+                  dup_commits=dup_commits(workers), wasted_tokens=wasted_tokens(root, manifest, lines, counts, workers),
                   dedup_hits=counts["dedup_hits"], skipped_terms=counts["skipped_terms"], claim_conflicts=counts["conflicts"],
                   land_stops=land_stops(lines),
                   rebase_s=sum(rebase_seconds(Path(a["clone"]), r.get("started"), r.get("ended"))
