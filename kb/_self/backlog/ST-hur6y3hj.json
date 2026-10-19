@@ -2,7 +2,7 @@
   "id": "ST-hur6y3hj",
   "kind": "story",
   "title": "multi fitness proves deduplication and structured coordination with scripted agents: research and coord cases under coord shared and isolated",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-giqleoy2",
   "sprint": "SP-p46hofrg",
   "priority": "P1",
@@ -119,5 +119,27 @@
     }
   ],
   "notes": "Premise run 2026-10-19 on 7079b184a: multi fitness --case is unknown (exit 2). bench_replay.py's research agent today claims research:replay:HOLDER by hand and posts its own claim and release events, so the fitness pass reads hand-posted events, not the coord path real agents take (the ST-eo3a7erb finding). Evidence 2026-10-19 on 59f956f4d: a clean multi run research --replay (and mixed, and coord) is named a problem by multi check: 'lost claim: research:TOPIC:* is still held by agentN (coord store coord/coord.sqlite) though every agent ended'. The scripted research agent's coord.py dedup claims the whole-topic key and bench_replay.py never releases that claim (only its own research:replay:HOLDER key).",
-  "claimed_by": "orch-r61"
+  "evidence": {
+    "commit": "3164bf11b842eb8ac7b776d0c1b0505b95729d33",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport re, subprocess, sys\nr = subprocess.run([sys.executable, \"_tools/benchmarks.py\", \"multi\", \"fitness\", \"--case\", \"research-shared\", \"--case\", \"research-isolated\"], capture_output=True, text=True, timeout=3000)\nassert r.returncode == 0, (\"multi fitness research cases\", r.returncode, (r.stdout + r.stderr)[-400:])\nassert \"research-concurrent\" not in r.stdout, \"--case ran other cases too\"\ndef m(case):\n    ln = [l for l in r.stdout.splitlines() if l.startswith(\"ok: \" + case + \":\")]\n    assert ln, (\"case did not run and pass\", case, r.stdout[-400:])\n    return {k: int(v) for k, v in re.findall(r\"(\\w+)=(\\d+)\", ln[0])}\ns, i = m(\"research-shared\"), m(\"research-isolated\")\nassert s.get(\"dedup_hits\", 0) >= 1 and s.get(\"dup_facts\") == 0, (\"research-shared measures\", s)\nassert i.get(\"dup_facts\", 0) >= 1, (\"research-isolated measures\", i)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport re, subprocess, sys\nr = subprocess.run([sys.executable, \"_tools/benchmarks.py\", \"multi\", \"fitness\", \"--case\", \"coord-shared\", \"--case\", \"coord-isolated\"], capture_output=True, text=True, timeout=3000)\nassert r.returncode == 0, (\"multi fitness coord cases\", r.returncode, (r.stdout + r.stderr)[-400:])\ndef m(case):\n    ln = [l for l in r.stdout.splitlines() if l.startswith(\"ok: \" + case + \":\")]\n    assert ln, (\"case did not run and pass\", case, r.stdout[-400:])\n    return {k: int(v) for k, v in re.findall(r\"(\\w+)=(\\d+)\", ln[0])}\ns, i = m(\"coord-shared\"), m(\"coord-isolated\")\nassert s.get(\"claim_refused\", 0) >= 1 and s.get(\"asks_answered\", 0) >= 1 and s.get(\"dup_facts\") == 0, (\"coord-shared measures\", s)\nassert i.get(\"dup_facts\", 0) >= 1, (\"coord-isolated measures\", i)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
