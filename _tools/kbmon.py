@@ -25,6 +25,12 @@
                                sprints, load or all (the default), from one snapshot of the panels the topic needs; with
                                --json an object of schema 1, topic, taken, lines and facts; a claim's holder is never named;
                                it calls no model and writes no file, and exits 0 also when the snapshot has an alert
+  kbmon.py --status sprints --backtest N
+                               replay the sprint estimate over the last N closed sprints on `origin/main` (N of 1 or more) at 25,
+                               50 and 75 percent of the time from each one's start commit to its close commit, a sprint only
+                               when another closed before its start: a line for each sprint and the line `backtest: sprints=S
+                               points=P median absolute error=E min median relative error=R% inside the range=C%`; with
+                               --json an object of schema 1, topic, sprints and summary
   kbmon.py                     show the text view every --interval seconds, --count times (default: until interrupted); on a
                                terminal it is redrawn in place with ANSI escapes (and again, from the last snapshot,
                                when the window is resized), on a pipe or under NO_COLOR it is plain frames one after
@@ -102,6 +108,7 @@ def parser():
     mode.add_argument("--split", action="store_true", help="open the live view in a pane beside the session")
     ap.add_argument("--status", nargs="?", const="all", choices=mon_status.TOPICS, metavar="TOPIC",
                     help="print a short plain-words answer for TOPIC (%s; default all); with --json an object" % ", ".join(mon_status.TOPICS))
+    ap.add_argument("--backtest", type=int, metavar="N", help="with --status sprints: replay the sprint estimate over the last N closed sprints")
     ap.add_argument("--dry-run", action="store_true", help="with --split: print the command, run nothing")
     ap.add_argument("--since", metavar="CURSOR", help="with --events: the cursor an earlier call printed (default: the newest records)")
     ap.add_argument("--ansi", action="store_true", help="colour the text view")
@@ -207,6 +214,20 @@ def status(a, out):
     return 0
 
 
+def backtest(a, out):
+    """The estimate replayed over the last `--backtest` closed sprints (`mon_eta.backtest`), as lines or, with `--json`, as an
+    object of schema 1, topic, sprints and summary. Exit 0."""
+    import mon_eta
+    import redact
+    result = mon_eta.backtest(a.root.resolve(), a.backtest)
+    if a.json:
+        out.write(json.dumps({"schema": 1, "topic": "sprints", **result}, ensure_ascii=False, indent=1) + "\n")
+    else:
+        out.write("\n".join(redact.redact(x) for x in mon_eta.backtest_lines(result)) + "\n")
+    out.flush()
+    return 0
+
+
 def main(argv=None, out=None):
     out = out or sys.stdout
     ap = parser()
@@ -216,6 +237,8 @@ def main(argv=None, out=None):
             ap.error("--status takes only --json beside the snapshot's own options")
         if a.panel:
             ap.error("--status reads the panels its topic needs and takes no --panel")
+    if a.backtest is not None and (a.status != "sprints" or a.backtest < 1):
+        ap.error("--backtest N (1 or more) needs --status sprints")
     if a.since is not None and not a.events:
         ap.error("--since needs --events")
     if a.dry_run and not a.split:
@@ -225,6 +248,8 @@ def main(argv=None, out=None):
     names = tuple(dict.fromkeys(a.panel)) if a.panel else (mon_receipt.DEFAULT_PANELS if a.receipt else mon_base.PANELS)
     names = tuple(n for n in mon_base.PANELS if n in names)
     try:
+        if a.backtest is not None:
+            return backtest(a, out)
         if a.status is not None:
             return status(a, out)
         if a.split:

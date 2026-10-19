@@ -68,8 +68,42 @@
       "class": "design",
       "answer": "median relative error at most 35 percent and half the close times inside the range over 20 sprints, labelled as not backed by data yet",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Does --backtest N take the last N closed sprints and then leave out those no sprint preceded, or the last N sprints that can be replayed?",
+      "options": [
+        "the last N closed, then leave out those no sprint preceded",
+        "the last N replayable sprints"
+      ],
+      "recommendation": "the last N closed, then leave out those no sprint preceded",
+      "do": {
+        "the last N closed, then leave out those no sprint preceded": "ST-4qfbef2j",
+        "the last N replayable sprints": "ST-4qfbef2j"
+      },
+      "class": "design",
+      "answer": "the last N closed, then leave out those no sprint preceded",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does the replay order a sprint's open items and fill their after lists, which the live panel takes from the sprint's rank order?",
+      "options": [
+        "claim order, following the items a depends_on names and the earlier-claimed items whose touches meet its own",
+        "no after lists: every open item runs on its own"
+      ],
+      "recommendation": "claim order, following the items a depends_on names and the earlier-claimed items whose touches meet its own",
+      "do": {
+        "claim order, following the items a depends_on names and the earlier-claimed items whose touches meet its own": "ST-4qfbef2j",
+        "no after lists: every open item runs on its own": "ST-4qfbef2j"
+      },
+      "class": "design",
+      "answer": "claim order, following the items a depends_on names and the earlier-claimed items whose touches meet its own",
+      "by": "agent"
     }
   ],
-  "notes": "Premise on origin/main cf985537c, 2026-10-19: kbmon.py has no --backtest (argparse exits 2 on an unrecognised argument). Baseline on the same day, a planning script outside the repository: the commit-gap estimate (open items x the median gap of the last 5 done commits) over the last 20 closed sprints with at least 3 items and 10 minutes, at 25/50/75 percent of each (57 points): median absolute error 10 min, median relative error 51 percent. The sprint's target (relative error at most 35 percent, at least half the close times inside the range, over 20 sprints) has no data behind it for the new estimator yet; the review story's check measures it.",
+  "notes": "Premise on origin/main cf985537c, 2026-10-19: kbmon.py has no --backtest (argparse exits 2 on an unrecognised argument). Baseline on the same day, a planning script outside the repository: the commit-gap estimate (open items x the median gap of the last 5 done commits) over the last 20 closed sprints with at least 3 items and 10 minutes, at 25/50/75 percent of each (57 points): median absolute error 10 min, median relative error 51 percent. The sprint's target (relative error at most 35 percent, at least half the close times inside the range, over 20 sprints) has no data behind it for the new estimator yet; the review story's check measures it. Probe 2026-10-19, measured on this clone at origin/main (a35ab76c7 plus the work branch), command python3 _tools/kbmon.py --status sprints --backtest 20 (5.9 s wall): sprints=20 points=60 median absolute error=4.9 min median relative error=20% inside the range=67%.",
   "claimed_by": "orch-r33"
 }
