@@ -2,7 +2,7 @@
   "id": "ST-tmvkydpf",
   "kind": "story",
   "title": "install-hooks sets push.recurseSubmodules=check, so a superproject push that names an unpushed root commit is refused",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-mguax5m3",
   "priority": "P2",
@@ -33,5 +33,6 @@
     "kb/_self/git.md",
     "kb/_self/code.md"
   ],
-  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): install-hooks leaves push.recurseSubmodules unset, and such a push succeeds. The goal research story reads git's push.recurseSubmodules documentation. "
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): install-hooks leaves push.recurseSubmodules unset, and such a push succeeds. The goal research story reads git's push.recurseSubmodules documentation. ",
+  "claimed_by": "orch-r35"
 }
