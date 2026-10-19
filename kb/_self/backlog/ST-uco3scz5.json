@@ -2,7 +2,7 @@
   "id": "ST-uco3scz5",
   "kind": "story",
   "title": "Review sprint: Each session, agent and sprint names its operator: a pseudonymous operator id from the Claude login",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-czs3jk57",
   "review": true,
   "priority": "P1",
@@ -23,6 +23,27 @@
       ]
     }
   ],
-  "claimed_by": "orch-r38",
-  "operator": "op-4b76a6bc"
+  "operator": "op-4b76a6bc",
+  "evidence": {
+    "commit": "d6e8272be5b116802e7c754923631c4b4340fefa",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "5ae2837dc47aa4ad"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "c98757c5f15449d5"
+      }
+    ]
+  }
 }
