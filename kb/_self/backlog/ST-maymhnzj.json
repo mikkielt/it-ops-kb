@@ -37,9 +37,6 @@
   "touches": [
     "kb/_self/querylog.md"
   ],
-  "depends_on": [
-    "ST-6iu2xb23"
-  ],
   "gates": [
     {
       "id": "g-querylog",

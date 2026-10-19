@@ -36,9 +36,6 @@
     "kb/_self/git.md",
     "kb/_self/code.md"
   ],
-  "depends_on": [
-    "ST-6iu2xb23"
-  ],
   "gates": [
     {
       "id": "g-trailer",
