@@ -3,7 +3,7 @@
   "kind": "sprint",
   "title": "The paid multi-agent runs measure concurrency, dedup, cache reuse, model choice, pack budget and kb tools",
   "status": "planned",
-  "goal": "the multi-agent scenarios run as the operator sized them, concurrent and one at a time with each knob, and their rows, deltas and fitness check results are recorded in benchmarks.csv and the report; kb/_self/token-efficiency.md states the conclusions those numbers support, each citing its report section",
+  "goal": "the multi-agent scenarios run as the operator sized them, concurrent and one at a time with each knob, and their rows, deltas and fitness check results are recorded in benchmarks.csv and the report; each paid run has a bare twin run at the same time by agents with none of the kb's tooling, and the report compares the two arms in tokens and USD per correct answer, per verified fact and per passing item; kb/_self/token-efficiency.md states the conclusions those numbers support, each citing its report section",
   "gates": [
     {
       "id": "start",
@@ -14,7 +14,29 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    },
+    {
+      "id": "bare-spend",
+      "kind": "blocking",
+      "question": "Spend for the bare arm the operator asked for on 2026-10-19 (a bare twin of each paid run, ST-fnj6hllh): run as sized, 30 twin runs in 2 reps, about 124 USD, about 281 USD with the kb arm's about 157, under a sprint stop of 300 USD; a smaller bare sample is a twin of the first rep only, about 62 USD, about 219 USD in total. Estimated from the recorded rows' means at bench_core.PRICE (ST-xjtqwdtq notes) and printed again by multi run --dry-run --bare before the runs.",
+      "options": [
+        "run as sized",
+        "run a smaller bare sample",
+        "do not run the bare arm"
+      ],
+      "recommendation": "run as sized",
+      "do": {
+        "run as sized": "ST-xjtqwdtq",
+        "run a smaller bare sample": "ST-xjtqwdtq",
+        "do not run the bare arm": "ST-fnj6hllh"
+      },
+      "class": "design",
+      "answer": "run as sized",
+      "by": "operator"
     }
-  ]
+  ],
+  "notes": "Operator request 2026-10-19, verbatim: \"give the benchmark that will run today a parallel run of bare agents doing similar work -- need to compare token and dollar efficiency\". Gate bare-spend answered run as sized on it by the operatorʼs delegate: kb arm about 157 USD plus bare arm about 124 USD, about 281 USD, at most 300 USD. Spend stop of this sprint raised to 300 USD in total, both arms counted (ST-xjtqwdtq notes say how each run is capped)."
 }

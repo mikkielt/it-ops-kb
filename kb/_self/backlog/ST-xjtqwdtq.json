@@ -7,7 +7,7 @@
   "sprint": "SP-3pvz2noj",
   "priority": "P2",
   "rank": 0,
-  "goal": "once the operator answers the paid-run gate, the scenarios lookups, research and mixed run as answered, at once and with --sequential, with each knob run the answer keeps; multi check runs on each paid run and its failures are recorded as check_failures rows; multi record merges each run's rows and deltas into kb/_self/reports/benchmarks.csv; the report's multi section and README's figures are regenerated from those rows",
+  "goal": "once the operator answers the paid-run gate, the scenarios lookups, research and mixed run as answered, at once and with --sequential, with each knob run the answer keeps; multi check runs on each paid run and its failures are recorded as check_failures rows; multi record merges each run's rows and deltas into kb/_self/reports/benchmarks.csv; the report's multi section and README's figures are regenerated from those rows; each of those runs has its bare twin run at the same time with multi run --bare as the bare-arm spend gate of SP-3pvz2noj answered, its rows recorded beside the kb arm's; the sprint's paid runs stop at 300 USD in total, both arms counted",
   "checks": [
     {
       "run": [
@@ -22,6 +22,13 @@
         "_tools/benchmarks.py",
         "report",
         "--check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\n\nimport csv\nm = [x for x in csv.DictReader(open(\"kb/_self/reports/benchmarks.csv\", encoding=\"utf-8\"))\n     if x[\"scenario\"] == \"multi\" and x[\"date\"] > \"2026-10-18\" and \"replay\" not in x[\"arm\"].split()]\nbare = [x for x in m if x[\"arm\"].startswith(\"bare \")]\nprint(sorted({x[\"case\"] for x in bare}), len(bare))\nassert {\"lookups\", \"research\", \"mixed\"} <= {x[\"case\"] for x in bare}, \"a scenario has no bare twin run\"\nassert any(x[\"arm\"].startswith(\"bare concurrent\") for x in bare) and any(x[\"arm\"].startswith(\"bare sequential\") for x in bare), \"a start order has no bare twin\"\nspent = sum(float(x[\"value\"]) for x in m if x[\"metric\"] == \"usd\" and not x[\"arm\"].startswith(\"delta\"))\nprint(\"spent\", round(spent, 2))\nassert 0 < spent <= 300, f\"the paid runs spent {spent:.2f} USD, both arms counted: above the 300 USD stop or none recorded\"\n"
       ]
     }
   ],
@@ -41,6 +48,14 @@
     {
       "clause": "the report's multi section and README's figures are regenerated from those rows",
       "check": 1
+    },
+    {
+      "clause": "each of those runs has its bare twin run at the same time with multi run --bare as the bare-arm spend gate of SP-3pvz2noj answered, its rows recorded beside the kb arm's",
+      "check": 2
+    },
+    {
+      "clause": "the sprint's paid runs stop at 300 USD in total, both arms counted",
+      "check": 2
     }
   ],
   "touches": [
@@ -49,7 +64,10 @@
     "README.md"
   ],
   "depends_on": [
-    "ST-2hooit6y"
+    "ST-2hooit6y",
+    "ST-fnj6hllh",
+    "ST-i64xyh4s",
+    "ST-pbspqgvw"
   ],
   "gates": [
     {
@@ -87,5 +105,5 @@
     "kb/_self/reports/benchmarks.csv",
     "kb/public/claude/models.csv"
   ],
-  "notes": "Sizing (kb/_self/backlog.md, Plan): no estimate from a dry run yet, since multi run --dry-run comes with SP-5y4ut64g; once it lands, the planner runs it with the answered flags and records here the command, run count, sequential runtime and spend before this sprint's start gate. Planning estimate (recorded rows' means at bench_core.PRICE), per rep: concurrent lookups 2.94 USD (20 questions x 0.147 Sonnet), research 8.48 (3 areas x 2.83), mixed 8.39 (2 areas, 2 code items x about 1.0, 5 questions); the sequential baseline the same 19.81; knob runs: dedup off 8.48, staggered start 2.94, Haiku lookups 0.17, Opus lookups 4.72, Haiku research about 1.0 (no recorded row), pack budget 600 and 2400 5.88, reading files about 4.41 (1.5x the kb arm, no recorded row), an orchestrator session as manager about 11.39 (mixed plus about 3, no recorded row): 78.61 USD and 15 runs per rep, about 2.9 h one after another (573 s per area, 28 s per question, about 900 s per code item, no recorded row). Run as sized: 2 reps, 30 runs, about 157 USD, about 6 h. Smaller sample: 1 rep without the Opus, reading-files and manager-session runs, 12 runs, about 58 USD, about 2.5 h. Caps: --max-usd per run at its estimate plus 25 percent; research agents at --area-usd 8 as repro."
+  "notes": "Sizing (kb/_self/backlog.md, Plan): no estimate from a dry run yet, since multi run --dry-run comes with SP-5y4ut64g; once it lands, the planner runs it with the answered flags and records here the command, run count, sequential runtime and spend before this sprint's start gate. Planning estimate (recorded rows' means at bench_core.PRICE), per rep: concurrent lookups 2.94 USD (20 questions x 0.147 Sonnet), research 8.48 (3 areas x 2.83), mixed 8.39 (2 areas, 2 code items x about 1.0, 5 questions); the sequential baseline the same 19.81; knob runs: dedup off 8.48, staggered start 2.94, Haiku lookups 0.17, Opus lookups 4.72, Haiku research about 1.0 (no recorded row), pack budget 600 and 2400 5.88, reading files about 4.41 (1.5x the kb arm, no recorded row), an orchestrator session as manager about 11.39 (mixed plus about 3, no recorded row): 78.61 USD and 15 runs per rep, about 2.9 h one after another (573 s per area, 28 s per question, about 900 s per code item, no recorded row). Run as sized: 2 reps, 30 runs, about 157 USD, about 6 h. Smaller sample: 1 rep without the Opus, reading-files and manager-session runs, 12 runs, about 58 USD, about 2.5 h. Caps: --max-usd per run at its estimate plus 25 percent; research agents at --area-usd 8 as repro. Bare arm 2026-10-19 (operator request, ST-fnj6hllh notes): a twin per run, same method; per rep USD: lookups 1.39 (20 x 0.0695 web-sonnet-5-5), research 8.48 (no bare row: repro 2.83/area), mixed 8.01, baseline 17.88, knob twins 26.43 (dedup 8.48, stagger 1.39, Haiku 0.60, Opus 2.78, Haiku research 1.0, packs 2.78, files 1.39, manager 8.01): 62.19/rep, about 124 for 2 reps, about 281 with the kb arm. Stop 300 USD both arms: each run gets --max-usd min(estimate+25%, 300 - recorded usd). report --check passes before the work as a guard that the regenerated report and README stay in step; checks 0 and 2 fail until the paid runs are recorded."
 }
