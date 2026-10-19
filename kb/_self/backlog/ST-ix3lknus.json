@@ -43,7 +43,8 @@
     "kb/_self/reports/benchmarks.md",
     "README.md",
     "_tools/bench_report.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/token-efficiency.md"
   ],
   "depends_on": [
     "ST-hur6y3hj"
