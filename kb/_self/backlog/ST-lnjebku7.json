@@ -54,7 +54,11 @@
         "coord.py lists operator among the intent's fields; a server's own operator field still replaces the client's, and digest shows operator=ID": "ST-lnjebku7",
         "coord.py reads KB_OPERATOR itself when it posts": "ST-lnjebku7"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "coord.py lists operator among the intent's fields; a server's own operator field still replaces the client's, and digest shows operator=ID",
+      "by": "operator",
+      "operator": "op-4b76a6bc",
+      "role": "interactive"
     },
     {
       "id": "g2",
