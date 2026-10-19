@@ -2,7 +2,7 @@
   "id": "ST-53jojuqs",
   "kind": "story",
   "title": "Review sprint: Roots in other repositories: pointer files in kb/_roots, fetched or submodule roots, a missing root reported and never fatal",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-s2svf5a6",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-r34"
 }
