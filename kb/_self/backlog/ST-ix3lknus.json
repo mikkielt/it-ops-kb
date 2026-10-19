@@ -2,7 +2,7 @@
   "id": "ST-ix3lknus",
   "kind": "story",
   "title": "A paid multi run measures research dedup and the coord scenario under coord shared against isolated, two records each, within 75 USD",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-giqleoy2",
   "sprint": "SP-p46hofrg",
   "priority": "P1",
@@ -65,5 +65,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Dry-run estimates 2026-10-19 on 7079b184a (benchmarks.py multi run research --dry-run): Sonnet research 8.48 USD a run (3 x 2.83), --model research=haiku-5-5 0.42 USD a run (3 x 0.14, price ratio 0.05), mixed 7.68 USD; the coord scenario has no estimate until ST-kx6qdtkv adds it. Measured SP-3pvz2noj records: Haiku research 3.40 and 6.21 USD (usd metric), Sonnet research 11.18-12.49 USD, mixed 4.70-4.76 USD. The harness estimate understates Haiku research 8-15 times (SP-yjfiemha works on estimates), so the spend gate sizes from the larger measured record: about 49.52 USD for 8 runs, at most the 75 USD stop. Rerun the dry run of both scenarios before the first paid run and stop if the measured spend so far plus the next run's sizing passes 75 USD."
+  "notes": "Dry-run estimates 2026-10-19 on 7079b184a (benchmarks.py multi run research --dry-run): Sonnet research 8.48 USD a run (3 x 2.83), --model research=haiku-5-5 0.42 USD a run (3 x 0.14, price ratio 0.05), mixed 7.68 USD; the coord scenario has no estimate until ST-kx6qdtkv adds it. Measured SP-3pvz2noj records: Haiku research 3.40 and 6.21 USD (usd metric), Sonnet research 11.18-12.49 USD, mixed 4.70-4.76 USD. The harness estimate understates Haiku research 8-15 times (SP-yjfiemha works on estimates), so the spend gate sizes from the larger measured record: about 49.52 USD for 8 runs, at most the 75 USD stop. Rerun the dry run of both scenarios before the first paid run and stop if the measured spend so far plus the next run's sizing passes 75 USD.",
+  "claimed_by": "orch-r61"
 }
