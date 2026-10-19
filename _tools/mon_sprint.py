@@ -1,5 +1,7 @@
 """kbmon's sprint panel (kb/_self/monitoring.md): every sprint of the backlog with its state, its items' counts by status, its
-next item, its open items, the times of its last done commits and its waiting gates, and each landing in progress.
+next item, its open items (each with its kind, the time of its last claim commit and the open items it follows), the times of its last
+done commits, the time its review story was done and its waiting gates, the duration history of `mon_eta.py`, and each
+landing in progress.
 
 The sprints are the backlog's items of kind `sprint` whose status is `active` or `planned`, read through `bl_base.Backlog`
 and `bl_view.ready` from the item files of the local `origin/main` ref (`bl_view.items_at`, no fetch; the checkout's own
@@ -9,7 +11,7 @@ files where the ref cannot be read), with the count of commits the checkout is b
 open items, `{item, gate}`. A landing in progress is an item whose newest `land.step` row has no later `land.end` row in the
 ops rows: `{item, step, since}`, the last step recorded and the time of the landing's first step. A root with no backlog
 has no sprints. The panel writes nothing and makes no request. Imports no sibling at load; `bl_base`, `bl_view`, `bl_plan`,
-`bl_stall`, `ql_capture` and `ql_distill` where it reads them.
+`bl_stall`, `mon_eta`, `ql_capture` and `ql_distill` where it reads them.
 """
 import re
 from datetime import datetime, timezone
@@ -73,9 +75,23 @@ def done_commits(root):
     return out
 
 
-def sprint_row(bl, sid, state, done_at):
+def follows(bl, left, files):
+    """{id: [ids]} for each open item of LEFT (in the sprint's order): the open items it depends on or that come before it
+    in that order with touches that meet its own (bl_plan.touches_meet over FILES, the tracked files), in that order."""
+    import bl_plan
+    deps = {i: bl_plan.dependencies(bl, i) for i in left}
+    mine = {i: [t for t in bl.items[i].get("touches") or [] if isinstance(t, str) and t] for i in left}
+    out = {}
+    for n, i in enumerate(left):
+        out[i] = [j for k, j in enumerate(left) if j != i and (j in deps[i] or (k < n and any(
+            bl_plan.touches_meet(a, b, files) for a in mine[i] for b in mine[j])))]
+    return out
+
+
+def sprint_row(bl, sid, state, done_at, claimed, files):
     import bl_base
     import bl_view
+    import mon_eta
     items = bl.sprint_items(sid)
     counts = {}
     for i in items:
@@ -85,26 +101,39 @@ def sprint_row(bl, sid, state, done_at):
     waiting = [{"item": i, "gate": g["id"]} for i in holders for g in bl_base.open_gates(bl.items[i])]
     nxt = bl_view.ready(bl, sid) if state == "active" else []
     left = sorted((i for i in items if bl.items[i].get("status") not in ("done", "dropped")), key=bl.order_key)
-    open_items = [{"id": i, "title": str(bl.items[i].get("title") or ""), "status": str(bl.items[i].get("status"))} for i in left]
+    after = follows(bl, left, files())
+    open_items = [{"id": i, "title": str(bl.items[i].get("title") or ""), "status": str(bl.items[i].get("status")),
+                   "kind": mon_eta.kind_of(bl.items[i]), "claimed": claimed.get(i), "after": after[i]} for i in left]
     times = sorted(done_at[i] for i in items if i in done_at)[-DONE_KEPT:]
+    review = sorted(done_at[i] for i in items if bl.items[i].get("review") and i in done_at)
     return {"id": sid, "title": str(bl.items[sid].get("title") or ""), "state": state, "items": counts,
             "next": nxt[0] if nxt else None, "next_title": str(bl.items[nxt[0]].get("title") or "") if nxt else None,
-            "open": open_items[:OPEN_KEPT], "done_at": times, "waiting": waiting}
+            "open": open_items[:OPEN_KEPT], "done_at": times, "review_done": review[-1] if review else None,
+            "waiting": waiting}
 
 
 def sprints(root):
     """{sprints, source, behind}: the sprint rows, `origin/main` or `checkout` as the source of the items, and the commits
     the checkout is behind `origin/main` (None where unknown)."""
     import bl_plan
+    import mon_eta
     bl, source, behind = backlog_at(root)
     done_at = done_commits(root) if source == REF else {}
+    eta = mon_eta.read(root) if source == REF else mon_eta.empty()
+    tracked = []
+
+    def files():  # the tracked files the touches are expanded over, listed once and only when a touch holds a glob
+        if not tracked and any(re.search(r"[*?]", t) for it in bl.items.values() for t in it.get("touches") or [] if isinstance(t, str)):
+            tracked.extend(bl_plan.touch_files(bl.root))
+        return tracked
+
     rows = []
     for sid, sp in sorted(bl.items.items()):
         state = sprint_state(sp, bl_plan.start_approved) if sp.get("kind") == "sprint" else None
         if state:
-            rows.append(sprint_row(bl, sid, state, done_at))
+            rows.append(sprint_row(bl, sid, state, done_at, eta["claimed"], files))
     rows.sort(key=lambda r: SPRINT_STATES.index(r["state"]))  # stable: ids stay in order within a state
-    return {"sprints": rows, "source": source, "behind": behind}
+    return {"sprints": rows, "source": source, "behind": behind, "history": eta["history"]}
 
 
 def in_spool_order(rows):

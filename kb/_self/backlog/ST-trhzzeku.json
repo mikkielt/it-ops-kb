@@ -87,6 +87,57 @@
       "class": "design",
       "answer": "claim-to-done times of the claim and done commits on the main branch",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Does the outlier rule also trim the review-to-close tail?",
+      "options": [
+        "no, the tail keeps its last durations as they are",
+        "yes, the tail is trimmed like a kind and its outliers are counted"
+      ],
+      "recommendation": "no, the tail keeps its last durations as they are",
+      "do": {
+        "no, the tail keeps its last durations as they are": "ST-trhzzeku",
+        "yes, the tail is trimmed like a kind and its outliers are counted": "ST-trhzzeku"
+      },
+      "class": "design",
+      "answer": "no, the tail keeps its last durations as they are",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does an open item's after list compare touches and dependencies?",
+      "options": [
+        "bl_plan.touches_meet over the tracked files (the serializing overlap, kb/_self docs excepted) and bl_plan.dependencies (direct and through other items)",
+        "touches_overlap on the globs alone and the item's own depends_on"
+      ],
+      "recommendation": "bl_plan.touches_meet over the tracked files (the serializing overlap, kb/_self docs excepted) and bl_plan.dependencies (direct and through other items)",
+      "do": {
+        "bl_plan.touches_meet over the tracked files (the serializing overlap, kb/_self docs excepted) and bl_plan.dependencies (direct and through other items)": "ST-trhzzeku",
+        "touches_overlap on the globs alone and the item's own depends_on": "ST-trhzzeku"
+      },
+      "class": "design",
+      "answer": "bl_plan.touches_meet over the tracked files (the serializing overlap, kb/_self docs excepted) and bl_plan.dependencies (direct and through other items)",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Which kind does an item with no touch get, and which claim time does an open item carry?",
+      "options": [
+        "content for no touch (nothing under a code directory), and the last claim commit whatever the item's status",
+        "code for no touch, and a claim time only for a doing item"
+      ],
+      "recommendation": "content for no touch (nothing under a code directory), and the last claim commit whatever the item's status",
+      "do": {
+        "content for no touch (nothing under a code directory), and the last claim commit whatever the item's status": "ST-trhzzeku",
+        "code for no touch, and a claim time only for a doing item": "ST-trhzzeku"
+      },
+      "class": "design",
+      "answer": "content for no touch (nothing under a code directory), and the last claim commit whatever the item's status",
+      "by": "agent"
     }
   ],
   "notes": "Planned 2026-10-19 on the operator's request (\"ensure more accurate timeframing\"). Premise on origin/main cf985537c, 2026-10-19: the planted clone's sprint panel (state ok) has no history and its open items no kind, claimed or after (check exits 1, no traceback). Keep a refresh cheap: one git log and one git cat-file --batch call per read, the result kept in memory for the same origin/main commit; kbmon writes no file, so no disk cache. mon_eta.py is no panel: kb/_self/code.md lists it beside mon_status.py and mon_receipt.py. Overlap: SP-2uljwgho (ST-dhsyyjft, BG-lyfl57xv) and the housekeeping split sprint SP-jplczvj2 touch mon_sprint.py and mon_status.py later and rebase onto this sprint. Gate source was first worded with the integration ref's name, which classed it push by a word match; the operator's delegate removed it unanswered (gate remove --by operator, 2026-10-19) and re-added it in neutral words as a design gate: it decides a data source, not a push.",
