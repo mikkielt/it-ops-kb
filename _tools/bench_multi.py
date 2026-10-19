@@ -11,11 +11,13 @@ directory, as the clones of bench_repro do, in a directory of their own for each
 of each coordination mode in a temporary directory, lands one `_gaps.md` commit from each clone of the shared one on its
 bare through `kbgit.py sync --push` and proves the landing and the stores stayed inside the sandbox. Nothing but `execute`
 (`multi run` without `--dry-run`) starts a model or reads the network, and under `--replay` it starts bench_replay.py, a
-scripted stand-in for `claude`, instead: no model call. `record` merges the lines of DIR/results.jsonl into the results
-file as the rows of the scenario `multi`. `fitness` replays every scenario clean and with each plant and reads each run with `check`. This module imports bench_repro for its instance helpers (kb/_self/code.md,
+scripted stand-in for `claude`, instead: no model call. With `--bare` each agent has a bare twin started with it (the same model,
+turns and dollar cap, none of the kb's tooling) in its own sandbox DIR/bare/agentN; a twin's line in results.jsonl has the arm `bare`.
+`record` merges the lines of DIR/results.jsonl into the results file as the rows of the scenario `multi`; the twins' rows have the
+arm `bare` and the kb arm. `fitness` replays every scenario clean and with each plant and reads each run with `check`. This module imports bench_repro for its instance helpers (kb/_self/code.md,
 Layout); benchmarks.py holds the command line.
 """
-import base64, csv, datetime, hashlib, itertools, json, os, re, secrets, shlex, shutil, signal, sqlite3, subprocess, sys, threading, time
+import base64, csv, datetime, hashlib, io, itertools, json, os, re, secrets, shlex, shutil, signal, sqlite3, subprocess, sys, tarfile, threading, time
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -24,8 +26,8 @@ import agent_bench
 import bench_pool
 import bench_repro
 import kbpublic
-from bench_core import (HOME, PRICE, RESULTS, isolate, pinned, read_rows, resolve_model, scratch_dir, spent_run, transcript,
-                        write_rows)
+from bench_core import (HOME, PRICE, RESULTS, isolate, pinned, read_rows, resolve_model, scratch_dir, spent_run, tier_of, transcript,
+                        write_rate, write_rows)
 from bench_repro import (Refused, failure_of, inside, instance_env, lock_dir, mcp_config, reset_clone, run_git, same_path, sh,
                          utc_now)
 
@@ -63,6 +65,12 @@ CANARY_ENV, SCRATCH_ENV = "MULTI_CANARY", "MULTI_SCRATCH"  # the variables of an
 LEAK_ENV = "MULTI_LEAK_CANARY_FILE"  # bench_replay.LEAK_ENV: the file of the canary a --plant leak-* agent writes where it must not
 OUTPUT_DIR = "output"  # DIR/output/agentN.log: what agent N's session wrote to its output streams
 REPLAY = "_tools/bench_replay.py"  # the scripted stand-in of `--replay`, run from this checkout in the agents' clones
+BARE = "bare"  # DIR/bare/agentN: the sandbox of agent N's bare twin (`--bare`); also the arm of a twin's line and row
+BARE_TOOLS = "Read,Grep,Glob,Bash,Edit,Write,WebSearch,WebFetch"  # a twin's --tools: files, shell and the web, no kb tool
+BARE_SETTINGS = json.dumps({"disableAllHooks": True})  # a twin's --settings: no hook runs
+BARE_DROP = ("kb/public", ".claude", ".claude-plugin", ".mcp.json", "CLAUDE.md", "AGENTS.md")  # what a code twin's checkout lacks
+BARE_ENV = ("KB_", "CLAUDE_PLUGIN_")  # the prefixes of the variables a twin's environment lacks
+NOTES = "NOTES.md"  # the file of its sandbox a research twin writes its findings to
 POOL_ARM = re.compile(r"[a-z]+-\d+(?:-\d+)*(?::default)?(/session)?")  # a kb arm of the pool at its default effort
 GAP = ("\n## multi-probe-agent{n}\n\n- **A probe entry that multi probe commits and syncs from agent {n}.** Nothing was tried; "
        "the entry exists to be pushed to the sandbox's bare. [UNK] (topic: {topic})\n")
@@ -211,7 +219,7 @@ def setup(count, coord, root=None, start=None, dry_run=False, out=print, scenari
             out(ln)
         return 0
     bare = origin_path(root)
-    for d in (bare, root / "coord", root / OUTPUT_DIR, *(lock_dir(root, n) for n in range(1, count + 1)),
+    for d in (bare, root / "coord", root / OUTPUT_DIR, root / BARE, *(lock_dir(root, n) for n in range(1, count + 1)),
               *(clone_path(root, n) for n in range(1, count + 1)), *(scratch_path(root, n) for n in range(1, count + 1))):
         shutil.rmtree(d, ignore_errors=True)
     root.mkdir(parents=True, exist_ok=True)
@@ -247,17 +255,21 @@ def setup(count, coord, root=None, start=None, dry_run=False, out=print, scenari
 
 
 def remove(root, out=None):
-    """Remove a sandbox: its directory and the directory its clones sit in. With `out` (`multi remove`) it names both and
-    returns 0, or raises Refused when `root` is a directory that is no sandbox's."""
+    """Remove a sandbox: its directory (the sandboxes of the bare twins under DIR/bare too) and the directory its clones sit in. With `out`
+    (`multi remove`) it names each and returns 0, or raises Refused when `root` is a directory that is no sandbox's."""
     root = Path(root) if root else default_dir()
     if out is not None and root.exists() and not (root / MANIFEST).is_file():
         raise Refused(f"{root} holds no {MANIFEST}: not a sandbox of `multi setup`")
-    clones = clone_path(root, 1).parent
+    clones, twins = clone_path(root, 1).parent, root / BARE
+    had_twins = twins.exists()
     shutil.rmtree(clones, ignore_errors=True)
+    shutil.rmtree(twins, ignore_errors=True)
     shutil.rmtree(root, ignore_errors=True)
     if out is not None:
         out(f"removed: {root}")
         out(f"removed: {clones}")
+        if had_twins:
+            out(f"removed: {twins}")
     return 0
 
 
@@ -701,6 +713,102 @@ def agent_plan(agent, scenario, n, root, knobs, models, means, questions, briefs
     return plan
 
 
+def bare_path(root, n):
+    """The sandbox of the bare twin of agent N, under DIR/bare."""
+    return Path(root) / BARE / f"agent{n}"
+
+
+def bare_argv(model, max_turns, usd):
+    """The argv of a bare twin's session: the kb agent's model, turns and dollar cap, and nothing of the kb's tooling (no setting
+    source, no hook, no mcp server, no slash command or skill, only the tools of BARE_TOOLS); the prompt is its stdin."""
+    return [*bench_repro.CLAUDE, "-p", "--output-format", "stream-json", "--verbose", "--permission-mode", "bypassPermissions",
+            "--setting-sources", "", "--settings", BARE_SETTINGS, "--strict-mcp-config", "--disable-slash-commands", "--tools", BARE_TOOLS,
+            "--model", bench_repro.model_id(model), "--max-turns", str(max_turns), "--max-budget-usd", f"{usd:g}"]
+
+
+def bare_lookup_prompt(questions):
+    """The prompt of a lookup twin: the kb agent's questions, answered from the web."""
+    return ("Answer from the web: search it and read pages, and cite the source url of each fact. Answer the questions one after the other.\n\n"
+            + "\n".join(f"{n}. {q}" for n, q in enumerate(questions, 1)) + "\n")
+
+
+def bare_area_prompt(brief):
+    """The prompt of a research twin: the brief of its kb agent's area (scope, sources, depth, what to leave out) with no kb to write
+    to; the findings go to NOTES.md, a line for each fact that ends with the url of the page that states it."""
+    lines = [f"Research the area `{brief['area'].strip()}`: {brief['scope'].strip()}", "",
+             f"- Sources: {brief['sources'].strip()}", f"- Depth: {brief['depth'].strip()}"]
+    if brief.get("leave_out", "").strip():
+        lines.append(f"- Leave out: {brief['leave_out'].strip()}")
+    lines += ["", f"Write your findings to {NOTES} in the current directory: one line for each fact, ending with the url of the page that "
+              "states it. Finish the research: nobody answers questions in this session."]
+    return "\n".join(lines) + "\n"
+
+
+def bare_item_prompt(spec):
+    """The prompt of a code twin: the planted item as its spec says it, the gate answered by its recommendation as the operator's answer,
+    and the change committed with plain git."""
+    gate = spec["gate"]
+    lines = [f"Implement this item in the git repository of the current directory: {spec['title']}.", "", f"Goal: {spec['goal']}",
+             f"Change only: {', '.join(spec['touches'])}", f"Done when `{shlex.join(spec['check'])}` exits 0.", "",
+             f"One decision is open: {gate['question']}", *(f"- {o}" for o in gate["options"]),
+             f"The operator's answer: {gate['recommendation']}", "",
+             "Commit the change with plain git (git add, git commit); finish it: nobody answers questions in this session."]
+    return "\n".join(lines) + "\n"
+
+
+def web_question_usd(rows, model, mid):
+    """(US dollars of one lookup question answered from the web on `mid`, its basis): the recorded mean of the pool's `web-MODEL` arm,
+    else that of another web arm scaled by the input price. `rows` are the results file's; Refused when it has no web arm."""
+    got = {}
+    for r in rows:
+        if r["scenario"] == "pool" and r["metric"] == "cost" and r["case"] == "all" and r["arm"].startswith("web-"):
+            tot, n = got.get(r["arm"], (0.0, 0.0))
+            got[r["arm"]] = (tot + float(r["value"]) * float(r["runs"] or 0), n + float(r["runs"] or 0))
+    arm = f"web-{model}"
+    if got.get(arm, (0, 0))[1]:
+        tot, n = got[arm]
+        return tot / n, f"the mean of {int(n)} recorded pool runs of the {arm} arm"
+    for a, (tot, n) in got.items():
+        if n and a.removeprefix("web-") in agent_bench.MODEL:
+            ratio = price_ratio(mid) / price_ratio(model_price_id(a.removeprefix("web-")))
+            return tot / n * ratio, f"the mean of {int(n)} recorded pool runs of the {a} arm x {ratio:.3g} (the input price ratio)"
+    raise Refused(f"no recorded pool cost of the {arm} arm: run the pool scenario first")
+
+
+def twin_plan(plan, agent, root, recorded, briefs):
+    """The plan of the bare twin of one kb agent's `plan`: its model, turns and dollar cap, its bare argv, prompt, sandbox and estimate (a
+    lookup twin's from the pool's web arm of its model, a research or code twin's as its kb agent's). Raises Refused."""
+    role = plan["role"]
+    twin = {"agent": plan["agent"], "role": role, "model": plan["model"], "mid": plan["mid"], "n": plan["n"], "arm": BARE, "turns": plan["turns"],
+            "cap": plan["cap"], "dir": bare_path(root, plan["n"]), "argv": bare_argv(plan["model"], plan["turns"], plan["cap"]),
+            "sandbox": "an empty directory"}
+    if role == "lookup":
+        one, why = web_question_usd(recorded, plan["model"], plan["mid"])
+        qs = plan["questions"]
+        twin.update(prompt=bare_lookup_prompt(qs), usd=one * len(qs), basis=f"{len(qs)} question(s) x ${one:.4f}, {why}", questions=qs)
+    elif role == "research":
+        brief = next(b for b in briefs if b["area"].strip() == plan["area"])
+        twin.update(prompt=bare_area_prompt(brief), usd=plan["usd"], basis="as its kb agent's: " + plan["basis"], area=plan["area"])
+    else:
+        spec = spec_of(agent["inputs"][0])
+        twin.update(prompt=bare_item_prompt(spec), usd=plan["usd"], basis="as its kb agent's: " + plan["basis"], spec=spec, item=plan["item"],
+                    sandbox="a git checkout of the start commit without " + ", ".join(BARE_DROP) + ", and no hooks path")
+    return twin
+
+
+def twin_replay_argv(twin, usage):
+    """The argv that stands in for a twin's `claude` session under --replay: bench_replay.py as its scripted bare agent, with its kb agent's
+    planted `usage` and the twin's estimate as the cost."""
+    twin["usage"], twin["cost"] = usage, twin["usd"]
+    argv = [sys.executable, str(HOME / REPLAY), f"bare-{twin['role']}", "--usage", json.dumps(usage), "--cost", f"{twin['usd']:.4f}"]
+    if twin["role"] == "research":
+        argv += ["--area", twin["area"]]
+    elif twin["role"] == "code":
+        spec = twin["spec"]
+        argv += ["--title", spec["title"], "--check", json.dumps(spec["check"]), *[x for t in spec["touches"] for x in ("--touch", t)]]
+    return argv
+
+
 def replay_argv(plan, usage, k):
     """The argv that stands in for plan's `claude` session under --replay: bench_replay.py of this checkout with the planted usage
     (a lookup agent's scaled to its questions) and the plan's estimate as the cost. A code agent's is made by the wrapper in
@@ -726,12 +834,12 @@ def run(scenario, root=None, dry_run=False, knobs=None, out=print):
     """`multi run SCENARIO`: with `dry_run`, print each agent's role, model, argv and coordination store, the knob values and
     an estimate in US dollars, and create nothing and start no model. Returns 0, or 1 when an input does not resolve. Without
     it, `execute` runs the scenario: the sandbox of DIR (built when DIR holds none), every agent's session, the operator's
-    steps and DIR/results.jsonl; the knob `replay` makes each session a bench_replay.py run (`replay_argv`). Raises Refused on
-    an unknown scenario, knob or model."""
+    steps and DIR/results.jsonl; the knob `replay` makes each session a bench_replay.py run (`replay_argv`); the knob `bare` adds a
+    bare twin to each agent (`twin_plan`), printed with its argv and estimate. Raises Refused on an unknown scenario, knob or model."""
     if scenario not in SCENARIOS:
         raise Refused(f"no scenario {scenario}; one of {', '.join(SCENARIOS)}")
     k = {"sequential": False, "coord": "shared", "stagger": 0.0, "model": "", "pack_budget": PACK_BUDGET, "tools": "kb", "manager": "code",
-         "max_usd": None, "timeout": bench_repro.DEFAULTS["timeout"], "replay": False, "plant": "", **(knobs or {})}
+         "max_usd": None, "timeout": bench_repro.DEFAULTS["timeout"], "replay": False, "plant": "", "bare": False, **(knobs or {})}
     bad = [f"--coord is one of {', '.join(COORDS)}"] if k["coord"] not in COORDS else []
     bad += [f"--tools is one of {', '.join(TOOL_SETS)}"] if k["tools"] not in TOOL_SETS else []
     bad += [f"--manager is one of {', '.join(MANAGERS)}"] if k["manager"] not in MANAGERS else []
@@ -760,20 +868,25 @@ def run(scenario, root=None, dry_run=False, knobs=None, out=print):
     recorded = read_rows(RESULTS)
     means = recorded_means(recorded)
     plans = [agent_plan(a, scenario, n, root, k, models, means, questions, briefs) for n, a in enumerate(agents, 1)]
+    if k["bare"]:
+        for p, a in zip(plans, agents):
+            p["twin"] = twin_plan(p, a, root, recorded, briefs)
     if k["plant"]:
         for p in [p for p in plans if p["role"] == PLANTS[k["plant"]]][:PLANT_AGENTS.get(k["plant"], 1)]:
             p["plant"] = k["plant"]
     if k["replay"]:
         for p in plans:
             p["argv"] = replay_argv(p, recorded_usage(recorded, p["mid"]), k)
+            if p.get("twin"):
+                p["twin"]["argv"] = twin_replay_argv(p["twin"], p["usage"])
     if not dry_run:
         return execute(scenario, root, k, plans, out)
     order = "one at a time (--sequential)" if k["sequential"] else f"at once, {k['stagger']:g} s apart (--stagger)"
     out(f"multi run {scenario} --dry-run: {len(plans)} agent(s), started {order}, coord {k['coord']}, manager {k['manager']}"
-        + (", replay (scripted agents, no model call)" if k["replay"] else ""))
+        + (", each with a bare twin" if k["bare"] else "") + (", replay (scripted agents, no model call)" if k["replay"] else ""))
     out(f"dir: {root} (nothing is created)")
     out(f"knobs: --sequential {'on' if k['sequential'] else 'off'}, --coord {k['coord']}, --stagger {k['stagger']:g}, --model "
-        + ",".join(f"{r}={m}" for r, m in models.items()) + f", --pack-budget {k['pack_budget']}, --tools {k['tools']}, --manager {k['manager']}")
+        + ",".join(f"{r}={m}" for r, m in models.items()) + f", --pack-budget {k['pack_budget']}, --tools {k['tools']}, --manager {k['manager']}, --bare {'on' if k['bare'] else 'off'}")
     total = sum(p["usd"] for p in plans)
     if k["manager"] == "session":
         one, why = question_usd(means, model_price_id(models["manager"]))
@@ -792,8 +905,17 @@ def run(scenario, root=None, dry_run=False, knobs=None, out=print):
             out(f"  plant: {p['plant']}")
         for ln in p["prompt"].splitlines()[:3]:
             out(f"  | {ln}")
+        if p.get("twin"):
+            t = p["twin"]
+            out(f"  bare argv: {shlex.join(t['argv'])}")
+            out(f"  bare estimate {money(t['usd'])}: {t['basis']}")
+            out(f"  bare sandbox: {t['dir']} ({t['sandbox']}); the environment has no {' or '.join(x + '*' for x in BARE_ENV)} variable")
+            for ln in t["prompt"].splitlines()[:3]:
+                out(f"  | bare: {ln}")
     walls = [p["wall"] for p in plans if p["wall"]]
-    out(f"estimate: {money(total)} for the scenario, from bench_core.PRICE and the recorded rows' means")
+    bare = sum(p["twin"]["usd"] for p in plans if p.get("twin"))
+    out("estimate: " + (f"{money(total)} kb + {money(bare)} bare = {money(total + bare)}" if k["bare"] else money(total))
+        + " for the scenario, from bench_core.PRICE and the recorded rows' means")
     if walls:
         out(f"wall: about {sum(walls) if k['sequential'] else max(walls):.0f} s for the {len(walls)} research agent(s) at the recorded mean "
             f"of {means['repro']['wall_s']:.0f} s per area; the others have no recorded wall time")
@@ -880,9 +1002,10 @@ def event_steps(stdout):
     return []
 
 
-def write_output(root, n, *streams):
-    """DIR/output/agentN.log: the text of agent N's output streams, which `canary_leaks` reads."""
-    path = Path(root) / OUTPUT_DIR / f"agent{n}.log"
+def write_output(root, n, *streams, prefix="agent"):
+    """DIR/output/agentN.log: the text of agent N's output streams, which `canary_leaks` reads (a twin's, with `prefix` BARE, are in
+    DIR/output/bareN.log, which it does not)."""
+    path = Path(root) / OUTPUT_DIR / f"{prefix}{n}.log"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(x or "" for x in streams), encoding="utf-8", errors="replace", newline="\n")
 
@@ -973,7 +1096,8 @@ class Budget:
 
 
 def blank_line(plan, scenario, k):
-    return {"scenario": scenario, "agent": plan["agent"], "n": plan["n"], "role": plan["role"], "item": plan.get("item", ""),
+    return {"arm": plan.get("arm", "kb"), "scenario": scenario, "agent": plan["agent"], "n": plan["n"], "role": plan["role"],
+            "item": plan.get("item", ""),
             "model": bench_repro.model_id(plan["model"]), "coord": k["coord"], "sequential": k["sequential"], "replay": k["replay"],
             "knobs": {key: k[key] for key in KNOB_KEYS}, "started": "", "ended": "", "failure": "", "subtype": "", "wall_s": 0,
             "cost": 0, "input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0, "turns": 0,
@@ -1107,11 +1231,115 @@ def session_agent(plan, ctx, rec):
     rec["steps"] += worked or ["session"]
 
 
+def twin_env():
+    """The environment of a bare twin's session: this process's without a variable of BARE_ENV's prefixes."""
+    return {k: v for k, v in os.environ.items() if not k.startswith(BARE_ENV)}
+
+
+def twin_sandbox(twin, root, manifest):
+    """Build the sandbox of a bare twin: an empty directory for a lookup or research twin; for a code twin a git checkout of the start
+    commit of the run (fetched from the sandbox's bare) without BARE_DROP and with one commit that says so, on `main`, a git identity of
+    its own and no hooks path."""
+    d = Path(twin["dir"])
+    shutil.rmtree(d, ignore_errors=True)
+    d.mkdir(parents=True)
+    if twin["role"] != "code":
+        return
+    run_git("init", "-q", "--initial-branch=main", cwd=d)
+    run_git("fetch", "-q", "--depth", "1", "--no-tags", str(origin_path(root)), manifest["rev"], cwd=d)
+    run_git("checkout", "-q", "FETCH_HEAD", cwd=d)
+    run_git("checkout", "-q", "-B", "main", cwd=d)
+    run_git("rm", "-r", "-q", "--ignore-unmatch", "--", *BARE_DROP, cwd=d)
+    run_git("config", "user.name", f"bare twin {twin['n']}", cwd=d)
+    run_git("config", "user.email", f"bare{twin['n']}@corp.example.com", cwd=d)
+    run_git("commit", "-q", "--no-verify", "--allow-empty", "-m", "chore: bare twin base commit, without the kb root, plugin files and agent docs", cwd=d)
+
+
+def item_passes(spec, cwd, env):
+    """True when the check of an item spec (an argv) exits 0 in `cwd`."""
+    try:
+        return subprocess.run(spec["check"], cwd=str(cwd), env=env, capture_output=True, timeout=300).returncode == 0
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+
+
+def usd_of(line):
+    """US dollars of a result line's four token counts at bench_core.PRICE: the price tier of the mean prompt of one turn, a cache write at
+    the billing surface's rate (write_rate) and a cache read at the tier's read price; 0 for a model the table lacks."""
+    mid = resolve_model(line.get("model") or "")
+    if mid not in PRICE:
+        return 0.0
+    unc, out, read, write = (line.get(k) or 0 for k in ("input_tokens", "output_tokens", "cache_read_tokens", "cache_write_tokens"))
+    p = PRICE[mid][tier_of(mid, (unc + read + write) / max(line.get("turns") or 0, 1))]
+    return round((unc * p[1] + out * p[2] + write * write_rate(p) + read * p[4]) / 1e6, 6)
+
+
+def twin_agent(plan, ctx, rec):
+    """A bare twin: its sandbox, one session in it with the twin's argv, prompt and a clean environment, and the quality counts of the
+    kind of its agent that its own answer or sandbox gives: a lookup twin's right of asked (`right_counts`, the kb arm's answer key), a
+    code twin's items_passed of items (the item's check in the twin's sandbox); a research twin's notes are scored by `score_twins`."""
+    twin, env = plan["twin"], twin_env()
+    twin_sandbox(twin, ctx.root, ctx.manifest)
+    rec["started"] = utc_now()
+    t = time.time()
+    r = run_session(twin["argv"], twin["prompt"], twin["dir"], env, ctx.timeout,
+                    lambda *streams: write_output(ctx.root, twin["n"], *streams, prefix=BARE))
+    worked = r.get("steps", [])
+    rec.update(session_fields(r, twin, time.time() - t, len(worked) or None))
+    rec["usd"] = usd_of(rec)
+    rec["steps"] += worked or ["session"]
+    if twin["role"] == "lookup":
+        rec["answer"] = r.get("answer") or ""
+        rec["right"], rec["asked"] = right_counts(ctx.scenario, [rec]).get(rec["agent"], (0, 0))
+    elif twin["role"] == "code":
+        rec["items"], rec["items_passed"] = 1, int(item_passes(twin["spec"], twin["dir"], env))
+
+
+def source_urls(bare):
+    """{source id: url} of the rows of the public root's `_sources.csv` on the bare's main."""
+    p = sh(["git", "show", "refs/heads/main:kb/public/_sources.csv"], bare, os.environ)
+    return {r["id"]: r["url"] for r in csv.DictReader(io.StringIO(p.stdout))} if p.returncode == 0 else {}
+
+
+def verified_facts(root, manifest, lines):
+    """{agent: [[url, ...] of each DOC fact]} of the research agents of `lines`: the facts each added to the bare's main with a DOC
+    tag (`added_facts`), each as the urls of its DOC sources (`source_urls`)."""
+    bare = origin_path(root)
+    urls = source_urls(bare)
+    return {r["agent"]: [sorted({urls[i] for i in f["doc"] if i in urls})
+                         for f in added_facts(bare, manifest["base"], agent_email(r["n"])) if f["doc"]]
+            for r in lines if r.get("role") == "research" and r.get("n")}
+
+
+def facts_matched(notes, facts):
+    """How many of `facts` (each a list of source urls) a research twin's `notes` cite: a fact counts when the notes hold the url of one of
+    its sources, whatever the case or a trailing slash."""
+    text = notes.lower()
+    return sum(1 for urls in facts if any(u.rstrip("/").lower() in text for u in urls))
+
+
+def score_twins(ctx, lines, twins, out):
+    """Score each research twin's NOTES.md against the DOC facts its kb agent's line (same agent name) wrote on the bare's main, and
+    append the twin's line again with facts_matched and facts_verified (the newest line of an agent is the one `record` reads)."""
+    mine = [r for r in twins if r["role"] == "research"]
+    if not mine:
+        return
+    facts = verified_facts(ctx.root, ctx.manifest, lines)
+    for rec in mine:
+        notes = Path(next(p["twin"]["dir"] for p in ctx.plans if p["agent"] == rec["agent"])) / NOTES
+        text = notes.read_text(encoding="utf-8", errors="replace") if notes.is_file() else ""
+        rec["facts_verified"] = len(facts.get(rec["agent"], []))
+        rec["facts_matched"] = facts_matched(text, facts.get(rec["agent"], []))
+        ctx.write(rec)
+        out(f"bare agent {rec['agent']}: {rec['facts_matched']} of {rec['facts_verified']} verified fact(s) cited in {NOTES}")
+
+
 class Context:
     """What the agents of one run share: the sandbox, its manifest, the results file and the budget."""
 
-    def __init__(self, scenario, root, k, manifest, budget, steps):
+    def __init__(self, scenario, root, k, manifest, budget, steps, plans=()):
         self.scenario, self.root, self.k, self.manifest, self.budget, self.gate_steps = scenario, root, k, manifest, budget, steps
+        self.plans = plans
         self.timeout, self.path, self.lock = k["timeout"], root / RUN_RESULTS, threading.Lock()
 
     def clone(self, plan):
@@ -1132,34 +1360,39 @@ class Context:
         if plan["role"] != "lookup":
             reset_clone(self.clone(plan), self.env(plan))
 
-    def append(self, rec, out):
+    def write(self, rec):
         with self.lock, open(self.path, "a", encoding="utf-8", newline="\n") as f:
             f.write(json.dumps(rec, sort_keys=True) + "\n")
             f.flush()
-        out(f"agent {rec['agent']}: {rec['failure'] or 'ok'}, ${rec['cost']:.2f}, {rec['turns']} turns, {rec['wall_s']:.0f} s"
+
+    def append(self, rec, out):
+        self.write(rec)
+        out(f"{'bare ' if rec['arm'] == BARE else ''}agent {rec['agent']}: {rec['failure'] or 'ok'}, ${rec['cost']:.2f}, {rec['turns']} turns, {rec['wall_s']:.0f} s"
             + (f", land {rec['land']}" if rec["land"] else ""))
 
-    def one(self, plan, out):
-        """Run one agent and append its line: its session, its operator steps, or, when the spend would pass --max-usd, the line
-        that records it with the failure budget. A harness error is a line with failure `error`: it ends no other agent."""
-        rec = blank_line(plan, self.scenario, self.k)
-        ok, spent = self.budget.reserve(plan["usd"])
+    def one(self, plan, out, twin=False):
+        """Run one agent (with `twin`, its bare twin) and append its line: its session, its operator steps, or, when the spend would pass
+        --max-usd, the line that records it with the failure budget. A harness error is a line with failure `error`: it ends no other agent."""
+        agent = plan["twin"] if twin else plan
+        rec = blank_line(agent, self.scenario, self.k)
+        ok, spent = self.budget.reserve(agent["usd"])
         if not ok:
             rec.update(failure="budget", subtype="budget", started=utc_now(), ended=utc_now(),
-                       error=f"recorded spend ${spent:.2f} plus the estimate ${plan['usd']:.2f} passes --max-usd {self.budget.cap:g}")
+                       error=f"recorded spend ${spent:.2f} plus the estimate ${agent['usd']:.2f} passes --max-usd {self.budget.cap:g}")
             self.append(rec, out)
             return rec
         try:
-            (code_agent if plan["role"] == "code" else session_agent)(plan, self, rec)
+            (twin_agent if twin else code_agent if plan["role"] == "code" else session_agent)(plan, self, rec)
         except Exception as e:  # noqa: BLE001 - a harness error is the agent's line, never the run's end
             rec.update(failure="error", subtype="error", error=f"harness: {e}"[:300])
             rec["started"] = rec["started"] or utc_now()
-        try:
-            rec["commit"] = run_git("rev-parse", "HEAD", cwd=self.clone(plan))
-        except Refused:
-            pass
+        if not twin or agent["role"] == "code":  # a twin's sandbox is a repository only for a code twin
+            try:
+                rec["commit"] = run_git("rev-parse", "HEAD", cwd=agent["dir"] if twin else self.clone(plan))
+            except Refused:
+                pass
         rec["ended"] = utc_now()
-        self.budget.settle(plan["usd"], rec["cost"])
+        self.budget.settle(agent["usd"], rec["cost"])
         self.append(rec, out)
         return rec
 
@@ -1182,8 +1415,9 @@ def reset_sandbox(root, manifest, scenario, coord, path, out):
 def execute(scenario, root, k, plans, out):
     """The real `multi run`: the sandbox of `root` (built when it holds none), the operator's answers to the planted items'
     gates, every agent's session (all at once, one thread each, `--stagger` apart; one after the other with `--sequential`) and
-    each agent's line appended to DIR/results.jsonl. Returns 0 when every agent finished and every code item landed (the agent
-    that makes a planted fault apart), else 1.
+    each agent's line appended to DIR/results.jsonl; with the knob `bare` each agent's twin starts with it (a pair at a time under
+    --sequential) and the research twins are scored at the end (`score_twins`). Returns 0 when every agent finished and every code item
+    landed (the agent that makes a planted fault apart; a twin that failed is named, not counted), else 1.
     Raises Refused on a refusal."""
     if k["manager"] == "session":
         raise Refused("--manager session is not supported by a real run: the harness code starts the agents (--manager code)")
@@ -1200,28 +1434,42 @@ def execute(scenario, root, k, plans, out):
         manifest = reset_sandbox(root, manifest, scenario, k["coord"], path, out)
     write_wrapper(root, k["replay"])
     ctx = Context(scenario, root, k, manifest, Budget(k["max_usd"], sum(r.get("cost") or 0 for r in bench_repro.read_results(path))),
-                  operator_pass(root, k["coord"], manifest, plans, out, k["replay"]))
-    out(f"multi run {scenario}: {len(plans)} agent(s), " + ("one at a time" if k["sequential"] else "all at once")
-        + f", coord {k['coord']}, results {path}")
-    recs = []
+                  operator_pass(root, k["coord"], manifest, plans, out, k["replay"]), plans)
+    out(f"multi run {scenario}: {len(plans)} agent(s)" + (" and as many bare twins" if k["bare"] else "") + ", "
+        + ("one at a time" if k["sequential"] else "all at once") + f", coord {k['coord']}, results {path}")
+    recs, twins = [], []
     if k["sequential"]:
         for i, plan in enumerate(plans):
             time.sleep(k["stagger"] if i else 0)
             ctx.fresh(plan)
-            recs.append(ctx.one(plan, out))
+            if plan.get("twin"):  # the kb agent and its twin start together, so both see the same host load
+                with ThreadPoolExecutor(max_workers=2) as pair:
+                    kb, bare = pair.submit(ctx.one, plan, out), pair.submit(ctx.one, plan, out, True)
+                    recs.append(kb.result())
+                    twins.append(bare.result())
+            else:
+                recs.append(ctx.one(plan, out))
     else:
         for plan in plans:
             ctx.fresh(plan)
 
-        def start(i, plan):
+        def start(i, plan, twin=False):
             time.sleep(i * k["stagger"])
-            return ctx.one(plan, out)
-        with ThreadPoolExecutor(max_workers=len(plans)) as pool:
-            recs = [f.result() for f in [pool.submit(start, i, p) for i, p in enumerate(plans)]]
+            return ctx.one(plan, out, twin)
+        with ThreadPoolExecutor(max_workers=len(plans) * (2 if k["bare"] else 1)) as pool:
+            futures = [pool.submit(start, i, p) for i, p in enumerate(plans)]
+            bare = [pool.submit(start, i, p, True) for i, p in enumerate(plans) if p.get("twin")]
+            recs = [f.result() for f in futures]
+            twins = [f.result() for f in bare]
+    score_twins(ctx, recs, twins, out)
     on_purpose = {p["agent"] for p in plans if p.get("plant")}  # a planted fault is `multi check`'s to name, not a failed run
     failed = [r for r in recs if (r["failure"] or (r["role"] == "code" and r["land"] != "ok")) and r["agent"] not in on_purpose]
     out(f"multi run {scenario}: {len(recs) - len(failed)} of {len(recs)} agent(s) finished" + ("" if not failed else f", {len(failed)} failed: "
         + ", ".join(f"{r['agent']} ({r['failure'] or r['land']})" for r in failed)) + f", ${ctx.budget.spent:.2f} recorded in {path}")
+    if twins:
+        lost = [r for r in twins if r["failure"]]
+        out(f"multi run {scenario}: {len(twins) - len(lost)} of {len(twins)} bare twin(s) finished" + ("" if not lost else f", {len(lost)} failed: "
+            + ", ".join(f"{r['agent']} ({r['failure']})" for r in lost)))
     return 1 if failed else 0
 
 
@@ -1526,8 +1774,11 @@ def fitness(root=None, out=print):
 SCENARIO = "multi"  # the scenario of the rows `record` merges into the results file
 HEADS = ("concurrent", "sequential", "delta")  # the first word of an arm: the run's order of starts, or the difference of the two
 AGENT_METRICS = (("input", "input_tokens"), ("out", "output_tokens"), ("cache_read", "cache_read_tokens"),
-                 ("cache_write", "cache_write_tokens"), ("cost", "cost"), ("wall_s", "wall_s"),
+                 ("cache_write", "cache_write_tokens"), ("usd", "usd"), ("cost", "cost"), ("wall_s", "wall_s"),
                  ("turns", "turns"))  # (metric, key of the json line) of the numbers an agent and the run hold
+TWIN_METRICS = AGENT_METRICS[:5] + AGENT_METRICS[6:7]  # a bare twin's: the counts, usd and wall_s (its session's own cost stays in its line)
+TWIN_QUALITY = {"lookup": ("right", "asked"), "research": ("facts_matched", "facts_verified"),
+                "code": ("items_passed", "items")}  # the quality counts of a twin's line, by the role of its agent
 STAMP = "%Y-%m-%dT%H:%M:%SZ"  # bench_repro.utc_now's
 COMMIT_AT = "commit-at "  # the prefix of the line that gives each commit's time in added_facts' log
 RESEARCH = "research:"  # coord.RESEARCH: the prefix of a research claim's key, research:<anchor topic>:<lack term>
@@ -1536,9 +1787,9 @@ ARTICLE = re.compile(r"kb/([^/_][^/]*)/([^/_][^/]*)/([^/_][^/]*\.md)")  # a kb a
 REBASE = re.compile(r"\brebase(?: -i)? \((start|finish|abort)\)")  # a HEAD reflog message of a rebase's start and end
 
 
-def latest_lines(results):
-    """The newest line of each agent of DIR/results.jsonl, in plan order."""
-    last = {r["agent"]: r for r in results if r.get("agent")}
+def latest_lines(results, arm="kb"):
+    """The newest line of each agent of DIR/results.jsonl that names `arm` (kb, else BARE; a line with no arm is a kb agent's), in plan order."""
+    last = {r["agent"]: r for r in results if r.get("agent") and r.get("arm", "kb") == arm}
     return sorted(last.values(), key=lambda r: (r.get("n") or 0, r["agent"]))
 
 
@@ -1568,7 +1819,8 @@ def run_wall(lines):
 
 def added_facts(bare, base, email):
     """The fact lines (a line with an evidence tag) that the commits of one author added to kb articles between `base` and the
-    bare's main, as [{path, text, at, ids}] (`at`: the commit's seconds since the epoch) in the form bench_repro.match_facts reads."""
+    bare's main, as [{path, text, at, ids, doc}] (`at`: the commit's seconds since the epoch; `doc`: the ids of its DOC parts) in the form
+    bench_repro.match_facts reads."""
     p = sh(["git", "log", f"{base}..refs/heads/main", "--no-merges", f"--author=<{email}>", "-p", "-U0", f"--format={COMMIT_AT}%at", "--", "kb"],
            bare, os.environ)
     import kbfacts
@@ -1580,7 +1832,8 @@ def added_facts(bare, base, email):
             m = ARTICLE.fullmatch(ln[6:]) if ln.startswith("+++ b/") else None
             path = "/".join(m.groups()) if m else None
         elif path and ln.startswith("+") and kbfacts.TAG.search(ln):
-            facts.append({"path": path, "text": ln[1:], "at": at, "ids": [i for t in kbfacts.tags_in(ln) for i in t["ids"]]})
+            facts.append({"path": path, "text": ln[1:], "at": at, "ids": [i for t in kbfacts.tags_in(ln) for i in t["ids"]],
+                          "doc": [i for t in kbfacts.tags_in(ln) if t["kind"] == "DOC" for i in t["ids"]]})
     return facts
 
 
@@ -1713,6 +1966,7 @@ def run_values(root, manifest, lines):
     (`run_wall`), then dup_facts, claims, claim_conflicts, land_stops, rebase_s, right and asked (lookup agents), eval_passed
     and eval_total (research agents with a frozen question)."""
     values, total = {}, {m: 0 for m, _ in AGENT_METRICS}
+    lines = [{**r, "usd": usd_of(r)} for r in lines]
     for r in lines:
         for metric, key in AGENT_METRICS:
             values[f"{r['agent']}/{metric}"] = number(r.get(key))
@@ -1730,7 +1984,53 @@ def run_values(root, manifest, lines):
         if counts:
             values[key] = sum(g for g, _ in counts.values())
             values["asked" if key == "right" else "eval_total"] = sum(a for _, a in counts.values())
+    facts = {agent: len(f) for agent, f in verified_facts(root, manifest, lines).items()}
+    items = kb_items_passed(root, lines)
+    for key, counts in (("facts_verified", {a: (n,) for a, n in facts.items()}), ("items_passed", {a: (int(ok),) for a, ok in items.items()}),
+                        ("items", {a: (1,) for a in items})):
+        for agent, (got,) in counts.items():
+            values[f"{agent}/{key}"] = got
+        if counts:
+            values[key] = sum(got for got, in counts.values())
     return values
+
+
+def kb_items_passed(root, lines):
+    """{agent: whether its planted item's check passes} of the code agents of `lines`, in a checkout of the item's touched files on
+    the sandbox bare's main (`git archive`), where a twin's check runs in its own sandbox; {} when `lines` hold no code agent."""
+    codes = {r["agent"] for r in lines if r["role"] == "code"}
+    items = {a: item for a, _, item in planted(lines[0]["scenario"]) if a in codes} if codes else {}
+    out, base = {}, clone_path(root, 1).parent / "items"
+    for agent, item in items.items():
+        work = base / agent
+        shutil.rmtree(work, ignore_errors=True)
+        work.mkdir(parents=True)
+        try:
+            p = subprocess.run(["git", "archive", "--format=tar", "refs/heads/main", "--", *item["touches"]], cwd=str(origin_path(root)),
+                               capture_output=True)
+            if p.returncode == 0:
+                with tarfile.open(fileobj=io.BytesIO(p.stdout)) as t:
+                    t.extractall(work, **({"filter": "data"} if hasattr(tarfile, "data_filter") else {}))
+            out[agent] = p.returncode == 0 and item_passes({"check": item["checks"][0]["run"]}, work, os.environ)
+        finally:
+            shutil.rmtree(work, ignore_errors=True)
+    shutil.rmtree(base, ignore_errors=True)
+    return out
+
+
+def twin_values(lines):
+    """{metric: value} of the bare twins' lines: each twin's TWIN_METRICS as `AGENT/METRIC` and the run's (its wall seconds from
+    `run_wall`), and the quality counts of TWIN_QUALITY by the role of each agent, per agent and summed."""
+    values, total, quality = {}, {m: 0 for m, _ in TWIN_METRICS}, {}
+    for r in lines:
+        for metric, key in TWIN_METRICS:
+            values[f"{r['agent']}/{metric}"] = number(r.get(key))
+            total[metric] += r.get(key) or 0
+        for q in TWIN_QUALITY[r["role"]]:
+            values[f"{r['agent']}/{q}"] = number(r.get(q))
+            quality[q] = quality.get(q, 0) + (r.get(q) or 0)
+    total["wall_s"] = run_wall(lines)
+    return {**values, **{m: number(v) for m, v in total.items()}, **quality}
 
 
 def knob_text(value):
@@ -1769,9 +2069,11 @@ def record(root=None, file=None, out=print):
     scenario, arm `concurrent` or `sequential` with the knob values, and the metrics of `run_values`; then, for the record,
     case and knob values that a concurrent and a sequential arm share, the rows of the arm `delta ...` (`delta_rows`). It
     replaces the rows of the same record, case and arm. The lines of a replay reach only `file`, which they then need. The same
-    lines again change nothing. Returns 0, or raises Refused (no manifest, a replay with no `file`)."""
+    lines again change nothing. The twins' lines (arm `bare`) make the rows of the arm `bare ` and the kb arm (`twin_values`). Returns
+    0, or raises Refused (no manifest, a replay with no `file`)."""
     root = (Path(root) if root else default_dir()).resolve()
-    lines = latest_lines(bench_repro.read_results(root / RUN_RESULTS))
+    results = bench_repro.read_results(root / RUN_RESULTS)
+    lines, twins = latest_lines(results), latest_lines(results, BARE)
     if not lines:
         out(f"multi record: {root / RUN_RESULTS} holds no result line: nothing to record")
         return 0
@@ -1788,6 +2090,11 @@ def record(root=None, file=None, out=print):
     new = [{"scenario": SCENARIO, "record": rev[:7], "date": date, "commit": rev[:7], "claude_code": "", "kb_topics": "",
             "case": lines[0]["scenario"], "arm": arm, "model": models, "metric": metric, "value": value, "runs": 1, "note": note}
            for metric, value in run_values(root, manifest, lines).items()]
+    if twins:
+        twin_models = ",".join(sorted({t.get("model") or "" for t in twins} - {""}))
+        new += [{**new[0], "arm": f"{BARE} {arm}", "model": twin_models, "metric": metric, "value": value,
+                 "note": note + "; bare twins: the kb agents' model, turns and dollar cap with none of the kb's tooling"}
+                for metric, value in twin_values(twins).items()]
     target = Path(file) if file else RESULTS
     old = read_rows(target)
     key = lambda r: (r["scenario"], r["record"], r["case"], r["arm"])  # noqa: E731

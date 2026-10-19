@@ -175,7 +175,7 @@
                                             not resolve, 0 otherwise; no model, no network
   benchmarks.py multi run SCENARIO [--dry-run] [--replay [--plant lost-claim|land-stop|dup-research|leak-output|leak-commit|leak-event]] [--dir DIR] [--sequential] [--coord shared|isolated] [--stagger SECONDS]
                                             [--model [ROLE=]MODEL,...] [--pack-budget TOKENS] [--tools kb|files]
-                                            [--manager code|session] [--max-usd USD] [--timeout SECONDS]
+                                            [--manager code|session] [--max-usd USD] [--timeout SECONDS] [--bare]
                                             --dry-run prints each agent of the scenario (lookups, research or mixed) with its
                                             role, model, argv and KB_COORD_STORE, the knob values and an estimate in USD from
                                             bench_core.PRICE and the recorded rows' means; creates nothing, starts no model;
@@ -206,7 +206,22 @@
                                             for one research term, leak-output makes the first lookup agent write another
                                             agent's canary to its result text, leak-commit and leak-event the first research
                                             agent write it to its planted _gaps.md commit and to a coord event; each agent's
-                                            output streams are kept in DIR/output/agentN.log
+                                            output streams are kept in DIR/output/agentN.log; --bare starts beside each
+                                            agent, at the same time (--sequential: one pair at a time), a bare twin with the
+                                            same model, turns and dollar cap and none of the kb's tooling (claude -p with
+                                            --setting-sources "", hooks off, --strict-mcp-config and no --mcp-config,
+                                            --disable-slash-commands and the tools Read, Grep, Glob, Bash, Edit, Write,
+                                            WebSearch and WebFetch; no KB_ or CLAUDE_PLUGIN_ variable) in its own sandbox
+                                            DIR/bare/agentN (an empty directory; for a code twin a git checkout of the start
+                                            commit without kb/public, .claude, .claude-plugin, .mcp.json, CLAUDE.md and
+                                            AGENTS.md): a lookup twin answers the same questions from the web, a research
+                                            twin researches the same area into NOTES.md, a code twin implements the planted
+                                            item from its spec (the gate's recommendation as the operator's answer) and commits
+                                            it with plain git; --dry-run prints each twin's `bare argv:` and `bare estimate $X:`
+                                            and `estimate: $K kb + $B bare = $T`; each twin's line in results.jsonl has the arm
+                                            bare, its counts, wall seconds, usd (the counts at bench_core.PRICE) and quality
+                                            (right of asked, facts_matched of facts_verified, items_passed of items);
+                                            --replay --bare starts bench_replay.py's scripted bare agents
   benchmarks.py multi check [--dir DIR]     read the finished run in DIR (results.jsonl, the sandbox's coord store, the clones'
                                             backlog claims of the planted items and the bare's main) and name each lost claim
                                             (a coord or backlog claim still held after every agent ended, or released with
@@ -239,7 +254,10 @@
                                             main); when the file holds a concurrent and a sequential arm of the same record,
                                             case and knob values, it also holds the arm `delta ...`: the concurrent value
                                             minus the sequential one per metric; the lines of a --replay run need --out and
-                                            never reach the results file; exit 0, 2 on a refusal
+                                            never reach the results file; with the lines of bare twins it also writes their
+                                            rows under the arm `bare` and the kb arm (input, out, cache_read, cache_write,
+                                            usd, wall_s and the quality counts), the kb rows gaining usd, facts_verified,
+                                            items and items_passed; exit 0, 2 on a refusal
   benchmarks.py report [--check]            write the report's generated tables from the results file; --check writes
                                             nothing and exits 1 when a table, or a number in README.md, disagrees with
                                             the results file, or a `bench:` marker (the `multi` one apart) names a scenario
@@ -434,6 +452,8 @@ def main(argv=None):
                     "create nothing and start no model")
     mr.add_argument("--replay", action="store_true", help="start _tools/bench_replay.py as each agent's scripted stand-in, in place of "
                     "claude: no model call; the run's lines carry planted usage and the commands the stand-ins ran")
+    mr.add_argument("--bare", action="store_true", help="start beside each kb agent a bare twin with the same model, turns and dollar cap and "
+                    "none of the kb's tooling (no settings, hooks, mcp server, skills or kb files), in a sandbox of its own under DIR/bare")
     mr.add_argument("--plant", choices=list(bench_multi.PLANTS), help="with --replay: make one fault on purpose in the first "
                     "agent(s) of the role that makes it, for `multi check` to find: "
                     + ", ".join(f"{k} ({bench_multi.PLANT_AGENTS.get(k, 1)} {v} agent(s))" for k, v in bench_multi.PLANTS.items()))
@@ -519,7 +539,7 @@ def main(argv=None):
                 return bench_multi.run(a.scenario, a.dir, a.dry_run, {"sequential": a.sequential, "coord": a.coord, "stagger": a.stagger,
                                                                     "model": a.model, "pack_budget": a.pack_budget, "tools": a.tools,
                                                                     "manager": a.manager, "max_usd": a.max_usd, "timeout": a.timeout,
-                                                                    "replay": a.replay, "plant": a.plant or ""})
+                                                                    "replay": a.replay, "plant": a.plant or "", "bare": a.bare})
             return bench_multi.setup(a.agents, a.coord, a.dir, a.start, a.dry_run, scenario=a.scenario)
         except bench_repro.Refused as e:
             print(f"multi {a.multi_cmd}: {e}", file=sys.stderr)
