@@ -2,7 +2,7 @@
   "id": "ST-qec6japx",
   "kind": "story",
   "title": "Research sprint goal: The paid multi-agent runs measure concurrency, dedup, cache reuse, model choice, pack budget and kb tools",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3pvz2noj",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,19 @@
     "kb/public/**"
   ],
   "notes": "Findings 2026-10-19: kb already answers pricing (S2131), cache entry timing and scope (S2130), subagent and alias model rules, --max-budget-usd, --tools, strict-mcp-config. New: claude/cli-flags.csv row --disable-slash-commands (S1824, S2157); _gaps.md entries (topic claude/ci-and-headless) on an empty --setting-sources value, the web search fee in total_cost_usd, and the concurrent claude -p limit of a subscription login; answer QK-kb-live-docs-say-concurrency-prompt. Committed items needing the gaps: ST-xjtqwdtq (bare arm dollar figure is a lower bound until the fee gap is closed), ST-fnj6hllh (bare twin isolation), ST-oczsqpzx (conclusions on cache reuse need staggered or sequential rows). No outside facts needed beyond these.",
-  "claimed_by": "orch-r32"
+  "evidence": {
+    "commit": "8a2b74bc5856622a97fda26a0c68f1f16d783569",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-qec6japx"
+        ],
+        "exit": 0,
+        "sha256": "831a5e4051a3005d"
+      }
+    ]
+  }
 }
