@@ -22,5 +22,6 @@
   ],
   "depends_on": [
     "BG-hdgfm7rc"
-  ]
+  ],
+  "notes": "BG-hdgfm7rc (2026-10-19): the multi report now shows the twins' facts_matched beside the kb agents' facts_verified and reads not comparable on the bare side of the per-verified-fact rows. kb/_self/token-efficiency.md line 95 (Research bullet) still quotes the bare per-verified-fact figures (3,687 tokens, $0.0116) and says the table does not show how many facts the notes cited: reword it to the new table; outside BG-hdgfm7rc's touches."
 }
