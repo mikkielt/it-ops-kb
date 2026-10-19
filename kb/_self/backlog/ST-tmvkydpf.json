@@ -33,6 +33,25 @@
     "kb/_self/git.md",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "When push.recurseSubmodules is already set to another value, and on --uninstall, what does install-hooks do?",
+      "options": [
+        "Leave a value already set alone; --uninstall unsets it only while it is check",
+        "Overwrite any value with check; --uninstall always unsets it"
+      ],
+      "recommendation": "Leave a value already set alone; --uninstall unsets it only while it is check",
+      "do": {
+        "Leave a value already set alone; --uninstall unsets it only while it is check": "ST-tmvkydpf",
+        "Overwrite any value with check; --uninstall always unsets it": "ST-tmvkydpf"
+      },
+      "class": "push",
+      "answer": "Leave a value already set alone; --uninstall unsets it only while it is check",
+      "by": "operator"
+    }
+  ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): install-hooks leaves push.recurseSubmodules unset, and such a push succeeds. The goal research story reads git's push.recurseSubmodules documentation. ",
   "claimed_by": "orch-r35"
 }

@@ -183,6 +183,22 @@ def hook_pre_push(args, stdin, gate, dirty_paths):
     return 0
 
 
+def _set_push_recurse():
+    """push.recurseSubmodules=check makes git refuse a push of a commit whose gitlink names a root commit that the
+    root's remote lacks. A value already set (any scope) is left alone."""
+    cur = (git("config", "--get", "push.recurseSubmodules") or "").strip()
+    if cur:
+        if cur != "check":
+            print(f"push.recurseSubmodules is already {cur!r}; not changed (check refuses a push whose gitlink "
+                  "names a root commit missing from the root's remote)")
+        return 0
+    if git("config", "push.recurseSubmodules", "check") is None:
+        print("git config push.recurseSubmodules failed")
+        return 2
+    print("installed: push.recurseSubmodules=check; a push naming an unpushed root commit is refused")
+    return 0
+
+
 def cmd_install_hooks(a):
     if git("rev-parse", "--git-dir") is None:
         print("not a git clone (or git is missing)")
@@ -191,7 +207,9 @@ def cmd_install_hooks(a):
     if a.uninstall:
         if hooks_path_is_ours(cur):
             git("config", "--unset", "core.hooksPath")
-            print(f"uninstalled: core.hooksPath unset ({HOOKS_DIR}/ stays in the repo)")
+            if (git("config", "--get", "push.recurseSubmodules") or "").strip() == "check":
+                git("config", "--unset", "push.recurseSubmodules")
+            print(f"uninstalled: core.hooksPath and push.recurseSubmodules unset ({HOOKS_DIR}/ stays in the repo)")
         else:
             print("not installed" + (f" (core.hooksPath is {cur!r}; left alone)" if cur else ""))
         return 0
@@ -209,7 +227,7 @@ def cmd_install_hooks(a):
         return 2
     if cur:
         print(f"already installed (core.hooksPath={cur})")
-        return 0
+        return _set_push_recurse()
     old = git_path("hooks")  # .git/hooks while core.hooksPath is unset
     if old and os.path.isdir(old):
         own = sorted(f for f in os.listdir(old) if not f.endswith(".sample"))
@@ -219,7 +237,7 @@ def cmd_install_hooks(a):
         print("git config core.hooksPath failed")
         return 2
     print(f"installed: core.hooksPath={HOOKS_DIR} ({', '.join(HOOKS)}); kb commits now get KB-* trailers")
-    return 0
+    return _set_push_recurse()
 
 
 _NT = None  # _nt_api's bindings, made on first use
