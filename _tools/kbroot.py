@@ -15,8 +15,12 @@
                                          fails stays as it was. `--pin` writes the commit the clone is at into the
                                          pointer's `pin`, so the root stays there until `pin` is emptied (refused, exit 2,
                                          when this copy runs as the plugin: the pointer is in the plugin copy). A fetch of a
-                                         root with a `pin` checks out the pin, whatever its `ref` has moved to. Nothing
-                                         else fetches: lookups read what is on disk
+                                         root with a `pin` checks out the pin, whatever its `ref` has moved to. Only
+                                         this command and its --hook form fetch: lookups read what is on disk
+  kbroot.py fetch --hook                 the SessionStart form: fetch each fetch root whose last fetch is older than
+                                         HOOK_MAX_AGE_S, each bounded at HOOK_FETCH_BOUND_S and all within HOOK_BUDGET_S
+                                         (a root not reached is left to the next session); prints one line per failed
+                                         root and nothing else; always exit 0
   kbroot.py push NAME                    push the commits of the checked-out submodule root kb/NAME to its own remote
                                          (the pointer's `ref`, else the branch it is on), then commit the gitlink bump
                                          in this repository, so neither holds a commit the other cannot reach. A fetch
@@ -35,15 +39,18 @@ keeps it (AGENTS.md, "Agent conduct").
 A root in another repository is named by a pointer file kb/_roots/<name>.md (kbcommon.py): `list` shows one whose
 root is not on disk as `missing` and exits 0; `add` refuses a name or prefix a pointer holds.
 
-Exit: 0 done, 1 a fetch, a submodule add or a push failed (stderr names the root), 2 refused (bad name or prefix, taken, the directory exists,
+Exit: 0 done (always, for `fetch --hook`), 1 a fetch, a submodule add or a push failed (stderr names the root), 2 refused (bad name or prefix, taken, the directory exists,
 a name that is no fetch root, or for `push` a fetch root, a root not checked out, or one with uncommitted changes).
 """
-import argparse, os, re, shutil, subprocess, sys
+import argparse, os, re, shutil, subprocess, sys, time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build_index, kbcommon  # noqa: E402
 
 FETCH_TIMEOUT_S = 120  # one git command of a fetch
+HOOK_MAX_AGE_S = 24 * 3600  # `fetch --hook` fetches a root again once its last fetch is older than this
+HOOK_FETCH_BOUND_S = 20  # `fetch --hook`: the longest one root's fetch may take
+HOOK_BUDGET_S = 50  # `fetch --hook`: all its fetches, inside the 60 s timeout of the hook that runs it
 
 SOURCES_HEADER = "id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by\n"
 FILES = {
@@ -193,13 +200,13 @@ def fetch_env():
     return env
 
 
-def git(args, p, cwd=None):
+def git(args, p, cwd=None, timeout=FETCH_TIMEOUT_S):
     """Run git with `args`; (True, '') or (False, the last line of its stderr without the pointer's url)."""
     try:
         r = subprocess.run(["git", *args], cwd=cwd, env=fetch_env(), capture_output=True, text=True, encoding="utf-8",
-                           errors="replace", timeout=FETCH_TIMEOUT_S, stdin=subprocess.DEVNULL)
+                           errors="replace", timeout=timeout, stdin=subprocess.DEVNULL)
     except subprocess.TimeoutExpired:
-        return False, f"git {args[0]} timed out after {FETCH_TIMEOUT_S} s"
+        return False, f"git {args[0]} timed out after {round(timeout)} s"
     except OSError as e:
         return False, f"git not run ({getattr(e, 'strerror', None) or e})"
     if r.returncode == 0:
@@ -254,31 +261,84 @@ def submodule_add(p):
     return why
 
 
-def fetch_one(p):
+def fetch_one(p, bound=None):
     """Clone or update the root of fetch Pointer `p` into its directory, at `pin` or the tip of `ref`; '' when done,
-    else why it failed. A failed update leaves the clone as it was."""
+    else why it failed. A failed update leaves the clone as it was. `bound`: seconds all of it may take."""
+    end = time.monotonic() + bound if bound else None
+
+    def run(args, cwd=None):
+        left = FETCH_TIMEOUT_S if end is None else min(FETCH_TIMEOUT_S, end - time.monotonic())
+        if left <= 0:
+            return False, f"fetch timed out after {round(bound)} s"
+        return git(args, p, cwd, left)
+
     d = kbcommon.pointer_root_dir(p)
     os.makedirs(os.path.dirname(d), exist_ok=True)
     if os.path.isdir(os.path.join(d, ".git")):
-        ok, why = git(["fetch", "--quiet", "--tags", "--force", "origin", "+refs/heads/*:refs/remotes/origin/*"], p, d)
+        ok, why = run(["fetch", "--quiet", "--tags", "--force", "origin", "+refs/heads/*:refs/remotes/origin/*"], d)
         if not ok:
             return why
     else:
         tmp = d + ".part"
         shutil.rmtree(tmp, ignore_errors=True)
-        ok, why = git(["clone", "--quiet", "--no-checkout", "--", p.url, tmp], p)
+        ok, why = run(["clone", "--quiet", "--no-checkout", "--", p.url, tmp])
         if not ok:
             shutil.rmtree(tmp, ignore_errors=True)
             return why
         shutil.rmtree(d, ignore_errors=True)
         os.replace(tmp, d)
     target = p.pin or (f"origin/{p.ref}" if p.ref else "origin/HEAD")
-    ok, why = git(["checkout", "--quiet", "--force", "--detach", target + "^{commit}"], p, d)
+    ok, why = run(["checkout", "--quiet", "--force", "--detach", target + "^{commit}"], d)
     if not ok:
         return why
     if not os.path.isfile(os.path.join(d, kbcommon.ROOT_FILE)):
         return f"the repository holds no {kbcommon.ROOT_FILE} at {target}"
     return ""
+
+
+def fetched_stamp(name):
+    """The file whose mtime is when root `name` was last fetched without failing (beside its clone)."""
+    return os.path.join(kbcommon.roots_cache_dir(), name + ".fetched")
+
+
+def stale(p, now):
+    """Whether fetch Pointer `p` has no clone or no fetch within HOOK_MAX_AGE_S before `now` (time.time())."""
+    try:
+        return now - os.path.getmtime(fetched_stamp(p.name)) > HOOK_MAX_AGE_S
+    except OSError:
+        return True
+
+
+def record_fetch(p, why):
+    """Keep the result of a fetch of Pointer `p`: the reason it failed, else its time."""
+    err = kbcommon.fetch_error_path(p.name)
+    if why:
+        with open(err, "w", encoding="utf-8", newline="\n") as f:
+            f.write(f"fetch failed: {why}\n")
+        return
+    if os.path.exists(err):
+        os.remove(err)
+    with open(fetched_stamp(p.name), "w", encoding="utf-8", newline="\n") as f:
+        f.write("")
+
+
+def cmd_fetch_hook():
+    """SessionStart: fetch each stale fetch root within its bound and the hook's budget; one line per failure."""
+    try:
+        start, now = time.monotonic(), time.time()
+        for p in kbcommon.pointers():
+            if p.access != "fetch" or not stale(p, now):
+                continue
+            left = HOOK_BUDGET_S - (time.monotonic() - start)
+            if left < 1:
+                break
+            why = fetch_one(p, min(HOOK_FETCH_BOUND_S, left))
+            record_fetch(p, why)
+            if why:
+                print(f"fetch failed: {p.name}: {why}")
+    except Exception as e:  # a hook never fails a session
+        print(f"fetch failed: {e.__class__.__name__}: {e}")
+    return 0
 
 
 def write_pin(p, commit):
@@ -299,6 +359,8 @@ def write_pin(p, commit):
 
 
 def cmd_fetch(a):
+    if a.hook:
+        return cmd_fetch_hook()
     if a.pin and kbcommon.plugin_hosted():
         print("refused: --pin writes the pointer file kb/_roots/NAME.md, which is in the plugin copy, read-only here; "
               "pin in a clone of the team's repository")
@@ -314,15 +376,11 @@ def cmd_fetch(a):
     failed = 0
     for p in fetchable:
         why = fetch_one(p)
-        err = kbcommon.fetch_error_path(p.name)
+        record_fetch(p, why)
         if why:
             failed += 1
-            with open(err, "w", encoding="utf-8", newline="\n") as f:
-                f.write(f"fetch failed: {why}\n")
             print(f"fetch failed: {p.name}: {why}", file=sys.stderr)
         else:
-            if os.path.exists(err):
-                os.remove(err)
             print(f"fetched {p.name}")
             if a.pin:
                 ok, commit = git_out(["rev-parse", "HEAD"], p, kbcommon.pointer_root_dir(p))
@@ -397,6 +455,8 @@ def main():
     ar.add_argument("--description", default="", help="one line: what the root holds")
     fe = sub.add_parser("fetch", help="clone or update fetch roots into the roots cache")
     fe.add_argument("--pin", action="store_true", help="write the commit each fetch root is at into its pointer's `pin`")
+    fe.add_argument("--hook", action="store_true", help="SessionStart form: fetch the stale roots within a bound, print "
+                    "only failures, exit 0")
     fe.add_argument("names", nargs="*", metavar="NAME", help="fetch roots to fetch (default: every one)")
     pu = sub.add_parser("push", help="push a submodule root's commits to its own remote, then commit the gitlink")
     pu.add_argument("name", metavar="NAME", help="a submodule root")
