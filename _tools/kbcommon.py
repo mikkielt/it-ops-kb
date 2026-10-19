@@ -32,7 +32,9 @@ and a topic by `<root>/<topic>`.
                               roots a pointer names that resolve (only the named ones after serve_only)
   missing_roots()             [MissingRoot]: the pointers kb/_roots/<name>.md whose root is not served and the KB_ROOTS
                               directories with no ROOT_FILE, each with its reason; read_pointer(), pointer_problems()
-                              read one pointer file
+                              read one pointer file; pointers() reads every sound one
+  roots_cache_dir()           where fetch roots are cloned (kbroot.py fetch); fetch_error_path(name) holds why the
+                              last fetch of one failed, which its missing reason repeats
   missing_note()              the one line `roots missing: NAME (reason), ...` ('' when none is missing);
                               with_missing_note(text) puts it after the first block of lines of a lookup's text
   serve_only(names)           limit roots() to the named roots for this process (kb_mcp.py --roots); RootError
@@ -46,7 +48,8 @@ and a topic by `<root>/<topic>`.
 
 A remote root, one kept in another repository, is named by a pointer file kb/_roots/<name>.md (front matter `root`,
 `id_prefix`, `visibility`, `team`, `url`, `ref`, `pin`, `access`, `description`). Its root is served when it is on
-disk (access `submodule`: kb/<name>/; `fetch`: _cache/roots/<name>/) with a ROOT_FILE that agrees with the pointer;
+disk (access `submodule`: kb/<name>/; `fetch`: _cache/roots/<name>/, or ${CLAUDE_PLUGIN_DATA}/roots/<name>/ when this
+copy runs as the plugin, filled by `kbroot.py fetch`) with a ROOT_FILE that agrees with the pointer;
 otherwise it is listed by missing_roots() and the tools go on with the roots they have, never failing for it.
 
 KB_ROOTS=DIR[:DIR...] adds roots kept outside this repository (a team's private repository with the same root
@@ -468,19 +471,51 @@ def read_pointer(path):
                    m.get("ref", ""), m.get("pin", ""), m["access"], m.get("description", ""), path)
 
 
+def pointers():
+    """[Pointer] of every sound pointer file, by name (an unsound one is left to check.py and missing_roots())."""
+    return [read_pointer(f) for f in _pointer_files() if not pointer_problems(f)]
+
+
+def roots_cache_dir():
+    """Where fetch roots are cloned: ${CLAUDE_PLUGIN_DATA}/roots when this copy runs as the plugin (CLAUDE_PLUGIN_ROOT is
+    this copy: the copy itself is read-only), else _cache/roots of this repository. Never under kb/."""
+    data, root = os.environ.get("CLAUDE_PLUGIN_DATA"), os.environ.get("CLAUDE_PLUGIN_ROOT")
+    try:
+        hosted = bool(data and root and os.path.samefile(root, HOME))
+    except OSError:
+        hosted = False
+    return os.path.join(data, "roots") if hosted else os.path.join(HOME, "_cache", "roots")
+
+
 def pointer_root_dir(p):
-    """Where the root of Pointer `p` is kept: a submodule at kb/<name>/, a fetched clone in _cache/roots/<name>/."""
-    return os.path.join(KB_DIR, p.name) if p.access == "submodule" else os.path.join(HOME, "_cache", "roots", p.name)
+    """Where the root of Pointer `p` is kept: a submodule at kb/<name>/, a fetched clone in roots_cache_dir()/<name>/."""
+    return os.path.join(KB_DIR, p.name) if p.access == "submodule" else os.path.join(roots_cache_dir(), p.name)
+
+
+def fetch_error_path(name):
+    """The file that holds why the last `kbroot.py fetch` of root `name` failed (beside its clone, not inside it)."""
+    return os.path.join(roots_cache_dir(), name + ".fetch-error")
+
+
+def _fetch_error(name):
+    """The one-line reason the last fetch of root `name` failed, '' when it did not or none was made."""
+    try:
+        with open(fetch_error_path(name), encoding="utf-8") as f:
+            return f.read().strip()
+    except OSError:
+        return ""
 
 
 def _resolve_pointer(p):
     """(Root, '', False) of a pointer whose root is on disk and agrees with it, else (None, why it is missing, whether
     that is a defect: a root that is there but unusable or disagrees, not one that is merely absent)."""
     d = pointer_root_dir(p)
-    where = os.path.relpath(d, HOME).replace(os.sep, "/")
+    where = os.path.relpath(d, HOME).replace(os.sep, "/") if d.startswith(HOME + os.sep) else "roots/" + p.name
     if not os.path.isfile(os.path.join(d, ROOT_FILE)):
-        return None, (f"submodule not initialised: no {where}/{ROOT_FILE}" if p.access == "submodule"
-                      else f"not fetched: no {where}/{ROOT_FILE}"), False
+        if p.access == "submodule":
+            return None, f"submodule not initialised: no {where}/{ROOT_FILE}", False
+        failed = _fetch_error(p.name)
+        return None, f"not fetched: no {where}/{ROOT_FILE}" + (f"; {failed}" if failed else ""), False
     try:
         r = load_root(d)
     except RootError as e:
