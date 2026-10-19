@@ -11,8 +11,8 @@ The id, in this order:
   4. none        no id (null in --json); nothing is guessed.
 The role is KB_ROLE, `interactive` when unset.
 
-An email is never the id: it is mapped to an alias in `_private/operators.json` (uncommitted, gitignored), a JSON
-object of lowercase email to alias. The first use of an email writes `op-` and 8 random hex digits; the operator may
+An email is never the id: it is mapped to an alias in `_private/operators.json` (uncommitted, gitignored; in the main
+worktree of the clone, so its linked worktrees share it), a JSON object of lowercase email to alias. The first use of an email writes `op-` and 8 random hex digits; the operator may
 edit the alias, and a tool takes whatever the file holds. A plain hash of an address could be reversed by guessing
 it, a random alias cannot. The email itself appears only in `_private/operators.json` and in the output of
 `--show-email`; `operator()` and the default output carry the alias only.
@@ -21,9 +21,9 @@ it, a random alias cannot. The email itself appears only in `_private/operators.
 that cannot be written leaves `id` None). Exit 0 whatever the source; 2 for a bad argument.
 """
 import argparse, json, os, re, secrets, subprocess, sys
-from pathlib import Path
 
 import kbcommon
+import ql_base
 
 SOURCES = ("inherited", "auth-status", "git", "none")
 ID_RX = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
@@ -31,7 +31,8 @@ AUTH_TIMEOUT = 5  # seconds for `claude auth status` (0.12 s measured)
 
 
 def aliases_path():
-    return Path(kbcommon.HOME) / "_private" / "operators.json"
+    """The clone's main worktree keeps the file, so every linked worktree gives one email the same alias."""
+    return ql_base.clone_home() / "_private" / "operators.json"
 
 
 def _read_aliases(path):
