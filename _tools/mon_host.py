@@ -6,11 +6,14 @@ no such call); the locks are the files `tests.py` and `kg_lock.py` write in the 
 readers (`tests.read_holder`, `tests.pid_alive`, `kg_lock.holder_step`): a holder whose pid no longer runs is none. A
 holder's clone is `this` (the clone the panel reads) or `other`, never a path. The ceiling is `tests.read_ceiling`'s, the
 suite's files the `test_*.py` of the clone, and its ids and the seconds of the last full run the newest passing `test.run`
-row of mode `full` that ran pytest, from the ops rows. Imports `mon_base`; `tests`, `kg_lock` and `bl_stall` where it
-reads them.
+row of mode `full` that ran pytest, from the ops rows. The CPU groups come from one `ps -A -o pid=,pcpu=,args=` listing: each
+command line is matched against fixed patterns in memory and only its kind, clone, CPU and count are kept (`unsupported`
+where there is no `ps`). Imports `mon_base`; `tests`, `kg_lock` and `bl_stall` where it reads them.
 """
 import os
+import re
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -22,6 +25,7 @@ WARN_PCT = 80  # a bar from here on is a warning, at 100 an error
 LABEL = 10  # columns of a body row's label
 WIDE = 100  # columns from which the three bars share one row
 UNSUPPORTED = "unsupported"
+PS_TIMEOUT = 5  # seconds the process listing may take
 
 
 def load():
@@ -30,6 +34,59 @@ def load():
         return [round(x, 2) for x in os.getloadavg()]
     except (AttributeError, OSError):
         return UNSUPPORTED
+
+
+def kind_of(args, root):
+    """(kind, clone) of one process from its command line ARGS, by fixed patterns: `kbmon`, `fseventsd`, `tests` (pytest or the
+    clone's `tests.py` or `test_*.py`), `kb-tools` (any other script of a `_tools` directory), `claude` or `other`; `clone`
+    is `this` for a script under ROOT, `other` for one elsewhere, else None. Only the pair leaves the function."""
+    words = args.split()
+    first = os.path.basename(words[0]) if words else ""
+    script = next((w for w in words if re.search(r"(^|/)_tools/[\w.-]+\.py$", w)), "")
+    name = os.path.basename(script)
+    if name == "kbmon.py":
+        kind = "kbmon"
+    elif first == "fseventsd":
+        return "fseventsd", None
+    elif "pytest" in words or name == "tests.py" or re.match(r"test_[\w-]*\.py$", name):
+        kind = "tests"
+    elif script:
+        kind = "kb-tools"
+    elif first == "claude":
+        return "claude", None
+    else:
+        return "other", None
+    if not script:
+        return kind, None
+    mine = tuple(str(p) + "/" for p in {str(root), os.path.realpath(root)})
+    return kind, "this" if script.startswith(mine) else "other"
+
+
+def groups(root):
+    """The CPU consumers of one `ps -A -o pid=,pcpu=,args=` listing as [{kind, clone, cpu, procs}] in CPU order, or
+    `unsupported` where the host has no `ps` or it fails. The command lines are matched in memory and dropped."""
+    if sys.platform == "win32" or not shutil.which("ps"):
+        return UNSUPPORTED
+    try:
+        p = subprocess.run(["ps", "-A", "-o", "pid=,pcpu=,args="], capture_output=True, text=True, encoding="utf-8",
+                           errors="replace", timeout=PS_TIMEOUT)
+    except (OSError, subprocess.SubprocessError):
+        return UNSUPPORTED
+    if p.returncode != 0:
+        return UNSUPPORTED
+    sums = {}
+    for line in p.stdout.splitlines():
+        parts = line.split(None, 2)
+        try:
+            cpu = float(parts[1].replace(",", "."))
+        except (IndexError, ValueError):
+            continue
+        key = kind_of(parts[2] if len(parts) > 2 else "", root)
+        cell = sums.setdefault(key, [0.0, 0])
+        cell[0] += cpu
+        cell[1] += 1
+    made = [{"kind": k, "clone": c, "cpu": round(v[0], 1), "procs": v[1]} for (k, c), v in sums.items()]
+    return sorted(made, key=lambda g: (-g["cpu"], g["kind"], g["clone"] or ""))
 
 
 def holder(path, root):
@@ -112,7 +169,8 @@ def collect(ctx):
     return {"load": load(), "cores": cores if isinstance(cores, int) else None,
             "suite_lock": holder(os.path.join(base, tests.HOST_LOCK_NAME), ctx.root),
             "main_lock": holder(os.path.join(base, kg_lock.LOCK_NAME), ctx.root),
-            "ceiling": ceiling(ctx.root), "disk": disk(ctx.root)}
+            "ceiling": ceiling(ctx.root), "disk": disk(ctx.root), "groups": groups(ctx.root),
+            "cpu_basis": "recent" if sys.platform == "darwin" else "lifetime"}
 
 
 def bar(used, limit):
