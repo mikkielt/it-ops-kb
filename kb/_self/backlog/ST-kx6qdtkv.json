@@ -43,7 +43,8 @@
     "_tools/benchmarks.py",
     "kb/_self/reports/multi_bench.csv",
     "kb/_self/tools.md",
-    "kb/_self/reports/modules.md"
+    "kb/_self/reports/modules.md",
+    "kb/_self/code.md"
   ],
   "depends_on": [
     "ST-uo23fwho",
