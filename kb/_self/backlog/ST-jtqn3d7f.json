@@ -2,7 +2,7 @@
   "id": "ST-jtqn3d7f",
   "kind": "story",
   "title": "Research sprint goal: Writing to a team's remote root, and the plugin host's roots",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mguax5m3",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Open questions: (1) git push.recurseSubmodules check and on-demand semantics (git-config, git-push at v2.55.0); (2) what Claude Code does with a marketplace repository holding a submodule a user cannot read, and whether CLAUDE_PLUGIN_DATA survives plugin updates (claude/plugins.md); (3) SessionStart hook timeouts and async hooks (claude/hooks.md); (4) git clone --filter for a fetch root on GitLab and GitHub."
+  "notes": "Open questions: (1) git push.recurseSubmodules check and on-demand semantics (git-config, git-push at v2.55.0); (2) what Claude Code does with a marketplace repository holding a submodule a user cannot read, and whether CLAUDE_PLUGIN_DATA survives plugin updates (claude/plugins.md); (3) SessionStart hook timeouts and async hooks (claude/hooks.md); (4) git clone --filter for a fetch root on GitLab and GitHub.",
+  "claimed_by": "orch-r35"
 }
