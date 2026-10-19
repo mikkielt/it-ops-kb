@@ -1,0 +1,38 @@
+{
+  "id": "ST-tac4z3zk",
+  "kind": "story",
+  "title": "kb-setup asks for the clone's test ceiling profile, usual or busy, and a busy clone's seconds ceiling is 15 times the platform's",
+  "status": "draft",
+  "sprint": "SP-3trnelzv",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "kb-setup asks the operator for the clone's test ceiling profile, usual or busy, where busy multiplies each platform's max_seconds by 15 in that clone only; tests.py, perfcheck.py and the kbmon host panel apply the clone's factor beside the CI factor and name the profile in a refusal; the profile is set only by the operator outside an agent session, as a ceiling-class answer is; tests_ceiling.json and its decision row stay as they are",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "busy_profile"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys;t=open('.claude/skills/kb-setup/SKILL.md',encoding='utf-8').read();s=t.split('## 3. Commit hook')[0].split('## 2. Repository checks')[1];sys.exit(0 if re.search(r'busy',s) and re.search(r'15',s) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/tests.py",
+    "_tools/perfcheck.py",
+    "_tools/mon_host.py",
+    "_tools/bl_authority.py",
+    "_tools/test_ceiling.py",
+    ".claude/skills/kb-setup/SKILL.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ]
+}
