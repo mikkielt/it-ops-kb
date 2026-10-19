@@ -2,7 +2,7 @@
   "id": "SP-3pvz2noj",
   "kind": "sprint",
   "title": "The paid multi-agent runs measure concurrency, dedup, cache reuse, model choice, pack budget and kb tools",
-  "status": "planned",
+  "status": "active",
   "goal": "the multi-agent scenarios run as the operator sized them, concurrent and one at a time with each knob, and their rows, deltas and fitness check results are recorded in benchmarks.csv and the report; each paid run has a bare twin run at the same time by agents with none of the kb's tooling, and the report compares the two arms in tokens and USD per correct answer, per verified fact and per passing item; kb/_self/token-efficiency.md states the conclusions those numbers support, each citing its report section",
   "gates": [
     {

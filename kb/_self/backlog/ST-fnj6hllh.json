@@ -2,7 +2,7 @@
   "id": "ST-fnj6hllh",
   "kind": "story",
   "title": "multi run --bare runs a bare twin of each agent at the same time, with none of the kb's tooling",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-giqleoy2",
   "sprint": "SP-3pvz2noj",
   "priority": "P2",

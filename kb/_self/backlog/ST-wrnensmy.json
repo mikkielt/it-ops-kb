@@ -2,7 +2,7 @@
   "id": "ST-wrnensmy",
   "kind": "story",
   "title": "Review sprint: The paid multi-agent runs measure concurrency, dedup, cache reuse, model choice, pack budget and kb tools",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-3pvz2noj",
   "review": true,
   "priority": "P1",

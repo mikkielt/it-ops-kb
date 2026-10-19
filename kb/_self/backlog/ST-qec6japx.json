@@ -2,7 +2,7 @@
   "id": "ST-qec6japx",
   "kind": "story",
   "title": "Research sprint goal: The paid multi-agent runs measure concurrency, dedup, cache reuse, model choice, pack budget and kb tools",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-3pvz2noj",
   "goal_research": true,
   "priority": "P1",
