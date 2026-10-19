@@ -1791,7 +1791,8 @@ def sandbox_leaks(d):
 
 
 def init_leaks(path):
-    """[(kind, text)] of the session init event in the output log `path` of a real run's twin: an MCP server, a plugin or a skill it lists."""
+    """[(kind, text)] of the session init event in the output log `path` of a real run's twin: an MCP server, a plugin or a skill it lists.
+    A plugin of Claude Code itself (path `builtin`, source ending `@builtin`) is no leak."""
     try:
         text = Path(path).read_text(encoding="utf-8", errors="replace")
     except OSError:
@@ -1799,9 +1800,15 @@ def init_leaks(path):
     for ln in text.splitlines():
         ev = json_of(ln) if ln.startswith("{") else None
         if isinstance(ev, dict) and ev.get("type") == "system" and ev.get("subtype") == "init":
+            ev = dict(ev, plugins=[p for p in ev.get("plugins") or [] if not builtin_plugin(p)])
             return [(kind, f"session init event lists {len(ev[key])} {key.replace('_', ' ')}") for kind, key in
                     (("mcp", "mcp_servers"), ("plugin", "plugins"), ("skill", "skills")) if ev.get(key)]
     return []
+
+
+def builtin_plugin(plugin):
+    """True for an entry of the init event's `plugins` that Claude Code ships itself: path `builtin` and source ending `@builtin`."""
+    return isinstance(plugin, dict) and plugin.get("path") == "builtin" and str(plugin.get("source", "")).endswith("@builtin")
 
 
 def isolation_problems(root, results, out):
