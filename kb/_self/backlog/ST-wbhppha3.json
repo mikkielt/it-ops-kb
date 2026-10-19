@@ -2,7 +2,7 @@
   "id": "ST-wbhppha3",
   "kind": "story",
   "title": "Pointer files in kb/_roots name remote roots, check.py validates them and kbroot.py list shows an unresolved one as missing",
-  "status": "draft",
+  "status": "doing",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-s2svf5a6",
   "priority": "P2",
@@ -60,5 +60,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19, this checkout): kbroot.py list in a planted clone with kb/_roots/team-a.md prints only the public row; check.py says nothing of the pointers. "
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19, this checkout): kbroot.py list in a planted clone with kb/_roots/team-a.md prints only the public row; check.py says nothing of the pointers. ",
+  "claimed_by": "orch-r34"
 }
