@@ -2,7 +2,7 @@
   "id": "ST-vj5fnkjw",
   "kind": "story",
   "title": "coord.py serve scopes keys by team: key files <keys>/<team>/<operator>, team-named events and holders",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-46k7sw57",
   "priority": "P2",
@@ -55,5 +55,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): a key file in a subdirectory of --keys is not read, so its caller gets 401 (exit 2). "
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): a key file in a subdirectory of --keys is not read, so its caller gets 401 (exit 2). ",
+  "claimed_by": "orch-r37"
 }
