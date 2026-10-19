@@ -2,7 +2,7 @@
   "id": "ST-s2uh3doo",
   "kind": "story",
   "title": "Research sprint goal: An assistant answers status questions from kbmon, not by hand",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-dulvwwjc",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Plan 2026-10-19: the kb has the UserPromptSubmit block, reason and additionalContext semantics (public/claude/hooks.md:58, :63) and the MCP tool annotations (public/mcp/tools.md:25). It lacks, for ST-tdypjvev: a portable ps -A -o pid=,pcpu=,args= on macOS and Linux (POSIX ps), what %CPU means on each, and the Windows counterpart."
+  "notes": "Plan 2026-10-19: the kb has the UserPromptSubmit block, reason and additionalContext semantics (public/claude/hooks.md:58, :63) and the MCP tool annotations (public/mcp/tools.md:25). It lacks, for ST-tdypjvev: a portable ps -A -o pid=,pcpu=,args= on macOS and Linux (POSIX ps), what %CPU means on each, and the Windows counterpart.",
+  "claimed_by": "orch-r31"
 }
