@@ -48,7 +48,9 @@
       },
       "class": "design",
       "answer": "plant every code agent that shares the item",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-6cf5171e",
+      "role": "interactive"
     }
   ],
   "evidence": {

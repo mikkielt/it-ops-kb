@@ -38,7 +38,9 @@
       },
       "class": "design",
       "answer": "only non-lookup agents' stores",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-6cf5171e",
+      "role": "interactive"
     }
   ],
   "links": [

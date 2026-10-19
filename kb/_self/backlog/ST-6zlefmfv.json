@@ -1,0 +1,26 @@
+{
+  "id": "ST-6zlefmfv",
+  "kind": "story",
+  "title": "The multi report prints skipped_terms, conflicts_resolved, dup_commits and the per-agent coord rows the sprint goal names",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bench_report prints skipped_terms, conflicts_resolved and dup_commits beside the other multi metrics and the per-agent AGENT/claims, AGENT/dedup_hits and AGENT/skipped_terms rows, so kb/_self/reports/benchmarks.md shows the per-agent dedup figures token-efficiency.md cites (reviewer of SP-p46hofrg on ST-ix3lknus)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, sys\nr = subprocess.run([sys.executable, '_tools/benchmarks.py', 'report', '--check'], capture_output=True, text=True)\nassert r.returncode == 0, (r.stdout + r.stderr)[-300:]\nt = open('kb/_self/reports/benchmarks.md', encoding='utf-8').read()\nassert 'skipped_terms' in t and 'conflicts_resolved' in t and '/dedup_hits' in t, 'the report omits the per-agent and conflict figures'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_report.py",
+    "kb/_self/reports/benchmarks.md",
+    "README.md"
+  ],
+  "links": [
+    "parked: SP-p46hofrg review"
+  ]
+}

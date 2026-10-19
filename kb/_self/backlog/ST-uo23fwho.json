@@ -79,7 +79,9 @@
       },
       "class": "design",
       "answer": "A dedup event that found an overlapping live claim is a hit; a lack term of a dedup event that the event's holder did not claim is skipped",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-6cf5171e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -96,7 +98,9 @@
       },
       "class": "design",
       "answer": "claims, refused, dedup_hits, skipped_terms, conflicts and agents; conflicts are the keys claimed in more than one store plus the refused claims, read from claim events",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-6cf5171e",
+      "role": "interactive"
     },
     {
       "id": "g3",
@@ -113,7 +117,9 @@
       },
       "class": "design",
       "answer": "Rows AGENT/claims, AGENT/claim_refused, AGENT/dedup_hits and AGENT/skipped_terms (a holder agentN or multi-agentN counts for agent N); multi setup also gives the kb MCP server KB_COORD_HOLDER",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-6cf5171e",
+      "role": "interactive"
     }
   ],
   "notes": "Premise run 2026-10-19 on 7079b184a (precheck): agent_env gives agent 2 no KB_COORD_HOLDER (None); coord_counts on a planted store with one claim released and one refused returns (0, 0), a tuple; a research --replay run recorded with multi record --out writes no claim_refused, dedup_hits or skipped_terms row.",

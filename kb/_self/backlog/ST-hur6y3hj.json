@@ -81,7 +81,9 @@
       },
       "class": "design",
       "answer": "add research-shared, research-isolated, coord-shared and coord-isolated beside the -concurrent cases",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-6cf5171e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -98,7 +100,9 @@
       },
       "class": "design",
       "answer": "pass when no agent failed, multi check names only those two costs, and dup_facts is at least 1",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-6cf5171e",
+      "role": "interactive"
     },
     {
       "id": "g3",
@@ -114,8 +118,10 @@
         "no hold and no own key: the sync time alone keeps the claim live and the plant depends on the dedup claiming": "ST-hur6y3hj"
       },
       "class": "design",
-      "answer": "dedup anchored with --topic on the first article with four fact bullets, the claim held 5 s after the sync, and the lost-claim agent claims its own key when its dedup claimed none",
-      "by": "agent"
+      "answer": "dedup anchored with --topic on the first article with four fact bullets, the claim held at least 5 s from the dedup (as built; reviewer: not from the sync, so a sync that takes 5 s or more opens a flake window, parked), and the lost-claim agent claims its own key when its dedup claimed none",
+      "by": "operator",
+      "operator": "op-6cf5171e",
+      "role": "interactive"
     }
   ],
   "notes": "Premise run 2026-10-19 on 7079b184a: multi fitness --case is unknown (exit 2). bench_replay.py's research agent today claims research:replay:HOLDER by hand and posts its own claim and release events, so the fitness pass reads hand-posted events, not the coord path real agents take (the ST-eo3a7erb finding). Evidence 2026-10-19 on 59f956f4d: a clean multi run research --replay (and mixed, and coord) is named a problem by multi check: 'lost claim: research:TOPIC:* is still held by agentN (coord store coord/coord.sqlite) though every agent ended'. The scripted research agent's coord.py dedup claims the whole-topic key and bench_replay.py never releases that claim (only its own research:replay:HOLDER key).",

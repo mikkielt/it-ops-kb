@@ -65,8 +65,10 @@
         "It runs backlog.py claim in its clone, refused once the first claim has landed on the shared bare": "ST-kx6qdtkv"
       },
       "class": "design",
-      "answer": "Its harness step claims the item's key in its own coord store (coord.py claim ITEM): a shared store refuses it, an isolated one does not; a refused agent does no work",
-      "by": "agent"
+      "answer": "Its harness step claims the item's key in its own coord store (coord.py claim ITEM): a shared store refuses whichever code agent claims second, an isolated one refuses none; a refused agent does no work (reviewer: the refused agent is not fixed to code-2, parked)",
+      "by": "operator",
+      "operator": "op-6cf5171e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -82,8 +84,10 @@
         "A research agent asks another, posted by the scripted agents of bench_replay.py": "ST-kx6qdtkv"
       },
       "class": "design",
-      "answer": "code-2, whose claim a shared store refuses, asks code-1 (the holder); the harness runs kbask.py ask in the asking agent's clone and kbask.py answer in the asked agent's clone once its work ended, each against that agent's own store; the ask is a second row of the asking agent, ask AGENT: QUESTION",
-      "by": "agent"
+      "answer": "the refused code agent asks the holder the dup_of event's held_by names; the harness runs kbask.py ask in the asking agent's clone and kbask.py answer in the asked agent's clone once its work ended (as built the ask is fixed code-2 to code-1: the change is a parked draft)",
+      "by": "operator",
+      "operator": "op-6cf5171e",
+      "role": "interactive"
     },
     {
       "id": "g3",
@@ -100,7 +104,9 @@
       },
       "class": "design",
       "answer": "A key more than one agent claimed or was refused (the stores' claim and dup_of events) that at most one of those agents worked: a commit naming the item, a fact on the research key's topic",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-6cf5171e",
+      "role": "interactive"
     },
     {
       "id": "g4",
@@ -133,8 +139,10 @@
         "pip for both, as the research scenario does; only the agents of coord claim": "ST-kx6qdtkv"
       },
       "class": "design",
-      "answer": "pip and uv (two areas of Python package tooling); every code agent of every scenario claims its item's key in coord, so mixed records two more claims than before",
-      "by": "agent"
+      "answer": "every code agent of every scenario claims its item's key in coord, so mixed records two more claims than before; the two research areas move to areas whose packs share lack terms, since pip and uv held dedup_hits 0 and dup_facts 0 in all four paid coord records (the change is a parked draft)",
+      "by": "operator",
+      "operator": "op-6cf5171e",
+      "role": "interactive"
     }
   ],
   "notes": "Premise run 2026-10-19 on 7079b184a: multi run coord --dry-run and --replay exit 2, 'no scenario coord; one of lookups, research, mixed'. Open design choices for the worker, recorded as provisional gates: how the second code agent meets the shared item (its own claim through backlog.py claim in its clone, refused once the first claim lands on the shared bare, is the recommended reading of 'refused claim'), which agent asks whom, and what counts as a conflict resolved. Overlap: SP-ipeewrlv ST-y53hvh64 and SP-2uljwgho ST-hvpdkmit also touch _tools/bench_multi.py; held serializes them.",

@@ -1,0 +1,25 @@
+{
+  "id": "ST-ilhpec6d",
+  "kind": "story",
+  "title": "multi check refuses a run whose coord store exists but is empty or corrupt, not only a missing one",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "multi check names a coord store that exists but holds no readable events table (empty or corrupt) as unreadable and exits 2, as it does for a missing store; store_events and store_claims stop reading a sqlite3.Error as no events (reviewer of SP-p46hofrg: _tools/bench_multi.py store_events swallows sqlite3.Error, unreadable tests only is_file())",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import glob, json, os, sqlite3, subprocess, sys, tempfile\nD = tempfile.mkdtemp(prefix='rv-', dir=os.environ.get('TMPDIR', '/tmp'))\nb = lambda *a: subprocess.run([sys.executable, '_tools/benchmarks.py', 'multi', *a, '--dir', D], capture_output=True, text=True)\nb('run', 'coord', '--replay', '--coord', 'isolated')\ns = sorted(glob.glob(D + '/coord/*/coord.sqlite'))\nassert s, 'the replay made no coord store'\nopen(s[0], 'w').close()\nr = b('check')\nb('remove')\nassert r.returncode == 2, ('an empty coord store passes multi check', r.returncode)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_multi.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-p46hofrg review"
+  ]
+}

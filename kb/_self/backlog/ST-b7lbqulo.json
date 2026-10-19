@@ -1,0 +1,27 @@
+{
+  "id": "ST-b7lbqulo",
+  "kind": "story",
+  "title": "A scripted research replay reaches coord.py dedup's lack-term path, so multi fitness exercises skipped_terms, partial overlap and held",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the scripted research agent's pack names lack terms in at least one replay, so a dedup event carries terms, a partial overlap and a held term, and multi fitness asserts skipped_terms and the per-agent AGENT/skipped_terms (reviewer of SP-p46hofrg: every replayed dedup is the whole-topic research:T:* path with terms '-')",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import glob, json, os, sqlite3, subprocess, sys, tempfile\nD = tempfile.mkdtemp(prefix='rv-', dir=os.environ.get('TMPDIR', '/tmp'))\nb = lambda *a: subprocess.run([sys.executable, '_tools/benchmarks.py', 'multi', *a, '--dir', D], capture_output=True, text=True)\nb('run', 'research', '--replay', '--coord', 'shared')\nev = [json.loads(f) for s in glob.glob(D + '/coord/**/coord.sqlite', recursive=True) for k, f in sqlite3.connect(s).execute('SELECT kind, fields FROM events') if k == 'dedup']\nb('remove')\nassert ev, 'the replay left no dedup event'\nassert any(e.get('terms') not in ('-', '', None) for e in ev), ('no replayed dedup reaches the lack-term path', ev)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_replay.py",
+    "_tools/bench_multi.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "parked: SP-p46hofrg review"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "ST-chxuz5ej",
+  "kind": "story",
+  "title": "conflicts_resolved counts a research key as worked from the claim events and the facts an agent wrote, not the term's text in a fact",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "multi record's conflicts_resolved judges an agent to have worked a research key from its claim and fact_added events or its facts on the key's topic, so agents that wrote the same facts in other words count, and the isolated arm no longer shows more resolved conflicts than the shared arm by wording alone (reviewer of SP-p46hofrg: records 00cb019 research isolated 3 and 3 against shared 0 and 0 while isolated held a dup_fact)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import glob, json, os, sqlite3, subprocess, sys, tempfile\nD = tempfile.mkdtemp(prefix='rv-', dir=os.environ.get('TMPDIR', '/tmp'))\nb = lambda *a: subprocess.run([sys.executable, '_tools/benchmarks.py', 'multi', *a, '--dir', D], capture_output=True, text=True)\nb('run', 'research', '--replay', '--coord', 'isolated')\nr = b('record', '--dry-run')\nb('remove')\nassert 'conflicts_resolved' in r.stdout + r.stderr, ('record --dry-run names no conflicts_resolved', (r.stdout + r.stderr)[-300:])\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_multi.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-p46hofrg review"
+  ]
+}

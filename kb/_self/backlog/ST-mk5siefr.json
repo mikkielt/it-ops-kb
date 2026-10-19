@@ -1,0 +1,25 @@
+{
+  "id": "ST-mk5siefr",
+  "kind": "story",
+  "title": "The scripted research agent holds its dedup claim until its sync ends, so research-shared cannot flake under load",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the replayed research agent releases its claim only after its sync to the shared origin ends (plus the hold), so a late dedup of another agent under host load sees the claim and multi fitness case research-shared holds on every run (reviewer of SP-p46hofrg on ST-hur6y3hj g3: the hold runs from the dedup, bench_replay.py PLANT_HOLD, the class of flake BG-cs7uxn7a fixed for land-stop)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, sys\nfor i in range(3):\n    r = subprocess.run([sys.executable, '_tools/benchmarks.py', 'multi', 'fitness', '--case', 'research-shared'], capture_output=True, text=True)\n    assert r.returncode == 0, ('research-shared failed on run', i, (r.stdout + r.stderr)[-300:])\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_replay.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-p46hofrg review"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "ST-nvsccfjn",
+  "kind": "story",
+  "title": "token-efficiency.md's dedup bullet says the shared arm was cheaper in USD in each paired record instead of calling the gap inside the spread",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the coord dedup bullet of kb/_self/token-efficiency.md states the USD ranges as they are (research shared 3.94-5.01 against isolated 5.05-5.60, coord 1.73-1.77 against 1.99-3.14: no overlap, shared cheaper) and keeps 'not shown' only for tokens and duplicate facts, without the $0.04 nearest-ends figure (reviewer of SP-p46hofrg on ST-sn25w6jm)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re\nt = open('kb/_self/token-efficiency.md', encoding='utf-8').read()\nb = [l for l in t.splitlines() if l.startswith('- **Coord dedup')]\nassert b, 'no coord dedup bullet'\nassert '$0.04' not in b[0], 'the bullet still gives the nearest-ends USD figure as the gap'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/token-efficiency.md"
+  ],
+  "links": [
+    "parked: SP-p46hofrg review"
+  ]
+}

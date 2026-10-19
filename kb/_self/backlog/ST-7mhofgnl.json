@@ -1,0 +1,25 @@
+{
+  "id": "ST-7mhofgnl",
+  "kind": "story",
+  "title": "multi run coord: the refused code agent asks the claim's holder the dup_of event names, whichever code agent wins the claim",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "in multi run coord the asking agent is the code agent a shared store refused and the asked agent is the dup_of event's held_by, not a fixed code-2 to code-1, so the answer never comes from an agent that did no work (reviewer of SP-p46hofrg on ST-kx6qdtkv g1 and g2, operator answer of g2 changed to this)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import glob, json, os, sqlite3, subprocess, sys, tempfile\nD = tempfile.mkdtemp(prefix='rv-', dir=os.environ.get('TMPDIR', '/tmp'))\nb = lambda *a: subprocess.run([sys.executable, '_tools/benchmarks.py', 'multi', *a, '--dir', D], capture_output=True, text=True)\nb('run', 'coord', '--replay', '--coord', 'shared')\nd = [json.loads(f) for s in glob.glob(D + '/coord/**/coord.sqlite', recursive=True) for k, f in sqlite3.connect(s).execute('SELECT kind, fields FROM events') if k == 'dup_of']\nt = open(D + '/results.jsonl', encoding='utf-8').read()\nb('remove')\nassert d, 'no refused claim'\nheld, asker = d[0]['held_by'], d[0]['holder']\nassert ('ask ' + held.replace('multi-', '')) in t or ('ask ' + held) in t, ('the ask does not go to the holder the dup_of event names', held, asker)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_multi.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-p46hofrg review"
+  ]
+}

@@ -82,7 +82,9 @@
       },
       "class": "design",
       "answer": "dup_of (key, holder, held_by) for a refused claim; new dedup kind (holder, topic, terms, claimed, overlapping, held) plus a claim event per key dedup takes",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-6cf5171e",
+      "role": "interactive"
     }
   ],
   "links": [
