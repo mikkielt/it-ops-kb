@@ -2,7 +2,7 @@
   "id": "SP-yjfiemha",
   "kind": "sprint",
   "title": "kbmon's sprint estimate is a range from per-kind history that keeps moving while an item runs",
-  "status": "planned",
+  "status": "active",
   "goal": "kbmon.py --status sprints gives an active sprint's time left as a range with its basis and a confidence word, from the claim-to-done times of recent items of the same kind plus the sprint's review, retrospective and close tail, not from the gaps between done commits; an item in progress counts its kind's estimate less its elapsed time, never below a floor, so a planted long item in progress neither freezes nor inflates the estimate; items that may run side by side within the worker limit are counted in parallel, items that depend on each other or share touches one after another; the live view's sprint panel and kb_monitor_status show the same estimate from the same function; kbmon.py --status sprints --backtest N replays the estimator over the last N closed sprints at 25, 50 and 75 percent of each and prints its median absolute error, its median relative error and the share of actual close times inside the range; the target, not yet backed by data for the new estimator, is a median relative error of at most 35 percent over the last 20 closed sprints with at least half of the close times inside the range, against 51 percent measured on 2026-10-19 for the commit-gap estimate over the last 20 closed sprints of three or more items at the same three points",
   "gates": [
     {

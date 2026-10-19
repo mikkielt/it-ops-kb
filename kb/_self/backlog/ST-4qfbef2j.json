@@ -2,7 +2,7 @@
   "id": "ST-4qfbef2j",
   "kind": "story",
   "title": "kbmon --status sprints --backtest N replays the estimator over the last N closed sprints and prints its error and range coverage",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yjfiemha",
   "priority": "P2",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "ST-po5rwymx",
   "kind": "story",
   "title": "kbmon --status sprints gives each active sprint's time left as a range with its basis and a confidence word, from mon_eta.estimate",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yjfiemha",
   "priority": "P2",
   "rank": 0,
