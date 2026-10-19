@@ -2,7 +2,7 @@
   "id": "BG-e2hfeycb",
   "kind": "bug",
   "title": "multi record replaces the rows of an earlier rep that ran at the same start commit with the same case and knobs",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3pvz2noj",
   "priority": "P2",
   "rank": 0,
@@ -45,5 +45,18 @@
     }
   ],
   "notes": "In SP-3pvz2noj (operator delegate 2026-10-19): the 28 run DIRs stay under the orchestrator's scratch (/private/tmp/kb-r32-runs) until this lands; the fix re-records them all.",
-  "claimed_by": "orch-r32"
+  "evidence": {
+    "commit": "c97b262326f6bf3152460104a172e8252a7a8ce2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv, subprocess, sys, tempfile, shutil\nfrom pathlib import Path\ntmp = Path(tempfile.mkdtemp(prefix=\"reps-\")); out = tmp / \"r.csv\"\ndef sh(*a):\n    p = subprocess.run([sys.executable, \"_tools/benchmarks.py\", \"multi\", *a], capture_output=True, text=True)\n    assert p.returncode == 0, p.stdout + p.stderr\ndef rows():\n    return list(csv.DictReader(open(out, encoding=\"utf-8\")))\ntry:\n    for n in (1, 2):\n        d = str(tmp / f\"rep{n}\")\n        sh(\"run\", \"lookups\", \"--replay\", \"--dir\", d)\n        sh(\"record\", \"--dir\", d, \"--out\", str(out))\n        sh(\"remove\", \"--dir\", d)\n        one = len(rows()) if n == 1 else one\n    assert len(rows()) > one or any(r[\"runs\"] == \"2\" for r in rows()), \"rep 2 replaced rep 1\"\nfinally:\n    shutil.rmtree(tmp, ignore_errors=True)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
