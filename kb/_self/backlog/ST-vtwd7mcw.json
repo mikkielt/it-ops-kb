@@ -2,7 +2,7 @@
   "id": "ST-vtwd7mcw",
   "kind": "story",
   "title": "The kb-ingest skill writes a team's facts into its submodule root and pushes them with kbroot.py push",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-mguax5m3",
   "priority": "P2",
@@ -32,5 +32,6 @@
   "depends_on": [
     "ST-f4fwtc4v"
   ],
-  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): the skill names a writable fork clone and KB_ROOTS only. "
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): the skill names a writable fork clone and KB_ROOTS only. ",
+  "claimed_by": "orch-r35"
 }
