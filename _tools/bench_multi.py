@@ -1,5 +1,5 @@
 """The multi-agent benchmark's sandbox, plan, run and record: `benchmarks.py multi setup`, `multi probe`, `multi inputs`,
-`multi run`, `multi check` and `multi record` (stdlib only).
+`multi run`, `multi check`, `multi fitness` and `multi record` (stdlib only).
 
 A sandbox is a directory DIR holding one bare copy of one pinned commit (DIR/origin.git: the commit alone, no history,
 and on it one base commit that empties `lane_module` in backlog.json, so the sandbox has no code lane and an item lands on
@@ -12,7 +12,7 @@ of each coordination mode in a temporary directory, lands one `_gaps.md` commit 
 bare through `kbgit.py sync --push` and proves the landing and the stores stayed inside the sandbox. Nothing but `execute`
 (`multi run` without `--dry-run`) starts a model or reads the network, and under `--replay` it starts bench_replay.py, a
 scripted stand-in for `claude`, instead: no model call. `record` merges the lines of DIR/results.jsonl into the results
-file as the rows of the scenario `multi`. This module imports bench_repro for its instance helpers (kb/_self/code.md,
+file as the rows of the scenario `multi`. `fitness` replays every scenario clean and with each plant and reads each run with `check`. This module imports bench_repro for its instance helpers (kb/_self/code.md,
 Layout); benchmarks.py holds the command line.
 """
 import base64, csv, datetime, hashlib, itertools, json, os, re, secrets, shlex, shutil, signal, sqlite3, subprocess, sys, threading, time
@@ -1461,6 +1461,64 @@ def check(root=None, out=print):
         "no lost claim, no landing stop and no canary outside its owner"))
         + ("" if shared else f"; {len(dups)} duplicate research counted"))
     return 1 if found else 0
+
+
+# ----------------------------------------------------------------------------------------------------- the fitness run
+
+PLANT_NAMED = {"lost-claim": "lost claim: ", "land-stop": "landing stop: ", "dup-research": "duplicate research: ",
+               "leak-output": "to its output stream", "leak-commit": "to a commit on the bare",
+               "leak-event": "to a coord store event"}  # what a line of `multi check` holds that names each --plant fault
+
+
+def fitness_cases(rows=None):
+    """[(name, scenario, knobs)] of the fitness run: for each scenario its replay clean at once and one at a time, then its
+    replay at once with each --plant the scenario's agents can make (the roles PLANTS names, the agents PLANT_AGENTS counts,
+    a second agent for a leak). `knobs` are those of `run`; `name` is the case's directory name under DIR."""
+    rows = load_inputs() if rows is None else rows
+    cases = []
+    for scenario in SCENARIOS:
+        agents = agents_of(rows, scenario)
+        for sequential in (False, True):
+            cases.append((f"{scenario}-{'sequential' if sequential else 'concurrent'}", scenario, {"sequential": sequential}))
+        for plant, role in PLANTS.items():
+            if sum(a["role"] == role for a in agents) >= PLANT_AGENTS.get(plant, 1) and (len(agents) > 1 or not plant.startswith("leak-")):
+                cases.append((f"{scenario}-{plant}", scenario, {"plant": plant}))
+    return cases
+
+
+def fitness(root=None, out=print):
+    """`multi fitness`: the comprehensive check of concurrent work, no model and no network. For each case of `fitness_cases`
+    it replays the scenario (`run` with the knob `replay`; a sandbox of its own under DIR/CASE, removed after it) and reads the
+    finished run with `check`: a clean replay passes when the run finished and `check` named nothing; a replay with a plant
+    passes when the run finished, `check` exits 1 and a line of it holds what PLANT_NAMED gives the plant. Returns 0 when every case passes,
+    else 1; raises Refused on a refusal of `run` or `check`."""
+    root = (Path(root) if root else scratch_dir() / f"multi-fitness-{os.getpid()}").resolve()
+    made = not root.exists()
+    failed, cases = [], fitness_cases()
+    out(f"multi fitness: {len(cases)} case(s) under {root}, scripted agents only (no model call, no network)")
+    try:
+        for name, scenario, knobs in cases:
+            lines, plant = [], knobs.get("plant", "")
+            case = root / name
+            try:
+                ran = run(scenario, case, False, {"replay": True, **knobs}, lambda ln: None)
+                code = check(case, lines.append)
+            finally:
+                remove(case)
+            if plant:
+                ok = ran == 0 and code == 1 and any(PLANT_NAMED[plant] in ln for ln in lines)
+                why = "" if ok else f"run exit {ran}, multi check exit {code}, " + ("it named" if any(PLANT_NAMED[plant] in ln for ln in lines) else "it did not name") + " the plant"
+            else:
+                ok = ran == 0 and code == 0
+                why = "" if ok else f"run exit {ran}, multi check exit {code}: " + "; ".join(ln for ln in lines if ": " in ln)[:300]
+            if not ok:
+                failed.append(f"{name} ({why})")
+            out(f"{'ok' if ok else 'FAIL'}: {name}: " + (f"multi check named {plant}" if plant and ok else "multi check passed" if ok else why))
+    finally:
+        if made:
+            shutil.rmtree(root, ignore_errors=True)
+    out("multi fitness: " + (f"{len(cases)} case(s) held" if not failed else f"{len(failed)} of {len(cases)} failed: " + "; ".join(failed)))
+    return 1 if failed else 0
 
 
 # ------------------------------------------------------------------------------------------------------- the record

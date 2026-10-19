@@ -220,6 +220,12 @@
                                             another holder; it names the agent, the owner and the place);
                                             exit 1 naming them, 0 when none, 2 on a refusal (no
                                             run in DIR, an agent with no end stamp); no model, no network
+  benchmarks.py multi fitness [--dir DIR]   the comprehensive check of concurrent work, run by the harness in place of a test: replay
+                                            (`multi run --replay`) the scenarios lookups, research and mixed at once and one at a time,
+                                            and at once with each --plant their agents can make, each in a sandbox of its own under DIR
+                                            (default: a temporary directory under the scratch directory), removed after the case, and read
+                                            each finished run with `multi check`; exit 0 only when `multi check` passes every clean replay
+                                            and names every planted fault, 1 naming each case that did not; no model, no network
   benchmarks.py multi record [--dir DIR] [--out FILE]
                                             merge the newest json line of each agent in DIR/results.jsonl into FILE (default
                                             kb/_self/reports/benchmarks.csv) as rows of the scenario `multi`: record the first
@@ -448,6 +454,8 @@ def main(argv=None):
                     help=f"the seconds one agent's session may take (default: {bench_repro.DEFAULTS['timeout']})")
     mk = mp.add_parser("check")
     mk.add_argument("--dir", help="the sandbox's directory (default: _cache/bench-multi of the clone's main worktree)")
+    mf = mp.add_parser("fitness")
+    mf.add_argument("--dir", help="the directory the cases' sandboxes are built under (default: a temporary directory under the scratch directory)")
     mc = mp.add_parser("record")
     mc.add_argument("--dir", help="the sandbox's directory (default: _cache/bench-multi of the clone's main worktree)")
     mc.add_argument("--out", metavar="FILE", help="the results file to merge into (default: kb/_self/reports/benchmarks.csv; "
@@ -503,6 +511,8 @@ def main(argv=None):
                 return bench_multi.inputs(a.file)
             if a.multi_cmd == "check":
                 return bench_multi.check(a.dir)
+            if a.multi_cmd == "fitness":
+                return bench_multi.fitness(a.dir, lambda ln: print(ln, flush=True))
             if a.multi_cmd == "record":
                 return bench_multi.record(a.dir, a.out)
             if a.multi_cmd == "run":
