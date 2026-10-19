@@ -53,7 +53,11 @@
         "drop KB_OPERATOR, name no id in the brief, record only the role": "ST-xdldbxjq",
         "refuse the dispatch until an operator id resolves": "ST-xdldbxjq"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "drop KB_OPERATOR, name no id in the brief, record only the role",
+      "by": "operator",
+      "operator": "op-4b76a6bc",
+      "role": "interactive"
     }
   ],
   "notes": "Premise (2026-10-19): a planted dispatch with a stub claude starts the worker with the orchestrator's KB_ROLE (orchestrator), and the brief names no operator. Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and .claude/hooks with its own coord store and a stub claude on PATH; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations; facts: public/claude/ci-and-headless.md:124-127, public/claude/otel-monitoring.md:51-53, QK-claude-code-session-learn-email-account. Addresses in checks are built at run time; docs and items use the placeholder jan.kowalski only.",
