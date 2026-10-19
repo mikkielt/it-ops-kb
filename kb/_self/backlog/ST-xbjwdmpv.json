@@ -2,7 +2,7 @@
   "id": "ST-xbjwdmpv",
   "kind": "story",
   "title": "kbwho gives one operator the same alias in every linked worktree of a clone",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yjugq5c2",
   "priority": "P1",
   "rank": 0,
@@ -18,9 +18,11 @@
   ],
   "touches": [
     "_tools/kbwho.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/design.md"
   ],
   "links": [
     "parked: SP-czs3jk57 review"
-  ]
+  ],
+  "notes": "Premise (2026-10-19, precheck on the base): a clone and its linked worktree got two operator ids (op-1a1d57ad, op-97aad118). Committed by the orchestrator on the operator's run of SP-yjugq5c2: the trailer and export ids depend on one id per operator."
 }
