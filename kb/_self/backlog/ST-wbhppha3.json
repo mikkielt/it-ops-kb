@@ -58,6 +58,40 @@
       "class": "push",
       "answer": "kb/_roots/<name>.md, one file per remote root, with front matter root, id_prefix, visibility, team, url, ref, pin, access and description",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which pointer fields must a pointer file hold, and which are optional?",
+      "options": [
+        "root, id_prefix and access are required with url; visibility defaults to internal; team, ref, pin and description are optional, a pin must be a commit hash",
+        "every field of the design is required"
+      ],
+      "recommendation": "root, id_prefix and access are required with url; visibility defaults to internal; team, ref, pin and description are optional, a pin must be a commit hash",
+      "do": {
+        "root, id_prefix and access are required with url; visibility defaults to internal; team, ref, pin and description are optional, a pin must be a commit hash": "ST-wbhppha3",
+        "every field of the design is required": "ST-wbhppha3"
+      },
+      "class": "design",
+      "answer": "root, id_prefix and access are required with url; visibility defaults to internal; team, ref, pin and description are optional, a pin must be a commit hash",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "When a pointer's name or prefix is already a root's or an earlier pointer's, which one keeps it?",
+      "options": [
+        "the root or the earlier pointer (by name) keeps it; the later pointer is listed missing with the clash and check.py names its file",
+        "both pointers are listed missing"
+      ],
+      "recommendation": "the root or the earlier pointer (by name) keeps it; the later pointer is listed missing with the clash and check.py names its file",
+      "do": {
+        "the root or the earlier pointer (by name) keeps it; the later pointer is listed missing with the clash and check.py names its file": "ST-wbhppha3",
+        "both pointers are listed missing": "ST-wbhppha3"
+      },
+      "class": "design",
+      "answer": "the root or the earlier pointer (by name) keeps it; the later pointer is listed missing with the clash and check.py names its file",
+      "by": "agent"
     }
   ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19, this checkout): kbroot.py list in a planted clone with kb/_roots/team-a.md prints only the public row; check.py says nothing of the pointers. ",

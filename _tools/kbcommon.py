@@ -28,8 +28,10 @@ ARTIFACTS, ANCHORS), `_census/`, SNAPSHOTS and DATA_DIR. Every path inside a roo
 line inside it. Tools that span roots name a file by its qualified path `<root>/<path in root>` (`public/intune/x.md`)
 and a topic by `<root>/<topic>`.
 
-  roots()                     [Root] in order: public first, then kb/<name>/ by name, then the KB_ROOTS dirs
-                              (only the named ones after serve_only)
+  roots()                     [Root] in order: public first, then kb/<name>/ by name, then the KB_ROOTS dirs, then the
+                              roots a pointer names that resolve (only the named ones after serve_only)
+  missing_roots()             [MissingRoot]: the pointers kb/_roots/<name>.md whose root is not served, each with its
+                              reason; read_pointer(), pointer_problems() read one pointer file
   serve_only(names)           limit roots() to the named roots for this process (kb_mcp.py --roots); RootError
                               names an unknown one; serving() gives the names, () when every root is served
   root(name)                  the Root of that name (KeyError when there is none)
@@ -38,6 +40,11 @@ and a topic by `<root>/<topic>`.
   split(qpath)                (Root, rel) of a qualified path; (None, qpath) when its first part names no root
   path_of(qpath)              the absolute path of a qualified path (a root's file), else of a repository path
   root_of_prefix(prefix)      the Root whose id_prefix it is, or None
+
+A remote root, one kept in another repository, is named by a pointer file kb/_roots/<name>.md (front matter `root`,
+`id_prefix`, `visibility`, `team`, `url`, `ref`, `pin`, `access`, `description`). Its root is served when it is on
+disk (access `submodule`: kb/<name>/; `fetch`: _cache/roots/<name>/) with a ROOT_FILE that agrees with the pointer;
+otherwise it is listed by missing_roots() and the tools go on with the roots they have, never failing for it.
 
 KB_ROOTS=DIR[:DIR...] adds roots kept outside this repository (a team's private repository with the same root
 layout and its own ROOT_FILE): the read tools and the checks serve them with kb/'s roots; git, census and fetch work
@@ -69,6 +76,8 @@ SELF = os.path.join(KB_DIR, "_self")  # the kb's own docs: rules, tool reference
 DATA_DIR = "_retrieval"  # a root's retrieval data (signals, eval set, doc2query, index extras), relative to the root
 KB = PUBLIC
 ROOT_FILE = "_root.md"
+POINTERS_DIR = "_roots"  # kb/_roots/<name>.md: a pointer file for each remote root (Pointer)
+ACCESS = ("submodule", "fetch")  # how a remote root is kept: a git submodule at kb/<name>/, a clone in _cache/roots/<name>/
 SOURCES, STATE, ARTIFACTS = "_sources.csv", "_fetch_state.csv", "_artifacts.csv"
 # _fetch_state.csv: fetch.py's columns (the text hash of --diff), then factdiff.py detect's (the provider's signals as
 # last seen: validators, version id, the normalized document's hash, where the url led, its status and simhash, the
@@ -374,17 +383,139 @@ def load_root(path):
     return Root(name, path, prefix, vis, meta.get("description", ""))
 
 
+class Pointer(NamedTuple):
+    """A remote root's pointer file POINTERS_DIR/<name>.md: the root's name, prefix and visibility as its own ROOT_FILE
+    holds them, and where it is kept."""
+    name: str
+    id_prefix: str
+    visibility: str
+    team: str
+    url: str
+    ref: str  # a branch ('' follows the remote's default branch)
+    pin: str  # a commit ('' follows ref)
+    access: str  # one of ACCESS
+    description: str
+    path: str  # absolute path of the pointer file
+
+
+class MissingRoot(NamedTuple):
+    """A pointer whose root is not served here, and why (a pointer that cannot be read is listed too, by its file name)."""
+    name: str
+    id_prefix: str  # '' when the pointer holds none
+    visibility: str
+    access: str
+    path: str  # the pointer file
+    reason: str
+    defect: bool  # the pointer or the root is wrong (check.py reports it), not just absent on disk
+
+
+def _pointer_files():
+    d = os.path.join(KB_DIR, POINTERS_DIR)
+    return sorted(os.path.join(d, f) for f in os.listdir(d) if f.endswith(".md")) if os.path.isdir(d) else []
+
+
+def _pointer_stem(path):
+    return os.path.basename(path)[:-len(".md")]
+
+
+def pointer_problems(path):
+    """What is wrong with the pointer file at `path`, one message each ([] when it is sound; it never raises):
+    unreadable, no front matter, a `root` that is not the file's name, a bad or reserved `id_prefix`, a `visibility`
+    other than public or internal, a `url` missing, an `access` other than submodule or fetch, a `pin` that is no
+    commit hash."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+    except (OSError, UnicodeDecodeError) as e:
+        return [f"unreadable pointer ({getattr(e, 'strerror', None) or e})"]
+    meta = _meta(text)
+    if not meta:
+        return ["malformed pointer: no front matter (`---` lines around `key: value` pairs)"]
+    out, stem = [], _pointer_stem(path)
+    name, prefix = meta.get("root", ""), meta.get("id_prefix", "")
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", name) or name == "kb":
+        out.append(f"malformed pointer: `root` must be a lowercase name (a-z, 0-9, -), got {name!r}")
+    elif name != stem:
+        out.append(f"malformed pointer: `root` {name!r} must be the file's name {stem!r}")
+    if not PREFIX.fullmatch(prefix) or prefix in RESERVED_PREFIXES:
+        out.append(f"malformed pointer: `id_prefix` must be 1-4 capital letters, not one of "
+                   f"{', '.join(sorted(RESERVED_PREFIXES))}; got {prefix!r}")
+    vis = meta.get("visibility", "internal")
+    if vis not in ("public", "internal"):
+        out.append(f"malformed pointer: `visibility` must be public or internal, got {vis!r}")
+    if not meta.get("url"):
+        out.append("malformed pointer: `url` (the root's repository) is missing")
+    access = meta.get("access", "")
+    if access not in ACCESS:
+        out.append(f"`access` must be {' or '.join(ACCESS)}, got {access!r}")
+    if meta.get("pin") and not re.fullmatch(r"[0-9a-f]{7,40}", meta["pin"]):
+        out.append(f"malformed pointer: `pin` must be a commit hash (7-40 hex digits) or empty, got {meta['pin']!r}")
+    return out
+
+
+def read_pointer(path):
+    """The Pointer of the file at `path`; RootError, naming the file and its problems, when it is unsound."""
+    problems = pointer_problems(path)
+    if problems:
+        raise RootError(f"{os.path.relpath(path, HOME)}: {'; '.join(problems)}")
+    with open(path, encoding="utf-8") as f:
+        m = _meta(f.read())
+    return Pointer(m["root"], m["id_prefix"], m.get("visibility", "internal"), m.get("team", ""), m["url"],
+                   m.get("ref", ""), m.get("pin", ""), m["access"], m.get("description", ""), path)
+
+
+def pointer_root_dir(p):
+    """Where the root of Pointer `p` is kept: a submodule at kb/<name>/, a fetched clone in _cache/roots/<name>/."""
+    return os.path.join(KB_DIR, p.name) if p.access == "submodule" else os.path.join(HOME, "_cache", "roots", p.name)
+
+
+def _resolve_pointer(p):
+    """(Root, '', False) of a pointer whose root is on disk and agrees with it, else (None, why it is missing, whether
+    that is a defect: a root that is there but unusable or disagrees, not one that is merely absent)."""
+    d = pointer_root_dir(p)
+    where = os.path.relpath(d, HOME).replace(os.sep, "/")
+    if not os.path.isfile(os.path.join(d, ROOT_FILE)):
+        return None, (f"submodule not initialised: no {where}/{ROOT_FILE}" if p.access == "submodule"
+                      else f"not fetched: no {where}/{ROOT_FILE}"), False
+    try:
+        r = load_root(d)
+    except RootError as e:
+        return None, f"the root at {where} is unusable: {e}", True
+    diff = [f"{k} {a!r} in the root, {b!r} in the pointer" for k, a, b in
+            (("name", r.name, p.name), ("id_prefix", r.id_prefix, p.id_prefix), ("visibility", r.visibility, p.visibility))
+            if a != b]
+    if diff:
+        return None, f"the pointer and the root at {where} disagree: {'; '.join(diff)}", True
+    return r, "", False
+
+
 _ROOTS = []  # every root, loaded once
+_MISSING = []  # the pointers whose roots are not served, loaded with _ROOTS
 _SERVED = []  # serve_only's names; empty: every root
 
 
-def _all_roots():
-    """Every root, in order: public first, then kb/<name>/ by name, then the KB_ROOTS directories. RootError when a
-    ROOT_FILE is malformed, or two roots share a name or an id prefix."""
+def _load():
+    """Fill _ROOTS and _MISSING. RootError when a local root's ROOT_FILE is malformed, or two local roots share a
+    name or an id prefix; a pointer never raises: its root is served when it resolves, else listed as missing."""
     if _ROOTS:
-        return list(_ROOTS)
+        return
+    pointers, missing = [], []
+    for f in _pointer_files():
+        problems = pointer_problems(f)
+        if problems:
+            try:
+                with open(f, encoding="utf-8", errors="replace") as fh:
+                    meta = _meta(fh.read())
+            except OSError:
+                meta = {}
+            missing.append(MissingRoot(_pointer_stem(f), meta.get("id_prefix", ""), meta.get("visibility", ""),
+                                       meta.get("access", ""), f, "; ".join(problems), True))
+        else:
+            pointers.append(read_pointer(f))
+    claimed = {p.name for p in pointers if p.access == "submodule"}  # their kb/<name>/ is the pointer's, not a local root
     dirs = [PUBLIC] + sorted(os.path.join(KB_DIR, d) for d in os.listdir(KB_DIR) if not d.startswith((".", "_"))
-                             and os.path.join(KB_DIR, d) != PUBLIC and os.path.isfile(os.path.join(KB_DIR, d, ROOT_FILE)))
+                             and os.path.join(KB_DIR, d) != PUBLIC and d not in claimed
+                             and os.path.isfile(os.path.join(KB_DIR, d, ROOT_FILE)))
     dirs += [d for d in os.environ.get("KB_ROOTS", "").split(os.pathsep) if d.strip()]
     out, names, prefixes = [], {}, {}
     for d in dirs:
@@ -394,8 +525,34 @@ def _all_roots():
                 raise RootError(f"roots {seen[key]} and {r.path} share the {what} {key!r}")
             seen[key] = r.path
         out.append(r)
+    for p in pointers:  # an earlier root or pointer keeps a name or prefix, resolved or not
+        clash = [f"{what} {key!r} is already the {what} of {os.path.relpath(seen[key], HOME)}"
+                 for seen, key, what in ((names, p.name, "name"), (prefixes, p.id_prefix, "id_prefix")) if key in seen]
+        if clash:
+            missing.append(MissingRoot(p.name, p.id_prefix, p.visibility, p.access, p.path, "; ".join(clash), True))
+            continue
+        names[p.name] = prefixes[p.id_prefix] = p.path
+        r, reason, defect = _resolve_pointer(p)
+        if r is None:
+            missing.append(MissingRoot(p.name, p.id_prefix, p.visibility, p.access, p.path, reason, defect))
+        else:
+            out.append(r)
+    _MISSING[:] = sorted(missing, key=lambda m: m.name)
     _ROOTS[:] = out
-    return list(out)
+
+
+def _all_roots():
+    """Every root served, in order: public first, then kb/<name>/ by name, then the KB_ROOTS directories, then the roots
+    pointers name (kb/_roots/<name>.md) that are on disk and agree with their pointer, by name."""
+    _load()
+    return list(_ROOTS)
+
+
+def missing_roots():
+    """[MissingRoot] by name: the pointers whose roots are not served (not fetched, submodule not initialised, the
+    pointer and the root disagree, the name or prefix taken by another root or pointer, the pointer unsound)."""
+    _load()
+    return list(_MISSING)
 
 
 def roots():
@@ -407,7 +564,7 @@ def serve_only(names):
     """Limit roots(), and every tool built on it, to the named roots for the rest of this process (a server started
     for one team's roots). RootError, naming every root, when a name is no root; an empty list serves every root."""
     names = [n.strip() for n in names if n and n.strip()]
-    known = [r.name for r in _all_roots()]
+    known = [r.name for r in _all_roots()] + [m.name for m in missing_roots()]
     unknown = [n for n in names if n not in known]
     if unknown:
         raise RootError(f"no root {', '.join(map(repr, unknown))}; roots: {', '.join(known)}")

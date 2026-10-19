@@ -4,6 +4,9 @@
   check.py [--root NAME]      every root (kbcommon.roots(): kb/public, kb/<name>/, KB_ROOTS), or one
 
 - every root's _root.md is well-formed, and no two roots share a name or an id prefix;
+- every pointer file kb/_roots/<name>.md (a remote root, kbcommon.py) is well-formed (`root` its file's name, `id_prefix`,
+  `visibility`, a `url`, an `access` of submodule or fetch, a `pin` that is a commit hash or empty), names a root and
+  prefix no other root or pointer has, and, where its root is on disk, agrees with it; an absent root is no error;
 - per root: _sources.csv and _artifacts.csv exist and have their required columns;
 - every .csv has the same number of columns in every row;
 - source ids in a root's _sources.csv are unique and well-formed: the root's `<prefix>-<8 base32>` equal to the
@@ -867,6 +870,9 @@ def main():
     held = held_ledger_ids(roots)  # tags resolve here
     errors.extend(f"{kbcommon.qualify(r, kbcommon.ROOT_FILE)}: id_prefix {LOG_PREFIX!r} is reserved for log row ids"
                   for r in roots if r.id_prefix == LOG_PREFIX and (not a.root or r.name == a.root))
+    if not a.root:  # a pointer file names its root's name and prefix even where nobody here can read the root
+        errors.extend(f"{os.path.relpath(m.path, kbcommon.HOME).replace(os.sep, '/')}: {m.reason}"
+                      for m in kbcommon.missing_roots() if m.defect)
     scans = [(r, r.path) for r in roots if not a.root or r.name == a.root]
     if not a.root:
         scans.append((None, kbcommon.HOME))  # this repository outside the roots: kb/_self, _tools/ data, README.md
