@@ -131,7 +131,7 @@
       },
       "class": "design",
       "answer": "record runs the same checks as multi check itself and counts the problems; no row while an agent has no end stamp",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

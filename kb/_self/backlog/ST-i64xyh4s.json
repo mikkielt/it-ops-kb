@@ -64,7 +64,7 @@
       },
       "class": "design",
       "answer": "a: record argv and env, read sandbox at check time, bare cases per scenario",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",

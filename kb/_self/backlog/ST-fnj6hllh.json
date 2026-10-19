@@ -113,7 +113,7 @@
       },
       "class": "design",
       "answer": "the price tier of the mean prompt of a turn, a cache write at the billing surface's rate, a cache read at the tier's list price",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "effort",
@@ -130,7 +130,7 @@
       },
       "class": "design",
       "answer": "the model's default effort (no --effort flag), as the lookup kb agents run",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "twin-exit",
@@ -147,7 +147,7 @@
       },
       "class": "design",
       "answer": "no: the run's exit follows the kb agents, a failed twin is named in the summary and its line",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "kb-item-check",
@@ -164,7 +164,7 @@
       },
       "class": "design",
       "answer": "in a checkout of the item's touched files on the sandbox bare's main, where the code agent's change landed",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Operator request 2026-10-19, verbatim: \"give the benchmark that will run today a parallel run of bare agents doing similar work -- need to compare token and dollar efficiency\". Design (planned 2026-10-19): one twin per kb agent, started with it (concurrent: all kb agents and all twins at once; --sequential: kb agent N and its twin together, pair after pair), so both arms see the same host load. The twin has no kb tooling: no kb MCP server, no project or user settings, hooks, skills, plugin or coord store, no kb articles in its directory; web tools stay so it can look things up. The dollar figure is priced from the four usage counts with bench_core.PRICE for both arms (the session's own cost stays in `cost`). Gates score and arm answered by the operator's delegate with their recommendations (unattended overnight run, operator policy). Premise, run 2026-10-19 on origin/main: `benchmarks.py multi run lookups --dry-run --bare` exits 2 (unrecognized argument --bare): no bare arm exists. Spend: none, the checks run --dry-run and --replay only.",

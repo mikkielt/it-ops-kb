@@ -1,0 +1,26 @@
+{
+  "id": "ST-kgprodly",
+  "kind": "story",
+  "title": "A bare research twin's facts are matched to the kb agent's by one url form, so a twin citing the rendered page of a raw source matches nothing",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "score_twins matches a twin's cited url to a kb DOC fact's source url after normalising the forms one source takes (raw.githubusercontent.com against its rendered docs page, http against https, a trailing slash or fragment), so facts_matched counts what the twin's notes cite; the review of SP-3pvz2noj found 0 of 89 matched in r1-02 although the notes cite pip.pypa.io pages",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import inspect, sys\nsys.path.insert(0, '_tools')\nimport bench_multi\ns = inspect.getsource(bench_multi.score_twins) + inspect.getsource(bench_multi)\nassert 'normalize_url' in s or 'url_key' in s, 'a twin fact is matched by its exact url form only'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_multi.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-3pvz2noj review"
+  ]
+}

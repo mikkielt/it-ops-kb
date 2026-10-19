@@ -41,7 +41,7 @@
       },
       "class": "design",
       "answer": "told apart",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "In SP-3pvz2noj (operator delegate 2026-10-19): the 28 run DIRs stay under the orchestrator's scratch (/private/tmp/kb-r32-runs) until this lands; the fix re-records them all.",

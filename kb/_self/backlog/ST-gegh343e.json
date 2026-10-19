@@ -1,0 +1,26 @@
+{
+  "id": "ST-gegh343e",
+  "kind": "story",
+  "title": "A bare code twin's item check runs on what it committed, as the kb code agent's runs on what landed",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "twin_agent runs a bare code twin's item check on a checkout of its committed touched files, as kb_items_passed does for the kb code agent, so uncommitted files do not pass a twin's item",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import inspect, sys\nsys.path.insert(0, '_tools')\nimport bench_multi\ns = inspect.getsource(bench_multi.twin_agent)\nassert 'item_passes(twin[\"spec\"], twin[\"dir\"]' not in s, 'a twin code item is checked in its whole working tree, uncommitted files included, while the kb agent is checked on the landed files'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_multi.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-3pvz2noj review"
+  ]
+}

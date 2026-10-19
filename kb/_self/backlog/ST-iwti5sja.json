@@ -1,0 +1,26 @@
+{
+  "id": "ST-iwti5sja",
+  "kind": "story",
+  "title": "multi check names a CLAUDE.md or AGENTS.md in a parent directory of a bare twin's sandbox, which claude loads by walking up",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "sandbox_leaks (or multi check) names a CLAUDE.md or AGENTS.md in any parent directory of a bare twin's sandbox up to the filesystem root, and a user-level ~/.claude/CLAUDE.md, as a kb leak",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, sys, tempfile\nsys.path.insert(0, '_tools')\nimport bench_multi\nT = tempfile.mkdtemp()\nd = os.path.join(T, 'bare', 'agent1'); os.makedirs(d)\nopen(os.path.join(T, 'CLAUDE.md'), 'w').write('use the kb')\nfound = bench_multi.sandbox_leaks(d)\nassert any('CLAUDE.md' in t for _, t in found), 'a CLAUDE.md in a parent of the twin sandbox is not named'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_multi.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-3pvz2noj review"
+  ]
+}

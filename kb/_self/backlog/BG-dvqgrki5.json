@@ -1,0 +1,26 @@
+{
+  "id": "BG-dvqgrki5",
+  "kind": "bug",
+  "title": "token-efficiency.md concludes kb higher per verified fact in research, a figure the twin's scoring cannot support, and omits the effort mismatch",
+  "status": "todo",
+  "parent": "EP-giqleoy2",
+  "sprint": "SP-3pvz2noj",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "the Concurrent agents section of kb/_self/token-efficiency.md states the research per-verified-fact comparison as not comparable (the twin's figure divides by the kb agent's verified count and its notes matched 0 to 28 of them by url form), states that the kb research and code agents ran at effort high and the bare twins at the model's default, and names whether each USD figure it quotes is the cost or the usd metric",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re\nt = open('kb/_self/token-efficiency.md', encoding='utf-8').read()\nm = re.search(r'^## Concurrent agents\\n(.*?)(?=^## |\\Z)', t, re.S | re.M)\ns = m.group(1)\nassert 'effort' in s, 'the kb research and code agents ran at effort high and the twins at the default: not stated'\nassert re.search(r'not comparable', s), 'the research per-verified-fact conclusion is stated as kb higher, though the twin divides by the kb agent count'\n"
+    ]
+  },
+  "repro_reason": "the defect is the doc's wording; the repro reads the section the fix rewrites",
+  "touches": [
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "BG-hdgfm7rc"
+  ]
+}

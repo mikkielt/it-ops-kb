@@ -1,0 +1,26 @@
+{
+  "id": "ST-eitho5j2",
+  "kind": "story",
+  "title": "A bare twin runs at its kb agent's effort, so research and mixed compare like with like",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bare_argv passes the kb agent's --effort to its twin (high for research and code agents, the default for lookups), and the dry run's bare argv lines show it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import inspect, sys\nsys.path.insert(0, '_tools')\nimport bench_multi\nassert '--effort' in ' '.join(bench_multi.bare_argv.__code__.co_consts.__repr__().split()) or 'effort' in inspect.getsource(bench_multi.bare_argv), 'a bare twin runs at the model default effort while its kb agent runs at high'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_multi.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-3pvz2noj review"
+  ]
+}
