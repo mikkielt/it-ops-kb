@@ -2,7 +2,7 @@
   "id": "ST-xdldbxjq",
   "kind": "story",
   "title": "dispatch hands each worker the operator id and the worker role, and its brief and record name them",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-czs3jk57",
   "priority": "P2",
   "rank": 0,

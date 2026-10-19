@@ -2,7 +2,7 @@
   "id": "ST-245gyb6r",
   "kind": "story",
   "title": "coord.py list --by-operator shows each operator's live claims and approved budgets on a shared coord server",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-czs3jk57",
   "priority": "P3",
   "rank": 0,
