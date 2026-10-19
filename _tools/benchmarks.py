@@ -170,7 +170,7 @@
                                             agent's area one of repro_briefs.csv, a code agent's item spec has a title, goal,
                                             touches, check and a gate with a recommendation; exit 1 naming each row that does
                                             not resolve, 0 otherwise; no model, no network
-  benchmarks.py multi run SCENARIO [--dry-run] [--replay] [--dir DIR] [--sequential] [--coord shared|isolated] [--stagger SECONDS]
+  benchmarks.py multi run SCENARIO [--dry-run] [--replay [--plant lost-claim|land-stop]] [--dir DIR] [--sequential] [--coord shared|isolated] [--stagger SECONDS]
                                             [--model [ROLE=]MODEL,...] [--pack-budget TOKENS] [--tools kb|files]
                                             [--manager code|session] [--max-usd USD] [--timeout SECONDS]
                                             --dry-run prints each agent of the scenario (lookups, research or mixed) with its
@@ -192,9 +192,20 @@
                                             agent's scripted stand-in (no model call, no network): it prints one result event
                                             with planted usage (the recorded means of its role) and the commands it ran, which
                                             become the line's steps; a lookup agent runs rag.py pack on its questions, a
-                                            research agent coord.py dedup on its area and commits and syncs one planted
-                                            _gaps.md entry to the bare, a code agent writes and commits its item's planted
-                                            change in the worktree dispatch made, and the harness answers and lands it
+                                            research agent claims a key of its own in the coord store, runs coord.py dedup
+                                            on its area, commits and syncs one planted _gaps.md entry to the bare and releases
+                                            the claim (claim and release events), a code agent writes and commits its item's
+                                            planted change in the worktree dispatch made, and the harness answers and lands
+                                            it; --plant (with --replay) makes one fault, which `multi check` names: lost-claim
+                                            leaves the first research agent's claim held, land-stop leaves the first code
+                                            agent's change uncommitted so its item does not land (the run still exits 0)
+  benchmarks.py multi check [--dir DIR]     read the finished run in DIR (results.jsonl, the sandbox's coord store, the clones'
+                                            backlog claims of the planted items and the bare's main) and name each lost claim
+                                            (a coord or backlog claim still held after every agent ended, or released with
+                                            neither a commit nor a release event of its holder) and each landing stop (a
+                                            planted code item with no code commit on the bare's main, with the land step the
+                                            agent's line says stopped); exit 1 naming them, 0 when none, 2 on a refusal (no
+                                            run in DIR, an agent with no end stamp); no model, no network
   benchmarks.py multi record [--dir DIR] [--out FILE]
                                             merge the newest json line of each agent in DIR/results.jsonl into FILE (default
                                             kb/_self/reports/benchmarks.csv) as rows of the scenario `multi`: record the first
@@ -403,6 +414,8 @@ def main(argv=None):
                     "create nothing and start no model")
     mr.add_argument("--replay", action="store_true", help="start _tools/bench_replay.py as each agent's scripted stand-in, in place of "
                     "claude: no model call; the run's lines carry planted usage and the commands the stand-ins ran")
+    mr.add_argument("--plant", choices=list(bench_multi.PLANTS), help="with --replay: make one fault on purpose in the first "
+                    "agent of the role that makes it, for `multi check` to find: " + ", ".join(f"{k} ({v} agent)" for k, v in bench_multi.PLANTS.items()))
     mr.add_argument("--dir", help="the sandbox's directory (default: _cache/bench-multi of the clone's main worktree)")
     mr.add_argument("--sequential", action="store_true", help="start the agents one at a time (default: all at once)")
     mr.add_argument("--coord", choices=bench_multi.COORDS, default="shared", help="one coordination store for every agent, or one for each (default: shared)")
@@ -418,6 +431,8 @@ def main(argv=None):
                     "it is recorded with the failure budget (default: no cap)")
     mr.add_argument("--timeout", type=int, default=bench_repro.DEFAULTS["timeout"], metavar="SECONDS",
                     help=f"the seconds one agent's session may take (default: {bench_repro.DEFAULTS['timeout']})")
+    mk = mp.add_parser("check")
+    mk.add_argument("--dir", help="the sandbox's directory (default: _cache/bench-multi of the clone's main worktree)")
     mc = mp.add_parser("record")
     mc.add_argument("--dir", help="the sandbox's directory (default: _cache/bench-multi of the clone's main worktree)")
     mc.add_argument("--out", metavar="FILE", help="the results file to merge into (default: kb/_self/reports/benchmarks.csv; "
@@ -471,13 +486,15 @@ def main(argv=None):
                 return bench_multi.remove(a.dir, print)
             if a.multi_cmd == "inputs":
                 return bench_multi.inputs(a.file)
+            if a.multi_cmd == "check":
+                return bench_multi.check(a.dir)
             if a.multi_cmd == "record":
                 return bench_multi.record(a.dir, a.out)
             if a.multi_cmd == "run":
                 return bench_multi.run(a.scenario, a.dir, a.dry_run, {"sequential": a.sequential, "coord": a.coord, "stagger": a.stagger,
                                                                     "model": a.model, "pack_budget": a.pack_budget, "tools": a.tools,
                                                                     "manager": a.manager, "max_usd": a.max_usd, "timeout": a.timeout,
-                                                                    "replay": a.replay})
+                                                                    "replay": a.replay, "plant": a.plant or ""})
             return bench_multi.setup(a.agents, a.coord, a.dir, a.start, a.dry_run, scenario=a.scenario)
         except bench_repro.Refused as e:
             print(f"multi {a.multi_cmd}: {e}", file=sys.stderr)

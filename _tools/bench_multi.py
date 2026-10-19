@@ -1,5 +1,5 @@
 """The multi-agent benchmark's sandbox, plan, run and record: `benchmarks.py multi setup`, `multi probe`, `multi inputs`,
-`multi run` and `multi record` (stdlib only).
+`multi run`, `multi check` and `multi record` (stdlib only).
 
 A sandbox is a directory DIR holding one bare copy of one pinned commit (DIR/origin.git: the commit alone, no history,
 and on it one base commit that empties `lane_module` in backlog.json, so the sandbox has no code lane and an item lands on
@@ -55,6 +55,7 @@ CODE_ITEM_USD = 1.0  # what one code item costs on RECORDED_MODEL: about the mea
 RECORDED_MODEL = "claude-sonnet-5-5"  # the model the recorded repro rows and the code figure were taken on
 DEFAULT_USAGE = {"input_tokens": 120, "output_tokens": 30000, "cache_creation_input_tokens": 150000, "cache_read_input_tokens": 6000000,
                  "num_turns": 80}  # what a replayed code agent prints, and a role with no recorded row: about one worker session
+PLANTS = {"lost-claim": "research", "land-stop": "code"}  # --plant: the fault, and the role of the first agent that makes it
 REPLAY = "_tools/bench_replay.py"  # the scripted stand-in of `--replay`, run from this checkout in the agents' clones
 POOL_ARM = re.compile(r"[a-z]+-\d+(?:-\d+)*(?::default)?(/session)?")  # a kb arm of the pool at its default effort
 GAP = ("\n## multi-probe-agent{n}\n\n- **A probe entry that multi probe commits and syncs from agent {n}.** Nothing was tried; "
@@ -683,7 +684,7 @@ def replay_argv(plan, usage, k):
             "--holder", f"agent{plan['n']}"]
     if plan["role"] == "lookup":
         return argv + ["--budget", str(k["pack_budget"])] + [x for q in plan["questions"] for x in ("--question", q)]
-    return argv + ["--area", plan["area"]]
+    return argv + ["--area", plan["area"]] + (["--plant", plan["plant"]] if plan.get("plant") else [])
 
 
 def money(usd):
@@ -699,13 +700,15 @@ def run(scenario, root=None, dry_run=False, knobs=None, out=print):
     if scenario not in SCENARIOS:
         raise Refused(f"no scenario {scenario}; one of {', '.join(SCENARIOS)}")
     k = {"sequential": False, "coord": "shared", "stagger": 0.0, "model": "", "pack_budget": PACK_BUDGET, "tools": "kb", "manager": "code",
-         "max_usd": None, "timeout": bench_repro.DEFAULTS["timeout"], "replay": False, **(knobs or {})}
+         "max_usd": None, "timeout": bench_repro.DEFAULTS["timeout"], "replay": False, "plant": "", **(knobs or {})}
     bad = [f"--coord is one of {', '.join(COORDS)}"] if k["coord"] not in COORDS else []
     bad += [f"--tools is one of {', '.join(TOOL_SETS)}"] if k["tools"] not in TOOL_SETS else []
     bad += [f"--manager is one of {', '.join(MANAGERS)}"] if k["manager"] not in MANAGERS else []
     bad += ["--stagger needs 0 or more seconds"] if k["stagger"] < 0 else []
     bad += ["--max-usd needs more than 0"] if k["max_usd"] is not None and k["max_usd"] <= 0 else []
     bad += ["--timeout needs 1 or more seconds"] if k["timeout"] < 1 else []
+    bad += [f"--plant is one of {', '.join(PLANTS)}"] if k["plant"] and k["plant"] not in PLANTS else []
+    bad += ["--plant needs --replay: only a scripted agent makes a fault on purpose"] if k["plant"] and not k["replay"] else []
     bad += [f"--pack-budget is {PACK_LIMITS[0]} to {PACK_LIMITS[1]} tokens"] if not PACK_LIMITS[0] <= k["pack_budget"] <= PACK_LIMITS[1] else []
     if bad:
         raise Refused("; ".join(bad))
@@ -715,6 +718,8 @@ def run(scenario, root=None, dry_run=False, knobs=None, out=print):
     briefs = bench_repro.load_briefs()
     problems = input_problems([r for r in rows if r["scenario"] == scenario], questions, {b["area"].strip() for b in briefs})
     agents = agents_of(rows, scenario)
+    if k["plant"] and not any(a["role"] == PLANTS[k["plant"]] for a in agents):
+        raise Refused(f"--plant {k['plant']} needs an agent of role {PLANTS[k['plant']]}: scenario {scenario} has none")
     if problems or not agents:
         for ln in problems or [f"no rows of scenario {scenario} in {INPUTS}"]:
             out(f"FAIL: {ln}")
@@ -722,6 +727,8 @@ def run(scenario, root=None, dry_run=False, knobs=None, out=print):
     recorded = read_rows(RESULTS)
     means = recorded_means(recorded)
     plans = [agent_plan(a, scenario, n, root, k, models, means, questions, briefs) for n, a in enumerate(agents, 1)]
+    if k["plant"]:
+        next(p for p in plans if p["role"] == PLANTS[k["plant"]])["plant"] = k["plant"]
     if k["replay"]:
         for p in plans:
             p["argv"] = replay_argv(p, recorded_usage(recorded, p["mid"]), k)
@@ -747,6 +754,8 @@ def run(scenario, root=None, dry_run=False, knobs=None, out=print):
         out(f"  argv: {shlex.join(p['argv'])}")
         out(f"  KB_COORD_STORE {p['store']}")
         out(f"  estimate {money(p['usd'])}: {p['basis']}")
+        if p.get("plant"):
+            out(f"  plant: {p['plant']}")
         for ln in p["prompt"].splitlines()[:3]:
             out(f"  | {ln}")
     walls = [p["wall"] for p in plans if p["wall"]]
@@ -775,7 +784,8 @@ sys.exit("claude is not on PATH")
 
 REPLAY_WRAPPER = """#!{python}
 import os, sys
-os.execv({python!r}, [{python!r}, {replay!r}, "code", "--usage", os.environ["MULTI_REPLAY_USAGE"], "--cost", os.environ["MULTI_REPLAY_COST"]])
+os.execv({python!r}, [{python!r}, {replay!r}, "code", "--usage", os.environ["MULTI_REPLAY_USAGE"], "--cost", os.environ["MULTI_REPLAY_COST"],
+                      *(["--plant", os.environ["MULTI_REPLAY_PLANT"]] if os.environ.get("MULTI_REPLAY_PLANT") else [])])
 """  # DIR/bin/claude under --replay: bench_replay.py as the code agent's worker, which makes no model call
 
 
@@ -998,7 +1008,8 @@ def code_agent(plan, ctx, rec):
     steps.append("claimed")
     denv = {**env, "PATH": str(ctx.root / BIN) + os.pathsep + env.get("PATH", ""), "MULTI_SETTINGS": bench_repro.SETTINGS,
             "MULTI_MCP_CONFIG": str(mcp_path(ctx.root, plan["n"])), "MULTI_MAX_USD": f"{plan['cap']:g}",
-            **({"MULTI_REPLAY_USAGE": json.dumps(plan["usage"]), "MULTI_REPLAY_COST": f"{plan['cost']:.4f}"} if ctx.k["replay"] else {})}
+            **({"MULTI_REPLAY_USAGE": json.dumps(plan["usage"]), "MULTI_REPLAY_COST": f"{plan['cost']:.4f}",
+               "MULTI_REPLAY_PLANT": plan.get("plant", "")} if ctx.k["replay"] else {})}
     rec["started"] = utc_now()
     t = time.time()
     code, out, err, timed = run_group(plan["argv"], clone, denv, ctx.timeout)
@@ -1124,7 +1135,8 @@ def reset_sandbox(root, manifest, scenario, coord, path, out):
 def execute(scenario, root, k, plans, out):
     """The real `multi run`: the sandbox of `root` (built when it holds none), the operator's answers to the planted items'
     gates, every agent's session (all at once, one thread each, `--stagger` apart; one after the other with `--sequential`) and
-    each agent's line appended to DIR/results.jsonl. Returns 0 when every agent finished and every code item landed, else 1.
+    each agent's line appended to DIR/results.jsonl. Returns 0 when every agent finished and every code item landed (the agent
+    that makes a planted fault apart), else 1.
     Raises Refused on a refusal."""
     if k["manager"] == "session":
         raise Refused("--manager session is not supported by a real run: the harness code starts the agents (--manager code)")
@@ -1159,10 +1171,129 @@ def execute(scenario, root, k, plans, out):
             return ctx.one(plan, out)
         with ThreadPoolExecutor(max_workers=len(plans)) as pool:
             recs = [f.result() for f in [pool.submit(start, i, p) for i, p in enumerate(plans)]]
-    failed = [r for r in recs if r["failure"] or (r["role"] == "code" and r["land"] != "ok")]
+    on_purpose = {p["agent"] for p in plans if p.get("plant")}  # a planted fault is `multi check`'s to name, not a failed run
+    failed = [r for r in recs if (r["failure"] or (r["role"] == "code" and r["land"] != "ok")) and r["agent"] not in on_purpose]
     out(f"multi run {scenario}: {len(recs) - len(failed)} of {len(recs)} agent(s) finished" + ("" if not failed else f", {len(failed)} failed: "
         + ", ".join(f"{r['agent']} ({r['failure'] or r['land']})" for r in failed)) + f", ${ctx.budget.spent:.2f} recorded in {path}")
     return 1 if failed else 0
+
+
+# -------------------------------------------------------------------------------------------------------- the check
+
+CLAIM_COMMIT = "chore(backlog): claim "  # the subject bl_base.commit_item gives a claim: the claim's own commit, no work
+RELEASE_COMMIT = "chore(backlog): release "
+HOLDER_AGENT = re.compile(r"agent(\d+)")  # the agent a holder name (`agent2`, `multi-agent2`) stands for
+
+
+def worked(bare, base, holder):
+    """True when `holder` ("agentN" or "multi-agentN") has a commit on the bare's main since `base` that is not a backlog
+    chore (a claim, answer or done commit is bookkeeping, no work)."""
+    m = HOLDER_AGENT.search(holder or "")
+    if not m:
+        return False
+    p = sh(["git", "log", f"{base}..refs/heads/main", "--no-merges", f"--author=<{agent_email(int(m.group(1)))}>", "--format=%s"], bare, os.environ)
+    return any(not ln.startswith("chore(backlog): ") for ln in p.stdout.splitlines())
+
+
+def store_claims(path):
+    """(held, events) of the coord store at `path`: (key, holder) of each row that still names a holder (a session's presence
+    lease is no claim), and (kind, key, holder) of each claim and release event; ([], []) when there is no file."""
+    if not Path(path).is_file():
+        return [], []
+    con = sqlite3.connect(Path(path).resolve().as_uri() + "?mode=ro", uri=True)
+    try:
+        held = con.execute("SELECT key, holder FROM entries WHERE holder IS NOT NULL AND substr(key, 1, ?) != ? ORDER BY key",
+                           (len(SESSION_LEASE), SESSION_LEASE)).fetchall()
+        events = [(kind, *(json.loads(fields).get(f) for f in ("key", "holder")))
+                  for kind, fields in con.execute("SELECT kind, fields FROM events WHERE kind IN ('claim', 'release') ORDER BY seq")]
+    except (sqlite3.Error, ValueError):
+        return [], []
+    finally:
+        con.close()
+    return held, events
+
+
+def coord_losses(root, manifest, bare):
+    """The lost claims of the coord stores of the run (each file once): a row still held by a holder after every agent ended,
+    and a claim event whose key is no longer held, released with neither a commit of its holder nor a release event of it."""
+    out, seen = [], set()
+    for a in manifest["agents"]:
+        path = a["coord_store"]
+        if path in seen:
+            continue
+        seen.add(path)
+        held, events = store_claims(path)
+        where = Path(path).resolve().relative_to(Path(root).resolve())
+        out += [f"lost claim: {key} is still held by {holder} (coord store {where}) though every agent ended" for key, holder in held]
+        holding = {key for key, _ in held}
+        for kind, key, holder in events:
+            if kind == "claim" and key not in holding and (("release", key, holder) not in events) and not worked(bare, manifest["base"], holder):
+                out.append(f"lost claim: {key} of {holder} was released with neither a commit of {holder} nor a release event (coord store {where})")
+    return out
+
+
+def item_state(clone, iid):
+    """(status, claimed_by) of backlog item `iid` in the working tree of `clone`; ("", "") when it holds no such file."""
+    try:
+        item = json.loads((Path(clone) / ITEM_DIR / f"{iid}.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return "", ""
+    return item.get("status") or "", item.get("claimed_by") or ""
+
+
+def backlog_losses(manifest, lines, bare):
+    """The lost claims of the planted backlog items, read in the clone of the agent that claimed each: an item still claimed
+    (`doing`, not done) after every agent ended, and an item claimed (its claim commit is in the clone's history) and unclaimed
+    again with neither a work commit of the claimant on the bare's main nor a release commit of it."""
+    out = []
+    for agent, iid in sorted(manifest.get("items", {}).items()):
+        line = next((r for r in lines if r["agent"] == agent), None)
+        if line is None or not line.get("n"):
+            continue
+        clone, holder = manifest["agents"][line["n"] - 1]["clone"], f"multi-agent{line['n']}"
+        status, claimed_by = item_state(clone, iid)
+        subjects = sh(["git", "log", "--format=%s"], clone, os.environ).stdout.splitlines()
+        if status not in ("done", "dropped") and claimed_by:
+            out.append(f"lost claim: backlog item {iid} is still claimed by {claimed_by} (status {status}) in agent {line['n']}'s clone though every agent ended")
+        elif (any(ln.startswith(CLAIM_COMMIT + iid) for ln in subjects) and status == "todo"
+              and not worked(bare, manifest["base"], holder) and not any(ln.startswith(RELEASE_COMMIT + iid) for ln in subjects)):
+            out.append(f"lost claim: backlog item {iid} of {holder} was released with neither a commit of {holder} nor a release")
+    return out
+
+
+def landing_stops(manifest, lines, bare):
+    """The landing stops of the run: each planted code item with no code commit on the bare's main, with the land step the
+    agent's line says stopped (`land`)."""
+    out = []
+    for agent, iid in sorted(manifest.get("items", {}).items()):
+        p = sh(["git", "log", "refs/heads/main", "--no-merges", "--fixed-strings", f"--grep={iid}", "--format=%s"], bare, os.environ)
+        if all(ln.startswith("chore(backlog): ") for ln in p.stdout.splitlines()):
+            line = next((r for r in lines if r["agent"] == agent), {})
+            out.append(f"landing stop: item {iid} of {agent} is not on the bare's main; " + (
+                f"the land step said: {line['land']}" if line.get("land") else "no land step ran" if line else "the agent has no result line"))
+    return out
+
+
+def check(root=None, out=print):
+    """`multi check`: read the finished run in DIR (results.jsonl, the sandbox's coord store, the clones' planted backlog
+    items and the bare's main) and name each lost claim (`coord_losses`, `backlog_losses`) and each landing stop
+    (`landing_stops`). Returns 1 when it names any, else 0; raises Refused when DIR holds no run or an agent has not ended."""
+    root = (Path(root) if root else default_dir()).resolve()
+    lines = latest_lines(bench_repro.read_results(root / RUN_RESULTS))
+    if not lines:
+        raise Refused(f"{root / RUN_RESULTS} holds no result line: nothing to check")
+    if not (root / MANIFEST).is_file():
+        raise Refused(f"{root} holds no {MANIFEST}: not a sandbox of `multi setup`")
+    unended = [r["agent"] for r in lines if not r.get("ended")]
+    if unended:
+        raise Refused(f"agent(s) {', '.join(unended)} have no end stamp: the run is not finished")
+    manifest = json.loads((root / MANIFEST).read_text(encoding="utf-8"))
+    bare = origin_path(root)
+    found = coord_losses(root, manifest, bare) + backlog_losses(manifest, lines, bare) + landing_stops(manifest, lines, bare)
+    for ln in found:
+        out(ln)
+    out(f"multi check: {len(lines)} agent(s) of scenario {lines[0]['scenario']}, " + (f"{len(found)} problem(s) named" if found else "no lost claim and no landing stop"))
+    return 1 if found else 0
 
 
 # ------------------------------------------------------------------------------------------------------- the record
