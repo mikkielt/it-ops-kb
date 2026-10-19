@@ -98,7 +98,9 @@
         "120 s per git command, an empty ref that follows the remote's default branch": "ST-zsbylj6j",
         "no bound, ref main": "ST-zsbylj6j"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "120 s per git command, an empty ref that follows the remote's default branch",
+      "by": "operator"
     }
   ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): kbroot.py has only list and add. A clone run by a tool takes GIT_TERMINAL_PROMPT=0 so a missing credential fails at once (the goal research story confirms the variable). ",
