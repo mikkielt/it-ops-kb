@@ -1,0 +1,27 @@
+{
+  "id": "ST-w2vheqsm",
+  "kind": "story",
+  "title": "new bug warns when its repro matches a word of the bug's own title, which an output listing open items echoes",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py new bug and set --repro print a warning when a quoted literal the repro tests for in a tool's output is also a word of the item's own title, since a status or panel output that lists open items prints the title and the repro then fails on its own echo",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile;d=tempfile.mkdtemp();open(d+\"/backlog.json\",\"w\").write(json.dumps({\"item_dir\":\"items\"}));os.makedirs(d+\"/items\");r=s.run([sys.executable,\"_tools/backlog.py\",\"--root\",d,\"new\",\"bug\",\"--title\",\"panel says zzecho\",\"--repro\",\"python3 -c \\\"import sys;o=chr(122)*2+chr(101)+chr(99)+chr(104)+chr(111);sys.exit(1 if \\x27zzecho\\x27 in o else 0)\\\"\"],capture_output=True,text=True);print(r.returncode,r.stdout,r.stderr);sys.exit(0 if \"own title\" in r.stdout+r.stderr else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/backlog.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-yjfiemha close"
+  ],
+  "notes": "SP-yjfiemha retrospective, 2026-10-19: BG-jemfbkjs's repro failed on the word timeout in kbmon --status sprints' stdout after the fix, because the open bug's own title ended '(timeout)' and the output's next and left lines print it; the orchestrator reworded the title on the worker's branch and on the main branch (the panel reads origin/main's items). The touches name bl_plan.py as a guess: run referrers for the repro-warning code at planning. The check's planted repro is a placeholder."
+}

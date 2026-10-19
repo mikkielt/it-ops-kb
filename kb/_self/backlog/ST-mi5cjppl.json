@@ -1,0 +1,26 @@
+{
+  "id": "ST-mi5cjppl",
+  "kind": "story",
+  "title": "A headless worker dispatched from an orchestrator's linked worktree leaves its work rows in the spool",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "a worker that backlog.py dispatch starts in a worktree under an orchestrator's linked worktree writes its branch, agent-start and agent-stop rows to the clone's query log spool, so land finds its work rows and cost counts its session",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import glob,os,sys;f=[p for p in glob.glob(os.path.expanduser(\"~/it-ops-kb/_cache/querylog/spool/*\")) if \"f2e7b849\" in open(p,errors=\"replace\").read()];print(f);sys.exit(0 if f else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-yjfiemha close"
+  ],
+  "notes": "SP-yjfiemha retrospective, 2026-10-19: 5 of the 6 workers (ST-trhzzeku session bbacb5aa, BG-jemfbkjs b9f99ac2, ST-po5rwymx 76fe1197, ST-jejcrcib f2e7b849, ST-4qfbef2j 6197ab9e) landed with 'no work rows (missing)'; only the research worker ST-6fnbtbjn (7d4a2b7e) left a row. All were dispatched from the orchestrator worktree scratchpad/orch/wt33 through a PATH wrapper that adds --settings to claude -p (gitkraken plugin off). Cause not found: check whether the wrapper's --settings or the nested worktree path keeps the capture hooks from the spool. The touch bl_dispatch.py and the check (a live spool read of one session id) are leads for planning, not a plan; cost figures of this sprint stay provisional."
+}

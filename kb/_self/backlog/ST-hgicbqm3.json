@@ -1,0 +1,26 @@
+{
+  "id": "ST-hgicbqm3",
+  "kind": "story",
+  "title": "An item that changes a kbmon panel carries a check that the panel reads within its timeout on this clone",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the kb-sprint plan step tells the planner that an item whose touches change a kbmon panel module carries a check that runs the panel on this clone (kbmon.py --json --panel NAME) and asserts state ok within its panel timeout, beside its planted-clone check, so a slowdown the planted clone is too small to show fails the item's done",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/skills/kb-sprint/SKILL.md').read();sys.exit(0 if 'within its panel timeout' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-yjfiemha close"
+  ],
+  "notes": "SP-yjfiemha retrospective, 2026-10-19: ST-trhzzeku's only check ran on a planted clone of a dozen items and passed, while on this clone mon_sprint.follows made kbmon.py --status sprints go from 7.0 s to 21.3 s wall and the sprint panel past its 10 s timeout; only ST-po5rwymx's kb_monitor_status check, which reads the real clone, showed it, and the fix took an extra bug (BG-jemfbkjs) and a worker. The check is a doc-text placeholder: pair it at planning with one that runs the planner's rule on a planted item."
+}

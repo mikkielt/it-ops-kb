@@ -1,0 +1,26 @@
+{
+  "id": "ST-hwji7ti2",
+  "kind": "story",
+  "title": "land's rebase resolves a conflict confined to the landing item's own file by merging its keys",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "when backlog.py land's rebase of work/<id> stops only on the landing item's own item file, land merges the two sides key by key (gates and notes from both, a scalar both sides changed alike kept, a scalar changed differently left as a conflict) and goes on, instead of stopping at step rebase for a hand rebase",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open(\"_tools/bl_land.py\").read();sys.exit(0 if \"merge_item_file\" in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-yjfiemha close"
+  ],
+  "notes": "SP-yjfiemha retrospective, 2026-10-19: land BG-jemfbkjs stopped at step rebase (ops land.step rebase exit=1): the orchestrator's main-branch commit reworded the item's title and notes while the worker's fix commit added its gate g1 to the same file; the orchestrator re-made the worktree, kept both sides (gates plus the longer notes) and landed on the second run. Check is a placeholder: at planning, plant the two conflicting commits on a fixture and drive land. A lighter alternative: a rule that the orchestrator rewords a landing item only on its branch."
+}
