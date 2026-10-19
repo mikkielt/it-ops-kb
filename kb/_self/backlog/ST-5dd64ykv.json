@@ -2,7 +2,7 @@
   "id": "ST-5dd64ykv",
   "kind": "story",
   "title": "kbroot.py fetch --pin records the fetched commit, a pinned root stays at its pin, and the index follows a root's new commit",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-s2svf5a6",
   "priority": "P2",
@@ -46,5 +46,6 @@
   "depends_on": [
     "ST-zsbylj6j"
   ],
-  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): no fetch command; the index name today is keyed by the root set (kbindex-r<hash>), so a cache check is part of the goal. "
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): no fetch command; the index name today is keyed by the root set (kbindex-r<hash>), so a cache check is part of the goal. ",
+  "claimed_by": "orch-r34"
 }
