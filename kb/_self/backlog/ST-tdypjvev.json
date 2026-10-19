@@ -2,7 +2,7 @@
   "id": "ST-tdypjvev",
   "kind": "story",
   "title": "Load status groups the CPU consumers by kind and clone with a cause and a remedy each",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-dulvwwjc",
   "priority": "P1",
@@ -60,5 +60,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Plan 2026-10-19: premise: --status load exits 2 and the host panel has no process data. %CPU differs by platform (Linux procps: CPU time over the process's life; macOS: a decaying recent average; the goal research story confirms it), so the answer says which it shows. Windows has no ps: the groups are unsupported there. The remedies are fixed text, e.g. kbmon: a longer --interval or fewer live views; fseventsd: file churn in the clone and its worktrees, so fewer parallel workers and pruned worktrees; kb-tools: a long pack or index build, see stalled; claude: fewer parallel sessions; tests: one whole-suite run at a time (the host lock)."
+  "notes": "Plan 2026-10-19: premise: --status load exits 2 and the host panel has no process data. %CPU differs by platform (Linux procps: CPU time over the process's life; macOS: a decaying recent average; the goal research story confirms it), so the answer says which it shows. Windows has no ps: the groups are unsupported there. The remedies are fixed text, e.g. kbmon: a longer --interval or fewer live views; fseventsd: file churn in the clone and its worktrees, so fewer parallel workers and pruned worktrees; kb-tools: a long pack or index build, see stalled; claude: fewer parallel sessions; tests: one whole-suite run at a time (the host lock).",
+  "claimed_by": "orch-r31"
 }
