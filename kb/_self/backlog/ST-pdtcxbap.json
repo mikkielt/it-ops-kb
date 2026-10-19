@@ -40,7 +40,8 @@
     "_tools/kbcommon.py",
     "kb/_self/tools.md",
     "kb/_self/code.md",
-    "kb/_self/plugin.md"
+    "kb/_self/plugin.md",
+    "_tools/kbfacts.py"
   ],
   "depends_on": [
     "ST-5dd64ykv"
