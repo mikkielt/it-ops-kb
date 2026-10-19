@@ -2,7 +2,7 @@
   "id": "SP-s2svf5a6",
   "kind": "sprint",
   "title": "Roots in other repositories: pointer files in kb/_roots, fetched or submodule roots, a missing root reported and never fatal",
-  "status": "planned",
+  "status": "active",
   "goal": "kb/_roots/<name>.md pointer files name remote roots and check.py validates them; a root that does not resolve (a KB_ROOTS directory without _root.md, a pointer not fetched, a submodule not initialised, no access) is listed as missing with its reason by kbroot.py list, rag.py pack, kb_status and kb_mcp.py --status, which still exit 0 and answer from the other roots; kbroot.py add-remote writes a pointer for a fetch or submodule root; kbroot.py fetch clones a fetch root into _cache/roots/<name> at its pin or branch, and --pin records the commit; the /kb-add-root skill offers a remote root",
   "gates": [
     {

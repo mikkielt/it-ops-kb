@@ -2,7 +2,7 @@
   "id": "ST-pdtcxbap",
   "kind": "story",
   "title": "kbroot.py add-remote --access submodule checks a root out as a git submodule, and a clone without it lists the root as missing",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-s2svf5a6",
   "priority": "P2",

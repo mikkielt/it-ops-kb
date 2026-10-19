@@ -2,7 +2,7 @@
   "id": "ST-zsbylj6j",
   "kind": "story",
   "title": "kbroot.py add-remote writes a fetch root's pointer and kbroot.py fetch clones it into _cache/roots, which the lookups serve offline",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-s2svf5a6",
   "priority": "P2",

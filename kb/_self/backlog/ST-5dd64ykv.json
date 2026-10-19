@@ -2,7 +2,7 @@
   "id": "ST-5dd64ykv",
   "kind": "story",
   "title": "kbroot.py fetch --pin records the fetched commit, a pinned root stays at its pin, and the index follows a root's new commit",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-s2svf5a6",
   "priority": "P2",

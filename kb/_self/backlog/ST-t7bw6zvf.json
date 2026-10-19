@@ -2,7 +2,7 @@
   "id": "ST-t7bw6zvf",
   "kind": "story",
   "title": "A missing root is reported by rag.py pack, kb_status and kb_mcp.py --status, which answer from the other roots and exit 0",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-s2svf5a6",
   "priority": "P2",

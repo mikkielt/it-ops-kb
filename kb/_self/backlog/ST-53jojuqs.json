@@ -2,7 +2,7 @@
   "id": "ST-53jojuqs",
   "kind": "story",
   "title": "Review sprint: Roots in other repositories: pointer files in kb/_roots, fetched or submodule roots, a missing root reported and never fatal",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-s2svf5a6",
   "review": true,
   "priority": "P1",
