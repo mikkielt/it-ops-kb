@@ -1,0 +1,20 @@
+{
+  "id": "SP-kgvbpjhd",
+  "kind": "sprint",
+  "title": "Every kbmon surface shows the same summaries, and says why a panel is missing",
+  "status": "planned",
+  "goal": "the live view, --once, --status, the kb_monitor_status tool, the kbmon pane and the receipt show the needs-you line and the session summaries from one implementation; a panel that is absent or timed out says its own reason; the host panel's ceiling bars share a row only where the row fits; this clone's own processes are not counted as another clone's load; a docs question about cost, a session or kbmon stays a kb lookup",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
