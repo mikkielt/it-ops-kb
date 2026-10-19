@@ -104,7 +104,9 @@
         "all in both cases: several cues give all, an unmapped status: text runs kbmon.py --status all": "ST-icmfvtmm",
         "None for several cues, and status: with an unmapped text passes through unchanged": "ST-icmfvtmm"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "all in both cases: several cues give all, an unmapped status: text runs kbmon.py --status all",
+      "by": "operator"
     },
     {
       "id": "g2",
