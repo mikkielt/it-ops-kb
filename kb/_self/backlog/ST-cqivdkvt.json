@@ -2,7 +2,7 @@
   "id": "ST-cqivdkvt",
   "kind": "story",
   "title": "kbgit.py upstream brings the upstream main into the clone by its scope's policy and lists the local commits that change upstream-owned paths",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-3trnelzv",
   "priority": "P1",
   "rank": 0,

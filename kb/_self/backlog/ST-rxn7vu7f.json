@@ -2,7 +2,7 @@
   "id": "ST-rxn7vu7f",
   "kind": "story",
   "title": "Each backlog item records its provenance, and a clone with an upstream shows only its own items unless asked for all",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-3trnelzv",
   "priority": "P1",
   "rank": 0,

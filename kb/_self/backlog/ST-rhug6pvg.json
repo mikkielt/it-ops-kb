@@ -2,7 +2,7 @@
   "id": "ST-rhug6pvg",
   "kind": "story",
   "title": "kb_mcp.py registers the kb servers for a workspace directory above the clone, and its status names a .mcp.json there that does not parse",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-3trnelzv",
   "priority": "P1",
   "rank": 0,

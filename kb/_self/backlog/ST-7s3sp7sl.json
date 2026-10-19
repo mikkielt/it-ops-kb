@@ -2,7 +2,7 @@
   "id": "ST-7s3sp7sl",
   "kind": "story",
   "title": "An agent session cannot write _tools/tests_ceiling.json or a decision row of _decisions.csv directly",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-3trnelzv",
   "priority": "P1",
   "rank": 0,

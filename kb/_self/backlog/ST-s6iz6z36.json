@@ -2,7 +2,7 @@
   "id": "ST-s6iz6z36",
   "kind": "story",
   "title": "kb-setup asks the deployment scope (me, team or org) and sets the clone's remotes by it, with a fetch-only upstream every push to which is refused",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-3trnelzv",
   "priority": "P1",
   "rank": 0,

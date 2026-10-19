@@ -2,7 +2,7 @@
   "id": "ST-nvmndslp",
   "kind": "story",
   "title": "Research sprint goal: A team clone deploys from the public copy: busy-host ceiling at setup, fetch-only upstream, local fixes and backlog provenance",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-3trnelzv",
   "goal_research": true,
   "priority": "P1",
