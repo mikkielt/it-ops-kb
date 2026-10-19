@@ -2084,10 +2084,19 @@ def plant_named(plant, lines):
     return any(PLANT_NAMED[plant] in ln for ln in lines)
 
 
+COORD_WANTS = {("research", "shared"): {"dedup_hits": (1, None), "dup_facts": (0, 0)},
+               ("research", "isolated"): {"dup_facts": (1, None)},
+               ("coord", "shared"): {"claim_refused": (1, None), "asks_answered": (1, None), "dup_facts": (0, 0)},
+               ("coord", "isolated"): {"dup_facts": (1, None)}}  # (scenario, --coord): the least and the most (None: no limit) a measure of the case's run may be
+ISOLATION_COSTS = ("lost claim: backlog item ", "landing stop: ")  # the lines of `multi check` that two agents working one item in stores of their own cost
+CASE_MEASURES = ("claims", "claim_refused", "dedup_hits", "dup_facts", "asks", "asks_answered")  # the measures a case's line prints, as run_values names them
+
+
 def fitness_cases(rows=None):
     """[(name, scenario, knobs)] of the fitness run: for each scenario its replay clean at once and one at a time, then its
     replay at once with each --plant the scenario's agents can make (the roles PLANTS names, the agents PLANT_AGENTS counts,
-    a second agent for a leak), then its replay with --bare, clean and with --plant bare-leak. `knobs` are those of `run`; `name` is the case's directory name under DIR."""
+    a second agent for a leak), then its replay with --bare, clean and with --plant bare-leak, then, for each (scenario, coord) of
+    COORD_WANTS, its replay at once under that --coord. `knobs` are those of `run`; `name` is the case's directory name under DIR."""
     rows = load_inputs() if rows is None else rows
     cases = []
     for scenario in SCENARIOS:
@@ -2098,39 +2107,73 @@ def fitness_cases(rows=None):
             if plant != BARE_LEAK and sum(a["role"] == role for a in agents) >= PLANT_AGENTS.get(plant, 1) and (len(agents) > 1 or not plant.startswith("leak-")):
                 cases.append((f"{scenario}-{plant}", scenario, {"plant": plant}))
         cases += [(f"{scenario}-bare", scenario, {"bare": True}), (f"{scenario}-{BARE_LEAK}", scenario, {"bare": True, "plant": BARE_LEAK})]
+        cases += [(f"{scenario}-{coord}", scenario, {"coord": coord}) for coord in COORDS if (scenario, coord) in COORD_WANTS]
     return cases
 
 
-def fitness(root=None, out=print):
+def case_measures(root, manifest, lines):
+    """{measure: value} of CASE_MEASURES for the finished run in `root`: the values `run_values` gives them, without its frozen questions
+    and item checks, which a fitness case does not need."""
+    counts, asks = coord_counts(manifest), ask_counts(manifest)
+    return {"claims": counts["claims"], "claim_refused": counts["refused"], "dedup_hits": counts["dedup_hits"],
+            "dup_facts": dup_facts(root, manifest, lines), "asks": asks[0], "asks_answered": asks[1]}
+
+
+def problem_lines(lines):
+    """The lines of `multi check` (collected from its `out`) that name a problem: not its summary, the isolation `ok` line or a duplicate it counts."""
+    return [ln for ln in lines if not ln.startswith(("multi check:", "isolation: ok")) and "(counted: " not in ln]
+
+
+def measures_missed(wants, values):
+    """One phrase per measure of `wants` ({measure: (least, most)}) that `values` holds outside its range."""
+    return [f"{k}={values[k]} (wanted {'at least ' + str(lo) if hi is None else 'exactly ' + str(lo) if lo == hi else f'{lo} to {hi}'})"
+            for k, (lo, hi) in wants.items() if values[k] < lo or (hi is not None and values[k] > hi)]
+
+
+def fitness(root=None, out=print, only=()):
     """`multi fitness`: the comprehensive check of concurrent work, no model and no network. For each case of `fitness_cases`
-    it replays the scenario (`run` with the knob `replay`; a sandbox of its own under DIR/CASE, removed after it) and reads the
-    finished run with `check`: a clean replay passes when the run finished and `check` named nothing; a replay with a plant
-    passes when the run finished, `check` exits 1 and a line of it holds what PLANT_NAMED gives the plant (`plant_named`); a clean replay with
-    --bare also needs the `isolation: ok` line. Returns 0 when every case passes,
-    else 1; raises Refused on a refusal of `run` or `check`."""
+    (those named in `only` when it is not empty) it replays the scenario (`run` with the knob `replay`; a sandbox of its own under
+    DIR/CASE, removed after it) and reads the finished run with `check`: a clean replay passes when the run finished and `check`
+    named nothing (a case under --coord isolated: no agent failed and `check` named only ISOLATION_COSTS); a replay with a plant passes when the run finished, `check` exits 1 and a line of it holds what PLANT_NAMED gives the
+    plant (`plant_named`); a clean replay with --bare also needs the `isolation: ok` line; a case of COORD_WANTS also needs the
+    measures of its run (`case_measures`) inside the ranges COORD_WANTS gives it. Each case's line ends with its CASE_MEASURES as name=value.
+    Returns 0 when every case passes, else 1; raises Refused on a refusal of `run` or `check` and on a name in `only` that is no case."""
     root = (Path(root) if root else scratch_dir() / f"multi-fitness-{os.getpid()}").resolve()
     made = not root.exists()
     failed, cases = [], fitness_cases()
+    unknown = [n for n in only if n not in {c[0] for c in cases}]
+    if unknown:
+        raise Refused(f"no fitness case {', '.join(unknown)}; one of {', '.join(c[0] for c in cases)}")
+    cases = [c for c in cases if not only or c[0] in only]
     out(f"multi fitness: {len(cases)} case(s) under {root}, scripted agents only (no model call, no network)")
     try:
         for name, scenario, knobs in cases:
-            lines, plant = [], knobs.get("plant", "")
+            lines, plant, values = [], knobs.get("plant", ""), {}
             case = root / name
             try:
                 ran = run(scenario, case, False, {"replay": True, **knobs}, lambda ln: None)
                 code = check(case, lines.append)
+                manifest = json.loads((case / MANIFEST).read_text(encoding="utf-8"))
+                done = latest_lines(bench_repro.read_results(case / RUN_RESULTS))
+                values = case_measures(case, manifest, done)
             finally:
                 remove(case)
+            wants = COORD_WANTS.get((scenario, knobs.get("coord", "")), {})
+            missed = measures_missed(wants, values) if wants else []
             if plant:
                 ok = ran == 0 and code == 1 and plant_named(plant, lines)
                 why = "" if ok else f"run exit {ran}, multi check exit {code}, " + ("it named" if plant_named(plant, lines) else "it did not name") + " the plant"
             else:
-                ok = ran == 0 and code == 0 and (not knobs.get("bare") or any(ln.startswith("isolation: ok") for ln in lines))
-                why = "" if ok else f"run exit {ran}, multi check exit {code}: " + "; ".join(ln for ln in lines if ": " in ln)[:300]
+                if knobs.get("coord") == "isolated":  # an item worked twice leaves the second worker's land stopped and its claim held: the cost of isolation
+                    clean = not any(r["failure"] for r in done) and all(ln.startswith(ISOLATION_COSTS) for ln in problem_lines(lines))
+                else:
+                    clean = ran == 0 and code == 0
+                ok = clean and not missed and (not knobs.get("bare") or any(ln.startswith("isolation: ok") for ln in lines))
+                why = "" if ok else f"run exit {ran}, multi check exit {code}: " + "; ".join([*missed, *(ln for ln in lines if ": " in ln)])[:300]
             if not ok:
                 failed.append(f"{name} ({why})")
-            out(f"{'ok' if ok else 'FAIL'}: {name}: " + (f"multi check named {plant}" if plant and ok else "multi check passed" if ok else why)
-            + (" (with --bare)" if knobs.get("bare") else ""))
+            out(f"{'ok' if ok else 'FAIL'}: {name}: " + (f"multi check named {plant}" if plant and ok else "multi check named only the cost of isolation" if ok and code else "multi check passed" if ok else why)
+                + (" (with --bare)" if knobs.get("bare") else "") + "; " + " ".join(f"{k}={values[k]}" for k in CASE_MEASURES))
     finally:
         if made:
             shutil.rmtree(root, ignore_errors=True)
