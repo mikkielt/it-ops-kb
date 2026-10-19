@@ -21,5 +21,6 @@
   ],
   "links": [
     "parked: SP-s2svf5a6 review"
-  ]
+  ],
+  "notes": "Overlaps ST-vruwai2i (kbgit.py publish refuses an internal root's pointer file and the gitlink of an internal root), planned before this review: BG-rarbfrw3 already covers the pointer and .gitmodules at the tip; merge this history-range part into ST-vruwai2i or drop one at triage."
 }
