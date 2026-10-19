@@ -5,13 +5,18 @@ The processes are `backlog.py procs`' inventory (`bl_procs.snapshot`): pid, age 
 each with its checkout as a path relative to the clone (`.` is the clone itself; a worktree outside it is its directory
 name), never an absolute one. A process whose command name is `claude` is a Claude Code session: `headless`, with its item,
 when its checkout is a worktree on a `work/<id>` branch, else `interactive`; any other process has no session. The worktrees
-are `git worktree list`'s, and the stalled items are `bl_stall.collect`'s, only those with a signal. The panel makes no
+are `git worktree list`'s, and the stalled items are `bl_stall.collect`'s, only those with a signal. `operator` is this
+clone's operator id and role (`kbwho.operator()`, never an email) and `intents` the live session intents of the coord store
+(`coord.py digest`: session, item and the `operator` the hook posted, none for an intent that carries no operator); a
+store that is not there or does not answer leaves `intents` out. The panel makes no
 forge request, so the `mr-dead` signal is never read here (`backlog.py stalled` reads it). A host that cannot list working
 directories makes the panel `unsupported`; a root with no backlog items has no `stalled` key. Imports `mon_base`; `bl_procs`,
 `bl_stall` and `bl_base` where it reads them.
 """
 import os
 import re
+import subprocess
+import sys
 import time
 from pathlib import Path
 
@@ -24,6 +29,9 @@ PROCS_SHOWN = 12  # processes in the text view, orphans first
 TREES_SHOWN = 12  # worktrees in the text view, those on a work/ branch first
 LABEL = 10  # columns of a body row's label
 MIN_CHECKOUT = 8
+INTENTS_KEPT = 20  # live session intents in the data
+INTENTS_SHOWN = 6  # live session intents in the text view
+COORD_SECONDS = 10  # the longest the digest may take
 
 
 def no_request(argv, cwd=None):
@@ -80,8 +88,40 @@ def stalled(root):
     return [{"item": r["id"], "signals": r["signals"]} for r in report["items"] if r["signals"]]
 
 
+def live_intents(ctx):
+    """[{session, item, operator}] of the live session intents in the coord store (`coord.py digest`), or None when the
+    store is not there, is not reachable or does not answer."""
+    import mon_coord
+    if ctx.url:
+        if not ctx.key_file:
+            return None
+        conn = ["--url", ctx.url, "--key-file", ctx.key_file]
+    else:
+        store = mon_coord.local_store(ctx)
+        if not store or not Path(store).is_file():
+            return None
+        conn = ["--store", store]
+    try:
+        p = subprocess.run([sys.executable, str(mon_coord.COORD), *conn, "digest", "--key", "*", "--lines", str(INTENTS_KEPT)],
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=COORD_SECONDS,
+                           stdin=subprocess.DEVNULL)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if p.returncode != 0:
+        return None
+    out = []
+    for line in p.stdout.splitlines():
+        if not line.startswith("intent "):
+            continue
+        fields = dict(w.split("=", 1) for w in line.split()[1:] if "=" in w)
+        if fields.get("session"):
+            out.append({"session": fields["session"], "item": fields.get("item"), "operator": fields.get("operator")})
+    return out
+
+
 def collect(ctx):
     import bl_procs
+    import kbwho
     procs, _, why = bl_procs.snapshot(str(ctx.root))
     if procs is None:
         raise mon_base.Unsupported(why)
@@ -95,7 +135,11 @@ def collect(ctx):
         shown = names.get(first, first)
         out.append({"pid": p["pid"], "age_s": max(0, int(now - p["start"])), "class": p["kind"],
                     "checkout": shown + ("/" + rest if rest else ""), "session": session, "item": item})
-    data = {"procs": out, "worktrees": rows}
+    me = kbwho.operator()
+    data = {"procs": out, "worktrees": rows, "operator": {"id": me.get("id"), "role": me.get("role")}}
+    intents = live_intents(ctx)
+    if intents is not None:
+        data["intents"] = intents
     items = stalled(ctx.root)
     if items is not None:
         data["stalled"] = items
@@ -161,9 +205,19 @@ def joined(label, parts, width):
 
 def lines(data, width=80):
     """The body rows: the processes table (an orphan's row starts `! `, orphans first, PROCS_SHOWN at most), the worktrees
-    with their branches, and the stalled items, each a `! ` row of its id and signals."""
+    with their branches, and the stalled items, each a `! ` row of its id and signals; first the clone's operator and the live
+    session intents (session, item, operator)."""
     procs = sorted(data.get("procs", []), key=lambda p: (p["class"] != "orphan", p["pid"]))
     rows = []
+    me = data.get("operator") or {}
+    rows.append("operator".ljust(LABEL) + f"{me.get('id') or 'none'} ({me.get('role') or '-'})")
+    intents = data.get("intents") or []
+    if intents:
+        shown_intents = intents[:INTENTS_SHOWN]
+        parts = [f"{i['session']}  {i.get('item') or '-'}  {i.get('operator') or '-'}" for i in shown_intents]
+        if len(intents) > len(shown_intents):
+            parts.append(f"+{len(intents) - len(shown_intents)} more")
+        rows += joined("intents", parts, width - 2)
     if procs:
         shown = procs[:PROCS_SHOWN]
         rows += [("! " if flag else "") + text for flag, text in table(shown, width - 2)]
