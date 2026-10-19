@@ -51,11 +51,65 @@
     "_tools/mon_split.py",
     "kb/_self/monitoring.md",
     "kb/_self/tools.md",
-    "kb/_self/map.csv"
+    "kb/_self/map.csv",
+    "kb/_self/code.md"
   ],
   "depends_on": [
     "ST-nighxizj",
     "ST-qpcva3jl"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "When more than one of TMUX, WEZTERM_PANE and WT_SESSION is set (tmux inside WezTerm), which terminal does --split use?",
+      "options": [
+        "tmux first, then WezTerm, then Windows Terminal",
+        "WezTerm first, then tmux, then Windows Terminal"
+      ],
+      "recommendation": "tmux first, then WezTerm, then Windows Terminal",
+      "do": {
+        "tmux first, then WezTerm, then Windows Terminal": "ST-atei6ybh",
+        "WezTerm first, then tmux, then Windows Terminal": "ST-atei6ybh"
+      },
+      "class": "design",
+      "answer": "tmux first, then WezTerm, then Windows Terminal",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How wide is the split pane, and which options of the --split run does its live view take along?",
+      "options": [
+        "40 percent of the width; --root, --panel, --store, --url and --key-file go along",
+        "40 percent of the width; no option goes along"
+      ],
+      "recommendation": "40 percent of the width; --root, --panel, --store, --url and --key-file go along",
+      "do": {
+        "40 percent of the width; --root, --panel, --store, --url and --key-file go along": "ST-atei6ybh",
+        "40 percent of the width; no option goes along": "ST-atei6ybh"
+      },
+      "class": "design",
+      "answer": "40 percent of the width; --root, --panel, --store, --url and --key-file go along",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "When the splitting command is missing or fails, or no terminal is detected, what does --split do?",
+      "options": [
+        "print the command for a second terminal with the WezTerm installer hint, say why on stderr, exit 0",
+        "exit 1 on a failed split"
+      ],
+      "recommendation": "print the command for a second terminal with the WezTerm installer hint, say why on stderr, exit 0",
+      "do": {
+        "print the command for a second terminal with the WezTerm installer hint, say why on stderr, exit 0": "ST-atei6ybh",
+        "exit 1 on a failed split": "ST-atei6ybh"
+      },
+      "class": "design",
+      "answer": "print the command for a second terminal with the WezTerm installer hint, say why on stderr, exit 0",
+      "by": "agent"
+    }
   ],
   "notes": "Plan 2026-10-19: premise on the base: kbmon.py has no --split (exit 2). Prototype: a tmux split-window -d -h -l 45% opened the live view from a SessionStart hook and redrew at once on a resize. wezterm cli split-pane --right --percent N --cwd DIR -- PROG targets WEZTERM_PANE (vendor docs wezterm.org/cli/cli/split-pane.html, 2026-10-19, not in the kb yet); Windows Terminal wt -w 0 split-pane -V -d DIR commandline (learn.microsoft.com/windows/terminal/command-line-arguments, 2026-10-19). Apple Terminal has no split command: the hint path. --interval 60 keeps the live view's CPU low until ST-5bz4nwsf.",
   "claimed_by": "orch-r23"

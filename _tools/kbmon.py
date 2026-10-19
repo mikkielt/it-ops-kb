@@ -17,6 +17,10 @@
                                `land.step`, each `agent.run` and `test.run`, each timed delivery) newer than CURSOR, with
                                times in Unix nanoseconds and attributes of numbers, flags and redacted ids; the cursor is
                                the caller's to keep, and a call with the one it was given repeats none of them
+  kbmon.py --split [--dry-run] open the live view (`kbmon.py --interval 60`) in a pane beside the session: tmux where TMUX is
+                               set, WezTerm where WEZTERM_PANE is set, Windows Terminal where WT_SESSION is set; elsewhere
+                               print the command to run in a second terminal; --dry-run prints the command it would run
+                               and runs nothing; --root, --panel, --store, --url and --key-file go to the live view
   kbmon.py                     show the text view every --interval seconds, --count times (default: until interrupted); on a
                                terminal it is redrawn in place with ANSI escapes (and again, from the last snapshot,
                                when the window is resized), on a pipe or under NO_COLOR it is plain frames one after
@@ -33,8 +37,8 @@
   --from-snapshot FILE         show a snapshot saved with --json instead of reading the sources
 
 A run reads and writes nothing: no index is built, no eval is run, no file of the clone, the query log home or `_cache/`
-is written. Every string printed passes `redact.redact`, a saved snapshot's too. Exit codes: 0 shown (also `--receipt`,
-with or without an alert), 1 shown and an alert is in the snapshot, 2 a bad argument or an unreadable snapshot. Each panel is `mon_<name>.py` (`mon_base.py` holds the
+is written. Every string printed passes `redact.redact`, a saved snapshot's too (not the command `--split` prints, which
+must run as printed). Exit codes: 0 shown (also `--receipt`, with or without an alert, and `--split` in every case), 1 shown and an alert is in the snapshot, 2 a bad argument or an unreadable snapshot. Each panel is `mon_<name>.py` (`mon_base.py` holds the
 run, `mon_view.py` the output, `mon_export.py` the metric points, `mon_events.py` the event and span records).
 """
 import argparse
@@ -50,8 +54,10 @@ import mon_base
 import mon_events
 import mon_export
 import mon_receipt
+import mon_split
 import mon_view
 
+DEFAULT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_TIMEOUT = 10.0  # seconds a panel may take
 DEFAULT_INTERVAL = 5  # seconds between live frames
 MAX_INTERVAL = 300
@@ -80,7 +86,7 @@ def frames(text):
 
 def parser():
     ap = argparse.ArgumentParser(prog="kbmon.py", description=__doc__.split("\n\n")[0].splitlines()[0])
-    ap.add_argument("--root", type=Path, default=Path(__file__).resolve().parent.parent)
+    ap.add_argument("--root", type=Path, default=DEFAULT_ROOT)
     ap.add_argument("--panel", action="append", choices=mon_base.PANELS, help="a panel to show (repeatable; default: all)")
     mode = ap.add_mutually_exclusive_group()
     mode.add_argument("--json", action="store_true", help="print one snapshot as JSON")
@@ -88,6 +94,8 @@ def parser():
     mode.add_argument("--metrics", action="store_true", help="print one snapshot as JSON metric points")
     mode.add_argument("--receipt", action="store_true", help="print the agent's one-line receipt and an alert fingerprint as JSON")
     mode.add_argument("--events", action="store_true", help="print events and spans newer than --since as JSON")
+    mode.add_argument("--split", action="store_true", help="open the live view in a pane beside the session")
+    ap.add_argument("--dry-run", action="store_true", help="with --split: print the command, run nothing")
     ap.add_argument("--since", metavar="CURSOR", help="with --events: the cursor an earlier call printed (default: the newest records)")
     ap.add_argument("--ansi", action="store_true", help="colour the text view")
     ap.add_argument("--interval", type=interval, default=DEFAULT_INTERVAL, metavar="S")
@@ -98,6 +106,19 @@ def parser():
     ap.add_argument("--key-file", metavar="PATH")
     ap.add_argument("--from-snapshot", metavar="FILE")
     return ap
+
+
+def split_args(a):
+    """The options of this run the split pane's live view takes along."""
+    extra = []
+    if a.root.resolve() != DEFAULT_ROOT:
+        extra += ["--root", str(a.root.resolve())]
+    for name in a.panel or ():
+        extra += ["--panel", name]
+    for flag, value in (("--store", a.store), ("--url", a.url), ("--key-file", a.key_file)):
+        if value:
+            extra += [flag, value]
+    return extra
 
 
 def take(a, names, kept=None):
@@ -175,11 +196,15 @@ def main(argv=None, out=None):
     a = ap.parse_args(argv)
     if a.since is not None and not a.events:
         ap.error("--since needs --events")
+    if a.dry_run and not a.split:
+        ap.error("--dry-run needs --split")
     if a.events and (a.panel or a.from_snapshot):
         ap.error("--events reads the sources and takes neither --panel nor --from-snapshot")
     names = tuple(dict.fromkeys(a.panel)) if a.panel else (mon_receipt.DEFAULT_PANELS if a.receipt else mon_base.PANELS)
     names = tuple(n for n in mon_base.PANELS if n in names)
     try:
+        if a.split:
+            return mon_split.split(Path(__file__).resolve(), a.root.resolve(), split_args(a), a.dry_run, out=out)
         if a.events:
             ctx = mon_base.Ctx(root=a.root.resolve(), store=a.store, url=a.url, key_file=a.key_file)
             out.write(mon_events.render(ctx, a.since) + "\n")
