@@ -32,5 +32,24 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the land-stop plant land whichever code agent wins the shared item's claim?",
+      "options": [
+        "plant every code agent that shares the item",
+        "plant only the claim's winner"
+      ],
+      "recommendation": "plant every code agent that shares the item",
+      "do": {
+        "plant every code agent that shares the item": "BG-cs7uxn7a",
+        "plant only the claim's winner": "BG-cs7uxn7a"
+      },
+      "class": "design",
+      "answer": "plant every code agent that shares the item",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "orch-r61"
 }
