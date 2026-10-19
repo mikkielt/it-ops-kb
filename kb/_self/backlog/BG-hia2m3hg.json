@@ -34,6 +34,23 @@
     "_tools/kg_contrib.py",
     "kb/_self/git.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does contribute scan a commit's message and name a commit it leaves out for it?",
+      "options": [
+        "Registry private names and secrets only, hash alone",
+        "Every leak-scan shape, subject still printed"
+      ],
+      "recommendation": "Registry private names and secrets only, hash alone",
+      "do": {
+        "Registry private names and secrets only, hash alone": "BG-hia2m3hg",
+        "Every leak-scan shape, subject still printed": "BG-hia2m3hg"
+      },
+      "class": "secrets"
+    }
+  ],
   "notes": "Filed by the SP-qinvdomv review (gaps 1, 2, 5). ST-vruwai2i made kbpublic.history_changes return five fields after ST-6c5xgv5a landed; kg_contrib.py:31,63,87,91,94 still unpack four, so contribute and ST-6c5xgv5a's own check fail on main. The review changed ST-6c5xgv5a gate g1: the message check reads only the registry's private names and secrets (kbcommon.leak_hits with no allowlist flags the attribution trailer's email, 116 of the last 200 commits carry it), the added lines keep every leak-scan shape; a message hit names the commit by hash only (the subject echo printed the private id). Premise run 2026-10-19 on main f24dc409b: repro exits 1 with ValueError: too many values to unpack (expected 4) at kg_contrib.py:63.",
   "claimed_by": "orch-r36"
 }

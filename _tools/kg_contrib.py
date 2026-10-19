@@ -28,7 +28,7 @@ def classify_paths(changes, internal, pointers):
     internal root's directory INTERNAL (or an internal pointer's `kb/<name>`), is a pointer file (under POINTERS) or
     `.gitmodules`, or is one of kbpublic's PRIVATE paths; every other path is shared (the tools, the docs, a public root)."""
     roots, ptrs, priv, shared = {}, [], [], []
-    for _, _, _, x in changes:
+    for _, _, _, x, _ in changes:
         hit = next((r for r in internal if not r or x == r or x.startswith(r + "/")), None)
         if hit is not None:
             roots.setdefault(hit or ".", x)
@@ -60,7 +60,7 @@ def internal_dirs(head, up, changes):
             elif x.startswith(pdir) and x.endswith(".md") and "/" not in x[len(pdir):]:
                 pointed.setdefault(f"{rev}:{x}", x)
     for _, ch in changes:
-        for st, _, new, x in ch:
+        for st, _, new, x, _ in ch:
             if st != "D" and x.rsplit("/", 1)[-1] == kbcommon.ROOT_FILE:
                 rooted.setdefault(new, x)
             elif st != "D" and x.startswith(pdir) and x.endswith(".md") and "/" not in x[len(pdir):]:
@@ -80,14 +80,14 @@ def hit_reasons(path, hits):
 
 def added_hits(commits, head):
     """{sha: [reason]} of the leak scan (file_hits, so the private names the registry knows too) over the lines each of
-    COMMITS adds to a shared file; COMMITS is [(sha, [(status, old blob, new blob, path)])]. The values are never named."""
+    COMMITS adds to a shared file; COMMITS is [(sha, [(status, old blob, new blob, path, new mode)])]. The values are never named."""
     allow = kbpublic.parse_allowlist(kbpublic.blobs(head, [kbpublic.ALLOWLIST_PATH], KB).get(kbpublic.ALLOWLIST_PATH, ""))
     files = kbpublic.tree_files(head, KB) or []
     pinned = kbpublic.pinned_paths(head, files, KB)
-    specs = [s for _, ch in commits for st, old, new, _ in ch if st != "D" for s in (old, new) if not kbpublic.ZERO_RE.match(s)]
+    specs = [s for _, ch in commits for st, old, new, _, _ in ch if st != "D" for s in (old, new) if not kbpublic.ZERO_RE.match(s)]
     got, res = kbpublic.texts(specs, KB), {}
     for sha, ch in commits:
-        for st, old, new, x in ch:
+        for st, old, new, x, _ in ch:
             if st == "D" or new not in got:
                 continue
             seen = set(got.get(old, "").splitlines())
@@ -177,6 +177,9 @@ def cmd_contribute(a):
     for sha, ch in changes:
         subject = out("log", "-1", "--format=%s", sha) or ""
         label = f"{short(sha)} {subject}"
+        names = [h for h in kbcommon.leak_hits(out("log", "-1", "--format=%B", sha) or "") if h[0] == "secret" or h[0].startswith("private-")]
+        if names:
+            label = short(sha)  # the subject may be the private name itself
         if len(parents.get(sha, [])) != 1:
             left.append((label, "a merge or root commit: only a commit with one parent can be picked"))
             continue
@@ -187,7 +190,6 @@ def cmd_contribute(a):
         elif private:
             reasons.append("; ".join(private))
         reasons += hits.get(sha, [])
-        names = kbcommon.leak_hits(out("log", "-1", "--format=%B", sha) or "")
         if names:
             reasons.append(hit_reasons("its message", names))
         if reasons:
