@@ -2,7 +2,7 @@
   "id": "BG-cs7uxn7a",
   "kind": "bug",
   "title": "multi fitness case coord-land-stop fails at random: the land-stop plant sits on code-1 while code-2 races it for the same item's claim",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-p46hofrg",
   "priority": "P1",
   "rank": 0,
@@ -51,5 +51,30 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "orch-r61"
+  "evidence": {
+    "commit": "78d1a5caf25757dd15eef9f5828487ec1fab3583",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "multi",
+          "fitness",
+          "--case",
+          "coord-land-stop"
+        ],
+        "exit": 0,
+        "sha256": "75632ee43e7a269d"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re, subprocess, sys\nr = subprocess.run([sys.executable, \"_tools/benchmarks.py\", \"multi\", \"run\", \"coord\", \"--replay\", \"--plant\", \"land-stop\", \"--dry-run\"], capture_output=True, text=True)\no = r.stdout + r.stderr\nif r.returncode != 0: print(\"repro: the dry run failed\", r.returncode); sys.exit(1)\nblocks = re.split(r\"^(?=agent )\", o, flags=re.M)\nag = [(m.group(1), m.group(2), \"plant: land-stop\" in b) for b in blocks for m in [re.match(r\"agent (code-\\d+): .*?item (\\S+)\", b)] if m]\nif not any(a == \"code-1\" for a, i, p in ag): print(\"repro: the dry run names no code agent\"); sys.exit(1)\nitems = {i for a, i, p in ag if p}\npeers = [a for a, i, p in ag if i in items and not p]\nif peers and \"started at once\" in o:\n    print(\"repro: the planted code agent shares its item with\", peers, \"started at once: whichever claims first does the work, so the plant may never land\"); sys.exit(1)\nprint(\"ok\", ag)\n"
+        ],
+        "exit": 0,
+        "sha256": "ee9ac47c2604378a"
+      }
+    ]
+  }
 }
