@@ -2,7 +2,7 @@
   "id": "ST-sjhck2lv",
   "kind": "story",
   "title": "Review sprint: An assistant answers status questions from kbmon, not by hand",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-dulvwwjc",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-r31"
 }
