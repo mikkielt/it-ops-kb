@@ -86,7 +86,9 @@
         "every refresh": "ST-fobzhr5o",
         "only when the --once alert rows change": "ST-fobzhr5o"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "only when the --once alert rows change",
+      "by": "operator"
     },
     {
       "id": "g2",
