@@ -14,6 +14,8 @@
                                                      a key a live lease holds takes the put only with the holder's T
                                                      (exit 1 without it), and the lease goes on
   coord.py list [--prefix P]                         print, as a JSON array, every live key that starts with P
+  coord.py list --by-operator [--prefix P]           print {"operators": [{operator, claims, budget}]}: the live claims
+                                                     under P per operator, read from the holders behind serve
   coord.py post --kind K --field NAME=VALUE ...      add an event (kinds incl. ask, answer); prints its sequence number as seq
                                                      (exit 2 for a kind off the closed list or a value that is not a short id)
   coord.py digest --key K ... --lines N              print at most N lines (plain text, not JSON), newest first, of the
@@ -249,12 +251,12 @@ def take(con, key, holder, token, ttl, now, budget=None):
 def holder_name(args):
     """The claim's --holder, else `anonymous`: an id like an event's field value, so a digest line never carries free text.
     `main` fills a missing --holder of a local command from KB_COORD_HOLDER; a server never reads its own environment.
-    Behind `serve`, a caller of a team (`team/operator`) holds as `team/operator/HOLDER`."""
+    Behind `serve`, a caller holds as `operator/HOLDER` (`team/operator/HOLDER` for an operator of a team)."""
     holder = args.holder or "anonymous"
     if not FIELD_VALUE.fullmatch(holder):
         raise Refused({"ok": False, "error": f"--holder is an id of 1 to 120 characters of letters, digits and _ . : / # @ -, not {holder[:40]!r}"}, 2)
     operator = getattr(args, "operator", None) or ""
-    return f"{operator}/{holder}" if "/" in operator else holder
+    return f"{operator}/{holder}" if operator else holder
 
 
 def team_refusal(args):
@@ -418,11 +420,30 @@ def listing(args, clock):
                            f"WHERE {LIVE} ORDER BY key", {"now": now}).fetchall()
     finally:
         con.close()
+    if getattr(args, "by_operator", False):
+        return {"operators": by_operator(rows, args.prefix, getattr(args, "keys", None))}
     out = []
     for r in rows:
         if r["key"].startswith(args.prefix):
             out.append({**row_json({k: r[k] for k in r.keys() if k != "budget"}), **budget_view(r["key"], r["budget"])})
     return out
+
+
+def by_operator(rows, prefix, keys_dir):
+    """One row per operator of the live claims under PREFIX: {operator, claims, budget}, budget the sum of the budgets
+    approved at the claims (a claim with none adds 0). The operator is read from the claim's holder, which behind `serve`
+    starts with the operator's name and a `/`: the longest name of a key file in KEYS_DIR that the holder starts with. A
+    claim whose holder names none (every claim of a local store) is left out."""
+    names = sorted((name for name, _path in key_files(keys_dir)), key=len, reverse=True) if keys_dir else []
+    totals = {}
+    for r in rows:
+        if r["holder"] is None or not r["key"].startswith(prefix):
+            continue
+        who = next((n for n in names if r["holder"].startswith(n + "/")), None)
+        if who is not None:
+            claims, budget = totals.get(who, (0, 0.0))
+            totals[who] = (claims + 1, budget + (r["budget"] or 0))
+    return [{"operator": who, "claims": claims, "budget": round(budget, 6)} for who, (claims, budget) in sorted(totals.items())]
 
 
 def parse_fields(pairs, kind=""):
@@ -757,6 +778,8 @@ def build_parser(parser_class=argparse.ArgumentParser, remote=False):
     p.add_argument("--token", type=token, help="the holder's token: needed to write a key a live lease holds, refused for a key none holds")
     p = sub.add_parser("list", parents=parents)
     p.add_argument("--prefix", default="")
+    p.add_argument("--by-operator", action="store_true", help="print {operators: [...]}, one row per operator of the live claims "
+                   "(operator, claims, budget), read from the holders behind serve, instead of the array of keys")
     p = sub.add_parser("post", parents=parents)
     p.add_argument("--kind", required=True, help="one of " + ", ".join(KINDS))
     p.add_argument("--field", action="append", default=[], metavar="NAME=VALUE", help="an id field, repeatable")
@@ -903,7 +926,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return self.refuse(400, 'the body is {"argv": [strings]}')
         try:
             args = build_parser(QuietParser, True).parse_args(argv)
-            args.store, args.operator = self.server.store, operator
+            args.store, args.operator, args.keys = self.server.store, operator, self.server.keys
             header = self.headers.get("Authorization")
             args.recheck = lambda: authenticate(self.server.keys, header) == operator
             body, code = run(args, time.time)
