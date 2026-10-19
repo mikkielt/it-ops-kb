@@ -3,7 +3,8 @@
   "kind": "story",
   "title": "The ceiling refusal tells an operator in an IDE integrated terminal, where CLAUDECODE is also set, how to answer",
   "status": "draft",
-  "priority": "P2",
+  "sprint": "SP-3trnelzv",
+  "priority": "P1",
   "rank": 0,
   "goal": "the refusal backlog.py answer and kbdecide.py print for a ceiling-class answer, and backlog.md and tools.md, name the IDE integrated-terminal case (CLAUDECODE is set there too, DOC S-exebozns) and the route the operator takes then (a standalone terminal), or the guard keys on CLAUDE_CODE_CHILD_SESSION, which IDE terminals do not set; which of the two is a gate for the operator",
   "checks": [
@@ -14,6 +15,13 @@
         "-k",
         "test_an_agent_cannot_answer_or_provisionally_answer_an_operator_gate"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/backlog.md',encoding='utf-8').read()+open('kb/_self/tools.md',encoding='utf-8').read();sys.exit(0 if 'integrated terminal' in t else 1)"
+      ]
     }
   ],
   "touches": [
@@ -22,11 +30,34 @@
     "_tools/bl_authority.py",
     "_tools/test_authority.py",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md"
+  ],
+  "depends_on": [
+    "ST-tac4z3zk"
+  ],
+  "gates": [
+    {
+      "id": "signal",
+      "kind": "blocking",
+      "question": "How does the ceiling guard treat an operator answering from an IDE integrated terminal, where CLAUDECODE is also set?",
+      "options": [
+        "keep keying on CLAUDECODE; the refusal and the docs name the IDE case and send the operator to a standalone terminal",
+        "key on CLAUDE_CODE_CHILD_SESSION, which IDE terminals do not set",
+        "read both: refuse when either is set, and name the IDE route in the refusal"
+      ],
+      "recommendation": "read both: refuse when either is set, and name the IDE route in the refusal",
+      "do": {
+        "keep keying on CLAUDECODE; the refusal and the docs name the IDE case and send the operator to a standalone terminal": "ST-4vaqzqyr",
+        "key on CLAUDE_CODE_CHILD_SESSION, which IDE terminals do not set": "ST-4vaqzqyr",
+        "read both: refuse when either is set, and name the IDE route in the refusal": "ST-4vaqzqyr"
+      },
+      "class": "agents-rule"
+    }
   ],
   "links": [
     "parked: SP-rlincemn review",
     "merged: ST-26viyxlk"
   ],
-  "notes": "Merged from ST-26viyxlk “The ceiling guard also reads CLAUDE_CODE_CHILD_SESSION, and the docs call it a guard against carelessness, not a boundary” at the 2026-10-12 draft triage: in_agent_session still reads CLAUDECODE only (CHILD_SESSION returns False); it is the same signal-choice design as ST-4vaqzqyr (key on CLAUDE_CODE_CHILD_SESSION or add it beside CLAUDECODE), and the two options conflict, so one story decides it; hardening only, no failure seen. Its goal: bl_authority.in_agent_session reads CLAUDE_CODE_CHILD_SESSION (set in every subprocess Claude Code starts) besides CLAUDECODE, so a session command that clears CLAUDECODE alone ('CLAUDECODE= python3 _tools/backlog.py answer ...' or 'env -u CLAUDECODE ...') is still refused for a ceiling-class gate and a tests-ceiling decision; backlog.md and tools.md say the environment check guards against a careless delegated session, not one set on defeating it; any deny rule in .claude/settings.json for commands that clear these variables is the operator's call, asked as a gate Its checks: {\"run\": [\"python3\", \"-c\", \"import sys;sys.path.insert(0,'_tools');import bl_authority as a;sys.exit(0 if a.in_agent_session({'CLAUDE_CODE_CHILD_SESSION':'1'}) else 1)\"]} Its touches: _tools/bl_authority.py, _tools/test_authority.py, kb/_self/backlog.md, kb/_self/tools.md"
+  "notes": "Merged from ST-26viyxlk “The ceiling guard also reads CLAUDE_CODE_CHILD_SESSION, and the docs call it a guard against carelessness, not a boundary” at the 2026-10-12 draft triage: in_agent_session still reads CLAUDECODE only (CHILD_SESSION returns False); it is the same signal-choice design as ST-4vaqzqyr (key on CLAUDE_CODE_CHILD_SESSION or add it beside CLAUDECODE), and the two options conflict, so one story decides it; hardening only, no failure seen. Its goal: bl_authority.in_agent_session reads CLAUDE_CODE_CHILD_SESSION (set in every subprocess Claude Code starts) besides CLAUDECODE, so a session command that clears CLAUDECODE alone ('CLAUDECODE= python3 _tools/backlog.py answer ...' or 'env -u CLAUDECODE ...') is still refused for a ceiling-class gate and a tests-ceiling decision; backlog.md and tools.md say the environment check guards against a careless delegated session, not one set on defeating it; any deny rule in .claude/settings.json for commands that clear these variables is the operator's call, asked as a gate Its checks: {\"run\": [\"python3\", \"-c\", \"import sys;sys.path.insert(0,'_tools');import bl_authority as a;sys.exit(0 if a.in_agent_session({'CLAUDE_CODE_CHILD_SESSION':'1'}) else 1)\"]} Its touches: _tools/bl_authority.py, _tools/test_authority.py, kb/_self/backlog.md, kb/_self/tools.md In SP-3trnelzv: the operator's Windows deploy runs in a VS Code workspace, so the busy-profile setting of ST-tac4z3zk (operator-only, outside an agent session) meets this case first. Depends on ST-tac4z3zk (both touch bl_authority.py)."
 }

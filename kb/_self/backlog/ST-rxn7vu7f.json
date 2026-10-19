@@ -12,8 +12,37 @@
       "run": [
         "python3",
         "-c",
-        "import json,os,subprocess as s,sys,tempfile\nB=os.path.abspath('_tools/backlog.py');t=tempfile.mkdtemp();u=os.path.join(t,'up');c=os.path.join(t,'team')\ng=lambda d,*a:s.run(['git','-C',d,*a],capture_output=True,text=True)\nb=lambda d,*a:s.run([sys.executable,B,'--root',d,*a],capture_output=True,text=True)\nos.makedirs(u);g(u,'init','-q','-b','main');open(os.path.join(u,'backlog.json'),'w').write(json.dumps({'item_dir':'items'}))\nb(u,'new','story','--title','upstream planted item');g(u,'add','-A');g(u,'-c','user.name=t','-c','user.email=t@example.com','commit','-qm','up')\ns.run(['git','clone','-q',u,c]);g(c,'remote','rename','origin','upstream');g(c,'config','kb.upstreamRemote','upstream');g(c,'config','kb.scope','team')\nb(c,'new','story','--title','team planted item')\no=b(c,'list').stdout;a=b(c,'list','--all').stdout\nok='team planted item' in o and 'upstream planted item' not in o and 'upstream planted item' in a\nsys.exit(0 if ok else 1)\n"
+        "import json,os,subprocess as s,sys,tempfile\nB=os.path.abspath('_tools/backlog.py');t=tempfile.mkdtemp();u=os.path.join(t,'up');c=os.path.join(t,'team')\ng=lambda d,*a:s.run(['git','-C',d,*a],capture_output=True,text=True)\nb=lambda d,*a:s.run([sys.executable,B,'--root',d,*a],capture_output=True,text=True)\nos.makedirs(u);g(u,'init','-q','-b','main');open(os.path.join(u,'backlog.json'),'w').write(json.dumps({'item_dir':'items'}))\nb(u,'new','story','--title','upstream planted item');g(u,'add','-A');g(u,'-c','user.name=t','-c','user.email=t@example.com','commit','-qm','up')\ns.run(['git','clone','-q',u,c]);g(c,'remote','rename','origin','upstream');g(c,'config','kb.upstreamRemote','upstream');g(c,'config','kb.scope','team')\nb(c,'new','story','--title','team planted item')\no=b(c,'list');a=b(c,'list','--all')\nup=[l.split()[0] for l in a.stdout.splitlines() if 'upstream planted item' in l]\ncl=b(c,'claim',up[0],'--by','planted') if up else None\nok=(o.returncode==0 and a.returncode==0 and 'team planted item' in o.stdout and 'upstream planted item' not in o.stdout\n    and bool(up) and cl.returncode!=0 and 'upstream' in cl.stdout+cl.stderr)\nsys.exit(0 if ok else 1)\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/backlog.md',encoding='utf-8').read();sys.exit(0 if 'provenance' in t and 'kb.upstreamRemote' in t else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "backlog.py new records in each item it writes the clone it was filed in",
+      "check": 0
+    },
+    {
+      "clause": "in a clone whose git config names kb.upstreamRemote an item that arrived from the upstream main is marked upstream",
+      "check": 0
+    },
+    {
+      "clause": "list, next, horizon and sprint planning show only the clone's own items unless --all is given",
+      "check": 0
+    },
+    {
+      "clause": "claim, set and done refuse an upstream item there",
+      "check": 0
+    },
+    {
+      "clause": "backlog.md says how provenance is read",
+      "check": 1
     }
   ],
   "touches": [
@@ -24,6 +53,13 @@
     "_tools/bl_check.py",
     "_tools/bl_cli.py",
     "_tools/backlog.py",
-    "kb/_self/backlog.md"
-  ]
+    "kb/_self/backlog.md",
+    "kb/_self/querylog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-s6iz6z36",
+    "ST-4vaqzqyr"
+  ],
+  "notes": "Premise run 2026-10-19 on the base (the check, on a planted upstream repo and a team clone of it): list shows the upstream item beside the team one, list --all and the claim refusal do not exist; the check exits 1. Operator's answer 2026-10-19: keep upstream items, mark them upstream, read-only, hidden unless --all."
 }

@@ -6,7 +6,7 @@
   "sprint": "SP-3trnelzv",
   "priority": "P1",
   "rank": 0,
-  "goal": "kb_mcp.py --register-local --project DIR registers the kb and docs servers at local scope for a directory that holds the clone (a VS Code workspace above it) so no .mcp.json is written by hand, with --dry-run printing the commands; kb_mcp.py --status --project DIR names a .mcp.json there that does not parse, such as one with single backslashes in Windows paths, and the servers it would leave unloaded; kb-setup step 4 asks whether sessions start in a directory above the clone and runs the --project form for it",
+  "goal": "kb_mcp.py --register-local --project DIR registers the kb and docs servers at local scope for a directory that holds the clone (a VS Code workspace above it) so no .mcp.json is written by hand, with --dry-run printing the commands; kb_mcp.py --status --project DIR names a .mcp.json there that does not parse (such as one with single backslashes in Windows paths) with the servers it would leave unloaded; kb-setup step 4 asks whether sessions start in a directory above the clone and runs the --project form for it",
   "checks": [
     {
       "run": [
@@ -23,11 +23,32 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kb_mcp.py --register-local --project DIR registers the kb and docs servers at local scope for a directory that holds the clone (a VS Code workspace above it) so no .mcp.json is written by hand, with --dry-run printing the commands",
+      "check": 0
+    },
+    {
+      "clause": "kb_mcp.py --status --project DIR names a .mcp.json there that does not parse (such as one with single backslashes in Windows paths) with the servers it would leave unloaded",
+      "check": 0
+    },
+    {
+      "clause": "kb-setup step 4 asks whether sessions start in a directory above the clone and runs the --project form for it",
+      "check": 1
+    }
+  ],
   "touches": [
     "_tools/kb_mcp.py",
     ".claude/skills/kb-setup/SKILL.md",
     "kb/_self/tools.md",
     "kb/_self/plugin.md",
-    "kb/_self/maintaining.md"
-  ]
+    "kb/_self/maintaining.md",
+    "AGENTS.md",
+    "kb/_self/embedding.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-s6iz6z36"
+  ],
+  "notes": "Premise (field report 2026-10-19): sessions on the Windows host start in a VS Code workspace directory above the clone, where the clone's local-scope registration does not apply; the deploy agent hand-wrote <workspace>\\.mcp.json with single backslashes, invalid JSON, so the kb server never loaded until fixed by hand. kb_mcp.py has no --project form today: --status and --register-local read only the clone (registered_kb swallows a ValueError from a .mcp.json as no servers). The check plants such a file; on the base it exits 1 at the status step and skips the registration step, so a precheck run registers nothing."
 }

@@ -22,6 +22,31 @@
         "-c",
         "import re,sys;t=open('.claude/skills/kb-setup/SKILL.md',encoding='utf-8').read();s=t.split('## 3. Commit hook')[0].split('## 2. Repository checks')[1];sys.exit(0 if re.search(r'busy',s) and re.search(r'15',s) else 1)"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;sys.exit(subprocess.run(['git','diff','--quiet','origin/main','--','_tools/tests_ceiling.json']).returncode)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb-setup asks the operator for the clone's test ceiling profile, usual or busy, where busy multiplies each platform's max_seconds by 15 in that clone only",
+      "check": 1
+    },
+    {
+      "clause": "tests.py, perfcheck.py and the kbmon host panel apply the clone's factor beside the CI factor and name the profile in a refusal",
+      "check": 0
+    },
+    {
+      "clause": "the profile is set only by the operator outside an agent session, as a ceiling-class answer is",
+      "check": 0
+    },
+    {
+      "clause": "tests_ceiling.json and its decision row stay as they are",
+      "check": 2
     }
   ],
   "touches": [
@@ -33,6 +58,30 @@
     ".claude/skills/kb-setup/SKILL.md",
     "kb/_self/maintaining.md",
     "kb/_self/tools.md",
-    "kb/_self/code.md"
-  ]
+    "kb/_self/code.md",
+    "AGENTS.md",
+    "kb/_self/backlog.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/querylog.md"
+  ],
+  "gates": [
+    {
+      "id": "ceiling",
+      "kind": "blocking",
+      "question": "Where does a clone keep its test ceiling profile (usual or busy, busy = 15 times each platform's max_seconds), and who sets it?",
+      "options": [
+        "_private/host.json, written by tests.py --set-profile, refused in an agent session",
+        "git config kb.ceilingProfile in the clone, written by tests.py --set-profile, refused in an agent session",
+        "KB_TEST_PROFILE environment variable only, no stored setting"
+      ],
+      "recommendation": "_private/host.json, written by tests.py --set-profile, refused in an agent session",
+      "do": {
+        "_private/host.json, written by tests.py --set-profile, refused in an agent session": "ST-tac4z3zk",
+        "git config kb.ceilingProfile in the clone, written by tests.py --set-profile, refused in an agent session": "ST-tac4z3zk",
+        "KB_TEST_PROFILE environment variable only, no stored setting": "ST-tac4z3zk"
+      },
+      "class": "ceiling"
+    }
+  ],
+  "notes": "Premise (field report 2026-10-19, operator's Windows deploy in a VS Code workspace): the full tests.py run took over 150 s on a busy Windows host, over win32:150 of tests_ceiling.json; the deploy agent raised win32 to 1800 in the local clone with the operator's two answers, an edit of a tracked file that a later fetch from upstream conflicts with. Busy factor 15 gives darwin 435 s, linux 900 s, win32 2250 s, above the local 1800. kb-setup's profile question comes before step 2 runs tests.py. Once landed, the Windows clone drops its local ceiling edit and sets the busy profile."
 }

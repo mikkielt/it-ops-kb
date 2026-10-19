@@ -1,12 +1,12 @@
 {
   "id": "ST-cqivdkvt",
   "kind": "story",
-  "title": "kbgit.py upstream brings the public copy's main into the clone's main by a written policy and lists the local commits that change upstream-owned paths",
+  "title": "kbgit.py upstream brings the upstream main into the clone by its scope's policy and lists the local commits that change upstream-owned paths",
   "status": "draft",
   "sprint": "SP-3trnelzv",
   "priority": "P1",
   "rank": 0,
-  "goal": "kbgit.py upstream fetches the upstream remote alone and brings its main into the clone's integration main by the policy git.md writes down, never rewriting a commit the integration remote holds; it lists each local commit that changes a path the upstream main also tracks, marking one whose change the upstream main now holds as resolved upstream with the revert to drop it; --dry-run prints the plan and changes nothing; the gate and the push stay kbgit.py sync --push",
+  "goal": "kbgit.py upstream fetches the upstream remote alone and brings its main in by the scope kbpublic.clone_scope reads (me rebases the clone's local commits onto it, team and org merge it into main without rewriting a commit the integration remote holds) as git.md writes the policy down; it lists each local commit that changes a path the upstream main also tracks, marking one whose change the upstream main now holds as resolved upstream with the revert to drop it; --dry-run prints the plan and changes nothing; the gate and the push stay kbgit.py sync --push",
   "checks": [
     {
       "run": [
@@ -24,6 +24,24 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kbgit.py upstream fetches the upstream remote alone and brings its main in by the scope kbpublic.clone_scope reads (me rebases the clone's local commits onto it, team and org merge it into main without rewriting a commit the integration remote holds) as git.md writes the policy down",
+      "check": 0
+    },
+    {
+      "clause": "it lists each local commit that changes a path the upstream main also tracks, marking one whose change the upstream main now holds as resolved upstream with the revert to drop it",
+      "check": 0
+    },
+    {
+      "clause": "--dry-run prints the plan and changes nothing",
+      "check": 1
+    },
+    {
+      "clause": "the gate and the push stay kbgit.py sync --push",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kg_upstream.py",
     "_tools/kbgit.py",
@@ -33,5 +51,9 @@
     "kb/_self/code.md",
     "kb/_self/tools.md",
     "kb/_self/reports/modules.md"
-  ]
+  ],
+  "depends_on": [
+    "ST-s6iz6z36"
+  ],
+  "notes": "Premise (field report 2026-10-19): the Windows clone carries local edits of tracked upstream files (tests_ceiling.json win32 1800, its decision row) next to its own setup; no tool tells which local commits touch upstream-owned paths or which of them upstream now makes unneeded, so each fetch from GitHub would meet them as conflicts. The public main is a projection that fast-forwards on every publish (git.md, Public home), so a team clone seeded from it can take it by merge without rewriting its own pushed commits. Depends on ST-s6iz6z36 for kb.upstreamRemote. Operator's answer 2026-10-19 replaces the removed gate policy: the bring-in follows the scope table (me rebase, team and org merge; ST-s6iz6z36 notes). The test upstream_merge plants one clone per scope."
 }

@@ -23,6 +23,24 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "github/ISSUE_TEMPLATE/upstream-report.yml is an issue form whose fields hold user stories (title, goal, premise or repro, the local change made meanwhile, the clone's scope)",
+      "check": 0
+    },
+    {
+      "clause": "backlog.py upstream-report ID... --out FILE writes the clone's own items as an issue body in that form's sections",
+      "check": 0
+    },
+    {
+      "clause": "the kb-upstream-report skill has an agent turn the operator's findings into those items and the file, then tells the operator to paste it into a new issue or run gh issue create --body-file themselves",
+      "check": 1
+    },
+    {
+      "clause": "nothing it runs posts to GitHub",
+      "check": 1
+    }
+  ],
   "touches": [
     ".github/ISSUE_TEMPLATE/upstream-report.yml",
     ".claude/skills/kb-upstream-report/SKILL.md",
@@ -31,6 +49,13 @@
     "kb/_self/map.csv",
     "kb/_self/backlog.md",
     "kb/_self/plugin.md",
-    "AGENTS.md"
-  ]
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-rxn7vu7f",
+    "ST-rhug6pvg"
+  ],
+  "notes": "Operator's answer 2026-10-19: findings go back as a GitHub issue whose template the agent fills with user stories; how the issue is added (paste the file or automation) is the user's choice, so the tool writes a file and posts nothing. Premise: no template (.github holds only workflows) and no upstream-report command; the check exits 1 on the base. Today's field report (Windows ceiling, workspace .mcp.json, hand-made upstream remote and .venv) is the first planted case worth a dry run. A new skill is listed in AGENTS.md (4 KB cap: a cut elsewhere)."
 }

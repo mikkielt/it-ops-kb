@@ -3,9 +3,10 @@
   "kind": "story",
   "title": "An agent session cannot write _tools/tests_ceiling.json or a decision row of _decisions.csv directly",
   "status": "draft",
-  "priority": "P2",
+  "sprint": "SP-3trnelzv",
+  "priority": "P1",
   "rank": 0,
-  "goal": "a direct Edit or Write of _tools/tests_ceiling.json or kb/_self/_decisions.csv from an agent session is refused (deny rules in .claude/settings.json or a PreToolUse hook, the operator's choice through a gate before any change to settings), so the ceiling changes only by the operator's recorded ceiling-class answer and not by an edited file plus a hand-written active operator row that tests.py read_ceiling accepts",
+  "goal": "a direct Edit or Write of _tools/tests_ceiling.json, the clone's test ceiling profile or the _self decisions ledger from an agent session is refused (deny rules in .claude/settings.json or a PreToolUse hook, the operator's choice through a gate before any change to settings), so the ceiling changes only by the operator's recorded ceiling-class answer and not by an edited file plus a hand-written active operator row that tests.py read_ceiling accepts",
   "checks": [
     {
       "run": [
@@ -18,9 +19,32 @@
   "touches": [
     ".claude/settings.json",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    ".claude/hooks",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-tac4z3zk"
+  ],
+  "gates": [
+    {
+      "id": "guard",
+      "kind": "blocking",
+      "question": "How is a direct agent Edit or Write of _tools/tests_ceiling.json, a _decisions.csv row or the clone's test ceiling profile refused?",
+      "options": [
+        "deny rules in .claude/settings.json (Edit and Write of those paths)",
+        "a PreToolUse hook that refuses the write with the route to the operator's answer"
+      ],
+      "recommendation": "deny rules in .claude/settings.json (Edit and Write of those paths)",
+      "do": {
+        "deny rules in .claude/settings.json (Edit and Write of those paths)": "ST-7s3sp7sl",
+        "a PreToolUse hook that refuses the write with the route to the operator's answer": "ST-7s3sp7sl"
+      },
+      "class": "ceiling"
+    }
   ],
   "links": [
     "parked: SP-rlincemn review"
-  ]
+  ],
+  "notes": "Premise (field report 2026-10-19): on the operator's Windows clone the deploy agent itself raised win32 in _tools/tests_ceiling.json to 1800 with the operator's two answers; read_ceiling accepts such an edit with a hand-written active operator row. Depends on ST-tac4z3zk, whose gate picks the profile's store, so the guard covers that path too. The check reads deny rules; when the gate picks the hook, the worker replaces it with a check that runs the hook on a planted Edit of each path."
 }
