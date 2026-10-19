@@ -193,14 +193,14 @@ gitlab/pipelines-rules,P0,partial,gitlab/pipelines-rules.md,7
 gitlab/protected-branches-tags,P0,complete,gitlab/protected-branches-tags.md,9
 gitlab/variables,P0,complete,gitlab/variables.md,2
 gitlab/automated-merge-requests,P3,complete,gitlab/automated-merge-requests.md,52
-gitlab/commit-signing-and-provenance,P3,partial,gitlab/commit-signing-and-provenance.md,21
+gitlab/commit-signing-and-provenance,P3,partial,gitlab/commit-signing-and-provenance.md,26
 gitlab/deploy-keys-and-tokens,P3,partial,gitlab/deploy-keys-and-tokens.md,10
 gitlab/detecting-mr-merges-in-ci,P3,complete,gitlab/detecting-mr-merges-in-ci.md,16
 gitlab/git-commit-paths-and-symlinks,P3,complete,gitlab/git-commit-paths-and-symlinks.md,7
 gitlab/git-history-queries,P3,complete,gitlab/git-history-queries.md,8
 gitlab/git-refs,P3,complete,gitlab/git-refs.md,3
 gitlab/git-test-repositories,P3,complete,gitlab/git-test-repositories.md,53
-gitlab/git-trailers-and-hooks,P3,partial,gitlab/git-trailers-and-hooks.md,15
+gitlab/git-trailers-and-hooks,P3,partial,gitlab/git-trailers-and-hooks.md,17
 gitlab/github-branch-rules-and-auto-merge,P3,complete,gitlab/github-branch-rules-and-auto-merge.md,18
 gitlab/hosted-runners-windows,P3,complete,gitlab/hosted-runners-windows.md,5
 gitlab/issue-closing-patterns,P3,complete,gitlab/issue-closing-patterns.md,5
@@ -262,7 +262,7 @@ logs/otel-collector-receivers,P3,complete,logs/otel-collector-receivers.md;logs/
 logs/otel-python-sdk,P3,partial,logs/otel-python-sdk.md,28
 logs/prometheus-retention-exposition,P3,partial,logs/prometheus-retention-exposition.md,29
 logs/python-rust-json-stdout-logs,P3,partial,logs/python-rust-json-stdout-logs.md,8
-mcp/authorization,P1,complete,mcp/authorization.md,4
+mcp/authorization,P1,complete,mcp/authorization.md,5
 mcp/deprecations,P1,complete,mcp/deprecations.md,3
 mcp/elicitation,P1,complete,mcp/elicitation.md,6
 mcp/python-sdk,P1,complete,mcp/python-sdk.md,19
@@ -322,7 +322,7 @@ python/stdlib-sqlite3-csv,P2,complete,python/stdlib-sqlite3-csv.md,10
 python/uv-projects,P2,complete,python/uv-projects.md,15
 python/version-lifecycle,P2,complete,python/version-lifecycle.md;python/version-lifecycle.csv,8
 python/alembic-migrations,P3,partial,python/alembic-migrations.md,13
-python/fastapi-capability-dependencies,P3,partial,python/fastapi-capability-dependencies.md,11
+python/fastapi-capability-dependencies,P3,partial,python/fastapi-capability-dependencies.md,12
 python/imports-and-modules,P3,complete,python/imports-and-modules.md,10
 python/interpreter-startup,P3,partial,python/interpreter-startup.md,9
 python/maturin-pyo3-wheels,P3,partial,python/maturin-pyo3-wheels.md,13

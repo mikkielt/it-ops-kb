@@ -8222,11 +8222,13 @@ a9f145af1dcd,gitlab/codeowners.md,S444,located,Protect a branch > Configure prot
 42d7e547e2df,gitlab/commit-signing-and-provenance.md,S440,unlocated:no-match,,,,,2026-10-15
 42d7e547e2df,gitlab/commit-signing-and-provenance.md,S444,unlocated:no-match,,,,,2026-10-15
 43f89bb7d11e,gitlab/commit-signing-and-provenance.md,S-gqe643np,located,,key;sign;commit;ssh;git,8eea9880c2c62174,You must add the SSH key used to sign the commit to your GitLab account,2026-10-15
+475f8c6dd463,gitlab/commit-signing-and-provenance.md,S-7qi3b6ep,located,Create GitHub App Token > Usage > Configure Git CLI for an app's bot user,command;like;commit;work;push;bot;user;git,537eb9d2059c40a6,Git commands like commit and push work using the bot user,2026-10-19
 4ee71b374713,gitlab/commit-signing-and-provenance.md,S-6sw5hnns,located,Authenticating as a GitHub App installation > Using an installation access token to authenticate as an app installation,expir;hour;access;token;installation,9eebf0531c9be893,The installation access token will expire after 1 hour.,2026-10-19
 5028324ab88a,gitlab/commit-signing-and-provenance.md,S-ijtwicvp,located,Responses > Retrieve commit signature,verification;signatur;type;status,9477632aaab1b5ea,"signaturetype | string | Type of signature (PGP, SSH, or X509). verificationstatus | string | Verification status of the signature.",2026-10-15
-534b10cd82b4,gitlab/commit-signing-and-provenance.md,S-3466yhgq,unlocated:no-match,,,,,2026-10-19
-534b10cd82b4,gitlab/commit-signing-and-provenance.md,S-6sw5hnns,unlocated:no-match,,,,,2026-10-19
+5339491c0d2e,gitlab/commit-signing-and-provenance.md,S-ijgc3zl2,located,About commit signature verification > Signature verification for bots,app;custom;such;authenticat;bot;api;request;author,23c511332bff80e0,"contains no custom author information, custom committer information, and no custom signature information",2026-10-19
+586262352f3a,gitlab/commit-signing-and-provenance.md,S-ziyhuwyc,located,------------------------ >8 ------------------------,authentication;effect;name,14af08a0e75a35d2,This name has no effect on authentication,2026-10-19
 5a101e84d1cc,gitlab/commit-signing-and-provenance.md,S-mgxxzq3i,located,Build: Requirements for producing artifacts > Build Platform > Isolation strength,secret;sign;key;such;must;platform;provenanc;build,b514efa3a46e36bb,"It MUST NOT be possible for a build to access any secrets of the build platform, such as the provenance signing key",2026-10-15
+5d5dc5cdf8c2,gitlab/commit-signing-and-provenance.md,S-5636dvek,located,Setting your commit email address > Setting your commit email address in Git > Setting your email address for a single repository,uses;configuration;line;local;push;command;account;associat,151eaee5871e89e5,GitHub uses the email address set in your local Git configuration to associate commits pushed from the command line with your account,2026-10-19
 6474935341a5,gitlab/commit-signing-and-provenance.md,S-mgxxzq3i,located,Build: Requirements for producing artifacts > Build Platform > Provenance generation,except;tenant;platform;provenanc;build,3a76e7847d72b54b,"and not by a tenant of the build platform (i.e. outside the trust boundary), except as noted below.",2026-10-15
 6b9a3947b046,gitlab/commit-signing-and-provenance.md,S-yg2mm5c6,located,Types of service accounts > Service account emails,no-reply;prefix;reply;generat;email;lab;git;gitlab,edb0d6019ce66960,"When you create a service account, GitLab generates a no-reply email address with one of the following prefixes:",2026-10-15
 71cfbd8d20be,gitlab/commit-signing-and-provenance.md,S-jut4uqct,located,Verify commits > Troubleshooting > Fix verification problems with signed commits,belong;other;other_user;different;valid;user;gpg;email,d2ec8a904b5ccc71,"The signature and GPG key are valid, but the key belongs to a different user than the committer.",2026-10-15
@@ -8235,12 +8237,14 @@ a9f145af1dcd,gitlab/codeowners.md,S444,located,Protect a branch > Configure prot
 88996635e5f8,gitlab/commit-signing-and-provenance.md,S-ijtwicvp,unlocated:no-match,,,,,2026-10-15
 88996635e5f8,gitlab/commit-signing-and-provenance.md,S-lu25cylz,unlocated:no-match,,,,,2026-10-15
 88996635e5f8,gitlab/commit-signing-and-provenance.md,S-oroizj3k,unlocated:no-match,,,,,2026-10-15
+8aaf555a9c26,gitlab/commit-signing-and-provenance.md,S-k6iukhsi,located,Email addresses reference > Your `noreply` email address,form;com;users.noreply.github.com;user;usernam;github;noreply;creat,d0f008c10753e4df,your noreply email address is an ID number and your username in the form of,2026-10-19
 8b18b418793f,gitlab/commit-signing-and-provenance.md,S-jut4uqct,located,Verify commits > Verify GitLab-signed commits > Warning badge for unverified committer email,orang;warn;badg;verifi;gitlab;lab;git;sign,964cf4faccb5a48a,GitLab displays an orange verified badge with a warning sign,2026-10-15
 8e9292a638ad,gitlab/commit-signing-and-provenance.md,S-lu25cylz,located,Enable global push rules > Require signed commits > Reject unsigned commits and the Web IDE,cannot;default;through;ide;web;unsign;user;reject,680a228b08c85e03,users cannot create commits through the GitLab Web IDE by default.,2026-10-15
 94197fdc07bd,gitlab/commit-signing-and-provenance.md,S-gqe643np,located,Configure Git to sign commits and tags with your SSH key,broken;8.7;open;openssh;sign;ssh,bae88a74ec44faab,OpenSSH 8.7 has broken signing functionality.,2026-10-15
 9d6cabab5b80,gitlab/commit-signing-and-provenance.md,S-hvhro6n5,located,Set the maximum job timeout > Artifact provenance metadata > Provenance metadata format,secret;external;externalparameter;empty;parameter;protect;predicat;name,0971c9d2370bcf82,The value is always represented as an empty string to protect secrets.,2026-10-15
 a0afc8f1e317,gitlab/commit-signing-and-provenance.md,S-yg2mm5c6,located,,entity;human;non-human;non;user;account;servic,8e60aa01713d1158,Service accounts are user accounts that represent non-human entities rather than individual people.,2026-10-15
 a4cd504874bb,gitlab/commit-signing-and-provenance.md,S-ucjfr2m7,located,Source: Requirements for producing source > Requirements > Source Control System,vsa;level;revision;sourc,c7340cb33c76a653,"If the SCS DOES NOT generate a VSA for a revision, the revision has Source Level 0.",2026-10-15
+a6a19617caab,gitlab/commit-signing-and-provenance.md,S-6sw5hnns,located,Authenticating as a GitHub App installation > About authentication as a GitHub App installation,password;http;access;token;installation,7e9459b210fb5e22,use the installation access token as the HTTP password,2026-10-19
 a842a7f34d0f,gitlab/commit-signing-and-provenance.md,S-oroizj3k,located,Prerequisites > Turn on web-based commit signing for a group or project,editor;ide;merg;request;web;gitlab;lab;git,c236dce4e40da396,"the GitLab UI (Web Editor, Web IDE, and merge requests) are",2026-10-15
 a9be4d36adce,gitlab/commit-signing-and-provenance.md,S-jut4uqct,located,Verify commits > Verify GitLab-signed commits,creat;web;key;gitlab;lab;git;sign;commit,8a6faddb3997e150,"GitLab signs the commits it creates, like commits made through the web UI, with a key",2026-10-15
 b10d9be608e2,gitlab/commit-signing-and-provenance.md,S-lu25cylz,located,Enable global push rules > Verify users,identity;impersonation;verification;cryptographic;prevent,b724f5fa6c7397a3,but does not prevent impersonation. For cryptographic identity verification,2026-10-15
@@ -8533,11 +8537,17 @@ f3c796d9d1bb,gitlab/git-test-repositories.md,S-fqaj6jn5,unlocated:no-match,,,,,2
 f4233169ff3f,gitlab/git-test-repositories.md,S-7kl4eeso,located,,abort;original;reset;head;branch;rebas,8101159b51202f95,Abort the rebase operation and reset HEAD to the original branch.,2026-10-18
 f65096690ab7,gitlab/git-test-repositories.md,S-ali5r4n7,located,,delet;git,a7ad9c6a30eddef7,ret |= deletegitdir(wt->id);,2026-10-13
 f9e69d474f69,gitlab/git-test-repositories.md,S-j4qkzgvv,located,,mark;upstream;remote-track;track;default;commit-ish;ish;commit,ef83b97725ae6d28,"mark it as ""upstream"" from the new branch. This is the default if <commit-ish> is a remote-tracking branch.",2026-10-10
+02ace06d8dec,gitlab/git-trailers-and-hooks.md,S-wjfrtzpf,located,,lead;off;output;standard;trail;trim;whitespac;command,8e1d12ac63ae1b68,standard output of the command with any leading and trailing whitespace trimmed off,2026-10-19
 06baff0476f2,gitlab/git-trailers-and-hooks.md,S-l6s4hfqp,unlocated:no-match,,,,,2026-10-10
 0fdf5b3d10ac,gitlab/git-trailers-and-hooks.md,S-l6s4hfqp,located,,overall;code;exit;non-zero;zero;member;non;fail,ab87c93bdf2112f8,the remaining remotes in the group. The overall exit code is non-zero if any member push fails.,2026-10-10
+0ff90dccd22a,gitlab/git-trailers-and-hooks.md,S-kbwvfzcv,unlocated:no-match,,,,,2026-10-19
+0ff90dccd22a,gitlab/git-trailers-and-hooks.md,S-wjfrtzpf,located,,automatically;once;call;add;argument;alia;key-alia;key,0286e86c9f676e14,"once to automatically add a trailer with the specified <key-alias>, and then called each time a --trailer <key-alias>=<value> argument is specified to",2026-10-19
 12a9aabcb357,gitlab/git-trailers-and-hooks.md,S-33l7g2u2,located,,fatal;exit;die,6b124d924dae32c0,"fputs(""fatal: recursion detected in die handler\n"", stderr); exit(128);",2026-10-10
 12a9aabcb357,gitlab/git-trailers-and-hooks.md,S-r6wgcwme,located,,couldn;find;die;remot;ref,5b649e00e43c31be,"die((""couldn't find remote ref %s""), name);",2026-10-10
 149c8ff9bc20,gitlab/git-trailers-and-hooks.md,S-l6s4hfqp,unlocated:no-match,,,,,2026-10-10
+14d2dab7b928,gitlab/git-trailers-and-hooks.md,S-7dwkyip6,unlocated:no-match,,,,,2026-10-19
+14d2dab7b928,gitlab/git-trailers-and-hooks.md,S-kbwvfzcv,unlocated:no-match,,,,,2026-10-19
+14d2dab7b928,gitlab/git-trailers-and-hooks.md,S-zpfwc342,unlocated:no-match,,,,,2026-10-19
 168dc1097ba4,gitlab/git-trailers-and-hooks.md,S-33l7g2u2,unlocated:no-match,,,,,2026-10-10
 168dc1097ba4,gitlab/git-trailers-and-hooks.md,S-r6wgcwme,unlocated:no-match,,,,,2026-10-10
 2ecd12dc0d47,gitlab/git-trailers-and-hooks.md,S-l6s4hfqp,located,,denynonfastforward;receive.denynonfastforward;deny;non-fast-forward;non;receiv;fast;forward,4d7523101712bc7a,"branch), receive.denyNonFastForwards (for forced non-fast-forward updates), receive.denyDeletes or",2026-10-10
@@ -8565,6 +8575,7 @@ f9e69d474f69,gitlab/git-test-repositories.md,S-j4qkzgvv,located,,mark;upstream;r
 6e61284932f9,gitlab/git-trailers-and-hooks.md,S-l6s4hfqp,unlocated:no-match,,,,,2026-10-10
 6e61284932f9,gitlab/git-trailers-and-hooks.md,S-zhftykfq,unlocated:no-match,,,,,2026-10-10
 7110a4eb6531,gitlab/git-trailers-and-hooks.md,S-zhftykfq,located,,exit;non-zero;status;zero;non;refus;ff-only;resolv,bac41362a7f2f597,"With --ff-only, resolve the merge as a fast-forward when possible. When not possible, refuse to merge and exit with a non-zero status.",2026-10-10
+74cc3ed94c05,gitlab/git-trailers-and-hooks.md,S-wjfrtzpf,located,,case;must;prefix;alia;key-alia;key,770c490f8a1f8c67,must be a prefix (case does not matter) of the <key>,2026-10-19
 754a5016fc53,gitlab/git-trailers-and-hooks.md,S-wtbq3lvm,located,,only-input;only-trailer;pars;unfold;alia;input;trailer,886c8ef5713a97e6,The default is --no-unfold. --parse:: A convenience alias for --only-trailers --only-input,2026-10-10
 75eec267faa2,gitlab/git-trailers-and-hooks.md,S-iz4bgagx,located,,updat;server,0a0e5e4ee2d83e0c,"If all of that is fine, the server will then update the references.",2026-10-17
 86272d833602,gitlab/git-trailers-and-hooks.md,S-wtbq3lvm,unlocated:no-match,,,,,2026-10-10
@@ -8573,19 +8584,35 @@ f9e69d474f69,gitlab/git-test-repositories.md,S-j4qkzgvv,located,,mark;upstream;r
 a087518feaca,gitlab/git-trailers-and-hooks.md,S-d6iv4nbm,unlocated:no-match,,,,,2026-10-10
 a57d8f6cb75d,gitlab/git-trailers-and-hooks.md,S-wtbq3lvm,located,,non;non-whitespac;prec;whitespace-only;group;must;befor;last,57ca0e629986bb92,The group must be preceded by one or more empty (or whitespace-only) lines. The group must either be at the end of the input or,2026-10-10
 afd8fc43a49f,gitlab/git-trailers-and-hooks.md,S-wjfrtzpf,unlocated:no-match,,,,,2026-10-10
+b97112093f4b,gitlab/git-trailers-and-hooks.md,S-kbwvfzcv,located,,fail;run;error;command;trailer,cd7bba423f112b13,"error((""running trailer command '%s' failed""), cmd.buf);",2026-10-19
 c15a16a6daf3,gitlab/git-trailers-and-hooks.md,S-wtbq3lvm,unlocated:no-match,,,,,2026-10-10
 c382160226ac,gitlab/git-trailers-and-hooks.md,S-l6s4hfqp,located,,completely;bypass;no-verify;verify;hook,71a58e8f30f37b85,"With --no-verify, the hook is bypassed completely.",2026-10-10
+c67890d9d0ec,gitlab/git-trailers-and-hooks.md,S-7dwkyip6,unlocated:no-match,,,,,2026-10-19
+c67890d9d0ec,gitlab/git-trailers-and-hooks.md,S-kbwvfzcv,unlocated:no-match,,,,,2026-10-19
+c67890d9d0ec,gitlab/git-trailers-and-hooks.md,S-ziyhuwyc,unlocated:no-match,,,,,2026-10-19
 cc81a25b475d,gitlab/git-trailers-and-hooks.md,S-7dwkyip6,located,,suppress;no-verify;verify;abort;non-zero;non;exit;zero,e6e035d02c61edb9,"If the exit status is non-zero, git commit will abort. The purpose of the hook is to edit the message file in place, and it",2026-10-10
 d1c62af57fa9,gitlab/git-trailers-and-hooks.md,S-rzi7mtmw,located,,along;associat;availabl;display;referenc;repository;remot,24223fb90edd693d,Displays references available in a remote repository along with the associated,2026-10-17
+d679b08d420b,gitlab/git-trailers-and-hooks.md,S-kbwvfzcv,located,,configur;command;trailer,ba9409c8e4bd6040,Add an arg item for each configured trailer with a command,2026-10-19
+dc9c55ccf279,gitlab/git-trailers-and-hooks.md,S-7dwkyip6,unlocated:no-match,,,,,2026-10-19
+dc9c55ccf279,gitlab/git-trailers-and-hooks.md,S-kbwvfzcv,unlocated:no-match,,,,,2026-10-19
 df7dadc16951,gitlab/git-trailers-and-hooks.md,S-wtbq3lvm,located,,prec;whitespace-only;one;whitespac;empty;line,2cefcf276e78673e,The group must be preceded by one or more empty (or whitespace-only) lines.,2026-10-10
 e3e23fad2e39,gitlab/git-trailers-and-hooks.md,S-gvt5wbk7,unlocated:no-match,,,,,2026-10-17
 e3e23fad2e39,gitlab/git-trailers-and-hooks.md,S-iz4bgagx,unlocated:no-match,,,,,2026-10-17
 e3e23fad2e39,gitlab/git-trailers-and-hooks.md,S-l6s4hfqp,unlocated:no-match,,,,,2026-10-17
 e3e23fad2e39,gitlab/git-trailers-and-hooks.md,S-rzi7mtmw,unlocated:no-match,,,,,2026-10-17
+e4b0c532bf9e,gitlab/git-trailers-and-hooks.md,S-wjfrtzpf,located,,deprecat;cmd;alia;key-alia;key;trailer,2a2913934d351b9c,Deprecated in favor of trailer.<key-alias>.cmd.,2026-10-19
 e7f92909eecb,gitlab/git-trailers-and-hooks.md,S-d6iv4nbm,unlocated:no-match,,,,,2026-10-10
 e7f92909eecb,gitlab/git-trailers-and-hooks.md,S-wtbq3lvm,unlocated:no-match,,,,,2026-10-10
 e9db34dd6283,gitlab/git-trailers-and-hooks.md,S-ziyhuwyc,located,,duplicat;omit;trailer;configuration;run;git,1e3455eb71d54934,"The trailer. configuration variables (linkgit:git-interpret-trailers[1]) can be used to define if a duplicated trailer is omitted, where in the run of trailers",2026-10-10
+ecbde86bf86f,gitlab/git-trailers-and-hooks.md,S-kbwvfzcv,unlocated:no-match,,,,,2026-10-19
+ecbde86bf86f,gitlab/git-trailers-and-hooks.md,S-zpfwc342,unlocated:no-match,,,,,2026-10-19
+f0f9efa48178,gitlab/git-trailers-and-hooks.md,S-kbwvfzcv,unlocated:no-match,,,,,2026-10-19
+f0f9efa48178,gitlab/git-trailers-and-hooks.md,S-zpfwc342,unlocated:no-match,,,,,2026-10-19
+f1f7663d3cbe,gitlab/git-trailers-and-hooks.md,S-kbwvfzcv,located,,env;local;local_repo_env;repo,73bbfa254327adc2,"strvecpushv(&cp.env, (const char )localrepoenv);",2026-10-19
+f1f7663d3cbe,gitlab/git-trailers-and-hooks.md,S-zpfwc342,located,,git_;repository-local;local;variabl;repository;environment;git,5ed6b7efd84f6c3c,Repository-local GIT environment variables,2026-10-19
 f5e72cb3c62b,gitlab/git-trailers-and-hooks.md,S-rzi7mtmw,unlocated:no-match,,,,,2026-10-10
+f9d2d32e0744,gitlab/git-trailers-and-hooks.md,S-kbwvfzcv,unlocated:no-match,,,,,2026-10-19
+f9d2d32e0744,gitlab/git-trailers-and-hooks.md,S-wjfrtzpf,unlocated:no-match,,,,,2026-10-19
 0f3b5a6e64ca,gitlab/github-branch-rules-and-auto-merge.md,S-ai4fbdo7,located,,apply;becaus;block;branch;every;folder;target;extension,2c4fb271bdcb5d1b,"With push rulesets, you can block pushes to a private or internal repository and that repository's entire fork network based on file extensions, file path",2026-10-10
 12540c2561e0,gitlab/github-branch-rules-and-auto-merge.md,S-ldxeltib,located,Merge your commits > Indirect merges,another;becom;directly;outsid;reachabl;head;mark;protection,1f347f92bc5fae93,A pull request can be marked as merged if its head branch commits become reachable from the base branch outside that pull request. This can,2026-10-10
 205a0bc97ab6,gitlab/github-branch-rules-and-auto-merge.md,S-fuytyyvw,located,About branch protection rules > About branch protection settings > Require pull request reviews before merging,gh006;main;refs;remot;error;fail;head;updat,553709456f6d98b7,remote: error: GH006: Protected branch update failed for refs/heads/main.,2026-10-10
@@ -11074,19 +11101,28 @@ e166457ffe53,logs/sources.md,S634,located,"Enabling debug logging for the Netlog
 e9e94627878d,logs/sources.md,S648,located,Troubleshoot Windows Update error code 0x80070070 > Symptoms,client;event;microsoft-windows-windowsupdateclient;operational;windowsupdateclient;microsoft;log;window,b0d4f85e57a009da,"If you use Event Viewer to review the Microsoft-Windows-WindowsUpdateClient/Operational log, you find an event that includes the same message.",2026-10-10
 f26340f9f752,logs/sources.md,S635,unlocated:no-match,,,,,2026-10-10
 fae2ea5f155a,logs/sources.md,S-6lmczs32,located,Troubleshoot Microsoft Entra device registration and Windows Autopilot - Intune | Microsoft Learn > Windows Autopilot,mdm;microsoft-windows-moderndeployment-diagnostics-provider-autopilot.evtx;moderndeployment;admin;diagnostic;evtx;provider;autopilot,5f0d5b0e0a5c41f3,microsoft-windows-devicemanagement-enterprise-diagnostics-provider-admin.evtx microsoft-windows-moderndeployment-diagnostics-provider-autopilot.evtx MdmDiagReport\RegistryDump.reg,2026-10-11
+134b467c544e,mcp/authorization.md,S-e5aahjao,located,,fully;partially;ignor;may;scop;request;server;authorization,f3c607c187466be8,MAY fully or partially ignore the scope requested by the client,2026-10-19
+169ea35a0e71,mcp/authorization.md,S707,located,Introduction > Error Handling > Scope Challenge Handling > Step-Up Authorization Flow,account;broader;hierarchy;imply;narrower;ones;must;scop,e18e3ee1981125fc,MUST account for scope hierarchies,2026-10-19
 1dbf6f0d496a,mcp/authorization.md,S707,located,Introduction > Access Token Usage > Token Handling,them;audienc;issu;validat;access;must;token;server,02983eec98094411,"MCP servers MUST validate that access tokens were issued specifically for them as the intended audience,",2026-10-10
 26302f74f29b,mcp/authorization.md,S702,located,Deprecated,client;document;dynamic;metadata;registration;2026-07-28;2027-07-28;first,48a715a8573c2ce5,Dynamic Client Registration | PR #2858 | 2026-07-28 | Client ID Metadata Documents | First revision released on or after 2027-07-28,2026-10-10
 31156c428a30,mcp/authorization.md,S707,unlocated:no-match,,,,,2026-10-10
+32a824b50eaf,mcp/authorization.md,S-neu52zjd,located,,code;may;scop;resourc,1662c83a5dc77394,The resource server SHOULD respond with the HTTP 403 (Forbidden) status code,2026-10-19
 449d40a3f70e,mcp/authorization.md,S-neu52zjd,located,,header;client;authorization;bearer;token,0253fede99bf74cb,"Clients SHOULD make authenticated requests with a bearer token using the ""Authorization"" request header field",2026-10-16
 56c598957ae7,mcp/authorization.md,S707,located,Introduction > Purpose and Scope > Protocol Requirements,environment;instead;retriev;stdio;conform;credential;transport;follow,1830623789935273,"Implementations using an HTTP-based transport SHOULD conform to this specification. Implementations using an STDIO transport SHOULD NOT follow this specification, and instead retrieve credentials from",2026-10-10
 6e4d56b99210,mcp/authorization.md,S701,located,Major changes > Minor changes,key;persist;re-register;register;credential;issuer;authorization;must,df67e2b4eaefeaa0,"clients MUST key persisted credentials by the issuer identifier, MUST NOT reuse them with a different authorization server, and MUST re-register when the authorization server",2026-10-10
 7044be8b19a8,mcp/authorization.md,S-neu52zjd,located,,www-authenticat;authenticat;respons;header;www;must;server;resourc,cbbb695c4bcb4345,"the resource server MUST include the HTTP ""WWW-Authenticate"" response header field",2026-10-16
+74e81d887ecc,mcp/authorization.md,S-e5aahjao,located,,x21;x23;x23-5b;x5d;x5d-7;scop,9b9c841d3dc5f376,scope-token = 1( %x21 / %x23-5B / %x5D-7E ),2026-10-19
+74e81d887ecc,mcp/authorization.md,S-neu52zjd,located,,x21;x23;x23-5b;x5d;x5d-7;character;scop,284241d87f871437,MUST NOT include characters outside the set %x21 / %x23-5B / %x5D-7E for representing scope values,2026-10-19
+83395a5623fa,mcp/authorization.md,S-e5aahjao,located,,string;defin;server;authorization,d4f50a2362432ada,The strings are defined by the authorization server.,2026-10-19
 9e14915eb957,mcp/authorization.md,S707,located,Introduction > Access Token Usage > Token Requirements,query;string;uri;access;must;token,905940e9098f3244,Access tokens MUST NOT be included in the URI query string,2026-10-10
+af11c5f0512d,mcp/authorization.md,S-neu52zjd,located,,centraliz;registry;them;defin;valu,45f36a2efb2166d4,there is no centralized registry for them,2026-10-19
 b002ed2371f2,mcp/authorization.md,S707,unlocated:no-match,,,,,2026-10-10
 d67d0d162b83,mcp/authorization.md,S-neu52zjd,located,,hour;less;leak;lived;short-liv;short;one;token,16f13d38cf9fcc58,using short-lived (one hour or less) tokens reduces the impact of them being leaked,2026-10-16
 e0cbbfccbf90,mcp/authorization.md,S701,located,Major changes > Minor changes,against;present;record;redeem;validat;befor;iss;issuer,835b8b5b589def9e,"Authorization servers SHOULD include the iss parameter in authorization responses per RFC 9207, and MCP clients MUST validate a present iss against the recorded issuer",2026-10-10
 edeaf3d690a3,mcp/authorization.md,S-neu52zjd,located,,sourc;general;method;authorization;oauth;http;bearer;token,70d77892790fe159,a general HTTP authorization method that can be used with bearer tokens from any source,2026-10-16
 f3e1e51bc93d,mcp/authorization.md,S707,located,Introduction > Resource Parameter Implementation,canonical;uri;rfc;request;must;token;server;client,666bf44d1e5fa6ba,MUST be included in both authorization requests and token requests. MUST identify the MCP server that the client intends to use the token with. MUST,2026-10-10
+f66036d64090,mcp/authorization.md,S707,located,Introduction > Error Handling > Scope Challenge Handling > Runtime Insufficient Scope Errors,current;challeng;operation;scop;server,27fed756dae2e7bb,SHOULD include all scopes required for the current operation in a single challenge,2026-10-19
+f7d20698ac30,mcp/authorization.md,S707,located,Introduction > Error Handling > Scope Challenge Handling > Runtime Insufficient Scope Errors,insufficient_scop;insufficient;error;scop,c052b435d336e693,"error=""insufficientscope"" - indicating the specific type of authorization failure",2026-10-19
 fef19e75a063,mcp/authorization.md,S-neu52zjd,unlocated:no-match,,,,,2026-10-16
 19a0e784ced1,mcp/deprecations.md,S702,located,Deprecated,follow;log;stder;stdio;server,9763b45ae67499ea,Logging | SEP-2577 | 2026-07-28 | Log to stderr for stdio transports; use OpenTelemetry for observability | First revision released on or after 2027-07-28 Dynamic,2026-10-10
 34358f1e647c,mcp/deprecations.md,S701,unlocated:no-match,,,,,2026-10-10
@@ -13183,6 +13219,7 @@ ffd40ed6f37f,privacy/presidio.md,S808,unlocated:no-match,,,,,2026-10-10
 c46a693e407a,privacy/spacy-model-licence.md,S851,unlocated:no-match,,,,,2026-10-10
 cc4a9b44c0ed,privacy/spacy-model-licence.md,S833,located,,core;en_core_web_lg;install;spacy;web;download;python;presidio,378543ad49b4f286,"""!pip install presidioanalyzer presidioanonymizer\n"", ""!python -m spacy download encoreweblg""",2026-10-10
 d04ce44229c0,privacy/spacy-model-licence.md,S850,located,en_core_web_lg-3.8.0 > No results found > Details: https://spacy.io/models/en#en_core_web_lg,3.0;clear;clearnlp;conversion;net;nlp;note;onto,2978f80424cfa483,"OntoNotes 5 (Ralph Weischedel, Martha Palmer, Mitchell Marcus, Eduard Hovy, Sameer Pradhan, Lance Ramshaw, Nianwen Xue, Ann Taylor, Jeff Kaufman, Michelle Franchini, Mohammed El-Bachouti, Robert",2026-10-10
+01fba393f8bb,python/fastapi-capability-dependencies.md,S-neu52zjd,located,,forbidden;respond;status;code;scop;http;server;resourc,1662c83a5dc77394,The resource server SHOULD respond with the HTTP 403 (Forbidden) status code,2026-10-19
 12761989ebfb,python/imports-and-modules.md,S-uwxacpum,unlocated:no-match,,,,,2026-10-10
 2120e56082b9,python/imports-and-modules.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-14
 316852631715,python/imports-and-modules.md,S-y3vaig55,unlocated:no-match,,,,,2026-10-10

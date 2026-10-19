@@ -842,3 +842,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## agents/typescript-native-compiler
 
 - **Watch mode of the native compiler.** The typescript-go README at tag `typescript/v7.0.2` (S-mtnr5emw) marks watch mode "prototype" ("no incremental rechecking. Not optimized"), while the 7.0 announcement (S-eq3gt72a, 2026-07-08) says 7.0 ships a "completely rebuilt" `--watch` on a Parcel-watcher foundation. Both read 2026-10-15; the README text appears not to have been updated for the release, and no measurement of 7.0.2's watch mode was made. (topic: agents/typescript-native-compiler)
+
+## gitlab/git-trailers-and-hooks
+
+- **Whether a trailer configured with only `trailer.<alias>.cmd` is added without a `--trailer` argument.** The trailer configuration page at `v2.55.0` (S-wjfrtzpf, read 2026-10-19) says `.cmd` "will be called once to automatically add a trailer"; `parse_trailers_from_config` in `trailer.c` at the same tag (S-kbwvfzcv) adds a configured trailer by itself only when the alias has a `.command`, and a run of git 2.50.1 printed a message unchanged for a `.cmd`-only alias and added the trailer for `.command` or for `--trailer <alias>`. The kb states the code's behaviour; the page's sentence is read as describing the call for a named alias. Not settled: the pages and code of later releases, and git 2.55.0 itself, were not run. (topic: gitlab/git-trailers-and-hooks)

@@ -4265,3 +4265,13 @@ _Agent: kb-research_
 - See gitlab/multi-repository-layouts.md.
 
 _Agent: kb-research_
+
+## QK-author-committer-commit-pushed-github-app. Which author and committer does a commit pushed with a GitHub App installation token carry, how do OAuth bearer scopes model team-scoped access, and how does git add a trailer computed by a command?
+- An installation token authenticates HTTP-based Git access (Contents permission, the token as the HTTP password); git takes author and committer from `GIT_AUTHOR_*`/`GIT_COMMITTER_*` or `user.name`/`user.email`, which "has no effect on authentication", and GitHub attributes a command-line push by the email in the local git configuration. GitHub's own app-token action sets `<app-slug>[bot]` and `<user-id>+<app-slug>[bot]@users.noreply.github.com` for the bot, and signing as the app through the API needs a request with no custom author or committer. [DOC S-6sw5hnns, S-ziyhuwyc, S-5636dvek, S-7qi3b6ep, S-ijgc3zl2]
+- A scope is a case-sensitive string the service defines, with no registry; a resource server answers a token that is too weak with 403 `insufficient_scope` (MAY carry the needed `scope`) and a bad token with 401 `invalid_token`; the MCP revision adds one challenge listing every needed scope and a MUST to honour scope hierarchies. [DOC S-e5aahjao, S-neu52zjd, S707]
+- `trailer.<alias>.cmd` makes the trimmed output of a shell command the trailer value, but at `v2.55.0` it is applied only for `--trailer <alias>`; only the deprecated `.command` is added by itself, `git commit` adds neither alone, and the command runs with `GIT_INDEX_FILE` and the other repository-local variables cleared. [DOC S-wjfrtzpf; CODE S-kbwvfzcv, S-zpfwc342]
+- Conclusion: a commit pushed over git carries no identity from the token, so a team and operator named in author, committer or a trailer is the runner's own statement that neither git nor GitHub checks; a service with its own bearer tokens can map a token (key file) to a team and operator on its side, keep scope strings free of space, quote and backslash, and refuse another team's keys with a plain 403 (a step-up cannot cure it); a computed trailer that depends on the committed files is computed by the hook, not by a trailer command, because `git commit -a` showed the command reading a stale index. [DER S-6sw5hnns, S-ziyhuwyc, S-5636dvek, S-neu52zjd, S707, S-wjfrtzpf, S-kbwvfzcv, S-zpfwc342]
+- Open: whether GitHub renders a commit with the bot's address as the app's bot account, what a trailer command reads for `git commit <path>` and `-o`, and git 2.55.0 itself (runs were git 2.50.1). [UNK]
+- See gitlab/commit-signing-and-provenance.md, gitlab/git-trailers-and-hooks.md, mcp/authorization.md.
+
+_Agent: kb-research_

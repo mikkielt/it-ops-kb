@@ -2,8 +2,8 @@
 topic: python/fastapi-capability-dependencies
 priority: P3
 applies_to: "FastAPI 0.143.0 docs and Uvicorn 0.54.0 docs (release tags)"
-retrieved_utc: 2026-10-11
-sources: [S-ayprwh67, S-ejipyz2z, S-taoszxoo, S-a67xbp56, S-fwvusq4t, S-7ows5rub, S-uhdkuqjs, S-fwsrgnx2, S-dnaai5ya, S-b6za35dg, S-xvyw57kk]
+retrieved_utc: 2026-10-19
+sources: [S-ayprwh67, S-ejipyz2z, S-taoszxoo, S-a67xbp56, S-fwvusq4t, S-7ows5rub, S-uhdkuqjs, S-fwsrgnx2, S-dnaai5ya, S-b6za35dg, S-xvyw57kk, S-neu52zjd]
 status: partial
 ---
 
@@ -79,8 +79,12 @@ package carries the roles as optional extras is in `arch/python-single-package-e
   `asyncio.create_task(...)` before the `yield` and cancelling it after is a use of that same hook,
   but no page read shows it. With `--workers N` that task would run once per worker, so a single
   process is the matching deployment. [DER S-taoszxoo, S-xvyw57kk, S-dnaai5ya: lifespan semantics and per-worker lifespan]
-- Whether FastAPI or the OAuth2 specification recommends status 403 (rather than 401 with
-  `WWW-Authenticate`) for an authenticated caller lacking a scope is not stated on the pages read. [UNK]
+- Whether FastAPI recommends status 403 (rather than 401 with `WWW-Authenticate`) for an
+  authenticated caller lacking a scope is not stated on the pages read. [UNK]
+- The OAuth 2.0 bearer-token specification does state it: for the `insufficient_scope` error the
+  resource server "SHOULD respond with the HTTP 403 (Forbidden) status code", and 401 goes with
+  `invalid_token` (expired, revoked or malformed); see `mcp/authorization.md`. The scopes example above
+  answers 401 for a missing scope, which differs from that. [DOC S-neu52zjd]
 
 ## Reference
 | Level | Where to declare | Order of execution |
