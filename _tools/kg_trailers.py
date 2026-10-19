@@ -41,7 +41,7 @@ def root_of_path(path):
 # The last commit before KB-* trailers existed: it and its ancestors are exempt from check-trailers.
 TRAILERS_SINCE = "e5dadde122a08111128e48eec9656c5d617ab631"
 MAX_IDS = 40  # more values than this: "N ids (see diff)" instead of the list
-KEYS = ("KB-Topics", "KB-Sources-Added", "KB-Sources-Changed", "KB-Sources-Superseded", "KB-Answers")
+KEYS = ("KB-Topics", "KB-Sources-Added", "KB-Sources-Changed", "KB-Sources-Superseded", "KB-Answers", "KB-Teams")
 VERIFIED = "KB-Verified"
 AUTO = "KB-Auto"  # querylog.py's automatic commits (kb/_self/querylog.md, Delivery)
 REF = "KB-Ref"  # an external tracker id of a backlog item (backlog.py claim and done --commit): one per line, one word
@@ -160,7 +160,8 @@ def answer_sections(text):
 def trailers_from(paths, old, new):
     """{key: sorted values} for a change of `paths` (repository paths); old(rel)/new(rel) give a file's text
     before/after (None: absent). Every root under kb/ counts; topics are qualified (`public/intune/win32-apps`),
-    source ids are bare (unique by their root's prefix), answer ids are `<root>:<id>` outside the public root. A
+    source ids are bare (unique by their root's prefix), answer ids are `<root>:<id>` outside the public root, teams
+    are the `team` of each root a path lies in. A
     commit from before the kb moved (a flat tree with `_sources.csv` at the top) is the public root's."""
     groups = {}  # root name -> (repository prefix of the root, [content paths in the root])
     for p in paths:
@@ -213,6 +214,13 @@ def trailers_from(paths, old, new):
             out[k] = sorted(set(out[k]), key=id_key)
     if "KB-Answers" in out:
         out["KB-Answers"] = sorted(set(out["KB-Answers"]))
+    teams = set()  # the `team` of each root a changed path lies in (its _root.md at either end of the diff)
+    for name in {n for n, _ in map(root_of_path, paths) if n}:
+        meta = kbcommon._meta(new(f"{KB_DIR_REL}/{name}/{kbcommon.ROOT_FILE}") or old(f"{KB_DIR_REL}/{name}/{kbcommon.ROOT_FILE}"))
+        if kbcommon.TEAM.fullmatch(meta.get("team", "")):
+            teams.add(meta["team"])
+    if teams:
+        out["KB-Teams"] = sorted(teams)
     return {k: out[k] for k in KEYS if out.get(k)}
 
 
