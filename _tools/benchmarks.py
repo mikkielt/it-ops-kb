@@ -256,7 +256,8 @@
                                             `sequential` followed by the knob values (and `replay`); per agent (`AGENT/METRIC`)
                                             and for the run, input, out, cache_read, cache_write, cost, wall_s and turns, and
                                             for the run dup_facts (facts two agents wrote as one claim, repro compare's match),
-                                            claims and claim_conflicts (the sandbox's coord store), land_stops, rebase_s,
+                                            claims, claim_refused, dedup_hits and skipped_terms (also per agent: each agent has its
+                                            own coord holder, counted from the sandbox's coord store events) and claim_conflicts, land_stops, rebase_s,
                                             right and asked (the lookup agents' answers scored as the pool scores them) and
                                             eval_passed and eval_total (the research agents' frozen questions on the bare's
                                             main); when the file holds a concurrent and a sequential arm of the same record,

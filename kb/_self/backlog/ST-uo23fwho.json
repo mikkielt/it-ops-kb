@@ -63,6 +63,59 @@
     "ST-tslkou63",
     "ST-prrja362"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What does multi record count as a dedup hit and as a skipped lack term?",
+      "options": [
+        "A dedup event that found an overlapping live claim is a hit; a lack term of a dedup event that the event's holder did not claim is skipped",
+        "Every dedup event is a hit; only terms covered by an overlap (not terms held below the threshold) are skipped"
+      ],
+      "recommendation": "A dedup event that found an overlapping live claim is a hit; a lack term of a dedup event that the event's holder did not claim is skipped",
+      "do": {
+        "A dedup event that found an overlapping live claim is a hit; a lack term of a dedup event that the event's holder did not claim is skipped": "ST-uo23fwho",
+        "Every dedup event is a hit; only terms covered by an overlap (not terms held below the threshold) are skipped": "ST-uo23fwho"
+      },
+      "class": "design",
+      "answer": "A dedup event that found an overlapping live claim is a hit; a lack term of a dedup event that the event's holder did not claim is skipped",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which coord_counts keys does the dict hold and how does claim_conflicts come from events?",
+      "options": [
+        "claims, refused, dedup_hits, skipped_terms, conflicts and agents; conflicts are the keys claimed in more than one store plus the refused claims, read from claim events",
+        "Only the four counts and agents; claim_conflicts stays read from the rows left after the run"
+      ],
+      "recommendation": "claims, refused, dedup_hits, skipped_terms, conflicts and agents; conflicts are the keys claimed in more than one store plus the refused claims, read from claim events",
+      "do": {
+        "claims, refused, dedup_hits, skipped_terms, conflicts and agents; conflicts are the keys claimed in more than one store plus the refused claims, read from claim events": "ST-uo23fwho",
+        "Only the four counts and agents; claim_conflicts stays read from the rows left after the run": "ST-uo23fwho"
+      },
+      "class": "design",
+      "answer": "claims, refused, dedup_hits, skipped_terms, conflicts and agents; conflicts are the keys claimed in more than one store plus the refused claims, read from claim events",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Which names do the per-agent rows and the MCP server's environment get?",
+      "options": [
+        "Rows AGENT/claims, AGENT/claim_refused, AGENT/dedup_hits and AGENT/skipped_terms (a holder agentN or multi-agentN counts for agent N); multi setup also gives the kb MCP server KB_COORD_HOLDER",
+        "Run rows only; the MCP server's environment keeps KB_COORD_STORE alone"
+      ],
+      "recommendation": "Rows AGENT/claims, AGENT/claim_refused, AGENT/dedup_hits and AGENT/skipped_terms (a holder agentN or multi-agentN counts for agent N); multi setup also gives the kb MCP server KB_COORD_HOLDER",
+      "do": {
+        "Rows AGENT/claims, AGENT/claim_refused, AGENT/dedup_hits and AGENT/skipped_terms (a holder agentN or multi-agentN counts for agent N); multi setup also gives the kb MCP server KB_COORD_HOLDER": "ST-uo23fwho",
+        "Run rows only; the MCP server's environment keeps KB_COORD_STORE alone": "ST-uo23fwho"
+      },
+      "class": "design",
+      "answer": "Rows AGENT/claims, AGENT/claim_refused, AGENT/dedup_hits and AGENT/skipped_terms (a holder agentN or multi-agentN counts for agent N); multi setup also gives the kb MCP server KB_COORD_HOLDER",
+      "by": "agent"
+    }
+  ],
   "notes": "Premise run 2026-10-19 on 7079b184a (precheck): agent_env gives agent 2 no KB_COORD_HOLDER (None); coord_counts on a planted store with one claim released and one refused returns (0, 0), a tuple; a research --replay run recorded with multi record --out writes no claim_refused, dedup_hits or skipped_terms row.",
   "claimed_by": "orch-r61"
 }
