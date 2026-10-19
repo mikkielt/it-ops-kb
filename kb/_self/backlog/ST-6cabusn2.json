@@ -2,7 +2,7 @@
   "id": "ST-6cabusn2",
   "kind": "story",
   "title": "Research sprint goal: Agent deduplication and structured coordination are tested",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-p46hofrg",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Planner's open questions for the kb (answer with kb_pack first, then the claude-code-docs server): (1) does a headless claude -p session give its Bash tool its own session id in an environment variable, so coord.py can default the holder to it when KB_COORD_HOLDER is unset; (2) do project skills invoked as the first line of a -p prompt (/kb-research ...) and project hooks run in claude -p with --settings and --strict-mcp-config, as the SP-3pvz2noj transcripts show; (3) what published multi-agent work (Anthropic's multi-agent research system, MCP or agent framework docs) says about measuring duplicated work between parallel agents and claim or lease coordination. Facts go to the kb's existing agent-coordination articles (EP-ylklxolb's domain), not to _self."
+  "notes": "Planner's open questions for the kb (answer with kb_pack first, then the claude-code-docs server): (1) does a headless claude -p session give its Bash tool its own session id in an environment variable, so coord.py can default the holder to it when KB_COORD_HOLDER is unset; (2) do project skills invoked as the first line of a -p prompt (/kb-research ...) and project hooks run in claude -p with --settings and --strict-mcp-config, as the SP-3pvz2noj transcripts show; (3) what published multi-agent work (Anthropic's multi-agent research system, MCP or agent framework docs) says about measuring duplicated work between parallel agents and claim or lease coordination. Facts go to the kb's existing agent-coordination articles (EP-ylklxolb's domain), not to _self.",
+  "claimed_by": "orch-r61"
 }
