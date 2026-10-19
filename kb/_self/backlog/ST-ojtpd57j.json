@@ -1,0 +1,25 @@
+{
+  "id": "ST-ojtpd57j",
+  "kind": "story",
+  "title": "A gate about the backlog's release command is not classed push",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_authority's push words leave out release when it names the backlog's claim release (release, reopen and drop of a claim, a claim's operator after release), so such a design gate is not made a push gate an agent may not answer, while a release note or a package release stays push",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0, '_tools'); import bl_authority as a\ng = {'id': 'g1', 'question': \"How do the operator fields sit on an item: the claim's operator after release?\", 'options': [\"release, reopen and drop clear a claim's operator with claimed_by\", 'keep it after release']}\nc = a.derived_class({'touches': ['_tools/bl_items.py']}, g); print(c); sys.exit(0 if c != 'push' else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py"
+  ],
+  "links": [
+    "parked: SP-czs3jk57 close"
+  ],
+  "notes": "SP-czs3jk57 close: ST-zcfgtpfv's gate g1 (a claim's operator after release) was classed push on the word release, so the worker committed it open and the orchestrator answered it as operator. The push class is a guarded component: the change needs the operator's gate."
+}

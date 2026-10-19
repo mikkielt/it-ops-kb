@@ -1,0 +1,25 @@
+{
+  "id": "ST-kykf5crd",
+  "kind": "story",
+  "title": "A plan that adds a field to a coord event kind puts coord.py in the item's touches",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the kb-sprint plan step says that an item whose goal adds a field to a coord event (an intent, a claim) runs backlog.py referrers KIND_FIELDS and puts _tools/coord.py in its touches, since coord.py refuses a field its KIND_FIELDS does not list",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t = open('.claude/skills/kb-sprint/SKILL.md').read(); sys.exit(0 if 'KIND_FIELDS' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-czs3jk57 close"
+  ],
+  "notes": "SP-czs3jk57 close: ST-lnjebku7's worker stopped at its first run because coord.py rejected the intent's new operator field (KIND_FIELDS) outside the touches; the orchestrator widened the touches and resumed it (one extra session)."
+}

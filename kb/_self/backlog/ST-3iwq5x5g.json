@@ -1,0 +1,25 @@
+{
+  "id": "ST-3iwq5x5g",
+  "kind": "story",
+  "title": "A check of clone-local state runs in a linked worktree too",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the kb-sprint plan step says that a check of a file a tool keeps under the clone (_private, _cache) runs once in the main checkout and once in a linked worktree with HOME outside both, since sessions and workers run from worktrees",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t = open('.claude/skills/kb-sprint/SKILL.md').read(); sys.exit(0 if 'linked worktree too' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-czs3jk57 close"
+  ],
+  "notes": "SP-czs3jk57 close: ST-6iu2xb23's check ran kbwho in one clone with HOME set to it, so it could not show that each linked worktree writes its own _private/operators.json and gives one operator several ids (review gap, draft ST-xbjwdmpv)."
+}

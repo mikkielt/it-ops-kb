@@ -1,0 +1,25 @@
+{
+  "id": "ST-ij5dtjua",
+  "kind": "story",
+  "title": "A sprint whose items share only doc touches still runs its code items in parallel",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the kb-sprint plan step moves the kb/_self doc edits that most of a sprint's items share (tools.md, code.md) into one docs task at the end, or names how land resolves doc-only overlaps, so items whose code touches do not meet run in parallel",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t = open('.claude/skills/kb-sprint/SKILL.md').read(); sys.exit(0 if 'docs task' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-czs3jk57 close"
+  ],
+  "notes": "SP-czs3jk57 close: four of six work items shared kb/_self/tools.md and kb/_self/code.md and nothing else, so they ran one after another (about two hours of serial worker time) although their code touches did not overlap."
+}

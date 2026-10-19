@@ -1,0 +1,28 @@
+{
+  "id": "ST-knt6slnq",
+  "kind": "story",
+  "title": "dispatch resumes a stopped worker and keeps its environment and record",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py dispatch --resume SESSION resumes a worker's claude -p session in its worktree with the same KB_OPERATOR, KB_ROLE and capture settings and records the resumed session, so a resumed worker's work rows reach the spool and land finds them",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, sys; r = subprocess.run([sys.executable, '_tools/backlog.py', 'dispatch', '--help'], capture_output=True, text=True); sys.exit(0 if '--resume' in r.stdout else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-czs3jk57 close"
+  ],
+  "notes": "SP-czs3jk57 close: ST-lnjebku7's worker was resumed by hand with claude -p --resume; land then warned the item landed with no work rows (no spool file of session 953f2fb7)."
+}
