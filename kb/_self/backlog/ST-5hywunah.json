@@ -63,6 +63,40 @@
       "class": "design",
       "answer": "source ids with an internal root's prefix, the url hosts and paths of internal pointers, and qualified paths of internal roots (<name>/<domain>/...); never a bare root or team name",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which url hosts of an internal pointer does the leak scan leave alone?",
+      "options": [
+        "none: every host of an internal pointer's url is refused",
+        "placeholder hosts (example.com, .org, .net, localhost) and the public git hosts (github.com, gitlab.com, bitbucket.org, dev.azure.com); the url's path is refused whatever its host"
+      ],
+      "recommendation": "placeholder hosts (example.com, .org, .net, localhost) and the public git hosts (github.com, gitlab.com, bitbucket.org, dev.azure.com); the url's path is refused whatever its host",
+      "do": {
+        "none: every host of an internal pointer's url is refused": "ST-5hywunah",
+        "placeholder hosts (example.com, .org, .net, localhost) and the public git hosts (github.com, gitlab.com, bitbucket.org, dev.azure.com); the url's path is refused whatever its host": "ST-5hywunah"
+      },
+      "class": "push",
+      "answer": "placeholder hosts (example.com, .org, .net, localhost) and the public git hosts (github.com, gitlab.com, bitbucket.org, dev.azure.com); the url's path is refused whatever its host",
+      "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Where does the planted-failure case for the private names live, and does the tracked-file scan skip an internal pointer file?",
+      "options": [
+        "one planted case added inside the existing planted-leak test, and the tracked-file scan skips the pointer files of internal roots like their root files",
+        "a new test function, and the pointer files stay scanned"
+      ],
+      "recommendation": "one planted case added inside the existing planted-leak test, and the tracked-file scan skips the pointer files of internal roots like their root files",
+      "do": {
+        "one planted case added inside the existing planted-leak test, and the tracked-file scan skips the pointer files of internal roots like their root files": "ST-5hywunah",
+        "a new test function, and the pointer files stay scanned": "ST-5hywunah"
+      },
+      "class": "design",
+      "answer": "one planted case added inside the existing planted-leak test, and the tracked-file scan skips the pointer files of internal roots like their root files",
+      "by": "agent"
     }
   ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): kbcommon.leak_hits on a text holding TA-k3f7q2zd, an internal pointer's url and team-b/mdm/x.md returns no hits. A leak guard is a critical component: one planted-failure case in the existing test file. ",

@@ -46,6 +46,8 @@ and a topic by `<root>/<topic>`.
   split(qpath)                (Root, rel) of a qualified path; (None, qpath) when its first part names no root
   path_of(qpath)              the absolute path of a qualified path (a root's file), else of a repository path
   root_of_prefix(prefix)      the Root whose id_prefix it is, or None
+  private_hits(text)          [(kind, value)] of the private names of the internal roots and pointers (the leak scan's
+                              `private-id`, `private-host`, `private-path` kinds; leak_hits adds them)
 
 A remote root, one kept in another repository, is named by a pointer file kb/_roots/<name>.md (front matter `root`,
 `id_prefix`, `visibility`, `team`, `url`, `ref`, `pin`, `access`, `description`). Its root is served when it is on
@@ -217,8 +219,9 @@ def secrets_rx():
 
 
 def leak_hits(text, allow=None):
-    """[(kind, value)] of the leak scan's shapes in `text`: secret, home, ip, email, guid; `allow` maps a kind to
-    lowercased values that pass (the scan of tracked files reads them from _tools/tests_allowlist.txt)."""
+    """[(kind, value)] of the leak scan's shapes in `text`: secret, home, ip, email, guid, and the private names the
+    registry knows (`private_hits`); `allow` maps a kind to lowercased values that pass (the scan of tracked files
+    reads them from _tools/tests_allowlist.txt)."""
     allow = allow or {}
     out = [("secret", m.group(0)) for m in re.finditer(secrets_rx(), text)
            if m.group(0).lower() not in allow.get("secret", ())]
@@ -230,6 +233,7 @@ def leak_hits(text, allow=None):
             if not EMAIL_OK.search(m.group(0)) and m.group(0).lower() not in allow.get("email", ())]
     out += [("guid", m.group(0)) for m in re.finditer(LEAK_GUID, text)
             if not GUID_OK.fullmatch(m.group(0).lower()) and m.group(0).lower() not in allow.get("guid", ())]
+    out += [h for h in private_hits(text) if h[1].lower() not in allow.get(h[0], ())]
     return out
 
 
@@ -684,6 +688,68 @@ def root_of_prefix(prefix):
         if r.id_prefix == prefix:
             return r
     return None
+
+
+SHARED_HOST = re.compile(r"(?i)(?:^|\.)(?:example\.(?:com|org|net)|localhost|github\.com|gitlab\.com|bitbucket\.org|dev\.azure\.com)$")
+_PRIVATE = {}  # the compiled private-name patterns, keyed by the registry they were built from
+
+
+def _url_host_path(url):
+    """(host, path) of a pointer's `url`: `scheme://[user@]host[:port]/path`, `[user@]host:path` or a local path (no host)."""
+    m = re.fullmatch(r"[a-z][a-z0-9+.-]*://(?:[^/@]*@)?([^/:]*)(?::\d+)?(/.*)?", url, re.I)
+    if not m:
+        m = re.fullmatch(r"(?:[^/@:]+@)?([A-Za-z0-9.-]+):(?!//)(.*)", url)
+    host, path = (m.group(1), m.group(2) or "") if m else ("", url)
+    return host, re.sub(r"\.git$", "", path.strip("/"))
+
+
+def _private_patterns():
+    """[(kind, compiled pattern)] for the internal roots and pointers the registry holds (served, missing or unsound):
+    their source ids by prefix, the hosts and paths of their pointers' urls, and their qualified paths. None of it
+    raises: a registry that cannot be read gives no pattern."""
+    try:
+        _load()
+        files = tuple((f, os.stat(f).st_mtime_ns) for f in _pointer_files())
+        internal = {(r.name, r.id_prefix) for r in _ROOTS if r.visibility != "public"}
+        internal |= {(m.name, m.id_prefix) for m in _MISSING if m.visibility != "public"}
+        urls = []
+        for f, _ in files:
+            with open(f, encoding="utf-8", errors="replace") as fh:
+                meta = _meta(fh.read())
+            if meta.get("visibility", "internal") != "public":
+                internal.add((_pointer_stem(f), meta.get("id_prefix", "")))
+                urls.append(meta.get("url", ""))
+    except (OSError, RootError):
+        return []
+    key = (frozenset(internal), tuple(urls), files)
+    if key not in _PRIVATE:
+        names = sorted({n for n, _ in internal if n}, key=lambda n: (-len(n), n))
+        prefixes = sorted({p for _, p in internal if p})
+        hosts, paths = set(), set()
+        for host, path in map(_url_host_path, filter(None, urls)):
+            if host and not SHARED_HOST.search(host):
+                hosts.add(host)
+            if path.count("/") >= 1 and all(path.split("/")):
+                paths.add(path)
+        out = []
+        if prefixes:
+            out.append(("private-id", re.compile(r"(?<![\w-])(?:%s)-[a-z2-7]{8}(?![\w-])" % "|".join(map(re.escape, prefixes)))))
+        if hosts:
+            out.append(("private-host", re.compile(r"(?i)(?<![\w.-])(?:%s)(?![\w-])" % "|".join(map(re.escape, sorted(hosts))))))
+        if paths:
+            out.append(("private-path", re.compile(r"(?<![\w.-])(?:%s)(?![\w-])" % "|".join(map(re.escape, sorted(paths))))))
+        if names:
+            out.append(("private-path", re.compile(r"(?:(?<![\w./-])|(?<=\bkb/))(?:%s)(?:/\w[\w.-]*)+" % "|".join(map(re.escape, names)))))
+        _PRIVATE[key] = out
+    return _PRIVATE[key]
+
+
+def private_hits(text):
+    """[(kind, value)] of the private names the registry knows, in `text`: `private-id` (a source id with an internal
+    root's prefix), `private-host` (the host of an internal pointer's url, unless it is a placeholder or a public git
+    host), `private-path` (the path of such a url, or a qualified path `<internal root>/<domain>/...`). A bare root or
+    team name, a shared root's id or path and a placeholder host pass."""
+    return [(kind, m.group(0).rstrip(".-")) for kind, rx in _private_patterns() for m in rx.finditer(text)]
 
 
 def read_sources():
