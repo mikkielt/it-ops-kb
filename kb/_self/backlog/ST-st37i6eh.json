@@ -1,0 +1,25 @@
+{
+  "id": "ST-st37i6eh",
+  "kind": "story",
+  "title": "The leak scan's email shape catches an address at a dotless host and at an internationalised domain",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbcommon.leak_hits reports kind email for an address at a dotless host such as localhost and at a domain with non-ASCII letters, so publish, redact and the tracked-file scan refuse them",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, \"_tools\"); import kbcommon\ncases = [\"jan\" + chr(64) + \"localhost\", \"jan\" + chr(64) + \"münchen.de\"]\nmiss = [c.split(chr(64))[1] for c in cases if not any(k == \"email\" for k, _ in kbcommon.leak_hits(\"x \" + c + \" y\"))]\nprint(\"the leak scan misses an address at: \" + \", \".join(miss) if miss else \"ok\"); sys.exit(1 if miss else 0)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbcommon.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-yjugq5c2 review"
+  ]
+}

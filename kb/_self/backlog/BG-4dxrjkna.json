@@ -37,7 +37,9 @@
       },
       "class": "design",
       "answer": "build patterns from _root.md files read directly",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

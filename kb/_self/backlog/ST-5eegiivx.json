@@ -1,0 +1,25 @@
+{
+  "id": "ST-5eegiivx",
+  "kind": "story",
+  "title": "check-trailers reads a merge commit's KB-Operator and refuses an email there",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbgit.py check-trailers judges the KB-Operator trailer of a merge commit in its range as it does a plain commit's, and refuses an email address there",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, shutil, subprocess, sys, tempfile\nT = tempfile.mkdtemp(); C = os.path.join(T, \"clone\")\nshutil.copytree(\"_tools\", os.path.join(C, \"_tools\"), ignore=shutil.ignore_patterns(\"__pycache__\", \"*.pyc\", \"fixtures\"))\nshutil.copytree(\".claude/hooks\", os.path.join(C, \".claude\", \"hooks\"))\nfor f in (\"backlog.json\", \".gitignore\"):\n    shutil.copy(f, C)\nos.makedirs(os.path.join(C, \"kb\", \"_self\", \"notes\"))\nEM = \"jan.kowalski\" + chr(64) + \"corp-mail.test\"\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_\", \"CLAUDE\"))}\nENV.update(HOME=T, GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\", KB_LIVE_DOCS=\"0\", KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"),\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t\" + chr(64) + \"example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t\" + chr(64) + \"example.com\")\ndef g(*a):\n    return subprocess.run([\"git\", *a], cwd=C, env=ENV, capture_output=True, text=True, check=True).stdout\ng(\"init\", \"-q\", \"-b\", \"main\"); g(\"add\", \"-A\"); g(\"commit\", \"-qm\", \"base\", \"--no-verify\")\ng(\"checkout\", \"-qb\", \"side\"); open(os.path.join(C, \"kb\", \"_self\", \"notes\", \"a.md\"), \"w\").write(\"a\\n\"); g(\"add\", \"-A\"); g(\"commit\", \"-qm\", \"docs: a\", \"--no-verify\")\ng(\"checkout\", \"-q\", \"main\"); g(\"merge\", \"-q\", \"--no-ff\", \"--no-verify\", \"-m\", \"merge side\\n\\nKB-Operator: \" + EM, \"side\")\nr = subprocess.run([sys.executable, os.path.join(C, \"_tools\", \"kbgit.py\"), \"check-trailers\", \"side..HEAD\"], cwd=C, env=ENV, capture_output=True, text=True, timeout=300)\nbad = r.returncode != 0 and \"KB-Operator\" in r.stdout + r.stderr\nprint(\"ok\" if bad else \"check-trailers accepts an email in a merge commit's KB-Operator\"); sys.exit(0 if bad else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kg_trailers.py",
+    "kb/_self/git.md"
+  ],
+  "links": [
+    "parked: SP-yjugq5c2 review"
+  ]
+}

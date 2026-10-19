@@ -1,0 +1,25 @@
+{
+  "id": "ST-6fmtv5xs",
+  "kind": "story",
+  "title": "kbwho keeps a linked worktree's existing operator alias and mints a first alias once under a lock",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbwho moves an alias a linked worktree's own _private/operators.json already holds into the clone's file instead of minting a new one, and two first-time callers for one email get one alias",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, shutil, subprocess, sys, tempfile, json\nT = tempfile.mkdtemp(); C = os.path.join(T, \"c\")\nshutil.copytree(\"_tools\", os.path.join(C, \"_tools\"), ignore=shutil.ignore_patterns(\"__pycache__\", \"*.pyc\", \"fixtures\"))\nshutil.copy(\".gitignore\", C)\nB = os.path.join(T, \"b\"); os.makedirs(B)\nEM = \"jan.kowalski\" + chr(64) + \"corp-mail.test\"\np = os.path.join(B, \"claude\"); open(p, \"w\").write(\"#!/bin/sh\\necho '{\\\"email\\\": \\\"%s\\\"}'\\n\" % EM); os.chmod(p, 0o755)\nE = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_\", \"CLAUDE\"))}\nE.update(PATH=B + os.pathsep + os.environ[\"PATH\"], GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\",\n         GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t\" + chr(64) + \"example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t\" + chr(64) + \"example.com\")\ndef g(*a, cwd=C):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=E, check=True, capture_output=True, text=True).stdout\ndef start(d):\n    return subprocess.Popen([sys.executable, os.path.join(d, \"_tools\", \"kbwho.py\"), \"--json\"], cwd=d, env=E, stdout=subprocess.PIPE, text=True)\ng(\"init\", \"-q\", \"-b\", \"main\"); g(\"add\", \"-A\"); g(\"commit\", \"-qm\", \"base\")\nW = os.path.join(T, \"w\"); g(\"worktree\", \"add\", \"-q\", \"--detach\", W)\nos.makedirs(os.path.join(W, \"_private\")); open(os.path.join(W, \"_private\", \"operators.json\"), \"w\").write(json.dumps({EM: \"op-feedface\"}))\nkept = json.loads(start(W).communicate()[0] or \"{}\").get(\"id\") == \"op-feedface\"\nC2 = os.path.join(T, \"c2\"); shutil.copytree(C, C2, ignore=shutil.ignore_patterns(\"_private\"))\nids = {json.loads(p.communicate()[0] or \"{}\").get(\"id\") for p in [start(C2) for _ in range(8)]}\nprint(\"worktree alias kept:\", kept, \"ids of 8 first-time calls:\", len(ids)); sys.exit(0 if kept and len(ids) == 1 else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbwho.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-yjugq5c2 review"
+  ]
+}

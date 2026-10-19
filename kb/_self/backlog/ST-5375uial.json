@@ -1,0 +1,25 @@
+{
+  "id": "ST-5375uial",
+  "kind": "story",
+  "title": "kbmon's OTel adapter keeps no email in its fallback resource, proved on a stubbed SDK",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "otel/kbmon_otel.py's fallback resource, used when kbwho gives none, holds no email-shaped service.name; its check imports the adapter on a stubbed OpenTelemetry SDK, since the review could not run the adapter path",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import importlib.abc, importlib.machinery, os, sys, types\nclass Stub(types.ModuleType):\n    def __getattr__(self, name):\n        if name.startswith(\"__\"):\n            raise AttributeError(name)\n        return type(name, (), {\"__init__\": lambda s, *a, **k: None})\nclass Finder(importlib.abc.MetaPathFinder, importlib.abc.Loader):\n    def find_spec(self, name, path, target=None):\n        return importlib.machinery.ModuleSpec(name, self, is_package=True) if name.split(\".\")[0] == \"opentelemetry\" else None\n    def create_module(self, spec):\n        return Stub(spec.name)\n    def exec_module(self, m):\n        m.__path__ = []\nsys.meta_path.insert(0, Finder()); sys.path.insert(0, \"otel\")\nimport kbmon_otel\nkbmon_otel.KBWHO = os.path.join(\"_tools\", \"no-such-kbwho.py\")\nos.environ[\"OTEL_SERVICE_NAME\"] = \"jan\" + chr(64) + \"corp-mail.test\"\ngot = kbmon_otel.otel_attributes()\nleak = any(chr(64) in str(k) + str(v) for k, v in got.items())\nprint(\"the adapter's fallback resource holds an email\" if leak else \"ok\"); sys.exit(1 if leak else 0)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "otel/kbmon_otel.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-yjugq5c2 review"
+  ]
+}

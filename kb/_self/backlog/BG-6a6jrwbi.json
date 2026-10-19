@@ -1,0 +1,25 @@
+{
+  "id": "BG-6a6jrwbi",
+  "kind": "bug",
+  "title": "kbgit.py publish lets a noreply or no-reply local part at any domain, and any host whose first label is noreply, through its message guard",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "publish's message guard passes a noreply address only at the domains the kb names (the Claude Code trailer's and users.noreply.github.com) and the placeholder domains, and refuses a noreply or no-reply local part at any other domain and a host whose first label is noreply",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os, subprocess, sys, tempfile\nsys.path.insert(0, \"_tools\"); import kbpublic\nd = tempfile.mkdtemp(); e = dict(os.environ, GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\", GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ng = lambda *a: subprocess.run([\"git\", *a], cwd=d, env=e, check=True, capture_output=True)\ng(\"init\", \"-q\")\nbad = [\"noreply\" + chr(64) + \"gmail.com\", \"no-reply\" + chr(64) + \"corp-mail.test\", \"jan\" + chr(64) + \"noreply.corp-mail.test\"]\nmiss = []\nfor a in bad:\n    g(\"commit\", \"-q\", \"--allow-empty\", \"-m\", \"docs: x\\n\\nReviewed-by: \" + a)\n    if not kbpublic.message_refusals(\"HEAD\", \"HEAD~1\" if a != bad[0] else None, {}, d):\n        miss.append(a.split(chr(64))[0] + \" at \" + a.split(chr(64))[1].split(\".\")[0])\nprint(\"not refused: \" + \", \".join(miss) if miss else \"ok\"); sys.exit(1 if miss else 0)\n"
+    ]
+  },
+  "touches": [
+    "_tools/kbpublic.py",
+    "_tools/kbcommon.py",
+    "kb/_self/git.md"
+  ],
+  "links": [
+    "parked: SP-yjugq5c2 review"
+  ]
+}
