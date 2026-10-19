@@ -2,7 +2,7 @@
   "id": "ST-usolafmz",
   "kind": "story",
   "title": "A root's _root.md names its team, check.py validates it, and kbroot.py list and kb_status show it",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-46k7sw57",
   "priority": "P2",
@@ -43,5 +43,6 @@
     "kb/_self/embedding.md",
     "kb/_self/token-efficiency.md"
   ],
-  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): _root.md has no team field; kbroot.py list prints none. "
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): _root.md has no team field; kbroot.py list prints none. ",
+  "claimed_by": "orch-r37"
 }
