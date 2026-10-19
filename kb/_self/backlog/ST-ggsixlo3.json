@@ -55,7 +55,9 @@
         "claims research:replay:HOLDER with a claim event, releases it with a release event after its sync": "ST-ggsixlo3",
         "claims nothing in a replay (dedup finds no lack term), so only paid runs have claims": "ST-ggsixlo3"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "claims research:replay:HOLDER with a claim event, releases it with a release event after its sync",
+      "by": "operator"
     },
     {
       "id": "plants",
