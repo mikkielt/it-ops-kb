@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "remember_feedback_id rewrites feedback.ids with no lock or atomic replace, so two hook processes can drop an id",
   "status": "draft",
+  "sprint": "SP-vx6eufpj",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
@@ -15,10 +16,20 @@
     ]
   },
   "repro_reason": "the lost id needs two processes interleaving the read and the write; the race is not reproducible on demand, so the repro reads that the function takes no lock and no atomic replace yet",
+  "clauses": [
+    {
+      "clause": "remember_feedback_id writes feedback.ids under a lock or by an atomic replace, so the async capture hook and the MCP server recording at once keep both ids. Found by the SP-ficl7pxl review (ST-vpwkr76k gate g1)",
+      "check": 0
+    }
+  ],
   "touches": [
-    "_tools/ql_capture.py"
+    "_tools/ql_capture.py",
+    "kb/_self/code.md",
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md"
   ],
   "links": [
     "parked: SP-ficl7pxl review"
-  ]
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): query-log capture robustness. Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs."
 }

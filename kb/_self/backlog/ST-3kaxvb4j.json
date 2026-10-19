@@ -1,0 +1,49 @@
+{
+  "id": "ST-3kaxvb4j",
+  "kind": "story",
+  "title": "AGENTS.md keeps headroom under its 4 KB cap with no rule changed",
+  "status": "draft",
+  "sprint": "SP-gea4jifz",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "AGENTS.md holds at most 3968 bytes after the batch, maintainer detail moved into kb/_self; the _self lookup eval passes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nn=len(open('AGENTS.md','rb').read());print('AGENTS.md bytes',n);sys.exit(0 if n<=3968 else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval",
+        "--root",
+        "_self"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "AGENTS.md holds at most 3968 bytes after the batch, maintainer detail moved into kb/_self",
+      "check": 0
+    },
+    {
+      "clause": "the _self lookup eval passes",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/tools.md",
+    "kb/_self/design.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-wquz2n6c"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): AGENTS.md on 2026-10-19: 4091 of 4096 bytes; SP-dulvwwjc and SP-3hgirkur each add a line first. Trimming only: a wording that changes a rule is a blocking operator gate. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+}

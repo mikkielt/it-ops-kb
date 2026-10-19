@@ -1,0 +1,41 @@
+{
+  "id": "ST-g6t7jung",
+  "kind": "story",
+  "title": "The named unanchored facts are anchored to their sources or reworded",
+  "status": "draft",
+  "sprint": "SP-2rjhs7se",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the facts that seven review findings named as unanchored or overclaiming hold located anchor rows with quotes or are reworded to what their source says, as each folded item's check reads",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,subprocess,sys,os,base64,zlib\n# the folded drafts' own repro and check commands, compressed (their item files are in git history)\nR=json.loads(zlib.decompress(base64.b64decode('eJzFVcFu4zYQ/RVCF0qAJDtxGrf1qoeiQO/N3izBoKiRxUoiuSQVW1nsv3co2WsnbneDokAvhkwOOW/eezPcboNff0/Kw2jWatBBTLaBHl2j5Aq/g4T7X9FrZRzh9jm2o90Qk22PpFaGHImQfjn9TXD3B7AKTKg0yDAP2nKhh7ITfLFjkjfK2BQD8yAGyVUl5D7Lg8HVyY95EEVE1OS4zQOrBsNhJ6o8KDIMeFo/3OPnhmDaFI7ChXc+lMkx9OHPYEQtoNoNjmPYhzy4X94/JnfL5G6VBxeEJiLQWSDLKCgKXyFWvHLPx2a/cu+r2OfXzDWpkBaMC5cx3TmlOkujDTkFt2XNuMPg1mafT39S/7trYQyHLXVwdLSIJlyDx3UOGqRwNqQzX3RiA8N9PlqkICt7EK4J6aITcjgmsnas7MCmfYWxTFaEVmCdUSOx4Ki/+GuyebvuBtvcbn7ZENVmn82WehgY7IGZf5KU/r2i9CIonfSks5x4q3XMDZaikrRTnDmo6IQHtz4NygEWh7CFDqMvVwov/enWTpGt/ZCpdhbv7ize08dkP/Z6fHns3yNeLo06WF/msvjZvK7R/Lv6vuSSZf7WdA8upEvGf2L3d4zx1Rr94LK397E9SGcXleIJb5jcQ1KBA+6Ekl7E2wwTsDDKZdkjd6yEDqXfE0ZKpdqemXYS0m20ERIB9GDwzlp0QGbkNGYTf2y7KmJ6PkQOyvg0pAXtaFz2mOA17aFUDrMgRf7klW6zz/xu2d/KwXTPDo0Q35TDDqU2ioO1syoqu6ykZpDhdsYCfJj8fe6whTdnJeo61SONaZIYpRD9uVtiehJr2hvkGXERc6bdYGCnBqcHl300A8Te+NNXhNarcAcpZlW27SZfdJ5VlVrdCYeEgw0nK1Opkp453kysdxMVYUj3wiUOGy8xoJUVThkxN+UlihoomYV5Je3UAc2G7YGpQuyOqhNlchCyQiclniNWCsw8vrnjAmdejaIilyflv9ZLDFhghjfE+5LGHToQK4uizWuFJwlZ9UZDnIfderg37qV5p4aEWXISUmf/h34o3CvZ9EnQW/Wekl48VJ02q5m/4tQ2GrsME/jeg5mvKL4mFHkkqiZXx6/InN6h6xu8qOWbZwZb43H98MO4ZvadD6ufVNv/Zkh5gL4qE/2yPo3dO9/SM4jFyX4V1upED4mwKjkAtN58xdtx7B9cqg3UYAxSo/Dhnbg02/XVq+HRR7fTwf75ctR7s/62s7yTbifna7D2E0oLq8Sz8p256ZtaT9C0h4bt1jCEnvg3CQhXkg9YiuQjYcYJjpPTQIf9iy50jUBv32QkTunz6zzd6S5t2EHtByr223fbrfgLgD4xmA==')))\nbad=[]\nenv=dict(os.environ,NO_COLOR='1')\nfor i,a in R:\n    p=subprocess.run(a,capture_output=True,text=True,timeout=600,env=env)\n    print(i,'exit',p.returncode)\n    if p.returncode: bad.append(i)\nprint('still failing:',bad);sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the facts that seven review findings named as unanchored or overclaiming hold located anchor rows with quotes or are reworded to what their source says, as each folded item's check reads",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "kb/public/gitlab/git-test-repositories.md",
+    "kb/public/agents/doc-change-detection.md",
+    "kb/public/python/stdlib-windows-portability.md",
+    "kb/public/security/secret-shapes-in-text.md",
+    "kb/public/python/stdlib-datetime-iso-week.md",
+    "kb/public/python/stdlib-sqlite3-csv.md",
+    "kb/public/_fetch_state.csv",
+    "kb/public/_anchors.csv",
+    "kb/public/_sources.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "depends_on": [
+    "ST-sj65ovxr"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): folds BG-bwyr7oup, BG-3tvxhg3t, ST-gympyz6m, ST-apmawhii, BG-l7u2rtzh, ST-6745y7as, ST-sjzxpgr7 (all failed on 2026-10-19). A fact whose source does not support it is put to the operator as a blocking gate, never deleted by the worker."
+}

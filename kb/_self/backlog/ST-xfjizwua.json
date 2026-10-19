@@ -1,0 +1,25 @@
+{
+  "id": "ST-xfjizwua",
+  "kind": "story",
+  "title": "Research sprint goal: Agents call the kb's read-only commands as kb MCP tools, with the command line as fallback",
+  "status": "draft",
+  "sprint": "SP-ttgcpf7o",
+  "goal_research": true,
+  "priority": "P1",
+  "rank": 0,
+  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "researched",
+        "ST-xfjizwua"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ],
+  "notes": "Open questions for this sprint (kb first, then live docs): Questions: (1) MCP tool annotations (readOnlyHint, destructiveHint, idempotentHint, openWorldHint) and how clients treat them (kb/public/mcp/ first, then mcp-docs); (2) how Claude Code loads many MCP tools (tool search, deferred schemas) and what tools/list costs in context (claude-code-docs)."
+}

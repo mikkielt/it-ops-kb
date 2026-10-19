@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "coord.py --url with a malformed host ends in a ValueError or UnicodeError traceback and exit 1",
   "status": "draft",
+  "sprint": "SP-tsb23kev",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -14,12 +15,22 @@
       "import os,subprocess as s,sys,tempfile\nD=tempfile.mkdtemp();k=os.path.join(D,'k');open(k,'w').write('a'*40);os.chmod(k,0o600)\nbad=[]\nfor u in ('http://[::1','https://'+'a'*70+'.com'):\n    p=s.run([sys.executable,'_tools/coord.py','--url',u,'--key-file',k,'get','x'],capture_output=True,text=True,timeout=60,env=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.db')))\n    print(u[:20],'exit',p.returncode,'Traceback' in p.stderr)\n    if p.returncode!=2 or 'Traceback' in p.stderr: bad.append(u)\nsys.exit(0 if not bad else 1)"
     ]
   },
+  "clauses": [
+    {
+      "clause": "coord.py checks a --url it cannot split or encode (an unclosed IPv6 bracket, a host label over 63 characters) and exits 2 with a one-line reason, as BG-gmaaoumg made a bad port do, never a traceback or exit 1 (the 'key held' code). Found by the SP-fp3hxl6q review (S3, BG-gmaaoumg)",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/coord.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "BG-a2vvmvc4"
   ],
   "links": [
     "parked: SP-fp3hxl6q review"
   ],
-  "notes": "Review 2026-10-18: urllib.parse.urlsplit at coord.py:898 is unguarded."
+  "notes": "Review 2026-10-18: urllib.parse.urlsplit at coord.py:898 is unguarded. operator request 2026-10-19 (housekeeping batch): unclear errors: a traceback instead of a usage message. Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs."
 }

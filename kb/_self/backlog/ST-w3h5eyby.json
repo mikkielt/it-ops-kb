@@ -1,0 +1,43 @@
+{
+  "id": "ST-w3h5eyby",
+  "kind": "story",
+  "title": "kbask remediate answers an alert with a fixed remedy without a model session",
+  "status": "draft",
+  "sprint": "SP-v64egscn",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbask.py remediate answers an alert of a kind whose remedy is fixed (an orphan process) through coord from a rule table with no model session; an alert of any other kind still starts the capped session",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, subprocess, tempfile, stat\nT = tempfile.mkdtemp(); B = os.path.join(T, 'bin'); os.makedirs(B); log = os.path.join(T, 'claude.log')\nsh = os.path.join(B, 'claude'); open(sh, 'w').write('#!/bin/sh\\necho \"$@\" >> ' + log + '\\necho {}\\n'); os.chmod(sh, 0o755)\nenv = {k: v for k, v in os.environ.items() if not k.startswith('KB_COORD')}\nenv.update(PATH=B + os.pathsep + env['PATH'], KB_COORD_STORE=os.path.join(T, 'c.sqlite'), CLAUDE_PLUGIN_DATA=T, NO_COLOR='1')\ndef rem(alert):\n    if os.path.exists(log): os.remove(log)\n    p = subprocess.run([sys.executable, '_tools/kbask.py', 'remediate', alert], capture_output=True, text=True, env=env, timeout=180)\n    import time; time.sleep(3)\n    return p, os.path.exists(log)\np, called = rem('sessions.orphan')\nprint('orphan:', p.returncode, called, (p.stdout + p.stderr)[-300:])\nassert not called, 'kbask remediate started a model session for an orphan alert, whose remedy is fixed'\nlst = subprocess.run([sys.executable, '_tools/coord.py', 'list'], capture_output=True, text=True, env=env, timeout=60).stdout\nassert 'answer/' in lst, 'no coord answer was posted for the orphan alert: ' + lst[-300:]\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, subprocess, tempfile, time\nT = tempfile.mkdtemp(); B = os.path.join(T, 'bin'); os.makedirs(B); log = os.path.join(T, 'claude.log')\nsh = os.path.join(B, 'claude'); open(sh, 'w').write('#!/bin/sh\\necho \"$@\" >> ' + log + '\\necho {}\\n'); os.chmod(sh, 0o755)\nenv = {k: v for k, v in os.environ.items() if not k.startswith('KB_COORD')}\nenv.update(PATH=B + os.pathsep + env['PATH'], KB_COORD_STORE=os.path.join(T, 'c.sqlite'), CLAUDE_PLUGIN_DATA=T, NO_COLOR='1')\np = subprocess.run([sys.executable, '_tools/kbask.py', 'remediate', 'planted.unknown-kind'], capture_output=True, text=True, env=env, timeout=180)\nfor _ in range(20):\n    if os.path.exists(log): break\n    time.sleep(1)\nprint('unknown kind:', p.returncode, os.path.exists(log))\nassert os.path.exists(log), 'an alert of a kind with no fixed remedy did not start the capped session'\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbask.py remediate answers an alert of a kind whose remedy is fixed (an orphan process) through coord from a rule table with no model session",
+      "check": 0
+    },
+    {
+      "clause": "an alert of any other kind still starts the capped session",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/kbask.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/code.md",
+    "kb/_self/tools.md"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): kbmon on 2026-10-19 showed one alert, sessions.orphan, whose remedy is the same each time (backlog.py procs names the pid). Plan against SP-ep7cyuob, which changes kbask.py first. Premise: the first check fails (a shim claude on PATH is started). Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+}

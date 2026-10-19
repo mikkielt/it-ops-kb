@@ -1,0 +1,39 @@
+{
+  "id": "ST-7stcidke",
+  "kind": "story",
+  "title": "After a redact widening, the local store's waiting entries are re-redacted so delivery does not stall",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "querylog.py offers an operator command that re-runs the current redact rules over the local store's waiting entries and reports each change, so a redact widening does not block apply --push",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;o=subprocess.run([sys.executable,'_tools/querylog.py','--help'],capture_output=True,text=True).stdout;sys.exit(0 if 'reredact' in o else 1)"
+      ]
+    }
+  ],
+  "gates": [
+    {
+      "id": "querylog",
+      "kind": "blocking",
+      "question": "Should querylog.py get an operator command that re-redacts waiting local entries?",
+      "options": [
+        "add the operator-run command",
+        "keep fixing a stall by hand"
+      ],
+      "recommendation": "add the operator-run command",
+      "do": {
+        "add the operator-run command": "ST-7stcidke",
+        "keep fixing a stall by hand": "ST-7stcidke"
+      },
+      "class": "querylog"
+    }
+  ],
+  "links": [
+    "parked: housekeeping plan 2026-10-19 (operator gate)"
+  ],
+  "notes": "housekeeping batch 2026-10-19, query log theme: the 2026-10-17/18 stall (110 refusals) was cleared by re-redacting by hand. It changes what the local store holds: the operator's."
+}

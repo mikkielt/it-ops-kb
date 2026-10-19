@@ -1,0 +1,39 @@
+{
+  "id": "ST-oeet2kz7",
+  "kind": "story",
+  "title": "The query log's eight queued research gaps are researched or closed with a note",
+  "status": "draft",
+  "sprint": "SP-2rjhs7se",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "none of the eight gaps querylog.py queue listed on 2026-10-19 is still queued: each is researched into the kb with official sources or closed with --tried or --reject and its reason",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport subprocess\no = subprocess.run([sys.executable, '_tools/querylog.py', 'queue', '50'], capture_output=True, text=True, timeout=300).stdout\nleft = [i for i in ['F-633d7691b544', 'F-a098cb2db3d2', 'F-ea430090e717', 'F-bc9e9d4c3ffd', 'F-78a048b38e77', 'F-2f4d3eb31c9e', 'F-f5aa2bfb15f5', 'F-a1c83547238b'] if i in o]\nprint(len(left), 'still queued:', left); sys.exit(1 if left else 0)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "none of the eight gaps querylog.py queue listed on 2026-10-19 is still queued: each is researched into the kb with official sources or closed with --tried or --reject and its reason",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "kb/public/**",
+    "kb/_querylog/findings/**"
+  ],
+  "depends_on": [
+    "ST-gl57wgi6"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): queue on 2026-10-19: gaps=13 queued=8 (F-633d7691b544 F-a098cb2db3d2 F-ea430090e717 F-bc9e9d4c3ffd F-78a048b38e77 F-2f4d3eb31c9e F-f5aa2bfb15f5 F-a1c83547238b). F-ea430090e717 is a count question (how many intune articles) that a tool answers: close it --reject naming the D sprint's classifier item. Research item: /kb-research --queue. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+}

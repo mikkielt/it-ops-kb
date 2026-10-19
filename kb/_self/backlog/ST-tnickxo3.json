@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "land retries a fetch that failed on a transient network error once before it stops",
   "status": "draft",
+  "sprint": "SP-tsb23kev",
   "priority": "P3",
   "rank": 0,
   "goal": "backlog.py land runs its fetch step again once after a network failure (refused key, timeout) before it stops at step fetch",
@@ -15,12 +16,20 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "backlog.py land runs its fetch step again once after a network failure (refused key, timeout) before it stops at step fetch",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/bl_land.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/code.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-qvlnptiw close"
   ],
-  "notes": "SP-qvlnptiw close: ops shows two landings stopped at fetch (ST-aqaa7xa6 'Permission denied (publickey)', ST-wi2volsz a 120 s timeout); each passed when run again by hand minutes later. near-duplicate of open ST-pq24h2lg: kept as this sprint's evidence (two fetch stops); merge into it when planned"
+  "notes": "SP-qvlnptiw close: ops shows two landings stopped at fetch (ST-aqaa7xa6 'Permission denied (publickey)', ST-wi2volsz a 120 s timeout); each passed when run again by hand minutes later. near-duplicate of open ST-pq24h2lg: kept as this sprint's evidence (two fetch stops); merge into it when planned operator request 2026-10-19 (housekeeping batch): ST-pq24h2lg (land retries a network fetch once after a transient remote refusal) is the same change and is merged here. Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs."
 }

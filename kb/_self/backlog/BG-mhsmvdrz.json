@@ -4,10 +4,11 @@
   "title": "stalled and selfcheck have no total deadline on their forge reads, so a slow forge holds them for minutes",
   "status": "draft",
   "parent": "EP-4fawjprq",
+  "sprint": "SP-tsb23kev",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "backlog.py stalled and selfcheck bound their forge reads by one total deadline, after which every unread item is unknown:forge, so a slow but answering forge cannot hold them past it; found by the SP-dqkf3i42 review at _tools/bl_stall.py:292 (60 s per call, two calls per open request, sequential over the claimed items)",
+  "goal": "backlog.py stalled and selfcheck bound their forge reads by one total deadline, after which every unread item is unknown:forge, so a slow but answering forge cannot hold them past it",
   "repro": {
     "run": [
       "python3",
@@ -16,12 +17,20 @@
     ]
   },
   "repro_reason": "a slow forge cannot be reproduced offline; the text shows no total bound",
+  "clauses": [
+    {
+      "clause": "backlog.py stalled and selfcheck bound their forge reads by one total deadline, after which every unread item is unknown:forge, so a slow but answering forge cannot hold them past it",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/bl_stall.py",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
   ],
   "links": [
     "parked: SP-dqkf3i42 review"
-  ]
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): a long silent wait in stalled and selfcheck. Found by the SP-dqkf3i42 review at _tools/bl_stall.py:292 (60 s per call, two calls per open request, sequential over the claimed items); moved from the goal by the housekeeping plan 2026-10-19. Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs."
 }

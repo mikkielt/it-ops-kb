@@ -1,0 +1,80 @@
+{
+  "id": "ST-nqldomjk",
+  "kind": "story",
+  "title": "Sessions know their session id and how to read, answer and send coord asks",
+  "status": "draft",
+  "sprint": "SP-tsb23kev",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "the coord hook's SessionStart output names the session's own id and how to read, answer (kbask.py answer ID) and send (kbask.py ask TARGET) coord asks, through redact.redact and within its line budget; the worker brief and the worker role file tell a worker to answer asks addressed to its item; the kb-sprint run step says to steer a running worker or runner with kbask.py ask instead of stopping it or starting a second session; kb/_self/monitoring.md and kb/_self/tools.md say so",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, subprocess, tempfile, json\nT = tempfile.mkdtemp(); sid = '-'.join(c * n for c, n in (('1', 8), ('2', 4), ('3', 4), ('4', 4), ('5', 12)))\nenv = {k: v for k, v in os.environ.items() if not k.startswith('KB_COORD')}\nenv.update(KB_COORD_STORE=os.path.join(T, 'c.sqlite'), NO_COLOR='1')\nev = json.dumps({'hook_event_name': 'SessionStart', 'source': 'startup', 'session_id': sid, 'cwd': os.getcwd(), 'transcript_path': os.path.join(T, 't.jsonl')})\np = subprocess.run([sys.executable, '.claude/hooks/coord_hook.py'], input=ev, capture_output=True, text=True, env=env, timeout=60)\nout = p.stdout + p.stderr\nprint(out[-600:])\nmiss = [w for w in (sid, 'kbask.py ask', 'kbask.py answer') if w not in out]\nprint('missing from the SessionStart output:', miss)\nsys.exit(1 if miss else 0)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport subprocess\nb = subprocess.run([sys.executable, '_tools/backlog.py', 'brief', 'ST-nqldomjk'], capture_output=True, text=True, timeout=120).stdout\nw = ' '.join(open('agents/worker.md', encoding='utf-8').read().split())\nmiss = [n for n, t in (('brief', b), ('agents/worker.md', w)) if 'kbask.py answer' not in t]\nprint('no kbask.py answer in:', miss); sys.exit(1 if miss else 0)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nt=open('skills/sprint/SKILL.md',encoding='utf-8').read()\ni=t.find('## run');assert i>=0,'no section '+'## run'\nj=t.find('\\n## ',i+3)\nt=t[i:j if j>0 else len(t)]\nt=' '.join(t.split())\nmiss=[p for p in ['kbask.py ask'] if p not in t]\nprint('missing:',miss)\nsys.exit(1 if miss else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nt=open('kb/_self/monitoring.md',encoding='utf-8').read()\nt=' '.join(t.split())\nmiss=[p for p in ['kbask.py answer'] if p not in t]\nprint('missing:',miss)\nsys.exit(1 if miss else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nt=open('kb/_self/tools.md',encoding='utf-8').read()\nt=' '.join(t.split())\nmiss=[p for p in ['kbask.py answer'] if p not in t]\nprint('missing:',miss)\nsys.exit(1 if miss else 0)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the coord hook's SessionStart output names the session's own id and how to read, answer (kbask.py answer ID) and send (kbask.py ask TARGET) coord asks, through redact.redact and within its line budget",
+      "check": 0
+    },
+    {
+      "clause": "the worker brief and the worker role file tell a worker to answer asks addressed to its item",
+      "check": 1
+    },
+    {
+      "clause": "the kb-sprint run step says to steer a running worker or runner with kbask.py ask instead of stopping it or starting a second session",
+      "check": 2
+    },
+    {
+      "clause": "kb/_self/monitoring.md and kb/_self/tools.md say so",
+      "check": 3
+    }
+  ],
+  "touches": [
+    ".claude/hooks/coord_hook.py",
+    "_tools/bl_dispatch.py",
+    "agents/worker.md",
+    "skills/sprint/SKILL.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/code.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/backlog.md"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): coord ask A3b8d7e0199 (second operator addition: sessions know they can steer and be steered through coord asks). AGENTS.md only if a line can be paid for under the 4 KB cap (it is in the touches because the skill maps to it). Premise: the first check (the coord hook prints nothing at SessionStart on 2026-10-19)."
+}

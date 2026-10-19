@@ -1,0 +1,23 @@
+{
+  "id": "SP-vx6eufpj",
+  "kind": "sprint",
+  "title": "The query log says why delivery stalls, exports fast, and its open findings are worked",
+  "status": "planned",
+  "goal": "querylog.py check names, for a redact-gate problem, that the entry predates the current redact rules and where the operator's remedy is written; kbmon's delivery alert holds while deliveries are refused and its querylog panel counts each prompt's usage once; export --since reads only the days it exports; the open rules findings are tested _self questions or closed with a note; the open source findings are closed with their evidence; a count or list question is not written into _gaps.md as a kb gap; distill.log's size cap keeps a run's own lines and parallel hooks lose no feedback id",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ],
+  "notes": "Housekeeping batch (operator request 2026-10-19), run 3 of 8: start only after every sprint active or planned on 2026-10-19 (SP-7s6uubs7, SP-3hgirkur, SP-dulvwwjc, SP-3pvz2noj, SP-ipeewrlv, SP-ep7cyuob) has closed, in the order SP-tsb23kev SP-2rjhs7se SP-vx6eufpj SP-v64egscn SP-jplczvj2 SP-qh2j24z2 SP-ttgcpf7o SP-gea4jifz."
+}

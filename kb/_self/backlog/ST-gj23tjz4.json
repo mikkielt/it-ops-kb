@@ -1,0 +1,43 @@
+{
+  "id": "ST-gj23tjz4",
+  "kind": "story",
+  "title": "querylog.py check says when an entry predates the current redact rules, and where the remedy is",
+  "status": "draft",
+  "sprint": "SP-vx6eufpj",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "querylog.py check names, beside a store entry the redact gate refuses, that the entry may predate the current redact rules and points to kb/_self/querylog.md; kb/_self/querylog.md says how a redact change stalls delivery and what the operator does about it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, subprocess, tempfile, glob, json\nT = tempfile.mkdtemp(); os.makedirs(os.path.join(T, '2026-10'))\nsrc = sorted(f for f in glob.glob('kb/_querylog/2026-*/*.jsonl') if '\"question\"' in open(f, encoding='utf-8').read())[-1]\nrows = []; done = False\nfor l in open(src, encoding='utf-8'):\n    d = json.loads(l)\n    if not done and isinstance(d.get('question'), str):\n        d['question'] += ' mail ' + 'jan' + '.kowalski' + '@' + 'corp-mail' + '.com'; done = True\n    rows.append(json.dumps(d))\nopen(os.path.join(T, '2026-10', os.path.basename(src)), 'w').write('\\n'.join(rows) + '\\n')\np = subprocess.run([sys.executable, '_tools/querylog.py', 'check', T], capture_output=True, text=True, timeout=300)\nout = p.stdout + p.stderr; print(out[-500:])\nassert 'problems=1' in out, 'the planted entry is not a problem'\nmiss = [w for w in ('redact', 'kb/_self/querylog.md') if w not in out]\nprint('missing:', miss); sys.exit(1 if miss else 0)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nt=open('kb/_self/querylog.md',encoding='utf-8').read()\nt=' '.join(t.split())\nmiss=[p for p in ['store gates fail'] if p not in t]\nprint('missing:',miss)\nsys.exit(1 if miss else 0)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "querylog.py check names, beside a store entry the redact gate refuses, that the entry may predate the current redact rules and points to kb/_self/querylog.md",
+      "check": 0
+    },
+    {
+      "clause": "kb/_self/querylog.md says how a redact change stalls delivery and what the operator does about it",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/ql_store.py",
+    "kb/_self/querylog.md",
+    "kb/_self/code.md",
+    "kb/_self/usage.md"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): distill.log on 2026-10-19: 110 refusals 'the store gates fail on the local store's files' over 2026-10-17/18, each listing 'an identifier in question' with no cause or remedy; the operator re-redacted by hand. What the store records does not change. Premise: the first check fails."
+}

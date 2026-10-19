@@ -1,0 +1,23 @@
+{
+  "id": "SP-qh2j24z2",
+  "kind": "sprint",
+  "title": "OpenTelemetry signals have one place each, and kbmon's export is exact",
+  "status": "planned",
+  "goal": "kb/_self/monitoring.md says where a new OpenTelemetry exporter, receiver or exported measure goes and what kbmon exports against what a tool records; kbmon_otel.py builds its signal exporters from one registry; the otel and mon_ modules are mapped to the docs that name them; the adapter keeps a cursor per signal and serves only kbmon's points at /metrics; kbmon --events exports each delivery once with its outcome, keeps every row of the cursor's millisecond and keeps a comma-separated id list; otel/pyproject.toml's SDK floor is the release the adapter needs",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ],
+  "notes": "Housekeeping batch (operator request 2026-10-19), run 6 of 8: start only after every sprint active or planned on 2026-10-19 (SP-7s6uubs7, SP-3hgirkur, SP-dulvwwjc, SP-3pvz2noj, SP-ipeewrlv, SP-ep7cyuob) has closed, in the order SP-tsb23kev SP-2rjhs7se SP-vx6eufpj SP-v64egscn SP-jplczvj2 SP-qh2j24z2 SP-ttgcpf7o SP-gea4jifz."
+}

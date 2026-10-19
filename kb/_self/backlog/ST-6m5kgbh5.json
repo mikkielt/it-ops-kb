@@ -1,0 +1,68 @@
+{
+  "id": "ST-6m5kgbh5",
+  "kind": "story",
+  "title": "README.md is a concise executive summary of it-ops-kb",
+  "status": "draft",
+  "sprint": "SP-gea4jifz",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "README.md holds at most 4500 bytes under the headings What it is, Who it is for, Use it in five minutes and Where the rest lives; every figure it drops is kept in the kb/_self doc that owns it; its links to the plugin, design, benchmark and licence files are kept in it or in kb/_self/README.md; benchmarks.py report --check still passes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os\nt = open('README.md', encoding='utf-8').read(); n = len(t.encode('utf-8'))\nheads = ['## What it is', '## Who it is for', '## Use it in five minutes', '## Where the rest lives']\nmiss = [h for h in heads if h not in t]\nprint('bytes', n, 'missing headings', miss); sys.exit(0 if n <= 4500 and not miss else 1)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nt = ''.join(open(p, encoding='utf-8').read() for p in ('kb/_self/design.md', 'kb/_self/reports/benchmarks.md', 'kb/_self/token-efficiency.md'))\nt = ' '.join(t.split())\nfigs = ['227 of 387', '72,010', '73,323', '188k', '17,544', '138 of 150', '47-50 ms', '3.8M characters', '$2.06', '3.5 ms']\nmiss = [f for f in figs if f not in t]\nprint('README figures no owning doc keeps:', miss); sys.exit(1 if miss else 0)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nt = open('README.md', encoding='utf-8').read() + open('kb/_self/README.md', encoding='utf-8').read()\nlinks = ['kb/_self/plugin.md', 'kb/_self/design.md', 'kb/_self/reports/benchmarks.md', 'kb/_self/backlog.md', 'kb/_self/README.md', 'LICENSE', 'LICENSE-CONTENT', 'NOTICE']\nmiss = [l for l in links if l not in t]\nprint('links lost:', miss); sys.exit(1 if miss else 0)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "report",
+        "--check"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "README.md holds at most 4500 bytes under the headings What it is, Who it is for, Use it in five minutes and Where the rest lives",
+      "check": 0
+    },
+    {
+      "clause": "every figure it drops is kept in the kb/_self doc that owns it",
+      "check": 1
+    },
+    {
+      "clause": "its links to the plugin, design, benchmark and licence files are kept in it or in kb/_self/README.md",
+      "check": 2
+    },
+    {
+      "clause": "benchmarks.py report --check still passes",
+      "check": 3
+    }
+  ],
+  "touches": [
+    "README.md",
+    "kb/_self/design.md",
+    "kb/_self/reports/benchmarks.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/README.md",
+    "kb/_self/alternatives.md"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): README.md on 2026-10-19: 9962 bytes, 9 sections (Why, How it works, When it pays off, Benchmark, Where things are, Using it, What to trust). Figures only in README then: '227 of 387' (freshness at lookup), '72,010' and '73,323' (pool tokens per right answer). Plan against SP-3pvz2noj, which moves README's benchmark figures first. Premise: the first two checks fail. Checks 2, 3 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+}

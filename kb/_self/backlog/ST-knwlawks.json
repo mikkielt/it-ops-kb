@@ -1,0 +1,41 @@
+{
+  "id": "ST-knwlawks",
+  "kind": "story",
+  "title": "kb-observer and kbask remediate run on Haiku once the Haiku cleanup agent has results",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbask.py MODEL and the kb-observer agent's model are Haiku 5.5 when SP-ep7cyuob's Haiku remediation agent answered its asks as well as the Sonnet observer, recorded in kb/_self/token-efficiency.md",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('_tools/kbask.py',encoding='utf-8').read();sys.exit(0 if 'MODEL = \"haiku\"' in t else 1)"
+      ]
+    }
+  ],
+  "gates": [
+    {
+      "id": "model",
+      "kind": "blocking",
+      "question": "Should the observer and kbask remediate move from Sonnet to Haiku?",
+      "options": [
+        "decide after SP-ep7cyuob records its Haiku agent's results",
+        "move to Haiku now",
+        "keep Sonnet"
+      ],
+      "recommendation": "decide after SP-ep7cyuob records its Haiku agent's results",
+      "do": {
+        "decide after SP-ep7cyuob records its Haiku agent's results": "ST-knwlawks",
+        "move to Haiku now": "ST-knwlawks",
+        "keep Sonnet": "ST-knwlawks"
+      },
+      "class": "design"
+    }
+  ],
+  "links": [
+    "parked: housekeeping plan 2026-10-19 (operator gate)"
+  ],
+  "notes": "housekeeping batch 2026-10-19, cost theme: no measurement of Haiku as the observer exists yet."
+}

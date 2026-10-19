@@ -1,0 +1,39 @@
+{
+  "id": "ST-gt4tduzr",
+  "kind": "story",
+  "title": "The six open source findings are closed with their evidence",
+  "status": "draft",
+  "sprint": "SP-vx6eufpj",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "none of the six source findings open on 2026-10-19 is still open: the four WebFetch route findings are closed naming the PreToolUse WebFetch route that now refuses those hosts, and the two provider-level ones are probed or closed with a note",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport subprocess\no = subprocess.run([sys.executable, '_tools/querylog.py', 'show', '--findings', '--kind', 'source', '--state', 'open'], capture_output=True, text=True, timeout=300).stdout\nleft = [i for i in ['F-0d33aecc72fe', 'F-44bcdafa4499', 'F-9f512565c730', 'F-a69c6dbdf291', 'F-ca19ead7f445', 'F-d015ccb9f733'] if i in o]\nprint(len(left), 'still open:', left); sys.exit(1 if left else 0)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "none of the six source findings open on 2026-10-19 is still open: the four WebFetch route findings are closed naming the PreToolUse WebFetch route that now refuses those hosts",
+      "check": 0
+    },
+    {
+      "clause": "the two provider-level ones are probed or closed with a note",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "kb/_querylog/findings/**",
+    "_tools/providers.csv",
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md"
+  ],
+  "depends_on": [
+    "ST-w3qdrhdk"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): status 2026-10-19: code.claude.com 52.4M characters, learn.microsoft.com 3.0M, docs.gitlab.com 0.9M, www.anthropic.com 0.3M (route), docs.chef.io and huggingface.co (stage level 0, needs 1). kb_hook.py already denies WebFetch on code.claude.com and learn.microsoft.com (run on 2026-10-19). Premise: the check fails."
+}

@@ -1,0 +1,56 @@
+{
+  "id": "ST-gl57wgi6",
+  "kind": "story",
+  "title": "Facts whose source page is gone are re-sourced or noted, and none is deleted",
+  "status": "draft",
+  "sprint": "SP-2rjhs7se",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "each of the 28 anchor rows whose source page was gone on 2026-10-19 is re-anchored to the page's new address or its source id is named in a dated _gaps.md entry; the four articles that cite them keep every fact, and a fact no source still supports is put to the operator as a blocking gate",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport csv\ngone = [[f, p.replace('|', '/'), s] for f, p, s in [['acfae9242371', 'agents|doc-change-detection.md', 'S2180'], ['acfae9242371', 'agents|doc-change-detection.md', 'S2181'], ['b3c61a5a975a', 'agents|doc-change-detection.md', 'S-may2otwt'], ['bcd869aab2b2', 'agents|doc-change-detection.md', 'S-y23orbo7'], ['c111db35dca3', 'agents|doc-change-detection.md', 'S-may2otwt'], ['d8f317e28bed', 'agents|doc-change-detection.md', 'S2180'], ['d8f317e28bed', 'agents|doc-change-detection.md', 'S2181'], ['e63a1edc300a', 'agents|doc-change-detection.md', 'S-ny2cx7aq'], ['f7bc5c6b1fec', 'agents|doc-change-detection.md', 'S-y23orbo7'], ['fa2cb870740e', 'agents|doc-change-detection.md', 'S2196'], ['90ee5ad5fabe', 'agents|doc-lookup-sources.csv', 'S2181'], ['b792d07750cd', 'agents|doc-lookup-sources.csv', 'S2180'], ['005f48ae3c59', 'agents|doc-lookup-sources.md', 'S2180'], ['0dcbf46e3b99', 'agents|doc-lookup-sources.md', 'S2181'], ['14997773f21d', 'agents|doc-lookup-sources.md', 'S2180'], ['14997773f21d', 'agents|doc-lookup-sources.md', 'S2181'], ['a079c6ed4093', 'agents|doc-lookup-sources.md', 'S2196'], ['b02fc3a79e76', 'agents|doc-lookup-sources.md', 'S2196'], ['b02fc3a79e76', 'agents|doc-lookup-sources.md', 'S-rgpijsmb'], ['b02fc3a79e76', 'agents|doc-lookup-sources.md', 'S-yuwxbqz3'], ['e0c82db826eb', 'agents|doc-lookup-sources.md', 'S2180'], ['e0c82db826eb', 'agents|doc-lookup-sources.md', 'S2181'], ['e79c759b776f', 'agents|doc-lookup-sources.md', 'S2180'], ['e79c759b776f', 'agents|doc-lookup-sources.md', 'S2181'], ['1bda3c57ac88', 'arch|fluent-rust-typescript.md', 'S-ueumbn4x'], ['500a43168e20', 'arch|fluent-rust-typescript.md', 'S-ueumbn4x'], ['0515845f4b26', 'privacy|nist-sp800-38g.md', 'S869'], ['dd6194d4d450', 'privacy|nist-sp800-38g.md', 'S869']]]\nrows = {(r['fact'], r['path'], r['source_id']): r['status'] for r in csv.DictReader(open('kb/public/_anchors.csv', encoding='utf-8'))}\ngaps = open('kb/public/_gaps.md', encoding='utf-8').read()\nleft = [g for g in gone if rows.get(tuple(g)) == 'unlocated:gone' and g[2] not in gaps]\nprint(len(left), 'gone rows neither re-anchored nor named in _gaps.md:', left[:10]); sys.exit(1 if left else 0)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport subprocess\nwant = {'public/agents/doc-change-detection.md': 157, 'public/agents/doc-lookup-sources.md': 88, 'public/arch/fluent-rust-typescript.md': 52, 'public/privacy/nist-sp800-38g.md': 9}\no = subprocess.run([sys.executable, '_tools/rag.py', 'audit', '--root', 'public'], capture_output=True, text=True, timeout=600).stdout\nhave = {}\nfor l in o.splitlines():\n    c = [x.strip() for x in l.split('|')]\n    if len(c) > 3 and c[1] in want: have[c[1]] = int(c[3])\nlow = {p: (have.get(p), n) for p, n in want.items() if (have.get(p) or 0) < n}\nprint('articles with fewer facts than on 2026-10-19:', low); sys.exit(1 if low else 0)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "each of the 28 anchor rows whose source page was gone on 2026-10-19 is re-anchored to the page's new address or its source id is named in a dated _gaps.md entry",
+      "check": 0
+    },
+    {
+      "clause": "the four articles that cite them keep every fact",
+      "check": 1
+    },
+    {
+      "clause": "a fact no source still supports is put to the operator as a blocking gate",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "kb/public/agents/doc-change-detection.md",
+    "kb/public/agents/doc-lookup-sources.md",
+    "kb/public/agents/doc-lookup-sources.csv",
+    "kb/public/arch/fluent-rust-typescript.md",
+    "kb/public/privacy/nist-sp800-38g.md",
+    "kb/public/_gaps.md",
+    "kb/public/_fetch_state.csv",
+    "kb/public/_anchors.csv",
+    "kb/public/_sources.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "depends_on": [
+    "ST-g6t7jung"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): anchors on 2026-10-19: 19171 rows, located 10265, no-match 6886, not-text 1820, fetch-error 172, gone 28 (10 sources in 5 files). Deleting kb content is the operator's: a fact with no supporting source becomes a blocking gate. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+}

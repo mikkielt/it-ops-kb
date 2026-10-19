@@ -1,0 +1,50 @@
+{
+  "id": "ST-6tg2cevp",
+  "kind": "story",
+  "title": "The coord tools read an ask's text and answer an ask behind the existing opt-in",
+  "status": "draft",
+  "sprint": "SP-ttgcpf7o",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "with KB_COORD_TOOLS set the kb MCP server's coord tools read an ask's text and write an answer, each annotated for what it writes; with it unset tools/list names none of them",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport json, subprocess, os\ndef mcp(calls, **env_extra):\n    env = {k: v for k, v in os.environ.items() if not k.startswith('KB_COORD')}\n    env.update(env_extra)\n    msgs = [{\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"initialize\", \"params\": {\"protocolVersion\": \"2025-06-18\", \"capabilities\": {}, \"clientInfo\": {\"name\": \"t\", \"version\": \"0\"}}},\n            {\"jsonrpc\": \"2.0\", \"method\": \"notifications/initialized\"}, {\"jsonrpc\": \"2.0\", \"id\": 2, \"method\": \"tools/list\", \"params\": {}}]\n    for i, (name, args) in enumerate(calls):\n        msgs.append({\"jsonrpc\": \"2.0\", \"id\": 10 + i, \"method\": \"tools/call\", \"params\": {\"name\": name, \"arguments\": args}})\n    p = subprocess.run([sys.executable, '_tools/kb_mcp.py'], input='\\n'.join(json.dumps(m) for m in msgs) + '\\n', capture_output=True, text=True, env=env, timeout=900)\n    out = {}\n    for l in p.stdout.splitlines():\n        try: d = json.loads(l)\n        except ValueError: continue\n        out[d.get('id')] = d\n    return out\ndef text(r): return ''.join(c.get('text', '') for c in (r.get('result') or {}).get('content', []))\ndef cli(*a): return subprocess.run([sys.executable, *a], capture_output=True, text=True, timeout=600).stdout\nimport tempfile\nT = tempfile.mkdtemp(); st = os.path.join(T, 'c.sqlite')\no = mcp([('coord_put', {'key': 'answer/Aplanted01', 'value': 'planted answer text'}), ('coord_get', {'key': 'answer/Aplanted01'})], KB_COORD_TOOLS='1', KB_COORD_STORE=st)\nnames = [t['name'] for t in o[2]['result']['tools']]\nassert 'coord_get' in names and 'coord_put' in names, 'coord tools lack get or put: ' + ', '.join(n for n in names if n.startswith('coord'))\nassert 'planted answer text' in text(o[11]), 'coord_get does not return what coord_put wrote'\noff = mcp([], KB_COORD_STORE=st)\nassert not [t for t in off[2]['result']['tools'] if t['name'].startswith('coord')], 'coord tools are listed without KB_COORD_TOOLS'\nprint('coord get and put ok')\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,subprocess,sys,os,base64,zlib\n# the folded drafts' own repro and check commands, compressed (their item files are in git history)\nR=json.loads(zlib.decompress(base64.b64decode('eJxljdEKgjAYhV9l7GYOSgqhm+imggiEQXk3h1itHOq/sf2Svn1aXdXN4cD5+I6UdHuYN7XrEtArOiOSugErC8nY6fw6pWmd9UjCEHIYI3YlVrGBoD1Gixkr0NomML7+cvWlaK8uB9hIlAzKVjNF7tYTJAa+a7wT4rQvMiHSIj2eM5WD8wYwAv750L0Z5cTcSQlD1McabuFpsIrYQyPjb18/+YCPxO2Pct0vpZugyZJTpdQLXiNRrg==')))\nbad=[]\nenv=dict(os.environ,NO_COLOR='1')\nfor i,a in R:\n    p=subprocess.run(a,capture_output=True,text=True,timeout=600,env=env)\n    print(i,'exit',p.returncode)\n    if p.returncode: bad.append(i)\nprint('still failing:',bad);sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "with KB_COORD_TOOLS set the kb MCP server's coord tools read an ask's text and write an answer, each annotated for what it writes",
+      "check": 0
+    },
+    {
+      "clause": "with it unset tools/list names none of them",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py",
+    "_tools/test_redact.py",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/code.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/embedding.md"
+  ],
+  "depends_on": [
+    "ST-gnt2xlk6"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): folds BG-lkpu3ne6 (no get or put for an ask's text). The opt-in (KB_COORD_TOOLS) and every coord authority rule stay as they are. Premise: the check fails."
+}

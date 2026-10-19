@@ -1,0 +1,25 @@
+{
+  "id": "ST-5lh3rat3",
+  "kind": "story",
+  "title": "Research sprint goal: kb articles pass the contract lint clean, and the query log's research queue is worked",
+  "status": "draft",
+  "sprint": "SP-2rjhs7se",
+  "goal_research": true,
+  "priority": "P1",
+  "rank": 0,
+  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "researched",
+        "ST-5lh3rat3"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ],
+  "notes": "Open questions for this sprint (kb first, then live docs): Questions: (1) for each source whose anchor rows say gone (S-may2otwt, S-ny2cx7aq, S-rgpijsmb, S-ueumbn4x, S-y23orbo7, S-yuwxbqz3, S2180, S2181, S2196, S869), where the page moved, if anywhere; (2) the eight queued query-log gaps (querylog.py queue): what official sources answer them."
+}

@@ -1,0 +1,23 @@
+{
+  "id": "SP-2rjhs7se",
+  "kind": "sprint",
+  "title": "kb articles pass the contract lint clean, and the query log's research queue is worked",
+  "status": "planned",
+  "goal": "every public article's sources header matches the sources its facts cite; every article has a title line; facts carry one tag each and a DER fact that rests on a run names its version; the articles about this repository's own tools say what the tools do; the named unanchored facts are anchored or reworded; the query log's queued gaps are researched or closed with a note; the facts whose source is gone are re-sourced or noted, and none is deleted without an operator gate",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ],
+  "notes": "Housekeeping batch (operator request 2026-10-19), run 2 of 8: start only after every sprint active or planned on 2026-10-19 (SP-7s6uubs7, SP-3hgirkur, SP-dulvwwjc, SP-3pvz2noj, SP-ipeewrlv, SP-ep7cyuob) has closed, in the order SP-tsb23kev SP-2rjhs7se SP-vx6eufpj SP-v64egscn SP-jplczvj2 SP-qh2j24z2 SP-ttgcpf7o SP-gea4jifz."
+}

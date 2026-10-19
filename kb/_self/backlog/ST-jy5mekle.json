@@ -1,0 +1,80 @@
+{
+  "id": "ST-jy5mekle",
+  "kind": "story",
+  "title": "bl_land.py is split behind backlog.py with every command and name kept",
+  "status": "draft",
+  "sprint": "SP-jplczvj2",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_land.py holds at most 2300 lines, the tidy and close commands and their clause mapping in bl_close.py and the precheck and researched commands in bl_precheck.py; every name other modules import from bl_land still imports from it; backlog.py --help lists the same commands",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nk=sum(1 for _ in open('_tools/bl_land.py',encoding='utf-8'))\nprint('_tools/bl_land.py',k,'lines');sys.exit(0 if k<=2300 else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nsys.path.insert(0,'_tools');import importlib;m=importlib.import_module('bl_land')\nmiss=[n for n in ['cmd_done', 'last_push_failure', 'main_worker_dir', 'research_rows', 'selected_nothing', 'worker_dirs', 'WORK_PREFIX', 'WORKER_NAME', 'run_check', 'own_failure', 'REOPENED_REFS', 'RESEARCH_DEFAULT_GOAL', 'cleanup_gate_do', 'clauses_left_behind', 'prune_reopened_refs'] if not hasattr(m,n)]\nprint('names no longer importable from bl_land:',miss);sys.exit(1 if miss else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport subprocess\no = subprocess.run([sys.executable, '_tools/backlog.py', '--help'], capture_output=True, text=True, timeout=60).stdout\nmiss = [c for c in ('researched', 'done', 'land', 'tidy', 'close', 'precheck', 'merge') if c not in o]\nprint('commands missing from backlog.py --help:', miss); sys.exit(1 if miss else 0)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "bl_land.py holds at most 2300 lines, the tidy and close commands and their clause mapping in bl_close.py and the precheck and researched commands in bl_precheck.py",
+      "check": 0
+    },
+    {
+      "clause": "every name other modules import from bl_land still imports from it",
+      "check": 1
+    },
+    {
+      "clause": "backlog.py --help lists the same commands",
+      "check": 2
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/bl_close.py",
+    "_tools/bl_precheck.py",
+    "_tools/backlog.py",
+    "kb/_self/map.csv",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "ST-corcepuz"
+  ],
+  "gates": [
+    {
+      "id": "cut",
+      "kind": "blocking",
+      "question": "Where does bl_land.py split?",
+      "options": [
+        "tidy and close with their clause mapping into bl_close.py, precheck and researched into bl_precheck.py",
+        "by landing step: rebase, checks and push into three modules"
+      ],
+      "recommendation": "tidy and close with their clause mapping into bl_close.py, precheck and researched into bl_precheck.py",
+      "do": {
+        "tidy and close with their clause mapping into bl_close.py, precheck and researched into bl_precheck.py": "ST-jy5mekle",
+        "by landing step: rebase, checks and push into three modules": "ST-jy5mekle"
+      },
+      "class": "push",
+      "answer": "tidy and close with their clause mapping into bl_close.py, precheck and researched into bl_precheck.py",
+      "by": "operator"
+    }
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): bl_land.py on 2026-10-19: 3441 lines, 122 commits in 30 days (the most churned module), every landing and close edits it. The cut follows its command groups (cmd_tidy/cmd_close at 2585-3125, cmd_precheck/cmd_researched at 474-628 and 3126-3369). Plan against SP-ipeewrlv, which changes tidy first. Premise: the first check fails. Checks 1, 2 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+}

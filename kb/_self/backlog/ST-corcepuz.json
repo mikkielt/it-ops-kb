@@ -1,0 +1,55 @@
+{
+  "id": "ST-corcepuz",
+  "kind": "story",
+  "title": "Functions no code, hook, skill or agent names are removed",
+  "status": "draft",
+  "sprint": "SP-jplczvj2",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "none of the ten functions the 2026-10-19 scan found defined and named nowhere else is left unreferenced: each is removed, or the dynamic use that keeps it is named in a comment beside it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport ast, glob, re, subprocess\nnames = ['check_map', 'repeats_detector', 'registry_problems', 'trigger_problems', 'stored_pack', 'forget_audits', 'lead_passage', 'ci_status', 'read_pipeline', 'ConfigError']\nsrc = {f: open(f, encoding='utf-8').read() for f in glob.glob('_tools/*.py')}\nextra = subprocess.run(['git', 'grep', '-h', '-I', '-e', '.', '--', '.claude', 'skills', 'agents', '.githooks', 'otel'], capture_output=True, text=True).stdout\nwords = re.findall(r'[A-Za-z_][A-Za-z0-9_]*', '\\n'.join(src.values()) + extra)\nfrom collections import Counter\nc = Counter(words)\nleft = []\nfor f, s in src.items():\n    for n in ast.parse(s).body:\n        if isinstance(n, (ast.FunctionDef, ast.ClassDef)) and n.name in names and c[n.name] <= 1:\n            left.append(f + ':' + n.name)\nprint('defined and referenced nowhere else:', left)\nsys.exit(1 if left else 0)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "none of the ten functions the 2026-10-19 scan found defined and named nowhere else is left unreferenced: each is removed, or the dynamic use that keeps it is named in a comment beside it",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/selfdoc.py",
+    "_tools/bl_intake.py",
+    "_tools/ql_learn.py",
+    "_tools/kbfacts.py",
+    "_tools/kg_trailers.py",
+    "_tools/ql_apply.py",
+    "_tools/ql_deliver.py",
+    "_tools/bl_forge.py",
+    "_tools/bl_base.py",
+    "kb/_self/README.md",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/git.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/backlog.md",
+    "kb/_self/querylog.md"
+  ],
+  "depends_on": [
+    "ST-oo6uxbn6"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): scan 2026-10-19: selfdoc.check_map (35 lines), bl_intake.repeats_detector (28), ql_learn.registry_problems (15), kbfacts.stored_pack (13), ql_learn.trigger_problems, kg_trailers.forget_audits, ql_apply.lead_passage, ql_deliver.ci_status, bl_forge.read_pipeline, bl_base.ConfigError: 110 lines. A comment naming the dynamic use counts as a reference for the check. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+}

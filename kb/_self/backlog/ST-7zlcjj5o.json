@@ -1,0 +1,42 @@
+{
+  "id": "ST-7zlcjj5o",
+  "kind": "story",
+  "title": "querylog.py export --since reads only the days it exports",
+  "status": "draft",
+  "sprint": "SP-vx6eufpj",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "querylog.py export --since DAY over the committed store finishes in under 20 seconds on this clone; its records are the full export's records from that day on",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport subprocess, time, datetime\nd = (datetime.date.today() - datetime.timedelta(days=1)).isoformat()\nt = time.time()\np = subprocess.run([sys.executable, '_tools/querylog.py', 'export', '--format', 'jsonl', '--since', d, '--event', 'usage', '--store', 'kb/_querylog'], capture_output=True, text=True, timeout=600)\ns = time.time() - t\nprint('export --since', d, 'exit', p.returncode, 'seconds', round(s, 1), 'records', len(p.stdout.splitlines()))\nsys.exit(0 if p.returncode == 0 and s < 20 else 1)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport subprocess, datetime, json\nd = (datetime.date.today() - datetime.timedelta(days=3)).isoformat()\nns = int(datetime.datetime.fromisoformat(d + 'T00:00:00+00:00').timestamp() * 1e9)\nrun = lambda *a: subprocess.run([sys.executable, '_tools/querylog.py', 'export', '--format', 'jsonl', '--event', 'usage', '--store', 'kb/_querylog', *a], capture_output=True, text=True, timeout=900).stdout.splitlines()\nfull = [l for l in run() if int(json.loads(l)['timeUnixNano']) >= ns]\nsince = run('--since', d)\nprint('full-filtered', len(full), 'since', len(since))\nassert sorted(full) == sorted(since), 'export --since gives other records than the full export filtered by time'\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "querylog.py export --since DAY over the committed store finishes in under 20 seconds on this clone",
+      "check": 0
+    },
+    {
+      "clause": "its records are the full export's records from that day on",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/ql_export.py",
+    "kb/_self/querylog.md",
+    "kb/_self/code.md"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): measured 2026-10-19 on this host (loaded, warm): export --since 2026-10-18 --event usage took 89.2 s real (86.1 s user), while digest of the week took 1.9 s. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+}

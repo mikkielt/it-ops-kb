@@ -1,0 +1,56 @@
+{
+  "id": "ST-wic5d76z",
+  "kind": "story",
+  "title": "kbmon_otel.py builds its signal exporters from one registry, and the otel and mon_ modules are mapped",
+  "status": "draft",
+  "sprint": "SP-qh2j24z2",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "otel/kbmon_otel.py builds each signal's exporter from one SIGNALS registry, so a new signal is one module and one row; kb/_self/map.csv maps otel/*.py and _tools/mon_*.py to the docs that name them",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport ast\nt = ast.parse(open('otel/kbmon_otel.py', encoding='utf-8').read())\nreg = [n for n in t.body if isinstance(n, (ast.Assign, ast.AnnAssign)) and any(getattr(x, 'id', '') == 'SIGNALS' for x in (n.targets if isinstance(n, ast.Assign) else [n.target]))]\nmains = [n for n in t.body if isinstance(n, ast.FunctionDef) and n.name == 'main']\ndirect = [c.func.value.id + '.' + c.func.attr for m in mains for c in ast.walk(m) if isinstance(c, ast.Call) and isinstance(c.func, ast.Attribute) and isinstance(c.func.value, ast.Name) and c.func.value.id in ('otel_logs', 'otel_spans')]\nprint('SIGNALS registry:', bool(reg), 'direct exporter calls in main:', direct)\nsys.exit(0 if reg and not direct else 1)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,subprocess,sys,os,base64,zlib\n# the folded drafts' own repro and check commands, compressed (their item files are in git history)\nR=json.loads(zlib.decompress(base64.b64decode('eJxlkMFqwzAMhl/F5GIb0qRll8HIbU+w7eaakMZKa5ZIxta6Zk8/ey20sIss5E//L35jqvePzfmHj5fVHapamCqsfCJ8yn21GUv1S6DIYkznesJl4PFUpzXtMdJ36mafWOWv5tWP/AaDg6goACr5eWj7BPPULkNoMiFrwJGcx2Mnv3jaPEut9R4RwHXmAc8MNIuTteyZaE7tQtjDGZBTE1ap60dpQs8Us+Z1gxjmtpR+puN//C59B1MY8EraPS4+pc6gmCgKFB5FuU74SSCxGHBV0UhHo7Rdh2Zr88iJWybN7VVodrbOXBiYIaK0+k8uFrkSWfEJ+WRWxU2/5CwbuHhWu2JUZgLmBGKrK2vtL0Fxj54=')))\nbad=[]\nenv=dict(os.environ,NO_COLOR='1')\nfor i,a in R:\n    p=subprocess.run(a,capture_output=True,text=True,timeout=600,env=env)\n    print(i,'exit',p.returncode)\n    if p.returncode: bad.append(i)\nprint('still failing:',bad);sys.exit(1 if bad else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport subprocess, shutil\nu = shutil.which('uv'); assert u, 'uv is not on PATH'\np = subprocess.run([u, 'run', '--frozen', '--offline', '--project', 'otel', 'python', '-c', \"import sys; sys.path.insert(0, 'otel'); import kbmon_otel; print(sorted(kbmon_otel.SIGNALS))\"], capture_output=True, text=True, timeout=300)\nprint(p.stdout[-300:], p.stderr[-300:]); sys.exit(p.returncode)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "otel/kbmon_otel.py builds each signal's exporter from one SIGNALS registry, so a new signal is one module and one row",
+      "check": 0
+    },
+    {
+      "clause": "kb/_self/map.csv maps otel/*.py and _tools/mon_*.py to the docs that name them",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "otel/kbmon_otel.py",
+    "otel/otel_logs.py",
+    "otel/otel_spans.py",
+    "otel/otel_prom.py",
+    "kb/_self/map.csv",
+    "kb/_self/monitoring.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "ST-fgktuvvs"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): main() calls otel_logs.Logs and otel_spans.Spans directly on 2026-10-19. Folds ST-vztgxydb (map rows). The third check needs uv with the otel lock cached (it ran offline on 2026-10-19). Premise: the first check fails."
+}

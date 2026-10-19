@@ -1,0 +1,40 @@
+{
+  "id": "BG-onc6wxd3",
+  "kind": "bug",
+  "title": "publish refuses a pushed commit that quotes the EC private key armor line, so the public home cannot be updated",
+  "status": "draft",
+  "sprint": "SP-tsb23kev",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kbgit.py publish projects origin/main to the public home again: commit 73331d8a6 (docs(kb): add EC, DSA and PGP private key labels ... to secret shapes) quotes the RFC 5915 armor line BEGIN EC PRIVATE KEY, with its five hyphens on each side, in the security/secret-shapes-in-text article and in the public root's anchors ledger, with no key material; fcd8f6b53 already rewrote the line without the hyphens, but publish judges every commit of the range by what it adds, and pushed history is never rewritten, so the fix is one secret line for that hyphenated value in _tools/tests_allowlist.txt (read from the projection, matched lowercased), naming the source S-vstqd426. Code lane: the allowlist line lands through its code/<id> merge request, and done and the publish come after it merges and main's CI is green.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys; sys.path.insert(0,'_tools'); import kbcommon,kbpublic; a=kbpublic.parse_allowlist(open('_tools/tests_allowlist.txt').read()); h=[(p,v) for p in ('kb/public/security/secret-shapes-in-text.md','kb/public/_anchors.csv') for k,v in kbcommon.leak_hits(subprocess.run(['git','show','73331d8a6e4f:'+p],capture_output=True,text=True,check=True).stdout,a) if k=='secret']; print(h); sys.exit(1 if h else 0)"
+    ]
+  },
+  "clauses": [
+    {
+      "clause": "kbgit.py publish projects origin/main to the public home again: commit 73331d8a6 (docs(kb): add EC, DSA and PGP private key labels ... to secret shapes) quotes the RFC 5915 armor line BEGIN EC PRIVATE KEY, with its five hyphens on each side, in the security/secret-shapes-in-text article and in the public root's anchors ledger, with no key material",
+      "check": 0
+    },
+    {
+      "clause": "fcd8f6b53 already rewrote the line without the hyphens, but publish judges every commit of the range by what it adds",
+      "check": 0
+    },
+    {
+      "clause": "pushed history is never rewritten, so the fix is one secret line for that hyphenated value in _tools/tests_allowlist.txt (read from the projection, matched lowercased), naming the source S-vstqd426. Code lane: the allowlist line lands through its code/<id> merge request",
+      "check": 0
+    },
+    {
+      "clause": "done and the publish come after it merges and main's CI is green",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/tests_allowlist.txt"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): coord ask Aff9f23eb7c: put in the earliest housekeeping sprint. Touches the leak allowlist (_tools/tests_allowlist.txt): any gate it meets is secrets- or publish-class and stays the operator's. Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs."
+}

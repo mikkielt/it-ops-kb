@@ -1,0 +1,55 @@
+{
+  "id": "ST-p4cdatrf",
+  "kind": "story",
+  "title": "The kb MCP server's tools/list size and the tool grouping are recorded",
+  "status": "draft",
+  "sprint": "SP-ttgcpf7o",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "kb/_self/token-efficiency.md states the kb server's tools/list size today in characters and tools, with the command that measured it, and the grouping chosen for the new tools with the reason the figure gives",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nt=open('kb/_self/token-efficiency.md',encoding='utf-8').read()\ni=t.find('## MCP tools for commands');assert i>=0,'no section '+'## MCP tools for commands'\nj=t.find('\\n## ',i+3)\nt=t[i:j if j>0 else len(t)]\nt=' '.join(t.split())\nmiss=[p for p in ['tools/list', 'kb_mcp.py', 'kb_backlog'] if p not in t]\nprint('missing:',miss)\nsys.exit(1 if miss else 0)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/_self/token-efficiency.md states the kb server's tools/list size today in characters and tools, with the command that measured it",
+      "check": 0
+    },
+    {
+      "clause": "the grouping chosen for the new tools with the reason the figure gives",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "kb/_self/token-efficiency.md",
+    "kb/_self/plugin.md"
+  ],
+  "gates": [
+    {
+      "id": "grouping",
+      "kind": "blocking",
+      "question": "How are the read-only commands grouped as kb MCP tools?",
+      "options": [
+        "one tool per facade (kb_backlog, kb_querylog, kb_docs) with a closed list of read-only commands",
+        "one tool per command",
+        "one tool per facade taking free argv"
+      ],
+      "recommendation": "one tool per facade (kb_backlog, kb_querylog, kb_docs) with a closed list of read-only commands",
+      "do": {
+        "one tool per facade (kb_backlog, kb_querylog, kb_docs) with a closed list of read-only commands": "ST-p4cdatrf",
+        "one tool per command": "ST-p4cdatrf",
+        "one tool per facade taking free argv": "ST-p4cdatrf"
+      },
+      "class": "querylog",
+      "answer": "one tool per facade (kb_backlog, kb_querylog, kb_docs) with a closed list of read-only commands",
+      "by": "operator"
+    }
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): coord ask A275e35646a (operator addition: expose tools as MCP server tools instead of calling scripts). The grouping is answered by its recommendation (fewest definitions, a closed command list keeps every CLI gate); the worker measures tools/list and opens a gate if the figure argues otherwise. Premise: the check fails."
+}

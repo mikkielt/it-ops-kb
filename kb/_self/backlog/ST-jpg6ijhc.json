@@ -1,0 +1,75 @@
+{
+  "id": "ST-jpg6ijhc",
+  "kind": "story",
+  "title": "Every public article has a title line",
+  "status": "draft",
+  "sprint": "SP-2rjhs7se",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the contract lint prints no \"no '# ' title line\" warning; the indexes build_index.py regenerates follow",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport subprocess\no=subprocess.run([sys.executable,'.claude/skills/kb-verify/lint.py'],capture_output=True,text=True,timeout=900).stdout\nn=[l for l in o.splitlines() if l.startswith('WARN') and (\"no '# ' title line\" in l)]\nprint(len(n), 'lint warnings of the class');[print(l[:200]) for l in n[:12]]\nsys.exit(1 if n else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/build_index.py",
+        "--check"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the contract lint prints no \"no '# ' title line\" warning",
+      "check": 0
+    },
+    {
+      "clause": "the indexes build_index.py regenerates follow",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "kb/public/agents/a2a/a2a-proto-digest.md",
+    "kb/public/auth/audit-events.md",
+    "kb/public/auth/key-management-options.md",
+    "kb/public/auth/propagation-latency.md",
+    "kb/public/auth/revocation.md",
+    "kb/public/auth/threats.md",
+    "kb/public/mecm/application-model.md",
+    "kb/public/mecm/baselines.md",
+    "kb/public/mecm/client-settings.md",
+    "kb/public/mecm/collect-client-logs.md",
+    "kb/public/mecm/compliance-script-ci.md",
+    "kb/public/mecm/log-files.md",
+    "kb/public/mecm/logging.md",
+    "kb/public/mecm/sql-views-compliance.md",
+    "kb/public/mecm/versions-lifecycle.md",
+    "kb/public/prior-art/device-identity-correlation.md",
+    "kb/public/prior-art/drift-detection.md",
+    "kb/public/prior-art/layered-settings-resolution.md",
+    "kb/public/prior-art/log-collection-normalization.md",
+    "kb/public/prior-art/mcp-microsoft-endpoint-mgmt.md",
+    "kb/public/prior-art/pseudonymization-tokenization.md",
+    "kb/public/prior-art/secret-vault-encryption.md",
+    "kb/public/prior-art/tiered-approval-ops.md",
+    "kb/public/reuse/device-identity-correlation.md",
+    "kb/public/reuse/drift-detection.md",
+    "kb/public/reuse/layered-settings-resolution.md",
+    "kb/public/reuse/log-collection-normalization.md",
+    "kb/public/reuse/mcp-microsoft-endpoint-mgmt.md",
+    "kb/public/reuse/pseudonymization-tokenization.md",
+    "kb/public/reuse/secret-vault-encryption.md",
+    "kb/public/reuse/tiered-approval-ops.md",
+    "kb/public/security/baselines-catalog.md",
+    "kb/public/_sources.csv"
+  ],
+  "depends_on": [
+    "ST-de73ah5a"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): lint on 2026-10-19: 32 articles with no '# ' title line (prior-art, reuse, mecm, auth). Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+}

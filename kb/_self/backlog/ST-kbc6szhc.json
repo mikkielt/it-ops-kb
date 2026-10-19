@@ -1,0 +1,41 @@
+{
+  "id": "ST-kbc6szhc",
+  "kind": "story",
+  "title": "kbmon's delivery alert holds while deliveries are refused, and its querylog panel counts usage once",
+  "status": "draft",
+  "sprint": "SP-vx6eufpj",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbmon's delivery alert stays while a refused delivery is followed by lines that deliver nothing, carries the refusal's start as its since and names the gate of a delivery refused for want of rights; its querylog panel counts a distilled prompt's usage once, as each folded bug's repro reads",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,subprocess,sys,os,base64,zlib\n# the folded drafts' own repro and check commands, compressed (their item files are in git history)\nR=json.loads(zlib.decompress(base64.b64decode('eJztVlFv2zYQ/itsAIN0Qil2m6yAAj14jdcESOPBdQdsjiHQIm0zlkiZpOJ4Qf77jrTspGm29XVDX8QTeXe8++67k8bjg58/Ru70ZL0q5/yAovFBtXELrd6BfBDl/inLShuHbq1WVFtq62lldC6sRcwieN9Y6kRZzWQhbtRFupPjcsm9TNpn/ZTL3BFtY6HupAE/H656X8772a9XXz5eXmfnvVEvvXixORwMRimYzIXL15y06fUg+zC4GgxT3MXtG7XyhxVzi/hWS0UuKF7VwmwKPcftMzgq2VJwaSxZUXEvrcv0Mh2ZWoAphLy1lMoK40iH4sxpXViwbLJdFRkXhbwTBtTZJn16j+GGueDgVtcuLVg55Qy55For75qLGVqSQ9ZOkBGuNgrZ2NSKjP2d4l7ktWPTQuwuPF5OS63iaoPpIZvQnFVgIzLwXIFzHy5ge99IAF7ap06Wwt/cfdtph9gIRmjOnEC7/MEdyhciXybol97lVf8cEUDAoS4EVRVMOcERlBDCKCHh4IFVVbFBUVTVdpGg5XQunfdiNypHW9szpLRbSDVHXkdwvLv8a1PmtYRBHBCXRYG0CfpooQtuERyhQudLb1ylS4KjSKtcYApCxZQo8PMqgo6RypEq3kKZay5oFVvHIf9xAgBMIPyAq4QiIjlDz1XTtAvhQKqNBSzMOLuWbkHwmzeod9UfjnAbicIKwOZgMvH09+1QnUylWU1/tMN/sx2+ZqQRs9oKvqf+jvINQ5M9r51GayOd8Giy1NcXcmPcksBT//43PG341fa1gdsLwNBiOp7sCcxe0pQFYrJxZ7K1sdJ3wStUXL2fyveLk/wHFf8PVNxOTsSmuSebNnIu1XHJpHp9DPtpGYbnGsrZ0BjNYKKugchIzxA4WDiLyH3bw+7S7yTq2ZaVbhy963SS5zO068mJld5+TxQroV2QVMhtmdl5xsxSbH66XYv1PzJTPxEwsDEwlYNvDxWta8lv1Og1Xj4RMq4rb0Be4eXoX3j53XyaMisorEb4HS9Zp42gy2lt2Rx6Z0WztNGLYYxAi0GMZHWMbQXOAFiIXBpSMSOUszsyg7TLNd4LSq/J/sU//gR6xrXLwaBOH3CgQ/KA84LVXEQAmBIuOo1O/aYRUEwL0yXpUuz1uh3IKF/jJCzdxVYwYYFK4+S08/hIcfjyweajn2zWGeKhj/3jJMA03HWLpYeHyyTMPl6XlSUPWHKcfGNCsQ/CWWCUmfksCG79HrXKqMVHrYuk9Slpff4Dg5qtzQzwAhcU34WwLcwnqVXm/WKYkxhmVlm57XuFfQCPENITurDGPiKPcxjQmW88MiSNJabbNcX3uH2Eb24UPoLDUDpMjWBcmLQpZTzs9877w+y3/vDz5eCahs20bsz87Gpq39wUzkMofhPTFxm3ypBv61PI9ghH0NowZzpdGP97T8FHVkglCKN1e0I79PVo4HqT7mnY2DnNYTKs2k3TmjE2em3xN38++wP/2/P0HZn8BaWKDw4=')))\nbad=[]\nenv=dict(os.environ,NO_COLOR='1')\nfor i,a in R:\n    p=subprocess.run(a,capture_output=True,text=True,timeout=600,env=env)\n    print(i,'exit',p.returncode)\n    if p.returncode: bad.append(i)\nprint('still failing:',bad);sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbmon's delivery alert stays while a refused delivery is followed by lines that deliver nothing, carries the refusal's start as its since and names the gate of a delivery refused for want of rights",
+      "check": 0
+    },
+    {
+      "clause": "its querylog panel counts a distilled prompt's usage once, as each folded bug's repro reads",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/mon_querylog.py",
+    "_tools/ql_report.py",
+    "_tools/bl_land.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/usage.md",
+    "kb/_self/querylog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/backlog.md"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): the stall of 2026-10-17/18 ran 105 refused deliveries without an alert anyone saw. Folds BG-t54wqmgd, BG-tp4birqb, BG-q7bi7h4c, BG-mey6jwew (each repro embedded)."
+}

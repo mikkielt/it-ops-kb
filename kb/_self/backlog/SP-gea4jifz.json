@@ -1,0 +1,23 @@
+{
+  "id": "SP-gea4jifz",
+  "kind": "sprint",
+  "title": "README is a short executive summary, and the kb/_self docs say what the code does",
+  "status": "planned",
+  "goal": "README.md is a concise executive summary of it-ops-kb: what it is, who it is for, how to use it in five minutes and where the rest lives; every figure it drops is kept in the kb/_self doc that owns it; no kb/_self/tools.md line holds a whole subsystem's reference; the kb/_self docs and skills name no removed tool or test; the stale statements of tools.md, backlog.md, code.md, the kb-verify skill and the tools' help say what the code does; AGENTS.md keeps headroom under its 4 KB cap with no rule changed",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ],
+  "notes": "Housekeeping batch (operator request 2026-10-19), run 8 of 8: start only after every sprint active or planned on 2026-10-19 (SP-7s6uubs7, SP-3hgirkur, SP-dulvwwjc, SP-3pvz2noj, SP-ipeewrlv, SP-ep7cyuob) has closed, in the order SP-tsb23kev SP-2rjhs7se SP-vx6eufpj SP-v64egscn SP-jplczvj2 SP-qh2j24z2 SP-ttgcpf7o SP-gea4jifz."
+}

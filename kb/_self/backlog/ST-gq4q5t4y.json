@@ -1,0 +1,56 @@
+{
+  "id": "ST-gq4q5t4y",
+  "kind": "story",
+  "title": "Helpers copied between the backlog, query log, kbgit and kbmon modules are defined once",
+  "status": "draft",
+  "sprint": "SP-jplczvj2",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "no function body of four lines or more is defined identically in two of bl_dispatch, ql_base, bl_intake, kg_trailers, bl_procs, mon_sessions, mon_log and mon_sprint; the commands that use them print as before",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport ast, glob, hashlib, collections\nby = collections.defaultdict(list)\nfor f in sorted(glob.glob('_tools/*.py')):\n    if '/test_' in f or f.endswith('conftest.py'): continue\n    for n in ast.parse(open(f, encoding='utf-8').read()).body:\n        if isinstance(n, ast.FunctionDef):\n            b = n.body[1:] if (n.body and isinstance(n.body[0], ast.Expr) and isinstance(getattr(n.body[0], 'value', None), ast.Constant)) else n.body\n            if n.end_lineno - n.lineno + 1 >= 4:\n                by[hashlib.sha1(ast.dump(ast.Module(body=b, type_ignores=[])).encode()).hexdigest()].append((f.split('/')[-1], n.name))\ngroups = [v for v in by.values() if len({x[0] for x in v}) > 1 and {x[0] for x in v} & {'bl_dispatch.py', 'bl_procs.py', 'bl_intake.py', 'ql_base.py', 'mon_sprint.py', 'mon_log.py', 'kg_trailers.py', 'mon_sessions.py'}]\nprint('identical function bodies across modules:', groups)\nsys.exit(1 if groups else 0)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "procs"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "no function body of four lines or more is defined identically in two of bl_dispatch, ql_base, bl_intake, kg_trailers, bl_procs, mon_sessions, mon_log and mon_sprint",
+      "check": 0
+    },
+    {
+      "clause": "the commands that use them print as before",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/ql_base.py",
+    "_tools/bl_intake.py",
+    "_tools/kg_trailers.py",
+    "_tools/bl_procs.py",
+    "_tools/mon_sessions.py",
+    "_tools/mon_log.py",
+    "_tools/mon_sprint.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/git.md",
+    "kb/_self/backlog.md",
+    "kb/_self/querylog.md",
+    "kb/_self/monitoring.md"
+  ],
+  "depends_on": [
+    "ST-eihikgyx"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): identical bodies 2026-10-19: bl_dispatch.same_dir = ql_base._same, bl_intake.code_path = kg_trailers.code_path, bl_procs.age_text = mon_sessions.age_text, mon_log.in_spool_order = mon_sprint.in_spool_order. The copy goes to the lower module by code.md's import direction. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+}

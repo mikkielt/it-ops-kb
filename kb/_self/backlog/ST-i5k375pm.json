@@ -1,0 +1,26 @@
+{
+  "id": "ST-i5k375pm",
+  "kind": "story",
+  "title": "Review sprint: The tools share one copy of each helper, keep their import direction and stay small enough to work in",
+  "status": "draft",
+  "sprint": "SP-jplczvj2",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ]
+}

@@ -3,9 +3,10 @@
   "kind": "story",
   "title": "Drafts whose check selects a test still to write are re-planned under the no-test-by-default rule",
   "status": "draft",
+  "sprint": "SP-tsb23kev",
   "priority": "P2",
   "rank": 0,
-  "goal": "No open item's check or repro is a tests.py -k selector of a test still to write unless the item's component is a critical kind kb/_self/code.md names: each other is given a tool-run check on a planted input or dropped under decision D-2tq4fhgs; at SP-noqsd4hj's review backlog.py selectors printed 161 NONE rows of open drafts",
+  "goal": "No open item's check or repro is a tests.py -k selector of a test still to write unless the item's component is a critical kind kb/_self/code.md names: each other is given a tool-run check on a planted input or dropped under decision D-2tq4fhgs",
   "checks": [
     {
       "run": [
@@ -15,11 +16,17 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "No open item's check or repro is a tests.py -k selector of a test still to write unless the item's component is a critical kind kb/_self/code.md names: each other is given a tool-run check on a planted input or dropped under decision D-2tq4fhgs",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/_self/backlog/*.json"
   ],
   "links": [
     "parked: SP-noqsd4hj close"
   ],
-  "notes": "Retrospective finding of SP-noqsd4hj, filed by the orchestrator acting as operator."
+  "notes": "Retrospective finding of SP-noqsd4hj, filed by the orchestrator acting as operator. operator request 2026-10-19 (housekeeping batch): backlog.py selectors on 2026-10-19: none=27 (27 open drafts select no test). Also covers the 13 parked drafts whose only check is an always-green gate (backlog.py check, selfdoc.py check, rag.py eval) found by this plan's triage run: ST-qm5mv7xa, ST-2maa6tx6, ST-ybksk2f2, ST-bvmqojkw, ST-wsaymwtw, ST-5nyibqne, ST-2c4om47e, ST-jtvvjw5x, ST-g6yhdxkt, ST-fas2b2pu, ST-4axaho25, ST-a4sqcsfn, ST-s4gapsl4, ST-ejnfrw6f, ST-rwxgpmz2, ST-ilzaoi32: each gets a check that fails before its work, or its notes say what met it. At SP-noqsd4hj's review backlog.py selectors printed 161 NONE rows of open drafts; on 2026-10-19 none=27 (moved from the goal by the housekeeping plan). Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs."
 }

@@ -3,9 +3,10 @@
   "kind": "story",
   "title": "dispatch bounds a headless worker's spend, not only its turns, since subagent work escapes --max-turns",
   "status": "draft",
+  "sprint": "SP-v64egscn",
   "priority": "P3",
   "rank": 0,
-  "goal": "backlog.py dispatch passes a spend cap to the headless worker (claude -p --max-budget-usd, which the kb cites as a print-mode cap) from a setting or flag the operator sets, and the brief names it, so a worker that fans out to subagents stops at a known cost. SP-qjn563cf: the goal research worker ST-pnr4zyni used 54 of its 200 turns but cost 38.89 USD per its result JSON, against about 4 USD for the 301-turn SP-ajcomz6d research worker; the cap's value is the operator's call, asked as a gate when the item is planned.",
+  "goal": "backlog.py dispatch passes a spend cap to the headless worker (claude -p --max-budget-usd, which the kb cites as a print-mode cap) from a setting or flag the operator sets, and the brief names it, so a worker that fans out to subagents stops at a known cost",
   "checks": [
     {
       "run": [
@@ -13,14 +14,52 @@
         "-c",
         "import sys;t=open('_tools/bl_dispatch.py',encoding='utf-8').read();sys.exit(0 if 'max-budget-usd' in t else 1)"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport subprocess\no = subprocess.run([sys.executable, '_tools/backlog.py', 'dispatch', 'ST-dfmj76rf', '--dry-run'], capture_output=True, text=True, timeout=120)\nt = o.stdout + o.stderr; print(t[-400:])\nsys.exit(0 if '--max-budget-usd' in t else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "backlog.py dispatch passes a spend cap to the headless worker (claude -p --max-budget-usd, which the kb cites as a print-mode cap) from a setting or flag the operator sets",
+      "check": 0
+    },
+    {
+      "clause": "the brief names it, so a worker that fans out to subagents stops at a known cost",
+      "check": 1
     }
   ],
   "touches": [
     "_tools/bl_dispatch.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/code.md",
+    "kb/_self/tools.md"
+  ],
+  "gates": [
+    {
+      "id": "cap",
+      "kind": "blocking",
+      "question": "What spend cap does dispatch pass to a headless worker by default?",
+      "options": [
+        "no default: a setting the operator fills; dispatch passes the cap only when it is set and says when a worker runs without one",
+        "a default per kind from the two measured runs (about 4 USD and 38.89 USD)"
+      ],
+      "recommendation": "no default: a setting the operator fills; dispatch passes the cap only when it is set and says when a worker runs without one",
+      "do": {
+        "no default: a setting the operator fills; dispatch passes the cap only when it is set and says when a worker runs without one": "ST-dfmj76rf",
+        "a default per kind from the two measured runs (about 4 USD and 38.89 USD)": "ST-dfmj76rf"
+      },
+      "class": "agents-rule",
+      "answer": "no default: a setting the operator fills; dispatch passes the cap only when it is set and says when a worker runs without one",
+      "by": "operator"
+    }
   ],
   "links": [
     "parked: SP-qjn563cf close"
   ],
-  "notes": "SP-up5wchen (2026-10-11): the research worker dispatched with --max-turns 200 reported num_turns 318 and 7.37 USD in its result JSON, so the turn cap did not bound the turns it counts either."
+  "notes": "SP-up5wchen (2026-10-11): the research worker dispatched with --max-turns 200 reported num_turns 318 and 7.37 USD in its result JSON, so the turn cap did not bound the turns it counts either. operator request 2026-10-19 (housekeeping batch): a behaviour check is added: dispatch --dry-run prints the argv with --max-budget-usd. SP-qjn563cf: the goal research worker ST-pnr4zyni used 54 of its 200 turns but cost 38.89 USD per its result JSON, against about 4 USD for the 301-turn SP-ajcomz6d research worker. The cap's value is gate cap (moved from the goal by the housekeeping plan 2026-10-19). Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs."
 }

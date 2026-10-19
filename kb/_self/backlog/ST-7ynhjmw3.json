@@ -1,0 +1,72 @@
+{
+  "id": "ST-7ynhjmw3",
+  "kind": "story",
+  "title": "The other whole-subsystem lines of tools.md move to the docs that own them",
+  "status": "draft",
+  "sprint": "SP-gea4jifz",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "no kb/_self/tools.md line holds more than 5000 characters: census goes to kb/_self/web-sources.md, coord and kbmon to kb/_self/monitoring.md, land and check to kb/_self/backlog.md, kb_mcp to kb/_self/plugin.md and tests.py to kb/_self/maintaining.md, each leaving a one-line pointer; the _self lookup eval passes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nlong=[(i+1,len(l)) for i,l in enumerate(open('kb/_self/tools.md',encoding='utf-8')) if l.startswith('') and len(l)>5000]\nprint('tools.md lines over 5000 characters:',long);sys.exit(1 if long else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval",
+        "--root",
+        "_self"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "no kb/_self/tools.md line holds more than 5000 characters: census goes to kb/_self/web-sources.md, coord and kbmon to kb/_self/monitoring.md, land and check to kb/_self/backlog.md, kb_mcp to kb/_self/plugin.md and tests.py to kb/_self/maintaining.md, each leaving a one-line pointer",
+      "check": 0
+    },
+    {
+      "clause": "the _self lookup eval passes",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/backlog.md",
+    "kb/_self/plugin.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/map.csv",
+    "kb/_self/_retrieval/lookup_eval.csv",
+    "kb/_self/_retrieval/**"
+  ],
+  "depends_on": [
+    "ST-3utkudhz"
+  ],
+  "gates": [
+    {
+      "id": "homes",
+      "kind": "blocking",
+      "question": "Which doc takes each long tools.md line?",
+      "options": [
+        "census to web-sources.md, coord and kbmon to monitoring.md, land and check to backlog.md, kb_mcp to plugin.md, tests.py to maintaining.md",
+        "all of them to new per-tool docs"
+      ],
+      "recommendation": "census to web-sources.md, coord and kbmon to monitoring.md, land and check to backlog.md, kb_mcp to plugin.md, tests.py to maintaining.md",
+      "do": {
+        "census to web-sources.md, coord and kbmon to monitoring.md, land and check to backlog.md, kb_mcp to plugin.md, tests.py to maintaining.md": "ST-7ynhjmw3",
+        "all of them to new per-tool docs": "ST-7ynhjmw3"
+      },
+      "class": "design",
+      "answer": "census to web-sources.md, coord and kbmon to monitoring.md, land and check to backlog.md, kb_mcp to plugin.md, tests.py to maintaining.md",
+      "by": "operator"
+    }
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): tools.md lines over 5000 characters on 2026-10-19: census 19794, coord 13263, land 10390, kb_mcp 7510, backlog check 6170, kbmon 5722, tests.py 5608 (and benchmarks 53843, A2). Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+}

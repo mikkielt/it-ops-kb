@@ -1,0 +1,42 @@
+{
+  "id": "ST-sj65ovxr",
+  "kind": "story",
+  "title": "The articles about this repository's own tools say what the tools do",
+  "status": "draft",
+  "sprint": "SP-2rjhs7se",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "git-test-repositories, pytest-xdist, doc-change-detection, doc-lookup-sources, settings-and-scopes and the test-suite-ceiling answer state what the repository's tools and their sources say, as each folded bug's repro reads",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,subprocess,sys,os,base64,zlib\n# the folded drafts' own repro and check commands, compressed (their item files are in git history)\nR=json.loads(zlib.decompress(base64.b64decode('eJylk8tu2zAQRX9l4A0lwJITx3k0gTdFi+6bpWDYNElJtCgOw0cs/X1JuUGNBGmAZCNSkDhzz53Lqpp9/1XUne4OzRWfzaGamdG3qK/iflaw9JS9QevBje7BrwmQ8oBSZ2iEzki3X5iwV5ItGukV3ael8ML5wgqDTnq0Uriy52QuNEMudbMmwdfFHclLKyjP8tIZJX2W5w+xQymGuL8EWQPZbT2icgvnrXBum6qWZtzlsA9ScXCBtXDehYDU4EEoJ+Ain202iSbS4fFmeUDWfIXudCwtiW3gMmr5FBTVHHboSmbClmHQ8Z8d1GiBahBDPMSkh12hgQaPu0QkvQNqm9AL7V3+HqTHJtgV6g8h9dqFPiPUxF6Cg0dALcBYZNHkqbqa9Ki0fW0DbZKIBUdWsJbqRhRceMG8RJ3siLjGyshEPG0gxiHKBN/S2JmO533uyVy/tka/hXLiZtnyjn5lcmeSFWIXTOEwWPbZUFY/fv6Gx+Xl3bf5tNycltv35vLUsdun1bD8EKFeV/8xnikauFg44X1U64oYo8Kx+Nc7GJNWMQgWYmDhKH0LGv9ON0WQJMwCtRpTz94B1qevm+hlpSpV2lpqnk28JL/f/JNWbx6wW+/j1cx8PhWjeswy8liYvm0Oz+JUaYB4gDzerpan13yqMEw2vcQEuzN/L5Jm7E4WXp5ZuLw+Xq96NX4lBVuq3VHYTw49hme6fvG+9CIFX7poWUI3whY2xHk9C2slF29isPkDgj/C7g==')))\nbad=[]\nenv=dict(os.environ,NO_COLOR='1')\nfor i,a in R:\n    p=subprocess.run(a,capture_output=True,text=True,timeout=600,env=env)\n    print(i,'exit',p.returncode)\n    if p.returncode: bad.append(i)\nprint('still failing:',bad);sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "git-test-repositories, pytest-xdist, doc-change-detection, doc-lookup-sources, settings-and-scopes and the test-suite-ceiling answer state what the repository's tools and their sources say, as each folded bug's repro reads",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "kb/public/gitlab/git-test-repositories.md",
+    "kb/public/python/pytest-xdist.md",
+    "kb/public/agents/doc-change-detection.md",
+    "kb/public/agents/doc-lookup-sources.md",
+    "kb/public/claude/settings-and-scopes.md",
+    "kb/public/_answers.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_sources.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "depends_on": [
+    "ST-de73ah5a",
+    "ST-cvr76jag",
+    "ST-jliyfmxl"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): folds six review bugs, each with its repro embedded in the check (all six failed on 2026-10-19): BG-fknkjg3d, BG-ow62jocg, BG-togur4on, BG-se62hdka, BG-qkc7q4x2, BG-25w54mly."
+}

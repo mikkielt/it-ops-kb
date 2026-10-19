@@ -1,0 +1,80 @@
+{
+  "id": "ST-3utkudhz",
+  "kind": "story",
+  "title": "benchmarks.py's reference moves from one tools.md line to a doc of its own",
+  "status": "draft",
+  "sprint": "SP-gea4jifz",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/_self/tools.md's benchmarks.py row holds at most 2000 characters and points to kb/_self/benchmarks.md, which holds the reference; kb/_self/map.csv maps the benchmark tools to it; the _self lookup eval passes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nlong=[(i+1,len(l)) for i,l in enumerate(open('kb/_self/tools.md',encoding='utf-8')) if l.startswith('| `python3 _tools/benchmarks.py') and len(l)>2000]\nprint('tools.md lines over 2000 characters:',long);sys.exit(1 if long else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nt=open('kb/_self/benchmarks.md',encoding='utf-8').read()\nt=' '.join(t.split())\nmiss=[p for p in ['benchmarks.py run'] if p not in t]\nprint('missing:',miss)\nsys.exit(1 if miss else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval",
+        "--root",
+        "_self"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/_self/tools.md's benchmarks.py row holds at most 2000 characters and points to kb/_self/benchmarks.md, which holds the reference",
+      "check": 0
+    },
+    {
+      "clause": "kb/_self/map.csv maps the benchmark tools to it",
+      "check": 1
+    },
+    {
+      "clause": "the _self lookup eval passes",
+      "check": 2
+    }
+  ],
+  "touches": [
+    "kb/_self/tools.md",
+    "kb/_self/benchmarks.md",
+    "kb/_self/map.csv",
+    "kb/_self/README.md",
+    "kb/_self/_retrieval/lookup_eval.csv",
+    "kb/_self/_retrieval/**"
+  ],
+  "depends_on": [
+    "ST-6m5kgbh5"
+  ],
+  "gates": [
+    {
+      "id": "home",
+      "kind": "blocking",
+      "question": "Where does the benchmarks.py reference go?",
+      "options": [
+        "a new kb/_self/benchmarks.md mapped to _tools/benchmarks.py and _tools/bench_*.py",
+        "kb/_self/reports/benchmarks.md beside the measurements"
+      ],
+      "recommendation": "a new kb/_self/benchmarks.md mapped to _tools/benchmarks.py and _tools/bench_*.py",
+      "do": {
+        "a new kb/_self/benchmarks.md mapped to _tools/benchmarks.py and _tools/bench_*.py": "ST-3utkudhz",
+        "kb/_self/reports/benchmarks.md beside the measurements": "ST-3utkudhz"
+      },
+      "class": "design",
+      "answer": "a new kb/_self/benchmarks.md mapped to _tools/benchmarks.py and _tools/bench_*.py",
+      "by": "operator"
+    }
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): tools.md on 2026-10-19: 167 lines, the benchmarks.py row is one line of 53843 characters. Reports hold measurements, not references, so a doc of its own. Plan against SP-7s6uubs7 and SP-3pvz2noj, which edit that row first. Premise: the first check fails. Checks 2 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+}

@@ -1,0 +1,39 @@
+{
+  "id": "ST-wseqbgaa",
+  "kind": "story",
+  "title": "Mutating backlog commands as kb MCP tools behind an opt-in setting",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "with an opt-in setting the kb MCP server offers claim, release and answer as tools that keep every command-line gate and authority rule and are no way around a Bash deny rule",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('_tools/kb_mcp.py',encoding='utf-8').read();sys.exit(0 if 'kb_backlog_write' in t else 1)"
+      ]
+    }
+  ],
+  "gates": [
+    {
+      "id": "authority",
+      "kind": "blocking",
+      "question": "Should mutating backlog commands be offered as kb MCP tools behind an opt-in?",
+      "options": [
+        "not now: read-only tools only",
+        "offer claim, release and answer behind an opt-in setting"
+      ],
+      "recommendation": "not now: read-only tools only",
+      "do": {
+        "not now: read-only tools only": "ST-wseqbgaa",
+        "offer claim, release and answer behind an opt-in setting": "ST-wseqbgaa"
+      },
+      "class": "push"
+    }
+  ],
+  "links": [
+    "parked: housekeeping plan 2026-10-19 (operator gate)"
+  ],
+  "notes": "housekeeping batch 2026-10-19, coord ask A275e35646a: operator-only authority (gate answers) must not gain a route around its guard."
+}

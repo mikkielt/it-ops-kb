@@ -1,0 +1,40 @@
+{
+  "id": "ST-wquz2n6c",
+  "kind": "story",
+  "title": "tools.md, backlog.md, code.md and conftest say what the code does",
+  "status": "draft",
+  "sprint": "SP-gea4jifz",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the stale statements six review findings named in tools.md, backlog.md, code.md and the conftest docstring say what the code does, as each folded item's check reads",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,subprocess,sys,os,base64,zlib\n# the folded drafts' own repro and check commands, compressed (their item files are in git history)\nR=json.loads(zlib.decompress(base64.b64decode('eJytlE1v2zAMhv8KkYtsxHGydQXWBt5hl25YgR26WxIksiUnmmVJE+XW2a8f5aTfWLsCuwQKZZF6H73kYjH6fDFpe80/9LoZZbAYuX3YWXNC69Gkir+qddYHwD3OQ8GA5T+tMol10iSsKadrlLqeBms15q1gmTSVFcpsC9aFevKRpbmXXCRpjk6rkKTpvOSiYGdnsJNaTGwX4FcnMShrEJLNl++TDSiBGYSdBHnNNdRKy+WSIVRWd63BFG6sF1IAR6DcGlAiDsc5NhSmgy0d5400UHvbDpmoht+DtlvAYP0hn7a26RzlqCgfMlAGwtx5ZUJCd0znJDmXPV36HagaKARSo4RZOlqtIipC1zcnuK/x/avoYi7Hwy5XBqUPySxj6wEaS+fHz0pCt1t76byN0krC/WbK87ZY9FBbD32Uk7BYE9fIW8kypqXYSr/29uYuhLbzlXwQSqNWtmHjfsw2GWwYGBsGNMCNuNuJf+63Vkds7VNo7RNkVz8mdrs9OfW/8TVkS/Nf7LY0qgh5rYxIWOi8wbW9JgYVd0Qei7BQ52p8Nput5rYp1KdiNshMGJ1QuBtMgUA8GXZVRUY7RNKjYNs8UDyLim1zkPzugUtUZcrQi/ofGuztL/4YOBN8T/cl8lwZdv9uy9EQQAjKLUd3D7cIZEgh+4SVvGqoPXK3B0cdsZNVw9Lz1eL8ZEZwnjtfWH39y5+qVzXxp5puK72oqjyeyivNOyGn2CitcdqUExzIT6++fb28fBOZkkaNI54Z0PVvuPvdYFcOiPi4fO5TU2onrjv3ssCupHaNvsiiVlfcB3LfmWRxuIOsusBLLW+bfhpBCFsR7diDsorjj1YkJDblhTq8Do1FZKuMvErOlWuala4LxQ/fySzI/rBKyTQuxyBod3xgdqxRWVPHFLHIX5g4CsemiHUHkz+qfOuS2/TDF9ZI4OQpMhJNi4PB7tmt/gBFuBkU')))\nbad=[]\nenv=dict(os.environ,NO_COLOR='1')\nfor i,a in R:\n    p=subprocess.run(a,capture_output=True,text=True,timeout=600,env=env)\n    print(i,'exit',p.returncode)\n    if p.returncode: bad.append(i)\nprint('still failing:',bad);sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the stale statements six review findings named in tools.md, backlog.md, code.md and the conftest docstring say what the code does, as each folded item's check reads",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md",
+    "skills/sprint/SKILL.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/code.md",
+    "_tools/conftest.py",
+    "AGENTS.md",
+    "kb/_self/design.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-ke655nm5"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): folds BG-mxla4xlk, BG-xk3syfs2, ST-ogg35rzs, BG-icnbtxdf, BG-dolvqr5i, ST-nblpdvup (repros embedded). AGENTS.md is in the touches only for BG-dolvqr5i's sizing rule wording; no rule changes."
+}

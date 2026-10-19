@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "The commit-msg KB-Work judgement lives in one function the hook and refuse_commit_msg share",
   "status": "draft",
+  "sprint": "SP-jplczvj2",
   "priority": "P3",
   "rank": 0,
   "goal": "kg_hooks.hook_commit_msg and kg_trailers.refuse_commit_msg judge a message's KB-Work line through one shared function, so the hook's printed problems and its refusal cannot drift apart. Follow-up of gate ST-3mfjrjom g2 (the refusal was placed in kg_trailers because kg_hooks.py was outside that item's touches), confirmed by the SP-kbrxa4c4 review with this follow-up.",
@@ -15,13 +16,25 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kg_hooks.hook_commit_msg and kg_trailers.refuse_commit_msg judge a message's KB-Work line through one shared function, so the hook's printed problems and its refusal cannot drift apart. Follow-up of gate ST-3mfjrjom g2 (the refusal was placed in kg_trailers because kg_hooks.py was outside that item's touches), confirmed by the SP-kbrxa4c4 review with this follow-up",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kg_hooks.py",
     "_tools/kg_trailers.py",
     "_tools/kbgit.py",
-    "kb/_self/git.md"
+    "kb/_self/git.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "ST-eihikgyx",
+    "ST-corcepuz"
   ],
   "links": [
     "parked: SP-kbrxa4c4 review"
-  ]
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): one copy of a judgement the hook and the gate share. Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs."
 }

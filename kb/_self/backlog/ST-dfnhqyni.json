@@ -1,0 +1,42 @@
+{
+  "id": "ST-dfnhqyni",
+  "kind": "story",
+  "title": "A count or list question the query log captures is not written into _gaps.md as a kb gap",
+  "status": "draft",
+  "sprint": "SP-vx6eufpj",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "ql_apply.gap_decision gives a question a tool answers (how many articles or sources a domain holds) a decision other than keep; a question the kb lacks a fact for still gets keep",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nsys.path.insert(0, '_tools'); import ql_apply\ng = ql_apply.Gate()\nqs = ['How many articles does the kb hold in the intune domain?', 'How many sources does the kb cite in the mecm domain?']\nd = {q: ql_apply.gap_decision(q, g)[2] for q in qs}\nprint(d); sys.exit(1 if any(v == 'keep' for v in d.values()) else 0)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nsys.path.insert(0, '_tools'); import ql_apply\ng = ql_apply.Gate()\nqs = ['OTEL_EXPORTER_OTLP_PROTOCOL http/json OTEL_EXPORTER_OTLP_LOGS_ENDPOINT logs export interval',\n      'git worktree add path branch checks out an existing local branch after its worktree was removed']\nd = {q: ql_apply.gap_decision(q, g)[2] for q in qs}\nprint(d); sys.exit(0 if all(v == 'keep' for v in d.values()) else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "ql_apply.gap_decision gives a question a tool answers (how many articles or sources a domain holds) a decision other than keep",
+      "check": 0
+    },
+    {
+      "clause": "a question the kb lacks a fact for still gets keep",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/ql_apply.py",
+    "kb/_self/querylog.md",
+    "kb/_self/code.md"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): F-ea430090e717 ('How many articles does the kb hold in the intune domain?') was written into kb/public/_gaps.md:1582 as a gap of security/policy-precedence. The existing entry stays (removing kb content is the operator's). Premise: gap_decision gives keep for both count questions on 2026-10-19. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+}

@@ -1,0 +1,23 @@
+{
+  "id": "SP-v64egscn",
+  "kind": "sprint",
+  "title": "Each model call is listed with what it decides, and the calls a rule can make are made by the rule",
+  "status": "planned",
+  "goal": "kb/_self/token-efficiency.md lists every model call site with its role, model, caps, what it decides and whether a rule could decide it, with the evidence; the weekly digest prints tokens by model; the orchestrator finishes a story whose tasks are all done and whose checks pass without a worker session; kbask remediate answers an alert of a kind with a fixed remedy without a model session; dispatch caps a worker's spend as well as its turns; the census checker's passage judgments run on the model the docs name",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ],
+  "notes": "Housekeeping batch (operator request 2026-10-19), run 4 of 8: start only after every sprint active or planned on 2026-10-19 (SP-7s6uubs7, SP-3hgirkur, SP-dulvwwjc, SP-3pvz2noj, SP-ipeewrlv, SP-ep7cyuob) has closed, in the order SP-tsb23kev SP-2rjhs7se SP-vx6eufpj SP-v64egscn SP-jplczvj2 SP-qh2j24z2 SP-ttgcpf7o SP-gea4jifz."
+}

@@ -1,0 +1,59 @@
+{
+  "id": "ST-cvr76jag",
+  "kind": "story",
+  "title": "The agents articles' facts carry one tag each, and their run-based DER facts name a version",
+  "status": "draft",
+  "sprint": "SP-2rjhs7se",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the contract lint prints no 'fact mixes tags' and no 'DER fact rests on a run or probe but names no version' warning for the agents articles; no fact is deleted",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport subprocess\no=subprocess.run([sys.executable,'.claude/skills/kb-verify/lint.py'],capture_output=True,text=True,timeout=900).stdout\nP=('public/agents/a2a-protocol.md', 'public/agents/agent-caching.md', 'public/agents/agent-evaluation.md', 'public/agents/agent-rbac.md', 'public/agents/api-tokens-issue-and-store.md', 'public/agents/azure-openai-deployments.md', 'public/agents/codebase-mapping.md', 'public/agents/doc-change-detection.md', 'public/agents/doc-lookup-sources.md', 'public/agents/docs-maintenance-agents.md', 'public/agents/github-copilot-admin.md', 'public/agents/instruction-and-context-limits.md', 'public/agents/shared-ner-service.md', 'public/agents/hybrid-retrieval.md')\nn=[l for l in o.splitlines() if l.startswith('WARN') and any(x+':' in l for x in P) and ('fact mixes tags' in l or 'DER fact rests on a run' in l)]\nprint(len(n), 'lint warnings of the class');[print(l[:200]) for l in n[:12]]\nsys.exit(1 if n else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport subprocess\nwant = {'public/agents/a2a-protocol.md': 26, 'public/agents/agent-caching.md': 47, 'public/agents/agent-evaluation.md': 63, 'public/agents/agent-rbac.md': 46, 'public/agents/api-tokens-issue-and-store.md': 55, 'public/agents/azure-openai-deployments.md': 60, 'public/agents/codebase-mapping.md': 168, 'public/agents/doc-change-detection.md': 157, 'public/agents/doc-lookup-sources.md': 88, 'public/agents/docs-maintenance-agents.md': 38, 'public/agents/github-copilot-admin.md': 28, 'public/agents/instruction-and-context-limits.md': 74, 'public/agents/shared-ner-service.md': 34, 'public/agents/hybrid-retrieval.md': 150}\no = subprocess.run([sys.executable, '_tools/rag.py', 'audit', '--root', 'public'], capture_output=True, text=True, timeout=600).stdout\nhave = {}\nfor l in o.splitlines():\n    c = [x.strip() for x in l.split('|')]\n    if len(c) > 3 and c[1] in want: have[c[1]] = int(c[3])\nlow = {p: (have.get(p), n) for p, n in want.items() if (have.get(p) or 0) < n}\nprint('articles with fewer facts than on 2026-10-19:', low); sys.exit(1 if low else 0)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the contract lint prints no 'fact mixes tags' and no 'DER fact rests on a run or probe but names no version' warning for the agents articles",
+      "check": 0
+    },
+    {
+      "clause": "no fact is deleted",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "kb/public/agents/a2a-protocol.md",
+    "kb/public/agents/agent-caching.md",
+    "kb/public/agents/agent-evaluation.md",
+    "kb/public/agents/agent-rbac.md",
+    "kb/public/agents/api-tokens-issue-and-store.md",
+    "kb/public/agents/azure-openai-deployments.md",
+    "kb/public/agents/codebase-mapping.md",
+    "kb/public/agents/doc-change-detection.md",
+    "kb/public/agents/doc-lookup-sources.md",
+    "kb/public/agents/docs-maintenance-agents.md",
+    "kb/public/agents/github-copilot-admin.md",
+    "kb/public/agents/instruction-and-context-limits.md",
+    "kb/public/agents/shared-ner-service.md",
+    "kb/public/agents/hybrid-retrieval.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_sources.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "depends_on": [
+    "ST-jpg6ijhc"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): lint on 2026-10-19: 56 mixed-tag facts in 27 articles and 2 DER facts without a version. A mixed fact is split into one fact per tag or retagged; a reworded DOC fact is re-anchored (factdiff.py anchor --file) and its doc2query rows pruned. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+}

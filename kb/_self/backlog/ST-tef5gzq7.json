@@ -4,6 +4,7 @@
   "title": "The phase-4 checker's passage judgments run on the model census.STEP_MODELS names, or the docs stop saying so",
   "status": "draft",
   "parent": "EP-mkzkd7in",
+  "sprint": "SP-v64egscn",
   "priority": "P2",
   "rank": 0,
   "goal": "Either a census.py command runs the passage judgments of sample --brief on census.STEP_MODELS['check'] and the kb-census skill's phase 4 uses it, or the brief header, kb/_self/web-sources.md and kb/_self/token-efficiency.md stop saying the checker runs on Haiku 5.5.",
@@ -14,6 +15,19 @@
         "-c",
         "import sys\ns=open('_tools/census.py',encoding='utf-8').read();n=s.count('STEP_MODELS[\"check\"]')+s.count(\"STEP_MODELS['check']\")\nr=lambda p:' '.join(open(p,encoding='utf-8').read().split())\nsay=\"STEP_MODELS['check']`, Haiku\" in r('kb/_self/web-sources.md') or \"checker's passage judgments run on Haiku\" in r('kb/_self/token-efficiency.md')\nprint(n,say);sys.exit(0 if n>1 or not say else 1)"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0, \"_tools\"); import census; m = census.STEP_MODELS[\"check\"]; print(m); sys.exit(0 if isinstance(m, str) and m.startswith(\"claude-\") else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "Either a census.py command runs the passage judgments of sample --brief on census.STEP_MODELS['check'] and the kb-census skill's phase 4 uses it, or the brief header, kb/_self/web-sources.md and kb/_self/token-efficiency.md stop saying the checker runs on Haiku 5.5",
+      "check": 0
     }
   ],
   "touches": [
@@ -21,9 +35,16 @@
     ".claude/skills/kb-census/SKILL.md",
     "kb/_self/web-sources.md",
     "kb/_self/token-efficiency.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "ST-ac2cw5ek"
   ],
   "links": [
     "parked: SP-yojt6y7v review"
-  ]
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): the docs name a model the code does not run. Checks 2 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done. Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs."
 }

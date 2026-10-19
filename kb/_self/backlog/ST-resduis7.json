@@ -1,0 +1,39 @@
+{
+  "id": "ST-resduis7",
+  "kind": "story",
+  "title": "A sprint orchestrator runs on Sonnet for one trial sprint, compared with Opus on cost and landings",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "one sprint's orchestrator session runs on Sonnet 5.5 and its cost --rework, land.step failures and done refusals are compared with the last three Opus-orchestrated sprints in kb/_self/token-efficiency.md",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/token-efficiency.md',encoding='utf-8').read();sys.exit(0 if 'Sonnet orchestrator trial' in t else 1)"
+      ]
+    }
+  ],
+  "gates": [
+    {
+      "id": "model",
+      "kind": "blocking",
+      "question": "Should one sprint's orchestrator session run on Sonnet 5.5 as a measured trial?",
+      "options": [
+        "run one trial sprint with a Sonnet orchestrator and compare",
+        "keep Opus for orchestrators"
+      ],
+      "recommendation": "run one trial sprint with a Sonnet orchestrator and compare",
+      "do": {
+        "run one trial sprint with a Sonnet orchestrator and compare": "ST-resduis7",
+        "keep Opus for orchestrators": "ST-resduis7"
+      },
+      "class": "design"
+    }
+  ],
+  "links": [
+    "parked: housekeeping plan 2026-10-19 (operator gate)"
+  ],
+  "notes": "housekeeping batch 2026-10-19, cost theme: work rows by model (kb/_querylog/work): Opus 5.5 on 435 item rows with 1.42B cache reads and 3.4M output, Sonnet 5.5 on 632 with 2.81B and 14.4M. No quality data for a Sonnet orchestrator exists: a model switch for a role that affects quality is the operator's."
+}

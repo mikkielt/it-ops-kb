@@ -1,0 +1,49 @@
+{
+  "id": "ST-eihikgyx",
+  "kind": "story",
+  "title": "kbgit's stages share one git helper from kg_base",
+  "status": "draft",
+  "sprint": "SP-jplczvj2",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "no kg_ module but kg_base.py defines its own git, rev_parse or git_run helper; the push and sync gates behave as before",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport ast, glob\nbad = []\nfor f in sorted(glob.glob('_tools/kg_*.py')):\n    if f.endswith('kg_base.py'): continue\n    for n in ast.parse(open(f, encoding='utf-8').read()).body:\n        if isinstance(n, ast.FunctionDef) and n.name in ('git', 'rev_parse', 'git_run'):\n            bad.append(f + ':' + n.name)\nprint('kg_ modules that define their own git helper:', bad); sys.exit(1 if bad else 0)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_sync_e2e.py",
+        "_tools/test_prepush_e2e.py"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "no kg_ module but kg_base.py defines its own git, rev_parse or git_run helper",
+      "check": 0
+    },
+    {
+      "clause": "the push and sync gates behave as before",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/kg_base.py",
+    "_tools/kg_bridge.py",
+    "_tools/kg_history.py",
+    "_tools/kg_hooks.py",
+    "_tools/kg_merge.py",
+    "_tools/kg_sync.py",
+    "_tools/kg_trailers.py",
+    "kb/_self/code.md",
+    "kb/_self/git.md"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): AST scan 2026-10-19: git() is defined in 12 modules, rev_parse in 5 kg_ modules, git_run in 4. Behaviour-preserving move. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+}

@@ -1,0 +1,29 @@
+{
+  "id": "ST-e4vjchrg",
+  "kind": "story",
+  "title": "token-efficiency.md lists every model call site with what it decides and whether a rule could",
+  "status": "draft",
+  "sprint": "SP-v64egscn",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "kb/_self/token-efficiency.md has a Model call sites section naming each model constant and agent file with its role, model, caps, what it decides and whether a rule or index could decide it, with the evidence and the command behind each figure",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport ast, re\nwant = []\nfor f, names in (('bl_dispatch', ['DEFAULT_MODEL']), ('census', ['HAIKU_MODEL', 'STEP_MODELS', 'DISPATCH_MODEL']), ('factdiff', ['JUDGE_MODEL']),\n                 ('kb_ask', ['READER_MODEL']), ('kbask', ['MODEL']), ('ql_distill', ['HAIKU_MODEL']), ('ql_research', ['RESEARCH_MODEL'])):\n    t = ast.parse(open('_tools/' + f + '.py', encoding='utf-8').read())\n    have = {n.targets[0].id for n in t.body if isinstance(n, ast.Assign) and isinstance(n.targets[0], ast.Name)}\n    want += [f + '.' + n for n in names if n in have]\nimport glob\nwant += [p for p in sorted(glob.glob('.claude/agents/*.md')) if re.search(r'^model:', open(p, encoding='utf-8').read(), re.M)]\nt = open('kb/_self/token-efficiency.md', encoding='utf-8').read()\ni = t.find('## Model call sites'); assert i >= 0, 'no Model call sites section'\nj = t.find('\\n## ', i + 3); s = ' '.join(t[i:j if j > 0 else len(t)].split())\nmiss = [w for w in want if w not in s]\nprint('call sites the section does not name:', miss); sys.exit(1 if miss else 0)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/_self/token-efficiency.md has a Model call sites section naming each model constant and agent file with its role, model, caps, what it decides and whether a rule or index could decide it, with the evidence and the command behind each figure",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "kb/_self/token-efficiency.md"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): evidence measured 2026-10-19 for the section: the store's judged entries by pack verdict and judgement (good: answered 11, partly 5, missed 37; weak: 8, 6, 26; none: 8, 7, 59) show the verdict cannot stand in for distill's Haiku judge; work rows by model (kb/_querylog/work: Sonnet 5.5 on 632 item rows, 2.81B cache reads, 14.4M output; Opus 5.5 on 435 item rows, 1.42B cache reads, 3.4M output) show the orchestrator's share. A model switch is not made here: each is a parked draft with an operator gate."
+}

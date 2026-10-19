@@ -1,0 +1,81 @@
+{
+  "id": "ST-ijamqlyh",
+  "kind": "story",
+  "title": "kbfacts.py is split behind its names with retrieval unchanged",
+  "status": "draft",
+  "sprint": "SP-jplczvj2",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbfacts.py holds at most 2500 lines, its pack index in kf_index.py, its freshness stamp in kf_fresh.py and its routed questions and topics for code in kf_route.py; every name other modules use from kbfacts still imports from it; the public and _self lookup evals pass",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nk=sum(1 for _ in open('_tools/kbfacts.py',encoding='utf-8'))\nprint('_tools/kbfacts.py',k,'lines');sys.exit(0 if k<=2500 else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nsys.path.insert(0,'_tools');import importlib;m=importlib.import_module('kbfacts')\nmiss=[n for n in ['ALIASES', 'COMMON_SHARE', 'EVIDENCE_KINDS', 'ID', 'INDEX_VERSION', 'LOG_LABEL', 'MAX_QUESTIONS', 'OPEN_GAP', 'PACK_HANDLE', 'SCATTER_DOMAINS', 'SCATTER_SCORE', 'SELF_ALIASES', 'SELF_ROOT', 'SKIP_DIRS', 'STOP', 'TAG', 'WORD', 'alias_files', 'aliases', 'anchor_of', 'articles', 'audit', 'audit_logs', 'bare', 'cited_lines', 'clip', 'clone_home', 'code_file_source', 'code_pointer', 'contract_source', 'csv_units', 'decision_conflicts', 'domain_prefix', 'domains', 'drifted_words', 'expand', 'expansions', 'fact_key', 'format_topics_for', 'fresh_state', 'front_matter', 'handled', 'in_prefix', 'index_dir', 'is_article', 'item_brief', 'key_shares', 'key_terms', 'kinds_of', 'ledger_entries', 'link_entries', 'locate', 'logs_for', 'md_units', 'pack', 'pack_many', 'pack_routed', 'parse_tag', 'pinned_source', 'qpath_of', 'read', 'record_self', 'root_freshness', 'root_name', 'route_of', 'routed', 'scope', 'search', 'self_docs', 'self_eval_rows', 'self_store', 'self_units', 'set_pack', 'show_decisions', 'show_logs', 'showable', 'source_freshness', 'source_rows', 'stem', 'store', 'tags_in', 'terms', 'topic_files', 'topics_for', 'units'] if not hasattr(m,n)]\nprint('names no longer importable from kbfacts:',miss);sys.exit(1 if miss else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbfacts.py holds at most 2500 lines, its pack index in kf_index.py, its freshness stamp in kf_fresh.py and its routed questions and topics for code in kf_route.py",
+      "check": 0
+    },
+    {
+      "clause": "every name other modules use from kbfacts still imports from it",
+      "check": 1
+    },
+    {
+      "clause": "the public and _self lookup evals pass",
+      "check": 2
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/kf_index.py",
+    "_tools/kf_fresh.py",
+    "_tools/kf_route.py",
+    "kb/_self/map.csv",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-jy5mekle"
+  ],
+  "gates": [
+    {
+      "id": "cut",
+      "kind": "blocking",
+      "question": "Where does kbfacts.py split?",
+      "options": [
+        "the pack index, the freshness stamp and the routed questions with topics for code into kf_index.py, kf_fresh.py and kf_route.py",
+        "only the pack index into its own module"
+      ],
+      "recommendation": "the pack index, the freshness stamp and the routed questions with topics for code into kf_index.py, kf_fresh.py and kf_route.py",
+      "do": {
+        "the pack index, the freshness stamp and the routed questions with topics for code into kf_index.py, kf_fresh.py and kf_route.py": "ST-ijamqlyh",
+        "only the pack index into its own module": "ST-ijamqlyh"
+      },
+      "class": "design",
+      "answer": "the pack index, the freshness stamp and the routed questions with topics for code into kf_index.py, kf_fresh.py and kf_route.py",
+      "by": "operator"
+    }
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): kbfacts.py on 2026-10-19: 4377 lines, 87 commits in 30 days; its sections index (1905-3087), freshness (3087-3640), routed (3640-3946) and topics for code (3946-end) are the cut. Premise: the first check fails. Checks 1, 2 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+}

@@ -1,0 +1,39 @@
+{
+  "id": "ST-uruhigy4",
+  "kind": "story",
+  "title": "AGENTS.md routes agents to the kb MCP tools for backlog, query log and docs commands",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "AGENTS.md names the kb_backlog, kb_querylog and kb_docs tools first and the command line as fallback, within its 4 KB cap",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('AGENTS.md',encoding='utf-8').read();sys.exit(0 if 'kb_backlog' in t else 1)"
+      ]
+    }
+  ],
+  "gates": [
+    {
+      "id": "rule",
+      "kind": "blocking",
+      "question": "Should AGENTS.md route agents to the new kb MCP tools?",
+      "options": [
+        "add one routing line, paid for by a cut",
+        "leave AGENTS.md as it is; skills and briefs carry the route"
+      ],
+      "recommendation": "leave AGENTS.md as it is; skills and briefs carry the route",
+      "do": {
+        "add one routing line, paid for by a cut": "ST-uruhigy4",
+        "leave AGENTS.md as it is; skills and briefs carry the route": "ST-uruhigy4"
+      },
+      "class": "agents-rule"
+    }
+  ],
+  "links": [
+    "parked: housekeeping plan 2026-10-19 (operator gate)"
+  ],
+  "notes": "housekeeping batch 2026-10-19, coord ask A275e35646a: a change to AGENTS.md's rules is the operator's. The H sprint switches the skills, briefs and observer."
+}

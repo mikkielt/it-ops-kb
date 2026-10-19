@@ -1,0 +1,51 @@
+{
+  "id": "ST-de73ah5a",
+  "kind": "story",
+  "title": "Article sources headers list exactly the sources their facts cite",
+  "status": "draft",
+  "sprint": "SP-2rjhs7se",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the contract lint prints no 'header sources not cited in the body' and no 'cited sources missing from the header' warning; each header change keeps the source rows and the coverage counts in step",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport subprocess\no=subprocess.run([sys.executable,'.claude/skills/kb-verify/lint.py'],capture_output=True,text=True,timeout=900).stdout\nn=[l for l in o.splitlines() if l.startswith('WARN') and ('header sources not cited' in l or 'cited sources missing from the header' in l)]\nprint(len(n), 'lint warnings of the class');[print(l[:200]) for l in n[:12]]\nsys.exit(1 if n else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the contract lint prints no 'header sources not cited in the body' and no 'cited sources missing from the header' warning",
+      "check": 0
+    },
+    {
+      "clause": "each header change keeps the source rows and the coverage counts in step",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "kb/public/agents/doc-lookup-sources.md",
+    "kb/public/arch/buildkit-build-secrets.md",
+    "kb/public/auth/issuer-token-rotation.md",
+    "kb/public/auth/propagation-latency.md",
+    "kb/public/auth/threats.md",
+    "kb/public/security/privacy-compliance.md",
+    "kb/public/security/settings-crosswalk.md",
+    "kb/public/security/supply-chain.md",
+    "kb/public/claude/settings-and-scopes.md",
+    "kb/public/_sources.csv"
+  ],
+  "depends_on": [
+    "ST-5lh3rat3"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): lint on 2026-10-19: 8 header-not-cited and 2 cited-missing warnings. Folds BG-vfqof6v7 (doc-lookup-sources.md header) and BG-psoxf24w (settings-and-scopes.md lacks S742). A header source no fact cites is removed from the header only, never a fact. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+}

@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "A story whose tasks are all done and whose checks pass on main is done by the orchestrator without a worker session",
   "status": "draft",
+  "sprint": "SP-v64egscn",
   "priority": "P3",
   "rank": 0,
   "goal": "The kb-sprint run step, and backlog.py next or brief, name a story whose child tasks are all done and whose checks all pass on the current main as one the orchestrator lands with backlog.py land ID directly, without dispatching a worker that only re-runs its checks",
@@ -15,14 +16,27 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "The kb-sprint run step",
+      "check": 0
+    },
+    {
+      "clause": "backlog.py next or brief, name a story whose child tasks are all done and whose checks all pass on the current main as one the orchestrator lands with backlog.py land ID directly, without dispatching a worker that only re-runs its checks",
+      "check": 0
+    }
+  ],
   "touches": [
     "skills/sprint/SKILL.md",
     "_tools/bl_plan.py",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/code.md"
   ],
   "links": [
     "parked: SP-g2ssvhi2 close"
   ],
-  "notes": "Retrospective of SP-g2ssvhi2: ST-h66j7wm5's worker (17 turns, about $0.28) made no commit: both child tasks TK-zqeq54ma and TK-2auyrlan had landed and both checks passed on main; the worker only verified them."
+  "notes": "Retrospective of SP-g2ssvhi2: ST-h66j7wm5's worker (17 turns, about $0.28) made no commit: both child tasks TK-zqeq54ma and TK-2auyrlan had landed and both checks passed on main; the worker only verified them. operator request 2026-10-19 (housekeeping batch): a worker session per already-finished story is a model call a rule decides. Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs."
 }

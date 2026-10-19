@@ -1,0 +1,40 @@
+{
+  "id": "ST-w3qdrhdk",
+  "kind": "story",
+  "title": "The 33 open rules findings are tested _self questions or closed with a note",
+  "status": "draft",
+  "sprint": "SP-vx6eufpj",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "none of the 33 rules findings open on 2026-10-19 is still open: each became a tested row of the _self lookup eval or was closed with --tried or --reject and its reason",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport subprocess\no = subprocess.run([sys.executable, '_tools/querylog.py', 'show', '--findings', '--kind', 'rules', '--state', 'open'], capture_output=True, text=True, timeout=300).stdout\nleft = [i for i in ['F-054d190a7866', 'F-0bd501e9cb74', 'F-0cece9f033a1', 'F-155a8af3958c', 'F-2c2363d7f0de', 'F-2f90427e06bd', 'F-30f6072e21fa', 'F-36dd8773ede9', 'F-3b0685859c54', 'F-530d73059c05', 'F-55df081d1ce7', 'F-5b59c5be5133', 'F-5d6fc80f81ea', 'F-60857f33756c', 'F-6481333acafe', 'F-64b17ac73741', 'F-73ef59fab5db', 'F-7920e9ed1e44', 'F-7a03a2cea24d', 'F-7f1df6100269', 'F-85be1f9bee1c', 'F-8ca3d36e06f4', 'F-9556eb22f0c9', 'F-a2b8a4c8f1a0', 'F-a2e8bb7be347', 'F-b74ede5eec99', 'F-c381b3f50bc3', 'F-c894f821753f', 'F-d770ad6b48e2', 'F-d8ff98fc623c', 'F-dc3bec5c5998', 'F-ef8afb47ffde', 'F-f6c387dec551'] if i in o]\nprint(len(left), 'still open:', left); sys.exit(1 if left else 0)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval",
+        "--root",
+        "_self"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "none of the 33 rules findings open on 2026-10-19 is still open: each became a tested row of the _self lookup eval or was closed with --tried or --reject and its reason",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "kb/_self/_retrieval/lookup_eval.csv",
+    "kb/_self/_retrieval/**",
+    "kb/_querylog/findings/**"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): digest 2026-W42: rules lookups 971 (good 13, weak 92, none 553, no verdict 313), open rules findings 33. A _self eval row is a code-lane path: land with backlog.py land ID --wait-merge 1800. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+}

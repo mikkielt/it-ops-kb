@@ -1,0 +1,61 @@
+{
+  "id": "ST-oo6uxbn6",
+  "kind": "story",
+  "title": "The shared grounds import no sibling, and the bl_ and ql_ stages have no import cycle",
+  "status": "draft",
+  "sprint": "SP-jplczvj2",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_base, ql_base, kg_base, bench_core and mon_base import no module of their own prefix, and no two bl_ or ql_ modules import each other; backlog.py and querylog.py run as before",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport ast, glob, os\nmods = {os.path.basename(f)[:-3] for f in glob.glob('_tools/*.py')}\nimps = {}\nfor f in glob.glob('_tools/*.py'):\n    m = os.path.basename(f)[:-3]\n    if m.startswith('test_'): continue\n    s = set()\n    for n in ast.walk(ast.parse(open(f, encoding='utf-8').read())):\n        if isinstance(n, ast.Import): s |= {a.name for a in n.names if a.name in mods}\n        elif isinstance(n, ast.ImportFrom) and n.module in mods: s.add(n.module)\n    imps[m] = s\nbad = []\nfor b, p in (('ql_base', 'ql_'), ('kg_base', 'kg_'), ('bench_core', 'bench_'), ('bl_base', 'bl_'), ('mon_base', 'mon_')):\n    bad += [f'{b} -> {x}' for x in imps.get(b, ()) if x.startswith(p) and x != b]\nfor a in imps:\n    for b in imps[a]:\n        if a < b and a in imps.get(b, ()) and a[:3] == b[:3] and a[:3] in ('bl_', 'ql_'):\n            bad.append(f'{a} <-> {b}')\nprint('import direction breaks:', bad)\nsys.exit(1 if bad else 0)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "bl_base, ql_base, kg_base, bench_core and mon_base import no module of their own prefix",
+      "check": 0
+    },
+    {
+      "clause": "no two bl_ or ql_ modules import each other",
+      "check": 1
+    },
+    {
+      "clause": "backlog.py and querylog.py run as before",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/bl_base.py",
+    "_tools/bl_intake.py",
+    "_tools/bl_land.py",
+    "_tools/bl_selfcheck.py",
+    "_tools/ql_deliver.py",
+    "_tools/ql_distill.py",
+    "_tools/ql_learn.py",
+    "_tools/ql_apply.py",
+    "_tools/ql_research.py",
+    "_tools/ql_store.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md",
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md"
+  ],
+  "depends_on": [
+    "ST-e23cb2h4"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): AST scan 2026-10-19 (function-level imports included): bl_base -> bl_intake; cycles bl_base<->bl_intake, bl_land<->bl_selfcheck, ql_deliver<->ql_distill, ql_distill<->ql_learn, ql_apply<->ql_research, ql_research<->ql_store. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+}

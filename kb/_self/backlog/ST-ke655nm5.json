@@ -1,0 +1,53 @@
+{
+  "id": "ST-ke655nm5",
+  "kind": "story",
+  "title": "The kb/_self docs and skills name no removed tool or test, and kb-verify says what the suite runs",
+  "status": "draft",
+  "sprint": "SP-gea4jifz",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "no kb/_self doc, skill or role file names a _tools path or test the tree no longer has; the kb-verify skill says what tests.py runs now and when a worker runs it, as the folded items' checks read",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport re, glob, os, ast, subprocess\ntracked = set(subprocess.run(['git', 'ls-files'], capture_output=True, text=True).stdout.split())\ntests = set()\nfor f in glob.glob('_tools/test_*.py'):\n    tests |= {n.name for n in ast.walk(ast.parse(open(f, encoding='utf-8').read())) if isinstance(n, ast.FunctionDef)}\nfiles = {os.path.splitext(os.path.basename(p))[0] for p in tracked}\ndocs = glob.glob('kb/_self/*.md') + ['AGENTS.md', 'README.md'] + glob.glob('skills/*/SKILL.md') + glob.glob('.claude/skills/*/SKILL.md') + glob.glob('agents/*.md')\nok = {'_tools/test_x.py', 'test_x', 'test_file'}\nbad = []\nfor d in docs:\n    s = open(d, encoding='utf-8').read()\n    for m in re.findall(r'(?<![\\w/.-])(_tools/[\\w./-]+\\.(?:py|json|txt|csv|toml))', s):\n        if m not in tracked and m not in ok: bad.append((d, m))\n    for m in set(re.findall(r'\\b(test_[a-z0-9_]+)\\b', s)):\n        if m not in tests and m not in files and m not in ok: bad.append((d, m))\nprint('removed tools or tests the docs still name:', sorted(set(bad))); sys.exit(1 if bad else 0)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,subprocess,sys,os,base64,zlib\n# the folded drafts' own repro and check commands, compressed (their item files are in git history)\nR=json.loads(zlib.decompress(base64.b64decode('eJyNkc1u4yAURl/lig2gsZ2myWI0ljfdVKN21+6MF4590zBgcIE4ydsXiKbzo5EyG8SC+92Pc9qWvLyW9/Lk3tAFUkBL5ks4WLOJd1IO6ZTTbF0Af/HCBGjAzmiYINWg++OIK6+k1n6lduWCTu4vq5en78/P1TSKOIxmsKM0b40gx7AvvwrCK4f9yHjlZy2DlgY948Ls+jFGtxK+wBr21oEsQIM0MeE4oesDssBB7kEQba06zoBLr8HGnRAOCFouCGonSJrRnTCzkyawGMvrVL3CswxsnRLSKtQe4Y6TrktffngsBzeoyZ2HWwjqP7Po6YAmF5ABJzCIowdrkKYaGRS9yYn+RPJXqyjmx3L25/ft5WarpfnfZcWnEpqN0H8KqX3T6uwhS1jSX3XlQ++CP8lwYIxuKqAF3caT8662qtGxgOdNcw+9GaHXmtGTdQpdhvFbmuf11Q797Ac+4Oxhk0e3YPoJM1WfH8I15xstrOK/DNylVlZdsa0Ttu4D2wPp6w==')))\nbad=[]\nenv=dict(os.environ,NO_COLOR='1')\nfor i,a in R:\n    p=subprocess.run(a,capture_output=True,text=True,timeout=600,env=env)\n    print(i,'exit',p.returncode)\n    if p.returncode: bad.append(i)\nprint('still failing:',bad);sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "no kb/_self doc, skill or role file names a _tools path or test the tree no longer has",
+      "check": 0
+    },
+    {
+      "clause": "the kb-verify skill says what tests.py runs now and when a worker runs it, as the folded items' checks read",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    "kb/_self/usage.md",
+    "kb/_self/git.md",
+    "kb/_self/tools.md",
+    ".claude/skills/kb-verify/SKILL.md",
+    "agents/worker.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/plugin.md",
+    "kb/_self/code.md",
+    "kb/_self/token-efficiency.md",
+    "AGENTS.md"
+  ],
+  "depends_on": [
+    "ST-7ynhjmw3"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): scan 2026-10-19: backlog.md names the land end-to-end test file deleted in ca6724328 (the test-trimming commit). Folds the kb-verify drafts ST-2iwrgert, BG-crckmrxc, ST-jvxsxq4y (their checks embedded). ST-622bea6b (docs name that deleted file's seed) is dropped: its file is gone. Premise: both checks fail."
+}

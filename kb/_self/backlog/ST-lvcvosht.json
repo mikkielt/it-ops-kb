@@ -1,0 +1,54 @@
+{
+  "id": "ST-lvcvosht",
+  "kind": "story",
+  "title": "The observer, the worker brief and the sprint skill name the kb MCP tools first",
+  "status": "draft",
+  "sprint": "SP-ttgcpf7o",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbask's observer session allows the read-only kb MCP tools; the worker brief and the kb-sprint skill name kb_backlog first and the backlog.py command as the fallback",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport ast\nt=open('_tools/kbask.py',encoding='utf-8').read()\nsys.exit(0 if 'kb_backlog' in t else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport subprocess\nb = subprocess.run([sys.executable, '_tools/backlog.py', 'brief', 'ST-lvcvosht'], capture_output=True, text=True, timeout=120).stdout\nw = ' '.join(open('agents/worker.md', encoding='utf-8').read().split())\nmiss = [n for n, t in (('brief', b), ('agents/worker.md', w)) if 'kb_backlog' not in t]\nprint('no kb_backlog in:', miss); sys.exit(1 if miss else 0)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbask's observer session allows the read-only kb MCP tools",
+      "check": 0
+    },
+    {
+      "clause": "the worker brief and the kb-sprint skill name kb_backlog first and the backlog.py command as the fallback",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/kbask.py",
+    ".claude/agents/kb-observer.md",
+    "_tools/bl_dispatch.py",
+    "skills/sprint/SKILL.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/backlog.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-6tg2cevp"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): AGENTS.md's routing is left as it is: changing it is a rule change and waits for the operator (parked draft). Premise: both checks fail."
+}

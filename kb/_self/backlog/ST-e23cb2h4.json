@@ -1,0 +1,60 @@
+{
+  "id": "ST-e23cb2h4",
+  "kind": "story",
+  "title": "Helpers copied between census, fetch, kbingest and the decision tools are defined once",
+  "status": "draft",
+  "sprint": "SP-jplczvj2",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "no function body of four lines or more is defined identically in two of bl_intake, kbingest, census, kbcommon, fetch, kg_base, kbdecide and kblog; the guard tests and the tools' help run as before",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport ast, glob, hashlib, collections\nby = collections.defaultdict(list)\nfor f in sorted(glob.glob('_tools/*.py')):\n    if '/test_' in f or f.endswith('conftest.py'): continue\n    for n in ast.parse(open(f, encoding='utf-8').read()).body:\n        if isinstance(n, ast.FunctionDef):\n            b = n.body[1:] if (n.body and isinstance(n.body[0], ast.Expr) and isinstance(getattr(n.body[0], 'value', None), ast.Constant)) else n.body\n            if n.end_lineno - n.lineno + 1 >= 4:\n                by[hashlib.sha1(ast.dump(ast.Module(body=b, type_ignores=[])).encode()).hexdigest()].append((f.split('/')[-1], n.name))\ngroups = [v for v in by.values() if len({x[0] for x in v}) > 1 and {x[0] for x in v} & {'kblog.py', 'kbcommon.py', 'kg_base.py', 'fetch.py', 'census.py', 'kbingest.py', 'kbdecide.py'}]\nprint('identical function bodies across modules:', groups)\nsys.exit(1 if groups else 0)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_kbingest_guards.py"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "no function body of four lines or more is defined identically in two of bl_intake, kbingest, census, kbcommon, fetch, kg_base, kbdecide and kblog",
+      "check": 0
+    },
+    {
+      "clause": "the guard tests and the tools' help run as before",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/bl_intake.py",
+    "_tools/kbingest.py",
+    "_tools/census.py",
+    "_tools/kbcommon.py",
+    "_tools/fetch.py",
+    "_tools/kg_base.py",
+    "_tools/kbdecide.py",
+    "_tools/kblog.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/git.md",
+    "kb/_self/plugin.md",
+    "kb/_self/web-sources.md",
+    "kb/_self/backlog.md",
+    ".claude/skills/kb-ingest/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-gq4q5t4y"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): identical bodies 2026-10-19: bl_intake.end_tree = kbingest.kill_tree, census.read_sources = kbcommon.read_sources, fetch.repo_roots = kg_base.repo_roots, kbdecide.matches/main = kblog.matches/main. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+}

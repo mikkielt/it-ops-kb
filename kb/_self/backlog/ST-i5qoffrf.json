@@ -1,0 +1,26 @@
+{
+  "id": "ST-i5qoffrf",
+  "kind": "story",
+  "title": "Review sprint: Each model call is listed with what it decides, and the calls a rule can make are made by the rule",
+  "status": "draft",
+  "sprint": "SP-v64egscn",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ]
+}

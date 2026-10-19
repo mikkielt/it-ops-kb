@@ -1,0 +1,35 @@
+{
+  "id": "ST-e5fdgjk4",
+  "kind": "story",
+  "title": "kbmon --events exports each delivery once with its outcome and loses no row or id",
+  "status": "draft",
+  "sprint": "SP-qh2j24z2",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbmon --events gives a refused delivery an error span, exports a delivery once while its outcome stands last, keeps every ops row of the cursor's millisecond and splits a comma-separated coord id list, as each folded bug's repro reads",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,subprocess,sys,os,base64,zlib\n# the folded drafts' own repro and check commands, compressed (their item files are in git history)\nR=json.loads(zlib.decompress(base64.b64decode('eJzFVW2L2zgQ/iu6QJHd2r5stpQjQQfb7tI9LlzKNv2UhKDYk0RrR1IkOS8c999vZHvzst0LHEupIUaR5/2ZZ2Y0an38HG+sfUwft+tWREYtvXdLJa/x3IpT/xYrrYwjj1bJSNnIljNtVArWEm4J/t/byMFKz0UBY3nPns7JKs/8OQh7a6ZsorlbJo9KyOA+ousSzL5QCxr28NOK55AJY4N1OJZKgwzO5NcRzYR1oiiSSiWiWxomWyMcBJRrXexJHOvSLrvEwLy0kHWJWwLxV2SLQTa347Gk6OCOZSJ13gXIjTCY1af+zbfbu+mX/rfPf/w1vb0Z3rD7Z5cPg8HQZ7EAl26zIIz+/Dj9NBg83E6/DgcPd98lmCZ2XWCANESPGfPFw+B5ZgObmFIGIyxbAjtIS8dnBUR06pQq7K/5bIWSek8jGsewAeksnUQp1640MFWl06VjQ1MC1nzXnDANdhc5sQL8zq467TCxLsMzuraajXZkrgzZESFJ5hMIqNVcWhqNJiERc7KrLyVfYbiM0XyWZFCIDUJEJ2OJElI5YnWXaCOkl1TkRIZ4awhknZFwwVVYKVk9iq8mjUPHXWlp+AujYIwy9GBrzrFXMnIwBjvfbXiDuL0x9M1LVp75aiypvEv4E9ZHgwL7tArR5187R53WZOKbHZvfua1YXm+zVzd/hcDrGdDrs4vd3zCkf4EF/o0lUPlP6/icFXw1yzh5y7vkVc0fveWv6f+U5UFYd09aGuvB73nJxBYAOrhKOlj/pp78WM9dU7kM1TEWK2QKNLLOBKlPjy+4kEisU+J8R7KnBJBl717knTd3aiKiWDsMnRtnt8ItgzMmhjUVK9cH9vgxZ1H3Jf7Ugp5D1fECaSQppYGCezXsMVIICY0hi9w/Gq8MndMn1fz97Hqxv0gf9NyzJmVVpZ/QRqyndY0qyEGmKhNywWjp5vFviIUBjn2HM+wQt68axZ8jvxM+d2C61BccTRMoLJB2eAzscf9B6MV7/qOW2vACA34Q5YZo2LDLHEqVMlnNIa2sq6iUC5nhAQHHalc3cwGFv7KYsVCSfenH/WHcbl91rs++YzYr9nUY8+aJ8Dxrnv+5lz6067VgEFdU8mjDoY99qKReBV1C3xlPYJzVo7jTbncnJ63b+bnrFDYvrdMTpr+0T2tImuofFypsThfqqRCpDD5fqZzB5rgLuXNGzEoH6Pfvf8KDVS73QX42RDyGzXjKfdA8PPg9c1p4DAQy3is0g+O/h8aZao6z1B50cX5g49VTYvIvtxCIlQ==')))\nbad=[]\nenv=dict(os.environ,NO_COLOR='1')\nfor i,a in R:\n    p=subprocess.run(a,capture_output=True,text=True,timeout=600,env=env)\n    print(i,'exit',p.returncode)\n    if p.returncode: bad.append(i)\nprint('still failing:',bad);sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbmon --events gives a refused delivery an error span, exports a delivery once while its outcome stands last, keeps every ops row of the cursor's millisecond and splits a comma-separated coord id list, as each folded bug's repro reads",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/mon_events.py",
+    "_tools/ql_report.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): folds BG-vssjcjwq, BG-ttwih3wd, BG-cpa4b3gy, BG-jy6ipg4a (repros embedded)."
+}

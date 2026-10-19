@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "coord.py wait --since with a number past SQLite's integer range ends in an OverflowError traceback, and a served one kills its handler thread",
   "status": "draft",
+  "sprint": "SP-tsb23kev",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -14,12 +15,19 @@
       "import os,subprocess as s,sys,tempfile\nD=tempfile.mkdtemp()\np=s.run([sys.executable,'_tools/coord.py','--store',os.path.join(D,'c.sqlite'),'wait','--since','99999999999999999999','--timeout','0'],capture_output=True,text=True,timeout=60)\nprint('exit',p.returncode,'traceback','Traceback' in p.stderr);sys.exit(0 if p.returncode==2 and 'Traceback' not in p.stderr else 1)"
     ]
   },
+  "clauses": [
+    {
+      "clause": "coord.py answers a wait --since (and any other integer argument it binds into SQLite) outside SQLite's signed 64-bit range with exit 2 and a one-line reason, locally and through serve (a 400 the client prints as a refusal), never a traceback or a dropped connection. Found by the SP-fp3hxl6q review (S2): the sprint goal's 'refusal, not a traceback' for an authenticated operator",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/coord.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
   ],
   "links": [
     "parked: SP-fp3hxl6q review"
   ],
-  "notes": "Review 2026-10-18: `python3 _tools/coord.py --store $(mktemp -d)/c.sqlite wait --since 99999999999999999999 --timeout 0` prints `OverflowError: Python int too large to convert to SQLite INTEGER` (coord.py:413). Served, the handler thread dies and the client reports `RemoteDisconnected` as 'cannot reach'."
+  "notes": "Review 2026-10-18: `python3 _tools/coord.py --store $(mktemp -d)/c.sqlite wait --since 99999999999999999999 --timeout 0` prints `OverflowError: Python int too large to convert to SQLite INTEGER` (coord.py:413). Served, the handler thread dies and the client reports `RemoteDisconnected` as 'cannot reach'. operator request 2026-10-19 (housekeeping batch): unclear errors: a traceback instead of a usage message. Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs."
 }

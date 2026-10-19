@@ -1,0 +1,32 @@
+{
+  "id": "ST-c3d3rijw",
+  "kind": "story",
+  "title": "The weekly digest prints tokens by model",
+  "status": "draft",
+  "sprint": "SP-v64egscn",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "querylog.py digest prints the week's work tokens for each model the work rows name",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, subprocess, tempfile, glob, json, datetime\nT = tempfile.mkdtemp()\nsrc = sorted(glob.glob('kb/_querylog/work/2026-*/*.jsonl'))[-1]\nlines = open(src, encoding='utf-8').read().splitlines()\nrows = [json.loads(l) for l in lines]\nfor r in rows:\n    if 'item' in r:\n        u = next(iter(r['main'].values()))\n        r['main'] = {'claude-sonnet-5-5': dict(u), 'claude-opus-5-5': dict(u)}\nrel = os.path.relpath(src, 'kb/_querylog'); os.makedirs(os.path.dirname(os.path.join(T, rel)))\nopen(os.path.join(T, rel), 'w').write('\\n'.join(json.dumps(r) for r in rows) + '\\n')\nstem = os.path.basename(src)[:8]; day = datetime.date(int(stem[:4]), int(stem[4:6]), int(stem[6:8]))\ny, w, _ = day.isocalendar()\no = subprocess.run([sys.executable, '_tools/querylog.py', 'digest', '--store', T, '--week', f'{y}-W{w:02d}'], capture_output=True, text=True, timeout=300).stdout\nprint(o[-800:])\nmiss = [m for m in ('claude-sonnet-5-5', 'claude-opus-5-5') if m not in o]\nprint('models the digest does not name:', miss); sys.exit(1 if miss else 0)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "querylog.py digest prints the week's work tokens for each model the work rows name",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/ql_report.py",
+    "kb/_self/querylog.md",
+    "kb/_self/code.md",
+    "kb/_self/usage.md"
+  ],
+  "notes": "operator request 2026-10-19 (housekeeping batch): digest 2026-W42 prints 'work: 510 items, tokens 2529565938 (main 100%, subagents 0%)' with no model split. The work rows already hold the model; what the store records does not change. Premise: the check fails."
+}
