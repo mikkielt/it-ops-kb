@@ -2,7 +2,7 @@
   "id": "BG-jemfbkjs",
   "kind": "bug",
   "title": "kbmon's sprint panel takes over 10 s on this clone, so kbmon --status sprints says the panel is not readable",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-yjfiemha",
   "priority": "P1",
   "rank": 0,
@@ -49,5 +49,27 @@
     }
   ],
   "notes": "Orchestrator 2026-10-19: a regression of this sprint's ST-trhzzeku (mon_sprint.follows). Measured on this host: kbmon.py --status sprints --timeout 60 took 7.0 s wall on origin/main 8f7133f9d (before ST-trhzzeku) and 21.3 s on 5eda43997 (after). It blocks ST-po5rwymx's kb_monitor_status check, so it is S1 in this sprint. Keep follows' result the same (ST-trhzzeku's check must still pass): memoize the touch-pair verdicts or expand each touch's files once, inside mon_sprint.py. Orchestrator 2026-10-19: title reworded to drop the word the repro matches, which the open item's own title echoed into the panel's next and left lines (a self-echo, not slowness).",
-  "claimed_by": "orch-r33"
+  "evidence": {
+    "commit": "8a32251c60828ea5de67066485edb34c53411c3e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile\nd=tempfile.mkdtemp();c=os.path.join(d,\"c\");os.makedirs(c+\"/kb/_self/backlog\")\nenv=dict(os.environ,CLAUDE_PLUGIN_DATA=d+\"/pd\",CLAUDE_PLUGIN_ROOT=d+\"/pr\",GIT_CONFIG_GLOBAL=os.devnull,GIT_CONFIG_NOSYSTEM=\"1\")\ng=lambda *a,**k:s.run([\"git\",\"-C\",c,*a],check=True,capture_output=True,text=True,env=dict(env,**k)).stdout\ng(\"init\",\"-q\",\"-b\",\"main\");g(\"config\",\"user.email\",\"p@example.com\");g(\"config\",\"user.name\",\"p\")\nopen(c+\"/backlog.json\",\"w\").write(json.dumps({\"item_dir\":\"kb/_self/backlog\"}))\nT=[1790000000]\ndef commit(msg,minutes):\n    T[0]+=int(minutes*60);at=\"@%d +0000\"%T[0];g(\"add\",\"-A\");g(\"commit\",\"-q\",\"--allow-empty\",\"-m\",msg,GIT_COMMITTER_DATE=at,GIT_AUTHOR_DATE=at)\ndef item(i,sp,touch,**k):\n    open(c+\"/kb/_self/backlog/%s.json\"%i,\"w\").write(json.dumps(dict(id=i,kind=\"bug\" if i.startswith(\"BG\") else \"story\",title=\"t \"+i,status=\"doing\",sprint=sp,touches=[touch],**k)))\ndef work(i,sp,touch,dur,**k):\n    item(i,sp,touch,**k);commit(\"chore(backlog): claim %s \\\"t\\\"\"%i,1);commit(\"chore(backlog): done %s \\\"t\\\"\"%i,dur)\ncommit(\"chore: base\",0)\nfor sp,codes,rv,tail in ((\"SP-aaaaaaaa\",(4,5,6),20,10),(\"SP-bbbbbbbb\",(7,8,300),30,14)):\n    commit(\"chore(backlog): start %s \\\"t\\\"\"%sp,1)\n    for n,dur in enumerate(codes):work(\"ST-c%s%06d\"%(sp[3],n),sp,\"_tools/x.py\",dur)\n    work(\"ST-g\"+sp[3:10],sp,\"kb/public/**\",15 if sp==\"SP-aaaaaaaa\" else 25,goal_research=True)\n    work(\"ST-r\"+sp[3:10],sp,\"kb/_self/backlog/**\",rv,review=True)\n    commit(\"chore(backlog): close %s \\\"t\\\"\"%sp,tail)\nwork(\"ST-naaaaaaa\",\"SP-cccccccc\",\"kb/public/a.md\",50)\nwork(\"BG-baaaaaaa\",\"SP-cccccccc\",\"_tools/y.py\",9)\nopen(c+\"/kb/_self/backlog/SP-dddddddd.json\",\"w\").write(json.dumps(dict(id=\"SP-dddddddd\",kind=\"sprint\",title=\"t\",status=\"active\",goal=\"g\")))\ncommit(\"chore(backlog): start SP-dddddddd \\\"t\\\"\",1)\nfor i,rk,tch,dep in ((\"ST-xddddddd\",1,\"_tools/x.py\",[]),(\"ST-yddddddd\",2,\"_tools/y2.py\",[\"ST-xddddddd\"]),(\"ST-zddddddd\",3,\"_tools/x.py\",[]),(\"ST-wddddddd\",4,\"_tools/w.py\",[])):\n    item(i,\"SP-dddddddd\",tch,rank=rk,priority=\"P2\",depends_on=dep)\nfor i in (\"ST-yddddddd\",\"ST-zddddddd\",\"ST-wddddddd\"):\n    x=json.load(open(c+\"/kb/_self/backlog/%s.json\"%i));x[\"status\"]=\"todo\";json.dump(x,open(c+\"/kb/_self/backlog/%s.json\"%i,\"w\"))\ncommit(\"chore(backlog): claim ST-xddddddd \\\"t\\\"\",2);CL=T[0]\nitem(\"ST-rddddddd\",\"SP-dddddddd\",\"kb/_self/backlog/**\",review=True,rank=9);commit(\"chore(backlog): claim ST-rddddddd \\\"t\\\"\",1)\nx=json.load(open(c+\"/kb/_self/backlog/ST-rddddddd.json\"));x[\"status\"]=\"done\";json.dump(x,open(c+\"/kb/_self/backlog/ST-rddddddd.json\",\"w\"));commit(\"chore(backlog): done ST-rddddddd \\\"t\\\"\",3);RD=T[0]\ng(\"update-ref\",\"refs/remotes/origin/main\",\"HEAD\")\np=s.run([sys.executable,\"_tools/kbmon.py\",\"--json\",\"--panel\",\"sprint\",\"--root\",c],capture_output=True,text=True,timeout=120,env=env)\npn=json.loads(p.stdout or \"{}\").get(\"panels\",{}).get(\"sprint\",{});h=(pn.get(\"data\") or {}).get(\"history\") or {}\nk=h.get(\"kinds\") or {};print(\"panel\",pn.get(\"state\"),\"history\",json.dumps(h,sort_keys=True))\nfrom datetime import datetime,timezone\nsp=[x for x in (pn.get(\"data\") or {}).get(\"sprints\") or [] if x.get(\"id\")==\"SP-dddddddd\"]\nop={o.get(\"id\"):(o.get(\"kind\"),o.get(\"claimed\"),o.get(\"after\")) for o in (sp[0].get(\"open\") if sp else [])};print(\"open\",op)\nat=datetime.fromtimestamp(CL,timezone.utc).strftime(\"%Y-%m-%dT%H:%M:%SZ\")\nrd=datetime.fromtimestamp(RD,timezone.utc).strftime(\"%Y-%m-%dT%H:%M:%SZ\");print(\"review_done\",sp[0].get(\"review_done\") if sp else None)\nopok=(sp and sp[0].get(\"review_done\")==rd) and op=={\"ST-xddddddd\":(\"code\",at,[]),\"ST-yddddddd\":(\"code\",None,[\"ST-xddddddd\"]),\"ST-zddddddd\":(\"code\",None,[\"ST-xddddddd\"]),\"ST-wddddddd\":(\"code\",None,[])}\nwant={\"code\":{\"n\":5,\"p25\":5,\"median\":6,\"p75\":7},\"review\":{\"n\":3,\"p25\":11.5,\"median\":20,\"p75\":25},\"research\":{\"n\":2,\"p25\":17.5,\"median\":20,\"p75\":22.5},\n      \"content\":{\"n\":1,\"p25\":50,\"median\":50,\"p75\":50},\"bug\":{\"n\":1,\"p25\":9,\"median\":9,\"p75\":9}}\nok=p.returncode==0 and opok and (all(k.get(x)==v for x,v in want.items()) and h.get(\"tail\")=={\"n\":2,\"p25\":11,\"median\":12,\"p75\":13} and h.get(\"outliers\")==1\n    and (h.get(\"all\") or {}).get(\"n\")==12)\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "cccb1cd48ea9031c"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys; p=subprocess.run([sys.executable,\"_tools/kbmon.py\",\"--status\",\"sprints\"],capture_output=True,text=True,timeout=120); print(p.stdout); sys.exit(1 if p.returncode or \"timeout\" in p.stdout else 0)"
+        ],
+        "exit": 0,
+        "sha256": "7547ab6a086db35f"
+      }
+    ]
+  }
 }
