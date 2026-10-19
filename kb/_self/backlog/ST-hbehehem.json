@@ -1,0 +1,25 @@
+{
+  "id": "ST-hbehehem",
+  "kind": "story",
+  "title": "Planning reads each check's absence assertion against the content both sides of the change hold",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "a planned check that asserts a path or phrase is absent after the work names something only the old side holds: when the base and the target both hold it (an article that exists at both commits), the check asserts the changed fact text instead, before the start gate (SP-s2svf5a6 close: ST-5dd64ykv's check asserted the article path absent from a pinned root's pack although the pinned commit holds that article, so no correct fetch could pass it; its worker found it and the check was replaced through gate g2)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; s = open('.claude/skills/kb-sprint/SKILL.md').read(); i = s.find('## plan'); j = s.find('## start'); sys.exit(0 if 'both sides of the change' in s[i:j] else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-s2svf5a6 close"
+  ]
+}

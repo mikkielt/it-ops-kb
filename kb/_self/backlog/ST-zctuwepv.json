@@ -1,0 +1,25 @@
+{
+  "id": "ST-zctuwepv",
+  "kind": "story",
+  "title": "backlog.py new bug prints the repro's last output lines, so the filer sees the failure is the defect it names",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py new bug runs the repro once (it already must fail now) and prints its last output lines beside the new id, so a worker sees a repro that fails for another reason before it hands back (SP-s2svf5a6 close: BG-y5r5a3ht's repro copied only _tools, failed on kbcommon listdir(KB_DIR) instead of the missing kb/_self it named, and was dropped once ST-pdtcxbap fixed the real defect)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, subprocess, sys, tempfile\nd = tempfile.mkdtemp()\np = subprocess.run([sys.executable, \"_tools/backlog.py\", \"--root\", d, \"new\", \"bug\", \"--title\", \"t\", \"--goal\", \"g\", \"--severity\", \"S3\", \"--repro\", \"python3 -c 'import sys; print(\\\"FileNotFoundError: kb\\\", file=sys.stderr); sys.exit(1)'\"], capture_output=True, text=True)\nout = p.stdout + p.stderr\nprint(out[-400:])\nsys.exit(0 if \"FileNotFoundError: kb\" in out else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-s2svf5a6 close"
+  ]
+}

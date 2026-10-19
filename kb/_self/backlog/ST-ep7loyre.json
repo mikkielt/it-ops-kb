@@ -1,0 +1,25 @@
+{
+  "id": "ST-ep7loyre",
+  "kind": "story",
+  "title": "backlog.py land names the cause when its second pass stops at fetch with no stop line",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "a land run whose step exits non-zero always prints `land stopped at step <step>` with git's or the tool's reason, also in the second pass after a code-lane merge request merged (SP-s2svf5a6 close: BG-zwmzzyeu's land wrote land.step fetch exit=1 after `merged on origin/main: second pass` and printed nothing more; the rerun landed it). Notes: the cause is not yet known; the planner first finds it (the second pass's fetch of a merged, removed code branch is the lead) and replaces this check with a planted run of that path",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; s = open('_tools/bl_land.py').read(); sys.exit(0 if s.count('land_stop(\"fetch\"') >= 3 else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-s2svf5a6 close"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "ST-6qplip34",
+  "kind": "story",
+  "title": "Planning a sprint that adds a new kind of committed file plans its publish and leak-guard coverage",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "a sprint plan that adds a new kind of committed file or field (a pointer file, a submodule entry) has an item, or a clause of one, for what the publish gate, the leak scan and the redaction say of it, before the start gate (SP-s2svf5a6 close: the review found that kbgit.py publish carried an internal root's pointer and .gitmodules entry, and that a roots missing reason leaked an absolute path; neither was planned)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; s = open('.claude/skills/kb-sprint/SKILL.md').read(); i = s.find('## plan'); j = s.find('## start'); sys.exit(0 if 'new kind of committed file' in s[i:j] else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-s2svf5a6 close"
+  ]
+}
