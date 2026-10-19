@@ -56,7 +56,9 @@
         "every leak-scan shape (kbpublic.file_hits) in the lines the commit adds to a shared file and in its message, a value never printed": "ST-6c5xgv5a",
         "only the private names the registry knows (private-id, private-host, private-path)": "ST-6c5xgv5a"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "every leak-scan shape (kbpublic.file_hits) in the lines the commit adds to a shared file and in its message, a value never printed",
+      "by": "operator"
     },
     {
       "id": "g2",
