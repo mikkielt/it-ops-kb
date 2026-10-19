@@ -2,7 +2,7 @@
   "id": "ST-lbpkvzha",
   "kind": "story",
   "title": "Research sprint goal: Each change names its team and operator: a team field, the KB-Teams trailer, team-scoped coord",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-46k7sw57",
   "goal_research": true,
   "priority": "P1",
@@ -41,5 +41,19 @@
     }
   ],
   "notes": "Open questions: (1) git interpret-trailers configuration for a computed trailer (trailer.<key>.*); (2) bearer key files and scopes in MCP authorization and OAuth (mcp/authorization.md) as a model for team scopes in coord; (3) the author and committer a GitHub App installation token gives a commit pushed over git (gap in commit-signing-and-provenance).",
-  "claimed_by": "orch-r37"
+  "evidence": {
+    "commit": "f34a04a6cd28e29b1b998b9ecbb1f8f4df3636df",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-lbpkvzha"
+        ],
+        "exit": 0,
+        "sha256": "d96990c448681edd"
+      }
+    ]
+  }
 }
