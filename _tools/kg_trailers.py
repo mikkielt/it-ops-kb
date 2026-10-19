@@ -44,6 +44,7 @@ MAX_IDS = 40  # more values than this: "N ids (see diff)" instead of the list
 KEYS = ("KB-Topics", "KB-Sources-Added", "KB-Sources-Changed", "KB-Sources-Superseded", "KB-Answers", "KB-Teams")
 VERIFIED = "KB-Verified"
 AUTO = "KB-Auto"  # querylog.py's automatic commits (kb/_self/querylog.md, Delivery)
+OPERATOR = "KB-Operator"  # the pseudonymous operator id of an agent session's commit (kbwho.py): an id, never an email address
 REF = "KB-Ref"  # an external tracker id of a backlog item (backlog.py claim and done --commit): one per line, one word
 AUTO_VALUES = ("querylog", "eval", "alias", "expansion", "gap", "research", "revert")
 WORK = kg_lane.WORK  # the backlog items a commit works on (kb/_self/backlog.md); written by the agent, never computed
@@ -54,6 +55,7 @@ NOUN = {"KB-Topics": "topics", "KB-Answers": "answers"}
 SUMMARY = re.compile(r"^(\d+) (?:ids|topics|answers) \(see diff\)$")
 KEY_LINE = re.compile(r"^(" + "|".join(re.escape(k) for k in KEYS) + r")\s*:", re.I)
 DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
+OPERATOR_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")  # kbwho.ID_RX: no "@", so an email address is no id
 INDEX = None  # compute() target: the index (staged changes)
 
 
@@ -235,7 +237,7 @@ def first_parent(rev):
     return parents[0] if parents else ""
 
 
-def trailer_lines(computed, verified=None):
+def trailer_lines(computed, verified=None, operator=None):
     out = []
     for k in KEYS:
         v = computed.get(k)
@@ -243,13 +245,15 @@ def trailer_lines(computed, verified=None):
             out.append(f"{k}: " + (", ".join(v) if len(v) <= MAX_IDS else f"{len(v)} {NOUN.get(k, 'ids')} (see diff)"))
     if verified:
         out.append(f"{VERIFIED}: {verified}")
+    if operator:
+        out.append(f"{OPERATOR}: {operator}")
     return out
 
 
 def parse_trailers(text):
     """{canonical key: [values]} of the KB-* trailers in `git log %(trailers:only,unfold)` output."""
     out = {}
-    canon = {k.lower(): k for k in KEYS + (VERIFIED, AUTO, WORK, REF)}
+    canon = {k.lower(): k for k in KEYS + (VERIFIED, AUTO, WORK, REF, OPERATOR)}
     for ln in (text or "").splitlines():
         k, sep, v = ln.partition(":")
         if sep and k.strip().lower() in canon:
@@ -276,15 +280,16 @@ def comment_char():
     return c if len(c) == 1 else "#"
 
 
-def apply_trailers(message, computed, verified=None):
-    """The message with its KB-* trailers replaced by the computed ones (appended with git interpret-trailers).
-    An empty message (the user aborted in the editor) is returned unchanged, so the commit still aborts."""
+def apply_trailers(message, computed, verified=None, operator=None):
+    """The message with its KB-* trailers replaced by the computed ones (appended with git interpret-trailers); with
+    `operator` (an agent session's operator id) its KB-Operator line is set too, else an existing one stays. An empty message (the user aborted in the editor) is returned unchanged, so the commit still aborts."""
     cc = comment_char()
     if not any(ln.strip() and not ln.startswith(cc) for ln in message.splitlines()):
         return message
-    drop = lambda ln: KEY_LINE.match(ln) or (verified and ln.lower().startswith(VERIFIED.lower() + ":"))  # noqa: E731
+    drop = lambda ln: (KEY_LINE.match(ln) or (verified and ln.lower().startswith(VERIFIED.lower() + ":"))  # noqa: E731
+                       or (operator and ln.lower().startswith(OPERATOR.lower() + ":")))
     kept = "".join(ln for ln in message.splitlines(keepends=True) if not drop(ln))
-    lines = trailer_lines(computed, verified)
+    lines = trailer_lines(computed, verified, operator)
     if not lines:
         return kept
     args = ["interpret-trailers", "--if-exists", "replace"]
@@ -449,6 +454,8 @@ def trailer_audit(rng, quiet=False, work_state_on=True):
                 wrong.append(AUTO)
             if any(re.fullmatch(r"\S+", x) is None for x in have.get(REF, [])):
                 wrong.append(REF)
+            if any(OPERATOR_ID.fullmatch(x) is None for x in have.get(OPERATOR, [])) or len(have.get(OPERATOR, [])) > 1:
+                wrong.append(OPERATOR)
             work = have.get(WORK)
             state = []
             paths = changes[sha][1] if sha in changes else changed_paths(first_parent(sha), sha)
@@ -469,6 +476,7 @@ def trailer_audit(rng, quiet=False, work_state_on=True):
                 for k in wrong:
                     exp = next((ln for ln in trailer_lines(want) if ln.startswith(k + ":")), {VERIFIED: "YYYY-MM-DD, once", AUTO: "once, of " + "|".join(AUTO_VALUES),
                                                                                                      WORK: "once, backlog item ids that exist at the commit or its parent",
+                                                                                                     OPERATOR: "once, an operator id (kbwho.py), not an email address",
                                                                                                      REF: "one tracker id on each line, with no space"}.get(k, f"(no {k})"))
                     lines.append(f"    {k}: has {', '.join(have.get(k, [])) or '(none)'}; expected {exp}")
                 for why in state:
@@ -487,7 +495,7 @@ STRAY = ("git reads trailers only in the message's last paragraph (a blank line 
          "that paragraph, one block with Co-Authored-By and the other trailers")
 STRAY_WORK = STRAY  # the name kbgit.py re-exports
 REVIEWED = "Self-Reviewed"  # selfdoc.py's trailer; kg_trailers does not import selfdoc
-TRAILER_KEYS = (*KEYS, VERIFIED, AUTO, WORK, REF, REVIEWED)  # the trailers of ours: a prose line like `kb-sprint:` is none
+TRAILER_KEYS = (*KEYS, VERIFIED, AUTO, WORK, REF, OPERATOR, REVIEWED)  # the trailers of ours: a prose line like `kb-sprint:` is none
 STRAY_KEY = re.compile(r"(" + "|".join(re.escape(k) for k in TRAILER_KEYS) + r")[ \t]*:[ \t]*\S", re.I)  # by key, any case
 
 
