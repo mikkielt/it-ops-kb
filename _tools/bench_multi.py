@@ -2235,13 +2235,41 @@ def delta_rows(rows):
     return out
 
 
+RUN_NOTE = "; run started "  # a run's rows end their note with this and the stamp of the run's first start
+
+
+def run_stamp(note):
+    """The stamp of the run a row's note names (`RUN_NOTE`), or "" for a row recorded before runs were told apart."""
+    return note.partition(RUN_NOTE)[2].partition(";")[0]
+
+
+def rep_record(old, rev7, case, arm, stamp):
+    """The record of a run's rows among those already in `old`: `rev7` for the first run of the case and arm at that start
+    commit, `rev7#2`, `rev7#3` ... for the next ones, so that a run never replaces the rows of another. A run takes the
+    record whose rows name its stamp (the same run again); else the first record of the case and arm that holds no rows or
+    rows with no stamp (recorded before runs were told apart: the run replaces them, as it did)."""
+    held = {}
+    for r in old:
+        if r["scenario"] == SCENARIO and r["case"] == case and r["arm"] == arm and r["record"].partition("#")[0] == rev7:
+            held.setdefault(r["record"], run_stamp(r["note"]))
+    if stamp:
+        for rec, got in held.items():
+            if got == stamp:
+                return rec
+    for n in itertools.count(1):
+        rec = rev7 if n == 1 else f"{rev7}#{n}"
+        if not held.get(rec):
+            return rec
+
+
 def record(root=None, file=None, out=print):
     """`multi record`: merge the lines of DIR/results.jsonl (the newest of each agent) into the results file `file` (default
-    kb/_self/reports/benchmarks.csv) as the scenario `multi`: record the first 7 characters of DIR's start commit, case the
-    scenario, arm `concurrent` or `sequential` with the knob values, and the metrics of `run_values` with `check_failures`, the number of
+    kb/_self/reports/benchmarks.csv) as the scenario `multi`: record the first 7 characters of DIR's start commit (`rep_record`:
+    followed by `#2`, `#3` ... for a second run of the case and arm at the same commit, whose note names the run's first start),
+    case the scenario, arm `concurrent` or `sequential` with the knob values, and the metrics of `run_values` with `check_failures`, the number of
     problems `check` names about the finished run (left out while an agent has no end stamp); then, for the record,
     case and knob values that a concurrent and a sequential arm share, the rows of the arm `delta ...` (`delta_rows`). It
-    replaces the rows of the same record, case and arm. The lines of a replay reach only `file`, which they then need. The same
+    replaces the rows of the same record, case and arm (the same run again). The lines of a replay reach only `file`, which they then need. The same
     lines again change nothing. The twins' lines (arm `bare`) make the rows of the arm `bare ` and the kb arm (`twin_values`). Returns
     0, or raises Refused (no manifest, a replay with no `file`)."""
     root = (Path(root) if root else default_dir()).resolve()
@@ -2258,12 +2286,17 @@ def record(root=None, file=None, out=print):
         raise Refused("the lines of this run are a replay's (scripted agents): their rows reach only --out FILE, never the results file")
     rev, arm = manifest.get("rev", ""), arm_of(lines[0], replay)
     date = min((r["started"][:10] for r in lines if r.get("started")), default="")
-    note = f"start {rev}; sandbox of {len(manifest['agents'])} agent(s)" + ("; replay: scripted agents, no model call" if replay else "")
+    stamp = min((r["started"] for r in lines if r.get("started")), default="")
+    note = (f"start {rev}; sandbox of {len(manifest['agents'])} agent(s)" + ("; replay: scripted agents, no model call" if replay else "")
+            + (RUN_NOTE + stamp if stamp else ""))
     models = ",".join(sorted({r.get("model") or "" for r in lines} - {""}))
     values = run_values(root, manifest, lines)
     if all(r.get("ended") for r in lines):
         values["check_failures"] = len(check_found(root, manifest, results, lines, lambda ln: None)[0])
-    new = [{"scenario": SCENARIO, "record": rev[:7], "date": date, "commit": rev[:7], "claude_code": "", "kb_topics": "",
+    target = Path(file) if file else RESULTS
+    old = read_rows(target)
+    rec = rep_record(old, rev[:7], lines[0]["scenario"], arm, stamp)
+    new = [{"scenario": SCENARIO, "record": rec, "date": date, "commit": rev[:7], "claude_code": "", "kb_topics": "",
             "case": lines[0]["scenario"], "arm": arm, "model": models, "metric": metric, "value": value, "runs": 1, "note": note}
            for metric, value in values.items()]
     if twins:
@@ -2271,8 +2304,6 @@ def record(root=None, file=None, out=print):
         new += [{**new[0], "arm": f"{BARE} {arm}", "model": twin_models, "metric": metric, "value": value,
                  "note": note + "; bare twins: the kb agents' model, turns and dollar cap with none of the kb's tooling"}
                 for metric, value in twin_values(twins).items()]
-    target = Path(file) if file else RESULTS
-    old = read_rows(target)
     key = lambda r: (r["scenario"], r["record"], r["case"], r["arm"])  # noqa: E731
     taken = {key(r) for r in new}
     merged = [r for r in old if key(r) not in taken] + new
@@ -2282,6 +2313,6 @@ def record(root=None, file=None, out=print):
     same = sorted(bench_repro.cells(r) for r in old if key(r) in held) == sorted(bench_repro.cells(r) for r in new + delta)
     if not same:
         write_rows(merged, target)
-    out(f"multi record: {len(new)} row(s) of record {rev[:7]}, arm {arm!r}, and {len(delta)} delta row(s) " + (
+    out(f"multi record: {len(new)} row(s) of record {rec}, arm {arm!r}, and {len(delta)} delta row(s) " + (
         f"already in {target}: nothing changes" if same else f"merged into {target}"))
     return 0
