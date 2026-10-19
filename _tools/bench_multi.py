@@ -127,11 +127,17 @@ def store_path(root, coord, n):
     return base / "coord.sqlite" if coord == "shared" else base / f"agent{n}" / "coord.sqlite"
 
 
+def holder_of(n):
+    """The coordination holder of agent N: its claims, refused claims and dedups carry this name in the store's events."""
+    return f"agent{n}"
+
+
 def agent_env(root, coord, n):
-    """The session environment of agent N: bench_repro.instance_env's with KB_COORD_STORE its store, and its canary and scratch
-    directory (CANARY_ENV, SCRATCH_ENV) once setup made them."""
+    """The session environment of agent N: bench_repro.instance_env's with KB_COORD_STORE its store, KB_COORD_HOLDER its own
+    holder name (`holder_of`), and its canary and scratch directory (CANARY_ENV, SCRATCH_ENV) once setup made them."""
     env = instance_env(root, n)
     env["KB_COORD_STORE"] = str(store_path(root, coord, n))
+    env["KB_COORD_HOLDER"] = holder_of(n)
     if canary_of(root, n):
         env[CANARY_ENV], env[SCRATCH_ENV] = canary_of(root, n), str(scratch_path(root, n))
     return env
@@ -242,7 +248,7 @@ def setup(count, coord, root=None, start=None, dry_run=False, out=print, scenari
         if p.returncode:
             raise Refused(f"agent {n}: install-hooks exited {p.returncode}: {(p.stdout + p.stderr).strip()[-300:]}")
         cfg = mcp_config(clone)
-        cfg["mcpServers"]["kb"]["env"] = {"KB_COORD_STORE": str(store_path(root, coord, n))}
+        cfg["mcpServers"]["kb"]["env"] = {"KB_COORD_STORE": str(store_path(root, coord, n)), "KB_COORD_HOLDER": holder_of(n)}
         mcp_path(root, n).write_text(json.dumps(cfg, indent=2) + "\n", encoding="utf-8", newline="\n")
         lock_dir(root, n).mkdir(parents=True, exist_ok=True)
         store_path(root, coord, n).parent.mkdir(parents=True, exist_ok=True)
@@ -296,7 +302,7 @@ def store_checks(root, coord):
     for a, env in zip(agents, envs):
         clone = a["clone"]
         p = sh([sys.executable, str(Path(clone) / "_tools" / "coord.py"), "claim", CLAIM_KEY, "--ttl", "60", "--holder",
-                f"agent{a['n']}"], clone, env)
+                holder_of(a["n"])], clone, env)
         codes.append(p.returncode)
     expect = [0] + [1] * (len(agents) - 1) if coord == "shared" else [0] * len(agents)
     res.append((f"{coord}: a claim of one key by each agent in turn exits {expect}", codes == expect, f"exits {codes}"))
@@ -823,7 +829,7 @@ def replay_argv(plan, usage, k):
     if plan["role"] == "code":
         return plan["argv"]
     argv = [sys.executable, str(HOME / REPLAY), plan["role"], "--usage", json.dumps(planted), "--cost", f"{plan['usd']:.4f}",
-            "--holder", f"agent{plan['n']}"]
+            "--holder", holder_of(plan["n"])]
     plant = ["--plant", plan["plant"]] if plan.get("plant") else []
     if plan["role"] == "lookup":
         return argv + ["--budget", str(k["pack_budget"])] + [x for q in plan["questions"] for x in ("--question", q)] + plant
@@ -2038,26 +2044,51 @@ def dup_facts(root, manifest, lines):
                if added[a] and added[b])
 
 
+COUNT_KEYS = ("claims", "refused", "dedup_hits", "skipped_terms")  # what coord_counts counts, for the run and for each holder
+COUNT_METRICS = ("claims", "claim_refused", "dedup_hits", "skipped_terms")  # the rows `multi record` writes for them
+
+
+def term_set(text):
+    """The lack terms of a dedup event's field (`coord.term_list`): comma-separated, `-` for none."""
+    return set() if text in (None, "", "-") else set(text.split(","))
+
+
 def coord_counts(manifest):
-    """(claims, conflicts) from the coordination stores of the run (each file once): the claim rows of the stores, and the
-    claims of one key that more than one store holds, which only the isolated mode gives, plus the stores' `dup_of`
-    events. A claim that a shared store refused leaves no row."""
-    keys, events, seen = {}, 0, set()
+    """The counts of the coordination stores of the run (each file once), read from the stores' events, not from the rows
+    that are left once the run ends (a released claim leaves no row, a refused one never had one): {claims, refused,
+    dedup_hits, skipped_terms, conflicts, agents}. `claims` are the `claim` events (a research key or a backlog item id, as
+    `coord.recorded` says, whether `claim` or `dedup` made them), `refused` the `dup_of` events (a claim a store refused),
+    `dedup_hits` the `dedup` events that found an overlapping live claim, `skipped_terms` the lack terms of the `dedup`
+    events that no claim of the event's holder took (covered by or held by another claim), `conflicts` the keys claimed in
+    more than one store, which only the isolated mode gives, plus `refused`; `agents` holds the four counts of each holder
+    that an event names, by holder name."""
+    total, agents, keys, seen = dict.fromkeys(COUNT_KEYS, 0), {}, {}, set()
+
+    def add(holder, key, n=1):
+        total[key] += n
+        agents.setdefault(holder or "anonymous", dict.fromkeys(COUNT_KEYS, 0))[key] += n
+
     for a in manifest["agents"]:
         path = a["coord_store"]
         if path in seen or not Path(path).is_file():
             continue
         seen.add(path)
-        con = sqlite3.connect(Path(path).resolve().as_uri() + "?mode=ro", uri=True)
-        try:
-            for (key,) in con.execute("SELECT key FROM entries WHERE substr(key, 1, ?) != ?", (len(SESSION_LEASE), SESSION_LEASE)):
-                keys.setdefault(key, set()).add(path)
-            events += con.execute("SELECT count(*) FROM events WHERE kind = 'dup_of'").fetchone()[0]
-        except sqlite3.Error:
-            pass
-        finally:
-            con.close()
-    return sum(len(v) for v in keys.values()), sum(len(v) - 1 for v in keys.values()) + events
+        for _seq, kind, text in store_events(path):
+            try:
+                fields = json.loads(text)
+            except ValueError:
+                continue
+            holder = fields.get("holder")
+            if kind == "claim":
+                add(holder, "claims")
+                keys.setdefault(fields.get("key"), set()).add(path)
+            elif kind == "dup_of":
+                add(holder, "refused")
+            elif kind == "dedup":
+                if term_set(fields.get("overlapping")):
+                    add(holder, "dedup_hits")
+                add(holder, "skipped_terms", len(term_set(fields.get("terms")) - term_set(fields.get("claimed"))))
+    return {**total, "conflicts": sum(len(v) - 1 for v in keys.values()) + total["refused"], "agents": agents}
 
 
 def land_stops(lines):
@@ -2154,7 +2185,8 @@ def frozen_counts(root, manifest, scenario, lines):
 
 def run_values(root, manifest, lines):
     """{metric: value} of one run: each agent's AGENT_METRICS as `AGENT/METRIC` and the run's, the run's wall seconds its own
-    (`run_wall`), then dup_facts, claims, claim_conflicts, land_stops, rebase_s, right and asked (lookup agents), eval_passed
+    (`run_wall`), then dup_facts, claims, claim_refused, dedup_hits, skipped_terms (each also per agent, by its holder name
+    `agentN`), claim_conflicts, land_stops, rebase_s, right and asked (lookup agents), eval_passed
     and eval_total (research agents with a frozen question)."""
     values, total = {}, {m: 0 for m, _ in AGENT_METRICS}
     lines = [{**r, "usd": usd_of(r)} for r in lines]
@@ -2164,10 +2196,21 @@ def run_values(root, manifest, lines):
             total[metric] += r.get(key) or 0
     total["wall_s"] = run_wall(lines)
     values.update({m: number(v) for m, v in total.items()})
-    claims, conflicts = coord_counts(manifest)
-    values.update(dup_facts=dup_facts(root, manifest, lines), claims=claims, claim_conflicts=conflicts, land_stops=land_stops(lines),
+    counts = coord_counts(manifest)
+    values.update(dup_facts=dup_facts(root, manifest, lines), claims=counts["claims"], claim_refused=counts["refused"],
+                  dedup_hits=counts["dedup_hits"], skipped_terms=counts["skipped_terms"], claim_conflicts=counts["conflicts"],
+                  land_stops=land_stops(lines),
                   rebase_s=sum(rebase_seconds(Path(a["clone"]), r.get("started"), r.get("ended"))
                                for r in lines for a in manifest["agents"][r["n"] - 1:r["n"]] if r.get("n")))
+    held = {}
+    for holder, got in counts["agents"].items():
+        m = HOLDER_AGENT.search(holder)
+        if m:
+            for key, value in got.items():
+                held[(int(m.group(1)), key)] = held.get((int(m.group(1)), key), 0) + value
+    for r in lines:
+        for key, metric in zip(COUNT_KEYS, COUNT_METRICS):
+            values[f"{r['agent']}/{metric}"] = held.get((r.get("n"), key), 0)
     scenario = lines[0]["scenario"]
     for key, counts in (("right", right_counts(scenario, lines)), ("eval_passed", frozen_counts(root, manifest, scenario, lines))):
         for agent, (got, asked) in counts.items():
