@@ -4221,6 +4221,9 @@ _Agent: kb-research_
 - Conclusion: no documented route hands a running session its account email: hooks, the status line and the environment carry a session id only, and the OpenTelemetry attributes reach an exporter, not the session. A tool that wants the operator's identity reads `claude auth status` for `authMethod`, takes the email from its undocumented `email` key only when present, and otherwise uses an operator-set value. [DER S1824, S744, S743, S745, S-rkp4qc7b]
 - Open: the `email`, `orgId` and `subscriptionType` keys of `claude auth status` are undocumented (seen on one host, 2.1.303, claude.ai login); their form under a token or API key login is not known. [UNK]
 - See claude/ci-and-headless.md, claude/otel-monitoring.md.
+
+_Agent: kb-research_
+
 ## QK-headless-claude-p-sessions-give-bash. Do headless claude -p sessions give Bash a session id, run skills and hooks, and what is published on measuring duplicated work and claims between parallel agents?
 - A Bash command sees `CLAUDE_CODE_SESSION_ID`, set to the current session id and matching the hook input `session_id`; one headless `claude -p` run on Claude Code 2.1.303 showed it equal to the session's transcript folder id. [DOC S745; DER S745, S743]
 - In `-p` a `/skill-name` in the prompt is expanded before running, and a forked skill started that way reports under a `forked-command-` `parent_tool_use_id`; without `--bare` the project's hooks run, and hook entries merge across settings levels, so `--settings` adds to them. `--strict-mcp-config` filters MCP servers only. [DOC S1800, S1824, S743]
