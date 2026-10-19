@@ -2,7 +2,7 @@
   "id": "BG-lgjpfifx",
   "kind": "bug",
   "title": "The report's multi table leaves out the check_failures metric that multi record writes",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3pvz2noj",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,6 @@
   "depends_on": [
     "ST-xjtqwdtq",
     "BG-e2hfeycb"
-  ]
+  ],
+  "claimed_by": "orch-r32"
 }
