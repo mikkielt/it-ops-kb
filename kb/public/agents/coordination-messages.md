@@ -2,7 +2,7 @@
 topic: agents/coordination-messages
 priority: P2
 applies_to: "Anthropic engineering posts on context engineering, multi-agent research and tool writing; Claude Code subagents, agent teams and costs docs (2026-10); A2A spec 1.0.0 for message parts (see agents/a2a-protocol.md)"
-retrieved_utc: 2026-10-16
+retrieved_utc: 2026-10-19
 sources: [S1855, S1921, S1935, S-wf2dmtu6, S-qdxfqzln, S2132, S2157]
 status: complete
 ---
@@ -43,6 +43,12 @@ context window, loads its own startup context, and its brief and returned summar
 - The agent-teams docs give two ways to keep teammates apart: a code-review prompt "assigns each teammate a distinct lens so they don't overlap", and for edits "each teammate owns a different set of files", since two teammates editing one file overwrite each other. [DOC S-qdxfqzln]
 - The docs warn that more teammates means more communication, task coordination and chance of conflicts, with diminishing returns, and suggest starting with 3-5 teammates; they suggest new users begin with tasks with clear boundaries that do not write code, such as reviewing a PR or researching a library. [DOC S-qdxfqzln]
 - No official source read here describes a shared record of searches already made (a ledger agents consult before searching) as a way to avoid duplicate research; the documented mechanisms are the lead's division of labour, the task list and file or lens ownership (searched 2026-10-16: the Anthropic multi-agent, context-engineering and tool-writing posts, and the Claude Code subagents and agent-teams pages; see `_gaps.md`). [DER S1921, S2157, S-qdxfqzln: absence across the pages searched]
+
+- The agent-teams page says task claiming "uses file locking to prevent race conditions when multiple teammates try to claim the same task simultaneously", so two teammates cannot both take one task from the shared list. [DOC S-qdxfqzln]
+- The same page lists as a limitation that "teammates sometimes fail to mark tasks as completed, which blocks dependent tasks", and tells the user to check whether the work is done and update the status by hand or nudge the teammate. [DOC S-qdxfqzln]
+- The agent-teams page read 2026-10-19 names a lock on the claim but no expiry, lease or heartbeat for it (the words "expire" and "lease" are absent), so a claim whose holder stops is cleared by a person or the lead, not by a timeout; whether a stopped teammate's claimed task returns to pending is the open question in `_gaps.md`. [DER S-qdxfqzln: absence across the page text, with the stuck-task limitation above]
+- Anthropic's Research system graded each output with one LLM judge against a rubric of five criteria: factual accuracy, citation accuracy, completeness, source quality and tool efficiency ("did it use the right tools a reasonable number of times?"). [DOC S1921]
+- None of those five criteria counts work repeated between subagents, and the post gives the duplication it saw as one example from its simulations (one subagent on the 2021 automotive chip crisis, two others on 2025 supply chains), with no rate. The nearest published measure is tool-call count, which the post lists beside token use and model choice among the factors behind BrowseComp performance. [DER S1921: the rubric criteria and the example read 2026-10-19; no duplicate-work metric on the page]
 
 ### What coordination costs in tokens
 - Claude Code's cost page says each teammate has its own context window and "token usage scales with the number of active teammates and how long each one runs"; the agent-teams page adds that token costs scale linearly with team size. [DOC S2132, S-qdxfqzln]

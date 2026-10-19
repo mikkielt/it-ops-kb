@@ -268,7 +268,7 @@ mcp/elicitation,P1,complete,mcp/elicitation.md,6
 mcp/python-sdk,P1,complete,mcp/python-sdk.md,19
 mcp/security-best-practices,P1,complete,mcp/security-best-practices.md,3
 mcp/spec-overview,P1,complete,mcp/spec-overview.md;mcp/schema/2026-07-28/README.md;mcp/schema/2026-07-28/schema.ts;mcp/schema/2026-07-28/schema.json,10
-mcp/tasks-extension,P1,partial,mcp/tasks-extension.md,7
+mcp/tasks-extension,P1,partial,mcp/tasks-extension.md,8
 mcp/tools,P1,complete,mcp/tools.md,7
 mcp/transports-stdio,P1,complete,mcp/transports-stdio.md,6
 mcp/registry-and-extensions,P2,complete,mcp/registry-and-extensions.md,17
