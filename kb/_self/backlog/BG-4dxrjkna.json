@@ -21,6 +21,25 @@
     "kb/_self/plugin.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "When the root registry does not load (RootError), does the private-name scan build its patterns from the roots' _root.md files read directly, or refuse? Recommended: build, so private_hits keeps its signature and every caller still scans.",
+      "options": [
+        "build patterns from _root.md files read directly",
+        "raise and refuse the scan"
+      ],
+      "recommendation": "build patterns from _root.md files read directly",
+      "do": {
+        "build patterns from _root.md files read directly": "BG-4dxrjkna",
+        "raise and refuse the scan": "BG-4dxrjkna"
+      },
+      "class": "design",
+      "answer": "build patterns from _root.md files read directly",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-qinvdomv review"
   ],
