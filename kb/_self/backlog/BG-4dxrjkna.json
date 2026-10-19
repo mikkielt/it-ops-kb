@@ -4,6 +4,7 @@
   "title": "The private-name leak scan fails open: a registry that does not load (two roots with one id prefix) gives no private pattern, and file_hits passes every private name",
   "status": "draft",
   "parent": "EP-eocmyqdx",
+  "sprint": "SP-yjugq5c2",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
