@@ -2,7 +2,7 @@
   "id": "ST-55efexsa",
   "kind": "story",
   "title": "Review sprint: Writing to a team's remote root, and the plugin host's roots",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mguax5m3",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-r35"
 }
