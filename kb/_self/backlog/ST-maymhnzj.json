@@ -2,7 +2,7 @@
   "id": "ST-maymhnzj",
   "kind": "story",
   "title": "The query log says whether its rows name the operator, as the operator decides",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-yjugq5c2",
   "priority": "P3",
   "rank": 0,
@@ -59,6 +59,19 @@
     }
   ],
   "notes": "Premise (2026-10-19): kb/_self/querylog.md does not say whether rows name the operator. Waits on the operator's gate g-querylog (class querylog); the recommended answer changes no recorded field. Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and .claude/hooks with its own coord store and a stub claude on PATH; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations; facts: public/claude/ci-and-headless.md:124-127, public/claude/otel-monitoring.md:51-53, QK-claude-code-session-learn-email-account. Addresses in checks are built at run time; docs and items use the placeholder jan.kowalski only.",
-  "claimed_by": "orch-r39",
-  "operator": "op-5145561d"
+  "operator": "op-5145561d",
+  "evidence": {
+    "commit": "3483150d158d49ef475cd4841c96423427bcae7a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nt = open('kb/_self/querylog.md', encoding='utf-8').read()\nok = any('kbwho' in l and 'operator' in l for l in t.splitlines())\nprint('ok' if ok else 'querylog.md does not say whether rows record the operator id of kbwho')\nsys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "dc51b8c96c2d745d"
+      }
+    ]
+  }
 }
