@@ -2,7 +2,7 @@
   "id": "SP-p46hofrg",
   "kind": "sprint",
   "title": "Agent deduplication and structured coordination are tested",
-  "status": "planned",
+  "status": "active",
   "goal": "kb-arm research agents take real coord claims that the harness counts, with dedup hits and skipped lack terms per agent; a structured-coordination scenario measures claims, refused claims, conflicts resolved, asks answered and duplicated work under coord shared against isolated; scripted replays in multi fitness prove each coordination path without model calls, and a check that reads nothing fails; and a small paid run says in kb/_self/token-efficiency.md whether dedup cuts duplicate facts and tokens, with the spread",
   "gates": [
     {

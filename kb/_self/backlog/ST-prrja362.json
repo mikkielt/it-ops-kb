@@ -2,7 +2,7 @@
   "id": "ST-prrja362",
   "kind": "story",
   "title": "multi check refuses a run whose canaries, coord store or output it cannot read instead of passing it",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-giqleoy2",
   "sprint": "SP-p46hofrg",
   "priority": "P2",

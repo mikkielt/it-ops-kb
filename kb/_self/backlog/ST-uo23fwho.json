@@ -2,7 +2,7 @@
   "id": "ST-uo23fwho",
   "kind": "story",
   "title": "multi run gives each agent its own coord holder and counts its claims, refused claims, dedup hits and skipped lack terms from the store's events",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-giqleoy2",
   "sprint": "SP-p46hofrg",
   "priority": "P1",

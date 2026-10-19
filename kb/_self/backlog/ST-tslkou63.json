@@ -2,7 +2,7 @@
   "id": "ST-tslkou63",
   "kind": "story",
   "title": "coord.py dedup sees another agent's claim on the same area: the holder is the agent's own, the topic is the article it writes, and a question with no lack term still claims its topic",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-fxrzbuza",
   "sprint": "SP-p46hofrg",
   "priority": "P1",

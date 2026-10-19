@@ -2,7 +2,7 @@
   "id": "ST-sn25w6jm",
   "kind": "story",
   "title": "token-efficiency.md says whether coord dedup cuts duplicate facts and tokens, by how much and with what spread, from the paid shared and isolated records",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-giqleoy2",
   "sprint": "SP-p46hofrg",
   "priority": "P1",
