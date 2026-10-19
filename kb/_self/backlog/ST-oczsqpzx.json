@@ -2,7 +2,7 @@
   "id": "ST-oczsqpzx",
   "kind": "story",
   "title": "kb/_self/token-efficiency.md states what the multi-agent runs show",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-giqleoy2",
   "sprint": "SP-3pvz2noj",
   "priority": "P2",
@@ -71,5 +71,27 @@
     "kb/_self/reports/benchmarks.md"
   ],
   "notes": "Conclusions only from the recorded rows; a knob the operator's answer left out is named as not measured.",
-  "claimed_by": "orch-r32"
+  "evidence": {
+    "commit": "78379207dee761c9cf59123c85e0c0e3451aea93",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\n\nimport re\nt = open(\"kb/_self/token-efficiency.md\", encoding=\"utf-8\").read()\nm = re.search(r\"^## Concurrent agents\\n(.*?)(?=^## |\\Z)\", t, re.S | re.M)\nassert m, \"no section Concurrent agents\"\ns = m.group(1)\nfor w in (\"sequential baseline\", \"dedup\", \"cache\", \"Haiku\", \"pack budget\", \"reading files\"):\n    assert w in s, w\nassert s.count(\"reports/benchmarks.md\") >= 3, \"the conclusions cite no report section\"\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\n\nimport re\nt = open(\"kb/_self/token-efficiency.md\", encoding=\"utf-8\").read()\nm = re.search(r\"^## Concurrent agents\\n(.*?)(?=^## |\\Z)\", t, re.S | re.M)\nassert m, \"no section Concurrent agents\"\ns = m.group(1)\nfor w in (\"bare agents\", \"per correct answer\", \"per verified fact\", \"per passing item\"):\n    assert w in s, w\nassert re.search(r\"kb (lower|higher|equal)|no data\", s), \"no kb-minus-bare direction or no-data label stated\"\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
