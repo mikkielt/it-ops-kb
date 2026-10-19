@@ -1,0 +1,28 @@
+{
+  "id": "ST-454ie3iw",
+  "kind": "story",
+  "title": "A sandbox rebuilt with fewer agents leaves no clone or scratch dir of the higher-numbered agents",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "multi setup (and the reset of a used DIR) removes the clones and scratch dirs of agents above the new count, so a smaller rebuild leaves no 1.3 GB clone behind",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, re, shutil, subprocess, tempfile\nsys.path.insert(0, '_tools')\nT = tempfile.mkdtemp()\nB = os.path.join(T, 'bin'); os.mkdir(B)\nopen(os.path.join(B, 'claude'), 'w').write('#!/bin/sh\\nexit 1\\n')\nos.chmod(os.path.join(B, 'claude'), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ['PATH'])\ndef bench(*a):\n    return subprocess.run([sys.executable, '_tools/benchmarks.py', *a], capture_output=True, text=True, env=ENV, timeout=1800)\nimport bench_multi\nd = os.path.join(T, 's')\np = bench_multi.clone_path(d, 1).parent\ntry:\n    assert bench('multi', 'setup', '--agents', '3', '--coord', 'shared', '--dir', d).returncode == 0\n    shutil.rmtree(d)\n    r = bench('multi', 'setup', '--agents', '1', '--coord', 'shared', '--dir', d)\n    assert r.returncode == 0, r.stderr[-300:]\n    assert not (p / 'agent3').exists(), 'agent3 clone outlives a rebuild with 1 agent'\nfinally:\n    shutil.rmtree(p, ignore_errors=True)\n    shutil.rmtree(T, ignore_errors=True)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_multi.py",
+    "_tools/benchmarks.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-7s6uubs7 review"
+  ],
+  "notes": "Review of SP-7s6uubs7, edge of BG-ytbjm2n6 g2: setup clears only range(1, count+1)."
+}

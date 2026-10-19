@@ -1,0 +1,27 @@
+{
+  "id": "ST-cdrao6rg",
+  "kind": "story",
+  "title": "The multi check docs say which places it reads for a canary and that the sandbox's query log is not one of them",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/tools.md's multi check text names the query log: either it reads it or it says the sandbox's query log is off, so the sprint goal's query-log place is stated, not silently dropped",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, re, shutil, subprocess, tempfile\nsys.path.insert(0, '_tools')\nT = tempfile.mkdtemp()\nB = os.path.join(T, 'bin'); os.mkdir(B)\nopen(os.path.join(B, 'claude'), 'w').write('#!/bin/sh\\nexit 1\\n')\nos.chmod(os.path.join(B, 'claude'), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ['PATH'])\ndef bench(*a):\n    return subprocess.run([sys.executable, '_tools/benchmarks.py', *a], capture_output=True, text=True, env=ENV, timeout=1800)\nt = open('kb/_self/tools.md', encoding='utf-8').read()\ni = t.index('a canary outside its owner is'); seg = t[i:t.index('#canary_leaks]', i)]\nassert 'query log' in seg, 'the multi check canary places of tools.md do not name the query log'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/tools.md",
+    "_tools/bench_multi.py"
+  ],
+  "links": [
+    "parked: SP-7s6uubs7 review"
+  ],
+  "notes": "Review of SP-7s6uubs7, S2: ST-kuh545eo's notes say the sandbox's query log is off; the goal clause 'or query log' is unmet for the sprint goal and the docs do not say so."
+}

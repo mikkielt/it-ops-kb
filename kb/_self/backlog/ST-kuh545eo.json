@@ -60,7 +60,7 @@
       },
       "class": "design",
       "answer": "KBCANARY_agentN_ plus 32 hex digits in a scratch file and MULTI_CANARY, session output kept in DIR/output/agentN.log",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -77,7 +77,7 @@
       },
       "class": "design",
       "answer": "leak-output the first lookup agent, leak-commit and leak-event the first research agent; each writes the canary of the lowest-numbered other agent",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

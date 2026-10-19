@@ -37,7 +37,7 @@
       },
       "class": "design",
       "answer": "reset",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -54,7 +54,7 @@
       },
       "class": "delete",
       "answer": "results.N.jsonl beside it",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

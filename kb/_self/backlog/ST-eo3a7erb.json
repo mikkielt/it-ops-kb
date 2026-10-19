@@ -1,0 +1,29 @@
+{
+  "id": "ST-eo3a7erb",
+  "kind": "story",
+  "title": "multi check reads the claim window a real research agent leaves: a coord.py claim and release with no claim or release event",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "claim_windows (bench_multi.py) finds the window of a research key that coord.py claim then coord.py release left in a store, with no claim or release event posted, so duplicate research of a paid run whose agents release properly is named",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, re, shutil, subprocess, tempfile\nsys.path.insert(0, '_tools')\nT = tempfile.mkdtemp()\nB = os.path.join(T, 'bin'); os.mkdir(B)\nopen(os.path.join(B, 'claude'), 'w').write('#!/bin/sh\\nexit 1\\n')\nos.chmod(os.path.join(B, 'claude'), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ['PATH'])\ndef bench(*a):\n    return subprocess.run([sys.executable, '_tools/benchmarks.py', *a], capture_output=True, text=True, env=ENV, timeout=1800)\nimport json, bench_multi\ns = os.path.join(T, 'c.sqlite')\nc = json.loads(subprocess.run([sys.executable, '_tools/coord.py', '--store', s, 'claim', 'research:public/ad/x:term1', '--ttl', '60', '--holder', 'a'], capture_output=True, text=True, check=True).stdout)\nsubprocess.run([sys.executable, '_tools/coord.py', '--store', s, 'release', 'research:public/ad/x:term1', '--token', c['token']], capture_output=True, text=True, check=True)\nw = bench_multi.claim_windows(s)\nshutil.rmtree(T, ignore_errors=True)\nassert w, 'a claimed and released research key leaves no claim window'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_multi.py",
+    "_tools/benchmarks.py",
+    "kb/_self/tools.md",
+    "_tools/coord.py"
+  ],
+  "links": [
+    "parked: SP-7s6uubs7 review"
+  ],
+  "notes": "Review of SP-7s6uubs7, S2: coord.py claim and release post no events and a released row is deleted, so only the replay's hand-posted events make the duplicate-research check fire (bench_multi.py claim_windows)."
+}

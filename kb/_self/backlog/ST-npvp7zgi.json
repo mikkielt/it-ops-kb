@@ -1,0 +1,28 @@
+{
+  "id": "ST-npvp7zgi",
+  "kind": "story",
+  "title": "The dup-research plant lands inside the other agent's claim on a loaded host, not on a 5 s hold",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the dup-research plant orders its two agents (the second writes only after the first holds the claim, and the first releases only after the second has committed) instead of a fixed PLANT_HOLD, so multi fitness does not fail on timing",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, re, shutil, subprocess, tempfile\nsys.path.insert(0, '_tools')\nT = tempfile.mkdtemp()\nB = os.path.join(T, 'bin'); os.mkdir(B)\nopen(os.path.join(B, 'claude'), 'w').write('#!/bin/sh\\nexit 1\\n')\nos.chmod(os.path.join(B, 'claude'), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ['PATH'])\ndef bench(*a):\n    return subprocess.run([sys.executable, '_tools/benchmarks.py', *a], capture_output=True, text=True, env=ENV, timeout=1800)\nimport bench_replay\nassert not hasattr(bench_replay, 'PLANT_HOLD'), 'the dup-research plant still rests on a fixed hold'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_replay.py",
+    "_tools/bench_multi.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-7s6uubs7 review"
+  ],
+  "notes": "Review of SP-7s6uubs7, S3: window is PLANT_HOLD 5 s plus 1 s slack; a late start or a sync_push retry misses it. The check reads source only: planning replaces it with a planted delayed agent."
+}

@@ -1,0 +1,28 @@
+{
+  "id": "ST-prrja362",
+  "kind": "story",
+  "title": "multi check refuses a run whose canaries, coord store or output it cannot read instead of passing it",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "multi check --dir DIR exits 2 naming what it could not read when an agent's canary file, the coord store or the output logs are missing, so a moved or cleaned sandbox is not passed vacuously",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, re, shutil, subprocess, tempfile\nsys.path.insert(0, '_tools')\nT = tempfile.mkdtemp()\nB = os.path.join(T, 'bin'); os.mkdir(B)\nopen(os.path.join(B, 'claude'), 'w').write('#!/bin/sh\\nexit 1\\n')\nos.chmod(os.path.join(B, 'claude'), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ['PATH'])\ndef bench(*a):\n    return subprocess.run([sys.executable, '_tools/benchmarks.py', *a], capture_output=True, text=True, env=ENV, timeout=1800)\nimport glob, bench_multi\nd = os.path.join(T, 'm')\ntry:\n    r = bench('multi', 'run', 'mixed', '--replay', '--dir', d)\n    assert r.returncode == 0, r.stderr[-400:]\n    for p in glob.glob(str(bench_multi.clone_path(d, 1).parent / 'scratch*')):\n        shutil.rmtree(p)\n    c = bench('multi', 'check', '--dir', d)\n    assert c.returncode == 2, ('multi check with no canary readable', c.returncode, c.stdout[-300:])\nfinally:\n    bench('multi', 'remove', '--dir', d)\n    shutil.rmtree(T, ignore_errors=True)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_multi.py",
+    "_tools/benchmarks.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-7s6uubs7 review"
+  ],
+  "notes": "Review of SP-7s6uubs7, S2: with the scratch dirs, coord/coord.sqlite or output/ moved away, multi check exits 0 with 'no canary outside its owner' (canary_of, store_claims, store_events return empty on a missing file)."
+}

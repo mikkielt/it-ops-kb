@@ -1,0 +1,28 @@
+{
+  "id": "ST-iumqa7h3",
+  "kind": "story",
+  "title": "A shared-store coord event with no holder is not called a canary leak of the canary's own owner",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "canary_leaks attributes a shared-store event that names no holder to no writer and never names the canary's owner as having leaked it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, re, shutil, subprocess, tempfile\nsys.path.insert(0, '_tools')\nT = tempfile.mkdtemp()\nB = os.path.join(T, 'bin'); os.mkdir(B)\nopen(os.path.join(B, 'claude'), 'w').write('#!/bin/sh\\nexit 1\\n')\nos.chmod(os.path.join(B, 'claude'), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ['PATH'])\ndef bench(*a):\n    return subprocess.run([sys.executable, '_tools/benchmarks.py', *a], capture_output=True, text=True, env=ENV, timeout=1800)\ns = open('_tools/bench_multi.py', encoding='utf-8').read()\ni = s.index('def canary_leaks'); body = s[i:s.index('\\ndef ', i + 1)]\nassert 'if m != holder and c in fields' not in body, 'an event with no holder is a leak by an unknown agent of every canary in it'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_multi.py",
+    "_tools/benchmarks.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-7s6uubs7 review"
+  ],
+  "notes": "Review of SP-7s6uubs7, S3: agent_of(None) is None, so m != holder holds for the owner too. No clean-replay impact. The check reads source only: planning replaces it with a planted store event."
+}

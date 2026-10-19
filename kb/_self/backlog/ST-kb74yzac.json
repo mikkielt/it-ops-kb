@@ -73,7 +73,7 @@
       },
       "class": "design",
       "answer": "The facts are one claim by bench_repro.match_facts, lie on the article of a research key research:TOPIC:TERM, contain TERM, and one fact's commit time falls inside the time the other agent held that key (a row from lease start to expiry, a claim event to its end event), a second of slack",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -90,7 +90,7 @@
       },
       "class": "design",
       "answer": "The first two research agents; into one article of kb/public with four bullets under Facts, an odd-numbered agent after the first bullet and an even-numbered one after the last",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

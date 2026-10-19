@@ -1,0 +1,28 @@
+{
+  "id": "ST-ez3cfxkg",
+  "kind": "story",
+  "title": "A duplicate-research line of multi check names the facts: their commits or text",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "each 'duplicate research:' line of multi check names the two facts it found (commit sha or fact text), as the sprint goal's 'names the facts two agents added' says",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, re, shutil, subprocess, tempfile\nsys.path.insert(0, '_tools')\nT = tempfile.mkdtemp()\nB = os.path.join(T, 'bin'); os.mkdir(B)\nopen(os.path.join(B, 'claude'), 'w').write('#!/bin/sh\\nexit 1\\n')\nos.chmod(os.path.join(B, 'claude'), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ['PATH'])\ndef bench(*a):\n    return subprocess.run([sys.executable, '_tools/benchmarks.py', *a], capture_output=True, text=True, env=ENV, timeout=1800)\nd = os.path.join(T, 'r')\ntry:\n    bench('multi', 'run', 'research', '--replay', '--coord', 'shared', '--plant', 'dup-research', '--dir', d)\n    c = bench('multi', 'check', '--dir', d)\n    L = [l for l in c.stdout.splitlines() if l.startswith('duplicate research:')]\n    assert L and all(re.search(r'\\b[0-9a-f]{7,40}\\b', l) for l in L), ('dup lines name no commit', L)\nfinally:\n    bench('multi', 'remove', '--dir', d)\n    shutil.rmtree(T, ignore_errors=True)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_multi.py",
+    "_tools/benchmarks.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-7s6uubs7 review"
+  ],
+  "notes": "Review of SP-7s6uubs7, S3: the line holds the agents, term, topic and key but no fact text, path:line or sha (bench_multi.py duplicate_research)."
+}
