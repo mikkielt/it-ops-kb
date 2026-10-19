@@ -58,7 +58,8 @@ RECORDED_MODEL = "claude-sonnet-5-5"  # the model the recorded repro rows and th
 DEFAULT_USAGE = {"input_tokens": 120, "output_tokens": 30000, "cache_creation_input_tokens": 150000, "cache_read_input_tokens": 6000000,
                  "num_turns": 80}  # what a replayed code agent prints, and a role with no recorded row: about one worker session
 PLANTS = {"lost-claim": "research", "land-stop": "code", "dup-research": "research", "leak-output": "lookup", "leak-commit": "research",
-          "leak-event": "research"}  # --plant: the fault, and the role of the first agents that make it
+          "leak-event": "research", "bare-leak": "bare"}  # --plant: the fault, and the role of the first agents that make it ("bare": the first bare twin)
+BARE_LEAK = "bare-leak"  # the --plant that makes the first bare twin load the kb's tooling (needs --bare)
 PLANT_AGENTS = {"dup-research": 2}  # the agents a --plant makes its fault in, when not one
 CANARY_FILE = "canary"  # the file of an agent's scratch directory that holds its canary
 CANARY_ENV, SCRATCH_ENV = "MULTI_CANARY", "MULTI_SCRATCH"  # the variables of an agent's environment: its canary, its scratch directory
@@ -70,6 +71,8 @@ BARE_TOOLS = "Read,Grep,Glob,Bash,Edit,Write,WebSearch,WebFetch"  # a twin's --t
 BARE_SETTINGS = json.dumps({"disableAllHooks": True})  # a twin's --settings: no hook runs
 BARE_DROP = ("kb/public", ".claude", ".claude-plugin", ".mcp.json", "CLAUDE.md", "AGENTS.md")  # what a code twin's checkout lacks
 BARE_ENV = ("KB_", "CLAUDE_PLUGIN_")  # the prefixes of the variables a twin's environment lacks
+LEAK_KINDS = {"mcp": "a kb MCP server", "hook": "a hook", "skill": "a skill", "plugin": "a plugin", "coord": "a coord store",
+              "kb": "a kb article"}  # what a bare twin must not load: the kind of a leak `multi check` names, and how its line says it
 NOTES = "NOTES.md"  # the file of its sandbox a research twin writes its findings to
 POOL_ARM = re.compile(r"[a-z]+-\d+(?:-\d+)*(?::default)?(/session)?")  # a kb arm of the pool at its default effort
 GAP = ("\n## multi-probe-agent{n}\n\n- **A probe entry that multi probe commits and syncs from agent {n}.** Nothing was tried; "
@@ -782,6 +785,7 @@ def twin_plan(plan, agent, root, recorded, briefs):
     twin = {"agent": plan["agent"], "role": role, "model": plan["model"], "mid": plan["mid"], "n": plan["n"], "arm": BARE, "turns": plan["turns"],
             "cap": plan["cap"], "dir": bare_path(root, plan["n"]), "argv": bare_argv(plan["model"], plan["turns"], plan["cap"]),
             "sandbox": "an empty directory"}
+    twin["session"] = twin["argv"]  # the `claude` argv the twin stands for: a replay runs another argv, the record keeps this one
     if role == "lookup":
         one, why = web_question_usd(recorded, plan["model"], plan["mid"])
         qs = plan["questions"]
@@ -806,7 +810,7 @@ def twin_replay_argv(twin, usage):
     elif twin["role"] == "code":
         spec = twin["spec"]
         argv += ["--title", spec["title"], "--check", json.dumps(spec["check"]), *[x for t in spec["touches"] for x in ("--touch", t)]]
-    return argv
+    return argv + (["--plant", twin["plant"]] if twin.get("plant") else [])
 
 
 def replay_argv(plan, usage, k):
@@ -848,6 +852,7 @@ def run(scenario, root=None, dry_run=False, knobs=None, out=print):
     bad += ["--timeout needs 1 or more seconds"] if k["timeout"] < 1 else []
     bad += [f"--plant is one of {', '.join(PLANTS)}"] if k["plant"] and k["plant"] not in PLANTS else []
     bad += ["--plant needs --replay: only a scripted agent makes a fault on purpose"] if k["plant"] and not k["replay"] else []
+    bad += [f"--plant {BARE_LEAK} needs --bare: the fault is made in the first bare twin"] if k["plant"] == BARE_LEAK and not k["bare"] else []
     bad += [f"--pack-budget is {PACK_LIMITS[0]} to {PACK_LIMITS[1]} tokens"] if not PACK_LIMITS[0] <= k["pack_budget"] <= PACK_LIMITS[1] else []
     if bad:
         raise Refused("; ".join(bad))
@@ -859,7 +864,7 @@ def run(scenario, root=None, dry_run=False, knobs=None, out=print):
     agents = agents_of(rows, scenario)
     if k["plant"].startswith("leak-") and len(agents) < 2:
         raise Refused(f"--plant {k['plant']} needs a second agent whose canary it writes: scenario {scenario} has one")
-    if k["plant"] and sum(a["role"] == PLANTS[k["plant"]] for a in agents) < PLANT_AGENTS.get(k["plant"], 1):
+    if k["plant"] and k["plant"] != BARE_LEAK and sum(a["role"] == PLANTS[k["plant"]] for a in agents) < PLANT_AGENTS.get(k["plant"], 1):
         raise Refused(f"--plant {k['plant']} needs {PLANT_AGENTS.get(k['plant'], 1)} agent(s) of role {PLANTS[k['plant']]}: scenario {scenario} has fewer")
     if problems or not agents:
         for ln in problems or [f"no rows of scenario {scenario} in {INPUTS}"]:
@@ -871,7 +876,9 @@ def run(scenario, root=None, dry_run=False, knobs=None, out=print):
     if k["bare"]:
         for p, a in zip(plans, agents):
             p["twin"] = twin_plan(p, a, root, recorded, briefs)
-    if k["plant"]:
+    if k["plant"] == BARE_LEAK:
+        plant_twin(plans[0]["twin"])
+    elif k["plant"]:
         for p in [p for p in plans if p["role"] == PLANTS[k["plant"]]][:PLANT_AGENTS.get(k["plant"], 1)]:
             p["plant"] = k["plant"]
     if k["replay"]:
@@ -910,6 +917,8 @@ def run(scenario, root=None, dry_run=False, knobs=None, out=print):
             out(f"  bare argv: {shlex.join(t['argv'])}")
             out(f"  bare estimate {money(t['usd'])}: {t['basis']}")
             out(f"  bare sandbox: {t['dir']} ({t['sandbox']}); the environment has no {' or '.join(x + '*' for x in BARE_ENV)} variable")
+            if t.get("plant"):
+                out(f"  bare plant: {t['plant']}")
             for ln in t["prompt"].splitlines()[:3]:
                 out(f"  | bare: {ln}")
     walls = [p["wall"] for p in plans if p["wall"]]
@@ -1231,6 +1240,33 @@ def session_agent(plan, ctx, rec):
     rec["steps"] += worked or ["session"]
 
 
+def plant_twin(twin):
+    """--plant bare-leak: make the session argv of `twin` (the first bare twin) load a kb MCP server (--mcp-config), a hook (the
+    settings), a plugin (--plugin-dir) and a skill (no --disable-slash-commands); `plant_env` and `plant_sandbox` add the rest."""
+    hook = {"SessionStart": [{"hooks": [{"type": "command", "command": "true"}]}]}
+    argv = [a for a in twin["session"] if a != "--disable-slash-commands"]
+    argv[argv.index("--settings") + 1] = json.dumps({"hooks": hook})
+    twin.update(plant=BARE_LEAK, session=[*argv, "--mcp-config", "kb-mcp.json", "--plugin-dir", "plugins"])
+
+
+def plant_env(twin, env):
+    """--plant bare-leak: the coord store and the plugin root in the environment of the twin's session."""
+    env["KB_COORD_STORE"], env["CLAUDE_PLUGIN_ROOT"] = str(Path(twin["dir"]) / "coord.sqlite"), str(HOME)
+
+
+def plant_sandbox(d):
+    """--plant bare-leak: in the sandbox `d` of the twin, an .mcp.json, a settings file with a hook, a skill, a plugin manifest, an agent
+    doc, a kb article and a coord store."""
+    files = {".mcp.json": json.dumps({"mcpServers": {"kb": {"command": "true"}}}),
+             ".claude/settings.json": json.dumps({"hooks": {"SessionStart": [{"hooks": [{"type": "command", "command": "true"}]}]}}),
+             ".claude/skills/leak/SKILL.md": "---\nname: leak\ndescription: a planted skill\n---\n", ".claude-plugin/plugin.json": '{"name": "leak"}',
+             "CLAUDE.md": "@AGENTS.md\n", "kb/public/leak/leak.md": "# A planted kb article\n", "coord.sqlite": ""}
+    for name, text in files.items():
+        path = Path(d) / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8", newline="\n")
+
+
 def twin_env():
     """The environment of a bare twin's session: this process's without a variable of BARE_ENV's prefixes."""
     return {k: v for k, v in os.environ.items() if not k.startswith(BARE_ENV)}
@@ -1280,6 +1316,10 @@ def twin_agent(plan, ctx, rec):
     code twin's items_passed of items (the item's check in the twin's sandbox); a research twin's notes are scored by `score_twins`."""
     twin, env = plan["twin"], twin_env()
     twin_sandbox(twin, ctx.root, ctx.manifest)
+    if twin.get("plant"):
+        plant_env(twin, env)
+        plant_sandbox(twin["dir"])
+    rec["isolation"] = {"argv": twin["session"], "env": sorted(k for k in env if k.startswith(BARE_ENV))}  # what `multi check` reads
     rec["started"] = utc_now()
     t = time.time()
     r = run_session(twin["argv"], twin["prompt"], twin["dir"], env, ctx.timeout,
@@ -1682,10 +1722,115 @@ def canary_leaks(root, manifest, lines):
     return out
 
 
+def settings_leaks(settings, where):
+    """[(kind, text)] of a settings object (a twin's --settings value or a settings file of its sandbox) that loads a hook, a plugin or an
+    MCP server; `where` names it."""
+    if not isinstance(settings, dict):
+        return []
+    found = [("hook", f"{where} sets hooks")] if settings.get("hooks") else []
+    found += [("plugin", f"{where} sets {key}") for key in ("enabledPlugins", "extraKnownMarketplaces") if settings.get(key)]
+    found += [("mcp", f"{where} sets {key}") for key in ("mcpServers", "enabledMcpjsonServers") if settings.get(key)]
+    return found
+
+
+def json_of(text):
+    try:
+        return json.loads(text)
+    except ValueError:
+        return None
+
+
+def argv_leaks(argv):
+    """[(kind, text)] of what a bare twin's `claude` argv would load of the kb's tooling: an MCP config or a tool of an MCP server, no
+    --strict-mcp-config, a plugin directory, setting sources, hooks, plugins or MCP servers in its --settings value, or slash
+    commands and skills left on."""
+    def value(flag):
+        i = argv.index(flag) if flag in argv else -1
+        return argv[i + 1] if 0 <= i < len(argv) - 1 else ""
+    found = [("mcp", "argv has --mcp-config")] if "--mcp-config" in argv else []
+    found += [("mcp", "argv lacks --strict-mcp-config")] if "--strict-mcp-config" not in argv else []
+    found += [("mcp", f"argv allows the tools {t}") for t in (value("--tools"), value("--allowedTools")) if "mcp__" in t]
+    found += [("plugin", "argv has --plugin-dir")] if "--plugin-dir" in argv else []
+    found += [("hook", f"argv --setting-sources {value('--setting-sources')!r} reads settings files, which set hooks, skills and plugins")] if (
+        "--setting-sources" not in argv or value("--setting-sources")) else []
+    found += settings_leaks(json_of(value("--settings")), "argv --settings")
+    found += [("skill", "argv lacks --disable-slash-commands")] if "--disable-slash-commands" not in argv else []
+    return found
+
+
+def env_leaks(names):
+    """[(kind, text)] of the variables of a bare twin's environment that the kb's tooling reads."""
+    found = [("coord", f"environment sets {n}") for n in names if n == "KB_COORD_STORE"]
+    found += [("plugin", f"environment sets {n}") for n in names if n.startswith("CLAUDE_PLUGIN_")]
+    found += [("kb", f"environment sets {n}") for n in names if n.startswith("KB_") and n != "KB_COORD_STORE"]
+    return found
+
+
+def sandbox_leaks(d):
+    """[(kind, text)] of what the sandbox `d` of a bare twin holds that loads the kb's tooling: an .mcp.json, .claude settings with hooks, plugins
+    or MCP servers, skills, commands or agents, a plugin manifest, a coord store, a hooks path or hook of git, an agent doc or a kb article."""
+    d, found = Path(d), []
+    if (d / ".mcp.json").exists():
+        found.append(("mcp", "sandbox holds .mcp.json"))
+    for name in ("settings.json", "settings.local.json"):
+        path = d / ".claude" / name
+        if path.is_file():
+            found += settings_leaks(json_of(path.read_text(encoding="utf-8", errors="replace")), f"sandbox .claude/{name}")
+    found += [("skill", f"sandbox holds .claude/{n}") for n in ("skills", "commands", "agents") if (d / ".claude" / n).exists()]
+    found += [("plugin", "sandbox holds .claude-plugin")] if (d / ".claude-plugin").exists() else []
+    found += [("coord", f"sandbox holds {p.relative_to(d).as_posix()}") for p in (*d.glob("*.sqlite"), *d.glob("_private/*.sqlite"))]
+    config = d / ".git" / "config"
+    if config.is_file() and "hookspath" in config.read_text(encoding="utf-8", errors="replace").lower():
+        found.append(("hook", "sandbox git config sets core.hooksPath"))
+    hooks = d / ".git" / "hooks"
+    found += [("hook", f"sandbox holds the git hook {p.name}") for p in (sorted(hooks.glob("*")) if hooks.is_dir() else []) if p.suffix != ".sample"]
+    found += [("kb", f"sandbox holds {n}") for n in ("CLAUDE.md", "AGENTS.md") if (d / n).exists()]
+    found += [("kb", f"sandbox holds the article {p.relative_to(d).as_posix()}") for p in sorted(d.glob("kb/*/*/*.md"))
+              if ARTICLE.search(p.relative_to(d).as_posix())]
+    return found
+
+
+def init_leaks(path):
+    """[(kind, text)] of the session init event in the output log `path` of a real run's twin: an MCP server, a plugin or a skill it lists."""
+    try:
+        text = Path(path).read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return []
+    for ln in text.splitlines():
+        ev = json_of(ln) if ln.startswith("{") else None
+        if isinstance(ev, dict) and ev.get("type") == "system" and ev.get("subtype") == "init":
+            return [(kind, f"session init event lists {len(ev[key])} {key.replace('_', ' ')}") for kind, key in
+                    (("mcp", "mcp_servers"), ("plugin", "plugins"), ("skill", "skills")) if ev.get(key)]
+    return []
+
+
+def isolation_problems(root, results, out):
+    """The lines of `multi check` for the bare twins of DIR/results.jsonl, each on a line with the word isolation: for each twin whose argv,
+    settings, environment or sandbox would load a kb MCP server, a hook, a skill or plugin, a coord store or a kb article, or whose
+    session init event lists an MCP server, a plugin or a skill, a line for each such leak. `out` is called with `isolation: ok ...` when
+    there are twins and none leaks."""
+    twins = [r for r in latest_lines(results, BARE) if r.get("failure") != "budget"]
+    problems = []
+    for r in twins:
+        iso = r.get("isolation")
+        who = f"isolation: bare twin of {r['agent']}"
+        if not isinstance(iso, dict):
+            problems.append(f"{who} has no record of its argv and environment: its isolation is not proven")
+            continue
+        sandbox = bare_path(root, r["n"])
+        leaks = (argv_leaks(iso.get("argv") or []) + env_leaks(iso.get("env") or []) + (sandbox_leaks(sandbox) if sandbox.is_dir() else [])
+                 + init_leaks(Path(root) / OUTPUT_DIR / f"{BARE}{r['n']}.log"))
+        problems += [f"{who} would load {LEAK_KINDS[kind]}: {text}" for kind, text in leaks]
+    if twins and not problems:
+        out(f"isolation: ok, {len(twins)} bare twin(s) load no kb MCP server, hook, skill, plugin, coord store or kb article")
+    return problems
+
+
 def check(root=None, out=print):
     """`multi check`: read the finished run in DIR (results.jsonl, the sandbox's coord store, the clones' planted backlog
     items, the bare's main, the agents' output logs and canaries) and name each lost claim (`coord_losses`, `backlog_losses`),
-    each landing stop (`landing_stops`) and each canary found outside its owner (`canary_leaks`). Returns 1 when it names any, else 0; raises Refused when DIR holds no run or an agent has not ended."""
+    each landing stop (`landing_stops`), each canary found outside its owner (`canary_leaks`) and each leak of the kb's tooling into a bare twin
+    (`isolation_problems`: a line with the word isolation). Returns 1 when it names any, else 0; raises Refused when DIR holds no run or an agent has not ended."""
     root = (Path(root) if root else default_dir()).resolve()
     lines = latest_lines(bench_repro.read_results(root / RUN_RESULTS))
     if not lines:
@@ -1699,6 +1844,7 @@ def check(root=None, out=print):
     bare = origin_path(root)
     found = coord_losses(root, manifest, bare) + backlog_losses(manifest, lines, bare) + landing_stops(manifest, lines, bare)
     found += canary_leaks(root, manifest, lines)
+    found += isolation_problems(root, bench_repro.read_results(root / RUN_RESULTS), out)
     dups = duplicate_research(root, manifest, lines)
     shared = manifest.get("coord") == "shared"
     found += dups if shared else []
@@ -1715,13 +1861,22 @@ def check(root=None, out=print):
 
 PLANT_NAMED = {"lost-claim": "lost claim: ", "land-stop": "landing stop: ", "dup-research": "duplicate research: ",
                "leak-output": "to its output stream", "leak-commit": "to a commit on the bare",
-               "leak-event": "to a coord store event"}  # what a line of `multi check` holds that names each --plant fault
+               "leak-event": "to a coord store event", BARE_LEAK: "isolation: "}  # what a line of `multi check` holds that names each --plant fault
+
+
+def plant_named(plant, lines):
+    """True when a line of `lines` (the output of `multi check`) names the --plant fault; the plant bare-leak when an isolation line names
+    each kind of LEAK_KINDS."""
+    if plant == BARE_LEAK:
+        iso = [ln for ln in lines if ln.startswith(PLANT_NAMED[plant])]
+        return all(any(what in ln for ln in iso) for what in LEAK_KINDS.values())
+    return any(PLANT_NAMED[plant] in ln for ln in lines)
 
 
 def fitness_cases(rows=None):
     """[(name, scenario, knobs)] of the fitness run: for each scenario its replay clean at once and one at a time, then its
     replay at once with each --plant the scenario's agents can make (the roles PLANTS names, the agents PLANT_AGENTS counts,
-    a second agent for a leak). `knobs` are those of `run`; `name` is the case's directory name under DIR."""
+    a second agent for a leak), then its replay with --bare, clean and with --plant bare-leak. `knobs` are those of `run`; `name` is the case's directory name under DIR."""
     rows = load_inputs() if rows is None else rows
     cases = []
     for scenario in SCENARIOS:
@@ -1729,8 +1884,9 @@ def fitness_cases(rows=None):
         for sequential in (False, True):
             cases.append((f"{scenario}-{'sequential' if sequential else 'concurrent'}", scenario, {"sequential": sequential}))
         for plant, role in PLANTS.items():
-            if sum(a["role"] == role for a in agents) >= PLANT_AGENTS.get(plant, 1) and (len(agents) > 1 or not plant.startswith("leak-")):
+            if plant != BARE_LEAK and sum(a["role"] == role for a in agents) >= PLANT_AGENTS.get(plant, 1) and (len(agents) > 1 or not plant.startswith("leak-")):
                 cases.append((f"{scenario}-{plant}", scenario, {"plant": plant}))
+        cases += [(f"{scenario}-bare", scenario, {"bare": True}), (f"{scenario}-{BARE_LEAK}", scenario, {"bare": True, "plant": BARE_LEAK})]
     return cases
 
 
@@ -1738,7 +1894,8 @@ def fitness(root=None, out=print):
     """`multi fitness`: the comprehensive check of concurrent work, no model and no network. For each case of `fitness_cases`
     it replays the scenario (`run` with the knob `replay`; a sandbox of its own under DIR/CASE, removed after it) and reads the
     finished run with `check`: a clean replay passes when the run finished and `check` named nothing; a replay with a plant
-    passes when the run finished, `check` exits 1 and a line of it holds what PLANT_NAMED gives the plant. Returns 0 when every case passes,
+    passes when the run finished, `check` exits 1 and a line of it holds what PLANT_NAMED gives the plant (`plant_named`); a clean replay with
+    --bare also needs the `isolation: ok` line. Returns 0 when every case passes,
     else 1; raises Refused on a refusal of `run` or `check`."""
     root = (Path(root) if root else scratch_dir() / f"multi-fitness-{os.getpid()}").resolve()
     made = not root.exists()
@@ -1754,14 +1911,15 @@ def fitness(root=None, out=print):
             finally:
                 remove(case)
             if plant:
-                ok = ran == 0 and code == 1 and any(PLANT_NAMED[plant] in ln for ln in lines)
-                why = "" if ok else f"run exit {ran}, multi check exit {code}, " + ("it named" if any(PLANT_NAMED[plant] in ln for ln in lines) else "it did not name") + " the plant"
+                ok = ran == 0 and code == 1 and plant_named(plant, lines)
+                why = "" if ok else f"run exit {ran}, multi check exit {code}, " + ("it named" if plant_named(plant, lines) else "it did not name") + " the plant"
             else:
-                ok = ran == 0 and code == 0
+                ok = ran == 0 and code == 0 and (not knobs.get("bare") or any(ln.startswith("isolation: ok") for ln in lines))
                 why = "" if ok else f"run exit {ran}, multi check exit {code}: " + "; ".join(ln for ln in lines if ": " in ln)[:300]
             if not ok:
                 failed.append(f"{name} ({why})")
-            out(f"{'ok' if ok else 'FAIL'}: {name}: " + (f"multi check named {plant}" if plant and ok else "multi check passed" if ok else why))
+            out(f"{'ok' if ok else 'FAIL'}: {name}: " + (f"multi check named {plant}" if plant and ok else "multi check passed" if ok else why)
+            + (" (with --bare)" if knobs.get("bare") else ""))
     finally:
         if made:
             shutil.rmtree(root, ignore_errors=True)

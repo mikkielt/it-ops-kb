@@ -16,7 +16,8 @@ MULTI_LEAK_CANARY_FILE holds, to its result text, to the planted `_gaps.md` entr
 The roles `bare-lookup`, `bare-research` and `bare-code` stand in for the bare twins of `multi run --bare`, which have no kb
 tooling: `bare-lookup` runs nothing, `bare-research` writes NOTES.md in the current directory (the sandbox of the twin), and
 `bare-code [--title T] [--touch PATH]... [--check JSON]` writes the planted files of the touches, runs the check and commits them with
-plain git, with no `KB-Work` trailer.
+plain git, with no `KB-Work` trailer; a bare role first prints a session init event that lists no MCP server, plugin or skill (`--plant bare-leak`
+lists one of each).
 It prints one stream-json result
 event with the planted `--usage` (the four token counts and the turns) and `--cost`, and the commands it ran as `steps`;
 the exit is 1 and the event an error when a command failed. The harness (bench_multi.py) reads the event as it reads a
@@ -28,7 +29,7 @@ from pathlib import Path
 
 ITEM_DIR = "kb/_self/backlog"  # bench_multi.ITEM_DIR
 CLAIM_TTL = 3600  # seconds a replayed research agent's claim lasts
-PLANTS = ("lost-claim", "land-stop", "dup-research", "leak-output", "leak-commit", "leak-event")  # bench_multi.PLANTS' names
+PLANTS = ("lost-claim", "land-stop", "dup-research", "leak-output", "leak-commit", "leak-event", "bare-leak")  # bench_multi.PLANTS' names
 LEAK_ENV = "MULTI_LEAK_CANARY_FILE"  # bench_multi.LEAK_ENV: the file that holds the canary of another agent
 PLANT_TERM = "replay-planted-term"  # the research term of --plant dup-research
 PLANT_HOLD = 5  # seconds a dup-research agent holds its claim at least, so another agent's fact lands inside it
@@ -241,6 +242,10 @@ def main(argv=None):
     ap.add_argument("--plant", choices=PLANTS, default="", help="a fault the role makes on purpose")
     a = ap.parse_args(argv)
     usage, steps, t, shown = json.loads(a.usage), [], time.time(), ""
+    if a.role.startswith("bare-"):  # the init event of a session: the kb's servers, plugins and skills a bare twin must not have
+        loaded = a.plant == "bare-leak"
+        print(json.dumps({"type": "system", "subtype": "init", "mcp_servers": [{"name": "kb", "status": "connected"}] if loaded else [],
+                          "plugins": [{"name": "it-ops-kb"}] if loaded else [], "skills": ["kb-lookup"] if loaded else []}))
     try:
         ROLES[a.role](a, steps)
         error, shown = "", " " + leaked() if a.plant == "leak-output" else ""
