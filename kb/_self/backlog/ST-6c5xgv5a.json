@@ -2,7 +2,7 @@
   "id": "ST-6c5xgv5a",
   "kind": "story",
   "title": "kbgit.py contribute builds a local branch at the upstream main with only the shared changes, names what it left out and pushes nothing",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-qinvdomv",
   "priority": "P2",

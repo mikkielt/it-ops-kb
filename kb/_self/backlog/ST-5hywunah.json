@@ -2,7 +2,7 @@
   "id": "ST-5hywunah",
   "kind": "story",
   "title": "The leak scan refuses an internal root's source ids, pointer url hosts and qualified paths in public roots, the tools and the docs",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-qinvdomv",
   "priority": "P2",
