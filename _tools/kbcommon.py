@@ -519,7 +519,7 @@ def _resolve_pointer(p):
     try:
         r = load_root(d)
     except RootError as e:
-        return None, f"the root at {where} is unusable: {e}", True
+        return None, f"the root at {where} is unusable: {str(e).replace(os.path.abspath(d), where)}", True
     diff = [f"{k} {a!r} in the root, {b!r} in the pointer" for k, a, b in
             (("name", r.name, p.name), ("id_prefix", r.id_prefix, p.id_prefix), ("visibility", r.visibility, p.visibility))
             if a != b]
@@ -556,7 +556,7 @@ def _load():
                              and os.path.join(KB_DIR, d) != PUBLIC and d not in claimed
                              and os.path.isfile(os.path.join(KB_DIR, d, ROOT_FILE)))
     dirs += [d for d in os.environ.get("KB_ROOTS", "").split(os.pathsep) if d.strip()]
-    out, names, prefixes = [], {}, {}
+    out, names, prefixes, holder = [], {}, {}, {}  # holder: the root name that holds a name or prefix
     for d in dirs:
         if not os.path.isfile(os.path.join(os.path.abspath(os.path.expanduser(d)), ROOT_FILE)):
             missing.append(MissingRoot(os.path.basename(os.path.normpath(d)) or d, "", "", "KB_ROOTS", os.path.abspath(os.path.expanduser(d)),
@@ -567,14 +567,16 @@ def _load():
             if key in seen:
                 raise RootError(f"roots {seen[key]} and {r.path} share the {what} {key!r}")
             seen[key] = r.path
+            holder[what, key] = r.name
         out.append(r)
     for p in pointers:  # an earlier root or pointer keeps a name or prefix, resolved or not
-        clash = [f"{what} {key!r} is already the {what} of {os.path.relpath(seen[key], HOME)}"
+        clash = [f"{what} {key!r} is already the {what} of root {holder[what, key]}"
                  for seen, key, what in ((names, p.name, "name"), (prefixes, p.id_prefix, "id_prefix")) if key in seen]
         if clash:
             missing.append(MissingRoot(p.name, p.id_prefix, p.visibility, p.access, p.path, "; ".join(clash), True))
             continue
         names[p.name] = prefixes[p.id_prefix] = p.path
+        holder["name", p.name] = holder["id_prefix", p.id_prefix] = p.name
         r, reason, defect = _resolve_pointer(p)
         if r is None:
             missing.append(MissingRoot(p.name, p.id_prefix, p.visibility, p.access, p.path, reason, defect))
