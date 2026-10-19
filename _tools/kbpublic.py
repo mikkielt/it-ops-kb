@@ -37,7 +37,9 @@ the same `main`, so the public home gets a projection of it:
               the tip's version of the file already holds and whose value no file of the tip holds (already public;
               the tip's values are scanned once per tip and cached in _cache/publish/, as digests); the integration
               CI verdict of the source commit (ql_deliver.ci_pipeline on the source remote's url) is not `ok`: red, pending,
-              unverified, none, or skip when glab or gh cannot read it. Content is refused, never filtered.
+              unverified, none, or skip when glab or gh cannot read it.
+              A commit whose message or trailers hold an email address of the leak scan's shape that is not a noreply or
+              no-reply local part or an allowed placeholder is refused too (message_refusals), named, its address never. Content is refused, never filtered.
               Each commit's leak verdict is cached in _cache/publish/ per public tip, projection allowlist and pinned artifacts, so a
               range is scanned once; `publish --hook` leaves a range with more than HOOK_BOUND uncached commits to a
               publish by hand (one line, exit 0, nothing checked or pushed).
@@ -573,6 +575,12 @@ def leak_verdicts(written, proj, tip, final, cwd, pinned=frozenset()):
     return res
 
 
+def commit_name(c, sources):
+    """The source commit's short hash of the projected commit C (SOURCES: {projected sha: source sha}), with C's when they differ."""
+    src = (sources or {}).get(c, c)
+    return src[:12] + (f" (projected {c[:12]})" if src != c else "")
+
+
 def history_refusals(proj, tip, files, cwd, sources=None, bound=None):
     """(tree causes, leak causes, paths named) of the commits publish would push: TIP..PROJ, all of PROJ's history when
     TIP is None; FILES are the paths of PROJ's tree. A cause names the source commit (SOURCES: {projected sha: source
@@ -591,7 +599,7 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None):
     than BOUND commits of the range have no cached verdict. Raises RuntimeError on a git error."""
     import kbcommon
     sources = sources or {}
-    name = lambda c: sources.get(c, c)[:12] + (f" (projected {c[:12]})" if sources.get(c, c) != c else "")  # noqa: E731
+    name = lambda c: commit_name(c, sources)  # noqa: E731
     changes = history_changes(proj, tip, cwd)
     final = blobs(proj, [ALLOWLIST_PATH], cwd).get(ALLOWLIST_PATH, "")
     pinned = pinned_paths(proj, files, cwd)
@@ -658,6 +666,37 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None):
         cache_save(cwd, vname, verdicts, "verdicts-")
     leak = [f"commit {name(c)}: {x} has a leak-scan hit ({', '.join(kinds)})" for c, _ in changes for x, kinds in verdicts[c]]
     return tree, leak, named
+
+
+TRAILER_RX = re.compile(r"[A-Za-z][\w-]*:[ \t]\S")
+NOREPLY_LOCALS = ("noreply", "no-reply")  # local parts of an address that names no one
+
+
+def message_refusals(proj, tip, final, cwd, sources=None):
+    """Causes: a commit of TIP..PROJ (all of PROJ's history when TIP is None) whose message holds an email address of the
+    leak scan's shape (kbcommon.leak_hits, kind email, allowing FINAL, the projection's allowlist) that is neither a
+    noreply or no-reply local part nor a placeholder domain the scan allows. A cause names the commit and the field
+    (the message, or a trailer of its last paragraph), never the address. Raises RuntimeError on a git error."""
+    import kbcommon
+    code, o, e = run(["log", "--topo-order", "--format=%x01%H%x02%B", "--diff-merges=first-parent", "--root",
+                      proj if tip is None else f"{tip}..{proj}"], cwd)
+    if code:
+        raise RuntimeError(f"git log: {e.strip()}")
+    res = []
+    for chunk in o.decode("utf-8", "replace").split("\x01")[1:]:
+        sha, _, msg = chunk.partition("\x02")
+        paras = [p for p in re.split(r"\n\s*\n", msg.strip()) if p.strip()]
+        last = paras[-1].splitlines() if len(paras) > 1 else []
+        fields = set()
+        for ln in msg.splitlines():
+            if "@" in ln and any(h[0] == "email" and h[1].rsplit("@", 1)[0].lower() not in NOREPLY_LOCALS
+                   for h in kbcommon.leak_hits(ln, final)):
+                trailer = ln in last and all(TRAILER_RX.match(x) or x.startswith((" ", "\t")) for x in last)
+                fields.add("a trailer" if trailer else "the message")
+        if fields:
+            res.append(f"commit {commit_name(sha, sources)}: {' and '.join(sorted(fields))} holds an email address "
+                       "(only a noreply or placeholder one may stay in a published commit)")
+    return res
 
 
 def ci_refusals(src, url, cwd, run_ci=None):
@@ -755,6 +794,7 @@ def cmd_publish(a, cwd):
         return 2
     try:
         tree, leak, named = history_refusals(proj, tip, files, cwd, sources, HOOK_BOUND if getattr(a, "hook", False) else None)
+        leak += message_refusals(proj, tip, allowlist(proj, cwd), cwd, sources)
     except LongRange as exc:
         print(f"publish by hand: {exc.n} commits to check (python3 _tools/kbgit.py publish)")
         return 0

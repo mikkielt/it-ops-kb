@@ -32,6 +32,23 @@
     "kb/_self/git.md",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does publish tell a trailer from the message in an address cause?",
+      "options": [
+        "A line of the last paragraph counts as a trailer when every line of that paragraph is trailer-shaped (Key: value), else the message",
+        "Any line shaped Key: value counts as a trailer, wherever it stands"
+      ],
+      "recommendation": "A line of the last paragraph counts as a trailer when every line of that paragraph is trailer-shaped (Key: value), else the message",
+      "do": {
+        "A line of the last paragraph counts as a trailer when every line of that paragraph is trailer-shaped (Key: value), else the message": "ST-cmjz33nf",
+        "Any line shaped Key: value counts as a trailer, wherever it stands": "ST-cmjz33nf"
+      },
+      "class": "push"
+    }
+  ],
   "notes": "Premise (2026-10-19): a planted publish --dry-run of a commit whose message holds a non-placeholder address publishes (exit 0). Fires-now check (2026-10-19): refs/kb/published..origin/main holds 10651 commits; their messages hold 7968 address hits of kbcommon.leak_hits, every one the noreply address of Anthropic in Co-Authored-By (EMAIL_OK allows noreply hosts, not a noreply local part, so this note cannot spell it), none other; so the refusal, with noreply local parts allowed, refuses nothing on today's range. Test policy (D-6kei5o2z, D-2tq4fhgs): a publish gate is critical, so the item may add one planted case (an address in a commit message is refused) inside the existing test_publish_refuses_a_leak_in_any_commit_of_the_range, no new test function or file; never touch _tools/tests_ceiling.json. Author and committer emails are not this item's: the open gate on the author-email item decides them.",
   "claimed_by": "orch-r39",
   "operator": "op-5145561d"
