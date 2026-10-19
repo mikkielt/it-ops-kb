@@ -2,7 +2,7 @@
   "id": "ST-kuh545eo",
   "kind": "story",
   "title": "Each agent gets a canary value and multi check names any canary found outside its owner",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-giqleoy2",
   "sprint": "SP-7s6uubs7",
   "priority": "P2",
@@ -52,5 +52,6 @@
     "_tools/redact.py",
     "kb/_self/_decisions.csv"
   ],
-  "notes": "The canary is generated per run and never a real secret; it lives only in the sandbox under the scratch directory. A fitness check, not a tests.py test (D-6kei5o2z, D-2tq4fhgs). The sandbox's query log is off (bench_repro), so there is no query log place to read."
+  "notes": "The canary is generated per run and never a real secret; it lives only in the sandbox under the scratch directory. A fitness check, not a tests.py test (D-6kei5o2z, D-2tq4fhgs). The sandbox's query log is off (bench_repro), so there is no query log place to read.",
+  "claimed_by": "orch-r21"
 }
