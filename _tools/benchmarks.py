@@ -173,7 +173,7 @@
                                             agent's area one of repro_briefs.csv, a code agent's item spec has a title, goal,
                                             touches, check and a gate with a recommendation; exit 1 naming each row that does
                                             not resolve, 0 otherwise; no model, no network
-  benchmarks.py multi run SCENARIO [--dry-run] [--replay [--plant lost-claim|land-stop|dup-research|leak-output|leak-commit|leak-event]] [--dir DIR] [--sequential] [--coord shared|isolated] [--stagger SECONDS]
+  benchmarks.py multi run SCENARIO [--dry-run] [--replay [--plant lost-claim|land-stop|dup-research|leak-output|leak-commit|leak-event|bare-leak]] [--dir DIR] [--sequential] [--coord shared|isolated] [--stagger SECONDS]
                                             [--model [ROLE=]MODEL,...] [--pack-budget TOKENS] [--tools kb|files]
                                             [--manager code|session] [--max-usd USD] [--timeout SECONDS] [--bare]
                                             --dry-run prints each agent of the scenario (lookups, research or mixed) with its
@@ -221,7 +221,10 @@
                                             and `estimate: $K kb + $B bare = $T`; each twin's line in results.jsonl has the arm
                                             bare, its counts, wall seconds, usd (the counts at bench_core.PRICE) and quality
                                             (right of asked, facts_matched of facts_verified, items_passed of items);
-                                            --replay --bare starts bench_replay.py's scripted bare agents
+                                            --replay --bare starts bench_replay.py's scripted bare agents; --plant bare-leak
+                                            (with --replay --bare) makes the first bare twin load the kb's tooling, one leak of
+                                            each kind: an mcp config, a hook, a skill, a plugin, a coord store and a kb article
+                                            in its argv, settings, environment, sandbox and session init event
   benchmarks.py multi check [--dir DIR]     read the finished run in DIR (results.jsonl, the sandbox's coord store, the clones'
                                             backlog claims of the planted items and the bare's main) and name each lost claim
                                             (a coord or backlog claim still held after every agent ended, or released with
@@ -232,15 +235,20 @@
                                             claim of it was live; with --coord isolated they are printed and counted, not
                                             failed on) and each canary found outside its owner (in another agent's
                                             output log, a commit of another author on the bare, or a coord store event of
-                                            another holder; it names the agent, the owner and the place);
+                                            another holder; it names the agent, the owner and the place) and, on a line
+                                            with the word isolation, each bare twin whose argv, settings, environment or
+                                            sandbox would load a kb MCP server, a hook, a skill or plugin, a coord store or a
+                                            kb article, or whose session init event (its output log) lists an MCP server, a
+                                            plugin or a skill, and `isolation: ok` when none does;
                                             exit 1 naming them, 0 when none, 2 on a refusal (no
                                             run in DIR, an agent with no end stamp); no model, no network
   benchmarks.py multi fitness [--dir DIR]   the comprehensive check of concurrent work, run by the harness in place of a test: replay
                                             (`multi run --replay`) the scenarios lookups, research and mixed at once and one at a time,
-                                            and at once with each --plant their agents can make, each in a sandbox of its own under DIR
+                                            and at once with each --plant their agents can make, and with --bare clean and with
+                                            --plant bare-leak, each in a sandbox of its own under DIR
                                             (default: a temporary directory under the scratch directory), removed after the case, and read
                                             each finished run with `multi check`; exit 0 only when `multi check` passes every clean replay
-                                            and names every planted fault, 1 naming each case that did not; no model, no network
+                                            (a --bare one with `isolation: ok`) and names every planted fault (bare-leak: each kind of leak), 1 naming each case that did not; no model, no network
   benchmarks.py multi record [--dir DIR] [--out FILE]
                                             merge the newest json line of each agent in DIR/results.jsonl into FILE (default
                                             kb/_self/reports/benchmarks.csv) as rows of the scenario `multi`: record the first
@@ -456,7 +464,8 @@ def main(argv=None):
                     "none of the kb's tooling (no settings, hooks, mcp server, skills or kb files), in a sandbox of its own under DIR/bare")
     mr.add_argument("--plant", choices=list(bench_multi.PLANTS), help="with --replay: make one fault on purpose in the first "
                     "agent(s) of the role that makes it, for `multi check` to find: "
-                    + ", ".join(f"{k} ({bench_multi.PLANT_AGENTS.get(k, 1)} {v} agent(s))" for k, v in bench_multi.PLANTS.items()))
+                    + ", ".join(f"{k} ({bench_multi.PLANT_AGENTS.get(k, 1)} {v} agent(s))" for k, v in bench_multi.PLANTS.items() if k != bench_multi.BARE_LEAK)
+                    + f", {bench_multi.BARE_LEAK} (the first bare twin loads the kb's tooling; needs --bare)")
     mr.add_argument("--dir", help="the sandbox's directory (default: _cache/bench-multi of the clone's main worktree)")
     mr.add_argument("--sequential", action="store_true", help="start the agents one at a time (default: all at once)")
     mr.add_argument("--coord", choices=bench_multi.COORDS, default="shared", help="one coordination store for every agent, or one for each (default: shared)")

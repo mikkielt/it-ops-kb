@@ -48,6 +48,42 @@
   "depends_on": [
     "ST-fnj6hllh"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does multi check read a bare twin's isolation from, and which fitness cases carry the bare replays? (a: argv and environment names recorded in the twin's results line, sandbox read as it stands at check time, init event from the twin's output log; fitness adds a clean --bare case and a --bare --plant bare-leak case per scenario. b: everything recorded at run time, bare cases only for the lookups scenario.)",
+      "options": [
+        "a: record argv and env, read sandbox at check time, bare cases per scenario",
+        "b: record everything at run time, bare cases for lookups only"
+      ],
+      "recommendation": "a: record argv and env, read sandbox at check time, bare cases per scenario",
+      "do": {
+        "a: record argv and env, read sandbox at check time, bare cases per scenario": "ST-i64xyh4s",
+        "b: record everything at run time, bare cases for lookups only": "ST-i64xyh4s"
+      },
+      "class": "design",
+      "answer": "a: record argv and env, read sandbox at check time, bare cases per scenario",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How is --plant bare-leak made, given a replay runs a stand-in argv and not claude? (a: the twin's recorded claude argv is the leaky one and the stand-in is told --plant bare-leak so its init event lists an MCP server, a plugin and a skill; the environment variables and sandbox files are really set. b: only sandbox files and environment are planted.)",
+      "options": [
+        "a: leaky recorded argv plus leaking init event",
+        "b: sandbox and environment only"
+      ],
+      "recommendation": "a: leaky recorded argv plus leaking init event",
+      "do": {
+        "a: leaky recorded argv plus leaking init event": "ST-i64xyh4s",
+        "b: sandbox and environment only": "ST-i64xyh4s"
+      },
+      "class": "agents-rule",
+      "answer": "a: leaky recorded argv plus leaking init event",
+      "by": "operator"
+    }
+  ],
   "notes": "Operator request 2026-10-19, verbatim: \"give the benchmark that will run today a parallel run of bare agents doing similar work -- need to compare token and dollar efficiency\". Isolation proof for the bare arm (ST-fnj6hllh): read from the twin's argv, the settings json it passes, its environment and its sandbox (no .mcp.json, .claude/, .claude-plugin/, CLAUDE.md, AGENTS.md, kb/ articles or core.hooksPath), and from a real run's stream-json init event (mcp_servers, plugins, skills). No tests.py test (D-6kei5o2z, D-2tq4fhgs): the check is the harness's own, run by multi fitness. Premise 2026-10-19: --bare and --plant bare-leak do not exist (exit 2).",
   "claimed_by": "orch-r32"
 }
