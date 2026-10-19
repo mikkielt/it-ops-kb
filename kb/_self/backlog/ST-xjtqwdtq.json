@@ -115,6 +115,23 @@
       "class": "design",
       "answer": "as listed",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does multi record take the check_failures count from?",
+      "options": [
+        "record runs the same checks as multi check itself and counts the problems; no row while an agent has no end stamp",
+        "record reads the problem count from the run's check.txt"
+      ],
+      "recommendation": "record runs the same checks as multi check itself and counts the problems; no row while an agent has no end stamp",
+      "do": {
+        "record runs the same checks as multi check itself and counts the problems; no row while an agent has no end stamp": "ST-xjtqwdtq",
+        "record reads the problem count from the run's check.txt": "ST-xjtqwdtq"
+      },
+      "class": "design",
+      "answer": "record runs the same checks as multi check itself and counts the problems; no row while an agent has no end stamp",
+      "by": "agent"
     }
   ],
   "links": [

@@ -1,0 +1,27 @@
+{
+  "id": "BG-lgjpfifx",
+  "kind": "bug",
+  "title": "The report's multi table leaves out the check_failures metric that multi record writes",
+  "status": "todo",
+  "sprint": "SP-3pvz2noj",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "the multi section of kb/_self/reports/benchmarks.md shows check_failures beside the other run metrics: bench_report.MULTI_METRICS names it, so the report regenerates it from the rows multi record writes",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '_tools'); import bench_report; assert 'check_failures' in bench_report.MULTI_METRICS"
+    ]
+  },
+  "touches": [
+    "_tools/bench_report.py",
+    "kb/_self/reports/benchmarks.md",
+    "README.md"
+  ],
+  "depends_on": [
+    "ST-xjtqwdtq",
+    "BG-e2hfeycb"
+  ]
+}
