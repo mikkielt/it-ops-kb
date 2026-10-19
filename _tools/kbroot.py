@@ -220,12 +220,28 @@ def submodule_add(p):
     when it names one); '' when done, else why it failed, with nothing of it left behind."""
     d = kbcommon.pointer_root_dir(p)
     rel = os.path.relpath(d, kbcommon.HOME).replace(os.sep, "/")
+    gm = os.path.join(kbcommon.HOME, ".gitmodules")
+    try:
+        with open(gm, "rb") as f:
+            gm_before = f.read()
+    except OSError:
+        gm_before = None
+    gm_clean = git(["diff", "--cached", "--quiet", "--", ".gitmodules"], p, kbcommon.HOME)[0]
     ok, why = git(["submodule", "add", "--quiet", *(["-b", p.ref] if p.ref else []), "--", p.url, rel], p, kbcommon.HOME)
     if ok and not os.path.isfile(os.path.join(d, kbcommon.ROOT_FILE)):
         ok, why = False, f"the repository holds no {kbcommon.ROOT_FILE}"
     if not ok:
         git(["submodule", "deinit", "--force", "--", rel], p, kbcommon.HOME)
         git(["rm", "--cached", "--force", "--quiet", "--", rel], p, kbcommon.HOME)
+        if gm_before is None:
+            if os.path.exists(gm):
+                os.remove(gm)
+            git(["rm", "--cached", "--force", "--quiet", "--ignore-unmatch", "--", ".gitmodules"], p, kbcommon.HOME)
+        else:
+            with open(gm, "wb") as f:
+                f.write(gm_before)
+            if gm_clean:
+                git(["reset", "--quiet", "--", ".gitmodules"], p, kbcommon.HOME)
         shutil.rmtree(d, ignore_errors=True)
         found, gitdir = git_out(["rev-parse", "--absolute-git-dir"], p, kbcommon.HOME)
         if found:
