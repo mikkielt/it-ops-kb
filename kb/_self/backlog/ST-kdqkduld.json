@@ -2,7 +2,7 @@
   "id": "ST-kdqkduld",
   "kind": "story",
   "title": "Review sprint: kbmon's sprint estimate is a range from per-kind history that keeps moving while an item runs",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yjfiemha",
   "review": true,
   "priority": "P1",
@@ -30,5 +30,6 @@
       ]
     }
   ],
-  "notes": "Its last check is the sprint goal's backtest target over the last 20 closed sprints: median relative error at most 35 percent and at least half of the close times inside the range, with at least 10 sprints replayed. The target has no data behind it yet (labelled in the goal)."
+  "notes": "Its last check is the sprint goal's backtest target over the last 20 closed sprints: median relative error at most 35 percent and at least half of the close times inside the range, with at least 10 sprints replayed. The target has no data behind it yet (labelled in the goal).",
+  "claimed_by": "orch-r33"
 }
