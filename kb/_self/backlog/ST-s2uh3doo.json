@@ -37,7 +37,7 @@
       },
       "class": "design",
       "answer": "new topic python/ps-process-cpu, linked from stdlib-os-loadavg",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Plan 2026-10-19: the kb has the UserPromptSubmit block, reason and additionalContext semantics (public/claude/hooks.md:58, :63) and the MCP tool annotations (public/mcp/tools.md:25). It lacks, for ST-tdypjvev: a portable ps -A -o pid=,pcpu=,args= on macOS and Linux (POSIX ps), what %CPU means on each, and the Windows counterpart.",

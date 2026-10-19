@@ -113,7 +113,7 @@
       },
       "class": "design",
       "answer": "the first-parent commits whose subject starts 'chore(backlog): done ID' for an item of the sprint, at their commit time, the newest per item",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Plan 2026-10-19: premise on a planted clone whose checkout lags origin/main by 3 done commits: the sprint panel counts 0 done (todo 5, doing 1) while origin/main holds 3 of 6 done; --status sprints exits 2. Done commits are first-parent commits whose subject starts 'chore(backlog): done ID'. With fewer than 2 done commits the answer says there is no ETA yet. The check's figures: done at 10:00, 10:20, 10:40, so the median is 20 min and 3 open items give about 60 min.",

@@ -1,0 +1,24 @@
+{
+  "id": "BG-jeyt5f56",
+  "kind": "bug",
+  "title": "status routing sends docs questions about cost, sessions or kbmon to a kbmon status answer",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "mon_status.topic_of returns None for docs questions that name cost, a session or kbmon without asking the monitored state (the cost of Intune licences so far; how do I resume a session that is running in Claude Code?; what does kbmon do?), so they stay a kb lookup as kb/_self/monitoring.md says",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import mon_status as m; assert m.topic_of('the cost of Intune licences so far') is None and m.topic_of('how do I resume a session that is running in Claude Code?') is None and m.topic_of('what does kbmon do?') is None"
+    ]
+  },
+  "touches": [
+    "_tools/mon_status.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-dulvwwjc review"
+  ]
+}

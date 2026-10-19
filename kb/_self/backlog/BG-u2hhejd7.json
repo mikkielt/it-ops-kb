@@ -1,0 +1,23 @@
+{
+  "id": "BG-u2hhejd7",
+  "kind": "bug",
+  "title": "load status classes this clone's own processes started by a relative script path as another clone",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "mon_host.kind_of gives a process whose script path is relative (python3 _tools/kbmon.py, ./_tools/tests.py, a pytest run of a relative test path) the clone this or unknown, never other, so --status load does not report this clone's own kbmon or tests as another clone's load",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import mon_host; assert mon_host.kind_of('python3 _tools/kbmon.py --status','/x')[1] != 'other'"
+    ]
+  },
+  "touches": [
+    "_tools/mon_host.py"
+  ],
+  "links": [
+    "parked: SP-dulvwwjc review"
+  ]
+}

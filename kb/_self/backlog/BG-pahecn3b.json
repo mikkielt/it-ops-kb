@@ -1,0 +1,25 @@
+{
+  "id": "BG-pahecn3b",
+  "kind": "bug",
+  "title": "sprint status lists stale landings of deleted items by bare id with no age",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbmon --status sprints names no landing whose item file is gone or whose land.step rows are older than the sprint panel's window by a bare id: such a landing is left out or shown with its age, so an id appears only where the operator acts",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re,subprocess,sys; p=subprocess.run([sys.executable,'_tools/kbmon.py','--status','sprints'],capture_output=True,text=True); sys.exit(1 if p.returncode or re.search(r'landing [A-Z]{2}-[a-z0-9]{8}', p.stdout) else 0)"
+    ]
+  },
+  "repro_reason": "reads this clone's own ops rows of 2026-10-15 (land.step with no land.end for items closed since); a planted fixture needs the panel's spool input",
+  "touches": [
+    "_tools/mon_status.py",
+    "_tools/mon_sprint.py"
+  ],
+  "links": [
+    "parked: SP-dulvwwjc review"
+  ]
+}

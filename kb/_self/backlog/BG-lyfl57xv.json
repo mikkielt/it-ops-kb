@@ -1,0 +1,23 @@
+{
+  "id": "BG-lyfl57xv",
+  "kind": "bug",
+  "title": "sprint status in the checkout fallback says 0 done commits on origin/main when the ref was not readable",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "when the sprint panel's source is checkout, the ETA line of kbmon --status sprints says no ETA because origin/main was not readable, not a count of done commits on origin/main",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import mon_status as m; s={'taken':'x','panels':{'sprint':{'state':'ok','data':{'source':'checkout','behind':None,'landings':[],'sprints':[{'id':'SP-a','title':'T','state':'active','items':{'done':1,'todo':1},'open':[{'id':'ST-b','title':'B','status':'todo'}],'done_at':[],'waiting':[]}]}},'host':{'state':'ok','data':{}}}}; assert not any('0 done commits on origin/main' in l for l in m.answer(s,'sprints')['lines'])"
+    ]
+  },
+  "touches": [
+    "_tools/mon_status.py"
+  ],
+  "links": [
+    "parked: SP-dulvwwjc review"
+  ]
+}
