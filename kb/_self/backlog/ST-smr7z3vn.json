@@ -66,7 +66,9 @@
         "correct the check: read _root.md before writing it, and append to planted/win32-packaging.md": "ST-smr7z3vn",
         "make a root without a team report its own name as team, so the check passes unchanged (public would need a team too)": "ST-smr7z3vn"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "correct the check: read _root.md before writing it, and append to planted/win32-packaging.md",
+      "by": "operator"
     }
   ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): a commit to a planted team root gets KB-Topics only. KB-* trailers are a format other tools parse: no new test, the check is the hook run in a planted clone. ",
