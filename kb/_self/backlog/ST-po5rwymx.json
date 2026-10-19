@@ -2,7 +2,7 @@
   "id": "ST-po5rwymx",
   "kind": "story",
   "title": "kbmon --status sprints gives each active sprint's time left as a range with its basis and a confidence word, from mon_eta.estimate",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yjfiemha",
   "priority": "P2",
   "rank": 0,
@@ -127,5 +127,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Premise on origin/main cf985537c, 2026-10-19: a planted snapshot of six active sprints gives 'No ETA yet: 0 done commits on origin/main' for each and no eta facts; kb_monitor_status's sprints answer on this clone says 'ETA about 5.9 h, an estimate: 4 left x the median 88 min between the last 5 done commits' for the paid sprint whose 3-4 small items were expected to take about 1-1.5 h (it said 148 min, frozen for 5 hours, then 4.1 h, then 5.9 h). From 180 minutes write hours with one decimal (`about 3.5-5.0 h`), as mon_status.minutes does. Overlap: SP-2uljwgho's ST-dhsyyjft (one row per sprint with the ETA) and BG-lyfl57xv (the checkout fallback's ETA line) rebase onto this story's ETA line."
+  "notes": "Premise on origin/main cf985537c, 2026-10-19: a planted snapshot of six active sprints gives 'No ETA yet: 0 done commits on origin/main' for each and no eta facts; kb_monitor_status's sprints answer on this clone says 'ETA about 5.9 h, an estimate: 4 left x the median 88 min between the last 5 done commits' for the paid sprint whose 3-4 small items were expected to take about 1-1.5 h (it said 148 min, frozen for 5 hours, then 4.1 h, then 5.9 h). From 180 minutes write hours with one decimal (`about 3.5-5.0 h`), as mon_status.minutes does. Overlap: SP-2uljwgho's ST-dhsyyjft (one row per sprint with the ETA) and BG-lyfl57xv (the checkout fallback's ETA line) rebase onto this story's ETA line.",
+  "claimed_by": "orch-r33"
 }
