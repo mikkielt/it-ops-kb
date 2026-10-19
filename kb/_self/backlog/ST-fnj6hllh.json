@@ -61,9 +61,6 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
-  "depends_on": [
-    "ST-2hooit6y"
-  ],
   "gates": [
     {
       "id": "score",
