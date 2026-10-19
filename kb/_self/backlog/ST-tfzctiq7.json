@@ -21,7 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Open questions for this sprint (kb first, then live docs): No outside facts expected beyond Claude Code's hook output limits (SessionStart additionalContext, kb/public/claude/hooks.md) and git's transient fetch errors; confirm each with rag.py pack and record the kb lines in the item notes, else close with 'no outside facts needed'.",
+  "notes": "Open questions for this sprint (kb first, then live docs): No outside facts expected beyond Claude Code's hook output limits (SessionStart additionalContext, kb/public/claude/hooks.md) and git's transient fetch errors; confirm each with rag.py pack and record the kb lines in the item notes, else close with 'no outside facts needed'. Kb lines checked with rag.py pack: kb/public/claude/hooks.md:85 (a hook's additionalContext, systemMessage and plain stdout are each capped at 10,000 characters; longer output is saved to a file and replaced by its path and a 2,000-character preview), hooks.md:82 (SessionStart stdout and additionalContext reach Claude before the first prompt); kb/public/gitlab/git-trailers-and-hooks.md:48 (git fetch of a missing ref ends with fatal: couldn't find remote ref, die exits 128), kb/public/gitlab/automated-merge-requests.md:53 (over HTTP a failed ref discovery ends with fatal: unable to access '<url>': <error>). The kb has no list of which git fetch failures are transient; the sprint's retry-once treats any failed fetch alike, so no such list is needed. No outside facts: every question the sprint goal opens is answered by those kb lines or by the repository's own code, and the live docs hold nothing the items need.",
   "claimed_by": "orch-r102",
   "operator": "op-f618a13e"
 }
