@@ -16,6 +16,10 @@
                                          pointer's `pin`, so the root stays there until `pin` is emptied. A fetch of a
                                          root with a `pin` checks out the pin, whatever its `ref` has moved to. Nothing
                                          else fetches: lookups read what is on disk
+  kbroot.py push NAME                    push the commits of the checked-out submodule root kb/NAME to its own remote
+                                         (the pointer's `ref`, else the branch it is on), then commit the gitlink bump
+                                         in this repository, so neither holds a commit the other cannot reach. A fetch
+                                         root is read-only; a root with uncommitted changes is refused
   kbroot.py add NAME --prefix P [--visibility internal|public] [--description TEXT]
                                          create kb/NAME/: its _root.md, empty ledgers with their headers, a coverage
                                          page with the table markers, _retrieval/ with empty data tables, and empty
@@ -30,8 +34,8 @@ keeps it (AGENTS.md, "Agent conduct").
 A root in another repository is named by a pointer file kb/_roots/<name>.md (kbcommon.py): `list` shows one whose
 root is not on disk as `missing` and exits 0; `add` refuses a name or prefix a pointer holds.
 
-Exit: 0 done, 1 a fetch or a submodule add failed (stderr names the root), 2 refused (bad name or prefix, taken, the directory exists, or
-a name that is no fetch root).
+Exit: 0 done, 1 a fetch, a submodule add or a push failed (stderr names the root), 2 refused (bad name or prefix, taken, the directory exists,
+a name that is no fetch root, or for `push` a fetch root, a root not checked out, or one with uncommitted changes).
 """
 import argparse, os, re, shutil, subprocess, sys
 
@@ -326,6 +330,53 @@ def cmd_fetch(a):
     return 1 if failed else 0
 
 
+def cmd_push(a):
+    by_name = {p.name: p for p in kbcommon.pointers()}
+    p = by_name.get(a.name)
+    if p is None:
+        print(f"refused: no remote root {a.name}; remote roots: {', '.join(by_name) or 'none'}")
+        return 2
+    if p.access != "submodule":
+        print(f"refused: {a.name} is a fetch root, read-only (its clone is a cache that `kbroot.py fetch` replaces); "
+              f"write in a clone of the team's repository or keep the root as a submodule")
+        return 2
+    d = kbcommon.pointer_root_dir(p)
+    rel = os.path.relpath(d, kbcommon.HOME).replace(os.sep, "/")
+    if not os.path.exists(os.path.join(d, ".git")):
+        print(f"refused: {rel} is not a checked-out submodule: git submodule update --init -- {rel}")
+        return 2
+    ok, dirty = git_out(["status", "--porcelain"], p, d)
+    if not ok:
+        print(f"push failed: {a.name}: {dirty}", file=sys.stderr)
+        return 1
+    if dirty:
+        print(f"refused: {rel} has uncommitted changes; commit them in the root first")
+        return 2
+    ok, branch = git_out(["symbolic-ref", "--short", "-q", "HEAD"], p, d)
+    target = p.ref or (branch if ok else "")
+    if not target:
+        print(f"refused: {rel} is on no branch and the pointer names no `ref`; check out a branch in the root first")
+        return 2
+    ok, why = git(["push", "--quiet", "origin", f"HEAD:refs/heads/{target}"], p, d)
+    if not ok:
+        print(f"push failed: {a.name}: {why}", file=sys.stderr)
+        return 1
+    ok, commit = git_out(["rev-parse", "HEAD"], p, d)
+    ok2, why = git(["add", "--", rel], p, kbcommon.HOME)
+    if not (ok and ok2):
+        print(f"gitlink bump failed: {a.name}: {commit if not ok else why}", file=sys.stderr)
+        return 1
+    if git(["diff", "--cached", "--quiet", "--", rel], p, kbcommon.HOME)[0]:
+        print(f"pushed {a.name} to {target}; the superproject already holds {commit[:12]}")
+        return 0
+    ok, why = git(["commit", "--quiet", "-m", f"chore(kb): bump root {a.name} to {commit[:12]}", "--", rel], p, kbcommon.HOME)
+    if not ok:
+        print(f"gitlink bump failed: {a.name}: {why}", file=sys.stderr)
+        return 1
+    print(f"pushed {a.name} to {target} and committed the gitlink at {commit[:12]}")
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -342,6 +393,8 @@ def main():
     fe = sub.add_parser("fetch", help="clone or update fetch roots into the roots cache")
     fe.add_argument("--pin", action="store_true", help="write the commit each fetch root is at into its pointer's `pin`")
     fe.add_argument("names", nargs="*", metavar="NAME", help="fetch roots to fetch (default: every one)")
+    pu = sub.add_parser("push", help="push a submodule root's commits to its own remote, then commit the gitlink")
+    pu.add_argument("name", metavar="NAME", help="a submodule root")
     ad = sub.add_parser("add", help="create a root beside kb/public")
     ad.add_argument("name")
     ad.add_argument("--prefix", required=True, help="the root's source id prefix: 1-4 capital letters")
@@ -349,7 +402,7 @@ def main():
     ad.add_argument("--description", default="", help="one line: what the root holds")
     a = ap.parse_args()
     return {"list": lambda: cmd_list(), "add": lambda: cmd_add(a), "add-remote": lambda: cmd_add_remote(a),
-            "fetch": lambda: cmd_fetch(a)}[a.cmd]()
+            "fetch": lambda: cmd_fetch(a), "push": lambda: cmd_push(a)}[a.cmd]()
 
 
 if __name__ == "__main__":
