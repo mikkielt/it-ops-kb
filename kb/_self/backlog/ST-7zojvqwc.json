@@ -63,6 +63,25 @@
       "class": "agents-rule",
       "answer": "when its last fetch is older than 24 hours, each fetch bounded at 20 seconds within the hook's timeout (figures with no data behind them)",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does fetch --hook know a root's last fetch, and what bounds the whole hook run?",
+      "options": [
+        "a NAME.fetched stamp file beside the clone, touched by every successful fetch; hook timeout 60 s, all fetches within 50 s",
+        "the mtime of the clone's .git/FETCH_HEAD; hook timeout 60 s, all fetches within 50 s",
+        "no stamp: fetch every fetch root at every session start"
+      ],
+      "recommendation": "a NAME.fetched stamp file beside the clone, touched by every successful fetch; hook timeout 60 s, all fetches within 50 s",
+      "do": {
+        "a NAME.fetched stamp file beside the clone, touched by every successful fetch; hook timeout 60 s, all fetches within 50 s": "ST-7zojvqwc",
+        "the mtime of the clone's .git/FETCH_HEAD; hook timeout 60 s, all fetches within 50 s": "ST-7zojvqwc",
+        "no stamp: fetch every fetch root at every session start": "ST-7zojvqwc"
+      },
+      "class": "agents-rule",
+      "answer": "a NAME.fetched stamp file beside the clone, touched by every successful fetch; hook timeout 60 s, all fetches within 50 s",
+      "by": "operator"
     }
   ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): no fetch command or hook. ",

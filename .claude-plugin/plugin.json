@@ -180,6 +180,12 @@
             "command": "sh \"${CLAUDE_PLUGIN_ROOT}/_tools/kbpy\" _tools/backlog.py intake --file --hook --opt-in",
             "async": true,
             "timeout": 60
+          },
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/_tools/kbpy\" _tools/kbroot.py fetch --hook",
+            "async": true,
+            "timeout": 60
           }
         ]
       },
