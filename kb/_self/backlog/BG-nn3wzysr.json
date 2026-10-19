@@ -1,0 +1,26 @@
+{
+  "id": "BG-nn3wzysr",
+  "kind": "bug",
+  "title": "kbgit.py contribute on git older than 2.38 leaves every commit out with exit 1, where git.md says it exits 2",
+  "status": "draft",
+  "parent": "EP-eocmyqdx",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbgit.py contribute checks up front that git merge-tree --write-tree is available and exits 2 naming the git version when it is not, as kb/_self/git.md says",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re,sys; s=open('_tools/kg_contrib.py').read(); sys.exit(0 if re.search(r'--version|merge-tree.{0,40}-h|write-tree.{0,80}(exit|return) 2', s) else 1)"
+    ]
+  },
+  "repro_reason": "the behaviour needs a git older than 2.38, which this host does not have (git 2.50); the repro reads for an up-front version or feature check",
+  "touches": [
+    "_tools/kg_contrib.py",
+    "kb/_self/git.md"
+  ],
+  "links": [
+    "parked: SP-qinvdomv review"
+  ]
+}

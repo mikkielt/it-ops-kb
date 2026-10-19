@@ -1,0 +1,26 @@
+{
+  "id": "ST-j6c4phh6",
+  "kind": "story",
+  "title": "tests_allowlist.txt names the private-name kinds the leak scan honours, and a root added mid-process is seen by the private patterns",
+  "status": "draft",
+  "parent": "EP-eocmyqdx",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "_tools/tests_allowlist.txt's header lists private-id, private-host and private-path beside guid, ip, email, secret and path, and kbcommon's private patterns follow a local root added after the first load",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; s=open('_tools/tests_allowlist.txt').read(4000); sys.exit(0 if all(k in s for k in ('private-id','private-host','private-path')) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/tests_allowlist.txt",
+    "_tools/kbcommon.py"
+  ],
+  "links": [
+    "parked: SP-qinvdomv review"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "BG-zap3ai4x",
+  "kind": "bug",
+  "title": "check.py's own-log rule refuses an internal root's own source id in its _logs.csv context, since leak_hits now holds the private names",
+  "status": "draft",
+  "parent": "EP-eocmyqdx",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "check.py accepts an internal root's own log row whose context cites its own source id (source:<prefix>-<id>), while a public root's log still refuses a private name",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import csv, os, sys, tempfile\nd = tempfile.mkdtemp(); r = os.path.join(d, \"team-x\"); os.makedirs(r)\nopen(os.path.join(r, \"_root.md\"), \"w\").write(\"---\\nroot: team-x\\nid_prefix: TX\\nvisibility: internal\\n---\\n\\n# team-x\\n\")\nos.environ[\"KB_ROOTS\"] = r\nsys.path.insert(0, \"_tools\")\nimport check, kbcommon\nw = csv.writer(open(os.path.join(r, check.LOGS), \"w\", newline=\"\"))\nw.writerow(check.LOG_COLS)\nrow = {c: \"\" for c in check.LOG_COLS}\nrow.update(id=\"L-aaaaaaaa\", observation=\"3 runs\", context=\"source:TX-\" + \"k3f7q2zd\", status=\"current\")\nw.writerow([row[c] for c in check.LOG_COLS])\ndel w\nroot = [x for x in kbcommon.roots() if x.name == \"team-x\"][0]\ncheck.check_logs(root, {\"TX\": root}, {\"team-x\": {\"TX-\" + \"k3f7q2zd\"}})\nbad = [e for e in check.errors if \"private-id\" in str(e)]\nprint(bad)\nsys.exit(1 if bad else 0)\n"
+    ]
+  },
+  "touches": [
+    "_tools/check.py"
+  ],
+  "links": [
+    "parked: SP-qinvdomv review"
+  ]
+}
