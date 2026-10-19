@@ -51,7 +51,8 @@
     "_tools/mon_split.py",
     "kb/_self/monitoring.md",
     "kb/_self/tools.md",
-    "kb/_self/map.csv"
+    "kb/_self/map.csv",
+    "kb/_self/code.md"
   ],
   "depends_on": [
     "ST-nighxizj",
