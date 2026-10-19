@@ -2,7 +2,7 @@
   "id": "ST-icmfvtmm",
   "kind": "story",
   "title": "kb_ask.py, a status: hook prefix and one AGENTS.md line send status questions to kbmon --status first",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-dulvwwjc",
   "priority": "P1",
@@ -92,5 +92,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Plan 2026-10-19: premise: no _tools/mon_status.py, and kb_hook.py --test 'status: how much did today cost' gives no output. The recommended rule answer's AGENTS.md line, measured at 4085 bytes on the base (measure again after ST-qpcva3jl, which also touches AGENTS.md): '- Status (sprints, sessions, load, cost): `python3 _tools/kbmon.py --status [TOPIC]`; results, not backlog ids. Hooks `kb:`, `status:` answer; `kb+:`, `status+:` pass on.' in place of the kb: hook line, with the Skills paragraph's links note dropped. A status: prompt whose kbmon run fails or times out goes through with a note of what failed, as backlog: does. The check keeps docs questions (Claude Code sessions, an Intune licence cost, GPO processing order, a ConfigMgr deployment status) as lookups."
+  "notes": "Plan 2026-10-19: premise: no _tools/mon_status.py, and kb_hook.py --test 'status: how much did today cost' gives no output. The recommended rule answer's AGENTS.md line, measured at 4085 bytes on the base (measure again after ST-qpcva3jl, which also touches AGENTS.md): '- Status (sprints, sessions, load, cost): `python3 _tools/kbmon.py --status [TOPIC]`; results, not backlog ids. Hooks `kb:`, `status:` answer; `kb+:`, `status+:` pass on.' in place of the kb: hook line, with the Skills paragraph's links note dropped. A status: prompt whose kbmon run fails or times out goes through with a note of what failed, as backlog: does. The check keeps docs questions (Claude Code sessions, an Intune licence cost, GPO processing order, a ConfigMgr deployment status) as lookups.",
+  "claimed_by": "orch-r31"
 }
