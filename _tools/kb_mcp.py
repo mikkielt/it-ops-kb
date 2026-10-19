@@ -531,7 +531,7 @@ def status():
     counts = root_counts()
     if any(t is not None for t, _ in counts.values()):
         info["topics"] = str(sum(t or 0 for t, _ in counts.values()))
-    info["roots"] = "; ".join(f"{r.name} (prefix {r.id_prefix}, {r.visibility}, {counts[r.name][0] or 0} topics, "
+    info["roots"] = "; ".join(f"{r.name} (prefix {r.id_prefix}, {r.visibility}{', team=' + r.team if r.team else ''}, {counts[r.name][0] or 0} topics, "
                               f"{counts[r.name][1]} sources)" for r in kbcommon.roots())
     if kbcommon.missing_roots():
         info["roots_missing"] = "; ".join(f"{m.name} ({m.reason})" for m in kbcommon.missing_roots())

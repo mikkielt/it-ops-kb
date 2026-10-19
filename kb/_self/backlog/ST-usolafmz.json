@@ -43,6 +43,25 @@
     "kb/_self/embedding.md",
     "kb/_self/token-efficiency.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does a pointer's team relate to its root's _root.md team when both exist?",
+      "options": [
+        "Disagreement only when both name one; a root naming none shows the pointer's team",
+        "A root must repeat the pointer's team, any difference or absence is a disagreement"
+      ],
+      "recommendation": "Disagreement only when both name one; a root naming none shows the pointer's team",
+      "do": {
+        "Disagreement only when both name one; a root naming none shows the pointer's team": "ST-usolafmz",
+        "A root must repeat the pointer's team, any difference or absence is a disagreement": "ST-usolafmz"
+      },
+      "class": "design",
+      "answer": "Disagreement only when both name one; a root naming none shows the pointer's team",
+      "by": "agent"
+    }
+  ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): _root.md has no team field; kbroot.py list prints none. ",
   "claimed_by": "orch-r37"
 }

@@ -22,7 +22,7 @@ source ledger. One copy, so every tool reads and writes these files the same way
   resolve(rel)                the absolute path of a file named relative to the kb root, else to this repository
 
 Roots. Knowledge lives in roots: kb/public (the upstream facts) and any kb/<name>/ a team adds, each a directory
-with a ROOT_FILE (`_root.md`: front matter `root`, `id_prefix`, `visibility`, `description`) and the same layout:
+with a ROOT_FILE (`_root.md`: front matter `root`, `id_prefix`, `visibility`, `description`, optionally `team`) and the same layout:
 domain directories of articles, the ledgers (SOURCES, ANSWERS, GAPS, CONFLICTS, COVERAGE_CSV, COVERAGE_MD, STATE,
 ARTIFACTS, ANCHORS), `_census/`, SNAPSHOTS and DATA_DIR. Every path inside a root is relative to that root, so moving a root moves no
 line inside it. Tools that span roots name a file by its qualified path `<root>/<path in root>` (`public/intune/x.md`)
@@ -112,6 +112,7 @@ REUSE = {
     "paraphrase": "the terms forbid copying the text (CIS, ISO): paraphrase and cite ids only, no quotes",
     "unknown": "the terms could not be read or determined: treated as paraphrase",
 }
+TEAM = re.compile(r"[a-z0-9][a-z0-9-]*")  # a root's optional `team`: a lowercase name, like a root's name
 PREFIX = re.compile(r"[A-Z]{1,4}")  # a root's source id prefix: its ids are <prefix>-<8 base32 chars>
 RESERVED_PREFIXES = {"DOC", "CODE", "DER", "UNK", "QK", "EV", "PL", "D", "L"}  # tag kinds, answer, eval, decision and log ids, placeholders
 RESERVED_FOR = {"D": "decision ids", "L": "log row ids"}  # the one-letter reserved prefixes and whose ids they are
@@ -355,6 +356,7 @@ class Root(NamedTuple):
     id_prefix: str
     visibility: str  # public | internal
     description: str
+    team: str = ""  # '' when the root names none
 
 
 class RootError(Exception):
@@ -392,7 +394,10 @@ def load_root(path):
     vis = meta.get("visibility", "internal")
     if vis not in ("public", "internal"):
         raise RootError(f"{path}/{ROOT_FILE}: `visibility` must be public or internal, got {vis!r}")
-    return Root(name, path, prefix, vis, meta.get("description", ""))
+    team = meta.get("team", "")
+    if team and not TEAM.fullmatch(team):
+        raise RootError(f"{path}/{ROOT_FILE}: `team` must be a lowercase name (a-z, 0-9, -), got {team!r}")
+    return Root(name, path, prefix, vis, meta.get("description", ""), team)
 
 
 class Pointer(NamedTuple):
@@ -433,7 +438,7 @@ def _pointer_stem(path):
 def pointer_problems(path):
     """What is wrong with the pointer file at `path`, one message each ([] when it is sound; it never raises):
     unreadable, no front matter, a `root` that is not the file's name, a bad or reserved `id_prefix`, a `visibility`
-    other than public or internal, a `url` missing, an `access` other than submodule or fetch, a `pin` that is no
+    other than public or internal, a `team` that is no lowercase name, a `url` missing, an `access` other than submodule or fetch, a `pin` that is no
     commit hash."""
     try:
         with open(path, encoding="utf-8") as f:
@@ -460,6 +465,8 @@ def pointer_problems(path):
     access = meta.get("access", "")
     if access not in ACCESS:
         out.append(f"`access` must be {' or '.join(ACCESS)}, got {access!r}")
+    if meta.get("team") and not TEAM.fullmatch(meta["team"]):
+        out.append(f"malformed pointer: `team` must be a lowercase name (a-z, 0-9, -), got {meta['team']!r}")
     if meta.get("pin") and not re.fullmatch(r"[0-9a-f]{7,40}", meta["pin"]):
         out.append(f"malformed pointer: `pin` must be a commit hash (7-40 hex digits) or empty, got {meta['pin']!r}")
     return out
@@ -534,9 +541,11 @@ def _resolve_pointer(p):
     diff = [f"{k} {a!r} in the root, {b!r} in the pointer" for k, a, b in
             (("name", r.name, p.name), ("id_prefix", r.id_prefix, p.id_prefix), ("visibility", r.visibility, p.visibility))
             if a != b]
+    if r.team and p.team and r.team != p.team:
+        diff.append(f"team {r.team!r} in the root, {p.team!r} in the pointer")
     if diff:
         return None, f"the pointer and the root at {where} disagree: {'; '.join(diff)}", True
-    return r, "", False
+    return r._replace(team=r.team or p.team), "", False
 
 
 _ROOTS = []  # every root, loaded once

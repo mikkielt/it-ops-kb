@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The kb's roots (stdlib only): list them, add one beside kb/public, or keep one from another repository.
 
-  kbroot.py list                         name, id prefix, visibility, articles, sources and path of every root, then a
+  kbroot.py list                         name, id prefix, visibility, team (when it names one), articles, sources and path of every root, then a
                                          row `missing` with its reason for each pointer whose root is not here
   kbroot.py add-remote NAME --url URL --prefix P --team T [--visibility internal|public] [--ref BRANCH]
                         [--access fetch|submodule] [--description TEXT]
@@ -90,7 +90,8 @@ def cmd_list():
         except kbcommon.CsvError:
             n_src = 0
         where = os.path.relpath(r.path, kbcommon.HOME) if r.path.startswith(kbcommon.HOME + os.sep) else r.path
-        print(f"{r.name}\tprefix={r.id_prefix}\t{r.visibility}\tarticles={n_art}\tsources={n_src}\t{where}")
+        team = f"\tteam={r.team}" if r.team else ""
+        print(f"{r.name}\tprefix={r.id_prefix}\t{r.visibility}{team}\tarticles={n_art}\tsources={n_src}\t{where}")
     missing = kbcommon.missing_roots()
     for m in missing:
         print(f"{m.name}\tprefix={m.id_prefix or '?'}\t{m.visibility or '?'}\tmissing\t{m.reason}\t{os.path.relpath(m.path, kbcommon.HOME)}")
