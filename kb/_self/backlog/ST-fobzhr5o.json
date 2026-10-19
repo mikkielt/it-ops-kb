@@ -120,7 +120,9 @@
         "wait for the run at session.start": "ST-fobzhr5o",
         "first run 1.5 seconds after session.start, not awaited": "ST-fobzhr5o"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "first run 1.5 seconds after session.start, not awaited",
+      "by": "operator"
     }
   ],
   "notes": "Plan 2026-10-19 (operator choices): the receipt comes from the mod, not settings hooks, since session.start's isInteractive (false for -p and the SDK) is the one documented headless signal; the mod lives in .claude/skills/kbmon-pane and loads with no install and no settings change. Prototype in the discovery session (scratchpad, --plugin-dir): the pane docked as a sidebar at 170 columns, clipped at once on a resize and was laid out again at the new width after one kbmon run (about 20 s); the demo agent quoted only the receipt row, nothing of the pane. Checks: claude plugin validate and a read of the module; no check runs the mod, since claude plugin test needs a *.test.ts file, which the operator ruled out (D-6kei5o2z, D-2tq4fhgs), and a live session makes a model call. The mods API is early access (bundled reference, Claude Code 2.1.290; this host runs 2.1.303).",
