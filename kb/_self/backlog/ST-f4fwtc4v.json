@@ -33,8 +33,5 @@
     "kb/_self/code.md",
     "kb/_self/plugin.md"
   ],
-  "depends_on": [
-    "ST-pdtcxbap"
-  ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): no push command. "
 }
