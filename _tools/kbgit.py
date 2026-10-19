@@ -15,6 +15,7 @@
   kbgit.py sync [--push] [--dry-run] [--remote R] [--branch main] [--session S]   fetch, rebase, fix, gate, push
   kbgit.py publish [--remote R] [--dry-run] [--rewrite] [--hook]    push the integration main without kb/_querylog and any _logs.csv to the public home
   kbgit.py bridge BRANCH [--push] [--dry-run] [--remote R]  a public-home branch to the integration remote: rebase, gate, push by lane
+  kbgit.py contribute --upstream REMOTE [--branch NAME]    the shared commits of REMOTE/main..HEAD on a local branch at REMOTE/main (kg_contrib.py)
   kbgit.py check-public [REV]                              exit 1 when REV's history touches kb/_querylog or a _logs.csv (kbpublic.py)
   kbgit.py lost-definitions FILE                           exit 1 listing definitions a side added that a resolved .py conflict dropped
 
@@ -177,6 +178,7 @@ import argparse, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kbpublic  # noqa: E402
 import kg_bridge  # noqa: E402
+import kg_contrib  # noqa: E402
 import kg_hooks  # noqa: E402
 import kg_lane  # noqa: E402
 import kg_sync  # noqa: E402
@@ -290,6 +292,9 @@ def main():
     br.add_argument("--push", action="store_true", help="push after a green gate (as sync --push); the public home is never written")
     br.add_argument("--dry-run", action="store_true", help="fetch and report the commits and the lane; check out and push nothing")
     br.add_argument("--remote", help=f"the integration remote (default: git config {kbpublic.INTEGRATION_KEY}, else origin)")
+    co = sub.add_parser("contribute", help="a local branch at the upstream main with the commits that touch only shared roots and tools; pushes nothing")
+    co.add_argument("--upstream", required=True, metavar="REMOTE", help="the upstream remote: its main is fetched and the branch starts there")
+    co.add_argument("--branch", help=f"the local branch to write, reset when it exists (default: {kg_contrib.DEFAULT_BRANCH}REMOTE)")
     cp = sub.add_parser("check-public", help=f"exit 1 listing commits of REV whose history touches {kbpublic.PRIVATE_LABEL}")
     cp.add_argument("rev", nargs="?", help="a commit (default HEAD)")
     ld = sub.add_parser("lost-definitions", help="exit 1 listing definitions a side added that a resolved .py conflict dropped")
@@ -302,7 +307,7 @@ def main():
         a.rerun = [os.path.abspath(__file__), *sys.argv[1:]]  # what rerun_sync repeats after a rebase changed this code
     cmds ={"trailers": cmd_trailers, "install-hooks": cmd_install_hooks, "check-trailers": cmd_check_trailers, "lane": cmd_lane, "check-lanes": cmd_check_lanes,
             "log": cmd_log, "blame": cmd_blame, "asof": cmd_asof, "tag-census": cmd_tag_census, "hook": cmd_hook,
-            "sync": cmd_sync, "bridge": cmd_bridge, "publish": lambda a: (kbpublic.cmd_publish_hook if a.hook else kbpublic.cmd_publish)(a, KB),
+            "sync": cmd_sync, "bridge": cmd_bridge, "contribute": kg_contrib.cmd_contribute, "publish": lambda a: (kbpublic.cmd_publish_hook if a.hook else kbpublic.cmd_publish)(a, KB),
             "check-public": lambda a: kbpublic.cmd_check_public(a, KB), "lost-definitions": cmd_lost_definitions}
     if a.cmd in cmds:
         try:
