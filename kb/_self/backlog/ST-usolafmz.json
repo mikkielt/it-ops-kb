@@ -2,7 +2,7 @@
   "id": "ST-usolafmz",
   "kind": "story",
   "title": "A root's _root.md names its team, check.py validates it, and kbroot.py list and kb_status show it",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-46k7sw57",
   "priority": "P2",

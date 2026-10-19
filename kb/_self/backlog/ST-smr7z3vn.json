@@ -2,7 +2,7 @@
   "id": "ST-smr7z3vn",
   "kind": "story",
   "title": "The commit hook adds a computed KB-Teams trailer, check-trailers accepts it, and plugin.md says which identity each actor commits with",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-46k7sw57",
   "priority": "P2",
