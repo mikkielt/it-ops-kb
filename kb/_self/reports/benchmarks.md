@@ -1701,5 +1701,299 @@ Verdict: stop splitting. The split did not make the code cheaper to find in thes
 **Setup:** `python3 _tools/benchmarks.py multi run SCENARIO --dir DIR` (SCENARIO is `lookups`, `research` or `mixed`, the frozen inputs of `kb/_self/reports/multi_bench.csv`) starts every agent of the scenario at once in a sandbox of its own: a bare copy of one commit, an agent clone each and one coordination store for all (`--coord shared`) or one each (`--coord isolated`). The same command with `--sequential` and another `--dir` starts the same agents one after the other, the baseline. `multi record --dir DIR` writes the rows of one run: record the start commit, case the scenario, arm `concurrent` or `sequential` and the knob values; per agent (`AGENT/METRIC`) and for the run `input`, `out`, `cache_read`, `cache_write`, `cost`, `wall_s` (for the run, the first start to the last end) and `turns`; for the run `dup_facts` (facts two agents wrote as one claim, found as `repro compare` finds them), `claims` and `claim_conflicts` (the rows of the sandbox's coordination store, and the keys held in more than one store plus its `dup_of` events), `land_stops` (the `backlog.py land` runs of the code agents that stopped), `rebase_s` (the time the agents' clones spent between the start and the end of a rebase), `right` and `asked` (the lookup agents' answers scored by the checks of their pool rows) and `eval_passed` and `eval_total` (the frozen questions of the research agents' areas on the sandbox bare's main). Once a record holds both arms with the same knob values it also holds the arm `delta`: the concurrent run's value minus the sequential run's, per metric. A `--replay` run (scripted agents, no model) is recorded only with `--out FILE`, never into the results file. Per case the tables also set each kb arm against its bare twin of the same record and knob set: tokens (`input`, `out`, `cache_read` and `cache_write` summed) and USD in all and per correct answer (`right`), per verified fact (`facts_verified`) and per passing item (`items_passed`), with a column `kb minus bare` that says kb lower, kb higher or equal; a figure with no row behind it (an arm with no bare twin, no correct answer) reads `no data`, never 0.
 
 <!-- bench:multi -->
-No multi-agent run is recorded in the results file.
+#### lookups
+
+| case | arm | input | out | cache_read | cache_write | cost | wall_s | turns | dup_facts | claims | claim_conflicts | land_stops | rebase_s | right | asked |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| lookups | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 24 -> 24 (+0%) | 19,408 -> 19,305 (-1%) | 312,932 -> 325,554 (+4%) | 113,703 -> 109,557 (-4%) | $0.036 -> $0.035 (-2%) | 41 s -> 43 s (+5%) | 15 -> 13 (-13%) | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0.00 s -> 0.00 s | 20 -> 20 (+0%) | 20 -> 20 (+0%) |
+| lookups | concurrent coord=shared stagger=30 model=default pack_budget=1200 tools=kb manager=code | 34 | 27,407 | 537,109 | 108,743 | $0.060 | 155 s | 18 | 0 | 0 | 0 | 0 | 0.00 s | 20 | 20 |
+| lookups | concurrent coord=shared stagger=0 model=lookup=sonnet-5-5 pack_budget=1200 tools=kb manager=code | 38 | 24,150 | 610,820 | 124,456 | $0.801 | 83 s | 27 | 0 | 0 | 0 | 0 | 0.00 s | 20 | 20 |
+| lookups | concurrent coord=shared stagger=0 model=default pack_budget=600 tools=kb manager=code | 18 | 18,129 | 210,946 | 91,434 | $0.029 | 35 s | 9 | 0 | 0 | 0 | 0 | 0.00 s | 20 | 20 |
+| lookups | concurrent coord=shared stagger=0 model=default pack_budget=2400 tools=kb manager=code | 24 | 23,042 | 339,659 | 107,804 | $0.048 | 58 s | 12 | 0 | 0 | 0 | 0 | 0.00 s | 20 | 20 |
+| lookups | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=files manager=code | 32 | 27,616 | 641,754 | 222,674 | $0.065 | 52 s | 52 | 0 | 0 | 0 | 0 | 0.00 s | 20 | 20 |
+| lookups | concurrent coord=shared stagger=0 model=lookup=opus-5-5 pack_budget=1200 tools=kb manager=code | 38 | 18,083 | 571,807 | 111,418 | $1.367 | 79 s | 22 | 0 | 0 | 0 | 0 | 0.00 s | 20 | 20 |
+| lookups | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 20 -> 22 (+10%) | 16,442 -> 16,832 (+2%) | 252,104 -> 286,187 (+14%) | 94,416 -> 98,704 (+5%) | $0.030 -> $0.031 (+5%) | 249 s -> 306 s (+23%) | 10 -> 11 (+10%) | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0.00 s -> 0.00 s | 20 -> 20 (+0%) | 20 -> 20 (+0%) |
+| lookups | delta coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 4 | 2,863 | 73,450 | 15,141 | $0.005 | -206 s | 3 | 0 | 0 | 0 | 0 | 0.00 s | 0 | 0 |
+| lookups | bare concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 38 -> 40 (+5%) | 74,980 -> 72,971 (-3%) | 443,042 -> 486,328 (+10%) | 207,922 -> 183,560 (-12%) | - | 75 s -> 103 s (+37%) | - | - | - | - | - | - | 18 -> 18 (+0%) | 20 -> 20 (+0%) |
+| lookups | bare sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 58 -> 84 (+45%) | 69,234 -> 81,109 (+17%) | 680,009 -> 953,516 (+40%) | 178,725 -> 179,471 (+0%) | - | 285 s -> 370 s (+30%) | - | - | - | - | - | - | 19 -> 20 (+5%) | 20 -> 20 (+0%) |
+| lookups | bare concurrent coord=shared stagger=30 model=default pack_budget=1200 tools=kb manager=code | 42 | 68,280 | 570,048 | 203,482 | - | 140 s | - | - | - | - | - | - | 20 | 20 |
+| lookups | bare concurrent coord=shared stagger=0 model=lookup=sonnet-5-5 pack_budget=1200 tools=kb manager=code | 38 | 42,996 | 538,642 | 182,367 | - | 68 s | - | - | - | - | - | - | 19 | 20 |
+| lookups | bare concurrent coord=shared stagger=0 model=default pack_budget=600 tools=kb manager=code | 50 | 80,268 | 799,253 | 226,097 | - | 124 s | - | - | - | - | - | - | 19 | 20 |
+| lookups | bare concurrent coord=shared stagger=0 model=default pack_budget=2400 tools=kb manager=code | 46 | 72,127 | 659,603 | 181,313 | - | 98 s | - | - | - | - | - | - | 18 | 20 |
+| lookups | bare concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=files manager=code | 38 | 71,673 | 411,805 | 165,631 | - | 95 s | - | - | - | - | - | - | 19 | 20 |
+| lookups | bare concurrent coord=shared stagger=0 model=lookup=opus-5-5 pack_budget=1200 tools=kb manager=code | 44 | 63,839 | 618,483 | 186,321 | - | 113 s | - | - | - | - | - | - | 19 | 20 |
+
+The kb agents against their bare twins in lookups:
+
+| record | arm | measure | kb | bare | kb minus bare |
+|---|---|---|---|---|---|
+| c53d72f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens | 446,067 | 725,982 | -279,915 (kb lower) |
+| c53d72f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD | $0.0356 | $0.0835 | -$0.0479 (kb lower) |
+| c53d72f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per correct answer | 22,303 | 40,332 | -18,029 (kb lower) |
+| c53d72f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per correct answer | $0.0018 | $0.0046 | -$0.0029 (kb lower) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens | 454,440 | 742,899 | -288,459 (kb lower) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD | $0.0348 | $0.0781 | -$0.0432 (kb lower) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per correct answer | 22,722 | 41,272 | -18,550 (kb lower) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per correct answer | $0.0017 | $0.0043 | -$0.0026 (kb lower) |
+| 013e25d | concurrent coord=shared stagger=30 model=default pack_budget=1200 tools=kb manager=code | tokens | 673,293 | 841,852 | -168,559 (kb lower) |
+| 013e25d | concurrent coord=shared stagger=30 model=default pack_budget=1200 tools=kb manager=code | USD | $0.0408 | $0.0805 | -$0.0397 (kb lower) |
+| 013e25d | concurrent coord=shared stagger=30 model=default pack_budget=1200 tools=kb manager=code | tokens per correct answer | 33,665 | 42,093 | -8,428 (kb lower) |
+| 013e25d | concurrent coord=shared stagger=30 model=default pack_budget=1200 tools=kb manager=code | USD per correct answer | $0.0020 | $0.0040 | -$0.0020 (kb lower) |
+| 013e25d | concurrent coord=shared stagger=0 model=lookup=sonnet-5-5 pack_budget=1200 tools=kb manager=code | tokens | 759,464 | 764,043 | -4,579 (kb lower) |
+| 013e25d | concurrent coord=shared stagger=0 model=lookup=sonnet-5-5 pack_budget=1200 tools=kb manager=code | USD | $0.8005 | $1.2134 | -$0.4129 (kb lower) |
+| 013e25d | concurrent coord=shared stagger=0 model=lookup=sonnet-5-5 pack_budget=1200 tools=kb manager=code | tokens per correct answer | 37,973 | 40,213 | -2,240 (kb lower) |
+| 013e25d | concurrent coord=shared stagger=0 model=lookup=sonnet-5-5 pack_budget=1200 tools=kb manager=code | USD per correct answer | $0.0400 | $0.0639 | -$0.0238 (kb lower) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=600 tools=kb manager=code | tokens | 320,527 | 1,105,668 | -785,141 (kb lower) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=600 tools=kb manager=code | USD | $0.0295 | $0.0934 | -$0.0639 (kb lower) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=600 tools=kb manager=code | tokens per correct answer | 16,026 | 58,193 | -42,167 (kb lower) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=600 tools=kb manager=code | USD per correct answer | $0.0015 | $0.0049 | -$0.0034 (kb lower) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=2400 tools=kb manager=code | tokens | 470,529 | 913,089 | -442,560 (kb lower) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=2400 tools=kb manager=code | USD | $0.0365 | $0.0789 | -$0.0424 (kb lower) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=2400 tools=kb manager=code | tokens per correct answer | 23,526 | 50,727 | -27,201 (kb lower) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=2400 tools=kb manager=code | USD per correct answer | $0.0018 | $0.0044 | -$0.0026 (kb lower) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=files manager=code | tokens | 892,076 | 649,147 | +242,929 (kb higher) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=files manager=code | USD | $0.0648 | $0.0731 | -$0.0083 (kb lower) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=files manager=code | tokens per correct answer | 44,604 | 34,166 | +10,438 (kb higher) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=files manager=code | USD per correct answer | $0.0032 | $0.0038 | -$0.0006 (kb lower) |
+| 013e25d | concurrent coord=shared stagger=0 model=lookup=opus-5-5 pack_budget=1200 tools=kb manager=code | tokens | 701,346 | 868,687 | -167,341 (kb lower) |
+| 013e25d | concurrent coord=shared stagger=0 model=lookup=opus-5-5 pack_budget=1200 tools=kb manager=code | USD | $1.3675 | $2.8912 | -$1.5237 (kb lower) |
+| 013e25d | concurrent coord=shared stagger=0 model=lookup=opus-5-5 pack_budget=1200 tools=kb manager=code | tokens per correct answer | 35,067 | 45,720 | -10,653 (kb lower) |
+| 013e25d | concurrent coord=shared stagger=0 model=lookup=opus-5-5 pack_budget=1200 tools=kb manager=code | USD per correct answer | $0.0684 | $0.1522 | -$0.0838 (kb lower) |
+| 7f2317f | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens | 401,745 | 1,214,180 | -812,435 (kb lower) |
+| 7f2317f | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD | $0.0310 | $0.0860 | -$0.0550 (kb lower) |
+| 7f2317f | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per correct answer | 20,087 | 60,709 | -40,622 (kb lower) |
+| 7f2317f | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per correct answer | $0.0016 | $0.0043 | -$0.0027 (kb lower) |
+| 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens | 362,982 | 928,026 | -565,044 (kb lower) |
+| 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD | $0.0296 | $0.0772 | -$0.0475 (kb lower) |
+| 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per correct answer | 18,149 | 48,843 | -30,694 (kb lower) |
+| 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per correct answer | $0.0015 | $0.0041 | -$0.0026 (kb lower) |
+
+Per agent of lookups:
+
+| agent | arm | input | out | cache_read | cache_write | cost | wall_s | turns | right |
+|---|---|---|---|---|---|---|---|---|---|
+| lookup-1 | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 4 -> 4 (+0%) | 2,846 -> 3,126 (+10%) | 29,947 -> 43,832 (+46%) | 36,707 -> 22,770 (-38%) | $0.009 -> $0.007 (-27%) | 26 s -> 27 s (+6%) | 2 -> 2 (+0%) | 5 -> 5 (+0%) |
+| lookup-2 | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 4 -> 6 (+50%) | 6,577 -> 4,941 (-25%) | 43,833 -> 80,964 (+85%) | 23,260 -> 26,093 (+12%) | $0.008 -> $0.009 (+1%) | 41 s -> 39 s (-5%) | 2 -> 3 (+50%) | 5 -> 5 (+0%) |
+| lookup-3 | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 6 -> 10 (+67%) | 5,235 -> 6,170 (+18%) | 80,086 -> 156,915 (+96%) | 25,009 -> 37,030 (+48%) | $0.008 -> $0.012 (+44%) | 33 s -> 43 s (+30%) | 3 -> 6 (+100%) | 5 -> 5 (+0%) |
+| lookup-4 | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 10 -> 4 (-60%) | 4,750 -> 5,068 (+7%) | 159,066 -> 43,843 (-72%) | 28,727 -> 23,664 (-18%) | $0.010 -> $0.008 (-21%) | 40 s -> 36 s (-11%) | 8 -> 2 (-75%) | 5 -> 5 (+0%) |
+| lookup-1 | concurrent coord=shared stagger=30 model=default pack_budget=1200 tools=kb manager=code | 4 | 4,223 | 43,829 | 22,809 | $0.007 | 28 s | 2 | 5 |
+| lookup-2 | concurrent coord=shared stagger=30 model=default pack_budget=1200 tools=kb manager=code | 10 | 8,349 | 161,389 | 27,647 | $0.012 | 52 s | 5 | 5 |
+| lookup-3 | concurrent coord=shared stagger=30 model=default pack_budget=1200 tools=kb manager=code | 6 | 6,097 | 80,174 | 27,298 | $0.009 | 35 s | 3 | 5 |
+| lookup-4 | concurrent coord=shared stagger=30 model=default pack_budget=1200 tools=kb manager=code | 14 | 8,738 | 251,717 | 30,989 | $0.031 | 66 s | 8 | 5 |
+| lookup-1 | concurrent coord=shared stagger=0 model=lookup=sonnet-5-5 pack_budget=1200 tools=kb manager=code | 6 | 5,287 | 78,296 | 25,738 | $0.164 | 48 s | 3 | 5 |
+| lookup-2 | concurrent coord=shared stagger=0 model=lookup=sonnet-5-5 pack_budget=1200 tools=kb manager=code | 12 | 6,833 | 208,820 | 34,510 | $0.227 | 62 s | 8 | 5 |
+| lookup-3 | concurrent coord=shared stagger=0 model=lookup=sonnet-5-5 pack_budget=1200 tools=kb manager=code | 12 | 7,350 | 201,352 | 34,506 | $0.232 | 82 s | 7 | 5 |
+| lookup-4 | concurrent coord=shared stagger=0 model=lookup=sonnet-5-5 pack_budget=1200 tools=kb manager=code | 8 | 4,680 | 122,352 | 29,702 | $0.178 | 43 s | 9 | 5 |
+| lookup-1 | concurrent coord=shared stagger=0 model=default pack_budget=600 tools=kb manager=code | 6 | 4,734 | 79,421 | 26,316 | $0.008 | 35 s | 3 | 5 |
+| lookup-2 | concurrent coord=shared stagger=0 model=default pack_budget=600 tools=kb manager=code | 4 | 5,004 | 43,847 | 21,697 | $0.007 | 33 s | 2 | 5 |
+| lookup-3 | concurrent coord=shared stagger=0 model=default pack_budget=600 tools=kb manager=code | 4 | 3,998 | 43,836 | 21,838 | $0.007 | 27 s | 2 | 5 |
+| lookup-4 | concurrent coord=shared stagger=0 model=default pack_budget=600 tools=kb manager=code | 4 | 4,393 | 43,842 | 21,583 | $0.007 | 32 s | 2 | 5 |
+| lookup-1 | concurrent coord=shared stagger=0 model=default pack_budget=2400 tools=kb manager=code | 4 | 4,510 | 43,833 | 23,366 | $0.007 | 32 s | 2 | 5 |
+| lookup-2 | concurrent coord=shared stagger=0 model=default pack_budget=2400 tools=kb manager=code | 10 | 7,678 | 171,274 | 32,848 | $0.024 | 58 s | 5 | 5 |
+| lookup-3 | concurrent coord=shared stagger=0 model=default pack_budget=2400 tools=kb manager=code | 6 | 6,022 | 80,708 | 27,371 | $0.009 | 40 s | 3 | 5 |
+| lookup-4 | concurrent coord=shared stagger=0 model=default pack_budget=2400 tools=kb manager=code | 4 | 4,832 | 43,844 | 24,219 | $0.008 | 34 s | 2 | 5 |
+| lookup-1 | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=files manager=code | 8 | 5,392 | 147,602 | 43,309 | $0.013 | 52 s | 13 | 5 |
+| lookup-2 | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=files manager=code | 8 | 6,993 | 161,419 | 59,175 | $0.017 | 49 s | 13 | 5 |
+| lookup-3 | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=files manager=code | 6 | 8,606 | 92,675 | 57,439 | $0.017 | 51 s | 11 | 5 |
+| lookup-4 | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=files manager=code | 10 | 6,625 | 240,058 | 62,751 | $0.018 | 47 s | 15 | 5 |
+| lookup-1 | concurrent coord=shared stagger=0 model=lookup=opus-5-5 pack_budget=1200 tools=kb manager=code | 6 | 4,174 | 76,290 | 25,811 | $0.305 | 79 s | 3 | 5 |
+| lookup-2 | concurrent coord=shared stagger=0 model=lookup=opus-5-5 pack_budget=1200 tools=kb manager=code | 12 | 5,297 | 193,005 | 28,836 | $0.375 | 75 s | 7 | 5 |
+| lookup-3 | concurrent coord=shared stagger=0 model=lookup=opus-5-5 pack_budget=1200 tools=kb manager=code | 8 | 4,457 | 111,776 | 29,350 | $0.346 | 49 s | 5 | 5 |
+| lookup-4 | concurrent coord=shared stagger=0 model=lookup=opus-5-5 pack_budget=1200 tools=kb manager=code | 12 | 4,155 | 190,736 | 27,421 | $0.341 | 64 s | 7 | 5 |
+| lookup-1 | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 4 -> 4 (+0%) | 3,554 -> 3,099 (-13%) | 43,832 -> 43,817 (-0%) | 22,763 -> 22,700 (-0%) | $0.007 -> $0.006 (-4%) | 25 s -> 24 s (-7%) | 2 -> 2 (+0%) | 5 -> 5 (+0%) |
+| lookup-2 | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 4 -> 4 (+0%) | 5,416 -> 4,902 (-9%) | 43,848 -> 43,833 (-0%) | 23,234 -> 23,321 (+0%) | $0.008 -> $0.008 (-3%) | 34 s -> 33 s (-2%) | 2 -> 2 (+0%) | 5 -> 5 (+0%) |
+| lookup-3 | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 4 -> 8 (+100%) | 3,636 -> 4,646 (+28%) | 43,837 -> 117,315 (+168%) | 22,456 -> 26,798 (+19%) | $0.007 -> $0.009 (+33%) | 23 s -> 29 s (+25%) | 2 -> 4 (+100%) | 5 -> 5 (+0%) |
+| lookup-4 | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 8 -> 6 (-25%) | 3,836 -> 4,185 (+9%) | 120,587 -> 81,222 (-33%) | 25,963 -> 25,885 (-0%) | $0.008 -> $0.008 (-2%) | 32 s -> 33 s (+3%) | 4 -> 3 (-25%) | 5 -> 5 (+0%) |
+| lookup-1 | delta coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 0 | -428 | 0 | 7 | -$0.000 | 2 s | 0 | 0 |
+| lookup-2 | delta coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 2 | -475 | 37,116 | 2,859 | $0.001 | 5 s | 1 | 0 |
+| lookup-3 | delta coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 6 | 2,534 | 113,078 | 14,574 | $0.005 | 20 s | 4 | 0 |
+| lookup-4 | delta coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | -4 | 1,232 | -76,744 | -2,299 | -$0.001 | 4 s | -2 | 0 |
+| lookup-1 | bare concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 8 -> 8 (+0%) | 12,674 -> 11,843 (-7%) | 76,400 -> 74,117 (-3%) | 45,808 -> 40,075 (-13%) | - | 48 s -> 39 s (-19%) | - | 4 -> 4 (+0%) |
+| lookup-2 | bare concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 10 -> 10 (+0%) | 25,213 -> 31,084 (+23%) | 137,556 -> 124,992 (-9%) | 65,255 -> 60,189 (-8%) | - | 75 s -> 103 s (+37%) | - | 5 -> 5 (+0%) |
+| lookup-3 | bare concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 10 -> 12 (+20%) | 15,330 -> 11,939 (-22%) | 120,994 -> 186,142 (+54%) | 55,500 -> 52,306 (-6%) | - | 55 s -> 49 s (-10%) | - | 5 -> 5 (+0%) |
+| lookup-4 | bare concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 10 -> 10 (+0%) | 21,763 -> 18,105 (-17%) | 108,092 -> 101,077 (-6%) | 41,359 -> 30,990 (-25%) | - | 74 s -> 62 s (-17%) | - | 4 -> 4 (+0%) |
+| lookup-1 | bare sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 6 -> 12 (+100%) | 13,952 -> 17,072 (+22%) | 32,027 -> 172,432 (+438%) | 24,655 -> 43,991 (+78%) | - | 36 s -> 65 s (+81%) | - | 5 -> 5 (+0%) |
+| lookup-2 | bare sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 14 -> 12 (-14%) | 24,033 -> 29,575 (+23%) | 178,144 -> 159,111 (-11%) | 54,983 -> 52,517 (-4%) | - | 96 s -> 104 s (+8%) | - | 5 -> 5 (+0%) |
+| lookup-3 | bare sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 24 -> 32 (+33%) | 12,710 -> 15,047 (+18%) | 289,115 -> 322,881 (+12%) | 62,918 -> 41,813 (-34%) | - | 85 s -> 105 s (+23%) | - | 5 -> 5 (+0%) |
+| lookup-4 | bare sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 14 -> 28 (+100%) | 18,539 -> 19,415 (+5%) | 180,723 -> 299,092 (+65%) | 36,169 -> 41,150 (+14%) | - | 68 s -> 96 s (+41%) | - | 4 -> 5 (+25%) |
+| lookup-1 | bare concurrent coord=shared stagger=30 model=default pack_budget=1200 tools=kb manager=code | 10 | 15,113 | 119,661 | 40,448 | - | 54 s | - | 5 |
+| lookup-2 | bare concurrent coord=shared stagger=30 model=default pack_budget=1200 tools=kb manager=code | 14 | 24,143 | 223,577 | 68,213 | - | 85 s | - | 5 |
+| lookup-3 | bare concurrent coord=shared stagger=30 model=default pack_budget=1200 tools=kb manager=code | 10 | 11,460 | 161,002 | 64,000 | - | 44 s | - | 5 |
+| lookup-4 | bare concurrent coord=shared stagger=30 model=default pack_budget=1200 tools=kb manager=code | 8 | 17,564 | 65,808 | 30,821 | - | 50 s | - | 5 |
+| lookup-1 | bare concurrent coord=shared stagger=0 model=lookup=sonnet-5-5 pack_budget=1200 tools=kb manager=code | 10 | 9,423 | 125,154 | 42,819 | - | 46 s | - | 5 |
+| lookup-2 | bare concurrent coord=shared stagger=0 model=lookup=sonnet-5-5 pack_budget=1200 tools=kb manager=code | 12 | 12,551 | 223,786 | 49,516 | - | 68 s | - | 5 |
+| lookup-3 | bare concurrent coord=shared stagger=0 model=lookup=sonnet-5-5 pack_budget=1200 tools=kb manager=code | 8 | 7,716 | 123,979 | 59,471 | - | 49 s | - | 5 |
+| lookup-4 | bare concurrent coord=shared stagger=0 model=lookup=sonnet-5-5 pack_budget=1200 tools=kb manager=code | 8 | 13,306 | 65,723 | 30,561 | - | 52 s | - | 4 |
+| lookup-1 | bare concurrent coord=shared stagger=0 model=default pack_budget=600 tools=kb manager=code | 10 | 10,628 | 121,197 | 46,327 | - | 44 s | - | 5 |
+| lookup-2 | bare concurrent coord=shared stagger=0 model=default pack_budget=600 tools=kb manager=code | 16 | 32,607 | 285,753 | 59,110 | - | 124 s | - | 5 |
+| lookup-3 | bare concurrent coord=shared stagger=0 model=default pack_budget=600 tools=kb manager=code | 14 | 18,578 | 260,789 | 63,729 | - | 76 s | - | 5 |
+| lookup-4 | bare concurrent coord=shared stagger=0 model=default pack_budget=600 tools=kb manager=code | 10 | 18,455 | 131,514 | 56,931 | - | 66 s | - | 4 |
+| lookup-1 | bare concurrent coord=shared stagger=0 model=default pack_budget=2400 tools=kb manager=code | 10 | 13,686 | 140,267 | 70,349 | - | 56 s | - | 4 |
+| lookup-2 | bare concurrent coord=shared stagger=0 model=default pack_budget=2400 tools=kb manager=code | 16 | 24,762 | 308,400 | 54,396 | - | 98 s | - | 5 |
+| lookup-3 | bare concurrent coord=shared stagger=0 model=default pack_budget=2400 tools=kb manager=code | 8 | 12,663 | 55,660 | 18,464 | - | 43 s | - | 5 |
+| lookup-4 | bare concurrent coord=shared stagger=0 model=default pack_budget=2400 tools=kb manager=code | 12 | 21,016 | 155,276 | 38,104 | - | 82 s | - | 4 |
+| lookup-1 | bare concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=files manager=code | 6 | 10,787 | 31,237 | 36,582 | - | 64 s | - | 4 |
+| lookup-2 | bare concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=files manager=code | 14 | 27,400 | 202,697 | 55,886 | - | 95 s | - | 5 |
+| lookup-3 | bare concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=files manager=code | 10 | 16,242 | 111,822 | 40,880 | - | 62 s | - | 5 |
+| lookup-4 | bare concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=files manager=code | 8 | 17,244 | 66,049 | 32,283 | - | 62 s | - | 5 |
+| lookup-1 | bare concurrent coord=shared stagger=0 model=lookup=opus-5-5 pack_budget=1200 tools=kb manager=code | 10 | 11,578 | 107,585 | 38,613 | - | 69 s | - | 5 |
+| lookup-2 | bare concurrent coord=shared stagger=0 model=lookup=opus-5-5 pack_budget=1200 tools=kb manager=code | 12 | 25,470 | 208,542 | 55,376 | - | 113 s | - | 5 |
+| lookup-3 | bare concurrent coord=shared stagger=0 model=lookup=opus-5-5 pack_budget=1200 tools=kb manager=code | 10 | 12,999 | 156,318 | 62,847 | - | 75 s | - | 5 |
+| lookup-4 | bare concurrent coord=shared stagger=0 model=lookup=opus-5-5 pack_budget=1200 tools=kb manager=code | 12 | 13,792 | 146,038 | 29,485 | - | 92 s | - | 4 |
+
+#### research
+
+| case | arm | input | out | cache_read | cache_write | cost | wall_s | turns | dup_facts | claims | claim_conflicts | land_stops | rebase_s | eval_passed | eval_total |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| research | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 640 -> 598 (-7%) | 281,469 -> 242,731 (-14%) | 61,555,536 -> 55,389,063 (-10%) | 880,352 -> 803,151 (-9%) | $12.493 -> $11.180 (-11%) | 1153 s -> 1092 s (-5%) | 573 -> 478 (-17%) | 1 -> 2 (+100%) | 0 -> 0 | 0 -> 0 | 0 -> 0 | 532.00 s -> 483.00 s (-9%) | 15 -> 15 (+0%) | 15 -> 15 (+0%) |
+| research | concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | 732 -> 740 (+1%) | 300,907 -> 289,995 (-4%) | 74,442,992 -> 77,722,188 (+4%) | 904,492 -> 918,072 (+2%) | $14.073 -> $14.346 (+2%) | 1342 s -> 1291 s (-4%) | 638 -> 648 (+2%) | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 495.00 s -> 418.00 s (-16%) | 15 -> 15 (+0%) | 15 -> 15 (+0%) |
+| research | concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code | 738 | 541,406 | 77,266,942 | 993,532 | $5.771 | 1373 s | 552 | 5 | 0 | 0 | 0 | 320.00 s | 15 | 15 |
+| research | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 378 -> 370 (-2%) | 149,702 -> 120,923 (-19%) | 25,534,025 -> 26,646,217 (+4%) | 503,736 -> 456,022 (-9%) | $6.066 -> $5.699 (-6%) | 1739 s -> 1483 s (-15%) | 376 -> 303 (-19%) | 1 -> 1 (+0%) | 0 -> 0 | 0 -> 0 | 0 -> 0 | 0.00 s -> 0.00 s | 15 -> 15 (+0%) | 15 -> 15 (+0%) |
+| research | delta coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 262 -> 228 (-13%) | 131,767 -> 121,808 (-8%) | 36,021,511 -> 28,742,846 (-20%) | 376,616 -> 347,129 (-8%) | $6.427 -> $5.481 (-15%) | -586 s -> -391 s (-33%) | 197 -> 175 (-11%) | 0 -> 1 | 0 -> 0 | 0 -> 0 | 0 -> 0 | 532.00 s -> 483.00 s (-9%) | 0 -> 0 | 0 -> 0 |
+| research | bare concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 22 -> 28 (+27%) | 55,726 -> 73,850 (+33%) | 123,604 -> 181,765 (+47%) | 46,023 -> 57,741 (+25%) | - | 70 s -> 96 s (+37%) | - | - | - | - | - | - | - | - |
+| research | bare sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 24 -> 26 (+8%) | 65,757 -> 76,849 (+17%) | 142,679 -> 167,348 (+17%) | 53,005 -> 60,726 (+15%) | - | 1012 s -> 1530 s (+51%) | - | - | - | - | - | - | - | - |
+| research | bare concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | 28 -> 26 (-7%) | 71,983 -> 62,056 (-14%) | 192,069 -> 157,288 (-18%) | 56,374 -> 51,152 (-9%) | - | 89 s -> 91 s (+2%) | - | - | - | - | - | - | - | - |
+| research | bare concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code | 54 | 178,618 | 847,684 | 155,013 | - | 217 s | - | - | - | - | - | - | - | - |
+
+The kb agents against their bare twins in research:
+
+| record | arm | measure | kb | bare | kb minus bare |
+|---|---|---|---|---|---|
+| 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens | 62,717,997 | 225,375 | +62,492,622 (kb higher) |
+| 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD | $12.4929 | $0.7538 | +$11.7392 (kb higher) |
+| 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 597,314 | 2,146 | +595,168 (kb higher) |
+| 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.1190 | $0.0072 | +$0.1118 (kb higher) |
+| 4018d11 | concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens | 75,649,123 | 320,454 | +75,328,669 (kb higher) |
+| 4018d11 | concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD | $14.0728 | $0.9646 | +$13.1082 (kb higher) |
+| 4018d11 | concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 796,307 | 3,373 | +792,933 (kb higher) |
+| 4018d11 | concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.1481 | $0.0102 | +$0.1380 (kb higher) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens | 56,435,543 | 313,384 | +56,122,159 (kb higher) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD | $11.1800 | $0.9877 | +$10.1923 (kb higher) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 663,948 | 3,687 | +660,261 (kb higher) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.1315 | $0.0116 | +$0.1199 (kb higher) |
+| 013e25d | concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens | 78,930,995 | 270,522 | +78,660,473 (kb higher) |
+| 013e25d | concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD | $14.3459 | $0.8409 | +$13.5050 (kb higher) |
+| 013e25d | concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 830,853 | 2,848 | +828,005 (kb higher) |
+| 013e25d | concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.1510 | $0.0089 | +$0.1422 (kb higher) |
+| 013e25d | concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code | tokens | 78,802,618 | 1,181,369 | +77,621,249 (kb higher) |
+| 013e25d | concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code | USD | $6.2108 | $0.1288 | +$6.0820 (kb higher) |
+| 013e25d | concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code | tokens per verified fact | 949,429 | 14,233 | +935,196 (kb higher) |
+| 013e25d | concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.0748 | $0.0016 | +$0.0733 (kb higher) |
+| 7f2317f | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens | 26,187,841 | 261,465 | +25,926,376 (kb higher) |
+| 7f2317f | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD | $6.0661 | $0.8839 | +$5.1822 (kb higher) |
+| 7f2317f | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 254,251 | 2,538 | +251,712 (kb higher) |
+| 7f2317f | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.0589 | $0.0086 | +$0.0503 (kb higher) |
+| 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens | 27,223,532 | 304,949 | +26,918,583 (kb higher) |
+| 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD | $5.6987 | $1.0282 | +$4.6705 (kb higher) |
+| 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 406,321 | 4,551 | +401,770 (kb higher) |
+| 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.0851 | $0.0153 | +$0.0697 (kb higher) |
+
+Per agent of research:
+
+| agent | arm | input | out | cache_read | cache_write | cost | wall_s | turns | eval_passed |
+|---|---|---|---|---|---|---|---|---|---|
+| research-1 | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 140 -> 264 (+89%) | 70,051 -> 89,413 (+28%) | 10,669,896 -> 26,481,098 (+148%) | 242,062 -> 300,582 (+24%) | $2.736 -> $4.745 (+73%) | 699 s -> 1092 s (+56%) | 153 -> 228 (+49%) | 5 -> 5 (+0%) |
+| research-2 | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 216 -> 198 (-8%) | 100,696 -> 85,509 (-15%) | 20,605,448 -> 18,056,413 (-12%) | 305,996 -> 269,196 (-12%) | $4.292 -> $3.738 (-13%) | 1050 s -> 934 s (-11%) | 188 -> 143 (-24%) | 5 -> 5 (+0%) |
+| research-3 | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 284 -> 136 (-52%) | 110,722 -> 67,809 (-39%) | 30,280,192 -> 10,851,552 (-64%) | 332,294 -> 233,373 (-30%) | $5.465 -> $2.697 (-51%) | 1153 s -> 716 s (-38%) | 232 -> 107 (-54%) | 5 -> 5 (+0%) |
+| research-1 | concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | 218 -> 190 (-13%) | 97,565 -> 70,554 (-28%) | 22,476,254 -> 15,890,082 (-29%) | 295,898 -> 239,268 (-19%) | $4.407 -> $3.252 (-26%) | 1036 s -> 685 s (-34%) | 188 -> 168 (-11%) | 5 -> 5 (+0%) |
+| research-2 | concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | 214 -> 296 (+38%) | 73,770 -> 125,151 (+70%) | 18,386,813 -> 36,388,740 (+98%) | 258,133 -> 376,724 (+46%) | $3.609 -> $6.398 (+77%) | 718 s -> 1291 s (+80%) | 173 -> 266 (+54%) | 5 -> 5 (+0%) |
+| research-3 | concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | 300 -> 254 (-15%) | 129,572 -> 94,290 (-27%) | 33,579,925 -> 25,443,366 (-24%) | 350,461 -> 302,080 (-14%) | $6.056 -> $4.696 (-22%) | 1342 s -> 1063 s (-21%) | 277 -> 214 (-23%) | 5 -> 5 (+0%) |
+| research-1 | concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code | 234 | 248,504 | 32,455,326 | 437,516 | $2.576 | 1373 s | 238 | 5 |
+| research-2 | concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code | 204 | 139,293 | 18,424,368 | 261,875 | $1.398 | 841 s | 163 | 5 |
+| research-3 | concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code | 300 | 153,609 | 26,387,248 | 294,141 | $1.797 | 1019 s | 151 | 5 |
+| research-1 | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 134 -> 218 (+63%) | 57,795 -> 75,624 (+31%) | 9,709,702 -> 18,075,135 (+86%) | 189,861 -> 237,806 (+25%) | $2.309 -> $3.515 (+52%) | 645 s -> 928 s (+44%) | 130 -> 167 (+28%) | 5 -> 5 (+0%) |
+| research-2 | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 82 -> 136 (+66%) | 19,411 -> 42,771 (+120%) | 3,166,101 -> 8,178,358 (+158%) | 88,964 -> 159,064 (+79%) | $0.867 -> $1.882 (+117%) | 297 s -> 511 s (+72%) | 71 -> 122 (+72%) | 5 -> 5 (+0%) |
+| research-3 | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 162 -> 16 (-90%) | 72,496 -> 2,528 (-97%) | 12,658,222 -> 392,724 (-97%) | 224,911 -> 59,152 (-74%) | $2.891 -> $0.301 (-90%) | 796 s -> 40 s (-95%) | 175 -> 14 (-92%) | 5 -> 5 (+0%) |
+| research-1 | delta coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 6 -> 46 (+667%) | 12,256 -> 13,789 (+13%) | 960,194 -> 8,405,963 (+775%) | 52,201 -> 62,776 (+20%) | $0.427 -> $1.230 (+188%) | 54 s -> 163 s (+201%) | 23 -> 61 (+165%) | 0 -> 0 |
+| research-2 | delta coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 134 -> 62 (-54%) | 81,285 -> 42,738 (-47%) | 17,439,347 -> 9,878,055 (-43%) | 217,032 -> 110,132 (-49%) | $3.425 -> $1.856 (-46%) | 753 s -> 422 s (-44%) | 117 -> 21 (-82%) | 0 -> 0 |
+| research-3 | delta coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 122 -> 120 (-2%) | 38,226 -> 65,281 (+71%) | 17,621,970 -> 10,458,828 (-41%) | 107,383 -> 174,221 (+62%) | $2.574 -> $2.396 (-7%) | 358 s -> 676 s (+89%) | 57 -> 93 (+63%) | 0 -> 0 |
+| research-1 | bare concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 8 -> 10 (+25%) | 21,013 -> 25,144 (+20%) | 47,840 -> 66,108 (+38%) | 17,220 -> 19,055 (+11%) | - | 70 s -> 81 s (+16%) | - | - |
+| research-2 | bare concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 6 -> 10 (+67%) | 14,998 -> 29,412 (+96%) | 29,599 -> 70,615 (+139%) | 12,919 -> 22,719 (+76%) | - | 49 s -> 96 s (+95%) | - | - |
+| research-3 | bare concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 8 -> 8 (+0%) | 19,715 -> 19,294 (-2%) | 46,165 -> 45,042 (-2%) | 15,884 -> 15,967 (+1%) | - | 64 s -> 64 s (+0%) | - | - |
+| research-1 | bare sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 8 -> 10 (+25%) | 24,786 -> 27,279 (+10%) | 48,083 -> 68,251 (+42%) | 19,140 -> 21,270 (+11%) | - | 70 s -> 83 s (+19%) | - | - |
+| research-2 | bare sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 8 -> 8 (+0%) | 19,740 -> 21,246 (+8%) | 47,631 -> 46,240 (-3%) | 16,290 -> 17,383 (+7%) | - | 61 s -> 63 s (+2%) | - | - |
+| research-3 | bare sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 8 -> 8 (+0%) | 21,231 -> 28,324 (+33%) | 46,965 -> 52,857 (+13%) | 17,575 -> 22,073 (+26%) | - | 69 s -> 87 s (+27%) | - | - |
+| research-1 | bare concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | 10 -> 8 (-20%) | 23,550 -> 23,523 (-0%) | 72,262 -> 48,987 (-32%) | 18,509 -> 18,306 (-1%) | - | 89 s -> 69 s (-22%) | - | - |
+| research-2 | bare concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | 10 -> 10 (+0%) | 23,844 -> 21,161 (-11%) | 72,367 -> 63,954 (-12%) | 19,215 -> 18,163 (-5%) | - | 81 s -> 91 s (+12%) | - | - |
+| research-3 | bare concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | 8 -> 8 (+0%) | 24,589 -> 17,372 (-29%) | 47,440 -> 44,347 (-7%) | 18,650 -> 14,683 (-21%) | - | 83 s -> 62 s (-26%) | - | - |
+| research-1 | bare concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code | 12 | 45,034 | 106,733 | 35,061 | - | 111 s | - | - |
+| research-2 | bare concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code | 16 | 57,956 | 179,251 | 43,528 | - | 150 s | - | - |
+| research-3 | bare concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code | 26 | 75,628 | 561,700 | 76,424 | - | 217 s | - | - |
+
+#### mixed
+
+| case | arm | input | out | cache_read | cache_write | cost | wall_s | turns | dup_facts | claims | claim_conflicts | land_stops | rebase_s | right | asked | eval_passed | eval_total |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| mixed | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 292 -> 284 (-3%) | 116,223 -> 115,558 (-1%) | 18,849,885 -> 18,269,465 (-3%) | 475,874 -> 463,569 (-3%) | $4.764 -> $4.700 (-1%) | 824 s -> 742 s (-10%) | 253 -> 274 (+8%) | 0 -> 0 | 0 -> 0 | 0 -> 0 | 2 -> 2 (+0%) | 1.00 s -> 0.00 s (-100%) | 5 -> 5 (+0%) | 5 -> 5 (+0%) | 10 -> 10 (+0%) | 10 -> 10 (+0%) |
+| mixed | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 376 -> 250 (-34%) | 117,523 -> 97,644 (-17%) | 24,310,116 -> 14,290,611 (-41%) | 468,595 -> 445,216 (-5%) | $5.292 -> $3.978 (-25%) | 1692 s -> 1176 s (-30%) | 286 -> 210 (-27%) | 0 -> 0 | 0 -> 0 | 0 -> 0 | 2 -> 2 (+0%) | 0.00 s -> 0.00 s | 5 -> 5 (+0%) | 5 -> 5 (+0%) | 10 -> 10 (+0%) | 10 -> 10 (+0%) |
+| mixed | delta coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | -92 | -1,965 | -6,040,651 | -5,026 | -$0.592 | -950 s | -12 | 0 | 0 | 0 | 0 | 0.00 s | 0 | 0 | 0 | 0 |
+| mixed | bare concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 40 -> 38 (-5%) | 53,068 -> 54,308 (+2%) | 362,338 -> 354,064 (-2%) | 145,647 -> 149,455 (+3%) | - | 81 s -> 86 s (+6%) | - | - | - | - | - | - | 5 -> 5 (+0%) | 5 -> 5 (+0%) | - | - |
+| mixed | bare sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 40 -> 40 (+0%) | 55,456 -> 62,456 (+13%) | 431,632 -> 441,500 (+2%) | 137,543 -> 158,890 (+16%) | - | 1724 s -> 1208 s (-30%) | - | - | - | - | - | - | 5 -> 5 (+0%) | 5 -> 5 (+0%) | - | - |
+
+The kb agents against their bare twins in mixed:
+
+| record | arm | measure | kb | bare | kb minus bare |
+|---|---|---|---|---|---|
+| 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens | 19,442,274 | 561,093 | +18,881,181 (kb higher) |
+| 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD | $4.7642 | $0.7329 | +$4.0313 (kb higher) |
+| 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per correct answer | 3,888,455 | 112,219 | +3,776,236 (kb higher) |
+| 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per correct answer | $0.9528 | $0.1466 | +$0.8063 (kb higher) |
+| 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 163,380 | 4,715 | +158,665 (kb higher) |
+| 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.0400 | $0.0062 | +$0.0339 (kb higher) |
+| 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per passing item | 9,721,137 | 280,546 | +9,440,590 (kb higher) |
+| 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per passing item | $2.3821 | $0.3664 | +$2.0157 (kb higher) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens | 18,848,876 | 557,865 | +18,291,011 (kb higher) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD | $4.6996 | $0.7275 | +$3.9721 (kb higher) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per correct answer | 3,769,775 | 111,573 | +3,658,202 (kb higher) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per correct answer | $0.9399 | $0.1455 | +$0.7944 (kb higher) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 157,074 | 4,649 | +152,425 (kb higher) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.0392 | $0.0061 | +$0.0331 (kb higher) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per passing item | 9,424,438 | 278,932 | +9,145,506 (kb higher) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per passing item | $2.3498 | $0.3638 | +$1.9861 (kb higher) |
+| a22529e | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens | 14,833,721 | 662,886 | +14,170,835 (kb higher) |
+| a22529e | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD | $3.9656 | $0.7475 | +$3.2180 (kb higher) |
+| a22529e | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per correct answer | 2,966,744 | 132,577 | +2,834,167 (kb higher) |
+| a22529e | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per correct answer | $0.7931 | $0.1495 | +$0.6436 (kb higher) |
+| a22529e | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 138,633 | 6,195 | +132,438 (kb higher) |
+| a22529e | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.0371 | $0.0070 | +$0.0301 (kb higher) |
+| a22529e | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per passing item | 7,416,860 | 331,443 | +7,085,418 (kb higher) |
+| a22529e | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per passing item | $1.9828 | $0.3738 | +$1.6090 (kb higher) |
+| 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens | 24,896,610 | 624,671 | +24,271,939 (kb higher) |
+| 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD | $5.2921 | $0.7696 | +$4.5224 (kb higher) |
+| 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per correct answer | 4,979,322 | 124,934 | +4,854,388 (kb higher) |
+| 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per correct answer | $1.0584 | $0.1539 | +$0.9045 (kb higher) |
+| 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 241,715 | 6,065 | +235,650 (kb higher) |
+| 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.0514 | $0.0075 | +$0.0439 (kb higher) |
+| 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per passing item | 12,448,305 | 312,336 | +12,135,970 (kb higher) |
+| 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per passing item | $2.6460 | $0.3848 | +$2.2612 (kb higher) |
+
+Per agent of mixed:
+
+| agent | arm | input | out | cache_read | cache_write | cost | wall_s | turns | right | eval_passed |
+|---|---|---|---|---|---|---|---|---|---|---|
+| research-1 | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 152 -> 150 (-1%) | 78,638 -> 75,265 (-4%) | 12,729,334 -> 12,247,636 (-4%) | 235,804 -> 228,250 (-3%) | $3.003 -> $2.891 (-4%) | 824 s -> 742 s (-10%) | 136 -> 143 (+5%) | - | 5 -> 5 (+0%) |
+| research-2 | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 88 -> 86 (-2%) | 24,988 -> 29,854 (+19%) | 5,081,735 -> 5,080,418 (-0%) | 139,212 -> 144,633 (+4%) | $1.315 -> $1.385 (+5%) | 420 s -> 376 s (-10%) | 75 -> 95 (+27%) | - | 5 -> 5 (+0%) |
+| code-1 | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 26 -> 22 (-15%) | 3,489 -> 2,749 (-21%) | 554,687 -> 439,829 (-21%) | 35,661 -> 32,772 (-8%) | $0.233 -> $0.203 (-13%) | 99 s -> 94 s (-5%) | 19 -> 16 (-16%) | - | - |
+| code-2 | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 18 -> 22 (+22%) | 2,706 -> 2,928 (+8%) | 364,338 -> 457,717 (+26%) | 34,804 -> 34,613 (-1%) | $0.203 -> $0.213 (+5%) | 64 s -> 82 s (+29%) | 17 -> 18 (+6%) | - | - |
+| lookup-1 | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 8 -> 4 (-50%) | 6,402 -> 4,762 (-26%) | 119,791 -> 43,865 (-63%) | 30,393 -> 23,301 (-23%) | $0.011 -> $0.007 (-29%) | 45 s -> 33 s (-26%) | 6 -> 2 (-67%) | 5 -> 5 (+0%) | - |
+| research-1 | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 234 -> 134 (-43%) | 83,184 -> 63,104 (-24%) | 18,979,811 -> 10,085,364 (-47%) | 253,571 -> 214,422 (-15%) | $3.745 -> $2.498 (-33%) | 1060 s -> 649 s (-39%) | 182 -> 108 (-41%) | - | 5 -> 5 (+0%) |
+| research-2 | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 82 -> 56 (-32%) | 20,278 -> 18,886 (-7%) | 4,145,224 -> 3,011,192 (-27%) | 118,137 -> 132,417 (+12%) | $1.090 -> $1.020 (-6%) | 397 s -> 255 s (-36%) | 60 -> 62 (+3%) | - | 5 -> 5 (+0%) |
+| code-1 | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 26 -> 26 (+0%) | 3,850 -> 3,460 (-10%) | 527,066 -> 534,380 (+1%) | 33,140 -> 33,474 (+1%) | $0.224 -> $0.222 (-1%) | 53 s -> 77 s (+46%) | 17 -> 17 (+0%) | - | - |
+| code-2 | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 20 -> 20 (+0%) | 3,610 -> 3,096 (-14%) | 419,438 -> 413,241 (-1%) | 36,089 -> 35,261 (-2%) | $0.222 -> $0.213 (-4%) | 59 s -> 56 s (-5%) | 20 -> 16 (-20%) | - | - |
+| lookup-1 | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 14 -> 14 (+0%) | 6,601 -> 9,098 (+38%) | 238,577 -> 246,434 (+3%) | 27,658 -> 29,642 (+7%) | $0.011 -> $0.026 (+130%) | 47 s -> 60 s (+28%) | 7 -> 7 (+0%) | 5 -> 5 (+0%) | - |
+| research-1 | delta coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | -84 | -7,919 | -6,732,175 | -25,321 | -$0.854 | -319 s | -39 | - | 0 |
+| research-2 | delta coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 4 | 9,576 | 935,194 | 26,496 | $0.295 | -21 s | 35 | - | 0 |
+| code-1 | delta coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | -4 | -1,101 | -87,237 | -368 | -$0.021 | 41 s | -1 | - | - |
+| code-2 | delta coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 2 | -682 | 38,279 | -1,476 | -$0.009 | 23 s | -2 | - | - |
+| lookup-1 | delta coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | -10 | -1,839 | -194,712 | -4,357 | -$0.004 | -13 s | -5 | 0 | - |
+| research-1 | bare concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 8 -> 8 (+0%) | 19,464 -> 21,386 (+10%) | 44,680 -> 46,108 (+3%) | 15,547 -> 17,115 (+10%) | - | 63 s -> 73 s (+15%) | - | - | - |
+| research-2 | bare concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 8 -> 8 (+0%) | 10,875 -> 9,987 (-8%) | 117,568 -> 112,754 (-4%) | 69,519 -> 64,135 (-8%) | - | 79 s -> 84 s (+6%) | - | - | - |
+| code-1 | bare concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 6 -> 4 (-33%) | 729 -> 660 (-9%) | 24,332 -> 15,009 (-38%) | 4,014 -> 3,812 (-5%) | - | 20 s -> 11 s (-44%) | - | - | - |
+| code-2 | bare concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 6 -> 6 (+0%) | 648 -> 701 (+8%) | 24,175 -> 24,158 (-0%) | 3,878 -> 3,911 (+1%) | - | 16 s -> 13 s (-21%) | - | - | - |
+| lookup-1 | bare concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 12 -> 12 (+0%) | 21,352 -> 21,574 (+1%) | 151,583 -> 156,035 (+3%) | 52,689 -> 60,482 (+15%) | - | 81 s -> 86 s (+5%) | - | 5 -> 5 (+0%) | - |
+| research-1 | bare sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 8 -> 8 (+0%) | 23,111 -> 22,522 (-3%) | 50,259 -> 47,859 (-5%) | 18,835 -> 17,025 (-10%) | - | 88 s -> 69 s (-22%) | - | - | - |
+| research-2 | bare sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 10 -> 8 (-20%) | 11,061 -> 9,774 (-12%) | 182,921 -> 112,951 (-38%) | 65,007 -> 63,852 (-2%) | - | 75 s -> 70 s (-6%) | - | - | - |
+| code-1 | bare sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 4 -> 6 (+50%) | 654 -> 964 (+47%) | 15,005 -> 24,806 (+65%) | 3,803 -> 4,371 (+15%) | - | 8 s -> 10 s (+27%) | - | - | - |
+| code-2 | bare sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 6 -> 6 (+0%) | 706 -> 676 (-4%) | 24,200 -> 24,149 (-0%) | 3,925 -> 3,909 (-0%) | - | 10 s -> 12 s (+12%) | - | - | - |
+| lookup-1 | bare sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | 12 -> 12 (+0%) | 19,924 -> 28,520 (+43%) | 159,247 -> 231,735 (+46%) | 45,973 -> 69,733 (+52%) | - | 78 s -> 92 s (+18%) | - | 5 -> 5 (+0%) | - |
 <!-- /bench -->
