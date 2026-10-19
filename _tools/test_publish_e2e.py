@@ -87,8 +87,13 @@ def test_publish_refuses_a_leak_in_any_commit_of_the_range(world, capsys):
     leak = ".".join(("10", "20", "30", "40"))  # assembled here: this file holds no address
     push_commit(clone, "leak", {"kb/public/leak.md": f"host at {leak}\n"})
     push_commit(clone, "unleak", {"kb/public/leak.md": "host at corp.example.com\n"})
+    at = chr(64)  # an address in a commit message: a noreply or placeholder one stays, any other is refused, unnamed
+    push_commit(clone, "ok\n\nCo-Authored-By: Claude <noreply" + at + "anthropic.com>\nReviewed-by: jan.kowalski" + at + "corp.example.com", {"kb/public/ok.md": "fact\n"})
+    push_commit(clone, "note\n\nReviewed-by: jan.kowalski" + at + "corp-mail.test", {"kb/public/note.md": "fact\n"})
     assert publish(clone) == 1
-    assert "refused:" in capsys.readouterr().out
+    out = capsys.readouterr().out
+    assert "refused:" in out
+    assert out.count("holds an email address") == 1 and "a trailer" in out and "corp-mail" not in out
     assert pub_empty(pub)  # the final tree is clean, the history is not
 
 
