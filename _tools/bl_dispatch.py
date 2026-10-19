@@ -39,10 +39,11 @@ import bl_procs
 from bl_base import (RESEARCH_KINDS, ROOT as PLUGIN_ROOT, Refused, Rejected, always_in_scope, canonical, claims_ledger, commit_message,
                      external_lines, git, id_re, item_repos, link_target, need, repositories, research_touches, resolved_touch,
                      run_check, say, scope, scratch_dir, setting, split_touch, touches_overlap, trailer_problem, withhold,
-                     worker_dir, ledger_lock, write_ledger)
+                     operator_who, worker_dir, ledger_lock, write_ledger)
 from bl_land import WORK_PREFIX, WORKER_NAME
 from bl_plan import shared_doc
 
+WORKER_ROLE = "worker"  # KB_ROLE of every dispatched session, whatever role the dispatching one has
 ROLE_FILE = ".claude/agents/kb-worker.md"  # the worker's role file: its brief makes the session read and follow it
 PLUGIN_ROLE_FILE = "agents/worker.md"  # the plugin's, under PLUGIN_ROOT (the directory of the tool scripts): the file
 # the brief names when the project has no ROLE_FILE
@@ -445,6 +446,14 @@ def role_file_line(root):
             f"`${{CLAUDE_PLUGIN_ROOT}}` in it is `{plugin}`: write that path where a command shows the variable.")
 
 
+def operator_line():
+    """The brief's line naming the operator id the worker runs under and its role (kbwho.py): the dispatching
+    session's id, which `cmd_dispatch` passes on as `KB_OPERATOR`; the role is the worker's, not the dispatcher's."""
+    oid, _ = operator_who()
+    who = f"operator {oid}" if oid else "no operator id (none could be resolved)"
+    return f"Session: {who}, role: {WORKER_ROLE} (`KB_OPERATOR`, `KB_ROLE` in your environment; `python3 _tools/kbwho.py` prints them)."
+
+
 def compose_brief(bl, iid, known=(), probe=None, turns=None, known_suite=()):
     """The brief for ITEM's worker, as text: its fixed rules name the turn cap TURNS, else the cap of the item's kind.
     Reads the backlog and runs the rules pack; writes nothing."""
@@ -458,7 +467,7 @@ def compose_brief(bl, iid, known=(), probe=None, turns=None, known_suite=()):
         if value:
             facts.append(f"{label} {bl.label(value)}")
     head = f"{bl.label(iid)} ({', '.join(facts)})"
-    out = [role_file_line(bl.root), "",
+    out = [role_file_line(bl.root), operator_line(), "",
            f"Worktree (work only here): {wt}, on branch `{branch}` (made for you; the item is already claimed).",
            *repo_lines(bl, iid, branch),
            f"Scratch directory for throwaway files: {scratch}/ (never /tmp, never the worktree).", "",
@@ -502,6 +511,18 @@ def compose_brief(bl, iid, known=(), probe=None, turns=None, known_suite=()):
 
 
 # ------------------------------------------------------------------ the session
+
+def worker_env(oid):
+    """The environment of the worker's session: this one's, with `KB_OPERATOR` the dispatching operator's id OID
+    (dropped when none resolved) and `KB_ROLE` the worker's, so a worker never inherits the orchestrator's role."""
+    env = dict(os.environ)
+    if oid:
+        env["KB_OPERATOR"] = oid
+    else:
+        env.pop("KB_OPERATOR", None)
+    env["KB_ROLE"] = WORKER_ROLE
+    return env
+
 
 def claude_argv(bl, iid, model=None, turns=None):
     """The headless session's argument list: the brief goes on stdin, never as a trailing prompt argument, which
@@ -815,6 +836,7 @@ def cmd_dispatch(bl, a):
     if shutil.which(argv[0]) is None:
         raise Rejected(f"dispatch: {argv[0]} is not on PATH")
     text = compose_brief(bl, iid, a.known, a.probe, turns, a.known_suite)
+    oid, _ = operator_who()
     defaults = repo_defaults(bl, iid)  # a repository whose fetch fails refuses the dispatch before anything is made
     make_worktree(bl.root, iid, wt)
     for n, co in repo_checkouts(bl, iid):
@@ -825,8 +847,9 @@ def cmd_dispatch(bl, a):
     result, errlog = scratch / RESULT_NAME, scratch / STDERR_NAME
     with open(brief, encoding="utf-8") as stdin, open(result, "w", encoding="utf-8", newline="\n") as out, \
             open(errlog, "w", encoding="utf-8", newline="\n") as err:
-        proc = subprocess.Popen(argv, cwd=str(wt), stdin=stdin, stdout=out, stderr=err)
-        record_worker(bl.root, iid, worker_pid=proc.pid)
+        proc = subprocess.Popen(argv, cwd=str(wt), stdin=stdin, stdout=out, stderr=err,
+                                env=worker_env(oid))
+        record_worker(bl.root, iid, worker_pid=proc.pid, role=WORKER_ROLE, **({"operator": oid} if oid else {}))
         say(f"dispatched {bl.label(iid)}: pid {proc.pid}, brief {brief}, output {result}")
         sys.stdout.flush()
         code = proc.wait()
