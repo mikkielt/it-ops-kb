@@ -2,7 +2,7 @@
   "id": "ST-atei6ybh",
   "kind": "story",
   "title": "kbmon --split opens the live view in a WezTerm, tmux or Windows Terminal pane beside the session",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-3hgirkur",
   "priority": "P2",
@@ -57,5 +57,6 @@
     "ST-nighxizj",
     "ST-qpcva3jl"
   ],
-  "notes": "Plan 2026-10-19: premise on the base: kbmon.py has no --split (exit 2). Prototype: a tmux split-window -d -h -l 45% opened the live view from a SessionStart hook and redrew at once on a resize. wezterm cli split-pane --right --percent N --cwd DIR -- PROG targets WEZTERM_PANE (vendor docs wezterm.org/cli/cli/split-pane.html, 2026-10-19, not in the kb yet); Windows Terminal wt -w 0 split-pane -V -d DIR commandline (learn.microsoft.com/windows/terminal/command-line-arguments, 2026-10-19). Apple Terminal has no split command: the hint path. --interval 60 keeps the live view's CPU low until ST-5bz4nwsf."
+  "notes": "Plan 2026-10-19: premise on the base: kbmon.py has no --split (exit 2). Prototype: a tmux split-window -d -h -l 45% opened the live view from a SessionStart hook and redrew at once on a resize. wezterm cli split-pane --right --percent N --cwd DIR -- PROG targets WEZTERM_PANE (vendor docs wezterm.org/cli/cli/split-pane.html, 2026-10-19, not in the kb yet); Windows Terminal wt -w 0 split-pane -V -d DIR commandline (learn.microsoft.com/windows/terminal/command-line-arguments, 2026-10-19). Apple Terminal has no split command: the hint path. --interval 60 keeps the live view's CPU low until ST-5bz4nwsf.",
+  "claimed_by": "orch-r23"
 }
