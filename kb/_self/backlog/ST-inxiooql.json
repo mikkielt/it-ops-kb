@@ -1,0 +1,29 @@
+{
+  "id": "ST-inxiooql",
+  "kind": "story",
+  "title": "kbmon's sprint estimate reads a running paid bench item's own progress, run N of M",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bench_multi.progress(DIR) gives the runs done and planned of a running multi sandbox from its results.jsonl and plan; mon_eta.estimate counts a paid bench item in progress by the runs it has left at its kind's minutes per run",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0,\"_tools\"); import bench_multi; sys.exit(0 if hasattr(bench_multi,\"progress\") else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_multi.py",
+    "_tools/mon_eta.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "parked: SP-yjfiemha plan"
+  ],
+  "notes": "Operator request 2026-10-19 (\"ensure more accurate timeframing\"), design point 2: a paid bench item uses its own progress, run N of M. Parked at the plan of SP-yjfiemha (gate bench-progress of ST-po5rwymx): no reader of a running bench's progress exists (bench_multi has no progress function, and nothing records which sandbox a running item uses), and the paid sprint SP-3pvz2noj holds bench_multi.py until it closes."
+}

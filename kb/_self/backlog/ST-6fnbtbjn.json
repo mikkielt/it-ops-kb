@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Planned 2026-10-19. The goal's open questions are statistical, not product facts: the quartile method the estimator names (Python's statistics.quantiles, method inclusive) and the far-out outlier fence (p75 plus three times the p25-p75 spread). Look them up with the kb tools first (rag.py pack); where the kb lacks them, the live docs (docs.python.org) and a fact through the kb skills only if the public root covers Python tooling. History for the estimate is the claim and done commits on origin/main; the ops rows (agent.run, land.end) were weighed and not chosen (gate source of ST-trhzzeku)."
 }
