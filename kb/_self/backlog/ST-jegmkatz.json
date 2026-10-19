@@ -2,7 +2,7 @@
   "id": "ST-jegmkatz",
   "kind": "story",
   "title": "The commit hook adds KB-Operator with the operator id to an agent session's commits, and check-trailers refuses an email there",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yjugq5c2",
   "priority": "P2",
   "rank": 0,
@@ -57,5 +57,7 @@
       "by": "operator"
     }
   ],
-  "notes": "Premise (2026-10-19): in a planted clone with the hooks installed, a commit made with CLAUDECODE=1 and KB_OPERATOR set gets no KB-Operator trailer. Builds on ST-smr7z3vn (the KB-Teams trailer) in the same hook and trailer code; an agent session is told by bl_authority.in_agent_session (CLAUDECODE). Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and .claude/hooks with its own coord store and a stub claude on PATH; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations; facts: public/claude/ci-and-headless.md:124-127, public/claude/otel-monitoring.md:51-53, QK-claude-code-session-learn-email-account. Addresses in checks are built at run time; docs and items use the placeholder jan.kowalski only."
+  "notes": "Premise (2026-10-19): in a planted clone with the hooks installed, a commit made with CLAUDECODE=1 and KB_OPERATOR set gets no KB-Operator trailer. Builds on ST-smr7z3vn (the KB-Teams trailer) in the same hook and trailer code; an agent session is told by bl_authority.in_agent_session (CLAUDECODE). Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and .claude/hooks with its own coord store and a stub claude on PATH; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations; facts: public/claude/ci-and-headless.md:124-127, public/claude/otel-monitoring.md:51-53, QK-claude-code-session-learn-email-account. Addresses in checks are built at run time; docs and items use the placeholder jan.kowalski only.",
+  "claimed_by": "orch-r39",
+  "operator": "op-f618a13e"
 }
