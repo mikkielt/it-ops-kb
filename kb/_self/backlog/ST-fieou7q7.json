@@ -1,0 +1,25 @@
+{
+  "id": "ST-fieou7q7",
+  "kind": "story",
+  "title": "A kb-content research gate that names a token as a fact's subject is not classed secrets",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_authority classes a gate of an item whose touches are all kb content as secrets only when its words act on a credential, not when an option names one as a research topic (SP-46k7sw57: ST-lbpkvzha's where-to-write gate matched 'app-token' and became an operator-only blocking gate); a code item's gate about a bearer token stays secrets",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, \"_tools\")\nimport bl_authority as a\nit = {\"id\": \"ST-x\", \"kind\": \"story\", \"touches\": [\"kb/public/**\"]}\ng = {\"id\": \"g1\", \"question\": \"Where do the research findings live: extended existing articles or new topics?\",\n     \"options\": [\"Extend the existing anchor articles, no new topic\",\n                 \"Create new topics for computed trailers, OAuth scopes and app-token commit identity\"]}\nc = a.gate_class(it, g)\nif c == \"secrets\":\n    print(\"check failed: a kb-content research gate naming app-token as a topic is classed secrets\", a.class_reasons(it, g)); sys.exit(1)\nit2 = {\"id\": \"ST-y\", \"kind\": \"story\", \"touches\": [\"_tools/coord.py\"]}\ng2 = {\"id\": \"g1\", \"question\": \"Where is the bearer token file read?\", \"options\": [\"keys dir\", \"env\"]}\nif a.gate_class(it2, g2) != \"secrets\":\n    print(\"check failed: a code gate about a bearer token is no longer classed secrets\"); sys.exit(1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-46k7sw57 close"
+  ]
+}

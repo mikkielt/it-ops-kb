@@ -1,0 +1,26 @@
+{
+  "id": "ST-uq7oegfv",
+  "kind": "story",
+  "title": "precheck names an item check that empties a planted file before it reads it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py check and precheck name an item check whose python code opens a file for writing in the same statement that reads it (open(p, 'w').write(open(p).read()...)), through a bl_check.planted_input_problem predicate, so a check that cannot pass is fixed before the start gate and not found by the worker (SP-46k7sw57: ST-smr7z3vn's check 0 emptied kb/team-b/_root.md and appended to a file its planted root lacked; precheck showed it failing on its premise assertion)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, \"_tools\")\nimport bl_check\nf = getattr(bl_check, \"planted_input_problem\", None)\nif f is None:\n    print(\"check failed: bl_check has no planted_input_problem predicate\"); sys.exit(1)\nbad = [\"python3\", \"-c\", 'p = \"x\"; open(p, \"w\").write(open(p).read().replace(\"a\", \"b\"))']\ngood = [\"python3\", \"-c\", 'p = \"x\"; t = open(p).read(); open(p, \"w\").write(t.replace(\"a\", \"b\"))']\nif not f(bad) or f(good):\n    print(\"check failed: planted_input_problem does not name a check that empties a planted file before reading it\", f(bad), f(good)); sys.exit(1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_check.py",
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-46k7sw57 close"
+  ]
+}
