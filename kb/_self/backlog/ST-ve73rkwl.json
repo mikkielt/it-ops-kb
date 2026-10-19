@@ -52,6 +52,42 @@
   "depends_on": [
     "ST-xbjwdmpv"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does otel/kbmon_otel.py get the resource attributes from kbwho.otel_attributes()? The adapter reaches the tools only as child processes today.",
+      "options": [
+        "child-process",
+        "import"
+      ],
+      "recommendation": "child-process",
+      "do": {
+        "child-process": "ST-ve73rkwl",
+        "import": "ST-ve73rkwl"
+      },
+      "class": "design",
+      "answer": "child-process",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What does the export resource hold besides the kbwho attributes? Resource.create adds the SDK's telemetry.sdk.* attributes and reads OTEL_RESOURCE_ATTRIBUTES itself.",
+      "options": [
+        "resource-alone",
+        "create-merged"
+      ],
+      "recommendation": "resource-alone",
+      "do": {
+        "resource-alone": "ST-ve73rkwl",
+        "create-merged": "ST-ve73rkwl"
+      },
+      "class": "design",
+      "answer": "resource-alone",
+      "by": "agent"
+    }
+  ],
   "notes": "Premise (2026-10-19): otel/kbmon_otel.py builds its resources with Resource.create({service.name}) at two places, which also merges OTEL_RESOURCE_ATTRIBUTES, so an address set there would be exported; kbotel.py keeps an allowlist of event attributes and none of the identity attributes. The OpenTelemetry SDK is not installed on this host, so the check runs the stdlib function and reads the adapter's source. Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and .claude/hooks with its own coord store and a stub claude on PATH; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations; facts: public/claude/ci-and-headless.md:124-127, public/claude/otel-monitoring.md:51-53, QK-claude-code-session-learn-email-account. Addresses in checks are built at run time; docs and items use the placeholder jan.kowalski only.",
   "claimed_by": "orch-r39",
   "operator": "op-f618a13e"
