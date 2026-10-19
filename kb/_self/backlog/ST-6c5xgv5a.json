@@ -73,7 +73,9 @@
         "every pointer file under kb/_roots and .gitmodules, whatever the root's visibility": "ST-6c5xgv5a",
         "only the pointer files of internal roots": "ST-6c5xgv5a"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "every pointer file under kb/_roots and .gitmodules, whatever the root's visibility",
+      "by": "operator"
     },
     {
       "id": "g3",
