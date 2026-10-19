@@ -21,7 +21,8 @@
     "_tools/bench_report.py",
     "kb/_self/reports/benchmarks.md",
     "README.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/token-efficiency.md"
   ],
   "gates": [
     {
