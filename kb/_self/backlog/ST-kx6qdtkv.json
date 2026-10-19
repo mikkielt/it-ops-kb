@@ -2,7 +2,7 @@
   "id": "ST-kx6qdtkv",
   "kind": "story",
   "title": "multi run coord: a structured-coordination scenario of overlapping work, a refused claim and an answered ask, measured under coord shared against isolated",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-giqleoy2",
   "sprint": "SP-p46hofrg",
   "priority": "P1",
@@ -49,5 +49,6 @@
     "ST-uo23fwho",
     "ST-prrja362"
   ],
-  "notes": "Premise run 2026-10-19 on 7079b184a: multi run coord --dry-run and --replay exit 2, 'no scenario coord; one of lookups, research, mixed'. Open design choices for the worker, recorded as provisional gates: how the second code agent meets the shared item (its own claim through backlog.py claim in its clone, refused once the first claim lands on the shared bare, is the recommended reading of 'refused claim'), which agent asks whom, and what counts as a conflict resolved. Overlap: SP-ipeewrlv ST-y53hvh64 and SP-2uljwgho ST-hvpdkmit also touch _tools/bench_multi.py; held serializes them."
+  "notes": "Premise run 2026-10-19 on 7079b184a: multi run coord --dry-run and --replay exit 2, 'no scenario coord; one of lookups, research, mixed'. Open design choices for the worker, recorded as provisional gates: how the second code agent meets the shared item (its own claim through backlog.py claim in its clone, refused once the first claim lands on the shared bare, is the recommended reading of 'refused claim'), which agent asks whom, and what counts as a conflict resolved. Overlap: SP-ipeewrlv ST-y53hvh64 and SP-2uljwgho ST-hvpdkmit also touch _tools/bench_multi.py; held serializes them.",
+  "claimed_by": "orch-r61"
 }
