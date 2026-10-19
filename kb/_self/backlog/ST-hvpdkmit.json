@@ -32,7 +32,6 @@
     "kb/_self/code.md"
   ],
   "depends_on": [
-    "ST-xjtqwdtq",
     "ST-y53hvh64"
   ],
   "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: bench_multi has no progress function; a run keeps --max-usd in memory only (Budget) and sandbox.json does not record --bare, so the planned runs per arm and the cap are not on disk. The check calls the function on a planted manifest and result lines; no paid or networked run."
