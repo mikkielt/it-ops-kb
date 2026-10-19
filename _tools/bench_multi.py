@@ -1833,6 +1833,21 @@ def isolation_problems(root, results, out):
     return problems
 
 
+def unreadable(root, manifest, lines):
+    """What `check` needs to read and cannot: each canary file of an agent's scratch directory, the coord store file of each agent that is no lookup
+    and the output log of each kb agent that ran a session (`write_output`), the readers of which take a missing file for an empty one
+    (`canary_of`, `store_claims`, `store_events`, `canary_leaks`), so a moved or cleaned sandbox would pass with nothing to find."""
+    root = Path(root)
+    missing = [f"the canary file {scratch_path(root, a['n']) / CANARY_FILE}" for a in manifest["agents"] if not canary_of(root, a["n"])]
+    claiming = {r["n"] for r in lines if r.get("role") != "lookup"}  # a lookup agent makes no claim, so a run of lookups leaves no store
+    stores = sorted({a["coord_store"] for a in manifest["agents"] if a["n"] in claiming and not Path(a["coord_store"]).is_file()})
+    missing += [f"the coord store {Path(s)}" for s in stores]
+    logs = [r["agent"] for r in lines if r.get("n") and r.get("failure") != "budget" and not (root / OUTPUT_DIR / f"agent{r['n']}.log").is_file()]
+    if logs:
+        missing.append(f"the output log of {', '.join(logs)} ({root / OUTPUT_DIR}/agentN.log)")
+    return missing
+
+
 def check_found(root, manifest, results, lines, out=print):
     """What `check` names about the finished run in DIR: ([problem line], [duplicate research line], whether the coord stores are shared).
     The duplicates are problems only in a shared run; an isolated run counts them. `out` takes the isolation check's `ok` line."""
@@ -1849,7 +1864,8 @@ def check(root=None, out=print):
     """`multi check`: read the finished run in DIR (results.jsonl, the sandbox's coord store, the clones' planted backlog
     items, the bare's main, the agents' output logs and canaries) and name each lost claim (`coord_losses`, `backlog_losses`),
     each landing stop (`landing_stops`), each canary found outside its owner (`canary_leaks`) and each leak of the kb's tooling into a bare twin
-    (`isolation_problems`: a line with the word isolation). Returns 1 when it names any, else 0; raises Refused when DIR holds no run or an agent has not ended."""
+    (`isolation_problems`: a line with the word isolation). Returns 1 when it names any, else 0; raises Refused when DIR holds no run, an agent has
+    not ended or a canary file, a coord store or an output log is missing (`unreadable`)."""
     root = (Path(root) if root else default_dir()).resolve()
     results = bench_repro.read_results(root / RUN_RESULTS)
     lines = latest_lines(results)
@@ -1861,6 +1877,9 @@ def check(root=None, out=print):
     if unended:
         raise Refused(f"agent(s) {', '.join(unended)} have no end stamp: the run is not finished")
     manifest = json.loads((root / MANIFEST).read_text(encoding="utf-8"))
+    missing = unreadable(root, manifest, lines)
+    if missing:
+        raise Refused("cannot read " + "; ".join(missing) + ": the run is not checked")
     found, dups, shared = check_found(root, manifest, results, lines, out)
     for ln in found + ([] if shared else [f"{ln} (counted: the agents' stores are isolated)" for ln in dups]):
         out(ln)
