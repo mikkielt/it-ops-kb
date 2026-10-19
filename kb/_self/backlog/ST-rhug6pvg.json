@@ -1,0 +1,33 @@
+{
+  "id": "ST-rhug6pvg",
+  "kind": "story",
+  "title": "kb_mcp.py registers the kb servers for a workspace directory above the clone, and its status names a .mcp.json there that does not parse",
+  "status": "draft",
+  "sprint": "SP-3trnelzv",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "kb_mcp.py --register-local --project DIR registers the kb and docs servers at local scope for a directory that holds the clone (a VS Code workspace above it) so no .mcp.json is written by hand, with --dry-run printing the commands; kb_mcp.py --status --project DIR names a .mcp.json there that does not parse, such as one with single backslashes in Windows paths, and the servers it would leave unloaded; kb-setup step 4 asks whether sessions start in a directory above the clone and runs the --project form for it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,subprocess as s,sys,tempfile\nK=os.path.abspath('_tools/kb_mcp.py');d=tempfile.mkdtemp()\nopen(os.path.join(d,'.mcp.json'),'w',encoding='utf-8').write('{\"mcpServers\":{\"kb\":{\"command\":\"C:\\\\Python\\\\python.exe\",\"args\":[\"C:\\\\kb\\\\_tools\\\\kb_mcp.py\"]}}}')\nst=s.run([sys.executable,K,'--status','--project',d],capture_output=True,text=True,timeout=120);o=st.stdout+st.stderr\nif not ('.mcp.json' in o and ('not parse' in o or 'invalid' in o)): sys.exit(1)\nrg=s.run([sys.executable,K,'--register-local','--project',d,'--dry-run'],capture_output=True,text=True,timeout=120);r=rg.stdout+rg.stderr\nsys.exit(0 if rg.returncode==0 and 'add-json' in r and d in r and 'kb_mcp.py' in r else 1)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/skills/kb-setup/SKILL.md',encoding='utf-8').read();s=t.split('## 4. MCP servers')[1].split('## 5.')[0];sys.exit(0 if '--project' in s else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py",
+    ".claude/skills/kb-setup/SKILL.md",
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md",
+    "kb/_self/maintaining.md"
+  ]
+}
