@@ -2,7 +2,7 @@
   "id": "ST-7zojvqwc",
   "kind": "story",
   "title": "kbroot.py fetch --hook runs at SessionStart, fetches stale fetch roots within a bound and prints only failures",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-mguax5m3",
   "priority": "P2",

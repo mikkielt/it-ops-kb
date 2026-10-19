@@ -2,7 +2,7 @@
   "id": "ST-tmvkydpf",
   "kind": "story",
   "title": "install-hooks sets push.recurseSubmodules=check, so a superproject push that names an unpushed root commit is refused",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-mguax5m3",
   "priority": "P2",

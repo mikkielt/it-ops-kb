@@ -2,7 +2,7 @@
   "id": "ST-gbyfjgmq",
   "kind": "story",
   "title": "In a plugin host fetch roots resolve into CLAUDE_PLUGIN_DATA/roots and the plugin copy is never written",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-mguax5m3",
   "priority": "P2",

@@ -2,7 +2,7 @@
   "id": "ST-f4fwtc4v",
   "kind": "story",
   "title": "kbroot.py push pushes a submodule root's commits to its own remote, then commits the superproject's gitlink",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-mguax5m3",
   "priority": "P2",

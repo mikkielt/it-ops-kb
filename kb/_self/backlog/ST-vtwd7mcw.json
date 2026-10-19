@@ -2,7 +2,7 @@
   "id": "ST-vtwd7mcw",
   "kind": "story",
   "title": "The kb-ingest skill writes a team's facts into its submodule root and pushes them with kbroot.py push",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-mguax5m3",
   "priority": "P2",
