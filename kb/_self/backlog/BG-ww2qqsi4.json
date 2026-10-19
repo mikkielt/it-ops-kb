@@ -1,0 +1,18 @@
+{
+  "id": "BG-ww2qqsi4",
+  "kind": "bug",
+  "title": "The multi report table prints no dedup_hits, claim_refused, asks_answered or wasted_tokens, so a recorded coord measurement is invisible in benchmarks.md",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "benchmarks.py report lists dedup_hits, claim_refused, asks_answered and wasted_tokens of the multi rows beside dup_facts, claims and claim_conflicts (bench_report.MULTI_METRICS), so kb/_self/reports/benchmarks.md shows the coord shared against isolated figures that multi record wrote",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; t=open('kb/_self/reports/benchmarks.md',encoding='utf-8').read(); sys.exit(0 if 'dedup_hits' in t else 1)"
+    ]
+  },
+  "repro_reason": "the defect is a column the generated report omits; the only observable is the generated report's text, so the repro reads it after a report run"
+}
