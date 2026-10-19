@@ -90,6 +90,38 @@
       "class": "agents-rule",
       "answer": "one AGENTS.md status line that replaces the kb: hook line, paid by dropping the Skills paragraph's links note: 4085 bytes",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What does topic_of give a question that names several topics, and what does a status: prompt with no mappable topic get?",
+      "options": [
+        "all in both cases: several cues give all, an unmapped status: text runs kbmon.py --status all",
+        "None for several cues, and status: with an unmapped text passes through unchanged"
+      ],
+      "recommendation": "all in both cases: several cues give all, an unmapped status: text runs kbmon.py --status all",
+      "do": {
+        "all in both cases: several cues give all, an unmapped status: text runs kbmon.py --status all": "ST-icmfvtmm",
+        "None for several cues, and status: with an unmapped text passes through unchanged": "ST-icmfvtmm"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Does a status answer (kb_ask.py, status:, status+:) write a query log row, and where does the shared kbmon runner live?",
+      "options": [
+        "no row (as backlog: writes none); the runner mon_status.run starts kbmon.py as a subprocess with a 60 s timeout",
+        "a kb_ask row as for a tool answer; the runner sits in kb_hook.py"
+      ],
+      "recommendation": "no row (as backlog: writes none); the runner mon_status.run starts kbmon.py as a subprocess with a 60 s timeout",
+      "do": {
+        "no row (as backlog: writes none); the runner mon_status.run starts kbmon.py as a subprocess with a 60 s timeout": "ST-icmfvtmm",
+        "a kb_ask row as for a tool answer; the runner sits in kb_hook.py": "ST-icmfvtmm"
+      },
+      "class": "querylog",
+      "answer": "no row (as backlog: writes none); the runner mon_status.run starts kbmon.py as a subprocess with a 60 s timeout",
+      "by": "agent"
     }
   ],
   "notes": "Plan 2026-10-19: premise: no _tools/mon_status.py, and kb_hook.py --test 'status: how much did today cost' gives no output. The recommended rule answer's AGENTS.md line, measured at 4085 bytes on the base (measure again after ST-qpcva3jl, which also touches AGENTS.md): '- Status (sprints, sessions, load, cost): `python3 _tools/kbmon.py --status [TOPIC]`; results, not backlog ids. Hooks `kb:`, `status:` answer; `kb+:`, `status+:` pass on.' in place of the kb: hook line, with the Skills paragraph's links note dropped. A status: prompt whose kbmon run fails or times out goes through with a note of what failed, as backlog: does. The check keeps docs questions (Claude Code sessions, an Intune licence cost, GPO processing order, a ConfigMgr deployment status) as lookups.",

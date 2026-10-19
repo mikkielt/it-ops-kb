@@ -12,7 +12,7 @@ An offline knowledge base of facts from official sources on Windows endpoint man
   - `none` or a `route:` line: state what the kb has and lacks (`kb has:`, `kb lacks:`), answer what it has, research only the rest in the live docs (below, else the web), never from memory.
 - Counts, lists and joins are tools, not reading: `rag.py audit [PREFIX] [--status partial] [--entries]` (per article: tag counts, linked gaps, conflicts), `rag.py facts PREFIX --tag UNK,COMMUNITY`, `rag.py src S123 --cited`. MCP: `kb_audit`, `kb_facts`, `kb_source` with `cited`. `--format detailed` / `response_format`: full text, urls.
 - Also: `rag.py show PATH:LINE -n 30`, `rag.py search "<keywords>" [-d DOMAIN] [--index]` (`--index` adds the ledgers and `kb/_self/` docs), `rag.py topics [DOMAIN]`. A hook points article `cat`/`sed -n` here; raw reads only to edit.
-- `kb: <question>`: a hook answers from the pack when coverage is good, else passes it on (`kb+:` always does).
+- Status (sprints, sessions, load, cost): `python3 _tools/kbmon.py --status [TOPIC]`; plain words, not backlog ids. Hooks `kb:`, `status:` answer; `kb+:`, `status+:` pass on.
 - Open work, in order: `backlog.py horizon`, `next --all --any`, or `backlog:`.
 
 ## Tags
@@ -25,7 +25,7 @@ Three remote servers, no authentication, urls in `.claude-plugin/it-ops-kb-docs/
 
 ## Skills
 
-`/kb-lookup`, `/kb-review-workspace` and `/kb-gap` (read-only). **A request to change the kb goes through its skill**, not freehand (a hook names it): `/kb-setup`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-add-root`, `/kb-ingest`, `/kb-census`, `/kb-probe`, `/kb-verify`, `/kb-git-sync`, `/kb-self`; planned work: `/kb-backlog`, `/kb-sprint`, `/kb-item` (links to the plugin's `skills/`; `kb-worker`, to its `agents/`).
+`/kb-lookup`, `/kb-review-workspace` and `/kb-gap` (read-only). **A request to change the kb goes through its skill**, not freehand (a hook names it): `/kb-setup`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-add-root`, `/kb-ingest`, `/kb-census`, `/kb-probe`, `/kb-verify`, `/kb-git-sync`, `/kb-self`; planned work: `/kb-backlog`, `/kb-sprint`, `/kb-item`.
 
 ## Agent conduct
 

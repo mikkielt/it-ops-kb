@@ -30,6 +30,11 @@
   backlog+: [text]  always let the prompt through: the same output as additionalContext with a short instruction, cut so
                     the context stays under the limit: each command keeps a share of it, cut by whole lines and ending
                     in a note of the lines left out and the command that prints them all (fit_blocks).
+  status: [text]    run `kbmon.py --status TOPIC` (mon_status.run; TOPIC is what mon_status.topic_of reads from the text, else
+                    `all`) and block the prompt with its lines as the reason: no model call, no query log row. A kbmon that
+                    fails or times out lets the prompt through with a note of what failed.
+  status+: [text]   always let the prompt through: the same lines as additionalContext with a short instruction. A `kb:`
+                    prompt is never read for a topic: it stays the docs lookup.
   anything else     no output: the prompt goes to the model unchanged.
 
 The same script answers a PreToolUse event on Bash or PowerShell (a JSON event with `tool_input`): a command that reads a
@@ -56,13 +61,17 @@ import json, os, re, subprocess, sys
 PREFIX = re.compile(r"^\s*kb(\+)?\s*:\s*(\S.*)$", re.I | re.S)
 FEEDBACK_PREFIX = re.compile(r"^\s*kb!\s*:(.*)$", re.I | re.S)
 BACKLOG_PREFIX = re.compile(r"^\s*backlog(\+)?\s*:", re.I)
+STATUS_PREFIX = re.compile(r"^\s*status(\+)?\s*:(.*)$", re.I | re.S)
 BACKLOG_PY = os.path.join(os.path.dirname(os.path.abspath(__file__)), "backlog.py")
 BACKLOG_COMMANDS = (("horizon",), ("next", "--all", "--any"))  # the plain-words backlog question's two answers
 BACKLOG_TIMEOUT = 60
+STATUS_TIMEOUT = 60  # seconds kbmon.py may take
 LIMIT = 9500  # additionalContext is capped at 10,000 characters (kb/public/claude/hooks.md); keep the margin
 HEAD_LINES = ("coverage:", "check:", "freshness:", "route:", "kb has:", "kb lacks:")
 NOTE = ("\n\n(answered by the kb hook from the kb alone, without the model; ask again with `kb+:` to have Claude "
         "reason over these facts)")
+STATUS_NOTE = ("\n\n(answered by the status hook from kbmon.py alone, without the model; ask again with `status+:` "
+               "to have Claude reason over this output)")
 BACKLOG_NOTE = ("\n\n(answered by the backlog hook from backlog.py alone, without the model; ask again with `backlog+:` "
                 "to have Claude reason over this output)")
 
@@ -77,6 +86,9 @@ def respond(prompt):
     b = BACKLOG_PREFIX.match(prompt or "")
     if b:  # no query log row: the answer is the backlog's own state, not a kb lookup
         return backlog_answer(bool(b.group(1))), None
+    s = STATUS_PREFIX.match(prompt or "")
+    if s:  # no query log row, as for backlog:
+        return status_answer(bool(s.group(1)), s.group(2)), None
     m = PREFIX.match(prompt or "")
     if not m:
         return None, None
@@ -210,6 +222,23 @@ def backlog_answer(forward):
     # over 10,000 characters the context is saved to a file: every command keeps a share of LIMIT (fit_blocks)
     return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit",
                                    "additionalContext": head + fit_blocks(blocks, LIMIT - len(head))}}
+
+
+def status_answer(forward, text):
+    """The answer to a `status:` prompt (block, the kbmon lines as the reason) or `status+:` (the lines as context); the topic
+    is the one mon_status.topic_of reads from TEXT, else `all`."""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import mon_status
+    topic = mon_status.topic_of(text) or "all"
+    lines, error = mon_status.run(topic, STATUS_TIMEOUT)
+    if lines is None:  # never block a prompt on a tool that does not run
+        return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit",
+                                       "additionalContext": f"The status hook could not read the monitor: {error}"}}
+    if not forward:
+        return {"decision": "block", "reason": lines + STATUS_NOTE}
+    head = (f"The status hook ran `kbmon.py --status {topic}` for this question. Answer from its lines in plain words, "
+            "naming no backlog id; run another `kbmon.py --status TOPIC` only if it misses what was asked.\n\n")
+    return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": (head + lines)[:LIMIT]}}
 
 
 def routed(res):
