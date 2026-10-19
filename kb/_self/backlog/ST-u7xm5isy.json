@@ -1,0 +1,24 @@
+{
+  "id": "ST-u7xm5isy",
+  "kind": "story",
+  "title": "A plan's check of an allow-list guard plants a near miss of each allowed shape",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the kb-sprint plan step says a check of a guard with an allow-list (noreply, placeholder domains) plants one near miss per allowed shape (the allowed word at another domain); ST-cmjz33nf's check planted only the allowed address and the review found BG-6a6jrwbi",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt = open('.claude/skills/kb-sprint/SKILL.md', encoding='utf-8').read()\nok = 'near miss' in t\nprint('ok' if ok else 'the kb-sprint plan step names no near-miss case for an allow-list check'); sys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-yjugq5c2 close"
+  ]
+}

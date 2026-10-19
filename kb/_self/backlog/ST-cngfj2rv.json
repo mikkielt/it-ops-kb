@@ -1,0 +1,25 @@
+{
+  "id": "ST-cngfj2rv",
+  "kind": "story",
+  "title": "land keeps the worker's worktree until the push step passes",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "land removes the worker's worktree only after the push step passes, and its help says so; ST-yywctl35's landing removed it, then stopped at the push, and the worktree had to be added back by hand to resume the worker",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, sys\no = subprocess.run([sys.executable, \"_tools/backlog.py\", \"land\", \"--help\"], capture_output=True, text=True)\nok = o.returncode == 0 and \"keeps the worker\" in \" \".join(o.stdout.split())\nprint(\"ok\" if ok else \"land --help does not say it keeps the worker's worktree until the push passes\"); sys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-yjugq5c2 close"
+  ]
+}

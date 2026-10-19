@@ -1,0 +1,25 @@
+{
+  "id": "ST-3ihmzwoz",
+  "kind": "story",
+  "title": "backlog.py start warns about a draft item still in the sprint",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "start prints a warning for each item of the sprint that is still a draft, since ST-xbjwdmpv sat in SP-yjugq5c2 as a draft until the orchestrator moved it to todo by hand",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, sys\no = subprocess.run([sys.executable, \"_tools/backlog.py\", \"start\", \"--help\"], capture_output=True, text=True)\nok = o.returncode == 0 and \"draft\" in o.stdout\nprint(\"ok\" if ok else \"start --help names no draft warning\"); sys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-yjugq5c2 close"
+  ]
+}

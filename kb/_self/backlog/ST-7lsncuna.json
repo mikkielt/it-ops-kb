@@ -1,0 +1,24 @@
+{
+  "id": "ST-7lsncuna",
+  "kind": "story",
+  "title": "A sprint plan keeps an item whose route waits on an operator-only gate out of the sprint until it is answered",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the kb-sprint plan step says an item whose work waits on an unanswered operator-only gate (class push or querylog) is filed outside the sprint with its gate, so the sprint's goal holds no clause it cannot meet unattended; ST-estjbyy4 left SP-yjugq5c2 unworked on g-author",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt = open('.claude/skills/kb-sprint/SKILL.md', encoding='utf-8').read()\nok = 'operator-only gate' in t\nprint('ok' if ok else 'the kb-sprint plan step does not say how to plan an item waiting on an operator-only gate'); sys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-yjugq5c2 close"
+  ]
+}

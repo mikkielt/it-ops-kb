@@ -1,0 +1,24 @@
+{
+  "id": "ST-jfmtvelw",
+  "kind": "story",
+  "title": "A plan asks for a stubbed run when an item's code path cannot run on the host",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the kb-sprint plan step says a check over a code path that needs a package the host lacks (the OpenTelemetry SDK) runs it on a stubbed module, not by reading source; ST-ve73rkwl's check read kbmon_otel.py only",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt = open('.claude/skills/kb-sprint/SKILL.md', encoding='utf-8').read()\nok = 'stubbed' in t\nprint('ok' if ok else 'the kb-sprint plan step does not ask for a stubbed run of a path the host cannot run'); sys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-yjugq5c2 close"
+  ]
+}

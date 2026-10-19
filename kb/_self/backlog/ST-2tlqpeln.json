@@ -1,0 +1,24 @@
+{
+  "id": "ST-2tlqpeln",
+  "kind": "story",
+  "title": "A content or research worker runs the tracked-file leak scan before it hands back",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the kb-worker role file has a content worker run the tracked-file leak scan selection on its changed articles before its report, since ST-yywctl35 handed back facts with literal addresses that the landing's sync gate refused",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt = open('.claude/agents/kb-worker.md', encoding='utf-8').read()\nok = 'test_leaks' in t\nprint('ok' if ok else 'kb-worker.md does not name the leak scan run'); sys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "agents/worker.md"
+  ],
+  "links": [
+    "parked: SP-yjugq5c2 close"
+  ]
+}

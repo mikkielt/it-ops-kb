@@ -1,0 +1,24 @@
+{
+  "id": "ST-u3hg42xz",
+  "kind": "story",
+  "title": "gate add does not class a proposed new kb topic path under an existing domain as push",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_authority.gate_class reads `new topic gitlab/<slug>` under an existing kb domain as a topic path, not the forge name, so a research placement gate stays provisional (ST-yywctl35 g1 was made blocking, class push)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, \"_tools\"); import bl_authority as b\nit = {\"id\": \"ST-x\", \"kind\": \"story\", \"touches\": [\"kb/public/**\"]}\ng = {\"id\": \"g1\", \"question\": \"Where do the facts live?\", \"options\": [\"extend gitlab/commit-signing-and-provenance\", \"new topic gitlab/git-history-rewrite\"], \"recommendation\": \"extend gitlab/commit-signing-and-provenance\"}\nc = b.gate_class(it, g)\nprint(c, b.class_reasons(it, g)); sys.exit(0 if c != \"push\" else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py"
+  ],
+  "links": [
+    "parked: SP-yjugq5c2 close"
+  ]
+}
