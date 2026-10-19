@@ -72,6 +72,21 @@
       "class": "agents-rule",
       "answer": "the operator id and the answering session's role (interactive, orchestrator or worker)",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How do the operator fields sit on an item: a session with no operator id, and the claim's operator after release?",
+      "options": [
+        "write nothing without an id, and release, reopen and drop clear a claim's operator with claimed_by",
+        "write a null id, and keep the claim's operator after release"
+      ],
+      "recommendation": "write nothing without an id, and release, reopen and drop clear a claim's operator with claimed_by",
+      "do": {
+        "write nothing without an id, and release, reopen and drop clear a claim's operator with claimed_by": "ST-zcfgtpfv",
+        "write a null id, and keep the claim's operator after release": "ST-zcfgtpfv"
+      },
+      "class": "push"
     }
   ],
   "notes": "Premise (2026-10-19): in a planted backlog, new sprint writes no creator, claim writes no operator, an operator's gate answer records by only, and set has no --owner flag. kb/_self/map.csv maps _tools/bl_base.py to kb/_self/querylog.md: a field list change there is reviewed against it; the query log's own fields are another item's open gate. Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and .claude/hooks with its own coord store and a stub claude on PATH; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations; facts: public/claude/ci-and-headless.md:124-127, public/claude/otel-monitoring.md:51-53, QK-claude-code-session-learn-email-account. Addresses in checks are built at run time; docs and items use the placeholder jan.kowalski only.",

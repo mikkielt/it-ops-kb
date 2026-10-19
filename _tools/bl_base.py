@@ -269,8 +269,30 @@ NEEDS_CHECKS = ("story", "bug", "task")
 NEEDS_TOUCHES = ("task", "subtask")
 ORDER = ("id", "kind", "title", "status", "parent", "sprint", "review", "goal_research", "priority", "rank", "severity", "goal",
          "repro", "repro_reason", "checks", "clauses", "touches", "repos", "repos_if_needed", "depends_on", "relates_to", "gates", "trigger", "knowledge",
-         "links", "external", "notes", "delegates", "recurs", "claimed_by", "evidence")
+         "links", "external", "notes", "delegates", "recurs", "creator", "owner", "claimed_by", "operator", "evidence")
 FIELDS = set(ORDER)
+OPERATOR_ID_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")  # a pseudonymous operator id (kbwho.py), never an address
+EMAIL_RE = re.compile(r"[^@\s]+@[^@\s]+")
+
+
+def operator_who():
+    """(id, role) of this session by kbwho.operator(), for an item field: the id is None when there is none or when it
+    is shaped like an email address (an address is never written into an item)."""
+    import kbwho
+    who = kbwho.operator()
+    oid = who["id"]
+    return (oid if oid and not EMAIL_RE.search(oid) else None), who["role"]
+
+
+def operator_problem(field, value):
+    """Why VALUE cannot be an item's operator-id FIELD (creator, owner, operator, a gate's operator), else None."""
+    if not isinstance(value, str) or not value:
+        return f"{field} needs an operator id (text)"
+    if EMAIL_RE.search(value):
+        return f"{field} is shaped like an email address: an operator id is a pseudonym (kbwho.py), never an address"
+    if not OPERATOR_ID_RE.fullmatch(value):
+        return f"{field} {value!r} is not an operator id (letters, digits, . _ -, at most 64)"
+    return None
 CHECK_TIMEOUT_S = 1800
 ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]|\x1b\][^\x07]*\x07")  # colour and title codes a check prints
 TEXT_MAX = 2000  # one field's text; a longer one is an essay, not a work item

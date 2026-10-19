@@ -20,7 +20,7 @@ from bl_base import (
     APPROVALS, FIELDS, GATE_KINDS, IN_SPRINT, NEEDS_CHECKS, NEEDS_TOUCHES, PARENTS,
     PRIORITIES, Refused, SEVERITIES, SPRINT_STATUSES, START_GATE, STATUSES, TEXT_MAX, WORKED,
     always_in_scope, canonical, clause_commands, external_problems, glob_re, goal_clauses, id_re, kinds, prefix_kind, rel_dir, repositories, sprint_id_re, host_user_pieces, items_holding_names, research_in_planned, say, scope,
-    touches_overlap, withhold_names,
+    touches_overlap, withhold_names, EMAIL_RE, operator_problem,
 )
 from bl_plan import (docs_after_code, docs_warnings, linked_touch_warnings, shared_file_warnings, stale_touches,
                      unordered_overlap_warnings)
@@ -613,6 +613,11 @@ def validate(bl, pieces=None):
                 isinstance(d, dict) and set(d) == {"name", "by"} and isinstance(d["name"], str)
                 and re.fullmatch(r"[\w.-]+", d["name"]) and d["by"] in ("operator", "agent") for d in it["delegates"])):
             e("delegates is a sprint's list of {name, by} grants (set SP --delegate NAME --by operator)")
+        for f in ("creator", "owner", "operator"):
+            if f in it:
+                why = operator_problem(f, it[f]) if f == "operator" or kind == "sprint" else f"{f} is a sprint's field"
+                if why:
+                    e(why)
         if _text_problem("title", it.get("title"), "missing"):
             e(_text_problem("title", it.get("title"), "missing"))
         for f in ("goal", "notes"):
@@ -718,6 +723,11 @@ def validate(bl, pieces=None):
             if "answer" in g and g.get("by") not in ("operator", "agent") and not (
                     g["kind"] == "provisional" and re.fullmatch(r"delegate:[\w.-]+", str(g.get("by")))):
                 e(f"gate {g['id']}: an answer needs by: operator|agent (delegate:NAME confirms a provisional one)")
+            why = operator_problem("operator", g["operator"]) if "operator" in g else None
+            if "role" in g and not (isinstance(g["role"], str) and g["role"] and not EMAIL_RE.search(g["role"])):
+                why = why or "role needs the session's role (text, never an email address)"
+            if why:
+                e(f"gate {g['id']}: {why}")
             if "class" in g and g["class"] not in bl_authority.CLASSES:
                 e(f"gate {g['id']}: class {g['class']!r} is not one of {', '.join(bl_authority.CLASSES)}")
             elif bl_authority.lowered(it, g):
