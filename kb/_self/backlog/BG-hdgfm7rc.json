@@ -2,7 +2,7 @@
   "id": "BG-hdgfm7rc",
   "kind": "bug",
   "title": "The report divides a bare research twin's tokens and USD by the kb agent's verified facts, so its per-verified-fact figure measures nothing the twin did",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-giqleoy2",
   "sprint": "SP-3pvz2noj",
   "priority": "P1",
@@ -22,5 +22,6 @@
     "kb/_self/reports/benchmarks.md",
     "README.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "orch-r32"
 }
