@@ -2,7 +2,7 @@
   "id": "ST-jejcrcib",
   "kind": "story",
   "title": "The live view's sprint panel shows each active sprint's estimate range from mon_eta.estimate",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yjfiemha",
   "priority": "P2",
   "rank": 0,
@@ -48,5 +48,6 @@
     "ST-po5rwymx",
     "BG-jemfbkjs"
   ],
-  "notes": "Premise on origin/main cf985537c, 2026-10-19: the planted snapshot's sprint panel rows show done counts and no range; mon_sprint still has DONE_KEPT and done_commits. A panel's lines(data) gets no snapshot time today: pass the taken time from mon_view.render_text, or another way inside these touches. Overlap: SP-2uljwgho's ST-dhsyyjft touches mon_sprint.py and mon_view.py later and rebases onto this story."
+  "notes": "Premise on origin/main cf985537c, 2026-10-19: the planted snapshot's sprint panel rows show done counts and no range; mon_sprint still has DONE_KEPT and done_commits. A panel's lines(data) gets no snapshot time today: pass the taken time from mon_view.render_text, or another way inside these touches. Overlap: SP-2uljwgho's ST-dhsyyjft touches mon_sprint.py and mon_view.py later and rebases onto this story.",
+  "claimed_by": "orch-r33"
 }
