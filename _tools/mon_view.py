@@ -235,14 +235,23 @@ def takes_width(view):
     return len(params) >= 2 or any(x.kind is x.VAR_POSITIONAL for x in params)
 
 
-def panel_lines(name, data, width):
-    """The body rows of a panel: its module's `lines(data[, width])` (a second parameter gets the columns it may use), each
-    cut into printable lines; the generic view when it has none or fails."""
+def takes_taken(view):
+    try:
+        return "taken" in inspect.signature(view).parameters
+    except (TypeError, ValueError):
+        return False
+
+
+def panel_lines(name, data, width, taken=None):
+    """The body rows of a panel: its module's `lines(data[, width][, taken])` (a second parameter gets the columns it may use,
+    a parameter named `taken` the snapshot's taken time), each cut into printable lines; the generic view when it has none or
+    fails."""
     try:
         module = mon_base.panel_module(name)
         view = getattr(module, "lines", None)
         if view is not None:
-            rows = view(data, width) if takes_width(view) else view(data)
+            args = (data, width) if takes_width(view) else (data,)
+            rows = view(*args, taken=taken) if takes_taken(view) else view(*args)
             return [part for x in rows for part in (plain(x).expandtabs(4).splitlines() or [""])]
     except Exception:  # noqa: BLE001 - a saved snapshot may hold data the module's view does not take
         pass
@@ -278,13 +287,14 @@ def title_row(name, panel):
     return row
 
 
-def body_rows(name, panel, width):
+def body_rows(name, panel, width, taken=None):
     """The rows under a title, each behind the two-column gutter: a row of the panel's own that starts `! ` or `!!` keeps
-    it (its colour is the whole row's), any other gets two spaces. A panel that is not ok has none."""
+    it (its colour is the whole row's), any other gets two spaces. A panel that is not ok has none. TAKEN is the snapshot's
+    taken time, for a panel whose rows move with it."""
     if panel.get("state") != "ok" or "data" not in panel:
         return []
     rows = []
-    for x in panel_lines(name, panel["data"], width):
+    for x in panel_lines(name, panel["data"], width, taken):
         x = x.rstrip()
         if x[:2] not in GUTTER_COLOURS and x:
             x = "  " + x
@@ -348,10 +358,10 @@ def render_text(snap, ansi=False, width=80, height=None, frame=1, interval=5, ro
     for name, panel in panels:
         if name == "log":
             continue
-        rows += [title_row(name, panel)] + body_rows(name, panel, cols) + [[]]
+        rows += [title_row(name, panel)] + body_rows(name, panel, cols, snap.get("taken")) + [[]]
     for name, panel in panels:
         if name == "log":
-            tail = body_rows(name, panel, cols)
+            tail = body_rows(name, panel, cols, snap.get("taken"))
             if height:
                 tail = tail[-max(MIN_LOG_ROWS, int(height) - 2 - alert_rows - len(rows)):]
             rows += [title_row(name, panel)] + tail
