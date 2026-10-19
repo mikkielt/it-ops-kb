@@ -253,13 +253,17 @@
                                             plugin or a skill, and `isolation: ok` when none does;
                                             exit 1 naming them, 0 when none, 2 on a refusal (no
                                             run in DIR, an agent with no end stamp); no model, no network
-  benchmarks.py multi fitness [--dir DIR]   the comprehensive check of concurrent work, run by the harness in place of a test: replay
+  benchmarks.py multi fitness [--dir DIR] [--case NAME]...
+                                            the comprehensive check of concurrent work, run by the harness in place of a test: replay
                                             (`multi run --replay`) the scenarios lookups, research, mixed and coord at once and one at a time,
                                             and at once with each --plant their agents can make, and with --bare clean and with
                                             --plant bare-leak, each in a sandbox of its own under DIR
                                             (default: a temporary directory under the scratch directory), removed after the case, and read
                                             each finished run with `multi check`; exit 0 only when `multi check` passes every clean replay
-                                            (a --bare one with `isolation: ok`) and names every planted fault (bare-leak: each kind of leak), 1 naming each case that did not; no model, no network
+                                            (a --bare one with `isolation: ok`) and names every planted fault (bare-leak: each kind of leak), 1 naming each case that did not; no model, no network;
+                                            the cases research-shared, research-isolated, coord-shared and coord-isolated (the scenario at once under that --coord)
+                                            also need the run's measures: dedup_hits and dup_facts, claim_refused and asks_answered, dup_facts; each case's line ends
+                                            with its measures as name=value; --case NAME runs only the named cases (exit 2 for a name that is no case)
   benchmarks.py multi record [--dir DIR] [--out FILE]
                                             merge the newest json line of each agent in DIR/results.jsonl into FILE (default
                                             kb/_self/reports/benchmarks.csv) as rows of the scenario `multi`: record the first
@@ -504,6 +508,7 @@ def main(argv=None):
     mk.add_argument("--dir", help="the sandbox's directory (default: _cache/bench-multi of the clone's main worktree)")
     mf = mp.add_parser("fitness")
     mf.add_argument("--dir", help="the directory the cases' sandboxes are built under (default: a temporary directory under the scratch directory)")
+    mf.add_argument("--case", action="append", default=[], metavar="NAME", help="run only the case NAME (repeatable; default: every case)")
     mc = mp.add_parser("record")
     mc.add_argument("--dir", help="the sandbox's directory (default: _cache/bench-multi of the clone's main worktree)")
     mc.add_argument("--out", metavar="FILE", help="the results file to merge into (default: kb/_self/reports/benchmarks.csv; "
@@ -560,7 +565,7 @@ def main(argv=None):
             if a.multi_cmd == "check":
                 return bench_multi.check(a.dir)
             if a.multi_cmd == "fitness":
-                return bench_multi.fitness(a.dir, lambda ln: print(ln, flush=True))
+                return bench_multi.fitness(a.dir, lambda ln: print(ln, flush=True), a.case)
             if a.multi_cmd == "record":
                 return bench_multi.record(a.dir, a.out)
             if a.multi_cmd == "run":

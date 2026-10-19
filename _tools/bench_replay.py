@@ -2,9 +2,12 @@
 
 `python3 bench_replay.py ROLE [--usage JSON] [--cost USD] [--question Q]... [--budget N] [--area A] [--holder H] [--plant P]`
 runs one agent's role in the current directory (the agent's clone, or the worktree `backlog.py dispatch` made for a code
-item) and makes no model call: a `lookup` agent runs `rag.py pack` on each question; a `research` agent claims the key
-`research:replay:HOLDER` (with a `claim` event), runs `coord.py dedup` on its area, commits one planted `_gaps.md` entry,
-runs `kbgit.py sync --push`, then releases its claim (with a `release` event); a `code` agent writes the planted files of
+item) and makes no model call: a `lookup` agent runs `rag.py pack` on each question; a `research` agent takes the path a real
+one takes: `coord.py dedup` on its area anchored with `--topic` on one article (the holder is the variable KB_COORD_HOLDER's;
+the store makes the `claim` events), adds the planted fact to that article when the dedup claimed a key and the article lacks the fact
+(an agent whose dedup found the topic claimed by another holder writes none), commits it with one planted `_gaps.md` entry, runs
+`kbgit.py sync --push`, posts a `fact_added` event, holds its claim a few seconds and releases each key it holds
+(the store makes the `release` events); a `code` agent writes the planted files of
 its item's touches, runs the item's check and commits them with the item's `KB-Work` trailer. `--plant lost-claim` makes a
 research agent end with its claim held and `--plant land-stop` makes a code agent leave its change uncommitted, so the
 item cannot land, and `--plant dup-research` makes a research agent skip `coord.py dedup`: it claims the key
@@ -33,10 +36,14 @@ PLANTS = ("lost-claim", "land-stop", "dup-research", "leak-output", "leak-commit
 LEAK_ENV = "MULTI_LEAK_CANARY_FILE"  # bench_multi.LEAK_ENV: the file that holds the canary of another agent
 PLANT_TERM = "replay-planted-term"  # the research term of --plant dup-research
 PLANT_HOLD = 5  # seconds a dup-research agent holds its claim at least, so another agent's fact lands inside it
+HOLDER_ENV = "KB_COORD_HOLDER"  # coord.HOLDER_ENV: the holder name coord.py takes when no --holder is given
+RESEARCH_TERM = "replay-research-term"  # the term of the fact a replayed research agent adds when its dedup claimed a key
 GAP = ("\n## replay-{agent}\n\n- **A planted entry that a replayed research agent commits and syncs.** Nothing was tried; the entry "
        "exists to be pushed to the sandbox's bare. [UNK] (topic: {topic}){note}\n")
 PLANT_FACT = ("- A planted fact about {term}: two replayed research agents that skip the dedup claim of one research term write this "
               "one fact each. [UNK]")
+DEDUP_FACT = ("- A planted fact about {term}: replayed research agents whose dedup shares one store write this one fact once; agents "
+              "whose stores are their own write it each. [UNK]")
 PLANTED_CODE = {  # the file a replayed code agent writes for a touch of the planted items (kb/_self/reports/multi_bench.csv)
     "examples/multi-bench/slugify.py": '''"""A slugify helper for the multi-agent benchmark examples."""
 import re
@@ -157,28 +164,53 @@ def sync_push(steps):
     raise Failed(last)
 
 
+def holder_args(a):
+    """The `--holder` of a coord command: none when the variable KB_COORD_HOLDER names the holder, as it does in the harness's agents."""
+    return [] if os.environ.get(HOLDER_ENV) else ["--holder", a.holder]
+
+
+def fact_slot(bullets, a):
+    """The bullet after which an agent writes its fact: by the agent's number, the first, the last or the middle bullet of `## Facts`, so
+    two agents' identical facts sit apart and both merge."""
+    return (bullets[0], bullets[-1], bullets[len(bullets) // 2])[int(re.sub(r"\D", "", a.holder) or 0) % 3]
+
+
 def research(a, steps):
+    """A research agent on the real coord path: `coord.py dedup AREA --topic T` (T the planted article's topic, so every agent's area
+    overlaps), the fact for the keys it claimed, the `fact_added` event, the claim held PLANT_HOLD seconds and its release."""
     if a.plant == "dup-research":
         return dup_research(a, steps)
     canary = leaked() if a.plant in ("leak-commit", "leak-event") else ""
-    key = f"research:replay:{a.holder}"
-    token = json.loads(run([sys.executable, tool("coord.py"), "claim", key, "--ttl", str(CLAIM_TTL), "--holder", a.holder], steps,
-                           f"coord.py claim {key} --holder {a.holder}"))["token"]
-    coord_event("claim", key, a.holder, steps)
+    topic, path = plant_article()
+    out = run([sys.executable, tool("coord.py"), "dedup", a.area, "--topic", topic, *holder_args(a)], steps,
+              f"coord.py dedup {a.area!r} --topic {topic}")
+    body, got = json.loads(out.strip().splitlines()[-1]), time.time()
+    claimed, token = body.get("claimed") or [], body.get("token", "")
+    if a.plant == "lost-claim" and not claimed:  # another agent's claim covered the topic: this agent takes a key of its own to lose
+        key = f"research:{topic}:replay-lost-claim"
+        token = json.loads(run([sys.executable, tool("coord.py"), "claim", key, "--ttl", str(CLAIM_TTL), *holder_args(a)], steps,
+                               f"coord.py claim {key}"))["token"]
+        claimed = [key]
     if a.plant == "leak-event":
-        coord_event("lesson", key, a.holder, steps, "--field", f"note={canary}")
-    out = run([sys.executable, tool("coord.py"), "dedup", a.area, "--holder", a.holder], steps, f"coord.py dedup {a.area!r} --holder {a.holder}")
-    topic = str(json.loads(out.strip().splitlines()[-1]).get("topic", "")).removeprefix("public/")
-    if not (Path("kb/public") / (topic + ".md")).is_file():  # a gap names a topic the root has
-        topic = next(f"{x.parent.name}/{x.stem}" for x in sorted(Path("kb/public").glob("*/*.md")) if not x.name.startswith("_"))
+        coord_event("lesson", f"research:{topic}", a.holder, steps, "--field", f"note={canary}")
+    lines = path.read_text(encoding="utf-8").splitlines()
+    fact = DEDUP_FACT.format(term=RESEARCH_TERM)
+    wrote = bool(claimed) and fact not in lines  # a fact the clone already holds closes the lack the claim was for
+    if wrote:
+        lines.insert(fact_slot(fact_bullets(lines), a) + 1, fact)
+        path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+    gap_topic = topic.removeprefix("public/")
     with open(Path("kb/public/_gaps.md"), "a", encoding="utf-8", newline="\n") as f:
-        f.write(GAP.format(agent=a.holder, topic=topic, note=f" The entry holds {canary}." if a.plant == "leak-commit" else ""))
-    run(["git", "add", "kb/public/_gaps.md"], steps)
+        f.write(GAP.format(agent=a.holder, topic=gap_topic, note=f" The entry holds {canary}." if a.plant == "leak-commit" else ""))
+    run(["git", "add", "kb/public/_gaps.md", *([str(path)] if wrote else [])], steps)
     run(["git", "commit", "-q", "-m", f"docs(kb): replayed research gap of {a.holder} on {a.area}"], steps)
     sync_push(steps)
-    if a.plant != "lost-claim":
-        run([sys.executable, tool("coord.py"), "release", key, "--token", token], steps, f"coord.py release {key}")
-        coord_event("release", key, a.holder, steps)
+    if wrote:
+        coord_event("fact_added", topic, a.holder, steps)
+    if claimed and a.plant != "lost-claim":
+        time.sleep(max(0.0, PLANT_HOLD - (time.time() - got)))
+        for key in claimed:
+            run([sys.executable, tool("coord.py"), "release", key, "--token", token], steps, f"coord.py release {key}")
 
 
 def code(a, steps):

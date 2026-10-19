@@ -65,6 +65,59 @@
     "ST-kx6qdtkv",
     "ST-prrja362"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where do the new fitness cases go: beside the existing research and coord -concurrent cases, or in place of them?",
+      "options": [
+        "add research-shared, research-isolated, coord-shared and coord-isolated beside the -concurrent cases",
+        "replace research-concurrent and coord-concurrent by the -shared cases"
+      ],
+      "recommendation": "add research-shared, research-isolated, coord-shared and coord-isolated beside the -concurrent cases",
+      "do": {
+        "add research-shared, research-isolated, coord-shared and coord-isolated beside the -concurrent cases": "ST-hur6y3hj",
+        "replace research-concurrent and coord-concurrent by the -shared cases": "ST-hur6y3hj"
+      },
+      "class": "design",
+      "answer": "add research-shared, research-isolated, coord-shared and coord-isolated beside the -concurrent cases",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What does an isolated case count as a pass when two agents work one item in stores of their own: the second worker's land stops and its claim stays held?",
+      "options": [
+        "pass when no agent failed, multi check names only those two costs, and dup_facts is at least 1",
+        "pass only when the run exits 0 and multi check names nothing"
+      ],
+      "recommendation": "pass when no agent failed, multi check names only those two costs, and dup_facts is at least 1",
+      "do": {
+        "pass when no agent failed, multi check names only those two costs, and dup_facts is at least 1": "ST-hur6y3hj",
+        "pass only when the run exits 0 and multi check names nothing": "ST-hur6y3hj"
+      },
+      "class": "design",
+      "answer": "pass when no agent failed, multi check names only those two costs, and dup_facts is at least 1",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "How does the scripted research agent make the agents overlap on one topic and keep the lost-claim plant working?",
+      "options": [
+        "dedup anchored with --topic on the first article with four fact bullets, the claim held 5 s after the sync, and the lost-claim agent claims its own key when its dedup claimed none",
+        "no hold and no own key: the sync time alone keeps the claim live and the plant depends on the dedup claiming"
+      ],
+      "recommendation": "dedup anchored with --topic on the first article with four fact bullets, the claim held 5 s after the sync, and the lost-claim agent claims its own key when its dedup claimed none",
+      "do": {
+        "dedup anchored with --topic on the first article with four fact bullets, the claim held 5 s after the sync, and the lost-claim agent claims its own key when its dedup claimed none": "ST-hur6y3hj",
+        "no hold and no own key: the sync time alone keeps the claim live and the plant depends on the dedup claiming": "ST-hur6y3hj"
+      },
+      "class": "design",
+      "answer": "dedup anchored with --topic on the first article with four fact bullets, the claim held 5 s after the sync, and the lost-claim agent claims its own key when its dedup claimed none",
+      "by": "agent"
+    }
+  ],
   "notes": "Premise run 2026-10-19 on 7079b184a: multi fitness --case is unknown (exit 2). bench_replay.py's research agent today claims research:replay:HOLDER by hand and posts its own claim and release events, so the fitness pass reads hand-posted events, not the coord path real agents take (the ST-eo3a7erb finding). Evidence 2026-10-19 on 59f956f4d: a clean multi run research --replay (and mixed, and coord) is named a problem by multi check: 'lost claim: research:TOPIC:* is still held by agentN (coord store coord/coord.sqlite) though every agent ended'. The scripted research agent's coord.py dedup claims the whole-topic key and bench_replay.py never releases that claim (only its own research:replay:HOLDER key).",
   "claimed_by": "orch-r61"
 }
