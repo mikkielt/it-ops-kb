@@ -2,7 +2,7 @@
   "id": "ST-sjhck2lv",
   "kind": "story",
   "title": "Review sprint: An assistant answers status questions from kbmon, not by hand",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-dulvwwjc",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-r31"
+  "evidence": {
+    "commit": "0568db62009877234a48aa842beabc4e7c7dd424",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "9d0d87e52951a11a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "e1dbebee65f59223"
+      }
+    ]
+  }
 }
