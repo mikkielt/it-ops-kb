@@ -67,6 +67,38 @@
       "class": "design",
       "answer": "_cache/roots/<name>/ in a clone and ${CLAUDE_PLUGIN_DATA}/roots/<name>/ in a plugin host, never under kb/",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where is a failed fetch's reason kept for kbroot.py list to show?",
+      "options": [
+        "a NAME.fetch-error file beside the clone in the roots cache, removed by the next successful fetch",
+        "a field in the pointer file"
+      ],
+      "recommendation": "a NAME.fetch-error file beside the clone in the roots cache, removed by the next successful fetch",
+      "do": {
+        "a NAME.fetch-error file beside the clone in the roots cache, removed by the next successful fetch": "ST-zsbylj6j",
+        "a field in the pointer file": "ST-zsbylj6j"
+      },
+      "class": "design",
+      "answer": "a NAME.fetch-error file beside the clone in the roots cache, removed by the next successful fetch",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "What bounds one git command of a fetch, and what ref does add-remote write when --ref is not given?",
+      "options": [
+        "120 s per git command, an empty ref that follows the remote's default branch",
+        "no bound, ref main"
+      ],
+      "recommendation": "120 s per git command, an empty ref that follows the remote's default branch",
+      "do": {
+        "120 s per git command, an empty ref that follows the remote's default branch": "ST-zsbylj6j",
+        "no bound, ref main": "ST-zsbylj6j"
+      },
+      "class": "push"
     }
   ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): kbroot.py has only list and add. A clone run by a tool takes GIT_TERMINAL_PROMPT=0 so a missing credential fails at once (the goal research story confirms the variable). ",

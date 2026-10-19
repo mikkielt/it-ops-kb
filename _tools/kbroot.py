@@ -1,8 +1,17 @@
 #!/usr/bin/env python3
-"""The kb's roots (stdlib only): list them, or add one beside kb/public.
+"""The kb's roots (stdlib only): list them, add one beside kb/public, or keep one from another repository.
 
   kbroot.py list                         name, id prefix, visibility, articles, sources and path of every root, then a
                                          row `missing` with its reason for each pointer whose root is not here
+  kbroot.py add-remote NAME --url URL --prefix P --team T [--visibility internal|public] [--ref BRANCH]
+                        [--access fetch|submodule] [--description TEXT]
+                                         write the pointer file kb/_roots/NAME.md (no `pin`; `ref` empty follows the
+                                         remote's default branch); `submodule` access prints the `git submodule add`
+  kbroot.py fetch [NAME ...]             clone or update each fetch root (all, or those named) into _cache/roots/NAME/
+                                         (${CLAUDE_PLUGIN_DATA}/roots/NAME/ when this copy runs as the plugin) at its
+                                         `pin` or the tip of its `ref`, with no credential prompt; a failure is kept as the
+                                         reason `list` gives for a root with no clone, and the clone of an update that
+                                         fails stays as it was. Nothing else fetches: lookups read what is on disk
   kbroot.py add NAME --prefix P [--visibility internal|public] [--description TEXT]
                                          create kb/NAME/: its _root.md, empty ledgers with their headers, a coverage
                                          page with the table markers, _retrieval/ with empty data tables, and empty
@@ -17,12 +26,15 @@ keeps it (AGENTS.md, "Agent conduct").
 A root in another repository is named by a pointer file kb/_roots/<name>.md (kbcommon.py): `list` shows one whose
 root is not on disk as `missing` and exits 0; `add` refuses a name or prefix a pointer holds.
 
-Exit: 0 done, 2 refused (bad name or prefix, taken, or the directory exists).
+Exit: 0 done, 1 a fetch failed (stderr names the root), 2 refused (bad name or prefix, taken, the directory exists, or
+a name that is no fetch root).
 """
-import argparse, os, re, sys
+import argparse, os, re, shutil, subprocess, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build_index, kbcommon  # noqa: E402
+
+FETCH_TIMEOUT_S = 120  # one git command of a fetch
 
 SOURCES_HEADER = "id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by\n"
 FILES = {
@@ -107,17 +119,157 @@ def cmd_add(a):
     return 0
 
 
+def pointer_md(name, prefix, visibility, team, url, ref, access, description):
+    return (f"---\nroot: {name}\nid_prefix: {prefix}\nvisibility: {visibility}\nteam: {team}\nurl: {url}\nref: {ref}\n"
+            f"pin: \naccess: {access}\ndescription: {description}\n---\n\n"
+            f"# {name}\n\n{description or 'A root kept in its own repository.'}\n")
+
+
+def cmd_add_remote(a):
+    name, prefix = a.name, a.prefix
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", name) or name == "kb":
+        print(f"refused: root name {name!r} must be lowercase letters, digits and -")
+        return 2
+    if not kbcommon.PREFIX.fullmatch(prefix) or prefix in kbcommon.RESERVED_PREFIXES:
+        print(f"refused: id prefix {prefix!r} must be 1-4 capital letters, not one of "
+              f"{', '.join(sorted(kbcommon.RESERVED_PREFIXES))}")
+        return 2
+    for what, v, required in (("url", a.url, True), ("team", a.team, True), ("ref", a.ref, False),
+                              ("description", a.description, False)):
+        if "\n" in v or "\r" in v or (required and not v.strip()):
+            print(f"refused: {what} must be one {'non-empty ' if required else ''}line")
+            return 2
+    try:
+        roots = kbcommon.roots()
+    except kbcommon.RootError as e:
+        print("refused: fix the existing roots first:", e)
+        return 2
+    for r in [*roots, *kbcommon.missing_roots()]:
+        if r.name == name or r.id_prefix == prefix:
+            print(f"refused: root {r.name} already has the {'name' if r.name == name else 'id prefix'} "
+                  f"{name if r.name == name else prefix!r}")
+            return 2
+    if os.path.exists(os.path.join(kbcommon.KB_DIR, name)):
+        print(f"refused: kb/{name} exists")
+        return 2
+    d = os.path.join(kbcommon.KB_DIR, kbcommon.POINTERS_DIR)
+    path = os.path.join(d, name + ".md")
+    os.makedirs(d, exist_ok=True)
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        f.write(pointer_md(name, prefix, a.visibility, a.team.strip(), a.url.strip(), a.ref.strip(), a.access,
+                           " ".join(a.description.split())))
+    problems = kbcommon.pointer_problems(path)
+    if problems:
+        os.remove(path)
+        print("refused:", "; ".join(problems))
+        return 2
+    rel = os.path.relpath(path, kbcommon.HOME).replace(os.sep, "/")
+    if a.access == "fetch":
+        print(f"created {rel} (root {name}, id prefix {prefix}, {a.visibility}, fetch): python3 _tools/kbroot.py fetch {name}")
+    else:
+        print(f"created {rel} (root {name}, id prefix {prefix}, {a.visibility}, submodule): "
+              f"git submodule add {a.url.strip()} kb/{name}")
+    return 0
+
+
+def fetch_env():
+    """The environment of a git run by a fetch: no credential prompt (a missing credential fails at once)."""
+    env = dict(os.environ, GIT_TERMINAL_PROMPT="0", GCM_INTERACTIVE="never", LC_ALL="C")
+    env.setdefault("GIT_SSH_COMMAND", "ssh -o BatchMode=yes")
+    return env
+
+
+def git(args, p, cwd=None):
+    """Run git with `args`; (True, '') or (False, the last line of its stderr without the pointer's url)."""
+    try:
+        r = subprocess.run(["git", *args], cwd=cwd, env=fetch_env(), capture_output=True, text=True, encoding="utf-8",
+                           errors="replace", timeout=FETCH_TIMEOUT_S, stdin=subprocess.DEVNULL)
+    except subprocess.TimeoutExpired:
+        return False, f"git {args[0]} timed out after {FETCH_TIMEOUT_S} s"
+    except OSError as e:
+        return False, f"git not run ({getattr(e, 'strerror', None) or e})"
+    if r.returncode == 0:
+        return True, ""
+    lines = [ln.strip() for ln in (r.stderr or r.stdout).splitlines() if ln.strip()]
+    return False, (lines[-1] if lines else f"git {args[0]} exited {r.returncode}").replace(p.url, "the url")
+
+
+def fetch_one(p):
+    """Clone or update the root of fetch Pointer `p` into its directory, at `pin` or the tip of `ref`; '' when done,
+    else why it failed. A failed update leaves the clone as it was."""
+    d = kbcommon.pointer_root_dir(p)
+    os.makedirs(os.path.dirname(d), exist_ok=True)
+    if os.path.isdir(os.path.join(d, ".git")):
+        ok, why = git(["fetch", "--quiet", "--tags", "--force", "origin", "+refs/heads/*:refs/remotes/origin/*"], p, d)
+        if not ok:
+            return why
+    else:
+        tmp = d + ".part"
+        shutil.rmtree(tmp, ignore_errors=True)
+        ok, why = git(["clone", "--quiet", "--no-checkout", "--", p.url, tmp], p)
+        if not ok:
+            shutil.rmtree(tmp, ignore_errors=True)
+            return why
+        shutil.rmtree(d, ignore_errors=True)
+        os.replace(tmp, d)
+    target = p.pin or (f"origin/{p.ref}" if p.ref else "origin/HEAD")
+    ok, why = git(["checkout", "--quiet", "--force", "--detach", target + "^{commit}"], p, d)
+    if not ok:
+        return why
+    if not os.path.isfile(os.path.join(d, kbcommon.ROOT_FILE)):
+        return f"the repository holds no {kbcommon.ROOT_FILE} at {target}"
+    return ""
+
+
+def cmd_fetch(a):
+    fetchable = [p for p in kbcommon.pointers() if p.access == "fetch"]
+    by_name = {p.name: p for p in fetchable}
+    if a.names:
+        unknown = [n for n in a.names if n not in by_name]
+        if unknown:
+            print(f"refused: no fetch root {', '.join(unknown)}; fetch roots: {', '.join(by_name) or 'none'}")
+            return 2
+        fetchable = [by_name[n] for n in dict.fromkeys(a.names)]
+    failed = 0
+    for p in fetchable:
+        why = fetch_one(p)
+        err = kbcommon.fetch_error_path(p.name)
+        if why:
+            failed += 1
+            with open(err, "w", encoding="utf-8", newline="\n") as f:
+                f.write(f"fetch failed: {why}\n")
+            print(f"fetch failed: {p.name}: {why}", file=sys.stderr)
+        else:
+            if os.path.exists(err):
+                os.remove(err)
+            print(f"fetched {p.name}")
+    print(f"fetch roots={len(fetchable)} failed={failed}")
+    return 1 if failed else 0
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("list", help="every root")
+    ar = sub.add_parser("add-remote", help="write the pointer file of a root kept in another repository")
+    ar.add_argument("name")
+    ar.add_argument("--url", required=True, help="the root's repository")
+    ar.add_argument("--prefix", required=True, help="the root's source id prefix: 1-4 capital letters")
+    ar.add_argument("--team", required=True, help="the team that owns the root")
+    ar.add_argument("--visibility", choices=("internal", "public"), default="internal")
+    ar.add_argument("--ref", default="", help="a branch (default: the remote's default branch)")
+    ar.add_argument("--access", choices=kbcommon.ACCESS, default="fetch")
+    ar.add_argument("--description", default="", help="one line: what the root holds")
+    fe = sub.add_parser("fetch", help="clone or update fetch roots into the roots cache")
+    fe.add_argument("names", nargs="*", metavar="NAME", help="fetch roots to fetch (default: every one)")
     ad = sub.add_parser("add", help="create a root beside kb/public")
     ad.add_argument("name")
     ad.add_argument("--prefix", required=True, help="the root's source id prefix: 1-4 capital letters")
     ad.add_argument("--visibility", choices=("internal", "public"), default="internal")
     ad.add_argument("--description", default="", help="one line: what the root holds")
     a = ap.parse_args()
-    return cmd_list() if a.cmd == "list" else cmd_add(a)
+    return {"list": lambda: cmd_list(), "add": lambda: cmd_add(a), "add-remote": lambda: cmd_add_remote(a),
+            "fetch": lambda: cmd_fetch(a)}[a.cmd]()
 
 
 if __name__ == "__main__":
