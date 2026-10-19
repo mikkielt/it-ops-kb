@@ -1,0 +1,17 @@
+{
+  "id": "BG-jemfbkjs",
+  "kind": "bug",
+  "title": "kbmon's sprint panel takes over 10 s on this clone, so kbmon --status sprints says the panel is not readable (timeout)",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kbmon --status sprints reads the sprint panel within the panel timeout of 10 seconds on a clone with 18 sprints: mon_sprint.follows runs bl_plan.touches_meet over every open item pair of every sprint, about 22 million calls that each deep-copy the settings, so it takes about 14 s; it needs the open items' follows only for active sprints, or the touches expanded once, and no deep copy per call",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys; p=subprocess.run([sys.executable,\"_tools/kbmon.py\",\"--status\",\"sprints\"],capture_output=True,text=True,timeout=120); print(p.stdout); sys.exit(1 if p.returncode or \"timeout\" in p.stdout else 0)"
+    ]
+  }
+}
