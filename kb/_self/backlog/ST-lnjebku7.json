@@ -40,6 +40,38 @@
   "depends_on": [
     "ST-6iu2xb23"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does a hook's intent carry the operator id into coord, which rejected the field before?",
+      "options": [
+        "coord.py lists operator among the intent's fields; a server's own operator field still replaces the client's, and digest shows operator=ID",
+        "coord.py reads KB_OPERATOR itself when it posts"
+      ],
+      "recommendation": "coord.py lists operator among the intent's fields; a server's own operator field still replaces the client's, and digest shows operator=ID",
+      "do": {
+        "coord.py lists operator among the intent's fields; a server's own operator field still replaces the client's, and digest shows operator=ID": "ST-lnjebku7",
+        "coord.py reads KB_OPERATOR itself when it posts": "ST-lnjebku7"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "What does kbmon's sessions panel do on a host that cannot list processes, now that it also carries the operator id and the live intents?",
+      "options": [
+        "stay ok with procs empty and procs_unreadable naming the reason, so the operator and the intents still show",
+        "stay unsupported as before, and show the operator only where processes can be listed"
+      ],
+      "recommendation": "stay ok with procs empty and procs_unreadable naming the reason, so the operator and the intents still show",
+      "do": {
+        "stay ok with procs empty and procs_unreadable naming the reason, so the operator and the intents still show": "ST-lnjebku7",
+        "stay unsupported as before, and show the operator only where processes can be listed": "ST-lnjebku7"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "notes": "Premise (2026-10-19): the coord hook's SessionStart intent on a work/<id> branch carries item and session only, no operator; kbmon.py --status sessions names no operator. Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and .claude/hooks with its own coord store and a stub claude on PATH; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations; facts: public/claude/ci-and-headless.md:124-127, public/claude/otel-monitoring.md:51-53, QK-claude-code-session-learn-email-account. Addresses in checks are built at run time; docs and items use the placeholder jan.kowalski only.",
   "claimed_by": "orch-r38",
   "operator": "op-4b76a6bc"
