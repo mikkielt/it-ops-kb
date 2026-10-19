@@ -2,7 +2,7 @@
   "id": "ST-lnjebku7",
   "kind": "story",
   "title": "The coord hook's intents carry the operator id, and kbmon's sessions panel shows who runs each session",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-czs3jk57",
   "priority": "P2",
   "rank": 0,
@@ -39,5 +39,7 @@
   "depends_on": [
     "ST-6iu2xb23"
   ],
-  "notes": "Premise (2026-10-19): the coord hook's SessionStart intent on a work/<id> branch carries item and session only, no operator; kbmon.py --status sessions names no operator. Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and .claude/hooks with its own coord store and a stub claude on PATH; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations; facts: public/claude/ci-and-headless.md:124-127, public/claude/otel-monitoring.md:51-53, QK-claude-code-session-learn-email-account. Addresses in checks are built at run time; docs and items use the placeholder jan.kowalski only."
+  "notes": "Premise (2026-10-19): the coord hook's SessionStart intent on a work/<id> branch carries item and session only, no operator; kbmon.py --status sessions names no operator. Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and .claude/hooks with its own coord store and a stub claude on PATH; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations; facts: public/claude/ci-and-headless.md:124-127, public/claude/otel-monitoring.md:51-53, QK-claude-code-session-learn-email-account. Addresses in checks are built at run time; docs and items use the placeholder jan.kowalski only.",
+  "claimed_by": "orch-r38",
+  "operator": "op-4b76a6bc"
 }
