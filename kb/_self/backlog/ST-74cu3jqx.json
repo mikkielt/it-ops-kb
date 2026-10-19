@@ -21,5 +21,6 @@
   ],
   "links": [
     "parked: SP-5y4ut64g close"
-  ]
+  ],
+  "notes": "Recurred in SP-dulvwwjc: ST-rnh43c36 added _tools/mon_status.py without kb/_self/code.md in its touches; the worker stopped on selfdoc stale and was resumed after the touch was widened."
 }

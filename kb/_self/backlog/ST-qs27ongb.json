@@ -1,0 +1,25 @@
+{
+  "id": "ST-qs27ongb",
+  "kind": "story",
+  "title": "Planning names an item's protected-path touches so its stage-back is planned, not found when the worker returns",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "precheck lists each committed item whose touches name a path a headless worker cannot write (such as .claude/agents/*.md), so the plan expects the worker's staging copy and the orchestrator's stage-back before the landing; in SP-dulvwwjc ST-nrtqorqm returned with its check failing on the staged kb-observer.md until the orchestrator's stage-back",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys; p=subprocess.run([sys.executable,'_tools/backlog.py','precheck','--help'],capture_output=True,text=True); sys.exit(0 if p.returncode==0 and 'protected' in p.stdout else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/bl_plan.py"
+  ],
+  "links": [
+    "parked: SP-dulvwwjc close"
+  ]
+}

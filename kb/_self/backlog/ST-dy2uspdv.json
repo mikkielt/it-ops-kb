@@ -1,0 +1,25 @@
+{
+  "id": "ST-dy2uspdv",
+  "kind": "story",
+  "title": "A sprint whose start warns that most items share one file gets a gate before it starts, not a fully serial run",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "when backlog.py start warns that a file is in the touches of more than half of the sprint's items, host-check or the start gate names it as a planning finding to split or order before the start; SP-dulvwwjc started with _tools/mon_status.py in four of six items and every work item ran one after another",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys; p=subprocess.run([sys.executable,'_tools/backlog.py','host-check','--help'],capture_output=True,text=True); sys.exit(0 if p.returncode==0 and 'share' in p.stdout else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/bl_plan.py"
+  ],
+  "links": [
+    "parked: SP-dulvwwjc close"
+  ]
+}

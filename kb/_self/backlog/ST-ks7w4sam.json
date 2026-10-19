@@ -25,5 +25,5 @@
   "links": [
     "parked: SP-v4yih547 close"
   ],
-  "notes": "SP-v4yih547 close: ST-go6vdmnt g1 and ST-d2ekxwvd g1, both display choices, were classed push by 'origin' and made blocking, so each took an operator round. Narrowing the classifier is the operator's call (operator-only authority); related ST-dfauycuq (erase classed delete)."
+  "notes": "SP-v4yih547 close: ST-go6vdmnt g1 and ST-d2ekxwvd g1, both display choices, were classed push by 'origin' and made blocking, so each took an operator round. Narrowing the classifier is the operator's call (operator-only authority); related ST-dfauycuq (erase classed delete). Recurred in SP-dulvwwjc: ST-db4gscgj's worker gate g1 (what the sprint panel reads when origin/main is unreadable) was classed push and made blocking for naming origin; the orchestrator answered it as operator."
 }

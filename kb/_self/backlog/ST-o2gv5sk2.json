@@ -1,0 +1,24 @@
+{
+  "id": "ST-o2gv5sk2",
+  "kind": "story",
+  "title": "A classifier item's check plants near-miss inputs that must stay out, not only the inputs it must catch",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-sprint plan step 6 asks an item whose goal adds a classifier or router (a question router, a process kind or clone classer) for a check that plants near-miss inputs, such as docs questions that use a status cue word or a relative script path, and asserts they are not caught; SP-dulvwwjc's checks planted only positive cases and the review found routing and clone gaps (BG-jeyt5f56, BG-u2hhejd7)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(0 if 'near-miss' in open('skills/sprint/SKILL.md').read() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-dulvwwjc close"
+  ]
+}
