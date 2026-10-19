@@ -1,0 +1,36 @@
+{
+  "id": "ST-s6iz6z36",
+  "kind": "story",
+  "title": "A clone names the public GitHub copy as a fetch-only upstream remote, and every push to it is refused",
+  "status": "draft",
+  "sprint": "SP-3trnelzv",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "kb-setup asks whether the clone fetches from the public GitHub copy and, on yes, adds it as the remote git config kb.upstreamRemote names with its push url disabled; the pre-push hook refuses a push of any ref to the upstream remote or its url, sync and publish refuse it as a target; git.md and maintaining.md say the upstream is only fetched from",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "upstream_push_refused"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys;t=open('.claude/skills/kb-setup/SKILL.md',encoding='utf-8').read();s=t.split('## 3. Commit hook')[1].split('## 4. MCP servers')[0];sys.exit(0 if 'kb.upstreamRemote' in s and re.search(r'fetch',s) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbpublic.py",
+    "_tools/kg_hooks.py",
+    "_tools/kg_sync.py",
+    "_tools/test_prepush_e2e.py",
+    ".claude/skills/kb-setup/SKILL.md",
+    "kb/_self/git.md",
+    "kb/_self/maintaining.md"
+  ]
+}
