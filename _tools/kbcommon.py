@@ -30,8 +30,11 @@ and a topic by `<root>/<topic>`.
 
   roots()                     [Root] in order: public first, then kb/<name>/ by name, then the KB_ROOTS dirs, then the
                               roots a pointer names that resolve (only the named ones after serve_only)
-  missing_roots()             [MissingRoot]: the pointers kb/_roots/<name>.md whose root is not served, each with its
-                              reason; read_pointer(), pointer_problems() read one pointer file
+  missing_roots()             [MissingRoot]: the pointers kb/_roots/<name>.md whose root is not served and the KB_ROOTS
+                              directories with no ROOT_FILE, each with its reason; read_pointer(), pointer_problems()
+                              read one pointer file
+  missing_note()              the one line `roots missing: NAME (reason), ...` ('' when none is missing);
+                              with_missing_note(text) puts it after the first block of lines of a lookup's text
   serve_only(names)           limit roots() to the named roots for this process (kb_mcp.py --roots); RootError
                               names an unknown one; serving() gives the names, () when every root is served
   root(name)                  the Root of that name (KeyError when there is none)
@@ -48,7 +51,8 @@ otherwise it is listed by missing_roots() and the tools go on with the roots the
 
 KB_ROOTS=DIR[:DIR...] adds roots kept outside this repository (a team's private repository with the same root
 layout and its own ROOT_FILE): the read tools and the checks serve them with kb/'s roots; git, census and fetch work
-on this repository's roots only.
+on this repository's roots only. A directory with no readable ROOT_FILE is listed by missing_roots() under its
+directory name, not raised.
 
 Layout. The paths below are the only place that says where knowledge sits in this repository: the tools' code in
 _tools/, the roots in KB_DIR, the kb's own docs in SELF. KB is the public root, the default of the tools that work on
@@ -519,6 +523,10 @@ def _load():
     dirs += [d for d in os.environ.get("KB_ROOTS", "").split(os.pathsep) if d.strip()]
     out, names, prefixes = [], {}, {}
     for d in dirs:
+        if not os.path.isfile(os.path.join(os.path.abspath(os.path.expanduser(d)), ROOT_FILE)):
+            missing.append(MissingRoot(os.path.basename(os.path.normpath(d)) or d, "", "", "KB_ROOTS", os.path.abspath(os.path.expanduser(d)),
+                                       f"no readable {ROOT_FILE} in the KB_ROOTS directory", False))
+            continue
         r = load_root(d)
         for seen, key, what in ((names, r.name, "name"), (prefixes, r.id_prefix, "id_prefix")):
             if key in seen:
@@ -550,9 +558,26 @@ def _all_roots():
 
 def missing_roots():
     """[MissingRoot] by name: the pointers whose roots are not served (not fetched, submodule not initialised, the
-    pointer and the root disagree, the name or prefix taken by another root or pointer, the pointer unsound)."""
+    pointer and the root disagree, the name or prefix taken by another root or pointer, the pointer unsound) and the
+    KB_ROOTS directories with no readable ROOT_FILE; only the named ones after serve_only."""
     _load()
-    return list(_MISSING)
+    return [m for m in _MISSING if not _SERVED or m.name in _SERVED]
+
+
+def missing_note():
+    """`roots missing: NAME (reason), ...` for the roots a lookup could not read, '' when every root resolves. The
+    reasons name no absolute path, so a server limited to named roots may print it."""
+    return "roots missing: " + ", ".join(f"{m.name} ({m.reason})" for m in missing_roots()) if missing_roots() else ""
+
+
+def with_missing_note(text):
+    """`text` of a lookup with the missing_note() line after its first block of lines (a pack's verdict lines), else at
+    its end; `text` unchanged when no root is missing."""
+    note = missing_note()
+    if not note:
+        return text
+    head, sep, rest = text.partition("\n\n")
+    return f"{head}\n{note}{sep}{rest}" if sep else f"{text}\n{note}"
 
 
 def roots():

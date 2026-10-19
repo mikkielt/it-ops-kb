@@ -65,6 +65,23 @@
       "class": "agents-rule",
       "answer": "one stdout line `roots missing: NAME (reason), ...` after the pack's verdict lines, the same list in kb_status and kb_mcp.py --status, exit codes unchanged",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does a lookup print the roots missing line, and under what name is a KB_ROOTS directory with no _root.md listed?",
+      "options": [
+        "After the first block of lines of the text (a pack's verdict lines), one line; rag.py search and kb_search print it after their hits; a KB_ROOTS directory is listed under its directory name with reason 'no readable _root.md in the KB_ROOTS directory' and its absolute path withheld; after serve_only only the named missing roots are listed",
+        "At the very end of the output, with the absolute path of the directory in the reason"
+      ],
+      "recommendation": "After the first block of lines of the text (a pack's verdict lines), one line; rag.py search and kb_search print it after their hits; a KB_ROOTS directory is listed under its directory name with reason 'no readable _root.md in the KB_ROOTS directory' and its absolute path withheld; after serve_only only the named missing roots are listed",
+      "do": {
+        "After the first block of lines of the text (a pack's verdict lines), one line; rag.py search and kb_search print it after their hits; a KB_ROOTS directory is listed under its directory name with reason 'no readable _root.md in the KB_ROOTS directory' and its absolute path withheld; after serve_only only the named missing roots are listed": "ST-t7bw6zvf",
+        "At the very end of the output, with the absolute path of the directory in the reason": "ST-t7bw6zvf"
+      },
+      "class": "agents-rule",
+      "answer": "After the first block of lines of the text (a pack's verdict lines), one line; rag.py search and kb_search print it after their hits; a KB_ROOTS directory is listed under its directory name with reason 'no readable _root.md in the KB_ROOTS directory' and its absolute path withheld; after serve_only only the named missing roots are listed",
+      "by": "operator"
     }
   ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19, this checkout): KB_ROOTS=<a directory without _root.md> python3 _tools/rag.py pack 'intune win32 app' exits 1 with 'no readable _root.md', and kb_mcp.py --status prints the same error. ",
