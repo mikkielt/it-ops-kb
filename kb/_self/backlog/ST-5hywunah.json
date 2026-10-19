@@ -2,7 +2,7 @@
   "id": "ST-5hywunah",
   "kind": "story",
   "title": "The leak scan refuses an internal root's source ids, pointer url hosts and qualified paths in public roots, the tools and the docs",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-qinvdomv",
   "priority": "P2",
@@ -65,5 +65,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): kbcommon.leak_hits on a text holding TA-k3f7q2zd, an internal pointer's url and team-b/mdm/x.md returns no hits. A leak guard is a critical component: one planted-failure case in the existing test file. "
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): kbcommon.leak_hits on a text holding TA-k3f7q2zd, an internal pointer's url and team-b/mdm/x.md returns no hits. A leak guard is a critical component: one planted-failure case in the existing test file. ",
+  "claimed_by": "orch-r36"
 }
