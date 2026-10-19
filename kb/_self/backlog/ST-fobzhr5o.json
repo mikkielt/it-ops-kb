@@ -103,7 +103,9 @@
         "next 60-second refresh only": "ST-fobzhr5o",
         "also one second after the resize settles": "ST-fobzhr5o"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "also one second after the resize settles",
+      "by": "operator"
     },
     {
       "id": "g3",
