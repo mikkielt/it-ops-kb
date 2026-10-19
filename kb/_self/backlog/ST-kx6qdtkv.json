@@ -114,7 +114,9 @@
         "wasted_tokens is the four token counts of each agent whose claim was refused, whose work on an item another agent had already written (all but the first to end) or whose fact another agent wrote as one claim (the later fact); dup_commits the agents that wrote work for one item beyond the first (a commit naming it in the agent's own clone); asks_answered the ask events a completed answer event of the same store answers, with asks beside it for the total": "ST-kx6qdtkv",
         "wasted_tokens is the output tokens only of the refused agents": "ST-kx6qdtkv"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "wasted_tokens is the four token counts of each agent whose claim was refused, whose work on an item another agent had already written (all but the first to end) or whose fact another agent wrote as one claim (the later fact); dup_commits the agents that wrote work for one item beyond the first (a commit naming it in the agent's own clone); asks_answered the ask events a completed answer event of the same store answers, with asks beside it for the total",
+      "by": "operator"
     },
     {
       "id": "g5",
