@@ -60,7 +60,9 @@
         "rely on the content key, no change": "ST-5dd64ykv",
         "add each remote root's commit to the key": "ST-5dd64ykv"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "rely on the content key, no change",
+      "by": "operator"
     },
     {
       "id": "g2",
