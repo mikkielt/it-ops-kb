@@ -50,6 +50,9 @@ asks and, unasked, for a source past its freshness lifetime):
              When it is behind, kb_pack opens with one `kb copy:` line saying so.
              A server limited to named roots (--roots; kb_http.py always is) serves clients outside the team:
              kb_status and that line then name no local path and no update command (behind_note).
+  kb_monitor_status  (the team's own server only: off under --roots, and kb_http.py never serves it) the lines of
+             `kbmon.py --status TOPIC --json` as text: topic sessions, cost, querylog, coord, sprints, load or all (default),
+             at most 25 lines; each panel is bound by kbmon's --timeout (10 seconds), and no model is called
   kb_topics_for  kb topics that code touches, like `rag.py topics-for`: the curated signals of each root's signals.csv
              found in the files or text given (paths relative to the host project, CLAUDE_PROJECT_DIR or the cwd);
              imports=true matches only the packages the files declare (imports, manifests), not comments or strings;
@@ -1072,6 +1075,50 @@ COORD_HANDLERS = {"coord_claim": coord_claim, "coord_renew": coord_renew, "coord
                   "coord_post": coord_post, "coord_digest": coord_digest, "coord_wait": coord_wait}
 
 
+# ---------------------------------------------------------------- monitor status
+
+KBMON = Path(TOOLS, "kbmon.py")
+MONITOR_TOPICS = ["sessions", "cost", "querylog", "coord", "sprints", "load", "all"]
+MONITOR_TIMEOUT_S = 10  # kbmon.py --timeout: the seconds each panel may take
+MONITOR_RUN_S = 6 * MONITOR_TIMEOUT_S  # the whole run: the panels of one topic, then the answer
+MONITOR_TOOL_LIST = [
+    {"name": "kb_monitor_status", "title": "Monitor status",
+     "description": "Status of this clone's work in plain words (kbmon.py --status; not kb facts, not live device data): "
+                    "running sessions, today's cost, the query log, coord claims, sprints and the host's load, at most 25 "
+                    "lines. Reads local files and the coord store; no model call. Use for a status question before "
+                    "reading any state by hand.",
+     "inputSchema": {"type": "object", "properties": {
+         "topic": {"type": "string", "enum": MONITOR_TOPICS, "default": "all",
+                   "description": "what to report: sessions, cost, querylog, coord, sprints, load or all"}},
+         "additionalProperties": False},
+     "annotations": {"title": "Monitor status", **READ_ONLY}},
+]
+
+
+def kb_monitor_status(args):
+    extra = sorted(set(args) - {"topic"})
+    if extra:
+        raise ToolError(f"unknown argument(s): {', '.join(extra)}")
+    topic = args.get("topic", "all")
+    if topic not in MONITOR_TOPICS:
+        raise ToolError(f"topic must be one of {', '.join(MONITOR_TOPICS)}")
+    try:
+        p = subprocess.run([sys.executable, str(KBMON), "--status", topic, "--json", "--timeout", str(MONITOR_TIMEOUT_S)],
+                           capture_output=True, text=True, encoding="utf-8", timeout=MONITOR_RUN_S, stdin=subprocess.DEVNULL)
+    except (OSError, subprocess.SubprocessError) as e:
+        raise ToolError(f"kbmon.py did not run: {e.__class__.__name__}")
+    if p.returncode != 0:
+        raise ToolError(p.stderr.strip()[-500:] or f"kbmon.py exited {p.returncode}")
+    try:
+        lines = json.loads(p.stdout)["lines"]
+    except (ValueError, KeyError, TypeError):
+        raise ToolError("kbmon.py printed no status object")
+    return "\n".join(str(line) for line in lines)
+
+
+MONITOR_HANDLERS = {"kb_monitor_status": kb_monitor_status}
+
+
 def coord_enabled():
     """True when the team's own server is started with KB_COORD_TOOLS=1: the coord_ tools write to the coord store, so
     a default server lists and serves none of them."""
@@ -1127,7 +1174,7 @@ def handle(msg):
     if method == "ping":
         return result(msg_id, {})
     if method == "tools/list":
-        return result(msg_id, {"tools": TOOL_LIST + ([] if limited() else [FEEDBACK_TOOL])
+        return result(msg_id, {"tools": TOOL_LIST + ([] if limited() else [FEEDBACK_TOOL] + MONITOR_TOOL_LIST)
                                + (COORD_TOOL_LIST if coord_enabled() else [])
                                + (LIVE_TOOL_LIST if live_enabled() else []), "ttlMs": 3600000, "cacheScope": "public"})
     if method == "tools/call":
@@ -1135,6 +1182,7 @@ def handle(msg):
         handlers = {**HANDLERS, **LIVE_HANDLERS} if live_enabled() else dict(HANDLERS)
         if not limited():
             handlers["kb_feedback"] = kb_feedback
+            handlers.update(MONITOR_HANDLERS)
         if coord_enabled():
             handlers.update(COORD_HANDLERS)
         if name not in handlers:

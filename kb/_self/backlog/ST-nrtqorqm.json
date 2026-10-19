@@ -45,6 +45,23 @@
   "depends_on": [
     "ST-rnh43c36"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Who is served kb_monitor_status, and may a call set the kbmon timeout? Recommended: the team's own server only, fixed 10 s, because the tool reads this clone's coord store, sessions and cost, which a server for clients outside the team must not show.",
+      "options": [
+        "own-server-fixed-timeout",
+        "every-server-timeout-argument"
+      ],
+      "recommendation": "own-server-fixed-timeout",
+      "do": {
+        "own-server-fixed-timeout": "ST-nrtqorqm",
+        "every-server-timeout-argument": "ST-nrtqorqm"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "notes": "Plan 2026-10-19: premise: kb_mcp.py's tools/list lacks kb_monitor_status (it lists docs_fetch, docs_search, kb_audit, kb_facts, kb_feedback, kb_pack, kb_search, kb_show, kb_source, kb_status, kb_topics_for). The annotations are in kb/public/mcp/tools.md:25. kbask.ALLOWED_TOOLS gains Bash(python3 _tools/kbmon.py --status *); the marketplace description lists the server's tools. .claude/ is a protected path for a headless worker: kb-observer.md goes through staging copies.",
   "claimed_by": "orch-r31"
 }
