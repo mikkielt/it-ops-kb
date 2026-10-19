@@ -53,6 +53,25 @@
   "depends_on": [
     "ST-fnj6hllh"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the multi report's kb-versus-bare table lay out and fill its figures: a line per measure with kb, bare and kb-minus-bare columns (tokens need all four token rows, USD is the usd row else cost, delta arms left out), or a line per arm with a column per measure?",
+      "options": [
+        "line per measure",
+        "line per arm"
+      ],
+      "recommendation": "line per measure",
+      "do": {
+        "line per measure": "ST-pbspqgvw",
+        "line per arm": "ST-pbspqgvw"
+      },
+      "class": "secrets",
+      "answer": "line per measure",
+      "by": "operator"
+    }
+  ],
   "notes": "Operator request 2026-10-19, verbatim: \"give the benchmark that will run today a parallel run of bare agents doing similar work -- need to compare token and dollar efficiency\". Tokens are input, output, cache read and cache write summed, and each of the four is kept in its own row too. The direction words are kb lower, kb higher or equal (kb minus bare below, above or at 0). Premise 2026-10-19: bench_report.multi_tables prints no per-answer, per-fact or per-item figure and no kb-minus-bare column. benchmarks.py report --check passes before the work and stays as a guard: it pins that kb/_self/reports/benchmarks.md and README.md are regenerated in step with the changed report code; the planted-row check 0 is the one that fails until the work.",
   "claimed_by": "orch-r32"
 }
