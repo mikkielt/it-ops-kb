@@ -9,10 +9,14 @@ from one snapshot of the panels the topic needs (stdlib only).
 
 An answer is at most MAX_LINES lines, every one passed through `redact.redact` and cleared of absolute paths, and a claim's
 holder is never read. A panel that is not `ok` gives one line that says so. It speaks results, an item by its title, and an
-id only on a line where the operator acts. It calls no model and writes no file. Imports `mon_base`, `mon_sessions` (its
+id only on a line where the operator acts. The sprints answer rests on the sprint panel's data (items read from `origin/main`,
+the commits the checkout is behind it, the times of each sprint's last done commits) and the host panel's load, so a saved
+snapshot gives the same answer; its ETA is the open items times the median gap between the last ETA_DONE done commits. It calls no model and writes no file. Imports `mon_base`, `mon_sessions` (its
 age text) and `mon_view`; `bl_base` where it reads titles.
 """
 import re
+from datetime import datetime, timezone
+from statistics import median
 
 import mon_base
 import mon_sessions
@@ -21,10 +25,11 @@ import mon_view
 SCHEMA = 1
 TOPICS = ("sessions", "cost", "querylog", "coord", "sprints", "load", "all")
 TOPIC_PANELS = {"sessions": ("sessions",), "cost": ("querylog",), "querylog": ("querylog",), "coord": ("coord",),
-                "sprints": ("sprint",), "load": ("host", "sessions")}
+                "sprints": ("sprint", "host"), "load": ("host", "sessions")}
 ALL_ORDER = ("sessions", "cost", "querylog", "coord", "sprints", "load")  # the topics `all` answers, in this order
 MAX_LINES = 25
 ALL_LINES = 4  # lines each topic gives in `all`
+ETA_DONE = 5  # a sprint's last done commits its ETA rests on
 ROWS = 6  # processes, claims, sprints or gates one topic names before it counts the rest
 WHY_CHARS = 120
 ABSOLUTE = re.compile(r"(?<![\w.:/])(?:~|\.\.)?/[^\s'\",;)]+|\b[A-Za-z]:\\[^\s'\",;)]*")
@@ -69,6 +74,12 @@ class Reader:
         if not title:
             return str(ident)
         return f"{title} ({ident})" if act else title
+
+    def learn(self, rows):
+        """Titles the panel carries ({id, title} rows) for the items the clone's backlog does not hold (a stale checkout)."""
+        for x in rows:
+            if isinstance(x, dict) and x.get("id") and x.get("title"):
+                self.titles.setdefault(x["id"], str(x["title"]))
 
 
 def number(value, default=0):
@@ -179,35 +190,97 @@ def coord(r):
     return lines + ["  " + x for x in more(len(claims) - ROWS, "claims")], facts
 
 
+def minutes(n):
+    """N minutes as `45 min`, `3.5 h` or `2.0 days`."""
+    return f"{n:.0f} min" if n < 180 else f"{n / 60:.1f} h" if n < 2880 else f"{n / 1440:.1f} days"
+
+
+def seconds_of(text):
+    try:
+        return datetime.strptime(str(text), "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc).timestamp()
+    except ValueError:
+        return None
+
+
+def eta(open_count, done_at):
+    """(median minutes between the sprint's last ETA_DONE done commits, how many commits, ETA minutes) from their times;
+    the median and the ETA are None below two commits."""
+    times = sorted(t for t in (seconds_of(x) for x in done_at) if t is not None)[-ETA_DONE:]
+    if len(times) < 2:
+        return None, len(times), None
+    gap = median(b - a for a, b in zip(times, times[1:])) / 60
+    return gap, len(times), gap * open_count
+
+
+def sprint_lines(r, s, facts):
+    """The lines of one sprint and its entry of the answer's facts."""
+    counts = s.get("items") if isinstance(s.get("items"), dict) else {}
+    total = sum(number(v) for v in counts.values())
+    done = number(counts.get("done")) + number(counts.get("dropped"))
+    name = s.get("title") or r.item(s.get("id"))
+    entry = facts["progress"][s.get("id")] = {"state": s.get("state"), "done": done, "total": total}
+    if s.get("state") != "active":
+        return [f"  {name}: " + ("approved, not started yet" if s.get("state") == "approved" else "waits for its start gate")]
+    pct = round(done * 100 / total) if total else 0
+    entry["percent"] = pct
+    text = f"{done}/{total} done ({pct}%), {number(counts.get('doing'))} in progress, {number(counts.get('todo'))} to do"
+    if s.get("next"):
+        text += f"; next: {s.get('next_title') or r.item(s['next'])}"
+    lines = [f"  {name}: {text}"]
+    left = [x for x in s.get("open") or [] if isinstance(x, dict)]
+    if left:
+        names = [str(x.get("title") or x.get("id")) + (" (in progress)" if x.get("status") == "doing" else "") for x in left[:ROWS]]
+        rest = total - done - len(names)
+        lines.append("    left: " + "; ".join(names) + (f"; +{rest} more" if rest > 0 else ""))
+    gap, count, wait = eta(total - done, s.get("done_at") or [])
+    entry.update(open=total - done, done_commits=count, median_min=None if gap is None else round(gap, 1),
+                 eta_min=None if wait is None else round(wait))
+    if total - done <= 0:
+        lines.append("    nothing is left.")
+    elif wait is None:
+        lines.append(f"    No ETA yet: {count} done commit{'' if count == 1 else 's'} on origin/main, two are needed for a median.")
+    else:
+        lines.append(f"    ETA about {minutes(wait)}, an estimate: {total - done} left x the median {minutes(gap)} between the "
+                     f"last {count} done commits on origin/main.")
+    return lines
+
+
 def sprints(r):
     data, why = r.data("sprint")
     if data is None:
         return [f"Sprints: {why}."], {"state": "unread"}
     rows = [s for s in data.get("sprints") or [] if isinstance(s, dict)]
     landing = [x for x in data.get("landings") or [] if isinstance(x, dict)]
-    facts = {"sprints": len(rows), "landings": len(landing), "progress": {}}
-    if not rows:
-        return ["Sprints: none active or planned."] + [f"  landing {r.item(x.get('item'))}, at step {x.get('step')}" for x in landing[:ROWS]], facts
-    lines = [f"Sprints: {len(rows)} active or planned:"]
+    for s in rows:
+        r.learn([{"id": s.get("id"), "title": s.get("title")}, *(s.get("open") or [])])
+    behind = data.get("behind") if isinstance(data.get("behind"), int) and not isinstance(data.get("behind"), bool) else None
+    source = data.get("source") or "?"
+    facts = {"sprints": len(rows), "landings": len(landing), "progress": {}, "source": source, "behind": behind}
+    where = (f"read from {source}" + ("" if behind is None else f"; this checkout is {behind} commit{'' if behind == 1 else 's'} behind it")
+             if source == "origin/main" else "read from this checkout's files, origin/main was not readable")
+    head = f"Sprints: {len(rows)} active or planned, {where}:" if rows else f"Sprints: none active or planned, {where}."
+    lines = [head]
     for s in rows[:ROWS]:
-        counts = s.get("items") if isinstance(s.get("items"), dict) else {}
-        total = sum(number(v) for v in counts.values())
-        done = number(counts.get("done")) + number(counts.get("dropped"))
-        facts["progress"][s.get("id")] = {"state": s.get("state"), "done": done, "total": total}
-        if s.get("state") == "active":
-            pct = round(done * 100 / total) if total else 0
-            text = f"{done} of {total} done ({pct}%)" + (f", {number(counts.get('doing'))} in progress" if counts.get("doing") else "")
-            if s.get("next"):
-                text += f"; next: {r.item(s['next'])}"
-        else:
-            text = "approved, not started yet" if s.get("state") == "approved" else "waits for its start gate"
-        lines.append(f"  {r.item(s.get('id'))}: {text}")
+        lines += sprint_lines(r, s, facts)
         waiting = [w for w in s.get("waiting") or [] if isinstance(w, dict) and not (w.get("item") == s.get("id") and w.get("gate") == "start")]
         lines += [f"    your answer is needed: gate {w.get('gate')} of {r.item(w.get('item'), True)}" for w in waiting[:2]]
         lines += ["    " + x for x in more(len(waiting) - 2, "gates waiting")]
     lines += ["  " + x for x in more(len(rows) - ROWS, "sprints")]
     lines += [f"  landing {r.item(x.get('item'))}, at step {x.get('step')}" for x in landing[:ROWS]]
+    host, hwhy = r.data("host")
+    ld, cores = (host.get("load"), number(host.get("cores"), 0)) if host else (None, 0)
+    if isinstance(ld, list) and len(ld) >= 3:
+        facts["host_load1"] = ld[0]
+        lines.append(f"  host load {ld[0]:.2f} / {ld[1]:.2f} / {ld[2]:.2f} over 1, 5 and 15 minutes on {cores or '?'} cores{load_word(ld[0], cores)}.")
+    else:
+        lines.append("  host load: " + (hwhy or "this host gives no load average") + ".")
     return lines, facts
+
+
+def load_word(load1, cores):
+    """` (calm)`, ` (busy)` or ` (overloaded)` for a one-minute load on CORES; "" where the cores are not known."""
+    ratio = number(load1) / cores if cores else None
+    return "" if ratio is None else " (calm)" if round(ratio, 2) < 0.7 else " (busy)" if round(ratio, 2) < 1.0 else " (overloaded)"
 
 
 def holder_text(label, rec):
@@ -225,7 +298,7 @@ def load(r):
         lines, facts = ["Load: this host gives no load average."], {"load": None}
     else:
         ratio = round(number(ld[0]) / cores, 2) if cores else None
-        word = "" if ratio is None else " (calm)" if ratio < 0.7 else " (busy)" if ratio < 1.0 else " (overloaded)"
+        word = load_word(ld[0], cores)
         facts = {"load1": ld[0], "load5": ld[1], "load15": ld[2], "cores": cores, "per_core": ratio}
         lines = [f"Load: {ld[0]:.2f} / {ld[1]:.2f} / {ld[2]:.2f} over 1, 5 and 15 minutes on {cores or '?'} cores{word}."]
     lines.append("  " + holder_text("suite", data.get("suite_lock")) + "; " + holder_text("main", data.get("main_lock")) + ".")

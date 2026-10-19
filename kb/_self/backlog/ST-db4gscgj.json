@@ -80,6 +80,40 @@
       "class": "design",
       "answer": "the open items times the median interval between the sprint's last 5 done commits (throughput, so parallel workers count)",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where origin/main cannot be read (no such ref, no repository), what does the sprint panel read?",
+      "options": [
+        "the checkout's own item files, source checkout, no behind count and no done times (so no ETA)",
+        "no sprint rows: the panel is an error"
+      ],
+      "recommendation": "the checkout's own item files, source checkout, no behind count and no done times (so no ETA)",
+      "do": {
+        "the checkout's own item files, source checkout, no behind count and no done times (so no ETA)": "ST-db4gscgj",
+        "no sprint rows: the panel is an error": "ST-db4gscgj"
+      },
+      "class": "push",
+      "answer": "the checkout's own item files, source checkout, no behind count and no done times (so no ETA)",
+      "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which commits give a sprint's done times for the ETA?",
+      "options": [
+        "the first-parent commits whose subject starts 'chore(backlog): done ID' for an item of the sprint, at their commit time, the newest per item",
+        "every commit that touches a done item's file"
+      ],
+      "recommendation": "the first-parent commits whose subject starts 'chore(backlog): done ID' for an item of the sprint, at their commit time, the newest per item",
+      "do": {
+        "the first-parent commits whose subject starts 'chore(backlog): done ID' for an item of the sprint, at their commit time, the newest per item": "ST-db4gscgj",
+        "every commit that touches a done item's file": "ST-db4gscgj"
+      },
+      "class": "design",
+      "answer": "the first-parent commits whose subject starts 'chore(backlog): done ID' for an item of the sprint, at their commit time, the newest per item",
+      "by": "agent"
     }
   ],
   "notes": "Plan 2026-10-19: premise on a planted clone whose checkout lags origin/main by 3 done commits: the sprint panel counts 0 done (todo 5, doing 1) while origin/main holds 3 of 6 done; --status sprints exits 2. Done commits are first-parent commits whose subject starts 'chore(backlog): done ID'. With fewer than 2 done commits the answer says there is no ETA yet. The check's figures: done at 10:00, 10:20, 10:40, so the median is 20 min and 3 open items give about 60 min.",
