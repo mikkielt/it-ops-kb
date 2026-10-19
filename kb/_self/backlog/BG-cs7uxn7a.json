@@ -1,0 +1,23 @@
+{
+  "id": "BG-cs7uxn7a",
+  "kind": "bug",
+  "title": "multi fitness case coord-land-stop fails at random: the land-stop plant sits on code-1 while code-2 races it for the same item's claim",
+  "status": "todo",
+  "sprint": "SP-p46hofrg",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "multi run coord --replay --plant land-stop makes the land-stop fault land whichever code agent wins the shared item's claim (the plant on every code agent that shares the item, or on the claim's winner), so multi fitness case coord-land-stop names the plant on every run; the full multi fitness of 2026-10-19 on 00cb0193a failed only this case (run exit 0, multi check exit 0, it did not name the plant) while four runs of the case alone passed",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re, subprocess, sys\nr = subprocess.run([sys.executable, \"_tools/benchmarks.py\", \"multi\", \"run\", \"coord\", \"--replay\", \"--plant\", \"land-stop\", \"--dry-run\"], capture_output=True, text=True)\no = r.stdout + r.stderr\nblocks = re.split(r\"^(?=agent )\", o, flags=re.M)\nag = [(m.group(1), m.group(2), \"plant: land-stop\" in b) for b in blocks for m in [re.match(r\"agent (code-\\d+): .*?item (\\S+)\", b)] if m]\nitems = {i for a, i, p in ag if p}\npeers = [a for a, i, p in ag if i in items and not p]\nif peers and \"started at once\" in o:\n    print(\"repro: the planted code agent shares its item with\", peers, \"started at once: whichever claims first does the work, so the plant may never land\"); sys.exit(1)\nprint(\"ok\", ag)\n"
+    ]
+  },
+  "touches": [
+    "_tools/bench_multi.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ]
+}
