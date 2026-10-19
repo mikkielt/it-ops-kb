@@ -2,7 +2,7 @@
   "id": "ST-krwntzfy",
   "kind": "story",
   "title": "Research sprint goal: Each session, agent and sprint names its operator: a pseudonymous operator id from the Claude login",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-czs3jk57",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Already researched before planning (2026-10-19, commit e17140354 on the main branch): public/claude/ci-and-headless.md:124-127 and public/claude/otel-monitoring.md:51-53, answer QK-claude-code-session-learn-email-account. Open questions: (1) whether the live docs now name the email, orgId or subscriptionType keys of claude auth status (ci-and-headless.md:126 is UNK); (2) what claude auth status prints under an oauth_token (CLAUDE_CODE_OAUTH_TOKEN) or api_key login, which no login of this host can show: record what was tried; (3) whether a cloud session (CLAUDE_CODE_REMOTE) runs claude auth status with the session's own credentials, as user.email does (otel-monitoring.md:51)."
+  "notes": "Already researched before planning (2026-10-19, commit e17140354 on the main branch): public/claude/ci-and-headless.md:124-127 and public/claude/otel-monitoring.md:51-53, answer QK-claude-code-session-learn-email-account. Open questions: (1) whether the live docs now name the email, orgId or subscriptionType keys of claude auth status (ci-and-headless.md:126 is UNK); (2) what claude auth status prints under an oauth_token (CLAUDE_CODE_OAUTH_TOKEN) or api_key login, which no login of this host can show: record what was tried; (3) whether a cloud session (CLAUDE_CODE_REMOTE) runs claude auth status with the session's own credentials, as user.email does (otel-monitoring.md:51).",
+  "claimed_by": "orch-r38"
 }
