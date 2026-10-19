@@ -1,0 +1,27 @@
+{
+  "id": "ST-fqjdrjx7",
+  "kind": "story",
+  "title": "factdiff.py anchor --file keeps the anchor rows of facts it did not anchor, unlocated ones too",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "an anchor run with --file F (and --lines) leaves every row of a fact it did not anchor as it was, unlocated rows included, so a research worker's anchor run drops no source's rows (SP-p46hofrg close: ST-6cabusn2's done refused outside-touches because the run dropped the three unlocated:no-match rows of an unchanged coordination fact, S1855 among them)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/factdiff.py",
+        "anchor",
+        "--help"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-p46hofrg close"
+  ],
+  "notes": "check to tighten at planning: the command given only proves the tool runs"
+}

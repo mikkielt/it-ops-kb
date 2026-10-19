@@ -1,0 +1,27 @@
+{
+  "id": "ST-u4jzwjjh",
+  "kind": "story",
+  "title": "A plan whose check reads a generated report's text puts the generator in the item's touches",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the plan step names the generator of each generated file an item's check reads (bench_report.py for kb/_self/reports/benchmarks.md) in that item's touches, or backlog.py check warns of it, so the worker does not stop with its check unreachable inside its touches (SP-p46hofrg close: ST-ix3lknus's check asked benchmarks.md for dedup_hits that bench_report.MULTI_METRICS never printed; the worker stopped, filed BG-ww2qqsi4 and the touches were widened mid-flight)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "kb/_self/backlog.md",
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-p46hofrg close"
+  ],
+  "notes": "check to tighten at planning: the command given only proves the tool runs"
+}

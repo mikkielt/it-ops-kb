@@ -1,0 +1,26 @@
+{
+  "id": "ST-ybtnyqfu",
+  "kind": "story",
+  "title": "An item that lands new benchmark records carries the docs those records make false",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the plan puts a doc sentence the new records falsify (a 'not shown' or 'every row is 0' claim over the same metric) in the touches of the item that lands the records, or lands the records and the verdict as one item, so the landing's stale step does not stop on a doc a later item owns (SP-p46hofrg close: ST-ix3lknus stopped at stale on token-efficiency.md, whose dedup bullet the paid records made false; the orchestrator dated the bullet by hand before ST-sn25w6jm rewrote it)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-p46hofrg close"
+  ],
+  "notes": "check to tighten at planning: the command given only proves the tool runs"
+}

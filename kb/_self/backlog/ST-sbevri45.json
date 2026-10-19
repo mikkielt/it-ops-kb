@@ -1,0 +1,27 @@
+{
+  "id": "ST-sbevri45",
+  "kind": "story",
+  "title": "gate add does not class a design question as secrets for the word token, or as an agents rule for the word skill, when it names a count or a doc",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "gate add's class words match a secret or credential (an access token, a key) and not a token count such as wasted_tokens, and an agents-rule question by the rule it changes and not the word skill alone, so a metric or doc-placement choice stays a provisional design gate (SP-p46hofrg close: ST-kx6qdtkv g4 on wasted_tokens was classed secrets and blocking; ST-6cabusn2 g1 on which article holds -p facts was classed blocking for the word skill)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "gate",
+        "--help"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-p46hofrg close"
+  ],
+  "notes": "check to tighten at planning: the command given only proves the tool runs"
+}

@@ -1,0 +1,28 @@
+{
+  "id": "ST-tacmaqnz",
+  "kind": "story",
+  "title": "land finds the work rows of a worker dispatched from an orchestrator's linked worktree",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py land and cost read the spool of the clone a dispatched worker wrote to, so a landing from an orchestrator's linked worktree does not warn 'landed with no work rows (missing)' for a worker whose session rows exist (SP-p46hofrg close: every landing of the sprint printed that warning, each naming the session dispatch recorded)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "cost",
+        "--help"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/bl_cost.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-p46hofrg close"
+  ],
+  "notes": "check to tighten at planning: the command given only proves the tool runs"
+}

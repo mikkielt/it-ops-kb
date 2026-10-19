@@ -1,0 +1,27 @@
+{
+  "id": "ST-x275m5a7",
+  "kind": "story",
+  "title": "land's stale step compares against the commit it rebased on, not the shared origin/main ref another session's fetch moves",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py land records the origin/main commit it rebased on and runs its stale check with --since that commit, so another session's fetch that moves the shared refs/remotes/origin/main during a landing names none of that session's docs as stale (SP-p46hofrg close: ST-hur6y3hj stopped at stale twice on kb/_self/plugin.md, AGENTS.md and kb/_self/code.md for kbcommon.py, kb-ingest SKILL.md and kbroot.py, none of them its change)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "land",
+        "--help"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-p46hofrg close"
+  ],
+  "notes": "check to tighten at planning: the command given only proves the tool runs"
+}

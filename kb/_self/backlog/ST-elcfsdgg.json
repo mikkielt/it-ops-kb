@@ -1,0 +1,26 @@
+{
+  "id": "ST-elcfsdgg",
+  "kind": "story",
+  "title": "land's rebase resolves a conflict in a kb root's generated indexes and an article's sources list as kbgit sync does, without repeating a ledger row",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py land rebases a research branch whose _coverage.md, _sources.csv or an article's sources front matter conflicts with main by the ledger merge kbgit.py sync uses (union, then build_index), so a landing neither stops at rebase nor repeats a source row (SP-p46hofrg close: ST-6cabusn2 stopped at rebase on _coverage.md and claude/ci-and-headless.md; the hand rebase repeated row S744, which check.py caught as a duplicate id)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/kbgit.py",
+        "--help"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-p46hofrg close"
+  ],
+  "notes": "check to tighten at planning: the command given only proves the tool runs"
+}

@@ -1,0 +1,29 @@
+{
+  "id": "ST-hm3hze4w",
+  "kind": "story",
+  "title": "An item that adds or changes multi fitness cases runs the whole multi fitness once before its done",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "a worker or the orchestrator runs python3 _tools/benchmarks.py multi fitness in full (detached, it takes about 40 minutes) for an item that adds or changes fitness cases or plants, and a case that fails at random is filed before the landing (SP-p46hofrg close: ST-hur6y3hj's worker stopped the full run part way; the orchestrator's full run found coord-land-stop failing under load, BG-cs7uxn7a, which single-case runs had passed)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "multi",
+        "fitness",
+        "--help"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    "kb/_self/code.md",
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-p46hofrg close"
+  ],
+  "notes": "check to tighten at planning: the command given only proves the tool runs"
+}

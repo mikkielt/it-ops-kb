@@ -1,0 +1,27 @@
+{
+  "id": "ST-yyup6d62",
+  "kind": "story",
+  "title": "backlog.py cost prints a sprint's USD: its worker sessions and its paid benchmark runs, against a spend gate's cap",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py cost SP prints the USD of the sprint's worker sessions (their total_cost_usd) and of the paid multi or repro runs its items recorded, beside the token counts, so an orchestrator reads the spend against a spend gate's cap from one command (SP-p46hofrg close: the 75 USD stop was tracked by summing result.json files by hand, 12.03 USD of workers plus 30.59 USD of runs)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "cost",
+        "--help"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_cost.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-p46hofrg close"
+  ],
+  "notes": "check to tighten at planning: the command given only proves the tool runs"
+}
