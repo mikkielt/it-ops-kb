@@ -13,7 +13,8 @@
                                          `pin` or the tip of its `ref`, with no credential prompt; a failure is kept as the
                                          reason `list` gives for a root with no clone, and the clone of an update that
                                          fails stays as it was. `--pin` writes the commit the clone is at into the
-                                         pointer's `pin`, so the root stays there until `pin` is emptied. A fetch of a
+                                         pointer's `pin`, so the root stays there until `pin` is emptied (refused, exit 2,
+                                         when this copy runs as the plugin: the pointer is in the plugin copy). A fetch of a
                                          root with a `pin` checks out the pin, whatever its `ref` has moved to. Nothing
                                          else fetches: lookups read what is on disk
   kbroot.py push NAME                    push the commits of the checked-out submodule root kb/NAME to its own remote
@@ -298,6 +299,10 @@ def write_pin(p, commit):
 
 
 def cmd_fetch(a):
+    if a.pin and kbcommon.plugin_hosted():
+        print("refused: --pin writes the pointer file kb/_roots/NAME.md, which is in the plugin copy, read-only here; "
+              "pin in a clone of the team's repository")
+        return 2
     fetchable = [p for p in kbcommon.pointers() if p.access == "fetch"]
     by_name = {p.name: p for p in fetchable}
     if a.names:
