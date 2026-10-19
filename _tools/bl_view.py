@@ -296,10 +296,28 @@ def finishable(bl, items):
     return out
 
 
+LAG_REF = "origin/main"  # the integration main the hook compares the checkout's branch with (as last fetched)
+
+
+def lag_line(root):
+    """The hook's line naming how many commits the checkout's branch is behind LAG_REF and the fast-forward to ask the
+    operator about, or "" when it is level or ahead, or git cannot say (no repository, no such ref, no network used)."""
+    try:
+        p = subprocess.run(["git", "-C", str(root), "rev-list", "--count", f"HEAD..{LAG_REF}"], capture_output=True,
+                           text=True, encoding="utf-8", errors="replace", timeout=10)
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    n = int(p.stdout) if p.returncode == 0 and p.stdout.strip().isdigit() else 0
+    if not n:
+        return ""
+    return (f"checkout is {n} commit(s) behind {LAG_REF}, so its hooks run old code: ask the operator about "
+            f"git merge --ff-only {LAG_REF}")
+
+
 def cmd_horizon(bl, a):
     sprints = [a.sprint] if a.sprint else sorted(i for i, it in bl.items.items()
                                                   if it.get("kind") == "sprint" and it.get("status") == "active")
-    lines = []
+    lines = [lag] if a.hook and (lag := lag_line(bl.root)) else []  # first: the hook's cut drops the last lines
     if not sprints:
         planned = [i for i, it in bl.items.items() if it.get("kind") == "sprint"]
         n = sum(1 for it in bl.items.values() if it.get("kind") != "sprint" and it.get("status") not in ("done", "dropped"))
