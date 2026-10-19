@@ -103,7 +103,7 @@
       },
       "class": "design",
       "answer": "no, the tail keeps its last durations as they are",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -120,7 +120,7 @@
       },
       "class": "design",
       "answer": "bl_plan.touches_meet over the tracked files (the serializing overlap, kb/_self docs excepted) and bl_plan.dependencies (direct and through other items)",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -137,7 +137,7 @@
       },
       "class": "design",
       "answer": "content for no touch (nothing under a code directory), and the last claim commit whatever the item's status",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Planned 2026-10-19 on the operator's request (\"ensure more accurate timeframing\"). Premise on origin/main cf985537c, 2026-10-19: the planted clone's sprint panel (state ok) has no history and its open items no kind, claimed or after (check exits 1, no traceback). Keep a refresh cheap: one git log and one git cat-file --batch call per read, the result kept in memory for the same origin/main commit; kbmon writes no file, so no disk cache. mon_eta.py is no panel: kb/_self/code.md lists it beside mon_status.py and mon_receipt.py. Overlap: SP-2uljwgho (ST-dhsyyjft, BG-lyfl57xv) and the housekeeping split sprint SP-jplczvj2 touch mon_sprint.py and mon_status.py later and rebase onto this sprint. Gate source was first worded with the integration ref's name, which classed it push by a word match; the operator's delegate removed it unanswered (gate remove --by operator, 2026-10-19) and re-added it in neutral words as a design gate: it decides a data source, not a push.",

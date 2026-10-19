@@ -1,0 +1,27 @@
+{
+  "id": "ST-4lemw7sr",
+  "kind": "story",
+  "title": "kbmon's ETA says the history could not be read, not that no item has finished, when origin/main cannot be read",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "when mon_eta.read cannot read the history (no origin/main, a git error), the sprints answer and the panel say the history could not be read and why, not 'No ETA yet: no durations of finished items on origin/main'",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import inspect,sys;sys.path.insert(0,\"_tools\");import mon_eta;s=inspect.getsource(mon_eta.read);sys.exit(1 if s.rstrip().endswith(\"return empty()\") else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/mon_eta.py",
+    "_tools/mon_status.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-yjfiemha review"
+  ],
+  "notes": "SP-yjfiemha review, 2026-10-19, not reproduced: mon_eta.read catches every exception and returns empty(), so an unreadable ref reads as no finished items. The check is a source-text placeholder: at planning, replace it with a planted clone whose origin/main is missing, run through kbmon --status sprints."
+}

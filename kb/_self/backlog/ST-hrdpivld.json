@@ -1,0 +1,26 @@
+{
+  "id": "ST-hrdpivld",
+  "kind": "story",
+  "title": "The backtest's doc says it replays a sprint with the items it ended with, filed mid-sprint ones included",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/monitoring.md's Backtest bullet says that a replayed sprint's members are the items that named it at their claim commit by its close, so an item filed into the sprint mid-sprint counts as open at an earlier point, and a re-claimed item whose last claim is after the point counts as to do; or the replay takes each item from the point it joined the sprint",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys;t=open(\"kb/_self/monitoring.md\").read();b=[l for l in t.splitlines() if \"--backtest\" in l];print(len(b));sys.exit(0 if any(re.search(r\"mid-sprint|filed into the sprint|joined the sprint\",l) for l in b) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/monitoring.md",
+    "_tools/mon_eta.py"
+  ],
+  "links": [
+    "parked: SP-yjfiemha review"
+  ],
+  "notes": "SP-yjfiemha review, 2026-10-19, reasoned from mon_eta.backtest/replay_row and not measured: hindsight on the item set makes early points a bit pessimistic (BG-jemfbkjs, filed mid-sprint into SP-yjfiemha, would count as open at its 25 percent point)."
+}

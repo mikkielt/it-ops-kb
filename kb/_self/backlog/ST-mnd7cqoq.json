@@ -1,0 +1,25 @@
+{
+  "id": "ST-mnd7cqoq",
+  "kind": "story",
+  "title": "kb/_self/code.md is brought in line with the bench_multi.py change of the multi check refusal",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "python3 _tools/selfdoc.py stale lists no doc stale for _tools/bench_multi.py: kb/_self/code.md is read against commit 1f2a31069 and updated or self-reviewed",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "stale"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "parked: SP-yjfiemha review"
+  ],
+  "notes": "SP-yjfiemha review, 2026-10-19: selfdoc.py stale reports kb/_self/code.md stale since 2f946b693 for _tools/bench_multi.py, changed by 1f2a31069 (another sprint's item, multi check refusal). Not this sprint's change; drop this draft if that sprint's own work settles it."
+}

@@ -1,0 +1,25 @@
+{
+  "id": "BG-z422vlfi",
+  "kind": "bug",
+  "title": "mon_eta.kind_of counts a paid bench item whose goal does not say paid as content",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "mon_eta.kind_of gives bench for an item that touches the benchmark results file and whose title or goal names a paid run (the word paid, a USD cap or --max-usd), so a paid bench item in progress counts the bench kind's figures, not content's",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,json;sys.path.insert(0,\"_tools\");import mon_eta;k=mon_eta.kind_of(json.load(open(\"kb/_self/backlog/ST-ix3lknus.json\")));print(k);sys.exit(0 if k==\"bench\" else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/mon_eta.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-yjfiemha review"
+  ],
+  "notes": "SP-yjfiemha review, 2026-10-19: ST-ix3lknus touches kb/_self/reports/benchmarks.csv and its goal names --max-usd and 75 USD but not the word paid (only its title does), so kind_of gives content (3-11 min) while the bench kind's p75 is 190 min; the live view showed SP-p46hofrg ETA 38-83 min, high confidence. Even as bench it is pooled today (n=3 under POOL_MIN). The repro reads a live item file: replace it with a planted item if ST-ix3lknus closes first."
+}

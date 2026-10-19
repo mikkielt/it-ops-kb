@@ -1,0 +1,27 @@
+{
+  "id": "ST-oefrzspg",
+  "kind": "story",
+  "title": "A sprint of more than 20 open items gets an estimate over all of them, its review story included",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "mon_eta.estimate counts every open item of an active sprint, its review story included, or the basis says how many open items it left out; the sprint panel still keeps OPEN_KEPT open items for its text",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import inspect,sys;sys.path.insert(0,\"_tools\");import mon_sprint as m;s=inspect.getsource(m.sprint_row);sys.exit(1 if \"for i in left[:OPEN_KEPT]]\" in s and \"open_all\" not in s and \"left_out\" not in s else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/mon_sprint.py",
+    "_tools/mon_eta.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-yjfiemha review"
+  ],
+  "notes": "SP-yjfiemha review, 2026-10-19: sprint_row keeps left[:OPEN_KEPT] (20) open items and estimate reads only those, so the review story, which sorts last, is the first left out. Planted row of 25 todo code items plus a review (p25/p75 20/40): 140-273 min; cut to 20: 105-208 min with no review in the basis. The check is a source-text placeholder: replace it at planning with a planted 25-item sprint run through kbmon --json --panel sprint. It carries the change the review proposed to BG-jemfbkjs gate g1 (follows over the first 20 open items), confirmed as built since the cut that drops items from the estimate is the row's open list, not follows."
+}

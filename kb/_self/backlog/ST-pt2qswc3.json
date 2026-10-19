@@ -1,0 +1,26 @@
+{
+  "id": "ST-pt2qswc3",
+  "kind": "story",
+  "title": "An open item's after list in the sprint panel never names an item that depends on it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "mon_sprint.follows adds a touch edge from item A to item B only when B does not depend on A (directly or through other items), so no open item's after list names an item that depends on it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,subprocess,sys;p=subprocess.run([sys.executable,\"_tools/kbmon.py\",\"--json\",\"--panel\",\"sprint\"],capture_output=True,text=True,timeout=120);d=json.loads(p.stdout)[\"panels\"][\"sprint\"][\"data\"];bad=[(o[\"id\"],a) for s in d[\"sprints\"] for o in s.get(\"open\") or [] for a in o.get(\"after\") or [] if o[\"id\"] in {x[\"id\"]:x for x in s[\"open\"]}.get(a,{}).get(\"after\",[])];print(bad);sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/mon_sprint.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-yjfiemha review"
+  ],
+  "notes": "SP-yjfiemha review, 2026-10-19 (and the change it proposed to ST-trhzzeku gate g2, confirmed as built with this draft carrying the change): follows adds the touch edge by order_key, not by dependencies, so on the live panel ST-uo23fwho (doing) was after ST-hur6y3hj and ST-kx6qdtkv, which depend on it. span guards the cycle and a fully serial group sums the same, so the estimate was still right there. The check reads mutual after pairs on this clone's live panel, a proxy: at planning, plant a sprint where B depends on A and both share a touch, A ranked after B."
+}
