@@ -72,7 +72,9 @@
         "lost-claim: the first research agent ends with its claim held; land-stop: the first code agent leaves its change uncommitted": "ST-ggsixlo3",
         "lost-claim: the claim is released with no release event and no commit; land-stop: the change fails the item's check": "ST-ggsixlo3"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "lost-claim: the first research agent ends with its claim held; land-stop: the first code agent leaves its change uncommitted",
+      "by": "operator"
     },
     {
       "id": "plantexit",
