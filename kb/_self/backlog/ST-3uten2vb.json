@@ -1,0 +1,26 @@
+{
+  "id": "ST-3uten2vb",
+  "kind": "story",
+  "title": "A paid-run plan runs only the knobs a real run supports, or the harness supports them",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "a sprint that sizes paid multi runs plans no knob that multi run refuses on a real run (--manager session), or multi run supports it; SP-3pvz2noj: the two manager-session runs of the sized 30 were refused at start (known at planning)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport inspect, bench_multi\nassert 'is not supported by a real run' not in inspect.getsource(bench_multi), 'manager session still refused on a real run'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_multi.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-3pvz2noj close"
+  ]
+}

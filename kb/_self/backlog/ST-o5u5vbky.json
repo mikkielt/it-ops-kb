@@ -1,0 +1,26 @@
+{
+  "id": "ST-o5u5vbky",
+  "kind": "story",
+  "title": "A long paid run item names who starts the runs and how a worker records them",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the kb-sprint skill says an item whose paid runs outlast a headless worker has its runs started by the orchestrator, detached, and its worker dispatched to record them once they end; SP-3pvz2noj: decided mid-sprint for ST-xjtqwdtq's 6-hour runs and recorded as a gate",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nt = open('.claude/skills/kb-sprint/SKILL.md', encoding='utf-8').read()\nassert 'outlast' in t, 'no rule for paid runs that outlast a worker'\n"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-3pvz2noj close"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "ST-kzldbwta",
+  "kind": "story",
+  "title": "land's siblings step runs a sibling's long check once per tree, not again on the second pass",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "land reuses a passing sibling check result for the same tree on its second pass (after wait-merge), so a 18-minute multi fitness check runs once per landing; SP-3pvz2noj: BG-e2hfeycb's landing ran the siblings step twice, 1080 s and 1066 s",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport inspect, bl_land\nassert 'siblings' in inspect.getsource(bl_land) and 'reuse' in inspect.getsource(bl_land), 'siblings checks rerun on the second pass'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-3pvz2noj close"
+  ]
+}

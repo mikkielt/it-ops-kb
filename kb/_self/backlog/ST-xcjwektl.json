@@ -1,0 +1,27 @@
+{
+  "id": "ST-xcjwektl",
+  "kind": "story",
+  "title": "dispatch resumes a returned worker with a prompt file, detached",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py dispatch ID --resume SESSION --prompt FILE resumes a returned worker in its worktree with the prompt on stdin, as dispatch starts one; SP-3pvz2noj: the orchestrator built the resume argv by hand three times and once started it with no prompt",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, sys\nr = subprocess.run([sys.executable, '_tools/backlog.py', 'dispatch', '--help'], capture_output=True, text=True)\nassert '--resume' in r.stdout, 'dispatch has no --resume'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-3pvz2noj close"
+  ]
+}

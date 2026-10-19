@@ -22,7 +22,8 @@
     "kb/_self/tools.md"
   ],
   "links": [
-    "parked: SP-7s6uubs7 review"
+    "parked: SP-7s6uubs7 review",
+    "parked: SP-3pvz2noj close"
   ],
   "notes": "Review of SP-7s6uubs7, S3: window is PLANT_HOLD 5 s plus 1 s slack; a late start or a sync_push retry misses it. The check reads source only: planning replaces it with a planted delayed agent."
 }

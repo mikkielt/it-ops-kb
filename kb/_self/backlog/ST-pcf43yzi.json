@@ -1,0 +1,26 @@
+{
+  "id": "ST-pcf43yzi",
+  "kind": "story",
+  "title": "selfdoc maps a report change to the docs that cite the report section it changed, not the whole report",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "selfdoc stale lists a doc as stale after a report change only when the doc cites a section the change touched; SP-3pvz2noj: rows appended to one section of benchmarks.md made design.md and token-efficiency.md stale at land (ST-xjtqwdtq, stopped at step stale) though both cite other sections",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport inspect, selfdoc\nassert 'section' in inspect.getsource(selfdoc.stale) if hasattr(selfdoc, 'stale') else False, 'stale maps whole files'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/selfdoc.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-3pvz2noj close"
+  ]
+}

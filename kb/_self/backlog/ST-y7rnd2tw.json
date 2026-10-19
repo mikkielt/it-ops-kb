@@ -1,0 +1,25 @@
+{
+  "id": "ST-y7rnd2tw",
+  "kind": "story",
+  "title": "A paid-run item's checks count the records of each arm against the reps its spend gate sized",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "an item that records sized paid runs carries a check that each arm has as many records as reps were sized, so a record that collapses two reps fails the item's done; SP-3pvz2noj: 2 reps were recorded as one for seven arms and only the worker's own spend sum showed it (BG-e2hfeycb)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nt = open('kb/_self/backlog.md', encoding='utf-8').read()\nassert 'records of each arm' in t, 'no rule that a paid-run check counts records per sized rep'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-3pvz2noj close"
+  ]
+}

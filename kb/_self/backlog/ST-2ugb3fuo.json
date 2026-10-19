@@ -1,0 +1,26 @@
+{
+  "id": "ST-2ugb3fuo",
+  "kind": "story",
+  "title": "kbask ask says when redaction changed the text it stored",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbask ask prints a warning naming each span redact replaced in the stored ask (such as a session id inside a path), so the sender can reword before the worker reads it; SP-3pvz2noj: a runs path holding the orchestrator's session id reached the worker with the id zeroed",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport inspect, kbask\nassert 'redact' in inspect.getsource(kbask) and 'warning' in inspect.getsource(kbask), 'ask is silent when redaction changed the text'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbask.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-3pvz2noj close"
+  ]
+}

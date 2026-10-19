@@ -1,0 +1,26 @@
+{
+  "id": "ST-37z4pivd",
+  "kind": "story",
+  "title": "A replay stand-in's session init event lists Claude Code's builtin plugins, as a real session's does, so a check that reads init events is tested on what a paid run shows",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bench_replay's scripted init event lists the builtin plugins a real claude -p session lists (path builtin), so multi fitness exercises the same init event a paid run writes; SP-3pvz2noj: ST-i64xyh4s passed every replay check and failed all four first paid runs on builtin plugins (BG-bv4ymhy6)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport inspect, bench_replay\nassert '@builtin' in inspect.getsource(bench_replay), 'the replay init event lists no builtin plugin'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_replay.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-3pvz2noj close"
+  ]
+}

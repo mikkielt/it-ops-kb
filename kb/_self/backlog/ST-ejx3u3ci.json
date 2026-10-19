@@ -1,0 +1,26 @@
+{
+  "id": "ST-ejx3u3ci",
+  "kind": "story",
+  "title": "kbask ask ITEM reaches the item's running worker session, not the orchestrator that claimed it",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbask ask with an item id addresses the session dispatch started for the item while it runs, and the claimer's only when no worker runs; SP-3pvz2noj: an ask to ST-xjtqwdtq went to the orchestrator's own session and was re-sent by session id",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport inspect, kbask\nassert 'dispatch' in inspect.getsource(kbask), 'ask resolves an item to its claimer only'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbask.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-3pvz2noj close"
+  ]
+}

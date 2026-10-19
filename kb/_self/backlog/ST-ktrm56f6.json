@@ -1,0 +1,28 @@
+{
+  "id": "ST-ktrm56f6",
+  "kind": "story",
+  "title": "precheck bounds a check's time and names a check it stopped, so an orchestrator can run it on a sprint with long fitness checks",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py precheck SP takes a per-check time limit and prints a check it stopped as timed out, instead of running a 90-minute multi fitness check inline; SP-3pvz2noj: the orchestrator stopped precheck after 10 minutes and read the sibling checks by hand",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "precheck",
+        "--help"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/bl_check.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-3pvz2noj close"
+  ]
+}

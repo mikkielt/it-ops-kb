@@ -1,0 +1,26 @@
+{
+  "id": "ST-6jhwe7tt",
+  "kind": "story",
+  "title": "Planning a goal that names a metric checks the code writes it",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the plan step greps each metric or row name a goal clause names (check_failures, facts_matched) in the code that records and reports it, and adds a task or widens touches before the start gate when none writes it; SP-3pvz2noj: no code wrote check_failures (ST-xjtqwdtq touches widened mid-run) and the report left it out (BG-lgjpfifx)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nt = open('.claude/skills/kb-sprint/SKILL.md', encoding='utf-8').read()\nassert 'metric' in t.split('## start SP')[0], 'the plan step does not check that a named metric is written'\n"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-3pvz2noj close"
+  ]
+}
