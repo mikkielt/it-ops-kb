@@ -170,7 +170,7 @@
                                             agent's area one of repro_briefs.csv, a code agent's item spec has a title, goal,
                                             touches, check and a gate with a recommendation; exit 1 naming each row that does
                                             not resolve, 0 otherwise; no model, no network
-  benchmarks.py multi run SCENARIO [--dry-run] [--replay [--plant lost-claim|land-stop]] [--dir DIR] [--sequential] [--coord shared|isolated] [--stagger SECONDS]
+  benchmarks.py multi run SCENARIO [--dry-run] [--replay [--plant lost-claim|land-stop|dup-research]] [--dir DIR] [--sequential] [--coord shared|isolated] [--stagger SECONDS]
                                             [--model [ROLE=]MODEL,...] [--pack-budget TOKENS] [--tools kb|files]
                                             [--manager code|session] [--max-usd USD] [--timeout SECONDS]
                                             --dry-run prints each agent of the scenario (lookups, research or mixed) with its
@@ -198,13 +198,18 @@
                                             planted change in the worktree dispatch made, and the harness answers and lands
                                             it; --plant (with --replay) makes one fault, which `multi check` names: lost-claim
                                             leaves the first research agent's claim held, land-stop leaves the first code
-                                            agent's change uncommitted so its item does not land (the run still exits 0)
+                                            agent's change uncommitted so its item does not land (the run still exits 0), dup-research
+                                            makes the first two research agents skip coord.py dedup and write one planted fact
+                                            for one research term
   benchmarks.py multi check [--dir DIR]     read the finished run in DIR (results.jsonl, the sandbox's coord store, the clones'
                                             backlog claims of the planted items and the bare's main) and name each lost claim
                                             (a coord or backlog claim still held after every agent ended, or released with
-                                            neither a commit nor a release event of its holder) and each landing stop (a
+                                            neither a commit nor a release event of its holder), each landing stop (a
                                             planted code item with no code commit on the bare's main, with the land step the
-                                            agent's line says stopped); exit 1 naming them, 0 when none, 2 on a refusal (no
+                                            agent's line says stopped) and, with a shared coord store, each duplicate research
+                                            (two agents' facts of one claim for a research term while the other agent's dedup
+                                            claim of it was live; with --coord isolated they are printed and counted, not
+                                            failed on); exit 1 naming them, 0 when none, 2 on a refusal (no
                                             run in DIR, an agent with no end stamp); no model, no network
   benchmarks.py multi record [--dir DIR] [--out FILE]
                                             merge the newest json line of each agent in DIR/results.jsonl into FILE (default
@@ -415,7 +420,8 @@ def main(argv=None):
     mr.add_argument("--replay", action="store_true", help="start _tools/bench_replay.py as each agent's scripted stand-in, in place of "
                     "claude: no model call; the run's lines carry planted usage and the commands the stand-ins ran")
     mr.add_argument("--plant", choices=list(bench_multi.PLANTS), help="with --replay: make one fault on purpose in the first "
-                    "agent of the role that makes it, for `multi check` to find: " + ", ".join(f"{k} ({v} agent)" for k, v in bench_multi.PLANTS.items()))
+                    "agent(s) of the role that makes it, for `multi check` to find: "
+                    + ", ".join(f"{k} ({bench_multi.PLANT_AGENTS.get(k, 1)} {v} agent(s))" for k, v in bench_multi.PLANTS.items()))
     mr.add_argument("--dir", help="the sandbox's directory (default: _cache/bench-multi of the clone's main worktree)")
     mr.add_argument("--sequential", action="store_true", help="start the agents one at a time (default: all at once)")
     mr.add_argument("--coord", choices=bench_multi.COORDS, default="shared", help="one coordination store for every agent, or one for each (default: shared)")

@@ -40,6 +40,57 @@
   "depends_on": [
     "ST-ggsixlo3"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does a dup-research agent hold a live dedup claim when it skips coord.py dedup (the pack of a replayed area names no lack term, so dedup claims nothing)?",
+      "options": [
+        "It claims the key research:TOPIC:replay-planted-term itself with coord.py claim, ignores a refusal of a shared store, posts claim and release events, and holds the claim at least 5 seconds",
+        "It runs coord.py dedup on a question whose pack names a lack term"
+      ],
+      "recommendation": "It claims the key research:TOPIC:replay-planted-term itself with coord.py claim, ignores a refusal of a shared store, posts claim and release events, and holds the claim at least 5 seconds",
+      "do": {
+        "It claims the key research:TOPIC:replay-planted-term itself with coord.py claim, ignores a refusal of a shared store, posts claim and release events, and holds the claim at least 5 seconds": "ST-kb74yzac",
+        "It runs coord.py dedup on a question whose pack names a lack term": "ST-kb74yzac"
+      },
+      "class": "push"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "When does multi check call two agents' facts duplicate research for a term?",
+      "options": [
+        "The facts are one claim by bench_repro.match_facts, lie on the article of a research key research:TOPIC:TERM, contain TERM, and one fact's commit time falls inside the time the other agent held that key (a row from lease start to expiry, a claim event to its end event), a second of slack",
+        "Any two facts of one claim on the topic's article, whether or not a claim was live"
+      ],
+      "recommendation": "The facts are one claim by bench_repro.match_facts, lie on the article of a research key research:TOPIC:TERM, contain TERM, and one fact's commit time falls inside the time the other agent held that key (a row from lease start to expiry, a claim event to its end event), a second of slack",
+      "do": {
+        "The facts are one claim by bench_repro.match_facts, lie on the article of a research key research:TOPIC:TERM, contain TERM, and one fact's commit time falls inside the time the other agent held that key (a row from lease start to expiry, a claim event to its end event), a second of slack": "ST-kb74yzac",
+        "Any two facts of one claim on the topic's article, whether or not a claim was live": "ST-kb74yzac"
+      },
+      "class": "design",
+      "answer": "The facts are one claim by bench_repro.match_facts, lie on the article of a research key research:TOPIC:TERM, contain TERM, and one fact's commit time falls inside the time the other agent held that key (a row from lease start to expiry, a claim event to its end event), a second of slack",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Which two agents does --plant dup-research use, and where do their identical facts go so both commits merge?",
+      "options": [
+        "The first two research agents; into one article of kb/public with four bullets under Facts, an odd-numbered agent after the first bullet and an even-numbered one after the last",
+        "The first two research agents, each into an article of its own"
+      ],
+      "recommendation": "The first two research agents; into one article of kb/public with four bullets under Facts, an odd-numbered agent after the first bullet and an even-numbered one after the last",
+      "do": {
+        "The first two research agents; into one article of kb/public with four bullets under Facts, an odd-numbered agent after the first bullet and an even-numbered one after the last": "ST-kb74yzac",
+        "The first two research agents, each into an article of its own": "ST-kb74yzac"
+      },
+      "class": "design",
+      "answer": "The first two research agents; into one article of kb/public with four bullets under Facts, an odd-numbered agent after the first bullet and an even-numbered one after the last",
+      "by": "agent"
+    }
+  ],
   "links": [
     "kb/_self/tools.md",
     "kb/_self/reports/research-repro.md",
