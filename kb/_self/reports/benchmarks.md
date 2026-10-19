@@ -1698,7 +1698,7 @@ Verdict: stop splitting. The split did not make the code cheaper to find in thes
 
 ### Agents at once against agents one at a time
 
-**Setup:** `python3 _tools/benchmarks.py multi run SCENARIO --dir DIR` (SCENARIO is `lookups`, `research` or `mixed`, the frozen inputs of `kb/_self/reports/multi_bench.csv`) starts every agent of the scenario at once in a sandbox of its own: a bare copy of one commit, an agent clone each and one coordination store for all (`--coord shared`) or one each (`--coord isolated`). The same command with `--sequential` and another `--dir` starts the same agents one after the other, the baseline. `multi record --dir DIR` writes the rows of one run: record the start commit (`#2`, `#3` after it for a second and third run of the same case and knob values at that commit, so the runs sit side by side in the tables), case the scenario, arm `concurrent` or `sequential` and the knob values; per agent (`AGENT/METRIC`) and for the run `input`, `out`, `cache_read`, `cache_write`, `cost`, `wall_s` (for the run, the first start to the last end) and `turns`; for the run `dup_facts` (facts two agents wrote as one claim, found as `repro compare` finds them), `claims` and `claim_conflicts` (the rows of the sandbox's coordination store, and the keys held in more than one store plus its `dup_of` events), `land_stops` (the `backlog.py land` runs of the code agents that stopped), `rebase_s` (the time the agents' clones spent between the start and the end of a rebase), `right` and `asked` (the lookup agents' answers scored by the checks of their pool rows) and `eval_passed` and `eval_total` (the frozen questions of the research agents' areas on the sandbox bare's main). Once a record holds both arms with the same knob values it also holds the arm `delta`: the concurrent run's value minus the sequential run's, per metric. A `--replay` run (scripted agents, no model) is recorded only with `--out FILE`, never into the results file. Per case the tables also set each kb arm against its bare twin of the same record and knob set: tokens (`input`, `out`, `cache_read` and `cache_write` summed) and USD in all and per correct answer (`right`), per verified fact (`facts_verified`) and per passing item (`items_passed`), with a column `kb minus bare` that says kb lower, kb higher or equal; a figure with no row behind it (an arm with no bare twin, no correct answer) reads `no data`, never 0.
+**Setup:** `python3 _tools/benchmarks.py multi run SCENARIO --dir DIR` (SCENARIO is `lookups`, `research` or `mixed`, the frozen inputs of `kb/_self/reports/multi_bench.csv`) starts every agent of the scenario at once in a sandbox of its own: a bare copy of one commit, an agent clone each and one coordination store for all (`--coord shared`) or one each (`--coord isolated`). The same command with `--sequential` and another `--dir` starts the same agents one after the other, the baseline. `multi record --dir DIR` writes the rows of one run: record the start commit (`#2`, `#3` after it for a second and third run of the same case and knob values at that commit, so the runs sit side by side in the tables), case the scenario, arm `concurrent` or `sequential` and the knob values; per agent (`AGENT/METRIC`) and for the run `input`, `out`, `cache_read`, `cache_write`, `cost`, `wall_s` (for the run, the first start to the last end) and `turns`; for the run `dup_facts` (facts two agents wrote as one claim, found as `repro compare` finds them), `claims` and `claim_conflicts` (the rows of the sandbox's coordination store, and the keys held in more than one store plus its `dup_of` events), `land_stops` (the `backlog.py land` runs of the code agents that stopped), `rebase_s` (the time the agents' clones spent between the start and the end of a rebase), `right` and `asked` (the lookup agents' answers scored by the checks of their pool rows) and `eval_passed` and `eval_total` (the frozen questions of the research agents' areas on the sandbox bare's main). Once a record holds both arms with the same knob values it also holds the arm `delta`: the concurrent run's value minus the sequential run's, per metric. A `--replay` run (scripted agents, no model) is recorded only with `--out FILE`, never into the results file. Per case the tables also set each kb arm against its bare twin of the same record and knob set: tokens (`input`, `out`, `cache_read` and `cache_write` summed) and USD in all and per correct answer (`right`), per verified fact (`facts_verified`) and per passing item (`items_passed`), with a column `kb minus bare` that says kb lower, kb higher or equal; a research case also shows the kb agents' `facts_verified` beside the twins' own `facts_matched` (the facts whose source url their `NOTES.md` cites), and the bare side of its per-verified-fact figures reads `not comparable`, because a twin's line carries the kb agent's count; a figure with no row behind it (an arm with no bare twin, no correct answer) reads `no data`, never 0.
 
 <!-- bench:multi -->
 #### lookups
@@ -1885,36 +1885,44 @@ The kb agents against their bare twins in research:
 |---|---|---|---|---|---|
 | 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens | 62,717,997 | 225,375 | +62,492,622 (kb higher) |
 | 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD | $12.4929 | $0.7538 | +$11.7392 (kb higher) |
-| 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 597,314 | 2,146 | +595,168 (kb higher) |
-| 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.1190 | $0.0072 | +$0.1118 (kb higher) |
+| 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | facts (kb verified, bare matched in its notes) | 105 | 8 | +97 (kb higher) |
+| 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 597,314 | not comparable | not comparable |
+| 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.1190 | not comparable | not comparable |
 | 4018d11 | concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens | 75,649,123 | 320,454 | +75,328,669 (kb higher) |
 | 4018d11 | concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD | $14.0728 | $0.9646 | +$13.1082 (kb higher) |
-| 4018d11 | concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 796,307 | 3,373 | +792,933 (kb higher) |
-| 4018d11 | concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.1481 | $0.0102 | +$0.1380 (kb higher) |
+| 4018d11 | concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | facts (kb verified, bare matched in its notes) | 95 | 0 | +95 (kb higher) |
+| 4018d11 | concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 796,307 | not comparable | not comparable |
+| 4018d11 | concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.1481 | not comparable | not comparable |
 | 013e25d | concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code | tokens | 52,017,519 | 593,730 | +51,423,789 (kb higher) |
 | 013e25d | concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code | USD | $3.4025 | $0.0877 | +$3.3148 (kb higher) |
-| 013e25d | concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code | tokens per verified fact | 536,263 | 6,121 | +530,142 (kb higher) |
-| 013e25d | concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.0351 | $0.0009 | +$0.0342 (kb higher) |
+| 013e25d | concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code | facts (kb verified, bare matched in its notes) | 97 | 28 | +69 (kb higher) |
+| 013e25d | concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code | tokens per verified fact | 536,263 | not comparable | not comparable |
+| 013e25d | concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.0351 | not comparable | not comparable |
 | 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens | 56,435,543 | 313,384 | +56,122,159 (kb higher) |
 | 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD | $11.1800 | $0.9877 | +$10.1923 (kb higher) |
-| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 663,948 | 3,687 | +660,261 (kb higher) |
-| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.1315 | $0.0116 | +$0.1199 (kb higher) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | facts (kb verified, bare matched in its notes) | 85 | 0 | +85 (kb higher) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 663,948 | not comparable | not comparable |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.1315 | not comparable | not comparable |
 | 013e25d | concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens | 78,930,995 | 270,522 | +78,660,473 (kb higher) |
 | 013e25d | concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD | $14.3459 | $0.8409 | +$13.5050 (kb higher) |
-| 013e25d | concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 830,853 | 2,848 | +828,005 (kb higher) |
-| 013e25d | concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.1510 | $0.0089 | +$0.1422 (kb higher) |
+| 013e25d | concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | facts (kb verified, bare matched in its notes) | 95 | 0 | +95 (kb higher) |
+| 013e25d | concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 830,853 | not comparable | not comparable |
+| 013e25d | concurrent coord=isolated stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.1510 | not comparable | not comparable |
 | 013e25d#2 | concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code | tokens | 78,802,618 | 1,181,369 | +77,621,249 (kb higher) |
 | 013e25d#2 | concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code | USD | $6.2108 | $0.1288 | +$6.0820 (kb higher) |
-| 013e25d#2 | concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code | tokens per verified fact | 949,429 | 14,233 | +935,196 (kb higher) |
-| 013e25d#2 | concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.0748 | $0.0016 | +$0.0733 (kb higher) |
+| 013e25d#2 | concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code | facts (kb verified, bare matched in its notes) | 83 | 1 | +82 (kb higher) |
+| 013e25d#2 | concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code | tokens per verified fact | 949,429 | not comparable | not comparable |
+| 013e25d#2 | concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.0748 | not comparable | not comparable |
 | 7f2317f | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens | 26,187,841 | 261,465 | +25,926,376 (kb higher) |
 | 7f2317f | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD | $6.0661 | $0.8839 | +$5.1822 (kb higher) |
-| 7f2317f | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 254,251 | 2,538 | +251,712 (kb higher) |
-| 7f2317f | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.0589 | $0.0086 | +$0.0503 (kb higher) |
+| 7f2317f | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | facts (kb verified, bare matched in its notes) | 103 | 0 | +103 (kb higher) |
+| 7f2317f | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 254,251 | not comparable | not comparable |
+| 7f2317f | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.0589 | not comparable | not comparable |
 | 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens | 27,223,532 | 304,949 | +26,918,583 (kb higher) |
 | 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD | $5.6987 | $1.0282 | +$4.6705 (kb higher) |
-| 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 406,321 | 4,551 | +401,770 (kb higher) |
-| 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.0851 | $0.0153 | +$0.0697 (kb higher) |
+| 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | facts (kb verified, bare matched in its notes) | 67 | 0 | +67 (kb higher) |
+| 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 406,321 | not comparable | not comparable |
+| 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.0851 | not comparable | not comparable |
 
 Per agent of research:
 
@@ -1964,34 +1972,38 @@ The kb agents against their bare twins in mixed:
 |---|---|---|---|---|---|
 | 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens | 19,442,274 | 561,093 | +18,881,181 (kb higher) |
 | 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD | $4.7642 | $0.7329 | +$4.0313 (kb higher) |
+| 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | facts (kb verified, bare matched in its notes) | 119 | 9 | +110 (kb higher) |
 | 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per correct answer | 3,888,455 | 112,219 | +3,776,236 (kb higher) |
 | 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per correct answer | $0.9528 | $0.1466 | +$0.8063 (kb higher) |
-| 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 163,380 | 4,715 | +158,665 (kb higher) |
-| 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.0400 | $0.0062 | +$0.0339 (kb higher) |
+| 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 163,380 | not comparable | not comparable |
+| 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.0400 | not comparable | not comparable |
 | 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per passing item | 9,721,137 | 280,546 | +9,440,590 (kb higher) |
 | 7f2317f | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per passing item | $2.3821 | $0.3664 | +$2.0157 (kb higher) |
 | 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens | 18,848,876 | 557,865 | +18,291,011 (kb higher) |
 | 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD | $4.6996 | $0.7275 | +$3.9721 (kb higher) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | facts (kb verified, bare matched in its notes) | 120 | 5 | +115 (kb higher) |
 | 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per correct answer | 3,769,775 | 111,573 | +3,658,202 (kb higher) |
 | 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per correct answer | $0.9399 | $0.1455 | +$0.7944 (kb higher) |
-| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 157,074 | 4,649 | +152,425 (kb higher) |
-| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.0392 | $0.0061 | +$0.0331 (kb higher) |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 157,074 | not comparable | not comparable |
+| 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.0392 | not comparable | not comparable |
 | 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per passing item | 9,424,438 | 278,932 | +9,145,506 (kb higher) |
 | 013e25d | concurrent coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per passing item | $2.3498 | $0.3638 | +$1.9861 (kb higher) |
 | a22529e | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens | 14,833,721 | 662,886 | +14,170,835 (kb higher) |
 | a22529e | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD | $3.9656 | $0.7475 | +$3.2180 (kb higher) |
+| a22529e | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | facts (kb verified, bare matched in its notes) | 107 | 4 | +103 (kb higher) |
 | a22529e | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per correct answer | 2,966,744 | 132,577 | +2,834,167 (kb higher) |
 | a22529e | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per correct answer | $0.7931 | $0.1495 | +$0.6436 (kb higher) |
-| a22529e | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 138,633 | 6,195 | +132,438 (kb higher) |
-| a22529e | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.0371 | $0.0070 | +$0.0301 (kb higher) |
+| a22529e | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 138,633 | not comparable | not comparable |
+| a22529e | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.0371 | not comparable | not comparable |
 | a22529e | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per passing item | 7,416,860 | 331,443 | +7,085,418 (kb higher) |
 | a22529e | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per passing item | $1.9828 | $0.3738 | +$1.6090 (kb higher) |
 | 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens | 24,896,610 | 624,671 | +24,271,939 (kb higher) |
 | 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD | $5.2921 | $0.7696 | +$4.5224 (kb higher) |
+| 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | facts (kb verified, bare matched in its notes) | 103 | 4 | +99 (kb higher) |
 | 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per correct answer | 4,979,322 | 124,934 | +4,854,388 (kb higher) |
 | 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per correct answer | $1.0584 | $0.1539 | +$0.9045 (kb higher) |
-| 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 241,715 | 6,065 | +235,650 (kb higher) |
-| 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.0514 | $0.0075 | +$0.0439 (kb higher) |
+| 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per verified fact | 241,715 | not comparable | not comparable |
+| 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per verified fact | $0.0514 | not comparable | not comparable |
 | 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | tokens per passing item | 12,448,305 | 312,336 | +12,135,970 (kb higher) |
 | 013e25d | sequential coord=shared stagger=0 model=default pack_budget=1200 tools=kb manager=code | USD per passing item | $2.6460 | $0.3848 | +$2.2612 (kb higher) |
 

@@ -250,6 +250,7 @@ MULTI_AGENT_METRICS = ("input", "out", "cache_read", "cache_write", "cost", "wal
 TOKEN_PARTS = ("input", "out", "cache_read", "cache_write")  # summed to one run's tokens
 PER_UNIT = (("correct answer", "right"), ("verified fact", "facts_verified"), ("passing item", "items_passed"))  # name, count metric
 NO_DATA = "no data"
+NOT_COMPARABLE = "not comparable"  # a bare twin's spend divided by the kb agent's `facts_verified`: the twin's own count is `facts_matched`
 
 
 def _measure(vals, kind, count=None):
@@ -268,14 +269,17 @@ def _show(kind, x, signed=False):
     if x is None:
         return NO_DATA
     sign = ("+" if x > 0 else "-" if x < 0 else "") if signed else ("-" if x < 0 else "")
-    return sign + (f"{abs(x):,.0f}" if kind == "tokens" else f"${abs(x):.4f}")
+    return sign + (f"{abs(x):,.0f}" if kind in ("tokens", "facts") else f"${abs(x):.4f}")
 
 
 def compare_table(run):
     """The kb arm against its bare twin (the arm `bare ` and the kb arm's label) of each record and knob set of one case:
     per measure (tokens and USD, in all and per correct answer, verified fact and passing item the case has rows for) the
     kb arm's figure, the bare arm's and kb minus bare with its direction; `no data` where no row (or a count of 0) is
-    behind a figure. The `delta` arms are differences, not arms, and are left out."""
+    behind a figure. A case with research agents also shows the kb agents' `facts_verified` against the twins' own
+    `facts_matched` (the facts whose source url their notes cite), and its per-verified-fact figures read `not comparable`
+    on the bare side: the twin's line carries the kb agent's count, not a count of what the twin verified. The `delta`
+    arms are differences, not arms, and are left out."""
     got, order = {}, []
     for r in run:
         arm = r["arm"]
@@ -289,12 +293,20 @@ def compare_table(run):
         return ""
     units = [(n, c) for n, c in PER_UNIT if any(c in s for g in got.values() for s in g.values())]
     measures = [("tokens", "tokens", None), ("USD", "usd", None)]
+    if any("facts_matched" in g["bare"] for g in got.values()):
+        measures.append(("facts (kb verified, bare matched in its notes)", "facts", None))
     for name, count in units:
         measures += [(f"tokens per {name}", "tokens", count), (f"USD per {name}", "usd", count)]
     out = ["| record | arm | measure | kb | bare | kb minus bare |", "|---|---|---|---|---|---|"]
     for key in order:
         for name, kind, count in measures:
-            a, b = (_measure(got[key][s], kind, count) for s in ("kb", "bare"))
+            if kind == "facts":
+                a, b = got[key]["kb"].get("facts_verified"), got[key]["bare"].get("facts_matched")
+            else:
+                a, b = (_measure(got[key][s], kind, count) for s in ("kb", "bare"))
+            if count == "facts_verified" and "facts_matched" in got[key]["bare"]:
+                out.append(f"| {key[0]} | {key[1]} | {name} | {_show(kind, a)} | {NOT_COMPARABLE} | {NOT_COMPARABLE} |")
+                continue
             if a is None or b is None:
                 diff = NO_DATA
             else:
