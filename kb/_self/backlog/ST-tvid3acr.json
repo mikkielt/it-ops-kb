@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "ceiling_wordings_any_order"
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bl_authority as a\nqs=['Is the ceiling in seconds for darwin right?','Which ceiling does darwin take?','Raise the ceiling seconds?','Raise the suite time ceiling?','Does the darwin test time ceiling change?']\nbad=[q for q in qs if a.gate_class({'touches':[]},{'question':q,'kind':'blocking','options':['yes','no']})!='ceiling']\nprint('not classed ceiling:',bad)\nsys.exit(1 if bad else 0)"
       ]
     }
   ],

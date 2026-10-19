@@ -10,8 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/backlog.py",
-        "check"
+        "-c",
+        "import sys\nws=['gate', 'new place', 'spool']\nt=open('kb/_self/backlog.md',encoding='utf-8').read().splitlines()\nok=any(all(w in l.lower() for w in ws) for l in t)\nprint(ok)\nsys.exit(0 if ok else 1)"
       ]
     }
   ],

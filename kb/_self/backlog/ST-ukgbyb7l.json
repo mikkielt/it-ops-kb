@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "gate_class_phrase_drop_is_design"
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bl_authority as a\nit={'touches':['kb/public/x/y.md']}\ng=lambda q,o:a.gate_class(it,{'question':q,'kind':'blocking','options':o})\nwant=[(g('Reword the four negations or drop them?',['Reword the negations','Delete the negations']),'design'),(g('Remove the article?',['Delete the article','Keep it']),'delete'),(g('Remove the source row?',['Delete the source row','Keep it']),'delete')]\nprint(want)\nsys.exit(0 if all(x==y for x,y in want) else 1)"
       ]
     }
   ],

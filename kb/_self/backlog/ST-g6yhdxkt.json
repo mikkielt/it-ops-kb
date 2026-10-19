@@ -10,7 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/check.py"
+        "-c",
+        "import sys,tempfile,pathlib\nsys.path.insert(0,'_tools')\nimport check,kbcommon\ndef run(code):\n    with tempfile.TemporaryDirectory() as d:\n        h=pathlib.Path(d)\n        (h/'kb/public/a').mkdir(parents=True)\n        (h/'kb/public'/kbcommon.ROOT_FILE).write_text('x\\n',encoding='utf-8')\n        (h/'kb/public/a/b.md').write_text('# T\\n\\n- Alpha beta gamma holds. [DOC S-1]\\n',encoding='utf-8')\n        (h/'_tools').mkdir()\n        (h/'_tools/x.py').write_text(code,encoding='utf-8')\n        return check.code_citation_errors(h)\nwrapped=run('# see kb/public/a/b.md:3 \"missing\\n# term\"\\n')\nrel=run('# see a/b.md:99\\n')\nprint('wrapped quote:',wrapped,'root-relative past the end:',rel)\nsys.exit(0 if wrapped and rel else 1)"
       ]
     }
   ],

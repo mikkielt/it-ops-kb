@@ -25,6 +25,25 @@
   "touches": [
     "kb/_self/backlog/*.json"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which of the 27 drafts that selected a test still to write are dropped and which get a tool-run check?",
+      "options": [
+        "Check three (the two gate-class items and the sync e2e item), drop 24 under D-2tq4fhgs",
+        "Check more, drop only items with no cheap planted input"
+      ],
+      "recommendation": "Check three (the two gate-class items and the sync e2e item), drop 24 under D-2tq4fhgs",
+      "do": {
+        "Check three (the two gate-class items and the sync e2e item), drop 24 under D-2tq4fhgs": "ST-lhtuyih2",
+        "Check more, drop only items with no cheap planted input": "ST-lhtuyih2"
+      },
+      "class": "design",
+      "answer": "Check three (the two gate-class items and the sync e2e item), drop 24 under D-2tq4fhgs",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-noqsd4hj close"
   ],

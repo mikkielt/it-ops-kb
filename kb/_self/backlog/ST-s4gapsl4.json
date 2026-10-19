@@ -11,12 +11,8 @@
     {
       "run": [
         "python3",
-        "_tools/rag.py",
-        "pack",
-        "--root",
-        "_self",
-        "--set",
-        "kb-census:phase2"
+        "-c",
+        "import sys\nt=open('.claude/skills/kb-census/SKILL.md',encoding='utf-8').read()\nok='factdiff.py dead <flog>' in t\nprint(ok)\nsys.exit(0 if ok else 1)"
       ]
     }
   ],

@@ -10,8 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/rag.py",
-        "eval"
+        "-c",
+        "import sys\nsys.path.insert(0,'_tools')\nimport kbfacts\nq='Retrospective: provider.py reads a rate limit from providers.csv. How provider.py read reports a pacing for a host row of providers.csv'\nb={'id':'ST-aaaaaaaa','question':q,'docs':['kb/_self/tools.md','kb/_self/web-sources.md']}\nhead=kbfacts.pack_many([q],600,None,'concise','_self',False,b,False)['text'].splitlines()[0]\nprint(head)\nsys.exit(1 if head.startswith('coverage: none') else 0)"
       ]
     }
   ],

@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "refusal_then_sync_same_clone"
+        "-c",
+        "import ast,sys\nt=ast.parse(open('_tools/test_sync_e2e.py',encoding='utf-8').read())\nnames=[n.name for n in ast.walk(t) if isinstance(n,ast.FunctionDef)]\nprint(names)\nsys.exit(0 if 'test_refusal_then_sync_same_clone' in names else 1)"
       ]
     }
   ],

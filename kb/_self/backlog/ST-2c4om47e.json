@@ -11,8 +11,8 @@
     {
       "run": [
         "python3",
-        "_tools/selfdoc.py",
-        "check"
+        "-c",
+        "import sys\nt=open('kb/_self/reports/fact-diff.md',encoding='utf-8').read()\nleft=[s for s in ('25 USD ceiling','filed as a bug','paid runs of the item') if s in t]\nprint(left)\nsys.exit(1 if left else 0)"
       ]
     }
   ],

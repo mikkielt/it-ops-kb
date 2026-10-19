@@ -11,7 +11,8 @@
     {
       "run": [
         "python3",
-        "_tools/check.py"
+        "-c",
+        "import subprocess,sys\nt=subprocess.run([sys.executable,'_tools/factdiff.py','--help'],capture_output=True,text=True).stdout.lower()\nok='redirect' in t\nprint(ok)\nsys.exit(0 if ok else 1)"
       ]
     }
   ],

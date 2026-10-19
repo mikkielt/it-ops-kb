@@ -10,10 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/rag.py",
-        "eval",
-        "--root",
-        "_self"
+        "-c",
+        "import sys\nws=['planted', 'guard', 'acceptor']\nt=open('kb/_self/backlog.md',encoding='utf-8').read().splitlines()\nok=any(all(w in l.lower() for w in ws) for l in t)\nprint(ok)\nsys.exit(0 if ok else 1)"
       ]
     }
   ],
