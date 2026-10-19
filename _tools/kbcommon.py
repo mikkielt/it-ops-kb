@@ -33,6 +33,7 @@ and a topic by `<root>/<topic>`.
   missing_roots()             [MissingRoot]: the pointers kb/_roots/<name>.md whose root is not served and the KB_ROOTS
                               directories with no ROOT_FILE, each with its reason; read_pointer(), pointer_problems()
                               read one pointer file; pointers() reads every sound one
+  plugin_hosted()             whether this copy runs as the plugin (the copy is read-only: nothing is written to it)
   roots_cache_dir()           where fetch roots are cloned (kbroot.py fetch); fetch_error_path(name) holds why the
                               last fetch of one failed, which its missing reason repeats
   missing_note()              the one line `roots missing: NAME (reason), ...` ('' when none is missing);
@@ -476,15 +477,21 @@ def pointers():
     return [read_pointer(f) for f in _pointer_files() if not pointer_problems(f)]
 
 
+def plugin_hosted():
+    """True when this copy runs as the plugin: CLAUDE_PLUGIN_DATA is set and CLAUDE_PLUGIN_ROOT is this copy (read-only)."""
+    data, root = os.environ.get("CLAUDE_PLUGIN_DATA"), os.environ.get("CLAUDE_PLUGIN_ROOT")
+    try:
+        return bool(data and root and os.path.samefile(root, HOME))
+    except OSError:
+        return False
+
+
 def roots_cache_dir():
     """Where fetch roots are cloned: ${CLAUDE_PLUGIN_DATA}/roots when this copy runs as the plugin (CLAUDE_PLUGIN_ROOT is
     this copy: the copy itself is read-only), else _cache/roots of this repository. Never under kb/."""
-    data, root = os.environ.get("CLAUDE_PLUGIN_DATA"), os.environ.get("CLAUDE_PLUGIN_ROOT")
-    try:
-        hosted = bool(data and root and os.path.samefile(root, HOME))
-    except OSError:
-        hosted = False
-    return os.path.join(data, "roots") if hosted else os.path.join(HOME, "_cache", "roots")
+    if plugin_hosted():
+        return os.path.join(os.environ["CLAUDE_PLUGIN_DATA"], "roots")
+    return os.path.join(HOME, "_cache", "roots")
 
 
 def pointer_root_dir(p):

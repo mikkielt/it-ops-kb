@@ -37,6 +37,25 @@
   "depends_on": [
     "ST-f4fwtc4v"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "In a plugin host, what does kbroot.py fetch --pin do, since the pointer it rewrites is in the read-only plugin copy?",
+      "options": [
+        "refuse with exit 2 before any fetch",
+        "fetch and skip the pin write with a note"
+      ],
+      "recommendation": "refuse with exit 2 before any fetch",
+      "do": {
+        "refuse with exit 2 before any fetch": "ST-gbyfjgmq",
+        "fetch and skip the pin write with a note": "ST-gbyfjgmq"
+      },
+      "class": "design",
+      "answer": "refuse with exit 2 before any fetch",
+      "by": "agent"
+    }
+  ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): no fetch command; kbcommon knows no plugin data directory for roots. Relates to EP-4fawjprq (the plugin in a host project). ",
   "claimed_by": "orch-r35"
 }
