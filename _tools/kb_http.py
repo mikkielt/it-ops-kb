@@ -397,6 +397,8 @@ def serve(port=PORT, host=HOST, bind_any=False, allow_origins=(), max_body=MAX_B
         print("kb_http: warning: listening outside loopback, with no authentication (--bind-any)", file=sys.stderr)
     print(f"kb_http: serving {url(httpd)}, roots {','.join(r.name for r in kbcommon.roots())}", file=sys.stderr,
           flush=True)
+    if kbcommon.missing_note():
+        print(f"kb_http: {kbcommon.missing_note()}", file=sys.stderr, flush=True)
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

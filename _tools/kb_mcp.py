@@ -279,6 +279,8 @@ def kb_search(args):
         out.append(f"no match for {query!r}" + (f" in {args['domain']}/" if args.get("domain") else "")
                    + ": the kb does not cover this (try other words, or index=true for _answers.md and _gaps.md)")
     out.append(rag.format_hits(hits, fmt))
+    if kbcommon.missing_note():
+        out.append(kbcommon.missing_note())
     return "\n".join(out).strip()
 
 
@@ -334,6 +336,7 @@ def kb_pack(args):
         text = res["text"]
         if root == kbfacts.SELF_ROOT:
             kbfacts.record_self(text, budget, res, questions)
+        text = kbcommon.with_missing_note(text)
     note = behind_note()
     return f"{note}\n\n{text}" if note else text
 
@@ -530,6 +533,8 @@ def status():
         info["topics"] = str(sum(t or 0 for t, _ in counts.values()))
     info["roots"] = "; ".join(f"{r.name} (prefix {r.id_prefix}, {r.visibility}, {counts[r.name][0] or 0} topics, "
                               f"{counts[r.name][1]} sources)" for r in kbcommon.roots())
+    if kbcommon.missing_roots():
+        info["roots_missing"] = "; ".join(f"{m.name} ({m.reason})" for m in kbcommon.missing_roots())
     return info
 
 

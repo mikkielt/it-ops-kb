@@ -595,6 +595,8 @@ def main():
             return print(json.dumps(res, indent=1))
         if res:
             print(format_hits(res, "detailed" if a.urls else a.format))
+        if kbcommon.missing_note():
+            print(kbcommon.missing_note())
         if not res:
             sys.exit("no match")
     elif a.cmd == "src":
@@ -646,6 +648,7 @@ def main():
         res = kbfacts.pack_many(parts, a.budget, domain_arg(a.domain), a.format, a.root, a.invalidated, brief, a.revalidate)
         if a.root == kbfacts.SELF_ROOT:
             kbfacts.record_self(res["text"], a.budget, res, parts, item=a.item)
+        res["text"] = kbcommon.with_missing_note(res["text"])
         if a.json:
             return print(json.dumps(res, indent=1))
         print(res["text"])
