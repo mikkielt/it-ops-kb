@@ -43,6 +43,25 @@
   "depends_on": [
     "ST-kuh545eo"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which replays does multi fitness run with a plant: each plant at once only, or each plant also one at a time?",
+      "options": [
+        "each plant at once only",
+        "each plant at once and one at a time"
+      ],
+      "recommendation": "each plant at once only",
+      "do": {
+        "each plant at once only": "ST-2hooit6y",
+        "each plant at once and one at a time": "ST-2hooit6y"
+      },
+      "class": "design",
+      "answer": "each plant at once only",
+      "by": "agent"
+    }
+  ],
   "links": [
     "kb/_self/tools.md",
     "kb/_self/reports/research-repro.md",
