@@ -1,0 +1,24 @@
+{
+  "id": "ST-v2emks5y",
+  "kind": "story",
+  "title": "backlog.py claim resolves the operator before it takes the ledger lock",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "cmd_claim calls operator_who() (which may run claude auth status and git config, 5 s each) before ledger_lock, so a slow or hung claude never holds the lock that dispatch and other claims wait on",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, shutil, subprocess, sys, tempfile, json, stat\nT = tempfile.mkdtemp(); C = os.path.join(T, \"c\")\nshutil.copytree(\"_tools\", os.path.join(C, \"_tools\"), ignore=shutil.ignore_patterns(\"__pycache__\", \"*.pyc\", \"fixtures\"))\nshutil.copy(\".gitignore\", C)\nB = os.path.join(T, \"b\"); os.makedirs(B)\nEM = \"jan.kowalski\" + chr(64) + \"corp-mail.test\"\np = os.path.join(B, \"claude\"); open(p, \"w\").write(\"#!/bin/sh\\necho '{\\\"email\\\": \\\"%s\\\"}'\\n\" % EM); os.chmod(p, 0o755)\nE = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_\", \"CLAUDE\"))}\nE.update(PATH=B + os.pathsep + os.environ[\"PATH\"], GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\",\n         GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t\" + chr(64) + \"example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t\" + chr(64) + \"example.com\")\ndef g(*a, cwd=C):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=E, check=True, capture_output=True, text=True).stdout\ndef who(d=C, **kw):\n    r = subprocess.run([sys.executable, os.path.join(d, \"_tools\", \"kbwho.py\"), \"--json\"], cwd=d, env={**E, **kw}, capture_output=True, text=True, timeout=60)\n    return json.loads(r.stdout or \"{}\"), r\ng(\"init\", \"-q\", \"-b\", \"main\"); g(\"add\", \"-A\"); g(\"commit\", \"-qm\", \"base\")\nM = os.path.join(C, \"_private\", \"operators.json\")\nsrc = open(\"_tools/bl_items.py\").read()\nf = src.split(\"def cmd_claim\", 1)[1].split(\"\\ndef \", 1)[0]\ni, j = f.find(\"operator_who(\"), f.find(\"ledger_lock(\")\nprint(i, j); sys.exit(0 if 0 <= i < j else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py"
+  ],
+  "links": [
+    "parked: SP-czs3jk57 review"
+  ]
+}

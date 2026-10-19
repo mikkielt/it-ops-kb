@@ -128,7 +128,9 @@
       },
       "class": "design",
       "answer": "source none, id null (printed as none), exit 0",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-4b76a6bc",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -145,7 +147,9 @@
       },
       "class": "design",
       "answer": "letters, digits, dot, underscore and hyphen, at most 64 characters; anything else is warned about on stderr and ignored",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-4b76a6bc",
+      "role": "interactive"
     },
     {
       "id": "g3",
@@ -162,7 +166,9 @@
       },
       "class": "design",
       "answer": "5 seconds each, asked on every use, no cache",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-4b76a6bc",
+      "role": "interactive"
     }
   ],
   "notes": "Premise (2026-10-19): _tools/kbwho.py does not exist; the planted check fails at its first run. claude auth status took 0.12 s per run on this host (three runs), so kbwho may call it on each use with a short timeout; its email key is undocumented (UNK), so kbwho falls back when the key is missing. Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and .claude/hooks with its own coord store and a stub claude on PATH; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations; facts: public/claude/ci-and-headless.md:124-127, public/claude/otel-monitoring.md:51-53, QK-claude-code-session-learn-email-account. Addresses in checks are built at run time; docs and items use the placeholder jan.kowalski only.",

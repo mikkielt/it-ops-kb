@@ -1,0 +1,25 @@
+{
+  "id": "ST-7oq6lrao",
+  "kind": "story",
+  "title": "coord list --by-operator says why it is empty and keeps old plain-holder claims",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "coord.py list --by-operator run on a store with no served operator (the server's own --store, no --url) says so on stderr instead of printing an empty operators list silently, counts a live claim held under the old plain holder as operator unknown with its budget, and the served OPERATOR/HOLDER form keeps the 120-character holder limit and no flat/team holder collision; ST-hmismfxs's check is updated for the new holder form",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, shutil, subprocess, sys, tempfile, json, stat\nT = tempfile.mkdtemp(); C = os.path.join(T, \"c\")\nshutil.copytree(\"_tools\", os.path.join(C, \"_tools\"), ignore=shutil.ignore_patterns(\"__pycache__\", \"*.pyc\", \"fixtures\"))\nshutil.copy(\".gitignore\", C)\nB = os.path.join(T, \"b\"); os.makedirs(B)\nEM = \"jan.kowalski\" + chr(64) + \"corp-mail.test\"\np = os.path.join(B, \"claude\"); open(p, \"w\").write(\"#!/bin/sh\\necho '{\\\"email\\\": \\\"%s\\\"}'\\n\" % EM); os.chmod(p, 0o755)\nE = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_\", \"CLAUDE\"))}\nE.update(PATH=B + os.pathsep + os.environ[\"PATH\"], GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\",\n         GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t\" + chr(64) + \"example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t\" + chr(64) + \"example.com\")\ndef g(*a, cwd=C):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=E, check=True, capture_output=True, text=True).stdout\ndef who(d=C, **kw):\n    r = subprocess.run([sys.executable, os.path.join(d, \"_tools\", \"kbwho.py\"), \"--json\"], cwd=d, env={**E, **kw}, capture_output=True, text=True, timeout=60)\n    return json.loads(r.stdout or \"{}\"), r\ng(\"init\", \"-q\", \"-b\", \"main\"); g(\"add\", \"-A\"); g(\"commit\", \"-qm\", \"base\")\nM = os.path.join(C, \"_private\", \"operators.json\")\nS = os.path.join(T, \"s.sqlite\")\nr = subprocess.run([sys.executable, os.path.join(C, \"_tools\", \"coord.py\"), \"--store\", S, \"list\", \"--by-operator\"], cwd=C, env=E, capture_output=True, text=True)\nprint(r.returncode, r.stdout, r.stderr); sys.exit(0 if r.stderr.strip() else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/coord.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-czs3jk57 review"
+  ]
+}

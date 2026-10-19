@@ -1,0 +1,27 @@
+{
+  "id": "ST-3ixuy5vz",
+  "kind": "story",
+  "title": "Operator checks cover the claim intent, the hook without KB_OPERATOR and distinct clone and intent operators",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the operator-id path has a planted run where the clone's operator and a session intent's operator differ, the backlog-claim intent carries the operator, and the coord hook resolves the operator through kbwho when KB_OPERATOR is unset, within the hook's time limit",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, shutil, subprocess, tempfile, json, re\nT = tempfile.mkdtemp()\nC = os.path.join(T, \"clone\")\nshutil.copytree(\"_tools\", os.path.join(C, \"_tools\"), ignore=shutil.ignore_patterns(\"__pycache__\", \"*.pyc\", \"fixtures\"))\nshutil.copytree(\".claude/hooks\", os.path.join(C, \".claude\", \"hooks\"))\nfor f in (\"backlog.json\", \".gitignore\"):\n    shutil.copy(f, C)\nos.makedirs(os.path.join(C, \"kb\", \"_self\", \"backlog\"))\nshutil.copy(\"kb/_self/map.csv\", os.path.join(C, \"kb\", \"_self\", \"map.csv\"))\nB = os.path.join(T, \"bin\"); os.makedirs(B)\nEM = \"jan.kowalski\" + chr(64) + \"corp-mail.test\"  # built at run time: no address sits in the check's text\ndef stub(body):\n    p = os.path.join(B, \"claude\"); open(p, \"w\").write(\"#!/bin/sh\\n\" + body + \"\\n\"); os.chmod(p, 0o755)\nstub(\"echo '{\\\"loggedIn\\\": true, \\\"authMethod\\\": \\\"claude.ai\\\", \\\"email\\\": \\\"%s\\\"}'\" % EM)\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_\", \"CLAUDE\"))}\nENV.update(PATH=os.pathsep.join([B, os.path.dirname(shutil.which(\"git\")), \"/usr/bin\", \"/bin\"]), HOME=T,\n           GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\", KB_LIVE_DOCS=\"0\", KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"),\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a):\n    return subprocess.run([\"git\", *a], cwd=C, env=ENV, capture_output=True, text=True, check=True).stdout\ndef run(tool, *a, stdin=None, **kw):\n    return subprocess.run([sys.executable, os.path.join(C, *tool.split(\"/\")) if \"/\" in tool else os.path.join(C, \"_tools\", tool), *a],\n                          cwd=C, env={**ENV, **kw}, input=stdin, capture_output=True, text=True, timeout=300)\ng(\"init\", \"-q\", \"-b\", \"main\"); g(\"add\", \"-A\"); g(\"commit\", \"-qm\", \"base\")\nimport time\ng(\"checkout\", \"-q\", \"-b\", \"work/ST-aaaaaaaa\")\npay = json.dumps({\"hook_event_name\": \"SessionStart\", \"session_id\": \"s-planted-1\", \"cwd\": C, \"source\": \"startup\"})\nt0 = time.time(); r = run(\".claude/hooks/coord_hook.py\", stdin=pay); took = time.time() - t0\nassert took < 10, (\"the hook without KB_OPERATOR takes\", took)\nr = run(\"coord.py\", \"wait\", \"--since\", \"0\", \"--timeout\", \"1\")\nev = [e for e in json.loads(r.stdout or \"{}\").get(\"events\", []) if e.get(\"kind\") == \"intent\"]\nops = {(e.get(\"fields\") or {}).get(\"operator\") for e in ev}\nassert ev and None not in ops and len(ops) == 1, (\"the hook without KB_OPERATOR posts no operator from kbwho\", ev)\nop = ops.pop()\nr = run(\"kbmon.py\", \"--status\", \"sessions\", KB_OPERATOR=\"op-other0002\")\nassert r.returncode == 0 and op in r.stdout and \"op-other0002\" in r.stdout, (\"kbmon does not show the intent's operator apart from the clone's\", r.stdout[-500:])\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/coord.py",
+    ".claude/hooks/coord_hook.py",
+    "_tools/mon_sessions.py"
+  ],
+  "links": [
+    "parked: SP-czs3jk57 review"
+  ],
+  "notes": "Review of SP-czs3jk57 (2026-10-19), gap 9: ST-lnjebku7's check set one KB_OPERATOR for hook and kbmon and ran only the SessionStart intent. This planted run (hook without KB_OPERATOR, kbmon under a different operator) passed on the tree of 2026-10-19, so the behaviour holds; still open: the backlog-claim intent path has no planted run. Triage may narrow this to that path or drop it."
+}
