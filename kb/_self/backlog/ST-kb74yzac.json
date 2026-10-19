@@ -54,7 +54,9 @@
         "It claims the key research:TOPIC:replay-planted-term itself with coord.py claim, ignores a refusal of a shared store, posts claim and release events, and holds the claim at least 5 seconds": "ST-kb74yzac",
         "It runs coord.py dedup on a question whose pack names a lack term": "ST-kb74yzac"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "It claims the key research:TOPIC:replay-planted-term itself with coord.py claim, ignores a refusal of a shared store, posts claim and release events, and holds the claim at least 5 seconds",
+      "by": "operator"
     },
     {
       "id": "g2",
