@@ -2,7 +2,7 @@
   "id": "ST-ggsixlo3",
   "kind": "story",
   "title": "multi check names each lost claim and each landing stop of a run",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-giqleoy2",
   "sprint": "SP-7s6uubs7",
   "priority": "P2",
@@ -103,5 +103,18 @@
     "kb/_self/_decisions.csv"
   ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): a fitness check the harness runs on replays and on paid runs, not a tests.py test; no test file and no change to _tools/tests_ceiling.json. Landing: kb/_self/code.md read against the multi check change (no new module, bench_replay.py still imports no project module) and found still correct.",
-  "claimed_by": "orch-r21"
+  "evidence": {
+    "commit": "e5ffd1a6b3d78f30497dd8a7648a8748721fe08a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\n\nimport os, subprocess, sys, tempfile\nT = tempfile.mkdtemp()\nB = os.path.join(T, \"bin\"); os.mkdir(B)\nMARK = os.path.join(T, \"claude-was-started\")\nopen(os.path.join(B, \"claude\"), \"w\").write(\"#!/bin/sh\\necho started >> \" + MARK + \"\\nexit 1\\n\")\nos.chmod(os.path.join(B, \"claude\"), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ[\"PATH\"])\ndef bench(*a, ok=(0,), timeout=1200):\n    r = subprocess.run([sys.executable, \"_tools/benchmarks.py\", *a], capture_output=True, text=True, env=ENV, timeout=timeout)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-600:], r.stderr[-600:])\n    return r\n\nfor plant, word in ((None, None), (\"lost-claim\", \"lost claim\"), (\"land-stop\", \"landing stop\")):\n    d = os.path.join(T, plant or \"clean\")\n    bench(\"multi\", \"run\", \"mixed\", \"--replay\", \"--dir\", d, *([\"--plant\", plant] if plant else []))\n    r = bench(\"multi\", \"check\", \"--dir\", d, ok=(0, 1))\n    if plant:\n        assert r.returncode == 1 and word in r.stdout, (plant, r.stdout[-600:])\n    else:\n        assert r.returncode == 0, r.stdout[-600:]\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
