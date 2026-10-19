@@ -2,7 +2,7 @@
   "id": "ST-rnh43c36",
   "kind": "story",
   "title": "kbmon --status answers sessions, cost, query log and coord questions in plain words from one snapshot",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-dulvwwjc",
   "priority": "P1",
@@ -77,5 +77,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Plan 2026-10-19: premise on the base: kbmon.py --status cost exits 2 (unrecognized arguments); the planted snapshot renders with --once --from-snapshot (exit 1 on its orphan alert), so the check fails only on --status. Frozen operator questions: 'status and percentage of done on sprints', 'check what causes high load on my computer', 'which sessions are running / is anything stuck or orphaned', 'how much did today cost', 'did the query log deliver', 'what is left before X is done'. The coord panel's own text view prints the holder; the status answer must not. The sprints and load topics render the panel data there today; ST-db4gscgj and ST-tdypjvev extend them. A topic runs only the panels it needs, each under kbmon's --timeout."
+  "notes": "Plan 2026-10-19: premise on the base: kbmon.py --status cost exits 2 (unrecognized arguments); the planted snapshot renders with --once --from-snapshot (exit 1 on its orphan alert), so the check fails only on --status. Frozen operator questions: 'status and percentage of done on sprints', 'check what causes high load on my computer', 'which sessions are running / is anything stuck or orphaned', 'how much did today cost', 'did the query log deliver', 'what is left before X is done'. The coord panel's own text view prints the holder; the status answer must not. The sprints and load topics render the panel data there today; ST-db4gscgj and ST-tdypjvev extend them. A topic runs only the panels it needs, each under kbmon's --timeout.",
+  "claimed_by": "orch-r31"
 }
