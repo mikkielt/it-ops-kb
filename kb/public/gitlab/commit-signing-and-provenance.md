@@ -1,9 +1,9 @@
 ---
 topic: gitlab/commit-signing-and-provenance
 priority: P3
-applies_to: "GitLab 19.x docs (gitlab-org/gitlab master @9f1632e2, 2026-09-27; protected branches and approval rules @56c82a97); SLSA v1.2"
-retrieved_utc: 2026-10-15
-sources: [S-jut4uqct, S-hthqd5dx, S-gqe643np, S-gfhrhfsb, S-oroizj3k, S-ijtwicvp, S-lu25cylz, S-cfpw3yy4, S-yg2mm5c6, S-wyjdebjb, S444, S442, S440, S-mgxxzq3i, S-zsl52tpy, S-ucjfr2m7, S-hvhro6n5, S-l6ia2wz4, S-243c6khs]
+applies_to: "GitLab 19.x docs (gitlab-org/gitlab master @9f1632e2, 2026-09-27; protected branches and approval rules @56c82a97); SLSA v1.2; GitHub deploy keys and GitHub App installation tokens (docs.github.com, 2026-10-19)"
+retrieved_utc: 2026-10-19
+sources: [S-jut4uqct, S-hthqd5dx, S-gqe643np, S-gfhrhfsb, S-oroizj3k, S-ijtwicvp, S-lu25cylz, S-cfpw3yy4, S-yg2mm5c6, S-wyjdebjb, S444, S442, S440, S-mgxxzq3i, S-zsl52tpy, S-ucjfr2m7, S-hvhro6n5, S-l6ia2wz4, S-243c6khs, S-3466yhgq, S-6sw5hnns]
 status: partial
 ---
 
@@ -46,6 +46,12 @@ GitLab verifies signatures on commits and tags made with an SSH key, a GPG key o
 - A service account's SSH keys are managed only through the user SSH and GPG keys API, not the UI; GitLab gives it a generated no-reply email with a `service_account_` prefix, and a custom email needs confirmation unless the top-level group has a matching verified domain. [DOC S-yg2mm5c6]
 - An administrator adds keys to any user with `POST /users/:id/keys` (`usage_type` `auth`, `signing` or `auth_and_signing`, default `auth_and_signing`) and `POST /users/:id/gpg_keys`. [DOC S-wyjdebjb]
 - Open: whether a service account's generated no-reply email counts as a verified email for signature verification and the **Reject unverified users** rule is not stated on the service account or signed commits pages. [UNK: neither page says]
+### GitHub machine identities
+- A GitHub deploy key is an SSH key attached to one repository, not to a personal account; it is read-only by default, may be given write access (then acting like an admin member or collaborator), has no expiry date and stays active when the user who added it leaves. [DOC S-3466yhgq]
+- For access across repositories or organizations GitHub recommends a GitHub App: its installation access tokens are decoupled from any user, scoped to one or more repositories with fine-grained permissions, and have their own rate limits. [DOC S-3466yhgq]
+- An installation access token expires after 1 hour, and API requests made with it are attributed to the app, not to a person. [DOC S-6sw5hnns]
+- A deploy key fits one machine reading one repository, such as a pointer to a team's knowledge repository; a GitHub App installation fits an agent that writes to several, since each token is short-lived and its actions carry the app's name. [DER S-3466yhgq, S-6sw5hnns]
+
 ### Protected branches and approvals for automation
 - Users and groups allowed to push to a protected branch need no merge request to merge their branches, so they skip merge request approval rules, Code Owners included. [DOC S444]
 - In Premium and Ultimate, individual users and groups can be added to **Allowed to merge** and **Allowed to push and merge**; Free sets them by role only. [DOC S444]
@@ -86,7 +92,7 @@ GitLab verifies signatures on commits and tags made with an SSH key, a GPG key o
 | Runner artifact provenance metadata (no signature described) | every tier | all | S-hvhro6n5 |
 | SLSA L3 provenance attestations | Ultimate, Experiment | GitLab.com, public projects | S-l6ia2wz4 |
 
-See also `gitlab/protected-branches-tags.md` (push and merge lists, push rules), `gitlab/mr-approvals.md` (approval settings), `gitlab/deploy-keys-and-tokens.md` (deploy keys and group access tokens), `gitlab/git-trailers-and-hooks.md` (commit trailers such as `Co-Authored-By`) and `security/supply-chain.md` (SLSA levels and GitLab's attestation tiers for a Python package).
+See also `gitlab/multi-repository-layouts.md` (submodules and forks for knowledge kept in several repositories), `gitlab/protected-branches-tags.md` (push and merge lists, push rules), `gitlab/mr-approvals.md` (approval settings), `gitlab/deploy-keys-and-tokens.md` (deploy keys and group access tokens), `gitlab/git-trailers-and-hooks.md` (commit trailers such as `Co-Authored-By`) and `security/supply-chain.md` (SLSA levels and GitLab's attestation tiers for a Python package).
 
 ## Examples
 - SNIPPET: make Git sign an agent's commits with an SSH key; context: Git 2.34.0 or later, OpenSSH 8.1 or later, the public key added to the agent's GitLab account with usage type Signing; checked: no [DER S-gqe643np: the configuration steps of the SSH signing page]

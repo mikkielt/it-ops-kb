@@ -2,7 +2,7 @@
 topic: agents/a2a-protocol
 priority: P2
 applies_to: "A2A protocol spec v1.0.0 / v1.0.1; A2A Python SDK (a2a-sdk)"
-retrieved_utc: 2026-10-16
+retrieved_utc: 2026-10-19
 sources: [S2120, S2121, S2122, S2123, S2124, S2125, S2126, S2127, S2128, S2129, S-xasyjfgi, S-2jevtssc, S-t24szuu4, S-byrq57yo, S-fpw4ly2l]
 status: complete
 files: [agents/a2a/a2a-proto-digest.md, agents/a2a/a2a.proto]
@@ -25,6 +25,9 @@ Agent2Agent (A2A) is an open protocol, launched by Google in April 2025 and dona
 - **Transports.** Three functionally equivalent bindings: JSON-RPC 2.0, gRPC, and HTTP+JSON/REST [DOC S2120].
 - **Streaming and push.** Server-Sent Events carry `SendStreamingMessage`/`SubscribeToTask` for persistent connections; push notifications use HTTP POST webhooks to client-registered endpoints for async updates; clients without a persistent connection can poll via `GetTask` [DOC S2120].
 - **Authentication.** Declared security schemes cover API key, HTTP Basic/Bearer, OAuth 2.0 (authorization code, client credentials, device code), OpenID Connect, and mutual TLS [DOC S2120]. Copilot Studio's A2A connector setup form offers exactly three: None, API key (header or query parameter), and OAuth 2.0 (client id/secret, authorization/token/refresh URLs) [DOC S2126].
+- **Security requirements per agent and per skill.** An Agent Card's optional `securityRequirements` lists the requirements for contacting the agent, and an `AgentSkill` carries its own `securityRequirements` naming the schemes that skill needs, so one card can ask more of one skill than of the rest. [DOC S2120]
+- **Signed Agent Cards.** A card MAY carry `signatures`, JSON Web Signatures (RFC 7515) over the card, so a client can check it was not altered and comes from the claimed provider; the content MUST first be canonicalised with JCS (RFC 8785), with the `signatures` field itself left out of what is signed. [DOC S2120]
+- **Extended Agent Card.** When the public card declares `capabilities.extendedAgentCard: true`, Get Extended Agent Card returns a fuller card after the client authenticates with one of the card's declared schemes; the operation MUST require authentication, MAY vary its content by the caller's identity or authorisation level, and clients SHOULD replace their cached public card with it for the authenticated session. [DOC S2120]
 - **Message and Part.** A `Message` is one communication turn with a required `messageId`, a required `role` (`ROLE_USER` client to server, `ROLE_AGENT` server to client), a required `parts` list, and optional `contextId`, `taskId`, `metadata`, `extensions` and `referenceTaskIds` (task ids the message cites for context) [DOC S2120]. A `Part` carries "exactly one" of `text`, `raw` (bytes, base64 in JSON), `url` (a file by reference) or `data`, plus optional `metadata`, `filename` and a `media_type` MIME type that applies to every part kind [DOC S2120].
 - **Typed data in a Part.** The `data` member holds "arbitrary structured data as a JSON value" (object, array, string, number, boolean or null), which is how an agent returns structured results instead of prose; since v1.0 a part is identified by its member name, not a `kind` field, and the legacy data part becomes `{ "data": ..., "mediaType": "application/json" }` [DOC S2120].
 - **Task output.** A `Task` holds a `status`, `artifacts` and `history`; an `Artifact` is a task output with a required `artifactId`, optional `name` and `description`, and at least one `Part`, so a result can be a text, file and data part together [DOC S2120].

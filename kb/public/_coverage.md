@@ -199,7 +199,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `gitlab/protected-branches-tags` | P0 | complete | `gitlab/protected-branches-tags.md` | 9 |
 | `gitlab/variables` | P0 | complete | `gitlab/variables.md` | 2 |
 | `gitlab/automated-merge-requests` | P3 | complete | `gitlab/automated-merge-requests.md` | 52 |
-| `gitlab/commit-signing-and-provenance` | P3 | partial | `gitlab/commit-signing-and-provenance.md` | 19 |
+| `gitlab/commit-signing-and-provenance` | P3 | partial | `gitlab/commit-signing-and-provenance.md` | 21 |
 | `gitlab/deploy-keys-and-tokens` | P3 | partial | `gitlab/deploy-keys-and-tokens.md` | 10 |
 | `gitlab/detecting-mr-merges-in-ci` | P3 | complete | `gitlab/detecting-mr-merges-in-ci.md` | 16 |
 | `gitlab/git-commit-paths-and-symlinks` | P3 | complete | `gitlab/git-commit-paths-and-symlinks.md` | 7 |
@@ -213,6 +213,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `gitlab/jira-issue-keys-in-commits` | P3 | partial | `gitlab/jira-issue-keys-in-commits.md` | 3 |
 | `gitlab/job-log-timestamps` | P3 | complete | `gitlab/job-log-timestamps.md` | 6 |
 | `gitlab/multi-project-pipelines` | P3 | complete | `gitlab/multi-project-pipelines.md` | 5 |
+| `gitlab/multi-repository-layouts` | P3 | partial | `gitlab/multi-repository-layouts.md` | 13 |
 | `gitlab/package-registries` | P3 | partial | `gitlab/package-registries.md` | 11 |
 | `gitlab/project-settings-api` | P3 | complete | `gitlab/project-settings-api.md` | 7 |
 | `gitlab/repository-mirroring` | P3 | complete | `gitlab/repository-mirroring.md` | 9 |

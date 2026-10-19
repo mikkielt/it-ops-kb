@@ -946,3 +946,5 @@ wezterm cli split-pane,claude/terminal-split-pane
 WEZTERM_PANE,claude/terminal-split-pane
 split-window,claude/terminal-split-pane
 TMUX_PANE,claude/terminal-split-pane
+.gitmodules,gitlab/multi-repository-layouts
+GIT_SUBMODULE_STRATEGY,gitlab/multi-repository-layouts

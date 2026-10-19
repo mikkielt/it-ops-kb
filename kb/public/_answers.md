@@ -4162,3 +4162,17 @@ _Agent: kb-research_
 - See claude/mods.md, claude/terminal-split-pane.md, claude/statusline.md, claude/hooks.md.
 
 _Agent: kb-research_
+
+## QK-team-roots-and-agent-identity. How are agent sessions, sprint workers, headless runners and MCP servers identified per operator and team, and how is knowledge split across team repositories so a team without read access still works?
+- An Entra agent identity is a credential-less service principal created from a blueprint, with a sponsor accountable for it and an optional agent's user account, so an organization can name each agent and the person answerable for it. [DOC S2040]
+- A GitLab project or group access token creates a bot user scoped to that project or group, whose contributions are attributed to it; a GitHub App installation token is scoped to chosen repositories, expires after 1 hour, and its API requests are attributed to the app. [DOC S-cfpw3yy4, S-6sw5hnns]
+- A deploy key reaches one repository, read-only by default, on both GitLab and GitHub, and on GitHub it outlives the user who added it. [DOC S-muzlee2k, S-3466yhgq]
+- An MCP server over stdio takes credentials from its environment and follows no OAuth flow; one over HTTP implements Protected Resource Metadata and takes a bearer token. An A2A agent card declares security schemes per agent and per skill, may be signed with JWS, and may give an authenticated caller an extended card. [DOC S707, S2120]
+- Claude Code's OpenTelemetry export names `session.id`, `user.account_uuid` and `user.email` on every metric and event, and `OTEL_RESOURCE_ATTRIBUTES` adds a `team.id`. [DOC S744]
+- A submodule is a separate repository each reader clones with their own access, and the gitsubmodules page names access control as a use; a superproject clone does not recurse by default. A subtree, a sparse checkout and a partial clone hold or trim one repository's objects and control no access. [DOC S-tzjw5vut, S-hvg7hx3q, S-dhea6atb]
+- A GitLab fork may be more restrictive than its upstream; a GitHub fork of a public repository stays public, so a private team root beside a public upstream on GitHub is a separate repository. [DOC S-p6qwirq5, S-nhku2azk]
+- Conclusion: one repository per team root, pinned from the shared repository as a submodule or named by a pointer file that is resolved at use time, lets each team read only what its credentials reach, while the shared root still clones and serves without it. Attribution needs one stable name per operator and per machine identity (a bot or app account, a key file per operator for a coord server) carried the same way in commits, coord events and telemetry. [DER S-tzjw5vut, S-vvarw4uu, S-cfpw3yy4, S744]
+- Open: what `git submodule update` does when the forge refuses the credential (401, 403, an SSH denial), and the author a commit pushed with a GitHub App token carries. [UNK]
+- See gitlab/multi-repository-layouts.md, gitlab/commit-signing-and-provenance.md, gitlab/deploy-keys-and-tokens.md, entra/agent-id.md, agents/a2a-protocol.md, mcp/authorization.md, claude/otel-monitoring.md.
+
+_Agent: kb-research_
