@@ -2,7 +2,7 @@
   "id": "ST-i64xyh4s",
   "kind": "story",
   "title": "multi check proves a bare twin loads no kb MCP server, hook, skill, plugin or coord store",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-giqleoy2",
   "sprint": "SP-3pvz2noj",
   "priority": "P2",
@@ -48,5 +48,6 @@
   "depends_on": [
     "ST-fnj6hllh"
   ],
-  "notes": "Operator request 2026-10-19, verbatim: \"give the benchmark that will run today a parallel run of bare agents doing similar work -- need to compare token and dollar efficiency\". Isolation proof for the bare arm (ST-fnj6hllh): read from the twin's argv, the settings json it passes, its environment and its sandbox (no .mcp.json, .claude/, .claude-plugin/, CLAUDE.md, AGENTS.md, kb/ articles or core.hooksPath), and from a real run's stream-json init event (mcp_servers, plugins, skills). No tests.py test (D-6kei5o2z, D-2tq4fhgs): the check is the harness's own, run by multi fitness. Premise 2026-10-19: --bare and --plant bare-leak do not exist (exit 2)."
+  "notes": "Operator request 2026-10-19, verbatim: \"give the benchmark that will run today a parallel run of bare agents doing similar work -- need to compare token and dollar efficiency\". Isolation proof for the bare arm (ST-fnj6hllh): read from the twin's argv, the settings json it passes, its environment and its sandbox (no .mcp.json, .claude/, .claude-plugin/, CLAUDE.md, AGENTS.md, kb/ articles or core.hooksPath), and from a real run's stream-json init event (mcp_servers, plugins, skills). No tests.py test (D-6kei5o2z, D-2tq4fhgs): the check is the harness's own, run by multi fitness. Premise 2026-10-19: --bare and --plant bare-leak do not exist (exit 2).",
+  "claimed_by": "orch-r32"
 }
