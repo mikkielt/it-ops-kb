@@ -7,11 +7,14 @@
                         [--access fetch|submodule] [--description TEXT]
                                          write the pointer file kb/_roots/NAME.md (no `pin`; `ref` empty follows the
                                          remote's default branch); `submodule` access prints the `git submodule add`
-  kbroot.py fetch [NAME ...]             clone or update each fetch root (all, or those named) into _cache/roots/NAME/
+  kbroot.py fetch [--pin] [NAME ...]     clone or update each fetch root (all, or those named) into _cache/roots/NAME/
                                          (${CLAUDE_PLUGIN_DATA}/roots/NAME/ when this copy runs as the plugin) at its
                                          `pin` or the tip of its `ref`, with no credential prompt; a failure is kept as the
                                          reason `list` gives for a root with no clone, and the clone of an update that
-                                         fails stays as it was. Nothing else fetches: lookups read what is on disk
+                                         fails stays as it was. `--pin` writes the commit the clone is at into the
+                                         pointer's `pin`, so the root stays there until `pin` is emptied. A fetch of a
+                                         root with a `pin` checks out the pin, whatever its `ref` has moved to. Nothing
+                                         else fetches: lookups read what is on disk
   kbroot.py add NAME --prefix P [--visibility internal|public] [--description TEXT]
                                          create kb/NAME/: its _root.md, empty ledgers with their headers, a coverage
                                          page with the table markers, _retrieval/ with empty data tables, and empty
@@ -194,6 +197,18 @@ def git(args, p, cwd=None):
     return False, (lines[-1] if lines else f"git {args[0]} exited {r.returncode}").replace(p.url, "the url")
 
 
+def git_out(args, p, cwd):
+    """Run git with `args` in `cwd`; (True, its stdout stripped) or (False, why) as git() says."""
+    try:
+        r = subprocess.run(["git", *args], cwd=cwd, env=fetch_env(), capture_output=True, text=True, encoding="utf-8",
+                           errors="replace", timeout=FETCH_TIMEOUT_S, stdin=subprocess.DEVNULL)
+    except (subprocess.TimeoutExpired, OSError) as e:
+        return False, f"git {args[0]} not run ({e.__class__.__name__})"
+    if r.returncode:
+        return False, f"git {args[0]} exited {r.returncode}"
+    return True, r.stdout.strip()
+
+
 def fetch_one(p):
     """Clone or update the root of fetch Pointer `p` into its directory, at `pin` or the tip of `ref`; '' when done,
     else why it failed. A failed update leaves the clone as it was."""
@@ -221,6 +236,23 @@ def fetch_one(p):
     return ""
 
 
+def write_pin(p, commit):
+    """Set `pin` in the front matter of Pointer `p`'s file to `commit`; False when the file has no front matter."""
+    with open(p.path, encoding="utf-8", newline="") as f:
+        text = f.read()
+    m = re.match(r"(---\r?\n)(.*?)(\r?\n---)", text, re.S)
+    if not m:
+        return False
+    head = m.group(2)
+    if re.search(r"^pin:.*$", head, re.M):
+        head = re.sub(r"^pin:.*$", lambda _: f"pin: {commit}", head, count=1, flags=re.M)
+    else:
+        head += f"\npin: {commit}"
+    with open(p.path, "w", encoding="utf-8", newline="") as f:
+        f.write(text[:m.start(2)] + head + text[m.end(2):])
+    return True
+
+
 def cmd_fetch(a):
     fetchable = [p for p in kbcommon.pointers() if p.access == "fetch"]
     by_name = {p.name: p for p in fetchable}
@@ -243,6 +275,13 @@ def cmd_fetch(a):
             if os.path.exists(err):
                 os.remove(err)
             print(f"fetched {p.name}")
+            if a.pin:
+                ok, commit = git_out(["rev-parse", "HEAD"], p, kbcommon.pointer_root_dir(p))
+                if ok and write_pin(p, commit):
+                    print(f"pinned {p.name} at {commit}")
+                else:
+                    failed += 1
+                    print(f"pin failed: {p.name}: {commit or 'the pointer has no front matter'}", file=sys.stderr)
     print(f"fetch roots={len(fetchable)} failed={failed}")
     return 1 if failed else 0
 
@@ -261,6 +300,7 @@ def main():
     ar.add_argument("--access", choices=kbcommon.ACCESS, default="fetch")
     ar.add_argument("--description", default="", help="one line: what the root holds")
     fe = sub.add_parser("fetch", help="clone or update fetch roots into the roots cache")
+    fe.add_argument("--pin", action="store_true", help="write the commit each fetch root is at into its pointer's `pin`")
     fe.add_argument("names", nargs="*", metavar="NAME", help="fetch roots to fetch (default: every one)")
     ad = sub.add_parser("add", help="create a root beside kb/public")
     ad.add_argument("name")
