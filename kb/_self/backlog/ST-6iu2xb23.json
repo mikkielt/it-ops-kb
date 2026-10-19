@@ -112,6 +112,57 @@
       "answer": "only in the output of kbwho --show-email and in _private/operators.json, never in a tracked file, a coord event or a panel",
       "by": "operator",
       "host_unchecked": "design choice about where the email may appear (kbwho output and _private only); no host setup to prove, the item's planted check asserts it"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What does kbwho print and return when no source gives an identity (no KB_OPERATOR, no email from claude auth status, no git user.email)?",
+      "options": [
+        "source none, id null (printed as none), exit 0",
+        "exit 1 with an error on stderr"
+      ],
+      "recommendation": "source none, id null (printed as none), exit 0",
+      "do": {
+        "source none, id null (printed as none), exit 0": "ST-6iu2xb23",
+        "exit 1 with an error on stderr": "ST-6iu2xb23"
+      },
+      "class": "design",
+      "answer": "source none, id null (printed as none), exit 0",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which values of KB_OPERATOR does kbwho accept as an inherited id?",
+      "options": [
+        "letters, digits, dot, underscore and hyphen, at most 64 characters; anything else is warned about on stderr and ignored",
+        "any non-empty text"
+      ],
+      "recommendation": "letters, digits, dot, underscore and hyphen, at most 64 characters; anything else is warned about on stderr and ignored",
+      "do": {
+        "letters, digits, dot, underscore and hyphen, at most 64 characters; anything else is warned about on stderr and ignored": "ST-6iu2xb23",
+        "any non-empty text": "ST-6iu2xb23"
+      },
+      "class": "design",
+      "answer": "letters, digits, dot, underscore and hyphen, at most 64 characters; anything else is warned about on stderr and ignored",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "How long may kbwho wait for claude auth status and git config, and is the answer cached between runs?",
+      "options": [
+        "5 seconds each, asked on every use, no cache",
+        "cache the email on disk between runs"
+      ],
+      "recommendation": "5 seconds each, asked on every use, no cache",
+      "do": {
+        "5 seconds each, asked on every use, no cache": "ST-6iu2xb23",
+        "cache the email on disk between runs": "ST-6iu2xb23"
+      },
+      "class": "design",
+      "answer": "5 seconds each, asked on every use, no cache",
+      "by": "agent"
     }
   ],
   "notes": "Premise (2026-10-19): _tools/kbwho.py does not exist; the planted check fails at its first run. claude auth status took 0.12 s per run on this host (three runs), so kbwho may call it on each use with a short timeout; its email key is undocumented (UNK), so kbwho falls back when the key is missing. Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and .claude/hooks with its own coord store and a stub claude on PATH; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations; facts: public/claude/ci-and-headless.md:124-127, public/claude/otel-monitoring.md:51-53, QK-claude-code-session-learn-email-account. Addresses in checks are built at run time; docs and items use the placeholder jan.kowalski only.",

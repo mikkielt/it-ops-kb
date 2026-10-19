@@ -150,3 +150,5 @@ kb/_self/monitoring.md,otel/pyproject.toml
 kb/_self/code.md,otel/pyproject.toml
 kb/_self/tools.md,_tools/install_wezterm.py
 kb/_self/maintaining.md,_tools/install_wezterm.py
+kb/_self/tools.md,_tools/kbwho.py
+kb/_self/design.md,_tools/kbwho.py
