@@ -1,7 +1,7 @@
 {
   "id": "BG-jemfbkjs",
   "kind": "bug",
-  "title": "kbmon's sprint panel takes over 10 s on this clone, so kbmon --status sprints says the panel is not readable (timeout)",
+  "title": "kbmon's sprint panel takes over 10 s on this clone, so kbmon --status sprints says the panel is not readable",
   "status": "doing",
   "sprint": "SP-yjfiemha",
   "priority": "P1",
@@ -29,6 +29,6 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
-  "notes": "Orchestrator 2026-10-19: a regression of this sprint's ST-trhzzeku (mon_sprint.follows). Measured on this host: kbmon.py --status sprints --timeout 60 took 7.0 s wall on origin/main 8f7133f9d (before ST-trhzzeku) and 21.3 s on 5eda43997 (after). It blocks ST-po5rwymx's kb_monitor_status check, so it is S1 in this sprint. Keep follows' result the same (ST-trhzzeku's check must still pass): memoize the touch-pair verdicts or expand each touch's files once, inside mon_sprint.py.",
+  "notes": "Orchestrator 2026-10-19: a regression of this sprint's ST-trhzzeku (mon_sprint.follows). Measured on this host: kbmon.py --status sprints --timeout 60 took 7.0 s wall on origin/main 8f7133f9d (before ST-trhzzeku) and 21.3 s on 5eda43997 (after). It blocks ST-po5rwymx's kb_monitor_status check, so it is S1 in this sprint. Keep follows' result the same (ST-trhzzeku's check must still pass): memoize the touch-pair verdicts or expand each touch's files once, inside mon_sprint.py. Orchestrator 2026-10-19: title reworded to drop the word the repro matches, which the open item's own title echoed into the panel's next and left lines (a self-echo, not slowness).",
   "claimed_by": "orch-r33"
 }
