@@ -2,7 +2,7 @@
   "id": "ST-uco3scz5",
   "kind": "story",
   "title": "Review sprint: Each session, agent and sprint names its operator: a pseudonymous operator id from the Claude login",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-czs3jk57",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,7 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-r38",
+  "operator": "op-4b76a6bc"
 }
