@@ -1400,7 +1400,7 @@ RULE_TAG = [{"kind": "DOC", "ids": [], "note": "rule"}]  # a rule passage counts
 
 def self_docs():
     """The top-level .md docs of the kb's own docs (SELF_DIR; no subdirectory), by repository path, sorted."""
-    return sorted(kbcommon.repo_rel(os.path.join(SELF_DIR, f)) for f in os.listdir(SELF_DIR)
+    return sorted(kbcommon.repo_rel(os.path.join(SELF_DIR, f)) for f in (os.listdir(SELF_DIR) if os.path.isdir(SELF_DIR) else [])
                   if f.endswith(".md") and os.path.isfile(os.path.join(SELF_DIR, f)))
 
 

@@ -6,7 +6,8 @@
   kbroot.py add-remote NAME --url URL --prefix P --team T [--visibility internal|public] [--ref BRANCH]
                         [--access fetch|submodule] [--description TEXT]
                                          write the pointer file kb/_roots/NAME.md (no `pin`; `ref` empty follows the
-                                         remote's default branch); `submodule` access prints the `git submodule add`
+                                         remote's default branch); `submodule` access also runs `git submodule add` at
+                                         kb/NAME (a failure removes the pointer again, exit 1)
   kbroot.py fetch [--pin] [NAME ...]     clone or update each fetch root (all, or those named) into _cache/roots/NAME/
                                          (${CLAUDE_PLUGIN_DATA}/roots/NAME/ when this copy runs as the plugin) at its
                                          `pin` or the tip of its `ref`, with no credential prompt; a failure is kept as the
@@ -29,7 +30,7 @@ keeps it (AGENTS.md, "Agent conduct").
 A root in another repository is named by a pointer file kb/_roots/<name>.md (kbcommon.py): `list` shows one whose
 root is not on disk as `missing` and exits 0; `add` refuses a name or prefix a pointer holds.
 
-Exit: 0 done, 1 a fetch failed (stderr names the root), 2 refused (bad name or prefix, taken, the directory exists, or
+Exit: 0 done, 1 a fetch or a submodule add failed (stderr names the root), 2 refused (bad name or prefix, taken, the directory exists, or
 a name that is no fetch root).
 """
 import argparse, os, re, shutil, subprocess, sys
@@ -169,9 +170,14 @@ def cmd_add_remote(a):
     rel = os.path.relpath(path, kbcommon.HOME).replace(os.sep, "/")
     if a.access == "fetch":
         print(f"created {rel} (root {name}, id prefix {prefix}, {a.visibility}, fetch): python3 _tools/kbroot.py fetch {name}")
-    else:
-        print(f"created {rel} (root {name}, id prefix {prefix}, {a.visibility}, submodule): "
-              f"git submodule add {a.url.strip()} kb/{name}")
+        return 0
+    why = submodule_add(kbcommon.read_pointer(path))
+    if why:
+        os.remove(path)
+        print(f"submodule add failed: {name}: {why}", file=sys.stderr)
+        return 1
+    print(f"created {rel} (root {name}, id prefix {prefix}, {a.visibility}, submodule) and the submodule kb/{name}: "
+          f"commit .gitmodules, kb/{name} and the pointer")
     return 0
 
 
@@ -207,6 +213,24 @@ def git_out(args, p, cwd):
     if r.returncode:
         return False, f"git {args[0]} exited {r.returncode}"
     return True, r.stdout.strip()
+
+
+def submodule_add(p):
+    """Check the root of submodule Pointer `p` out as a git submodule at kb/<name>/ of this repository (on its `ref`
+    when it names one); '' when done, else why it failed, with nothing of it left behind."""
+    d = kbcommon.pointer_root_dir(p)
+    rel = os.path.relpath(d, kbcommon.HOME).replace(os.sep, "/")
+    ok, why = git(["submodule", "add", "--quiet", *(["-b", p.ref] if p.ref else []), "--", p.url, rel], p, kbcommon.HOME)
+    if ok and not os.path.isfile(os.path.join(d, kbcommon.ROOT_FILE)):
+        ok, why = False, f"the repository holds no {kbcommon.ROOT_FILE}"
+    if not ok:
+        git(["submodule", "deinit", "--force", "--", rel], p, kbcommon.HOME)
+        git(["rm", "--cached", "--force", "--quiet", "--", rel], p, kbcommon.HOME)
+        shutil.rmtree(d, ignore_errors=True)
+        found, gitdir = git_out(["rev-parse", "--absolute-git-dir"], p, kbcommon.HOME)
+        if found:
+            shutil.rmtree(os.path.join(gitdir, "modules", *rel.split("/")), ignore_errors=True)
+    return why
 
 
 def fetch_one(p):
