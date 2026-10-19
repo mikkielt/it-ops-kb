@@ -1,0 +1,78 @@
+{
+  "id": "ST-zcfgtpfv",
+  "kind": "story",
+  "title": "Backlog items record the operator id: a sprint's creator and owner, a claim's operator and the operator who answered a gate",
+  "status": "draft",
+  "sprint": "SP-czs3jk57",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py new sprint records the operator id of kbwho.operator() as the sprint's creator; set SP --owner ID --by operator records its owner and refuses a value shaped like an email address; claim records the operator id beside claimed_by; an answer --by operator records the operator id and the answering session's role on the gate beside by, and gate classes and who may answer stay as they are; backlog.py check accepts the creator, owner and operator fields and refuses one that holds an email address",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, shutil, subprocess, tempfile, json, re\nT = tempfile.mkdtemp()\nC = os.path.join(T, \"clone\")\nshutil.copytree(\"_tools\", os.path.join(C, \"_tools\"), ignore=shutil.ignore_patterns(\"__pycache__\", \"*.pyc\", \"fixtures\"))\nshutil.copytree(\".claude/hooks\", os.path.join(C, \".claude\", \"hooks\"))\nfor f in (\"backlog.json\", \".gitignore\"):\n    shutil.copy(f, C)\nos.makedirs(os.path.join(C, \"kb\", \"_self\", \"backlog\"))\nshutil.copy(\"kb/_self/map.csv\", os.path.join(C, \"kb\", \"_self\", \"map.csv\"))\nB = os.path.join(T, \"bin\"); os.makedirs(B)\nEM = \"jan.kowalski\" + chr(64) + \"corp-mail.test\"  # built at run time: no address sits in the check's text\ndef stub(body):\n    p = os.path.join(B, \"claude\"); open(p, \"w\").write(\"#!/bin/sh\\n\" + body + \"\\n\"); os.chmod(p, 0o755)\nstub(\"echo '{\\\"loggedIn\\\": true, \\\"authMethod\\\": \\\"claude.ai\\\", \\\"email\\\": \\\"%s\\\"}'\" % EM)\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_\", \"CLAUDE\"))}\nENV.update(PATH=os.pathsep.join([B, os.path.dirname(shutil.which(\"git\")), \"/usr/bin\", \"/bin\"]), HOME=T,\n           GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\", KB_LIVE_DOCS=\"0\", KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"),\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a):\n    return subprocess.run([\"git\", *a], cwd=C, env=ENV, capture_output=True, text=True, check=True).stdout\ndef run(tool, *a, stdin=None, **kw):\n    return subprocess.run([sys.executable, os.path.join(C, *tool.split(\"/\")) if \"/\" in tool else os.path.join(C, \"_tools\", tool), *a],\n                          cwd=C, env={**ENV, **kw}, input=stdin, capture_output=True, text=True, timeout=300)\ng(\"init\", \"-q\", \"-b\", \"main\"); g(\"add\", \"-A\"); g(\"commit\", \"-qm\", \"base\")\nO = dict(KB_OPERATOR=\"op-test0001\", KB_ROLE=\"orchestrator\")\nitem = lambda i: json.load(open(os.path.join(C, \"kb\", \"_self\", \"backlog\", i + \".json\")))\nr = run(\"backlog.py\", \"new\", \"sprint\", \"--title\", \"Planted\", \"--goal\", \"a planted goal\", **O)\nsp = re.search(r\"new sprint (SP-\\w+)\", r.stdout).group(1)\nassert item(sp).get(\"creator\") == \"op-test0001\", (\"a new sprint does not record its creator\", item(sp))\nrun(\"backlog.py\", \"answer\", sp, \"start\", \"--answer\", \"approve\", \"--by\", \"operator\", **O)\ngt = [x for x in item(sp)[\"gates\"] if x[\"id\"] == \"start\"][0]\nassert (gt.get(\"by\"), gt.get(\"operator\"), gt.get(\"role\")) == (\"operator\", \"op-test0001\", \"orchestrator\"), (\"an operator's gate answer does not record the operator id and role\", gt)\nr = run(\"backlog.py\", \"set\", sp, \"--owner\", \"op-own00002\", \"--by\", \"operator\", **O)\nassert r.returncode == 0 and item(sp).get(\"owner\") == \"op-own00002\", (\"set --owner does not record the owner\", r.returncode, r.stderr[-300:])\nr = run(\"backlog.py\", \"set\", sp, \"--owner\", EM, \"--by\", \"operator\", **O)\nassert r.returncode != 0 and item(sp).get(\"owner\") == \"op-own00002\", (\"set --owner takes an email address\", r.returncode, item(sp).get(\"owner\"))\nr = run(\"backlog.py\", \"new\", \"story\", \"--title\", \"Planted claim\", \"--goal\", \"a planted claim\", \"--sprint\", sp, \"--touch\", \"kb/x.md\",\n        \"--check\", \"python3 _tools/backlog.py config\", **O)\ns = re.search(r\"new story (ST-\\w+)\", r.stdout).group(1)\nrun(\"backlog.py\", \"start\", sp, **O)\nr = run(\"backlog.py\", \"claim\", s, \"--by\", \"w1\", KB_OPERATOR=\"op-wkr00003\", KB_ROLE=\"worker\")\nit = item(s)\nassert it.get(\"claimed_by\") == \"w1\" and it.get(\"operator\") == \"op-wkr00003\", (\"a claim does not record the operator beside claimed_by\", r.stderr[-300:], it)\nr = run(\"backlog.py\", \"check\", **O)\nassert r.returncode == 0, (\"backlog.py check refuses the operator fields\", r.stdout[-500:])\np = os.path.join(C, \"kb\", \"_self\", \"backlog\", sp + \".json\"); d = json.load(open(p)); d[\"creator\"] = EM; json.dump(d, open(p, \"w\"), indent=2)\nr = run(\"backlog.py\", \"check\", **O)\nassert r.returncode != 0 and sp in r.stdout + r.stderr, (\"backlog.py check accepts an email address as creator\", r.stdout[-300:])\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "backlog.py new sprint records the operator id of kbwho.operator() as the sprint's creator",
+      "check": 0
+    },
+    {
+      "clause": "set SP --owner ID --by operator records its owner and refuses a value shaped like an email address",
+      "check": 0
+    },
+    {
+      "clause": "claim records the operator id beside claimed_by",
+      "check": 0
+    },
+    {
+      "clause": "an answer --by operator records the operator id and the answering session's role on the gate beside by",
+      "check": 0
+    },
+    {
+      "clause": "gate classes and who may answer stay as they are",
+      "check": 0
+    },
+    {
+      "clause": "backlog.py check accepts the creator, owner and operator fields and refuses one that holds an email address",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/bl_base.py",
+    "_tools/bl_check.py",
+    "_tools/backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/querylog.md"
+  ],
+  "depends_on": [
+    "ST-6iu2xb23"
+  ],
+  "gates": [
+    {
+      "id": "g-gate-who",
+      "kind": "blocking",
+      "question": "What does a gate answered --by operator record beside by, so that an answer an orchestrator gave on the operator's delegation is told apart from one the operator typed?",
+      "options": [
+        "the operator id and the answering session's role (interactive, orchestrator or worker)",
+        "the operator id only"
+      ],
+      "recommendation": "the operator id and the answering session's role (interactive, orchestrator or worker)",
+      "do": {
+        "the operator id and the answering session's role (interactive, orchestrator or worker)": "ST-zcfgtpfv",
+        "the operator id only": "ST-zcfgtpfv"
+      },
+      "class": "agents-rule",
+      "answer": "the operator id and the answering session's role (interactive, orchestrator or worker)",
+      "by": "operator"
+    }
+  ],
+  "notes": "Premise (2026-10-19): in a planted backlog, new sprint writes no creator, claim writes no operator, an operator's gate answer records by only, and set has no --owner flag. kb/_self/map.csv maps _tools/bl_base.py to kb/_self/querylog.md: a field list change there is reviewed against it; the query log's own fields are another item's open gate. Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and .claude/hooks with its own coord store and a stub claude on PATH; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations; facts: public/claude/ci-and-headless.md:124-127, public/claude/otel-monitoring.md:51-53, QK-claude-code-session-learn-email-account. Addresses in checks are built at run time; docs and items use the placeholder jan.kowalski only."
+}

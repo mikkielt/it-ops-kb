@@ -1,0 +1,55 @@
+{
+  "id": "ST-ve73rkwl",
+  "kind": "story",
+  "title": "kbmon's OpenTelemetry export names the operator by kb.operator.id and drops email-shaped resource attributes",
+  "status": "draft",
+  "sprint": "SP-yjugq5c2",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbwho.otel_attributes() gives kbmon's OpenTelemetry resource: service.name, kb.operator.id with the operator id, and each OTEL_RESOURCE_ATTRIBUTES entry except user.email and any whose value is shaped like an email address; otel/kbmon_otel.py builds both of its resources from it alone, so the SDK's own read of OTEL_RESOURCE_ATTRIBUTES adds nothing; kb/_self/monitoring.md says that Claude Code's own user.email attribute reaches only the exporter the operator configures and that kbotel.py keeps no identity attribute",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, shutil, subprocess, tempfile, json, re\nT = tempfile.mkdtemp()\nC = os.path.join(T, \"clone\")\nshutil.copytree(\"_tools\", os.path.join(C, \"_tools\"), ignore=shutil.ignore_patterns(\"__pycache__\", \"*.pyc\", \"fixtures\"))\nshutil.copytree(\".claude/hooks\", os.path.join(C, \".claude\", \"hooks\"))\nfor f in (\"backlog.json\", \".gitignore\"):\n    shutil.copy(f, C)\nos.makedirs(os.path.join(C, \"kb\", \"_self\", \"backlog\"))\nshutil.copy(\"kb/_self/map.csv\", os.path.join(C, \"kb\", \"_self\", \"map.csv\"))\nB = os.path.join(T, \"bin\"); os.makedirs(B)\nEM = \"jan.kowalski\" + chr(64) + \"corp-mail.test\"  # built at run time: no address sits in the check's text\ndef stub(body):\n    p = os.path.join(B, \"claude\"); open(p, \"w\").write(\"#!/bin/sh\\n\" + body + \"\\n\"); os.chmod(p, 0o755)\nstub(\"echo '{\\\"loggedIn\\\": true, \\\"authMethod\\\": \\\"claude.ai\\\", \\\"email\\\": \\\"%s\\\"}'\" % EM)\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_\", \"CLAUDE\"))}\nENV.update(PATH=os.pathsep.join([B, os.path.dirname(shutil.which(\"git\")), \"/usr/bin\", \"/bin\"]), HOME=T,\n           GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\", KB_LIVE_DOCS=\"0\", KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"),\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a):\n    return subprocess.run([\"git\", *a], cwd=C, env=ENV, capture_output=True, text=True, check=True).stdout\ndef run(tool, *a, stdin=None, **kw):\n    return subprocess.run([sys.executable, os.path.join(C, *tool.split(\"/\")) if \"/\" in tool else os.path.join(C, \"_tools\", tool), *a],\n                          cwd=C, env={**ENV, **kw}, input=stdin, capture_output=True, text=True, timeout=300)\ng(\"init\", \"-q\", \"-b\", \"main\"); g(\"add\", \"-A\"); g(\"commit\", \"-qm\", \"base\")\nsys.path.insert(0, os.path.join(C, \"_tools\"))\nos.environ.update(KB_OPERATOR=\"op-test0001\", KB_ROLE=\"interactive\",\n                  OTEL_RESOURCE_ATTRIBUTES=\"user.email=\" + EM + \",team=ops,contact=\" + EM.replace(\"jan\", \"ola\"))\ntry:\n    import kbwho\nexcept ImportError:\n    kbwho = None\nassert kbwho is not None and hasattr(kbwho, \"otel_attributes\"), \"kbwho has no otel_attributes()\"\na = kbwho.otel_attributes()\nassert a.get(\"kb.operator.id\") == \"op-test0001\", (\"the export does not name the operator by kb.operator.id\", a)\nassert \"user.email\" not in a and \"contact\" not in a and EM not in json.dumps(a), (\"an email-shaped attribute survives\", a)\nassert a.get(\"team\") == \"ops\" and a.get(\"service.name\"), (\"other resource attributes are dropped\", a)\nsrc = open(\"otel/kbmon_otel.py\", encoding=\"utf-8\").read()\nassert \"Resource.create(\" not in src and src.count(\"otel_attributes\") >= 2, \"otel/kbmon_otel.py does not build both of its resources from kbwho.otel_attributes() alone\"\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t = open('kb/_self/monitoring.md', encoding='utf-8').read(); ok = 'kb.operator.id' in t and any('user.email' in l and 'kbotel' in l for l in t.splitlines()); print('ok' if ok else 'monitoring.md does not say where user.email goes and that kbotel.py keeps no identity attribute'); sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbwho.otel_attributes() gives kbmon's OpenTelemetry resource: service.name, kb.operator.id with the operator id",
+      "check": 0
+    },
+    {
+      "clause": "each OTEL_RESOURCE_ATTRIBUTES entry except user.email and any whose value is shaped like an email address",
+      "check": 0
+    },
+    {
+      "clause": "otel/kbmon_otel.py builds both of its resources from it alone, so the SDK's own read of OTEL_RESOURCE_ATTRIBUTES adds nothing",
+      "check": 0
+    },
+    {
+      "clause": "kb/_self/monitoring.md says that Claude Code's own user.email attribute reaches only the exporter the operator configures and that kbotel.py keeps no identity attribute",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/kbwho.py",
+    "otel/kbmon_otel.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "ST-6iu2xb23"
+  ],
+  "notes": "Premise (2026-10-19): otel/kbmon_otel.py builds its resources with Resource.create({service.name}) at two places, which also merges OTEL_RESOURCE_ATTRIBUTES, so an address set there would be exported; kbotel.py keeps an allowlist of event attributes and none of the identity attributes. The OpenTelemetry SDK is not installed on this host, so the check runs the stdlib function and reads the adapter's source. Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and .claude/hooks with its own coord store and a stub claude on PATH; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations; facts: public/claude/ci-and-headless.md:124-127, public/claude/otel-monitoring.md:51-53, QK-claude-code-session-learn-email-account. Addresses in checks are built at run time; docs and items use the placeholder jan.kowalski only."
+}

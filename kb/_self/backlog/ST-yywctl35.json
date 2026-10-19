@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Open questions: (1) how the OpenTelemetry Python SDK's Resource.create merges OTEL_RESOURCE_ATTRIBUTES and OTEL_SERVICE_NAME, and how a resource built without that detector is made (the official opentelemetry-python docs), for the kbmon export item; (2) what git documents for a commit's author and committer identity when history is rewritten (git-commit-tree, git-filter-branch or git-filter-repo docs, .mailmap in gitmailmap), for the open author-email gate's options; (3) the noreply address forms GitHub documents for commit emails, so the publish message scan allows them."
 }

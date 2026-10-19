@@ -14,7 +14,10 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
     }
-  ]
+  ],
+  "notes": "Planned 2026-10-19 with SP-czs3jk57 on the same operator request. Run order: after SP-czs3jk57, whose kbwho item ST-6iu2xb23 its items depend on, and after the team sprints. Left open for the operator: g-author on ST-estjbyy4 (class push, the public home) and g-querylog on ST-maymhnzj (class querylog), each with its recommendation; the rest of the sprint runs without them. Start gate approved on the operator's pre-approval of 2026-10-19; not started."
 }

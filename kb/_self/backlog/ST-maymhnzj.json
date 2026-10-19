@@ -1,0 +1,61 @@
+{
+  "id": "ST-maymhnzj",
+  "kind": "story",
+  "title": "The query log says whether its rows name the operator, as the operator decides",
+  "status": "draft",
+  "sprint": "SP-yjugq5c2",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/querylog.md says, as the operator's answer to gate g-querylog decides, whether query log rows carry the operator id of kbwho.operator(); for the recommended answer the rows keep their fields and name no operator, an email never, and the sentence says why; for the other answer ql_capture adds the operator id to the ops rows' closed keys",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt = open('kb/_self/querylog.md', encoding='utf-8').read()\nok = any('kbwho' in l and 'operator' in l for l in t.splitlines())\nprint('ok' if ok else 'querylog.md does not say whether rows record the operator id of kbwho')\nsys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/_self/querylog.md says, as the operator's answer to gate g-querylog decides, whether query log rows carry the operator id of kbwho.operator()",
+      "check": 0
+    },
+    {
+      "clause": "for the recommended answer the rows keep their fields and name no operator, an email never",
+      "check": 0
+    },
+    {
+      "clause": "the sentence says why",
+      "check": 0
+    },
+    {
+      "clause": "for the other answer ql_capture adds the operator id to the ops rows' closed keys",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "kb/_self/querylog.md"
+  ],
+  "depends_on": [
+    "ST-6iu2xb23"
+  ],
+  "gates": [
+    {
+      "id": "g-querylog",
+      "kind": "blocking",
+      "question": "Should query log rows record the operator id? Today a row names no operator, and an ops row is a closed event with no session (kb/_self/querylog.md); the fields the query log records are the operator's call.",
+      "options": [
+        "no: the query log keeps its fields and names no operator",
+        "yes: ops rows add the pseudonymous operator id as a closed key"
+      ],
+      "recommendation": "no: the query log keeps its fields and names no operator",
+      "do": {
+        "no: the query log keeps its fields and names no operator": "ST-maymhnzj",
+        "yes: ops rows add the pseudonymous operator id as a closed key": "ST-maymhnzj"
+      },
+      "class": "querylog"
+    }
+  ],
+  "notes": "Premise (2026-10-19): kb/_self/querylog.md does not say whether rows name the operator. Waits on the operator's gate g-querylog (class querylog); the recommended answer changes no recorded field. Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and .claude/hooks with its own coord store and a stub claude on PATH; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations; facts: public/claude/ci-and-headless.md:124-127, public/claude/otel-monitoring.md:51-53, QK-claude-code-session-learn-email-account. Addresses in checks are built at run time; docs and items use the placeholder jan.kowalski only."
+}
