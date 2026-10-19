@@ -41,7 +41,7 @@ item and its descendants, read through `bl_cost.spend_usd`, the reader `backlog.
 `bench_core.PRICE`; null without a budget) and `over_budget` (true when the spend is above the budget), and `digest`
 adds `over budget` to the line of such a claim. Nothing is stopped: the claim, its renewals and its holder go on.
 
-An event is a kind from a closed list (claim, release, fact_added, gap_opened, dup_of, lesson, heartbeat, ask, answer) and up to
+An event is a kind from a closed list (claim, release, dedup, fact_added, gap_opened, dup_of, lesson, heartbeat, ask, answer) and up to
 eight fields, each NAME=VALUE: an event carries references only, so a VALUE is an id of at most 120 characters of
 letters, digits and `_ . : / # @ -` (a source id, a `path:line` fact key, a QK answer id, a backlog item id, a pack
 handle) and free text is refused. `post` numbers events 1, 2, 3 ... in the store; `wait` polls the store twice a second
@@ -61,6 +61,11 @@ one line per live intent (posted within a day, its items not all done by a later
 session, that session's presence lease `session/<id>` still held: a release or an expiry drops the session's intents) or
 live claim (a held lease) with a value that overlaps a key (equal, a directory-style prefix either way, or a glob match either
 way), newest first, cut at N lines; with nothing to show it prints nothing.
+
+A `claim` of a research key (`research:TOPIC:TERM`) or a backlog item id leaves a `claim` event (fields key, holder), its `release`
+a `release` event and a claim the store refuses a `dup_of` event (key, holder of the refused claim, held_by); a session's presence
+lease `session/ID` and any other key leave none. `dedup` leaves a `claim` event for each key it claims and one `dedup` event
+(holder, topic, terms, claimed, overlapping, held: lack terms, comma-separated, `-` for none).
 
 `dedup` runs `rag.py pack QUESTION` and takes its fingerprint: the anchor topic (the first article's path without `.md`,
 else `unanchored`) and the terms of its `kb lacks:` lines, lowercased and mapped to their canonical form by
@@ -125,7 +130,7 @@ EVENTS_SCHEMA = (
     "CREATE TABLE IF NOT EXISTS events ("
     "seq INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, fields TEXT NOT NULL, at REAL NOT NULL)"
 )
-KINDS = ("claim", "release", "fact_added", "gap_opened", "dup_of", "lesson", "heartbeat", "intent", "progress", "ask", "answer")
+KINDS = ("claim", "release", "dedup", "fact_added", "gap_opened", "dup_of", "lesson", "heartbeat", "intent", "progress", "ask", "answer")
 KIND_FIELDS = {"intent": ("session", "item", "topic", "touch"), "progress": ("item", "state"),
                "ask": ("id", "to", "ref"), "answer": ("id", "state", "ref")}
 STATES = ("working", "blocked", "done")
@@ -234,6 +239,30 @@ def holder_name(args):
     return holder
 
 
+def recorded(key):
+    """Whether a claim of KEY leaves events: a research key or a backlog item id, never a session's presence lease (the
+    coord hook renews those all session long)."""
+    if key.startswith(RESEARCH):
+        return True
+    if key.startswith(SESSION_LEASE):
+        return False
+    import bl_base
+    return bl_base.id_re().fullmatch(key) is not None
+
+
+def add_event(con, args, kind, fields, now):
+    """Insert an event inside the open transaction, with the serving operator's name like `post` does."""
+    if getattr(args, "operator", None):
+        fields = {**fields, "operator": args.operator}
+    return con.execute("INSERT INTO events (kind, fields, at) VALUES (?, ?, ?)",
+                       (kind, json.dumps(fields, sort_keys=True, ensure_ascii=False), now)).lastrowid
+
+
+def term_list(items):
+    """ITEMS (lack terms, which may hold spaces, as the keys made of them do) as one event field value: comma-separated, `-` for none."""
+    return ",".join(items) or "-"
+
+
 def claim(args, clock):
     holder = holder_name(args)
     if not FIELD_VALUE.fullmatch(args.key):
@@ -244,13 +273,21 @@ def claim(args, clock):
         if not bl_base.id_re().fullmatch(args.key):
             raise Refused({"ok": False, "key": args.key, "error": f"--budget is for a claim of a backlog item id, not {args.key[:40]!r}"}, 2)
     token = secrets.token_hex(16)
+    refusal = None
     with Tx(args.store) as con:
         now = clock()
         row = live_row(con, args.key, now)
         if row is not None and row["holder"] is not None:
-            raise Refused({"ok": False, "key": args.key, "holder": row["holder"], "revision": row["revision"],
-                           "expires": row_json(row)["expires"], "error": f"{args.key} is held by {row['holder']}"})
-        revision = take(con, args.key, holder, token, args.ttl, now, budget)
+            refusal = {"ok": False, "key": args.key, "holder": row["holder"], "revision": row["revision"],
+                       "expires": row_json(row)["expires"], "error": f"{args.key} is held by {row['holder']}"}
+            if recorded(args.key):
+                add_event(con, args, "dup_of", {"key": args.key, "holder": holder, "held_by": row["holder"]}, now)
+        else:
+            revision = take(con, args.key, holder, token, args.ttl, now, budget)
+            if recorded(args.key):
+                add_event(con, args, "claim", {"key": args.key, "holder": holder}, now)
+    if refusal:
+        raise Refused(refusal)
     body = {"ok": True, "key": args.key, "holder": holder, "token": token, "ttl": args.ttl, "revision": revision,
             "expires": round(now + args.ttl, 3)}
     if budget is not None:
@@ -285,6 +322,8 @@ def release(args, clock):
             con.execute("DELETE FROM entries WHERE key = ?", (args.key,))
         else:
             con.execute("UPDATE entries SET holder = NULL, token = NULL, ttl = NULL, expires = NULL, budget = NULL WHERE key = ?", (args.key,))
+        if recorded(args.key):
+            add_event(con, args, "release", {"key": args.key, "holder": row["holder"]}, now)
     return {"ok": True, "key": args.key, "holder": row["holder"], "released": True}
 
 
@@ -571,6 +610,11 @@ def dedup(args, clock):
             elif term not in own:
                 take(con, research_key(topic, term), holder, token, args.ttl, now)
                 taken.append(research_key(topic, term))
+                add_event(con, args, "claim", {"key": taken[-1], "holder": holder}, now)
+        add_event(con, args, "dedup", {
+            "holder": holder, "topic": topic, "terms": term_list(terms),
+            "claimed": term_list(t for t in uncovered if research_key(topic, t) in taken),
+            "overlapping": term_list(sorted(covered)), "held": term_list(o["term"] for o in others)}, now)
         last = con.execute("SELECT COALESCE(MAX(seq), 0) FROM events").fetchone()[0]
     body = {"ok": True, "topic": topic, "holder": holder, "terms": terms, "uncovered": uncovered, "overlaps": overlapping,
             "held": others, "claimed": taken, "ttl": args.ttl, "seq": last}

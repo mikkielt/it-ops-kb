@@ -66,6 +66,23 @@
       "class": "design",
       "answer": "research and item keys only, no session leases",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which event kinds and fields do a refused claim and a dedup leave?",
+      "options": [
+        "dup_of (key, holder, held_by) for a refused claim; new dedup kind (holder, topic, terms, claimed, overlapping, held) plus a claim event per key dedup takes",
+        "new refused and dedup kinds only"
+      ],
+      "recommendation": "dup_of (key, holder, held_by) for a refused claim; new dedup kind (holder, topic, terms, claimed, overlapping, held) plus a claim event per key dedup takes",
+      "do": {
+        "dup_of (key, holder, held_by) for a refused claim; new dedup kind (holder, topic, terms, claimed, overlapping, held) plus a claim event per key dedup takes": "ST-eo3a7erb",
+        "new refused and dedup kinds only": "ST-eo3a7erb"
+      },
+      "class": "design",
+      "answer": "dup_of (key, holder, held_by) for a refused claim; new dedup kind (holder, topic, terms, claimed, overlapping, held) plus a claim event per key dedup takes",
+      "by": "agent"
     }
   ],
   "links": [
