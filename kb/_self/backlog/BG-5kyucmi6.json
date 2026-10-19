@@ -2,7 +2,7 @@
   "id": "BG-5kyucmi6",
   "kind": "bug",
   "title": "kbpublic.file_hits strips urls before the leak scan, so an internal root's qualified path or pointer host inside a url passes, and its cached verdicts do not know the registry",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-qinvdomv",
   "priority": "P2",
@@ -39,5 +39,6 @@
     "_tools/kbpublic.py",
     "kb/_self/git.md"
   ],
-  "notes": "Planned into SP-qinvdomv by the orchestrator: its goal clause 'the tracked-file leak scan refuses ... its pointer url host and its qualified paths' is not met while file_hits strips urls (found by ST-5hywunah's worker). Premise run 2026-10-19 on main 94cb17b16: repro exits 1 (url path passes), check 0 prints 'before 0 after 0' (public_values cache keyed on SCAN_FORM and tip only, a registry change reads the old value). Ordered before ST-vruwai2i, which also touches _tools/kbpublic.py."
+  "notes": "Planned into SP-qinvdomv by the orchestrator: its goal clause 'the tracked-file leak scan refuses ... its pointer url host and its qualified paths' is not met while file_hits strips urls (found by ST-5hywunah's worker). Premise run 2026-10-19 on main 94cb17b16: repro exits 1 (url path passes), check 0 prints 'before 0 after 0' (public_values cache keyed on SCAN_FORM and tip only, a registry change reads the old value). Ordered before ST-vruwai2i, which also touches _tools/kbpublic.py.",
+  "claimed_by": "orch-r36"
 }
