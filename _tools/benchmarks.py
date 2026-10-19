@@ -171,14 +171,20 @@
                                             kb/_self/reports/multi_bench.csv: one row per agent and input): a lookup agent's
                                             question id is a row of the question pool or the evaluation rows, a research
                                             agent's area one of repro_briefs.csv, a code agent's item spec has a title, goal,
-                                            touches, check and a gate with a recommendation; exit 1 naming each row that does
+                                            touches, check and a gate with a recommendation, and a later row of a code or
+                                            research agent may be an ask, `ask AGENT: QUESTION`, of another agent of the
+                                            scenario; exit 1 naming each row that does
                                             not resolve, 0 otherwise; no model, no network
   benchmarks.py multi run SCENARIO [--dry-run] [--replay [--plant lost-claim|land-stop|dup-research|leak-output|leak-commit|leak-event|bare-leak]] [--dir DIR] [--sequential] [--coord shared|isolated] [--stagger SECONDS]
                                             [--model [ROLE=]MODEL,...] [--pack-budget TOKENS] [--tools kb|files]
                                             [--manager code|session] [--max-usd USD] [--timeout SECONDS] [--bare]
-                                            --dry-run prints each agent of the scenario (lookups, research or mixed) with its
+                                            --dry-run prints each agent of the scenario (lookups, research, mixed or coord) with its
                                             role, model, argv and KB_COORD_STORE, the knob values and an estimate in USD from
-                                            bench_core.PRICE and the recorded rows' means; creates nothing, starts no model;
+                                            bench_core.PRICE and the recorded rows' means, and for the scenario coord
+                                            (two code agents of one item, two research agents of overlapping areas, one agent that
+                                            asks another through kbask.py ask, which answers with kbask.py answer) the shared item,
+                                            the overlapping areas and the asking and asked agents, and what --coord does to them;
+                                            creates nothing, starts no model;
                                             exit 1 naming a row that does not resolve. Without it the run builds the sandbox
                                             in DIR when DIR holds none (a DIR whose results.jsonl holds a finished run gets its
                                             results moved to results.N.jsonl and the sandbox built again at its start commit,
@@ -186,7 +192,12 @@
                                             recommendation as the operator (backlog.py answer --by operator, synced to the
                                             bare), starts every agent at once, one thread each, in its own clone (--sequential:
                                             each after the one before it ended; --stagger seconds apart), lands each code
-                                            agent's item through backlog.py dispatch and land in the sandbox, and appends one
+                                            agent's item through backlog.py dispatch and land in the sandbox (the agent claims
+                                            the item's key in its coord store first, coord.py claim, and releases it after the land:
+                                            one whose claim a shared store refuses, or whose item is done on the bare's main,
+                                            does no work and its line says skipped), posts each ask of its input rows with
+                                            kbask.py ask and, once its own work ended, answers an ask it finds in its own store with
+                                            kbask.py answer (when the agents run at once, up to 10 s), and appends one
                                             json line per agent to DIR/results.jsonl (role, item, the four token counts, cost,
                                             turns, tool_calls, wall_s, started, ended, steps, commit, land, failure); --max-usd
                                             starts no agent once the recorded spend plus its estimate would pass it and records
@@ -243,7 +254,7 @@
                                             exit 1 naming them, 0 when none, 2 on a refusal (no
                                             run in DIR, an agent with no end stamp); no model, no network
   benchmarks.py multi fitness [--dir DIR]   the comprehensive check of concurrent work, run by the harness in place of a test: replay
-                                            (`multi run --replay`) the scenarios lookups, research and mixed at once and one at a time,
+                                            (`multi run --replay`) the scenarios lookups, research, mixed and coord at once and one at a time,
                                             and at once with each --plant their agents can make, and with --bare clean and with
                                             --plant bare-leak, each in a sandbox of its own under DIR
                                             (default: a temporary directory under the scratch directory), removed after the case, and read
@@ -257,7 +268,14 @@
                                             and for the run, input, out, cache_read, cache_write, cost, wall_s and turns, and
                                             for the run dup_facts (facts two agents wrote as one claim, repro compare's match),
                                             claims, claim_refused, dedup_hits and skipped_terms (also per agent: each agent has its
-                                            own coord holder, counted from the sandbox's coord store events) and claim_conflicts, land_stops, rebase_s,
+                                            own coord holder, counted from the sandbox's coord store events) and claim_conflicts,
+                                            conflicts_resolved (the keys more than one agent claimed or was refused that at most one
+                                            of them worked: a commit naming the item, a fact on the research key's topic), asks and
+                                            asks_answered (the ask events, and those a completed answer event of the same store
+                                            answers), dup_commits (the agents that wrote work for one item beyond the first),
+                                            wasted_tokens (the four token counts of the agents whose claim was refused, whose work on an
+                                            item another agent had already written, or whose fact another agent wrote as one claim),
+                                            land_stops, rebase_s,
                                             right and asked (the lookup agents' answers scored as the pool scores them) and
                                             eval_passed and eval_total (the research agents' frozen questions on the bare's
                                             main); when the file holds a concurrent and a sequential arm of the same record,

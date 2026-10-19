@@ -49,6 +49,91 @@
     "ST-uo23fwho",
     "ST-prrja362"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the second code agent meet the item both code agents hold, and so get a refused claim?",
+      "options": [
+        "Its harness step claims the item's key in its own coord store (coord.py claim ITEM): a shared store refuses it, an isolated one does not; a refused agent does no work",
+        "It runs backlog.py claim in its clone, refused once the first claim has landed on the shared bare"
+      ],
+      "recommendation": "Its harness step claims the item's key in its own coord store (coord.py claim ITEM): a shared store refuses it, an isolated one does not; a refused agent does no work",
+      "do": {
+        "Its harness step claims the item's key in its own coord store (coord.py claim ITEM): a shared store refuses it, an isolated one does not; a refused agent does no work": "ST-kx6qdtkv",
+        "It runs backlog.py claim in its clone, refused once the first claim has landed on the shared bare": "ST-kx6qdtkv"
+      },
+      "class": "design",
+      "answer": "Its harness step claims the item's key in its own coord store (coord.py claim ITEM): a shared store refuses it, an isolated one does not; a refused agent does no work",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which agent asks whom, and who runs the ask and the answer?",
+      "options": [
+        "code-2, whose claim a shared store refuses, asks code-1 (the holder); the harness runs kbask.py ask in the asking agent's clone and kbask.py answer in the asked agent's clone once its work ended, each against that agent's own store; the ask is a second row of the asking agent, ask AGENT: QUESTION",
+        "A research agent asks another, posted by the scripted agents of bench_replay.py"
+      ],
+      "recommendation": "code-2, whose claim a shared store refuses, asks code-1 (the holder); the harness runs kbask.py ask in the asking agent's clone and kbask.py answer in the asked agent's clone once its work ended, each against that agent's own store; the ask is a second row of the asking agent, ask AGENT: QUESTION",
+      "do": {
+        "code-2, whose claim a shared store refuses, asks code-1 (the holder); the harness runs kbask.py ask in the asking agent's clone and kbask.py answer in the asked agent's clone once its work ended, each against that agent's own store; the ask is a second row of the asking agent, ask AGENT: QUESTION": "ST-kx6qdtkv",
+        "A research agent asks another, posted by the scripted agents of bench_replay.py": "ST-kx6qdtkv"
+      },
+      "class": "design",
+      "answer": "code-2, whose claim a shared store refuses, asks code-1 (the holder); the harness runs kbask.py ask in the asking agent's clone and kbask.py answer in the asked agent's clone once its work ended, each against that agent's own store; the ask is a second row of the asking agent, ask AGENT: QUESTION",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "What counts as a conflict resolved?",
+      "options": [
+        "A key more than one agent claimed or was refused (the stores' claim and dup_of events) that at most one of those agents worked: a commit naming the item, a fact on the research key's topic",
+        "Each refused claim"
+      ],
+      "recommendation": "A key more than one agent claimed or was refused (the stores' claim and dup_of events) that at most one of those agents worked: a commit naming the item, a fact on the research key's topic",
+      "do": {
+        "A key more than one agent claimed or was refused (the stores' claim and dup_of events) that at most one of those agents worked: a commit naming the item, a fact on the research key's topic": "ST-kx6qdtkv",
+        "Each refused claim": "ST-kx6qdtkv"
+      },
+      "class": "design",
+      "answer": "A key more than one agent claimed or was refused (the stores' claim and dup_of events) that at most one of those agents worked: a commit naming the item, a fact on the research key's topic",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "How are wasted_tokens, dup_commits and the ask count taken?",
+      "options": [
+        "wasted_tokens is the four token counts of each agent whose claim was refused, whose work on an item another agent had already written (all but the first to end) or whose fact another agent wrote as one claim (the later fact); dup_commits the agents that wrote work for one item beyond the first (a commit naming it in the agent's own clone); asks_answered the ask events a completed answer event of the same store answers, with asks beside it for the total",
+        "wasted_tokens is the output tokens only of the refused agents"
+      ],
+      "recommendation": "wasted_tokens is the four token counts of each agent whose claim was refused, whose work on an item another agent had already written (all but the first to end) or whose fact another agent wrote as one claim (the later fact); dup_commits the agents that wrote work for one item beyond the first (a commit naming it in the agent's own clone); asks_answered the ask events a completed answer event of the same store answers, with asks beside it for the total",
+      "do": {
+        "wasted_tokens is the four token counts of each agent whose claim was refused, whose work on an item another agent had already written (all but the first to end) or whose fact another agent wrote as one claim (the later fact); dup_commits the agents that wrote work for one item beyond the first (a commit naming it in the agent's own clone); asks_answered the ask events a completed answer event of the same store answers, with asks beside it for the total": "ST-kx6qdtkv",
+        "wasted_tokens is the output tokens only of the refused agents": "ST-kx6qdtkv"
+      },
+      "class": "secrets"
+    },
+    {
+      "id": "g5",
+      "kind": "provisional",
+      "question": "Which areas do the two research agents of coord research, and does every code agent claim its item in coord?",
+      "options": [
+        "pip and uv (two areas of Python package tooling); every code agent of every scenario claims its item's key in coord, so mixed records two more claims than before",
+        "pip for both, as the research scenario does; only the agents of coord claim"
+      ],
+      "recommendation": "pip and uv (two areas of Python package tooling); every code agent of every scenario claims its item's key in coord, so mixed records two more claims than before",
+      "do": {
+        "pip and uv (two areas of Python package tooling); every code agent of every scenario claims its item's key in coord, so mixed records two more claims than before": "ST-kx6qdtkv",
+        "pip for both, as the research scenario does; only the agents of coord claim": "ST-kx6qdtkv"
+      },
+      "class": "design",
+      "answer": "pip and uv (two areas of Python package tooling); every code agent of every scenario claims its item's key in coord, so mixed records two more claims than before",
+      "by": "agent"
+    }
+  ],
   "notes": "Premise run 2026-10-19 on 7079b184a: multi run coord --dry-run and --replay exit 2, 'no scenario coord; one of lookups, research, mixed'. Open design choices for the worker, recorded as provisional gates: how the second code agent meets the shared item (its own claim through backlog.py claim in its clone, refused once the first claim lands on the shared bare, is the recommended reading of 'refused claim'), which agent asks whom, and what counts as a conflict resolved. Overlap: SP-ipeewrlv ST-y53hvh64 and SP-2uljwgho ST-hvpdkmit also touch _tools/bench_multi.py; held serializes them.",
   "claimed_by": "orch-r61"
 }
