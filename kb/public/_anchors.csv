@@ -8808,18 +8808,21 @@ fec4a9bff9d7,gitlab/multi-project-pipelines.md,S-s67nwj2e,located,Keywords > Job
 0cf80aabdf52,gitlab/multi-repository-layouts.md,S-tzjw5vut,unlocated:no-match,,,,,2026-10-19
 0cf80aabdf52,gitlab/multi-repository-layouts.md,S-vvarw4uu,unlocated:no-match,,,,,2026-10-19
 0d76b8886017,gitlab/multi-repository-layouts.md,S-lwtajpn7,located,Analyzing Git traffic on your GitHub Enterprise Server instance > Recommended actions for Git load reduction,blob;none;request;requir;exampl;partial;filter;workflow,42b681eac86d673d,"use --filter to request only the objects the workflow requires, for example git clone --filter=blob:none.",2026-10-19
+1c8fe2c09d0a,gitlab/multi-repository-layouts.md,S-7vhtlusy,located,,option;sourc;writ;target;permission;branch;request;member,a66a853548001d7a,members who have permission to merge to the target branch get permission to write to the merge request's source branch.,2026-10-19
 2052f4a32564,gitlab/multi-repository-layouts.md,S-tzjw5vut,located,,implement;policy;read;restrict;writ;different;user;access,75d1e9ac81ac2da1,"By restricting user access to submodules, this can be used to implement read/write policies for different users.",2026-10-19
 266e5062e09e,gitlab/multi-repository-layouts.md,S-zflhytlw,located,,core.ignorecas;ignorecas;ignor;case;core,a13fd94d613d50bb,will probe and set core.ignoreCase true if appropriate when the repository is created.,2026-10-19
 2a7d9380ad3e,gitlab/multi-repository-layouts.md,S-dcbs6vpj,unlocated:no-match,,,,,2026-10-19
 2a7d9380ad3e,gitlab/multi-repository-layouts.md,S-vvarw4uu,unlocated:no-match,,,,,2026-10-19
 2cbeb9b70614,gitlab/multi-repository-layouts.md,S-dhea6atb,unlocated:no-match,,,,,2026-10-19
 2cbeb9b70614,gitlab/multi-repository-layouts.md,S-hvg7hx3q,unlocated:no-match,,,,,2026-10-19
+33867e52c887,gitlab/multi-repository-layouts.md,S-mjtf6vif,located,,privat;recipient;useless;becaus;information;branch;cherry-pick;cherry,949c1783e608f495,Do not use this option if you are cherry-picking from your private branch because the information is useless to the recipient.,2026-10-19
 34ad7b427d3f,gitlab/multi-repository-layouts.md,S-vvarw4uu,unlocated:no-match,,,,,2026-10-19
 34ad7b427d3f,gitlab/multi-repository-layouts.md,S-zflhytlw,unlocated:no-match,,,,,2026-10-19
 3565e11f5f3e,gitlab/multi-repository-layouts.md,S1591,unlocated:no-match,,,,,2026-10-19
 3565e11f5f3e,gitlab/multi-repository-layouts.md,S-gt67rjc2,unlocated:no-match,,,,,2026-10-19
 3565e11f5f3e,gitlab/multi-repository-layouts.md,S-zflhytlw,unlocated:no-match,,,,,2026-10-19
 3579f1ac0ee3,gitlab/multi-repository-layouts.md,S-vvarw4uu,located,,bar;bar.git;foo.git;next;foo;superproject;git,64c72f2658acb8ad,"which is located right next to a superproject bar.git, you'll have to use ../foo.git instead of ./foo.git",2026-10-19
+35d09ea49975,gitlab/multi-repository-layouts.md,S-7kl4eeso,located,,cherry-mark;detect;preliminary;determin;log;step;cherry-pick;clean,138159d36b8de77e,commits which are clean cherry-picks (as determined by git log --cherry-mark ...) are detected and dropped as a preliminary step,2026-10-19
 382ba8c565e0,gitlab/multi-repository-layouts.md,S-zniasdly,located,Clone with SSH > Reduce clone size,2.22.0;later;git,a03921e13b637715,Git 2.22.0 or later is required.,2026-10-19
 3e9146394b0a,gitlab/multi-repository-layouts.md,S-tzjw5vut,located,Change worktree,out;pull;default;check;clon;recurs;submodul,40ae6ecb9e116640,When cloning or pulling a repository containing submodules the submodules will not be checked out by default,2026-10-19
 449477561de3,gitlab/multi-repository-layouts.md,S-ph2mlwwa,located,,mean;submodule.recurs;demand;on-demand;unless;recurs;submodul;true,eb926a386e29bb52,"If not set, no is used by default, unless submodule.recurse is set (in which case a true value means on-demand).",2026-10-19
@@ -8834,23 +8837,32 @@ fec4a9bff9d7,gitlab/multi-project-pipelines.md,S-s67nwj2e,located,Keywords > Job
 5e2cc1f1ffab,gitlab/multi-repository-layouts.md,S-dcbs6vpj,unlocated:no-match,,,,,2026-10-19
 5e2cc1f1ffab,gitlab/multi-repository-layouts.md,S-vvarw4uu,unlocated:no-match,,,,,2026-10-19
 5ed9c2a176c9,gitlab/multi-repository-layouts.md,S-tzjw5vut,unlocated:no-match,,,,,2026-10-19
+5ef6df8efc82,gitlab/multi-repository-layouts.md,S-7kl4eeso,located,,flaw;part;some;way;topica;topic,96bbe15e8f50fd19,"This is useful if F and G were flawed in some way, or should not be part of topicA.",2026-10-19
 69203f71a19b,gitlab/multi-repository-layouts.md,S-bhnnr3li,located,,end;must;path;name,bd8a8376a75e8df1,The path name must not end with a /.,2026-10-19
 69ea72ca903e,gitlab/multi-repository-layouts.md,S-hvuk3dqt,located,Claude Code changelog,submodul;hold;fetch;refresh;repository;larg;marketplac;plugin,e995e2955d91eda6,only the submodules that hold plugin files are now fetched,2026-10-19
+6bc36e106ec9,gitlab/multi-repository-layouts.md,S-acpw7zsh,located,Creating a pull request from a fork,base;merg;compar;branch;fork;pull;request,3f46866e6e52d6a6,the compare branch is the branch in your fork that contains your changes.,2026-10-19
+6bc36e106ec9,gitlab/multi-repository-layouts.md,S-askrbg64,located,Branches > Comparing branches in pull requests > Three-dot and two-dot Git diff comparisons,fork;must;push;two-dot;two;comparison;dot;github,1065a32142a4d98b,the Git committish references in a two-dot diff comparison must be pushed to the same repository or its forks.,2026-10-19
 6e86b954ebbf,gitlab/multi-repository-layouts.md,S-dcbs6vpj,unlocated:no-match,,,,,2026-10-19
 6feabf1aae57,gitlab/multi-repository-layouts.md,S-nhku2azk,located,Forks > Visibility of forks,itself;cannot;chang;visibility;fork,15ae9065b1896453,You cannot change the visibility of a fork by itself.,2026-10-19
 75424bf5d356,gitlab/multi-repository-layouts.md,S-5obxyibm,unlocated:no-match,,,,,2026-10-19
 75424bf5d356,gitlab/multi-repository-layouts.md,S-l6s4hfqp,unlocated:no-match,,,,,2026-10-19
+766bfee19636,gitlab/multi-repository-layouts.md,S-mjtf6vif,located,,given;one;each;record;new;introduc;apply;chang,316591e8dcf9dcff,"Given one or more existing commits, apply the change each one introduces, recording a new commit for each.",2026-10-19
 7729007b2b51,gitlab/multi-repository-layouts.md,S-p6qwirq5,located,Create a fork,least;restrictiv;both;visibility;must;namespac;upstream;project,2ddc16dd8bc7f996,A fork's visibility must be at least as restrictive as the visibility of both the upstream project and the namespace your fork belongs to.,2026-10-19
+77785b887997,gitlab/multi-repository-layouts.md,S-2f2bbr7f,located,,dif;equivalenc;line;number;remov;test;whitespac;based,589358b9c21b1b0a,"The equivalence test is based on the diff, after removing whitespace and line numbers.",2026-10-19
 78eaa515b917,gitlab/multi-repository-layouts.md,S-dhea6atb,located,,onlin;demand;user;partial;clon;remot;fetch;promisor,b49bf25e97d1b639,Use of partial clone requires that the user be online and the origin remote or other promisor remotes be available for on-demand fetching,2026-10-19
 78eaa515b917,gitlab/multi-repository-layouts.md,S-k2jlpd4u,located,,none;need;blob;filter;git,fe9113b654df4eea,"For example, --filter=blob:none will filter out all blobs (file contents) until needed by Git.",2026-10-19
-7930ea24d467,gitlab/multi-repository-layouts.md,S-mvqt325m,unlocated:no-match,,,,,2026-10-19
+7d94f380a656,gitlab/multi-repository-layouts.md,S-mjtf6vif,located,,cherry_pick_head;difficult;head;apply;cherry;pick;commit,788f4c46d9f4f652,The CHERRYPICKHEAD ref is set to point at the commit that introduced the change that is difficult to apply.,2026-10-19
 7e459be6e54a,gitlab/multi-repository-layouts.md,S-mvqt325m,located,,remot;name,1d0c90d52a9c79c6,"strvecpushf(&argv, ""--remotes=%s"", remotesname);",2026-10-19
+7ead222b0a34,gitlab/multi-repository-layouts.md,S-mjtf6vif,located,,cannot;becaus;mainlin;merg;pick,f9d33d6da85d93c1,Usually you cannot cherry-pick a merge because you do not know which side of the merge should be considered the mainline.,2026-10-19
+874ee854e28d,gitlab/multi-repository-layouts.md,S-7pysmrqf,located,Checking out pull requests locally > Modifying an inactive pull request locally,availabl;befor;even;commit;merg;repository;request;pull,fb90de039a1484a3,Commits in a pull request are available in a repository even before the pull request is merged.,2026-10-19
 877dd7197cf7,gitlab/multi-repository-layouts.md,S-vvarw4uu,located,,partial;filter-spec;spec;filter;clon;submodul,4b31abd4191161bc,"If --filter <filter-spec> is specified, the given partial clone filter will be applied to the submodule.",2026-10-19
 8979464263ee,gitlab/multi-repository-layouts.md,S-vvarw4uu,located,,print;sha;sha-1;check;out;commit;submodul,dbded51e1da9e3ef,This will print the SHA-1 of the currently checked out commit for each submodule,2026-10-19
 8f9f41c29d00,gitlab/multi-repository-layouts.md,S-vvarw4uu,unlocated:no-match,,,,,2026-10-19
 91eb5fba7eae,gitlab/multi-repository-layouts.md,S-7gx5uugz,located,,clon;partial;support;option;fetch;filter;upload;upload-pack,8cd3464c4f31732a,"If this option is set, upload-pack will support partial clone and partial fetch object filtering.",2026-10-19
 987282578458,gitlab/multi-repository-layouts.md,S-oewizkwq,located,Optimize Gitaly for monorepos > Optimize Git for monorepos > Avoid shallow clones for development,greatly;increas;need;push;chang;shallow;time;clon,28ebe224b21e647f,Shallow clones greatly increase the time needed to push changes.,2026-10-19
+a8afc73c0b3b,gitlab/multi-repository-layouts.md,S-esk5mh7z,located,From the top bar > When you work in a fork,exposur;potential;prevent;information;privat;fork,982b29da96afdf2c,This prevents potential exposure of private information in your fork.,2026-10-19
 aad60e1d79ad,gitlab/multi-repository-layouts.md,S-lu3mudsw,unlocated:no-match,,,,,2026-10-19
+aaec2e73132b,gitlab/multi-repository-layouts.md,S-3o2ashyn,located,Merge request cannot retrieve the pipeline status > Check out merge requests locally through the `head` ref,days;delet;clos;ref;head;request;merg,dc90af25192f671e,The merge request head ref is deleted 14 days after a merge request is closed or merged.,2026-10-19
 ab67fc188ed3,gitlab/multi-repository-layouts.md,S-hvg7hx3q,located,,chosen;subset;default;mode;cone;directory;file,d91957aa6d17a259,The subset of files is chosen by providing a list of directories in cone mode (the default),2026-10-19
 acc4e8a182ae,gitlab/multi-repository-layouts.md,S-bhnnr3li,unlocated:no-match,,,,,2026-10-19
 acc4e8a182ae,gitlab/multi-repository-layouts.md,S-kzv2kznr,unlocated:no-match,,,,,2026-10-19
@@ -8858,6 +8870,7 @@ ad1f524c1e09,gitlab/multi-repository-layouts.md,S-53fmero7,located,,defin;withou
 ad1f524c1e09,gitlab/multi-repository-layouts.md,S-zflhytlw,located,,git_askpass;askpass;git,949efa1fd180beef,Can be overridden by the GITASKPASS environment variable.,2026-10-19
 ad6ab3c31b7d,gitlab/multi-repository-layouts.md,S-dhea6atb,unlocated:no-match,,,,,2026-10-19
 ad6ab3c31b7d,gitlab/multi-repository-layouts.md,S-vvarw4uu,unlocated:no-match,,,,,2026-10-19
+adcb7400f3cb,gitlab/multi-repository-layouts.md,S-nhku2azk,located,Forks > Permissions of forks,commit;other;accessibl;includ;push;network;upstream;repository,a59376ccdf0364f0,"Commits pushed to any repository in a network can be accessible from other repositories in that network, including the upstream repository.",2026-10-19
 b9138b027e82,gitlab/multi-repository-layouts.md,S-5obxyibm,located,,fail;need;submodul;push,efcc50dbfc114aba,die((failed to push all needed submodules));,2026-10-19
 b9138b027e82,gitlab/multi-repository-layouts.md,S-mr3e2hvd,located,,instead;recur;warn;push.recursesubmodul;recursesubmodul;on-demand;demand;recurs,5a760cf0dfeaba32,"warning((""recursing into submodule with push.recurseSubmodules=only; using on-demand instead""));",2026-10-19
 b9138b027e82,gitlab/multi-repository-layouts.md,S-mvqt325m,located,,only-is-on-demand;recurse-submodul;demand;recurs;push;submodul,2ee1bad769a98180,"strvecpush(&cp.args, ""--recurse-submodules=only-is-on-demand"");",2026-10-19

@@ -4255,3 +4255,13 @@ _Agent: kb-research_
 - See gitlab/multi-repository-layouts.md, claude/plugins.md, claude/hooks.md.
 
 _Agent: kb-research_
+
+## QK-git-cherry-pick-git-rebase-onto. What do git cherry-pick, git rebase --onto and git cherry do for a branch built from selected commits, what does the upstream of a fork see of the fork's private history through a GitLab merge request or a GitHub pull request, and what does git transfer of a submodule gitlink to a remote that cannot read the submodule?
+- `git cherry-pick` records a new commit for each named commit, keeping author and message and adding no trace of the source unless `-x` is given, which the page says not to use from a private branch; a merge needs `-m`, an already-present change stops (`--empty=drop` drops it), and a commit is taken whole. `git rebase --onto <new-parent> <last-commit-cut> <branch>` removes a contiguous run and rewrites what follows; `git cherry` marks commits with an equivalent upstream `-` and the others `+`. [DOC S-mjtf6vif, S-7kl4eeso, S-2f2bbr7f]
+- A GitLab merge request from a fork is created in the upstream project, "contains all the history from a repository, plus the additional commits" of its branch, and keeps a `refs/merge-requests/:iid/head` ref for each request, also when the source is a private fork, until 14 days after it closes; GitHub stores a pull request's changes in the base repository, and a network's repositories share Git data, "even after a fork is deleted". [DOC S-esk5mh7z, S-3o2ashyn, S-7pysmrqf, S-nhku2azk]
+- A push traverses a tree without following a gitlink entry (`ignore gitlink` in `list-objects.c`), so the receiving side gets the gitlink's commit id and the `.gitmodules` text and none of the submodule's objects; a probe saw a bare receiver accept a gitlink to an unreadable commit and to a made-up id with a clean `fsck`. [CODE S-7otaqc5c, S-rl2loiqt, S-mhjsbdfr]
+- Conclusion: the upstream of a fork sees every commit of the proposed branch it lacks, so a contribution branch is built at the upstream tip by cherry-picking only cleared commits (no `-x`), the refusal of private paths, private names and gitlinks to a private root is the building tool's, and a gitlink or `.gitmodules` in a public repository discloses a private root's url host, path and pinned commit. [DER S-mjtf6vif, S-3o2ashyn, S-7pysmrqf, S-nhku2azk, S-7otaqc5c]
+- Open: what a GitLab upstream can read of a fork's other branches, whether GitHub accepts a pull request from a repository outside the network, a forge's behaviour for a pushed gitlink, and the bitmap and path-walk packing paths. [UNK]
+- See gitlab/multi-repository-layouts.md.
+
+_Agent: kb-research_
