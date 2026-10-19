@@ -87,8 +87,12 @@ is covered prints `uncovered` empty and claims nothing; exit 0 either way.
   coord.py --url URL --key-file PATH COMMAND ...     send COMMAND to such a server instead of a local store
 
 `serve` binds 127.0.0.1 unless --bind names a host (port 0 picks a free port) and prints `coord.py: serving URL` as
-its first line. DIR holds one file per operator, named for the operator and holding that operator's token; the server
-reads DIR on every request, so removing a file revokes that operator at once. A client sends its own token, read from
+its first line. DIR holds one file per operator, named for the operator and holding that operator's token, and a file in
+a subdirectory named for a team (DIR/TEAM/OPERATOR) makes its operator TEAM/OPERATOR, beside flat files whose operators
+have no team; the server reads DIR on every request, so removing a file revokes that operator at once. An event carries
+`operator` TEAM/OPERATOR, a claim or `dedup` of such an operator holds as TEAM/OPERATOR/HOLDER, and its `claim` or `put`
+of a key under another team's `team/NAME/` prefix exits 1 (a flat operator's too): its own team's keys and every other
+key stay open. A client sends its own token, read from
 the file --key-file names (never from argv or the environment), as `Authorization: Bearer TOKEN` in `POST /v1/run`
 with the body {"argv": [the command and its arguments]}; the server answers 401 to a token no file holds (or two
 files hold) and runs the command on its store otherwise, answering {"code": N, "body": ...}, where code and body are
@@ -150,6 +154,7 @@ ID_LIST = re.compile(r"(?=.{1,120}$)[A-Za-z0-9_.:/#@-]+(,[A-Za-z0-9_.:/#@-]+)*")
 GLOB_LIST = re.compile(r"(?=.{1,120}$)[A-Za-z0-9_.:/#@*?-]+(,[A-Za-z0-9_.:/#@*?-]+)*")
 LIST_VALUES = {("intent", "item"): ID_LIST, ("intent", "topic"): ID_LIST, ("intent", "touch"): GLOB_LIST}
 INTENT_SECONDS = 86400
+TEAM_KEYS = "team/"  # a team's keys: team/<team>/<name>, written by that team's operators alone behind `serve`
 SESSION_LEASE = "session/"  # the presence lease of a session: key session/<id>, held while the session lives
 MAX_FIELDS = 8
 POLL_SECONDS = 0.05
@@ -242,11 +247,25 @@ def take(con, key, holder, token, ttl, now, budget=None):
 
 def holder_name(args):
     """The claim's --holder, else `anonymous`: an id like an event's field value, so a digest line never carries free text.
-    `main` fills a missing --holder of a local command from KB_COORD_HOLDER; a server never reads its own environment."""
+    `main` fills a missing --holder of a local command from KB_COORD_HOLDER; a server never reads its own environment.
+    Behind `serve`, a caller of a team (`team/operator`) holds as `team/operator/HOLDER`."""
     holder = args.holder or "anonymous"
     if not FIELD_VALUE.fullmatch(holder):
         raise Refused({"ok": False, "error": f"--holder is an id of 1 to 120 characters of letters, digits and _ . : / # @ -, not {holder[:40]!r}"}, 2)
-    return holder
+    operator = getattr(args, "operator", None) or ""
+    return f"{operator}/{holder}" if "/" in operator else holder
+
+
+def team_refusal(args):
+    """Refuse, exit 1, a served caller's claim or put of a key under another team's `team/NAME/` prefix: its own team's
+    keys, every key outside `team/` and a local command's keys stay open."""
+    operator = getattr(args, "operator", None)
+    if not operator or not args.key.startswith(TEAM_KEYS):
+        return
+    owner = args.key.split("/")[1]
+    if "/" in args.key[len(TEAM_KEYS):] and owner != operator.partition("/")[0]:
+        raise Refused({"ok": False, "key": args.key,
+                       "error": f"{args.key} is under team {owner}'s keys, which {operator} does not write"})
 
 
 def recorded(key):
@@ -277,6 +296,7 @@ def claim(args, clock):
     holder = holder_name(args)
     if not FIELD_VALUE.fullmatch(args.key):
         raise Refused({"ok": False, "error": f"a claim's key is an id of 1 to 120 characters of letters, digits and _ . : / # @ -, not {args.key[:40]!r}"}, 2)
+    team_refusal(args)
     budget = getattr(args, "budget", None)
     if budget is not None:
         import bl_base
@@ -351,6 +371,7 @@ def get(args, clock):
 
 
 def put(args, clock):
+    team_refusal(args)
     with Tx(args.store) as con:
         now = clock()
         if args.token is not None:
@@ -798,19 +819,26 @@ def open_key_text(path, mode):
 
 
 def key_files(keys_dir):
-    """The files authenticate reads in keys_dir: (name, path) for each regular file named for an operator."""
+    """The files authenticate reads in keys_dir: (name, path) for each regular file named for an operator, and for each
+    one in a subdirectory named for a team, whose name is `team/operator`."""
     out = []
     for name in sorted(os.listdir(keys_dir)):
         path = Path(keys_dir) / name
-        if OPERATOR_NAME.fullmatch(name) and path.is_file():
+        if not OPERATOR_NAME.fullmatch(name):
+            continue
+        if path.is_file():
             out.append((name, path))
+        elif path.is_dir():
+            for member in sorted(os.listdir(path)):
+                if OPERATOR_NAME.fullmatch(member) and (path / member).is_file():
+                    out.append((f"{name}/{member}", path / member))
     return out
 
 
 def authenticate(keys_dir, header):
-    """The operator a request comes from, else None: the one file in keys_dir (named for the operator) that holds the
-    bearer token in the Authorization header. Every request reads the directory again, so removing a file revokes
-    its operator; a token that two files hold names no one. An OAuth2 bearer-token check replaces or joins this."""
+    """The operator a request comes from, else None: the one file in keys_dir (named for the operator, `team/operator`
+    for a file in a team's subdirectory) that holds the bearer token in the Authorization header. Every request reads
+    the directory again, so removing a file revokes its operator; a token that two files hold names no one. An OAuth2 bearer-token check replaces or joins this."""
     scheme, _space, token = (header or "").partition(" ")
     token = token.strip().encode("utf-8")
     if scheme.lower() != "bearer" or not token:

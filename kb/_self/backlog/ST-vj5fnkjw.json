@@ -53,6 +53,23 @@
       "class": "design",
       "answer": "key files <keys>/<team>/<operator>; a caller writes keys under team/<its team>/ and shared keys, never under another team's team/<name>/; events and holders carry <team>/<operator>; flat key files keep working as operators with no team",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How is a served claim's holder named, and may a flat-key operator write another team's keys?",
+      "options": [
+        "a team operator holds as TEAM/OPERATOR/HOLDER; a flat operator's holder stays as sent; a flat operator is refused another team's team/NAME/ keys like any caller outside that team",
+        "every served holder is prefixed with its operator, flat ones too; a flat operator may write any team's keys"
+      ],
+      "recommendation": "a team operator holds as TEAM/OPERATOR/HOLDER; a flat operator's holder stays as sent; a flat operator is refused another team's team/NAME/ keys like any caller outside that team",
+      "do": {
+        "a team operator holds as TEAM/OPERATOR/HOLDER; a flat operator's holder stays as sent; a flat operator is refused another team's team/NAME/ keys like any caller outside that team": "ST-vj5fnkjw",
+        "every served holder is prefixed with its operator, flat ones too; a flat operator may write any team's keys": "ST-vj5fnkjw"
+      },
+      "class": "design",
+      "answer": "a team operator holds as TEAM/OPERATOR/HOLDER; a flat operator's holder stays as sent; a flat operator is refused another team's team/NAME/ keys like any caller outside that team",
+      "by": "agent"
     }
   ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): a key file in a subdirectory of --keys is not read, so its caller gets 401 (exit 2). ",
