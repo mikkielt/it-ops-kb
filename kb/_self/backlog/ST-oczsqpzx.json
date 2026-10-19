@@ -2,7 +2,7 @@
   "id": "ST-oczsqpzx",
   "kind": "story",
   "title": "kb/_self/token-efficiency.md states what the multi-agent runs show",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-giqleoy2",
   "sprint": "SP-3pvz2noj",
   "priority": "P2",
@@ -51,5 +51,6 @@
     "kb/_self/token-efficiency.md",
     "kb/_self/reports/benchmarks.md"
   ],
-  "notes": "Conclusions only from the recorded rows; a knob the operator's answer left out is named as not measured."
+  "notes": "Conclusions only from the recorded rows; a knob the operator's answer left out is named as not measured.",
+  "claimed_by": "orch-r32"
 }
