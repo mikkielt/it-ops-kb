@@ -35,7 +35,9 @@
         "Extend the existing anchor articles, no new topic": "ST-lbpkvzha",
         "Create new topics for computed trailers, OAuth scopes and app-token commit identity": "ST-lbpkvzha"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "Extend the existing anchor articles, no new topic",
+      "by": "operator"
     }
   ],
   "notes": "Open questions: (1) git interpret-trailers configuration for a computed trailer (trailer.<key>.*); (2) bearer key files and scopes in MCP authorization and OAuth (mcp/authorization.md) as a model for team scopes in coord; (3) the author and committer a GitHub App installation token gives a commit pushed over git (gap in commit-signing-and-provenance).",
