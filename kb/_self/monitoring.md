@@ -138,6 +138,7 @@ The panel reads the clone the script is in; `--root` naming another clone makes 
 | key | holds |
 |---|---|
 | `procs` | per process with a working directory in a checkout of the clone, in pid order (`backlog.py procs`' inventory): `pid`, `age_s`, `class` (`orphan`, `hook` or `foreign`), `checkout`, `session` and `item` |
+| `procs_unreadable` | the reason `backlog.py procs` gives when the host cannot list processes; left out otherwise |
 | `worktrees` | per worktree of `git worktree list`: `path` and `branch` (null for a detached head) |
 | `stalled` | per claimed or ready item with a signal of `backlog.py stalled`: `item` and `signals`; left out where the root has no backlog items |
 | `operator` | this clone's operator, from `kbwho.operator()`: `id` (null when no source gives one) and `role` |
@@ -148,7 +149,7 @@ The panel reads the clone the script is in; `--root` naming another clone makes 
 - **Operator.** `operator` and each intent's `operator` are operator ids, never an email address: `kbwho.py` maps the login's email to an alias, and the coord hook posts that alias as the intent's `operator` field (a `coord.py serve` server replaces it with the name of the caller's key file). The panel reads the intents with one `coord.py digest` run on the same store or `--url` as the coord panel.
 - **Stalled.** The signals are those of `backlog.py stalled`, read without the forge: the panel starts no network request, so `mr-dead` is never in `signals` and an item with only an unknown signal is left out.
 - **Alert.** While `procs` lists a process of class `orphan`, the snapshot's `alerts` hold `{kind: "orphan", id: "sessions.orphan", message, since}`: the message counts the orphans and names the oldest one's pid and age, `since` is empty. The alert goes when no orphan is listed; the alert line (Layout) and the exit code 1 follow as for the delivery alert.
-- **Unsupported.** A host that cannot list working directories (Windows, or no `/proc` and no `lsof`) makes the panel `unsupported`, with the reason of `backlog.py procs`.
+- **Unreadable processes.** A host that cannot list working directories (Windows, or no `/proc` and no `lsof`) gives `procs` empty and `procs_unreadable`, the reason of `backlog.py procs`; the panel stays `ok`, so the operator, the intents, the worktrees and the stalled items still show, and the view's first process row reads `processes unreadable: REASON`.
 - **View.** A table of pid, age, class, session, item and checkout, an orphan's row starting `! ` and orphans first (12 rows at most, then `+N more`); `worktrees` with `path  branch` joined by ` · `, those on a `work/` branch first (12 at most); then a `! ` row for each stalled item with its id and signals. Above the table, a row with this clone's operator id and role, and the live session intents as `session  item  operator` joined by ` · ` (6 at most, then `+N more`).
 
 ## The sprint panel

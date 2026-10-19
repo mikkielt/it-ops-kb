@@ -177,7 +177,11 @@ def sessions(r):
     stalled = [s for s in data.get("stalled") or [] if isinstance(s, dict)]
     facts = {"processes": len(procs), "orphans": len(orphans), "headless": len(headless),
              "interactive": len(claude) - len(headless), "stalled": len(stalled)}
-    if orphans:
+    unreadable = data.get("procs_unreadable")
+    if unreadable:
+        facts["unreadable"] = True
+        lines = [f"Sessions: the processes cannot be listed on this host ({unreadable})."]
+    elif orphans:
         lines = [f"Sessions: {len(orphans)} orphan process{'' if len(orphans) == 1 else 'es'} left running, nothing waits for them:"]
     else:
         lines = [f"Sessions: no orphan; {len(headless)} headless and {len(claude) - len(headless)} interactive Claude "
@@ -360,7 +364,7 @@ def load(r):
         lines = [f"Load: {ld[0]:.2f} / {ld[1]:.2f} / {ld[2]:.2f} over 1, 5 and 15 minutes on {cores or '?'} cores{word}."]
     lines.append("  " + holder_text("suite", data.get("suite_lock")) + "; " + holder_text("main", data.get("main_lock")) + ".")
     s, _ = r.data("sessions")
-    if s is not None:
+    if s is not None and not s.get("procs_unreadable"):
         procs = [p for p in s.get("procs") or [] if isinstance(p, dict)]
         n = sum(1 for p in procs if p.get("class") == "orphan")
         facts.update(processes=len(procs), orphans=n)

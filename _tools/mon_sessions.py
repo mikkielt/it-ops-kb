@@ -10,7 +10,8 @@ clone's operator id and role (`kbwho.operator()`, never an email) and `intents` 
 (`coord.py digest`: session, item and the `operator` the hook posted, none for an intent that carries no operator); a
 store that is not there or does not answer leaves `intents` out. The panel makes no
 forge request, so the `mr-dead` signal is never read here (`backlog.py stalled` reads it). A host that cannot list working
-directories makes the panel `unsupported`; a root with no backlog items has no `stalled` key. Imports `mon_base`; `bl_procs`,
+directories gives no processes and `procs_unreadable`, the reason, so the operator and the intents still show; a root with
+no backlog items has no `stalled` key. Imports `mon_base`; `bl_procs`,
 `bl_stall` and `bl_base` where it reads them.
 """
 import os
@@ -114,8 +115,9 @@ def live_intents(ctx):
         if not line.startswith("intent "):
             continue
         fields = dict(w.split("=", 1) for w in line.split()[1:] if "=" in w)
-        if fields.get("session"):
-            out.append({"session": fields["session"], "item": fields.get("item"), "operator": fields.get("operator")})
+        row = {"session": fields.get("session"), "item": fields.get("item"), "operator": fields.get("operator")}
+        if row["session"] and row not in out:
+            out.append(row)
     return out
 
 
@@ -123,13 +125,11 @@ def collect(ctx):
     import bl_procs
     import kbwho
     procs, _, why = bl_procs.snapshot(str(ctx.root))
-    if procs is None:
-        raise mon_base.Unsupported(why)
     now = time.time()
     rows, by_name = branches(ctx.root)
-    names = display_names(ctx.root, bl_procs.checkouts(str(ctx.root)))
+    names = display_names(ctx.root, bl_procs.checkouts(str(ctx.root))) if procs is not None else {}
     out = []
-    for p in procs:
+    for p in procs or []:
         session, item = session_of(p, by_name)
         first, _, rest = p["where"].partition("/")
         shown = names.get(first, first)
@@ -137,6 +137,8 @@ def collect(ctx):
                     "checkout": shown + ("/" + rest if rest else ""), "session": session, "item": item})
     me = kbwho.operator()
     data = {"procs": out, "worktrees": rows, "operator": {"id": me.get("id"), "role": me.get("role")}}
+    if procs is None:
+        data["procs_unreadable"] = why
     intents = live_intents(ctx)
     if intents is not None:
         data["intents"] = intents
@@ -223,6 +225,8 @@ def lines(data, width=80):
         rows += [("! " if flag else "") + text for flag, text in table(shown, width - 2)]
         if len(procs) > len(shown):
             rows.append(f"+{len(procs) - len(shown)} more")
+    elif data.get("procs_unreadable"):
+        rows.append("processes unreadable: " + str(data["procs_unreadable"]))
     else:
         rows.append("processes none")
     trees = sorted(data.get("worktrees", []), key=lambda w: not (w.get("branch") or "").startswith("work/"))
