@@ -25,6 +25,25 @@
   "depends_on": [
     "ST-xjtqwdtq"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does multi record keep two runs of one case and knob set started at the same commit? Told apart: the later run's rows get the record SHA7#2 (then #3), each run's note names its first start, the same run again replaces its own rows. Averaged: one set of rows, the mean of the runs, runs=N.",
+      "options": [
+        "told apart",
+        "averaged"
+      ],
+      "recommendation": "told apart",
+      "do": {
+        "told apart": "BG-e2hfeycb",
+        "averaged": "BG-e2hfeycb"
+      },
+      "class": "design",
+      "answer": "told apart",
+      "by": "agent"
+    }
+  ],
   "notes": "In SP-3pvz2noj (operator delegate 2026-10-19): the 28 run DIRs stay under the orchestrator's scratch (/private/tmp/kb-r32-runs) until this lands; the fix re-records them all.",
   "claimed_by": "orch-r32"
 }
