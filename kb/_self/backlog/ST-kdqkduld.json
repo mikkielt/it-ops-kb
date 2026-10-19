@@ -2,7 +2,7 @@
   "id": "ST-kdqkduld",
   "kind": "story",
   "title": "Review sprint: kbmon's sprint estimate is a range from per-kind history that keeps moving while an item runs",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-yjfiemha",
   "review": true,
   "priority": "P1",
@@ -31,5 +31,35 @@
     }
   ],
   "notes": "Its last check is the sprint goal's backtest target over the last 20 closed sprints: median relative error at most 35 percent and at least half of the close times inside the range, with at least 10 sprints replayed. The target has no data behind it yet (labelled in the goal).",
-  "claimed_by": "orch-r33"
+  "evidence": {
+    "commit": "6e3734cd2965c43fd850dcda7b1e00c5bdcb7a8f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "828899df94ea7f1c"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "ca14931ee42d9c7c"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,subprocess as s,sys; o=s.run([sys.executable,\"_tools/kbmon.py\",\"--status\",\"sprints\",\"--backtest\",\"20\"],capture_output=True,text=True,timeout=600).stdout; print(o[-1500:]); m=re.search(r\"backtest: sprints=(\\d+) points=(\\d+) median absolute error=\\S+ min median relative error=(\\d+)% inside the range=(\\d+)%\",o); sys.exit(0 if m and int(m.group(1))>=10 and int(m.group(3))<=35 and int(m.group(4))>=50 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "179bf7a8efce0df7"
+      }
+    ]
+  }
 }
