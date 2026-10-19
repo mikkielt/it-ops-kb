@@ -44,6 +44,42 @@
   "depends_on": [
     "ST-kb74yzac"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does a canary live and what does it look like, and how does multi check read an agent's output stream?",
+      "options": [
+        "KBCANARY_agentN_ plus 32 hex digits in a scratch file and MULTI_CANARY, session output kept in DIR/output/agentN.log",
+        "A canary kept in sandbox.json, output read from the results lines"
+      ],
+      "recommendation": "KBCANARY_agentN_ plus 32 hex digits in a scratch file and MULTI_CANARY, session output kept in DIR/output/agentN.log",
+      "do": {
+        "KBCANARY_agentN_ plus 32 hex digits in a scratch file and MULTI_CANARY, session output kept in DIR/output/agentN.log": "ST-kuh545eo",
+        "A canary kept in sandbox.json, output read from the results lines": "ST-kuh545eo"
+      },
+      "class": "design",
+      "answer": "KBCANARY_agentN_ plus 32 hex digits in a scratch file and MULTI_CANARY, session output kept in DIR/output/agentN.log",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which agent makes each leak plant and whose canary does it write?",
+      "options": [
+        "leak-output the first lookup agent, leak-commit and leak-event the first research agent; each writes the canary of the lowest-numbered other agent",
+        "Every plant in the first agent of any role, writing the next agent's canary"
+      ],
+      "recommendation": "leak-output the first lookup agent, leak-commit and leak-event the first research agent; each writes the canary of the lowest-numbered other agent",
+      "do": {
+        "leak-output the first lookup agent, leak-commit and leak-event the first research agent; each writes the canary of the lowest-numbered other agent": "ST-kuh545eo",
+        "Every plant in the first agent of any role, writing the next agent's canary": "ST-kuh545eo"
+      },
+      "class": "design",
+      "answer": "leak-output the first lookup agent, leak-commit and leak-event the first research agent; each writes the canary of the lowest-numbered other agent",
+      "by": "agent"
+    }
+  ],
   "links": [
     "kb/_self/tools.md",
     "kb/_self/reports/research-repro.md",

@@ -10,22 +10,26 @@ research agent end with its claim held and `--plant land-stop` makes a code agen
 item cannot land, and `--plant dup-research` makes a research agent skip `coord.py dedup`: it claims the key
 `research:TOPIC:replay-planted-term` (a claim a shared store refuses to the second agent, which goes on), adds the planted fact
 for that term to an article, commits and syncs it, and holds its claim a few seconds before the release: two such agents
-write one fact: the faults `benchmarks.py multi check` finds. It prints one stream-json result
+write one fact: the faults `benchmarks.py multi check` finds. `--plant leak-output` (a lookup agent), `leak-commit` and
+`leak-event` (research agents) make an agent write the canary of another agent, which the file named by the variable
+MULTI_LEAK_CANARY_FILE holds, to its result text, to the planted `_gaps.md` entry it commits and syncs, or to a coord event it posts.
+It prints one stream-json result
 event with the planted `--usage` (the four token counts and the turns) and `--cost`, and the commands it ran as `steps`;
 the exit is 1 and the event an error when a command failed. The harness (bench_multi.py) reads the event as it reads a
 session's and lands the code item itself. This module imports nothing of the project: it runs from the checkout that
 started the benchmark, in the sandbox's clones.
 """
-import argparse, json, re, shlex, subprocess, sys, time
+import argparse, json, os, re, shlex, subprocess, sys, time
 from pathlib import Path
 
 ITEM_DIR = "kb/_self/backlog"  # bench_multi.ITEM_DIR
 CLAIM_TTL = 3600  # seconds a replayed research agent's claim lasts
-PLANTS = ("lost-claim", "land-stop", "dup-research")  # bench_multi.PLANTS' names
+PLANTS = ("lost-claim", "land-stop", "dup-research", "leak-output", "leak-commit", "leak-event")  # bench_multi.PLANTS' names
+LEAK_ENV = "MULTI_LEAK_CANARY_FILE"  # bench_multi.LEAK_ENV: the file that holds the canary of another agent
 PLANT_TERM = "replay-planted-term"  # the research term of --plant dup-research
 PLANT_HOLD = 5  # seconds a dup-research agent holds its claim at least, so another agent's fact lands inside it
 GAP = ("\n## replay-{agent}\n\n- **A planted entry that a replayed research agent commits and syncs.** Nothing was tried; the entry "
-       "exists to be pushed to the sandbox's bare. [UNK] (topic: {topic})\n")
+       "exists to be pushed to the sandbox's bare. [UNK] (topic: {topic}){note}\n")
 PLANT_FACT = ("- A planted fact about {term}: two replayed research agents that skip the dedup claim of one research term write this "
               "one fact each. [UNK]")
 PLANTED_CODE = {  # the file a replayed code agent writes for a touch of the planted items (kb/_self/reports/multi_bench.csv)
@@ -75,9 +79,17 @@ def lookup(a, steps):
         run([sys.executable, tool("rag.py"), "pack", q, "--budget", str(a.budget)], steps, f"rag.py pack {q!r} --budget {a.budget}")
 
 
-def coord_event(kind, key, holder, steps):
-    run([sys.executable, tool("coord.py"), "post", "--kind", kind, "--field", f"key={key}", "--field", f"holder={holder}"], steps,
+def coord_event(kind, key, holder, steps, *extra):
+    run([sys.executable, tool("coord.py"), "post", "--kind", kind, "--field", f"key={key}", "--field", f"holder={holder}", *extra], steps,
         f"coord.py post --kind {kind} {key}")
+
+
+def leaked():
+    """The canary of another agent that a --plant leak-* agent writes where it must not."""
+    path = os.environ.get(LEAK_ENV)
+    if not path:
+        raise Failed(f"a leak plant needs {LEAK_ENV}: the file of the canary to write")
+    return Path(path).read_text(encoding="utf-8").strip()
 
 
 def plant_article():
@@ -143,16 +155,19 @@ def sync_push(steps):
 def research(a, steps):
     if a.plant == "dup-research":
         return dup_research(a, steps)
+    canary = leaked() if a.plant in ("leak-commit", "leak-event") else ""
     key = f"research:replay:{a.holder}"
     token = json.loads(run([sys.executable, tool("coord.py"), "claim", key, "--ttl", str(CLAIM_TTL), "--holder", a.holder], steps,
                            f"coord.py claim {key} --holder {a.holder}"))["token"]
     coord_event("claim", key, a.holder, steps)
+    if a.plant == "leak-event":
+        coord_event("lesson", key, a.holder, steps, "--field", f"note={canary}")
     out = run([sys.executable, tool("coord.py"), "dedup", a.area, "--holder", a.holder], steps, f"coord.py dedup {a.area!r} --holder {a.holder}")
     topic = str(json.loads(out.strip().splitlines()[-1]).get("topic", "")).removeprefix("public/")
     if not (Path("kb/public") / (topic + ".md")).is_file():  # a gap names a topic the root has
         topic = next(f"{x.parent.name}/{x.stem}" for x in sorted(Path("kb/public").glob("*/*.md")) if not x.name.startswith("_"))
     with open(Path("kb/public/_gaps.md"), "a", encoding="utf-8", newline="\n") as f:
-        f.write(GAP.format(agent=a.holder, topic=topic))
+        f.write(GAP.format(agent=a.holder, topic=topic, note=f" The entry holds {canary}." if a.plant == "leak-commit" else ""))
     run(["git", "add", "kb/public/_gaps.md"], steps)
     run(["git", "commit", "-q", "-m", f"docs(kb): replayed research gap of {a.holder} on {a.area}"], steps)
     sync_push(steps)
@@ -193,14 +208,14 @@ def main(argv=None):
     ap.add_argument("--holder", default="agent")
     ap.add_argument("--plant", choices=PLANTS, default="", help="a fault the role makes on purpose")
     a = ap.parse_args(argv)
-    usage, steps, t = json.loads(a.usage), [], time.time()
+    usage, steps, t, shown = json.loads(a.usage), [], time.time(), ""
     try:
         ROLES[a.role](a, steps)
-        error = ""
+        error, shown = "", " " + leaked() if a.plant == "leak-output" else ""
     except (Failed, OSError, KeyError, ValueError, StopIteration) as e:
         error = f"replay: {e}"
     turns = int(usage.pop("num_turns", 1))
-    print(json.dumps({"type": "result", "subtype": "error_replay" if error else "success", "is_error": bool(error), "result": error or "replayed",
+    print(json.dumps({"type": "result", "subtype": "error_replay" if error else "success", "is_error": bool(error), "result": error or "replayed" + shown,
                       "duration_api_ms": int((time.time() - t) * 1000), "total_cost_usd": a.cost, "num_turns": turns, "usage": usage,
                       "steps": steps}))
     return 1 if error else 0
