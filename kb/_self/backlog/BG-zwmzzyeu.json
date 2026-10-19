@@ -2,7 +2,7 @@
   "id": "BG-zwmzzyeu",
   "kind": "bug",
   "title": "A failed kbroot.py add-remote --access submodule leaves .gitmodules staged with the root's section",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-s2svf5a6",
   "priority": "P1",
@@ -19,5 +19,6 @@
   "touches": [
     "_tools/kbroot.py",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "orch-r34"
 }
