@@ -6,6 +6,10 @@ from one snapshot of the panels the topic needs (stdlib only).
   answer(snap, topic, root=None)
                          {"schema": 1, "topic", "taken", "lines", "facts"} from a scrubbed snapshot (`mon_view.scrub`)
                          that holds those panels; `root` is the clone whose backlog gives an item its title
+  topic_of(question)     the topic a plain question about the monitored work asks, by fixed cue words (CUES), `all` where it
+                         asks for several, or None: a question about the docs (how sessions resume, what a licence costs) is
+                         no status question
+  run(topic, timeout)    (text, None) of `kbmon.py --status TOPIC` run as a subprocess, or (None, what failed)
 
 An answer is at most MAX_LINES lines, every one passed through `redact.redact` and cleared of absolute paths, and a claim's
 holder is never read. A panel that is not `ok` gives one line that says so. It speaks results, an item by its title, and an
@@ -13,11 +17,15 @@ id only on a line where the operator acts. The sprints answer rests on the sprin
 the commits the checkout is behind it, the times of each sprint's last done commits) and the host panel's load, so a saved
 snapshot gives the same answer; its ETA is the open items times the median gap between the last ETA_DONE done commits. The
 load answer also gives the host panel's CPU groups with a fixed cause and remedy each (GROUP_TEXT), as lines and as a
-top-level `groups` list. It calls no model and writes no file. Imports `mon_base`, `mon_sessions` (its
+top-level `groups` list. It calls no model and writes no file (`run` starts `kbmon.py`, which writes none). Imports `mon_base`, `mon_sessions` (its
 age text) and `mon_view`; `bl_base` where it reads titles.
 """
+import os
 import re
+import subprocess
+import sys
 from datetime import datetime, timezone
+from pathlib import Path
 from statistics import median
 
 import mon_base
@@ -47,7 +55,48 @@ GROUP_TEXT = {  # kind: (cause, remedy), fixed words
 }
 BASIS = {"recent": "ps's decaying recent average of each process (macOS)",
          "lifetime": "ps's CPU time over each process's whole life"}
+RUN_TIMEOUT = 60  # seconds `run` waits for kbmon.py
+KBMON = Path(__file__).resolve().parent / "kbmon.py"
+# topic_of: a topic is asked when every group of one of its cues has a match in the question's lower-cased words or text.
+# A cue pairs a word that names the monitored thing with a word that asks for its state, so a docs question that holds
+# one of them (how sessions resume, what a licence costs, a ConfigMgr deployment's status) matches none.
+HOST = r"\b(?:my|this|the) (?:computer|machine|laptop|mac|pc|host)\b"
+CUES = {
+    "sprints": [(r"\bsprints?\b", r"\b(?:status|progress|percent\w*|done|finished|left|remaining|eta|how far)\b")],
+    "load": [(HOST, r"\b(?:load|cpu|slow|busy|overloaded|hot|fan|lag\w*|freez\w*)\b")],
+    "sessions": [(r"\b(?:sessions?|workers?|agents?)\b", r"\b(?:running|active|stuck|stalled|orphan\w*|hung|left running)\b"),
+                 (r"\b(?:anything|something|any)\b", r"\b(?:stuck|orphan\w*|stalled|hung)\b")],
+    "cost": [(r"\b(?:cost|costs|spent|spend|spending)\b", r"\b(?:today|so far|this session|right now|tokens?|usage)\b")],
+    "querylog": [(r"\bquery log\b", r"\b(?:deliver\w*|undelivered|spool\w*|pushed|stuck)\b")],
+    "coord": [(r"\bcoord\b", r"\b(?:claims?|budget|live|active|left|status)\b")],
+    "all": [(r"\bkbmon\b", r"")],
+}
 ABSOLUTE = re.compile(r"(?<![\w.:/])(?:~|\.\.)?/[^\s'\",;)]+|\b[A-Za-z]:\\[^\s'\",;)]*")
+
+
+def topic_of(question):
+    """The status topic a plain question asks, by the fixed cues of CUES: the one topic that matches, `all` when several do
+    (or only `kbmon` is named), None when none does."""
+    text = " ".join(str(question or "").lower().split())
+    found = [topic for topic, groups in CUES.items() for named, state in groups
+             if re.search(named, text) and re.search(state, text)]
+    found = list(dict.fromkeys(found))
+    return found[0] if len(found) == 1 else "all" if found else None
+
+
+def run(topic, timeout=RUN_TIMEOUT):
+    """(the lines `kbmon.py --status TOPIC` printed, None), or (None, what failed): a command that cannot start, runs past
+    TIMEOUT seconds or exits non-zero."""
+    shown = f"kbmon.py --status {topic}"
+    try:
+        p = subprocess.run([sys.executable, str(KBMON), "--status", topic], capture_output=True, text=True, encoding="utf-8",
+                           errors="replace", timeout=timeout, cwd=str(KBMON.parent.parent), env=dict(os.environ, PYTHONUTF8="1"))
+    except (OSError, subprocess.SubprocessError) as e:
+        return None, f"`{shown}` could not run: {type(e).__name__}"
+    if p.returncode != 0:
+        last = ((p.stderr or p.stdout).strip().splitlines() or ["no output"])[-1]
+        return None, f"`{shown}` exited {p.returncode}: {last}"
+    return p.stdout.rstrip(), None
 
 
 def panels(topic):

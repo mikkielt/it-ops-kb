@@ -2,6 +2,10 @@
 """Ask the kb from a shell or a script, routed by the kb's own tools instead of by a model (stdlib only).
 
   kb_ask.py "<question>"             answer it the cheapest way that works:
+                                     0. a plain question about the monitored work (sprints, sessions, load, cost, the query
+                                        log, coord: mon_status.topic_of, fixed cue words) is answered by `kbmon.py --status
+                                        TOPIC` before any pack or model; a docs question that merely holds such a word is not
+                                        one; it writes no query log row, as `status:` of the kb hook does not;
                                      1. a question of a kind a tool decides (a count or list of articles, a decision
                                         id, which sources disagree, a topic a gaps entry records, which files cite a
                                         source id: kbfacts.routed) is answered by that tool, with path:line: no model;
@@ -29,7 +33,8 @@
                                         `kb has:` words to the reader and its `kb lacks:` words to the researcher.
                                      A weak or none pack without a `route:` line plans split.
   kb_ask.py --route "<question>"     print the plan (kind, parts, verdict, model and, for web and split, the pack's
-                                     route, kb has and kb lacks lines), run nothing
+                                     route, kb has and kb lacks lines; for a status question `kind=status topic=TOPIC`), run
+                                     nothing
   kb_ask.py --no-model "<question>"  print a good pack, or a routed answer, without calling a model
   kb_ask.py --model M "<question>"   override the routed model of step 3 or 4
   kb_ask.py -v "<question>"          also print the route to stderr
@@ -46,7 +51,7 @@ revalidate "stale", within a time budget): each such footer line carries its `[s
 showed, and the facts the reader gets carry the live marks. Within a lifetime no request is made; --route and
 KB_NO_REVALIDATE=1 make none.
 
-Every run writes one query log spool row (kb/_self/querylog.md, Capture): the question, the route taken (`tool`,
+Every run but a status one writes one query log spool row (kb/_self/querylog.md, Capture): the question, the route taken (`tool`,
 `good`, `web`, `split`, `plan` for --route, with `escalated` when the reader answered INSUFFICIENT; for --root _self
 `tool`, `read` or `miss`), the verdict, the kb lines of the pack (path:line, tag, verdict), the model and, for a web or
 split run, `sources`: the ids of the kb
@@ -62,7 +67,7 @@ Claude Code context; skipping user plugins and MCP servers takes it to 25k, and 
 import argparse, json, os, re, shutil, subprocess, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import kbcommon, kbfacts  # noqa: E402
+import kbcommon, kbfacts, mon_status  # noqa: E402
 import ql_capture, selfdoc  # noqa: E402
 
 HOME = kbfacts.kbcommon.HOME  # this repository: the kb server, the sessions' cwd
@@ -103,6 +108,24 @@ def tool_answer(question):
     None: the question goes on to the pack."""
     res = kbfacts.routed(question)
     return res["text"] if res else None
+
+
+# ---------------------------------------------------------------- questions about the monitored work
+
+def status(topic, route):
+    """A status question: the lines of `kbmon.py --status TOPIC` (mon_status.run), no pack and no model; with `route` the plan
+    line only. Exit 1, the failure on stderr, where kbmon does not run."""
+    line = f"kind=status topic={topic} (kbmon.py --status {topic}, no model)"
+    if route:
+        print(line)
+        return 0
+    log(line)
+    text, error = mon_status.run(topic)
+    if text is None:
+        print(f"kb_ask: {error}", file=sys.stderr)
+        return 1
+    print(text)
+    return 0
 
 
 # ---------------------------------------------------------------- several parts in one question
@@ -482,6 +505,10 @@ def run(row):
     row.update(question=q, route="tool")
     if a.root:
         return rules(q, a, row)
+    topic = mon_status.topic_of(q)
+    if topic:  # the monitor's own state is no kb lookup: no pack, no model, no query log row
+        row.pop("question")
+        return status(topic, a.route)
     res = kbfacts.routed(q) if len(split_parts(q)) == 1 else None  # parts are routed one by one, in their pack
     if res:
         row.update(verdict=res["verdict"], lines=ql_capture.pack_lines(res["text"]))
