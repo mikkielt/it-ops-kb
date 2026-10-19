@@ -368,7 +368,9 @@ def allowlist(proj, cwd):
 
 
 def tree_refusals(proj, files, cwd):
-    """Causes: an internal root (a `_root.md` saying `visibility: internal`) or a _private or _cache path in the tree."""
+    """Causes: an internal root (a `_root.md` saying `visibility: internal`), the pointer file `kb/_roots/<name>.md` of
+    an internal remote root (no `visibility` line counts as internal, as kbcommon reads it) and a `.gitmodules` section
+    whose path is such a pointer's `kb/<name>`, or a _private or _cache path in the tree."""
     import kbcommon
     res = []
     for x in files:
@@ -377,6 +379,34 @@ def tree_refusals(proj, files, cwd):
     for x, text in sorted(blobs(proj, [f for f in files if f.rsplit("/", 1)[-1] == kbcommon.ROOT_FILE], cwd).items()):
         if kbcommon._meta(text).get("visibility") == "internal":
             res.append(f"the projection's tree holds the internal root {x.rsplit('/', 1)[0] or '.'} ({x} says visibility: internal)")
+    pdir = f"kb/{kbcommon.POINTERS_DIR}/"
+    internal = {}  # internal pointer name -> its file
+    for x, text in sorted(blobs(proj, [f for f in files if f.startswith(pdir) and f.endswith(".md") and "/" not in f[len(pdir):]], cwd).items()):
+        if kbcommon._meta(text).get("visibility", "internal") == "internal":
+            internal[x[len(pdir):-len(".md")]] = x
+            res.append(f"the projection's tree holds the pointer {x} of an internal root ({x} says visibility: internal)")
+    if internal and ".gitmodules" in files:
+        for sec, path in gitmodules_paths(blobs(proj, [".gitmodules"], cwd).get(".gitmodules", "")):
+            if path.startswith("kb/") and path[3:].rstrip("/") in internal:
+                res.append(f"the projection's tree holds the .gitmodules section {sec} for {path}, the internal root "
+                           f"{path[3:].rstrip('/')} ({internal[path[3:].rstrip('/')]} says visibility: internal)")
+    return res
+
+
+def gitmodules_paths(text):
+    """[(section name, path)] of the `[submodule "name"]` sections of a .gitmodules TEXT that set a `path`."""
+    res, sec = [], None
+    for ln in text.splitlines():
+        ln = ln.strip()
+        m = re.fullmatch(r'\[submodule\s+"(.*)"\]', ln)
+        if m:
+            sec = m.group(1)
+        elif ln.startswith("["):
+            sec = None
+        elif sec is not None:
+            k, sep, v = ln.partition("=")
+            if sep and k.strip().lower() == "path":
+                res.append((sec, v.strip().strip('"')))
     return res
 
 
