@@ -1,0 +1,21 @@
+{
+  "id": "BG-5kyucmi6",
+  "kind": "bug",
+  "title": "kbpublic.file_hits strips urls before the leak scan, so an internal root's qualified path or pointer host inside a url passes, and its cached verdicts do not know the registry",
+  "status": "draft",
+  "parent": "EP-eocmyqdx",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbpublic.file_hits reads an internal root's qualified path inside a url (it strips urls before the scan), and kbpublic.SCAN_FORM and the verdict cache keys change when the registry's private names change, so a cached verdict never passes a private name added later",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,sys,tempfile; d=tempfile.mkdtemp(); open(os.path.join(d,\"_root.md\"),\"w\").write(\"---\\nroot: team-z\\nid_prefix: TZ\\nvisibility: internal\\n---\\n\"); os.environ[\"KB_ROOTS\"]=d; sys.path.insert(0,\"_tools\"); import kbpublic; h=kbpublic.file_hits(\"notes.md\",\"see https://corp.example.com/team-z/mdm/x.md\",{}); sys.exit(0 if h else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/kbpublic.py"
+  ]
+}
