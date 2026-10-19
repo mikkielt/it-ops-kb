@@ -38,6 +38,7 @@ from opentelemetry.sdk.resources import Resource
 
 ROOT = Path(__file__).resolve().parent.parent
 KBMON = ROOT / "_tools" / "kbmon.py"
+KBWHO = ROOT / "_tools" / "kbwho.py"
 HEADER_VARS = tuple(f"OTEL_EXPORTER_OTLP_{signal}HEADERS" for signal in ("METRICS_", "LOGS_", "TRACES_", ""))
 
 
@@ -79,6 +80,22 @@ class Scrub(logging.Filter):
             text = text.replace(value, "***")
         record.msg, record.args = text, None
         return True
+
+
+def otel_attributes() -> dict:
+    """The resource attributes of the export, from `kbwho.py --otel-attributes`: the operator id as kb.operator.id and no
+    email-shaped value. When kbwho gives none, service.name alone."""
+    fallback = {"service.name": os.environ.get("OTEL_SERVICE_NAME", "").strip() or "kbmon"}
+    try:
+        proc = subprocess.run([sys.executable, str(KBWHO), "--otel-attributes"], capture_output=True, text=True,
+                              encoding="utf-8", timeout=30, stdin=subprocess.DEVNULL)
+        got = json.loads(proc.stdout) if proc.returncode == 0 else None
+    except (OSError, subprocess.SubprocessError, ValueError):
+        got = None
+    if not isinstance(got, dict):
+        print("kbmon_otel: kbwho gave no resource attributes; the resource is service.name alone", file=sys.stderr)
+        return fallback
+    return {str(k): str(v) for k, v in got.items()}
 
 
 def run_kbmon(args, mode: list[str], what: str) -> dict:
@@ -137,7 +154,7 @@ class Sender:
         self.latest: dict[str, list[dict]] = {}
         self.created: set[str] = set()
         self.reader = InMemoryMetricReader()
-        resource = Resource.create({"service.name": os.environ.get("OTEL_SERVICE_NAME", "kbmon")})
+        resource = Resource(otel_attributes())
         self.provider = MeterProvider(metric_readers=[self.reader, *extra_readers], resource=resource)
         self.meter = self.provider.get_meter("kbmon")
         self.exporter = Exporter() if export else None
@@ -253,7 +270,7 @@ def main(argv=None) -> int:
         print("kbmon_otel: export is off (no OTEL_EXPORTER_OTLP_ENDPOINT set); /metrics only")
     prom = otel_prom.reader() if args.prometheus_port is not None else None
     sender = Sender(export=bool(url), extra_readers=[prom] if prom else []) if url or prom else None
-    resource = Resource.create({"service.name": os.environ.get("OTEL_SERVICE_NAME", "kbmon")})
+    resource = Resource(otel_attributes())
     logs = otel_logs.Logs(resource) if logs_url else None
     spans = otel_spans.Spans(resource) if spans_url else None
     cursor = Cursor()
