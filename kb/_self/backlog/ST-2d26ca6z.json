@@ -1,0 +1,28 @@
+{
+  "id": "ST-2d26ca6z",
+  "kind": "story",
+  "title": "The maintainer turns an upstream-report GitHub issue back into draft backlog items that link the issue",
+  "status": "draft",
+  "sprint": "SP-3trnelzv",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "backlog.py upstream-import FILE --issue URL reads an issue body written in the upstream-report form (a saved file, or the gh issue view output the maintainer saves) and files one draft story per user story outside any sprint, each with a link naming the issue url and the reporting clone's scope; an issue already imported files nothing again; backlog.md says the maintainer then triages the drafts as any other",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,re,subprocess as s,sys,tempfile\nB=os.path.abspath('_tools/backlog.py');T='.github/ISSUE_TEMPLATE/upstream-report.yml'\nlabels=re.findall(r'^\\s*label:\\s*[\"\\']?(.+?)[\"\\']?\\s*$',open(T,encoding='utf-8').read(),re.M) if os.path.exists(T) else []\nt=tempfile.mkdtemp();u=os.path.join(t,'up');c=os.path.join(t,'team');f=os.path.join(t,'report.md')\ng=lambda d,*a:s.run(['git','-C',d,*a],capture_output=True,text=True)\nb=lambda d,*a:s.run([sys.executable,B,'--root',d,*a],capture_output=True,text=True)\nos.makedirs(u);g(u,'init','-q','-b','main');open(os.path.join(u,'backlog.json'),'w').write(json.dumps({'item_dir':'items'}))\ng(u,'add','-A');g(u,'-c','user.name=t','-c','user.email=t@example.com','commit','-qm','up')\ns.run(['git','clone','-q',u,c]);g(c,'remote','rename','origin','upstream');g(c,'config','kb.upstreamRemote','upstream');g(c,'config','kb.scope','team')\nn=b(c,'new','story','--title','planted field finding for upstream','--goal','planted goal text')\niid=(re.findall(r'ST-[a-z0-9]{8}',n.stdout) or [''])[0]\nr=b(c,'upstream-report',iid,'--out',f)\nbody=open(f,encoding='utf-8').read() if os.path.exists(f) else ''\nok=bool(labels) and bool(iid) and r.returncode==0 and 'planted field finding for upstream' in body and all(l in body for l in labels)\nSTEP='import'\nif ok and STEP=='import':\n    i=b(u,'upstream-import',f,'--issue','https://github.com/example/it-ops-kb/issues/1');l=b(u,'list')\n    items=[json.load(open(os.path.join(u,'items',x))) for x in os.listdir(os.path.join(u,'items'))] if os.path.isdir(os.path.join(u,'items')) else []\n    ok=i.returncode==0 and 'planted field finding for upstream' in l.stdout and any('issues/1' in ' '.join(x.get('links',[])) and x.get('status')=='draft' for x in items)\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_upstream.py",
+    "_tools/backlog.py",
+    "kb/_self/backlog.md",
+    ".claude/skills/kb-backlog/SKILL.md"
+  ],
+  "depends_on": [
+    "ST-lnxywo7s"
+  ]
+}
