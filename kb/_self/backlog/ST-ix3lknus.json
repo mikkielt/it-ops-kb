@@ -41,7 +41,9 @@
   "touches": [
     "kb/_self/reports/benchmarks.csv",
     "kb/_self/reports/benchmarks.md",
-    "README.md"
+    "README.md",
+    "_tools/bench_report.py",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "ST-hur6y3hj"
@@ -65,6 +67,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Dry-run estimates 2026-10-19 on 7079b184a (benchmarks.py multi run research --dry-run): Sonnet research 8.48 USD a run (3 x 2.83), --model research=haiku-5-5 0.42 USD a run (3 x 0.14, price ratio 0.05), mixed 7.68 USD; the coord scenario has no estimate until ST-kx6qdtkv adds it. Measured SP-3pvz2noj records: Haiku research 3.40 and 6.21 USD (usd metric), Sonnet research 11.18-12.49 USD, mixed 4.70-4.76 USD. The harness estimate understates Haiku research 8-15 times (SP-yjfiemha works on estimates), so the spend gate sizes from the larger measured record: about 49.52 USD for 8 runs, at most the 75 USD stop. Rerun the dry run of both scenarios before the first paid run and stop if the measured spend so far plus the next run's sizing passes 75 USD.",
+  "notes": "Dry-run estimates 2026-10-19 on 7079b184a (benchmarks.py multi run research --dry-run): Sonnet research 8.48 USD a run (3 x 2.83), --model research=haiku-5-5 0.42 USD a run (3 x 0.14, price ratio 0.05), mixed 7.68 USD; the coord scenario has no estimate until ST-kx6qdtkv adds it. Measured SP-3pvz2noj records: Haiku research 3.40 and 6.21 USD (usd metric), Sonnet research 11.18-12.49 USD, mixed 4.70-4.76 USD. The harness estimate understates Haiku research 8-15 times (SP-yjfiemha works on estimates), so the spend gate sizes from the larger measured record: about 49.52 USD for 8 runs, at most the 75 USD stop. Rerun the dry run of both scenarios before the first paid run and stop if the measured spend so far plus the next run's sizing passes 75 USD. Orchestrator 2026-10-19: done refused on check 1 (benchmarks.md has no dedup_hits) because bench_report.MULTI_METRICS omits the coord metrics; touches widened to _tools/bench_report.py and kb/_self/tools.md so this item adds them and regenerates the report; BG-ww2qqsi4 is dropped as carried here.",
   "claimed_by": "orch-r61"
 }
