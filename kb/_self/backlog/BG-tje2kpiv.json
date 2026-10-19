@@ -1,0 +1,25 @@
+{
+  "id": "BG-tje2kpiv",
+  "kind": "bug",
+  "title": "The kbmon-pane mod never retries a failed --receipt run while the alert set stays the same",
+  "status": "draft",
+  "parent": "EP-wqgicmmj",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "a --receipt run that fails (empty output, bad JSON, timeout) is tried again at the next refresh, since the mod records the alert rows as seen only after the receipt was appended",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('.claude/skills/kbmon-pane/hooks/register.tsx',encoding='utf-8').read();i=t.find('lastAlerts = alerts');j=t.find('session.append');sys.exit(0 if (i>=0 and j>=0 and i>j) else 1)"
+    ]
+  },
+  "repro_reason": "the mod runs only inside an interactive Claude Code session; no headless command makes its --receipt run fail at a refresh, so the repro reads that the alert rows are recorded only after the receipt is appended",
+  "touches": [
+    ".claude/skills/kbmon-pane/**"
+  ],
+  "links": [
+    "parked: SP-3hgirkur review"
+  ]
+}

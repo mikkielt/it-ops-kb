@@ -56,7 +56,7 @@
       },
       "class": "design",
       "answer": "since empty, free_pct to one decimal",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Plan 2026-10-19: premise run on the base: a planted snapshot with an orphan process and 3% free disk judges no alert (alerts [] exit 0), and the host panel has no disk data. The sessions panel listed 2-4 real orphans during the session. The receipt (ST-nighxizj) and the pane read these alerts.",

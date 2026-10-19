@@ -1,0 +1,25 @@
+{
+  "id": "BG-z2y2hu6p",
+  "kind": "bug",
+  "title": "The kbmon-pane mod gives no receipt after /clear, /resume or /branch until the alert set changes",
+  "status": "draft",
+  "parent": "EP-wqgicmmj",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "after /clear, /resume or /branch resets the mod's state, the next refresh appends the kbmon receipt line again even when the alert set is unchanged",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('.claude/skills/kbmon-pane/hooks/register.tsx',encoding='utf-8').read();sys.exit(0 if ('SessionStart' in t and 'lastAlerts = null' in t) else 1)"
+    ]
+  },
+  "repro_reason": "the mod runs only inside an interactive Claude Code session; no headless command drives /clear and the pane refresh, so the repro reads that the hooks module resets lastAlerts on a session reset",
+  "touches": [
+    ".claude/skills/kbmon-pane/**"
+  ],
+  "links": [
+    "parked: SP-3hgirkur review"
+  ]
+}

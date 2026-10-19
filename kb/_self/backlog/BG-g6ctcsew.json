@@ -1,0 +1,24 @@
+{
+  "id": "BG-g6ctcsew",
+  "kind": "bug",
+  "title": "kbmon's disk alert compares the rounded free_pct, so 9.96% free gives no alert and a 0-byte total gives a false one",
+  "status": "draft",
+  "parent": "EP-wqgicmmj",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "mon_host.alerts raises host.disk when the unrounded free share is under 10% and never for a file system that reports a total of 0 bytes; the displayed free_pct keeps one decimal",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import mon_host as m;a=m.alerts({'disk':{'free_pct':round(996*100/10000,1),'free_bytes':996,'total_bytes':10000}});b=m.alerts({'disk':{'free_pct':0.0,'free_bytes':0,'total_bytes':0}});print(a,b);sys.exit(0 if len(a)==1 and b==[] else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/mon_host.py"
+  ],
+  "links": [
+    "parked: SP-3hgirkur review"
+  ]
+}

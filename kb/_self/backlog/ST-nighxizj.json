@@ -66,7 +66,7 @@
       },
       "class": "design",
       "answer": "the first alert's panel",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -83,7 +83,7 @@
       },
       "class": "design",
       "answer": "12 hex characters of a sha256 of the sorted kinds and ids",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Plan 2026-10-19: premise on the base: kbmon.py has no --receipt (exit 2). Prototype in the discovery session: a receipt line of 99-186 characters (about 25-46 tokens at 4 characters a token, an estimate) from the querylog and sessions panels took 1.4 s warm and 6.5 s cold; querylog alone 0.23 s. A planted distill.log line 'apply --push: refused: ...' with CLAUDE_PLUGIN_DATA and CLAUDE_PLUGIN_ROOT gives the delivery alert whose message carries the line's text, so the planted secrets reach the receipt's input. The mod (ST-fobzhr5o) keeps the last fingerprint; kbmon stays read-only.",

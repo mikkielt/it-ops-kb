@@ -74,7 +74,7 @@
       },
       "class": "design",
       "answer": "tmux first, then WezTerm, then Windows Terminal",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -91,7 +91,7 @@
       },
       "class": "design",
       "answer": "40 percent of the width; --root, --panel, --store, --url and --key-file go along",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -108,7 +108,7 @@
       },
       "class": "design",
       "answer": "print the command for a second terminal with the WezTerm installer hint, say why on stderr, exit 0",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Plan 2026-10-19: premise on the base: kbmon.py has no --split (exit 2). Prototype: a tmux split-window -d -h -l 45% opened the live view from a SessionStart hook and redrew at once on a resize. wezterm cli split-pane --right --percent N --cwd DIR -- PROG targets WEZTERM_PANE (vendor docs wezterm.org/cli/cli/split-pane.html, 2026-10-19, not in the kb yet); Windows Terminal wt -w 0 split-pane -V -d DIR commandline (learn.microsoft.com/windows/terminal/command-line-arguments, 2026-10-19). Apple Terminal has no split command: the hint path. --interval 60 keeps the live view's CPU low until ST-5bz4nwsf.",
