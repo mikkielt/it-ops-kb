@@ -193,7 +193,7 @@ gitlab/pipelines-rules,P0,partial,gitlab/pipelines-rules.md,7
 gitlab/protected-branches-tags,P0,complete,gitlab/protected-branches-tags.md,9
 gitlab/variables,P0,complete,gitlab/variables.md,2
 gitlab/automated-merge-requests,P3,complete,gitlab/automated-merge-requests.md,52
-gitlab/commit-signing-and-provenance,P3,partial,gitlab/commit-signing-and-provenance.md,26
+gitlab/commit-signing-and-provenance,P3,partial,gitlab/commit-signing-and-provenance.md,34
 gitlab/deploy-keys-and-tokens,P3,partial,gitlab/deploy-keys-and-tokens.md,10
 gitlab/detecting-mr-merges-in-ci,P3,complete,gitlab/detecting-mr-merges-in-ci.md,16
 gitlab/git-commit-paths-and-symlinks,P3,complete,gitlab/git-commit-paths-and-symlinks.md,7
@@ -259,7 +259,7 @@ logs/microsoft-sentinel,P2,complete,logs/microsoft-sentinel.md,25
 logs/loki-tempo-grafana-retention,P3,partial,logs/loki-tempo-grafana-retention.md,37
 logs/otel-collector-otlp-pipeline,P3,partial,logs/otel-collector-otlp-pipeline.md,34
 logs/otel-collector-receivers,P3,complete,logs/otel-collector-receivers.md;logs/otel-filelogreceiver.config.csv;logs/otel-windowseventlogreceiver.config.csv;logs/otel-filelogreceiver.metadata.yaml;logs/otel-windowseventlogreceiver.metadata.yaml,5
-logs/otel-python-sdk,P3,partial,logs/otel-python-sdk.md,28
+logs/otel-python-sdk,P3,partial,logs/otel-python-sdk.md,31
 logs/prometheus-retention-exposition,P3,partial,logs/prometheus-retention-exposition.md,29
 logs/python-rust-json-stdout-logs,P3,partial,logs/python-rust-json-stdout-logs.md,8
 mcp/authorization,P1,complete,mcp/authorization.md,5
