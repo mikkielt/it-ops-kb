@@ -14,21 +14,20 @@ from one snapshot of the panels the topic needs (stdlib only).
 An answer is at most MAX_LINES lines, every one passed through `redact.redact` and cleared of absolute paths, and a claim's
 holder is never read. A panel that is not `ok` gives one line that says so. It speaks results, an item by its title, and an
 id only on a line where the operator acts. The sprints answer rests on the sprint panel's data (items read from `origin/main`,
-the commits the checkout is behind it, the times of each sprint's last done commits) and the host panel's load, so a saved
-snapshot gives the same answer; its ETA is the open items times the median gap between the last ETA_DONE done commits. The
+the commits the checkout is behind it, the duration history) and the host panel's load, so a saved
+snapshot gives the same answer; its ETA is a range from `mon_eta.estimate` taken at the snapshot's time. The
 load answer also gives the host panel's CPU groups with a fixed cause and remedy each (GROUP_TEXT), as lines and as a
-top-level `groups` list. It calls no model and writes no file (`run` starts `kbmon.py`, which writes none). Imports `mon_base`, `mon_sessions` (its
+top-level `groups` list. It calls no model and writes no file (`run` starts `kbmon.py`, which writes none). Imports `mon_base`, `mon_eta`, `mon_sessions` (its
 age text) and `mon_view`; `bl_base` where it reads titles.
 """
 import os
 import re
 import subprocess
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
-from statistics import median
 
 import mon_base
+import mon_eta
 import mon_sessions
 import mon_view
 
@@ -39,7 +38,6 @@ TOPIC_PANELS = {"sessions": ("sessions",), "cost": ("querylog",), "querylog": ("
 ALL_ORDER = ("sessions", "cost", "querylog", "coord", "sprints", "load")  # the topics `all` answers, in this order
 MAX_LINES = 25
 ALL_LINES = 4  # lines each topic gives in `all`
-ETA_DONE = 5  # a sprint's last done commits its ETA rests on
 ROWS = 6  # processes, claims, sprints or gates one topic names before it counts the rest
 WHY_CHARS = 120
 GROUP_TEXT = {  # kind: (cause, remedy), fixed words
@@ -121,6 +119,7 @@ class Reader:
 
     def __init__(self, snap, titles_of):
         self.panels = snap.get("panels") or {}
+        self.now = mon_eta.seconds_of(snap.get("taken"))  # the time estimates are taken at
         self.titles = titles_of
 
     def data(self, name):
@@ -259,25 +258,13 @@ def minutes(n):
     return f"{n:.0f} min" if n < 180 else f"{n / 60:.1f} h" if n < 2880 else f"{n / 1440:.1f} days"
 
 
-def seconds_of(text):
-    try:
-        return datetime.strptime(str(text), "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc).timestamp()
-    except ValueError:
-        return None
+def minutes_range(low, high):
+    """LOW to HIGH minutes as `33-69 min`, or in hours as `3.5-5.0 h` from 180 minutes (by the high end)."""
+    return f"{low:.0f}-{high:.0f} min" if high < 180 else f"{low / 60:.1f}-{high / 60:.1f} h"
 
 
-def eta(open_count, done_at):
-    """(median minutes between the sprint's last ETA_DONE done commits, how many commits, ETA minutes) from their times;
-    the median and the ETA are None below two commits."""
-    times = sorted(t for t in (seconds_of(x) for x in done_at) if t is not None)[-ETA_DONE:]
-    if len(times) < 2:
-        return None, len(times), None
-    gap = median(b - a for a, b in zip(times, times[1:])) / 60
-    return gap, len(times), gap * open_count
-
-
-def sprint_lines(r, s, facts):
-    """The lines of one sprint and its entry of the answer's facts."""
+def sprint_lines(r, s, facts, hist):
+    """The lines of one sprint and its entry of the answer's facts; HIST is the sprint panel's duration history."""
     counts = s.get("items") if isinstance(s.get("items"), dict) else {}
     total = sum(number(v) for v in counts.values())
     done = number(counts.get("done")) + number(counts.get("dropped"))
@@ -296,16 +283,15 @@ def sprint_lines(r, s, facts):
         names = [str(x.get("title") or x.get("id")) + (" (in progress)" if x.get("status") == "doing" else "") for x in left[:ROWS]]
         rest = total - done - len(names)
         lines.append("    left: " + "; ".join(names) + (f"; +{rest} more" if rest > 0 else ""))
-    gap, count, wait = eta(total - done, s.get("done_at") or [])
-    entry.update(open=total - done, done_commits=count, median_min=None if gap is None else round(gap, 1),
-                 eta_min=None if wait is None else round(wait))
-    if total - done <= 0:
-        lines.append("    nothing is left.")
-    elif wait is None:
-        lines.append(f"    No ETA yet: {count} done commit{'' if count == 1 else 's'} on origin/main, two are needed for a median.")
+    got = mon_eta.estimate(s, hist, r.now)
+    entry.update(open=total - done, eta_low_min=None if got is None else got["low_min"],
+                 eta_high_min=None if got is None else got["high_min"],
+                 confidence=None if got is None else got["confidence"], basis=None if got is None else got["basis"])
+    if got is None:
+        lines.append("    No ETA yet: no durations of finished items on origin/main to estimate from.")
     else:
-        lines.append(f"    ETA about {minutes(wait)}, an estimate: {total - done} left x the median {minutes(gap)} between the "
-                     f"last {count} done commits on origin/main.")
+        lines.append(f"    ETA about {minutes_range(got['low_min'], got['high_min'])}, {got['confidence']} confidence; "
+                     f"basis: {got['basis']}.")
     return lines
 
 
@@ -325,7 +311,7 @@ def sprints(r):
     head = f"Sprints: {len(rows)} active or planned, {where}:" if rows else f"Sprints: none active or planned, {where}."
     lines = [head]
     for s in rows[:ROWS]:
-        lines += sprint_lines(r, s, facts)
+        lines += sprint_lines(r, s, facts, data.get("history") if isinstance(data.get("history"), dict) else {})
         waiting = [w for w in s.get("waiting") or [] if isinstance(w, dict) and not (w.get("item") == s.get("id") and w.get("gate") == "start")]
         lines += [f"    your answer is needed: gate {w.get('gate')} of {r.item(w.get('item'), True)}" for w in waiting[:2]]
         lines += ["    " + x for x in more(len(waiting) - 2, "gates waiting")]

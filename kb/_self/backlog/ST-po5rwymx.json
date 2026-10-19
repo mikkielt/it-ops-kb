@@ -125,6 +125,57 @@
       "class": "design",
       "answer": "park it as a draft story, since no reader of a running bench's progress exists yet",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which unit does the ETA range use between 'about 33-69 min' and hours when its ends fall on both sides of 180 minutes?",
+      "options": [
+        "the high end decides: both ends in hours once the high end is 180 minutes or more",
+        "each end is written in its own unit"
+      ],
+      "recommendation": "the high end decides: both ends in hours once the high end is 180 minutes or more",
+      "do": {
+        "the high end decides: both ends in hours once the high end is 180 minutes or more": "ST-po5rwymx",
+        "each end is written in its own unit": "ST-po5rwymx"
+      },
+      "class": "design",
+      "answer": "the high end decides: both ends in hours once the high end is 180 minutes or more",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What does the ETA say when the duration history lacks a figure an estimate needs (a checkout read, a repository with no finished item or no closed sprint)?",
+      "options": [
+        "no estimate: 'No ETA yet' with no eta facts",
+        "an estimate from the figures that exist, with the confidence low"
+      ],
+      "recommendation": "no estimate: 'No ETA yet' with no eta facts",
+      "do": {
+        "no estimate: 'No ETA yet' with no eta facts": "ST-po5rwymx",
+        "an estimate from the figures that exist, with the confidence low": "ST-po5rwymx"
+      },
+      "class": "design",
+      "answer": "no estimate: 'No ETA yet' with no eta facts",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "In what form does mon_eta.estimate take the time it is taken at, and how does its basis read?",
+      "options": [
+        "UTC seconds as a number, the snapshot's taken time parsed by mon_eta.seconds_of; the basis lists the open items by kind with the durations behind each, and the tail's",
+        "a datetime; the basis only names the confidence's lowest count"
+      ],
+      "recommendation": "UTC seconds as a number, the snapshot's taken time parsed by mon_eta.seconds_of; the basis lists the open items by kind with the durations behind each, and the tail's",
+      "do": {
+        "UTC seconds as a number, the snapshot's taken time parsed by mon_eta.seconds_of; the basis lists the open items by kind with the durations behind each, and the tail's": "ST-po5rwymx",
+        "a datetime; the basis only names the confidence's lowest count": "ST-po5rwymx"
+      },
+      "class": "design",
+      "answer": "UTC seconds as a number, the snapshot's taken time parsed by mon_eta.seconds_of; the basis lists the open items by kind with the durations behind each, and the tail's",
+      "by": "agent"
     }
   ],
   "notes": "Premise on origin/main cf985537c, 2026-10-19: a planted snapshot of six active sprints gives 'No ETA yet: 0 done commits on origin/main' for each and no eta facts; kb_monitor_status's sprints answer on this clone says 'ETA about 5.9 h, an estimate: 4 left x the median 88 min between the last 5 done commits' for the paid sprint whose 3-4 small items were expected to take about 1-1.5 h (it said 148 min, frozen for 5 hours, then 4.1 h, then 5.9 h). From 180 minutes write hours with one decimal (`about 3.5-5.0 h`), as mon_status.minutes does. Overlap: SP-2uljwgho's ST-dhsyyjft (one row per sprint with the ETA) and BG-lyfl57xv (the checkout fallback's ETA line) rebase onto this story's ETA line.",

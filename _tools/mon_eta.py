@@ -3,6 +3,8 @@ commits of the local `origin/main` ref. No panel: `mon_sprint.py` reads it for i
 
   read(root)    {"history": {kinds, all, tail, outliers}, "claimed": {item id: UTC time}}
   kind_of(item) review, research, bug, bench, content or code, from an item's JSON
+  estimate(row, history, now)
+                {low_min, high_min, confidence, basis} of an active sprint's time left, or None
 
 An item's duration is the minutes from its last `chore(backlog): claim ID` first-parent commit before its newest
 `chore(backlog): done ID` one; its kind is read from its item file as that claim commit has it. A closed sprint's tail is
@@ -12,7 +14,8 @@ least OUTLIER_MIN of them drops each one above its p75 plus OUTLIER_SPREAD times
 `outliers`. `kinds`, `all` (the kinds pooled after that) and `tail` (its last KEPT, no outlier drop) are each
 `{n, p25, median, p75}` in minutes, one decimal, the statistics module's inclusive quantiles (a single duration is all three;
 `kinds` lacks a kind with none). One `git log` and one `git cat-file --batch` read the history, kept in memory for the
-same `origin/main` commit; nothing is written. Imports no sibling at load; `bl_base` and `bl_view` where it reads them.
+same `origin/main` commit; nothing is written. `estimate` turns a sprint-panel row and that history into the sprint's time left
+as a range (docstring of the function). Imports no sibling at load; `bl_base` and `bl_view` where it reads them.
 """
 import json
 import re
@@ -25,6 +28,10 @@ LIFECYCLE = re.compile(r"^chore\(backlog\): (claim|done|close) ([A-Z]{2}-[a-z0-9
 KEPT = 30  # durations of each kind (and of the tail) the history keeps, the newest
 OUTLIER_MIN = 4  # durations a kind needs before its outliers are dropped
 OUTLIER_SPREAD = 3  # p25-p75 spreads above p75 that make a duration an outlier
+POOL_MIN = 4  # durations a kind needs before its own figures are used, and the confidence `medium` needs
+CONFIDENT_N = 10  # durations behind every figure of an estimate for the confidence `high`
+FLOOR_MIN = 5  # minutes an item in progress, or the tail once the review is done, still counts
+WORKERS = 4  # items the estimate runs side by side, the number a sprint run takes at once
 KINDS = ("review", "research", "bug", "bench", "content", "code")
 BENCH_RESULTS = "kb/_self/reports/benchmarks.csv"  # the file whose touch makes a paid item a bench one
 CODE_DIRS = ("_tools/", ".claude/", ".claude-plugin/", ".githooks/", "otel/")  # a touch under one makes an item code
@@ -154,6 +161,100 @@ def history(root, claims, dones, closes):
             kinds[k] = stats(kept)
             pooled += kept
     return {"kinds": kinds, "all": stats(pooled), "tail": stats(tail[-KEPT:]), "outliers": outliers}
+
+
+def seconds_of(text):
+    """UTC seconds of a `YYYY-MM-DDTHH:MM:SSZ` stamp, None for anything else."""
+    try:
+        return datetime.strptime(str(text), "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc).timestamp()
+    except ValueError:
+        return None
+
+
+def figures(item, hist, now):
+    """(low, high, n, pooled, kind) minutes one open ITEM adds: its kind's p25 and p75 of HIST, less the minutes since its
+    claim when it is in progress (never below FLOOR_MIN); a kind of fewer than POOL_MIN durations takes the pooled figures
+    (`pooled` true). None where HIST has no such figures."""
+    kind = item.get("kind") if item.get("kind") in KINDS else "code"
+    st = (hist.get("kinds") or {}).get(kind) or {}
+    pooled = (st.get("n") or 0) < POOL_MIN
+    if pooled:
+        st = hist.get("all") or {}
+    if st.get("p25") is None or st.get("p75") is None:
+        return None
+    low, high = st["p25"], st["p75"]
+    if item.get("status") == "doing":
+        claimed = seconds_of(item.get("claimed"))
+        gone = max(0.0, (now - claimed) / 60) if claimed is not None and now is not None else 0.0
+        low, high = max(low - gone, FLOOR_MIN), max(high - gone, FLOOR_MIN)
+    return low, high, st.get("n") or 0, pooled, kind
+
+
+def span(weights, after, ids, pick):
+    """The minutes ids of IDS take on WORKERS side by side: the larger of the longest chain along AFTER (summed WEIGHTS[PICK])
+    and the sum divided by WORKERS."""
+    longest, visiting = {}, set()
+
+    def chain(i):
+        if i not in longest:
+            visiting.add(i)
+            longest[i] = weights[i][pick] + max((chain(j) for j in after.get(i, []) if j in ids and j not in visiting), default=0)
+            visiting.discard(i)
+        return longest[i]
+
+    if not ids:
+        return 0.0
+    return max(max(chain(i) for i in ids), sum(weights[i][pick] for i in ids) / WORKERS)
+
+
+def estimate(row, hist, now):
+    """An active sprint's time left from its sprint-panel ROW, the HISTORY object and NOW (UTC seconds; None counts no minutes
+    since any claim): {low_min, high_min, confidence, basis}, or None where a figure it needs is missing (no history). Each open
+    item adds its kind's p25 to the low end and its p75 to the high end (`figures`); the review story comes in full after the
+    other items, which run in chains along their `after` lists WORKERS side by side; the review-to-close tail is added, less
+    the minutes since `review_done` once the review is done (never below FLOOR_MIN). The confidence is `high` when the fewest
+    durations behind any figure is CONFIDENT_N or more, `medium` at POOL_MIN or more, else `low`; a pooled figure makes it low."""
+    open_items = [x for x in row.get("open") or [] if isinstance(x, dict) and x.get("id")]
+    weights, used, pooled = {}, [], []
+    for x in open_items:
+        got = figures(x, hist, now)
+        if got is None:
+            return None
+        weights[x["id"]] = got[:2]
+        used.append(got)
+        if got[3]:
+            pooled.append(got[4])
+    others = [x["id"] for x in open_items if x.get("kind") != "review"]
+    ids = set(others)
+    after = {x["id"]: [j for j in x.get("after") or [] if isinstance(j, str)] for x in open_items}
+    low = span(weights, after, ids, 0)
+    high = span(weights, after, ids, 1)
+    for x in open_items:
+        if x.get("kind") == "review":
+            low, high = low + weights[x["id"]][0], high + weights[x["id"]][1]
+    tail = hist.get("tail") or {}
+    if tail.get("p25") is None or tail.get("p75") is None:
+        return None
+    t_low, t_high = tail["p25"], tail["p75"]
+    if row.get("review_done"):
+        done = seconds_of(row.get("review_done"))
+        gone = max(0.0, (now - done) / 60) if done is not None and now is not None else 0.0
+        t_low, t_high = max(t_low - gone, FLOOR_MIN), max(t_high - gone, FLOOR_MIN)
+    counts = [u[2] for u in used] + [tail.get("n") or 0]
+    fewest = min(counts)
+    confidence = "low" if pooled else "high" if fewest >= CONFIDENT_N else "medium" if fewest >= POOL_MIN else "low"
+    parts = {}
+    for _, _, n, was_pooled, kind in used:
+        key = (kind, n, was_pooled)
+        parts[key] = parts.get(key, 0) + 1
+    basis = ", ".join(f"{c} {k}" + (f" from the {n} pooled" if p else f" from {n}") for (k, n, p), c in parts.items())
+    basis += (", " if basis else "") + f"tail from {tail.get('n') or 0}"
+    return {"low_min": nearest(low + t_low), "high_min": nearest(high + t_high), "confidence": confidence, "basis": basis}
+
+
+def nearest(x):
+    """X rounded to the nearest whole minute, halves up."""
+    return int(x + 0.5)
 
 
 def empty():
