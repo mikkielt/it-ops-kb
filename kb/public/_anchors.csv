@@ -13160,6 +13160,37 @@ f4adf2ec89e1,python/maturin-pyo3-wheels.md,S-yfykoru4,unlocated:no-match,,,,,202
 6a2f386d05b0,python/percentile-nearest-rank.md,S-or2wocyn,located,Percentile > Calculation methods > The nearest-rank method,list;nearest-rank;nearest;valu;method;rank;percentil,17fa25702aed590a,Using the nearest-rank method on lists with fewer than 100 distinct values can result in the same value being used for more than one percentile.,2026-10-13
 b0fba6c5235a,python/percentile-nearest-rank.md,S-g5oa4uyp,located,"percentile(), percentiles() - Kusto | Microsoft Learn",ascend;percent;wikipedia;list;smallest;nearest;nearest-rank;rank,ad2e3bd0f551873f,"Nearest-rank percentile P-th percentile (0 &lt; P &lt;= 100) of a list of ordered values, sorted in ascending order, is the smallest value in the",2026-10-13
 b2936907fa0a,python/percentile-nearest-rank.md,S-or2wocyn,located,Percentile > Calculation methods > The nearest-rank method,alway;distinct;fewer;largest;member;100th;result;list,e103682830fd451c,Using the nearest-rank method on lists with fewer than 100 distinct values can result in the same value being used for more than one percentile.,2026-10-13
+04dde8e33742,python/ps-process-cpu.md,S-ggxrmcqc,located,,empty;text;written;line;header;keyword,77c4b5dafb81384c,"If all keywords have empty header texts, no header line is written.",2026-10-19
+053d8137814c,python/ps-process-cpu.md,S-ggxrmcqc,unlocated:no-match,,,,,2026-10-19
+053d8137814c,python/ps-process-cpu.md,S-glwifmco,unlocated:no-match,,,,,2026-10-19
+053d8137814c,python/ps-process-cpu.md,S-tldzr3mf,unlocated:no-match,,,,,2026-10-19
+0557d2d35948,python/ps-process-cpu.md,S-wh6i6rv4,located,Get-Counter > Parameters > -SampleInterval,one-second;between;one;second;sampleinterval;interval;sampl;get-counter,1c74512727cab22a,"Specifies the number of seconds between samples for each specified performance counter. If the SampleInterval parameter isn't specified, Get-Counter uses a one-second interval.",2026-10-19
+29d01dc2c521,python/ps-process-cpu.md,S-glwifmco,located,ps(1) — Linux manual page > NOTES top,entir;spent;during;lifetim;percentag;usag;currently;run,727d43f78deb4652,CPU usage is currently expressed as the percentage of time spent running during the entire lifetime of a process.,2026-10-19
+2e2288911bcf,python/ps-process-cpu.md,S-tldzr3mf,located,NAME > SYNOPSIS > DESCRIPTION > STDOUT,com;args;blank,1815b966b6de73ad,Only comm and args shall be allowed to contain <blank> characters; all others shall not.,2026-10-19
+2e23c3f04c73,python/ps-process-cpu.md,S-ggxrmcqc,unlocated:no-match,,,,,2026-10-19
+2e23c3f04c73,python/ps-process-cpu.md,S-glwifmco,unlocated:no-match,,,,,2026-10-19
+32ffd0a7271c,python/ps-process-cpu.md,S-tldzr3mf,located,NAME > SYNOPSIS > DESCRIPTION,controll;effectiv;select;default;user;process,c89b03aeff16af52,"By default, ps shall select all processes with the same effective user ID as the current user",2026-10-19
+37b2aa285ce8,python/ps-process-cpu.md,S-5syx7mel,located,Get-Process > Notes,processor;time;cpu;second;process,1cd1832ff938d4f9,"CPU(s): The amount of processor time that the process has used on all processors, in seconds.",2026-10-19
+3800d7644620,python/ps-process-cpu.md,S-ggxrmcqc,unlocated:no-match,,,,,2026-10-19
+3800d7644620,python/ps-process-cpu.md,S-glwifmco,unlocated:no-match,,,,,2026-10-19
+3800d7644620,python/ps-process-cpu.md,S-tldzr3mf,unlocated:no-match,,,,,2026-10-19
+5a80905c7c79,python/ps-process-cpu.md,S-tldzr3mf,located,NAME > SYNOPSIS > DESCRIPTION > STDOUT,null;written;line;text;header,7e70c482256de47c,"If all header text fields are null, no header line shall be written.",2026-10-19
+7b31bff9681d,python/ps-process-cpu.md,S-glwifmco,located,ps(1) — Linux manual page > OUTPUT FORMAT CONTROL top,empty;line;header;com;output;column;pid,1a8795b33efa2b27,If all column headers are empty (ps -o pid= -o comm=) then the header line will not be output.,2026-10-19
+8945978adc1a,python/ps-process-cpu.md,S-wh6i6rv4,located,Get-Counter > Parameters > -SampleInterval,one-second;one;second;sampl,2757d625693077f0,"If the SampleInterval parameter isn't specified, Get-Counter uses a one-second interval.",2026-10-19
+9f81ad66505d,python/ps-process-cpu.md,S-v6442u3l,located,Decode a PowerShell command from a running process - PowerShell | Microsoft Learn > View the process,cim;ciminstanc;classnam;get-ciminstanc;instanc;query;result;administrator,8ecd15d7336a0759,"It's vital that PowerShell is running as administrator, otherwise no results are returned when querying the running processes. Execute the following command to get all",2026-10-19
+aaad454ed4e9,python/ps-process-cpu.md,S-ggxrmcqc,located,,percentag;usag;alia;cpu,8da9a7cee73969ca,percentage CPU usage (alias,2026-10-19
+c42b3b65623c,python/ps-process-cpu.md,S-tldzr3mf,located,NAME > SYNOPSIS > DESCRIPTION > RATIONALE,frequently;add;valu;process,e0a43aadc188294b,"Frequently, these values for all processes did not add up to 100%.",2026-10-19
+c46ad67d21ae,python/ps-process-cpu.md,S-tldzr3mf,located,NAME > SYNOPSIS > DESCRIPTION > STDOUT,period;ratio;percentag;recently;availabl;cpu;time,87fcfb99a57051b3,"The ratio of CPU time used recently to CPU time available in the same period, expressed as a percentage.",2026-10-19
+d16bcbc01d48,python/ps-process-cpu.md,S-5syx7mel,unlocated:no-match,,,,,2026-10-19
+d16bcbc01d48,python/ps-process-cpu.md,S-v6442u3l,unlocated:no-match,,,,,2026-10-19
+d16bcbc01d48,python/ps-process-cpu.md,S-wh6i6rv4,unlocated:no-match,,,,,2026-10-19
+d49af75190b0,python/ps-process-cpu.md,S-glwifmco,located,ps(1) — Linux manual page > STANDARD FORMAT SPECIFIERS top,run,06086fdfc1ab9c3b,cputime/realtime ratio,2026-10-19
+e2621a5185b1,python/ps-process-cpu.md,S-tldzr3mf,unlocated:no-match,,,,,2026-10-19
+e9cab6ac541b,python/ps-process-cpu.md,S-glwifmco,located,ps(1) — Linux manual page > STANDARD FORMAT SPECIFIERS top,pcpu;cpu;alia,5f9b4a1b46a2d16d,pcpu %CPU see %cpu. (alias %cpu).,2026-10-19
+ecb3796330d7,python/ps-process-cpu.md,S-js22cswf,located,Collecting Performance Data - Win32 apps | Microsoft Learn > Understanding Multiple Processor Counters,count;sum;through;name;thread;rang;two;time,5d29a8dc32cbf8ba,"The ""\Process(X)\% Processor Time"" (where X is the process name), counter value is the sum of the processor usage by all threads of process X.",2026-10-19
+ef2da117a7ed,python/ps-process-cpu.md,S-5syx7mel,located,Get-Process > Notes,gps;platform;alia;get-process;process,356110ecfaa34803,PowerShell includes the following aliases for Get-Process: All platforms: gps,2026-10-19
+f82b03111d91,python/ps-process-cpu.md,S-glwifmco,located,ps(1) — Linux manual page > SIMPLE PROCESS SELECTION top,identical;select;process,ac967109ca00a447,-A Select all processes. Identical to -e.,2026-10-19
+fc26ab3a5229,python/ps-process-cpu.md,S-ggxrmcqc,located,,averag;decay;minut;previous;over;real;time,46eae98e9587f0bc,this is a decaying average over up to a minute of previous (real) time.,2026-10-19
 020860d757a9,python/pytest-xdist.md,S-eaoeu53g,unlocated:no-match,,,,,2026-10-14
 039bc1590489,python/pytest-xdist.md,S-g7bkixrp,unlocated:no-match,,,,,2026-10-14
 057b80d6d62a,python/pytest-xdist.md,S-3cbnj3pk,unlocated:no-match,,,,,2026-10-14

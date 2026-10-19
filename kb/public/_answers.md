@@ -4176,3 +4176,15 @@ _Agent: kb-research_
 - See gitlab/multi-repository-layouts.md, gitlab/commit-signing-and-provenance.md, gitlab/deploy-keys-and-tokens.md, entra/agent-id.md, agents/a2a-protocol.md, mcp/authorization.md, claude/otel-monitoring.md.
 
 _Agent: kb-research_
+
+## QK-ps-o-pid-pcpu-args-give. What does ps -A -o pid=,pcpu=,args= give on macOS and Linux, what does pcpu mean on each, and what is the Windows counterpart?
+- POSIX `ps` has `-A` (all processes), `-o` with an `=` header override that writes no header line when every header is empty, and the names `pid`, `pcpu` and `args`; only `comm` and `args` may hold blanks. [DOC S-tldzr3mf]
+- POSIX defines `pcpu` as CPU time used recently over CPU time available, with "recently" and the available time unspecified. [DOC S-tldzr3mf]
+- Linux (procps-ng) accepts the same `-A` and empty-header forms, and its `pcpu` (`%cpu`) is CPU time over the time the process has run, a percentage over the whole life of the process. [DOC S-glwifmco]
+- macOS (Apple `ps`, adv_cmds-237) accepts them too, and its `%cpu` (alias `pcpu`) is a decaying average over up to a minute of previous real time; the sum can exceed 100%. [DOC S-ggxrmcqc]
+- Windows `Get-Process` gives CPU seconds, not a percentage; a percentage per process is the two-sample `\Process(*)\% Processor Time` counter, up to 100 times the processor count; the command line is `Win32_Process.CommandLine`. [DOC S-5syx7mel, S-wh6i6rv4, S-js22cswf, S-v6442u3l]
+- Conclusion: one `ps -A -o pid=,pcpu=,args=` call serves macOS and Linux with the same parsing, but its `pcpu` is a lifetime ratio on Linux and a one-minute decaying average on macOS, so a report names which it shows; Windows needs a separate collector for CPU percentage and command line. [DER S-tldzr3mf, S-glwifmco, S-ggxrmcqc, S-5syx7mel, S-wh6i6rv4, S-v6442u3l]
+- Open: `ps` implementations other than procps-ng and Apple's (for example BusyBox) were not read. [UNK]
+- See python/ps-process-cpu.md, python/stdlib-os-loadavg.md.
+
+_Agent: kb-research_

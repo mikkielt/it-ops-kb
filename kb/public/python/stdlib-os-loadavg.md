@@ -57,7 +57,8 @@ count and remembering that the 1-minute value still carries the last minute of l
 ## Reference
 - Related: `python/pytest-xdist.md` (worker count: `os.cpu_count()` and `-n auto`, and the wall time of a
   `loadscope` run), `python/stdlib-windows-portability.md` (what the stdlib lacks on Windows),
-  `python/interpreter-startup.md` (`-X cpu_count`).
+  `python/interpreter-startup.md` (`-X cpu_count`), `python/ps-process-cpu.md` (which processes load the host:
+  `ps` `pcpu` on macOS and Linux, and the Windows counterpart).
 - Sources: the docs page for `os` at CPython v3.14.7 (`Doc/library/os.rst`), `Modules/posixmodule.c`, Apple
   `Libc` `gen/getloadavg.3` and `gen/getloadavg.c`, XNU `bsd/kern/kern_sysctl.c`,
   `bsd/kern/kern_synch.c` and `osfmk/kern/sched_average.c`.
