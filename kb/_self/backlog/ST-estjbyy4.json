@@ -2,8 +2,7 @@
   "id": "ST-estjbyy4",
   "kind": "story",
   "title": "kbgit.py publish handles git author and committer emails as the operator decides for the public home",
-  "status": "todo",
-  "sprint": "SP-yjugq5c2",
+  "status": "draft",
   "priority": "P3",
   "rank": 0,
   "goal": "kbgit.py publish treats the git author and committer emails of the commits it projects as the operator's answer to gate g-author says; for the recommended answer it keeps the published history and its emails as they are and prints, without refusing and without the address, one warning line naming each new commit whose author or committer email is no noreply or placeholder one; kb/_self/git.md says how the operator sets a noreply user.email for new commits",
@@ -68,5 +67,5 @@
       "class": "push"
     }
   ],
-  "notes": "Premise (2026-10-19): a planted publish --dry-run of a commit authored with a non-placeholder address prints no warning. Waits on the operator's gate g-author (class push); the check fits the recommended answer, and another answer rewords it before the claim. Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and .claude/hooks with its own coord store and a stub claude on PATH; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations; facts: public/claude/ci-and-headless.md:124-127, public/claude/otel-monitoring.md:51-53, QK-claude-code-session-learn-email-account. Addresses in checks are built at run time; docs and items use the placeholder jan.kowalski only."
+  "notes": "Premise (2026-10-19): a planted publish --dry-run of a commit authored with a non-placeholder address prints no warning. Waits on the operator's gate g-author (class push); the check fits the recommended answer, and another answer rewords it before the claim. Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and .claude/hooks with its own coord store and a stub claude on PATH; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations; facts: public/claude/ci-and-headless.md:124-127, public/claude/otel-monitoring.md:51-53, QK-claude-code-session-learn-email-account. Addresses in checks are built at run time; docs and items use the placeholder jan.kowalski only. 2026-10-19, SP-yjugq5c2 run: moved out of the sprint unworked. Gate g-author (class push, the public home's history) is operator-only under the run's policy (publishing to GitHub is never answered by the orchestrator); it waits on the operator's own answer, with ST-cmjz33nf already landed."
 }
