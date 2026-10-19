@@ -2,7 +2,7 @@
   "id": "ST-fobzhr5o",
   "kind": "story",
   "title": "The kbmon-pane mod shows kbmon live in a pane and gives the agent only the receipt",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-3hgirkur",
   "priority": "P2",
@@ -126,5 +126,36 @@
     }
   ],
   "notes": "Plan 2026-10-19 (operator choices): the receipt comes from the mod, not settings hooks, since session.start's isInteractive (false for -p and the SDK) is the one documented headless signal; the mod lives in .claude/skills/kbmon-pane and loads with no install and no settings change. Prototype in the discovery session (scratchpad, --plugin-dir): the pane docked as a sidebar at 170 columns, clipped at once on a resize and was laid out again at the new width after one kbmon run (about 20 s); the demo agent quoted only the receipt row, nothing of the pane. Checks: claude plugin validate and a read of the module; no check runs the mod, since claude plugin test needs a *.test.ts file, which the operator ruled out (D-6kei5o2z, D-2tq4fhgs), and a live session makes a model call. The mods API is early access (bundled reference, Claude Code 2.1.290; this host runs 2.1.303).",
-  "claimed_by": "orch-r23"
+  "evidence": {
+    "commit": "8065cb2ce8b780102a739d1e3e68d72b495629f1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import shutil,subprocess as s,sys\nc=shutil.which('claude')\nif not c:\n    print('claude is not on PATH');sys.exit(1)\np=s.run([c,'plugin','validate','.claude/skills/kbmon-pane'],capture_output=True,text=True,timeout=180);o=p.stdout+p.stderr\nneed=['session.start','ui.render{component=Pane','command.run{command=kbmon}','$.process.run','$.session.append','$.ui.toast','$.clock.every','$.ui.open']\nmiss=[n for n in need if n not in o]\nif p.returncode!=0 or 'Validation passed' not in o or miss:\n    print(o[-1200:]);print('missing:',miss);sys.exit(1)\nprint('ok: the mod validates and hooks and calls what the goal names')\n"
+        ],
+        "exit": 0,
+        "sha256": "bba9c385b725d00d"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import glob,sys\nt=''.join(open(f,encoding='utf-8').read() for f in glob.glob('.claude/skills/kbmon-pane/hooks/**/*.ts*',recursive=True))\nneed=['isInteractive','--receipt','--once','bodyColumns',\"'-3'\",'60_000']\nmiss=[n for n in need if n not in t]\nprint('missing:',miss) if miss else print('ok');sys.exit(1 if miss else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "dc51b8c96c2d745d"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import glob,re,sys,subprocess,resource,time\nsrc=\"\".join(open(f,encoding=\"utf-8\").read() for f in glob.glob(\".claude/skills/kbmon-pane/hooks/**/*.ts*\",recursive=True))\nif not src:\n    print(\"no kbmon-pane hooks yet\");sys.exit(1)\nif not re.search(r\"(inFlight|running|busy|pending)\",src):\n    print(\"the pane timer has no guard against starting kbmon.py --once while the last run is still going\");sys.exit(1)\nt=time.time();subprocess.run([sys.executable,\"_tools/kbmon.py\",\"--once\"],capture_output=True)\nu=resource.getrusage(resource.RUSAGE_CHILDREN);cpu=u.ru_utime+u.ru_stime\nprint(\"one pane refresh (kbmon.py --once) cpu seconds:\",round(cpu,1),\"wall\",round(time.time()-t,1))\nsys.exit(0 if cpu<6 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "270827d13f48598b"
+      }
+    ]
+  }
 }
