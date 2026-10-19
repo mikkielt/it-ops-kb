@@ -29,6 +29,25 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How long is the total deadline for all forge reads of stalled and selfcheck, and how is it enforced?",
+      "options": [
+        "60 s total, each command cut to the time left",
+        "120 s total, each command cut to the time left",
+        "checked only between reads, a command in flight keeps its own 60 s"
+      ],
+      "recommendation": "60 s total, each command cut to the time left",
+      "do": {
+        "60 s total, each command cut to the time left": "BG-mhsmvdrz",
+        "120 s total, each command cut to the time left": "BG-mhsmvdrz",
+        "checked only between reads, a command in flight keeps its own 60 s": "BG-mhsmvdrz"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-dqkf3i42 review"
   ],
