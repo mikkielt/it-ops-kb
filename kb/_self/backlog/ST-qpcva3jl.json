@@ -77,6 +77,36 @@
       "class": "push",
       "answer": "the newest stable release at work time, its SHA-256 taken from the release's own checksum files",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does install_wezterm.py put WezTerm for the user, and which Linux file?",
+      "options": [
+        "macOS ~/Applications/WezTerm.app, Windows %LOCALAPPDATA%\\Programs\\WezTerm, Linux x86_64 AppImage under $XDG_DATA_HOME/wezterm (the release's only checksummed per-user Linux file)",
+        "a system location or a distribution package"
+      ],
+      "recommendation": "macOS ~/Applications/WezTerm.app, Windows %LOCALAPPDATA%\\Programs\\WezTerm, Linux x86_64 AppImage under $XDG_DATA_HOME/wezterm (the release's only checksummed per-user Linux file)",
+      "do": {
+        "macOS ~/Applications/WezTerm.app, Windows %LOCALAPPDATA%\\Programs\\WezTerm, Linux x86_64 AppImage under $XDG_DATA_HOME/wezterm (the release's only checksummed per-user Linux file)": "ST-qpcva3jl",
+        "a system location or a distribution package": "ST-qpcva3jl"
+      },
+      "class": "push"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "What does install_wezterm.py do without --yes and when the target already exists?",
+      "options": [
+        "without --yes it prints the plan and installs nothing (exit 2); an existing target is left alone (exit 3) unless --replace",
+        "it asks on stdin, and overwrites an existing target"
+      ],
+      "recommendation": "without --yes it prints the plan and installs nothing (exit 2); an existing target is left alone (exit 3) unless --replace",
+      "do": {
+        "without --yes it prints the plan and installs nothing (exit 2); an existing target is left alone (exit 3) unless --replace": "ST-qpcva3jl",
+        "it asks on stdin, and overwrites an existing target": "ST-qpcva3jl"
+      },
+      "class": "agents-rule"
     }
   ],
   "notes": "Plan 2026-10-19 (operator choice): a pinned installer like _tools/install-python.ps1, SHA-256 checked, per user; /kb-setup asks permission first and, on a no, quotes the saved --declined text: WezTerm is a quality-of-life dependency, never critical; without it the kbmon pane of the mod still works, and kbmon runs by hand or Claude reads it on request. Standard library only. The pinned version is the gate pin. Premise on the base: no _tools/install_wezterm.py (exit 2).",
