@@ -2,9 +2,9 @@
 topic: claude/ci-and-headless
 priority: P2
 applies_to: "Claude Code v2.1.x (code.claude.com docs, retrieved 2026-09-26)"
-retrieved_utc: 2026-10-16
-sources: [S1800, S1801, S1802, S-32ilsmsf, S-l6l42j6e, S-pilcrlei, S1824, S-isqfh6pr, S-fmj24q2u, S-fksbud2r, S-ezqg74ki, S-eu3n3hyf, S2131, S-ehhvgjky, S2130, S1864, S2157, S-e5rrs4ee, S-fzkqxhmg, S-wf2dmtu6]
-status: complete
+retrieved_utc: 2026-10-19
+sources: [S1800, S1801, S1802, S-32ilsmsf, S-l6l42j6e, S-pilcrlei, S1824, S-isqfh6pr, S-fmj24q2u, S-fksbud2r, S-ezqg74ki, S-eu3n3hyf, S2131, S-ehhvgjky, S2130, S1864, S2157, S-e5rrs4ee, S-fzkqxhmg, S-wf2dmtu6, S-frvnva4f, S743, S745, S-rkp4qc7b, S744]
+status: partial
 ---
 
 # `claude -p` CLI details, GitHub Actions/GitLab CI parameters, sandboxing and gateways for CI
@@ -121,6 +121,10 @@ article's `claude -p` exit-code/`--output-format` summary or its runtime-compari
 - Observed on Claude Code 2.1.296 (the two Sonnet 5.5 runs of 2026-10-12 above), the result object's top-level keys were `type`, `subtype`, `is_error`, `api_error_status`, `result`, `stop_reason`, `terminal_reason`, `session_id`, `num_turns`, `duration_ms`, `duration_api_ms`, `total_cost_usd`, `usage`, `modelUsage`, `permission_denials`, `fast_mode_state`, `subagent_stats` and `safety_stops` among others; `usage` carried `input_tokens`, `output_tokens`, `cache_creation_input_tokens`, `cache_read_input_tokens`, a `cache_creation` split into `ephemeral_5m_input_tokens` and `ephemeral_1h_input_tokens`, `inference_geo`, `speed`, `service_tier` and `iterations`; and the `modelUsage` entry carried the documented keys plus `costBasis`. Which of the extra keys the 2.1.293 record's runs also had is not established. [DER S-fksbud2r, S-isqfh6pr: the result object of one run read against the documented fields]
 - Confirmed 2026-10-12, the Claude Code model-config page read raw: the model default effort is still `high` except `medium` for Opus 5.5, Sonnet 5.5 and Haiku 5.5 and `xhigh` for Opus 4.7, with the same accepted levels as above. [DOC S-ezqg74ki]
 - The changelog entries of Claude Code v2.1.293 to v2.1.296 change no model's default effort: v2.1.293 fixed `/model` effort ←/→ wrapping that could save Low as a model's default, v2.1.295 fixed `/model` saying a Max pick was saved as the default (Max applies to the current session only), and v2.1.296 fixed web searches and `agent` hooks running slowly at `xhigh` and `max`. [DER S1864: the entries of the four releases read against the effort defaults]
+- `claude auth status` prints the authentication status as JSON (`--text` for human-readable output) and exits 0 when logged in, 1 when not; the documented fields are `authMethod`, one of `none`, `claude.ai`, `oauth_token`, `api_key`, `api_key_helper` or `third_party`, and `configDirectory` (Claude Code v2.1.268 or later). [DOC S1824]
+- Credential precedence puts `ANTHROPIC_API_KEY` (always used in `-p` when present) and an `apiKeyHelper` script above `CLAUDE_CODE_OAUTH_TOKEN`, the long-lived subscription token of `claude setup-token`, and bare mode does not read `CLAUDE_CODE_OAUTH_TOKEN`; so a headless run that inherits an API key runs under the key, not the operator's subscription, and `authMethod` says which applies. [DOC S-frvnva4f]
+- Observed on Claude Code 2.1.303 on 2026-10-19 with a claude.ai login, the `claude auth status` JSON also carried `loggedIn`, `apiProvider`, `email`, `orgId`, `orgName`, `subscriptionType`, `analyticsDisabled` and `projectsDirectory`; the CLI reference names none of them, so a tool that reads the account email from it feature-detects the key and falls back when it is missing (an API key or a token login was not tried). [UNK: undocumented fields, one host and version]
+- A session itself gets no documented account identity: the hook input, the status line input and the environment variable list give a session id but no email or account id (`email` searched on the hooks, env-vars, statusline, headless, claude-directory and settings-reference pages on 2026-10-19); the documented routes are `claude auth status` (logged in or not, `authMethod`) and the OpenTelemetry attributes of `otel-monitoring.md`, which reach only a configured exporter. [DER S1824, S743, S745, S-rkp4qc7b, S744: the input fields and variable list read against the auth status fields and the standard attributes]
 
 ## Reference
 

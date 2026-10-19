@@ -2,7 +2,7 @@
 topic: claude/otel-monitoring
 priority: P1
 applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23; metrics and correlation read 2026-09-29)"
-retrieved_utc: 2026-10-16
+retrieved_utc: 2026-10-19
 sources: [S744, S745, S741, S743, S-kumwk4fp, S-v2wnj4qk, S-iekncbeu, S-r7mszxqu, S-ggeduchu]
 status: complete
 ---
@@ -48,6 +48,9 @@ Enable with `CLAUDE_CODE_ENABLE_TELEMETRY=1` plus OTLP exporter variables. MCP a
 - `OTEL_RESOURCE_ATTRIBUTES` adds custom attributes such as `department`, `team.id` or `cost_center` to all metrics and events, so cost can be filtered per team or cost centre; values must be percent-encoded for spaces and similar characters. [DOC S744]
 - Per user and per session cost and tokens therefore come from the `claude_code.cost.usage` and `claude_code.token.usage` counters grouped by `user.email` (or `user.account_id`) and `session.id`; per prompt needs the events, whose `prompt.id` metrics never carry. [DER S744: the counters, the standard attributes and the events-only `prompt.id` read together]
 - Through a Claude apps gateway the CLI stamps each export from the gateway-issued JWT with `user.id` (the IdP subject), `user.email`, `user.groups` and `identity.source: gateway-oidc`, which `OTEL_RESOURCE_ATTRIBUTES` cannot override; the gateway then acts as an authenticated OTLP relay that, when `telemetry.forward_to` and `listen.public_url` are set, pushes the exporter variables to connected clients and forwards their traffic to each listed destination, metrics only unless a destination also opts into logs or traces. [DOC S744, S-r7mszxqu]
+- `user.email` comes from the sign-in or, in a cloud session, from the session's own credentials; `organization.id` is always included when authenticated; `user.account_id` is the account in the tagged form the Anthropic admin APIs use (`user_01...`), and `OTEL_METRICS_INCLUDE_ACCOUNT_UUID` (default `true`) controls both `user.account_uuid` and `user.account_id` on metrics. [DOC S744]
+- When authenticated through OAuth, `user.email` is in the telemetry attributes, sent only to the configured OpenTelemetry endpoint and never to Anthropic; the docs leave filtering or redacting it to the telemetry backend. [DOC S744]
+- In a session a developer starts, MCP tool calls, Bash commands and file edits are attributed to the developer's own Claude account (or IdP identity on a gateway session), not to a separate service account. [DOC S744]
 - OpenTelemetry data from Claude Code goes only to destinations the organization configures, never to Anthropic. [DOC S-r7mszxqu]
 - Cloud sessions (including Claude Tag) run on Anthropic-hosted VMs, so a device's managed file does not configure them: set the variables in server-managed settings `env` (reaches cloud sessions except Claude Tag) or in the cloud environment's variables (the only route that reaches Claude Tag); anyone who uses an environment can read its variables, so a collector token goes through server-managed settings instead, and the collector's domain must be on the environment's network allowlist. Cloud sessions add `ccr.session.id`; Claude Tag sessions act as the organization's shared identity, so `user.*` does not say who tagged Claude, and `OTEL_METRICS_INCLUDE_ENTRYPOINT=true` marks them with `app.entrypoint` `claude-in-slack`. [DOC S744]
 - Beside OpenTelemetry the docs list, for usage reporting, an analytics dashboard (Teams and Enterprise at `claude.ai/analytics`, Console at `platform.claude.com/claude-code`) and per-user usage and cost over an API (Enterprise Analytics API on Enterprise, Claude Code Analytics API on Console); on Teams and Enterprise, per-user spend numbers come from the spend report, not the dashboard. [DOC S-ggeduchu]

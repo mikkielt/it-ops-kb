@@ -4213,3 +4213,13 @@ _Agent: kb-research_
 - See python/percentile-nearest-rank.md.
 
 _Agent: kb-research_
+
+## QK-claude-code-session-learn-email-account. How does a Claude Code session learn the email or account id of the subscription it runs under?
+- `claude auth status` prints JSON and exits 0 when logged in, 1 when not; its documented fields are `authMethod` (`none`, `claude.ai`, `oauth_token`, `api_key`, `api_key_helper`, `third_party`) and `configDirectory`. [DOC S1824]
+- The OpenTelemetry standard attributes carry `user.email` (from the sign-in, or a cloud session's own credentials), `user.account_uuid`, `user.account_id` and `organization.id` when authenticated, sent only to the configured endpoint. [DOC S744]
+- `ANTHROPIC_API_KEY` is always used in `-p` when present and outranks `CLAUDE_CODE_OAUTH_TOKEN`, which bare mode does not read, so a headless run may not run under the operator's subscription at all. [DOC S-frvnva4f]
+- Conclusion: no documented route hands a running session its account email: hooks, the status line and the environment carry a session id only, and the OpenTelemetry attributes reach an exporter, not the session. A tool that wants the operator's identity reads `claude auth status` for `authMethod`, takes the email from its undocumented `email` key only when present, and otherwise uses an operator-set value. [DER S1824, S744, S743, S745, S-rkp4qc7b]
+- Open: the `email`, `orgId` and `subscriptionType` keys of `claude auth status` are undocumented (seen on one host, 2.1.303, claude.ai login); their form under a token or API key login is not known. [UNK]
+- See claude/ci-and-headless.md, claude/otel-monitoring.md.
+
+_Agent: kb-research_
