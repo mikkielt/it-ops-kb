@@ -34,7 +34,8 @@
     "kb/_self/tools.md",
     "kb/_self/code.md",
     "kb/_self/maintaining.md",
-    "kb/_self/token-efficiency.md"
+    "kb/_self/token-efficiency.md",
+    "_tools/coord.py"
   ],
   "depends_on": [
     "ST-6iu2xb23"
