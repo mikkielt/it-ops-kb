@@ -52,6 +52,25 @@
   "depends_on": [
     "BG-5kyucmi6"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does publish find an internal root's pointer and gitlink: per commit of the range (a commit a later one undoes is still refused, like the other history checks), or only in the projection's tree?",
+      "options": [
+        "per commit of the range",
+        "projection tree only"
+      ],
+      "recommendation": "per commit of the range",
+      "do": {
+        "per commit of the range": "ST-vruwai2i",
+        "projection tree only": "ST-vruwai2i"
+      },
+      "class": "push",
+      "answer": "per commit of the range",
+      "by": "operator"
+    }
+  ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): publish --dry-run in a planted clone with an internal pointer and an internal submodule root refuses only for the CI verdict. A publish guard is a critical component: one planted-failure case in the existing test file.  Check 1 (tests.py _tools/test_publish_e2e.py) passes before the work by design: it pins the publish gate's existing refusals, which must stay; check 0 is the one that fails until the work.",
   "claimed_by": "orch-r36"
 }

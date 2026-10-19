@@ -99,3 +99,22 @@ def test_publish_follows_the_ci_verdict(world, capsys):
     assert "CI verdict" in capsys.readouterr().out and pub_empty(pub)
     assert publish(clone, "success") == 0
     assert not pub_empty(pub)
+
+
+def test_publish_refuses_an_internal_roots_pointer_and_gitlink_in_any_commit_of_the_range(world, capsys):
+    clone, pub = world
+    pointer = "kb/_roots/team-a.md"
+    clone.write(pointer, "---\nroot: team-a\nid_prefix: TA\nvisibility: internal\nteam: team-a\nurl: x\nref: main\naccess: submodule\n---\n")
+    clone.write("kb/_roots/team-b.md", "---\nroot: team-b\nid_prefix: TB\nvisibility: public\nteam: team-b\nurl: y\nref: main\naccess: fetch\n---\n")
+    clone.git("add", "kb/_roots")
+    clone.git("update-index", "--add", "--cacheinfo", f"160000,{clone.rev('HEAD')},kb/team-a")  # a submodule's entry, no checkout
+    clone.git("commit", "-q", "-m", "pointers")
+    clone.git("push", "-q", "origin", "HEAD:main")
+    clone.git("rm", "-q", "--cached", "kb/team-a")  # the final tree holds neither, the history does
+    clone.git("rm", "-q", pointer)
+    clone.git("commit", "-q", "-m", "unpoint")
+    clone.git("push", "-q", "origin", "HEAD:main")
+    assert publish(clone) == 1
+    out = capsys.readouterr().out
+    assert f"the pointer {pointer} of an internal root" in out and "the gitlink kb/team-a of the internal root team-a" in out
+    assert "team-b" not in out and pub_empty(pub)

@@ -71,6 +71,7 @@ CLONE_REMOTE = "origin"  # what `git clone` names its source: the integration re
 PUBLISHED_REF = "refs/kb/published"
 NO_HOOK_ENV = "KB_NO_PUBLISH_HOOK"  # a non-empty value: publish --hook does nothing (a session that must never publish exports it)
 ZERO_RE = re.compile(r"^0+$")
+GITLINK = "160000"  # the mode of a submodule's entry in a tree
 FORBIDDEN_RE = re.compile(r"(^|/)(_private|_cache)(/|$)")
 ALLOWLIST_PATH = "_tools/tests_allowlist.txt"
 URL_RX = re.compile(r"(?:https?|ssh|git)://\S+|(?<![\w.%+-])git@[\w.-]+:[\w./~-]+|\bssh(?:\s+-\w+)*\s+git@[\w.-]+")
@@ -500,9 +501,9 @@ def public_values(tip, cwd):
 
 
 def history_changes(proj, tip, cwd):
-    """[(commit sha, [(status, old blob, new blob, path)])] of the commits TIP..PROJ (all of PROJ's history when TIP is
-    None), oldest first, from one `git log --raw` pass: a rename is a delete and an add, a merge is diffed against its
-    first parent. Raises RuntimeError on a git error."""
+    """[(commit sha, [(status, old blob, new blob, path, new mode)])] of the commits TIP..PROJ (all of PROJ's history when
+    TIP is None), oldest first, from one `git log --raw` pass: a rename is a delete and an add, a merge is diffed against
+    its first parent; the new mode is GITLINK for a submodule's commit. Raises RuntimeError on a git error."""
     code, o, e = run(["log", "--topo-order", "--reverse", "--no-renames", "--raw", "-z", "--no-abbrev", "--root",
                       "--diff-merges=first-parent", "--format=%x01%H", proj if tip is None else f"{tip}..{proj}"], cwd)
     if code:
@@ -513,8 +514,8 @@ def history_changes(proj, tip, cwd):
         fields = rest.lstrip(b"\n").split(b"\0")
         changes = []
         for meta, path in zip(fields[0::2], fields[1::2]):
-            _, _, old, new, status = meta.lstrip(b":").split()
-            changes.append((status.decode()[:1], old.decode(), new.decode(), path.decode("utf-8", "replace")))
+            _, mode, old, new, status = meta.lstrip(b":").split()
+            changes.append((status.decode()[:1], old.decode(), new.decode(), path.decode("utf-8", "replace"), mode.decode()))
         res.append((sha.decode(), changes))
     return res
 
@@ -578,7 +579,9 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None):
     sha}, from project()) and the projected one when they differ. Each commit is checked by what it adds or changes
     against its (first) parent, so a later commit that deletes a path or a value does not hide it:
       tree  a path under a `_private` or `_cache` directory, or a path under a root that is internal (its `_root.md`
-            says `visibility: internal`) in any commit of the range, at TIP or at PROJ;
+            says `visibility: internal`) in any commit of the range, at TIP or at PROJ; the pointer file
+            `kb/_roots/<name>.md` of an internal remote root (no `visibility` line counts as internal) that a commit
+            adds or changes, and the gitlink `kb/<name>` of such a root that a commit adds or moves;
       leak  a leak-scan hit that neither the parent's version nor TIP's version of the file holds, and whose value no
             file of TIP holds (public_values: already public), allowing the _tools/tests_allowlist.txt of the commit
             and of PROJ.
@@ -600,7 +603,8 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None):
     todo = {c for c, _ in changes if c not in verdicts}
     if bound is not None and len(todo) > bound:
         raise LongRange(len(todo))
-    written = [(c, old, new, x) for c, ch in changes for st, old, new, x in ch if st != "D"]
+    written = [(c, old, new, x) for c, ch in changes for st, old, new, x, mode in ch if st != "D"]
+    links = [(c, x) for c, ch in changes for st, old, new, x, mode in ch if st != "D" and mode == GITLINK]
     is_root = lambda x: x.rsplit("/", 1)[-1] == kbcommon.ROOT_FILE  # noqa: E731
     roots = {}  # object name -> the _root.md paths it is (one blob can be several roots' file)
     for c, old, new, x in written:
@@ -612,7 +616,30 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None):
                 roots.setdefault(f"{rev}:{x}", set()).add(x)
     internal = sorted({root_dir(x) for spec, text in texts(list(roots), cwd).items()
                        if kbcommon._meta(text).get("visibility") == "internal" for x in roots[spec]})
+    pdir = f"kb/{kbcommon.POINTERS_DIR}/"
+    is_pointer = lambda x: x.startswith(pdir) and x.endswith(".md") and "/" not in x[len(pdir):]  # noqa: E731
+    pointers = {}  # object name -> the pointer paths it is
+    for c, old, new, x in written:
+        if is_pointer(x):
+            pointers.setdefault(new, set()).add(x)
+    for rev, paths in ((tip, tree_files(tip, cwd) if tip else []), (proj, files)):
+        for x in paths or []:
+            if is_pointer(x):
+                pointers.setdefault(f"{rev}:{x}", set()).add(x)
+    ptext = texts(list(pointers), cwd)
+    # no `visibility` line counts as internal, as kbcommon reads it
+    internal_pointers = {x[len(pdir):-len(".md")]: x for spec, text in ptext.items()
+                         if kbcommon._meta(text).get("visibility", "internal") == "internal" for x in pointers[spec]}
     tree, named, under = [], set(), {}
+    for c, old, new, x in written:
+        if is_pointer(x) and new in ptext and kbcommon._meta(ptext[new]).get("visibility", "internal") == "internal":
+            tree.append(f"commit {name(c)} adds or changes the pointer {x} of an internal root ({x} says visibility: internal)")
+            named.add(x)
+    for c, x in links:
+        if x.startswith("kb/") and x[3:] in internal_pointers:
+            tree.append(f"commit {name(c)} adds or moves the gitlink {x} of the internal root {x[3:]} "
+                        f"(the pointer of {x[3:]} says visibility: internal)")
+            named.add(x)
     for c, old, new, x in written:
         if FORBIDDEN_RE.search(x):
             tree.append(f"commit {name(c)} holds {x}, a path under _private or _cache")
