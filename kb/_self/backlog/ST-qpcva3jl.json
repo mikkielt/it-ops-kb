@@ -91,7 +91,9 @@
         "macOS ~/Applications/WezTerm.app, Windows %LOCALAPPDATA%\\Programs\\WezTerm, Linux x86_64 AppImage under $XDG_DATA_HOME/wezterm (the release's only checksummed per-user Linux file)": "ST-qpcva3jl",
         "a system location or a distribution package": "ST-qpcva3jl"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "macOS ~/Applications/WezTerm.app, Windows %LOCALAPPDATA%\\Programs\\WezTerm, Linux x86_64 AppImage under $XDG_DATA_HOME/wezterm (the release's only checksummed per-user Linux file)",
+      "by": "operator"
     },
     {
       "id": "g2",
