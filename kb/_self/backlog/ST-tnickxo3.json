@@ -2,7 +2,7 @@
   "id": "ST-tnickxo3",
   "kind": "story",
   "title": "land retries a fetch that failed on a transient network error once before it stops",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-tsb23kev",
   "priority": "P3",
   "rank": 0,

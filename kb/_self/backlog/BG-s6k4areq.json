@@ -2,7 +2,7 @@
   "id": "BG-s6k4areq",
   "kind": "bug",
   "title": "selfcheck's host line over both load limits is cut inside its remedy, so the host-load remedy never shows",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-tsb23kev",
   "priority": "P3",
   "rank": 0,

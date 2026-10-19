@@ -2,7 +2,7 @@
   "id": "BG-ifyabjct",
   "kind": "bug",
   "title": "coord.py --url with a malformed host ends in a ValueError or UnicodeError traceback and exit 1",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-tsb23kev",
   "priority": "P3",
   "rank": 0,

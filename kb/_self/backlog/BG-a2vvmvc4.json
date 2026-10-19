@@ -2,7 +2,7 @@
   "id": "BG-a2vvmvc4",
   "kind": "bug",
   "title": "coord.py wait --since with a number past SQLite's integer range ends in an OverflowError traceback, and a served one kills its handler thread",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-tsb23kev",
   "priority": "P2",
   "rank": 0,

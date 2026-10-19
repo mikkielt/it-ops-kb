@@ -2,7 +2,7 @@
   "id": "SP-tsb23kev",
   "kind": "sprint",
   "title": "Sessions steer each other through coord asks, and the orchestrator's chores fail clearly",
-  "status": "planned",
+  "status": "active",
   "goal": "every session and worker knows its session id and how to read, answer and send coord asks; dispatch starts a worker detached and prints its pid and log; land retries a transient fetch failure once; coord, stalled and selfcheck end with a clear message instead of a traceback, a cut line or an unbounded wait; the horizon hook says when the checkout is behind origin/main; the open drafts whose check selects no test get a check that runs; the public home takes main again once the EC armor line is allowed",
   "gates": [
     {

@@ -2,7 +2,7 @@
   "id": "ST-lhtuyih2",
   "kind": "story",
   "title": "Drafts whose check selects a test still to write are re-planned under the no-test-by-default rule",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-tsb23kev",
   "priority": "P2",
   "rank": 0,

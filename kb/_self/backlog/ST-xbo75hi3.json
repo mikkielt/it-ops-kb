@@ -2,7 +2,7 @@
   "id": "ST-xbo75hi3",
   "kind": "story",
   "title": "backlog.py dispatch starts its worker detached and prints the pid and log, so an orchestrator keeps no launcher script of its own",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-tsb23kev",
   "priority": "P3",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "BG-onc6wxd3",
   "kind": "bug",
   "title": "publish refuses a pushed commit that quotes the EC private key armor line, so the public home cannot be updated",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-tsb23kev",
   "priority": "P1",
   "rank": 0,

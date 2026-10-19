@@ -2,7 +2,7 @@
   "id": "BG-mhsmvdrz",
   "kind": "bug",
   "title": "stalled and selfcheck have no total deadline on their forge reads, so a slow forge holds them for minutes",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4fawjprq",
   "sprint": "SP-tsb23kev",
   "priority": "P3",
