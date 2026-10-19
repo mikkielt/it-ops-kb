@@ -1,0 +1,47 @@
+{
+  "id": "ST-kmgwsjto",
+  "kind": "story",
+  "title": "kbmon heads its view and status answer with one line of what needs the operator",
+  "status": "draft",
+  "sprint": "SP-2uljwgho",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "mon_needs builds from one snapshot the list of what waits on the operator: each open operator gate (sprint and gate), each blocked sprint (active with items left and none ready), a refused delivery, each real orphan, disk under 10% free and a checkout that cannot fast-forward with why; the text view prints it as one needs you line under the header (needs you: nothing when empty), and kbmon --status all starts with the same line",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile\nk=lambda *a:s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,timeout=180,env=dict(os.environ,COLUMNS='400'))\nsnap=json.loads(k('--json').stdout);P=snap['panels']\nfor n in ('sprint','querylog','sessions','host'):P[n]={'state':'ok','seconds':0.1,'data':P[n].get('data') or {}}\nsp=P['sprint']['data'];sp['sprints']=[{'id':'SP-aaaaaaaa','state':'active','title':'A blocked plant sprint','items':{'todo':2},'next':None,'next_title':None,\n    'open':[{'id':'ST-bbbbbbbb','title':'Plant item','status':'todo'}],'done_at':[],'waiting':[{'item':'ST-bbbbbbbb','gate':'g-plant'}]}]\nsp['fast_forward']={'can':False,'why':'2 tracked files with local changes: README.md, AGENTS.md'};sp['behind']=4;sp['source']='origin/main';sp['landings']=[]\nP['querylog']['data']['last_delivery']={'outcome':'refused','why':'gate lint failed','when':'2026-10-19T08:00:00Z'}\nP['sessions']['data']['procs']=[{'pid':4242,'age_s':7200,'class':'orphan','checkout':'wt9','session':None,'item':None}]\nP['host']['data']['disk']={'free_bytes':5*10**9,'total_bytes':100*10**9,'free_pct':5.0}\nf=os.path.join(tempfile.mkdtemp(),'s.json');json.dump(snap,open(f,'w'))\nonce=k('--once','--from-snapshot',f).stdout.splitlines();st=k('--status','all','--from-snapshot',f).stdout.splitlines()\nnl=[l for l in once[:6] if l.lower().startswith('needs you')];print(nl[:1],st[:1])\nok=len(nl)==1 and all(w in nl[0] for w in ('g-plant','blocked','refused','orphan','disk','fast-forward')) and bool(st) and st[0]==nl[0]\nsys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "mon_needs builds from one snapshot the list of what waits on the operator: each open operator gate (sprint and gate), each blocked sprint (active with items left and none ready), a refused delivery, each real orphan, disk under 10% free and a checkout that cannot fast-forward with why",
+      "check": 0
+    },
+    {
+      "clause": "the text view prints it as one needs you line under the header (needs you: nothing when empty)",
+      "check": 0
+    },
+    {
+      "clause": "kbmon --status all starts with the same line",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/mon_needs.py",
+    "_tools/mon_view.py",
+    "_tools/mon_status.py",
+    "kb/_self/map.csv",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "ST-jof4u6e6",
+    "ST-dhsyyjft"
+  ],
+  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: a live snapshot with a planted waiting gate, a blocked sprint, a refused delivery, an orphan, 5% free disk and a checkout that cannot fast-forward gives no needs you line; --status all starts with the sessions line."
+}

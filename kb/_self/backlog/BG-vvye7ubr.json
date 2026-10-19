@@ -1,0 +1,40 @@
+{
+  "id": "BG-vvye7ubr",
+  "kind": "bug",
+  "title": "A live detached worker or benchmark launcher shows as an orphan in kbmon and backlog.py procs",
+  "status": "draft",
+  "sprint": "SP-razcgjsb",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "bl_procs classes a process whose parent is gone but which leads its own process group (started with start_new_session) and still has a live child as detached, not orphan, so kbmon raises no orphan alert for it and backlog.py procs and selfcheck name no orphan for it; a process left behind with no live child, or in another's group, is still an orphan",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,shutil,signal,subprocess as s,sys,tempfile,time\nos.makedirs('_cache',exist_ok=True);d=tempfile.mkdtemp(prefix='detached-',dir='_cache')\nL=\"import subprocess,time;c=subprocess.Popen(['sleep','90']);time.sleep(90)\"\nM=(\"import subprocess,sys;n=subprocess.DEVNULL;a=subprocess.Popen([sys.executable,'-c',sys.argv[1]],start_new_session=True,stdout=n,stderr=n);\"\n   \"b=subprocess.Popen(['sleep','90'],stdout=n,stderr=n);print(a.pid,b.pid)\")\ndet,orph=[int(x) for x in s.run([sys.executable,'-c',M,L],cwd=d,capture_output=True,text=True).stdout.split()];ok=False\ntry:\n    time.sleep(1.5)\n    P=json.loads(s.run([sys.executable,'_tools/kbmon.py','--json','--panel','sessions'],capture_output=True,text=True,timeout=120).stdout)['panels']['sessions']['data']['procs']\n    k={p['pid']:p['class'] for p in P};print('detached launcher',k.get(det),'plain orphan',k.get(orph))\n    ok=k.get(det)=='detached' and k.get(orph)=='orphan'\nfinally:\n    for f in (lambda:os.killpg(det,signal.SIGKILL),lambda:os.kill(orph,signal.SIGKILL)):\n        try:f()\n        except OSError:pass\n    shutil.rmtree(d,ignore_errors=True)\nsys.exit(0 if ok else 1)"
+    ]
+  },
+  "clauses": [
+    {
+      "clause": "bl_procs classes a process whose parent is gone but which leads its own process group (started with start_new_session) and still has a live child as detached, not orphan, so kbmon raises no orphan alert for it and backlog.py procs and selfcheck name no orphan for it",
+      "check": 0
+    },
+    {
+      "clause": "a process left behind with no live child, or in another's group, is still an orphan",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/bl_procs.py",
+    "kb/_self/backlog.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "ST-gq4q5t4y",
+    "ST-hpbjc2gc"
+  ],
+  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: the repro starts a detached launcher (start_new_session, a live sleep child) and a plain orphan in _cache of the worktree; kbmon --json --panel sessions classes both orphan. Seen live on 2026-10-19: wt32's benchmark launcher pid (parent 1, its own group, live children) raised the orphan alert. end_orphans keeps ending a worker's leftovers after the worker exits; this bug changes the class only."
+}

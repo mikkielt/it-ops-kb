@@ -1,0 +1,47 @@
+{
+  "id": "ST-lgsiwdo4",
+  "kind": "story",
+  "title": "kbmon breaks today's cost down by sprint, session and model",
+  "status": "draft",
+  "sprint": "SP-2uljwgho",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the querylog panel's usage_today also gives the day's dollars by model, by session (its s- label) and by sprint (the sprint of the item a session's work window names, none outside one), and kbmon --status cost prints the top three of each with their dollars and gives them as facts by_model, by_session and by_sprint",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import datetime,json,os,subprocess as s,sys,tempfile,uuid\nH=tempfile.mkdtemp();sp=os.path.join(H,'querylog','spool');os.makedirs(sp)\nnow=datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.000Z')\ndef row(sid,model,n):return {'id':uuid.uuid4().hex,'ts':now,'surface':'usage','v':1,'session_id':sid,'prompt_id':uuid.uuid4().hex,'reader':1,\n    'usage':{'main':{model:{'requests':1,'in':n,'cw':0,'cw1h':0,'cr':0,'out':n}},'start':0,'steps':[]}}\nids=[]\nfor m,n in (('claude-opus-5-5',100000),('claude-sonnet-5-5',50000)):\n    sid=str(uuid.uuid4());ids.append(sid);open(os.path.join(sp,sid+'.jsonl'),'w').write(json.dumps(row(sid,m,n))+'\\n')\ne=dict(os.environ,CLAUDE_PLUGIN_DATA=H,CLAUDE_PLUGIN_ROOT=os.getcwd())\no=s.run([sys.executable,'_tools/kbmon.py','--status','cost','--json'],capture_output=True,text=True,env=e,timeout=120).stdout\nj=json.loads(o);f=j['facts'];print(j['lines'],f)\nbm,bs,bp=f.get('by_model') or {},f.get('by_session') or {},f.get('by_sprint') or {}\nok=(set(bm)=={'claude-opus-5-5','claude-sonnet-5-5'} and len(bs)==2 and all(str(x).startswith('s-') for x in bs) and bool(bp)\n    and abs(sum(bm.values())-f['usd'])<0.01 and abs(sum(bp.values())-f['usd'])<0.01 and not any(i in o for i in ids)\n    and any('by model' in l for l in j['lines']) and any('by sprint' in l for l in j['lines']))\nsys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the querylog panel's usage_today also gives the day's dollars by model, by session (its s- label) and by sprint (the sprint of the item a session's work window names, none outside one)",
+      "check": 0
+    },
+    {
+      "clause": "kbmon --status cost prints the top three of each with their dollars and gives them as facts by_model, by_session and by_sprint",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/ql_report.py",
+    "_tools/mon_querylog.py",
+    "_tools/mon_status.py",
+    "kb/_self/usage.md",
+    "kb/_self/querylog.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "ST-kbc6szhc",
+    "ST-c3d3rijw",
+    "ST-e5fdgjk4",
+    "ST-njsgt56c",
+    "ST-kmgwsjto"
+  ],
+  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: a planted query log home with two sessions' usage rows of two models gives one total line ('Cost today: $3.00 over 2 usage rows') and no by_model, by_session or by_sprint facts."
+}

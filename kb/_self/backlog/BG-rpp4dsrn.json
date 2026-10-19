@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kbmon's text view drops a panel's own reason: an absent coord store reads 'no mon_coord.py'",
   "status": "draft",
+  "sprint": "SP-kgvbpjhd",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -14,11 +15,26 @@
       "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=120);p.wall=time.time()-t0\n    if p.returncode not in (0,1): print('kbmon exit',p.returncode,p.stderr[-300:]);sys.exit(1)\n    return p\nst=os.path.join(tempfile.mkdtemp(),'none.sqlite')\np=k('--once','--panel','coord','--store',st)\nprint(p.stdout[:300]);sys.exit(1 if 'no mon_coord.py' in p.stdout else 0)"
     ]
   },
+  "clauses": [
+    {
+      "clause": "the text view prints the reason a panel gives for a state other than ok (an absent store names the store, an unreachable server names the refusal)",
+      "check": 0
+    },
+    {
+      "clause": "says 'no mon_<name>.py' only when the module is missing",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/mon_view.py",
     "_tools/mon_base.py",
     "_tools/mon_coord.py",
-    "kb/_self/monitoring.md"
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "BG-qpcct4ps"
   ],
   "relates_to": [
     "BG-qpcct4ps"
@@ -26,5 +42,5 @@
   "links": [
     "parked: SP-5gph7fh6 review"
   ],
-  "notes": "SP-5gph7fh6 review: the view's reason() ignores data.reason, so mon_coord's absent and timeout reasons are lost. The reviewer asked ST-q4qqiw2w g1 to change to BG-qpcct4ps's fix (a state in mon_base) with the view printing data.reason; fix the two together."
+  "notes": "SP-5gph7fh6 review: the view's reason() ignores data.reason, so mon_coord's absent and timeout reasons are lost. The reviewer asked ST-q4qqiw2w g1 to change to BG-qpcct4ps's fix (a state in mon_base) with the view printing data.reason; fix the two together. Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: an absent coord store reads 'coord  absent  0.0s  — no mon_coord.py'."
 }

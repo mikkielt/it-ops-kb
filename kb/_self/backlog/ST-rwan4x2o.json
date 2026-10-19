@@ -1,0 +1,46 @@
+{
+  "id": "ST-rwan4x2o",
+  "kind": "story",
+  "title": "Every kbmon surface prints the same needs you line and session lines",
+  "status": "draft",
+  "sprint": "SP-kgvbpjhd",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the needs you line and the session lines come from mon_needs and mon_sessions alone, so --once, the live view, kbmon --status, the kb_monitor_status tool and the kbmon pane (which runs --once) print the same text; the receipt's line ends with the needs you count and the command that prints it, and its fingerprint still moves only with the alerts",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,re,subprocess as s,sys,tempfile\nk=lambda *a:s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,timeout=180,env=dict(os.environ,COLUMNS='400'))\nsnap=json.loads(k('--json').stdout);P=snap['panels']\nfor n in ('sprint','querylog','sessions','host'):P[n]={'state':'ok','seconds':0.1,'data':P[n].get('data') or {}}\nsp=P['sprint']['data'];sp['sprints']=[{'id':'SP-aaaaaaaa','state':'active','title':'A plant sprint','items':{'todo':2},'next':'ST-bbbbbbbb','next_title':'Plant item',\n    'open':[{'id':'ST-bbbbbbbb','title':'Plant item','status':'todo'}],'done_at':[],'waiting':[{'item':'ST-bbbbbbbb','gate':'g-plant'}]}]\nP['querylog']['data']['last_delivery']={'outcome':'refused','why':'gate lint failed','when':'2026-10-19T08:00:00Z'}\nP['sessions']['data']['sessions']=[{'label':'s-1a2b3c','role':'worker','item':'ST-bbbbbbbb','item_title':'Plant item','sprint':'SP-aaaaaaaa','sprint_title':'A plant sprint',\n    'step':'work','started':'2026-10-19T07:00:00Z','last_activity':'2026-10-19T07:40:00Z','spend_usd':0.5}]\nd=tempfile.mkdtemp();f=os.path.join(d,'a.json');json.dump(snap,open(f,'w'))\nsp['sprints'][0]['waiting'][0]['gate']='g-other';g=os.path.join(d,'b.json');json.dump(snap,open(g,'w'))\nonce=k('--once','--from-snapshot',f).stdout;st=k('--status','all','--from-snapshot',f).stdout.splitlines();ses=k('--status','sessions','--from-snapshot',f).stdout\nra=json.loads(k('--receipt','--from-snapshot',f).stdout);rb=json.loads(k('--receipt','--from-snapshot',g).stdout)\nsys.path.insert(0,'_tools');import kb_mcp\nmcp=kb_mcp.kb_monitor_status({'topic':'all'}).splitlines();live=k('--status','all').stdout.splitlines()\nnl=[l for l in once.splitlines() if l.lower().startswith('needs you')]\nsrow=[l.strip() for l in ses.splitlines() if re.search(r'\\bs-[0-9a-f]{6}\\b',l)]\nprint(nl[:1],st[:1],ra['line'],mcp[:1],live[:1],srow)\nok=(len(nl)==1 and st[:1]==nl and 'needs you' in ra['line'].lower() and ra['fingerprint']==rb['fingerprint']\n    and mcp[:1]==live[:1] and mcp[0].lower().startswith('needs you') and len(srow)==1 and srow[0] in once)\nsys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the needs you line and the session lines come from mon_needs and mon_sessions alone, so --once, the live view, kbmon --status, the kb_monitor_status tool and the kbmon pane (which runs --once) print the same text",
+      "check": 0
+    },
+    {
+      "clause": "the receipt's line ends with the needs you count and the command that prints it",
+      "check": 0
+    },
+    {
+      "clause": "its fingerprint still moves only with the alerts",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/mon_receipt.py",
+    "_tools/mon_view.py",
+    "_tools/mon_status.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "ST-kmgwsjto",
+    "ST-7m6awnoc"
+  ],
+  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: with a planted waiting gate, a refused delivery and a sessions entry, --once has no needs you line, --status all and kb_monitor_status start with the sessions line, the receipt names only the alerts and no line carries the session label."
+}

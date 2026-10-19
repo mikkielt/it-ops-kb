@@ -1,0 +1,63 @@
+{
+  "id": "ST-njsgt56c",
+  "kind": "story",
+  "title": "kbmon shows each Claude Code session as one short label in every panel, not the all-zero placeholder",
+  "status": "draft",
+  "sprint": "SP-razcgjsb",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "coord's session keys and holders, the coord events' session fields, the log panel's coord fields and the coord status answer show each session id as s- and the first six hex characters of its SHA-256, computed before redaction so the raw id is never printed and one session has one label in every panel; every other string still passes redact.redact, so a secret planted in a coord holder or field is still replaced",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,re,subprocess as s,sys,tempfile,uuid\nsys.path.insert(0,'_tools');import kbcommon\nst=os.path.join(tempfile.mkdtemp(),'c.sqlite')\ndef c(*x):return s.run([sys.executable,'_tools/coord.py','--store',st,*x],capture_output=True,text=True).returncode==0\na,b=str(uuid.uuid4()),str(uuid.uuid4())\nassert c('claim','session/'+a,'--ttl','600','--holder',a) and c('claim','session/'+b,'--ttl','600','--holder',b)\nassert c('post','--kind','intent','--field','session='+a,'--field','item=ST-aaaaaaaa')\nP=['-----BEGIN '+'PRIVATE KEY-----','AKIA'+'Q'*16,'gh'+'p_'+'a'*36,'github'+'_pat_'+'b'*22,'gl'+'pat-'+'c'*20,'gl'+'rt-'+'d'*20,'xo'+'xb-'+'e'*10,'sk'+'-ant-'+'f'*20,'sk'+'-'+'g'*32,'Account'+'Key='+'h'*40,'?si'+'g='+'i'*30,'ey'+'J'+'j'*10+'.ey'+'J'+'k'*10+'.'+'l'*10,'pass'+'word=\"'+'m'*8+'\"']\nassert all(any(re.search(r,p) for r in kbcommon.SECRETS) for p in P)\nP.append('api'+'_key='+'n'*12)\nput=[p for i,p in enumerate(P) if c('claim','p/%d'%i,'--ttl','600','--holder',p) or c('post','--kind','intent','--field','session='+a,'--field','topic='+p)]\ndef k(*x):return s.run([sys.executable,'_tools/kbmon.py',*x,'--store',st],capture_output=True,text=True,timeout=120).stdout\no=k('--json','--panel','coord','--panel','log');t=k('--status','coord')\nj=json.loads(o);hs=[x.get('holder') or '' for x in j['panels']['coord']['data']['claims'] if str(x.get('key')).startswith('session/')]\nlg=json.dumps(j['panels']['log']);both=o+t;leak=[p for p in put if p in both]\nprint('holders',hs,'planted',len(put),'leaked',len(leak),'zero ids',both.count('00000000-0000-0000-0000-000000000000'))\nok=(len(put)>=8 and not leak and a not in both and b not in both and '00000000-0000-0000-0000-000000000000' not in both\n    and len(set(hs))==2 and all(re.fullmatch(r's-[0-9a-f]{6}',h) for h in hs) and all(h in t for h in hs) and any(h in lg for h in hs))\nsys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "coord's session keys and holders, the coord events' session fields, the log panel's coord fields and the coord status answer show each session id as s- and the first six hex characters of its SHA-256, computed before redaction so the raw id is never printed and one session has one label in every panel",
+      "check": 0
+    },
+    {
+      "clause": "every other string still passes redact.redact, so a secret planted in a coord holder or field is still replaced",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/mon_coord.py",
+    "_tools/mon_log.py",
+    "_tools/mon_view.py",
+    "_tools/mon_status.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "ST-gq4q5t4y"
+  ],
+  "gates": [
+    {
+      "id": "g-label",
+      "kind": "blocking",
+      "question": "kbmon shows every Claude Code session id as the all-zero placeholder, because redact.redact replaces every GUID it does not find in the public root. How should a session be named in kbmon's panels and answers? Leak-guard reasoning: a session id is a random version-4 UUID that Claude Code makes for one session; it names no tenant, user, device or directory object, which is what the GUID rule protects. Six hex characters of a one-way hash cannot be turned back into the id and match nothing outside this host's coord store and spool; every other GUID still gets the placeholder and every other string still passes redact.redact, which the item's planted-value check proves.",
+      "options": [
+        "a label s- and the first six hex characters of the SHA-256 of the session id, made before redaction so the raw id is never printed",
+        "the same label from a keyed hash whose key is kept per clone outside the repository",
+        "keep the all-zero placeholder"
+      ],
+      "recommendation": "a label s- and the first six hex characters of the SHA-256 of the session id, made before redaction so the raw id is never printed",
+      "do": {
+        "a label s- and the first six hex characters of the SHA-256 of the session id, made before redaction so the raw id is never printed": "ST-njsgt56c",
+        "the same label from a keyed hash whose key is kept per clone outside the repository": "ST-njsgt56c",
+        "keep the all-zero placeholder": "ST-njsgt56c"
+      },
+      "class": "querylog",
+      "answer": "a label s- and the first six hex characters of the SHA-256 of the session id, made before redaction so the raw id is never printed",
+      "by": "operator"
+    }
+  ],
+  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: the check plants two session leases in a fresh coord store; both holders read 00000000-0000-0000-0000-000000000000 in --json and --status coord (10 all-zero ids), so the two sessions cannot be told apart; 9 of the 14 planted secret shapes enter coord (the rest are refused by coord's id charset) and none leaks today."
+}

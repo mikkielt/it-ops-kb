@@ -1,0 +1,39 @@
+{
+  "id": "ST-hvpdkmit",
+  "kind": "story",
+  "title": "A paid multi run records its plan, done runs and spend where a monitor can read them",
+  "status": "draft",
+  "sprint": "SP-2uljwgho",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bench_multi.progress(manifest, lines, bare, max_usd) gives a run's planned runs per arm, done runs per arm, spend_usd and max_usd, and multi run keeps DIR/progress.json written from it, with its pid and start time, from before its first paid call to its end",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0,'_tools');import bench_multi as b\nm={'agents':[{'n':1},{'n':2},{'n':3}]};L=[{'arm':'kb','cost':1.5},{'arm':'kb','cost':1.5},{'arm':'bare','cost':0.5}]\nf=getattr(b,'progress',None)\nif f is None:print('bench_multi has no progress function');sys.exit(1)\np=f(m,L,bare=True,max_usd=10.0);print(p)\nsys.exit(0 if p['planned']=={'kb':3,'bare':3} and p['done']=={'kb':2,'bare':1} and abs(p['spend_usd']-3.5)<1e-9 and p['max_usd']==10.0 else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "bench_multi.progress(manifest, lines, bare, max_usd) gives a run's planned runs per arm, done runs per arm, spend_usd and max_usd",
+      "check": 0
+    },
+    {
+      "clause": "multi run keeps DIR/progress.json written from it, with its pid and start time, from before its first paid call to its end",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/bench_multi.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "ST-xjtqwdtq",
+    "ST-y53hvh64"
+  ],
+  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: bench_multi has no progress function; a run keeps --max-usd in memory only (Budget) and sandbox.json does not record --bare, so the planned runs per arm and the cap are not on disk. The check calls the function on a planted manifest and result lines; no paid or networked run."
+}

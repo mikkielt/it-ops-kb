@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "kbmon's sessions panel lists dispatch runs from the claims ledger's worker pid and session",
   "status": "draft",
+  "sprint": "SP-razcgjsb",
   "priority": "P3",
   "rank": 0,
   "goal": "the sessions panel lists each dispatch run of this clone (item, worker pid, worker session, alive or ended) from the worker_pid and worker_session dispatch records, so a dead worker shows beside the live ones",
@@ -18,10 +19,15 @@
   "touches": [
     "_tools/mon_sessions.py",
     "kb/_self/monitoring.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "BG-k2yygxwn",
+    "ST-njsgt56c"
   ],
   "links": [
     "parked: SP-5gph7fh6 review"
   ],
-  "notes": "SP-5gph7fh6 review: ST-jokdpvsi read the goal's 'dispatch runs' as headless sessions in worker worktrees; bl_dispatch.py records worker_pid and worker_session per claim and the panel never reads them."
+  "notes": "SP-5gph7fh6 review: ST-jokdpvsi read the goal's 'dispatch runs' as headless sessions in worker worktrees; bl_dispatch.py records worker_pid and worker_session per claim and the panel never reads them. Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: the sessions panel's data has no dispatch key (procs, worktrees, stalled only)."
 }

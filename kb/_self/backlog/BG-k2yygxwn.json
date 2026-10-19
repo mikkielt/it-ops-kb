@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kbmon's sessions panel keys worktrees by directory name, so a same-named worktree shows as the clone",
   "status": "draft",
+  "sprint": "SP-razcgjsb",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -15,9 +16,16 @@
     ]
   },
   "touches": [
-    "_tools/mon_sessions.py"
+    "_tools/mon_sessions.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "ST-gq4q5t4y"
   ],
   "links": [
     "parked: SP-5gph7fh6 review"
-  ]
+  ],
+  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: repro prints {'wt': 'wt'} (two checkouts named wt share one row)."
 }

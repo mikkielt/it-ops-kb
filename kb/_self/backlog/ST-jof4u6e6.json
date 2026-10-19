@@ -1,0 +1,44 @@
+{
+  "id": "ST-jof4u6e6",
+  "kind": "story",
+  "title": "kbmon says why a checkout behind origin/main cannot fast-forward",
+  "status": "draft",
+  "sprint": "SP-2uljwgho",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the sprint panel's data holds fast_forward, {can, why}, for the checkout it reads: can is false when tracked files with local changes are also changed by the commits it is behind, or HEAD holds commits origin/main lacks, and why names the cause with the count of files or commits and up to three paths relative to the clone; kbmon --status sprints says the checkout cannot fast-forward, with why",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,shutil,subprocess as s,sys,tempfile\nt=tempfile.mkdtemp();w=os.path.join(t,'wt');ok=False\nfor n in range(3,60):\n    ch=s.run(['git','diff','--name-only','--diff-filter=M','origin/main~%d'%n,'origin/main'],capture_output=True,text=True).stdout.split()\n    if ch:break\ns.run(['git','worktree','add','-q','--detach',w,'origin/main~%d'%n],check=True,capture_output=True)\ntry:\n    k=lambda *a:s.run([sys.executable,'_tools/kbmon.py',*a,'--root',w],capture_output=True,text=True,timeout=180).stdout\n    clean=json.loads(k('--json','--panel','sprint'))['panels']['sprint']['data'].get('fast_forward') or {}\n    open(os.path.join(w,ch[0]),'a').write('\\nlocal edit\\n')\n    d=json.loads(k('--json','--panel','sprint'))['panels']['sprint']['data'];ff=d.get('fast_forward') or {}\n    st=k('--status','sprints');print(d.get('behind'),clean,ff,ch)\n    ok=clean.get('can') is True and ff.get('can') is False and ch[0] in str(ff.get('why')) and 'cannot fast-forward' in st\nfinally:\n    s.run(['git','worktree','remove','--force',w],capture_output=True);shutil.rmtree(t,ignore_errors=True)\nsys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the sprint panel's data holds fast_forward, {can, why}, for the checkout it reads: can is false when tracked files with local changes are also changed by the commits it is behind, or HEAD holds commits origin/main lacks",
+      "check": 0
+    },
+    {
+      "clause": "why names the cause with the count of files or commits and up to three paths relative to the clone",
+      "check": 0
+    },
+    {
+      "clause": "kbmon --status sprints says the checkout cannot fast-forward, with why",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/mon_sprint.py",
+    "_tools/mon_status.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "BG-pahecn3b"
+  ],
+  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: a throwaway detached worktree 4 commits behind origin/main, clean and then with a local edit to a file the incoming commits change, gives no fast_forward in either case ({{}} {{}}); --status says only 'N commits behind'. Seen on 2026-10-19: the main checkout's local item edits by another session kept it behind with no reason shown."
+}

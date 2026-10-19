@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "load status classes this clone's own processes started by a relative script path as another clone",
   "status": "draft",
+  "sprint": "SP-kgvbpjhd",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -15,9 +16,16 @@
     ]
   },
   "touches": [
-    "_tools/mon_host.py"
+    "_tools/mon_host.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "BG-her5vsbt"
   ],
   "links": [
     "parked: SP-dulvwwjc review"
-  ]
+  ],
+  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: repro fails (python3 _tools/kbmon.py --status is classed another clone)."
 }

@@ -3,7 +3,7 @@
   "kind": "sprint",
   "title": "kbmon puts what needs the operator first, one row per sprint, from one implementation",
   "status": "planned",
-  "goal": "a needs-you line heads the view and the status answer, naming open operator gates, blocked sprints, a refused delivery, real orphans, low disk and a checkout that cannot fast-forward with why; each sprint is one compact row with a short name, state, done of total, percentage and ETA, active first, with the full detail on request; a landing whose item is done, dropped or gone is not shown as in progress; a paid benchmark run shows its run of the planned runs per arm, its spend against the cap and its sandbox disk; today's cost is broken down by sprint, session and model; the live view, --once, --status, the kb_monitor_status tool, the kbmon pane and the receipt show the same summaries from one implementation",
+  "goal": "a needs-you line heads the view and the status answer, naming open operator gates, blocked sprints, a refused delivery, real orphans, low disk and a checkout that cannot fast-forward with why; each sprint is one compact row with a short name, state, done of total, percentage and ETA, active first, with the full detail on request; a landing whose item is done, dropped or gone is not shown as in progress; a paid benchmark run shows its run of the planned runs per arm, its spend against the cap and its sandbox disk; today's cost is broken down by sprint, session and model",
   "gates": [
     {
       "id": "start",
@@ -14,7 +14,9 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
     }
   ]
 }
