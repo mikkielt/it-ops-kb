@@ -21,7 +21,8 @@
     "kb/_self/backlog.md"
   ],
   "links": [
-    "parked: SP-waxgh3kg close"
+    "parked: SP-waxgh3kg close",
+    "parked: SP-7s6uubs7 close"
   ],
-  "notes": "Triage 2026-10-16: its check names a test the pruned suite (D-6kei5o2z) lacks; no planted check yet: land --wait-merge second pass (bl_land.py:2387) needs a worktree + merge-request fixture; reuse decision has no named function to drive on a planted input"
+  "notes": "Triage 2026-10-16: its check names a test the pruned suite (D-6kei5o2z) lacks; no planted check yet: land --wait-merge second pass (bl_land.py:2387) needs a worktree + merge-request fixture; reuse decision has no named function to drive on a planted input SP-7s6uubs7 close: ST-2hooit6y's landing took 43 min: its check (multi fitness, about 12 min) ran at checks, again in the second pass's done, and the sibling checks ran every earlier item's replay checks twice (about 9 min each pass); ST-kuh545eo took 21 min the same way."
 }

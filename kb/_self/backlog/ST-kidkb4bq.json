@@ -1,0 +1,26 @@
+{
+  "id": "ST-kidkb4bq",
+  "kind": "story",
+  "title": "A gate whose options release a coordination claim is classed design, not push",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_authority classes a gate whose only push word is release of a coord claim or a release event (a claim's release, not a software release) as design, so a worker's design choice about claims is provisional, not an operator gate",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, re, shutil, subprocess, tempfile\nsys.path.insert(0, '_tools')\nT = tempfile.mkdtemp()\nB = os.path.join(T, 'bin'); os.mkdir(B)\nopen(os.path.join(B, 'claude'), 'w').write('#!/bin/sh\\nexit 1\\n')\nos.chmod(os.path.join(B, 'claude'), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ['PATH'])\ndef bench(*a):\n    return subprocess.run([sys.executable, '_tools/benchmarks.py', *a], capture_output=True, text=True, env=ENV, timeout=1800)\nimport bl_authority as b\nc = b.derived_class({'touches': ['_tools/bench_multi.py']}, {'id': 'g', 'question': 'What does a replay agent do with the coordination store?', 'options': ['claims research:replay:HOLDER with a claim event, releases it with a release event after its sync', 'claims nothing']})\nassert c == 'design', ('a claim release gate is classed', c)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-7s6uubs7 close"
+  ],
+  "notes": "SP-7s6uubs7 close: three gates (ST-ggsixlo3 claimreplay and plants, ST-kb74yzac g1) were made blocking as push only for the word release; each waited for the operator's answer. bl_authority fails closed on purpose: the change must keep a software release push."
+}

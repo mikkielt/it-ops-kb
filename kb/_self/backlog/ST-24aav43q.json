@@ -1,0 +1,26 @@
+{
+  "id": "ST-24aav43q",
+  "kind": "story",
+  "title": "dispatch's return warns when the worker's report names a choice that no gate on its branch records",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "when a dispatched worker exits, dispatch compares the report's named choices (a 'gate not recorded' or 'choice' line) with the gates on work/<id> and prints a warning naming each unrecorded one, so the orchestrator resumes the worker before the landing instead of finding it by reading",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, re, shutil, subprocess, tempfile\nsys.path.insert(0, '_tools')\nT = tempfile.mkdtemp()\nB = os.path.join(T, 'bin'); os.mkdir(B)\nopen(os.path.join(B, 'claude'), 'w').write('#!/bin/sh\\nexit 1\\n')\nos.chmod(os.path.join(B, 'claude'), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ['PATH'])\ndef bench(*a):\n    return subprocess.run([sys.executable, '_tools/benchmarks.py', *a], capture_output=True, text=True, env=ENV, timeout=1800)\ns = open('_tools/bl_dispatch.py', encoding='utf-8').read()\nassert re.search(r'not recorded|unrecorded', s), 'dispatch does not read the report for unrecorded choices'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-7s6uubs7 close"
+  ],
+  "notes": "SP-7s6uubs7 close: BG-lyifmguf's worker wrote 'Gate not recorded' for two choices; one resume recorded them. The check reads source only."
+}

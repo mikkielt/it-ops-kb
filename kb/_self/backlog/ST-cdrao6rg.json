@@ -23,5 +23,5 @@
   "links": [
     "parked: SP-7s6uubs7 review"
   ],
-  "notes": "Review of SP-7s6uubs7, S2: ST-kuh545eo's notes say the sandbox's query log is off; the goal clause 'or query log' is unmet for the sprint goal and the docs do not say so."
+  "notes": "Review of SP-7s6uubs7, S2: ST-kuh545eo's notes say the sandbox's query log is off; the goal clause 'or query log' is unmet for the sprint goal and the docs do not say so. SP-7s6uubs7 close (retro): planning committed the goal clause 'or query log' while ST-kuh545eo's own notes said the sandbox's query log is off, so no item could carry it; the clause should have been reworded before the start gate."
 }

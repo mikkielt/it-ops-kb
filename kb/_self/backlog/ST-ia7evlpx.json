@@ -1,0 +1,26 @@
+{
+  "id": "ST-ia7evlpx",
+  "kind": "story",
+  "title": "dispatch's return lists the docs selfdoc stale names on the worker's branch, so a missing Self-Reviewed goes back before the landing",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "when a dispatched worker exits, dispatch runs selfdoc.py stale --since the upstream main in the worker's worktree and prints each stale doc, so a worker that reported stale=0 while its branch leaves a doc stale is sent back before land stops at its stale step",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, re, shutil, subprocess, tempfile\nsys.path.insert(0, '_tools')\nT = tempfile.mkdtemp()\nB = os.path.join(T, 'bin'); os.mkdir(B)\nopen(os.path.join(B, 'claude'), 'w').write('#!/bin/sh\\nexit 1\\n')\nos.chmod(os.path.join(B, 'claude'), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ['PATH'])\ndef bench(*a):\n    return subprocess.run([sys.executable, '_tools/benchmarks.py', *a], capture_output=True, text=True, env=ENV, timeout=1800)\ns = open('_tools/bl_dispatch.py', encoding='utf-8').read()\ni = s.index('def cmd_dispatch'); body = s[i:s.index('\\ndef ', i + 1)]\nassert 'stale' in body, 'cmd_dispatch reads no stale docs on the worker branch when the worker exits'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-7s6uubs7 close"
+  ],
+  "notes": "SP-7s6uubs7 close: ST-ggsixlo3's worker reported stale=0, then land stopped at step stale on kb/_self/code.md (its three sibling workers had named it in Self-Reviewed). The check reads source only: planning replaces it with a planted worker branch."
+}

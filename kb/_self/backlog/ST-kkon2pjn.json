@@ -1,0 +1,26 @@
+{
+  "id": "ST-kkon2pjn",
+  "kind": "story",
+  "title": "land retries a fetch that failed on a transient remote error once before it stops at step fetch",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "land's fetch step runs under the bounded network helper (land_git_network) with one retry, so a one-off authentication or network refusal does not stop a landing that a second try would pass",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, re, shutil, subprocess, tempfile\nsys.path.insert(0, '_tools')\nT = tempfile.mkdtemp()\nB = os.path.join(T, 'bin'); os.mkdir(B)\nopen(os.path.join(B, 'claude'), 'w').write('#!/bin/sh\\nexit 1\\n')\nos.chmod(os.path.join(B, 'claude'), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ['PATH'])\ndef bench(*a):\n    return subprocess.run([sys.executable, '_tools/benchmarks.py', *a], capture_output=True, text=True, env=ENV, timeout=1800)\ns = open('_tools/bl_land.py', encoding='utf-8').read()\ni = s.index('ops_mark(\"fetch\")')\nassert 'land_git(root, \"fetch\"' not in s[i:i + 400], 'the first fetch of land runs without the network retry'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-7s6uubs7 close"
+  ],
+  "notes": "SP-7s6uubs7 close: ST-2hooit6y's land stopped at step fetch with 'Permission denied (publickey)'; a plain git fetch seconds later passed and the rerun landed. The check reads source only."
+}
