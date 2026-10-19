@@ -2,7 +2,7 @@
   "id": "ST-tdypjvev",
   "kind": "story",
   "title": "Load status groups the CPU consumers by kind and clone with a cause and a remedy each",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-dulvwwjc",
   "priority": "P1",
@@ -95,5 +95,18 @@
     }
   ],
   "notes": "Plan 2026-10-19: premise: --status load exits 2 and the host panel has no process data. %CPU differs by platform (Linux procps: CPU time over the process's life; macOS: a decaying recent average; the goal research story confirms it), so the answer says which it shows. Windows has no ps: the groups are unsupported there. The remedies are fixed text, e.g. kbmon: a longer --interval or fewer live views; fseventsd: file churn in the clone and its worktrees, so fewer parallel workers and pruned worktrees; kb-tools: a long pack or index build, see stalled; claude: fewer parallel sessions; tests: one whole-suite run at a time (the host lock).",
-  "claimed_by": "orch-r31"
+  "evidence": {
+    "commit": "662682d2c3f8cd7d1b64b9bf67329e1d0c71a0b5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,atexit,shutil\ndef fail(m):\n    print(m);sys.exit(1)\nT=tempfile.mkdtemp();atexit.register(shutil.rmtree,T,True)\nR=os.getcwd();X='/srv/other-clone'\ntok='gl'+'pat-'+'q'*22\nrows=[(101,35.0,'/usr/bin/python3 %s/_tools/kbmon.py --interval 5'%R),(102,20.0,'/usr/sbin/fseventsd'),\n (103,15.0,'python3 %s/_tools/rag.py pack --key %s'%(R,tok)),(104,12.0,'claude -p --model sonnet'),\n (105,8.0,'python3 -m pytest %s/_tools/test_x.py'%R),(106,7.5,'python3 %s/_tools/tests.py'%R),\n (107,3.0,'/Applications/Other.app/Contents/MacOS/Other'),(108,6.0,'python3 %s/_tools/backlog.py next'%X)]\nopen(os.path.join(T,'listing'),'w').write(''.join('%d %.1f %s\\n'%r for r in rows))\nopen(os.path.join(T,'ps'),'w').write('#!/bin/sh\\ncat \"%s\"\\n'%os.path.join(T,'listing'));os.chmod(os.path.join(T,'ps'),0o755)\nE=dict(os.environ,PATH=T+os.pathsep+os.environ['PATH'])\ndef run(*a):\n    p=s.run([sys.executable,'_tools/kbmon.py','--status','load','--timeout','30',*a],capture_output=True,text=True,env=E,timeout=120)\n    if p.returncode not in (0,1): fail('exit %s: %s'%(p.returncode,(p.stderr or p.stdout)[-300:]))\n    return p.stdout\nout=run()\nfor w in ('kbmon','fseventsd','claude','test','35','20','15.5','12','cores'):\n    if w not in out: fail('missing %r in:\\n%s'%(w,out[-800:]))\nif out.find('kbmon')>out.find('fseventsd'): fail('groups not in CPU order:\\n'+out[-800:])\nfor w in (tok,'--interval','--model','/srv/other-clone','Other.app'):\n    if w in out: fail('a command line part reached the output: %r'%w)\ntry: j=json.loads(run('--json'))\nexcept ValueError: fail('--json is not JSON')\ng={(x.get('kind'),x.get('clone')):x for x in j.get('groups',[])}\nwant={'kbmon':35.0,'fseventsd':20.0,'claude':12.0,'tests':15.5}\nfor k,v in want.items():\n    hit=[x for (kk,_),x in g.items() if kk==k]\n    if not hit or abs(sum(x.get('cpu',0) for x in hit)-v)>0.05: fail('group %s: %r'%(k,hit))\nkt={c:x.get('cpu') for (k,c),x in g.items() if k=='kb-tools'}\nif kt.get('this')!=15.0 or kt.get('other')!=6.0: fail('kb-tools by clone: %r'%kt)\nif any(not x.get('cause') or not x.get('remedy') for x in g.values()): fail('a group with no cause or remedy: %r'%list(g.values()))\nif tok in json.dumps(j): fail('the planted key reached the JSON')\nprint('ok: load grouped by kind and clone in CPU order, cause and remedy each, no command line printed')\n"
+        ],
+        "exit": 0,
+        "sha256": "995df45ede6d0674"
+      }
+    ]
+  }
 }
