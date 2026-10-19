@@ -2,7 +2,7 @@
   "id": "ST-hur6y3hj",
   "kind": "story",
   "title": "multi fitness proves deduplication and structured coordination with scripted agents: research and coord cases under coord shared and isolated",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-giqleoy2",
   "sprint": "SP-p46hofrg",
   "priority": "P1",
@@ -58,11 +58,13 @@
     "_tools/bench_replay.py",
     "_tools/bench_multi.py",
     "_tools/benchmarks.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
   ],
   "depends_on": [
     "ST-kx6qdtkv",
     "ST-prrja362"
   ],
-  "notes": "Premise run 2026-10-19 on 7079b184a: multi fitness --case is unknown (exit 2). bench_replay.py's research agent today claims research:replay:HOLDER by hand and posts its own claim and release events, so the fitness pass reads hand-posted events, not the coord path real agents take (the ST-eo3a7erb finding). Evidence 2026-10-19 on 59f956f4d: a clean multi run research --replay (and mixed, and coord) is named a problem by multi check: 'lost claim: research:TOPIC:* is still held by agentN (coord store coord/coord.sqlite) though every agent ended'. The scripted research agent's coord.py dedup claims the whole-topic key and bench_replay.py never releases that claim (only its own research:replay:HOLDER key)."
+  "notes": "Premise run 2026-10-19 on 7079b184a: multi fitness --case is unknown (exit 2). bench_replay.py's research agent today claims research:replay:HOLDER by hand and posts its own claim and release events, so the fitness pass reads hand-posted events, not the coord path real agents take (the ST-eo3a7erb finding). Evidence 2026-10-19 on 59f956f4d: a clean multi run research --replay (and mixed, and coord) is named a problem by multi check: 'lost claim: research:TOPIC:* is still held by agentN (coord store coord/coord.sqlite) though every agent ended'. The scripted research agent's coord.py dedup claims the whole-topic key and bench_replay.py never releases that claim (only its own research:replay:HOLDER key).",
+  "claimed_by": "orch-r61"
 }
