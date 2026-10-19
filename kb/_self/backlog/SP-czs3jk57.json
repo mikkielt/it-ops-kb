@@ -1,0 +1,20 @@
+{
+  "id": "SP-czs3jk57",
+  "kind": "sprint",
+  "title": "Each session, agent and sprint names its operator: a pseudonymous operator id from the Claude login",
+  "status": "planned",
+  "goal": "kbwho.py prints the operator's pseudonymous id, where it came from and the session's role, read from KB_OPERATOR, else the email of claude auth status, else git config user.email, mapped to an alias in the uncommitted _private/operators.json, and prints the email only with --show-email; backlog.py records the operator id as a new sprint's creator, beside a claim's claimed_by and on a gate the operator answers, and set SP --owner records a sprint's owner; dispatch gives each worker KB_OPERATOR and KB_ROLE=worker, and the worker's brief and its dispatch record name both; the coord hook's intents carry the operator id and kbmon's sessions panel shows it; coord.py serve refuses a key file named like an email address, and coord.py list names the operator of each served claim",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
