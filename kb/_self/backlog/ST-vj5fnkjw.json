@@ -69,7 +69,7 @@
       },
       "class": "design",
       "answer": "a team operator holds as TEAM/OPERATOR/HOLDER; a flat operator's holder stays as sent; a flat operator is refused another team's team/NAME/ keys like any caller outside that team",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): a key file in a subdirectory of --keys is not read, so its caller gets 401 (exit 2). ",

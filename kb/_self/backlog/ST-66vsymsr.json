@@ -1,0 +1,25 @@
+{
+  "id": "ST-66vsymsr",
+  "kind": "story",
+  "title": "The kbgit.py docstring and the commit-msg hook header name the KB-Teams trailer",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbgit.py's module docstring and .githooks/commit-msg list KB-Teams beside KB-Topics, KB-Sources-* and KB-Answers",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsrc = open(\"_tools/kbgit.py\", encoding=\"utf-8\").read().split('\"\"\"', 2)[1]\nhook = open(\".githooks/commit-msg\", encoding=\"utf-8\").read()\nmiss = [n for n, t in ((\"kbgit.py docstring\", src), (\".githooks/commit-msg\", hook)) if \"KB-Teams\" not in t]\nif miss:\n    print(\"check failed: KB-Teams not named in\", miss); sys.exit(1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbgit.py",
+    ".githooks/commit-msg"
+  ],
+  "links": [
+    "parked: SP-46k7sw57 review"
+  ]
+}
