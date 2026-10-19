@@ -2,7 +2,7 @@
   "id": "BG-hdgfm7rc",
   "kind": "bug",
   "title": "The report divides a bare research twin's tokens and USD by the kb agent's verified facts, so its per-verified-fact figure measures nothing the twin did",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-giqleoy2",
   "sprint": "SP-3pvz2noj",
   "priority": "P1",
@@ -43,5 +43,18 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "orch-r32"
+  "evidence": {
+    "commit": "0c18d108c8788128ccb6b7bb2e46ff23be78d558",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re\nt = open('kb/_self/reports/benchmarks.md', encoding='utf-8').read()\ns = t[t.index('### Agents at once against agents one at a time'):]\nassert 'facts_matched' in s or 'facts matched' in s, 'the multi comparison never shows a twin\\'s own matched facts'\nassert re.search(r'not comparable', s), 'a bare twin\\'s per-verified-fact figure divides by the kb agent\\'s count with no label'\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
