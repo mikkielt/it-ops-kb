@@ -52,6 +52,23 @@
   "depends_on": [
     "ST-usolafmz"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "The item's first check cannot pass as written: it truncates kb/team-b/_root.md (open(p,'w').write(open(p).read()...) empties the file before it is read, so the root names no team) and appends to kb/public/intune/win32-apps.md, a file the planted public root does not hold (it holds planted/win32-packaging.md). How is the check corrected?",
+      "options": [
+        "correct the check: read _root.md before writing it, and append to planted/win32-packaging.md",
+        "make a root without a team report its own name as team, so the check passes unchanged (public would need a team too)"
+      ],
+      "recommendation": "correct the check: read _root.md before writing it, and append to planted/win32-packaging.md",
+      "do": {
+        "correct the check: read _root.md before writing it, and append to planted/win32-packaging.md": "ST-smr7z3vn",
+        "make a root without a team report its own name as team, so the check passes unchanged (public would need a team too)": "ST-smr7z3vn"
+      },
+      "class": "push"
+    }
+  ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19): a commit to a planted team root gets KB-Topics only. KB-* trailers are a format other tools parse: no new test, the check is the hook run in a planted clone. ",
   "claimed_by": "orch-r37"
 }
