@@ -712,24 +712,56 @@ def _url_host_path(url):
     return host, re.sub(r"\.git$", "", path.strip("/"))
 
 
+def _raw_internal_roots():
+    """{(name, id_prefix)} of the internal roots read straight from their ROOT_FILE front matter, with no registry:
+    every kb/<name>/ and KB_ROOTS directory that has one. A file that cannot be read is skipped; a malformed value is
+    taken as written when it is a root name or prefix, so a registry that does not load still hides these names."""
+    dirs = [os.path.join(KB_DIR, d) for d in os.listdir(KB_DIR) if not d.startswith((".", "_"))]
+    dirs += [os.path.abspath(os.path.expanduser(d)) for d in os.environ.get("KB_ROOTS", "").split(os.pathsep) if d.strip()]
+    out = set()
+    for d in dirs:
+        try:
+            with open(os.path.join(d, ROOT_FILE), encoding="utf-8", errors="replace") as fh:
+                meta = _meta(fh.read())
+        except OSError:
+            continue
+        if meta.get("visibility", "internal") == "public":
+            continue
+        name, prefix = meta.get("root", ""), meta.get("id_prefix", "")
+        out.add((name if re.fullmatch(r"[a-z0-9][a-z0-9-]*", name) and name != "kb" else "",
+                 prefix if PREFIX.fullmatch(prefix) and prefix not in RESERVED_PREFIXES else ""))
+    return out
+
+
 def _private_patterns():
     """[(kind, compiled pattern)] for the internal roots and pointers the registry holds (served, missing or unsound):
-    their source ids by prefix, the hosts and paths of their pointers' urls, and their qualified paths. None of it
-    raises: a registry that cannot be read gives no pattern."""
+    their source ids by prefix, the hosts and paths of their pointers' urls, and their qualified paths. A registry
+    that does not load (RootError: two roots share a prefix) is replaced by the roots' ROOT_FILEs read directly, so
+    the scan never passes a name for want of a registry; none of it raises."""
+    internal = set()
     try:
         _load()
-        files = tuple((f, os.stat(f).st_mtime_ns) for f in _pointer_files())
         internal = {(r.name, r.id_prefix) for r in _ROOTS if r.visibility != "public"}
         internal |= {(m.name, m.id_prefix) for m in _MISSING if m.visibility != "public"}
-        urls = []
-        for f, _ in files:
+    except (RootError, OSError):
+        try:
+            internal = _raw_internal_roots()
+        except OSError:
+            pass
+    files, urls = (), []
+    try:
+        files = tuple((f, os.stat(f).st_mtime_ns) for f in _pointer_files())
+    except OSError:
+        pass
+    for f, _ in files:
+        try:
             with open(f, encoding="utf-8", errors="replace") as fh:
                 meta = _meta(fh.read())
-            if meta.get("visibility", "internal") != "public":
-                internal.add((_pointer_stem(f), meta.get("id_prefix", "")))
-                urls.append(meta.get("url", ""))
-    except (OSError, RootError):
-        return []
+        except OSError:
+            continue
+        if meta.get("visibility", "internal") != "public":
+            internal.add((_pointer_stem(f), meta.get("id_prefix", "")))
+            urls.append(meta.get("url", ""))
     key = (frozenset(internal), tuple(urls), files)
     if key not in _PRIVATE:
         names = sorted({n for n, _ in internal if n}, key=lambda n: (-len(n), n))
