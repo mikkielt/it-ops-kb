@@ -2,7 +2,7 @@
   "id": "ST-yywctl35",
   "kind": "story",
   "title": "Research sprint goal: Operator identities stay pseudonymous where they leave the clone: the KB-Operator trailer, publish and export guards",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yjugq5c2",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Open questions: (1) how the OpenTelemetry Python SDK's Resource.create merges OTEL_RESOURCE_ATTRIBUTES and OTEL_SERVICE_NAME, and how a resource built without that detector is made (the official opentelemetry-python docs), for the kbmon export item; (2) what git documents for a commit's author and committer identity when history is rewritten (git-commit-tree, git-filter-branch or git-filter-repo docs, .mailmap in gitmailmap), for the open author-email gate's options; (3) the noreply address forms GitHub documents for commit emails, so the publish message scan allows them."
+  "notes": "Open questions: (1) how the OpenTelemetry Python SDK's Resource.create merges OTEL_RESOURCE_ATTRIBUTES and OTEL_SERVICE_NAME, and how a resource built without that detector is made (the official opentelemetry-python docs), for the kbmon export item; (2) what git documents for a commit's author and committer identity when history is rewritten (git-commit-tree, git-filter-branch or git-filter-repo docs, .mailmap in gitmailmap), for the open author-email gate's options; (3) the noreply address forms GitHub documents for commit emails, so the publish message scan allows them.",
+  "claimed_by": "orch-r39",
+  "operator": "op-5145561d"
 }
