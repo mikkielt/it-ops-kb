@@ -1,0 +1,24 @@
+{
+  "id": "ST-dhryjmk4",
+  "kind": "story",
+  "title": "A goal clause that says a copy is never written gets a planted case for each command that writes",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Planning maps a goal clause of the form \"X is never written\" or \"read-only\" to a planted case for each command of the touched tool that writes (fetch, fetch --pin, push, add, add-remote), not only the one the item adds (SP-mguax5m3 review: ST-gbyfjgmq's check covered fetch in a plugin host while kbroot.py push still committed in the plugin copy, BG-syg4awkk)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; s = open('.claude/skills/kb-sprint/SKILL.md').read(); i = s.find('## plan'); j = s.find('## start'); sys.exit(0 if 'each command that writes' in s[i:j] else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-mguax5m3 close"
+  ]
+}

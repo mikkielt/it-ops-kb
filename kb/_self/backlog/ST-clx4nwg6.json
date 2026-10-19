@@ -1,0 +1,24 @@
+{
+  "id": "ST-clx4nwg6",
+  "kind": "story",
+  "title": "A goal clause that bounds a tool's time gets a planted slow transport, not only an absent remote",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Planning maps a goal clause that bounds a git command's time to a planted case where the transport hangs (a GIT_SSH_COMMAND that sleeps) and asserts no child outlives the bound, beside the absent-remote case (SP-mguax5m3 review: ST-7zojvqwc's check used only an absent remote, and a hung transport stayed with ppid 1, BG-osk7hyua)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; s = open('.claude/skills/kb-sprint/SKILL.md').read(); i = s.find('## plan'); j = s.find('## start'); sys.exit(0 if 'slow transport' in s[i:j] else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-mguax5m3 close"
+  ]
+}

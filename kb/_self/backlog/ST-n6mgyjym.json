@@ -1,0 +1,24 @@
+{
+  "id": "ST-n6mgyjym",
+  "kind": "story",
+  "title": "An item whose tool makes commits in the clone runs kblane on the commit it makes",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Planning gives an item whose tool makes a commit in the kb clone (a gitlink bump, a pointer, a generated file) a check that runs kblane.py on that commit and asserts its lane, so a commit the pre-push hook routes through a merge request is found before the landing (SP-mguax5m3 review: kbroot.py push's gitlink bump is code-lane, BG-qgulx5sj)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; s = open('.claude/skills/kb-sprint/SKILL.md').read(); i = s.find('## plan'); j = s.find('## start'); sys.exit(0 if 'kblane' in s[i:j] else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-mguax5m3 close"
+  ]
+}

@@ -22,5 +22,5 @@
   "links": [
     "parked: SP-bhzxxhub close"
   ],
-  "notes": "Retrospective of SP-bhzxxhub: the plan committed ST-apmeih5l with five checks that all passed on the base, one an eval comparison against a single area's row (max 5) instead of the summed figure repro pick reads (24); the start gate was approved without a note, and the orchestrator found and tightened it only at the run's precheck."
+  "notes": "Retrospective of SP-bhzxxhub: the plan committed ST-apmeih5l with five checks that all passed on the base, one an eval comparison against a single area's row (max 5) instead of the summed figure repro pick reads (24); the start gate was approved without a note, and the orchestrator found and tightened it only at the run's precheck. SP-mguax5m3 close: ST-gbyfjgmq's check passed on the base when its worker started (its premise, fetch roots under CLAUDE_PLUGIN_DATA/roots, had landed with SP-s2svf5a6's ST-zsbylj6j after planning); start ran no precheck, so the item was claimed and only its worker found the clause already met."
 }

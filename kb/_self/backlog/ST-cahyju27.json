@@ -1,0 +1,24 @@
+{
+  "id": "ST-cahyju27",
+  "kind": "story",
+  "title": "Planning asks the design choices of an item that adds a push path before the start gate",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Planning a sprint item whose goal adds a command that pushes or changes push configuration (a target ref, a value the user may already have set, a staleness stamp and its bounds) records each choice the goal leaves open as a blocking gate before the start gate, so a worker does not stop on it mid-work (SP-mguax5m3 close: ST-f4fwtc4v g1, ST-tmvkydpf g1 and ST-7zojvqwc g1 were raised by workers as blocking push or agents-rule gates and waited for the orchestrator)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; s = open('.claude/skills/kb-sprint/SKILL.md').read(); i = s.find('## plan'); j = s.find('## start'); sys.exit(0 if 'adds a push path' in s[i:j] else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-mguax5m3 close"
+  ]
+}
