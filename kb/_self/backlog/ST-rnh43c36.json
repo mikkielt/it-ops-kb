@@ -1,0 +1,87 @@
+{
+  "id": "ST-rnh43c36",
+  "kind": "story",
+  "title": "kbmon --status answers sessions, cost, query log and coord questions in plain words from one snapshot",
+  "status": "draft",
+  "parent": "EP-wqgicmmj",
+  "sprint": "SP-dulvwwjc",
+  "priority": "P1",
+  "rank": 1,
+  "goal": "kbmon.py --status [TOPIC] prints a short plain-words answer for TOPIC (sessions, cost, querylog, coord, sprints, load or all, all by default) from one snapshot of the panels the topic needs, built in a new _tools/mon_status.py, also from --from-snapshot; --status TOPIC --json prints an object with schema 1, topic, taken, lines and facts; sessions names each orphan by pid and age and each stalled item by id with its signals, pointing to kbask.py summary for why; cost gives today's dollars, usage rows, tokens and each unpriced model from the querylog panel's usage_today; querylog gives the last delivery outcome and the undelivered count; coord gives each live claim's key, time left and budget, never its holder; every line passes redact.redact and names no path outside the clone; an answer is at most 25 lines; it calls no model and writes no file",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile,atexit,shutil\ndef fail(m):\n    print(m);sys.exit(1)\nT=tempfile.mkdtemp();atexit.register(shutil.rmtree,T,True)\nfake=['-----BEGIN '+'RSA PRIVATE KEY-----','AK'+'IA'+'Q'*16,'gh'+'p_'+'a1'*18,'github'+'_pat_'+'b'*24,'gl'+'pat-'+'c'*22,'gl'+'rt-'+'d'*22,'xo'+'xb-'+'e'*12,'sk-'+'ant-'+'f'*22,'sk-'+'g'*34,'Account'+'Key='+'h'*44,'&s'+'ig='+'i'*32,'ey'+'J'+'j'*12+'.ey'+'J'+'k'*12+'.'+'l'*12,'pass'+'word=\"'+'m'*10+'\"','Authorization: Bearer '+'n'*30,'https://u:'+'o'*12+'@corp.example.com/x','api'+'_key='+'p'*20]\naway='/Users/jan.kowalski/private/elsewhere';who='planted-holder-name'\nok=lambda d:{'state':'ok','seconds':0.1,'data':d}\nsnap={'schema':1,'taken':'2026-10-01T12:00:00Z','alerts':[{'kind':'orphan','id':'sessions.orphan','message':'1 orphan: pid 4242, 2 h','since':''}],'panels':{\n 'kb':ok({'roots':[],'gaps':0,'conflicts':0,'refreshed':None,'census':None,'census_tag':None,'eval':None,'index_age_s':None}),\n 'coord':ok({'source':'local','claims':[{'key':'topic/winget','holder':who,'left_s':600,'budget_usd':2.0,'spend_usd':2.5,'over_budget':True}],'events':[],'digest':[]}),\n 'sessions':ok({'procs':[{'pid':4242,'age_s':7200,'class':'orphan','checkout':'.claude/worktrees/agent-ST-zzzzzzz1','session':'headless','item':'ST-zzzzzzz1'},{'pid':5001,'age_s':60,'class':'foreign','checkout':'.','session':'interactive','item':None}],'worktrees':[],'stalled':[{'item':'ST-zzzzzzz2','signals':['claim-no-commit']}]}),\n 'querylog':ok({'mode':'auto','disabled':False,'spool':{'files':1,'rows':2,'by_kind':{'hook':2},'unreadable':0},'undelivered':3,'undelivered_runs':1,'undelivered_since':'2026-10-01T10:00:00Z','delivery_ref':True,'last_distill':None,'last_delivery':{'outcome':'refused','why':'kbgit.py sync exit 1: '+' '.join(fake)+' '+away,'when':'2026-10-01T11:00:00Z'},'last_pushed':None,'usage_today':{'rows':12,'tokens':3400000,'usd':5.67,'unpriced':['claude-x-unknown']}}),\n 'host':ok({'load':[2.0,3.0,4.0],'cores':8,'suite_lock':None,'main_lock':None,'ceiling':{'error':'n/a'},'disk':{'free_bytes':5*10**11,'total_bytes':10**12,'free_pct':50.0}}),\n 'sprint':ok({'sprints':[],'landings':[]}),'log':ok({'events':[],'problems':[]})}}\nF=os.path.join(T,'snap.json');json.dump(snap,open(F,'w'))\nB=os.path.join(T,'bin');os.makedirs(B);M=os.path.join(T,'model-called')\nopen(os.path.join(B,'claude'),'w').write('#!/bin/sh\\ntouch \"%s\"\\n'%M);os.chmod(os.path.join(B,'claude'),0o755)\nE=dict(os.environ,PATH=B+os.pathsep+os.environ['PATH'])\ndef tree(): return s.run(['git','status','--porcelain','--untracked-files=all'],capture_output=True,text=True).stdout\nbefore=tree()\ndef run(topic,*a):\n    p=s.run([sys.executable,'_tools/kbmon.py','--status',topic,'--from-snapshot',F,*a],capture_output=True,text=True,env=E,timeout=120)\n    if p.returncode not in (0,1): fail('%s exit %s: %s'%(topic,p.returncode,(p.stderr or p.stdout)[-300:]))\n    return p.stdout\nwant={'cost':['5.67','12','claude-x-unknown'],'sessions':['4242','orphan','ST-zzzzzzz2','kbask.py summary'],'querylog':['refused','3'],'coord':['topic/winget','budget'],'all':['5.67','4242','refused','topic/winget']}\nouts={}\nfor t,words in want.items():\n    o=outs[t]=run(t)\n    miss=[w for w in words if w not in o]\n    if miss: fail('%s: missing %r in:\\n%s'%(t,miss,o[-600:]))\n    if len(o.splitlines())>25: fail('%s: %d lines, not a short answer'%(t,len(o.splitlines())))\nblob=''.join(outs.values())\nleft=[f for f in fake if f in blob or f[-10:] in blob]\nif left: fail('%d planted secrets survived'%len(left))\nif who in blob or away in blob or 'jan.kowalski' in blob: fail('a holder or a path outside the clone reached the output')\ntry: j=json.loads(run('sessions','--json'))\nexcept ValueError: fail('--json is not JSON')\nif j.get('schema')!=1 or j.get('topic')!='sessions' or not isinstance(j.get('lines'),list): fail('json %r'%str(j)[:300])\nif os.path.exists(M): fail('the status answer called claude')\nif tree()!=before: fail('the status run changed files in the clone')\nprint('ok: cost, sessions, querylog, coord and all from a snapshot, short, redacted, no holder, no model call, nothing written')\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbmon.py --status [TOPIC] prints a short plain-words answer for TOPIC (sessions, cost, querylog, coord, sprints, load or all, all by default) from one snapshot of the panels the topic needs, built in a new _tools/mon_status.py, also from --from-snapshot",
+      "check": 0
+    },
+    {
+      "clause": "--status TOPIC --json prints an object with schema 1, topic, taken, lines and facts",
+      "check": 0
+    },
+    {
+      "clause": "sessions names each orphan by pid and age and each stalled item by id with its signals, pointing to kbask.py summary for why",
+      "check": 0
+    },
+    {
+      "clause": "cost gives today's dollars, usage rows, tokens and each unpriced model from the querylog panel's usage_today",
+      "check": 0
+    },
+    {
+      "clause": "querylog gives the last delivery outcome and the undelivered count",
+      "check": 0
+    },
+    {
+      "clause": "coord gives each live claim's key, time left and budget, never its holder",
+      "check": 0
+    },
+    {
+      "clause": "every line passes redact.redact and names no path outside the clone",
+      "check": 0
+    },
+    {
+      "clause": "an answer is at most 25 lines",
+      "check": 0
+    },
+    {
+      "clause": "it calls no model and writes no file",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/kbmon.py",
+    "_tools/mon_status.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-nighxizj",
+    "ST-atei6ybh",
+    "ST-fobzhr5o",
+    "ST-qpcva3jl"
+  ],
+  "gates": [
+    {
+      "id": "style",
+      "kind": "blocking",
+      "question": "How does a status answer speak? The operator's rule: \"speak results, not backlog ids\".",
+      "options": [
+        "results in plain words with real numbers, an item by its title, an id only on a line where the operator acts (a gate to answer, an item to release)",
+        "title and id together on every item, as the sprint skill names items",
+        "ids and counts only, no titles"
+      ],
+      "recommendation": "results in plain words with real numbers, an item by its title, an id only on a line where the operator acts (a gate to answer, an item to release)",
+      "class": "push",
+      "answer": "results in plain words with real numbers, an item by its title, an id only on a line where the operator acts (a gate to answer, an item to release)",
+      "by": "operator"
+    }
+  ],
+  "notes": "Plan 2026-10-19: premise on the base: kbmon.py --status cost exits 2 (unrecognized arguments); the planted snapshot renders with --once --from-snapshot (exit 1 on its orphan alert), so the check fails only on --status. Frozen operator questions: 'status and percentage of done on sprints', 'check what causes high load on my computer', 'which sessions are running / is anything stuck or orphaned', 'how much did today cost', 'did the query log deliver', 'what is left before X is done'. The coord panel's own text view prints the holder; the status answer must not. The sprints and load topics render the panel data there today; ST-db4gscgj and ST-tdypjvev extend them. A topic runs only the panels it needs, each under kbmon's --timeout."
+}

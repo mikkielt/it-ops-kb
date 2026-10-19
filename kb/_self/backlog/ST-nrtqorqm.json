@@ -1,0 +1,49 @@
+{
+  "id": "ST-nrtqorqm",
+  "kind": "story",
+  "title": "A kb_monitor_status MCP tool answers status for any agent, and the kb-observer starts from kbmon --status",
+  "status": "draft",
+  "parent": "EP-wqgicmmj",
+  "sprint": "SP-dulvwwjc",
+  "priority": "P1",
+  "rank": 5,
+  "goal": "the kb MCP server lists kb_monitor_status with a topic argument (sessions, cost, querylog, coord, sprints, load or all) and readOnlyHint true; a call returns the lines of kbmon.py --status TOPIC --json as text, bounded by kbmon's --timeout, with no model call; kbask.py lets the observer session run kbmon.py --status, which kb-observer.md tells it to read first",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile,atexit,shutil\ndef fail(m):\n    print(m);sys.exit(1)\nT=tempfile.mkdtemp();atexit.register(shutil.rmtree,T,True);M=os.path.join(T,'model-called')\nopen(os.path.join(T,'claude'),'w').write('#!/bin/sh\\ntouch \"%s\"\\n'%M);os.chmod(os.path.join(T,'claude'),0o755)\nE=dict(os.environ,PATH=T+os.pathsep+os.environ['PATH'])\nmsgs=[{'jsonrpc':'2.0','id':1,'method':'initialize','params':{'protocolVersion':'2025-06-18','capabilities':{},'clientInfo':{'name':'check','version':'0'}}},\n {'jsonrpc':'2.0','method':'notifications/initialized'},{'jsonrpc':'2.0','id':2,'method':'tools/list'},\n {'jsonrpc':'2.0','id':3,'method':'tools/call','params':{'name':'kb_monitor_status','arguments':{'topic':'cost'}}}]\np=s.run([sys.executable,'_tools/kb_mcp.py'],input=''.join(json.dumps(m)+'\\n' for m in msgs),capture_output=True,text=True,env=E,timeout=180)\nif p.returncode not in (0,None): fail('kb_mcp exit %s: %s'%(p.returncode,p.stderr[-300:]))\nout={}\nfor line in p.stdout.splitlines():\n    try: r=json.loads(line)\n    except ValueError: continue\n    if 'id' in r: out[r['id']]=r\ntools={t['name']:t for t in out.get(2,{}).get('result',{}).get('tools',[])}\nt=tools.get('kb_monitor_status')\nif not t: fail('kb_monitor_status not listed: %r'%sorted(tools))\nif not (t.get('annotations') or {}).get('readOnlyHint'): fail('kb_monitor_status is not readOnlyHint: %r'%t.get('annotations'))\nen=json.dumps(t.get('inputSchema',{}))\nif any(w not in en for w in ('sessions','cost','querylog','coord','sprints','load','all')): fail('topic enum %s'%en)\nr=out.get(3,{}).get('result',{})\ntxt=''.join(c.get('text','') for c in r.get('content',[]))\nif r.get('isError') or '$' not in txt: fail('cost call: %r'%str(out.get(3))[:400])\nif os.path.exists(M): fail('the MCP status call called claude')\nsys.path.insert(0,'_tools');import kbask\nargv=kbask.session_argv('claude')\nif 'Bash(python3 _tools/kbmon.py --status *)' not in argv: fail('the observer may not run kbmon.py --status')\nif '--status' not in open('.claude/agents/kb-observer.md').read(): fail('kb-observer.md does not start from kbmon.py --status')\nprint('ok: kb_monitor_status listed read-only with its topics, answers cost with no model call, the observer may run --status')\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the kb MCP server lists kb_monitor_status with a topic argument (sessions, cost, querylog, coord, sprints, load or all) and readOnlyHint true",
+      "check": 0
+    },
+    {
+      "clause": "a call returns the lines of kbmon.py --status TOPIC --json as text, bounded by kbmon's --timeout, with no model call",
+      "check": 0
+    },
+    {
+      "clause": "kbask.py lets the observer session run kbmon.py --status, which kb-observer.md tells it to read first",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py",
+    "_tools/kbask.py",
+    ".claude/agents/kb-observer.md",
+    ".claude-plugin/marketplace.json",
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/embedding.md",
+    "kb/_self/monitoring.md"
+  ],
+  "depends_on": [
+    "ST-rnh43c36"
+  ],
+  "notes": "Plan 2026-10-19: premise: kb_mcp.py's tools/list lacks kb_monitor_status (it lists docs_fetch, docs_search, kb_audit, kb_facts, kb_feedback, kb_pack, kb_search, kb_show, kb_source, kb_status, kb_topics_for). The annotations are in kb/public/mcp/tools.md:25. kbask.ALLOWED_TOOLS gains Bash(python3 _tools/kbmon.py --status *); the marketplace description lists the server's tools. .claude/ is a protected path for a headless worker: kb-observer.md goes through staging copies."
+}

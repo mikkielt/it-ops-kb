@@ -1,0 +1,96 @@
+{
+  "id": "ST-icmfvtmm",
+  "kind": "story",
+  "title": "kb_ask.py, a status: hook prefix and one AGENTS.md line send status questions to kbmon --status first",
+  "status": "draft",
+  "parent": "EP-wqgicmmj",
+  "sprint": "SP-dulvwwjc",
+  "priority": "P1",
+  "rank": 4,
+  "goal": "mon_status.topic_of(question) maps a status question to its topic by fixed cue words or gives None, so a docs question about sessions, cost or status stays a lookup; kb_ask.py answers a question topic_of maps by running kbmon.py --status TOPIC before any pack or model, its --route printing the plan kind status; the kb hook blocks a status: prompt with the status answer as the reason (no model tokens) while a status+: prompt goes through with the answer as context; AGENTS.md carries one line that sends status questions to kbmon.py --status first and asks for results in plain words, not backlog ids, within its 4096-byte cap",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,re,subprocess as s,sys,tempfile,atexit,shutil\ndef fail(m):\n    print(m);sys.exit(1)\nsys.path.insert(0,'_tools')\ntry: import mon_status\nexcept ImportError: fail('no _tools/mon_status.py')\nif not hasattr(mon_status,'topic_of'): fail('mon_status has no topic_of')\nwant={'status and percentage of done on sprints':'sprints','provide status on sprints':'sprints','check what causes high load on my computer':'load',\n 'which sessions are running':'sessions','is anything stuck or orphaned':'sessions','how much did today cost':'cost','did the query log deliver':'querylog',\n 'how do Claude Code sessions resume':None,'what does an Intune license cost':None,'what is the GPO processing order':None,'how do I check the status of a ConfigMgr deployment':None}\nbad={q:(mon_status.topic_of(q),t) for q,t in want.items() if mon_status.topic_of(q)!=t}\nif bad: fail('topic_of (got, want): %r'%bad)\nT=tempfile.mkdtemp();atexit.register(shutil.rmtree,T,True);M=os.path.join(T,'model-called')\nopen(os.path.join(T,'claude'),'w').write('#!/bin/sh\\ntouch \"%s\"\\n'%M);os.chmod(os.path.join(T,'claude'),0o755)\nE=dict(os.environ,PATH=T+os.pathsep+os.environ['PATH'])\ndef hook(prompt):\n    p=s.run([sys.executable,'_tools/kb_hook.py','--test',prompt],capture_output=True,text=True,env=E,timeout=180)\n    if p.returncode: fail('kb_hook exit %s: %s'%(p.returncode,p.stderr[-300:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('hook output is not JSON: %r'%p.stdout[:200])\nb=hook('status: how much did today cost')\nif b.get('decision')!='block' or '$' not in b.get('reason',''): fail('status: is not answered by a block: %r'%str(b)[:300])\nc=hook('status+: how much did today cost')\nctx=(c.get('hookSpecificOutput') or {}).get('additionalContext','')\nif c.get('decision')=='block' or '$' not in ctx: fail('status+: does not pass the answer as context: %r'%str(c)[:300])\nr=s.run([sys.executable,'_tools/kb_ask.py','--route','how much did today cost'],capture_output=True,text=True,env=E,timeout=180)\nif r.returncode or 'status' not in r.stdout: fail('kb_ask --route does not plan status: %r'%(r.stdout[-300:] or r.stderr[-300:]))\na=s.run([sys.executable,'_tools/kb_ask.py','how much did today cost'],capture_output=True,text=True,env=E,timeout=180)\nif a.returncode not in (0,1) or '$' not in a.stdout: fail('kb_ask does not answer from kbmon --status: %r'%(a.stdout[-300:] or a.stderr[-300:]))\nif os.path.exists(M): fail('a status answer called claude')\nag=open('AGENTS.md','rb').read()\nif len(ag)>4096: fail('AGENTS.md is %d bytes'%len(ag))\nline=[l for l in ag.decode().splitlines() if 'kbmon.py --status' in l]\nif len(line)!=1 or 'not backlog ids' not in line[0]: fail('AGENTS.md status line: %r'%line)\ncmd=re.search(r'`(python3 _tools/kbmon\\.py --status[^`]*)`',line[0])\nif not cmd: fail('no runnable kbmon --status command in the AGENTS.md line')\nargv=[sys.executable]+[w for w in cmd.group(1).split()[1:] if not w.startswith('[')]\nk=s.run(argv,capture_output=True,text=True,env=E,timeout=180)\nif k.returncode not in (0,1) or not k.stdout.strip(): fail('the AGENTS.md command %r failed: %s'%(cmd.group(1),k.stderr[-300:]))\nprint('ok: topic_of maps the frozen questions and leaves docs questions, status: blocks, status+: adds context, kb_ask answers with no model, AGENTS.md line runs')\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "mon_status.topic_of(question) maps a status question to its topic by fixed cue words or gives None, so a docs question about sessions, cost or status stays a lookup",
+      "check": 0
+    },
+    {
+      "clause": "kb_ask.py answers a question topic_of maps by running kbmon.py --status TOPIC before any pack or model, its --route printing the plan kind status",
+      "check": 0
+    },
+    {
+      "clause": "the kb hook blocks a status: prompt with the status answer as the reason (no model tokens) while a status+: prompt goes through with the answer as context",
+      "check": 0
+    },
+    {
+      "clause": "AGENTS.md carries one line that sends status questions to kbmon.py --status first and asks for results in plain words, not backlog ids, within its 4096-byte cap",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/mon_status.py",
+    "_tools/kb_ask.py",
+    "_tools/kb_hook.py",
+    "AGENTS.md",
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/design.md",
+    "kb/_self/monitoring.md"
+  ],
+  "depends_on": [
+    "ST-tdypjvev"
+  ],
+  "gates": [
+    {
+      "id": "hook",
+      "kind": "blocking",
+      "question": "Does the hook answer a status question by itself (no model tokens) or add the answer as context for the assistant?",
+      "options": [
+        "both, as backlog: and backlog+: do: status: blocks with the answer, status+: adds it as context",
+        "only status:, blocking",
+        "only context"
+      ],
+      "recommendation": "both, as backlog: and backlog+: do: status: blocks with the answer, status+: adds it as context",
+      "class": "secrets",
+      "answer": "both, as backlog: and backlog+: do: status: blocks with the answer, status+: adds it as context",
+      "by": "operator"
+    },
+    {
+      "id": "kbprefix",
+      "kind": "blocking",
+      "question": "Does a kb: prompt that topic_of maps go to the status answer too?",
+      "options": [
+        "no: kb: stays the docs lookup; status goes through status:, kb_ask.py and the AGENTS.md rule",
+        "yes: kb: runs topic_of first"
+      ],
+      "recommendation": "no: kb: stays the docs lookup; status goes through status:, kb_ask.py and the AGENTS.md rule",
+      "class": "agents-rule",
+      "answer": "no: kb: stays the docs lookup; status goes through status:, kb_ask.py and the AGENTS.md rule",
+      "by": "operator"
+    },
+    {
+      "id": "rule",
+      "kind": "blocking",
+      "question": "Where does the always-on rule that sends plain status questions to kbmon live, and what pays for it under the 4096-byte cap (AGENTS.md is 4091 bytes now)?",
+      "options": [
+        "one AGENTS.md status line that replaces the kb: hook line, paid by dropping the Skills paragraph's links note: 4085 bytes",
+        "one AGENTS.md status line that replaces both the kb: hook line and the Open work line: 4088 bytes",
+        "a new skill instead, AGENTS.md unchanged: 4091 bytes"
+      ],
+      "recommendation": "one AGENTS.md status line that replaces the kb: hook line, paid by dropping the Skills paragraph's links note: 4085 bytes",
+      "class": "agents-rule",
+      "answer": "one AGENTS.md status line that replaces the kb: hook line, paid by dropping the Skills paragraph's links note: 4085 bytes",
+      "by": "operator"
+    }
+  ],
+  "notes": "Plan 2026-10-19: premise: no _tools/mon_status.py, and kb_hook.py --test 'status: how much did today cost' gives no output. The recommended rule answer's AGENTS.md line, measured at 4085 bytes on the base (measure again after ST-qpcva3jl, which also touches AGENTS.md): '- Status (sprints, sessions, load, cost): `python3 _tools/kbmon.py --status [TOPIC]`; results, not backlog ids. Hooks `kb:`, `status:` answer; `kb+:`, `status+:` pass on.' in place of the kb: hook line, with the Skills paragraph's links note dropped. A status: prompt whose kbmon run fails or times out goes through with a note of what failed, as backlog: does. The check keeps docs questions (Claude Code sessions, an Intune licence cost, GPO processing order, a ConfigMgr deployment status) as lookups."
+}
