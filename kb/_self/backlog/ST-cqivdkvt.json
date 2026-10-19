@@ -1,0 +1,37 @@
+{
+  "id": "ST-cqivdkvt",
+  "kind": "story",
+  "title": "kbgit.py upstream brings the public copy's main into the clone's main by a written policy and lists the local commits that change upstream-owned paths",
+  "status": "draft",
+  "sprint": "SP-3trnelzv",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "kbgit.py upstream fetches the upstream remote alone and brings its main into the clone's integration main by the policy git.md writes down, never rewriting a commit the integration remote holds; it lists each local commit that changes a path the upstream main also tracks, marking one whose change the upstream main now holds as resolved upstream with the revert to drop it; --dry-run prints the plan and changes nothing; the gate and the push stay kbgit.py sync --push",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "upstream_merge"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;p=subprocess.run([sys.executable,'_tools/kbgit.py','upstream','--help'],capture_output=True,text=True);sys.exit(0 if p.returncode==0 and '--dry-run' in p.stdout else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kg_upstream.py",
+    "_tools/kbgit.py",
+    "_tools/kbpublic.py",
+    "_tools/test_sync_e2e.py",
+    "kb/_self/git.md",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/reports/modules.md"
+  ]
+}
