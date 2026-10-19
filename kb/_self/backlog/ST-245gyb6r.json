@@ -2,7 +2,7 @@
   "id": "ST-245gyb6r",
   "kind": "story",
   "title": "coord.py list --by-operator shows each operator's live claims and approved budgets on a shared coord server",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-czs3jk57",
   "priority": "P3",
   "rank": 0,
@@ -31,5 +31,7 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
-  "notes": "Premise (2026-10-19): coord.py list has no --by-operator flag (exit 2). Already met, dropped from the sprint goal: a key file named like an email address is never served, since coord.py OPERATOR_NAME (coord.py:148) has no @; the check keeps that case as a guard. Builds on ST-vj5fnkjw (key files <keys>/<team>/<operator>, holders starting with the operator). Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and .claude/hooks with its own coord store and a stub claude on PATH; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations; facts: public/claude/ci-and-headless.md:124-127, public/claude/otel-monitoring.md:51-53, QK-claude-code-session-learn-email-account. Addresses in checks are built at run time; docs and items use the placeholder jan.kowalski only."
+  "notes": "Premise (2026-10-19): coord.py list has no --by-operator flag (exit 2). Already met, dropped from the sprint goal: a key file named like an email address is never served, since coord.py OPERATOR_NAME (coord.py:148) has no @; the check keeps that case as a guard. Builds on ST-vj5fnkjw (key files <keys>/<team>/<operator>, holders starting with the operator). Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and .claude/hooks with its own coord store and a stub claude on PATH; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations; facts: public/claude/ci-and-headless.md:124-127, public/claude/otel-monitoring.md:51-53, QK-claude-code-session-learn-email-account. Addresses in checks are built at run time; docs and items use the placeholder jan.kowalski only.",
+  "claimed_by": "orch-r38",
+  "operator": "op-4b76a6bc"
 }
