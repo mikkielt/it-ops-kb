@@ -73,7 +73,11 @@
         "stay ok with procs empty and procs_unreadable naming the reason, so the operator and the intents still show": "ST-lnjebku7",
         "stay unsupported as before, and show the operator only where processes can be listed": "ST-lnjebku7"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "stay ok with procs empty and procs_unreadable naming the reason, so the operator and the intents still show",
+      "by": "operator",
+      "operator": "op-4b76a6bc",
+      "role": "interactive"
     }
   ],
   "notes": "Premise (2026-10-19): the coord hook's SessionStart intent on a work/<id> branch carries item and session only, no operator; kbmon.py --status sessions names no operator. Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and .claude/hooks with its own coord store and a stub claude on PATH; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations; facts: public/claude/ci-and-headless.md:124-127, public/claude/otel-monitoring.md:51-53, QK-claude-code-session-learn-email-account. Addresses in checks are built at run time; docs and items use the placeholder jan.kowalski only.",
