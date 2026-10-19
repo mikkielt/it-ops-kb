@@ -77,6 +77,16 @@ Without `--json` and `--once`, kbmon shows a frame every `--interval` seconds (1
 - **A pipe, a file, or `NO_COLOR` set, gives plain frames:** no escape byte, one frame after another with a blank row between, unless `--ansi` asks for the escapes. `--once` is always one plain frame, with escapes only for `--ansi`.
 - **Windows.** `mon_view.enable_vt()` switches on the console's virtual terminal processing for standard output (`ctypes`, `SetConsoleMode`). It returns True off Windows and False where the console cannot take escapes (no console, a redirected output, an old console host); kbmon then writes plain frames one after another, with or without `--ansi`.
 
+## The kbmon-pane mod
+
+`.claude/skills/kbmon-pane` is a Claude Code mod (a plugin of function hooks, an early-access API): it loads in every session of the clone with no install and no settings change, once the workspace is trusted. It shows kbmon in a pane beside the chat and gives the agent only the receipt. It runs `python3 _tools/kbmon.py` from the session's working directory, so a session started in the clone's root is the one it serves.
+
+- **Only an interactive session.** At `session.start` the mod reads `isInteractive`; false (a `-p` run, the SDK) and it registers and opens nothing and appends nothing.
+- **The pane.** An interactive session registers `/kbmon` and opens the pane `kbmon`; `/kbmon` opens it again and refreshes it. Every 60 seconds a timer runs `kbmon.py --once` with `COLUMNS` set to the pane's `bodyColumns` and draws the text, each line cut at the edge. Python is found as `python3`, `python` or `py -3`, whichever gives output first, and the one that worked is tried first the next time; a run that gives none shows the reason in the pane.
+- **No overlap.** The timer starts no run while the last is still going; it marks the pane stale instead, and a run that ended at another width than the pane now has is followed by one at the new width.
+- **A resize** clips the drawn text at once; a second after the resize settles the mod runs kbmon again at the new width, or the next timer run does, whichever is first.
+- **The receipt.** After a run whose alert rows differ from the last run's, the mod runs `kbmon.py --receipt`. When the fingerprint differs from the one the session holds, it appends the `line` as one user-role row (`$.session.append`), and shows it as a toast unless it is the first of the session. The first one comes at session start; a later one only when the alert set changes, and a reload of the mod appends none while the fingerprint stays. The pane's text is never given to the agent.
+
 ## The kb panel
 
 `data` of `mon_kb.py`:

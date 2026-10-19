@@ -72,6 +72,53 @@
   "depends_on": [
     "ST-nighxizj"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How often does the pane run kbmon.py --receipt: on every 60-second refresh, or only after a refresh whose alert rows differ from the last one's (one run per minute instead of two; the fingerprint cannot move while the alert rows are the same)?",
+      "options": [
+        "every refresh",
+        "only when the --once alert rows change"
+      ],
+      "recommendation": "only when the --once alert rows change",
+      "do": {
+        "every refresh": "ST-fobzhr5o",
+        "only when the --once alert rows change": "ST-fobzhr5o"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does the pane lay itself out again after a resize: only at the next 60-second refresh, or also one second after the resize settles through the same guarded refresh (the pane is clipped for less than a minute, a drag costs one run)?",
+      "options": [
+        "next 60-second refresh only",
+        "also one second after the resize settles"
+      ],
+      "recommendation": "also one second after the resize settles",
+      "do": {
+        "next 60-second refresh only": "ST-fobzhr5o",
+        "also one second after the resize settles": "ST-fobzhr5o"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Does the session-start receipt row wait for the first kbmon run at session.start (holding the first prompt for several seconds), or does the first run start 1.5 seconds later, not awaited, once the pane's first drawing has given its width?",
+      "options": [
+        "wait for the run at session.start",
+        "first run 1.5 seconds after session.start, not awaited"
+      ],
+      "recommendation": "first run 1.5 seconds after session.start, not awaited",
+      "do": {
+        "wait for the run at session.start": "ST-fobzhr5o",
+        "first run 1.5 seconds after session.start, not awaited": "ST-fobzhr5o"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "notes": "Plan 2026-10-19 (operator choices): the receipt comes from the mod, not settings hooks, since session.start's isInteractive (false for -p and the SDK) is the one documented headless signal; the mod lives in .claude/skills/kbmon-pane and loads with no install and no settings change. Prototype in the discovery session (scratchpad, --plugin-dir): the pane docked as a sidebar at 170 columns, clipped at once on a resize and was laid out again at the new width after one kbmon run (about 20 s); the demo agent quoted only the receipt row, nothing of the pane. Checks: claude plugin validate and a read of the module; no check runs the mod, since claude plugin test needs a *.test.ts file, which the operator ruled out (D-6kei5o2z, D-2tq4fhgs), and a live session makes a model call. The mods API is early access (bundled reference, Claude Code 2.1.290; this host runs 2.1.303).",
   "claimed_by": "orch-r23"
 }
