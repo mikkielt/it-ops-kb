@@ -50,3 +50,6 @@ Ask before creating anything when any of these is unclear:
 Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-commit`.
 
 `/kb-verify`, then commit (`feat(kb): add the <name> root`) and push with `python3 _tools/kbgit.py sync --push` only to the remote the user confirmed.
+
+## 4. Give shared-root changes back
+A team that follows an upstream keeps its `internal` root private and gives only its changes to shared roots (`kb/public`, other `public` roots) and tools back. Tell the user this when the root is `internal`, and do not push the root, its pointer file or its gitlink upstream. To give changes back, run `python3 _tools/kbgit.py contribute --upstream <remote>` (`--branch <name>` names the local branch; default `contribute/<remote>`). It writes a local branch at the upstream `main` that holds only the commits touching shared files and adding no private name, names each commit it left out and why, and pushes nothing. A person then reviews that branch, pushes it and opens the merge request on the upstream's host; upstream's gate and review take it from there. A commit left out is split or reworded by the team, then `contribute` is run again (`kb/_self/git.md`, "Contributing upstream").
