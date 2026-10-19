@@ -1,0 +1,26 @@
+{
+  "id": "ST-uubfsjd4",
+  "kind": "story",
+  "title": "land's sibling checks rerun a done item of the sprint whose touched code imports a module the landing changes",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py land reruns, before done, the checks of each done item of the sprint whose touched _tools modules import a module the landing's commits change, beside the items that share a touched file",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; s=open('_tools/bl_land.py').read(); i=s.find('def rerun_sibling_checks'); sys.exit(0 if 'import' in s[i:i+2500].split('return rerun_done_checks')[0] else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-qinvdomv close"
+  ],
+  "notes": "SP-qinvdomv close: ST-vruwai2i made kbpublic.history_changes return five fields after ST-6c5xgv5a (kg_contrib.py, a reader) had landed; ST-vruwai2i's worktree predated the reader, so its referrers run missed it, and land's sibling checks reran only done items sharing a touched file. contribute crashed on main until the review found it (BG-hia2m3hg)."
+}

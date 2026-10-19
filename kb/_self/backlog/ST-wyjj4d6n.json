@@ -1,0 +1,25 @@
+{
+  "id": "ST-wyjj4d6n",
+  "kind": "story",
+  "title": "The sprint plan's check of a clause that names a scan path runs that path, not an inner helper",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-sprint plan step 6 says a check of a goal clause that names a scan or gate path (the tracked-file leak scan, publish, sync) runs that path's entry function or command on a planted input, not a helper it calls",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; s=open('.claude/skills/kb-sprint/SKILL.md').read(); i=s.find('## plan'); j=s.find('## start'); sys.exit(0 if 'inner helper' in s[i:j] else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-qinvdomv close"
+  ],
+  "notes": "SP-qinvdomv close: ST-5hywunah's check called kbcommon.leak_hits directly and passed, while the tracked-file scan (kbpublic.file_hits) stripped urls first, so a private host or path inside a url passed the scan the goal names; BG-5kyucmi6 was found by the worker and planned in mid-sprint."
+}

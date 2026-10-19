@@ -1,0 +1,25 @@
+{
+  "id": "ST-56qrgvnl",
+  "kind": "story",
+  "title": "land records one land.end per landing: a verify step that fails on a fetch and is retried does not log a failed landing",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py land writes land.end with exit 1 only when the landing stops; a verify-step fetch failure that the landing retries and passes logs its land.step row, not a land.end, so ops shows one land.end per landing",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; s=open('_tools/bl_land.py').read(); i=s.find('ops_mark(\"verify\")'); sys.exit(0 if 'retry' in s[i-1500:i+1500] else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py"
+  ],
+  "links": [
+    "parked: SP-qinvdomv close"
+  ],
+  "notes": "SP-qinvdomv close: ST-5hywunah's landing logged land.step verify exit=1 and land.end exit=1 at 18:18:03 (git fetch: Permission denied (publickey), a transient host failure), then went on and landed; ops reads it as a failed landing."
+}

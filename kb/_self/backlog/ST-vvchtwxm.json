@@ -1,0 +1,26 @@
+{
+  "id": "ST-vvchtwxm",
+  "kind": "story",
+  "title": "The worker brief names the gate words that class a gate push or secrets",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py brief's fixed worker rules list the words that make a gate's class push or secrets (and so blocking and operator-only), so a worker words a design gate's options neutrally",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys; r=subprocess.run(['python3','_tools/backlog.py','brief','ST-roonz5uw'],capture_output=True,text=True); sys.exit(0 if r.returncode==0 and 'secrets' in r.stdout and 'class' in r.stdout and 'github' in r.stdout.lower() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_brief.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-qinvdomv close"
+  ],
+  "notes": "SP-qinvdomv close: every code gate the workers recorded (ST-5hywunah g1, ST-6c5xgv5a g1-g3, BG-5kyucmi6 g1, ST-vruwai2i g1, BG-hia2m3hg g1) was classed push or secrets by a word in its options (github, push, secrets) and made blocking; BG-hia2m3hg's secrets gate could not be answered unattended and its choice moved to parked ST-roonz5uw."
+}

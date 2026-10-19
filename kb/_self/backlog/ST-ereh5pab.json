@@ -1,0 +1,25 @@
+{
+  "id": "ST-ereh5pab",
+  "kind": "story",
+  "title": "A check of a tool that reads commit history plants commits shaped like the project's own",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-sprint plan step 6 says a check of a tool that reads commit messages or trailers plants at least one commit with the project's own trailers (Co-Authored-By, KB-Work), so the planted history meets what real history holds",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; s=open('.claude/skills/kb-sprint/SKILL.md').read(); i=s.find('## plan'); j=s.find('## start'); sys.exit(0 if 'own trailers' in s[i:j] else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-qinvdomv close"
+  ],
+  "notes": "SP-qinvdomv close: ST-6c5xgv5a's check planted commits with bare one-line messages, so contribute's message scan leaving out every commit with the attribution trailer (116 of the last 200 commits) went unseen until the review (gap 2)."
+}
