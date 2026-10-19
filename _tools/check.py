@@ -3,9 +3,9 @@
 
   check.py [--root NAME]      every root (kbcommon.roots(): kb/public, kb/<name>/, KB_ROOTS), or one
 
-- every root's _root.md is well-formed, and no two roots share a name or an id prefix;
+- every root's _root.md is well-formed (an optional `team` is a lowercase name), and no two roots share a name or an id prefix;
 - every pointer file kb/_roots/<name>.md (a remote root, kbcommon.py) is well-formed (`root` its file's name, `id_prefix`,
-  `visibility`, a `url`, an `access` of submodule or fetch, a `pin` that is a commit hash or empty), names a root and
+  `visibility`, an optional `team` that is a lowercase name, a `url`, an `access` of submodule or fetch, a `pin` that is a commit hash or empty), names a root and
   prefix no other root or pointer has, and, where its root is on disk, agrees with it; an absent root is no error;
 - per root: _sources.csv and _artifacts.csv exist and have their required columns;
 - every .csv has the same number of columns in every row;
