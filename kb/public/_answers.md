@@ -4202,3 +4202,14 @@ _Agent: kb-research_
 - See agents/agent-caching.md, claude/ci-and-headless.md, claude/cli-flags.csv, claude/settings-and-scopes.md, claude/parallel-sessions.md.
 
 _Agent: kb-research_
+
+## QK-statistics-quantiles-take-quartiles-far-out. How does Python's statistics.quantiles take quartiles with its inclusive method, and what is the far-out outlier fence (p75 plus three times the p25 to p75 spread) built from them?
+- `statistics.quantiles(data, n=4, method=...)` returns the three quartile cut points; `inclusive` treats the minimum as the 0th and the maximum as the 100th percentile (position `(i - 1) / (m - 1)`), `exclusive` (the default) puts the i-th of m points at `i / (m + 1)`; both interpolate linearly between the two nearest points. [DOC S-dh7f43kc]
+- It raises `StatisticsError` for an empty input and for `n` below 1; since Python 3.13 one data point no longer raises (all three quartiles are that value), and the page asks for more data points than `n`. [DOC S-dh7f43kc]
+- NIST's handbook names the fences `Q1 - 1.5*IQ`, `Q3 + 1.5*IQ` (inner, mild outliers) and `Q1 - 3*IQ`, `Q3 + 3*IQ` (outer, extreme outliers), with `IQ = Q3 - Q1`; the upper outer fence is the fence in question. [DOC S-4hnlw34j]
+- The handbook's own example takes its quartiles at position `p * (N + 1)`, which is the `exclusive` method; on the same list `inclusive` gives other quartiles and so another fence (observed on 3.13.2: 20.0 against 18.25 for ten timings with one planted 40). [DER S-4hnlw34j, S-dh7f43kc]
+- Conclusion: an estimator that names `method="inclusive"` and a fence of `p75 + 3 * (p75 - p25)` uses a documented quartile method and the handbook's upper outer fence, but the pair is the estimator's choice, not a handbook rule; the fence is compared only with values for the method it was computed with, and a zero spread (most values equal) collapses it onto the quartile. [DER S-4hnlw34j, S-dh7f43kc]
+- Open: which quartile method a fence should use, and a minimum list size for a meaningful fence, are named by no page read. [UNK]
+- See python/percentile-nearest-rank.md.
+
+_Agent: kb-research_
