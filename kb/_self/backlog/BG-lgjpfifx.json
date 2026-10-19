@@ -21,6 +21,7 @@
     "README.md"
   ],
   "depends_on": [
-    "ST-xjtqwdtq"
+    "ST-xjtqwdtq",
+    "BG-e2hfeycb"
   ]
 }
