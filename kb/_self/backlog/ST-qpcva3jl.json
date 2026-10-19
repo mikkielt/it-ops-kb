@@ -108,7 +108,9 @@
         "without --yes it prints the plan and installs nothing (exit 2); an existing target is left alone (exit 3) unless --replace": "ST-qpcva3jl",
         "it asks on stdin, and overwrites an existing target": "ST-qpcva3jl"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "without --yes it prints the plan and installs nothing (exit 2); an existing target is left alone (exit 3) unless --replace",
+      "by": "operator"
     }
   ],
   "notes": "Plan 2026-10-19 (operator choice): a pinned installer like _tools/install-python.ps1, SHA-256 checked, per user; /kb-setup asks permission first and, on a no, quotes the saved --declined text: WezTerm is a quality-of-life dependency, never critical; without it the kbmon pane of the mod still works, and kbmon runs by hand or Claude reads it on request. Standard library only. The pinned version is the gate pin. Premise on the base: no _tools/install_wezterm.py (exit 2).",
