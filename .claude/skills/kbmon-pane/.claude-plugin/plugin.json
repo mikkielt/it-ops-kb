@@ -1,0 +1,6 @@
+{
+  "name": "kbmon-pane",
+  "version": "0.1.0",
+  "description": "Shows kbmon live in a pane beside the chat and gives the agent only its one-line receipt",
+  "types": "./types/index.d.ts"
+}
