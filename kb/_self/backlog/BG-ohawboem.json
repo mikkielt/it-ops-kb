@@ -1,0 +1,17 @@
+{
+  "id": "BG-ohawboem",
+  "kind": "bug",
+  "title": "A gate about the token counts of a model run (tokens per correct answer, input and output tokens) is classed secrets",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "A gate whose only token word counts a model's tokens (tokens per answer, input tokens, cache tokens, a token budget) is classed by its other words and not as secrets, while a gate naming an API token, GITLAB_TOKEN or a credential file stays secrets. Seen on ST-pbspqgvw gate g1, a layout question of a benchmark report table made blocking by the word tokens.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_authority as a;it={'touches':['_tools/bench_report.py']};qs=['Show tokens per correct answer in the report?','Sum input, output and cache tokens in the multi table?'];r=[a.class_reasons(it,dict(id='g1',question=q,options=['one','two']))[0] for q in qs];print(r);sys.exit(0 if 'secrets' not in r else 1)"
+    ]
+  }
+}
