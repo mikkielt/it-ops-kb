@@ -2,7 +2,7 @@
   "id": "ST-cmjz33nf",
   "kind": "story",
   "title": "kbgit.py publish refuses a commit whose message or trailers hold an email address other than a noreply or placeholder one",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yjugq5c2",
   "priority": "P1",
   "rank": 0,

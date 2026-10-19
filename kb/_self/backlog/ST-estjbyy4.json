@@ -2,7 +2,7 @@
   "id": "ST-estjbyy4",
   "kind": "story",
   "title": "kbgit.py publish handles git author and committer emails as the operator decides for the public home",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yjugq5c2",
   "priority": "P3",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "BG-4dxrjkna",
   "kind": "bug",
   "title": "The private-name leak scan fails open: a registry that does not load (two roots with one id prefix) gives no private pattern, and file_hits passes every private name",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-yjugq5c2",
   "priority": "P2",
@@ -17,7 +17,9 @@
     ]
   },
   "touches": [
-    "_tools/kbcommon.py"
+    "_tools/kbcommon.py",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-qinvdomv review"

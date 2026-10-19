@@ -2,7 +2,7 @@
   "id": "ST-jegmkatz",
   "kind": "story",
   "title": "The commit hook adds KB-Operator with the operator id to an agent session's commits, and check-trailers refuses an email there",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yjugq5c2",
   "priority": "P2",
   "rank": 0,
