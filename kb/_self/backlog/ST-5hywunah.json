@@ -77,7 +77,9 @@
         "none: every host of an internal pointer's url is refused": "ST-5hywunah",
         "placeholder hosts (example.com, .org, .net, localhost) and the public git hosts (github.com, gitlab.com, bitbucket.org, dev.azure.com); the url's path is refused whatever its host": "ST-5hywunah"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "placeholder hosts (example.com, .org, .net, localhost) and the public git hosts (github.com, gitlab.com, bitbucket.org, dev.azure.com); the url's path is refused whatever its host",
+      "by": "operator"
     },
     {
       "id": "g2",
