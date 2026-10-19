@@ -2,7 +2,7 @@
   "id": "ST-4qfbef2j",
   "kind": "story",
   "title": "kbmon --status sprints --backtest N replays the estimator over the last N closed sprints and prints its error and range coverage",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yjfiemha",
   "priority": "P2",
   "rank": 0,
@@ -70,5 +70,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Premise on origin/main cf985537c, 2026-10-19: kbmon.py has no --backtest (argparse exits 2 on an unrecognised argument). Baseline on the same day, a planning script outside the repository: the commit-gap estimate (open items x the median gap of the last 5 done commits) over the last 20 closed sprints with at least 3 items and 10 minutes, at 25/50/75 percent of each (57 points): median absolute error 10 min, median relative error 51 percent. The sprint's target (relative error at most 35 percent, at least half the close times inside the range, over 20 sprints) has no data behind it for the new estimator yet; the review story's check measures it."
+  "notes": "Premise on origin/main cf985537c, 2026-10-19: kbmon.py has no --backtest (argparse exits 2 on an unrecognised argument). Baseline on the same day, a planning script outside the repository: the commit-gap estimate (open items x the median gap of the last 5 done commits) over the last 20 closed sprints with at least 3 items and 10 minutes, at 25/50/75 percent of each (57 points): median absolute error 10 min, median relative error 51 percent. The sprint's target (relative error at most 35 percent, at least half the close times inside the range, over 20 sprints) has no data behind it for the new estimator yet; the review story's check measures it.",
+  "claimed_by": "orch-r33"
 }
