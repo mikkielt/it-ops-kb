@@ -2,7 +2,7 @@
   "id": "ST-t7bw6zvf",
   "kind": "story",
   "title": "A missing root is reported by rag.py pack, kb_status and kb_mcp.py --status, which answer from the other roots and exit 0",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-s2svf5a6",
   "priority": "P2",
@@ -67,5 +67,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19, this checkout): KB_ROOTS=<a directory without _root.md> python3 _tools/rag.py pack 'intune win32 app' exits 1 with 'no readable _root.md', and kb_mcp.py --status prints the same error. "
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the check is a tool run on a throwaway clone built from this checkout's _tools and a planted kb (a public root, a team root in a local bare repository, pointer files), with its own coord store; no change to _tools/tests_ceiling.json. Design: kb/_self/design.md, Teams and organizations. Premise (2026-10-19, this checkout): KB_ROOTS=<a directory without _root.md> python3 _tools/rag.py pack 'intune win32 app' exits 1 with 'no readable _root.md', and kb_mcp.py --status prints the same error. ",
+  "claimed_by": "orch-r34"
 }
