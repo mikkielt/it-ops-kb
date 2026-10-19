@@ -1,0 +1,21 @@
+{
+  "id": "BG-svqrrfbt",
+  "kind": "bug",
+  "title": "mon_view.py defines panel_lines twice; the first definition is dead code",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "_tools/mon_view.py has one panel_lines, the one that takes width, and the dead two-parameter definition above it is removed",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import ast,sys; t=ast.parse(open('_tools/mon_view.py',encoding='utf-8').read()); n=sum(isinstance(x,ast.FunctionDef) and x.name=='panel_lines' for x in t.body); print(n); sys.exit(0 if n==1 else 1)"
+    ]
+  },
+  "repro_reason": "a duplicate definition has no behaviour of its own: the later one wins, so only the module's definitions show it",
+  "touches": [
+    "_tools/mon_view.py"
+  ]
+}
