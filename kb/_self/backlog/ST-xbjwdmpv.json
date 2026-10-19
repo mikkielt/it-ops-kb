@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "kbwho gives one operator the same alias in every linked worktree of a clone",
   "status": "draft",
+  "sprint": "SP-yjugq5c2",
   "priority": "P1",
   "rank": 0,
   "goal": "kbwho.py keeps _private/operators.json in the clone's main worktree (as ql_base.clone_home does for the query log), so a session in a linked worktree and one in the main checkout get the same operator id for the same email",
