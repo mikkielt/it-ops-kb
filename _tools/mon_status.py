@@ -11,7 +11,9 @@ An answer is at most MAX_LINES lines, every one passed through `redact.redact` a
 holder is never read. A panel that is not `ok` gives one line that says so. It speaks results, an item by its title, and an
 id only on a line where the operator acts. The sprints answer rests on the sprint panel's data (items read from `origin/main`,
 the commits the checkout is behind it, the times of each sprint's last done commits) and the host panel's load, so a saved
-snapshot gives the same answer; its ETA is the open items times the median gap between the last ETA_DONE done commits. It calls no model and writes no file. Imports `mon_base`, `mon_sessions` (its
+snapshot gives the same answer; its ETA is the open items times the median gap between the last ETA_DONE done commits. The
+load answer also gives the host panel's CPU groups with a fixed cause and remedy each (GROUP_TEXT), as lines and as a
+top-level `groups` list. It calls no model and writes no file. Imports `mon_base`, `mon_sessions` (its
 age text) and `mon_view`; `bl_base` where it reads titles.
 """
 import re
@@ -32,6 +34,19 @@ ALL_LINES = 4  # lines each topic gives in `all`
 ETA_DONE = 5  # a sprint's last done commits its ETA rests on
 ROWS = 6  # processes, claims, sprints or gates one topic names before it counts the rest
 WHY_CHARS = 120
+GROUP_TEXT = {  # kind: (cause, remedy), fixed words
+    "kbmon": ("the monitor reads every panel on each refresh",
+              "a longer refresh interval, fewer live views, or this status answer in place of a view"),
+    "fseventsd": ("the system reports file changes in the clone and its worktrees",
+                  "fewer parallel workers and pruned worktrees"),
+    "kb-tools": ("kb scripts are running, such as a long pack, an index build or a check",
+                 "wait for it, or look for a stalled item in the sessions answer"),
+    "claude": ("Claude Code sessions are working", "fewer parallel sessions"),
+    "tests": ("the test suite is running", "one whole-suite run at a time, which the host lock keeps"),
+    "other": ("processes outside the kb", "nothing the kb can change; find the biggest in the system's activity monitor"),
+}
+BASIS = {"recent": "ps's decaying recent average of each process (macOS)",
+         "lifetime": "ps's CPU time over each process's whole life"}
 ABSOLUTE = re.compile(r"(?<![\w.:/])(?:~|\.\.)?/[^\s'\",;)]+|\b[A-Za-z]:\\[^\s'\",;)]*")
 
 
@@ -312,7 +327,29 @@ def load(r):
     if "free_pct" in disk:
         facts["disk_free_pct"] = disk["free_pct"]
         lines.append(f"  Disk {number(disk['free_pct']):g}% free.")
+    lines += consumer_lines(data, facts)
     return lines, facts
+
+
+def consumer_lines(data, facts):
+    """The lines of the CPU groups (those using CPU, ROWS at most, each with its cause and remedy), and `facts["groups"]`
+    with all of them as {kind, clone, cpu, procs, cause, remedy}."""
+    found = data.get("groups")
+    if not isinstance(found, list):
+        facts["groups"] = []
+        return ["  CPU by kind: not available on this host (no ps)."]
+    made = [g for g in found if isinstance(g, dict) and g.get("kind") in GROUP_TEXT]
+    facts["groups"] = [{"kind": g["kind"], "clone": g.get("clone"), "cpu": number(g.get("cpu"), 0.0), "procs": number(g.get("procs")),
+                        "cause": GROUP_TEXT[g["kind"]][0], "remedy": GROUP_TEXT[g["kind"]][1]} for g in made]
+    using = [g for g in facts["groups"] if g["cpu"] > 0]
+    basis = BASIS.get(data.get("cpu_basis"), "as ps gives it")
+    if not using:
+        return [f"  No process group uses CPU ({basis})."]
+    lines = [f"  CPU by kind, the percent being {basis}:"]
+    for g in using[:ROWS]:
+        what = g["kind"] + (f" ({g['clone']} clone)" if g["clone"] else "")
+        lines.append(f"  {what} {g['cpu']:g}%, {int(g['procs'])} process{'' if g['procs'] == 1 else 'es'}: {g['cause']}. Remedy: {g['remedy']}.")
+    return lines + ["  " + x for x in more(len(using) - ROWS, "groups")]
 
 
 ANSWERS = {"sessions": sessions, "cost": cost, "querylog": querylog, "coord": coord, "sprints": sprints, "load": load}
@@ -346,5 +383,9 @@ def answer(snap, topic, root=None):
         facts[t] = found
     if topic != "all":
         facts = facts[topic]
+    groups = facts.pop("groups", []) if topic == "load" else []
     lines, facts = clean(lines, facts)
-    return {"schema": SCHEMA, "topic": topic, "taken": snap.get("taken"), "lines": lines, "facts": facts}
+    found = {"schema": SCHEMA, "topic": topic, "taken": snap.get("taken"), "lines": lines, "facts": facts}
+    if topic == "load":
+        found["groups"] = mon_view.scrub({"groups": groups})["groups"]
+    return found
