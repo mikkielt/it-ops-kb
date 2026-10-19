@@ -76,7 +76,7 @@ ALLOWLIST_PATH = "_tools/tests_allowlist.txt"
 URL_RX = re.compile(r"(?:https?|ssh|git)://\S+|(?<![\w.%+-])git@[\w.-]+:[\w./~-]+|\bssh(?:\s+-\w+)*\s+git@[\w.-]+")
 CACHE_DIR = ("_cache", "publish")  # the per-clone scan cache under the repository, never committed (its own .gitignore)
 PROJECTION_FORM = 1  # the projection's form: a change to how commits are projected bumps it, so no older cache is read
-SCAN_FORM = 1  # the leak scan's form (file_hits): a change to what it flags bumps it, so no verdict cached under an older rule is read
+SCAN_FORM = 2  # the leak scan's form (file_hits): a change to what it flags bumps it, so no verdict cached under an older rule is read
 HOOK_BOUND = 150  # uncached commits publish --hook checks at most; a longer range is left to a publish by hand (git.md)
 CI_RUN = None  # a command runner (argv -> (code, stdout, stderr)) for the CI check; None: ql_base.run_cmd. Tests stub it.
 
@@ -425,13 +425,27 @@ def pinned_paths(proj, files, cwd):
 
 def file_hits(path, text, allow, pinned=()):
     """[(kind, value)] of the leak scan of the file PATH with TEXT, as the tracked-file scan reads a file: urls are
-    stripped except for secrets; vendor exports, snapshots (`/artifacts/`, `/_snapshots/`) and the pinned artifacts
-    PINNED lists are scanned for secrets only; a GUID counts in every other text file."""
+    stripped except for secrets and the registry's private names (an internal root's qualified path, id, pointer host
+    and path, read in each url and after each `/` of it); vendor exports, snapshots (`/artifacts/`, `/_snapshots/`) and
+    the pinned artifacts PINNED lists are scanned for secrets only; a GUID counts in every other text file."""
     import kbcommon
     vendored = "/artifacts/" in path or f"/{kbcommon.SNAPSHOTS}/" in path or path in pinned
     hits = kbcommon.leak_hits(URL_RX.sub("", text), allow)
     hits += [h for h in kbcommon.leak_hits(text, allow) if h[0] == "secret" and h not in hits]
+    if not vendored:
+        for m in URL_RX.finditer(text):
+            url = m.group(0)
+            for piece in [url, *(url[i + 1:] for i, c in enumerate(url) if c == "/")]:
+                hits += [h for h in kbcommon.private_hits(piece) if h[1].lower() not in allow.get(h[0], ()) and h not in hits]
     return [h for h in hits if h[0] == "secret" or not vendored]
+
+
+def scan_form():
+    """The leak scan's form as a cache key: SCAN_FORM and a digest of the registry's private patterns (kbcommon's), so a
+    private name the registry gains or loses reads no verdict or value cached before it."""
+    import kbcommon
+    pats = "\0".join(f"{kind}\0{rx.pattern}" for kind, rx in kbcommon._private_patterns())
+    return f"{SCAN_FORM}-{hashlib.sha256(pats.encode('utf-8')).hexdigest()[:12]}"
 
 
 def cache_load(cwd, name):
@@ -469,11 +483,11 @@ def hit_key(hit):
 def public_values(tip, cwd):
     """{hit_key} of every leak-scan hit (file_hits without an allowlist) in any file of the public tip TIP's tree: the
     values the public home already holds, whichever file holds them. Scanned once per tip and scan rule and cached in
-    CACHE_DIR/public-<SCAN_FORM>-<tip>.json, so a change to what the scan flags reads none of an older rule's values;
-    empty without a tip. Raises RuntimeError on a git error."""
+    CACHE_DIR/public-<scan_form()>-<tip>.json, so a change to what the scan flags or to the registry's private names
+    reads none of an older rule's values; empty without a tip. Raises RuntimeError on a git error."""
     if not tip:
         return set()
-    name = f"public-{SCAN_FORM}-{tip}.json"
+    name = f"public-{scan_form()}-{tip}.json"
     got = cache_load(cwd, name)
     if isinstance(got, list) and all(isinstance(x, str) for x in got):
         return set(got)
@@ -569,7 +583,7 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None):
             file of TIP holds (public_values: already public), allowing the _tools/tests_allowlist.txt of the commit
             and of PROJ.
     The leak verdict of each commit (its causes, often none) is cached per commit in
-    CACHE_DIR/verdicts-<TIP>-<digest of SCAN_FORM, PROJ's allowlist and pinned artifacts>.json, the inputs it depends on beside the commit's own, so a
+    CACHE_DIR/verdicts-<TIP>-<digest of scan_form(), PROJ's allowlist and pinned artifacts>.json, the inputs it depends on beside the commit's own, so a
     range already checked costs one `git log` the next time. With BOUND, raises LongRange before any scan when more
     than BOUND commits of the range have no cached verdict. Raises RuntimeError on a git error."""
     import kbcommon
@@ -578,7 +592,7 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None):
     changes = history_changes(proj, tip, cwd)
     final = blobs(proj, [ALLOWLIST_PATH], cwd).get(ALLOWLIST_PATH, "")
     pinned = pinned_paths(proj, files, cwd)
-    inputs = "\0".join([f"scan-form {SCAN_FORM}", final, *sorted(pinned)])
+    inputs = "\0".join([f"scan-form {scan_form()}", final, *sorted(pinned)])
     vname = f"verdicts-{tip or 'none'}-{hashlib.sha256(inputs.encode('utf-8')).hexdigest()[:16]}.json"
     got = cache_load(cwd, vname)
     verdicts = {c: v for c, v in (got.items() if isinstance(got, dict) else ())
