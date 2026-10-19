@@ -2,7 +2,7 @@
   "id": "ST-sn25w6jm",
   "kind": "story",
   "title": "token-efficiency.md says whether coord dedup cuts duplicate facts and tokens, by how much and with what spread, from the paid shared and isolated records",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-giqleoy2",
   "sprint": "SP-p46hofrg",
   "priority": "P1",
@@ -33,5 +33,7 @@
   "depends_on": [
     "ST-ix3lknus"
   ],
-  "notes": "Premise 2026-10-19: the Concurrent agents section of kb/_self/token-efficiency.md says 'Coord dedup is not shown to work' (claims and claim_conflicts 0 in every row). Overlap: many planned sprints (SP-ttgcpf7o, SP-gea4jifz, SP-tsb23kev, SP-46k7sw57, SP-v64egscn, SP-jplczvj2, SP-s2svf5a6, SP-mguax5m3, SP-ipeewrlv) have items touching this file; this item edits only the dedup bullet, rebase keeping both sides."
+  "notes": "Premise 2026-10-19: the Concurrent agents section of kb/_self/token-efficiency.md says 'Coord dedup is not shown to work' (claims and claim_conflicts 0 in every row). Overlap: many planned sprints (SP-ttgcpf7o, SP-gea4jifz, SP-tsb23kev, SP-46k7sw57, SP-v64egscn, SP-jplczvj2, SP-s2svf5a6, SP-mguax5m3, SP-ipeewrlv) have items touching this file; this item edits only the dedup bullet, rebase keeping both sides.",
+  "claimed_by": "orch-r61",
+  "operator": "op-6cf5171e"
 }
