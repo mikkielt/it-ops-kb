@@ -13,7 +13,8 @@ import bl_cli
 from bl_base import (
     IN_SPRINT, PRIORITIES, RESEARCH_ID, Refused, Rejected, SEVERITIES, START_GATE, TEXT_MAX, canonical,
     claims_ledger, commit_message, commit_written, external_problems, git, in_scope, item_file, kinds, ledger_lock, need,
-    new_id, rel_dir, research_checks, research_in_planned, review_checks, say, scope, trailer_problem, waits, withhold, write_ledger,
+    new_id, operator_problem, operator_who, rel_dir, research_checks, research_in_planned, review_checks, say, scope,
+    trailer_problem, waits, withhold, write_ledger,
 )
 from bl_check import (
     ITEM_FILES_ROUTE, bl_intake, item_files_only, noop_warnings, refused_command_errors, text_only_repro, validate,
@@ -108,6 +109,9 @@ def cmd_new(bl, a):
                   gates=[{"id": START_GATE, "kind": "blocking",
                           "question": "Approve this sprint's goal and committed items?",
                           "options": ["approve", "change", "cancel"], "recommendation": "approve"}])
+        creator = operator_who()[0]
+        if creator:
+            it["creator"] = creator
         bl.save(it)
         rv = {"id": new_id("story"), "kind": "story", "title": f"Review sprint: {it['title']}"[:TEXT_MAX],
               "status": "draft", "sprint": it["id"], "review": True, "priority": "P1", "rank": 999999,
@@ -246,6 +250,10 @@ def cmd_claim(bl, a):
                           f"in this checkout ({top}) on {', '.join(bl.label(i) for i in busy)}; each session works in its "
                           "own worktree (git worktree add), so its claim commits never land on another session's branch")
         it.update(status="doing", claimed_by=a.by)
+        it.pop("operator", None)
+        who = operator_who()[0]
+        if who:
+            it["operator"] = who
         bl.save(it)
         here = {i: r for i, r in here.items() if i in bl.items and bl.items[i].get("status") == "doing"}
         here[iid] = {"by": a.by, "session": session}
@@ -266,6 +274,7 @@ def cmd_release(bl, a):
         raise Refused(f"{bl.label(iid)} is {it.get('status')}, not doing")
     it["status"] = "draft" if research_in_planned(bl, iid) else "todo"  # a planned sprint's items stay draft
     it.pop("claimed_by", None)
+    it.pop("operator", None)
     bl.save(it)
     say(f"released {bl.label(iid)}")
     return 0
@@ -385,6 +394,12 @@ def cmd_answer(bl, a):
         g.update(answer=a.answer, by=a.by)
         if a.record:
             record_decision(bl, iid, a.gate, a.answer, a.by)
+    g.pop("operator", None)
+    g.pop("role", None)
+    if g.get("by") == "operator":  # who answered, and whether an orchestrator did on a delegation
+        who, role = operator_who()
+        if who:
+            g["operator"], g["role"] = who, role
     bl.save(it)
     say(f"gate {a.gate} of {bl.label(iid)}: {g['answer']} (by {g['by']})")
     if a.record:
@@ -463,10 +478,12 @@ def replace_flag(field):
     """The flag that replaces `field`, the twin of its append flag (--check for --add-check)."""
     return "--" + SET_APPEND[field][0].removeprefix("--add-")
 SET_FIELDS = ("notes", "priority", "rank", "sprint", "title", "goal", "repro", "repro_reason", "severity",
-              "parent", "delegates", "external", "clauses") + SET_LISTS  # what set changes; the others are refused
+              "parent", "delegates", "external", "clauses", "owner") + SET_LISTS  # what set changes; the others are refused
 SET_REFUSED = {  # a field set refuses, with the rule it states
     "status": "changes only through claim, release, start, close, drop and done",
     "claimed_by": "changes only through claim and release",
+    "operator": "is written by claim",
+    "creator": "is written by new sprint",
     "evidence": "is written only by done",
     "id": "is the item's identity",
     "kind": "is the item's identity",
@@ -509,7 +526,15 @@ def cmd_set(bl, a):
         if set_refusal(f):
             raise Rejected(set_refusal(f))
     given = {"notes": a.notes, "priority": a.priority, "rank": a.rank, "sprint": a.sprint}
-    given.update({f: getattr(a, f) for f in ("title", "goal", "repro", "repro_reason", "severity", "parent")})
+    given.update({f: getattr(a, f) for f in ("title", "goal", "repro", "repro_reason", "severity", "parent", "owner")})
+    if a.owner is not None or "owner" in a.clear:  # a sprint's owner: the operator's word, an id and never an address
+        if a.set_by != "operator":
+            raise Rejected("set refuses owner without --by operator: a sprint's owner is the operator's to name")
+        if it.get("kind") != "sprint":
+            raise Rejected(f"set refuses owner on {bl.label(iid)}: an owner is a sprint's")
+        why = operator_problem("--owner", a.owner) if a.owner is not None else None
+        if why:
+            raise Rejected(f"set: {why}")
     if a.delegate or "delegates" in a.clear:  # a grant the operator gives: never an agent's own word
         if a.set_by != "operator":
             raise Rejected("set refuses delegates without --by operator: a grant to confirm provisional answers is the "
@@ -545,7 +570,7 @@ def cmd_set(bl, a):
         raise Rejected("set: nothing to change: name a field (" + ", ".join(SET_FIELDS) + ")")
     named = sorted(set(given) | set(adds) | set(a.clear))
     if it.get("kind") == "sprint":
-        takes = {"notes", "links", "delegates"}
+        takes = {"notes", "links", "delegates", "owner"}
         if "goal" in given and "goal" not in a.clear:
             if a.set_by != "operator":  # a rescope a gate answers lands in the goal close --summary reads: the operator's
                 raise Rejected(f"set refuses goal on {bl.label(iid)} without --by operator: a sprint's goal changes "
@@ -555,7 +580,7 @@ def cmd_set(bl, a):
             takes.add("goal")
         if set(named) - takes:
             raise Rejected(f"set refuses {', '.join(sorted(set(named) - takes))} on a sprint: "
-                           "a sprint takes notes, links, delegates and, with --by operator, its goal only")
+                           "a sprint takes notes, links, delegates and, with --by operator, its goal and owner only")
     frozen = {"checks", "clauses", "touches", "goal", "repro", "repro_reason"}  # what a done item's evidence proved
     if it.get("status") == "done" and frozen & set(named):
         raise Rejected(f"set refuses {', '.join(sorted(frozen & set(named)))} "
@@ -752,6 +777,7 @@ def cmd_reopen(bl, a):
         new["status"] = state
         new.pop("evidence", None)
         new.pop("claimed_by", None)
+        new.pop("operator", None)
 
     # a done item's gone touches are no finding while it is done: reopening reveals them, and set --check repoints the checks that name them
     changed_items(bl, {iid: edit}, reveal=(iid,))
@@ -1032,6 +1058,7 @@ def cmd_drop(bl, a):
         return 0
     it.update(status="dropped", notes=(it.get("notes", "") + " Dropped: " + a.why).strip()[:TEXT_MAX])
     it.pop("claimed_by", None)
+    it.pop("operator", None)
     bl.save(it)
     say(f"dropped {bl.label(iid)}: {a.why}")
     return 0
@@ -1183,8 +1210,10 @@ def args_set(p):
     p.add_argument("--parent", help="the item's parent, by the same kind rules check applies")
     p.add_argument("--delegate", action="append", metavar="NAME",
                    help="on a sprint, with --by operator: grant NAME the confirming of its provisional answers")
+    p.add_argument("--owner", metavar="ID",
+                   help="on a sprint, with --by operator: its owner, an operator id (kbwho.py), never an email address")
     p.add_argument("--by", dest="set_by", metavar="operator",
-                   help="who writes a --delegate grant or a sprint's --goal: the operator only")
+                   help="who writes a --delegate grant or a sprint's --goal or --owner: the operator only")
     for f, (flag, value) in SET_APPEND.items():  # each appends to its own field; the plain flag replaces it
         p.add_argument(flag, dest="add_" + f, action="append", metavar=value,
                        help=f"append to {f} (repeatable; refused beside {replace_flag(f)})")

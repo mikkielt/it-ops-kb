@@ -55,7 +55,9 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           only the claimed items outside ID's chain whose touches overlap ID's own or
                                           its descendants' (a glob read as a path matches the other, or a tracked file
                                           matches both), each naming the glob it meets; exit 1 when there is one
-  backlog.py claim ID --by NAME          status doing, claimed by NAME;  backlog.py release ID  back to todo
+  backlog.py claim ID --by NAME          status doing, claimed by NAME, with the session's operator id beside it
+                                          (kbwho.py; `new sprint` writes the sprint's creator the same way);
+                                          backlog.py release ID  back to todo
                                           (a research item of a planned sprint, one whose touches are all inside kb
                                           roots: claimed from draft, released to draft; check accepts it doing or
                                           done, and done proves it before the sprint starts)
@@ -73,11 +75,13 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           an answer only with --by operator (--provisional, --confirm included);
                                           --record commits what it wrote, the item file (chore(backlog): answer ID
                                           "title", KB-Work: ID, then each --trailer 'KEY: VALUE') and the decisions
-                                          row (no KB-Work), so the tree is clean for the next kbgit.py sync
+                                          row (no KB-Work), so the tree is clean for the next kbgit.py sync;
+                                          an answer --by operator also records the answering session's operator id
+                                          and role (interactive, orchestrator or worker) on the gate beside by
   backlog.py set ID [--notes TEXT] [--link T]... [--touch GLOB]... [--check CMD]... [--depends ID]...
                  [--relates ID]... [--priority P1|P2|P3] [--rank N] [--sprint ID] [--title T] [--goal T]
                  [--repro CMD] [--repro-reason T] [--severity S1..S4] [--parent ID]
-                 [--delegate NAME --by operator] [--add-notes T]... [--add-link T]... [--add-touch GLOB]...
+                 [--delegate NAME --by operator] [--owner ID --by operator] [--add-notes T]... [--add-link T]... [--add-touch GLOB]...
                  [--add-check CMD]... [--add-depends ID]... [--add-relates ID]... [--external TRACKER=ID]...
                  [--add-external TRACKER=ID]... [--clause CLAUSE=N]... [--add-clause CLAUSE=N]... [--clear FIELD]...
                                           change an item after new: each list option replaces its list, and its
@@ -91,9 +95,11 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           The result is validated as check does and written only when it adds no
                                           error; title, goal and parent, and a bug's repro (one that fails now, as
                                           new bug's), repro_reason and severity are replaced whole; status,
-                                          claimed_by, evidence, id, kind, a done item's goal, repro, checks and
-                                          touches (its evidence proves them) and the fields set does not name
-                                          are refused, and a sprint takes notes and links only; exit 2 for each
+                                          claimed_by, operator, creator, evidence, id, kind, a done item's goal,
+                                          repro, checks and touches (its evidence proves them) and the fields set
+                                          does not name are refused, and a sprint takes notes and links only (and,
+                                          with --by operator, its goal and --owner, an operator id that is
+                                          refused when shaped like an email address); exit 2 for each
                                           refusal (exit 1 for a repro that passes), the item file unchanged
   backlog.py move ID --sprint SP|none     set a story's or bug's sprint (none: no sprint) and write the status that
                                           sprint's state gives: todo in an active sprint, draft in a planned one or
