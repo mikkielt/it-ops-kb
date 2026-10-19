@@ -2,7 +2,7 @@
   "id": "BG-ifba4s7y",
   "kind": "bug",
   "title": "A roots missing reason names an absolute path or a ../ chain for an unusable fetched root or a prefix clash",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-s2svf5a6",
   "priority": "P1",
@@ -20,5 +20,6 @@
     "_tools/kbcommon.py",
     "kb/_self/tools.md",
     "kb/_self/plugin.md"
-  ]
+  ],
+  "claimed_by": "orch-r34"
 }
