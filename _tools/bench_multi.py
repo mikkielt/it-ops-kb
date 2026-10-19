@@ -15,7 +15,7 @@ scripted stand-in for `claude`, instead: no model call. `record` merges the line
 file as the rows of the scenario `multi`. This module imports bench_repro for its instance helpers (kb/_self/code.md,
 Layout); benchmarks.py holds the command line.
 """
-import base64, csv, datetime, hashlib, json, os, re, shlex, shutil, signal, sqlite3, subprocess, sys, threading, time
+import base64, csv, datetime, hashlib, itertools, json, os, re, shlex, shutil, signal, sqlite3, subprocess, sys, threading, time
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -55,7 +55,8 @@ CODE_ITEM_USD = 1.0  # what one code item costs on RECORDED_MODEL: about the mea
 RECORDED_MODEL = "claude-sonnet-5-5"  # the model the recorded repro rows and the code figure were taken on
 DEFAULT_USAGE = {"input_tokens": 120, "output_tokens": 30000, "cache_creation_input_tokens": 150000, "cache_read_input_tokens": 6000000,
                  "num_turns": 80}  # what a replayed code agent prints, and a role with no recorded row: about one worker session
-PLANTS = {"lost-claim": "research", "land-stop": "code"}  # --plant: the fault, and the role of the first agent that makes it
+PLANTS = {"lost-claim": "research", "land-stop": "code", "dup-research": "research"}  # --plant: the fault, and the role of the first agents that make it
+PLANT_AGENTS = {"dup-research": 2}  # the agents a --plant makes its fault in, when not one
 REPLAY = "_tools/bench_replay.py"  # the scripted stand-in of `--replay`, run from this checkout in the agents' clones
 POOL_ARM = re.compile(r"[a-z]+-\d+(?:-\d+)*(?::default)?(/session)?")  # a kb arm of the pool at its default effort
 GAP = ("\n## multi-probe-agent{n}\n\n- **A probe entry that multi probe commits and syncs from agent {n}.** Nothing was tried; "
@@ -718,8 +719,8 @@ def run(scenario, root=None, dry_run=False, knobs=None, out=print):
     briefs = bench_repro.load_briefs()
     problems = input_problems([r for r in rows if r["scenario"] == scenario], questions, {b["area"].strip() for b in briefs})
     agents = agents_of(rows, scenario)
-    if k["plant"] and not any(a["role"] == PLANTS[k["plant"]] for a in agents):
-        raise Refused(f"--plant {k['plant']} needs an agent of role {PLANTS[k['plant']]}: scenario {scenario} has none")
+    if k["plant"] and sum(a["role"] == PLANTS[k["plant"]] for a in agents) < PLANT_AGENTS.get(k["plant"], 1):
+        raise Refused(f"--plant {k['plant']} needs {PLANT_AGENTS.get(k['plant'], 1)} agent(s) of role {PLANTS[k['plant']]}: scenario {scenario} has fewer")
     if problems or not agents:
         for ln in problems or [f"no rows of scenario {scenario} in {INPUTS}"]:
             out(f"FAIL: {ln}")
@@ -728,7 +729,8 @@ def run(scenario, root=None, dry_run=False, knobs=None, out=print):
     means = recorded_means(recorded)
     plans = [agent_plan(a, scenario, n, root, k, models, means, questions, briefs) for n, a in enumerate(agents, 1)]
     if k["plant"]:
-        next(p for p in plans if p["role"] == PLANTS[k["plant"]])["plant"] = k["plant"]
+        for p in [p for p in plans if p["role"] == PLANTS[k["plant"]]][:PLANT_AGENTS.get(k["plant"], 1)]:
+            p["plant"] = k["plant"]
     if k["replay"]:
         for p in plans:
             p["argv"] = replay_argv(p, recorded_usage(recorded, p["mid"]), k)
@@ -1274,6 +1276,61 @@ def landing_stops(manifest, lines, bare):
     return out
 
 
+def claim_windows(path):
+    """[(key, holder, start, end)] of the research claims (`research:TOPIC:TERM`) in the coord store at `path`, each the seconds
+    since the epoch a holder held the key: a row that still names a holder from its lease's start to its expiry, and a claim
+    event to its release event (open ended when none follows); [] when there is no file."""
+    if not Path(path).is_file():
+        return []
+    con = sqlite3.connect(Path(path).resolve().as_uri() + "?mode=ro", uri=True)
+    out, begun = [], {}
+    try:
+        out = [(key, holder, expires - ttl, expires) for key, holder, ttl, expires in con.execute(
+            "SELECT key, holder, ttl, expires FROM entries WHERE holder IS NOT NULL AND substr(key, 1, ?) = ?", (len(RESEARCH), RESEARCH))]
+        for kind, fields, at in con.execute("SELECT kind, fields, at FROM events WHERE kind IN ('claim', 'release') ORDER BY seq"):
+            f = json.loads(fields)
+            key, holder = f.get("key") or "", f.get("holder")
+            if key.startswith(RESEARCH):
+                if kind == "claim":
+                    begun[(key, holder)] = at
+                elif (key, holder) in begun:
+                    out.append((key, holder, begun.pop((key, holder)), at))
+    except (sqlite3.Error, ValueError):
+        pass
+    finally:
+        con.close()
+    return out + [(key, holder, at, float("inf")) for (key, holder), at in begun.items()]
+
+
+def duplicate_research(root, manifest, lines):
+    """The duplicate research of the run: for each two agents that added a fact of one claim (bench_repro.match_facts, as
+    `repro compare` matches them) on the article of a research key `research:TOPIC:TERM`, with TERM in the fact, a line naming
+    the agent whose fact was committed while the other agent's claim of that key was live (a second between the clock of
+    the store and the commit's whole seconds is allowed), once for each pair and key."""
+    who = {r["n"]: r["agent"] for r in lines if r.get("n")}
+    bare = origin_path(root)
+    added = {n: added_facts(bare, manifest["base"], agent_email(n)) for n in who}
+    windows, seen = [], set()
+    for a in manifest["agents"]:
+        if a["coord_store"] not in seen:
+            seen.add(a["coord_store"])
+            windows += claim_windows(a["coord_store"])
+    out, named = [], set()
+    for x, y in itertools.combinations(sorted(who), 2):
+        for i, j in bench_repro.match_facts(added[x], added[y]) if added[x] and added[y] else ():
+            for key, holder, start, end in windows:
+                topic, _, term = key[len(RESEARCH):].partition(":")
+                m = HOLDER_AGENT.search(holder or "")
+                owner = int(m.group(1)) if m else None
+                for adder, fact in ((y, added[y][j]), (x, added[x][i])):
+                    if (owner in (x, y) and owner != adder and (x, y, key) not in named and fact["path"] == topic + ".md"
+                            and term in fact["text"].lower() and start - 1 <= fact["at"] <= end + 1):
+                        named.add((x, y, key))
+                        out.append(f"duplicate research: {who[adder]} added a fact for {term!r} on {topic} while {who[owner]} held the "
+                                   f"dedup claim {key}, and {who[owner]} wrote it too")
+    return out
+
+
 def check(root=None, out=print):
     """`multi check`: read the finished run in DIR (results.jsonl, the sandbox's coord store, the clones' planted backlog
     items and the bare's main) and name each lost claim (`coord_losses`, `backlog_losses`) and each landing stop
@@ -1290,9 +1347,14 @@ def check(root=None, out=print):
     manifest = json.loads((root / MANIFEST).read_text(encoding="utf-8"))
     bare = origin_path(root)
     found = coord_losses(root, manifest, bare) + backlog_losses(manifest, lines, bare) + landing_stops(manifest, lines, bare)
-    for ln in found:
+    dups = duplicate_research(root, manifest, lines)
+    shared = manifest.get("coord") == "shared"
+    found += dups if shared else []
+    for ln in found + ([] if shared else [f"{ln} (counted: the agents' stores are isolated)" for ln in dups]):
         out(ln)
-    out(f"multi check: {len(lines)} agent(s) of scenario {lines[0]['scenario']}, " + (f"{len(found)} problem(s) named" if found else "no lost claim and no landing stop"))
+    out(f"multi check: {len(lines)} agent(s) of scenario {lines[0]['scenario']}, " + (f"{len(found)} problem(s) named" if found else (
+        "no lost claim, no landing stop and no duplicate research" if shared else "no lost claim and no landing stop"))
+        + ("" if shared else f"; {len(dups)} duplicate research counted"))
     return 1 if found else 0
 
 
@@ -1304,6 +1366,8 @@ AGENT_METRICS = (("input", "input_tokens"), ("out", "output_tokens"), ("cache_re
                  ("cache_write", "cache_write_tokens"), ("cost", "cost"), ("wall_s", "wall_s"),
                  ("turns", "turns"))  # (metric, key of the json line) of the numbers an agent and the run hold
 STAMP = "%Y-%m-%dT%H:%M:%SZ"  # bench_repro.utc_now's
+COMMIT_AT = "commit-at "  # the prefix of the line that gives each commit's time in added_facts' log
+RESEARCH = "research:"  # coord.RESEARCH: the prefix of a research claim's key, research:<anchor topic>:<lack term>
 SESSION_LEASE = "session/"  # coord.SESSION_LEASE: the key of a session's presence lease, which is no claim
 ARTICLE = re.compile(r"kb/([^/_][^/]*)/([^/_][^/]*)/([^/_][^/]*\.md)")  # a kb article: root, domain, file
 REBASE = re.compile(r"\brebase(?: -i)? \((start|finish|abort)\)")  # a HEAD reflog message of a rebase's start and end
@@ -1341,17 +1405,19 @@ def run_wall(lines):
 
 def added_facts(bare, base, email):
     """The fact lines (a line with an evidence tag) that the commits of one author added to kb articles between `base` and the
-    bare's main, as [{path, text, ids}] in the form bench_repro.match_facts reads."""
-    p = sh(["git", "log", f"{base}..refs/heads/main", "--no-merges", f"--author=<{email}>", "-p", "-U0", "--format=", "--", "kb"],
+    bare's main, as [{path, text, at, ids}] (`at`: the commit's seconds since the epoch) in the form bench_repro.match_facts reads."""
+    p = sh(["git", "log", f"{base}..refs/heads/main", "--no-merges", f"--author=<{email}>", "-p", "-U0", f"--format={COMMIT_AT}%at", "--", "kb"],
            bare, os.environ)
     import kbfacts
-    facts, path = [], None
+    facts, path, at = [], None, 0
     for ln in p.stdout.splitlines():
-        if ln.startswith("+++ "):
+        if ln.startswith(COMMIT_AT):
+            at = int(ln[len(COMMIT_AT):])
+        elif ln.startswith("+++ "):
             m = ARTICLE.fullmatch(ln[6:]) if ln.startswith("+++ b/") else None
             path = "/".join(m.groups()) if m else None
         elif path and ln.startswith("+") and kbfacts.TAG.search(ln):
-            facts.append({"path": path, "text": ln[1:], "ids": [i for t in kbfacts.tags_in(ln) for i in t["ids"]]})
+            facts.append({"path": path, "text": ln[1:], "at": at, "ids": [i for t in kbfacts.tags_in(ln) for i in t["ids"]]})
     return facts
 
 

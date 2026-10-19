@@ -7,20 +7,27 @@ item) and makes no model call: a `lookup` agent runs `rag.py pack` on each quest
 runs `kbgit.py sync --push`, then releases its claim (with a `release` event); a `code` agent writes the planted files of
 its item's touches, runs the item's check and commits them with the item's `KB-Work` trailer. `--plant lost-claim` makes a
 research agent end with its claim held and `--plant land-stop` makes a code agent leave its change uncommitted, so the
-item cannot land: the faults `benchmarks.py multi check` finds. It prints one stream-json result
+item cannot land, and `--plant dup-research` makes a research agent skip `coord.py dedup`: it claims the key
+`research:TOPIC:replay-planted-term` (a claim a shared store refuses to the second agent, which goes on), adds the planted fact
+for that term to an article, commits and syncs it, and holds its claim a few seconds before the release: two such agents
+write one fact: the faults `benchmarks.py multi check` finds. It prints one stream-json result
 event with the planted `--usage` (the four token counts and the turns) and `--cost`, and the commands it ran as `steps`;
 the exit is 1 and the event an error when a command failed. The harness (bench_multi.py) reads the event as it reads a
 session's and lands the code item itself. This module imports nothing of the project: it runs from the checkout that
 started the benchmark, in the sandbox's clones.
 """
-import argparse, json, shlex, subprocess, sys, time
+import argparse, json, re, shlex, subprocess, sys, time
 from pathlib import Path
 
 ITEM_DIR = "kb/_self/backlog"  # bench_multi.ITEM_DIR
 CLAIM_TTL = 3600  # seconds a replayed research agent's claim lasts
-PLANTS = ("lost-claim", "land-stop")  # bench_multi.PLANTS' names
+PLANTS = ("lost-claim", "land-stop", "dup-research")  # bench_multi.PLANTS' names
+PLANT_TERM = "replay-planted-term"  # the research term of --plant dup-research
+PLANT_HOLD = 5  # seconds a dup-research agent holds its claim at least, so another agent's fact lands inside it
 GAP = ("\n## replay-{agent}\n\n- **A planted entry that a replayed research agent commits and syncs.** Nothing was tried; the entry "
        "exists to be pushed to the sandbox's bare. [UNK] (topic: {topic})\n")
+PLANT_FACT = ("- A planted fact about {term}: two replayed research agents that skip the dedup claim of one research term write this "
+              "one fact each. [UNK]")
 PLANTED_CODE = {  # the file a replayed code agent writes for a touch of the planted items (kb/_self/reports/multi_bench.csv)
     "examples/multi-bench/slugify.py": '''"""A slugify helper for the multi-agent benchmark examples."""
 import re
@@ -73,7 +80,69 @@ def coord_event(kind, key, holder, steps):
         f"coord.py post --kind {kind} {key}")
 
 
+def plant_article():
+    """(topic, path) of the first article of kb/public with at least four bullets under `## Facts`, the topic as the dedup key
+    names it (`public/domain/slug`)."""
+    for path in sorted(Path("kb/public").glob("*/*.md")):
+        if not path.name.startswith("_") and len(fact_bullets(path.read_text(encoding="utf-8").splitlines())) >= 4:
+            return f"public/{path.parent.name}/{path.stem}", path
+    raise Failed("no article of kb/public has four bullets under ## Facts")
+
+
+def fact_bullets(lines):
+    """The indexes of the bullet lines under `## Facts`."""
+    out, inside = [], False
+    for i, ln in enumerate(lines):
+        if ln.startswith("## "):
+            inside = ln.strip() == "## Facts"
+        elif inside and ln.startswith("- "):
+            out.append(i)
+    return out
+
+
+def dup_research(a, steps):
+    """--plant dup-research: no `coord.py dedup`. The agent claims the planted term's key and goes on when the store refuses it
+    (another agent holds it), writes the planted fact into the article (after the first bullet of `## Facts` for an odd
+    agent, after the last for an even one, so two agents' commits merge), commits and syncs it, and keeps a claim it got
+    PLANT_HOLD seconds, then releases it."""
+    topic, path = plant_article()
+    key, token, begun = f"research:{topic}:{PLANT_TERM}", "", time.time()
+    try:
+        token = json.loads(run([sys.executable, tool("coord.py"), "claim", key, "--ttl", str(CLAIM_TTL), "--holder", a.holder], steps,
+                               f"coord.py claim {key} --holder {a.holder}"))["token"]
+        coord_event("claim", key, a.holder, steps)
+    except Failed:
+        pass  # a shared store holds it for another agent: the agent does not look, and writes the fact
+    lines = path.read_text(encoding="utf-8").splitlines()
+    bullets = fact_bullets(lines)
+    at = bullets[0] if int(re.sub(r"\D", "", a.holder) or 0) % 2 else bullets[-1]
+    lines.insert(at + 1, PLANT_FACT.format(term=PLANT_TERM))
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+    run(["git", "add", str(path)], steps)
+    run(["git", "commit", "-q", "-m", f"docs(kb): replayed research fact of {a.holder} on {PLANT_TERM}"], steps)
+    sync_push(steps)
+    if token:
+        time.sleep(max(0.0, PLANT_HOLD - (time.time() - begun)))
+        run([sys.executable, tool("coord.py"), "release", key, "--token", token], steps, f"coord.py release {key}")
+        coord_event("release", key, a.holder, steps)
+
+
+def sync_push(steps):
+    """`kbgit.py sync --push`, again up to twice when another agent's push moves the bare's main in the same moment."""
+    last = ""
+    for _ in range(3):
+        try:
+            run([sys.executable, tool("kbgit.py"), "sync", "--push"], steps, "kbgit.py sync --push")
+            return
+        except Failed as e:
+            last = str(e)
+            steps.pop()
+    raise Failed(last)
+
+
 def research(a, steps):
+    if a.plant == "dup-research":
+        return dup_research(a, steps)
     key = f"research:replay:{a.holder}"
     token = json.loads(run([sys.executable, tool("coord.py"), "claim", key, "--ttl", str(CLAIM_TTL), "--holder", a.holder], steps,
                            f"coord.py claim {key} --holder {a.holder}"))["token"]
@@ -86,16 +155,7 @@ def research(a, steps):
         f.write(GAP.format(agent=a.holder, topic=topic))
     run(["git", "add", "kb/public/_gaps.md"], steps)
     run(["git", "commit", "-q", "-m", f"docs(kb): replayed research gap of {a.holder} on {a.area}"], steps)
-    last = ""
-    for _ in range(3):  # another agent's push in the same moment moves the bare's main: sync again
-        try:
-            run([sys.executable, tool("kbgit.py"), "sync", "--push"], steps, "kbgit.py sync --push")
-            break
-        except Failed as e:
-            last = str(e)
-            steps.pop()
-    else:
-        raise Failed(last)
+    sync_push(steps)
     if a.plant != "lost-claim":
         run([sys.executable, tool("coord.py"), "release", key, "--token", token], steps, f"coord.py release {key}")
         coord_event("release", key, a.holder, steps)
