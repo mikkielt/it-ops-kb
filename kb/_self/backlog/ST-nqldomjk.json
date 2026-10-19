@@ -76,6 +76,40 @@
     "kb/_self/token-efficiency.md",
     "kb/_self/backlog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the SessionStart line carry the session id through redact.redact, which masks a UUID as an object id?",
+      "options": [
+        "redact the fixed text, then put the session id in",
+        "redact the whole line, id included"
+      ],
+      "recommendation": "redact the fixed text, then put the session id in",
+      "do": {
+        "redact the fixed text, then put the session id in": "ST-nqldomjk",
+        "redact the whole line, id included": "ST-nqldomjk"
+      },
+      "class": "querylog",
+      "answer": "redact the fixed text, then put the session id in",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Which SessionStart sources print the id line, and how long is it?",
+      "options": [
+        "every source, one line",
+        "startup and resume only"
+      ],
+      "recommendation": "every source, one line",
+      "do": {
+        "every source, one line": "ST-nqldomjk",
+        "startup and resume only": "ST-nqldomjk"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "notes": "operator request 2026-10-19 (housekeeping batch): coord ask A3b8d7e0199 (second operator addition: sessions know they can steer and be steered through coord asks). AGENTS.md only if a line can be paid for under the 4 KB cap (it is in the touches because the skill maps to it). Premise: the first check (the coord hook prints nothing at SessionStart on 2026-10-19).",
   "claimed_by": "orch-r102",
   "operator": "op-f618a13e"
