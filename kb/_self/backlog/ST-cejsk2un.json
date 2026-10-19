@@ -2,7 +2,7 @@
   "id": "ST-cejsk2un",
   "kind": "story",
   "title": "Review sprint: Private stays private: the publish guard and the leak scan know remote roots, and contribute gives shared changes back",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qinvdomv",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-r36"
+  "evidence": {
+    "commit": "e2b065547f6ad7029b530ef567de7cfd87a6451f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "1053d2d8b167ac62"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "a036961ee864252e"
+      }
+    ]
+  }
 }
