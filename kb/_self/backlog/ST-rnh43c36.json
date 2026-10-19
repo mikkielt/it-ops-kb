@@ -2,7 +2,7 @@
   "id": "ST-rnh43c36",
   "kind": "story",
   "title": "kbmon --status answers sessions, cost, query log and coord questions in plain words from one snapshot",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-dulvwwjc",
   "priority": "P1",

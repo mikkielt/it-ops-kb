@@ -2,7 +2,7 @@
   "id": "ST-nrtqorqm",
   "kind": "story",
   "title": "A kb_monitor_status MCP tool answers status for any agent, and the kb-observer starts from kbmon --status",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-dulvwwjc",
   "priority": "P1",

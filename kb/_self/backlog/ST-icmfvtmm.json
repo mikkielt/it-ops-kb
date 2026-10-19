@@ -2,7 +2,7 @@
   "id": "ST-icmfvtmm",
   "kind": "story",
   "title": "kb_ask.py, a status: hook prefix and one AGENTS.md line send status questions to kbmon --status first",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-dulvwwjc",
   "priority": "P1",

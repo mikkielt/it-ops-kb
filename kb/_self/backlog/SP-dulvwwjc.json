@@ -2,7 +2,7 @@
   "id": "SP-dulvwwjc",
   "kind": "sprint",
   "title": "An assistant answers status questions from kbmon, not by hand",
-  "status": "planned",
+  "status": "active",
   "goal": "kbmon.py --status answers sessions, cost, querylog, coord and all in plain words from one snapshot with no model call; sprint status reads origin/main and gives done/total, percent, next, what is left and an ETA it calls an estimate; load status groups the CPU consumers by kind and clone with a cause and a remedy each; a status question is routed to kbmon --status first through kb_ask.py, a status: hook prefix, a kb_monitor_status MCP tool and one AGENTS.md line",
   "gates": [
     {
