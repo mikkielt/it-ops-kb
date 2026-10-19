@@ -48,6 +48,59 @@
     "ST-po5rwymx",
     "BG-jemfbkjs"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the snapshot's taken time reach the sprint panel's lines?",
+      "options": [
+        "keyword",
+        "data"
+      ],
+      "recommendation": "keyword",
+      "do": {
+        "keyword": "ST-jejcrcib",
+        "data": "ST-jejcrcib"
+      },
+      "class": "design",
+      "answer": "keyword",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Where does the sprint row's review_done come from now that done_commits is removed?",
+      "options": [
+        "mon_eta.lifecycle read lazily at the first finished review story",
+        "mon_eta.read gains a done map"
+      ],
+      "recommendation": "mon_eta.lifecycle read lazily at the first finished review story",
+      "do": {
+        "mon_eta.lifecycle read lazily at the first finished review story": "ST-jejcrcib",
+        "mon_eta.read gains a done map": "ST-jejcrcib"
+      },
+      "class": "design",
+      "answer": "mon_eta.lifecycle read lazily at the first finished review story",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "How does the panel write the range text and where on the row?",
+      "options": [
+        "mon_status.minutes_range imported inside lines, ETA after the done count",
+        "a copy of the format in mon_sprint, ETA at the row end"
+      ],
+      "recommendation": "mon_status.minutes_range imported inside lines, ETA after the done count",
+      "do": {
+        "mon_status.minutes_range imported inside lines, ETA after the done count": "ST-jejcrcib",
+        "a copy of the format in mon_sprint, ETA at the row end": "ST-jejcrcib"
+      },
+      "class": "design",
+      "answer": "mon_status.minutes_range imported inside lines, ETA after the done count",
+      "by": "agent"
+    }
+  ],
   "notes": "Premise on origin/main cf985537c, 2026-10-19: the planted snapshot's sprint panel rows show done counts and no range; mon_sprint still has DONE_KEPT and done_commits. A panel's lines(data) gets no snapshot time today: pass the taken time from mon_view.render_text, or another way inside these touches. Overlap: SP-2uljwgho's ST-dhsyyjft touches mon_sprint.py and mon_view.py later and rebases onto this story.",
   "claimed_by": "orch-r33"
 }
