@@ -21,7 +21,27 @@
     "_tools/bench_report.py",
     "kb/_self/reports/benchmarks.md",
     "README.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the kb-versus-bare table treat a research twin's per-verified-fact figure: mark the bare side not comparable (and show the twins' facts_matched beside the kb agent's facts_verified), or leave the per-verified-fact rows out of research cases?",
+      "options": [
+        "mark not comparable",
+        "leave out"
+      ],
+      "recommendation": "mark not comparable",
+      "do": {
+        "mark not comparable": "BG-hdgfm7rc",
+        "leave out": "BG-hdgfm7rc"
+      },
+      "class": "design",
+      "answer": "mark not comparable",
+      "by": "agent"
+    }
   ],
   "claimed_by": "orch-r32"
 }
