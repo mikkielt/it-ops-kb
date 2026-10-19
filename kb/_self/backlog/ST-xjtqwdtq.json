@@ -69,7 +69,8 @@
   "depends_on": [
     "ST-fnj6hllh",
     "ST-i64xyh4s",
-    "ST-pbspqgvw"
+    "ST-pbspqgvw",
+    "BG-bv4ymhy6"
   ],
   "gates": [
     {
