@@ -1,0 +1,21 @@
+{
+  "id": "ST-kpibt5is",
+  "kind": "story",
+  "title": "A new non-panel kbmon module maps to code.md, so its item plans code.md in touches",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/map.csv maps _tools/mon_*.py to kb/_self/code.md, whose Layout bullet names every kbmon module that is no panel, so check warns at plan time when a kbmon item's touches leave code.md out; in SP-3hgirkur two workers (ST-nighxizj, ST-atei6ybh) stopped on a stale code.md outside their touches and were resumed after the orchestrator widened them",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,sys;r=list(csv.DictReader(open('kb/_self/map.csv',encoding='utf-8')));sys.exit(0 if any(x['doc']=='kb/_self/code.md' and x['pattern']=='_tools/mon_*.py' for x in r) else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-3hgirkur close"
+  ]
+}

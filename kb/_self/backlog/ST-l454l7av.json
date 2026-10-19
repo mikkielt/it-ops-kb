@@ -1,0 +1,21 @@
+{
+  "id": "ST-l454l7av",
+  "kind": "story",
+  "title": "A threshold clause gets a planted case on each side of its boundary at the shown precision",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-sprint plan step 6 asks a goal clause with a threshold (under 10% free, at most 200 characters) for planted cases just below and just above the boundary, at the precision the output shows, and for a degenerate input (a zero total); in SP-3hgirkur ST-dtahnx2a's check planted 3% and 60% free and passed while 9.96% free gave no alert and a 0-byte total a false one (BG-g6ctcsew)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();i=t.find('## plan');j=t.find('## start');sys.exit(0 if 'boundary' in t[i:j] else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-3hgirkur close"
+  ]
+}

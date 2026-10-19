@@ -1,0 +1,21 @@
+{
+  "id": "ST-m3qoc4bc",
+  "kind": "story",
+  "title": "A mod story's plan names how its hooks run outside a live session, or a gate that says none can",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-sprint plan step 6 asks an item that adds or changes a Claude Code mod for a check that drives its hooks module (session.start, a timer tick, a session reset, a failed process run) against a stub, or a gate recording that no such run is possible on the host; in SP-3hgirkur ST-fobzhr5o's checks read source text and claude plugin validate only, and the review found the receipt lost after /clear and never retried after a failed run (BG-z2y2hu6p, BG-tje2kpiv)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();i=t.find('## plan');j=t.find('## start');sys.exit(0 if ' mod ' in t[i:j] else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-3hgirkur close"
+  ]
+}
