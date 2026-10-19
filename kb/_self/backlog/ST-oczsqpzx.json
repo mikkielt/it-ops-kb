@@ -47,6 +47,25 @@
     "BG-e2hfeycb",
     "BG-lgjpfifx"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How much of the report's comparison table does the Concurrent agents section carry per scenario?",
+      "options": [
+        "key record with range",
+        "every record and arm row"
+      ],
+      "recommendation": "key record with range",
+      "do": {
+        "key record with range": "ST-oczsqpzx",
+        "every record and arm row": "ST-oczsqpzx"
+      },
+      "class": "design",
+      "answer": "key record with range",
+      "by": "agent"
+    }
+  ],
   "links": [
     "kb/_self/token-efficiency.md",
     "kb/_self/reports/benchmarks.md"
