@@ -955,7 +955,10 @@ def run(scenario, root=None, dry_run=False, knobs=None, out=print):
     if k["plant"] == BARE_LEAK:
         plant_twin(plans[0]["twin"])
     elif k["plant"]:
-        for p in [p for p in plans if p["role"] == PLANTS[k["plant"]]][:PLANT_AGENTS.get(k["plant"], 1)]:
+        planted_plans = [p for p in plans if p["role"] == PLANTS[k["plant"]]][:PLANT_AGENTS.get(k["plant"], 1)]
+        if k["plant"] == "land-stop":  # agents started at once race for the item's claim: the winner must be the one that stops
+            planted_plans = [p for p in plans if p["role"] == "code" and p["item"] in {q["item"] for q in planted_plans}]
+        for p in planted_plans:
             p["plant"] = k["plant"]
     if k["replay"]:
         for p in plans:
