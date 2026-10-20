@@ -21,5 +21,6 @@
   ],
   "links": [
     "parked: SP-4cc36epy close"
-  ]
+  ],
+  "notes": "SP-ttgcpf7o close (2026-10-20): ST-6tg2cevp's gate g1, on which coord keys coord_put may write, was classed secrets and made blocking by the word token (the lease holder argument); the landing waited until the orchestrator answered it as operator."
 }

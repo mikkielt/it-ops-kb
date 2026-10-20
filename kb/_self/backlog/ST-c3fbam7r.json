@@ -18,5 +18,5 @@
   "links": [
     "parked: SP-aoiqmnc6 close"
   ],
-  "notes": "SP-mguax5m3 close: all six landings warned 'landed with no work rows on origin/main (undelivered)' once more."
+  "notes": "SP-mguax5m3 close: all six landings warned 'landed with no work rows on origin/main (undelivered)' once more. SP-ttgcpf7o close (2026-10-20): ST-efcbmm3y and ST-6tg2cevp landed with the undelivered work-rows warning (a store sidecar in the main checkout's _cache/querylog/store that origin/main lacks); ST-p4cdatrf, ST-xfjizwua, ST-gnt2xlk6 and ST-lvcvosht printed the late-rows line."
 }

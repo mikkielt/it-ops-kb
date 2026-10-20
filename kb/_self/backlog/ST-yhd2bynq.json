@@ -1,0 +1,32 @@
+{
+  "id": "ST-yhd2bynq",
+  "kind": "story",
+  "title": "backlog.py check warns of a code item's goal clause that only a file-text check reads",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog check warns of a goal clause of an item whose touches name code when every check that clause maps to only reads a file's text",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, sys, json, shutil, subprocess, tempfile\nT = tempfile.mkdtemp()\nos.makedirs(os.path.join(T, 'kb/_self/backlog'))\nshutil.copy('backlog.json', T)\nitem = subprocess.run(['git', 'show', '866e5fdae:kb/_self/backlog/ST-lvcvosht.json'], capture_output=True, text=True, check=True).stdout\nd = json.loads(item); d.pop('depends_on', None); d.pop('sprint', None); d['status'] = 'draft'\nopen(os.path.join(T, 'kb/_self/backlog/ST-lvcvosht.json'), 'w').write(json.dumps(d, indent=2) + '\\n')\np = subprocess.run([sys.executable, '_tools/backlog.py', '--root', T, 'check'], capture_output=True, text=True, timeout=300)\nout = p.stdout + p.stderr\nhit = [l for l in out.splitlines() if 'ST-lvcvosht' in l and \"observer session\" in l]\nprint('warning lines:', hit); sys.exit(0 if hit else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "backlog check warns of a goal clause of an item whose touches name code when every check that clause maps to only reads a file's text",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/bl_check.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-ttgcpf7o close"
+  ],
+  "notes": "retrospective of SP-ttgcpf7o: ST-lvcvosht's clause \"kbask's observer session allows the read-only kb MCP tools\" was read only by `'kb_backlog' in open('_tools/kbask.py').read()`; the review found the check weak (no test calls session_argv). The item-level warning that every check only reads files did not fire, since its other check runs backlog.py brief."
+}

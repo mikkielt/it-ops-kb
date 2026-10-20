@@ -1,0 +1,33 @@
+{
+  "id": "ST-lygbzi5w",
+  "kind": "story",
+  "title": "A worker's brief says to edit or name the docs stage-back --check lists as stale before it returns",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the brief's staging section tells the worker that the docs `selfdoc.py stale` lists in its stage-back --check output are read and edited, or named as still correct, before it returns",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt = open('_tools/bl_dispatch.py', encoding='utf-8').read()\ni = t.find('\"## Staging copies\"'); j = t.find('links = [', i)\ns = t[i:j]\nprint('stale named in the staging section:', 'stale' in s); sys.exit(0 if i >= 0 and 'stale' in s else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the brief's staging section tells the worker that the docs `selfdoc.py stale` lists in its stage-back --check output are read and edited, or named as still correct, before it returns",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "agents/worker.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-ttgcpf7o close"
+  ],
+  "notes": "retrospective of SP-ttgcpf7o: ST-lvcvosht's worker staged .claude/agents/kb-observer.md, saw `selfdoc.py stale --since HEAD` list kb/_self/plugin.md and token-efficiency.md and \"did not look into why\"; stage-back then refused until the orchestrator edited both docs (14b54df0fb). The check reads the brief text because the rule is text the brief prints."
+}

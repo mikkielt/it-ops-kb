@@ -1,0 +1,32 @@
+{
+  "id": "ST-2gffsv4s",
+  "kind": "story",
+  "title": "backlog.py check warns of an item whose check opens a repository file no touch covers",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog check warns of an item whose check opens a repository file that none of its touches covers, naming the item and the file",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, sys, json, shutil, subprocess, tempfile\nT = tempfile.mkdtemp()\nos.makedirs(os.path.join(T, 'kb/_self/backlog'))\nshutil.copy('backlog.json', T)\nitem = subprocess.run(['git', 'show', '866e5fdae:kb/_self/backlog/ST-lvcvosht.json'], capture_output=True, text=True, check=True).stdout\nd = json.loads(item); d.pop('depends_on', None); d.pop('sprint', None); d['status'] = 'draft'\nopen(os.path.join(T, 'kb/_self/backlog/ST-lvcvosht.json'), 'w').write(json.dumps(d, indent=2) + '\\n')\np = subprocess.run([sys.executable, '_tools/backlog.py', '--root', T, 'check'], capture_output=True, text=True, timeout=300)\nout = p.stdout + p.stderr\nhit = [l for l in out.splitlines() if 'ST-lvcvosht' in l and 'agents/worker.md' in l]\nprint('warning lines:', hit); sys.exit(0 if hit else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "backlog check warns of an item whose check opens a repository file that none of its touches covers, naming the item and the file",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/bl_check.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-ttgcpf7o close"
+  ],
+  "notes": "retrospective of SP-ttgcpf7o: ST-lvcvosht was planned with a check that reads agents/worker.md, outside its touches, so its done would have refused the worker's edit there; the orchestrator found it by reading the item before the claim (commit 4f7623645f). The planted copy is ST-lvcvosht as the sprint started (866e5fdae). Touches name bl_check.py as the likely home: widen at plan time with referrers."
+}
