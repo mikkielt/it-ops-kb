@@ -2,7 +2,7 @@
   "id": "ST-y23dwivv",
   "kind": "story",
   "title": "kbask.py cleanup allows its session only the exact kbmon.py --json command, not any text after it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rrqlgiff",
   "priority": "P1",
   "rank": 0,
@@ -41,5 +41,7 @@
   "links": [
     "parked: SP-ep7cyuob review"
   ],
-  "notes": "SP-ep7cyuob review (S2), gate g2 of ST-pjf3zk3x overturned in part: `Bash(python3 _tools/kbmon.py --json *)` (kbask.py cmd_cleanup) matches any text after --json, e.g. `--json $(touch f)` or `--json > f`; the kb says an allow rule bounds the command text only, and how dontAsk treats a redirect is an UNK (kb/public/claude/settings-and-scopes.md:90, its _gaps.md entry). The prompt names the exact command, so the wildcard is not needed. A pinned-version dontAsk redirect probe would close the UNK. Plan 2026-10-20 (SP-rrqlgiff): premise run on origin/main 8aa620db0: the check's stub claude records --allowedTools ... Bash(python3 _tools/kbmon.py --json *) from cmd_cleanup (kbask.py:407); the check fails as planned. Scope: the cleanup profile only; the remediation session's ALLOWED_TOOLS (kbask.py:72) keeps its rules (no review finding names it). The goal named tools.md too, but tools.md makes no write claim about the session (grep 2026-10-20); it stays in touches for the docs map."
+  "notes": "SP-ep7cyuob review (S2), gate g2 of ST-pjf3zk3x overturned in part: `Bash(python3 _tools/kbmon.py --json *)` (kbask.py cmd_cleanup) matches any text after --json, e.g. `--json $(touch f)` or `--json > f`; the kb says an allow rule bounds the command text only, and how dontAsk treats a redirect is an UNK (kb/public/claude/settings-and-scopes.md:90, its _gaps.md entry). The prompt names the exact command, so the wildcard is not needed. A pinned-version dontAsk redirect probe would close the UNK. Plan 2026-10-20 (SP-rrqlgiff): premise run on origin/main 8aa620db0: the check's stub claude records --allowedTools ... Bash(python3 _tools/kbmon.py --json *) from cmd_cleanup (kbask.py:407); the check fails as planned. Scope: the cleanup profile only; the remediation session's ALLOWED_TOOLS (kbask.py:72) keeps its rules (no review finding names it). The goal named tools.md too, but tools.md makes no write claim about the session (grep 2026-10-20); it stays in touches for the docs map.",
+  "claimed_by": "orch240",
+  "operator": "op-f618a13e"
 }
