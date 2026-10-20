@@ -2,7 +2,7 @@
   "id": "ST-y53hvh64",
   "kind": "story",
   "title": "backlog.py own records what this clone's tools make as coord own/ keys, and dispatch, bench multi and the sprint skill's runner and reviewer steps record theirs",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ipeewrlv",
   "priority": "P2",
   "rank": 0,
@@ -59,5 +59,7 @@
     "kb/_self/tools.md",
     "kb/_self/benchmarks.md"
   ],
-  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with planted inputs (KB_COORD_STORE points at its own coord store, so no check writes the clone's real one); no change to _tools/tests_ceiling.json. Owner store: coord (operator, 2026-10-19). bench_multi.py is also in the touches of the planned benchmark sprint SP-7s6uubs7: do not claim this while one of its items holding bench_multi.py is in flight (held --overlaps)."
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with planted inputs (KB_COORD_STORE points at its own coord store, so no check writes the clone's real one); no change to _tools/tests_ceiling.json. Owner store: coord (operator, 2026-10-19). bench_multi.py is also in the touches of the planned benchmark sprint SP-7s6uubs7: do not claim this while one of its items holding bench_multi.py is in flight (held --overlaps).",
+  "claimed_by": "orch-r201",
+  "operator": "op-f618a13e"
 }
