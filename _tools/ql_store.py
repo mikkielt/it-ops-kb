@@ -12,7 +12,7 @@ local store laid out the same way), their readers and writers, and the gates `qu
                                       operational row of the spool (ql_capture.OPS_EVENTS): names, exit codes,
                                       milliseconds, item ids, short shas and test file names, never free text
 """
-import datetime, hashlib, json, re, subprocess
+import datetime, hashlib, json, re, shutil, subprocess
 from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit
 
@@ -813,6 +813,108 @@ def leak_problems(store, rels, k=None):
     return out
 
 
+REREDACT_SKIP = ("id", "entry", "run", "kb_commit")  # the keys the leak scan passes over (leak_problems)
+REREDACT_EXACT = TEXT_KEYS + ("lead",)  # the fields the store gates also hold to redact.redact(value) == value
+
+
+def _flagged(v, key, k):
+    """Whether the store gates flag the string `v` of field `key`: a leak scan hit, and for the exact fields a change
+    by the rules."""
+    import redact
+    return bool(redact.scan(v, k)) or (key in REREDACT_EXACT and redact.redact(v, k) != v)
+
+
+def _reredact_value(x, key, field, k, notes):
+    """`x` with each string the store gates flag replaced by redact.redact of it; `notes` gets (field, "replaced") for
+    it and (field, "left") for one the rules still flag. `field` names the place (`fetches[1].path`), never the value."""
+    import redact
+    if isinstance(x, dict):
+        return {a: _reredact_value(b, a, f"{field}.{a}", k, notes) for a, b in x.items()}
+    if isinstance(x, list):
+        return [_reredact_value(b, key, f"{field}[{i}]", k, notes) for i, b in enumerate(x)]
+    if not isinstance(x, str) or not _flagged(x, key, k):
+        return x
+    new = redact.redact(x, k)
+    if new != x:
+        notes.append((field, "replaced"))
+    if _flagged(new, key, k):
+        notes.append((field, "left"))
+    return new
+
+
+def reredact_entry(e, k=None):
+    """(entry, [(field, what)]): `e` with each value the current rules flag replaced by its redacted form (`replaced`)
+    and each fetch whose path the leak scan still flags then dropped (`dropped`); a value the rules still flag in any
+    other place stays and is noted `left`. Fields the rules do not flag stay as they are."""
+    import redact
+    out, notes = {}, []
+    for a, b in e.items():
+        if a in REREDACT_SKIP:
+            out[a] = b
+        elif a == "fetches" and isinstance(b, list):
+            out[a] = []
+            for i, f in enumerate(b):
+                f = _reredact_value(f, a, f"{a}[{i}]", k, notes)
+                if isinstance(f, dict) and isinstance(f.get("path"), str) and redact.scan(f["path"], k):
+                    notes[:] = [n for n in notes if not n[0].startswith(f"{a}[{i}].path")]
+                    notes.append((f"{a}[{i}].path", "dropped"))
+                else:
+                    out[a].append(f)
+        else:
+            out[a] = _reredact_value(b, a, a, k, notes)
+    return out, notes
+
+
+def reredact(store=None, k=None, out=print):
+    """`reredact [--store DIR]`: the run files of `store` (default: the local store beside the spool) with each value
+    the current redact rules flag replaced by its redacted form, and a fetch whose path the leak scan still flags
+    dropped. Before the first change the files that change are copied to a directory beside the store (never inside
+    it, where the store gates would read them); each change is reported by file, line and field, never by value.
+    0, or 1 when a value the rules flag stays (the report names it)."""
+    from ql_base import places
+    store = Path(store or places()[0] / "store")
+    plan = []  # (path, [line], [(index, report lines)])
+    for p in run_files(store):
+        lines = p.read_text(encoding="utf-8").splitlines()
+        rel = p.relative_to(store).as_posix()
+        seen, changed, hit = 0, {}, []
+        for i, line in enumerate(lines):
+            if not line.strip():
+                continue
+            seen += 1
+            try:
+                obj = json.loads(line)
+            except ValueError:
+                continue  # `check` reports a line that is not JSON
+            if seen == 1 or not isinstance(obj, dict):
+                continue  # the header
+            new, notes = reredact_entry(obj, k)
+            if notes:
+                hit += [f"{rel}:{i + 1}: {field}: {what}" for field, what in notes]
+                if new != obj:
+                    changed[i] = new
+        if hit:
+            plan.append((p, rel, lines, changed, hit))
+    changes = [p for p, _, _, changed, _ in plan if changed]
+    if changes:
+        stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        backup = store.parent / f"{store.name}-reredact-{stamp}"
+        for p in changes:
+            dest = backup / p.relative_to(store)
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(p, dest)
+        out(f"backup: {backup}")
+    left = 0
+    for p, rel, lines, changed, hit in plan:
+        for h in hit:
+            out(h)
+        left += sum(h.endswith(": left") for h in hit)
+        if changed:
+            write_text(p, "".join((json_lines([changed[i]]) if i in changed else line + "\n") for i, line in enumerate(lines)))
+    out(f"reredact: files={len(changes)} left={left}")
+    return 1 if left else 0
+
+
 def _count(v):
     return isinstance(v, int) and not isinstance(v, bool) and v >= 0
 
@@ -1149,7 +1251,7 @@ def ops_sidecar_problems(store, k=None):
 
 REDACT_MARKS = ("an identifier in `", "the leak scan flags", "the redact rules")
 REDACT_NOTE = ("note: an entry the redact gate refuses may predate the current redact rules (a redact change makes "
-               "stored entries fail); the remedy is in kb/_self/querylog.md, Delivery")
+               "stored entries fail); the remedy is `querylog.py reredact`, kb/_self/querylog.md, Delivery")
 
 
 def check(store=None):

@@ -115,6 +115,15 @@ the ql_*.py modules beside it.
   querylog.py check [DIR]  the store gates over DIR (default kb/_querylog): header and provenance fields, entry fields,
                         identifiers, fetch entries, duplicate ids and the findings files; one line per problem, exit 1
                         when there is any
+  querylog.py reredact [--store DIR]
+                        the operator's remedy for a redact change that stalls delivery (querylog.md, Delivery): in the
+                        run files of DIR (default: the local store) each value the current redact rules flag (the leak
+                        scan; and for `question` and a feedback `lead` also a change by redact.redact) is replaced by
+                        its redacted form, and a fetch whose path the leak scan still flags is dropped; a value the
+                        rules still flag elsewhere stays and is reported. First the run files that change are copied
+                        to `<DIR name>-reredact-<UTC time>` beside DIR (printed as `backup: PATH`), never inside it.
+                        One line per change, `FILE:LINE: FIELD: replaced|dropped|left`, never the value. Entries,
+                        header and unflagged fields stay as written. Exit 0, 1 when a flagged value is left
   querylog.py where     prints the mode, the config file, the spool directory and whether capture writes
   querylog.py digest [--store DIR] [--week YYYY-Www]
                         the week's numbers from the committed store (default kb/_querylog): lookups by surface,
@@ -229,6 +238,12 @@ def main(argv=None):
     if argv[:1] == ["check"] and len(argv) <= 2:
         import ql_store
         return ql_store.check(argv[1] if len(argv) > 1 else None)
+    if argv[:1] == ["reredact"]:
+        ap = argparse.ArgumentParser(prog="querylog.py reredact")
+        ap.add_argument("--store", help="the store whose run files to re-redact (default: the local store)")
+        a = ap.parse_args(argv[1:])
+        import ql_store
+        return ql_store.reredact(a.store)
     if argv[:1] == ["learn"]:
         ap = argparse.ArgumentParser(prog="querylog.py learn")
         ap.add_argument("--store", help="the store to learn from and write findings to (default: the local store)")

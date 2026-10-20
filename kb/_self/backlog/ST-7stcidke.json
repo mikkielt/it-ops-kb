@@ -68,6 +68,40 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does reredact write its backup?",
+      "options": [
+        "beside the store, as <store name>-reredact-<UTC time>, only the run files it changes",
+        "inside the spool directory whatever store is given"
+      ],
+      "recommendation": "beside the store, as <store name>-reredact-<UTC time>, only the run files it changes",
+      "do": {
+        "beside the store, as <store name>-reredact-<UTC time>, only the run files it changes": "ST-7stcidke",
+        "inside the spool directory whatever store is given": "ST-7stcidke"
+      },
+      "class": "querylog",
+      "answer": "beside the store, as <store name>-reredact-<UTC time>, only the run files it changes",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which values does reredact treat as flagged, and what does a value it cannot clear do?",
+      "options": [
+        "the store gates' own test: a leak scan hit, and for question and a feedback lead also a change by redact.redact; a value still flagged outside a fetch path stays, is reported left and exits 1",
+        "every value redact.redact would change, and a still flagged value drops its entry"
+      ],
+      "recommendation": "the store gates' own test: a leak scan hit, and for question and a feedback lead also a change by redact.redact; a value still flagged outside a fetch path stays, is reported left and exits 1",
+      "do": {
+        "the store gates' own test: a leak scan hit, and for question and a feedback lead also a change by redact.redact; a value still flagged outside a fetch path stays, is reported left and exits 1": "ST-7stcidke",
+        "every value redact.redact would change, and a still flagged value drops its entry": "ST-7stcidke"
+      },
+      "class": "querylog",
+      "answer": "the store gates' own test: a leak scan hit, and for question and a feedback lead also a change by redact.redact; a value still flagged outside a fetch path stays, is reported left and exits 1",
+      "by": "agent"
     }
   ],
   "links": [
