@@ -2,7 +2,7 @@
   "id": "ST-xbo75hi3",
   "kind": "story",
   "title": "backlog.py dispatch starts its worker detached and prints the pid and log, so an orchestrator keeps no launcher script of its own",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-tsb23kev",
   "priority": "P3",
   "rank": 0,
@@ -45,5 +45,7 @@
   "links": [
     "parked: SP-75hdeqld close"
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): folds ST-pfqz32mn (where a background dispatch or land log goes) and ST-mvyhvoqb (how to wait on a detached run): with dispatch detached and printing its pid and log, the skill names that log and the wait. Recurring: SP-uwkr7iyl and later sprints each wrote a launcher by hand. SP-75hdeqld close: the shared launcher an earlier orchestrator left was removed mid-run, and the next dispatch failed until a new one was written (moved from the goal by the housekeeping plan 2026-10-19). Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs."
+  "notes": "operator request 2026-10-19 (housekeeping batch): folds ST-pfqz32mn (where a background dispatch or land log goes) and ST-mvyhvoqb (how to wait on a detached run): with dispatch detached and printing its pid and log, the skill names that log and the wait. Recurring: SP-uwkr7iyl and later sprints each wrote a launcher by hand. SP-75hdeqld close: the shared launcher an earlier orchestrator left was removed mid-run, and the next dispatch failed until a new one was written (moved from the goal by the housekeeping plan 2026-10-19). Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs.",
+  "claimed_by": "orch-r102",
+  "operator": "op-f618a13e"
 }
