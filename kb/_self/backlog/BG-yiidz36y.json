@@ -2,7 +2,7 @@
   "id": "BG-yiidz36y",
   "kind": "bug",
   "title": "kbmon's coord panel reads absent on a Windows clone: mon_coord finds the store only through git on PATH and from its own script's clone, never --root's",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-kgvbpjhd",
   "priority": "P2",
   "rank": 0,
@@ -95,6 +95,46 @@
     }
   ],
   "notes": "Operator feedback 2026-10-20, running kbmon on Windows: 'coord absent - no mon_coord.py while the file exists'. Investigated on origin/main 5970ced2c, 2026-10-20: the module loads (a planted import failure, sys.modules['atexit']=None, gives state error, not absent, so no POSIX-only import is the cause: coord.py, mon_coord.py and coord_hook.py import none). 'no mon_coord.py' is the text view's word for every absent panel (BG-rpp4dsrn, same sprint); the panel's own reason is 'no coord store file'. Cause candidates for the store not being found on the Windows clone: mon_coord.local_store ignores ctx.root and asks coord.default_store, which locates the store from coord.py's own clone by running git rev-parse --git-common-dir, returning None when git cannot run from that Python (git not on PATH outside Git Bash) and so absent; or the Windows clone's hook never created the store. Premise: the repro plants a clone with its own store and claim; with git on PATH kbmon --root shows the host clone's store (ok, claim missing), with git off PATH it is absent 'no coord store file'. Planning, 2026-10-20 (orchestrator r114): clauses 2 and 4 had no check; added default_store-without-git and absent-names-path checks (both fail on base 1defb86e2), and a planted import failure check for clause 5 (passes on base: an invariant the fix must keep).",
-  "claimed_by": "orch-r114",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "7eb15b5ab27a8cb836e2bf2800c8b63b907b5576",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,sys,subprocess as s;sys.path.insert(0,'_tools')\nexp=os.path.realpath(os.path.join(s.run(['git','rev-parse','--path-format=absolute','--git-common-dir'],capture_output=True,text=True).stdout.strip(),'kb-coord','coord.sqlite'))\nos.environ['PATH']=os.path.join(os.getcwd(),'nogit');import coord;got=coord.default_store();print(got,exp);sys.exit(0 if got and os.path.realpath(got)==exp else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "a3fb8e1eaed2944e"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile\nd=tempfile.mkdtemp();t=os.path.join(d,'clone');s.run(['git','init','-q',t],check=True)\nenv={k:v for k,v in os.environ.items() if k!='KB_COORD_STORE'}\nbad=[]\nfor name,path in (('git on PATH',env.get('PATH','')),('no git on PATH',os.path.join(t,'nogit'))):\n    p=s.run([sys.executable,'_tools/kbmon.py','--json','--panel','coord','--root',t],capture_output=True,text=True,env=dict(env,PATH=path),timeout=120)\n    c=json.loads(p.stdout)['panels']['coord'];r=str((c.get('data') or {}).get('reason',''))\n    print(name,c['state'],r)\n    if c['state']!='absent' or os.path.basename(d) not in r or 'coord.sqlite' not in r: bad.append(name)\nsys.exit(1 if bad else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "74db9ed510a963a0"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,io,json;sys.path.insert(0,'_tools');sys.modules['coord']=None;import kbmon\nb=io.StringIO();kbmon.main(['--json','--panel','coord'],out=b);c=json.loads(b.getvalue())['panels']['coord'];print(c['state'],c.get('data'));sys.exit(0 if c['state']=='error' else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "6a04e1aa1d393f86"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile\nt=os.path.join(tempfile.mkdtemp(),'clone');s.run(['git','init','-q',t],check=True)\nst=os.path.join(t,'.git','kb-coord','coord.sqlite')\ns.run([sys.executable,'_tools/coord.py','claim','planted-win-key','--store',st,'--ttl','600','--holder','planted'],check=True,capture_output=True)\nenv={k:v for k,v in os.environ.items() if k!='KB_COORD_STORE'}\nbad=[]\nfor name,path in (('git on PATH',env.get('PATH','')),('no git on PATH',os.path.join(t,'nogit'))):\n    p=s.run([sys.executable,'_tools/kbmon.py','--json','--panel','coord','--root',t],capture_output=True,text=True,env=dict(env,PATH=path),timeout=120)\n    c=json.loads(p.stdout)['panels']['coord']\n    keys=[x.get('key') for x in (c.get('data') or {}).get('claims') or []]\n    print(name,c['state'],(c.get('data') or {}).get('reason',''),'planted' if 'planted-win-key' in keys else 'not planted')\n    if c['state']!='ok' or 'planted-win-key' not in keys: bad.append(name)\nsys.exit(1 if bad else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "9c458c5ddcaaca5d"
+      }
+    ]
+  }
 }
