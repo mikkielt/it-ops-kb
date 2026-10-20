@@ -2,7 +2,7 @@
   "id": "ST-gq4q5t4y",
   "kind": "story",
   "title": "Helpers copied between the backlog, query log, kbgit and kbmon modules are defined once",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-jplczvj2",
   "priority": "P3",
   "rank": 0,
@@ -52,5 +52,7 @@
   "depends_on": [
     "ST-eihikgyx"
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): identical bodies 2026-10-19: bl_dispatch.same_dir = ql_base._same, bl_intake.code_path = kg_trailers.code_path, bl_procs.age_text = mon_sessions.age_text, mon_log.in_spool_order = mon_sprint.in_spool_order. The copy goes to the lower module by code.md's import direction. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+  "notes": "operator request 2026-10-19 (housekeeping batch): identical bodies 2026-10-19: bl_dispatch.same_dir = ql_base._same, bl_intake.code_path = kg_trailers.code_path, bl_procs.age_text = mon_sessions.age_text, mon_log.in_spool_order = mon_sprint.in_spool_order. The copy goes to the lower module by code.md's import direction. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
+  "claimed_by": "orch-r108",
+  "operator": "op-f618a13e"
 }
