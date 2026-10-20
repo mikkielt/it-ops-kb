@@ -2,7 +2,7 @@
   "id": "ST-e23cb2h4",
   "kind": "story",
   "title": "Helpers copied between census, fetch, kbingest and the decision tools are defined once",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-jplczvj2",
   "priority": "P3",
   "rank": 0,
@@ -56,5 +56,7 @@
   "depends_on": [
     "ST-gq4q5t4y"
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): identical bodies 2026-10-19: bl_intake.end_tree = kbingest.kill_tree, census.read_sources = kbcommon.read_sources, fetch.repo_roots = kg_base.repo_roots, kbdecide.matches/main = kblog.matches/main. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+  "notes": "operator request 2026-10-19 (housekeeping batch): identical bodies 2026-10-19: bl_intake.end_tree = kbingest.kill_tree, census.read_sources = kbcommon.read_sources, fetch.repo_roots = kg_base.repo_roots, kbdecide.matches/main = kblog.matches/main. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
+  "claimed_by": "orch-r108",
+  "operator": "op-f618a13e"
 }
