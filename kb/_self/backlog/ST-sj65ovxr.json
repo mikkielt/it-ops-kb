@@ -2,7 +2,7 @@
   "id": "ST-sj65ovxr",
   "kind": "story",
   "title": "The articles about this repository's own tools say what the tools do",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-2rjhs7se",
   "priority": "P3",
   "rank": 0,
@@ -39,5 +39,7 @@
     "ST-cvr76jag",
     "ST-jliyfmxl"
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): folds six review bugs, each with its repro embedded in the check (all six failed on 2026-10-19): BG-fknkjg3d, BG-ow62jocg, BG-togur4on, BG-se62hdka, BG-qkc7q4x2, BG-25w54mly."
+  "notes": "operator request 2026-10-19 (housekeeping batch): folds six review bugs, each with its repro embedded in the check (all six failed on 2026-10-19): BG-fknkjg3d, BG-ow62jocg, BG-togur4on, BG-se62hdka, BG-qkc7q4x2, BG-25w54mly.",
+  "claimed_by": "orch-r105",
+  "operator": "op-f618a13e"
 }
