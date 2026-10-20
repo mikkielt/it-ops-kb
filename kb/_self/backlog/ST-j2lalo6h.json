@@ -2,7 +2,7 @@
   "id": "ST-j2lalo6h",
   "kind": "story",
   "title": "Review sprint: kb/_self explains the agent coordination tooling in one owner doc",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-eptouzxc",
   "review": true,
   "priority": "P1",
@@ -23,6 +23,27 @@
       ]
     }
   ],
-  "claimed_by": "orch-r221",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "d3a2ae8d4ab84f91389b5c47c9ebaf28a02c7fbc",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "665b3b69e650404e"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "7d5a303eaacfb312"
+      }
+    ]
+  }
 }
