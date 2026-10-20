@@ -2,7 +2,7 @@
   "id": "ST-efcbmm3y",
   "kind": "story",
   "title": "The read-only backlog commands are one kb MCP tool",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ttgcpf7o",
   "priority": "P1",
   "rank": 0,
@@ -38,5 +38,7 @@
   "depends_on": [
     "ST-p4cdatrf"
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): precheck, claim, done and every other command that writes or runs item checks stay off the tool. Each tool calls the command's own function and returns its text through redact.redact. test_redact.py's tools/list assertion changes only for the new tool. Premise: the check fails."
+  "notes": "operator request 2026-10-19 (housekeeping batch): precheck, claim, done and every other command that writes or runs item checks stay off the tool. Each tool calls the command's own function and returns its text through redact.redact. test_redact.py's tools/list assertion changes only for the new tool. Premise: the check fails.",
+  "claimed_by": "orch-r110",
+  "operator": "op-f618a13e"
 }
