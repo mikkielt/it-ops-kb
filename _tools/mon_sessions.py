@@ -22,8 +22,10 @@ usage rows of the session's own spool file, null without one). A session's id is
 ledger (the pid, then the session), the claim records of its checkout's ledger, the coord intents and leases and the
 hook's per-session state file names under its checkout, never from a command line or an environment; a raw id leaves
 this module as its label only. A host that cannot list working
-directories gives no processes and `procs_unreadable`, the reason, so the operator and the intents still show; a root with
-no backlog items has no `stalled` key. `session_line` turns one `sessions` entry into the one line the view and
+directories (no `/proc` and no `lsof`) gives no processes and `procs_unreadable`, the reason, so the operator and the
+intents still show. Windows exposes no working directory, so the processes are `bl_procs.windows_snapshot`'s: those whose
+command line names a checkout of the clone (matched and dropped, never kept), and `procs_limit` says what Windows cannot
+show; a PowerShell that does not answer gives `procs_unreadable`. A root with no backlog items has no `stalled` key. `session_line` turns one `sessions` entry into the one line the view and
 `mon_status` print. Imports `mon_base` and `mon_view`; `bl_procs`,
 `bl_stall`, `bl_base`, `bl_cost`, `ql_base`, `ql_distill` and `ql_report` where it reads them.
 """
@@ -64,6 +66,8 @@ BARE_DIR = "bare"  # the sandbox directory of a benchmark's bare twins (`bench_m
 AGENT_DIR = re.compile(r"agent\d+")
 MULTI_DIR = re.compile(r"multi-[0-9a-f]{8}")  # `bench_multi.clone_path`: `<scratch>/multi-<hash>/agentN`
 PLAN_KINDS = ("epic", "sprint")  # the items a planner works on
+WINDOWS_LIMIT = ("Windows shows no working directory: a process is listed when its command line names a checkout of "
+                 "the clone, so one that names none, an orphan told by working directory, is not shown")
 ROLES = ("worker", "sprint runner", "planner", "reviewer", "interactive", "benchmark agent", "bare twin", "observer",
          "unknown")  # the roles `role_of` gives
 
@@ -121,6 +125,9 @@ def checkout_paths(procs, bases):
     cwds = None
     out = {}
     for p in procs:
+        if p.get("base"):  # a Windows process, placed by the checkout path in its command line
+            out[p["pid"]] = p["base"]
+            continue
         found = by_name.get(p["where"].split("/", 1)[0], [])
         if len(found) > 1:
             if cwds is None:
@@ -465,7 +472,11 @@ def session_rows(ctx, procs, placed, by_path, found, bl, names):
 def collect(ctx):
     import bl_procs
     import kbwho
-    procs, _, why = bl_procs.snapshot(str(ctx.root))
+    blind = None
+    if os.name == "nt":
+        procs, _, why, blind = bl_procs.windows_snapshot(str(ctx.root))
+    else:
+        procs, _, why = bl_procs.snapshot(str(ctx.root))
     now = time.time()
     rows, by_path = branches(ctx.root)
     bases = bl_procs.checkouts(str(ctx.root)) if procs is not None else []
@@ -483,6 +494,9 @@ def collect(ctx):
     data = {"procs": out, "worktrees": rows, "operator": {"id": me.get("id"), "role": me.get("role")}}
     if procs is None:
         data["procs_unreadable"] = why
+    elif blind is not None:
+        data["procs_limit"] = WINDOWS_LIMIT + (f"; {blind} process{' shows' if blind == 1 else 'es show'} no command line "
+                                               "(another account's, unless run elevated)" if blind else "")
     found = read_coord(ctx)
     intents = intent_rows(found)
     if intents is not None:
@@ -618,6 +632,8 @@ def lines(data, width=80, taken=None):
         rows.append("processes unreadable: " + str(data["procs_unreadable"]))
     else:
         rows.append("processes none")
+    if data.get("procs_limit"):
+        rows += joined("limit", str(data["procs_limit"]).split("; "), width - 2)
     trees = sorted(data.get("worktrees", []), key=lambda w: not (w.get("branch") or "").startswith("work/"))
     parts = [f"{w['path']}  {w.get('branch') or '(detached)'}" for w in trees[:TREES_SHOWN]]
     if len(trees) > TREES_SHOWN:
