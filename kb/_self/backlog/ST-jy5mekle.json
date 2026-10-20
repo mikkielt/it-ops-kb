@@ -2,7 +2,7 @@
   "id": "ST-jy5mekle",
   "kind": "story",
   "title": "bl_land.py is split behind backlog.py with every command and name kept",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-jplczvj2",
   "priority": "P3",
   "rank": 0,
@@ -96,6 +96,37 @@
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): bl_land.py on 2026-10-19: 3441 lines, 122 commits in 30 days (the most churned module), every landing and close edits it. The cut follows its command groups (cmd_tidy/cmd_close at 2585-3125, cmd_precheck/cmd_researched at 474-628 and 3126-3369). Plan against SP-ipeewrlv, which changes tidy first. Premise: the first check fails. Checks 1, 2 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
-  "claimed_by": "orch-r108",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "8525762f52b3df0782b1a23510d3c769b036c220",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nk=sum(1 for _ in open('_tools/bl_land.py',encoding='utf-8'))\nprint('_tools/bl_land.py',k,'lines');sys.exit(0 if k<=2300 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "3e2cc6a70ddc85c7"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nsys.path.insert(0,'_tools');import importlib;m=importlib.import_module('bl_land')\nmiss=[n for n in ['cmd_done', 'last_push_failure', 'main_worker_dir', 'research_rows', 'selected_nothing', 'worker_dirs', 'WORK_PREFIX', 'WORKER_NAME', 'run_check', 'own_failure', 'REOPENED_REFS', 'RESEARCH_DEFAULT_GOAL', 'cleanup_gate_do', 'clauses_left_behind', 'prune_reopened_refs'] if not hasattr(m,n)]\nprint('names no longer importable from bl_land:',miss);sys.exit(1 if miss else 0)"
+        ],
+        "exit": 0,
+        "sha256": "f7ef18ec83c1fe61"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport subprocess\no = subprocess.run([sys.executable, '_tools/backlog.py', '--help'], capture_output=True, text=True, timeout=60).stdout\nmiss = [c for c in ('researched', 'done', 'land', 'tidy', 'close', 'precheck', 'merge') if c not in o]\nprint('commands missing from backlog.py --help:', miss); sys.exit(1 if miss else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "c6b4a2a4f4354565"
+      }
+    ]
+  }
 }
