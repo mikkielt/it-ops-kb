@@ -2,7 +2,7 @@
   "id": "ST-5lh3rat3",
   "kind": "story",
   "title": "Research sprint goal: kb articles pass the contract lint clean, and the query log's research queue is worked",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-2rjhs7se",
   "goal_research": true,
   "priority": "P1",

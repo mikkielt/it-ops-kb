@@ -2,7 +2,7 @@
   "id": "SP-2rjhs7se",
   "kind": "sprint",
   "title": "kb articles pass the contract lint clean, and the query log's research queue is worked",
-  "status": "planned",
+  "status": "active",
   "goal": "every public article's sources header matches the sources its facts cite; every article has a title line; facts carry one tag each and a DER fact that rests on a run names its version; the articles about this repository's own tools say what the tools do; the named unanchored facts are anchored or reworded; the query log's queued gaps are researched or closed with a note; the facts whose source is gone are re-sourced or noted, and none is deleted without an operator gate",
   "gates": [
     {
