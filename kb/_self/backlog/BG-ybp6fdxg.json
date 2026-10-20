@@ -2,7 +2,7 @@
   "id": "BG-ybp6fdxg",
   "kind": "bug",
   "title": "content-rules.md and tools.md name tests that no longer exist as the planted failures of their checks",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gea4jifz",
   "priority": "P1",
   "rank": 0,
@@ -22,5 +22,7 @@
     "kb/_self/_retrieval/lookup_eval.csv",
     "kb/_self/_retrieval/**"
   ],
-  "notes": "Found by the SP-gea4jifz review (S1): ST-ke655nm5's check matched only test_* names and _tools/ paths, so short names after 'tests named' passed. Repro on 2026-10-20 (b206ca178): exits 1 naming 17 names in content-rules.md (decisions_store, kbdecide_withdraw, decision_sweep, decision_tag, log_row_contract, kblog_record_confirm, publish_omits_logs_csv, kblog_propose_*, kblog_sweep_*) and tools.md (pack_scatter_check, pack_freshness_stamp, freshness_lifetime, pack_revalidate, lookup_shows_log_lines, log_not_counted_in_coverage). Fix the sentence to name what checks the rule now (the check.py/rag.py code path, or a remaining test if one holds it); delete no rule. Re-point any lookup_eval.csv row whose expected text changes."
+  "notes": "Found by the SP-gea4jifz review (S1): ST-ke655nm5's check matched only test_* names and _tools/ paths, so short names after 'tests named' passed. Repro on 2026-10-20 (b206ca178): exits 1 naming 17 names in content-rules.md (decisions_store, kbdecide_withdraw, decision_sweep, decision_tag, log_row_contract, kblog_record_confirm, publish_omits_logs_csv, kblog_propose_*, kblog_sweep_*) and tools.md (pack_scatter_check, pack_freshness_stamp, freshness_lifetime, pack_revalidate, lookup_shows_log_lines, log_not_counted_in_coverage). Fix the sentence to name what checks the rule now (the check.py/rag.py code path, or a remaining test if one holds it); delete no rule. Re-point any lookup_eval.csv row whose expected text changes.",
+  "claimed_by": "orch-r111",
+  "operator": "op-f618a13e"
 }
