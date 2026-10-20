@@ -72,10 +72,10 @@ Encrypted, DPAPI-NG, age/sops) and `mcp/authorization.md` (MCP OAuth 2.1, DCR de
   and, when encryption is unavailable (e.g. Linux without libsecret), re-raises the error by default
   (`fallback_to_plaintext=False`); only a caller that opts in gets the warning "Encryption unavailable.
   Opting in to plain text." and an **unencrypted** token cache. The persistence object exposes
-  `is_encrypted`, so the caller can check which backend actually engaged. [DOC S2044] The general
-  "unknown is never treated as absent/safe" rule applies by analogy: a component reading this cache should
-  keep the fallback off and check `is_encrypted`, treating a plaintext cache as a condition to refuse, not
-  a transparent degrade. [DER S2044]
+  `is_encrypted`, so the caller can check which backend actually engaged. [DOC S2044]
+- **Handling the plaintext fallback.** The general "unknown is never treated as absent/safe" rule applies by
+  analogy: a component reading this cache should keep the fallback off and check `is_encrypted`, treating a
+  plaintext cache as a condition to refuse, not a transparent degrade. [DER S2044]
 - Documented scope of intended use: "public client applications such as desktop apps only," explicitly
   cautioned against for web applications ("potential scale and performance issues") — matches a CLI-only
   client case, where a web-facing deployment is out of scope regardless. [DOC S2044]
@@ -103,7 +103,7 @@ Encrypted, DPAPI-NG, age/sops) and `mcp/authorization.md` (MCP OAuth 2.1, DCR de
   both vault management and data access) or the older **access-policy** model (data access only);
   Standard tier = FIPS 140 Level 1 software crypto, Premium tier = FIPS 140-3 Level 3 HSM-protected keys;
   Microsoft states "Key Vault is designed so that Microsoft doesn't see or extract your data." [DOC S2047]
-  Threat covered: a single machine-local secret (e.g. a CMK certificate) needing replication to every
+- **Azure Key Vault, threat covered.** A single machine-local secret (e.g. a CMK certificate) needing replication to every
   workstation that decrypts it — Key Vault centralizes that instead, matching the gap already flagged in
   `auth/key-management-options.md`. [DER S2047, auth/key-management-options.md]
 - **HashiCorp Vault**: "centralized, well-audited privileged access and secret management" for
@@ -154,18 +154,19 @@ Encrypted, DPAPI-NG, age/sops) and `mcp/authorization.md` (MCP OAuth 2.1, DCR de
   to any other OIDC-compliant provider. [DOC S2055]
 - The documented operational difference from an ordinary CI/CD variable: "secrets must be explicitly
   requested by a job," fetched at run time, versus a CI/CD variable which is "always available in jobs"
-  and injected into every job's environment by default whether that job needs it or not. GitLab's docs do
-  not explicitly rank this as more secure than a masked/protected variable, but the on-demand model
-  structurally narrows which jobs a given secret's value ever reaches — a concrete GitLab-native
-  alternative to the CI/CD-variable leakage path this file already documents from S449. [DOC S2055, DER
-  against S449]
+  and injected into every job's environment by default whether that job needs it or not. [DOC S2055]
+- GitLab's docs do not explicitly rank on-demand secrets as more secure than a masked/protected variable,
+  but the on-demand model structurally narrows which jobs a given secret's value ever reaches — a concrete
+  GitLab-native alternative to the CI/CD-variable leakage path this file already documents from S449. [DER
+  S2055, S449]
 - **Vault's JWT/OIDC auth method** is the mechanism a GitLab `id_tokens` JWT would present against a
   self-hosted Vault: a role configured with `bound_audiences` (must exactly match the JWT's `aud` claim)
   and optional `bound_claims` (arbitrary claim/value matching, e.g. restricting by GitLab project path or
   ref), then `vault write auth/jwt/login role=<name> jwt=<token>` exchanges the JWT for a Vault token
-  scoped to that role's policies and TTL. [DOC S2056] Combined with a "one job per runner and trigger"
-  policy and "MR code never runs with a domain identity," this is a concrete non-PAT, non-static-secret
-  path for a protected scheduled job to reach Vault-issued dynamic secrets. [DER S2056]
+  scoped to that role's policies and TTL. [DOC S2056]
+- Combined with a "one job per runner and trigger" policy and "MR code never runs with a domain identity,"
+  Vault's JWT/OIDC auth is a concrete non-PAT, non-static-secret path for a protected scheduled job to
+  reach Vault-issued dynamic secrets. [DER S2056]
 
 ### Deepening: Claude Code `apiKeyHelper` hot-reload behaviour
 - Claude Code's settings system reloads `apiKeyHelper` (and other credential helpers, alongside

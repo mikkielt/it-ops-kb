@@ -62,9 +62,10 @@ d30c42262cf4,ad/ldap-paging-filters.md,S567,located,Search Filter Syntax > Speci
 237615345412,agents/a2a-protocol.md,S-2jevtssc,located,A New Chapter for A2A: Joining the Agentic AI Foundation¶ > Ecosystem Adoption and Scale¶,agentcor;aws;azur;bedrock;cloud;core;foundry;googl,faf73b7e1a3f876d,"Major cloud providers-including Google Cloud, AWS Bedrock AgentCore Runtime, and Microsoft Azure AI Foundry-have built native A2A support directly into their infrastructure.",2026-10-10
 237615345412,agents/a2a-protocol.md,S-fpw4ly2l,unlocated:no-match,,,,,2026-10-10
 2564686db5b6,agents/a2a-protocol.md,S2120,located,Agent2Agent (A2A) Protocol Specification¶ > 4. Protocol Data Model¶ > 4.4. Agent Discovery Objects¶ > 4.4.5. AgentSkill¶,skill;schem;security,9c8e720f7729ce76,Security schemes necessary for this skill.,2026-10-19
+2890fb0f7513,agents/a2a-protocol.md,S2120,located,Agent2Agent (A2A) Protocol Specification¶,relea;1.0.0;latest;version,ef9a85dfa0ebe4bc,Latest Released Version 1.0.0,2026-10-20
+2890fb0f7513,agents/a2a-protocol.md,S-xasyjfgi,located,,2026-03-12;application;status;bind;break;list;chang;0.3.0,23198c1b5784a606,"""body"": ""## [1.0.0](https://github.com/a2aproject/A2A/compare/v0.3.0...v1.0.0) (2026-03-12)\n\n\n### ⚠ BREAKING CHANGES\n\n spec: Combine TaskPushNotificationConfig and PushNotificationConfig ([#1500](https://github.com/a2aproject/A2A/issues/1500))\n spec: remove duplicated ID from the create task push config request ([#1487](https://github.com/a2aproject/A2A/issues/1487))\n",2026-10-20
 2b68652dcd2f,agents/a2a-protocol.md,S2120,located,Agent2Agent (A2A) Protocol Specification¶ > 8. Agent Discovery: The Agent Card¶ > 8.4. Agent Card Signing¶,sign;web;rfc;signatur;may;json;card;agent,1eee3a61a87f06ce,Agent Cards MAY be digitally signed using JSON Web Signature (JWS) as defined in RFC 7515 to ensure authenticity and integrity.,2026-10-19
-33c7f6766ae3,agents/a2a-protocol.md,S2129,unlocated:no-match,,,,,2026-10-10
-33c7f6766ae3,agents/a2a-protocol.md,S-2jevtssc,unlocated:no-match,,,,,2026-10-10
+2d85d803994b,agents/a2a-protocol.md,S2129,located,Deploying multi-agent systems using MCP and A2A with Claude on Vertex AI,model;protocol;tool;webinar;anthropic;implementation;vertex;a2a,d6917b13822ba112,"This webinar, presented by Anthropic and Google Cloud, will dive deep into the practical implementation of multi-agent systems using Model Context Protocol (MCP) and Agent-to",2026-10-20
 43c98bd3b316,agents/a2a-protocol.md,S2120,located,Agent2Agent (A2A) Protocol Specification¶ > 4. Protocol Data Model¶ > 4.4. Agent Discovery Objects¶ > 4.4.5. AgentSkill¶,overrid;media;default;skill;input;support;type;agent,7d2d9cd9ebf73c25,"The set of supported input media types for this skill, overriding the agent's defaults.",2026-10-16
 4d81ce69d690,agents/a2a-protocol.md,S2120,unlocated:no-match,,,,,2026-10-10
 5a219920d966,agents/a2a-protocol.md,S2120,located,Agent2Agent (A2A) Protocol Specification¶ > 4. Protocol Data Model¶ > 4.1. Core Objects¶ > 4.1.6. Part¶,raw;exactly;one;text;part;data;url,0d2567092ef727ec,"A Part MUST contain exactly one of the following: text, raw, url, data",2026-10-16
@@ -82,8 +83,6 @@ a7e05c9057b7,agents/a2a-protocol.md,S2120,unlocated:no-match,,,,,2026-10-10
 a7e05c9057b7,agents/a2a-protocol.md,S2126,located,Connect to an agent over the Agent2Agent (A2A) protocol - Microsoft Copilot Studio | Microsoft Learn > Connect your agent to another agent over the A2A protocol,2.0;authorization;client;header;oauth;parameter;query;refresh,5c526a19b7c709ab,You need to provide the name of the header where the API key should be included or the query parameter. OAuth 2.0: Select this option,2026-10-10
 abb798235707,agents/a2a-protocol.md,S-2jevtssc,located,A New Chapter for A2A: Joining the Agentic AI Foundation¶ > Neutral Governance¶,agents.md;alongsid;goos;linux;operat;under;mcp;project,19870e06e5e14452,"By operating under the Linux Foundation-directed AAIF alongside sibling projects like MCP, goose, and AGENTS.md, A2A is protected from single-vendor constraints.",2026-10-10
 b810ccaa1d3f,agents/a2a-protocol.md,S2120,located,Agent2Agent (A2A) Protocol Specification¶ > 4. Protocol Data Model¶ > 4.1. Core Objects¶ > 4.1.6. Part¶,arbitrary;null;boolean;number;structur;array;data;valu,8d686d1b6963da7b,"Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).",2026-10-16
-d4238afabbf7,agents/a2a-protocol.md,S2120,unlocated:no-match,,,,,2026-10-10
-d4238afabbf7,agents/a2a-protocol.md,S-xasyjfgi,located,,1.0.0;2026-03-12;application;status;bind;break;list;chang,23198c1b5784a606,"""body"": ""## [1.0.0](https://github.com/a2aproject/A2A/compare/v0.3.0...v1.0.0) (2026-03-12)\n\n\n### ⚠ BREAKING CHANGES\n\n spec: Combine TaskPushNotificationConfig and PushNotificationConfig ([#1500](https://github.com/a2aproject/A2A/issues/1500))\n spec: remove duplicated ID from the create task push config request ([#1487](https://github.com/a2aproject/A2A/issues/1487))\n",2026-10-10
 d6a1648a0b6d,agents/a2a-protocol.md,S-byrq57yo,located,A2A JSON Artifact,commit;non;non-normativ;normativ;proto;a2a.json;generat;a2a,c465490e61588246,a2a.json is a non-normative build artifact derived from the canonical proto definition at specification/a2a.proto. It is generated during builds and intentionally not committed to source,2026-10-10
 dc825b8c29b8,agents/a2a-protocol.md,S2120,located,Agent2Agent (A2A) Protocol Specification¶ > 6. Common Workflows & Examples¶ > 6.5. Task Listing and Management¶ > Validation Error Example¶,task_state_submit;submit;task_state_input_requir;task_state_work;task_state_cancel;task_state_fail;task_state_reject;task_state_auth_requir,19ec7abdb7732a16,"Must be one of: TASKSTATESUBMITTED, TASKSTATEWORKING, TASKSTATECOMPLETED, TASKSTATEFAILED, TASKSTATECANCELED, TASKSTATEREJECTED, TASKSTATEINPUTREQUIRED, TASKSTATEAUTHREQUIRED""",2026-10-10
 ed042e128315,agents/a2a-protocol.md,S2125,unlocated:no-match,,,,,2026-10-10
@@ -110,6 +109,7 @@ b0c26162383b,agents/a2a/a2a-proto-digest.md,S2120,located,Agent2Agent (A2A) Prot
 11c42d9b8243,agents/agent-caching.md,S2130,unlocated:no-match,,,,,2026-10-12
 11c42d9b8243,agents/agent-caching.md,S2132,unlocated:no-match,,,,,2026-10-12
 11c42d9b8243,agents/agent-caching.md,S2135,unlocated:no-match,,,,,2026-10-12
+159a12006fb2,agents/agent-caching.md,S2135,located,Tools > Capabilities,credential;grant;per-request;sinc;caller;vary;authorization;scop,ee77384314481dd8,"MAY vary by the authorization presented on the request - for example, returning only the tools the caller's granted scopes permit - since credentials are",2026-10-20
 174c06de8cb6,agents/agent-caching.md,S2130,located,...long conversation so far > FAQ,5-minut;pric;base;1-hour;cost;hour;minut;writ,4fd326a36bbe4e78,"Prompt caching introduces a new pricing structure where 5-minute cache writes cost 25% more than base input tokens, 1-hour cache writes cost 2x base input",2026-10-12
 174c06de8cb6,agents/agent-caching.md,S2131,located,Pricing > Feature-specific pricing > Prompt caching,1.25x;1-hour;25x;5-minut;minut;writ;hour;cost,6f39f61b71f42f0e,"A cache hit costs 10% of the standard input price, which means caching pays off after one cache read for the 5-minute duration (1.25x write),",2026-10-12
 1ae34268ac92,agents/agent-caching.md,S2130,located,Prompt caching > Caching strategies and considerations > What invalidates the cache,hierarchy;level;invalidat;chang;tool;system;messag,457b6a686a2c0083,"As described in Structuring your prompt, the cache follows the hierarchy: tools → system → messages. Changes at each level invalidate that level and all",2026-10-12
@@ -154,7 +154,6 @@ a46aa63d4b1a,agents/agent-caching.md,S2130,unlocated:no-match,,,,,2026-10-12
 a6760776a879,agents/agent-caching.md,S2130,located,Prompt caching > Caching strategies and considerations > Cache limitations,becom;concurrent;begin;availabl;first;entry;respons;request,13a800c65e1dd1df,"For concurrent requests, note that a cache entry only becomes available after the first response begins.",2026-10-18
 a8f3dcbdb85e,agents/agent-caching.md,S2133,unlocated:no-match,,,,,2026-10-12
 b15c5b47ea84,agents/agent-caching.md,S2131,located,Pricing > Feature-specific pricing > Prompt caching,1.25x;off;1-hour;25x;5-minut;minut;one;pays,6f39f61b71f42f0e,"A cache hit costs 10% of the standard input price, which means caching pays off after one cache read for the 5-minute duration (1.25x write),",2026-10-12
-b5392ef99125,agents/agent-caching.md,S2135,located,Tools > Capabilities,credential;grant;per-request;sinc;caller;vary;authorization;scop,ee77384314481dd8,"MAY vary by the authorization presented on the request - for example, returning only the tools the caller's granted scopes permit - since credentials are",2026-10-12
 b5e0c3c4f709,agents/agent-caching.md,S2132,located,Manage costs effectively > Track your costs > Using the `/usage` command > Prompt cache statistics,re-cach;tool-result;serv;ttl;whether;rebuild;result;warm,16b05256870679da,"After the main conversation's first API response, Claude Code also adds a Prompt cache (main) line to the Session block, summarizing the session's prompt cache",2026-10-12
 c04b8036c05d,agents/agent-caching.md,S2135,located,Tools > Capabilities,hit;improv;reliably;deterministic;order;rate;cach;context,faea098453bdff07,Deterministic ordering enables clients to reliably cache the tool list and improves LLM prompt cache hit rates when tools are included in model context.,2026-10-12
 c22e0ae3fe6f,agents/agent-caching.md,S2133,unlocated:no-match,,,,,2026-10-12
@@ -337,6 +336,8 @@ a15d0eba160f,agents/agent-evaluation.md,S-onkwuwst,unlocated:no-match,,,,,2026-1
 a1fc656eea89,agents/agent-evaluation.md,S-onkwuwst,unlocated:no-match,,,,,2026-10-10
 a1fc656eea89,agents/agent-evaluation.md,S-p7dq3fku,unlocated:no-match,,,,,2026-10-10
 a542f14c702b,agents/agent-evaluation.md,S-p7dq3fku,unlocated:no-match,,,,,2026-10-10
+a55e64196235,agents/agent-evaluation.md,S1890,located,"garak, LLM vulnerability scanner",jailbreak;leakag;misinformation;hallucination;toxicity;data;injection;llm,9d9b21727adaa382,"garak probes for hallucination, data leakage, prompt injection, misinformation, toxicity generation, jailbreaks,",2026-10-20
+a55e64196235,agents/agent-evaluation.md,S1891,located,,nvidia;2.0;apach;file;licens,7ce61a5b6c05a99b,"Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES Licensed under the Apache License, Version 2.0 (the ""License""); you may not use this file except in compliance",2026-10-20
 a8b41b01e4b4,agents/agent-evaluation.md,S1893,unlocated:no-match,,,,,2026-10-10
 a8b41b01e4b4,agents/agent-evaluation.md,S1894,unlocated:no-match,,,,,2026-10-10
 a8b41b01e4b4,agents/agent-evaluation.md,S1895,unlocated:no-match,,,,,2026-10-10
@@ -348,9 +349,6 @@ b1e2dd011ecf,agents/agent-evaluation.md,S1900,unlocated:no-match,,,,,2026-10-10
 b4194d67baeb,agents/agent-evaluation.md,S-onkwuwst,unlocated:no-match,,,,,2026-10-10
 b4194d67baeb,agents/agent-evaluation.md,S-p7dq3fku,unlocated:no-match,,,,,2026-10-10
 c16293a821ef,agents/agent-evaluation.md,S-6jcocxnl,unlocated:no-match,,,,,2026-10-10
-c585f1f3349b,agents/agent-evaluation.md,S1890,unlocated:no-match,,,,,2026-10-10
-c585f1f3349b,agents/agent-evaluation.md,S1891,unlocated:no-match,,,,,2026-10-10
-c585f1f3349b,agents/agent-evaluation.md,S1903,unlocated:no-match,,,,,2026-10-10
 c8374ca0116b,agents/agent-evaluation.md,S-m2glighe,unlocated:no-match,,,,,2026-10-10
 c84616315950,agents/agent-evaluation.md,S-zfg6jhgr,unlocated:no-match,,,,,2026-10-10
 ccc477c302d3,agents/agent-evaluation.md,S1896,unlocated:no-match,,,,,2026-10-10
@@ -570,6 +568,7 @@ feb51ab6ec5c,agents/agent-planning-and-done.md,S2150,located,Effective harnesses
 5df89de5281b,agents/agent-rbac.md,S2053,unlocated:no-match,,,,,2026-10-10
 7389ebead128,agents/agent-rbac.md,S2050,located,Create a role-assignable group in Microsoft Entra ID - Microsoft Entra ID | Microsoft Learn,dynamic;membership;tenant;set;isassignabletorol;true;assign;entra,9c78a98aaeffe2c7,You create a new role-assignable group by setting Microsoft Entra roles can be assigned to the group to Yes or by setting the isAssignableToRole property,2026-10-10
 7c14024d09f4,agents/agent-rbac.md,S-fwzaxe7i,located,Authorization in Microsoft Entra Agent ID | Microsoft Learn > Microsoft Entra role assignments for agent identities,assignabl;role-assignabl;group;identity;role;agent,d490aff6c4a10aeb,"Also, agent identities can't be members of role-assignable groups.",2026-10-10
+7e1c57f42e12,agents/agent-rbac.md,S2058,located,OWASP Non-Human Identities Top 10 > About OWASP Non-Human Identities Top 10,individual;manual;nhi10;perform;task;misus;risk;nhi,1fcc522df85e09bc,"NHI10:2025 - Human Use of NHI During application development and maintenance, developers or administrators may misuse NHIs for manual tasks that should be performed using",2026-10-20
 83b29324593a,agents/agent-rbac.md,S2052,located,Privileged Identity Management (PIM) for Groups - Microsoft Entra ID Governance | Microsoft Learn > Make a group of users eligible for a Microsoft Entra role,avoid;delay;instead;portal;purview;exchang;point;shar,ee5ab5350e009e05,"In other words, to avoid activation delays, use PIM for Microsoft Entra roles instead of PIM for Groups to provide just-in-time access to SharePoint, Exchange,",2026-10-10
 867e6b295804,agents/agent-rbac.md,S2040,located,Overview of agent identities in Microsoft Entra | Microsoft Learn,autonomous;interactiv;app;acquir;behalf;call;token;user,55adfa3b19defbba,Autonomous agents acquire app tokens on behalf of the agent identity. Interactive agents called with a user token acquire user tokens on behalf of the,2026-10-10
 8b8af8b8c899,agents/agent-rbac.md,S2053,located,Add app roles and get them from a token - Microsoft identity platform | Microsoft Learn > Declare roles for an application,currently;identity;issu;doesn;principal;claim;servic;add,9465d1e963a80eba,"App roles can also be assigned to the service principal for another application, or to the service principal for a managed identity. Currently, if you",2026-10-10
@@ -582,10 +581,7 @@ a3359b9b2695,agents/agent-rbac.md,S742,located,Configure permissions > Tool-spec
 a357266bf443,agents/agent-rbac.md,S-etygtiqw,located,What is Azure attribute-based access control (Azure ABAC)? | Microsoft Learn > Conditions and Microsoft Entra PIM,eligibl;pim;azur;assignment;role;condition,8ee9d194aead6aab,You can also add conditions to eligible role assignments using Microsoft Entra Privileged Identity Management (Microsoft Entra PIM) for Azure resources.,2026-10-14
 a8cb5e14b099,agents/agent-rbac.md,S707,unlocated:no-match,,,,,2026-10-10
 a8cb5e14b099,agents/agent-rbac.md,S2045,unlocated:no-match,,,,,2026-10-10
-a994e93529bd,agents/agent-rbac.md,S1282,unlocated:no-match,,,,,2026-10-10
-a994e93529bd,agents/agent-rbac.md,S2052,unlocated:no-match,,,,,2026-10-10
 b39792d1ee24,agents/agent-rbac.md,S2052,unlocated:no-match,,,,,2026-10-10
-b92d6ab2430f,agents/agent-rbac.md,S2058,unlocated:no-match,,,,,2026-10-10
 bbae2d23a29e,agents/agent-rbac.md,S740,located,Connect Claude Code to tools via MCP > Require approval for a specific tool,acceptedit;dont;dontask;bypasspermission;bypass;edit;deni;even,eb7e1ee79d17d72c,"Claude Code shows that tool's permission prompt on every call, even in acceptEdits, auto, and bypassPermissions permission modes, and doesn't offer a ""don't ask again""",2026-10-10
 c64a8eab8ad9,agents/agent-rbac.md,S2042,located,Deploy managed settings,security-sensitiv;sensitiv;security;stricter;exception;abov;count;project,8eda1b564689d1eb,"Claude Code applies them above every other level, so no user, project, local, or --settings value overrides them, apart from a few security-sensitive exceptions where",2026-10-12
 c685a846a34a,agents/agent-rbac.md,S707,unlocated:no-match,,,,,2026-10-10
@@ -767,12 +763,10 @@ d1658536bb95,agents/anthropic-materials.md,S2137,located,Engineering at Anthropi
 de5c948b6b9d,agents/anthropic-materials.md,S2137,unlocated:no-match,,,,,2026-10-10
 0081de9718b1,agents/api-tokens-issue-and-store.md,S-h7wl75vd,unlocated:no-match,,,,,2026-10-18
 0081de9718b1,agents/api-tokens-issue-and-store.md,S-uyzwls57,unlocated:no-match,,,,,2026-10-18
-197178218c67,agents/api-tokens-issue-and-store.md,S2044,unlocated:no-match,,,,,2026-10-10
 24b86864dabc,agents/api-tokens-issue-and-store.md,S2041,located,Authentication > Credential management,inherit;userprofil;control;linux;mac;maco;credentials.json;directory,fc77f28e09a328c0,"On Linux, credentials are stored in ~/.claude/.credentials.json with file mode 0600. On Windows, credentials are stored in %USERPROFILE%\.claude\.credentials.json and inherit the access controls of your",2026-10-10
 25e7cbb053b6,agents/api-tokens-issue-and-store.md,S2043,unlocated:no-match,,,,,2026-10-10
 33e8ea3797dd,agents/api-tokens-issue-and-store.md,S2046,unlocated:no-match,,,,,2026-10-10
 3421315dea48,agents/api-tokens-issue-and-store.md,S2043,unlocated:no-match,,,,,2026-10-10
-35455ce792b9,agents/api-tokens-issue-and-store.md,S2056,unlocated:no-match,,,,,2026-10-10
 42fd605a992d,agents/api-tokens-issue-and-store.md,S740,unlocated:no-match,,,,,2026-10-10
 47c10c6a5e31,agents/api-tokens-issue-and-store.md,S-h7wl75vd,located,Introduction > What are Canarytokens,like;motion;sensor;canarytoken,7dd887e7c6e87246,Canarytokens are like motion sensors for your networks,2026-10-18
 47c10c6a5e31,agents/api-tokens-issue-and-store.md,S-uyzwls57,located,Search > What are Canarytokens?,singl;each;creat;location;canarytoken;plac,0fa939206a022dd2,each Canarytoken you create should only be placed in a single location,2026-10-18
@@ -792,13 +786,14 @@ de5c948b6b9d,agents/anthropic-materials.md,S2137,unlocated:no-match,,,,,2026-10-
 832a83577782,agents/api-tokens-issue-and-store.md,S2057,located,Settings files and precedence > Change a setting > When edits take effect,apikeyhelper;watch;credential;helper;reload;restart;api;hook,e8e27f045a57a263,"Claude Code watches your settings files and reloads them when they change, so it applies most edits to the running session without a restart, including",2026-10-12
 89e04707b27c,agents/api-tokens-issue-and-store.md,S-75p7zmds,unlocated:no-match,,,,,2026-10-18
 90a1a8b0be60,agents/api-tokens-issue-and-store.md,S2055,unlocated:no-match,,,,,2026-10-10
-90c30576660e,agents/api-tokens-issue-and-store.md,S2047,unlocated:no-match,,,,,2026-10-10
 9b8dc12070ec,agents/api-tokens-issue-and-store.md,S449,unlocated:no-match,,,,,2026-10-10
-ac10cd29993d,agents/api-tokens-issue-and-store.md,S2055,located,Use external secrets in CI/CD,alway;availabl;explicitly;job;must;request;variabl;git,dbee0558678d1e70,"Unlike CI/CD variables which are always available in jobs, secrets must be explicitly requested by a job. GitLab supports several secret management providers, including:",2026-10-10
 b464d03f3790,agents/api-tokens-issue-and-store.md,S1297,unlocated:no-match,,,,,2026-10-10
+b9b8940d23cd,agents/api-tokens-issue-and-store.md,S2055,located,Use external secrets in CI/CD,alway;availabl;explicitly;job;must;request;variabl;jobs,a7e7595b98f13b21,"Unlike CI/CD variables which are always available in jobs, secrets must be explicitly requested by a job.",2026-10-20
 cbeac38fd2fd,agents/api-tokens-issue-and-store.md,S2046,unlocated:no-match,,,,,2026-10-10
 d27435038c6d,agents/api-tokens-issue-and-store.md,S-75p7zmds,located,Secret push protection workflow > Coverage > Diff scanning,already;present;part;chang;detect;file;secret,bd30732222fc5878,"If a secret is already present in a file and not part of the changes, it is not detected.",2026-10-18
 ecc6dc4b26c2,agents/api-tokens-issue-and-store.md,S2041,unlocated:no-match,,,,,2026-10-10
+f0bfc2e3807a,agents/api-tokens-issue-and-store.md,S2044,located,Microsoft Authentication Extensions for Python > Usage > Creating an encrypted token cache file to be used by MSAL,opting;plain;text,51365aa9fd2aecf3,Opting in to plain text.,2026-10-20
+f35f6d374978,agents/api-tokens-issue-and-store.md,S2056,located,Use JWT/OIDC authentication > Configuration > Bound claims,exactly;bound_audienc;aud;audienc;match;must;bound;claim,911f436fc323a122,the boundaudiences parameter must exactly match at least one of provided aud claims.,2026-10-20
 fb5121e560ae,agents/api-tokens-issue-and-store.md,S-2spmezqp,unlocated:no-match,,,,,2026-10-10
 115cbdc78d46,agents/api-tokens.csv,S2047,unlocated:no-match,,,,,2026-10-10
 49dd15f3152d,agents/api-tokens.csv,S2054,unlocated:no-match,,,,,2026-10-10
@@ -820,8 +815,6 @@ f64ed9338fa5,agents/azure-openai-deployment-types.csv,S-psa4dspu,unlocated:no-ma
 f80bb161b26d,agents/azure-openai-deployment-types.csv,S-psa4dspu,located,Understanding deployment types in Microsoft Foundry Models - Microsoft Foundry | Microsoft Learn > Data Zone Standard,higher;datazonestandard;microsoft-defin;default;defin;based;geography-ba;apac,230e1ff5318cb71b,"SKU name in code: DataZoneStandard Data Zone Standard deployments dynamically route traffic to datacenters within the Microsoft-defined data zone (US, EU, or APAC). This deployment",2026-10-10
 f8dccef776a6,agents/azure-openai-deployment-types.csv,S-psa4dspu,unlocated:no-match,,,,,2026-10-10
 fe5815b635a0,agents/azure-openai-deployment-types.csv,S-psa4dspu,located,Understanding deployment types in Microsoft Foundry Models - Microsoft Foundry | Microsoft Learn > Deployment type comparison,highest;globalstandard;pay-per-token;quota;token;pay;region;azur,5c3be8a87b42f1b7,"Global Standard | GlobalStandard | Any Azure region | Pay-per-token | General workloads, highest quota",2026-10-10
-0356e3313aa3,agents/azure-openai-deployments.md,S-f7arhttw,located,Configure content filters,gpt;gpt-image-1;seri;support;imag;default;configuration;content,c33c33455869fc2a,The GPT-image-1 series models do not support content filtering configuration: only the default content filter is used.,2026-10-10
-0356e3313aa3,agents/azure-openai-deployments.md,S-uk5qyhwi,unlocated:no-match,,,,,2026-10-10
 06247ac54233,agents/azure-openai-deployments.md,S-4mutzurm,unlocated:no-match,,,,,2026-10-10
 06e66ba3e471,agents/azure-openai-deployments.md,S-wxhjirsk,located,Determine PTU sizing for a workload - Microsoft Foundry | Microsoft Learn > Deployment parameters and throughput values by model > Latest Azure OpenAI models,128k;aren;error;rout;spillover;5.4;availabl;gpt-4.1-mini,7a6a5f309c719dd5,"Long-context requests that exceed 128K prompt tokens aren't supported for gpt-5.4, gpt-4.1, gpt-4.1-mini, and gpt-4.1-nano. The system routes these requests to spillover deployments, if available.",2026-10-10
 070cad064626,agents/azure-openai-deployments.md,S-psa4dspu,located,Understanding deployment types in Microsoft Foundry Models - Microsoft Foundry | Microsoft Learn > Data processing locations > Data Zone deployments,affect;disaster;initially;primary;recovery;guid;rout;traffic,ac74bb8757314e62,"With Global Standard and Data Zone Standard deployment types, if the primary region experiences an interruption in service, all traffic initially routed to this region",2026-10-10
@@ -839,6 +832,7 @@ fe5815b635a0,agents/azure-openai-deployment-types.csv,S-psa4dspu,located,Underst
 64f4fba649f4,agents/azure-openai-deployments.md,S-2l76try5,located,Azure OpenAI image and audio REST API reference (2024-10-21) - Microsoft Foundry | Microsoft Learn > Data plane inference,specification;referenc;inferenc;rest;plan;2024-10-21;data,f0ca5f2198b9bf83,"The rest of this article covers the image and audio operations in the GA release of the Azure OpenAI data plane inference specification, 2024-10-21. For",2026-10-10
 65cf61e2c98b,agents/azure-openai-deployments.md,S-wxhjirsk,unlocated:no-match,,,,,2026-10-10
 65d0eae7ad5d,agents/azure-openai-deployments.md,S-4mutzurm,located,Azure OpenAI in Microsoft Foundry Models v1 API - Microsoft Foundry | Microsoft Learn > API evolution,monthly;updat;code;environment;featur;variabl;version;new,149204ce565b377e,"Previously, Azure OpenAI received monthly updates of new API versions. Taking advantage of new features required constantly updating code and environment variables with each new",2026-10-10
+684f7d1f896e,agents/azure-openai-deployments.md,S-f7arhttw,unlocated:gone,,,,,2026-10-20
 6917a83a0444,agents/azure-openai-deployments.md,S-gueirwxw,unlocated:no-match,,,,,2026-10-10
 6917a83a0444,agents/azure-openai-deployments.md,S-wxhjirsk,unlocated:no-match,,,,,2026-10-10
 6e876202a87b,agents/azure-openai-deployments.md,S-u75x3q42,unlocated:no-match,,,,,2026-10-10
@@ -951,7 +945,6 @@ fca2957f5e7e,agents/codebase-mapping.csv,S-j2laoer5,unlocated:no-match,,,,,2026-
 066b81211e7d,agents/codebase-mapping.md,S-l7o6het5,unlocated:no-match,,,,,2026-10-10
 080f8a9a9ff6,agents/codebase-mapping.md,S-5gm7nwzj,unlocated:no-match,,,,,2026-10-10
 0b42288d4c86,agents/codebase-mapping.md,S-hvxiebin,located,Overrides,away;further;current;rust-toolchain.toml;toml;rust;directory;file,fd67773093e5d8f4,"the directory tree toward the filesystem root, and a rust-toolchain.toml file that is closer to the current directory will be preferred over a directory override",2026-10-10
-0b6d33b64eef,agents/codebase-mapping.md,S-a7wduz2b,unlocated:no-match,,,,,2026-10-10
 0d350a990ffc,agents/codebase-mapping.md,S-73rwtmys,unlocated:no-match,,,,,2026-10-10
 0e38204feeb2,agents/codebase-mapping.md,S-2u4dktv3,unlocated:no-match,,,,,2026-10-10
 0e38204feeb2,agents/codebase-mapping.md,S-a7wduz2b,unlocated:no-match,,,,,2026-10-10
@@ -987,10 +980,12 @@ fca2957f5e7e,agents/codebase-mapping.csv,S-j2laoer5,unlocated:no-match,,,,,2026-
 2446edc057b4,agents/codebase-mapping.md,S-vstmwlcx,unlocated:no-match,,,,,2026-10-10
 2558661a1366,agents/codebase-mapping.md,S-5mnhlz54,unlocated:no-match,,,,,2026-10-10
 2558661a1366,agents/codebase-mapping.md,S-kyv336v3,unlocated:no-match,,,,,2026-10-10
+257ab57210cf,agents/codebase-mapping.md,S-px4fsmrd,located,Modules: CommonJS modules > The module scope > `require(id)`,string;name;path;modul,a6fa3cc2cfc99e86,id {string} module name or path,2026-10-20
 25b4e36ec2a2,agents/codebase-mapping.md,S-2u4dktv3,unlocated:no-match,,,,,2026-10-10
 25c2fe939064,agents/codebase-mapping.md,S-xmboehyd,unlocated:no-match,,,,,2026-10-10
 26dd7fd8a860,agents/codebase-mapping.md,S-st5dilla,located,Introduction {#intro} > Module and workspace configuration {#config},1.16;go.work;go.mod;mod;work;line,b9a872b1510b42bb,"For compatibility reasons, if the go line is omitted from a go.mod file, the module is considered to have an implicit go 1.16 line, and",2026-10-10
 29e7181af9a6,agents/codebase-mapping.md,S-42ml7nxg,located,,hostfxr_resolve_sdk2;start;global;json;resolv;hostfxr;directory;sdk,62ddeefa252514e3,"Interop.Windows.hostfxrresolvesdk2(dotnetExeDirectory, globalJsonStartDirectory, flags, result.Initialize)",2026-10-10
+2cb6e0825ee9,agents/codebase-mapping.md,S-a7wduz2b,located,Tooling API > Querying tooling models with build actions > getModel/findModel versus fetch,evaluat;request;script;configuration;target;fail;project;model,602ba5249a5cff74,or throws an exception if the model cannot be built - for example because the target project's configuration script fails to evaluate.,2026-10-20
 31532b332d4c,agents/codebase-mapping.md,S-j7sjakc5,unlocated:no-match,,,,,2026-10-10
 35040eaa69de,agents/codebase-mapping.md,S-223vfyli,located,Dev Container Metadata Reference > Scenario specific properties > Image or Dockerfile specific properties,registry;name;imag;dev;devcontainer.json;json;devcontainer;container,f91238d2d4ab6bb2,"image | string | Required when using an image. The name of an image in a container registry (DockerHub, GitHub Container Registry, Azure Container Registry)",2026-10-10
 35040eaa69de,agents/codebase-mapping.md,S-4xsjlwlt,unlocated:no-match,,,,,2026-10-10
@@ -1019,14 +1014,11 @@ fca2957f5e7e,agents/codebase-mapping.csv,S-j2laoer5,unlocated:no-match,,,,,2026-
 53ed091072c8,agents/codebase-mapping.md,S-st5dilla,unlocated:no-match,,,,,2026-10-10
 57e81d350bd1,agents/codebase-mapping.md,S-6ei7z5hd,unlocated:no-match,,,,,2026-10-10
 57e81d350bd1,agents/codebase-mapping.md,S-7cn5bcww,unlocated:no-match,,,,,2026-10-10
-58503bc05c6c,agents/codebase-mapping.md,S-px4fsmrd,unlocated:no-match,,,,,2026-10-10
 585e2c02377f,agents/codebase-mapping.md,S-jixwe4dj,unlocated:no-match,,,,,2026-10-10
 589ef326e04d,agents/codebase-mapping.md,S-bwtnlzvy,unlocated:no-match,,,,,2026-10-10
 589ef326e04d,agents/codebase-mapping.md,S-uwukziri,unlocated:no-match,,,,,2026-10-10
 591ec0280aec,agents/codebase-mapping.md,S-53fkmfzh,unlocated:no-match,,,,,2026-10-10
 591ec0280aec,agents/codebase-mapping.md,S-7jjocmag,unlocated:no-match,,,,,2026-10-10
-59526799ec3d,agents/codebase-mapping.md,S-223vfyli,unlocated:no-match,,,,,2026-10-10
-59526799ec3d,agents/codebase-mapping.md,S-cx5yd4ae,unlocated:no-match,,,,,2026-10-10
 615e2815108a,agents/codebase-mapping.md,S-cvfkrw4j,located,`tree-sitter tags`,list;page;output;sitter;tree;tree-sitter;path;tags,5ba3df02ee8bbd2c,"This will output a list of tags. For more information, see the code navigation page. tree-sitter tags [OPTIONS] [PATHS]...",2026-10-10
 6282c7116c3b,agents/codebase-mapping.md,S-e54zbsgw,located,Reference an MSBuild Project SDK - MSBuild | Microsoft Learn,adds;bottom;implicit;sdk.prop;file;prop;top;microsoft,d5b95221ce711bef,"During evaluation of the project, MSBuild adds implicit imports at the top and bottom of the project file: <Project> <Import Project=""Sdk.props"" Sdk=""Microsoft.NET.Sdk"" />",2026-10-10
 6282c7116c3b,agents/codebase-mapping.md,S-z35np3zd,located,How MSBuild builds projects - MSBuild | Microsoft Learn > User-configurable imports,driv;root;directory.build.prop;microsoft.common.prop;directory;prop;common;microsoft,97633f37baecfa8a,"That's commonly at the solution level for settings to control all the projects in the solution, but could also be higher up in the filesystem,",2026-10-10
@@ -1095,9 +1087,6 @@ fca2957f5e7e,agents/codebase-mapping.csv,S-j2laoer5,unlocated:no-match,,,,,2026-
 94bae7f4830c,agents/codebase-mapping.md,S-qg4k7brn,unlocated:no-match,,,,,2026-10-10
 950da3b44c55,agents/codebase-mapping.md,S-572g5w55,unlocated:no-match,,,,,2026-10-10
 95249e038ce3,agents/codebase-mapping.md,S-awr5xive,located,Central Package Management | Microsoft Learn > Central Package Management Rules,first;such;import;msbuild;file;directory.packages.prop;prop;directory,868d1efd0f5684a4,"MSBuild will only automatically import the first Directory.Packages.props file it finds in the project directory or any parent directory. If you have multiple such files,",2026-10-10
-954b88b4a8a9,agents/codebase-mapping.md,S-cltv4idz,unlocated:no-match,,,,,2026-10-10
-954b88b4a8a9,agents/codebase-mapping.md,S-me5pwvu4,unlocated:no-match,,,,,2026-10-10
-954b88b4a8a9,agents/codebase-mapping.md,S-nkxy23mu,unlocated:no-match,,,,,2026-10-10
 95c71981713a,agents/codebase-mapping.md,S-j2laoer5,unlocated:no-match,,,,,2026-10-10
 99233e1b7e8a,agents/codebase-mapping.md,S-f6y5we3c,located,,hash_ex;exe;wrapper;hash,f38bfb85bfe3ed98,"hashexe(&mut hasher, wrapper)?;",2026-10-13
 99233e1b7e8a,agents/codebase-mapping.md,S-zonbsokp,unlocated:no-match,,,,,2026-10-13
@@ -1110,8 +1099,6 @@ fca2957f5e7e,agents/codebase-mapping.csv,S-j2laoer5,unlocated:no-match,,,,,2026-
 9e20b7692a59,agents/codebase-mapping.md,S-px4fsmrd,unlocated:no-match,,,,,2026-10-10
 9e20b7692a59,agents/codebase-mapping.md,S-vyrse2i6,unlocated:no-match,,,,,2026-10-10
 9f03f563188f,agents/codebase-mapping.md,S-ubjrtutg,located,,avoid;build.target;cargo_build_target;intentionally;read;host;filter;build,a3c8c34071d4066e,"// Otherwise note that ""just host"" is used as the fallback here if // filterplatforms is empty to intentionally avoid reading // $CARGOBUILDTARGET (or build.target)",2026-10-10
-a2543ede0138,agents/codebase-mapping.md,S-3e3kl7vi,located,Overview > Using `tsconfig.json` or `jsconfig.json`,ignor;command;line;tsc;file;tsconfig.json;json;tsconfig,b53f5cdfb7e01482,By invoking tsc with no input files and a --project (or just -p) command line option that specifies the path of a directory containing a,2026-10-10
-a2543ede0138,agents/codebase-mapping.md,S-gfjnysog,located,,ignor;json;tsconfig;skip;present;error;report;file,eeb3e5e69dd69584,reportDiagnostic(ast.NewCompilerDiagnostic(diagnostics.XtsconfigjsonispresentbutwillnotbeloadediffilesarespecifiedoncommandlineUseignoreConfigtoskipthiserror)) return tsc.CommandLineResult{Status: tsc.ExitStatusDiagnosticsPresentOutputsSkipped},2026-10-10
 a3256038f136,agents/codebase-mapping.md,S-7e63teyx,unlocated:no-match,,,,,2026-10-10
 a3e58002e893,agents/codebase-mapping.md,S-cmdzei72,located,Guide to Using Toolchains > Using Toolchains in Your Project,user;user.hom;install;home;pom;path;toolchains.xml;xml,ad2136b4f11df5bf,"So when the maven-compiler-plugin configured in the pom.xml above executes, it sees that a JDK toolchain is set in the MavenSession and will use that",2026-10-10
 a46468d6be48,agents/codebase-mapping.md,S-zihpu7lj,located,global.json overview - .NET CLI | Microsoft Learn > global.json schema > `sdk` > `paths`,folder;repository;path;run;command;dotnet;sdk,4e18bd6da3a50e97,This feature enables using local SDK installations (such as SDKs relative to a repository root or placed in a custom folder) that aren't installed globally,2026-10-10
@@ -1142,6 +1129,8 @@ cec95884f1d9,agents/codebase-mapping.md,S-k6rik7wf,unlocated:no-match,,,,,2026-1
 cec95884f1d9,agents/codebase-mapping.md,S-ot3h76t5,unlocated:no-match,,,,,2026-10-14
 cf9e97e5f877,agents/codebase-mapping.md,S-3dlonliy,unlocated:no-match,,,,,2026-10-10
 cf9e97e5f877,agents/codebase-mapping.md,S-xdf63oro,unlocated:no-match,,,,,2026-10-10
+d117278d471b,agents/codebase-mapping.md,S-223vfyli,located,Dev Container Metadata Reference > Scenario specific properties > Image or Dockerfile specific properties,registry;name;imag;dev;docker;container,f91238d2d4ab6bb2,"image | string | Required when using an image. The name of an image in a container registry (DockerHub, GitHub Container Registry, Azure Container Registry)",2026-10-20
+d117278d471b,agents/codebase-mapping.md,S-cx5yd4ae,located,docker image pull > Examples > Pull an image by digest (immutable identifier),tag;digest;pull;imag,90be6221f25db7f3,A digest takes the place of the tag when pulling an image,2026-10-20
 d1f2951b7127,agents/codebase-mapping.md,S-rgn6ezsf,unlocated:no-match,,,,,2026-10-10
 d62a3cfb8549,agents/codebase-mapping.md,S-k6rik7wf,located,,byte;string;tokeniz,0f9e729dd1d5af3e,Tokenize a source reading unicode strings instead of bytes.,2026-10-14
 d78c319ddb27,agents/codebase-mapping.md,S-f3dxxlte,located,Target frameworks in SDK-style projects - .NET | Microsoft Learn > How to specify a target framework > TargetFramework values are aliases,targetframeworkmoniker;alia;moniker;property;project;framework;net;target,ad8fc449d4a55a97,"For example, net10.0-windows translates to TargetFrameworkMoniker = .NETCoreApp,Version=v10.0 and TargetPlatformMoniker = Windows,Version=7.0. Because the alias is just a name, the TargetFramework value can be any",2026-10-10
@@ -1845,15 +1834,13 @@ d0dcb443f677,agents/doc-change-detection.md,S-ods72iyh,unlocated:no-match,,,,,20
 d0dcb443f677,agents/doc-change-detection.md,S-wcrrjfwh,unlocated:no-match,,,,,2026-10-12
 d0de9a65dd25,agents/doc-change-detection.md,S-wze42rd7,located,Viewing wiki history,commit;messag;user;made;history;chang;wiki,1149162a878c6a8e,Wiki history includes: The user who made the change The commit message they provided,2026-10-12
 d1643fc8b97d,agents/doc-change-detection.md,S-ffzntayk,unlocated:no-match,,,,,2026-10-12
-d18fd03cca1e,agents/doc-change-detection.md,S-xpbhjzu7,unlocated:no-match,,,,,2026-10-12
+d294221ca78a,agents/doc-change-detection.md,S-xpbhjzu7,located,,c_kwdokudkgtoakdk1zdmwnmriodm4mdy1mwqznjzimzlkzwuzzjuynwi0mzrizwzlzgq;gto;kud;mdy;mzlk;nwi;odm;zgq,ece9a624e7079b41,sha 95d306db8380651d366b39dee3f525b434befedd nodeid CkwDOKudKGtoAKDk1ZDMwNmRiODM4MDY1MWQzNjZiMzlkZWUzZjUyNWI0MzRiZWZlZGQ,2026-10-20
 d59c40f1c8bb,agents/doc-change-detection.md,S-phkss6q3,located,Status codes,authoriz;couldn;project;found;delet;isn;access;user,7c7933a6ffc9f152,"403 Forbidden | The request isn't allowed. For example, the user isn't allowed to delete a project. 404 Not Found | A resource couldn't be",2026-10-12
 d61085528514,agents/doc-change-detection.md,S-2r7j5aw2,unlocated:no-match,,,,,2026-10-12
 d61085528514,agents/doc-change-detection.md,S-g3ciqhyh,unlocated:no-match,,,,,2026-10-12
 d61085528514,agents/doc-change-detection.md,S-oqvrq2wq,unlocated:no-match,,,,,2026-10-12
 d69e224c37a3,agents/doc-change-detection.md,S-5lkuonr6,unlocated:no-match,,,,,2026-10-13
 d69e224c37a3,agents/doc-change-detection.md,S-7tff4woa,unlocated:no-match,,,,,2026-10-12
-d876710e89a5,agents/doc-change-detection.md,S2176,unlocated:no-match,,,,,2026-10-12
-d876710e89a5,agents/doc-change-detection.md,S-lylm4eqz,located,Use the Microsoft Learn CLI | Microsoft Learn > Use CLI commands,markdown;markdown-friendly;page;friendly;output;query;return;url,62977ef316d14981,search <query> [--json] searches official Microsoft documentation. fetch <url> fetches a Learn page as Markdown-friendly output. fetch <url> --section <heading> returns a single section.,2026-10-12
 d8f317e28bed,agents/doc-change-detection.md,S2177,unlocated:fetch-error,,,,,2026-10-13
 d8f317e28bed,agents/doc-change-detection.md,S2180,unlocated:gone,,,,,2026-10-13
 d8f317e28bed,agents/doc-change-detection.md,S2181,unlocated:gone,,,,,2026-10-13
@@ -1914,8 +1901,11 @@ fa01deebc8f2,agents/doc-lookup-sources.csv,S2184,unlocated:no-match,,,,,2026-10-
 07799601f49b,agents/doc-lookup-sources.md,S-j7xzzcxj,unlocated:no-match,,,,,2026-10-13
 0dcbf46e3b99,agents/doc-lookup-sources.md,S2181,unlocated:gone,,,,,2026-10-14
 10068d640e1d,agents/doc-lookup-sources.md,S2189,located,GitLab MCP server,18.3;experiment;generally;status;introduc;availabl;server;lab,a21f49c867f20fab,Status: Generally available Introduced as an experiment in GitLab 18.3 with feature flags named mcpserver and oauthdynamicclientregistration.,2026-10-14
+107716aa6a98,agents/doc-lookup-sources.md,S-3yod3u7q,located,Tools reference > WebFetch tool behavior,acceptedit;manual;preapprov;documentation;except;accept;built-in;built,80b9afbbeb881160,"In Manual and acceptEdits permission modes, WebFetch prompts before fetching, except for domains your permission rules already allow or deny and a built-in set of",2026-10-20
 14997773f21d,agents/doc-lookup-sources.md,S2180,unlocated:gone,,,,,2026-10-14
 14997773f21d,agents/doc-lookup-sources.md,S2181,unlocated:gone,,,,,2026-10-14
+1636d06c008f,agents/doc-lookup-sources.md,S-b6tooge2,located,,licens;microsoft;mit,3c391435f1ea6d84,MIT License Copyright (c) Microsoft Corporation.,2026-10-20
+215f9b9fdf2b,agents/doc-lookup-sources.md,S-u2afup7q,located,MicrosoftDocs/memdocs > History,commit,129229745f65b009,"83,904 Commits",2026-10-20
 272dbb20de2d,agents/doc-lookup-sources.md,S2195,unlocated:no-match,,,,,2026-10-13
 2766e8299ac3,agents/doc-lookup-sources.md,S2187,located,Remote GitHub MCP Server 🚀 > Remote MCP Toolsets > Additional _Remote_ Server Toolsets,documentation;remot;server;api.githubcopilot.com;com;githubcopilot;api;read-only,0f8298239ae2ce35,"<picture><source media=""(prefers-color-scheme: dark)"" srcset=""../pkg/octicons/icons/book-dark.png""><source media=""(prefers-color-scheme: light)"" srcset=""../pkg/octicons/icons/book-light.png""><img src=""../pkg/octicons/icons/book-light.png"" width=""20"" height=""20"" alt=""book""></picture><br>githubsupportdocssearch | Retrieve documentation to answer GitHub product and support questions. Topics include: GitHub Actions",2026-10-13
 2aa3acce37ce,agents/doc-lookup-sources.md,S742,unlocated:no-match,,,,,2026-10-12
@@ -1931,7 +1921,6 @@ fa01deebc8f2,agents/doc-lookup-sources.csv,S2184,unlocated:no-match,,,,,2026-10-
 33acbb71b4f9,agents/doc-lookup-sources.md,S-mz6tic2a,unlocated:fetch-error,,,,,2026-10-14
 3830810d7c75,agents/doc-lookup-sources.md,S-pxvdwitn,located,Commercial Terms of Service > F. Intellectual Property,grant;intellectual;property;expressly;stat;content;except;right,84e34b3ae6bf9653,"Except as expressly stated in these Terms, these Terms do not grant either party any rights to the other's content or intellectual property, by implication",2026-10-12
 3b2a6ff025ce,agents/doc-lookup-sources.md,S-soqo5xvt,unlocated:no-match,,,,,2026-10-13
-3c056adb0a3c,agents/doc-lookup-sources.md,S745,located,Environment variables > Variables,refill;v2.1.290;call;non-interactiv;limit;terminal;interactiv;non,1915f2fee340983c,The default is 100 in an interactive terminal session. In a non-interactive session the default is 0,2026-10-13
 3e4f1b3ee401,agents/doc-lookup-sources.md,S2195,unlocated:no-match,,,,,2026-10-13
 3e4f1b3ee401,agents/doc-lookup-sources.md,S-4yvdwu5c,unlocated:no-match,,,,,2026-10-13
 3e4f1b3ee401,agents/doc-lookup-sources.md,S-ezhoiiyb,unlocated:no-match,,,,,2026-10-13
@@ -1945,8 +1934,6 @@ fa01deebc8f2,agents/doc-lookup-sources.csv,S2184,unlocated:no-match,,,,,2026-10-
 4c747b5cafc5,agents/doc-lookup-sources.md,S-j7xzzcxj,located,Adding Libraries > What Gets Indexed,ipynb;markdown;mdx;rst;txt;exampl;code;file,a53a98cb1e7622c4,"Context7 parses documentation files - .md, .mdx, .markdown, .rst, .txt, and .ipynb",2026-10-13
 4f5593dc0ecd,agents/doc-lookup-sources.md,S-fqi6xbbc,unlocated:no-match,,,,,2026-10-13
 4f5593dc0ecd,agents/doc-lookup-sources.md,S-ke227men,unlocated:no-match,,,,,2026-10-13
-546d1ad569ad,agents/doc-lookup-sources.md,S2177,unlocated:fetch-error,,,,,2026-10-14
-57995f3f8016,agents/doc-lookup-sources.md,S-b6tooge2,unlocated:no-match,,,,,2026-10-12
 587fd15a4ff9,agents/doc-lookup-sources.md,S1002,unlocated:no-match,,,,,2026-10-13
 587fd15a4ff9,agents/doc-lookup-sources.md,S-ezhoiiyb,located,About licenses,against;file;mean;spdx;take;match;api;licens,c9e901cb795caf5d,"Licensee matches the contents of a project's LICENSE file (if it exists) against a short list of known licenses. As a result, the API does",2026-10-13
 5bbc7f06a4aa,agents/doc-lookup-sources.md,S2188,located,Rate limits for the REST API > About primary rate limits > Primary rate limit for authenticated users,personal;access;token;hour;hub;api;github;git,1cc7eb61022319b7,"You can use a personal access token to make API requests. Additionally, you can authorize a GitHub App or OAuth app, which can then make",2026-10-12
@@ -1977,6 +1964,7 @@ fa01deebc8f2,agents/doc-lookup-sources.csv,S2184,unlocated:no-match,,,,,2026-10-
 8e15f36aed0b,agents/doc-lookup-sources.md,S-eutmp4xp,located,Context7 Platform - Up-to-date Code Docs For Any Prompt > Disclaimer,backend;crawl;engin;pars;privat;repository;sourc;api,dfc4441a3ef08beb,"2- This repository hosts the MCP server's source code. The supporting components - API backend, parsing engine, and crawling engine - are private and not",2026-10-12
 90bef4de93c3,agents/doc-lookup-sources.md,S2191,unlocated:no-match,,,,,2026-10-13
 921e8eb4119a,agents/doc-lookup-sources.md,S-4yvdwu5c,unlocated:no-match,,,,,2026-10-13
+93715a46162e,agents/doc-lookup-sources.md,S745,located,Environment variables > Variables,refill;2.1.290;page;call;non-interactiv;interactiv;limit;terminal,b8e28866f7d91809,"CLAUDECODEWEBFETCHDEADLINEMS | Upper bound in milliseconds on how long WebFetch waits for a page to download, including any redirects it follows. A download that hasn't",2026-10-20
 938470fe7949,agents/doc-lookup-sources.md,S-fvspfpxd,located,,code.claude.com;com;docs;fetch;code;claud,4205c23534ed0997,Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt,2026-10-13
 938470fe7949,agents/doc-lookup-sources.md,S-pxvdwitn,unlocated:no-match,,,,,2026-10-12
 94154ce52774,agents/doc-lookup-sources.md,S-3yod3u7q,located,Tools reference > WebSearch tool behavior,sonnet;4.5;haiku;aws;opus;amazon;bedrock;foundry,0df67fa5aad132f7,"WebSearch is available on the Claude API, Claude Platform on AWS, and Microsoft Foundry. On Google Cloud's Agent Platform it works with Opus 4, Sonnet",2026-10-13
@@ -1984,31 +1972,23 @@ fa01deebc8f2,agents/doc-lookup-sources.csv,S2184,unlocated:no-match,,,,,2026-10-
 9d01f99626dc,agents/doc-lookup-sources.md,S2006,unlocated:no-match,,,,,2026-10-13
 9d01f99626dc,agents/doc-lookup-sources.md,S-soqo5xvt,unlocated:no-match,,,,,2026-10-13
 9d01f99626dc,agents/doc-lookup-sources.md,S-u5diy2cr,unlocated:no-match,,,,,2026-10-13
-a079c6ed4093,agents/doc-lookup-sources.md,S2177,unlocated:fetch-error,,,,,2026-10-14
-a079c6ed4093,agents/doc-lookup-sources.md,S2188,unlocated:no-match,,,,,2026-10-13
-a079c6ed4093,agents/doc-lookup-sources.md,S2196,unlocated:gone,,,,,2026-10-14
 a16e2414771b,agents/doc-lookup-sources.md,S2182,unlocated:no-match,,,,,2026-10-13
 af8857a29b32,agents/doc-lookup-sources.md,S2192,unlocated:no-match,,,,,2026-10-12
-b02fc3a79e76,agents/doc-lookup-sources.md,S2196,unlocated:gone,,,,,2026-10-14
-b02fc3a79e76,agents/doc-lookup-sources.md,S-rgpijsmb,unlocated:gone,,,,,2026-10-14
-b02fc3a79e76,agents/doc-lookup-sources.md,S-u2afup7q,located,MicrosoftDocs/memdocs > History,commit,129229745f65b009,"83,904 Commits",2026-10-13
-b02fc3a79e76,agents/doc-lookup-sources.md,S-yuwxbqz3,unlocated:gone,,,,,2026-10-14
 b135f9653e0f,agents/doc-lookup-sources.md,S-autbwi4y,unlocated:no-match,,,,,2026-10-13
-b36539db2efb,agents/doc-lookup-sources.md,S-ekcs6zhr,unlocated:no-match,,,,,2026-10-13
-b36539db2efb,agents/doc-lookup-sources.md,S-eluaxz73,unlocated:no-match,,,,,2026-10-13
 b37e1003dc74,agents/doc-lookup-sources.md,S-ybuoluc4,unlocated:no-match,,,,,2026-10-12
 c574b2f599b6,agents/doc-lookup-sources.md,S452,located,,4.0;by-sa;doc;git;gitlab;lab;repository;under,fdc53a323342d84a,"Copyright (c) 2011-present GitLab Inc. Portions of this software are licensed as follows: All content residing under the ""doc/"" directory of this repository is licensed",2026-10-12
 ca00d0a346b8,agents/doc-lookup-sources.md,S2177,unlocated:fetch-error,,,,,2026-10-14
 ccdbabeacc80,agents/doc-lookup-sources.md,S-7ppiqh3x,unlocated:no-match,,,,,2026-10-13
 ce4c00bda3f1,agents/doc-lookup-sources.md,S2185,located,,generally;availabl;remot;server;mcp;git;github;hub,3ec343be24457800,Remote GitHub MCP Server is now generally available,2026-10-13
 d201a8b0ed67,agents/doc-lookup-sources.md,S-7ppiqh3x,located,Terms of Use for arXiv APIs > Limitations > Rate limits,connection;every;one;second;singl;thre;legacy;time,1beed283a2df64f0,"When using the legacy APIs (including OAI-PMH, RSS, and the arXiv API), make no more than one request every three seconds, and limit requests to",2026-10-13
-d2e9bb96358c,agents/doc-lookup-sources.md,S-3yod3u7q,located,Tools reference > WebFetch tool behavior,acceptedit;manual;preapprov;documentation;except;accept;built-in;built,80b9afbbeb881160,"In Manual and acceptEdits permission modes, WebFetch prompts before fetching, except for domains your permission rules already allow or deny and a built-in set of",2026-10-13
 d5fef84b6dc7,agents/doc-lookup-sources.md,S2179,located,Connect to MCP servers > Troubleshooting,github;hub;git;check;connect;add;mcp;server,43f370d5dac9aa72,"Use the browser sign-in in Connect a server that requires sign-in, or for servers that take a token instead, like GitHub's, pass it with --header",2026-10-13
 d5fef84b6dc7,agents/doc-lookup-sources.md,S2187,located,Remote GitHub MCP Server 🚀 > Remote MCP Toolsets > Additional _Remote_ Server Toolsets,search;git;hub;github;read-only;read;mcp,69883813a01f2dd9,"<picture><source media=""(prefers-color-scheme: dark)"" srcset=""../pkg/octicons/icons/book-dark.png""><source media=""(prefers-color-scheme: light)"" srcset=""../pkg/octicons/icons/book-light.png""><img src=""../pkg/octicons/icons/book-light.png"" width=""20"" height=""20"" alt=""book""></picture><br>githubsupportdocssearch | Retrieve documentation to answer GitHub product and support questions. Topics include: GitHub Actions",2026-10-13
 d5fef84b6dc7,agents/doc-lookup-sources.md,S-el34o4bb,unlocated:no-match,,,,,2026-10-13
 d685fb46c18c,agents/doc-lookup-sources.md,S2177,unlocated:fetch-error,,,,,2026-10-14
 d685fb46c18c,agents/doc-lookup-sources.md,S2193,unlocated:no-match,,,,,2026-10-13
 d685fb46c18c,agents/doc-lookup-sources.md,S-j7xzzcxj,unlocated:no-match,,,,,2026-10-13
+db52834cf611,agents/doc-lookup-sources.md,S-ekcs6zhr,located,Accelerate automation with AI and the Ansible development tools MCP servers > Getting started with the Ansible MCP server,preview;technology;tool;development;server;mcp;ansibl,30579e18ce6edf0f,The Ansible development tools MCP server is available as a Technology Preview.,2026-10-20
+db52834cf611,agents/doc-lookup-sources.md,S-eluaxz73,located,Get support for security baselines | Microsoft Learn > Frequently asked questions > What is the Microsoft Security Compliance Manager (SCM)?,center;download;publish;report;script;servic;spreadsheet;through,8755c46c3b80468c,"It has been replaced by the Security Compliance Toolkit (SCT). To provide a better service for our customers, we've moved to SCT with which we",2026-10-20
 e09ae0030809,agents/doc-lookup-sources.md,S-t36jnjsm,located,About search > Ranking search results > Rate limit,requir;unauthenticat;allow;make;authenticat;code;minut;rate,fa3102da199c148b,"The Search code endpoint requires you to authenticate and limits you to 10 requests per minute{% endif %}. For unauthenticated requests, the rate limit allows",2026-10-13
 e0c82db826eb,agents/doc-lookup-sources.md,S2180,unlocated:gone,,,,,2026-10-14
 e0c82db826eb,agents/doc-lookup-sources.md,S2181,unlocated:gone,,,,,2026-10-14
@@ -2032,6 +2012,7 @@ fd2f3b12aadd,agents/doc-lookup-sources.md,S2177,unlocated:fetch-error,,,,,2026-1
 19d974494320,agents/docs-maintenance-agents.md,S1812,unlocated:no-match,,,,,2026-10-10
 1bbed2e9c0a0,agents/docs-maintenance-agents.md,S1810,unlocated:no-match,,,,,2026-10-10
 1bbed2e9c0a0,agents/docs-maintenance-agents.md,S-tpvi7ohn,located,DeepWiki,account;ask;ask_question;content;index;privat;question;read,13d49feddb89965d,"Index private repos with a Devin account. DeepWiki MCP Server The remote no-auth server provides three tools (askquestion, readwikistructure, and readwikicontents).",2026-10-10
+1cbad42bba53,agents/docs-maintenance-agents.md,S1809,located,DeepWiki repository wikis,bypass;cluster;cluster-ba;based;exactly;field;plan;present,8eb2ecd23465308d,"If a .devin/wiki.json file is found in your repository's root directory during wiki generation, we'll use the provided reponotes and pages to steer wiki generation.",2026-10-20
 1d7acf7197f6,agents/docs-maintenance-agents.md,S1814,located,Sync don’t sink: why we built Swimm for dev teams > Swimm is the new knowledge operating system for your code > Documentation for documentation’s sake is not the goal,merg;pull;test;verify;auto-sync;auto;chang;sync,ddd61fc9c3d39e18,"Because Swimm is intelligent, it can recognize when documentation-impacting code changes are committed. Our patented Swimm Verify and Auto-sync features automatically updates their docs at",2026-10-10
 1d7acf7197f6,agents/docs-maintenance-agents.md,S1815,located,7 reasons continuous integration documentation is a must > How continuous integration documentation works > How CI documentation works with Swimm,fail;impactful;review;auto-sync;auto;run;sync;test,0834346a8b2c1860,"If Swimm's Auto-sync algorithm determines that a change in the code is impactful enough that it warrants getting more information, Swimm's verification check fails, and",2026-10-10
 2f59cb7ca1d5,agents/docs-maintenance-agents.md,S1816,located,About GitHub Copilot Spaces > Who can I share Spaces with? > Organization-owned spaces,kept;privat;personal;specific;owned;publicly;access;user,54d0818b8b507ee5,"Alternatively, you can choose to grant ""No access"" to organization members, and keep the space hidden. Individual-owned spaces Spaces belonging to a personal account can",2026-10-10
@@ -2087,8 +2068,6 @@ ce8fc83cc5e0,agents/docs-maintenance-agents.md,S1815,located,7 reasons continuou
 d327fb8d7ba5,agents/docs-maintenance-agents.md,S-f2vfcma6,located,Configure automerge for GitHub Apps,every;automation;deploy;list;app;branch;target;merg,bdd22ca3ea3ff6ad,Add the Mintlify GitHub App to a ruleset's bypass list so that the app can create and merge pull requests without review and status check,2026-10-10
 d59da5e56df5,agents/docs-maintenance-agents.md,S1814,located,Sync don’t sink: why we built Swimm for dev teams > Swimm is the new knowledge operating system for your code > Documentation for documentation’s sake is not the goal,merg;pull;test;verify;auto-sync;auto;sync;docs,0169811124239054,"Our patented Swimm Verify and Auto-sync features automatically updates their docs at any relevant pull, merge, or CI test.",2026-10-10
 d59da5e56df5,agents/docs-maintenance-agents.md,S1815,unlocated:no-match,,,,,2026-10-10
-ef4552e6602a,agents/docs-maintenance-agents.md,S1809,located,DeepWiki repository wikis,bypass;cluster;cluster-ba;based;exactly;field;plan;present,93d00baa53e47812,"Both fields are required, and pages must list at least one page. When a config file is present, we bypass the default cluster-based planning",2026-10-13
-ef4552e6602a,agents/docs-maintenance-agents.md,S-tpvi7ohn,unlocated:no-match,,,,,2026-10-13
 f38127834e4a,agents/docs-maintenance-agents.md,S-xote3xa2,located,Table of Contents > Commandline usage > Commandline Parameters,mail;broken;checker;websit;address;markdown;html;link,eda6d54508315e71,"lychee is a fast, asynchronous link checker which detects broken URLs and mail addresses in local files and websites. It supports Markdown and HTML and",2026-10-10
 f82fc2b788a8,agents/docs-maintenance-agents.md,S1808,located,DeepWiki: AI docs for any repo,already;git;github.com;hub;index;launch;over;replac,84dc1de8301b4b27,"Now, we're launching DeepWiki, the free public version of Devin Wiki and Devin Search. Visit the DeepWiki for any repo by replacing github.com with deepwiki.com",2026-10-10
 37cd4c2484d6,agents/eval-question-baseline.md,S1896,located,Demystifying evals for AI agents > Going from zero to one: a roadmap to great evals for agents > Collect tasks for the initial eval dataset,20-50;drawn;small;great;simpl;failur;real;start,66133d35a82568f3,"In reality, 20-50 simple tasks drawn from real failures is a great start. After all, in early agent development, each change to the system often",2026-10-10
@@ -2242,7 +2221,7 @@ bdc7819e387c,agents/genai-telemetry.md,S2004,unlocated:no-match,,,,,2026-10-10
 811bee354fa3,agents/github-copilot-admin.md,S-ftbeo3o7,located,REST API endpoints for Copilot usage metrics > Get Copilot enterprise usage metrics for a specific day,manage_bill;manager;manag;bill;owner;scop;view;read,958ffd536598033f,"Enterprise owners, billing managers, and authorized users with fine-grained ""View Enterprise Copilot Metrics"" permission can retrieve Copilot metrics reports for the enterprise. OAuth app tokens",2026-10-10
 8255ab99c2d3,agents/github-copilot-admin.md,S-ovxxqqbw,unlocated:no-match,,,,,2026-10-10
 935fefe79f71,agents/github-copilot-admin.md,S-5mca3vxo,located,GitHub Copilot seats and billing cycles for organizations and enterprises > GitHub AI Credits,0.01;beyond;code;completion;edit;next;suggestion;pool,addb034c01596890,"Each license contributes AI credits to a shared enterprise pool, and usage beyond the pool is charged at $0.01 USD per AI credit. Code completions",2026-10-10
-9408df636731,agents/github-copilot-admin.md,S-5yxttqw4,located,Hosting of models for GitHub Copilot > Anthropic models,bound;exemption;time-bound;end;time;request;retention;zdr,08f0c2ecd3b70dde,Customers can request to use Claude Fable 5 or Claude Fable 5.1 with zero data retention (ZDR) through the end of 2026 under a time-bound,2026-10-10
+a25c696632e5,agents/github-copilot-admin.md,S-5yxttqw4,located,Hosting of models for GitHub Copilot > Anthropic models,bound;exemption;time-bound;end;time;request;retention;zdr,08f0c2ecd3b70dde,Customers can request to use Claude Fable 5 or Claude Fable 5.1 with zero data retention (ZDR) through the end of 2026 under a time-bound,2026-10-20
 b601b096ee37,agents/github-copilot-admin.md,S-ovxxqqbw,located,Managing policies and features for GitHub Copilot in your organization,collection;com;github.com;opting;feedback;preview;user;featur,8030155c624ce6f0,"Opting in to previews or feedback If your organization has a Copilot Business or Copilot Enterprise plan and you enable ""Copilot in GitHub.com"", two additional",2026-10-10
 c4a913f50b76,agents/github-copilot-admin.md,S-tn4wwzyx,located,"Ignore files in or below any `security` directories, anywhere in this repository. > Configuring content exclusion for your enterprise",apply;rule;seat;user;enterpris;organization;copilot;exclusion,90e6642b5a25ff52,The key difference between setting content exclusion at the enterprise level and the organization level is that rules set at the enterprise level apply to,2026-10-10
 cbb98d79ccd6,agents/github-copilot-admin.md,S-unwwieso,located,Reviewing the audit log for your organization > Searching the audit log > Search based on the action performed,subscription;business;copilot;enterpris;git;github;hub;relat,c1e67b8ed3357ab8,copilotContains all activities related to your GitHub Copilot Business or GitHub Copilot Enterprise subscription.,2026-10-10
@@ -3275,7 +3254,6 @@ eb50e6aa7bb3,agents/security-copilot-endpoint.md,S-meh6fmlt,unlocated:no-match,,
 f1070e20c9af,agents/security-copilot-endpoint.md,S-27puhgbj,unlocated:no-match,,,,,2026-10-10
 ffa5d042f10d,agents/security-copilot-endpoint.md,S-meh6fmlt,located,Model Context Protocol (MCP) plugins in Microsoft Security Copilot (Preview) | Microsoft Learn > Known limitations,chang;destructiv;destructivehint;edit;even;hint;must;discover,18b616faf3c54a6a,"When tools are updated (for example, added or edited) in an MCP server, Security Copilot does not dynamically discover and reflect these changes. To update",2026-10-10
 05f7ebd92c82,agents/shared-ner-service.md,S2101,unlocated:no-match,,,,,2026-10-10
-0763d00de134,agents/shared-ner-service.md,S-hfymbj4j,located,When to use hybrid jobs,databa;on-premis;premis;stor;stream;other;googl;find,fcbfb921a2d966be,"Inspect data in hybrid and multi-cloud environments: Stream data from on-premises databases, virtual machines, or other cloud providers into Sensitive Data Protection while storing findings",2026-10-10
 15587638aab1,agents/shared-ner-service.md,S-alyohfil,unlocated:no-match,,,,,2026-10-10
 15587638aab1,agents/shared-ner-service.md,S-ulqlpnc5,unlocated:no-match,,,,,2026-10-10
 194078761843,agents/shared-ner-service.md,S2094,located,Use Docker containers in disconnected environments - Foundry Tools | Microsoft Learn > Purchase a commitment plan to use containers in disconnected environments,calendar;chang;during;full;pro;unit;period;charg,74fb5382ce680f04,"Commitment plans for disconnected containers have a calendar year commitment period. When you purchase a plan, you are charged the full price immediately. During the",2026-10-10
@@ -3284,8 +3262,6 @@ ffa5d042f10d,agents/security-copilot-endpoint.md,S-meh6fmlt,located,Model Contex
 1ebfd18b4117,agents/shared-ner-service.md,S2100,located,,built;built-in;protection;detector;sensitiv;data;info;infotyp,99bef31051119df7,"The Sensitive Data Protection team releases new infoType detectors and groups periodically. To get the latest list of built-in infoTypes, call the",2026-10-10
 1ebfd18b4117,agents/shared-ner-service.md,S2108,located,Sensitive Data Protection documentation,built;built-in;over;detector;infotyp;info;type;protection,ba837d43d5d56e0f,"Sensitive Data Protection includes: Over 200 built-in information type (or ""infoType"") detectors.",2026-10-10
 2032a62e574f,agents/shared-ner-service.md,S2090,located,Anonymize PII entities in an Azure Data Factory ETL Pipeline,call;over;scal;two;rest;pipelin;spark;app,c2a42a767b0fc040,The following samples showcase two scenarios which use Azure Data Factory (ADF) to move a set of JSON objects from an online location to an,2026-10-10
-277579914d4f,agents/shared-ner-service.md,S2095,unlocated:no-match,,,,,2026-10-10
-277579914d4f,agents/shared-ner-service.md,S-g6nzyems,unlocated:fetch-error,,,,,2026-10-10
 3a79be71805c,agents/shared-ner-service.md,S2112,located,Identify and extract Personally Identifiable Information (PII) from text - Foundry Tools | Microsoft Learn > Submitting data,account;hour;stateless;stor;respons;result;detection;pii,ba7af5008fbc15b4,"Using the PII detection feature synchronously is stateless. No data is stored in your account, and results are returned immediately in the response. When using",2026-10-10
 462147833536,agents/shared-ner-service.md,S2095,unlocated:no-match,,,,,2026-10-10
 468585631cbe,agents/shared-ner-service.md,S2097,unlocated:no-match,,,,,2026-10-10
@@ -3294,6 +3270,7 @@ ffa5d042f10d,agents/security-copilot-endpoint.md,S-meh6fmlt,located,Model Contex
 5cde6481946f,agents/shared-ner-service.md,S830,unlocated:no-match,,,,,2026-10-10
 5cde6481946f,agents/shared-ner-service.md,S-5gpkixnx,unlocated:no-match,,,,,2026-10-10
 5e5b784f8a24,agents/shared-ner-service.md,S2099,located,Amazon Comprehend pricing,even;bill;minimum;document;charg;character;unit,4b1f98aea71cacb0,"Endpoints are billed on one second increments, with a minimum of 60 seconds. Charges will continue to incur from the time you start the endpoint",2026-10-10
+60a79a38a4f9,agents/shared-ner-service.md,S-hfymbj4j,located,When to use hybrid jobs,databa;on-premis;premis;stor;stream;other;googl;find,fcbfb921a2d966be,"Inspect data in hybrid and multi-cloud environments: Stream data from on-premises databases, virtual machines, or other cloud providers into Sensitive Data Protection while storing findings",2026-10-20
 62928ce3d48e,agents/shared-ner-service.md,S-blcom642,unlocated:no-match,,,,,2026-10-10
 68fdbd6fb045,agents/shared-ner-service.md,S2091,unlocated:no-match,,,,,2026-10-10
 6b9b496b7114,agents/shared-ner-service.md,S2102,unlocated:no-match,,,,,2026-10-10
@@ -3303,7 +3280,12 @@ ffa5d042f10d,agents/security-copilot-endpoint.md,S-meh6fmlt,located,Model Contex
 8059322a15d0,agents/shared-ner-service.md,S2088,located,Deploy presidio services to an Azure App Service,demo;team;uses;environment;azur;presidio;app;servic,b966e74894232e7a,The presidio team uses Azure App Service for both its development environment and the presidio demo website.,2026-10-10
 8059322a15d0,agents/shared-ner-service.md,S-azdam24d,unlocated:no-match,,,,,2026-10-10
 8059322a15d0,agents/shared-ner-service.md,S-g33kybfp,unlocated:no-match,,,,,2026-10-10
+841bf12339a3,agents/shared-ner-service.md,S-g6nzyems,located,,westeurop;retail;pric,be0031f581429f08,retailPrice 1.0 unitPrice 1.0 armRegionName westeurope,2026-10-20
 888a77910948,agents/shared-ner-service.md,S2093,unlocated:no-match,,,,,2026-10-10
+9e4f61940dcc,agents/shared-ner-service.md,S2087,located,microsoft/presidio-analyzer repository overview > ⁠Presidio Analyzer > ⁠About this Image > ⁠Full Tag Listing,longer;pin;ghcr.io;releas;updat;data-privacy-stack;ghcr;privacy,1c0ab522e6a9ace7,No longer updated with the latest Presidio version; use ghcr.io/data-privacy-stack/presidio-analyzer:latest or a pinned GHCR release tag instead.,2026-10-20
+9e4f61940dcc,agents/shared-ner-service.md,S-azdam24d,located,Installing Presidio > Using Docker,explicit;legacy;longer;new;organization;pin;prefer;production,d245c15d8c4e5718,New Presidio container releases are published to GitHub Container Registry under the Data Privacy Stack packages organization. The legacy Microsoft Container Registry images at mcr.microsoft.com/presidio-,2026-10-20
+9e4f61940dcc,agents/shared-ner-service.md,S-clgh6hxa,located,,community;community-own;owned;project;transition;presidio,11ae5eef1fe25c67,Presidio has transitioned to a community-owned project.,2026-10-20
+9e4f61940dcc,agents/shared-ner-service.md,S-g33kybfp,located,,data;data-privacy-stack;ghcr;ghcr.io;privacy;stack;tag,1c03579e08d89aa2,"Choose the tag from ghcr.io/data-privacy-stack, e.g. latest",2026-10-20
 ac896880bb76,agents/shared-ner-service.md,S2091,located,Use personally identifiable information (PII) detection Docker containers on-premises - Foundry Tools | Microsoft Learn,limit;synchronous;document;character;call;data;api;pii,ec9e375badebf561,"The data limits in a single synchronous API call for the PII container are 5,120 characters per document and up to 10 documents per call.",2026-10-10
 ade8d088f861,agents/shared-ner-service.md,S2086,unlocated:no-match,,,,,2026-10-10
 ade8d088f861,agents/shared-ner-service.md,S-tks3v5p5,unlocated:no-match,,,,,2026-10-10
@@ -3313,12 +3295,6 @@ b0abfe21c364,agents/shared-ner-service.md,S2099,unlocated:no-match,,,,,2026-10-1
 bdf90517471a,agents/shared-ner-service.md,S-blcom642,located,LICENSE > File metadata and controls,contributor;mit;presidio;copyright,7375fea32549f72b,The MIT License (MIT) Copyright (c) Presidio Contributors.,2026-10-10
 c5432a565719,agents/shared-ner-service.md,S2097,unlocated:no-match,,,,,2026-10-10
 c5432a565719,agents/shared-ner-service.md,S2107,located,"Amazon Comprehend detects and redacts 14 new PII entity types across the U.S., U.K., Canada, and India",category;credit;e.g;financial;localiz;name;passport;password,88aa51f3a2c6d1f8,"Previously, Amazon Comprehend supported 22 PII entities across multiple categories, including Financial (e.g., credit card number, bank account number), Personal (e.g., name, email, age), Technical",2026-10-10
-c724cc32fd72,agents/shared-ner-service.md,S2087,unlocated:no-match,,,,,2026-10-10
-c724cc32fd72,agents/shared-ner-service.md,S-azdam24d,located,which requires a spaCy language model: > Using Docker,explicit;legacy;longer;new;organization;page;pin;prefer,855f4cd1252fbaef,New Presidio container releases are published to [GitHub Container Registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry) under the [Data Privacy Stack packages organization](https://github.com/orgs/data-privacy-stack/packages). The legacy Microsoft Container Registry images at mcr.microsoft.com/presidio-,2026-10-10
-c724cc32fd72,agents/shared-ner-service.md,S-clgh6hxa,unlocated:no-match,,,,,2026-10-10
-c724cc32fd72,agents/shared-ner-service.md,S-g33kybfp,unlocated:no-match,,,,,2026-10-10
-c724cc32fd72,agents/shared-ner-service.md,S-gpnrqpjt,unlocated:no-match,,,,,2026-10-10
-c724cc32fd72,agents/shared-ner-service.md,S-tks3v5p5,unlocated:no-match,,,,,2026-10-10
 c813b0702738,agents/shared-ner-service.md,S2105,unlocated:no-match,,,,,2026-10-10
 c813b0702738,agents/shared-ner-service.md,S2111,unlocated:no-match,,,,,2026-10-10
 c813b0702738,agents/shared-ner-service.md,S-gpnrqpjt,unlocated:no-match,,,,,2026-10-10

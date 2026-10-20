@@ -178,9 +178,10 @@ inference data plane. Full deployment-type comparison table: `agents/azure-opena
   but for completions of Azure OpenAI models require Limited Access approval via the Modified Content
   Filters review form. [DOC S-uk5qyhwi]
 - The content-filters how-to stated at its 2025-11-11 revision that the GPT-image-1 series does not support
-  content-filter configuration and uses only the default filter [DOC S-f7arhttw]; the sentence was removed by
-  2025-12-04 and the current pages do not state the restriction, so treat it as historical [DER S-f7arhttw,
-  S-uk5qyhwi: pinned revision compared with the current page].
+  content-filter configuration and uses only the default filter [DOC S-f7arhttw].
+- The GPT-image-1 content-filter sentence was removed by 2025-12-04 and the current pages do not state the
+  restriction, so treat it as historical [DER S-f7arhttw, S-uk5qyhwi: pinned revision compared with the
+  current page].
 - Content filter configurations are created at the resource level and then associated with one or more
   deployments. [DOC S-uk5qyhwi]
 

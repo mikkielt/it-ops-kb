@@ -112,7 +112,8 @@ separate from content exclusion, configured per organization or repository.
   which covers TLS-inspecting setups such as transparent proxies or Zscaler. [DOC S-hjnsjtb6]
 - Model-provider retention: GitHub states zero data retention agreements with OpenAI, Anthropic and xAI for
   the models they host; Claude Fable 5 and 5.1 need a time-bound ZDR exemption requested through the end of
-  2026. [DOC S-5yxttqw4] GitHub's own retention periods for prompts are not stated on a docs.github.com page
+  2026. [DOC S-5yxttqw4]
+- GitHub's own retention periods for prompts are not stated on a docs.github.com page
   read on 2026-09-27 (the Trust Center FAQ is JavaScript-rendered); see `_gaps.md`. [DER S-5yxttqw4: absence
   on the pages read]
 

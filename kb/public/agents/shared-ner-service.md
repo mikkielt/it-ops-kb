@@ -28,7 +28,8 @@ choice (Presidio + spaCy `en_core_web_lg`, in-process) is not itself re-argued h
   path is pinning a frozen image; for production the installation guide prefers pinning an explicit
   release tag. Presidio is transitioning to a community-owned project under the Data Privacy Stack
   organization (`github.com/data-privacy-stack/presidio`); the Kubernetes Helm sample
-  pulls the default images from `ghcr.io/data-privacy-stack`. [DOC S-azdam24d, S-clgh6hxa, S2087, S-g33kybfp] The sample and
+  pulls the default images from `ghcr.io/data-privacy-stack`. [DOC S-azdam24d, S-clgh6hxa, S2087, S-g33kybfp]
+- The sample and
   evaluation pages cited here now live under `presidio.dataprivacystack.org`; their old
   `microsoft.github.io/presidio/...` paths returned 404 on 2026-09-26. [DER S-tks3v5p5, S-g33kybfp, S-gpnrqpjt: direct fetch of old and new urls]
 - Presidio's Docker sample exposes each service as a Flask REST endpoint: the analyzer on port 5002
@@ -79,7 +80,8 @@ choice (Presidio + spaCy `en_core_web_lg`, in-process) is not itself re-argued h
   characters. [DOC S2093]
 - Azure Language "Standard Text Records" list price (Retail Prices API, westeurope, effective 2020-12-01):
   $1.00 per 1,000 records up to 500K, $0.75 from 500K, $0.30 from 2.5M and $0.25 from 10M records a month;
-  "Free Text Records" are $0 [DOC S-g6nzyems]. That PII detection bills under this meter follows from the
+  "Free Text Records" are $0 [DOC S-g6nzyems].
+- That PII detection bills under the Standard Text Records meter follows from the
   pricing page grouping PII under standard text records [DER S2095, S-g6nzyems].
 - The cloud Language service may store data sent in synchronous or asynchronous calls for up to 48 hours (encrypted, reachable only by on-call engineers for catastrophic-failure debugging); the `LoggingOptOut` parameter prevents this and defaults to true for the PII and health endpoints; data stays in the resource's region. [DOC S2106]
 - Synchronous PII detection is stateless: nothing is stored in the account and results, including the input text with PII entities redacted, come back in the response; asynchronous results stay retrievable for 24 hours and are then purged. [DOC S2112]
@@ -118,7 +120,8 @@ choice (Presidio + spaCy `en_core_web_lg`, in-process) is not itself re-argued h
   profiled in consumption mode, or US$2,500 per subscription unit. [DOC S2101]
 - Google Sensitive Data Protection documents only hybrid jobs for data outside Google Cloud: data from
   on-premises databases, VMs or other clouds is streamed into the cloud service and findings are stored in
-  Google Cloud [DOC S-hfymbj4j]. No on-premises container or disconnected runtime is documented
+  Google Cloud [DOC S-hfymbj4j].
+- No on-premises container or disconnected runtime is documented
   [DER S-hfymbj4j: only the hybrid, cloud-processed route is described].
 - Presidio's analyzer and anonymizer REST servers are plain Flask apps exposing `/health`, `/analyze`,
   `/recognizers`, `/supportedentities` (analyzer) and `/anonymize`, `/deanonymize`, `/anonymizers`,

@@ -67,10 +67,11 @@ capability/safety-eval ground for an agent that happens to be hosted in Azure AI
   — a live deprecation relevant to any plan that depends on it going forward. [DOC S1894]
 - **garak** (NVIDIA) is an Apache-2.0 LLM vulnerability scanner (its LICENSE file) that probes
   for hallucination, data leakage, prompt injection, misinformation, toxicity and jailbreaks against a
-  configured generator/target; MCP-specific target support exists only through third-party wrappers
-  (e.g. a community "Garak-MCP" MCP server exposing garak) rather than a garak-shipped MCP client; a
-  community NVIDIA/garak issue proposing native MCP/OWASP-MCP-Top-10 scanning was closed by its author on
-  2026-05-12 without an MCP probe or generator shipping in garak. [DOC S1890, S1891; COMMUNITY S1903]
+  configured generator/target; the repository ships no MCP generator or probe. [DOC S1890, S1891]
+- A community NVIDIA/garak issue proposing native MCP/OWASP-MCP-Top-10 scanning was closed by its author on
+  2026-05-12 without an MCP probe or generator shipping in garak, so MCP-specific target support exists only
+  through third-party wrappers (e.g. a community "Garak-MCP" MCP server exposing garak) rather than a
+  garak-shipped MCP client. [COMMUNITY S1903]
 - **PyRIT** (Microsoft, MIT, v1.1.0/2026-09-04) is a red-teaming framework whose built-in targets are
   OpenAI-family and Azure ML chat targets, a LiteLLM chat target (for other providers), Hugging Face,
   custom HTTP/WebSocket endpoints and Playwright web-app targets, plus a "build your own" `PromptTarget`

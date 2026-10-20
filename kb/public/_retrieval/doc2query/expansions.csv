@@ -505,9 +505,6 @@ eb275435b2f6,"toolsListChanged subscription, notifications/tools/list_changed ev
 c04b8036c05d,MCP deterministic tool ordering
 c04b8036c05d,Why does the MCP spec recommend deterministic tool ordering?
 c04b8036c05d,tool list order impact on prompt cache hit rates in LLM context
-b5392ef99125,MCP tools/list by authorization
-b5392ef99125,Can an MCP server return different tool lists based on authorization?
-b5392ef99125,MCP tiered access: tool set variation by scopes and caller credentials
 1ae34268ac92,cache invalidation hierarchy
 1ae34268ac92,What is the order of cache invalidation in prompt caching?
 1ae34268ac92,"tool definitions, system prompt, messages: cascading invalidation"

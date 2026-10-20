@@ -154,12 +154,14 @@ group claims/overage, PIM-for-Groups sync latency).
   Third-Party NHI, NHI4 Insecure Authentication, NHI5 Overprivileged NHI, NHI6 Insecure Cloud Deployment
   Configurations, NHI7 Long-Lived Secrets, NHI8 Environment Isolation, NHI9 NHI Reuse, NHI10 Human Use of
   NHI. [DOC S2058]
-- **NHI7 (Long-Lived Secrets)** names exactly the failure mode this part's GitLab-PAT and
-  `keyring`/`msal-extensions` findings in `agents/api-tokens-issue-and-store.md` describe concretely.
-  **NHI10 (Human Use of NHI)** — misusing a service identity "for manual tasks that should be performed
-  using individual human identities" — is the named risk mitigated by a general policy of "interactive
-  calls use the engineer's own identity; shared state written only by scheduled jobs under read-only
-  identities," independent of and prior to this OWASP list existing. [DOC S2058; DER — general implication]
+- **NHI7 (Long-Lived Secrets)** and **NHI10 (Human Use of NHI)** are two of the ten named risks; NHI10 is
+  misusing a service identity "for manual tasks that should be performed using individual human
+  identities." [DOC S2058]
+- **NHI7 and NHI10 applied.** NHI7 names exactly the failure mode this part's GitLab-PAT and
+  `keyring`/`msal-extensions` findings in `agents/api-tokens-issue-and-store.md` describe concretely, and
+  NHI10 is mitigated by a general policy of "interactive calls use the engineer's own identity; shared
+  state written only by scheduled jobs under read-only identities," independent of and prior to this OWASP
+  list existing. [DER S2058: general implication]
 
 ### PIM-for-Groups: numbered activation latency, and what it actually measures (deepening QG26)
 - Three distinct latency regimes exist under "PIM for Groups," not one: (1) the **active-assignment
@@ -170,7 +172,9 @@ group claims/overage, PIM-for-Groups sync latency).
   back to the **ordinary 40-minute sync cycle** (an explicit, numbered rate limit: "five requests per 10
   seconds," scoped "per enterprise application") (S2052, new); (3) a **client's own cached token** not
   reflecting a membership change until its next acquisition — the case `auth/entra-intune-rbac.md`
-  already documents and this part does not repeat. [DOC S2052, S1282; DER: three regimes, not one]
+  already documents and this part does not repeat. [DOC S2052, S1282]
+- The three PIM-for-Groups latency regimes are distinct, so "PIM for Groups latency" names three numbers, not
+  one. [DER S2052, S1282: three regimes, not one]
 - Microsoft's own documented advice **against** using PIM for Groups where speed matters: "to avoid
   activation delays, use PIM for Microsoft Entra roles instead of PIM for Groups to provide just-in-time
   access to SharePoint, Exchange, or Microsoft Purview portal" — the group-mediated path is measurably

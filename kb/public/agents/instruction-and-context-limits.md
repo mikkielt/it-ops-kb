@@ -42,10 +42,10 @@ a generic 400 on the underlying model call, worded around "exceeds the maximum" 
   field "must contain at least one nonwhitespace character and be 8,000 characters or less." Unless stated otherwise,
   every other string property in the manifest is capped at 4,000 characters (`name` 100, `description` 1,000,
   `disclaimer.text` 500 are stated overrides). [DOC S1840]
-  - The manifest schema does not document a runtime error message for exceeding `instructions` length; it states the
-    constraint as a schema validation rule ("must ... be 8,000 characters or less"), which would fail app-package
-    validation rather than emit a runtime "limit exceeded" error. [DER S1840: derived from the schema's constraint
-    wording, which is a build-time/package-validation constraint, not a documented runtime error]
+- The manifest schema does not document a runtime error message for exceeding `instructions` length; it states the
+  constraint as a schema validation rule ("must ... be 8,000 characters or less"), which would fail app-package
+  validation rather than emit a runtime "limit exceeded" error. [DER S1840: derived from the schema's constraint
+  wording, which is a build-time/package-validation constraint, not a documented runtime error]
 - GitHub Copilot: `copilot-instructions.md` and `*.instructions.md` under `.github/` previously stopped being read by
   Copilot code review past 4,000 characters; GitHub removed this character limit (announced June 2026). No error is
   raised — content past the old limit was silently truncated/ignored, not rejected. [DOC S1851, S1852]
@@ -75,7 +75,7 @@ a generic 400 on the underlying model call, worded around "exceeds the maximum" 
   (400), `out_of_range` (416), `rate_limit_exceeded` and `quota_exceeded` (429), none specific to instruction
   length [DOC S-5lgjpf27]. The long-context guide says the model does not keep single-needle accuracy when several
   pieces of information must be found in a long context [DOC S-uyp3vgvo].
-- Claude (Anthropic):
+- Claude (Anthropic), documented:
   - No API error type named for "instructions" specifically. The Claude API's documented error taxonomy is generic:
     `400 invalid_request_error`, `413 request_too_large` (request exceeds a per-endpoint byte maximum — 32 MB for the
     Messages API), `429 rate_limit_error`, `529 overloaded_error`. None of these use the phrase "instruction limit."
@@ -84,14 +84,6 @@ a generic 400 on the underlying model call, worded around "exceeds the maximum" 
     in the skill listing "to reduce context usage" — a silent truncation, not a raised error. The `compatibility`
     frontmatter field is capped at 500 characters. `SKILL.md` itself has no hard limit but a documented tip to keep it
     under 500 lines. [DOC S1860]
-  - The 1,536-character cap is a recent raise from an earlier, differently documented 250-character cap; Claude Code's
-    own issue tracker records that the docs lagged the change and that Claude Code added a startup warning when a
-    skill description is truncated (exact current wording of that warning was not independently fetched). [COMMUNITY
-    S1848, S1849]
-  - A separate, portability-oriented Agent Skills specification (referenced from community sources, not confirmed as
-    an Anthropic-authored page in this pass) is reported to cap `description` at 1,024 characters, narrower than
-    Claude Code's own 1,536; an open GitHub issue on `anthropics/skills` reports frontmatter descriptions exceeding a
-    1,024-character limit as a real failure mode when a skill is meant to be portable across tools. [COMMUNITY S1850]
   - CLAUDE.md size warning: Claude Code shows a warning at startup and in `/status` when an instruction file is over
     the recommended length (target under 200 lines), and also when files that are each within that length add up
     past a combined limit; each CLAUDE.md, rules file and `@path` import counts as a separate file. The page states
@@ -102,6 +94,15 @@ a generic 400 on the underlying model call, worded around "exceeds the maximum" 
     article publishes no character limit for the project instructions field. [DOC S1859]
   - Context window on paid Claude plans depends on the model: 200K tokens by default, 500K or 1M tokens for the newer
     models listed (for chat, for example 1M for Claude Opus 5.5 and 500K for Claude Opus 4.8). [DOC S-etprakdx]
+- Claude (Anthropic), community-reported:
+  - The 1,536-character cap is a recent raise from an earlier, differently documented 250-character cap; Claude Code's
+    own issue tracker records that the docs lagged the change and that Claude Code added a startup warning when a
+    skill description is truncated (exact current wording of that warning was not independently fetched). [COMMUNITY
+    S1848, S1849]
+  - A separate, portability-oriented Agent Skills specification (referenced from community sources, not confirmed as
+    an Anthropic-authored page in this pass) is reported to cap `description` at 1,024 characters, narrower than
+    Claude Code's own 1,536; an open GitHub issue on `anthropics/skills` reports frontmatter descriptions exceeding a
+    1,024-character limit as a real failure mode when a skill is meant to be portable across tools. [COMMUNITY S1850]
   - Tool-count/tool-name limits: a tool name has a documented 128-character limit (reported via a Claude Code bug
     report reproducing the API's rejection), and the raw Messages API is reported to support very large tool catalogs
     (order 10,000) once `defer_loading`/tool search is used, versus client UIs (for example VS Code's tool picker)
