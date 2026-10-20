@@ -5,7 +5,8 @@ The panel runs `coord.py list`, `coord.py wait --since 0 --timeout 0` and `coord
 once, on the local store (`--store`, else `KB_COORD_STORE`, else the clone's default) or on a `coord.py serve` server
 (`--url` with `--key-file`, which coord.py reads: the panel never opens the key file). A local store that is not there
 is `absent` and is not created. A server that cannot be reached, or that answers no command within `CHILD_SECONDS`, is
-`timeout`. Imports `mon_base`; `coord` only to name the default store.
+`timeout`. A session id (a holder, a `session/` key, an event's session fields) shows as its label
+(`mon_view.session_label`). Imports `mon_base` and `mon_view`; `coord` only to name the default store.
 """
 import atexit
 import json
@@ -17,6 +18,7 @@ import time
 from pathlib import Path
 
 import mon_base
+import mon_view
 
 COORD = Path(__file__).resolve().with_name("coord.py")
 CHILD_SECONDS = 30  # the longest the three commands may take; the panel's own bound is kbmon's --timeout
@@ -127,9 +129,16 @@ def fetch(conn):
 
 
 def claim_of(row, now):
-    return {"key": row["key"], "holder": row["holder"], "left_s": max(0, int(row["expires"] - now)),
+    return {"key": mon_view.session_key(row["key"]), "holder": mon_view.session_label(row["holder"]), "left_s": max(0, int(row["expires"] - now)),
             "budget_usd": row.get("budget_usd"), "spend_usd": row.get("spend_usd"),
             "over_budget": bool(row.get("over_budget"))}
+
+
+def event_fields(event):
+    """The fields of a coord event with its session ids labelled (`mon_view.session_fields`) and its key's."""
+    fields = event.get("fields") if isinstance(event.get("fields"), dict) else {}
+    fields = mon_view.session_fields(fields)
+    return {**fields, "key": mon_view.session_key(fields["key"])} if "key" in fields else fields
 
 
 def collect(ctx):
@@ -139,8 +148,8 @@ def collect(ctx):
     claims = [claim_of(r, now) for r in json.loads(out["list"]) if r.get("holder")]
     events = json.loads(out["wait"])["events"][-EVENTS_KEPT:]
     return {"source": source, "claims": claims,
-            "events": [{"seq": e["seq"], "kind": e["kind"], "fields": e.get("fields", {})} for e in reversed(events)],
-            "digest": [x for x in out["digest"].splitlines() if x.strip()]}
+            "events": [{"seq": e["seq"], "kind": e["kind"], "fields": event_fields(e)} for e in reversed(events)],
+            "digest": [mon_view.session_text(x) for x in out["digest"].splitlines() if x.strip()]}
 
 
 def usd(value):

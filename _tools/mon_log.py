@@ -7,8 +7,9 @@ sidecars: `land.step`, `land.end`, `done.refused` and `test.run` only) and the q
 (`ql_report.last_outcomes`). A source that cannot be read adds a `problems` entry and the others still show. A field is kept
 only when its value is a number or an id-shaped word (a list of them joined by `,`) that `redact.redact` leaves as it is, so
 no free text of an event reaches the view; the subject too, else `-`. A row with `warn` (a `done.refused` row, a refused or
-failed delivery) takes the `! ` gutter. The panel writes nothing. Imports `mon_view` (`LazyKnown`) and, where it reads
-them, `coord`, `bl_stall`, `ql_capture`, `ql_distill`, `ql_base` and `ql_report`; no other panel module.
+failed delivery) takes the `! ` gutter. A session id in a coord field or key shows as its label first
+(`mon_view.session_label`). The panel writes nothing. Imports `mon_view` (`LazyKnown`, the session labels) and, where it
+reads them, `coord`, `bl_stall`, `ql_capture`, `ql_distill`, `ql_base` and `ql_report`; no other panel module.
 """
 import datetime
 import json
@@ -120,7 +121,9 @@ def coord_events(ctx, clean):
         return []
     rows = []
     for e in json.loads(coord_wait(args))["events"][-LOG_KEPT:]:
-        values = e.get("fields") if isinstance(e.get("fields"), dict) else {}
+        values = mon_view.session_fields(e.get("fields") if isinstance(e.get("fields"), dict) else {})
+        if "key" in values:
+            values["key"] = mon_view.session_key(values["key"])
         key = next((k for k in SUBJECTS if clean(values.get(k)) is not None), None)
         subject = clean(values[key]) if key else None
         kind = clean(e.get("kind"))

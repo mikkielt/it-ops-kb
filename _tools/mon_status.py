@@ -252,7 +252,8 @@ def coord(r):
     if data is None:
         return [f"Coord: {why}."], {"state": "unread"}
     claims = [c for c in data.get("claims") or [] if isinstance(c, dict)]
-    over = [c for c in claims if c.get("over_budget")]
+    claims.sort(key=lambda c: not str(c.get("key")).startswith(mon_view.SESSION_KEY))  # the sessions first: stable
+    over =[c for c in claims if c.get("over_budget")]
     facts = {"claims": len(claims), "over_budget": len(over), "keys": [str(c.get("key")) for c in claims]}
     if not claims:
         return ["Coord: no live claim."], facts

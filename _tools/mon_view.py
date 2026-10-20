@@ -8,6 +8,10 @@ Standard library only; imports `mon_base` and `redact` (at the first redaction).
                                  one frame of the text view, laid out as the Layout section of the doc gives it: no line
                                  past `width` less one columns, each string redacted, an escape byte only with `ansi`
                                  (colour), and no control character of a panel's own text ever reaches the terminal
+  session_label(value)           `s-` and six hex characters of the SHA-256 of a session id (a value that is a GUID), else
+                                 the value; `session_key(key)`, `session_fields(fields)` and `session_text(line)` label a
+                                 coord key, a coord event's session-naming fields and a digest line the same way, before
+                                 any redaction
   enable_vt()                    True when the console takes ANSI escapes: always off Windows, there the console's
                                  virtual terminal processing switched on, False when it cannot be
   CLEAR                          the cursor-home and erase sequences that start a frame redrawn in place
@@ -18,6 +22,7 @@ Standard library only; imports `mon_base` and `redact` (at the first redaction).
                                  signal it sleeps one `POLL_SLICE` at most, then the caller polls)
   render_json(snap)              the snapshot as JSON text
 """
+import hashlib
 import inspect
 import json
 import re
@@ -40,6 +45,11 @@ VT_FLAG = 0x0004  # ENABLE_VIRTUAL_TERMINAL_PROCESSING
 STD_OUTPUT_HANDLE = -11
 GUID_JOINTS = re.compile(r"-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-")  # the middle of a dashed guid
 FIELD_CHARS = 200  # characters of a value the generic view of a panel prints
+SESSION_ID = re.compile(r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")
+SESSION_FIELDS = ("holder", "operator", "session")  # the fields of a coord event that name a session
+SESSION_KEY = "session/"  # a coord key that names a session
+SESSION_IN_TEXT = re.compile(r"((?:\bsession/|\b(?:session|holder|operator)=))(" + SESSION_ID.pattern + r")(?![\w-])")
+LABEL_HEX = 6 # hex characters of the digest in a session label
 
 
 class LazyKnown:
@@ -71,6 +81,32 @@ class LazyKnown:
                     found.update(g.replace("-", "") for g in redact.GUID.findall(low[max(0, m.start() - 9):m.end() + 13]))
                 found.update(redact.GUID_BARE.findall(low))
         return found
+
+
+def session_label(value):
+    """`s-` and the first six hex characters of the SHA-256 of a session id (a whole string that is a GUID, in lower case),
+    made before redaction so the raw id is never printed and one session has one label in every panel; any other value is
+    returned as it is, to pass `redact.redact` like every string."""
+    if isinstance(value, str) and SESSION_ID.fullmatch(value):
+        return "s-" + hashlib.sha256(value.lower().encode("utf-8")).hexdigest()[:LABEL_HEX]
+    return value
+
+
+def session_key(key):
+    """A coord key with the session id of `session/<id>` labelled (`session_label`); any other key as it is."""
+    if isinstance(key, str) and key.startswith(SESSION_KEY):
+        return SESSION_KEY + session_label(key[len(SESSION_KEY):])
+    return key
+
+
+def session_text(text):
+    """A line of coord.py's digest with the session ids after `session/`, `session=`, `holder=` and `operator=` labelled."""
+    return SESSION_IN_TEXT.sub(lambda m: m.group(1) + session_label(m.group(2)), text)
+
+
+def session_fields(fields):
+    """A copy of a coord event's fields with the session ids of `holder`, `operator` and `session` labelled."""
+    return {k: session_label(v) if k in SESSION_FIELDS else v for k, v in fields.items()}
 
 
 def judged(snap):
