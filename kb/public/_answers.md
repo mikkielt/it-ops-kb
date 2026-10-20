@@ -4404,3 +4404,13 @@ _Agent: kb-research_
 - See gitlab/commit-signing-and-provenance.md.
 
 _Agent: kb-research_
+
+## QK-public-repository-each-learn-path-prefix. Which public repository does each Learn path prefix (`intune/`, `windows/`, `api/`, `azure/`) name, does a Learn URL without a locale redirect and keep `?accept=text/markdown`, and how does a Claude Code Bash allow rule without a wildcard match?
+- `intune/` pages name `MicrosoftDocs/memdocs`, which answers `404` on 2026-10-21; `windows/` and `azure/` split across several repositories by subpath, some public (`win32`, `windows-dev-docs`, `azure-docs`) and some `404` (`windows-itpro-docs`, `azure-ai-docs`, `defender-docs`), each with its own repository path rewrite; there is no top-level `api/` prefix (`/en-us/api/` answers `404`). [DER S-xmqy75h7, S-j4ksai6m, S1221, S2198, S-qdfwoaa7, S-bxionmbk, S-gyfh4qfu]
+- A Learn URL without a locale answers `302` to the `/en-us/` path, and the `?accept=text/markdown` query and the `Accept: text/markdown` header both survive the redirect and return `text/markdown`; with a locale in the path the form keeps that locale. [DER S-xmqy75h7]
+- A Bash rule with no `*` matches one exact command; a trailing ` *` is prefix matching with the space as the word boundary, and `--allowedTools` uses the same rule syntax. [DOC S742, S1800]
+- Conclusion: a census map from path prefix to repository is sound only per subpath and only for repositories that answer; `intune/` and a prefix-level `windows/` entry cannot decide pages by git history. A locale-less URL needs a followed redirect, and an allowed-tools rule for one exact git command is written without a `*`. [DER S-xmqy75h7, S-j4ksai6m, S742, S1800]
+- Open: the repository of every `windows/` and `azure/` subpath was not sampled, only the subpaths the kb cites; why Learn names repositories that answer `404` is not stated by a source read. [UNK]
+- See agents/doc-change-detection.md, claude/settings-and-scopes.md.
+
+_Agent: kb-research_
