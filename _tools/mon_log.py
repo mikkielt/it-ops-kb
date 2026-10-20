@@ -9,7 +9,7 @@ only when its value is a number or an id-shaped word (a list of them joined by `
 no free text of an event reaches the view; the subject too, else `-`. A row with `warn` (a `done.refused` row, a refused or
 failed delivery) takes the `! ` gutter. A session id in a coord field or key shows as its label first
 (`mon_view.session_label`). The panel writes nothing. Imports `mon_view` (`LazyKnown`, the session labels) and, where it
-reads them, `coord`, `bl_stall`, `ql_capture`, `ql_distill`, `ql_base` and `ql_report`; no other panel module.
+reads them, `coord`, `bl_stall`, `ql_capture`, `ql_distill`, `ql_store`, `ql_base` and `ql_report`; no other panel module.
 """
 import datetime
 import json
@@ -131,13 +131,19 @@ def coord_events(ctx, clean):
     return rows
 
 
-def in_spool_order(rows):
-    """ROWS (`bl_stall.ops_rows`, sorted by time and id) with the rows of this host's spool that share a millisecond put
-    back in the order the spool file holds them; the committed rows stay first and in their order."""
+def in_spool_order(rows, root=None):
+    """ROWS (`bl_stall.ops_rows`, sorted by time and id) with the rows that share a millisecond put back in the order they
+    were written: the committed sidecars' rows of ROOT (the clone, when given) in their files' order, then the rows of this
+    host's spool in the order the spool file holds them. Without ROOT the committed rows keep the order ROWS has them in."""
     import ql_capture
     import ql_distill
-    spool = ql_capture.spool_dir()
+    import ql_store
     at = {}
+    if root is not None:
+        for _, objs in ql_store.records(ql_store.ops_files(Path(root) / "kb" / "_querylog")):
+            for _, o in objs:
+                at.setdefault(o.get("id"), len(at))
+    spool = ql_capture.spool_dir()
     for f in sorted(Path(spool).glob("tools-*.jsonl")) if spool is not None and Path(spool).is_dir() else []:
         for r in ql_distill.spool_rows(f)[0]:
             at.setdefault(r.get("id"), len(at))
@@ -149,7 +155,7 @@ def ops_events(ctx, clean):
     import bl_stall
     import ql_capture
     rows = []
-    for r in in_spool_order(bl_stall.ops_rows(str(ctx.root)))[-LOG_KEPT * 4:]:
+    for r in in_spool_order(bl_stall.ops_rows(str(ctx.root)), ctx.root)[-LOG_KEPT * 4:]:
         event = r.get("event")
         if event not in OPS_SHOWN:
             continue
