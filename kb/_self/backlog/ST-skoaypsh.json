@@ -2,7 +2,7 @@
   "id": "ST-skoaypsh",
   "kind": "story",
   "title": "land and close run tidy for their own recorded leftovers, and SessionStart prints tidy's one-line report",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ipeewrlv",
   "priority": "P2",
   "rank": 0,
@@ -54,5 +54,7 @@
   "depends_on": [
     "ST-nkc5supu"
   ],
-  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with planted inputs (KB_COORD_STORE points at its own coord store, so no check writes the clone's real one); no change to _tools/tests_ceiling.json. What land and close may remove follows gate g1 of the tidy story: under option (a) they remove only their own items' worker worktrees as today and scratch directories (a plain directory removal, not a denied git command); the orchestrator's and reviewer's worktrees then wait for the operator's run."
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with planted inputs (KB_COORD_STORE points at its own coord store, so no check writes the clone's real one); no change to _tools/tests_ceiling.json. What land and close may remove follows gate g1 of the tidy story: under option (a) they remove only their own items' worker worktrees as today and scratch directories (a plain directory removal, not a denied git command); the orchestrator's and reviewer's worktrees then wait for the operator's run.",
+  "claimed_by": "orch-r201",
+  "operator": "op-f618a13e"
 }
