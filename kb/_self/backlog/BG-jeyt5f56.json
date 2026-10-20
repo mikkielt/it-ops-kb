@@ -2,7 +2,7 @@
   "id": "BG-jeyt5f56",
   "kind": "bug",
   "title": "status routing sends docs questions about cost, sessions or kbmon to a kbmon status answer",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-kgvbpjhd",
   "priority": "P2",
   "rank": 0,
@@ -61,6 +61,19 @@
     "parked: SP-dulvwwjc review"
   ],
   "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: repro fails (a docs question about cost, a session or kbmon maps to a status topic).",
-  "claimed_by": "orch-r114",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "dcdaad5c9097f2b4ce490c0fa4bcff9026d550d0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,'_tools'); import mon_status as m; assert m.topic_of('the cost of Intune licences so far') is None and m.topic_of('how do I resume a session that is running in Claude Code?') is None and m.topic_of('what does kbmon do?') is None"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
