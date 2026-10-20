@@ -37,6 +37,38 @@
     "kb/_self/code.md",
     "kb/_self/backlog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the delivery alert get its since, when the log's lines carry no time and later lines follow a refusal?",
+      "options": [
+        "oldest undelivered run, else log write",
+        "log last write only"
+      ],
+      "recommendation": "oldest undelivered run, else log write",
+      "do": {
+        "oldest undelivered run, else log write": "ST-kbc6szhc",
+        "log last write only": "ST-kbc6szhc"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does usage_today match a store usage sidecar line to the spool prompt it was distilled from?",
+      "options": [
+        "entry id equals one of the prompt's row ids, else equal counts",
+        "entry id only"
+      ],
+      "recommendation": "entry id equals one of the prompt's row ids, else equal counts",
+      "do": {
+        "entry id equals one of the prompt's row ids, else equal counts": "ST-kbc6szhc",
+        "entry id only": "ST-kbc6szhc"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "notes": "operator request 2026-10-19 (housekeeping batch): the stall of 2026-10-17/18 ran 105 refused deliveries without an alert anyone saw. Folds BG-t54wqmgd, BG-tp4birqb, BG-q7bi7h4c, BG-mey6jwew (each repro embedded).",
   "claimed_by": "orch-r106",
   "operator": "op-f618a13e"

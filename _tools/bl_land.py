@@ -865,7 +865,7 @@ def ops_mark(label):
 
 
 PUSH_LOG_TAIL = 200_000  # bytes of the end of a store's distill.log read for the last `apply --push`
-PUSH_FAILED = re.compile(r"apply --push: (?:kbgit\.py sync exit [1-9]|refused|commit failed|conflict|the worktree|.*nothing pushed)")
+PUSH_FAILED = re.compile(r"apply --push: (?:kbgit\.py sync exit [1-9]|refused|commit failed|conflict|the worktree|the push was refused|the revert of|git clone|the findings a|.*nothing pushed)")
 PUSH_DONE = re.compile(r"apply --push: (?:pushed [0-9a-f]+ to |nothing to push)")
 PUSH_GATE = re.compile(r"\s+gate (.+?): FAILED(?: \(exit \d+\))?: (.*)")  # check-trailers' FAILED has no exit
 PUSH_GATE_OUTPUT = re.compile(r"\s+gate (.+?) whole output: (.+) \(\d+ test ids\)")

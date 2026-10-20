@@ -31,15 +31,22 @@ def priced(models):
 
 
 def delivery_of(outcome, qdir):
-    """The `last_delivery` of the log's apply outcome: {outcome, why, when}, or None when the log has none. `why` is the
-    failed gate and its first error line (`bl_land.last_push_failure`) of a push that delivered nothing, else empty."""
+    """The `last_delivery` of the log's apply outcome: {outcome, why, when}, or None when the log has none. A refusal
+    stands through the lines of runs that tried no push (`ql_report.NO_DELIVERY`) and through a log whose last write
+    is not its line: the outcome is then `refused` still, and `when` the log's last write. `why` is the failed gate
+    and its first error line (`bl_land.last_push_failure`) of a push that delivered nothing, else empty."""
     if outcome is None:
         return None
+    kind, when = outcome["outcome"], outcome["when"]
+    if kind in ql_report.NO_DELIVERY or (kind == "refused" and not when):
+        held = ql_report.standing_apply(qdir)
+        if held and held["outcome"] == "refused":
+            kind, when = "refused", when or held["when"]
     why = ""
-    if outcome["outcome"] in ("refused", "fetch-failed"):
+    if kind in ("refused", "fetch-failed"):
         import bl_land
         why = bl_land.last_push_failure(qdir / "store") or ""
-    return {"outcome": outcome["outcome"], "why": why, "when": outcome["when"]}
+    return {"outcome": kind, "why": why, "when": when}
 
 
 def collect(ctx):
@@ -88,15 +95,18 @@ def delivery_rows(data):
 
 
 def alerts(data):
-    """The alerts of the panel's data: one `delivery` alert (id `querylog.delivery`) while the log's last apply outcome is a
-    refused run or a failed gate. A fetch that failed is a `! ` row only, and a later push that delivered clears it (the
-    outcome is then `pushed`). `since` is the `HH:MM` (UTC) of the log's last write."""
+    """The alerts of the panel's data: one `delivery` alert (id `querylog.delivery`) while the log's last apply outcome that
+    tried a push is a refused run or a failed gate, whatever lines of other runs follow it. A fetch that failed is a `! `
+    row only, and a later push that delivered clears it (the outcome is then `pushed`). `since` is the time (UTC, as
+    `YYYY-MM-DD HH:MM`) of the oldest run file the delivery ref lacks, which a refusal keeps undelivered and so does not
+    move while it stands; else the log's last write."""
     last = data.get("last_delivery")
     if not isinstance(last, dict) or last.get("outcome") != "refused":
         return []
-    since = str(last.get("when") or "")[11:16]
+    since = data.get("undelivered_since") or last.get("when")
     return [{"kind": "delivery", "id": "querylog.delivery", "panel": "querylog",
-             "message": "query-log delivery REFUSED: " + (last.get("why") or "no gate named"), "since": since}]
+             "message": "query-log delivery REFUSED: " + (last.get("why") or "no gate named"),
+             "since": when(since) if since else ""}]
 
 
 def lines(data):
