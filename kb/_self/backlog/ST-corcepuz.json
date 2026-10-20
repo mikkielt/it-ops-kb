@@ -65,7 +65,11 @@
         "keep repeats_detector with a comment; remove the four orphans": "ST-corcepuz",
         "remove repeats_detector too; keep the orphans": "ST-corcepuz"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "keep repeats_detector with a comment; remove the four orphans",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): scan 2026-10-19: selfdoc.check_map (35 lines), bl_intake.repeats_detector (28), ql_learn.registry_problems (15), kbfacts.stored_pack (13), ql_learn.trigger_problems, kg_trailers.forget_audits, ql_apply.lead_passage, ql_deliver.ci_status, bl_forge.read_pipeline, bl_base.ConfigError: 110 lines. A comment naming the dynamic use counts as a reference for the check. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
