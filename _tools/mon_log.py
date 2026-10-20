@@ -87,8 +87,8 @@ def row(ts, source, event, subject, fields, warn=False):
 
 
 def coord_args(ctx):
-    """coord.py's connection arguments for the url or the local store (`--store`, else `KB_COORD_STORE`, else the clone's
-    default); None when no store file is there."""
+    """coord.py's connection arguments for the url or the local store (`--store`, else `KB_COORD_STORE`, else the default of
+    the clone at `--root`); None when no store file is there."""
     if ctx.url:
         if not ctx.key_file:
             raise RuntimeError("--url needs --key-file")
@@ -96,7 +96,7 @@ def coord_args(ctx):
     store = ctx.store or os.environ.get("KB_COORD_STORE")
     if not store:
         import coord
-        store = coord.default_store()
+        store = coord.store_of(ctx.root)
     store = str(Path(store).expanduser()) if store else None
     return ["--store", store] if store and Path(store).is_file() else None
 

@@ -75,6 +75,25 @@
     "BG-rpp4dsrn",
     "BG-qpcct4ps"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does mon_coord find the store of --root: a new coord.store_of(root) that default_store wraps, or a root parameter on default_store?",
+      "options": [
+        "store_of(root) beside default_store",
+        "default_store(root=None)"
+      ],
+      "recommendation": "store_of(root) beside default_store",
+      "do": {
+        "store_of(root) beside default_store": "BG-yiidz36y",
+        "default_store(root=None)": "BG-yiidz36y"
+      },
+      "class": "design",
+      "answer": "store_of(root) beside default_store",
+      "by": "agent"
+    }
+  ],
   "notes": "Operator feedback 2026-10-20, running kbmon on Windows: 'coord absent - no mon_coord.py while the file exists'. Investigated on origin/main 5970ced2c, 2026-10-20: the module loads (a planted import failure, sys.modules['atexit']=None, gives state error, not absent, so no POSIX-only import is the cause: coord.py, mon_coord.py and coord_hook.py import none). 'no mon_coord.py' is the text view's word for every absent panel (BG-rpp4dsrn, same sprint); the panel's own reason is 'no coord store file'. Cause candidates for the store not being found on the Windows clone: mon_coord.local_store ignores ctx.root and asks coord.default_store, which locates the store from coord.py's own clone by running git rev-parse --git-common-dir, returning None when git cannot run from that Python (git not on PATH outside Git Bash) and so absent; or the Windows clone's hook never created the store. Premise: the repro plants a clone with its own store and claim; with git on PATH kbmon --root shows the host clone's store (ok, claim missing), with git off PATH it is absent 'no coord store file'. Planning, 2026-10-20 (orchestrator r114): clauses 2 and 4 had no check; added default_store-without-git and absent-names-path checks (both fail on base 1defb86e2), and a planted import failure check for clause 5 (passes on base: an invariant the fix must keep).",
   "claimed_by": "orch-r114",
   "operator": "op-f618a13e"

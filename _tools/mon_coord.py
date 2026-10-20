@@ -2,11 +2,11 @@
 the newest events with their sequence numbers, and the live intent and progress digest.
 
 The panel runs `coord.py list`, `coord.py wait --since 0 --timeout 0` and `coord.py digest` as three child processes at
-once, on the local store (`--store`, else `KB_COORD_STORE`, else the clone's default) or on a `coord.py serve` server
+once, on the local store (`--store`, else `KB_COORD_STORE`, else the default of the clone at `--root`) or on a `coord.py serve` server
 (`--url` with `--key-file`, which coord.py reads: the panel never opens the key file). A local store that is not there
 is `absent` and is not created. A server that cannot be reached, or that answers no command within `CHILD_SECONDS`, is
 `timeout`. A session id (a holder, a `session/` key, an event's session fields) shows as its label
-(`mon_view.session_label`). Imports `mon_base` and `mon_view`; `coord` only to name the default store.
+(`mon_view.session_label`). Imports `mon_base` and `mon_view`; `coord` only to name the clone's store.
 """
 import atexit
 import json
@@ -44,10 +44,12 @@ atexit.register(_reap)
 
 
 def local_store(ctx):
+    """The local store: `--store`, else `KB_COORD_STORE`, else the one of the clone at `--root`; None when that is no git
+    clone."""
     store = ctx.store or os.environ.get("KB_COORD_STORE")
     if not store:
         import coord
-        store = coord.default_store()
+        store = coord.store_of(ctx.root)
     return str(Path(store).expanduser()) if store else None
 
 
@@ -60,7 +62,7 @@ def connection(ctx):
         return ["--url", ctx.url, "--key-file", ctx.key_file], "url"
     store = local_store(ctx)
     if not store or not Path(store).is_file():
-        raise mon_base.Absent(f"no coord store file at {store}" if store else "no coord store file")
+        raise mon_base.Absent(f"no coord store file at {store}" if store else f"no coord store file: {ctx.root} is in no git clone")
     return ["--store", store], "local"
 
 
