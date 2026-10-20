@@ -68,6 +68,25 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does kb_backlog_write decide a Bash deny rule matches, and which arguments does it accept?",
+      "options": [
+        "match the command line python3 _tools/backlog.py COMMAND ARGS against Bash deny rules of .claude/settings.json and settings.local.json, refuse when a settings file is unreadable, pass args unchanged",
+        "also match other interpreter spellings and restrict args to a closed option list per command"
+      ],
+      "recommendation": "match the command line python3 _tools/backlog.py COMMAND ARGS against Bash deny rules of .claude/settings.json and settings.local.json, refuse when a settings file is unreadable, pass args unchanged",
+      "do": {
+        "match the command line python3 _tools/backlog.py COMMAND ARGS against Bash deny rules of .claude/settings.json and settings.local.json, refuse when a settings file is unreadable, pass args unchanged": "ST-wseqbgaa",
+        "also match other interpreter spellings and restrict args to a closed option list per command": "ST-wseqbgaa"
+      },
+      "class": "agents-rule",
+      "answer": "match the command line python3 _tools/backlog.py COMMAND ARGS against Bash deny rules of .claude/settings.json and settings.local.json, refuse when a settings file is unreadable, pass args unchanged",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
