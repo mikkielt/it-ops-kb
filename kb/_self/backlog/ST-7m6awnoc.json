@@ -36,6 +36,25 @@
   "depends_on": [
     "ST-wubbd6ws"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How is a session line laid out and cut: field order, the cut of the sprint and item titles, the wording of elapsed and last activity, and how many lines the status answer shows?",
+      "options": [
+        "label role sprint(20) item title(40) step up last-ago spend, status shows 6 then +N more sessions",
+        "item id instead of sprint, no cut of the sprint title"
+      ],
+      "recommendation": "label role sprint(20) item title(40) step up last-ago spend, status shows 6 then +N more sessions",
+      "do": {
+        "label role sprint(20) item title(40) step up last-ago spend, status shows 6 then +N more sessions": "ST-7m6awnoc",
+        "item id instead of sprint, no cut of the sprint title": "ST-7m6awnoc"
+      },
+      "class": "design",
+      "answer": "label role sprint(20) item title(40) step up last-ago spend, status shows 6 then +N more sessions",
+      "by": "agent"
+    }
+  ],
   "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: a --from-snapshot file whose sessions panel holds two sessions entries prints no line with an s- label in --once or --status sessions ([]).",
   "claimed_by": "orch-r112",
   "operator": "op-f618a13e"
