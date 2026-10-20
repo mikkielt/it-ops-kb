@@ -2,7 +2,7 @@
   "id": "ST-6tg2cevp",
   "kind": "story",
   "title": "The coord tools read an ask's text and answer an ask behind the existing opt-in",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ttgcpf7o",
   "priority": "P2",
   "rank": 0,
@@ -46,5 +46,7 @@
   "depends_on": [
     "ST-gnt2xlk6"
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): folds BG-lkpu3ne6 (no get or put for an ask's text). The opt-in (KB_COORD_TOOLS) and every coord authority rule stay as they are. Premise: the check fails."
+  "notes": "operator request 2026-10-19 (housekeeping batch): folds BG-lkpu3ne6 (no get or put for an ask's text). The opt-in (KB_COORD_TOOLS) and every coord authority rule stay as they are. Premise: the check fails.",
+  "claimed_by": "orch-r110",
+  "operator": "op-f618a13e"
 }
