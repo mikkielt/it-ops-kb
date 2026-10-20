@@ -47,7 +47,11 @@
         "judge_work in kg_trailers": "ST-jpgklwch",
         "hook returns problems, refusal calls the hook": "ST-jpgklwch"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "judge_work in kg_trailers",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
