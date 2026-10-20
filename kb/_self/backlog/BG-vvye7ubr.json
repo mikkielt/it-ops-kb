@@ -35,5 +35,9 @@
   "depends_on": [
     "ST-hpbjc2gc"
   ],
-  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: the repro starts a detached launcher (start_new_session, a live sleep child) and a plain orphan in _cache of the worktree; kbmon --json --panel sessions classes both orphan. Seen live on 2026-10-19: wt32's benchmark launcher pid (parent 1, its own group, live children) raised the orphan alert. end_orphans keeps ending a worker's leftovers after the worker exits; this bug changes the class only."
+  "links": [
+    "kb/public/python/process-orphans-and-cwd.md:26",
+    "kb/public/python/process-orphans-and-cwd.md:39"
+  ],
+  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: the repro starts a detached launcher (start_new_session, a live sleep child) and a plain orphan in _cache of the worktree; kbmon --json --panel sessions classes both orphan. Seen live on 2026-10-19: wt32's benchmark launcher pid (parent 1, its own group, live children) raised the orphan alert. end_orphans keeps ending a worker's leftovers after the worker exits; this bug changes the class only. Research ST-dtrqrwzo 2026-10-20: kb facts on orphan and detached processes: the new parent after exit is a system process (init, or a Linux subreaper), setsid makes a launcher its own session and group leader (pgid equals pid), and the standard ps has ppid and pgid (kb/public/python/process-orphans-and-cwd.md). Open as UNK: the orphan's new parent on macOS."
 }
