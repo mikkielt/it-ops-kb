@@ -35,7 +35,9 @@
       },
       "class": "design",
       "answer": "Scan article, expect, line and observed paths and articles; skip an emptied file",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "claimed_by": "orch240",
