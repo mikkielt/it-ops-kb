@@ -2295,6 +2295,7 @@ f71e591a7fa7,agents/gitops-for-agents.md,S-2mzbvpov,located,FAQ > How often does
 fcb78e765f01,agents/gitops-for-agents.md,S1802,located,Claude Code GitLab CI/CD > How it works,apply;container;dif;every;reviewer;still;approval;each,0d48a4b670c9c595,Sandboxed execution: Each interaction runs in a container with strict network and filesystem rules. Claude Code enforces workspace-scoped permissions to constrain writes. Every change flows,2026-10-14
 ff9576e1fef3,agents/gitops-for-agents.md,S-7na2vvh5,located,Application deployments with GitOps (Flux v2) - Azure Arc | Microsoft Learn > Flux configurations,poll;plan;new;data;fluxconfiguration;kubernet;configuration;flux,e401c8461d809301,Polls the Kubernetes Configuration data plane service for new or updated fluxConfigurations resources.,2026-10-15
 0073db73ecc7,agents/headless-agent-runtimes.md,S1804,unlocated:no-match,,,,,2026-10-10
+00a614424d10,agents/headless-agent-runtimes.md,S-qne4hqox,located,Scheduling Timed Jobs > Timed Jobs Using cron,becaus;programmatically;resourc;shar;add;modify;install;crontab,6e23855064c81f7d,you should not programmatically add a cron job.,2026-10-20
 0413f3b862d8,agents/headless-agent-runtimes.md,S1807,located,GitLab Announces the General Availability of GitLab Duo Agent Platform,during;18.8;dedicat;plan;premium;releas;self;self-manag,71e740861885cae9,"Available now to GitLab Premium and Ultimate customers on GitLab.com and Self-Managed deployments, with planned availability to GitLab Dedicated customers during the GitLab 18.8 release",2026-10-10
 0de82fe2c5cc,agents/headless-agent-runtimes.md,S1801,unlocated:no-match,,,,,2026-10-12
 0de82fe2c5cc,agents/headless-agent-runtimes.md,S1803,unlocated:no-match,,,,,2026-10-10
@@ -2316,6 +2317,7 @@ ff9576e1fef3,agents/gitops-for-agents.md,S-7na2vvh5,located,Application deployme
 3cdb9849f780,agents/headless-agent-runtimes.md,S1800,unlocated:no-match,,,,,2026-10-12
 43456da512b1,agents/headless-agent-runtimes.md,S1818,unlocated:no-match,,,,,2026-10-10
 43456da512b1,agents/headless-agent-runtimes.md,S-qso27noq,located,GitHub Agentic Workflows,frontmatter;markdown;yaml;repository;gh-aw;agent;action;git,47fd6d8a4b418812,GitHub Agentic Workflows (gh-aw) lets developers define AI-powered repository automation in Markdown with YAML frontmatter and run AI agents securely through GitHub Actions.,2026-10-10
+451683673d80,agents/headless-agent-runtimes.md,S-65kz6itt,located,SUBCOMMANDS,remov;bootstrap;domain,c632b27e41c374fa,Bootstraps or removes domains and services.,2026-10-20
 4b77754c2896,agents/headless-agent-runtimes.md,S-xpfrl54v,located,This job only runs for issue comments > schedule,days;automatically;disabl;public;schedul;default;repository;branch,e6732fb574a4b7b6,"Scheduled workflows will only run on the default branch. In a public repository, scheduled workflows are automatically disabled when no repository activity has occurred in",2026-10-10
 4db11e008fe8,agents/headless-agent-runtimes.md,S1818,located,GitHub Agentic Workflows > Guardrails Built-In,block;dedicat;job;propo;detection;scan;suspicious;threat,b1c36e0b9fee35b1,"Threat detection A dedicated job scans proposed outputs, blocking suspicious changes.",2026-10-10
 4db11e008fe8,agents/headless-agent-runtimes.md,S-qso27noq,unlocated:no-match,,,,,2026-10-10
@@ -2323,6 +2325,7 @@ ff9576e1fef3,agents/gitops-for-agents.md,S-7na2vvh5,located,Application deployme
 50341efee004,agents/headless-agent-runtimes.md,S-ezqg74ki,unlocated:no-match,,,,,2026-10-12
 50341efee004,agents/headless-agent-runtimes.md,S-fksbud2r,unlocated:no-match,,,,,2026-10-12
 51a42053da07,agents/headless-agent-runtimes.md,S1803,located,Automate work with routines > Usage and limits,draw;count;cap;don;against;daily;subscription;one-of,951629da9e5ea99d,One-off runs do not count against the daily routine cap. They draw down your regular subscription usage like any other session. While your subscription is,2026-10-10
+54bdf6f6c5cc,agents/headless-agent-runtimes.md,S-qne4hqox,located,Scheduling Timed Jobs > Effects of Sleeping and Powering Off,other;skip;asleep;designat;until;computer;next;off,e21b23fb26f540a0,All other launchd jobs are skipped when the computer is turned off or asleep,2026-10-20
 55a9c2c4742f,agents/headless-agent-runtimes.md,S-gu5aqnrl,located,Configure cloud environments > Network access > GitHub proxy,deployment;opt;authenticat;provid;credential;self;self-host;git,2c9dacdb1857c15d,"Sessions in a self-hosted environment authenticate git operations with credentials your deployment provides; Configure git covers the options, including per-session minted credentials and an opt-in",2026-10-10
 589bc9a032fa,agents/headless-agent-runtimes.md,S-mkqjh4ac,located,Use Claude Code in the cloud > Limitations,bitbucket;gitlab;lab;result;ccr;ccr_force_bundl;forc;creation,66477de0acf1290d,Platform restrictions: repository cloning and pull request creation require GitHub. Self-hosted GitHub Enterprise Server instances are supported for Team and Enterprise plans. You can send,2026-10-10
 5de9a4a601df,agents/headless-agent-runtimes.md,S-5paxdbvt,unlocated:no-match,,,,,2026-10-10
@@ -2346,8 +2349,10 @@ ff9576e1fef3,agents/gitops-for-agents.md,S-7na2vvh5,located,Application deployme
 9235625b1265,agents/headless-agent-runtimes.md,S1801,unlocated:no-match,,,,,2026-10-12
 940c9e5b023a,agents/headless-agent-runtimes.md,S1800,unlocated:no-match,,,,,2026-10-12
 940c9e5b023a,agents/headless-agent-runtimes.md,S-fvspfpxd,unlocated:no-match,,,,,2026-10-13
+9a69d03d1cb8,agents/headless-agent-runtimes.md,S-rmzenq4r,located,"run at 10 pm on weekdays, annoy Joe > NOTES top",instead;twic;execut;every;hour;minut,201e6fe9dd2de89c,"it will be executed twice every hour,",2026-10-20
 9afe6ffbd7e7,agents/headless-agent-runtimes.md,S1800,located,Run Claude Code programmatically > Examples > Auto-approve tools,dont;dontask;down;lock;locked-down;manual;otherwis;classifier,09a53c44f4d8b529,"auto: pass --permission-mode auto to have a classifier review most actions instead of you dontAsk: Claude Code denies every call that would otherwise prompt, which",2026-10-12
 9afe6ffbd7e7,agents/headless-agent-runtimes.md,S1801,unlocated:no-match,,,,,2026-10-12
+9bc945b9060a,agents/headless-agent-runtimes.md,S-n7cnr4i5,located,schtasks create | Microsoft Learn > Syntax > Parameters,given;interactively;non-interactively;resourc;stor;non;log;password,d663c2596fbb908c,/it | Specifies to run the scheduled task only when the run as user (the user account under which the task runs) is logged on,2026-10-20
 9be9aa0d6cdb,agents/headless-agent-runtimes.md,S-gu5aqnrl,unlocated:no-match,,,,,2026-10-10
 9be9aa0d6cdb,agents/headless-agent-runtimes.md,S-mkqjh4ac,unlocated:no-match,,,,,2026-10-10
 a421ed70bf9e,agents/headless-agent-runtimes.md,S1800,unlocated:no-match,,,,,2026-10-12
@@ -2355,6 +2360,9 @@ a5f887843ac6,agents/headless-agent-runtimes.md,S-fvspfpxd,unlocated:no-match,,,,
 a5f887843ac6,agents/headless-agent-runtimes.md,S-rleo3k4b,unlocated:no-match,,,,,2026-10-20
 a6a94062f4a3,agents/headless-agent-runtimes.md,S1803,located,Automate work with routines > Manage routines > Repositories and branch permissions,connection;skip;hour;runs;git;github;hub;routin,5ecb6f7cc4a196d3,"If your GitHub connection is missing or expired when a run is due, the routine skips runs until you reconnect, for up to 72 hours.",2026-10-10
 a8770cc9b242,agents/headless-agent-runtimes.md,S1803,unlocated:no-match,,,,,2026-10-10
+aaddd462cfde,agents/headless-agent-runtimes.md,S-n7cnr4i5,unlocated:no-match,,,,,2026-10-20
+aaddd462cfde,agents/headless-agent-runtimes.md,S-qne4hqox,unlocated:no-match,,,,,2026-10-20
+aaddd462cfde,agents/headless-agent-runtimes.md,S-rmzenq4r,unlocated:no-match,,,,,2026-10-20
 b4aa870f77fa,agents/headless-agent-runtimes.md,S1800,located,Run Claude Code programmatically > Examples > Turn off permission prompts in unattended runs,cancell;elicitation;askuserquestion;ask;question;none;permission-prompt;user,9fc8d8eac5d6fa30,"With --permission-prompts none, Claude Code removes the tools that need an answer from a person, such as AskUserQuestion, so Claude can't call them. Any MCP",2026-10-12
 b6ca407a3445,agents/headless-agent-runtimes.md,S1801,located,Claude Code GitHub Actions > Setup > Set up for an organization,exchang;oidc;workload;identity;setup-token;stor;through;federation,f947ce23aea52c45,"For a secret shared across repositories, authenticate with an API key from the Claude Console rather than an OAuth token, since an OAuth token is",2026-10-12
 bc4bb6f4c286,agents/headless-agent-runtimes.md,S1804,located,Application card: GitHub Copilot Agents > 1. Overview,ephemeral;branch;firewall;issu;environment;cloud;hub;git,191a0f9ff8c84f7e,"Copilot cloud agent: An asynchronous agent on GitHub.com that can create branches, write code, and open pull requests in response to assigned issues. The cloud",2026-10-10
@@ -2371,13 +2379,20 @@ c414c281119d,agents/headless-agent-runtimes.md,S1803,unlocated:no-match,,,,,2026
 c6232606d180,agents/headless-agent-runtimes.md,S1800,unlocated:no-match,,,,,2026-10-12
 c879ead4e741,agents/headless-agent-runtimes.md,S-gu5aqnrl,unlocated:no-match,,,,,2026-10-10
 cf80a512300a,agents/headless-agent-runtimes.md,S1800,located,Run Claude Code programmatically > Basic usage > Start faster with bare mode,dialog;per-server;settings.json;workspac;mcp.json;approval;even;show,9e341cfeae3b4314,"Skills from additional directories covers what does and doesn't load. Without --bare, a -p session runs the hooks in a project's .claude/settings.json and connects the",2026-10-12
+d7c9e3ddae20,agents/headless-agent-runtimes.md,S-rmzenq4r,located,crontab(5) — Linux manual page > DESCRIPTION top,examin;entry;every;minut;cron,a5a32baadc1cf9f5,cron(8) examines cron entries every minute.,2026-10-20
 dfa84b6acfdb,agents/headless-agent-runtimes.md,S1803,unlocated:no-match,,,,,2026-10-10
+e03e013719b8,agents/headless-agent-runtimes.md,S-n7cnr4i5,unlocated:no-match,,,,,2026-10-20
+e03e013719b8,agents/headless-agent-runtimes.md,S-nrlbtzhc,unlocated:no-match,,,,,2026-10-20
+e03e013719b8,agents/headless-agent-runtimes.md,S-qne4hqox,unlocated:no-match,,,,,2026-10-20
+e03e013719b8,agents/headless-agent-runtimes.md,S-rmzenq4r,unlocated:no-match,,,,,2026-10-20
 e813d3116b05,agents/headless-agent-runtimes.md,S1801,located,Claude Code GitHub Actions > Setup > Manual setup,pro;setup-token;max;claude_code_oauth_token;oauth;setup;key;anthropic,f9f5deb64821c96b,"ANTHROPICAPIKEY: a Claude API key from the Claude Console CLAUDECODEOAUTHTOKEN: an OAuth token that authenticates with your Claude subscription, available on Pro, Max, Team, and",2026-10-20
 e813d3116b05,agents/headless-agent-runtimes.md,S-frvnva4f,unlocated:no-match,,,,,2026-10-20
 e813d3116b05,agents/headless-agent-runtimes.md,S-rleo3k4b,unlocated:no-match,,,,,2026-10-20
 ebfa15490ed6,agents/headless-agent-runtimes.md,S1806,unlocated:no-match,,,,,2026-10-10
 ebfa15490ed6,agents/headless-agent-runtimes.md,S1807,located,GitLab Announces the General Availability of GitLab Duo Agent Platform,premium;ultimat;credit;user;includ;duo;platform;agent,33a8ad475810cf48,"Pricing: For new usage-based products, including GitLab Duo Agent Platform, GitLab is introducing GitLab Credits, a virtual currency. All customers with active Premium and Ultimate",2026-10-10
+ec87d8aa5587,agents/headless-agent-runtimes.md,S-nrlbtzhc,located,XML,asleep;next;wake;time;start;launchd;job,a870d776ae0ba964,launchd will start the job the next time the computer wakes up.,2026-10-20
 f33232145b89,agents/headless-agent-runtimes.md,S1801,unlocated:no-match,,,,,2026-10-12
+fa42bb4e9400,agents/headless-agent-runtimes.md,S-n7cnr4i5,located,schtasks create | Microsoft Learn > Syntax > Parameters,directory;folder;uniqu;character;system32;path;onidl;onstart,1cf9d882a7ba0ce8,/sc <scheduletype> | Specifies the schedule type. The valid values include:<br>- MINUTE - Specifies the number of minutes before the task should run.<br>- HOURLY -,2026-10-20
 ff30d86700a7,agents/headless-agent-runtimes.md,S-fvspfpxd,located,Legal and compliance > Usage policy > Acceptable use,advertis;assum;individual;limit;ordinary;sdk;max;plan,3fe16b9b9d68ee3c,"Advertised usage limits for Pro and Max plans assume ordinary, individual usage of Claude Code and the Agent SDK.",2026-10-20
 0624ba108cb0,agents/hybrid-retrieval.md,S-pgtfj4fh,located,Hybrid Search Overview - Azure AI Search | Microsoft Learn > How does hybrid search work?,combin;rrf;full;full-text;semantic;text;hybrid;vector,735940e7d713c572,"Hybrid queries take advantage of existing text-based functionality like filtering, faceting, sorting, scoring profiles, and semantic ranking on your text fields, while executing a similarity",2026-10-11
 063f2f947381,agents/hybrid-retrieval.md,S-dmhfxnon,located,Title:From Local to Global: A Graph RAG Approach to Query-Focused Summarization,baselin;comprehensiveness;conventional;diversity;million;sensemak;token;dataset,8c080e38e1244f74,"For a class of global sensemaking questions over datasets in the 1 million token range, we show that GraphRAG leads to substantial improvements over a",2026-10-11
@@ -8460,9 +8475,11 @@ f6180b076942,gitlab/git-refs.md,S-xahbgevi,unlocated:no-match,,,,,2026-10-10
 569f410eef4e,gitlab/git-test-repositories.md,S-lr3jwdq2,unlocated:no-match,,,,,2026-10-10
 57c4a2a3e1e5,gitlab/git-test-repositories.md,S-rzi7mtmw,located,,one;symref;upload-pack;pack;upload;ls-remot;show;head,360af30974b745bf,"upload-pack only shows the symref HEAD, so it will be the only one shown by ls-remote.",2026-10-10
 598605c8556d,gitlab/git-test-repositories.md,S-7kl4eeso,located,,problematic;leav;marker;first;stop;conflict;git;rebas,3aa87ffd57b08bba,git rebase will stop at the first problematic commit and leave conflict markers,2026-10-15
+5bad67d25c12,gitlab/git-test-repositories.md,S-j4qkzgvv,located,,being;delet;prevent;moved,dc6d235846c34338,This also prevents it from being moved or deleted.,2026-10-20
 5d2e20e586d9,gitlab/git-test-repositories.md,S-nxowyi4h,unlocated:no-match,,,,,2026-10-10
 5e2ca77956fc,gitlab/git-test-repositories.md,S-6foknrbi,located,,explicitly;relativ;git_dir;path;dir;git,887140b4f9f752a5,"explicitly set. If the specified path is relative, it is relative to $GITDIR.",2026-10-10
 62466ffc48c2,gitlab/git-test-repositories.md,S-j4qkzgvv,located,,omit;already;refus;new-branch;check;out;commit-ish;creat,adafe4b0c415f8af,"<commit-ish>, and check out <new-branch> into the new worktree. If <commit-ish> is omitted, it defaults to HEAD. By default, -b refuses to create a new",2026-10-10
+6574b97cce61,gitlab/git-test-repositories.md,S-j4qkzgvv,located,,existent;non;non-existent;gitdir;location;point;prunabl;file,93ce1528bc5a9903,prunable gitdir file points to non-existent location,2026-10-20
 66ec2aec0e14,gitlab/git-test-repositories.md,S-lr3jwdq2,unlocated:no-match,,,,,2026-10-10
 676e1adf1f66,gitlab/git-test-repositories.md,S-j4qkzgvv,located,,rev-pars;rev;common;directory;pars;dir;link;git,67cdc4c7687e38e3,the top directory of the linked worktree. Path resolution via git rev-parse --git-path uses either $GITDIR or $GITCOMMONDIR depending on the path.,2026-10-10
 676e1adf1f66,gitlab/git-test-repositories.md,S-rscocily,unlocated:no-match,,,,,2026-10-10
@@ -8498,8 +8515,11 @@ f6180b076942,gitlab/git-refs.md,S-xahbgevi,unlocated:no-match,,,,,2026-10-10
 8a054cecf47b,gitlab/git-test-repositories.md,S-tx5lxmr3,located,,miss;git;worktr;worktre,62a5cfb232a7b82b,"Repair worktree's /path/to/worktree/.git file if missing, corrupt, or not pointing at <repo>/worktrees/<id>.",2026-10-13
 8afccdb15bd9,gitlab/git-test-repositories.md,S-dcbs6vpj,unlocated:no-match,,,,,2026-10-10
 8c3087d27585,gitlab/git-test-repositories.md,S-j4qkzgvv,unlocated:no-match,,,,,2026-10-10
+8d439abf05a4,gitlab/git-test-repositories.md,S-j4qkzgvv,located,,annotat;older;miss;prunabl;list,35774dec2b3c15fe,annotate missing worktrees as prunable if they are older than,2026-10-20
 8dbeb41cbebb,gitlab/git-test-repositories.md,S-uea2fdpv,located,,alnum;level;zealous;xdl;merg,b3463ceec5ce2bb6,xmp.level = XDLMERGEZEALOUSALNUM;,2026-10-17
 8dbeb41cbebb,gitlab/git-test-repositories.md,S-v45en2pm,located,,built;built-in;text;xdl;merg,a8513fb3983a32b4,"{ ""text"", ""built-in 3-way text merge"", llxdlmerge },",2026-10-17
+8ee67c5cfab1,gitlab/git-test-repositories.md,S-j4qkzgvv,located,,twic;forc;remov;lock;worktre,b8b54e55c39c1b60,"To remove a locked worktree, specify --force twice.",2026-10-20
+8ee67c5cfab1,gitlab/git-test-repositories.md,S-wyfuoqs5,located,Setup and Config > OPTIONS,refus;forc;remov;worktre,f494ef72d7dd81f3,remove refuses to remove an unclean worktree unless --force is used.,2026-10-20
 90c59b9ff312,gitlab/git-test-repositories.md,S-lnlroicz,located,Setup and Config > OPTIONS,leav;side;favour;resolv;union;both;instead;line,9d203aa431a55d3f,"--union Instead of leaving conflicts in the file, resolve conflicts favouring our (or their or both) side of the lines.",2026-10-10
 93fa1d0590f5,gitlab/git-test-repositories.md,S-3iovxrkf,unlocated:no-match,,,,,2026-10-10
 97235b87aa93,gitlab/git-test-repositories.md,S-3qf7ndi6,unlocated:no-match,,,,,2026-10-15
@@ -8966,19 +8986,34 @@ c2f15a193289,gitlab/pipelines-rules.md,S446,located,Prerequisites,18.1;lab;git;r
 e4490668166a,gitlab/pipelines-rules.md,S453,unlocated:no-match,,,,,2026-10-10
 ff67e03b5f5b,gitlab/pipelines-rules.md,S446,located,,push;tab;branch;sourc;run;pipelin,f95eed4b58a3a826,Push a new commit to the source branch for a merge request. Go to the Pipelines tab in a merge request and select Run pipeline.,2026-10-10
 4a86f3d1b700,gitlab/project-settings-api.md,S-4yvdwu5c,located,Prerequisites > Manage projects > Create a project,visibility;featur;level;project,6221e762f7bdb509,"To set the visibility level of individual project features, see Project feature visibility level",2026-10-14
+19accb99747c,gitlab/protected-branches-tags.md,S-4abgkvor,located,Removals in API v5 > List merge requests,deletion;set;force_remove_source_branch;forc;remov;sourc;branch;true,a2a9868581ce1d0c,the project settings force the deletion of the source branch after merge,2026-10-20
+2c98dc1b9b18,gitlab/protected-branches-tags.md,S-m5gqjzvs,located,frozen_string_literal: true,maintainer;owner;delet;project;protect;branch,c2016918fee1890a,Only a project maintainer or owner can delete a protected branch.,2026-10-20
 2d592a545504,gitlab/protected-branches-tags.md,S446,unlocated:no-match,,,,,2026-10-10
 469aef9099a8,gitlab/protected-branches-tags.md,S-4o7kkuoi,located,,protect;branch;push;mirror,b8e8393a8894b9ae,"When you push a change to the upstream repository, the push mirror receives it in five minutes, or one minute if the setting Only mirror",2026-10-10
+49b5704737c8,gitlab/protected-branches-tags.md,S-7wdbu4r4,located,Source branch changed while it's being removed,deletebranchworker;delet;worker;project;user;sourc;branch;merg,40a12b5cf22783ec,"::Projects::DeleteBranchWorker.new.perform(mergerequest.sourceproject.id, user.id, mergerequest.sourcebranch)",2026-10-20
+49b5704737c8,gitlab/protected-branches-tags.md,S-hxmsaqdu,located,Temporary error when Gitaly cannot lock the branch reference. A retry should solve it.,deleteservic;servic;delet;user;project;branch,0526f5e319c7298e,"::Branches::DeleteService.new(project, user)",2026-10-20
+49b5704737c8,gitlab/protected-branches-tags.md,S-onmjrpyd,located,frozen_string_literal: true,access;dont;repo;push,a335f8a098e75c2d,You dont have push access to repo,2026-10-20
 504bf409fe68,gitlab/protected-branches-tags.md,S445,located,Configure protected tags > Delete a protected tag,maintainer;owner;role;list;delet;allow;creat;tag,bc8563384b7639a5,Be in the Allowed to create list of roles or users for that tag. The Maintainer or Owner role in the project. To delete a,2026-10-10
 50e58bba4089,gitlab/protected-branches-tags.md,S450,unlocated:no-match,,,,,2026-10-10
 58975eec41ec,gitlab/protected-branches-tags.md,S-lu25cylz,unlocated:no-match,,,,,2026-10-10
+5e9fd670c5cf,gitlab/protected-branches-tags.md,S-fi4hv5qp,located,frozen_string_literal: true,destroy;destroy_protected_branch;protect;user;branch,65452fce3601a7f7,"user.can?(:destroyprotectedbranch, container)",2026-10-20
 648beaf244b2,gitlab/protected-branches-tags.md,S444,unlocated:no-match,,,,,2026-10-10
+648f8597548d,gitlab/protected-branches-tags.md,S-hxmsaqdu,located,,avoid;existent;non;permission;rais;error;branch,2ae943f7ca693138,Only want to raise on 400 to avoid permission and non existent branch error,2026-10-20
+648f8597548d,gitlab/protected-branches-tags.md,S-onmjrpyd,located,frozen_string_literal: true,rm_branch;repository;branch,d8d6143c82c3b7f4,"repository.rmbranch(currentuser, branchname, targetsha: targetsha)",2026-10-20
 789a6c073ea7,gitlab/protected-branches-tags.md,S444,located,,default;protect;branch,bb23b4a6e5707fb4,The default branch for your repository is protected by default.,2026-10-10
 8ac9dd95e98b,gitlab/protected-branches-tags.md,S444,located,Protect a branch > Push and merge permissions > Protection strategies by branch types,developer;one;maintainer;allow;push;merg,e843be654b90694c,Set Allowed to merge to Developers + Maintainers. Set Allowed to push and merge to No one (not empty).,2026-10-10
 95e7b4f31c7a,gitlab/protected-branches-tags.md,S445,located,Configure protected tags,individual;premium;ultimat;add;user;allow;group;creat,64186fbe3877d9bd,"In GitLab Premium and Ultimate, you can also add groups or individual users to Allowed to create.",2026-10-10
 9a1fcc979df3,gitlab/protected-branches-tags.md,S-mi3mmhpi,unlocated:no-match,,,,,2026-10-10
 a867a5d1f8bd,gitlab/protected-branches-tags.md,S445,located,,deletion;updat;control;prevent;creat;tags,5745bc9cae373f7a,Allow control over who has permission to create tags. Prevent accidental update or deletion once created.,2026-10-10
+a9bd5bdfc3ca,gitlab/protected-branches-tags.md,S444,located,Protect a branch > Delete protected branches,delet;api;lab;gitlab;git;protect;branch,ef3474c6e6e90b94,You can only delete protected branches with the GitLab UI or API.,2026-10-20
 b2c0dfc9dc8d,gitlab/protected-branches-tags.md,S444,located,Protect a branch > CI/CD on protected branches,jobs;isn;run;whether;sourc;pipelin;creat;user,a292a7df352da6c4,whether or not a user can run CI/CD pipelines and execute actions on jobs. Merge request pipelines run on the source branch or a merge,2026-10-10
 be64655be010,gitlab/protected-branches-tags.md,S445,located,Configure protected tags > Run pipelines on protected tags,jobs;pipelin;run;permission;creat;tags;protect,22952365c14be3bc,The permissions to create protected tags define if a user can: Initiate and run CI/CD pipelines. Execute actions on jobs associated with these tags.,2026-10-10
+c6fce1c867e1,gitlab/protected-branches-tags.md,S444,unlocated:no-match,,,,,2026-10-20
+c6fce1c867e1,gitlab/protected-branches-tags.md,S-7wdbu4r4,unlocated:no-match,,,,,2026-10-20
+c6fce1c867e1,gitlab/protected-branches-tags.md,S-fi4hv5qp,unlocated:no-match,,,,,2026-10-20
+c6fce1c867e1,gitlab/protected-branches-tags.md,S-hxmsaqdu,unlocated:no-match,,,,,2026-10-20
+c6fce1c867e1,gitlab/protected-branches-tags.md,S-m5gqjzvs,unlocated:no-match,,,,,2026-10-20
+cd995fed31a7,gitlab/protected-branches-tags.md,S444,located,Protect a branch > Use wildcard rules,permissiv;most;control;one;rule;branch,17a493fdda67fd12,the most permissive rule controls,2026-10-20
 d6db401f45fa,gitlab/protected-branches-tags.md,S444,located,Protect a branch > Push and merge permissions,directly;one;configur;set;allow;push;merg,a8a2e662b7df0afd,Setting | Purpose | Default behavior (not configured) Allowed to merge | Controls who can merge changes through merge requests and create new protected branches,2026-10-10
 e9964006b583,gitlab/protected-branches-tags.md,S444,located,Protect a branch > Push and merge permissions,through;one;configur;creat;allow;merg;protect;branch,52c624b504de4259,Setting | Purpose | Default behavior (not configured) Allowed to merge | Controls who can merge changes through merge requests and create new protected branches,2026-10-10
 ebd52821966b,gitlab/protected-branches-tags.md,S444,unlocated:no-match,,,,,2026-10-10
@@ -13747,8 +13782,10 @@ dc0ca92d51fb,python/stdlib-urllib-errors.md,S-kudz6dke,unlocated:no-match,,,,,20
 101c180f2336,python/stdlib-windows-portability.md,S-iv3usyoz,unlocated:no-match,,,,,2026-10-18
 101c180f2336,python/stdlib-windows-portability.md,S-kkrnrh7n,located,SetConsoleMode function - Windows Console | Microsoft Learn > Parameters,page;print;stat;whil;off;reach;sequenc;flag,16de7ed0e9ca4aab,"DISABLE\NEWLINE\AUTO\RETURN 0x0008 | When writing with WriteFile or WriteConsole, this adds an additional state to end-of-line wrapping that can delay the cursor move and buffer",2026-10-18
 101c180f2336,python/stdlib-windows-portability.md,S-qvjkxdub,unlocated:no-match,,,,,2026-10-18
+1362548df905,python/stdlib-windows-portability.md,S-elctquww,located,(this is done by normpath).,make;backslash;lowercas;character;slash,1104556505322990,Makes all characters lowercase and all slashes into backslashes.,2026-10-20
 1372d5a7463a,python/stdlib-windows-portability.md,S-ujjrcinq,located,Job Objects - Win32 apps | Microsoft Learn > Managing Processes in Jobs,createprocess;default;child;creat;associat;process;job,67fae0aedbc84ddd,"After a process is associated with a job, by default any child processes it creates using CreateProcess are also associated with the job.",2026-10-10
 13d1074fbd9b,python/stdlib-windows-portability.md,S-ew7mucsg,located,,excl;o_creat;o_excl;creat,c838c5394ac23386,OCREAT OEXCL,2026-10-14
+1a4606faf876,python/stdlib-windows-portability.md,S-zyrhexwo,located,os.path — Common pathname manipulations¶,report;uses;case;operat;system;path,fe9c1ba1cb3f7fd9,"The returned path uses the case reported by the operating system,",2026-10-20
 1ac5ae214581,python/stdlib-windows-portability.md,S-hjy5rcb2,located,IsProcessInJob function (jobapi.h) - Win32 apps | Microsoft Learn > Remarks,cannot;name;queryinformationjobobject;null;object;query;information;handl,2cb69d80923f82e7,"An application cannot obtain a handle to the job object in which it is running unless it has the name of the job object. However,",2026-10-10
 1bf4f99e3db1,python/stdlib-windows-portability.md,S-6bobcclf,located,CreateProcessW function (processthreadsapi.h) - Win32 apps | Microsoft Learn > Parameters,length;limit;max;maximum;createprocessw;character;includ;lpcommandlin,0c2696f4d72f4d59,"The maximum length of this string is 32,767 characters, including the Unicode terminating null character. If lpApplicationName is NULL, the module name portion of lpCommandLine",2026-10-10
 1cc518dc8459,python/stdlib-windows-portability.md,S-ujjrcinq,located,Job Objects - Win32 apps | Microsoft Learn > Managing Processes in Jobs,chang;default;silent;flag;breakaway;child;creat;limit,375bc1e4ad71ff6b,(Child processes created using Win32\Process.Create are not associated with the job.) This default behavior can be changed by setting the extended limit JOB\OBJECT\LIMIT\BREAKAWAY\OK or JOB\OBJECT\LIMIT\SILENT\BREAKAWAY\OK,2026-10-10
@@ -13760,6 +13797,7 @@ dc0ca92d51fb,python/stdlib-urllib-errors.md,S-kudz6dke,unlocated:no-match,,,,,20
 2e3c045e3719,python/stdlib-windows-portability.md,S-qz6kfi4i,located,SetCurrentDirectory function (winbase.h) - Win32 apps | Microsoft Learn > Remarks,colon;driv;each;letter;made;singl;designator;disk,b55a461a34dda75d,"Each process has a single current directory made up of two parts: A disk designator that is either a drive letter followed by a colon,",2026-10-10
 2ef98f7eca87,python/stdlib-windows-portability.md,S-5qbsemqm,located,do a signed reduction modulo 2**sys.hash_info.width,break;line,4fe720f3e8db9120,"Return a list of the lines in the binary sequence, breaking at ASCII line boundaries. This method uses the",2026-10-20
 2ef98f7eca87,python/stdlib-windows-portability.md,S-7ctlvynr,located,,islinebreak;stringlib_islinebreak;defin;stringlib,e3fcd4ff9882ceb5,#define STRINGLIBISLINEBREAK(x) ((x == '\n') || (x == '\r')),2026-10-20
+30fa3a571a1d,python/stdlib-windows-portability.md,S-elctquww,located,,already;unless;strip;prefix,54028203e2e3c134,strip off that prefix unless it was already provided on the original,2026-10-20
 31ba4df98441,python/stdlib-windows-portability.md,S-ttcgrkbl,located,System Error Codes (0-499) (WinError.h) - Win32 apps | Microsoft Learn,0x20;shar;violation;becaus;being;another;access;process,e99a1c025e9f3989,ERROR\SHARING\VIOLATION 32 (0x20) The process cannot access the file because it is being used by another process.,2026-10-10
 35ffab1eaa3b,python/stdlib-windows-portability.md,S-zch3x2zi,located,NO_COLOR > Last updated: 2026-10-12,pull;request,9129b48c285fadec,submitting a pull request,2026-10-18
 3afe97cf7c30,python/stdlib-windows-portability.md,S-j6wqryzp,located,,row;column;position;default;cursor,b46411127caed7f7,"Cursor Position [row;column] (default = [1,1]) (CUP).",2026-10-18
@@ -13772,6 +13810,7 @@ dc0ca92d51fb,python/stdlib-urllib-errors.md,S-kudz6dke,unlocated:no-match,,,,,20
 403465dd38db,python/stdlib-windows-portability.md,S-dabwnzz5,located,,setsid;session;start_new_session;start;new;posix;call;true,79cac77bff5379a1,If startnewsession is true the setsid() system call will be made in the child process prior to the execution of the subprocess. .. availability:: POSIX,2026-10-10
 4125803ce58e,python/stdlib-windows-portability.md,S-kkrnrh7n,located,SetConsoleMode function - Windows Console | Microsoft Learn > Parameters,both;default;output;enabl;mode,79a595672a60f49b,"When a screen buffer is created, both output modes are enabled by default.",2026-10-18
 4125803ce58e,python/stdlib-windows-portability.md,S-qvjkxdub,located,Console Virtual Terminal Sequences - Windows Console | Microsoft Learn,suggest;sampl;way;enabl,211b63d07f673e4f,A sample of the suggested way to enable virtual terminal behaviors is included at the end of this document.,2026-10-18
+421ed8293cdb,python/stdlib-windows-portability.md,S-5ck3iec5,located,"Naming Files, Paths, and Namespaces - Win32 apps | Microsoft Learn > File and Directory Names > Naming Conventions",case-insensitiv;insensitiv;letter;case;driv;volum,545baab21b19eafe,Volume designators (drive letters) are similarly case-insensitive.,2026-10-20
 435ad9b80880,python/stdlib-windows-portability.md,S-f5bnvamj,unlocated:no-match,,,,,2026-10-10
 458d3c95b8f1,python/stdlib-windows-portability.md,S-e4zz24dq,located,Command prompt line string limitation - Windows Client | Microsoft Learn > More information > Examples,even;ignor;longer;though;win32;inherit;parameter;character,40b4a82adf1ec26e,"In a batch file, the total length of the following command line after you expand the parameters can't contain more than 8191 characters: ExecutableFile.exe parameter1",2026-10-10
 46151bc688e3,python/stdlib-windows-portability.md,S-j6wqryzp,located,,saved;eras;line;xterm,f6b9fdf4f4e0cfb3,"Erase Saved Lines, xterm.",2026-10-18
@@ -13794,10 +13833,14 @@ dc0ca92d51fb,python/stdlib-urllib-errors.md,S-kudz6dke,unlocated:no-match,,,,,20
 5ce2042281ca,python/stdlib-windows-portability.md,S-sjuwcuhk,unlocated:no-match,,,,,2026-10-12
 6648c8869eb9,python/stdlib-windows-portability.md,S-oqrlzkwe,located,CreateHardLinkW function (winbase.h) - Win32 apps | Microsoft Learn > Remarks,server;support;window;function;creat;hard;link,0822071be3f761ab,"Symbolic link behavior-If the path points to a symbolic link, the function creates a hard link to the symbolic link. In Windows 8 and Windows",2026-10-10
 6bc94643544b,python/stdlib-windows-portability.md,S-dabwnzz5,located,,3.1;process_group;group;posix;process,c3a67b2d0de60f11,.. availability:: POSIX .. versionchanged:: 3.11 processgroup was added.,2026-10-10
+6ef1adfeddd7,python/stdlib-windows-portability.md,S1591,located,"Maximum Path Length Limitation - Win32 apps | Microsoft Learn > Enable long paths in Windows 10, version 1607, and later",app;opt;opt-in;behavior;new;must,5fff5d494b20996e,your app must opt-in to the new behavior,2026-10-20
 71c39692a049,python/stdlib-windows-portability.md,S-5qbsemqm,located,do a signed reduction modulo 2**sys.hash_info.width,superset;universal;boundary;newlin,afbf5dd85aa00f01,"In particular, the boundaries are a superset of",2026-10-18
 71f0f18d8ba0,python/stdlib-windows-portability.md,S-dabwnzz5,unlocated:no-match,,,,,2026-10-10
 7a3195cba863,python/stdlib-windows-portability.md,S-ujjrcinq,unlocated:no-match,,,,,2026-10-10
 7a3195cba863,python/stdlib-windows-portability.md,S-ymqlfpgy,located,Process Creation Flags (WinBase.h) - Win32 apps | Microsoft Learn > Flags,breakaway;chang;job;limit;object;must;child;detach,b1fdcf3827912ec6,- CREATE\BREAKAWAY\FROM\JOB<br>- 0x01000000 | The child processes of a process associated with a job are not associated with the job. If the calling process is,2026-10-10
+7cb1cc6046e9,python/stdlib-windows-portability.md,S-5ck3iec5,unlocated:no-match,,,,,2026-10-20
+7cb1cc6046e9,python/stdlib-windows-portability.md,S-elctquww,unlocated:no-match,,,,,2026-10-20
+7cb1cc6046e9,python/stdlib-windows-portability.md,S-zyrhexwo,unlocated:no-match,,,,,2026-10-20
 801cfaf7f9c4,python/stdlib-windows-portability.md,S-zch3x2zi,located,NO_COLOR > Frequently Asked Questions,care;no_color;color,d282d61d47496bc7,does not need to care about NOCOLOR,2026-10-18
 804f4f510217,python/stdlib-windows-portability.md,S-qo63gfo7,located,errno — Standard errno system symbols¶,cross;cross-devic;errno.exdev;exdev;link;devic;errno,bbbacbec30995b0e,errno.EXDEV¶ Cross-device link,2026-10-10
 814d2ce12f3d,python/stdlib-windows-portability.md,S-zch3x2zi,located,NO_COLOR > Last updated: 2026-10-12,empty;present;regardless;valu;addition;check;prevent;variabl,a3370646e06bd198,when present and not an empty string (regardless of its value),2026-10-18
@@ -13820,8 +13863,10 @@ dc0ca92d51fb,python/stdlib-urllib-errors.md,S-kudz6dke,unlocated:no-match,,,,,20
 99c781ecb282,python/stdlib-windows-portability.md,S-qz6kfi4i,unlocated:no-match,,,,,2026-10-15
 99c781ecb282,python/stdlib-windows-portability.md,S-vfd5kpka,unlocated:no-match,,,,,2026-10-15
 99d886ec74a4,python/stdlib-windows-portability.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-14
+9a5162c36048,python/stdlib-windows-portability.md,S-zyrhexwo,located,os.path — Common pathname manipulations¶,argument;both;refer;true;directory;file;pathnam;return,2011fffdc8aae6e1,Return True if both pathname arguments refer to the same file or directory.,2026-10-20
 9ae0feeb1da2,python/stdlib-windows-portability.md,S-oqrlzkwe,located,CreateHardLinkW function (winbase.h) - Win32 apps | Microsoft Learn > Return value,getlasterror;last;zero;return;error;creat;hard;link,c1b5529d42e2c45b,"If the function fails, the return value is zero (0). To get extended error information, call GetLastError. The maximum number of hard links that can",2026-10-10
 9ef4f42a9a05,python/stdlib-windows-portability.md,S-5brdhqgo,located,os — Miscellaneous operating system interfaces¶ > File Descriptor Operations¶,5.3;errno.exdev;exdev;older;resid;errno;otherwis;kernel,c0a4ec1d6a9c1140,"In Linux kernel older than 5.3, the files pointed to by src and dst must reside in the same filesystem, otherwise an OSError is raised",2026-10-10
+9f13dcc130ca,python/stdlib-windows-portability.md,S1591,located,Maximum Path Length Limitation - Win32 apps | Microsoft Learn,maximum;api;max;character;window;path,37f97042984d5652,which is defined as 260 characters,2026-10-20
 a32f76a5dfb5,python/stdlib-windows-portability.md,S-5brdhqgo,unlocated:no-match,,,,,2026-10-10
 a32f76a5dfb5,python/stdlib-windows-portability.md,S-jwv5eevl,unlocated:no-match,,,,,2026-10-10
 a6a57fddb89c,python/stdlib-windows-portability.md,S-qvjkxdub,located,Console Virtual Terminal Sequences - Windows Console | Microsoft Learn > Text Formatting,compet;precedenc;taking;right-most;most;option;right,c94836b04a07e8c9,Applying competing formatting options will result in the right-most option taking precedence.,2026-10-18
@@ -13848,7 +13893,9 @@ d56521463bda,python/stdlib-windows-portability.md,S-ntbllsvy,unlocated:no-match,
 d7a42ce41019,python/stdlib-windows-portability.md,S-6bobcclf,unlocated:no-match,,,,,2026-10-10
 d7a42ce41019,python/stdlib-windows-portability.md,S-dabwnzz5,unlocated:no-match,,,,,2026-10-10
 d7a42ce41019,python/stdlib-windows-portability.md,S-e4zz24dq,unlocated:no-match,,,,,2026-10-10
+d7c6b72c72f1,python/stdlib-windows-portability.md,S-zyrhexwo,located,os.path — Common pathname manipulations¶,forward;slash,a05a043f3e200f45,"pathname to lowercase, and also convert forward slashes to backward slashes.",2026-10-20
 d8f968b5eb03,python/stdlib-windows-portability.md,S-dabwnzz5,unlocated:no-match,,,,,2026-10-10
+daef97ec8978,python/stdlib-windows-portability.md,S1591,located,Maximum Path Length Limitation - Win32 apps | Microsoft Learn,server;shar;itself;part;unc;prefix;path,ccb9a0e5af294831,"For example, ""\\?\UNC\server\share"", where ""server"" is the name of the computer and ""share"" is the name of the shared folder. These prefixes are not used",2026-10-20
 de7bd78973b9,python/stdlib-windows-portability.md,S743,unlocated:no-match,,,,,2026-10-12
 de7bd78973b9,python/stdlib-windows-portability.md,S-hjy5rcb2,unlocated:no-match,,,,,2026-10-10
 de7bd78973b9,python/stdlib-windows-portability.md,S-obrkrr52,unlocated:no-match,,,,,2026-10-10

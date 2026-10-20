@@ -4333,3 +4333,44 @@ _Agent: kb-research_
 - See python/process-orphans-and-cwd.md, python/ps-process-cpu.md, python/stdlib-windows-portability.md, windows/process-parent-and-command-line.md.
 
 _Agent: kb-research_
+
+## QK-gitlab-merged-source-branch-protected-pattern. Does GitLab keep a merged request's source branch when the branch matches a protected pattern (`code/*`)?
+- A wildcard rule protects every branch whose name matches, and Maintainers and Owners can delete a protected branch in the web interface or the API, not with local Git. [DOC S444]
+- A protected branch's deletion by push is refused unless the user may delete protected branches and the update came from the web; the default branch can never be deleted. [CODE S-m5gqjzvs, S-fi4hv5qp]
+- The post-merge deletion runs as the user who merged, through `Branches::DeleteService`, and ends silently on a refusal that is not a `400`; none of the three files tests whether the branch is protected. [CODE S-7wdbu4r4, S-hxmsaqdu, S-onmjrpyd]
+- `force_remove_source_branch` and `should_remove_source_branch` in the API report a setting, not a deletion. [DOC S-4abgkvor]
+- Conclusion: GitLab does not exempt a protected-pattern branch from the post-merge delete; the delete runs under the merging account's rights, so an account below Maintainer leaves the branch with no error on the request, which fits a merged request that asked for removal and whose `code/*` branch remains. "Protected branches cannot be deleted" is not what the page says. [DER S444, S-m5gqjzvs, S-fi4hv5qp, S-hxmsaqdu]
+- Open: whether the post-merge delete passes the web-interface condition, and where `destroy_protected_branch` is granted, are not read; a run with a Maintainer and a Developer token settles it. [UNK]
+- See gitlab/protected-branches-tags.md, gitlab/project-settings-api.md.
+
+_Agent: kb-research_
+
+## QK-windows-refuse-rename-directory-process-uses. What refuses a rename or removal of a directory a process uses on Windows, and how do `\\?\` long paths and drive-letter case compare with `os.path.normcase` and `realpath`?
+- The current directory of a running process is locked: it cannot be deleted, moved or renamed; a child started without a directory inherits the parent's, and a recorded rename of a worktree held that way raised `PermissionError` `winerror` 32. [DOC S-qz6kfi4i, S-6bobcclf]
+- The path maximum is 260 characters; `\\?\` lifts it to about 32,767 and turns off "/" conversion; the opt-in without the prefix needs `LongPathsEnabled` and a `longPathAware` manifest. [DOC S1591]
+- Drive letters and names are case-insensitive; `normcase` lowercases and flips slashes as pure string work; `realpath` resolves links, junctions (3.8+) and 8.3 names, returns the disk's case with a capital drive letter and strips the `\\?\` prefix it added; `samefile` compares device and index. [DOC S-5ck3iec5, S-zyrhexwo; CODE S-elctquww]
+- Conclusion: a tool that guards a directory compares `samefile` or `normcase(realpath())` of both paths, never `normcase` alone, and treats a holder process as the reason for a refused rename, not the path spelling. [DER S-zyrhexwo, S-elctquww, S-qz6kfi4i]
+- Open: whether `python.exe` is `longPathAware` is not read. [UNK]
+- See python/stdlib-windows-portability.md.
+
+_Agent: kb-research_
+
+## QK-install-scheduled-run-outside-agent-sessions. How is a scheduled run installed outside agent sessions: cron, launchd `StartInterval`, Task Scheduler (`schtasks`)?
+- Linux cron checks its entries every minute and `*/35` in the minute field fires twice an hour. [DOC S-rmzenq4r]
+- macOS prefers a `launchd` job (one file each) to cron and warns against adding a cron job programmatically; `StartInterval` runs every N seconds and misses a firing while asleep or while the job runs, `StartCalendarInterval` runs at wake and coalesces missed times. [DOC S-qne4hqox; COMMUNITY S-nrlbtzhc]
+- `launchctl bootstrap gui/<uid> <plist>` loads a job and `bootout` removes it. [COMMUNITY S-65kz6itt]
+- `schtasks /create /sc minute /mo N /tn NAME /tr PROGRAM` makes a recurring task; `/ru`, `/rp`, `/np` and `/it` choose the account and whether the user must be logged on. [DOC S-n7cnr4i5]
+- Conclusion: one artefact per system, none of which replays every missed run, so the job is idempotent; a password on a `schtasks` command line is a secret in argv. [DER S-rmzenq4r, S-qne4hqox, S-nrlbtzhc, S-n7cnr4i5]
+- Open: a `schtasks /it` or `/np` task while nobody is logged on and a `StartInterval` job after a long sleep are not run here. [UNK]
+- See agents/headless-agent-runtimes.md.
+
+_Agent: kb-research_
+
+## QK-git-worktree-remove-prune-lock-porcelain. What do `git worktree remove`, `prune` and `lock` do, and what do `locked` and `prunable` mean in the porcelain list?
+- `remove` refuses an unclean worktree without `--force` and a locked one without `--force` twice; the main worktree cannot be removed. [DOC S-wyfuoqs5]
+- `lock` writes a `locked` file in the entry directory and keeps the entry from being pruned, moved or deleted; `prune` drops the entries of missing worktrees at once unless locked. [DOC S-j4qkzgvv; CODE S-ali5r4n7, S-tx5lxmr3]
+- `list --porcelain` prints `worktree`, `HEAD`, `branch` or `detached`, and the labels `locked [reason]` and `prunable [reason]` only when true. [DOC S-j4qkzgvv]
+- Conclusion: a cleanup reads the porcelain list, leaves `locked` worktrees and treats `prunable` as an entry whose directory is gone: `prune` removes no directory. [DER S-j4qkzgvv, S-wyfuoqs5]
+- See gitlab/git-test-repositories.md.
+
+_Agent: kb-research_

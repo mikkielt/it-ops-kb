@@ -32,7 +32,7 @@ agents/doc-lookup-sources,P2,complete,agents/doc-lookup-sources.md;agents/doc-lo
 agents/docs-maintenance-agents,P2,complete,agents/docs-maintenance-agents.md,30
 agents/genai-telemetry,P2,complete,agents/genai-telemetry.md,5
 agents/github-copilot-admin,P2,complete,agents/github-copilot-admin.md,12
-agents/headless-agent-runtimes,P2,partial,agents/headless-agent-runtimes.md,28
+agents/headless-agent-runtimes,P2,partial,agents/headless-agent-runtimes.md,33
 agents/hybrid-retrieval,P2,complete,agents/hybrid-retrieval.md,56
 agents/mcp-server-lifecycle,P2,complete,agents/mcp-server-lifecycle.md,5
 agents/microsoft-agent-framework,P2,complete,agents/microsoft-agent-framework.md,21
@@ -191,7 +191,7 @@ entra/pim-and-governance,P2,complete,entra/pim-and-governance.md,16
 gitlab/codeowners,P0,complete,gitlab/codeowners.md,4
 gitlab/mr-approvals,P0,complete,gitlab/mr-approvals.md,7
 gitlab/pipelines-rules,P0,partial,gitlab/pipelines-rules.md,7
-gitlab/protected-branches-tags,P0,complete,gitlab/protected-branches-tags.md,9
+gitlab/protected-branches-tags,P0,partial,gitlab/protected-branches-tags.md,15
 gitlab/variables,P0,complete,gitlab/variables.md,2
 gitlab/automated-merge-requests,P3,complete,gitlab/automated-merge-requests.md,52
 gitlab/commit-signing-and-provenance,P3,partial,gitlab/commit-signing-and-provenance.md,34
@@ -337,7 +337,7 @@ python/stdlib-cprofile-pstats,P3,partial,python/stdlib-cprofile-pstats.md,4
 python/stdlib-datetime-iso-week,P3,complete,python/stdlib-datetime-iso-week.md,1
 python/stdlib-os-loadavg,P3,partial,python/stdlib-os-loadavg.md,7
 python/stdlib-urllib-errors,P3,partial,python/stdlib-urllib-errors.md,5
-python/stdlib-windows-portability,P3,partial,python/stdlib-windows-portability.md,36
+python/stdlib-windows-portability,P3,partial,python/stdlib-windows-portability.md,40
 python/testcontainers-postgres-pytest,P3,partial,python/testcontainers-postgres-pytest.md,15
 python/typer-cli,P3,partial,python/typer-cli.md,16
 python/uv-windows-install,P3,partial,python/uv-windows-install.md,3

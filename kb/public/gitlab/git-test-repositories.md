@@ -246,6 +246,10 @@ This repository's own test suite, which `_tools/tests.py` runs, builds such repo
   S-tx5lxmr3: worktree.c#should_prune_worktree]
 - A working tree deleted without `git worktree remove` has its administrative files "eventually" removed
   automatically (see `gc.worktreePruneExpire`), or sooner by `git worktree prune`. [DOC S-j4qkzgvv]
+- `git worktree lock` adds a file named `locked` to the worktree's entry directory (its content is the reason in plain text), which keeps the entry from being pruned and, in the command's own words, "also prevents it from being moved or deleted"; `unlock` allows it again. [DOC S-j4qkzgvv]
+- `git worktree list --porcelain` prints one block for each worktree: `worktree <path>`, `HEAD <sha>`, then `branch refs/heads/<name>` or `detached`, and, only when true, the labels `locked` (with its reason after a space when there is one) and `prunable` (with its reason, for example "gitdir file points to non-existent location"); an "unusual" character in a lock reason such as a newline is escaped and the reason quoted unless `-z` is used. [DOC S-j4qkzgvv]
+- The plain `list` marks the same two states after the branch (`locked`, `prunable`; `-v` puts a reason on a line of its own), and `list --expire <time>` annotates a missing worktree as prunable only when it is older than that time. [DOC S-j4qkzgvv]
+- So a cleanup that decides from the porcelain list which worktrees are finished reads `locked` as a worktree its owner asked git to protect and leaves it (removing one takes `--force` twice, so an unforced `remove` of a locked worktree is refused by git itself), and reads `prunable` as an entry whose directory is already gone: `git worktree prune` drops that entry and deletes no directory. [DER S-j4qkzgvv, S-wyfuoqs5: the lock, remove and prune texts above]
 - Git lists every `worktrees/<id>` entry whose `gitdir` file is readable without testing that the path exists,
   and the branch check reads that entry's own `HEAD`, so an entry left by a hand-deleted directory still holds
   its branch: `git worktree add <other-path> <branch>` dies "'<branch>' is already used by worktree at '<old
