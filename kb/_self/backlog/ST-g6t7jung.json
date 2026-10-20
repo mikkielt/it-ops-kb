@@ -2,7 +2,7 @@
   "id": "ST-g6t7jung",
   "kind": "story",
   "title": "The named unanchored facts are anchored to their sources or reworded",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-2rjhs7se",
   "priority": "P3",
   "rank": 0,
@@ -39,5 +39,7 @@
   "depends_on": [
     "ST-sj65ovxr"
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): folds BG-bwyr7oup, BG-3tvxhg3t, ST-gympyz6m, ST-apmawhii, BG-l7u2rtzh, ST-6745y7as, ST-sjzxpgr7 (all failed on 2026-10-19). A fact whose source does not support it is put to the operator as a blocking gate, never deleted by the worker."
+  "notes": "operator request 2026-10-19 (housekeeping batch): folds BG-bwyr7oup, BG-3tvxhg3t, ST-gympyz6m, ST-apmawhii, BG-l7u2rtzh, ST-6745y7as, ST-sjzxpgr7 (all failed on 2026-10-19). A fact whose source does not support it is put to the operator as a blocking gate, never deleted by the worker.",
+  "claimed_by": "orch-r105",
+  "operator": "op-f618a13e"
 }
