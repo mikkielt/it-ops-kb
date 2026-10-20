@@ -1,0 +1,17 @@
+{
+  "id": "BG-m4avekie",
+  "kind": "bug",
+  "title": "A change to a kbcommon.SECRETS shape reads the verdicts the old shape cached: the publish scan's cache key holds SCAN_FORM, which no one bumps",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbpublic.scan_form, the leak scan's cache key, holds a digest of kbcommon.SECRETS beside SCAN_FORM and the registry's private patterns, so a change to a secret shape (BG-3vnu37rq narrowed the armor line to one with key material after it) reads no verdict cached under the old shape, and the repro exits 0",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, \"_tools\"); import hashlib, kbcommon, kbpublic; sys.exit(0 if hashlib.sha256(kbcommon.secrets_rx().encode()).hexdigest()[:12] in kbpublic.scan_form() else 1)"
+    ]
+  }
+}
