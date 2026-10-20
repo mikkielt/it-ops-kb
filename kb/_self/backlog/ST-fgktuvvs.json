@@ -29,6 +29,25 @@
   "touches": [
     "kb/_self/monitoring.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the new monitoring.md section word the SIGNALS registry, which otel/kbmon_otel.py does not hold yet?",
+      "options": [
+        "state today's state",
+        "write it as present"
+      ],
+      "recommendation": "state today's state",
+      "do": {
+        "state today's state": "ST-fgktuvvs",
+        "write it as present": "ST-fgktuvvs"
+      },
+      "class": "design",
+      "answer": "state today's state",
+      "by": "agent"
+    }
+  ],
   "notes": "operator request 2026-10-19 (housekeeping batch): where additional OTel factories and consumers belong. Layout on 2026-10-19: otel/ (SDK, uv-pinned: kbmon_otel.py runner, otel_logs.py, otel_spans.py, otel_prom.py), _tools/ stdlib (mon_export.py points, mon_events.py events, ql_export.py OTLP-JSON lines, kbotel.py receiver of Claude Code's events). Premise: the check fails (no such section).",
   "claimed_by": "orch-r109",
   "operator": "op-f618a13e"
