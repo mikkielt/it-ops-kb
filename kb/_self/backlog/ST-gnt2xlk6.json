@@ -34,6 +34,42 @@
   "depends_on": [
     "ST-efcbmm3y"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How are kb_docs commands named and which options of querylog.py and kb_docs commands do the tools take?",
+      "options": [
+        "kb_docs commands stale, section, map, check (check.py) and eval (rag.py eval); each command takes only options on a closed list, so digest --hook, --store and eval --write-shares stay on the command line",
+        "free argv after the command, with a list of refused options"
+      ],
+      "recommendation": "kb_docs commands stale, section, map, check (check.py) and eval (rag.py eval); each command takes only options on a closed list, so digest --hook, --store and eval --write-shares stay on the command line",
+      "do": {
+        "kb_docs commands stale, section, map, check (check.py) and eval (rag.py eval); each command takes only options on a closed list, so digest --hook, --store and eval --write-shares stay on the command line": "ST-gnt2xlk6",
+        "free argv after the command, with a list of refused options": "ST-gnt2xlk6"
+      },
+      "class": "querylog",
+      "answer": "kb_docs commands stale, section, map, check (check.py) and eval (rag.py eval); each command takes only options on a closed list, so digest --hook, --store and eval --write-shares stay on the command line",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How do the two tools run the scripts and return a finding exit?",
+      "options": [
+        "a subprocess per call; stale, check and eval answer their text with (exit 1) last when they exit 1, other non-zero exits are tool errors; output is redacted and cut at 60000 characters",
+        "in-process like kb_backlog; every non-zero exit is a tool error"
+      ],
+      "recommendation": "a subprocess per call; stale, check and eval answer their text with (exit 1) last when they exit 1, other non-zero exits are tool errors; output is redacted and cut at 60000 characters",
+      "do": {
+        "a subprocess per call; stale, check and eval answer their text with (exit 1) last when they exit 1, other non-zero exits are tool errors; output is redacted and cut at 60000 characters": "ST-gnt2xlk6",
+        "in-process like kb_backlog; every non-zero exit is a tool error": "ST-gnt2xlk6"
+      },
+      "class": "querylog",
+      "answer": "a subprocess per call; stale, check and eval answer their text with (exit 1) last when they exit 1, other non-zero exits are tool errors; output is redacted and cut at 60000 characters",
+      "by": "agent"
+    }
+  ],
   "notes": "operator request 2026-10-19 (housekeeping batch): kbmon's snapshot is served by the kb_monitor_status tool SP-dulvwwjc adds: extend that tool, add no second one. Premise: the check fails.",
   "claimed_by": "orch-r110",
   "operator": "op-f618a13e"
