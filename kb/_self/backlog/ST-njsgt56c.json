@@ -54,6 +54,23 @@
       "class": "querylog",
       "answer": "a label s- and the first six hex characters of the SHA-256 of the session id, made before redaction so the raw id is never printed",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which coord values get the session label, and where do session claims sit in the coord status answer? (the goal names session keys, holders, event session fields and the status answer)",
+      "options": [
+        "label a whole-GUID value of the holder, operator and session fields, the id of a session/ key and those words in the coord panel's digest lines; list session claims first in the status answer",
+        "label only the holder and session fields; leave claim order by key"
+      ],
+      "recommendation": "label a whole-GUID value of the holder, operator and session fields, the id of a session/ key and those words in the coord panel's digest lines; list session claims first in the status answer",
+      "do": {
+        "label a whole-GUID value of the holder, operator and session fields, the id of a session/ key and those words in the coord panel's digest lines; list session claims first in the status answer": "ST-njsgt56c",
+        "label only the holder and session fields; leave claim order by key": "ST-njsgt56c"
+      },
+      "class": "design",
+      "answer": "label a whole-GUID value of the holder, operator and session fields, the id of a session/ key and those words in the coord panel's digest lines; list session claims first in the status answer",
+      "by": "agent"
     }
   ],
   "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: the check plants two session leases in a fresh coord store; both holders read 00000000-0000-0000-0000-000000000000 in --json and --status coord (10 all-zero ids), so the two sessions cannot be told apart; 9 of the 14 planted secret shapes enter coord (the rest are refused by coord's id charset) and none leaks today.",
