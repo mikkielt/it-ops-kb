@@ -4,8 +4,10 @@
 The kb tools are stdlib-only Python; only the tests need pytest (uv installs pyproject.toml's dev group from uv.lock).
 What a new container lacks is the local git config (commit hooks), the local-scope MCP servers (kb and the docs
 servers), the test environment and the context of earlier sessions. Idempotent, non-interactive, a few seconds.
-Outside a cloud session (CLAUDE_CODE_REMOTE is not "true") it does nothing. Run through `_tools/kbpy`, like every
-hook, so it finds the interpreter on every OS; `--test` runs it as if in a cloud session.
+Outside a cloud session (CLAUDE_CODE_REMOTE is not "true") it prints only the leftovers line (`backlog.py tidy
+--report`: the recorded worktrees, branches, bench sandboxes and scratch directories that tidy would remove, with their
+bytes), which reads and removes nothing. Run through `_tools/kbpy`, like every hook, so it finds the interpreter on
+every OS; `--test` runs it as if in a cloud session.
 """
 import os, shutil, subprocess, sys
 
@@ -28,6 +30,13 @@ def last_line(text):
     return lines[-1] if lines else ""
 
 
+def leftovers():
+    """The one line of `backlog.py tidy --report` (it reads only), or None when it did not print one."""
+    rc, out = run([sys.executable, "_tools/backlog.py", "tidy", "--report"], timeout=10)
+    line = last_line(out)
+    return line if rc == 0 and line.startswith("tidy report:") else None
+
+
 def report():
     if sys.version_info < (3, 11):
         return ["it-ops-kb: python3 3.11+ is missing; the kb tools cannot run."]
@@ -46,6 +55,7 @@ def report():
     rc, counts = run(["git", "rev-list", "--left-right", "--count", "FETCH_HEAD...HEAD"])
     parts = counts.split()
     sync = f"{parts[1]} ahead, {parts[0]} behind origin/main" if rc == 0 and len(parts) == 2 else "origin/main not fetched"
+    left = leftovers()
     return [
         "it-ops-kb session setup:",
         f"- commit hooks: {hooks}",
@@ -53,6 +63,7 @@ def report():
         f"- check.py: {check}",
         f"- test tools: {deps}",
         f"- branch {branch} at {head} ({sync})",
+        *([f"- {left}"] if left else []),
         f"- The open work is the backlog ({SELF}/backlog.md; the horizon hook printed its state). Before any change run python3 _tools/selfdoc.py section maintaining \"Conduct for changes\"; rules: python3 _tools/rag.py pack --root _self \"<question>\" (a skill step's set: --set NAME); {SELF}/README.md",
         "  maps the kb's own docs (content rules, tools, git, plugin, design).",
         "- The gate is python3 _tools/kbgit.py sync --push: it runs only what the changed paths can break (the checks each",
@@ -66,6 +77,10 @@ def report():
 
 def main(argv):
     if os.environ.get("CLAUDE_CODE_REMOTE") != "true" and "--test" not in argv:
+        left = leftovers() if sys.version_info >= (3, 11) else None
+        if left:
+            sys.stdout.buffer.write((left + "\n").encode("utf-8"))
+            sys.stdout.flush()
         return 0
     out = "".join(line + "\n" for line in report())
     sys.stdout.buffer.write(out.encode("utf-8"))

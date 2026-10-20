@@ -5,6 +5,7 @@ on whether a leftover may go (kb/_self/backlog.md, Leftovers; kb/_self/tools.md)
   own PID  --class process [--item ID] [--sprint SP] [--session ID]                   record the process
   own TARGET --class C --drop                                                          clear the record
   tidy [--apply] [--json] [--older-than HOURS] [--disk-free-gb GB]                     list the recorded leftovers
+  tidy --report                                                                        one line of counts and bytes a class
 
 A record is one coord key, `own/<class>/<digest>`, whose value is a JSON object: the `path` (normalised) or the `pid`, the
 class, the item, sprint and session when given, and `at`, the time it was recorded in seconds since the epoch. The digest is the first 16
@@ -30,11 +31,20 @@ limit is waived. --apply removes the `remove` rows with `git worktree remove` (n
 to rename is kept and reported), a branch only once `git cherry` finds its commits on the integration main, then `git
 worktree prune`. Exit codes of `tidy`: 0 listed, or removed all it planned; 1 an --apply removal failed or a claim appeared
 on a candidate; 2 a refusal (bad arguments, no integration main, an unreadable coord store); 3 the coord store stayed locked.
+`tidy --report` reads only and prints one line, the count that would go and the bytes it frees, and the count kept, for each
+class; the bytes of all the rows share a `REPORT_SECONDS` walk, the figure `or more` past it, so the line comes within seconds
+on a clone with many worktrees (the SessionStart hook prints it and removes nothing).
+
+`land` and `close` call the two functions below for the leftovers of their own item or sprint, as processes of their own: `land_leftovers`
+removes the landed item's recorded scratch directory (and the records of its worktrees git no longer lists), `close_leftovers`
+the closed sprint's recorded scratch directories and worker worktrees, each with `safe_to_remove`'s verdict and the age limit
+waived. The orchestrator's and the reviewer's worktrees (a record with a sprint and no item) stay for `tidy --apply`.
 
 Standard library only; imports `bl_base`, `bl_close` and `bl_cli`, never `backlog` (a layer rule). It registers its own
 subcommands when imported, so `backlog.py` carries only the import."""
 import contextlib
 import hashlib
+import io
 import json
 import os
 import re
@@ -61,6 +71,7 @@ DRIVE = re.compile(r"[A-Za-z]:")
 AGE_HOURS = 4  # --older-than: how long a leftover's last activity must be past
 DISK_FREE_GB = 20  # --disk-free-gb: free space below it is disk pressure
 BYTES_SECONDS = 2  # the longest walk that measures what one candidate frees
+REPORT_SECONDS = 4  # the longest walk that measures what all the candidates of `tidy --report` free
 TIDY_PREFIXES = (WORK_PREFIX, AGENT_BRANCH + WORKER_NAME, "orch/")  # the local branches tidy lists
 TIDY_CLASSES = ("worktree", "branch", "sandbox", "scratch")
 FINISHED = ("done", "dropped")
@@ -462,19 +473,25 @@ def row_of(cand, verdict, reason):
     return row
 
 
-def plan(snap, state):
+def plan(snap, state, only=None, budget=None):
     """The rows of every candidate with its verdict, reason and the bytes it frees; the bench sandboxes first when the
-    disk is under pressure, else by class. A worktree judged `remove` is no longer a checkout for its branch."""
+    disk is under pressure, else by class. A worktree judged `remove` is no longer a checkout for its branch. ONLY, a
+    predicate on a candidate, keeps the rows it accepts; BUDGET is the seconds all the walks of one plan share (the
+    figure of a row the budget did not reach is 0, `approximate`)."""
     cands = candidates(snap, state)
+    deadline = None if budget is None else time.monotonic() + budget
     rows = []
     for cls in TIDY_CLASSES:
         for cand in cands[cls]:
+            if only is not None and not only(cand):
+                continue
             verdict, reason = safe_to_remove(cand, snap, state)
             row = row_of(cand, verdict, reason)
             if verdict == REMOVE and cls == "worktree":
                 snap["planned"].add(cand["path"])
             if verdict == REMOVE and cls != "branch" and os.path.isdir(cand["path"]):
-                row["bytes"], approx = tree_bytes(cand["path"])
+                left = BYTES_SECONDS if deadline is None else min(BYTES_SECONDS, deadline - time.monotonic())
+                row["bytes"], approx = tree_bytes(cand["path"], left) if left > 0 else (0, True)
                 if approx:
                     row["approximate"] = True
             if cls == "sandbox" and "disk pressure" in reason:
@@ -565,17 +582,81 @@ def apply_rows(snap, rows, say_to):
     return failed
 
 
-def summary_lines(rows, applied):
-    """One line a class: how many rows go (were removed, with --apply) and the bytes they free, nested paths counted once."""
-    lines = []
+def class_counts(rows, applied):
+    """[(class, rows that go, rows kept, bytes they free, whether the bytes are a floor)] for each of TIDY_CLASSES: the rows
+    removed (with --apply) or that would go, and the bytes of them, nested paths counted once."""
+    out = []
     for cls in TIDY_CLASSES:
         mine = [r for r in rows if r["class"] == cls]
         gone = [r for r in mine if (r.get("result") == "removed" if applied else r["verdict"] == REMOVE)]
         paths = [r["path"] for r in gone if "path" in r]
-        size = sum(r["bytes"] for r in gone if not any(o != r.get("path") and inside(o, r.get("path", "")) for o in paths))
-        lines.append(f"tidy: {cls}: {'removed' if applied else 'would remove'} {len(gone)}"
-                     f"{f' ({fmt_size(size)})' if size else ''}, kept {len(mine) - len(gone)}")
-    return lines
+        top = [r for r in gone if not any(o != r.get("path") and inside(o, r.get("path", "")) for o in paths)]
+        out.append((cls, len(gone), len(mine) - len(gone), sum(r["bytes"] for r in top),
+                    any(r.get("approximate") for r in top)))
+    return out
+
+
+def summary_lines(rows, applied):
+    """One line a class: how many rows go (were removed, with --apply) and the bytes they free, nested paths counted once."""
+    return [f"tidy: {cls}: {'removed' if applied else 'would remove'} {n}{f' ({fmt_size(size)})' if size else ''}, kept {kept}"
+            for cls, n, kept, size, _ in class_counts(rows, applied)]
+
+
+def report_line(rows):
+    """The one line of `tidy --report`: for each class the count that would go, the bytes it frees and the count kept."""
+    parts = []
+    for cls, n, kept, size, approx in class_counts(rows, False):
+        freed = f" ({fmt_size(size)}{' or more' if approx else ''})" if size or approx else ""
+        parts.append(f"{cls}: {n} would go{freed}, {kept} kept")
+    return "tidy report: " + "; ".join(parts)
+
+
+def apply_subset(bl, who, only, spare=None, items=None):
+    """Remove, as `tidy --apply` does with `safe_to_remove`'s verdict and the age limit waived, the candidates ONLY accepts,
+    except the ones SPARE accepts, which are said as left. ITEMS sets item statuses over the clone's (an item `land` just
+    landed is done). Each result is said as a `WHO:` line. Returns the number kept. Never raises: what goes wrong is said
+    and left to the next `tidy --apply`."""
+    try:
+        snap = take_snapshot(bl, older_than=0)
+        snap["items"].update(items or {})
+        rows = plan(snap, coord_state(), only=only)
+        for r in rows:
+            if spare is not None and spare(r["_cand"]) and r["verdict"] == REMOVE:
+                r["verdict"], r["reason"] = KEEP, "the sprint's own worktree is left for tidy --apply"
+        failed = apply_rows(snap, rows, io.StringIO())
+    except (CoordLocked, Rejected, Refused, OSError) as e:
+        say(f"{who}: kept its recorded leftovers: {e or e.__class__.__name__}")
+        return 1
+    kept = failed
+    for r in rows:
+        what = r.get("branch") or r["path"]
+        if r["verdict"] == REMOVE and r["result"] == "removed":
+            say(f"{who}: removed {what}")
+        else:
+            kept += 1
+            say(f"{who}: kept {what}: {(r.get('result') or r['reason']).removeprefix('kept: ')}")
+    return kept
+
+
+def land_leftovers(bl, iid):
+    """What `land` removes once the item IID has landed: its recorded scratch directory, and the records of its worktrees
+    git no longer lists (the worker's worktree `land` released). Returns the number kept."""
+    def mine(cand):
+        rec = cand.get("record") or {}
+        return rec.get("item") == iid and (cand["class"] == "scratch"
+                                           or (cand["class"] == "worktree" and cand.get("entry") is None))
+    return apply_subset(bl, "land", mine, items={iid: "done"})
+
+
+def close_leftovers(bl, sid):
+    """What `close` removes once the sprint SID is closed: its items' recorded scratch directories and worker worktrees (a
+    record with the sprint and an item; one `close` could not release stays, with the reason). The orchestrator's and the
+    reviewer's worktrees (the sprint and no item) are said as left to `tidy --apply`. Returns the number kept."""
+    def mine(cand):
+        return (cand.get("record") or {}).get("sprint") == sid and cand["class"] in ("scratch", "worktree")
+    def spare(cand):
+        return cand["class"] == "worktree" and not cand["record"].get("item")
+    return apply_subset(bl, "close", mine, spare)
 
 
 def cmd_tidy(bl, a):
@@ -583,9 +664,11 @@ def cmd_tidy(bl, a):
     it clears), under the exit codes in the module docstring."""
     if a.older_than < 0 or a.disk_free_gb < 0:
         raise Rejected("tidy: --older-than and --disk-free-gb are not negative")
+    if a.report and (a.apply or a.json):
+        raise Rejected("tidy: --report reads only and prints one line: it takes neither --apply nor --json")
     snap = take_snapshot(bl, a.older_than, a.disk_free_gb)
     try:
-        rows = plan(snap, coord_state())
+        rows = plan(snap, coord_state(), budget=REPORT_SECONDS if a.report else None)
         failed = apply_rows(snap, rows, sys.stderr if a.json else sys.stdout) if a.apply else 0
     except CoordLocked:
         say("tidy: the coord store stayed locked: nothing more was removed; run tidy again")
@@ -593,6 +676,9 @@ def cmd_tidy(bl, a):
     if a.json:
         print(json.dumps([public(r) for r in rows], indent=2))
         return 1 if failed else 0
+    if a.report:
+        say(report_line(rows))
+        return 0
     for r in rows:
         what = r.get("branch") or r["path"]
         size = f" ({fmt_size(r['bytes'])}{' or more' if r.get('approximate') else ''})" if r["bytes"] else ""
@@ -610,6 +696,7 @@ def cmd_tidy(bl, a):
 def args_tidy(p):
     p.add_argument("--apply", action="store_true", help="remove what tidy lists as safe (default: only list it)")
     p.add_argument("--json", action="store_true", help="print the rows as a JSON array")
+    p.add_argument("--report", action="store_true", help="print one line of counts and bytes a class; reads only")
     p.add_argument("--older-than", type=float, default=AGE_HOURS, metavar="HOURS",
                    help=f"a leftover's last activity must be older than this (default {AGE_HOURS})")
     p.add_argument("--disk-free-gb", type=float, default=DISK_FREE_GB, metavar="GB",
