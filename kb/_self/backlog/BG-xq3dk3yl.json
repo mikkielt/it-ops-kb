@@ -16,6 +16,15 @@
     ]
   },
   "repro_reason": "the lost id needs two processes interleaving the read and the write; the race is not reproducible on demand, so the repro reads that the function takes no lock and no atomic replace yet",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, sys, tempfile, pathlib\nd = tempfile.mkdtemp(); (pathlib.Path(d) / 'spool').mkdir()\nc = 'import sys,pathlib;sys.path.insert(0,\"_tools\");import ql_capture as q\\nfor i in range(40): q.remember_feedback_id(pathlib.Path(sys.argv[1])/\"spool\",\"FB-%02d%06d\"%(int(sys.argv[2]),i))'\nps = [subprocess.Popen([sys.executable, '-c', c, d, str(k)]) for k in range(4)]\n[p.wait(timeout=120) for p in ps]\nsys.path.insert(0, '_tools'); import ql_capture as q\ngot = set(q.written_feedback_ids(pathlib.Path(d) / 'spool')); print('ids kept', len(got), 'of 160'); sys.exit(0 if len(got) == 160 else 1)\n"
+      ]
+    }
+  ],
   "clauses": [
     {
       "clause": "remember_feedback_id writes feedback.ids under a lock or by an atomic replace, so the async capture hook and the MCP server recording at once keep both ids. Found by the SP-ficl7pxl review (ST-vpwkr76k gate g1)",
@@ -31,7 +40,7 @@
   "links": [
     "parked: SP-ficl7pxl review"
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): query-log capture robustness. Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs.",
+  "notes": "operator request 2026-10-19 (housekeeping batch): query-log capture robustness. Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs. Orchestrator 2026-10-20: added a behavioural check: four processes write 40 ids each at once into a planted spool and all 160 must survive. On the base it keeps 10 of 160. An atomic replace alone still loses ids in a read-modify-write race, so the fix needs a lock (or append-only) around the read and write.",
   "claimed_by": "orch-r106",
   "operator": "op-f618a13e"
 }
