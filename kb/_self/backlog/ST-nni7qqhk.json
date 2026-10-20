@@ -2,7 +2,7 @@
   "id": "ST-nni7qqhk",
   "kind": "story",
   "title": "kb/_self/coordination.md explains coord.py, the coord hook, kbask and the coord MCP tools, read from the code",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-eptouzxc",
   "priority": "P1",
   "rank": 0,
@@ -92,5 +92,7 @@
       "role": "interactive"
     }
   ],
-  "notes": "Method (planner): every statement is read from the code on origin/main and the research story ST-m5u7gmdo's notes, never from memory; the benchmark part says what the recorded runs showed (dedup works but saves nothing beyond the spread yet; structured coordination works) and links token-efficiency.md for the figures, which stay there. The parts monitoring.md owns today (The coord.py store, Asks and remediation) are written here in full as the owner text; ST-hayrghyh then cuts monitoring.md to pointers, so the duplicate lasts only until it lands. Worked case per gate worked-case: built from ask A275e35646a (the operator's addition to the housekeeping plan, sent by the orchestrator to a running planning session, answered with the sprint it planned) and ask A3b8d7e0199 (a second addition, answered with a P1 story), read with python3 _tools/coord.py get ask/ID and answer/ID; placeholders in the doc. Code lane: map.csv and README.md are code-lane paths, so this item lands with backlog.py land ID --wait-merge 1800. A wrong statement in an existing doc found while reading the code is filed as a draft bug, not fixed here. Premise 2026-10-20 on origin/main ec635a62c7: kb/_self/coordination.md does not exist; coord is described in monitoring.md (The coord.py store, Asks and remediation, The coord panel), tools.md (the coord.py and kbask.py rows), benchmarks.md, plugin.md and token-efficiency.md with no owner doc."
+  "notes": "Method (planner): every statement is read from the code on origin/main and the research story ST-m5u7gmdo's notes, never from memory; the benchmark part says what the recorded runs showed (dedup works but saves nothing beyond the spread yet; structured coordination works) and links token-efficiency.md for the figures, which stay there. The parts monitoring.md owns today (The coord.py store, Asks and remediation) are written here in full as the owner text; ST-hayrghyh then cuts monitoring.md to pointers, so the duplicate lasts only until it lands. Worked case per gate worked-case: built from ask A275e35646a (the operator's addition to the housekeeping plan, sent by the orchestrator to a running planning session, answered with the sprint it planned) and ask A3b8d7e0199 (a second addition, answered with a P1 story), read with python3 _tools/coord.py get ask/ID and answer/ID; placeholders in the doc. Code lane: map.csv and README.md are code-lane paths, so this item lands with backlog.py land ID --wait-merge 1800. A wrong statement in an existing doc found while reading the code is filed as a draft bug, not fixed here. Premise 2026-10-20 on origin/main ec635a62c7: kb/_self/coordination.md does not exist; coord is described in monitoring.md (The coord.py store, Asks and remediation, The coord panel), tools.md (the coord.py and kbask.py rows), benchmarks.md, plugin.md and token-efficiency.md with no owner doc.",
+  "claimed_by": "orch-r221",
+  "operator": "op-f618a13e"
 }
