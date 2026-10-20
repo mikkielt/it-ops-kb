@@ -23,7 +23,7 @@ LOW_DISK_PCT = 10  # percent free below which the clone's file system is an aler
 CELLS = 10  # cells of a bar
 WARN_PCT = 80  # a bar from here on is a warning, at 100 an error
 LABEL = 10  # columns of a body row's label
-WIDE = 100  # columns from which the three bars share one row
+GUTTER = 2  # columns the view puts before a body row
 UNSUPPORTED = "unsupported"
 PS_TIMEOUT = 5  # seconds the process listing may take
 
@@ -207,16 +207,16 @@ def lock_row(label, rec):
 
 
 def ceiling_rows(c, width):
-    """The ceiling's three measures: `ids`, `files` and `last run`, as one row of the worst gutter from WIDE columns,
-    else three aligned rows each with its own gutter."""
+    """The ceiling's three measures: `ids`, `files` and `last run`, as one row of the worst gutter where the joined row
+    fits WIDTH columns, else three aligned rows each with its own gutter."""
     if "error" in c:
         return ["! " + "ceiling".ljust(LABEL) + str(c["error"])]
     cells = [("ids", c["ids"], c["max_ids"], ""), ("files", c["files"], c["max_files"], ""),
              ("last run", c["last_run_s"], c["max_seconds"], " s")]
     made = [(name, flag(used, limit), bar(used, limit), unit) for name, used, limit, unit in cells]
-    if width >= WIDE:
+    text = " · ".join(f"{name} {n}{unit} {b} {p}" for name, _, (n, b, p), unit in made)
+    if GUTTER + LABEL + len(text) <= width:
         worst = max((f for _, f, _, _ in made), key=lambda f: {"": 0, "! ": 1, "!!": 2}[f])
-        text = " · ".join(f"{name} {n}{unit} {b} {p}" for name, _, (n, b, p), unit in made)
         return [worst + "ceiling".ljust(LABEL) + text]
     name_w = max(len(n) for n, *_ in made)
     num_w = max(len(b[0]) + len(u) for _, _, b, u in made)
