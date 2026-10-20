@@ -9,9 +9,10 @@ is the query log's distill.log and that is still at work: the run a session's en
 distill lock up to the query log's USAGE_LOCK_WAIT_S, delivers with its parent gone, and ends on its own; it is at work
 while the distill lock records its pid, or while it is younger than USAGE_LOCK_WAIT_S plus HOOK_MARGIN_S) and `foreign`
 (anything else: a live session's own work). `procs` signals nothing: an orphan is named for the operator, who ends it
-when it is theirs, and `backlog.py selfcheck` fails while one runs. `end_orphans(worktree)` is the one place that
-signals: `dispatch` calls it once the worker has exited, to end the orphans in the worker's worktree (the MCP servers
-its session started), and prints each pid and command name it ended; a hook in flight is named with its age and fails
+when it is theirs, and `backlog.py selfcheck` fails while one runs. Two callers signal, through `end_pids` (SIGTERM, then
+SIGKILL after END_WAIT_S): `end_orphans(worktree)`, which `dispatch` calls once the worker has exited, to end the orphans in
+the worker's worktree (the MCP servers its session started), and prints each pid and command name it ended, and `bl_clean`'s
+`tidy --class process --apply` for a process an own record names. A hook in flight is named with its age and fails
 nothing, and a distill run past both is a stuck one, an orphan. HOOK_GRACE_S is the shorter wait `land` makes. A
 process's command line and environment are never read: only its command name is printed, and a hook is told by the file
 its standard output is. Where a host cannot list working directories (Windows) it says so. The one exception is
@@ -390,22 +391,32 @@ def end_orphans(worktree):
         return []
     procs = inventory(base, tab, cwds, [base])
     hooks = hook_pids(base, [p["pid"] for p in procs if orphaned(tab, p["pid"])], [base])
+    pids = {p["pid"]: p["comm"] for p in classify(procs, tab, hooks, holders=lock_holders([base])) if p["kind"] == ORPHAN}
+    return [(pid, pids[pid]) for pid in end_pids(list(pids))]
+
+
+def end_pids(pids):
+    """Send SIGTERM to each of PIDS, and SIGKILL to those still alive END_WAIT_S later (a host with no SIGKILL, Windows,
+    ends a process with the first). Returns the pids that took the SIGTERM; one gone since the scan, or not ours, is left
+    out."""
     ended = []
-    for p in classify(procs, tab, hooks, holders=lock_holders([base])):
-        if p["kind"] != ORPHAN:
-            continue
+    for pid in pids:
         try:
-            os.kill(p["pid"], signal.SIGTERM)
+            os.kill(pid, signal.SIGTERM)
         except OSError:  # gone since the scan, or not ours
             continue
-        ended.append((p["pid"], p["comm"]))
+        ended.append(pid)
     deadline = time.time() + END_WAIT_S
-    for pid, _ in ended:
-        while time.time() < deadline and running(pid):
+    for pid in ended:
+        while time.time() < deadline and alive(pid):
             time.sleep(0.1)
-        if running(pid):
+        if alive(pid):
             with contextlib.suppress(OSError):
-                os.kill(pid, signal.SIGKILL)
+                os.kill(pid, getattr(signal, "SIGKILL", signal.SIGTERM))
+            for _ in range(10):  # a killed process leaves the table within a moment
+                if not alive(pid):
+                    break
+                time.sleep(0.1)
     return ended
 
 
@@ -415,6 +426,14 @@ def running(pid):
     except OSError:
         return False
     return True
+
+
+def alive(pid):
+    """Whether PID runs: a zombie, which the process table leaves out, does not."""
+    if not running(pid):
+        return False
+    tab = process_table()
+    return True if tab is None else pid in tab
 
 
 def args_procs(p):

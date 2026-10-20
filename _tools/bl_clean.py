@@ -4,11 +4,14 @@ on whether a leftover may go (kb/_self/backlog.md, Leftovers; kb/_self/tools.md)
   own PATH --class worktree|sandbox|scratch [--item ID] [--sprint SP] [--session ID]   record the directory
   own PID  --class process [--item ID] [--sprint SP] [--session ID]                   record the process
   own TARGET --class C --drop                                                          clear the record
-  tidy [--apply] [--json] [--older-than HOURS] [--disk-free-gb GB]                     list the recorded leftovers
+  tidy [--apply] [--json] [--older-than HOURS] [--disk-free-gb GB] [--class C]         list the recorded leftovers
   tidy --report                                                                        one line of counts and bytes a class
+  tidy --class process [--apply]                                                       list, and end, the recorded processes
+  tidy --remote [--json]                                                               list the merged code/<id> branches of the remote
 
 A record is one coord key, `own/<class>/<digest>`, whose value is a JSON object: the `path` (normalised) or the `pid`, the
-class, the item, sprint and session when given, and `at`, the time it was recorded in seconds since the epoch. The digest is the first 16
+class, the item, sprint and session when given, and `at`, the time it was recorded in seconds since the epoch; a process's
+record also holds its `start` time when the host's process table gives one. The digest is the first 16
 hex digits of the sha256 of the normalised path or of the pid's decimal text, so one directory is one key however it was
 spelled (`norm_path`: realpath, then no `\\\\?\\` prefix, normcase, one case for a drive letter), on every platform. The
 coord store is the one `coord.py` finds (`--store`, else KB_COORD_STORE, else the clone's common git directory), shared by
@@ -35,12 +38,23 @@ on a candidate; 2 a refusal (bad arguments, no integration main, an unreadable c
 class; the bytes of all the rows share a `REPORT_SECONDS` walk, the figure `or more` past it, so the line comes within seconds
 on a clone with many worktrees (the SessionStart hook prints it and removes nothing).
 
+`tidy --class process` adds the class `process`, which no other run lists: each pid an own record names, and each process in a
+checkout of the clone that no record names (`bl_procs.snapshot`; kept, never signalled, however old or orphaned: a parent of 1
+proves nothing, a live detached worker has it). A recorded process goes only when it still runs as recorded (its start time
+is the record's, within `START_SLOP_S`: a pid is reused), its record names a session that holds no coord lease or claim
+(`session/<id>`), its item is finished and the record is older than --older-than; one that no longer runs goes with its
+record alone, with no signal. `--apply` ends the `remove` rows with SIGTERM, then SIGKILL after `bl_procs.END_WAIT_S`
+(`end_process`, after it reads the process table again), and is refused (exit 2) in an agent session
+(`bl_authority.in_agent_session`). `tidy --remote` reads only: it lists the `code/<id>` branches of the integration remote,
+as last fetched, whose commits `git cherry` finds on the integration main; no tidy run deletes a remote branch, and `--remote`
+with --apply is refused (exit 2).
+
 `land` and `close` call the two functions below for the leftovers of their own item or sprint, as processes of their own: `land_leftovers`
 removes the landed item's recorded scratch directory (and the records of its worktrees git no longer lists), `close_leftovers`
 the closed sprint's recorded scratch directories and worker worktrees, each with `safe_to_remove`'s verdict and the age limit
 waived. The orchestrator's and the reviewer's worktrees (a record with a sprint and no item) stay for `tidy --apply`.
 
-Standard library only; imports `bl_base`, `bl_close` and `bl_cli`, never `backlog` (a layer rule). It registers its own
+Standard library only; imports `bl_authority`, `bl_base`, `bl_cli`, `bl_close` and `bl_procs`, never `backlog` (a layer rule). It registers its own
 subcommands when imported, so `backlog.py` carries only the import."""
 import contextlib
 import hashlib
@@ -55,8 +69,10 @@ import sys
 import time
 from pathlib import Path
 
+import bl_authority
 import bl_cli
 import bl_close
+import bl_procs
 from bl_base import Refused, Rejected, git, run, say
 from bl_close import AGENT_BRANCH, WORK_PREFIX, WORKER_NAME
 
@@ -74,6 +90,9 @@ BYTES_SECONDS = 2  # the longest walk that measures what one candidate frees
 REPORT_SECONDS = 4  # the longest walk that measures what all the candidates of `tidy --report` free
 TIDY_PREFIXES = (WORK_PREFIX, AGENT_BRANCH + WORKER_NAME, "orch/")  # the local branches tidy lists
 TIDY_CLASSES = ("worktree", "branch", "sandbox", "scratch")
+PROCESS = "process"  # tidy lists it only under `--class process`
+REMOTE_BRANCHES = "code/"  # the branches `tidy --remote` lists on the integration remote
+START_SLOP_S = 2  # how far a process's start time may differ from its record's: the table's seconds
 FINISHED = ("done", "dropped")
 REMOVE, KEEP = "remove", "keep"
 
@@ -128,6 +147,14 @@ def run_coord(*args):
     return p.returncode, body, lines[-1] if lines else ""
 
 
+def host_table(root):
+    """{pid: (ppid, start epoch seconds, command name)} of this host's processes, or None when it cannot be read (a
+    Windows host reads it through PowerShell, the others from /proc or `ps`)."""
+    if os.name == "nt":
+        return bl_procs.windows_snapshot(str(root))[1]
+    return bl_procs.process_table()
+
+
 def put_value(key, text):
     """Write TEXT as the value of KEY, a new key or its next revision; Refused when coord does not take it."""
     for _try in range(3):
@@ -155,6 +182,10 @@ def record_owner(cls, target, item=None, sprint=None, session=None, drop=False):
             put_value(key, "")  # a key coord does not hold, or already dropped, has nothing to clear
         return key
     value = {"class": cls, **ident, "at": int(time.time())}
+    if cls == PROCESS:  # the start time tells this process from a later one with the same pid
+        seen = (host_table(Path.cwd()) or {}).get(ident["pid"])
+        if seen:
+            value["start"] = seen[1]
     value.update({k: v for k, v in (("item", item), ("sprint", sprint), ("session", session)) if v})
     put_value(key, json.dumps(value, sort_keys=True))
     return key
@@ -366,12 +397,55 @@ def idle_reason(last, snap, waived=None):
     return True, None
 
 
+def label(thing):
+    """What names a candidate or a row: its branch, its path, else its pid."""
+    return thing.get("branch") or thing.get("path") or f"pid {thing['pid']}" + (f" ({thing['comm']})" if thing.get("comm") else "")
+
+
+def process_verdict(cand, snap, state):
+    """(verdict, reason) for a candidate of class `process`. Only a process a record names goes, and only when it is still
+    the process the record names (its start time is the record's: a pid is reused), its recorded session has no live
+    coord lease or claim, its item is finished and the record is older than the age limit. A process that is no longer
+    running leaves its record alone to go. A process no record names stays, whatever its parent."""
+    pid, rec = cand["pid"], cand.get("record")
+    if rec is None:
+        return KEEP, "no owner record names it (the process was not made by this clone's tools, or never recorded)"
+    if pid in (os.getpid(), os.getppid()):
+        return KEEP, "it is the process tidy runs in, or its parent"
+    table = snap.get("ptable")
+    if table is None:
+        return KEEP, "this host's process table cannot be read"
+    seen = table.get(pid)
+    if seen is None:
+        return REMOVE, "it is no longer running; only its record is left"
+    start = rec.get("start")
+    if not isinstance(start, int) or isinstance(start, bool):
+        return KEEP, "its record holds no start time, so the pid cannot be told from a later process"
+    if abs(seen[1] - start) > START_SLOP_S:
+        return KEEP, f"pid {pid} was started {int(abs(seen[1] - start))} s apart from its record: the pid was reused"
+    if not rec.get("session"):
+        return KEEP, "its record names no session, so nothing shows its owner is gone"
+    held = live_claim(names_of(cand), state)
+    if held:
+        return KEEP, f"a live coord lease or claim names it: {held}"
+    ok, why = item_finished(cand, snap)
+    if not ok:
+        return KEEP, why
+    ok, why = idle_reason(rec.get("at") or snap["now"], snap)
+    if not ok:
+        return KEEP, why
+    return REMOVE, (f"owned, its session {rec['session']} holds no coord lease, started as recorded, idle for "
+                    f"{(snap['now'] - (rec.get('at') or snap['now'])) / 3600:.1f} h")
+
+
 def safe_to_remove(cand, snap, state):
     """(verdict, reason) for the candidate CAND, the one rule tidy, kbmon and the remediation agent read. CAND is a dict:
-    `class` (worktree, branch, sandbox or scratch), `path` (normalised; not for a branch), `branch`, `record` (its coord
-    record, or None), and for a worktree its `entry` (git's, or None), for a branch its `tip` and `checked_out` paths.
-    The verdict is `remove` or `keep`; the reason names the first rule that keeps it, else what holds. SNAP is
-    `take_snapshot`'s, STATE `coord_state`'s."""
+    `class` (worktree, branch, sandbox, scratch or process), `path` (normalised; not for a branch or a process), `branch`,
+    `pid` (a process), `record` (its coord record, or None), and for a worktree its `entry` (git's, or None), for a branch
+    its `tip` and `checked_out` paths. The verdict is `remove` or `keep`; the reason names the first rule that keeps it,
+    else what holds. SNAP is `take_snapshot`'s, STATE `coord_state`'s."""
+    if cand["class"] == PROCESS:
+        return process_verdict(cand, snap, state)
     cls, path, rec = cand["class"], cand.get("path"), cand.get("record")
     for p in ([path] if path else []) + cand.get("checked_out", []):
         why = always_kept(p, snap)
@@ -429,16 +503,34 @@ def safe_to_remove(cand, snap, state):
     return REMOVE, why if why else f"{done} for {(snap['now'] - last) / 3600:.1f} h"
 
 
-def candidates(snap, state):
+def process_candidates(snap, state):
+    """The candidates of class `process`: each pid an own record names, then each process in a checkout of the clone that
+    no record names (kept, never signalled). Reads the host's process table into SNAP once."""
+    root = snap["root"]
+    snap["ptable"] = host_table(root)
+    recs = {r["pid"]: r for r in state["owners"] if r.get("class") == PROCESS and isinstance(r.get("pid"), int)}
+    out = []
+    for pid, rec in sorted(recs.items()):
+        seen = (snap["ptable"] or {}).get(pid)
+        out.append({"class": PROCESS, "pid": pid, "record": rec, **({"comm": seen[2]} if seen else {})})
+    found = bl_procs.windows_snapshot(str(root))[0] if os.name == "nt" else bl_procs.snapshot(str(root))[0]
+    for p in found or []:
+        if p["pid"] not in recs:
+            out.append({"class": PROCESS, "pid": p["pid"], "record": None, "comm": p["comm"], "where": p["where"],
+                        "kind": p["kind"]})
+    return out
+
+
+def candidates(snap, state, classes=TIDY_CLASSES):
     """The candidates of each class, in TIDY_CLASSES order: every git worktree (the unrecorded ones too, kept), every
     recorded worktree git no longer lists, the local TIDY_PREFIXES branches, and the recorded sandboxes and scratch
-    directories."""
+    directories; with `process` among CLASSES also its processes (`process_candidates`)."""
     recs = {(r.get("class"), r["path"]): r for r in state["owners"] if isinstance(r.get("path"), str)}
     by_item = {}
     for r in recs.values():
         if r.get("item") and r.get("class") in ("worktree", "scratch", "sandbox"):
             by_item.setdefault(r["item"], r)
-    out = {c: [] for c in TIDY_CLASSES}
+    out = {c: [] for c in TIDY_CLASSES + (PROCESS,)}
     listed = set()
     branch_rec = {}
     for e in snap["entries"]:
@@ -461,27 +553,32 @@ def candidates(snap, state):
         rec = branch_rec.get(branch) or (by_item.get(branch[len(WORK_PREFIX):]) if branch.startswith(WORK_PREFIX) else None)
         out["branch"].append({"class": "branch", "branch": branch, "tip": tip, "record": rec,
                               "checked_out": [norm_path(e["path"]) for e in snap["entries"] if e["branch"] == branch]})
+    if PROCESS in classes:
+        out[PROCESS] = process_candidates(snap, state)
     return out
 
 
 def row_of(cand, verdict, reason):
     row = {"class": cand["class"], "verdict": verdict, "reason": reason, "bytes": 0, "_cand": cand}
-    row.update({"branch": cand["branch"]} if cand["class"] == "branch" else {"path": cand["path"]})
+    if cand["class"] == PROCESS:
+        row.update({k: cand[k] for k in ("pid", "comm", "where", "kind") if k in cand})
+    else:
+        row.update({"branch": cand["branch"]} if cand["class"] == "branch" else {"path": cand["path"]})
     item = (cand.get("record") or {}).get("item")
     if item:
         row["item"] = item
     return row
 
 
-def plan(snap, state, only=None, budget=None):
+def plan(snap, state, only=None, budget=None, classes=TIDY_CLASSES):
     """The rows of every candidate with its verdict, reason and the bytes it frees; the bench sandboxes first when the
     disk is under pressure, else by class. A worktree judged `remove` is no longer a checkout for its branch. ONLY, a
     predicate on a candidate, keeps the rows it accepts; BUDGET is the seconds all the walks of one plan share (the
-    figure of a row the budget did not reach is 0, `approximate`)."""
-    cands = candidates(snap, state)
+    figure of a row the budget did not reach is 0, `approximate`). CLASSES are the classes planned."""
+    cands = candidates(snap, state, classes)
     deadline = None if budget is None else time.monotonic() + budget
     rows = []
-    for cls in TIDY_CLASSES:
+    for cls in classes:
         for cand in cands[cls]:
             if only is not None and not only(cand):
                 continue
@@ -489,7 +586,7 @@ def plan(snap, state, only=None, budget=None):
             row = row_of(cand, verdict, reason)
             if verdict == REMOVE and cls == "worktree":
                 snap["planned"].add(cand["path"])
-            if verdict == REMOVE and cls != "branch" and os.path.isdir(cand["path"]):
+            if verdict == REMOVE and cls in ("worktree", "sandbox", "scratch") and os.path.isdir(cand["path"]):
                 left = BYTES_SECONDS if deadline is None else min(BYTES_SECONDS, deadline - time.monotonic())
                 row["bytes"], approx = tree_bytes(cand["path"], left) if left > 0 else (0, True)
                 if approx:
@@ -521,11 +618,29 @@ def rmtree_writable(path):
 
 
 def drop_record(cand):
-    if cand.get("record") is not None and cand.get("path"):
+    target = cand.get("path") or cand.get("pid")
+    if cand.get("record") is not None and target:
         try:
-            record_owner(cand["class"], cand["path"], drop=True)
+            record_owner(cand["class"], target, drop=True)
         except Refused as e:
             say(f"tidy: {e}")
+
+
+def end_process(snap, cand):
+    """End the process of CAND with SIGTERM, then SIGKILL after `bl_procs.END_WAIT_S`, and clear its record; returns None
+    once it is gone, else why it was kept. The process table is read again first: a pid that now has another start time
+    than the record is another process and is never signalled."""
+    pid, rec = cand["pid"], cand["record"]
+    seen = (host_table(snap["root"]) or {}).get(pid)
+    if seen is not None:
+        start = rec.get("start")
+        if not isinstance(start, int) or abs(seen[1] - start) > START_SLOP_S:
+            return "its start time is no longer the record's: the pid was reused"
+        bl_procs.end_pids([pid])
+        if bl_procs.alive(pid):
+            return "it still runs after SIGKILL"
+    drop_record(cand)
+    return None
 
 
 def remove_one(snap, row, removed):
@@ -533,6 +648,8 @@ def remove_one(snap, row, removed):
     paths removed so far (a branch checked out only in those is free to go)."""
     cand, root = row["_cand"], snap["root"]
     cls, path = cand["class"], cand.get("path")
+    if cls == PROCESS:
+        return end_process(snap, cand)
     if cls == "branch":
         if any(p not in removed for p in cand["checked_out"]):
             return "its worktree stays"
@@ -582,11 +699,11 @@ def apply_rows(snap, rows, say_to):
     return failed
 
 
-def class_counts(rows, applied):
-    """[(class, rows that go, rows kept, bytes they free, whether the bytes are a floor)] for each of TIDY_CLASSES: the rows
+def class_counts(rows, applied, classes=TIDY_CLASSES):
+    """[(class, rows that go, rows kept, bytes they free, whether the bytes are a floor)] for each of CLASSES: the rows
     removed (with --apply) or that would go, and the bytes of them, nested paths counted once."""
     out = []
-    for cls in TIDY_CLASSES:
+    for cls in classes:
         mine = [r for r in rows if r["class"] == cls]
         gone = [r for r in mine if (r.get("result") == "removed" if applied else r["verdict"] == REMOVE)]
         paths = [r["path"] for r in gone if "path" in r]
@@ -596,10 +713,10 @@ def class_counts(rows, applied):
     return out
 
 
-def summary_lines(rows, applied):
+def summary_lines(rows, applied, classes=TIDY_CLASSES):
     """One line a class: how many rows go (were removed, with --apply) and the bytes they free, nested paths counted once."""
     return [f"tidy: {cls}: {'removed' if applied else 'would remove'} {n}{f' ({fmt_size(size)})' if size else ''}, kept {kept}"
-            for cls, n, kept, size, _ in class_counts(rows, applied)]
+            for cls, n, kept, size, _ in class_counts(rows, applied, classes)]
 
 
 def report_line(rows):
@@ -629,7 +746,7 @@ def apply_subset(bl, who, only, spare=None, items=None):
         return 1
     kept = failed
     for r in rows:
-        what = r.get("branch") or r["path"]
+        what = label(r)
         if r["verdict"] == REMOVE and r["result"] == "removed":
             say(f"{who}: removed {what}")
         else:
@@ -659,6 +776,47 @@ def close_leftovers(bl, sid):
     return apply_subset(bl, "close", mine, spare)
 
 
+def remote_merged(root):
+    """([branch names, `code/<id>`], the number kept, the remote name, the integration main's ref) of the `code/` branches
+    the integration remote had when last fetched (`refs/remotes/<remote>/code/*`; nothing is fetched): the ones whose
+    commits `git cherry` finds on the integration main, and the number that have a commit it lacks. Raises Rejected when
+    there is no integration main."""
+    import kbpublic
+    upstream = integration_main(root)
+    if upstream is None:
+        raise Rejected("tidy: no integration main to compare against (fetch the integration remote first)")
+    remote = kbpublic.integration_remote(root)
+    base = f"refs/remotes/{remote}/{REMOTE_BRANCHES}"
+    code, text, err = run(["git", "for-each-ref", "--format=%(refname)", base], cwd=root)
+    if code:
+        raise Rejected(f"tidy: cannot list {base}: {err.strip()}")
+    code, text2, _ = run(["git", "for-each-ref", "--format=%(refname)", f"--merged={upstream}", base], cwd=root)
+    ancestors = set(text2.splitlines()) if not code else set()
+    merged, kept = [], 0
+    for ref in sorted(text.splitlines()):
+        if ref in ancestors or bl_close.merged_into(root, ref, upstream):
+            merged.append(ref[len(f"refs/remotes/{remote}/"):])
+        else:
+            kept += 1
+    return merged, kept, remote, upstream
+
+
+def cmd_remote(bl, a):
+    """`tidy --remote`: list the `code/<id>` branches of the integration remote whose commits are on the integration main.
+    Reads only: tidy never deletes a branch of a remote."""
+    merged, kept, remote, upstream = remote_merged(bl.root)
+    if a.json:
+        print(json.dumps([{"class": "remote", "remote": remote, "branch": b, "merged": True,
+                           "reason": f"every commit of it is on {upstream}"} for b in merged], indent=2))
+        return 0
+    for b in merged:
+        say(f"tidy: {remote}/{b}: merged, every commit of it is on {upstream}")
+    say(f"tidy: remote: {len(merged)} merged {REMOTE_BRANCHES}<id> branch(es) on {remote} (as last fetched), "
+        f"{kept} with a commit {upstream} lacks")
+    say("tidy: it deletes no remote branch: a merged one is removed by the operator's own command")
+    return 0
+
+
 def cmd_tidy(bl, a):
     """List the recorded leftovers with `safe_to_remove`'s verdict, reason and bytes (and with --apply remove the ones
     it clears), under the exit codes in the module docstring."""
@@ -666,9 +824,19 @@ def cmd_tidy(bl, a):
         raise Rejected("tidy: --older-than and --disk-free-gb are not negative")
     if a.report and (a.apply or a.json):
         raise Rejected("tidy: --report reads only and prints one line: it takes neither --apply nor --json")
+    if a.remote:
+        if a.apply:
+            raise Rejected("tidy: --remote reads only: tidy deletes no remote branch")
+        if a.report or a.cls:
+            raise Rejected("tidy: --remote lists the merged remote branches: it takes neither --report nor --class")
+        return cmd_remote(bl, a)
+    if a.apply and a.cls == PROCESS and bl_authority.in_agent_session():
+        raise Rejected("tidy: --apply with --class process ends processes, which an agent session may not do: "
+                       "the operator runs it from their own terminal")
+    classes = (a.cls,) if a.cls else TIDY_CLASSES
     snap = take_snapshot(bl, a.older_than, a.disk_free_gb)
     try:
-        rows = plan(snap, coord_state(), budget=REPORT_SECONDS if a.report else None)
+        rows = plan(snap, coord_state(), budget=REPORT_SECONDS if a.report else None, classes=classes)
         failed = apply_rows(snap, rows, sys.stderr if a.json else sys.stdout) if a.apply else 0
     except CoordLocked:
         say("tidy: the coord store stayed locked: nothing more was removed; run tidy again")
@@ -680,13 +848,13 @@ def cmd_tidy(bl, a):
         say(report_line(rows))
         return 0
     for r in rows:
-        what = r.get("branch") or r["path"]
+        what = label(r)
         size = f" ({fmt_size(r['bytes'])}{' or more' if r.get('approximate') else ''})" if r["bytes"] else ""
         if a.apply and r["verdict"] == REMOVE:
             say(f"tidy: {r['result']} {what}{size}: {r['reason']}" if r["result"] == "removed" else f"tidy: {r['result']} {what}")
         else:
             say(f"tidy: {'would remove' if r['verdict'] == REMOVE else 'kept'} {what}{size}: {r['reason']}")
-    for ln in summary_lines(rows, a.apply):
+    for ln in summary_lines(rows, a.apply, classes):
         say(ln)
     if not a.apply:
         say("tidy: --apply removes the ones listed as would remove (never --force)")
@@ -697,6 +865,11 @@ def args_tidy(p):
     p.add_argument("--apply", action="store_true", help="remove what tidy lists as safe (default: only list it)")
     p.add_argument("--json", action="store_true", help="print the rows as a JSON array")
     p.add_argument("--report", action="store_true", help="print one line of counts and bytes a class; reads only")
+    p.add_argument("--class", dest="cls", choices=TIDY_CLASSES + (PROCESS,),
+                   help="list only this class; `process` lists the processes an own record names (and those none names, "
+                        "kept) and with --apply ends the ones it clears: refused in an agent session")
+    p.add_argument("--remote", action="store_true",
+                   help="list the code/<id> branches of the integration remote that are merged (reads only; deletes none)")
     p.add_argument("--older-than", type=float, default=AGE_HOURS, metavar="HOURS",
                    help=f"a leftover's last activity must be older than this (default {AGE_HOURS})")
     p.add_argument("--disk-free-gb", type=float, default=DISK_FREE_GB, metavar="GB",
