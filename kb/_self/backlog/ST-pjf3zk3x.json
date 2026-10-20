@@ -56,6 +56,36 @@
       "class": "agents-rule",
       "answer": "haiku, --max-budget-usd 0.25 per run (a cap with no data behind it)",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which session ends in the cleanup run: how does the detached session's result reach the operator, and how long does the command wait for it?",
+      "options": [
+        "One ask to kb-observer takes the session result as its answer; the command waits at most 6 seconds for a quick session and reports ended",
+        "The session result is posted as the answer of the first operator ask; the command returns at once"
+      ],
+      "recommendation": "One ask to kb-observer takes the session result as its answer; the command waits at most 6 seconds for a quick session and reports ended",
+      "do": {
+        "One ask to kb-observer takes the session result as its answer; the command waits at most 6 seconds for a quick session and reports ended": "ST-pjf3zk3x",
+        "The session result is posted as the answer of the first operator ask; the command returns at once": "ST-pjf3zk3x"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does the cleanup session get its read-only tools and the kb-observer role?",
+      "options": [
+        "The agent body goes in on one line and --allowedTools holds Read, Grep, Glob, kbmon.py --json and the exact tidy --json command line (no --apply can follow it)",
+        "The agent body is passed as in remediate and --allowedTools allows tidy --json with a trailing wildcard"
+      ],
+      "recommendation": "The agent body goes in on one line and --allowedTools holds Read, Grep, Glob, kbmon.py --json and the exact tidy --json command line (no --apply can follow it)",
+      "do": {
+        "The agent body goes in on one line and --allowedTools holds Read, Grep, Glob, kbmon.py --json and the exact tidy --json command line (no --apply can follow it)": "ST-pjf3zk3x",
+        "The agent body is passed as in remediate and --allowedTools allows tidy --json with a trailing wildcard": "ST-pjf3zk3x"
+      },
+      "class": "agents-rule"
     }
   ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with its own coord store and a stand-in claude on PATH, so no paid model call; no change to _tools/tests_ceiling.json. Reuses SP-w6amecjt's kbask.py (ask, answer, remediate: one claim per run, detached session, caps) and its read-only kb-observer role. kbask.py is in the touches of SP-w6amecjt's open ST-xlxkap7l (kbask.py summary): start this sprint after SP-w6amecjt closes.",
