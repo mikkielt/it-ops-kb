@@ -2,7 +2,7 @@
   "id": "ST-viygfjeg",
   "kind": "story",
   "title": "kbmon's cleanup panel and a selfcheck leftovers line show each candidate's verdict and the leftover counts",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ipeewrlv",
   "priority": "P2",
   "rank": 0,
@@ -149,6 +149,28 @@
     }
   ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with planted inputs (KB_COORD_STORE points at its own coord store, so no check writes the clone's real one); no change to _tools/tests_ceiling.json. Premise (2026-10-19, this host): kbmon.py --json gave the sessions panel state timeout at 10 s with 50 worktrees; the cleanup panel's bytes walk is capped (gate g-bytes of the tidy story) so it stays inside the panel timeout.",
-  "claimed_by": "orch-r201",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "1e58e2649778f932ec01cb30dc80b8f4185251e4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, subprocess, sys, tempfile, json, time\nT = tempfile.mkdtemp()\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_COORD\"))}\nENV.pop(\"CLAUDECODE\", None)\nENV.update(KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\",\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\ndef tool(*a, env=None, ok=(0,)):\n    r = subprocess.run([sys.executable, *a], capture_output=True, text=True, env=env or ENV, timeout=300)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-800:], r.stderr[-800:])\n    return r\nO, C = os.path.join(T, \"origin.git\"), os.path.join(T, \"clone\")\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T)\ng(\"clone\", \"-q\", O, C, cwd=T)\nos.makedirs(os.path.join(C, \"kb\", \"_self\", \"backlog\"))\nopen(os.path.join(C, \"backlog.json\"), \"w\").write('{\"item_dir\": \"kb/_self/backlog\"}\\n')\nopen(os.path.join(C, \"kb\", \"_self\", \"backlog\", \".keep\"), \"w\").close()\ng(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C); g(\"push\", \"-q\", \"origin\", \"main\", cwd=C); g(\"fetch\", \"-q\", cwd=C)\nWT = os.path.join(C, \".claude\", \"worktrees\")\ndef wt(name, branch=None, at=\"HEAD\"):\n    p = os.path.join(WT, name)\n    g(\"worktree\", \"add\", \"-q\", *([\"-b\", branch] if branch else [\"--detach\"]), p, at, cwd=C)\n    return p\nn = lambda p: os.path.normcase(os.path.realpath(p))\ndef own(p, cls, *a, env=None):\n    return tool(\"_tools/backlog.py\", \"--root\", C, \"own\", str(p), \"--class\", cls, *a, env=env)\ndef rows(*a):\n    return json.loads(tool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--json\", *a).stdout)\ndef by_path(rs, cls=None):\n    return {n(x[\"path\"]): x for x in rs if \"path\" in x and (cls is None or x.get(\"class\") == cls)}\nimport json, subprocess, sys\nr = subprocess.run([sys.executable, \"_tools/kbmon.py\", \"--json\", \"--panel\", \"cleanup\"], capture_output=True, text=True, timeout=120)\nassert r.returncode == 0, (r.returncode, r.stderr[-400:])\np = json.loads(r.stdout)[\"panels\"][\"cleanup\"]\nassert p[\"state\"] == \"ok\", p\nrows = p[\"data\"][\"rows\"]\nassert isinstance(rows, list) and all({\"class\", \"verdict\", \"reason\", \"bytes\"} <= set(x) for x in rows), rows[:3]\nassert isinstance(p[\"data\"].get(\"counts\"), dict), p[\"data\"].keys()\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, subprocess, sys, tempfile, json, time\nT = tempfile.mkdtemp()\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_COORD\"))}\nENV.pop(\"CLAUDECODE\", None)\nENV.update(KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\",\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\ndef tool(*a, env=None, ok=(0,)):\n    r = subprocess.run([sys.executable, *a], capture_output=True, text=True, env=env or ENV, timeout=300)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-800:], r.stderr[-800:])\n    return r\nO, C = os.path.join(T, \"origin.git\"), os.path.join(T, \"clone\")\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T)\ng(\"clone\", \"-q\", O, C, cwd=T)\nos.makedirs(os.path.join(C, \"kb\", \"_self\", \"backlog\"))\nopen(os.path.join(C, \"backlog.json\"), \"w\").write('{\"item_dir\": \"kb/_self/backlog\"}\\n')\nopen(os.path.join(C, \"kb\", \"_self\", \"backlog\", \".keep\"), \"w\").close()\ng(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C); g(\"push\", \"-q\", \"origin\", \"main\", cwd=C); g(\"fetch\", \"-q\", cwd=C)\nWT = os.path.join(C, \".claude\", \"worktrees\")\ndef wt(name, branch=None, at=\"HEAD\"):\n    p = os.path.join(WT, name)\n    g(\"worktree\", \"add\", \"-q\", *([\"-b\", branch] if branch else [\"--detach\"]), p, at, cwd=C)\n    return p\nn = lambda p: os.path.normcase(os.path.realpath(p))\ndef own(p, cls, *a, env=None):\n    return tool(\"_tools/backlog.py\", \"--root\", C, \"own\", str(p), \"--class\", cls, *a, env=env)\ndef rows(*a):\n    return json.loads(tool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--json\", *a).stdout)\ndef by_path(rs, cls=None):\n    return {n(x[\"path\"]): x for x in rs if \"path\" in x and (cls is None or x.get(\"class\") == cls)}\nimport json, subprocess, sys\nr = subprocess.run([sys.executable, \"_tools/backlog.py\", \"selfcheck\", \"--json\"], capture_output=True, text=True, timeout=300)\nc = {x[\"name\"]: x for x in json.loads(r.stdout)[\"checks\"]}\nassert \"leftovers\" in c and \"removable\" in (c[\"leftovers\"][\"detail\"] or \"\"), c.get(\"leftovers\")\nassert c[\"leftovers\"][\"state\"] in (\"ok\", \"fail\", \"unknown\"), c[\"leftovers\"]\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
