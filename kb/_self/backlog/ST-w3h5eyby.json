@@ -55,7 +55,9 @@
       },
       "class": "design",
       "answer": "A rule table FIXED_REMEDIES in kbask.py; remediate posts it inline after claim and ask, no watcher",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): kbmon on 2026-10-19 showed one alert, sessions.orphan, whose remedy is the same each time (backlog.py procs names the pid). Plan against SP-ep7cyuob, which changes kbask.py first. Premise: the first check fails (a shim claude on PATH is started). Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",

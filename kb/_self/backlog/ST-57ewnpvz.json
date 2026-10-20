@@ -1,0 +1,24 @@
+{
+  "id": "ST-57ewnpvz",
+  "kind": "story",
+  "title": "token-efficiency.md's Model call sites says what dispatch's spend cap and kbask's fixed-remedy table now do",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The bl_dispatch.DEFAULT_MODEL bullet names the --max-budget-usd / KB_WORKER_BUDGET_USD cap, and the kbask.MODEL bullet names FIXED_REMEDIES and the alert kinds it answers with no session",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('kb/_self/token-efficiency.md',encoding='utf-8').read();i=t.find('## Model call sites');j=t.find('\\n## ',i+3);s=' '.join(t[i:j].split())\nbad=[p for p in ('no `--max-budget-usd`. Decides: the item','no per-alert remedy table exists') if p in s]\nok='KB_WORKER_BUDGET_USD' in s and 'FIXED_REMEDIES' in s\nprint(bad,ok);sys.exit(0 if ok and not bad else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/token-efficiency.md"
+  ],
+  "links": [
+    "parked: SP-v64egscn review"
+  ]
+}

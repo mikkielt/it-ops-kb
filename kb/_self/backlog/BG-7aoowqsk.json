@@ -19,5 +19,8 @@
     ".claude/skills/kb-census/SKILL.md",
     "_tools/census.py"
   ],
-  "notes": "Orchestrator 2026-10-20: the same finding as ST-tef5gzq7 (in SP-v64egscn), whose goal covers it: once that story lands, this draft is met or narrowed to what it leaves."
+  "links": [
+    "parked: SP-v64egscn review"
+  ],
+  "notes": "Orchestrator 2026-10-20: the same finding as ST-tef5gzq7 (in SP-v64egscn), whose goal covers it: once that story lands, this draft is met or narrowed to what it leaves. SP-v64egscn review gap 5 (S3): met on its 'or the brief stops naming a model' branch by ST-tef5gzq7 (census.py sample_brief names no model); its repro greps STEP_MODELS in the kb-census SKILL.md and so still exits 1. Proposed: close it as met, or change the repro to read census.sample_brief's header."
 }

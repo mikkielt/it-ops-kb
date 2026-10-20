@@ -1,0 +1,25 @@
+{
+  "id": "ST-kda4u6ml",
+  "kind": "story",
+  "title": "The sprint skill's resume step and the backlog usage text name the worker spend cap",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "skills/sprint/SKILL.md names --max-budget-usd (or KB_WORKER_BUDGET_USD) for dispatch and for the claude -p --resume of a stopped worker, and backlog.py dispatch --help shows the flag",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,subprocess\ns=open('skills/sprint/SKILL.md',encoding='utf-8').read();h=subprocess.run([sys.executable,'_tools/backlog.py','dispatch','--help'],capture_output=True,text=True).stdout\nok=('max-budget-usd' in s or 'KB_WORKER_BUDGET_USD' in s) and 'max-budget-usd' in h\nprint(ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "_tools/bl_dispatch.py"
+  ],
+  "links": [
+    "parked: SP-v64egscn review"
+  ]
+}

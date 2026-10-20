@@ -1,0 +1,26 @@
+{
+  "id": "ST-xesxiojo",
+  "kind": "story",
+  "title": "The census reports say Haiku 5.5 is the batch judge's default, not the phase-4 checker's",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/reports/fact-diff.md (Bars, Not measured) and kb/_self/reports/benchmarks.md stop calling Haiku 5.5 the default of the checker's passage judgments, since the checker keeps the session's model (ST-tef5gzq7), and compare --decide's check line says it is a measurement, not a default",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nr=lambda p:' '.join(open(p,encoding='utf-8').read().split())\nf=r('kb/_self/reports/fact-diff.md');b=r('kb/_self/reports/benchmarks.md')\nbad=[x for x,t in (('Haiku 5.5 is the default of the passage judgments',f),('so Haiku 5.5 is their default',b)) if x in t]\nprint(bad);sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/fact-diff.md",
+    "kb/_self/reports/benchmarks.md",
+    "_tools/census.py"
+  ],
+  "links": [
+    "parked: SP-v64egscn review"
+  ]
+}

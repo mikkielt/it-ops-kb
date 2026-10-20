@@ -1,0 +1,24 @@
+{
+  "id": "ST-ypdp4xll",
+  "kind": "story",
+  "title": "The digest prints no bare by-model line for item rows with no model usage",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "querylog.py digest leaves out the by-model line when the week's item lines name no model with tokens (empty main and sub)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os\nsys.path.insert(0,'_tools')\nimport ql_report as q\nimport inspect\nsrc=inspect.getsource(q.work_lines)\nprint('guard' if 'if by_model' in src or 'if models' in src else 'none');sys.exit(0 if ('if by_model' in src or 'if models' in src) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_report.py"
+  ],
+  "links": [
+    "parked: SP-v64egscn review"
+  ]
+}
