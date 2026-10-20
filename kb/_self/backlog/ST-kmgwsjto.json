@@ -91,7 +91,11 @@
         "three entries of a kind then a count, a cause cut at 100 characters": "ST-kmgwsjto",
         "every entry in full": "ST-kmgwsjto"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "three entries of a kind then a count, a cause cut at 100 characters",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: a live snapshot with a planted waiting gate, a blocked sprint, a refused delivery, an orphan, 5% free disk and a checkout that cannot fast-forward gives no needs you line; --status all starts with the sessions line.",
