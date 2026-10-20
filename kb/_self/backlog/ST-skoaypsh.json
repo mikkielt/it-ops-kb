@@ -6,7 +6,7 @@
   "sprint": "SP-ipeewrlv",
   "priority": "P2",
   "rank": 0,
-  "goal": "land removes its item's recorded scratch directory once the item has landed; close runs bl_clean for the sprint's own recorded leftovers (its items' worktrees and scratch directories, the orchestrator's and the reviewer's worktrees) with the age limit waived for them, within the operator's answer to gate g1; backlog.py tidy --report prints one line of counts and bytes per class, reads only, within 10 seconds on this clone; the SessionStart hook prints that line and removes nothing",
+  "goal": "land removes its item's recorded scratch directory once the item has landed; close runs bl_clean for the sprint's own recorded leftovers (its items' worktrees and scratch directories) with the age limit waived for them and leaves the orchestrator's and the reviewer's recorded worktrees to tidy --apply, within the operator's answer to gate g1 of ST-nkc5supu; backlog.py tidy --report prints one line of counts and bytes per class, reads only, within 10 seconds on this clone; the SessionStart hook prints that line and removes nothing",
   "checks": [
     {
       "run": [
@@ -29,7 +29,7 @@
       "check": 1
     },
     {
-      "clause": "close runs bl_clean for the sprint's own recorded leftovers (its items' worktrees and scratch directories, the orchestrator's and the reviewer's worktrees) with the age limit waived for them, within the operator's answer to gate g1",
+      "clause": "close runs bl_clean for the sprint's own recorded leftovers (its items' worktrees and scratch directories) with the age limit waived for them and leaves the orchestrator's and the reviewer's recorded worktrees to tidy --apply, within the operator's answer to gate g1 of ST-nkc5supu",
       "check": 1
     },
     {
@@ -132,7 +132,7 @@
       "role": "interactive"
     }
   ],
-  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with planted inputs (KB_COORD_STORE points at its own coord store, so no check writes the clone's real one); no change to _tools/tests_ceiling.json. What land and close may remove follows gate g1 of the tidy story: under option (a) they remove only their own items' worker worktrees as today and scratch directories (a plain directory removal, not a denied git command); the orchestrator's and reviewer's worktrees then wait for the operator's run.",
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with planted inputs (KB_COORD_STORE points at its own coord store, so no check writes the clone's real one); no change to _tools/tests_ceiling.json. What land and close may remove follows gate g1 of the tidy story: under option (a) they remove only their own items' worker worktrees as today and scratch directories (a plain directory removal, not a denied git command); the orchestrator's and reviewer's worktrees then wait for the operator's run. Goal reworded 2026-10-20 to gate g2's answer: close leaves the orchestrator's and the reviewer's recorded worktrees (close runs from the orchestrator's own worktree) to tidy --apply.",
   "claimed_by": "orch-r201",
   "operator": "op-f618a13e"
 }
