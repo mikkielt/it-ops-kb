@@ -40,8 +40,7 @@
     "kb/_self/code.md"
   ],
   "depends_on": [
-    "BG-lyfl57xv",
-    "ST-viygfjeg"
+    "BG-lyfl57xv"
   ],
   "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: a --from-snapshot file with three sprints gives one 160-character row for the active sprint, its full title, a 'left:' line repeating item titles, the two others as separate prose lines and no --detail flag."
 }

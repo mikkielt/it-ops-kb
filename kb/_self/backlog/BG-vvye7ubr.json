@@ -33,7 +33,6 @@
     "kb/_self/code.md"
   ],
   "depends_on": [
-    "ST-hpbjc2gc",
     "BG-y3vxqpkp"
   ],
   "gates": [

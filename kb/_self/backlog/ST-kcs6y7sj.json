@@ -39,8 +39,5 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "depends_on": [
-    "ST-nkc5supu"
-  ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with its own coord store and a stand-in claude on PATH, so no paid model call; no change to _tools/tests_ceiling.json. An uncommitted worktree stays keep even when answered: tidy never passes --force, so a dirty one is reported for a hand clean. Starts after SP-ipeewrlv has landed bl_clean.py."
 }
