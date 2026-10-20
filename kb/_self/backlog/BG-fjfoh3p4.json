@@ -2,7 +2,7 @@
   "id": "BG-fjfoh3p4",
   "kind": "bug",
   "title": "The otel adapter's /metrics carries the Python process and GC metrics beside kbmon's",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-qh2j24z2",
   "priority": "P3",
   "rank": 0,

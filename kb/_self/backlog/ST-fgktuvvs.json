@@ -2,7 +2,7 @@
   "id": "ST-fgktuvvs",
   "kind": "story",
   "title": "monitoring.md says where a new OpenTelemetry signal, exporter or receiver goes",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-qh2j24z2",
   "priority": "P2",
   "rank": 0,

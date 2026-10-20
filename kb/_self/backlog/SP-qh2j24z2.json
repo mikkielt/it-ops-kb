@@ -2,7 +2,7 @@
   "id": "SP-qh2j24z2",
   "kind": "sprint",
   "title": "OpenTelemetry signals have one place each, and kbmon's export is exact",
-  "status": "planned",
+  "status": "active",
   "goal": "kb/_self/monitoring.md says where a new OpenTelemetry exporter, receiver or exported measure goes and what kbmon exports against what a tool records; kbmon_otel.py builds its signal exporters from one registry; the otel and mon_ modules are mapped to the docs that name them; the adapter keeps a cursor per signal and serves only kbmon's points at /metrics; kbmon --events exports each delivery once with its outcome, keeps every row of the cursor's millisecond and keeps a comma-separated id list; otel/pyproject.toml's SDK floor is the release the adapter needs",
   "gates": [
     {

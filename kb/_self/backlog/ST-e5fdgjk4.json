@@ -2,7 +2,7 @@
   "id": "ST-e5fdgjk4",
   "kind": "story",
   "title": "kbmon --events exports each delivery once with its outcome and loses no row or id",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-qh2j24z2",
   "priority": "P2",
   "rank": 0,

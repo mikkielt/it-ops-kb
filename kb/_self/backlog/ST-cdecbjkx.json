@@ -2,7 +2,7 @@
   "id": "ST-cdecbjkx",
   "kind": "story",
   "title": "Research sprint goal: OpenTelemetry signals have one place each, and kbmon's export is exact",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-qh2j24z2",
   "goal_research": true,
   "priority": "P1",

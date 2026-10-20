@@ -2,7 +2,7 @@
   "id": "ST-jmzocfoh",
   "kind": "story",
   "title": "Review sprint: OpenTelemetry signals have one place each, and kbmon's export is exact",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-qh2j24z2",
   "review": true,
   "priority": "P1",

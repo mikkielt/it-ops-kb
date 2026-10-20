@@ -2,7 +2,7 @@
   "id": "BG-bubaqrja",
   "kind": "bug",
   "title": "The otel adapter resends the same log records every round while span export fails",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-qh2j24z2",
   "priority": "P2",
   "rank": 0,

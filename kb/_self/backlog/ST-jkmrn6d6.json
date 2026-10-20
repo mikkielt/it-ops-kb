@@ -2,7 +2,7 @@
   "id": "ST-jkmrn6d6",
   "kind": "story",
   "title": "otel/pyproject.toml's SDK floor is the release the adapter's log and span code needs",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-qh2j24z2",
   "priority": "P3",
   "rank": 0,

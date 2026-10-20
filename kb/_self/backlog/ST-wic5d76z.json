@@ -2,7 +2,7 @@
   "id": "ST-wic5d76z",
   "kind": "story",
   "title": "kbmon_otel.py builds its signal exporters from one registry, and the otel and mon_ modules are mapped",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-qh2j24z2",
   "priority": "P2",
   "rank": 0,
