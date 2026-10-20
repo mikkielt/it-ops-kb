@@ -41,7 +41,7 @@ from bl_base import (RESEARCH_KINDS, ROOT as PLUGIN_ROOT, Refused, Rejected, alw
                      run_check, say, scope, scratch_dir, setting, split_touch, touches_overlap, trailer_problem, withhold,
                      operator_who, worker_dir, ledger_lock, write_ledger)
 from bl_land import WORK_PREFIX, WORKER_NAME
-from bl_plan import shared_doc
+from bl_plan import land_line, shared_doc
 
 WORKER_ROLE = "worker"  # KB_ROLE of every dispatched session, whatever role the dispatching one has
 ROLE_FILE = ".claude/agents/kb-worker.md"  # the worker's role file: its brief makes the session read and follow it
@@ -818,6 +818,8 @@ def cmd_stage_back(bl, a):
 
 def cmd_brief(bl, a):
     iid = need(bl, a.id)
+    if note := land_line(bl, iid):
+        say(note.strip())
     sys.stdout.write(withhold(compose_brief(bl, iid, a.known, a.probe, known_suite=a.known_suite)))
     return 0
 

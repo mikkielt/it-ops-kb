@@ -15,7 +15,7 @@ from bl_base import (
     waits, withhold,
 )
 from bl_check import knowledge_lines
-from bl_plan import start_approved, touch_files, touches_meet, where_outside
+from bl_plan import land_line, start_approved, touch_files, touches_meet, where_outside
 
 
 def ready(bl, sprint=None, any_sprint=False):
@@ -141,6 +141,8 @@ def cmd_next(bl, a):
         return 1
     for i in ids if a.all else ids[:1]:
         say(line(bl, i))
+        if note := land_line(bl, i):
+            say(note)
         for x in knowledge_lines(bl, i):
             say(x)
     return 0
