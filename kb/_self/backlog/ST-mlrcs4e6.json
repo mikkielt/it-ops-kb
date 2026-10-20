@@ -2,7 +2,7 @@
   "id": "ST-mlrcs4e6",
   "kind": "story",
   "title": "Review sprint: Operator identities stay pseudonymous where they leave the clone: the KB-Operator trailer, publish and export guards",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-yjugq5c2",
   "review": true,
   "priority": "P1",
@@ -23,6 +23,27 @@
       ]
     }
   ],
-  "claimed_by": "orch-r39",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "db5839fea1f2f52da7cbfc5b2ededdff95c54a9d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "78ab87ad2ba4b8ec"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "69f18f9813779f49"
+      }
+    ]
+  }
 }
