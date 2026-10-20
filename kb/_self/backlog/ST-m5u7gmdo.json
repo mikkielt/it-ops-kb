@@ -2,7 +2,7 @@
   "id": "ST-m5u7gmdo",
   "kind": "story",
   "title": "Research sprint goal: kb/_self explains the agent coordination tooling in one owner doc",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-eptouzxc",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Planner: this research reads only the project's own code (no kb/public facts), so its touches are its item file; the researched check passes on the notes' No outside facts line. Steering case to read: python3 _tools/coord.py get ask/A275e35646a, answer/A275e35646a, ask/A3b8d7e0199, answer/A3b8d7e0199 (local store of this host)."
+  "notes": "Planner: this research reads only the project's own code (no kb/public facts), so its touches are its item file; the researched check passes on the notes' No outside facts line. Steering case to read: python3 _tools/coord.py get ask/A275e35646a, answer/A275e35646a, ask/A3b8d7e0199, answer/A3b8d7e0199 (local store of this host).",
+  "claimed_by": "orch-r221",
+  "operator": "op-f618a13e"
 }
