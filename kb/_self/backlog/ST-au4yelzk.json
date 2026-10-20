@@ -1,0 +1,25 @@
+{
+  "id": "ST-au4yelzk",
+  "kind": "story",
+  "title": "A check that a doc names no removed test reads every form the docs name a test in",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The kb-sprint plan step that reviews checks says a check asserting docs name no removed test or tool reads each naming form the docs use (a bare selector name after 'test named' or 'tests named', a test_ function, a _tools path), not only one",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt = open('.claude/skills/kb-sprint/SKILL.md', encoding='utf-8').read()\ns = t[t.index('## plan'):t.index('## start')]\nok = 'tests named' in s\nprint('plan step names the bare selector form:', ok); sys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-gea4jifz close"
+  ],
+  "notes": "SP-gea4jifz close: ST-ke655nm5's check matched only test_* names and _tools/ paths and passed while content-rules.md and tools.md still named 17 removed tests in the form 'the tests named `decisions_store`'. The review found it (S1) and BG-ybp6fdxg fixed it in the sprint, one more worker run and landing."
+}

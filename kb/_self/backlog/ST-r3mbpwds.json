@@ -1,0 +1,25 @@
+{
+  "id": "ST-r3mbpwds",
+  "kind": "story",
+  "title": "The sprint skill's run step says two items that share only a kb/_self doc may run at once",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The kb-sprint skill's run step that picks items whose touches do not overlap says a shared kb/_self doc is no overlap, as held --overlaps already treats it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt = open('.claude/skills/kb-sprint/SKILL.md', encoding='utf-8').read()\ns = t[t.index('## run'):t.index('## review')]\nstep = [l for l in s.splitlines() if l.startswith('2. ')]\nok = bool(step) and 'kb/_self' in step[0]\nprint('run step 2 names the kb/_self doc exception:', ok); sys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-gea4jifz close"
+  ],
+  "notes": "SP-gea4jifz close: ST-3utkudhz was ready while ST-mylcbpd6 was in flight; both named kb/_self/tools.md. held --overlaps printed no overlap (bl_plan.shared_doc exempts kb/_self docs, since a landing's rebase merges doc hunks), but run step 2 says only 'touches do not overlap', so the orchestrator waited for ST-mylcbpd6 to land before claiming: a serial wait the tool did not ask for."
+}

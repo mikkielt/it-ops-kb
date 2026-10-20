@@ -1,0 +1,27 @@
+{
+  "id": "ST-advggjpq",
+  "kind": "story",
+  "title": "backlog.py start refuses a sprint while a committed item's check fails on a traceback on the base",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py start runs or reads the precheck of the sprint and refuses, naming the item and check, while a committed item's check fails on the base with a traceback rather than its premise",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt = open('_tools/bl_plan.py', encoding='utf-8').read()\ns = t[t.index('def cmd_start'):]\ns = s[:s.index('\\ndef ', 1)]\nok = 'precheck' in s or 'traceback' in s\nprint('start reads the precheck verdicts:', ok); sys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/bl_precheck.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-gea4jifz close"
+  ],
+  "notes": "SP-gea4jifz close: precheck at plan time and again after the research story printed ST-3utkudhz's check as broken (FileNotFoundError on kb/_self/benchmarks.md, the doc the item creates), and start went ahead. Here the check worked once the doc existed, but a broken check that start lets through proves nothing until the work lands. Prefer a refusal over a new test (D-6kei5o2z)."
+}
