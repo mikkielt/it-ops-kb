@@ -20,6 +20,7 @@ kb/_self/code.md,_tools/*.py
 kb/_self/code.md,pyproject.toml
 kb/_self/tools.md,_tools/rag.py
 kb/_self/tools.md,_tools/kbfacts.py
+kb/_self/tools.md,_tools/kf_*.py
 kb/_self/tools.md,_tools/kb_mcp.py
 kb/_self/tools.md,_tools/kb_http.py
 kb/_self/tools.md,_tools/kb_hook.py
@@ -44,6 +45,7 @@ kb/_self/tools.md,.claude/skills/kb-verify/lint.py
 kb/_self/tools.md,pyproject.toml
 kb/_self/content-rules.md,_tools/check.py
 kb/_self/content-rules.md,_tools/kbfacts.py
+kb/_self/content-rules.md,_tools/kf_*.py
 kb/_self/content-rules.md,_tools/kbid.py
 kb/_self/content-rules.md,_tools/build_index.py
 kb/_self/content-rules.md,.claude/skills/kb-verify/lint.py
@@ -74,6 +76,7 @@ kb/_self/design.md,_tools/kb_http.py
 kb/_self/alternatives.md,kb/_self/design.md
 kb/_self/alternatives.md,README.md
 kb/_self/token-efficiency.md,_tools/kbfacts.py
+kb/_self/token-efficiency.md,_tools/kf_*.py
 kb/_self/token-efficiency.md,_tools/kb_mcp.py
 kb/_self/token-efficiency.md,_tools/kb_hook.py
 kb/_self/token-efficiency.md,_tools/kb_ask.py
