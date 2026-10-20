@@ -2,7 +2,7 @@
   "id": "ST-5lh3rat3",
   "kind": "story",
   "title": "Research sprint goal: kb articles pass the contract lint clean, and the query log's research queue is worked",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-2rjhs7se",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Open questions for this sprint (kb first, then live docs): Questions: (1) for each source whose anchor rows say gone (S-may2otwt, S-ny2cx7aq, S-rgpijsmb, S-ueumbn4x, S-y23orbo7, S-yuwxbqz3, S2180, S2181, S2196, S869), where the page moved, if anywhere; (2) the eight queued query-log gaps (querylog.py queue): what official sources answer them."
+  "notes": "Open questions for this sprint (kb first, then live docs): Questions: (1) for each source whose anchor rows say gone (S-may2otwt, S-ny2cx7aq, S-rgpijsmb, S-ueumbn4x, S-y23orbo7, S-yuwxbqz3, S2180, S2181, S2196, S869), where the page moved, if anywhere; (2) the eight queued query-log gaps (querylog.py queue): what official sources answer them.",
+  "claimed_by": "orch-r105",
+  "operator": "op-f618a13e"
 }
