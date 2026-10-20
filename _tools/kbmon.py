@@ -2,7 +2,7 @@
 """kbmon: the kb, coord, running sessions, the query log and the host in one snapshot (stdlib only). Docs: kb/_self/monitoring.md.
 
   kbmon.py --json              print one snapshot as a JSON object of schema 1: a panel for each of kb, coord, sessions,
-                               querylog, host, sprint and log, each with its state (ok, timeout, error, absent or
+                               querylog, host, sprint, cleanup and log, each with its state (ok, timeout, error, absent or
                                unsupported), its seconds and, unless it timed out or is absent, its data
   kbmon.py --once              print the same panels as plain text, with no escape byte
   kbmon.py --metrics           print the snapshot as one JSON object of metric points (name kbmon.<panel>.<measure>, unit,

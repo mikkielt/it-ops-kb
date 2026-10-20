@@ -111,7 +111,17 @@ def sessions_points(data):
     return out
 
 
-EXPORTERS = {"kb": kb_points, "coord": coord_points, "sessions": sessions_points}
+def cleanup_points(data):
+    out = []
+    for cls, c in (data.get("counts") or {}).items():
+        for verdict in ("remove", "keep"):
+            out.append(point("kbmon.cleanup.leftovers", "{leftover}", "gauge", c.get(verdict), **{"class": cls, "verdict": verdict}))
+    out.append(point("kbmon.cleanup.removable_bytes", "By", "gauge", data.get("bytes")))
+    out.append(point("kbmon.cleanup.free", "GiBy", "gauge", data.get("free_gib")))
+    return out
+
+
+EXPORTERS = {"kb": kb_points, "coord": coord_points, "sessions": sessions_points, "cleanup": cleanup_points}
 
 
 def points(snap):
