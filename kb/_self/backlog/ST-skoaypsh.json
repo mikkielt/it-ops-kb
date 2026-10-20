@@ -125,7 +125,11 @@
         "4 seconds shared by all the rows, the figure marked or more past it (a number with no data behind it; the git calls of the verdicts are the rest)": "ST-skoaypsh",
         "no shared limit: 2 seconds a candidate as tidy has": "ST-skoaypsh"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "4 seconds shared by all the rows, the figure marked or more past it (a number with no data behind it; the git calls of the verdicts are the rest)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with planted inputs (KB_COORD_STORE points at its own coord store, so no check writes the clone's real one); no change to _tools/tests_ceiling.json. What land and close may remove follows gate g1 of the tidy story: under option (a) they remove only their own items' worker worktrees as today and scratch directories (a plain directory removal, not a denied git command); the orchestrator's and reviewer's worktrees then wait for the operator's run.",
