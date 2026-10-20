@@ -70,7 +70,11 @@
         "kbcommon.repo_roots, with kg_base re-exporting it and fetch calling kbcommon.repo_roots": "ST-e23cb2h4",
         "kg_base.repo_roots stays and fetch imports kg_base": "ST-e23cb2h4"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "kbcommon.repo_roots, with kg_base re-exporting it and fetch calling kbcommon.repo_roots",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
