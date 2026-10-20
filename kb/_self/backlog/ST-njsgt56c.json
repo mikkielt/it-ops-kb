@@ -2,7 +2,7 @@
   "id": "ST-njsgt56c",
   "kind": "story",
   "title": "kbmon shows each Claude Code session as one short label in every panel, not the all-zero placeholder",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-razcgjsb",
   "priority": "P2",
   "rank": 0,
@@ -56,5 +56,7 @@
       "by": "operator"
     }
   ],
-  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: the check plants two session leases in a fresh coord store; both holders read 00000000-0000-0000-0000-000000000000 in --json and --status coord (10 all-zero ids), so the two sessions cannot be told apart; 9 of the 14 planted secret shapes enter coord (the rest are refused by coord's id charset) and none leaks today."
+  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: the check plants two session leases in a fresh coord store; both holders read 00000000-0000-0000-0000-000000000000 in --json and --status coord (10 all-zero ids), so the two sessions cannot be told apart; 9 of the 14 planted secret shapes enter coord (the rest are refused by coord's id charset) and none leaks today.",
+  "claimed_by": "orch-r112",
+  "operator": "op-f618a13e"
 }
