@@ -73,7 +73,9 @@
       },
       "class": "design",
       "answer": "reword",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): lint on 2026-10-19: 56 mixed-tag facts in 27 articles and 2 DER facts without a version. A mixed fact is split into one fact per tag or retagged; a reworded DOC fact is re-anchored (factdiff.py anchor --file) and its doc2query rows pruned. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",

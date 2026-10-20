@@ -55,7 +55,9 @@
       },
       "class": "design",
       "answer": "split the preferred-over sentence into its own fact with its own anchor",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): folds BG-bwyr7oup, BG-3tvxhg3t, ST-gympyz6m, ST-apmawhii, BG-l7u2rtzh, ST-6745y7as, ST-sjzxpgr7 (all failed on 2026-10-19). A fact whose source does not support it is put to the operator as a blocking gate, never deleted by the worker.",

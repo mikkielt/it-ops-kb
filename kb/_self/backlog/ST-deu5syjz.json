@@ -1,0 +1,26 @@
+{
+  "id": "ST-deu5syjz",
+  "kind": "story",
+  "title": "codebase-mapping's Tooling API DOC fact states only what its source says",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the DOC fact on the Gradle Tooling API in agents/codebase-mapping.md no longer ends with the derived 'and it therefore runs repository build code', which its DER fact carries",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/public/agents/codebase-mapping.md').read();sys.exit(1 if 'and it therefore runs repository build code. [DOC' in t else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/agents/codebase-mapping.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-2rjhs7se review"
+  ]
+}

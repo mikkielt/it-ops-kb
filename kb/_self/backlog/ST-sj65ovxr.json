@@ -59,7 +59,9 @@
       },
       "class": "design",
       "answer": "two facts: a CODE fact for the pytest command and worker_count, and a DER fact for the fixture reading",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): folds six review bugs, each with its repro embedded in the check (all six failed on 2026-10-19): BG-fknkjg3d, BG-ow62jocg, BG-togur4on, BG-se62hdka, BG-qkc7q4x2, BG-25w54mly.",

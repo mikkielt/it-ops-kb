@@ -1,0 +1,26 @@
+{
+  "id": "ST-zrcm5ytm",
+  "kind": "story",
+  "title": "Reworded and split facts keep their anchor rows: no stale old-key rows, every new DOC fact anchored",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "factdiff.py anchors --stale reports no stale row, and the DOC facts the SP-2rjhs7se splits made (a2a-protocol S-xasyjfgi and S2120, doc-lookup-sources and the rest of the 110 new fact/source pairs) hold anchor rows",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/factdiff.py",
+        "anchors",
+        "--stale"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-2rjhs7se review"
+  ]
+}

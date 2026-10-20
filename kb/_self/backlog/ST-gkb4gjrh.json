@@ -1,0 +1,26 @@
+{
+  "id": "ST-gkb4gjrh",
+  "kind": "story",
+  "title": "doc-change-detection's undocumented markdown-form fact names the fetch it rests on",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the agents/doc-change-detection.md fact that learn.microsoft.com/en-us/llms.txt returns 404 and the ?accept=text/markdown form is observed behaviour names the fetch it rests on (tool or client and date) in its DER tag, or is split into a documentation comparison and a dated observation",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/public/agents/doc-change-detection.md').read();sys.exit(1 if 'not a published interface. [DER S2176, S-lylm4eqz: documented routes compared with the undocumented form]' in t else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/agents/doc-change-detection.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-2rjhs7se review"
+  ]
+}

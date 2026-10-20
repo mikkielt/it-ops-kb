@@ -1,0 +1,24 @@
+{
+  "id": "ST-x265hfrg",
+  "kind": "story",
+  "title": "stdlib-sqlite3-csv links shared-state-concurrency again",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "python/stdlib-sqlite3-csv.md links agents/shared-state-concurrency.md again in its related list, worded without naming its own topic, restoring the link SP-2rjhs7se's ST-g6t7jung removed",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.exit(0 if 'shared-state-concurrency' in open('kb/public/python/stdlib-sqlite3-csv.md').read() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/python/stdlib-sqlite3-csv.md"
+  ],
+  "links": [
+    "parked: SP-2rjhs7se review"
+  ]
+}

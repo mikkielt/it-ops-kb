@@ -1,0 +1,28 @@
+{
+  "id": "ST-e7zhptqm",
+  "kind": "story",
+  "title": "An article's sources header lists the ids its Reference table rows cite, and lint warns of one it misses",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "auth/issuer-token-rotation.md, auth/propagation-latency.md and security/settings-crosswalk.md list in their sources header every source id their Reference table rows cite (S-fsqu2grq and S-ytnvr75r among them), and the contract lint warns of a table-row id missing from the header",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys;t=open('kb/public/auth/issuer-token-rotation.md').read();h=re.search(r'^sources: \\[(.*)\\]',t,re.M).group(1);sys.exit(0 if 'S-fsqu2grq' in h and 'S-ytnvr75r' in h else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/auth/issuer-token-rotation.md",
+    "kb/public/auth/propagation-latency.md",
+    "kb/public/security/settings-crosswalk.md",
+    "kb/public/_sources.csv",
+    ".claude/skills/kb-verify/lint.py"
+  ],
+  "links": [
+    "parked: SP-2rjhs7se review"
+  ]
+}

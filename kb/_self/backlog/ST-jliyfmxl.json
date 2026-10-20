@@ -73,7 +73,9 @@
       },
       "class": "design",
       "answer": "split",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): the second half of the 56 mixed-tag facts (E3 has the agents articles). Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
