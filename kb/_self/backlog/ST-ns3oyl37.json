@@ -1,0 +1,28 @@
+{
+  "id": "ST-ns3oyl37",
+  "kind": "story",
+  "title": "dispatch --detach keeps every run's log and the sprint skill steers a running worker by its item id",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A second dispatch --detach of an item appends to its dispatch.log instead of truncating the first run's, the docs name the log's real last line (the rows line after 'worker of ID exited'), and the sprint skill's steering text addresses a running worker by its item id, not a session id the dispatch log holds only after the worker exits",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re, sys\nsrc = open(\"_tools/bl_dispatch.py\", encoding=\"utf-8\").read()\nskill = open(\"skills/sprint/SKILL.md\", encoding=\"utf-8\").read()\nappend = bool(re.search(r\"DETACH_LOG_NAME\\)?,\\s*[\\x22\\x27]a\", src))\nsteer = \"session id from the dispatch log\" not in skill\nprint(\"log appended:\", append, \"| steering text not tied to the log:\", steer)\nsys.exit(0 if append and steer else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/backlog.py",
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-tsb23kev review"
+  ]
+}

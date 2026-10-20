@@ -1,0 +1,26 @@
+{
+  "id": "ST-oine6mto",
+  "kind": "story",
+  "title": "Every git fetch of land, not only the main one, runs once more after a failure",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The code-branch fetch, the pushed-tip fetch, the wait-merge poll fetch and the registered-repository fetch of bl_land go through land_git_fetch's one retry, so a single timeout in the wait-merge poll no longer ends the wait, as ST-tnickxo3 gate g1's answer (any failed git fetch of land runs once more) says",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re, sys\nsrc = open(\"_tools/bl_land.py\", encoding=\"utf-8\").read()\nn = len(re.findall(r\"land_git_network\\([^)]*\\\"fetch\\\"\", src)) + len(re.findall(r\"run_git_bounded\\(\\(\\\"fetch\\\"\", src)) + len(re.findall(r\"repo_network\\([^)]*\\\"fetch\\\"\", src))\nprint(\"fetch calls outside land_git_fetch:\", n)\nsys.exit(1 if n else 0)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-tsb23kev review"
+  ]
+}

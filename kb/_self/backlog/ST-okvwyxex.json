@@ -1,0 +1,24 @@
+{
+  "id": "ST-okvwyxex",
+  "kind": "story",
+  "title": "The six observed-defect drafts restored by the SP-tsb23kev review get planted checks",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "ST-vwe6kopi, ST-yh5ivly4, ST-qqeojkym, ST-y74y4tpn, ST-fqcy65x6 and ST-frcd5u2m, restored after ST-lhtuyih2 dropped them, each get a check or repro that runs the defect on a planted input and fails before its work, so none selects a test still to write",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, re, subprocess, sys\nids = [\"ST-vwe6kopi\", \"ST-yh5ivly4\", \"ST-qqeojkym\", \"ST-y74y4tpn\", \"ST-fqcy65x6\", \"ST-frcd5u2m\"]\nmissing = [i for i in ids if not os.path.exists(f\"kb/_self/backlog/{i}.json\")]\np = subprocess.run([sys.executable, \"_tools/backlog.py\", \"selectors\"], capture_output=True, text=True)\nnone = [l for l in p.stdout.splitlines() if re.match(r\"^\\s*0\\s+NONE\", l) and any(i in l for i in ids)]\nprint(\"missing:\", missing, \"| still selecting no test:\", len(none))\nsys.exit(1 if missing or none else 0)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog/*.json"
+  ],
+  "links": [
+    "parked: SP-tsb23kev review"
+  ]
+}

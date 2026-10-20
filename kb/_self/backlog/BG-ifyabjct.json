@@ -45,7 +45,9 @@
       },
       "class": "design",
       "answer": "catch ValueError around urlsplit and UnicodeError around the request, exit 2 with the library's reason",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

@@ -1,0 +1,25 @@
+{
+  "id": "BG-mg2sto2q",
+  "kind": "bug",
+  "title": "forge_reads does not cut a caller-injected runner at the total deadline, so BG-mhsmvdrz's 60 s bound holds only for the default runner and is unproven by its repro",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "forge_reads ends within its deadline whatever runner it is given: a slow injected runner is not called past the deadline and a planted run proves the bound",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys, time\nsys.path.insert(0, \"_tools\")\nimport bl_stall\ndef slow(argv, cwd=None):\n    time.sleep(3)\n    return 1, \"\"\nt = time.monotonic()\ntry:\n    bl_stall.forge_reads(\".\", [\"BG-aaaaaaaa\"], run=slow, deadline_s=0.5)\nexcept Exception as e:\n    print(\"raised\", type(e).__name__)\ntook = time.monotonic() - t\nprint(\"took %.1f s against a 0.5 s deadline\" % took)\nsys.exit(0 if took < 1.5 else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/bl_stall.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-tsb23kev review"
+  ]
+}

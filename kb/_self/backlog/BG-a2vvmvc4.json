@@ -42,7 +42,9 @@
       },
       "class": "design",
       "answer": "shared not_negative type",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

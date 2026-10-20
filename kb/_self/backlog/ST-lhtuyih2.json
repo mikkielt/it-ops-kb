@@ -40,8 +40,10 @@
         "Check more, drop only items with no cheap planted input": "ST-lhtuyih2"
       },
       "class": "design",
-      "answer": "Check three (the two gate-class items and the sync e2e item), drop 24 under D-2tq4fhgs",
-      "by": "agent"
+      "answer": "Check more, drop only items with no cheap planted input",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
