@@ -4,7 +4,7 @@ Used by kbmon_otel.py. Each event of kbmon's `--events` object (`{name, time, at
 record: `name` is the record's event name, `time` its timestamp (Unix nanoseconds) and `attributes` its attributes, which
 kbmon already limited to numbers, flags and identifiers. The record has no body. The endpoint and the headers are the
 SDK exporter's own (OTEL_EXPORTER_OTLP_LOGS_ENDPOINT or OTEL_EXPORTER_OTLP_ENDPOINT, which gets `v1/logs` appended).
-The cursor is kept in memory between rounds, so a round gives back only what is newer than the last one that was sent.
+The runner keeps this signal's cursor in memory, so a round gives back only what is newer than the last one that sent it.
 Docs: kb/_self/monitoring.md.
 """
 
@@ -37,10 +37,9 @@ def severity(event: dict):
 
 
 class Logs:
-    """One logger provider that lives across rounds, and the cursor of the events already sent."""
+    """One logger provider that lives across rounds."""
 
     def __init__(self, resource):
-        self.cursor = None
         self.exporter = Exporter()
         self.provider = LoggerProvider(resource=resource, shutdown_on_exit=False)
         self.provider.add_log_record_processor(
@@ -48,7 +47,7 @@ class Logs:
         self.logger = self.provider.get_logger("kbmon")
 
     def send(self, snapshot: dict) -> bool:
-        """Send the events of one `--events` object; the cursor moves to its cursor only when every record was sent."""
+        """Send the events of one `--events` object; True when every record was exported."""
         events = [e for e in snapshot.get("events", []) if isinstance(e, dict) and isinstance(e.get("name"), str)]
         self.exporter.ok = True
         for event in events:
@@ -56,10 +55,7 @@ class Logs:
             self.logger.emit(timestamp=event.get("time"), severity_number=number, severity_text=text,
                              attributes=event.get("attributes") or {}, event_name=event["name"])
         flushed = self.provider.force_flush(FLUSH_MS)
-        if not (flushed and self.exporter.ok):
-            return False
-        self.cursor = snapshot.get("cursor") or self.cursor
-        return True
+        return bool(flushed and self.exporter.ok)
 
     def close(self):
         self.provider.shutdown()
