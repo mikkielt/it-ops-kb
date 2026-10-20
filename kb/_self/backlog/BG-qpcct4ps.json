@@ -2,7 +2,7 @@
   "id": "BG-qpcct4ps",
   "kind": "bug",
   "title": "kbmon panels cannot say absent or timeout for themselves: mon_coord wraps mon_base's private worker, and the view calls every absent panel a missing mon_ module",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-kgvbpjhd",
   "priority": "P2",
   "rank": 0,
@@ -56,6 +56,19 @@
     }
   ],
   "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: repro fails (mon_base._worker is mon_coord's). 2026-10-20, ST-7jjj3b4s: mon_base now has Absent, an exception a panel's collect raises; _worker turns it into state absent with {reason} as data (the bench panel uses it, so it works under --panel bench alone, where mon_coord is never imported and its patched worker is not in place). mon_coord's declare for absent could use it; the timeout half of this bug and the view's reason text (BG-rpp4dsrn) remain.",
-  "claimed_by": "orch-r114",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "f6461787196149e56d9f2383145ea43f15357cfb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import mon_base,mon_coord;sys.exit(1 if mon_base._worker.__module__=='mon_coord' else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
