@@ -1,0 +1,26 @@
+{
+  "id": "ST-bbvgf34x",
+  "kind": "story",
+  "title": "querylog.py reredact holds the distill lock while it rewrites run files, so a concurrent apply never reads a half-written file",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "querylog.py reredact takes the distill lock before its backup and releases it after its last write, and says so and exits 3 when another distill or apply holds it, as apply --push does; kb/_self/querylog.md names it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys, inspect\nsys.path.insert(0, \"_tools\")\nimport ql_store\nsrc = inspect.getsource(ql_store.reredact)\nassert \"acquire\" in src and \"release\" in src, \"reredact rewrites run files without the distill lock apply --push holds\"\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_store.py",
+    "_tools/querylog.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-rrqlgiff review"
+  ]
+}

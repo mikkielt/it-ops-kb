@@ -1,0 +1,24 @@
+{
+  "id": "ST-nofrdbhh",
+  "kind": "story",
+  "title": "The Sonnet orchestrator trial section also holds the figures of the finished SP-rrqlgiff orchestrator session's result JSON",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/token-efficiency.md's Sonnet orchestrator trial section quotes total_cost_usd, num_turns and duration_ms from r240-SP-rrqlgiff.json (the finished session's result JSON), beside the figures it holds as of the claim, and names what the review and close added to the sprint's stops and hand fixes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re\nt = open(\"kb/_self/token-efficiency.md\", encoding=\"utf-8\").read()\nm = re.search(r\"(?m)^.*Sonnet orchestrator trial.*$\", t)\nassert m, \"no Sonnet orchestrator trial section\"\nrest = t[m.start():]\nnxt = re.search(r\"(?m)^#{1,3} \", rest[m.end() - m.start():])\nsec = rest[: (m.end() - m.start()) + nxt.start()] if nxt else rest\nassert re.search(r\"total_cost_usd\\D{0,12}\\d\", sec) and \"num_turns\" in sec, \"the trial section holds no figure from the final result JSON of the SP-rrqlgiff orchestrator\"\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/token-efficiency.md"
+  ],
+  "links": [
+    "parked: SP-rrqlgiff review"
+  ]
+}

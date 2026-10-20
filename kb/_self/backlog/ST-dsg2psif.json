@@ -1,0 +1,25 @@
+{
+  "id": "ST-dsg2psif",
+  "kind": "story",
+  "title": "kbask.py's remediation session allows git log and git show with any trailing text, so a flag such as --output can write a file",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the remediation session's allowed tools hold git log and git show only in forms that take no --output (an exact command or a fixed flag list), as the cleanup session's hold kbmon.py --json exactly; kb/_self/monitoring.md says so",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, \"_tools\")\nimport kbask\nbad = [t for t in kbask.ALLOWED_TOOLS if t in (\"Bash(git log *)\", \"Bash(git show *)\")]\nassert not bad, (\"the remediation session may run git log or git show with any flag, --output=FILE included\", bad)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbask.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-rrqlgiff review"
+  ]
+}

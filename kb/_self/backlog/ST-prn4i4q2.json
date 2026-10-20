@@ -1,0 +1,28 @@
+{
+  "id": "ST-prn4i4q2",
+  "kind": "story",
+  "title": "Two Claude Code version claims in the attribution and MCP-environment facts rest on a quote that holds no version",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the fact that names Claude Code 2.1.154 (hooks.md) and the fact that names v2.1.281 (commit-signing-and-provenance.md) each have a located anchor whose quote holds that version, or the fact drops the version the quote does not hold",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv\nrows = list(csv.DictReader(open(\"kb/public/_anchors.csv\", encoding=\"utf-8\")))\ndef has(path, needle):\n    return any(r[\"path\"] == path and r[\"status\"] == \"located\" and needle in r[\"quote\"] for r in rows)\nassert has(\"claude/hooks.md\", \"2.1.154\") or True\nmiss = []\nif not any(r[\"path\"] == \"claude/hooks.md\" and r[\"status\"] == \"located\" and \"stdio MCP server subprocesses\" in r[\"quote\"].replace(\"Stdio\", \"stdio\") for r in rows):\n    miss.append(\"hooks.md: the MCP environment fact has no located anchor\")\nif not has(\"gitlab/commit-signing-and-provenance.md\", \"2.1.281\"):\n    miss.append(\"commit-signing-and-provenance.md: no located anchor quotes v2.1.281\")\nif not has(\"claude/hooks.md\", \"2.1.154\"):\n    miss.append(\"hooks.md: no located anchor quotes 2.1.154\")\nassert not miss, miss\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/claude/hooks.md",
+    "kb/public/gitlab/commit-signing-and-provenance.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_sources.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-rrqlgiff review"
+  ]
+}
