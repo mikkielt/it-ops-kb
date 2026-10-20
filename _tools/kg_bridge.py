@@ -1,23 +1,14 @@
 """The public-bridge command of kbgit.py (kb/_self/git.md, Public home): a branch of the public home to the integration
-remote, its commits rebased onto the integration main on a local branch and sent through sync. Runs git in KB, this
-module's own copy of the repository directory (a caller may point it at a scratch clone). Standard library only;
+remote, its commits rebased onto the integration main on a local branch and sent through sync. Runs git in KB, the
+repository directory kg_base names. Standard library only;
 kbgit.py imports it, and it imports no facade: sync comes in as an argument.
 """
 import argparse
 
 import kbpublic
 import kg_lane
-import kg_merge
-from kg_base import KB
+from kg_base import KB, git, rev_parse
 from kg_sync import dirty_paths, do_rebase, gitx, in_progress, new_report, short
-
-
-def git(*args, stdin=None):
-    return kg_merge.git(*args, stdin=stdin, kb=KB)
-
-
-def rev_parse(rev):
-    return (git("rev-parse", "-q", "--verify", rev + "^{commit}") or "").strip() or None
 
 
 BRIDGE_PREFIX = "bridge/"

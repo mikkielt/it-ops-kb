@@ -12,7 +12,7 @@ import kbcommon, kbid
 import build_index
 import ql_store
 import kg_base
-from kg_base import BASELINE, Problem, repo_roots
+from kg_base import BASELINE, Problem, git, git_run, repo_roots  # noqa: F401  (kg_lane and kg_history read git here)
 
 ROOT = kbcommon.PUBLIC  # the root fix and the history commands work on now (use_root); the public root by default
 CUR = None  # its kbcommon.Root; None: the public root, before roots() was read
@@ -66,8 +66,8 @@ MIN_ITEM = 20  # shorter list items (`- none`) may repeat on purpose
 
 
 # ---------------------------------------------------------------- io and git
-# The repository is kg_base.KB. read, git_run, git and show take `kb`, another directory, for a caller that runs its
-# own commands elsewhere (kbgit.py passes its KB).
+# The repository is kg_base.KB, where kg_base's git_run and git run. read and show take `kb`, another directory, for a
+# caller that runs its own commands elsewhere.
 
 def read(rel, kb=None):
     return kbcommon.read(os.path.join(kb or kg_base.KB, rel), newline="", strict=True)
@@ -76,20 +76,6 @@ def read(rel, kb=None):
 def write(rel, text):
     with open(os.path.join(kg_base.KB, rel), "w", encoding="utf-8", newline="") as f:
         f.write(text)
-
-
-def git_run(*args, stdin=None, kb=None):
-    """The finished git process (bytes output), or None when git cannot be started."""
-    try:
-        return subprocess.run(["git", *args], cwd=kb or kg_base.KB, capture_output=True, input=stdin)
-    except OSError:
-        return None
-
-
-def git(*args, stdin=None, kb=None):
-    """stdout of a git command in the kb, or None when git or the object is unavailable."""
-    p = git_run(*args, stdin=stdin, kb=kb)
-    return p.stdout.decode("utf-8", "replace") if p is not None and p.returncode == 0 else None
 
 
 def show(rev, rel, kb=None):

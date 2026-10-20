@@ -1,7 +1,7 @@
 """The trailers of kbgit.py (kb/_self/git.md, Commit trailers): the KB-* trailers a commit's change computes, their
 application to a message (`kbgit.py trailers`), the audit of a range of commits (`check-trailers`, the pre-push hook and
-sync's gate) and the work state of the KB-Work items a commit names (work_state). Runs git in KB, this module's own copy
-of the repository directory (a caller may point it at a scratch clone). Standard library only; kbgit.py imports it, and
+sync's gate) and the work state of the KB-Work items a commit names (work_state). Runs git in KB, the repository
+directory kg_base names. Standard library only; kbgit.py imports it, and
 it imports no facade.
 """
 import csv, datetime, io, json, os, re, subprocess, sys
@@ -12,22 +12,10 @@ import kbid
 import kbpublic
 import kg_lane
 import kg_merge
-from kg_base import KB, Problem
+from kg_base import KB, Problem, git, git_run, rev_parse
 from kg_merge import id_key, lf, strip_markers
 
 KB_DIR_REL = kbcommon.repo_rel(kbcommon.KB_DIR)  # `kb`: the roots are the directories kb/<name>/
-
-
-def git_run(*args, stdin=None):
-    return kg_merge.git_run(*args, stdin=stdin, kb=KB)
-
-
-def git(*args, stdin=None):
-    return kg_merge.git(*args, stdin=stdin, kb=KB)
-
-
-def rev_parse(rev):
-    return (git("rev-parse", "-q", "--verify", rev + "^{commit}") or "").strip() or None
 
 
 def root_of_path(path):

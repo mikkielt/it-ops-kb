@@ -1,7 +1,6 @@
 """The sync run of kbgit.py (kb/_self/git.md, Workflow): fetch, rebase onto the remote branch (its conflicts in the
 mechanical paths resolved with `fix`), fix, the gate and the push, `kbgit.py sync` and the rebase `bridge` reuses. Runs
-git in KB, this module's own copy of the repository directory (a caller may point it at a scratch clone), and the
-`kbgit.py` and checks of that tree as subprocesses. What belongs to the trailers and the hooks (the trailer audit, the
+git in KB, the repository directory kg_base names, and the `kbgit.py` and checks of that tree as subprocesses. What belongs to the trailers and the hooks (the trailer audit, the
 message of the fix commit, whether the commit hooks are installed) comes in as a `Host` the facade builds, since this
 module imports no facade. Standard library only; kbgit.py imports it.
 """
@@ -15,7 +14,7 @@ import kg_lane
 import kg_lock
 import kg_merge
 import perfcheck
-from kg_base import BASELINE, KB, repo_roots
+from kg_base import BASELINE, KB, git, git_run, repo_roots, rev_parse
 from kg_merge import has_markers
 
 # What sync takes from the facade: audit(rng, quiet=False, work_state_on=True) is kbgit's trailer_audit, message(body)
@@ -24,20 +23,8 @@ from kg_merge import has_markers
 Host = namedtuple("Host", "audit message hooks_ok")
 
 
-def git_run(*args, stdin=None):
-    return kg_merge.git_run(*args, stdin=stdin, kb=KB)
-
-
-def git(*args, stdin=None):
-    return kg_merge.git(*args, stdin=stdin, kb=KB)
-
-
 def read(rel):
     return kg_merge.read(rel, kb=KB)
-
-
-def rev_parse(rev):
-    return (git("rev-parse", "-q", "--verify", rev + "^{commit}") or "").strip() or None
 
 
 def git_path(name):

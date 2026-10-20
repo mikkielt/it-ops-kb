@@ -1,8 +1,8 @@
 """The git hooks of kbgit.py (kb/_self/git.md, Commands): the hook scripts the clone installs (`install-hooks`), whether
 core.hooksPath runs them in a checkout, the pre-push hook (the push guard, the code-lane refusal and the sync gate
 before a plain `git push`) and the `hook` command that runs the three (prepare-commit-msg notes an --amend, commit-msg
-adds the KB-* trailers). Runs git in KB, this module's own copy of the repository directory (a caller may point it
-at a scratch clone). Standard library only; kbgit.py imports it, and it imports no facade: the gate and the dirty paths
+adds the KB-* trailers). Runs git in KB, the repository directory
+kg_base names. Standard library only; kbgit.py imports it, and it imports no facade: the gate and the dirty paths
 come in as arguments.
 """
 import os, stat, subprocess, sys
@@ -11,8 +11,7 @@ from pathlib import Path
 import kblane
 import kbpublic
 import kg_lane
-import kg_merge
-from kg_base import KB
+from kg_base import KB, git, rev_parse
 from kg_trailers import (INDEX, KEY_LINE, STRAY, WORK, apply_trailers, blob, changed_paths, compute, message_strays,
                          message_trailers, valid_date, WORK_RULE, work_ids_ok, work_state)
 
@@ -20,14 +19,6 @@ HOOKS_DIR = ".githooks"
 HOOKS = ("prepare-commit-msg", "commit-msg", "pre-push")
 ZERO = "0" * 40
 AMEND_MARK = "kb-trailers-base"
-
-
-def git(*args, stdin=None):
-    return kg_merge.git(*args, stdin=stdin, kb=KB)
-
-
-def rev_parse(rev):
-    return (git("rev-parse", "-q", "--verify", rev + "^{commit}") or "").strip() or None
 
 
 def git_path(name):
