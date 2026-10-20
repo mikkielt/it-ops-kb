@@ -101,7 +101,11 @@
         "only under tidy --class process (other runs, --report and the SessionStart line are unchanged)": "ST-hpbjc2gc",
         "in every tidy run": "ST-hpbjc2gc"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "only under tidy --class process (other runs, --report and the SessionStart line are unchanged)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
