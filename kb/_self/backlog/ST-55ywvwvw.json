@@ -1,0 +1,32 @@
+{
+  "id": "ST-55ywvwvw",
+  "kind": "story",
+  "title": "The four rules findings the eval gates refuse are closed with a note",
+  "status": "todo",
+  "sprint": "SP-vx6eufpj",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The four rules findings ST-w3qdrhdk left open (F-530d73059c05, F-6481333acafe, F-85be1f9bee1c, F-c381b3f50bc3) are closed with querylog.py close --tried and the reason each got no eval row (the _self docs lack the answer, the mean-pack gate, the noted baseline), after BG-65xsmfxg lets close take a rules finding",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, sys\np = subprocess.run([sys.executable, '_tools/querylog.py', 'show', '--findings', '--kind', 'rules', '--state', 'open'], capture_output=True, text=True, timeout=300)\nif p.returncode != 0: print('show exited', p.returncode, p.stderr[-300:]); sys.exit(1)\nleft = [i for i in ['F-530d73059c05', 'F-6481333acafe', 'F-85be1f9bee1c', 'F-c381b3f50bc3'] if i in p.stdout]\nprint(len(left), 'still open:', left); sys.exit(1 if left else 0)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_querylog/findings/**"
+  ],
+  "depends_on": [
+    "BG-65xsmfxg"
+  ],
+  "links": [
+    "gap F-530d73059c05",
+    "gap F-6481333acafe",
+    "gap F-85be1f9bee1c",
+    "gap F-c381b3f50bc3"
+  ],
+  "notes": "Premise run 2026-10-20: the check prints 4 still open (exit 1). Filed by the orchestrator from ST-w3qdrhdk gate g2 (follow-up)."
+}
