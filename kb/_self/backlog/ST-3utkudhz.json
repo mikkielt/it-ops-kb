@@ -2,7 +2,7 @@
   "id": "ST-3utkudhz",
   "kind": "story",
   "title": "benchmarks.py's reference moves from one tools.md line to a doc of its own",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gea4jifz",
   "priority": "P2",
   "rank": 0,
@@ -76,5 +76,7 @@
       "by": "operator"
     }
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): tools.md on 2026-10-19: 167 lines, the benchmarks.py row is one line of 53843 characters. Reports hold measurements, not references, so a doc of its own. Plan against SP-7s6uubs7 and SP-3pvz2noj, which edit that row first. Premise: the first check fails. Checks 2 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+  "notes": "operator request 2026-10-19 (housekeeping batch): tools.md on 2026-10-19: 167 lines, the benchmarks.py row is one line of 53843 characters. Reports hold measurements, not references, so a doc of its own. Plan against SP-7s6uubs7 and SP-3pvz2noj, which edit that row first. Premise: the first check fails. Checks 2 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
+  "claimed_by": "orch-r111",
+  "operator": "op-f618a13e"
 }
