@@ -2,7 +2,7 @@
   "id": "BG-her5vsbt",
   "kind": "bug",
   "title": "kbmon's host panel puts the ceiling bars on one row from 100 columns, but the row needs about 108",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-kgvbpjhd",
   "priority": "P3",
   "rank": 0,
@@ -24,5 +24,7 @@
   "links": [
     "parked: SP-v4yih547 review"
   ],
-  "notes": "SP-v4yih547 review: the review changed ST-iogk4rdb g4 to this fix. Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: at 102 columns the ceiling row ends '[||||||||…' (the last-run bar is cut)."
+  "notes": "SP-v4yih547 review: the review changed ST-iogk4rdb g4 to this fix. Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: at 102 columns the ceiling row ends '[||||||||…' (the last-run bar is cut).",
+  "claimed_by": "orch-r114",
+  "operator": "op-f618a13e"
 }
