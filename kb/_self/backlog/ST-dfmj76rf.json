@@ -70,7 +70,11 @@
         "dispatch --max-budget-usd flag, else the KB_WORKER_BUDGET_USD environment variable, none when neither is set": "ST-dfmj76rf",
         "a new backlog.json setting (needs _tools/bl_base.py SETTINGS, outside this item's touches)": "ST-dfmj76rf"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "dispatch --max-budget-usd flag, else the KB_WORKER_BUDGET_USD environment variable, none when neither is set",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
