@@ -14,6 +14,7 @@ local store laid out the same way), their readers and writers, and the gates `qu
 """
 import datetime, hashlib, json, re, subprocess
 from pathlib import Path
+from urllib.parse import urlsplit, urlunsplit
 
 from ql_base import HOME, PIPELINE_VERSION, STORE, json_lines, write_text
 from ql_capture import (ARG_MAX_CHARS, FEEDBACK, FEEDBACK_ISSUES, FEEDBACK_JUDGES, FEEDBACK_LINES_MAX, FEEDBACK_OUTCOMES,
@@ -104,6 +105,30 @@ OPS_TS = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?Z")  # th
 
 
 # ---------------------------------------------------------------- reading
+
+def public_url(url):
+    """Whether `url` is an http(s) page on a public DNS name, the url gate of a research candidate
+    (ql_research.candidate_problems) and of a kb_feedback report: no user part, a DNS name, its last label no private
+    one (PRIVATE_TLDS)."""
+    try:
+        u = urlsplit(str(url).strip())
+        host = (u.hostname or "").lower()
+        user = u.username
+    except ValueError:
+        return False
+    return u.scheme in ("http", "https") and not user and bool(HOSTNAME.fullmatch(host)) \
+        and host.rsplit(".", 1)[-1] not in PRIVATE_TLDS
+
+
+def bare_url(url):
+    """`url` with scheme, host and path only: its query and fragment, where free text can ride, dropped. What a
+    feedback report keeps as `lead` (ql_distill.feedback_report) and the store gate compares a stored one with."""
+    try:
+        u = urlsplit(str(url).strip())
+        return urlunsplit((u.scheme, u.netloc, u.path, "", ""))
+    except ValueError:
+        return ""
+
 
 def run_files(store):
     """The run files of a store: <yyyy-mm>/<run-id>.jsonl (findings/ has its own layout)."""
@@ -469,10 +494,9 @@ def closed_problems(e, where):
 def feedback_problems(f, where, k=None):
     """The gates on an entry's `feedback`: 1 to FEEDBACK_REPORTS_MAX reports, each holding only the closed fields of
     FEEDBACK_KEYS: an outcome and a judge of their classes; `lines` of a kb path:line and an issue class; a `best`
-    article path; `sources` ids; a `lead` url that passes the research candidate's url gate (ql_research.public_url)
+    article path; `sources` ids; a `lead` url that passes the research candidate's url gate (`public_url`)
     and the leak scan, that redact.redact leaves unchanged, with no query or fragment; a tool issue class. A comment, a claim or any other field is free text and is refused."""
     import kbid, redact
-    import ql_research
     if not (isinstance(f, list) and 0 < len(f) <= FEEDBACK_REPORTS_MAX):
         return [f"{where}: `feedback` is not a list of 1 to {FEEDBACK_REPORTS_MAX} reports"]
     out = []
@@ -507,10 +531,10 @@ def feedback_problems(f, where, k=None):
             out.append(f"{w}: sources are not 1 to {SOURCES_MAX} source ids, each once")
         if "lead" in r:
             lead = r["lead"]
-            if not (isinstance(lead, str) and len(lead) <= ARG_MAX_CHARS and ql_research.public_url(lead)
+            if not (isinstance(lead, str) and len(lead) <= ARG_MAX_CHARS and public_url(lead)
                     and not redact.scan(lead, k) and redact.redact(lead, k) == lead):
                 out.append(f"{w}: lead is not a url that passes the candidate url gate and the redact rules")
-            elif ql_research.bare_url(lead) != lead:
+            elif bare_url(lead) != lead:
                 out.append(f"{w}: lead is a url with a query or a fragment, free text can ride there")
         if "tool_issue" in r and r["tool_issue"] not in FEEDBACK_TOOL_ISSUES:
             out.append(f"{w}: tool_issue is not one of {', '.join(FEEDBACK_TOOL_ISSUES)}")
@@ -740,11 +764,10 @@ def record_problems(r, where, ids, k):
             out.append(f"{where}: a conflict finding names no kb path:line")
     if "lead" in r:
         import redact
-        import ql_research
         lead = r["lead"]
         if r.get("kind") not in ("gap", "conflict"):
             out.append(f"{where}: a `lead` url belongs to a gap or conflict finding only")
-        elif not (isinstance(lead, str) and len(lead) <= ARG_MAX_CHARS and ql_research.public_url(lead)
+        elif not (isinstance(lead, str) and len(lead) <= ARG_MAX_CHARS and public_url(lead)
                   and not redact.scan(lead, k) and redact.redact(lead, k) == lead):
             out.append(f"{where}: lead is not a url that passes the candidate url gate and the redact rules")
     if r.get("kind") == "gap" and r.get("stage") in STAGES[2:] and not ARTICLE.fullmatch(str(r.get("article", ""))):

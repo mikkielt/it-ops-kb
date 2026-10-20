@@ -24,7 +24,7 @@ from bl_base import (  # run_check lives below bl_land, so bl_ci reaches it with
     ANSI_RE, Backlog, CLAUSE_SPLIT, REF_HEADER, WORKSPACE, colourless_env, run_check, Refused, commit_written,
     claims_ledger, external_description, clause_commands, git, goal_clauses, id_re, in_scope, item_file, item_repos,
     line, main_worktree, main_worktree_spool, need, rel_dir, repositories, research_story, research_touches, run, say, scope, setting,
-    split_touch, waits, worker_dir,
+    split_touch, waits, worker_dirs, main_worker_dir,
 )
 from bl_check import HOST_BOUND_GATE, host_bound_accepted, is_test_run, noop_output, other_clone, trivial_command
 
@@ -1279,28 +1279,6 @@ def held_by_process(path):
     except OSError as e:
         return f"it was renamed to {probe} and could not be renamed back ({e.strerror or e}): rename it back by hand"
     return None
-
-
-def worker_dirs(root):
-    """The .claude/worktrees/ directory whose worktrees are the workers of the clone land runs in ROOT, as a set: the
-    one of the toplevel there (`git rev-parse --show-toplevel`: a linked worktree is its own clone)."""
-    top = Path(git(root, "rev-parse", "--show-toplevel").strip()).resolve()
-    return {top.joinpath(*worker_dir()).resolve()}
-
-
-def main_worker_dir(root):
-    """The .claude/worktrees/ directory of the main checkout the clone land runs in ROOT is a linked worktree of (the
-    Agent tool makes its workers there, whichever worktree its session runs in), or None when ROOT is the main
-    checkout itself or the repository has no working tree. worker_dirs, which tidy and close read, never holds it."""
-    code, out, _ = run(["git", "rev-parse", "--git-common-dir"], cwd=root)
-    if code or not out.strip():
-        return None
-    common = Path(root, out.strip()).resolve()
-    if common.name != ".git":
-        return None
-    main = common.parent
-    top = Path(git(root, "rev-parse", "--show-toplevel").strip()).resolve()
-    return None if main == top else main.joinpath(*worker_dir()).resolve()
 
 
 def detached_workers(root, branch):

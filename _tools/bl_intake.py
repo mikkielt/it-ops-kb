@@ -1102,13 +1102,6 @@ IDLE_PIPELINES = 10  # on GitLab the read stops after this many pipelines in a r
 ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]|\x1b\][^\x07]*\x07")
 
 
-def run_argv(argv, cwd=None):
-    """(exit code, stdout, stderr) of a command given as an argument list (git, glab, gh); 127 when it cannot start.
-    The readers below take a `run` of this shape, so a caller (backlog.py) passes its own."""
-    from ql_base import run_cmd
-    return run_cmd(argv, cwd=cwd, timeout=60)
-
-
 # GitLab.com prefixes each log line with a timestamp and a stream marker: a 2-digit stream, O (stdout) or E
 # (stderr), and `+` on a line continued from the one before (`2026-09-29T01:06:40.889927Z 01O `, `00O+`, where the
 # text follows the `+` directly; a marker without `+` is followed by whitespace)
@@ -1202,7 +1195,7 @@ def latest_pipeline(root, job=None, run=None):
     did not succeed. `how` names the choice for the message."""
     from ql_deliver import any_ran, job_decided, job_verdict, latest_jobs
     import bl_forge, kbpublic
-    run = run or run_argv
+    run = run or bl_base.run
     remote = kbpublic.integration_remote(root)
     code, url, _ = run(["git", "remote", "get-url", remote], cwd=root)
     if code:
@@ -1293,7 +1286,7 @@ def covered_by_revert(root, sha, run=None):
     """True when an automatic revert (KB-Auto: revert) on origin/main reverts the automatic push that `sha` ends;
     None when the history cannot be read. The revert commit names the first commit of that push."""
     import kbpublic
-    run = run or run_argv
+    run = run or bl_base.run
     code, o, _ = run(["git", "log", f"{sha}..{kbpublic.integration_remote(root)}/main", "--format=%B%x1e"], cwd=root)
     if code:
         return None
@@ -1349,7 +1342,7 @@ def ci_detector(root, run=None):
     so whichever runs first files the bug and the other finds it. A pipeline whose jobs nobody started is green; one
     that cannot be read (no remote, not signed in, a failed call) reports nothing. It fetches the integration main and
     calls the forge, so `collect` runs it only with `network` (`intake --network`)."""
-    run = run or run_argv
+    run = run or bl_base.run
     import kbpublic
     run(["git", "fetch", "-q", kbpublic.integration_remote(root), "main"], cwd=root)
     p, _ = latest_pipeline(root, None, run)

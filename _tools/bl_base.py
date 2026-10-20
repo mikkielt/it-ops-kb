@@ -2,12 +2,12 @@
 backlog.json by `read_settings`, with `SETTINGS`' defaults for the keys it leaves out, for the root the process runs on:
 `load_settings`) and the accessors that give them at call time (`setting`, `rel_dir`, `kinds`, `id_re`, ...), the
 two refusals, the Backlog class that reads and writes the item files, git, the claims ledger's path (`claims_ledger`)
-and the command runner, the scope helpers,
+and the command runner, the directories a worker's worktree sits under (`worker_dirs`, `main_worker_dir`), the scope helpers,
 the host and user name guard behind everything the tool prints, the external tracker id helpers (`external_problems`,
 `external_refs`, `external_lines`, `external_trailers`, `external_description`), the helpers that commit the item files a
 command wrote, and what an item waits on (`waits`, `open_gates`) with the one-line `line` that names it. Standard library only;
-backlog.py and the bl_ modules import it, and it imports no bl_ module at load and never backlog (`run`
-reaches bl_intake.run_argv by an import in the function, so a caller that patches the reader is heard).
+backlog.py and the bl_ modules import it, and it imports no bl_ module and never backlog (`run` reaches
+ql_base.run_cmd by an import in the function).
 """
 import base64, contextlib, copy, functools, getpass, json, os, re, secrets, socket, subprocess, sys, tempfile, threading, time
 from pathlib import Path
@@ -989,8 +989,30 @@ def commit_written(bl, a, verb, iid, ids=None, body="", title=None):
 
 def run(argv, cwd=None):
     """(exit code, stdout, stderr) of a command given as an argument list (git, glab, gh); 127 when it cannot start."""
-    import bl_intake
-    return bl_intake.run_argv(argv, cwd=cwd)
+    from ql_base import run_cmd
+    return run_cmd(argv, cwd=cwd, timeout=60)
+
+
+def worker_dirs(root):
+    """The .claude/worktrees/ directory whose worktrees are the workers of the clone land runs in ROOT, as a set: the
+    one of the toplevel there (`git rev-parse --show-toplevel`: a linked worktree is its own clone)."""
+    top = Path(git(root, "rev-parse", "--show-toplevel").strip()).resolve()
+    return {top.joinpath(*worker_dir()).resolve()}
+
+
+def main_worker_dir(root):
+    """The .claude/worktrees/ directory of the main checkout the clone land runs in ROOT is a linked worktree of (the
+    Agent tool makes its workers there, whichever worktree its session runs in), or None when ROOT is the main
+    checkout itself or the repository has no working tree. worker_dirs, which tidy and close read, never holds it."""
+    code, out, _ = run(["git", "rev-parse", "--git-common-dir"], cwd=root)
+    if code or not out.strip():
+        return None
+    common = Path(root, out.strip()).resolve()
+    if common.name != ".git":
+        return None
+    main = common.parent
+    top = Path(git(root, "rev-parse", "--show-toplevel").strip()).resolve()
+    return None if main == top else main.joinpath(*worker_dir()).resolve()
 
 
 def need(bl, iid):

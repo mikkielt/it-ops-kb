@@ -64,7 +64,7 @@ The same code runs on Linux, macOS and Windows.
 
 ## Imports
 
-- **A module imports the modules below it.** The facade imports its helpers; a helper never imports its facade. Inside a prefix, the shared ground (`ql_base.py`, `kg_base.py`, `bench_core.py`) imports no sibling, and a stage imports the stages it builds on, never one that builds on it.
+- **A module imports the modules below it.** The facade imports its helpers; a helper never imports its facade. Inside a prefix, the shared ground (`bl_base.py`, `ql_base.py`, `kg_base.py`, `bench_core.py`, `mon_base.py`) imports no sibling, and a stage imports the stages it builds on, never one that builds on it.
 - **No cycles at the top level.** A reach back up the order is an import inside the function that needs it.
 - **A leading underscore means the module's own.** Another module does not import or call a name that starts with `_`; a name two modules need is public, without the underscore.
 - **A reader of a file format that a writing tool also reads is below it.** `kbdecide.py` imports `kbfacts.py` (to find facts), so the lookup side reads `_decisions.csv` itself, tolerantly and by its columns (`kbfacts.decision_rows`), never through `kbdecide.py`; `check.py` stays the one place that judges the format.

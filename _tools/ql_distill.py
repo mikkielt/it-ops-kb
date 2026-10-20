@@ -17,8 +17,8 @@ from pathlib import Path
 
 import kbusage
 import ql_store as store_
-from ql_base import (HOME, LOCK_NAME, LOCK_STALE_S, acquire, claude_p, iso, json_lines, launch_places, lock_age,
-                     logging_off, one_line, places, plugin_data, read_json, read_mode, release, run_cmd, write_text)
+from ql_base import (BRANCH, HOME, LOCK_NAME, LOCK_STALE_S, acquire, claude_p, iso, json_lines, launch_places, lock_age,
+                     logging_off, one_line, places, read_json, read_mode, release, run_cmd, write_text)
 from ql_capture import (AGENT_ACTIONS, ARG_MAX_CHARS, BRANCH_ACTION, FEEDBACK, FEEDBACK_ISSUES, FEEDBACK_JUDGES,
                         FEEDBACK_LINES_MAX, FEEDBACK_OUTCOMES, FEEDBACK_TOOL_ISSUES, OPEN_ACTIONS, OPS, ROW_FORMAT,
                         SAFE_SESSION, TAGS, VERDICTS, WORK_ITEM, add_usage, pack_lines)
@@ -503,20 +503,20 @@ def feedback_report(r, k, pages):
     kb sources whose url the row's `source_url` is: `pages.named_ids`) or else `lead` (that url, when it passes the
     research candidate url gate and the leak scan, and redact.redact leaves it unchanged: a secret assignment in its
     path stays out), both from the url with its query and fragment dropped
-    (`ql_research.bare_url`), `tool_issue`; and `comment`, the row's text when the row has
+    (`ql_store.bare_url`), `tool_issue`; and `comment`, the row's text when the row has
     no outcome, which only Haiku's mapping reads (never stored). `claim` and every other field stay out."""
-    import redact, ql_research
+    import redact
     seen, lines = set(), []
     for x in r.get("lines") if isinstance(r.get("lines"), list) else []:
         if isinstance(x, dict) and isinstance(x.get("line"), str) and CITATION.fullmatch(x["line"]) \
                 and x.get("issue") in FEEDBACK_ISSUES and x["line"] not in seen:
             seen.add(x["line"])
             lines.append({"line": x["line"], "issue": x["issue"]})
-    url = ql_research.bare_url(r["source_url"]) if isinstance(r.get("source_url"), str) else ""
+    url = store_.bare_url(r["source_url"]) if isinstance(r.get("source_url"), str) else ""
     sources, lead = [], None
     if url and len(url) <= ARG_MAX_CHARS:
         sources = pages.named_ids(url)
-        if not sources and ql_research.public_url(url) and not redact.scan(url, k) and redact.redact(url, k) == url:
+        if not sources and store_.public_url(url) and not redact.scan(url, k) and redact.redact(url, k) == url:
             lead = url
     outcome = r.get("outcome") if r.get("outcome") in FEEDBACK_OUTCOMES else None
     comment = r.get("comment").strip() if isinstance(r.get("comment"), str) else ""
@@ -540,6 +540,31 @@ def closed_reports(reports):
         if c not in out:
             out.append(c)
     return out[:FEEDBACK_REPORTS_MAX]
+
+
+def spool_claims(spool=None):
+    """[(closed report, claim)] of the feedback rows the local spool still holds with a `claim`, the report in the
+    closed shape the store keeps (`feedback_report`), so a stored report finds its row by equality. The
+    claim is free text and lives in the spool only (the store keeps closed fields): once distill has delivered a row it
+    is gone, and a report whose row is gone has no claim."""
+    import ql_learn
+    spool = Path(spool) if spool else places()[0] / "spool"
+    out, pages = [], ql_learn.KbPages()
+    for p in sorted(spool.glob("*.jsonl")) if spool.is_dir() else []:
+        try:
+            lines = p.read_text(encoding="utf-8").splitlines()
+        except OSError:
+            continue
+        for ln in lines:
+            try:
+                r = json.loads(ln)
+            except ValueError:
+                continue
+            claim = " ".join(r["claim"].split()) if isinstance(r, dict) and isinstance(r.get("claim"), str) else ""
+            if claim and r.get("surface") == FEEDBACK:
+                for rep in closed_reports([feedback_report(r, None, pages)]):
+                    out.append((rep, claim))
+    return out
 
 
 def feedback_entry(r, k):
@@ -1007,11 +1032,12 @@ def judged(r):
 # ---------------------------------------------------------------- the run
 
 def distill(qdir=None, cfg=None, haiku=None, now_dt=None, run_id=None, kb_commit=None, settle=0.0, out=print,
-            deliver=None, usage_from=None):
+            deliver=None, usage_from=None, delivery=None):
     """One distill: 0 done (or nothing to do, or logging off), 1 when the push of mode `auto` failed, 3 when another
     distill holds the lock. Mode `auto` keeps the spool rows of the entries it writes and then runs
-    `deliver(qdir, out)` under the same lock (default: the push of `apply --push`, from the clone, or in a plugin
-    host from its managed clone), which deletes them once their run file is on origin/main; mode `local` deletes
+    `deliver(qdir, out)` under the same lock (default: what the caller's `delivery(qdir, places' directory)` returns,
+    ql_deliver.default_delivery: the push of `apply --push`, from the clone, or in a plugin host from its managed
+    clone; none without a `delivery`), which deletes them once their run file is on origin/main; mode `local` deletes
     them at once. `usage_from` (session id, transcript path): the `usage` rows of that session are written first
     (add_usage), waiting up to USAGE_LOCK_WAIT_S for the lock."""
     d, c = places()
@@ -1020,14 +1046,8 @@ def distill(qdir=None, cfg=None, haiku=None, now_dt=None, run_id=None, kb_commit
     if logging_off(qdir, cfg):
         out("distill: logging is off")
         return 0
-    if mode == "auto" and deliver is None:
-        import ql_deliver
-        if qdir.resolve() == (HOME / "_cache" / "querylog").resolve():
-            def deliver(q, say):
-                return ql_deliver.Pusher(HOME, q, run_cmd, None, say)()
-        elif plugin_data() is not None and qdir.resolve() == d.resolve():
-            def deliver(q, say):
-                return ql_deliver.host_push(q, run_cmd, None, say)
+    if mode == "auto" and deliver is None and delivery is not None:
+        deliver = delivery(qdir, d)
     if mode != "auto":
         deliver = None
     lock = acquire(qdir)
@@ -1224,9 +1244,9 @@ def _distill(qdir, haiku, now_dt, run_id, kb_commit, out, keep=False, spend=None
     if keep:
         _settle(spool, sessions, tools, consumed, qdir, today, dropped, waiting + written + done, skipped)
         if written or done:
-            from ql_deliver import BRANCH, REMOTE
+            import kbpublic
             out(f"distill: the spool keeps the rows of {len(written) + len(done)} entries until their run file is "
-                f"on {REMOTE}/{BRANCH}")
+                f"on {kbpublic.integration_remote(HOME)}/{BRANCH}")
     else:
         _settle(spool, sessions, tools, consumed, qdir, today, written + dropped + done, waiting, skipped)
     return 0
