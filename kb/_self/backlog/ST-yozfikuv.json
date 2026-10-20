@@ -2,7 +2,7 @@
   "id": "ST-yozfikuv",
   "kind": "story",
   "title": "kbmon's sessions panel lists dispatch runs from the claims ledger's worker pid and session",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-razcgjsb",
   "priority": "P3",
   "rank": 0,
@@ -50,6 +50,19 @@
     "parked: SP-5gph7fh6 review"
   ],
   "notes": "SP-5gph7fh6 review: ST-jokdpvsi read the goal's 'dispatch runs' as headless sessions in worker worktrees; bl_dispatch.py records worker_pid and worker_session per claim and the panel never reads them. Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: the sessions panel's data has no dispatch key (procs, worktrees, stalled only).",
-  "claimed_by": "orch-r112",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "228b2fdcce26ff884f58b50ab34209a40b566393",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=120);p.wall=time.time()-t0\n    if p.returncode not in (0,1): print('kbmon exit',p.returncode,p.stderr[-300:]);sys.exit(1)\n    return p\nd=json.loads(k('--json','--panel','sessions').stdout)['panels']['sessions']['data']\nprint(list(d));sys.exit(0 if 'dispatch' in d else 1)"
+        ],
+        "exit": 0,
+        "sha256": "373d16b2b35d081e"
+      }
+    ]
+  }
 }
