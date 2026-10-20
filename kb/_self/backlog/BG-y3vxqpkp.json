@@ -54,6 +54,38 @@
   "relates_to": [
     "BG-vvye7ubr"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does the Windows process listing apply: kbmon's sessions panel only, or also backlog.py procs, selfcheck orphans and land's live-process check?",
+      "options": [
+        "sessions panel only",
+        "every consumer of bl_procs.snapshot"
+      ],
+      "recommendation": "sessions panel only",
+      "do": {
+        "sessions panel only": "BG-y3vxqpkp",
+        "every consumer of bl_procs.snapshot": "BG-y3vxqpkp"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does a Windows process row read: command name without .exe, a start the table lacks as the read time, class by its parent as elsewhere, and the limit as a view row 'limit' beside procs_limit data?",
+      "options": [
+        "name without .exe, missing start is the read time, class by parent, limit row",
+        "name as Windows gives it (claude.exe, so no session), the rest the same"
+      ],
+      "recommendation": "name without .exe, missing start is the read time, class by parent, limit row",
+      "do": {
+        "name without .exe, missing start is the read time, class by parent, limit row": "BG-y3vxqpkp",
+        "name as Windows gives it (claude.exe, so no session), the rest the same": "BG-y3vxqpkp"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "kb/public/python/ps-process-cpu.md:62",
     "kb/public/windows/process-parent-and-command-line.md:45",

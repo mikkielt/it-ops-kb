@@ -14,14 +14,20 @@ signals: `dispatch` calls it once the worker has exited, to end the orphans in t
 its session started), and prints each pid and command name it ended; a hook in flight is named with its age and fails
 nothing, and a distill run past both is a stuck one, an orphan. HOOK_GRACE_S is the shorter wait `land` makes. A
 process's command line and environment are never read: only its command name is printed, and a hook is told by the file
-its standard output is. Where a host cannot list working directories (Windows) it says so. Exit codes: 0 listed (also on
-a host that cannot check), 2 a bad request.
+its standard output is. Where a host cannot list working directories (Windows) it says so. The one exception is
+`windows_snapshot`, which kbmon's sessions panel reads on Windows: the host's process table through PowerShell
+(`Get-CimInstance Win32_Process`: pid, parent, start, command name and command line as JSON) places a process in the
+checkout whose path its command line names; the command line is only matched against the checkout paths, never printed
+or kept, and a process whose command line names no checkout is not listed. Exit codes: 0 listed (also on a host that
+cannot check), 2 a bad request.
 
 Standard library only; imports `bl_base` and `bl_cli`, never `backlog` (a layer rule). It registers its own subcommand
 when imported, so `backlog.py` carries only the import.
 """
 import contextlib
+import json
 import os
+import re
 import shutil
 import signal
 import subprocess
@@ -198,6 +204,78 @@ def hook_run_s():
     """How long a distill run that holds no lock is still at work: the wait for the lock plus HOOK_MARGIN_S."""
     import ql_distill
     return ql_distill.USAGE_LOCK_WAIT_S + HOOK_MARGIN_S
+
+
+# ---------------------------------------------------------------- Windows: no working directory
+
+WIN_SHELLS = ("powershell", "pwsh")  # Windows PowerShell first, then PowerShell 7; each found on PATH by `shutil.which`
+WIN_QUERY = ("Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,Name,CommandLine,"
+             "@{n='Start';e={if ($_.CreationDate) {[int64]([DateTimeOffset]$_.CreationDate).ToUnixTimeSeconds()}}} "
+             "| ConvertTo-Json -Compress")
+
+
+def windows_rows():
+    """The process table of a Windows host as JSON rows (`ProcessId`, `ParentProcessId`, `Name`, `CommandLine`,
+    `Start`) read through PowerShell's `Get-CimInstance Win32_Process`, or None when no PowerShell answers. A single
+    process comes as an object, not a list."""
+    for shell in WIN_SHELLS:
+        if not shutil.which(shell):
+            continue
+        text = run_quiet([shell, "-NoProfile", "-NonInteractive", "-Command", WIN_QUERY])
+        try:
+            rows = json.loads(text or "")
+        except ValueError:
+            continue
+        rows = [rows] if isinstance(rows, dict) else rows
+        if isinstance(rows, list):
+            return [r for r in rows if isinstance(r, dict)]
+    return None
+
+
+def windows_name(name):
+    """The command name of a Windows image name: `claude.exe` is `claude`, as a POSIX host names it."""
+    name = command_name(str(name or ""))
+    return name[:-4] if name.lower().endswith(".exe") else name
+
+
+def windows_base(command_line, bases):
+    """The checkout in BASES whose path appears in COMMAND_LINE (the longest, so a worktree inside the main checkout wins;
+    case and the kind of slash ignored), or None. The command line is only searched: nothing of it is returned."""
+    text = command_line.replace("\\", "/").lower()
+    found = [b for b in bases if re.search(re.escape(b.replace("\\", "/").lower().rstrip("/")) + r"(?![\w.-])", text)]
+    return max(found, key=len, default=None)
+
+
+def windows_snapshot(root):
+    """(classified processes, table, None, blind), or (None, None, why, 0): the processes of a Windows host whose command
+    line names a checkout of the clone at ROOT. Windows exposes no working directory, so a process is placed by a
+    checkout path in its command line; one whose command line names none is not listed, and BLIND counts the processes
+    whose command line could not be read at all (another account's, unless run elevated). Each process is
+    `inventory`'s row with its `where` the checkout's directory name and `base` its real path. A command line is
+    matched and dropped, never printed or kept."""
+    rows = windows_rows()
+    if rows is None:
+        return None, None, "PowerShell did not answer Get-CimInstance Win32_Process", 0
+    bases = checkouts(root)
+    now = int(time.time())
+    tab, placed, blind = {}, {}, 0
+    for r in rows:
+        pid, ppid = r.get("ProcessId"), r.get("ParentProcessId")
+        if not isinstance(pid, int) or isinstance(pid, bool) or not isinstance(ppid, int) or isinstance(ppid, bool):
+            continue
+        start = r.get("Start")
+        tab[pid] = (ppid, start if isinstance(start, int) and not isinstance(start, bool) else now,
+                    windows_name(r.get("Name")))
+        line = r.get("CommandLine")
+        if not isinstance(line, str) or not line:
+            blind += 1
+            continue
+        base = windows_base(line, bases)
+        if base:
+            placed[pid] = base
+    procs = [{"pid": pid, "ppid": tab[pid][0], "start": tab[pid][1], "comm": tab[pid][2],
+              "where": Path(base).name, "base": base} for pid, base in sorted(placed.items())]
+    return classify(procs, tab, holders=lock_holders(bases)), tab, None, blind
 
 
 # ---------------------------------------------------------------- the clone's checkouts
