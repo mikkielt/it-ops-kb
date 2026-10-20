@@ -40,7 +40,11 @@
         "every kind needs key material after the armor line": "BG-3vnu37rq",
         "only the EC kind needs it, the others stay flagged on the armor line alone": "BG-3vnu37rq"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "only the EC kind needs it, the others stay flagged on the armor line alone",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
