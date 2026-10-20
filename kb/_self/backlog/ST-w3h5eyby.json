@@ -39,6 +39,25 @@
     "kb/_self/code.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does the fixed remedy for an orphan alert live, and when is it posted?",
+      "options": [
+        "A rule table FIXED_REMEDIES in kbask.py; remediate posts it inline after claim and ask, no watcher",
+        "A separate rules file read by kbask.py"
+      ],
+      "recommendation": "A rule table FIXED_REMEDIES in kbask.py; remediate posts it inline after claim and ask, no watcher",
+      "do": {
+        "A rule table FIXED_REMEDIES in kbask.py; remediate posts it inline after claim and ask, no watcher": "ST-w3h5eyby",
+        "A separate rules file read by kbask.py": "ST-w3h5eyby"
+      },
+      "class": "design",
+      "answer": "A rule table FIXED_REMEDIES in kbask.py; remediate posts it inline after claim and ask, no watcher",
+      "by": "agent"
+    }
+  ],
   "notes": "operator request 2026-10-19 (housekeeping batch): kbmon on 2026-10-19 showed one alert, sessions.orphan, whose remedy is the same each time (backlog.py procs names the pid). Plan against SP-ep7cyuob, which changes kbask.py first. Premise: the first check fails (a shim claude on PATH is started). Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
   "claimed_by": "orch-r107",
   "operator": "op-f618a13e"
