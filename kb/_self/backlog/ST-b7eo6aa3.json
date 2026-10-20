@@ -2,7 +2,7 @@
   "id": "ST-b7eo6aa3",
   "kind": "story",
   "title": "Research sprint goal: The query log says why delivery stalls, exports fast, and its open findings are worked",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vx6eufpj",
   "goal_research": true,
   "priority": "P1",
@@ -22,6 +22,20 @@
     "kb/public/**"
   ],
   "notes": "Open questions for this sprint (kb first, then live docs): No outside facts expected (all inputs are the query log's own data: digest, distill.log, findings); confirm with rag.py pack --root _self and record what kb/_self/querylog.md says on each clause. No outside facts: every clause is about this project's own query log; rag.py pack --root _self (2026-10-20) found the rules in kb/_self docs, not official sources. Redact-gate check message and where the operator's remedy is written: querylog.md Store/Gates (l.151) and Delivery (l.207, apply --push gates the copy with check and the leak scan; a problem commits nothing), tools.md l.124 (check, exit 1); the entry-predates-rules wording is not stated, so the committed item adds it. Delivery alert holds while the last apply --push outcome is refused: monitoring.md l.214 (querylog panel Alert); the usage count once per prompt: usage.md l.89-99 and querylog.md l.97 (a prompt in several windows counts once), the panel's day count via ql_report.usage_today (usage.md l.99). Export --since: querylog.md l.269 and tools.md l.133 say what it prints, not that it reads only the exported days, so the committed item states it. Open rules findings and source findings: backlog.md l.378 (a gap finding is closed by a commit that resolves its _gaps.md entry). Count or list question as a gap: querylog.md l.173 (the Apply gap step writes the _gaps.md entry) names no exclusion, so the committed item adds one. distill.log size cap and parallel-hook feedback ids: querylog.md l.217 names the log's lines, not a size cap or the id race; the pack found none (coverage none), so the committed items document the behaviour they change.",
-  "claimed_by": "orch-r106",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "3b6d42a8d822be6225bf4225e9355a1334e41222",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-b7eo6aa3"
+        ],
+        "exit": 0,
+        "sha256": "0f35232e964d20dc"
+      }
+    ]
+  }
 }
