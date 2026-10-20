@@ -43,6 +43,57 @@
     "ST-jof4u6e6",
     "ST-dhsyyjft"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which active sprints does the needs you line call blocked: every one with items left and none ready, or only one with no item in progress? A sprint whose last items are being worked has none ready too, and naming it blocked would send the operator after nothing.",
+      "options": [
+        "only when no item is in progress",
+        "every active sprint with items left and none ready"
+      ],
+      "recommendation": "only when no item is in progress",
+      "do": {
+        "only when no item is in progress": "ST-kmgwsjto",
+        "every active sprint with items left and none ready": "ST-kmgwsjto"
+      },
+      "class": "design",
+      "answer": "only when no item is in progress",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Does the needs you line name a planned sprint's start gate and say which panels it could not read? The goal lists open operator gates and an empty list as nothing; the sprint view leaves the start gate out because the sprint row says it waits for it.",
+      "options": [
+        "name start gates and add not read: PANELS when a source is not ok",
+        "leave start gates out and say nothing of unread panels"
+      ],
+      "recommendation": "name start gates and add not read: PANELS when a source is not ok",
+      "do": {
+        "name start gates and add not read: PANELS when a source is not ok": "ST-kmgwsjto",
+        "leave start gates out and say nothing of unread panels": "ST-kmgwsjto"
+      },
+      "class": "start",
+      "answer": "name start gates and add not read: PANELS when a source is not ok",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "How long may the needs you line get? Each entry is one phrase, and a long list of gates or orphans would push the line far past the screen.",
+      "options": [
+        "three entries of a kind then a count, a cause cut at 100 characters",
+        "every entry in full"
+      ],
+      "recommendation": "three entries of a kind then a count, a cause cut at 100 characters",
+      "do": {
+        "three entries of a kind then a count, a cause cut at 100 characters": "ST-kmgwsjto",
+        "every entry in full": "ST-kmgwsjto"
+      },
+      "class": "push"
+    }
+  ],
   "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: a live snapshot with a planted waiting gate, a blocked sprint, a refused delivery, an orphan, 5% free disk and a checkout that cannot fast-forward gives no needs you line; --status all starts with the sessions line.",
   "claimed_by": "orch-r113",
   "operator": "op-f618a13e"

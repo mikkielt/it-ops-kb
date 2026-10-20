@@ -1,5 +1,5 @@
 """kbmon's output (kb/_self/monitoring.md): the redaction every printed string passes and the text view of a snapshot.
-Standard library only; imports `mon_base` and `redact` (at the first redaction).
+Standard library only; imports `mon_base`, `mon_needs` and `redact` (at the first redaction).
 
   scrub(obj)                     a copy of a snapshot with every string, key and value, passed through `redact.redact`
                                  (its `LazyKnown` reads the public root only when a rule needs it); a snapshot also gets
@@ -34,6 +34,7 @@ import time
 from pathlib import Path
 
 import mon_base
+import mon_needs
 
 CONTROL = re.compile(r"[\x00-\x08\x0b-\x1f\x7f-\x9f]")
 COLOURS = {"ok": "32", "timeout": "33", "error": "31", "absent": "90", "unsupported": "90"}
@@ -381,7 +382,8 @@ def to_text(row, ansi):
 
 def render_text(snap, ansi=False, width=80, height=None, frame=1, interval=5, root="."):
     """One frame of the text view (the layout in kb/_self/monitoring.md): the alert line when the snapshot has an alert
-    (and, without colour, a row of `=` under it), the header, a blank row, then each panel's title and body rows with a
+    (and, without colour, a row of `=` under it), the header, the `needs you` line (`mon_needs.line`), a blank row, then
+    each panel's title and body rows with a
     blank row between, the log last. With `height` the log's rows are cut to what the screen has left (three at least)
     and the frame to `height` less one rows; the log keeps its newest rows (the bottom ones) and drops the oldest.
     `width` is the terminal's columns: no line passes `width` less one."""
@@ -389,7 +391,8 @@ def render_text(snap, ansi=False, width=80, height=None, frame=1, interval=5, ro
     alerts = snap.get("alerts") or []
     alert_rows = (1 if ansi else 2) if alerts else 0
     taken = one_line(snap.get("taken", "?")).replace("T", " ", 1)
-    rows = [[("kbmon", "1"), (f" \u00b7 {taken} \u00b7 refresh {interval}s \u00b7 frame {frame} \u00b7 {root}", "")], []]
+    rows = [[("kbmon", "1"), (f" \u00b7 {taken} \u00b7 refresh {interval}s \u00b7 frame {frame} \u00b7 {root}", "")],
+            [(mon_needs.line(snap), "33" if mon_needs.entries(snap) else "90")], []]
     panels = [(n, p if isinstance(p, dict) else {}) for n, p in snap.get("panels", {}).items()]
     for name, panel in panels:
         if name == "log":
