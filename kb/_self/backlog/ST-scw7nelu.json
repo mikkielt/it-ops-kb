@@ -21,6 +21,25 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where do the attribution and MCP-server-environment facts go, and is a new gap entry needed?",
+      "options": [
+        "extend the existing provenance and hooks articles and add no gap entry",
+        "write a new topic for Claude Code commit attribution"
+      ],
+      "recommendation": "extend the existing provenance and hooks articles and add no gap entry",
+      "do": {
+        "extend the existing provenance and hooks articles and add no gap entry": "ST-scw7nelu",
+        "write a new topic for Claude Code commit attribution": "ST-scw7nelu"
+      },
+      "class": "design",
+      "answer": "extend the existing provenance and hooks articles and add no gap entry",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "orch240",
   "operator": "op-f618a13e"
 }
