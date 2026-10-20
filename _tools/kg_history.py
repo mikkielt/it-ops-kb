@@ -1,7 +1,7 @@
 """The history commands of kbgit.py (kb/_self/git.md, Commands): `log` (the commits that touched a source id, topic,
 answer id or path), `blame` (the commit that introduced a line and the sources it cites), `asof` (a file as of a date or
-a tag) and `tag-census`, with the repository paths they take. Runs git in KB, this module's own copy of the repository
-directory (a caller may point it at a scratch clone). Standard library only; kbgit.py imports it, and it imports no
+a tag) and `tag-census`, with the repository paths they take. Runs git in KB, the repository
+directory kg_base names. Standard library only; kbgit.py imports it, and it imports no
 facade.
 """
 import csv, datetime, io, os, re, sys
@@ -11,7 +11,7 @@ import kbcommon
 import kbid
 import kbpublic
 import kg_merge
-from kg_base import KB, repo_roots
+from kg_base import KB, git, git_run, repo_roots, rev_parse
 from kg_merge import id_key, lf
 from kg_trailers import blob, is_content, log_records, parse_trailers, source_rows_of, valid_date
 
@@ -33,24 +33,12 @@ def with_legacy(path):
     return [path] + ([rel] if rel and rel != path else [])
 
 
-def git_run(*args, stdin=None):
-    return kg_merge.git_run(*args, stdin=stdin, kb=KB)
-
-
-def git(*args, stdin=None):
-    return kg_merge.git(*args, stdin=stdin, kb=KB)
-
-
 def read(rel):
     return kg_merge.read(rel, kb=KB)
 
 
 def show(rev, rel):
     return kg_merge.show(rev, rel, kb=KB)
-
-
-def rev_parse(rev):
-    return (git("rev-parse", "-q", "--verify", rev + "^{commit}") or "").strip() or None
 
 
 def id_regex(sid):
