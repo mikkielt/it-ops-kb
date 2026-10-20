@@ -2,7 +2,7 @@
   "id": "ST-kaabe3ds",
   "kind": "story",
   "title": "Research sprint goal: The tools share one copy of each helper, keep their import direction and stay small enough to work in",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-jplczvj2",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Open questions for this sprint (kb first, then live docs): No outside facts expected: the rules are kb/_self/code.md's (flat prefixed modules behind a CLI facade, import direction); confirm with rag.py pack --root _self and record the lines."
+  "notes": "Open questions for this sprint (kb first, then live docs): No outside facts expected: the rules are kb/_self/code.md's (flat prefixed modules behind a CLI facade, import direction); confirm with rag.py pack --root _self and record the lines.",
+  "claimed_by": "orch-r108",
+  "operator": "op-f618a13e"
 }
