@@ -6,6 +6,8 @@ snapshot and the reading of a saved one. Standard library only; every `mon_` mod
   Unsupported            a panel's `collect(ctx)` raises it when this host or this setting cannot give the panel
   Absent                 a panel's `collect(ctx)` raises it when there is nothing to show (the bench panel without a paid
                          run): the panel is `absent`, its data the `reason`
+  Timeout                a panel's `collect(ctx)` raises it when its source gave no answer in time (the coord panel's
+                         server): the panel is `timeout`, its data the `reason`
   panel_module(name)     the module `mon_<name>` (`MODULES` names the exceptions: `cleanup` is `mon_clean`), or None while no
                          item has written it (the panel is then `absent`)
   snapshot(ctx, names, timeout, kept=None)
@@ -51,6 +53,10 @@ class Absent(Exception):
     """The panel has nothing to show now; its text is the reason."""
 
 
+class Timeout(Exception):
+    """The panel's source gave no answer in time; its text is the reason."""
+
+
 def panel_module(name):
     """The module `mon_<name>` (or the one `MODULES` names), or None when it does not exist (a module that exists and fails to import is an error of
     the panel, so it raises)."""
@@ -80,6 +86,8 @@ def _worker(module, ctx, box):
         box["state"], box["data"] = "unsupported", {"reason": _one_line(e)}
     except Absent as e:
         box["state"], box["data"] = "absent", {"reason": _one_line(e)}
+    except Timeout as e:
+        box["state"], box["data"] = "timeout", {"reason": _one_line(e)}
     except Exception as e:  # noqa: BLE001 - a panel that fails is its own state, never a failure of the snapshot
         box["state"], box["data"] = "error", {"error": f"{type(e).__name__}: {_one_line(e)}"}
     box["seconds"] = time.monotonic() - start

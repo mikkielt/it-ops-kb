@@ -298,12 +298,14 @@ def panel_lines(name, data, width, taken=None):
 def reason(name, state, panel):
     """The text after a title's dash: why a panel that is not ok shows nothing."""
     data = panel.get("data") if isinstance(panel.get("data"), dict) else {}
+    if state == "error":
+        return one_line(data.get("error", ""))
+    if state in ("timeout", "absent", "unsupported") and data.get("reason"):
+        return one_line(data["reason"])
     if state == "timeout":
         return "no answer in time"
     if state == "absent":
         return f"no mon_{name}.py"
-    if state in ("error", "unsupported"):
-        return one_line(data.get("error" if state == "error" else "reason", ""))
     return ""
 
 
