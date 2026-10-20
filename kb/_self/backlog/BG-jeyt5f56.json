@@ -52,7 +52,9 @@
         "docs-intent guard and narrower cost cue": "BG-jeyt5f56",
         "narrower state words only": "BG-jeyt5f56"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "docs-intent guard and narrower cost cue",
+      "by": "agent"
     }
   ],
   "links": [
