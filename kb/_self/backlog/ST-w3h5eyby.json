@@ -2,7 +2,7 @@
   "id": "ST-w3h5eyby",
   "kind": "story",
   "title": "kbask remediate answers an alert with a fixed remedy without a model session",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-v64egscn",
   "priority": "P2",
   "rank": 0,
@@ -39,5 +39,7 @@
     "kb/_self/code.md",
     "kb/_self/tools.md"
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): kbmon on 2026-10-19 showed one alert, sessions.orphan, whose remedy is the same each time (backlog.py procs names the pid). Plan against SP-ep7cyuob, which changes kbask.py first. Premise: the first check fails (a shim claude on PATH is started). Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+  "notes": "operator request 2026-10-19 (housekeeping batch): kbmon on 2026-10-19 showed one alert, sessions.orphan, whose remedy is the same each time (backlog.py procs names the pid). Plan against SP-ep7cyuob, which changes kbask.py first. Premise: the first check fails (a shim claude on PATH is started). Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
+  "claimed_by": "orch-r107",
+  "operator": "op-f618a13e"
 }
