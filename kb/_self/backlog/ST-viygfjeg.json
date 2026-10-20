@@ -82,7 +82,11 @@
         "mon_clean, which bl_selfcheck imports where it reads it (a bl_ module importing a mon_ one)": "ST-viygfjeg",
         "bl_clean.plan, unchanged, with its 2 s walk for each removable row": "ST-viygfjeg"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "bl_selfcheck.leftovers, which mon_clean calls (the panel imports a bl module, as mon_sessions imports bl_procs; no bl_ module imports a mon_ one)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
