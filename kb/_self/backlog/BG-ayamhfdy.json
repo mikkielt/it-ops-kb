@@ -1,0 +1,22 @@
+{
+  "id": "BG-ayamhfdy",
+  "kind": "bug",
+  "title": "selfcheck's leftovers counts know only the verdicts remove and keep, so a tidy row with the verdict ask is missing from their total",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "bl_selfcheck.leftovers counts the rows with the verdict ask beside remove and keep, so the leftovers line's total includes them, and kbmon's cleanup panel (mon_clean.py) shows how many rows wait for the operator's tidy --decide answer",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '_tools'); import bl_selfcheck, inspect; assert 'bl_clean.ASK' in inspect.getsource(bl_selfcheck.leftovers)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_selfcheck.py",
+    "_tools/mon_clean.py",
+    "kb/_self/monitoring.md"
+  ]
+}
