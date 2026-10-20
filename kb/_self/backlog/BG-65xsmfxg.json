@@ -19,6 +19,25 @@
     "_tools/ql_research.py",
     "kb/_self/querylog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does close record an open rules finding closed with --tried or --reject, given ql_store takes no tried day on a rules finding and ql_store.py is outside the touches?",
+      "options": [
+        "state no-fix or rejected, note in observed",
+        "add a tried day to the store gate"
+      ],
+      "recommendation": "state no-fix or rejected, note in observed",
+      "do": {
+        "state no-fix or rejected, note in observed": "BG-65xsmfxg",
+        "add a tried day to the store gate": "BG-65xsmfxg"
+      },
+      "class": "design",
+      "answer": "state no-fix or rejected, note in observed",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "orch-r106",
   "operator": "op-f618a13e"
 }
