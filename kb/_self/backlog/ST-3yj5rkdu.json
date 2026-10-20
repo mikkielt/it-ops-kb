@@ -21,6 +21,25 @@
     "kb/public/_retrieval/word_shares.csv",
     "kb/_self/_retrieval/word_shares.csv"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "EV-page-file-size-windows cannot stay weak: the live pack prints good with a check: line for a question the kb holds no fact on. What becomes of the row? (The kb holds nothing on page file size; good would assert a false verdict and raise noted further above NOTED_BASELINE.)",
+      "options": [
+        "remove-row",
+        "expect-good"
+      ],
+      "recommendation": "remove-row",
+      "do": {
+        "remove-row": "ST-3yj5rkdu",
+        "expect-good": "ST-3yj5rkdu"
+      },
+      "class": "design",
+      "answer": "remove-row",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-z3jcdsgr review"
   ],

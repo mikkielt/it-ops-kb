@@ -23,6 +23,25 @@
     "kb/public/_retrieval/word_shares.csv",
     "kb/_self/_retrieval/word_shares.csv"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the row EV-let-another-operator-agents-see-claims lose its check: line: reword the row's question to words the fact holds, or reword the coordination.md fact? The fact says nothing of claims or agents seeing them, and the id stays because ST-3yj5rkdu names it.",
+      "options": [
+        "Reword the row's question",
+        "Reword the fact"
+      ],
+      "recommendation": "Reword the row's question",
+      "do": {
+        "Reword the row's question": "BG-tfqdkx4o",
+        "Reword the fact": "BG-tfqdkx4o"
+      },
+      "class": "design",
+      "answer": "Reword the row's question",
+      "by": "agent"
+    }
+  ],
   "notes": "Filed 2026-10-21 by the manager of SP-gavrmuvx: S1, a broken gate for everyone: main's rag.py eval exits 1 (noted=14 and the DRIFT that ST-3yj5rkdu re-decides), so every landing whose stale or eval step runs stops there and ql_apply refuses query-log delivery. ST-li5pag54 holds the same clause behind its open operator gate g1; this bug fixes the note without raising the constant. The repro reads noted from eval's stdout and not its exit code on purpose: the eval also exits 1 for the DRIFT line; a crash prints no noted= and fails the repro. Row added by 62b3775e7 (2026-10-20); its pack: check: no single fact holds half the key words (at most 3 of 7), at coordination.md:58. 2026-10-21 manager: main's eval fails on two counts (this note and ST-3yj5rkdu's DRIFT) and land's eval step needs both fixed in one tree, so this bug's branch carries ST-3yj5rkdu's commit 6a3c5c0bf (drop EV-page-file-size-windows, retake the word shares) and lands it; its touches widen to those three files.",
   "claimed_by": "manager-dfa692a0",
   "operator": "op-f618a13e"
