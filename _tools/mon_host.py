@@ -39,7 +39,8 @@ def load():
 def kind_of(args, root):
     """(kind, clone) of one process from its command line ARGS, by fixed patterns: `kbmon`, `fseventsd`, `tests` (pytest or the
     clone's `tests.py` or `test_*.py`), `kb-tools` (any other script of a `_tools` directory), `claude` or `other`; `clone`
-    is `this` for a script under ROOT, `other` for one elsewhere, else None. Only the pair leaves the function."""
+    is `this` for an absolute script path under ROOT, `other` for one elsewhere, else None (a relative path, which the
+    listing cannot place without the process's working directory, is None too). Only the pair leaves the function."""
     words = args.split()
     first = os.path.basename(words[0]) if words else ""
     script = next((w for w in words if re.search(r"(^|/)_tools/[\w.-]+\.py$", w)), "")
@@ -56,7 +57,7 @@ def kind_of(args, root):
         return "claude", None
     else:
         return "other", None
-    if not script:
+    if not script or not os.path.isabs(script):
         return kind, None
     mine = tuple(str(p) + "/" for p in {str(root), os.path.realpath(root)})
     return kind, "this" if script.startswith(mine) else "other"

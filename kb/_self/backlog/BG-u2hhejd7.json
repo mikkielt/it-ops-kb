@@ -24,6 +24,25 @@
   "depends_on": [
     "BG-her5vsbt"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does kind_of place a process whose script path is relative: with no clone or as this clone?",
+      "options": [
+        "unknown",
+        "this"
+      ],
+      "recommendation": "unknown",
+      "do": {
+        "unknown": "BG-u2hhejd7",
+        "this": "BG-u2hhejd7"
+      },
+      "class": "design",
+      "answer": "unknown",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-dulvwwjc review"
   ],
