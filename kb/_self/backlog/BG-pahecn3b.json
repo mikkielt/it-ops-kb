@@ -2,7 +2,7 @@
   "id": "BG-pahecn3b",
   "kind": "bug",
   "title": "sprint status lists stale landings of deleted items by bare id with no age",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-2uljwgho",
   "priority": "P3",
   "rank": 0,
@@ -29,5 +29,7 @@
   "links": [
     "parked: SP-dulvwwjc review"
   ],
-  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: --status sprints names landings by bare id (landing BG-hafdzcgw ... at step kbgit.py-sync-push, 2026-10-15)."
+  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: --status sprints names landings by bare id (landing BG-hafdzcgw ... at step kbgit.py-sync-push, 2026-10-15).",
+  "claimed_by": "orch-r113",
+  "operator": "op-f618a13e"
 }
