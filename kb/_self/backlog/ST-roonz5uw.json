@@ -2,7 +2,7 @@
   "id": "ST-roonz5uw",
   "kind": "story",
   "title": "kbgit.py contribute takes a clean shared commit whose message carries an attribution trailer",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-rrqlgiff",
   "priority": "P2",
@@ -66,5 +66,7 @@
   "links": [
     "parked: SP-qinvdomv review"
   ],
-  "notes": "SP-qinvdomv review gap 2: kbcommon.leak_hits(message) with no allowlist flags the attribution trailer's email (116 of the last 200 commits carry it), so contribute leaves those commits out. BG-hia2m3hg's worker proposed the private-names-and-secrets scope; its gate was classed secrets, which the unattended run may not answer, so the sprint kept every leak-scan shape (the conservative choice) and this story carries the operator's choice. Plan 2026-10-20 (SP-rrqlgiff): operator gate g1 (class secrets) answered by the operator: the registry's private names and secrets only, the commit named by hash alone. Premise run on origin/main 8aa620db0 with the check's planted clone: contribute leaves out the trailer commit for an email hit (kg_contrib.py:180, kbcommon.leak_hits of the whole message), so no branch is made. The check was fixed at plan: it read the branch with check=True and crashed when no branch was made; it now treats a missing branch as no subjects and plants a third message with a fake secret built at run time. The guard narrows, so no planted refusal case is added to a test (no contribute test exists)."
+  "notes": "SP-qinvdomv review gap 2: kbcommon.leak_hits(message) with no allowlist flags the attribution trailer's email (116 of the last 200 commits carry it), so contribute leaves those commits out. BG-hia2m3hg's worker proposed the private-names-and-secrets scope; its gate was classed secrets, which the unattended run may not answer, so the sprint kept every leak-scan shape (the conservative choice) and this story carries the operator's choice. Plan 2026-10-20 (SP-rrqlgiff): operator gate g1 (class secrets) answered by the operator: the registry's private names and secrets only, the commit named by hash alone. Premise run on origin/main 8aa620db0 with the check's planted clone: contribute leaves out the trailer commit for an email hit (kg_contrib.py:180, kbcommon.leak_hits of the whole message), so no branch is made. The check was fixed at plan: it read the branch with check=True and crashed when no branch was made; it now treats a missing branch as no subjects and plants a third message with a fake secret built at run time. The guard narrows, so no planted refusal case is added to a test (no contribute test exists).",
+  "claimed_by": "orch240",
+  "operator": "op-f618a13e"
 }
