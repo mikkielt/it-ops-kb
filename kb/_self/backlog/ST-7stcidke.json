@@ -2,7 +2,7 @@
   "id": "ST-7stcidke",
   "kind": "story",
   "title": "After a redact widening, the local store's waiting entries are re-redacted so delivery does not stall",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rrqlgiff",
   "priority": "P3",
   "rank": 0,
@@ -108,6 +108,28 @@
     "parked: housekeeping plan 2026-10-19 (operator gate)"
   ],
   "notes": "housekeeping batch 2026-10-19, query log theme: the 2026-10-17/18 stall (110 refusals) was cleared by re-redacting by hand. It changes what the local store holds: the operator's. Plan 2026-10-20 (SP-rrqlgiff): premise run on origin/main 8aa620db0: querylog.py has no reredact (exit 2); on a planted copy of the fixture store, querylog.py check flags an email in a question and a question holding one fake secret of each kbcommon.SECRETS shape plus a key=value assignment, and ql_store.leak_problems (the scan ql_deliver.Pusher.bring adds) flags a GUID in a support.microsoft.com fetch path that redact.redact leaves unchanged: the 2026-10-18 stall's shape. The manual fix of 2026-10-18 re-redacted flagged values in place, dropped the GUID fetch and kept a backup (kb/_self/querylog.md, Delivery, describes the steps). Operator gate querylog answered: add the operator-run command. Recorded fields stay: only a flagged value or a flagged fetch changes.",
-  "claimed_by": "orch240",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "bb8c32e31f6a964e63cdb0081441b9db2258c082",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, json, shutil, subprocess, tempfile, glob\nT = tempfile.mkdtemp(); S = os.path.join(T, \"store\")\nshutil.copytree(\"_tools/fixtures/querylog/store\", S)\nRF = glob.glob(os.path.join(S, \"2026-09\", \"*.jsonl\"))[0]\nlines = open(RF).read().splitlines()\nMAIL = \"anna.nowak\" + chr(64) + \"fabrikam\" + \".com\"\nGUID = \"-\".join([\"3f2a9c1e\", \"7b4d\", \"4e2a\", \"9c1f\", \"0a1b2c3d4e5f\"])\nrows = [json.loads(x) for x in lines]\nrows[1][\"question\"] = \"Why does the LAPS policy fail for \" + MAIL + \" on enrolment?\"\nCLEAN = {\"tool\": \"WebFetch\", \"fetcher\": \"webfetch\", \"host\": \"learn.microsoft.com\", \"path\": \"/en-us/windows/laps\", \"outcome\": \"http-200\", \"n\": 1}\nrows[2][\"fetches\"] = [{\"tool\": \"WebFetch\", \"fetcher\": \"webfetch\", \"host\": \"support.microsoft.com\", \"path\": \"/en-us/topic/smart-app-control-faq-\" + GUID, \"outcome\": \"http-200\", \"n\": 1}, CLEAN]\nPLANTS = [\"AK\" + \"IA\" + \"ABCDEFGHIJKLMNOP\", \"gh\" + \"p_\" + \"a\" * 36, \"github\" + \"_pat_\" + \"a\" * 22, \"glp\" + \"at-\" + \"a\" * 20,\n          \"glr\" + \"t-\" + \"a\" * 20, \"xo\" + \"xb-\" + \"1234567890\", \"sk-\" + \"ant-\" + \"a\" * 20, \"sk-\" + \"proj-\" + \"a\" * 32,\n          \"Account\" + \"Key=\" + \"A\" * 40, \"?si\" + \"g=\" + \"a\" * 30, \"ey\" + \"J\" + \"a\" * 10 + \".ey\" + \"J\" + \"a\" * 10 + \".\" + \"a\" * 10,\n          \"PASS\" + \"WORD\" + ' = \"' + \"hunter22xx\" + '\"', \"db_pass\" + \"word=\" + \"Zq7\" + \"trellis9\", \"-----BEGIN \" + \"RSA PRIVATE KEY-----\"]\nrows[3][\"question\"] = \"How is the LAPS password rotated? \" + \" ; \".join(PLANTS)\nopen(RF, \"w\").write(\"\".join(json.dumps(r, separators=(\",\", \":\")) + \"\\n\" for r in rows))\nbefore = open(RF).read()\nENV = dict(os.environ, KB_LIVE_DOCS=\"0\")\nr0 = subprocess.run([sys.executable, \"_tools/querylog.py\", \"check\", S], capture_output=True, text=True, env=ENV)\nassert r0.returncode == 1, (\"the planted store passes the store gates; the plant proves nothing\", r0.stdout[-600:])\nsys.path.insert(0, \"_tools\"); import ql_store\nREL = os.path.relpath(RF, S)\nassert any(\"guid\" in x for x in ql_store.leak_problems(S, [REL])), \"the delivery's leak scan does not flag the planted GUID fetch path\"\nr = subprocess.run([sys.executable, \"_tools/querylog.py\", \"reredact\", \"--store\", S], capture_output=True, text=True, env=ENV, timeout=300)\nout = r.stdout + r.stderr\nassert \"Traceback\" not in out, (\"reredact crashes\", out[-800:])\nassert r.returncode == 0, (\"querylog.py reredact --store does not run\", r.returncode, out[-800:])\nr1 = subprocess.run([sys.executable, \"_tools/querylog.py\", \"check\", S], capture_output=True, text=True, env=ENV)\nassert r1.returncode == 0, (\"the store gates still fail after reredact\", r1.stdout[-800:])\nleft = ql_store.leak_problems(S, [REL])\nassert not left, (\"the delivery's leak scan still flags the run file after reredact\", left)\nafter = [json.loads(x) for x in open(RF).read().splitlines()]\nassert len(after) == len(rows), (\"reredact added or removed an entry\", len(rows), len(after))\nassert MAIL not in after[1][\"question\"] and \"on enrolment?\" in after[1][\"question\"], (\"the flagged value is not replaced in place\", after[1][\"question\"])\nassert GUID not in json.dumps(after[2]) and after[2].get(\"fetches\") == [CLEAN], (\"not only the GUID fetch path is dropped\", after[2].get(\"fetches\"))\nsurvived = [x for x in PLANTS if x in json.dumps(after[3]) or x in out]\nassert not survived, (\"a planted secret survives reredact in the store or its report\", survived)\nassert after[3][\"question\"].startswith(\"How is the LAPS password rotated?\"), (\"reredact did not keep the clean words of a flagged value\", after[3][\"question\"][:200])\nassert after[4:] == rows[4:] and after[0] == rows[0], \"reredact changed an entry the rules do not flag\"\nbk = [l.split(\":\", 1)[1].strip() for l in out.splitlines() if l.startswith(\"backup:\")]\nassert bk and os.path.exists(bk[0]), (\"reredact names no backup it wrote\", out[-600:])\nheld = \"\".join(open(p).read() for p in glob.glob(os.path.join(bk[0], \"**\", \"*.jsonl\"), recursive=True)) if os.path.isdir(bk[0]) else open(bk[0]).read()\nassert MAIL in held, \"the backup does not hold the original run file\"\nassert os.path.realpath(bk[0]).startswith(os.path.realpath(S) + os.sep) is False, \"the backup sits inside the store, where the store gates read it\"\nassert \"question\" in out and \"fetches\" in out and MAIL not in out, (\"reredact does not report each change by its field, or prints the value it replaced\", out[-600:])\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nt = open(\"kb/_self/querylog.md\", encoding=\"utf-8\").read().splitlines()\npara = [l for l in t if l.startswith(\"- **A redact change stalls delivery.**\")]\nassert para, \"the Delivery paragraph 'A redact change stalls delivery' is gone\"\nsys.exit(0 if \"querylog.py reredact\" in para[0] else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
