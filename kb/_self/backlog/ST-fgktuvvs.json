@@ -2,7 +2,7 @@
   "id": "ST-fgktuvvs",
   "kind": "story",
   "title": "monitoring.md says where a new OpenTelemetry signal, exporter or receiver goes",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qh2j24z2",
   "priority": "P2",
   "rank": 0,
@@ -49,6 +49,19 @@
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): where additional OTel factories and consumers belong. Layout on 2026-10-19: otel/ (SDK, uv-pinned: kbmon_otel.py runner, otel_logs.py, otel_spans.py, otel_prom.py), _tools/ stdlib (mon_export.py points, mon_events.py events, ql_export.py OTLP-JSON lines, kbotel.py receiver of Claude Code's events). Premise: the check fails (no such section).",
-  "claimed_by": "orch-r109",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "9826c72231ea2481b7ab43082c84db9b177ff8ae",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nt=open('kb/_self/monitoring.md',encoding='utf-8').read()\ni=t.find('## Adding an OpenTelemetry signal');assert i>=0,'no section '+'## Adding an OpenTelemetry signal'\nj=t.find('\\n## ',i+3)\nt=t[i:j if j>0 else len(t)]\nt=' '.join(t.split())\nmiss=[p for p in ['otel/otel_logs.py', 'otel/otel_spans.py', 'otel/otel_prom.py', 'SIGNALS', '_tools/kbotel.py', '_tools/mon_export.py', '_tools/mon_events.py', '_tools/ql_export.py'] if p not in t]\nprint('missing:',miss)\nsys.exit(1 if miss else 0)"
+        ],
+        "exit": 0,
+        "sha256": "390dc10031409c71"
+      }
+    ]
+  }
 }
