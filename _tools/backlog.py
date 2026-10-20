@@ -79,10 +79,12 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           an answer --by operator also records the answering session's operator id
                                           and role (interactive, orchestrator or worker) on the gate beside by
   backlog.py set ID [--notes TEXT] [--link T]... [--touch GLOB]... [--check CMD]... [--depends ID]...
-                 [--relates ID]... [--priority P1|P2|P3] [--rank N] [--sprint ID] [--title T] [--goal T]
+                 [--relates ID]... [--repos NAME]... [--repos-if-needed NAME]... [--priority P1|P2|P3] [--rank N]
+                 [--sprint ID] [--title T] [--goal T]
                  [--repro CMD] [--repro-reason T] [--severity S1..S4] [--parent ID]
                  [--delegate NAME --by operator] [--owner ID --by operator] [--add-notes T]... [--add-link T]... [--add-touch GLOB]...
-                 [--add-check CMD]... [--add-depends ID]... [--add-relates ID]... [--external TRACKER=ID]...
+                 [--add-check CMD]... [--add-depends ID]... [--add-relates ID]... [--add-repos NAME]...
+                 [--add-repos-if-needed NAME]... [--external TRACKER=ID]...
                  [--add-external TRACKER=ID]... [--clause CLAUSE=N]... [--add-clause CLAUSE=N]... [--clear FIELD]...
                                           change an item after new: each list option replaces its list, and its
                                           --add-<option> twin appends what is missing to it, so a second run changes
@@ -91,7 +93,9 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           removes one. --external replaces the external ids whole, and only a
                                           tracker backlog.json's trackers names takes an id its pattern matches.
                                           --clause maps a goal clause to the index N of the check, then the repro,
-                                          that reads it (the clauses precheck prints).
+                                          that reads it (the clauses precheck prints). --repos names the
+                                          repositories the item changes and --repos-if-needed those it may change
+                                          (names from backlog.json's repositories; a name is in one of the two).
                                           The result is validated as check does and written only when it adds no
                                           error; title, goal and parent, and a bug's repro (one that fails now, as
                                           new bug's), repro_reason and severity are replaced whole; status,
@@ -161,7 +165,14 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           names the glab mr merge command that merges it. A finished worker's clean
                                           worktree that Claude Code left locked is removed, unless a process still
                                           runs in it (refused, naming each pid; a host that cannot list them: a note,
-                                          and it is removed). Stops at the first failing
+                                          and it is removed). An item that names repositories (set --repos) lands
+                                          in two more steps: `requests` reads each repository's merge request,
+                                          the one titled `ID:`, and stops until every one is merged, and
+                                          `repositories` fetches each origin, stops on a worktree of dispatch's
+                                          that is dirty, locked or in use, and removes them (never --force);
+                                          each repository's merge request and commit go into the item's
+                                          evidence, and its work/ID branch is deleted after the landing when
+                                          its commits are on the default branch. Stops at the first failing
                                           step, naming it (exit 1); a failed rebase is aborted
   backlog.py drop ID --why TEXT          status dropped (an item outside any sprint is deleted: git keeps it)
   backlog.py start SPRINT                 activate a sprint whose start gate the operator answered; drafts become todo;
@@ -192,7 +203,8 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
   backlog.py brief ID [--known TEST=BUG]... [--known-suite TEXT=BUG]... [--probe TEXT]
                                           the brief a sprint worker is given, printed: the item's JSON and goal
                                           text, its external tracker ids with their urls, the role file, the
-                                          worker's worktree and scratch directory (_cache/scratch/ID/), the
+                                          worker's worktree and scratch directory (the `scratch_dir` setting of
+                                          backlog.json + /ID/, _cache/scratch/ID/ by default), the
                                           in-flight sibling items with the files their touches change, the known
                                           failing tests (--known TEST=BUG, repeatable; BUG a backlog id) and
                                           suite-level failures that are no test (--known-suite TEXT=BUG, the
@@ -204,7 +216,8 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           [--known-suite TEXT=BUG]... [--probe TEXT]
                                           start the item's headless worker: make its worktree
                                           (<worktree_dir>/agent-ID on work/ID from this checkout's HEAD) and the
-                                          scratch directory, write the brief there (brief.md) and run `claude -p
+                                          scratch directory (`scratch_dir` + /ID/ under the clone's top), write the
+                                          brief there (brief.md) and run `claude -p
                                           --model sonnet --effort high --output-format json --add-dir SCRATCH
                                           --max-turns N` in the worktree with the brief on stdin (never a prompt
                                           argument), in the foreground until the session exits: N by kind, 60 task
@@ -255,7 +268,7 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           every item with `research` true or a link naming a query-log gap finding:
                                           its tokens (in + cw + cr + out of its own direct + attributed lines), the
                                           gap findings closed by commits with its KB-Work trailer (a _gaps.md entry
-                                          that gains a Resolved or Superseded note), and tokens per closed gap
+                                          that gains a Resolved, Superseded or Closed note), and tokens per closed gap
                                           (integer division; n/a when none closed; unresolved in a shallow clone)
   backlog.py red-pipeline [--status [--job J]|--hook]   the newest pipeline of origin's main in which a job ran
                                           (--job: in which job J succeeded or failed on its own account, never

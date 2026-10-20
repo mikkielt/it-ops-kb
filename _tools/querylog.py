@@ -93,10 +93,12 @@ the ql_*.py modules beside it.
                         ranked by the logged lookups that asked it, then the oldest lookup, and the top N printed by
                         topic with the question and each of its finding ids with its entry's path:line. The same store
                         and HEAD print the same lines in any clone. Exit 0, 1 when a closed gap reappears (a later
-                        record after its claim, or its entry without a Resolved note)
+                        record after its claim, or its entry without a settling note: Resolved, Superseded
+                        or Closed)
   querylog.py close F-ID [F-ID ...] (--claim | --tried NOTE | --reject) [--store DIR] [--commit [--trailer 'K: V']]
                         records what `/kb-research --queue` did with the gap findings of one queue item: --claim once
-                        each _gaps.md entry carries a `Resolved <date>:` note (gap -> claim, by kb-research); --tried
+                        each _gaps.md entry carries a settling note, `Resolved <date>:`, `Superseded <date>:` or
+                        `Closed <date>:` (gap -> claim, by kb-research); --tried
                         writes the note `Tried <date>: NOTE` under each entry and records the day; --reject once each
                         entry was removed as off the kb's domains (-> candidate-gap, `rejected`, as the gap step
                         records one). One findings file per finding; no older file is edited. --commit commits the
