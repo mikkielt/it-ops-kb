@@ -2,7 +2,7 @@
   "id": "ST-7ynhjmw3",
   "kind": "story",
   "title": "The other whole-subsystem lines of tools.md move to the docs that own them",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gea4jifz",
   "priority": "P2",
   "rank": 0,
@@ -68,5 +68,7 @@
       "by": "operator"
     }
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): tools.md lines over 5000 characters on 2026-10-19: census 19794, coord 13263, land 10390, kb_mcp 7510, backlog check 6170, kbmon 5722, tests.py 5608 (and benchmarks 53843, A2). Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+  "notes": "operator request 2026-10-19 (housekeeping batch): tools.md lines over 5000 characters on 2026-10-19: census 19794, coord 13263, land 10390, kb_mcp 7510, backlog check 6170, kbmon 5722, tests.py 5608 (and benchmarks 53843, A2). Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
+  "claimed_by": "orch-r111",
+  "operator": "op-f618a13e"
 }
