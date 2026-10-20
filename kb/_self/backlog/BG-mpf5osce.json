@@ -2,7 +2,7 @@
   "id": "BG-mpf5osce",
   "kind": "bug",
   "title": "publish refuses commit 1da4f4e3 for documentation-example email addresses no allowlist covers, so the public home cannot be updated",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ttgcpf7o",
   "priority": "P1",
   "rank": 0,
@@ -21,6 +21,19 @@
     "kb/_self/git.md"
   ],
   "notes": "Premise (2026-10-20): the operator's publish --dry-run from the main checkout (branch orch/mac, 942 commits behind origin/main) refused 73331d8a6e4f, 1da4f4e39b3e and f4190f0dbff1. With origin/main's own tools only 1da4f4e3 is refused (the armor-label commits pass since BG-onc6wxd3's allowlist line); leak_verdicts already unions the commit's and the projection's allowlist, so the fix is the missing exact entries, not code.",
-  "claimed_by": "p19-pubfix",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "008ad5561c0b19e71b6e25887f0d594b30635989",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,'_tools'); import kbpublic as k; a=k.parse_allowlist(open(k.ALLOWLIST_PATH).read()); w=[(c,o,n,x) for r in ('73331d8a6e4f','1da4f4e39b3e','f4190f0dbff1') for c,ch in k.history_changes(r,r+'^','.') for s,o,n,x,m in ch if s!='D']; v=k.leak_verdicts(w,None,None,a,'.'); print(v); sys.exit(1 if v else 0)"
+        ],
+        "exit": 0,
+        "sha256": "ca3d163bab055381"
+      }
+    ]
+  }
 }
