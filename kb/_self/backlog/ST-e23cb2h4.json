@@ -89,7 +89,11 @@
         "kbdecide.run_cli(parser, commands, argv) holds the parse, dispatch and refusal handling; both main functions call it": "ST-e23cb2h4",
         "kblog.main imports and calls kbdecide.main with its own parser and commands patched in": "ST-e23cb2h4"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "kbdecide.run_cli(parser, commands, argv) holds the parse, dispatch and refusal handling; both main functions call it",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): identical bodies 2026-10-19: bl_intake.end_tree = kbingest.kill_tree, census.read_sources = kbcommon.read_sources, fetch.repo_roots = kg_base.repo_roots, kbdecide.matches/main = kblog.matches/main. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
