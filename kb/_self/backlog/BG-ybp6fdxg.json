@@ -1,0 +1,25 @@
+{
+  "id": "BG-ybp6fdxg",
+  "kind": "bug",
+  "title": "content-rules.md and tools.md name tests that no longer exist as the planted failures of their checks",
+  "status": "todo",
+  "sprint": "SP-gea4jifz",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "Every test name kb/_self/content-rules.md and kb/_self/tools.md give after \"test named\" or \"tests named\" is a test the suite still holds, or the sentence names no test; the docs say what checks the rule now, so the sprint goal clause \"the kb/_self docs and skills name no removed tool or test\" holds",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import glob, re, sys\nnames = set()\nfor f in glob.glob('_tools/test_*.py') + ['_tools/conftest.py']:\n    names |= set(re.findall(r'def (test_\\w+)', open(f, encoding='utf-8').read()))\ndocs = glob.glob('kb/_self/*.md') + glob.glob('.claude/skills/*/SKILL.md') + glob.glob('.claude/agents/*.md') + ['AGENTS.md']\nbad = []\nfor d in docs:\n    t = ' '.join(open(d, encoding='utf-8').read().split())\n    for m in re.finditer(r'tests? named ((?:`[\\w]+`(?:,? (?:and |or )?)?)+)', t):\n        for n in re.findall(r'`(\\w+)`', m.group(1)):\n            if not any(n in x for x in names):\n                bad.append((d, n))\nprint('removed tests the docs still name:', sorted(set(bad)))\nsys.exit(1 if bad else 0)\n"
+    ]
+  },
+  "repro_reason": "the defect is a doc sentence naming tests; whether a named test exists can only be read against the test files, so the repro reads the docs beside the test functions the suite defines",
+  "touches": [
+    "kb/_self/content-rules.md",
+    "kb/_self/tools.md",
+    "kb/_self/_retrieval/lookup_eval.csv",
+    "kb/_self/_retrieval/**"
+  ]
+}
