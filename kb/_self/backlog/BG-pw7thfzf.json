@@ -44,6 +44,27 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which directories does tidy count as a sandbox's own, and what does it do with a recorded symlink?",
+      "options": [
+        "sandbox: default_dir and bench scratch; symlink kept",
+        "sandbox: bench scratch only; symlink unlinked"
+      ],
+      "recommendation": "sandbox: default_dir and bench scratch; symlink kept",
+      "do": {
+        "sandbox: default_dir and bench scratch; symlink kept": "BG-pw7thfzf",
+        "sandbox: bench scratch only; symlink unlinked": "BG-pw7thfzf"
+      },
+      "class": "agents-rule",
+      "answer": "sandbox: default_dir and bench scratch; symlink kept",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "notes": "Filed 2026-10-20 from the SP-ipeewrlv review (S1): the reviewer planted own <main>/kb --class scratch, own <tidy worktree>/_tools --class sandbox and a scratch record of a directory holding an unrecorded worktree, and each listed as would remove; a symlink record became its target. Premise run on origin/main: the repro and check 0 both fail (kb, the symlink target and the worktree holder are remove; the control scratch dir is remove as it should be).",
   "claimed_by": "orch-r201",
   "operator": "op-f618a13e"

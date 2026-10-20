@@ -13,7 +13,8 @@ A record is one coord key, `own/<class>/<digest>`, whose value is a JSON object:
 class, the item, sprint and session when given, and `at`, the time it was recorded in seconds since the epoch; a process's
 record also holds its `start` time when the host's process table gives one. The digest is the first 16
 hex digits of the sha256 of the normalised path or of the pid's decimal text, so one directory is one key however it was
-spelled (`norm_path`: realpath, then no `\\\\?\\` prefix, normcase, one case for a drive letter), on every platform. The
+spelled (`norm_path`: realpath of its parents, then no `\\\\?\\` prefix, normcase, one case for a drive letter), on every
+platform; a symlink at its end is not followed, so a link's record is the link's own path. The
 coord store is the one `coord.py` finds (`--store`, else KB_COORD_STORE, else the clone's common git directory), shared by
 the clone's worktrees. coord keeps no delete: `--drop` writes an empty value, which readers skip (`recorded`).
 
@@ -26,8 +27,10 @@ coord refused or did not run, 2 a bad request.
 `keep`: a candidate goes only when its owner is recorded, no live coord lease or claim names it (or its branch, item or
 session), no live process has it as its working directory, its item is done, dropped or gone with its closed sprint, it is
 clean and every commit of it is on the integration main (`git cherry`), and its last activity is older than --older-than
-hours; the main checkout, the worktree tidy runs in and `_cache/querylog/worktree` always stay, and so does everything no
-record names. `tidy` lists each recorded worktree, local branch, bench sandbox and scratch directory with that verdict, its
+hours; a recorded scratch or sandbox directory also lies in its class's own directories (`own_dirs`), is no symlink and
+holds no worktree of this repository (`misplaced`); the main checkout, the worktree tidy runs in and
+`_cache/querylog/worktree` always stay, and so does everything no record names. `--apply` looks at a path again with lstat
+(`is_recorded_dir`) and never removes a symlink's target. `tidy` lists each recorded worktree, local branch, bench sandbox and scratch directory with that verdict, its
 reason and the bytes it frees (a walk of at most `BYTES_SECONDS` a candidate, `approximate` past it), one summary line a class;
 --json prints the rows. Under disk pressure (free space below --disk-free-gb) the bench sandboxes come first and their age
 limit is waived. --apply removes the `remove` rows with `git worktree remove` (never --force; a directory Windows refuses
@@ -73,7 +76,7 @@ import bl_authority
 import bl_cli
 import bl_close
 import bl_procs
-from bl_base import Refused, Rejected, git, run, say
+from bl_base import Refused, Rejected, git, run, say, scratch_dir
 from bl_close import AGENT_BRANCH, WORK_PREFIX, WORKER_NAME
 
 COORD = Path(__file__).resolve().parent / "coord.py"
@@ -104,13 +107,33 @@ def strip_extended(path):
     return path[len(EXTENDED):] if path.startswith(EXTENDED) else path
 
 
-def norm_path(path):
-    """The one spelling of a directory every record is keyed by: realpath, without the extended-length prefix, normcase,
-    and one (lower) case for a drive letter. A trailing separator, a symlink, a relative path and (on Windows) a case
-    or slash difference all give the same text."""
-    text = strip_extended(os.path.realpath(strip_extended(os.fspath(path))))
-    text = os.path.normcase(text)
+def is_link(path):
+    """Whether PATH itself (not what it points at) is a symlink, or on Windows a junction."""
+    return os.path.islink(path) or getattr(os.path, "isjunction", lambda _p: False)(path)
+
+
+def spell(text):
+    """TEXT without the extended-length prefix, normcase, and one (lower) case for a drive letter."""
+    text = os.path.normcase(strip_extended(text))
     return text[0].lower() + text[1:] if DRIVE.match(text) else text
+
+
+def norm_real(path):
+    """PATH with every symlink resolved (realpath), spelled by `spell`: where a directory really is."""
+    return spell(os.path.realpath(strip_extended(os.fspath(path))))
+
+
+def norm_path(path):
+    """The one spelling of a directory every record is keyed by: realpath of its parent, then its own name, without the
+    extended-length prefix, normcase, and one (lower) case for a drive letter. A trailing separator, a relative path and
+    (on Windows) a case or slash difference all give the same text; a symlink in the parents is resolved, but PATH
+    itself being a symlink is not followed, so a record of a link is the link's own path, never its target's."""
+    raw = strip_extended(os.fspath(path))
+    bare = raw.rstrip("/\\")
+    if bare and is_link(bare):
+        parent, name = os.path.split(bare)
+        return spell(os.path.join(os.path.realpath(parent or os.curdir), name))
+    return norm_real(raw)
 
 
 def subject(cls, target):
@@ -358,6 +381,39 @@ def always_kept(path, snap):
     return None
 
 
+def own_dirs(cls, snap):
+    """({directory a record of CLS may sit strictly under}, {directory it may be, or sit under}), each really resolved, for
+    the classes scratch and sandbox: a scratch directory is made under the `scratch_dir` of a checkout of this clone (the
+    main checkout's or a linked worktree's); a bench multi sandbox is the sandbox root `bench_multi.default_dir` names or a
+    directory under the benchmarks' scratch directory (`bench_core.scratch_dir`) that holds its clones."""
+    cache = snap.setdefault("own_dirs", {})
+    if cls not in cache:
+        if cls == "scratch":
+            tops = {snap["main"], snap["here"], *(norm_path(e["path"]) for e in snap["entries"])}
+            cache[cls] = ({norm_real(Path(t).joinpath(*scratch_dir())) for t in tops}, set())
+        else:
+            import bench_core
+            import bench_multi
+            cache[cls] = ({norm_real(bench_core.scratch_dir())}, {norm_real(bench_multi.default_dir())})
+    return cache[cls]
+
+
+def misplaced(cls, path, snap):
+    """Why the recorded directory PATH of class scratch or sandbox is not one tidy removes, or None: it is a symlink (a
+    link is no directory tidy made, and what it points at is never removed), it lies outside the directories of its class
+    (`own_dirs`: the checkout itself and its tracked tree are in none), or it holds a worktree of this repository."""
+    if is_link(path):
+        return "it is a symlink, not the directory the record names"
+    strict, whole = own_dirs(cls, snap)
+    if not (any(path != d and inside(d, path) for d in strict) or any(inside(d, path) for d in whole)):
+        return f"it lies outside the directories tidy removes {cls} records from"
+    for e in snap["entries"]:
+        wt = norm_path(e["path"])
+        if inside(path, wt) and os.path.isdir(wt):
+            return f"it holds the worktree {wt} of this repository"
+    return None
+
+
 def live_claim(names, state):
     """What names one of NAMES (a path, branch, item or session) in a key or value a live coord lease or claim holds, or None."""
     for row in state["held"]:
@@ -454,8 +510,12 @@ def safe_to_remove(cand, snap, state):
     if rec is None:
         return KEEP, f"no owner record names it ({cand.get('branch') or path} was not made by this clone's tools, or never recorded)"
     entry = cand.get("entry")
-    if cls in ("worktree", "sandbox", "scratch") and not os.path.exists(path):
+    if cls in ("worktree", "sandbox", "scratch") and not os.path.lexists(path):
         return REMOVE, "its directory is already gone; only the record and git's worktree entry are left"
+    if cls in ("sandbox", "scratch"):
+        why = misplaced(cls, path, snap)
+        if why:
+            return KEEP, why
     if cls == "worktree" and entry is None:
         return KEEP, "git does not list it as a worktree"
     if cls == "worktree" and entry["lock"] is not None:
@@ -643,6 +703,15 @@ def end_process(snap, cand):
     return None
 
 
+def is_recorded_dir(path):
+    """Whether the normalised PATH, looked at with lstat, is a real directory at the place its record names: no symlink or
+    junction at its end, none in its parents (realpath of it is itself)."""
+    try:
+        return stat.S_ISDIR(os.lstat(path).st_mode) and not is_link(path) and norm_path(path) == path
+    except OSError:
+        return False
+
+
 def remove_one(snap, row, removed):
     """Remove the candidate of ROW; returns None once it is gone, else why it was kept. REMOVED collects the worktree
     paths removed so far (a branch checked out only in those is free to go)."""
@@ -656,7 +725,9 @@ def remove_one(snap, row, removed):
         if bl_close.delete_landed_branch(root, cand["branch"], snap["upstream"], who="tidy", prefixes=TIDY_PREFIXES):
             return None
         return "see the line above"
-    if os.path.exists(path):
+    if os.path.lexists(path):
+        if not is_recorded_dir(path):  # replaced by a link, or by a file, since the listing
+            return "it is no longer the recorded directory (a symlink or a file stands there)"
         if snap["table"] is None:  # Windows: a rename to a sibling and back fails while a process holds the directory
             held = bl_close.held_by_process(Path(path))
             if held:
