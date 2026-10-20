@@ -2,7 +2,7 @@
   "id": "ST-oygdwqxl",
   "kind": "story",
   "title": "Review sprint: kbmon puts what needs the operator first, one row per sprint, from one implementation",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-2uljwgho",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,7 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-r113",
+  "operator": "op-f618a13e"
 }
