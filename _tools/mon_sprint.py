@@ -24,7 +24,6 @@ SPRINT_STATES = ("active", "approved", "planned")  # the order the panel lists t
 SPRINT_ROWS = 12  # sprints in the text view
 LANDING_ROWS = 6  # landings in the text view
 WAITING_ROWS = 2  # waiting gates under a sprint in the text view
-STATE_WIDTH = 10  # columns of a sprint row's state
 PATHS_KEPT = 3  # paths `fast_forward`'s why names
 
 
@@ -223,28 +222,9 @@ def collect(ctx):
     return {**sprints(ctx.root, backlog), "landings": landings(ctx.root, backlog[0])}
 
 
-def progress(sp, eta=None):
-    """`4/11 done · ETA 33-69 min · next ST-… · counts by status` (ETA the estimate's range, text of `mon_status`, when ETA is
-    one), or `not started` or `waits on start gate`."""
-    if sp["state"] == "approved":
-        return "not started"
-    if sp["state"] == "planned":
-        return "waits on start gate"
-    counts = sp.get("items", {})
-    done = counts.get("done", 0) + counts.get("dropped", 0)
-    parts = [f"{done}/{sum(counts.values())} done"]
-    if eta:
-        import mon_status
-        parts.append(f"ETA {mon_status.minutes_range(eta['low_min'], eta['high_min'])}")
-    if sp.get("next"):
-        parts.append(f"next {sp['next']}")
-    parts.append(", ".join(f"{k} {v}" for k, v in sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))) or "no items")
-    return " · ".join(parts)
-
-
 def lines(data, width=None, taken=None):
-    """The body rows: where the items were read from (and how far the checkout is behind it), a row for each sprint (id, state padded to STATE_WIDTH, its short name `mon_status.short_name`, progress) with its first waiting gates
-    under it, then `landing` rows (item, last step, since). TAKEN is the snapshot's taken time, the `now` of each active
+    """The body rows: where the items were read from (and how far the checkout is behind it), a row for each sprint (the one
+    `mon_status.sprint_row` writes for `--status sprints`) with its first waiting gates under it, then `landing` rows (item, last step, since). TAKEN is the snapshot's taken time, the `now` of each active
     sprint's estimate (WIDTH is unused)."""
     import mon_eta
     import mon_status
@@ -259,8 +239,8 @@ def lines(data, width=None, taken=None):
     shown = data.get("sprints", [])[:SPRINT_ROWS]
     for sp in shown:
         eta = mon_eta.estimate(sp, data.get("history") or {}, now) if sp["state"] == "active" else None
-        name = mon_status.short_name(sp.get("title") or sp["id"]).ljust(mon_status.NAME_CHARS)
-        rows.append(f"{sp['id']}  {sp['state'].ljust(STATE_WIDTH)}{name}  {progress(sp, eta)}")
+        done, total = mon_status.sprint_counts(sp)
+        rows.append(mon_status.sprint_row(sp.get("title") or sp["id"], sp, done, total, eta, data.get("source") or "?"))
         waiting = [w for w in sp.get("waiting", []) if not (w["item"] == sp["id"] and w["gate"] == "start")]
         for w in waiting[:WAITING_ROWS]:
             rows.append(f"    waiting  {w['item']}/{w['gate']}")

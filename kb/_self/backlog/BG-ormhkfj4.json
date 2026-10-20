@@ -23,6 +23,25 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "The panel row is exactly the status row, so it no longer shows the sprint id, the next item or the counts by status: keep it so, or add them in a second line under the row?",
+      "options": [
+        "row only",
+        "second line with id, next item and counts"
+      ],
+      "recommendation": "row only",
+      "do": {
+        "row only": "BG-ormhkfj4",
+        "second line with id, next item and counts": "BG-ormhkfj4"
+      },
+      "class": "design",
+      "answer": "row only",
+      "by": "agent"
+    }
+  ],
   "links": [
     "SP-2uljwgho review"
   ],
