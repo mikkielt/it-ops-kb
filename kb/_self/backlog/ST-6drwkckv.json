@@ -2,7 +2,7 @@
   "id": "ST-6drwkckv",
   "kind": "story",
   "title": "benchmarks.md, plugin.md and token-efficiency.md point to coordination.md for coordination",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-eptouzxc",
   "priority": "P2",
   "rank": 0,
@@ -42,5 +42,7 @@
   "depends_on": [
     "ST-nni7qqhk"
   ],
-  "notes": "Method (planner): cut to the pointer only prose that repeats what coordination.md owns; measurements, figures and their setups stay in the doc that owns them (token-efficiency.md, kb/_self/reports/), and no fact is lost. Premise 2026-10-20: none of the three names coordination.md (it does not exist)."
+  "notes": "Method (planner): cut to the pointer only prose that repeats what coordination.md owns; measurements, figures and their setups stay in the doc that owns them (token-efficiency.md, kb/_self/reports/), and no fact is lost. Premise 2026-10-20: none of the three names coordination.md (it does not exist).",
+  "claimed_by": "orch-r221",
+  "operator": "op-f618a13e"
 }
