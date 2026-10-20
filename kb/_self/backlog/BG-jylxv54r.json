@@ -2,7 +2,7 @@
   "id": "BG-jylxv54r",
   "kind": "bug",
   "title": "ql_deliver.logged checks the distill.log size cap on every line, so a manual apply --push can truncate its own gate lines mid-run",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vx6eufpj",
   "priority": "P3",
   "rank": 0,
@@ -30,6 +30,19 @@
     "parked: SP-q5ldd25k review"
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): distill.log is the delivery's only record (972 KB, 13049 lines on 2026-10-19). Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs.",
-  "claimed_by": "orch-r106",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "b2e5145e7af938d495d05756bf7dbb437def5a6a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,tempfile,pathlib;sys.path.insert(0,'_tools');import ql_deliver as q;d=pathlib.Path(tempfile.mkdtemp());l=d/q.LOG_NAME;l.write_text('a'*(q.LOG_MAX_BYTES-5));s=q.logged(d,lambda t:None);s('gate X: FAILED');s('y'*20);s('end');sys.exit(0 if 'gate X: FAILED' in l.read_text() else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
