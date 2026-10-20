@@ -4,13 +4,14 @@ newer than a cursor. Standard library only; imports `mon_log` (its readers of th
 `mon_export` (its attribute rules), and `mon_view`, `bl_stall`, `ql_base` and `ql_report` where it reads them.
 
   collect(ctx, since)    {"schema", "cursor", "events", "spans", "problems"}: the records newer than the cursor `since` (None:
-                         the newest ones), and the cursor that holds the newest time of the spool rows and of the delivery
-                         and the newest coord sequence read; text, whose form a caller does not read
+                         the newest ones), and the cursor that holds the newest time of the spool rows with the keys of the
+                         rows of that millisecond, the time of the delivery and the newest coord sequence read; text, whose
+                         form a caller does not read
   render(ctx, since)     that object as JSON text with every string redacted, what `kbmon.py --events` prints
 
 An event is `{name, time, attributes}` (`severity` `warn` on a `done.refused` row and a refused delivery); a span is `{name, id,
-trace, parent, start, end, status, attributes}`, times in Unix nanoseconds, `parent` left out of a root, `trace` the id of the
-root. Ids are 16 hex characters taken from the ops row's own id, so a record has the same id on every call. A landing is a
+trace, parent, start, end, status, attributes}` (`status` `error` on a row with an `exit` and on a refused delivery), times in
+Unix nanoseconds, `parent` left out of a root, `trace` the id of the root. Ids are 16 hex characters taken from the ops row's own id, so a record has the same id on every call. A landing is a
 span only once its `land.end` row is in the log, and then with the steps of its item the rows hold; a step with no `land.end`
 is never exported. An attribute is kept only when it is a number, a flag or an identifier `redact.redact` leaves as it is (a
 list of them as `name_n` and `name_1`..), never a `holder`; the other attributes of a record are left out, the record stays.
@@ -26,7 +27,7 @@ import mon_log
 import mon_view
 
 SCHEMA = 1
-CURSOR = re.compile(r"1\.(\d+)\.(\d+)\.(\d+)")
+CURSOR = re.compile(r"1\.(\d+)\.(\d+)\.(\d+)(?:\.([0-9a-f]{8}(?:-[0-9a-f]{8})*))?")
 FIRST_ROWS = 4000  # ops rows read when there is no cursor
 FIRST_EVENTS = 1000  # coord events read when there is no cursor
 LIST_KEPT = 4  # items of a list attribute that are kept
@@ -79,13 +80,25 @@ def attributes(values, skip=()):
 
 
 def parse(since):
-    """(ops time, coord sequence, delivery time) of a cursor, zeros for none; ValueError for text this tool did not give."""
+    """(ops time, coord sequence, delivery time, keys of the ops rows of the ops time already read) of a cursor, zeros and
+    no keys for none; ValueError for text this tool did not give."""
     if since is None:
-        return 0, 0, 0
+        return 0, 0, 0, frozenset()
     found = CURSOR.fullmatch(since.strip())
     if not found:
         raise ValueError(f"--since is not a cursor of --events: {since[:40]!r}")
-    return tuple(int(x) for x in found.groups())
+    ops, seq, delivery, keys = found.groups()
+    return int(ops), int(seq), int(delivery), frozenset((keys or "").split("-")) - {""}
+
+
+def row_key(row):
+    """8 hex characters that tell an ops row from the others of its millisecond: of its id, else of its whole content."""
+    return span_id(row.get("id") or json.dumps(row, sort_keys=True, default=str))[:8]
+
+
+def id_list(values):
+    """VALUES with each string of comma-separated parts (a coord `item`, `topic` or `touch` list) as the list of its parts."""
+    return {k: [x.strip() for x in v.split(",")] if isinstance(v, str) and "," in v else v for k, v in values.items()}
 
 
 def status(row):
@@ -117,7 +130,7 @@ def coord_records(ctx, after):
         kind = e.get("kind") if isinstance(e.get("kind"), str) else ""
         values = e.get("fields") if isinstance(e.get("fields"), dict) else {}
         out.append({"name": "coord." + (kind if kind and mon_export.stable(kind) else "event"), "time": at,
-                    "attributes": attributes({"seq": e["seq"], **values})})
+                    "attributes": attributes({"seq": e["seq"], **id_list(values)})})
     return out, max([after] + [e["seq"] for e in events])
 
 
@@ -129,53 +142,60 @@ def landing(end_row, end, steps):
     return [root] + kids
 
 
-def ops_records(ctx, after):
-    """(events, spans, newest time) of the ops rows newer than AFTER (the newest FIRST_ROWS rows when AFTER is 0)."""
+def ops_records(ctx, after, seen=frozenset()):
+    """(events, spans, newest time, keys of the rows of that time) of the ops rows newer than AFTER, and those of AFTER's
+    millisecond whose key SEEN lacks (the newest FIRST_ROWS rows when AFTER is 0)."""
     import bl_stall
     rows = mon_log.in_spool_order(bl_stall.ops_rows(str(ctx.root)))
     rows = rows[-FIRST_ROWS:] if after == 0 else rows
-    events, spans, steps, newest = [], [], {}, after
+    events, spans, steps, newest, keys = [], [], {}, after, set(seen)
     for r in rows:
         t = ns_of(r.get("ts"))
         if t is None:
             continue
-        newest = max(newest, t)
+        if t > newest:
+            newest, keys = t, set()
+        if t == newest:
+            keys.add(row_key(r))
+        new = t > after or (t == after and row_key(r) not in seen)
         event, item = r.get("event"), r.get("item")
         if event == "land.step":
             steps.setdefault(item, []).append((t, r))
         elif event == "land.end":
             mine = steps.pop(item, [])
-            if t > after:
+            if new:
                 spans += landing(r, t, mine)
-        elif t > after and event == "done.refused":
+        elif new and event == "done.refused":
             events.append({"name": "kb.done.refused", "time": t, "severity": "warn",
                            "attributes": attributes(r, NOT_ATTRS)})
-        elif t > after and event in ("agent.run", "test.run"):
+        elif new and event in ("agent.run", "test.run"):
             spans.append(span("kb." + event, r, t))
-    return events, spans, newest
+    return events, spans, newest, frozenset(keys)
 
 
 def delivery_records(after):
-    """(events, spans, time) of the last apply outcome when the log gives its time and it is newer than AFTER."""
+    """(events, spans, time) of the apply outcome that is the log's last line, newer than AFTER. A line written after it
+    leaves the log's last write (the outcome's time) moved and the outcome no longer standing last: it is exported once."""
     import ql_base
     import ql_report
     last = ql_report.last_outcomes(ql_base.places()[0])["apply"]
-    when = ns_of(last.get("when")) if last and last.get("when") else None
+    when = ns_of(last.get("when")) if last and last.get("when") and last.get("line") == 1 else None
     if when is None or when <= after:
         return [], [], after
-    row = {"id": f"delivery-{when}", "outcome": last["outcome"], "ms": 0}
+    failed = last["outcome"] in mon_log.DELIVERY_FAILED
     event = {"name": "kb.delivery.apply", "time": when, "attributes": attributes({"outcome": last["outcome"]})}
-    if last["outcome"] in mon_log.DELIVERY_FAILED:
-        event["severity"] = "warn"
-    return [event], [span("kb.delivery", row, when)], when
+    out = span("kb.delivery", {"id": f"delivery-{when}", "outcome": last["outcome"]}, when)
+    if failed:
+        event["severity"], out["status"] = "warn", "error"
+    return [event], [out], when
 
 
 def collect(ctx, since=None):
-    ops_after, seq_after, delivery_after = parse(since)
+    ops_after, seq_after, delivery_after, ops_seen = parse(since)
     events, spans, problems = [], [], []
-    seq, ops_at, delivery_at = seq_after, ops_after, delivery_after
+    seq, ops_at, delivery_at, ops_keys = seq_after, ops_after, delivery_after, ops_seen
     for name, read in (("coord", lambda: coord_records(ctx, seq_after)),
-                       ("ops", lambda: ops_records(ctx, ops_after)),
+                       ("ops", lambda: ops_records(ctx, ops_after, ops_seen)),
                        ("delivery", lambda: delivery_records(delivery_after))):
         try:
             got = read()
@@ -187,9 +207,12 @@ def collect(ctx, since=None):
         else:
             events, spans = events + got[0], spans + got[1]
             ops_at, delivery_at = (got[2], delivery_at) if name == "ops" else (ops_at, got[2])
+            if name == "ops":
+                ops_keys = got[3]
     events.sort(key=lambda x: x["time"])
     spans.sort(key=lambda x: (x["start"], x["end"]))
-    return {"schema": SCHEMA, "cursor": f"1.{ops_at}.{seq}.{delivery_at}", "events": events, "spans": spans,
+    keys = "." + "-".join(sorted(ops_keys)) if ops_keys else ""
+    return {"schema": SCHEMA, "cursor": f"1.{ops_at}.{seq}.{delivery_at}{keys}", "events": events, "spans": spans,
             "problems": problems}
 
 

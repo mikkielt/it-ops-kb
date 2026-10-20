@@ -31,6 +31,59 @@
     "kb/_self/querylog.md",
     "kb/_self/usage.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does kbmon --events keep the cursor from losing an ops row of the cursor's millisecond?",
+      "options": [
+        "cursor tail of row keys",
+        "repeat the rows of the cursor's millisecond"
+      ],
+      "recommendation": "cursor tail of row keys",
+      "do": {
+        "cursor tail of row keys": "ST-e5fdgjk4",
+        "repeat the rows of the cursor's millisecond": "ST-e5fdgjk4"
+      },
+      "class": "design",
+      "answer": "cursor tail of row keys",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "When is a query-log delivery exported once with a stable time?",
+      "options": [
+        "only while its apply outcome is the log's last line",
+        "while it is the last apply or distill outcome line"
+      ],
+      "recommendation": "only while its apply outcome is the log's last line",
+      "do": {
+        "only while its apply outcome is the log's last line": "ST-e5fdgjk4",
+        "while it is the last apply or distill outcome line": "ST-e5fdgjk4"
+      },
+      "class": "querylog",
+      "answer": "only while its apply outcome is the log's last line",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Where is a comma-separated coord id list split into name_n and name_1..?",
+      "options": [
+        "in coord_records for coord fields only",
+        "in attributes for every record"
+      ],
+      "recommendation": "in coord_records for coord fields only",
+      "do": {
+        "in coord_records for coord fields only": "ST-e5fdgjk4",
+        "in attributes for every record": "ST-e5fdgjk4"
+      },
+      "class": "design",
+      "answer": "in coord_records for coord fields only",
+      "by": "agent"
+    }
+  ],
   "notes": "operator request 2026-10-19 (housekeeping batch): folds BG-vssjcjwq, BG-ttwih3wd, BG-cpa4b3gy, BG-jy6ipg4a (repros embedded).",
   "claimed_by": "orch-r109",
   "operator": "op-f618a13e"
