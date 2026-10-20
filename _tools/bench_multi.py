@@ -51,6 +51,7 @@ MANAGERS = ("code", "session")  # --manager: this tool starts the agents, or a m
 DEFAULT_MODELS = {"lookup": "haiku-5-5", "research": "sonnet-5-5", "code": "sonnet-5-5"}
 MANAGER_MODEL = "sonnet-5-5"
 RUN_RESULTS = "results.jsonl"  # DIR/results.jsonl: one json line per agent of a run
+PROGRESS = "progress.json"  # DIR/progress.json: a real run's plan, done runs and spend, with its pid and start time, for a monitor
 KNOB_KEYS = ("stagger", "model", "pack_budget", "tools", "manager")  # the knobs besides --coord and --sequential a line records
 BIN = "bin"  # DIR/bin: the claude wrapper dispatch's worker starts through
 OPERATOR = "operator"  # who the harness answers a gate as
@@ -1202,6 +1203,28 @@ class Budget:
             self.spent += cost
 
 
+def progress(manifest, lines, bare, max_usd):
+    """A run's progress: `planned` and `done` runs per arm (`kb`, and `bare` for the twins, planned only under --bare), the
+    `spend_usd` of the result `lines` (a line with no cost counts 0; of the lines of one agent and arm, as `score_twins`
+    writes a twin's line again, the newest) and the cap `max_usd` (None without --max-usd)."""
+    count = len(manifest["agents"])
+    newest = {(r.get("arm") == BARE, r.get("agent", i)): r for i, r in enumerate(lines)}
+    done = {"kb": 0, BARE: 0}
+    for twin, _ in newest:
+        done[BARE if twin else "kb"] += 1
+    return {"planned": {"kb": count, BARE: count if bare else 0}, "done": done,
+            "spend_usd": sum(r.get("cost") or 0 for r in newest.values()), "max_usd": max_usd}
+
+
+def write_progress(root, manifest, lines, bare, max_usd, started, ended=""):
+    """Write DIR/progress.json: `progress` with the pid and `started` time of the run and, once it is over, its `ended` time; the
+    file is replaced whole, so a monitor never reads half of it."""
+    doc = {**progress(manifest, lines, bare, max_usd), "pid": os.getpid(), "started": started, "ended": ended, "updated": utc_now()}
+    tmp = root / (PROGRESS + ".tmp")
+    tmp.write_text(json.dumps(doc, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
+    tmp.replace(root / PROGRESS)
+
+
 def blank_line(plan, scenario, k):
     return {"arm": plan.get("arm", "kb"), "scenario": scenario, "agent": plan["agent"], "n": plan["n"], "role": plan["role"],
             "item": plan.get("item", ""),
@@ -1573,6 +1596,7 @@ class Context:
         self.scenario, self.root, self.k, self.manifest, self.budget, self.gate_steps = scenario, root, k, manifest, budget, steps
         self.plans = plans
         self.timeout, self.path, self.lock = k["timeout"], root / RUN_RESULTS, threading.Lock()
+        self.started = utc_now()
 
     def clone(self, plan):
         return Path(self.manifest["agents"][plan["n"] - 1]["clone"])
@@ -1597,8 +1621,14 @@ class Context:
             f.write(json.dumps(rec, sort_keys=True) + "\n")
             f.flush()
 
+    def save(self, ended=""):
+        """Write DIR/progress.json from the lines so far; `ended` once the run is over."""
+        with self.lock:
+            write_progress(self.root, self.manifest, bench_repro.read_results(self.path), self.k["bare"], self.k["max_usd"], self.started, ended)
+
     def append(self, rec, out):
         self.write(rec)
+        self.save()
         out(f"{'bare ' if rec['arm'] == BARE else ''}agent {rec['agent']}: {rec['failure'] or 'ok'}, ${rec['cost']:.2f}, {rec['turns']} turns, {rec['wall_s']:.0f} s"
             + (f", land {rec['land']}" if rec["land"] else ""))
 
@@ -1672,30 +1702,34 @@ def execute(scenario, root, k, plans, out):
     out(f"multi run {scenario}: {len(plans)} agent(s)" + (" and as many bare twins" if k["bare"] else "") + ", "
         + ("one at a time" if k["sequential"] else "all at once") + f", coord {k['coord']}, results {path}")
     recs, twins = [], []
-    if k["sequential"]:
-        for i, plan in enumerate(plans):
-            time.sleep(k["stagger"] if i else 0)
-            ctx.fresh(plan)
-            if plan.get("twin"):  # the kb agent and its twin start together, so both see the same host load
-                with ThreadPoolExecutor(max_workers=2) as pair:
-                    kb, bare = pair.submit(ctx.one, plan, out), pair.submit(ctx.one, plan, out, True)
-                    recs.append(kb.result())
-                    twins.append(bare.result())
-            else:
-                recs.append(ctx.one(plan, out))
-    else:
-        for plan in plans:
-            ctx.fresh(plan)
+    ctx.save()  # before the first paid call: a monitor reads the plan, the pid and the start from here on
+    try:
+        if k["sequential"]:
+            for i, plan in enumerate(plans):
+                time.sleep(k["stagger"] if i else 0)
+                ctx.fresh(plan)
+                if plan.get("twin"):  # the kb agent and its twin start together, so both see the same host load
+                    with ThreadPoolExecutor(max_workers=2) as pair:
+                        kb, bare = pair.submit(ctx.one, plan, out), pair.submit(ctx.one, plan, out, True)
+                        recs.append(kb.result())
+                        twins.append(bare.result())
+                else:
+                    recs.append(ctx.one(plan, out))
+        else:
+            for plan in plans:
+                ctx.fresh(plan)
 
-        def start(i, plan, twin=False):
-            time.sleep(i * k["stagger"])
-            return ctx.one(plan, out, twin)
-        with ThreadPoolExecutor(max_workers=len(plans) * (2 if k["bare"] else 1)) as pool:
-            futures = [pool.submit(start, i, p) for i, p in enumerate(plans)]
-            bare = [pool.submit(start, i, p, True) for i, p in enumerate(plans) if p.get("twin")]
-            recs = [f.result() for f in futures]
-            twins = [f.result() for f in bare]
-    score_twins(ctx, recs, twins, out)
+            def start(i, plan, twin=False):
+                time.sleep(i * k["stagger"])
+                return ctx.one(plan, out, twin)
+            with ThreadPoolExecutor(max_workers=len(plans) * (2 if k["bare"] else 1)) as pool:
+                futures = [pool.submit(start, i, p) for i, p in enumerate(plans)]
+                bare = [pool.submit(start, i, p, True) for i, p in enumerate(plans) if p.get("twin")]
+                recs = [f.result() for f in futures]
+                twins = [f.result() for f in bare]
+        score_twins(ctx, recs, twins, out)
+    finally:
+        ctx.save(utc_now())
     on_purpose = {p["agent"] for p in plans if p.get("plant")}  # a planted fault is `multi check`'s to name, not a failed run
     failed = [r for r in recs if (r["failure"] or (r["role"] == "code" and r["land"] != "ok" and not r.get("skipped"))) and r["agent"] not in on_purpose]
     out(f"multi run {scenario}: {len(recs) - len(failed)} of {len(recs)} agent(s) finished" + ("" if not failed else f", {len(failed)} failed: "
