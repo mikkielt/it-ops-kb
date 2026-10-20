@@ -2,7 +2,7 @@
   "id": "ST-77p3ppiz",
   "kind": "story",
   "title": "Research sprint goal: The census tools and skill are fixed before the full census runs",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gavrmuvx",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Open questions of this sprint's goal (2026-10-20 planning): (1) which public repository each Learn path prefix intune/, windows/, api/ and azure/ names in its pages' github_feedback_content_git_url, for ST-wim24u46; (2) whether learn.microsoft.com serves a page with no locale segment by a redirect to /en-us/ and whether the ?accept=text/markdown form keeps the locale, for ST-bvmqojkw; (3) how a Claude Code --allowedTools Bash rule matches a command line with no wildcard (exact, prefix, word boundary), for ST-27k6puoc. Kb tools first (kb_pack), then microsoft-learn and claude-code-docs."
+  "notes": "Open questions of this sprint's goal (2026-10-20 planning): (1) which public repository each Learn path prefix intune/, windows/, api/ and azure/ names in its pages' github_feedback_content_git_url, for ST-wim24u46; (2) whether learn.microsoft.com serves a page with no locale segment by a redirect to /en-us/ and whether the ?accept=text/markdown form keeps the locale, for ST-bvmqojkw; (3) how a Claude Code --allowedTools Bash rule matches a command line with no wildcard (exact, prefix, word boundary), for ST-27k6puoc. Kb tools first (kb_pack), then microsoft-learn and claude-code-docs.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
