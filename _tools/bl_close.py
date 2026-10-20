@@ -1,13 +1,13 @@
 """The housekeeping side of backlog.py (kb/_self/backlog.md, Landing and Running a sprint; kb/_self/tools.md): `close`,
 which deletes a finished sprint with its items and finished epics, with the goal clauses it reports (`clause_words`,
-`goal_clause_lines`, `clauses_left_behind`) and `cleanup_gate_do`, and `tidy`, which lists or removes the clone's
-merged work branches and clean worker worktrees; with the worker's worktree and branches that `land` shares with them
-(`live_processes`, `release_worker_worktree`, `delete_landed_branch`, `held_by_process`, `wait_for_hooks`) and the
-repositories' leftovers `close` cleans (`clean_repository_leftovers`).
+`goal_clause_lines`, `clauses_left_behind`) and `cleanup_gate_do`; with the worker's worktree and branches that `land`
+shares with it and with `tidy`, which lives in `bl_clean` (`process_cwds`, `live_processes`, `release_worker_worktree`,
+`delete_landed_branch`, `held_by_process`, `wait_for_hooks`, `worktree_entries`, `merged_into`) and the repositories'
+leftovers `close` cleans (`clean_repository_leftovers`).
 
 Standard library only; imports `bl_base` and `bl_intake` and never `bl_land` or `backlog`: `bl_land` imports this module,
-so every name the other modules read as `bl_land.NAME` stays importable from there. It registers `close` and `tidy` with
-`bl_cli` itself when imported (`backlog.py`'s USAGE puts each in its usage position)."""
+so every name the other modules read as `bl_land.NAME` stays importable from there. It registers `close` with
+`bl_cli` itself when imported (`backlog.py`'s USAGE puts it in its usage position)."""
 import json, os, re, shlex, shutil, subprocess, time
 from pathlib import Path
 
@@ -46,16 +46,11 @@ WORK_PREFIX = "work/"  # the local branch a worker commits on: land deletes it o
 AGENT_BRANCH = "worktree-"  # + the worktree's name: the branch the Agent tool made the worker's worktree on
 
 
-def live_processes(path):
-    """([(pid, command)], None) of the processes whose working directory is PATH or under it, or (None, why) when this
-    host gives no way to tell: Linux reads /proc/<pid>/cwd, other POSIX hosts (macOS) ask `lsof -d cwd` for every
-    process's working directory; Windows exposes no process's working directory to the standard library, so it is
-    never listed there (release_worker_worktree tries held_by_process instead). Never signals a process."""
-    target = os.path.realpath(path)
-
-    def inside(cwd):
-        return cwd == target or cwd.startswith(target.rstrip(os.sep) + os.sep)
-
+def process_cwds():
+    """([(pid, command, working directory)], None) of every process this host lets the user read, or (None, why) when it
+    gives no way to tell: Linux reads /proc/<pid>/cwd, other POSIX hosts (macOS) ask `lsof -d cwd` once for every
+    process's working directory; Windows exposes no process's working directory to the standard library. Never signals
+    a process."""
     if os.name == "nt":
         return None, "Windows does not expose a process's working directory"
     proc = Path("/proc")
@@ -69,9 +64,8 @@ def live_processes(path):
                 comm = (d / "comm").read_text(encoding="utf-8", errors="replace").strip()
             except OSError:  # gone, or another user's
                 continue
-            if inside(cwd):
-                out.append((int(d.name), comm))
-        return sorted(out), None
+            out.append((int(d.name), comm, cwd))
+        return out, None
     lsof = shutil.which("lsof")
     if not lsof:
         return None, "no /proc and no lsof on this host"
@@ -86,11 +80,26 @@ def live_processes(path):
             pid, comm, seen = int(ln[1:]), "", True
         elif ln.startswith("c"):
             comm = ln[1:]
-        elif ln.startswith("n") and pid is not None and inside(ln[1:]):
-            out.append((pid, comm))
+        elif ln.startswith("n") and pid is not None:
+            out.append((pid, comm, ln[1:]))
     if not seen:  # lsof lists at least itself: nothing read means it could not look
         return None, f"lsof listed no process (exit {p.returncode})"
-    return sorted(set(out)), None
+    return out, None
+
+
+def processes_in(table, path):
+    """[(pid, command)], sorted, of the processes in TABLE (`process_cwds`) whose working directory is PATH or under it."""
+    target = os.path.realpath(path)
+    prefix = target.rstrip(os.sep) + os.sep
+    return sorted({(pid, comm) for pid, comm, cwd in table if cwd == target or cwd.startswith(prefix)})
+
+
+def live_processes(path):
+    """([(pid, command)], None) of the processes whose working directory is PATH or under it, or (None, why) when this
+    host gives no way to tell (`process_cwds`; Windows: release_worker_worktree tries held_by_process instead). Never
+    signals a process."""
+    table, why = process_cwds()
+    return (None, why) if table is None else (processes_in(table, path), None)
 
 
 HOOK_POLL_S = 1  # seconds between two looks at a worktree's processes while land waits for a session's end hook
@@ -630,89 +639,6 @@ def clean_worker_leftovers(root, sid, ids):
     return kept
 
 
-TIDY_PREFIXES = (WORK_PREFIX, AGENT_BRANCH + WORKER_NAME, "orch/")  # orch/: a retired runner's branch left in a clone
-
-
-def integration_main(root):
-    """The integration main's ref of the clone ROOT (`refs/remotes/<remote>/main`, else `refs/heads/main`), or None."""
-    import kbpublic
-    for ref in (f"refs/remotes/{kbpublic.integration_remote(root)}/main", "refs/heads/main"):
-        if has_ref(root, ref):
-            return ref
-    return None
-
-
-def tidy_worktree_kept(root, entry, upstream):
-    """Why the agent worktree ENTRY stays, or None when tidy may remove it: the worktree tidy runs in, any lock (a Claude
-    Code agent's too: tidy is clone-wide and cannot tell a finished worker from one that has not committed yet; close,
-    which knows its sprint's items, releases those), uncommitted changes, a live process, or a commit UPSTREAM lacks."""
-    path = entry["path"]
-    here = Path(git(root, "rev-parse", "--show-toplevel").strip()).resolve()
-    cwd = Path.cwd().resolve()
-    if path == here or path == cwd or path in cwd.parents:
-        return "it is the worktree tidy runs in"
-    if entry["lock"] is not None:
-        return f"it is locked ({entry['lock'] or 'no reason given'}): a worker may still be using it"
-    code, out, err = run(["git", "status", "--porcelain"], cwd=path)
-    if code or out.strip():
-        return "it has uncommitted changes" if not code else f"git status failed: {err.strip()}"
-    procs, _ = live_processes(path)
-    if procs:
-        return "a process still runs there: " + ", ".join(f"pid {pid} ({comm or '?'})" for pid, comm in procs)
-    if not merged_into(root, entry["head"], upstream):
-        return f"it has commits {upstream} lacks"
-    return None
-
-
-def cmd_tidy(bl, a):
-    """List (and with --apply remove) the clone's leftovers: the clean, process-free agent-* worktrees under its
-    .claude/worktrees/ whose commits are all on the integration main, then the local work/*, worktree-agent-* and
-    orch/* branches whose commits are all on it and that no worktree has checked out; every other one is printed with
-    why it stays. Removal goes through close's helpers, never --force."""
-    root = bl.root
-    upstream = integration_main(root)
-    if upstream is None:
-        raise Refused("tidy: no integration main to compare against (fetch the integration remote first)")
-    verb = "removed" if a.apply else "would remove"
-    removable, kept = 0, 0
-    dirs = worker_dirs(root)
-    for e in worktree_entries(root):
-        if e["path"].parent not in dirs or not e["path"].name.startswith(WORKER_NAME):
-            continue
-        why = tidy_worktree_kept(root, e, upstream)
-        if why is None and a.apply:
-            why = release_worker_worktree(root, e["path"], e["lock"])
-        if why:
-            kept += 1
-            say(f"tidy: kept {e['path']}: {why}")
-        else:
-            removable += 1
-            say(f"tidy: {verb} the worktree {e['path']}")
-    here = {e["branch"] for e in worktree_entries(root) if e["branch"]}
-    code, out, _ = run(["git", "for-each-ref", "--format=%(refname:short)", "refs/heads"], cwd=root)
-    for branch in out.split() if not code else []:
-        if not branch.startswith(TIDY_PREFIXES):
-            continue
-        if branch in here:
-            kept += 1
-            say(f"tidy: kept {branch}: it is checked out in a worktree")
-        elif not merged_into(root, f"refs/heads/{branch}", upstream):
-            kept += 1
-            say(f"tidy: kept {branch}: it has commits {upstream} lacks")
-        elif a.apply and not delete_landed_branch(root, branch, upstream, who="tidy", prefixes=TIDY_PREFIXES):
-            kept += 1
-        else:
-            removable += 1
-            if not a.apply:
-                say(f"tidy: would remove the branch {branch}")
-    say(f"tidy: {verb} {removable}, kept {kept}" + ("" if a.apply else " (--apply removes them)"))
-    return 0
-
-
-def args_tidy(p):
-    p.add_argument("--apply", action="store_true", help="remove what tidy lists (default: only list it)")
-
-
 def cleanup_gate_do(bl, dead):
     """Drop every gate `do` entry of a remaining item that names (by item id) an item in DEAD, which close deletes: the
     work that entry waited for is done or dropped, and check refuses a `do` naming an item that does not exist. An
@@ -970,4 +896,3 @@ def args_close(p):
 
 
 bl_cli.register("close", cmd_close, args_close)
-bl_cli.register("tidy", cmd_tidy, args_tidy)
