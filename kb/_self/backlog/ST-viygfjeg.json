@@ -122,7 +122,11 @@
         "12, the removable ones first, then '+N more in --json'; the JSON carries every row": "ST-viygfjeg",
         "every row in the text view too": "ST-viygfjeg"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "12, the removable ones first, then '+N more in --json'; the JSON carries every row",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",
