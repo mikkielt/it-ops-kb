@@ -22,5 +22,5 @@
   "links": [
     "parked: SP-a3w7xdij close"
   ],
-  "notes": "Retrospective finding of SP-a3w7xdij."
+  "notes": "Retrospective finding of SP-a3w7xdij. SP-tsb23kev retrospective evidence: ST-tnickxo3 (getattr FETCH_RETRIES>=1), BG-mhsmvdrz (grep 'deadline' in source) and ST-xbo75hi3 (--detach in --help) landed on checks that only read source text; the review found the retry missing from four fetch paths and the injected-runner deadline unbounded (parked ST-oine6mto, BG-mg2sto2q)."
 }

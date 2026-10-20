@@ -1,0 +1,26 @@
+{
+  "id": "ST-pvm4jkz3",
+  "kind": "story",
+  "title": "A worker that re-plans or drops drafts keeps operator-decision and observed-defect drafts",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The worker role says a draft that asks for an operator decision or describes an observed defect is never dropped by a re-plan item: it is kept and given a check, or a gate is asked",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt = open(\"agents/worker.md\", encoding=\"utf-8\").read()\nok = \"operator decision\" in t and \"observed defect\" in t\nprint(\"worker role keeps operator-decision and observed-defect drafts:\", ok)\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "agents/worker.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-tsb23kev close"
+  ],
+  "notes": "SP-tsb23kev retrospective: ST-lhtuyih2's worker dropped 24 drafts under D-2tq4fhgs, including the operator decision ST-lgekelkq (restored by the orchestrator before landing) and six observed-defect drafts (restored by the review)."
+}

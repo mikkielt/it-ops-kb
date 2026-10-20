@@ -22,5 +22,5 @@
   "links": [
     "parked: SP-7s6uubs7 close"
   ],
-  "notes": "SP-7s6uubs7 close: ST-ggsixlo3's worker reported stale=0, then land stopped at step stale on kb/_self/code.md (its three sibling workers had named it in Self-Reviewed). The check reads source only: planning replaces it with a planted worker branch."
+  "notes": "SP-7s6uubs7 close: ST-ggsixlo3's worker reported stale=0, then land stopped at step stale on kb/_self/code.md (its three sibling workers had named it in Self-Reviewed). The check reads source only: planning replaces it with a planted worker branch. SP-tsb23kev retrospective evidence: stage-back ST-nqldomjk refused on maintaining.md and token-efficiency.md, stale against HEAD though the worker's earlier commit on the branch had updated both; the orchestrator re-ran it with --self-reviewed after reading them."
 }

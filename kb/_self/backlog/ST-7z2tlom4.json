@@ -1,0 +1,27 @@
+{
+  "id": "ST-7z2tlom4",
+  "kind": "story",
+  "title": "A sprint's start or precheck names a committed item whose touches are item files only, with the drop route, before any claim",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "precheck SP and start SP name each committed story, task or bug whose scope is item files only (bl_check.item_files_only) and the route that closes it (a planning commit, then drop --why), so the orchestrator does not learn it from a done refusal at landing",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsrc = open(\"_tools/bl_plan.py\", encoding=\"utf-8\").read()\nok = \"item_files_only\" in src or \"ITEM_FILES_ROUTE\" in src\nprint(\"start or precheck reads item_files_only:\", ok)\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-tsb23kev close"
+  ],
+  "notes": "SP-tsb23kev retrospective: ST-lhtuyih2 (re-plan drafts, touches kb/_self/backlog/*.json) was committed and dispatched; land stopped at step done with no-work-commit (ops done.refused 2026-10-20T00:24:07Z), and the orchestrator closed it by drop after the fact. backlog.py check already warned (item_files_warnings) but nothing at start or precheck stopped it."
+}

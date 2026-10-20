@@ -25,5 +25,5 @@
   "links": [
     "parked: SP-qinvdomv close"
   ],
-  "notes": "SP-qinvdomv close: every code gate the workers recorded (ST-5hywunah g1, ST-6c5xgv5a g1-g3, BG-5kyucmi6 g1, ST-vruwai2i g1, BG-hia2m3hg g1) was classed push or secrets by a word in its options (github, push, secrets) and made blocking; BG-hia2m3hg's secrets gate could not be answered unattended and its choice moved to parked ST-roonz5uw."
+  "notes": "SP-qinvdomv close: every code gate the workers recorded (ST-5hywunah g1, ST-6c5xgv5a g1-g3, BG-5kyucmi6 g1, ST-vruwai2i g1, BG-hia2m3hg g1) was classed push or secrets by a word in its options (github, push, secrets) and made blocking; BG-hia2m3hg's secrets gate could not be answered unattended and its choice moved to parked ST-roonz5uw. SP-tsb23kev retrospective evidence: ST-ju37ir2m's lag gate was classed push by the word 'origin' and ST-tnickxo3's fetch-retry gate secrets by 'ssh' in an option; both became blocking operator gates for design choices, and ju37ir2m's worker needed a resume to record it."
 }

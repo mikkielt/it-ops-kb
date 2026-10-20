@@ -1,0 +1,27 @@
+{
+  "id": "ST-aemnz5vc",
+  "kind": "story",
+  "title": "A change to the leak allowlist carries a planted check that a real value of the same kind still hits",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/code.md and the worker role say that an item adding a tests_allowlist.txt entry carries a check that a real secret, address or id of the same kind, built at run time, still hits leak_hits with the new allowlist, beside the check that the quoted value passes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt = open(\"kb/_self/code.md\", encoding=\"utf-8\").read()\nok = \"allowlist\" in t and \"same kind still\" in t\nprint(\"code.md asks an allowlist change for a planted real value of the same kind:\", ok)\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/code.md",
+    "agents/worker.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-tsb23kev close"
+  ],
+  "notes": "SP-tsb23kev retrospective: BG-onc6wxd3 added 'secret -----BEGIN EC PRIVATE KEY-----' to the allowlist; its repro only showed the two quoted hits gone, so the value-wide entry that passed every EC private key landed and was found only by the review (S1 BG-3vnu37rq)."
+}
