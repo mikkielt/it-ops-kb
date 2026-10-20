@@ -2,7 +2,7 @@
   "id": "BG-jeyt5f56",
   "kind": "bug",
   "title": "status routing sends docs questions about cost, sessions or kbmon to a kbmon status answer",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-kgvbpjhd",
   "priority": "P2",
   "rank": 0,
@@ -41,5 +41,7 @@
   "links": [
     "parked: SP-dulvwwjc review"
   ],
-  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: repro fails (a docs question about cost, a session or kbmon maps to a status topic)."
+  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: repro fails (a docs question about cost, a session or kbmon maps to a status topic).",
+  "claimed_by": "orch-r114",
+  "operator": "op-f618a13e"
 }
