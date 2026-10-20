@@ -935,6 +935,8 @@ COORD_DOCS = ("Claims, leases and events other agents share (coord.py; not kb fa
 COORD_KEY = {"type": "string", "description": "the key: a backlog item id, or a topic or path key"}
 COORD_TOKEN = {"type": "string", "minLength": 1, "description": "the holder token coord_claim returned; without it nothing is renewed or released"}
 COORD_WRITE = {"readOnlyHint": False, "destructiveHint": False, "idempotentHint": False, "openWorldHint": False}
+COORD_TEXT_KEY = re.compile(r"(ask|answer)/[A-Za-z0-9_.:#@-]{1,100}")  # the keys an ask or answer event's ref names
+COORD_TEXT_MAX = 8000  # characters: kbask.py's MAX_TEXT
 COORD_TOOL_LIST = [
     {"name": "coord_claim", "title": "Claim a key",
      "description": COORD_DOCS + "Hold KEY for ttl seconds. Returns key, holder, ttl, revision, expires and the holder's "
@@ -975,6 +977,25 @@ COORD_TOOL_LIST = [
                     "description": "NAME to VALUE, each an id"}},
          "required": ["kind"], "additionalProperties": False},
      "annotations": {"title": "Post an event", **COORD_WRITE}},
+    {"name": "coord_get", "title": "Read a coord value",
+     "description": COORD_DOCS + "The value stored under KEY, with its revision and holder: use it to read the text an ask "
+                    "event's ref names (ask/ID) or an answer event's ref (answer/ID). An absent or expired key is refused.",
+     "inputSchema": {"type": "object", "properties": {"key": COORD_KEY},
+                     "required": ["key"], "additionalProperties": False},
+     "annotations": {"title": "Read a coord value", **READ_ONLY}},
+    {"name": "coord_put", "title": "Write an ask's or answer's text",
+     "description": COORD_DOCS + "Write the text of an ask or an answer under ask/ID or answer/ID, before coord_post of the "
+                    "event that names it as ref. The text is redacted and at most " + str(COORD_TEXT_MAX) + " characters. "
+                    "revision is the revision the key must still be at (absent: 0, a new key): a key at another revision "
+                    "is refused naming the one it is at, so read it with coord_get and write again. A key a live lease "
+                    "holds needs the holder's token. Returns key, value and the new revision.",
+     "inputSchema": {"type": "object", "properties": {
+         "key": {"type": "string", "pattern": COORD_TEXT_KEY.pattern, "description": "ask/ID or answer/ID"},
+         "value": {"type": "string", "minLength": 1, "maxLength": COORD_TEXT_MAX, "description": "the text"},
+         "revision": {"type": "integer", "minimum": 0, "description": "the revision the key must be at (default 0)"},
+         "token": {"type": "string", "minLength": 1, "description": "the holder's token, for a key a live lease holds"}},
+         "required": ["key", "value"], "additionalProperties": False},
+     "annotations": {"title": "Write an ask's or answer's text", **COORD_WRITE, "idempotentHint": True}},
     {"name": "coord_digest", "title": "Digest of live intents and claims",
      "description": COORD_DOCS + "At most `lines` lines of plain text, newest first, of the live intents and claims that "
                     "overlap a key (an item id, topic or path); nothing when none does.",
@@ -1066,6 +1087,29 @@ def coord_post(args):
     return coord_run(argv)
 
 
+def coord_get(args):
+    import redact
+    return redact.redact(coord_run(coord_argv("get", args, ("key",), {})))
+
+
+def coord_put(args):
+    import redact
+    extra = sorted(set(args) - {"key", "value", "revision", "token"})
+    if extra:
+        raise ToolError(f"unknown argument(s): {', '.join(extra)}")
+    key, value, revision = args.get("key"), args.get("value"), args.get("revision", 0)
+    if not isinstance(key, str) or not COORD_TEXT_KEY.fullmatch(key):
+        raise ToolError("key is ask/ID or answer/ID: this tool writes the text of an ask or an answer, nothing else")
+    if not isinstance(value, str) or not value.strip() or len(value) > COORD_TEXT_MAX:
+        raise ToolError(f"value is 1 to {COORD_TEXT_MAX} characters of text")
+    if isinstance(revision, bool) or not isinstance(revision, int) or revision < 0:
+        raise ToolError("revision is a whole number from 0")
+    argv = ["put", key, f"--value={redact.redact(value)}", "--revision", str(revision)]
+    if args.get("token") is not None:
+        argv += ["--token", coord_token(args)]
+    return coord_run(argv)
+
+
 def coord_digest(args):
     return coord_run(coord_argv("digest", args, ("key", "lines"), {"key": "--key", "lines": "--lines"}))
 
@@ -1081,7 +1125,8 @@ def coord_wait(args):
 
 
 COORD_HANDLERS = {"coord_claim": coord_claim, "coord_renew": coord_renew, "coord_release": coord_release,
-                  "coord_post": coord_post, "coord_digest": coord_digest, "coord_wait": coord_wait}
+                  "coord_post": coord_post, "coord_get": coord_get, "coord_put": coord_put,
+                  "coord_digest": coord_digest, "coord_wait": coord_wait}
 
 
 # ---------------------------------------------------------------- monitor status
