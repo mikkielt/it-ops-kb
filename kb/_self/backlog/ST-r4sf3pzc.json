@@ -1,0 +1,22 @@
+{
+  "id": "ST-r4sf3pzc",
+  "kind": "story",
+  "title": "Planning maps each sprint goal clause to checks that run every surface the clause names",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the plan step has the planner read each sprint goal clause that names several surfaces (the live view, --once, --status, the MCP tool, the pane, the receipt) against its carrying items' checks, and add a check or a carrying item for each surface no check runs, before the start gate",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys\nt=open('.claude/skills/kb-sprint/SKILL.md').read();s=t[t.index('## plan'):];s=s[:s.find('\\n## ',3)]\nsys.exit(0 if re.search(r'sprint goal clause[^.]*every surface',s) else 1)\n"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-kgvbpjhd close"
+  ],
+  "notes": "SP-kgvbpjhd retro: goal clause 'a panel that is absent or timed out says its own reason' was carried by BG-qpcct4ps and BG-rpp4dsrn, whose checks read only the --once text view; the review found --status and kb_monitor_status still print only the state word (ST-7k2popo6). The check reads the skill text; replace it with a planted precheck run when planned."
+}

@@ -1,0 +1,25 @@
+{
+  "id": "ST-gtorqgor",
+  "kind": "story",
+  "title": "start warns for a committed item whose several-clause goal has no clauses mapping",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py start prints a warning (as for docs outside touches) for each committed item whose goal has several clauses and no clauses mapping, so the planner maps them before the first claim",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys\nt=open('.claude/skills/kb-sprint/SKILL.md').read();s=t[t.index('## start'):];s=s[:s.find('\\n## ',3)]\nsys.exit(0 if re.search(r'clauses mapping',s) else 1)\n"
+      ]
+    }
+  ],
+  "relates_to": [
+    "ST-omqqzvlp"
+  ],
+  "links": [
+    "parked: SP-kgvbpjhd close"
+  ],
+  "notes": "SP-kgvbpjhd retro: BG-yiidz36y was committed with a five-clause goal, a repro only and no clauses mapping; precheck warned only after the start, and the orchestrator added three checks mid-sprint. The check reads the skill's start section; replace it with a planted start run when planned. Near-duplicate of ST-omqqzvlp (start refuses such an item): this draft holds SP-kgvbpjhd's evidence; merge into ST-omqqzvlp when planned."
+}

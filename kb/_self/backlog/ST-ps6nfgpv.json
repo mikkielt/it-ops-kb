@@ -1,0 +1,22 @@
+{
+  "id": "ST-ps6nfgpv",
+  "kind": "story",
+  "title": "A gate that names the kbmon querylog panel is not classed querylog",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_authority.derived_class classes a gate querylog only when its words name the query log store or its recording (query log, redact of recorded fields) or the item touches kb/_querylog/, not when an option names kbmon's querylog panel",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bl_authority as a\nit={'id':'ST-x','kind':'story','touches':['_tools/mon_receipt.py']}\nc=a.derived_class(it,{'id':'g1','question':'Which panels does the receipt read?','options':['the querylog, sessions and host panels','the sprint panel too']});print(c);sys.exit(0 if c!='querylog' else 1)\n"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-kgvbpjhd close"
+  ],
+  "notes": "SP-kgvbpjhd retro: ST-rwan4x2o g1 (which panels the receipt reads) was classed querylog because an option named the querylog panel; BG-rpp4dsrn g1 likewise for the word 'redacts'. The class is not operator-only, but an orchestrator acting under the operator-only rule for query-log recorded fields had to check by hand."
+}

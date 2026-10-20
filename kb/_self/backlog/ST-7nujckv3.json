@@ -1,0 +1,22 @@
+{
+  "id": "ST-7nujckv3",
+  "kind": "story",
+  "title": "Planning adds to touches the files that describe a tool's printed output a goal changes",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the plan step runs referrers on each module whose printed output or format a goal changes, not only on moved or renamed paths, and puts each file whose docstring or doc describes that output in touches",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys\nt=open('.claude/skills/kb-sprint/SKILL.md').read();s=t[t.index('## plan'):];s=s[:s.find('\\n## ',3)]\nsys.exit(0 if re.search(r'printed output',s) else 1)\n"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-kgvbpjhd close"
+  ],
+  "notes": "SP-kgvbpjhd retro: ST-rwan4x2o changed the receipt line; backlog.py referrers _tools/mon_receipt.py lists _tools/kbmon.py:71, whose module docstring describes the receipt, but kbmon.py was not in touches, so the worker left it stale (review gap, ST-teuwi4wh)."
+}
