@@ -21,6 +21,23 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where do the git fast-forward, ahead/behind and diff-filter facts for kbmon's checkout-cannot-fast-forward reason go?",
+      "options": [
+        "extend gitlab/git-trailers-and-hooks",
+        "new gitlab topic for git merge and status"
+      ],
+      "recommendation": "extend gitlab/git-trailers-and-hooks",
+      "do": {
+        "extend gitlab/git-trailers-and-hooks": "ST-jtbbzc6h",
+        "new gitlab topic for git merge and status": "ST-jtbbzc6h"
+      },
+      "class": "push"
+    }
+  ],
   "claimed_by": "orch-r113",
   "operator": "op-f618a13e"
 }

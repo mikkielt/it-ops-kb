@@ -4384,3 +4384,13 @@ _Agent: kb-research_
 - See claude/settings-and-scopes.md, claude/cli-flags.csv.
 
 _Agent: kb-research_
+
+## QK-checkout-behind-upstream-not-fast-forward. Why can a checkout behind its upstream not fast-forward, and how does a monitor count ahead and behind?
+- `git merge` fast-forwards when the current head is an ancestor of the named commit, moving `HEAD` and the index with no merge commit; it stops without doing anything when local uncommitted changes overlap files it may need to update. [DOC S-njfmq56u]
+- `git rev-list --left-right --count A...B` prints the left and right commit counts separated by a tab; `git status --porcelain=v2 --branch` gives `# branch.ab +<ahead> -<behind>`. [DOC S-dwkxab7d, S-2kqcgcf3]
+- `git diff --name-only --diff-filter=M` lists the modified paths between two commits. [DOC S-kr4uocm7]
+- Conclusion: a checkout cannot fast-forward for two causes, local changes on a path the incoming commits also change (`git merge --ff-only` exited 1 in a run) or local commits `origin/main` lacks (exited 128); local changes on other paths, staged or not, did not stop it. A monitor names the cause from the path intersection and the left-right counts. [DER S-njfmq56u, S-kr4uocm7, S-dwkxab7d: one git 2.50.1 run]
+- Open: untracked files that an incoming commit adds, and deletions, were not run. [UNK]
+- See gitlab/git-trailers-and-hooks.md.
+
+_Agent: kb-research_
