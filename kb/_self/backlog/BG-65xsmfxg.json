@@ -2,7 +2,7 @@
   "id": "BG-65xsmfxg",
   "kind": "bug",
   "title": "querylog.py close refuses a rules finding, so a rules miss the _self docs do not answer cannot be closed with --tried or --reject",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vx6eufpj",
   "priority": "P2",
   "rank": 0,
@@ -18,5 +18,7 @@
   "touches": [
     "_tools/ql_research.py",
     "kb/_self/querylog.md"
-  ]
+  ],
+  "claimed_by": "orch-r106",
+  "operator": "op-f618a13e"
 }
