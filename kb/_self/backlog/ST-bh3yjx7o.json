@@ -2,7 +2,7 @@
   "id": "ST-bh3yjx7o",
   "kind": "story",
   "title": "census.py brief renumbers a group's parts once part 1's outcomes are applied, so brief --part 2 exits 2",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-gavrmuvx",
   "priority": "P2",
@@ -31,5 +31,7 @@
   "links": [
     "parked: SP-uwkr7iyl review"
   ],
-  "notes": "Review severity S2 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck). Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft. 2026-10-20 planning: found by the SP-uwkr7iyl review (census.py cmd_brief). The old check made phase2_rows keep rows that hold an outcome, which judge, repin and summary also read, so applied rows would be read again; the new check drives cmd_brief over planted rows (part 1 applied, one row per part) and leaves the mechanism to the work. Premise: it fails, 'group g1 has 1 part(s); --part 2 is out of range'."
+  "notes": "Review severity S2 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck). Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft. 2026-10-20 planning: found by the SP-uwkr7iyl review (census.py cmd_brief). The old check made phase2_rows keep rows that hold an outcome, which judge, repin and summary also read, so applied rows would be read again; the new check drives cmd_brief over planted rows (part 1 applied, one row per part) and leaves the mechanism to the work. Premise: it fails, 'group g1 has 1 part(s); --part 2 is out of range'.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
