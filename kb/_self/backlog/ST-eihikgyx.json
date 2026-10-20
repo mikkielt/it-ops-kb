@@ -2,7 +2,7 @@
   "id": "ST-eihikgyx",
   "kind": "story",
   "title": "kbgit's stages share one git helper from kg_base",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-jplczvj2",
   "priority": "P2",
   "rank": 0,
@@ -45,5 +45,7 @@
     "kb/_self/code.md",
     "kb/_self/git.md"
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): AST scan 2026-10-19: git() is defined in 12 modules, rev_parse in 5 kg_ modules, git_run in 4. Behaviour-preserving move. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+  "notes": "operator request 2026-10-19 (housekeeping batch): AST scan 2026-10-19: git() is defined in 12 modules, rev_parse in 5 kg_ modules, git_run in 4. Behaviour-preserving move. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
+  "claimed_by": "orch-r108",
+  "operator": "op-f618a13e"
 }
