@@ -2,7 +2,7 @@
   "id": "BG-nmvbn7gp",
   "kind": "bug",
   "title": "A finding that names an entry the delivery left out stalls delivery again and carries the internal root's path into the shared copy",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rrqlgiff",
   "priority": "P1",
   "rank": 0,
@@ -18,5 +18,7 @@
   "touches": [
     "_tools/ql_deliver.py",
     "kb/_self/querylog.md"
-  ]
+  ],
+  "claimed_by": "orch240",
+  "operator": "op-f618a13e"
 }
