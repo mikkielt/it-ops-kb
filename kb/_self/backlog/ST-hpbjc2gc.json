@@ -120,7 +120,11 @@
         "remote-tracking refs as last fetched (offline), lists the merged branches and counts the others; --apply, --report and --class with it exit 2": "ST-hpbjc2gc",
         "fetch first, then list": "ST-hpbjc2gc"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "remote-tracking refs as last fetched (offline), lists the merged branches and counts the others; --apply, --report and --class with it exit 2",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
