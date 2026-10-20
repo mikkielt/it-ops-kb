@@ -74,6 +74,25 @@
       "class": "push",
       "answer": "tidy and close with their clause mapping into bl_close.py, precheck and researched into bl_precheck.py",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where do the helpers that both land and close need live, so bl_close and bl_precheck import nothing from bl_land?",
+      "options": [
+        "the worker worktree and branch helpers, has_ref, land_stop and gone_checks into bl_close, item_commits into bl_precheck, land imports both",
+        "bl_close and bl_precheck import them from bl_land at call time"
+      ],
+      "recommendation": "the worker worktree and branch helpers, has_ref, land_stop and gone_checks into bl_close, item_commits into bl_precheck, land imports both",
+      "do": {
+        "the worker worktree and branch helpers, has_ref, land_stop and gone_checks into bl_close, item_commits into bl_precheck, land imports both": "ST-jy5mekle",
+        "bl_close and bl_precheck import them from bl_land at call time": "ST-jy5mekle"
+      },
+      "class": "agents-rule",
+      "answer": "the worker worktree and branch helpers, has_ref, land_stop and gone_checks into bl_close, item_commits into bl_precheck, land imports both",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): bl_land.py on 2026-10-19: 3441 lines, 122 commits in 30 days (the most churned module), every landing and close edits it. The cut follows its command groups (cmd_tidy/cmd_close at 2585-3125, cmd_precheck/cmd_researched at 474-628 and 3126-3369). Plan against SP-ipeewrlv, which changes tidy first. Premise: the first check fails. Checks 1, 2 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
