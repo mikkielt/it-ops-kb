@@ -2,7 +2,7 @@
   "id": "ST-nkc5supu",
   "kind": "story",
   "title": "tidy lists every recorded leftover with one safe_to_remove verdict, reason and bytes, and --apply removes only the safe set",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ipeewrlv",
   "priority": "P2",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "ST-hpbjc2gc",
   "kind": "story",
   "title": "Merged remote code branches and recorded orphan processes are removed only by an operator command",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ipeewrlv",
   "priority": "P2",
   "rank": 0,
