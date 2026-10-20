@@ -57,6 +57,25 @@
   "depends_on": [
     "ST-cvr76jag"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does each of the 24 mixed-tag facts reach one tag: split into one fact per tag with its wording kept, or retagged to a single tag?",
+      "options": [
+        "split",
+        "retag"
+      ],
+      "recommendation": "split",
+      "do": {
+        "split": "ST-jliyfmxl",
+        "retag": "ST-jliyfmxl"
+      },
+      "class": "design",
+      "answer": "split",
+      "by": "agent"
+    }
+  ],
   "notes": "operator request 2026-10-19 (housekeeping batch): the second half of the 56 mixed-tag facts (E3 has the agents articles). Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
   "claimed_by": "orch-r105",
   "operator": "op-f618a13e"
