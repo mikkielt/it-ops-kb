@@ -311,7 +311,7 @@ def sprint_row(name, s, done, total, got, source):
     state = str(s.get("state"))
     if state == "active":
         last = (f"ETA {minutes_range(got['low_min'], got['high_min'])}" if got is not None
-                else "no ETA yet" if source == "origin/main" else "no ETA")
+                else "no ETA yet" if source == "origin/main" else "no ETA: origin/main not readable")
     else:
         last = "not started" if state == "approved" else "waits for start gate"
     return f"  {short_name(name):<{NAME_CHARS}}  {state:<8}  {f'{done}/{total}':>5}  {f'{pct}%':>4}  {last}"[:ROW_CHARS]
