@@ -174,12 +174,13 @@ def ops_records(ctx, after, seen=frozenset()):
 
 
 def delivery_records(after):
-    """(events, spans, time) of the apply outcome that is the log's last line, newer than AFTER. A line written after it
-    leaves the log's last write (the outcome's time) moved and the outcome no longer standing last: it is exported once."""
+    """(events, spans, time) of the apply outcome that stands last in the log (only its run's spool-rows line may follow
+    it), newer than AFTER. Any other line written after it leaves the log's last write (the outcome's time) moved and the
+    outcome no longer standing last: it is exported once."""
     import ql_base
     import ql_report
     last = ql_report.last_outcomes(ql_base.places()[0])["apply"]
-    when = ns_of(last.get("when")) if last and last.get("when") and last.get("line") == 1 else None
+    when = ns_of(last.get("when")) if last and last.get("when") else None
     if when is None or when <= after:
         return [], [], after
     failed = last["outcome"] in mon_log.DELIVERY_FAILED

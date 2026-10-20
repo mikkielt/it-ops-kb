@@ -23,6 +23,25 @@
     "kb/_self/tools.md",
     "kb/_self/usage.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does a pushed delivery with its spool-rows line after it stay exported once?",
+      "options": [
+        "time the outcome by the log's last write while only its run's spool-rows lines follow it",
+        "key the delivery on the pushed sha instead of the log's time"
+      ],
+      "recommendation": "time the outcome by the log's last write while only its run's spool-rows lines follow it",
+      "do": {
+        "time the outcome by the log's last write while only its run's spool-rows lines follow it": "BG-ko4sdvxy",
+        "key the delivery on the pushed sha instead of the log's time": "BG-ko4sdvxy"
+      },
+      "class": "design",
+      "answer": "time the outcome by the log's last write while only its run's spool-rows lines follow it",
+      "by": "agent"
+    }
+  ],
   "links": [
     "found: SP-qh2j24z2 review"
   ],
