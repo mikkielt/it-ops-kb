@@ -20,6 +20,10 @@
     {
       "clause": "git-test-repositories, pytest-xdist, doc-change-detection, doc-lookup-sources, settings-and-scopes and the test-suite-ceiling answer state what the repository's tools and their sources say, as each folded bug's repro reads",
       "check": 0
+    },
+    {
+      "clause": "the reworded facts' old anchor rows of S-if5q2jhk, S-tyedhnrz, S-xc5fkeod, S-5lkuonr6, S-mz6tic2a, S2186, S2187, S2189, S1800, S-zcuxapgb and S-vt5s6nsz go with their old keys",
+      "check": 0
     }
   ],
   "touches": [
