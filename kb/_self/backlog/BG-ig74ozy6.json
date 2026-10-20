@@ -20,5 +20,6 @@
   ],
   "links": [
     "parked: SP-5gph7fh6 review"
-  ]
+  ],
+  "notes": "ST-m5u7gmdo research evidence (2026-10-20, origin/main): the store need not be an older schema. A store file that exists and is empty (0 bytes) is `Path(store).is_file()` for mon_coord.connection (_tools/mon_coord.py:64), so `kbmon.py --json --panel coord --store EMPTYFILE` runs coord.py list, wait and digest, whose ensure_schema or EVENTS_SCHEMA execute (_tools/coord.py:213-218, :368, :517) creates both tables: the file grows from 0 to 20480 bytes and the panel is ok. kb/_self/monitoring.md:15 says a run writes no file in the clone and :144 that a store that is not there is not created."
 }
