@@ -1,0 +1,20 @@
+{
+  "id": "BG-iwr5n7ch",
+  "kind": "bug",
+  "title": "coord.py's docstring says wait polls the store twice a second, but it polls every 50 ms",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "coord.py's module docstring gives wait's poll interval as POLL_SECONDS has it (50 ms, as monitoring.md says)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import coord;assert 'twice a second' not in coord.__doc__ or coord.POLL_SECONDS==0.5,'coord.py docstring says wait polls the store twice a second; POLL_SECONDS is %s'%coord.POLL_SECONDS"
+    ]
+  },
+  "touches": [
+    "_tools/coord.py"
+  ]
+}
