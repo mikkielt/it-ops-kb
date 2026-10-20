@@ -12,7 +12,9 @@
                                         its result is posted as the answer of that ask and the claim is released. A
                                         second remediation of the same alert exits 1 while the first runs. The prompt
                                         names the alert's id and holds no alert text: the session reads the alert itself
-                                        with `kbmon.py --json`
+                                        with `kbmon.py --json`. An alert whose remedy is fixed (FIXED_REMEDIES: an orphan
+                                        process) starts no session: the remedy is posted at once as the answer, and the
+                                        claim released
   kbask.py summary QUESTION [--wait]    the same capped read-only session with the operator's QUESTION (after redact.redact),
                                         asking for a summary of the monitored work: sprints, research, sessions, coord and the
                                         query log, read from this clone's backlog and the coord store kbask is pointed at.
@@ -73,6 +75,13 @@ SUMMARY_PROMPT = ("Summarise the monitored work for the operator's question belo
                   "Question: {question}\n")
 COORD_STORE_NOTE = "Coord is the store in the environment variable KB_COORD_STORE."
 COORD_URL_NOTE = "Coord is on a server this session cannot reach: leave coord out and say so."
+# Alerts whose remedy is the same every time: `remediate` answers them from this table, with no model session.
+FIXED_REMEDIES = {
+    "sessions.orphan": ("An orphan process is a background run a session left behind. `python3 _tools/backlog.py procs` "
+                        "lists each one with its pid, age and checkout; end the one that is not yours to keep with "
+                        "`kill PID` (`kill -9 PID` if it stays), then run `python3 _tools/kbmon.py --status sessions` "
+                        "to see the alert gone."),
+}
 CLAIM_PREFIX = "remediate/"
 CLAIM_SECONDS = 1800  # the lease of a remediation: longer than the session's own limit, so a dead watcher frees the alert
 SESSION_SECONDS = 1500  # the longest a session may run before it is stopped
@@ -242,16 +251,22 @@ def detach(argv, payload):
 def cmd_remediate(args):
     conn = connection(args)
     alert = check_id(args.alert, "ALERT", ALERT_ID)
-    claude = shutil.which("claude")
-    if claude is None:
+    fixed = FIXED_REMEDIES.get(alert)
+    claude = None if fixed else shutil.which("claude")
+    if claude is None and not fixed:
         raise Stop("kbask: claude is not on PATH")
-    observer_agent()
+    if not fixed:
+        observer_agent()
     key = CLAIM_PREFIX + alert
     claimed = need(run_coord(conn, "claim", key, "--ttl", str(CLAIM_SECONDS), "--holder", "kbask"), f"cannot claim {key}")
     token = claimed["token"]
     ask_id = "A" + secrets.token_hex(5)
     try:
         send_ask(conn, ask_id, OBSERVER, QUESTION.format(alert=alert))
+        if fixed:
+            send_answer(conn, ask_id, "completed", fixed)
+            run_coord(conn, "release", key, "--token", token)
+            return {"ok": True, "alert": alert, "id": ask_id, "claim": key, "fixed": True, "ref": f"ask/{ask_id}"}
         pid = detach([sys.executable, str(Path(__file__).resolve()), "_watch"],
                      json.dumps({"conn": conn, "alert": alert, "id": ask_id, "token": token, "claude": claude,
                                  "prompt": PROMPT.format(alert=alert)}))
