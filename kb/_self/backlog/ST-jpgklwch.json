@@ -2,7 +2,7 @@
   "id": "ST-jpgklwch",
   "kind": "story",
   "title": "The commit-msg KB-Work judgement lives in one function the hook and refuse_commit_msg share",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-jplczvj2",
   "priority": "P3",
   "rank": 0,
@@ -58,6 +58,19 @@
     "parked: SP-kbrxa4c4 review"
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): one copy of a judgement the hook and the gate share. Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs.",
-  "claimed_by": "orch-r108",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "74a5ae1867dfd9545e26f751e91115323c989eb0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import inspect,sys\nsys.path.insert(0,'_tools')\nimport kg_hooks,kg_trailers\nh=inspect.getsource(kg_hooks.hook_commit_msg);r=inspect.getsource(kg_trailers.refuse_commit_msg)\nok=('refuse_commit_msg' in h) or ('hook_commit_msg' in r) or ('judge_work' in h and 'judge_work' in r)\nprint('one shared KB-Work judgement',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "1b1fed8db699544b"
+      }
+    ]
+  }
 }
