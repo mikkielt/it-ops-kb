@@ -6,6 +6,7 @@ on whether a leftover may go (kb/_self/backlog.md, Leftovers; kb/_self/tools.md)
   own TARGET --class C --drop                                                          clear the record
   tidy [--apply] [--json] [--older-than HOURS] [--disk-free-gb GB] [--class C]         list the recorded leftovers
   tidy --report                                                                        one line of counts and bytes a class
+  tidy --decide KEY remove|keep                                                        record the operator's answer to a row
   tidy --class process [--apply]                                                       list, and end, the recorded processes
   tidy --remote [--json]                                                               list the merged code/<id> branches of the remote
 
@@ -23,8 +24,8 @@ multi` its sandbox, and the sprint skill's run and review steps their worktrees 
 nothing: it says who made the path or process, never that it may be removed. Exit codes of `own`: 0 recorded or dropped, 1
 coord refused or did not run, 2 a bad request.
 
-`safe_to_remove(candidate, snapshot, coord_state)` is the one verdict, `(verdict, reason)` with the verdict `remove` or
-`keep`: a candidate goes only when its owner is recorded, no live coord lease or claim names it (or its branch, item or
+`safe_to_remove(candidate, snapshot, coord_state)` is the one verdict, `(verdict, reason)` with the verdict `remove`,
+`keep` or `ask` (below): a candidate goes only when its owner is recorded, no live coord lease or claim names it (or its branch, item or
 session), no live process has it as its working directory, its item is done, dropped or gone with its closed sprint, it is
 clean and every commit of it is on the integration main (`git cherry`), and its last activity is older than --older-than
 hours; a recorded scratch or sandbox directory also lies in its class's own directories (`own_dirs`), is no symlink and
@@ -37,6 +38,15 @@ limit is waived. --apply removes the `remove` rows with `git worktree remove` (n
 to rename is kept and reported), a branch only once `git cherry` finds its commits on the integration main, then `git
 worktree prune`. Exit codes of `tidy`: 0 listed, or removed all it planned; 1 an --apply removal failed or a claim appeared
 on a candidate; 2 a refusal (bad arguments, no integration main, an unreadable coord store); 3 the coord store stayed locked.
+A candidate that is recorded, clean, merged and idle but whose item is still claimed (`doing`) with no live coord lease or
+claim naming it gets the verdict `ask`, as does a recorded process that outlives its session's lease while its item is
+still claimed: nothing in the record tells whether the work went on, so only the operator settles it. Each row carries its
+`key` (`worktree/<16 hex digits>`, from `cand_key`). `tidy --decide KEY remove|keep` writes the answer as the coord value
+of `tidy-answer/<KEY>` with the time (refused, exit 2, in an agent session: `bl_authority.in_agent_session`); an answer
+made before the candidate's record is stale. The next run reads it: `keep` is a `keep` row, `remove` a `remove` row with
+`answer` set. `--apply` removes such a row only after it claims `clean/<KEY>` (`CLAIM_TTL` seconds, holder `tidy`): while
+another holder has that claim it removes nothing, says so and exits 1; it releases the claim and clears the answer once the
+candidate is gone. An uncommitted worktree is `keep` before it can ask, so a dirty one is reported for a hand clean.
 `tidy --report` reads only and prints one line, the count that would go and the bytes it frees, and the count kept, for each
 class; the bytes of all the rows share a `REPORT_SECONDS` walk, the figure `or more` past it, so the line comes within seconds
 on a clone with many worktrees (the SessionStart hook prints it and removes nothing).
@@ -97,7 +107,12 @@ PROCESS = "process"  # tidy lists it only under `--class process`
 REMOTE_BRANCHES = "code/"  # the branches `tidy --remote` lists on the integration remote
 START_SLOP_S = 2  # how far a process's start time may differ from its record's: the table's seconds
 FINISHED = ("done", "dropped")
-REMOVE, KEEP = "remove", "keep"
+REMOVE, KEEP, ASK = "remove", "keep", "ask"
+ANSWER_PREFIX = "tidy-answer/"  # the coord keys of the operator's answers: tidy-answer/<candidate key>
+CLAIM_PREFIX = "clean/"  # the coord key an --apply claims before it removes an answered candidate: clean/<candidate key>
+CLAIM_TTL = 600  # seconds a removal's claim lasts
+CLAIM_HOLDER = "tidy"
+KEY_FORM = re.compile(r"(?:worktree|branch|sandbox|scratch|process)/[0-9a-f]{16}")
 
 
 def strip_extended(path):
@@ -178,19 +193,19 @@ def host_table(root):
     return bl_procs.process_table()
 
 
-def put_value(key, text):
+def put_value(key, text, who="own"):
     """Write TEXT as the value of KEY, a new key or its next revision; Refused when coord does not take it."""
     for _try in range(3):
         code, body, err = run_coord("get", key)
         if code not in (0, 1):
-            raise Refused(f"own: cannot read {key}: {err or 'coord.py exited ' + str(code)}")
+            raise Refused(f"{who}: cannot read {key}: {err or 'coord.py exited ' + str(code)}")
         revision = body.get("revision", 0) if isinstance(body, dict) else 0
         code, body, err = run_coord("put", key, f"--value={text}", "--revision", str(revision))
         if code == 0:
             return
         if code != 1:
-            raise Refused(f"own: cannot write {key}: {err or 'coord.py exited ' + str(code)}")
-    raise Refused(f"own: {key} keeps moving on")
+            raise Refused(f"{who}: cannot write {key}: {err or 'coord.py exited ' + str(code)}")
+    raise Refused(f"{who}: {key} keeps moving on")
 
 
 def record_owner(cls, target, item=None, sprint=None, session=None, drop=False):
@@ -244,14 +259,15 @@ class CoordLocked(Exception):
 
 
 def coord_state():
-    """{"owners": [record], "held": [coord row]} of the coord store now: every live `own/` record, and every live key
-    that a holder's lease or claim holds. Raises CoordLocked when the store stayed locked, Rejected when it cannot be read."""
+    """{"owners": [record], "held": [coord row], "answers": {candidate key: answer}} of the coord store now: every live
+    `own/` record, every live key that a holder's lease or claim holds, and the operator's answers (`decide`). Raises
+    CoordLocked when the store stayed locked, Rejected when it cannot be read."""
     code, body, err = run_coord("list")
     if code != 0 or not isinstance(body, list):
         if "locked" in err or "TimeoutExpired" in err:
             raise CoordLocked(err)
         raise Rejected(f"tidy: cannot read the coord store: {err or 'coord.py exited ' + str(code)}")
-    owners, held = [], []
+    owners, held, answers = [], [], {}
     for row in body:
         if not isinstance(row, dict) or not isinstance(row.get("key"), str):
             continue
@@ -259,9 +275,13 @@ def coord_state():
             rec = recorded(row)
             if rec:
                 owners.append(rec)
+        elif row["key"].startswith(ANSWER_PREFIX):
+            rec = recorded(row)
+            if rec:
+                answers[row["key"][len(ANSWER_PREFIX):]] = rec
         elif row.get("holder"):
             held.append(row)
-    return {"owners": owners, "held": held}
+    return {"owners": owners, "held": held, "answers": answers}
 
 
 def inside(outer, inner):
@@ -430,12 +450,35 @@ def names_of(cand):
     return [cand.get("path"), cand.get("branch"), rec.get("item"), rec.get("session")]
 
 
+def cand_key(cand):
+    """The key of the candidate CAND: its class and the first 16 hex digits of the sha256 of its normalised path, branch
+    or pid (a recorded process: the pid and its start time), `worktree/<digest>`. The answer to a verdict `ask` is the
+    coord value of `ANSWER_PREFIX` + this key and a removal's claim is `CLAIM_PREFIX` + this key."""
+    cls, rec = cand["class"], cand.get("record") or {}
+    if cls == PROCESS:
+        ident = f"{cand['pid']}:{rec['start']}" if isinstance(rec.get("start"), int) else str(cand["pid"])
+    else:
+        ident = cand["branch"] if cls == "branch" else cand["path"]
+    return owner_key(cls, ident)[len(PREFIX):]
+
+
+def item_of(cand):
+    """The id of the backlog item CAND was made for (its record's, else the one its `work/<id>` branch names), or None."""
+    branch = cand.get("branch")
+    return (cand.get("record") or {}).get("item") or (branch[len(WORK_PREFIX):] if branch and branch.startswith(WORK_PREFIX) else None)
+
+
+def still_claimed(cand, snap):
+    """Whether the item of CAND is `doing`: claimed, which no live coord lease names (the caller has found none)."""
+    iid = item_of(cand)
+    return bool(iid) and snap["items"].get(iid) == "doing"
+
+
 def item_finished(cand, snap):
     """(True, None) when the candidate's item (else its sprint) is done, dropped or gone with its closed sprint, or names
     none; else (False, why)."""
     rec = cand.get("record") or {}
-    branch = cand.get("branch")
-    iid = rec.get("item") or (branch[len(WORK_PREFIX):] if branch and branch.startswith(WORK_PREFIX) else None)
+    iid = item_of(cand)
     for what, ident in (("item", iid), ("sprint", None if iid else rec.get("sprint"))):
         if ident and snap["items"].get(ident) not in FINISHED + (None,):
             return False, f"its {what} {ident} is {snap['items'][ident]}"
@@ -485,21 +528,29 @@ def process_verdict(cand, snap, state):
     if held:
         return KEEP, f"a live coord lease or claim names it: {held}"
     ok, why = item_finished(cand, snap)
+    asking = None
     if not ok:
-        return KEEP, why
+        if not still_claimed(cand, snap):
+            return KEEP, why
+        asking = f"its item {item_of(cand)} is still claimed"
     ok, why = idle_reason(rec.get("at") or snap["now"], snap)
     if not ok:
         return KEEP, why
-    return REMOVE, (f"owned, its session {rec['session']} holds no coord lease, started as recorded, idle for "
-                    f"{(snap['now'] - (rec.get('at') or snap['now'])) / 3600:.1f} h")
+    idle = f"idle for {(snap['now'] - (rec.get('at') or snap['now'])) / 3600:.1f} h"
+    if asking:
+        return ASK, (f"{asking}, and the process outlives its session {rec['session']}'s lease (none is held), started as "
+                     f"recorded, {idle}: the operator decides")
+    return REMOVE, f"owned, its session {rec['session']} holds no coord lease, started as recorded, {idle}"
 
 
 def safe_to_remove(cand, snap, state):
     """(verdict, reason) for the candidate CAND, the one rule tidy, kbmon and the remediation agent read. CAND is a dict:
     `class` (worktree, branch, sandbox, scratch or process), `path` (normalised; not for a branch or a process), `branch`,
     `pid` (a process), `record` (its coord record, or None), and for a worktree its `entry` (git's, or None), for a branch
-    its `tip` and `checked_out` paths. The verdict is `remove` or `keep`; the reason names the first rule that keeps it,
-    else what holds. SNAP is `take_snapshot`'s, STATE `coord_state`'s."""
+    its `tip` and `checked_out` paths. The verdict is `remove` or `keep`, or `ask` for a candidate that is recorded, clean,
+    merged and idle whose item is still claimed (`doing`) with no live coord lease naming it, or whose process outlives its
+    session's lease: only the operator's answer (`decide`) settles it. The reason names the first rule that keeps it, else
+    what holds. SNAP is `take_snapshot`'s, STATE `coord_state`'s."""
     if cand["class"] == PROCESS:
         return process_verdict(cand, snap, state)
     cls, path, rec = cand["class"], cand.get("path"), cand.get("record")
@@ -532,8 +583,11 @@ def safe_to_remove(cand, snap, state):
         if procs:
             return KEEP, "a process still runs there: " + ", ".join(f"pid {pid} ({comm or '?'})" for pid, comm in procs)
     ok, why = item_finished(cand, snap)
+    asking = None
     if not ok:
-        return KEEP, why
+        if not still_claimed(cand, snap):
+            return KEEP, why
+        asking = f"its item {item_of(cand)} is still claimed and no live coord lease names it"
     waived = None
     if cls == "worktree":
         code, out, err = run(["git", "--no-optional-locks", "status", "--porcelain"], cwd=path)
@@ -560,7 +614,10 @@ def safe_to_remove(cand, snap, state):
     done = {"worktree": f"owned, item finished, clean, on {snap['upstream']}, idle",
             "branch": f"owned, item finished, on {snap['upstream']}, idle",
             "sandbox": "owned, nothing runs in it, idle", "scratch": "owned, item finished, nothing runs in it, idle"}[cls]
-    return REMOVE, why if why else f"{done} for {(snap['now'] - last) / 3600:.1f} h"
+    idle = why if why else f"{done} for {(snap['now'] - last) / 3600:.1f} h"
+    if asking:
+        return ASK, f"{asking}; {idle}: the operator decides"
+    return REMOVE, idle
 
 
 def process_candidates(snap, state):
@@ -619,7 +676,7 @@ def candidates(snap, state, classes=TIDY_CLASSES):
 
 
 def row_of(cand, verdict, reason):
-    row = {"class": cand["class"], "verdict": verdict, "reason": reason, "bytes": 0, "_cand": cand}
+    row = {"class": cand["class"], "verdict": verdict, "reason": reason, "bytes": 0, "key": cand_key(cand), "_cand": cand}
     if cand["class"] == PROCESS:
         row.update({k: cand[k] for k in ("pid", "comm", "where", "kind") if k in cand})
     else:
@@ -628,6 +685,16 @@ def row_of(cand, verdict, reason):
     if item:
         row["item"] = item
     return row
+
+
+def answer_of(cand, state):
+    """The operator's answer (`remove` or `keep`) to CAND's verdict `ask`, or None: none given, or given before the
+    candidate's record was made (a path used again is a new candidate)."""
+    given = state.get("answers", {}).get(cand_key(cand))
+    if not isinstance(given, dict) or given.get("answer") not in (REMOVE, KEEP):
+        return None
+    at, made = given.get("at"), (cand.get("record") or {}).get("at") or 0
+    return given["answer"] if isinstance(at, (int, float)) and not isinstance(at, bool) and at >= made else None
 
 
 def plan(snap, state, only=None, budget=None, classes=TIDY_CLASSES):
@@ -643,7 +710,12 @@ def plan(snap, state, only=None, budget=None, classes=TIDY_CLASSES):
             if only is not None and not only(cand):
                 continue
             verdict, reason = safe_to_remove(cand, snap, state)
+            answer = answer_of(cand, state) if verdict == ASK else None
+            if answer:
+                verdict, reason = answer, f"the operator answered {answer} ({reason.removesuffix(': the operator decides')})"
             row = row_of(cand, verdict, reason)
+            if answer:
+                row["answer"] = answer
             if verdict == REMOVE and cls == "worktree":
                 snap["planned"].add(cand["path"])
             if verdict == REMOVE and cls in ("worktree", "sandbox", "scratch") and os.path.isdir(cand["path"]):
@@ -747,9 +819,43 @@ def remove_one(snap, row, removed):
     return None
 
 
+def claim_clean(key):
+    """Claim `CLAIM_PREFIX` + KEY for a removal: (the token, None) once held, else (None, why) with the holder's name when
+    another holds it. Raises CoordLocked when the store stayed locked."""
+    code, body, err = run_coord("claim", CLAIM_PREFIX + key, "--ttl", str(CLAIM_TTL), "--holder", CLAIM_HOLDER)
+    if code == 0 and isinstance(body, dict) and body.get("token"):
+        return body["token"], None
+    if "locked" in err or "TimeoutExpired" in err:
+        raise CoordLocked(err)
+    if code == 1 and isinstance(body, dict) and body.get("holder"):
+        return None, f"{CLAIM_PREFIX}{key} is claimed by {body['holder']}"
+    return None, f"cannot claim {CLAIM_PREFIX}{key}: {err or 'coord.py exited ' + str(code)}"
+
+
+def remove_answered(snap, row, removed):
+    """Remove the candidate of ROW, a verdict `ask` the operator answered `remove`, only while this run holds the coord
+    claim `CLAIM_PREFIX` + its key; returns None once it is gone, else why it was kept. The claim is released after, and the
+    answer cleared once the candidate is gone."""
+    token, why = claim_clean(row["key"])
+    if token is None:
+        return why
+    try:
+        why = remove_one(snap, row, removed)
+        if why is None:
+            try:
+                put_value(ANSWER_PREFIX + row["key"], "", who="tidy")
+            except Refused as e:
+                say(f"tidy: {e}")
+        return why
+    finally:
+        run_coord("release", CLAIM_PREFIX + row["key"], "--token", token)
+
+
 def apply_rows(snap, rows, say_to):
     """Remove the `remove` rows, setting each row's `result`. Before each removal the coord store is read again: a lease
-    or claim that appeared since the listing keeps the candidate. Returns the number of failures; raises CoordLocked."""
+    or claim that appeared since the listing keeps the candidate. A row the operator answered `remove` (`answer`) goes
+    only once this run has claimed `CLAIM_PREFIX` + its key: while another holder has it nothing is removed and the row
+    counts as a failure. Returns the number of failures; raises CoordLocked."""
     failed, removed, pruned = 0, set(), False
     with contextlib.redirect_stdout(say_to):
         for row in rows:
@@ -760,7 +866,7 @@ def apply_rows(snap, rows, say_to):
                 row["result"], failed = f"kept: a live coord lease or claim names it now: {held}", failed + 1
                 continue
             pruned = pruned or row["class"] == "worktree"
-            why = remove_one(snap, row, removed)
+            why = remove_answered(snap, row, removed) if row.get("answer") else remove_one(snap, row, removed)
             if why:
                 row["result"], failed = f"kept: {why}", failed + 1
             else:
@@ -888,9 +994,28 @@ def cmd_remote(bl, a):
     return 0
 
 
+def decide(key, answer):
+    """Record the operator's ANSWER (`remove` or `keep`) to the verdict `ask` of the candidate KEY, as the coord value of
+    `ANSWER_PREFIX` + KEY with the time. Refused in an agent session; Rejected for a bad key or answer."""
+    if bl_authority.in_agent_session():
+        raise Rejected("tidy: --decide records the operator's answer, which an agent session may not give: "
+                       "the operator runs it from their own terminal")
+    if not KEY_FORM.fullmatch(key):
+        raise Rejected(f"tidy: --decide takes the key of a row (class/16 hex digits, `tidy --json` prints it), not {key[:40]!r}")
+    if answer not in (REMOVE, KEEP):
+        raise Rejected(f"tidy: --decide answers {REMOVE} or {KEEP}, not {answer[:20]!r}")
+    put_value(ANSWER_PREFIX + key, json.dumps({"answer": answer, "at": int(time.time())}, sort_keys=True), who="tidy")
+    say(f"tidy: recorded {answer} for {key}")
+
+
 def cmd_tidy(bl, a):
     """List the recorded leftovers with `safe_to_remove`'s verdict, reason and bytes (and with --apply remove the ones
     it clears), under the exit codes in the module docstring."""
+    if a.decide:
+        if a.apply or a.json or a.report or a.remote or a.cls:
+            raise Rejected("tidy: --decide records one answer: it takes no other option")
+        decide(*a.decide)
+        return 0
     if a.older_than < 0 or a.disk_free_gb < 0:
         raise Rejected("tidy: --older-than and --disk-free-gb are not negative")
     if a.report and (a.apply or a.json):
@@ -924,9 +1049,14 @@ def cmd_tidy(bl, a):
         if a.apply and r["verdict"] == REMOVE:
             say(f"tidy: {r['result']} {what}{size}: {r['reason']}" if r["result"] == "removed" else f"tidy: {r['result']} {what}")
         else:
-            say(f"tidy: {'would remove' if r['verdict'] == REMOVE else 'kept'} {what}{size}: {r['reason']}")
+            say(f"tidy: {'would remove' if r['verdict'] == REMOVE else r['verdict'] if r['verdict'] == ASK else 'kept'} "
+                f"{what}{size}: {r['reason']}")
     for ln in summary_lines(rows, a.apply, classes):
         say(ln)
+    asks = [r for r in rows if r["verdict"] == ASK]
+    if asks:
+        say(f"tidy: {len(asks)} to ask: `tidy --decide KEY remove|keep` answers one; then --apply removes a `remove` "
+            f"answer after it claims {CLAIM_PREFIX}KEY ({', '.join(r['key'] for r in asks)})")
     if not a.apply:
         say("tidy: --apply removes the ones listed as would remove (never --force)")
     return 1 if failed else 0
@@ -941,6 +1071,9 @@ def args_tidy(p):
                         "kept) and with --apply ends the ones it clears: refused in an agent session")
     p.add_argument("--remote", action="store_true",
                    help="list the code/<id> branches of the integration remote that are merged (reads only; deletes none)")
+    p.add_argument("--decide", nargs=2, metavar=("KEY", "ANSWER"),
+                   help="record the operator's answer, remove or keep, to the row of that key whose verdict is ask "
+                        "(`--json` prints each row's key); refused in an agent session")
     p.add_argument("--older-than", type=float, default=AGE_HOURS, metavar="HOURS",
                    help=f"a leftover's last activity must be older than this (default {AGE_HOURS})")
     p.add_argument("--disk-free-gb", type=float, default=DISK_FREE_GB, metavar="GB",
