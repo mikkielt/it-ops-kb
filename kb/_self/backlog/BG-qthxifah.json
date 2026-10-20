@@ -1,0 +1,20 @@
+{
+  "id": "BG-qthxifah",
+  "kind": "bug",
+  "title": "monitoring.md calls kbask.py the one writer of asks and answers, but coord_put and coord_post write them too",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "the Asks and remediation section of kb/_self/monitoring.md names every writer of an ask or answer: kbask.py, the coord_put and coord_post tools of the kb MCP server under KB_COORD_TOOLS=1, and coord.py post with a put",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kb_mcp;t=open('kb/_self/monitoring.md',encoding='utf-8').read();w=any(x['name']=='coord_put' for x in kb_mcp.COORD_TOOL_LIST);assert not (w and 'is the one writer of asks and answers' in t),'monitoring.md calls kbask.py the one writer of asks and answers; coord_put and coord_post write them too'"
+    ]
+  },
+  "touches": [
+    "kb/_self/monitoring.md"
+  ]
+}
