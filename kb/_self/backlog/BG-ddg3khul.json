@@ -1,0 +1,21 @@
+{
+  "id": "BG-ddg3khul",
+  "kind": "bug",
+  "title": "learn derives a route source finding again after it is closed, because the WebFetch entries stay in the store after the hook denies the host",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "learn derives no route source finding for a host the PreToolUse WebFetch hook now denies, so a route finding closed fixed-since stays closed after the next learn run",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); from pathlib import Path; import ql_learn; r=[f['host'] for f in ql_learn.source_findings(ql_learn.store_entries(Path('kb/_querylog'))) if f['signal']=='route']; print('route findings derived:', r); sys.exit(1 if r else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/ql_learn.py",
+    "kb/_self/querylog.md"
+  ]
+}
