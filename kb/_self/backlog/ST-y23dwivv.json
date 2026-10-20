@@ -2,7 +2,7 @@
   "id": "ST-y23dwivv",
   "kind": "story",
   "title": "kbask.py cleanup allows its session only the exact kbmon.py --json command, not any text after it",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-rrqlgiff",
   "priority": "P1",
   "rank": 0,

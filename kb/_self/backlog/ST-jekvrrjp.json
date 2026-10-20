@@ -2,7 +2,7 @@
   "id": "ST-jekvrrjp",
   "kind": "story",
   "title": "A query log entry that names an internal root stays in the local store and no longer stalls delivery",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-rrqlgiff",
   "priority": "P3",
