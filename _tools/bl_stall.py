@@ -24,7 +24,8 @@ sidecars (`ql_store` readers; a row's closed keys only, never event text), never
   lock-wait           the host test lock has been held, by a live process, for HOST_LOCK_WAIT_S (claimed items)
 
 A signal whose input cannot be read is `unknown:<what>`, never a guess: a request read that fails, a forge CLI not
-signed in or a remote that names no forge project is `unknown:forge`. Standard library only; imports `bl_base` and
+signed in or a remote that names no forge project is `unknown:forge`, and so is every claimed item not read when the
+reads' one total deadline (FORGE_DEADLINE_S) passes. Standard library only; imports `bl_base` and
 `bl_cli` at load and never `backlog` (a layer rule); the query log, `tests`, `bl_procs`, `bl_forge` and `kg_lane` are
 imported where used. It registers its own subcommand when imported, so `backlog.py` carries only the import.
 """
@@ -46,6 +47,8 @@ DONE_REFUSED_N = 2  # refused `done` rows of one item that make the repeat a sta
 CHECK_TIMEOUT_N = 2  # refused dones that ran out of the check time that make a timeout a stall
 LAND_SAME_STEP_N = 2  # failed rows of one `land` step of one item that make the repeat a stall
 HOST_LOCK_WAIT_S = 1800  # seconds the host test lock may be held before the runs waiting for it are a stall
+FORGE_DEADLINE_S = 60  # seconds all the forge reads together may take: past it, each item not yet read is unknown:forge
+FORGE_CALL_S = 60  # seconds one forge command may take (bl_base.run's limit), cut shorter by the time left to the deadline
 LOCK_NAME = "kb-tests.lock"  # tests.py's host lock file (tests.HOST_LOCK_NAME), read for its holder and start
 
 # Head pipeline words of a request that never become `success` by waiting: the pipeline ended without it, or holds at a
@@ -289,17 +292,39 @@ def request_dead(request):
     return request.pipeline in MR_DEAD_PIPELINE or request.merge_status in MR_DEAD_MERGE
 
 
-def forge_reads(root, ids, run=None):
+class DeadlineReached(Exception):
+    """The forge reads' total time is spent."""
+
+
+def bounded_run(run, deadline):
+    """A runner of `run`'s shape that starts no command once the monotonic time DEADLINE has passed (DeadlineReached)
+    and, for the default runner, gives a command no more than the time left (`bl_base.run`'s own limit otherwise)."""
+    def bounded(argv, cwd=None):
+        left = deadline - time.monotonic()
+        if left <= 0:
+            raise DeadlineReached()
+        if run is None:
+            from ql_base import run_cmd
+            return run_cmd(argv, cwd=cwd, timeout=min(FORGE_CALL_S, left))
+        return run(argv, cwd=cwd)
+    return bounded
+
+
+def forge_reads(root, ids, run=None, deadline_s=None):
     """{item id: whether its `code/<id>` request is dead} for the ids read, one `bl_forge` request read for each. The
     first read that fails (a CLI not installed or signed in, a failed call, a remote that names no forge project)
-    ends the reads, as the rest would fail the same way: an id left out is `unknown:forge`."""
+    ends the reads, as the rest would fail the same way, and so does the total deadline (FORGE_DEADLINE_S, or
+    DEADLINE_S seconds when given) of all the reads together, a command in flight cut at it: an id left out is
+    `unknown:forge`."""
     import bl_forge
     from kg_lane import CODE_BRANCH_PREFIX
     dead = {}
     if not ids:
         return dead
+    deadline = time.monotonic() + (FORGE_DEADLINE_S if deadline_s is None else deadline_s)
+    bounded = bounded_run(run, deadline)
     try:
-        arm = bl_forge.arm(root, run)
+        arm = bl_forge.arm(root, bounded)
         for iid in ids:
             dead[iid] = request_dead(arm.request(branch=CODE_BRANCH_PREFIX + iid))
     except Exception:  # noqa: BLE001 - a read that fails is unknown:forge, never an error of the listing
