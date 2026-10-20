@@ -2,7 +2,7 @@
   "id": "ST-qkqpnysb",
   "kind": "story",
   "title": "Review sprint: Leftovers are recorded when made and removed only when proven finished: backlog.py own, a safe_to_remove verdict in tidy, a kbmon cleanup panel",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ipeewrlv",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,7 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-r201",
+  "operator": "op-f618a13e"
 }
