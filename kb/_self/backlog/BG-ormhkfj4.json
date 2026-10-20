@@ -26,7 +26,7 @@
   "links": [
     "SP-2uljwgho review"
   ],
-  "notes": "SP-2uljwgho review gap 1 (S1): mon_sprint.progress/lines (_tools/mon_sprint.py:226) and mon_status.sprint_row (_tools/mon_status.py:319) are two implementations; on the planted snapshot the panel row reads 'SP-bbbbbbbb  active  The paid multi-agent runs measure…  4/10 done · next ST-cccccccc · todo 5, done 4, doing 1' (no percentage, no ETA) while the status row reads '… active 4/10 40% no ETA yet'. Premise run on origin/main 7b462e014: repro exits 1.",
+  "notes": "SP-2uljwgho review gap 1 (S1): mon_sprint.progress/lines (_tools/mon_sprint.py:226) and mon_status.sprint_row (_tools/mon_status.py:319) are two implementations; on the planted snapshot the panel row reads 'SP-bbbbbbbb  active  The paid multi-agent runs measure…  4/10 done · next ST-cccccccc · todo 5, done 4, doing 1' (no percentage, no ETA) while the status row reads '… active 4/10 40% no ETA yet'. Premise run on origin/main 7b462e014: repro exits 1. For the worker: land re-runs the proofs of this sprint's done items that share a file with this bug (step siblings). Before returning, run the checks or repros of ST-dhsyyjft, BG-lyfl57xv, BG-pahecn3b, BG-gkocrnfw, ST-jof4u6e6 and ST-kmgwsjto from their item files and keep each at exit 0: the --status sprints compact row (ST-dhsyyjft) and its checkout-fallback 'no ETA: origin/main not readable' wording (BG-lyfl57xv) must stay.",
   "claimed_by": "orch-r113",
   "operator": "op-f618a13e"
 }
