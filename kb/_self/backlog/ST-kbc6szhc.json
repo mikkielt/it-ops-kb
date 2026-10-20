@@ -70,7 +70,11 @@
         "entry id equals one of the prompt's row ids, else equal counts": "ST-kbc6szhc",
         "entry id only": "ST-kbc6szhc"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "entry id equals one of the prompt's row ids, else equal counts",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): the stall of 2026-10-17/18 ran 105 refused deliveries without an alert anyone saw. Folds BG-t54wqmgd, BG-tp4birqb, BG-q7bi7h4c, BG-mey6jwew (each repro embedded).",
