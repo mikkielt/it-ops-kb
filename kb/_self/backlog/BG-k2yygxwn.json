@@ -2,7 +2,7 @@
   "id": "BG-k2yygxwn",
   "kind": "bug",
   "title": "kbmon's sessions panel keys worktrees by directory name, so a same-named worktree shows as the clone",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-razcgjsb",
   "priority": "P3",
   "rank": 0,

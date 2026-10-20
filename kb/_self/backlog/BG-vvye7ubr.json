@@ -2,7 +2,7 @@
   "id": "BG-vvye7ubr",
   "kind": "bug",
   "title": "A live detached worker or benchmark launcher shows as an orphan in kbmon and backlog.py procs",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-razcgjsb",
   "priority": "P2",
   "rank": 0,

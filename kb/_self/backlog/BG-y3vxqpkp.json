@@ -2,7 +2,7 @@
   "id": "BG-y3vxqpkp",
   "kind": "bug",
   "title": "kbmon's sessions panel lists no process on Windows: bl_procs gives up because Windows exposes no working directory",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-razcgjsb",
   "priority": "P2",
   "rank": 0,
