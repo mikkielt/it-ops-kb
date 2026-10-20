@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "goal": "Read on origin/main the code each part of the planned kb/_self/coordination.md describes (_tools/coord.py, .claude/hooks/coord_hook.py, _tools/kbask.py, .claude/agents/kb-observer.md, the coord_ tools of _tools/kb_mcp.py and KB_COORD_TOOLS, _tools/mon_coord.py with the kbmon panels that read coord, the own records and safe_to_remove of _tools/bl_clean.py, the coord rows of the benchmarks in kb/_self/reports/ and kb/_self/token-efficiency.md, and each tool's Windows path), and record in this story's notes, per part of the doc, the facts with their file:line; each place where monitoring.md, tools.md, plugin.md, benchmarks.md or token-efficiency.md says what the code does not do is filed as a draft bug with a failing repro and named in the notes; the notes end with `No outside facts: the goal describes this project's own tools, read from their code`, since no kb root's article changes.",
   "checks": [
     {
       "run": [
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Planner: this research reads only the project's own code (no kb/public facts), so its touches are its item file; the researched check passes on the notes' No outside facts line. Steering case to read: python3 _tools/coord.py get ask/A275e35646a, answer/A275e35646a, ask/A3b8d7e0199, answer/A3b8d7e0199 (local store of this host)."
 }

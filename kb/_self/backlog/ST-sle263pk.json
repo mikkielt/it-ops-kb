@@ -1,0 +1,63 @@
+{
+  "id": "ST-sle263pk",
+  "kind": "story",
+  "title": "The kb-sprint and kb-research skills and the kb-worker role point to coordination.md",
+  "status": "draft",
+  "sprint": "SP-eptouzxc",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the kb-sprint skill's steering step, the kb-research skill's dedup step and the kb-worker role's asks rule each point to kb/_self/coordination.md; AGENTS.md stays under 4 KB with no routing line to coordination.md; selfdoc.py stale --work for this item stays clean",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport pathlib, subprocess, re, csv\nmiss = [f for f in ('.claude/skills/kb-sprint/SKILL.md', '.claude/skills/kb-research/SKILL.md',\n                    '.claude/agents/kb-worker.md')\n        if 'kb/_self/coordination.md' not in pathlib.Path(f).read_text(encoding='utf-8')]\nassert not miss, f'no pointer to kb/_self/coordination.md in {miss}'\nprint('ok')\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport pathlib, subprocess, re, csv\nn = len(pathlib.Path('AGENTS.md').read_bytes())\nassert n < 4096, f'AGENTS.md is {n} bytes'\nassert 'coordination.md' not in pathlib.Path('AGENTS.md').read_text(encoding='utf-8'), 'AGENTS.md gained a routing line to coordination.md'\nassert 'kb/_self/coordination.md' in pathlib.Path('.claude/skills/kb-sprint/SKILL.md').read_text(encoding='utf-8'), 'kb-sprint skill has no pointer yet'\nprint('ok', n)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport pathlib, subprocess, re, csv\nassert pathlib.Path('kb/_self/coordination.md').is_file(), 'kb/_self/coordination.md missing'\nfor a in (['check'], ['stale', '--work', 'ST-sle263pk']):\n    r = subprocess.run([sys.executable, '_tools/selfdoc.py'] + a, capture_output=True, text=True)\n    print(' '.join(a), r.returncode, (r.stdout + r.stderr).strip()[-600:])\n    assert r.returncode == 0, f'selfdoc {a} exit {r.returncode}'\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the kb-sprint skill's steering step, the kb-research skill's dedup step and the kb-worker role's asks rule each point to kb/_self/coordination.md",
+      "check": 0
+    },
+    {
+      "clause": "AGENTS.md stays under 4 KB with no routing line to coordination.md",
+      "check": 1
+    },
+    {
+      "clause": "selfdoc.py stale --work for this item stays clean",
+      "check": 2
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    ".claude/skills/kb-research/SKILL.md",
+    "agents/worker.md",
+    "kb/_self/coordination.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/backlog.md",
+    "kb/_self/web-sources.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-nni7qqhk"
+  ],
+  "notes": "Method (planner): AGENTS.md is 3967 of 4096 bytes on origin/main (wc -c, 2026-10-20) and every line of it is a lookup rule; no cut pays for a routing line, so the skills route to the doc instead. The skills map to AGENTS.md, maintaining.md, backlog.md and web-sources.md, the role file to plugin.md and token-efficiency.md (selfdoc.py map): read each and name it Self-Reviewed only when it needs no edit. Code lane: .claude/ paths land with backlog.py land ID --wait-merge 1800."
+}

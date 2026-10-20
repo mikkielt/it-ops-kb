@@ -1,0 +1,50 @@
+{
+  "id": "ST-qvrm7wis",
+  "kind": "story",
+  "title": "Twelve tested _self questions on coordination answer good from coordination.md",
+  "status": "draft",
+  "sprint": "SP-eptouzxc",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "kb/_self/_retrieval/lookup_eval.csv gains at least ten rows on coordination whose expect_paths is coordination.md; rag.py pack --root _self gives coverage good with a coordination.md line for each of the twelve questions in this item's first check; the _self lookup eval passes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport pathlib, subprocess, re, csv\nqs = ['how does an agent message another running session', 'what does coord.py claim and lease do', 'how do agents avoid duplicate research with coord dedup', 'how to run coord.py serve for several operators', 'what does the coord hook show at session start', 'how do I tell a running sprint runner to add scope', 'why did claims stay 0 in the benchmark', \"how do I let another operator's agents see my claims\", 'how are the kb MCP coord tools turned on', 'which coord records does tidy check before it removes a worktree', 'what does coord do differently on Windows', 'how do I see a stuck coord claim or a failed ask in kbmon']\nbad = []\nfor q in qs:\n    r = subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', '_self', q, '--budget', '400'], capture_output=True, text=True)\n    o = r.stdout\n    h = o.splitlines()[0] if o else ''\n    if r.returncode != 0 or not h.startswith('coverage: good') or 'coordination.md:' not in o:\n        bad.append((q, r.returncode, h[:90]))\nfor b in bad: print('miss:', b)\nassert not bad, f'{len(bad)} of {len(qs)} questions not good from coordination.md'\nprint('ok', len(qs))\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport pathlib, subprocess, re, csv\nrows = list(csv.DictReader(open('kb/_self/_retrieval/lookup_eval.csv', encoding='utf-8')))\nn = sum(1 for r in rows if 'coordination.md' in r['expect_paths'])\nassert n >= 10, f'{n} eval rows expect coordination.md'\nr = subprocess.run([sys.executable, '_tools/rag.py', 'eval', '--root', '_self'], capture_output=True, text=True)\nprint((r.stdout + r.stderr).strip()[-800:])\nassert r.returncode == 0, f'rag.py eval --root _self exit {r.returncode}'\nprint('ok', n)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/_self/_retrieval/lookup_eval.csv gains at least ten rows on coordination whose expect_paths is coordination.md",
+      "check": 1
+    },
+    {
+      "clause": "rag.py pack --root _self gives coverage good with a coordination.md line for each of the twelve questions in this item's first check",
+      "check": 0
+    },
+    {
+      "clause": "the _self lookup eval passes",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "kb/_self/_retrieval/lookup_eval.csv",
+    "kb/_self/_retrieval/word_shares.csv",
+    "kb/_self/_retrieval/aliases.csv",
+    "kb/_self/coordination.md"
+  ],
+  "depends_on": [
+    "ST-nni7qqhk"
+  ],
+  "notes": "Method (planner): rows worded as operators and agents ask, the five the operator found weak among them; a paraphrase that still misses gets an aliases.csv row only where rewording coordination.md's line cannot fix it (_self has no doc2query expansions file). Premise run 2026-10-20 on origin/main: rag.py pack --root _self gives coverage weak (no tested question matches) for eight of the twelve questions tried, the five the operator named among them; lookup_eval.csv has no row on coord. Code lane: lookup_eval.csv lands with backlog.py land ID --wait-merge 1800."
+}
