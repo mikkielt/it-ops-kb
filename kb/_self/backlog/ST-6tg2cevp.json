@@ -60,7 +60,11 @@
         "coord_put writes only ask/ID and answer/ID; coord_get reads any key": "ST-6tg2cevp",
         "coord_put and coord_get take any key, as coord.py does": "ST-6tg2cevp"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "coord_put writes only ask/ID and answer/ID; coord_get reads any key",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): folds BG-lkpu3ne6 (no get or put for an ask's text). The opt-in (KB_COORD_TOOLS) and every coord authority rule stay as they are. Premise: the check fails.",
