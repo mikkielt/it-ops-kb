@@ -30,6 +30,25 @@
   "depends_on": [
     "ST-wic5d76z"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does a failed span send keep the log records from being sent again?",
+      "options": [
+        "A cursor per signal kept by the runner",
+        "Log records carry an id the receiver dedups on"
+      ],
+      "recommendation": "A cursor per signal kept by the runner",
+      "do": {
+        "A cursor per signal kept by the runner": "BG-bubaqrja",
+        "Log records carry an id the receiver dedups on": "BG-bubaqrja"
+      },
+      "class": "design",
+      "answer": "A cursor per signal kept by the runner",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-qvlnptiw review"
   ],

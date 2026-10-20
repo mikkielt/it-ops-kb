@@ -6,7 +6,7 @@ Run it from the clone's root, with the SDK pinned in otel/uv.lock:
         [--store PATH] [--url URL --key-file PATH] [--from-snapshot FILE] [--prometheus-port N [--prometheus-bind HOST]]
 
 The points come from `python3 _tools/kbmon.py --metrics` and the events from `--events` (otel_logs.py: one OTLP log
-record each, and otel_spans.py: one span each, the cursor kept in memory), run as child processes (the stdlib tools
+record each, and otel_spans.py: one span each, a cursor per signal kept in memory), run as child processes (the stdlib tools
 import no OpenTelemetry package). The SDK reads the endpoints and the headers itself, from OTEL_EXPORTER_OTLP_ENDPOINT
 (or the _METRICS_, _LOGS_ and _TRACES_ variant of each signal) and OTEL_EXPORTER_OTLP_HEADERS (or its variants); the adapter takes no
 flag or file for either and prints and logs no header value. With no endpoint set it sends nothing and says export
@@ -215,31 +215,35 @@ class Sender:
             self.exporter.shutdown()
 
 
-class Cursor:
-    """The `--events` cursor, kept in memory: it moves only when every signal of a round was sent."""
+def send_events(args, cursors: dict, exporters: dict) -> int:
+    """One round of event records and spans: 0 sent, 1 a send failed, 2 kbmon gave no events for a signal.
 
-    value = None
-
-
-def send_events(args, cursor: Cursor, exporters: dict) -> int:
-    """One round of event records and spans: 0 sent, 1 a send failed (the cursor stays), 2 kbmon gave no events."""
-    try:
-        got = collect_events(args, cursor.value)
-    except (RuntimeError, subprocess.TimeoutExpired) as e:
-        print(f"kbmon_otel: {e}", file=sys.stderr)
-        return 2
-    for problem in got.get("problems") or []:
-        print(f"kbmon_otel: {problem}", file=sys.stderr)
+    `cursors` holds each signal's `--events` cursor, kept in memory (None: the first round). A signal's cursor moves only
+    when that signal was sent, so a signal that failed is given its events again next round and the others are not.
+    Signals at the same cursor share one kbmon run."""
     code = 0
+    runs: dict = {}
     for name, exporter in exporters.items():
+        cursor = cursors.get(name)
+        if cursor not in runs:
+            try:
+                runs[cursor] = collect_events(args, cursor)
+            except (RuntimeError, subprocess.TimeoutExpired) as e:
+                print(f"kbmon_otel: {e}", file=sys.stderr)
+                runs[cursor] = None
+            else:
+                for problem in runs[cursor].get("problems") or []:
+                    print(f"kbmon_otel: {problem}", file=sys.stderr)
+        got = runs[cursor]
         row = SIGNALS[name]
-        if exporter.send(got):
+        if got is None:
+            code = max(code, 2)
+        elif exporter.send(got):
+            cursors[name] = got.get("cursor") or cursor
             print(f"kbmon_otel: sent {row.count(got)} {row.noun}", flush=True)
         else:
             print(f"kbmon_otel: {row.failed}", file=sys.stderr)
-            code = 1
-    if code == 0:
-        cursor.value = got.get("cursor") or cursor.value
+            code = max(code, 1)
     return code
 
 
@@ -293,7 +297,7 @@ def main(argv=None) -> int:
     sender = Sender(export=bool(url), extra_readers=[prom] if prom else []) if url or prom else None
     resource = Resource(otel_attributes())
     exporters = {name: SIGNALS[name].build(resource) for name in urls}
-    cursor = Cursor()
+    cursors: dict = {}
     server = None
     code = 0
     sent = 0
@@ -316,7 +320,7 @@ def main(argv=None) -> int:
                         print("kbmon_otel: export failed", file=sys.stderr)
                         code = 1
             if exporters:
-                code = max(code, send_events(args, cursor, exporters))
+                code = max(code, send_events(args, cursors, exporters))
             sent += 1
             if args.count and sent >= args.count:
                 return code
