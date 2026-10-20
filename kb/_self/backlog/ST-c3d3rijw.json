@@ -2,7 +2,7 @@
   "id": "ST-c3d3rijw",
   "kind": "story",
   "title": "The weekly digest prints tokens by model",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-v64egscn",
   "priority": "P2",
   "rank": 0,
@@ -28,5 +28,7 @@
     "kb/_self/code.md",
     "kb/_self/usage.md"
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): digest 2026-W42 prints 'work: 510 items, tokens 2529565938 (main 100%, subagents 0%)' with no model split. The work rows already hold the model; what the store records does not change. Premise: the check fails."
+  "notes": "operator request 2026-10-19 (housekeeping batch): digest 2026-W42 prints 'work: 510 items, tokens 2529565938 (main 100%, subagents 0%)' with no model split. The work rows already hold the model; what the store records does not change. Premise: the check fails.",
+  "claimed_by": "orch-r107",
+  "operator": "op-f618a13e"
 }
