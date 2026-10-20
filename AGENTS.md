@@ -1,17 +1,17 @@
 # AGENTS.md
 
-An offline knowledge base of facts from official sources on Windows endpoint management and the AI agents that operate it: Markdown articles and CSV data in roots under `kb/` (`kb/public`, a team's own), searched and checked by stdlib Python tools in `_tools/`. **Before any change** (edit, research, refresh, census, commit, push), run `python3 _tools/selfdoc.py section maintaining "Conduct for changes"` (section "Skills that change the kb" only to pick a skill).
+An offline knowledge base of facts from official sources on Windows endpoint management and the AI agents that operate it: Markdown and CSV in roots under `kb/` (`kb/public`, a team's own), searched and checked by stdlib Python tools in `_tools/`. **Before any change** (edit, research, refresh, census, commit, push), run `python3 _tools/selfdoc.py section maintaining "Conduct for changes"` (section "Skills that change the kb" only to pick a skill).
 
 ## Look things up: deterministic tools first
 
 - Answer lookups in the session that asked. Never start a general-purpose subagent for one; the `kb-lookup` agent only for long research that would fill the context.
 - From a shell or script: `python3 _tools/kb_ask.py "<question>"` answers at the lowest working cost (routing: `kb/_self/tools.md`).
-- One call first: `kb_pack` (MCP) or `rag.py pack "<question>"`; several parts: `questions` / `pack -q PART -q PART`. It prints `coverage: good|weak|none`, the best fact lines by article (`root/path:line`, tag) and one footer of source urls; `root` keeps one root.
+- One call first: `kb_pack` (MCP) or `rag.py pack "<question>"`; several parts: `questions` / `pack -q PART -q PART`. It prints `coverage: good|weak|none`, the best fact lines by article (`root/path:line`, tag) and a footer of urls; `root` keeps one root.
   - `good`: answer from the pack. A `check:` line flags a possible false `good`: answer only if a cited line itself answers it, else treat as `none`.
   - `weak`: one reworded pack or one `show` of the article.
   - `none` or a `route:` line: state what the kb has and lacks (`kb has:`, `kb lacks:`), answer what it has, research only the rest in the live docs (below, else the web), never from memory.
-- Counts, lists and joins are tools, not reading: `rag.py audit [PREFIX] [--status partial] [--entries]` (per article: tag counts, linked gaps, conflicts), `rag.py facts PREFIX --tag UNK,COMMUNITY`, `rag.py src S123 --cited`. MCP: `kb_audit`, `kb_facts`, `kb_source` with `cited`. `--format detailed` / `response_format`: full text, urls.
-- Also: `rag.py show PATH:LINE -n 30`, `rag.py search "<keywords>" [-d DOMAIN] [--index]` (`--index` adds the ledgers and `kb/_self/` docs), `rag.py topics [DOMAIN]`. A hook points article `cat`/`sed -n` here; raw reads only to edit.
+- Counts, lists and joins are tools, not reading: `rag.py audit [PREFIX] [--status partial] [--entries]`, `rag.py facts PREFIX --tag UNK,COMMUNITY`, `rag.py src S123 --cited`. MCP: `kb_audit`, `kb_facts`, `kb_source` with `cited`. `--format detailed` / `response_format`: full text, urls.
+- Also: `rag.py show PATH:LINE -n 30`, `rag.py search "<keywords>" [-d DOMAIN] [--index]` (`--index`: also ledgers, `kb/_self/` docs), `rag.py topics [DOMAIN]`. Raw reads only to edit.
 - Status (sprints, sessions, load, cost): `python3 _tools/kbmon.py --status [TOPIC]`; plain words, not backlog ids. Hooks `kb:`, `status:` answer; `kb+:`, `status+:` pass on.
 - Open work, in order: `backlog.py horizon`, `next --all --any`, or `backlog:`.
 
