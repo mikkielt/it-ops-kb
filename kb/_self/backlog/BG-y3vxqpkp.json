@@ -15,6 +15,29 @@
       "import json,os,sys,tempfile,types\nsys.path.insert(0,'_tools')\nimport mon_base,mon_sessions,bl_procs\nroot=os.path.realpath('.');d=tempfile.mkdtemp();me=os.getpid()\nrows=[{'ProcessId':me,'ParentProcessId':os.getppid(),'Name':'claude.exe','CommandLine':'claude.exe --add-dir '+root}]\nfor n in ('powershell','pwsh','powershell.exe','pwsh.exe'):\n    f=os.path.join(d,n);open(f,'w').write('#!/bin/sh\\ncat <<\"EOF\"\\n'+json.dumps(rows)+'\\nEOF\\n');os.chmod(f,0o755)\nos.environ['PATH']=d+os.pathsep+os.environ.get('PATH','')\nclass Win(types.ModuleType):\n    def __init__(s,real,**kw): super().__init__(real.__name__);s._r=real;s.__dict__.update(kw)\n    def __getattr__(s,k): return getattr(s._r,k)\nfor m in (bl_procs,mon_sessions):\n    m.os=Win(os,name='nt');m.sys=Win(sys,platform='win32')\ndata=mon_sessions.collect(mon_base.Ctx(root=mon_base.Path(root)))\ntext='\\n'.join(mon_sessions.lines(data,200))\nprint(text[:600])\nsys.exit(1 if 'processes unreadable' in text or str(me) not in text else 0)\n"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,sys,tempfile,types\nsys.path.insert(0,'_tools')\nimport mon_base,mon_sessions,bl_procs\nroot=os.path.realpath('.');d=tempfile.mkdtemp();me=os.getpid()\nrows=[{'ProcessId':me,'ParentProcessId':os.getppid(),'Name':'claude.exe','CommandLine':'claude.exe --add-dir '+root+' --zq-marker-7731'}]\nfor n in ('powershell','pwsh','powershell.exe','pwsh.exe'):\n    f=os.path.join(d,n);open(f,'w').write('#!/bin/sh\\ncat <<\"EOF\"\\n'+json.dumps(rows)+'\\nEOF\\n');os.chmod(f,0o755)\nos.environ['PATH']=d+os.pathsep+os.environ.get('PATH','')\nclass Win(types.ModuleType):\n    def __init__(s,real,**kw): super().__init__(real.__name__);s._r=real;s.__dict__.update(kw)\n    def __getattr__(s,k): return getattr(s._r,k)\nfor m in (bl_procs,mon_sessions):\n    m.os=Win(os,name='nt');m.sys=Win(sys,platform='win32')\ndata=mon_sessions.collect(mon_base.Ctx(root=mon_base.Path(root)))\ntext='\\n'.join(mon_sessions.lines(data,200))\nprint(text[:600])\nblob=text+json.dumps(data,default=str)\nsys.exit(0 if str(me) in text and 'zq-marker-7731' not in blob and 'processes unreadable' not in text else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "on Windows the sessions panel lists the clone's processes without a working directory: pid, parent, start and command name from the host's process table read through PowerShell (Get-CimInstance Win32_Process: ProcessId, ParentProcessId, Name, CommandLine as JSON), each with its checkout when a checkout path of the clone appears in its command line, beside the coord intents and the dispatch records' worker pids",
+      "check": 1
+    },
+    {
+      "clause": "the command line is only matched against checkout paths, never printed or kept",
+      "check": 0
+    },
+    {
+      "clause": "and in place of 'processes unreadable' the panel says plainly what Windows cannot show (a process whose command line names no checkout, so orphans told by working directory)",
+      "check": 1
+    }
+  ],
   "touches": [
     "_tools/bl_procs.py",
     "_tools/mon_sessions.py",
