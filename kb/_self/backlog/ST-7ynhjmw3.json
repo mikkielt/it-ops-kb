@@ -82,7 +82,9 @@
       },
       "class": "design",
       "answer": "split each into a bullet and indented sub-bullets in tools.md at sentence boundaries",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -99,7 +101,9 @@
       },
       "class": "design",
       "answer": "the row keeps its command cell and a one-line summary with a pointer to a new section; the text moves verbatim as bullets of about 1000 characters, split at semicolons",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): tools.md lines over 5000 characters on 2026-10-19: census 19794, coord 13263, land 10390, kb_mcp 7510, backlog check 6170, kbmon 5722, tests.py 5608 (and benchmarks 53843, A2). Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",

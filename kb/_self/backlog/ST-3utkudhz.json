@@ -90,7 +90,9 @@
       },
       "class": "design",
       "answer": "text moved word for word under one section per command group (run, report, pool, repro, multi) with a command list on top; the tools.md row keeps the command families, a pointer and the module layout",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): tools.md on 2026-10-19: 167 lines, the benchmarks.py row is one line of 53843 characters. Reports hold measurements, not references, so a doc of its own. Plan against SP-7s6uubs7 and SP-3pvz2noj, which edit that row first. Premise: the first check fails. Checks 2 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
