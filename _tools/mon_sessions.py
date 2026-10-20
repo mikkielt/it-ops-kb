@@ -161,14 +161,8 @@ def alerts(data):
 
 
 def age_text(seconds):
-    s = max(0, int(seconds))
-    if s < 60:
-        return f"{s}s"
-    if s < 3600:
-        return f"{s // 60}m"
-    if s < 86400:
-        return f"{s // 3600}h{s % 3600 // 60:02d}m"
-    return f"{s // 86400}d{s % 86400 // 3600:02d}h"
+    import bl_procs
+    return bl_procs.age_text(seconds)
 
 
 def cut_left(text, n):

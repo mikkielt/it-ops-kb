@@ -42,6 +42,7 @@ from bl_base import (RESEARCH_KINDS, ROOT as PLUGIN_ROOT, Refused, Rejected, alw
                      operator_who, worker_dir, ledger_lock, write_ledger)
 from bl_land import WORK_PREFIX, WORKER_NAME
 from bl_plan import land_line, shared_doc
+from ql_base import same_dir
 
 WORKER_ROLE = "worker"  # KB_ROLE of every dispatched session, whatever role the dispatching one has
 ROLE_FILE = ".claude/agents/kb-worker.md"  # the worker's role file: its brief makes the session read and follow it
@@ -973,13 +974,6 @@ def other_spools(read):
         if d.is_dir() and not any(same_dir(d, r) for r in [*read, *out]):
             out.append(d)
     return out
-
-
-def same_dir(a, b):
-    try:
-        return os.path.samefile(a, b)
-    except OSError:
-        return False
 
 
 def rows_line(root, iid, session):

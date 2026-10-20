@@ -52,6 +52,38 @@
   "depends_on": [
     "ST-eihikgyx"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does the process-group ending of the drift check live, now that bl_intake.end_tree and kbingest.kill_tree are the same body (kbingest is outside this item's touches)?",
+      "options": [
+        "bl_intake calls kg_lock.end_group, its own end_tree goes",
+        "keep both copies"
+      ],
+      "recommendation": "bl_intake calls kg_lock.end_group, its own end_tree goes",
+      "do": {
+        "bl_intake calls kg_lock.end_group, its own end_tree goes": "ST-gq4q5t4y",
+        "keep both copies": "ST-gq4q5t4y"
+      },
+      "class": "push"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Which module holds the one definition of in_spool_order, and where does bl_intake's code_path copy go, when the lower module is not clear from the import direction?",
+      "options": [
+        "in_spool_order stays in mon_log (mon_sprint imports it where it reads the landings); code_path stays in kg_trailers (bl_intake imports it where trailer_findings runs)",
+        "move both to a module outside this item's touches (mon_base, kg_base)"
+      ],
+      "recommendation": "in_spool_order stays in mon_log (mon_sprint imports it where it reads the landings); code_path stays in kg_trailers (bl_intake imports it where trailer_findings runs)",
+      "do": {
+        "in_spool_order stays in mon_log (mon_sprint imports it where it reads the landings); code_path stays in kg_trailers (bl_intake imports it where trailer_findings runs)": "ST-gq4q5t4y",
+        "move both to a module outside this item's touches (mon_base, kg_base)": "ST-gq4q5t4y"
+      },
+      "class": "push"
+    }
+  ],
   "notes": "operator request 2026-10-19 (housekeeping batch): identical bodies 2026-10-19: bl_dispatch.same_dir = ql_base._same, bl_intake.code_path = kg_trailers.code_path, bl_procs.age_text = mon_sessions.age_text, mon_log.in_spool_order = mon_sprint.in_spool_order. The copy goes to the lower module by code.md's import direction. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
   "claimed_by": "orch-r108",
   "operator": "op-f618a13e"

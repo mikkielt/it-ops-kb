@@ -27,7 +27,7 @@ LOCK_STALE_S = 3600
 PIPELINE_VERSION = 7 # bumped when what distill writes, or how it decides it, changes
 
 
-def _same(a, b):
+def same_dir(a, b):
     try:
         return os.path.samefile(a, b)
     except OSError:
@@ -38,7 +38,7 @@ def plugin_data():
     """${CLAUDE_PLUGIN_DATA} when this copy runs as the plugin (the hook's CLAUDE_PLUGIN_ROOT is this copy), else
     None: a plugin host."""
     data, root = os.environ.get("CLAUDE_PLUGIN_DATA"), os.environ.get("CLAUDE_PLUGIN_ROOT")
-    return Path(data) if data and root and _same(root, HOME) else None
+    return Path(data) if data and root and same_dir(root, HOME) else None
 
 
 def clone_home():

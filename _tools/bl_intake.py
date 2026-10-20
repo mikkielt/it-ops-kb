@@ -32,7 +32,7 @@ the detectors and the filing of their candidates:
   started after the last item the previous run reached (`rotated`, `read_cursor`, `write_cursor`; the commit count of
   main's tip, `rotation`, only seeds the first run), so every eligible item is reached within as many runs as there
   are whatever moved the tip between them, each check as a process group of
-  its own that a timeout or this process's exit ends whole (`end_tree`, `end_live`), with an isolated query log home
+  its own that a timeout or this process's exit ends whole (`kg_lock.end_group`, `end_live`), with an isolated query log home
   as `bl_base.run_check`'s checks have (`bl_base.check_env`), and a check that runs the whole
   test suite (`heavy_check`: `_tools/tests.py` or pytest with no narrowing `-k`, a wrapper such as
   `perfcheck.py`, also inside `sh -c '...'`) never runs, nor one that is not of drift's read-only forms
@@ -65,7 +65,6 @@ import json
 import os
 import re
 import shlex
-import signal
 import subprocess
 import sys
 import tempfile
@@ -75,6 +74,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 import bl_base
+import kg_lock
 from bl_base import TEXT_MAX, Refused, rel_dir
 
 DETECTORS = {}  # name -> fn(root) -> iterable of Candidate; the registry
@@ -626,21 +626,6 @@ LIVE = set()  # the drift checks running now (Popen); an exit ends their process
 LIVE_LOCK = threading.Lock()
 
 
-def end_tree(proc):
-    """End the process group the check leads (tests.py, uv, pytest and its workers), then the check itself."""
-    if os.name == "posix":
-        try:
-            os.killpg(proc.pid, signal.SIGKILL)
-        except (ProcessLookupError, PermissionError):
-            pass
-    else:
-        subprocess.run(["taskkill", "/PID", str(proc.pid), "/T", "/F"], capture_output=True)
-    try:
-        proc.kill()
-    except OSError:
-        pass
-
-
 @atexit.register
 def end_live():
     """End every drift check still running when the process exits: `intake --hook` stops waiting for a detector and
@@ -648,7 +633,7 @@ def end_live():
     with LIVE_LOCK:
         procs = list(LIVE)
     for proc in procs:
-        end_tree(proc)
+        kg_lock.end_group(proc)
 
 
 def check_result(root, check, timeout):
@@ -676,14 +661,14 @@ def check_result(root, check, timeout):
         try:
             out, err = proc.communicate(timeout=timeout)
         except subprocess.TimeoutExpired:
-            end_tree(proc)
+            kg_lock.end_group(proc)
             try:
                 proc.communicate(timeout=2)  # the pipes close once the group is gone
             except subprocess.TimeoutExpired:
                 pass
             return "timeout"
         except BaseException:
-            end_tree(proc)
+            kg_lock.end_group(proc)
             raise
         finally:
             with LIVE_LOCK:
@@ -857,23 +842,16 @@ def drift_detector(root):
 TRAILER_WINDOW_DAYS = 7  # the commits of main this much newer than its tip are read
 AUTO_KEY = "KB-Auto"  # querylog.py's automatic commits carry no KB-Work
 WORK_LINE = re.compile(r"KB-Work\s*:\s*(.*\S)\s*$", re.I)  # kbgit.py's WORK_LINE
-WORK_PATHS = ("_tools/", ".claude/", ".githooks/", ".gitlab-ci.yml")  # a change to these is work: it needs a KB-Work
-CONTENT_PATHS = ("_tools/aliases.csv",)  # inside WORK_PATHS, kb content as kblane.py lanes it: a research commit writes it
 SHORT_SHA = 10
-
-
-def code_path(path):
-    if path in CONTENT_PATHS:
-        return False
-    return any(path == p or (p.endswith("/") and path.startswith(p)) for p in WORK_PATHS)
 
 
 def trailer_findings(root, days=None):
     """[(short sha, why)] sorted by sha, for the non-merge commits on the integration main whose committer time is at
     most `days` (default TRAILER_WINDOW_DAYS) older than the tip's: `stray` when the message has more KB-Work lines than
     git reads as trailers (a blank line before Co-Authored-By?), `missing` when the commit changes a path of
-    WORK_PATHS and carries neither a KB-Work nor a KB-Auto trailer. The tip's time stands for "now", as in the drift
-    detector: no clock."""
+    `kg_trailers.WORK_PATHS` and carries neither a KB-Work nor a KB-Auto trailer. The tip's time stands for "now",
+    as in the drift detector: no clock."""
+    import kg_trailers  # the one code_path rule, read where this detector runs
     days = TRAILER_WINDOW_DAYS if days is None else days
     ref = main_ref(root)
     if not ref_exists(root, ref):
@@ -893,7 +871,7 @@ def trailer_findings(root, days=None):
         lines = sum(1 for ln in body.splitlines() if WORK_LINE.match(ln))
         if lines > trailers:
             out.append((sha[:SHORT_SHA], "stray"))
-        elif not trailers and not auto.strip() and any(code_path(p.strip()) for p in paths.split("\n")):
+        elif not trailers and not auto.strip() and any(kg_trailers.code_path(p.strip()) for p in paths.split("\n")):
             out.append((sha[:SHORT_SHA], "missing"))
     return sorted(out)
 

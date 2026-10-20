@@ -11,11 +11,10 @@ files where the ref cannot be read), with the count of commits the checkout is b
 open items, `{item, gate}`. A landing in progress is an item whose newest `land.step` row has no later `land.end` row in the
 ops rows: `{item, step, since}`, the last step recorded and the time of the landing's first step. A root with no backlog
 has no sprints. The panel writes nothing and makes no request. Imports no sibling at load; `bl_base`, `bl_view`, `bl_plan`,
-`bl_stall`, `mon_eta`, `mon_status` (the range's text), `ql_capture` and `ql_distill` where it reads them.
+`bl_stall`, `mon_eta`, `mon_status` (the range's text) and `mon_log` (`in_spool_order`) where it reads them.
 """
 import re
 from datetime import datetime, timezone
-from pathlib import Path
 
 REF = "origin/main"  # the ref the items are read from: the integration branch as this clone last fetched it
 CHECKOUT = "checkout"  # `source` where REF cannot be read
@@ -169,24 +168,12 @@ def sprints(root):
     return {"sprints": rows, "source": source, "behind": behind, "history": eta["history"]}
 
 
-def in_spool_order(rows):
-    """ROWS (`bl_stall.ops_rows`, sorted by time and id) with the rows of this host's spool that share a millisecond put
-    back in the order the spool file holds them; the committed rows stay first and in their order."""
-    import ql_capture
-    import ql_distill
-    spool = ql_capture.spool_dir()
-    at = {}
-    for f in sorted(Path(spool).glob("tools-*.jsonl")) if spool is not None and Path(spool).is_dir() else []:
-        for r in ql_distill.spool_rows(f)[0]:
-            at.setdefault(r.get("id"), len(at))
-    return sorted(rows, key=lambda r: (str(r.get("ts")), at.get(r.get("id"), -1)))
-
-
 def landings(root):
     """[{item, step, since}] of the landings in progress, newest first; [] when the ops rows cannot be read."""
     try:
         import bl_stall
-        rows = in_spool_order(bl_stall.ops_rows(str(root)))
+        import mon_log
+        rows = mon_log.in_spool_order(bl_stall.ops_rows(str(root)))
     except Exception:  # noqa: BLE001 - an unreadable log shows no landing
         return []
     cur = {}
