@@ -1,0 +1,26 @@
+{
+  "id": "BG-tfqdkx4o",
+  "kind": "bug",
+  "title": "rag.py eval fails on main: the _self row EV-let-another-operator-agents-see-claims raises noted to 14, above NOTED_BASELINE=13",
+  "status": "doing",
+  "sprint": "SP-gavrmuvx",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "rag.py eval's noted is at or under rag.NOTED_BASELINE again with the constant unchanged: the _self row EV-let-another-operator-agents-see-claims gets a pack with no check: line, by a coordination.md fact that answers the question in its own words or by a row whose question the kb's facts answer; no other row's verdict changes",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re,subprocess,sys;sys.path.insert(0,'_tools');import rag;p=subprocess.run([sys.executable,'_tools/rag.py','eval'],capture_output=True,text=True);n=int(re.search(r'noted=(\\d+)',p.stdout).group(1));print('noted',n,'baseline',rag.NOTED_BASELINE);sys.exit(0 if n<=rag.NOTED_BASELINE else 1)"
+    ]
+  },
+  "touches": [
+    "kb/_self/coordination.md",
+    "kb/_self/_retrieval/lookup_eval.csv",
+    "kb/_self/_retrieval/doc2query/expansions.csv"
+  ],
+  "notes": "Filed 2026-10-21 by the manager of SP-gavrmuvx: S1, a broken gate for everyone: main's rag.py eval exits 1 (noted=14 and the DRIFT that ST-3yj5rkdu re-decides), so every landing whose stale or eval step runs stops there and ql_apply refuses query-log delivery. ST-li5pag54 holds the same clause behind its open operator gate g1; this bug fixes the note without raising the constant. The repro reads noted from eval's stdout and not its exit code on purpose: the eval also exits 1 for the DRIFT line; a crash prints no noted= and fails the repro. Row added by 62b3775e7 (2026-10-20); its pack: check: no single fact holds half the key words (at most 3 of 7), at coordination.md:58.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
+}
