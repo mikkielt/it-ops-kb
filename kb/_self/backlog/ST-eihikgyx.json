@@ -59,7 +59,11 @@
         "Move the helpers to kg_base; stages import them and run git in kg_base.KB": "ST-eihikgyx",
         "Keep a wrapper in each stage that binds its module KB": "ST-eihikgyx"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "Move the helpers to kg_base; stages import them and run git in kg_base.KB",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): AST scan 2026-10-19: git() is defined in 12 modules, rev_parse in 5 kg_ modules, git_run in 4. Behaviour-preserving move. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
