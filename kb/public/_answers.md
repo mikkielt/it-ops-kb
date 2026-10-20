@@ -4321,3 +4321,15 @@ _Agent: kb-research_
 - See mcp/tools.md, claude/mcp-tool-search.md, claude/permissions-mcp.md, mcp/resources-prompts.md.
 
 _Agent: kb-research_
+
+## QK-process-show-parent-gone-detached-launcher. How does a process show its parent is gone, how does a detached launcher differ from a leftover, and how is another process's working directory read on Linux and macOS?
+- On exit, a process's children and zombies get the id of an implementation-defined system process as their parent, historically `init` with pid 1; ending a process does not directly end its children. [DOC S-xp4b2g5v]
+- On Linux `getppid()` returns `init` or the nearest living ancestor that set `PR_SET_CHILD_SUBREAPER`, and the standard `ps` has `ppid` and `pgid` names for a listing of both ids. [DOC S-fcdwaly4, S-6xelj6je, S-tldzr3mf]
+- `setsid()` (Python's `start_new_session=True` on POSIX) makes the caller the leader of a new session and process group, alone in both, and fails with `EPERM` for a process that already leads a group. [DOC S-dwwfdbtg, S-dabwnzz5]
+- Another process's working directory is the symbolic link `/proc/PID/cwd` on Linux, readable under a ptrace access check; `lsof` lists it as the `cwd` descriptor (`-a -d cwd`). [DOC S-vvqjpqvl, S-ppkjvumt]
+- On macOS the xnu headers give `proc_pidinfo` with the `PROC_PIDVNODEPATHINFO` flavour, which fills the current and root directory paths. [CODE S-ifgjakdt, S-4qybivhq: proc_info.h#proc_vnodepathinfo]
+- Conclusion: a parent id of 1 (or a subreaper's pid) says only that the creator is gone; the group id against the pid tells a process that leads its own group (a `setsid` launcher) from a leftover in another process's group. A working-directory read can be refused, so "not read" is a state of its own. [DER S-xp4b2g5v, S-dwwfdbtg, S-vvqjpqvl]
+- Open: the orphan's new parent on macOS and the access rule of macOS's `lsof` and `proc_pidinfo` for another user's process are not read; whether a non-elevated Windows query returns another process's `CommandLine` stays open in windows/process-parent-and-command-line.md. [UNK]
+- See python/process-orphans-and-cwd.md, python/ps-process-cpu.md, python/stdlib-windows-portability.md, windows/process-parent-and-command-line.md.
+
+_Agent: kb-research_
