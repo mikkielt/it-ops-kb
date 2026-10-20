@@ -2,8 +2,8 @@
 topic: agents/shared-state-concurrency
 priority: P3
 applies_to: "Concurrency control for state several agents write: Amazon S3 conditional writes, Azure Blob Storage ETags and leases, Redis distributed locks (Redlock), LangGraph PostgresStore; self-hosted MinIO, Garage and SeaweedFS conditional writes, NATS JetStream key-value, Valkey without persistence, etcd leases and transactions; docs read 2026-10-14 and 2026-10-15"
-retrieved_utc: 2026-10-18
-sources: [S-7my6ujm5, S-qdltospe, S-4qurlvvy, S-4oanvdmr, S-2fthx3xp, S-srqpsf7c, S-5lu6lddr, S-f3dlrjtw, S-26trg6rj, S-ukfteilx, S-opdaj4dk, S-oa3slfgh, S-a3umo362, S-ntlmfsuw, S-zv2dqsow, S-ulnpjwb7, S-pheyvvix, S-x3firlbx, S-eoyz3p4t, S-6hgplow2, S-vseohdra, S-75jmw3lf, S-s7uvhjek, S-3l6vhq2q, S-jnn4ww4t, S-bayxg4xz, S-523ddbfr, S-v7s32e7q, S-gxbtrq7d, S704, S718, S-onc3gpse, S2157, S-bisz7fay]
+retrieved_utc: 2026-10-20
+sources: [S-7my6ujm5, S-qdltospe, S-4qurlvvy, S-4oanvdmr, S-2fthx3xp, S-srqpsf7c, S-5lu6lddr, S-f3dlrjtw, S-26trg6rj, S-ukfteilx, S-opdaj4dk, S-oa3slfgh, S-a3umo362, S-ntlmfsuw, S-zv2dqsow, S-ulnpjwb7, S-pheyvvix, S-x3firlbx, S-eoyz3p4t, S-6hgplow2, S-vseohdra, S-75jmw3lf, S-s7uvhjek, S-3l6vhq2q, S-jnn4ww4t, S-bayxg4xz, S-523ddbfr, S-v7s32e7q, S-gxbtrq7d, S704, S718, S-onc3gpse, S2157, S-bisz7fay, S-jxkwd67p]
 status: partial
 ---
 
@@ -258,7 +258,19 @@ status: partial
 - The etcd API page names no owner of a lease and no rule that only the client that obtained a
   lease may write a key attached to it: leases and keys are tied by the lease ID alone, so whether
   another client may write a leased key, or attach its own key to that ID, is not answered by the
-  page. [DER S-6hgplow2: absence of a holder check on the page]
+  page (the server code in the next two facts answers it). [DER S-6hgplow2: absence of a holder check on the page]
+- With authentication on, etcd v3.6.5 checks a put that names a lease against the keys already
+  attached to that lease, not against who granted it: `authApplierV3.Put` first requires write
+  permission on the written key, then `checkLeasePuts` requires, unless authentication is disabled
+  or the user is an admin, write permission on every key attached to the lease, and returns the
+  permission error otherwise; its comment says a user who cannot write one of the lease's keys cannot
+  revoke the lease, so attaching it to a new key is forbidden. [CODE S-jxkwd67p:
+  server/etcdserver/apply/apply_auth.go#authApplierV3.Put, checkLeasePuts, checkLeasePutsKeys]
+- `LeaseRevoke` runs the same `checkLeasePuts` check in v3.6.5, so a client may revoke a lease, and
+  so delete all its keys, only when it may write every key attached to it (or authentication is
+  disabled or the user is an admin); the function reads the keys of the lease the lessor finds and
+  no field naming the client that granted it. [CODE S-jxkwd67p:
+  server/etcdserver/apply/apply_auth.go#authApplierV3.LeaseRevoke]
 - Leases are refreshed over a bidirectional `LeaseKeepAlive` stream, and each response returns the
   lease's remaining TTL. [DOC S-6hgplow2]
 

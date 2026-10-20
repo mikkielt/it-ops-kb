@@ -2,7 +2,7 @@
 topic: privacy/nist-sp800-38g
 priority: P0
 applies_to: "NIST SP 800-38G (2016, updated 2016-08-04) and SP 800-38G Rev. 1 drafts"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-10-20
 sources: [S865, S866, S867, S868, S869]
 status: complete
 ---
@@ -21,6 +21,7 @@ status: complete
 - 2PD changes: larger FF1 domain size; FF3 no longer specified; the inverse AES function may no longer be CIPH; floating-point arithmetic is disallowed in FF1. [DOC S868]
 - Document history for Rev. 1: 02/28/19 draft, 02/03/25 draft. No final entry. [DOC S868]
 - `https://csrc.nist.gov/pubs/sp/800/38/g/r1/final` returned HTTP 404 on 2026-09-23 and again on 2026-09-26. [DOC S869]
+- Re-read on 2026-10-20: the `final` URL still answers HTTP 404 (also with a trailing slash), the `2pd` page still loads with the same document history of the 02/28/19 and 02/03/25 drafts only, and the `ipd` page loads too, so the 404 is the fact itself and no page has moved. [DER S868, S869: the three urls fetched the same day; the history list read on the `2pd` page]
 - No final SP 800-38G Rev. 1 had been published by 2026-09-26. [DER S868,S869: history ends with the 2025 draft; the final URL is 404]
 - The FF3-1 method appears only in the 2019 draft. It is not in the current final (FF3) and not in the 2025 draft. [DER S866,S867,S868]
 

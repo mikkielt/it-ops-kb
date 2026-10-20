@@ -2,9 +2,9 @@
 topic: agents/headless-agent-runtimes
 priority: P2
 applies_to: "Claude Code v2.1.x (code.claude.com docs, retrieved 2026-09-25); GitHub Copilot coding agent; GitLab Duo Agent Platform (GA 2026-01-15)"
-retrieved_utc: 2026-10-11
-sources: [S1800, S1801, S1802, S1803, S1804, S1805, S1806, S1807, S1818, S1824, S-qso27noq, S-szgomxsz, S-xpfrl54v, S-5paxdbvt, S-ulr4lcp4, S-gu5aqnrl, S-mkqjh4ac, S743, S-ezqg74ki, S-fksbud2r, S-eu3n3hyf, S2131, S-hobjhakf, S-bcbpadtc, S-3pftmimx, S-fvspfpxd]
-status: complete
+retrieved_utc: 2026-10-20
+sources: [S1800, S1801, S1802, S1803, S1804, S1805, S1806, S1807, S1818, S1824, S-qso27noq, S-szgomxsz, S-xpfrl54v, S-5paxdbvt, S-ulr4lcp4, S-gu5aqnrl, S-mkqjh4ac, S743, S-ezqg74ki, S-fksbud2r, S-eu3n3hyf, S2131, S-hobjhakf, S-bcbpadtc, S-3pftmimx, S-fvspfpxd, S-rleo3k4b, S-frvnva4f]
+status: partial
 ---
 
 # Runtimes that run an agent unattended, on a schedule
@@ -64,6 +64,11 @@ protected branch without a review step.
 - At the same token counts a Sonnet 5.5 call costs twenty times a Haiku 5.5 call of up to 100,000 prompt tokens in input, output and 1-hour cache write ($2, $10 and $4 against $0.10, $0.50 and $0.20 per million tokens) and ten times in cache reads ($0.10 against $0.01): the runs' 400 prompt tokens and 97 output tokens an item would be about $0.0026 an item on Sonnet 5.5 against $0.00013 on Haiku 5.5 beyond the call's 6,207-token start ($0.025 against $0.0012), before any difference in the thinking each model spends. [DER S2131: the Sonnet 5.5 and Haiku 5.5 prices (`claude/ci-and-headless.md:88`, `:91`) applied to the token counts of the runs above]
 - The Agent SDK page says the SDK validates structured output against the schema and re-prompts on a mismatch; once the retry limit is reached the result is an `error_max_structured_output_retries` error with no structured data, and the page names a schema too complex for the task, an ambiguous task and a model-fallback retraction as the causes, without stating the retry count. [DOC S-hobjhakf]
 - The Message Batches API is no route for a clone whose only credential is a Claude Code subscription login: the API overview lists an API key or a Workload Identity Federation access token as the bearer credential (`x-api-key` is the legacy form), every example of the batch page sends `x-api-key`, and the legal page limits OAuth subscription login to Claude Code and other native Anthropic applications and sends products that call the API to API keys. `claude -p` has no batch mode. On such a clone the documented way to judge many items in one model call is `claude -p --json-schema` with the items in one prompt; `--bare` is not used there, since bare mode never reads OAuth credentials (`claude/cli-flags.csv`). The Batches route halves the Haiku 5.5 prices (`claude/messages-api.md`) but needs an API key the clone does not have. [DER S-bcbpadtc, S-3pftmimx, S-fvspfpxd, S1800: the documented credential kinds of the API and of Claude Code's login read against a clone with the subscription login only]
+- Claude Code's legal page puts its usage under the Anthropic Usage Policy and states that the advertised usage limits of the Pro and Max plans "assume ordinary, individual usage of Claude Code and the Agent SDK" (read 2026-10-20). [DOC S-fvspfpxd]
+- The same legal page does not define "ordinary", sets no number for scripted or unattended runs and names no ban rule for them; the Consumer Terms, read the same day, name no scripted-use threshold either (only the automated-access clause below). [DER S-fvspfpxd, S-rleo3k4b: absence in the "Acceptable use" and "Authentication and credential use" sections and in the terms' section 3]
+- Anthropic's Consumer Terms (edition for consumers in the EEA and Switzerland, effective 2025-10-08, served 2026-10-20) forbid accessing the Services "through automated or non-human means, whether through a bot, script, or otherwise", except through an Anthropic API key or where Anthropic otherwise explicitly permits it. [DOC S-rleo3k4b]
+- So an unattended `claude -p` run on a Pro or Max login rests on Anthropic's explicit permission, which the docs give for `claude setup-token` ("CI pipelines, scripts") and the GitHub Action's `claude_code_oauth_token` input, while an API key falls outside the clause. [DER S-rleo3k4b, S-frvnva4f, S1801: the clause read against the documented subscription-token routes]
+- Whether a scripted loop on a subscription login beyond the documented routes is allowed, and what Anthropic does about one, is not stated on a page read (the legal page, the Consumer Terms edition above, the authentication and headless pages, 2026-10-20); the Consumer Terms edition for other regions was not read. [UNK: needs Anthropic's statement or the other regional edition of the terms]
 
 ## Reference
 

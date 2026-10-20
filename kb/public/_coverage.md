@@ -34,11 +34,11 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/coordination-messages` | P2 | complete | `agents/coordination-messages.md` | 7 |
 | `agents/copilot-studio-mcp-client` | P2 | partial | `agents/copilot-studio-mcp-client.md` | 14 |
 | `agents/dataverse-mcp-server` | P2 | complete | `agents/dataverse-mcp-server.md` | 7 |
-| `agents/doc-lookup-sources` | P2 | complete | `agents/doc-lookup-sources.md`, `agents/doc-lookup-sources.csv` | 63 |
+| `agents/doc-lookup-sources` | P2 | complete | `agents/doc-lookup-sources.md`, `agents/doc-lookup-sources.csv` | 65 |
 | `agents/docs-maintenance-agents` | P2 | complete | `agents/docs-maintenance-agents.md` | 30 |
 | `agents/genai-telemetry` | P2 | complete | `agents/genai-telemetry.md` | 5 |
 | `agents/github-copilot-admin` | P2 | complete | `agents/github-copilot-admin.md` | 12 |
-| `agents/headless-agent-runtimes` | P2 | complete | `agents/headless-agent-runtimes.md` | 26 |
+| `agents/headless-agent-runtimes` | P2 | partial | `agents/headless-agent-runtimes.md` | 28 |
 | `agents/hybrid-retrieval` | P2 | complete | `agents/hybrid-retrieval.md` | 56 |
 | `agents/mcp-server-lifecycle` | P2 | complete | `agents/mcp-server-lifecycle.md` | 5 |
 | `agents/microsoft-agent-framework` | P2 | complete | `agents/microsoft-agent-framework.md` | 21 |
@@ -60,7 +60,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/peer-state-sync` | P3 | complete | `agents/peer-state-sync.md` | 17 |
 | `agents/policy-as-code` | P3 | partial | `agents/policy-as-code.md` | 22 |
 | `agents/repository-ingestion` | P3 | complete | `agents/repository-ingestion.md` | 4 |
-| `agents/shared-state-concurrency` | P3 | partial | `agents/shared-state-concurrency.md` | 34 |
+| `agents/shared-state-concurrency` | P3 | partial | `agents/shared-state-concurrency.md` | 35 |
 | `agents/test-suite-size-and-agent-overengineering` | P3 | partial | `agents/test-suite-size-and-agent-overengineering.md` | 17 |
 | `agents/typescript-module-resolution` | P3 | complete | `agents/typescript-module-resolution.md` | 9 |
 | `agents/typescript-native-compiler` | P3 | partial | `agents/typescript-native-compiler.md` | 6 |
@@ -265,7 +265,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `logs/loki-tempo-grafana-retention` | P3 | partial | `logs/loki-tempo-grafana-retention.md` | 37 |
 | `logs/otel-collector-otlp-pipeline` | P3 | partial | `logs/otel-collector-otlp-pipeline.md` | 34 |
 | `logs/otel-collector-receivers` | P3 | complete | `logs/otel-collector-receivers.md`, `logs/otel-filelogreceiver.config.csv`, `logs/otel-windowseventlogreceiver.config.csv`, `logs/otel-filelogreceiver.metadata.yaml`, `logs/otel-windowseventlogreceiver.metadata.yaml` | 5 |
-| `logs/otel-python-sdk` | P3 | partial | `logs/otel-python-sdk.md` | 31 |
+| `logs/otel-python-sdk` | P3 | partial | `logs/otel-python-sdk.md` | 34 |
 | `logs/prometheus-retention-exposition` | P3 | partial | `logs/prometheus-retention-exposition.md` | 29 |
 | `logs/python-rust-json-stdout-logs` | P3 | partial | `logs/python-rust-json-stdout-logs.md` | 8 |
 | `mcp/authorization` | P1 | complete | `mcp/authorization.md` | 5 |

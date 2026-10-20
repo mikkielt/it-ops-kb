@@ -4287,3 +4287,16 @@ _Agent: kb-research_
 - See logs/otel-python-sdk.md, gitlab/commit-signing-and-provenance.md.
 
 _Agent: kb-research_
+
+## QK-did-sources-whose-anchor-rows-say. Where did the sources whose anchor rows say gone move to, and what do the queued query-log gaps (unattended subscription use, OTLP logs interval, GPO order, worktree re-add, agent-team cost, etcd leases, dontAsk) rest on?
+- Read again on 2026-10-20, no `gone` source moved: the NIST `final` url is still HTTP 404 while the Rev. 1 draft pages list only the 2019 and 2025 drafts; the `fluent-resource` crate row is a 404 by design; the GitLab made-up project row is a 404 by design; the two docs MCP urls are protocol endpoints that answer an `initialize` POST with `200`; the two `.wiki.git` rows are git remotes that answer `ls-remote` (a web fetch of them reads `404`). [DER S869, S868, S-ueumbn4x, S-ny2cx7aq, S2180, S2181, S-may2otwt, S-y23orbo7]
+- The three `MicrosoftDocs/memdocs` rows (S2196, S-yuwxbqz3, S-rgpijsmb) still answer `404`, the organisation holds no repository with that name and no page names a successor; Learn's "How to use Microsoft Intune documentation" still links the repository. [DER S2196, S-xmqy75h7]
+- Unattended use of a subscription login: Claude Code's legal page says the Pro and Max limits assume ordinary, individual usage, and the Consumer Terms forbid automated access "whether through a bot, script, or otherwise" except through an API key or where Anthropic explicitly permits it. [DOC S-fvspfpxd, S-rleo3k4b]
+- OTLP logs: the batch log record processor's interval is `OTEL_BLRP_SCHEDULE_DELAY`, default 1000 ms, in the specification and in the Python SDK. [DOC S-fmftohuj; CODE S-l56uc2eg]
+- etcd: authorization of a leased put and of a lease revoke follows the write permission on the keys attached to the lease, not an owner of the lease, in v3.6.5. [CODE S-jxkwd67p]
+- `claude -p` denies every call that would prompt under `--permission-mode dontAsk`. [DOC S1800]
+- Conclusion: the ten `gone` rows are the evidence they record or a transport that an HTTP anchor fetch cannot read, except the three `memdocs` rows, which are gone with no successor; of the queued gaps, three were already answered by kb facts (GPO order, worktree re-add, agent-team cost) and two ask about this project's own tools. [DER S-fvspfpxd, S-rleo3k4b, S-fmftohuj, S-jxkwd67p, S1800: the findings above]
+- Open: what Anthropic does about scripted loops on a subscription login, the other regional edition of the Consumer Terms, and why `memdocs` answers `404`. [UNK]
+- See agents/doc-change-detection.md, agents/doc-lookup-sources.md, agents/headless-agent-runtimes.md, logs/otel-python-sdk.md, agents/shared-state-concurrency.md, claude/ci-and-headless.md.
+
+_Agent: kb-research_
