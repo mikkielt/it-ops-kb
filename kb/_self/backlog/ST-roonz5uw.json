@@ -34,7 +34,11 @@
         "the registry's private names and secrets only, the commit named by hash alone": "ST-roonz5uw",
         "every leak-scan shape with the project's allowlist, the trailer address added to it": "ST-roonz5uw"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "the registry's private names and secrets only, the commit named by hash alone",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

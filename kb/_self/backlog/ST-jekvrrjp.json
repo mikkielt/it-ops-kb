@@ -36,7 +36,11 @@
         "delivered to the shared store as today": "ST-jekvrrjp",
         "delivered to the internal root's own repository": "ST-jekvrrjp"
       },
-      "class": "querylog"
+      "class": "querylog",
+      "answer": "kept in the local spool and never delivered to the shared store",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Draft, outside any sprint: what the query log delivers is the operator's call (query-log recording), so gate g-ql stays open for the operator. The rows already hold qualified paths (<root>/<path>), so no new field is needed. The check is a placeholder to replace when the item is planned into a sprint: a planted spool with one row naming an internal root and one naming public, run through the delivery's dry run. Design: kb/_self/design.md, Teams and organizations."

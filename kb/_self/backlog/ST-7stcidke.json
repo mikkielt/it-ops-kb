@@ -29,7 +29,11 @@
         "add the operator-run command": "ST-7stcidke",
         "keep fixing a stall by hand": "ST-7stcidke"
       },
-      "class": "querylog"
+      "class": "querylog",
+      "answer": "add the operator-run command",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

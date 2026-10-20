@@ -29,7 +29,11 @@
         "add one routing line, paid for by a cut": "ST-uruhigy4",
         "leave AGENTS.md as it is; skills and briefs carry the route": "ST-uruhigy4"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "leave AGENTS.md as it is; skills and briefs carry the route",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
