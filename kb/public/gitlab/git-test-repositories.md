@@ -21,7 +21,7 @@ Tools that read such repositories also meet three details: `git show REV:PATH` s
 tree (which fails on a deep Windows path without `core.longpaths`) while `git cat-file blob REV:PATH` does not;
 a relative `gitdir:` path resolves against the directory of the file that holds it; and the assume-unchanged
 and skip-worktree index bits make git skip checks a tool might rely on.
-This repository's own suites (`_tools/tests.py`, `_tools/stress_test.py`) build such repositories; see
+This repository's own test suite, which `_tools/tests.py` runs, builds such repositories; see
 `python/pytest.md` and `python/pytest-xdist.md` for the test runner side.
 
 ## Facts

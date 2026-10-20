@@ -1825,6 +1825,9 @@ c211c11b0cd6,agents/doc-change-detection.md,S-a76fjdhb,located,Rate limit errors
 c2dce6186ec9,agents/doc-change-detection.md,S1217,unlocated:no-match,,,,,2026-10-13
 c595f49699d0,agents/doc-change-detection.md,S-ods72iyh,unlocated:no-match,,,,,2026-10-12
 c8062f0b9ca5,agents/doc-change-detection.md,S-inrmedim,located,HTML > 4 The elements of HTML > 4.2 Document metadata > 4.2.5 The meta > 4.2.5.1 Standard metadata names,preferenc;sinc;status;application;may;page;agent;titl,c8e58362b168cc93,User agents may use the application name in UI in preference to the page's title,2026-10-17
+c8ab4804a3e1,agents/doc-change-detection.md,S-if5q2jhk,located,Outlier detection (proto) > config.cluster.v3.OutlierDetection,appli;time,7330bdb9ed4517ef,"baseejectiontime value is applied, whatever is larger.",2026-10-20
+c8ab4804a3e1,agents/doc-change-detection.md,S-tyedhnrz,located,Circuit Breaker Pattern - Azure Architecture Center | Microsoft Learn > Solution,minut;resolv;time;failur,6d881f7b269accad,"If the failure isn't resolved, increase the time-out to a few minutes and adjust accordingly.",2026-10-20
+c8ab4804a3e1,agents/doc-change-detection.md,S-xc5fkeod,located,Circuit breaker resilience strategy > Usage,minut;time;failur,5373434b56df6a88,"BreakDurationGenerator = static args => new ValueTask<TimeSpan>(TimeSpan.FromMinutes(args.FailureCount)),",2026-10-20
 c9782fbdadbd,agents/doc-change-detection.md,S-yrqtp5aq,located,Understand the JavaScript SEO basics > Use meaningful HTTP status codes > Avoid soft 404 errors in single-page apps,impossibl;impractical;meaningful;status;http;code,ee06a7369af55893,using meaningful HTTP status codes can be impossible or impractical,2026-10-13
 cb43a9db108c,agents/doc-change-detection.md,S-7tff4woa,unlocated:no-match,,,,,2026-10-12
 ccf9e285650b,agents/doc-change-detection.md,S-niqtbnmc,unlocated:no-match,,,,,2026-10-12
@@ -1852,9 +1855,6 @@ e2f242ac5feb,agents/doc-change-detection.md,S-ybuoluc4,unlocated:no-match,,,,,20
 e2f37dd1ed57,agents/doc-change-detection.md,S-ecrpwvoh,located,Contributing instructions | Microsoft Learn > Renaming or deleting an existing article,different;pointer;rank;target;true;cover;document;renam,fb830cbc5a120bbb,"Use true if you want to preserve the ms.documentid attribute value from the redirected article. If you preserve the document ID, data, such as page",2026-10-12
 e63a1edc300a,agents/doc-change-detection.md,S-ggcghqgu,unlocated:no-match,,,,,2026-10-12
 e63a1edc300a,agents/doc-change-detection.md,S-ny2cx7aq,unlocated:gone,,,,,2026-10-13
-e6e3158bcbe0,agents/doc-change-detection.md,S-if5q2jhk,unlocated:no-match,,,,,2026-10-13
-e6e3158bcbe0,agents/doc-change-detection.md,S-tyedhnrz,unlocated:no-match,,,,,2026-10-13
-e6e3158bcbe0,agents/doc-change-detection.md,S-xc5fkeod,unlocated:no-match,,,,,2026-10-13
 e7b46fadd142,agents/doc-change-detection.md,S-2dckbgu5,unlocated:no-match,,,,,2026-10-12
 eaa325a6632d,agents/doc-change-detection.md,S-a6bblnnl,located,,old;time;new;retriev;dif;content;filter,78a170cb34628efa,"(see :ref:configurationdisplay for details), and the diff output will be between (old content with filter at the time old content was retrieved) and (new content",2026-10-12
 efd9db787fae,agents/doc-change-detection.md,S-4e2arcjz,located,The Open Graph protocol > Basic Metadata > Optional Metadata,larger;overall;part;display;site_nam;site;name;imdb,bd7bddc0f2aa9c64,"If your object is part of a larger web site, the name which should be displayed for the overall site.",2026-10-17
@@ -1917,8 +1917,6 @@ fa01deebc8f2,agents/doc-lookup-sources.csv,S2184,unlocated:no-match,,,,,2026-10-
 2ee35fd27098,agents/doc-lookup-sources.md,S2197,located,,repo;presidio;api;api.github.com;github;http;com;data-privacy-stack,4fcc83ea7679fa1b,"""url"": ""https://api.github.com/repos/data-privacy-stack/presidio"",",2026-10-13
 32664f011198,agents/doc-lookup-sources.md,S-3yod3u7q,located,Tools reference > WebSearch tool behavior,query;backend;urls;titl;anthropic;websearch;page;webfetch,4b5a66d389d27bab,WebSearch runs a query against Anthropic's web search backend and returns result titles and URLs. It doesn't fetch the result pages. To read a page,2026-10-13
 327b27033805,agents/doc-lookup-sources.md,S-rgy4dvjf,located,GitHub Docs > License,4.0;asset;dual;dual-licen;folder;licen;mit;code,c50f35585d67bd10,"This project is dual-licensed under: Creative Commons Attribution 4.0 - for documentation and content in the assets, content, and data folders (see LICENSE) MIT License",2026-10-12
-33acbb71b4f9,agents/doc-lookup-sources.md,S-5lkuonr6,unlocated:no-match,,,,,2026-10-13
-33acbb71b4f9,agents/doc-lookup-sources.md,S-mz6tic2a,unlocated:fetch-error,,,,,2026-10-14
 3830810d7c75,agents/doc-lookup-sources.md,S-pxvdwitn,located,Commercial Terms of Service > F. Intellectual Property,grant;intellectual;property;expressly;stat;content;except;right,84e34b3ae6bf9653,"Except as expressly stated in these Terms, these Terms do not grant either party any rights to the other's content or intellectual property, by implication",2026-10-12
 3b2a6ff025ce,agents/doc-lookup-sources.md,S-soqo5xvt,unlocated:no-match,,,,,2026-10-13
 3e4f1b3ee401,agents/doc-lookup-sources.md,S2195,unlocated:no-match,,,,,2026-10-13
@@ -1954,9 +1952,6 @@ fa01deebc8f2,agents/doc-lookup-sources.csv,S2184,unlocated:no-match,,,,,2026-10-
 7a3d03552b76,agents/doc-lookup-sources.md,S2183,located,Additional resources > Resources for AI ingestion,index;llm;llm-optimiz;llms;llms.txt;txt;documentation;optimiz,50f2f0f1da46f932,llms.txt LLM-optimized documentation index.,2026-10-12
 7a3d03552b76,agents/doc-lookup-sources.md,S2184,located,Anthropic Developer Documentation > English > Other pages,llms;txt;documentation;com;http;platform.claude.com;platform;claud,7af41c4da79f4d59,"For more comprehensive documentation, see [llms-full.txt](https://platform.claude.com/llms-full.txt)",2026-10-13
 7a6099f32135,agents/doc-lookup-sources.md,S2186,located,Setting up the GitHub MCP Server > Setting up the GitHub MCP server in Visual Studio,token;personal;oauth;remot;access;git;hub;server,adccefc34b280f0f,"The remote GitHub MCP server uses one-click OAuth authentication by default, but you can also manually configure it to use a personal access token (PAT)",2026-10-13
-7c425bf54081,agents/doc-lookup-sources.md,S2186,unlocated:no-match,,,,,2026-10-14
-7c425bf54081,agents/doc-lookup-sources.md,S2187,unlocated:no-match,,,,,2026-10-14
-7c425bf54081,agents/doc-lookup-sources.md,S2189,unlocated:no-match,,,,,2026-10-14
 7c4f785e2e8b,agents/doc-lookup-sources.md,S-gupervu4,unlocated:no-match,,,,,2026-10-13
 7e13b7bdaeb2,agents/doc-lookup-sources.md,S717,located,,mcp;new;apache-2.0;mit;specification;2.0;4.0;apach,7584c68c17cf4557,"The MCP project is undergoing a licensing transition from the MIT License to the Apache License, Version 2.0 (""Apache-2.0""). All new code and specification contributions",2026-10-12
 88eeab86f91f,agents/doc-lookup-sources.md,S2182,located,Search Model Context Protocol (MCP) server,address;rate;hour;request;limit;mintlify;user;server,4534e9dfd70aba9d,"To protect availability, Mintlify applies rate limits to MCP servers. ScopeLimitDescription Per user (IP address)5,000 requests per hourLimits how frequently a single user can query",2026-10-13
@@ -1976,6 +1971,9 @@ a16e2414771b,agents/doc-lookup-sources.md,S2182,unlocated:no-match,,,,,2026-10-1
 af8857a29b32,agents/doc-lookup-sources.md,S2192,unlocated:no-match,,,,,2026-10-12
 b135f9653e0f,agents/doc-lookup-sources.md,S-autbwi4y,unlocated:no-match,,,,,2026-10-13
 b37e1003dc74,agents/doc-lookup-sources.md,S-ybuoluc4,unlocated:no-match,,,,,2026-10-12
+bec910351606,agents/doc-lookup-sources.md,S2186,located,Setting up the GitHub MCP Server > Setting up the GitHub MCP server in Visual Studio,one;token;remot;git;hub;server;github;mcp,adccefc34b280f0f,"uses one-click OAuth authentication by default, but you can also manually configure it to use a personal access token (PAT) for authentication.",2026-10-20
+bec910351606,agents/doc-lookup-sources.md,S2187,located,Remote GitHub MCP Server 🚀 > Remote MCP Toolsets,repo;repository;sourc;git;hub;api;github;read-only,7a771600ae6e0e90,repos | GitHub Repository related tools | https://api.githubcopilot.com/mcp/x/repos | Install | read-only,2026-10-20
+bec910351606,agents/doc-lookup-sources.md,S2189,located,GitLab MCP server,data;lab;git;gitlab,6f66e570127ecf6a,Access GitLab project information. Retrieve issue and merge request data. Interact with GitLab APIs securely.,2026-10-20
 c574b2f599b6,agents/doc-lookup-sources.md,S452,located,,4.0;by-sa;doc;git;gitlab;lab;repository;under,fdc53a323342d84a,"Copyright (c) 2011-present GitLab Inc. Portions of this software are licensed as follows: All content residing under the ""doc/"" directory of this repository is licensed",2026-10-12
 ca00d0a346b8,agents/doc-lookup-sources.md,S2177,unlocated:fetch-error,,,,,2026-10-14
 ccdbabeacc80,agents/doc-lookup-sources.md,S-7ppiqh3x,unlocated:no-match,,,,,2026-10-13
@@ -6852,8 +6850,6 @@ f9fd5b27c190,claude/powershell-tool.md,S742,located,Configure permissions > Tool
 3aaaf2a43d2b,claude/settings-and-scopes.md,S-rfpmkpck,located,API credentials,statuslin;status;outputstyl;env;model;hook;line;permission,25e37ef4b6814dee,"contains: [<><A href=""/docs/en/permissions"">permissions</A>: allow, deny, or prompt before Claude uses specific tools or commands</>, <><A href=""/docs/en/hooks"">hooks</A>: run your own scripts on events like before a",2026-10-12
 3e2043471b49,claude/settings-and-scopes.md,S-inpjf36q,located,Claude Code on Amazon Bedrock > Sign in with Bedrock,claude_code_use_bedrock;code;bedrock;claud,b7f7712f0b37ae67,"Until CLAUDECODEUSEBEDROCK=1 is set, Claude Code hides the command from the command menu",2026-10-12
 41a47cea808e,claude/settings-and-scopes.md,S-l6l42j6e,located,Configure the sandboxed Bash tool > Configure sandboxing,v2.1.246;sandbox.filesystem;sourc;build;edit;ignor;configuration;exclud,0ee0b26fb13ea091,"If you exclude a source with --setting-sources on the CLI or settingSources in the Agent SDK, Claude Code ignores its sandbox.filesystem entries, its Edit permission",2026-10-12
-4354d3783cb1,claude/settings-and-scopes.md,S1800,located,Run Claude Code programmatically > Examples > Auto-approve tools,manual;permissions.allow;read-only;acceptedit;accept;rule;deni;edit,6dcc57c6f1c0c0bf,"Actions that need no approval in Manual mode still run, such as file reads in your working directories and the read-only command set, and so",2026-10-13
-4354d3783cb1,claude/settings-and-scopes.md,S-zcuxapgb,unlocated:no-match,,,,,2026-10-13
 47e70f65f10f,claude/settings-and-scopes.md,S-zcuxapgb,located,Choose a permission mode > Protected paths,rout;interactiv;availabl;terminal;allow;bypass;plan;classifier,c512921cd6b35443,"Allowed in interactive terminal sessions with bypass permissions available. Otherwise, routed to the classifier when auto mode is available during planning",2026-10-12
 48706ffaf461,claude/settings-and-scopes.md,S2042,located,Deploy managed settings > How Claude Code combines managed sources,authenticat;eligibl;directly;api;credential;login;anthropic;gateway,8d2067dbdbfe2c0c,Claude Code fetches this source only when the session authenticates to Anthropic's API directly with an eligible credential,2026-10-12
 488b01a1e95e,claude/settings-and-scopes.md,S2042,located,Deploy managed settings > How Claude Code combines managed sources > Keys read from every admin source,every;admin;read;sourc;set;manag;claud,93de366b314572d7,"Claude Code reads them from every admin source, so a lower-ranked MDM policy or managed settings file can still set them",2026-10-12
@@ -6882,6 +6878,9 @@ f9fd5b27c190,claude/powershell-tool.md,S742,located,Configure permissions > Tool
 74a02d72e567,claude/settings-and-scopes.md,S1863,located,How Claude remembers your project > AGENTS.md,v2.1.27;requir;directly;import;agents.md;read;agent;code,aa0da02b0977015e,"Reading AGENTS.md directly requires Claude Code v2.1.277 or later. In some sessions Claude can't read AGENTS.md, so import it from a CLAUDE.md there instead.",2026-10-12
 78ec23ff50e0,claude/settings-and-scopes.md,S-22qwtmf7,located,Configure server-managed settings > Security considerations,arriv;hook;refresh;chang;run;them;server-manag;server,0971ee621b4d32f9,Claude Code doesn't run them when server-managed settings arrive or refresh,2026-10-16
 78ec23ff50e0,claude/settings-and-scopes.md,S-gu5aqnrl,located,Configure cloud environments > Setup scripts > Setup scripts vs. SessionStart hooks,receiv;server-manag;tag;server;manag;don;hook;set,2188dc195f227e65,"Claude Tag sessions don't receive server-managed settings, so hooks from server-managed settings don't run there.",2026-10-16
+7a687f509da0,claude/settings-and-scopes.md,S1800,located,Run Claude Code programmatically > Examples > Turn off permission prompts in unattended runs,deni;run;claud,a6b1ca16217d708a,"In a -p run with no host, these requests are denied either way",2026-10-20
+7a687f509da0,claude/settings-and-scopes.md,S-pmhgjvef,located,Configure permissions > Tool-specific permission rules > Bash > Read-only commands,built-in;built;outsid;read-only;mode;bash;read;permission,f7f30cd7015060bc,a built-in set of Bash commands as read-only and runs them without a permission prompt in every mode,2026-10-20
+7a687f509da0,claude/settings-and-scopes.md,S-zcuxapgb,located,Choose a permission mode > Auto-approve file edits with acceptEdits mode,acceptedit;bash;accept;edit;file;command;mode,02ab9cbe0dea289b,"acceptEdits mode auto-approves common filesystem Bash commands: mkdir, touch, rm, rmdir, mv, cp, and sed.",2026-10-20
 7c33d3099635,claude/settings-and-scopes.md,S-22qwtmf7,located,Configure server-managed settings > Requirements,plan;role;primary;api.anthropic.com;owner;com;edit;enterpris,1cf72fcb6460d38c,"Claude for Teams or Claude for Enterprise plan The Owner or Primary Owner role in your Claude organization, to view and edit the configuration Network",2026-10-12
 7fa5996cee7f,claude/settings-and-scopes.md,S2042,located,Deploy managed settings > Choose a delivery mechanism > Where each mechanism stores the policy,com.anthropic.claudecod;dictionary;com;nest;preferenc;top-level;array;top,7927e9a7bb0abaa3,"macOS configuration profile: the com.anthropic.claudecode managed preferences domain. Use the same top-level keys as managed-settings.json, with nested settings as dictionaries and lists as plist arrays.",2026-10-12
 82415719108f,claude/settings-and-scopes.md,S2057,located,Settings files and precedence > Settings files and who they affect > Keep personal settings out of a repository > Where Claude Code keeps the local file in a git repository,v2.1.21;primary;anchor;work;git;directory;path;root,e4d2da3a38e9223c,"When the file stays with .claude/settings.json instead: outside a git repository, when the repository root is your home directory, on Windows, or when the repository",2026-10-12
@@ -13331,6 +13330,7 @@ fc26ab3a5229,python/ps-process-cpu.md,S-ggxrmcqc,located,,averag;decay;minut;pre
 158f377a55d5,python/pytest-xdist.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-14
 158f377a55d5,python/pytest-xdist.md,S-qejsavhl,unlocated:no-match,,,,,2026-10-14
 158f377a55d5,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-14
+1e8d850e47b3,python/pytest-xdist.md,S-vt5s6nsz,located,,explicit;cap;live;argument;runs;tests.py;worker;test,be54d02fad1d8b8b,an explicit -n in the arguments wins.,2026-10-20
 1ec7c93c2713,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-14
 22d73764a3b1,python/pytest-xdist.md,S-eaoeu53g,unlocated:no-match,,,,,2026-10-14
 40cd5dd3c72f,python/pytest-xdist.md,S-tt4fugbi,unlocated:no-match,,,,,2026-10-14
@@ -13354,12 +13354,13 @@ fc26ab3a5229,python/ps-process-cpu.md,S-ggxrmcqc,located,,averag;decay;minut;pre
 995e657da22c,python/pytest-xdist.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-14
 9b88d6cf3c3d,python/pytest-xdist.md,S-qejsavhl,unlocated:no-match,,,,,2026-10-14
 9b88d6cf3c3d,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-14
-a356e2e94fde,python/pytest-xdist.md,S-vt5s6nsz,unlocated:no-match,,,,,2026-10-14
 a55594ae66ef,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-14
 ad68d654f78d,python/pytest-xdist.md,S-eaoeu53g,unlocated:no-match,,,,,2026-10-14
 ad68d654f78d,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-14
 b2e3492bd293,python/pytest-xdist.md,S-eaoeu53g,unlocated:no-match,,,,,2026-10-14
 b2e3492bd293,python/pytest-xdist.md,S-qejsavhl,unlocated:no-match,,,,,2026-10-14
+c1b04acc3f44,python/pytest-xdist.md,S-t7c2nvll,located,,modul;dist;group;test,7b5ab1806ac5c4cc,--dist loadscope: Tests are grouped by module for test functions,2026-10-20
+c1b04acc3f44,python/pytest-xdist.md,S-vt5s6nsz,located,The test.run row,load;dist;worker,77da11eff9655935,"""-n"", str(workercount(args)), ""--dist"", ""load""",2026-10-20
 ce04e1af815c,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-14
 dcd897e9d861,python/pytest-xdist.md,S-lthpihsc,located,,count;gw2;name;pytest_xdist_worker_count;total;e.g;session;xdist,21c24d8613328d8c,"The name of the worker, e.g., ""gw2"". .. envvar:: PYTESTXDISTWORKERCOUNT The total number of workers in this session, e.g., ""4"" when -n 4 is given",2026-10-14
 ded7bd2119bc,python/pytest-xdist.md,S-t7c2nvll,located,,pend;default;order;distribution;load;mode;guarant;availabl,dd07cc3b9c789132,".. distribution modes: --dist load (default): Sends pending tests to any worker that is available, without any guaranteed order.",2026-10-14

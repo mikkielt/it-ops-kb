@@ -32,12 +32,15 @@ configuration itself; this article covers what changes when `-n` is used, which 
 - `--dist loadscope` groups tests by module (for plain test functions) and by class (for test
   methods, which takes priority over module grouping); each group is sent to one worker as a unit, so
   all tests sharing a module- or class-scoped fixture run in the same process. [DOC S-t7c2nvll]
-- This repository's `_tools/tests.py` does not use `loadscope`: it runs pytest with `-n <integer>
-  --dist load`, the integer being its `worker_count` (`KB_TEST_WORKERS` when set, else the CPUs
-  divided among the live runs on the host and capped at 12, and `os.cpu_count()` for an explicit
-  `-n auto` in its arguments), so a module- or class-scoped fixture is built once on each worker that
-  runs one of its tests. [CODE S-vt5s6nsz: _tools/tests.py#worker_count, default_workers, and the
-  pytest command]
+- This repository's `_tools/tests.py` does not use `loadscope`: it puts `-n <integer> --dist load` in front
+  of the pytest arguments it was given, the integer being its `worker_count` (`KB_TEST_WORKERS` when set,
+  else the CPUs divided among the live runs on the host and capped at 12; for an explicit `-n auto` in
+  those arguments `worker_count` returns `os.cpu_count()`, which is only the count it records, since that
+  `-n auto` comes later in the command and is the one xdist reads). [CODE S-vt5s6nsz:
+  _tools/tests.py#worker_count, default_workers, and the pytest command]
+- So under `tests.py` a module- or class-scoped fixture is built once on each worker that runs one of its
+  tests, because `--dist load` does not group tests by module or class. [DER S-vt5s6nsz, S-t7c2nvll: the
+  `--dist load` command above and the distribution docs' grouping modes]
 - `--dist loadfile` groups by containing file (whole file runs on one worker); `--dist loadgroup`
   groups by the `@pytest.mark.xdist_group(name=...)` marker (tests with the same group name always run
   on the same worker; ungrouped tests distribute as under `load`); `--dist worksteal` distributes

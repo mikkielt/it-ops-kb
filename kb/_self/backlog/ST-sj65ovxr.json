@@ -43,6 +43,25 @@
     "ST-cvr76jag",
     "ST-jliyfmxl"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does pytest-xdist.md separate the tests.py CODE reading from the fixture-per-worker reading?",
+      "options": [
+        "two facts: a CODE fact for the pytest command and worker_count, and a DER fact for the fixture reading",
+        "one DER fact for both, citing S-vt5s6nsz and S-t7c2nvll"
+      ],
+      "recommendation": "two facts: a CODE fact for the pytest command and worker_count, and a DER fact for the fixture reading",
+      "do": {
+        "two facts: a CODE fact for the pytest command and worker_count, and a DER fact for the fixture reading": "ST-sj65ovxr",
+        "one DER fact for both, citing S-vt5s6nsz and S-t7c2nvll": "ST-sj65ovxr"
+      },
+      "class": "design",
+      "answer": "two facts: a CODE fact for the pytest command and worker_count, and a DER fact for the fixture reading",
+      "by": "agent"
+    }
+  ],
   "notes": "operator request 2026-10-19 (housekeeping batch): folds six review bugs, each with its repro embedded in the check (all six failed on 2026-10-19): BG-fknkjg3d, BG-ow62jocg, BG-togur4on, BG-se62hdka, BG-qkc7q4x2, BG-25w54mly.",
   "claimed_by": "orch-r105",
   "operator": "op-f618a13e"
