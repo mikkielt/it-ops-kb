@@ -1,0 +1,21 @@
+{
+  "id": "SP-eptouzxc",
+  "kind": "sprint",
+  "title": "kb/_self explains the agent coordination tooling in one owner doc",
+  "status": "planned",
+  "goal": "kb/_self/coordination.md explains the agent coordination tooling read from the code (coord.py, the coord hook, kbask and the kb-observer, the kb MCP coord tools, steering a running session, Windows limits, failure modes in kbmon, benchmark results, cleanup's use of coord); monitoring.md, tools.md and the other kb/_self docs and skills keep one-line pointers to it with no fact lost; ten or more tested _self questions on coordination answer good from coordination.md; AGENTS.md stays under 4 KB",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e"
+}

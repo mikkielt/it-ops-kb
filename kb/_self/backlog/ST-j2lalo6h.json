@@ -1,0 +1,26 @@
+{
+  "id": "ST-j2lalo6h",
+  "kind": "story",
+  "title": "Review sprint: kb/_self explains the agent coordination tooling in one owner doc",
+  "status": "draft",
+  "sprint": "SP-eptouzxc",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ]
+}
