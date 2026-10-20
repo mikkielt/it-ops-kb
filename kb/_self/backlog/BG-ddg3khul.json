@@ -2,7 +2,8 @@
   "id": "BG-ddg3khul",
   "kind": "bug",
   "title": "learn derives a route source finding again after it is closed, because the WebFetch entries stay in the store after the hook denies the host",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-vx6eufpj",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -17,5 +18,6 @@
   "touches": [
     "_tools/ql_learn.py",
     "kb/_self/querylog.md"
-  ]
+  ],
+  "notes": "Orchestrator 2026-10-20: moved into SP-vx6eufpj so ST-gt4tduzr's four route closures stay closed (gate g2 of ST-gt4tduzr). Repro on base: 4 route findings derived, exit 1."
 }
