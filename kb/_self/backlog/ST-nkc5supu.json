@@ -207,7 +207,11 @@
         "list it as remove (nothing on disk; --apply clears the record and runs git worktree prune)": "ST-nkc5supu",
         "list it as keep and leave the stale record": "ST-nkc5supu"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "list it as remove (nothing on disk; --apply clears the record and runs git worktree prune)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",
