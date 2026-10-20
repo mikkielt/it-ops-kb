@@ -6,7 +6,7 @@ dispatches work (kb/_self/backlog.md, Self-check; kb/_self/tools.md; the kb-spri
   selfcheck --full     the same without the cap on the output
   selfcheck --json     the results as one JSON object
 
-The seven checks, each independent and each a result {name, state, detail, remedy}, `state` being `ok`, `fail` or
+The eight checks, each independent and each a result {name, state, detail, remedy}, `state` being `ok`, `fail` or
 `unknown` (an input that cannot be read, never a guess and never a failure):
 
   allow-rules  every command the skills run (`SKILL_COMMANDS`, the list this module keeps as the source of truth, and
@@ -37,12 +37,16 @@ The seven checks, each independent and each a result {name, state, detail, remed
   main         the newest `ci.pipeline` row (`bl_stall.main_state`, the row `red-pipeline` writes) is not red;
                `unknown` with no row, which `backlog.py red-pipeline --status` reads from the forge (this check reads
                the rows only and makes no forge call of its own)
+  leftovers    the recorded leftovers `backlog.py tidy` lists (`leftovers`, read through `bl_clean.safe_to_remove`):
+               the detail names how many `remove` and the bytes they free; it fails only when the free space of the
+               clone's volume is under tidy's disk-pressure limit (`bl_clean.DISK_FREE_GB`), else it is `ok`; `unknown`
+               when the coord store, the integration main or git cannot be read
 
 The output is capped: each check prints at most one line of at most LINE_MAX characters, a list in it names its first
 SHOW entries and a count of the rest (`+K more`), and the whole is under MAX_CHARS characters, whole lines dropped
 from the end with a last line that says how many; `--full` lifts the cap. Standard library only; imports `bl_base`,
-`bl_cli`, `bl_procs` and `bl_stall` at load and never `backlog` (a layer rule); `tests` and `kg_hooks` are
-imported where used. It registers its own subcommand when imported, so `backlog.py` carries only the import.
+`bl_cli`, `bl_procs` and `bl_stall` at load and never `backlog` (a layer rule); `tests`, `kg_hooks` and `bl_clean` are
+imported where used. `leftovers` is also what kbmon's cleanup panel (`mon_clean.py`) reads. It registers its own subcommand when imported, so `backlog.py` carries only the import.
 """
 import json
 import os
@@ -65,6 +69,7 @@ LINE_MAX = 330  # characters of one line
 MAX_CHARS = 1500  # characters of the whole output; whole lines past it are dropped and counted
 CLAIM_SIGNALS = ("claim-no-commit", "returned-no-commit", "returned-staged", "mr-dead")  # the stall signals of a claim
 LOCKS = ("kb-tests.lock", "kb-main.lock")  # the host's locks, in tests.HOST_LOCK_NAME and kg_lock.LOCK_NAME
+BYTES_BUDGET_S = 3  # the longest all the walks that measure what the removable leftovers free take together
 
 # The commands the skills run (the kb-sprint, kb-item, kb-backlog and kb-verify skills, the runbook's Working on items
 # and Definition of done), each as one real command line; the allow rules are matched against them whole. A command a
@@ -119,6 +124,9 @@ REMEDY = {
                "nothing ends it for you",
     "main": "file the red pipeline as a bug (`backlog.py red-pipeline`) and take the next ready item",
     "main-unknown": "read it by hand: `python3 _tools/backlog.py red-pipeline --status` (needs the network)",
+    "leftovers": "run `python3 _tools/backlog.py tidy --apply`, which removes the leftovers it lists as `would remove` "
+                 "(never --force); free more space by hand if none is removable",
+    "leftovers-unknown": "read them by hand: `python3 _tools/backlog.py tidy`",
 }
 
 
@@ -356,7 +364,7 @@ def check_main(report):
 
 
 def run_checks(bl, now=None):
-    """The seven results, in the order above. One `bl_stall.collect` serves the claims and main."""
+    """The eight results, in the order above. One `bl_stall.collect` serves the claims and main."""
     root = str(bl.root)
     try:
         report = bl_stall.collect(bl, now)
@@ -368,7 +376,66 @@ def run_checks(bl, now=None):
         result("claims", "unknown", f"the claims could not be read ({why})", REMEDY["claims"]),
         check_orphans(root),
         result("main", "unknown", f"the pipeline row could not be read ({why})", REMEDY["main-unknown"])]
+    out.append(check_leftovers(bl))
     return out
+
+
+# ---------------------------------------------------------------- the leftovers
+
+def leftovers(bl, seconds=BYTES_BUDGET_S):
+    """What `backlog.py tidy` lists, as one dict, read without a change: `rows` (tidy's rows, `bl_clean.safe_to_remove`'s
+    verdict, reason and the bytes a removal frees; `approximate` where a walk was cut), `counts` ({class: {"remove": n,
+    "keep": n}}), `removable` (the `remove` rows), `bytes` (what they free, a nested path counted once), `approximate`,
+    `free_gib` of the clone's volume, `limit_gib` (tidy's disk-pressure limit) and `pressure`. The bytes of all the
+    `remove` rows are walked for SECONDS together, a row past it keeps 0 bytes and is `approximate`. Raises
+    `bl_base.Rejected` where there is no integration main or the coord store cannot be read, `bl_clean.CoordLocked`."""
+    import bl_clean
+    snap = bl_clean.take_snapshot(bl)
+    state = bl_clean.coord_state()
+    cands = bl_clean.candidates(snap, state)
+    deadline = time.monotonic() + seconds
+    rows = []
+    for cls in bl_clean.TIDY_CLASSES:
+        for cand in cands[cls]:
+            verdict, reason = bl_clean.safe_to_remove(cand, snap, state)
+            row = bl_clean.row_of(cand, verdict, reason)
+            if verdict == bl_clean.REMOVE and cls == "worktree":
+                snap["planned"].add(cand["path"])
+            if verdict == bl_clean.REMOVE and cls != "branch" and os.path.isdir(cand["path"]):
+                left = deadline - time.monotonic()
+                row["bytes"], approx = bl_clean.tree_bytes(cand["path"], min(bl_clean.BYTES_SECONDS, max(left, 0)))
+                if approx:
+                    row["approximate"] = True
+            if cls == "sandbox" and "disk pressure" in reason:
+                row["_pressure"] = True
+            rows.append(row)
+    rows.sort(key=lambda r: 0 if r.get("_pressure") else 1)
+    gone = [r for r in rows if r["verdict"] == bl_clean.REMOVE]
+    paths = [r["path"] for r in gone if "path" in r]
+    size = sum(r["bytes"] for r in gone if not any(o != r.get("path") and bl_clean.inside(o, r.get("path", "")) for o in paths))
+    counts = {cls: {v: sum(1 for r in rows if r["class"] == cls and r["verdict"] == v)
+                    for v in (bl_clean.REMOVE, bl_clean.KEEP)} for cls in bl_clean.TIDY_CLASSES}
+    free = bl_clean.free_gib(snap, bl.root)
+    return {"rows": [bl_clean.public(r) for r in rows], "counts": counts, "removable": len(gone), "bytes": size,
+            "approximate": any(r.get("approximate") for r in gone),
+            "free_gib": None if free == float("inf") else round(free, 1), "limit_gib": snap["free_gb"],
+            "pressure": free < snap["free_gb"]}
+
+
+def check_leftovers(bl):
+    try:
+        found = leftovers(bl)
+    except Exception as e:  # noqa: BLE001 - a read that fails is unknown, never an error of the check
+        return result("leftovers", "unknown", f"the leftovers could not be read ({type(e).__name__})",
+                      REMEDY["leftovers-unknown"])
+    import bl_clean
+    size = f"{bl_clean.fmt_size(found['bytes'])}{' or more' if found['approximate'] else ''}"
+    total = sum(sum(v.values()) for v in found["counts"].values())
+    detail = f"{found['removable']} removable ({size}) of {total} leftovers"
+    if found["pressure"]:
+        return result("leftovers", "fail", f"{detail}; {found['free_gib']:g} GiB free, under tidy's "
+                      f"{found['limit_gib']:g} GiB disk-pressure limit", REMEDY["leftovers"])
+    return result("leftovers", "ok", detail)
 
 
 # ---------------------------------------------------------------- the output

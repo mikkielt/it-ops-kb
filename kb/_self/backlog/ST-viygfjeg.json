@@ -66,6 +66,70 @@
       "class": "agents-rule",
       "answer": "fail only when free space is below tidy's disk-pressure limit; otherwise ok, with the removable count and bytes in its detail",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does the one read of tidy's rows with a total bytes budget live, for selfcheck's leftovers line and kbmon's cleanup panel?",
+      "options": [
+        "bl_selfcheck.leftovers, which mon_clean calls (the panel imports a bl module, as mon_sessions imports bl_procs; no bl_ module imports a mon_ one)",
+        "mon_clean, which bl_selfcheck imports where it reads it (a bl_ module importing a mon_ one)",
+        "bl_clean.plan, unchanged, with its 2 s walk for each removable row"
+      ],
+      "recommendation": "bl_selfcheck.leftovers, which mon_clean calls (the panel imports a bl module, as mon_sessions imports bl_procs; no bl_ module imports a mon_ one)",
+      "do": {
+        "bl_selfcheck.leftovers, which mon_clean calls (the panel imports a bl module, as mon_sessions imports bl_procs; no bl_ module imports a mon_ one)": "ST-viygfjeg",
+        "mon_clean, which bl_selfcheck imports where it reads it (a bl_ module importing a mon_ one)": "ST-viygfjeg",
+        "bl_clean.plan, unchanged, with its 2 s walk for each removable row": "ST-viygfjeg"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How long may the walks that measure the bytes of the removable leftovers take together, so the cleanup panel stays inside the panel timeout?",
+      "options": [
+        "3 seconds for all the rows, 2 seconds for one at most (tidy's own limit); a row past it keeps 0 bytes and is marked approximate",
+        "tidy's 2 seconds for each row, with no total",
+        "no walk: the panel gives no bytes"
+      ],
+      "recommendation": "3 seconds for all the rows, 2 seconds for one at most (tidy's own limit); a row past it keeps 0 bytes and is marked approximate",
+      "do": {
+        "3 seconds for all the rows, 2 seconds for one at most (tidy's own limit); a row past it keeps 0 bytes and is marked approximate": "ST-viygfjeg",
+        "tidy's 2 seconds for each row, with no total": "ST-viygfjeg",
+        "no walk: the panel gives no bytes": "ST-viygfjeg"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "How many leftover rows does the cleanup panel's text view show?",
+      "options": [
+        "12, the removable ones first, then '+N more in --json'; the JSON carries every row",
+        "every row in the text view too"
+      ],
+      "recommendation": "12, the removable ones first, then '+N more in --json'; the JSON carries every row",
+      "do": {
+        "12, the removable ones first, then '+N more in --json'; the JSON carries every row": "ST-viygfjeg",
+        "every row in the text view too": "ST-viygfjeg"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "What names the panel and its module, and where does it stand among the panels?",
+      "options": [
+        "panel cleanup in module mon_clean (mon_base.MODULES maps the name), listed after sprint and before log",
+        "panel clean, module mon_clean, listed last"
+      ],
+      "recommendation": "panel cleanup in module mon_clean (mon_base.MODULES maps the name), listed after sprint and before log",
+      "do": {
+        "panel cleanup in module mon_clean (mon_base.MODULES maps the name), listed after sprint and before log": "ST-viygfjeg",
+        "panel clean, module mon_clean, listed last": "ST-viygfjeg"
+      },
+      "class": "agents-rule"
     }
   ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with planted inputs (KB_COORD_STORE points at its own coord store, so no check writes the clone's real one); no change to _tools/tests_ceiling.json. Premise (2026-10-19, this host): kbmon.py --json gave the sessions panel state timeout at 10 s with 50 worktrees; the cleanup panel's bytes walk is capped (gate g-bytes of the tidy story) so it stays inside the panel timeout.",

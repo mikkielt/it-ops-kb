@@ -1,10 +1,11 @@
 """kbmon's shared ground (kb/_self/monitoring.md): the panels, a panel's run in a daemon thread under a timeout, the
 snapshot and the reading of a saved one. Standard library only; every `mon_` module imports it and it imports no sibling.
 
-  PANELS                 the seven panels, in the order a snapshot lists them
+  PANELS                 the eight panels, in the order a snapshot lists them
   Ctx                    what a panel reads: the clone `root`, the coord `store`, `url` and `key_file`
   Unsupported            a panel's `collect(ctx)` raises it when this host or this setting cannot give the panel
-  panel_module(name)     the module `mon_<name>`, or None while no item has written it (the panel is then `absent`)
+  panel_module(name)     the module `mon_<name>` (`MODULES` names the exceptions: `cleanup` is `mon_clean`), or None while no
+                         item has written it (the panel is then `absent`)
   snapshot(ctx, names, timeout, kept=None)
                          one dict of schema 1: every named panel run at once, each bounded by `timeout` seconds; the
                          ops rows are read once for all the panels (`OpsMemo`); with `kept` (a `Kept`, the live view's) a
@@ -24,7 +25,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 SCHEMA = 1
-PANELS = ("kb", "coord", "sessions", "querylog", "host", "sprint", "log")
+PANELS = ("kb", "coord", "sessions", "querylog", "host", "sprint", "cleanup", "log")
+MODULES = {"cleanup": "mon_clean"}  # the panels whose module is not `mon_<name>`
 STATES = ("ok", "timeout", "error", "absent", "unsupported")
 ERROR_CHARS = 300  # characters of an exception's text a panel in state error keeps
 OPS_PANELS = ("kb", "sessions", "host", "sprint", "log")  # the panels that read `bl_stall.ops_rows`
@@ -44,9 +46,9 @@ class Unsupported(Exception):
 
 
 def panel_module(name):
-    """The module `mon_<name>`, or None when it does not exist (a module that exists and fails to import is an error of
+    """The module `mon_<name>` (or the one `MODULES` names), or None when it does not exist (a module that exists and fails to import is an error of
     the panel, so it raises)."""
-    mod = "mon_" + name
+    mod = MODULES.get(name, "mon_" + name)
     try:
         return importlib.import_module(mod)
     except ModuleNotFoundError as e:
