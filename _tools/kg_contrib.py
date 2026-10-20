@@ -177,7 +177,9 @@ def cmd_contribute(a):
     for sha, ch in changes:
         subject = out("log", "-1", "--format=%s", sha) or ""
         label = f"{short(sha)} {subject}"
-        names = kbcommon.leak_hits(out("log", "-1", "--format=%B", sha) or "")
+        # an email, home path, ip or guid in a message is no leak (an attribution trailer carries an email); a secret or a private name is
+        names = [h for h in kbcommon.leak_hits(out("log", "-1", "--format=%B", sha) or "")
+                 if h[0] == "secret" or h[0].startswith("private-")]
         if names:
             label = short(sha)  # the subject may be the private name itself
         if len(parents.get(sha, [])) != 1:
