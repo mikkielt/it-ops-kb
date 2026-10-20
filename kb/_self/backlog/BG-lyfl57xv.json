@@ -12,7 +12,7 @@
     "run": [
       "python3",
       "-c",
-      "import sys; sys.path.insert(0,'_tools'); import mon_status as m; s={'taken':'x','panels':{'sprint':{'state':'ok','data':{'source':'checkout','behind':None,'landings':[],'sprints':[{'id':'SP-a','title':'T','state':'active','items':{'done':1,'todo':1},'open':[{'id':'ST-b','title':'B','status':'todo'}],'done_at':[],'waiting':[]}]}},'host':{'state':'ok','data':{}}}}; assert not any('0 done commits on origin/main' in l for l in m.answer(s,'sprints')['lines'])"
+      "import sys; sys.path.insert(0,'_tools'); import mon_status as m; s={'taken':'x','panels':{'sprint':{'state':'ok','data':{'source':'checkout','behind':None,'landings':[],'sprints':[{'id':'SP-a','title':'T','state':'active','items':{'done':1,'todo':1},'open':[{'id':'ST-b','title':'B','status':'todo'}],'done_at':[],'waiting':[]}]}},'host':{'state':'ok','data':{}}}}; L=[l for l in m.answer(s,'sprints')['lines'] if 'ETA' in l]; print(L); assert L and all('not readable' in l and 'on origin/main to estimate' not in l for l in L)"
     ]
   },
   "touches": [
@@ -27,5 +27,5 @@
   "links": [
     "parked: SP-dulvwwjc review"
   ],
-  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: repro fails (AssertionError: the checkout fallback says '0 done commits on origin/main')."
+  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: repro fails (AssertionError: the checkout fallback says '0 done commits on origin/main'). Re-premise 2026-10-20 after mon_eta reworded the ETA line (a00b40ce3): the old repro's phrase '0 done commits on origin/main' is gone, but the checkout fallback's ETA line still reads 'No ETA yet: no durations of finished items on origin/main to estimate from.' instead of saying origin/main was not readable; the repro now reads the ETA line itself and fails on main."
 }
