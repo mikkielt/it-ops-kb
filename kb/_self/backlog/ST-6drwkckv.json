@@ -2,7 +2,7 @@
   "id": "ST-6drwkckv",
   "kind": "story",
   "title": "benchmarks.md, plugin.md and token-efficiency.md point to coordination.md for coordination",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-eptouzxc",
   "priority": "P2",
   "rank": 0,
@@ -43,6 +43,28 @@
     "ST-nni7qqhk"
   ],
   "notes": "Method (planner): cut to the pointer only prose that repeats what coordination.md owns; measurements, figures and their setups stay in the doc that owns them (token-efficiency.md, kb/_self/reports/), and no fact is lost. Premise 2026-10-20: none of the three names coordination.md (it does not exist).",
-  "claimed_by": "orch-r221",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "057ebd5a887c1b4b82ad81f46ad778b039122e46",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport pathlib, subprocess, re, csv\nmiss = [f for f in ('kb/_self/benchmarks.md', 'kb/_self/plugin.md', 'kb/_self/token-efficiency.md')\n        if 'kb/_self/coordination.md' not in pathlib.Path(f).read_text(encoding='utf-8')]\nassert not miss, f'no pointer to kb/_self/coordination.md in {miss}'\nprint('ok')\n"
+        ],
+        "exit": 0,
+        "sha256": "dc51b8c96c2d745d"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport pathlib, subprocess, re, csv\nassert pathlib.Path('kb/_self/coordination.md').is_file(), 'kb/_self/coordination.md missing'\nfor a in (['check'], ['stale', '--work', 'ST-6drwkckv']):\n    r = subprocess.run([sys.executable, '_tools/selfdoc.py'] + a, capture_output=True, text=True)\n    print(' '.join(a), r.returncode, (r.stdout + r.stderr).strip()[-600:])\n    assert r.returncode == 0, f'selfdoc {a} exit {r.returncode}'\n"
+        ],
+        "exit": 0,
+        "sha256": "2546a1c89d12b206"
+      }
+    ]
+  }
 }
