@@ -85,7 +85,11 @@
         "in_spool_order stays in mon_log (mon_sprint imports it where it reads the landings); code_path stays in kg_trailers (bl_intake imports it where trailer_findings runs)": "ST-gq4q5t4y",
         "move both to a module outside this item's touches (mon_base, kg_base)": "ST-gq4q5t4y"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "in_spool_order stays in mon_log (mon_sprint imports it where it reads the landings); code_path stays in kg_trailers (bl_intake imports it where trailer_findings runs)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): identical bodies 2026-10-19: bl_dispatch.same_dir = ql_base._same, bl_intake.code_path = kg_trailers.code_path, bl_procs.age_text = mon_sessions.age_text, mon_log.in_spool_order = mon_sprint.in_spool_order. The copy goes to the lower module by code.md's import direction. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
