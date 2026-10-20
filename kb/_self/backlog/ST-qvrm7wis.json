@@ -2,7 +2,7 @@
   "id": "ST-qvrm7wis",
   "kind": "story",
   "title": "Twelve tested _self questions on coordination answer good from coordination.md",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-eptouzxc",
   "priority": "P1",
   "rank": 0,
@@ -46,5 +46,7 @@
   "depends_on": [
     "ST-nni7qqhk"
   ],
-  "notes": "Method (planner): rows worded as operators and agents ask, the five the operator found weak among them; a paraphrase that still misses gets an aliases.csv row only where rewording coordination.md's line cannot fix it (_self has no doc2query expansions file). Premise run 2026-10-20 on origin/main: rag.py pack --root _self gives coverage weak (no tested question matches) for eight of the twelve questions tried, the five the operator named among them; lookup_eval.csv has no row on coord. Code lane: lookup_eval.csv lands with backlog.py land ID --wait-merge 1800."
+  "notes": "Method (planner): rows worded as operators and agents ask, the five the operator found weak among them; a paraphrase that still misses gets an aliases.csv row only where rewording coordination.md's line cannot fix it (_self has no doc2query expansions file). Premise run 2026-10-20 on origin/main: rag.py pack --root _self gives coverage weak (no tested question matches) for eight of the twelve questions tried, the five the operator named among them; lookup_eval.csv has no row on coord. Code lane: lookup_eval.csv lands with backlog.py land ID --wait-merge 1800.",
+  "claimed_by": "orch-r221",
+  "operator": "op-f618a13e"
 }
