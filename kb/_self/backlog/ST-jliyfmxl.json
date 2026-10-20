@@ -6,7 +6,7 @@
   "sprint": "SP-2rjhs7se",
   "priority": "P3",
   "rank": 0,
-  "goal": "the contract lint prints no 'fact mixes tags' warning for the auth, claude, dsc, mecm, privacy, python and security articles; no fact is deleted, and the split facts' old anchor rows of S-53ajdzoj, S-cqnp7ckg, S-difowozj, S-m45iz65n, S-yg2usmqp, S1205, S1342 and S1372 go with their old keys",
+  "goal": "the contract lint prints no 'fact mixes tags' warning for the auth, claude, dsc, mecm, privacy, python and security articles; no fact is deleted, and the split facts' old anchor rows of S-53ajdzoj, S-cqnp7ckg, S-difowozj, S-m45iz65n, S-yg2usmqp, S1205, S1342, S1372, S1373, S1377, S1378 and S1380 go with their old keys",
   "checks": [
     {
       "run": [
