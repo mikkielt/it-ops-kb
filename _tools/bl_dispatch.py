@@ -59,6 +59,8 @@ EFFORT = "high"
 TURNS = {"task": 100, "subtask": 100, "bug": 100, "story": 150, "epic": 150, "sprint": 150}
 RESEARCH_TURNS = 200  # a research story, task or subtask or an investigation bug
 COMMIT_MARGIN = 15  # the brief tells a worker to have committed its work in progress this many turns before its cap
+BUDGET_ENV = "KB_WORKER_BUDGET_USD"  # the spend cap in USD of a worker when `--max-budget-usd` is not given; unset = none
+BUDGET_FLAG = "--max-budget-usd"  # claude -p, print mode only: subagent spend counts toward it (kb/public/claude/cli-flags.csv)
 INVESTIGATION_RE = re.compile(r"investigat", re.I)  # a bug whose title or goal says so is an investigation bug
 PACK_TIMEOUT_S = 120
 SELF_ROOT = "_self"  # the kb root of the kb's own rule docs: the one `rag.py pack --item` serves
@@ -90,6 +92,9 @@ WORKER_RULES = (
     "Your turn cap is {turns} turns (print mode ends with an error at it): by turn {commit_by} commit what you have on "
     "`{branch}` with `KB-Work: {id}`, finished or as work in progress, and report what is left; never end the session "
     "with staged or uncommitted changes.",
+    "Your spend cap is {budget} USD (`claude -p --max-budget-usd`, an estimate that can pass the cap; the spend of "
+    "subagents you start counts toward it): the session stops once it is reached, so commit your work in progress "
+    "before you start a subagent and keep fan-out small.",
     "Run tests in the foreground, and end every background command and monitor you started before you return: "
     "`land` refuses a branch while a process still runs in your worktree.",
     "File a bug for any defect outside the item, do not fix it: first run `{backlog} find WORDS` with the defect's key "
@@ -161,13 +166,14 @@ def backlog_cmd(root):
     return f"python3 {PLUGIN_ROOT.as_posix()}/_tools/backlog.py"
 
 
-def worker_rules(root, iid, branch, turns=None):
+def worker_rules(root, iid, branch, turns=None, budget=None):
     """The brief's fixed rules for the project at ROOT, as lines: the kb-only ones (its test runner and ceiling, its
     stale-doc check) as the kb's own brief has them where the project has the tool, else the project-neutral wording
     (a rule with no such wording is left out there).
     The rule on the paths every item may change names `always_in_scope` (what `in_scope` counts), and is left out
     where the project sets none; the rule on the turn cap names TURNS and the turn `COMMIT_MARGIN` turns before it,
-    and is left out where no cap is given."""
+    and is left out where no cap is given; the rule on the spend cap names BUDGET (USD, as text) and is left out
+    where the worker runs without one."""
     always = ", ".join(f"`{g}`" for g in always_in_scope())
     out = []
     for rule in WORKER_RULES:
@@ -180,8 +186,10 @@ def worker_rules(root, iid, branch, turns=None):
             continue
         if "{turns}" in rule and not turns:
             continue
+        if "{budget}" in rule and not budget:
+            continue
         out.append(rule.format(id=iid, branch=branch, backlog=backlog_cmd(root), always=always, turns=turns,
-                               commit_by=max((turns or 0) - COMMIT_MARGIN, 1)))
+                               budget=budget, commit_by=max((turns or 0) - COMMIT_MARGIN, 1)))
     return out
 
 
@@ -464,9 +472,10 @@ def operator_line():
     return f"Session: {who}, role: {WORKER_ROLE} (`KB_OPERATOR`, `KB_ROLE` in your environment; `python3 _tools/kbwho.py` prints them)."
 
 
-def compose_brief(bl, iid, known=(), probe=None, turns=None, known_suite=()):
-    """The brief for ITEM's worker, as text: its fixed rules name the turn cap TURNS, else the cap of the item's kind.
-    Reads the backlog and runs the rules pack; writes nothing."""
+def compose_brief(bl, iid, known=(), probe=None, turns=None, known_suite=(), budget=None):
+    """The brief for ITEM's worker, as text: its fixed rules name the turn cap TURNS, else the cap of the item's kind,
+    and the spend cap BUDGET (`budget_usd`) when there is one. Reads the backlog and runs the rules pack; writes
+    nothing."""
     it = bl.items[iid]
     turns = turns or max_turns(bl, iid)
     wt, scratch, branch = worktree_path(bl.root, iid), scratch_path(bl.root, iid), worker_branch(iid)
@@ -514,7 +523,7 @@ def compose_brief(bl, iid, known=(), probe=None, turns=None, known_suite=()):
     kf = known_failures(bl, known, known_suite)
     out += (kf + ["A failure listed here gets no new bug; a failure not named here is yours to file as a bug."]) if kf else \
         ["None known to the orchestrator. A failure you meet is yours to file as a bug."]
-    out += ["", "## Fixed rules", *[f"- {r}" for r in (*worker_rules(bl.root, iid, branch, turns), *self_eval_rules(bl, iid))], "",
+    out += ["", "## Fixed rules", *[f"- {r}" for r in (*worker_rules(bl.root, iid, branch, turns, budget), *self_eval_rules(bl, iid))], "",
             "## Rules of the docs your touches map to", *rules_section(bl, iid), "",
             "## Report", report_line(bl.root)]
     return "\n".join(out) + "\n"
@@ -534,13 +543,38 @@ def worker_env(oid):
     return env
 
 
-def claude_argv(bl, iid, model=None, turns=None):
+def budget_usd(flag=None, env=None):
+    """The worker's spend cap in USD as text, or None for none: the `--max-budget-usd` FLAG, else the `BUDGET_ENV`
+    variable of ENV (default: the environment), else none. Subagent work does not count against `--max-turns`, so the
+    cap is what bounds a worker that fans out. A value that is no positive number is refused."""
+    given = flag if flag is not None else (os.environ if env is None else env).get(BUDGET_ENV, "").strip() or None
+    if given is None:
+        return None
+    try:
+        usd = float(given)
+    except ValueError:
+        usd = 0.0
+    if not usd > 0 or usd == float("inf"):
+        raise Rejected(f"dispatch: the spend cap {given!r} ({BUDGET_FLAG} or {BUDGET_ENV}) is no positive number of USD")
+    return format(usd, "f").rstrip("0").rstrip(".")
+
+
+def budget_line(budget):
+    """What dispatch says about the worker's spend cap: BUDGET (`budget_usd`) when set, else that none is."""
+    if budget:
+        return f"spend cap: {budget} USD ({BUDGET_FLAG} {budget}, named in the brief)"
+    return (f"spend cap: none, so the worker runs without a {BUDGET_FLAG} and subagent work is bounded by neither it nor "
+            f"--max-turns (set it with {BUDGET_FLAG} USD or {BUDGET_ENV})")
+
+
+def claude_argv(bl, iid, model=None, turns=None, budget=None):
     """The headless session's argument list: the brief goes on stdin, never as a trailing prompt argument, which
     `--add-dir` swallows (it takes several paths: the scratch directory and, for an item with required repositories,
-    the directory of their worktrees)."""
+    the directory of their worktrees). BUDGET (`budget_usd`) adds the spend cap."""
     dirs = [scratch_path(bl.root, iid)] + ([repos_dir(bl.root, iid)] if repo_checkouts(bl, iid) else [])
     return ["claude", "-p", "--model", model or DEFAULT_MODEL, "--effort", EFFORT, "--output-format", "json",
-            "--add-dir", *map(str, dirs), "--max-turns", str(turns or max_turns(bl, iid))]
+            "--add-dir", *map(str, dirs), "--max-turns", str(turns or max_turns(bl, iid)),
+            *([BUDGET_FLAG, budget] if budget else [])]
 
 
 def write_text(path, text):
@@ -820,7 +854,8 @@ def cmd_brief(bl, a):
     iid = need(bl, a.id)
     if note := land_line(bl, iid):
         say(note.strip())
-    sys.stdout.write(withhold(compose_brief(bl, iid, a.known, a.probe, known_suite=a.known_suite)))
+    sys.stdout.write(withhold(compose_brief(bl, iid, a.known, a.probe, known_suite=a.known_suite,
+                                            budget=budget_usd(a.max_budget_usd))))
     return 0
 
 
@@ -831,6 +866,8 @@ def detached_argv(bl, a):
         argv += ["--model", a.model]
     if a.max_turns:
         argv += ["--max-turns", str(a.max_turns)]
+    if a.max_budget_usd is not None:
+        argv += [BUDGET_FLAG, a.max_budget_usd]
     if a.probe:
         argv += ["--probe", a.probe]
     for flag, values in (("--known", a.known), ("--known-suite", a.known_suite)):
@@ -859,7 +896,8 @@ def cmd_dispatch(bl, a):
     iid = need(bl, a.id)
     it = bl.items[iid]
     turns = a.max_turns or max_turns(bl, iid)
-    argv = claude_argv(bl, iid, a.model, turns)
+    budget = budget_usd(a.max_budget_usd)
+    argv = claude_argv(bl, iid, a.model, turns, budget)
     wt, scratch = worktree_path(bl.root, iid), scratch_path(bl.root, iid)
     brief = scratch / BRIEF_NAME
     if a.dry_run:
@@ -873,6 +911,7 @@ def cmd_dispatch(bl, a):
         say(f"brief: {brief} (stdin)")
         say(f"cwd: {wt}")
         say("argv: " + shlex.join(argv))
+        say(budget_line(budget))
         if a.detach:
             say(f"detached: log {scratch / DETACH_LOG_NAME} (stdin closed, a new session)")
         return 0
@@ -880,9 +919,10 @@ def cmd_dispatch(bl, a):
         raise Refused(f"{bl.label(iid)} is {it.get('status')}, not doing: claim it (and push the claim) before dispatch")
     if shutil.which(argv[0]) is None:
         raise Rejected(f"dispatch: {argv[0]} is not on PATH")
+    say(budget_line(budget))
     if a.detach:
         return start_detached(bl, a, iid, scratch)
-    text = compose_brief(bl, iid, a.known, a.probe, turns, a.known_suite)
+    text = compose_brief(bl, iid, a.known, a.probe, turns, a.known_suite, budget)
     oid, _ = operator_who()
     defaults = repo_defaults(bl, iid)  # a repository whose fetch fails refuses the dispatch before anything is made
     make_worktree(bl.root, iid, wt)
@@ -995,6 +1035,8 @@ def args_brief(p):
                    help="a whole-suite failure that is no test (the darwin seconds ceiling) and the bug filed for it "
                         "(repeatable)")
     p.add_argument("--probe", metavar="TEXT", help="the result of the one probe run for a bug of unproven cause")
+    p.add_argument("--max-budget-usd", metavar="USD", help=f"the worker's spend cap in USD (claude -p {BUDGET_FLAG}); "
+                   f"else the {BUDGET_ENV} variable; with neither the worker runs without one")
 
 
 def args_dispatch(p):
