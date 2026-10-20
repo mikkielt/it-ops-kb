@@ -2,7 +2,7 @@
   "id": "ST-tnickxo3",
   "kind": "story",
   "title": "land retries a fetch that failed on a transient network error once before it stops",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-tsb23kev",
   "priority": "P3",
   "rank": 0,
@@ -55,6 +55,19 @@
     "parked: SP-qvlnptiw close"
   ],
   "notes": "SP-qvlnptiw close: ops shows two landings stopped at fetch (ST-aqaa7xa6 'Permission denied (publickey)', ST-wi2volsz a 120 s timeout); each passed when run again by hand minutes later. near-duplicate of open ST-pq24h2lg: kept as this sprint's evidence (two fetch stops); merge into it when planned operator request 2026-10-19 (housekeeping batch): ST-pq24h2lg (land retries a network fetch once after a transient remote refusal) is the same change and is merged here. Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs.",
-  "claimed_by": "orch-r102",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "865bbe06c73470cd6214a00dbc7866518d82a286",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_land;sys.exit(0 if getattr(bl_land,'FETCH_RETRIES',0)>=1 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
