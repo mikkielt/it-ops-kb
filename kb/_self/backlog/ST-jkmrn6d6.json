@@ -2,7 +2,7 @@
   "id": "ST-jkmrn6d6",
   "kind": "story",
   "title": "otel/pyproject.toml's SDK floor is the release the adapter's log and span code needs",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qh2j24z2",
   "priority": "P3",
   "rank": 0,
@@ -31,5 +31,7 @@
   "links": [
     "parked: SP-qvlnptiw review"
   ],
-  "notes": "SP-qvlnptiw: the ST-vau24eqm worker found the floor >=1.30 while the code relies on the pinned 1.45.1; the floor in the check (1.39) is a guess to be read from the SDK changelog by the item. operator request 2026-10-19 (housekeeping batch): otel/pyproject.toml floor. Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs."
+  "notes": "SP-qvlnptiw: the ST-vau24eqm worker found the floor >=1.30 while the code relies on the pinned 1.45.1; the floor in the check (1.39) is a guess to be read from the SDK changelog by the item. operator request 2026-10-19 (housekeeping batch): otel/pyproject.toml floor. Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs.",
+  "claimed_by": "orch-r109",
+  "operator": "op-f618a13e"
 }
