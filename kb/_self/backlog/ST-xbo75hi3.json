@@ -42,6 +42,27 @@
   "depends_on": [
     "ST-nqldomjk"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does --detach run the worker: as a child process that re-runs dispatch (the printed pid ends when the worker has exited and its leftovers are ended; the log is dispatch.log in the scratch directory), or by starting claude directly?",
+      "options": [
+        "re-run dispatch as the detached child",
+        "start claude directly, detached"
+      ],
+      "recommendation": "re-run dispatch as the detached child",
+      "do": {
+        "re-run dispatch as the detached child": "ST-xbo75hi3",
+        "start claude directly, detached": "ST-xbo75hi3"
+      },
+      "class": "agents-rule",
+      "answer": "re-run dispatch as the detached child",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-75hdeqld close"
   ],
