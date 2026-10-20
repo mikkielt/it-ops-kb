@@ -29,6 +29,25 @@
   "depends_on": [
     "BG-a2vvmvc4"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does coord.py send() refuse a --url the standard library cannot split or encode?",
+      "options": [
+        "catch ValueError around urlsplit and UnicodeError around the request, exit 2 with the library's reason",
+        "pre-validate the host (IDNA encode, label length) before connecting"
+      ],
+      "recommendation": "catch ValueError around urlsplit and UnicodeError around the request, exit 2 with the library's reason",
+      "do": {
+        "catch ValueError around urlsplit and UnicodeError around the request, exit 2 with the library's reason": "BG-ifyabjct",
+        "pre-validate the host (IDNA encode, label length) before connecting": "BG-ifyabjct"
+      },
+      "class": "design",
+      "answer": "catch ValueError around urlsplit and UnicodeError around the request, exit 2 with the library's reason",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-fp3hxl6q review"
   ],
