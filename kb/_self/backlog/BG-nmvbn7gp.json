@@ -19,6 +19,25 @@
     "_tools/ql_deliver.py",
     "kb/_self/querylog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How is a findings record judged to name an internal root, and where does a file left empty go?",
+      "options": [
+        "Scan article, expect, line and observed paths and articles; skip an emptied file",
+        "Scan every string value of the record; list an emptied file as kept local"
+      ],
+      "recommendation": "Scan article, expect, line and observed paths and articles; skip an emptied file",
+      "do": {
+        "Scan article, expect, line and observed paths and articles; skip an emptied file": "BG-nmvbn7gp",
+        "Scan every string value of the record; list an emptied file as kept local": "BG-nmvbn7gp"
+      },
+      "class": "design",
+      "answer": "Scan article, expect, line and observed paths and articles; skip an emptied file",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "orch240",
   "operator": "op-f618a13e"
 }
