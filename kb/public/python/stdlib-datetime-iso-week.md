@@ -73,8 +73,9 @@ probes ran on Python 3.13.2, macOS (Darwin 25.5.0), 2026-10-07.
   `astimezone` to UTC+2 (2026-10-05 01:30) is week 41. So a detector that closes weeks fixes one zone, normally UTC, before
   it takes the week. [DER S-gaeidf4e: `datetime.isocalendar()` is `self.date().isocalendar()`; the two weeks observed on 3.13.2, macOS, 2026-10-07]
 - `date.today()` returns "the current local date", equivalent to `date.fromtimestamp(time.time())`, and
-  `datetime.today()` and `datetime.now()` without `tz` return the local date and time with `tzinfo` `None`; the
-  docs prefer `datetime.now(tz)` over `today()` and `utcnow()`. [DOC S-gaeidf4e]
+  `datetime.today()` and `datetime.now()` without `tz` return the local date and time with `tzinfo` `None`. [DOC S-gaeidf4e]
+- The `datetime.now(tz)` entry of the docs says "This function is preferred over `today()` and `utcnow()`", and the
+  `tz` argument converts the current date and time to that time zone. [DOC S-gaeidf4e]
 - So `date.today()` is the day of the host's time zone, not the UTC day: with `TZ=Europe/Warsaw` on 3.13.2, the
   instant 2026-10-14 23:30 UTC gave `date.fromtimestamp(t)` 2026-10-15 but
   `datetime.fromtimestamp(t, timezone.utc).date()` 2026-10-14. Code that compares a day with a UTC-stamped value

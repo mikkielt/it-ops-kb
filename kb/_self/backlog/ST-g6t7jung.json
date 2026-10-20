@@ -39,6 +39,25 @@
   "depends_on": [
     "ST-sj65ovxr"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How is the datetime fact on datetime.now(tz) being preferred anchored: split it from the today() fact, or keep one fact and re-anchor it at the preferred-over sentence?",
+      "options": [
+        "split the preferred-over sentence into its own fact with its own anchor",
+        "keep one fact with the anchor at the preferred-over sentence"
+      ],
+      "recommendation": "split the preferred-over sentence into its own fact with its own anchor",
+      "do": {
+        "split the preferred-over sentence into its own fact with its own anchor": "ST-g6t7jung",
+        "keep one fact with the anchor at the preferred-over sentence": "ST-g6t7jung"
+      },
+      "class": "design",
+      "answer": "split the preferred-over sentence into its own fact with its own anchor",
+      "by": "agent"
+    }
+  ],
   "notes": "operator request 2026-10-19 (housekeeping batch): folds BG-bwyr7oup, BG-3tvxhg3t, ST-gympyz6m, ST-apmawhii, BG-l7u2rtzh, ST-6745y7as, ST-sjzxpgr7 (all failed on 2026-10-19). A fact whose source does not support it is put to the operator as a blocking gate, never deleted by the worker.",
   "claimed_by": "orch-r105",
   "operator": "op-f618a13e"
