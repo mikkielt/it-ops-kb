@@ -2,7 +2,7 @@
   "id": "BG-pahecn3b",
   "kind": "bug",
   "title": "sprint status lists stale landings of deleted items by bare id with no age",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-2uljwgho",
   "priority": "P3",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "BG-lyfl57xv",
   "kind": "bug",
   "title": "sprint status in the checkout fallback says 0 done commits on origin/main when the ref was not readable",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-2uljwgho",
   "priority": "P3",
   "rank": 0,
