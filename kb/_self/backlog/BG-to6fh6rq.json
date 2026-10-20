@@ -2,7 +2,8 @@
   "id": "BG-to6fh6rq",
   "kind": "bug",
   "title": "kbmon sessions panel and sessions status answer still show a session intent's id as the all-zero placeholder",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-razcgjsb",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
@@ -13,5 +14,14 @@
       "-c",
       "import os,subprocess as s,sys,tempfile,uuid;st=os.path.join(tempfile.mkdtemp(),'c.sqlite');c=lambda *x:s.run([sys.executable,'_tools/coord.py','--store',st,*x],capture_output=True,text=True);a=str(uuid.uuid4());c('post','--kind','intent','--field','session='+a,'--field','item=ST-aaaaaaaa');c('claim','session/'+a,'--ttl','600','--holder',a);o=s.run([sys.executable,'_tools/kbmon.py','--status','sessions','--store',st],capture_output=True,text=True,timeout=120).stdout;sys.exit(1 if '00000000-0000-0000-0000-000000000000' in o else 0)"
     ]
-  }
+  },
+  "touches": [
+    "_tools/mon_sessions.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-k2yygxwn"
+  ],
+  "notes": "Folded into SP-razcgjsb by the orchestrator (acting operator) 2026-10-20: the goal clause 'one short label per session, the same in every panel' covers the sessions panel; ST-njsgt56c's worker filed it because mon_sessions.py was outside its touches. Ordered after BG-k2yygxwn and before ST-yozfikuv, which share mon_sessions.py."
 }

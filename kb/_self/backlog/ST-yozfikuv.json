@@ -24,7 +24,8 @@
   ],
   "depends_on": [
     "BG-k2yygxwn",
-    "ST-njsgt56c"
+    "ST-njsgt56c",
+    "BG-to6fh6rq"
   ],
   "links": [
     "parked: SP-5gph7fh6 review"
