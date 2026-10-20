@@ -9,9 +9,10 @@ import json, os, re, shutil, sys
 from pathlib import Path
 from urllib.parse import urlsplit
 
+import kbcommon
 import kbpublic
-from ql_base import (BRANCH, DISABLED_NAME, HOME, STORE_REL, acquire, now, places, plugin_data, read_json, release,
-                     run_cmd, write_text)
+from ql_base import (BRANCH, DISABLED_NAME, HOME, STORE_REL, acquire, json_lines, now, places, plugin_data, read_json,
+                     release, run_cmd, write_text)
 from ql_distill import LOG_MAX_BYTES, LOG_NAME, spool_delivered
 from ql_research import edit_problems
 from ql_store import (APPLY_FAILED, FINDINGS, LEARN_STATES, OPS, USAGE, WORK, finding_states, findings_files,
@@ -43,6 +44,60 @@ REFUSALS = (  # a push refused for want of rights, as the remote words it (kb: g
     ("github", re.compile(r"Permission to \S+ denied to [^\n]*|GH006: Protected branch update failed[^\n]*")),
     ("http-403", re.compile(r"The requested URL returned error: 403\b[^\n]*")),
 )
+
+
+# ---------------------------------------------------------------- entries that name an internal root
+
+def names_internal(entry):
+    """Whether the entry's `root`, `articles`, `best` or `citations` lines name an internal root (a root or pointer of
+    visibility internal: the registry's private names, `kbcommon.private_hits`)."""
+    def hit(text):
+        return isinstance(text, str) and bool(kbcommon.private_hits(text))
+    root = entry.get("root")
+    arts = entry.get("articles")
+    cites = entry.get("citations")
+    lines = [c.get("line") for c in cites if isinstance(c, dict)] if isinstance(cites, list) else []
+    return (hit(f"{root}/x" if isinstance(root, str) else None) or hit(entry.get("best"))
+            or any(hit(a) for a in (arts if isinstance(arts, list) else [])) or any(hit(ln) for ln in lines))
+
+
+def internal_ids(run_file):
+    """The ids of the entries of a local run file that name an internal root; empty when the file cannot be read."""
+    try:
+        return {e["id"] for _, e in load_run(run_file)[1:] if isinstance(e.get("id"), str) and names_internal(e)}
+    except (OSError, ValueError):
+        return set()
+
+
+def public_copy(src, rel, local):
+    """(the text of the local run file or usage sidecar `src` (path `rel` in the store `local`) to deliver, how many
+    entries stay local). The lines of the entries that name an internal root (internal_ids of the run file) are left
+    out, every other line is kept as written, and the header's `counts.entries` counts what is kept. The text is None
+    when nothing is left of a file that held entries, so the file is not delivered."""
+    text = Path(src).read_text(encoding="utf-8")
+    run_rel = rel[len(USAGE) + 1:] if rel.startswith(USAGE + "/") else rel
+    stay = internal_ids(local / run_rel)
+    if not stay:
+        return text, 0
+    lines = [ln for ln in text.splitlines() if ln.strip()]
+    kept, dropped = [], 0
+    for ln in lines[1:]:
+        try:
+            eid = json.loads(ln).get("id")
+        except (ValueError, AttributeError):
+            eid = None
+        if eid in stay:
+            dropped += 1
+        else:
+            kept.append(ln)
+    if not dropped:
+        return text, 0
+    if not kept:
+        return None, dropped
+    head = json.loads(lines[0])
+    if isinstance(head.get("counts"), dict) and "entries" in head["counts"]:
+        head["counts"]["entries"] = len(kept)
+    return json_lines([head]) + "".join(ln + "\n" for ln in kept), dropped
 
 
 # ---------------------------------------------------------------- origin's forge and its CI
@@ -509,6 +564,10 @@ class Pusher:
                 ids = {e["id"] for _, e in load_run(p)[1:] if isinstance(e.get("id"), str)}
             except (OSError, ValueError):
                 ids = set()  # copied all the same: `check` refuses it
+            stay = internal_ids(p)  # entries that name an internal root stay in the local store, undelivered
+            if stay and ids <= stay:
+                continue
+            ids -= stay
             if (store / rel).exists():
                 delivered |= ids
             else:
@@ -528,8 +587,9 @@ class Pusher:
                 kept.append(rel)
         for p in usage_files(local) + work_files(local) + ops_files(local):
             rel = p.relative_to(local).as_posix()
-            if not (store / rel).exists():
-                new.append((p, rel, set()))
+            if (store / rel).exists() or (rel.startswith(USAGE + "/") and public_copy(p, rel, local)[0] is None):
+                continue
+            new.append((p, rel, set()))
         return delivered, new, kept
 
     def forget(self, ids):
@@ -542,9 +602,18 @@ class Pusher:
         """The local files `new` copied into the worktree's store, then the worktree's `querylog.py check` and the
         leak scan over them, before learn and apply run: the run's one commit holds them. 0, or 1 when a gate fails
         (nothing committed or pushed)."""
-        store = self.wt / STORE_REL
+        store, local = self.wt / STORE_REL, self.qdir / "store"
+        stayed = 0
         for src, rel, _ in new:
-            write_text(store / rel, Path(src).read_text(encoding="utf-8"))
+            if rel.startswith((FINDINGS + "/", WORK + "/", OPS + "/")):
+                write_text(store / rel, Path(src).read_text(encoding="utf-8"))
+                continue
+            text, n = public_copy(src, rel, local)
+            stayed += n if not rel.startswith(USAGE + "/") else 0
+            if text is not None:
+                write_text(store / rel, text)
+        if stayed:
+            self.say(f"{stayed} entries name an internal root and stay in the local store, undelivered")
         if kept:
             self.say(f"{len(kept)} local findings file(s) stay local (apply's outcomes, or findings "
                      f"{self.remote}/{BRANCH} already records)")
