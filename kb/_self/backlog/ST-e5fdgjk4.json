@@ -2,7 +2,7 @@
   "id": "ST-e5fdgjk4",
   "kind": "story",
   "title": "kbmon --events exports each delivery once with its outcome and loses no row or id",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qh2j24z2",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,7 @@
     "kb/_self/querylog.md",
     "kb/_self/usage.md"
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): folds BG-vssjcjwq, BG-ttwih3wd, BG-cpa4b3gy, BG-jy6ipg4a (repros embedded)."
+  "notes": "operator request 2026-10-19 (housekeeping batch): folds BG-vssjcjwq, BG-ttwih3wd, BG-cpa4b3gy, BG-jy6ipg4a (repros embedded).",
+  "claimed_by": "orch-r109",
+  "operator": "op-f618a13e"
 }
