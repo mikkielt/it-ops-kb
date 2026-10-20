@@ -25,6 +25,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+from typing import Callable, NamedTuple
 from urllib.parse import urlsplit
 
 import otel_logs
@@ -40,6 +41,31 @@ ROOT = Path(__file__).resolve().parent.parent
 KBMON = ROOT / "_tools" / "kbmon.py"
 KBWHO = ROOT / "_tools" / "kbwho.py"
 HEADER_VARS = tuple(f"OTEL_EXPORTER_OTLP_{signal}HEADERS" for signal in ("METRICS_", "LOGS_", "TRACES_", ""))
+
+
+class Signal(NamedTuple):
+    """One row of SIGNALS: a signal that `kbmon.py --events` feeds and that goes over OTLP/HTTP.
+
+    env is the endpoint variable's signal name (OTEL_EXPORTER_OTLP_<env>_ENDPOINT), target the word the start line shows
+    for it, build the module's class (called with the resource, it gives an object with `send(got) -> bool` and
+    `close()`), count the number of records of one `--events` object it sends, noun what they are called in the
+    progress line and failed the line printed when the send failed."""
+
+    env: str
+    target: str
+    build: Callable
+    count: Callable[[dict], int]
+    noun: str
+    failed: str
+
+
+# A new signal is its module beside this file and one row here.
+SIGNALS = {
+    "logs": Signal("LOGS", "logs", lambda resource: otel_logs.Logs(resource), lambda got: len(got["events"]),
+                   "log records", "log export failed"),
+    "spans": Signal("TRACES", "traces", lambda resource: otel_spans.Spans(resource), lambda got: len(got.get("spans") or []),
+                    "spans", "span export failed"),
+}
 
 
 def endpoint(signal: str = "METRICS") -> str:
@@ -195,7 +221,7 @@ class Cursor:
     value = None
 
 
-def send_events(args, cursor: Cursor, logs, spans) -> int:
+def send_events(args, cursor: Cursor, exporters: dict) -> int:
     """One round of event records and spans: 0 sent, 1 a send failed (the cursor stays), 2 kbmon gave no events."""
     try:
         got = collect_events(args, cursor.value)
@@ -205,17 +231,12 @@ def send_events(args, cursor: Cursor, logs, spans) -> int:
     for problem in got.get("problems") or []:
         print(f"kbmon_otel: {problem}", file=sys.stderr)
     code = 0
-    if logs:
-        if logs.send(got):
-            print(f"kbmon_otel: sent {len(got['events'])} log records", flush=True)
+    for name, exporter in exporters.items():
+        row = SIGNALS[name]
+        if exporter.send(got):
+            print(f"kbmon_otel: sent {row.count(got)} {row.noun}", flush=True)
         else:
-            print("kbmon_otel: log export failed", file=sys.stderr)
-            code = 1
-    if spans:
-        if spans.send(got):
-            print(f"kbmon_otel: sent {len(got.get('spans') or [])} spans", flush=True)
-        else:
-            print("kbmon_otel: span export failed", file=sys.stderr)
+            print(f"kbmon_otel: {row.failed}", file=sys.stderr)
             code = 1
     if code == 0:
         cursor.value = got.get("cursor") or cursor.value
@@ -251,9 +272,9 @@ def main(argv=None) -> int:
         ap.error(str(e))
 
     url = endpoint("METRICS")
-    logs_url = "" if args.from_snapshot else endpoint("LOGS")
-    spans_url = "" if args.from_snapshot else endpoint("TRACES")
-    if not url and not logs_url and not spans_url and args.prometheus_port is None:
+    urls = {} if args.from_snapshot else {name: endpoint(row.env) for name, row in SIGNALS.items()}
+    urls = {name: u for name, u in urls.items() if u}
+    if not url and not urls and args.prometheus_port is None:
         print("kbmon_otel: export is off (no OTEL_EXPORTER_OTLP_ENDPOINT set); nothing sent")
         return 0
 
@@ -262,17 +283,16 @@ def main(argv=None) -> int:
     for handler in logging.getLogger().handlers:
         handler.addFilter(scrub)
 
-    if url or logs_url or spans_url:
+    if url or urls:
         targets = [f"{kind} to {shown_endpoint(u)}"
-                   for kind, u in (("metrics", url), ("logs", logs_url), ("traces", spans_url)) if u]
+                   for kind, u in (("metrics", url), *((SIGNALS[n].target, u) for n, u in urls.items())) if u]
         print(f"kbmon_otel: export is on, {', '.join(targets)}")
     else:
         print("kbmon_otel: export is off (no OTEL_EXPORTER_OTLP_ENDPOINT set); /metrics only")
     prom = otel_prom.reader() if args.prometheus_port is not None else None
     sender = Sender(export=bool(url), extra_readers=[prom] if prom else []) if url or prom else None
     resource = Resource(otel_attributes())
-    logs = otel_logs.Logs(resource) if logs_url else None
-    spans = otel_spans.Spans(resource) if spans_url else None
+    exporters = {name: SIGNALS[name].build(resource) for name in urls}
     cursor = Cursor()
     server = None
     code = 0
@@ -295,8 +315,8 @@ def main(argv=None) -> int:
                     else:
                         print("kbmon_otel: export failed", file=sys.stderr)
                         code = 1
-            if logs or spans:
-                code = max(code, send_events(args, cursor, logs, spans))
+            if exporters:
+                code = max(code, send_events(args, cursor, exporters))
             sent += 1
             if args.count and sent >= args.count:
                 return code
@@ -306,10 +326,8 @@ def main(argv=None) -> int:
     finally:
         if sender:
             sender.close()
-        if logs:
-            logs.close()
-        if spans:
-            spans.close()
+        for exporter in exporters.values():
+            exporter.close()
         if server:
             server.shutdown()
             server.server_close()

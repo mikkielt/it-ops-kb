@@ -52,6 +52,42 @@
   "depends_on": [
     "ST-fgktuvvs"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What shape is the SIGNALS registry in otel/kbmon_otel.py: a row of endpoint name, builder, record counter and lines per signal, or the module's class alone?",
+      "options": [
+        "row per signal",
+        "class only"
+      ],
+      "recommendation": "row per signal",
+      "do": {
+        "row per signal": "ST-wic5d76z",
+        "class only": "ST-wic5d76z"
+      },
+      "class": "design",
+      "answer": "row per signal",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does map.csv name the otel and mon_ modules: glob rows otel/*.py and _tools/mon_*.py for the docs that name them, or one row per module?",
+      "options": [
+        "glob rows",
+        "row per module"
+      ],
+      "recommendation": "glob rows",
+      "do": {
+        "glob rows": "ST-wic5d76z",
+        "row per module": "ST-wic5d76z"
+      },
+      "class": "design",
+      "answer": "glob rows",
+      "by": "agent"
+    }
+  ],
   "notes": "operator request 2026-10-19 (housekeeping batch): main() calls otel_logs.Logs and otel_spans.Spans directly on 2026-10-19. Folds ST-vztgxydb (map rows). The third check needs uv with the otel lock cached (it ran offline on 2026-10-19). Premise: the first check fails. ST-fgktuvvs left kb/_self/monitoring.md's 'Adding an OpenTelemetry signal' section saying main still builds otel_logs.Logs and otel_spans.Spans by name (its provisional gate g1: state today's state); once SIGNALS exists, reword that sentence to the registry.",
   "claimed_by": "orch-r109",
   "operator": "op-f618a13e"
