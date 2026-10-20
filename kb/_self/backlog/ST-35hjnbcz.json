@@ -1,0 +1,26 @@
+{
+  "id": "ST-35hjnbcz",
+  "kind": "story",
+  "title": "The tidy docs say an answered remove deletes a recorded scratch directory or bench sandbox, whose ask has no clean or merged test",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/backlog.md's tidy paragraph says that a recorded scratch directory or bench sandbox of a still-claimed item also gets the verdict ask, and that an answered remove deletes it with no clean or merged test, as gate g1 of ST-kcs6y7sj allowed for every recorded class",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt = open(\"kb/_self/backlog.md\", encoding=\"utf-8\").read()\ni = t.index(\"its verdict is `ask`\"); j = t.index(\"tidy --decide KEY\", i)\nif \"scratch\" not in t[i:j]:\n    print(\"check failed: the ask sentence names no scratch directory or sandbox\"); sys.exit(1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-ep7cyuob review"
+  ],
+  "notes": "SP-ep7cyuob review (S3): remove_one (bl_clean.py) rmtree's an answered scratch or sandbox ask row; the ask class includes them with no clean or merged check. As decided (g1 own-digest-key: every recorded class may ask); only the docs lag."
+}

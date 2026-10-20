@@ -1,0 +1,25 @@
+{
+  "id": "ST-ofu7lb6p",
+  "kind": "story",
+  "title": "backlog.py's usage text lists tidy --decide and the verdict ask",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the tidy line of backlog.py's usage text names --decide KEY remove|keep and the verdict ask beside remove and keep",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, \"_tools\")\nimport backlog\nd = backlog.__doc__; s = d[d.index(\"backlog.py tidy\"):]; s = s[:s.index(\"backlog.py horizon\")]\nif \"--decide\" not in s:\n    print(\"check failed: the tidy usage names no --decide\"); sys.exit(1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py"
+  ],
+  "links": [
+    "parked: SP-ep7cyuob review"
+  ],
+  "notes": "SP-ep7cyuob review (S3): _tools/backlog.py usage still says `(remove or keep)` with no --decide or ask."
+}

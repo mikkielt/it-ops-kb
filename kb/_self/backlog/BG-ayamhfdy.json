@@ -18,5 +18,9 @@
     "_tools/bl_selfcheck.py",
     "_tools/mon_clean.py",
     "kb/_self/monitoring.md"
-  ]
+  ],
+  "links": [
+    "parked: SP-ep7cyuob review"
+  ],
+  "notes": "SP-ep7cyuob review (S3) widens this: bl_selfcheck.leftovers never applies bl_clean.answer_of, so an answered row still shows as ask in kbmon's cleanup panel and check_leftovers (which the cleanup session's prompt has Haiku read), and tidy --report (class_counts) counts ask rows as kept."
 }

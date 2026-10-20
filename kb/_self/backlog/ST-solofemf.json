@@ -1,0 +1,26 @@
+{
+  "id": "ST-solofemf",
+  "kind": "story",
+  "title": "A tidy removal renews its clean/<KEY> claim while it runs",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "tidy --apply renews the coord claim clean/<KEY> of a removal that runs longer than half of bl_clean.CLAIM_TTL, so a slow removal is never claimed by a second session mid-way",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, \"_tools\")\nimport bl_clean, inspect\nif \"renew\" not in inspect.getsource(bl_clean):\n    print(\"check failed: no removal claim is renewed\"); sys.exit(1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_clean.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-ep7cyuob review"
+  ],
+  "notes": "SP-ep7cyuob review (S3): CLAIM_TTL is 600 s with no renewal; a removal slower than that could be claimed again mid-way (unlikely); a crash between claim and removal blocks others up to 600 s. The check reads source because a removal slower than the ttl cannot be planted in a short run; the item should replace it with a planted run that sets a short ttl."
+}
