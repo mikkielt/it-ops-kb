@@ -39,6 +39,25 @@
   "relates_to": [
     "BG-qpcct4ps"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What does an absent coord store's reason show to name the store? Full path: says which store was looked at, and the text view already redacts it. File name only: shorter, but ambiguous.",
+      "options": [
+        "full store path",
+        "store file name only"
+      ],
+      "recommendation": "full store path",
+      "do": {
+        "full store path": "BG-rpp4dsrn",
+        "store file name only": "BG-rpp4dsrn"
+      },
+      "class": "querylog",
+      "answer": "full store path",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-5gph7fh6 review",
     "parked: SP-2uljwgho review"
