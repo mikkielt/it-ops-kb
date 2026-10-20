@@ -3,7 +3,7 @@
   "kind": "story",
   "title": "Planning gives a goal that calls a headless session read-only a check of the permissions the session really loads",
   "status": "draft",
-  "priority": "P3",
+  "priority": "P2",
   "rank": 0,
   "goal": "the kb-sprint skill's plan step 6 says an item whose goal calls a claude -p session read-only carries a check that starts the session against a fake claude and computes the allow rules of every settings source its argv loads (user, project, local, unless --setting-sources leaves them out) together with --allowedTools, failing on a rule that admits a write, and not only a check that the flags are present",
   "checks": [
@@ -20,7 +20,8 @@
     "kb/_self/backlog.md"
   ],
   "links": [
-    "parked: SP-w6amecjt close"
+    "parked: SP-w6amecjt close",
+    "parked: SP-ep7cyuob close"
   ],
-  "notes": "SP-w6amecjt close: ST-hp5cccy7's check 2 (flags_ok) passed on --permission-mode dontAsk and --allowedTools while every settings source's allow rules still loaded; the review found it as S1 (BG-jpzlj4gi, fixed in the sprint)."
+  "notes": "SP-w6amecjt close: ST-hp5cccy7's check 2 (flags_ok) passed on --permission-mode dontAsk and --allowedTools while every settings source's allow rules still loaded; the review found it as S1 (BG-jpzlj4gi, fixed in the sprint). SP-ep7cyuob close: recurred. ST-pjf3zk3x's check read only that the argv held haiku and 0.25, and its clause 'whose allowed tools read kbmon.py --json and tidy --json and write no file' passed while --allowedTools held Bash(python3 _tools/kbmon.py --json *), a wildcard that admits a redirect or a substitution (review S2, parked as ST-y23dwivv). The allow-list shape was a design choice found mid-work as a blocking gate (g2), not asked at planning."
 }

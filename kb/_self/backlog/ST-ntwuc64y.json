@@ -1,0 +1,27 @@
+{
+  "id": "ST-ntwuc64y",
+  "kind": "story",
+  "title": "A sprint's goal research story names the goal's open questions, so researched reads their coverage",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py new sprint writes the goal research story's goal with the sprint goal's open questions as numbered questions (or asks the planner for them), so backlog.py researched reads the kb coverage of each instead of printing that the goal names no question",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, subprocess, tempfile, json, glob\nT = os.path.realpath(tempfile.mkdtemp())\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_COORD\"))}\nENV.pop(\"CLAUDECODE\", None)\nENV.update(KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\",\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\ndef tool(*a, ok=(0,)):\n    r = subprocess.run([sys.executable, *a], capture_output=True, text=True, env=ENV, timeout=300)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-800:], r.stderr[-800:])\n    return r\nO, C = os.path.join(T, \"origin.git\"), os.path.join(T, \"clone\")\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T)\ng(\"clone\", \"-q\", O, C, cwd=T)\nos.makedirs(os.path.join(C, \"kb\", \"_self\", \"backlog\"))\nopen(os.path.join(C, \"backlog.json\"), \"w\").write('{\"item_dir\": \"kb/_self/backlog\"}\\n')\nopen(os.path.join(C, \"kb\", \"_self\", \"backlog\", \".keep\"), \"w\").close()\ng(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C)\ntool(\"_tools/backlog.py\", \"--root\", C, \"new\", \"sprint\", \"--title\", \"Tidy asks\", \"--goal\", \"tidy asks the operator about a leftover; cleanup runs one capped session\")\ngoals = [json.load(open(p)).get(\"goal\", \"\") for p in glob.glob(os.path.join(C, \"kb\", \"_self\", \"backlog\", \"ST-*.json\"))\n         if json.load(open(p)).get(\"goal_research\")]\nassert goals and \"?\" in goals[0], (\"the goal research story names no question\", goals[:1])\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/bl_precheck.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-ep7cyuob close"
+  ],
+  "notes": "SP-ep7cyuob close: ST-n2bqm32a's only check, `researched ST-n2bqm32a`, passed with \"coverage not read: the goal names no question\": it proved the work-commit rule only, and the worker named the sprint's questions from its own rag.py packs. The touches are a guess: run referrers on goal_questions and the new-sprint template before the claim."
+}
