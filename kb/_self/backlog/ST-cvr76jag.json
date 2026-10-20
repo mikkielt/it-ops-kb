@@ -55,6 +55,25 @@
   "depends_on": [
     "ST-jpg6ijhc"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the DER fact in doc-change-detection.md that compares the documented Markdown routes with the ?accept=text/markdown form clear the 'rests on a run or probe but names no version' warning, when no source gives a version number for the Learn MCP server or CLI?",
+      "options": [
+        "reword",
+        "date-version"
+      ],
+      "recommendation": "reword",
+      "do": {
+        "reword": "ST-cvr76jag",
+        "date-version": "ST-cvr76jag"
+      },
+      "class": "design",
+      "answer": "reword",
+      "by": "agent"
+    }
+  ],
   "notes": "operator request 2026-10-19 (housekeeping batch): lint on 2026-10-19: 56 mixed-tag facts in 27 articles and 2 DER facts without a version. A mixed fact is split into one fact per tag or retagged; a reworded DOC fact is re-anchored (factdiff.py anchor --file) and its doc2query rows pruned. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
   "claimed_by": "orch-r105",
   "operator": "op-f618a13e"
