@@ -56,7 +56,11 @@
         "re-run dispatch as the detached child": "ST-xbo75hi3",
         "start claude directly, detached": "ST-xbo75hi3"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "re-run dispatch as the detached child",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
