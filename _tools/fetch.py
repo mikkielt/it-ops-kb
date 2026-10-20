@@ -99,12 +99,6 @@ def read_csv(name, required):
         sys.exit(str(e))
 
 
-def repo_roots():
-    """The roots in this repository's kb/ (KB_ROOTS roots are other repositories' to fetch)."""
-    kbd = os.path.realpath(kbcommon.KB_DIR)
-    return [r for r in kbcommon.roots() if os.path.dirname(os.path.realpath(r.path)) == kbd]
-
-
 class _PageText(html.parser.HTMLParser):
     """Visible text of an HTML page, one block per line; <main> only when the page has one. `headings` starts each
     h1-h6 line with Markdown `#` marks (provider.py's document text; the hash text of --diff has none). An <aside>
@@ -412,7 +406,7 @@ def main():
     if (a.topic or a.dir or a.file or a.source or a.older_than is not None) and not (a.diff or a.status):
         ap.error("--topic/--dir/--file/--source/--older-than need --diff or --status")
     try:
-        roots = repo_roots()
+        roots = kbcommon.repo_roots()
     except kbcommon.RootError as e:
         sys.exit(str(e))
     if a.root:

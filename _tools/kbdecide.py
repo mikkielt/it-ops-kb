@@ -1042,7 +1042,7 @@ def cmd_list(a):
 
 
 def matches(row, ref):
-    """Whether the decision's context names `ref`: a `kind:value` part, or a bare value of any kind."""
+    """Whether the row's context (a decision's, or one of kblog's) names `ref`: a `kind:value` part, or a bare value of any kind."""
     ref = ref.strip()
     return any(ref in (f"{kind}:{value}", value) for kind, value in kbcommon.context_refs(row.get("context")))
 
@@ -1126,13 +1126,18 @@ COMMANDS = {"propose": cmd_propose, "confirm": cmd_confirm, "record": cmd_record
             "restore": cmd_restore, "ratify": cmd_ratify, "revert": cmd_revert, "digest": cmd_digest, "relink": cmd_relink, "sweep": cmd_sweep, "list": cmd_list}
 
 
-def main(argv=None):
-    a = parser().parse_args(argv)
+def run_cli(ap, commands, argv=None):
+    """Parse `argv` with `ap` and run the chosen command of `commands`; a refusal prints its message and exits 2 (kblog's too)."""
+    a = ap.parse_args(argv)
     try:
-        return COMMANDS[a.cmd](a)
+        return commands[a.cmd](a)
     except Refused as e:
         print(f"refused: {e}")
         return 2
+
+
+def main(argv=None):
+    return run_cli(parser(), COMMANDS, argv)
 
 
 if __name__ == "__main__":

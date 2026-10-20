@@ -2,10 +2,10 @@
 runs its commands through, the lint baseline's path, the error the merge code raises and the roots inside this
 repository. Standard library only; the other kg_ modules and kbgit.py import it, and it imports no sibling but kbcommon.
 """
-import os
 import subprocess
 
 import kbcommon
+from kbcommon import repo_roots  # noqa: F401  (the kg_ modules import it from here; kbcommon holds the one definition)
 
 KB = kbcommon.HOME  # the repository: git runs here, and every path kbgit names is relative to it
 BASELINE = "_tools/lint_baseline.txt"
@@ -33,10 +33,3 @@ def git(*args, stdin=None, kb=None):
 def rev_parse(rev, kb=None):
     """The commit hash REV names, or None when it names no commit."""
     return (git("rev-parse", "-q", "--verify", rev + "^{commit}", kb=kb) or "").strip() or None
-
-
-def repo_roots():
-    """The roots inside this repository's kb/ (KB_ROOTS roots live in other repositories): what fix, sync and the
-    trailers work on, public first."""
-    kbd = os.path.realpath(kbcommon.KB_DIR)
-    return [r for r in kbcommon.roots() if os.path.dirname(os.path.realpath(r.path)) == kbd]

@@ -56,6 +56,38 @@
   "depends_on": [
     "ST-gq4q5t4y"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does the one copy of repo_roots live, now that fetch.repo_roots and kg_base.repo_roots are the same body?",
+      "options": [
+        "kbcommon.repo_roots, with kg_base re-exporting it and fetch calling kbcommon.repo_roots",
+        "kg_base.repo_roots stays and fetch imports kg_base"
+      ],
+      "recommendation": "kbcommon.repo_roots, with kg_base re-exporting it and fetch calling kbcommon.repo_roots",
+      "do": {
+        "kbcommon.repo_roots, with kg_base re-exporting it and fetch calling kbcommon.repo_roots": "ST-e23cb2h4",
+        "kg_base.repo_roots stays and fetch imports kg_base": "ST-e23cb2h4"
+      },
+      "class": "push"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How do kbdecide.main and kblog.main share one body?",
+      "options": [
+        "kbdecide.run_cli(parser, commands, argv) holds the parse, dispatch and refusal handling; both main functions call it",
+        "kblog.main imports and calls kbdecide.main with its own parser and commands patched in"
+      ],
+      "recommendation": "kbdecide.run_cli(parser, commands, argv) holds the parse, dispatch and refusal handling; both main functions call it",
+      "do": {
+        "kbdecide.run_cli(parser, commands, argv) holds the parse, dispatch and refusal handling; both main functions call it": "ST-e23cb2h4",
+        "kblog.main imports and calls kbdecide.main with its own parser and commands patched in": "ST-e23cb2h4"
+      },
+      "class": "push"
+    }
+  ],
   "notes": "operator request 2026-10-19 (housekeeping batch): identical bodies 2026-10-19: bl_intake.end_tree = kbingest.kill_tree, census.read_sources = kbcommon.read_sources, fetch.repo_roots = kg_base.repo_roots, kbdecide.matches/main = kblog.matches/main. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
   "claimed_by": "orch-r108",
   "operator": "op-f618a13e"

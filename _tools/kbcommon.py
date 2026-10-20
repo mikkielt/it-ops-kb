@@ -30,6 +30,7 @@ and a topic by `<root>/<topic>`.
 
   roots()                     [Root] in order: public first, then kb/<name>/ by name, then the KB_ROOTS dirs, then the
                               roots a pointer names that resolve (only the named ones after serve_only)
+  repo_roots()                the roots() inside this repository's kb/ (not the KB_ROOTS dirs of other repositories)
   missing_roots()             [MissingRoot]: the pointers kb/_roots/<name>.md whose root is not served and the KB_ROOTS
                               directories with no ROOT_FILE, each with its reason; read_pointer(), pointer_problems()
                               read one pointer file; pointers() reads every sound one
@@ -645,6 +646,13 @@ def with_missing_note(text):
 def roots():
     """The roots the tools serve, in _all_roots() order: every root, or only those serve_only() named."""
     return [r for r in _all_roots() if not _SERVED or r.name in _SERVED]
+
+
+def repo_roots():
+    """The roots inside this repository's kb/ (KB_ROOTS roots live in other repositories): what fix, sync, fetch and the
+    trailers work on, public first."""
+    kbd = os.path.realpath(KB_DIR)
+    return [r for r in roots() if os.path.dirname(os.path.realpath(r.path)) == kbd]
 
 
 def serve_only(names):
