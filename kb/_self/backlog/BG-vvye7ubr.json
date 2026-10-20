@@ -50,7 +50,11 @@
         "end orphan and detached": "BG-vvye7ubr",
         "end orphan only": "BG-vvye7ubr"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "end orphan and detached",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
