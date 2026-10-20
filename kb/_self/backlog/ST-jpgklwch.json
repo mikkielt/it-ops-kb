@@ -33,6 +33,27 @@
     "ST-eihikgyx",
     "ST-corcepuz"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does the shared KB-Work judgement live: in kg_trailers beside refuse_commit_msg, or behind the hook?",
+      "options": [
+        "judge_work in kg_trailers",
+        "hook returns problems, refusal calls the hook"
+      ],
+      "recommendation": "judge_work in kg_trailers",
+      "do": {
+        "judge_work in kg_trailers": "ST-jpgklwch",
+        "hook returns problems, refusal calls the hook": "ST-jpgklwch"
+      },
+      "class": "push",
+      "answer": "judge_work in kg_trailers",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-kbrxa4c4 review"
   ],

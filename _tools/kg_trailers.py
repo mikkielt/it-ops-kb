@@ -574,6 +574,19 @@ def amend_base(mark):
         return None
 
 
+def judge_work(work, base):
+    """[problem lines] for a message's KB-Work values WORK (message_trailers') against the index and BASE (the commit
+    the change is judged from, "" for a root): the checks check-trailers runs on the commit before a push. The
+    commit-msg hook prints each problem and refuse_commit_msg refuses on any, so the two read one judgement. Empty
+    when WORK is empty or sound."""
+    if not work:
+        return []
+    staged = lambda rel: blob(INDEX, rel) if blob(INDEX, rel) is not None else blob(base, rel)  # noqa: E731
+    if not work_ids_ok(work, staged):
+        return [f"has {', '.join(work)}; expected one line of backlog item ids that exist"]
+    return work_state(work, changed_paths(base, INDEX), staged)
+
+
 def refuse_commit_msg(path, base):
     """REFUSED, with the reason on stderr, when the commit-msg hook must refuse the message in file PATH: its KB-Work line
     fails the checks check-trailers runs on the commit before a push (work_ids_ok, work_state). BASE is amend_base's.
@@ -589,10 +602,7 @@ def refuse_commit_msg(path, base):
         base = "" if base == "root" else (base or rev_parse("HEAD") or "")
         with open(path, encoding="utf-8", errors="replace", newline="") as f:
             work = message_trailers(f.read())[1].get(WORK, [])
-        if not work:
-            return 0
-        staged = lambda rel: blob(INDEX, rel) if blob(INDEX, rel) is not None else blob(base, rel)  # noqa: E731
-        refused = (not work_ids_ok(work, staged)) or work_state(work, changed_paths(base, INDEX), staged)
+        refused = judge_work(work, base)
     except Exception:  # noqa: BLE001
         return 0
     if refused:

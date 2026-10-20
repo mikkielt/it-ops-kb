@@ -12,8 +12,8 @@ import kblane
 import kbpublic
 import kg_lane
 from kg_base import KB, git, rev_parse
-from kg_trailers import (INDEX, KEY_LINE, STRAY, WORK, apply_trailers, blob, changed_paths, compute, message_strays,
-                         message_trailers, valid_date, WORK_RULE, work_ids_ok, work_state)
+from kg_trailers import (INDEX, KEY_LINE, STRAY, WORK, apply_trailers, compute, judge_work, message_strays,
+                         message_trailers, valid_date, WORK_RULE)
 
 HOOKS_DIR = ".githooks"
 HOOKS = ("prepare-commit-msg", "commit-msg", "pre-push")
@@ -407,18 +407,12 @@ def hook_commit_msg(args):
               "this commit", file=sys.stderr)
     if stray:
         print(f"kbgit.py commit-msg: {STRAY}", file=sys.stderr)
-    work = message_trailers(new)[1].get(WORK, [])
-    if work:  # the checks check-trailers runs on this commit before a push, with the rule they apply said once
-        staged = lambda rel: blob(INDEX, rel) if blob(INDEX, rel) is not None else blob(base, rel)  # noqa: E731
-        if not work_ids_ok(work, staged):
-            whys = [f"has {', '.join(work)}; expected one line of backlog item ids that exist"]
-        else:
-            whys = work_state(work, changed_paths(base, INDEX), staged)
-        for why in whys:
-            print(f"kbgit.py commit-msg: {WORK}: {why}; check-trailers (the pre-push hook, sync's gate) refuses this "
-                  "commit: work lands only for a claimed item of a started sprint", file=sys.stderr)
-        if whys:
-            print(f"kbgit.py commit-msg: the rule: {WORK_RULE}", file=sys.stderr)
+    whys = judge_work(message_trailers(new)[1].get(WORK, []), base)  # the checks check-trailers runs, shared with the refusal
+    for why in whys:
+        print(f"kbgit.py commit-msg: {WORK}: {why}; check-trailers (the pre-push hook, sync's gate) refuses this "
+              "commit: work lands only for a claimed item of a started sprint", file=sys.stderr)
+    if whys:
+        print(f"kbgit.py commit-msg: the rule: {WORK_RULE}", file=sys.stderr)
 
 
 def cmd_hook(a, gate, dirty_paths):
