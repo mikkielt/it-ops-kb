@@ -1,0 +1,24 @@
+{
+  "id": "ST-bpr3xc2x",
+  "kind": "story",
+  "title": "A plan whose goal says a row or file is never delivered plants each kind of file the delivery copies, not only the one the story names",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "step 6 of the kb-sprint skill's plan section asks, for a goal clause that a thing is never copied, delivered or published, for one planted case per kind of file that route copies (run files, usage and ops sidecars, findings, work files), so a story that handles two kinds does not leave the third to the review",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "t = open(\".claude/skills/kb-sprint/SKILL.md\", encoding=\"utf-8\").read()\ni = t.find(\"## plan\")\nj = t.find(\"## start\")\nplan = t[i:j]\nassert \"file family\" in plan or \"each kind of file\" in plan, \"the plan step does not ask for one planted case per kind of file a delivery or copy clause covers\"\n"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-rrqlgiff close"
+  ]
+}

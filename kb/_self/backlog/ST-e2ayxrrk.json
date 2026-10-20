@@ -1,0 +1,24 @@
+{
+  "id": "ST-e2ayxrrk",
+  "kind": "story",
+  "title": "A check that slices a doc section is run on each heading form it accepts, and an item that needs the orchestrator's own result JSON runs after the sprint closes",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "step 6 of the kb-sprint skill's plan section asks a check that slices a doc section by its heading to be run against a planted section of each heading form it accepts (ST-resduis7's check sliced a # heading to nothing), and says an item whose figures come from the orchestrator session's own result JSON is planned for after the sprint closes, since that file is written when the session exits",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "t = open(\".claude/skills/kb-sprint/SKILL.md\", encoding=\"utf-8\").read()\ni = t.find(\"## plan\")\nj = t.find(\"## start\")\nplan = t[i:j]\nassert \"heading form\" in plan, \"the plan step does not ask a check that slices a doc section to run against each heading form it accepts\"\nassert \"own result\" in plan or \"result JSON of the orchestrator\" in plan, \"the plan step does not say that an item which needs the orchestrator session's own result JSON is planned after the sprint closes\"\n"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-rrqlgiff close"
+  ]
+}

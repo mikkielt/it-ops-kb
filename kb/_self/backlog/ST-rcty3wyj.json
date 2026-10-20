@@ -1,0 +1,25 @@
+{
+  "id": "ST-rcty3wyj",
+  "kind": "story",
+  "title": "A worker re-runs the stale-doc check after rebasing, rewords a gate that gate add made blocking, and edits only under its own worktree path",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the fixed worker rules tell a worker to run git fetch and git rebase origin/main and then selfdoc.py stale --since origin/main again before it names its Self-Reviewed docs (land rebases first and stops at the stale step for a doc the worker's earlier run did not list), to reword a gate whose gate add output says made blocking so it stays provisional unless its choice guards a rule, and never to edit a path under the orchestrator's checkout",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, \"_tools\")\nimport bl_dispatch\nrules = \" \".join(r if isinstance(r, str) else \" \".join(x for x in r[1:] if x) for r in bl_dispatch.WORKER_RULES).lower()\nmiss = [w for w, p in ((\"rebase\", \"rebase\"), (\"blocking gate reworded\", \"made blocking\"), (\"own worktree paths\", \"orchestrator's checkout\")) if p not in rules]\nassert not miss, (\"the worker rules do not cover\", miss)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-rrqlgiff close"
+  ]
+}
