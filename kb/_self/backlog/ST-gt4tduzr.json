@@ -68,7 +68,11 @@
         "hand-written fixed-since records in the committed store, the bug filed for learn": "ST-gt4tduzr",
         "leave them open until learn stops deriving them": "ST-gt4tduzr"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "hand-written fixed-since records in the committed store, the bug filed for learn",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): status 2026-10-19: code.claude.com 52.4M characters, learn.microsoft.com 3.0M, docs.gitlab.com 0.9M, www.anthropic.com 0.3M (route), docs.chef.io and huggingface.co (stage level 0, needs 1). kb_hook.py already denies WebFetch on code.claude.com and learn.microsoft.com (run on 2026-10-19). Premise: the check fails.",
