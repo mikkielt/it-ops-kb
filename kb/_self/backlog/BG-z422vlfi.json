@@ -11,7 +11,7 @@
     "run": [
       "python3",
       "-c",
-      "import sys,json;sys.path.insert(0,\"_tools\");import mon_eta;k=mon_eta.kind_of(json.load(open(\"kb/_self/backlog/ST-ix3lknus.json\")));print(k);sys.exit(0 if k==\"bench\" else 1)"
+      "import sys,json;sys.path.insert(0,\"_tools\");import mon_eta;k=mon_eta.kind_of({\"kind\":\"story\",\"title\":\"A paid multi run measures research dedup within 75 USD\",\"goal\":\"multi run research runs twice with --max-usd 12 per run; multi record writes its rows\",\"touches\":[\"kb/_self/reports/benchmarks.csv\"]});print(k);sys.exit(0 if k==\"bench\" else 1)"
     ]
   },
   "touches": [

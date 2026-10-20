@@ -11,11 +11,11 @@
     "run": [
       "python3",
       "-c",
-      "import sys,types;sys.path.insert(0,'_tools');import bl_land as b;it={'ST-x':{'kind':'story','status':'done','title':'Planning gives an item whose rule text names a command form a check that runs that command form, not only a read of the phrase','goal':'an item that changes how researched reads a goal gets a check that runs researched on the sprint own goal research story'}};cw=b.clause_words('researched names each narrowed-goal piece it does not read as a question');s=b.carries_clause(types.SimpleNamespace(items=it,label=lambda i:i),cw,'ST-x');print(sorted(cw),s);sys.exit(1 if s else 0)"
+      "import sys,types;sys.path.insert(0,'_tools');import bl_close as b;it={'ST-x':{'kind':'story','status':'done','title':'Planning gives an item whose rule text names a command form a check that runs that command form, not only a read of the phrase','goal':'an item that changes how researched reads a goal gets a check that runs researched on the sprint own goal research story'}};cw=b.clause_words('researched names each narrowed-goal piece it does not read as a question');s=b.carries_clause(types.SimpleNamespace(items=it,label=lambda i:i),cw,'ST-x');print(sorted(cw),s);sys.exit(1 if s else 0)"
     ]
   },
   "touches": [
-    "_tools/bl_land.py",
+    "_tools/bl_close.py",
     "kb/_self/tools.md"
   ],
   "links": [

@@ -22,5 +22,5 @@
   "links": [
     "parked: SP-uwkr7iyl review"
   ],
-  "notes": "Review severity S3 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck)."
+  "notes": "Review severity S3 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck). Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft."
 }

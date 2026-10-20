@@ -11,11 +11,11 @@
     "run": [
       "python3",
       "-c",
-      "import sys,types;sys.path.insert(0,'_tools');import bl_land as b;sys.exit(1 if b.DELIVERY_READ.search('python3 _tools/bench_querylog.py --dry-run') else 0)"
+      "import sys,types;sys.path.insert(0,'_tools');import bl_precheck as b;sys.exit(1 if b.DELIVERY_READ.search('python3 _tools/bench_querylog.py --dry-run') else 0)"
     ]
   },
   "touches": [
-    "_tools/bl_land.py",
+    "_tools/bl_precheck.py",
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
   ],

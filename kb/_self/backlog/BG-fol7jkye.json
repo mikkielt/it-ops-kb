@@ -11,11 +11,11 @@
     "run": [
       "python3",
       "-c",
-      "import sys;sys.path.insert(0,'_tools');import bl_land as b;q=b.goal_questions('Does it support (1) a or (2) b?');print(q);sys.exit(0 if q==['Does it support (1) a or (2) b?'] else 1)"
+      "import sys;sys.path.insert(0,'_tools');import bl_precheck as b;q=b.goal_questions('Does it support (1) a or (2) b?');print(q);sys.exit(0 if q==['Does it support (1) a or (2) b?'] else 1)"
     ]
   },
   "touches": [
-    "_tools/bl_land.py",
+    "_tools/bl_precheck.py",
     "kb/_self/tools.md"
   ],
   "links": [

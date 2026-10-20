@@ -11,11 +11,11 @@
     "run": [
       "python3",
       "-c",
-      "import sys;sys.path.insert(0,'_tools');import bl_land as b;q=b.goal_questions('Answer these: 1. does X work; 2. does Y work');print(q);sys.exit(0 if len(q)==2 else 1)"
+      "import sys;sys.path.insert(0,'_tools');import bl_precheck as b;q=b.goal_questions('Answer these: 1. does X work; 2. does Y work');print(q);sys.exit(0 if len(q)==2 else 1)"
     ]
   },
   "touches": [
-    "_tools/bl_land.py",
+    "_tools/bl_precheck.py",
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
   ],
