@@ -2,7 +2,7 @@
   "id": "ST-jpg6ijhc",
   "kind": "story",
   "title": "Every public article has a title line",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-2rjhs7se",
   "priority": "P3",
   "rank": 0,
@@ -71,5 +71,7 @@
   "depends_on": [
     "ST-de73ah5a"
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): lint on 2026-10-19: 32 articles with no '# ' title line (prior-art, reuse, mecm, auth). Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+  "notes": "operator request 2026-10-19 (housekeeping batch): lint on 2026-10-19: 32 articles with no '# ' title line (prior-art, reuse, mecm, auth). Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
+  "claimed_by": "orch-r105",
+  "operator": "op-f618a13e"
 }
