@@ -28,6 +28,25 @@
     "kb/_self/code.md",
     "kb/_self/monitoring.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which otel/pyproject.toml floors move with the SDK's 1.39 floor? The exporter before 1.39 imports LogData, which the SDK removed in 1.39",
+      "options": [
+        "sdk and otlp-http exporter to 1.39",
+        "sdk only"
+      ],
+      "recommendation": "sdk and otlp-http exporter to 1.39",
+      "do": {
+        "sdk and otlp-http exporter to 1.39": "ST-jkmrn6d6",
+        "sdk only": "ST-jkmrn6d6"
+      },
+      "class": "design",
+      "answer": "sdk and otlp-http exporter to 1.39",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-qvlnptiw review"
   ],

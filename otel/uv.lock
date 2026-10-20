@@ -191,9 +191,9 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "opentelemetry-exporter-otlp-proto-http", specifier = ">=1.30" },
+    { name = "opentelemetry-exporter-otlp-proto-http", specifier = ">=1.39" },
     { name = "opentelemetry-exporter-prometheus", specifier = ">=0.51b0" },
-    { name = "opentelemetry-sdk", specifier = ">=1.30" },
+    { name = "opentelemetry-sdk", specifier = ">=1.39" },
 ]
 
 [[package]]

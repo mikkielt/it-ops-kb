@@ -6,8 +6,8 @@ version = "0"
 description = "Exports kbmon's metric points over OTLP/HTTP with the OpenTelemetry Python SDK"
 requires-python = ">=3.11"
 dependencies = [
-    "opentelemetry-sdk>=1.30",
-    "opentelemetry-exporter-otlp-proto-http>=1.30",
+    "opentelemetry-sdk>=1.39",
+    "opentelemetry-exporter-otlp-proto-http>=1.39",
     "opentelemetry-exporter-prometheus>=0.51b0",
 ]
 
