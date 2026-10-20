@@ -71,7 +71,11 @@
         "add querylog.py to the touches": "ST-oo6uxbn6",
         "narrow the goal and leave the pair": "ST-oo6uxbn6"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "add querylog.py to the touches",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
