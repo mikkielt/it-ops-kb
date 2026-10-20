@@ -21,7 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Open questions for this sprint (kb first, then live docs): No outside facts expected; the inputs are the repository's own docs and README. Confirm with rag.py pack --root _self which doc owns each README section (kb/_self/README.md, map.csv).",
+  "notes": "Open questions for this sprint (kb first, then live docs): No outside facts expected; the inputs are the repository's own docs and README. Confirm with rag.py pack --root _self which doc owns each README section (kb/_self/README.md, map.csv). No outside facts: the inputs are the repository's own docs. rag.py pack --root _self and kb/_self/README.md with map.csv show the owners: README.md Why, How it works and When it pays off are described by kb/_self/design.md (map.csv README.md,kb/_self/design.md); the Benchmark section restates kb/_self/reports/benchmarks.md, which design.md and token-efficiency.md rest on; Where things are mirrors the file table of kb/_self/README.md; Using it points to kb/_self/plugin.md and kb/_self/maintaining.md; What to trust points to kb/_self/content-rules.md. kb/_self/alternatives.md is mapped to README.md but has no README section.",
   "claimed_by": "orch-r111",
   "operator": "op-f618a13e"
 }
