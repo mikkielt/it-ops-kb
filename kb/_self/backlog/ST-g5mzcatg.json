@@ -1,0 +1,29 @@
+{
+  "id": "ST-g5mzcatg",
+  "kind": "story",
+  "title": "land runs a code-branch push that timed out once more before it stops",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "when kbgit.py sync's push of a code/<id> branch ends on the network timeout, land retries it once and stops only on a second timeout, naming both",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,re; t=open(\"_tools/kg_sync.py\",encoding=\"utf-8\").read()+open(\"_tools/bl_land.py\",encoding=\"utf-8\").read(); ok=re.search(r\"GitNetworkTimeout[\\s\\S]{0,400}(retry|once more|again)\",t) is not None; print(\"push timeout retried:\",ok); sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/kg_sync.py",
+    "kb/_self/git.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "related: ST-oine6mto",
+    "parked: SP-jplczvj2 close"
+  ],
+  "notes": "SP-jplczvj2 close: ST-corcepuz and ST-ijamqlyh landings stopped at kbgit.py sync --push with 'git push did not finish within 120 s'; each rerun pushed in about 40 s."
+}

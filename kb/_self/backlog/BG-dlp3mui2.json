@@ -1,0 +1,25 @@
+{
+  "id": "BG-dlp3mui2",
+  "kind": "bug",
+  "title": "land's scope stop records its ops row under step rebase, not scope",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "a land run that stops at step scope records its land.step row with step=scope, so backlog.py ops and the retrospective name the real stop",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,re; t=open(\"_tools/bl_land.py\",encoding=\"utf-8\").read(); ok=re.search(r\"ops_mark\\(\\\"scope\\\"\\)\",t) is not None; print(\"scope step marked:\",ok); sys.exit(0 if ok else 1)"
+    ]
+  },
+  "repro_reason": "the stop needs a code-lane landing with a branch whose commit changes a file outside its touches against a remote; SP-jplczvj2's ST-oo6uxbn6 landing printed 'land stopped at step scope' while backlog.py ops showed step=rebase exit=1",
+  "touches": [
+    "_tools/bl_land.py"
+  ],
+  "links": [
+    "related: ST-vwe6kopi",
+    "parked: SP-jplczvj2 close"
+  ]
+}

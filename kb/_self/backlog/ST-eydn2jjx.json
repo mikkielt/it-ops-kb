@@ -1,0 +1,26 @@
+{
+  "id": "ST-eydn2jjx",
+  "kind": "story",
+  "title": "A worker's edit to a file outside its own worktree is refused before it lands",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "a headless worker's Edit or Write to a path outside its worktree and scratch directory (the orchestrator's tree above it) is refused by a hook naming its worktree",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,sys; s=json.dumps(json.load(open(\".claude/settings.json\",encoding=\"utf-8\")).get(\"hooks\",{})); ok=\"worktree\" in s.lower(); print(\"a hook guards worker writes outside the worktree:\",ok); sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/settings.json",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-jplczvj2 close"
+  ],
+  "notes": "SP-jplczvj2 close: ST-corcepuz's worker made two edits to the orchestrator's _tools/ql_learn.py by a wrong path and restored them itself; nothing refused the write. The check is a first cut: the planner replaces it with a run of the hook on a planted path."
+}

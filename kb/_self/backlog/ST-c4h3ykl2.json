@@ -1,0 +1,26 @@
+{
+  "id": "ST-c4h3ykl2",
+  "kind": "story",
+  "title": "A plan's structural goal clause gets a check that scans the whole scope the clause names",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-sprint plan step 6 says a clause such as 'no import cycle' or 'no duplicate' is read by a check over cycles of any length, function-level imports included, and over every module the clause names, not only pairs or a listed subset",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,re; t=open(\"skills/sprint/SKILL.md\",encoding=\"utf-8\").read(); s=t[t.find(\"## plan\"):t.find(\"## start\")]; ok=re.search(r\"cycles? of any length\",s) is not None; print(\"plan step names cycles of any length:\",ok); sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-jplczvj2 close"
+  ],
+  "notes": "SP-jplczvj2 close: ST-oo6uxbn6's goal check read mutual pairs only, so it passed while a four-module ql_ cycle through function-level imports remained (review gap BG-cnmm24jd). The same item's planned touches missed querylog.py, the sole caller of the function whose signature the cycle break changed, and ql_base.py: the worker stopped on a gate and the landing stopped at step scope."
+}

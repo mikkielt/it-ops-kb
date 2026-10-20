@@ -1,0 +1,24 @@
+{
+  "id": "BG-sqmvvtiy",
+  "kind": "bug",
+  "title": "gate add classes a gate secrets when its question names a code identifier such as bare_token or def_tokens",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "a gate whose only secrets word sits inside a code identifier (bare_token, def_tokens) classes design, while a question that names a token, secret or credential still classes secrets",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,\"_tools\"); import bl_authority as a; c,r=a.class_reasons({\"touches\":[]},{\"id\":\"g1\",\"question\":\"Gate and bare_token move to ql_learn; def_tokens is left with no caller\",\"options\":[\"move them\",\"keep them\"]}); print(\"class:\",c,r); sys.exit(1 if c==\"secrets\" else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-jplczvj2 close"
+  ]
+}
