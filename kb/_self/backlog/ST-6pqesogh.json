@@ -1,0 +1,24 @@
+{
+  "id": "ST-6pqesogh",
+  "kind": "story",
+  "title": "kbask.py's docstring names coordination.md as its doc",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "_tools/kbask.py's module docstring names kb/_self/coordination.md, the doc that now owns kbask, not kb/_self/monitoring.md, which holds only a pointer",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import ast,sys;d=ast.get_docstring(ast.parse(open('_tools/kbask.py',encoding='utf-8').read())).splitlines()[0];print(d[-60:]);sys.exit(0 if 'kb/_self/coordination.md' in d else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbask.py"
+  ],
+  "links": [
+    "parked: SP-eptouzxc review"
+  ]
+}

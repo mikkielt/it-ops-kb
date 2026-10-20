@@ -1,0 +1,25 @@
+{
+  "id": "ST-u57465ym",
+  "kind": "story",
+  "title": "tools.md's kbask and coord.py rows are short pointers to coordination.md, not a second copy of it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/tools.md's rows for _tools/kbask.py and _tools/coord.py each name what the tool is for in a sentence or two and point to kb/_self/coordination.md, so the long text that repeats (and on the kbask session's MCP server contradicts, BG-wrqd4ytg) the owner doc lives only there; no fact is lost",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;rows=[l for l in open('kb/_self/tools.md',encoding='utf-8') if l.startswith('|') and ('kbask.py' in l.split('|')[1] or 'coord.py' in l.split('|')[1])];long=[(r.split('|')[1].strip(),len(r.split())) for r in rows if len(r.split())>90 or 'no MCP server' in r];print(long);sys.exit(1 if long or not rows else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/tools.md",
+    "kb/_self/coordination.md"
+  ],
+  "links": [
+    "parked: SP-eptouzxc review"
+  ]
+}

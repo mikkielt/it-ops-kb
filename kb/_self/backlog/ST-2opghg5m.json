@@ -1,0 +1,25 @@
+{
+  "id": "ST-2opghg5m",
+  "kind": "story",
+  "title": "The sprint skill and worker role name coordination.md by a path a project that installs the plugin can open",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "skills/sprint/SKILL.md and agents/worker.md, which the plugin ships, name kb/_self/coordination.md by a path that resolves in a host project (under ${CLAUDE_PLUGIN_ROOT}, or as a rag.py pack --root _self question), as every command in them already does, not as a bare clone-relative path",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys;bad=[(f,m.start()) for f in ('skills/sprint/SKILL.md','agents/worker.md') for m in re.finditer(r'kb/_self/',open(f,encoding='utf-8').read()) if not open(f,encoding='utf-8').read()[:m.start()].endswith('${CLAUDE_PLUGIN_ROOT}/')];print(bad);sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "agents/worker.md"
+  ],
+  "links": [
+    "parked: SP-eptouzxc review"
+  ]
+}

@@ -12,7 +12,7 @@
     "run": [
       "python3",
       "-c",
-      "import re,sys;t=open('kb/_self/coordination.md',encoding='utf-8').read();L=t.splitlines();need={'401 not the next event':r'not the next event','absent key starts at revision 1':r'starts at (revision )?1','second cleanup exits 1':r'second (kbask )?cleanup','typed /kb-research bypasses PreToolUse':r'bypass','free-text --holder exits 2':r'--holder[^\\n]*exits 2|exits 2[^\\n]*--holder','git log --output caveat':r'--output[ =]'};lost=[k for k,p in need.items() if not re.search(p,t)];wrong=[l[:70] for l in L if ('claim_windows' in l and re.search(r'refused claims[^.]*claim_windows',l)) or re.search(r'(coord_wait|coord_put)[^.]*\\bcaps\\b',l)];print('lost:',lost);print('wrong:',wrong);sys.exit(1 if lost or wrong else 0)"
+      "import re,sys;t=open('kb/_self/coordination.md',encoding='utf-8').read();L=t.splitlines();need={'401 not the next event':r'not the next event','absent key starts at revision 1':r'starts at (revision )?1','second cleanup exits 1':r'second (kbask )?cleanup','typed /kb-research bypasses PreToolUse':r'bypass','free-text --holder exits 2':r'--holder[^\\n]*exits 2|exits 2[^\\n]*--holder','git log --output caveat':r'--output[ =]'};lost=[k for k,p in need.items() if not re.search(p,t)];wrong=[l[:70] for l in L if re.search(r'refused claims[^\\n]{0,120}claim_windows',l) or re.search(r'(coord_wait|coord_put)[^.]*\\bcaps\\b',l)];print('lost:',lost);print('wrong:',wrong);sys.exit(1 if lost or wrong else 0)"
     ]
   },
   "repro_reason": "the defect is the doc's text against the code; the behaviour each sentence describes already runs as the code says (the reviewer ran coord.py claim --holder 'free text' on a temp store, exit 2), so only the doc's wording can be read",
