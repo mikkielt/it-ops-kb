@@ -43,6 +43,23 @@
   "depends_on": [
     "ST-ac2cw5ek"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which branch of the goal: a census.py command that runs the phase-4 passage judgments on STEP_MODELS['check'], or docs and brief header that name no model for the checker? The reword suits a checker that opens pages when a passage does not settle a fact, which a tool-less call cannot.",
+      "options": [
+        "Reword",
+        "Command"
+      ],
+      "recommendation": "Reword",
+      "do": {
+        "Reword": "ST-tef5gzq7",
+        "Command": "ST-tef5gzq7"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-yojt6y7v review"
   ],

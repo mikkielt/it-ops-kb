@@ -236,8 +236,9 @@ JUDGE_COLS = ["source_id", "fact", "path", "verdict", "sentence", "model", "note
 HAIKU_MODEL = "claude-haiku-5-5"  # pinned: the `haiku` alias moves over time (claude/ci-and-headless.md)
 BASELINE_MODELS = {"judge": "claude-sonnet-5-5", "check": "claude-opus-5-5"}  # step: the model it ran on before its comparison
 # (the checker's was the orchestrator's, the model the census sessions run on)
-STEP_MODELS = {"judge": HAIKU_MODEL, "check": HAIKU_MODEL}  # step: the model it runs on now: Haiku 5.5 where it held both
-# bars on the held-out half (kb/_self/reports/fact-diff.md, "Haiku 5.5 on the census's judging steps")
+STEP_MODELS = {"judge": HAIKU_MODEL, "check": HAIKU_MODEL}  # step: the model that held both bars on the held-out half
+# (kb/_self/reports/fact-diff.md, "Haiku 5.5 on the census's judging steps"); `judge` is the default model of `judge`, and
+# `check` is a call of `compare --step check` only: the phase-4 checker is a subagent that keeps the session's model
 COLS = ["id", "url", "kind", "repo", "pin", "path", "retrieved_utc", "http_status", "bucket", "evidence", "proof", "note",
         "used_in", "outcome", "outcome_note"]
 BUCKETS = ("OK", "CHANGED", "GONE", "NEWER-VERSION", "NEEDS-READING")
@@ -1360,8 +1361,8 @@ def sample_brief(picked, log, a):
     groups = "; ".join(f"{g} checked={c['checked']} agreed by tool={c['agreed by tool']} for the checker={c['for the checker']}"
                        for g, c in by_group.items())
     text = "\n\n".join([SAMPLE_RULES.format(date=date),
-                         f"checked={n} agreed by tool={len(tool)} for the checker={len(check)}; the checker's passage judgments "
-                         f"run on {STEP_MODELS['check']}\nby group, each stated apart in the report: {groups}",
+                         f"checked={n} agreed by tool={len(tool)} for the checker={len(check)}\n"
+                         f"by group, each stated apart in the report: {groups}",
                          "## Agreed by tool\n" + ("\n".join(tool) or "none"),
                          "## For the checker\n\n" + ("\n\n".join(check) or "none")])
     return text, {"checked": n, "agreed by tool": len(tool), "for the checker": len(check)}
