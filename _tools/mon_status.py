@@ -316,9 +316,16 @@ def short_name(text, limit=NAME_CHARS):
     return cut.rstrip(" ,;:-") + "…"
 
 
+def sprint_counts(s):
+    """(done, total) of the sprint row S: its items done of all, done and dropped counted as done."""
+    counts = s.get("items") if isinstance(s.get("items"), dict) else {}
+    return number(counts.get("done")) + number(counts.get("dropped")), sum(number(v) for v in counts.values())
+
+
 def sprint_row(name, s, done, total, got, source):
     """The one row of a sprint: `  name  state  done/total  percent  ETA range`, or what a sprint not yet started waits for;
-    GOT is the active sprint's estimate (None where it has none), at most ROW_CHARS characters."""
+    GOT is the active sprint's estimate (None where it has none), at most ROW_CHARS characters. The sprint panel's rows
+    are written by this function too."""
     pct = round(done * 100 / total) if total else 0
     state = str(s.get("state"))
     if state == "active":
@@ -333,8 +340,7 @@ def sprint_lines(r, s, facts, hist, source="origin/main"):
     """The lines of one sprint and its entry of the answer's facts: its one row, or with `r.detail` the full lines with the
     items left by their short titles; HIST is the sprint panel's duration history, SOURCE where the panel read the items from."""
     counts = s.get("items") if isinstance(s.get("items"), dict) else {}
-    total = sum(number(v) for v in counts.values())
-    done = number(counts.get("done")) + number(counts.get("dropped"))
+    done, total = sprint_counts(s)
     name = s.get("title") or r.item(s.get("id"))
     entry = facts["progress"][s.get("id")] = {"state": s.get("state"), "name": short_name(name), "done": done, "total": total}
     active = s.get("state") == "active"
