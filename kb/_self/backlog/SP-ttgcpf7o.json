@@ -2,7 +2,7 @@
   "id": "SP-ttgcpf7o",
   "kind": "sprint",
   "title": "Agents call the kb's read-only commands as kb MCP tools, with the command line as fallback",
-  "status": "planned",
+  "status": "active",
   "goal": "the tools/list size today and the chosen tool grouping are recorded with the command that measured them; the read-only backlog commands are kb MCP tools that return what the command prints; the read-only query log and docs commands are kb MCP tools; the coord tools read an ask's text and answer an ask behind the existing opt-in; the observer, the worker brief and the sprint skill name the tools first and the command as fallback",
   "gates": [
     {

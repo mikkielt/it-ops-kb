@@ -2,7 +2,7 @@
   "id": "ST-xfjizwua",
   "kind": "story",
   "title": "Research sprint goal: Agents call the kb's read-only commands as kb MCP tools, with the command line as fallback",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ttgcpf7o",
   "goal_research": true,
   "priority": "P1",
