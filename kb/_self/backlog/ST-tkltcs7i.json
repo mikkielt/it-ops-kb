@@ -1,0 +1,24 @@
+{
+  "id": "ST-tkltcs7i",
+  "kind": "story",
+  "title": "A check that greps a dry run for a flag name fails when the flag is named only as absent",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The kb-sprint plan step's check rules say a check that a flag reaches an argv sets the flag's value on a planted run and reads that value in the argv, not the flag name anywhere in the output, since ST-dfmj76rf's check 2 passed on the 'spend cap: none' line",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ns=' '.join(open('skills/sprint/SKILL.md',encoding='utf-8').read().split())\ni=s.find('## plan');j=s.find('## start')\nok='named only as absent' in s[i:j] or 'reads that value in the argv' in s[i:j]\nprint(ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-v64egscn close"
+  ]
+}

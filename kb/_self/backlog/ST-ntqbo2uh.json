@@ -1,0 +1,24 @@
+{
+  "id": "ST-ntqbo2uh",
+  "kind": "story",
+  "title": "Planning runs referrers on each subcommand a goal names, so its readers are in the touches before the claim",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The kb-sprint plan step says that a goal naming a backlog.py subcommand (next, brief, dispatch) has the module that implements it found with referrers and put in touches, since ST-ac2cw5ek's goal named next and brief while its touches lacked bl_view.py and bl_dispatch.py",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ns=' '.join(open('skills/sprint/SKILL.md',encoding='utf-8').read().split())\ni=s.find('## plan');j=s.find('## start')\nok='subcommand a goal names' in s[i:j] or 'subcommand the goal names' in s[i:j]\nprint(ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-v64egscn close"
+  ]
+}

@@ -13,5 +13,9 @@
       "-c",
       "import sys;sys.path.insert(0,'_tools');import bl_authority as a;it={'touches':['_tools/bench_report.py']};qs=['Show tokens per correct answer in the report?','Sum input, output and cache tokens in the multi table?'];r=[a.class_reasons(it,dict(id='g1',question=q,options=['one','two']))[0] for q in qs];print(r);sys.exit(0 if 'secrets' not in r else 1)"
     ]
-  }
+  },
+  "links": [
+    "parked: SP-v64egscn close"
+  ],
+  "notes": "SP-v64egscn close (2026-10-20): seen again. ST-c3d3rijw's gate g1 ('How does the digest show tokens by model') was classed secrets and made blocking; the orchestrator answered it with its recommendation as a layout choice. bl_authority.gate_class still returns secrets for that planted gate today. A duplicate retro draft was folded into this bug instead of filed."
 }

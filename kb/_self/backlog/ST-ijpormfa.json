@@ -1,0 +1,24 @@
+{
+  "id": "ST-ijpormfa",
+  "kind": "story",
+  "title": "kb/_self/map.csv maps token-efficiency.md to every module its Model call sites section names",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Each _tools module the Model call sites section of kb/_self/token-efficiency.md names (bl_dispatch, census, factdiff, kb_ask, kbask, ql_distill, ql_research) has a map.csv row to that doc, so selfdoc.py stale flags the section when one of them changes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,csv\nrows={(r[0],r[1]) for r in csv.reader(open('kb/_self/map.csv',encoding='utf-8')) if len(r)>1}\nmiss=[m for m in ('bl_dispatch','census','factdiff','kb_ask','kbask','ql_distill','ql_research') if ('kb/_self/token-efficiency.md','_tools/'+m+'.py') not in rows]\nprint('unmapped:',miss);sys.exit(1 if miss else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/map.csv"
+  ],
+  "links": [
+    "parked: SP-v64egscn close"
+  ]
+}

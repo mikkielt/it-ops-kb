@@ -1,0 +1,24 @@
+{
+  "id": "ST-4mq6w3lx",
+  "kind": "story",
+  "title": "A worker brief lists its sibling items' goals, so a worker files no item a sibling already carries",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py brief names each in-flight or todo sibling of the sprint with its goal, and the worker rules say to search the sprint's items before filing, since ST-e4vjchrg's worker filed BG-7aoowqsk, the finding ST-tef5gzq7 carried",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,subprocess\no=subprocess.run([sys.executable,'_tools/backlog.py','brief','ST-57ewnpvz'],capture_output=True,text=True)\nprint(o.returncode);sys.exit(0 if o.returncode==0 and 'goal' in o.stdout.lower() and 'sibling' in o.stdout.lower() and 'before filing' in o.stdout.lower() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py"
+  ],
+  "links": [
+    "parked: SP-v64egscn close"
+  ]
+}
