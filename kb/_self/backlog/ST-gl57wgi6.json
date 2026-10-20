@@ -2,7 +2,7 @@
   "id": "ST-gl57wgi6",
   "kind": "story",
   "title": "Facts whose source page is gone are re-sourced or noted, and none is deleted",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-2rjhs7se",
   "priority": "P3",
   "rank": 0,
@@ -53,5 +53,7 @@
   "depends_on": [
     "ST-g6t7jung"
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): anchors on 2026-10-19: 19171 rows, located 10265, no-match 6886, not-text 1820, fetch-error 172, gone 28 (10 sources in 5 files). Deleting kb content is the operator's: a fact with no supporting source becomes a blocking gate. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+  "notes": "operator request 2026-10-19 (housekeeping batch): anchors on 2026-10-19: 19171 rows, located 10265, no-match 6886, not-text 1820, fetch-error 172, gone 28 (10 sources in 5 files). Deleting kb content is the operator's: a fact with no supporting source becomes a blocking gate. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
+  "claimed_by": "orch-r105",
+  "operator": "op-f618a13e"
 }
