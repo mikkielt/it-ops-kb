@@ -38,6 +38,25 @@
     "kb/_self/querylog.md",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does export --since/--event get fast: filter rows before the gates and leak scan (rows passed over are not counted as left out), or keep counting every row through the gates?",
+      "options": [
+        "filter before the gates",
+        "gate every row, filter after"
+      ],
+      "recommendation": "filter before the gates",
+      "do": {
+        "filter before the gates": "ST-7zlcjj5o",
+        "gate every row, filter after": "ST-7zlcjj5o"
+      },
+      "class": "design",
+      "answer": "filter before the gates",
+      "by": "agent"
+    }
+  ],
   "notes": "operator request 2026-10-19 (housekeeping batch): measured 2026-10-19 on this host (loaded, warm): export --since 2026-10-18 --event usage took 89.2 s real (86.1 s user), while digest of the week took 1.9 s. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
   "claimed_by": "orch-r106",
   "operator": "op-f618a13e"
