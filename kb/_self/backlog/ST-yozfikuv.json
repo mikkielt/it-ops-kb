@@ -27,6 +27,25 @@
     "ST-njsgt56c",
     "BG-to6fh6rq"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the sessions panel judge a dispatch run's worker alive or ended?",
+      "options": [
+        "alive is the recorded pid still existing (os.kill signal 0 through bl_procs.running; null on Windows, where signal 0 would end the process)",
+        "alive also requires the pid to be a claude process in the panel's procs list"
+      ],
+      "recommendation": "alive is the recorded pid still existing (os.kill signal 0 through bl_procs.running; null on Windows, where signal 0 would end the process)",
+      "do": {
+        "alive is the recorded pid still existing (os.kill signal 0 through bl_procs.running; null on Windows, where signal 0 would end the process)": "ST-yozfikuv",
+        "alive also requires the pid to be a claude process in the panel's procs list": "ST-yozfikuv"
+      },
+      "class": "design",
+      "answer": "alive is the recorded pid still existing (os.kill signal 0 through bl_procs.running; null on Windows, where signal 0 would end the process)",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-5gph7fh6 review"
   ],
