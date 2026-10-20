@@ -1042,7 +1042,11 @@ def send(url, key_file, argv, plain_http=False):
     if not token or not token.isascii() or not token.isprintable() or " " in token:
         print(f"coord.py: key file {key_file} holds no token (one line of printable ASCII, no spaces)", file=sys.stderr)
         return 2
-    parts = urllib.parse.urlsplit(url)
+    try:
+        parts = urllib.parse.urlsplit(url)
+    except ValueError as error:
+        print(f"coord.py: --url {url[:60]!r} cannot be split: {error}", file=sys.stderr)
+        return 2
     if parts.scheme not in ("http", "https") or not parts.hostname:
         print(f"coord.py: --url is http://HOST:PORT or https://HOST[:PORT], not {url[:60]!r}", file=sys.stderr)
         return 2
@@ -1072,8 +1076,8 @@ def send(url, key_file, argv, plain_http=False):
             status, data = response.status, response.read()
         finally:
             conn.close()
-    except (OSError, http.client.HTTPException) as error:
-        print(f"coord.py: cannot reach {where}: {error}", file=sys.stderr)
+    except (OSError, UnicodeError, http.client.HTTPException) as error:
+        print(f"coord.py: cannot reach {where[:80]}: {error}", file=sys.stderr)
         return 2
     try:
         payload = json.loads(data.decode("utf-8"))
