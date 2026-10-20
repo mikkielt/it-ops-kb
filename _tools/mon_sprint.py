@@ -243,10 +243,11 @@ def progress(sp, eta=None):
 
 
 def lines(data, width=None, taken=None):
-    """The body rows: where the items were read from (and how far the checkout is behind it), a row for each sprint (id, state padded to STATE_WIDTH, progress) with its first waiting gates
+    """The body rows: where the items were read from (and how far the checkout is behind it), a row for each sprint (id, state padded to STATE_WIDTH, its short name `mon_status.short_name`, progress) with its first waiting gates
     under it, then `landing` rows (item, last step, since). TAKEN is the snapshot's taken time, the `now` of each active
     sprint's estimate (WIDTH is unused)."""
     import mon_eta
+    import mon_status
     now = mon_eta.seconds_of(taken)
     rows = []
     if data.get("sprints") and data.get("source"):
@@ -258,7 +259,8 @@ def lines(data, width=None, taken=None):
     shown = data.get("sprints", [])[:SPRINT_ROWS]
     for sp in shown:
         eta = mon_eta.estimate(sp, data.get("history") or {}, now) if sp["state"] == "active" else None
-        rows.append(f"{sp['id']}  {sp['state'].ljust(STATE_WIDTH)}{progress(sp, eta)}")
+        name = mon_status.short_name(sp.get("title") or sp["id"]).ljust(mon_status.NAME_CHARS)
+        rows.append(f"{sp['id']}  {sp['state'].ljust(STATE_WIDTH)}{name}  {progress(sp, eta)}")
         waiting = [w for w in sp.get("waiting", []) if not (w["item"] == sp["id"] and w["gate"] == "start")]
         for w in waiting[:WAITING_ROWS]:
             rows.append(f"    waiting  {w['item']}/{w['gate']}")
