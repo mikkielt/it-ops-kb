@@ -2,7 +2,7 @@
   "id": "BG-lyfl57xv",
   "kind": "bug",
   "title": "sprint status in the checkout fallback says 0 done commits on origin/main when the ref was not readable",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-2uljwgho",
   "priority": "P3",
   "rank": 0,
@@ -27,5 +27,7 @@
   "links": [
     "parked: SP-dulvwwjc review"
   ],
-  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: repro fails (AssertionError: the checkout fallback says '0 done commits on origin/main'). Re-premise 2026-10-20 after mon_eta reworded the ETA line (a00b40ce3): the old repro's phrase '0 done commits on origin/main' is gone, but the checkout fallback's ETA line still reads 'No ETA yet: no durations of finished items on origin/main to estimate from.' instead of saying origin/main was not readable; the repro now reads the ETA line itself and fails on main."
+  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: repro fails (AssertionError: the checkout fallback says '0 done commits on origin/main'). Re-premise 2026-10-20 after mon_eta reworded the ETA line (a00b40ce3): the old repro's phrase '0 done commits on origin/main' is gone, but the checkout fallback's ETA line still reads 'No ETA yet: no durations of finished items on origin/main to estimate from.' instead of saying origin/main was not readable; the repro now reads the ETA line itself and fails on main.",
+  "claimed_by": "orch-r113",
+  "operator": "op-f618a13e"
 }
