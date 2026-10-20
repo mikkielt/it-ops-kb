@@ -21,7 +21,8 @@ The seven checks, each independent and each a result {name, state, detail, remed
                and each hook script is there; the plugin manifest parses and the files it names exist
   host         the 5-minute load average is under SUITE_LOAD_PER_CORE times the cores (the load a whole-suite
                tests.py run fits its seconds ceiling at, which `done` of a review story reads too, naming the host;
-               it is lower than LOAD_PER_CORE, so a load over that one fails it as well), no host lock (`kb-tests.lock`,
+               it is lower than LOAD_PER_CORE, so a load over that one fails it as well, in one short detail with
+               one remedy that names both), no host lock (`kb-tests.lock`,
                `kb-main.lock`) has a live holder older than `bl_stall.HOST_LOCK_WAIT_S` (pid and clone named; a
                holder that is gone is cleared by the next taker and is no failure)
   claims       no `doing` item shows `claim-no-commit`, `returned-no-commit`, `returned-staged` or `mr-dead`
@@ -108,6 +109,8 @@ REMEDY = {
     "host-load": "dispatch fewer workers and give the tests a `-k` selection, which takes no host lock",
     "suite-load": "wait for the load to fall (another application or sibling workers hold the CPU) and run the "
                   "whole suite then; a `-k` selection takes no host lock and no ceiling",
+    "both-load": "wait for the load to fall and run the whole suite then; dispatch fewer workers; a `-k` selection "
+                 "takes no host lock",
     "host-lock": "wait for the holder or narrow the tests to a `-k` selection; end the holder only when it is yours "
                  "and stuck",
     "claims": "ask its worker, or release it (`backlog.py release ID`) and dispatch it again with the failure named in "
@@ -293,10 +296,15 @@ def check_host(now=None, load=None, cores=None):
     cores = cores or os.cpu_count() or 1
     problems, remedy = [], []
     suite = None if load is None else suite_load_problem(load, cores)
-    if suite:  # under LOAD_PER_CORE too, whatever it allows: the whole suite is what the load decides first
+    busy = load is not None and load > LOAD_PER_CORE * cores
+    if suite and busy:  # over both limits: one short problem and one remedy, so the line stays within LINE_MAX
+        problems.append(f"load {load:.1f} over {SUITE_LOAD_PER_CORE:g} (a whole-suite run) and {LOAD_PER_CORE:g} "
+                        f"(more workers) per core of {cores}")
+        remedy.append(REMEDY["both-load"])
+    elif suite:
         problems.append(suite)
         remedy.append(REMEDY["suite-load"])
-    if load is not None and load > LOAD_PER_CORE * cores:
+    elif busy:
         problems.append(f"load {load:.1f} over {LOAD_PER_CORE:g} per core of {cores}")
         remedy.append(REMEDY["host-load"])
     old = [f"{n} held by pid {pid} (clone {clone}) for {age}s" for n, pid, clone, age in lock_facts(now)
