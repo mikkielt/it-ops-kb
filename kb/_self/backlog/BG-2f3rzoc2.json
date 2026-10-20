@@ -1,0 +1,20 @@
+{
+  "id": "BG-2f3rzoc2",
+  "kind": "bug",
+  "title": "token-efficiency.md's today's figure of 12 tools and 12,416 characters is not what the default server's tools/list holds",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "the tools/list figure in kb/_self/token-efficiency.md counts the tools the measuring command lists today, including kb_backlog, kb_querylog and kb_docs, or is worded as a dated measurement that names the tools it counted",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,subprocess,sys;p=subprocess.run([sys.executable,'_tools/kb_mcp.py'],input=json.dumps({'jsonrpc':'2.0','id':1,'method':'tools/list'})+'\\n',capture_output=True,text=True);assert p.returncode==0,p.stderr;t=json.loads(p.stdout)['result']['tools'];n=len(json.dumps(t,separators=(',',':')));d=open('kb/_self/token-efficiency.md',encoding='utf-8').read();m='Today'+chr(39)+'s figure.** ';assert m not in d or (m+'%d tools and %s characters'%(len(t),format(n,','))) in d,'token-efficiency.md gives a tool count and size that the default server does not list: %d tools, %d characters'%(len(t),n)"
+    ]
+  },
+  "touches": [
+    "kb/_self/token-efficiency.md"
+  ]
+}
