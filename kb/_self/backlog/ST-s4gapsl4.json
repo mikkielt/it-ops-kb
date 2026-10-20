@@ -2,7 +2,7 @@
   "id": "ST-s4gapsl4",
   "kind": "story",
   "title": "kb-census skill tells factdiff.py dead to take the census log, which needs the fact diff log",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-gavrmuvx",
   "priority": "P2",
@@ -28,5 +28,7 @@
   "links": [
     "parked: SP-uwkr7iyl review"
   ],
-  "notes": "Review severity S3 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck). Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft. 2026-10-20 planning: found by the SP-uwkr7iyl review: with the census log, dead fails with CsvError lacks column(s) source_id. The check reads the Phase 2 section only. Premise: it fails, the line names <log>."
+  "notes": "Review severity S3 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck). Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft. 2026-10-20 planning: found by the SP-uwkr7iyl review: with the census log, dead fails with CsvError lacks column(s) source_id. The check reads the Phase 2 section only. Premise: it fails, the line names <log>.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
