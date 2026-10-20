@@ -26,6 +26,25 @@
   "depends_on": [
     "BG-gkocrnfw"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the status answer treat a landing in progress whose last land.step row is old, and one with no title?",
+      "options": [
+        "Show it by the item's title with the age of its last step; leave out a landing the panel gives no title for",
+        "Leave out a landing whose last step is older than a fixed window"
+      ],
+      "recommendation": "Show it by the item's title with the age of its last step; leave out a landing the panel gives no title for",
+      "do": {
+        "Show it by the item's title with the age of its last step; leave out a landing the panel gives no title for": "BG-pahecn3b",
+        "Leave out a landing whose last step is older than a fixed window": "BG-pahecn3b"
+      },
+      "class": "design",
+      "answer": "Show it by the item's title with the age of its last step; leave out a landing the panel gives no title for",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-dulvwwjc review"
   ],

@@ -162,6 +162,12 @@ def when(text):
     return str(text)[:16].replace("T", " ") if text else "-"
 
 
+def ago(now, stamp):
+    """`, last step 3.5 h ago` for a row stamped STAMP (`2026-10-20T14:18:19.451Z`) at NOW seconds; "" where either is unknown."""
+    then = mon_eta.seconds_of(str(stamp)[:19] + "Z") if stamp else None
+    return "" if then is None or now is None else f", last step {minutes(max(now - then, 0) / 60)} ago"
+
+
 def more(count, noun):
     return [f"+{count} more {noun}"] if count > 0 else []
 
@@ -316,7 +322,7 @@ def sprints(r):
     if data is None:
         return [f"Sprints: {why}."], {"state": "unread"}
     rows = [s for s in data.get("sprints") or [] if isinstance(s, dict)]
-    landing = [x for x in data.get("landings") or [] if isinstance(x, dict)]
+    landing = [x for x in data.get("landings") or [] if isinstance(x, dict) and x.get("title")]  # a landing is named by its title
     for s in rows:
         r.learn([{"id": s.get("id"), "title": s.get("title")}, *(s.get("open") or [])])
     behind = data.get("behind") if isinstance(data.get("behind"), int) and not isinstance(data.get("behind"), bool) else None
@@ -332,7 +338,7 @@ def sprints(r):
         lines += [f"    your answer is needed: gate {w.get('gate')} of {r.item(w.get('item'), True)}" for w in waiting[:2]]
         lines += ["    " + x for x in more(len(waiting) - 2, "gates waiting")]
     lines += ["  " + x for x in more(len(rows) - ROWS, "sprints")]
-    lines += [f"  landing {r.item(x.get('item'))}, at step {x.get('step')}" for x in landing[:ROWS]]
+    lines += [f"  landing {x['title']}, at step {x.get('step')}{ago(r.now, x.get('last'))}" for x in landing[:ROWS]]
     host, hwhy = r.data("host")
     ld, cores = (host.get("load"), number(host.get("cores"), 0)) if host else (None, 0)
     if isinstance(ld, list) and len(ld) >= 3:
