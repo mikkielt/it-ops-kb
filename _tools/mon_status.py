@@ -285,8 +285,8 @@ def minutes_range(low, high):
     return f"{low:.0f}-{high:.0f} min" if high < 180 else f"{low / 60:.1f}-{high / 60:.1f} h"
 
 
-def sprint_lines(r, s, facts, hist):
-    """The lines of one sprint and its entry of the answer's facts; HIST is the sprint panel's duration history."""
+def sprint_lines(r, s, facts, hist, source="origin/main"):
+    """The lines of one sprint and its entry of the answer's facts; HIST is the sprint panel's duration history, SOURCE where the panel read the items from."""
     counts = s.get("items") if isinstance(s.get("items"), dict) else {}
     total = sum(number(v) for v in counts.values())
     done = number(counts.get("done")) + number(counts.get("dropped"))
@@ -310,7 +310,9 @@ def sprint_lines(r, s, facts, hist):
                  eta_high_min=None if got is None else got["high_min"],
                  confidence=None if got is None else got["confidence"], basis=None if got is None else got["basis"])
     if got is None:
-        lines.append("    No ETA yet: no durations of finished items on origin/main to estimate from.")
+        lines.append("    No ETA: origin/main was not readable, so there are no durations of finished items to estimate from."
+                     if source != "origin/main" else
+                     "    No ETA yet: no durations of finished items on origin/main to estimate from.")
     else:
         lines.append(f"    ETA about {minutes_range(got['low_min'], got['high_min'])}, {got['confidence']} confidence; "
                      f"basis: {got['basis']}.")
@@ -339,7 +341,7 @@ def sprints(r):
     elif ff and behind:
         facts["fast_forward"] = {"can": True, "why": str(ff.get("why"))}
     for s in rows[:ROWS]:
-        lines += sprint_lines(r, s, facts, data.get("history") if isinstance(data.get("history"), dict) else {})
+        lines += sprint_lines(r, s, facts, data.get("history") if isinstance(data.get("history"), dict) else {}, source)
         waiting = [w for w in s.get("waiting") or [] if isinstance(w, dict) and not (w.get("item") == s.get("id") and w.get("gate") == "start")]
         lines += [f"    your answer is needed: gate {w.get('gate')} of {r.item(w.get('item'), True)}" for w in waiting[:2]]
         lines += ["    " + x for x in more(len(waiting) - 2, "gates waiting")]
