@@ -135,11 +135,26 @@ def keep(obj, keys):
     return {key: obj[key] for key in keys if key in obj}
 
 
-def rows(store, with_question, k):
+def rows(store, with_question, k, since=None, event=None):
     """(records, refused) of the store: each readable row that passes its gates as a record, in file order; `refused`
-    is [(where, why)] for the rows left out, `why` `shape`, `leak scan` or `unreadable`."""
+    is [(where, why)] for the rows left out, `why` `shape`, `leak scan` or `unreadable`. With `since` (a day) or
+    `event`, a row or file that cannot yield a record of that day on or that event is passed over before any gate or
+    the leak scan runs, so it is neither read into a record nor counted in `refused`."""
     store = Path(store)
     out, refused = [], []
+
+    def family_wanted(family):
+        return event is None or event.partition("_")[0] == family
+
+    def wanted(family, kind, when):
+        """The time and event name of a row, read as `record` writes them, against `since` and `event`."""
+        if event is not None and event_name(family, kind) != event:
+            return False
+        return since is None or not isinstance(when, str) or when[:10] >= since
+
+    def run_wanted(stem):
+        """A file whose rows all carry the time of the run id in its name."""
+        return since is None or run_time(stem)[:10] >= since
 
     def add(where, make):
         try:
@@ -160,25 +175,32 @@ def rows(store, with_question, k):
         return "leak" if leaks(attributes, k) else make()
 
     entry_ids, seen = set(), set()
-    for p in ql_store.run_files(store):
+    for p in ql_store.run_files(store) if family_wanted("entry") or family_wanted("finding") else []:
         for n, e in lines_of(p):
+            if e is not None:
+                if isinstance(e.get("id"), str):
+                    entry_ids.add(e["id"])
+                    if e["id"] in seen:
+                        continue
+                    seen.add(e["id"])
+                if not family_wanted("entry") or not wanted("entry", e.get("surface"), e.get("day")):
+                    continue
             where = f"{p.relative_to(store).as_posix()}:{n}"
             if e is None:
                 refused.append((where, "unreadable"))
                 continue
-            if isinstance(e.get("id"), str):
-                entry_ids.add(e["id"])
-                if e["id"] in seen:
-                    continue
-                seen.add(e["id"])
             kept = keep(e, ql_store.ENTRY_KEYS)
             if not with_question:
                 kept.pop("question", None)
             attrs = {a: b for a, b in kept.items() if a != "id"}
             add(where, lambda: checked(ql_store.entry_problems(kept, where, k), attrs, lambda: record(
                 f"{kept['day']}T00:00:00Z", "entry", kept["surface"], kept["id"], p.stem, attrs)))
-    for p in ql_store.findings_files(store):
+    for p in ql_store.findings_files(store) if family_wanted("finding") else []:
+        if not run_wanted(p.stem):
+            continue
         for n, r in lines_of(p):
+            if r is not None and not wanted("finding", r.get("kind"), None):
+                continue
             where = f"{p.relative_to(store).as_posix()}:{n}"
             if r is None:
                 refused.append((where, "unreadable"))
@@ -187,7 +209,9 @@ def rows(store, with_question, k):
             attrs = {a: b for a, b in kept.items() if a != "id"}
             add(where, lambda: checked(ql_store.record_problems(kept, where, entry_ids, k), attrs, lambda: record(
                 run_time(p.stem), "finding", kept["kind"], f"{kept['id']}/{p.stem}", p.stem, attrs)))
-    for p in ql_store.usage_files(store):
+    for p in ql_store.usage_files(store) if family_wanted("usage") else []:
+        if not run_wanted(p.stem):
+            continue
         for n, u in lines_of(p):
             where = f"{p.relative_to(store).as_posix()}:{n}"
             if u is None:
@@ -197,7 +221,9 @@ def rows(store, with_question, k):
             attrs = {"entry": kept.get("id"), **{a: b for a, b in kept.items() if a != "id"}}
             add(where, lambda: checked(ql_store.usage_line_problems(kept, where), attrs, lambda: record(
                 run_time(p.stem), "usage", None, kept["id"], p.stem, attrs)))
-    for p in ql_store.work_files(store):
+    for p in ql_store.work_files(store) if family_wanted("work") else []:
+        if not run_wanted(p.stem):
+            continue
         for n, w in lines_of(p):
             where = f"{p.relative_to(store).as_posix()}:{n}"
             if w is None:
@@ -205,10 +231,14 @@ def rows(store, with_question, k):
                 continue
             kept = keep(w, WORK_KEYS)
             kind = "item" if "item" in kept else "overhead" if "overhead" in kept else "shared"
+            if not wanted("work", kind, None):
+                continue
             add(where, lambda: checked(ql_store.work_line_problems(kept, where), kept, lambda: record(
                 run_time(p.stem), "work", kind, f"{p.stem}:{n}", p.stem, kept)))
-    for p in ql_store.ops_files(store):
+    for p in ql_store.ops_files(store) if family_wanted("ops") else []:
         for n, o in lines_of(p):
+            if o is not None and not wanted("ops", o.get("event"), o.get("ts")):
+                continue
             where = f"{p.relative_to(store).as_posix()}:{n}"
             if o is None:
                 refused.append((where, "unreadable"))
@@ -244,7 +274,7 @@ def export(store=None, fmt="jsonl", since=None, event=None, with_question=False,
         err("export: refused: the store is not a directory")
         return 2
     import redact
-    records, refused = rows(store, with_question, redact.known())
+    records, refused = rows(store, with_question, redact.known(), since, event)
     records = [r for r in records if (since is None or r[0][:10] >= since) and (event is None or r[1] == event)]
     for r in sorted(records, key=lambda r: r[:3]):
         out(json.dumps(r[3], separators=(",", ":")))
