@@ -45,7 +45,11 @@
         "120 s total, each command cut to the time left": "BG-mhsmvdrz",
         "checked only between reads, a command in flight keeps its own 60 s": "BG-mhsmvdrz"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "60 s total, each command cut to the time left",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
