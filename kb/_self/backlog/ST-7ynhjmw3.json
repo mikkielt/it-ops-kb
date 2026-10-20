@@ -66,6 +66,40 @@
       "class": "design",
       "answer": "census to web-sources.md, coord and kbmon to monitoring.md, land and check to backlog.md, kb_mcp to plugin.md, tests.py to maintaining.md",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Two tools.md bullets over 5000 characters (the check: line and revalidation at question time) are in no home the goal names: where do they go?",
+      "options": [
+        "split each into a bullet and indented sub-bullets in tools.md at sentence boundaries",
+        "move them to another doc"
+      ],
+      "recommendation": "split each into a bullet and indented sub-bullets in tools.md at sentence boundaries",
+      "do": {
+        "split each into a bullet and indented sub-bullets in tools.md at sentence boundaries": "ST-7ynhjmw3",
+        "move them to another doc": "ST-7ynhjmw3"
+      },
+      "class": "design",
+      "answer": "split each into a bullet and indented sub-bullets in tools.md at sentence boundaries",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does each moved tools.md row leave tools.md and how does its text land in the owning doc?",
+      "options": [
+        "the row keeps its command cell and a one-line summary with a pointer to a new section; the text moves verbatim as bullets of about 1000 characters, split at semicolons",
+        "the text is rewritten into prose in the owning doc"
+      ],
+      "recommendation": "the row keeps its command cell and a one-line summary with a pointer to a new section; the text moves verbatim as bullets of about 1000 characters, split at semicolons",
+      "do": {
+        "the row keeps its command cell and a one-line summary with a pointer to a new section; the text moves verbatim as bullets of about 1000 characters, split at semicolons": "ST-7ynhjmw3",
+        "the text is rewritten into prose in the owning doc": "ST-7ynhjmw3"
+      },
+      "class": "design",
+      "answer": "the row keeps its command cell and a one-line summary with a pointer to a new section; the text moves verbatim as bullets of about 1000 characters, split at semicolons",
+      "by": "agent"
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): tools.md lines over 5000 characters on 2026-10-19: census 19794, coord 13263, land 10390, kb_mcp 7510, backlog check 6170, kbmon 5722, tests.py 5608 (and benchmarks 53843, A2). Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
