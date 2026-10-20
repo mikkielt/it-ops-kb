@@ -84,7 +84,9 @@
       },
       "class": "querylog",
       "answer": "beside the store, as <store name>-reredact-<UTC time>, only the run files it changes",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -101,7 +103,9 @@
       },
       "class": "querylog",
       "answer": "the store gates' own test: a leak scan hit, and for question and a feedback lead also a change by redact.redact; a value still flagged outside a fetch path stays, is reported left and exits 1",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
