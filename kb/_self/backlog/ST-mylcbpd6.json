@@ -2,7 +2,7 @@
   "id": "ST-mylcbpd6",
   "kind": "story",
   "title": "The help texts of backlog.py, benchmarks.py and the query log say what the code does",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gea4jifz",
   "priority": "P3",
   "rank": 0,
@@ -42,5 +42,7 @@
     "_tools/bl_cli.py",
     "_tools/bench_repro.py"
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): folds ST-scbu2zyn, ST-zc355heu, BG-j3r2xicw (repros embedded; all failed on 2026-10-19). Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+  "notes": "operator request 2026-10-19 (housekeeping batch): folds ST-scbu2zyn, ST-zc355heu, BG-j3r2xicw (repros embedded; all failed on 2026-10-19). Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
+  "claimed_by": "orch-r111",
+  "operator": "op-f618a13e"
 }
