@@ -36,6 +36,27 @@
     "ST-hpbjc2gc",
     "BG-y3vxqpkp"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Does end_orphans, which dispatch calls after a worker exits, also end a detached process left in the worker's worktree?",
+      "options": [
+        "end orphan and detached",
+        "end orphan only"
+      ],
+      "recommendation": "end orphan and detached",
+      "do": {
+        "end orphan and detached": "BG-vvye7ubr",
+        "end orphan only": "BG-vvye7ubr"
+      },
+      "class": "agents-rule",
+      "answer": "end orphan and detached",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "kb/public/python/process-orphans-and-cwd.md:26",
     "kb/public/python/process-orphans-and-cwd.md:39"
