@@ -2,8 +2,9 @@
   "id": "ST-3yj5rkdu",
   "kind": "story",
   "title": "EV-page-file-size-windows is re-decided now that the word window is under COMMON_SHARE",
-  "status": "draft",
-  "priority": "P3",
+  "status": "doing",
+  "sprint": "SP-gavrmuvx",
+  "priority": "P1",
   "rank": 0,
   "goal": "rag.py eval prints no DRIFT line for EV-page-file-size-windows: the row's expect_verdict is reread against what the kb holds on page file size (the live pack prints good with a check: line since window fell to 0.1987 of the units) and either kept weak with a reason or set to the verdict the kb now earns, and word_shares.csv is rewritten with rag.py eval --write-shares once the row passes on live shares; found at the SP-z3jcdsgr review's done rerun",
   "checks": [
@@ -23,5 +24,7 @@
   "links": [
     "parked: SP-z3jcdsgr review"
   ],
-  "notes": "ST-kio3rfoh 2026-10-19: rag.py eval printed DRIFT EV-page-file-size-windows (window share baseline 0.2015, now 0.1957) while 717 of 717 rows passed, after a change of kb/public articles only; --write-shares rewrote word_shares.csv for every word, so the drift is corpus-wide. ST-li5pag54 2026-10-21: on main 163d32c36 window is 0.1944 (baseline 0.2015); eval DRIFT passes only on the committed shares. After --write-shares (reverted, not committed) EV-page-file-size-windows FAILS: verdict=good (want weak), pack 'best article matches 4 of 5 key words: file, page, size, window' plus a check: line, from agent-error-catalogue/ldap-paging/robocopy lines, none on page file size. So the drift is not benign and the shares cannot be retaken while the row expects weak; the item ST-li5pag54 is blocked on this one (needs kb/public/_retrieval/lookup_eval.csv, outside its touches). Same eval run: noted=14 vs NOTED_BASELINE=13; the extra row is the _self row EV-let-another-operator-agents-see-claims (check: 'no single fact holds half the key words (at most 3 of 7)'), added by 62b3775e7."
+  "notes": "ST-kio3rfoh 2026-10-19: rag.py eval printed DRIFT EV-page-file-size-windows (window share baseline 0.2015, now 0.1957) while 717 of 717 rows passed, after a change of kb/public articles only; --write-shares rewrote word_shares.csv for every word, so the drift is corpus-wide. ST-li5pag54 2026-10-21: on main 163d32c36 window is 0.1944 (baseline 0.2015); eval DRIFT passes only on the committed shares. After --write-shares (reverted, not committed) EV-page-file-size-windows FAILS: verdict=good (want weak), pack 'best article matches 4 of 5 key words: file, page, size, window' plus a check: line, from agent-error-catalogue/ldap-paging/robocopy lines, none on page file size. So the drift is not benign and the shares cannot be retaken while the row expects weak; the item ST-li5pag54 is blocked on this one (needs kb/public/_retrieval/lookup_eval.csv, outside its touches). Same eval run: noted=14 vs NOTED_BASELINE=13; the extra row is the _self row EV-let-another-operator-agents-see-claims (check: 'no single fact holds half the key words (at most 3 of 7)'), added by 62b3775e7. Blocks (2026-10-21, manager of SP-gavrmuvx): main's rag.py eval fails on this row's drift, so every landing whose paths the eval reads stops at its gate; taken into SP-gavrmuvx beside ST-li5pag54, whose gate g1 (widen touches or land this first) waits for the operator.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
