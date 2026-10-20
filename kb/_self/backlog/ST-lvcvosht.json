@@ -21,6 +21,13 @@
         "-c",
         "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport subprocess\nb = subprocess.run([sys.executable, '_tools/backlog.py', 'brief', 'ST-lvcvosht'], capture_output=True, text=True, timeout=120).stdout\nw = ' '.join(open('agents/worker.md', encoding='utf-8').read().split())\nmiss = [n for n, t in (('brief', b), ('agents/worker.md', w)) if 'kb_backlog' not in t]\nprint('no kb_backlog in:', miss); sys.exit(1 if miss else 0)\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t=open('skills/sprint/SKILL.md',encoding='utf-8').read(); print('kb_backlog in skills/sprint/SKILL.md:', 'kb_backlog' in t); sys.exit(0 if 'kb_backlog' in t else 1)"
+      ]
     }
   ],
   "clauses": [
@@ -31,6 +38,10 @@
     {
       "clause": "the worker brief and the kb-sprint skill name kb_backlog first and the backlog.py command as the fallback",
       "check": 1
+    },
+    {
+      "clause": "the worker brief and the kb-sprint skill name kb_backlog first and the backlog.py command as the fallback",
+      "check": 2
     }
   ],
   "touches": [
@@ -45,10 +56,11 @@
     "kb/_self/code.md",
     "kb/_self/tools.md",
     "kb/_self/plugin.md",
-    "kb/_self/token-efficiency.md"
+    "kb/_self/token-efficiency.md",
+    "agents/worker.md"
   ],
   "depends_on": [
     "ST-6tg2cevp"
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): AGENTS.md's routing is left as it is: changing it is a rule change and waits for the operator (parked draft). Premise: both checks fail."
+  "notes": "operator request 2026-10-19 (housekeeping batch): AGENTS.md's routing is left as it is: changing it is a rule change and waits for the operator (parked draft). Premise: both checks fail. orchestrator r110 2026-10-20: check 1 reads agents/worker.md, which was outside the touches, and no check read the sprint skill the clause names: agents/worker.md added to touches and check 2 reads skills/sprint/SKILL.md."
 }
