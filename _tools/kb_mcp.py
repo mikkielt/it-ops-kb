@@ -57,6 +57,11 @@ asks and, unasked, for a source past its freshness lifetime):
              querylog.py (digest, status, show) and selfdoc.py, check.py and rag.py eval (stale, section, map, check, eval) as
              `command` and `args`, answering the text the script prints through redact.redact (kb_docs ends it with
              `(exit 1)` when the command found something); a command or option outside each tool's closed list is a tool error
+  kb_backlog_write  (the team's own server only, and only with KB_BACKLOG_WRITE_TOOLS=1 in its environment: otherwise
+             not listed and an unknown tool) `claim`, `release` or `answer` of backlog.py as `command` and `args`, run as a
+             child with CLAUDECODE=1, so every gate and authority rule of the command line holds (a ceiling-class gate takes
+             no `--by operator` here); a command line that a Bash deny rule of the clone's .claude/settings.json or
+             settings.local.json matches, and any other command, is a tool error
   kb_topics_for  kb topics that code touches, like `rag.py topics-for`: the curated signals of each root's signals.csv
              found in the files or text given (paths relative to the host project, CLAUDE_PROJECT_DIR or the cwd);
              imports=true matches only the packages the files declare (imports, manifests), not comments or strings;
@@ -1219,6 +1224,90 @@ def kb_backlog(args):
 
 BACKLOG_HANDLERS = {"kb_backlog": kb_backlog}
 
+# the one writing tool, opt-in: three commands of backlog.py, each run as a command line of an agent session
+BACKLOG_WRITE_COMMANDS = ["claim", "release", "answer"]
+BACKLOG_WRITE_RUN_S = 120
+BACKLOG_WRITE_TOOL_LIST = [
+    {"name": "kb_backlog_write", "title": "Claim, release or answer in the backlog",
+     "description": "Writes the project's backlog (backlog.py; not kb facts, not live device data), served only with "
+                    "KB_BACKLOG_WRITE_TOOLS=1: claim ID --by NAME; release ID; answer ID GATE --answer TEXT [--by agent "
+                    "--provisional ...]. It runs the command line as an agent session (CLAUDECODE set), so the command's "
+                    "own gate and authority rules hold, a ceiling-class gate's terminal-only rule included, and a command "
+                    "line a Bash deny rule of the project's settings matches is refused. Any other command is refused: "
+                    "run backlog.py for it.",
+     "inputSchema": {"type": "object", "properties": {
+         "command": {"type": "string", "enum": BACKLOG_WRITE_COMMANDS, "description": "the backlog.py command"},
+         "args": {"type": "array", "items": {"type": "string"}, "description": "its id and options, e.g. ['ST-xxxxxxxx', '--by', 'worker']"}},
+         "required": ["command"], "additionalProperties": False},
+     "annotations": {"title": "Claim, release or answer in the backlog", "readOnlyHint": False, "destructiveHint": False,
+                     "idempotentHint": False, "openWorldHint": False}},
+]
+
+
+def backlog_write_enabled():
+    """True when the team's own server is started with KB_BACKLOG_WRITE_TOOLS=1: kb_backlog_write writes the backlog, so a
+    default server lists and serves none of it."""
+    return not limited() and os.environ.get("KB_BACKLOG_WRITE_TOOLS") == "1"
+
+
+def bash_denied(command_line):
+    """The deny rule of the project's settings (.claude/settings.json and settings.local.json) that a Bash call of
+    COMMAND_LINE would meet, or None. A `*` matches any text and a rule ending in ` *` also matches the bare command; a
+    settings file that is there and unreadable denies every call, as a rule that cannot be read cannot be shown not to match."""
+    for name in ("settings.json", "settings.local.json"):
+        path = Path(kbcommon.HOME, ".claude", name)
+        if not path.is_file():
+            continue
+        try:
+            rules = json.loads(path.read_text(encoding="utf-8"))["permissions"].get("deny", [])
+        except (OSError, ValueError, KeyError, AttributeError):
+            return f"{name} (unreadable)"
+        for rule in rules if isinstance(rules, list) else []:
+            if not isinstance(rule, str):
+                continue
+            if rule == "Bash":
+                return rule
+            if not (rule.startswith("Bash(") and rule.endswith(")")):
+                continue
+            pattern = rule[5:-1]
+            if pattern.endswith(":*"):  # the older spelling of a trailing ` *`
+                pattern = pattern[:-2] + " *"
+            bare = pattern[:-2] if pattern.endswith(" *") else None
+            if re.fullmatch(".*".join(re.escape(part) for part in pattern.split("*")), command_line, re.S) \
+                    or command_line == bare:
+                return rule
+    return None
+
+
+def kb_backlog_write(args):
+    extra = sorted(set(args) - {"command", "args"})
+    if extra:
+        raise ToolError(f"unknown argument(s): {', '.join(extra)}")
+    command, rest = args.get("command"), args.get("args") or []
+    if command not in BACKLOG_WRITE_COMMANDS:
+        raise ToolError(f"command must be one of {', '.join(BACKLOG_WRITE_COMMANDS)}: {command!r} is not offered here; "
+                        "run backlog.py for it")
+    if not isinstance(rest, list) or not all(isinstance(a, str) for a in rest):
+        raise ToolError("args is a list of strings")
+    import redact, shlex
+    line = " ".join(["python3 _tools/backlog.py", command, *(shlex.quote(a) for a in rest)])
+    rule = bash_denied(line)
+    if rule:
+        raise ToolError(f"refused: a deny rule of the project's settings matches this command line ({rule}): run it yourself")
+    env = dict(os.environ, CLAUDECODE="1")  # an agent session, whatever this server's own environment holds
+    try:
+        p = subprocess.run([sys.executable, str(Path(TOOLS, "backlog.py")), command, *rest], capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", timeout=BACKLOG_WRITE_RUN_S, stdin=subprocess.DEVNULL,
+                           cwd=kbcommon.HOME, env=env)
+    except subprocess.TimeoutExpired:
+        raise ToolError(f"backlog.py {command} did not finish in {BACKLOG_WRITE_RUN_S} seconds")
+    except (OSError, subprocess.SubprocessError) as e:
+        raise ToolError(f"backlog.py did not run: {e.__class__.__name__}")
+    out, err = p.stdout.rstrip("\n"), p.stderr.strip()
+    if p.returncode:
+        raise ToolError(redact.redact(err or out or f"backlog.py {command} exited {p.returncode}")[-2000:])
+    return redact.redact(out) or f"backlog.py {command}: done"
+
 
 # ---------------------------------------------------------------- query log and docs commands
 
@@ -1385,6 +1474,7 @@ def handle(msg):
         return result(msg_id, {"tools": TOOL_LIST + ([] if limited() else [FEEDBACK_TOOL] + MONITOR_TOOL_LIST + BACKLOG_TOOL_LIST
                                + QUERYLOG_TOOL_LIST + DOCS_TOOL_LIST)
                                + (COORD_TOOL_LIST if coord_enabled() else [])
+                               + (BACKLOG_WRITE_TOOL_LIST if backlog_write_enabled() else [])
                                + (LIVE_TOOL_LIST if live_enabled() else []), "ttlMs": 3600000, "cacheScope": "public"})
     if method == "tools/call":
         name, args = params.get("name"), params.get("arguments") or {}
@@ -1396,6 +1486,8 @@ def handle(msg):
             handlers.update(FACADE_HANDLERS)
         if coord_enabled():
             handlers.update(COORD_HANDLERS)
+        if backlog_write_enabled():
+            handlers["kb_backlog_write"] = kb_backlog_write
         if name not in handlers:
             return error(msg_id, -32602, f"Unknown tool: {name}")
         if not isinstance(args, dict):
