@@ -50,9 +50,12 @@ PERMISSION_MODE = "dontAsk"
 AGENT_FILE = ROOT / ".claude" / "agents" / "kb-observer.md"
 BUILT_IN_TOOLS = ("Read", "Grep", "Glob", "Bash")
 NO_HOOKS = '{"disableAllHooks": true}'
+# The kb's own MCP server, the only one a session loads: its read-only command tools come before the command lines.
+MCP_CONFIG = {"mcpServers": {"kb": {"command": sys.executable, "args": [str(HERE / "kb_mcp.py")]}}}
+MCP_TOOLS = ("mcp__kb__kb_backlog", "mcp__kb__kb_querylog", "mcp__kb__kb_monitor_status")
 # The Bash a remediation session may run (a trailing ` *` also matches the bare command), and the file tools.
 ALLOWED_TOOLS = (
-    "Read", "Grep", "Glob",
+    "Read", "Grep", "Glob", *MCP_TOOLS,
     "Bash(python3 _tools/kbmon.py --json *)", "Bash(python3 _tools/kbmon.py --status *)",
     "Bash(python3 _tools/querylog.py show *)", "Bash(python3 _tools/querylog.py status *)",
     "Bash(python3 _tools/backlog.py show *)", "Bash(python3 _tools/backlog.py list *)",
@@ -221,12 +224,13 @@ def observer_agent():
 
 
 def session_argv(claude):
-    """The claude -p command line of a session: the agent inline, no settings source, hooks, MCP server or tool beyond the
-    four, the caps, no prompt (it goes on stdin), and the tool list last, since --allowedTools takes every argument
-    after it. A settings source adds its permissions.allow rules to --allowedTools and the project's hooks write
+    """The claude -p command line of a session: the agent inline, no settings source, hooks, MCP server beyond the kb's or
+    tool beyond the four and the kb's read-only MCP tools, the caps, no prompt (it goes on stdin), and the tool list
+    last, since --allowedTools takes every argument after it. A settings source adds its permissions.allow rules to --allowedTools and the project's hooks write
     into the clone, so none loads."""
     return [claude, "-p", "--agent", OBSERVER, "--agents", observer_agent(), "--setting-sources", "",
-            "--settings", NO_HOOKS, "--strict-mcp-config", "--tools", ",".join(BUILT_IN_TOOLS),
+            "--settings", NO_HOOKS, "--mcp-config", json.dumps(MCP_CONFIG),
+            "--strict-mcp-config", "--tools", ",".join(BUILT_IN_TOOLS),
             "--model", MODEL, "--max-budget-usd", MAX_BUDGET_USD, "--max-turns", MAX_TURNS,
             "--permission-mode", PERMISSION_MODE, "--output-format", "json", "--allowedTools", *ALLOWED_TOOLS]
 

@@ -7,6 +7,8 @@ argument-hint: "plan \"<goal>\" | start SP-... | run [SP-...] | review SP-... | 
 
 `${CLAUDE_PLUGIN_ROOT}` is the directory that holds the tool scripts: the plugin's, or, where this text runs from a clone's own copy and still shows the variable, that clone's top directory. The Bash tool does not set it: write the path where a command below shows it.
 
+Read the backlog with the `kb_backlog` kb MCP tool first when your tools list it (`command` one of `show`, `list`, `next`, `horizon`, `stalled`, `cost`, `ops` or `selectors`, `args` its arguments); the `backlog.py` command a step below shows is the fallback, and the way to every command the tool refuses (`claim`, `brief`, `land`, `done` and the rest, which write).
+
 The project's `backlog.json`, at its repository root, names the steps only some projects have. `python3 ${CLAUDE_PLUGIN_ROOT}/_tools/backlog.py config` prints each setting and whether it came from the file or is a default. A step below that names a setting runs when that setting is set (a non-empty value, a non-empty argument list) and is skipped, said so in one line, when it is not; no step asks for a file the project does not have:
 - `kb_root`: the kb root whose rule docs the project keeps; empty means the project has none, and every rule-pack command below is skipped.
 - `docs_map`: the CSV that maps an item's touches to the docs it must keep right; empty means no docs warning.
