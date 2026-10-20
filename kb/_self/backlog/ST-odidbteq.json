@@ -2,7 +2,7 @@
   "id": "ST-odidbteq",
   "kind": "story",
   "title": "census.py apply writes no census.phase ops row, so phase 2's outcomes are never measured",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-gavrmuvx",
   "priority": "P2",
@@ -32,6 +32,19 @@
     "parked: SP-uwkr7iyl review"
   ],
   "notes": "Review severity S3 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck). Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft. 2026-10-20 planning: found by the SP-uwkr7iyl review; ST-qo3kicix gate g2 left it out of that item. The check runs census.py apply under bl_base.check_env's planted query-log home and reads its spool. Premise: it fails, 0 census.phase rows with phase apply (a census_phase call in the same home writes one).",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "89395ea94ed8b57cc982fd165b65cca0f5627189",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, subprocess, sys, tempfile\nsys.path.insert(0, '_tools')\nimport bl_base\nhome = tempfile.mkdtemp()\nenv = bl_base.check_env(os.getcwd(), home)\nlog = os.path.join(home, '2026-10-21.csv')\nopen(log, 'w').write('id,url,kind,repo,pin,path,retrieved_utc,http_status,bucket,evidence,proof,note,used_in,outcome,outcome_note\\n')\np = subprocess.run([sys.executable, '_tools/census.py', 'apply', log, '--group', 'g1', '--from', os.path.join(home, 'none.json')],\n                   env=env, capture_output=True, text=True)\nrows = []\nfor d, _, fs in os.walk(home):\n    for f in fs:\n        if f.endswith('.jsonl'):\n            rows += [l for l in open(os.path.join(d, f), encoding='utf-8') if '\"census.phase\"' in l and '\"apply\"' in l]\nprint('apply exit', p.returncode, 'census.phase apply rows', len(rows))\nsys.exit(0 if rows else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "0ea8c8e2ecfb9c3b"
+      }
+    ]
+  }
 }
