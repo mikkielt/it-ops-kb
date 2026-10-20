@@ -18,5 +18,6 @@
   "touches": [
     ".claude/skills/kb-census/SKILL.md",
     "_tools/census.py"
-  ]
+  ],
+  "notes": "Orchestrator 2026-10-20: the same finding as ST-tef5gzq7 (in SP-v64egscn), whose goal covers it: once that story lands, this draft is met or narrowed to what it leaves."
 }
