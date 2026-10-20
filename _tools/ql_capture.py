@@ -10,7 +10,7 @@ that event has, each a name, an exit code, a count, milliseconds, an item id, a 
 closed reason class, never free text. `record` writes none that breaks that shape (ops_problems), and the store
 gates the written lines by the same function.
 """
-import collections, datetime, functools, hashlib, json, re, secrets, sys, threading, time, uuid
+import collections, datetime, functools, hashlib, json, os, re, secrets, sys, threading, time, uuid
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -62,6 +62,8 @@ FEEDBACK_CLAIM_WORDS = 40
 FEEDBACK_JUDGES = ("agent", "user")  # who made a report: a kb_feedback call, or a person's (the row's `judged_by`)
 FEEDBACK_IDS_NAME = "feedback.ids"  # beside the spool, never committed: the ids of the reports written lately, one per line
 FEEDBACK_IDS_MAX = 200  # the newest ids it keeps
+FEEDBACK_IDS_LOCK_WAIT_S = 5  # how long a writer waits for the record's lock before it leaves its id out
+FEEDBACK_IDS_LOCK_STALE_S = 30  # a lock file older than this is a dead writer's: it is taken over
 FEEDBACK_ID = re.compile(r"FB-[0-9a-f]{8}")
 FEEDBACK_UNCLASSIFIED ="unclassified"  # a person's comment no deterministic reader mapped: distill's Haiku maps it
 FEEDBACK_COMMENT_MAX_CHARS = 1000  # a person's comment kept in the spool, after the rules
@@ -461,11 +463,45 @@ def written_feedback_ids(spool):
     return [i for i in text.split() if FEEDBACK_ID.fullmatch(i)]
 
 
+def _take_ids_lock(path):
+    """Create the lock file `path` (O_EXCL, so one writer at a time on every OS); True once held, False when another
+    writer kept it for FEEDBACK_IDS_LOCK_WAIT_S. A lock file older than FEEDBACK_IDS_LOCK_STALE_S is a dead writer's."""
+    end = time.monotonic() + FEEDBACK_IDS_LOCK_WAIT_S
+    while True:
+        try:
+            os.close(os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY))
+            return True
+        except FileExistsError:
+            try:
+                if time.time() - path.stat().st_mtime > FEEDBACK_IDS_LOCK_STALE_S:
+                    stale = path.with_name(f"{path.name}.stale-{uuid.uuid4().hex[:8]}")
+                    os.rename(path, stale)  # atomic: of two takers, one wins
+                    stale.unlink()
+                    continue
+            except OSError:
+                pass
+        if time.monotonic() >= end:
+            return False
+        time.sleep(0.005)
+
+
 def remember_feedback_id(spool, fb):
-    """Append `fb` to the record of written ids and cut it to the newest FEEDBACK_IDS_MAX. Never raises."""
+    """Append `fb` to the record of written ids and cut it to the newest FEEDBACK_IDS_MAX. The read and the write
+    run under a lock file and the write replaces the record whole, so two writers at once (the async capture hook
+    and the MCP server) keep both ids. Never raises."""
+    path = spool.parent / FEEDBACK_IDS_NAME
+    lock = path.with_name(FEEDBACK_IDS_NAME + ".lock")
+    tmp = path.with_name(f"{FEEDBACK_IDS_NAME}.tmp-{uuid.uuid4().hex[:8]}")
     try:
-        ids = [*written_feedback_ids(spool), fb][-FEEDBACK_IDS_MAX:]
-        (spool.parent / FEEDBACK_IDS_NAME).write_text("\n".join(ids) + "\n", encoding="utf-8", newline="\n")
+        if not _take_ids_lock(lock):
+            return
+        try:
+            ids = [*written_feedback_ids(spool), fb][-FEEDBACK_IDS_MAX:]
+            tmp.write_text("\n".join(ids) + "\n", encoding="utf-8", newline="\n")
+            os.replace(tmp, path)
+        finally:
+            tmp.unlink(missing_ok=True)
+            lock.unlink(missing_ok=True)
     except OSError:
         pass
 
