@@ -1,0 +1,22 @@
+{
+  "id": "BG-vao5m6qh",
+  "kind": "bug",
+  "title": "coordination.md lost facts of monitoring.md's moved sections and states coord behaviour the code does not have",
+  "status": "todo",
+  "sprint": "SP-eptouzxc",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "kb/_self/coordination.md states each fact of monitoring.md's sections The coord.py store and Asks and remediation (at 8980d565d^) that the merge dropped: --holder takes an id and free text exits 2, a claim of an absent key starts at revision 1, a wait held behind serve rechecks the token so a revoked operator gets 401 and not the next event, a second kbask cleanup exits 1 while the first runs, UserPromptExpansion of a typed /kb-research bypasses PreToolUse, summary --wait posts its result as the answer (a failed result as the failed answer), the kb-observer agent file names the kb MCP tools first with the command lines as fallback; and it no longer says what the code does not do: claim_windows reads claim and release events only (refused claims come from coord_counts), coord_wait and coord_put refuse an over-limit value rather than cap it, the observer's read-only claim carries the git log/git show --output caveat (BG-ylrx5zt7), the Windows python3 line and the vanished-directory verdict of safe_to_remove read as _tools/kbpy and bl_clean.safe_to_remove do",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re,sys;t=open('kb/_self/coordination.md',encoding='utf-8').read();L=t.splitlines();need={'401 not the next event':r'not the next event','absent key starts at revision 1':r'starts at (revision )?1','second cleanup exits 1':r'second (kbask )?cleanup','typed /kb-research bypasses PreToolUse':r'bypass','free-text --holder exits 2':r'--holder[^\\n]*exits 2|exits 2[^\\n]*--holder','git log --output caveat':r'--output[ =]'};lost=[k for k,p in need.items() if not re.search(p,t)];wrong=[l[:70] for l in L if ('claim_windows' in l and re.search(r'refused claims[^.]*claim_windows',l)) or re.search(r'(coord_wait|coord_put)[^.]*\\bcaps\\b',l)];print('lost:',lost);print('wrong:',wrong);sys.exit(1 if lost or wrong else 0)"
+    ]
+  },
+  "repro_reason": "the defect is the doc's text against the code; the behaviour each sentence describes already runs as the code says (the reviewer ran coord.py claim --holder 'free text' on a temp store, exit 2), so only the doc's wording can be read",
+  "touches": [
+    "kb/_self/coordination.md"
+  ]
+}
