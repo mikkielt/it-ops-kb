@@ -7,6 +7,8 @@ sources: [S1340, S1341, S1342, S1343, S1349, S1350, S1351, S1000, S1001, S-53ajd
 status: complete
 ---
 
+# Key management options
+
 ## Summary
 Extends [[secret-vault-encryption]] (reuse/secret-vault-encryption.md) with options for
 protecting a pseudonymization vault's AES-256-GCM key and HMAC key: DPAPI-NG group descriptors, CNG

@@ -7,6 +7,8 @@ sources: [S1015, S1016, S1017, S1018, S-lscdap53]
 status: complete
 ---
 
+# Reuse: tiered approval for operations
+
 ## Summary
 All four are `pattern`-or-`no`, never `dependency`/`logic`. Their RBAC/approval concepts validate that
 gating risky actions behind role and confirmation is an established idea, but a small, deliberately

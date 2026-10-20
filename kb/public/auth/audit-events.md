@@ -7,6 +7,8 @@ sources: [S1357, S1358, S1359, S1360, S1361, S1362, S1363, S1364, S1365, S1366, 
 status: complete
 ---
 
+# Audit events across the endpoint stack
+
 ## Summary
 Full table now in `audit-events.csv`: Windows Security-log event ids for logon, Kerberos, NTLM fallback and
 account/group-management auditing; the four Entra sign-in log categories (interactive, non-interactive,

@@ -7,6 +7,8 @@ sources: [S1020, S1021, S-5ub6genn, S-knqivzgt, S-unpitz6t, S-mblcg5ds]
 status: complete
 ---
 
+# Reuse: log collection and normalization
+
 ## Summary
 Both OpenTelemetry Collector and Fluent Bit are `no` for direct reuse: their deployment model is an
 always-on collector process/service, which a no-always-on-service constraint (CLI + stdio MCP only)

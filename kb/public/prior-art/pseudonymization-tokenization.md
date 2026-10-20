@@ -7,6 +7,8 @@ sources: [S1005, S1006, S1007, S827, S-nvdbj7bz, S-mn7nbj7n]
 status: complete
 ---
 
+# Prior art: pseudonymization and tokenization
+
 ## Summary
 Presidio (Microsoft-originated, now `data-privacy-stack/presidio`) is the reference open-source
 implementation of detect-then-replace PII handling: `presidio-analyzer` finds entities,

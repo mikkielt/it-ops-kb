@@ -7,6 +7,8 @@ sources: [S1000, S1001, S1002, S1003, S1004, S-r3t6wvk5, S-rirjtdlh, S-nijzofsq,
 status: complete
 ---
 
+# Prior art: secret vault encryption
+
 ## Summary
 Five established projects each solve "encrypt secrets at rest, control who/what can decrypt": sops
 (file-level envelope encryption via KMS/PGP/age), age (small modern recipient-based encryption tool

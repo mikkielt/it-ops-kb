@@ -7,6 +7,8 @@ sources: [S-mmydokhp, S-tnbxhz6o, S-7hxddhnw, S-6qn22dge, S-qqxrnbd5, S-ava6e5jq
 status: complete
 ---
 
+# ConfigMgr SQL views for compliance
+
 ## Summary
 Table: `sql-views-compliance.csv` (68 views: view, doc section, description, documented columns, source). The SQL views
 reference describes each view and its join columns but **does not publish full column lists**. Compliance state per CI

@@ -7,6 +7,8 @@ sources: [S1000, S1001, S1002, S1003, S1004, S-b43o3ma3, S-6onf7joh, S-3eg2zeqb,
 status: complete
 ---
 
+# Reuse: secret vault encryption
+
 ## Summary
 Two different problems hide under "secret vault": (1) a per-conversation, short-TTL, audited-reveal
 placeholder vault, and (2) long-lived site secrets committed to a repository (credentials in a

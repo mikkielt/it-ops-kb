@@ -71,6 +71,25 @@
   "depends_on": [
     "ST-de73ah5a"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How are the 32 missing article titles worded?",
+      "options": [
+        "Short topic name; prior-art and reuse twins prefixed 'Prior art:' and 'Reuse:'",
+        "Topic path as title (e.g. prior-art/drift-detection)"
+      ],
+      "recommendation": "Short topic name; prior-art and reuse twins prefixed 'Prior art:' and 'Reuse:'",
+      "do": {
+        "Short topic name; prior-art and reuse twins prefixed 'Prior art:' and 'Reuse:'": "ST-jpg6ijhc",
+        "Topic path as title (e.g. prior-art/drift-detection)": "ST-jpg6ijhc"
+      },
+      "class": "design",
+      "answer": "Short topic name; prior-art and reuse twins prefixed 'Prior art:' and 'Reuse:'",
+      "by": "agent"
+    }
+  ],
   "notes": "operator request 2026-10-19 (housekeeping batch): lint on 2026-10-19: 32 articles with no '# ' title line (prior-art, reuse, mecm, auth). Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
   "claimed_by": "orch-r105",
   "operator": "op-f618a13e"

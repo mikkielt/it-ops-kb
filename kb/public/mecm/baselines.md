@@ -7,6 +7,8 @@ sources: [S-f6ejsacc, S-smzttlyd, S-6war5y2t, S-pm6pjuef, S-xcvlnpgb, S-eswaciiy
 status: complete
 ---
 
+# ConfigMgr configuration baselines
+
 ## Summary
 A configuration baseline holds CIs (specific revision or "Always Use Latest") and is deployed to a user or device collection
 with a simple or custom evaluation schedule (default from the client setting "Schedule compliance evaluation"). The client

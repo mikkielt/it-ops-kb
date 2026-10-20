@@ -7,6 +7,8 @@ sources: [S-j2tke6bb, S-irr2him7, S-le4dru57, S-pm6pjuef]
 status: complete
 ---
 
+# ConfigMgr application model
+
 ## Summary
 Deployment types carry detection methods: rule clauses (File System, Registry, Windows Installer product code; groupable
 with And/Or) or a custom script (PowerShell/VBScript/JScript, max 32 KB). File rules can test Version, Date Modified,

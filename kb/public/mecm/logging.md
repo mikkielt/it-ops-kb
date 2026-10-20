@@ -7,6 +7,8 @@ sources: [S-jtvk6o4y, S-hvtmunqo, S-m6tydsnh, S234, S-hmjlvsck, S-3ed5gfct]
 status: complete
 ---
 
+# ConfigMgr logging configuration
+
 ## Summary
 Logs are plain text in "CCM format", best read with CMTrace, OneTrace or Support Center. A `.log` rolls to `.lo_` at max
 size (default 250,000 bytes). Client/MP logging is set under `HKLM\SOFTWARE\Microsoft\CCM\Logging\@Global` (LogLevel,

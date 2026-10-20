@@ -7,6 +7,8 @@ sources: [S1019, S-gg2bczek, S-vouhh5ur, S-eiluqiui, S2190]
 status: complete
 ---
 
+# Prior art: MCP servers for Microsoft endpoint management
+
 ## Summary
 Microsoft publishes one official MCP server catalog, `microsoft/mcp` ("Catalog of official Microsoft
 MCP server implementations for AI-powered data access and tool integration," MIT licence). As of this

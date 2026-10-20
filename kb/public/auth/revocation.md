@@ -7,6 +7,8 @@ sources: [S1380, S1378, S1344, S1345, S1347, S1348, S1354, S1355, S1306, S1375, 
 status: complete
 ---
 
+# Access revocation
+
 ## Summary
 Answers QA19 for the systems this agent could research directly. Two corrections from this file's earlier
 drafts: (1) **Microsoft Graph is a CAE-enabled resource**, not excluded from it -- it sends a

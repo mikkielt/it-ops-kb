@@ -7,6 +7,8 @@ sources: [S1352, S1353, S1347, S-7o47ht7q, S-mifutdb3, S-ffangyfp, S-7bjorbzz, S
 status: complete
 ---
 
+# Threats to credentials and tokens
+
 ## Summary
 Defensive-only digest: attack class, the identity flow it touches,
 the official Microsoft mitigation, and how to detect it. No exploitation steps or tooling are recorded.

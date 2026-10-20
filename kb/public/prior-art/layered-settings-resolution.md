@@ -7,6 +7,8 @@ sources: [S1022, S1023, S-ovuvyg6h, S-mambvmwl]
 status: complete
 ---
 
+# Prior art: layered settings resolution
+
 ## Summary
 pydantic-settings and dynaconf are the two established Python libraries for layered configuration
 with defined source precedence. pydantic-settings is built directly on Pydantic's model validation,

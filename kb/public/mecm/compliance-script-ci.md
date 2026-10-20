@@ -7,6 +7,8 @@ sources: [S-mmydokhp, S-pm6pjuef, S-nejxr76b, S-5lqbi3py, S-j2tke6bb, S-7s2aa2cm
 status: complete
 ---
 
+# Compliance scripts in configuration items
+
 ## Summary
 Script settings in a custom "Windows Desktops and Servers" configuration item (CI) run a discovery script whose returned
 value is compared by compliance rules; an optional remediation script runs only for value rules with the Equals operator.

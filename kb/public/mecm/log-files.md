@@ -7,6 +7,8 @@ sources: [S-5lqbi3py, S-jtvk6o4y]
 status: complete
 ---
 
+# ConfigMgr log files
+
 ## Summary
 `log-files.csv` (sha256 `7f5532614548846a04e2b9b58a8994e9722c0d62d51a6585f95184f801431f46`) holds all 433 rows of the "Log file reference" tables, including the included
 cloud management gateway table: columns log, location_or_role, component (doc section), description, source_id. Client-operation

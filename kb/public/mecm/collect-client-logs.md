@@ -7,6 +7,8 @@ sources: [S-hmjlvsck, S-a2vstihu, S-lsjjopsz, S-pzvndq5z, S-mt7k74n7, S-iqjy5rwm
 status: complete
 ---
 
+# Collecting ConfigMgr client logs
+
 ## Summary
 Client Diagnostics (device or device collection, console) offers Enable verbose logging, Disable verbose logging and
 Collect Client Logs. Collection uses a client notification; the client uploads a compressed `Support_<guid>.zip` (limit 100 MB)

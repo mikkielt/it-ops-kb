@@ -7,6 +7,8 @@ sources: [S1008, S1009, S1010, S-e4iemhin, S-2fvvbt5t, S-fylt7wwn, S-qlnd73w2, S
 status: partial
 ---
 
+# Prior art: drift detection
+
 ## Summary
 Puppet (`noop`/report mode), Chef InSpec, Ansible `--check` mode and Microsoft365DSC all separate
 "detect and report a gap between desired and actual state" from "apply a fix," matching a

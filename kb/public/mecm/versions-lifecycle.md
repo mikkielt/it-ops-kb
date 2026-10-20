@@ -7,6 +7,8 @@ sources: [S-334svlym, S-qfo4gvbb, S-qhlzdpie, S-ebuvm65r, S-actyzzlw]
 status: complete
 ---
 
+# ConfigMgr versions and lifecycle
+
 ## Summary
 2603 exists and is the latest current branch version (5.00.9146.1000, early ring 2026-05-05, globally available
 2026-05-27, support ends 2027-11-05). Supported: 2603, 2509, 2503 (2503 ends 2026-09-30). Each version is supported 18

@@ -7,6 +7,8 @@ sources: [S1008, S1009, S1010, S-tvp7vziq, S-3aphi7n2]
 status: complete
 ---
 
+# Reuse: drift detection
+
 ## Summary
 None of the three surveyed projects is reusable as code when DSC v3 is already the declared source of
 truth, and none of Puppet, Chef InSpec or Microsoft365DSC ships a Python, DSC-compatible drift engine.

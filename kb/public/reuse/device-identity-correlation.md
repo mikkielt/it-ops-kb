@@ -7,6 +7,8 @@ sources: [S1011, S1012, S1013, S1014, S-y47upe33, S-ivg7xp7y, S-53yzqgkc]
 status: complete
 ---
 
+# Reuse: device identity correlation
+
 ## Summary
 All four surveyed CMDB/asset/inventory tools are a `no` for reuse into a device-identity merge problem.
 Two are wrong domain (NetBox: IPAM/DCIM; GLPI/Snipe-IT: ITSM/asset-licence tracking, not a multi-plane

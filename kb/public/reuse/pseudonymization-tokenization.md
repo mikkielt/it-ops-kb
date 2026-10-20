@@ -7,6 +7,8 @@ sources: [S1005, S1006, S1007, S827, S-rxee6wqu, S-7t5ulcii, S-h2cmbqvf, S-dcjdn
 status: complete
 ---
 
+# Reuse: pseudonymization and tokenization
+
 ## Summary
 Presidio is a commonly chosen, pinnable dependency for PII detection and replacement. LLM Guard's
 `Vault` object (placeholder<->value mapping shared between an `Anonymize` and a `Deanonymize` scanner)

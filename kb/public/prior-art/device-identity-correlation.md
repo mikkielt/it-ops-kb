@@ -7,6 +7,8 @@ sources: [S1011, S1012, S1013, S1014, S-awv4qk3v, S-53yzqgkc, S-y47upe33]
 status: complete
 ---
 
+# Prior art: device identity correlation
+
 ## Summary
 GLPI, Snipe-IT, NetBox and Fleet are open-source inventory/CMDB tools; each keeps one canonical
 record per asset/device and exposes an API others can key off. GLPI documents an ordered, first-match

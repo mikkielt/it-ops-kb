@@ -7,6 +7,8 @@ sources: [S1022, S1023, S-ovuvyg6h]
 status: complete
 ---
 
+# Reuse: layered settings resolution
+
 ## Summary
 `pydantic-settings` is a direct `dependency` fit and the clear leverage candidate in this whole reuse
 pass: it already implements this precedence order, and its default `extra='forbid'` refuses unmatched

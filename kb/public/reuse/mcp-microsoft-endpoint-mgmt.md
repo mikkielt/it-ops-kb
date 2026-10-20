@@ -7,6 +7,8 @@ sources: [S1019, S-eiluqiui, S-vouhh5ur]
 status: complete
 ---
 
+# Reuse: MCP server for Microsoft endpoint management
+
 ## Summary
 `no` reuse: Microsoft's own official MCP server catalog (`microsoft/mcp`, MIT) lists no server for
 ConfigMgr, Intune, Graph device management, or Entra as of this session's fetch. A custom MCP tool

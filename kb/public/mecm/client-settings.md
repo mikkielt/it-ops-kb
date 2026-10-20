@@ -7,6 +7,8 @@ sources: [S-pm6pjuef, S-le4dru57]
 status: complete
 ---
 
+# ConfigMgr client settings
+
 ## Summary
 Client settings are managed in Administration > Client Settings; default settings apply to all clients, custom settings
 assigned to collections override them. Full tables below cover Client policy, Compliance settings, Computer agent,

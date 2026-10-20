@@ -7,6 +7,8 @@ sources: [S1015, S1016, S1017, S1018, S-p6qlnhra, S-nnzeoxyh, S-smmzgplg, S-askz
 status: complete
 ---
 
+# Prior art: tiered approval for operations
+
 ## Summary
 Rundeck, StackStorm, Teleport and Ansible AWX each gate operational actions behind some form of
 role/ACL and, for the higher-risk ones, an approval step. Rundeck's job ACL policies and StackStorm's

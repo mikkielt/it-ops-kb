@@ -7,6 +7,8 @@ sources: [S1344, S-fn2rot77, S1346, S1347, S1354, S1355, S1306, S1380, S1378, S-
 status: complete
 ---
 
+# Permission and credential propagation latency
+
 ## Summary
 See `propagation-latency.csv` for the full table (QA2, QA8, QA9, QA10). AD global and universal group
 changes reach Kerberos flows only with a new TGT (lock, sign-out, `klist purge` or expiry, default 10 h), and

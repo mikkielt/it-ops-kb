@@ -7,6 +7,8 @@ sources: [S1020, S1021, S-5ub6genn, S-unpitz6t, S-mblcg5ds, S-d7pjd3ma, S-4wx4xn
 status: complete
 ---
 
+# Prior art: log collection and normalization
+
 ## Summary
 OTel Collector and Fluent Bit are established, vendor-neutral log collection/normalization pipelines;
 both support structured receivers/inputs and a plugin model for custom parsers, so a CMTrace-format

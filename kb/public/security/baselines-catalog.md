@@ -7,6 +7,8 @@ sources: [S1470, S1471, S1472, S1598, S1400, S1401, S1402, S1403, S1404, S1405, 
 status: complete
 ---
 
+# Security baselines catalog
+
 ## Summary
 
 Microsoft ships a GPO-backup-plus-spreadsheet security baseline for Windows 11 24H2 and 25H2, and
