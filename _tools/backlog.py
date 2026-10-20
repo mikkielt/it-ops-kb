@@ -335,7 +335,7 @@ import bl_check  # noqa: F401 - registers its commands
 import bl_ci  # noqa: F401 - registers its commands
 import bl_cli
 import bl_items  # noqa: F401 - registers the item writers (new, fmt, claim, ... goal)
-import bl_land  # noqa: F401 - registers its commands
+import bl_land  # noqa: F401 - registers its commands, and those of bl_close and bl_precheck, which it imports
 import bl_plan  # noqa: F401 - registers its commands
 import bl_view  # noqa: F401 - registers its commands
 from bl_base import Backlog, COMMITS, OUTPUT_ROOT, ROOT, Refused, Rejected, cmd_config, load_settings, rel_dir
