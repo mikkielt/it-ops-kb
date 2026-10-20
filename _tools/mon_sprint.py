@@ -9,7 +9,7 @@ files where the ref cannot be read), with the count of commits the checkout is b
 `backlog.py start` is left) or `planned`, in that order. `items` counts the sprint's items by status; `next` is the item
 `backlog.py next` offers (an active sprint only); `waiting` is each open blocking gate of the sprint or of one of its
 open items, `{item, gate}`. A landing in progress is an item still open in the backlog (not done or dropped, and in it) whose
-newest `land.step` row has no later `land.end` row in the ops rows: `{item, step, since}`, the last step recorded and the time of the landing's first step. A root with no backlog
+newest `land.step` row has no later `land.end` row in the ops rows: `{item, title, step, since, last}`, the item's title, the last step recorded, the time of the landing's first step and the time of the last. A root with no backlog
 has no sprints. The panel writes nothing and makes no request. Imports no sibling at load; `bl_base`, `bl_view`, `bl_plan`,
 `bl_stall`, `mon_eta`, `mon_status` (the range's text) and `mon_log` (`in_spool_order`) where it reads them.
 """
@@ -169,8 +169,9 @@ def sprints(root, backlog=None):
 
 
 def landings(root, bl):
-    """[{item, step, since}] of the landings in progress, newest first: an item BL (the backlog the sprints are read from)
-    holds not done or dropped whose newest `land.step` row has no later `land.end` row; [] when the ops rows cannot be read."""
+    """[{item, title, step, since, last}] of the landings in progress, newest first: an item BL (the backlog the sprints are
+    read from) holds not done or dropped whose newest `land.step` row has no later `land.end` row; `last` is the time of
+    that row, `title` the item's; [] when the ops rows cannot be read."""
     try:
         import bl_stall
         import mon_log
@@ -183,9 +184,10 @@ def landings(root, bl):
         if r.get("event") == "land.end":
             cur.pop(item, None)
         elif r.get("event") == "land.step" and isinstance(item, str):
-            cur.setdefault(item, {"item": item, "since": r.get("ts")})["step"] = r.get("step")
+            cur.setdefault(item, {"item": item, "since": r.get("ts")}).update(step=r.get("step"), last=r.get("ts"))
     cur = {i: v for i, v in cur.items() if i in bl.items and bl.items[i].get("status") not in ("done", "dropped")}
-    return sorted(({"item": v["item"], "step": v["step"], "since": v["since"]} for v in cur.values()),
+    return sorted(({"item": v["item"], "title": str(bl.items[v["item"]].get("title") or ""), "step": v["step"],
+                    "since": v["since"], "last": v["last"]} for v in cur.values()),
                   key=lambda v: (str(v["since"]), v["item"]), reverse=True)
 
 
