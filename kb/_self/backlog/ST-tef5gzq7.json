@@ -57,7 +57,11 @@
         "Reword": "ST-tef5gzq7",
         "Command": "ST-tef5gzq7"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Reword",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
