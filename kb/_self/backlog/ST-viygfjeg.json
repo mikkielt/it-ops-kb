@@ -2,7 +2,7 @@
   "id": "ST-viygfjeg",
   "kind": "story",
   "title": "kbmon's cleanup panel and a selfcheck leftovers line show each candidate's verdict and the leftover counts",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ipeewrlv",
   "priority": "P2",
   "rank": 0,
@@ -68,5 +68,7 @@
       "by": "operator"
     }
   ],
-  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with planted inputs (KB_COORD_STORE points at its own coord store, so no check writes the clone's real one); no change to _tools/tests_ceiling.json. Premise (2026-10-19, this host): kbmon.py --json gave the sessions panel state timeout at 10 s with 50 worktrees; the cleanup panel's bytes walk is capped (gate g-bytes of the tidy story) so it stays inside the panel timeout."
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with planted inputs (KB_COORD_STORE points at its own coord store, so no check writes the clone's real one); no change to _tools/tests_ceiling.json. Premise (2026-10-19, this host): kbmon.py --json gave the sessions panel state timeout at 10 s with 50 worktrees; the cleanup panel's bytes walk is capped (gate g-bytes of the tidy story) so it stays inside the panel timeout.",
+  "claimed_by": "orch-r201",
+  "operator": "op-f618a13e"
 }
