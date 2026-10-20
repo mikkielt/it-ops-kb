@@ -38,6 +38,25 @@
   "depends_on": [
     "ST-p4cdatrf"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does kb_backlog run a backlog.py command, and does a tool addition bump the server VERSION?",
+      "options": [
+        "in-process: backlog.main with stdout and stderr captured, no VERSION bump",
+        "a backlog.py subprocess per call"
+      ],
+      "recommendation": "in-process: backlog.main with stdout and stderr captured, no VERSION bump",
+      "do": {
+        "in-process: backlog.main with stdout and stderr captured, no VERSION bump": "ST-efcbmm3y",
+        "a backlog.py subprocess per call": "ST-efcbmm3y"
+      },
+      "class": "design",
+      "answer": "in-process: backlog.main with stdout and stderr captured, no VERSION bump",
+      "by": "agent"
+    }
+  ],
   "notes": "operator request 2026-10-19 (housekeeping batch): precheck, claim, done and every other command that writes or runs item checks stay off the tool. Each tool calls the command's own function and returns its text through redact.redact. test_redact.py's tools/list assertion changes only for the new tool. Premise: the check fails.",
   "claimed_by": "orch-r110",
   "operator": "op-f618a13e"
