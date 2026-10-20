@@ -50,7 +50,11 @@
         "tools.md: a clause in the benchmarks.py row": "ST-wquz2n6c",
         "benchmarks.md: edit the reference there (outside the touches)": "ST-wquz2n6c"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "tools.md: a clause in the benchmarks.py row",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): folds BG-mxla4xlk, BG-xk3syfs2, ST-ogg35rzs, BG-icnbtxdf, BG-dolvqr5i, ST-nblpdvup (repros embedded). AGENTS.md is in the touches only for BG-dolvqr5i's sizing rule wording; no rule changes.",
