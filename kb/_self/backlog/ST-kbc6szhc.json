@@ -2,7 +2,7 @@
   "id": "ST-kbc6szhc",
   "kind": "story",
   "title": "kbmon's delivery alert holds while deliveries are refused, and its querylog panel counts usage once",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vx6eufpj",
   "priority": "P2",
   "rank": 0,
@@ -37,5 +37,7 @@
     "kb/_self/code.md",
     "kb/_self/backlog.md"
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): the stall of 2026-10-17/18 ran 105 refused deliveries without an alert anyone saw. Folds BG-t54wqmgd, BG-tp4birqb, BG-q7bi7h4c, BG-mey6jwew (each repro embedded)."
+  "notes": "operator request 2026-10-19 (housekeeping batch): the stall of 2026-10-17/18 ran 105 refused deliveries without an alert anyone saw. Folds BG-t54wqmgd, BG-tp4birqb, BG-q7bi7h4c, BG-mey6jwew (each repro embedded).",
+  "claimed_by": "orch-r106",
+  "operator": "op-f618a13e"
 }
