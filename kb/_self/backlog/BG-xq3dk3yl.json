@@ -37,6 +37,25 @@
     "kb/_self/querylog.md",
     "kb/_self/usage.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does remember_feedback_id keep both ids when two writers record at once?",
+      "options": [
+        "lock file and atomic replace",
+        "append-only record"
+      ],
+      "recommendation": "lock file and atomic replace",
+      "do": {
+        "lock file and atomic replace": "BG-xq3dk3yl",
+        "append-only record": "BG-xq3dk3yl"
+      },
+      "class": "design",
+      "answer": "lock file and atomic replace",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ficl7pxl review"
   ],
