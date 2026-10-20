@@ -2,7 +2,7 @@
   "id": "ST-li5pag54",
   "kind": "story",
   "title": "rag.py eval passes on main again: no DRIFT line and noted at its baseline",
-  "status": "doing",
+  "status": "dropped",
   "sprint": "SP-gavrmuvx",
   "priority": "P1",
   "rank": 0,
@@ -26,7 +26,5 @@
   "links": [
     "parked: SP-ficl7pxl review"
   ],
-  "notes": "Blocks (2026-10-21, manager of SP-gavrmuvx): rag.py eval fails on origin/main 163d32c36 (DRIFT EV-page-file-size-windows 0.2015 -> 0.1944; noted=14 above NOTED_BASELINE=13), so every landing of the sprint stops at land step eval and ql_apply refuses query-log delivery. Its one check reads both clauses: eval exit 0 and no DRIFT line.",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "notes": "Blocks (2026-10-21, manager of SP-gavrmuvx): rag.py eval fails on origin/main 163d32c36 (DRIFT EV-page-file-size-windows 0.2015 -> 0.1944; noted=14 above NOTED_BASELINE=13), so every landing of the sprint stops at land step eval and ql_apply refuses query-log delivery. Its one check reads both clauses: eval exit 0 and no DRIFT line. Dropped: met on main 2026-10-21 by BG-tfqdkx4o (the noted row reworded; noted=13, constant unchanged) and ST-3yj5rkdu (EV-page-file-size-windows removed, shares retaken): rag.py eval exits 0 with no DRIFT line. Its worker's blocking gate g1 (widen touches or land ST-3yj5rkdu first), recorded only on work/ST-li5pag54, is moot."
 }
