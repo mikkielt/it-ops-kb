@@ -22,5 +22,5 @@
   "links": [
     "parked: SP-ep7cyuob review"
   ],
-  "notes": "SP-ep7cyuob review (S3) widens this: bl_selfcheck.leftovers never applies bl_clean.answer_of, so an answered row still shows as ask in kbmon's cleanup panel and check_leftovers (which the cleanup session's prompt has Haiku read), and tidy --report (class_counts) counts ask rows as kept."
+  "notes": "SP-ep7cyuob review (S3) widens this: bl_selfcheck.leftovers never applies bl_clean.answer_of, so an answered row still shows as ask in kbmon's cleanup panel and check_leftovers (which the cleanup session's prompt has Haiku read), and tidy --report (class_counts) counts ask rows as kept. ST-m5u7gmdo research evidence (2026-10-20, origin/main): a planted candidate whose safe_to_remove gives ask, with a recorded tidy-answer of remove, comes out of bl_clean.plan (_tools/bl_clean.py:713-715, answer_of) as remove and out of bl_selfcheck.leftovers (_tools/bl_selfcheck.py:400-417, which never calls answer_of) as ask with counts worktree {remove: 0, keep: 0} for the one listed row. kb/_self/monitoring.md:244 says the panel's verdict is remove or keep and :249 says it is tidy's verdict; kb/_self/tools.md:91 lists ask as a verdict of tidy."
 }
