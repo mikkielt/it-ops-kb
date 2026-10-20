@@ -223,11 +223,6 @@ def rules_alias_rows(f, gate):
     return [[term, canonical]] + ([] if canonical in existing else [[canonical, canonical]])
 
 
-def lead_passage(res):
-    """The `kb/_self/<doc>.md:<line>` reference of the first passage a `pack --root _self` result prints, or None."""
-    return lead_printed(res)[0]
-
-
 def lead_printed(res):
     """(the reference of the first passage a `pack --root _self` result prints, the text it prints of it), or (None, "")."""
     m = PASSAGE.search(res.get("text") or "")

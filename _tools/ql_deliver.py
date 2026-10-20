@@ -308,11 +308,6 @@ def pipeline_failure(url, pipe, run):
     return failure, bl_ci.failure_fingerprint(first["name"], failure)
 
 
-def ci_status(url, sha, run):
-    """(verdict, detail) of `ci_pipeline`."""
-    return ci_pipeline(url, sha, run)[:2]
-
-
 def auto_log(run, cwd, *revs, sha="%H"):
     """[(sha, subject, [KB-Auto values])] of `git log REVS`, newest first; `sha` is the hash's format (%H, %h)."""
     fmt = f"{sha}%x1f%s%x1f%(trailers:key=KB-Auto,valueonly,separator=%x2C)%x1e"

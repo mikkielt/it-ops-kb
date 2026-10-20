@@ -58,10 +58,6 @@ SETTINGS = {
 WORKSPACE_NAME = "workspace"  # the name the workspace's own files take in a touch, so no repository's
 
 
-class ConfigError(Exception):
-    """backlog.json (or the file KB_BACKLOG_CONFIG names) cannot be read or holds a key `read_settings` refuses."""
-
-
 def _type_problem(kind, v):
     """Why V is no value of the settings type KIND (the type names SETTINGS uses), or None."""
     def strs(x):
