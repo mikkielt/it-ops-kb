@@ -2,7 +2,7 @@
   "id": "BG-y3vxqpkp",
   "kind": "bug",
   "title": "kbmon's sessions panel lists no process on Windows: bl_procs gives up because Windows exposes no working directory",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-razcgjsb",
   "priority": "P2",
   "rank": 0,
@@ -59,5 +59,7 @@
     "kb/public/windows/process-parent-and-command-line.md:45",
     "kb/public/_gaps.md:1327"
   ],
-  "notes": "Operator feedback 2026-10-20, running kbmon on Windows: 'kbmon shows \"processes unreadable: Windows does not expose a process working directory\"'. Premise on origin/main 5970ced2c, 2026-10-20, simulated Windows (os.name nt and sys.platform win32 for bl_procs and mon_sessions only, since a global os.name breaks pathlib; a planted powershell/pwsh shim answering Win32_Process rows as JSON): the repro prints 'processes unreadable: Windows does not expose a process's working directory' and lists no pid. Cause: bl_procs.unsupported() returns that reason for os.name nt and cwd_map/snapshot return no processes at all, though worktrees and coord intents still show. The bl_procs rule 'a process's command line is never read' changes for Windows only: the command line is matched against checkout paths and dropped, never printed or kept. kb: Win32_Process has ParentProcessId and CommandLine [DOC S-hgt26zgs]; Get-CimInstance Win32_Process gives CommandLine, and the Learn example runs elevated, without which its query returns no results [DOC S-v6442u3l], so a non-elevated run may see no command line for another user's process: say so, never fail. Research ST-dtrqrwzo 2026-10-20: the kb holds no Microsoft statement that a non-elevated Win32_Process query returns CommandLine of another account's process; the gap entry (windows/process-parent-and-command-line) stays UNK, so the panel must treat a missing command line as a state and say so; a run on a Windows host, elevated and not, settles it."
+  "notes": "Operator feedback 2026-10-20, running kbmon on Windows: 'kbmon shows \"processes unreadable: Windows does not expose a process working directory\"'. Premise on origin/main 5970ced2c, 2026-10-20, simulated Windows (os.name nt and sys.platform win32 for bl_procs and mon_sessions only, since a global os.name breaks pathlib; a planted powershell/pwsh shim answering Win32_Process rows as JSON): the repro prints 'processes unreadable: Windows does not expose a process's working directory' and lists no pid. Cause: bl_procs.unsupported() returns that reason for os.name nt and cwd_map/snapshot return no processes at all, though worktrees and coord intents still show. The bl_procs rule 'a process's command line is never read' changes for Windows only: the command line is matched against checkout paths and dropped, never printed or kept. kb: Win32_Process has ParentProcessId and CommandLine [DOC S-hgt26zgs]; Get-CimInstance Win32_Process gives CommandLine, and the Learn example runs elevated, without which its query returns no results [DOC S-v6442u3l], so a non-elevated run may see no command line for another user's process: say so, never fail. Research ST-dtrqrwzo 2026-10-20: the kb holds no Microsoft statement that a non-elevated Win32_Process query returns CommandLine of another account's process; the gap entry (windows/process-parent-and-command-line) stays UNK, so the panel must treat a missing command line as a state and say so; a run on a Windows host, elevated and not, settles it.",
+  "claimed_by": "orch-r112",
+  "operator": "op-f618a13e"
 }
