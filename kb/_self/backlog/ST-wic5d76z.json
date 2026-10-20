@@ -2,7 +2,7 @@
   "id": "ST-wic5d76z",
   "kind": "story",
   "title": "kbmon_otel.py builds its signal exporters from one registry, and the otel and mon_ modules are mapped",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qh2j24z2",
   "priority": "P2",
   "rank": 0,
@@ -52,5 +52,7 @@
   "depends_on": [
     "ST-fgktuvvs"
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): main() calls otel_logs.Logs and otel_spans.Spans directly on 2026-10-19. Folds ST-vztgxydb (map rows). The third check needs uv with the otel lock cached (it ran offline on 2026-10-19). Premise: the first check fails."
+  "notes": "operator request 2026-10-19 (housekeeping batch): main() calls otel_logs.Logs and otel_spans.Spans directly on 2026-10-19. Folds ST-vztgxydb (map rows). The third check needs uv with the otel lock cached (it ran offline on 2026-10-19). Premise: the first check fails. ST-fgktuvvs left kb/_self/monitoring.md's 'Adding an OpenTelemetry signal' section saying main still builds otel_logs.Logs and otel_spans.Spans by name (its provisional gate g1: state today's state); once SIGNALS exists, reword that sentence to the registry.",
+  "claimed_by": "orch-r109",
+  "operator": "op-f618a13e"
 }
