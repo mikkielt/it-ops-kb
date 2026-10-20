@@ -2,7 +2,7 @@
   "id": "ST-dtrqrwzo",
   "kind": "story",
   "title": "Research sprint goal: kbmon says what each session is doing, under a readable label",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-razcgjsb",
   "goal_research": true,
   "priority": "P1",
@@ -40,6 +40,20 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "orch-r112",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "93e17c6b03b5405bb09290a8acc0e9575128637f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-dtrqrwzo"
+        ],
+        "exit": 0,
+        "sha256": "872b8dbaea9c2582"
+      }
+    ]
+  }
 }
