@@ -103,7 +103,11 @@
         "tidy's 2 seconds for each row, with no total": "ST-viygfjeg",
         "no walk: the panel gives no bytes": "ST-viygfjeg"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "3 seconds for all the rows, 2 seconds for one at most (tidy's own limit); a row past it keeps 0 bytes and is marked approximate",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
