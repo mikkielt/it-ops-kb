@@ -1,0 +1,24 @@
+{
+  "id": "ST-5opsztkc",
+  "kind": "story",
+  "title": "done counts the anchor rows of a fact the item reworded or split as the item's own",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "done's ledger rows check treats a dropped or re-anchored _anchors.csv row whose fact key the item's change removed or whose article the item touched as related, so a fact split or reword lands without naming each source id in the goal (SP-2rjhs7se: five done refusals over three items, each fixed by a goal edit naming up to 24 ids)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.exit(0 if 'old key' in open('_tools/bl_land.py').read() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py"
+  ],
+  "links": [
+    "parked: SP-2rjhs7se close"
+  ]
+}

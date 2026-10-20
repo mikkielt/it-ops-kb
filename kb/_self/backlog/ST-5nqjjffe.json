@@ -1,0 +1,24 @@
+{
+  "id": "ST-5nqjjffe",
+  "kind": "story",
+  "title": "The sprint reviewer gets a base worktree and makes none of its own",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-sprint's review step gives the read-only reviewer a base worktree at the sprint's start commit beside its head worktree, and the orchestrator removes both at close (SP-2rjhs7se: the reviewer made /tmp/r105base/wt for its comparison, and its removal was refused to both the reviewer and the orchestrator)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.exit(0 if 'base worktree' in open('.claude/skills/kb-sprint/SKILL.md').read() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-2rjhs7se close"
+  ]
+}

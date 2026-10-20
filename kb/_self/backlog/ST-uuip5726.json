@@ -1,0 +1,24 @@
+{
+  "id": "ST-uuip5726",
+  "kind": "story",
+  "title": "A goal research story's questions leave a committed sibling's own goal to that sibling",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-sprint's plan step says the goal research story's open questions do not hold a committed sibling's whole goal, or the sibling is not committed (SP-2rjhs7se: the research story closed all eight queued gaps that ST-oeet2kz7 was planned for, and the sibling was dropped)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.exit(0 if \"a committed sibling's whole goal\" in open('.claude/skills/kb-sprint/SKILL.md').read() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-2rjhs7se close"
+  ]
+}

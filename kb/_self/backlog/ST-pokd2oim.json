@@ -1,0 +1,24 @@
+{
+  "id": "ST-pokd2oim",
+  "kind": "story",
+  "title": "land keeps a worker's worktree when done refuses",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "land removes a worker's clean worktree only after the item lands, and leaves it in place when a step before the push (done, siblings) refuses, so a fix on the branch needs no git worktree add (SP-2rjhs7se: six re-adds after refusals)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.exit(1 if \"land removed the worker's worktree\" in open('_tools/bl_land.py').read() else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py"
+  ],
+  "links": [
+    "parked: SP-2rjhs7se close"
+  ]
+}

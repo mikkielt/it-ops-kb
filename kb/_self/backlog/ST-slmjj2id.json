@@ -1,0 +1,24 @@
+{
+  "id": "ST-slmjj2id",
+  "kind": "story",
+  "title": "The sprint plan puts the answer and gap ledgers in the touches of an item that rewords or splits facts",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-sprint's plan step says an item that may reword or split a fact has its root's _answers.md and _gaps.md in its touches, since their path:line citations shift (SP-2rjhs7se: ST-cvr76jag's landing stopped at the siblings step on check.py for two shifted citations outside its touches)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.exit(0 if '_answers.md' in open('.claude/skills/kb-sprint/SKILL.md').read() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-2rjhs7se close"
+  ]
+}

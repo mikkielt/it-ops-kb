@@ -1,0 +1,24 @@
+{
+  "id": "ST-ynoj42hm",
+  "kind": "story",
+  "title": "A worker's report gives each of its item's checks as run, not an equivalent",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the worker brief tells a worker to run each check of its item as written and report its exit, and to verify a claim such as 'every reworded DOC fact is re-anchored' with a command (SP-2rjhs7se: ST-gl57wgi6 reported an equivalent scan for its first check, ST-cvr76jag claimed every reworded DOC fact re-anchored while the review found 110 new fact/source pairs without an anchor row)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.exit(0 if 'as written' in open('_tools/bl_dispatch.py').read() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py"
+  ],
+  "links": [
+    "parked: SP-2rjhs7se close"
+  ]
+}
