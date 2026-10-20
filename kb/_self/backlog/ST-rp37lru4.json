@@ -2,7 +2,7 @@
   "id": "ST-rp37lru4",
   "kind": "story",
   "title": "Review sprint: README is a short executive summary, and the kb/_self docs say what the code does",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gea4jifz",
   "review": true,
   "priority": "P1",
@@ -23,6 +23,27 @@
       ]
     }
   ],
-  "claimed_by": "orch-r111",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "3a3dd202eb0d78bbbe80f21a5674c0021b3c52e8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "290fb1a8d1a26ec3"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "5dfdd0aa135db6de"
+      }
+    ]
+  }
 }
