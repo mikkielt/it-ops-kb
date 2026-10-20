@@ -8,8 +8,8 @@ and `bl_view.ready` from the item files of the local `origin/main` ref (`bl_view
 files where the ref cannot be read), with the count of commits the checkout is behind that ref: the state is `active`, `approved` (planned, its start gate answered with an approval, so only
 `backlog.py start` is left) or `planned`, in that order. `items` counts the sprint's items by status; `next` is the item
 `backlog.py next` offers (an active sprint only); `waiting` is each open blocking gate of the sprint or of one of its
-open items, `{item, gate}`. A landing in progress is an item whose newest `land.step` row has no later `land.end` row in the
-ops rows: `{item, step, since}`, the last step recorded and the time of the landing's first step. A root with no backlog
+open items, `{item, gate}`. A landing in progress is an item still open in the backlog (not done or dropped, and in it) whose
+newest `land.step` row has no later `land.end` row in the ops rows: `{item, step, since}`, the last step recorded and the time of the landing's first step. A root with no backlog
 has no sprints. The panel writes nothing and makes no request. Imports no sibling at load; `bl_base`, `bl_view`, `bl_plan`,
 `bl_stall`, `mon_eta`, `mon_status` (the range's text) and `mon_log` (`in_spool_order`) where it reads them.
 """
@@ -143,12 +143,12 @@ def sprint_row(bl, sid, state, done, claimed, meet):
             "open": open_items, "review_done": review[-1] if review else None, "waiting": waiting}
 
 
-def sprints(root):
+def sprints(root, backlog=None):
     """{sprints, source, behind}: the sprint rows, `origin/main` or `checkout` as the source of the items, and the commits
-    the checkout is behind `origin/main` (None where unknown)."""
+    the checkout is behind `origin/main` (None where unknown). BACKLOG is `backlog_at(root)` when the caller has it."""
     import bl_plan
     import mon_eta
-    bl, source, behind = backlog_at(root)
+    bl, source, behind = backlog or backlog_at(root)
     done = done_stamps(root) if source == REF else (lambda i: None)
     eta = mon_eta.read(root) if source == REF else mon_eta.empty()
     tracked = []
@@ -168,12 +168,13 @@ def sprints(root):
     return {"sprints": rows, "source": source, "behind": behind, "history": eta["history"]}
 
 
-def landings(root):
-    """[{item, step, since}] of the landings in progress, newest first; [] when the ops rows cannot be read."""
+def landings(root, bl):
+    """[{item, step, since}] of the landings in progress, newest first: an item BL (the backlog the sprints are read from)
+    holds not done or dropped whose newest `land.step` row has no later `land.end` row; [] when the ops rows cannot be read."""
     try:
         import bl_stall
         import mon_log
-        rows = mon_log.in_spool_order(bl_stall.ops_rows(str(root)))
+        rows = mon_log.in_spool_order(bl_stall.ops_rows(str(root)), root)
     except Exception:  # noqa: BLE001 - an unreadable log shows no landing
         return []
     cur = {}
@@ -183,12 +184,14 @@ def landings(root):
             cur.pop(item, None)
         elif r.get("event") == "land.step" and isinstance(item, str):
             cur.setdefault(item, {"item": item, "since": r.get("ts")})["step"] = r.get("step")
+    cur = {i: v for i, v in cur.items() if i in bl.items and bl.items[i].get("status") not in ("done", "dropped")}
     return sorted(({"item": v["item"], "step": v["step"], "since": v["since"]} for v in cur.values()),
                   key=lambda v: (str(v["since"]), v["item"]), reverse=True)
 
 
 def collect(ctx):
-    return {**sprints(ctx.root), "landings": landings(ctx.root)}
+    backlog = backlog_at(ctx.root)
+    return {**sprints(ctx.root, backlog), "landings": landings(ctx.root, backlog[0])}
 
 
 def progress(sp, eta=None):

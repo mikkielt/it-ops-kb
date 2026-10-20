@@ -22,6 +22,27 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which backlog decides that a landing's item is still open, and how does in_spool_order learn the committed rows' write order?",
+      "options": [
+        "Items of the sprint panel's backlog (origin/main item files, else the checkout's); in_spool_order takes an optional clone root and reads the committed sidecars' file order",
+        "Item files of the checkout; in_spool_order reorders by row id only"
+      ],
+      "recommendation": "Items of the sprint panel's backlog (origin/main item files, else the checkout's); in_spool_order takes an optional clone root and reads the committed sidecars' file order",
+      "do": {
+        "Items of the sprint panel's backlog (origin/main item files, else the checkout's); in_spool_order takes an optional clone root and reads the committed sidecars' file order": "BG-gkocrnfw",
+        "Item files of the checkout; in_spool_order reorders by row id only": "BG-gkocrnfw"
+      },
+      "class": "push",
+      "answer": "Items of the sprint panel's backlog (origin/main item files, else the checkout's); in_spool_order takes an optional clone root and reads the committed sidecars' file order",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-v4yih547 review"
   ],
