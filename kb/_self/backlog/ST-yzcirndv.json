@@ -2,7 +2,7 @@
   "id": "ST-yzcirndv",
   "kind": "story",
   "title": "Research sprint goal: README is a short executive summary, and the kb/_self docs say what the code does",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gea4jifz",
   "goal_research": true,
   "priority": "P1",
@@ -22,6 +22,20 @@
     "kb/public/**"
   ],
   "notes": "Open questions for this sprint (kb first, then live docs): No outside facts expected; the inputs are the repository's own docs and README. Confirm with rag.py pack --root _self which doc owns each README section (kb/_self/README.md, map.csv). No outside facts: the inputs are the repository's own docs. rag.py pack --root _self and kb/_self/README.md with map.csv show the owners: README.md Why, How it works and When it pays off are described by kb/_self/design.md (map.csv README.md,kb/_self/design.md); the Benchmark section restates kb/_self/reports/benchmarks.md, which design.md and token-efficiency.md rest on; Where things are mirrors the file table of kb/_self/README.md; Using it points to kb/_self/plugin.md and kb/_self/maintaining.md; What to trust points to kb/_self/content-rules.md. kb/_self/alternatives.md is mapped to README.md but has no README section.",
-  "claimed_by": "orch-r111",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "227d1df855db8f24d9f9467e8c4e2619152e0d06",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-yzcirndv"
+        ],
+        "exit": 0,
+        "sha256": "108d7d3df0e31272"
+      }
+    ]
+  }
 }
