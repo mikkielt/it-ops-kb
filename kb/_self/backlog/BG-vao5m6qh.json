@@ -19,6 +19,25 @@
   "touches": [
     "kb/_self/coordination.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Does coordination.md name the draft BG-ylrx5zt7 beside the git log/git show --output caveat?",
+      "options": [
+        "caveat without the item id",
+        "cite BG-ylrx5zt7 in the doc"
+      ],
+      "recommendation": "caveat without the item id",
+      "do": {
+        "caveat without the item id": "BG-vao5m6qh",
+        "cite BG-ylrx5zt7 in the doc": "BG-vao5m6qh"
+      },
+      "class": "design",
+      "answer": "caveat without the item id",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "orch-r221",
   "operator": "op-f618a13e"
 }
