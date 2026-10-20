@@ -18,7 +18,7 @@ the commits the checkout is behind it, the duration history) and the host panel'
 snapshot gives the same answer; its ETA is a range from `mon_eta.estimate` taken at the snapshot's time. The
 load answer also gives the host panel's CPU groups with a fixed cause and remedy each (GROUP_TEXT), as lines and as a
 top-level `groups` list. It calls no model and writes no file (`run` starts `kbmon.py`, which writes none). Imports `mon_base`, `mon_eta`, `mon_sessions` (its
-age text) and `mon_view`; `bl_base` where it reads titles.
+age text and `session_line`) and `mon_view`; `bl_base` where it reads titles.
 """
 import os
 import re
@@ -188,15 +188,19 @@ def sessions(r):
                  f"session{'' if len(claude) == 1 else 's'}, {len(procs)} process{'' if len(procs) == 1 else 'es'} in the clone."]
     lines += [f"  orphan pid {p.get('pid')}, running {mon_sessions.age_text(number(p.get('age_s')))}, in {p.get('checkout') or '?'}"
               for p in orphans[:ROWS]] + [("  " + x) for x in more(len(orphans) - ROWS, "orphans")]
+    rows = [s for s in data.get("sessions") or [] if isinstance(s, dict)]
+    lines += [("  " + mon_sessions.session_line(s, r.now)) for s in rows[:ROWS]] \
+        + [("  " + x) for x in more(len(rows) - ROWS, "sessions")]
     if stalled:
         lines.append(f"  {len(stalled)} stalled item{'' if len(stalled) == 1 else 's'}:")
         lines += [f"  {r.item(s.get('item'), True)}: {', '.join(str(x) for x in s.get('signals') or []) or 'no signal named'}"
                   for s in stalled[:ROWS]] + [("  " + x) for x in more(len(stalled) - ROWS, "stalled items")]
     else:
         lines.append("  no stalled item.")
-    if orphans or stalled:
-        lines.append("  Why: python3 _tools/kbask.py summary \"why is it stuck\" (a read-only session answers).")
-    if headless:
+    if orphans or stalled or rows:
+        lines.append("  A model summary, only when you ask: python3 _tools/kbask.py summary \"what are the sessions doing, "
+                     "or why is it stuck\" (read-only, capped by its budget and turns).")
+    if headless and not rows:
         lines.append("  Workers running: " + "; ".join(r.item(p.get("item")) for p in headless[:ROWS]) + ".")
     me = data.get("operator") if isinstance(data.get("operator"), dict) else {}
     lines.append(f"  This clone's operator: {me.get('id') or 'none'} ({me.get('role') or '-'}).")

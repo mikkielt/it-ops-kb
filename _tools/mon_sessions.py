@@ -23,7 +23,8 @@ ledger (the pid, then the session), the claim records of its checkout's ledger, 
 hook's per-session state file names under its checkout, never from a command line or an environment; a raw id leaves
 this module as its label only. A host that cannot list working
 directories gives no processes and `procs_unreadable`, the reason, so the operator and the intents still show; a root with
-no backlog items has no `stalled` key. Imports `mon_base` and `mon_view`; `bl_procs`,
+no backlog items has no `stalled` key. `session_line` turns one `sessions` entry into the one line the view and
+`mon_status` print. Imports `mon_base` and `mon_view`; `bl_procs`,
 `bl_stall`, `bl_base`, `bl_cost`, `ql_base`, `ql_distill` and `ql_report` where it reads them.
 """
 import datetime
@@ -53,7 +54,9 @@ DISPATCH_SHOWN = 6  # dispatch runs in the text view, live ones first
 DIGEST_LINES = 200  # digest lines read: the live leases and intents the sessions list is built from
 SESSIONS_KEPT = 30  # sessions in the data
 SESSIONS_SHOWN = 8  # sessions in the text view
-TITLE_CHARS = 40  # characters of an item title in the text view
+TITLE_CHARS = 40  # characters of an item title in a session line
+SPRINT_CHARS = 20  # characters of a sprint's title in a session line
+LINE_CHARS = 120  # characters of a session line at most
 CLAIM_TOPIC = "backlog-claim"  # the topic of the intent a `backlog.py claim` posts (the dispatching session's, not the worker's)
 REMEDIATE = "remediate/"  # the coord key `kbask.py remediate` claims while its observer session runs
 HOOK_STATE = ("_cache", "coord_hook")  # under a checkout: the hook's `<session id>.json` of each session it announced
@@ -544,32 +547,56 @@ def joined(label, parts, width):
     return [(label if i == 0 else "").ljust(LABEL) + r for i, r in enumerate(rows)]
 
 
-def session_lines(sessions, width):
-    """The sessions as rows, SESSIONS_SHOWN at most then `+N more`: `label  role  item  step  title`, the title (the item's,
-    else the sprint's) cut to what the width leaves, then the spend where it is known."""
+def epoch(text):
+    """UTC seconds of a `YYYY-MM-DDTHH:MM:SSZ` stamp, None for anything else."""
+    try:
+        return datetime.datetime.strptime(str(text), "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=datetime.timezone.utc).timestamp()
+    except ValueError:
+        return None
+
+
+def clipped(text, n):
+    return text if len(text) <= n else text[:max(0, n - 1)] + "…"
+
+
+def session_line(s, now=None, width=LINE_CHARS):
+    """One session entry as one line of at most WIDTH (LINE_CHARS at most) characters, the one function the sessions panel
+    and `kbmon.py --status sessions` print an entry with: `label  role  sprint  item title  step  up 1h00m  last 20m ago  $1.25`.
+    The sprint is its title cut to SPRINT_CHARS, the item title to the room the other fields leave (TITLE_CHARS at most; the
+    id where the title is not known); a field the entry does not know is left out. NOW is the time the elapsed and last
+    activity are taken at (epoch seconds; the snapshot's taken time, else the clock)."""
+    now = time.time() if now is None else now
+    width = min(width, LINE_CHARS)
+    started, last = epoch(s.get("started")), epoch(s.get("last_activity"))
+    spend = s.get("spend_usd")
+    sprint = s.get("sprint_title") or s.get("sprint")
+    title = s.get("item_title") or s.get("item") or ""
+    before = [s.get("label") or "-", s.get("role") or "unknown"] + ([clipped(sprint, SPRINT_CHARS)] if sprint else [])
+    after = ([s["step"]] if s.get("step") else []) + ([f"up {age_text(now - started)}"] if started is not None else []) \
+        + ([f"last {age_text(now - last)} ago"] if last is not None else []) \
+        + ([f"${spend:.2f}"] if isinstance(spend, (int, float)) and not isinstance(spend, bool) else [])
+    room = min(TITLE_CHARS, width - len("  ".join(before + after)) - 2)
+    mid = [clipped(title, room)] if title and room > 1 else []
+    return clipped("  ".join(before + mid + after), width)
+
+
+def session_lines(sessions, width, taken=None):
+    """The sessions as rows, SESSIONS_SHOWN at most then `+N more`: `session_line` of each, behind the label `sessions` and
+    within WIDTH columns; TAKEN is the snapshot's taken time."""
     sessions = [s for s in sessions if isinstance(s, dict)]
-    if not sessions:
-        return []
-    cells = [(s.get("label") or "-", s.get("role") or "unknown", s.get("item") or s.get("sprint") or "-", s.get("step") or "-",
-              s.get("item_title") or s.get("sprint_title") or "", s.get("spend_usd")) for s in sessions[:SESSIONS_SHOWN]]
-    widths = [max(len(c[i]) for c in cells) for i in range(4)]
-    rows = []
-    for n, (label, role, item, step, title, spend) in enumerate(cells):
-        head = "  ".join(c.ljust(w) for c, w in zip((label, role, item, step), widths))
-        tail = f"  ${spend:.2f}" if isinstance(spend, (int, float)) else ""
-        room = min(TITLE_CHARS, width - 2 - LABEL - len(head) - len(tail) - 2)
-        text = head + ("  " + (title if len(title) <= room else title[:room - 1] + "…") if title and room > 1 else "")
-        rows.append(("sessions" if n == 0 else "").ljust(LABEL) + text.rstrip() + tail)
-    if len(sessions) > len(cells):
-        rows.append(" " * LABEL + f"+{len(sessions) - len(cells)} more")
+    now = epoch(taken)
+    shown = sessions[:SESSIONS_SHOWN]
+    rows = [("sessions" if n == 0 else "").ljust(LABEL) + session_line(s, now, width - 2 - LABEL) for n, s in enumerate(shown)]
+    if len(sessions) > len(shown):
+        rows.append(" " * LABEL + f"+{len(sessions) - len(shown)} more")
     return rows
 
 
-def lines(data, width=80):
+def lines(data, width=80, taken=None):
     """The body rows: the processes table (an orphan's row starts `! `, orphans first, PROCS_SHOWN at most), the worktrees
     with their branches, the dispatch runs (item, pid, session, `alive` or `ended`, live ones first, DISPATCH_SHOWN at most) and
-    the stalled items, each a `! ` row of its id and signals; first the clone's operator and the live session intents
-    (session, item, operator)."""
+    the stalled items, each a `! ` row of its id and signals; first the clone's operator, the live session intents
+    (session, item, operator) and the sessions, one `session_line` each (TAKEN is the snapshot's taken time)."""
     procs = sorted(data.get("procs", []), key=lambda p: (p["class"] != "orphan", p["pid"]))
     rows = []
     me = data.get("operator") or {}
@@ -581,7 +608,7 @@ def lines(data, width=80):
         if len(intents) > len(shown_intents):
             parts.append(f"+{len(intents) - len(shown_intents)} more")
         rows += joined("intents", parts, width - 2)
-    rows += session_lines(data.get("sessions") or [], width)
+    rows += session_lines(data.get("sessions") or [], width, taken)
     if procs:
         shown = procs[:PROCS_SHOWN]
         rows += [("! " if flag else "") + text for flag, text in table(shown, width - 2)]
