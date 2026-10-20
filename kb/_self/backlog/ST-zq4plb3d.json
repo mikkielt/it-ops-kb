@@ -1,0 +1,33 @@
+{
+  "id": "ST-zq4plb3d",
+  "kind": "story",
+  "title": "kb_backlog and the kb MCP facades return a command's stderr warnings with an exit 0",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb_backlog, kb_querylog and kb_docs return what the command prints on stderr beside stdout when it exits 0, so a warning such as backlog.py cost's left-out items reaches the agent",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0, '_tools')\nimport kb_mcp, backlog, tempfile, pathlib\ndef fake(argv):\n    print('total 5'); print('cost: left out ST-x', file=sys.stderr); return 0\nbacklog.main = fake\nt = kb_mcp.kb_backlog({'command': 'cost', 'args': []})\nd = tempfile.mkdtemp(); pathlib.Path(d, 'w.py').write_text(\"import sys\\nprint('ok')\\nprint('warn: partial', file=sys.stderr)\\n\")\nkb_mcp.TOOLS = d\nf = kb_mcp.facade_run('w.py', [])\nbad = [n for n, x, w in (('kb_backlog', t, 'left out'), ('facade_run', f, 'partial')) if w not in x]\nprint('stderr dropped by:', bad); sys.exit(1 if bad else 0)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb_backlog, kb_querylog and kb_docs return what the command prints on stderr beside stdout when it exits 0, so a warning such as backlog.py cost's left-out items reaches the agent",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-ttgcpf7o review"
+  ],
+  "notes": "review of SP-ttgcpf7o, S2: _tools/kb_mcp.py kb_backlog and facade_run read stderr only on a non-zero exit; backlog.py cost prints left-out items to stderr with exit 0 (bl_cost.py), so the tool's sums look complete."
+}

@@ -1,0 +1,33 @@
+{
+  "id": "ST-qeespjim",
+  "kind": "story",
+  "title": "A slow kb_backlog command does not hold the kb MCP server's other calls",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb_backlog cost answers in a time the server's other calls can wait, or the server answers other calls and notifications/cancelled while it runs",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0, '_tools')\nimport time, kb_mcp\ns = time.time(); kb_mcp.kb_backlog({'command': 'cost', 'args': ['SP-ttgcpf7o']}); el = time.time() - s\nprint('kb_backlog cost seconds:', round(el, 1)); sys.exit(0 if el < 10 else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb_backlog cost answers in a time the server's other calls can wait, or the server answers other calls and notifications/cancelled while it runs",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py",
+    "_tools/bl_cost.py",
+    "kb/_self/plugin.md"
+  ],
+  "links": [
+    "parked: SP-ttgcpf7o review"
+  ],
+  "notes": "review of SP-ttgcpf7o, S3 note: kb_backlog cost took 38-48 s in-process on a loaded host, the same as the CLI; the stdio server serves one request at a time and does not act on notifications/cancelled."
+}

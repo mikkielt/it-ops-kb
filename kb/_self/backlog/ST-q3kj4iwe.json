@@ -1,0 +1,32 @@
+{
+  "id": "ST-q3kj4iwe",
+  "kind": "story",
+  "title": "kb_backlog cuts its output at the facades' character cap",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb_backlog cuts its text at FACADE_MAX_CHARS with the same pointer to the command line the facades print",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0, '_tools')\nimport kb_mcp\nt = kb_mcp.kb_backlog({'command': 'list', 'args': []})\nprint('kb_backlog list chars:', len(t)); sys.exit(0 if len(t) <= kb_mcp.FACADE_MAX_CHARS + 200 else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb_backlog cuts its text at FACADE_MAX_CHARS with the same pointer to the command line the facades print",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py",
+    "kb/_self/plugin.md"
+  ],
+  "links": [
+    "parked: SP-ttgcpf7o review"
+  ],
+  "notes": "review of SP-ttgcpf7o, S3: kb_backlog list with no args returned 93,280 characters; facade_run cuts at 60,000."
+}

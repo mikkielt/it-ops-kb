@@ -1,0 +1,31 @@
+{
+  "id": "ST-5tpfksjx",
+  "kind": "story",
+  "title": "coord_put caps an ask's text at 8000 characters after redaction, not before",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "coord_put stores at most 8000 characters of an ask's or answer's text after redact grows it, as kbask.clean does",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0, '_tools')\nimport os, tempfile\nos.environ['KB_COORD_STORE'] = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nimport kb_mcp\naddr = 'a' + chr(64) + 'b.io '\nkb_mcp.coord_put({'key': 'ask/Abig0001', 'value': addr * 1100})\nr = kb_mcp.coord_get({'key': 'ask/Abig0001'})\nprint('coord_get chars:', len(r)); sys.exit(0 if len(r) <= 9000 else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "coord_put stores at most 8000 characters of an ask's or answer's text after redact grows it, as kbask.clean does",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py"
+  ],
+  "links": [
+    "parked: SP-ttgcpf7o review"
+  ],
+  "notes": "review of SP-ttgcpf7o, S3: kb_mcp.py coord_put checks len(value) against COORD_TEXT_MAX before redact.redact; 7,700 characters of addresses became 33,000 stored."
+}
