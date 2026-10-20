@@ -2,7 +2,7 @@
   "id": "BG-65xsmfxg",
   "kind": "bug",
   "title": "querylog.py close refuses a rules finding, so a rules miss the _self docs do not answer cannot be closed with --tried or --reject",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vx6eufpj",
   "priority": "P2",
   "rank": 0,
@@ -38,6 +38,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "orch-r106",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "bcc65411ef59da7d82e03783888fc4528a660af5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,shutil,subprocess,sys,tempfile; t=tempfile.mkdtemp(); d=t+'/store'; shutil.copytree('kb/_querylog', d); o=subprocess.run([sys.executable,'_tools/querylog.py','show','--findings','--kind','rules','--state','open','--store',d],capture_output=True,text=True).stdout; f=re.findall(r'^(F-\\w+) rules',o,re.M); sys.exit(subprocess.run([sys.executable,'_tools/querylog.py','close',f[0],'--tried','kb lacks the answer','--store',d]).returncode)"
+        ],
+        "exit": 0,
+        "sha256": "7442e2c2ad487f2f"
+      }
+    ]
+  }
 }
