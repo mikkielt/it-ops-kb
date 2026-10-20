@@ -2,7 +2,7 @@
   "id": "ST-hpbjc2gc",
   "kind": "story",
   "title": "Merged remote code branches and recorded orphan processes are removed only by an operator command",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ipeewrlv",
   "priority": "P2",
   "rank": 0,
@@ -89,5 +89,7 @@
       "role": "interactive"
     }
   ],
-  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with planted inputs (KB_COORD_STORE points at its own coord store, so no check writes the clone's real one); no change to _tools/tests_ceiling.json. Never kill by pattern (a host hook blocks pkill -f). Premise (2026-10-19): backlog.py procs names 3 orphans, one a gk MCP server orphaned 4 days in review-j65ihctq, and one a live detached headless worker (claude, parent 1, in agent-ST-xlxkap7l): parent 1 is no proof a process is finished. The 846 origin code/* branches remain although every request is sent with merge_request.remove_source_branch (kg_sync.push_options; request !1247 merged with force_remove_source_branch true): code/* is a protected branch pattern on the forge, a likely cause the research story confirms. Reworded 2026-10-20 to the operator's g-remote answer (no remote deletion: tidy only counts them): goal clauses 1-2 and check 0 no longer ask tidy --remote --apply to delete; check 0 asserts that no tidy run deletes a remote branch, in an agent session or not."
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with planted inputs (KB_COORD_STORE points at its own coord store, so no check writes the clone's real one); no change to _tools/tests_ceiling.json. Never kill by pattern (a host hook blocks pkill -f). Premise (2026-10-19): backlog.py procs names 3 orphans, one a gk MCP server orphaned 4 days in review-j65ihctq, and one a live detached headless worker (claude, parent 1, in agent-ST-xlxkap7l): parent 1 is no proof a process is finished. The 846 origin code/* branches remain although every request is sent with merge_request.remove_source_branch (kg_sync.push_options; request !1247 merged with force_remove_source_branch true): code/* is a protected branch pattern on the forge, a likely cause the research story confirms. Reworded 2026-10-20 to the operator's g-remote answer (no remote deletion: tidy only counts them): goal clauses 1-2 and check 0 no longer ask tidy --remote --apply to delete; check 0 asserts that no tidy run deletes a remote branch, in an agent session or not.",
+  "claimed_by": "orch-r201",
+  "operator": "op-f618a13e"
 }
