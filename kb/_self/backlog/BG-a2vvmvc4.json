@@ -26,6 +26,25 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does the SQLite integer-range refusal live?",
+      "options": [
+        "shared not_negative type",
+        "wait --since only"
+      ],
+      "recommendation": "shared not_negative type",
+      "do": {
+        "shared not_negative type": "BG-a2vvmvc4",
+        "wait --since only": "BG-a2vvmvc4"
+      },
+      "class": "design",
+      "answer": "shared not_negative type",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-fp3hxl6q review"
   ],

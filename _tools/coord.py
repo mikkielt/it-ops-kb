@@ -164,6 +164,7 @@ POLL_SECONDS = 0.05
 RECHECK_SECONDS = 1.0
 OPERATOR_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,63}")
 BODY_LIMIT = 65536
+SQLITE_MAX_INT = 2**63 - 1
 REQUEST_SECONDS = 60
 ENDPOINT = "/v1/run"
 LIVE = "(expires IS NULL OR expires > :now OR value IS NOT NULL)"  # a row with a value outlives its lease
@@ -715,6 +716,8 @@ def not_negative(text):
     value = int(text)
     if value < 0:
         raise argparse.ArgumentTypeError("must be 0 or more")
+    if value > SQLITE_MAX_INT:
+        raise argparse.ArgumentTypeError(f"must be at most {SQLITE_MAX_INT} (SQLite's largest integer)")
     return value
 
 
