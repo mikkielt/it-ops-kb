@@ -54,7 +54,8 @@
     "kb/_self/querylog.md",
     "kb/_self/usage.md",
     "_tools/querylog.py",
-    "kb/_self/plugin.md"
+    "kb/_self/plugin.md",
+    "_tools/ql_base.py"
   ],
   "depends_on": [
     "ST-e23cb2h4"
