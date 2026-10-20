@@ -188,7 +188,11 @@
         "recursive delete that makes a read-only file writable first (git object files on Windows); an error that remains is kept and reported, exit 1": "ST-nkc5supu",
         "recursive delete with no change of file modes": "ST-nkc5supu"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "recursive delete that makes a read-only file writable first (git object files on Windows); an error that remains is kept and reported, exit 1",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
