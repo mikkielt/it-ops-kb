@@ -2,7 +2,7 @@
   "id": "BG-bubaqrja",
   "kind": "bug",
   "title": "The otel adapter resends the same log records every round while span export fails",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qh2j24z2",
   "priority": "P2",
   "rank": 0,
@@ -33,5 +33,7 @@
   "links": [
     "parked: SP-qvlnptiw review"
   ],
-  "notes": "SP-qvlnptiw review (ST-gj4eicfw g1 changed to a cursor per signal): one shared cursor moves only when every signal that is on was sent, so a receiver that refuses /v1/traces gets duplicate log records. operator request 2026-10-19 (housekeeping batch): the repro needs uv and a loopback listener, no network. Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs."
+  "notes": "SP-qvlnptiw review (ST-gj4eicfw g1 changed to a cursor per signal): one shared cursor moves only when every signal that is on was sent, so a receiver that refuses /v1/traces gets duplicate log records. operator request 2026-10-19 (housekeeping batch): the repro needs uv and a loopback listener, no network. Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs.",
+  "claimed_by": "orch-r109",
+  "operator": "op-f618a13e"
 }
