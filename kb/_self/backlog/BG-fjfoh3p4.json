@@ -32,6 +32,25 @@
   "depends_on": [
     "BG-bubaqrja"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does /metrics answer 404 on other paths, since prometheus_client's own server answers every path?",
+      "options": [
+        "Own wsgiref server around make_wsgi_app on the reader's registry, with a path check",
+        "prometheus_client start_http_server on the registry, any path served"
+      ],
+      "recommendation": "Own wsgiref server around make_wsgi_app on the reader's registry, with a path check",
+      "do": {
+        "Own wsgiref server around make_wsgi_app on the reader's registry, with a path check": "BG-fjfoh3p4",
+        "prometheus_client start_http_server on the registry, any path served": "BG-fjfoh3p4"
+      },
+      "class": "design",
+      "answer": "Own wsgiref server around make_wsgi_app on the reader's registry, with a path check",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-qvlnptiw review"
   ],
