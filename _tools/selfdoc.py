@@ -450,7 +450,6 @@ TOOLS_REL = "_tools"
 DOC_MAX = 100  # a docstring's first line is cut here in the map
 DEFS = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
 MAP_LINE_RX = re.compile(r"(?P<path>.+?):(?P<line>\d+) (?P<kind>\w+) (?P<name>\S+)(?: — .*)?\Z")
-DEF_LINE_RX = re.compile(r"(?P<indent>\s*)(?P<kw>async\s+def|def|class)\s+(?P<name>\w+)")
 
 
 def tool_files(root=KB):
@@ -532,58 +531,6 @@ def file_map(path, root=KB):
 def map_tools(file=None, root=KB):
     """[map line] of every _tools Python file, or of FILE alone."""
     return [ln for p in ([resolve_tool(file, root)] if file else tool_files(root)) for ln in file_map(p, root)]
-
-
-def def_tokens(text):
-    """[(line, column, name)] of every `def` and `class` statement of Python source, read from its tokens (a `def` inside
-    a string is no token of that kind), for the check that the map and the code agree; [] when the source does not tokenize."""
-    out, prev, before = [], None, None
-    try:
-        for tok in tokenize.generate_tokens(io.StringIO(text).readline):
-            if tok.type == tokenize.NAME and prev is not None and prev.string in ("def", "class"):
-                first = before.start if prev.string == "def" and before is not None and before.string == "async" else prev.start
-                out.append((first[0], first[1], tok.string))
-            before, prev = prev, tok
-    except (tokenize.TokenError, SyntaxError, IndentationError):
-        return []
-    return out
-
-
-def check_map(map_lines, root=KB):
-    """[problem] where a map line does not hold in the code: the file or the line is missing, the line is not the `def` or
-    `class` of that name and kind, or a top-level def or class of a mapped file has no line in the map."""
-    problems, mapped, base = [], {}, pathlib.Path(root)
-    src = {}
-    for ln in map_lines:
-        m = MAP_LINE_RX.match(ln)
-        if not m:
-            problems.append(f"not a map line: {ln}")
-            continue
-        path, no, kind, name = m["path"], int(m["line"]), m["kind"], m["name"]
-        if path not in src:
-            try:
-                src[path] = lf_lines((base / path).read_text(encoding="utf-8"))
-            except (OSError, UnicodeDecodeError):
-                src[path] = None
-        text = src[path]
-        if text is None:
-            problems.append(f"{path}: no such file (mapped: {name})")
-        elif kind in ("module", "unparsed"):
-            continue
-        elif not 1 <= no <= len(text):
-            problems.append(f"{path}:{no}: past the end of the file (mapped: {name})")
-        else:
-            d = DEF_LINE_RX.match(text[no - 1])
-            want = "class" if kind == "class" else "def"
-            if not d or d["name"] != name.rsplit(".", 1)[-1] or d["kw"].split()[-1] != want:
-                problems.append(f"{path}:{no}: `{name}` ({kind}) is not at that line")
-            else:
-                mapped.setdefault(path, set()).add(no)
-    for path, nos in mapped.items():
-        for k, col, name in def_tokens("\n".join(src[path]) + "\n"):
-            if col == 0 and k not in nos:
-                problems.append(f"{path}:{k}: `{name}` is in the code and not in the map")
-    return problems
 
 
 def main(argv=None):

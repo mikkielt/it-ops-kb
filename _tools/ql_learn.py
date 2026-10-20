@@ -21,14 +21,12 @@ FAILED = re.compile(r"http-[45]\d\d|empty|truncated|error")  # fetch outcomes th
 NO_PAGE = re.compile(r"http-[45]\d\d|empty|error")  # fetch outcomes with no page read: no evidence for a false none
 ANSWER_URL = re.compile(r"https?://[^\s<>\"'`\[\]()]+")  # a url in an answer's text; Markdown and prose end it
 LEARN_LOCALE = re.compile(r"^/[a-z]{2}-[a-z]{2}(?=/|$)")  # Microsoft Learn's locale segment (agent_bench.norm_url)
-# the staging triggers (web-sources.md, "When a family needs staging"): the numbers a test holds equal to the doc
+# the staging triggers (web-sources.md, "When a family needs staging")
 STAGE_SHARE_ROWS = 25  # Share: a host backing at least this many rows of a root's _sources.csv
 STAGE_SHARE_PERCENT = 5  # Share: or at least this share of them
 STAGE_FAILURES = 3  # Failures: this many failed fetches on the host
 STAGE_NEEDED_LEVEL = 1  # what a Share or Failures trigger asks for first: a route
 WEBFETCH_DENY_DAY = "2026-10-08"  # the day the PreToolUse hook began to deny WebFetch on a host the routes table avoids: a WebFetch of an earlier day, kept in the store, makes no `route` finding
-NUMBER_WORDS = {w: i for i, w in enumerate(("zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
-                                            "nine", "ten"))}
 
 
 # ---------------------------------------------------------------- where a host stands
@@ -75,47 +73,6 @@ def avoided_route(host, routes=None):
     route signal of source_findings and the WebFetch hook's deny (kb_hook.webfetch_deny) both read it here."""
     route = next((r for r in (routes_table() if routes is None else routes) if host in r["hosts"]), None)
     return route if route and "WebFetch" in route["avoid"] else None
-
-
-def registry_problems(registry=None, routes=None):
-    """A registry row whose host the routes table does not name: a staged family adds its routes row first, so the
-    two sources of a host's level agree. The shared registry only; a root's own providers are its team's."""
-    import provider
-    rows = provider._read(provider.SHARED) if registry is None else registry
-    hosts = {h for r in (routes_table() if routes is None else routes) for h in r["hosts"]}
-    out = []
-    for r in rows:
-        if r.get("_root"):
-            continue
-        for m in (r.get("match") or "").split():
-            h = m.split("/", 1)[0].lower()
-            if m != "*" and h not in hosts:
-                out.append(f"provider {r.get('provider')}: {h} has a registry row but no row in the routes table")
-    return out
-
-
-def doc_triggers(text=None):
-    """{share_rows, share_percent, failures} as the staging triggers of web-sources.md state them (None when absent)."""
-    text = WEB_SOURCES.read_text(encoding="utf-8") if text is None else text
-    m = re.search(r"^## When a family needs staging\n(.*?)(?=^## )", text, re.M | re.S)
-    sec = m.group(1) if m else ""
-
-    def num(rx):
-        g = re.search(rx, sec, re.I)
-        if not g:
-            return None
-        v = g.group(1).lower()
-        return int(v) if v.isdigit() else NUMBER_WORDS.get(v)
-    return {"share_rows": num(r"\*\*Share\.\*\*[^\n]*?at least (\d+) rows"),
-            "share_percent": num(r"\*\*Share\.\*\*[^\n]*?at least (\d+)%"),
-            "failures": num(r"\*\*Failures\.\*\*\s*(\w+) or more failures")}
-
-
-def trigger_problems(text=None):
-    """Each staging trigger whose number in ql_learn.py differs from web-sources.md."""
-    ours = {"share_rows": STAGE_SHARE_ROWS, "share_percent": STAGE_SHARE_PERCENT, "failures": STAGE_FAILURES}
-    doc = doc_triggers(text)
-    return [f"trigger {k}: ql_learn.py has {v}, web-sources.md has {doc[k]}" for k, v in ours.items() if doc[k] != v]
 
 
 def kb_host_counts():

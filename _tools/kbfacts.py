@@ -3586,21 +3586,6 @@ def keep_pack(handle, questions, text, commit):
             _remove(tmp)
 
 
-def stored_pack(handle):
-    """The record keep_pack stored for `handle` ({handle, questions, commit, ts, lines}), or None when it was never
-    stored, has expired or was pruned."""
-    d = pack_store()
-    if not d or not PACK_HANDLE.fullmatch(handle or ""):
-        return None
-    try:
-        with open(os.path.join(d, handle + ".json"), encoding="utf-8") as f:
-            rec = json.load(f)
-    except (OSError, ValueError):
-        return None
-    ok = isinstance(rec, dict) and rec.get("handle") == handle and time.time() - rec.get("ts", 0) <= PACK_HANDLE_DAYS * 86400
-    return rec if ok else None
-
-
 def handled(res, questions, budget=1200, domain=None, fmt="detailed", root=None, invalidated=False, item=None):
     """`res` (pack_many's or pack_routed's result) with a last line `pack: P-<8 hex>` (pack_handle) added to `text`
     and the handle in `res["pack"]`, and the offline pack stored (keep_pack). A weak or none pack gets one line

@@ -344,11 +344,6 @@ def read_request(root, branch=None, title_prefix=None, run=None):
     return arm(root, run).request(branch=branch, title_prefix=title_prefix)
 
 
-def read_pipeline(root, ref, run=None):
-    """The newest Pipeline of REF, or None when it has none. Errors as `read_request`."""
-    return arm(root, run).pipeline(ref)
-
-
 def set_description(root, request, text, run=None):
     """(ok, output) of setting REQUEST's description to TEXT. Refused on the gh arm, before any call; errors as
     `read_request` for a root whose remote names no forge project."""

@@ -1061,7 +1061,7 @@ def committed_calls(root, budget=None):
     return list(out), total - len(out)
 
 
-@detector("repeats")
+@detector("repeats")  # called by name through DETECTORS["repeats"] in collect, never as repeats_detector
 def repeats_detector(root):
     """One story per command class or tool group (call.tool's `class`, else its `tool`) called more than
     REPEAT_THRESHOLD times in the latest closed ISO week (the week before the one today's UTC date is in, never the
