@@ -2,7 +2,7 @@
   "id": "ST-nsrai3dd",
   "kind": "story",
   "title": "Review sprint: The query log says why delivery stalls, exports fast, and its open findings are worked",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-vx6eufpj",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,27 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "9b0a5f2618bb134dcb13a8cb29b9cdfd5331862e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "cba4d284aeca2631"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "4934a888841a7742"
+      }
+    ]
+  }
 }
