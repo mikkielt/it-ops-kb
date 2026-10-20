@@ -26,6 +26,7 @@ STAGE_SHARE_ROWS = 25  # Share: a host backing at least this many rows of a root
 STAGE_SHARE_PERCENT = 5  # Share: or at least this share of them
 STAGE_FAILURES = 3  # Failures: this many failed fetches on the host
 STAGE_NEEDED_LEVEL = 1  # what a Share or Failures trigger asks for first: a route
+WEBFETCH_DENY_DAY = "2026-10-08"  # the day the PreToolUse hook began to deny WebFetch on a host the routes table avoids: a WebFetch of an earlier day, kept in the store, makes no `route` finding
 NUMBER_WORDS = {w: i for i, w in enumerate(("zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
                                             "nine", "ten"))}
 
@@ -566,7 +567,8 @@ def answer_sources(text, pages=None):
 
 def host_fetches(entries):
     """{host: {failures, entries, webfetch, chars}} of the fetches the store's entries record; `chars` sums the
-    result characters of the fetches that recorded them."""
+    result characters of the fetches that recorded them; `webfetch` holds the entries of WebFetch fetches from
+    WEBFETCH_DENY_DAY on (an entry with no `day` counts)."""
     hosts = {}
     for _, e in entries:
         items = [f for f in e.get("fetches") or [] if isinstance(f, dict)]
@@ -583,7 +585,7 @@ def host_fetches(entries):
                 s["chars"] += f["chars"]
             if isinstance(f.get("outcome"), str) and FAILED.fullmatch(f["outcome"]):
                 s["failures"] += n
-            if f.get("tool") == "WebFetch":
+            if f.get("tool") == "WebFetch" and not (isinstance(e.get("day"), str) and e["day"] < WEBFETCH_DENY_DAY):
                 s["webfetch"].add(e["id"])
     return hosts
 
