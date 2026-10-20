@@ -2,7 +2,7 @@
   "id": "ST-jy5mekle",
   "kind": "story",
   "title": "bl_land.py is split behind backlog.py with every command and name kept",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-jplczvj2",
   "priority": "P3",
   "rank": 0,
@@ -76,5 +76,7 @@
       "by": "operator"
     }
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): bl_land.py on 2026-10-19: 3441 lines, 122 commits in 30 days (the most churned module), every landing and close edits it. The cut follows its command groups (cmd_tidy/cmd_close at 2585-3125, cmd_precheck/cmd_researched at 474-628 and 3126-3369). Plan against SP-ipeewrlv, which changes tidy first. Premise: the first check fails. Checks 1, 2 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+  "notes": "operator request 2026-10-19 (housekeeping batch): bl_land.py on 2026-10-19: 3441 lines, 122 commits in 30 days (the most churned module), every landing and close edits it. The cut follows its command groups (cmd_tidy/cmd_close at 2585-3125, cmd_precheck/cmd_researched at 474-628 and 3126-3369). Plan against SP-ipeewrlv, which changes tidy first. Premise: the first check fails. Checks 1, 2 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
+  "claimed_by": "orch-r108",
+  "operator": "op-f618a13e"
 }
