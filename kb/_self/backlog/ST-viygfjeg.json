@@ -141,7 +141,11 @@
         "panel cleanup in module mon_clean (mon_base.MODULES maps the name), listed after sprint and before log": "ST-viygfjeg",
         "panel clean, module mon_clean, listed last": "ST-viygfjeg"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "panel cleanup in module mon_clean (mon_base.MODULES maps the name), listed after sprint and before log",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with planted inputs (KB_COORD_STORE points at its own coord store, so no check writes the clone's real one); no change to _tools/tests_ceiling.json. Premise (2026-10-19, this host): kbmon.py --json gave the sessions panel state timeout at 10 s with 50 worktrees; the cleanup panel's bytes walk is capped (gate g-bytes of the tidy story) so it stays inside the panel timeout.",
