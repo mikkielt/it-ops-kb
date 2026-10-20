@@ -2,7 +2,7 @@
   "id": "ST-w3qdrhdk",
   "kind": "story",
   "title": "The 33 open rules findings are tested _self questions or closed with a note",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vx6eufpj",
   "priority": "P2",
   "rank": 0,
@@ -36,5 +36,7 @@
     "kb/_self/_retrieval/**",
     "kb/_querylog/findings/**"
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): digest 2026-W42: rules lookups 971 (good 13, weak 92, none 553, no verdict 313), open rules findings 33. A _self eval row is a code-lane path: land with backlog.py land ID --wait-merge 1800. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done. Precheck 2026-10-20: rag.py eval --root _self passes before the work by design: it pins that the new _self rows pass; the findings check carries the proof."
+  "notes": "operator request 2026-10-19 (housekeeping batch): digest 2026-W42: rules lookups 971 (good 13, weak 92, none 553, no verdict 313), open rules findings 33. A _self eval row is a code-lane path: land with backlog.py land ID --wait-merge 1800. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done. Precheck 2026-10-20: rag.py eval --root _self passes before the work by design: it pins that the new _self rows pass; the findings check carries the proof.",
+  "claimed_by": "orch-r106",
+  "operator": "op-f618a13e"
 }
