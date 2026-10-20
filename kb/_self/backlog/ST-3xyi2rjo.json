@@ -2,7 +2,7 @@
   "id": "ST-3xyi2rjo",
   "kind": "story",
   "title": "The census.phase docs name every command that writes the row, and the digest reads detect's exit 1 as no failure",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-gavrmuvx",
   "priority": "P3",
@@ -47,5 +47,7 @@
     "merged: ST-4zufzrar",
     "merged: ST-y35da4y5"
   ],
-  "notes": "Merged at the 2026-10-12 draft triage: ST-4zufzrar (the digest counts detect exit 1 as a failed census.phase) and ST-y35da4y5 (querylog.md names every command that writes a census.phase row). Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item). 2026-10-20 planning: the reading-volume clause is met and dropped: judge and dispatch already add their tokens of each kind and spend to their census.phase row (factdiff.judge_tally; census.py cmd_dispatch). Premises: the census.phase sentence lacks repin, judge and dispatch; the digest of kb/_querylog/ops/2026-10/20261012T004736Z-41538f5b.jsonl prints census.phase failed 1 where its only non-zero row is a detect exit 1."
+  "notes": "Merged at the 2026-10-12 draft triage: ST-4zufzrar (the digest counts detect exit 1 as a failed census.phase) and ST-y35da4y5 (querylog.md names every command that writes a census.phase row). Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item). 2026-10-20 planning: the reading-volume clause is met and dropped: judge and dispatch already add their tokens of each kind and spend to their census.phase row (factdiff.judge_tally; census.py cmd_dispatch). Premises: the census.phase sentence lacks repin, judge and dispatch; the digest of kb/_querylog/ops/2026-10/20261012T004736Z-41538f5b.jsonl prints census.phase failed 1 where its only non-zero row is a detect exit 1.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
