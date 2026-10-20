@@ -420,7 +420,7 @@ EV-run-coord-py-serve-several-operators,how to run coord.py serve for several op
 EV-coord-hook-show-session-start,what does the coord hook show at session start,coordination.md,good,yes,"Every SessionStart prints it, with or without an overlap or an ask",
 EV-tell-running-sprint-runner-add-scope,how do I tell a running sprint runner to add scope,coordination.md,good,yes,A sprint orchestrator steers a running worker or runner by an `ask`,
 EV-did-claims-stay-0-benchmark,why did claims stay 0 in the benchmark,coordination.md,good,yes,a released claim leaves no row,
-EV-let-another-operator-agents-see-claims,how do I let another operator's agents see my claims,coordination.md,good,yes,DIR holds one file for each operator,
+EV-let-another-operator-agents-see-claims,what does the serve keys directory hold for each operator,coordination.md,good,yes,DIR holds one file for each operator,
 EV-kb-mcp-coord-tools-turned,how are the kb MCP coord tools turned on,coordination.md,good,yes,A `kb` MCP server started with `KB_COORD_TOOLS=1`,
 EV-coord-records-tidy-check-before-removes,which coord records does tidy check before it removes a worktree,coordination.md,good,yes,"A candidate is kept while any held key or value contains its path, branch, item or session as text",
 EV-coord-differently-windows,what does coord do differently on Windows,coordination.md,good,yes,"uses SQLite's locking only (no `fcntl`, no signals)",
