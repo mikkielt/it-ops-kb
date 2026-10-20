@@ -89,7 +89,11 @@
         "The agent body goes in on one line and --allowedTools holds Read, Grep, Glob, kbmon.py --json and the exact tidy --json command line (no --apply can follow it)": "ST-pjf3zk3x",
         "The agent body is passed as in remediate and --allowedTools allows tidy --json with a trailing wildcard": "ST-pjf3zk3x"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "The agent body goes in on one line and --allowedTools holds Read, Grep, Glob, kbmon.py --json and the exact tidy --json command line (no --apply can follow it)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with its own coord store and a stand-in claude on PATH, so no paid model call; no change to _tools/tests_ceiling.json. Reuses SP-w6amecjt's kbask.py (ask, answer, remediate: one claim per run, detached session, caps) and its read-only kb-observer role. kbask.py is in the touches of SP-w6amecjt's open ST-xlxkap7l (kbask.py summary): start this sprint after SP-w6amecjt closes.",
