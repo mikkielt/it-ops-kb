@@ -2,7 +2,7 @@
   "id": "BG-vao5m6qh",
   "kind": "bug",
   "title": "coordination.md lost facts of monitoring.md's moved sections and states coord behaviour the code does not have",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-eptouzxc",
   "priority": "P1",
   "rank": 0,
@@ -38,6 +38,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "orch-r221",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "63e0244ef8551c63c235b2545b25b7c557e9f7a3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys;t=open('kb/_self/coordination.md',encoding='utf-8').read();L=t.splitlines();need={'401 not the next event':r'not the next event','absent key starts at revision 1':r'starts at (revision )?1','second cleanup exits 1':r'second (kbask )?cleanup','typed /kb-research bypasses PreToolUse':r'bypass','free-text --holder exits 2':r'--holder[^\\n]*exits 2|exits 2[^\\n]*--holder','git log --output caveat':r'--output[ =]'};lost=[k for k,p in need.items() if not re.search(p,t)];wrong=[l[:70] for l in L if re.search(r'refused claims[^\\n]{0,120}claim_windows',l) or re.search(r'(coord_wait|coord_put)[^.]*\\bcaps\\b',l)];print('lost:',lost);print('wrong:',wrong);sys.exit(1 if lost or wrong else 0)"
+        ],
+        "exit": 0,
+        "sha256": "945b20c7fc779fde"
+      }
+    ]
+  }
 }
