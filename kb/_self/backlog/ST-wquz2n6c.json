@@ -36,6 +36,23 @@
   "depends_on": [
     "ST-ke655nm5"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where do the repro compare metric names and the turns_over_cap reading go, since their reference now sits in kb/_self/benchmarks.md, outside this item's touches, while the folded checks read kb/_self/tools.md?",
+      "options": [
+        "tools.md: a clause in the benchmarks.py row",
+        "benchmarks.md: edit the reference there (outside the touches)"
+      ],
+      "recommendation": "tools.md: a clause in the benchmarks.py row",
+      "do": {
+        "tools.md: a clause in the benchmarks.py row": "ST-wquz2n6c",
+        "benchmarks.md: edit the reference there (outside the touches)": "ST-wquz2n6c"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "notes": "operator request 2026-10-19 (housekeeping batch): folds BG-mxla4xlk, BG-xk3syfs2, ST-ogg35rzs, BG-icnbtxdf, BG-dolvqr5i, ST-nblpdvup (repros embedded). AGENTS.md is in the touches only for BG-dolvqr5i's sizing rule wording; no rule changes.",
   "claimed_by": "orch-r111",
   "operator": "op-f618a13e"
