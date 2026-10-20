@@ -2,7 +2,7 @@
   "id": "ST-jtbbzc6h",
   "kind": "story",
   "title": "Research sprint goal: kbmon puts what needs the operator first, one row per sprint, from one implementation",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-2uljwgho",
   "goal_research": true,
   "priority": "P1",
@@ -42,6 +42,20 @@
       "role": "interactive"
     }
   ],
-  "claimed_by": "orch-r113",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "5e70dc641f566522129f628c28bf15878a658857",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-jtbbzc6h"
+        ],
+        "exit": 0,
+        "sha256": "bf76bcc6d49aebdf"
+      }
+    ]
+  }
 }
