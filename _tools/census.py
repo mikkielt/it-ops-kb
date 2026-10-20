@@ -3392,7 +3392,10 @@ def cmd_finish(a, tally):
         return refused
     rerun = shlex.join(["python3", f"{TOOLS_REL}/census.py", *root_args(root), "finish", log, "--date", date])
     code, kept = drive(plan_finish(root, log, date), root_rel, True, a.dry_run, rerun)
-    if code == 0 and not a.dry_run:
+    failed = list(kept)[-1] if code else ""
+    if a.dry_run or failed == "sweep":
+        return code
+    if code == 0 or "sweep" in kept:  # a later step's failure keeps the lines: a rerun's sweep finds nothing left to invalidate
         print("for the report (kbdecide.py sweep: the invalidations and the relink lines, which `kbdecide.py relink` repoints):")
         print(kept.get("sweep", "").rstrip("\n") or "(no output)")
     return code
