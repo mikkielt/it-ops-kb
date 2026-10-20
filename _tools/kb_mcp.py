@@ -1124,6 +1124,53 @@ def kb_monitor_status(args):
 MONITOR_HANDLERS = {"kb_monitor_status": kb_monitor_status}
 
 
+# ---------------------------------------------------------------- backlog commands
+
+# the commands of backlog.py that write nothing (precheck, claim, done and every other that writes a file or runs an
+# item's checks stay off the tool); the closed list is what keeps a tool annotated read-only read-only
+BACKLOG_COMMANDS = ["show", "list", "next", "horizon", "stalled", "cost", "ops", "selectors"]
+BACKLOG_TOOL_LIST = [
+    {"name": "kb_backlog", "title": "Read the backlog",
+     "description": "The project's backlog, read-only (backlog.py; not kb facts, not live device data): the same text "
+                    "the command prints. show ID: one item; list: items (--kind K --status S --sprint ID); next: the "
+                    "ready items; horizon: the sprint's next one; stalled; cost; ops SPRINT; selectors. Any other "
+                    "command is refused: run backlog.py for it.",
+     "inputSchema": {"type": "object", "properties": {
+         "command": {"type": "string", "enum": BACKLOG_COMMANDS, "description": "the backlog.py command"},
+         "args": {"type": "array", "items": {"type": "string"}, "description": "its id and options, e.g. ['ST-xxxxxxxx'] or ['--kind', 'sprint']"}},
+         "required": ["command"], "additionalProperties": False},
+     "annotations": {"title": "Read the backlog", **READ_ONLY}},
+]
+
+
+def kb_backlog(args):
+    extra = sorted(set(args) - {"command", "args"})
+    if extra:
+        raise ToolError(f"unknown argument(s): {', '.join(extra)}")
+    command, rest = args.get("command"), args.get("args") or []
+    if command not in BACKLOG_COMMANDS:
+        raise ToolError(f"command must be one of {', '.join(BACKLOG_COMMANDS)}: {command!r} is not read-only here; "
+                        "run backlog.py for it")
+    if not isinstance(rest, list) or not all(isinstance(a, str) for a in rest):
+        raise ToolError("args is a list of strings")
+    import backlog, redact
+    out, err = io.TextIOWrapper(io.BytesIO(), encoding="utf-8"), io.TextIOWrapper(io.BytesIO(), encoding="utf-8")
+    try:
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = backlog.main([command, *rest])
+    except SystemExit as e:  # argparse: a usage error
+        code = e.code if isinstance(e.code, int) else 2
+    for stream in (out, err):
+        stream.seek(0)
+    text, refusal = out.read().rstrip("\n"), err.read().strip()
+    if code:
+        raise ToolError(redact.redact(refusal or text or f"backlog.py {command} exited {code}")[-2000:])
+    return redact.redact(text)
+
+
+BACKLOG_HANDLERS = {"kb_backlog": kb_backlog}
+
+
 def coord_enabled():
     """True when the team's own server is started with KB_COORD_TOOLS=1: the coord_ tools write to the coord store, so
     a default server lists and serves none of them."""
@@ -1179,7 +1226,7 @@ def handle(msg):
     if method == "ping":
         return result(msg_id, {})
     if method == "tools/list":
-        return result(msg_id, {"tools": TOOL_LIST + ([] if limited() else [FEEDBACK_TOOL] + MONITOR_TOOL_LIST)
+        return result(msg_id, {"tools": TOOL_LIST + ([] if limited() else [FEEDBACK_TOOL] + MONITOR_TOOL_LIST + BACKLOG_TOOL_LIST)
                                + (COORD_TOOL_LIST if coord_enabled() else [])
                                + (LIVE_TOOL_LIST if live_enabled() else []), "ttlMs": 3600000, "cacheScope": "public"})
     if method == "tools/call":
@@ -1188,6 +1235,7 @@ def handle(msg):
         if not limited():
             handlers["kb_feedback"] = kb_feedback
             handlers.update(MONITOR_HANDLERS)
+            handlers.update(BACKLOG_HANDLERS)
         if coord_enabled():
             handlers.update(COORD_HANDLERS)
         if name not in handlers:
