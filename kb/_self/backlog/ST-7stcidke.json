@@ -2,7 +2,7 @@
   "id": "ST-7stcidke",
   "kind": "story",
   "title": "After a redact widening, the local store's waiting entries are re-redacted so delivery does not stall",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rrqlgiff",
   "priority": "P3",
   "rank": 0,
@@ -73,5 +73,7 @@
   "links": [
     "parked: housekeeping plan 2026-10-19 (operator gate)"
   ],
-  "notes": "housekeeping batch 2026-10-19, query log theme: the 2026-10-17/18 stall (110 refusals) was cleared by re-redacting by hand. It changes what the local store holds: the operator's. Plan 2026-10-20 (SP-rrqlgiff): premise run on origin/main 8aa620db0: querylog.py has no reredact (exit 2); on a planted copy of the fixture store, querylog.py check flags an email in a question and a question holding one fake secret of each kbcommon.SECRETS shape plus a key=value assignment, and ql_store.leak_problems (the scan ql_deliver.Pusher.bring adds) flags a GUID in a support.microsoft.com fetch path that redact.redact leaves unchanged: the 2026-10-18 stall's shape. The manual fix of 2026-10-18 re-redacted flagged values in place, dropped the GUID fetch and kept a backup (kb/_self/querylog.md, Delivery, describes the steps). Operator gate querylog answered: add the operator-run command. Recorded fields stay: only a flagged value or a flagged fetch changes."
+  "notes": "housekeeping batch 2026-10-19, query log theme: the 2026-10-17/18 stall (110 refusals) was cleared by re-redacting by hand. It changes what the local store holds: the operator's. Plan 2026-10-20 (SP-rrqlgiff): premise run on origin/main 8aa620db0: querylog.py has no reredact (exit 2); on a planted copy of the fixture store, querylog.py check flags an email in a question and a question holding one fake secret of each kbcommon.SECRETS shape plus a key=value assignment, and ql_store.leak_problems (the scan ql_deliver.Pusher.bring adds) flags a GUID in a support.microsoft.com fetch path that redact.redact leaves unchanged: the 2026-10-18 stall's shape. The manual fix of 2026-10-18 re-redacted flagged values in place, dropped the GUID fetch and kept a backup (kb/_self/querylog.md, Delivery, describes the steps). Operator gate querylog answered: add the operator-run command. Recorded fields stay: only a flagged value or a flagged fetch changes.",
+  "claimed_by": "orch240",
+  "operator": "op-f618a13e"
 }
