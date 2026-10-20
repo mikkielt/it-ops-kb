@@ -11,7 +11,7 @@
     "run": [
       "python3",
       "-c",
-      "import json,os,subprocess,sys,tempfile;sys.path.insert(0,'_tools');import bench_multi as b;d=tempfile.mkdtemp();s=os.path.join(d,'c.sqlite');r=lambda *a:subprocess.run([sys.executable,'_tools/coord.py','--store',s,*a],capture_output=True,text=True);tok=json.loads(r('claim','research:t:x','--ttl','60','--holder','a').stdout)['token'];r('release','research:t:x','--token',tok);n=b.coord_counts({'agents':[{'coord_store':s}]})['claims'];t=open('kb/_self/reports/benchmarks.md',encoding='utf-8').read();assert not (chr(96)+'claim_conflicts'+chr(96)+' (the rows of' in t) or n==0,'benchmarks.md says claims are rows of the store; the code counts claim events (%d for a released claim that leaves no row)'%n"
+      "import json,os,subprocess,sys,tempfile;sys.path.insert(0,'_tools');import bench_multi as b;d=tempfile.mkdtemp();s=os.path.join(d,'c.sqlite');r=lambda *a:subprocess.run([sys.executable,'_tools/coord.py','--store',s,*a],capture_output=True,text=True);c=r('claim','research:t:x','--ttl','60','--holder','a');assert c.returncode==0,c.stderr;tok=json.loads(c.stdout)['token'];q=r('release','research:t:x','--token',tok);assert q.returncode==0,q.stderr;n=b.coord_counts({'agents':[{'coord_store':s}]})['claims'];t=open('kb/_self/reports/benchmarks.md',encoding='utf-8').read();assert not (chr(96)+'claim_conflicts'+chr(96)+' (the rows of' in t) or n==0,'benchmarks.md says claims are rows of the store; the code counts claim events (%d for a released claim that leaves no row)'%n"
     ]
   },
   "touches": [
