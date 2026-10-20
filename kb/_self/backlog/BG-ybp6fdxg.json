@@ -2,7 +2,7 @@
   "id": "BG-ybp6fdxg",
   "kind": "bug",
   "title": "content-rules.md and tools.md name tests that no longer exist as the planted failures of their checks",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gea4jifz",
   "priority": "P1",
   "rank": 0,
@@ -23,6 +23,19 @@
     "kb/_self/_retrieval/**"
   ],
   "notes": "Found by the SP-gea4jifz review (S1): ST-ke655nm5's check matched only test_* names and _tools/ paths, so short names after 'tests named' passed. Repro on 2026-10-20 (b206ca178): exits 1 naming 17 names in content-rules.md (decisions_store, kbdecide_withdraw, decision_sweep, decision_tag, log_row_contract, kblog_record_confirm, publish_omits_logs_csv, kblog_propose_*, kblog_sweep_*) and tools.md (pack_scatter_check, pack_freshness_stamp, freshness_lifetime, pack_revalidate, lookup_shows_log_lines, log_not_counted_in_coverage). Fix the sentence to name what checks the rule now (the check.py/rag.py code path, or a remaining test if one holds it); delete no rule. Re-point any lookup_eval.csv row whose expected text changes.",
-  "claimed_by": "orch-r111",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "878326164c30defe265b872fe98fe6a71844ae7e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import glob, re, sys\nnames = set()\nfor f in glob.glob('_tools/test_*.py') + ['_tools/conftest.py']:\n    names |= set(re.findall(r'def (test_\\w+)', open(f, encoding='utf-8').read()))\ndocs = glob.glob('kb/_self/*.md') + glob.glob('.claude/skills/*/SKILL.md') + glob.glob('.claude/agents/*.md') + ['AGENTS.md']\nbad = []\nfor d in docs:\n    t = ' '.join(open(d, encoding='utf-8').read().split())\n    for m in re.finditer(r'tests? named ((?:`[\\w]+`(?:,? (?:and |or )?)?)+)', t):\n        for n in re.findall(r'`(\\w+)`', m.group(1)):\n            if not any(n in x for x in names):\n                bad.append((d, n))\nprint('removed tests the docs still name:', sorted(set(bad)))\nsys.exit(1 if bad else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "e58c6dfe3ad1e99a"
+      }
+    ]
+  }
 }
