@@ -2,7 +2,7 @@
   "id": "BG-fjfoh3p4",
   "kind": "bug",
   "title": "The otel adapter's /metrics carries the Python process and GC metrics beside kbmon's",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qh2j24z2",
   "priority": "P3",
   "rank": 0,
@@ -55,6 +55,19 @@
     "parked: SP-qvlnptiw review"
   ],
   "notes": "SP-qvlnptiw review (ST-wi2volsz): the reviewer found the bind loopback-only (127.0.0.1 and [::1]; 0.0.0.0, :: and 127.1 refused). operator request 2026-10-19 (housekeeping batch): the repro needs uv and a loopback listener, no network. Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs.",
-  "claimed_by": "orch-r109",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "851ed1733d992c7aa1321ac385347ba603d22566",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,re,shutil,subprocess as s,sys,time,urllib.request\nU=shutil.which('uv') or sys.exit('uv is not on PATH')\npr=s.Popen([U,'run','--frozen','--project','otel','python','otel/kbmon_otel.py','--prometheus-port','0','--interval','1','--count','20','--panel','kb'],stdout=s.PIPE,stderr=s.PIPE,text=True,env={k:v for k,v in os.environ.items() if not k.startswith('OTEL_')})\ntry:\n    url=None;t0=time.time()\n    while time.time()-t0<120 and not url:\n        line=pr.stdout.readline()\n        if not line: sys.exit('adapter ended: '+pr.stderr.read()[-300:])\n        m=re.search(r'http://127\\.0\\.0\\.1:\\d+/metrics',line);url=m[0] if m else None\n    body='';t0=time.time()\n    while time.time()-t0<60 and 'kbmon_' not in body:\n        body=urllib.request.urlopen(url,timeout=10).read().decode('utf-8','replace');time.sleep(1)\nfinally:\n    pr.terminate()\nextra=sorted({l.split('{')[0].split()[0] for l in body.splitlines() if l and not l.startswith('#') and not l.startswith('kbmon_') and not l.startswith('target_info')})\nif extra: print('/metrics carries more than kbmon metrics: %s'%extra[:5]);sys.exit(1)\nprint('ok: /metrics carries only kbmon metrics')\n"
+        ],
+        "exit": 0,
+        "sha256": "a3462a5706c130ef"
+      }
+    ]
+  }
 }
