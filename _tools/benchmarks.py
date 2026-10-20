@@ -85,20 +85,23 @@
   benchmarks.py repro run [--instances N] [--model M] [--effort E] [--max-turns T] [--area-usd A] [--instance-usd C]
                           [--timeout S] [--dir DIR] [--dry-run]
                                             start every instance of DIR's instances.json at the same time, each running one
-                                            headless `claude -p` /kb-research session per area of repro_briefs.csv in the
-                                            briefs' order, in the instance's clone with its env and mcp-config, the
+                                            headless `claude -p` /kb-research session per area of repro_briefs.csv, in
+                                            the instance's own rotation of the areas (instance 1 keeps the file's order,
+                                            `area_order`), in the instance's clone with its env and mcp-config, the
                                             project's hooks on, the gitkraken and caveman plugins off by --settings, the
                                             same argv and prompt for every instance; each area's clone is reset to its
                                             bare's main first and the bare's main sha is recorded before and after;
                                             appends one json line per area to DIR/results.jsonl (cost, tokens, turns, tool
                                             calls, wall time, model usage, failure: budget, turns, timeout or error, and
-                                            the shas); an instance starts no further area once its recorded spend
-                                            reaches --instance-usd and records the areas left as failures named budget;
+                                            the shas); an instance starts an area only while its recorded spend plus
+                                            --area-usd stays within --instance-usd and records the areas left as failures
+                                            named budget;
                                             a run again skips the areas with a result and retries the failed ones;
                                             --dry-run starts nothing and prints each argv, the estimate and each refusal,
                                             exit 0 (1 for a briefs problem); a real run exits 2 on a refusal (no
                                             instances.json, `repro questions` failing, the start commit holding
-                                            repro_bench.csv) and 1 when an area failed
+                                            repro_bench.csv, the briefs or questions file differing from HEAD, a `claude`
+                                            command on PATH that is a script, not the binary) and 1 when an area failed
   benchmarks.py repro record [--dir DIR] [--file FILE] [--briefs FILE] [--questions FILE] [--dry-run]
                                             merge the json lines of DIR/results.jsonl (the newest of each instance and
                                             area) into the results file (kb/_self/reports/benchmarks.csv) as the scenario
@@ -437,7 +440,8 @@ def main(argv=None):
     rr.add_argument("--max-turns", type=int, default=d["max_turns"], help=f"turns of one area's session (default: {d['max_turns']})")
     rr.add_argument("--area-usd", type=float, default=d["area_usd"], help=f"US dollars of one area's session (default: {d['area_usd']:g})")
     rr.add_argument("--instance-usd", type=float, default=d["instance_usd"],
-                    help=f"start no further area of an instance once its recorded spend reaches this (default: {d['instance_usd']:g})")
+                    help=f"start an area of an instance only while its recorded spend plus --area-usd stays within this "
+                         f"(default: {d['instance_usd']:g})")
     rr.add_argument("--timeout", type=int, default=d["timeout"], help=f"seconds of one area's session (default: {d['timeout']})")
     rr.add_argument("--dir", help="the instances' directory (default: _cache/bench-repro of the clone's main worktree)")
     rr.add_argument("--dry-run", action="store_true", help="start nothing: print each instance's argv, the estimate and each refusal")
