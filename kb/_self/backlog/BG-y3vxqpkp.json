@@ -48,7 +48,8 @@
     "_tools/bl_selfcheck.py"
   ],
   "depends_on": [
-    "ST-yozfikuv"
+    "ST-yozfikuv",
+    "ST-7m6awnoc"
   ],
   "relates_to": [
     "BG-vvye7ubr"

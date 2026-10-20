@@ -33,7 +33,8 @@
     "kb/_self/code.md"
   ],
   "depends_on": [
-    "ST-hpbjc2gc"
+    "ST-hpbjc2gc",
+    "BG-y3vxqpkp"
   ],
   "links": [
     "kb/public/python/process-orphans-and-cwd.md:26",
