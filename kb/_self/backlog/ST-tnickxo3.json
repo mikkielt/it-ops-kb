@@ -44,7 +44,11 @@
         "only a timeout or an ssh refusal, matched on git's message": "ST-tnickxo3",
         "every failed fetch twice, after a pause": "ST-tnickxo3"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "any failed git fetch of land, once more at once (FETCH_RETRIES = 1)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
