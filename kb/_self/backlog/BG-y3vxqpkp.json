@@ -87,7 +87,11 @@
         "name without .exe, missing start is the read time, class by parent, limit row": "BG-y3vxqpkp",
         "name as Windows gives it (claude.exe, so no session), the rest the same": "BG-y3vxqpkp"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "name without .exe, missing start is the read time, class by parent, limit row",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
