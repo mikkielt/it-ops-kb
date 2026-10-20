@@ -1,0 +1,28 @@
+{
+  "id": "BG-3txhxbiq",
+  "kind": "bug",
+  "title": "An EC private key with double-escaped newlines (JSON inside a JSON string) passes the leak scan",
+  "status": "draft",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "The leak scan flags an EC private key whose line breaks are written as a doubled backslash and n, as in a JSONL record that embeds a JSON tool result",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import base64, os, sys, time\nsys.path.insert(0, \"_tools\")\nimport kbcommon\nd = \"-\" * 5\narm = d + \"BEGIN EC PRIVATE KEY\" + d\nb = base64.b64encode(os.urandom(96)).decode()\nhit = lambda t: any(k == \"secret\" for k, _ in kbcommon.leak_hits(t))\nbs = chr(92)\nt = arm + bs + bs + \"n\" + b[:64] + bs + bs + \"n\" + b[64:]\nprint(\"double-escaped key flagged:\", hit(t))\nsys.exit(0 if hit(t) else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/kbcommon.py",
+    "_tools/kbingest.py",
+    "_tools/test_leaks.py",
+    "kb/_self/content-rules.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-tsb23kev review"
+  ],
+  "notes": "Found by the SP-tsb23kev focused review of BG-3vnu37rq (reviewer session a419aba4) on origin/main 902e961a9; repro fails there."
+}

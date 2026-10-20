@@ -61,7 +61,9 @@
       },
       "class": "design",
       "answer": "a run of 20 base64 characters",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Found by the SP-tsb23kev review (reviewer session on origin/main 4125e63f4): BG-onc6wxd3's allowlist line 'secret -----BEGIN EC PRIVATE KEY-----' matches by value with no file or commit scope, and the SECRETS shape matches only the armor line, so any EC private key with its body passes leak_hits, the tracked-file scan and kbgit.py publish. Repro on 4125e63f4: 'key with body flagged: False | bare label flagged: False', exit 1. RSA and plain armor lines still hit. The fix is a critical guard (leak scan): one planted failure in test_leaks.py is allowed. Publishing stays the operator's.",

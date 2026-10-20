@@ -1,0 +1,28 @@
+{
+  "id": "BG-ok4itunr",
+  "kind": "bug",
+  "title": "Narrow-wrapped, colon-without-space and tab-escaped EC keys pass the leak scan, and the quoted EC label followed by a path is flagged",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The leak scan flags an EC key body wrapped under 20 characters per line, a Proc-Type header with no space after its colon and a literal tab escape separator, and does not flag the EC armor label quoted alone with a repository path on the next line",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import base64, os, sys, time\nsys.path.insert(0, \"_tools\")\nimport kbcommon\nd = \"-\" * 5\narm = d + \"BEGIN EC PRIVATE KEY\" + d\nb = base64.b64encode(os.urandom(96)).decode()\nhit = lambda t: any(k == \"secret\" for k, _ in kbcommon.leak_hits(t))\ncases = {\"wrap16\": arm + \"\\n\" + \"\\n\".join(b[i:i+16] for i in range(0, 96, 16)), \"hdr_nospace\": arm + \"\\nProc-Type:4,ENCRYPTED\\n\" + b[:64], \"tab_escape\": arm + chr(92) + \"t\" + b[:64]}\nmiss = [k for k, v in cases.items() if not hit(v)]\nfp = hit(arm + \"\\nkb/public/security/secret-shapes-in-text.md\")\nprint(\"passing:\", miss, \"| label+path flagged:\", fp)\nsys.exit(1 if miss or fp else 0)\n"
+    ]
+  },
+  "touches": [
+    "_tools/kbcommon.py",
+    "_tools/kbingest.py",
+    "_tools/test_leaks.py",
+    "kb/_self/content-rules.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-tsb23kev review"
+  ],
+  "notes": "Found by the SP-tsb23kev focused review of BG-3vnu37rq (reviewer session a419aba4) on origin/main 902e961a9; repro fails there."
+}
