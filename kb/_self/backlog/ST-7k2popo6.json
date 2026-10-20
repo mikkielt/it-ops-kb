@@ -1,0 +1,22 @@
+{
+  "id": "ST-7k2popo6",
+  "kind": "story",
+  "title": "kbmon --status and kb_monitor_status say an absent or timed-out panel's own reason",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbmon --status PANEL and the kb_monitor_status tool print the reason an absent or timed-out panel gives (an absent coord store names the store, an unreachable server names the refusal), as --once and --json do, not only the state word",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,subprocess as s,sys,tempfile\nd=tempfile.mkdtemp();st=os.path.join(d,'none.sqlite');kf=os.path.join(d,'k');open(kf,'w').write('planted'+'x'*20);os.chmod(kf,0o600)\nenv=dict(os.environ,COLUMNS='400')\na=s.run([sys.executable,'_tools/kbmon.py','--status','coord','--store',st],capture_output=True,text=True,env=env,timeout=120).stdout\nb=s.run([sys.executable,'_tools/kbmon.py','--status','coord','--url','http://127.0.0.1:9','--key-file',kf],capture_output=True,text=True,env=env,timeout=120).stdout\nprint(a.strip()[:300]);print(b.strip()[:300])\nsys.exit(0 if os.path.basename(d) in a and 'refused' in b.lower() else 1)\n"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-kgvbpjhd review"
+  ],
+  "notes": "SP-kgvbpjhd review gap 2 (fresh-context reviewer, 2026-10-20, on origin/main aa05a50fa4); check fails on that tip."
+}

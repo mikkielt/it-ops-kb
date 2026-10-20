@@ -1,0 +1,22 @@
+{
+  "id": "ST-kmgugm5e",
+  "kind": "story",
+  "title": "status routing leaves docs questions to the lookup wherever the docs intent sits in the question",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "mon_status.topic_of returns None for docs questions that name cost, a session or kbmon without opening with a docs phrase (What is the cost of Intune licences today; can I resume a running session in Claude Code; tell me about kbmon; Hey, how do I check how much we have spent so far)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import mon_status as m\nq=['What is the cost of Intune licences today','can I resume a running session in Claude Code','tell me about kbmon','Hey, how do I check how much we have spent so far']\nr=[m.topic_of(x) for x in q];print(r);sys.exit(0 if all(x is None for x in r) else 1)\n"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-kgvbpjhd review"
+  ],
+  "notes": "SP-kgvbpjhd review gap 3 (fresh-context reviewer, 2026-10-20, on origin/main aa05a50fa4); check fails on that tip."
+}

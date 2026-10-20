@@ -1,0 +1,22 @@
+{
+  "id": "ST-teuwi4wh",
+  "kind": "story",
+  "title": "kbmon's module docstring describes the receipt line it prints now",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the _tools/kbmon.py module docstring says the receipt line ends with the needs-you count and its command, and that the receipt reads the sprint panel, as mon_receipt does since ST-rwan4x2o",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import kbmon\nd=kbmon.__doc__ or '';print('needs you' in d);sys.exit(0 if 'needs you' in d else 1)\n"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-kgvbpjhd review"
+  ],
+  "notes": "SP-kgvbpjhd review gap 1 (fresh-context reviewer, 2026-10-20, on origin/main aa05a50fa4); check fails on that tip."
+}

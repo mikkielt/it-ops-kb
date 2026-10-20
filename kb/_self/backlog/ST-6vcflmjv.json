@@ -1,0 +1,22 @@
+{
+  "id": "ST-6vcflmjv",
+  "kind": "story",
+  "title": "kbmon --receipt with one panel names that panel when no alert is up",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbmon --receipt --panel coord with no alert says no alert on coord, not an empty panel list before the needs-you ending",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile\nst=os.path.join(tempfile.mkdtemp(),'none.sqlite')\no=s.run([sys.executable,'_tools/kbmon.py','--receipt','--panel','coord','--store',st],capture_output=True,text=True,timeout=120).stdout\nl=json.loads(o)['line'];print(l);sys.exit(0 if 'no alert on ;' not in l and 'coord' in l else 1)\n"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-kgvbpjhd review"
+  ],
+  "notes": "SP-kgvbpjhd review gap 4 (fresh-context reviewer, 2026-10-20, on origin/main aa05a50fa4); check fails on that tip."
+}

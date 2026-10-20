@@ -1,0 +1,22 @@
+{
+  "id": "ST-rjjz23r2",
+  "kind": "story",
+  "title": "status routing still sends cost so far and is anything waiting on me to a status answer",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "mon_status.topic_of gives cost for cost so far and what is the cost so far, as it did before BG-jeyt5f56 narrowed the so far cue, and a topic for is anything waiting on me",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import mon_status as m\nr=[m.topic_of(x) for x in ('cost so far','what is the cost so far')];w=m.topic_of('is anything waiting on me')\nprint(r,w);sys.exit(0 if r==['cost','cost'] and w is not None else 1)\n"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-kgvbpjhd review"
+  ],
+  "notes": "SP-kgvbpjhd review gap 5 (fresh-context reviewer, 2026-10-20, on origin/main aa05a50fa4); check fails on that tip."
+}

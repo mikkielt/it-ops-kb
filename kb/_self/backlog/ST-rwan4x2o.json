@@ -56,7 +56,9 @@
       },
       "class": "querylog",
       "answer": "count of mon_needs entries plus python3 _tools/kbmon.py --status all, with the sprint panel added to the receipt's default panels",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -75,7 +77,9 @@
       },
       "class": "design",
       "answer": "one line: the count and the short titles of the items they announce, no session label",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: with a planted waiting gate, a refused delivery and a sessions entry, --once has no needs you line, --status all and kb_monitor_status start with the sessions line, the receipt names only the alerts and no line carries the session label.",

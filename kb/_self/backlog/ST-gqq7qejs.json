@@ -1,0 +1,22 @@
+{
+  "id": "ST-gqq7qejs",
+  "kind": "story",
+  "title": "coord.store_of gives a linked worktree's store as a normalised path when git cannot run",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "coord.store_of of a linked worktree with git off PATH returns the main clone's .git/kb-coord/coord.sqlite with no .. segments, so the absent-store reason stays readable; the reason keeps the store's file name on an 80-column view",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,subprocess as s,sys,tempfile\nsys.path.insert(0,'_tools')\nd=tempfile.mkdtemp();m=os.path.join(d,'main');w=os.path.join(d,'wt1')\ns.run(['git','init','-q',m],check=True);s.run(['git','-C',m,'-c','user.name=t','-c','user.email=t@corp.example.com','commit','-q','--allow-empty','-m','x'],check=True)\ns.run(['git','-C',m,'worktree','add','-q',w],check=True)\nos.environ['PATH']=os.path.join(d,'nogit');import coord\np=coord.store_of(w);print(p);sys.exit(0 if p and '..' not in p.replace('\\\\','/').split('/') and os.path.realpath(p)==os.path.realpath(os.path.join(m,'.git','kb-coord','coord.sqlite')) else 1)\n"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-kgvbpjhd review"
+  ],
+  "notes": "SP-kgvbpjhd review gap 6 (fresh-context reviewer, 2026-10-20, on origin/main aa05a50fa4); check fails on that tip."
+}
