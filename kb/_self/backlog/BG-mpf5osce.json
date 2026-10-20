@@ -2,7 +2,7 @@
   "id": "BG-mpf5osce",
   "kind": "bug",
   "title": "publish refuses commit 1da4f4e3 for documentation-example email addresses no allowlist covers, so the public home cannot be updated",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ttgcpf7o",
   "priority": "P1",
   "rank": 0,
@@ -20,5 +20,7 @@
     "_tools/test_publish_e2e.py",
     "kb/_self/git.md"
   ],
-  "notes": "Premise (2026-10-20): the operator's publish --dry-run from the main checkout (branch orch/mac, 942 commits behind origin/main) refused 73331d8a6e4f, 1da4f4e39b3e and f4190f0dbff1. With origin/main's own tools only 1da4f4e3 is refused (the armor-label commits pass since BG-onc6wxd3's allowlist line); leak_verdicts already unions the commit's and the projection's allowlist, so the fix is the missing exact entries, not code."
+  "notes": "Premise (2026-10-20): the operator's publish --dry-run from the main checkout (branch orch/mac, 942 commits behind origin/main) refused 73331d8a6e4f, 1da4f4e39b3e and f4190f0dbff1. With origin/main's own tools only 1da4f4e3 is refused (the armor-label commits pass since BG-onc6wxd3's allowlist line); leak_verdicts already unions the commit's and the projection's allowlist, so the fix is the missing exact entries, not code.",
+  "claimed_by": "p19-pubfix",
+  "operator": "op-f618a13e"
 }
