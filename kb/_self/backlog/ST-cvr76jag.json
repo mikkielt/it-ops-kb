@@ -6,7 +6,7 @@
   "sprint": "SP-2rjhs7se",
   "priority": "P3",
   "rank": 0,
-  "goal": "the contract lint prints no 'fact mixes tags' and no 'DER fact rests on a run or probe but names no version' warning for the agents articles; no fact is deleted",
+  "goal": "the contract lint prints no 'fact mixes tags' and no 'DER fact rests on a run or probe but names no version' warning for the agents articles; no fact is deleted, and the split facts' old anchor rows of S2047, S2095, S-gpnrqpjt and S-tks3v5p5 go with their old keys",
   "checks": [
     {
       "run": [
