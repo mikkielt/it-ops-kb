@@ -68,7 +68,11 @@
         "sessions panel only": "BG-y3vxqpkp",
         "every consumer of bl_procs.snapshot": "BG-y3vxqpkp"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "sessions panel only",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
