@@ -2,7 +2,7 @@
   "id": "BG-u2hhejd7",
   "kind": "bug",
   "title": "load status classes this clone's own processes started by a relative script path as another clone",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-kgvbpjhd",
   "priority": "P2",
   "rank": 0,
@@ -47,6 +47,19 @@
     "parked: SP-dulvwwjc review"
   ],
   "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: repro fails (python3 _tools/kbmon.py --status is classed another clone).",
-  "claimed_by": "orch-r114",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "f783dc311ffda71992aee408ceccaab7d4ed3d85",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,'_tools'); import mon_host; assert mon_host.kind_of('python3 _tools/kbmon.py --status','/x')[1] != 'other'"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
