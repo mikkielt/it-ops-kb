@@ -849,13 +849,18 @@ def logged(qdir, out=print):
     except (OSError, ValueError, AttributeError):
         pass  # no log yet, or a standard output that is no file
 
+    try:
+        fresh = [log.stat().st_size > LOG_MAX_BYTES]  # decided once: the run's own lines never truncate each other
+    except OSError:
+        fresh = [False]
+
     def say(text):
         out(text)
         try:
             log.parent.mkdir(parents=True, exist_ok=True)
-            fresh = log.exists() and log.stat().st_size > LOG_MAX_BYTES
-            with open(log, "w" if fresh else "a", encoding="utf-8", newline="\n") as f:
+            with open(log, "w" if fresh[0] else "a", encoding="utf-8", newline="\n") as f:
                 f.write(text + "\n")
+            fresh[0] = False
         except OSError:
             pass
     return say
