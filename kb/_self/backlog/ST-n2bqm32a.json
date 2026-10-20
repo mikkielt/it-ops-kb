@@ -2,7 +2,7 @@
   "id": "ST-n2bqm32a",
   "kind": "story",
   "title": "Research sprint goal: A Haiku remediation agent asks the operator through coord about the leftovers tidy cannot decide, and each answer is claimed before tidy removes it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ep7cyuob",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,7 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orch-r202",
+  "operator": "op-f618a13e"
 }
