@@ -57,7 +57,8 @@
     "skills/sprint/SKILL.md",
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
-    "kb/_self/benchmarks.md"
+    "kb/_self/benchmarks.md",
+    "kb/_self/code.md"
   ],
   "gates": [
     {
