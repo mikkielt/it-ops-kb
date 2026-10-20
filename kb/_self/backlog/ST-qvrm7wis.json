@@ -60,7 +60,11 @@
         "State the row-versus-event reading in the benchmark results paragraph, without dating the old records": "ST-qvrm7wis",
         "Add nothing; leave the question to token-efficiency.md": "ST-qvrm7wis"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "State the row-versus-event reading in the benchmark results paragraph, without dating the old records",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Method (planner): rows worded as operators and agents ask, the five the operator found weak among them; a paraphrase that still misses gets an aliases.csv row only where rewording coordination.md's line cannot fix it (_self has no doc2query expansions file). Premise run 2026-10-20 on origin/main: rag.py pack --root _self gives coverage weak (no tested question matches) for eight of the twelve questions tried, the five the operator named among them; lookup_eval.csv has no row on coord. Code lane: lookup_eval.csv lands with backlog.py land ID --wait-merge 1800.",
