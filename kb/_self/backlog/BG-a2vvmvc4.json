@@ -2,7 +2,7 @@
   "id": "BG-a2vvmvc4",
   "kind": "bug",
   "title": "coord.py wait --since with a number past SQLite's integer range ends in an OverflowError traceback, and a served one kills its handler thread",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-tsb23kev",
   "priority": "P2",
   "rank": 0,
@@ -49,6 +49,19 @@
     "parked: SP-fp3hxl6q review"
   ],
   "notes": "Review 2026-10-18: `python3 _tools/coord.py --store $(mktemp -d)/c.sqlite wait --since 99999999999999999999 --timeout 0` prints `OverflowError: Python int too large to convert to SQLite INTEGER` (coord.py:413). Served, the handler thread dies and the client reports `RemoteDisconnected` as 'cannot reach'. operator request 2026-10-19 (housekeeping batch): unclear errors: a traceback instead of a usage message. Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs.",
-  "claimed_by": "orch-r102",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "f43dc80af6222042f9fef62dc9f910930704369a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,subprocess as s,sys,tempfile\nD=tempfile.mkdtemp()\np=s.run([sys.executable,'_tools/coord.py','--store',os.path.join(D,'c.sqlite'),'wait','--since','99999999999999999999','--timeout','0'],capture_output=True,text=True,timeout=60)\nprint('exit',p.returncode,'traceback','Traceback' in p.stderr);sys.exit(0 if p.returncode==2 and 'Traceback' not in p.stderr else 1)"
+        ],
+        "exit": 0,
+        "sha256": "ad53afb21ce26a7e"
+      }
+    ]
+  }
 }
