@@ -2,7 +2,7 @@
   "id": "ST-p4cdatrf",
   "kind": "story",
   "title": "The kb MCP server's tools/list size and the tool grouping are recorded",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ttgcpf7o",
   "priority": "P1",
   "rank": 0,
@@ -51,5 +51,7 @@
       "by": "operator"
     }
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): coord ask A275e35646a (operator addition: expose tools as MCP server tools instead of calling scripts). The grouping is answered by its recommendation (fewest definitions, a closed command list keeps every CLI gate); the worker measures tools/list and opens a gate if the figure argues otherwise. Premise: the check fails."
+  "notes": "operator request 2026-10-19 (housekeeping batch): coord ask A275e35646a (operator addition: expose tools as MCP server tools instead of calling scripts). The grouping is answered by its recommendation (fewest definitions, a closed command list keeps every CLI gate); the worker measures tools/list and opens a gate if the figure argues otherwise. Premise: the check fails.",
+  "claimed_by": "orch-r110",
+  "operator": "op-f618a13e"
 }
