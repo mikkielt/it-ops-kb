@@ -2,7 +2,7 @@
   "id": "ST-xshbmpgk",
   "kind": "story",
   "title": "Research sprint goal: Every kbmon surface shows the same summaries, and says why a panel is missing",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-kgvbpjhd",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,7 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orch-r114",
+  "operator": "op-f618a13e"
 }
