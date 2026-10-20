@@ -68,7 +68,11 @@
         "bl_land.py replaces the handler bl_close registered for close with one that runs bl_close.cmd_close and then bl_clean.close_leftovers": "ST-skoaypsh",
         "edit bl_close.cmd_close to call bl_clean (a touch to add, and bl_clean already imports bl_close, so a lazy import)": "ST-skoaypsh"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "bl_land.py replaces the handler bl_close registered for close with one that runs bl_close.cmd_close and then bl_clean.close_leftovers",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
