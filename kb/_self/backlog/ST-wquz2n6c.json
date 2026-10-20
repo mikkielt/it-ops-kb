@@ -2,7 +2,7 @@
   "id": "ST-wquz2n6c",
   "kind": "story",
   "title": "tools.md, backlog.md, code.md and conftest say what the code does",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gea4jifz",
   "priority": "P3",
   "rank": 0,
@@ -36,5 +36,7 @@
   "depends_on": [
     "ST-ke655nm5"
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): folds BG-mxla4xlk, BG-xk3syfs2, ST-ogg35rzs, BG-icnbtxdf, BG-dolvqr5i, ST-nblpdvup (repros embedded). AGENTS.md is in the touches only for BG-dolvqr5i's sizing rule wording; no rule changes."
+  "notes": "operator request 2026-10-19 (housekeeping batch): folds BG-mxla4xlk, BG-xk3syfs2, ST-ogg35rzs, BG-icnbtxdf, BG-dolvqr5i, ST-nblpdvup (repros embedded). AGENTS.md is in the touches only for BG-dolvqr5i's sizing rule wording; no rule changes.",
+  "claimed_by": "orch-r111",
+  "operator": "op-f618a13e"
 }
