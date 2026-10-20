@@ -2,7 +2,7 @@
   "id": "BG-fjfoh3p4",
   "kind": "bug",
   "title": "The otel adapter's /metrics carries the Python process and GC metrics beside kbmon's",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qh2j24z2",
   "priority": "P3",
   "rank": 0,
@@ -35,5 +35,7 @@
   "links": [
     "parked: SP-qvlnptiw review"
   ],
-  "notes": "SP-qvlnptiw review (ST-wi2volsz): the reviewer found the bind loopback-only (127.0.0.1 and [::1]; 0.0.0.0, :: and 127.1 refused). operator request 2026-10-19 (housekeeping batch): the repro needs uv and a loopback listener, no network. Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs."
+  "notes": "SP-qvlnptiw review (ST-wi2volsz): the reviewer found the bind loopback-only (127.0.0.1 and [::1]; 0.0.0.0, :: and 127.1 refused). operator request 2026-10-19 (housekeeping batch): the repro needs uv and a loopback listener, no network. Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs.",
+  "claimed_by": "orch-r109",
+  "operator": "op-f618a13e"
 }
