@@ -1,0 +1,25 @@
+{
+  "id": "ST-fffe37ib",
+  "kind": "story",
+  "title": "A finding a sprint item closed is not reopened by a query-log apply that runs older tool code",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "a query-log apply whose learn code is older than the one on the main branch does not write a finding open again that a landed item closed (SP-vx6eufpj review: the 06:41 apply reopened the four route findings ST-gt4tduzr closed, before BG-ddg3khul's learn fix reached it; the 06:51 apply closed them again), relating to ST-y74y4tpn's stale-checkout refusal",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;s=open('kb/_self/querylog.md').read();sys.exit(0 if 'older learn code' in s else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_apply.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-vx6eufpj close"
+  ]
+}

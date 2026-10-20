@@ -1,0 +1,24 @@
+{
+  "id": "ST-27yvxwit",
+  "kind": "story",
+  "title": "close --summary names a goal clause's carrier by its clauses mapping, not by shared words with sibling items",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py close --summary lists for each sprint goal clause the items whose clauses mapping or goal carries it, so SP-vx6eufpj's clause 'export --since reads only the days it exports' no longer lists ST-kbc6szhc and the rules clause no longer lists ST-gt4tduzr",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,glob;s=''.join(open(f).read() for f in glob.glob('_tools/bl_*.py'));sys.exit(0 if 'carried by its clauses mapping' in s else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py"
+  ],
+  "links": [
+    "parked: SP-vx6eufpj close"
+  ]
+}

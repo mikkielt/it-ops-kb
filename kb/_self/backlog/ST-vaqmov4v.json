@@ -1,0 +1,24 @@
+{
+  "id": "ST-vaqmov4v",
+  "kind": "story",
+  "title": "A sprint goal clause about 'the open findings' reads every open finding of that kind at review, not the planning-day snapshot of ids",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "a check for a goal clause that names the open findings of a kind reads querylog.py show --findings --kind KIND --state open in full, or the clause names the day of its snapshot, so findings filed after planning (F-0087f0a19e8b, F-164e39b14bfc, F-543547c9270c in SP-vx6eufpj) do not leave a clause unmet while its checks pass",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;s=open('.claude/skills/kb-sprint/SKILL.md').read();i=s.find('## plan');b=s[i:s.find('## start',i)];sys.exit(0 if 'snapshot' in b else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-vx6eufpj close"
+  ]
+}

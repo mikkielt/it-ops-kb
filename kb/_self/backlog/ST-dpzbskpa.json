@@ -1,0 +1,24 @@
+{
+  "id": "ST-dpzbskpa",
+  "kind": "story",
+  "title": "A bug about a lock, race or parallel writers is not committed with checks that only read its source text",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py check warns of a committed bug or story whose title or goal names a lock, a race or writers at once and whose checks and repro all only read files, as BG-xq3dk3yl's repro read 'lock' or 'os.replace' in the source, which an atomic replace that still loses ids passes; the orchestrator's four-writer check caught it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,glob;s=''.join(open(f).read() for f in glob.glob('_tools/bl_*.py'));sys.exit(0 if 'writers at once' in s else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_check.py"
+  ],
+  "links": [
+    "parked: SP-vx6eufpj close"
+  ]
+}

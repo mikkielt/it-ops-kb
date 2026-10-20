@@ -1,0 +1,24 @@
+{
+  "id": "ST-3huor4nw",
+  "kind": "story",
+  "title": "Planning runs the command a goal names to close a finding on one finding, before the start gate",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the kb-sprint plan step has a committed item whose goal closes findings or records with a named command (querylog.py close --tried or --reject) run that command once on a copy of the store against one of its targets, and a refusal becomes a planned item or a gate before the start, as ST-w3qdrhdk's 'or was closed with --tried or --reject' met a close that took no rules finding (BG-65xsmfxg) only mid-work",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;s=open('.claude/skills/kb-sprint/SKILL.md').read();i=s.find('## plan');b=s[i:s.find('## start',i)];sys.exit(0 if 'on a copy of the store' in b else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-vx6eufpj close"
+  ]
+}

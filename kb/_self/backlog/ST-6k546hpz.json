@@ -1,0 +1,24 @@
+{
+  "id": "ST-6k546hpz",
+  "kind": "story",
+  "title": "A gate whose question names a forge only inside a host name (docs.gitlab.com) is not classed push",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_authority.class_reasons does not class a gate push for a forge word that is part of a host name in its question or options, so a query-log or source question about a documentation host stays answerable by the delegate",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bl_authority as a;c=a.derived_class({'touches':['kb/_querylog/findings/**']},{'id':'g2','question':'How are the four route findings (docs.gitlab.com, learn.microsoft.com) closed?','options':['hand-written records','leave them open']});print(c);sys.exit(1 if c=='push' else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py"
+  ],
+  "links": [
+    "parked: SP-vx6eufpj close"
+  ]
+}
