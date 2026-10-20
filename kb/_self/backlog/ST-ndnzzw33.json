@@ -2,7 +2,7 @@
   "id": "ST-ndnzzw33",
   "kind": "story",
   "title": "Review sprint: kb articles pass the contract lint clean, and the query log's research queue is worked",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-2rjhs7se",
   "review": true,
   "priority": "P1",
@@ -23,6 +23,27 @@
       ]
     }
   ],
-  "claimed_by": "orch-r105",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "45f543e35cd88301d808442c97ec66b54d50c55f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "9d98f273be55c417"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "dfbf88d16baacdde"
+      }
+    ]
+  }
 }
