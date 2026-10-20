@@ -2,7 +2,7 @@
   "id": "ST-3kaxvb4j",
   "kind": "story",
   "title": "AGENTS.md keeps headroom under its 4 KB cap with no rule changed",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gea4jifz",
   "priority": "P2",
   "rank": 0,
@@ -46,6 +46,30 @@
     "ST-wquz2n6c"
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): AGENTS.md on 2026-10-19: 4091 of 4096 bytes; SP-dulvwwjc and SP-3hgirkur each add a line first. Trimming only: a wording that changes a rule is a blocking operator gate. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
-  "claimed_by": "orch-r111",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "f989fef18f527124349048b9b424bd9ba77d4979",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nn=len(open('AGENTS.md','rb').read());print('AGENTS.md bytes',n);sys.exit(0 if n<=3968 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "bc91129944268051"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval",
+          "--root",
+          "_self"
+        ],
+        "exit": 0,
+        "sha256": "97161137748d54b9"
+      }
+    ]
+  }
 }
