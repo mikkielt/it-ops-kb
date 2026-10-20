@@ -66,7 +66,11 @@
         "bl_intake calls kg_lock.end_group, its own end_tree goes": "ST-gq4q5t4y",
         "keep both copies": "ST-gq4q5t4y"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "bl_intake calls kg_lock.end_group, its own end_tree goes",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
