@@ -90,9 +90,15 @@ def test_publish_refuses_a_leak_in_any_commit_of_the_range(world, capsys):
     at = chr(64)  # an address in a commit message: a noreply or placeholder one stays, any other is refused, unnamed
     push_commit(clone, "ok\n\nCo-Authored-By: Claude <noreply" + at + "anthropic.com>\nReviewed-by: jan.kowalski" + at + "corp.example.com", {"kb/public/ok.md": "fact\n"})
     push_commit(clone, "note\n\nReviewed-by: jan.kowalski" + at + "corp-mail.test", {"kb/public/note.md": "fact\n"})
+    # a value allowlisted only at the source tip passes the older commit that added it; a secret no allowlist covers does not
+    push_commit(clone, "example", {"kb/public/mailmap.md": "<proper" + at + "mailmap.test>\n",
+                                   "kb/public/key.md": "glpat-" + "x7Kq2mN9pR4sT6vW8yZ1\n"})
+    push_commit(clone, "reviewed", {"kb/public/mailmap.md": "fact\n", "kb/public/key.md": "fact\n",
+                                    kbpublic.ALLOWLIST_PATH: "email proper" + at + "mailmap.test  # placeholder\n"})
     assert publish(clone) == 1
     out = capsys.readouterr().out
-    assert "refused:" in out
+    assert "refused:" in out and "leak.md has a leak-scan hit" in out
+    assert "key.md has a leak-scan hit (secret)" in out and "mailmap.md" not in out
     assert out.count("holds an email address") == 1 and "a trailer" in out and "corp-mail" not in out
     assert pub_empty(pub)  # the final tree is clean, the history is not
 
