@@ -16,5 +16,6 @@
   },
   "touches": [
     "kb/_self/monitoring.md"
-  ]
+  ],
+  "notes": "ST-hayrghyh moved the coord.py store section into kb/_self/coordination.md and did not carry the sentence over: its hook section says a SessionStart always prints the session id line and only a PreToolUse event with nothing to show prints nothing. The repro reads kb/_self/monitoring.md, where the sentence is gone, so it now passes; the move corrects the statement and no file holds it."
 }

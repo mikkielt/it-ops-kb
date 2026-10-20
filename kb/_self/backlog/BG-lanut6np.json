@@ -17,5 +17,6 @@
   "repro_reason": "the claim is that no tool, hook or skill posts a progress event, which only a search of their code shows; no run of a behaviour can show an absence",
   "touches": [
     "kb/_self/monitoring.md"
-  ]
+  ],
+  "notes": "ST-hayrghyh moved the coord.py store section into kb/_self/coordination.md and did not carry the sentence over: coordination.md now says the SessionStart intent carries session, item and operator (topic backlog-claim only at a claim), fact_added comes from /kb-research, dup_of from a refused claim, and no tool, hook or skill posts progress, gap_opened, heartbeat or lesson. The repro reads kb/_self/monitoring.md, where the sentence is gone, so it now passes; the move corrects the statement."
 }
