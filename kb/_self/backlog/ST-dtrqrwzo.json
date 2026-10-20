@@ -2,7 +2,7 @@
   "id": "ST-dtrqrwzo",
   "kind": "story",
   "title": "Research sprint goal: kbmon says what each session is doing, under a readable label",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-razcgjsb",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,7 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orch-r112",
+  "operator": "op-f618a13e"
 }
