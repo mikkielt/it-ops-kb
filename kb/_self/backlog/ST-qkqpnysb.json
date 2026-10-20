@@ -2,7 +2,7 @@
   "id": "ST-qkqpnysb",
   "kind": "story",
   "title": "Review sprint: Leftovers are recorded when made and removed only when proven finished: backlog.py own, a safe_to_remove verdict in tidy, a kbmon cleanup panel",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ipeewrlv",
   "review": true,
   "priority": "P1",
@@ -23,6 +23,27 @@
       ]
     }
   ],
-  "claimed_by": "orch-r201",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "01f0d475914f364f8f4361977333dbf7ddb8e4ca",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "1dcad0754af351ea"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "f390db5c38b0fbe6"
+      }
+    ]
+  }
 }
