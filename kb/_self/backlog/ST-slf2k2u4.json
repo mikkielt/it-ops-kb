@@ -2,7 +2,7 @@
   "id": "ST-slf2k2u4",
   "kind": "story",
   "title": "Review sprint: A Haiku remediation agent asks the operator through coord about the leftovers tidy cannot decide, and each answer is claimed before tidy removes it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ep7cyuob",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,7 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-r202",
+  "operator": "op-f618a13e"
 }
