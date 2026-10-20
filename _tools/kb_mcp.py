@@ -53,6 +53,10 @@ asks and, unasked, for a source past its freshness lifetime):
   kb_monitor_status  (the team's own server only: off under --roots, and kb_http.py never serves it) the lines of
              `kbmon.py --status TOPIC --json` as text: topic sessions, cost, querylog, coord, sprints, load or all (default),
              at most 25 lines; each panel is bound by kbmon's --timeout (10 seconds), and no model is called
+  kb_backlog, kb_querylog, kb_docs  (the team's own server only, as kb_monitor_status) the read-only commands of backlog.py,
+             querylog.py (digest, status, show) and selfdoc.py, check.py and rag.py eval (stale, section, map, check, eval) as
+             `command` and `args`, answering the text the script prints through redact.redact (kb_docs ends it with
+             `(exit 1)` when the command found something); a command or option outside each tool's closed list is a tool error
   kb_topics_for  kb topics that code touches, like `rag.py topics-for`: the curated signals of each root's signals.csv
              found in the files or text given (paths relative to the host project, CLAUDE_PROJECT_DIR or the cwd);
              imports=true matches only the packages the files declare (imports, manifests), not comments or strings;
@@ -1171,6 +1175,113 @@ def kb_backlog(args):
 BACKLOG_HANDLERS = {"kb_backlog": kb_backlog}
 
 
+# ---------------------------------------------------------------- query log and docs commands
+
+# Each facade runs one script with a command from a closed list and the options listed for it. An option outside the list
+# is refused (argparse takes any unambiguous prefix of a long option, so a list of refused ones would let `--write` through
+# for `--write-shares`), and so is a value that starts with `-`: what runs writes nothing and takes no option of git.
+FACADE_RUN_S = 300
+FACADE_MAX_CHARS = 60000
+QUERYLOG_COMMANDS = {
+    "digest": {"--week"},
+    "status": set(),
+    "show": {"--run", "--entry", "--findings", "--usage", "--spool", "--kind", "--article", "--state", "--limit"},
+}
+DOCS_COMMANDS = {  # command: (script, the command word it passes, its options); stale, check and eval exit 1 on findings
+    "stale": ("selfdoc.py", "stale", {"--since", "--work"}),
+    "section": ("selfdoc.py", "section", set()),
+    "map": ("selfdoc.py", "map", set()),
+    "check": ("check.py", None, {"--root"}),
+    "eval": ("rag.py", "eval", {"--file", "--root", "--min", "--all", "--free"}),
+}
+FACADE_ARGS = {"type": "array", "items": {"type": "string"}}
+QUERYLOG_TOOL_LIST = [
+    {"name": "kb_querylog", "title": "Read the query log",
+     "description": "The kb's query log, read-only (querylog.py; not kb facts, not live device data): the same text the "
+                    "command prints. digest [--week YYYY-Www]: the weekly digest; status: the log's state; show "
+                    "--run ID | --entry ID | --findings [--kind K --article A --state S] | --usage RUN | --spool "
+                    "[--limit N]. Any other command or option is refused: run querylog.py for it.",
+     "inputSchema": {"type": "object", "properties": {
+         "command": {"type": "string", "enum": list(QUERYLOG_COMMANDS), "description": "the querylog.py command"},
+         "args": {**FACADE_ARGS, "description": "its options, e.g. ['--week', '2026-W42'] or ['--findings', '--kind', 'gap']"}},
+         "required": ["command"], "additionalProperties": False},
+     "annotations": {"title": "Read the query log", **READ_ONLY}},
+]
+DOCS_TOOL_LIST = [
+    {"name": "kb_docs", "title": "Check the kb's own docs",
+     "description": "The kb's own docs and their checks, read-only (selfdoc.py, check.py, rag.py; not kb facts, not live "
+                    "device data): the same text the command prints, and `(exit 1)` last when it found something. "
+                    "stale [--since REV | --work ID]: docs behind their files; section DOC HEADING ...: sections of "
+                    "kb/_self docs; map PATH ...: the docs that describe paths; check [--root NAME]: check.py; eval "
+                    "[--root NAME --file F --min N --all --free]: rag.py eval. Any other command or option is refused.",
+     "inputSchema": {"type": "object", "properties": {
+         "command": {"type": "string", "enum": list(DOCS_COMMANDS), "description": "stale, section, map, check or eval"},
+         "args": {**FACADE_ARGS, "description": "its arguments, e.g. ['_tools/rag.py'] for map"}},
+         "required": ["command"], "additionalProperties": False},
+     "annotations": {"title": "Check the kb's own docs", **READ_ONLY}},
+]
+
+
+def facade_args(rest, allowed):
+    """REST as the list of strings it must be, every option in ALLOWED (spelled out, with an optional =value) and no
+    value that starts with `-`."""
+    if not isinstance(rest, list) or not all(isinstance(a, str) for a in rest):
+        raise ToolError("args is a list of strings")
+    for a in rest:
+        flag, eq, value = a.partition("=")
+        if a.startswith("-") and flag in allowed and eq and value.startswith("-"):
+            raise ToolError(f"the value of {flag} may not start with '-'")
+        if a.startswith("-") and flag not in allowed:
+            raise ToolError(f"option {flag!r} is not offered here" + (f" (offered: {', '.join(sorted(allowed))})" if allowed else "")
+                            + ": run the command line for it")
+    return rest
+
+
+def facade_run(script, words, findings_exit=False):
+    """What `python3 _tools/SCRIPT WORDS` prints, redacted and capped. An exit 1 that FINDINGS_EXIT says is a finding
+    ends the text with `(exit 1)`; any other non-zero exit is a tool error."""
+    import redact
+    try:
+        p = subprocess.run([sys.executable, str(Path(TOOLS, script)), *words], capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", timeout=FACADE_RUN_S, stdin=subprocess.DEVNULL)
+    except subprocess.TimeoutExpired:
+        raise ToolError(f"{script} did not finish in {FACADE_RUN_S} seconds")
+    except (OSError, subprocess.SubprocessError) as e:
+        raise ToolError(f"{script} did not run: {e.__class__.__name__}")
+    text = p.stdout.rstrip("\n")
+    if p.returncode and not (findings_exit and p.returncode == 1 and text):
+        raise ToolError(redact.redact(p.stderr.strip() or text or f"{script} exited {p.returncode}")[-2000:])
+    text = redact.redact(text)
+    if len(text) > FACADE_MAX_CHARS:
+        text = text[:FACADE_MAX_CHARS] + f"\n... cut at {FACADE_MAX_CHARS} characters: run the command line for the rest"
+    return text + ("\n(exit 1)" if p.returncode else "")
+
+
+def facade_call(args, commands):
+    extra = sorted(set(args) - {"command", "args"})
+    if extra:
+        raise ToolError(f"unknown argument(s): {', '.join(extra)}")
+    command = args.get("command")
+    if command not in commands:
+        raise ToolError(f"command must be one of {', '.join(commands)}: {command!r} is not offered here; run the "
+                        "command line for it")
+    return command, args.get("args") or []
+
+
+def kb_querylog(args):
+    command, rest = facade_call(args, QUERYLOG_COMMANDS)
+    return facade_run("querylog.py", [command, *facade_args(rest, QUERYLOG_COMMANDS[command])])
+
+
+def kb_docs(args):
+    command, rest = facade_call(args, DOCS_COMMANDS)
+    script, word, allowed = DOCS_COMMANDS[command]
+    return facade_run(script, [*([word] if word else []), *facade_args(rest, allowed)], findings_exit=True)
+
+
+FACADE_HANDLERS = {"kb_querylog": kb_querylog, "kb_docs": kb_docs}
+
+
 def coord_enabled():
     """True when the team's own server is started with KB_COORD_TOOLS=1: the coord_ tools write to the coord store, so
     a default server lists and serves none of them."""
@@ -1226,7 +1337,8 @@ def handle(msg):
     if method == "ping":
         return result(msg_id, {})
     if method == "tools/list":
-        return result(msg_id, {"tools": TOOL_LIST + ([] if limited() else [FEEDBACK_TOOL] + MONITOR_TOOL_LIST + BACKLOG_TOOL_LIST)
+        return result(msg_id, {"tools": TOOL_LIST + ([] if limited() else [FEEDBACK_TOOL] + MONITOR_TOOL_LIST + BACKLOG_TOOL_LIST
+                               + QUERYLOG_TOOL_LIST + DOCS_TOOL_LIST)
                                + (COORD_TOOL_LIST if coord_enabled() else [])
                                + (LIVE_TOOL_LIST if live_enabled() else []), "ttlMs": 3600000, "cacheScope": "public"})
     if method == "tools/call":
@@ -1236,6 +1348,7 @@ def handle(msg):
             handlers["kb_feedback"] = kb_feedback
             handlers.update(MONITOR_HANDLERS)
             handlers.update(BACKLOG_HANDLERS)
+            handlers.update(FACADE_HANDLERS)
         if coord_enabled():
             handlers.update(COORD_HANDLERS)
         if name not in handlers:
