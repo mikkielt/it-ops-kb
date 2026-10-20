@@ -38,6 +38,25 @@
     "kb/_self/querylog.md",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does gap_decision mark a count or list question a tool answers?",
+      "options": [
+        "new decision tool",
+        "reuse reject"
+      ],
+      "recommendation": "new decision tool",
+      "do": {
+        "new decision tool": "ST-dfnhqyni",
+        "reuse reject": "ST-dfnhqyni"
+      },
+      "class": "design",
+      "answer": "new decision tool",
+      "by": "agent"
+    }
+  ],
   "notes": "operator request 2026-10-19 (housekeeping batch): F-ea430090e717 ('How many articles does the kb hold in the intune domain?') was written into kb/public/_gaps.md:1582 as a gap of security/policy-precedence. The existing entry stays (removing kb content is the operator's). Premise: gap_decision gives keep for both count questions on 2026-10-19. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done. Precheck 2026-10-20: the second check (two non-count questions stay keep) passes before the work by design: it pins that the count/list rule does not drop real gaps.",
   "claimed_by": "orch-r106",
   "operator": "op-f618a13e"
