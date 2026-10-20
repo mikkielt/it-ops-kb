@@ -2,7 +2,7 @@
   "id": "ST-lvcvosht",
   "kind": "story",
   "title": "The observer, the worker brief and the sprint skill name the kb MCP tools first",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ttgcpf7o",
   "priority": "P2",
   "rank": 0,
@@ -62,5 +62,7 @@
   "depends_on": [
     "ST-6tg2cevp"
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): AGENTS.md's routing is left as it is: changing it is a rule change and waits for the operator (parked draft). Premise: both checks fail. orchestrator r110 2026-10-20: check 1 reads agents/worker.md, which was outside the touches, and no check read the sprint skill the clause names: agents/worker.md added to touches and check 2 reads skills/sprint/SKILL.md."
+  "notes": "operator request 2026-10-19 (housekeeping batch): AGENTS.md's routing is left as it is: changing it is a rule change and waits for the operator (parked draft). Premise: both checks fail. orchestrator r110 2026-10-20: check 1 reads agents/worker.md, which was outside the touches, and no check read the sprint skill the clause names: agents/worker.md added to touches and check 2 reads skills/sprint/SKILL.md.",
+  "claimed_by": "orch-r110",
+  "operator": "op-f618a13e"
 }
