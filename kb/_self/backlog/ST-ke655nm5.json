@@ -2,7 +2,7 @@
   "id": "ST-ke655nm5",
   "kind": "story",
   "title": "The kb/_self docs and skills name no removed tool or test, and kb-verify says what the suite runs",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gea4jifz",
   "priority": "P2",
   "rank": 0,
@@ -49,5 +49,7 @@
   "depends_on": [
     "ST-7ynhjmw3"
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): scan 2026-10-19: backlog.md names the land end-to-end test file deleted in ca6724328 (the test-trimming commit). Folds the kb-verify drafts ST-2iwrgert, BG-crckmrxc, ST-jvxsxq4y (their checks embedded). ST-622bea6b (docs name that deleted file's seed) is dropped: its file is gone. Premise: both checks fail."
+  "notes": "operator request 2026-10-19 (housekeeping batch): scan 2026-10-19: backlog.md names the land end-to-end test file deleted in ca6724328 (the test-trimming commit). Folds the kb-verify drafts ST-2iwrgert, BG-crckmrxc, ST-jvxsxq4y (their checks embedded). ST-622bea6b (docs name that deleted file's seed) is dropped: its file is gone. Premise: both checks fail.",
+  "claimed_by": "orch-r111",
+  "operator": "op-f618a13e"
 }
