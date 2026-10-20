@@ -35,7 +35,11 @@
         "extend gitlab/git-trailers-and-hooks": "ST-jtbbzc6h",
         "new gitlab topic for git merge and status": "ST-jtbbzc6h"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "extend gitlab/git-trailers-and-hooks",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "claimed_by": "orch-r113",
