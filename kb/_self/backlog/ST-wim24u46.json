@@ -4,9 +4,10 @@
   "title": "LEARN_MAP maps the large Learn docsets to their public MicrosoftDocs repositories, so detect decides most Learn pages by git history",
   "status": "draft",
   "parent": "EP-mkzkd7in",
+  "sprint": "SP-gavrmuvx",
   "priority": "P2",
   "rank": 0,
-  "goal": "census.py LEARN_MAP gains entries, each checked against the page's github_feedback_content_git_url, for the most common unmapped Learn path prefixes (intune 134, api 80, windows 75, azure 70 on 2026-10-10), and a detect --sitemaps run measured before and after on the same day shows the wall time fall, recorded in kb/_self/reports/fact-diff.md.",
+  "goal": "census.py LEARN_MAP maps the intune/ and windows/ Learn path prefixes to the public repository each page's github_feedback_content_git_url names; a census.py detect --sitemaps run before and after the change on the same day is recorded with both wall times in kb/_self/reports/fact-diff.md",
   "checks": [
     {
       "run": [
@@ -14,15 +15,37 @@
         "-c",
         "import sys;sys.path.insert(0,'_tools');import census\nsys.exit(0 if all(any(p.startswith(x) for p,_,_ in census.LEARN_MAP) for x in ('intune/','windows/')) else 1)"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re, sys\nt = open('kb/_self/reports/fact-diff.md', encoding='utf-8').read()\nL = [l for l in t.splitlines() if 'LEARN_MAP' in l and 'sitemaps' in l and any(d > '2026-10-20' for d in re.findall(r'20\\d\\d-\\d\\d-\\d\\d', l))]\nprint(L[:2])\nsys.exit(0 if L else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "census.py LEARN_MAP maps the intune/ and windows/ Learn path prefixes to the public repository each page's github_feedback_content_git_url names",
+      "check": 0
+    },
+    {
+      "clause": "a census.py detect --sitemaps run before and after the change on the same day is recorded with both wall times in kb/_self/reports/fact-diff.md",
+      "check": 1
     }
   ],
   "touches": [
     "_tools/census.py",
     "kb/_self/reports/fact-diff.md",
-    "kb/_self/web-sources.md"
+    "kb/_self/web-sources.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-2c4om47e",
+    "ST-27k6puoc"
   ],
   "links": [
     "parked: SP-ilje65fa review"
   ],
-  "notes": "Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft."
+  "notes": "Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft. 2026-10-20 planning: the api/ and azure/ prefixes stay out of the goal: the work maps them too only where their pages name a public repository. A prefix whose pages name no public repository is a gate, not a guess. Premises: LEARN_MAP has no intune/ or windows/ entry; fact-diff.md has no LEARN_MAP sitemaps line dated after 2026-10-20."
 }

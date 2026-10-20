@@ -4,25 +4,31 @@
   "title": "kb-census skill's --resume argument is not mapped to census.py run --resume",
   "status": "draft",
   "parent": "EP-mkzkd7in",
+  "sprint": "SP-gavrmuvx",
   "priority": "P3",
   "rank": 0,
-  "goal": "kb-census SKILL.md (line 40) maps the skill's --resume argument to census.py run --resume, so a resumed census does not exit 2 on a log that already holds phase-2 outcomes; found by the SP-uwkr7iyl review.",
+  "goal": "kb-census SKILL.md maps the skill's --resume argument to census.py run --resume, so a resumed census does not exit 2 on a log that already holds phase-2 outcomes",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import sys\nt=open('.claude/skills/kb-census/SKILL.md',encoding='utf-8').read().splitlines()\nok=any('run --date <date> --resume' in l or 'census.py run --resume' in l for l in t[:41])\nprint(ok)\nsys.exit(0 if ok else 1)"
+        "import sys\nt = open('.claude/skills/kb-census/SKILL.md', encoding='utf-8').read()\narg = [l for l in t[:t.index('## Phases 0 and 1')].splitlines() if '`--resume`' in l]\nok = [l for l in arg if 'census.py run' in l and '--resume' in l.split('census.py run', 1)[1]]\nprint(len(arg), 'lines define the skill argument --resume;', len(ok), 'map it to census.py run --resume')\nsys.exit(0 if ok else 1)\n"
       ]
     }
   ],
   "touches": [
-    ".claude/skills/kb-census/SKILL.md"
+    ".claude/skills/kb-census/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-s4gapsl4"
   ],
   "links": [
     "parked: SP-uwkr7iyl review",
     "merged: ST-l3fqdqxb",
     "merged: ST-o7anudlq"
   ],
-  "notes": "Review severity S4 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck). Merged from ST-l3fqdqxb “census.py's usage header lists compare and the full judge options” at the 2026-10-12 draft triage: census.py usage header (lines 8-21) omits compare and judge's --max-budget-usd and --jobs: cosmetic usage text, same census skill and usage polish as ST-jtvvjw5x Its goal: _tools/census.py's module usage header lists compare and the judge command's --max-budget-usd and --jobs, as kb/_self/tools.md does. Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"census\"]} Its touches: _tools/census.py Merged from ST-o7anudlq “The kb-census skill's report names the dns and connect hosts beside the blocked ones and gives detect's measured wall time” at the 2026-10-12 draft triage: kb-census skill report text: SKILL.md:40 still says detect takes about 45 minutes where fact-diff.md measured 31 to 33, and the report line omits the dns and connect hosts; same skill-text polish as ST-jtvvjw5x Its goal: The kb-census skill's report line names the hosts census.py summary counts as dns and connect, apart from blocked, and phase 0 gives factdiff.py detect --sitemaps the measured 31 to 33 minutes of 2026-10-10 (the fact-diff report) instead of about 45. Its checks: {\"run\": [\"python3\", \"_tools/selfdoc.py\", \"check\"]} Its touches: .claude/skills/kb-census/SKILL.md Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft."
+  "notes": "Review severity S4 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck). Merged from ST-l3fqdqxb “census.py's usage header lists compare and the full judge options” at the 2026-10-12 draft triage: census.py usage header (lines 8-21) omits compare and judge's --max-budget-usd and --jobs: cosmetic usage text, same census skill and usage polish as ST-jtvvjw5x Its goal: _tools/census.py's module usage header lists compare and the judge command's --max-budget-usd and --jobs, as kb/_self/tools.md does. Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"census\"]} Its touches: _tools/census.py Merged from ST-o7anudlq “The kb-census skill's report names the dns and connect hosts beside the blocked ones and gives detect's measured wall time” at the 2026-10-12 draft triage: kb-census skill report text: SKILL.md:40 still says detect takes about 45 minutes where fact-diff.md measured 31 to 33, and the report line omits the dns and connect hosts; same skill-text polish as ST-jtvvjw5x Its goal: The kb-census skill's report line names the hosts census.py summary counts as dns and connect, apart from blocked, and phase 0 gives factdiff.py detect --sitemaps the measured 31 to 33 minutes of 2026-10-10 (the fact-diff report) instead of about 45. Its checks: {\"run\": [\"python3\", \"_tools/selfdoc.py\", \"check\"]} Its touches: .claude/skills/kb-census/SKILL.md Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft. 2026-10-20 planning: found by the SP-uwkr7iyl review. The old check read the first 41 lines, which phase 1 step 3 already passes; the new one reads the line that defines the skill argument. Premise: it fails, 1 line defines --resume and none maps it."
 }

@@ -4,6 +4,7 @@
   "title": "kb/_self/reports/fact-diff.md keeps its measurements without task or environment markers",
   "status": "draft",
   "parent": "EP-mkzkd7in",
+  "sprint": "SP-gavrmuvx",
   "priority": "P3",
   "rank": 0,
   "goal": "kb/_self/reports/fact-diff.md's sprint-3 sections keep their measurements and drop the task and environment markers (the item's paid runs, the 25 USD ceiling, 'filed as a bug').",
@@ -22,5 +23,5 @@
   "links": [
     "parked: SP-yojt6y7v review"
   ],
-  "notes": "Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft."
+  "notes": "Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft. 2026-10-20 planning: Premise: its check fails, fact-diff.md holds '25 USD ceiling', 'filed as a bug' and 'paid runs of the item'."
 }

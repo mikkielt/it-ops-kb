@@ -4,23 +4,29 @@
   "title": "census.py finish drops the sweep's invalidation and relink lines when a later step fails",
   "status": "draft",
   "parent": "EP-mkzkd7in",
+  "sprint": "SP-gavrmuvx",
   "priority": "P2",
   "rank": 0,
-  "goal": "census.py finish prints kbdecide.py sweep's invalidation and relink lines even when a later step (index, commit) fails, so the report keeps them (a rerun prints invalidated=0); found by the SP-uwkr7iyl review at _tools/census.py:1546 drive.",
+  "goal": "census.py finish prints kbdecide.py sweep's invalidation and relink lines when a later step (index, commit) fails, so the report keeps them (a rerun prints invalidated=0)",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import inspect,sys;sys.path.insert(0,'_tools');import census\ns=inspect.getsource(census.cmd_finish)\nsys.exit(1 if 'if code == 0 and not a.dry_run:\\n        print(\"for the report' in s else 0)"
+        "import argparse, collections, contextlib, io, os, subprocess, sys, tempfile\nsys.path.insert(0, '_tools')\nimport census, kbcommon\nd = tempfile.mkdtemp()\nsubprocess.run(['git', '-C', d, 'init', '-q'], check=True)\nlog = os.path.join(d, 'log.csv'); open(log, 'w').write('id\\n')\nkbcommon.HOME = d\ncensus.plan_finish = lambda root, log, date: [\n    {'name': 'sweep', 'argv': ['python3', '-c', \"print('invalid' + 'ated=1 D-0000' + '0000')\"], 'ok': (0,), 'skip': '', 'capture': True},\n    {'name': 'index', 'argv': ['python3', '-c', 'raise SystemExit(1)'], 'ok': (0,), 'skip': '', 'capture': False}]\nout = io.StringIO()\nwith contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):\n    code = census.cmd_finish(argparse.Namespace(date='2026-10-21', log=log, dry_run=False), collections.Counter())\nt = out.getvalue()\nprint('exit', code, 'sweep lines kept:', 'invalidated=1 D-00000000' in t)\nsys.exit(0 if code != 0 and 'invalidated=1 D-00000000' in t else 1)\n"
       ]
     }
   ],
   "touches": [
-    "_tools/census.py"
+    "_tools/census.py",
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md"
+  ],
+  "depends_on": [
+    "ST-xe6ury3c"
   ],
   "links": [
     "parked: SP-uwkr7iyl review"
   ],
-  "notes": "Review severity S3 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck). Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft."
+  "notes": "Review severity S3 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck). Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft. 2026-10-20 planning: found by the SP-uwkr7iyl review (census.py drive). The check runs cmd_finish on planted steps, a sweep then a failing index step. Premise: it fails, the sweep line is not printed."
 }

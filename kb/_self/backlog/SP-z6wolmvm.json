@@ -1,0 +1,21 @@
+{
+  "id": "SP-z6wolmvm",
+  "kind": "sprint",
+  "title": "The open gaps of the endpoint, identity, security, arch, gitlab and logs articles are researched against the census",
+  "status": "planned",
+  "goal": "every _gaps.md entry open on 2026-10-20 under the arch, security, privacy, gitlab, logs, windows, dsc, ad, gpo, mecm, intune, autopilot, entra, graph, defender and auth articles is researched into its article from official sources and closed, or carries a Tried note dated 2026-10-21 or later on what would answer it",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e"
+}

@@ -1,13 +1,21 @@
 {
   "id": "ST-bler2hy7",
   "kind": "story",
-  "title": "A failed batch judge call keeps its raw reply and an empty verdict list is refused",
+  "title": "A batch judge call whose reply matches no item is retried once, and an empty verdict list is refused",
   "status": "draft",
   "parent": "EP-mkzkd7in",
+  "sprint": "SP-gavrmuvx",
   "priority": "P3",
   "rank": 0,
-  "goal": "A failed factdiff judge call keeps its raw reply beside the judge file, JUDGE_SCHEMA or the call refuses an empty verdicts list, and a failed call is retried once or reported with its cause (the logs census of 2026-10-11 lost 20 items to one call that answered 'no entry matched an item').",
+  "goal": "factdiff's batch judge retries once a call whose reply matched no item; JUDGE_SCHEMA refuses an empty verdicts list",
   "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport factdiff as f\nitems = [{'fact': 'The setting is on by default. [DOC S1]', 'old': 'The setting is on by default.', 'new': 'The setting is on by default.'}]\nseen = []\ndef call(prompt, model, cap):\n    seen.append(1)\n    v = [] if len(seen) == 1 else [{'n': 1, 'verdict': 'supported', 'sentence': 'The setting is on by default.'}]\n    return {'verdicts': v, 'cost_usd': 0.0, 'usage': {}, 'error': ''}\nverdicts, calls = f.judge_items(items, size=5, jobs=1, cap_usd=0.1, call=call)\nprint('calls made', len(seen), 'verdicts', verdicts)\nsys.exit(0 if len(seen) == 2 and verdicts.get(0, {}).get('verdict') == 'supported' else 1)\n"
+      ]
+    },
     {
       "run": [
         "python3",
@@ -16,12 +24,26 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "factdiff's batch judge retries once a call whose reply matched no item",
+      "check": 0
+    },
+    {
+      "clause": "JUDGE_SCHEMA refuses an empty verdicts list",
+      "check": 1
+    }
+  ],
   "touches": [
     "_tools/factdiff.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md"
+  ],
+  "depends_on": [
+    "ST-a62jazsp"
   ],
   "links": [
     "parked: SP-yojt6y7v review"
   ],
-  "notes": "Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft."
+  "notes": "Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft. 2026-10-20 planning: the logs census of 2026-10-11 lost 20 items to one call that answered 'no entry matched an item'. The raw-reply clause is dropped: a failed call's record already names its cause. The first check drives judge_items with a call that answers no verdict, then one. Premises: 1 call made, no verdict; JUDGE_SCHEMA minItems is 0."
 }

@@ -4,25 +4,32 @@
   "title": "census.py brief renumbers a group's parts once part 1's outcomes are applied, so brief --part 2 exits 2",
   "status": "draft",
   "parent": "EP-mkzkd7in",
+  "sprint": "SP-gavrmuvx",
   "priority": "P2",
   "rank": 0,
-  "goal": "census.py brief --group G --part N keeps a group's parts stable across applies (phase2_rows drops rows that already hold an outcome, so after apply of part 1 the group has one part and --part 2 exits 2 'has 1 part(s)'), so the skill's run of parts one after another with --part N works; found by the SP-uwkr7iyl review at _tools/census.py:838.",
+  "goal": "census.py brief --group G --part N prints the same part N before and after an earlier part of the group is applied, so the skill reads a group of several parts one part after another with --part N",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import sys;sys.path.insert(0,'_tools');import census\nr=[{'bucket':'CHANGED','note':'','outcome':'confirmed'},{'bucket':'CHANGED','note':'','outcome':''}]\nn=len(census.phase2_rows(r));print(n);sys.exit(0 if n==2 else 1)"
+        "import argparse, collections, contextlib, io, sys\nsys.path.insert(0, '_tools')\nimport census, kbfacts\nrow = lambda i, o: {'id': i, 'bucket': 'CHANGED', 'note': '', 'outcome': o, 'kind': 'page'}\nrows = [row('S-aaaaaaaa', 'confirmed'), row('S-bbbbbbbb', '')]\ncensus.phase2_args = lambda a: (rows, None)\ncensus.factdiff_log_rows = lambda *a, **k: []\nkbfacts.cited_lines = lambda ids: {}\ncensus.read_judged = lambda log: {}\ncensus.review_by_source = lambda ids, fd: {}\ncensus.unsupported = lambda items, judged: items\ncensus.with_repin_items = lambda items, todo: items\ncensus.reading_queue = lambda rows, fd, items=None, cited=None: [{'id': r['id'], 'chars': 1} for r in rows]\ncensus.citing_files = lambda r, cited, root: ['agents/x.md']\ncensus.owner_of = lambda files: 'g1'\ncensus.brief_parts = lambda group, members, ctx: ['part of ' + r['id'] for r, _, _ in members]\nout = io.StringIO()\nwith contextlib.redirect_stdout(out):\n    code = census.cmd_brief(argparse.Namespace(log='kb/public/_census/2026-10-21.csv', factdiff=None, group='g1', part=2), collections.Counter())\nprint('exit', code, out.getvalue().strip())\nsys.exit(0 if code == 0 and 'part of S-bbbbbbbb' in out.getvalue() else 1)\n"
       ]
     }
   ],
   "touches": [
     "_tools/census.py",
     ".claude/skills/kb-census/SKILL.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/web-sources.md"
+  ],
+  "depends_on": [
+    "ST-odidbteq"
   ],
   "links": [
     "parked: SP-uwkr7iyl review"
   ],
-  "notes": "Review severity S2 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck). Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft."
+  "notes": "Review severity S2 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck). Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft. 2026-10-20 planning: found by the SP-uwkr7iyl review (census.py cmd_brief). The old check made phase2_rows keep rows that hold an outcome, which judge, repin and summary also read, so applied rows would be read again; the new check drives cmd_brief over planted rows (part 1 applied, one row per part) and leaves the mechanism to the work. Premise: it fails, 'group g1 has 1 part(s); --part 2 is out of range'."
 }

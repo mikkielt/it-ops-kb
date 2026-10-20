@@ -4,23 +4,29 @@
   "title": "kb-census skill tells factdiff.py dead to take the census log, which needs the fact diff log",
   "status": "draft",
   "parent": "EP-mkzkd7in",
+  "sprint": "SP-gavrmuvx",
   "priority": "P2",
   "rank": 0,
-  "goal": "kb-census SKILL.md phase 2 (line 50) names the fact diff log, not the census log, as factdiff.py dead's argument; with the census log dead fails with CsvError lacks column(s) source_id; found by the SP-uwkr7iyl review.",
+  "goal": "kb-census SKILL.md phase 2 names the fact diff log (<flog>), not the census log, as factdiff.py dead's argument",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import sys\nt=open('.claude/skills/kb-census/SKILL.md',encoding='utf-8').read()\nok='factdiff.py dead <flog>' in t\nprint(ok)\nsys.exit(0 if ok else 1)"
+        "import re, sys\nt = open('.claude/skills/kb-census/SKILL.md', encoding='utf-8').read()\nsec = t[t.index('## Phase 2'):t.index('## Phase 3')]\nL = [l for l in sec.splitlines() if 'factdiff.py dead' in l]\nbad = [m for l in L for m in re.findall(r'factdiff\\.py dead (\\S+)', l) if m.strip('`') != '<flog>']\nprint(len(L), 'phase-2 lines name factdiff.py dead; wrong log argument:', bad)\nsys.exit(0 if L and not bad else 1)\n"
       ]
     }
   ],
   "touches": [
-    ".claude/skills/kb-census/SKILL.md"
+    ".claude/skills/kb-census/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-bh3yjx7o"
   ],
   "links": [
     "parked: SP-uwkr7iyl review"
   ],
-  "notes": "Review severity S3 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck). Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft."
+  "notes": "Review severity S3 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck). Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft. 2026-10-20 planning: found by the SP-uwkr7iyl review: with the census log, dead fails with CsvError lacks column(s) source_id. The check reads the Phase 2 section only. Premise: it fails, the line names <log>."
 }

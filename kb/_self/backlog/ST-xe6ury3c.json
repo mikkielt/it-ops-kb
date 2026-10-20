@@ -4,24 +4,26 @@
   "title": "census.py run and finish commit every tracked change under the root, not only what their steps wrote",
   "status": "draft",
   "parent": "EP-mkzkd7in",
+  "sprint": "SP-gavrmuvx",
   "priority": "P2",
   "rank": 0,
-  "goal": "census.py run_commit (_tools/census.py:1531) stages only the paths its steps wrote, so an operator's uncommitted article edit is never swept into the phase-1 or the KB-Verified confirmed-dates commit; found by the SP-uwkr7iyl review.",
+  "goal": "census.py run and finish commit only the census logs and the paths their steps wrote, so an operator's uncommitted article edit made before the run is never swept into the phase-1 or the confirmed-dates commit",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import inspect,sys;sys.path.insert(0,'_tools');import census\nsys.exit(1 if '*dirty' in inspect.getsource(census.run_commit) else 0)"
+        "import os, subprocess, sys, tempfile\nsys.path.insert(0, '_tools')\nimport census, kbcommon\nd = tempfile.mkdtemp()\nG = lambda *a: subprocess.run(['git', '-C', d, *a], capture_output=True, text=True)\nG('init', '-q'); G('config', 'user.email', 't@example.com'); G('config', 'user.name', 't')\nos.makedirs(d + '/kb/public/_census')\nfor f in ('a.md', 'b.md'):\n    open(d + '/kb/public/' + f, 'w').write('base\\n')\nG('add', '.'); G('commit', '-qm', 'base')\nopen(d + '/kb/public/a.md', 'w').write('operator edit made before the run\\n')\nkbcommon.HOME = d\nsteps = [{'name': 'write', 'argv': ['python3', '-c', \"open('kb/public/b.md', 'w').write('step\\\\n')\"], 'ok': (0,), 'skip': '', 'capture': False},\n         {'name': 'commit', 'argv': ['git', 'commit', '-m', 'census'], 'ok': (0,), 'skip': '', 'capture': False, 'add': []}]\ncode, _ = census.drive(steps, 'kb/public', False, False, 'rerun')\ngot = G('show', '--name-only', '--format=', 'HEAD').stdout.split()\nprint('exit', code, 'committed', got)\nsys.exit(0 if code == 0 and 'kb/public/b.md' in got and 'kb/public/a.md' not in got else 1)\n"
       ]
     }
   ],
   "touches": [
     "_tools/census.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md"
   ],
   "links": [
     "parked: SP-uwkr7iyl review"
   ],
-  "notes": "Review severity S3 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck). Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft."
+  "notes": "Review severity S3 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck). Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft. 2026-10-20 planning: found by the SP-uwkr7iyl review (census.py run_commit). The check drives census.drive over a planted repository with an article edited before the run and a step that writes another. Premise: it fails, the commit holds both kb/public/a.md and kb/public/b.md."
 }

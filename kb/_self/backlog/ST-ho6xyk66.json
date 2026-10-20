@@ -4,9 +4,10 @@
   "title": "The open gaps of the security and privacy articles are researched from official sources or noted with what was tried",
   "status": "draft",
   "parent": "EP-aolytxc5",
+  "sprint": "SP-z6wolmvm",
   "priority": "P2",
   "rank": 0,
-  "goal": "every _gaps.md entry open on 2026-10-20 whose first topic is under the security and privacy articles is researched into its article from official sources and closed with a Resolved or Partly resolved note citing them, or carries a Tried note dated 2026-10-21 or later saying what was searched and what source, lab or login would answer it; an entry asking for a count or list a kb tool answers is closed naming the tool; no fact is deleted",
+  "goal": "every _gaps.md entry open on 2026-10-20 whose first topic is under the security and privacy articles carries a closing note (Resolved, Partly resolved, Narrowed or Closed) citing the official sources researched into its article, or a Tried note dated 2026-10-21 or later saying what was searched and what source, lab or login would answer it; the fact count under those topics does not fall, since no fact is deleted",
   "checks": [
     {
       "run": [
@@ -20,6 +21,23 @@
         "python3",
         "_tools/check.py"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport kbfacts\nP, B = ('security/', 'privacy/'), 2099\nn = sum(len(kbfacts.units('public/' + p)) for p in P)\nprint(n, 'fact units under', P, '- at least', B, 'on 2026-10-20')\nsys.exit(0 if n >= B else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "every _gaps.md entry open on 2026-10-20 whose first topic is under the security and privacy articles carries a closing note (Resolved, Partly resolved, Narrowed or Closed) citing the official sources researched into its article, or a Tried note dated 2026-10-21 or later saying what was searched and what source, lab or login would answer it",
+      "check": 0
+    },
+    {
+      "clause": "the fact count under those topics does not fall, since no fact is deleted",
+      "check": 2
     }
   ],
   "touches": [
@@ -33,7 +51,8 @@
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
   "depends_on": [
-    "ST-vhtpgjb5"
+    "ST-vhtpgjb5",
+    "ST-polh634k"
   ],
-  "notes": "Research item (/kb-research). Operator 2026-10-20: all open gaps, including those already tried: each gets a fresh search (live docs, then the web) and a dated note; a gap that still needs a lab, a login or unpublished information stays open as state. Premise on 2026-10-20 (the first check fails): 60 open public/_gaps.md entries under ('security/', 'privacy/') with no note dated 2026-10-21 or later, lines: [649, 655, 659, 694, 704, 712, 722, 739, 768, 773, 782, 790, 1386, 1387, 1388, 1389, 1394, 1395, 1398, 1401, 1404, 1428, 1429, 1430, 1431]"
+  "notes": "Research item (/kb-research). Operator 2026-10-20: all open gaps, including those already tried: each gets a fresh search (live docs, then the web) and a dated note; a gap that still needs a lab, a login or unpublished information stays open as state. Premise on 2026-10-20 (the first check fails): 60 open public/_gaps.md entries under ('security/', 'privacy/') with no note dated 2026-10-21 or later, lines: [649, 655, 659, 694, 704, 712, 722, 739, 768, 773, 782, 790, 1386, 1387, 1388, 1389, 1394, 1395, 1398, 1401, 1404, 1428, 1429, 1430, 1431] Fact units under the topics on 2026-10-20: 2099. check.py and the fact-count check pass before the work and must stay passing: they pin the kb's structure rules and that no fact is deleted across the rewrites (2026-10-20 planning). An entry asking for a count or list a kb tool answers is closed naming the tool."
 }

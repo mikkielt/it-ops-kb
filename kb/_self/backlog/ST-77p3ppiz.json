@@ -1,0 +1,25 @@
+{
+  "id": "ST-77p3ppiz",
+  "kind": "story",
+  "title": "Research sprint goal: The census tools and skill are fixed before the full census runs",
+  "status": "draft",
+  "sprint": "SP-gavrmuvx",
+  "goal_research": true,
+  "priority": "P1",
+  "rank": 0,
+  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "researched",
+        "ST-77p3ppiz"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ],
+  "notes": "Open questions of this sprint's goal (2026-10-20 planning): (1) which public repository each Learn path prefix intune/, windows/, api/ and azure/ names in its pages' github_feedback_content_git_url, for ST-wim24u46; (2) whether learn.microsoft.com serves a page with no locale segment by a redirect to /en-us/ and whether the ?accept=text/markdown form keeps the locale, for ST-bvmqojkw; (3) how a Claude Code --allowedTools Bash rule matches a command line with no wildcard (exact, prefix, word boundary), for ST-27k6puoc. Kb tools first (kb_pack), then microsoft-learn and claude-code-docs."
+}

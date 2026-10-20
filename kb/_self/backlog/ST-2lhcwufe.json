@@ -4,9 +4,10 @@
   "title": "The open conflicts of the mecm, intune, sqlserver, ad and gpo articles are settled by a source or noted with what would settle them",
   "status": "draft",
   "parent": "EP-aolytxc5",
+  "sprint": "SP-rmp5zm5a",
   "priority": "P2",
   "rank": 0,
-  "goal": "every _conflicts.md entry open on 2026-10-20 whose first topic is under the mecm, intune, sqlserver, ad and gpo articles is closed with a Resolved or Reviewed note that cites the source settling it, the kb's facts reworded or superseded where the census's fresh reading shows them wrong, or carries a note dated 2026-10-21 or later saying what was checked and which source, lab or login would settle it; no fact is deleted",
+  "goal": "every _conflicts.md entry open on 2026-10-20 whose first topic is under the mecm, intune, sqlserver, ad and gpo articles carries a closing note (Resolved, Reviewed, Superseded, Narrowed or Closed) that cites the source settling it, or a note dated 2026-10-21 or later saying what was checked and which source, lab or login would settle it; the fact count under those topics does not fall, since a wrong fact is reworded or superseded, never deleted",
   "checks": [
     {
       "run": [
@@ -20,6 +21,23 @@
         "python3",
         "_tools/check.py"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport kbfacts\nP, B = ('mecm/', 'intune/', 'sqlserver/', 'ad/', 'gpo/'), 2607\nn = sum(len(kbfacts.units('public/' + p)) for p in P)\nprint(n, 'fact units under', P, '- at least', B, 'on 2026-10-20')\nsys.exit(0 if n >= B else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "every _conflicts.md entry open on 2026-10-20 whose first topic is under the mecm, intune, sqlserver, ad and gpo articles carries a closing note (Resolved, Reviewed, Superseded, Narrowed or Closed) that cites the source settling it, or a note dated 2026-10-21 or later saying what was checked and which source, lab or login would settle it",
+      "check": 0
+    },
+    {
+      "clause": "the fact count under those topics does not fall, since a wrong fact is reworded or superseded, never deleted",
+      "check": 2
     }
   ],
   "touches": [
@@ -36,7 +54,8 @@
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
   "depends_on": [
-    "ST-ywqj4gva"
+    "ST-ywqj4gva",
+    "ST-k5pjflob"
   ],
-  "notes": "Research item (/kb-research, sources read against the census of ST-zpe7qxtv): an entry closes only when a source settles it or it is no source disagreement (Reviewed); one that needs a lab, a login or unpublished information stays open with a dated note (maintaining.md, Conduct for changes). A gap the reading finds goes to _gaps.md under the same topic. Premise on 2026-10-20 (the first check fails): 24 open public/_conflicts.md entries under ('mecm/', 'intune/', 'sqlserver/', 'ad/', 'gpo/') with no note dated 2026-10-21 or later, lines: [279, 302, 304, 306, 308, 310, 318, 320, 322, 324, 326, 328, 330, 335, 337, 345, 347, 470, 474, 529, 643, 659, 800, 807]"
+  "notes": "Research item (/kb-research, sources read against the census of ST-zpe7qxtv): an entry closes only when a source settles it or it is no source disagreement (Reviewed); one that needs a lab, a login or unpublished information stays open with a dated note (maintaining.md, Conduct for changes). A gap the reading finds goes to _gaps.md under the same topic. Premise on 2026-10-20 (the first check fails): 24 open public/_conflicts.md entries under ('mecm/', 'intune/', 'sqlserver/', 'ad/', 'gpo/') with no note dated 2026-10-21 or later, lines: [279, 302, 304, 306, 308, 310, 318, 320, 322, 324, 326, 328, 330, 335, 337, 345, 347, 470, 474, 529, 643, 659, 800, 807] Fact units under the topics on 2026-10-20: 2607. check.py and the fact-count check pass before the work and must stay passing: they pin the kb's structure rules and that no fact is deleted across the rewrites (2026-10-20 planning)."
 }

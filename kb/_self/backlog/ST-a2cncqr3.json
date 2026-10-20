@@ -4,9 +4,10 @@
   "title": "The open gaps of the claude, mcp and prior-art articles, and the entries that name no topic are researched from official sources or noted with what was tried",
   "status": "draft",
   "parent": "EP-aolytxc5",
+  "sprint": "SP-5cyrnkw7",
   "priority": "P2",
   "rank": 0,
-  "goal": "every _gaps.md entry open on 2026-10-20 whose first topic is under the claude, mcp and prior-art articles, and the entries that name no topic is researched into its article from official sources and closed with a Resolved or Partly resolved note citing them, or carries a Tried note dated 2026-10-21 or later saying what was searched and what source, lab or login would answer it; an entry asking for a count or list a kb tool answers is closed naming the tool; no fact is deleted",
+  "goal": "every _gaps.md entry open on 2026-10-20 whose first topic is under the claude, mcp and prior-art articles or naming no topic carries a closing note (Resolved, Partly resolved, Narrowed or Closed) citing the official sources researched into its article, or a Tried note dated 2026-10-21 or later saying what was searched and what source, lab or login would answer it; the fact count under those topics does not fall, since no fact is deleted",
   "checks": [
     {
       "run": [
@@ -20,6 +21,23 @@
         "python3",
         "_tools/check.py"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport kbfacts\nP, B = ('claude/', 'mcp/', 'prior-art/'), 1830\nn = sum(len(kbfacts.units('public/' + p)) for p in P)\nprint(n, 'fact units under', P, '- at least', B, 'on 2026-10-20')\nsys.exit(0 if n >= B else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "every _gaps.md entry open on 2026-10-20 whose first topic is under the claude, mcp and prior-art articles or naming no topic carries a closing note (Resolved, Partly resolved, Narrowed or Closed) citing the official sources researched into its article, or a Tried note dated 2026-10-21 or later saying what was searched and what source, lab or login would answer it",
+      "check": 0
+    },
+    {
+      "clause": "the fact count under those topics does not fall, since no fact is deleted",
+      "check": 2
     }
   ],
   "touches": [
@@ -34,7 +52,8 @@
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
   "depends_on": [
-    "ST-k5pjflob"
+    "ST-k5pjflob",
+    "ST-pulgbtl5"
   ],
-  "notes": "Research item (/kb-research). Operator 2026-10-20: all open gaps, including those already tried: each gets a fresh search (live docs, then the web) and a dated note; a gap that still needs a lab, a login or unpublished information stays open as state. Premise on 2026-10-20 (the first check fails): 60 open public/_gaps.md entries under ('claude/', 'mcp/', 'prior-art/', '?') with no note dated 2026-10-21 or later, lines: [193, 319, 498, 499, 504, 516, 588, 1116, 1117, 1118, 1119, 1123, 1124, 1125, 1136, 1137, 1139, 1140, 1144, 1146, 1148, 1150, 1154, 1155, 1158]"
+  "notes": "Research item (/kb-research). Operator 2026-10-20: all open gaps, including those already tried: each gets a fresh search (live docs, then the web) and a dated note; a gap that still needs a lab, a login or unpublished information stays open as state. Premise on 2026-10-20 (the first check fails): 60 open public/_gaps.md entries under ('claude/', 'mcp/', 'prior-art/', '?') with no note dated 2026-10-21 or later, lines: [193, 319, 498, 499, 504, 516, 588, 1116, 1117, 1118, 1119, 1123, 1124, 1125, 1136, 1137, 1139, 1140, 1144, 1146, 1148, 1150, 1154, 1155, 1158] Fact units under the topics on 2026-10-20: 1830. check.py and the fact-count check pass before the work and must stay passing: they pin the kb's structure rules and that no fact is deleted across the rewrites (2026-10-20 planning). An entry asking for a count or list a kb tool answers is closed naming the tool."
 }

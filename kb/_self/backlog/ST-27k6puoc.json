@@ -4,15 +4,16 @@
   "title": "census.py dispatch allows only the git show and git diff argument shapes its briefs print",
   "status": "draft",
   "parent": "EP-mkzkd7in",
+  "sprint": "SP-gavrmuvx",
   "priority": "P3",
   "rank": 0,
-  "goal": "census.py dispatch_rules allows only the exact git show and git diff argument shapes the phase-2 briefs print (no --output, no --no-index), so a dispatched session that reads untrusted pages can read and edit only its group's owned files, or the docs state those two commands as the exception.",
+  "goal": "census.py dispatch allows a phase-2 session only the exact git show and git diff command lines its brief prints, with no wildcard, so a session that reads untrusted pages can read and edit only its group's owned files",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import sys;sys.path.insert(0,'_tools');import census\na,_=census.dispatch_rules({'files':[],'clones':['/c'],'fetch':{},'learn':False},'/s')\ng=[r for r in a if r.startswith('Bash(git ')]\nprint(g);sys.exit(0 if g and not any(r.endswith(' *)') for r in g) else 1)"
+        "import sys\nsys.path.insert(0, '_tools')\nimport census\nL = ['git -C _cache/census/clones/r show abc1234:docs/x.md', 'git -C _cache/census/clones/r diff abc1234 def5678 -- docs/x.md']\ncensus.read_commands = lambda r, ctx: L\ncensus.owned_files = lambda g, m: []\nplan = census.dispatch_plan('g1', [({'id': 'S1'}, None, None)], None)\nallow, _ = census.dispatch_rules(plan, '/s')\ng = sorted(r for r in allow if r.startswith('Bash(git '))\nprint(g)\nok = (len(g) == 2 and not any('*' in r for r in g) and any(r.endswith(' show abc1234:docs/x.md)') for r in g)\n      and any(r.endswith(' diff abc1234 def5678 -- docs/x.md)') for r in g))\nsys.exit(0 if ok else 1)\n"
       ]
     }
   ],
@@ -21,8 +22,11 @@
     "kb/_self/tools.md",
     "kb/_self/web-sources.md"
   ],
+  "depends_on": [
+    "ST-yvvpxspq"
+  ],
   "links": [
     "parked: SP-yojt6y7v review"
   ],
-  "notes": "Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft."
+  "notes": "Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft. 2026-10-20 planning: the goal's other branch (the docs state the two commands as the exception) is dropped: the check drives dispatch_plan and dispatch_rules over two planted brief lines. Premise: it fails, the rules are 'git -C <clone> show *' and 'diff *'."
 }

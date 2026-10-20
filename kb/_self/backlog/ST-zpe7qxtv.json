@@ -4,9 +4,10 @@
   "title": "A census of the whole public root dated after 2026-10-20 records a verdict or a reading outcome for every live source, and dates only what it confirmed",
   "status": "draft",
   "parent": "EP-aolytxc5",
+  "sprint": "SP-rmp5zm5a",
   "priority": "P2",
   "rank": 0,
-  "goal": "kb/public/_census/<date>.csv, dated after 2026-10-20, holds a row for every source of kb/public/_sources.csv with no superseded_by; every row not OK has an outcome from phase 2 (confirmed, updated, superseded, gone or unconfirmed); phase 3 dated each OK or confirmed source to the census date and no earlier; a changed fact is reworded or superseded with its source, none is deleted",
+  "goal": "kb/public/_census/<date>.csv, dated after 2026-10-20, holds a row for every source of kb/public/_sources.csv with no superseded_by; every row not OK has an outcome from phase 2 (confirmed, updated, superseded, gone or unconfirmed); phase 3 dated each OK or confirmed source to the census date and no earlier; the fact count of the public root does not fall, since a changed fact is reworded or superseded, never deleted",
   "checks": [
     {
       "run": [
@@ -20,6 +21,31 @@
         "python3",
         "_tools/check.py"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport kbfacts\nP, B = ('',), 16886\nn = sum(len(kbfacts.units('public/' + p)) for p in P)\nprint(n, 'fact units under', P, '- at least', B, 'on 2026-10-20')\nsys.exit(0 if n >= B else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/public/_census/<date>.csv, dated after 2026-10-20, holds a row for every source of kb/public/_sources.csv with no superseded_by",
+      "check": 0
+    },
+    {
+      "clause": "every row not OK has an outcome from phase 2 (confirmed, updated, superseded, gone or unconfirmed)",
+      "check": 0
+    },
+    {
+      "clause": "phase 3 dated each OK or confirmed source to the census date and no earlier",
+      "check": 0
+    },
+    {
+      "clause": "the fact count of the public root does not fall, since a changed fact is reworded or superseded, never deleted",
+      "check": 2
     }
   ],
   "touches": [
@@ -39,7 +65,8 @@
     "ST-a62jazsp",
     "ST-bler2hy7",
     "ST-bvmqojkw",
-    "ST-jtvvjw5x"
+    "ST-jtvvjw5x",
+    "ST-2dagptub"
   ],
-  "notes": "Run with /kb-census <date> from the main checkout (census.py dispatch refuses inside .claude/worktrees), after every EP-mkzkd7in story is done. Phases 0 to 3: census.py run, the phase-2 groups by census.py dispatch and apply, census.py finish. A census.py rule found wrong in phase 1 is filed as a bug, not worked around in the log. Premise on 2026-10-20 (the first check fails): no census log dated after 2026-10-20; the newest full census is kb/public/_census/2026-09-26.csv (1907 rows), and 2754 of 4508 live sources are in no full census log."
+  "notes": "Run with /kb-census <date> from the main checkout (census.py dispatch refuses inside .claude/worktrees), after every EP-mkzkd7in story is done. Phases 0 to 3: census.py run, the phase-2 groups by census.py dispatch and apply, census.py finish. A census.py rule found wrong in phase 1 is filed as a bug, not worked around in the log. Premise on 2026-10-20 (the first check fails): no census log dated after 2026-10-20; the newest full census is kb/public/_census/2026-09-26.csv (1907 rows), and 2754 of 4508 live sources are in no full census log. Fact units of the public root on 2026-10-20: 16886. check.py and the fact-count check pass before the work and must stay passing: they pin the kb's structure rules and that no fact is deleted across the rewrites (2026-10-20 planning)."
 }
