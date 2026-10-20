@@ -21,6 +21,25 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the panel label two outside worktrees that share a directory name?",
+      "options": [
+        "shortest parent suffix that tells them apart (a/wt, b/wt)",
+        "the absolute path"
+      ],
+      "recommendation": "shortest parent suffix that tells them apart (a/wt, b/wt)",
+      "do": {
+        "shortest parent suffix that tells them apart (a/wt, b/wt)": "BG-k2yygxwn",
+        "the absolute path": "BG-k2yygxwn"
+      },
+      "class": "design",
+      "answer": "shortest parent suffix that tells them apart (a/wt, b/wt)",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-5gph7fh6 review"
   ],
