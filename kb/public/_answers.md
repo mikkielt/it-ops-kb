@@ -4374,3 +4374,13 @@ _Agent: kb-research_
 - See gitlab/git-test-repositories.md.
 
 _Agent: kb-research_
+
+## QK-bash-allow-rule-headless-claude-p. Does a Bash allow rule in a headless `claude -p` session stop chained commands, redirects and file writes by the allowed script?
+- A rule such as `Bash(safe-cmd *)` gives no permission for `safe-cmd && other-cmd`: the separators are `&&`, `||`, `;`, `|`, `|&`, `&` and newlines, and a rule must match each subcommand. [DOC S742]
+- An output redirect in an allowed command is checked against the `Edit` rules, protected paths and working directories, and the Bash rule allows the command, not the target. [DOC S742]
+- Read and Edit deny rules do not cover a subprocess that opens files itself, and a deny or ask Bash rule is not a security boundary around the program; the page names sandboxing for that. [DOC S742]
+- Conclusion: a session that must post through one script and write no file is bounded by `--tools`, `dontAsk` and a scoped allow rule, and what the allowed script writes itself is bounded only by the script or the sandbox. [DER S742, S-zcuxapgb, S1824]
+- Open: the `dontAsk` outcome for a redirect inside the working directory with no `Edit` allow rule. [UNK]
+- See claude/settings-and-scopes.md, claude/cli-flags.csv.
+
+_Agent: kb-research_
