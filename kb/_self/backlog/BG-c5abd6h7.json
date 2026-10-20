@@ -1,0 +1,20 @@
+{
+  "id": "BG-c5abd6h7",
+  "kind": "bug",
+  "title": "plugin.md says the coord_ tools come right after kb_feedback, but kb_monitor_status, kb_backlog, kb_querylog and kb_docs come first",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/_self/plugin.md names the place the eight coord_ tools have in tools/list when KB_COORD_TOOLS is 1: after kb_docs, before kb_backlog_write and the live-docs tools, in the order kb_mcp.py's handle() builds",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess,sys;p=subprocess.run([sys.executable,'_tools/kb_mcp.py'],input=json.dumps({'jsonrpc':'2.0','id':1,'method':'tools/list'})+'\\n',capture_output=True,text=True,env={**os.environ,'KB_COORD_TOOLS':'1'});assert p.returncode==0,p.stderr;n=[t['name'] for t in json.loads(p.stdout)['result']['tools']];d=open('kb/_self/plugin.md',encoding='utf-8').read();i=n.index('kb_feedback');assert n[i+1]=='coord_claim' or ('right after '+chr(96)+'kb_feedback'+chr(96)) not in d,'plugin.md says the coord_ tools come right after kb_feedback; the tool after it is '+n[i+1]"
+    ]
+  },
+  "touches": [
+    "kb/_self/plugin.md"
+  ]
+}
