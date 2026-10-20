@@ -21,6 +21,25 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where do the POSIX orphan, setsid and process working-directory facts go?",
+      "options": [
+        "a new topic python/process-orphans-and-cwd",
+        "extend python/ps-process-cpu"
+      ],
+      "recommendation": "a new topic python/process-orphans-and-cwd",
+      "do": {
+        "a new topic python/process-orphans-and-cwd": "ST-dtrqrwzo",
+        "extend python/ps-process-cpu": "ST-dtrqrwzo"
+      },
+      "class": "design",
+      "answer": "a new topic python/process-orphans-and-cwd",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "orch-r112",
   "operator": "op-f618a13e"
 }
