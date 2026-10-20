@@ -21,6 +21,27 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How are the two queued gaps that ask about this project's own tools (the intune article count; whether expect_paths needs the lead article) closed?",
+      "options": [
+        "Resolved note and close --claim",
+        "Remove the entries and close --reject",
+        "Tried note, entries left open"
+      ],
+      "recommendation": "Resolved note and close --claim",
+      "do": {
+        "Resolved note and close --claim": "ST-5lh3rat3",
+        "Remove the entries and close --reject": "ST-5lh3rat3",
+        "Tried note, entries left open": "ST-5lh3rat3"
+      },
+      "class": "design",
+      "answer": "Resolved note and close --claim",
+      "by": "agent"
+    }
+  ],
   "notes": "Open questions for this sprint (kb first, then live docs): Questions: (1) for each source whose anchor rows say gone (S-may2otwt, S-ny2cx7aq, S-rgpijsmb, S-ueumbn4x, S-y23orbo7, S-yuwxbqz3, S2180, S2181, S2196, S869), where the page moved, if anywhere; (2) the eight queued query-log gaps (querylog.py queue): what official sources answer them.",
   "claimed_by": "orch-r105",
   "operator": "op-f618a13e"
