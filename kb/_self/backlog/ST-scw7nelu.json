@@ -2,7 +2,7 @@
   "id": "ST-scw7nelu",
   "kind": "story",
   "title": "Research sprint goal: Operator answers of 2026-10-20, run as the Sonnet orchestrator trial",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rrqlgiff",
   "goal_research": true,
   "priority": "P1",
@@ -40,6 +40,20 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "orch240",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "8fdef31a0de1307168ae440e4c28ac05e7cac9c3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-scw7nelu"
+        ],
+        "exit": 0,
+        "sha256": "f854f737e90b7fc4"
+      }
+    ]
+  }
 }
