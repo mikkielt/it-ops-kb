@@ -1,8 +1,10 @@
-"""`backlog.py own`: the record of what this clone's tools make and leave behind (kb/_self/backlog.md, Leftovers; kb/_self/tools.md).
+"""`backlog.py own` and `backlog.py tidy`: the record of what this clone's tools make and leave behind, and the one verdict
+on whether a leftover may go (kb/_self/backlog.md, Leftovers; kb/_self/tools.md).
 
   own PATH --class worktree|sandbox|scratch [--item ID] [--sprint SP] [--session ID]   record the directory
   own PID  --class process [--item ID] [--sprint SP] [--session ID]                   record the process
   own TARGET --class C --drop                                                          clear the record
+  tidy [--apply] [--json] [--older-than HOURS] [--disk-free-gb GB]                     list the recorded leftovers
 
 A record is one coord key, `own/<class>/<digest>`, whose value is a JSON object: the `path` (normalised) or the `pid`, the
 class, the item, sprint and session when given, and `at`, the time it was recorded in seconds since the epoch. The digest is the first 16
@@ -13,22 +15,40 @@ the clone's worktrees. coord keeps no delete: `--drop` writes an empty value, wh
 
 `record_owner` is the one writer: `dispatch` records the worker's worktree, scratch directory and pid through it, `bench
 multi` its sandbox, and the sprint skill's run and review steps their worktrees with the `own` command. A record is a claim of
-nothing: it says who made the path or process, never that it may be removed. Exit codes: 0 recorded or dropped, 1 coord
-refused or did not run, 2 a bad request.
+nothing: it says who made the path or process, never that it may be removed. Exit codes of `own`: 0 recorded or dropped, 1
+coord refused or did not run, 2 a bad request.
 
-Standard library only; imports `bl_base` and `bl_cli`, never `backlog` (a layer rule). It registers its own subcommand
-when imported, so `backlog.py` carries only the import."""
+`safe_to_remove(candidate, snapshot, coord_state)` is the one verdict, `(verdict, reason)` with the verdict `remove` or
+`keep`: a candidate goes only when its owner is recorded, no live coord lease or claim names it (or its branch, item or
+session), no live process has it as its working directory, its item is done, dropped or gone with its closed sprint, it is
+clean and every commit of it is on the integration main (`git cherry`), and its last activity is older than --older-than
+hours; the main checkout, the worktree tidy runs in and `_cache/querylog/worktree` always stay, and so does everything no
+record names. `tidy` lists each recorded worktree, local branch, bench sandbox and scratch directory with that verdict, its
+reason and the bytes it frees (a walk of at most `BYTES_SECONDS` a candidate, `approximate` past it), one summary line a class;
+--json prints the rows. Under disk pressure (free space below --disk-free-gb) the bench sandboxes come first and their age
+limit is waived. --apply removes the `remove` rows with `git worktree remove` (never --force; a directory Windows refuses
+to rename is kept and reported), a branch only once `git cherry` finds its commits on the integration main, then `git
+worktree prune`. Exit codes of `tidy`: 0 listed, or removed all it planned; 1 an --apply removal failed or a claim appeared
+on a candidate; 2 a refusal (bad arguments, no integration main, an unreadable coord store); 3 the coord store stayed locked.
+
+Standard library only; imports `bl_base`, `bl_close` and `bl_cli`, never `backlog` (a layer rule). It registers its own
+subcommands when imported, so `backlog.py` carries only the import."""
+import contextlib
 import hashlib
 import json
 import os
 import re
+import shutil
+import stat
 import subprocess
 import sys
 import time
 from pathlib import Path
 
 import bl_cli
-from bl_base import Refused, Rejected, say
+import bl_close
+from bl_base import Refused, Rejected, git, run, say
+from bl_close import AGENT_BRANCH, WORK_PREFIX, WORKER_NAME
 
 COORD = Path(__file__).resolve().parent / "coord.py"
 CLASSES = ("worktree", "sandbox", "scratch", "process")
@@ -38,6 +58,13 @@ COORD_SECONDS = 60
 EXTENDED = "\\\\?\\"  # the Windows extended-length prefix
 EXTENDED_UNC = EXTENDED + "UNC\\"
 DRIVE = re.compile(r"[A-Za-z]:")
+AGE_HOURS = 4  # --older-than: how long a leftover's last activity must be past
+DISK_FREE_GB = 20  # --disk-free-gb: free space below it is disk pressure
+BYTES_SECONDS = 2  # the longest walk that measures what one candidate frees
+TIDY_PREFIXES = (WORK_PREFIX, AGENT_BRANCH + WORKER_NAME, "orch/")  # the local branches tidy lists
+TIDY_CLASSES = ("worktree", "branch", "sandbox", "scratch")
+FINISHED = ("done", "dropped")
+REMOVE, KEEP = "remove", "keep"
 
 
 def strip_extended(path):
@@ -147,4 +174,447 @@ def args_own(p):
     p.add_argument("--drop", action="store_true", help="clear the record instead of making it")
 
 
+class CoordLocked(Exception):
+    """The coord store stayed locked past coord.py's wait."""
+
+
+def coord_state():
+    """{"owners": [record], "held": [coord row]} of the coord store now: every live `own/` record, and every live key
+    that a holder's lease or claim holds. Raises CoordLocked when the store stayed locked, Rejected when it cannot be read."""
+    code, body, err = run_coord("list")
+    if code != 0 or not isinstance(body, list):
+        if "locked" in err or "TimeoutExpired" in err:
+            raise CoordLocked(err)
+        raise Rejected(f"tidy: cannot read the coord store: {err or 'coord.py exited ' + str(code)}")
+    owners, held = [], []
+    for row in body:
+        if not isinstance(row, dict) or not isinstance(row.get("key"), str):
+            continue
+        if row["key"].startswith(PREFIX):
+            rec = recorded(row)
+            if rec:
+                owners.append(rec)
+        elif row.get("holder"):
+            held.append(row)
+    return {"owners": owners, "held": held}
+
+
+def inside(outer, inner):
+    """Whether the normalised path INNER is OUTER or under it."""
+    return inner == outer or inner.startswith(outer.rstrip(os.sep) + os.sep)
+
+
+def fmt_size(n):
+    for unit in ("B", "KiB", "MiB", "GiB"):
+        if n < 1024 or unit == "GiB":
+            return f"{n} B" if unit == "B" else f"{n:.1f} {unit}"
+        n /= 1024
+
+
+def tree_bytes(path, seconds=BYTES_SECONDS):
+    """(bytes under PATH, whether the figure is approximate): a walk with os.scandir that never follows a link and stops
+    after SECONDS, the sum so far then being a floor."""
+    deadline = time.monotonic() + seconds
+    total, stack = 0, [str(path)]
+    while stack:
+        if time.monotonic() > deadline:
+            return total, True
+        try:
+            with os.scandir(stack.pop()) as it:
+                for e in it:
+                    try:
+                        if e.is_dir(follow_symlinks=False):
+                            stack.append(e.path)
+                        else:
+                            total += e.stat(follow_symlinks=False).st_size
+                    except OSError:
+                        continue
+        except OSError:
+            continue
+    return total, False
+
+
+def dir_activity(path, limit=2000):
+    """The newest modification time of the directory PATH and of its direct entries (the first LIMIT)."""
+    newest = 0.0
+    try:
+        newest = os.stat(path).st_mtime
+        with os.scandir(path) as it:
+            for n, e in enumerate(it):
+                if n >= limit:
+                    break
+                try:
+                    newest = max(newest, e.stat(follow_symlinks=False).st_mtime)
+                except OSError:
+                    continue
+    except OSError:
+        pass
+    return newest
+
+
+def git_time(path, *args):
+    """The commit time (an int) git prints for ARGS in PATH, else None. `--no-optional-locks`: asking never rewrites the
+    index file, whose own time is no activity."""
+    code, out, _ = run(["git", "--no-optional-locks", *args], cwd=path)
+    word = out.split()[0] if not code and out.split() else ""
+    return int(word) if word.isdigit() else None
+
+
+def integration_main(root):
+    """The integration main's ref of the clone ROOT (`refs/remotes/<remote>/main`, else `refs/heads/main`), or None."""
+    import kbpublic
+    for ref in (f"refs/remotes/{kbpublic.integration_remote(root)}/main", "refs/heads/main"):
+        if bl_close.has_ref(root, ref):
+            return ref
+    return None
+
+
+def take_snapshot(bl, older_than=AGE_HOURS, disk_free_gb=DISK_FREE_GB, now=None):
+    """What `safe_to_remove` reads of the clone besides the coord store: the integration main, the worktrees, the item
+    statuses, every process's working directory (read once), the age limit and the disk-pressure limit. Raises Rejected
+    when there is no integration main to compare against."""
+    root = bl.root
+    upstream = integration_main(root)
+    if upstream is None:
+        raise Rejected("tidy: no integration main to compare against (fetch the integration remote first)")
+    entries = bl_close.worktree_entries(root)
+    here = Path(git(root, "rev-parse", "--show-toplevel").strip()).resolve()
+    table, why = bl_close.process_cwds()
+    return {"root": root, "upstream": upstream, "entries": entries, "here": norm_path(here),
+            "main": norm_path(entries[0]["path"] if entries else here), "cwd": norm_path(Path.cwd()),
+            "items": {i: it.get("status") for i, it in bl.items.items()}, "table": table, "table_why": why,
+            "age": float(older_than) * 3600, "free_gb": float(disk_free_gb), "now": time.time() if now is None else now,
+            "disk": {}, "planned": set()}
+
+
+def free_gib(snap, path):
+    """The free space, in GiB, of the volume that holds PATH (or its nearest existing parent)."""
+    p = Path(path)
+    while not p.exists() and p != p.parent:
+        p = p.parent
+    key = str(p)
+    if key not in snap["disk"]:
+        try:
+            snap["disk"][key] = shutil.disk_usage(p).free / 2 ** 30
+        except OSError:
+            snap["disk"][key] = float("inf")
+    return snap["disk"][key]
+
+
+def always_kept(path, snap):
+    """Why the normalised PATH is never removed, or None: the query log's worktree, the main checkout, the worktree tidy
+    runs in (each also when PATH holds it) and the directory tidy's process stands in."""
+    for base in (snap["main"], snap["here"]):
+        if path == norm_path(Path(base) / "_cache" / "querylog" / "worktree"):
+            return "it is the query log's worktree (_cache/querylog/worktree)"
+    if inside(path, snap["main"]):
+        return "it is, or holds, the main checkout"
+    if inside(path, snap["here"]):
+        return "it is, or holds, the worktree tidy runs in"
+    if inside(path, snap["cwd"]):
+        return "tidy runs inside it"
+    return None
+
+
+def live_claim(names, state):
+    """What names one of NAMES (a path, branch, item or session) in a key or value a live coord lease or claim holds, or None."""
+    for row in state["held"]:
+        text = f"{row['key']} {row.get('value') or ''}"
+        for name in names:
+            if name and name in text:
+                return f"{row['key']} (held by {row['holder']})"
+    return None
+
+
+def names_of(cand):
+    """The texts a lease or claim names the candidate by: its path, branch, item and session."""
+    rec = cand.get("record") or {}
+    return [cand.get("path"), cand.get("branch"), rec.get("item"), rec.get("session")]
+
+
+def item_finished(cand, snap):
+    """(True, None) when the candidate's item (else its sprint) is done, dropped or gone with its closed sprint, or names
+    none; else (False, why)."""
+    rec = cand.get("record") or {}
+    branch = cand.get("branch")
+    iid = rec.get("item") or (branch[len(WORK_PREFIX):] if branch and branch.startswith(WORK_PREFIX) else None)
+    for what, ident in (("item", iid), ("sprint", None if iid else rec.get("sprint"))):
+        if ident and snap["items"].get(ident) not in FINISHED + (None,):
+            return False, f"its {what} {ident} is {snap['items'][ident]}"
+    return True, None
+
+
+def idle_reason(last, snap, waived=None):
+    """(True, None) when LAST (seconds since the epoch) is older than the age limit or the limit is WAIVED (a reason), else
+    (False, why)."""
+    idle = snap["now"] - last
+    if waived:
+        return True, waived
+    if idle < snap["age"]:
+        return False, f"its last activity was {idle / 3600:.1f} h ago, under the {snap['age'] / 3600:g} h limit"
+    return True, None
+
+
+def safe_to_remove(cand, snap, state):
+    """(verdict, reason) for the candidate CAND, the one rule tidy, kbmon and the remediation agent read. CAND is a dict:
+    `class` (worktree, branch, sandbox or scratch), `path` (normalised; not for a branch), `branch`, `record` (its coord
+    record, or None), and for a worktree its `entry` (git's, or None), for a branch its `tip` and `checked_out` paths.
+    The verdict is `remove` or `keep`; the reason names the first rule that keeps it, else what holds. SNAP is
+    `take_snapshot`'s, STATE `coord_state`'s."""
+    cls, path, rec = cand["class"], cand.get("path"), cand.get("record")
+    for p in ([path] if path else []) + cand.get("checked_out", []):
+        why = always_kept(p, snap)
+        if why:
+            return KEEP, f"it is checked out in a path that stays ({why})" if cls == "branch" else why
+    if rec is None:
+        return KEEP, f"no owner record names it ({cand.get('branch') or path} was not made by this clone's tools, or never recorded)"
+    entry = cand.get("entry")
+    if cls in ("worktree", "sandbox", "scratch") and not os.path.exists(path):
+        return REMOVE, "its directory is already gone; only the record and git's worktree entry are left"
+    if cls == "worktree" and entry is None:
+        return KEEP, "git does not list it as a worktree"
+    if cls == "worktree" and entry["lock"] is not None:
+        return KEEP, f"it is locked ({entry['lock'] or 'no reason given'})"
+    held = live_claim(names_of(cand), state)
+    if held:
+        return KEEP, f"a live coord lease or claim names it: {held}"
+    if cls == "branch":
+        out = [p for p in cand["checked_out"] if p not in snap["planned"]]
+        if out:
+            return KEEP, f"it is checked out in the worktree {out[0]}"
+    elif snap["table"] is not None:
+        procs = bl_close.processes_in(snap["table"], path)
+        if procs:
+            return KEEP, "a process still runs there: " + ", ".join(f"pid {pid} ({comm or '?'})" for pid, comm in procs)
+    ok, why = item_finished(cand, snap)
+    if not ok:
+        return KEEP, why
+    waived = None
+    if cls == "worktree":
+        code, out, err = run(["git", "--no-optional-locks", "status", "--porcelain"], cwd=path)
+        if code or out.strip():
+            return KEEP, "it has uncommitted changes" if not code else f"git status failed: {err.strip()}"
+    if cls in ("worktree", "branch"):
+        rev = entry["head"] if cls == "worktree" else f"refs/heads/{cand['branch']}"
+        if not bl_close.merged_into(snap["root"], rev, snap["upstream"]):
+            return KEEP, f"it has commits {snap['upstream']} lacks"
+        if cls == "worktree":
+            last = git_time(path, "log", "-g", "-1", "--format=%ct", "HEAD") or git_time(path, "log", "-1", "--format=%ct", "HEAD")
+        else:
+            last = git_time(snap["root"], "log", "-1", "--format=%ct", rev)
+    else:
+        last = dir_activity(path)
+        if cls == "sandbox":
+            free = free_gib(snap, path)
+            if free < snap["free_gb"]:
+                waived = f"disk pressure ({free:.1f} GiB free, under {snap['free_gb']:g} GiB): its age limit is waived"
+    last = max(last or snap["now"], rec.get("at") or 0)
+    ok, why = idle_reason(last, snap, waived)
+    if not ok:
+        return KEEP, why
+    done = {"worktree": f"owned, item finished, clean, on {snap['upstream']}, idle",
+            "branch": f"owned, item finished, on {snap['upstream']}, idle",
+            "sandbox": "owned, nothing runs in it, idle", "scratch": "owned, item finished, nothing runs in it, idle"}[cls]
+    return REMOVE, why if why else f"{done} for {(snap['now'] - last) / 3600:.1f} h"
+
+
+def candidates(snap, state):
+    """The candidates of each class, in TIDY_CLASSES order: every git worktree (the unrecorded ones too, kept), every
+    recorded worktree git no longer lists, the local TIDY_PREFIXES branches, and the recorded sandboxes and scratch
+    directories."""
+    recs = {(r.get("class"), r["path"]): r for r in state["owners"] if isinstance(r.get("path"), str)}
+    by_item = {}
+    for r in recs.values():
+        if r.get("item") and r.get("class") in ("worktree", "scratch", "sandbox"):
+            by_item.setdefault(r["item"], r)
+    out = {c: [] for c in TIDY_CLASSES}
+    listed = set()
+    branch_rec = {}
+    for e in snap["entries"]:
+        p = norm_path(e["path"])
+        listed.add(p)
+        rec = recs.get(("worktree", p))
+        if rec and e["branch"]:
+            branch_rec[e["branch"]] = rec
+        out["worktree"].append({"class": "worktree", "path": p, "record": rec, "entry": e, "branch": e["branch"]})
+    for (cls, p), rec in sorted(recs.items(), key=lambda kv: (str(kv[0][0]), kv[0][1])):
+        if cls == "worktree" and p not in listed:
+            out["worktree"].append({"class": "worktree", "path": p, "record": rec, "entry": None, "branch": None})
+        elif cls in ("sandbox", "scratch"):
+            out[cls].append({"class": cls, "path": p, "record": rec})
+    code, text, _ = run(["git", "for-each-ref", "--format=%(refname:short) %(objectname)", "refs/heads"], cwd=snap["root"])
+    for ln in sorted(text.splitlines()) if not code else []:
+        branch, _, tip = ln.partition(" ")
+        if not branch.startswith(TIDY_PREFIXES):
+            continue
+        rec = branch_rec.get(branch) or (by_item.get(branch[len(WORK_PREFIX):]) if branch.startswith(WORK_PREFIX) else None)
+        out["branch"].append({"class": "branch", "branch": branch, "tip": tip, "record": rec,
+                              "checked_out": [norm_path(e["path"]) for e in snap["entries"] if e["branch"] == branch]})
+    return out
+
+
+def row_of(cand, verdict, reason):
+    row = {"class": cand["class"], "verdict": verdict, "reason": reason, "bytes": 0, "_cand": cand}
+    row.update({"branch": cand["branch"]} if cand["class"] == "branch" else {"path": cand["path"]})
+    item = (cand.get("record") or {}).get("item")
+    if item:
+        row["item"] = item
+    return row
+
+
+def plan(snap, state):
+    """The rows of every candidate with its verdict, reason and the bytes it frees; the bench sandboxes first when the
+    disk is under pressure, else by class. A worktree judged `remove` is no longer a checkout for its branch."""
+    cands = candidates(snap, state)
+    rows = []
+    for cls in TIDY_CLASSES:
+        for cand in cands[cls]:
+            verdict, reason = safe_to_remove(cand, snap, state)
+            row = row_of(cand, verdict, reason)
+            if verdict == REMOVE and cls == "worktree":
+                snap["planned"].add(cand["path"])
+            if verdict == REMOVE and cls != "branch" and os.path.isdir(cand["path"]):
+                row["bytes"], approx = tree_bytes(cand["path"])
+                if approx:
+                    row["approximate"] = True
+            if cls == "sandbox" and "disk pressure" in reason:
+                row["_pressure"] = True
+            rows.append(row)
+    rows.sort(key=lambda r: 0 if r.get("_pressure") else 1)
+    return rows
+
+
+def public(row):
+    return {k: v for k, v in row.items() if not k.startswith("_")}
+
+
+def rmtree_writable(path):
+    """Remove the directory tree PATH, making a read-only file writable first (git's object files on Windows); an error
+    that remains (a file a process holds open) is raised."""
+    def retry(func, name, exc):
+        if isinstance(exc, PermissionError) and os.path.lexists(name):
+            os.chmod(name, stat.S_IWRITE)
+            func(name)
+        else:
+            raise exc
+    if sys.version_info >= (3, 12):
+        shutil.rmtree(path, onexc=lambda f, n, e: retry(f, n, e))
+    else:
+        shutil.rmtree(path, onerror=lambda f, n, i: retry(f, n, i[1]))
+
+
+def drop_record(cand):
+    if cand.get("record") is not None and cand.get("path"):
+        try:
+            record_owner(cand["class"], cand["path"], drop=True)
+        except Refused as e:
+            say(f"tidy: {e}")
+
+
+def remove_one(snap, row, removed):
+    """Remove the candidate of ROW; returns None once it is gone, else why it was kept. REMOVED collects the worktree
+    paths removed so far (a branch checked out only in those is free to go)."""
+    cand, root = row["_cand"], snap["root"]
+    cls, path = cand["class"], cand.get("path")
+    if cls == "branch":
+        if any(p not in removed for p in cand["checked_out"]):
+            return "its worktree stays"
+        if bl_close.delete_landed_branch(root, cand["branch"], snap["upstream"], who="tidy", prefixes=TIDY_PREFIXES):
+            return None
+        return "see the line above"
+    if os.path.exists(path):
+        if snap["table"] is None:  # Windows: a rename to a sibling and back fails while a process holds the directory
+            held = bl_close.held_by_process(Path(path))
+            if held:
+                return f"it could not be moved ({held}): a process may hold it"
+        if cls == "worktree":
+            code, out, err = run(["git", "worktree", "remove", path], cwd=root)
+            if code:
+                return f"git worktree remove: {(err or out).strip()}"
+        else:
+            try:
+                rmtree_writable(path)
+            except OSError as e:
+                return f"{type(e).__name__}: {e.strerror or e}"
+    if cls == "worktree":
+        removed.add(path)
+    drop_record(cand)
+    return None
+
+
+def apply_rows(snap, rows, say_to):
+    """Remove the `remove` rows, setting each row's `result`. Before each removal the coord store is read again: a lease
+    or claim that appeared since the listing keeps the candidate. Returns the number of failures; raises CoordLocked."""
+    failed, removed, pruned = 0, set(), False
+    with contextlib.redirect_stdout(say_to):
+        for row in rows:
+            if row["verdict"] != REMOVE:
+                continue
+            held = live_claim(names_of(row["_cand"]), coord_state())
+            if held:
+                row["result"], failed = f"kept: a live coord lease or claim names it now: {held}", failed + 1
+                continue
+            pruned = pruned or row["class"] == "worktree"
+            why = remove_one(snap, row, removed)
+            if why:
+                row["result"], failed = f"kept: {why}", failed + 1
+            else:
+                row["result"] = "removed"
+        if pruned:
+            run(["git", "worktree", "prune"], cwd=snap["root"])
+    return failed
+
+
+def summary_lines(rows, applied):
+    """One line a class: how many rows go (were removed, with --apply) and the bytes they free, nested paths counted once."""
+    lines = []
+    for cls in TIDY_CLASSES:
+        mine = [r for r in rows if r["class"] == cls]
+        gone = [r for r in mine if (r.get("result") == "removed" if applied else r["verdict"] == REMOVE)]
+        paths = [r["path"] for r in gone if "path" in r]
+        size = sum(r["bytes"] for r in gone if not any(o != r.get("path") and inside(o, r.get("path", "")) for o in paths))
+        lines.append(f"tidy: {cls}: {'removed' if applied else 'would remove'} {len(gone)}"
+                     f"{f' ({fmt_size(size)})' if size else ''}, kept {len(mine) - len(gone)}")
+    return lines
+
+
+def cmd_tidy(bl, a):
+    """List the recorded leftovers with `safe_to_remove`'s verdict, reason and bytes (and with --apply remove the ones
+    it clears), under the exit codes in the module docstring."""
+    if a.older_than < 0 or a.disk_free_gb < 0:
+        raise Rejected("tidy: --older-than and --disk-free-gb are not negative")
+    snap = take_snapshot(bl, a.older_than, a.disk_free_gb)
+    try:
+        rows = plan(snap, coord_state())
+        failed = apply_rows(snap, rows, sys.stderr if a.json else sys.stdout) if a.apply else 0
+    except CoordLocked:
+        say("tidy: the coord store stayed locked: nothing more was removed; run tidy again")
+        return 3
+    if a.json:
+        print(json.dumps([public(r) for r in rows], indent=2))
+        return 1 if failed else 0
+    for r in rows:
+        what = r.get("branch") or r["path"]
+        size = f" ({fmt_size(r['bytes'])}{' or more' if r.get('approximate') else ''})" if r["bytes"] else ""
+        if a.apply and r["verdict"] == REMOVE:
+            say(f"tidy: {r['result']} {what}{size}: {r['reason']}" if r["result"] == "removed" else f"tidy: {r['result']} {what}")
+        else:
+            say(f"tidy: {'would remove' if r['verdict'] == REMOVE else 'kept'} {what}{size}: {r['reason']}")
+    for ln in summary_lines(rows, a.apply):
+        say(ln)
+    if not a.apply:
+        say("tidy: --apply removes the ones listed as would remove (never --force)")
+    return 1 if failed else 0
+
+
+def args_tidy(p):
+    p.add_argument("--apply", action="store_true", help="remove what tidy lists as safe (default: only list it)")
+    p.add_argument("--json", action="store_true", help="print the rows as a JSON array")
+    p.add_argument("--older-than", type=float, default=AGE_HOURS, metavar="HOURS",
+                   help=f"a leftover's last activity must be older than this (default {AGE_HOURS})")
+    p.add_argument("--disk-free-gb", type=float, default=DISK_FREE_GB, metavar="GB",
+                   help=f"free space below this is disk pressure: sandboxes come first, age waived (default {DISK_FREE_GB})")
+
+
 bl_cli.register("own", cmd_own, args_own, help="record a worktree, sandbox, scratch directory or process this clone's tools made")
+bl_cli.register("tidy", cmd_tidy, args_tidy)

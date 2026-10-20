@@ -6,7 +6,7 @@ ledger rows they changed for a source nothing names: `unrelated_baselines`), the
 stuck merge request line.
 
 Standard library only; imports `bl_base`, `bl_check` (the no-op rules `done` applies), `bl_cli`, `bl_intake`, `bl_plan` and
-the two modules cut from it: `bl_close` (`close`, `tidy` and the worker's worktree and branches `land` releases and
+the two modules cut from it: `bl_close` (`close` and the worker's worktree and branches `land` releases and
 deletes) and `bl_precheck` (`researched`, `precheck` and `item_commits`), which import neither this module nor `backlog`.
 The names the other modules read as `bl_land.NAME` stay importable from here. `bl_selfcheck` (the load a review story's
 `done` refuses a whole-suite run at) is imported where `done` reads it. The branch `land` expects sync to open for code
