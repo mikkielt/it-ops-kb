@@ -53,7 +53,11 @@
         "own-digest-key": "ST-kcs6y7sj",
         "own-record-key": "ST-kcs6y7sj"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "own-digest-key",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with its own coord store and a stand-in claude on PATH, so no paid model call; no change to _tools/tests_ceiling.json. An uncommitted worktree stays keep even when answered: tidy never passes --force, so a dirty one is reported for a hand clean. Starts after SP-ipeewrlv has landed bl_clean.py.",
