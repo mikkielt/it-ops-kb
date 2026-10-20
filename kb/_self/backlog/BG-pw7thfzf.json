@@ -2,7 +2,7 @@
   "id": "BG-pw7thfzf",
   "kind": "bug",
   "title": "tidy --apply deletes a recorded scratch or sandbox path outside its own directory, and the target of a recorded symlink",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ipeewrlv",
   "priority": "P1",
   "rank": 0,
@@ -66,6 +66,28 @@
     }
   ],
   "notes": "Filed 2026-10-20 from the SP-ipeewrlv review (S1): the reviewer planted own <main>/kb --class scratch, own <tidy worktree>/_tools --class sandbox and a scratch record of a directory holding an unrecorded worktree, and each listed as would remove; a symlink record became its target. Premise run on origin/main: the repro and check 0 both fail (kb, the symlink target and the worktree holder are remove; the control scratch dir is remove as it should be).",
-  "claimed_by": "orch-r201",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "d00a4bcb1f7615693fc54a99454f6219cc080c66",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, subprocess, tempfile, json\nT = os.path.realpath(tempfile.mkdtemp())\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_COORD\"))}\nENV.pop(\"CLAUDECODE\", None)\nENV.update(KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\",\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\ndef tool(*a, ok=(0,)):\n    r = subprocess.run([sys.executable, *a], capture_output=True, text=True, env=ENV, timeout=300)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-800:], r.stderr[-800:])\n    return r\nO, C = os.path.join(T, \"origin.git\"), os.path.join(T, \"clone\")\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T)\ng(\"clone\", \"-q\", O, C, cwd=T)\nos.makedirs(os.path.join(C, \"kb\", \"_self\", \"backlog\"))\nopen(os.path.join(C, \"backlog.json\"), \"w\").write('{\"item_dir\": \"kb/_self/backlog\"}\\n')\nopen(os.path.join(C, \"kb\", \"_self\", \"backlog\", \".keep\"), \"w\").close()\ng(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C); g(\"push\", \"-q\", \"origin\", \"main\", cwd=C); g(\"fetch\", \"-q\", cwd=C)\nown = lambda p, cls: tool(\"_tools/backlog.py\", \"--root\", C, \"own\", p, \"--class\", cls)\nscratch = os.path.join(C, \"_cache\", \"scratch\"); os.makedirs(scratch)\nholder = os.path.join(scratch, \"ST-holderxx\"); os.makedirs(holder)\ng(\"worktree\", \"add\", \"-q\", \"--detach\", os.path.join(holder, \"wt\"), \"HEAD\", cwd=C)\nown(holder, \"scratch\"); own(os.path.join(C, \"kb\", \"_self\"), \"sandbox\")\nrows = json.loads(tool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--json\", \"--older-than\", \"0\").stdout)\nrows = rows[\"rows\"] if isinstance(rows, dict) else rows\nn = lambda p: os.path.normcase(os.path.realpath(p))\nv = {n(x[\"path\"]): x.get(\"verdict\") for x in rows if \"path\" in x}\nassert v.get(n(holder)) != \"remove\", (\"a recorded scratch directory holding a worktree of the repository is removable\", v)\nassert v.get(n(os.path.join(C, \"kb\", \"_self\"))) != \"remove\", (\"a recorded sandbox inside the tracked tree is removable\", v)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, subprocess, tempfile, json\nT = os.path.realpath(tempfile.mkdtemp())\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_COORD\"))}\nENV.pop(\"CLAUDECODE\", None)\nENV.update(KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\",\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\ndef tool(*a, ok=(0,)):\n    r = subprocess.run([sys.executable, *a], capture_output=True, text=True, env=ENV, timeout=300)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-800:], r.stderr[-800:])\n    return r\nO, C = os.path.join(T, \"origin.git\"), os.path.join(T, \"clone\")\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T)\ng(\"clone\", \"-q\", O, C, cwd=T)\nos.makedirs(os.path.join(C, \"kb\", \"_self\", \"backlog\"))\nopen(os.path.join(C, \"backlog.json\"), \"w\").write('{\"item_dir\": \"kb/_self/backlog\"}\\n')\nopen(os.path.join(C, \"kb\", \"_self\", \"backlog\", \".keep\"), \"w\").close()\ng(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C); g(\"push\", \"-q\", \"origin\", \"main\", cwd=C); g(\"fetch\", \"-q\", cwd=C)\nown = lambda p, cls: tool(\"_tools/backlog.py\", \"--root\", C, \"own\", p, \"--class\", cls)\ninside = os.path.join(C, \"kb\")\nreal = os.path.join(T, \"real\"); os.makedirs(real); open(os.path.join(real, \"keep.txt\"), \"w\").write(\"x\")\nscratch = os.path.join(C, \"_cache\", \"scratch\"); os.makedirs(scratch)\nlink = os.path.join(scratch, \"ST-linkedxx\"); os.symlink(real, link)\nlegit = os.path.join(scratch, \"ST-legitxxx\"); os.makedirs(legit); open(os.path.join(legit, \"f\"), \"w\").write(\"x\")\nown(inside, \"scratch\"); own(link, \"scratch\"); own(legit, \"scratch\")\nrows = json.loads(tool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--json\", \"--older-than\", \"0\").stdout)\nrows = rows[\"rows\"] if isinstance(rows, dict) else rows\nn = lambda p: os.path.normcase(os.path.realpath(p))\nv = {n(x[\"path\"]): x.get(\"verdict\") for x in rows if \"path\" in x}\nassert v.get(n(legit)) == \"remove\", (\"the control: a recorded scratch directory under the scratch dir is not removable\", v)\nassert v.get(n(inside)) != \"remove\", (\"a recorded scratch path inside the checkout's tracked tree is removable\", v)\nassert v.get(n(real)) != \"remove\", (\"a symlink's target outside the clone is removable\", v)\ntool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--apply\", \"--older-than\", \"0\", ok=(0, 1))\nassert os.path.isdir(inside) and os.path.isfile(os.path.join(real, \"keep.txt\")), \"tidy --apply deleted a path outside its own directories\"\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
