@@ -4394,3 +4394,13 @@ _Agent: kb-research_
 - See gitlab/git-trailers-and-hooks.md.
 
 _Agent: kb-research_
+
+## QK-claude-code-add-commit-message-attribution. What does Claude Code add to a commit message as attribution, and which settings change or remove it?
+- Unset, `attribution.commit` gives a `Co-Authored-By: <model name> <noreply address at anthropic.com>` trailer, and an empty string removes it; `attribution.pr` and `attribution.sessionUrl` do the same for the pull request text and the session link. [DOC S-wzatkg4o]
+- `attribution: false` hides all of it from v2.1.281, and the deprecated `includeCoAuthoredBy: false` is ignored once `attribution.commit` or `attribution.pr` is set. [DOC S-wzatkg4o]
+- The lines are instructions to Claude: a CLAUDE.md or memory rule outranks them unless managed settings set the line, and `includeGitInstructions: false` leaves the built-in commit instructions out. [DOC S-wzatkg4o]
+- Conclusion: the trailer comes from the model following an instruction, not from a git hook, so a reader of commit messages meets the default trailer, a custom one or none, and the trailer's `noreply` address is a fixed one under Anthropic's domain. [DER S-wzatkg4o]
+- Open: whether every Claude Code mode (a subagent's commit, a headless `-p` run) always follows the instruction was not tested. [UNK]
+- See gitlab/commit-signing-and-provenance.md.
+
+_Agent: kb-research_
