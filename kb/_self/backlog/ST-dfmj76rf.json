@@ -56,6 +56,25 @@
       "class": "agents-rule",
       "answer": "no default: a setting the operator fills; dispatch passes the cap only when it is set and says when a worker runs without one",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does the operator set the worker's spend cap: a backlog.json setting, or a dispatch flag with an environment variable?",
+      "options": [
+        "dispatch --max-budget-usd flag, else the KB_WORKER_BUDGET_USD environment variable, none when neither is set",
+        "a new backlog.json setting (needs _tools/bl_base.py SETTINGS, outside this item's touches)"
+      ],
+      "recommendation": "dispatch --max-budget-usd flag, else the KB_WORKER_BUDGET_USD environment variable, none when neither is set",
+      "do": {
+        "dispatch --max-budget-usd flag, else the KB_WORKER_BUDGET_USD environment variable, none when neither is set": "ST-dfmj76rf",
+        "a new backlog.json setting (needs _tools/bl_base.py SETTINGS, outside this item's touches)": "ST-dfmj76rf"
+      },
+      "class": "agents-rule",
+      "answer": "dispatch --max-budget-usd flag, else the KB_WORKER_BUDGET_USD environment variable, none when neither is set",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
