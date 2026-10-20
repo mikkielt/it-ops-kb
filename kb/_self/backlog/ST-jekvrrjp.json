@@ -67,6 +67,23 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the delivery decide that a query log entry names an internal root, and what does it do with the usage sidecar lines of the entries it leaves out?",
+      "options": [
+        "kbcommon.private_hits on root, articles, best and citation lines; usage sidecar lines of left-out entries dropped with them",
+        "only entries whose root field is an internal root; sidecars copied whole"
+      ],
+      "recommendation": "kbcommon.private_hits on root, articles, best and citation lines; usage sidecar lines of left-out entries dropped with them",
+      "do": {
+        "kbcommon.private_hits on root, articles, best and citation lines; usage sidecar lines of left-out entries dropped with them": "ST-jekvrrjp",
+        "only entries whose root field is an internal root; sidecars copied whole": "ST-jekvrrjp"
+      },
+      "class": "querylog",
+      "answer": "kbcommon.private_hits on root, articles, best and citation lines; usage sidecar lines of left-out entries dropped with them",
+      "by": "agent"
     }
   ],
   "notes": "Draft, outside any sprint: what the query log delivers is the operator's call (query-log recording), so gate g-ql stays open for the operator. The rows already hold qualified paths (<root>/<path>), so no new field is needed. The check is a placeholder to replace when the item is planned into a sprint: a planted spool with one row naming an internal root and one naming public, run through the delivery's dry run. Design: kb/_self/design.md, Teams and organizations. Plan 2026-10-20 (SP-rrqlgiff): operator gate g-ql answered: kept in the local spool and never delivered to the shared store. Premise run on origin/main 8aa620db0 with a planted clone (public root and an internal root team-a, a local run file holding one public entry and one naming team-a/mdm/enrolment.md): ql_deliver.Pusher.bring refuses the whole run file (root is not a root value: 'team-a', private-path leak hits), so today such an entry stalls the delivery of every entry beside it rather than being delivered. The check drives Pusher.fetch, reset, local_files and bring on that clone. Roots and their visibility: kbcommon roots (kb/<root>/_root.md visibility, kb/_roots pointers).",
