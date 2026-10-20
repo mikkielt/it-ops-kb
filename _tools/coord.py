@@ -28,7 +28,7 @@
 
 The store is one SQLite file: `--store PATH` (before or after the command), else the environment variable
 KB_COORD_STORE, else `kb-coord/coord.sqlite` in the common git directory of the clone that holds this script (shared by
-its worktrees, and the store the coord hook uses); a script in no git clone with neither is refused (exit 2). Every command prints one JSON object on stdout with
+its worktrees, and the store the coord hook uses; read from `.git` where git cannot run); a script in no git clone with neither is refused (exit 2). Every command prints one JSON object on stdout with
 sorted keys. A claimed key is a row with a holder, a token, a ttl and an expiry; `put` writes the row's value and
 raises its revision by one (a claim of an absent key starts at revision 1). The end of a lease, a `release` or an expiry,
 clears the row's holder, token and expiry and keeps its value and revision: `get` and `list` show the key with no
@@ -1093,19 +1093,47 @@ def send(url, key_file, argv, plain_http=False):
     return code
 
 
-def default_store():
-    """kb-coord/coord.sqlite in the common git directory of the clone that holds this script, which its worktrees share
-    (the store the coord hook uses); None when the script is in no git clone."""
-    root = HERE.parent
+def git_dir_of(root):
+    """The common git directory of the clone at ROOT, which its worktrees share, read from ROOT/.git without git: the
+    directory itself, or the directory a `gitdir:` file names less its `commondir` file; None when it is neither."""
+    dot = Path(root, ".git")
+    try:
+        if dot.is_dir():
+            return dot
+        if not dot.is_file():
+            return None
+        first = dot.read_text(encoding="utf-8").splitlines()[0]
+        if not first.startswith("gitdir:"):
+            return None
+        git_dir = Path(root, first[len("gitdir:"):].strip())
+        common = git_dir / "commondir"
+        if common.is_file():
+            return Path(git_dir, common.read_text(encoding="utf-8").strip())
+        return git_dir if git_dir.is_dir() else None
+    except (OSError, UnicodeError, IndexError):
+        return None
+
+
+def store_of(root):
+    """kb-coord/coord.sqlite in the common git directory of the clone at ROOT: from `git rev-parse --git-common-dir`,
+    else, where git cannot run, from ROOT/.git (`git_dir_of`); None when ROOT is in no git clone."""
+    common = None
     try:
         p = subprocess.run(["git", "-C", str(root), "rev-parse", "--git-common-dir"], capture_output=True, text=True,
                            encoding="utf-8", timeout=10)
+        if p.returncode == 0 and p.stdout.strip():
+            common = Path(root, p.stdout.strip())
     except (OSError, subprocess.SubprocessError):
-        return None
-    common = p.stdout.strip()
-    if p.returncode != 0 or not common:
-        return None
-    return str(Path(root, common, "kb-coord", "coord.sqlite"))
+        pass
+    if common is None:
+        common = git_dir_of(root)
+    return str(common / "kb-coord" / "coord.sqlite") if common else None
+
+
+def default_store():
+    """kb-coord/coord.sqlite in the common git directory of the clone that holds this script, which its worktrees share
+    (the store the coord hook uses); None when the script is in no git clone."""
+    return store_of(HERE.parent)
 
 
 def main(argv=None):
