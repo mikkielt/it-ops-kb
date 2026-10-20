@@ -38,8 +38,10 @@
         "key the delivery on the pushed sha instead of the log's time": "BG-ko4sdvxy"
       },
       "class": "design",
-      "answer": "time the outcome by the log's last write while only its run's spool-rows lines follow it",
-      "by": "agent"
+      "answer": "superseded by g2: delivery_records reads a standing flag; last_outcomes' when is unchanged",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -56,7 +58,9 @@
       },
       "class": "design",
       "answer": "last_outcomes sets a standing flag on the apply entry and when keeps its meaning",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
