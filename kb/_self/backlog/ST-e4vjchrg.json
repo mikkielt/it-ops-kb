@@ -25,6 +25,25 @@
   "touches": [
     "kb/_self/token-efficiency.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the Model call sites section list the paid benchmarks' claude -p calls: the goal names the model constants and agent files, and the benchmark modules hold models as the measured variable",
+      "options": [
+        "one bullet naming the benchmark modules as not call sites of a decision",
+        "one bullet per benchmark module with its model and caps"
+      ],
+      "recommendation": "one bullet naming the benchmark modules as not call sites of a decision",
+      "do": {
+        "one bullet naming the benchmark modules as not call sites of a decision": "ST-e4vjchrg",
+        "one bullet per benchmark module with its model and caps": "ST-e4vjchrg"
+      },
+      "class": "design",
+      "answer": "one bullet naming the benchmark modules as not call sites of a decision",
+      "by": "agent"
+    }
+  ],
   "notes": "operator request 2026-10-19 (housekeeping batch): evidence measured 2026-10-19 for the section: the store's judged entries by pack verdict and judgement (good: answered 11, partly 5, missed 37; weak: 8, 6, 26; none: 8, 7, 59) show the verdict cannot stand in for distill's Haiku judge; work rows by model (kb/_querylog/work: Sonnet 5.5 on 632 item rows, 2.81B cache reads, 14.4M output; Opus 5.5 on 435 item rows, 1.42B cache reads, 3.4M output) show the orchestrator's share. A model switch is not made here: each is a parked draft with an operator gate.",
   "claimed_by": "orch-r107",
   "operator": "op-f618a13e"
