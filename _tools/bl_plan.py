@@ -2,8 +2,8 @@
 docs (`stale_touches`, `docs_after_code`, `docs_warnings`, with the `touch_paths`, `dependencies` and `dependents`
 they share), the `_anchors.csv` rule of an item that rewords a DOC fact (`anchors_warnings`, which `precheck`
 prints), the eval-file rule of an item that touches a doc the goal research's rows quote
-(`research_rows_warnings`, which `precheck` prints), the host-check gates, where a dependency outside a sprint stands (`outside_deps`) and `start`, which refuses a
-sprint on them and warns of the rest.
+(`research_rows_warnings`, which `precheck` prints), the host-check gates, where a dependency outside a sprint stands (`outside_deps`), the story the orchestrator lands
+without a worker (`orchestrator_lands`, `land_line`) and `start`, which refuses a sprint on them and warns of the rest.
 
 Standard library only; imports `bl_base`, `bl_authority` (the class of a gate, which `free_text_host_gates` reads) and
 `bl_cli` (and `kbpublic`, where `history_ref` reads the integration remote's name) and
@@ -18,8 +18,8 @@ import bl_cli
 from bl_authority import derived_class
 from bl_base import (
     APPROVALS, CHECK_TIMEOUT_S, KB_CONTENT_RE, OPEN, RECURRING_MIN, Refused, START_GATE, WORKSPACE, commit_written,
-    glob_re, id_re, in_scope, link_target, need, repositories, resolved_touch, say, scope, split_touch,
-    within_repository,
+    glob_re, id_re, in_scope, link_target, need, repositories, resolved_touch, run_check, say, scope,
+    split_touch, within_repository,
 )
 
 OPEN_STATUSES = OPEN  # the statuses of an item still to do
@@ -600,6 +600,27 @@ def outside_deps(bl, sid):
                 continue
             out.append((i, d, where_outside(bl, d)))
     return out
+
+
+def orchestrator_lands(bl, iid):
+    """True when the orchestrator finishes story `iid` itself: it is an open story with checks, it has child items
+    and every one of its descendants is done or dropped, and each of its checks passes in this checkout (the current
+    main, once fetched and fast-forwarded). A worker session for it would only run those checks again. Runs the
+    checks, so callers ask only of a story that is ready."""
+    it = bl.items[iid]
+    kids = bl.descendants(iid)
+    if it.get("kind") != "story" or it.get("status") not in ("todo", "doing") or not it.get("checks") or not kids \
+            or any(bl.items[k].get("status") not in ("done", "dropped") for k in kids):
+        return False
+    return all(run_check(bl.root, c)[0] for c in it["checks"])
+
+
+def land_line(bl, iid):
+    """The line `next` and `brief` print under story `iid` when `orchestrator_lands` holds, else ""."""
+    if not orchestrator_lands(bl, iid):
+        return ""
+    return (f"  no worker: every task of {iid} is done and its checks pass here; claim it, then land it yourself "
+            f"with python3 _tools/backlog.py land {iid} (kb-sprint run, step 3)")
 
 
 def args_start(p):
