@@ -681,7 +681,8 @@ def close(fid, claim=False, tried=None, store=None, gate=None, day=None, kb_comm
           written=None):
     """`close F-ID --claim|--tried NOTE|--reject`: one findings record for an open gap finding worked by
     `/kb-research`, or with --tried an eval finding whose newest record is no-fix (apply found no fix for the miss): its
-    record carries `tried` (the day) and the note, with no _gaps.md entry to write. --claim: its _gaps.md entry must
+    record carries `tried` (the day) and the note, with no _gaps.md entry to write. An open rules finding takes --tried
+    (state no-fix, the note and day in `observed`) and --reject (state rejected) the same way. --claim: its _gaps.md entry must
     carry a settling note (SETTLED, dated: `Resolved <day>:` by the content rules), and the finding is promoted to claim
     (by kb-research, `applied`). --tried: the dated note `  - Tried <day>: NOTE (topic: ...)` goes under the entry, and
     the record carries `tried` (the day). --reject: its entry must be gone from the ledger (removed
@@ -707,6 +708,25 @@ def close(fid, claim=False, tried=None, store=None, gate=None, day=None, kb_comm
         if written is not None:
             written.append(run_path(store, run_id, findings=True))
         out(f"close: {fid} tried {day} run={run_id} (an eval finding apply left no-fix)")
+        return 0
+    if g and g.get("kind") == "rules" and g.get("state") == "open" and not claim:
+        # a rules miss the _self docs do not answer (apply found no answer line, or none that passes the gates): no
+        # _gaps.md entry exists, so the state moves in the record and the finding leaves the open list; the store
+        # takes no `tried` day on a rules finding, so the note and the day are in `observed`
+        keep = {k: v for k, v in g.items() if k != "observed"}
+        if reject:
+            rec, state = {**keep, "state": "rejected", "observed": {"note": "rejected", "day": day}}, "rejected"
+        else:
+            note = TOPIC_MARK.sub("", one_line(tried or "", 1000)).strip()
+            if not note:
+                out("close: --tried needs a note of what was tried and what it still needs")
+                return 1
+            rec, state = {**keep, "state": "no-fix", "observed": {"note": note, "day": day}}, "no-fix"
+        run_id, _ = write_findings(store, store_entries(store), [rec], (state,), kb_commit)
+        if written is not None:
+            written.append(run_path(store, run_id, findings=True))
+        out(f"close: {fid} {'rejected' if reject else 'tried ' + day} run={run_id} (a rules finding, left out of "
+            "the open list)")
         return 0
     if not g or g not in open_gaps(store, last):
         out(f"close: {fid} is no open gap finding of {shown(store)}")
