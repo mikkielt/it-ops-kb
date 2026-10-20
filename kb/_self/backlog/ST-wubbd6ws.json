@@ -2,7 +2,7 @@
   "id": "ST-wubbd6ws",
   "kind": "story",
   "title": "kbmon's sessions panel says what each Claude Code session is doing",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-razcgjsb",
   "priority": "P2",
   "rank": 0,
@@ -32,5 +32,7 @@
     "kb/public/claude/otel-monitoring.md:49",
     "kb/public/python/process-orphans-and-cwd.md:66"
   ],
-  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: a throwaway repository with a work/ST-aaaaaaaa worktree, a process named claude in it, a claims ledger record naming its pid and worker session and a coord intent gives no sessions list (the panel lists pids, ages and checkouts only: 'ok []'). Research ST-dtrqrwzo 2026-10-20: kb facts this item rests on: CLAUDE_CODE_CHILD_SESSION=1 marks a claude run started from another session (hooks.md:49); a headless claude -p run sees CLAUDE_CODE_SESSION_ID equal to its transcript folder id (ci-and-headless.md:28); per-session spend comes from claude_code.cost.usage with session.id (otel-monitoring.md:49); a process's checkout comes from its working directory: /proc/PID/cwd on Linux, lsof cwd or proc_pidinfo on macOS (process-orphans-and-cwd.md:66). No documented field names a session's role: the role table stays this repository's own rule."
+  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: a throwaway repository with a work/ST-aaaaaaaa worktree, a process named claude in it, a claims ledger record naming its pid and worker session and a coord intent gives no sessions list (the panel lists pids, ages and checkouts only: 'ok []'). Research ST-dtrqrwzo 2026-10-20: kb facts this item rests on: CLAUDE_CODE_CHILD_SESSION=1 marks a claude run started from another session (hooks.md:49); a headless claude -p run sees CLAUDE_CODE_SESSION_ID equal to its transcript folder id (ci-and-headless.md:28); per-session spend comes from claude_code.cost.usage with session.id (otel-monitoring.md:49); a process's checkout comes from its working directory: /proc/PID/cwd on Linux, lsof cwd or proc_pidinfo on macOS (process-orphans-and-cwd.md:66). No documented field names a session's role: the role table stays this repository's own rule.",
+  "claimed_by": "orch-r112",
+  "operator": "op-f618a13e"
 }
