@@ -35,6 +35,42 @@
   "depends_on": [
     "ST-w3qdrhdk"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How are the stage findings for docs.chef.io and huggingface.co closed? Chef avoids WebFetch; Hugging Face avoids only a summary as the quote, because the store holds a WebFetch entry on that host and a WebFetch-avoiding row would derive a new route finding that cannot stay closed (BG-ddg3khul)",
+      "options": [
+        "routes row each, Hugging Face not avoiding WebFetch",
+        "routes row each, both avoiding WebFetch",
+        "providers.csv row each after a full probe"
+      ],
+      "recommendation": "routes row each, Hugging Face not avoiding WebFetch",
+      "do": {
+        "routes row each, Hugging Face not avoiding WebFetch": "ST-gt4tduzr",
+        "routes row each, both avoiding WebFetch": "ST-gt4tduzr",
+        "providers.csv row each after a full probe": "ST-gt4tduzr"
+      },
+      "class": "querylog",
+      "answer": "routes row each, Hugging Face not avoiding WebFetch",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How are the four route findings (docs.gitlab.com, www.anthropic.com, code.claude.com, learn.microsoft.com) closed, given learn derives them again while the store holds the WebFetch entries?",
+      "options": [
+        "hand-written fixed-since records in the committed store, the bug filed for learn",
+        "leave them open until learn stops deriving them"
+      ],
+      "recommendation": "hand-written fixed-since records in the committed store, the bug filed for learn",
+      "do": {
+        "hand-written fixed-since records in the committed store, the bug filed for learn": "ST-gt4tduzr",
+        "leave them open until learn stops deriving them": "ST-gt4tduzr"
+      },
+      "class": "push"
+    }
+  ],
   "notes": "operator request 2026-10-19 (housekeeping batch): status 2026-10-19: code.claude.com 52.4M characters, learn.microsoft.com 3.0M, docs.gitlab.com 0.9M, www.anthropic.com 0.3M (route), docs.chef.io and huggingface.co (stage level 0, needs 1). kb_hook.py already denies WebFetch on code.claude.com and learn.microsoft.com (run on 2026-10-19). Premise: the check fails.",
   "claimed_by": "orch-r106",
   "operator": "op-f618a13e"
