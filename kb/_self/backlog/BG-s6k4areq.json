@@ -2,7 +2,7 @@
   "id": "BG-s6k4areq",
   "kind": "bug",
   "title": "selfcheck's host line over both load limits is cut inside its remedy, so the host-load remedy never shows",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-tsb23kev",
   "priority": "P3",
   "rank": 0,
@@ -31,6 +31,19 @@
     "parked: SP-qlpfcgs2 review"
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): a cut line hides selfcheck's host remedy. Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs.",
-  "claimed_by": "orch-r102",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "e67739dd102d9d737a2457f391c6ecd0e0444c4a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_selfcheck as s;r=s.check_host(load=30.0,cores=14);t=s.line_of(r);sys.exit(1 if t.endswith('[cut]') else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
