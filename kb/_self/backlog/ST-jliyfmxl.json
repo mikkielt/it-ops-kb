@@ -2,7 +2,7 @@
   "id": "ST-jliyfmxl",
   "kind": "story",
   "title": "The other articles' facts carry one tag each",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-2rjhs7se",
   "priority": "P3",
   "rank": 0,
@@ -57,5 +57,7 @@
   "depends_on": [
     "ST-cvr76jag"
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): the second half of the 56 mixed-tag facts (E3 has the agents articles). Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+  "notes": "operator request 2026-10-19 (housekeeping batch): the second half of the 56 mixed-tag facts (E3 has the agents articles). Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
+  "claimed_by": "orch-r105",
+  "operator": "op-f618a13e"
 }
