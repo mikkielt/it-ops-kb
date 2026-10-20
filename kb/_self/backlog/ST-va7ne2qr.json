@@ -1,0 +1,26 @@
+{
+  "id": "ST-va7ne2qr",
+  "kind": "story",
+  "title": "Docstrings that point at tools.md for benchmarks.py and coord.py name the docs that now hold them",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "_tools/bench_pool.py and .claude/hooks/coord_hook.py name the benchmarks and monitoring docs where their docstrings point at the reference that moved out of the tools reference",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nbad = []\nif '(kb/_self/tools.md, benchmarks.py pool)' in open('_tools/bench_pool.py', encoding='utf-8').read(): bad.append('bench_pool.py')\nif '(`kb/_self/tools.md`, coord.py)' in open('.claude/hooks/coord_hook.py', encoding='utf-8').read(): bad.append('coord_hook.py')\nprint('docstrings pointing at moved text:', bad); sys.exit(1 if bad else 0)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_pool.py",
+    ".claude/hooks/coord_hook.py"
+  ],
+  "links": [
+    "parked: SP-gea4jifz review"
+  ],
+  "notes": "review of SP-gea4jifz, S3, and the ST-3utkudhz worker's report: bench_pool.py:5 and coord_hook.py:6 point at tools.md rows whose text moved to benchmarks.md (ST-3utkudhz) and monitoring.md (ST-7ynhjmw3); both were outside those items' touches."
+}

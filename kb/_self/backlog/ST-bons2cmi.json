@@ -1,0 +1,30 @@
+{
+  "id": "ST-bons2cmi",
+  "kind": "story",
+  "title": "The text SP-gea4jifz moved out of tools.md reads on its own in the docs it moved to",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "No moved bullet in monitoring.md, plugin.md, web-sources.md or backlog.md refers to a row, bullet or subject that is no longer beside it, and each moved section does not repeat a section already in its doc",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nprobes = [('kb/_self/monitoring.md', '(above, in the `kb_mcp.py` row)'),\n          ('kb/_self/plugin.md', '(below, \"Revalidation at question time\")'),\n          ('kb/_self/web-sources.md', '\\n- `--dry-run` prints that line'),\n          ('kb/_self/backlog.md', '- And with neither,')]\nleft = [(d, p.strip()) for d, p in probes if p in open(d, encoding='utf-8').read()]\nprint('dangling references left:', left); sys.exit(1 if left else 0)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/monitoring.md",
+    "kb/_self/plugin.md",
+    "kb/_self/web-sources.md",
+    "kb/_self/backlog.md",
+    "kb/_self/_retrieval/lookup_eval.csv",
+    "kb/_self/_retrieval/**"
+  ],
+  "links": [
+    "parked: SP-gea4jifz review"
+  ],
+  "notes": "review of SP-gea4jifz, S3: ST-7ynhjmw3 moved rows verbatim, split at semicolons, so monitoring.md:268 says '(above, in the kb_mcp.py row)', plugin.md:155 '(below, \"Revalidation at question time\")' (that bullet is in tools.md), web-sources.md:93 starts '--dry-run prints that line' with its subject in the bullet before, and backlog.md:308 starts 'And with neither'. The worker also noted the moved text sits beside sections covering the same ground (kbmon panels in monitoring.md, land steps in backlog.md) and was not merged."
+}

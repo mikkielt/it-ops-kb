@@ -1,0 +1,25 @@
+{
+  "id": "ST-4gstnwf7",
+  "kind": "story",
+  "title": "The kb-self skill's doc table describes the README and tools.md as they are now",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The kb-self skill's rows for README.md and the tools reference say what each holds after SP-gea4jifz: a short executive summary, and rows that point to the docs owning whole subsystems",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt = open('.claude/skills/kb-self/SKILL.md', encoding='utf-8').read()\nrow = [l for l in t.splitlines() if l.startswith('| `README.md`')]\nold = [l for l in row if 'how it works, when it pays off' in l]\nprint('README row still the old overview:', bool(old)); sys.exit(1 if old else 0)\n"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-self/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-gea4jifz review"
+  ],
+  "notes": "review of SP-gea4jifz, S3: .claude/skills/kb-self/SKILL.md:47-48 still describe the old long README (what, why, how it works, when it pays off, where things are) and a tools.md of one full row per command."
+}

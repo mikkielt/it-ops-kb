@@ -1,0 +1,31 @@
+{
+  "id": "ST-a2idsssa",
+  "kind": "story",
+  "title": "The AGENTS.md and README.md size caps the kb/_self docs call tested are enforced by a check, or the docs stop calling them tested",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A check the gate runs refuses an AGENTS.md over 4096 bytes and a README.md over its cap, or maintaining.md, design.md, token-efficiency.md, kb/_self/README.md and the kb-self skill no longer say the caps are tested",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import glob, re, sys\npat = re.compile(r'AGENTS\\.md.{0,300}(4096|4 \\* 1024)|(4096|4 \\* 1024).{0,300}AGENTS\\.md', re.S)\nenforced = any(pat.search(open(f, encoding='utf-8').read()) for f in glob.glob('_tools/*.py') + glob.glob('.githooks/*'))\nclaimed = '4096 bytes, tested' in open('kb/_self/maintaining.md', encoding='utf-8').read()\nprint('cap claimed tested:', claimed, 'enforced in _tools:', enforced); sys.exit(1 if claimed and not enforced else 0)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/maintaining.md",
+    "kb/_self/design.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/README.md",
+    ".claude/skills/kb-self/SKILL.md",
+    "_tools/selfdoc.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-gea4jifz review"
+  ],
+  "notes": "review of SP-gea4jifz, S2: maintaining.md:62 says '(4096 bytes, tested)'; design.md:13 and :74, token-efficiency.md:44, kb/_self/README.md:35 and kb-self/SKILL.md:46-47 repeat it; tests.py -k 'agents_md or readme or size_cap' collects no test and no _tools module reads AGENTS.md's size (2026-10-20). The sprint's AGENTS.md headroom clause rests on nothing that would catch a regrowth. Test policy D-6kei5o2z: prefer a check in selfdoc.py check over a new test."
+}

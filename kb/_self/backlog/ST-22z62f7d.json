@@ -1,0 +1,25 @@
+{
+  "id": "ST-22z62f7d",
+  "kind": "story",
+  "title": "kb/_self/README.md says web-sources.md and monitoring.md now hold the census and coord references",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The kb/_self/README.md rows of web-sources.md and monitoring.md name the census tool's and the coord.py store's references moved there by SP-gea4jifz",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt = open('kb/_self/README.md', encoding='utf-8').read().splitlines()\nws = [l for l in t if l.startswith('| `kb/_self/web-sources.md`')]\nmo = [l for l in t if l.startswith('| `kb/_self/monitoring.md`')]\nok = bool(ws) and 'census' in ws[0] and bool(mo) and 'coord' in mo[0]\nprint('README rows name census and coord:', ok); sys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/README.md"
+  ],
+  "links": [
+    "parked: SP-gea4jifz review"
+  ],
+  "notes": "ST-7ynhjmw3 worker's report (SP-gea4jifz): kb/_self/README.md was outside its touches, so the rows of web-sources.md and monitoring.md do not say they now hold the census tool and coord.py store references; an agent picking a doc from the table misses them."
+}

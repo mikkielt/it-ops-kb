@@ -1,0 +1,25 @@
+{
+  "id": "ST-3ul7x4cy",
+  "kind": "story",
+  "title": "The freshness-at-lookup row of design.md says when and on which run its 227 of 387 figure was measured",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The design.md row holding 227 of 387 names its run date, that it is the later of the day's two runs, and the not-found and unchecked lines",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re, sys\nrow = [l for l in open('kb/_self/design.md', encoding='utf-8') if '227 of 387' in l]\nok = bool(row) and bool(re.search(r'20\\d\\d-\\d\\d-\\d\\d', row[0]))\nprint('227 of 387 row dated:', ok); sys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/design.md"
+  ],
+  "links": [
+    "parked: SP-gea4jifz review"
+  ],
+  "notes": "review of SP-gea4jifz, S3: design.md:44 (added by ST-6m5kgbh5 when the README dropped the figure) has no date, does not say it is the later of two runs that day, and leaves out the 9 not-found and 2 unchecked lines that the source report (kb/_self/reports/benchmarks.md, 'Freshness of the cited sources') holds."
+}

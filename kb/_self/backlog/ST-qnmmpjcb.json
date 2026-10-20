@@ -1,0 +1,26 @@
+{
+  "id": "ST-qnmmpjcb",
+  "kind": "story",
+  "title": "The turns_over_cap reading in tools.md and benchmarks.md cites the ci-and-headless.md lines that hold it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Each ci-and-headless.md line range that kb/_self/tools.md and kb/_self/benchmarks.md cite for turns_over_cap points at fact lines about turns",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re, sys\nsrc = open('kb/public/claude/ci-and-headless.md', encoding='utf-8').read().splitlines()\nbad = []\nfor d in ('kb/_self/tools.md', 'kb/_self/benchmarks.md'):\n    for a, b in re.findall(r'ci-and-headless\\.md:(\\d+)-(\\d+)', open(d, encoding='utf-8').read()):\n        if not any('turn' in src[i - 1] for i in range(int(a), int(b) + 1)):\n            bad.append((d, a, b))\nprint('cites that hold no turn fact:', bad); sys.exit(1 if bad else 0)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/tools.md",
+    "kb/_self/benchmarks.md"
+  ],
+  "links": [
+    "parked: SP-gea4jifz review"
+  ],
+  "notes": "review of SP-gea4jifz, S3: tools.md:25 and benchmarks.md:88 cite ci-and-headless.md:86-87, a blank line and a heading; the facts are at :93-94. The reading itself matches bench_repro.py:684. A path:line cite drifts as articles grow: consider citing the heading or a fact id."
+}
