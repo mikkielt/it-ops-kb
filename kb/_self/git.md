@@ -85,7 +85,7 @@ Neither host enforces paths on its free tier, so the hook and `check-lanes` are 
 - writes only private paths: the reason names the internal root, the pointer or the private path;
 - is mixed, writing shared and private paths: the reason names both;
 - adds a line to a shared file with a leak-scan hit (`kbpublic.file_hits`, allowing `_tools/tests_allowlist.txt`): a private name the registry knows (`kbcommon.private_hits`) or another leak shape, named by kind and path and never by value;
-- has in its message a leak-scan hit of any shape (`kbcommon.leak_hits`: secret, home, ip, email, guid and the registry's private names, so an email in a `Co-Authored-By` trailer counts): the commit is named by its short hash alone, since its subject may be the private name, and the reason by kind and never by value;
+- has in its message a secret or one of the registry's private names (`kbcommon.leak_hits`, only the kinds `secret` and `private-*`; an email, home path, ip or guid in a message passes, so a `Co-Authored-By` trailer does not leave a commit out): the commit is named by its short hash alone, since its subject may be the private name, and the reason by kind and never by value;
 - is a merge or root commit (only a commit with one parent is picked);
 - conflicts with the upstream `main` and the commits taken before it, as a commit that builds on a left-out one does.
 
