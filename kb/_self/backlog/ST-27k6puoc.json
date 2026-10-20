@@ -2,7 +2,7 @@
   "id": "ST-27k6puoc",
   "kind": "story",
   "title": "census.py dispatch allows only the git show and git diff argument shapes its briefs print",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-gavrmuvx",
   "priority": "P3",

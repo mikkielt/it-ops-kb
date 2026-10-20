@@ -2,7 +2,7 @@
   "id": "SP-gavrmuvx",
   "kind": "sprint",
   "title": "The census tools and skill are fixed before the full census runs",
-  "status": "planned",
+  "status": "active",
   "goal": "census.py keeps a group's brief parts stable across applies; census.py finish keeps the sweep's invalidation and relink lines when a later step fails; census.py run and finish commit only the paths their steps wrote; census.py apply writes a census.phase ops row, the docs name every command that writes it and the digest reads detect's exit 1 as no failure; census.py dispatch allows only the exact git commands its briefs print; the kb-census skill maps --resume, runs the batch judge before grouping and gives factdiff.py dead the fact diff log; LEARN_MAP and the Learn locale form cut the requests detect makes; a batch judge call that matches no item is retried once and an empty verdict list is refused; factdiff.py anchors fails below a given located share; fact-diff.md keeps its measurements without task or environment markers",
   "gates": [
     {
@@ -14,7 +14,11 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "creator": "op-f618a13e"

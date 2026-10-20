@@ -2,7 +2,7 @@
   "id": "ST-a62jazsp",
   "kind": "story",
   "title": "factdiff.py anchors can fail below a located share, so a goal's share figure is read by a check",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-gavrmuvx",
   "priority": "P3",

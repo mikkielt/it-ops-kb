@@ -2,7 +2,7 @@
   "id": "ST-xe6ury3c",
   "kind": "story",
   "title": "census.py run and finish commit every tracked change under the root, not only what their steps wrote",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-gavrmuvx",
   "priority": "P2",

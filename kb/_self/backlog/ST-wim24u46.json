@@ -2,7 +2,7 @@
   "id": "ST-wim24u46",
   "kind": "story",
   "title": "LEARN_MAP maps the large Learn docsets to their public MicrosoftDocs repositories, so detect decides most Learn pages by git history",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-gavrmuvx",
   "priority": "P2",

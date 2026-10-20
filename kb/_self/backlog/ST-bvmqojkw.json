@@ -2,7 +2,7 @@
   "id": "ST-bvmqojkw",
   "kind": "story",
   "title": "The Learn provider requests a Learn page at its locale form, so detect follows no locale redirect",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-gavrmuvx",
   "priority": "P3",

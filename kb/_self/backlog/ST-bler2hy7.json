@@ -2,7 +2,7 @@
   "id": "ST-bler2hy7",
   "kind": "story",
   "title": "A batch judge call whose reply matches no item is retried once, and an empty verdict list is refused",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-gavrmuvx",
   "priority": "P3",

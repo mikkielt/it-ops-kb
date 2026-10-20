@@ -2,7 +2,7 @@
   "id": "ST-3xyi2rjo",
   "kind": "story",
   "title": "The census.phase docs name every command that writes the row, and the digest reads detect's exit 1 as no failure",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-gavrmuvx",
   "priority": "P3",

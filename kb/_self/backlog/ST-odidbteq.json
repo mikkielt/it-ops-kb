@@ -2,7 +2,7 @@
   "id": "ST-odidbteq",
   "kind": "story",
   "title": "census.py apply writes no census.phase ops row, so phase 2's outcomes are never measured",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-gavrmuvx",
   "priority": "P2",

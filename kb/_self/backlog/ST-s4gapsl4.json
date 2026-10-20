@@ -2,7 +2,7 @@
   "id": "ST-s4gapsl4",
   "kind": "story",
   "title": "kb-census skill tells factdiff.py dead to take the census log, which needs the fact diff log",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-gavrmuvx",
   "priority": "P2",
