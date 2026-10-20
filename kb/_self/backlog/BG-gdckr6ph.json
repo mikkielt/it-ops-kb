@@ -16,5 +16,6 @@
   },
   "touches": [
     "_tools/kbcommon.py"
-  ]
+  ],
+  "notes": "BG-3vnu37rq (2026-10-20): the first SECRETS shape in kbcommon now flags an armor line only when key material follows it (a lookahead for base64 after optional header lines), still over the kinds RSA, EC, OPENSSH, DSA, PGP, ENCRYPTED and plain. The PGP fix extends that shape: the label with BLOCK, keeping the lookahead, so a label quoted alone still passes. Correction (BG-3vnu37rq, after the operator's answer): the shape in kbcommon.SECRETS flags the RSA, OPENSSH, DSA, PGP, ENCRYPTED and plain armor lines on their own, as before; only the EC line carries the key-material lookahead. The earlier note on this item that all kinds carry it is wrong."
 }

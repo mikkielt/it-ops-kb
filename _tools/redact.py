@@ -93,7 +93,7 @@ ASSIGNED_PLACEHOLDER = re.compile(r"<[^<>\s]*>|\$\{[^}\s]*\}|%\w+%|\*{3}")  # a 
 # is a value, and so is a word of the list inside a URL's user:password@ part.
 PROSE_WORDS = frozenset("where in is it the see for to of".split())
 # A private key block whole, BEGIN line through END line; with no END line (cut off), BEGIN line to the end of the text
-# (the BEGIN line alone is a kbcommon.SECRETS shape).
+# (the BEGIN line alone is a kbcommon.SECRETS shape, except the EC one, which is a shape only with key material after it).
 KEY_BLOCK = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY(?: BLOCK)?-----(?:.*?-----END [A-Z ]*PRIVATE KEY(?: BLOCK)?-----|.*)", re.S)
 # The credential of an Authorization header, Bearer or Basic, whatever its length or entropy; the scheme stays. The name
 # and the scheme may sit behind escaped quotes or a bracket, as in ASSIGNMENT; the credential ends at a quote, escaped or not.
