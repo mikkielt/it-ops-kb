@@ -69,12 +69,63 @@ def internal_ids(run_file):
         return set()
 
 
+def names_internal_finding(rec):
+    """Whether a findings record's `article`, `expect`, `line` or `observed` paths and articles name an internal root
+    (`kbcommon.private_hits`, as names_internal does for an entry)."""
+    def hit(text):
+        return isinstance(text, str) and bool(kbcommon.private_hits(text))
+    obs = rec.get("observed")
+    seen = [rec.get("article"), rec.get("expect"), rec.get("line")]
+    if isinstance(obs, dict):
+        for key in ("paths", "articles"):
+            seen += obs[key] if isinstance(obs.get(key), list) else []
+    return any(hit(v) for v in seen)
+
+
+def all_internal_ids(local):
+    """The ids of the entries that name an internal root across the run files of the local store `local`."""
+    out = set()
+    for p in run_files(local):
+        out |= internal_ids(p)
+    return out
+
+
+def public_findings(text, stay):
+    """(the findings file `text` without the records whose `entry` is in `stay` or that name an internal root, how many
+    records were left out). The header's counts become what the file holds: `findings`, and each state it counts. The
+    text is None when nothing is left of a file that held records."""
+    lines = [ln for ln in text.splitlines() if ln.strip()]
+    kept, dropped = [], 0
+    for ln in lines[1:]:
+        try:
+            rec = json.loads(ln)
+        except ValueError:
+            kept.append(ln)
+            continue
+        if isinstance(rec, dict) and (rec.get("entry") in stay or names_internal_finding(rec)):
+            dropped += 1
+        else:
+            kept.append(ln)
+    if not dropped:
+        return text, 0
+    if not kept:
+        return None, dropped
+    head = json.loads(lines[0])
+    states = [json.loads(ln).get("state") if ln.startswith("{") else None for ln in kept]
+    if isinstance(head.get("counts"), dict):
+        head["counts"] = {k: (len(kept) if k == "findings" else states.count(k)) for k in head["counts"]}
+    return json_lines([head]) + "".join(ln + "\n" for ln in kept), dropped
+
+
 def public_copy(src, rel, local):
-    """(the text of the local run file or usage sidecar `src` (path `rel` in the store `local`) to deliver, how many
-    entries stay local). The lines of the entries that name an internal root (internal_ids of the run file) are left
-    out, every other line is kept as written, and the header's `counts.entries` counts what is kept. The text is None
-    when nothing is left of a file that held entries, so the file is not delivered."""
+    """(the text of the local run file, usage sidecar or findings file `src` (path `rel` in the store `local`) to
+    deliver, how many entries (records of a findings file) stay local). The lines of the entries that name an internal
+    root (internal_ids of the run file) are left out, every other line is kept as written, and the header's
+    `counts.entries` counts what is kept; a findings file loses the records of public_findings. The text is None when
+    nothing is left of a file that held entries, so the file is not delivered."""
     text = Path(src).read_text(encoding="utf-8")
+    if rel.startswith(FINDINGS + "/"):
+        return public_findings(text, all_internal_ids(local))
     run_rel = rel[len(USAGE) + 1:] if rel.startswith(USAGE + "/") else rel
     stay = internal_ids(local / run_rel)
     if not stay:
@@ -578,10 +629,13 @@ class Pusher:
             if (store / rel).exists():
                 continue
             try:
-                recs = [r for _, r in load_run(p)[1:]]
+                text, _ = public_copy(p, rel, local)
+                if text is None:
+                    continue  # every record names an internal root or a left-out entry: nothing to deliver
+                recs = [json.loads(ln) for ln in text.splitlines()[1:] if ln.strip()]
             except (OSError, ValueError):
                 recs = None
-            if recs is not None and all(r.get("state") in LEARN_STATES and r.get("id") not in recorded for r in recs):
+            if recs is not None and all(isinstance(r, dict) and r.get("state") in LEARN_STATES and r.get("id") not in recorded for r in recs):
                 new.append((p, rel, set()))
             else:
                 kept.append(rel)
@@ -605,11 +659,11 @@ class Pusher:
         store, local = self.wt / STORE_REL, self.qdir / "store"
         stayed = 0
         for src, rel, _ in new:
-            if rel.startswith((FINDINGS + "/", WORK + "/", OPS + "/")):
+            if rel.startswith((WORK + "/", OPS + "/")):
                 write_text(store / rel, Path(src).read_text(encoding="utf-8"))
                 continue
             text, n = public_copy(src, rel, local)
-            stayed += n if not rel.startswith(USAGE + "/") else 0
+            stayed += n if not rel.startswith((USAGE + "/", FINDINGS + "/")) else 0
             if text is not None:
                 write_text(store / rel, text)
         if stayed:
