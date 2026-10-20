@@ -3,7 +3,7 @@ with their branches and the stalled items with their signals.
 
 The processes are `backlog.py procs`' inventory (`bl_procs.snapshot`): pid, age and class (`orphan`, `hook` or `foreign`),
 each with its checkout as a path relative to the clone (`.` is the clone itself; a worktree outside it is its directory
-name), never an absolute one. A process whose command name is `claude` is a Claude Code session: `headless`, with its item,
+name, with the parents that tell it from a same-named one), never an absolute one. A process whose command name is `claude` is a Claude Code session: `headless`, with its item,
 when its checkout is a worktree on a `work/<id>` branch, else `interactive`; any other process has no session. The worktrees
 are `git worktree list`'s, and the stalled items are `bl_stall.collect`'s, only those with a signal. `operator` is this
 clone's operator id and role (`kbwho.operator()`, never an email) and `intents` the live session intents of the coord store
@@ -41,39 +41,68 @@ def no_request(argv, cwd=None):
 
 
 def display_names(root, bases):
-    """{directory name: path relative to the clone} for the checkouts BASES: `.` for the clone itself, the path under it
-    for a worktree inside it, else the directory name alone."""
+    """{real path: name shown} for the checkouts BASES: `.` for the clone itself, the path under it for a worktree inside
+    it, else the directory name, with as many parent directories added as tell it from another outside worktree of the
+    same name (`a/wt`, `b/wt`), never an absolute path."""
     base = os.path.realpath(root)
     out = {}
+    outside = []
     for b in bases:
-        name = Path(b).name
         if b == base:
-            out[name] = "."
+            out[b] = "."
+            continue
+        rel = os.path.relpath(b, base)
+        if rel.startswith("..") or os.path.isabs(rel):
+            outside.append(b)
         else:
-            rel = os.path.relpath(b, base)
-            out[name] = name if rel.startswith("..") or os.path.isabs(rel) else rel.replace(os.sep, "/")
+            out[b] = rel.replace(os.sep, "/")
+    parts = {b: [x for x in Path(b).parts if x != Path(b).anchor] for b in outside}
+    depth = dict.fromkeys(outside, 1)
+    while True:
+        names = {b: "/".join(parts[b][-depth[b]:]) for b in outside}
+        clash = [b for b in outside if list(names.values()).count(names[b]) > 1 and depth[b] < len(parts[b])]
+        if not clash:
+            break
+        for b in clash:
+            depth[b] += 1
+    out.update(names)
     return out
 
 
 def branches(root):
-    """([{path, branch}] of the clone's worktrees, paths as `display_names` gives them; {directory name: branch}). A
-    directory name that two worktrees share tells no worktree a process is in, so it has no branch in the map."""
+    """([{path, branch}] of the clone's worktrees, paths as `display_names` gives them; {real path: branch})."""
     import bl_stall
     found = [(os.path.realpath(p), b) for p, b in bl_stall.worktrees(str(root)) or []]
     names = display_names(root, [p for p, _ in found])
-    rows = [{"path": names[Path(p).name], "branch": b} for p, b in found]
-    count = {}
-    for p, _ in found:
-        count[Path(p).name] = count.get(Path(p).name, 0) + 1
-    return rows, {Path(p).name: b for p, b in found if count[Path(p).name] == 1}
+    return [{"path": names[p], "branch": b} for p, b in found], dict(found)
 
 
-def session_of(proc, by_name):
-    """(session, item) of a process: none for a process that is no Claude Code one."""
-    if proc["comm"] != CLAUDE:
-        return None, None
-    first = proc["where"].split("/", 1)[0]
-    m = WORK_BRANCH.fullmatch(by_name.get(first) or "")
+def checkout_paths(procs, bases):
+    """{pid: real path of the checkout the process is in}. A process's `where` holds the checkout's directory name only: a
+    name that two checkouts share is told apart by the process's working directory, and a process that cannot be placed
+    is left out."""
+    import bl_procs
+    by_name = {}
+    for b in bases:
+        by_name.setdefault(Path(b).name, []).append(b)
+    cwds = None
+    out = {}
+    for p in procs:
+        found = by_name.get(p["where"].split("/", 1)[0], [])
+        if len(found) > 1:
+            if cwds is None:
+                cwds = bl_procs.cwd_map()[0] or {}
+            cwd = cwds.get(p["pid"])
+            found = [max((b for b in found if cwd and bl_procs.inside(cwd, b)), key=len, default=None)]
+        if found and found[0]:
+            out[p["pid"]] = found[0]
+    return out
+
+
+def session_of(base, by_path):
+    """(session, item) of a Claude Code process in the checkout BASE (None when unplaced) whose worktrees' branches are
+    BY_PATH."""
+    m = WORK_BRANCH.fullmatch(by_path.get(base) or "")
     return ("headless", m.group(1)) if m else ("interactive", None)
 
 
@@ -126,13 +155,16 @@ def collect(ctx):
     import kbwho
     procs, _, why = bl_procs.snapshot(str(ctx.root))
     now = time.time()
-    rows, by_name = branches(ctx.root)
-    names = display_names(ctx.root, bl_procs.checkouts(str(ctx.root))) if procs is not None else {}
+    rows, by_path = branches(ctx.root)
+    bases = bl_procs.checkouts(str(ctx.root)) if procs is not None else []
+    names = display_names(ctx.root, bases)
+    placed = checkout_paths(procs or [], bases)
     out = []
     for p in procs or []:
-        session, item = session_of(p, by_name)
-        first, _, rest = p["where"].partition("/")
-        shown = names.get(first, first)
+        base = placed.get(p["pid"])
+        session, item = session_of(base, by_path) if p["comm"] == CLAUDE else (None, None)
+        _, _, rest = p["where"].partition("/")
+        shown = names.get(base, p["where"].split("/", 1)[0])
         out.append({"pid": p["pid"], "age_s": max(0, int(now - p["start"])), "class": p["kind"],
                     "checkout": shown + ("/" + rest if rest else ""), "session": session, "item": item})
     me = kbwho.operator()
