@@ -1410,6 +1410,22 @@ def phase2_rows(rows):
     return [r for r in rows if r["bucket"] != "OK" and r["note"] not in UNREAD and not r["outcome"]]
 
 
+REPIN_NOTE = "re-pinned to"  # the start of the outcome note `repin` gives a source it superseded
+
+
+def tool_decided(r):
+    """Whether a tool, not a reader, gave the row its outcome before phase 2 read it: `judge` (confirmed, the note holds
+    JUDGED_NOTE) or `repin` (superseded, the note starts with REPIN_NOTE)."""
+    note = r.get("outcome_note", "")
+    return (r["outcome"] == "confirmed" and JUDGED_NOTE in note) or (r["outcome"] == "superseded" and note.startswith(REPIN_NOTE))
+
+
+def applied_rows(rows):
+    """The rows of phase 2's scope (bucket not OK, note neither `blocked` nor `lookup hint`) that hold an outcome a reader's
+    `apply` gave: the sources an earlier part of their group has been applied to."""
+    return [r for r in rows if r["bucket"] != "OK" and r["note"] not in UNREAD and r["outcome"] and not tool_decided(r)]
+
+
 def review_by_source(ids, fd_rows):
     """{source id: [review item]}: the fact diff items of `fd_rows` for `ids`, each with its old and new passage, read
     with no network (`factdiff.review_items`, offline)."""
@@ -1995,23 +2011,33 @@ def owner_of(files):
 
 def phase2_context(rows, log, flog=None):
     """What groups and brief share, with no network and no model: the date, the rows phase 2 reads by owner group
-    (`members`: group -> [(row, citing files, queue record)]), the fact diff items, the cited lines and the providers."""
-    todo = phase2_rows(rows)
+    (`members`: group -> [(row, citing files, queue record)]), the fact diff items, the cited lines and the providers.
+    A group with a row left to read also lists the rows of its that `apply` gave an outcome (`applied_rows`, an empty
+    queue record), so its brief parts keep their numbers once an earlier part is applied; a group with none left is
+    dropped."""
+    todo, held = phase2_rows(rows), applied_rows(rows)
     ids = {r["id"] for r in todo}
     fd_rows = factdiff_log_rows(rows, log, flog) if ids else []
-    cited = kbfacts.cited_lines(ids) if ids else {}
+    cited = kbfacts.cited_lines(ids | {r["id"] for r in held}) if ids else {}
     judged = read_judged(log) if ids else {}
     items = with_repin_items(unsupported(review_by_source(ids, fd_rows), judged), todo) if ids else {}
     queue = {q["id"]: q for q in reading_queue(rows, fd_rows, items, cited)}
     root, members = os.path.basename(KB), defaultdict(list)
-    for r in sorted(todo, key=lambda r: r["id"]):
+    for r in sorted(todo + held if ids else [], key=lambda r: r["id"]):
         files = citing_files(r, cited, root)
-        members[owner_of(files)].append((r, files, queue[r["id"]]))
+        members[owner_of(files)].append((r, files, queue.get(r["id"]) or {
+            "id": r["id"], "facts": 0, "items": 0, "partial": 0, "cached": True, "mode": "applied", "chars": 0}))
+    members = {g: ms for g, ms in members.items() if unread(ms)}
     date = ql_capture.phase_date(path=log)
     flog_rel = os.path.relpath(os.path.abspath(flog), kbcommon.HOME).replace(os.sep, "/") if flog else census_path(f"factdiff-{date}.csv")
     return {"date": date, "root": root, "members": dict(sorted(members.items())), "items": items, "judged": judged, "flog": flog_rel,
             "log": os.path.relpath(os.path.abspath(log), kbcommon.HOME).replace(os.sep, "/"),
             "providers": provider.providers(factdiff.ROOT)}
+
+
+def unread(members):
+    """The members of a group (`phase2_context`) still to read: those with no outcome."""
+    return [m for m in members if not m[0]["outcome"]]
 
 
 def foreign_files(group, members):
@@ -2056,6 +2082,8 @@ def row_block(r, files, q, group, ctx):
     """The brief's text for one source: its row, the lines of the kb that cite it, then its review items or the
     commands that read it."""
     root = ctx["root"]
+    if r["outcome"]:
+        return f"### {r['id']}  {r['bucket']}\n- applied: outcome `{r['outcome']}` is in the log; it is read, leave it"
     out = [f"### {r['id']}  {r['bucket']}", f"- url: {r['url']}", f"- evidence: {r['evidence']}",
            f"- used_in: {r['used_in'] or '-'}"]
     lines = [(rel, n) for rel, ns in files.items() for n in ns]
@@ -2101,9 +2129,39 @@ def brief_head(group, part, parts, files, foreign, ctx, n):
     return "\n".join(out)
 
 
+def parts_file(group, ctx):
+    """Where the layout of a group's brief parts is kept: beside the group's dispatch results."""
+    return os.path.join(DISPATCH_DIR, ctx["date"], group, "parts.json")
+
+
+def kept_layout(path, members):
+    """[[row id]] the layout at `path` holds, or None when there is none or it leaves a source to read out of every part."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            layout = json.load(f)["parts"]
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+    named = {i for part in layout for i in part}
+    return layout if all(m[0]["id"] in named for m in unread(members)) else None
+
+
+def keep_layout(path, layout):
+    """Write the layout of a group's parts (a cache: a directory that cannot be written is left alone)."""
+    text = json.dumps({"parts": layout}, indent=1) + "\n"
+    try:
+        if not os.path.isfile(path) or kbcommon.read(path, newline="") != text:
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "w", encoding="utf-8", newline="\n") as f:
+                f.write(text)
+    except OSError:
+        pass
+
+
 def brief_packs(group, members, ctx):
     """(packed, rules): the group's `members` packed into parts of at most BRIEF_CHARS (a source alone over it is a part
-    of its own), each a list of (member, its block's text) in id order, and the rules text every part ends with."""
+    of its own), each a list of (member, its block's text) in id order, and the rules text every part ends with. The
+    parts are numbered once, while no member has an outcome (`parts.json`, `parts_file`): once an earlier part is applied
+    the members that hold an outcome keep their part, so `--part N` names the same sources as before."""
     rules = BRIEF_RULES.format(flog=ctx["flog"], schema=SCHEMA_REL, log=ctx["log"], group=group)
     blocks = [(m, row_block(m[0], m[1], m[2], group, ctx)) for m in members]
     fixed = len(brief_head(group, 99, 99, owned_files(group, members), foreign_files(group, members), ctx, 999)) \
@@ -2116,15 +2174,24 @@ def brief_packs(group, members, ctx):
         cur.append(b)
         size += len(b[1]) + 2
     packed.append(cur)
+    path = parts_file(group, ctx)
+    if len(unread(members)) == len(members):
+        keep_layout(path, [[m[0]["id"] for m, _ in part] for part in packed])
+    else:
+        layout = kept_layout(path, members)
+        if layout:
+            by_id = {m[0]["id"]: (m, text) for m, text in blocks}
+            packed = [[by_id[i] for i in part if i in by_id] for part in layout]
     return packed, rules
 
 
 def part_text(group, packed, rules, ctx, i):
-    """The text of part `i` (from 1) of `brief_packs`'s `packed`."""
-    part = packed[i - 1]
-    mem = [m for m, _ in part]
-    return "\n\n".join([brief_head(group, i, len(packed), owned_files(group, mem), foreign_files(group, mem), ctx, len(part)),
-                        *(text for _, text in part), rules])
+    """The text of part `i` (from 1) of `brief_packs`'s `packed`: the sources of it still to read."""
+    mem = unread([m for m, _ in packed[i - 1]])
+    head = brief_head(group, i, len(packed), owned_files(group, mem), foreign_files(group, mem), ctx, len(mem))
+    if not mem:
+        return head + "\n\nEvery source of this part has an outcome in the log: nothing is left to read."
+    return "\n\n".join([head, *(text for m, text in packed[i - 1] if not m[0]["outcome"]), rules])
 
 
 def brief_parts(group, members, ctx):
@@ -2137,14 +2204,15 @@ def brief_parts(group, members, ctx):
 def group_records(ctx):
     """The groups of `census.py groups`: per group its rows, owned files, foreign files, queue size and brief parts."""
     out = []
-    for group, members in ctx["members"].items():
+    for group, everyone in ctx["members"].items():
+        members = unread(everyone)
         qs = [q for _, _, q in members]
         chars = sum(q["chars"] for q in qs)
         out.append({"group": group, "files": owned_files(group, members),
                     "foreign": [{"file": f, "domain": domain_of(f), "rows": ids} for f, ids in foreign_files(group, members).items()],
                     "queue": {"rows": len(members), "facts": sum(q["facts"] for q in qs), "items": sum(q["items"] for q in qs),
                               "chars": chars, "tokens": chars // kbusage.CHARS_PER_TOKEN},
-                    "parts": len(brief_parts(group, members, ctx)),
+                    "parts": len(brief_parts(group, everyone, ctx)),
                     "rows": [{"id": r["id"], "url": r["url"], "bucket": r["bucket"], "evidence": r["evidence"],
                               "used_in": [f for f in r["used_in"].split(";") if f], "mode": q["mode"], "facts": q["facts"],
                               "items": q["items"], "chars": q["chars"]} for r, _, q in members]})
@@ -2168,7 +2236,7 @@ def cmd_groups(a, tally):
     ctx = phase2_context(rows, a.log, a.factdiff)
     print(json.dumps({"log": os.path.relpath(os.path.abspath(a.log), kbcommon.HOME).replace(os.sep, "/"),
                       "date": ctx["date"], "root": ctx["root"], "brief_chars": BRIEF_CHARS,
-                      "rows": sum(len(m) for m in ctx["members"].values()), "groups": group_records(ctx)}, indent=1))
+                      "rows": sum(len(unread(m)) for m in ctx["members"].values()), "groups": group_records(ctx)}, indent=1))
     return 0
 
 
@@ -2436,7 +2504,7 @@ def cmd_repin(a, tally):
             continue
         new_id = there["id"] if there else ids_of.get(url) or kbid.source_id(url, root.id_prefix)
         old_l, new_l = (plan["old"] or plan["ref"])[:12], plan["new"][:12]
-        proof = f"re-pinned to {new_id}: {old_l} -> {new_l}, {len(plan['matched'])} fact(s) found word for word"
+        proof = f"{REPIN_NOTE} {new_id}: {old_l} -> {new_l}, {len(plan['matched'])} fact(s) found word for word"
         if not there and url not in ids_of:
             row = {"url": url, "title": repin_title(srcs[sid]["title"], plan), "publisher": srcs[sid]["publisher"],
                    "licence": srcs[sid]["licence"], "reuse": srcs[sid]["reuse"],
@@ -3038,7 +3106,10 @@ def cmd_dispatch(a, tally):
     if not 1 <= a.part <= len(packed):
         print(f"group {a.group} has {len(packed)} part(s); --part {a.part} is out of range")
         return 2
-    members = [m for m, _ in packed[a.part - 1]]
+    members = unread([m for m, _ in packed[a.part - 1]])
+    if not members:
+        print(f"group {a.group} part {a.part} of {len(packed)} has no source without an outcome: nothing to dispatch")
+        return 0
     brief = part_text(a.group, packed, rules, ctx, a.part)
     exe = claude_exe()
     if exe is None and not a.dry_run:

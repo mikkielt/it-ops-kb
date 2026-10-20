@@ -28,6 +28,38 @@
   "depends_on": [
     "ST-odidbteq"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does census.py keep a group's part numbers once part 1 is applied?",
+      "options": [
+        "Keep layout file",
+        "Recompute each time"
+      ],
+      "recommendation": "Keep layout file",
+      "do": {
+        "Keep layout file": "ST-bh3yjx7o",
+        "Recompute each time": "ST-bh3yjx7o"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "What does dispatch do for a part whose rows all have an outcome?",
+      "options": [
+        "Print that and exit 0",
+        "Refuse with exit 2"
+      ],
+      "recommendation": "Print that and exit 0",
+      "do": {
+        "Print that and exit 0": "ST-bh3yjx7o",
+        "Refuse with exit 2": "ST-bh3yjx7o"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-uwkr7iyl review"
   ],
