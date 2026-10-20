@@ -7,11 +7,12 @@ name, with the parents that tell it from a same-named one), never an absolute on
 when its checkout is a worktree on a `work/<id>` branch, else `interactive`; any other process has no session. The worktrees
 are `git worktree list`'s, and the stalled items are `bl_stall.collect`'s, only those with a signal. `operator` is this
 clone's operator id and role (`kbwho.operator()`, never an email) and `intents` the live session intents of the coord store
-(`coord.py digest`: session, item and the `operator` the hook posted, none for an intent that carries no operator); a
+(`coord.py digest`: session, item and the `operator` the hook posted, none for an intent that carries no operator; a
+session id or operator that is a session id is the label `mon_view.session_label` gives, never the raw id); a
 store that is not there or does not answer leaves `intents` out. The panel makes no
 forge request, so the `mr-dead` signal is never read here (`backlog.py stalled` reads it). A host that cannot list working
 directories gives no processes and `procs_unreadable`, the reason, so the operator and the intents still show; a root with
-no backlog items has no `stalled` key. Imports `mon_base`; `bl_procs`,
+no backlog items has no `stalled` key. Imports `mon_base` and `mon_view`; `bl_procs`,
 `bl_stall` and `bl_base` where it reads them.
 """
 import os
@@ -22,6 +23,7 @@ import time
 from pathlib import Path
 
 import mon_base
+import mon_view
 
 CLAUDE = "claude"  # the command name of a Claude Code process
 REFRESH_S = 30  # seconds the live view serves the last result: the stalled signals read git for each claimed item
@@ -144,7 +146,8 @@ def live_intents(ctx):
         if not line.startswith("intent "):
             continue
         fields = dict(w.split("=", 1) for w in line.split()[1:] if "=" in w)
-        row = {"session": fields.get("session"), "item": fields.get("item"), "operator": fields.get("operator")}
+        row = mon_view.session_fields({"session": fields.get("session"), "item": fields.get("item"),
+                                       "operator": fields.get("operator")})
         if row["session"] and row not in out:
             out.append(row)
     return out
