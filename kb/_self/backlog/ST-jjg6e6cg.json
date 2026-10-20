@@ -1,0 +1,25 @@
+{
+  "id": "ST-jjg6e6cg",
+  "kind": "story",
+  "title": "kbmon's fast_forward names an untracked file the incoming commits add as what stops the fast-forward",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the sprint panel's fast_forward gives can false and names the path when an untracked file in the checkout is one the commits it is behind add, as git merge --ff-only refuses then",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,shutil,subprocess as s,sys,tempfile\nt=tempfile.mkdtemp();w=os.path.join(t,'wt');ok=False\nfor n in range(2,80):\n    add=s.run(['git','diff','--name-only','--diff-filter=A','origin/main~%d'%n,'origin/main'],capture_output=True,text=True).stdout.split()\n    if add:break\ns.run(['git','worktree','add','-q','--detach',w,'origin/main~%d'%n],check=True,capture_output=True)\ntry:\n    p=os.path.join(w,add[0]);os.makedirs(os.path.dirname(p),exist_ok=True);open(p,'w').write('untracked\\n')\n    q=s.run([sys.executable,'_tools/kbmon.py','--json','--panel','sprint','--root',w],capture_output=True,text=True,timeout=180)\n    ff=json.loads(q.stdout)['panels']['sprint']['data'].get('fast_forward') or {};print(q.returncode,ff,add[0])\n    ok=ff.get('can') is False and add[0] in str(ff.get('why'))\nfinally:\n    s.run(['git','worktree','remove','--force',w],capture_output=True);shutil.rmtree(t,ignore_errors=True)\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/mon_sprint.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-2uljwgho review"
+  ]
+}

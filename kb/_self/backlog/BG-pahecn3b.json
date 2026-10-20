@@ -42,7 +42,9 @@
       },
       "class": "design",
       "answer": "Show it by the item's title with the age of its last step; leave out a landing the panel gives no title for",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

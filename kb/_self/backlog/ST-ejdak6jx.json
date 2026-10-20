@@ -1,0 +1,24 @@
+{
+  "id": "ST-ejdak6jx",
+  "kind": "story",
+  "title": "kbmon's docstring and help say the view and --status all start with the needs-you line",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the _tools/kbmon.py docstring and its --help text name the needs-you line that heads the --once view and starts --status all, as kb/_self/monitoring.md does",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.exit(0 if 'needs you' in open('_tools/kbmon.py').read() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbmon.py"
+  ],
+  "links": [
+    "parked: SP-2uljwgho review"
+  ]
+}

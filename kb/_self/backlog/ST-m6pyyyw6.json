@@ -1,0 +1,27 @@
+{
+  "id": "ST-m6pyyyw6",
+  "kind": "story",
+  "title": "Today's cost attributes distilled usage to its sprint and session through the work sidecars",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "usage_today reads the committed work sidecars' per-item usage and maps each item to its sprint, so on a day of sprint work most dollars are not under session distilled and sprint none",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,subprocess as s,sys\nd=json.loads(s.run([sys.executable,'_tools/kbmon.py','--json','--panel','querylog'],capture_output=True,text=True,timeout=180).stdout)['panels']['querylog']['data']['usage_today']\nprint(d['usd'],d['by_sprint'])\nsys.exit(0 if d['usd']>0 and d['by_sprint'].get('none',0)<d['usd']/2 else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_report.py",
+    "_tools/mon_querylog.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-2uljwgho review"
+  ]
+}

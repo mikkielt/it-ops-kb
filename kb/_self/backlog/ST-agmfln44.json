@@ -1,0 +1,24 @@
+{
+  "id": "ST-agmfln44",
+  "kind": "story",
+  "title": "mon_needs reads the low-disk threshold from the host alert's constant",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "mon_needs takes its low-disk percentage from mon_host's constant instead of a copy, so the needs-you line and the host alert change together",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,inspect;sys.path.insert(0,'_tools');import mon_needs\nsys.exit(1 if 'LOW_DISK_PCT = ' in inspect.getsource(mon_needs) else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/mon_needs.py"
+  ],
+  "links": [
+    "parked: SP-2uljwgho review"
+  ]
+}

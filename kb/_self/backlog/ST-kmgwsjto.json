@@ -59,7 +59,9 @@
       },
       "class": "design",
       "answer": "only when no item is in progress",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -76,7 +78,9 @@
       },
       "class": "start",
       "answer": "name start gates and add not read: PANELS when a source is not ok",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",

@@ -1,0 +1,26 @@
+{
+  "id": "ST-dywfcdgo",
+  "kind": "story",
+  "title": "kbmon's needs-you line shows every kind it names at an 80-column width",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the needs-you line under the kbmon view's header wraps or orders its entries so that at 80 columns each kind present (operator gates, blocked sprints, a refused delivery, orphans, low disk, cannot fast-forward) shows at least once, not only the first three gates",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile\nk=lambda c,*a:s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,timeout=180,env=dict(os.environ,COLUMNS=c))\nsnap=json.loads(k('400','--json').stdout);P=snap['panels']\nfor n in ('sprint','querylog','sessions','host'):P[n]={'state':'ok','seconds':0.1,'data':P[n].get('data') or {}}\nsp=P['sprint']['data'];sp['sprints']=[{'id':'SP-aaaaaaaa','state':'active','title':'A blocked plant sprint','items':{'todo':2},'next':None,'next_title':None,\n    'open':[{'id':'ST-bbbbbbbb','title':'Plant item','status':'todo'}],'done_at':[],'waiting':[{'item':'ST-bbbbbbbb','gate':'g%d'%i} for i in range(4)]}]\nsp['fast_forward']={'can':False,'why':'2 tracked files with local changes: README.md, AGENTS.md'};sp['behind']=4;sp['source']='origin/main';sp['landings']=[]\nP['querylog']['data']['last_delivery']={'outcome':'refused','why':'gate lint failed','when':'2026-10-19T08:00:00Z'}\nP['sessions']['data']['procs']=[{'pid':4242+i,'age_s':7200,'class':'orphan','checkout':'wt9','session':None,'item':None} for i in range(6)]\nP['host']['data']['disk']={'free_bytes':5*10**9,'total_bytes':100*10**9,'free_pct':5.0}\nf=os.path.join(tempfile.mkdtemp(),'s.json');json.dump(snap,open(f,'w'))\nL=k('80','--once','--from-snapshot',f).stdout.splitlines();i=[j for j,l in enumerate(L) if l.startswith('needs you')]\nhead='\\n'.join(L[i[0]:L.index('',i[0]) if '' in L[i[0]:] else None]) if i else '';print(head)\nsys.exit(0 if all(w in head for w in ('blocked','refused','orphan','disk','fast-forward')) else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/mon_view.py",
+    "_tools/mon_needs.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-2uljwgho review"
+  ]
+}
