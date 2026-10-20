@@ -2,7 +2,7 @@
   "id": "ST-xe6ury3c",
   "kind": "story",
   "title": "census.py run and finish commit every tracked change under the root, not only what their steps wrote",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-gavrmuvx",
   "priority": "P2",
@@ -25,5 +25,7 @@
   "links": [
     "parked: SP-uwkr7iyl review"
   ],
-  "notes": "Review severity S3 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck). Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft. 2026-10-20 planning: found by the SP-uwkr7iyl review (census.py run_commit). The check drives census.drive over a planted repository with an article edited before the run and a step that writes another. Premise: it fails, the commit holds both kb/public/a.md and kb/public/b.md."
+  "notes": "Review severity S3 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck). Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft. 2026-10-20 planning: found by the SP-uwkr7iyl review (census.py run_commit). The check drives census.drive over a planted repository with an article edited before the run and a step that writes another. Premise: it fails, the commit holds both kb/public/a.md and kb/public/b.md.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
