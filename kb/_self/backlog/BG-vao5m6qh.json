@@ -2,7 +2,7 @@
   "id": "BG-vao5m6qh",
   "kind": "bug",
   "title": "coordination.md lost facts of monitoring.md's moved sections and states coord behaviour the code does not have",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-eptouzxc",
   "priority": "P1",
   "rank": 0,
@@ -18,5 +18,7 @@
   "repro_reason": "the defect is the doc's text against the code; the behaviour each sentence describes already runs as the code says (the reviewer ran coord.py claim --holder 'free text' on a temp store, exit 2), so only the doc's wording can be read",
   "touches": [
     "kb/_self/coordination.md"
-  ]
+  ],
+  "claimed_by": "orch-r221",
+  "operator": "op-f618a13e"
 }
