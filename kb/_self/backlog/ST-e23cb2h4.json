@@ -2,7 +2,7 @@
   "id": "ST-e23cb2h4",
   "kind": "story",
   "title": "Helpers copied between census, fetch, kbingest and the decision tools are defined once",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-jplczvj2",
   "priority": "P3",
   "rank": 0,

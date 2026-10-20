@@ -2,7 +2,7 @@
   "id": "ST-kaabe3ds",
   "kind": "story",
   "title": "Research sprint goal: The tools share one copy of each helper, keep their import direction and stay small enough to work in",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-jplczvj2",
   "goal_research": true,
   "priority": "P1",

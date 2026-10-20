@@ -2,7 +2,7 @@
   "id": "SP-jplczvj2",
   "kind": "sprint",
   "title": "The tools share one copy of each helper, keep their import direction and stay small enough to work in",
-  "status": "planned",
+  "status": "active",
   "goal": "kbgit's stages share one git helper from kg_base; each helper defined identically in two modules is defined once and imported; the shared grounds import no sibling and the bl_ and ql_ stages have no import cycle; the functions no code, hook, skill or agent names are removed; bl_land.py and kbfacts.py are split behind their names with every command, name and output kept; the commit-msg KB-Work judgement lives in one function",
   "gates": [
     {
