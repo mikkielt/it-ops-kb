@@ -2,7 +2,7 @@
   "id": "ST-ndnzzw33",
   "kind": "story",
   "title": "Review sprint: kb articles pass the contract lint clean, and the query log's research queue is worked",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-2rjhs7se",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,7 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-r105",
+  "operator": "op-f618a13e"
 }
