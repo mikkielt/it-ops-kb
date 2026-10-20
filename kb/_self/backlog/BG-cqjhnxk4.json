@@ -1,0 +1,20 @@
+{
+  "id": "BG-cqjhnxk4",
+  "kind": "bug",
+  "title": "headless-agent-runtimes.md cites the Haiku 5.5 price fact at ci-and-headless.md:91, which is another fact",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "the citations of the Haiku 5.5 price fact in kb/public/agents/headless-agent-runtimes.md (lines 62 and 63) name the line that holds that fact in kb/public/claude/ci-and-headless.md",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re,subprocess,sys,pathlib; t=pathlib.Path('kb/public/agents/headless-agent-runtimes.md').read_text(encoding='utf-8').splitlines()[62]; n=re.search(r'ci-and-headless\\.md:(\\d+)', t).group(1); o=subprocess.run([sys.executable,'_tools/rag.py','show','kb/public/claude/ci-and-headless.md:'+n,'-n','1'],capture_output=True,text=True).stdout; sys.exit(0 if 'Haiku 5.5 list prices' in o else 1)"
+    ]
+  },
+  "touches": [
+    "kb/public/agents/headless-agent-runtimes.md"
+  ]
+}
