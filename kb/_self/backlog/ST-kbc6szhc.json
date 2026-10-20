@@ -51,7 +51,11 @@
         "oldest undelivered run, else log write": "ST-kbc6szhc",
         "log last write only": "ST-kbc6szhc"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "oldest undelivered run, else log write",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
