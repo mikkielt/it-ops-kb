@@ -2,7 +2,7 @@
   "id": "ST-s4gapsl4",
   "kind": "story",
   "title": "kb-census skill tells factdiff.py dead to take the census log, which needs the fact diff log",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-gavrmuvx",
   "priority": "P2",
@@ -29,6 +29,19 @@
     "parked: SP-uwkr7iyl review"
   ],
   "notes": "Review severity S3 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck). Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft. 2026-10-20 planning: found by the SP-uwkr7iyl review: with the census log, dead fails with CsvError lacks column(s) source_id. The check reads the Phase 2 section only. Premise: it fails, the line names <log>.",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "d659dd3b4e398e191351f416351df82f210c45c9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re, sys\nt = open('.claude/skills/kb-census/SKILL.md', encoding='utf-8').read()\nsec = t[t.index('## Phase 2'):t.index('## Phase 3')]\nL = [l for l in sec.splitlines() if 'factdiff.py dead' in l]\nbad = [m for l in L for m in re.findall(r'factdiff\\.py dead (\\S+)', l) if m.strip('`') != '<flog>']\nprint(len(L), 'phase-2 lines name factdiff.py dead; wrong log argument:', bad)\nsys.exit(0 if L and not bad else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "4dc68c8a10a6dc4b"
+      }
+    ]
+  }
 }
