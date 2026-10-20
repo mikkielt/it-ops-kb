@@ -39,6 +39,23 @@
     "kb/_self/code.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which branch does the horizon hook's lag line compare with origin/main?",
+      "options": [
+        "the checkout's current HEAD, so a worker branch also reports lag",
+        "only a checkout on main, so a worker branch reports none"
+      ],
+      "recommendation": "the checkout's current HEAD, so a worker branch also reports lag",
+      "do": {
+        "the checkout's current HEAD, so a worker branch also reports lag": "ST-ju37ir2m",
+        "only a checkout on main, so a worker branch reports none": "ST-ju37ir2m"
+      },
+      "class": "push"
+    }
+  ],
   "notes": "operator request 2026-10-19 (housekeeping batch): the main checkout lagging origin/main: on 2026-10-18 it was 868 commits behind, so its hooks ran old code and the query log delivery stalled; on 2026-10-19 it was 19 behind. The hook only reports; the fast-forward stays the operator's. Premise: the first check fails (no lag line). Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
   "claimed_by": "orch-r102",
   "operator": "op-f618a13e"
