@@ -4310,3 +4310,14 @@ _Agent: kb-research_
 - See agents/doc-change-detection.md, agents/doc-lookup-sources.md, agents/headless-agent-runtimes.md, logs/otel-python-sdk.md, agents/shared-state-concurrency.md, claude/ci-and-headless.md.
 
 _Agent: kb-research_
+
+## QK-mcp-tool-annotations-work-claude-code. How do MCP tool annotations (readOnlyHint, destructiveHint, idempotentHint, openWorldHint) work and how do clients treat them, how does Claude Code load many MCP tools, and what does a tools/list cost in context?
+- The four hints describe a tool to clients (defaults: `readOnlyHint` false, `destructiveHint` true, `idempotentHint` false, `openWorldHint` true; the middle two only matter when `readOnlyHint` is false), and clients must treat them as untrusted unless the server is trusted. [DOC S708, S711]
+- Claude Code's documented use of a hint is narrow: in the Agent SDK `readOnlyHint` decides whether a custom tool may run in parallel with other read-only tools, the other three are informational only; the permission pages name only `anthropic/requiresUserInteraction`, which forces a prompt on every call. [DOC S-vrff4evh, S740]
+- Claude Code defers MCP tool definitions by default, so only tool names and server instructions enter context until a tool is used; `ENABLE_TOOL_SEARCH` switches between deferred (unset), `auto` (upfront below 10% of the context window), `auto:N` and `false`, and `alwaysLoad` (server or tool) keeps chosen tools upfront. [DOC S1862, S-sug3dznu]
+- Descriptions are cut at 4,096 characters for upfront tools and server instructions and at 16,384 for tools loaded through tool search; Claude Code sets no per-server tool cap. [DOC S1862]
+- Conclusion: for a server of many read-only commands, annotate each tool `readOnlyHint: true, openWorldHint: false` so an SDK host can run them in parallel, rely on tool search rather than a tool cap, give tools descriptive names and keyword-first descriptions, and put `alwaysLoad` on at most the one tool every session starts with. Do not count on an annotation to skip a permission prompt. [DER S708, S-vrff4evh, S1862, S-sug3dznu: the rules above applied to a read-only tool set]
+- Open: the token size of one tool definition or of a whole `tools/list` response is not published, so it is measured per server. [UNK]
+- See mcp/tools.md, claude/mcp-tool-search.md, claude/permissions-mcp.md, mcp/resources-prompts.md.
+
+_Agent: kb-research_

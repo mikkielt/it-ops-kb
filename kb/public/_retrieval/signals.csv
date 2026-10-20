@@ -948,3 +948,6 @@ split-window,claude/terminal-split-pane
 TMUX_PANE,claude/terminal-split-pane
 .gitmodules,gitlab/multi-repository-layouts
 GIT_SUBMODULE_STRATEGY,gitlab/multi-repository-layouts
+ENABLE_TOOL_SEARCH,claude/mcp-tool-search
+anthropic/alwaysLoad,claude/mcp-tool-search
+ToolSearch,claude/mcp-tool-search
