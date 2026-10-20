@@ -412,3 +412,4 @@ SQ-backlog-item-whose-end-state-earlier,"backlog item whose end state an earlier
 SQ-paths-kbgit-py-publish-leave-out,"which paths does kbgit.py publish leave out of the public home, is kb/_self/backlog published",maintaining.md,good,yes,user: GitHub's read-only repository,
 SQ-who-may-raise-tests-py-seconds,who may raise the tests.py seconds ceiling on darwin and how is it recorded,maintaining.md,good,yes,"_tools/tests_ceiling.json` (`max_ids`, `max_files`, `max_seconds",
 SQ-flat-prefixed-modules-behind-cli-facade,"flat prefixed modules behind a CLI facade, import direction, shared helpers",README.md,good,yes,"failures, flat prefixed modules",
+SQ-item-trigger-set,what is an item's trigger and how is it set,backlog.md,good,yes,happen runs `backlog.py fire,
