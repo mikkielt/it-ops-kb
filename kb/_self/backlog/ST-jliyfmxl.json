@@ -2,7 +2,7 @@
   "id": "ST-jliyfmxl",
   "kind": "story",
   "title": "The other articles' facts carry one tag each",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-2rjhs7se",
   "priority": "P3",
   "rank": 0,
@@ -77,6 +77,28 @@
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): the second half of the 56 mixed-tag facts (E3 has the agents articles). Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
-  "claimed_by": "orch-r105",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "c2a27123aef94047141896c78e1993cb3ab36245",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport subprocess\no=subprocess.run([sys.executable,'.claude/skills/kb-verify/lint.py'],capture_output=True,text=True,timeout=900).stdout\nP=('public/auth/audit-events.md', 'public/auth/delegation-kcd-obo.md', 'public/auth/key-management-options.md', 'public/auth/ldap-smb-signing.md', 'public/auth/msal-public-client.md', 'public/auth/revocation.md', 'public/claude/ci-and-headless.md', 'public/dsc/releases-feature-matrix.md', 'public/mecm/client-notification.md', 'public/privacy/presidio-operators-deanonymize.md', 'public/python/stdlib-sqlite3-csv.md', 'public/python/stdlib-windows-portability.md', 'public/security/baselines-catalog.md', 'public/security/vulnerability-prioritization.md')\nn=[l for l in o.splitlines() if l.startswith('WARN') and any(x+':' in l for x in P) and ('fact mixes tags' in l)]\nprint(len(n), 'lint warnings of the class');[print(l[:200]) for l in n[:12]]\nsys.exit(1 if n else 0)"
+        ],
+        "exit": 0,
+        "sha256": "ad365ea40f7a49b1"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport subprocess\nwant = {'public/auth/audit-events.md': 40, 'public/auth/delegation-kcd-obo.md': 28, 'public/auth/key-management-options.md': 21, 'public/auth/ldap-smb-signing.md': 21, 'public/auth/msal-public-client.md': 22, 'public/auth/revocation.md': 19, 'public/claude/ci-and-headless.md': 103, 'public/dsc/releases-feature-matrix.md': 15, 'public/mecm/client-notification.md': 78, 'public/privacy/presidio-operators-deanonymize.md': 16, 'public/python/stdlib-sqlite3-csv.md': 39, 'public/python/stdlib-windows-portability.md': 106, 'public/security/baselines-catalog.md': 43, 'public/security/vulnerability-prioritization.md': 52}\no = subprocess.run([sys.executable, '_tools/rag.py', 'audit', '--root', 'public'], capture_output=True, text=True, timeout=600).stdout\nhave = {}\nfor l in o.splitlines():\n    c = [x.strip() for x in l.split('|')]\n    if len(c) > 3 and c[1] in want: have[c[1]] = int(c[3])\nlow = {p: (have.get(p), n) for p, n in want.items() if (have.get(p) or 0) < n}\nprint('articles with fewer facts than on 2026-10-19:', low); sys.exit(1 if low else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "9008a3a8155d9918"
+      }
+    ]
+  }
 }
