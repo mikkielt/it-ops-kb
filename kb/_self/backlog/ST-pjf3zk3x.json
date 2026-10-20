@@ -70,7 +70,11 @@
         "One ask to kb-observer takes the session result as its answer; the command waits at most 6 seconds for a quick session and reports ended": "ST-pjf3zk3x",
         "The session result is posted as the answer of the first operator ask; the command returns at once": "ST-pjf3zk3x"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "One ask to kb-observer takes the session result as its answer; the command waits at most 6 seconds for a quick session and reports ended",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
