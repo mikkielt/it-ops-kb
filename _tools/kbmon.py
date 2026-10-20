@@ -25,6 +25,11 @@
                                sprints, load or all (the default), from one snapshot of the panels the topic needs; with
                                --json an object of schema 1, topic, taken, lines and facts; a claim's holder is never named;
                                it calls no model and writes no file, and exits 0 also when the snapshot has an alert
+  kbmon.py --status sprints [--detail]
+                               one row for each sprint, the active one first (a short name of at most 40 characters, its
+                               state, done of total, the percentage and the ETA, at most 100 characters), the sprints
+                               waiting for the operator's answer and the host load; --detail prints the full lines
+                               instead, with the items left by their short titles
   kbmon.py --status sprints --backtest N
                                replay the sprint estimate over the last N closed sprints on `origin/main` (N of 1 or more) at 25,
                                50 and 75 percent of the time from each one's start commit to its close commit, a sprint only
@@ -109,6 +114,7 @@ def parser():
     ap.add_argument("--status", nargs="?", const="all", choices=mon_status.TOPICS, metavar="TOPIC",
                     help="print a short plain-words answer for TOPIC (%s; default all); with --json an object" % ", ".join(mon_status.TOPICS))
     ap.add_argument("--backtest", type=int, metavar="N", help="with --status sprints: replay the sprint estimate over the last N closed sprints")
+    ap.add_argument("--detail", action="store_true", help="with --status sprints: the full lines in place of one row for each sprint")
     ap.add_argument("--dry-run", action="store_true", help="with --split: print the command, run nothing")
     ap.add_argument("--since", metavar="CURSOR", help="with --events: the cursor an earlier call printed (default: the newest records)")
     ap.add_argument("--ansi", action="store_true", help="colour the text view")
@@ -208,7 +214,7 @@ def status(a, out):
     """The status answer for the topic of `--status`: the panels it needs in one snapshot, as lines or, with `--json`, as an
     object. Exit 0: an alert is the answer's content, not a failure of the command."""
     snap = take(a, mon_status.panels(a.status))
-    found = mon_status.answer(snap, a.status, a.root.resolve())
+    found = mon_status.answer(snap, a.status, a.root.resolve(), a.detail)
     out.write((json.dumps(found, ensure_ascii=False, indent=1) if a.json else "\n".join(found["lines"])) + "\n")
     out.flush()
     return 0
@@ -239,6 +245,8 @@ def main(argv=None, out=None):
             ap.error("--status reads the panels its topic needs and takes no --panel")
     if a.backtest is not None and (a.status != "sprints" or a.backtest < 1):
         ap.error("--backtest N (1 or more) needs --status sprints")
+    if a.detail and (a.status != "sprints" or a.backtest is not None):
+        ap.error("--detail needs --status sprints and no --backtest")
     if a.since is not None and not a.events:
         ap.error("--since needs --events")
     if a.dry_run and not a.split:

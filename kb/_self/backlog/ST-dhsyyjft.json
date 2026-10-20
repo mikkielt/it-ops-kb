@@ -42,6 +42,76 @@
   "depends_on": [
     "BG-lyfl57xv"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How is a sprint or item name cut that is longer than 40 characters?",
+      "options": [
+        "cut after the last whole word and end in an ellipsis, within the 40 characters",
+        "cut at 40 characters, mid-word, with no ellipsis"
+      ],
+      "recommendation": "cut after the last whole word and end in an ellipsis, within the 40 characters",
+      "do": {
+        "cut after the last whole word and end in an ellipsis, within the 40 characters": "ST-dhsyyjft",
+        "cut at 40 characters, mid-word, with no ellipsis": "ST-dhsyyjft"
+      },
+      "class": "design",
+      "answer": "cut after the last whole word and end in an ellipsis, within the 40 characters",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which --status topics take --detail?",
+      "options": [
+        "sprints only, any other topic or --backtest exits 2",
+        "every topic, ignored where a topic has no detail form"
+      ],
+      "recommendation": "sprints only, any other topic or --backtest exits 2",
+      "do": {
+        "sprints only, any other topic or --backtest exits 2": "ST-dhsyyjft",
+        "every topic, ignored where a topic has no detail form": "ST-dhsyyjft"
+      },
+      "class": "design",
+      "answer": "sprints only, any other topic or --backtest exits 2",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "What does the last column of a row show for a sprint that is not active?",
+      "options": [
+        "not started for an approved sprint, waits for start gate for a planned one",
+        "no ETA for both"
+      ],
+      "recommendation": "not started for an approved sprint, waits for start gate for a planned one",
+      "do": {
+        "not started for an approved sprint, waits for start gate for a planned one": "ST-dhsyyjft",
+        "no ETA for both": "ST-dhsyyjft"
+      },
+      "class": "design",
+      "answer": "not started for an approved sprint, waits for start gate for a planned one",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "Which names does --detail write by their short form?",
+      "options": [
+        "only the items left; the sprint's title and the next item's title stay in full, as today",
+        "the sprint's title, the next item and the items left"
+      ],
+      "recommendation": "only the items left; the sprint's title and the next item's title stay in full, as today",
+      "do": {
+        "only the items left; the sprint's title and the next item's title stay in full, as today": "ST-dhsyyjft",
+        "the sprint's title, the next item and the items left": "ST-dhsyyjft"
+      },
+      "class": "design",
+      "answer": "only the items left; the sprint's title and the next item's title stay in full, as today",
+      "by": "agent"
+    }
+  ],
   "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: a --from-snapshot file with three sprints gives one 160-character row for the active sprint, its full title, a 'left:' line repeating item titles, the two others as separate prose lines and no --detail flag.",
   "claimed_by": "orch-r113",
   "operator": "op-f618a13e"

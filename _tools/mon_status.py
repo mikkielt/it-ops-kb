@@ -3,9 +3,12 @@ from one snapshot of the panels the topic needs (stdlib only).
 
   TOPICS                 sessions, cost, querylog, coord, sprints, load and all (the default)
   panels(topic)          the panels a topic reads, in `mon_base.PANELS` order
-  answer(snap, topic, root=None)
+  answer(snap, topic, root=None, detail=False)
                          {"schema": 1, "topic", "taken", "lines", "facts"} from a scrubbed snapshot (`mon_view.scrub`)
-                         that holds those panels; `root` is the clone whose backlog gives an item its title
+                         that holds those panels; `root` is the clone whose backlog gives an item its title; `detail`
+                         gives the sprints answer its full lines in place of one row for each sprint
+  short_name(text)       TEXT cut after a whole word to at most NAME_CHARS characters, ending in an ellipsis where cut:
+                         the name of a sprint or an item in a row, shared with the sprint panel
   topic_of(question)     the topic a plain question about the monitored work asks, by fixed cue words (CUES), `all` where it
                          asks for several, or None: a question about the docs (how sessions resume, what a licence costs) is
                          no status question
@@ -40,6 +43,9 @@ MAX_LINES = 25
 ALL_LINES = 4  # lines each topic gives in `all`
 ROWS = 6  # processes, claims, sprints or gates one topic names before it counts the rest
 WHY_CHARS = 120
+NAME_CHARS = 40  # characters of a sprint's or an item's short name
+ROW_CHARS = 100  # characters of a sprint's row
+SPRINT_ORDER = ("active", "approved", "planned")  # the order the sprints answer lists them in
 GROUP_TEXT = {  # kind: (cause, remedy), fixed words
     "kbmon": ("the monitor reads every panel on each refresh",
               "a longer refresh interval, fewer live views, or this status answer in place of a view"),
@@ -117,10 +123,11 @@ def titles(root):
 class Reader:
     """What a topic reads from the snapshot: a panel's data, or the line that says why it has none."""
 
-    def __init__(self, snap, titles_of):
+    def __init__(self, snap, titles_of, detail=False):
         self.panels = snap.get("panels") or {}
         self.now = mon_eta.seconds_of(snap.get("taken"))  # the time estimates are taken at
         self.titles = titles_of
+        self.detail = detail  # the sprints answer's full lines in place of one row for each sprint
 
     def data(self, name):
         panel = self.panels.get(name)
@@ -285,30 +292,58 @@ def minutes_range(low, high):
     return f"{low:.0f}-{high:.0f} min" if high < 180 else f"{low / 60:.1f}-{high / 60:.1f} h"
 
 
+def short_name(text, limit=NAME_CHARS):
+    """TEXT on one line of at most LIMIT characters: a longer one is cut after its last whole word that leaves room for an
+    ellipsis (a single word longer than that is cut where it stands)."""
+    text = " ".join(str(text or "").split())
+    if len(text) <= limit:
+        return text
+    cut = text[:limit - 1]
+    if text[limit - 1] != " " and " " in cut:
+        cut = cut[:cut.rindex(" ")]
+    return cut.rstrip(" ,;:-") + "…"
+
+
+def sprint_row(name, s, done, total, got, source):
+    """The one row of a sprint: `  name  state  done/total  percent  ETA range`, or what a sprint not yet started waits for;
+    GOT is the active sprint's estimate (None where it has none), at most ROW_CHARS characters."""
+    pct = round(done * 100 / total) if total else 0
+    state = str(s.get("state"))
+    if state == "active":
+        last = (f"ETA {minutes_range(got['low_min'], got['high_min'])}" if got is not None
+                else "no ETA yet" if source == "origin/main" else "no ETA")
+    else:
+        last = "not started" if state == "approved" else "waits for start gate"
+    return f"  {short_name(name):<{NAME_CHARS}}  {state:<8}  {f'{done}/{total}':>5}  {f'{pct}%':>4}  {last}"[:ROW_CHARS]
+
+
 def sprint_lines(r, s, facts, hist, source="origin/main"):
-    """The lines of one sprint and its entry of the answer's facts; HIST is the sprint panel's duration history, SOURCE where the panel read the items from."""
+    """The lines of one sprint and its entry of the answer's facts: its one row, or with `r.detail` the full lines with the
+    items left by their short titles; HIST is the sprint panel's duration history, SOURCE where the panel read the items from."""
     counts = s.get("items") if isinstance(s.get("items"), dict) else {}
     total = sum(number(v) for v in counts.values())
     done = number(counts.get("done")) + number(counts.get("dropped"))
     name = s.get("title") or r.item(s.get("id"))
-    entry = facts["progress"][s.get("id")] = {"state": s.get("state"), "done": done, "total": total}
-    if s.get("state") != "active":
+    entry = facts["progress"][s.get("id")] = {"state": s.get("state"), "name": short_name(name), "done": done, "total": total}
+    active = s.get("state") == "active"
+    got = mon_eta.estimate(s, hist, r.now) if active else None
+    if active:
+        entry.update(percent=round(done * 100 / total) if total else 0, open=total - done,
+                     eta_low_min=None if got is None else got["low_min"], eta_high_min=None if got is None else got["high_min"],
+                     confidence=None if got is None else got["confidence"], basis=None if got is None else got["basis"])
+    if not r.detail:
+        return [sprint_row(name, s, done, total, got, source)]
+    if not active:
         return [f"  {name}: " + ("approved, not started yet" if s.get("state") == "approved" else "waits for its start gate")]
-    pct = round(done * 100 / total) if total else 0
-    entry["percent"] = pct
-    text = f"{done}/{total} done ({pct}%), {number(counts.get('doing'))} in progress, {number(counts.get('todo'))} to do"
+    text = f"{done}/{total} done ({entry['percent']}%), {number(counts.get('doing'))} in progress, {number(counts.get('todo'))} to do"
     if s.get("next"):
         text += f"; next: {s.get('next_title') or r.item(s['next'])}"
     lines = [f"  {name}: {text}"]
     left = [x for x in s.get("open") or [] if isinstance(x, dict)]
     if left:
-        names = [str(x.get("title") or x.get("id")) + (" (in progress)" if x.get("status") == "doing" else "") for x in left[:ROWS]]
+        names = [short_name(x.get("title") or x.get("id")) + (" (in progress)" if x.get("status") == "doing" else "") for x in left[:ROWS]]
         rest = total - done - len(names)
         lines.append("    left: " + "; ".join(names) + (f"; +{rest} more" if rest > 0 else ""))
-    got = mon_eta.estimate(s, hist, r.now)
-    entry.update(open=total - done, eta_low_min=None if got is None else got["low_min"],
-                 eta_high_min=None if got is None else got["high_min"],
-                 confidence=None if got is None else got["confidence"], basis=None if got is None else got["basis"])
     if got is None:
         lines.append("    No ETA: origin/main was not readable, so there are no durations of finished items to estimate from."
                      if source != "origin/main" else
@@ -323,7 +358,8 @@ def sprints(r):
     data, why = r.data("sprint")
     if data is None:
         return [f"Sprints: {why}."], {"state": "unread"}
-    rows = [s for s in data.get("sprints") or [] if isinstance(s, dict)]
+    rows = sorted((s for s in data.get("sprints") or [] if isinstance(s, dict)),
+                  key=lambda s: SPRINT_ORDER.index(s.get("state")) if s.get("state") in SPRINT_ORDER else len(SPRINT_ORDER))
     landing = [x for x in data.get("landings") or [] if isinstance(x, dict) and x.get("title")]  # a landing is named by its title
     for s in rows:
         r.learn([{"id": s.get("id"), "title": s.get("title")}, *(s.get("open") or [])])
@@ -437,10 +473,10 @@ def clean(lines, facts):
     return lines, facts
 
 
-def answer(snap, topic, root=None):
+def answer(snap, topic, root=None, detail=False):
     if topic not in TOPICS:
         raise ValueError(f"no status topic {topic}: {', '.join(TOPICS)}")
-    reader = Reader(snap, titles(root))
+    reader = Reader(snap, titles(root), detail)
     lines, facts = [], {}
     for t in (ALL_ORDER if topic == "all" else (topic,)):
         got, found = ANSWERS[t](reader)
