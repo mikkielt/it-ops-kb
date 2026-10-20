@@ -1,0 +1,17 @@
+{
+  "id": "BG-qoumygqq",
+  "kind": "bug",
+  "title": "kbmon --events orders committed ops rows of one millisecond by row id, not write order",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbmon --events reads committed ops rows of one millisecond in their write order (mon_events passes the clone root to mon_log.in_spool_order), so a landing whose land.step shares a millisecond with its land.end keeps its step span",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json, os, sys, tempfile\nfrom pathlib import Path\nhome = tempfile.mkdtemp()\nos.environ[\"CLAUDE_PLUGIN_DATA\"] = home\nos.environ[\"CLAUDE_PLUGIN_ROOT\"] = os.getcwd()\nsys.path.insert(0, \"_tools\")\nd = Path(home) / \"kb\" / \"_querylog\" / \"ops\" / \"2026-10\"\nd.mkdir(parents=True)\nts = \"2026-10-19T10:00:00.123Z\"\nrows = [{\"run\": \"r\", \"counts\": {\"rows\": 2}},\n        {\"id\": \"zz-late-id\", \"ts\": ts, \"event\": \"land.step\", \"item\": \"BG-testtest\", \"step\": \"verify\", \"exit\": 0, \"ms\": 5},\n        {\"id\": \"aa-early-id\", \"ts\": ts, \"event\": \"land.end\", \"item\": \"BG-testtest\", \"exit\": 0, \"ms\": 9, \"lane\": \"main\"}]\n(d / \"20261019T100000Z-aaaaaaaa.jsonl\").write_text(\"\\n\".join(json.dumps(r) for r in rows) + \"\\n\", encoding=\"utf-8\")\nimport mon_events\n\n\nclass Ctx:\n    root = home\n\n\nspans = mon_events.ops_records(Ctx, 0)[1]\nprint(len(spans), \"spans\")\nsys.exit(0 if any(s.get(\"name\") == \"kb.land.step\" for s in spans) else 1)\n"
+    ]
+  }
+}
