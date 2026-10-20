@@ -2,7 +2,7 @@
   "id": "ST-ijamqlyh",
   "kind": "story",
   "title": "kbfacts.py is split behind its names with retrieval unchanged",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-jplczvj2",
   "priority": "P3",
   "rank": 0,
@@ -77,5 +77,7 @@
       "by": "operator"
     }
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): kbfacts.py on 2026-10-19: 4377 lines, 87 commits in 30 days; its sections index (1905-3087), freshness (3087-3640), routed (3640-3946) and topics for code (3946-end) are the cut. Premise: the first check fails. Checks 1, 2 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+  "notes": "operator request 2026-10-19 (housekeeping batch): kbfacts.py on 2026-10-19: 4377 lines, 87 commits in 30 days; its sections index (1905-3087), freshness (3087-3640), routed (3640-3946) and topics for code (3946-end) are the cut. Premise: the first check fails. Checks 1, 2 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
+  "claimed_by": "orch-r108",
+  "operator": "op-f618a13e"
 }
