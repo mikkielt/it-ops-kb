@@ -36,6 +36,44 @@
     "kb/_self/_retrieval/**",
     "kb/_querylog/findings/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which kb/_self line does each hand-written eval row of this item pin, and what stands in for the apply gates when a row is refused?",
+      "options": [
+        "answering-line",
+        "lead-passage"
+      ],
+      "recommendation": "answering-line",
+      "do": {
+        "answering-line": "ST-w3qdrhdk",
+        "lead-passage": "ST-w3qdrhdk"
+      },
+      "class": "querylog",
+      "answer": "answering-line",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Four of the 33 rules findings (F-530d73059c05, F-6481333acafe, F-85be1f9bee1c, F-c381b3f50bc3) get no eval row and stay open: how are they to be closed?",
+      "options": [
+        "follow-up",
+        "write-past-gates",
+        "none-rows"
+      ],
+      "recommendation": "follow-up",
+      "do": {
+        "follow-up": "ST-w3qdrhdk",
+        "write-past-gates": "ST-w3qdrhdk",
+        "none-rows": "ST-w3qdrhdk"
+      },
+      "class": "querylog",
+      "answer": "follow-up",
+      "by": "agent"
+    }
+  ],
   "notes": "operator request 2026-10-19 (housekeeping batch): digest 2026-W42: rules lookups 971 (good 13, weak 92, none 553, no verdict 313), open rules findings 33. A _self eval row is a code-lane path: land with backlog.py land ID --wait-merge 1800. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done. Precheck 2026-10-20: rag.py eval --root _self passes before the work by design: it pins that the new _self rows pass; the findings check carries the proof.",
   "claimed_by": "orch-r106",
   "operator": "op-f618a13e"
