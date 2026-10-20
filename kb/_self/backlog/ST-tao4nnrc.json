@@ -1,0 +1,26 @@
+{
+  "id": "ST-tao4nnrc",
+  "kind": "story",
+  "title": "bl_land and kbfacts still offer every public function and class they defined before the split",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "every public top-level function and class bl_land.py and kbfacts.py defined at 43613de1e is still an attribute of its module, or the sprint goal's 'every name kept' is reworded to the names other modules read",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import ast, subprocess, sys\nsys.path.insert(0, \"_tools\")\nmiss = []\nfor m in (\"bl_land\", \"kbfacts\"):\n    src = subprocess.run([\"git\", \"show\", \"43613de1e:_tools/\" + m + \".py\"], capture_output=True, text=True, check=True).stdout\n    top = [n.name for n in ast.parse(src).body if isinstance(n, (ast.FunctionDef, ast.ClassDef)) and not n.name.startswith(\"_\")]\n    mod = __import__(m)\n    miss += [m + \".\" + x for x in top if not hasattr(mod, x)]\nprint(\"public names the split dropped:\", len(miss), miss[:10])\nsys.exit(1 if miss else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/kbfacts.py",
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "parked: SP-jplczvj2 review"
+  ]
+}

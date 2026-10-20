@@ -1,0 +1,26 @@
+{
+  "id": "ST-celkeq27",
+  "kind": "story",
+  "title": "The pack store kf_fresh.keep_pack writes on every lookup has a reader, or is no longer written",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kf_fresh.keep_pack's packs/ store is either read by something (a restored stored_pack or kb_feedback's pack handle) or no longer written, and kb/_self/tools.md says which",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0,\"_tools\"); import kbfacts; sys.exit(0 if not hasattr(kbfacts,\"keep_pack\") or hasattr(kbfacts,\"stored_pack\") else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kf_fresh.py",
+    "_tools/kbfacts.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-jplczvj2 review"
+  ]
+}

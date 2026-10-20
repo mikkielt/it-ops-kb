@@ -91,7 +91,9 @@
       },
       "class": "design",
       "answer": "kbfacts.py imports the three stages at its end and re-exports their names; each stage takes the ground by name from the partly loaded kbfacts; kf_fresh reaches kf_route inside pack_many and imports kbfacts for pack_store",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "ground",
@@ -108,7 +110,9 @@
       },
       "class": "design",
       "answer": "clone_home, index_dir, clip and clip_around stay in kbfacts.py (the ground and the stages all use them) and the shared _git and _remove become the public git_out and remove_file",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "fingerprint",
@@ -125,7 +129,9 @@
       },
       "class": "design",
       "answer": "kbfacts.py, kf_index.py and kbid.py (an edit to the weighing or the layout rebuilds the index, an edit to kf_fresh.py or kf_route.py does not)",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): kbfacts.py on 2026-10-19: 4377 lines, 87 commits in 30 days; its sections index (1905-3087), freshness (3087-3640), routed (3640-3946) and topics for code (3946-end) are the cut. Premise: the first check fails. Checks 1, 2 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",

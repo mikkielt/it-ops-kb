@@ -1,0 +1,28 @@
+{
+  "id": "BG-dgnrn4jy",
+  "kind": "bug",
+  "title": "Importing kf_route, kf_index or kf_fresh before kbfacts raises ImportError",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "each kf_ stage imports on its own, before kbfacts, and every name other modules use from kbfacts still imports",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys; bad=[m for m in (\"kf_route\",\"kf_index\",\"kf_fresh\") if subprocess.run([sys.executable,\"-c\",\"import \"+m],cwd=\"_tools\",capture_output=True).returncode]; print(\"kf_ modules that fail when imported first:\",bad); sys.exit(1 if bad else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/kf_index.py",
+    "_tools/kf_fresh.py",
+    "_tools/kf_route.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-jplczvj2 review"
+  ]
+}
