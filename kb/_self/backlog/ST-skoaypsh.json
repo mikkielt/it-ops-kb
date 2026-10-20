@@ -87,7 +87,11 @@
         "no: close removes its items' scratch directories and worker worktrees and says the orchestrator's and reviewer's recorded worktrees (a record with the sprint and no item) are left to tidy --apply": "ST-skoaypsh",
         "yes: close removes them too, with the age limit waived": "ST-skoaypsh"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "no: close removes its items' scratch directories and worker worktrees and says the orchestrator's and reviewer's recorded worktrees (a record with the sprint and no item) are left to tidy --apply",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
