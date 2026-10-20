@@ -22,7 +22,8 @@
     "kb/_self/backlog.md"
   ],
   "links": [
-    "parked: SP-p46hofrg close"
+    "parked: SP-p46hofrg close",
+    "parked: SP-2uljwgho close"
   ],
-  "notes": "check to tighten at planning: the command given only proves the tool runs"
+  "notes": "check to tighten at planning: the command given only proves the tool runs SP-2uljwgho retro evidence: 9 of 11 landings warned 'landed with no work rows (missing)' (worker sessions dispatched from the orchestrator's linked worktree under scratchpad/orch/wt113); cost --rework SP-2uljwgho reads 2 items with work lines and 3.28M tokens, while the workers' own result.json totals were about USD 13 (12 worker runs, one resume, the reviewer)."
 }

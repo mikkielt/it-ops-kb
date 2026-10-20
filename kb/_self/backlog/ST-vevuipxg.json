@@ -1,0 +1,26 @@
+{
+  "id": "ST-vevuipxg",
+  "kind": "story",
+  "title": "kbgit sync resolves a diff3 conflict hunk in which each line was changed by one side only",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "when a sync rebase stops on a kb/_self doc whose diff3 hunk has every line changed by at most one side against the base, sync takes each side's lines and continues, so two items that edit adjacent table rows of tools.md no longer stop a landing",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import kg_sync as k\nt='# T\\n\\n<<<<<<< HEAD\\n| a | row one, changed upstream |\\n| b | row two |\\n||||||| parent of 1f71a33 (side)\\n| a | row one |\\n| b | row two |\\n=======\\n| a | row one |\\n| b | row two, changed by the side |\\n>>>>>>> 1f71a33 (side)\\n| c | row three |\\n'\nf=getattr(k,'resolve_disjoint',None)\nif f is None:print('kg_sync has no resolve_disjoint');sys.exit(1)\no=f(t);print(o)\nsys.exit(0 if o=='# T\\n\\n| a | row one, changed upstream |\\n| b | row two, changed by the side |\\n| c | row three |\\n' else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kg_sync.py",
+    "kb/_self/git.md"
+  ],
+  "links": [
+    "parked: SP-2uljwgho close"
+  ],
+  "notes": "SP-2uljwgho retro: land ST-7jjj3b4s stopped at kbgit.py sync --push exit 3 on kb/_self/tools.md: the kbmon row (changed by ST-7jjj3b4s only) and the kbask row below it (changed upstream only) formed one diff3 hunk; resolved by hand taking each side's line. The stop also left the orchestrator checkout on work/ST-7jjj3b4s mid-rebase ('could not return to refs/heads/orch/...'). The check names a function kg_sync.resolve_disjoint the planner may rename; it plants the exact hunk."
+}

@@ -1,0 +1,26 @@
+{
+  "id": "ST-3siivfby",
+  "kind": "story",
+  "title": "backlog.py start warns of a committed bug whose repro already passes on the base",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "start runs each committed bug's repro once on the base, as precheck does, and prints a warning naming each bug whose repro exits 0 (its premise went stale since planning), before any claim",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,inspect;sys.path.insert(0,'_tools');import bl_plan;s=inspect.getsource(bl_plan.cmd_start);sys.exit(0 if 'repro' in s else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-2uljwgho close"
+  ],
+  "notes": "SP-2uljwgho retro: BG-lyfl57xv's repro asserted the phrase '0 done commits on origin/main' was absent; the ETA rewrite a00b40ce3 removed the phrase while the defect (the checkout fallback's ETA line blaming origin/main durations) stayed, so the repro passed before the fix. precheck after the research landing caught it and the orchestrator re-premised the repro; start had run no repro. The check is a source read; the planner should replace it with start run on a planted sprint whose bug repro exits 0."
+}

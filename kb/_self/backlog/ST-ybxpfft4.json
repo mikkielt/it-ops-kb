@@ -1,0 +1,26 @@
+{
+  "id": "ST-ybxpfft4",
+  "kind": "story",
+  "title": "gate add does not class a design gate push for origin/main as a ref, a gitlab/ article path or push as a plain verb",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_authority.class_reasons classes a worker's design gate design, not push, when its text names origin/main only as the ref an item file is read from, a kb article path under gitlab/, or the verb push in a sentence about screen width, while a gate about pushing to a remote stays push",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bl_authority as a\nI={'touches':['_tools/mon_sprint.py','kb/_self/monitoring.md']}\nG=[{'id':'g1','question':\"Which backlog decides that a landing's item is still open?\",'options':[\"Items of the sprint panel's backlog (origin/main item files, else the checkout's)\",\"Item files of the checkout\"]},\n   {'id':'g1','question':\"Where do the git fast-forward and ahead/behind facts go?\",'options':['extend gitlab/git-trailers-and-hooks','new gitlab topic for git merge and status']},\n   {'id':'g3','question':\"How long may the needs you line get? A long list of gates would push the line far past the screen.\",'options':['three entries of a kind then a count','every entry in full']}]\nR=[a.class_reasons(I,g) for g in G];print(R)\nsys.exit(0 if all(c!='push' for c,_ in R) else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-2uljwgho close"
+  ],
+  "notes": "SP-2uljwgho retro: three worker gates were made blocking class push by a plain word and each stopped the landing until the orchestrator answered it: BG-gkocrnfw g1 ('origin/main item files'), ST-jtbbzc6h g1 ('extend gitlab/git-trailers-and-hooks'), ST-kmgwsjto g3 ('would push the line far past the screen'). The check plants those three texts; bl_authority guards operator-only authority, so the change needs a planted push case beside each exemption (see ST-c5twwnja, ST-wxodyx66)."
+}

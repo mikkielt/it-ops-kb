@@ -19,7 +19,8 @@
     "_tools/bl_dispatch.py"
   ],
   "links": [
-    "parked: SP-qh2j24z2 close"
+    "parked: SP-qh2j24z2 close",
+    "parked: SP-2uljwgho close"
   ],
-  "notes": "SP-qh2j24z2 retrospective: BG-ko4sdvxy's first fix passed its own repro and broke ST-e5fdgjk4's folded BG-ttwih3wd repro (both touch _tools/mon_events.py); land stopped at step siblings and the worker was resumed once. The brief had not named the done sibling's check."
+  "notes": "SP-qh2j24z2 retrospective: BG-ko4sdvxy's first fix passed its own repro and broke ST-e5fdgjk4's folded BG-ttwih3wd repro (both touch _tools/mon_events.py); land stopped at step siblings and the worker was resumed once. The brief had not named the done sibling's check. SP-2uljwgho retro evidence: land ST-dhsyyjft stopped at step siblings because its compact row dropped the 'origin/main not readable' ETA reason that done sibling BG-lyfl57xv's repro reads (both touch _tools/mon_status.py); the worker's brief did not name that repro, and the resume to fix it cost about USD 1.46 of the item's 2.77. For BG-ormhkfj4 the orchestrator put the siblings' ids in the item notes by hand, and its land passed siblings first time."
 }

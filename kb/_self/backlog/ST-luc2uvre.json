@@ -1,0 +1,26 @@
+{
+  "id": "ST-luc2uvre",
+  "kind": "story",
+  "title": "kbgit sync retries a fetch that another worktree's fetch of the same ref holds",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbgit.py sync tries git fetch origin again after a pause when it fails with cannot lock ref refs/remotes/origin/main ... but expected, as the push already does, instead of exiting 2",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,inspect;sys.path.insert(0,'_tools');import kg_sync as k\ns=inspect.getsource(k)\ni=s.find('git fetch origin failed')\nprint(i)\nsys.exit(0 if i>0 and 'cannot lock ref' in s[max(0,i-1500):i] else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kg_sync.py",
+    "kb/_self/git.md"
+  ],
+  "links": [
+    "parked: SP-2uljwgho close"
+  ],
+  "notes": "SP-2uljwgho retro: land ST-7jjj3b4s stopped at step kbgit.py sync --push with exit 2: 'git fetch origin failed: error: cannot lock ref refs/remotes/origin/main: is at 942cfa81 but expected 6160edf3' while another linked worktree's sync fetched (host main lock held by its pid); a plain retry of land passed. The check is a source read only (the race needs two processes); a planted check that runs sync against a ref held by a second fetch should replace it at planning."
+}
