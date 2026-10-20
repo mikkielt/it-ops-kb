@@ -1,0 +1,22 @@
+{
+  "id": "ST-hi6zejcf",
+  "kind": "story",
+  "title": "A goal clause that says 'every panel' gets each panel module that prints the value in the item's touches",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the kb-sprint plan step says a goal clause over every panel or surface (one label in every panel, redacted everywhere) is run through referrers for the function each panel prints the value with, and every panel module it lists goes into the item's touches, so a worker does not leave one panel out and file it as a new bug",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('.claude/skills/kb-sprint/SKILL.md').read()\nsys.exit(0 if 'every panel' in t else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-razcgjsb close"
+  ],
+  "notes": "SP-razcgjsb retrospective 2026-10-20: ST-njsgt56c's goal clause 'one session has one label in every panel' named coord, log and status but its touches left out _tools/mon_sessions.py; the worker filed BG-to6fh6rq (sessions panel still all-zero), which the orchestrator folded into the sprint and ordered before ST-yozfikuv, one more worker run."
+}

@@ -1,0 +1,22 @@
+{
+  "id": "ST-ip7wzext",
+  "kind": "story",
+  "title": "land keeps the worker's worktree when it stops before done, so a trailer fix needs no re-checkout",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "a land run that stops at a step before done (stale, eval, lint, checks) leaves the worker's worktree and branch in place and names the fix for the step (for stale: amend the work commit's Self-Reviewed trailer in that worktree), instead of removing the worktree and asking for a re-checkout",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('kb/_self/backlog.md').read()\nsys.exit(0 if 'stops before done' in t and 'keeps the worker' in t else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-razcgjsb close"
+  ],
+  "notes": "SP-razcgjsb retrospective 2026-10-20: BG-y3vxqpkp's land stopped at step stale (kb/_self/code.md listed for bl_procs.py and mon_sessions.py after the rebase onto an origin/main that ST-hpbjc2gc had moved; the worker's own stale run had printed stale=0) and removed the worker's worktree; the orchestrator re-added the worktree, reset to the work commit, amended its Self-Reviewed trailer and cherry-picked the two gate commits back before landing again. ops row: land.step stale exit=1."
+}

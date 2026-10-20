@@ -1,0 +1,22 @@
+{
+  "id": "ST-su3kodbp",
+  "kind": "story",
+  "title": "set --sprint's refusal of a draft into an active sprint names move as the route",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py set ID --sprint SP refused for a draft item and an active sprint names backlog.py move ID --sprint SP (after touches are set) in its message, since move is the command that makes the item todo there",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('_tools/bl_items.py').read()\ni=t.find('would never be ready');sys.exit(0 if i>0 and 'move' in t[i-400:i+200] else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-razcgjsb close"
+  ],
+  "notes": "SP-razcgjsb retrospective 2026-10-20: folding the worker-filed BG-to6fh6rq into the active sprint took three refusals: set --sprint refused a draft for an active sprint without naming move; move then refused an item with no touches; set --touch beside --add-touch refused. The kb/_self/tools.md move row gave the route."
+}

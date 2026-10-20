@@ -1,0 +1,22 @@
+{
+  "id": "ST-s6e7iwer",
+  "kind": "story",
+  "title": "bl_procs.running never signals a pid on Windows, so no caller can end a process by probing it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_procs.running returns None on Windows (os.name nt) without calling os.kill, the one place every caller's liveness probe goes through, instead of each call site carrying its own os.name guard",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,sys,types\nsys.path.insert(0,'_tools');import bl_procs\nc=[]\nclass W(types.ModuleType):\n    def __init__(s,r,**k): super().__init__(r.__name__);s._r=r;s.__dict__.update(k)\n    def __getattr__(s,k): return getattr(s._r,k)\nbl_procs.os=W(os,name='nt',kill=lambda p,g:c.append(p))\nv=bl_procs.running(424242);print(v,c);sys.exit(0 if not c and v is None else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-razcgjsb close"
+  ],
+  "notes": "SP-razcgjsb retrospective 2026-10-20: the review's S1 BG-r3mpv76o: ST-wubbd6ws added a live-workers test in mon_sessions.session_rows without the os.name guard its two sibling branches in the same function had, so the sessions panel would os.kill(pid, 0) a worker on Windows, which ends it. ST-yozfikuv's gate recorded 'null on Windows' but nothing enforced it at the one helper all callers use. What let it through: the guard lived at each call site; no check planted os.name nt for the new branch."
+}

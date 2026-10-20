@@ -1,0 +1,22 @@
+{
+  "id": "ST-poakskg2",
+  "kind": "story",
+  "title": "An item that changes which processes a tool ends or reads gets its scope gate before the start, not from the worker",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the plan step asks, before the start gate, the scope gate of an item whose touches change bl_procs' process inventory, end_orphans or the rule that a command line is never read (which consumers the change applies to, what is ended), so the worker does not open a blocking gate mid-work",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('.claude/skills/kb-sprint/SKILL.md').read()\nsys.exit(0 if 'end_orphans' in t else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-razcgjsb close"
+  ],
+  "notes": "SP-razcgjsb retrospective 2026-10-20: BG-y3vxqpkp's worker opened two blocking agents-rule gates (Windows listing scope: sessions panel only; row reading) and BG-vvye7ubr's worker one (end_orphans ends orphan and detached); the orchestrator answered each with its recommendation as acting operator. Each was a scope choice the goal left open on a rule-guarding file, which the plan step says is a blocking gate before any code."
+}

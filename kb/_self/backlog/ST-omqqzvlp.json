@@ -1,0 +1,22 @@
+{
+  "id": "ST-omqqzvlp",
+  "kind": "story",
+  "title": "start refuses a sprint item whose goal has several clauses and no clauses mapping",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py start refuses (exit 1, naming each) a committed item whose goal splits into several clauses and that records no clauses mapping, as precheck warns, so a clause no check reads is found before the start gate and not after the goal research lands",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('kb/_self/backlog.md').read()\nsys.exit(0 if 'start refuses' in t and 'clauses mapping' in t else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-razcgjsb close"
+  ],
+  "notes": "SP-razcgjsb retrospective 2026-10-20: BG-y3vxqpkp entered the active sprint with three goal clauses and no mapping; its repro read only two of them, and the clause 'the command line is never printed or kept' had no check until the orchestrator's post-research precheck warned of it and a check was added mid-sprint (commit ffaa1cbc7)."
+}
