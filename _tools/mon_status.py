@@ -332,6 +332,12 @@ def sprints(r):
              if source == "origin/main" else "read from this checkout's files, origin/main was not readable")
     head = f"Sprints: {len(rows)} active or planned, {where}:" if rows else f"Sprints: none active or planned, {where}."
     lines = [head]
+    ff = data.get("fast_forward") if isinstance(data.get("fast_forward"), dict) else None
+    if ff and ff.get("can") is False and behind:
+        facts["fast_forward"] = {"can": False, "why": str(ff.get("why"))}
+        lines.append(f"  This checkout cannot fast-forward to origin/main: {ff.get('why')}.")
+    elif ff and behind:
+        facts["fast_forward"] = {"can": True, "why": str(ff.get("why"))}
     for s in rows[:ROWS]:
         lines += sprint_lines(r, s, facts, data.get("history") if isinstance(data.get("history"), dict) else {})
         waiting = [w for w in s.get("waiting") or [] if isinstance(w, dict) and not (w.get("item") == s.get("id") and w.get("gate") == "start")]
