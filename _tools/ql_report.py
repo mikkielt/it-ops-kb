@@ -823,34 +823,44 @@ def last_pushed(qdir=None, run=None):
 
 
 def usage_today(qdir=None, today=None):
-    """{rows, models} of the usage the query log holds for the UTC day `today` (default: now): the spool's `usage`
+    """{rows, models, by_session, by_sprint} of the usage the query log holds for the UTC day `today` (default: now): the spool's `usage`
     rows stamped that day (a prompt's last row of the current reader, as distill reads it) and the usage sidecars of
     the local store's runs of that day for the prompts no such row stands for. A sidecar line stands for a spool
     prompt when its entry id is the id of one of that prompt's rows (an entry takes its first row's id), else when
     its counts equal those of a spool prompt no line has matched yet; the spool keeps a distilled prompt's rows until
     their run file is on origin/main, so the prompt is counted once. `models` is {model: counts} (`in`, `cw`,
     `cr`, `out`, `requests`, `cw1h`) summed over the main and the subagent counts; the caller prices it. Only counts
-    leave: the rows' prompts and replies are not read."""
+    leave: the rows' prompts and replies are not read. `by_session` is {session id: models} and `by_sprint` {sprint id:
+    models}, the same counts split by the spool session that wrote the prompt and by the sprint of the item its work
+    window names (`work_windows`, `sprint_finder`; None for a prompt outside a window or in the windows of several
+    sprints); a prompt only a sidecar line stands for has no session in the spool, so its key is None in both."""
     import ql_distill
     qdir = Path(qdir or places()[0])
     today = today or datetime.datetime.now(datetime.timezone.utc).date()
     day = today.isoformat()
-    by_prompt, row_ids = {}, {}
+    by_prompt, row_ids, session_of, sprint_at = {}, {}, {}, {}
+    sprint_of, known = ql_distill.sprint_finder(), ql_distill.item_finder()
     for p in sorted((qdir / "spool").glob("*.jsonl")) if (qdir / "spool").is_dir() else []:
-        for r in ql_distill.spool_rows(p)[0]:
+        rows_of = ql_distill.spool_rows(p)[0]
+        inside = ql_distill.work_windows(rows_of, known)[0] if any(r.get("surface") == USAGE for r in rows_of) else {}
+        for r in rows_of:
             if not isinstance(r.get("prompt_id"), str):
                 continue
             row_ids.setdefault(r["prompt_id"], set()).add(r["id"])
             if r["surface"] == USAGE and r["ts"][:10] == day:
                 by_prompt.setdefault(r["prompt_id"], []).append(r)
-    models, rows = {}, 0
+                session_of[r["prompt_id"]] = r.get("session_id") if isinstance(r.get("session_id"), str) else None
+                sprints = {sprint_of(i) for i in inside.get(r["prompt_id"], ())}
+                sprint_at[r["prompt_id"]] = next(iter(sprints)) if len(sprints) == 1 else None
+    models, rows, by_session, by_sprint = {}, 0, {}, {}
     spool = {}  # {prompt id: counts} of the spool's prompts, which no sidecar line has matched yet
     for pid, rs in by_prompt.items():
         counts = usage_counts(ql_distill.usage_of(rs))
         if counts:
             rows += 1
             spool[pid] = counts
-            add_usage_models(models, counts)
+            for into in (models, by_session.setdefault(session_of[pid], {}), by_sprint.setdefault(sprint_at[pid], {})):
+                add_usage_models(into, counts)
     local = qdir / "store"
     lines = [(u.get("id"), usage_counts({k: v for k, v in u.items() if k != "id"}))
              for p, objs in records([f for f in usage_files(local) if run_day(f.stem) == today]) for _, u in objs]
@@ -868,8 +878,9 @@ def usage_today(qdir=None, today=None):
             del spool[pid]
         else:
             rows += 1
-            add_usage_models(models, counts)
-    return {"rows": rows, "models": models}
+            for into in (models, by_session.setdefault(None, {}), by_sprint.setdefault(None, {})):
+                add_usage_models(into, counts)
+    return {"rows": rows, "models": models, "by_session": by_session, "by_sprint": by_sprint}
 
 
 def add_usage_models(into, counts):
