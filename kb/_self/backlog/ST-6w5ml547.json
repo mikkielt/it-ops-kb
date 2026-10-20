@@ -1,0 +1,27 @@
+{
+  "id": "ST-6w5ml547",
+  "kind": "story",
+  "title": "kbgit sync's rebase merges a one-line kb/_self paragraph word by word, as land's rebase does",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbgit.py sync --push resolves a rebase conflict inside one long line of a kb/_self doc by the same word-level merge land's rebase uses, keeping both sides, and stops only on a true word conflict",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ns = open('_tools/kg_merge.py', encoding='utf-8').read()\nsec = s\nif 'word by word' not in sec:\n    print('check failed: ' + 'kg_merge has no word-level merge of a line'); sys.exit(1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kg_sync.py",
+    "_tools/kg_merge.py",
+    "kb/_self/git.md"
+  ],
+  "links": [
+    "parked: SP-ipeewrlv close"
+  ],
+  "notes": "SP-ipeewrlv close: ST-skoaypsh's landing stopped at kbgit.py sync --push exit 3 on kb/_self/code.md (the one-line 'A subsystem is a prefix.' paragraph), which another session had changed elsewhere in the line; land's own rebase had merged the same kind of line word by word minutes before. Resolved by hand. Placeholder text check: the planner replaces it with a planted two-clone sync."
+}

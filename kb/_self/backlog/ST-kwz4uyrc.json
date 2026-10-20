@@ -1,0 +1,27 @@
+{
+  "id": "ST-kwz4uyrc",
+  "kind": "story",
+  "title": "check warns of a committed item whose code maps to a docs_map doc that no item's touches hold",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py check warns, before the start gate, of a committed item whose touches name code that the docs map maps to a kb/_self doc held by no item's touches (kb/_self/code.md for every _tools/*.py), naming the doc and the set --add-touch remedy, as start already warns when another item holds it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ns = open('_tools/bl_check.py', encoding='utf-8').read()\nsec = s\nif \"no item's touches\" not in sec:\n    print('check failed: ' + 'check does not warn of a mapped doc no item holds'); sys.exit(1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_check.py",
+    "_tools/bl_plan.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-ipeewrlv close"
+  ],
+  "notes": "SP-ipeewrlv close: land stopped ST-y53hvh64 at its stale step on kb/_self/code.md, which map.csv maps from every _tools/*.py; start warned only of kb/_self/benchmarks.md (held by another item), and check said nothing, so the orchestrator added code.md to four items' touches by hand mid-sprint. The check is a placeholder that reads source text: the planner replaces it with a check run on a planted clone."
+}

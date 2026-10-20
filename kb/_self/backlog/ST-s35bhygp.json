@@ -1,0 +1,27 @@
+{
+  "id": "ST-s35bhygp",
+  "kind": "story",
+  "title": "land keeps the worker's worktree until the landing succeeds",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "land removes the finished worker's clean worktree only after the item has landed; a landing that stops at a step (stale, eval, lint, the push) leaves the worktree in place for the fix, so no re-add is needed",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ns = open('skills/sprint/SKILL.md', encoding='utf-8').read()\nsec = s.split('## run', 1)[1].split('\\n## review', 1)[0] if '## run' in s else ''\nif \"keeps the worker's worktree until\" not in sec:\n    print('check failed: ' + 'the run step does not say land keeps the worktree until it lands'); sys.exit(1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/bl_close.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-ipeewrlv close"
+  ],
+  "notes": "SP-ipeewrlv close: land removed agent-ST-y53hvh64 as its first step, then stopped at stale; the orchestrator re-added the worktree by hand before resuming the worker. The check is a placeholder text read: the planner replaces it with a planted land run that fails at a step."
+}

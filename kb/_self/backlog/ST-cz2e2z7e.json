@@ -1,0 +1,26 @@
+{
+  "id": "ST-cz2e2z7e",
+  "kind": "story",
+  "title": "check warns when a goal names a backlog.py subcommand whose registering module is outside the item's touches",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py check warns of an item whose goal names a backlog.py subcommand (tidy, close, land ...) while the module that registers it with bl_cli is in no touch of the item, naming the module",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ns = open('_tools/bl_check.py', encoding='utf-8').read()\nsec = s\nif 'registers it' not in sec:\n    print('check failed: ' + 'check does not name the registering module'); sys.exit(1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_check.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-ipeewrlv close"
+  ],
+  "notes": "SP-ipeewrlv close: tidy and close were registered in bl_close.py, which ST-nkc5supu's and ST-skoaypsh's plans left out; the orchestrator widened ST-nkc5supu by hand, and ST-skoaypsh's worker replaced the close handler from bl_land.py instead (gate g1). Placeholder text check: the planner replaces it with a planted check run."
+}

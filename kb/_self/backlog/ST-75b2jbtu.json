@@ -1,0 +1,26 @@
+{
+  "id": "ST-75b2jbtu",
+  "kind": "story",
+  "title": "The plan step asks a removal tool's items for a planted negative per class: a path outside its own directories and a symlink",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the kb-sprint skill's plan step 6 says an item whose goal removes files or directories carries a planted check for each class it removes that a recorded path outside that class's own directory, inside the checkout's tracked tree and behind a symlink is kept",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ns = open('skills/sprint/SKILL.md', encoding='utf-8').read()\nsec = s.split('## plan', 1)[1].split('\\n## start', 1)[0] if '## plan' in s else ''\nif 'behind a symlink' not in sec:\n    print('check failed: ' + 'plan step 6 does not ask a removal tool for planted negatives'); sys.exit(1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-ipeewrlv close"
+  ],
+  "notes": "SP-ipeewrlv close: tidy --apply, allowed in agent sessions, passed every item check and its done, and the fresh-context review found it would delete a recorded scratch path inside the checkout (kb/), a symlink's target and a directory holding a worktree (BG-pw7thfzf, S1). The checks planted only well-placed records."
+}

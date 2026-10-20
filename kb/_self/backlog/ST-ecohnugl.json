@@ -1,0 +1,26 @@
+{
+  "id": "ST-ecohnugl",
+  "kind": "story",
+  "title": "answer warns when the operator picks an option other than the recommendation and the item's goal or checks still ask for the recommendation",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py answer, given an answer other than the gate's recommendation, prints a warning naming the item's goal clauses and checks that hold words of the recommendation and not of the answer, with the set --goal / --check remedy, so the item is reworded before its claim",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ns = open('_tools/bl_items.py', encoding='utf-8').read()\nsec = s.split('def cmd_answer', 1)[1].split('\\ndef ', 1)[0] if 'def cmd_answer' in s else ''\nif 'words of the recommendation' not in sec:\n    print('check failed: ' + 'answer does not compare the answer with the recommendation'); sys.exit(1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-ipeewrlv close"
+  ],
+  "notes": "SP-ipeewrlv close: ST-hpbjc2gc's gate g-remote was answered 'no remote deletion' against its recommendation, yet its goal and check 0 still asked tidy --remote --apply to delete; ST-skoaypsh's g2 answer contradicted its goal clause on the orchestrator's and reviewer's worktrees. The orchestrator caught both by reading. Placeholder text check: the planner replaces it with a planted answer run."
+}
