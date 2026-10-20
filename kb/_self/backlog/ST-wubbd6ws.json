@@ -26,6 +26,59 @@
     "ST-yozfikuv",
     "ST-njsgt56c"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How is a session's role told, when no documented field names it and a command line or environment may not be read? (the goal names the roles and a fixed rule table)",
+      "options": [
+        "the first row that fits of a fixed table over the checkout's path and branch, the claims ledgers, the item files and the coord leases: bare twin, benchmark agent, observer, reviewer, worker, sprint runner, planner, interactive, else unknown",
+        "only the role the dispatch record keeps (worker) and interactive for every other session"
+      ],
+      "recommendation": "the first row that fits of a fixed table over the checkout's path and branch, the claims ledgers, the item files and the coord leases: bare twin, benchmark agent, observer, reviewer, worker, sprint runner, planner, interactive, else unknown",
+      "do": {
+        "the first row that fits of a fixed table over the checkout's path and branch, the claims ledgers, the item files and the coord leases: bare twin, benchmark agent, observer, reviewer, worker, sprint runner, planner, interactive, else unknown": "ST-wubbd6ws",
+        "only the role the dispatch record keeps (worker) and interactive for every other session": "ST-wubbd6ws"
+      },
+      "class": "design",
+      "answer": "the first row that fits of a fixed table over the checkout's path and branch, the claims ledgers, the item files and the coord leases: bare twin, benchmark agent, observer, reviewer, worker, sprint runner, planner, interactive, else unknown",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which sessions are listed and how does a process get its session id, with no command line or environment read? (the goal says one entry per live session in a checkout of the clone, read from the leases, intents, dispatch records, checkout and branch)",
+      "options": [
+        "one entry per claude process in a checkout, plus a dispatch record whose pid still runs and the process table does not list; its id from the dispatch record's pid, then the ledger's claims, then the item's own intent, then the checkout's hook session with a live lease; an id binds to the oldest process only and an unbound process has a null label",
+        "only the processes the table lists, with the id from the dispatch record alone"
+      ],
+      "recommendation": "one entry per claude process in a checkout, plus a dispatch record whose pid still runs and the process table does not list; its id from the dispatch record's pid, then the ledger's claims, then the item's own intent, then the checkout's hook session with a live lease; an id binds to the oldest process only and an unbound process has a null label",
+      "do": {
+        "one entry per claude process in a checkout, plus a dispatch record whose pid still runs and the process table does not list; its id from the dispatch record's pid, then the ledger's claims, then the item's own intent, then the checkout's hook session with a live lease; an id binds to the oldest process only and an unbound process has a null label": "ST-wubbd6ws",
+        "only the processes the table lists, with the id from the dispatch record alone": "ST-wubbd6ws"
+      },
+      "class": "design",
+      "answer": "one entry per claude process in a checkout, plus a dispatch record whose pid still runs and the process table does not list; its id from the dispatch record's pid, then the ledger's claims, then the item's own intent, then the checkout's hook session with a live lease; an id binds to the oldest process only and an unbound process has a null label",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "What do the step values mean? (the goal names claim, work, the landing's step, review and waiting)",
+      "options": [
+        "the landing's step while an item of the session is in a landing, else review for a reviewer, waiting for an open blocking gate or a sprint runner with a running worker, else claim for a todo item and work for a doing one, null with no item",
+        "work for every session with an item and the landing's step only"
+      ],
+      "recommendation": "the landing's step while an item of the session is in a landing, else review for a reviewer, waiting for an open blocking gate or a sprint runner with a running worker, else claim for a todo item and work for a doing one, null with no item",
+      "do": {
+        "the landing's step while an item of the session is in a landing, else review for a reviewer, waiting for an open blocking gate or a sprint runner with a running worker, else claim for a todo item and work for a doing one, null with no item": "ST-wubbd6ws",
+        "work for every session with an item and the landing's step only": "ST-wubbd6ws"
+      },
+      "class": "design",
+      "answer": "the landing's step while an item of the session is in a landing, else review for a reviewer, waiting for an open blocking gate or a sprint runner with a running worker, else claim for a todo item and work for a doing one, null with no item",
+      "by": "agent"
+    }
+  ],
   "links": [
     "kb/public/claude/hooks.md:49",
     "kb/public/claude/ci-and-headless.md:28",
