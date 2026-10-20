@@ -16,6 +16,7 @@ HOME = TOOLS.parent
 ENTRY = TOOLS / "querylog.py"  # the command every hook and the launcher run
 STORE_REL = "kb/_querylog"
 STORE = HOME / STORE_REL
+BRANCH = "main"  # the branch automatic commits land on
 
 DEFAULT_MODE = "auto"
 MODES = ("auto", "local", "off")

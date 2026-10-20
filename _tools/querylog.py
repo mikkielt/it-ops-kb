@@ -382,8 +382,12 @@ def main(argv=None):
         if bool(a.session) != bool(a.transcript):
             ap.error("--session and --transcript go together")
         import ql_base, ql_distill
+
+        def delivery(qdir, home):  # ql_deliver is imported only when mode `auto` asks for the push
+            import ql_deliver
+            return ql_deliver.default_delivery(qdir, home)
         return ql_distill.distill(haiku=ql_base.Replay(a.replay) if a.replay else None, settle=a.settle,
-                                  usage_from=(a.session, a.transcript) if a.session else None)
+                                  usage_from=(a.session, a.transcript) if a.session else None, delivery=delivery)
     if argv in (["-h"], ["--help"]):
         print(__doc__.strip())
         return 0

@@ -10,8 +10,8 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 import kbpublic
-from ql_base import (DISABLED_NAME, HOME, STORE_REL, acquire, now, places, plugin_data, read_json, release, run_cmd,
-                     write_text)
+from ql_base import (BRANCH, DISABLED_NAME, HOME, STORE_REL, acquire, now, places, plugin_data, read_json, release,
+                     run_cmd, write_text)
 from ql_distill import LOG_MAX_BYTES, LOG_NAME, spool_delivered
 from ql_research import edit_problems
 from ql_store import (APPLY_FAILED, FINDINGS, LEARN_STATES, OPS, USAGE, WORK, finding_states, findings_files,
@@ -19,7 +19,6 @@ from ql_store import (APPLY_FAILED, FINDINGS, LEARN_STATES, OPS, USAGE, WORK, fi
                       write_findings)
 
 REMOTE = kbpublic.integration_remote(HOME)  # the integration remote of this clone (git config kb.integrationRemote); a Pusher asks its own home
-BRANCH = "main"  # the branch automatic commits land on
 CONFLICT_BRANCH_PREFIX = "querylog/"  # a conflict sync cannot resolve goes to querylog/<run-id>, as a merge request
 MR_OPTIONS = ("merge_request.create", f"merge_request.target={BRANCH}")  # push options: no token, no auto-merge
 FALLBACK_GITLAB_HOST = "gitlab.com"  # only when origin's url names no host
@@ -970,3 +969,18 @@ def host_push(qdir, run=None, apply_step=None, out=print, now_dt=None, root=None
     if p.refused:
         disable(qdir, p.refused, out)
     return rc
+
+
+def default_delivery(qdir, home):
+    """The delivery distill runs in mode `auto` when the caller gives none, `deliver(qdir, out)`: the push of `apply
+    --push` from this clone when `qdir` is its _cache/querylog, from the managed clone when this copy runs as the plugin
+    and `qdir` is its querylog directory `home`, else None."""
+    if Path(qdir).resolve() == (HOME / "_cache" / "querylog").resolve():
+        def deliver(q, say):
+            return Pusher(HOME, q, run_cmd, None, say)()
+        return deliver
+    if plugin_data() is not None and Path(qdir).resolve() == Path(home).resolve():
+        def deliver(q, say):
+            return host_push(q, run_cmd, None, say)
+        return deliver
+    return None

@@ -17,8 +17,8 @@ from pathlib import Path
 
 import kbusage
 import ql_store as store_
-from ql_base import (HOME, LOCK_NAME, LOCK_STALE_S, acquire, claude_p, iso, json_lines, launch_places, lock_age,
-                     logging_off, one_line, places, plugin_data, read_json, read_mode, release, run_cmd, write_text)
+from ql_base import (BRANCH, HOME, LOCK_NAME, LOCK_STALE_S, acquire, claude_p, iso, json_lines, launch_places, lock_age,
+                     logging_off, one_line, places, read_json, read_mode, release, run_cmd, write_text)
 from ql_capture import (AGENT_ACTIONS, ARG_MAX_CHARS, BRANCH_ACTION, FEEDBACK, FEEDBACK_ISSUES, FEEDBACK_JUDGES,
                         FEEDBACK_LINES_MAX, FEEDBACK_OUTCOMES, FEEDBACK_TOOL_ISSUES, OPEN_ACTIONS, OPS, ROW_FORMAT,
                         SAFE_SESSION, TAGS, VERDICTS, WORK_ITEM, add_usage, pack_lines)
@@ -1032,11 +1032,12 @@ def judged(r):
 # ---------------------------------------------------------------- the run
 
 def distill(qdir=None, cfg=None, haiku=None, now_dt=None, run_id=None, kb_commit=None, settle=0.0, out=print,
-            deliver=None, usage_from=None):
+            deliver=None, usage_from=None, delivery=None):
     """One distill: 0 done (or nothing to do, or logging off), 1 when the push of mode `auto` failed, 3 when another
     distill holds the lock. Mode `auto` keeps the spool rows of the entries it writes and then runs
-    `deliver(qdir, out)` under the same lock (default: the push of `apply --push`, from the clone, or in a plugin
-    host from its managed clone), which deletes them once their run file is on origin/main; mode `local` deletes
+    `deliver(qdir, out)` under the same lock (default: what the caller's `delivery(qdir, places' directory)` returns,
+    ql_deliver.default_delivery: the push of `apply --push`, from the clone, or in a plugin host from its managed
+    clone; none without a `delivery`), which deletes them once their run file is on origin/main; mode `local` deletes
     them at once. `usage_from` (session id, transcript path): the `usage` rows of that session are written first
     (add_usage), waiting up to USAGE_LOCK_WAIT_S for the lock."""
     d, c = places()
@@ -1045,14 +1046,8 @@ def distill(qdir=None, cfg=None, haiku=None, now_dt=None, run_id=None, kb_commit
     if logging_off(qdir, cfg):
         out("distill: logging is off")
         return 0
-    if mode == "auto" and deliver is None:
-        import ql_deliver
-        if qdir.resolve() == (HOME / "_cache" / "querylog").resolve():
-            def deliver(q, say):
-                return ql_deliver.Pusher(HOME, q, run_cmd, None, say)()
-        elif plugin_data() is not None and qdir.resolve() == d.resolve():
-            def deliver(q, say):
-                return ql_deliver.host_push(q, run_cmd, None, say)
+    if mode == "auto" and deliver is None and delivery is not None:
+        deliver = delivery(qdir, d)
     if mode != "auto":
         deliver = None
     lock = acquire(qdir)
@@ -1249,9 +1244,9 @@ def _distill(qdir, haiku, now_dt, run_id, kb_commit, out, keep=False, spend=None
     if keep:
         _settle(spool, sessions, tools, consumed, qdir, today, dropped, waiting + written + done, skipped)
         if written or done:
-            from ql_deliver import BRANCH, REMOTE
+            import kbpublic
             out(f"distill: the spool keeps the rows of {len(written) + len(done)} entries until their run file is "
-                f"on {REMOTE}/{BRANCH}")
+                f"on {kbpublic.integration_remote(HOME)}/{BRANCH}")
     else:
         _settle(spool, sessions, tools, consumed, qdir, today, written + dropped + done, waiting, skipped)
     return 0
