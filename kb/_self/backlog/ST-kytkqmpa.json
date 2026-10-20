@@ -1,0 +1,21 @@
+{
+  "id": "ST-kytkqmpa",
+  "kind": "story",
+  "title": "A planned check that plants a claude process uses a live interpreter named claude, not a /bin/sleep copy macOS kills",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the planning rules say a check that plants a process named claude runs a symlink to the Python interpreter (or another binary macOS does not kill at launch) and asserts a field only the process-table path sets, since a /bin/sleep copy is killed at launch and its zombie passes os.kill(pid, 0), so the check proves only a fallback path (ST-wubbd6ws, SP-razcgjsb review)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('kb/_self/backlog.md').read()+open('.claude/skills/kb-sprint/SKILL.md').read()\nsys.exit(0 if 'sys.executable' in t and 'zombie' in t else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-razcgjsb review"
+  ]
+}

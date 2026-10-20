@@ -42,7 +42,9 @@
       },
       "class": "design",
       "answer": "the first row that fits of a fixed table over the checkout's path and branch, the claims ledgers, the item files and the coord leases: bare twin, benchmark agent, observer, reviewer, worker, sprint runner, planner, interactive, else unknown",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -59,7 +61,9 @@
       },
       "class": "design",
       "answer": "one entry per claude process in a checkout, plus a dispatch record whose pid still runs and the process table does not list; its id from the dispatch record's pid, then the ledger's claims, then the item's own intent, then the checkout's hook session with a live lease; an id binds to the oldest process only and an unbound process has a null label",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
@@ -76,7 +80,9 @@
       },
       "class": "design",
       "answer": "the landing's step while an item of the session is in a landing, else review for a reviewer, waiting for an open blocking gate or a sprint runner with a running worker, else claim for a todo item and work for a doing one, null with no item",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

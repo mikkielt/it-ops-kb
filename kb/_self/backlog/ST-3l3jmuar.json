@@ -1,0 +1,21 @@
+{
+  "id": "ST-3l3jmuar",
+  "kind": "story",
+  "title": "An ask's to= and an answer's ref= session id show as the session's label in kbmon, not the all-zero placeholder",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbmon's coord panel and coord status show a session id in an ask's to field and an answer's ref field as the same s- label the holder and session fields get, so one session has one label in every field",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile,uuid\nsys.path.insert(0,'_tools');import mon_view\nst=os.path.join(tempfile.mkdtemp(),'c.sqlite');g=str(uuid.uuid4())\ns.run([sys.executable,'_tools/coord.py','--store',st,'post','--kind','ask','--field','to='+g,'--field','id=AQ-aaaaaaaa','--field','ref=ask/AQ-aaaaaaaa'],capture_output=True,check=True)\no=s.run([sys.executable,'_tools/kbmon.py','--json','--panel','coord','--store',st],capture_output=True,text=True,timeout=120).stdout\nlab=mon_view.session_label(g);print(lab, lab in o, g in o);sys.exit(0 if lab in o and g not in o else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-razcgjsb review"
+  ]
+}

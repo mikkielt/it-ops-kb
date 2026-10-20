@@ -1,0 +1,21 @@
+{
+  "id": "ST-qdmeqpc4",
+  "kind": "story",
+  "title": "The docs name every reader of bl_procs.windows_snapshot: the sessions panel and tidy",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/monitoring.md and the bl_procs docstring name tidy (bl_clean) beside the sessions panel as readers of windows_snapshot, since ST-hpbjc2gc made tidy read it on Windows",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys\nt=open('kb/_self/monitoring.md').read()+open('_tools/bl_procs.py').read()\nsys.exit(0 if 'bl_clean' in t and re.search(r'windows_snapshot[^\\n]*(tidy|bl_clean)|(tidy|bl_clean)[^\\n]*windows_snapshot',t) else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-razcgjsb review"
+  ]
+}

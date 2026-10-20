@@ -43,7 +43,9 @@
       },
       "class": "design",
       "answer": "alive is the recorded pid still existing (os.kill signal 0 through bl_procs.running; null on Windows, where signal 0 would end the process)",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

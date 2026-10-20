@@ -1,0 +1,21 @@
+{
+  "id": "ST-ci3wsoiz",
+  "kind": "story",
+  "title": "A session line in kbmon --status sessions stays within 120 characters with its indent",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "every session line kbmon --status sessions prints is at most 120 characters including its indent, as the one-line-per-session rule says",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile\nS=[{'label':'s-1a2b3c','role':'sprint runner','item':'ST-aaaaaaaa','item_title':'T'*90,'sprint':'SP-bbbbbbbb','sprint_title':'P'*60,'step':'land:kbgit.py-sync-push','started':'2026-10-19T07:00:00Z','last_activity':'2026-10-19T07:40:00Z','spend_usd':123.25}]\nsnap={'schema':1,'taken':'2026-10-19T08:00:00Z','alerts':[],'panels':{'sessions':{'state':'ok','seconds':0.1,'data':{'procs':[],'worktrees':[],'sessions':S}}}}\nf=os.path.join(tempfile.mkdtemp(),'s.json');json.dump(snap,open(f,'w'))\nr=s.run([sys.executable,'_tools/kbmon.py','--status','sessions','--from-snapshot',f],capture_output=True,text=True,timeout=120);o=r.stdout\nL=[l for l in o.splitlines() if 's-1a2b3c' in l];print([len(l) for l in L]);sys.exit(0 if r.returncode==0 and L and all(len(l)<=120 for l in L) else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-razcgjsb review"
+  ]
+}

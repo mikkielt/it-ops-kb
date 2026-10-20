@@ -1,0 +1,28 @@
+{
+  "id": "BG-r3mpv76o",
+  "kind": "bug",
+  "title": "kbmon's sessions panel probes a dispatch worker's pid with os.kill(pid, 0) on Windows, which ends the process",
+  "status": "todo",
+  "sprint": "SP-razcgjsb",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "on Windows the sessions panel never calls os.kill on any pid: the live-workers test of session_rows takes the same os.name guard as dispatch_runs and the synthetic-worker branch, so a sprint runner's step reads without probing its workers there",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,sys,tempfile,types\nsys.path.insert(0,'_tools')\nimport mon_base,mon_sessions,bl_procs\ncalls=[]\nclass Win(types.ModuleType):\n    def __init__(s,real,**kw): super().__init__(real.__name__);s._r=real;s.__dict__.update(kw)\n    def __getattr__(s,k): return getattr(s._r,k)\nspy=lambda pid,sig:calls.append((pid,sig))\nfor m in (bl_procs,mon_sessions):\n    m.os=Win(os,name='nt',kill=spy)\nbase=os.path.realpath(tempfile.mkdtemp())\nmon_sessions.ledger_records=lambda root:{'ST-aaaaaaaa':{'by':'orch','worker_pid':424242}}\nprocs=[{'pid':os.getpid(),'start':0,'comm':mon_sessions.CLAUDE}]\ntry:\n    mon_sessions.session_rows(mon_base.Ctx(root=mon_base.Path(base)),procs,{os.getpid():base},{base:None},{},None,{base:'.'})\nexcept Exception as e:\n    print('raised',type(e).__name__,e)\nprint('os.kill calls under os.name=nt:',calls)\nsys.exit(1 if calls else 0)\n"
+    ]
+  },
+  "touches": [
+    "_tools/mon_sessions.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "found: SP-razcgjsb review"
+  ],
+  "notes": "SP-razcgjsb review 2026-10-20: _tools/mon_sessions.py session_rows computes live_workers = any(bl_procs.running(w) ...) with no os.name != 'nt' guard, while dispatch_runs and the synthetic-worker branch have one; bl_procs.running is os.kill(pid, 0), which on Windows ends the process (dispatch_runs' own docstring). Introduced by ST-wubbd6ws. Repro: os.name patched to nt for bl_procs and mon_sessions, os.kill spied, one claude process and one ledger record with a worker_pid: one os.kill call recorded."
+}

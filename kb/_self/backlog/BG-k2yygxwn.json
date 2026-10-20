@@ -37,7 +37,9 @@
       },
       "class": "design",
       "answer": "shortest parent suffix that tells them apart (a/wt, b/wt)",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
