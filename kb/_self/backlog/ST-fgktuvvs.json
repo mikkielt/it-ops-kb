@@ -45,7 +45,9 @@
       },
       "class": "design",
       "answer": "state today's state",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): where additional OTel factories and consumers belong. Layout on 2026-10-19: otel/ (SDK, uv-pinned: kbmon_otel.py runner, otel_logs.py, otel_spans.py, otel_prom.py), _tools/ stdlib (mon_export.py points, mon_events.py events, ql_export.py OTLP-JSON lines, kbotel.py receiver of Claude Code's events). Premise: the check fails (no such section).",

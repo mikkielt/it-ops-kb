@@ -1,0 +1,25 @@
+{
+  "id": "ST-ofu2gbco",
+  "kind": "story",
+  "title": "otel/pyproject.toml's prometheus exporter floor is the release that pairs with the SDK 1.39 floor",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "otel/pyproject.toml's opentelemetry-exporter-prometheus floor is the first release whose sdk pin admits opentelemetry-sdk 1.39 and whose PrometheusMetricReader takes registry=, read from that release's metadata, re-locked with uv lock --project otel",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys;m=re.search(r'opentelemetry-exporter-prometheus>=0\\.([0-9]+)',open('otel/pyproject.toml',encoding='utf-8').read());v=int(m[1]) if m else 0;print('prometheus exporter floor 0.%db0'%v);sys.exit(0 if v>=60 else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "otel/pyproject.toml",
+    "otel/uv.lock"
+  ],
+  "links": [
+    "parked: SP-qh2j24z2 review"
+  ]
+}

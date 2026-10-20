@@ -1,0 +1,30 @@
+{
+  "id": "BG-ko4sdvxy",
+  "kind": "bug",
+  "title": "kbmon --events exports no normal delivery, since apply's spool-rows line follows its pushed outcome",
+  "status": "todo",
+  "sprint": "SP-qh2j24z2",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "kbmon --events exports a pushed delivery whose apply outcome is followed by the apply run's spool-rows line once, with its outcome, and not again on the next round given the returned cursor",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,sys,tempfile;sys.path.insert(0,'_tools');import ql_base,mon_events;d=tempfile.mkdtemp();open(os.path.join(d,'distill.log'),'w').write('apply --push: pushed 50d66f3d6 to origin/main\\napply --push: deleted the spool rows of 1 entries whose run file is on origin/main\\n');ql_base.places=lambda *a,**k:(d,);ev,sp,cur=mon_events.delivery_records(0);ev2,sp2,_=mon_events.delivery_records(cur);print('events',len(ev),'spans',len(sp),'again',len(ev2));sys.exit(0 if len(ev)==1 and len(sp)==1 and not ev2 else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/mon_events.py",
+    "_tools/ql_report.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/querylog.md",
+    "kb/_self/tools.md",
+    "kb/_self/usage.md"
+  ],
+  "links": [
+    "found: SP-qh2j24z2 review"
+  ],
+  "notes": "Found by the SP-qh2j24z2 review (gap 1, S1): ST-e5fdgjk4's provisional g2 exports a delivery only while ql_report.last_outcomes gives its apply outcome line==1, but every real 'apply --push: pushed' line (205 of 205 in the main clone's distill.log) is followed by 'apply --push: deleted the spool rows of N entries ...', so the outcome stands at line 2 and nothing is exported. The item's check passed on a synthetic log whose last line was the outcome. Keep BG-ttwih3wd's premise (a line appended later does not make a new delivery): key the delivery on the outcome line itself (e.g. the pushed sha or the outcome line's position among apply outcome lines), not line==1. Repro run on the tip 2026-10-20: events 0 spans 0, exit 1."
+}

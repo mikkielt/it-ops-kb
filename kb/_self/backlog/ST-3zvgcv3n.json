@@ -1,0 +1,24 @@
+{
+  "id": "ST-3zvgcv3n",
+  "kind": "story",
+  "title": "monitoring.md's OpenTelemetry section names where a new kbmon panel's points go",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/monitoring.md's Adding an OpenTelemetry signal section says a new panel is a mon_base.PANELS entry and a points function plus an EXPORTERS row in _tools/mon_export.py, not a mon_<name>.py points module",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/monitoring.md',encoding='utf-8').read();i=t.find('## Adding an OpenTelemetry signal');j=t.find('\\n## ',i+3);s=' '.join(t[i:j if j>0 else len(t)].split());miss=[p for p in ('PANELS','EXPORTERS','_tools/mon_export.py') if p not in s];bad='gets its points by `mon_<name>.py`' in s;print('missing',miss,'old wording',bad);sys.exit(1 if i<0 or miss or bad else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-qh2j24z2 review"
+  ]
+}

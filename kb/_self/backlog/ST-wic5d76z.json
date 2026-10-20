@@ -68,7 +68,9 @@
       },
       "class": "design",
       "answer": "row per signal",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -85,7 +87,9 @@
       },
       "class": "design",
       "answer": "glob rows",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): main() calls otel_logs.Logs and otel_spans.Spans directly on 2026-10-19. Folds ST-vztgxydb (map rows). The third check needs uv with the otel lock cached (it ran offline on 2026-10-19). Premise: the first check fails. ST-fgktuvvs left kb/_self/monitoring.md's 'Adding an OpenTelemetry signal' section saying main still builds otel_logs.Logs and otel_spans.Spans by name (its provisional gate g1: state today's state); once SIGNALS exists, reword that sentence to the registry.",
