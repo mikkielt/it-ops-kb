@@ -191,8 +191,12 @@ def maker_names_allowed(root, policy=None):
 
 
 # Secret shapes: the leak scan over tracked files (`_tools/test_leaks.py`) and kbingest.py's survey of a repository.
+# The first shape is the armor line of a private key (RSA, EC, OPENSSH, DSA, PGP, ENCRYPTED, plain) that key material
+# follows: optional `Name: value` header lines, then a run of base64 (a blank line, a newline or an escaped `\n` apart).
+# The lookahead keeps the match to the armor line, so a hit never prints the key; the label quoted alone in prose passes.
 SECRETS = (
-    r"-----BEGIN (?:RSA |EC |OPENSSH |DSA |PGP |ENCRYPTED )?PRIVATE KEY-----",
+    r"-----BEGIN (?:RSA |EC |OPENSSH |DSA |PGP |ENCRYPTED )?PRIVATE KEY-----(?=(?:\s|\\[nr])*(?:[A-Za-z][\w-]*: [^\n]*(?:\s|\\[nr])+)*"
+    r"[A-Za-z0-9+/]{20})",
     r"\bAKIA[0-9A-Z]{16}\b",
     r"\bgh[pousr]_[A-Za-z0-9]{36}\b", r"\bgithub_pat_[A-Za-z0-9_]{22,}\b",
     r"\bglpat-[A-Za-z0-9_-]{20,}\b", r"\bglrt-[A-Za-z0-9_-]{20,}\b",

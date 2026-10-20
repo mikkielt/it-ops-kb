@@ -22,7 +22,7 @@ def secret_plants():
     """One string for each kbcommon.SECRETS pattern, in its order, built from parts. The `(?i)` shape's plant is in
     capitals, which only a screen that casefolds the text and the pattern together finds."""
     return [
-        "-----BEGIN " + "RSA PRIVATE KEY-----",
+        "-----BEGIN " + "RSA PRIVATE KEY-----\n" + "A" * 64,
         "AK" + "IA" + "ABCDEFGHIJKLMNOP",
         "gh" + "p_" + "a" * 36,
         "github" + "_pat_" + "a" * 22,
@@ -132,6 +132,14 @@ def test_scan_reports_each_planted_leak_and_honours_the_allowlist_and_webfetch_h
         assert candidate(body, False) == body and candidate(body, True) == body, pattern
         assert "secret" in [k for k, _ in kbpublic.file_hits("notes.md", body, {})], pattern
         assert "secret" in [k for k, _ in kbpublic.file_hits("kb/x/artifacts/a.txt", body, {})], pattern
+    # a private key armor block with key material is a secret of every armor kind, with no allowlist entry that passes it
+    # by value; the armor label quoted alone in prose, or ahead of its own tail line, is not
+    for kind in ("", "RSA ", "EC ", "OPENSSH ", "DSA ", "PGP ", "ENCRYPTED "):
+        head, tail = "-----BEGIN " + kind + "PRIVATE KEY-----", "-----END " + kind + "PRIVATE KEY-----"
+        for lead in ("\n", "\r\n", "\\n", "\nProc-Type: 4,ENCRYPTED\nDEK-Info: AES-128-CBC,0123ABCD\n\n"):
+            assert kbcommon.leak_hits(head + lead + "MIIBVAIBADANBgkqhkiG9w0BAQEFAASC" + "\n" + tail, allowlist()) == \
+                [("secret", head)], (kind, lead)
+        assert kbcommon.leak_hits(f"the line `{head}` and `{tail}` name it, as does {head}\n{tail}\n", allowlist()) == [], kind
     # the placeholders pass, an allowlisted value passes
     ok = "jan.kowalski t@example.com 00000000-0000-0000-0000-000000000000 192.0.2.7"
     assert kbpublic.file_hits("notes.md", ok, {}) == []

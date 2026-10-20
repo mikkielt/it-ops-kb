@@ -26,6 +26,40 @@
     "kb/_self/content-rules.md",
     "kb/_self/querylog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Does the secret shape for a private key armor line need key material after it for every kind (RSA, EC, OPENSSH, DSA, PGP, ENCRYPTED, plain), or only the EC kind? Recommended: every kind, one rule with no per-kind exception, and a real key always carries a body.",
+      "options": [
+        "every kind needs key material after the armor line",
+        "only the EC kind needs it, the others stay flagged on the armor line alone"
+      ],
+      "recommendation": "every kind needs key material after the armor line",
+      "do": {
+        "every kind needs key material after the armor line": "BG-3vnu37rq",
+        "only the EC kind needs it, the others stay flagged on the armor line alone": "BG-3vnu37rq"
+      },
+      "class": "secrets"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How much base64 after the armor line counts as key material in the leak scan: a run of 20 characters (after optional header lines, a newline or an escaped newline), or a longer or shorter run?",
+      "options": [
+        "a run of 20 base64 characters",
+        "a run of 64 base64 characters, one full PEM line"
+      ],
+      "recommendation": "a run of 20 base64 characters",
+      "do": {
+        "a run of 20 base64 characters": "BG-3vnu37rq",
+        "a run of 64 base64 characters, one full PEM line": "BG-3vnu37rq"
+      },
+      "class": "design",
+      "answer": "a run of 20 base64 characters",
+      "by": "agent"
+    }
+  ],
   "notes": "Found by the SP-tsb23kev review (reviewer session on origin/main 4125e63f4): BG-onc6wxd3's allowlist line 'secret -----BEGIN EC PRIVATE KEY-----' matches by value with no file or commit scope, and the SECRETS shape matches only the armor line, so any EC private key with its body passes leak_hits, the tracked-file scan and kbgit.py publish. Repro on 4125e63f4: 'key with body flagged: False | bare label flagged: False', exit 1. RSA and plain armor lines still hit. The fix is a critical guard (leak scan): one planted failure in test_leaks.py is allowed. Publishing stays the operator's.",
   "claimed_by": "orch-r102",
   "operator": "op-f618a13e"
