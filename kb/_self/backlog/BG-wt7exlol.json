@@ -11,7 +11,7 @@
     "run": [
       "python3",
       "-c",
-      "import json,os,subprocess,sys,tempfile;d=tempfile.mkdtemp();env={**os.environ,'KB_COORD_STORE':os.path.join(d,'c.sqlite')};sid='aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';hook='.claude/hooks/coord_hook.py';run=lambda e:subprocess.run([sys.executable,hook],input=json.dumps({'hook_event_name':e,'session_id':sid,'cwd':d,'source':'startup'}),capture_output=True,text=True,env=env);p=run('SessionStart');run('SessionEnd');t=open('kb/_self/monitoring.md',encoding='utf-8').read();assert not (p.stdout.strip() and 'prints nothing when no other session overlaps and no ask is new' in t),'a SessionStart with no overlapping session and no ask printed %d characters, monitoring.md says the hook prints nothing then'%len(p.stdout)"
+      "import json,os,subprocess,sys,tempfile;d=tempfile.mkdtemp();env={**os.environ,'KB_COORD_STORE':os.path.join(d,'c.sqlite')};sid='planted-session';hook='.claude/hooks/coord_hook.py';run=lambda e:subprocess.run([sys.executable,hook],input=json.dumps({'hook_event_name':e,'session_id':sid,'cwd':d,'source':'startup'}),capture_output=True,text=True,env=env);p=run('SessionStart');q=run('SessionEnd');assert p.returncode==0 and q.returncode==0,(p.stderr,q.stderr);t=open('kb/_self/monitoring.md',encoding='utf-8').read();assert not (p.stdout.strip() and 'prints nothing when no other session overlaps and no ask is new' in t),'a SessionStart with no overlapping session and no ask printed %d characters, monitoring.md says the hook prints nothing then'%len(p.stdout)"
     ]
   },
   "touches": [
