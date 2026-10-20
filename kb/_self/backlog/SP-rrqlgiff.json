@@ -1,0 +1,21 @@
+{
+  "id": "SP-rrqlgiff",
+  "kind": "sprint",
+  "title": "Operator answers of 2026-10-20, run as the Sonnet orchestrator trial",
+  "status": "planned",
+  "goal": "an operator re-redacts the local store's waiting query-log entries with one querylog.py command; a query-log row naming an internal root stays in the local spool and is never delivered to the shared store; kbgit.py contribute takes a clean shared commit whose message carries an attribution trailer and leaves out one naming a private name, by hash alone; with an opt-in setting the kb MCP server offers claim, release and answer that keep every command-line gate and authority rule; kbask.py cleanup allows its session only the exact kbmon.py --json command; the Sonnet orchestrator trial is compared with the last three Opus-run sprints in kb/_self/token-efficiency.md",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e"
+}
