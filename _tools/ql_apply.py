@@ -547,15 +547,29 @@ def plain_question(text):
     return text
 
 
+TOOL_QUESTION = re.compile(
+    r"^\W*(?:how\s+many|count\b|list\b|number\s+of)\b.*?\b(?:articles?|sources?|topics?|facts?|domains?|roots?)\b"
+    r".*?\b(?:kb|knowledge\s+base|domains?|roots?)\b", re.I)
+
+
+def tool_question(question):
+    """Whether a question asks the kb to count or list what it holds (how many articles or sources a domain holds):
+    `rag.py audit`, `topics` and `facts` answer it from the files, so no article lacks a fact for it and the gap
+    step files no entry for it."""
+    return isinstance(question, str) and bool(TOOL_QUESTION.search(question))
+
+
 def gap_decision(question, gate):
     """(pack result, article, decision) of the gap step for one question, packed on the working tree, writing
     nothing: `passes` (it passes now), `held` (a `none` lead holds the words the pack lacks: an eval finding, the
     article is that lead), `reject` (off the kb's domains: no lead article, a stray `none` lead, a `weak` lead
     without the subject), `pasted` (pasted text, not a question: a backlog goal or a worker's brief, packed
-    nothing) or `keep` (a _gaps.md entry under the article's topic). `gap_one` acts on it and `gap_replay` prints
-    it."""
+    nothing), `tool` (a count or list of what the kb holds, which a tool answers: packed nothing) or `keep` (a
+    _gaps.md entry under the article's topic). `gap_one` acts on it and `gap_replay` prints it."""
     if pasted_text(question):
         return {}, None, "pasted"
+    if tool_question(question):
+        return {}, None, "tool"
     res = gate.pack(question)
     if passes(res, None):
         return res, None, "passes"
@@ -610,6 +624,9 @@ def gap_one(g, entry, gate, day):
     if decision == "pasted":
         return [{**without_observed(g), "state": "rejected",
                  "observed": {"gate": ["pasted text, not a question"]}}]
+    if decision == "tool":
+        return [{**without_observed(g), "state": "rejected",
+                 "observed": {"gate": ["a tool answers it, not a kb fact"]}}]
     if decision == "reject":
         return [{**without_observed(g), "state": "rejected",
                  "observed": {"verdict": res.get("verdict"), "gate": ["off the kb's domains"]}}]
