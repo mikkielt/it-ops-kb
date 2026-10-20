@@ -200,8 +200,8 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           worker rules and the rules of the docs the item's touches map to
                                           (`rag.py pack --root _self --item ID`, or a line saying it is absent);
                                           writes nothing, starts nothing, exit 0
-  backlog.py dispatch ID [--dry-run] [--model NAME] [--max-turns N] [--known TEST=BUG]... [--known-suite TEXT=BUG]...
-                                          [--probe TEXT]
+  backlog.py dispatch ID [--dry-run] [--detach] [--model NAME] [--max-turns N] [--known TEST=BUG]...
+                                          [--known-suite TEXT=BUG]... [--probe TEXT]
                                           start the item's headless worker: make its worktree
                                           (<worktree_dir>/agent-ID on work/ID from this checkout's HEAD) and the
                                           scratch directory, write the brief there (brief.md) and run `claude -p
@@ -214,7 +214,11 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           (worker_pid) when the session starts and its session_id (worker_session)
                                           when it exits; output goes to SCRATCH/result.json and SCRATCH/stderr.log.
                                           Refuses an item that is not doing (exit 1), a missing `claude` (exit 2);
-                                          exit 1 when the session exits non-zero or reports is_error. --dry-run
+                                          exit 1 when the session exits non-zero or reports is_error. --detach runs
+                                          that dispatch in a new session with stdin closed and what it prints in
+                                          SCRATCH/dispatch.log, prints its pid and the log and returns at once
+                                          (exit 0; the pid ends when the worker has exited): wait on the pid,
+                                          then read the log's last line. --dry-run
                                           prints the worktree, scratch, brief path and argv and makes, writes and
                                           starts nothing; --model names another model than sonnet only when given
   backlog.py stage-back ID [--check] [--self-reviewed DOC]... [--trailer 'Key: value']...

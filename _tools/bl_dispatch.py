@@ -50,6 +50,7 @@ PLUGIN_ROLE_FILE = "agents/worker.md"  # the plugin's, under PLUGIN_ROOT (the di
 BRIEF_NAME = "brief.md"
 RESULT_NAME = "result.json"  # the session's --output-format json output
 STDERR_NAME = "stderr.log"
+DETACH_LOG_NAME = "dispatch.log"  # `--detach`: what the detached dispatch prints (the pid line, the exit line, a refusal)
 STAGING = "staging"  # under the scratch directory: copies of the `.claude/` files the item's touches name
 BASES_NAME = "staging-bases.json"  # beside it: the digest of each worktree file when its copy was made (stage-back)
 DEFAULT_MODEL = "sonnet"
@@ -821,6 +822,37 @@ def cmd_brief(bl, a):
     return 0
 
 
+def detached_argv(bl, a):
+    """The argument list that runs this dispatch again without `--detach`, with the same flags."""
+    argv = [sys.executable, "-u", str(Path(__file__).with_name("backlog.py")), "--root", str(bl.root), "dispatch", a.id]
+    if a.model:
+        argv += ["--model", a.model]
+    if a.max_turns:
+        argv += ["--max-turns", str(a.max_turns)]
+    if a.probe:
+        argv += ["--probe", a.probe]
+    for flag, values in (("--known", a.known), ("--known-suite", a.known_suite)):
+        for v in values:
+            argv += [flag, v]
+    return argv
+
+
+def start_detached(bl, a, iid, scratch):
+    """Start this dispatch as a process of its own: a new session, stdin closed, what it prints in `DETACH_LOG_NAME`
+    of the scratch directory. It makes the worktree, runs the worker and ends once the worker has exited and its
+    leftovers are ended, so its pid is the one to wait on; this call prints the pid and the log and returns."""
+    scratch.mkdir(parents=True, exist_ok=True)
+    log = scratch / DETACH_LOG_NAME
+    where = ({"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS}
+             if sys.platform == "win32" else {"start_new_session": True})
+    with open(log, "w", encoding="utf-8", newline="\n") as out:
+        proc = subprocess.Popen(detached_argv(bl, a), cwd=str(bl.root), stdin=subprocess.DEVNULL, stdout=out,
+                                stderr=subprocess.STDOUT, **where)
+    say(f"dispatching {bl.label(iid)} detached: pid {proc.pid}, log {log} (its last line, `worker of {iid} exited`, "
+        f"ends it; the session's JSON is in {scratch / RESULT_NAME}); wait for the pid to end")
+    return 0
+
+
 def cmd_dispatch(bl, a):
     iid = need(bl, a.id)
     it = bl.items[iid]
@@ -839,11 +871,15 @@ def cmd_dispatch(bl, a):
         say(f"brief: {brief} (stdin)")
         say(f"cwd: {wt}")
         say("argv: " + shlex.join(argv))
+        if a.detach:
+            say(f"detached: log {scratch / DETACH_LOG_NAME} (stdin closed, a new session)")
         return 0
     if it.get("status") != "doing":
         raise Refused(f"{bl.label(iid)} is {it.get('status')}, not doing: claim it (and push the claim) before dispatch")
     if shutil.which(argv[0]) is None:
         raise Rejected(f"dispatch: {argv[0]} is not on PATH")
+    if a.detach:
+        return start_detached(bl, a, iid, scratch)
     text = compose_brief(bl, iid, a.known, a.probe, turns, a.known_suite)
     oid, _ = operator_who()
     defaults = repo_defaults(bl, iid)  # a repository whose fetch fails refuses the dispatch before anything is made
@@ -963,6 +999,9 @@ def args_dispatch(p):
     args_brief(p)
     p.add_argument("--dry-run", action="store_true",
                    help="print the worktree, scratch, brief path and argv; make, write and start nothing")
+    p.add_argument("--detach", action="store_true",
+                   help=f"run the dispatch in a new session with stdin closed and its output in SCRATCH/{DETACH_LOG_NAME}; "
+                        "print its pid and the log and return at once: wait on the pid")
     p.add_argument("--model", metavar="NAME", help=f"another model than {DEFAULT_MODEL}, only when the operator asks")
     p.add_argument("--max-turns", type=int, metavar="N", help="instead of the cap of the item's kind")
 
