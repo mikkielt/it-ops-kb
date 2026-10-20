@@ -1,0 +1,24 @@
+{
+  "id": "ST-mzsjeu6k",
+  "kind": "story",
+  "title": "A gate that speaks of a released coord claim, lease or key is not classed push",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_authority's push words leave out a release of a coord claim, lease or key (as without_benign_push_words already leaves out other benign wordings), so a doc or design question about a released claim is classed design while a release of the plugin or of a version stays push",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bl_authority as a;it={'touches':['kb/_self/coordination.md']};c1=a.derived_class(it,{'id':'g1','question':'state that a released claim leaves no row, or add nothing?','options':['state it','add nothing']});c2=a.derived_class(it,{'id':'g2','question':'Which release of the plugin do we publish?','options':['a','b']});print(c1,c2);sys.exit(0 if c1=='design' and c2=='push' else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py"
+  ],
+  "links": [
+    "parked: SP-eptouzxc close"
+  ]
+}

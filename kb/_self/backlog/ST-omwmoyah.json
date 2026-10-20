@@ -1,0 +1,24 @@
+{
+  "id": "ST-omwmoyah",
+  "kind": "story",
+  "title": "selfdoc check flags a bare kb/_self/ path in a skill or agent file the plugin ships",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "python3 _tools/selfdoc.py check reports each kb/_self/ path in skills/*/SKILL.md or agents/*.md that is not under ${CLAUDE_PLUGIN_ROOT}/, since a project that installs the plugin cannot open a clone-relative path: SP-eptouzxc's ST-sle263pk added such pointers to skills/sprint/SKILL.md and agents/worker.md and every check passed (the review found it; the fix is parked as ST-2opghg5m)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import shutil,subprocess,sys,tempfile;d=tempfile.mkdtemp();c=d+'/c';subprocess.run(['git','clone','-q','--shared','.',c],check=True);f=c+'/agents/worker.md';open(f,'a',encoding='utf-8').write('\\nSee kb/_self/planted-bare-path.md.\\n');r=subprocess.run([sys.executable,'_tools/selfdoc.py','check'],cwd=c,capture_output=True,text=True);o=r.stdout+r.stderr;print(r.returncode,o[-300:]);shutil.rmtree(d);sys.exit(0 if r.returncode!=0 and 'planted-bare-path' in o else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/selfdoc.py"
+  ],
+  "links": [
+    "parked: SP-eptouzxc close"
+  ]
+}

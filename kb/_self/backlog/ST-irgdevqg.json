@@ -1,0 +1,24 @@
+{
+  "id": "ST-irgdevqg",
+  "kind": "story",
+  "title": "A goal research story files no draft bug on text a sibling item of its sprint rewrites",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the kb-worker role's research rule says that a goal research story names a wrong statement in a file a sibling item of its sprint rewrites (that item's touches) in the sibling's notes instead of filing a draft bug, which the sibling's work would leave with a passing repro: SP-eptouzxc's ST-m5u7gmdo filed BG-wt7exlol, BG-lanut6np and BG-qthxifah on monitoring.md text ST-hayrghyh moved, and the review dropped all three by hand",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;L=open('agents/worker.md',encoding='utf-8').read().splitlines();ok=any('sibling' in l and 'draft' in l and 'research' in l for l in L);print(ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "agents/worker.md"
+  ],
+  "links": [
+    "parked: SP-eptouzxc close"
+  ]
+}

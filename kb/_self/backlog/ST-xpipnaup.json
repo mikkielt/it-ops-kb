@@ -1,0 +1,24 @@
+{
+  "id": "ST-xpipnaup",
+  "kind": "story",
+  "title": "The backlog runbook says where a goal research story keeps facts longer than one notes field",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/backlog.md names the cap of one item text field (TEXT_MAX in _tools/bl_base.py) and says where a goal research story whose per-part facts outrun it keeps them (one link per part, a summary in notes), so a worker does not stop on a gate for it: SP-eptouzxc's ST-m5u7gmdo held about 23000 characters of facts and recorded a provisional gate (g1) to put them in 17 links",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/backlog.md',encoding='utf-8').read();ok='TEXT_MAX' in t;print(ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-eptouzxc close"
+  ]
+}

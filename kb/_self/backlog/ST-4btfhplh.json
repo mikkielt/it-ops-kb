@@ -1,0 +1,24 @@
+{
+  "id": "ST-4btfhplh",
+  "kind": "story",
+  "title": "The sprint plan gives a doc move a no-fact-lost check over its sentences, not only its backticked terms",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the kb-sprint skill's plan step 6 says that an item which moves or merges doc text carries a no-fact-lost check that reads each moved sentence's facts (its numbers, exit codes, flags and named behaviours, plain prose included), not only its backticked terms: SP-eptouzxc's ST-hayrghyh passed a backticked-terms check while seven plain-prose facts of monitoring.md were lost (found by the review, fixed by BG-vao5m6qh)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('skills/sprint/SKILL.md',encoding='utf-8').read();s=t.split('## plan',1)[1].split('## start',1)[0];ok='no fact' in s and 'backticked' in s;print(ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-eptouzxc close"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "ST-vsc2punb",
+  "kind": "story",
+  "title": "An owner doc read from the code is planned with a check that runs the behaviours it states",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the kb-sprint skill's plan step 6 says that an item whose goal writes a kb/_self doc read from the code carries, beside its phrase checks, a check that runs each limit, refusal and exit code the goal names on a planted input (a temp coord store, a planted call of the MCP tool) and finds the doc's sentence for it: SP-eptouzxc's ST-nni7qqhk passed phrase checks while coordination.md said coord_wait and coord_put cap an over-limit value (the code refuses) and claim_windows reads refused claims (it does not)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('skills/sprint/SKILL.md',encoding='utf-8').read();s=t.split('## plan',1)[1].split('## start',1)[0];ok='read from the code' in s;print(ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-eptouzxc close"
+  ]
+}
