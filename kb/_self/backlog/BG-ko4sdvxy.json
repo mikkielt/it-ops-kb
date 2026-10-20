@@ -40,6 +40,23 @@
       "class": "design",
       "answer": "time the outcome by the log's last write while only its run's spool-rows lines follow it",
       "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does delivery_records tell an outcome followed only by its run's spool-rows line from one followed by another line?",
+      "options": [
+        "last_outcomes sets a standing flag on the apply entry and when keeps its meaning",
+        "last_outcomes gives the apply entry a when while its run's spool-rows line follows"
+      ],
+      "recommendation": "last_outcomes sets a standing flag on the apply entry and when keeps its meaning",
+      "do": {
+        "last_outcomes sets a standing flag on the apply entry and when keeps its meaning": "BG-ko4sdvxy",
+        "last_outcomes gives the apply entry a when while its run's spool-rows line follows": "BG-ko4sdvxy"
+      },
+      "class": "design",
+      "answer": "last_outcomes sets a standing flag on the apply entry and when keeps its meaning",
+      "by": "agent"
     }
   ],
   "links": [

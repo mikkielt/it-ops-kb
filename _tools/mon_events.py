@@ -180,7 +180,7 @@ def delivery_records(after):
     import ql_base
     import ql_report
     last = ql_report.last_outcomes(ql_base.places()[0])["apply"]
-    when = ns_of(last.get("when")) if last and last.get("when") else None
+    when = ns_of(last.get("when")) if last and last.get("when") and last.get("standing") else None
     if when is None or when <= after:
         return [], [], after
     failed = last["outcome"] in mon_log.DELIVERY_FAILED
