@@ -1,0 +1,41 @@
+{
+  "id": "ST-k5pjflob",
+  "kind": "story",
+  "title": "The open conflicts of the agents, claude, mcp and prior-art articles, and the entries that name no topic are settled by a source or noted with what would settle them",
+  "status": "draft",
+  "parent": "EP-aolytxc5",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "every _conflicts.md entry open on 2026-10-20 whose first topic is under the agents, claude, mcp and prior-art articles, and the entries that name no topic is closed with a Resolved or Reviewed note that cites the source settling it, the kb's facts reworded or superseded where the census's fresh reading shows them wrong, or carries a note dated 2026-10-21 or later saying what was checked and which source, lab or login would settle it; no fact is deleted",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re, sys\nsys.path.insert(0, '_tools')\nimport kbfacts\nL, P, F = 'public/_conflicts.md', ('agents/', 'claude/', 'mcp/', 'prior-art/', '?'), '2026-10-21'\nN = re.compile(r'\\b(?:Looked|Tried|Still open|Resolved|Reviewed|Closed|Narrowed|Partly resolved|Mostly resolved|Superseded):? (20\\d\\d-\\d\\d-\\d\\d)')\nC = re.compile(r'(?:^|\\s)- (?:Resolved|Superseded|Closed|Reviewed|Partly resolved|Mostly resolved|Narrowed)\\b')\nes = kbfacts.ledger_entries(L)\nkbfacts.link_entries(es)\ntop = lambda e: (e['explicit'] or e['via_sources'] or ['public/?'])[0].split('/', 1)[1]\nleft = [e['line'] for e in es if not C.search(e['text']) and top(e).startswith(P) and max(N.findall(e['text']) or ['0']) < F]\nprint(len(left), 'open', L, 'entries under', P, 'with no note dated', F, 'or later, lines:', left[:25])\nsys.exit(1 if left else 0)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/agents/**",
+    "kb/public/claude/**",
+    "kb/public/mcp/**",
+    "kb/public/prior-art/**",
+    "kb/public/_gaps.md",
+    "kb/public/_conflicts.md",
+    "kb/public/_sources.csv",
+    "kb/public/_anchors.csv",
+    "kb/public/_answers.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "depends_on": [
+    "ST-ywqj4gva"
+  ],
+  "notes": "Research item (/kb-research, sources read against the census of ST-zpe7qxtv): an entry closes only when a source settles it or it is no source disagreement (Reviewed); one that needs a lab, a login or unpublished information stays open with a dated note (maintaining.md, Conduct for changes). A gap the reading finds goes to _gaps.md under the same topic. Premise on 2026-10-20 (the first check fails): 32 open public/_conflicts.md entries under ('agents/', 'claude/', 'mcp/', 'prior-art/', '?') with no note dated 2026-10-21 or later, lines: [23, 34, 45, 55, 68, 77, 85, 97, 130, 164, 167, 170, 183, 292, 396, 424, 497, 501, 509, 566, 570, 579, 593, 663, 745]"
+}
