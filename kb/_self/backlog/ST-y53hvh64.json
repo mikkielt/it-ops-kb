@@ -57,7 +57,48 @@
     "skills/sprint/SKILL.md",
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
-    "kb/_self/benchmarks.md"
+    "kb/_self/benchmarks.md",
+    "kb/_self/code.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does --drop clear an own/ record, since coord has no delete command?",
+      "options": [
+        "write an empty value (readers skip it)",
+        "delete the row from the SQLite store directly"
+      ],
+      "recommendation": "write an empty value (readers skip it)",
+      "do": {
+        "write an empty value (readers skip it)": "ST-y53hvh64",
+        "delete the row from the SQLite store directly": "ST-y53hvh64"
+      },
+      "class": "agents-rule",
+      "answer": "write an empty value (readers skip it)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "When coord does not take an own/ record, does dispatch or bench multi stop?",
+      "options": [
+        "say it and go on",
+        "stop with the refusal"
+      ],
+      "recommendation": "say it and go on",
+      "do": {
+        "say it and go on": "ST-y53hvh64",
+        "stop with the refusal": "ST-y53hvh64"
+      },
+      "class": "agents-rule",
+      "answer": "say it and go on",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
   ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with planted inputs (KB_COORD_STORE points at its own coord store, so no check writes the clone's real one); no change to _tools/tests_ceiling.json. Owner store: coord (operator, 2026-10-19). bench_multi.py is also in the touches of the planned benchmark sprint SP-7s6uubs7: do not claim this while one of its items holding bench_multi.py is in flight (held --overlaps).",
   "claimed_by": "orch-r201",

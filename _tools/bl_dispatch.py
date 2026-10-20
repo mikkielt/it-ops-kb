@@ -1,7 +1,7 @@
 """The worker's brief and its start (kb/_self/backlog.md, Running a sprint; kb/_self/tools.md): `backlog.py brief ID`
 prints the brief a sprint worker is given, and `backlog.py dispatch ID` makes the worker's worktree and scratch
 directory, writes the brief there and starts the headless session from it, recording the session's pid and id on the
-item's claim, and ends with a line naming the spool that holds the session's file and whether it holds a `branch`,
+item's claim, and the worktree, scratch directory and pid as coord `own/` keys (`bl_clean.record_owner`), and ends with a line naming the spool that holds the session's file and whether it holds a `branch`,
 `agent-start` or `agent-stop` row naming the item (`rows_line`; the spool is one `land` and `cost` read, or another
 one on the host that they do not). In a workspace whose backlog.json declares `repositories`, dispatch also makes a worktree of each
 repository the item's `repos` names at `<worktree_dir>/<id>/<repo>`, on the same branch name from that repository's
@@ -18,7 +18,7 @@ worktree and scratch directory, the in-flight sibling items with the files their
 tests and whole-suite failures that are no test the orchestrator names, the fixed worker rules and the rules of the project's own docs (`rules_section`, the
 one function that builds that part: backlog.json's `kb_root` gives the cited fact lines of a kb root, its `docs_map`
 the docs and `##` headings the item's touches map to). Standard library only; imports `bl_base`, `bl_cli`,
-`bl_items` (for the `goal` text) and `bl_land` (the worker's branch and worktree names), never `backlog`."""
+`bl_items` (for the `goal` text), `bl_land` (the worker's branch and worktree names) and `bl_clean` (the `own/` records), never `backlog`."""
 import argparse
 import contextlib
 import csv
@@ -33,6 +33,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import bl_clean
 import bl_cli
 import bl_items
 import bl_procs
@@ -622,6 +623,15 @@ def make_worktree(root, iid, wt):
         raise Refused(f"dispatch: {shlex.join(argv)} failed: {(p.stderr or p.stdout).strip()}")
 
 
+def own_made(bl, iid, cls, target):
+    """Record TARGET, which dispatch made for the item, as a coord `own/` key (`bl_clean.record_owner`). A coord that
+    does not take the write is said and never stops the dispatch."""
+    try:
+        bl_clean.record_owner(cls, target, item=iid, sprint=bl.items[iid].get("sprint"))
+    except Refused as e:
+        say(f"dispatch: {e}")
+
+
 def git_in(checkout, *args):
     return subprocess.run(["git", "-C", str(checkout), *args], capture_output=True, text=True, encoding="utf-8",
                           errors="replace")
@@ -933,6 +943,9 @@ def cmd_dispatch(bl, a):
     for n, co in repo_checkouts(bl, iid):
         make_repo_worktree(n, co, repo_worktree_path(bl.root, iid, n), iid, defaults.get(n))
     scratch.mkdir(parents=True, exist_ok=True)
+    for where in [wt] + [repo_worktree_path(bl.root, iid, n) for n, _ in repo_checkouts(bl, iid)]:
+        own_made(bl, iid, "worktree", where)
+    own_made(bl, iid, "scratch", scratch)
     stage_copies(bl, iid, wt)
     write_text(brief, text)  # the worker needs the paths as they are: no name guard
     result, errlog = scratch / RESULT_NAME, scratch / STDERR_NAME
@@ -941,6 +954,7 @@ def cmd_dispatch(bl, a):
         proc = subprocess.Popen(argv, cwd=str(wt), stdin=stdin, stdout=out, stderr=err,
                                 env=worker_env(oid))
         record_worker(bl.root, iid, worker_pid=proc.pid, role=WORKER_ROLE, **({"operator": oid} if oid else {}))
+        own_made(bl, iid, "process", proc.pid)
         say(f"dispatched {bl.label(iid)}: pid {proc.pid}, brief {brief}, output {result}")
         sys.stdout.flush()
         code = proc.wait()

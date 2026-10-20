@@ -25,6 +25,7 @@ from pathlib import Path
 import agent_bench
 import bench_pool
 import bench_repro
+import bl_clean
 import kbpublic
 from bench_core import (HOME, PRICE, RESULTS, isolate, pinned, read_rows, resolve_model, scratch_dir, spent_run, tier_of, transcript,
                         write_rate, write_rows)
@@ -211,6 +212,16 @@ def base_commit(root, bare, items=(), scenario=None):
         shutil.rmtree(work, ignore_errors=True)
 
 
+def own_sandbox(root, drop=False):
+    """Record the sandbox at ROOT and the directory its clones sit in as coord `own/` keys (`bl_clean.record_owner`), or with
+    DROP clear them. A coord that does not take the write is said and never stops the run."""
+    for where in (root, clone_path(root, 1).parent):
+        try:
+            bl_clean.record_owner("sandbox", where, drop=drop)
+        except bl_clean.Refused as e:
+            print(f"multi: {e}", file=sys.stderr)
+
+
 def setup(count, coord, root=None, start=None, dry_run=False, out=print, scenario=None):
     """Build the sandbox: print the plan and every path. Returns 0, or raises Refused. With dry_run nothing is created. With a
     `scenario` the base commit also plants the backlog item of each of its code agents (`planted`); `count` None is the
@@ -260,6 +271,7 @@ def setup(count, coord, root=None, start=None, dry_run=False, out=print, scenari
         {"n": n, "clone": str(clone_path(root, n)), "mcp_config": str(mcp_path(root, n)),
          "coord_store": str(store_path(root, coord, n)), "lock_dir": str(lock_dir(root, n))} for n in range(1, count + 1)]}
     (root / MANIFEST).write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8", newline="\n")
+    own_sandbox(root)
     for ln in plan_lines(root, coord, count, sha, why, items):
         out(ln)
     out(f"manifest: {root / MANIFEST}")
@@ -277,6 +289,7 @@ def remove(root, out=None):
     shutil.rmtree(clones, ignore_errors=True)
     shutil.rmtree(twins, ignore_errors=True)
     shutil.rmtree(root, ignore_errors=True)
+    own_sandbox(root, drop=True)
     if out is not None:
         out(f"removed: {root}")
         out(f"removed: {clones}")
