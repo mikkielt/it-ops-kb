@@ -106,7 +106,11 @@
         "every clone: outside a cloud session the hook prints only that line, and in a cloud session it is one more status line": "ST-skoaypsh",
         "cloud sessions only, as the rest of the hook": "ST-skoaypsh"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "every clone: outside a cloud session the hook prints only that line, and in a cloud session it is one more status line",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",
