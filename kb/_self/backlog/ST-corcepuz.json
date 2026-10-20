@@ -2,7 +2,7 @@
   "id": "ST-corcepuz",
   "kind": "story",
   "title": "Functions no code, hook, skill or agent names are removed",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-jplczvj2",
   "priority": "P3",
   "rank": 0,
@@ -51,5 +51,7 @@
   "depends_on": [
     "ST-oo6uxbn6"
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): scan 2026-10-19: selfdoc.check_map (35 lines), bl_intake.repeats_detector (28), ql_learn.registry_problems (15), kbfacts.stored_pack (13), ql_learn.trigger_problems, kg_trailers.forget_audits, ql_apply.lead_passage, ql_deliver.ci_status, bl_forge.read_pipeline, bl_base.ConfigError: 110 lines. A comment naming the dynamic use counts as a reference for the check. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done."
+  "notes": "operator request 2026-10-19 (housekeeping batch): scan 2026-10-19: selfdoc.check_map (35 lines), bl_intake.repeats_detector (28), ql_learn.registry_problems (15), kbfacts.stored_pack (13), ql_learn.trigger_problems, kg_trailers.forget_audits, ql_apply.lead_passage, ql_deliver.ci_status, bl_forge.read_pipeline, bl_base.ConfigError: 110 lines. A comment naming the dynamic use counts as a reference for the check. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
+  "claimed_by": "orch-r108",
+  "operator": "op-f618a13e"
 }
