@@ -57,6 +57,38 @@
   "depends_on": [
     "ST-e23cb2h4"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "ql_distill and ql_deliver import each other: distill builds the default push, deliver reads LOG_NAME, LOG_MAX_BYTES and spool_delivered. Breaking it keeps deliver above distill and has distill take a delivery factory that the one caller, the distill command of _tools/querylog.py, passes (ql_deliver.default_delivery); that file is outside this item's touches. Add it to the touches?",
+      "options": [
+        "add querylog.py to the touches",
+        "narrow the goal and leave the pair"
+      ],
+      "recommendation": "add querylog.py to the touches",
+      "do": {
+        "add querylog.py to the touches": "ST-oo6uxbn6",
+        "narrow the goal and leave the pair": "ST-oo6uxbn6"
+      },
+      "class": "push"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Where do the helpers that two modules of a cycle shared now live? worker_dirs and main_worker_dir (bl_land and bl_selfcheck) in bl_base; run (bl_base and bl_intake) as bl_base.run calling ql_base.run_cmd; public_url and bare_url (ql_store and ql_research) in ql_store; spool_claims (ql_learn and ql_distill) in ql_distill; Gate and bare_token (ql_apply and ql_research) in ql_learn",
+      "options": [
+        "move each to the lower module, the old names still importable where callers use them",
+        "move each to the higher module"
+      ],
+      "recommendation": "move each to the lower module, the old names still importable where callers use them",
+      "do": {
+        "move each to the lower module, the old names still importable where callers use them": "ST-oo6uxbn6",
+        "move each to the higher module": "ST-oo6uxbn6"
+      },
+      "class": "secrets"
+    }
+  ],
   "notes": "operator request 2026-10-19 (housekeeping batch): AST scan 2026-10-19 (function-level imports included): bl_base -> bl_intake; cycles bl_base<->bl_intake, bl_land<->bl_selfcheck, ql_deliver<->ql_distill, ql_distill<->ql_learn, ql_apply<->ql_research, ql_research<->ql_store. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
   "claimed_by": "orch-r108",
   "operator": "op-f618a13e"

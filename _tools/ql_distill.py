@@ -503,20 +503,20 @@ def feedback_report(r, k, pages):
     kb sources whose url the row's `source_url` is: `pages.named_ids`) or else `lead` (that url, when it passes the
     research candidate url gate and the leak scan, and redact.redact leaves it unchanged: a secret assignment in its
     path stays out), both from the url with its query and fragment dropped
-    (`ql_research.bare_url`), `tool_issue`; and `comment`, the row's text when the row has
+    (`ql_store.bare_url`), `tool_issue`; and `comment`, the row's text when the row has
     no outcome, which only Haiku's mapping reads (never stored). `claim` and every other field stay out."""
-    import redact, ql_research
+    import redact
     seen, lines = set(), []
     for x in r.get("lines") if isinstance(r.get("lines"), list) else []:
         if isinstance(x, dict) and isinstance(x.get("line"), str) and CITATION.fullmatch(x["line"]) \
                 and x.get("issue") in FEEDBACK_ISSUES and x["line"] not in seen:
             seen.add(x["line"])
             lines.append({"line": x["line"], "issue": x["issue"]})
-    url = ql_research.bare_url(r["source_url"]) if isinstance(r.get("source_url"), str) else ""
+    url = store_.bare_url(r["source_url"]) if isinstance(r.get("source_url"), str) else ""
     sources, lead = [], None
     if url and len(url) <= ARG_MAX_CHARS:
         sources = pages.named_ids(url)
-        if not sources and ql_research.public_url(url) and not redact.scan(url, k) and redact.redact(url, k) == url:
+        if not sources and store_.public_url(url) and not redact.scan(url, k) and redact.redact(url, k) == url:
             lead = url
     outcome = r.get("outcome") if r.get("outcome") in FEEDBACK_OUTCOMES else None
     comment = r.get("comment").strip() if isinstance(r.get("comment"), str) else ""
@@ -540,6 +540,31 @@ def closed_reports(reports):
         if c not in out:
             out.append(c)
     return out[:FEEDBACK_REPORTS_MAX]
+
+
+def spool_claims(spool=None):
+    """[(closed report, claim)] of the feedback rows the local spool still holds with a `claim`, the report in the
+    closed shape the store keeps (`feedback_report`), so a stored report finds its row by equality. The
+    claim is free text and lives in the spool only (the store keeps closed fields): once distill has delivered a row it
+    is gone, and a report whose row is gone has no claim."""
+    import ql_learn
+    spool = Path(spool) if spool else places()[0] / "spool"
+    out, pages = [], ql_learn.KbPages()
+    for p in sorted(spool.glob("*.jsonl")) if spool.is_dir() else []:
+        try:
+            lines = p.read_text(encoding="utf-8").splitlines()
+        except OSError:
+            continue
+        for ln in lines:
+            try:
+                r = json.loads(ln)
+            except ValueError:
+                continue
+            claim = " ".join(r["claim"].split()) if isinstance(r, dict) and isinstance(r.get("claim"), str) else ""
+            if claim and r.get("surface") == FEEDBACK:
+                for rep in closed_reports([feedback_report(r, None, pages)]):
+                    out.append((rep, claim))
+    return out
 
 
 def feedback_entry(r, k):

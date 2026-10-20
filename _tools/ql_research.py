@@ -6,12 +6,11 @@ their _gaps.md entries for `/kb-research --queue`, and records what that researc
 """
 import collections, csv, datetime, io, json, re
 from pathlib import Path
-from urllib.parse import urlsplit, urlunsplit
 
 from ql_base import (DISABLED_NAME, HOME, STORE, Replay, claude_p, one_line, places, read_json, read_mode,
                      read_research, restore, run_cmd, write_text)
-from ql_store import (APPLY_FAILED, CLOSED_STAGE, HOSTNAME, LEARN_STATES, PRIVATE_TLDS, QUESTION_MAX_CHARS,
-                      closed_gaps, finding_states, reopened_problems, run_path, store_entries, write_findings)
+from ql_store import (APPLY_FAILED, CLOSED_STAGE, LEARN_STATES, QUESTION_MAX_CHARS, bare_url, closed_gaps,  # noqa: F401
+                      finding_states, public_url, reopened_problems, run_path, store_entries, write_findings)
 
 QUOTE_MAX_WORDS = 25  # the longest quote the kb's rules allow (kbcommon.QUOTE_WORDS, kb/_self/content-rules.md)
 QUOTE_MIN_WORDS = 5  # a shorter quote is found on almost any page and backs nothing
@@ -329,29 +328,6 @@ def parse_research(reply):
     return facts[:RESEARCH_FACTS_MAX]
 
 
-def public_url(url):
-    """Whether `url` is an http(s) page on a public DNS name, the url gate of a research candidate (candidate_problems)
-    and of a kb_feedback report: no user part, a DNS name, its last label no private one (PRIVATE_TLDS)."""
-    try:
-        u = urlsplit(str(url).strip())
-        host = (u.hostname or "").lower()
-        user = u.username
-    except ValueError:
-        return False
-    return u.scheme in ("http", "https") and not user and bool(HOSTNAME.fullmatch(host)) \
-        and host.rsplit(".", 1)[-1] not in PRIVATE_TLDS
-
-
-def bare_url(url):
-    """`url` with scheme, host and path only: its query and fragment, where free text can ride, dropped. What a
-    feedback report keeps as `lead` (ql_distill.feedback_report) and the store gate compares a stored one with."""
-    try:
-        u = urlsplit(str(url).strip())
-        return urlunsplit((u.scheme, u.netloc, u.path, "", ""))
-    except ValueError:
-        return ""
-
-
 def candidate_problems(c, facts):
     """Why a candidate fact cannot be written, before its quote is checked: its text (one sentence of our own, no
     tag, nothing the leak scan flags, not already a fact), tag, url (http(s), a public DNS name), source fields and
@@ -606,8 +582,7 @@ def queue(store=None, limit=None, gate=None, day=None, kb_commit=None, out=print
     per question (every gap finding that asked it, with its entry), ranked by the logged lookups that asked it, then by
     the oldest lookup, then by finding id; the top `limit` items (all when None) are printed grouped by topic. 1 when a
     closed gap reappears (a later record, or its entry without a settling note), else 0."""
-    from ql_apply import Gate  # imported here: ql_apply imports this module
-    from ql_learn import passes
+    from ql_learn import Gate, passes
     store = Path(store or STORE)
     gate = gate or Gate()
     day = day or head_day()
@@ -690,7 +665,7 @@ def close(fid, claim=False, tried=None, store=None, gate=None, day=None, kb_comm
     with OFF_DOMAINS in `observed`: the record the gap step writes for a candidate no topic can take. 0; 1 refused (not
     an open gap, no entry, no settling note for --claim, a settled entry or an empty note for --tried, an entry still
     in the ledger for --reject). `written`: a list the findings file's path is appended to."""
-    from ql_apply import Gate  # imported here: ql_apply imports this module
+    from ql_learn import Gate
     store = Path(store or STORE)
     gate = gate or Gate()
     day = day or datetime.datetime.now(datetime.timezone.utc).date().isoformat()

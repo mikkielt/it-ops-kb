@@ -6,14 +6,15 @@ quoted a line, or that is a weak miss with no missing key word (then the pack's 
 becomes a row of kb/_self/_retrieval/lookup_eval.csv anchored on a phrase of that line; then opt-in research
 (ql_research). One findings file records each outcome.
 """
-import csv, datetime, re, sys
+import csv, datetime, re
 from pathlib import Path
 
-from ql_base import HOME, one_line, places, restore, run_cmd, write_text
-from ql_learn import (article_facts, article_of, domain_article, feedback_reports, held_article, passes, pasted_text,
-                      report_claim, spool_claims, unknown_words)
+from ql_base import one_line, places, restore, write_text
+from ql_distill import spool_claims
+from ql_learn import (Gate, bare_token, domain_article, feedback_reports, held_article, passes, pasted_text, report_claim,
+                      unknown_words)
 from ql_research import add_under, fact_lines, quotecheck, research_one
-from ql_store import (APPLY_STATES, FIX_KINDS, RULES_ROOT, failed_counts, finding_states, store_entries, write_findings)
+from ql_store import (APPLY_STATES, FIX_KINDS, failed_counts, finding_states, store_entries, write_findings)
 
 FAILED_RETRIES = 0  # times a finding recorded apply-failed is applied again: never
 ALIAS_CANDIDATES = 3  # canonical words tried per alias finding: the article's file-name words, then its title's
@@ -29,188 +30,6 @@ ANCHOR_CANDIDATES = 5  # phrases of the answering line tried for the anchor, rar
 PASSAGE = re.compile(r"^- (kb/_self/\S+?\.md:\d+) (.*)$", re.M)  # a passage line of `pack --root _self`, as it prints it
 CSV_HEADERS = {"eval": ["id", "question", "expect_paths", "expect_verdict", "allow_weak"],
                "aliases": ["term", "canonical"], "expansions": ["key", "question"]}
-
-
-class Gate:
-    """pack and the kb gates on the working tree of this clone: `rag.py eval`, the off-kb verdicts, the pack size,
-    and where a fix, a gap entry or a researched fact goes."""
-
-    @staticmethod
-    def fresh():
-        import kbfacts
-        kbfacts._FP[:] = [0.0, None]  # a file was just written: the next call fingerprints the kb again
-
-    def pack(self, question):
-        import kbfacts
-        self.fresh()
-        return kbfacts.pack(question, fmt="concise")
-
-    def measure(self):
-        """{n, passed, noted, failed, why {failed id: [failed words: text, anchor, ...]}, chars {eval id: pack
-        characters}, offkb_good} on the working tree."""
-        import kbcommon, kbfacts, rag
-        self.fresh()
-        res = rag.run_eval()
-        good = 0
-        for r in kbcommon.roots():
-            p = Path(r.path) / kbcommon.DATA_DIR / "doc2query" / "offkb_questions.txt"
-            if p.is_file():
-                qs = [q for q in p.read_text(encoding="utf-8").splitlines() if q.strip()]
-                good += sum(kbfacts.pack(q, fmt="concise")["verdict"] == "good" for q in qs)
-        return {"n": res["n"], "passed": res["passed"], "noted": res["noted"], "failed": [r["id"] for r in res["rows"] if not r["ok"]],
-                "why": {r["id"]: r["failed"] for r in res["rows"] if not r["ok"] and r["failed"]},
-                "chars": {r["id"]: r["chars"] for r in res["rows"]}, "offkb_good": good}
-
-    def rules_eval(self):
-        """The `_self` eval file, where a rules finding's row goes."""
-        import kbcommon
-        return Path(kbcommon.SELF) / kbcommon.DATA_DIR / "lookup_eval.csv"
-
-    def rules_aliases(self):
-        """The `_self` aliases file, where a rules finding's word pair goes."""
-        import kbfacts
-        return Path(kbfacts.SELF_ALIASES)
-
-    def rules_pack(self, question):
-        """`pack --root _self` for the question on the working tree."""
-        import kbfacts
-        self.fresh()
-        return kbfacts.pack(question, fmt="concise", root=RULES_ROOT)
-
-    def rule_line(self, ref):
-        """(the doc's name under kb/_self, the text of the line) of a `kb/_self/<doc>.md:<line>` reference, or None."""
-        import kbfacts
-        path, _, n = ref.rpartition(":")
-        text = kbfacts.read(path) if path in kbfacts.self_docs() else None
-        lines = (text or "").splitlines()
-        return (path.rsplit("/", 1)[1], lines[int(n) - 1]) if n.isdigit() and 0 < int(n) <= len(lines) else None
-
-    def token_counts(self):
-        """{token: occurrences} over the kb/_self docs, a token as `anchor_phrases` cuts it."""
-        import kbfacts
-        counts = {}
-        for rel in kbfacts.self_docs():
-            for t in (kbfacts.read(rel) or "").split():
-                t = bare_token(t)
-                if t:
-                    counts[t] = counts.get(t, 0) + 1
-        return counts
-
-    def anchored(self, row):
-        """Whether the eval row's phrase is in a passage of its doc (what `rag.py eval --root _self` calls its anchor)."""
-        import kbfacts
-        return kbfacts.anchor_of(dict(zip(("id", "question", "expect_paths", "expect_verdict", "allow_weak", "expect_text"), row)),
-                                 kbfacts.self_units()) is not None
-
-    def targets(self, article):
-        """The files a fix for `article` writes: its root's eval set and expansions, and the aliases (the shared
-        _tools/aliases.csv for the public root, a root's own _retrieval/aliases.csv otherwise)."""
-        import kbcommon, kbfacts
-        r = self.root(article)
-        data = Path(r.path) / kbcommon.DATA_DIR
-        return {"root": r.name, "eval": data / "lookup_eval.csv", "expansions": data / "doc2query" / "expansions.csv",
-                "aliases": Path(kbfacts.ALIASES) if r.name == kbcommon.public().name else data / "aliases.csv"}
-
-    def alias_terms(self, rules=True):
-        """{term: canonical} of every alias file, kb/_self's rule vocabulary too unless `rules` is false (an article's
-        alias candidates: that file applies under `_self` only)."""
-        import kbfacts
-        out = {}
-        for p in kbfacts.alias_files(rules=rules):
-            with open(p, encoding="utf-8", newline="") as f:
-                for row in csv.DictReader(f):
-                    t = " ".join((row.get("term") or "").lower().split())
-                    if t:
-                        out.setdefault(t, (row.get("canonical") or "").strip().lower())
-        return out
-
-    def facts(self, article):
-        """[(line, text)] of the tagged facts of `article`."""
-        return article_facts(article)
-
-    def title(self, article):
-        import kbfacts
-        return (kbfacts.articles().get(article) or {}).get("title", "")
-
-    def article_of(self, path):
-        """The qualified article (.md) whose topic holds the qualified `path` (the article itself, a same-stem data
-        file or a file its `files:` lists), or None."""
-        return article_of(path)
-
-    def unit_words(self, article, words):
-        """[the key words of `words` one unit holds] for each unit of the article's topic (the article, its same-stem
-        data file and the files its `files:` lists) that holds any: its own words as the pack counts them (file name,
-        title, section and text), a product alias held where the product's other names are (`kbfacts.expand`'s
-        variants, from the alias forms the words make up)."""
-        import kbfacts
-        st = kbfacts.store()
-        topic = (kbfacts.articles().get(article) or {}).get("topic")
-        files = set(kbfacts.topic_files().get(topic) or ()) | {article}
-        words, variants = set(words), {}
-        for forms in kbfacts.aliases().values():
-            stems = [s for s in (tuple(kbfacts.stem(w) for w in f if w not in kbfacts.STOP) for f in forms) if s]
-            for s in stems:
-                if set(s) <= words:  # the question used this name of the product
-                    for t in s:
-                        variants.setdefault(t, set()).update(stems)
-        per = {}
-        for t in sorted(words):
-            ids = set(st.own(t))
-            for v in variants.get(t, ()):
-                ids |= set.intersection(*(set(st.own(x)) for x in v))
-            for i in ids:
-                if st.paths[i] in files:
-                    per.setdefault(i, set()).add(t)
-        return [per[i] for i in sorted(per)]
-
-    def topic(self, article):
-        """The topic of a qualified article, as its root's ledgers name it: `<domain>/<slug>`."""
-        import kbfacts
-        return kbfacts.bare((kbfacts.articles().get(article) or {}).get("topic") or article[:-3])
-
-    def root(self, article):
-        import kbcommon, kbfacts
-        return kbcommon.root(kbfacts.root_name(article) or kbcommon.public().name)
-
-    def ledger(self, article, name):
-        """A file of the article's root: `_gaps.md`, `_conflicts.md`, `_sources.csv`."""
-        return Path(self.root(article).path) / name
-
-    def file(self, article):
-        import kbcommon
-        return Path(kbcommon.path_of(article))
-
-    def id_prefix(self, article):
-        return self.root(article).id_prefix
-
-    def source_url(self, sid):
-        """The url of a kb source's row, else None."""
-        import kbfacts
-        return (kbfacts.source_rows().get(sid) or {}).get("url") or None
-
-    def research_files(self, article):
-        """Every file research may write for `article`, so a failed gate can put each back: the article, its root's
-        sources, gaps (the Resolved note), conflicts and the coverage files build_index regenerates."""
-        return [self.file(article)] + [self.ledger(article, n) for n in ("_sources.csv", "_gaps.md", "_conflicts.md",
-                                                                          "_coverage.csv", "_coverage.md")]
-
-    def ledger_errors(self, article):
-        """Every error check.py gives the ledgers of the article's root (`check.ledger_errors`)."""
-        import check
-        return check.ledger_errors(self.root(article))
-
-    def index_and_check(self):
-        """build_index.py, then check.py over every root: the ERROR lines when check.py does not end errors=0."""
-        tools = HOME / "_tools"
-        code, o, e = run_cmd([sys.executable, str(tools / "build_index.py")], cwd=HOME)
-        if code:
-            return [one_line(f"build_index.py exit {code}: {(o + e).strip()[-200:]}", 240)]
-        code, o, e = run_cmd([sys.executable, str(tools / "check.py")], cwd=HOME)
-        m = re.search(r"errors=(\d+)", o)
-        if code == 0 and m and m.group(1) == "0":
-            return []
-        errs = [one_line(ln, 200) for ln in o.splitlines() if ln.startswith("ERROR")]
-        return errs[:6] or [one_line(f"check.py exit {code}: {(o + e).strip()[-200:]}", 240)]
 
 
 def csv_rows(path):
@@ -369,11 +188,6 @@ def apply_one(ev, fix, entry, gate, base):
 
 
 # ---------------------------------------------------------------- rules findings: an anchored eval row
-
-def bare_token(t):
-    """A whitespace-separated token of a doc line in lower case without the punctuation around it."""
-    return re.sub(r"^\W+|\W+$", "", t).lower()
-
 
 def anchor_phrases(line, counts, shown=None):
     """The phrases of 4 to 6 consecutive words of `line`, as written (single spaces, no `;`, no punctuation at either

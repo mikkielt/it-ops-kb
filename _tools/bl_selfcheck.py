@@ -14,7 +14,7 @@ The seven checks, each independent and each a result {name, state, detail, remed
                a `Bash(PATTERN)` rule covers a command that PATTERN matches whole, `*` standing for any text and a
                trailing ` *` also for no arguments, as Claude Code reads it; a `deny` rule is not read; a bare `Bash` rule covers every command
   checkout     the clone is no linked worktree of another checkout (`git rev-parse --git-common-dir` is its own
-               `--git-dir`), or is one whose workers `land` accepts (`bl_land.main_worker_dir`: the other checkout's
+               `--git-dir`), or is one whose workers `land` accepts (`bl_base.main_worker_dir`: the other checkout's
                `.claude/worktrees/`, named with the clone's own in the detail); a linked worktree whose workers it
                refuses fails, and one git cannot be read for is `unknown`
   hooks        `core.hooksPath` runs this checkout's `.githooks` (or the `.githooks` of another worktree of the clone)
@@ -41,7 +41,7 @@ The seven checks, each independent and each a result {name, state, detail, remed
 The output is capped: each check prints at most one line of at most LINE_MAX characters, a list in it names its first
 SHOW entries and a count of the rest (`+K more`), and the whole is under MAX_CHARS characters, whole lines dropped
 from the end with a last line that says how many; `--full` lifts the cap. Standard library only; imports `bl_base`,
-`bl_cli`, `bl_procs` and `bl_stall` at load and never `backlog` (a layer rule); `tests`, `kg_hooks` and `bl_land` are
+`bl_cli`, `bl_procs` and `bl_stall` at load and never `backlog` (a layer rule); `tests` and `kg_hooks` are
 imported where used. It registers its own subcommand when imported, so `backlog.py` carries only the import.
 """
 import json
@@ -55,7 +55,7 @@ from pathlib import Path
 import bl_cli
 import bl_procs
 import bl_stall
-from bl_base import Refused, Rejected, say, worker_dir
+from bl_base import Refused, Rejected, main_worker_dir, say, worker_dir, worker_dirs
 
 LOAD_PER_CORE = 1.5  # the 5-minute load average, per core, above which the host is too busy to take more workers
 SUITE_LOAD_PER_CORE = 0.5  # the same load, per core, above which a whole-suite tests.py run no longer fits its darwin
@@ -199,10 +199,9 @@ def check_checkout(root):
     other = linked_worktree_of(root)
     if other is None:
         return result("checkout", "ok", "the clone is not a linked worktree")
-    import bl_land  # the directories `land` accepts a worker under are its own
     try:
-        own = sorted(bl_land.worker_dirs(root))
-        main = bl_land.main_worker_dir(root)
+        own = sorted(worker_dirs(root))
+        main = main_worker_dir(root)
     except Refused as e:
         return result("checkout", "unknown", f"the worker directories `land` expects cannot be read: {e}")
     if main is None:
