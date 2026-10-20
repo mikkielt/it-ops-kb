@@ -4,7 +4,9 @@ checkout and worktrees), each as an orphan or foreign (kb/_self/backlog.md, Proc
 
   procs                 list them (read only): pid, parent, age, class, command name, and where it runs
 
-Classes: `orphan` (its parent is gone: a background run a session left behind), `hook` (an orphan whose standard output
+Classes: `orphan` (its parent is gone: a background run a session left behind), `detached` (its parent is gone, but it
+leads its own process group, started with `start_new_session`, and still has a live child: a launcher a session started
+apart and left at work; named in no alert and by no `selfcheck`), `hook` (an orphan whose standard output
 is the query log's distill.log and that is still at work: the run a session's end hook started, which waits for the
 distill lock up to the query log's USAGE_LOCK_WAIT_S, delivers with its parent gone, and ends on its own; it is at work
 while the distill lock records its pid, or while it is younger than USAGE_LOCK_WAIT_S plus HOOK_MARGIN_S) and `foreign`
@@ -41,7 +43,7 @@ import bl_cli
 from bl_base import Refused, say
 
 REAPERS = ("init", "systemd", "launchd")  # a parent with one of these names has adopted an orphan
-ORPHAN, HOOK, FOREIGN = "orphan", "hook", "foreign"
+ORPHAN, HOOK, DETACHED, FOREIGN = "orphan", "hook", "detached", "foreign"
 HOOK_GRACE_S = 60  # how long `land` waits for a session-end hook's run to end
 HOOK_MARGIN_S = 120  # past the query log's USAGE_LOCK_WAIT_S, how long a distill run that holds no lock is still at work
 END_WAIT_S = 3  # how long `end_orphans` waits for a process to end on SIGTERM before it sends SIGKILL
@@ -332,17 +334,30 @@ def inventory(root, tab, cwds, bases=None):
     return out
 
 
+def leads_group(pid):
+    """True when PID leads its own process group (a process started with `start_new_session` does); False where the
+    host has no process groups (Windows) or PID is gone."""
+    try:
+        return os.getpgid(pid) == pid
+    except (AttributeError, OSError):
+        return False
+
+
 def classify(procs, tab, hooks=(), now=None, holders=()):
     """Each process of PROCS with its `kind`: foreign while its parent lives, else hook when its pid is in HOOKS (the
     runs whose standard output is a distill.log) and it is in HOLDERS (the pids a distill lock records) or started
-    less than `hook_run_s()` before NOW, else orphan."""
+    less than `hook_run_s()` before NOW, else detached when it is no hook's run, leads its own process group and a live
+    process of TAB is its child (a launcher a session started apart and left at work), else orphan."""
     now = time.time() if now is None else now
+    parents = {v[0] for v in tab.values()}
     out = []
     for p in procs:
         if not orphaned(tab, p["pid"]):
             kind = FOREIGN
         elif p["pid"] in hooks and (p["pid"] in holders or now - p["start"] < hook_run_s()):
             kind = HOOK
+        elif p["pid"] not in hooks and p["pid"] in parents and leads_group(p["pid"]):
+            kind = DETACHED
         else:
             kind = ORPHAN
         out.append(dict(p, kind=kind))
@@ -380,8 +395,8 @@ def snapshot(root):
 # ---------------------------------------------------------------- the command
 
 def end_orphans(worktree):
-    """End the orphans (class `orphan`) whose working directory lies in WORKTREE: the processes a headless worker
-    session started there (its MCP servers) and left running when it exited. A process whose parent lives (foreign)
+    """End the orphans (class `orphan` or `detached`) whose working directory lies in WORKTREE: the processes a headless
+    worker session started there (its MCP servers) and left running when it exited. A process whose parent lives (foreign)
     and a hook's distill run at work are left alone. Each gets SIGTERM, and SIGKILL if it still runs END_WAIT_S later.
     Returns [(pid, command name)] of those ended, [] when none or when this host cannot list working directories."""
     base = os.path.realpath(worktree)
@@ -391,7 +406,7 @@ def end_orphans(worktree):
         return []
     procs = inventory(base, tab, cwds, [base])
     hooks = hook_pids(base, [p["pid"] for p in procs if orphaned(tab, p["pid"])], [base])
-    pids = {p["pid"]: p["comm"] for p in classify(procs, tab, hooks, holders=lock_holders([base])) if p["kind"] == ORPHAN}
+    pids = {p["pid"]: p["comm"] for p in classify(procs, tab, hooks, holders=lock_holders([base])) if p["kind"] in (ORPHAN, DETACHED)}
     return [(pid, pids[pid]) for pid in end_pids(list(pids))]
 
 
@@ -449,7 +464,7 @@ def cmd_procs(bl, a):
     say(f"procs: {len(procs)} process(es) with a working directory in a checkout of this clone")
     for p in procs:
         say(line(p, now))
-    counts = {k: sum(p["kind"] == k for p in procs) for k in (ORPHAN, HOOK, FOREIGN)}
+    counts = {k: sum(p["kind"] == k for p in procs) for k in (ORPHAN, HOOK, DETACHED, FOREIGN)}
     say("procs: " + ", ".join(f"{n} {k}" for k, n in counts.items()) + "; nothing is signaled: an orphan is named for "
         f"the operator, who ends it when it is theirs, and a hook is a session's end distill run at work: it holds "
         f"the distill lock or is under {hook_run_s()}s old")
