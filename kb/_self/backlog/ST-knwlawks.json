@@ -31,7 +31,11 @@
         "move to Haiku now": "ST-knwlawks",
         "keep Sonnet": "ST-knwlawks"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "decide after SP-ep7cyuob records its Haiku agent's results",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

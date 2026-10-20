@@ -29,7 +29,11 @@
         "run one trial sprint with a Sonnet orchestrator and compare": "ST-resduis7",
         "keep Opus for orchestrators": "ST-resduis7"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "run one trial sprint with a Sonnet orchestrator and compare",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

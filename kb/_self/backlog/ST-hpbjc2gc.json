@@ -66,7 +66,11 @@
         "no remote deletion: tidy only counts them"
       ],
       "recommendation": "operator command only: tidy --remote --apply from the operator's own terminal, merged-only, refused in agent sessions; and the operator changes the forge's code/* protection so a merge deletes its own source branch, once the research story confirms that protection as the cause",
-      "class": "push"
+      "class": "push",
+      "answer": "no remote deletion: tidy only counts them",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g-procs",
@@ -77,7 +81,11 @@
         "report only: the operator ends processes by hand"
       ],
       "recommendation": "end only a process an own record names whose recorded session's coord lease is gone and whose start time matches the record, by an operator run outside agent sessions; every other process is reported only (backlog.py procs)",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "end only a process an own record names whose recorded session's coord lease is gone and whose start time matches the record, by an operator run outside agent sessions; every other process is reported only (backlog.py procs)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with planted inputs (KB_COORD_STORE points at its own coord store, so no check writes the clone's real one); no change to _tools/tests_ceiling.json. Never kill by pattern (a host hook blocks pkill -f). Premise (2026-10-19): backlog.py procs names 3 orphans, one a gk MCP server orphaned 4 days in review-j65ihctq, and one a live detached headless worker (claude, parent 1, in agent-ST-xlxkap7l): parent 1 is no proof a process is finished. The 846 origin code/* branches remain although every request is sent with merge_request.remove_source_branch (kg_sync.push_options; request !1247 merged with force_remove_source_branch true): code/* is a protected branch pattern on the forge, a likely cause the research story confirms."

@@ -29,7 +29,11 @@
         "not now: read-only tools only": "ST-wseqbgaa",
         "offer claim, release and answer behind an opt-in setting": "ST-wseqbgaa"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "offer claim, release and answer behind an opt-in setting",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
