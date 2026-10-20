@@ -46,6 +46,23 @@
   "depends_on": [
     "ST-gnt2xlk6"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which keys may coord_put write, and does coord_get read any key? (coord_put also redacts, caps at 8000 characters, takes an optional revision defaulting to 0 and an optional holder token.)",
+      "options": [
+        "coord_put writes only ask/ID and answer/ID; coord_get reads any key",
+        "coord_put and coord_get take any key, as coord.py does"
+      ],
+      "recommendation": "coord_put writes only ask/ID and answer/ID; coord_get reads any key",
+      "do": {
+        "coord_put writes only ask/ID and answer/ID; coord_get reads any key": "ST-6tg2cevp",
+        "coord_put and coord_get take any key, as coord.py does": "ST-6tg2cevp"
+      },
+      "class": "secrets"
+    }
+  ],
   "notes": "operator request 2026-10-19 (housekeeping batch): folds BG-lkpu3ne6 (no get or put for an ask's text). The opt-in (KB_COORD_TOOLS) and every coord authority rule stay as they are. Premise: the check fails.",
   "claimed_by": "orch-r110",
   "operator": "op-f618a13e"

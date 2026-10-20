@@ -216,7 +216,10 @@ def feedback_is_spooled_once_and_refuses_open_fields(tmp_path, monkeypatch):
     assert tool["annotations"] == {"title": tool["title"], "readOnlyHint": False, "destructiveHint": False,
                                    "idempotentHint": True, "openWorldHint": False}
     assert all(t["annotations"]["readOnlyHint"] for t in listed if t["name"] != "kb_feedback" and not t["name"].startswith("coord_"))
-    assert next(t for t in listed if t["name"] == "coord_digest")["annotations"]["readOnlyHint"]
+    assert all(next(t for t in listed if t["name"] == n)["annotations"]["readOnlyHint"] for n in ("coord_digest", "coord_get"))
+    assert not next(t for t in listed if t["name"] == "coord_put")["annotations"]["readOnlyHint"]
+    assert kb_mcp.handle({"jsonrpc": "2.0", "id": 4, "method": "tools/call", "params": {"name": "coord_put", "arguments": {
+        "key": "claim/x", "value": "text"}}})["result"]["isError"]  # only an ask's or answer's text is written
     assert "kb_feedback" in kb_mcp.instructions()
     with monkeypatch.context() as limited:  # --roots, and kb_http.py always: no such tool
         limited.setattr(kb_mcp, "limited", lambda: True)
