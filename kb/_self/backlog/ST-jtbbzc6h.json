@@ -2,7 +2,7 @@
   "id": "ST-jtbbzc6h",
   "kind": "story",
   "title": "Research sprint goal: kbmon puts what needs the operator first, one row per sprint, from one implementation",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-2uljwgho",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,7 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orch-r113",
+  "operator": "op-f618a13e"
 }
