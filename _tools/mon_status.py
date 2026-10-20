@@ -74,18 +74,23 @@ CUES = {
     "load": [(HOST, r"\b(?:load|cpu|slow|busy|overloaded|hot|fan|lag\w*|freez\w*)\b")],
     "sessions": [(r"\b(?:sessions?|workers?|agents?)\b", r"\b(?:running|active|stuck|stalled|orphan\w*|hung|left running)\b"),
                  (r"\b(?:anything|something|any)\b", r"\b(?:stuck|orphan\w*|stalled|hung)\b")],
-    "cost": [(r"\b(?:cost|costs|spent|spend|spending)\b", r"\b(?:today|so far|this session|right now|tokens?|usage)\b")],
+    "cost": [(r"\b(?:cost|costs|spent|spend|spending)\b", r"\b(?:today|this session|right now|tokens?|usage)\b"),
+             (r"\b(?:cost|costs|spent|spend|spending)\b", r"(?=.*\b(?:i|we|have|has|had|did|was|were)\b).*\bso far\b")],
     "querylog": [(r"\bquery log\b", r"\b(?:deliver\w*|undelivered|spool\w*|pushed|stuck)\b")],
     "coord": [(r"\bcoord\b", r"\b(?:claims?|budget|live|active|left|status)\b")],
     "all": [(r"\bkbmon\b", r"")],
 }
+# A question that asks how to do something or what a thing is or does asks the docs, not the monitored state.
+DOCS_ASK = re.compile(r"^(?:how (?:do|can|should|would|could) (?:i|you|we)\b|how to\b|how does\b|what does\b)")
 ABSOLUTE = re.compile(r"(?<![\w.:/])(?:~|\.\.)?/[^\s'\",;)]+|\b[A-Za-z]:\\[^\s'\",;)]*")
 
 
 def topic_of(question):
     """The status topic a plain question asks, by the fixed cues of CUES: the one topic that matches, `all` when several do
-    (or only `kbmon` is named), None when none does."""
+    (or only `kbmon` is named), None when none does or the question asks how to do something or what a thing does."""
     text = " ".join(str(question or "").lower().split())
+    if DOCS_ASK.search(text):
+        return None
     found = [topic for topic, groups in CUES.items() for named, state in groups
              if re.search(named, text) and re.search(state, text)]
     found = list(dict.fromkeys(found))
