@@ -26,7 +26,7 @@ Measured against a web-searching agent, the kb answers covered questions with a 
 
 - `kb/_self/README.md`: start here; every doc agents read to run, change and ship the kb, with when to read each.
 - `kb/_self/design.md`: how it works and why, and when it is token-efficient. `kb/_self/reports/benchmarks.md` holds the measurements.
-- `kb/_self/plugin.md`: installing the plugin, a team's own roots. `kb/_self/backlog.md`: the approved backlog of sprints the kb changes by.
+- `kb/_self/plugin.md`: installing the plugin, a team's own roots. `kb/_self/backlog.md`: the approved backlog of sprints the kb changes by. `kb/_self/coordination.md`: how agents claim work, ask each other and are steered.
 - `kb/`: the knowledge, one directory per root; `_tools/`: the tools; `AGENTS.md`: the short lookup rules every session loads; `.claude/` and `.claude-plugin/`: skills, agents, hooks and the plugin.
 
 Code is Apache-2.0 (`LICENSE`), kb text CC BY 4.0 (`LICENSE-CONTENT`); snapshots and pinned files keep their sources' licences (`NOTICE`). Examples use placeholders only (`PL-LT-00123`, `corp.example.com`, `jan.kowalski`).
