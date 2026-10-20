@@ -5,7 +5,7 @@ view writes on an active sprint's row the range `mon_eta.estimate` gives at the 
 
 The sprints are the backlog's items of kind `sprint` whose status is `active` or `planned`, read through `bl_base.Backlog`
 and `bl_view.ready` from the item files of the local `origin/main` ref (`bl_view.items_at`, no fetch; the checkout's own
-files where the ref cannot be read), with the count of commits the checkout is behind that ref: the state is `active`, `approved` (planned, its start gate answered with an approval, so only
+files where the ref cannot be read), with the count of commits the checkout is behind that ref and `fast_forward` (`{can, why}`: whether the checkout can fast-forward to it): the state is `active`, `approved` (planned, its start gate answered with an approval, so only
 `backlog.py start` is left) or `planned`, in that order. `items` counts the sprint's items by status; `next` is the item
 `backlog.py next` offers (an active sprint only); `waiting` is each open blocking gate of the sprint or of one of its
 open items, `{item, gate}`. A landing in progress is an item still open in the backlog (not done or dropped, and in it) whose
@@ -25,6 +25,7 @@ SPRINT_ROWS = 12  # sprints in the text view
 LANDING_ROWS = 6  # landings in the text view
 WAITING_ROWS = 2  # waiting gates under a sprint in the text view
 STATE_WIDTH = 10  # columns of a sprint row's state
+PATHS_KEPT = 3  # paths `fast_forward`'s why names
 
 
 def sprint_state(sp, approved):
@@ -54,6 +55,31 @@ def backlog_at(root):
         return bl, CHECKOUT, None
     bl.items, bl.raw = items, {}
     return bl, REF, int(behind) if behind.isdigit() else None
+
+
+def fast_forward(root, behind):
+    """{can, why} for the checkout at ROOT against REF, or None where REF cannot be read (BEHIND None). `can` is false when
+    HEAD holds commits REF lacks, or when tracked files with local changes (staged or not) are also changed by the commits
+    HEAD is behind; `why` names each cause with its count and up to PATHS_KEPT paths relative to the clone, `up to date` or
+    `nothing in the way` where `can` is true."""
+    import bl_base
+    if behind is None:
+        return None
+    try:
+        ahead = int(bl_base.git(root, "rev-list", "--count", f"{REF}..HEAD").strip())
+        mine = set(bl_base.git(root, "diff", "--name-only", "HEAD").split("\n"))
+        incoming = set(bl_base.git(root, "diff", "--name-only", f"HEAD...{REF}").split("\n"))
+    except Exception:  # noqa: BLE001 - no repository, an unreadable ref: nothing is claimed
+        return None
+    clash = sorted((mine & incoming) - {""})
+    why = []
+    if ahead:
+        why.append(f"HEAD holds {ahead} commit{'' if ahead == 1 else 's'} {REF} lacks")
+    if clash:
+        why.append(f"{len(clash)} file{' with local changes is' if len(clash) == 1 else 's with local changes are'} also changed by "
+                   f"the {behind} commit{'' if behind == 1 else 's'} it is behind: "
+                   + ", ".join(clash[:PATHS_KEPT]) + (f" and {len(clash) - PATHS_KEPT} more" if len(clash) > PATHS_KEPT else ""))
+    return {"can": not why, "why": "; ".join(why) or ("up to date" if not behind else "nothing in the way")}
 
 
 def done_stamps(root):
@@ -165,7 +191,8 @@ def sprints(root, backlog=None):
         if state:
             rows.append(sprint_row(bl, sid, state, done, eta["claimed"], meet))
     rows.sort(key=lambda r: SPRINT_STATES.index(r["state"]))  # stable: ids stay in order within a state
-    return {"sprints": rows, "source": source, "behind": behind, "history": eta["history"]}
+    return {"sprints": rows, "source": source, "behind": behind, "fast_forward": fast_forward(root, behind),
+            "history": eta["history"]}
 
 
 def landings(root, bl):
@@ -225,6 +252,9 @@ def lines(data, width=None, taken=None):
     if data.get("sprints") and data.get("source"):
         behind = data.get("behind")
         rows.append(f"items from {data['source']}" + (f", checkout {behind} commit{'' if behind == 1 else 's'} behind" if behind else ""))
+    ff = data.get("fast_forward")
+    if isinstance(ff, dict) and ff.get("can") is False and data.get("behind"):
+        rows.append(f"checkout cannot fast-forward: {ff.get('why')}")
     shown = data.get("sprints", [])[:SPRINT_ROWS]
     for sp in shown:
         eta = mon_eta.estimate(sp, data.get("history") or {}, now) if sp["state"] == "active" else None
