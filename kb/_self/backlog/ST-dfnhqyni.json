@@ -2,7 +2,7 @@
   "id": "ST-dfnhqyni",
   "kind": "story",
   "title": "A count or list question the query log captures is not written into _gaps.md as a kb gap",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vx6eufpj",
   "priority": "P2",
   "rank": 0,
@@ -58,6 +58,28 @@
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): F-ea430090e717 ('How many articles does the kb hold in the intune domain?') was written into kb/public/_gaps.md:1582 as a gap of security/policy-precedence. The existing entry stays (removing kb content is the operator's). Premise: gap_decision gives keep for both count questions on 2026-10-19. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done. Precheck 2026-10-20: the second check (two non-count questions stay keep) passes before the work by design: it pins that the count/list rule does not drop real gaps.",
-  "claimed_by": "orch-r106",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "024e20a65b3a607736e4e251c155080b01604afc",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nsys.path.insert(0, '_tools'); import ql_apply\ng = ql_apply.Gate()\nqs = ['How many articles does the kb hold in the intune domain?', 'How many sources does the kb cite in the mecm domain?']\nd = {q: ql_apply.gap_decision(q, g)[2] for q in qs}\nprint(d); sys.exit(1 if any(v == 'keep' for v in d.values()) else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "3cb5a279f858acc2"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nsys.path.insert(0, '_tools'); import ql_apply\ng = ql_apply.Gate()\nqs = ['OTEL_EXPORTER_OTLP_PROTOCOL http/json OTEL_EXPORTER_OTLP_LOGS_ENDPOINT logs export interval',\n      'git worktree add path branch checks out an existing local branch after its worktree was removed']\nd = {q: ql_apply.gap_decision(q, g)[2] for q in qs}\nprint(d); sys.exit(0 if all(v == 'keep' for v in d.values()) else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "22614e507064cac5"
+      }
+    ]
+  }
 }
