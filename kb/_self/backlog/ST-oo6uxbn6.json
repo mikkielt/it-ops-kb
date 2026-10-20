@@ -90,7 +90,11 @@
         "move each to the lower module, the old names still importable where callers use them": "ST-oo6uxbn6",
         "move each to the higher module": "ST-oo6uxbn6"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "move each to the lower module, the old names still importable where callers use them",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): AST scan 2026-10-19 (function-level imports included): bl_base -> bl_intake; cycles bl_base<->bl_intake, bl_land<->bl_selfcheck, ql_deliver<->ql_distill, ql_distill<->ql_learn, ql_apply<->ql_research, ql_research<->ql_store. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
