@@ -3,17 +3,51 @@
   "kind": "story",
   "title": "Mutating backlog commands as kb MCP tools behind an opt-in setting",
   "status": "draft",
+  "sprint": "SP-rrqlgiff",
   "priority": "P3",
   "rank": 0,
-  "goal": "with an opt-in setting the kb MCP server offers claim, release and answer as tools that keep every command-line gate and authority rule and are no way around a Bash deny rule",
+  "goal": "with KB_BACKLOG_WRITE_TOOLS=1 in its environment the kb MCP server lists one tool, kb_backlog_write, that runs backlog.py claim, release or answer and no other command, listing none without it; each call runs the command line as an agent session (CLAUDECODE set in the child), so every command-line gate and authority rule holds, a ceiling-class gate's terminal-only rule included; a call whose command line a Bash deny rule of the project's settings matches is refused; kb/_self/plugin.md, tools.md and backlog.md name the setting and its limits",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import sys;t=open('_tools/kb_mcp.py',encoding='utf-8').read();sys.exit(0 if 'kb_backlog_write' in t else 1)"
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, json, shutil, subprocess, tempfile\nT = tempfile.mkdtemp()\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_\", \"CLAUDE\"))}\nENV.update(GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\", KB_LIVE_DOCS=\"0\", KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"),\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\nC = os.path.join(T, \"clone\"); O = os.path.join(T, \"origin.git\")\nshutil.copytree(\"_tools\", os.path.join(C, \"_tools\"), ignore=shutil.ignore_patterns(\"__pycache__\", \"*.pyc\", \"fixtures\"))\nshutil.copytree(\"kb/public\", os.path.join(C, \"kb\", \"public\"))\nB = os.path.join(C, \"kb\", \"_self\", \"backlog\"); os.makedirs(B)\nopen(os.path.join(C, \"backlog.json\"), \"w\").write('{\"item_dir\": \"kb/_self/backlog\"}\\n')\nopen(os.path.join(C, \".gitignore\"), \"w\").write(\"_cache/\\n_private/\\n\")\nos.makedirs(os.path.join(C, \".claude\"))\nopen(os.path.join(C, \".claude\", \"settings.json\"), \"w\").write(json.dumps({\"permissions\": {\"deny\": [\"Bash(python3 _tools/backlog.py release *)\"]}}) + \"\\n\")\ndef gate(gid, cls, opts, kind=\"blocking\"):\n    return {\"id\": gid, \"kind\": kind, \"question\": f\"Which option for {gid}?\", \"options\": opts, \"recommendation\": opts[0],\n            \"do\": {o: \"ST-aaaaaaaa\" for o in opts}, \"class\": cls}\nitem = {\"id\": \"ST-aaaaaaaa\", \"kind\": \"story\", \"title\": \"planted\", \"status\": \"draft\", \"priority\": \"P3\", \"rank\": 0, \"goal\": \"g\",\n        \"checks\": [{\"run\": [\"true\"]}], \"touches\": [\"_tools/tests_ceiling.json\", \"_tools/planted.py\"],\n        \"gates\": [gate(\"value\", \"ceiling\", [\"keep the value\", \"change the value\"])]}\nitem2 = dict(item, id=\"ST-bbbbbbbb\", touches=[\"_tools/planted.py\"], gates=[gate(\"shape\", \"design\", [\"one flag\", \"two flags\"], \"provisional\")])\nfor it in (item, item2):\n    open(os.path.join(B, it[\"id\"] + \".json\"), \"w\").write(json.dumps(it, indent=2) + \"\\n\")\ng(\"init\", \"-q\", \"-b\", \"main\", C, cwd=T); g(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C)\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T); g(\"remote\", \"add\", \"origin\", O, cwd=C); g(\"push\", \"-q\", \"origin\", \"main\", cwd=C); g(\"fetch\", \"-q\", cwd=C)\ndef session(env, calls):\n    msgs = [{\"jsonrpc\": \"2.0\", \"id\": 0, \"method\": \"initialize\", \"params\": {\"protocolVersion\": \"2025-06-18\", \"capabilities\": {}, \"clientInfo\": {\"name\": \"t\", \"version\": \"1\"}}},\n            {\"jsonrpc\": \"2.0\", \"method\": \"notifications/initialized\"}, {\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"tools/list\"}]\n    msgs += [{\"jsonrpc\": \"2.0\", \"id\": 2 + i, \"method\": \"tools/call\", \"params\": {\"name\": n, \"arguments\": a}} for i, (n, a) in enumerate(calls)]\n    r = subprocess.run([sys.executable, os.path.join(C, \"_tools\", \"kb_mcp.py\")], input=\"\".join(json.dumps(m) + \"\\n\" for m in msgs),\n                       capture_output=True, text=True, env=env, cwd=C, timeout=300)\n    out = {}\n    for line in r.stdout.splitlines():\n        try:\n            m = json.loads(line)\n        except ValueError:\n            continue\n        if \"id\" in m:\n            out[m[\"id\"]] = m\n    return out, r.stderr\ndef names(out):\n    return {t[\"name\"] for t in out.get(1, {}).get(\"result\", {}).get(\"tools\", [])}\ndef text(m):\n    res = m.get(\"result\") or {}\n    return json.dumps(m.get(\"error\") or res.get(\"content\") or res), bool(res.get(\"isError\") or m.get(\"error\"))\noff, err = session(ENV, [])\nassert names(off), (\"kb_mcp lists no tools in the planted clone\", err[-600:])\nassert not any(\"claim\" in n or \"release\" in n or \"answer\" in n or n == \"kb_backlog_write\" for n in names(off)), (\"a mutating backlog tool is listed without the opt-in setting\", sorted(names(off)))\nON = dict(ENV, KB_BACKLOG_WRITE_TOOLS=\"1\")\ncur = sorted(names(session(ON, [])[0]) - names(off))\nassert cur == [\"kb_backlog_write\"], (\"the opt-in setting KB_BACKLOG_WRITE_TOOLS=1 does not list exactly the tool kb_backlog_write\", cur)\nW = cur[0]\ndef item_file(i):\n    return json.load(open(os.path.join(B, i + \".json\")))\nbefore = open(os.path.join(B, \"ST-aaaaaaaa.json\")).read()\ncalls = [(W, {\"command\": \"answer\", \"args\": [\"ST-aaaaaaaa\", \"value\", \"--answer\", \"change the value\", \"--by\", \"operator\"]}),\n         (W, {\"command\": \"answer\", \"args\": [\"ST-bbbbbbbb\", \"shape\", \"--answer\", \"one flag\", \"--provisional\"]}),\n         (W, {\"command\": \"release\", \"args\": [\"ST-bbbbbbbb\"]}),\n         (W, {\"command\": \"done\", \"args\": [\"ST-bbbbbbbb\"]})]\nres, err = session(ON, calls)\nt0, e0 = text(res.get(2, {}))\nassert e0 and open(os.path.join(B, \"ST-aaaaaaaa.json\")).read() == before, (\"an MCP call answers a ceiling-class gate --by operator, which only the operator's own terminal may\", t0[-500:])\nt1, e1 = text(res.get(3, {}))\nassert not e1 and any(x.get(\"answer\") == \"one flag\" for x in item_file(\"ST-bbbbbbbb\").get(\"gates\", [])), (\"the opt-in answer tool does not record a design gate's provisional answer\", t1[-500:], err[-400:])\nt2, e2 = text(res.get(4, {}))\nassert e2 and \"deny\" in t2.lower(), (\"the release tool runs although a Bash deny rule names the command\", t2[-500:])\nt3, e3 = text(res.get(5, {}))\nassert e3, (\"the opt-in tool runs a backlog command other than claim, release and answer\", t3[-300:])\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nok = all(\"KB_BACKLOG_WRITE_TOOLS\" in open(p, encoding=\"utf-8\").read() for p in (\"kb/_self/plugin.md\", \"kb/_self/tools.md\", \"kb/_self/backlog.md\"))\nsys.exit(0 if ok else 1)\n"
       ]
     }
+  ],
+  "clauses": [
+    {
+      "clause": "with KB_BACKLOG_WRITE_TOOLS=1 in its environment the kb MCP server lists one tool, kb_backlog_write, that runs backlog.py claim, release or answer and no other command, listing none without it",
+      "check": 0
+    },
+    {
+      "clause": "each call runs the command line as an agent session (CLAUDECODE set in the child), so every command-line gate and authority rule holds, a ceiling-class gate's terminal-only rule included",
+      "check": 0
+    },
+    {
+      "clause": "a call whose command line a Bash deny rule of the project's settings matches is refused",
+      "check": 0
+    },
+    {
+      "clause": "kb/_self/plugin.md, tools.md and backlog.md name the setting and its limits",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md",
+    "kb/_self/embedding.md",
+    "kb/_self/token-efficiency.md"
   ],
   "gates": [
     {
@@ -39,5 +73,5 @@
   "links": [
     "parked: housekeeping plan 2026-10-19 (operator gate)"
   ],
-  "notes": "housekeeping batch 2026-10-19, coord ask A275e35646a: operator-only authority (gate answers) must not gain a route around its guard."
+  "notes": "housekeeping batch 2026-10-19, coord ask A275e35646a: operator-only authority (gate answers) must not gain a route around its guard. Plan 2026-10-20 (SP-rrqlgiff): operator gate authority answered: offer claim, release and answer behind an opt-in setting. Operator-authority surface, kept narrow: the setting follows KB_COORD_TOOLS (kb_mcp.coord_enabled), the tool reuses the facade pattern of kb_backlog and runs backlog.py in a child with CLAUDECODE=1 whatever the server's own environment holds, so bl_authority is not changed and no test file is touched (a planted refusal case goes into the existing authority test only if a guard there were extended, which this goal does not ask). Premise run on origin/main 8aa620db0 with the check's planted clone: no mutating tool is listed with or without the setting; on the CLI, answer --by operator on a ceiling-class gate exits 2 under CLAUDECODE and a provisional design gate answers with exit 0. kb/_self/token-efficiency.md maps to kb_mcp.py but stays out of the touches: the tool is listed only with the opt-in setting, so the default server's always-on tool text is unchanged; name it Self-Reviewed when selfdoc stale lists it (ST-resduis7, which runs last, edits that doc). Correction at plan: kb/_self/token-efficiency.md is back in the touches (backlog check: code and its mapped docs land in one range); the earlier note on leaving it out no longer holds."
 }

@@ -1,19 +1,45 @@
 {
   "id": "ST-jekvrrjp",
   "kind": "story",
-  "title": "A query log row that names an internal root is delivered only as the operator's answer says",
+  "title": "A query log entry that names an internal root stays in the local store and no longer stalls delivery",
   "status": "draft",
   "parent": "EP-eocmyqdx",
+  "sprint": "SP-rrqlgiff",
   "priority": "P3",
   "rank": 0,
-  "goal": "The query log's delivery reads the qualified paths a row already holds and, for a row naming an internal root, does what gate g-ql answers; no recorded field is added or removed",
+  "goal": "the query log's delivery leaves out of each run file it brings into the shared store the entries whose root, articles, best or citations name an internal root, which stay in the local store and keep their spool rows; the rest of the run file is delivered with a header that counts what it holds; no recorded field is added or removed; kb/_self/querylog.md says an entry naming an internal root is never delivered and stays in the local store",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import sys; sys.path.insert(0, '_tools'); import ql_deliver; assert hasattr(ql_deliver, 'internal_root_rows'), 'no internal_root_rows in ql_deliver'"
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, json, shutil, subprocess, tempfile, glob\nT = tempfile.mkdtemp()\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_\", \"CLAUDE\"))}\nENV.update(GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\", KB_LIVE_DOCS=\"0\", KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"),\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\ndef make_root(path, name, prefix, vis, sid, rel, fact):\n    os.makedirs(os.path.dirname(os.path.join(path, rel)), exist_ok=True)\n    open(os.path.join(path, \"_root.md\"), \"w\").write(f\"---\\nroot: {name}\\nid_prefix: {prefix}\\nvisibility: {vis}\\ndescription: {name}\\n---\\n\\n# {name}\\n\")\n    open(os.path.join(path, \"_sources.csv\"), \"w\").write(\"id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by\\n\"\n        f\"{sid},https://example.com/{name},{name} doc,Example,MIT,copy,2026-10-19,v1,,,\\n\")\n    open(os.path.join(path, rel), \"w\").write(f\"---\\ntopic: {rel[:-3]}\\npriority: P3\\napplies_to: \\\"x\\\"\\nretrieved_utc: 2026-10-19\\nsources: [{sid}]\\nstatus: complete\\n---\\n\\n# T\\n\\n## Summary\\n{fact}\\n\\n## Facts\\n- {fact} [DOC {sid}]\\n\\n## Reference\\n\\n## Examples\\n\")\nO, C = os.path.join(T, \"origin.git\"), os.path.join(T, \"clone\")\nos.makedirs(C)\nshutil.copytree(\"_tools\", os.path.join(C, \"_tools\"), ignore=shutil.ignore_patterns(\"__pycache__\", \"*.pyc\", \"fixtures\"))\nmake_root(os.path.join(C, \"kb\", \"public\"), \"public\", \"S\", \"public\", \"S-aaaaaaaa\", \"planted/laps-rotation.md\", \"Windows LAPS rotates the local administrator password\")\nmake_root(os.path.join(C, \"kb\", \"team-a\"), \"team-a\", \"TA\", \"internal\", \"TA-aaaaaaaa\", \"mdm/enrolment.md\", \"Team A enrols kiosks through its enrolment profile\")\nos.makedirs(os.path.join(C, \"kb\", \"_self\")); os.makedirs(os.path.join(C, \"kb\", \"_query\" + \"log\"))\nopen(os.path.join(C, \"kb\", \"_query\" + \"log\", \".keep\"), \"w\").close()\nopen(os.path.join(C, \".gitignore\"), \"w\").write(\"_cache/\\n\")\ng(\"init\", \"-q\", \"-b\", \"main\", C, cwd=T); g(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C)\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T); g(\"remote\", \"add\", \"origin\", O, cwd=C); g(\"push\", \"-q\", \"origin\", \"main\", cwd=C)\nQ = os.path.join(C, \"_cache\", \"querylog\"); LS = os.path.join(Q, \"store\", \"2026-09\"); os.makedirs(LS)\nsrc = sorted(glob.glob(\"_tools/fixtures/querylog/store/2026-09/*.jsonl\"))[0]\nrows = [json.loads(x) for x in open(src).read().splitlines()]\npub = dict(rows[1]); intl = dict(rows[1], id=rows[1][\"id\"][:-2] + \"f1\", root=\"team-a\",\n                                 articles=[\"team-a/mdm/enrolment.md\"], best=\"team-a/mdm/enrolment.md\",\n                                 citations=[{\"line\": \"team-a/mdm/enrolment.md:12\", \"tag\": \"DOC\", \"verdict\": \"weak\"}],\n                                 question=\"How does team a enrol kiosks?\")\nhdr = dict(rows[0]); hdr[\"counts\"] = dict(hdr[\"counts\"], entries=2)\nRF = os.path.join(LS, os.path.basename(src))\nopen(RF, \"w\").write(\"\".join(json.dumps(r, separators=(\",\", \":\")) + \"\\n\" for r in (hdr, pub, intl)))\ncode = r'''\nimport sys, json, os\nsys.path.insert(0, sys.argv[1]); import ql_deliver, ql_base\nsaid = []\np = ql_deliver.Pusher(sys.argv[2], sys.argv[3], ql_base.run_cmd, None, said.append, cloud=False)\nassert p.fetch()[0] == 0 and p.reset()[0] == 0, said\ndelivered, new, kept = p.local_files()\nrc = p.bring(new, kept)\ndelivered2, _, _ = p.local_files()\nprint(json.dumps({\"rc\": rc, \"said\": said, \"delivered\": sorted(delivered2), \"wt\": str(p.wt)}))\n'''\nr = subprocess.run([sys.executable, \"-c\", code, os.path.join(C, \"_tools\"), C, Q], capture_output=True, text=True, env=ENV, cwd=C, timeout=300)\nassert r.returncode == 0 and \"Traceback\" not in r.stderr, (\"the delivery's local_files and bring do not run on the planted clone\", r.stdout[-600:], r.stderr[-1200:])\nres = json.loads(r.stdout.strip().splitlines()[-1])\nassert res[\"rc\"] == 0, (\"the delivery's store gates refuse the planted run file\", res[\"said\"])\nbrought = \"\".join(open(f).read() for f in glob.glob(os.path.join(res[\"wt\"], \"kb\", \"_query\" + \"log\", \"**\", \"*.jsonl\"), recursive=True))\nassert pub[\"id\"] in brought, \"the public row is not brought into the shared store\"\ngot = [json.loads(x) for x in brought.splitlines() if x.strip()]\nassert any(r == pub for r in got), \"the delivered public row's recorded fields differ from the local store's\"\nhd = [r for r in got if \"run\" in r and \"counts\" in r]\nassert hd and hd[0][\"counts\"][\"entries\"] == 1, (\"the delivered run file's header does not count the entries it holds\", hd)\nassert intl[\"id\"] not in brought and \"team-a/\" not in brought, \"a row naming the internal root team-a is brought into the shared store\"\nassert intl[\"id\"] in open(RF).read(), \"the internal-root row does not stay in the local store\"\nassert intl[\"id\"] not in res[\"delivered\"], \"the internal-root row counts as delivered, so its spool rows would be deleted\"\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re, sys\nt = open(\"kb/_self/querylog.md\", encoding=\"utf-8\").read()\nhits = [l for l in t.splitlines() if re.search(r\"internal root\", l) and re.search(r\"deliver\", l) and re.search(r\"local (store|spool)\", l)]\nsys.exit(0 if hits else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the query log's delivery leaves out of each run file it brings into the shared store the entries whose root, articles, best or citations name an internal root, which stay in the local store and keep their spool rows",
+      "check": 0
+    },
+    {
+      "clause": "the rest of the run file is delivered with a header that counts what it holds",
+      "check": 0
+    },
+    {
+      "clause": "no recorded field is added or removed",
+      "check": 0
+    },
+    {
+      "clause": "kb/_self/querylog.md says an entry naming an internal root is never delivered and stays in the local store",
+      "check": 1
     }
   ],
   "touches": [
@@ -43,5 +69,5 @@
       "role": "interactive"
     }
   ],
-  "notes": "Draft, outside any sprint: what the query log delivers is the operator's call (query-log recording), so gate g-ql stays open for the operator. The rows already hold qualified paths (<root>/<path>), so no new field is needed. The check is a placeholder to replace when the item is planned into a sprint: a planted spool with one row naming an internal root and one naming public, run through the delivery's dry run. Design: kb/_self/design.md, Teams and organizations."
+  "notes": "Draft, outside any sprint: what the query log delivers is the operator's call (query-log recording), so gate g-ql stays open for the operator. The rows already hold qualified paths (<root>/<path>), so no new field is needed. The check is a placeholder to replace when the item is planned into a sprint: a planted spool with one row naming an internal root and one naming public, run through the delivery's dry run. Design: kb/_self/design.md, Teams and organizations. Plan 2026-10-20 (SP-rrqlgiff): operator gate g-ql answered: kept in the local spool and never delivered to the shared store. Premise run on origin/main 8aa620db0 with a planted clone (public root and an internal root team-a, a local run file holding one public entry and one naming team-a/mdm/enrolment.md): ql_deliver.Pusher.bring refuses the whole run file (root is not a root value: 'team-a', private-path leak hits), so today such an entry stalls the delivery of every entry beside it rather than being delivered. The check drives Pusher.fetch, reset, local_files and bring on that clone. Roots and their visibility: kbcommon roots (kb/<root>/_root.md visibility, kb/_roots pointers)."
 }
