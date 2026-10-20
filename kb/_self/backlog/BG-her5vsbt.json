@@ -2,7 +2,7 @@
   "id": "BG-her5vsbt",
   "kind": "bug",
   "title": "kbmon's host panel puts the ceiling bars on one row from 100 columns, but the row needs about 108",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-kgvbpjhd",
   "priority": "P3",
   "rank": 0,

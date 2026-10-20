@@ -2,7 +2,7 @@
   "id": "BG-jeyt5f56",
   "kind": "bug",
   "title": "status routing sends docs questions about cost, sessions or kbmon to a kbmon status answer",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-kgvbpjhd",
   "priority": "P2",
   "rank": 0,

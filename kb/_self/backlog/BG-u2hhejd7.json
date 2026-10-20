@@ -2,7 +2,7 @@
   "id": "BG-u2hhejd7",
   "kind": "bug",
   "title": "load status classes this clone's own processes started by a relative script path as another clone",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-kgvbpjhd",
   "priority": "P2",
   "rank": 0,

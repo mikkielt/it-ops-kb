@@ -2,7 +2,7 @@
   "id": "BG-qpcct4ps",
   "kind": "bug",
   "title": "kbmon panels cannot say absent or timeout for themselves: mon_coord wraps mon_base's private worker, and the view calls every absent panel a missing mon_ module",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-kgvbpjhd",
   "priority": "P2",
   "rank": 0,

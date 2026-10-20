@@ -2,7 +2,7 @@
   "id": "BG-yiidz36y",
   "kind": "bug",
   "title": "kbmon's coord panel reads absent on a Windows clone: mon_coord finds the store only through git on PATH and from its own script's clone, never --root's",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-kgvbpjhd",
   "priority": "P2",
   "rank": 0,

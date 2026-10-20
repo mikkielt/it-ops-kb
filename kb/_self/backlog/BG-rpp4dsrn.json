@@ -2,7 +2,7 @@
   "id": "BG-rpp4dsrn",
   "kind": "bug",
   "title": "kbmon's text view drops a panel's own reason: an absent coord store reads 'no mon_coord.py'",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-kgvbpjhd",
   "priority": "P2",
   "rank": 0,
