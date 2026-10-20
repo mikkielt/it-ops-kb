@@ -2,7 +2,7 @@
   "id": "ST-pjf3zk3x",
   "kind": "story",
   "title": "kbask.py cleanup runs one capped Haiku session only when tidy has ask candidates, and posts one coord ask to the operator per candidate",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ep7cyuob",
   "priority": "P2",
   "rank": 0,
@@ -58,5 +58,7 @@
       "by": "operator"
     }
   ],
-  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with its own coord store and a stand-in claude on PATH, so no paid model call; no change to _tools/tests_ceiling.json. Reuses SP-w6amecjt's kbask.py (ask, answer, remediate: one claim per run, detached session, caps) and its read-only kb-observer role. kbask.py is in the touches of SP-w6amecjt's open ST-xlxkap7l (kbask.py summary): start this sprint after SP-w6amecjt closes."
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with its own coord store and a stand-in claude on PATH, so no paid model call; no change to _tools/tests_ceiling.json. Reuses SP-w6amecjt's kbask.py (ask, answer, remediate: one claim per run, detached session, caps) and its read-only kb-observer role. kbask.py is in the touches of SP-w6amecjt's open ST-xlxkap7l (kbask.py summary): start this sprint after SP-w6amecjt closes.",
+  "claimed_by": "orch-r202",
+  "operator": "op-f618a13e"
 }
