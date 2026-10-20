@@ -222,10 +222,10 @@ def sessions(r):
     me = data.get("operator") if isinstance(data.get("operator"), dict) else {}
     lines.append(f"  This clone's operator: {me.get('id') or 'none'} ({me.get('role') or '-'}).")
     intents = [i for i in data.get("intents") or [] if isinstance(i, dict)]
-    if intents:
-        lines.append(f"  {len(intents)} live session intent{'' if len(intents) == 1 else 's'} in coord:")
-        lines += [f"  session {i.get('session')}, item {i.get('item') or '-'}, operator {i.get('operator') or 'not named'}"
-                  for i in intents[:ROWS]] + [("  " + x) for x in more(len(intents) - ROWS, "intents")]
+    if intents:  # a session is named by its line above, only: the intents say which items they announce
+        named = list(dict.fromkeys(short_name(r.item(i.get("item"))) for i in intents if i.get("item")))
+        lines.append(f"  {len(intents)} live session intent{'' if len(intents) == 1 else 's'} in coord"
+                     + (": " + "; ".join(named[:ROWS]) + (f"; +{len(named) - ROWS} more" if len(named) > ROWS else "") if named else "") + ".")
     return lines, facts
 
 

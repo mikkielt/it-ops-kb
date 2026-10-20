@@ -38,6 +38,46 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What does the receipt's needs-you ending name, and which panels does it read?",
+      "options": [
+        "count of mon_needs entries plus python3 _tools/kbmon.py --status all, with the sprint panel added to the receipt's default panels",
+        "count of mon_needs entries plus kbmon.py --once, with the sprint panel added",
+        "count from the querylog, sessions and host panels only, no sprint panel"
+      ],
+      "recommendation": "count of mon_needs entries plus python3 _tools/kbmon.py --status all, with the sprint panel added to the receipt's default panels",
+      "do": {
+        "count of mon_needs entries plus python3 _tools/kbmon.py --status all, with the sprint panel added to the receipt's default panels": "ST-rwan4x2o",
+        "count of mon_needs entries plus kbmon.py --once, with the sprint panel added": "ST-rwan4x2o",
+        "count from the querylog, sessions and host panels only, no sprint panel": "ST-rwan4x2o"
+      },
+      "class": "querylog",
+      "answer": "count of mon_needs entries plus python3 _tools/kbmon.py --status all, with the sprint panel added to the receipt's default panels",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does the status sessions answer print the live coord intents, now that only the session lines may carry a session label?",
+      "options": [
+        "one line: the count and the short titles of the items they announce, no session label",
+        "keep one line per intent with session label and operator",
+        "drop the intents from the answer"
+      ],
+      "recommendation": "one line: the count and the short titles of the items they announce, no session label",
+      "do": {
+        "one line: the count and the short titles of the items they announce, no session label": "ST-rwan4x2o",
+        "keep one line per intent with session label and operator": "ST-rwan4x2o",
+        "drop the intents from the answer": "ST-rwan4x2o"
+      },
+      "class": "design",
+      "answer": "one line: the count and the short titles of the items they announce, no session label",
+      "by": "agent"
+    }
+  ],
   "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: with a planted waiting gate, a refused delivery and a sessions entry, --once has no needs you line, --status all and kb_monitor_status start with the sessions line, the receipt names only the alerts and no line carries the session label.",
   "claimed_by": "orch-r114",
   "operator": "op-f618a13e"
