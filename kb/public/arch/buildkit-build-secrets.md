@@ -3,7 +3,7 @@ topic: arch/buildkit-build-secrets
 priority: P3
 applies_to: "BuildKit and Docker Buildx build-time secrets: RUN --mount=type=secret against ARG and ENV, and what image history and provenance keep"
 retrieved_utc: 2026-10-11
-sources: [S-k2cfmmuo, S-wt5ys5zb, S-iuwgvvo2, S-5wya5dr3]
+sources: [S-k2cfmmuo, S-wt5ys5zb, S-iuwgvvo2]
 status: complete
 ---
 

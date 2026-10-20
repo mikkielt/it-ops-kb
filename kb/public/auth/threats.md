@@ -3,7 +3,7 @@ topic: auth/threats
 priority: P2
 applies_to: "Windows 11 24H2, Server 2025, Entra ID"
 retrieved_utc: 2026-09-27
-sources: [S1352, S1353, S1347, S-7o47ht7q, S1227, S-mifutdb3, S-ffangyfp, S-7bjorbzz, S-6ca4b7bg, S-ft7nubbn, S-p6zdxvtp]
+sources: [S1352, S1353, S1347, S-7o47ht7q, S-mifutdb3, S-ffangyfp, S-7bjorbzz, S-6ca4b7bg, S-ft7nubbn, S-p6zdxvtp]
 status: complete
 ---
 

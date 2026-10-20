@@ -3,7 +3,7 @@ topic: claude/settings-and-scopes
 priority: P2
 applies_to: "Claude Code docs (retrieved 2026-10-13)"
 retrieved_utc: 2026-10-16
-sources: [S2057, S-wzatkg4o, S-hfho3uwe, S2042, S-22qwtmf7, S743, S-gu5aqnrl, S-rp4dtt4w, S-zcuxapgb, S-l6l42j6e, S-pmhgjvef, S1800, S1863, S-rfpmkpck, S-vilbjgtf, S-lreom5ko, S-inpjf36q, S-a2zimsvk]
+sources: [S2057, S-wzatkg4o, S-hfho3uwe, S2042, S-22qwtmf7, S743, S-gu5aqnrl, S-rp4dtt4w, S-zcuxapgb, S-l6l42j6e, S-pmhgjvef, S1800, S1863, S-rfpmkpck, S-vilbjgtf, S-lreom5ko, S-inpjf36q, S-a2zimsvk, S742]
 status: partial
 files: [claude/settings-keys.csv, claude/env-vars.csv]
 ---
