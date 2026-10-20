@@ -6,7 +6,8 @@ from one snapshot of the panels the topic needs (stdlib only).
   answer(snap, topic, root=None, detail=False)
                          {"schema": 1, "topic", "taken", "lines", "facts"} from a scrubbed snapshot (`mon_view.scrub`)
                          that holds those panels; `root` is the clone whose backlog gives an item its title; `detail`
-                         gives the sprints answer its full lines in place of one row for each sprint
+                         gives the sprints answer its full lines in place of one row for each sprint; the `all` answer
+                         starts with the `needs you` line of `mon_needs.line` and holds its entries as `facts["needs"]`
   short_name(text)       TEXT cut after a whole word to at most NAME_CHARS characters, ending in an ellipsis where cut:
                          the name of a sprint or an item in a row, shared with the sprint panel
   topic_of(question)     the topic a plain question about the monitored work asks, by fixed cue words (CUES), `all` where it
@@ -20,7 +21,7 @@ id only on a line where the operator acts. The sprints answer rests on the sprin
 the commits the checkout is behind it, the duration history) and the host panel's load, so a saved
 snapshot gives the same answer; its ETA is a range from `mon_eta.estimate` taken at the snapshot's time. The
 load answer also gives the host panel's CPU groups with a fixed cause and remedy each (GROUP_TEXT), as lines and as a
-top-level `groups` list. It calls no model and writes no file (`run` starts `kbmon.py`, which writes none). Imports `mon_base`, `mon_eta`, `mon_sessions` (its
+top-level `groups` list. It calls no model and writes no file (`run` starts `kbmon.py`, which writes none). Imports `mon_base`, `mon_eta`, `mon_needs`, `mon_sessions` (its
 age text and `session_line`) and `mon_view`; `bl_base` where it reads titles.
 """
 import os
@@ -31,6 +32,7 @@ from pathlib import Path
 
 import mon_base
 import mon_eta
+import mon_needs
 import mon_sessions
 import mon_view
 
@@ -478,11 +480,15 @@ def answer(snap, topic, root=None, detail=False):
         raise ValueError(f"no status topic {topic}: {', '.join(TOPICS)}")
     reader = Reader(snap, titles(root), detail)
     lines, facts = [], {}
+    if topic == "all":  # the answer starts with the line the text view prints under its header
+        lines.append(mon_needs.line(snap))
     for t in (ALL_ORDER if topic == "all" else (topic,)):
         got, found = ANSWERS[t](reader)
         lines += trimmed(got, ALL_LINES, t) if topic == "all" else got
         facts[t] = found
-    if topic != "all":
+    if topic == "all":
+        facts["needs"] = mon_needs.entries(snap)
+    else:
         facts = facts[topic]
     groups = facts.pop("groups", []) if topic == "load" else []
     lines, facts = clean(lines, facts)
