@@ -199,7 +199,7 @@ score takes a census log that holds the outcomes a census recorded and the resul
 sources, agreement, false confirms (`confirmed` where the census changed a fact: updated, superseded or gone, the error
 that dates a stale fact) of the changed sources, unconfirmed. It reads, writes nothing and asks no model.
 
-check, record, confirm, repin, judge and dispatch (not their --dry-run) each append one ops row `census.phase` to the query log (phase,
+check, record, confirm, repin, judge, dispatch and apply (not their --dry-run) each append one ops row `census.phase` to the query log (phase,
 date, ms, exit and the rows per bucket or outcome; kb/_self/querylog.md): factdiff.py detect, apply and review write the same.
 
 run and finish chain the phases no model decides, each step a command of its own (its argv is printed first, its ops
@@ -3402,7 +3402,7 @@ def cmd_finish(a, tally):
 
 
 PHASES = {"check": cmd_check, "record": cmd_record, "confirm": cmd_confirm, "repin": cmd_repin,
-          "judge": cmd_judge, "dispatch": cmd_dispatch}  # each writes a census.phase ops row
+          "judge": cmd_judge, "dispatch": cmd_dispatch, "apply": cmd_apply}  # each writes a census.phase ops row
 
 
 def main():
