@@ -2,7 +2,7 @@
   "id": "ST-nni7qqhk",
   "kind": "story",
   "title": "kb/_self/coordination.md explains coord.py, the coord hook, kbask and the coord MCP tools, read from the code",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-eptouzxc",
   "priority": "P1",
   "rank": 0,
@@ -93,6 +93,55 @@
     }
   ],
   "notes": "Method (planner): every statement is read from the code on origin/main and the research story ST-m5u7gmdo's notes, never from memory; the benchmark part says what the recorded runs showed (dedup works but saves nothing beyond the spread yet; structured coordination works) and links token-efficiency.md for the figures, which stay there. The parts monitoring.md owns today (The coord.py store, Asks and remediation) are written here in full as the owner text; ST-hayrghyh then cuts monitoring.md to pointers, so the duplicate lasts only until it lands. Worked case per gate worked-case: built from ask A275e35646a (the operator's addition to the housekeeping plan, sent by the orchestrator to a running planning session, answered with the sprint it planned) and ask A3b8d7e0199 (a second addition, answered with a P1 story), read with python3 _tools/coord.py get ask/ID and answer/ID; placeholders in the doc. Code lane: map.csv and README.md are code-lane paths, so this item lands with backlog.py land ID --wait-merge 1800. A wrong statement in an existing doc found while reading the code is filed as a draft bug, not fixed here. Premise 2026-10-20 on origin/main ec635a62c7: kb/_self/coordination.md does not exist; coord is described in monitoring.md (The coord.py store, Asks and remediation, The coord panel), tools.md (the coord.py and kbask.py rows), benchmarks.md, plugin.md and token-efficiency.md with no owner doc.",
-  "claimed_by": "orch-r221",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "782db9d57347f14c41aeac73c7f7504d4464e771",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport pathlib, subprocess, re, csv\np = pathlib.Path('kb/_self/coordination.md')\nassert p.is_file(), 'kb/_self/coordination.md missing'\nt = p.read_text(encoding='utf-8')\nmiss = [w for w in ['coord.py claim', 'renew', 'release', 'put', 'get', 'post', 'wait', 'intent', 'progress', 'digest', 'dedup', '--holder', '--budget', 'spend', '--by-operator', 'serve', '--key-file', 'team', '--plain-http', '0600'] if w not in t]\nassert not miss, f'{p} lacks: {miss}'\nprint('ok')\n"
+        ],
+        "exit": 0,
+        "sha256": "dc51b8c96c2d745d"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport pathlib, subprocess, re, csv\np = pathlib.Path('kb/_self/coordination.md')\nassert p.is_file(), 'kb/_self/coordination.md missing'\nt = p.read_text(encoding='utf-8')\nmiss = [w for w in ['SessionStart', 'PreToolUse', 'coord_hook.py', 'session/', 'kbask.py ask', 'kbask.py answer', 'remediate', 'summary', 'kb-observer', 'KB_COORD_TOOLS', 'coord_claim'] if w not in t]\nassert not miss, f'{p} lacks: {miss}'\nprint('ok')\n"
+        ],
+        "exit": 0,
+        "sha256": "dc51b8c96c2d745d"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport pathlib, subprocess, re, csv\np = pathlib.Path('kb/_self/coordination.md')\nassert p.is_file(), 'kb/_self/coordination.md missing'\nt = p.read_text(encoding='utf-8')\nmiss = [w for w in ['Windows', 'kbmon', 'kb/_self/token-efficiency.md', 'own/', 'safe_to_remove', 'tidy', 'benchmark'] if w not in t]\nassert not miss, f'{p} lacks: {miss}'\nprint('ok')\n"
+        ],
+        "exit": 0,
+        "sha256": "dc51b8c96c2d745d"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport pathlib, subprocess, re, csv\nm = pathlib.Path('kb/_self/map.csv').read_text(encoding='utf-8').splitlines()\nneed = ['kb/_self/coordination.md,_tools/coord.py', 'kb/_self/coordination.md,_tools/kbask.py', 'kb/_self/coordination.md,.claude/hooks/coord_hook.py']\nmiss = [r for r in need if r not in m]\nassert not miss, f'map.csv lacks rows {miss}'\ns = pathlib.Path('kb/_self/README.md').read_text(encoding='utf-8')\nassert any(l.startswith('| `kb/_self/coordination.md`') for l in s.splitlines()), 'kb/_self/README.md table has no row for kb/_self/coordination.md'\nr = pathlib.Path('README.md').read_text(encoding='utf-8')\nsec = r.split('## Where the rest lives', 1)[1].split('\\n## ', 1)[0] if '## Where the rest lives' in r else ''\nassert 'kb/_self/coordination.md' in sec, 'README.md Where the rest lives does not link kb/_self/coordination.md'\nprint('ok')\n"
+        ],
+        "exit": 0,
+        "sha256": "dc51b8c96c2d745d"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport pathlib, subprocess, re, csv\nassert pathlib.Path('kb/_self/coordination.md').is_file(), 'kb/_self/coordination.md missing'\nfor a in (['check'], ['stale', '--work', 'ST-nni7qqhk']):\n    r = subprocess.run([sys.executable, '_tools/selfdoc.py'] + a, capture_output=True, text=True)\n    print(' '.join(a), r.returncode, (r.stdout + r.stderr).strip()[-600:])\n    assert r.returncode == 0, f'selfdoc {a} exit {r.returncode}'\n"
+        ],
+        "exit": 0,
+        "sha256": "6fda324d658b3511"
+      }
+    ]
+  }
 }
