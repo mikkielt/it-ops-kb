@@ -2,7 +2,7 @@
   "id": "ST-wgmz5pmw",
   "kind": "story",
   "title": "Review sprint: Sessions steer each other through coord asks, and the orchestrator's chores fail clearly",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-tsb23kev",
   "review": true,
   "priority": "P1",
@@ -23,6 +23,27 @@
       ]
     }
   ],
-  "claimed_by": "orch-r102",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "f2084fb93d0e4c9593e377e1b3d601e18d6ddea9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "a3998caec892ae3d"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "5dd080ee01eac1a2"
+      }
+    ]
+  }
 }
