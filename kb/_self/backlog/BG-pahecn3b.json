@@ -2,7 +2,7 @@
   "id": "BG-pahecn3b",
   "kind": "bug",
   "title": "sprint status lists stale landings of deleted items by bare id with no age",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-2uljwgho",
   "priority": "P3",
   "rank": 0,
@@ -49,6 +49,19 @@
     "parked: SP-dulvwwjc review"
   ],
   "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: --status sprints names landings by bare id (landing BG-hafdzcgw ... at step kbgit.py-sync-push, 2026-10-15).",
-  "claimed_by": "orch-r113",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "f5fc53cea4ca874d13aa2ea8f80cbdba62f446c9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,subprocess,sys; p=subprocess.run([sys.executable,'_tools/kbmon.py','--status','sprints'],capture_output=True,text=True); sys.exit(1 if p.returncode or re.search(r'landing [A-Z]{2}-[a-z0-9]{8}', p.stdout) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
