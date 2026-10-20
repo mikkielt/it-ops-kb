@@ -73,7 +73,11 @@
         "write an empty value (readers skip it)": "ST-y53hvh64",
         "delete the row from the SQLite store directly": "ST-y53hvh64"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "write an empty value (readers skip it)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
