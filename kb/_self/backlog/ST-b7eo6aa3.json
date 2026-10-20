@@ -2,7 +2,7 @@
   "id": "ST-b7eo6aa3",
   "kind": "story",
   "title": "Research sprint goal: The query log says why delivery stalls, exports fast, and its open findings are worked",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vx6eufpj",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Open questions for this sprint (kb first, then live docs): No outside facts expected (all inputs are the query log's own data: digest, distill.log, findings); confirm with rag.py pack --root _self and record what kb/_self/querylog.md says on each clause."
+  "notes": "Open questions for this sprint (kb first, then live docs): No outside facts expected (all inputs are the query log's own data: digest, distill.log, findings); confirm with rag.py pack --root _self and record what kb/_self/querylog.md says on each clause.",
+  "claimed_by": "orch-r106",
+  "operator": "op-f618a13e"
 }
