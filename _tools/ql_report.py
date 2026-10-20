@@ -108,15 +108,16 @@ def work_tokens(models):
 
 def work_lines(files, week_run):
     """The digest's work lines for the work sidecars `files` whose run id `week_run` accepts: `work: N items, tokens
-    T (main M%, subagents S%); top K by tokens` and one line per listed item, `  ID: T tokens, main M%, subagents
-    S%`, the most tokens first and the id first among equals, at most WORK_TOP of them; [] when the week's sidecars
+    T (main M%, subagents S%); top K by tokens`, `  by model: NAME T (P%), ...` (every model the item lines name, main and
+    subagents together, the most tokens first and the name first among equals) and one line per listed item, `  ID: T
+    tokens, main M%, subagents S%`, the most tokens first and the id first among equals, at most WORK_TOP of them; [] when the week's sidecars
     hold no item line. Only item lines count (an id, or a sprint's, which holds the prompts inside several of its
     items' windows): a shared line is a session's, an overhead line the system's, and neither is an item's. An item's
     lines of the week's runs are summed. A sidecar that breaks the work gates is left out whole, as `backlog.py cost`
     does, so one bad file never skews a figure. Only ids and counts go in: the sidecar holds no text, session or
     prompt, and an item deleted at sprint close is listed by its id like any other. The work sidecar holds no kb tool
     counts, so there is no kb-tool share."""
-    items = {}
+    items, models = {}, {}
     for p, objs in records(f for f in files if week_run(f.stem)):
         lines = [w for _, w in objs]
         if not lines or any(work_line_problems(w, p.stem) for w in lines):
@@ -127,13 +128,18 @@ def work_lines(files, week_run):
             t = items.setdefault(w["item"], {"main": 0, "sub": 0})
             t["main"] += work_tokens(w.get("main") or {})
             t["sub"] += sum(work_tokens(m) for m in (w.get("sub") or {}).values())
+            for group in [w.get("main") or {}, *(w.get("sub") or {}).values()]:
+                for name, c in group.items():
+                    models[name] = models.get(name, 0) + work_tokens({name: c})
     if not items:
         return []
     pct = lambda n, total: f"{round(100 * n / total)}%" if total else "0%"  # noqa: E731
     main, sub = sum(t["main"] for t in items.values()), sum(t["sub"] for t in items.values())
     top = sorted(items, key=lambda i: (-(items[i]["main"] + items[i]["sub"]), i))[:WORK_TOP]
     out = [f"work: {len(items)} items, tokens {main + sub} (main {pct(main, main + sub)}, subagents "
-           f"{pct(sub, main + sub)}); top {len(top)} by tokens"]
+           f"{pct(sub, main + sub)}); top {len(top)} by tokens",
+           "  by model: " + ", ".join(f"{m} {models[m]} ({pct(models[m], main + sub)})"
+                                      for m in sorted(models, key=lambda m: (-models[m], m)))]
     for i in top:
         t = items[i]
         total = t["main"] + t["sub"]

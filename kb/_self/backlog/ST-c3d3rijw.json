@@ -28,6 +28,27 @@
     "kb/_self/code.md",
     "kb/_self/usage.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the digest show tokens by model: where, over which items, in what form?",
+      "options": [
+        "one by-model line after the work header over all the week's item lines",
+        "a by-model split on each listed item's line"
+      ],
+      "recommendation": "one by-model line after the work header over all the week's item lines",
+      "do": {
+        "one by-model line after the work header over all the week's item lines": "ST-c3d3rijw",
+        "a by-model split on each listed item's line": "ST-c3d3rijw"
+      },
+      "class": "secrets",
+      "answer": "one by-model line after the work header over all the week's item lines",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "notes": "operator request 2026-10-19 (housekeeping batch): digest 2026-W42 prints 'work: 510 items, tokens 2529565938 (main 100%, subagents 0%)' with no model split. The work rows already hold the model; what the store records does not change. Premise: the check fails.",
   "claimed_by": "orch-r107",
   "operator": "op-f618a13e"
