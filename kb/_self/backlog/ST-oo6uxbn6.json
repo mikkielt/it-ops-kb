@@ -53,7 +53,8 @@
     "kb/_self/backlog.md",
     "kb/_self/querylog.md",
     "kb/_self/usage.md",
-    "_tools/querylog.py"
+    "_tools/querylog.py",
+    "kb/_self/plugin.md"
   ],
   "depends_on": [
     "ST-e23cb2h4"
