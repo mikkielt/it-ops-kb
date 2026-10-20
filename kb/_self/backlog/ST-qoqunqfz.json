@@ -16,6 +16,8 @@
     }
   ],
   "links": [
-    "parked: SP-aoiqmnc6 close"
-  ]
+    "parked: SP-aoiqmnc6 close",
+    "parked: SP-qh2j24z2 close"
+  ],
+  "notes": "Recurred in SP-qh2j24z2 (2026-10-20): the orchestrator ran five items that shared only kb/_self/monitoring.md one after another although held --overlaps reported no overlap for each; the run's critical path was one item wide for most of the sprint."
 }

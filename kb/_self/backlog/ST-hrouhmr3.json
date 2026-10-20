@@ -1,0 +1,25 @@
+{
+  "id": "ST-hrouhmr3",
+  "kind": "story",
+  "title": "A worker's brief names the checks of its sprint's done items that share a file with it, so it runs them before it returns",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py brief lists, under a heading 'checks of done items', each check and repro of a done item of the same sprint whose touches share a file with the item (land's siblings step runs them), and the worker rules say to run them before returning",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;p=subprocess.run([sys.executable,'_tools/backlog.py','brief','BG-tj3k7mk6'],capture_output=True,text=True);ok=p.returncode==0 and 'checks of done items' in p.stdout;print('exit',p.returncode,'brief names done siblings checks:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py"
+  ],
+  "links": [
+    "parked: SP-qh2j24z2 close"
+  ],
+  "notes": "SP-qh2j24z2 retrospective: BG-ko4sdvxy's first fix passed its own repro and broke ST-e5fdgjk4's folded BG-ttwih3wd repro (both touch _tools/mon_events.py); land stopped at step siblings and the worker was resumed once. The brief had not named the done sibling's check."
+}

@@ -1,0 +1,24 @@
+{
+  "id": "BG-cxgdnyq6",
+  "kind": "bug",
+  "title": "backlog.py done --dry-run records a done.refused ops row, which ops and the retrospective read as a real refusal",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "done --dry-run, which runs an item's checks or repro without changing anything, writes no done.refused ops row, so backlog.py ops lists only refusals of real done runs",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,subprocess,sys,tempfile;H=tempfile.mkdtemp();E=dict(os.environ,CLAUDE_PLUGIN_DATA=H,CLAUDE_PLUGIN_ROOT=os.getcwd());subprocess.run([sys.executable,'_tools/backlog.py','done','ST-3zvgcv3n','--dry-run'],capture_output=True,env=E);hits=[os.path.join(r,f) for r,_,fs in os.walk(H) for f in fs if 'done.refused' in open(os.path.join(r,f),errors='replace').read()];print('done.refused rows written by a dry run:',hits);sys.exit(1 if hits else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py"
+  ],
+  "links": [
+    "parked: SP-qh2j24z2 close"
+  ],
+  "notes": "SP-qh2j24z2 retrospective: the orchestrator ran BG-ko4sdvxy's repro with done --dry-run (backlog.py has no repro command, and the error names done --dry-run as the way), and ops SP then listed a done.refused row reasons=no-work-commit for it."
+}

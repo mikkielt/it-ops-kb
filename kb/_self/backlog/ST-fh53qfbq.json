@@ -1,0 +1,25 @@
+{
+  "id": "ST-fh53qfbq",
+  "kind": "story",
+  "title": "A planned check that plants a file another tool writes copies its shape from the writer's real output",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "skills/sprint/SKILL.md plan step 6 says a check or repro that plants a log or file another tool writes (distill.log, a spool row, a lock) takes its lines from that writer's code or a real run's output, every line the writer adds after the one the clause reads included, and records the source in the item's notes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('skills/sprint/SKILL.md',encoding='utf-8').read();s=t[t.index('## plan'):t.index('## start')];s=' '.join(s.split());ok='real output' in s and 'plants' in s;print('plan names the planted-file shape rule:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-qh2j24z2 close"
+  ],
+  "notes": "SP-qh2j24z2 retrospective: ST-e5fdgjk4's check planted a distill.log whose last line was the apply outcome; every real pushed run writes 'apply --push: deleted the spool rows ...' after it (205 of 205 in the main clone's log), so the check passed while no real delivery was exported. The review found it (S1, BG-ko4sdvxy)."
+}
