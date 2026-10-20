@@ -2,7 +2,7 @@
   "id": "BG-gkocrnfw",
   "kind": "bug",
   "title": "kbmon's sprint panel lists done and long-gone items as landings in progress",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-2uljwgho",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,7 @@
   "links": [
     "parked: SP-v4yih547 review"
   ],
-  "notes": "SP-v4yih547 review: committed ops rows sort by (ts,id), so a land.step verify sharing a millisecond with land.end sorts after it and the landing stays open (6 done items); about 1,436 old rows with no land.end name no backlog item. The review changed ST-n5d72sm3 g2 to this fix. Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: repro prints '1453 landings, 1453 done or gone'."
+  "notes": "SP-v4yih547 review: committed ops rows sort by (ts,id), so a land.step verify sharing a millisecond with land.end sorts after it and the landing stays open (6 done items); about 1,436 old rows with no land.end name no backlog item. The review changed ST-n5d72sm3 g2 to this fix. Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: repro prints '1453 landings, 1453 done or gone'.",
+  "claimed_by": "orch-r113",
+  "operator": "op-f618a13e"
 }
