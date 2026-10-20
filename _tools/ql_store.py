@@ -1124,10 +1124,18 @@ def ops_sidecar_problems(store, k=None):
     return out + leak_problems(store, rels, k)
 
 
+REDACT_MARKS = ("an identifier in `", "the leak scan flags", "the redact rules")
+REDACT_NOTE = ("note: an entry the redact gate refuses may predate the current redact rules (a redact change makes "
+               "stored entries fail); the remedy is in kb/_self/querylog.md, Delivery")
+
+
 def check(store=None):
-    """`check [DIR]`: every store gate over DIR (default kb/_querylog), one line per problem; 1 when any."""
+    """`check [DIR]`: every store gate over DIR (default kb/_querylog), one line per problem, a note after them when
+    one comes from the redact gate (the entry may predate the current rules); 1 when any."""
     problems = store_problems(store)
     for p in problems:
         print(p)
+    if any(m in p for p in problems for m in REDACT_MARKS):
+        print(REDACT_NOTE)
     print(f"querylog check: problems={len(problems)}")
     return 1 if problems else 0

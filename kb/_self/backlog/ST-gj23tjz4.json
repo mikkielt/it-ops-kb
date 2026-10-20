@@ -39,6 +39,25 @@
     "kb/_self/code.md",
     "kb/_self/usage.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does querylog.py check show that an entry may predate the redact rules?",
+      "options": [
+        "one note line after the problem lines, once, when any problem comes from the redact gate",
+        "the note appended to every redact problem line"
+      ],
+      "recommendation": "one note line after the problem lines, once, when any problem comes from the redact gate",
+      "do": {
+        "one note line after the problem lines, once, when any problem comes from the redact gate": "ST-gj23tjz4",
+        "the note appended to every redact problem line": "ST-gj23tjz4"
+      },
+      "class": "querylog",
+      "answer": "one note line after the problem lines, once, when any problem comes from the redact gate",
+      "by": "agent"
+    }
+  ],
   "notes": "operator request 2026-10-19 (housekeeping batch): distill.log on 2026-10-19: 110 refusals 'the store gates fail on the local store's files' over 2026-10-17/18, each listing 'an identifier in question' with no cause or remedy; the operator re-redacted by hand. What the store records does not change. Premise: the first check fails.",
   "claimed_by": "orch-r106",
   "operator": "op-f618a13e"
