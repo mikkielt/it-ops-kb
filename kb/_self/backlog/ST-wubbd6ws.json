@@ -2,7 +2,7 @@
   "id": "ST-wubbd6ws",
   "kind": "story",
   "title": "kbmon's sessions panel says what each Claude Code session is doing",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-razcgjsb",
   "priority": "P2",
   "rank": 0,
@@ -86,6 +86,19 @@
     "kb/public/python/process-orphans-and-cwd.md:66"
   ],
   "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: a throwaway repository with a work/ST-aaaaaaaa worktree, a process named claude in it, a claims ledger record naming its pid and worker session and a coord intent gives no sessions list (the panel lists pids, ages and checkouts only: 'ok []'). Research ST-dtrqrwzo 2026-10-20: kb facts this item rests on: CLAUDE_CODE_CHILD_SESSION=1 marks a claude run started from another session (hooks.md:49); a headless claude -p run sees CLAUDE_CODE_SESSION_ID equal to its transcript folder id (ci-and-headless.md:28); per-session spend comes from claude_code.cost.usage with session.id (otel-monitoring.md:49); a process's checkout comes from its working directory: /proc/PID/cwd on Linux, lsof cwd or proc_pidinfo on macOS (process-orphans-and-cwd.md:66). No documented field names a session's role: the role table stays this repository's own rule.",
-  "claimed_by": "orch-r112",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "522f96ed44f29911e556bc2927b1eb0456c92b6a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,shutil,subprocess as s,sys,tempfile,time,uuid\nT=os.path.realpath(tempfile.mkdtemp());g=lambda *a:s.run(['git','-C',T,*a],check=True,capture_output=True)\ng('init','-q');g('-c','user.name=x','-c','user.email=x@example.com','commit','-q','--allow-empty','-m','i')\nW=os.path.join(T,'.claude','worktrees','agent-ST-aaaaaaaa');g('worktree','add','-q','-b','work/ST-aaaaaaaa',W)\nos.makedirs(os.path.join(T,'kb','_self','backlog'))\njson.dump({'item_dir':'kb/_self/backlog'},open(os.path.join(T,'backlog.json'),'w'))\njson.dump({'id':'ST-aaaaaaaa','kind':'story','title':'Plant a worker item','status':'doing','sprint':'SP-bbbbbbbb','priority':'P2','goal':'g'},open(os.path.join(T,'kb','_self','backlog','ST-aaaaaaaa.json'),'w'))\njson.dump({'id':'SP-bbbbbbbb','kind':'sprint','title':'Plant sprint','status':'active','goal':'g'},open(os.path.join(T,'kb','_self','backlog','SP-bbbbbbbb.json'),'w'))\nB=os.path.join(T,'bin');os.makedirs(B);shutil.copy('/bin/sleep',os.path.join(B,'claude'))\np=s.Popen([os.path.join(B,'claude'),'90'],cwd=W)\nws=str(uuid.uuid4())\njson.dump({'ST-aaaaaaaa':{'by':'orch','session':'by:orch','worker_pid':p.pid,'worker_session':ws}},open(os.path.join(T,'.git','kb-backlog-claims.json'),'w'))\nst=os.path.join(T,'c.sqlite');ok=False\ns.run([sys.executable,'_tools/coord.py','--store',st,'post','--kind','intent','--field','session='+ws,'--field','item=ST-aaaaaaaa'],check=True,capture_output=True)\ntry:\n    time.sleep(1)\n    o=s.run([sys.executable,'_tools/kbmon.py','--json','--panel','sessions','--root',T,'--store',st],capture_output=True,text=True,timeout=120).stdout\n    d=json.loads(o)['panels']['sessions'];ss=[x for x in (d.get('data') or {}).get('sessions') or [] if x.get('item')=='ST-aaaaaaaa']\n    print(d.get('state'),ss)\n    need={'label','role','item','item_title','sprint','sprint_title','step','started','last_activity','spend_usd'}\n    ok=(len(ss)==1 and need<=set(ss[0]) and ss[0]['role']=='worker' and ss[0]['sprint']=='SP-bbbbbbbb'\n        and ss[0]['item_title']=='Plant a worker item' and str(ss[0]['label']).startswith('s-') and ws not in o)\nfinally:\n    p.kill();shutil.rmtree(T,ignore_errors=True)\nsys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "183394a779be8184"
+      }
+    ]
+  }
 }
