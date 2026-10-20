@@ -2,7 +2,7 @@
   "id": "ST-lgsiwdo4",
   "kind": "story",
   "title": "kbmon breaks today's cost down by sprint, session and model",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-2uljwgho",
   "priority": "P2",
   "rank": 0,
@@ -39,5 +39,7 @@
   "depends_on": [
     "ST-kmgwsjto"
   ],
-  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: a planted query log home with two sessions' usage rows of two models gives one total line ('Cost today: $3.00 over 2 usage rows') and no by_model, by_session or by_sprint facts."
+  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: a planted query log home with two sessions' usage rows of two models gives one total line ('Cost today: $3.00 over 2 usage rows') and no by_model, by_session or by_sprint facts.",
+  "claimed_by": "orch-r113",
+  "operator": "op-f618a13e"
 }
