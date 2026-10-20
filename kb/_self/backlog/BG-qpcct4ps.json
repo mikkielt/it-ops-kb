@@ -36,5 +36,5 @@
   "depends_on": [
     "ST-rwan4x2o"
   ],
-  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: repro fails (mon_base._worker is mon_coord's)."
+  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: repro fails (mon_base._worker is mon_coord's). 2026-10-20, ST-7jjj3b4s: mon_base now has Absent, an exception a panel's collect raises; _worker turns it into state absent with {reason} as data (the bench panel uses it, so it works under --panel bench alone, where mon_coord is never imported and its patched worker is not in place). mon_coord's declare for absent could use it; the timeout half of this bug and the view's reason text (BG-rpp4dsrn) remain."
 }
