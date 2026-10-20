@@ -1,9 +1,11 @@
 """kbmon's shared ground (kb/_self/monitoring.md): the panels, a panel's run in a daemon thread under a timeout, the
 snapshot and the reading of a saved one. Standard library only; every `mon_` module imports it and it imports no sibling.
 
-  PANELS                 the eight panels, in the order a snapshot lists them
+  PANELS                 the nine panels, in the order a snapshot lists them
   Ctx                    what a panel reads: the clone `root`, the coord `store`, `url` and `key_file`
   Unsupported            a panel's `collect(ctx)` raises it when this host or this setting cannot give the panel
+  Absent                 a panel's `collect(ctx)` raises it when there is nothing to show (the bench panel without a paid
+                         run): the panel is `absent`, its data the `reason`
   panel_module(name)     the module `mon_<name>` (`MODULES` names the exceptions: `cleanup` is `mon_clean`), or None while no
                          item has written it (the panel is then `absent`)
   snapshot(ctx, names, timeout, kept=None)
@@ -25,7 +27,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 SCHEMA = 1
-PANELS = ("kb", "coord", "sessions", "querylog", "host", "sprint", "cleanup", "log")
+PANELS = ("kb", "coord", "sessions", "querylog", "host", "sprint", "cleanup", "bench", "log")
 MODULES = {"cleanup": "mon_clean"}  # the panels whose module is not `mon_<name>`
 STATES = ("ok", "timeout", "error", "absent", "unsupported")
 ERROR_CHARS = 300  # characters of an exception's text a panel in state error keeps
@@ -43,6 +45,10 @@ class Ctx:
 
 class Unsupported(Exception):
     """The panel cannot be shown here; its text is the reason."""
+
+
+class Absent(Exception):
+    """The panel has nothing to show now; its text is the reason."""
 
 
 def panel_module(name):
@@ -72,6 +78,8 @@ def _worker(module, ctx, box):
         box["state"] = "ok"
     except Unsupported as e:
         box["state"], box["data"] = "unsupported", {"reason": _one_line(e)}
+    except Absent as e:
+        box["state"], box["data"] = "absent", {"reason": _one_line(e)}
     except Exception as e:  # noqa: BLE001 - a panel that fails is its own state, never a failure of the snapshot
         box["state"], box["data"] = "error", {"error": f"{type(e).__name__}: {_one_line(e)}"}
     box["seconds"] = time.monotonic() - start
