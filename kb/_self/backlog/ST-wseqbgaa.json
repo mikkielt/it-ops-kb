@@ -2,7 +2,7 @@
   "id": "ST-wseqbgaa",
   "kind": "story",
   "title": "Mutating backlog commands as kb MCP tools behind an opt-in setting",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rrqlgiff",
   "priority": "P3",
   "rank": 0,
@@ -73,5 +73,7 @@
   "links": [
     "parked: housekeeping plan 2026-10-19 (operator gate)"
   ],
-  "notes": "housekeeping batch 2026-10-19, coord ask A275e35646a: operator-only authority (gate answers) must not gain a route around its guard. Plan 2026-10-20 (SP-rrqlgiff): operator gate authority answered: offer claim, release and answer behind an opt-in setting. Operator-authority surface, kept narrow: the setting follows KB_COORD_TOOLS (kb_mcp.coord_enabled), the tool reuses the facade pattern of kb_backlog and runs backlog.py in a child with CLAUDECODE=1 whatever the server's own environment holds, so bl_authority is not changed and no test file is touched (a planted refusal case goes into the existing authority test only if a guard there were extended, which this goal does not ask). Premise run on origin/main 8aa620db0 with the check's planted clone: no mutating tool is listed with or without the setting; on the CLI, answer --by operator on a ceiling-class gate exits 2 under CLAUDECODE and a provisional design gate answers with exit 0. kb/_self/token-efficiency.md maps to kb_mcp.py but stays out of the touches: the tool is listed only with the opt-in setting, so the default server's always-on tool text is unchanged; name it Self-Reviewed when selfdoc stale lists it (ST-resduis7, which runs last, edits that doc). Correction at plan: kb/_self/token-efficiency.md is back in the touches (backlog check: code and its mapped docs land in one range); the earlier note on leaving it out no longer holds."
+  "notes": "housekeeping batch 2026-10-19, coord ask A275e35646a: operator-only authority (gate answers) must not gain a route around its guard. Plan 2026-10-20 (SP-rrqlgiff): operator gate authority answered: offer claim, release and answer behind an opt-in setting. Operator-authority surface, kept narrow: the setting follows KB_COORD_TOOLS (kb_mcp.coord_enabled), the tool reuses the facade pattern of kb_backlog and runs backlog.py in a child with CLAUDECODE=1 whatever the server's own environment holds, so bl_authority is not changed and no test file is touched (a planted refusal case goes into the existing authority test only if a guard there were extended, which this goal does not ask). Premise run on origin/main 8aa620db0 with the check's planted clone: no mutating tool is listed with or without the setting; on the CLI, answer --by operator on a ceiling-class gate exits 2 under CLAUDECODE and a provisional design gate answers with exit 0. kb/_self/token-efficiency.md maps to kb_mcp.py but stays out of the touches: the tool is listed only with the opt-in setting, so the default server's always-on tool text is unchanged; name it Self-Reviewed when selfdoc stale lists it (ST-resduis7, which runs last, edits that doc). Correction at plan: kb/_self/token-efficiency.md is back in the touches (backlog check: code and its mapped docs land in one range); the earlier note on leaving it out no longer holds.",
+  "claimed_by": "orch240",
+  "operator": "op-f618a13e"
 }
