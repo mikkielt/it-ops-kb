@@ -2,7 +2,7 @@
   "id": "BG-bubaqrja",
   "kind": "bug",
   "title": "The otel adapter resends the same log records every round while span export fails",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qh2j24z2",
   "priority": "P2",
   "rank": 0,
@@ -53,6 +53,19 @@
     "parked: SP-qvlnptiw review"
   ],
   "notes": "SP-qvlnptiw review (ST-gj4eicfw g1 changed to a cursor per signal): one shared cursor moves only when every signal that is on was sent, so a receiver that refuses /v1/traces gets duplicate log records. operator request 2026-10-19 (housekeeping batch): the repro needs uv and a loopback listener, no network. Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs.",
-  "claimed_by": "orch-r109",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "4e74fc168a3c57d690cab82d5ac60edf0982383c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import http.server,json,os,shutil,subprocess as s,sys,tempfile,threading\nU=shutil.which('uv') or sys.exit('uv is not on PATH')\nGOT=[]\nclass Rq(http.server.BaseHTTPRequestHandler):\n    def do_POST(self):\n        self.rfile.read(int(self.headers.get('Content-Length') or 0));GOT.append(self.path)\n        self.send_response(404 if self.path=='/v1/traces' else 200);self.send_header('Content-Type','application/x-protobuf');self.end_headers()\n    def log_message(self,*a): pass\nSV=http.server.ThreadingHTTPServer(('127.0.0.1',0),Rq);threading.Thread(target=SV.serve_forever,daemon=True).start()\nH=tempfile.mkdtemp();T=os.path.join(H,'c.sqlite')\nE={k:v for k,v in os.environ.items() if not k.startswith('OTEL_')}\nE.update(CLAUDE_PLUGIN_DATA=H,CLAUDE_PLUGIN_ROOT=os.getcwd(),KB_COORD_STORE=T,OTEL_EXPORTER_OTLP_ENDPOINT='http://127.0.0.1:%d'%SV.server_address[1])\nfor n in (1,2): s.run([sys.executable,'_tools/coord.py','post','--kind','lesson','--field','ref=x%d'%n],capture_output=True,env=E,timeout=60)\ns.run([U,'run','--frozen','--project','otel','python','otel/kbmon_otel.py','--count','3','--interval','1','--panel','coord','--store',T],capture_output=True,text=True,env=E,timeout=300);SV.shutdown()\nn=GOT.count('/v1/logs')\nif n>1: print('the same log records were sent %d times while spans failed'%n);sys.exit(1)\nprint('ok: log records sent once (%d posts)'%n)\n"
+        ],
+        "exit": 0,
+        "sha256": "bdd3946190721472"
+      }
+    ]
+  }
 }
