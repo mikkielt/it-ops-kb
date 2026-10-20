@@ -75,6 +75,57 @@
       "class": "design",
       "answer": "the pack index, the freshness stamp and the routed questions with topics for code into kf_index.py, kf_fresh.py and kf_route.py",
       "by": "operator"
+    },
+    {
+      "id": "imports",
+      "kind": "provisional",
+      "question": "How do the kf_ stages and kbfacts.py import each other, given that the pack index, the freshness stamp and the routing all read the ground that stays in kbfacts.py and the ground calls store, MemStore, weighed and INDEX_VERSION?",
+      "options": [
+        "kbfacts.py imports the three stages at its end and re-exports their names; each stage takes the ground by name from the partly loaded kbfacts; kf_fresh reaches kf_route inside pack_many and imports kbfacts for pack_store",
+        "a new kf_base.py holds the ground and all four modules import it"
+      ],
+      "recommendation": "kbfacts.py imports the three stages at its end and re-exports their names; each stage takes the ground by name from the partly loaded kbfacts; kf_fresh reaches kf_route inside pack_many and imports kbfacts for pack_store",
+      "do": {
+        "kbfacts.py imports the three stages at its end and re-exports their names; each stage takes the ground by name from the partly loaded kbfacts; kf_fresh reaches kf_route inside pack_many and imports kbfacts for pack_store": "ST-ijamqlyh",
+        "a new kf_base.py holds the ground and all four modules import it": "ST-ijamqlyh"
+      },
+      "class": "design",
+      "answer": "kbfacts.py imports the three stages at its end and re-exports their names; each stage takes the ground by name from the partly loaded kbfacts; kf_fresh reaches kf_route inside pack_many and imports kbfacts for pack_store",
+      "by": "agent"
+    },
+    {
+      "id": "ground",
+      "kind": "provisional",
+      "question": "Which helpers of the cut sections stay in kbfacts.py, and what happens to the two private helpers the stages share?",
+      "options": [
+        "clone_home, index_dir, clip and clip_around stay in kbfacts.py (the ground and the stages all use them) and the shared _git and _remove become the public git_out and remove_file",
+        "every helper moves with its section and the stages import the private names"
+      ],
+      "recommendation": "clone_home, index_dir, clip and clip_around stay in kbfacts.py (the ground and the stages all use them) and the shared _git and _remove become the public git_out and remove_file",
+      "do": {
+        "clone_home, index_dir, clip and clip_around stay in kbfacts.py (the ground and the stages all use them) and the shared _git and _remove become the public git_out and remove_file": "ST-ijamqlyh",
+        "every helper moves with its section and the stages import the private names": "ST-ijamqlyh"
+      },
+      "class": "design",
+      "answer": "clone_home, index_dir, clip and clip_around stay in kbfacts.py (the ground and the stages all use them) and the shared _git and _remove become the public git_out and remove_file",
+      "by": "agent"
+    },
+    {
+      "id": "fingerprint",
+      "kind": "provisional",
+      "question": "Which files does the index fingerprint cover now that the weighing and the index layout live in kf_index.py?",
+      "options": [
+        "kbfacts.py, kf_index.py and kbid.py (an edit to the weighing or the layout rebuilds the index, an edit to kf_fresh.py or kf_route.py does not)",
+        "all four kbfacts modules and kbid.py"
+      ],
+      "recommendation": "kbfacts.py, kf_index.py and kbid.py (an edit to the weighing or the layout rebuilds the index, an edit to kf_fresh.py or kf_route.py does not)",
+      "do": {
+        "kbfacts.py, kf_index.py and kbid.py (an edit to the weighing or the layout rebuilds the index, an edit to kf_fresh.py or kf_route.py does not)": "ST-ijamqlyh",
+        "all four kbfacts modules and kbid.py": "ST-ijamqlyh"
+      },
+      "class": "design",
+      "answer": "kbfacts.py, kf_index.py and kbid.py (an edit to the weighing or the layout rebuilds the index, an edit to kf_fresh.py or kf_route.py does not)",
+      "by": "agent"
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): kbfacts.py on 2026-10-19: 4377 lines, 87 commits in 30 days; its sections index (1905-3087), freshness (3087-3640), routed (3640-3946) and topics for code (3946-end) are the cut. Premise: the first check fails. Checks 1, 2 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",
