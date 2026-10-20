@@ -150,6 +150,7 @@ def work_lines(files, week_run):
 OPS_TOP = 5  # the command classes the ops block names, most calls first
 NOTHING_SELECTED = 2  # tests.py's exit, with selected 0, for a selection that collects no test: no failure
 PYTEST_NOTHING = 5  # pytest's own exit for it, which test.run rows held before tests.py refused such a run
+DETECT_REVIEW = 1  # factdiff.py detect's exit for facts to review: the phase ran, so its census.phase row is no failure
 OPS_TIMED = ("land.end", "sync.gate", "test.run", "census.phase")  # the events whose count, failures and median ms the block gives
 
 
@@ -183,7 +184,8 @@ def ops_lines(files, in_week):
         if e in by:
             empty = sum(1 for r in by[e] if e == "test.run" and (r.get("exit") == PYTEST_NOTHING or (
                 r.get("exit") == NOTHING_SELECTED and r.get("selected") == 0)))
-            failed = sum(1 for r in by[e] if r.get("exit") not in (0, None)) - empty
+            to_review = sum(1 for r in by[e] if e == "census.phase" and r.get("phase") == "detect" and r.get("exit") == DETECT_REVIEW)
+            failed = sum(1 for r in by[e] if r.get("exit") not in (0, None)) - empty - to_review
             out.append(f"  {e}: {len(by[e])}, failed {failed}, median {rank([r['ms'] for r in by[e]], 0.5)} ms"
                        + (f", selected nothing {empty}" if empty else ""))
     if "done.refused" in by:
