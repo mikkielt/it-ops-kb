@@ -453,7 +453,7 @@ def session_rows(ctx, procs, placed, by_path, found, bl, names):
             items = [i for i in items or intents_of(found, sid) if (items_of.get(i) or {}).get("status") in ("todo", "doing")]
         known = [items_of[i] for i in items if i in items_of]
         sprints = {it.get("sprint") for it in known}
-        live_workers = any(bl_procs.running(w) for w in (worker_of(r)[0] for r in records.values()) if w is not None)
+        live_workers = os.name != "nt" and any(bl_procs.running(w) for w in (worker_of(r)[0] for r in records.values()) if w is not None)
         role = role_of(base, worker, any(it.get("review") for it in known), runner,
                        bool(known) and all(it.get("kind") in PLAN_KINDS for it in known),
                        sid is None and not hook_sessions(base) and remediating, base in by_path)
