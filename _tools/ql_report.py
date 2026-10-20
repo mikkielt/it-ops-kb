@@ -706,6 +706,7 @@ APPLY_OUTCOMES = (  # (the start of an `apply --push:` line's text, the outcome 
     ("commit failed", "refused"), ("conflict", "refused"), ("the worktree", "refused"), ("git fetch", "fetch-failed"),
     ("the revert of", "refused"), ("git clone", "refused"), ("the findings a", "refused"),
     ("the push was refused", "refused"))
+RUN_TRAILER = "apply --push: deleted the spool rows"  # the line a run that pushed writes after its outcome
 NO_DELIVERY = ("locked", "waiting")  # apply outcomes of a run that tried no push: they neither deliver nor end a refusal
 DISTILL_OUTCOMES = (("logging is off", "off"), ("another distill", "locked"), ("nothing to write", "nothing"),
                     ("run=", "written"), ("Haiku call failed", "failed"))
@@ -730,7 +731,8 @@ def last_outcomes(qdir=None):
     """{distill, apply}: the last `distill:` line's and the last terminal `apply --push:` line's outcome in the
     distill.log beside the spool, each None when the log has none, else {outcome, line, when}. The outcome is one of
     DISTILL_OUTCOMES' or APPLY_OUTCOMES'; `line` is the log line's number from the end, and `when` the log's last write
-    for the outcome that stands last in the log (the lines carry no time), else None. A distill line also gives
+    for the outcome that stands last in the log (the lines carry no time), else None. An apply entry also gives
+    `standing`: True while only RUN_TRAILER lines (its own run's spool-rows line) follow it, else False. A distill line also gives
     `entries`, `dropped` and `waiting` when it counts them."""
     lines, when = log_tail(qdir or places()[0])
     found = {}
@@ -743,6 +745,8 @@ def last_outcomes(qdir=None):
             outcome = next((o for start, o in table if (start in body if key == "distill" else body.startswith(start))), None)
             if outcome:
                 found[key] = {"outcome": outcome, "line": len(lines) - i, "when": None}
+                if key == "apply":
+                    found[key]["standing"] = all(t.startswith(RUN_TRAILER) for t in lines[i + 1:])
                 if key == "distill":
                     found[key].update({k: int(v) for k, v in re.findall(r"\b(entries|dropped|waiting)=(\d+)", body)})
     last = min((v["line"] for v in found.values()), default=None)

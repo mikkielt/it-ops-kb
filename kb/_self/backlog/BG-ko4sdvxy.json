@@ -23,6 +23,42 @@
     "kb/_self/tools.md",
     "kb/_self/usage.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does a pushed delivery with its spool-rows line after it stay exported once?",
+      "options": [
+        "time the outcome by the log's last write while only its run's spool-rows lines follow it",
+        "key the delivery on the pushed sha instead of the log's time"
+      ],
+      "recommendation": "time the outcome by the log's last write while only its run's spool-rows lines follow it",
+      "do": {
+        "time the outcome by the log's last write while only its run's spool-rows lines follow it": "BG-ko4sdvxy",
+        "key the delivery on the pushed sha instead of the log's time": "BG-ko4sdvxy"
+      },
+      "class": "design",
+      "answer": "time the outcome by the log's last write while only its run's spool-rows lines follow it",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does delivery_records tell an outcome followed only by its run's spool-rows line from one followed by another line?",
+      "options": [
+        "last_outcomes sets a standing flag on the apply entry and when keeps its meaning",
+        "last_outcomes gives the apply entry a when while its run's spool-rows line follows"
+      ],
+      "recommendation": "last_outcomes sets a standing flag on the apply entry and when keeps its meaning",
+      "do": {
+        "last_outcomes sets a standing flag on the apply entry and when keeps its meaning": "BG-ko4sdvxy",
+        "last_outcomes gives the apply entry a when while its run's spool-rows line follows": "BG-ko4sdvxy"
+      },
+      "class": "design",
+      "answer": "last_outcomes sets a standing flag on the apply entry and when keeps its meaning",
+      "by": "agent"
+    }
+  ],
   "links": [
     "found: SP-qh2j24z2 review"
   ],
