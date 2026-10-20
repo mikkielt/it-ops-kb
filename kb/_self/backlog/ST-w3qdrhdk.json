@@ -52,7 +52,9 @@
       },
       "class": "querylog",
       "answer": "answering-line",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -71,7 +73,9 @@
       },
       "class": "querylog",
       "answer": "follow-up",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): digest 2026-W42: rules lookups 971 (good 13, weak 92, none 553, no verdict 313), open rules findings 33. A _self eval row is a code-lane path: land with backlog.py land ID --wait-merge 1800. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done. Precheck 2026-10-20: rag.py eval --root _self passes before the work by design: it pins that the new _self rows pass; the findings check carries the proof. Orchestrator 2026-10-20: the worker closed 29 with tested rows; the 4 the gates refuse go to BG-65xsmfxg (close takes no rules finding), gate g2 follow-up. Goal and check narrowed to the 29.",

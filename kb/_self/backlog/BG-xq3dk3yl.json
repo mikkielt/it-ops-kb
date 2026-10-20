@@ -53,7 +53,9 @@
       },
       "class": "design",
       "answer": "lock file and atomic replace",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

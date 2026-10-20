@@ -1,0 +1,24 @@
+{
+  "id": "ST-ujkgcqwj",
+  "kind": "story",
+  "title": "querylog.py close's help names the rules-finding route",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "querylog.py close --help says its ids may be rules findings, that --tried and --reject close one with no _gaps.md entry, and that --claim takes only a gap finding, as the code and kb/_self/querylog.md do",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;o=subprocess.run([sys.executable,'_tools/querylog.py','close','--help'],capture_output=True,text=True).stdout;sys.exit(0 if 'rules' in o else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/querylog.py"
+  ],
+  "links": [
+    "parked: SP-vx6eufpj review"
+  ]
+}

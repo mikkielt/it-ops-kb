@@ -1,0 +1,25 @@
+{
+  "id": "BG-mso7kfjq",
+  "kind": "bug",
+  "title": "apply --push keeps only check's first 10 problem lines, so the redact note is cut from the refusal text when check prints more",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "the refusal text apply --push writes carries check's redact note whatever the number of problem lines, so the operator always sees where the remedy is written",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;s=open('_tools/ql_deliver.py').read();sys.exit(1 if 'problems[:10]' in s else 0)"
+    ]
+  },
+  "repro_reason": "a store with 10 or more failing entries and a refused push is needed to run it; the slice that drops the note is the line the fix changes",
+  "touches": [
+    "_tools/ql_deliver.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-vx6eufpj review"
+  ]
+}

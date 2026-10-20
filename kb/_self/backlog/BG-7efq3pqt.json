@@ -1,0 +1,24 @@
+{
+  "id": "BG-7efq3pqt",
+  "kind": "bug",
+  "title": "remember_feedback_id's stale-lock takeover can let two writers in, and its finally unlinks a lock another writer holds",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "a writer takes over a stale feedback.ids lock only when the lock it renames is the stale one it saw, and releases only a lock it holds, so no id is lost when a holder stalls past the stale age",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;s=open('_tools/ql_capture.py').read();i=s.find('def remember_feedback_id');b=s[i:s.find(chr(10)+'def ',i+10)];sys.exit(1 if 'lock.unlink(missing_ok=True)' in b else 0)"
+    ]
+  },
+  "repro_reason": "the race needs a holder stalled past FEEDBACK_IDS_LOCK_STALE_S (30 s) and two takers at once; the unconditional unlink in the finally is the line the fix changes",
+  "touches": [
+    "_tools/ql_capture.py"
+  ],
+  "links": [
+    "parked: SP-vx6eufpj review"
+  ]
+}

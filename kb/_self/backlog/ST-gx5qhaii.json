@@ -1,0 +1,25 @@
+{
+  "id": "ST-gx5qhaii",
+  "kind": "story",
+  "title": "The three rules findings filed on 2026-10-19 after SP-vx6eufpj was planned are tested _self questions or closed with a note",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "F-0087f0a19e8b, F-164e39b14bfc and F-543547c9270c leave querylog.py show --findings --kind rules --state open, each as a tested _self eval row or closed with close --tried and its reason",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;p=subprocess.run([sys.executable,'_tools/querylog.py','show','--findings','--kind','rules','--state','open'],capture_output=True,text=True);left=[i for i in ['F-0087f0a19e8b','F-164e39b14bfc','F-543547c9270c'] if i in p.stdout];print(left);sys.exit(1 if p.returncode or left else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/_retrieval/lookup_eval.csv",
+    "kb/_querylog/findings/**"
+  ],
+  "links": [
+    "parked: SP-vx6eufpj review"
+  ]
+}

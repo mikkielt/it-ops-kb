@@ -1,0 +1,25 @@
+{
+  "id": "BG-jc53l3qa",
+  "kind": "bug",
+  "title": "querylog.py check prints no redact note when the only redact-gate problem is 'fetch host is not a public host'",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "check prints its note that an entry may predate the current redact rules for every redact-gate problem, the public-host check of a fetch host included, since that check depends on what the redact rules name",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import ql_store as s;p='2026-10/x.jsonl:1: fetch host is not a public host';sys.exit(0 if any(m in p for m in s.REDACT_MARKS) else 1)"
+    ]
+  },
+  "repro_reason": "a stored entry whose fetch host the current public root names is needed to fail the gate for real; the marks tuple is what check matches problem lines against",
+  "touches": [
+    "_tools/ql_store.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-vx6eufpj review"
+  ]
+}

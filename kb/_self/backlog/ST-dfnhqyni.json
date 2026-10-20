@@ -54,7 +54,9 @@
       },
       "class": "design",
       "answer": "new decision tool",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): F-ea430090e717 ('How many articles does the kb hold in the intune domain?') was written into kb/public/_gaps.md:1582 as a gap of security/policy-precedence. The existing entry stays (removing kb content is the operator's). Premise: gap_decision gives keep for both count questions on 2026-10-19. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done. Precheck 2026-10-20: the second check (two non-count questions stay keep) passes before the work by design: it pins that the count/list rule does not drop real gaps.",

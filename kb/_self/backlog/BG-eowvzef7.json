@@ -1,0 +1,24 @@
+{
+  "id": "BG-eowvzef7",
+  "kind": "bug",
+  "title": "ql_apply.tool_question takes a product question about domains or roots for a kb count question, so gap_decision drops a real gap with no pack",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "tool_question matches only a count or list question about the kb itself (the kb, knowledge base, its articles, sources or topics), so a product question such as 'list the domains and root domains in an AD forest' still gets a pack and a keep or reject decision",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import ql_apply as a;qs=['list the domains and root domains in an AD forest','how many domains can a Microsoft Entra tenant verify, and how many root domains','number of domains a DNS root zone can have'];bad=[q for q in qs if a.tool_question(q)];print('taken as kb count questions:',bad);sys.exit(1 if bad else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/ql_apply.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-vx6eufpj review"
+  ]
+}

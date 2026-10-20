@@ -54,7 +54,9 @@
       },
       "class": "design",
       "answer": "filter before the gates",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): measured 2026-10-19 on this host (loaded, warm): export --since 2026-10-18 --event usage took 89.2 s real (86.1 s user), while digest of the week took 1.9 s. Premise: the first check fails. Checks 1 (0-based) pass before the work on purpose: they pin behaviour that must stay (a gate, an eval, a guard test or a count that may not drop) beside the checks that fail until the work is done.",

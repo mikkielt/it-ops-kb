@@ -35,7 +35,9 @@
       },
       "class": "delete",
       "answer": "skip in learn",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Orchestrator 2026-10-20: moved into SP-vx6eufpj so ST-gt4tduzr's four route closures stay closed (gate g2 of ST-gt4tduzr). Repro on base: 4 route findings derived, exit 1.",

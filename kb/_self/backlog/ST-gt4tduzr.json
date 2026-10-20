@@ -53,7 +53,9 @@
       },
       "class": "querylog",
       "answer": "routes row each, Hugging Face not avoiding WebFetch",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
