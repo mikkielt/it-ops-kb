@@ -1,0 +1,22 @@
+{
+  "id": "BG-7aoowqsk",
+  "kind": "bug",
+  "title": "The census sample brief says the checker runs on Haiku 5.5, and the skill hands it to a subagent that keeps the session model",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The census sample brief names the model the phase-4 checker runs on only if the checker is started on it: the kb-census skill starts the checker on census.STEP_MODELS['check'] (a headless claude -p --model session, as dispatch does), or the brief stops naming a model",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.exit(0 if 'STEP_MODELS' in open('.claude/skills/kb-census/SKILL.md', encoding='utf-8').read() else 1)"
+    ]
+  },
+  "repro_reason": "the defect is a gap between a printed model name and the Agent-tool subagent the skill starts, which no command here runs",
+  "touches": [
+    ".claude/skills/kb-census/SKILL.md",
+    "_tools/census.py"
+  ]
+}
