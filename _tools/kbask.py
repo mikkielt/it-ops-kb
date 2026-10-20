@@ -404,7 +404,7 @@ def cmd_cleanup(args):
         raise Stop("kbask: claude is not on PATH")
     tidy = " ".join(shlex.quote(x) for x in ["python3", "_tools/backlog.py", *tidy_args(args)])
     profile = {"model": CLEANUP_MODEL, "budget": CLEANUP_BUDGET_USD, "flat": True,
-               "tools": ["Read", "Grep", "Glob", "Bash(python3 _tools/kbmon.py --json *)", f"Bash({tidy})"]}
+               "tools": ["Read", "Grep", "Glob", "Bash(python3 _tools/kbmon.py --json)", f"Bash({tidy})"]}
     observer_agent(CLEANUP_MODEL)
     key = CLAIM_PREFIX + CLEANUP_ALERT
     token = need(run_coord(conn, "claim", key, "--ttl", str(CLAIM_SECONDS), "--holder", "kbask"), f"cannot claim {key}")["token"]
