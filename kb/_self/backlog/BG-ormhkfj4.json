@@ -2,7 +2,7 @@
   "id": "BG-ormhkfj4",
   "kind": "bug",
   "title": "kbmon's sprint panel builds its own sprint row, without the percentage the status row shows",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-2uljwgho",
   "priority": "P1",
   "rank": 0,
@@ -46,6 +46,19 @@
     "SP-2uljwgho review"
   ],
   "notes": "SP-2uljwgho review gap 1 (S1): mon_sprint.progress/lines (_tools/mon_sprint.py:226) and mon_status.sprint_row (_tools/mon_status.py:319) are two implementations; on the planted snapshot the panel row reads 'SP-bbbbbbbb  active  The paid multi-agent runs measure…  4/10 done · next ST-cccccccc · todo 5, done 4, doing 1' (no percentage, no ETA) while the status row reads '… active 4/10 40% no ETA yet'. Premise run on origin/main 7b462e014: repro exits 1. For the worker: land re-runs the proofs of this sprint's done items that share a file with this bug (step siblings). Before returning, run the checks or repros of ST-dhsyyjft, BG-lyfl57xv, BG-pahecn3b, BG-gkocrnfw, ST-jof4u6e6 and ST-kmgwsjto from their item files and keep each at exit 0: the --status sprints compact row (ST-dhsyyjft) and its checkout-fallback 'no ETA: origin/main not readable' wording (BG-lyfl57xv) must stay.",
-  "claimed_by": "orch-r113",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "42f872efd894e60a5ef122b29bd497413f415607",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile\nlong='The paid multi-agent runs measure concurrency, dedup, cache reuse, model choice, pack budget and kb tools'\nSP=[{'id':'SP-aaaaaaaa','state':'approved','title':'An approved sprint','items':{'todo':3},'next':None,'next_title':None,'open':[],'done_at':[],'waiting':[]},\n    {'id':'SP-bbbbbbbb','state':'active','title':long,'items':{'done':4,'todo':5,'doing':1},'next':'ST-cccccccc','next_title':'Next item title',\n     'open':[{'id':'ST-cccccccc','title':'Next item title','status':'todo'}],'done_at':['2026-10-19T0%d:00:00Z'%h for h in range(1,6)],'waiting':[]}]\nsnap={'schema':1,'taken':'2026-10-19T08:00:00Z','alerts':[],'panels':{'sprint':{'state':'ok','seconds':0.1,'data':{'sprints':SP,'source':'origin/main','behind':0,'landings':[]}},\n      'host':{'state':'ok','seconds':0.1,'data':{'load':[1.0,1.0,1.0],'cores':8}}}}\nf=os.path.join(tempfile.mkdtemp(),'s.json');json.dump(snap,open(f,'w'))\nr=lambda *a:s.run([sys.executable,'_tools/kbmon.py',*a,'--from-snapshot',f],capture_output=True,text=True,timeout=120,env=dict(os.environ,COLUMNS='200')).stdout\nst=[l.strip() for l in r('--status','sprints').splitlines() if '4/10' in l]\npn=[l.strip() for l in r('--once','--panel','sprint').splitlines() if '4/10' in l]\nprint('status:',st);print('panel:',pn)\nsys.exit(0 if st and pn and '40%' in pn[0] and 'ETA' in pn[0] and len(pn[0])<=100 else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "868ce0662c2fab7e"
+      }
+    ]
+  }
 }
