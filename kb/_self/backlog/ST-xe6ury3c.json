@@ -22,6 +22,27 @@
     "kb/_self/tools.md",
     "kb/_self/web-sources.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the commit step tell the paths a run's steps wrote from changes made before it? Snapshot plus kept record, snapshot only, or refuse any change under the root?",
+      "options": [
+        "snapshot and kept record",
+        "snapshot only",
+        "refuse any change under the root"
+      ],
+      "recommendation": "snapshot and kept record",
+      "do": {
+        "snapshot and kept record": "ST-xe6ury3c",
+        "snapshot only": "ST-xe6ury3c",
+        "refuse any change under the root": "ST-xe6ury3c"
+      },
+      "class": "design",
+      "answer": "snapshot and kept record",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-uwkr7iyl review"
   ],

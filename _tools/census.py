@@ -3236,26 +3236,90 @@ def run_step(s):
     return p.returncode, p.stdout or ""
 
 
-def run_commit(s, root_rel, finish):
-    """(exit code, '') of the commit step: add the census logs and the tracked changes of the root (and, for `finish`,
-    of the ledgers), then commit when the index differs from HEAD; a tracked change outside them refuses it (exit 2).
-    Never pushes."""
+def dirty_state():
+    """{path: digest of its working copy, "deleted" for none} of the tracked paths `tracked_dirty` lists."""
+    return {p: g(kbcommon.HOME, "hash-object", "--", p)[1] if os.path.isfile(os.path.join(kbcommon.HOME, p)) else "deleted"
+            for p in tracked_dirty()}
+
+
+def own_file():
+    return os.path.join(kbcommon.HOME, "_cache", "census-own.json")
+
+
+class Writes:
+    """The tracked changes the steps of a driver made, told from the ones that were there before it ran. `own` is
+    {path: digest} of what the steps wrote and no commit holds yet, kept in `_cache/census-own.json` so that a stopped
+    run, run again, still commits what its earlier steps wrote (a path counts while its working copy has the digest the
+    run left, so an edit made after it is not its own); `before` is the other changes; `mixed` the paths of `before`
+    that a step changed too, which no commit may take whole."""
+
+    def __init__(self):
+        state = dirty_state()
+        try:
+            with open(own_file(), encoding="utf-8") as f:
+                saved = json.load(f)
+        except (OSError, ValueError):
+            saved = {}
+        self.own = {p: d for p, d in saved.items() if state.get(p) == d}
+        self.before = {p: d for p, d in state.items() if p not in self.own}
+        self.mixed = set()
+
+    def update(self):
+        for p, d in dirty_state().items():
+            if p not in self.before:
+                self.own[p] = d
+            elif self.before[p] != d:
+                self.mixed.add(p)
+        self.save()
+
+    def save(self):
+        if not self.own:
+            if os.path.exists(own_file()):
+                os.remove(own_file())
+            return
+        os.makedirs(os.path.dirname(own_file()), exist_ok=True)
+        with open(own_file(), "w", encoding="utf-8", newline="\n") as f:
+            json.dump(self.own, f, indent=1, sort_keys=True)
+            f.write("\n")
+
+
+def run_commit(s, root_rel, finish, writes=None):
+    """(exit code, '') of the commit step: add the census logs and the tracked paths the steps changed (`writes`; with
+    none, every tracked change of the root and, for `finish`, of the ledgers), then commit just those paths when they
+    differ from HEAD, so a change made before the run stays as it was; a tracked change outside the root refuses it
+    (exit 2), and so does a step that changed a path the operator had changed before. Never pushes."""
     dirty = tracked_dirty()
     bad = foreign(dirty, root_rel, finish)
     if bad:
         print(f"refused: tracked changes outside {root_rel}/: {', '.join(bad[:5])}", file=sys.stderr)
         return 2, ""
+    if writes:
+        writes.update()
+        if writes.mixed:
+            print(f"refused: a step changed what was changed before the run: {', '.join(sorted(writes.mixed)[:5])}; "
+                  "commit or set those changes aside and run again", file=sys.stderr)
+            return 2, ""
+        kept = [p for p in dirty if p not in writes.own]
+        if kept:
+            print(f"left out of the commit, changed before the run: {', '.join(kept[:5])}" + (f" (+{len(kept) - 5} more)" if len(kept) > 5 else ""))
+        dirty = [p for p in dirty if p in writes.own]
     add = sorted({*dirty, *(p for p in s["add"] if output_exists(p))})
     if add and g(kbcommon.HOME, "add", "--", *add)[0]:
         print("git add failed; nothing committed", file=sys.stderr)
         return 1, ""
-    if g(kbcommon.HOME, "diff", "--cached", "--quiet")[0] == 0:
+    if not add or g(kbcommon.HOME, "diff", "--cached", "--quiet", "--", *add)[0] == 0:
         print("nothing to commit")
+        if writes:
+            writes.own = {}
+            writes.save()
         return 0, ""
-    code, _, err = g(kbcommon.HOME, *s["argv"][1:])
+    code, _, err = g(kbcommon.HOME, *s["argv"][1:], "--", *add)
     if code:
         print(f"git commit failed (hooks or nothing to commit): {err.splitlines()[-1] if err else code}", file=sys.stderr)
         return 1, ""
+    if writes:
+        writes.own = {}
+        writes.save()
     print(f"committed: {s['argv'][s['argv'].index('-m') + 1]}")
     return 0, ""
 
@@ -3265,6 +3329,7 @@ def drive(steps, root_rel, finish, dry_run, rerun):
     code of the step that failed, kept); the failing step's name and `rerun`, the command that resumes it, are
     printed. A dry run prints each step's argv and runs nothing. `kept` is the output of each `capture` step by name."""
     n, kept = len(steps), {}
+    writes = Writes() if not dry_run and any(s["name"] == "commit" for s in steps) else None
     for i, s in enumerate(steps, 1):
         head = f"step {i}/{n} {s['name']}"
         if dry_run:
@@ -3273,7 +3338,9 @@ def drive(steps, root_rel, finish, dry_run, rerun):
             print(f"{head}: skipped, {s['skip']}")
         else:
             print(f"{head}: {shlex.join(s['argv'])}", flush=True)
-            code, kept[s["name"]] = run_commit(s, root_rel, finish) if s["name"] == "commit" else run_step(s)
+            code, kept[s["name"]] = run_commit(s, root_rel, finish, writes) if s["name"] == "commit" else run_step(s)
+            if writes and s["name"] != "commit":
+                writes.update()
             if code not in s["ok"]:
                 if kept[s["name"]]:
                     print(kept[s["name"]].rstrip("\n"), file=sys.stderr)
