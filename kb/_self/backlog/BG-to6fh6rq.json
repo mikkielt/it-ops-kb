@@ -1,0 +1,17 @@
+{
+  "id": "BG-to6fh6rq",
+  "kind": "bug",
+  "title": "kbmon sessions panel and sessions status answer still show a session intent's id as the all-zero placeholder",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "the sessions panel's intents and the sessions status answer show each session id as the label mon_view.session_label gives (s- and six hex characters of its SHA-256), the same label as the coord panel, so one session has one label in every panel and the raw id is never printed",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,subprocess as s,sys,tempfile,uuid;st=os.path.join(tempfile.mkdtemp(),'c.sqlite');c=lambda *x:s.run([sys.executable,'_tools/coord.py','--store',st,*x],capture_output=True,text=True);a=str(uuid.uuid4());c('post','--kind','intent','--field','session='+a,'--field','item=ST-aaaaaaaa');c('claim','session/'+a,'--ttl','600','--holder',a);o=s.run([sys.executable,'_tools/kbmon.py','--status','sessions','--store',st],capture_output=True,text=True,timeout=120).stdout;sys.exit(1 if '00000000-0000-0000-0000-000000000000' in o else 0)"
+    ]
+  }
+}
