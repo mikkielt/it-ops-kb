@@ -85,7 +85,11 @@
         "as the narrow allow, and land and close also call it for their own recorded leftovers (orchestrator and reviewer worktrees, scratch)"
       ],
       "recommendation": "operator-run: tidy --apply refuses in a Claude Code session (bl_authority.in_agent_session); the operator runs it in a terminal of their own or installs a scheduled run (cron, launchd or Task Scheduler) outside agent sessions; land and close keep only the removal of their own items' worker worktrees they do today",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "narrow allow: the operator records a decision that agent sessions may run exactly python3 _tools/backlog.py tidy --apply, which removes only what safe_to_remove proves finished and owned; every other removal stays operator-run",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g-owners",
