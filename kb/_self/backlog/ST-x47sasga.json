@@ -1,0 +1,26 @@
+{
+  "id": "ST-x47sasga",
+  "kind": "story",
+  "title": "own gives one key for one directory on a case-insensitive file system",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "norm_path folds a path to the file system's own case (realpath of an existing directory as the disk names it), so own of one directory written in two cases gives one own/ key on macOS and Windows",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, subprocess, tempfile, json, time\nT = os.path.realpath(tempfile.mkdtemp())\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_COORD\"))}\nENV.pop(\"CLAUDECODE\", None)\nENV.update(KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\",\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\ndef tool(*a, ok=(0,), env=None):\n    r = subprocess.run([sys.executable, *a], capture_output=True, text=True, env=env or ENV, timeout=300)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-800:], r.stderr[-800:])\n    return r\nO, C = os.path.join(T, \"origin.git\"), os.path.join(T, \"clone\")\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T)\ng(\"clone\", \"-q\", O, C, cwd=T)\nos.makedirs(os.path.join(C, \"kb\", \"_self\", \"backlog\"))\nopen(os.path.join(C, \"backlog.json\"), \"w\").write('{\"item_dir\": \"kb/_self/backlog\"}\\n')\nopen(os.path.join(C, \"kb\", \"_self\", \"backlog\", \".keep\"), \"w\").close()\ng(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C); g(\"push\", \"-q\", \"origin\", \"main\", cwd=C); g(\"fetch\", \"-q\", cwd=C)\nown = lambda p, cls, *a: tool(\"_tools/backlog.py\", \"--root\", C, \"own\", str(p), \"--class\", cls, *a)\ndef rows(*a):\n    r = json.loads(tool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--json\", *a).stdout)\n    return r[\"rows\"] if isinstance(r, dict) else r\np = os.path.join(T, \"CaseDir\"); os.makedirs(p)\nq = os.path.join(T, \"casedir\")\nif os.path.exists(q) and os.path.samefile(p, q):\n    own(p, \"scratch\"); own(q, \"scratch\")\n    r = tool(\"_tools/coord.py\", \"--store\", ENV[\"KB_COORD_STORE\"], \"list\", \"--prefix\", \"own/\")\n    k = [x for x in json.loads(r.stdout) if x.get(\"value\")]\n    assert len(k) == 1, (\"one directory in two cases gives two keys\", [x[\"key\"] for x in k])\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_clean.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-ipeewrlv review"
+  ],
+  "notes": "SP-ipeewrlv review (S3): norm_path gives two keys for one directory on case-insensitive macOS; the worktree then reads as unrecorded and is kept, so safe, but the goal says one key on every platform."
+}

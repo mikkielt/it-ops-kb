@@ -1,0 +1,27 @@
+{
+  "id": "ST-d55whxzg",
+  "kind": "story",
+  "title": "The narrow allow for tidy --apply that the docs state is an allow rule in the project settings, and token-efficiency.md no longer files the new SessionStart line under hooks that cost nothing",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the project settings carry the operator's narrow allow for exactly `python3 _tools/backlog.py tidy --apply` that kb/_self/backlog.md states, or the docs stop stating it as fact; token-efficiency.md names the SessionStart tidy line as a cost, not under hooks that cost nothing when not used",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json, sys\ns = json.load(open(\".claude/settings.json\"))\nallow = (s.get(\"permissions\") or {}).get(\"allow\") or []\nif not any(\"backlog.py tidy --apply\" in a for a in allow):\n    print(\"check failed: no allow rule for backlog.py tidy --apply\"); sys.exit(1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/settings.json",
+    "kb/_self/backlog.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "links": [
+    "parked: SP-ipeewrlv review"
+  ],
+  "notes": "SP-ipeewrlv review (S3): the docs state the narrow allow for `tidy --apply` (decision for ST-nkc5supu g1) as fact, but .claude/settings.json has no such rule; token-efficiency.md puts a new SessionStart line under 'hooks cost nothing when not used'. A settings edit is the operator's: this draft waits for them."
+}

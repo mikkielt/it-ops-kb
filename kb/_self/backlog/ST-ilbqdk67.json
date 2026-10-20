@@ -1,0 +1,26 @@
+{
+  "id": "ST-ilbqdk67",
+  "kind": "story",
+  "title": "tidy does not read an item missing from a lagging checkout as gone",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "safe_to_remove reads an item's state from the integration main the clone last fetched, not the checkout's working tree, so a recorded worktree of an item that exists on origin/main but not in a lagging checkout is kept",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, subprocess, tempfile, json, time\nT = os.path.realpath(tempfile.mkdtemp())\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_COORD\"))}\nENV.pop(\"CLAUDECODE\", None)\nENV.update(KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\",\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\ndef tool(*a, ok=(0,), env=None):\n    r = subprocess.run([sys.executable, *a], capture_output=True, text=True, env=env or ENV, timeout=300)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-800:], r.stderr[-800:])\n    return r\nO, C = os.path.join(T, \"origin.git\"), os.path.join(T, \"clone\")\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T)\ng(\"clone\", \"-q\", O, C, cwd=T)\nos.makedirs(os.path.join(C, \"kb\", \"_self\", \"backlog\"))\nopen(os.path.join(C, \"backlog.json\"), \"w\").write('{\"item_dir\": \"kb/_self/backlog\"}\\n')\nopen(os.path.join(C, \"kb\", \"_self\", \"backlog\", \".keep\"), \"w\").close()\ng(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C); g(\"push\", \"-q\", \"origin\", \"main\", cwd=C); g(\"fetch\", \"-q\", cwd=C)\nown = lambda p, cls, *a: tool(\"_tools/backlog.py\", \"--root\", C, \"own\", str(p), \"--class\", cls, *a)\ndef rows(*a):\n    r = json.loads(tool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--json\", *a).stdout)\n    return r[\"rows\"] if isinstance(r, dict) else r\nC2 = os.path.join(T, \"other\"); g(\"clone\", \"-q\", O, C2, cwd=T)\nopen(os.path.join(C2, \"kb\", \"_self\", \"backlog\", \"ST-zzzzzzzz.json\"), \"w\").write(json.dumps({\"id\": \"ST-zzzzzzzz\", \"kind\": \"story\", \"title\": \"t\", \"status\": \"in_progress\", \"goal\": \"g\"}) + \"\\n\")\ng(\"add\", \"-A\", cwd=C2); g(\"commit\", \"-qm\", \"item\", cwd=C2); g(\"push\", \"-q\", \"origin\", \"main\", cwd=C2)\ng(\"fetch\", \"-q\", \"origin\", cwd=C)\np = os.path.join(C, \".claude\", \"worktrees\", \"agent-ST-zzzzzzzz\")\ng(\"worktree\", \"add\", \"-q\", \"-b\", \"work/ST-zzzzzzzz\", p, \"origin/main\", cwd=C)\nown(p, \"worktree\", \"--item\", \"ST-zzzzzzzz\")\nv = {os.path.realpath(x[\"path\"]): x.get(\"verdict\") for x in rows(\"--older-than\", \"0\") if \"path\" in x}\nassert v.get(os.path.realpath(p)) != \"remove\", (\"an item open on origin/main but missing from the checkout reads as gone\", v)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_clean.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-ipeewrlv review"
+  ],
+  "notes": "SP-ipeewrlv review (S2): bl_clean.py:377 counts an item missing from a lagging checkout as gone; a live claim still protects it, so narrow."
+}
