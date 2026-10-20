@@ -21,6 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: the sprint's items change kbmon code and kb/_self docs; the public kb already answers the outside topics they touch (git gitdir/commondir and --git-common-dir in gitlab/git-test-repositories.md, subprocess and git on PATH on Windows in python/stdlib-windows-portability.md, status line and session cost in claude/statusline.md and agents/agent-cost-governance.md, panes in claude/terminal-split-pane.md), each pack coverage good or weak with the facts present; no gap entry needed.",
   "claimed_by": "orch-r114",
   "operator": "op-f618a13e"
 }
