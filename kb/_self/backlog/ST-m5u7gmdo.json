@@ -2,7 +2,7 @@
   "id": "ST-m5u7gmdo",
   "kind": "story",
   "title": "Research sprint goal: kb/_self explains the agent coordination tooling in one owner doc",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-eptouzxc",
   "goal_research": true,
   "priority": "P1",
@@ -60,6 +60,20 @@
     "Research part 10 (what matched, what was seen and not filed), read on origin/main 2026-10-20:\n- Read and found to match the code, so not filed: monitoring.md:131-146 (coord panel), :285-294 (kbask commands, session flags, fixed remedies, cleanup, exit codes), :298-305 and :307-309 (commands, fields, dedup, serve, plain http, exit rules), tools.md:32, :56 (but for the MCP clause), :91, :102, :120, plugin.md:154 and :158, token-efficiency.md:45, :152, the figures of benchmarks.md:1868-1884 and :2068-2116 that token-efficiency.md:152 quotes.\n- Seen, not filed: the which-command-line sentences of tools.md:102 and bl_clean.py:19 name --store, an option of coord.py that backlog.py own and tidy do not take (they read KB_COORD_STORE or the default); plugin worker.md rule 9 (agents/worker.md:29) and skills/sprint/SKILL.md:52 say the coord hook shows asks, a hook only a clone has. Known open drafts the doc should not contradict: BG-n4pgkyos (digest state=done for a two-item intent), BG-5p3bfm4u (observer role), ST-3l3jmuar (labels in ask events), ST-xzraupzo (tidy --report creates a store).\n\nNo outside facts: the goal describes this project's own tools, read from their code"
   ],
   "notes": "Planner: this research reads only the project's own code (no kb/public facts), so its touches are its item file; the researched check passes on the notes' No outside facts line. Steering case to read: python3 _tools/coord.py get ask/A275e35646a, answer/A275e35646a, ask/A3b8d7e0199, answer/A3b8d7e0199 (local store of this host). Facts per part of coordination.md, with path:line, are in this story's links (gate g1), numbered from 1: part 1 coord.py store and commands: links 1-4; part 2 coord hook: links 5-7; part 3 kbask and kb-observer: links 8-9; part 4 kb MCP coord_ tools: link 10; part 5 kbmon panels that read coord: link 11; part 6 cleanup records (bl_clean): links 12-13; part 7 benchmark and token-efficiency rows: link 14; part 8 Windows path of each tool: link 15; part 9 steering case: link 16; link 17 (part 10) lists what matched and what was seen and not filed. Read on origin/main 2026-10-20; asks A275e35646a, A3b8d7e0199: events 238, 239; answers 250, 251.\nStatements of the five docs the code does not meet, filed as draft bugs with a failing repro: BG-wrqd4ytg (tools.md:56 kbask session loads no MCP server), BG-c5abd6h7 (plugin.md:12 and :157 coord_ tools right after kb_feedback), BG-2f3rzoc2 (token-efficiency.md:135 gives 12 tools; the default server lists 15), BG-wt7exlol (monitoring.md:306 hook prints nothing), BG-lanut6np (monitoring.md:303 progress and topic posts nobody makes), BG-hljgagfl (benchmarks.md:1701 claims are rows), BG-qthxifah (monitoring.md:283 one writer of asks), BG-iwr5n7ch (coord.py docstring poll rate). Evidence added to open drafts: BG-ayamhfdy (cleanup panel verdict ask, answers not applied) and BG-ig74ozy6 (kbmon creates the schema in an empty store file). The rest of their coord text matches the code (part 10).\nNo outside facts: the goal describes this project's own tools, read from their code",
-  "claimed_by": "orch-r221",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "ae59fa688624ba875cd52c9238a83b7ee3e5a706",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-m5u7gmdo"
+        ],
+        "exit": 0,
+        "sha256": "d37867c9b3f317dd"
+      }
+    ]
+  }
 }
