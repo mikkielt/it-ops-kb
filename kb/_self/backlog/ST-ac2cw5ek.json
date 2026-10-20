@@ -2,7 +2,7 @@
   "id": "ST-ac2cw5ek",
   "kind": "story",
   "title": "A story whose tasks are all done and whose checks pass on main is done by the orchestrator without a worker session",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-v64egscn",
   "priority": "P3",
   "rank": 0,

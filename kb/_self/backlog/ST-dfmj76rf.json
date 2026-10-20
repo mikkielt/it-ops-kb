@@ -2,7 +2,7 @@
   "id": "ST-dfmj76rf",
   "kind": "story",
   "title": "dispatch bounds a headless worker's spend, not only its turns, since subagent work escapes --max-turns",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-v64egscn",
   "priority": "P3",
   "rank": 0,

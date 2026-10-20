@@ -2,7 +2,7 @@
   "id": "ST-e4vjchrg",
   "kind": "story",
   "title": "token-efficiency.md lists every model call site with what it decides and whether a rule could",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-v64egscn",
   "priority": "P1",
   "rank": 0,

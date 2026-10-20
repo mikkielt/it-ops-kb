@@ -2,7 +2,7 @@
   "id": "ST-pivhuu6r",
   "kind": "story",
   "title": "Research sprint goal: Each model call is listed with what it decides, and the calls a rule can make are made by the rule",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-v64egscn",
   "goal_research": true,
   "priority": "P1",
