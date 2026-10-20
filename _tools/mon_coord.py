@@ -60,7 +60,7 @@ def connection(ctx):
         return ["--url", ctx.url, "--key-file", ctx.key_file], "url"
     store = local_store(ctx)
     if not store or not Path(store).is_file():
-        raise mon_base.Absent("no coord store file")
+        raise mon_base.Absent(f"no coord store file at {store}" if store else "no coord store file")
     return ["--store", store], "local"
 
 

@@ -141,7 +141,7 @@ The panel reads the clone the script is in; `--root` naming another clone makes 
 
 - **Read through coord.py.** The panel runs `coord.py list`, `wait --since 0 --timeout 0` and `digest --key '*'` as three child processes at once, so it opens no SQLite file and no key file itself. The lease tokens `list` and `digest` leave out are never in the data, and the key file's content is never read or printed by kbmon.
 - **Where it reads.** With `--url` (and `--key-file`, which coord.py reads) from the server, else from the store `--store` names, else `KB_COORD_STORE`, else the clone's default store.
-- **Absent.** A local store file that is not there makes the panel `absent` and is not created (coord.py's own commands would create it).
+- **Absent.** A local store file that is not there makes the panel `absent` with `{"reason": ...}` naming the store path, and is not created (coord.py's own commands would create it).
 - **Timeout.** A server that cannot be reached, or whose three commands take over 30 seconds, makes the panel `timeout` with `{"reason": ...}`; one that is reached and gives no answer is `timeout` when `--timeout` passes, whichever is sooner. The children are killed when kbmon exits. Any other failure of a command (a key file others can read, a refused token) is `error` with coord.py's last line.
 - **View.** A table of key, holder, seconds left, budget and spend, a row over budget starting `! `; at 100 columns or more the newest 5 events sit beside it from column 52 under `events` (`#410  claim     topic/winget  w2`), below 100 under it; then up to two intent lines of the digest under `intents`.
 
