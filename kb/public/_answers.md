@@ -4139,6 +4139,16 @@ _Agent: kb-research_
 
 _Agent: kb-research_
 
+## QK-opentelemetry-python-sdk-release-first-has. Which OpenTelemetry Python SDK release first has LogRecordExportResult and Logger.emit with event_name, and how does the Prometheus reader take a registry of its own?
+- `Logger.emit` takes `event_name` (and the other fields) as keyword arguments first in 1.38.0 (2025-10-16); at 1.37.0 it took only a `LogRecord`. [CODE S-52mua5pm, S-s7takfin; DOC S-yzqhseki]
+- `LogRecordExportResult` first appears in `opentelemetry-sdk` 1.39.0 (2025-12-03), beside a deprecated `LogExportResult`; 1.38.0 has only the old name, and 1.45.1 still exports both. [CODE S-tnh7ueae, S-gblekxya, S-vxzgzrne; DOC S-yzqhseki]
+- `PrometheusMetricReader` takes a keyword-only `registry: CollectorRegistry = REGISTRY`, registers its collector there and unregisters it on `shutdown`; `start_wsgi_server` and `make_wsgi_app` take the registry they serve. [CODE S-qpknqjro, S-3ylk7y4h]
+- Conclusion: a process that needs both the `event_name` keyword and `LogRecordExportResult` needs `opentelemetry-api` and `opentelemetry-sdk` 1.39.0 or later, and a reader on its own `CollectorRegistry` is scraped only by a server or app given that same registry. [DER S-52mua5pm, S-tnh7ueae, S-gblekxya, S-qpknqjro, S-3ylk7y4h: first releases of each name read at neighbouring tags; the registry reasoning was not run]
+- Open: the release that removes `LogExportResult`, and any release before 1.37.0 that had the keyword arguments, were not read (`_gaps.md`, logs/otel-python-sdk). [UNK]
+- See logs/otel-python-sdk.md.
+
+_Agent: kb-research_
+
 ## QK-multiple-agents-sharing-one-clone-coord. How do multiple agents sharing one clone, coord store and bare avoid lost claims, duplicate research, landing stops and leaked secrets, and how does a harness check each?
 - A claim lost when its holder stops is the case leases and TTLs cover: a blob lease expires on its own, an etcd lease deletes its keys when keep-alive stops, and a NATS key-value claim cannot be renewed by an `update` (see `agents/shared-state-concurrency.md`). [DOC S-2fthx3xp, S-6hgplow2]
 - A landing stop is a refused push: a shared bare repository refuses a push that is not a fast-forward until the pusher fetches and merges, and a forge hook can refuse it for another reason (see `agents/peer-state-sync.md`, `gitlab/automated-merge-requests.md`). [DOC S-l6s4hfqp, S-7dwkyip6]
