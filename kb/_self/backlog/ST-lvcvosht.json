@@ -76,7 +76,11 @@
         "all three read-only facades": "ST-lvcvosht",
         "kb_backlog only": "ST-lvcvosht"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "all three read-only facades",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): AGENTS.md's routing is left as it is: changing it is a rule change and waits for the operator (parked draft). Premise: both checks fail. orchestrator r110 2026-10-20: check 1 reads agents/worker.md, which was outside the touches, and no check read the sprint skill the clause names: agents/worker.md added to touches and check 2 reads skills/sprint/SKILL.md.",
