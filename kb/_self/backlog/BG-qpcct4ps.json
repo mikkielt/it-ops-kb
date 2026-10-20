@@ -36,6 +36,25 @@
   "depends_on": [
     "ST-rwan4x2o"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does a panel's collect end in timeout with a reason, and how does the view show the reason?",
+      "options": [
+        "Timeout exception",
+        "state argument on one exception"
+      ],
+      "recommendation": "Timeout exception",
+      "do": {
+        "Timeout exception": "BG-qpcct4ps",
+        "state argument on one exception": "BG-qpcct4ps"
+      },
+      "class": "design",
+      "answer": "Timeout exception",
+      "by": "agent"
+    }
+  ],
   "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: repro fails (mon_base._worker is mon_coord's). 2026-10-20, ST-7jjj3b4s: mon_base now has Absent, an exception a panel's collect raises; _worker turns it into state absent with {reason} as data (the bench panel uses it, so it works under --panel bench alone, where mon_coord is never imported and its patched worker is not in place). mon_coord's declare for absent could use it; the timeout half of this bug and the view's reason text (BG-rpp4dsrn) remain.",
   "claimed_by": "orch-r114",
   "operator": "op-f618a13e"

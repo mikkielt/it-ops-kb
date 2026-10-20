@@ -13,7 +13,6 @@ import json
 import os
 import subprocess
 import sys
-import threading
 import time
 from pathlib import Path
 
@@ -33,7 +32,6 @@ WHOS = ("holder", "operator", "session")
 UNREACHABLE = "cannot reach"  # what coord.py prints when it cannot connect to a --url
 
 _children = set()
-_declared = {}  # thread id -> the state its collect asked for
 
 
 def _reap():
@@ -43,26 +41,6 @@ def _reap():
 
 
 atexit.register(_reap)
-
-
-def _worker(module, ctx, box):
-    """mon_base's worker, then the state `declare` asked for in place of unsupported: a panel can say absent and timeout
-    for itself, which mon_base's own worker cannot."""
-    _inner(module, ctx, box)
-    state = _declared.pop(threading.get_ident(), None)
-    if state:
-        box["state"] = state
-
-
-if getattr(mon_base._worker, "__module__", None) != __name__:
-    _inner = mon_base._worker
-    mon_base._worker = _worker
-
-
-def declare(state, reason):
-    """End collect in `state` (absent or timeout) with `reason` as its data."""
-    _declared[threading.get_ident()] = state
-    raise mon_base.Unsupported(reason)
 
 
 def local_store(ctx):
@@ -82,7 +60,7 @@ def connection(ctx):
         return ["--url", ctx.url, "--key-file", ctx.key_file], "url"
     store = local_store(ctx)
     if not store or not Path(store).is_file():
-        declare("absent", "no coord store file")
+        raise mon_base.Absent("no coord store file")
     return ["--store", store], "local"
 
 
@@ -110,11 +88,11 @@ def fetch(conn):
             try:
                 text, err = child.communicate(timeout=max(0.1, deadline - time.monotonic()))
             except subprocess.TimeoutExpired:
-                declare("timeout", f"coord.py {name} gave no answer in {CHILD_SECONDS} seconds")
+                raise mon_base.Timeout(f"coord.py {name} gave no answer in {CHILD_SECONDS} seconds")
             if child.returncode != 0:
                 why = last_line(err) or f"exit {child.returncode}"
                 if UNREACHABLE in why:
-                    declare("timeout", why)
+                    raise mon_base.Timeout(why)
                 raise RuntimeError(f"coord.py {name}: {why}")
             out[name] = text
     finally:
