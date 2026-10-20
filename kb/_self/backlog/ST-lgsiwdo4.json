@@ -39,6 +39,42 @@
   "depends_on": [
     "ST-kmgwsjto"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which session and sprint does usage get that only a distilled sidecar line stands for (its spool session is gone, the line names no session or window)?",
+      "options": [
+        "session distilled, sprint none",
+        "leave it out of by_session and by_sprint"
+      ],
+      "recommendation": "session distilled, sprint none",
+      "do": {
+        "session distilled, sprint none": "ST-lgsiwdo4",
+        "leave it out of by_session and by_sprint": "ST-lgsiwdo4"
+      },
+      "class": "design",
+      "answer": "session distilled, sprint none",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What do the facts by_model, by_session and by_sprint hold, and what does a prompt in the work windows of several sprints get?",
+      "options": [
+        "every group's dollars in the facts, the top three only in the lines; a prompt spanning sprints is sprint none",
+        "only the top three in the facts"
+      ],
+      "recommendation": "every group's dollars in the facts, the top three only in the lines; a prompt spanning sprints is sprint none",
+      "do": {
+        "every group's dollars in the facts, the top three only in the lines; a prompt spanning sprints is sprint none": "ST-lgsiwdo4",
+        "only the top three in the facts": "ST-lgsiwdo4"
+      },
+      "class": "design",
+      "answer": "every group's dollars in the facts, the top three only in the lines; a prompt spanning sprints is sprint none",
+      "by": "agent"
+    }
+  ],
   "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: a planted query log home with two sessions' usage rows of two models gives one total line ('Cost today: $3.00 over 2 usage rows') and no by_model, by_session or by_sprint facts.",
   "claimed_by": "orch-r113",
   "operator": "op-f618a13e"

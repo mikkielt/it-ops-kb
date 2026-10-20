@@ -21,7 +21,7 @@ id only on a line where the operator acts. The sprints answer rests on the sprin
 the commits the checkout is behind it, the duration history) and the host panel's load, so a saved
 snapshot gives the same answer; its ETA is a range from `mon_eta.estimate` taken at the snapshot's time. The
 load answer also gives the host panel's CPU groups with a fixed cause and remedy each (GROUP_TEXT), as lines and as a
-top-level `groups` list. It calls no model and writes no file (`run` starts `kbmon.py`, which writes none). Imports `mon_base`, `mon_eta`, `mon_needs`, `mon_sessions` (its
+top-level `groups` list. It calls no model and writes no file (`run` starts `kbmon.py`, which writes none). Imports `mon_base`, `mon_eta`, `mon_needs`, `mon_querylog` (the key of usage outside a sprint), `mon_sessions` (its
 age text and `session_line`) and `mon_view`; `bl_base` where it reads titles.
 """
 import os
@@ -33,6 +33,7 @@ from pathlib import Path
 import mon_base
 import mon_eta
 import mon_needs
+import mon_querylog
 import mon_sessions
 import mon_view
 
@@ -43,6 +44,7 @@ TOPIC_PANELS = {"sessions": ("sessions",), "cost": ("querylog",), "querylog": ("
 ALL_ORDER = ("sessions", "cost", "querylog", "coord", "sprints", "load")  # the topics `all` answers, in this order
 MAX_LINES = 25
 ALL_LINES = 4  # lines each topic gives in `all`
+TOP = 3  # the largest model, session and sprint figures the cost answer names
 ROWS = 6  # processes, claims, sprints or gates one topic names before it counts the rest
 WHY_CHARS = 120
 NAME_CHARS = 40  # characters of a sprint's or an item's short name
@@ -239,6 +241,14 @@ def cost(r):
              f"{short(u.get('tokens'))} tokens."]
     if unpriced:
         lines.append(f"No price for {', '.join(unpriced)}: {'its' if len(unpriced) == 1 else 'their'} cost is not in the dollars.")
+    for noun, key, name in (("model", "by_model", str), ("session", "by_session", str),
+                            ("sprint", "by_sprint", lambda k: k if k == mon_querylog.NO_SPRINT else short_name(r.item(k)))):
+        split = {str(k): number(v, 0.0) for k, v in (u.get(key) or {}).items()} if isinstance(u.get(key), dict) else {}
+        facts[key] = split
+        top = sorted(split.items(), key=lambda kv: (-kv[1], kv[0]))[:TOP]
+        if top:
+            lines.append(f"  by {noun}: " + ", ".join(f"{name(k)} {usd(v)}" for k, v in top)
+                         + (f", +{len(split) - TOP} more" if len(split) > TOP else ""))
     return lines, facts
 
 

@@ -1,5 +1,5 @@
 """kbmon's querylog panel (kb/_self/monitoring.md): the spool's waiting rows by kind, the local store's entries not yet
-delivered, the last distill and apply outcome, and today's usage rows with their tokens and cost in USD.
+delivered, the last distill and apply outcome, and today's usage rows with their tokens and cost in USD, split by model, session and sprint.
 
 The panel reads the query log home of this copy of the tools (`ql_base.places`) through the structured readers of
 `ql_report` and writes nothing. It carries counts, kinds, outcomes, times and commit hashes: no question, prompt or reply
@@ -14,6 +14,8 @@ import ql_report
 REFRESH_S = 30  # seconds the live view serves the last result: the spool and the store are read whole
 SHOWN_KINDS = 4  # spool kinds the text row names, most rows first, before it counts the rest
 HASH_CHARS = 7
+NO_SESSION = "distilled"  # the by_session key of usage only a distilled sidecar line stands for: the spool no longer holds its session
+NO_SPRINT = "none"  # the by_sprint key of usage outside any work window
 
 
 def tokens(models):
@@ -28,6 +30,15 @@ def priced(models):
     import bl_cost
     usd, unpriced = bl_cost.price_usd(models)
     return round(usd, 4), unpriced
+
+
+def split_usd(groups, label=str):
+    """{label(key): USD} of {key: models} (`ql_report.usage_today`'s `by_session`, `by_sprint`), each group priced as the
+    day is, the largest first and ties by label; groups that label alike are summed."""
+    out = {}
+    for key, models in groups.items():
+        out[label(key)] = out.get(label(key), 0.0) + priced(models)[0]
+    return dict(sorted(((k, round(v, 4)) for k, v in out.items()), key=lambda kv: (-kv[1], kv[0])))
 
 
 def delivery_of(outcome, qdir):
@@ -54,6 +65,10 @@ def collect(ctx):
     outcomes = ql_report.last_outcomes(qdir)
     models = ql_report.usage_today(qdir)
     usd, unpriced = priced(models["models"])
+    import mon_view
+    split = {"by_model": split_usd({m: {m: c} for m, c in models["models"].items()}),
+             "by_session": split_usd(models["by_session"], lambda k: NO_SESSION if k is None else mon_view.session_label(k)),
+             "by_sprint": split_usd(models["by_sprint"], lambda k: NO_SPRINT if k is None else k)}
     waiting = ql_report.undelivered(qdir, cfg)
     return {"mode": ql_base.read_mode(cfg), "disabled": (qdir / ql_base.DISABLED_NAME).exists(),
             "spool": ql_report.spool_state(qdir / "spool"),
@@ -61,7 +76,7 @@ def collect(ctx):
             "undelivered_since": waiting["since"], "delivery_ref": waiting["ref"],
             "last_distill": outcomes["distill"], "last_delivery": delivery_of(outcomes["apply"], qdir),
             "last_pushed": ql_report.last_pushed(qdir),
-            "usage_today": {"rows": models["rows"], "tokens": tokens(models["models"]), "usd": usd, "unpriced": unpriced}}
+            "usage_today": {"rows": models["rows"], "tokens": tokens(models["models"]), "usd": usd, "unpriced": unpriced, **split}}
 
 
 def when(text):
