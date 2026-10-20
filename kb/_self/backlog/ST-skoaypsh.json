@@ -54,6 +54,68 @@
   "depends_on": [
     "ST-nkc5supu"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does close reach bl_clean, when close lives in _tools/bl_close.py, which is outside this item's touches?",
+      "options": [
+        "bl_land.py replaces the handler bl_close registered for close with one that runs bl_close.cmd_close and then bl_clean.close_leftovers",
+        "edit bl_close.cmd_close to call bl_clean (a touch to add, and bl_clean already imports bl_close, so a lazy import)"
+      ],
+      "recommendation": "bl_land.py replaces the handler bl_close registered for close with one that runs bl_close.cmd_close and then bl_clean.close_leftovers",
+      "do": {
+        "bl_land.py replaces the handler bl_close registered for close with one that runs bl_close.cmd_close and then bl_clean.close_leftovers": "ST-skoaypsh",
+        "edit bl_close.cmd_close to call bl_clean (a touch to add, and bl_clean already imports bl_close, so a lazy import)": "ST-skoaypsh"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Under the operator's answer to the tidy story's gate g1 (a narrow allow of tidy --apply; land and close are not named as callers of it for the orchestrator's and reviewer's worktrees), does close remove the sprint's own orchestrator and reviewer worktrees?",
+      "options": [
+        "no: close removes its items' scratch directories and worker worktrees and says the orchestrator's and reviewer's recorded worktrees (a record with the sprint and no item) are left to tidy --apply",
+        "yes: close removes them too, with the age limit waived"
+      ],
+      "recommendation": "no: close removes its items' scratch directories and worker worktrees and says the orchestrator's and reviewer's recorded worktrees (a record with the sprint and no item) are left to tidy --apply",
+      "do": {
+        "no: close removes its items' scratch directories and worker worktrees and says the orchestrator's and reviewer's recorded worktrees (a record with the sprint and no item) are left to tidy --apply": "ST-skoaypsh",
+        "yes: close removes them too, with the age limit waived": "ST-skoaypsh"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Where does the SessionStart hook print tidy's one line: only in Claude Code on the web (where session_start.py runs today) or in every clone?",
+      "options": [
+        "every clone: outside a cloud session the hook prints only that line, and in a cloud session it is one more status line",
+        "cloud sessions only, as the rest of the hook"
+      ],
+      "recommendation": "every clone: outside a cloud session the hook prints only that line, and in a cloud session it is one more status line",
+      "do": {
+        "every clone: outside a cloud session the hook prints only that line, and in a cloud session it is one more status line": "ST-skoaypsh",
+        "cloud sessions only, as the rest of the hook": "ST-skoaypsh"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "How long may tidy --report spend measuring bytes, so it stays under 10 seconds with many candidates?",
+      "options": [
+        "4 seconds shared by all the rows, the figure marked or more past it (a number with no data behind it; the git calls of the verdicts are the rest)",
+        "no shared limit: 2 seconds a candidate as tidy has"
+      ],
+      "recommendation": "4 seconds shared by all the rows, the figure marked or more past it (a number with no data behind it; the git calls of the verdicts are the rest)",
+      "do": {
+        "4 seconds shared by all the rows, the figure marked or more past it (a number with no data behind it; the git calls of the verdicts are the rest)": "ST-skoaypsh",
+        "no shared limit: 2 seconds a candidate as tidy has": "ST-skoaypsh"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with planted inputs (KB_COORD_STORE points at its own coord store, so no check writes the clone's real one); no change to _tools/tests_ceiling.json. What land and close may remove follows gate g1 of the tidy story: under option (a) they remove only their own items' worker worktrees as today and scratch directories (a plain directory removal, not a denied git command); the orchestrator's and reviewer's worktrees then wait for the operator's run.",
   "claimed_by": "orch-r201",
   "operator": "op-f618a13e"

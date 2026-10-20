@@ -5,7 +5,8 @@ main, and `merge`; with what they share: the commits an item's trailers name (`u
 ledger rows they changed for a source nothing names: `unrelated_baselines`), the runner of a check (`run_check`) and the
 stuck merge request line.
 
-Standard library only; imports `bl_base`, `bl_check` (the no-op rules `done` applies), `bl_cli`, `bl_intake`, `bl_plan` and
+Standard library only; imports `bl_base`, `bl_check` (the no-op rules `done` applies), `bl_clean` (the recorded leftovers `land` and
+`close` remove once they are done: `land_cleanup`, and the handler it gives `close`), `bl_cli`, `bl_intake`, `bl_plan` and
 the two modules cut from it: `bl_close` (`close` and the worker's worktree and branches `land` releases and
 deletes) and `bl_precheck` (`researched`, `precheck` and `item_commits`), which import neither this module nor `backlog`.
 The names the other modules read as `bl_land.NAME` stay importable from here. `bl_selfcheck` (the load a review story's
@@ -17,7 +18,9 @@ import argparse, csv, hashlib, importlib, io, json, os, re, shlex, subprocess, s
 from collections import namedtuple
 from pathlib import Path
 
+import bl_clean
 import bl_cli
+import bl_close
 import bl_intake
 import bl_plan
 from bl_base import (  # run_check lives below bl_land, so bl_ci reaches it without bl_land (ST-ufpxla7r)
@@ -1938,6 +1941,16 @@ def land_once(bl, a):
                     if done_branch and start_ref != f"refs/heads/{done_branch}":
                         delete_landed_branch(root, done_branch, upstream)
                 delete_repo_branches(repos, iid)
+                land_cleanup(bl, iid)
+
+
+def land_cleanup(bl, iid):
+    """Remove the landed item's recorded scratch directory (`bl_clean.land_leftovers`: a process of its own, the verdict of
+    tidy with the age limit waived). Whatever goes wrong here is said and never fails or undoes the landing."""
+    try:
+        bl_clean.land_leftovers(bl, iid)
+    except Exception as e:  # noqa: BLE001
+        say(f"land: kept the recorded leftovers of {iid}: {e}")
 
 
 def pushed_tip(root, remote, code_branch):
@@ -2073,6 +2086,20 @@ def args_merge(p):
     p.add_argument("id", help="the item whose code/ID merge request to merge")
 
 
+def cmd_close(bl, a):
+    """`close` (bl_close.cmd_close), then the closed sprint's recorded scratch directories and worker worktrees go with
+    `bl_clean.close_leftovers`, as a process of its own: the worker worktrees `close` released leave their records, the
+    ones it could not release stay with their reason. Whatever goes wrong there is said and never fails the close."""
+    code = bl_close.cmd_close(bl, a)
+    if not code and not a.summary:
+        try:
+            bl_clean.close_leftovers(bl, a.sprint)
+        except Exception as e:  # noqa: BLE001
+            say(f"close: kept the recorded leftovers of {a.sprint}: {e}")
+    return code
+
+
 bl_cli.register("done", cmd_done, args_done)
 bl_cli.register("land", cmd_land, args_land)
 bl_cli.register("merge", cmd_merge, args_merge)
+bl_cli.COMMANDS["close"] = (cmd_close, *bl_cli.COMMANDS["close"][1:])  # bl_close registered it; this one wraps its handler
