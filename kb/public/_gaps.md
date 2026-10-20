@@ -1584,6 +1584,18 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 - Source S-yuwxbqz3 (https://raw.githubusercontent.com/MicrosoftDocs/memdocs/4b5429df8b47046c6b251e572ee61199fb5d4a5d/README.md) is gone (gone, 2026-10-12) and no page holds its passages (fact diff: provider search and redirects checked); facts at lines 55 lost it. (topic: agents/doc-lookup-sources)
 
+- Source S2180 (https://code.claude.com/docs/mcp) and S2181 (https://modelcontextprotocol.io/mcp) are protocol endpoints, not pages: they answer an `initialize` POST with `200`, so an anchor fetch by plain GET reads them as gone and no page holds their passages. Looked 2026-10-20: nothing moved, the facts keep their sources and stay as written. (topic: agents/doc-change-detection)
+
+- Source S2180 and S2181 (the two docs MCP endpoints) are protocol endpoints that an anchor fetch by plain GET cannot read. Looked 2026-10-20: nothing moved, the facts keep their sources and stay as written. (topic: agents/doc-lookup-sources)
+
+- Source S-may2otwt (https://github.com/rust-lang/rust.wiki.git) and S-y23orbo7 (https://github.com/gitextensions/gitextensions.wiki.git) are git remotes: a web fetch reads `404` (S-may2otwt answers `301` to `/rust-lang/rust.wiki`, then `404`), while `git ls-remote` answers with a SHA. Looked 2026-10-20: nothing moved, the facts keep their sources. (topic: agents/doc-change-detection)
+
+- Source S-ny2cx7aq (the GitLab.com API url of a made-up project) answers `404` by design: the project never existed, so the `404` is what the fact records. Looked 2026-10-20: no page to re-anchor to. (topic: agents/doc-change-detection)
+
+- Source S-ueumbn4x (https://crates.io/api/v1/crates/fluent-resource) answers `404` by design: no crate of that name exists, so the `404` is what the fact records. Looked 2026-10-20: no page to re-anchor to. (topic: arch/fluent-rust-typescript)
+
+- Source S869 (https://csrc.nist.gov/pubs/sp/800/38/g/r1/final) answers `404` because no final SP 800-38G Rev. 1 has been published; the Rev. 1 draft pages list only the 2019 and 2025 drafts. Looked 2026-10-20: the `404` is the fact itself and no page moved. (topic: privacy/nist-sp800-38g)
+
 ## logs/python-rust-json-stdout-logs
 - **Flushing of Python's `StreamHandler` on a pipe and of a `tracing-subscriber` stdout writer at exit.** Looked 2026-10-13 in the `logging.handlers` page (S-7v3dgzq4: `StreamHandler.flush` calls the stream's `flush`; no statement on when it is called) and in `tracing-subscriber` 0.3.23's `fmt` sources (S-fmhy7rbl); the non-blocking appender crate was not read. Needs the `StreamHandler.emit` source at a tag and the `tracing-appender` documentation. [UNK] (topic: logs/python-rust-json-stdout-logs)
 - **Where a Rust panic message goes beside a `tracing` JSON subscriber.** Looked 2026-10-13 only in `tracing-subscriber` (S-fmhy7rbl, S-bkz7cb64), which does not mention panics. Needs the standard library's panic hook documentation and the `tracing-panic` or hook examples of the `tracing` project. [UNK] (topic: logs/python-rust-json-stdout-logs)
