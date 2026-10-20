@@ -2,7 +2,7 @@
   "id": "ST-jof4u6e6",
   "kind": "story",
   "title": "kbmon says why a checkout behind origin/main cannot fast-forward",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-2uljwgho",
   "priority": "P2",
   "rank": 0,
@@ -40,5 +40,7 @@
   "depends_on": [
     "BG-pahecn3b"
   ],
-  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: a throwaway detached worktree 4 commits behind origin/main, clean and then with a local edit to a file the incoming commits change, gives no fast_forward in either case ({{}} {{}}); --status says only 'N commits behind'. Seen on 2026-10-19: the main checkout's local item edits by another session kept it behind with no reason shown."
+  "notes": "Operator request 2026-10-19: make kbmon readable and useful for a human operator (summaries of what sessions do); the orchestrator's notes from watching the night run of 2026-10-19 with kbmon. Premise on origin/main 9cee34c, 2026-10-19: a throwaway detached worktree 4 commits behind origin/main, clean and then with a local edit to a file the incoming commits change, gives no fast_forward in either case ({{}} {{}}); --status says only 'N commits behind'. Seen on 2026-10-19: the main checkout's local item edits by another session kept it behind with no reason shown.",
+  "claimed_by": "orch-r113",
+  "operator": "op-f618a13e"
 }
