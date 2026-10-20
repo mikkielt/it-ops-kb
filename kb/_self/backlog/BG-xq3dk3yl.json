@@ -2,7 +2,7 @@
   "id": "BG-xq3dk3yl",
   "kind": "bug",
   "title": "remember_feedback_id rewrites feedback.ids with no lock or atomic replace, so two hook processes can drop an id",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vx6eufpj",
   "priority": "P3",
   "rank": 0,
@@ -60,6 +60,28 @@
     "parked: SP-ficl7pxl review"
   ],
   "notes": "operator request 2026-10-19 (housekeeping batch): query-log capture robustness. Premise reproduced 2026-10-19 on origin/main 60a1f2d7b: backlog.py precheck ran its repro and checks and each failed before the work for the reason its goal names; the worker re-runs them first, since the code moves before this sprint runs. Orchestrator 2026-10-20: added a behavioural check: four processes write 40 ids each at once into a planted spool and all 160 must survive. On the base it keeps 10 of 160. An atomic replace alone still loses ids in a read-modify-write race, so the fix needs a lock (or append-only) around the read and write.",
-  "claimed_by": "orch-r106",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "62e376df2b47a9f126e2caf83dbb52df374dc9c6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, sys, tempfile, pathlib\nd = tempfile.mkdtemp(); (pathlib.Path(d) / 'spool').mkdir()\nc = 'import sys,pathlib;sys.path.insert(0,\"_tools\");import ql_capture as q\\nfor i in range(40): q.remember_feedback_id(pathlib.Path(sys.argv[1])/\"spool\",\"FB-%02d%06d\"%(int(sys.argv[2]),i))'\nps = [subprocess.Popen([sys.executable, '-c', c, d, str(k)]) for k in range(4)]\n[p.wait(timeout=120) for p in ps]\nsys.path.insert(0, '_tools'); import ql_capture as q\ngot = set(q.written_feedback_ids(pathlib.Path(d) / 'spool')); print('ids kept', len(got), 'of 160'); sys.exit(0 if len(got) == 160 else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "50b6b7bfe84181ea"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;s=open(\"_tools/ql_capture.py\").read();i=s.find(\"def remember_feedback_id\");b=s[i:s.find(\"\\ndef \",i+10)];sys.exit(0 if \"lock\" in b.lower() or \"os.replace\" in b else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
