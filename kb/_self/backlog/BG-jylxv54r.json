@@ -2,7 +2,7 @@
   "id": "BG-jylxv54r",
   "kind": "bug",
   "title": "ql_deliver.logged checks the distill.log size cap on every line, so a manual apply --push can truncate its own gate lines mid-run",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-vx6eufpj",
   "priority": "P3",
   "rank": 0,

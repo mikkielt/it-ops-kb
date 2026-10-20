@@ -2,7 +2,7 @@
   "id": "ST-kbc6szhc",
   "kind": "story",
   "title": "kbmon's delivery alert holds while deliveries are refused, and its querylog panel counts usage once",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-vx6eufpj",
   "priority": "P2",
   "rank": 0,

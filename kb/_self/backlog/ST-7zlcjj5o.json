@@ -2,7 +2,7 @@
   "id": "ST-7zlcjj5o",
   "kind": "story",
   "title": "querylog.py export --since reads only the days it exports",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-vx6eufpj",
   "priority": "P2",
   "rank": 0,

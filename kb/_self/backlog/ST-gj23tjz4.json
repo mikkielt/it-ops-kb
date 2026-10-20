@@ -2,7 +2,7 @@
   "id": "ST-gj23tjz4",
   "kind": "story",
   "title": "querylog.py check says when an entry predates the current redact rules, and where the remedy is",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-vx6eufpj",
   "priority": "P1",
   "rank": 0,

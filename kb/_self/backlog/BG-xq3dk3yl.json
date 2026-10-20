@@ -2,7 +2,7 @@
   "id": "BG-xq3dk3yl",
   "kind": "bug",
   "title": "remember_feedback_id rewrites feedback.ids with no lock or atomic replace, so two hook processes can drop an id",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-vx6eufpj",
   "priority": "P3",
   "rank": 0,
