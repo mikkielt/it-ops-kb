@@ -1013,12 +1013,6 @@ def check_one(r, c):
     return check_live(r["url"], since, r.get("version_or_date", ""))
 
 
-def read_sources():
-    """The rows of the root's _sources.csv, in file order."""
-    with open(os.path.join(KB, "_sources.csv"), encoding="utf-8-sig", newline="") as f:
-        return list(csv.DictReader(f))
-
-
 def article_files():
     """The root's domain .md files (directories not named `_*` or `.*`), relative to the root, sorted."""
     out = []
@@ -1032,7 +1026,7 @@ def article_files():
 def cmd_check(a, tally):
     date = a.date or today()
     out = a.out or os.path.join(KB, "_census", f"{date}.csv")
-    rows = [r for r in read_sources() if not a.source or r["id"] in a.source]
+    rows = [r for r in kbcommon.read_sources() if not a.source or r["id"] in a.source]
     if not rows:
         print("no source selected")
         return 2
@@ -1314,7 +1308,7 @@ def sample_brief(picked, log, a):
     found word for word by an anchor placed before phase 2's edits (`placed_before_phase2`) is agreed by tool, with that
     proof, and the rest go to the checker with the fact, the passage and the command that reads the source. Returns
     (text, counts)."""
-    srcs, facts, anchors = {r["id"]: r for r in read_sources()}, factdiff.cited_facts(), factdiff.read_anchors()
+    srcs, facts, anchors = {r["id"]: r for r in kbcommon.read_sources()}, factdiff.cited_facts(), factdiff.read_anchors()
     plan = {r["id"]: successor(r["id"], srcs) for _, r in picked}
     need = sorted({t for t in plan.values() if facts.get(t) and t in srcs})
     docs = factdiff.fetch_all(need, srcs, a.max_age) if need else {}
@@ -2396,7 +2390,7 @@ def cmd_repin(a, tally):
         print(f"no census log {a.log}")
         return 2
     date, root = a.date or today(), factdiff.ROOT
-    rows, srcs = read_log(a.log), {r["id"]: r for r in read_sources()}
+    rows, srcs = read_log(a.log), {r["id"]: r for r in kbcommon.read_sources()}
     say = lambda msg: print(("would " if a.dry_run else "") + msg, flush=True)  # noqa: E731
     read_state = lambda: (factdiff.cited_facts(), factdiff.read_anchors())  # noqa: E731
     facts, anchors = read_state()
@@ -2739,7 +2733,7 @@ def cmd_apply(a, tally):
     if a.group not in scope:
         return fail(f"no group {a.group!r} in {a.log}; groups: " + (", ".join(scope) or "none"))
     problems = schema_errors(res, schema)
-    sources = {r["id"]: r for r in read_sources()}
+    sources = {r["id"]: r for r in kbcommon.read_sources()}
     new_ids = []
     if not problems:
         problems, new_ids = result_problems(res, a.group, scope, {r["id"]: r for r in rows}, sources, root)

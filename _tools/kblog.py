@@ -63,7 +63,7 @@ import argparse, re, subprocess, sys
 from pathlib import Path
 
 import kbcommon, kbdecide
-from kbdecide import LOGS, OPERATOR, Refused, Store, day, field, find, load, need, need_operator, row_id, save
+from kbdecide import LOGS, OPERATOR, Refused, Store, day, field, find, load, matches, need, need_operator, row_id, save
 
 
 def cmd_record(a):
@@ -224,12 +224,6 @@ def cmd_sweep(a):
     return kbdecide.sweep(a, LOGS)
 
 
-def matches(row, ref):
-    """Whether the row's context names `ref`: a `kind:value` part, or a bare value of any kind."""
-    ref = ref.strip()
-    return any(ref in (f"{kind}:{value}", value) for kind, value in kbcommon.context_refs(row.get("context")))
-
-
 def cmd_list(a):
     n = 0
     for store in kbdecide.stores(a.root, LOGS):
@@ -290,12 +284,7 @@ COMMANDS = {"record": cmd_record, "propose": cmd_propose, "confirm": cmd_confirm
 
 
 def main(argv=None):
-    a = parser().parse_args(argv)
-    try:
-        return COMMANDS[a.cmd](a)
-    except Refused as e:
-        print(f"refused: {e}")
-        return 2
+    return kbdecide.run_cli(parser(), COMMANDS, argv)
 
 
 if __name__ == "__main__":
