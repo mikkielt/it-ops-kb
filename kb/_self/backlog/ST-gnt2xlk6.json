@@ -2,7 +2,7 @@
   "id": "ST-gnt2xlk6",
   "kind": "story",
   "title": "The read-only query log and docs commands are kb MCP tools",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ttgcpf7o",
   "priority": "P2",
   "rank": 0,
@@ -34,5 +34,7 @@
   "depends_on": [
     "ST-efcbmm3y"
   ],
-  "notes": "operator request 2026-10-19 (housekeeping batch): kbmon's snapshot is served by the kb_monitor_status tool SP-dulvwwjc adds: extend that tool, add no second one. Premise: the check fails."
+  "notes": "operator request 2026-10-19 (housekeeping batch): kbmon's snapshot is served by the kb_monitor_status tool SP-dulvwwjc adds: extend that tool, add no second one. Premise: the check fails.",
+  "claimed_by": "orch-r110",
+  "operator": "op-f618a13e"
 }
