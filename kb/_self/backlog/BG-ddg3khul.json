@@ -19,6 +19,25 @@
     "_tools/ql_learn.py",
     "kb/_self/querylog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does learn keep a closed route finding closed once the hook denies the host: skip WebFetch fetches of entries dated before the day the hook began to deny, or drop those fetches from the store?",
+      "options": [
+        "skip in learn",
+        "delete from the store"
+      ],
+      "recommendation": "skip in learn",
+      "do": {
+        "skip in learn": "BG-ddg3khul",
+        "delete from the store": "BG-ddg3khul"
+      },
+      "class": "delete",
+      "answer": "skip in learn",
+      "by": "agent"
+    }
+  ],
   "notes": "Orchestrator 2026-10-20: moved into SP-vx6eufpj so ST-gt4tduzr's four route closures stay closed (gate g2 of ST-gt4tduzr). Repro on base: 4 route findings derived, exit 1.",
   "claimed_by": "orch-r106",
   "operator": "op-f618a13e"
