@@ -98,7 +98,8 @@ ticket requests, so the real picture has three windows:
 ### (d) Password reset
 - Documented CAE critical event; for a `cp1`-aware Graph client, near-real-time (Microsoft's stated goal,
   up to ~15 minutes attributed to event-propagation latency for the services it names explicitly). [DOC
-  S1347] For AD-only Kerberos authentication, a password reset does not itself invalidate an
+  S1347]
+- For AD-only Kerberos authentication, a password reset does not itself invalidate an
   already-issued TGT or service ticket -- it only changes what a *new* AS-REQ must present -- so the same
   three-window shape as (a) applies: existing service tickets keep working at the target server up to
   their own lifetime (default 600 minutes), a fresh TGS-REQ on the old TGT is not specially checked against
@@ -122,7 +123,8 @@ ticket requests, so the real picture has three windows:
   working after that session's own authentication step; "after a connection is authenticated, it no longer
   matters whether the session ticket remains valid, as session tickets are used only to authenticate new
   connections" -- so disabling the AD account of an engineer or a `gmsa-*` account does not drop an
-  already-open SMB session to a artifact share. [DOC S1376] Establishing a *new* SMB session needs a new
+  already-open SMB session to a artifact share. [DOC S1376]
+- Establishing a *new* SMB session needs a new
   service ticket, so it follows the same ~20-minute MS-KILE re-check window as (a), not "next AS-REQ": a
   new SMB session can be refused well before the disabled account's TGT itself expires. [DER S1380, S1378]
 
@@ -133,14 +135,15 @@ ticket requests, so the real picture has three windows:
   Premium/Ultimate), GitLab documents that deleting or blocking that user's account **automatically**
   revokes their personal access tokens. [DOC S1377]
 - A blocked user cannot sign in or access any repositories, and a deactivated user cannot access
-  repositories or the API. [DOC S-dhnetmt7] So a plain account's PATs stop working once the account is
+  repositories or the API. [DOC S-dhnetmt7]
+- So a plain account's PATs stop working once the account is
   blocked or deactivated, even though they are not revoked (they work again if it is unblocked); revoke
   them explicitly when the block is meant to be permanent. [DER S-dhnetmt7, S1377] The effect of a block
   on CI/CD job tokens, runner authentication tokens (`glrt-`) and open web sessions is not stated in these
   pages (see `_gaps.md`).
 - A membership removal is not evaluated live per request: project access, with group membership
-  already applied, is stored in the `project_authorizations` table [DOC S-sjlqevgj], and creating or
-  destroying a membership queues an asynchronous `AuthorizedProjectsWorker` refresh (Sidekiq, high
+  already applied, is stored in the `project_authorizations` table. [DOC S-sjlqevgj]
+- Creating or destroying a GitLab membership queues an asynchronous `AuthorizedProjectsWorker` refresh (Sidekiq, high
   priority). [CODE S-m45iz65n: app/models/member.rb#refresh_member_authorized_projects; CODE S-yg2usmqp: app/services/user_project_access_changed_service.rb#execute]
 
 ## Reference

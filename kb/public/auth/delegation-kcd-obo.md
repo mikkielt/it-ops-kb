@@ -70,7 +70,8 @@ facts (audience validation, `resource` parameter, `iss` validation, DCR deprecat
 - In MS-SFU, when the principal's `DelegationNotAllowed` is set the KDC should not set the FORWARDABLE
   flag on the S4U2self service ticket [DOC S-cqnp7ckg], and for RBCD the KDC must reject an S4U2proxy
   request whose evidence ticket is not forwardable (`KRB-ERR-BADOPTION`, `STATUS_ACCOUNT_RESTRICTION`)
-  [DOC S-ws2x5bdf]. So the "sensitive" setting blocks protocol transition and RBCD as well; no Microsoft
+  [DOC S-ws2x5bdf].
+- So the "sensitive" setting blocks protocol transition and RBCD as well; no Microsoft
   page says in so many words that Protected Users membership sets `DelegationNotAllowed`, so for that
   group the RBCD block is inferred, not stated. [DER S-cqnp7ckg, S-ws2x5bdf, S1205]
 - Entra Application Proxy + KCD: connector and application servers must be domain-joined, same domain
@@ -87,8 +88,8 @@ facts (audience validation, `resource` parameter, `iss` validation, DCR deprecat
   client sends an RFC 8693 token-exchange request with the user's ID token or refresh token to the IdP,
   gets an Identity Assertion JWT Authorization Grant, and presents it as an RFC 7523 JWT grant to the MCP
   server's authorization server. [DOC S-hrri7kcy, S-3zrbebvf]
-- No Microsoft Learn page documents Entra ID issuing ID-JAG (searched 2026-09-27); the launch reporting
-  names Okta as the only IdP. [DER S-uw3gpx3u: absence; COMMUNITY S1300]
+- No Microsoft Learn page documents Entra ID issuing ID-JAG (searched 2026-09-27). [DER S-uw3gpx3u: absence]
+- The launch reporting for ID-JAG names Okta as the only IdP. [COMMUNITY S1300]
 - Microsoft documents Entra ID as the standard OAuth authorization server for an MCP server (protected
   resource metadata pointing at Entra, v2 tokens, Application ID URI matching `resource`), and on Azure App
   Service lets the platform's built-in authentication (Easy Auth) validate tokens; this is plain MCP OAuth,

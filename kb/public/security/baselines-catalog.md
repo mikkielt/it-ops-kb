@@ -81,9 +81,9 @@ attribution. NCSC (UK), BSI and ANSSI publish narrower guidance (Intune packs, W
   with role-based baseline profiles (Domain Controller, Member Server, Workgroup Member); examples
   of its settings are TLS 1.2 or higher, a minimum of SMB 3.0 and credential-theft protections such
   as Credential Guard [DOC S1424].
-  Once applied, OSConfig baseline settings are described as protected from drift automatically —
-  i.e. OSConfig **remediates**, unlike a ConfigMgr baseline kept deliberately in test (visibility-only)
-  mode. [DOC S1424; DER: a general implication for any drift-visibility-first design: expect this
+  Once applied, OSConfig baseline settings are described as protected from drift automatically [DOC S1424].
+- So OSConfig **remediates**, unlike a ConfigMgr baseline kept deliberately in test (visibility-only)
+  mode. [DER S1424: a general implication for any drift-visibility-first design: expect this
   contrast with any remediating baseline mechanism it is compared against]
 - CIS Benchmark PDFs for non-members are distributed under **CC BY-NC-SA 4.0** (free, attribution
   required, non-commercial, share-alike), per the non-member terms page read 2026-09-26 [DOC S-ycjlut3h];

@@ -4543,9 +4543,6 @@ e3abd5c892ef,auth/audit-events.csv,S-srnmxykl,unlocated:no-match,,,,,2026-10-10
 ef16b5bec020,auth/audit-events.csv,S1361,located,What are non-interactive user sign-ins in Microsoft Entra? > What is a non-interactive user sign-in?,component;delegat;factor;without;perform;app;behalf;entra,e31b911e4feebd31,Non-interactive sign-ins are done on behalf of a user. These delegated sign-ins were performed by a client app or OS components on behalf of a,2026-10-10
 ef16b5bec020,auth/audit-events.csv,S-mubyxer3,located,Microsoft Entra audit logs API overview - Microsoft Graph v1.0 | Microsoft Learn > Available audit logs > Sign-ins,interactiv;non;non-interactiv;perform;ins;sign-in;user;sign,6f36a38ae31f42d2,"The sign-in logs help you determine who or what performed the tasks reported by directory audit logs. The logs include interactive user sign-ins, non-interactive user",2026-10-10
 f9ec45eae5ad,auth/audit-events.csv,S1366,unlocated:no-match,,,,,2026-10-10
-35b42c29337d,auth/audit-events.md,S1372,unlocated:no-match,,,,,2026-10-10
-35b42c29337d,auth/audit-events.md,S1373,unlocated:fetch-error,,,,,2026-10-10
-35b42c29337d,auth/audit-events.md,S-rm7qmev7,unlocated:no-match,,,,,2026-10-10
 3ae0e6b9c506,auth/audit-events.md,S-2gxpfnjz,located,SMS_StatusMessage Class - Configuration Manager | Microsoft Learn > Properties,administrator;audit;automatically;taken;trail;action;object;provider,60e350420cdae47c,768 | Audit. Use this type for informational messages that provides a trail of actions taken by the Configuration Manager administrator. An audit message also,2026-10-10
 55c183930ff0,auth/audit-events.md,S1358,unlocated:no-match,,,,,2026-10-10
 60ee4356c40e,auth/audit-events.md,S-fzswb76a,located,What are managed identity sign-ins in Microsoft Entra?,chang;delet;entry;generat;logs;system;sign;sign-in,0161ba7b5a2a83ba,Entries in the sign-in logs are system generated and can't be changed or deleted.,2026-10-10
@@ -4553,6 +4550,8 @@ f9ec45eae5ad,auth/audit-events.csv,S1366,unlocated:no-match,,,,,2026-10-10
 654b1a4967e6,auth/audit-events.md,S1367,unlocated:no-match,,,,,2026-10-10
 654b1a4967e6,auth/audit-events.md,S1368,unlocated:no-match,,,,,2026-10-10
 654b1a4967e6,auth/audit-events.md,S-vudqagwn,unlocated:no-match,,,,,2026-10-10
+6797731aa77e,auth/audit-events.md,S1372,located,Read User-Defined Status Messages - Configuration Manager | Microsoft Learn > To read a user-defined status messages,instanc;provider;query;sms;status;messag,5b49c36c216aba37,Query the provider for the SMSStatusMessage instances you want.,2026-10-20
+6797731aa77e,auth/audit-events.md,S-rm7qmev7,located,The status system - Configuration Manager | Microsoft Learn > Monitor the status system,collection;account;built;built-in;query;delet;exampl;creat,8004c43dec15a735,"You can identify when a specific component, operation, or Configuration Manager object was modified, and the account that was used to make the modification. For",2026-10-20
 8a503509b007,auth/audit-events.md,S1363,unlocated:no-match,,,,,2026-10-10
 93464066898b,auth/audit-events.md,S1365,unlocated:no-match,,,,,2026-10-10
 93464066898b,auth/audit-events.md,S1366,unlocated:no-match,,,,,2026-10-10
@@ -4646,6 +4645,8 @@ fd6d6c99af9b,auth/configmgr-rbac-auth.md,S-7jumyiid,unlocated:no-match,,,,,2026-
 2644a9de9682,auth/delegation-kcd-obo.md,S1300,unlocated:no-match,,,,,2026-10-10
 2644a9de9682,auth/delegation-kcd-obo.md,S-uw3gpx3u,unlocated:no-match,,,,,2026-10-10
 27431a5601d2,auth/delegation-kcd-obo.md,S1297,located,Microsoft identity platform and OAuth2.0 On-Behalf-Of flow - Microsoft identity platform | Microsoft Learn > Client limitations,controll;signatur;custom;validat;key;uses;becaus;downstream,5f1962ae839e9315,"If the middle-tier API uses a custom signing key, the downstream API won't validate the signature of the access token that is passed to it.",2026-10-10
+2d38f63fae04,auth/delegation-kcd-obo.md,S-cqnp7ckg,located,[MS-SFU]: KDC Replies with Service Ticket | Microsoft Learn,delegationnotallow;krb;allow;delegation;principal;flag;forwardabl;s4u2self,4a877fce189db956,"If the DelegationNotAllowed parameter on the principal is set, then the KDC SHOULD NOT set the FORWARDABLE ticket flag ([RFC4120], section 2.6) in the S4U2self",2026-10-20
+2d38f63fae04,auth/delegation-kcd-obo.md,S-ws2x5bdf,located,[MS-SFU]: Using ServicesAllowedToReceiveForwardedTicketsFrom | Microsoft Learn,forwardabl;restriction;account;badoption;err;krb;krb-err-badoption;must,b1b5c8c64f3c1037,,2026-10-20
 344941c47e6d,auth/delegation-kcd-obo.md,S1298,unlocated:no-match,,,,,2026-10-10
 344941c47e6d,auth/delegation-kcd-obo.md,S-q2j6mx4q,located,ms-DS-Allowed-To-Act-On-Behalf-Of-Other-Identity attribute - Win32 apps | Microsoft Learn,account;check;requestor;run;servic;attribut;act;behalf,08cb98ebe5a2ed6e,This attribute is used for access checks to determine if a requestor has permission to act on the behalf of other identities to services running,2026-10-10
 4444e44f9116,auth/delegation-kcd-obo.md,S1301,unlocated:no-match,,,,,2026-10-10
@@ -4654,8 +4655,6 @@ fd6d6c99af9b,auth/configmgr-rbac-auth.md,S-7jumyiid,unlocated:no-match,,,,,2026-
 61ed8e9c5b59,auth/delegation-kcd-obo.md,S1297,unlocated:no-match,,,,,2026-10-10
 71caaa821cc1,auth/delegation-kcd-obo.md,S-l74ozdea,located,ms-DS-Allowed-To-Delegate-To attribute - Win32 apps | Microsoft Learn,account;computer;configur;constrain;delegation;list;object;obtain,70ed024e1fcd1507,This is an attribute on service account (computer or user account) objects. It contains a list of Service Principal Names (SPNs). This attribute is used,2026-10-10
 98ffc1dbdd54,auth/delegation-kcd-obo.md,S-6mj4jpce,located,Accounts security posture assessment - Microsoft Defender for Identity | Microsoft Learn > Ensure privileged accounts are not delegated,scenario;unconstrain;constrain;such;delegat;set;kerbero;permission,127d401d9df6ba7e,Enabling the setting This account is sensitive and can't be delegated doesn't affect the account's ability to log in or its assigned permissions. The restriction,2026-10-10
-9b14b6ea7ac8,auth/delegation-kcd-obo.md,S1300,unlocated:no-match,,,,,2026-10-10
-9b14b6ea7ac8,auth/delegation-kcd-obo.md,S-uw3gpx3u,unlocated:no-match,,,,,2026-10-10
 a67e5935c526,auth/delegation-kcd-obo.md,S1297,located,Microsoft identity platform and OAuth2.0 On-Behalf-Of flow - Microsoft identity platform | Microsoft Learn > Middle-tier access token request > First case: Access token request with a shared secret,different;making;meant;aud;redeem;graph;app;must,56b99eb686d72890,assertion | Required | The access token that was sent to the middle-tier API. This token must have an audience (aud) claim of the app,2026-10-10
 a7b3989a522f,auth/delegation-kcd-obo.md,S1298,unlocated:no-match,,,,,2026-10-10
 aa06d321ade7,auth/delegation-kcd-obo.md,S1299,unlocated:no-match,,,,,2026-10-10
@@ -4669,9 +4668,6 @@ d29f1f544857,auth/delegation-kcd-obo.md,S-62odry4k,located,Troubleshoot problems
 d8649fa417a4,auth/delegation-kcd-obo.md,S1297,located,Microsoft identity platform and OAuth2.0 On-Behalf-Of flow - Microsoft identity platform | Microsoft Learn > Client limitations,exchang;app-only;credential;app;obo;user;flow;client,08458b588821276d,"If a service principal requested an app-only token and sent it to an API, that API would then exchange a token that doesn't represent the",2026-10-10
 e32f2ab12e6d,auth/delegation-kcd-obo.md,S-lbitjans,located,Enable SSO for Bot & Message Extension - Teams | Microsoft Learn > To configure app manifest,framework;botframework;token.botframework.com;valid;validdomain;bots;token;domain,c9b7660a84973bae,"To handle authentication and token exchange, add https://token.botframework.com to the validDomains property for bots using Bot Framework.",2026-10-10
 ed03f01c3e0e,auth/delegation-kcd-obo.md,S1301,located,Group scope > Enable SSO for a Teams app,extend;graph;permission;scop;microsoft;app,54f53d22ff99f237,Configure Graph scopes and permissions: You can add more scopes to your app by extending your app with Microsoft Graph permissions and scopes.,2026-10-10
-ed8dbebbc9cd,auth/delegation-kcd-obo.md,S1205,unlocated:no-match,,,,,2026-10-10
-ed8dbebbc9cd,auth/delegation-kcd-obo.md,S-cqnp7ckg,unlocated:no-match,,,,,2026-10-10
-ed8dbebbc9cd,auth/delegation-kcd-obo.md,S-ws2x5bdf,unlocated:no-match,,,,,2026-10-10
 ee8222db2e25,auth/delegation-kcd-obo.md,S1301,located,Enable SSO with Microsoft Entra ID - Teams | Microsoft Learn,channel;support;one-on-on;chat;one;group;scop;sso,768fb9f24a57884d,"SSO for a bot app in Teams is supported in one-on-one and group chat scope, and not supported in channel scope.",2026-10-10
 fac1deee7377,auth/delegation-kcd-obo.md,S-uw3gpx3u,located,Secure a Model Context Protocol (MCP) server with Microsoft Entra ID - Microsoft Entra Agent ID | Microsoft Learn > Validate access tokens in your MCP server,auth;built;built-in;easy;azur;platform;servic;authentication,6af85ab55a684d3b,"If you host your MCP server on Azure App Service, you can offload authentication to the platform's built-in authentication (Easy Auth) instead of validating tokens",2026-10-10
 0360ca415161,auth/enterprise-access-model.md,S-gigu3bqb,located,Legacy privileged access guidance - Privileged access | Microsoft Learn > PAW Phased implementation > Phase 1: Immediate deployment for Active Directory administrators > Deploy your PAW(s),laps;password;recommend;local;manag;microsoft;workstation;includ,b0120d2dd11440ec,"Microsoft recommends using Local Administrator Password Solution (LAPS) to manage the local Administrator password for all workstations, including PAWs.",2026-10-10
@@ -4907,43 +4903,37 @@ fef69bd87f7b,auth/kerberos.md,S-q5hl3fyg,located,"Upcoming changes to NTLMv1 in 
 180c14cad23c,auth/key-management-options.md,S-3acopzkn,unlocated:no-match,,,,,2026-10-10
 19e82be3c1e6,auth/key-management-options.md,S1340,located,Using Always Encrypted with the ODBC Driver for SQL Server > Introduction > Enabling Always Encrypted in an ODBC application,odbc;alway;driver;encrypt,eea9987212764674,"The following code is an example of a connection string that enables Always Encrypted: SQLWCHAR connString = L""Driver={ODBC Driver 18 for SQL Server};Server={myServer};Encrypt=yes;TrustedConnection=yes;ColumnEncryption=Enabled;"";",2026-10-10
 19e82be3c1e6,auth/key-management-options.md,S1350,unlocated:no-match,,,,,2026-10-10
+2765503e7dec,auth/key-management-options.md,S-ftk5lzj7,located,ConfidentialClientApplication Class > Constructor > Parameters,1.13.0;certificat;client_assertion;jwt;pre;pre-sign;sign;added,81e3a77b43173ca7,It can also be a completely pre-signed assertion that you've assembled yourself.,2026-10-20
+2765503e7dec,auth/key-management-options.md,S-zb4abl74,located,Microsoft identity platform certificate credentials - Microsoft identity platform | Microsoft Learn > Assertion format,library;msal;assertion;jwt;certificat,9076e856ad6f3d16,"To compute the assertion, you can use one of the many JWT libraries in the language of your choice",2026-10-20
 33db78913862,auth/key-management-options.md,S1340,located,Using Always Encrypted with the ODBC Driver for SQL Server > Working with column master key stores > Using the Windows Certificate Store provider,machin;mssql_certificate_stor;mssql;availabl;certificat;built-in;linux;mac,5cb479289c36cc4e,"The ODBC Driver for SQL Server on Windows includes a built-in column master key store provider for the Windows Certificate Store, named MSSQLCERTIFICATESTORE. (This provider",2026-10-10
 33db78913862,auth/key-management-options.md,S1341,located,Create and store column master keys for Always Encrypted > Creating Column Master Keys in Windows Certificate Store > Create a self-signed certificate using PowerShell,current;window;location;local;machin;user;certificat;column,e98fa9e07f565116,# New-SelfSignedCertificate is a Windows PowerShell cmdlet that creates a self-signed certificate. The below examples show how to generate a certificate that can be used,2026-10-10
 3c808e93c59a,auth/key-management-options.md,S-53ajdzoj,located,,activ;directory;gkdi,3fa6a7b346a47f6b,"[MS-GKDI]: Group Key Distribution Protocol | Microsoft Learn Specifies the Group Key Distribution Protocol, which enables clients to obtain cryptographic keys associated with Active Directory",2026-10-10
 433203e469aa,auth/key-management-options.md,S1342,located,Protection Descriptors,case;register;sensitiv;creat;ncryptcreateprotectiondescriptor;crypt;display;rule,20239c8c3281a084,These values are not case sensitive. You must specify a rule string (or a display name associated with a rule string) when you call the,2026-10-10
 433203e469aa,auth/key-management-options.md,S1343,located,CNG DPAPI Constants,group;identity;principal;sid;descriptor;protection,18f30d3c148a0ae5,The SID protection descriptor contains a group or principal identity.,2026-10-10
-611e3d806e7f,auth/key-management-options.md,S-sp6pux45,located,ALTER SYMMETRIC KEY (Transact-SQL) - SQL Server | Microsoft Learn > Remarks,new;protect;material;add;encrypt;encryption;symmetric;key,ec70ab0afbf9ecd3,"For this reason, the best practice is to add the new form of encryption before removing the old form of encryption. To protect the key",2026-10-10
-64e99f5b4065,auth/key-management-options.md,S-ftk5lzj7,located,ConfidentialClientApplication Class > Constructor > Parameters,1.13.0;certificat;client_assertion;jwt;pre;pre-sign;register;sign,289c011dca64e2f2,"client\id<br><br>Required | str<br><br>Your app has a client\id after you register it on Microsoft Entra admin center. client\credential | Union[dict, str, None] <br><br><br>For PublicClientApplication, you use",2026-10-10
-64e99f5b4065,auth/key-management-options.md,S-wk6ahp72,unlocated:no-match,,,,,2026-10-10
-64e99f5b4065,auth/key-management-options.md,S-zb4abl74,unlocated:no-match,,,,,2026-10-10
+4e4e7f9deb12,auth/key-management-options.md,S-ax3gmu7j,located,,rage;rust;implementation;age,c510a2dd0ee4c4b0,📜 The format specification is at age-encryption.org/v1. age was designed by @benjojo and @FiloSottile. 🦀 An alternative interoperable Rust implementation is available at github.com/str4d/rage.,2026-10-20
+511a0bd39394,auth/key-management-options.md,S402,located,Create a Key Distribution Service (KDS) root key,converg;befor;hour;replication;wait;controller;domain,bae3ca3464b99a98,The domain controllers will wait up to 10 hours from time of creation to allow all domain controllers to converge their Active Directory replication before,2026-10-20
 7bbb66edafb0,auth/key-management-options.md,S1341,unlocated:no-match,,,,,2026-10-10
 81530f61604f,auth/key-management-options.md,S1350,unlocated:no-match,,,,,2026-10-10
 81530f61604f,auth/key-management-options.md,S1351,unlocated:no-match,,,,,2026-10-10
 872a2b9aae53,auth/key-management-options.md,S1000,unlocated:no-match,,,,,2026-10-10
 872a2b9aae53,auth/key-management-options.md,S1001,unlocated:no-match,,,,,2026-10-10
-89e9740e891f,auth/key-management-options.md,S-ax3gmu7j,located,,rage;rust;implementation;age,c510a2dd0ee4c4b0,📜 The format specification is at age-encryption.org/v1. age was designed by @benjojo and @FiloSottile. 🦀 An alternative interoperable Rust implementation is available at github.com/str4d/rage.,2026-10-10
-89e9740e891f,auth/key-management-options.md,S-duamtyj7,located,,bind;implementation;rust;age;python;pyrag,817580c88a15bc9b,![PyPI Downloads](https://pepy.tech/projects/pyrage) Python bindings for the Rust implementation of age.,2026-10-10
 923f67f45c56,auth/key-management-options.md,S-kqm5iv43,located,CNG Key Storage Providers - Win32 apps | Microsoft Learn > Microsoft Platform Crypto Provider,cannot;extract;privat;tpm;keys;platform;crypto;microsoft,4a324cbcd91c82b1,"The Microsoft Platform Crypto Provider is designed to work with the TPM, a hardware-based security module that provides robust protection for cryptographic keys. By leveraging",2026-10-10
-941a8223c3f4,auth/key-management-options.md,S402,unlocated:no-match,,,,,2026-10-10
-941a8223c3f4,auth/key-management-options.md,S-53ajdzoj,unlocated:no-match,,,,,2026-10-10
+baecc666e744,auth/key-management-options.md,S-sp6pux45,located,ALTER SYMMETRIC KEY (Transact-SQL) - SQL Server | Microsoft Learn > Arguments,adds;add;encryption,c782b6263edcf830,ADD ENCRYPTION BY Adds encryption by using the specified method.,2026-10-20
 c8d0d93f82b4,auth/key-management-options.md,S1340,unlocated:no-match,,,,,2026-10-10
 ca8e9e35d567,auth/key-management-options.md,S1340,unlocated:no-match,,,,,2026-10-10
 ca8e9e35d567,auth/key-management-options.md,S1350,unlocated:no-match,,,,,2026-10-10
 e10d5fb4ed07,auth/key-management-options.md,S-53ajdzoj,located,[MS-GKDI]: Group Key Distribution Protocol | Microsoft Learn,client;keys;security;group;key;may,8616ce52ae672d0e,"Specifies the Group Key Distribution Protocol, which enables clients to obtain cryptographic keys associated with Active Directory security principals. This page and associated content may",2026-10-10
 e6324c26bf86,auth/key-management-options.md,S-53ajdzoj,located,,gkdi;keys;ms-gkdi;principal;security;distribution;group;key,3fa6a7b346a47f6b,"[MS-GKDI]: Group Key Distribution Protocol | Microsoft Learn Specifies the Group Key Distribution Protocol, which enables clients to obtain cryptographic keys associated with Active Directory",2026-10-10
-f13b274a16a3,auth/key-management-options.md,S1342,unlocated:no-match,,,,,2026-10-10
-f13b274a16a3,auth/key-management-options.md,S1349,located,dpapi_ng - Python DPAPI-NG De-/Encryption Library,copy;credential;crypt;host;ncryptprotectsecret;ncryptunprotectsecret;over;replicat,54e4da976b315272,"It is designed to replicate the behaviour of NCryptUnprotectSecret and NCryptProtectSecret. This can be used on non-Windows hosts to de-/encrypt DPAPI NG protected secrets, like",2026-10-10
 f9235c38a1b1,auth/key-management-options.md,S1340,located,Using Always Encrypted with the ODBC Driver for SQL Server > Introduction > Enabling Always Encrypted in an ODBC application,keyword;string;odbc;connection;alway;driver;encrypt,7adb588348fa1b78,The easiest way to enable both parameter encryption and resultset encrypted column decryption is by setting the value of the ColumnEncryption connection string keyword to,2026-10-10
 15404cb04f7c,auth/ldap-smb-signing.md,S-mc5jjnfr,unlocated:no-match,,,,,2026-10-10
 20f2a90ff2d5,auth/ldap-smb-signing.md,S1201,unlocated:no-match,,,,,2026-10-10
 20f2a90ff2d5,auth/ldap-smb-signing.md,S1208,unlocated:no-match,,,,,2026-10-10
 20f2a90ff2d5,auth/ldap-smb-signing.md,S-7u4b7p5q,unlocated:no-match,,,,,2026-10-10
-23171037746f,auth/ldap-smb-signing.md,S1208,unlocated:no-match,,,,,2026-10-10
-23171037746f,auth/ldap-smb-signing.md,S1209,unlocated:no-match,,,,,2026-10-10
-23171037746f,auth/ldap-smb-signing.md,S-7u4b7p5q,unlocated:no-match,,,,,2026-10-10
 24450a61915a,auth/ldap-smb-signing.md,S1201,located,LDAP signing for Active Directory Domain Services on Windows Server | Microsoft Learn > Default security behavior > Upgrade considerations,exist;requirement;set;upgrad;enforcement;enabl;window;server,7d3d39b9f357e19f,When you upgrade from earlier Windows Server versions to Windows Server 2025: Existing policies preserved: Upgrade installations maintain their current LDAP security settings to prevent,2026-10-10
 2a22864e7673,auth/ldap-smb-signing.md,S1202,located,Control SMB signing behavior | Microsoft Learn > How SMB signing works,education;enterpris;neither;pro;24h2;inbound;outbound;requir,d6f9a867d43f0318,"Windows and Windows Server can require outbound signing only, inbound signing only, both, or neither. For example: Windows 11, version 24H2 Enterprise, Pro, and Education",2026-10-10
 2b63347ae3a5,auth/ldap-smb-signing.md,S1228,located,SMB security hardening > SMB security features > SMB client encryption mandate now supported,once;3.0;mandat;outbound;connect;support;enabl;encryption,adf6566c3a2e9ed8,The SMB client can now mandate encryption for all outbound SMB connections. This measure ensures the highest level of network security and brings SMB signing,2026-10-10
+30f69b0287f0,auth/ldap-smb-signing.md,S1208,located,while other servers are not resolvable and do not need it.,ssf;session_security;encryption;layer;requir;session;support;encrypt,36447439495d2b45,"ldap3 currently support SASL authentication and data security layers for encryption. If your server requires a string Security Strength Factor (SSF), you must enable data",2026-10-20
+30f69b0287f0,auth/ldap-smb-signing.md,S-7u4b7p5q,unlocated:no-match,,,,,2026-10-20
 31c578532c2b,auth/ldap-smb-signing.md,S-eu32xfgv,located,,dword;adsopenobject;open;usernam;password;path;object;iid,8ed66a6425792a0c,"hr = ADsOpenObject(path, userName, password, (DWORD)lres, iid, (void )&pOb);",2026-10-10
 31c578532c2b,auth/ldap-smb-signing.md,S-lzhs4uhl,unlocated:no-match,,,,,2026-10-10
 4c082176eefc,auth/ldap-smb-signing.md,S-mc5jjnfr,unlocated:no-match,,,,,2026-10-10
@@ -5164,13 +5154,7 @@ f534054623e5,auth/propagation-latency.md,S1347,unlocated:no-match,,,,,2026-10-10
 03c121a5f47a,auth/revocation.md,S1378,unlocated:no-match,,,,,2026-10-10
 0469c2998c6e,auth/revocation.md,S1376,unlocated:no-match,,,,,2026-10-10
 0fb88000e6e3,auth/revocation.md,S1306,located,Continuous access evaluation for workload identities in Microsoft Entra ID - Microsoft Entra ID | Microsoft Learn > How CAE works for workload identities,lived;long-liv;hour;cp1;declar;provider;request;resourc,013dc64a3b1cddd3,"A service principal requests an access token from Microsoft Entra ID for a supported resource provider, declaring the cp1 client capability in the claims parameter",2026-10-10
-1791c9a46b5c,auth/revocation.md,S1376,located,Maximum lifetime for service ticket - Windows 10 | Microsoft Learn > Reference,longer;matter;remain;whether;kerbero;authenticat;valid;connection,4a1f81813cb173d0,"The client must request a new session ticket from the Kerberos V5 KDC. After a connection is authenticated, however, it no longer matters whether the",2026-10-10
-1791c9a46b5c,auth/revocation.md,S1378,unlocated:no-match,,,,,2026-10-10
-1791c9a46b5c,auth/revocation.md,S1380,unlocated:no-match,,,,,2026-10-10
 188e874851d1,auth/revocation.md,S1347,unlocated:no-match,,,,,2026-10-10
-1c10bd555ff6,auth/revocation.md,S-m45iz65n,unlocated:no-match,,,,,2026-10-10
-1c10bd555ff6,auth/revocation.md,S-sjlqevgj,located,Instance > Groups and Projects > Members,already;authorization;membership;project_authorization;stor;tabl;group;project,e82a1ef6744cff7d,Project membership (where the group membership is already taken into account) is stored in the projectauthorizations table.,2026-10-10
-1c10bd555ff6,auth/revocation.md,S-yg2usmqp,unlocated:no-match,,,,,2026-10-10
 22387347ed0d,auth/revocation.md,S1347,unlocated:no-match,,,,,2026-10-10
 22387347ed0d,auth/revocation.md,S1354,unlocated:no-match,,,,,2026-10-10
 22387347ed0d,auth/revocation.md,S1355,unlocated:no-match,,,,,2026-10-10
@@ -5180,22 +5164,21 @@ f534054623e5,auth/propagation-latency.md,S1347,unlocated:no-match,,,,,2026-10-10
 362587ba3ca1,auth/revocation.md,S1378,located,[MS-KILE]: Account Revocation Checking | Microsoft Learn,allow;even;issu;kerbero;renewal;request;servic;tgs,09206d59e5076042,"Kerberos V5 does not provide account revocation checking for TGS requests, which allows TGT renewals and service tickets to be issued as long as the",2026-10-10
 41b831ed1541,auth/revocation.md,S1380,unlocated:no-match,,,,,2026-10-10
 41b831ed1541,auth/revocation.md,S-iqal4gqk,unlocated:no-match,,,,,2026-10-10
-48636f50c7f3,auth/revocation.md,S1347,unlocated:no-match,,,,,2026-10-10
-48636f50c7f3,auth/revocation.md,S1376,unlocated:no-match,,,,,2026-10-10
-48636f50c7f3,auth/revocation.md,S1380,unlocated:no-match,,,,,2026-10-10
+4630002bc2f0,auth/revocation.md,S1376,located,Maximum lifetime for service ticket - Windows 10 | Microsoft Learn > Reference,longer;matter;remain;whether;kerbero;authenticat;valid;connection,4a1f81813cb173d0,"The client must request a new session ticket from the Kerberos V5 KDC. After a connection is authenticated, however, it no longer matters whether the",2026-10-20
 505d5cfd9a2b,auth/revocation.md,S1375,located,ALTER LOGIN (Transact-SQL) > Arguments > *login_name* > ENABLE | DISABLE,affect;impersonat;retain;still;doesn;connect;terminat;behavior,63ce6edfc9aaca89,Disabling a login doesn't affect the behavior of logins that are already connected. (Use the KILL statement to terminate an existing connection.) Disabled logins retain,2026-10-10
 55ef802e6df5,auth/revocation.md,S1378,unlocated:no-match,,,,,2026-10-10
 55ef802e6df5,auth/revocation.md,S1380,located,[MS-KILE]: Check Account Policy for Every Session Ticket Request | Microsoft Learn,implementation;implementation-specific;kdcs;older;specific;still;tgt;verify,8f4e2e07a03ec8ac,"If the POLICY\KERBEROS\VALIDATE\CLIENT bit is set in the AuthenticationOptions (section 3.3.1) setting on the KDC, then KILE will enforce revocation on the account KDCs. When",2026-10-10
+777880161d78,auth/revocation.md,S1347,located,Continuous access evaluation > Overview,goal;propagation;latency;minut;near;real;critical;time,f25592b1341934bc,"The goal for critical event evaluation is for response to be near real time, but latency of up to 15 minutes might be observed because",2026-10-20
 85fb585eebe4,auth/revocation.md,S1344,unlocated:no-match,,,,,2026-10-10
-86eeabd2095c,auth/revocation.md,S1377,unlocated:no-match,,,,,2026-10-10
-86eeabd2095c,auth/revocation.md,S-dhnetmt7,unlocated:no-match,,,,,2026-10-10
 98947c86411d,auth/revocation.md,S1306,located,Continuous access evaluation for workload identities in Microsoft Entra ID - Microsoft Entra ID | Microsoft Learn > How CAE works for workload identities,becaus;return;through;lived;long-liv;handl;hour;new,483f7b59efc48ca3,"If a revocation event occurs (such as service principal disable or high risk detection), the resource provider rejects the token and returns a 401 response",2026-10-10
 98947c86411d,auth/revocation.md,S1354,unlocated:no-match,,,,,2026-10-10
 98947c86411d,auth/revocation.md,S1355,unlocated:no-match,,,,,2026-10-10
 9f73442adfde,auth/revocation.md,S1375,located,ALTER LOGIN (Transact-SQL) > Arguments > *login_name* > PASSWORD = *hashed_password*,sign;such;again;out;membership;member;sysadmin;identity,be08a3095798969d,"To force changes in the identity, such as a password reset or change in Windows group membership, the login must sign out from the authentication",2026-10-10
 ac16f517f956,auth/revocation.md,S1345,unlocated:no-match,,,,,2026-10-10
 ac16f517f956,auth/revocation.md,S1348,located,user: revokeSignInSessions - Microsoft Graph v1.0 | Microsoft Learn,cooky;date;reset;signinsessionsvalidfromdatetim;time;valid;invalidat;refresh,e2f59eb94c1d738a,"Invalidates all the refresh tokens issued to applications for a user (and session cookies in a user's browser), by resetting the signInSessionsValidFromDateTime user property to",2026-10-10
+cd8b4ebfddb5,auth/revocation.md,S-sjlqevgj,located,Instance > Groups and Projects > Members,already;authorization;membership;project_authorization;stor;tabl;group;project,e82a1ef6744cff7d,Project membership (where the group membership is already taken into account) is stored in the projectauthorizations table.,2026-10-20
 ce669286be91,auth/revocation.md,S1377,unlocated:no-match,,,,,2026-10-10
+fcf0815fb020,auth/revocation.md,S-dhnetmt7,located,View users > Deactivate and reactivate users,repository;api;cannot;access;sign;deactivat;user,c54658aea0373340,"If a deactivated user signs in, they are automatically reactivated. Cannot access repositories or the API.",2026-10-20
 01665a7aed8e,auth/role-source-options.md,S1286,located,directoryObject: checkMemberGroups - Microsoft Graph v1.0 | Microsoft Learn > Permissions,user.read;basic;readbasic;user.readbasic.all;groupmember;groupmember.read.all;sign;signed-in,314bb297064dbf0d,Group memberships for the signed-in user Permission type | Least privileged permissions | Higher privileged permissions Delegated (work or school account) | User.Read | User.ReadBasic.All,2026-10-10
 0dee295fc61b,auth/role-source-options.md,S1286,located,directoryObject: checkMemberGroups - Microsoft Graph v1.0 | Microsoft Learn > Permissions > Group memberships for a device,must;sign;signed-in;application;delegat;permission;user;member,a84a85b73c4e9017,Application permissions: The app must have the Member.Read.Hidden permissions. Delegated permissions: The signed-in user must be a member of the hidden-membership group.,2026-10-10
 1f983e0e47b1,auth/role-source-options.md,S1286,located,directoryObject: checkMemberGroups - Microsoft Graph v1.0 | Microsoft Learn,transitiv;request;check;group,e0a65a04371c793c,This function is transitive. You can check up to a maximum of 20 groups per request.,2026-10-10
@@ -5779,7 +5762,6 @@ fead0dfd883a,claude/api-limits.csv,S-5uxkh3j5,located,Rate limits > Spend limits
 56e1b0ceb685,claude/ci-and-headless.md,S-e5rrs4ee,unlocated:no-match,,,,,2026-10-13
 56e1b0ceb685,claude/ci-and-headless.md,S-eu3n3hyf,unlocated:no-match,,,,,2026-10-13
 56e1b0ceb685,claude/ci-and-headless.md,S-fksbud2r,unlocated:no-match,,,,,2026-10-13
-5b1c24083166,claude/ci-and-headless.md,S-fksbud2r,located,Agent SDK reference - Python > Message Types > `ResultMessage`,camel;camelcas;modelusag;underly;unmodifi;becaus;keys;model_usag,14162b341fbd6d7b,"Each value in modelusage is a ModelUsage TypedDict, imported via from claudeagentsdk.types import ModelUsage. Its keys use camelCase because the SDK passes the value through",2026-10-12
 5d918b0ca9bb,claude/ci-and-headless.md,S-fzkqxhmg,located,Development containers > Restrict network egress,net;net_admin;net_raw;raw;admin;args;runarg;capability,4757ceb75502a6b3,the reference adds the NETADMIN and NETRAW capabilities through runArgs.,2026-10-14
 60ac12ba669d,claude/ci-and-headless.md,S1800,located,Run Claude Code programmatically > Examples > Create a commit,expand;invok;user-invok;custom;skill-nam;user;string;work,818a5ac3871ed886,User-invoked skills and custom commands work. Include /skill-name in the prompt string and Claude Code expands it before running.,2026-10-19
 60e041290c21,claude/ci-and-headless.md,S1800,located,Run Claude Code programmatically > Basic usage > Stop a run with SIGTERM,unanswer;cancel;clos;ends;input;sigterm;sdk;agent,1df781f7a245e95e,"Waiting for an answer to a permission prompt: if you send SIGTERM to the process, Claude Code leaves the prompt unanswered. If your program closes",2026-10-12
@@ -5827,6 +5809,7 @@ fead0dfd883a,claude/api-limits.csv,S-5uxkh3j5,located,Rate limits > Spend limits
 9e005745fe7d,claude/ci-and-headless.md,S1801,located,Claude Code GitHub Actions > Setup > Set up for an organization,ran;tied;setup-token;rather;shar;sinc;federation;oauth,f947ce23aea52c45,"For a secret shared across repositories, authenticate with an API key from the Claude Console rather than an OAuth token, since an OAuth token is",2026-10-12
 9f869b4c43a4,claude/ci-and-headless.md,S-32ilsmsf,located,Use Claude Code GitHub Actions with cloud providers > Set up the integration,audit;audit-log;consum;entry;leav;log;minut;phras,0f1f2a86e1847d02,"On public repositories, a comment containing the trigger phrase from any user starts this workflow. The credential steps run before the Claude Code GitHub Action",2026-10-12
 9fd1cab9c6a4,claude/ci-and-headless.md,S1864,unlocated:no-match,,,,,2026-10-12
+a21f98ef6418,claude/ci-and-headless.md,S-fksbud2r,located,Agent SDK reference - Python > Message Types > `ResultMessage`,camel;camelcas;modelusag;underly;unmodifi;becaus;keys;model_usag,14162b341fbd6d7b,"Each value in modelusage is a ModelUsage TypedDict, imported via from claudeagentsdk.types import ModelUsage. Its keys use camelCase because the SDK passes the value through",2026-10-20
 a278acb34aec,claude/ci-and-headless.md,S1800,located,Run Claude Code programmatically > Examples > Stream responses > Handle API retries,quietly;retryabl;third;v2.1.246;api_retry;apikeyhelper;helper;reject,9df5591fe381b4b7,"When an API request fails with a retryable error, Claude Code emits a system/apiretry event before retrying. On v2.1.246 or later, when a 401 or",2026-10-12
 a3b0c0a6fd41,claude/ci-and-headless.md,S1864,unlocated:no-match,,,,,2026-10-12
 a481f631a5f9,claude/ci-and-headless.md,S-pilcrlei,located,Other LLM gateways > Subscriptions and gateways,anthropic-beta;beta;must;oauth;capability;header;traffic;subscription,cefdc96501d626dc,"Setting only that variable, without a gateway credential, doesn't replace the subscription. Requests still route through the gateway, but a saved claude.ai login remains the",2026-10-12
@@ -7671,16 +7654,14 @@ ec9d641edff7,dsc/mcp-server.md,S-catcwj3d,located,,struct;request;operation,6137
 7ff7b9af9f58,dsc/open-bugs-windows.md,S126,unlocated:no-match,,,,,2026-10-10
 abe95af1fb3d,dsc/open-bugs-windows.md,S126,unlocated:no-match,,,,,2026-10-10
 bf49d36fe886,dsc/open-bugs-windows.md,S126,unlocated:no-match,,,,,2026-10-10
+06fce013b163,dsc/releases-feature-matrix.md,S113,located,,3.2.3,1ef09fc5e38e373d,"""tagname"": ""v3.2.3"",",2026-10-20
 09c179aa6f69,dsc/releases-feature-matrix.md,S114,unlocated:not-text,,,,,2026-10-10
 09c179aa6f69,dsc/releases-feature-matrix.md,S116,unlocated:not-text,,,,,2026-10-10
+0c1c2fb8f602,dsc/releases-feature-matrix.md,S144,unlocated:no-match,,,,,2026-10-20
 1ac72fcd67bd,dsc/releases-feature-matrix.md,S113,located,,git;hub;releas;changelog;3.0.0;preview;github,7e8fc68fee1aaf7f,"""body"": ""## What's Changed\r\n (DOCS) Options refactor by @michaeltlombardi in https://github.com/PowerShell/DSC/pull/326\r\n update to next version by @SteveL-MSFT in https://github.com/PowerShell/DSC/pull/331\r\n add progress bar by @SteveL-MSFT in",2026-10-10
 1ac72fcd67bd,dsc/releases-feature-matrix.md,S143,located,Changelog,2025-02-28;3.0.0;git;hub;releas;github,c8155353ca6f2a28,"[v3.0.0][release-v3.0.0] - 2025-02-28 Version 3.0.0 is the first generally available release of DSC. [release-v3.0.0]: https://github.com/PowerShell/DSC/releases/tag/v3.0.0 ""Link to the DSC v3.0.0 release on GitHub""",2026-10-10
-203cc9dad69b,dsc/releases-feature-matrix.md,S111,located,,3.3.0;version;dsc,9794a7e55b320ed8,"name = ""dsc"" version = ""3.3.0""",2026-10-10
-203cc9dad69b,dsc/releases-feature-matrix.md,S144,unlocated:no-match,,,,,2026-10-10
 22c07812c97c,dsc/releases-feature-matrix.md,S116,unlocated:not-text,,,,,2026-10-10
 22c07812c97c,dsc/releases-feature-matrix.md,S117,unlocated:not-text,,,,,2026-10-10
-23d63ae6df2f,dsc/releases-feature-matrix.md,S113,unlocated:no-match,,,,,2026-10-10
-23d63ae6df2f,dsc/releases-feature-matrix.md,S-mmshotst,located,,ignor;set;file;short;args,47437afe0acb813e,"#[clap(short = 'i', long, help = t!(""args.ignoreSettingsFile"").tostring())]",2026-10-10
 38e00081ae93,dsc/releases-feature-matrix.md,S129,unlocated:no-match,,,,,2026-10-10
 38e00081ae93,dsc/releases-feature-matrix.md,S130,unlocated:no-match,,,,,2026-10-10
 38e00081ae93,dsc/releases-feature-matrix.md,S131,unlocated:no-match,,,,,2026-10-10
@@ -7691,10 +7672,6 @@ bf49d36fe886,dsc/open-bugs-windows.md,S126,unlocated:no-match,,,,,2026-10-10
 5ef658a40c6f,dsc/releases-feature-matrix.md,S118,unlocated:no-match,,,,,2026-10-10
 72581b054037,dsc/releases-feature-matrix.md,S119,unlocated:no-match,,,,,2026-10-10
 925486f6cbc9,dsc/releases-feature-matrix.md,S121,located,,0.1.0;grouppolicytemplat;manifest;microsoft;microsoft.adapter;dsc;adapter;templat,6c21216ff9be9590,"""$schema"": ""https://aka.ms/dsc/schemas/v3/bundled/resource/manifest.json"", ""type"": ""Microsoft.Adapter/GroupPolicyTemplate"", ""version"": ""0.1.0"",",2026-10-10
-a40e25e9048a,dsc/releases-feature-matrix.md,S114,unlocated:not-text,,,,,2026-10-10
-a40e25e9048a,dsc/releases-feature-matrix.md,S115,unlocated:not-text,,,,,2026-10-10
-a40e25e9048a,dsc/releases-feature-matrix.md,S122,located,Settings: {52730886-51AA-4243-9F7B-2776584659D4},adapt;microsoft.window;resourc;personalization;microsoft;window,0a70afce205c3945,$id: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/resources/Adapted/Three/v0.1.0/schema.json title: Microsoft.Windows/Personalization,2026-10-10
-a40e25e9048a,dsc/releases-feature-matrix.md,S-6hlzzfeg,located,https://learn.microsoft.com/en-us/windows/apps/develop/settings/settings-common#personalization---colors,microsoft.window;adapt;resourc;personalization;microsoft;window,e38a987501b43bee,$schema: https://aka.ms/dsc/schemas/v3/bundled/resource/adapted/manifest.json type: Microsoft.Windows/Personalization,2026-10-10
 ac4933c3c5ed,dsc/releases-feature-matrix.md,S110,located,,3.4.0;3.4.0-preview.1;preview;version;dsc,5e0023fb557e7e7a,"name = ""dsc"" version = ""3.4.0-preview.1""",2026-10-10
 b88ab7965ab2,dsc/releases-feature-matrix.md,S116,unlocated:not-text,,,,,2026-10-10
 b88ab7965ab2,dsc/releases-feature-matrix.md,S117,unlocated:not-text,,,,,2026-10-10
@@ -11579,8 +11556,6 @@ fe8f89a6572a,mecm/baselines.md,S-f6ejsacc,located,Create configuration baselines
 46cf2eb6b2c6,mecm/client-notification.md,S-z7zcccd3,unlocated:no-match,,,,,2026-10-10
 53cfc8262526,mecm/client-notification.md,S-43sy3dqq,located,Manage clients - Configuration Manager | Microsoft Learn > Start policy retrieval > Start client policy retrieval by script,ccm;class;invok;invoke-wmimethod;name;namespac;root;sms,ff7141622023bdc1,,2026-10-10
 5ff13ad1932d,mecm/client-notification.md,S334,located,Invoke-CMClientAction > Description,one;trigger;devic,b8a1fd054ca2162c,"The Invoke-CMClientAction cmdlet sends a notification to client computers to trigger an immediate client action. You can specify one or more client computers, or send",2026-10-10
-6b18e282c39c,mecm/client-notification.md,S-6rr2wgl6,unlocated:no-match,,,,,2026-10-10
-6b18e282c39c,mecm/client-notification.md,S-z7zcccd3,located,InitiateClientOperation Method - Configuration Manager | Microsoft Learn,class;code;client;initiat;initiateclientoperation;operation,1b01f6fa1006e7b2,The InitiateClientOperation Windows Management Instrumentation (WMI) class method in Configuration Manager that initiates a client operation. The following syntax is simplified from Managed Object Format,2026-10-10
 6d5830d66313,mecm/client-notification.md,S-e5qqwdcj,unlocated:no-match,,,,,2026-10-10
 7ea052e41669,mecm/client-notification.md,S-43sy3dqq,located,Manage clients - Configuration Manager | Microsoft Learn > Restart clients > Create the client notification to restart a device,minut;occur;center;default;softwar;notification;set;restart,22ef607feae65378,"When the notification is received by a client, a Software Center notification window opens to inform the user about the restart. By default, the restart",2026-10-10
 81511f6a0d37,mecm/client-notification.md,S334,located,Invoke-CMClientAction > Parameters > -ActionType > Parameter properties,execution;pivot;requestcmpivotexecution;requestscriptexecution;script;clientactiontyp;request;action,eda2290664575b7e,"Type: | ClientActionType Default value: | None Accepted values: | None, EndpointProtectionFullScan, EndpointProtectionQuickScan, EndpointProtectionDownloadDefinition, EndpointProtectionEvaluateSoftwareUpdate, EndpointProtectionExcludeScanPaths, EndpointProtectionAllowThreat, EndpointProtectionRestoreQuarantinedItems, ClientNotificationRequestMachinePolicyNow, ClientNotificationRequestUsersPolicyNow, ClientNotificationRequestDDRNow, ClientNotificationRequestSWInvNow, ClientNotificationRequestHWInvNow, ClientNotificationAppDeplEvalNow, ClientNotificationSUMDeplEvalNow,",2026-10-10
@@ -11589,6 +11564,7 @@ fe8f89a6572a,mecm/baselines.md,S-f6ejsacc,located,Create configuration baselines
 8e71fd545d75,mecm/client-notification.md,S-hmjlvsck,located,Client notification - Configuration Manager | Microsoft Learn > Actions > Install client,modify;read;install;resourc;action;client,ade880e4c119cb0a,Permissions - Install client This action requires the Modify Resource and Read permissions on the Collection object.,2026-10-10
 9acf3c8784ce,mecm/client-notification.md,S-6rr2wgl6,located,SMS_ClientOperation Class - Configuration Manager | Microsoft Learn > Properties,criteria;match;specific;member;collection,519afea0ccf8928d,3 | Members of a specific collection matching specified criteria.,2026-10-10
 a970174348aa,mecm/client-notification.md,S-wquiagrh,unlocated:no-match,,,,,2026-10-10
+c7751c0faa56,mecm/client-notification.md,S-6rr2wgl6,unlocated:no-match,,,,,2026-10-20
 d421818cefa0,mecm/client-notification.md,S-6rr2wgl6,unlocated:no-match,,,,,2026-10-10
 daffbd058a00,mecm/client-notification.md,S-hmjlvsck,located,Client notification - Configuration Manager | Microsoft Learn > Monitor client operations,some;monitor;delet;view;operation;client,aac48b917fceae74,"Monitor the operations sent to clients by using the Client Operations node under the Monitoring workspace. For some instances, you can cancel the operation by",2026-10-10
 eae8219621be,mecm/client-notification.md,S-hmjlvsck,located,Client notification - Configuration Manager | Microsoft Learn > Endpoint Protection > Quick Scan,definition;quick;download;scan;endpoint;protection,79cc03edb8effd41,Trigger Endpoint Protection or Windows Defender to run a quick antimalware scan. Download Definition,2026-10-10
@@ -13171,14 +13147,13 @@ f8d989cda15f,privacy/presidio-evaluator.md,S839,located,,0.3.2;3.1;3.14;requires
 2b14ca4d631e,privacy/presidio-operators-deanonymize.md,S836,unlocated:no-match,,,,,2026-10-10
 3ec703928245,privacy/presidio-operators-deanonymize.md,S828,located,Supporting new types of PII operators > Extending presidio-anonymizer for additional PII operators,add_anonymizer;add_deanonymizer;anonymizerengin;anonymizerengine.add_anonymizer;deanonymizeengin;deanonymizeengine.add_deanonymizer;deanonymizer;add,7ca924726f24639e,"Call the AnonymizerEngine.addanonymizer method to add a new operator to the anonymizer. Alternatively, call the DeanonymizeEngine.adddeanonymizer method to add a new deanonymizer.",2026-10-10
 48e26d7317e6,privacy/presidio-operators-deanonymize.md,S833,unlocated:no-match,,,,,2026-10-10
-4bfb30c5d51b,privacy/presidio-operators-deanonymize.md,S834,located,,batch;deanonymiz;engin;2.2.364,531d49d4080f1fdf,"""url"": ""https://api.github.com/repos/data-privacy-stack/presidio/contents/presidio-anonymizer/presidioanonymizer/batchdeanonymizeengine.py?ref=2.2.364"",",2026-10-10
-4bfb30c5d51b,privacy/presidio-operators-deanonymize.md,S845,located,,batchdeanonymizeengin;batch;engin;deanonymiz,f384e7c070e9c55b,class BatchDeanonymizeEngine:,2026-10-10
 54c3694a9616,privacy/presidio-operators-deanonymize.md,S831,unlocated:no-match,,,,,2026-10-10
 674a9cf41e2d,privacy/presidio-operators-deanonymize.md,S841,unlocated:no-match,,,,,2026-10-10
 6b34777eb327,privacy/presidio-operators-deanonymize.md,S827,located,Presidio Anonymizer > Built-in operators,hash_typ;sha256;sha512;chars_to_mask;from_end;masking_char;char;mask,1c7436ef278e460d,Anonymize | hash | Hashes the PII text using salted hashing for security | hashtype: sets the type of hashing. Can be either sha256 or,2026-10-10
 75521174b0d9,privacy/presidio-operators-deanonymize.md,S827,located,Presidio Anonymizer > Handling overlaps between entities,another;larger;partial;contain;one;scor,148a5aa1f658cf54,One PII is contained in another: Presidio Anonymizer will use the PII with the larger text even if it's score is lower. Partial intersection: Presidio,2026-10-10
 8e9104547ee8,privacy/presidio-operators-deanonymize.md,S830,located,,post;anonymiz;health;rout;anonymizer,a322365ecf4d56fa,"""""""Return basic health probe result."""""" return ""Presidio Anonymizer service is up"" @self.app.route(""/anonymize"", methods=[""POST""])",2026-10-10
 a568d7388912,privacy/presidio-operators-deanonymize.md,S832,located,,param;entity_typ;type;entity;operator,1b43dec05b22d37f,:param operatorsmetadata: dictionary where the key is the entitytype and what,2026-10-10
+bf6f469fad1b,privacy/presidio-operators-deanonymize.md,S834,located,,batch;deanonymiz;engin;2.2.364,531d49d4080f1fdf,"""url"": ""https://api.github.com/repos/data-privacy-stack/presidio/contents/presidio-anonymizer/presidioanonymizer/batchdeanonymizeengine.py?ref=2.2.364"",",2026-10-20
 d9722fbb806c,privacy/presidio-operators-deanonymize.md,S827,located,Presidio Anonymizer > Built-in operators > Hash operator with salt for referential integrity,session;stateful;maintain;stor;call;presidio,a5ab6814fd5859a0,"Presidio does not store or maintain stateful sessions. For referential integrity across records or calls, users must securely manage and provide their own salt.",2026-10-10
 e782852067a2,privacy/presidio-operators-deanonymize.md,S829,unlocated:no-match,,,,,2026-10-10
 f333bb9b3f13,privacy/presidio-operators-deanonymize.md,S830,located,,type;custom;rais;support;bad;badrequest;operator;request,13d127316debafd8,"if AppEntitiesConvertor.checkcustomoperator(anonymizersconfig): raise BadRequest(""Custom type anonymizer is not supported"")",2026-10-10
@@ -13643,6 +13618,7 @@ b05add04d471,python/stdlib-sqlite3-csv.md,S-nnljaqtm,unlocated:no-match,,,,,2026
 b36f123050ec,python/stdlib-sqlite3-csv.md,S-vc2lihhb,located,3. How VACUUM works,another;read;unfinaliz;hold;transaction;connection;fail;open,323db1ab7690c262,"statements typically hold a read transaction open, so the VACUUM might fail if there are unfinalized SQL statements on the same connection. VACUUM (but not",2026-10-10
 b38fb85d5c17,python/stdlib-sqlite3-csv.md,S-utoe3wfw,unlocated:no-match,,,,,2026-10-10
 b41b6b112b71,python/stdlib-sqlite3-csv.md,S-b4zlktyl,located,"2. Transactions > 2.2. DEFERRED, IMMEDIATE, and EXCLUSIVE transactions",another;activ;busy;immediat;sqlite_busy;fail;might;begin,e1cc4ec165b74456,BEGIN IMMEDIATE might fail with SQLITEBUSY if another write transaction is already active on another database connection.,2026-10-16
+c0d15565975c,python/stdlib-sqlite3-csv.md,S-xq53ipsf,located,,break;contain;doubl;quot;line;comma;field,b19dd88211d7bfb8,"Fields containing line breaks (CRLF), double quotes, and commas",2026-10-20
 c25191fa2b51,python/stdlib-sqlite3-csv.md,S-232dvyc5,located,2. How WAL Works > 2.2. Concurrency,time;writer;one;file;wal,f9784555bd8fc597,there can only be one writer at a time.,2026-10-16
 cd580551c29d,python/stdlib-sqlite3-csv.md,S-nnljaqtm,unlocated:no-match,,,,,2026-10-10
 cd580551c29d,python/stdlib-sqlite3-csv.md,S-vc2lihhb,unlocated:no-match,,,,,2026-10-10
@@ -13653,8 +13629,6 @@ d8823c0713f2,python/stdlib-sqlite3-csv.md,S-utoe3wfw,unlocated:no-match,,,,,2026
 e389e569c485,python/stdlib-sqlite3-csv.md,S-rle6nqpc,unlocated:no-match,,,,,2026-10-10
 e6a7ed701982,python/stdlib-sqlite3-csv.md,S-mvz475h7,located,SQLite C Interface > Register A Callback To Handle SQLITE_BUSY Errors,encounter;immediately;upon;null;sqlite_busy;return;lock;callback,96450f9263b758de,"If the busy callback is NULL, then SQLITEBUSY is returned immediately upon encountering the lock.",2026-10-18
 e925faea0bad,python/stdlib-sqlite3-csv.md,S-xq53ipsf,unlocated:no-match,,,,,2026-10-10
-f0da535aa346,python/stdlib-sqlite3-csv.md,S-utoe3wfw,unlocated:no-match,,,,,2026-10-10
-f0da535aa346,python/stdlib-sqlite3-csv.md,S-xq53ipsf,unlocated:no-match,,,,,2026-10-10
 f0df580248e3,python/stdlib-sqlite3-csv.md,S-utoe3wfw,unlocated:no-match,,,,,2026-10-10
 f1a81fc9a842,python/stdlib-sqlite3-csv.md,S-nnljaqtm,located,PRAGMA Statements > List Of PRAGMAs,end;every;freelist;truncat;commit;auto;full;transaction,33aeaa46a890e766,"When the auto-vacuum mode is 1 or ""full"", the freelist pages are moved to the end of the database file and the database file is",2026-10-10
 fbd94ec928b0,python/stdlib-sqlite3-csv.md,S-vc2lihhb,unlocated:no-match,,,,,2026-10-10
@@ -13730,6 +13704,7 @@ dc0ca92d51fb,python/stdlib-urllib-errors.md,S-kudz6dke,unlocated:no-match,,,,,20
 48a9a2602af2,python/stdlib-windows-portability.md,S-kyzwo2d6,located,getcwd(3) — Linux manual page > ERRORS top,enoent;unlink;work;directory;current,ff0cdc2176f5a196,The current working directory has been unlinked,2026-10-13
 48e799e029cc,python/stdlib-windows-portability.md,S-kkrnrh7n,located,SetConsoleMode function - Windows Console | Microsoft Learn > Parameters,control;sequenc;terminal;virtual;process;output;enabl;consol,5d3e2c66a9328bcf,It should be enabled when using control sequences,2026-10-18
 4b7bbfbef00c,python/stdlib-windows-portability.md,S-5qbsemqm,located,do a signed reduction modulo 2**sys.hash_info.width,terminal;break;line;empty;result;return;string,35de6ab383f3ca11,"returns an empty list for the empty string, and a terminal line break does not result in an extra line",2026-10-18
+4bb9ffb2a6c4,python/stdlib-windows-portability.md,S-ttcgrkbl,located,System Error Codes (0-499) (WinError.h) - Win32 apps | Microsoft Learn,exced;extension;filenam;rang;too;error,1f9b7ff02316f6b6,ERROR\FILENAME\EXCED\RANGE 206 (0xCE) The filename or extension is too long.,2026-10-20
 54b73738cd2c,python/stdlib-windows-portability.md,S-qvjkxdub,located,Console Virtual Terminal Sequences - Windows Console | Microsoft Learn > Text Formatting,prior;brightness;intensity;modification;attribut;stat;flag;default,db02a2654d715210,0 | Default | Returns all attributes to the default state prior to modification 1 | Bold/Bright | Applies brightness/intensity flag to foreground color 22,2026-10-18
 56cfa90089ea,python/stdlib-windows-portability.md,S-ip5ugdeb,located,Hard Links and Junctions - Win32 apps | Microsoft Learn > Hard links,driv;exampl;map;network;ethel;ethel.txt;lucy;lucy.txt,531ab5e115e9baf7,"For example, in a system where C: and D: are local drives and Z: is a network drive mapped to \\fred\share, the following references are",2026-10-10
 5706021dc9de,python/stdlib-windows-portability.md,S-4a5xeg5l,located,mixin will work in context of those fields existing,_supports_virtual_terminal;nt._supports_virtual_terminal;support;terminal;virtual,6e8415a73660fcfb,if not nt.supportsvirtualterminal():,2026-10-18
@@ -13781,8 +13756,6 @@ a806f50a8153,python/stdlib-windows-portability.md,S-hlwenztu,located,rmdir(2) �
 a9df22e1bd5e,python/stdlib-windows-portability.md,S-ntbllsvy,located,,fail;creation;exclusiv;already;exist;open;file,b9cc58808515e18e,"'x' open for exclusive creation, failing if the file already exists",2026-10-10
 aa7894657f5a,python/stdlib-windows-portability.md,S-6bobcclf,located,CreateProcessW function (processthreadsapi.h) - Win32 apps | Microsoft Learn > Parameters,work;start;driv;current;call;null;directory;new,55cd1be3350c1628,"If this parameter is NULL, the new process will have the same current drive and directory as the calling process. (This feature is provided primarily",2026-10-10
 ae65873cefe9,python/stdlib-windows-portability.md,S-oqrlzkwe,located,CreateHardLinkW function (winbase.h) - Win32 apps | Microsoft Learn > Remarks,volum;must;createhardlink;creat;hard;link;file,a36d2529a2863a36,"An additional hard link that is created with the CreateHardLink function allows you to have multiple directory entries for a file, that is, multiple hard",2026-10-10
-aea29fe4919c,python/stdlib-windows-portability.md,S-6bobcclf,unlocated:no-match,,,,,2026-10-10
-aea29fe4919c,python/stdlib-windows-portability.md,S-ttcgrkbl,unlocated:no-match,,,,,2026-10-10
 aef7cb26c281,python/stdlib-windows-portability.md,S-ntbllsvy,located,,linesep;os.linesep;newlin;writ;none;default,40ec9a086434ce45,"When writing output to the stream, if newline is None, any '\n' characters written are translated to the system default line separator, :data:os.linesep.",2026-10-10
 af2fbb0d64e8,python/stdlib-windows-portability.md,S-j6wqryzp,located,,faint;neither;nor;bold;normal,35d55ba3f7e56777,Normal (neither bold nor faint),2026-10-18
 afa81617b6e1,python/stdlib-windows-portability.md,S-vfd5kpka,located,NAME > SYNOPSIS > DESCRIPTION,root;suc;unspecifi;current;ebusy;whether;work;fail,afbf40c0ac0f6d01,it is unspecified whether the function succeeds,2026-10-13
@@ -14233,8 +14206,8 @@ e7c11a0c0a1a,security/baselines-catalog.csv,S-cwnwnkri,unlocated:no-match,,,,,20
 7fdc30fcc6b2,security/baselines-catalog.md,S-nwnif62g,unlocated:fetch-error,,,,,2026-10-10
 7fdc30fcc6b2,security/baselines-catalog.md,S-uzuvf3vo,unlocated:fetch-error,,,,,2026-10-10
 802da98f0009,security/baselines-catalog.md,S1402,unlocated:fetch-error,,,,,2026-10-10
-8c2b23ad91e4,security/baselines-catalog.md,S1424,unlocated:no-match,,,,,2026-10-10
 8d2843eccc76,security/baselines-catalog.md,S1401,unlocated:fetch-error,,,,,2026-10-10
+8df4a1b966fa,security/baselines-catalog.md,S1424,located,Configure Security Baselines for Windows Server 2025 | Microsoft Learn > Why security baselines matter > Network exposure reduction,1.2;tls;higher;baselin,c3f8e4c9cb0e606d,The baseline restricts TLS to version 1.2 or higher with modern cipher suites and disables IP source routing.,2026-10-20
 918616431bfd,security/baselines-catalog.md,S1471,unlocated:not-text,,,,,2026-10-10
 93ad10d5e9a5,security/baselines-catalog.md,S1598,located,,csp;ruleid;cis;stig;expect;rule;path;valu,337f6b6771561dc2,"""Name"",""ExtraId"",""Control Name"",""Registry Key"",""Registry Value"",""Registry Value Type"",""CSP Name"",""CSP Path"",""CSP Value Type"",""Default Value: Domain Controller"",""Default Value: Member Server"",""Default Value: Workgroup Member"",""Allowed Value"",""Expected Value: Domain Controller"",""Expected Value: Member",2026-10-10
 9c1f418c3b22,security/baselines-catalog.md,S1400,unlocated:no-match,,,,,2026-10-10
@@ -17648,8 +17621,6 @@ b2d7de103c5a,security/vuln-data-apis.csv,S-tcpq35hc,unlocated:fetch-error,,,,,20
 1262780f859c,security/vulnerability-prioritization.md,S-6jreovk7,unlocated:no-match,,,,,2026-10-10
 1262780f859c,security/vulnerability-prioritization.md,S-m6mns3xp,unlocated:no-match,,,,,2026-10-10
 18d5dcd562f0,security/vulnerability-prioritization.md,S-g3zab7vl,unlocated:no-match,,,,,2026-10-10
-1ce5331bcbb5,security/vulnerability-prioritization.md,S-difowozj,unlocated:no-match,,,,,2026-10-10
-1ce5331bcbb5,security/vulnerability-prioritization.md,S-vtximkx6,unlocated:no-match,,,,,2026-10-10
 2b3eab92bc3c,security/vulnerability-prioritization.md,S-c22robk5,unlocated:fetch-error,,,,,2026-10-10
 2b3ee0cf14b5,security/vulnerability-prioritization.md,S-n7obrzja,located,Welcome,definition;openapi;swagger;sourc;sampl;open;api;power,372d0060e92a93b2,source code for the MsrcSecurityUpdates PowerShell module sample code for using the MsrcSecurityUpdates PowerShell module OpenAPI/Swagger definition for the Microsoft Security Updates CVRF API,2026-10-10
 3c8263365f29,security/vulnerability-prioritization.md,S-ddkkzd4o,unlocated:fetch-error,,,,,2026-10-10
@@ -17671,6 +17642,7 @@ b2d7de103c5a,security/vuln-data-apis.csv,S-tcpq35hc,unlocated:fetch-error,,,,,20
 797c40659e5f,security/vulnerability-prioritization.md,S-forvn2ly,unlocated:no-match,,,,,2026-10-10
 7d865d4c4cb9,security/vulnerability-prioritization.md,S-e7zw3fou,unlocated:fetch-error,,,,,2026-10-10
 7f33df98fadf,security/vulnerability-prioritization.md,S-g3zab7vl,unlocated:no-match,,,,,2026-10-10
+83844e930a45,security/vulnerability-prioritization.md,S-vtximkx6,unlocated:no-match,,,,,2026-10-20
 8bfec1aecf28,security/vulnerability-prioritization.md,S-tcpq35hc,unlocated:fetch-error,,,,,2026-10-10
 987a8dceea61,security/vulnerability-prioritization.md,S-egmyslhi,unlocated:no-match,,,,,2026-10-10
 9b0404ee7c8f,security/vulnerability-prioritization.md,S-egmyslhi,unlocated:no-match,,,,,2026-10-10

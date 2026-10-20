@@ -62,9 +62,9 @@ module's implicit `BEGIN` before a `DELETE` opens.
 - RFC 4180: fields containing line breaks, double quotes or commas should be enclosed in double
   quotes, and a double quote inside a quoted field is escaped by preceding it with another double
   quote (`"b""bb"`); fields may or may not be quoted otherwise, spaces are part of a field, and the
-  last field of a record is not followed by a comma. Python's default `excel` dialect with
-  `QUOTE_MINIMAL` and `doublequote=True` produces this form apart from quoting only when needed.
-  [DOC S-xq53ipsf; DER S-utoe3wfw: the dialect defaults quoted above match the RFC rules]
+  last field of a record is not followed by a comma. [DOC S-xq53ipsf]
+- Python's default `excel` dialect with `QUOTE_MINIMAL` and `doublequote=True` produces the RFC 4180 form
+  apart from quoting only when needed. [DER S-xq53ipsf, S-utoe3wfw: the dialect defaults quoted above match the RFC rules]
 - `sqlite3` wraps a *third-party* SQLite C library, not one Python ships source for; the actual runtime
   version linked into a given Python build can therefore vary by platform/build and is only knowable
   at runtime via `sqlite3.sqlite_version` (a version string) or `sqlite3.sqlite_version_info` (a tuple

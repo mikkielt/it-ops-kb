@@ -70,8 +70,8 @@ The Microsoft Graph activity logs row is sourced from its Learn page.
   Provider generates them automatically. [DOC S-2gxpfnjz]
 - Status messages are read by querying the SMS Provider for `SMS_StatusMessage` instances [DOC S1372];
   the console's Status Message Queries show when an object was modified and the account used (for
-  example the built-in "Collections Created, Modified, or Deleted" query). [DOC S-rm7qmev7] The
-  specific numeric id ranges most audit actions fall into (commonly cited as beginning around 30000) come
+  example the built-in "Collections Created, Modified, or Deleted" query). [DOC S-rm7qmev7]
+- The specific numeric id ranges most audit actions fall into (commonly cited as beginning around 30000) come
   from Microsoft-authored TechCommunity guidance rather than a single enumerated Learn reference table, so
   that detail is tagged `COMMUNITY` here pending a primary source. [COMMUNITY S1373]
 - SQL Server Audit action groups `SUCCESSFUL_LOGIN_GROUP` / `FAILED_LOGIN_GROUP` record logins,

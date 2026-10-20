@@ -56,7 +56,8 @@ Windows.
 - Domain controllers wait up to 10 hours after a KDS root key is created before using it, so replication
   can converge; `-EffectiveImmediately` makes it usable only on the target DC until replication, and
   deleting and re-creating the root key can leave the old key cached (restart the KDC on all DCs).
-  [DOC S402] That page is written for gMSA; DPAPI-NG uses the same KDS root keys through MS-GKDI.
+  [DOC S402]
+- The KDS root key page is written for gMSA; DPAPI-NG uses the same KDS root keys through MS-GKDI.
   [DER S402, S-53ajdzoj]
 - Clients SHOULD cache group keys per domain and security descriptor and look in the cache before
   asking a DC, so a user removed from the group may still decrypt with a key already cached on that
@@ -67,7 +68,8 @@ Windows.
   to encrypt and decrypt DPAPI-NG blobs **on non-Windows hosts** (replicating `NCryptProtectSecret` /
   `NCryptUnprotectSecret`), either with an offline copy of the domain root key or with the supplied user's
   credentials over RPC to a DC; only the `SID` protection descriptor is supported. It is unofficial and not
-  audited by Microsoft. [COMMUNITY S1349] Using it from a `client` instance
+  audited by Microsoft. [COMMUNITY S1349]
+- Using `dpapi-ng` from a `client` instance
   (which does run on Windows) would still need to call into CNG (`NCryptProtectSecret`/
   `NCryptUnprotectSecret`) for the encrypt/decrypt calls themselves, which needs either `ctypes`/`cffi`
   bindings (not pure Python) or the community RPC-based library. [DER S1342,S1349]
@@ -83,14 +85,17 @@ Windows.
   `VIEW DEFINITION`, and needs `CONTROL` on the certificate or asymmetric key that decrypts it; open keys are
   bound to the session, not the security context, and stay open until closed or the session ends. [DOC S-3acopzkn]
 - `ALTER SYMMETRIC KEY` only adds or drops the encryption that protects the key (`ADD`/`DROP ENCRYPTION BY`);
-  it has no regenerate option, so rotating key material means a new key and re-encrypting the data. [DOC S-sp6pux45] [DER S-sp6pux45: rotation path]
-- age's README points to `rage`, a Rust implementation, and `pyrage` provides Python bindings for it: a
-  community, Rust-backed binding, not pure Python. [DOC S-ax3gmu7j; COMMUNITY S-duamtyj7]
+  it has no regenerate option. [DOC S-sp6pux45]
+- Rotating key material of a SQL Server symmetric key therefore means a new key and re-encrypting the data. [DER S-sp6pux45: rotation path]
+- age's README points to `rage`, a Rust implementation. [DOC S-ax3gmu7j]
+- `pyrage` provides Python bindings for `rage`: a community, Rust-backed binding, not pure Python. [COMMUNITY S-duamtyj7]
 - MSAL Python accepts a pre-signed client assertion in `client_credential={"client_assertion": ...}`
-  (added in 1.13.0) [DOC S-ftk5lzj7], and in 1.39.0 also a no-argument callable it calls only when it sends a
-  token request [CODE S-wk6ahp72: msal/application.py#ClientApplication.__init__]; Entra's assertion is a JWT
+  (added in 1.13.0) [DOC S-ftk5lzj7]; Entra's assertion is a JWT
   signed with the registered certificate, carrying an `x5t#S256` header, and any JWT library can build it.
-  [DOC S-zb4abl74] So a CNG/TPM-backed signer can build the assertion while MSAL only carries it; that Entra
+  [DOC S-zb4abl74]
+- In MSAL Python 1.39.0 the client assertion may also be a no-argument callable that MSAL calls only when it sends a
+  token request [CODE S-wk6ahp72: msal/application.py#ClientApplication.__init__].
+- So a CNG/TPM-backed signer can build the assertion while MSAL only carries it; that Entra
   accepts one signed by a non-exportable key end to end is a lab check (`_gaps.md`). [DER S-ftk5lzj7, S-zb4abl74]
 
 ## Reference
