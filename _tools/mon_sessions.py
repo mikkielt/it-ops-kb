@@ -10,11 +10,16 @@ clone's operator id and role (`kbwho.operator()`, never an email) and `intents` 
 (`coord.py digest`: session, item and the `operator` the hook posted, none for an intent that carries no operator; a
 session id or operator that is a session id is the label `mon_view.session_label` gives, never the raw id); a
 store that is not there or does not answer leaves `intents` out. The panel makes no
-forge request, so the `mr-dead` signal is never read here (`backlog.py stalled` reads it). A host that cannot list working
+forge request, so the `mr-dead` signal is never read here (`backlog.py stalled` reads it). `dispatch` lists the dispatch runs
+of this clone, read from the claims ledger of its git dir (`bl_base.claims_ledger`): for each record that `dispatch` gave a
+`worker_pid` or a `worker_session`, the item, the pid, the session (the label `mon_view.session_label` gives) and whether
+the worker is `alive` (its pid still runs; none where the host cannot tell), so a dead worker shows beside the live ones;
+a ledger that is not there or does not read gives an empty list. A host that cannot list working
 directories gives no processes and `procs_unreadable`, the reason, so the operator and the intents still show; a root with
 no backlog items has no `stalled` key. Imports `mon_base` and `mon_view`; `bl_procs`,
 `bl_stall` and `bl_base` where it reads them.
 """
+import json
 import os
 import re
 import subprocess
@@ -35,6 +40,8 @@ MIN_CHECKOUT = 8
 INTENTS_KEPT = 20  # live session intents in the data
 INTENTS_SHOWN = 6  # live session intents in the text view
 COORD_SECONDS = 10  # the longest the digest may take
+DISPATCH_KEPT = 20  # dispatch runs in the data
+DISPATCH_SHOWN = 6  # dispatch runs in the text view, live ones first
 
 
 def no_request(argv, cwd=None):
@@ -153,6 +160,34 @@ def live_intents(ctx):
     return out
 
 
+def dispatch_runs(root):
+    """[{item, pid, session, alive}] of the dispatch runs in the claims ledger of ROOT's git dir: a record with a
+    `worker_pid` or a `worker_session` (`bl_dispatch.record_worker`), live workers first, then by item, DISPATCH_KEPT at
+    most. `session` is the session's label, never its id, and null before the session ended; `alive` is whether the pid
+    still runs, null where the host cannot tell (Windows, where `os.kill` ends a process) or the record has no pid. A ledger
+    that is not there or does not read gives []."""
+    import bl_base
+    import bl_procs
+    ledger = bl_base.claims_ledger(root)[1]
+    try:
+        records = json.loads(Path(ledger).read_text(encoding="utf-8")) if ledger else {}
+    except (OSError, ValueError):
+        return []
+    out = []
+    for item, rec in (records.items() if isinstance(records, dict) else []):
+        if not isinstance(rec, dict):
+            continue
+        pid, session = rec.get("worker_pid"), rec.get("worker_session")
+        pid = pid if isinstance(pid, int) and not isinstance(pid, bool) and pid > 0 else None
+        session = session if isinstance(session, str) and session else None
+        if pid is None and session is None:
+            continue
+        alive = bl_procs.running(pid) if pid is not None and os.name != "nt" else None
+        out.append({"item": item, "pid": pid, "session": mon_view.session_label(session), "alive": alive})
+    out.sort(key=lambda r: (r["alive"] is not True, r["item"]))
+    return out[:DISPATCH_KEPT]
+
+
 def collect(ctx):
     import bl_procs
     import kbwho
@@ -177,6 +212,7 @@ def collect(ctx):
     intents = live_intents(ctx)
     if intents is not None:
         data["intents"] = intents
+    data["dispatch"] = dispatch_runs(ctx.root)
     items = stalled(ctx.root)
     if items is not None:
         data["stalled"] = items
@@ -236,8 +272,9 @@ def joined(label, parts, width):
 
 def lines(data, width=80):
     """The body rows: the processes table (an orphan's row starts `! `, orphans first, PROCS_SHOWN at most), the worktrees
-    with their branches, and the stalled items, each a `! ` row of its id and signals; first the clone's operator and the live
-    session intents (session, item, operator)."""
+    with their branches, the dispatch runs (item, pid, session, `alive` or `ended`, live ones first, DISPATCH_SHOWN at most) and
+    the stalled items, each a `! ` row of its id and signals; first the clone's operator and the live session intents
+    (session, item, operator)."""
     procs = sorted(data.get("procs", []), key=lambda p: (p["class"] != "orphan", p["pid"]))
     rows = []
     me = data.get("operator") or {}
@@ -263,6 +300,14 @@ def lines(data, width=80):
     if len(trees) > TREES_SHOWN:
         parts.append(f"+{len(trees) - TREES_SHOWN} more")
     rows += joined("worktrees", parts, width - 2) if trees else ["worktrees none"]
+    runs = [r for r in data.get("dispatch") or [] if isinstance(r, dict)]
+    if runs:
+        shown_runs = runs[:DISPATCH_SHOWN]
+        parts = [f"{r.get('item')}  {r.get('pid') or '-'}  {r.get('session') or '-'}  "
+                 f"{'alive' if r.get('alive') else 'ended' if r.get('alive') is False else 'unknown'}" for r in shown_runs]
+        if len(runs) > len(shown_runs):
+            parts.append(f"+{len(runs) - len(shown_runs)} more")
+        rows += joined("dispatch", parts, width - 2)
     if "stalled" in data:
         items = data["stalled"]
         for i, s in enumerate(items):
