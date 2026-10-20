@@ -700,6 +700,7 @@ APPLY_OUTCOMES = (  # (the start of an `apply --push:` line's text, the outcome 
     ("commit failed", "refused"), ("conflict", "refused"), ("the worktree", "refused"), ("git fetch", "fetch-failed"),
     ("the revert of", "refused"), ("git clone", "refused"), ("the findings a", "refused"),
     ("the push was refused", "refused"))
+NO_DELIVERY = ("locked", "waiting")  # apply outcomes of a run that tried no push: they neither deliver nor end a refusal
 DISTILL_OUTCOMES = (("logging is off", "off"), ("another distill", "locked"), ("nothing to write", "nothing"),
                     ("run=", "written"), ("Haiku call failed", "failed"))
 
@@ -743,6 +744,21 @@ def last_outcomes(qdir=None):
         if v["line"] == last:
             v["when"] = when
     return {"distill": found.get("distill"), "apply": found.get("apply")}
+
+
+def standing_apply(qdir=None):
+    """{outcome, when} of the last `apply --push:` line in the distill.log that tried a push, skipping the lines of a run
+    that did not (NO_DELIVERY: another run held the lock, or the last automatic commit's CI was awaited) and every
+    other kind of line, so a refusal stands until a run that delivered or was refused again; `when` is the log's last
+    write. None when the log holds no such line. `last_outcomes` gives the last line whatever it was."""
+    lines, when = log_tail(qdir or places()[0])
+    for text in reversed(lines):
+        if text.startswith("apply --push: "):
+            body = text[len("apply --push: "):]
+            outcome = next((o for start, o in APPLY_OUTCOMES if body.startswith(start)), None)
+            if outcome and outcome not in NO_DELIVERY:
+                return {"outcome": outcome, "when": when}
+    return None
 
 
 def delivery_home(qdir):
@@ -799,33 +815,50 @@ def last_pushed(qdir=None, run=None):
 def usage_today(qdir=None, today=None):
     """{rows, models} of the usage the query log holds for the UTC day `today` (default: now): the spool's `usage`
     rows stamped that day (a prompt's last row of the current reader, as distill reads it) and the usage sidecars of
-    the local store's runs of that day for the entries no such row names. `models` is {model: counts} (`in`, `cw`,
+    the local store's runs of that day for the prompts no such row stands for. A sidecar line stands for a spool
+    prompt when its entry id is the id of one of that prompt's rows (an entry takes its first row's id), else when
+    its counts equal those of a spool prompt no line has matched yet; the spool keeps a distilled prompt's rows until
+    their run file is on origin/main, so the prompt is counted once. `models` is {model: counts} (`in`, `cw`,
     `cr`, `out`, `requests`, `cw1h`) summed over the main and the subagent counts; the caller prices it. Only counts
     leave: the rows' prompts and replies are not read."""
     import ql_distill
     qdir = Path(qdir or places()[0])
     today = today or datetime.datetime.now(datetime.timezone.utc).date()
     day = today.isoformat()
-    by_prompt = {}
+    by_prompt, row_ids = {}, {}
     for p in sorted((qdir / "spool").glob("*.jsonl")) if (qdir / "spool").is_dir() else []:
         for r in ql_distill.spool_rows(p)[0]:
-            if r["surface"] == USAGE and r["ts"][:10] == day and isinstance(r.get("prompt_id"), str):
+            if not isinstance(r.get("prompt_id"), str):
+                continue
+            row_ids.setdefault(r["prompt_id"], set()).add(r["id"])
+            if r["surface"] == USAGE and r["ts"][:10] == day:
                 by_prompt.setdefault(r["prompt_id"], []).append(r)
     models, rows = {}, 0
-    counted = set()
+    spool = {}  # {prompt id: counts} of the spool's prompts, which no sidecar line has matched yet
     for pid, rs in by_prompt.items():
         counts = usage_counts(ql_distill.usage_of(rs))
         if counts:
             rows += 1
-            counted.add(pid)
+            spool[pid] = counts
             add_usage_models(models, counts)
     local = qdir / "store"
-    for p, objs in records([f for f in usage_files(local) if run_day(f.stem) == today]):
-        for _, u in objs:
-            counts = usage_counts({k: v for k, v in u.items() if k != "id"})
-            if counts and u.get("id") not in counted:
-                rows += 1
-                add_usage_models(models, counts)
+    lines = [(u.get("id"), usage_counts({k: v for k, v in u.items() if k != "id"}))
+             for p, objs in records([f for f in usage_files(local) if run_day(f.stem) == today]) for _, u in objs]
+    rest = []
+    for eid, counts in lines:
+        if counts:
+            pid = next((q for q in spool if eid in row_ids.get(q, ())), None)
+            if pid is None:
+                rest.append(counts)
+            else:
+                del spool[pid]
+    for counts in rest:
+        pid = next((q for q, c in spool.items() if c == counts), None)
+        if pid is not None:
+            del spool[pid]
+        else:
+            rows += 1
+            add_usage_models(models, counts)
     return {"rows": rows, "models": models}
 
 
