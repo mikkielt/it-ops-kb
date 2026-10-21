@@ -3,7 +3,7 @@ topic: dsc/directives
 priority: P0
 applies_to: "Microsoft DSC 3.3.0 (release/v3.3 @ ea572fa); behaviour re-checked on the 3.4.0-preview.1 binary"
 retrieved_utc: 2026-10-21
-sources: [S102, S103, S104, S105, S111, S112, S116, S117, S123, S140, S-v4tlkpo3]
+sources: [S102, S103, S104, S105, S111, S112, S116, S117, S123, S140, S-v4tlkpo3, S-c627tf43]
 status: complete
 ---
 
@@ -30,6 +30,7 @@ status: complete
 - Separately, a manifest's `requireSecurityContext` on an operation (for example `Microsoft.Windows/Service` set = `elevated`) fails that operation with `securityContextRequired` when the process lacks that context. [CODE S105: lib/dsc-lib/src/dscresources/command_resource.rs#validate_security_context; CODE S-v4tlkpo3: resources/windows_service/windows_service.dsc.resource.json#set.requireSecurityContext]
 - Observed: `directives.securityContext: elevated`, run non-elevated on 3.3.0 → exit 2, "Security context: Elevated security context required". [DER S116: local run 2026-09-23]
 - Document-level `resourceDiscovery: duringDeployment` skips the up-front discovery pass and refreshes the discovery cache during the run. The default is `preDeployment`. [CODE S102: lib/dsc-lib/src/configure/mod.rs#L1305-L1311]
+- The Learn resource instance schema reference (`dsc-3.0` docs set, `ms.date` 08/13/2026) documents the resource-level `directives` property, "added in DSC version 3.2": `requireAdapter` (the fully qualified type name of the adapter, such as `Microsoft.Adapter/PowerShell`; without it DSC uses the first discovered adapter that can invoke the resource; no effect on non-adapted instances) and `securityContext` (valid values `Current`, `Elevated`, `Restricted`; overrides the document-level `metadata.Microsoft.DSC.securityContext` setting for that instance). The Learn configuration document schema page (S145) still lists no document-level `directives`. [DOC S-c627tf43: reference/schemas/config/resource.md, section directives]
 
 ## Reference
 | Directive | Scope | Values | Failure |

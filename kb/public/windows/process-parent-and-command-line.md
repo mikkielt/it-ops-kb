@@ -3,7 +3,7 @@ topic: windows/process-parent-and-command-line
 priority: P3
 applies_to: "Windows desktop (Win32 Toolhelp, the native NtQueryInformationProcess and the PEB, WMI Win32_Process) for finding a process's parent and a process's command line, as documented on Microsoft Learn (read 2026-10-07)"
 retrieved_utc: 2026-10-21
-sources: [S-u6fzpqel, S-fvl2zjrg, S-xppzzo3g, S-vav6jyoa, S-kgfngudi, S-rstjssao, S-kgv326f5, S-hgt26zgs]
+sources: [S-u6fzpqel, S-fvl2zjrg, S-xppzzo3g, S-vav6jyoa, S-kgfngudi, S-rstjssao, S-kgv326f5, S-hgt26zgs, S-ew7mucsg, S-5ieww4en]
 status: partial
 ---
 
@@ -18,7 +18,7 @@ command line sits in the target's own memory, behind the PEB and `RTL_USER_PROCE
 means opening the target with read rights. WMI's `Win32_Process` class has both `ParentProcessId` and
 `CommandLine` as read-only properties. A parent id says nothing about whether that parent is still the process
 that created the child, because identifiers are reused. What the Python standard library offers on top
-(`os.getppid`, `ctypes`) is not read here; see the gap entry.
+(`os.getppid`, `ctypes`) is under "How it fits".
 
 ## Facts
 ### Toolhelp snapshot (documented, kernel32)
@@ -49,7 +49,8 @@ that created the child, because identifiers are reused. What the Python standard
 ### How it fits
 - A caller that has only the Python standard library reaches these through `ctypes` (`kernel32` for Toolhelp, `ntdll` for the native call) or by starting a PowerShell or other process that queries WMI; the WMI route costs a process start, the `ctypes` routes do not. [DER S-u6fzpqel, S-xppzzo3g, S-hgt26zgs: the three interfaces above; the `ctypes` binding itself is not read, see the gap entry]
 - For a hook that needs its ancestors' command lines, the parent chain comes cheaply from one Toolhelp snapshot, and each ancestor's command line from `Win32_Process.CommandLine` (documented) or from the PEB (documented structures, "may be altered"); a parent id whose entry is missing from the snapshot, or whose creation time is later than the child's, is a reused id, which `Win32_Process.CreationDate` can test and `PROCESSENTRY32` cannot. [DER S-fvl2zjrg, S-hgt26zgs, S-vav6jyoa, S-kgfngudi: the member lists above and the reuse warning]
-- Python's `os.getppid()` on Windows, the `ctypes.wintypes` names for `PROCESSENTRY32`, and what the Python documentation says about parent-id reuse are not recorded here. [UNK: CPython documentation could not be read in this session; see the gap entry]
+- Python's `os.getppid()` returns "the parent's process id" on Unix and Windows (not WASI), with Windows support added in Python 3.2; when the parent has exited, on Windows it "is still the same id, which may be already reused by another process", where on Unix it becomes the init process (1). [DOC S-ew7mucsg: Doc/library/os.rst at v3.14.7, getppid]
+- `ctypes.WinDLL` (and the `windll` object that creates its instances) is available on Windows only, loads libraries whose functions use the `stdcall` convention and assume an `int` return, and `ctypes.wintypes` provides Windows data types such as `HWND`, `WPARAM`, `VARIANT_BOOL` and `DWORD` and structures such as `MSG` and `RECT`; the page's examples call `windll.kernel32`, and it does not list `PROCESSENTRY32` or `PROCESS_BASIC_INFORMATION`, so a caller declares those structures itself. [DOC S-5ieww4en: Doc/library/ctypes.rst at v3.14.7, WinDLL, windll, wintypes]
 
 ## Reference
 - Related: `python/stdlib-windows-portability.md` (stdlib on Windows: detached processes, interpreter names), `gitlab/git-trailers-and-hooks.md` (the hooks that need a parent's arguments), `windows/event-forwarding-sysmon.md` (Sysmon event 1 records the parent's command line when a process starts).

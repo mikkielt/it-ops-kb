@@ -3,7 +3,7 @@ topic: dsc/secrets
 priority: P0
 applies_to: "Microsoft DSC 3.3.0 (release/v3.3 @ ea572fa); leakage re-checked on 3.4.0-preview.1"
 retrieved_utc: 2026-10-21
-sources: [S105, S106, S114, S116, S117, S124, S125, S126, S142, S101, S107, S115]
+sources: [S105, S106, S114, S116, S117, S124, S125, S126, S142, S101, S107, S115, S-elcyq3tv]
 status: complete
 ---
 
@@ -25,6 +25,8 @@ status: complete
 - The leaking trace lines come from `dsc_lib::configure` ("Desired state: {...secureString: <plaintext>}") and `dsc_lib::dscresources::command_resource` ("Verify JSON for ..." and "Invoking command 'dscecho' with args [--input, {...}]"). [DER S116: captured trace lines]
 - The trace level can be raised without a CLI flag through the `DSC_TRACE_LEVEL` env var or the `tracing` section of `dsc.settings.json` (`allowOverride`). See `settings-and-paths.md`. [CODE S101: dsc/src/util.rs#L370; CODE S107: lib/dsc-lib/src/util.rs#SETTINGS_FILE_NAME]
 - Open issue #1209 "Parameter `secureString` transforms input incorrectly on adapter" (Issue-Bug). [DOC S126]
+- The Learn `dsc` command reference warns that `trace` level output "emits all JSON input/output that DSC processes", that DSC "doesn't sanitize the JSON before emitting it", that the level is "only intended for developer use", and to "never redirect `trace` level output to storage". [DOC S-elcyq3tv: reference/cli/index.md, option --trace-level]
+- Through the PowerShell adapter, on the 3.3.0 macOS arm64 binary with PowerShell 7.5.0 and a class-based resource whose `Secret` property took a `secureString` parameter (value `Canary-9915`), `config set` printed 0 occurrences on stdout, 0 on stderr at `-l info` and `-l debug`, and 15 on stderr at `-l trace` (lines "Desired state", "Verify JSON", "Validating against JSON", "Writing to command STDIN" and "jsonInput"). So the adapter path leaks at the same level as `Microsoft.DSC.Debug/Echo`. [DER S116: local run 2026-10-21, grep of captured output]
 
 ## Reference
 | Mechanism | Where the plaintext exists |

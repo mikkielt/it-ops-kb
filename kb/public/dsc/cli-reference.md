@@ -3,7 +3,7 @@ topic: dsc/cli-reference
 priority: P0
 applies_to: "Microsoft DSC 3.3.0 (binary --help output; source release/v3.3 @ ea572fa)"
 retrieved_utc: 2026-10-21
-sources: [S100, S101, S116, S117, S118, S128, S132, S133, S134, S135, S136, S141, S-mmshotst]
+sources: [S100, S101, S116, S117, S118, S128, S132, S133, S134, S135, S136, S141, S-mmshotst, S-elcyq3tv]
 status: complete
 files: [dsc/cli/]
 ---
@@ -37,6 +37,8 @@ files: [dsc/cli/]
 - On Windows, if dsc.exe's parent process is `sihost.exe` or `explorer.exe` (for example, launched from the Store or by double-click), it prints a message, waits for a keypress and exits with code 1. [CODE S128: dsc/src/main.rs#L201-L226]
 - On Ctrl+C, dsc kills its child process tree and exits with 6. [CODE S128: dsc/src/main.rs#L155-L174]
 - Env vars read by the CLI: `DSC_TRACE_LEVEL` and `DSC_CONFIG_ROOT` (constants in dsc util.rs), and `DEBUG_DSC` (debug builds only). [CODE S101: dsc/src/util.rs#L80-L81; CODE S128: dsc/src/main.rs#L181]
+- The script `dsc completer zsh` prints on 3.3.0 starts with the line `#compdef dsc`, defines `_dsc`, and ends with `if [ "$funcstack[1]" = "_dsc" ]; then _dsc "$@"; else compdef _dsc dsc; fi`, so it works both as a file named `_dsc` autoloaded from `fpath` and when evaluated. [DER S116: local run 2026-10-21, head and tail of the output]
+- The Learn `dsc-3.0` docs repository (`MicrosoftDocs/PowerShell-Docs-DSC` @992e0ad719d1, 2026-10-20) has command pages for `completer`, `config`, `extension`, `resource` and `schema` only (none for `function` or `server`), 19 configuration function pages (no `secret`), and a changelog whose latest release entry is v3.1.0 (2025-06-18) above an Unreleased section. [DER S-elcyq3tv: reference/cli/index.md lists the commands; directory listings of the pinned commit]
 
 ## Reference
 | Code | Meaning (constant) |

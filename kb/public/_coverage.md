@@ -174,17 +174,17 @@ Every topic of this root with its priority (the research order, not importance),
 | `defender/response-actions-api` | P1 | complete | `defender/response-actions-api.md`, `defender/machine-actions.csv` | 18 |
 | `defender/advanced-hunting` | P2 | complete | `defender/advanced-hunting.md`, `defender/advanced-hunting-tables.csv` | 25 |
 | `defender/asr-and-antivirus` | P2 | complete | `defender/asr-and-antivirus.md`, `defender/asr-rules.csv` | 26 |
-| `dsc/cli-reference` | P0 | complete | `dsc/cli-reference.md`, `dsc/cli/` | 13 |
-| `dsc/directives` | P0 | complete | `dsc/directives.md` | 11 |
+| `dsc/cli-reference` | P0 | complete | `dsc/cli-reference.md`, `dsc/cli/` | 14 |
+| `dsc/directives` | P0 | complete | `dsc/directives.md` | 12 |
 | `dsc/functions` | P0 | complete | `dsc/functions.md`, `dsc/functions-3.3.0.csv` | 7 |
 | `dsc/manifests-diff` | P0 | complete | `dsc/manifests-diff.md`, `dsc/manifests-diff.csv`, `dsc/manifests/`, `dsc/zip-extras/` | 8 |
 | `dsc/mcp-server` | P0 | complete | `dsc/mcp-server.md` | 30 |
 | `dsc/open-bugs-windows` | P0 | complete | `dsc/open-bugs-windows.md`, `dsc/open-bugs.csv` | 1 |
 | `dsc/releases-feature-matrix` | P0 | complete | `dsc/releases-feature-matrix.md` | 24 |
 | `dsc/schemas` | P0 | complete | `dsc/schemas.md`, `dsc/schemas/` | 14 |
-| `dsc/secrets` | P0 | complete | `dsc/secrets.md` | 12 |
+| `dsc/secrets` | P0 | complete | `dsc/secrets.md` | 13 |
 | `dsc/settings-and-paths` | P0 | complete | `dsc/settings-and-paths.md` | 8 |
-| `dsc/what-if` | P0 | complete | `dsc/what-if.md` | 12 |
+| `dsc/what-if` | P0 | complete | `dsc/what-if.md` | 13 |
 | `entra/agent-id` | P1 | complete | `entra/agent-id.md` | 25 |
 | `entra/bitlocker-key-deletion` | P1 | complete | `entra/bitlocker-key-deletion.md` | 5 |
 | `entra/conditional-access-devices` | P1 | complete | `entra/conditional-access-devices.md`, `entra/ca-device-filter-properties.csv` | 19 |
@@ -431,7 +431,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `windows/openssh-estate-deployment` | P3 | partial | `windows/openssh-estate-deployment.md` | 10 |
 | `windows/openssh-key-management` | P3 | partial | `windows/openssh-key-management.md` | 5 |
 | `windows/powershell-static-analysis` | P3 | complete | `windows/powershell-static-analysis.md` | 21 |
-| `windows/process-parent-and-command-line` | P3 | partial | `windows/process-parent-and-command-line.md` | 8 |
+| `windows/process-parent-and-command-line` | P3 | partial | `windows/process-parent-and-command-line.md` | 10 |
 | `windows/robocopy` | P3 | partial | `windows/robocopy.md` | 3 |
 | `windows/windows-sandbox` | P3 | complete | `windows/windows-sandbox.md` | 4 |
 <!-- coverage:end -->

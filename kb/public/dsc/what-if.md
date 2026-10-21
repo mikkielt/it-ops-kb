@@ -3,7 +3,7 @@ topic: dsc/what-if
 priority: P0
 applies_to: "Microsoft DSC 3.3.0 (release/v3.3 @ ea572fa) and 3.4.0-preview.1"
 retrieved_utc: 2026-10-21
-sources: [S100, S102, S103, S105, S106, S108, S109, S114, S115, S138, S139, S140]
+sources: [S100, S102, S103, S105, S106, S108, S109, S114, S115, S138, S139, S140, S116]
 status: complete
 ---
 
@@ -33,6 +33,7 @@ status: complete
 - `Microsoft.Windows/FirewallRuleList` 0.3.0 (3.3.0 zip): `set.args` includes `{whatIfArg: "--what-if"}`, `implementsPretest: true`, `handlesExist: true`, `whatIfReturns: state`, `requireSecurityContext: elevated`. [DOC S114]
 - `windows_firewall.exe` `set_rules(input, what_if)` in what-if returns projected rules instead of changing the store; create, remove, remove-unspecified and disable-unspecified cases carry a what-if message in the rule's metadata. [CODE S139: resources/windows_firewall/src/firewall.rs#set_rules]
 - `Microsoft.Windows/UpdateList` has no what-if in 3.3.0 (0.1.0; synthetic path). Native what-if arrives in 3.4.0-preview.1 (0.1.1). [DOC S114,S115]
+- Observed on the 3.3.0 macOS arm64 binary, `dsc config set --what-if`: a document with `Microsoft.DSC/Group`, `Microsoft.DSC/Assertion` or `Microsoft.DSC/Include` (each holding an `Microsoft.DSC.Debug/Echo` instance), a document with `Microsoft.DSC.Transitional/RunCommandOnSet`, and a document with a class-based resource through the PowerShell adapter (nested under `Microsoft.DSC/PowerShell`, and as a directly listed instance) all stop with "Not implemented: cannot process what-if execution type, as resource implements pre-test and does not support what-if"; a lone `Microsoft.DSC.Debug/Echo` returns `executionType` `whatIf`. This confirms the "error (pretest, no what-if)" row at run time. [DER S116: local run 2026-10-21]
 
 ## Reference
 What-if mode per type, from the saved 3.3.0 manifests (full table in `manifests-diff.csv`):
