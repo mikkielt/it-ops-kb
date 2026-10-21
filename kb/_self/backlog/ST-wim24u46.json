@@ -2,7 +2,7 @@
   "id": "ST-wim24u46",
   "kind": "story",
   "title": "LEARN_MAP maps the large Learn docsets to their public MicrosoftDocs repositories, so detect decides most Learn pages by git history",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-gavrmuvx",
   "priority": "P2",
@@ -47,5 +47,7 @@
   "links": [
     "parked: SP-ilje65fa review"
   ],
-  "notes": "Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft. 2026-10-20 planning: the api/ and azure/ prefixes stay out of the goal: the work maps them too only where their pages name a public repository. A prefix whose pages name no public repository is a gate, not a guess. Premises: LEARN_MAP has no intune/ or windows/ entry; fact-diff.md has no LEARN_MAP sitemaps line dated after 2026-10-20. Research ST-77p3ppiz 2026-10-21 (kb public/agents/doc-change-detection.md:54-58): intune/ pages name MicrosoftDocs/memdocs, which answers 404; windows/ and azure/ split by subpath across repositories with a repository-path rewrite each (desktop-src/, hub/, articles/), several of them 404 (windows-itpro-docs, azure-ai-docs, defender-docs); no top-level api/ prefix exists (/en-us/api/ is 404). A prefix-level intune/ or windows/ entry cannot decide pages by git history, so the goal's first clause needs the gate this note's earlier text names."
+  "notes": "Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft. 2026-10-20 planning: the api/ and azure/ prefixes stay out of the goal: the work maps them too only where their pages name a public repository. A prefix whose pages name no public repository is a gate, not a guess. Premises: LEARN_MAP has no intune/ or windows/ entry; fact-diff.md has no LEARN_MAP sitemaps line dated after 2026-10-20. Research ST-77p3ppiz 2026-10-21 (kb public/agents/doc-change-detection.md:54-58): intune/ pages name MicrosoftDocs/memdocs, which answers 404; windows/ and azure/ split by subpath across repositories with a repository-path rewrite each (desktop-src/, hub/, articles/), several of them 404 (windows-itpro-docs, azure-ai-docs, defender-docs); no top-level api/ prefix exists (/en-us/api/ is 404). A prefix-level intune/ or windows/ entry cannot decide pages by git history, so the goal's first clause needs the gate this note's earlier text names.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
