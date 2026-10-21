@@ -117,7 +117,6 @@ b0c26162383b,agents/a2a/a2a-proto-digest.md,S2120,located,Agent2Agent (A2A) Prot
 26a1a59d0739,agents/agent-caching.md,S2133,located,Prompt caching > How caching works,fully;gpt-6.1;once;read;6.1;sol;uncach;ordinary,cafb1b3919151767,"For GPT-5.6 and later, cache writes cost 1.25× the standard, uncached input-token rate. Subsequent reads cost 0.1× that rate on most of these models and",2026-10-12
 2d1eb3b26803,agents/agent-caching.md,S2130,unlocated:no-match,,,,,2026-10-12
 2d1eb3b26803,agents/agent-caching.md,S2131,located,Pricing > Feature-specific pricing > Prompt caching,1-hour;5-minut;0.10;0.20;minut;writ;5.5;hour,f5767d20af36b981,"A cache hit costs 10% of the standard input price, which means caching pays off after one cache read for the 5-minute duration (1.25x write),",2026-10-21
-316b8a144c2e,agents/agent-caching.md,S1864,located,Changelog > 2.1.296,million;0.20;5.5;pric;sonnet;cach;token;read,3cc5126977ecadc0,"Updated /cost, the status line, --max-budget-usd and the SDK's cost figures to price Sonnet 5.5 cache reads at $0.10 per million tokens (was $0.20)",2026-10-21
 33da81b5cafd,agents/agent-caching.md,S2130,located,Prompt caching > Automatic caching > How automatic caching works in multi-turn conversations,support;cache_control;control;breakpoint;request;block;cach,a588a3a9cd7f2422,"The cache breakpoint automatically moves to the last cacheable block in each request, so you don't need to update any cachecontrol markers as the conversation",2026-10-12
 3c11e291e5bb,agents/agent-caching.md,S2130,located,"Depending on the model, this non-tool-result user block either keeps prior thinking blocks or strips them (see the next paragraph) > Cache storage and sharing",even;organization;never;identical;shar;different;prompt;cach,0bde243cb9aebe30,"Different organizations never share caches, even if they use identical prompts.",2026-10-16
 40b22f0fbaa4,agents/agent-caching.md,S2135,located,Tools > Capabilities,caller;scop;server;tool,00cca90f9611cda2,"only the tools the caller's granted scopes permit - since credentials are per-request input, not connection state. Servers SHOULD return tools in a deterministic order",2026-10-21
@@ -371,7 +370,6 @@ f9b56677beeb,agents/agent-evaluation.md,S-qmfejifr,unlocated:no-match,,,,,2026-1
 faba1c4c5c36,agents/agent-evaluation.md,S1884,unlocated:no-match,,,,,2026-10-10
 fd1dae839ebe,agents/agent-evaluation.md,S1886,unlocated:no-match,,,,,2026-10-10
 fd1dae839ebe,agents/agent-evaluation.md,S1887,unlocated:no-match,,,,,2026-10-10
-fd20a8f9b0f5,agents/agent-evaluation.md,S1903,unlocated:no-match,,,,,2026-10-21
 047361221571,agents/agent-memory-services.md,S-3bnq55fu,located,Agent class internals > What is the Agent?,durableobject;class;durabl;object;agent,62588a3bdd017cd1,The Agent class is an extension of DurableObject - agents are Durable Objects.,2026-10-21
 04ec8a9d4dc3,agents/agent-memory-services.md,S-n5jx3ykg,unlocated:no-match,,,,,2026-10-15
 04ec8a9d4dc3,agents/agent-memory-services.md,S-ovnqfusm,unlocated:no-match,,,,,2026-10-15
@@ -564,8 +562,6 @@ feb51ab6ec5c,agents/agent-planning-and-done.md,S2150,located,Effective harnesses
 398886f9054f,agents/agent-rbac.md,S707,unlocated:no-match,,,,,2026-10-10
 398886f9054f,agents/agent-rbac.md,S2045,unlocated:no-match,,,,,2026-10-10
 3c49928106c0,agents/agent-rbac.md,S1297,located,Microsoft identity platform and OAuth2.0 On-Behalf-Of flow - Microsoft identity platform | Microsoft Learn,attach;never;operat;remain;role;prevent;shouldn;delegat,73bc0362bf5ef3ec,"For the middle-tier service to make authenticated requests to the downstream service, it needs to secure an access token from the Microsoft identity platform. It",2026-10-10
-477767cd388a,agents/agent-rbac.md,S1282,located,Activate your group membership or ownership in Privileged Identity Management - Microsoft Entra ID Governance | Microsoft Learn > Activate a role,pim-for-group;pim;group,c95cc3f8183aff64,![Screenshot of the list of groups that you have eligible membership or ownership for.](media/pim-for-groups/pim-group-6.png#lightbox),2026-10-21
-477767cd388a,agents/agent-rbac.md,S2052,unlocated:no-match,,,,,2026-10-21
 47d3403d78ef,agents/agent-rbac.md,S-xt5vc46a,located,Update agentIdentity - Microsoft Graph v1.0 | Microsoft Learn > Permissions > Permissions for specific scenarios,microsoft.graph.agentidentity;patch;serviceprincipal;attribut;custom;principal;servic;graph,d080c00d893d09ac,"In app-only scenarios using Microsoft Graph permissions, the app must be granted the CustomSecAttributeAssignment.ReadWrite.All application permission. HTTP request PATCH /servicePrincipals/{id}/microsoft.graph.agentIdentity",2026-10-21
 4873605466b1,agents/agent-rbac.md,S740,located,Connect Claude Code to tools via MCP > Use MCP servers from claude.ai > Organization controls on connector tools,locally;ordinary;per-tool;enforc;except;withhold;ssh;deliver,fdede927e7b509b4,"Your organization can set per-tool controls on claude.ai connectors. Claude Code reads these settings at startup and enforces them locally, except in the desktop app's",2026-10-21
 4873605466b1,agents/agent-rbac.md,S742,unlocated:no-match,,,,,2026-10-21
@@ -579,8 +575,6 @@ feb51ab6ec5c,agents/agent-planning-and-done.md,S2150,located,Effective harnesses
 7389ebead128,agents/agent-rbac.md,S2050,located,Create a role-assignable group in Microsoft Entra ID - Microsoft Entra ID | Microsoft Learn,dynamic;membership;tenant;set;isassignabletorol;true;assign;entra,9c78a98aaeffe2c7,You create a new role-assignable group by setting Microsoft Entra roles can be assigned to the group to Yes or by setting the isAssignableToRole property,2026-10-10
 7c14024d09f4,agents/agent-rbac.md,S-fwzaxe7i,located,Authorization in Microsoft Entra Agent ID | Microsoft Learn > Microsoft Entra role assignments for agent identities,assignabl;role-assignabl;group;identity;role;agent,d490aff6c4a10aeb,"Also, agent identities can't be members of role-assignable groups.",2026-10-10
 7e1c57f42e12,agents/agent-rbac.md,S2058,located,OWASP Non-Human Identities Top 10 > About OWASP Non-Human Identities Top 10,individual;manual;nhi10;perform;task;misus;risk;nhi,1fcc522df85e09bc,"NHI10:2025 - Human Use of NHI During application development and maintenance, developers or administrators may misuse NHIs for manual tasks that should be performed using",2026-10-20
-7f9aac456422,agents/agent-rbac.md,S1282,unlocated:no-match,,,,,2026-10-21
-7f9aac456422,agents/agent-rbac.md,S2052,unlocated:no-match,,,,,2026-10-21
 83b29324593a,agents/agent-rbac.md,S2052,located,Privileged Identity Management (PIM) for Groups - Microsoft Entra ID Governance | Microsoft Learn > Make a group of users eligible for a Microsoft Entra role,avoid;delay;instead;portal;purview;exchang;point;shar,ee5ab5350e009e05,"In other words, to avoid activation delays, use PIM for Microsoft Entra roles instead of PIM for Groups to provide just-in-time access to SharePoint, Exchange,",2026-10-10
 867e6b295804,agents/agent-rbac.md,S2040,located,Overview of agent identities in Microsoft Entra | Microsoft Learn,autonomous;interactiv;app;acquir;behalf;call;token;user,55adfa3b19defbba,Autonomous agents acquire app tokens on behalf of the agent identity. Interactive agents called with a user token acquire user tokens on behalf of the,2026-10-10
 8b8af8b8c899,agents/agent-rbac.md,S2053,located,Add app roles and get them from a token - Microsoft identity platform | Microsoft Learn > Declare roles for an application,currently;identity;issu;doesn;principal;claim;servic;add,9465d1e963a80eba,"App roles can also be assigned to the service principal for another application, or to the service principal for a managed identity. Currently, if you",2026-10-10
@@ -592,7 +586,6 @@ a357266bf443,agents/agent-rbac.md,S-etygtiqw,located,What is Azure attribute-bas
 a8cb5e14b099,agents/agent-rbac.md,S707,unlocated:no-match,,,,,2026-10-10
 a8cb5e14b099,agents/agent-rbac.md,S2045,unlocated:no-match,,,,,2026-10-10
 b39792d1ee24,agents/agent-rbac.md,S2052,unlocated:no-match,,,,,2026-10-10
-b56f9bf8fbfd,agents/agent-rbac.md,S2058,unlocated:no-match,,,,,2026-10-21
 bbae2d23a29e,agents/agent-rbac.md,S740,located,Connect Claude Code to tools via MCP > Require approval for a specific tool,acceptedit;dont;dontask;bypasspermission;bypass;edit;deni;even,eb7e1ee79d17d72c,"Claude Code shows that tool's permission prompt on every call, even in acceptEdits, auto, and bypassPermissions permission modes, and doesn't offer a ""don't ask again""",2026-10-10
 c64a8eab8ad9,agents/agent-rbac.md,S2042,located,Deploy managed settings,security-sensitiv;sensitiv;security;stricter;exception;abov;count;project,8eda1b564689d1eb,"Claude Code applies them above every other level, so no user, project, local, or --settings value overrides them, apart from a few security-sensitive exceptions where",2026-10-12
 c685a846a34a,agents/agent-rbac.md,S707,unlocated:no-match,,,,,2026-10-10
@@ -774,8 +767,6 @@ c13286ade6cf,agents/anthropic-materials.md,S2137,unlocated:no-match,,,,,2026-10-
 ca692da0d54c,agents/anthropic-materials.md,S2137,unlocated:no-match,,,,,2026-10-10
 0081de9718b1,agents/api-tokens-issue-and-store.md,S-h7wl75vd,unlocated:no-match,,,,,2026-10-18
 0081de9718b1,agents/api-tokens-issue-and-store.md,S-uyzwls57,unlocated:no-match,,,,,2026-10-18
-070413b42980,agents/api-tokens-issue-and-store.md,S449,unlocated:no-match,,,,,2026-10-21
-070413b42980,agents/api-tokens-issue-and-store.md,S2055,located,Use external secrets in CI/CD,explicitly;variabl;git;gitlab;jobs;lab;secret,dbee0558678d1e70,"Unlike CI/CD variables which are always available in jobs, secrets must be explicitly requested by a job. GitLab supports several secret management providers, including:",2026-10-21
 25e7cbb053b6,agents/api-tokens-issue-and-store.md,S2043,unlocated:no-match,,,,,2026-10-10
 33e8ea3797dd,agents/api-tokens-issue-and-store.md,S2046,unlocated:no-match,,,,,2026-10-10
 3421315dea48,agents/api-tokens-issue-and-store.md,S2043,unlocated:no-match,,,,,2026-10-10
@@ -790,7 +781,6 @@ ca692da0d54c,agents/anthropic-materials.md,S2137,unlocated:no-match,,,,,2026-10-
 59aa936e7937,agents/api-tokens-issue-and-store.md,S2044,located,Microsoft Authentication Extensions for Python,apps;desktop;performanc;scal;such;issu;web;client,d31110ba3f2c0c2b,"Note: It is recommended to use this library for cache persistance support for Public client applications such as Desktop apps only. In web applications, this",2026-10-10
 5dc7e577c1f5,agents/api-tokens-issue-and-store.md,S-75p7zmds,located,Secret push protection workflow,hook;pre-receiv;pre;receiv;protection;push;secret,ef02c5e72ddd2e2e,Secret push protection takes place in the pre-receive hook.,2026-10-18
 6124eb6a6e4c,agents/api-tokens-issue-and-store.md,S449,unlocated:no-match,,,,,2026-10-10
-6b240e69ec26,agents/api-tokens-issue-and-store.md,S2044,unlocated:no-match,,,,,2026-10-21
 6c68dfcb24c7,agents/api-tokens-issue-and-store.md,S-75p7zmds,located,Secret push protection workflow > Resolve a blocked push > Skip secret push protection,pipelin;content;detection;enabl;scan;commit;push;secret,5dca04488c5d3c4f,"If pipeline secret detection is enabled, the content of all commits is scanned after they are pushed to the repository.",2026-10-18
 749bcfb43dcd,agents/api-tokens-issue-and-store.md,S2054,unlocated:no-match,,,,,2026-10-10
 77748b47d6b3,agents/api-tokens-issue-and-store.md,S-75p7zmds,located,Secret push protection workflow > Detected secrets,chosen;confidenc;high;fals;pattern;push,760006fe6ade1109,Only high-confidence patterns were chosen for secret push protection,2026-10-18
@@ -798,7 +788,6 @@ ca692da0d54c,agents/anthropic-materials.md,S2137,unlocated:no-match,,,,,2026-10-
 832a83577782,agents/api-tokens-issue-and-store.md,S2041,unlocated:no-match,,,,,2026-10-10
 832a83577782,agents/api-tokens-issue-and-store.md,S2057,located,Settings files and precedence > Change a setting > When edits take effect,apikeyhelper;watch;credential;helper;reload;restart;api;hook,e8e27f045a57a263,"Claude Code watches your settings files and reloads them when they change, so it applies most edits to the running session without a restart, including",2026-10-12
 89e04707b27c,agents/api-tokens-issue-and-store.md,S-75p7zmds,unlocated:no-match,,,,,2026-10-18
-8f724977ddb1,agents/api-tokens-issue-and-store.md,S2056,unlocated:no-match,,,,,2026-10-21
 90a1a8b0be60,agents/api-tokens-issue-and-store.md,S2055,unlocated:no-match,,,,,2026-10-10
 9b8dc12070ec,agents/api-tokens-issue-and-store.md,S449,unlocated:no-match,,,,,2026-10-10
 b464d03f3790,agents/api-tokens-issue-and-store.md,S1297,unlocated:no-match,,,,,2026-10-10
@@ -806,9 +795,7 @@ b9b8940d23cd,agents/api-tokens-issue-and-store.md,S2055,located,Use external sec
 ca345b9a46be,agents/api-tokens-issue-and-store.md,S2041,located,Authentication > Credential management,fallback;inherit;userprofil;different;entry;under;claude_config_dir;control,fc77f28e09a328c0,"On Linux, credentials are stored in ~/.claude/.credentials.json with file mode 0600. On Windows, credentials are stored in %USERPROFILE%\.claude\.credentials.json and inherit the access controls of your",2026-10-21
 cbeac38fd2fd,agents/api-tokens-issue-and-store.md,S2046,unlocated:no-match,,,,,2026-10-10
 d27435038c6d,agents/api-tokens-issue-and-store.md,S-75p7zmds,located,Secret push protection workflow > Coverage > Diff scanning,already;present;part;chang;detect;file;secret,bd30732222fc5878,"If a secret is already present in a file and not part of the changes, it is not detected.",2026-10-18
-d710c0da965c,agents/api-tokens-issue-and-store.md,S2047,located,Azure Key Vault Overview - Azure Key Vault | Microsoft Learn > Why use Azure Key Vault? > Securely store secrets and keys,design;doesn;extract;140-3;both;softwar;fips;microsoft,0c933c3f3f1139f3,"These Premium tier HSMs utilize Marvell LiquidSecurity hardware with FIPS 140-3 Level 3 validation, ensuring the most stringent cryptographic protection available. Both Standard and Premium",2026-10-21
 ecc6dc4b26c2,agents/api-tokens-issue-and-store.md,S2041,unlocated:no-match,,,,,2026-10-10
-f0b9fbd80277,agents/api-tokens-issue-and-store.md,S2047,unlocated:no-match,,,,,2026-10-21
 f0bfc2e3807a,agents/api-tokens-issue-and-store.md,S2044,located,Microsoft Authentication Extensions for Python > Usage > Creating an encrypted token cache file to be used by MSAL,opting;plain;text,51365aa9fd2aecf3,Opting in to plain text.,2026-10-20
 f35f6d374978,agents/api-tokens-issue-and-store.md,S2056,located,Use JWT/OIDC authentication > Configuration > Bound claims,exactly;bound_audienc;aud;audienc;match;must;bound;claim,911f436fc323a122,the boundaudiences parameter must exactly match at least one of provided aud claims.,2026-10-20
 fb5121e560ae,agents/api-tokens-issue-and-store.md,S-2spmezqp,unlocated:no-match,,,,,2026-10-21
@@ -2080,8 +2067,6 @@ ce8fc83cc5e0,agents/docs-maintenance-agents.md,S1815,located,7 reasons continuou
 d327fb8d7ba5,agents/docs-maintenance-agents.md,S-f2vfcma6,located,Configure automerge for GitHub Apps,every;automation;deploy;list;app;branch;target;merg,bdd22ca3ea3ff6ad,Add the Mintlify GitHub App to a ruleset's bypass list so that the app can create and merge pull requests without review and status check,2026-10-10
 d59da5e56df5,agents/docs-maintenance-agents.md,S1814,located,Sync don’t sink: why we built Swimm for dev teams > Swimm is the new knowledge operating system for your code > Documentation for documentation’s sake is not the goal,merg;pull;test;verify;auto-sync;auto;sync;docs,0169811124239054,"Our patented Swimm Verify and Auto-sync features automatically updates their docs at any relevant pull, merge, or CI test.",2026-10-10
 d59da5e56df5,agents/docs-maintenance-agents.md,S1815,unlocated:no-match,,,,,2026-10-10
-d99e6a9e10bb,agents/docs-maintenance-agents.md,S1809,located,DeepWiki repository wikis,automatic;based;document,e868004a694df884,"When a config file is present, we bypass the default cluster-based planning and create exactly the pages you specify - so list every page you",2026-10-21
-d99e6a9e10bb,agents/docs-maintenance-agents.md,S-tpvi7ohn,located,DeepWiki > README badge,auto;auto-refresh;refresh;badg,2d137f9497c4c659,We auto-refresh DeepWikis if their repo has a badge.,2026-10-21
 de9b067f2ef2,agents/docs-maintenance-agents.md,S1818,unlocated:no-match,,,,,2026-10-21
 de9b067f2ef2,agents/docs-maintenance-agents.md,S-qso27noq,located,GitHub Agentic Workflows > Security and permissions,apply;buffer;job;separat;output;safe;validat;writ,a1ac261bdf16343c,"The supported agent-job path defaults to read-only GitHub access and sandboxed execution. Safe outputs buffer configured writes, validate them, and apply them in separate jobs",2026-10-21
 f38127834e4a,agents/docs-maintenance-agents.md,S-xote3xa2,located,Table of Contents > Commandline usage > Commandline Parameters,mail;broken;checker;websit;address;markdown;html;link,eda6d54508315e71,"lychee is a fast, asynchronous link checker which detects broken URLs and mail addresses in local files and websites. It supports Markdown and HTML and",2026-10-10
@@ -2240,7 +2225,6 @@ bdc7819e387c,agents/genai-telemetry.md,S2004,unlocated:no-match,,,,,2026-10-10
 a25c696632e5,agents/github-copilot-admin.md,S-5yxttqw4,located,Hosting of models for GitHub Copilot > Anthropic models,bound;exemption;time-bound;end;time;request;retention;zdr,08f0c2ecd3b70dde,Customers can request to use Claude Fable 5 or Claude Fable 5.1 with zero data retention (ZDR) through the end of 2026 under a time-bound,2026-10-20
 b601b096ee37,agents/github-copilot-admin.md,S-ovxxqqbw,located,Managing policies and features for GitHub Copilot in your organization,collection;com;github.com;opting;feedback;preview;user;featur,8030155c624ce6f0,"Opting in to previews or feedback If your organization has a Copilot Business or Copilot Enterprise plan and you enable ""Copilot in GitHub.com"", two additional",2026-10-10
 c4a913f50b76,agents/github-copilot-admin.md,S-tn4wwzyx,located,"Ignore files in or below any `security` directories, anywhere in this repository. > Configuring content exclusion for your enterprise",apply;rule;seat;user;enterpris;organization;copilot;exclusion,90e6642b5a25ff52,The key difference between setting content exclusion at the enterprise level and the organization level is that rules set at the enterprise level apply to,2026-10-10
-c8530cc95587,agents/github-copilot-admin.md,S-5yxttqw4,unlocated:no-match,,,,,2026-10-21
 cbb98d79ccd6,agents/github-copilot-admin.md,S-unwwieso,located,Reviewing the audit log for your organization > Searching the audit log > Search based on the action performed,subscription;business;copilot;enterpris;git;github;hub;relat,c1e67b8ed3357ab8,copilotContains all activities related to your GitHub Copilot Business or GitHub Copilot Enterprise subscription.,2026-10-10
 cc810d4f006f,agents/github-copilot-admin.md,S-ftbeo3o7,unlocated:no-match,,,,,2026-10-10
 de86c7c3457a,agents/github-copilot-admin.md,S1805,located,Customizing or disabling the firewall for GitHub Copilot > Understanding the recommended firewall allowlist,aws;azur;container;dart;debian;docker;elastic;haskell,5cf3dc7de90a037c,"Common operating system package repositories (for example, Debian, Ubuntu, Red Hat). Common container registries (for example, Docker Hub, Azure Container Registry, AWS Elastic Container Registry).",2026-10-21
@@ -2356,7 +2340,6 @@ ff9576e1fef3,agents/gitops-for-agents.md,S-7na2vvh5,located,Application deployme
 6d8393787266,agents/headless-agent-runtimes.md,S2131,unlocated:no-match,,,,,2026-10-12
 70b5c03dbbcb,agents/headless-agent-runtimes.md,S2131,unlocated:no-match,,,,,2026-10-12
 7111c36d5f8a,agents/headless-agent-runtimes.md,S1802,located,Claude Code GitLab CI/CD > How it works,apply;container;dif;every;reviewer;sandbox;still;workspac,0d48a4b670c9c595,Sandboxed execution: Each interaction runs in a container with strict network and filesystem rules. Claude Code enforces workspace-scoped permissions to constrain writes. Every change flows,2026-10-12
-72aec8b555dd,agents/headless-agent-runtimes.md,S-hobjhakf,unlocated:no-match,,,,,2026-10-21
 73a098449867,agents/headless-agent-runtimes.md,S-gu5aqnrl,located,Configure cloud environments > What's available in cloud sessions > Link output back to the session,attribution;attribution.sessionurl;claude-session;fals;sessionurl;trailer;url;commit,120089470a075e75,"Commits that Claude creates in a cloud session include a Claude-Session: <url> git trailer, and PR bodies include the session URL on its own line.",2026-10-10
 7449343f1ca4,agents/headless-agent-runtimes.md,S1801,located,Claude Code GitHub Actions > Interactive and automation modes,subject;direct;result;automation;log;post;mode;default,e243b173a1450228,"Automation mode: when the workflow provides a prompt input, Claude runs without waiting for a mention, subject only to the checks on who can trigger",2026-10-12
 7e720f86d98a,agents/headless-agent-runtimes.md,S1800,unlocated:no-match,,,,,2026-10-21
@@ -2374,7 +2357,6 @@ ff9576e1fef3,agents/gitops-for-agents.md,S-7na2vvh5,located,Application deployme
 9235625b1265,agents/headless-agent-runtimes.md,S1801,unlocated:no-match,,,,,2026-10-12
 940c9e5b023a,agents/headless-agent-runtimes.md,S1800,unlocated:no-match,,,,,2026-10-12
 940c9e5b023a,agents/headless-agent-runtimes.md,S-3pftmimx,unlocated:no-match,,,,,2026-10-21
-940c9e5b023a,agents/headless-agent-runtimes.md,S-bcbpadtc,unlocated:no-match,,,,,2026-10-21
 940c9e5b023a,agents/headless-agent-runtimes.md,S-fvspfpxd,unlocated:no-match,,,,,2026-10-21
 9a69d03d1cb8,agents/headless-agent-runtimes.md,S-rmzenq4r,located,"run at 10 pm on weekdays, annoy Joe > NOTES top",instead;twic;execut;every;hour;minut,201e6fe9dd2de89c,"it will be executed twice every hour,",2026-10-21
 9bc945b9060a,agents/headless-agent-runtimes.md,S-n7cnr4i5,located,schtasks create | Microsoft Learn > Syntax > Parameters,given;interactively;non-interactively;resourc;stor;non;log;password,d663c2596fbb908c,/it | Specifies to run the scheduled task only when the run as user (the user account under which the task runs) is logged on,2026-10-21
@@ -3287,9 +3269,6 @@ e91c7737ef9e,agents/security-copilot-endpoint.md,S-5cjhp7co,located,Learn about 
 eb50e6aa7bb3,agents/security-copilot-endpoint.md,S-meh6fmlt,unlocated:no-match,,,,,2026-10-21
 f1070e20c9af,agents/security-copilot-endpoint.md,S-27puhgbj,unlocated:no-match,,,,,2026-10-21
 ffa5d042f10d,agents/security-copilot-endpoint.md,S-meh6fmlt,located,Model Context Protocol (MCP) plugins in Microsoft Security Copilot (Preview) | Microsoft Learn > Known limitations,chang;destructiv;destructivehint;edit;even;hint;must;discover,18b616faf3c54a6a,"When tools are updated (for example, added or edited) in an MCP server, Security Copilot does not dynamically discover and reflect these changes. To update",2026-10-21
-0222af652975,agents/shared-ner-service.md,S-g33kybfp,unlocated:no-match,,,,,2026-10-21
-0222af652975,agents/shared-ner-service.md,S-gpnrqpjt,unlocated:no-match,,,,,2026-10-21
-0222af652975,agents/shared-ner-service.md,S-tks3v5p5,unlocated:no-match,,,,,2026-10-21
 05f7ebd92c82,agents/shared-ner-service.md,S2101,unlocated:no-match,,,,,2026-10-10
 15587638aab1,agents/shared-ner-service.md,S-alyohfil,unlocated:no-match,,,,,2026-10-21
 15587638aab1,agents/shared-ner-service.md,S-ulqlpnc5,unlocated:no-match,,,,,2026-10-21
@@ -3318,7 +3297,6 @@ ffa5d042f10d,agents/security-copilot-endpoint.md,S-meh6fmlt,located,Model Contex
 8059322a15d0,agents/shared-ner-service.md,S-g33kybfp,unlocated:no-match,,,,,2026-10-10
 841bf12339a3,agents/shared-ner-service.md,S-g6nzyems,located,,westeurop;retail;pric,be0031f581429f08,retailPrice 1.0 unitPrice 1.0 armRegionName westeurope,2026-10-20
 888a77910948,agents/shared-ner-service.md,S2093,unlocated:no-match,,,,,2026-10-21
-92ebb3ec6b09,agents/shared-ner-service.md,S-hfymbj4j,unlocated:no-match,,,,,2026-10-21
 97a96a9f8bce,agents/shared-ner-service.md,S2095,unlocated:no-match,,,,,2026-10-21
 9e4f61940dcc,agents/shared-ner-service.md,S2087,located,microsoft/presidio-analyzer repository overview > ⁠Presidio Analyzer > ⁠About this Image > ⁠Full Tag Listing,longer;pin;ghcr.io;releas;updat;data-privacy-stack;ghcr;privacy,1c0ab522e6a9ace7,No longer updated with the latest Presidio version; use ghcr.io/data-privacy-stack/presidio-analyzer:latest or a pinned GHCR release tag instead.,2026-10-20
 9e4f61940dcc,agents/shared-ner-service.md,S-azdam24d,located,Installing Presidio > Using Docker,explicit;legacy;longer;new;organization;pin;prefer;production,d245c15d8c4e5718,New Presidio container releases are published to GitHub Container Registry under the Data Privacy Stack packages organization. The legacy Microsoft Container Registry images at mcr.microsoft.com/presidio-,2026-10-20
@@ -3331,7 +3309,6 @@ b0abfe21c364,agents/shared-ner-service.md,S2097,located,Detecting PII entities >
 b0abfe21c364,agents/shared-ner-service.md,S2098,located,PII real-time analysis (API),utf;utf-8;text;amazon;comprehend;real;real-tim;time,810e65f8edd3592a,"Locating PII real-time entities (API) To locate PII in a single document, you can use the Amazon Comprehend DetectPiiEntities operation. Your input text can include",2026-10-10
 b0abfe21c364,agents/shared-ner-service.md,S2099,unlocated:no-match,,,,,2026-10-10
 bbb8576becce,agents/shared-ner-service.md,S2095,unlocated:no-match,,,,,2026-10-21
-bbb8576becce,agents/shared-ner-service.md,S-g6nzyems,unlocated:no-match,,,,,2026-10-21
 bdf90517471a,agents/shared-ner-service.md,S-blcom642,located,LICENSE > File metadata and controls,contributor;mit;presidio;copyright,7375fea32549f72b,The MIT License (MIT) Copyright (c) Presidio Contributors.,2026-10-10
 c5432a565719,agents/shared-ner-service.md,S2097,unlocated:no-match,,,,,2026-10-10
 c5432a565719,agents/shared-ner-service.md,S2107,located,"Amazon Comprehend detects and redacts 14 new PII entity types across the U.S., U.K., Canada, and India",category;credit;e.g;financial;localiz;name;passport;password,88aa51f3a2c6d1f8,"Previously, Amazon Comprehend supported 22 PII entities across multiple categories, including Financial (e.g., credit card number, bank account number), Personal (e.g., name, email, age), Technical",2026-10-10
@@ -4120,74 +4097,11 @@ aaf19e2707d3,arch/gitlab-ci-components.md,S1701,unlocated:no-match,,,,,2026-10-1
 c2ee83703bb1,arch/gitlab-ci-components.md,S1700,located,CI/CD components > Component project > Directory structure,subdirectory;template.yml;yml;templat;name;component,40ab1ecb7f284a7f,"Component filenames and subdirectory names can contain letters, numbers, underscores (), hyphens (-), and periods (.). For example, templates/secret-detection.enterprise.yml and templates/secret-detection.enterprise/template.yml are valid component filenames.",2026-10-10
 cfcfab2aa0b1,arch/gitlab-ci-components.md,S1700,unlocated:no-match,,,,,2026-10-10
 ff267c8143db,arch/gitlab-ci-components.md,S447,located,Keywords > Job keywords > `release` > `release:tag_name`,ci_commit_tag;tag;commit;name;rule,838077d005ecdc96,Use the $CICOMMITTAG CI/CD variable as the tagname. Use rules:if to configure the job to run only for new tags.,2026-10-10
-007a012985fd,arch/gorules-zen-engine.md,S-5jpgqrfy,unlocated:no-match,,,,,2026-10-21
-007a012985fd,arch/gorules-zen-engine.md,S-g6tbk57j,located,Crate rquickjs > §High-level bindings to QuickJS,engin;high;high-level;level;rquickj;bind;quick;quickj,6158cdcc3de95608,The rquickjs crate provides safe high-level bindings to the QuickJS JavaScript engine.,2026-10-21
 0847e74248e8,arch/gorules-zen-engine.md,S-mrvrg4c7,unlocated:no-match,,,,,2026-10-21
 0847e74248e8,arch/gorules-zen-engine.md,S-ywjkyve4,located,,2.1.3;mit;zen-engin;crat;engin;zen,7e8c86222bf72255,"""license"": ""MIT"", ""links"": { ""dependencies"": ""/api/v1/crates/zen-engine/2.1.3/dependencies"",",2026-10-21
 0847e74248e8,arch/gorules-zen-engine.md,S-zuff3zj3,unlocated:no-match,,,,,2026-10-21
-1606eefcdd2a,arch/gorules-zen-engine.md,S-cdmzxvsn,located,Node types > Switch node > Connecting switch outputs,sourceid;target;targetid;sourcehandl;handl;edge;sourc;type,e6654702fa392f36,"{ ""id"": ""e1"", ""sourceId"": ""switch-1"", ""targetId"": ""enterprise-node"", ""sourceHandle"": ""s1"", ""type"": ""edge"" },",2026-10-21
-1b7835aa02fd,arch/gorules-zen-engine.md,S-heikuvcn,unlocated:no-match,,,,,2026-10-21
-2144a49095c9,arch/gorules-zen-engine.md,S-5dy4gz6x,unlocated:no-match,,,,,2026-10-21
-2144a49095c9,arch/gorules-zen-engine.md,S-ccvh7i4b,unlocated:no-match,,,,,2026-10-21
-2198ce6236e7,arch/gorules-zen-engine.md,S-heikuvcn,unlocated:no-match,,,,,2026-10-21
-2198ce6236e7,arch/gorules-zen-engine.md,S-xfsmauei,unlocated:no-match,,,,,2026-10-21
-228d7c41fa63,arch/gorules-zen-engine.md,S-cdmzxvsn,unlocated:no-match,,,,,2026-10-21
-228d7c41fa63,arch/gorules-zen-engine.md,S-heikuvcn,unlocated:no-match,,,,,2026-10-21
-2412a3cd6f53,arch/gorules-zen-engine.md,S-su332252,located,,auth;context;function;function_timeout_millis;http;http_auth;millis;node,d81153288ccdfdf6,"pub nodesincontext: AtomicBool, pub functiontimeoutmillis: AtomicU64, pub httpauth: AtomicBool,",2026-10-21
-312d52190fff,arch/gorules-zen-engine.md,S-osv63lk3,located,,overrid;override_config;node;stor;zen_config;zen;config,822fe27682c65d42,"pub fn overrideconfig(config: ZenConfig) { if let Some(val) = config.nodesincontext { ZENCONFIG.nodesincontext.store(val, Ordering::Relaxed);",2026-10-21
-3212e5c4c4b7,arch/gorules-zen-engine.md,S-q6ajn7wa,located,,object;block;key;policy;content,fb3acd3867fa9284,".issomeand(|object| object.containskey(""blocks"")); let content = if ispolicy {",2026-10-21
-393b9570780c,arch/gorules-zen-engine.md,S-5jpgqrfy,unlocated:no-match,,,,,2026-10-21
-393b9570780c,arch/gorules-zen-engine.md,S-heikuvcn,unlocated:no-match,,,,,2026-10-21
-393b9570780c,arch/gorules-zen-engine.md,S-ltzwimxf,unlocated:no-match,,,,,2026-10-21
-393b9570780c,arch/gorules-zen-engine.md,S-su332252,unlocated:no-match,,,,,2026-10-21
-403a141d3a2a,arch/gorules-zen-engine.md,S-z4pp6bkj,located,,create_decision;creat;error;kind;key;loader;content;decision,a70e6ae1b3bcbb95,") -> LoaderResult<Result<Decision, ContentKindError>> { let content = self.loader.load(key).await?; Ok(self.createdecision(content))",2026-10-21
-44833d5887a6,arch/gorules-zen-engine.md,S-kwztlqad,unlocated:no-match,,,,,2026-10-21
-44833d5887a6,arch/gorules-zen-engine.md,S-z4pp6bkj,located,,depth;none;evaluation,e30eda69f1641b4a,"trace: EvaluationTraceKind::None, maxdepth: 10,",2026-10-21
-45ae55dd2f91,arch/gorules-zen-engine.md,S-3tbh2eg2,unlocated:no-match,,,,,2026-10-21
-45ae55dd2f91,arch/gorules-zen-engine.md,S-z2auesug,unlocated:no-match,,,,,2026-10-21
-52293d63bbca,arch/gorules-zen-engine.md,S-kwehxqwf,unlocated:no-match,,,,,2026-10-21
-626d0e5a3ca9,arch/gorules-zen-engine.md,S-z4pp6bkj,located,,decisionengin;engin;default;decision,f81c3950ee86066d,impl Default for DecisionEngine {,2026-10-21
-66b327f00cc4,arch/gorules-zen-engine.md,S-cdmzxvsn,located,Node types > Decision table node > Output column,across;first-hit;rest;stay;whil;cell;rows;collect,ad225580c538d3d1,field | string | Output field path; end it with [] to collect the column across all matching rows while the rest of the table,2026-10-21
-6bfdb1bf61bc,arch/gorules-zen-engine.md,S-i3rxlppy,located,Rust Rules Engine > Tracing,evaluate_with_opt;opts;evaluationoption;option;trac;true;evaluation;evaluat,96c7a829915c9e30,"let response = decision.evaluatewithopts(input, EvaluationOptions { trace: true,",2026-10-21
-6cbbd94ad47f,arch/gorules-zen-engine.md,S-cdmzxvsn,unlocated:no-match,,,,,2026-10-21
-705975f92e72,arch/gorules-zen-engine.md,S-k5bcjgda,unlocated:no-match,,,,,2026-10-21
-855dd08c4012,arch/gorules-zen-engine.md,S-5dy4gz6x,unlocated:no-match,,,,,2026-10-21
-8bfaf6afe1fe,arch/gorules-zen-engine.md,S-dxo62u4b,located,BRE and BRMS > ZEN Engine > Standalone usage,distribut;stor;jdm;file;standalon;version;engin,9c9b764113c16f0e,"When using the ZEN Engine standalone, you're responsible for storing, versioning, and distributing JDM files to your applications.",2026-10-21
-8bfaf6afe1fe,arch/gorules-zen-engine.md,S-q6ajn7wa,unlocated:no-match,,,,,2026-10-21
-90ebad0e6a02,arch/gorules-zen-engine.md,S-ccvh7i4b,unlocated:no-match,,,,,2026-10-21
-929d1b360657,arch/gorules-zen-engine.md,S-yi5pmj5x,unlocated:no-match,,,,,2026-10-21
-92b6aedff315,arch/gorules-zen-engine.md,S-xfsmauei,located,JDM Standard > File structure > Additional fields,engin;ignor;level;part;top;top-level;unknown;field,6b9c427b4b264d70,"The engine ignores unknown top-level fields, so tools can attach their own metadata without breaking evaluation. Only nodes and edges are part of the format.",2026-10-21
 955a6aab6c8a,arch/gorules-zen-engine.md,S-zuff3zj3,unlocated:no-match,,,,,2026-10-21
-96d21b4ccbc0,arch/gorules-zen-engine.md,S-ltzwimxf,located,,functionnod;functionnodehandler;function;kind;handler;decision;node,110f82c43159fc4f,"DecisionNodeKind::FunctionNode { content } => { handlenode(basectx, content.clone(), FunctionNodeHandler).await",2026-10-21
-a1a6d700b3c3,arch/gorules-zen-engine.md,S-kvbchryu,unlocated:no-match,,,,,2026-10-21
-a4cb6bc1dca9,arch/gorules-zen-engine.md,S-ujerrwih,unlocated:no-match,,,,,2026-10-21
-a593ca011de9,arch/gorules-zen-engine.md,S-ipghmg2f,unlocated:no-match,,,,,2026-10-21
-a593ca011de9,arch/gorules-zen-engine.md,S-xfsmauei,located,JDM Standard > Loading JDM files,load;rule;file;jdm,8841762190782717,Load and evaluate JDM files using any GoRules SDK:,2026-10-21
-a9c4c525cbbc,arch/gorules-zen-engine.md,S-5jpgqrfy,located,,arbitrary;arbitrary_precision;precision;bindgen;json;default,005434f9afa72c45,"default = [] bindgen = [""rquickjs/bindgen""] arbitraryprecision = [""serdejson/arbitraryprecision"", ""zen-expression/arbitraryprecision"", ""zen-types/arbitraryprecision"", ""zen-tmpl/arbitraryprecision""]",2026-10-21
-b2dd74a95f3e,arch/gorules-zen-engine.md,S-cdmzxvsn,unlocated:no-match,,,,,2026-10-21
-b2dd74a95f3e,arch/gorules-zen-engine.md,S-xfsmauei,located,JDM Standard > File structure > Edges,input;output;node,6c9f1f8af7b0932b,"""sourceId"": ""input-node"", ""targetId"": ""decision-table-node"", ""sourceHandle"": ""output""",2026-10-21
-b4d9ed039c62,arch/gorules-zen-engine.md,S-heikuvcn,unlocated:no-match,,,,,2026-10-21
-b4d9ed039c62,arch/gorules-zen-engine.md,S-ltzwimxf,unlocated:no-match,,,,,2026-10-21
-b76f3a393b56,arch/gorules-zen-engine.md,S-5dy4gz6x,located,,file;zen;expression;function,03865c168f71812f,Use this file to discover all available pages before exploring further. Built-in functions Complete reference for ZEN expression language built-in functions.,2026-10-21
-b76f3a393b56,arch/gorules-zen-engine.md,S-dxj7zgns,unlocated:no-match,,,,,2026-10-21
-b76f3a393b56,arch/gorules-zen-engine.md,S-wgtknkrb,located,,function;node;modul;crat;http,768759bc10f0f238,use crate::nodes::function::v2::module::http::auth::HttpConfigAuth;,2026-10-21
-c2a7c1a5c353,arch/gorules-zen-engine.md,S-wgtknkrb,unlocated:no-match,,,,,2026-10-21
-c56a71c894c0,arch/gorules-zen-engine.md,S-enz7mrzn,unlocated:no-match,,,,,2026-10-21
-c56a71c894c0,arch/gorules-zen-engine.md,S-ibnjc3rf,unlocated:no-match,,,,,2026-10-21
-c56a71c894c0,arch/gorules-zen-engine.md,S-y7nfpahm,unlocated:no-match,,,,,2026-10-21
-d31c2c5fc217,arch/gorules-zen-engine.md,S-kvbchryu,located,ZEN Engine,matrix;support;linux;python;mark,878664310e22bc75,Support matrix Arch | Rust | Node.js | Python | Go | Java / Kotlin | .NET linux-x64-gnu | :heavycheckmark: | :heavycheckmark: | :heavycheckmark: |,2026-10-21
-d53c2e3e3969,arch/gorules-zen-engine.md,S-yi5pmj5x,located,Python Rules Engine > Tracing,trac;decision;evaluat,2baef1cfb9e3bbf1,"response = decision.evaluate(inputdata, {""trace"": True})",2026-10-21
-d6409e189b63,arch/gorules-zen-engine.md,S-5jpgqrfy,unlocated:no-match,,,,,2026-10-21
-d6409e189b63,arch/gorules-zen-engine.md,S-wgtknkrb,located,,function;node;http,768759bc10f0f238,use crate::nodes::function::v2::module::http::auth::HttpConfigAuth;,2026-10-21
 d6409e189b63,arch/gorules-zen-engine.md,S-zuff3zj3,located,,process;runtim;call;node;rust;graph;zen-engin;wheel,c3852df6e7e025ca,"Type flow, exhaustiveness checking, write-conflict detection and precise diagnostics, all available before anything runs.\n- Per-column collect: decision table output columns can collect across all matching",2026-10-21
-da9406e94671,arch/gorules-zen-engine.md,S-ipghmg2f,unlocated:no-match,,,,,2026-10-21
-db80f6340256,arch/gorules-zen-engine.md,S-jq7z2od2,unlocated:no-match,,,,,2026-10-21
-dde2e4ffe2d0,arch/gorules-zen-engine.md,S-3tbh2eg2,unlocated:no-match,,,,,2026-10-21
-dde2e4ffe2d0,arch/gorules-zen-engine.md,S-q6ajn7wa,unlocated:no-match,,,,,2026-10-21
-de91a066e7ee,arch/gorules-zen-engine.md,S-trcil35r,unlocated:no-match,,,,,2026-10-21
-df5ddad9bb74,arch/gorules-zen-engine.md,S-kvbchryu,located,ZEN Engine,cross;cross-platform;portabl;stor;open-sourc;written;bind;business,a1c5b46245863947,"ZEN Engine is a cross-platform, open-source Business Rules Engine (BRE) written in Rust, with native bindings for Node.js, Python, Go, Java, Kotlin and .NET, plus",2026-10-21
-e48c414d0654,arch/gorules-zen-engine.md,S-2fdfhonb,located,,custom;customhandler;handler;engin;loader;option,9df11055e9dd62e0,"class ZenEngineOptions(TypedDict, total=False): loader: Union[ZenLoaderCallback, ZenLoaderConfig] customHandler: Callable",2026-10-21
-f59baa4f4fa4,arch/gorules-zen-engine.md,S-ytvtdwbp,located,ZEN expression language > Two modes,node;output;decision;tabl;standard;unary;test;input,bb09581855408c91,"Standard | Expression nodes, output columns | price quantity (1 - discount) Unary test | Decision table input columns | >= 100, [1..10], 'US', 'CA'",2026-10-21
 7cfccebaeadd,arch/http-rate-limit-429-retry-after.md,S-wct3uoax,unlocated:no-match,,,,,2026-10-13
 0737d0e7665e,arch/k8s-gmsa-windows.md,S400,unlocated:no-match,,,,,2026-10-10
 0737d0e7665e,arch/k8s-gmsa-windows.md,S1600,unlocated:no-match,,,,,2026-10-10
@@ -4232,71 +4146,8 @@ c55c05a003b9,arch/kerberos-linux-containers.md,S1605,unlocated:no-match,,,,,2026
 d1eb884252d5,arch/kerberos-linux-containers.md,S1606,unlocated:no-match,,,,,2026-10-10
 e25743944a42,arch/kerberos-linux-containers.md,S1604,unlocated:no-match,,,,,2026-10-10
 fb34585ef252,arch/kerberos-linux-containers.md,S1604,unlocated:no-match,,,,,2026-10-10
-00ec01973f41,arch/oxigraph-embedded-rdf.md,S-5ty62hy3,unlocated:no-match,,,,,2026-10-21
-00ec01973f41,arch/oxigraph-embedded-rdf.md,S-guwnayzo,located,Struct SparqlEvaluator,featur;http-client;client;call;federat;servic;http,e0bde769cf80d1ae,"If the ""http-client"" optional feature is enabled, a simple HTTP 1.1 client is used to execute SPARQL 1.1 Federated Query SERVICE calls.",2026-10-21
-05b6f4950d78,arch/oxigraph-embedded-rdf.md,S-45qncmsz,located,,build;crat;default;featur;memory;stor;rust;oxigraph,a8f3434bdbdfd42e,"""description"": ""# Pyoxigraph (Oxigraph for Python)\n\n[![PyPI](https://img.shields.io/pypi/v/pyoxigraph)](https://pypi.org/project/pyoxigraph/)\n[![Conda](https://img.shields.io/conda/vn/conda-forge/pyoxigraph)](https://anaconda.org/conda-forge/pyoxigraph)\n![PyPI - Implementation](https://img.shields.io/pypi/implementation/pyoxigraph)\n![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyoxigraph)\n[![actions status](https://github.com/oxigraph/oxigraph/workflows/build/badge.svg)](https://github.com/oxigraph/oxigraph/actions)\n[![Gitter](https://badges.gitter.im/oxigraph/community.svg)](https://gitter.im/oxigraph/community)\n\nPyoxigraph is a graph database library implementing the [SPARQL](https://www.w3.org/TR/sparql11-overview/) standard.\nIt is a Python library",2026-10-21
-05b6f4950d78,arch/oxigraph-embedded-rdf.md,S-5ty62hy3,unlocated:no-match,,,,,2026-10-21
-05b6f4950d78,arch/oxigraph-embedded-rdf.md,S-bytyyxb4,located,,build;default-featur;fals;memory;rock;rocksdb;featur;default,bca4fe9ce74ac078,"To build the library locally, don't forget to clone the submodules using git clone --recursive https://github.com/oxigraph/oxigraph.git to clone the repository including submodules or git submodule",2026-10-21
-05b6f4950d78,arch/oxigraph-embedded-rdf.md,S-rw3phgvf,unlocated:no-match,,,,,2026-10-21
-0ac7bfdf1302,arch/oxigraph-embedded-rdf.md,S-bytyyxb4,located,,backend;compil;default-featur;disabl;fallback;fals;in-memory;memory,94f71e82a014fd1c,It is possible to disable the RocksDB storage backend to only use the in-memory fallback by disabling the rocksdb default feature: oxigraph = { version,2026-10-21
-0db462ea0dd9,arch/oxigraph-embedded-rdf.md,S-a5hei6wa,unlocated:no-match,,,,,2026-10-21
-0db462ea0dd9,arch/oxigraph-embedded-rdf.md,S-fi3wa4vw,unlocated:no-match,,,,,2026-10-21
-0db462ea0dd9,arch/oxigraph-embedded-rdf.md,S-nxnd5tsp,unlocated:no-match,,,,,2026-10-21
-1b2f45188a36,arch/oxigraph-embedded-rdf.md,S-bfv5hqkn,unlocated:no-match,,,,,2026-10-21
-1b2f45188a36,arch/oxigraph-embedded-rdf.md,S-dcliqq63,unlocated:no-match,,,,,2026-10-21
-2532fd18c8d5,arch/oxigraph-embedded-rdf.md,S-bfv5hqkn,unlocated:no-match,,,,,2026-10-21
-2582b133f22e,arch/oxigraph-embedded-rdf.md,S-bytyyxb4,located,,1.2;behind;csv;json;preliminary;rdf-12;support;tsv,d787c2be9834ec85,"SPARQL Query Results XML Format, SPARQL 1.1 Query Results JSON Format and SPARQL 1.1 Query Results CSV and TSV Formats. Support for RDF 1.2 and",2026-10-21
-2582b133f22e,arch/oxigraph-embedded-rdf.md,S-z4kbze7e,located,Oxigraph,1.2;csv;draft;tsv;1.1;preliminary;result;support,2c6604f28c9eecb4,"SPARQL Query Results XML Format, SPARQL Query Results JSON Format and SPARQL Query Results CSV and TSV Formats. RDF Dataset Canonicalization. Most implementations are nearly",2026-10-21
-2794c3af794d,arch/oxigraph-embedded-rdf.md,S-bfv5hqkn,located,"Struct Store > Implementations§ > impl Store > pub fn flush(&self) -> Result<(), StorageError>",background;bit;lag;littl;saved;thread;ensur;flush,2aac89cda86f5b11,Flushes all buffers and ensures that all writes are saved on disk. Flushes are automatically done using background threads but might lag a little bit.,2026-10-21
-291cd89c093b,arch/oxigraph-embedded-rdf.md,S-nxnd5tsp,located,,argument;fals;default_graph;union;use_default_graph_as_union;named_graph;query;default,dcc07f8c391efee4,"#[expect(clippy::toomanyarguments, clippy::doclinkwithquotes)] #[pyo3(signature = (query, , baseiri = None, prefixes = None, usedefaultgraphasunion = false, defaultgraph = None, namedgraphs = None, substitutions = None, customfunctions",2026-10-21
-2c19d788931a,arch/oxigraph-embedded-rdf.md,S-3etbob6s,located,,prepar;query,f6408fb5ac1bb4c1,Struct PreparedSparqlQuery,2026-10-21
-2c19d788931a,arch/oxigraph-embedded-rdf.md,S-fi3wa4vw,located,Struct QueryDatasetSpecification > Implementations§ > impl QueryDatasetSpecification > pub fn default_graph_graphs(&self) -> Option<&[GraphName]>,union;default;graph;query,df4dd39bb13e1303,Returns the list of the store graphs that are available to the query as the default graph or None if the union of all graphs,2026-10-21
 2d9cbd49771a,arch/oxigraph-embedded-rdf.md,S-uohdppyd,located,,2.0;apach;apache-2.0;mit;crat;oxigraph,3c7c9d697481ee08,"""license"": ""MIT OR Apache-2.0"", ""links"": { ""dependencies"": ""/api/v1/crates/oxigraph/0.5.12/dependencies"",",2026-10-21
-2d9cbd49771a,arch/oxigraph-embedded-rdf.md,S-z4kbze7e,located,Oxigraph > License,apache-2.0;dual;option;2.0;apach;licen;oxigraph,a88981d3a50eb953,"at your option. Contribution Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in Oxigraph by you, as defined in the Apache-2.0 license,",2026-10-21
-324bcaff9884,arch/oxigraph-embedded-rdf.md,S-45qncmsz,unlocated:no-match,,,,,2026-10-21
-341960ff6dc1,arch/oxigraph-embedded-rdf.md,S-rw3phgvf,unlocated:no-match,,,,,2026-10-21
-3d354e18e288,arch/oxigraph-embedded-rdf.md,S-nxnd5tsp,located,,on-disk;disk;stor,2a219ab1c363e0ef,/// Warning: Backups are only possible for on-disk databases created by providing a path to :py:class:Store constructor.,2026-10-21
-43431bb0cd60,arch/oxigraph-embedded-rdf.md,S-coloiwrz,unlocated:no-match,,,,,2026-10-21
-43431bb0cd60,arch/oxigraph-embedded-rdf.md,S-ifojpzaw,unlocated:no-match,,,,,2026-10-21
-53eeb2775776,arch/oxigraph-embedded-rdf.md,S-guwnayzo,unlocated:no-match,,,,,2026-10-21
-53eeb2775776,arch/oxigraph-embedded-rdf.md,S-jgxzxayp,unlocated:no-match,,,,,2026-10-21
-53eeb2775776,arch/oxigraph-embedded-rdf.md,S-nxnd5tsp,unlocated:no-match,,,,,2026-10-21
-55e6c81b9d59,arch/oxigraph-embedded-rdf.md,S-dcliqq63,unlocated:no-match,,,,,2026-10-21
-57101a9b6aab,arch/oxigraph-embedded-rdf.md,S-guwnayzo,located,Struct SparqlEvaluator > Implementations§ > impl SparqlEvaluator > pub fn parse_query(,graph;select;parse_query;on_stor;execut;queryresult;solution;pars,f4a920bd87d6b8d3,"store.insert(QuadRef::new(ex, ex, ex, GraphNameRef::DefaultGraph))?; let preparedquery = SparqlEvaluator::new().parsequery(""SELECT ?s WHERE { ?s ?p ?o }"")?; if let QueryResults::Solutions(mut solutions) = preparedquery.onstore(&store).execute()? {",2026-10-21
-57101a9b6aab,arch/oxigraph-embedded-rdf.md,S-iqad4pe3,located,Type Alias QueryOptions,0.5.0;deprecat;sinc;evaluator;sparqlevaluator;option;query;queryoption,0922cd80c30161a0,pub type QueryOptions = SparqlEvaluator; 👎Deprecated since 0.5.0:,2026-10-21
-57101a9b6aab,arch/oxigraph-embedded-rdf.md,S-mryj4twm,unlocated:no-match,,,,,2026-10-21
-77870c7d2233,arch/oxigraph-embedded-rdf.md,S-dcliqq63,located,[0.5.0-beta.1] - 2025-06-20 > Added > Removed,0.5;databa;first;automatically;migrat;open;rdf-star;star,9589e55220b5f625,The rdf-star feature is not available anymore but triple terms are supported using rdf-12. RDF 1.2 does not support triple terms in the subject position,2026-10-21
-8453f8dfbe22,arch/oxigraph-embedded-rdf.md,S-bytyyxb4,located,,json;1.1;n-quad;n-tripl;tri;trig;tripl;turtl,f2a056bd8808cbf4,"Turtle, TriG, N-Triples, N-Quads, and RDF/XML RDF serialization formats for both data ingestion and retrieval. SPARQL Query Results XML Format, SPARQL 1.1 Query Results JSON",2026-10-21
-8453f8dfbe22,arch/oxigraph-embedded-rdf.md,S-dcliqq63,unlocated:no-match,,,,,2026-10-21
-8453f8dfbe22,arch/oxigraph-embedded-rdf.md,S-z4kbze7e,unlocated:no-match,,,,,2026-10-21
-8ca876330f2c,arch/oxigraph-embedded-rdf.md,S-z2qagps6,unlocated:no-match,,,,,2026-10-21
 925fea1bea93,arch/oxigraph-embedded-rdf.md,S-uohdppyd,located,,newest;stabl;0.5.12;version,9176351cffa81da4,"""newestversion"": ""0.5.12"", ""maxstableversion"": ""0.5.12"",",2026-10-21
-952251030174,arch/oxigraph-embedded-rdf.md,S-3etbob6s,located,Struct PreparedSparqlQuery > Implementations§ > impl PreparedSparqlQuery,dataset_mut;specification;dataset;mut;prepar;query,354f2b7282b5ce6a,pub fn datasetmut(&mut self) -> &mut QueryDataset Returns the query dataset specification of this prepared query.,2026-10-21
-952251030174,arch/oxigraph-embedded-rdf.md,S-fi3wa4vw,unlocated:no-match,,,,,2026-10-21
-a366b324854a,arch/oxigraph-embedded-rdf.md,S-bfv5hqkn,unlocated:no-match,,,,,2026-10-21
-a3df6a122004,arch/oxigraph-embedded-rdf.md,S-3qbz2t4u,unlocated:no-match,,,,,2026-10-21
-a3df6a122004,arch/oxigraph-embedded-rdf.md,S-z4kbze7e,unlocated:no-match,,,,,2026-10-21
-a983bcd50c23,arch/oxigraph-embedded-rdf.md,S-z4kbze7e,located,Oxigraph,file;key;key-valu;read;rock;rocksdb;utility;valu,aa418ffc77b851ec,"Its goal is to provide a compliant, safe, and fast graph database based on the RocksDB key-value store. It is written in Rust. It also",2026-10-21
-b5536d7e4821,arch/oxigraph-embedded-rdf.md,S-bfv5hqkn,unlocated:no-match,,,,,2026-10-21
-c411e7c8d7b6,arch/oxigraph-embedded-rdf.md,S-dcliqq63,located,,0.5.0-beta.5;cancellation;cancellationtoken;token;run;0.5.0;beta;query,2a3094bee99c98f7,[0.5.0-beta.5] - 2025-09-07 Added spareval: a CancellationToken to easily cancel a running SPARQL query.,2026-10-21
-c411e7c8d7b6,arch/oxigraph-embedded-rdf.md,S-guwnayzo,located,Struct SparqlEvaluator > Implementations§ > impl SparqlEvaluator > pub fn with_cancellation_token(,with_cancellation_token;cancellationtoken;cancellation;token;query,e17b3227b9d65222,let cancellationtoken = CancellationToken::new(); if let QueryResults::Solutions(mut solutions) = SparqlEvaluator::new() .withcancellationtoken(cancellationtoken.clone()),2026-10-21
-c67bd0da95b1,arch/oxigraph-embedded-rdf.md,S-bfv5hqkn,unlocated:no-match,,,,,2026-10-21
-c786be6d3c90,arch/oxigraph-embedded-rdf.md,S-a5hei6wa,unlocated:no-match,,,,,2026-10-21
-c786be6d3c90,arch/oxigraph-embedded-rdf.md,S-axwbq3bp,unlocated:no-match,,,,,2026-10-21
-ca79e3e49b02,arch/oxigraph-embedded-rdf.md,S-bfv5hqkn,unlocated:no-match,,,,,2026-10-21
-ca79e3e49b02,arch/oxigraph-embedded-rdf.md,S-mzu53xnc,unlocated:no-match,,,,,2026-10-21
-cff158d7d35d,arch/oxigraph-embedded-rdf.md,S-bfv5hqkn,unlocated:no-match,,,,,2026-10-21
-cff158d7d35d,arch/oxigraph-embedded-rdf.md,S-z4kbze7e,unlocated:no-match,,,,,2026-10-21
-db5829cdfe20,arch/oxigraph-embedded-rdf.md,S-guwnayzo,located,Struct SparqlEvaluator,enabl;featur;http-client;optional;client;simpl;1.1;call,e0bde769cf80d1ae,"If the ""http-client"" optional feature is enabled, a simple HTTP 1.1 client is used to execute SPARQL 1.1 Federated Query SERVICE calls.",2026-10-21
-de4931e094e8,arch/oxigraph-embedded-rdf.md,S-bytyyxb4,located,,build;memory;rock;rocksdb,3c8e680c09e13286,"To build the library locally, don't forget to clone the submodules using git clone --recursive https://github.com/oxigraph/oxigraph.git to clone the repository including submodules or git submodule",2026-10-21
-e2081465b04b,arch/oxigraph-embedded-rdf.md,S-nxnd5tsp,located,,store.read_only;read_only;static;open;read;stor,29546c39659dd014,/// To open a static read-only instance use :py:func:Store.readonly.,2026-10-21
-ee5c57ad508d,arch/oxigraph-embedded-rdf.md,S-3qbz2t4u,located,Installation,link;pkg;pkg-config;shar;config;featur;rocksdb;default,ec124bca33e4dd6c,Some build options (cargo features) are available: rocksdb-pkg-config: links against an already compiled rocksdb shared library found using pkg-config. native-tls: Enables Oxigraph HTTP client for,2026-10-21
-ee5c57ad508d,arch/oxigraph-embedded-rdf.md,S-4ucs6ogm,located,,build;featur;part;bind;config;crat;default;link,648d14ac332e2257,RocksDB bindings for Oxigraph. By default it builds RocksDB as part of this crate. It is also possible to dynamically link to RocksDB using the,2026-10-21
-f27b045b0005,arch/oxigraph-embedded-rdf.md,S-5ty62hy3,unlocated:no-match,,,,,2026-10-21
-f27b045b0005,arch/oxigraph-embedded-rdf.md,S-z4kbze7e,unlocated:no-match,,,,,2026-10-21
-f3d7de44b64a,arch/oxigraph-embedded-rdf.md,S-c4gfzuad,located,,2.0;apach;apache-2.0;gpl;gpl-2.0-only;oxrocksdb;oxrocksdb-sy;sys,58fd794222c38fa4,"license = ""GPL-2.0-only OR Apache-2.0"" repository = ""https://github.com/oxigraph/oxigraph/tree/main/oxrocksdb-sys""",2026-10-21
-fede458047bd,arch/oxigraph-embedded-rdf.md,S-5ty62hy3,unlocated:no-match,,,,,2026-10-21
-ff001cee0789,arch/oxigraph-embedded-rdf.md,S-bfv5hqkn,located,"Struct Store > Implementations§ > impl Store > pub fn open_read_only(path: impl AsRef<Path>) -> Result<Self, StorageError>",behavior;other;process;undefin;read-only;whil;having;databas,db747377b5c8f68b,Opening as read-only while having an other process writing the database is undefined behavior.,2026-10-21
 078fd3f0d114,arch/podman-api-socket.md,S-noii6ew2,located,NAME > DESCRIPTION > Security,arbitrary;audit;code;execution;full;functionality;grant;limit,fce4c89fb2589283,"allows arbitrary code execution as the user running the API, with no ability to limit or audit this access.",2026-10-15
 2adeb00888a5,arch/podman-api-socket.md,S-noii6ew2,located,NAME > DESCRIPTION > Run the command in a systemd service,one;support;listen;command;api;socket,5ecfd9f6b5f37257,The podman system service command does not support more than one listening socket for the API service.,2026-10-15
 5584ed79dae0,arch/podman-api-socket.md,S742,located,Configure permissions > Tool-specific permission rules > Bash > Read-only commands,connection;daemon;podman;docker;select;another;url;flag,bd22a396bbc01c10,"docker pointed at another daemon: read-only forms of docker prompt when the command carries a flag that selects a different daemon, such as -H, --context,",2026-10-21
@@ -4421,27 +4272,8 @@ d825700555af,arch/podman-volumes-networks-pods.md,S-v4l2d5bl,located,`DisableDNS
 e74c444bebc2,arch/podman-volumes-networks-pods.md,S-tzyfmscm,located,"`Network=mode` > **--network**=*mode*, **--net**",ones;privat;rootful;uses;rootless;bridg;mode;pasta,3cea6db5afb202f4,Create a new namespace for the container. This uses the bridge mode for rootful containers and pasta for rootless ones.,2026-10-15
 e760d8140b46,arch/podman-volumes-networks-pods.md,S-y4qlxukm,located,NAME > OPTIONS > **--cpus**=*amount* > **--pod-id-file**=*path*,port;publish;container;pod,930e38a946541af8,"You must not publish ports of containers in the pod individually,",2026-10-15
 ed51566bbf3e,arch/podman-volumes-networks-pods.md,S-y4qlxukm,located,NAME > OPTIONS > **--cpus**=*amount* > **--exit-policy**=**continue** | *stop*,aliv;keep;continu;last;exit;default;infra;container,07f8c28aa0534846,"The pod continues running, by keeping its infra container alive, when the last container exits. Used by default.",2026-10-15
-0a7558ae6509,arch/postgres-dump-canonical-hash.md,S-vykvhstk,located,pg_dump > Options > Note,advanc;alphanumeric;compar;e.g;general;inject;keys;malicious,8e6270eb6a5bbe9e,"Keys may contain only alphanumeric characters. This option is primarily intended for testing purposes and other scenarios that require repeatable output (e.g., comparing dump files).",2026-10-21
-11769ad4952f,arch/postgres-dump-canonical-hash.md,S-aae3vzxi,unlocated:no-match,,,,,2026-10-21
-1e274094aaa4,arch/postgres-dump-canonical-hash.md,S-aae3vzxi,unlocated:no-match,,,,,2026-10-21
-294d2967a4a4,arch/postgres-dump-canonical-hash.md,S-vor6jmfj,unlocated:no-match,,,,,2026-10-21
-332df05049a1,arch/postgres-dump-canonical-hash.md,S-vykvhstk,unlocated:no-match,,,,,2026-10-21
-34150dcc0a34,arch/postgres-dump-canonical-hash.md,S-aae3vzxi,unlocated:no-match,,,,,2026-10-21
-3534cf2fd518,arch/postgres-dump-canonical-hash.md,S-vykvhstk,unlocated:no-match,,,,,2026-10-21
-3921121a05be,arch/postgres-dump-canonical-hash.md,S-vykvhstk,located,pg_dump > Options > Note,nonzero;through;lz4;zstd;gzip;plain;compress;level,ca180b64f6a15915,"For plain text output, setting a nonzero compression level causes the entire output file to be compressed, as though it had been fed through gzip,",2026-10-21
-697cfeca9e3d,arch/postgres-dump-canonical-hash.md,S-vor6jmfj,unlocated:no-match,,,,,2026-10-21
-697cfeca9e3d,arch/postgres-dump-canonical-hash.md,S-vykvhstk,unlocated:no-match,,,,,2026-10-21
-797e73f76846,arch/postgres-dump-canonical-hash.md,S-vor6jmfj,unlocated:no-match,,,,,2026-10-21
 8cbca9401d76,arch/postgres-dump-canonical-hash.md,S-v246rdbb,unlocated:no-match,,,,,2026-10-21
-943469b332fc,arch/postgres-dump-canonical-hash.md,S-aae3vzxi,unlocated:no-match,,,,,2026-10-21
-b834724f5be0,arch/postgres-dump-canonical-hash.md,S-vykvhstk,located,pg_dump > Options > Note,fed;moderat;segment;table-data;custom;gzip;plain;compress,d7ce89b0e003d769,"For the custom and directory archive formats, this specifies compression of individual table-data segments, and the default is to compress using gzip at a moderate",2026-10-21
-b9397f438724,arch/postgres-dump-canonical-hash.md,S-vykvhstk,located,pg_dump > Options > Note,primary;standby;9.2;snapshot;synchroniz;parallel;need;postgresql,f6d80d51e05d44a4,"To perform a parallel dump, the database server needs to support synchronized snapshots, a feature that was introduced in PostgreSQL 9.2 for primary servers and",2026-10-21
-bba30d206502,arch/postgres-dump-canonical-hash.md,S-vykvhstk,unlocated:no-match,,,,,2026-10-21
-d3bc7f93074a,arch/postgres-dump-canonical-hash.md,S-vykvhstk,unlocated:no-match,,,,,2026-10-21
-d5bb4f7607f0,arch/postgres-dump-canonical-hash.md,S-vykvhstk,unlocated:no-match,,,,,2026-10-21
-e8b0fa4fbb81,arch/postgres-dump-canonical-hash.md,S-aae3vzxi,unlocated:no-match,,,,,2026-10-21
 e8b0fa4fbb81,arch/postgres-dump-canonical-hash.md,S-v246rdbb,unlocated:no-match,,,,,2026-10-21
-e8b0fa4fbb81,arch/postgres-dump-canonical-hash.md,S-vykvhstk,unlocated:no-match,,,,,2026-10-21
 0440f2d56c7e,arch/puppet-agent-run-noop-reporting.md,S-cttzm2qq,located,Configuration Reference > Configuration settings > splay,sleep;random;splaylimit;first;befor;time;run;agent,4409463e2b2bf1cf,"Whether to sleep for a random amount of time, ranging from immediately up to its $splaylimit",2026-10-15
 04f900870e8a,arch/puppet-agent-run-noop-reporting.md,S-uqxc7z4f,located,Agent-server HTTPS communications > The process of Agent-side checks and HTTPS requests during a single Puppet run.,activat;against;between;deployment;evaluat;independently;them;code,b849af7570114f5f,Pluginsync and catalog compilation resolve the deployed code independently,2026-10-21
 09272962d865,arch/puppet-agent-run-noop-reporting.md,S-z6kl5grq,located,Man Page: puppet agent > OPTIONS,code;onetim;work;exit;test,784568cf638fbd00,works only if '--test' or '--onetime' is also specified.,2026-10-21
@@ -4615,24 +4447,17 @@ f1bb143695e2,arch/sql-auth-containers.md,S1610,located,Using Microsoft Entra ID 
 f3ac72d71792,arch/sql-auth-containers.md,S-z74feu7u,located,Microsoft Entra Authentication with Microsoft.Data.SqlClient - ADO.NET Provider for SQL Server | Microsoft Learn > Use workload identity authentication,token-fil;path;file;tenant;workload;string;user;client,84022d83f93c14d2,"Server=tcp:contoso.database.windows.net,1433;Database=<database>;Authentication=Active Directory Workload Identity;Encrypt=true;TrustServerCertificate=false;MultiSubnetFailover=true; An optional User ID=<clientid> overrides the client ID. The connection string doesn't override the tenant ID or token-file path.",2026-10-21
 f7a6a8d0ca2d,arch/sql-auth-containers.md,S1610,unlocated:no-match,,,,,2026-10-10
 fb6ba572f107,arch/sql-auth-containers.md,S-z74feu7u,unlocated:no-match,,,,,2026-10-21
-0108dfff550a,arch/sse-last-event-id-cursors.md,S-l4qgsnr4,unlocated:no-match,,,,,2026-10-21
 03a7aadf2ce0,arch/sse-last-event-id-cursors.md,S-6r5cdtdk,unlocated:no-match,,,,,2026-10-21
 0ac5c82392d4,arch/sse-last-event-id-cursors.md,S-6r5cdtdk,unlocated:no-match,,,,,2026-10-21
 0de2538e5b09,arch/sse-last-event-id-cursors.md,S-6r5cdtdk,located,,living;october;9.2;server-sent;standard;html;sent;updat,4f29dbdc0b834209,HTML Living Standard - Last Updated 20 October 2026 9.2 Server-sent events,2026-10-21
 1f5d5caf5107,arch/sse-last-event-id-cursors.md,S-6r5cdtdk,unlocated:no-match,,,,,2026-10-21
 40746808362b,arch/sse-last-event-id-cursors.md,S-6r5cdtdk,located,HTML > 9.2 Server-sent events > 9.2.1 Introduction > 9.2.7 Authoring notes,every;timeout;comment;second;start;author;proxy;line,14646ff6fd4e7a9b,"timeout. To protect against such proxy servers, authors can include a comment line (one starting with a ':' character) every 15 seconds or so.",2026-10-21
 51576770f922,arch/sse-last-event-id-cursors.md,S-6r5cdtdk,located,HTML > 9.2 Server-sent events > 9.2.1 Introduction,stop;told;code;content;reconnect;client;respons;http,ab0fc83b8ad6b334,Clients will reconnect if the connection is closed; a client can be told to stop reconnecting using the HTTP 204 No Content response code.,2026-10-21
-6ecdd7a6f417,arch/sse-last-event-id-cursors.md,S-e5yw2g7y,located,Server-Sent Events (SSE) { #server-sent-events-sse },last;last-event-id;resum;event,3336311e7b18c58d,Resuming with Last-Event-ID { #resuming-with-last-event-id },2026-10-21
-71714831b4b7,arch/sse-last-event-id-cursors.md,S-ciivqlqu,located,Response > Set Cookie > StreamingResponse,iterator;normal;generator;body;streamingrespons;take;stream;async,faa9c52d895fae8f,Takes an async generator or a normal generator/iterator and streams the response body. from starlette.responses import StreamingResponse,2026-10-21
 76a5a33668ca,arch/sse-last-event-id-cursors.md,S-6r5cdtdk,located,HTML > 9.2 Server-sent events > 9.2.1 Introduction > 9.2.6 Interpreting an event stream,incomplet;discard;final;end;must;line;data;event,a4a5fac20ce89a73,"Once the end of the file is reached, any pending data must be discarded. (If the file ends in the middle of an event, before",2026-10-21
-77807df5ccda,arch/sse-last-event-id-cursors.md,S-e5yw2g7y,unlocated:no-match,,,,,2026-10-21
 8e60454137cd,arch/sse-last-event-id-cursors.md,S-6r5cdtdk,unlocated:no-match,,,,,2026-10-21
-9ed439fee1f3,arch/sse-last-event-id-cursors.md,S-6nbqywql,located,Module ngx_http_proxy_module > Example Configuration > Directives,capability;x-accel-buffer;proxy_ignore_header;ignor;accel;disabl;buffer;respons,2d4a5751eed7e219,"""X-Accel-Buffering"" response header field. This capability can be disabled using the proxyignoreheaders directive.",2026-10-21
 c052521050fc,arch/sse-last-event-id-cursors.md,S-6r5cdtdk,unlocated:no-match,,,,,2026-10-21
-c276a84b681e,arch/sse-last-event-id-cursors.md,S-e5yw2g7y,unlocated:no-match,,,,,2026-10-21
 d3e834d4f75d,arch/sse-last-event-id-cursors.md,S-6r5cdtdk,unlocated:no-match,,,,,2026-10-21
 dc343154affd,arch/sse-last-event-id-cursors.md,S-6r5cdtdk,unlocated:no-match,,,,,2026-10-21
-dc343154affd,arch/sse-last-event-id-cursors.md,S-e5yw2g7y,unlocated:no-match,,,,,2026-10-21
 16903281c4b3,arch/texts-catalogue-formats.md,S1709,located,,install;pip;fluent.runtim;0.4.0;runtim;fluent,f78aa50bea55fdc0,fluent.runtime 0.4.0 Localization library for expressive translations. pip install fluent.runtime,2026-10-14
 21f2ef299372,arch/texts-catalogue-formats.md,S1717,unlocated:no-match,,,,,2026-10-10
 22e03167ccff,arch/texts-catalogue-formats.md,S-zqoo6bqj,located,Tabular Model Definition Language (TMDL) | Microsoft Learn > TMDL folder structure,schema;linguistic;cultur;each;one;file,dda3797ab83a7c91,One file for each culture linguistic schema.,2026-10-21
@@ -5934,7 +5759,6 @@ fead0dfd883a,claude/api-limits.csv,S-5uxkh3j5,located,Rate limits > Spend limits
 02460f40ba74,claude/ci-and-headless.md,S1802,unlocated:no-match,,,,,2026-10-12
 075cd6f9d07b,claude/ci-and-headless.md,S-ezqg74ki,located,Model configuration > Available models > Setting your model,actual;modelusag;output-format;stder;stream;stream-json;format;output,ffc5f9adecc30d70,The stderr warning is suppressed for --output-format json and stream-json; read the actual model from the modelUsage field of the result message instead.,2026-10-21
 08d5d28f36fe,claude/ci-and-headless.md,S1824,located,CLI reference > CLI commands,authmethod;email;helper;method;oauth_token;party;third;third_party,f12c15c6f1cd3918,"claude auth login | Sign in to your Anthropic account. Use --email to pre-fill your email address, --sso to force SSO authentication, and --console to",2026-10-21
-08d5d28f36fe,claude/ci-and-headless.md,S-hvuk3dqt,unlocated:no-match,,,,,2026-10-21
 0d7a5d83dbaf,claude/ci-and-headless.md,S1801,unlocated:no-match,,,,,2026-10-12
 0dfaa3954966,claude/ci-and-headless.md,S-pilcrlei,located,Other LLM gateways > Subscriptions and gateways,apikeyhelper;helper;owns;token;whoever;bill;key;saved,669cfadbd7e6f246,"While a gateway credential variable or apiKeyHelper is active, requests carry that credential in place of a developer's claude.ai subscription login, and the subscription's usage",2026-10-12
 15ef8fa68e32,claude/ci-and-headless.md,S-l6l42j6e,located,Configure the sandboxed Bash tool > Get started > Sandbox modes > Turn off the retry with strict sandbox mode,claude_code_subprocess_env_scrub;scrub;shell-mod;subprocess;env;includ;linux;shell,2b2fb9b262e4887f,"A Linux session with CLAUDECODESUBPROCESSENVSCRUB set: every command runs sandboxed, shell-mode commands included",2026-10-12
@@ -5969,7 +5793,6 @@ fead0dfd883a,claude/api-limits.csv,S-5uxkh3j5,located,Rate limits > Spend limits
 450e6fba8ef6,claude/ci-and-headless.md,S1800,unlocated:no-match,,,,,2026-10-12
 4731b5ed1b65,claude/ci-and-headless.md,S2131,located,Pricing > Feature-specific pricing > Prompt caching,million;0.10;0.20;5.5;usd;sonnet;opus;cach,6a6f7449401cca6f,"On Claude Opus 5.5 and Claude Sonnet 5.5, a cache hit costs 5% of the standard input price ($0.20 USD per million tokens on Claude",2026-10-21
 4cb70b975d31,claude/ci-and-headless.md,S1824,located,CLI reference > CLI commands,api_key;authmethod;email;method;key;out;subscription;anthropic,f12c15c6f1cd3918,"claude auth login | Sign in to your Anthropic account. Use --email to pre-fill your email address, --sso to force SSO authentication, and --console to",2026-10-21
-4cb70b975d31,claude/ci-and-headless.md,S-frvnva4f,unlocated:no-match,,,,,2026-10-21
 506e3eb1f601,claude/ci-and-headless.md,S1800,located,Run Claude Code programmatically > Basic usage > If the working directory is deleted,again;exist;mid;mid-session;delet;emit;keep;shell,4632a418316c6fd9,"If the working directory of a claude -p or Agent SDK session is deleted mid-session, the session keeps running. When a turn starts while the",2026-10-21
 5241027196ec,claude/ci-and-headless.md,S-ezqg74ki,unlocated:no-match,,,,,2026-10-12
 527801404835,claude/ci-and-headless.md,S1864,located,Changelog > 2.1.284,claude-sonnet-5-5;5.5;sonnet;anthropic;api;default;model;added,ef95917ecfc62520,"Added Claude Sonnet 5.5 (claude-sonnet-5-5), now the default Sonnet model on the Anthropic API - 1M context, $2/$10 per Mtok with $0.20/Mtok cache reads",2026-10-21
@@ -6346,8 +6169,6 @@ fe5dab79e3a9,claude/env-vars.csv,S-lreom5ko,located,Enterprise network configura
 1f6586a72513,claude/hooks.md,S743,unlocated:no-match,,,,,2026-10-12
 1fd8321d84ef,claude/hooks.md,S-wgllyvwc,located,Agent SDK reference - TypeScript > Message Types > `SDKUserMessage`,tool_us;named;depend;shap;typed;tool_use_result;tool_result;rather,60f3a63c1d12ae52,"On a message that carries a toolresult block, tooluseresult is the tool's structured output object rather than the text sent to the model. Its shape",2026-10-12
 20244bc3c156,claude/hooks.md,S-uzkb4duq,located,Manage sessions > Export and locate session data > Where transcripts are stored,break;hash;internal;metadata;truncat;version;pars;releas,0dd24780adad8170,"For a working directory whose converted name exceeds 200 characters, Claude Code truncates the name to 200 characters and appends a hash of the full",2026-10-12
-2314257614c8,claude/hooks.md,S-exebozns,unlocated:no-match,,,,,2026-10-21
-2314257614c8,claude/hooks.md,S-hvuk3dqt,unlocated:no-match,,,,,2026-10-21
 243c67e0c5b3,claude/hooks.md,S743,located,Hooks reference > Hook events > UserPromptSubmit > UserPromptSubmit input,collap;past;expand;plac;userpromptsubmit;submit;common;content,25a84004fd91ac4b,"In addition to the common input fields, UserPromptSubmit hooks receive the prompt field containing the submitted text. Pasted content that collapsed to a [Pasted text",2026-10-21
 247da2511a68,claude/hooks.md,S743,located,Hooks reference > Hook events > PostToolUseFailure > PostToolUseFailure input,exit-cod;middl;middle-truncat;around;insert;truncat;could;timed,081b80663dc8c8d4,"A payload may also carry a bare failure message with no exit-code line, when Claude Code could not start the shell process itself Claude Code",2026-10-21
 26fafc78cf74,claude/hooks.md,S743,unlocated:no-match,,,,,2026-10-12
@@ -7172,7 +6993,6 @@ be38d7ccaccc,claude/settings-and-scopes.md,S-zcuxapgb,located,Choose a permissio
 c04c7e790576,claude/settings-and-scopes.md,S742,located,Configure permissions > Tool-specific permission rules > Bash > Exec wrappers and `find` actions,tmp;delet;find;exact;wildcard;pattern;name;read,cffe27af231167ff,"not an exact match, so the command still prompts.",2026-10-21
 c0e2a5ed8f10,claude/settings-and-scopes.md,S742,unlocated:no-match,,,,,2026-10-21
 c0e2a5ed8f10,claude/settings-and-scopes.md,S1824,unlocated:no-match,,,,,2026-10-21
-c0e2a5ed8f10,claude/settings-and-scopes.md,S-zcuxapgb,unlocated:no-match,,,,,2026-10-21
 c2a080bcfd0f,claude/settings-and-scopes.md,S-pmhgjvef,located,Configure permissions > Tool-specific permission rules > Read and Edit,consult;legacy;allowedtool;multi;multiedit;docs;notebook;notebookedit,ad1bfccd66333711,"If you write a path rule for Write, NotebookEdit, Glob, or the legacy MultiEdit tool instead, Claude Code accepts the rule but never consults it,",2026-10-13
 c5877df12781,claude/settings-and-scopes.md,S-zcuxapgb,located,Choose a permission mode > Protected paths,session-scop;permissions.allow;offer;pre-approv;folder;protected-path;scop;pre,98e9067cbed73083,"permissions.allow rules in settings files do not pre-approve protected-path writes. The safety check runs before Claude Code evaluates allow rules from settings, so an entry",2026-10-12
 ca9b12c28d05,claude/settings-and-scopes.md,S1863,located,How Claude remembers your project > CLAUDE.md files > How CLAUDE.md files load,concatenat;order;discover;root;each;claude.local.md;context;local,904e39ca3675c775,"Run Claude Code in foo/bar/ and it loads instructions from foo/bar/CLAUDE.md, foo/CLAUDE.md, and any CLAUDE.local.md files alongside them. All discovered files are concatenated into context",2026-10-12
@@ -8467,8 +8287,6 @@ a9f145af1dcd,gitlab/codeowners.md,S444,located,Protect a branch > Configure prot
 3393e4049887,gitlab/commit-signing-and-provenance.md,S-oroizj3k,located,Prerequisites > Troubleshooting > Web commits become unsigned after rebase,rebas;push;gitlab;lab;git,1ed4e02250e174ef,"rebase the branch locally, and push the changes back up to GitLab.",2026-10-15
 368af1706b91,gitlab/commit-signing-and-provenance.md,S-anknmecs,located,,blob;mailmap.blob;mailmap.fil;file;mailmap,91cac9c8d6e333a4,the location pointed to by the mailmap.file or mailmap.blob,2026-10-19
 3a2afdb98d61,gitlab/commit-signing-and-provenance.md,S-gfhrhfsb,located,,background;daily;revocation;worker;list;lab;check;gitlab,910a660d529a84e3,GitLab checks certificate revocation lists on a daily basis with a background worker.,2026-10-15
-3cdc552a63c1,gitlab/commit-signing-and-provenance.md,S-3466yhgq,unlocated:no-match,,,,,2026-10-21
-3cdc552a63c1,gitlab/commit-signing-and-provenance.md,S-6sw5hnns,unlocated:no-match,,,,,2026-10-21
 3da4910d9ac9,gitlab/commit-signing-and-provenance.md,S-3466yhgq,located,Managing deploy keys > GitHub App installation access tokens,decoupl;installation;token;user;hub;git;access;github,413e46491716e776,"Since GitHub Apps are a first class actor on GitHub, the installation access tokens are decoupled from any GitHub user",2026-10-21
 42d7e547e2df,gitlab/commit-signing-and-provenance.md,S440,unlocated:no-match,,,,,2026-10-15
 42d7e547e2df,gitlab/commit-signing-and-provenance.md,S444,unlocated:no-match,,,,,2026-10-15
@@ -8507,7 +8325,6 @@ a9f145af1dcd,gitlab/codeowners.md,S444,located,Protect a branch > Configure prot
 a0afc8f1e317,gitlab/commit-signing-and-provenance.md,S-yg2mm5c6,located,,entity;human;non-human;non;user;account;servic,8e60aa01713d1158,Service accounts are user accounts that represent non-human entities rather than individual people.,2026-10-15
 a4cd504874bb,gitlab/commit-signing-and-provenance.md,S-ucjfr2m7,located,Source: Requirements for producing source > Requirements > Source Control System,vsa;level;revision;sourc,c7340cb33c76a653,"If the SCS DOES NOT generate a VSA for a revision, the revision has Source Level 0.",2026-10-21
 a6a19617caab,gitlab/commit-signing-and-provenance.md,S-6sw5hnns,located,Authenticating as a GitHub App installation > About authentication as a GitHub App installation,password;http;access;token;installation,7e9459b210fb5e22,use the installation access token as the HTTP password,2026-10-21
-a6fd968674f0,gitlab/commit-signing-and-provenance.md,S-wzatkg4o,unlocated:no-match,,,,,2026-10-21
 a8113fd6dec8,gitlab/commit-signing-and-provenance.md,S-mgxxzq3i,unlocated:no-match,,,,,2026-10-21
 a842a7f34d0f,gitlab/commit-signing-and-provenance.md,S-oroizj3k,located,Prerequisites > Turn on web-based commit signing for a group or project,editor;ide;merg;request;web;gitlab;lab;git,c236dce4e40da396,"the GitLab UI (Web Editor, Web IDE, and merge requests) are",2026-10-15
 a9be4d36adce,gitlab/commit-signing-and-provenance.md,S-jut4uqct,located,Verify commits > Verify GitLab-signed commits,creat;web;key;gitlab;lab;git;sign;commit,8a6faddb3997e150,"GitLab signs the commits it creates, like commits made through the web UI, with a key",2026-10-15
@@ -8516,10 +8333,6 @@ b10d9be608e2,gitlab/commit-signing-and-provenance.md,S-lu25cylz,located,Enable g
 b2f482bbbef4,gitlab/commit-signing-and-provenance.md,S-ucjfr2m7,unlocated:no-match,,,,,2026-10-15
 b3343432ea6b,gitlab/commit-signing-and-provenance.md,S-hvhro6n5,located,Set the maximum job timeout > Artifact provenance metadata,plain;stor;text;json;metadata;artifact,b7d9fca86aa4147a,The metadata renders in a plain text .json file stored with the artifact.,2026-10-15
 b3e3691e3fc1,gitlab/commit-signing-and-provenance.md,S-mgxxzq3i,located,Build: Requirements for producing artifacts > Producer > Distribute provenance,consumer;distribut;artifact;producer;must;provenanc,db5600cb4e6a9dcc,The producer MUST distribute provenance to artifact consumers.,2026-10-21
-ba23b5585e5a,gitlab/commit-signing-and-provenance.md,S-5636dvek,unlocated:no-match,,,,,2026-10-21
-ba23b5585e5a,gitlab/commit-signing-and-provenance.md,S-6sw5hnns,unlocated:no-match,,,,,2026-10-21
-ba23b5585e5a,gitlab/commit-signing-and-provenance.md,S-7qi3b6ep,unlocated:no-match,,,,,2026-10-21
-ba23b5585e5a,gitlab/commit-signing-and-provenance.md,S-ziyhuwyc,unlocated:no-match,,,,,2026-10-21
 be389691c4f3,gitlab/commit-signing-and-provenance.md,S-lu25cylz,located,Enable global push rules > Reject commits that aren't DCO certified,off;signed-off-by;trailer;every;messag;sign;reject;commit,9f49c4a2eb0f6350,"trailer in every commit message, and rejects any commits that lack it.",2026-10-15
 bf9fd8c6b9d6,gitlab/commit-signing-and-provenance.md,S-mgxxzq3i,located,Build: Requirements for producing artifacts > Build Platform > Provenance generation,cryptographic;digest;output;produc;must;provenanc;build,ecf0b97099e4c7f8,The build process MUST generate provenance that unambiguously identifies the output package by cryptographic digest and describes how that package was produced.,2026-10-21
 c1f543a829a5,gitlab/commit-signing-and-provenance.md,S-ucjfr2m7,located,Source: Requirements for producing source > Basics > Level 2: History & Provenance,retain;continuous;immutabl;each;history;provenanc;attestation;revision,ec7309b93751190a,"Branch history is continuous, immutable, and retained, and the SCS issues Source Provenance Attestations for each new Source Revision.",2026-10-21
@@ -8533,8 +8346,6 @@ d56281e03c45,gitlab/commit-signing-and-provenance.md,S-243c6khs,located,`buildTy
 d9a96f9ced02,gitlab/commit-signing-and-provenance.md,S-hthqd5dx,located,,keyr;own;server;public;lab;gitlab;git;gpg,45a878eb1210e26c,GitLab uses its own keyring to verify the GPG signature. It does not access any public key server.,2026-10-15
 d9effab48ac4,gitlab/commit-signing-and-provenance.md,S-jut4uqct,located,Verify commits,unsign;badg;commit,1029943487b7a4f1,Unsigned commits do not display a badge.,2026-10-15
 dc0ac95a7ff3,gitlab/commit-signing-and-provenance.md,S-cfpw3yy4,located,Create a project access token > Bot users for projects,bot;creat;user;project;access;token,89252327f98de065,"When you create a project access token, GitLab creates a bot user and associates it with the token.",2026-10-15
-de14760655d8,gitlab/commit-signing-and-provenance.md,S-ijgc3zl2,located,About commit signature verification > Signature verification for bots,app;custom;api;author;committer;information;hub;github,23c511332bff80e0,Signature verification for bots will only work if the request is verified and authenticated as the GitHub App or bot and contains no custom author,2026-10-21
-de14760655d8,gitlab/commit-signing-and-provenance.md,S-ziyhuwyc,unlocated:no-match,,,,,2026-10-21
 e0239ec56b49,gitlab/commit-signing-and-provenance.md,S442,located,Add an approval rule > Eligible approvers,direct;must;member;approver;user;project,a7baa788f0508ec0,"To be eligible as an approver for your project, a user must be a direct member of at least one of the following:",2026-10-15
 e0806626a873,gitlab/commit-signing-and-provenance.md,S-wyjdebjb,located,List all SSH keys > Add an SSH key,auth_and_sign;default;sign;auth;usag;usage_typ;type,f0747e968c2e474f,"Usage scope for the key. Possible values: auth, signing, or authandsigning.",2026-10-15
 eaad7dd0eea0,gitlab/commit-signing-and-provenance.md,S-zsl52tpy,located,Build: Provenance > Schema > BuildDefinition,requir;buildtyp;externalparameter;external;slsa;type;parameter;build,2427344fc7bf71e4,"REQUIRED for SLSA Build L1: buildType, externalParameters",2026-10-21
@@ -9224,50 +9035,26 @@ fb9811075fd0,gitlab/multi-repository-layouts.md,S-5obxyibm,located,,fail;need;su
 fb9811075fd0,gitlab/multi-repository-layouts.md,S-mvqt325m,located,,only-is-on-demand;recurse-submodul;demand;recurs;push;submodul,2ee1bad769a98180,"strvecpush(&cp.args, ""--recurse-submodules=only-is-on-demand"");",2026-10-19
 fb9811075fd0,gitlab/multi-repository-layouts.md,S-wt7v2674,located,,instead;recur;warn;push.recursesubmodul;recursesubmodul;on-demand;demand;recurs,5a760cf0dfeaba32,"warning((""recursing into submodule with push.recurseSubmodules=only; using on-demand instead""));",2026-10-21
 fcf108481737,gitlab/multi-repository-layouts.md,S-umm7t5f4,located,,file;user;default;policy;protocol,a627a0fb151d3f35,all other protocols (including file) have a default policy of user.,2026-10-19
-02bd4d6ffc19,gitlab/package-registries.md,S-5lpubwd5,located,View the container registry > View the tags of a specific container image in the container registry,configuration;digest;page;manifest;detail;tag;tags,de46f0962a466f49,"You can view details about each tag, such as when it was published, how much storage it consumes, and the manifest and configuration digests. You",2026-10-21
 02bd4d6ffc19,gitlab/package-registries.md,S-gqpmeuse,unlocated:no-match,,,,,2026-10-21
 0631837ff277,gitlab/package-registries.md,S-v25mipeh,located,Package request forwarding security notice > Publish a PyPI package > Publish with inline authentication,twine_password;twine_usernam;usernam;deploy;gitlab-ci-token;password;project_id;job,bb61d82a2773d71c,"TWINEPASSWORD=<personalaccesstoken, deploytoken, or $CIJOBTOKEN> \ TWINEUSERNAME=<username, deploytokenusername, or gitlab-ci-token> \ python3 -m twine upload --repository-url https://gitlab.example.com/api/v4/projects/<projectid>/packages/pypi dist/",2026-10-21
-17c47d44bb90,gitlab/package-registries.md,S-fo6cckzx,unlocated:no-match,,,,,2026-10-21
 1c6b79d1024b,gitlab/package-registries.md,S-owkwtkdm,located,Authenticate with username and password > Troubleshooting > Error: `unauthorized: authentication required` when pushing large images,default;gitlab.com;manag;self;self-manag;minut;com;authentication,525601b0f007da9e,"This error happens when your authentication token expires before the image push is complete. By default, tokens for the container registry on GitLab Self-Managed instances",2026-10-21
 2193a3d1cc82,gitlab/package-registries.md,S-v25mipeh,located,Package request forwarding security notice > Install a private PyPI package in a CI/CD pipeline > Use inline credentials,group_id;gitlab-ci-token;simpl;job;name;pip;group;api,470055ad2a3b8bc0,- pip install <packagename> --index-url https://gitlab-ci-token:${CIJOBTOKEN}@gitlab.example.com/api/v4/groups/<groupid>/-/packages/pypi/simple,2026-10-21
-234baf24d689,gitlab/package-registries.md,S-fo6cckzx,unlocated:no-match,,,,,2026-10-21
-2554cc4216ee,gitlab/package-registries.md,S-ocjsmgvx,located,Supported package managers > Supported hash types,interfac;api;hash;support;registry;packag,678ba03bc64adc7e,You can view these values in the user interface or with the API. The package registry supports the following hash types:,2026-10-21
-2e1173173fc0,gitlab/package-registries.md,S-5lpubwd5,unlocated:no-match,,,,,2026-10-21
-3b826f628190,gitlab/package-registries.md,S-ocjsmgvx,located,Supported package managers,generally;availabl;pypi,741fbb78faabf55a,PyPI | Generally available,2026-10-21
-3cf0711382d6,gitlab/package-registries.md,S-5lpubwd5,located,View the container registry > Container registry visibility permissions,anonymous;guest;reporter;public;enabl;privat;pull;view,ed47472e89b287ee,"| | Anonymous<br/>(Everyone on internet) | Guest | Reporter, Developer, Maintainer, Owner Public project with container registry visibility <br/> set to Everyone With Access (UI)",2026-10-21
-3d5682f1df42,gitlab/package-registries.md,S-5lpubwd5,unlocated:no-match,,,,,2026-10-21
-3d5682f1df42,gitlab/package-registries.md,S-n3qvicph,unlocated:no-match,,,,,2026-10-21
 3d5682f1df42,gitlab/package-registries.md,S-v25mipeh,unlocated:no-match,,,,,2026-10-21
-3f456618a1ce,gitlab/package-registries.md,S-fo6cckzx,located,Authenticate to the package registry > Troubleshooting > Internal Server error on large file uploads to S3,larger;limit;put;signatur;singl;object;storag;version,c8a30498b10d1433,S3-compatible object storage limits the size of a single PUT request to 5 GB. If the awssignatureversion is set to 2 in the object storage,2026-10-21
-4c7ddab19449,gitlab/package-registries.md,S-fo6cckzx,located,Authenticate to the package registry > Verify file integrity with checksums > Get checksums from response headers,serv;workhors;direct;redirect;through;x-checksum-sha256;sha256;object,8a6556baf3a65416,"Enable object storage, but disable direct download (files are served through GitLab Workhorse). When object storage direct download is enabled, files are redirected to the",2026-10-21
 606429dbbe3f,gitlab/package-registries.md,S-v25mipeh,located,Package request forwarding security notice,even;found;org;pypi.org;request;forward;git;lab,54c8f0e91784031c,"When using the GitLab PyPI package registry, package requests that cannot be found in the GitLab registry are automatically forwarded to pypi.org. This behavior can",2026-10-21
-62cfa3860463,gitlab/package-registries.md,S-n3qvicph,located,Package workflows > Package registry visibility permissions,guest;reporter;developer;internal;privat;publish;view;pull,874cd657fe9c2093,Internal | Publish a package | Developer Internal | Pull a package | Guest (1) Private | View package registry | Reporter,2026-10-21
-641c9f80d506,gitlab/package-registries.md,S-fo6cckzx,unlocated:no-match,,,,,2026-10-21
 89663306a9cf,gitlab/package-registries.md,S-v25mipeh,located,Package request forwarding security notice > Install a PyPI package > Package names,normaliz;pep;repeat;name,c9c648d263df5847,"Python normalized names (PEP-503). The characters -, , and . are all treated the same, and repeated",2026-10-21
 90eb87089219,gitlab/package-registries.md,S-v25mipeh,located,Package request forwarding security notice > Install a private PyPI package in a CI/CD pipeline,level;top-level;other;top;job;group;project;token,a01546cdc941b9cb,The job token authenticates automatically and can also access packages in other projects within the same top-level group.,2026-10-21
 923df1cbac13,gitlab/package-registries.md,S-gqpmeuse,located,Change the visibility of the container registry > List all registry repositories > Within a group,list;group;repository;registry,4a3bd79769812710,Lists all registry repositories for a specified group.,2026-10-21
 acddc977b817,gitlab/package-registries.md,S-gqpmeuse,unlocated:no-match,,,,,2026-10-21
-ad863f5b6a68,gitlab/package-registries.md,S-n3qvicph,unlocated:no-match,,,,,2026-10-21
-b08604d071c5,gitlab/package-registries.md,S-ocjsmgvx,located,Supported package managers > Publishing packages,publish;instanc;group;project;packag,3bf220b9504c6c8a,"Packages can be published to your project, group, or instance.",2026-10-21
-b4422f26d98b,gitlab/package-registries.md,S-5lpubwd5,located,View the container registry > Container registry visibility permissions,reporter;public;member;access;enabl;everyon;privat;project,ed47472e89b287ee,"| | Anonymous<br/>(Everyone on internet) | Guest | Reporter, Developer, Maintainer, Owner Public project with container registry visibility <br/> set to Everyone With Access (UI)",2026-10-21
 b4422f26d98b,gitlab/package-registries.md,S-gqpmeuse,located,Change the visibility of the container registry,everyon;disabl;visibl;container_registry_access_level;enabl;level;default;privat,27ffdb2ec00e9476,"containerregistryaccesslevel | string | no | The desired visibility of the container registry. One of enabled (default), private, or disabled. Descriptions of the possible values",2026-10-21
 b70ec1bb03fe,gitlab/package-registries.md,S-jk4rtq6g,located,,authentication;support;write_registry;read_registry;push;repository;pull;writ,a32451324d1f4b9f,"writerepository | Personal, group, project | Grants read and write access (pull and push) to repositories for the token's scope: private projects for a personal",2026-10-21
 b70ec1bb03fe,gitlab/package-registries.md,S-owkwtkdm,unlocated:no-match,,,,,2026-10-21
 b8dee46c4b3b,gitlab/package-registries.md,S-owkwtkdm,located,Authenticate with username and password > Use GitLab CI/CD to authenticate,per-job;read-writ;hold;ci_registry_password;ci_registry_user;job;user;writ,f0d2c64091d2a48b,"The CIREGISTRYUSER and CIREGISTRYPASSWORD CI/CD variables. CIREGISTRYUSER holds a per-job user with read-write access to the container registry,",2026-10-21
-ba473a8676d1,gitlab/package-registries.md,S-ocjsmgvx,located,Supported package managers > Publishing packages,publish;instanc;group;project;packag,3bf220b9504c6c8a,"Packages can be published to your project, group, or instance.",2026-10-21
 ba473a8676d1,gitlab/package-registries.md,S-v25mipeh,located,Package request forwarding security notice > Publish a PyPI package,availabl;publish;registry;group;project;packag,477d30d453913619,"If your project is in a group, PyPI packages published to the project registry are also available in the group registry.",2026-10-21
-c0847178af79,gitlab/package-registries.md,S-fo6cckzx,unlocated:no-match,,,,,2026-10-21
-c0847178af79,gitlab/package-registries.md,S-ocjsmgvx,unlocated:no-match,,,,,2026-10-21
 c611c92fcdff,gitlab/package-registries.md,S-v25mipeh,unlocated:no-match,,,,,2026-10-21
 cab429157019,gitlab/package-registries.md,S-cx5yd4ae,located,docker image pull,name;tag;digest;pull;imag,ae2a3f3630768e9c,image pull [OPTIONS] NAME[:TAG|@DIGEST],2026-10-13
-caf47afa6549,gitlab/package-registries.md,S-5lpubwd5,located,View the container registry > Container image signatures > Sign container images with OCI referrer data,fully;implement;field;subject;1.1;manifest;referrer;api,23f73ea487ff6968,"While the GitLab container registry supports the OCI 1.1 manifest subject field, it does not fully implement the OCI 1.1 Referrers API.",2026-10-21
 dec2b8e0481c,gitlab/package-registries.md,S-v25mipeh,unlocated:no-match,,,,,2026-10-21
 f410ec77ab16,gitlab/package-registries.md,S-2fkrq2c6,located,Secrets Management > Pipeline Integrity > Docker images,sha;digest;alway;docker;imag,d6b1371b9179caa2,Always use SHA digests for Docker images to ensure client-side integrity verification.,2026-10-13
-ff6aa2b2f496,gitlab/package-registries.md,S1507,unlocated:no-match,,,,,2026-10-21
-ff6aa2b2f496,gitlab/package-registries.md,S-cx5yd4ae,unlocated:no-match,,,,,2026-10-21
-ff6aa2b2f496,gitlab/package-registries.md,S-fo6cckzx,unlocated:no-match,,,,,2026-10-21
 ff6aa2b2f496,gitlab/package-registries.md,S-gqpmeuse,unlocated:no-match,,,,,2026-10-21
-ff6aa2b2f496,gitlab/package-registries.md,S-ocjsmgvx,unlocated:no-match,,,,,2026-10-21
 05cf6c8db0ae,gitlab/pipelines-rules.md,S447,located,Keywords > Job keywords > `rules`,on_success;delay;success;added;alway;exist;match;chang,4579f304d034c3d4,"The job is added to the pipeline: If an if, changes, or exists rule matches, and is configured with when: onsuccess (default if not defined),",2026-10-10
 135d51b84ef7,gitlab/pipelines-rules.md,S-zh7oqkup,located,,com;dedicat;gitlab.com;manag;self;self-manag;test;git,c77958abc63de125,"Offering: GitLab.com, GitLab Self-Managed, GitLab Dedicated {{< /details >}} Merged results pipelines test a temporary merged commit that combines code from",2026-10-10
 1e2a13eb35a3,gitlab/pipelines-rules.md,S448,unlocated:no-match,,,,,2026-10-10
@@ -13544,75 +13331,7 @@ e34635ade693,privacy/gliner-models.md,S856,unlocated:no-match,,,,,2026-10-10
 e34635ade693,privacy/gliner-models.md,S858,located,GLiNER-PII: Zero-shot PII model > 💡 Use Cases > 🌟 **Extended Applications** > Secure Mobile & Edge Processing,devic;card;name,c642231a027c2f0e,"piitypes = [""name"", ""phone number"", ""email address"", ""ssn"", ""credit card""] # All processing happens locally - no data leaves device",2026-10-10
 e34635ade693,privacy/gliner-models.md,S860,located,Usage Recommendation,name;label,d0c4337d0ad0bd11,"labels = [""email"", ""phonenumber"", ""username""]",2026-10-10
 f9a616af2583,privacy/gliner-models.md,S-zw4luelo,unlocated:no-match,,,,,2026-10-10
-0453a3d6901f,privacy/morfeusz-polish-lemmatisation.md,S-lbstvu2m,unlocated:no-match,,,,,2026-10-21
-0ca3aa211e41,privacy/morfeusz-polish-lemmatisation.md,S-d3lsp242,unlocated:not-text,,,,,2026-10-21
-0ca3aa211e41,privacy/morfeusz-polish-lemmatisation.md,S-jhuny2li,unlocated:not-text,,,,,2026-10-21
-0ca3aa211e41,privacy/morfeusz-polish-lemmatisation.md,S-jvn5jnee,located,Index of /morfeusz/20260823/,morfeusz2-dictionary-sgjp-20260823.tgz;dictionary;morfeusz2;polimorf;sgjp;tgz,6a425e7fde3a130a,morfeusz2-dictionary-polimorf-20260823.tgz 23-Aug-2026 23:21 8M morfeusz2-dictionary-sgjp-20260823.tgz 23-Aug-2026 23:20 7M,2026-10-21
-0f46594ae387,privacy/morfeusz-polish-lemmatisation.md,S-xz7r3unc,unlocated:not-text,,,,,2026-10-21
-0f46594ae387,privacy/morfeusz-polish-lemmatisation.md,S-zfdnyluh,unlocated:not-text,,,,,2026-10-21
-151d7ac996c4,privacy/morfeusz-polish-lemmatisation.md,S-7mdjthbr,unlocated:no-match,,,,,2026-10-21
-151d7ac996c4,privacy/morfeusz-polish-lemmatisation.md,S-ix7uqv2r,located,,pypi;spa;3.8;3.0;core;packag;version;spacy,1fb63413d7293750,"It features\nstate-of-the-art speed and neural network models for tagging, parsing,\nnamed entity recognition, text classification and more, multi-task\nlearning with pretrained transformers like BERT, as well as",2026-10-21
-151d7ac996c4,privacy/morfeusz-polish-lemmatisation.md,S-tzw22ffl,unlocated:no-match,,,,,2026-10-21
-1aac9e2601e0,privacy/morfeusz-polish-lemmatisation.md,S-caclcxya,unlocated:no-match,,,,,2026-10-21
-1aac9e2601e0,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-21
-1aac9e2601e0,privacy/morfeusz-polish-lemmatisation.md,S-zfdnyluh,unlocated:not-text,,,,,2026-10-21
-1cb11f523e49,privacy/morfeusz-polish-lemmatisation.md,S-igmmjjid,located,,lookup;pos;pos_lookup;spacy;mode;lemmatizer,c932dbf55b751be8,"""mode"": ""poslookup"", ""overwrite"": False, ""scorer"": {""@scorers"": ""spacy.lemmatizerscorer.v1""},",2026-10-21
-1fe00388449d,privacy/morfeusz-polish-lemmatisation.md,S-zfdnyluh,unlocated:not-text,,,,,2026-10-21
-23ca2a337c09,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-21
-24ae8d683b5e,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-21
-24d7afdd8f33,privacy/morfeusz-polish-lemmatisation.md,S-jvn5jnee,unlocated:no-match,,,,,2026-10-21
-24d7afdd8f33,privacy/morfeusz-polish-lemmatisation.md,S-zfdnyluh,unlocated:not-text,,,,,2026-10-21
-2d1923e85599,privacy/morfeusz-polish-lemmatisation.md,S-te5pgsg3,unlocated:not-text,,,,,2026-10-21
-2d1923e85599,privacy/morfeusz-polish-lemmatisation.md,S-xz7r3unc,unlocated:not-text,,,,,2026-10-21
-36a4f52e44e2,privacy/morfeusz-polish-lemmatisation.md,S-caclcxya,located,,releas;pypi;1.99.15;morfeusz2,b37b4cb25ce235a0,"""releaseurl"": ""https://pypi.org/project/morfeusz2/1.99.15/"",",2026-10-21
-36a4f52e44e2,privacy/morfeusz-polish-lemmatisation.md,S-jvn5jnee,unlocated:no-match,,,,,2026-10-21
-3898de0363ec,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-21
-3babbe845271,privacy/morfeusz-polish-lemmatisation.md,S-haoeqge5,unlocated:no-match,,,,,2026-10-21
-3babbe845271,privacy/morfeusz-polish-lemmatisation.md,S-pxcitvg3,unlocated:no-match,,,,,2026-10-21
-3babbe845271,privacy/morfeusz-polish-lemmatisation.md,S-sirpm4j2,unlocated:no-match,,,,,2026-10-21
-403c57acfebd,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-21
-4ee5200af74b,privacy/morfeusz-polish-lemmatisation.md,S-ohpwxaqx,located,fmt: off,adp;adv;aux;lemma_lookup_adj;num;part;pron;adj,39b5b0ffeb5d4288,"""lemmalookupadj"", ""lemmalookupadp"", ""lemmalookupadv"", ""lemmalookupaux"", ""lemmalookupnoun"", ""lemmalookupnum"", ""lemmalookuppart"", ""lemmalookuppron"", ""lemmalookupverb""",2026-10-21
-5580c8b63097,privacy/morfeusz-polish-lemmatisation.md,S-fgod2hh4,unlocated:not-text,,,,,2026-10-21
-5580c8b63097,privacy/morfeusz-polish-lemmatisation.md,S-haoeqge5,unlocated:no-match,,,,,2026-10-21
-5580c8b63097,privacy/morfeusz-polish-lemmatisation.md,S-pxcitvg3,unlocated:no-match,,,,,2026-10-21
-5580c8b63097,privacy/morfeusz-polish-lemmatisation.md,S-sirpm4j2,unlocated:no-match,,,,,2026-10-21
-5c092c73d228,privacy/morfeusz-polish-lemmatisation.md,S-caclcxya,unlocated:no-match,,,,,2026-10-21
-5c092c73d228,privacy/morfeusz-polish-lemmatisation.md,S-g6zhzddt,unlocated:no-match,,,,,2026-10-21
-75d884bc8502,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-21
-767b681c5a97,privacy/morfeusz-polish-lemmatisation.md,S-xz7r3unc,unlocated:not-text,,,,,2026-10-21
-7a6fcc850e8c,privacy/morfeusz-polish-lemmatisation.md,S-fkosk2vn,located,Analizator morfologiczny Morfeusz > Podstawowe pojęcia > Program Morfeusz,ipi;system;tagset;pan,ae8bfb20ca9fe7ac,"Z niewielkimi zmianami używany jest system znaczników (ang. tagset) opisany w artykule System znaczników morfosyntaktycznych w korpusie IPI PAN opublikowanym w Polonikach XXII/XXIII, 2003, s.",2026-10-21
-7a6fcc850e8c,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-21
-7ad367c27bfc,privacy/morfeusz-polish-lemmatisation.md,S-haoeqge5,unlocated:no-match,,,,,2026-10-21
-7ad367c27bfc,privacy/morfeusz-polish-lemmatisation.md,S-xz7r3unc,unlocated:not-text,,,,,2026-10-21
-7b9cfa39708b,privacy/morfeusz-polish-lemmatisation.md,S-xz7r3unc,unlocated:not-text,,,,,2026-10-21
-8786f2a002cd,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-21
-8786f2a002cd,privacy/morfeusz-polish-lemmatisation.md,S-zfdnyluh,unlocated:not-text,,,,,2026-10-21
 8eb4ec6631c2,privacy/morfeusz-polish-lemmatisation.md,S-u2shnqdn,unlocated:no-match,,,,,2026-10-21
-938a2bcb18c2,privacy/morfeusz-polish-lemmatisation.md,S-jvn5jnee,unlocated:no-match,,,,,2026-10-21
-938a2bcb18c2,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-21
-990f9399b1af,privacy/morfeusz-polish-lemmatisation.md,S-c3pmsz4l,unlocated:no-match,,,,,2026-10-21
-990f9399b1af,privacy/morfeusz-polish-lemmatisation.md,S-kpfntmtz,unlocated:no-match,,,,,2026-10-21
-9becc676674b,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-21
-a4f69027ef32,privacy/morfeusz-polish-lemmatisation.md,S-te5pgsg3,unlocated:not-text,,,,,2026-10-21
-a4f69027ef32,privacy/morfeusz-polish-lemmatisation.md,S-xz7r3unc,unlocated:not-text,,,,,2026-10-21
-aabce30804e7,privacy/morfeusz-polish-lemmatisation.md,S-fgod2hh4,unlocated:not-text,,,,,2026-10-21
-aea083fb2f7a,privacy/morfeusz-polish-lemmatisation.md,S-2b4qw6yv,unlocated:no-match,,,,,2026-10-21
-aea083fb2f7a,privacy/morfeusz-polish-lemmatisation.md,S-c2dp6hok,unlocated:no-match,,,,,2026-10-21
-aea083fb2f7a,privacy/morfeusz-polish-lemmatisation.md,S-i6a2ijlk,unlocated:no-match,,,,,2026-10-21
-b8278601bd36,privacy/morfeusz-polish-lemmatisation.md,S-xz7r3unc,unlocated:not-text,,,,,2026-10-21
-bde955348bd6,privacy/morfeusz-polish-lemmatisation.md,S-te5pgsg3,unlocated:not-text,,,,,2026-10-21
-bde955348bd6,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-21
-dadd06057b75,privacy/morfeusz-polish-lemmatisation.md,S850,unlocated:no-match,,,,,2026-10-21
-dadd06057b75,privacy/morfeusz-polish-lemmatisation.md,S-haoeqge5,unlocated:no-match,,,,,2026-10-21
-dadd06057b75,privacy/morfeusz-polish-lemmatisation.md,S-lbstvu2m,unlocated:no-match,,,,,2026-10-21
-e3ec518e4d2f,privacy/morfeusz-polish-lemmatisation.md,S-fkosk2vn,located,Analizator morfologiczny Morfeusz > Podstawowe pojęcia > Warianty programu Morfeusz,polimorf;sjp;sjp.pl;sgjp;siat,e1e39df44019a1aa,"Polimorf, wykorzystujący słownik fleksyjny Polimorf stanowiący połączenie danych SGJP z tworzonymi społecznościowo danymi Morfologika/sjp.pl. Dane Morfeusza SIaT miały z natury charakter przybliżony, ponieważ Indeks Tokarskiego-Saloniego",2026-10-21
-e3ec518e4d2f,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-21
-f0f7cdc23320,privacy/morfeusz-polish-lemmatisation.md,S-lbstvu2m,unlocated:no-match,,,,,2026-10-21
-f1995846b7b3,privacy/morfeusz-polish-lemmatisation.md,S-haoeqge5,unlocated:no-match,,,,,2026-10-21
-f1995846b7b3,privacy/morfeusz-polish-lemmatisation.md,S-ohpwxaqx,unlocated:no-match,,,,,2026-10-21
-f607d305e635,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-21
-f6ce7405723c,privacy/morfeusz-polish-lemmatisation.md,S-ohpwxaqx,unlocated:no-match,,,,,2026-10-21
-fc6e819ea1f0,privacy/morfeusz-polish-lemmatisation.md,S-caclcxya,located,,macosx;macosx_11_0_universal2;universal;1.99.15;abi3;cp310;packag;morfeusz2,4fe3355ef900c673,"""url"": ""https://files.pythonhosted.org/packages/a3/cf/87a496f0632b2c7d97bfbbf5f38000510d16c9b2e7c5d6ea8ffe11eebe07/morfeusz2-1.99.15-20260601-cp310-abi3-macosx110universal2.whl"",",2026-10-21
 0515845f4b26,privacy/nist-sp800-38g.md,S869,unlocated:gone,,,,,2026-10-10
 11d11c51f622,privacy/nist-sp800-38g.md,S866,unlocated:no-match,,,,,2026-10-10
 11d11c51f622,privacy/nist-sp800-38g.md,S867,unlocated:no-match,,,,,2026-10-10
@@ -13768,50 +13487,16 @@ eeae9431b9e2,python/interpreter-startup.md,S-gmtatolh,located,Compute the list o
 f0c169bcd9c3,python/interpreter-startup.md,S-j7sjakc5,located,,none;return;stder;string;sys;sys.stder;fals;quiet,8868f80511d6ef27,"If quiet is 0 or 1, and doraise is false, the default behaviour is enabled: an error string is written to sys.stderr, and the function",2026-10-10
 fd385ca5aec7,python/interpreter-startup.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-14
 fd385ca5aec7,python/interpreter-startup.md,S-ew7mucsg,located,release semaphore,python_cpu_count;overrid;cpu_count;cpu;count;3.13;python,2530d652d55ded52,".. versionchanged:: 3.13 If :option:-X cpucount <-X> is given or :envvar:PYTHONCPUCOUNT is set, :func:cpucount returns the override value n.",2026-10-14
-0971c694d623,python/maturin-pyo3-wheels.md,S-g5ef7rue,located,PyO3 > Usage,25.0;3.11;3.12;3.8;7.3;graal;graalpy;pypy,9db6e1a3977a6f6b,CPython 3.8 or greater PyPy 7.3 (Python 3.11+) GraalPy 25.0 or greater (Python 3.12+),2026-10-21
 0e30f622fb22,python/maturin-pyo3-wheels.md,S-26hqxvrn,located,Bindings > `pyo3`,cargo.toml;cargo;dependency;automatically;detect;toml;pyo3;maturin,c1576ef5932983fd,maturin automatically detects pyo3 bindings when it's added as a dependency in Cargo.toml.,2026-10-21
-18f2992223e6,python/maturin-pyo3-wheels.md,S-pyhwnq4g,unlocated:no-match,,,,,2026-10-21
-23e4ce8cbfc9,python/maturin-pyo3-wheels.md,S-yfykoru4,located,Platform Support > Releases,arm64;armv7;binary;linux;ppc64l;s390x;wheel;window,5d75b3ebeed2a5a9,"The following targets are built into wheels and downloadable binaries: Windows: 32-bit and 64-bit x86 as well as arm64 Linux: x86, x8664, armv7, aarch64 and",2026-10-21
-275f230dde86,python/maturin-pyo3-wheels.md,S-hec62m7j,located,Project Layout > Adding Python type information,empty;marker;information;py.typ;typed;pyi;stub;type,460289b20997ff8c,"To distribute typing information, you need to add: an empty marker file called py.typed in the root of the Python package inline types in Python",2026-10-21
 2e13c21b25f3,python/maturin-pyo3-wheels.md,S-26hqxvrn,located,Bindings > `pyo3` > `Py_LIMITED_API`/abi3,3.14;cp314;cp314-cp314t;cp314t;free;free-thread;thread;specific,377dfec4a15eb845,"Free-threaded CPython 3.14 does not support the abi3t stable ABI, so maturin builds a version-specific cp314-cp314t wheel for it instead.",2026-10-21
-3869f1a2c1dd,python/maturin-pyo3-wheels.md,S-c6fbhzyz,located,Distribution > Source Distribution,1.0;2.0;backend;build-backend;build-system;packag;system;pyproject,57a4ff6f5b3a88bf,"requires = [""maturin>=1.0,<2.0""] build-backend = ""maturin"" If a pyproject.toml with a [build-system] entry is present, maturin can build a source distribution of your package when",2026-10-21
-494d12e8a24a,python/maturin-pyo3-wheels.md,S-hec62m7j,located,Project Layout > Mixed Rust/Python project,lib.nam;match;mixed;cargo.toml;lib;cargo;directory;sourc,f444a8210c05d4cd,"To create a mixed Rust/Python project, add a directory with your package name (i.e. matching lib.name in your Cargo.toml) to contain the Python source:",2026-10-21
-593a2c7869ee,python/maturin-pyo3-wheels.md,S-pyhwnq4g,located,Building and distribution > Building Python extension modules > `Py_LIMITED_API`/`abi3`/`abi3t`,advantag;copy;vendor;architectur;each;singl;minimum;distribut,fef6efc895fcd667,The advantage of building extension modules using the limited Python API is that package vendors only need to build and distribute a single copy (for,2026-10-21
-61b7e97b1798,python/maturin-pyo3-wheels.md,S-hisnadiu,unlocated:no-match,,,,,2026-10-21
-628a924eb8f5,python/maturin-pyo3-wheels.md,S-romblyjt,unlocated:no-match,,,,,2026-10-21
-6d23dc80dca5,python/maturin-pyo3-wheels.md,S-hisnadiu,located,Configuration > Configuration keys > maturin options > `generate-ci`,array;container;plus;befor;before-script-linux;keys;args;runner,c0739616473e3ad2,"# [[tool.maturin.generate-ci.github.<platform>.target]] array, plus shared # keys: runner, manylinux, container, docker-options, rust-toolchain, # rustup-components, before-script-linux, args.",2026-10-21
 73cf75a0180a,python/maturin-pyo3-wheels.md,S-26hqxvrn,unlocated:no-match,,,,,2026-10-21
-73cf75a0180a,python/maturin-pyo3-wheels.md,S-hec62m7j,located,Project Layout > Data,wheel;cargo.toml;cargo;pyproject;pyproject.toml;toml;project,10936a6bdf4a66c8,You can add wheel data by creating a <modulename>.data folder or setting its location as data in pyproject.toml under [tool.maturin] or in Cargo.toml under [project.metadata.maturin].,2026-10-21
-73cf75a0180a,python/maturin-pyo3-wheels.md,S-hisnadiu,unlocated:no-match,,,,,2026-10-21
-7b43ce308782,python/maturin-pyo3-wheels.md,S-xpr6ww5t,unlocated:no-match,,,,,2026-10-21
-88601a38202b,python/maturin-pyo3-wheels.md,S-pyhwnq4g,located,Building and distribution > Building Python extension modules > `Py_LIMITED_API`/`abi3`/`abi3t` > Minimum Python version for `abi3` and `abi3t` builds,1.0;cp38;manylinux2020_x86_64;my-extension-1.0-cp38-abi3-manylinux2020_x86_64.whl;whl;abi3-py38;manylinux;py38,8d5833a77347691b,"Because a single abi3 wheel can be used with many different Python versions, PyO3 has feature flags abi3-py38, abi3-py39, abi3-py310 etc. to set the minimum",2026-10-21
-8e2bafd15f0d,python/maturin-pyo3-wheels.md,S-65rohhd6,located,Features reference > Features to select the target ABI > `abi3`,abi3-pyxy;cannot;cross-compilation;present;minimum;pyxy;compilation;cross,24a8254c6b9b590e,"As such, this feature requires a host Python interpreter is present and cannot be used for cross-compilation. If you are using this feature to distribute",2026-10-21
-8e62fc2b45e0,python/maturin-pyo3-wheels.md,S-c6fbhzyz,unlocated:no-match,,,,,2026-10-21
-9ff36e11707d,python/maturin-pyo3-wheels.md,S-c6fbhzyz,located,Distribution > Build Wheels,thre;command;maturin,e6c6ff035a841682,"Requires pgo-command to be set in [tool.maturin] in pyproject.toml. This performs a three-phase build: instrumented build, profile training, and optimized rebuild.",2026-10-21
-9ff36e11707d,python/maturin-pyo3-wheels.md,S-yfykoru4,unlocated:no-match,,,,,2026-10-21
-a941de49384e,python/maturin-pyo3-wheels.md,S-c6fbhzyz,located,Distribution > Build Wheels,lowest;noth;plain;compatibl;match;tag;linux;default,4153df807e1b8f0d,"The default is the lowest compatible manylinux tag, or plain linux if nothing matched.",2026-10-21
-ab47210d0097,python/maturin-pyo3-wheels.md,S-c6fbhzyz,located,Distribution > GitHub Actions,skip-attestation;attestation;deprecat;skip;tool.maturin.generate-ci.github;pyproject;pyproject.toml;toml,68352c33f4fba74e,Use zig to do cross compilation [deprecated: use [tool.maturin.generate-ci.github] in pyproject.toml] --skip-attestation,2026-10-21
 afb6633d8aa0,python/maturin-pyo3-wheels.md,S-26hqxvrn,located,Bindings > `pyo3` > `Py_LIMITED_API`/abi3,3.10;abi3-py310;py310;gil;gil-enabl;enabl;newer;cpython,54c3120e763713e1,"An abi3-py310 wheel supports all GIL-enabled CPython versions from Python 3.10 and newer, while the abi3.abi3t wheel supports",2026-10-21
-b168763332c3,python/maturin-pyo3-wheels.md,S-cr3vzki4,located,Tutorial > Create a new Rust project,0.26;0.27;earlier;tool.maturin;extension-modul;tool;extension;featur,0f36e87478fbbc6f,If you are using pyo3 0.26 or earlier you need to enable the extension-module feature of pyo3 to skip linking against libpython.so (this is automatically,2026-10-21
-b30381cf05ce,python/maturin-pyo3-wheels.md,S-cr3vzki4,located,Tutorial > Build and install the module with `maturin develop`,interpreter;window;specific;requir;abi3;python,34b861742be71bdf,"🐍 Not using a specific python interpreter (With abi3, an interpreter is only required on windows)",2026-10-21
-bcd1a7f5235f,python/maturin-pyo3-wheels.md,S-pyhwnq4g,located,Building and distribution > Building Python extension modules > `Py_LIMITED_API`/`abi3`/`abi3t`,3.15;free-thread;free;thread;both;cpython;abi3t;support,bb8f31da9cb058ba,We suggest enabling both features and using multiple python interpreters to build several wheels. You can build an abi3 wheel for your minimum supported Python,2026-10-21
-c26f6f17f606,python/maturin-pyo3-wheels.md,S-hisnadiu,located,Configuration > Configuration keys > maturin options,accept;dot;submodul;_nativ;my_package._nativ;nativ;extension;install,0c6a99764c0ce06a,"# Accepts dotted names like ""mypackage.native"" so the Rust extension is # installed as a submodule (useful for mixed Python/Rust projects).",2026-10-21
-c82532e0d220,python/maturin-pyo3-wheels.md,S-pyhwnq4g,located,Building and distribution > Building Python extension modules > `Py_LIMITED_API`/`abi3`/`abi3t` > Minimum Python version for `abi3` and `abi3t` builds,pyo3_no_python;abi3-py39;py39;without;3.8;call;abi3;interpreter,7deee55265141868,"For example, with both abi3-py38 and abi3-py39 set, PyO3 would build a wheel which supports Python 3.8 and up. Building stable ABI extension modules without",2026-10-21
-caacbe05f0d7,python/maturin-pyo3-wheels.md,S-pyhwnq4g,located,Building and distribution > Cross Compiling,omit;often;pyo3_cross_lib_dir;unix;dir;window;mac;maco,601ef77c5c42d8a8,"PYO3CROSSLIBDIR can often be omitted when cross compiling extension modules for Unix, macOS, and Windows targets.",2026-10-21
-cd01e51927e6,python/maturin-pyo3-wheels.md,S-c6fbhzyz,unlocated:no-match,,,,,2026-10-21
-cf24c4d109ee,python/maturin-pyo3-wheels.md,S-pyhwnq4g,unlocated:no-match,,,,,2026-10-21
-d78bb71c9c16,python/maturin-pyo3-wheels.md,S-oeklvsgw,located,Local Development > `maturin develop` command,debug;mode;virtualenv;develop;packag;install;default;maturin,edcd7b3c2debc897,"For local development, the maturin develop command can be used to quickly build a package in debug mode by default and install it to virtualenv.",2026-10-21
-da55f8816035,python/maturin-pyo3-wheels.md,S-sne3yj7b,unlocated:no-match,,,,,2026-10-21
-dcd294cf3443,python/maturin-pyo3-wheels.md,S-hec62m7j,located,Project Layout > Mixed Rust/Python project,common;error;importerror;pitfall;recommend;avoid;layout;directory,43ae393f29af527a,This structure is recommended to avoid a common ImportError pitfall Alternate Python source directory (src layout),2026-10-21
-e03c4c449c85,python/maturin-pyo3-wheels.md,S-c6fbhzyz,located,Distribution > Source Distribution,build-system;sdist;sourc;system;distribution;pyproject;pyproject.toml;toml,344d831196966647,"If a pyproject.toml with a [build-system] entry is present, maturin can build a source distribution of your package when --sdist is specified.",2026-10-21
-e65829ce67f8,python/maturin-pyo3-wheels.md,S-c6fbhzyz,located,Distribution > Cross Compiling > Cross-compile to Linux/macOS > Use Docker,manylinux-cross;maturin-action;action;docker;imag;cross;manylinux;maturin,0bc55a7d92f47762,For manylinux support the manylinux-cross docker images can be used. And maturin-action makes it easy to do cross compilation on GitHub Actions.,2026-10-21
 f1605ea7890b,python/maturin-pyo3-wheels.md,S-sne3yj7b,located,maturin-action > Inputs,auto;compatibl;control;ignor;lowest;other;publish;tag,9457792d2ec05030,"Control the manylinux platform tag on linux, ignored on other platforms, use auto to build for lowest compatible",2026-10-13
 f4adf2ec89e1,python/maturin-pyo3-wheels.md,S-c6fbhzyz,unlocated:no-match,,,,,2026-10-13
 f4adf2ec89e1,python/maturin-pyo3-wheels.md,S-hisnadiu,unlocated:no-match,,,,,2026-10-13
 f4adf2ec89e1,python/maturin-pyo3-wheels.md,S-pyhwnq4g,unlocated:no-match,,,,,2026-10-13
 f4adf2ec89e1,python/maturin-pyo3-wheels.md,S-sne3yj7b,unlocated:no-match,,,,,2026-10-13
 f4adf2ec89e1,python/maturin-pyo3-wheels.md,S-yfykoru4,unlocated:no-match,,,,,2026-10-13
-ff77300733ae,python/maturin-pyo3-wheels.md,S-65rohhd6,located,Features reference > Deprecated features for extension module authors,1.12;1.9.4;extension-modul;maturin;remov;setuptool;setuptools-rust;deprecat,8ae9c7b8db62b4ac,"extension-module Deprecated, users should remove this feature and upgrade to maturin >= 1.9.4 or setuptools-rust >= 1.12.",2026-10-21
 2c1e62582523,python/percentile-nearest-rank.md,S-35bztnbb,unlocated:no-match,,,,,2026-10-13
 2c1e62582523,python/percentile-nearest-rank.md,S-or2wocyn,unlocated:no-match,,,,,2026-10-13
 2df547ebc1fd,python/percentile-nearest-rank.md,S-dh7f43kc,unlocated:no-match,,,,,2026-10-13
@@ -14015,37 +13700,6 @@ d87d46ddf760,python/ruff.md,S-7e63teyx,located,,graph;map;import,3b6d9ab482c400b
 db3d6a81dd43,python/ruff.md,S-yfbe6ete,unlocated:no-match,,,,,2026-10-10
 debb8922de45,python/ruff.md,S-szaj7ze7,located,The Ruff Formatter > `ruff format`,in-plac;plac;unformat;writ;directory;check;run;whil,9a8ce31f4fa3403c,"Similar to Black, running ruff format /path/to/file.py will format the given file or directory in-place, while ruff format --check /path/to/file.py will avoid writing any formatted",2026-10-21
 debb8922de45,python/ruff.md,S-y3zhzpmv,unlocated:no-match,,,,,2026-10-10
-00264566cada,python/sqlalchemy-asyncio-asyncpg.md,S-anvb7ol7,located,Drop type codec cache for all connections in the pool.,300.0;max_inactive_connection_lifetim;lifetim;max_query;max_siz;inactiv;query;max,54c4d7a46b4d9616,"maxsize=10, maxqueries=50000, maxinactiveconnectionlifetime=300.0,",2026-10-21
-07bedefdaf2b,python/sqlalchemy-asyncio-asyncpg.md,S-4eztl5ck,located,"used, however the test suite looks for these in a few cases.",fallbackasyncadaptedqueuepool;queu;async_fallback;pool;url;fallback;adapt;async,76139271a2e89b97,"asyncfallback = url.query.get(""asyncfallback"", False) if util.asbool(asyncfallback): return pool.FallbackAsyncAdaptedQueuePool",2026-10-21
-11306e61697c,python/sqlalchemy-asyncio-asyncpg.md,S-4eztl5ck,located,mypy: ignore-errors,expensiv;metadata;mitigat;emit;jit;query;may;set,007ea1a138546e90,"connections, an expensive query may be emitted in order to retrieve metadata regarding custom types which has been shown to negatively affect performance. To mitigate",2026-10-21
-1e1d8a3ee9fa,python/sqlalchemy-asyncio-asyncpg.md,S-4zo5mcqa,unlocated:no-match,,,,,2026-10-21
-2019181a13e0,python/sqlalchemy-asyncio-asyncpg.md,S-4zo5mcqa,unlocated:no-match,,,,,2026-10-21
-2029fd55c87a,python/sqlalchemy-asyncio-asyncpg.md,S-4eztl5ck,unlocated:no-match,,,,,2026-10-21
-26843deb6b41,python/sqlalchemy-asyncio-asyncpg.md,S-4zo5mcqa,unlocated:no-match,,,,,2026-10-21
-2c85a626d997,python/sqlalchemy-asyncio-asyncpg.md,S-4eztl5ck,unlocated:no-match,,,,,2026-10-21
-2c85a626d997,python/sqlalchemy-asyncio-asyncpg.md,S-xhpt3onl,unlocated:no-match,,,,,2026-10-21
-4390372e626b,python/sqlalchemy-asyncio-asyncpg.md,S-4dfwedi7,located,,mode;pgbouncer;transaction;pool,05d62ce7ad1e1c76,"pgbouncer <https://pgbouncer.github.io/>. pgbouncer, when in the ""transaction"" or ""statement"" pooling mode, does not support",2026-10-21
-4390372e626b,python/sqlalchemy-asyncio-asyncpg.md,S-4eztl5ck,located,mypy: ignore-errors,bouncer;pgbouncer;pool,5ed58fbfad111b43,"your application, it's important to use the :class:.NullPool pool class, and to configure PgBouncer to use DISCARD <https://www.postgresql.org/docs/current/sql-discard.html>",2026-10-21
-452fcb1f8910,python/sqlalchemy-asyncio-asyncpg.md,S-4zo5mcqa,unlocated:no-match,,,,,2026-10-21
-4814612aafa0,python/sqlalchemy-asyncio-asyncpg.md,S-4zo5mcqa,unlocated:no-match,,,,,2026-10-21
-5028dbde93ca,python/sqlalchemy-asyncio-asyncpg.md,S-4zo5mcqa,unlocated:no-match,,,,,2026-10-21
-6d99e48ecab3,python/sqlalchemy-asyncio-asyncpg.md,S-4eztl5ck,unlocated:no-match,,,,,2026-10-21
-6d99e48ecab3,python/sqlalchemy-asyncio-asyncpg.md,S-4zo5mcqa,unlocated:no-match,,,,,2026-10-21
-6dcb86baac3d,python/sqlalchemy-asyncio-asyncpg.md,S-4eztl5ck,unlocated:no-match,,,,,2026-10-21
-6f8f752625c5,python/sqlalchemy-asyncio-asyncpg.md,S-stp2kczx,located,,2.0;apach;apache-2.0;requires-python;requir;python,d91ecaecfbb4d04a,"requires-python = '>=3.9.0' readme = ""README.rst"" license = ""Apache-2.0""",2026-10-21
-81aa041aef90,python/sqlalchemy-asyncio-asyncpg.md,S-4zo5mcqa,unlocated:no-match,,,,,2026-10-21
-844b4c541aba,python/sqlalchemy-asyncio-asyncpg.md,S-xhpt3onl,located,people the real error is queue.Empty which it isn't.,default;create_async_engin;engin;creat;async;class;pool,f96d425cc21649c3,This pool is used by default when using :class:.AsyncEngine engines that were generated from :func:asyncio.createasyncengine.,2026-10-21
-a51f8aceb87a,python/sqlalchemy-asyncio-asyncpg.md,S-ukfbblnj,unlocated:no-match,,,,,2026-10-21
-a9c4f8eeb501,python/sqlalchemy-asyncio-asyncpg.md,S-ukfbblnj,unlocated:no-match,,,,,2026-10-21
-ab195261f6de,python/sqlalchemy-asyncio-asyncpg.md,S-4dfwedi7,located,,asyncpg.connect;cach;pass;size;statement_cache_siz;connect;func;prepar,44cfcf21fd5eeab7,disable automatic use of prepared statements by passing statementcachesize=0 to :func:asyncpg.connect() <asyncpg.connection.connect> and,2026-10-21
-ab195261f6de,python/sqlalchemy-asyncio-asyncpg.md,S-4eztl5ck,unlocated:no-match,,,,,2026-10-21
-b7c87609b017,python/sqlalchemy-asyncio-asyncpg.md,S-4zo5mcqa,unlocated:no-match,,,,,2026-10-21
-d7a31736257e,python/sqlalchemy-asyncio-asyncpg.md,S-oh5jmzp6,located,Close the connection.,bouncer;pgbouncer;pooler;such;asyncpg.create_pool;create_pool;creat;pool,6e2ed659be0988b1,"pooler such as PgBouncer. To create a connection pool, use the :func:asyncpg.createpool() <asyncpg.pool.createpool> function.",2026-10-21
-e5759f555102,python/sqlalchemy-asyncio-asyncpg.md,S-4zo5mcqa,unlocated:no-match,,,,,2026-10-21
-e8ba1b2b1866,python/sqlalchemy-asyncio-asyncpg.md,S-4zo5mcqa,unlocated:no-match,,,,,2026-10-21
-f63c3b4b9737,python/sqlalchemy-asyncio-asyncpg.md,S-4zo5mcqa,unlocated:no-match,,,,,2026-10-21
-fa5286068585,python/sqlalchemy-asyncio-asyncpg.md,S-4dfwedi7,unlocated:no-match,,,,,2026-10-21
-fcc750171691,python/sqlalchemy-asyncio-asyncpg.md,S-4eztl5ck,unlocated:no-match,,,,,2026-10-21
 0563e804e7cb,python/stdlib-argparse-json.md,S-a3h5eijf,unlocated:no-match,,,,,2026-10-18
 0563e804e7cb,python/stdlib-argparse-json.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-18
 0563e804e7cb,python/stdlib-argparse-json.md,S-jqewtaii,unlocated:no-match,,,,,2026-10-18
@@ -14816,7 +14470,6 @@ e7c11a0c0a1a,security/baselines-catalog.csv,S-cwnwnkri,unlocated:no-match,,,,,20
 27be6e61181c,security/baselines-catalog.md,S1403,unlocated:no-match,,,,,2026-10-21
 506f7d1fa907,security/baselines-catalog.md,S-cvu2vf7c,unlocated:no-match,,,,,2026-10-10
 5cf9499519dd,security/baselines-catalog.md,S1470,unlocated:not-text,,,,,2026-10-10
-6147d4a3ab89,security/baselines-catalog.md,S1424,unlocated:no-match,,,,,2026-10-21
 6b0c4a36f93a,security/baselines-catalog.md,S1418,unlocated:no-match,,,,,2026-10-21
 6b0c4a36f93a,security/baselines-catalog.md,S1419,unlocated:no-match,,,,,2026-10-21
 71a2f6637e99,security/baselines-catalog.md,S-li2s6pgb,unlocated:no-match,,,,,2026-10-10
@@ -19252,7 +18905,6 @@ c5c41deabd30,windows/jea-config-fields.csv,S-s4yqv6lz,unlocated:no-match,,,,,202
 d60355ae4ec8,windows/jea-config-fields.csv,S-xe3uwlpq,located,JEA Session Configurations - PowerShell | Microsoft Learn > Create a session configuration file > Role definitions,psrc;dnsadmin;jea_dns_admin;extension;admin;roledefinition;contoso;dns,641f3dd563cdf419,"The name of the role capability should be the name of the role capability file, without the .psrc extension. RoleDefinitions = @{ 'CONTOSO\JEADNSADMINS' = @{",2026-10-21
 f07a65904c3c,windows/jea-config-fields.csv,S-r3cngad7,located,New-PSRoleCapabilityFile > Parameters > -VisibleCmdlets,modulestoimport;new-psrolecapabilityfil;psrolecapabilityfil;new;import;modul;capability;role,3bb9e6f4c75db200,"Use the SessionType and ModulesToImport parameters to determine which modules and snap-ins are imported into the session. If no modules in ModulesToImport expose the cmdlet,",2026-10-21
 fa5b03b0fa3e,windows/jea-config-fields.csv,S-s4yqv6lz,unlocated:no-match,,,,,2026-10-21
-fc37a1db09dd,windows/jea-config-fields.csv,S-p5lwby5b,unlocated:no-match,,,,,2026-10-21
 0f7b94cd816b,windows/kiosk-assigned-access.md,S-snqf6qj3,unlocated:no-match,,,,,2026-10-21
 1ac060d53712,windows/kiosk-assigned-access.md,S-ocgh5a3g,located,Create an Assigned Access configuration file | Microsoft Learn > Profiles > AllAppList,applocker;dependency;locker;rule;generat;multi-ap;multi;must,078ec67e3d7393b9,"When the multi-app kiosk configuration is applied to a device, AppLocker rules are generated to allow the apps that are listed in the configuration. Note",2026-10-21
 1aead4b568ab,windows/kiosk-assigned-access.md,S-c6tea7ux,unlocated:no-match,,,,,2026-10-21
@@ -19720,7 +19372,6 @@ f5314807b60b,windows/process-parent-and-command-line.md,S-xppzzo3g,located,NtQue
 397d52c90181,windows/robocopy.md,S-3lm4tsvh,located,Robocopy | Microsoft Learn > Syntax > Parameters > Logging options,just;verbos;extra;select;ones;report;show;skip,080e4b0f7855c108,"/x | Reports all extra files, not just the ones that are selected. /v | Produces verbose output, and shows all skipped files. /ts |",2026-10-21
 3c84086b29d2,windows/robocopy.md,S-3lm4tsvh,located,Robocopy | Microsoft Learn > Syntax > Parameters > Copy options,acl;audit;ignor;owner;dat;ntfs;stream;flag,5dc436c811b4a184,/copy:<copyflags> | Specifies which file properties to copy. The valid values for this option are:<br>- D - Data<br>- A - Attributes<br>- T - Time stamps<br>-,2026-10-21
 3dcea1fc9691,windows/robocopy.md,S-3lm4tsvh,unlocated:no-match,,,,,2026-10-21
-3dcea1fc9691,windows/robocopy.md,S-w4neuhkd,located,xcopy | Microsoft Learn > Syntax > Parameters,mode;restartabl;symbolic;vista;instead;window;link;file,2d7c5c3f22a2af1a,/z | Copies over a network in restartable mode. /b | Copies the symbolic link instead of the files. This parameter was introduced in Windows,2026-10-21
 3e722b99fad9,windows/robocopy.md,S-3lm4tsvh,located,Robocopy | Microsoft Learn > Syntax > Parameters > Copy options,without;thread;default;valu;log;copy,a6910bd89b79d983,/mt:<n> | Creates multi-threaded copies with n threads. n must be an integer between 1 and 128. The default value for n is 8. For,2026-10-21
 43d0455899c2,windows/robocopy.md,S-3lm4tsvh,unlocated:no-match,,,,,2026-10-21
 4dd9d3dea4b5,windows/robocopy.md,S-3lm4tsvh,located,Robocopy | Microsoft Learn > Syntax > Parameters > Copy options,better;integer;redirect;performanc;thread;output;default;log,8cc0ae3f0db230cf,/mt:<n> | Creates multi-threaded copies with n threads. n must be an integer between 1 and 128. The default value for n is 8. For,2026-10-21
@@ -19730,9 +19381,7 @@ f5314807b60b,windows/process-parent-and-command-line.md,S-xppzzo3g,located,NtQue
 5663078fa21c,windows/robocopy.md,S-3lm4tsvh,located,Robocopy | Microsoft Learn > Syntax > Parameters > Copy options,8.3;turn;zero;zero-length;fat;length;off;longer,071d730c00558e05,/create | Creates a directory tree and zero-length files only. /fat | Creates destination files by using 8.3 character-length FAT file names only. /256 |,2026-10-21
 5c3d063aedd9,windows/robocopy.md,S-3lm4tsvh,unlocated:no-match,,,,,2026-10-21
 601c626f13c3,windows/robocopy.md,S-3lm4tsvh,located,Robocopy | Microsoft Learn > Syntax > Parameters > Copy options,audit;flag;information;copy;copi,003b805ead25dce8,/efsraw | Copies all encrypted files in EFS RAW mode. /copy:<copyflags> | Specifies which file properties to copy. The valid values for this option are:<br>-,2026-10-21
-601c626f13c3,windows/robocopy.md,S-w4neuhkd,located,xcopy | Microsoft Learn > Syntax > Parameters,audit;dacl;imply;ownership;sacl;set;information;copi,1107da6df2570b7a,/o | Copies file ownership and discretionary access control list (DACL) information. /x | Copies file audit settings and system access control list (SACL) information,2026-10-21
 6ce8322ea1b4,windows/robocopy.md,S-3lm4tsvh,unlocated:no-match,,,,,2026-10-21
-6ce8322ea1b4,windows/robocopy.md,S-7varc2ty,located,if | Microsoft Learn > Syntax > Parameters,code;exit;greater;true;errorlevel,f11e09aaac2dc297,errorlevel <number> | Specifies a true condition only if the previous program run by Cmd.exe returned an exit code equal to or greater than number.,2026-10-21
 6d0049a3fc01,windows/robocopy.md,S-3lm4tsvh,located,Robocopy | Microsoft Learn > Examples,mirror;mir;backup.log;logs;user;delet;record;backup,d83c11a6b8718683,"To mirror the contents of the ""Records"" folder to the ""Backup"" folder on drive ""D"", delete any files in the destination that don't exist in",2026-10-21
 72c5deb2a322,windows/robocopy.md,S-3lm4tsvh,located,Robocopy | Microsoft Learn > Examples,dat;backup.log;logs;user;record;backup;log;robocopy,19c7a169ca418e66,,2026-10-21
 72e8fa3d59c8,windows/robocopy.md,S-3lm4tsvh,located,Robocopy | Microsoft Learn > Syntax > Parameters > File selection options,reset;rashcneto;archiv;attribut;includ;exclud;copi;file,ec5532f66b67eebb,"/m | Copies only files for which the Archive attribute is set, and resets the Archive attribute. /ia:[RASHCNETO] | Includes only files for which any",2026-10-21
@@ -19742,15 +19391,11 @@ f5314807b60b,windows/process-parent-and-command-line.md,S-xppzzo3g,located,NtQue
 85cb1771d622,windows/robocopy.md,S-3lm4tsvh,located,Robocopy | Microsoft Learn > Syntax > Parameters > Copy options,plus;mirror;equivalent;mir;tree;purg;directory,373821b5b5a976ba,"/mir | Mirrors a directory tree (equivalent to /e plus /purge). Using this option with the /e option and a destination directory, overwrites the destination",2026-10-21
 8789fc49ca0a,windows/robocopy.md,S-3lm4tsvh,located,Robocopy | Microsoft Learn > Syntax > Parameters > Copy options,symbolic;target;follow;instead;link;junction;default;copi,41a67c3049d5bbd5,/sj | Copies junctions (soft-links) to the destination path instead of link targets. /sl | Don't follow symbolic links and instead create a copy of,2026-10-21
 87f7f46f038d,windows/robocopy.md,S-3lm4tsvh,located,Robocopy | Microsoft Learn > Syntax,devic;root;data;during;hidden;system;attribut;destination,f2ff6c34d77694d7,"If any data is copied from the root of a device, the destination directory adopts the ""hidden"" and ""system"" attributes during the copy process.",2026-10-21
-8819503ba00f,windows/robocopy.md,S-w4neuhkd,located,xcopy | Microsoft Learn > Syntax > Parameters,hidden;read-only;remov;read;system;default;attribut;sourc,e736c4bf0d8a751a,"/k | Copies files and retains the read-only attribute on destination files if present on the source files. By default, xcopy removes the read-only attribute.",2026-10-21
 8c7bb6c10196,windows/robocopy.md,S-3lm4tsvh,located,Robocopy | Microsoft Learn > Syntax > Parameters > Copy options,nocopy;useful;purg;information;copi;file,b41e0a81fa460a71,/nocopy | Copies no file information (useful with /purge).,2026-10-21
 99bb0a574fbe,windows/robocopy.md,S-3lm4tsvh,unlocated:no-match,,,,,2026-10-21
 9c505735a657,windows/robocopy.md,S-3lm4tsvh,unlocated:no-match,,,,,2026-10-21
-9c505735a657,windows/robocopy.md,S-7varc2ty,unlocated:no-match,,,,,2026-10-21
 a8b04956d14a,windows/robocopy.md,S-3lm4tsvh,located,Robocopy | Microsoft Learn > Syntax > Parameters > Copy options,done;info;nodcopy;dcopy;default;directory;copi,29e3fae1ffb85c76,/nodcopy | Copies no directory info (the default /dcopy:DA is done).,2026-10-21
-a9a24477319b,windows/robocopy.md,S-w4neuhkd,located,xcopy | Microsoft Learn > Syntax > Parameters,option;subdirectory;line;xcopy;file,b605aaa1c6bed930,"/t | Copies the subdirectory structure (that is, the tree) only, not files. To copy empty directories, you must include the /e command-line option. /k",2026-10-21
 b309090e3294,windows/robocopy.md,S-3lm4tsvh,unlocated:no-match,,,,,2026-10-21
-b309090e3294,windows/robocopy.md,S-w4neuhkd,located,xcopy | Microsoft Learn > Remarks,found;initialization;spac;ctrl;invalid;memory;syntax;disk,fff776979fe559b0,1 | No files were found to copy. 2 | The user pressed CTRL+C to terminate xcopy. 4 | Initialization error occurred. There isn't enough,2026-10-21
 b343e2a64c74,windows/robocopy.md,S-3lm4tsvh,located,Robocopy | Microsoft Learn > Syntax > Parameters > Copy options,check;gap;hhm;hhmm-hhm;inter;inter-packet;packet;pass,b82d0e424ebb2bf0,/rh:hhmm-hhmm | Specifies run times when new copies can be started. /pf | Checks run times on a per file (not per-pass) basis. /ipg:<n> |,2026-10-21
 b6e67de01314,windows/robocopy.md,S-3lm4tsvh,located,Robocopy | Microsoft Learn > Syntax > Exit (return) codes,equal;greater;least;indicat;during;failur;one;valu,64434355d2c9d8b1,Any value equal to or greater than 8 indicates that there was at least one failure during the copy operation.,2026-10-21
 beff9d3bdf20,windows/robocopy.md,S-3lm4tsvh,located,Robocopy | Microsoft Learn > Syntax > Parameters > Remarks,whenever;below;paus;floor;volum;spac;free;lfsm,f0a9759c763bf6e4,"In this mode, robocopy pauses whenever a file copy would cause the destination volume's free space to go below a 'floor' value. This value can",2026-10-21
@@ -19764,10 +19409,8 @@ e0a667ac4f17,windows/robocopy.md,S-3lm4tsvh,located,Robocopy | Microsoft Learn >
 e0b68126734c,windows/robocopy.md,S-3lm4tsvh,located,Robocopy | Microsoft Learn > Syntax > Parameters > Remarks,formerly;session;top-level;level;root;top;mir;volum,76253c33c81a673a,Using /PURGE or /MIR on the root directory of the volume formerly caused robocopy to apply the requested operation on files inside the System Volume,2026-10-21
 e61b53c5970c,windows/robocopy.md,S-3lm4tsvh,located,Robocopy | Microsoft Learn > Syntax > Parameters > File selection options,assum;compensat;differenc;dst;fft;hour;one-hour;precision,96618bcc27c7d45b,/fft | Assumes FAT file times (two-second precision). /dst | Compensates for one-hour DST time differences.,2026-10-21
 ea406fd96216,windows/robocopy.md,S-3lm4tsvh,located,Robocopy | Microsoft Learn > Syntax > Parameters > Copy options,turn;off;longer;support;character;path;name;file,d52eda680daead54,/fat | Creates destination files by using 8.3 character-length FAT file names only. /256 | Turns off support for paths longer than 256 characters.,2026-10-21
-ea406fd96216,windows/robocopy.md,S-w4neuhkd,located,xcopy | Microsoft Learn > Remarks,folder;may;character;insufficient;memory;occur;path;error,b1a7ac6e01dc58f8,"An ""insufficient memory"" error may occur if running xcopy to copy a file or folder whose filename path is greater than 255 characters.",2026-10-21
 f2dcbb8a9396,windows/robocopy.md,S-3lm4tsvh,located,Robocopy | Microsoft Learn > Syntax > Parameters > Copy options,acl;audit;owner;dat;ntfs;sec;dcopy;information,f9992742a36c0edd,/copy:<copyflags> | Specifies which file properties to copy. The valid values for this option are:<br>- D - Data<br>- A - Attributes<br>- T - Time stamps<br>-,2026-10-21
 f3189442a8ec,windows/robocopy.md,S-3lm4tsvh,unlocated:no-match,,,,,2026-10-21
-f3189442a8ec,windows/robocopy.md,S-w4neuhkd,located,xcopy | Microsoft Learn > Syntax > Parameters,both;noclon;spars;compress;copy;file,1b9d896ee53088ae,/compress | Request network compression during file transfer where applicable. /[-]sparse | Enables or disables retaining the sparse state of files during copy process. If,2026-10-21
 f331a6395152,windows/robocopy.md,S-3lm4tsvh,located,Robocopy | Microsoft Learn > Syntax > Parameters > Retry options,defin;error;reg;registry;tbd;shar;save;wait,7a5708f66cb7c045,/reg | Saves the values specified in the /r and /w options as default settings in the registry. /tbd | Specifies that the system waits,2026-10-21
 f3f3d1ffc585,windows/robocopy.md,S-3lm4tsvh,located,Robocopy | Microsoft Learn > Syntax > Parameters > Copy options,efs;raw;efsraw;encrypt;mode;copi;file,aaed5e031526c2b2,/efsraw | Copies all encrypted files in EFS RAW mode.,2026-10-21
 fdf43c49c363,windows/robocopy.md,S-3lm4tsvh,located,Robocopy | Microsoft Learn > Syntax > Parameters > Job options,befor;nosd;jobnam;must;save;job;retry;parameter,9cede6deb55542bd,"/save:<jobname> | Specifies that parameters are to be saved to the named job file. This must be ran before running /job:jobname. All copy, retry, and",2026-10-21
