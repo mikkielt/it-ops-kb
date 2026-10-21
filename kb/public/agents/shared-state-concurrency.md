@@ -3,7 +3,7 @@ topic: agents/shared-state-concurrency
 priority: P3
 applies_to: "Concurrency control for state several agents write: Amazon S3 conditional writes, Azure Blob Storage ETags and leases, Redis distributed locks (Redlock), LangGraph PostgresStore; self-hosted MinIO, Garage and SeaweedFS conditional writes, NATS JetStream key-value, Valkey without persistence, etcd leases and transactions; docs read 2026-10-14 and 2026-10-15"
 retrieved_utc: 2026-10-20
-sources: [S-7my6ujm5, S-qdltospe, S-4qurlvvy, S-4oanvdmr, S-2fthx3xp, S-srqpsf7c, S-5lu6lddr, S-f3dlrjtw, S-26trg6rj, S-ukfteilx, S-opdaj4dk, S-oa3slfgh, S-a3umo362, S-ntlmfsuw, S-zv2dqsow, S-ulnpjwb7, S-pheyvvix, S-x3firlbx, S-eoyz3p4t, S-6hgplow2, S-vseohdra, S-75jmw3lf, S-s7uvhjek, S-3l6vhq2q, S-jnn4ww4t, S-bayxg4xz, S-523ddbfr, S-v7s32e7q, S-gxbtrq7d, S704, S718, S-onc3gpse, S2157, S-bisz7fay, S-jxkwd67p]
+sources: [S-7my6ujm5, S-qdltospe, S-4qurlvvy, S-4oanvdmr, S-2fthx3xp, S-srqpsf7c, S-5lu6lddr, S-f3dlrjtw, S-26trg6rj, S-ukfteilx, S-opdaj4dk, S-oa3slfgh, S-a3umo362, S-ntlmfsuw, S-zv2dqsow, S-ulnpjwb7, S-pheyvvix, S-x3firlbx, S-eoyz3p4t, S-6hgplow2, S-vseohdra, S-75jmw3lf, S-s7uvhjek, S-3l6vhq2q, S-jnn4ww4t, S-bayxg4xz, S-523ddbfr, S-v7s32e7q, S-gxbtrq7d, S704, S718, S-onc3gpse, S2157, S-bisz7fay, S-jxkwd67p, S-3az5pk5l]
 status: partial
 ---
 
@@ -286,6 +286,7 @@ status: partial
 - One probe (macOS 26.5, arm64, a directory on the local disk, 2026-10-18): a file created, its `st_ino` read, unlinked, and another
   file of the same name created at once got a different number in all 200 rounds. No reuse seen there says nothing for another file
   system or operating system; Linux was not run. [DER S-7my6ujm5: probe read against the reuse rule]
+- In the Linux kernel's ext4 allocator (`fs/ext4/ialloc.c` at commit 98c949b9), the check `recently_deleted` runs only on a file system without a journal: it skips a free inode whose deletion time is under 60 seconds old, or under 360 seconds old when the inode's table block is still dirty in the buffer cache, "until we're reasonably sure the inode table block has been written back" (the values are called "somewhat arbitrary" in the source); a journaled ext4 skips the check, so a freed number there can be handed to the next file created. XFS and tmpfs were not read. [CODE S-3az5pk5l: fs/ext4/ialloc.c#recently_deleted]
 - A lock holder that decides "this lock file is still mine" by `st_ino` alone can therefore be wrong after another process cleared a
   stale lock and created its own: on a system that reuses the number, the new file looks like the old one. A check that adds a value
   only the holder wrote into the file (a random token or its pid and start time) and compares the pair `st_dev`, `st_ino` together with

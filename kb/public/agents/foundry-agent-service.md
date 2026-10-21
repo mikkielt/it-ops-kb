@@ -28,7 +28,7 @@ quotas/limits, and a runnable MCP-tool example.
   **Toolbox**: one MCP-compatible endpoint with centralized auth, governance, and versioning. Full
   per-tool status/auth/limits table: `agents/foundry-agent-tools.csv`. [DOC S-yutqeaay]
 - MCP `require_approval` is enforced by the *calling runtime*, never by the toolbox/MCP endpoint itself:
-  the endpoint does not block `tools/call` even when a tool is marked `always`. [DOC S-5ygcb6vm, S-3axje6py]
+  the endpoint does not block `tools/call` even when a tool is marked `always`. [DOC S-3axje6py, S-wy457poi]
 - Three deployment tiers trade managed convenience for data control: **Basic** (Microsoft-managed
   storage), **Standard** (BYO Azure Storage + Azure AI Search + Azure Cosmos DB, all in the customer's
   tenant), **Standard with BYO VNet** (adds full network isolation). [DOC S-5tsg2rir]
@@ -110,7 +110,7 @@ quotas/limits, and a runnable MCP-tool example.
 - The toolbox/MCP endpoint **never blocks `tools/call`** based on `require_approval`; enforcement --
   pausing the call, presenting name+arguments to a human, resuming or rejecting -- is entirely the calling
   agent runtime's responsibility. A system-prompt instruction alone does not enforce approval. [DOC
-  S-5ygcb6vm, S-3axje6py, S-wy457poi]
+  S-3axje6py, S-wy457poi]
 - When approval is required, the model's attempt to call the tool surfaces as an `mcp_approval_request`
   output item (Responses API) carrying the server label, tool name, and arguments; the caller reviews it
   and replies with an `mcp_approval_response` (`approve: true/false`) referencing that request's id via

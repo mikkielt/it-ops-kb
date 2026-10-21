@@ -3,7 +3,7 @@ topic: agents/typescript-projects-declarations-incremental
 priority: P3
 applies_to: "TypeScript 3.0 to 7.0: project references and composite projects, tsc --build (build mode), incremental builds and .tsbuildinfo, declaration output (declaration, declarationDir, declarationMap, emitDeclarationOnly, isolatedDeclarations); handbook pages pinned at TypeScript-Website commit 6556b08"
 retrieved_utc: 2026-10-21
-sources: [S-fzozdweh, S-7sglzzpd, S-xgfiu5jf, S-fe6375ln, S-hhmjdvsd, S-6a5dvcgm, S-mghofndm, S-trc6i7ti, S-rklpxnqt, S-ff6may7t, S-lq5mn2bc, S-vdfo2blu, S-sp2a6svk, S-eq3gt72a, S-e6jwgvmc, S-mtnr5emw]
+sources: [S-fzozdweh, S-7sglzzpd, S-xgfiu5jf, S-fe6375ln, S-hhmjdvsd, S-6a5dvcgm, S-mghofndm, S-trc6i7ti, S-rklpxnqt, S-ff6may7t, S-lq5mn2bc, S-vdfo2blu, S-sp2a6svk, S-eq3gt72a, S-e6jwgvmc, S-mtnr5emw, S-j645b5a2]
 status: complete
 ---
 
@@ -19,6 +19,7 @@ A large TypeScript codebase is split into several `tsconfig.json` projects that 
 - Importing a module from a referenced project loads that project's output declaration file, and build mode builds the referenced project first when it is out of date. [DOC S-rklpxnqt]
 - A referenced project must set `composite`. With it on, `rootDir` defaults to the directory of the `tsconfig.json`, every implementation file must be matched by `include` or listed in `files` (otherwise `tsc` names the files left out), and `declaration` defaults to true. [DOC S-fzozdweh]
 - `references` is the one top-level property that `extends` does not inherit. [DOC S-ff6may7t]
+- `tsc --showConfig` of 7.0.2, run on 2026-10-21 in a throwaway project whose `tsconfig.json` extends a base file and lists its own `references`, prints that project's `references` array (its own entry, not the base file's) together with the merged compiler options, `files`, `include` and `exclude`. [DER S-ff6may7t, S-j645b5a2: a run of the 7.0.2 compiler; the handbook says `--showConfig` prints the final configuration]
 - A "solution" `tsconfig.json` that only lists `references` should set `files` to an empty array; otherwise it compiles the files a second time. Since 3.0 an empty `files` is not an error when at least one reference exists. [DOC S-rklpxnqt]
 - The handbook recommends centralising shared options in a base file used through `extends`, and for relative-module layouts either an explicit `outDir` subfolder per project or a `rootDir` set to the common root. [DOC S-rklpxnqt]
 - Dependent projects read `.d.ts` files built from their dependencies, so a fresh clone shows spurious errors in an editor until the dependencies are built or the outputs are checked in; VS Code generates declarations in memory to mitigate it, which `disableSourceOfProjectReferenceRedirect` turns off for very large projects. [DOC S-rklpxnqt]

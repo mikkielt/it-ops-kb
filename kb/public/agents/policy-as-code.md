@@ -3,7 +3,7 @@ topic: agents/policy-as-code
 priority: P3
 applies_to: "Open Policy Agent v1.21.2 (Rego, bundles, REST API); Cedar docs at commit 3a37098e (2026-09-25); Amazon Verified Permissions (Cedar 4.7); Policy in Amazon Bedrock AgentCore (GA 2026-03-03); Azure Policy effects, remediation and Policy as Code workflow (Learn, 2026-10)"
 retrieved_utc: 2026-10-15
-sources: [S-tcvnt2sk, S-iq6vp7q2, S-hvug6eux, S-fnw2pa3v, S-qbgkkkgs, S-lyw4ziag, S-ksyczslf, S-fd4vxmr2, S-gbndonu5, S-mflbdcpq, S-o6ybh6w2, S-tlwezbfd, S-3wgje3ri, S-sfwmzlty, S-dyazlyh5, S-nfmfjmf4, S-y5rp4spd, S-xgmsiz27, S-yzbv3f7p, S-gca2wrxp, S-prq2x4xt, S-ady4i6kn, S-o43a4uum]
+sources: [S-tcvnt2sk, S-iq6vp7q2, S-hvug6eux, S-fnw2pa3v, S-qbgkkkgs, S-lyw4ziag, S-ksyczslf, S-fd4vxmr2, S-gbndonu5, S-mflbdcpq, S-o6ybh6w2, S-tlwezbfd, S-3wgje3ri, S-sfwmzlty, S-dyazlyh5, S-nfmfjmf4, S-y5rp4spd, S-xgmsiz27, S-yzbv3f7p, S-gca2wrxp, S-prq2x4xt, S-ady4i6kn, S-o43a4uum, S-nvgcf3ru, S-777jjbr6]
 status: partial
 ---
 
@@ -78,7 +78,9 @@ Policy-as-code moves an authorization or governance rule out of the code that en
 - The engines sit at two layers. OPA, Cedar, Verified Permissions and AgentCore Policy decide whether an agent may make a call, at a gateway or an MCP server's own check; Azure Policy decides whether Azure accepts the resource the call creates, changes or deletes, whoever made it. [DER S-tcvnt2sk, S-ksyczslf, S-sfwmzlty, S-nfmfjmf4: decision engines take a principal/action/resource request; Azure Policy evaluates Resource Manager requests]
 - An agent's Azure automation is governed by Azure Policy like any other caller: a `deny` or `denyAction` 403 is a policy refusal the agent should report, not retry, and a resource it creates under an `audit` assignment is created but shows as non-compliant. [DER S-y5rp4spd, S-yzbv3f7p, S-xgmsiz27: deny and denyAction return 403; audit lets the request through]
 - Both decision engines suit a tiered confirm gate: a Cedar `forbid` on higher-tier tools unless the context carries a confirmation, or a Rego rule with `default allow := false`, keeps the tier table in reviewed policy files rather than in the server's code. [DER S-ksyczslf, S-fnw2pa3v: forbid overrides permit; default supplies the fallback value]
-- No page read (OPA, Cedar, Microsoft Learn) describes OPA or Cedar placed in front of an MCP server's tools outside AgentCore Gateway; how a self-hosted MCP server would call either is a design choice, not a vendor pattern. [UNK: looked in the OPA docs at v1.21.2, the Cedar docs and the AgentCore Policy page, 2026-10-15]
+- No page of the OPA docs (v1.21.2), the Cedar docs or the AgentCore Policy page, read 2026-10-15, describes OPA or Cedar placed in front of an MCP server's tools outside AgentCore Gateway; two other projects' documentation does (the next two facts), read 2026-10-21. [UNK: looked in the OPA docs at v1.21.2, the Cedar docs and the AgentCore Policy page, 2026-10-15]
+- Dapr's MCP access control page says MCP transports route every tool call through one HTTP endpoint with the tool name inside the JSON-RPC body (`params.name`), so path-based access control rules give no per-tool control, and recommends layering an OPA middleware on the MCP server's inbound pipeline that reads the body, extracts the tool name and applies a Rego policy keyed by caller App ID and tool name. [DOC S-nvgcf3ru]
+- Stacklok's ToolHive documentation describes Cedar policies evaluated on every request to an MCP server, denying anything not explicitly permitted: the principal is `Client::<client_id>` taken from the access token's `sub` claim, an action is such as `Action::"call_tool"`, and a resource is such as `Tool::"weather"`. [DOC S-777jjbr6]
 
 ## Reference
 | Engine | Policy language | Decision input | Distribution / storage | Default when nothing matches | Source |
