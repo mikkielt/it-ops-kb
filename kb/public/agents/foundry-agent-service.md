@@ -2,7 +2,7 @@
 topic: agents/foundry-agent-service
 priority: P1
 applies_to: "Microsoft Foundry Agent Service (GA runtime; Toolbox tool search/Skills, voice-based prompt agents, Work IQ, Agent Optimizer preview), Azure AI Projects SDK, docs current 2026-09-26"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-hkoalitj, S-yutqeaay, S-3axje6py, S-wy457poi, S-5ygcb6vm, S-f5p5qi4d, S-k3l2irzl, S-gessjq23, S-kub3e5bx, S-5tsg2rir, S-23bcmfv4, S-all62inb, S-jgc6ne22, S-wffcy42c, S-eh6okx77, S-zlfl25p7]
 status: complete
 files: [agents/foundry-agent-tools.csv]
@@ -231,8 +231,11 @@ quotas/limits, and a runnable MCP-tool example.
   hosted-agent-session limit (2,000 in named regions / 1,000 elsewhere). [DOC S-f5p5qi4d]
 - Error codes for limit breaches: `file_size_exceeded` (400), `token_limit_exceeded` (400),
   `message_limit_exceeded` (400), `content_size_exceeded` (400), `tool_limit_exceeded` (400),
-  `rate_limit_exceeded` (429); model-level 429s can also surface as `session_quota_exceeded` or
-  `regional_session_quota_exceeded`. [DOC S-f5p5qi4d]
+  `rate_limit_exceeded` (429); hosted-agent session limits return 429 `session_quota_exceeded`
+  (subscription+region concurrent-session quota), `regional_session_quota_exceeded` (regional capacity;
+  retry with backoff or use another region) and `subnet_exhausted` (delegated subnet out of IP addresses);
+  the 1,000-version cap returns 400 `UserError`, which is terminal until older versions are deleted.
+  [DOC S-f5p5qi4d]
 - Model call rate limits are enforced at the **model deployment** level (Azure OpenAI / Foundry Models
   quotas), not by Agent Service itself. [DOC S-f5p5qi4d]
 - Tool availability varies by model and region (e.g. file search is unavailable in Italy North and Brazil
