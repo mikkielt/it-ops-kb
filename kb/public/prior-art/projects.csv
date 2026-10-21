@@ -18,7 +18,7 @@ Rundeck,tiered-approval-ops,https://github.com/rundeck/rundeck,Apache-2.0,Groovy
 StackStorm,tiered-approval-ops,https://github.com/StackStorm/st2,Apache-2.0,Python,v3.9.0,2026-01-12,2026-09-02,S1016
 Teleport,tiered-approval-ops,https://github.com/gravitational/teleport,AGPL-3.0,Go,v18.10.0,2026-07-09,2026-09-17,S1017
 Ansible AWX,tiered-approval-ops,https://github.com/ansible/awx,Apache-2.0 (LICENSE.md; GitHub reports NOASSERTION),Python,24.6.1,2024-07-02,2026-09-23,S1018;S-lscdap53
-microsoft/mcp (official server catalog),mcp-microsoft-endpoint-mgmt,https://github.com/microsoft/mcp,MIT,multiple,n/a (catalog repo),n/a,2026-09-26,S1019
+microsoft/mcp (official server catalog),mcp-microsoft-endpoint-mgmt,https://github.com/microsoft/mcp,MIT,multiple,n/a (catalog repo),n/a,2026-10-21,S1019
 OpenTelemetry Collector,log-collection-normalization,https://github.com/open-telemetry/opentelemetry-collector,Apache-2.0,Go,v0.161.0,2026-09-14,2026-09-23,S1020
 Fluent Bit,log-collection-normalization,https://github.com/fluent/fluent-bit,Apache-2.0,C,v5.1.2,2026-09-05,2026-09-23,S1021
 pydantic-settings,layered-settings-resolution,https://github.com/pydantic/pydantic-settings,MIT,Python,v2.15.0,2026-08-07,2026-09-23,S1022
