@@ -111,7 +111,7 @@ auth/kerberos,P0,complete,auth/kerberos.md,16
 auth/ldap-smb-signing,P0,complete,auth/ldap-smb-signing.md,16
 auth/msal-public-client,P0,complete,auth/msal-public-client.md,10
 auth/ntlm-deprecation,P0,complete,auth/ntlm-deprecation.md,7
-auth/permissions-matrix,P0,partial,auth/permissions-matrix.csv,25
+auth/permissions-matrix,P0,partial,auth/permissions-matrix.csv,24
 auth/sql-authz,P0,complete,auth/sql-authz.md,5
 auth/workload-identity,P0,complete,auth/workload-identity.md,23
 auth/ad-jit-membership,P1,complete,auth/ad-jit-membership.md,9
@@ -131,7 +131,7 @@ auth/threats,P2,complete,auth/threats.md;auth/threats.csv,10
 auth/transport-crypto,P2,complete,auth/transport-crypto.md,14
 auth/enrolment-tokens,P3,complete,auth/enrolment-tokens.md,7
 auth/http-message-signatures,P3,partial,auth/http-message-signatures.md,8
-auth/issuer-token-rotation,P3,partial,auth/issuer-token-rotation.md,13
+auth/issuer-token-rotation,P3,partial,auth/issuer-token-rotation.md,14
 auth/oauth-pkce-oidc-id-token,P3,partial,auth/oauth-pkce-oidc-id-token.md,6
 auth/postgres-column-encryption,P3,partial,auth/postgres-column-encryption.md,7
 auth/shamir-secret-sharing,P3,partial,auth/shamir-secret-sharing.md,9
