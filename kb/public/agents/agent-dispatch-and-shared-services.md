@@ -1,8 +1,8 @@
 ---
 topic: agents/agent-dispatch-and-shared-services
 priority: P1
-applies_to: "Copilot Studio connected agents (2026-06-23 docs), Microsoft Agent Framework (BUILD 2026), Claude Code subagents (2026-09 docs), MCP spec 2026-07-28"
-retrieved_utc: 2026-09-27
+applies_to: "Copilot Studio connected agents (2026-10 docs), Microsoft Agent Framework (BUILD 2026), Claude Code subagents (2026-10 docs), MCP spec 2026-07-28"
+retrieved_utc: 2026-10-21
 sources: [S2080, S2081, S2082, S2083, S2084, S2109, S2110, S1920, S1928, S-vqothyeg]
 status: complete
 ---
@@ -23,19 +23,27 @@ topic 9 (`agents-a2a-cache`) covers it; A2A is named below only as one transport
 ### QG29 — dispatch criteria: agent-to-agent vs remote service vs in-process
 - Microsoft Copilot Studio's **connected agents**: a "primary agent" can delegate to another agent when
   a user's request falls inside that agent's declared domain; the orchestration runtime does
-  intent-matching per turn, and the connected agent "runs in its own orchestration context, with its own
-  instructions, knowledge, and tools." [DOC S2080]
+  intent-matching per turn, and the connected agent runs in its own orchestration context with its own
+  configuration; the primary agent sends it the relevant conversation history and user message and
+  presents the returned response. [DOC S2080]
 - Copilot Studio's stated reasons to connect rather than fold logic into one agent: **specialization**
   (own domain, easier to build/maintain), **reusability** (one specialist agent connected to several
-  primary agents), **separation of concerns** (different teams own different agents), and
-  **scalability** (add capability by connecting an agent rather than growing one agent's instructions).
-  [DOC S2080]
+  primary agents), **separation of concerns** (different teams own different agents), **scalability**
+  (add capability by connecting an agent rather than growing one agent's instructions),
+  **independent publishing and ALM** (the connected agent can also be published on its own channels) and
+  **dedicated settings** (e.g. its own model). [DOC S2080]
 - Copilot Studio's multi-agent guidance separates inline (child) agents, which share the main agent's context, from connected agents, which have their own orchestration, tools and knowledge and receive the conversation history only when their context-inclusion setting allows it. It advises splitting out an agent only for a distinct domain, different governance or access rules, or reuse across main agents; treating a connected-agent call like any powerful action, since it may be allowed what the parent is not; and logging each invocation so the parent and connected transcripts can be correlated. [DOC S2081]
-- As of the 2026-06-23 Copilot Studio docs, the new agent experience can only connect other agents that
-  are themselves built in Copilot Studio — not an arbitrary external service. [DOC S2080]
-- Connected-agent invocation is usage-metered: "usage-based billing applies to using, building, testing,
-  and evaluating agents," consuming Copilot Credits — a per-call cost that a purely in-process function
-  call does not carry. [DOC S2080]
+- As of the 2026-10 Copilot Studio docs, the new agent experience can connect four kinds of agent from
+  one **Add a connected agent** dialog: other Copilot Studio agents, Microsoft Foundry agents, remote
+  agents over the A2A protocol, and agents built with the Microsoft 365 Agents SDK. This replaces the
+  earlier (2026-06-23) docs, which allowed only Copilot Studio agents. [DOC S2080]
+- Connected-agent invocation is usage-metered: the page notes that using, building, testing and
+  evaluating agents under usage-based billing might consume Copilot Credits — a per-call cost that a
+  purely in-process function call does not carry. [DOC S2080]
+- The orchestrating model writes the task description for a connected agent and may rephrase or expand
+  the user's request, so a workflow must not depend on the original prompt being forwarded verbatim;
+  handoffs are also subject to a messaging payload limit, so oversized files may not come back to the
+  primary agent. [DOC S2080]
 - Microsoft Agent Framework's BUILD 2026 post adds an Agent Harness (built-in context compaction, file
   memory, background child agents for fan-out), Foundry Hosted Agents (the agent's own code as a container
   on Foundry-managed infrastructure, scale to zero, a VM-isolated sandbox per session) and CodeAct (the
@@ -83,7 +91,7 @@ topic 9 (`agents-a2a-cache`) covers it; A2A is named below only as one transport
 ## Reference
 | Dispatch target | Declared boundary | Reuse across callers | Metered per call | Source |
 |---|---|---|---|---|
-| Copilot Studio connected agent | domain (intent-matched) | yes, one agent to many primaries | yes (Copilot Credits) | S2080 |
+| Copilot Studio connected agent | domain (intent-matched) | yes, one agent to many primaries | yes (may consume Copilot Credits) | S2080 |
 | Claude Code subagent (non-fork) | task/tool-permission scope | no (spawned per task) | model tokens only | S2083 |
 | Claude Code fork | none (inherits full context) | no | model tokens only | S2083 |
 | Remote MCP server (2026-07-28 spec) | protocol boundary (stateless HTTP) | yes, many clients | depends on hosting | S2084 |
