@@ -128,9 +128,10 @@ the Skills extension (serving Agent Skills over `resources/read`) and two author
   extension is mandatory for that call. [DOC S-rji5dyla]
 - Extension lifecycle: propose via a SEP (type "Extensions Track"), build at least one reference
   implementation in an official SDK before review, Core Maintainers review and approve, then publish to
-  the extension repo; a breaking change (removed/renamed field, changed type, changed semantics, new
-  required field) needs a new identifier (e.g. `...my-extension-v2`) rather than breaking the existing
-  one in place. [DOC S-rji5dyla]
+  the extension repo; changes should prefer capability flags or versioning inside the settings object, and
+  an unavoidable breaking change (removed/renamed field, changed type, changed semantics, new required
+  field) needs a new identifier (e.g. `...my-extension-v2`) rather than breaking the existing one in
+  place. [DOC S-rji5dyla]
 - Four official extension families exist: MCP Apps (`io.modelcontextprotocol/ui`), Skills over MCP
   (`io.modelcontextprotocol/skills`), MCP Tasks (see `mcp/tasks-extension.md`), and two authorization
   extensions — OAuth Client Credentials (`io.modelcontextprotocol/oauth-client-credentials`) and

@@ -11579,6 +11579,7 @@ f00c411c06a6,mcp/python-sdk.md,S-ot2uskua,located,What's new in v2 > The SDK: v1
 9436ee638555,mcp/registry-and-extensions.md,S-rl4z6q5b,unlocated:no-match,,,,,2026-10-10
 a1a9ae2caf20,mcp/registry-and-extensions.md,S-wvioh66u,unlocated:no-match,,,,,2026-10-10
 a28a4e182498,mcp/registry-and-extensions.md,S-vl6444k5,located,MCP Registry Aggregators > Acting as a Subregistry,result;_meta;inject;meta;open;openapi;spec;custom,b1682d631984ea0f,"The subregistry OpenAPI spec allows subregistries to inject custom metadata via the meta field. For example, a subregistry could inject user ratings, download counts, and",2026-10-10
+a536d9962ca4,mcp/registry-and-extensions.md,S-rji5dyla,unlocated:no-match,,,,,2026-10-21
 c396298723b0,mcp/registry-and-extensions.md,S-rji5dyla,unlocated:no-match,,,,,2026-10-10
 c5887e6bc62c,mcp/registry-and-extensions.md,S-bgodqwyo,located,Package Types > npm Packages,npmj;registry.npmjs.org;org;npm;support;server.json;registrytyp;json,5e40fc21dfc9993f,"For npm packages, the MCP Registry currently supports the npm public registry (https://registry.npmjs.org) only. npm packages use ""registryType"": ""npm"" in server.json.",2026-10-10
 d6aab05298f7,mcp/registry-and-extensions.md,S-2hsm4de7,unlocated:no-match,,,,,2026-10-10
@@ -11590,7 +11591,6 @@ e9728993f038,mcp/registry-and-extensions.md,S-bgodqwyo,located,Package Types > C
 ecb9a93ab62d,mcp/registry-and-extensions.md,S-3j6fi7yk,located,Quickstart: Publish an MCP Server to the MCP Registry > Step 4: Create `server.json`,2025-12-1;schema;server.schema.json;static;static.modelcontextprotocol.io;modelcontextprotocol;http;json,f239f3e64cff8ccd,"""$schema"": ""https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json"",",2026-10-10
 ecb9a93ab62d,mcp/registry-and-extensions.md,S-w5egb2fu,located,Publishing Remote Servers > Supporting Remote and Non-remote Installation,host;packag;server.json;2025-12-1;schema;server.schema.json;static;static.modelcontextprotocol.io,96aa1ff26e3e7381,The remotes property can coexist with the packages property in server.json in order to allow MCP host applications to choose the preferred method of installation.,2026-10-10
 fbc0a6be35e5,mcp/registry-and-extensions.md,S-4zkeipor,unlocated:no-match,,,,,2026-10-10
-fc6906840158,mcp/registry-and-extensions.md,S-rji5dyla,unlocated:no-match,,,,,2026-10-10
 0167ca0f0be1,mcp/resources-prompts.md,S-onc3gpse,unlocated:no-match,,,,,2026-10-10
 02cc624f3685,mcp/resources-prompts.md,S-onc3gpse,located,Subscriptions > Cancellation,cancell;down;e.g;referenc;sse;tear;cancel;shutdown,3ec8d90627fd0323,"The client cancels it - close the SSE stream (HTTP) or send notifications/cancelled referencing the subscriptions/listen request ID (stdio). The server tears it down (e.g.,",2026-10-10
 06f84159bd3d,mcp/resources-prompts.md,S-twgov237,located,Completion > Error Handling,found;invalid;miss;method;support;capability;prompt;name,07d0422260015d28,Method not found: -32601 (Capability not supported) Invalid prompt name: -32602 (Invalid params) Missing required arguments: -32602 (Invalid params),2026-10-10
