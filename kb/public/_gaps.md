@@ -1887,3 +1887,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## claude/messages-api
 
 - Whether the MCP connector is available on Amazon Bedrock and Google Cloud: the earlier 'not available' statement is no longer on the MCP connector page (read 2026-10-21; only the mcp-client-2026-09-15 header is said to be on the Claude API). Check the Bedrock and Google Cloud feature pages. (topic: claude/messages-api)
+
+## claude/permissions-mcp
+
+- Minimum Claude Code version for the `anthropic/requiresUserInteraction` annotation (previously v2.1.199) is no longer stated on the MCP page (S740, 2026-10-21); look in the changelog (S746) for the release that added it. (topic: claude/permissions-mcp)

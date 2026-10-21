@@ -16,7 +16,7 @@ reference. A tool may raise its own threshold with `_meta["anthropic/maxResultSi
 ## Facts
 - Warning when MCP tool output exceeds 10,000 tokens; the warning threshold is fixed. [DOC S740]
 - Default maximum 25,000 tokens; `MAX_MCP_OUTPUT_TOKENS` changes it (default 25000). [DOC S745]
-- `anthropic/maxResultSizeChars` in a tool's `_meta` sets that tool's text threshold (hard ceiling 500,000 characters), independent of `MAX_MCP_OUTPUT_TOKENS`; image content stays subject to the token limit. [DOC S740]
+- `anthropic/maxResultSizeChars` in a tool's `_meta` raises that tool's persist-to-disk threshold above the 50,000-character default for text results (hard ceiling 500,000 characters), independent of `MAX_MCP_OUTPUT_TOKENS`; image content stays subject to the token limit. [DOC S740]
 - Over the limit (no images): result saved to a file in the session `tool-results` directory under `~/.claude/projects/` and replaced by a message naming the path. [DOC S740]
 - `MCP_TOOL_TIMEOUT` default 100000000 ms (~28 h); stdio servers have no per-request timer. [DOC S745]
 - `CLAUDE_CODE_MCP_TOOL_IDLE_TIMEOUT` default 1800000 ms (30 min) for stdio, 300000 ms for network servers; progress notifications reset it. [DOC S745]
