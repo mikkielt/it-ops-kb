@@ -53,7 +53,7 @@
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
   "depends_on": [
-    "ST-ywqj4gva",
+    "ST-zpe7qxtv",
     "ST-2lhcwufe"
   ],
   "notes": "Research item (/kb-research, sources read against the census of ST-zpe7qxtv): an entry closes only when a source settles it or it is no source disagreement (Reviewed); one that needs a lab, a login or unpublished information stays open with a dated note (maintaining.md, Conduct for changes). A gap the reading finds goes to _gaps.md under the same topic. Premise on 2026-10-20 (the first check fails): 19 open public/_conflicts.md entries under ('windows/', 'entra/', 'graph/', 'defender/') with no note dated 2026-10-21 or later, lines: [245, 247, 341, 343, 478, 494, 544, 629, 652, 676, 678, 690, 691, 707, 723, 731, 803, 804, 836] Fact units under the topics on 2026-10-20: 2478. check.py and the fact-count check pass before the work and must stay passing: they pin the kb's structure rules and that no fact is deleted across the rewrites (2026-10-20 planning)."
