@@ -159,7 +159,7 @@ status: complete
   rebranded from "LangGraph Platform") is LangChain's managed service for running LangGraph agents
   in production, offering one-click deployment with durable execution, state and streaming, plus a
   **Studio** IDE for visual debugging. [DOC S-43xr27dp]
-- LangSmith pricing (read 2026-10-12): Developer $0 for one seat with up to 5k base traces a month;
+- LangSmith pricing (read 2026-10-21): Developer $0 for one seat with up to 5k base traces a month;
   Plus $39 per seat per month with up to 10k base traces, access to Deployment and one free small
   serverless deployment; Enterprise custom-priced with self-hosted and hybrid deployment options.
   [DOC S-woho7bmc]
