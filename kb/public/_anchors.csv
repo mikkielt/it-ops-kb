@@ -505,8 +505,7 @@ f9093e852e03,agents/agent-overuse-patterns.md,S1920,located,Building effective a
 14de35309b41,agents/agent-planning-and-done.md,S2150,unlocated:no-match,,,,,2026-10-10
 14de35309b41,agents/agent-planning-and-done.md,S-o3v6ozch,unlocated:no-match,,,,,2026-10-12
 1e6c62a9c17b,agents/agent-planning-and-done.md,S-2wwcyoa4,unlocated:no-match,,,,,2026-10-21
-1e6c62a9c17b,agents/agent-planning-and-done.md,S-v2ztgtdn,unlocated:fetch-error,,,,,2026-10-10
-2041c8d97ad0,agents/agent-planning-and-done.md,S-vp5onm7b,located,Keep Claude working toward a goal > How evaluation works,prompt-ba;session-scop;api;based;scop;fast;haiku;return,ac06108f9871b653,"/goal is a wrapper around a session-scoped prompt-based Stop hook. Each time Claude finishes a turn, Claude Code sends the condition and the conversation so",2026-10-10
+1e6c62a9c17b,agents/agent-planning-and-done.md,S-v2ztgtdn,unlocated:no-match,,,,,2026-10-21
 261255dc6ea3,agents/agent-planning-and-done.md,S-2wwcyoa4,located,The 2020 Scrum GuideTM > Scrum Artifacts > Product Backlog,ready;selection;one;within;item;done;plan;backlog,6a3c556579af3469,Product Backlog items that can be Done by the Scrum Team within one Sprint are deemed ready for selection in a Sprint Planning event.,2026-10-21
 2cd7d77e747b,agents/agent-planning-and-done.md,S-2wwcyoa4,unlocated:no-match,,,,,2026-10-21
 388861b3f3d6,agents/agent-planning-and-done.md,S-o3v6ozch,located,Best practices for Claude Code > Give Claude a way to verify its work,exit;fixtur;linter;iterat;return;until;build;screenshot,89894ef107833554,"Claude does the work, runs the check, reads the result, and iterates until the check passes. The check is anything that returns a signal Claude",2026-10-12
@@ -519,6 +518,7 @@ f9093e852e03,agents/agent-overuse-patterns.md,S1920,located,Building effective a
 5cb365623b6a,agents/agent-planning-and-done.md,S-2wwcyoa4,unlocated:no-match,,,,,2026-10-21
 61246ab4cfa3,agents/agent-planning-and-done.md,S-vp5onm7b,located,Keep Claude working toward a goal > Use `/goal` > Write an effective condition,constraint;stat;end;check,0e377c508dfc7d17,"One measurable end state: a test result, a build exit code, a file count, an empty queue A stated check: how Claude should prove it,",2026-10-10
 6a3a6d5bde0d,agents/agent-planning-and-done.md,S-2wwcyoa4,located,The 2020 Scrum GuideTM > Scrum Artifacts > Sprint Backlog > Commitment: Sprint Goal,different;expect;scop;out;turn;without;backlog;work,3444c1186f6642fa,"If the work turns out to be different than they expected, they collaborate with the Product Owner to negotiate the scope of the Sprint Backlog",2026-10-21
+7950777169bc,agents/agent-planning-and-done.md,S-vp5onm7b,located,Keep Claude working toward a goal > How evaluation works,prompt-ba;session-scop;based;configur;fast;scop;small;return,7847c48394f6b9cf,"/goal is a wrapper around a session-scoped prompt-based Stop hook. Each time Claude finishes a turn, Claude Code sends the condition and the conversation so",2026-10-21
 7d1918aab7f6,agents/agent-planning-and-done.md,S2150,located,Effective harnesses for long-running agents > The long-running agent problem,claude-progress.txt;log;structur;txt;commit;init;init.sh;updat,9171a86e9b65ad75,"Initializer agent: The very first agent session uses a specialized prompt that asks the model to set up the initial environment: an init.sh script, a",2026-10-10
 8c18ffce5907,agents/agent-planning-and-done.md,S-cbzadytw,located,The Kanban Guide (May 2025) > Kanban Practices > Defining and Visualizing the Workflow,each;expectation;policy;servic;level;stat;controll;through,32715444dc48179f,A definition of how WIP will be controlled from started to finished. Explicit policies about how work items can flow through each state from started,2026-10-10
 978cc263ba9d,agents/agent-planning-and-done.md,S-2wwcyoa4,located,The 2020 Scrum GuideTM > Scrum Artifacts,against;measur;commitment;artifact;progress;each,4bc185cd377c3f31,Each artifact contains a commitment to ensure it provides information that enhances transparency and focus against which progress can be measured:,2026-10-21
@@ -6640,14 +6640,15 @@ f314f46c5c7c,claude/messages-api.md,S-wbsmegvl,unlocated:no-match,,,,,2026-10-10
 ff50112c5220,claude/messages-api.md,S-3pftmimx,located,Message Batches API > How the Message Batches API works > Batch limitations,creation;whichever;complet;days;first;hour;within;expir,f78ddd7ac7ce5066,"You can access batch results when all messages have completed or after 24 hours, whichever comes first. Batches expire if processing does not complete within",2026-10-10
 02501624eb9b,claude/models.csv,S2131,unlocated:no-match,,,,,2026-10-12
 02501624eb9b,claude/models.csv,S-eu3n3hyf,unlocated:no-match,,,,,2026-10-12
-047e7e91cd8a,claude/models.csv,S2131,unlocated:no-match,,,,,2026-10-12
-047e7e91cd8a,claude/models.csv,S-eu3n3hyf,unlocated:no-match,,,,,2026-10-12
 2f0aa6267c6e,claude/models.csv,S1864,unlocated:no-match,,,,,2026-10-12
 2f0aa6267c6e,claude/models.csv,S2130,unlocated:no-match,,,,,2026-10-12
 2f0aa6267c6e,claude/models.csv,S2131,unlocated:no-match,,,,,2026-10-12
 2f0aa6267c6e,claude/models.csv,S-eu3n3hyf,unlocated:no-match,,,,,2026-10-12
 2f0aa6267c6e,claude/models.csv,S-ezqg74ki,unlocated:no-match,,,,,2026-10-12
-713b1ff371ac,claude/models.csv,S-eu3n3hyf,unlocated:no-match,,,,,2026-10-12
+5e668080fea6,claude/models.csv,S2131,unlocated:no-match,,,,,2026-10-21
+5e668080fea6,claude/models.csv,S-4giqyujg,unlocated:no-match,,,,,2026-10-21
+68ff572bbd48,claude/models.csv,S2131,unlocated:no-match,,,,,2026-10-21
+68ff572bbd48,claude/models.csv,S-wclgtr6m,unlocated:no-match,,,,,2026-10-21
 7df84d3ee12d,claude/models.csv,S2131,unlocated:no-match,,,,,2026-10-12
 7df84d3ee12d,claude/models.csv,S-eu3n3hyf,unlocated:no-match,,,,,2026-10-12
 9851271d5628,claude/models.csv,S-eu3n3hyf,unlocated:no-match,,,,,2026-10-12
