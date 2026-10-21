@@ -2,7 +2,7 @@
   "id": "BG-vo45wips",
   "kind": "bug",
   "title": "census.py brief and dispatch build the review items of every queued source, so each part spends minutes on other groups' rows",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-rmp5zm5a",
   "priority": "P1",
@@ -20,5 +20,7 @@
     "_tools/census.py",
     "kb/_self/web-sources.md"
   ],
-  "notes": "Found 2026-10-21 in the census of ST-zpe7qxtv: cProfile of `census.py brief --group mcp --part 2` on the 2026-10-21 log took 684 s, 516 s of it in review_by_source over 5601 sources and 160 s in repin_items, while the part reads 9 rows; each dispatch pays it, so the agents group (106 parts in order) would spend about 20 h on it. phase2_context is shared by groups, brief and dispatch: keep groups' sizes (it needs every row's queue record) and scope brief and dispatch to the named group's rows (owners come from cited lines, which are cheap). The census driver resumes on the fixed code once this lands."
+  "notes": "Found 2026-10-21 in the census of ST-zpe7qxtv: cProfile of `census.py brief --group mcp --part 2` on the 2026-10-21 log took 684 s, 516 s of it in review_by_source over 5601 sources and 160 s in repin_items, while the part reads 9 rows; each dispatch pays it, so the agents group (106 parts in order) would spend about 20 h on it. phase2_context is shared by groups, brief and dispatch: keep groups' sizes (it needs every row's queue record) and scope brief and dispatch to the named group's rows (owners come from cited lines, which are cheap). The census driver resumes on the fixed code once this lands.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
