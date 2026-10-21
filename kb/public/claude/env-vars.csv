@@ -3,7 +3,7 @@ CLAUDE_CODE_USE_BEDROCK,route requests through Amazon Bedrock instead of the dir
 CLAUDE_CODE_USE_VERTEX,use Google Cloud's Agent Platform (Vertex AI) as the API provider instead of the direct Anthropic API; set to 1,S-vilbjgtf;S-a2zimsvk
 CLAUDE_CODE_USE_FOUNDRY,use Microsoft Foundry as the API provider instead of the direct Anthropic API; set to 1,S-vilbjgtf;S-a2zimsvk
 CLAUDE_CODE_USE_ANTHROPIC_AWS,use Claude Platform on AWS as the API provider instead of the direct Anthropic API; set to 1,S-vilbjgtf;S-a2zimsvk
-ANTHROPIC_BASE_URL,override the API endpoint to route through a proxy or gateway; disables MCP tool search by default on non-first-party hosts; disables Remote Control when it points off api.anthropic.com,S-vilbjgtf
+ANTHROPIC_BASE_URL,override the API endpoint to route through a proxy or gateway (the MCP page covers what happens when the gateway rejects MCP tool search); from v2.1.196 disables Remote Control when it points off api.anthropic.com,S-vilbjgtf
 ANTHROPIC_BEDROCK_BASE_URL,override the Amazon Bedrock endpoint URL for custom regions or an LLM gateway,S-vilbjgtf
 ANTHROPIC_MODEL,name of the model to use; read before the model settings key,S-vilbjgtf
 ANTHROPIC_API_KEY,API key sent as X-Api-Key; overrides a Pro/Max/Team/Enterprise subscription when set,S-vilbjgtf
