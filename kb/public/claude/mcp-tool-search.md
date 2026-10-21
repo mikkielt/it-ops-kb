@@ -2,7 +2,7 @@
 topic: claude/mcp-tool-search
 priority: P3
 applies_to: "Claude Code and Agent SDK docs as read on 2026-10-20 (Agent SDK tool-search page dateModified 2026-10-14)"
-retrieved_utc: 2026-10-20
+retrieved_utc: 2026-10-21
 sources: [S1862, S-sug3dznu, S-bisz7fay, S2159, S2132]
 status: complete
 ---
@@ -13,8 +13,8 @@ Claude Code defers MCP tool definitions by default (tool search). At session sta
 instructions enter the context; Claude fetches a tool's schema through the `ToolSearch` tool when it decides to use it.
 The `ENABLE_TOOL_SEARCH` variable switches the mode (unset, `true`, `auto`, `auto:N`, `false`), a server's `alwaysLoad`
 setting or a tool's `_meta["anthropic/alwaysLoad"]` exempts tools from deferral, and descriptions are cut at fixed
-character limits. The docs publish no token figure for one tool definition; the only published size rule is the `auto`
-threshold of 10% of the context window.
+character limits. The docs publish no exact token figure for one tool definition (the SDK page says only that 50 tools can use
+10-20K tokens); the only published size rule is the `auto` threshold of 10% of the context window.
 
 ## Facts
 - Tool search keeps MCP context low by deferring tool definitions until Claude needs them; only tool names and server instructions load at session start. [DOC S1862]
@@ -41,7 +41,7 @@ threshold of 10% of the context window.
 - With tool search, a server that finishes connecting mid-turn has its tool names listed on Claude's next request in the same turn; without it, Claude uses the `WaitForMcpServers` tool. [DOC S1862]
 - With tool deferral on (the default on supported models) a server connecting or disconnecting mid-conversation does not invalidate the prompt cache, because the tool list of the first request is kept for the whole conversation; with tools loaded upfront, adding or removing a definition does. [DOC S2159]
 - The cost guide says that with deferral only tool names and server instructions enter context, points to `/context` to see what consumes space, and notes that CLI tools add no per-tool listing at all. [DOC S2132]
-- No Claude Code page states the token size of one MCP tool definition or of a `tools/list` response; the only published rule is the 10%-of-window `auto` threshold, so the size of a given server's list is measured, not looked up. [DER S1862, S-sug3dznu, S2132, S-bisz7fay: searched the four pages for a per-tool token figure and found none]
+- The only token figure in the four pages is the Agent SDK page's rough one: 50 tools can use 10-20K tokens of the context window (about 200-400 tokens per tool, derived), and tool selection accuracy degrades with more than 30-50 tools loaded at once; no page states the size of one definition or of a given `tools/list` response, and the published size rule is the 10%-of-window `auto` threshold, so a given server's list is measured, not looked up. [DER S1862, S-sug3dznu, S2132, S-bisz7fay: the SDK page's 50-tool figure; the other three pages searched and give none]
 - For a server with many read-only tools, the docs imply: descriptive names and keyword-first descriptions (search), server instructions that say when to search (4,096-character cut), and `alwaysLoad` only on the one tool needed at the start of nearly every session. [DER S1862, S-sug3dznu: applying the name, instruction and alwaysLoad rules above]
 
 ## Reference

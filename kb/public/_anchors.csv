@@ -6550,12 +6550,12 @@ aa712ec66d58,claude/mcp-tool-search.md,S1862,located,Connect Claude Code to tool
 af9c46728346,claude/mcp-tool-search.md,S1862,located,Connect Claude Code to tools via MCP > Scale with MCP tool search > Tool search for MCP server authors,2.1.285;mcp-config;sets;fals;alwaysload;defer;alway;upfront,19950bc93233220e,The tool stays deferred when their configuration sets,2026-10-20
 b122386693b0,claude/mcp-tool-search.md,S-sug3dznu,located,Scale to many tools with tool search > Configure tool search,alway;alwaysload;mark;plus;built;built-in;count;demand,f3f17dc44749fc76,each MCP tool that isn't marked alwaysLoad,2026-10-21
 bbee3922714e,claude/mcp-tool-search.md,S-sug3dznu,located,Scale to many tools with tool search > How tool search works,until;stay;turn;availabl;discover;them;messag;load,75c29b4c6ee8fbac,until the SDK compacts the messages where the agent discovered them,2026-10-21
-d154e61168a5,claude/mcp-tool-search.md,S1862,unlocated:no-match,,,,,2026-10-20
-d154e61168a5,claude/mcp-tool-search.md,S2132,unlocated:no-match,,,,,2026-10-20
-d154e61168a5,claude/mcp-tool-search.md,S-bisz7fay,unlocated:no-match,,,,,2026-10-20
-d154e61168a5,claude/mcp-tool-search.md,S-sug3dznu,unlocated:no-match,,,,,2026-10-20
 d17a9177caff,claude/mcp-tool-search.md,S1862,located,Connect Claude Code to tools via MCP > Scale with MCP tool search > Configure tool search,forward;most;tool_referenc;non-first-party;party;anthropic_base_url;base;proxy,ab9b81b28b89b2a3,since most proxies don't forward,2026-10-20
 e1a73261edab,claude/mcp-tool-search.md,S1862,located,Connect Claude Code to tools via MCP > Scale with MCP tool search,low;definition;context;until;defer;need;keep;them,10dfc0c9cee1d95c,Tool search keeps MCP context usage low by deferring tool definitions until Claude needs them.,2026-10-20
+f0ae17128d36,claude/mcp-tool-search.md,S1862,unlocated:no-match,,,,,2026-10-21
+f0ae17128d36,claude/mcp-tool-search.md,S2132,unlocated:no-match,,,,,2026-10-21
+f0ae17128d36,claude/mcp-tool-search.md,S-bisz7fay,unlocated:no-match,,,,,2026-10-21
+f0ae17128d36,claude/mcp-tool-search.md,S-sug3dznu,located,Scale to many tools with tool search,10-20k;20k;30-50;accuracy;degrad;once;selection;token,00b7f490c6ac2747,"Context efficiency: Tool definitions can consume large portions of the context window (50 tools can use 10-20K tokens), leaving less room for actual work. Tool",2026-10-21
 f8df1362d6c3,claude/mcp-tool-search.md,S1862,located,Connect Claude Code to tools via MCP > Installing MCP servers > Managing your servers > Tool availability,finish;next;turn;request;search;list;connect;name,4016929030f1b681,Claude Code lists the server's tool names to Claude on its next request,2026-10-20
 fa8738c35b21,claude/mcp-tool-search.md,S1862,located,Connect Claude Code to tools via MCP > Scale with MCP tool search > Configure tool search,earlier;enable_tool_search;model;upfront;true;enabl;load;search,6fc1d198011caff6,"On earlier models, Claude Code loads all MCP tools upfront",2026-10-20
 02827f20569b,claude/messages-api.md,S-jrsntqfg,located,Count tokens in a Message,post;without;count_token;imag;creat;includ;document;count,536d97b3041cf781,"POST/v1/messages/counttokens Count the number of tokens in a Message. The Token Count API can be used to count the number of tokens in a Message,",2026-10-10

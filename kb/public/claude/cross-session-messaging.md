@@ -2,7 +2,7 @@
 topic: claude/cross-session-messaging
 priority: P3
 applies_to: "Claude Code v2.1.224+ (macOS, Linux, WSL 2), native Windows per the docs page v2.1.234+; cross-session messaging page and changelog, retrieved 2026-09-30 (Claude Code 2.1.285 current); Remote Control and channels pages read 2026-10-17"
-retrieved_utc: 2026-10-17
+retrieved_utc: 2026-10-21
 sources: [S-sdxhnx3i, S746, S-3yod3u7q, S-wzatkg4o, S748, S-d3ythwgb, S2057, S2042, S-fk46gdey, S-4jj4dtg4, S-s67nwj2e, S-yhad7wiu, S-m6qlxza7, S-uw2bn2un]
 status: complete
 ---
