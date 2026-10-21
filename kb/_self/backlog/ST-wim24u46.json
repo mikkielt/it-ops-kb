@@ -44,6 +44,42 @@
     "ST-2c4om47e",
     "ST-27k6puoc"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Does LEARN_MAP map intune/ and the windows/ fallback to the repositories their pages name although those answer 404 (memdocs, windows-itpro-docs), or only prefixes whose repository answers? A 404 repository leaves its pages on Learn and its clone fails with no login prompt, about a second a run; the goal names intune/ and windows/.",
+      "options": [
+        "map every prefix the pages name, 404 ones included",
+        "map only prefixes whose repository answers"
+      ],
+      "recommendation": "map every prefix the pages name, 404 ones included",
+      "do": {
+        "map every prefix the pages name, 404 ones included": "ST-wim24u46",
+        "map only prefixes whose repository answers": "ST-wim24u46"
+      },
+      "class": "design",
+      "answer": "map every prefix the pages name, 404 ones included",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which windows/ subpaths does LEARN_MAP map beyond the fallback, and how are the large new repositories cloned? Mapped: win32/api (sdk-api), win32 (win32, desktop-src/ has mixed-case directories that the lowercase Learn path does not match, so most of its pages stay on Learn), apps, dev-drive, dev-environment, package-manager (windows-dev-docs, hub/), terminal, wsl; left out: console (Microsoft/Console-Docs), azure/ and every other prefix. sdk-api, win32 and windows-dev-docs are cloned shallow since SHALLOW_SINCE, as the other large repositories.",
+      "options": [
+        "map those subpaths and clone the three shallow",
+        "map only intune/ and windows/ itself"
+      ],
+      "recommendation": "map those subpaths and clone the three shallow",
+      "do": {
+        "map those subpaths and clone the three shallow": "ST-wim24u46",
+        "map only intune/ and windows/ itself": "ST-wim24u46"
+      },
+      "class": "design",
+      "answer": "map those subpaths and clone the three shallow",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ilje65fa review"
   ],

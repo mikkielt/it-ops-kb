@@ -257,8 +257,19 @@ LEARN_MAP = [
     ("sql/", "MicrosoftDocs/sql-docs", "docs/"),
     ("powershell/dsc/", "MicrosoftDocs/PowerShell-Docs-DSC", "dsc/docs-conceptual/"),
     ("graph/api/", "microsoftgraph/microsoft-graph-docs-contrib", "api-reference/v1.0/api/"),
-]
-SHALLOW = ("sql-docs", "entra-docs", "windowsserverdocs")  # large doc repos: history since SHALLOW_SINCE is enough
+    ("intune/", "MicrosoftDocs/memdocs", "intune/"),
+    ("windows/win32/api/", "MicrosoftDocs/sdk-api", "sdk-api-src/content/"),
+    ("windows/win32/", "MicrosoftDocs/win32", "desktop-src/"),
+    ("windows/apps/", "MicrosoftDocs/windows-dev-docs", "hub/apps/"),
+    ("windows/dev-drive/", "MicrosoftDocs/windows-dev-docs", "hub/dev-drive/"),
+    ("windows/dev-environment/", "MicrosoftDocs/windows-dev-docs", "hub/dev-environment/"),
+    ("windows/package-manager/", "MicrosoftDocs/windows-dev-docs", "hub/package-manager/"),
+    ("windows/terminal/", "MicrosoftDocs/terminal", "TerminalDocs/"),
+    ("windows/wsl/", "MicrosoftDocs/wsl", "WSL/"),
+    ("windows/", "MicrosoftDocs/windows-itpro-docs", "windows/"),
+]  # the specific entries come first: learn_source takes the first prefix a path starts with
+SHALLOW = ("sql-docs", "entra-docs", "windowsserverdocs", "sdk-api", "windows-dev-docs", "win32")
+# (large doc repos: history since SHALLOW_SINCE is enough)
 SHALLOW_SINCE = "2026-01-01"
 
 
@@ -268,8 +279,10 @@ def today():
 
 
 def run(args, cwd=None, timeout=300):
+    # GIT_TERMINAL_PROMPT=0: a clone of a repository that answers 404 (the map names some) fails, never asks for a login
     try:
-        p = subprocess.run(args, cwd=cwd, capture_output=True, text=True, encoding="utf-8", timeout=timeout)
+        p = subprocess.run(args, cwd=cwd, capture_output=True, text=True, encoding="utf-8", timeout=timeout,
+                           env={**os.environ, "GIT_TERMINAL_PROMPT": "0"})
         return p.returncode, p.stdout.strip(), p.stderr.strip()
     except (subprocess.TimeoutExpired, OSError) as e:
         return 124, "", str(e)
@@ -341,7 +354,7 @@ def learn_source(url):
     rest = "/".join(unquote(p) for p in u.path.split("/")[2:])
     for pre, repo, rpre in LEARN_MAP:
         if rest.startswith(pre):
-            return "github.com/" + repo, rpre + rest[len(pre):].rstrip("/")
+            return "github.com/" + repo, (rpre + rest[len(pre):]).rstrip("/")
     return "", ""
 
 
