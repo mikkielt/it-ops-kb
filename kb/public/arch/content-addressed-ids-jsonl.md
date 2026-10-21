@@ -2,8 +2,8 @@
 topic: arch/content-addressed-ids-jsonl
 priority: P3
 applies_to: "JSON Lines (jsonlines.org source @d5ba812), NDJSON 1.0.0, RFC 8259, RFC 8785, RFC 4648; FIPS 180-4 and FIPS 202 (Aug 2015), SP 800-107 Rev. 1; BLAKE3 1.8.7, sha2 0.11.0; Python 3.14.7 hashlib and json; multihash @b43ec10, CID (ipfs/specs @3000be6), multibase @d7406cd, multicodec @8d9e9b3; Git v2.55.0 (retrieved 2026-10-11)"
-retrieved_utc: 2026-10-11
-sources: [S-wux7hanj, S-5m7fpuo3, S-f2cirt63, S-4rjxcq6v, S-wtlhziak, S-zzvrhdyd, S-2lsfwean, S-c5k5fslm, S-y6p3nnub, S-tvrordiw, S-6icauyji, S-ndrgfovo, S-5p5nwact, S-y6i5zuly, S-zf4axfjq, S-k4oiaaw2, S-hqrgt5kx, S-pn5cpaof, S-szv7ubhm, S-22wqxchx, S-7lqazmox, S-dgbl4wgb, S-eperpanz, S-silsshto, S-dbs2gjpc, S-za3ghpu4, S-3yvyv65p, S-nv6io42x, S-2wxyobvm, S-h7eqeryo]
+retrieved_utc: 2026-10-21
+sources: [S-wux7hanj, S-5m7fpuo3, S-f2cirt63, S-4rjxcq6v, S-wtlhziak, S-zzvrhdyd, S-2lsfwean, S-c5k5fslm, S-y6p3nnub, S-tvrordiw, S-6icauyji, S-ndrgfovo, S-5p5nwact, S-y6i5zuly, S-zf4axfjq, S-k4oiaaw2, S-hqrgt5kx, S-pn5cpaof, S-szv7ubhm, S-22wqxchx, S-7lqazmox, S-dgbl4wgb, S-eperpanz, S-silsshto, S-dbs2gjpc, S-za3ghpu4, S-3yvyv65p, S-nv6io42x, S-2wxyobvm, S-h7eqeryo, S-hacajbds, S-qekmtdbw, S-x5tojgxe, S-yhrjz7fk]
 status: partial
 ---
 
@@ -66,6 +66,10 @@ below separate what each text states from the derivation of an id recipe.
 - Truncating an id to lambda bits leaves about lambda/2 bits of collision resistance (a 128-bit prefix gives about 64), so a shortened display form should be a view of the full digest, never the stored key. [DER S-ndrgfovo, S-tvrordiw: the lambda/2 rule applied to 128 bits]
 - With the Python stdlib on both sides of the line, an id is only as stable as the record shape: floats, `-0.0` and keys above U+FFFF are where `json.dumps` and JCS part ways, so records meant to be hashed should hold strings, booleans, null and integers within +/-(2**53)-1 (or carry larger numbers as strings, as RFC 8785 Appendix D recommends), and both the Python and the Rust serialiser should pass the RFC's sorting and number samples. [DER S-wtlhziak, S-4rjxcq6v, S-zzvrhdyd: the differences above and the interoperable integer range]
 - SHA-256 needs no network and no model, is standardised, is guaranteed in `hashlib` and is a pure Rust crate with hardware backends; BLAKE3 would add speed and a public-domain licence at the price of a non-FIPS, non-`hashlib` function and a `draft` multicodec entry, so SHA-256 is the conservative default for record ids and BLAKE3 a candidate for large-artifact digests. [DER S-c5k5fslm, S-7lqazmox, S-pn5cpaof, S-y6i5zuly, S-eperpanz: standards status, library availability, licence and registry status]
+- The Rust crate `serde_json_canonicalizer` (MIT) says it was written because `serde_jcs` seems abandoned and its issues list places where it differs from RFC 8785. [DOC S-hacajbds]
+- The PyPI package `rfc8785` 0.1.4 (Trail of Bits, Apache-2.0) is a pure-Python, no-dependency implementation of RFC 8785. [DOC S-qekmtdbw]
+- The tests of `rfc8785` take the number generator and the pre-computed test inputs and known answers verbatim from the RFC's reference implementation. [DOC S-x5tojgxe]
+- The JSON Lines page says its MIME type may be `application/jsonl` but this is not yet standardized. [DOC S-yhrjz7fk]
 
 ## Reference
 - JSON Lines: https://jsonlines.org/ ; NDJSON: https://github.com/ndjson/ndjson-spec

@@ -3,7 +3,7 @@ topic: arch/k8s-gmsa-windows
 priority: P1
 applies_to: "Kubernetes (kubernetes.io, stable since v1.18), Windows containers (Windows Server 2019+), AKS/AKS Arc (docs current 2026-09-24)"
 retrieved_utc: 2026-10-21
-sources: [S1600, S1601, S1602, S1603, S400]
+sources: [S1600, S1601, S1602, S1603, S400, S-obzuej5s]
 status: complete
 ---
 
@@ -29,6 +29,7 @@ status: complete
 - Microsoft's `AksGMSA` PowerShell module (`microsoft/Windows-Containers-AKS-gMSA`) scripts that AKS setup: AKS Windows agents must have the `CCGAKVPlugin`; the module creates the standard domain user and a gMSA that authorizes only that user, a Key Vault secret holding the user's credentials (in `DOMAIN\USERNAME` form, otherwise pods using the credential spec crash), a user-assigned managed identity given read access for the Windows node pools, and the credential spec with its ClusterRole and RoleBinding. [DOC S1603]
 - No Microsoft or kubernetes.io page states a Windows-Server-version floor different from the general Windows container gMSA requirement (Windows Server 2019+ for the fixes noted above; Windows Server 2016/1709/1803 has the extra "hostname must equal gMSA SAM name" limitation, fixed in 2019). [DOC S1601]
 - Kerberos to AdminService (HTTP SPN) and SQL (`MSSQLSvc` SPN) from a gMSA-identified Windows container: no doc found that calls this out explicitly for containers, but it follows directly from the existing gMSA Kerberos facts in `windows/gmsa.md` (correct SPNs + DNS + firewall + supported enc types) — the container's network identity *is* the gMSA computer/service identity once CCG/`ADServiceAccount` resolves it, so an SPN'd HTTP or SQL service is reachable the same way. [DER S400,S1600,S1601: same Kerberos ticket-request path, container vs. bare host]
+- The Kubernetes Windows intro page says Windows nodes are supported provided the operating system is Windows Server 2022 or Windows Server 2025, while the gMSA task page's examples use an ltsc2019 image and state no minimum. [DOC S-obzuej5s]
 
 ## Reference
 | Path | Node/host domain-joined? | Mechanism | Plug-in needed? |

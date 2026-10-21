@@ -3,7 +3,7 @@ topic: arch/cloudflare-tunnel-replicas-ssh-access
 priority: P3
 applies_to: "cloudflared tunnel replicas and Cloudflare Access / Cloudflare One for an SSH admin path"
 retrieved_utc: 2026-10-21
-sources: [S-cs6tyx3d, S-dbxfjxtf]
+sources: [S-cs6tyx3d, S-dbxfjxtf, S-5u5725sq]
 status: partial
 ---
 
@@ -25,6 +25,9 @@ A `cloudflared` process keeps four outbound-only connections to Cloudflare; extr
 - Self-managed SSH keys keep the existing key infrastructure with network-level policy, needing a tunnel, a client on-ramp and Gateway but no client-side `cloudflared`. [DOC S-dbxfjxtf]
 - Two `cloudflared` replicas of one tunnel on two hosts, each with only outbound access, give an admin path that survives the loss of one host; the SSH daemon stays bound to loopback or the tunnel's private network and the firewall opens no inbound SSH port. [DER S-cs6tyx3d, S-dbxfjxtf: replica failover, no inbound ports]
 - The Access policy syntax, the token or credentials a replica uses to join the tunnel, and the plan limits are not covered by the two pages read. [UNK: logged in `_gaps.md`]
+- An Access for Infrastructure application for SSH takes a policy with a rule that matches the users allowed to reach the targets and a Connection context whose "SSH user" field lists the UNIX usernames they may log in as; an optional setting lets a user log in as the lowercased prefix of their email address. [DOC S-yaxvixjr]
+- A replica of a locally-managed tunnel is another host that runs `cloudflared tunnel run <NAME>` with the same tunnel credentials. [DOC S-typ6g7bt]
+- A remotely-managed tunnel needs only a token to run, and anyone holding the token can run the tunnel. [DOC S-5u5725sq]
 
 ## Reference
 | method | server side | client side | source |

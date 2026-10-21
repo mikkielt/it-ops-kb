@@ -2,8 +2,8 @@
 topic: arch/fluent-rust-typescript
 priority: P3
 applies_to: "fluent-bundle 0.16.0, fluent 0.17.0, fluent-syntax 0.12.0 (Rust); @fluent/bundle 0.19.1, @fluent/syntax 0.19.0, @fluent/langneg 0.7.0 (npm); fluent.runtime 0.4.0 (Python); moz-fluent-linter 0.4.10; Fluent Syntax 1.0"
-retrieved_utc: 2026-10-20
-sources: [S-dftqctth, S-o4mezmn2, S-jjpbp7g2, S-43gqmseb, S1709, S-c7rozbcf, S-ey42zwsk, S-vktfavae, S-v5arxcqi, S-6dmythvr, S-fte52rkq, S-qetvxk3e, S-puf5y636, S-un2vqcl3, S-fi73q2gh, S-pkdj2ggv, S-3zcwxrkd, S-2msclknw, S-ewnl7di2, S-f67paqny, S-ihysyyjh, S-j6vzyt5y, S-ueumbn4x, S-5ehlhbmd, S-xxelwvq6, S-adkxxbxo, S-sui7jilt, S-2ctin4w5, S-34inydkn, S-yf4y3ooe, S-yxzyna3l, S-lj3rgbhb, S-ngxalogc, S-zqefeiow, S-zsnubksc, S-qucwxqjo, S-u5ks3e5h, S-v5hog4zh, S-fnbm2hx6, S-edmvqoen, S-ejm4457f, S-wo2rtyeb, S-2viytftj, S-tj5gqic5, S-jm4q5smn, S-ccvjl7yh, S-5bmxcoy4, S-mobvrkio, S-nqeg3xk3, S-wxarrmdh, S-5qwcsz2g, S-l53lrqoz, S-nmwvmitf]
+retrieved_utc: 2026-10-21
+sources: [S-dftqctth, S-o4mezmn2, S-jjpbp7g2, S-43gqmseb, S1709, S-c7rozbcf, S-ey42zwsk, S-vktfavae, S-v5arxcqi, S-6dmythvr, S-fte52rkq, S-qetvxk3e, S-puf5y636, S-un2vqcl3, S-fi73q2gh, S-pkdj2ggv, S-3zcwxrkd, S-2msclknw, S-ewnl7di2, S-f67paqny, S-ihysyyjh, S-j6vzyt5y, S-ueumbn4x, S-5ehlhbmd, S-xxelwvq6, S-adkxxbxo, S-sui7jilt, S-2ctin4w5, S-34inydkn, S-yf4y3ooe, S-yxzyna3l, S-lj3rgbhb, S-ngxalogc, S-zqefeiow, S-zsnubksc, S-qucwxqjo, S-u5ks3e5h, S-v5hog4zh, S-fnbm2hx6, S-edmvqoen, S-ejm4457f, S-wo2rtyeb, S-2viytftj, S-tj5gqic5, S-jm4q5smn, S-ccvjl7yh, S-5bmxcoy4, S-mobvrkio, S-nqeg3xk3, S-wxarrmdh, S-5qwcsz2g, S-l53lrqoz, S-nmwvmitf, S-3eooje7z, S-ktvj7yua, S-zcdtwnr2]
 status: partial
 ---
 
@@ -73,6 +73,10 @@ Project Fluent publishes Rust crates (`fluent-rs` workspace: `fluent`, `fluent-b
 - Offline and CPU-only operation needs nothing beyond the crate set: `fluent-bundle` depends on `fluent-syntax`, `fluent-langneg`, `intl_pluralrules`, `unic-langid`, `intl-memoizer`, `rustc-hash`, `self_cell` and `smallvec`, with no network or model crate in that list. [DER S-fte52rkq: the dependency list]
 - Because no official generator exists, message ids stay runtime strings in both libraries (`get_message(&str)`, `getMessage(id: string)`), so a missing or renamed key shows up as `None` or `undefined` at runtime; a project-side check that compares the ids found in the FTL AST with the ids used in code, or a community generator under MIT, is what closes the gap. [DER S-edmvqoen, S-vktfavae, S-lj3rgbhb: no official generator; id parameters are plain strings]
 - In the Python shell the same holds: ids are `str` in a package that ships `py.typed`, so mypy checks the call but accepts any string; typed ids there are a project-side design (a thin wrapper whose parameter is a `Literal` or an `Enum` of the ids found in the FTL AST, checked by mypy), not something `fluent.runtime` provides, and a missing key comes back as the id text instead of an error. [DER S-dftqctth, S-43gqmseb, S-edmvqoen: `str` ids and `py.typed` in 0.4.0, no official generator]
+- The `fluent-syntax` crate changelog records "Update to Fluent Syntax 0.8" and "Update to Fluent Syntax 0.9" (0.8.0 and 0.9.0, 2019) and names no later Syntax version. [CODE S-3eooje7z]
+- projectfluent.org says Fluent Syntax 1.0 was released in April 2019 with client- and server-side implementations in JS, Python and Rust. [DOC S-c7rozbcf]
+- ESLint's `no-restricted-syntax` rule restricts syntax patterns by user-written AST selector; the core rule index read on 2026-10-21 lists no rule on localisation or hard-coded strings. [DOC S-ktvj7yua]
+- Ruff's `lint.flake8-gettext.extend-function-names` setting adds function names that count as internationalization calls for the INT001 to INT003 rules, which flag formatted-string arguments; Ruff's rule index has no Fluent rule. [DOC S-zcdtwnr2]
 
 ## Reference
 - Rust sources (tags): https://github.com/projectfluent/fluent-rs at `fluent-bundle@0.16.0`, `fluent@0.17.0`, `fluent-syntax@0.12.0`; docs.rs: https://docs.rs/fluent-bundle/0.16.0/fluent_bundle/; language negotiation: https://github.com/projectfluent/fluent-langneg-rs (commit 945d2d8).

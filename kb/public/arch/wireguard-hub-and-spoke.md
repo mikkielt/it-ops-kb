@@ -3,7 +3,7 @@ topic: arch/wireguard-hub-and-spoke
 priority: P3
 applies_to: "WireGuard with wg-quick on Linux hosts: one hub, many spokes"
 retrieved_utc: 2026-10-21
-sources: [S-fqnfqney, S-lyyx35bw]
+sources: [S-fqnfqney, S-lyyx35bw, S-sjlw6v6l]
 status: complete
 ---
 
@@ -24,7 +24,9 @@ A WireGuard interface is configured from one file per interface; `wg-quick` turn
 - `PersistentKeepalive` is an interval of 1 to 65535 seconds for an authenticated empty packet that keeps a stateful firewall or NAT mapping valid; the page gives 25 seconds as the example for an interface behind NAT, and 0 or `off` (the default) disables it. [DOC S-lyyx35bw]
 - `wg syncconf IFACE FILE` reads the live configuration and changes only what differs, without disrupting peer sessions; it is less efficient than `setconf`. [DOC S-lyyx35bw]
 - In a hub-and-spoke layout the hub has one `[Peer]` per spoke with that spoke's tunnel `/32` (plus a LAN prefix if the hub must route to it) in `AllowedIPs`; each spoke has one `[Peer]` for the hub whose `AllowedIPs` is the tunnel subnet; a spoke behind NAT sets `PersistentKeepalive` on its hub peer, so the hub needs no `Endpoint` for it. [DER S-lyyx35bw, S-fqnfqney: AllowedIPs is both route and filter, Endpoint is learned, keepalive holds the NAT mapping]
-- Traffic from one spoke to another goes through the hub only if the first spoke's hub-peer `AllowedIPs` covers the other spoke's address, which is why a spoke lists the whole tunnel subnet; the kernel forwarding switch on the hub is not covered by the pages read. [DER S-lyyx35bw: AllowedIPs decides where outgoing traffic goes]
+- Traffic from one spoke to another goes through the hub only if the first spoke's hub-peer `AllowedIPs` covers the other spoke's address, which is why a spoke lists the whole tunnel subnet; the kernel forwarding switch on the hub is a separate setting (next fact). [DER S-lyyx35bw: AllowedIPs decides where outgoing traffic goes]
+- The kernel setting `net.ipv4.ip_forward` ("Forward Packets between interfaces") is a boolean that defaults to 0 (disabled); the kernel documentation notes that changing it resets all IPv4 configuration parameters to their defaults. [DOC S-sjlw6v6l]
+- A hub that relays IPv4 spoke-to-spoke traffic needs `net.ipv4.ip_forward` set to 1, since the default forwards nothing between interfaces; the wg-quick and wg pages read do not mention it, and the IPv6 setting was not read. [DER S-sjlw6v6l, S-fqnfqney, S-lyyx35bw: default 0 plus a hub that must forward]
 - An idempotent apply on a host is `wg syncconf wg0 <(wg-quick strip wg0)`: `strip` yields a file `wg` accepts and `syncconf` touches only the differences. [DER S-fqnfqney, S-lyyx35bw: strip output is for wg(8); syncconf applies differences only]
 
 ## Reference

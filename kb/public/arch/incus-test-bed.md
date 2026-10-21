@@ -3,7 +3,7 @@ topic: arch/incus-test-bed
 priority: P3
 applies_to: "Incus system containers and virtual machines as a Linux test bed: images, launch, exec, snapshot"
 retrieved_utc: 2026-10-21
-sources: [S-ffguw2vw, S-65ttwu4c, S-24r24rv2, S-jccjrysc]
+sources: [S-ffguw2vw, S-65ttwu4c, S-24r24rv2, S-jccjrysc, S-dkfxyuyt, S-jnhplqpb]
 status: partial
 ---
 
@@ -27,6 +27,8 @@ Incus creates system containers and virtual machines from an image on a remote i
 - Custom storage volumes attached to an instance are not part of its snapshot or backup. [DOC S-65ttwu4c]
 - A test loop for an agent that applies host configuration is: `incus launch` the family's image, `incus exec` the agent's apply, `incus snapshot create`, apply a changed revision, `incus exec` the check, `incus snapshot restore` to retry; a container shares the host kernel, so settings that need their own kernel (audit lock, kernel modules, WireGuard, nftables hooks) need `--vm`. [DER S-ffguw2vw, S-jccjrysc, S-65ttwu4c: launch, exec, snapshot, restore; `--vm` gives a separate kernel]
 - Which `images:` remote names exist for Ubuntu, AlmaLinux and Alpine (the pages show only `debian/12`) and how an image is pinned by fingerprint are not in the pages read. [UNK: logged in `_gaps.md`]
+- On 2026-10-21 the `images:` server lists Ubuntu (jammy, noble, resolute), AlmaLinux 8, 9 and 10 and Alpine 3.21 to 3.24 plus edge, with aliases such as `ubuntu/24.04/cloud`, `almalinux/9/cloud` and `alpine/3.22/cloud`; the listing changes with every build. [DOC S-dkfxyuyt]
+- An Incus image is referenced by its remote and its alias or fingerprint, separated with a colon, so `images:<fingerprint>` names one build. [DOC S-jnhplqpb]
 
 ## Reference
 | step | command | source |

@@ -3,7 +3,7 @@ topic: arch/heartbeat-dead-man-monitors
 priority: P3
 applies_to: "Dead-man heartbeat monitors (Healthchecks) for agents that must report on a schedule"
 retrieved_utc: 2026-10-21
-sources: [S-fgzitvvz, S-agjtc4hy, S-mwxrr7ac]
+sources: [S-fgzitvvz, S-agjtc4hy, S-mwxrr7ac, S-ifbnaz62, S-2fcvc2ay, S-mm4em6gy, S-2gbhpb2w]
 status: partial
 ---
 
@@ -23,6 +23,10 @@ A heartbeat monitor stays silent while pings arrive on time and alerts when one 
 - Healthchecks states it is the wrong tool for probing website uptime by HTTP requests, for application metrics and for log aggregation. [DOC S-fgzitvvz]
 - A host or an agent that has failed, lost its network or been blocked cannot send an alert about it, so the receiving monitor must not share the failure domain (provider account, network, DNS, identity) of the estate it watches; the agent pings after each completed pull-and-apply cycle, with Period equal to its interval and a Grace Time larger than its jitter. [DER S-fgzitvvz, S-agjtc4hy: a missing ping is the alarm, schedule and Grace Time are the tuning]
 - Other providers' heartbeat features (Cronitor, Better Stack, UptimeRobot, Alertmanager's Watchdog) were not read, so no vendor comparison or second-provider recommendation rests on a source here. [UNK: logged in `_gaps.md`]
+- Cronitor sends an alert to a heartbeat monitor's recipients when heartbeats stop arriving or report failures. [DOC S-ifbnaz62]
+- Better Stack opens an incident and notifies the on-call team when the expected heartbeat does not arrive within the set frequency and grace period. [DOC S-2fcvc2ay]
+- UptimeRobot describes heartbeat (cron job) monitoring as suited to intranet servers and devices that can reach the internet. [DOC S-mm4em6gy]
+- The Prometheus-operator runbook for the Watchdog alert says it is always firing and should always fire in Alertmanager against a receiver, which is the dead-man pattern for the alerting pipeline itself. [DOC S-2gbhpb2w]
 
 ## Reference
 | concept | Healthchecks term | source |

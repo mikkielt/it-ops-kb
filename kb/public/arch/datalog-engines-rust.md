@@ -2,8 +2,8 @@
 topic: arch/datalog-engines-rust
 priority: P3
 applies_to: "Embeddable Datalog engines for Rust: crepe 0.2.0, ascent 0.8.1, datafrog 2.0.1 (crates.io latest at retrieval 2026-10-11); polonius-engine 0.13.0 as a datafrog user"
-retrieved_utc: 2026-10-11
-sources: [S-vebfsq3a, S-tnv3dwqy, S-lpnwfh7p, S-o2h35tvo, S-tmiyxzib, S-qwtlpuec, S-qtsiwo4d, S-kneimuih, S-cjeqjcrh, S-gixrekn4, S-34fj2zgp, S-wn6nwfee, S-k3cjuiam, S-4mwzuy4t, S-vy6ewhyh]
+retrieved_utc: 2026-10-21
+sources: [S-vebfsq3a, S-tnv3dwqy, S-lpnwfh7p, S-o2h35tvo, S-tmiyxzib, S-qwtlpuec, S-qtsiwo4d, S-kneimuih, S-cjeqjcrh, S-gixrekn4, S-34fj2zgp, S-wn6nwfee, S-k3cjuiam, S-4mwzuy4t, S-vy6ewhyh, S-hwygscyq, S-ajbhdhhp]
 status: partial
 ---
 
@@ -53,6 +53,7 @@ Three Rust crates run Datalog-style rules inside an ordinary program: Crepe and 
 - Rules kept as data, read from a file by a running service, fit none of the engines directly: a rule change with Crepe or Ascent means regenerating Rust and rebuilding, and with Datafrog it means writing an interpreter that maps data rules onto `from_join` and `from_antijoin` calls. [DER S-vebfsq3a, S-qwtlpuec, S-34fj2zgp: rules are compile-time macro input or hand-written Rust]
 - A closure rule (transitive closure over an edge relation) is the first example in each README, and a contradiction rule that needs "no such fact" needs negation: Crepe and Ascent provide it as stratified negation, Datafrog as an anti-join the caller orders. [DER S-vebfsq3a, S-qwtlpuec, S-34fj2zgp: the README closure examples and each engine's negation facts above]
 - A conflict report that must be byte-identical between runs needs its own ordering step with Crepe (unordered sets) and possibly Ascent (order not promised); Datafrog's output is already sorted. [DER S-vy6ewhyh, S-tnv3dwqy, S-wn6nwfee: unordered `HashSet` results, no stated Ascent order, sorted `Relation`]
+- A contributor answering in the Ascent issue tracker says loading rules on demand "isn't implemented now" in Ascent, and another comment says Ascent has no plans for incremental compilation; these are issue comments, not documentation. [COMMUNITY S-hwygscyq, S-ajbhdhhp]
 
 ## Reference
 | engine | version (crates.io, 2026-10-11) | licence | rule definition time | negation | aggregation | status |
