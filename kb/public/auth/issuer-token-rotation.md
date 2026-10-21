@@ -3,7 +3,7 @@ topic: auth/issuer-token-rotation
 priority: P3
 applies_to: "Credential ceilings and rotation at the issuer: GitLab access tokens (rotate API), Cloudflare API tokens (TTL, roll), R2 S3 credentials, Discord bot token reset"
 retrieved_utc: 2026-10-11
-sources: [S-mhouxzvy, S-tef353hj, S-pu7alvhx, S-i7k2yzu3, S-mk66h6ri, S-olzs5pbh, S-pj2f4zxz, S-gvnx776h, S-34drdif4, S-xaij2xlf, S-azsoi3uw, S-jnot5rsp, S-utofkpju]
+sources: [S-mhouxzvy, S-tef353hj, S-pu7alvhx, S-i7k2yzu3, S-mk66h6ri, S-olzs5pbh, S-pj2f4zxz, S-gvnx776h, S-34drdif4, S-xaij2xlf, S-azsoi3uw, S-jnot5rsp, S-utofkpju, S-udvn7k24]
 status: partial
 ---
 
@@ -59,7 +59,7 @@ The four issuers differ in what they let a holder do to a credential: GitLab rot
 | Issuer credential | Default or ceiling | Rotation | Old value afterwards | Source |
 |---|---|---|---|---|
 | GitLab personal, group, project token | 365 days if unset; 400 days max behind a flag (Ultimate limit) | `rotate` API, `self` allowed; new token one week by default | revoked at once; family revoked on reuse | S-mhouxzvy, S-tef353hj, S-pu7alvhx |
-| GitLab runner authentication token | `token_expires_at` 5 minutes to 15 days (see `gitlab/runner-registration.md`) | `reset_authentication_token` | replaced | S-fsqu2grq, S-ytnvr75r |
+| GitLab runner authentication token | `token_expires_at` 5 minutes to 21 days (see `gitlab/runner-registration.md`) | `reset_authentication_token` | replaced | S-udvn7k24, S-ytnvr75r |
 | Cloudflare user or account API token | optional TTL (`not_before`, `expires_on`); no ceiling stated | roll in place | invalidated at once | S-i7k2yzu3, S-mk66h6ri, S-34drdif4 |
 | R2 S3 key pair | follows its API token | roll the token; secret = SHA-256 of the new value | old secret invalid | S-xaij2xlf |
 | R2 temporary credential | `ttlSeconds` per credential | none: mint again | expires or dies with parent | S-azsoi3uw |

@@ -64,7 +64,7 @@ files: [auth/passportforwork-csp.csv]
 
 ### Multi-factor unlock (trusted signal unlock)
 - Trusted signal unlock extends WHfB with a required additional "trust signal" factor (e.g. a known network or companion device) layered on top of the PIN/biometric gesture, for organizations where a device-bound credential plus PIN alone isn't sufficient assurance. [DOC S-htlj43pv]
-- Configured with **First unlock factor credential providers**, **Second unlock factor credential providers**, and **signal rules for the Trusted Signal Credential Provider**; enabled via GPO `Computer Configuration > Administrative Templates > Windows Components > Windows Hello for Business > Configure device unlock factors`. [DOC S-htlj43pv]
+- Configured with **First unlock factor credential providers**, **Second unlock factor credential providers**, and **Signal rules for device unlock** (used by the Trusted Signal credential provider); enabled via GPO `Computer Configuration > Administrative Templates > Windows Components > Windows Hello for Business > Configure device unlock factors`, or through Intune (Settings catalog, `Device Unlock Plugins`) or the PassportForWork CSP `DeviceUnlock` node. [DOC S-htlj43pv]
 - Microsoft recommends disabling all non-Microsoft credential providers when using trusted signal unlock, so users can't unlock without the required factors; the remaining fallback options are password and smart card, which can also be disabled. [DOC S-htlj43pv]
 - Trusted signal unlock events are logged under `Applications and Services Logs\Microsoft\Windows\HelloForBusiness`, category "Device Unlock": 3520 unlock attempt initiated, 5520 unlock policy not configured, 6520 warning, 7520 error, 8520 success. [DOC S-htlj43pv]
 
