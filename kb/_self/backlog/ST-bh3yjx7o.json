@@ -2,7 +2,7 @@
   "id": "ST-bh3yjx7o",
   "kind": "story",
   "title": "census.py brief renumbers a group's parts once part 1's outcomes are applied, so brief --part 2 exits 2",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-gavrmuvx",
   "priority": "P2",
@@ -72,6 +72,19 @@
     "parked: SP-uwkr7iyl review"
   ],
   "notes": "Review severity S2 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck). Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft. 2026-10-20 planning: found by the SP-uwkr7iyl review (census.py cmd_brief). The old check made phase2_rows keep rows that hold an outcome, which judge, repin and summary also read, so applied rows would be read again; the new check drives cmd_brief over planted rows (part 1 applied, one row per part) and leaves the mechanism to the work. Premise: it fails, 'group g1 has 1 part(s); --part 2 is out of range'. 2026-10-21 manager: the worker's branch work/ST-bh3yjx7o (5512e2e44, plus a staged SKILL.md copy in its scratch for stage-back) waits on two gates it recorded, made blocking by class agents-rule: g1 how part numbers stay once part 1 is applied (keep a layout file, recommended, or recompute each time) and g2 what dispatch does for a part whose rows all have an outcome (print that and exit 0, recommended, or refuse with exit 2). Released so the chain goes on; ST-s4gapsl4 now follows ST-3xyi2rjo. Once answered, the branch is rebased over the census.py and SKILL.md changes landed since, staged back and landed.",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "f675cc404ba69a2b710fe22c53be9848ba9dd521",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import argparse, collections, contextlib, io, sys\nsys.path.insert(0, '_tools')\nimport census, kbfacts\nrow = lambda i, o: {'id': i, 'bucket': 'CHANGED', 'note': '', 'outcome': o, 'kind': 'page'}\nrows = [row('S-aaaaaaaa', 'confirmed'), row('S-bbbbbbbb', '')]\ncensus.phase2_args = lambda a: (rows, None)\ncensus.factdiff_log_rows = lambda *a, **k: []\nkbfacts.cited_lines = lambda ids: {}\ncensus.read_judged = lambda log: {}\ncensus.review_by_source = lambda ids, fd: {}\ncensus.unsupported = lambda items, judged: items\ncensus.with_repin_items = lambda items, todo: items\ncensus.reading_queue = lambda rows, fd, items=None, cited=None: [{'id': r['id'], 'chars': 1} for r in rows]\ncensus.citing_files = lambda r, cited, root: ['agents/x.md']\ncensus.owner_of = lambda files: 'g1'\ncensus.brief_parts = lambda group, members, ctx: ['part of ' + r['id'] for r, _, _ in members]\nout = io.StringIO()\nwith contextlib.redirect_stdout(out):\n    code = census.cmd_brief(argparse.Namespace(log='kb/public/_census/2026-10-21.csv', factdiff=None, group='g1', part=2), collections.Counter())\nprint('exit', code, out.getvalue().strip())\nsys.exit(0 if code == 0 and 'part of S-bbbbbbbb' in out.getvalue() else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "9615e4acc73cf090"
+      }
+    ]
+  }
 }
