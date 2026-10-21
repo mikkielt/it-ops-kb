@@ -9540,8 +9540,8 @@ ada8c179fe92,graph/csdl-device.md,S500,located,,alternat;startswith;azur;registr
 b0167890e9b9,graph/csdl-device.md,S-vdp4zb6i,located,device resource type > Properties,never;longer;onpremisessyncenabl;enabl;on-premis;sync;fals;true,09b273e5ec32acd5,onPremisesSyncEnabled | Boolean | true if this object is synced from an on-premises directory; false if this object was originally synced from an on-premises directory,2026-10-21
 c5649aa4aa5f,graph/csdl-device.md,S530,located,Advanced query capabilities on Microsoft Entra ID objects,search;eventual;capability;consistency;consistencylevel;level;count;advanc,50dfb04ec7d9d540,"However, these advanced query capabilities aren't available by default. The requestor must set the ConsistencyLevel header to eventual and, except for $search, use the $count",2026-10-10
 c5649aa4aa5f,graph/csdl-device.md,S-vdp4zb6i,located,device resource type > Properties,consistency;consistencylevel;eventual;level;advanc;specific;usag;capability,7368d2260fb106ce,Specific usage of $filter and the $search query parameter is supported only when you use the ConsistencyLevel header set to eventual and $count. For more,2026-10-21
-d3fc08dace7c,graph/csdl-device.md,S501,unlocated:no-match,,,,,2026-10-10
-d3fc08dace7c,graph/csdl-device.md,S505,unlocated:no-match,,,,,2026-10-10
+e46243aff6fc,graph/csdl-device.md,S501,unlocated:no-match,,,,,2026-10-21
+e46243aff6fc,graph/csdl-device.md,S505,unlocated:no-match,,,,,2026-10-21
 008796d93f03,graph/csdl-managedDevice.md,S500,unlocated:no-match,,,,,2026-10-10
 3405c036fa70,graph/csdl-managedDevice.md,S506,located,managedDevice resource type > Properties,ethernet;ethernetmacaddress;memory;non;non-default;physical;physicalmemoryinbyt;return,12093b6d5d76ae0b,"ethernetMacAddress | String | Indicates Ethernet MAC Address of the device. Default, is Null (Non-Default property) for this property when returned as part of managedDevice",2026-10-10
 6efd93f1039d,graph/csdl-managedDevice.md,S500,unlocated:no-match,,,,,2026-10-10
