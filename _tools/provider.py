@@ -769,11 +769,23 @@ def repository_state(url):
 
 # ---------------------------------------------------------------- the document text
 
+LEARN_LOCALE = re.compile(r"/[a-z]{2}(?:-[a-z]{4})?-[a-z]{2}(?:/|$)", re.I)  # a Learn path's leading locale segment (en-us, pt-br, sr-latn-rs)
+
+
+def learn_locale_form(url):
+    """`url` with /en-us/ in front of the path when it is a learn.microsoft.com url with no locale segment (Learn answers
+    such a url with a redirect to the /en-us/ form, a request detection would make for nothing); any other url as it is."""
+    u = urllib.parse.urlsplit(url)
+    if u.netloc.lower() != "learn.microsoft.com" or LEARN_LOCALE.match(u.path):
+        return url
+    return urllib.parse.urlunsplit((u.scheme, u.netloc, "/en-us" + (u.path if u.path.startswith("/") else "/" + u.path), u.query, u.fragment))
+
+
 def raw_url(url, row):
-    """(url, extra headers) of the provider's raw form of `url`."""
+    """(url, extra headers) of the provider's raw form of `url`; a Learn url without a locale is given at /en-us/."""
     form = (row or {}).get("raw_form") or "-"
     kind, _, val = form.partition(":")
-    base = url.split("#")[0]
+    base = learn_locale_form(url.split("#")[0])
     if kind == "query":
         return base + ("&" if "?" in base else "?") + val, {}
     if kind == "suffix":
