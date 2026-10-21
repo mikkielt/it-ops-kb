@@ -15408,8 +15408,6 @@ deb73d389764,security/policy-precedence.md,S-vzmmy23x,located,Windows Firewall T
 e2fc66bd2dd4,security/policy-precedence.md,S1593,located,Co-management workloads - Configuration Manager | Microsoft Learn > Device configuration,tattoo;remov;need;endpoint;switch;protection;set;configuration,f9954e0f32cdbb18,"In order to tattoo remove Endpoint protection settings, Device Configuration workload also needs to be switched.",2026-10-21
 fe4bd3281dc4,security/policy-precedence.md,S1412,located,ControlPolicyConflict Policy CSP | Microsoft Learn > MDMWinsOverGP,outsid;script;user;remov;conflict;valu;mdm,b90df9e8f5de9bcf,Any values set by scripts/user outside of GP that conflict with MDM are removed,2026-10-10
 014655374ddf,security/privacy-compliance.md,S1558,located,EU AI Act Omnibus Agreement — Postponed High-Risk Deadlines and Other Key Changes,council;alert;commission;provisional;agreement,9c54cfe64d618b2c,"By late 2025, implementation was visibly off track, prompting the European Commission to table the Digital Omnibus on AI on 19 November 2025 (see our",2026-10-10
-1cb756e88051,security/privacy-compliance.md,S-k2bxn62w,unlocated:no-match,,,,,2026-10-10
-1cb756e88051,security/privacy-compliance.md,S-nzqme6xu,located,,full;notify;opinion;reason;sent;status;commission;transposition,0de6c531aa9d7d3a,Status of transposition On 7 May 2025 the Commission sent a reasoned opinion for failure to notify full transposition.,2026-10-10
 207d6294d9bf,security/privacy-compliance.md,S-twztbg3z,unlocated:not-text,,,,,2026-10-10
 30bb9c4b601a,security/privacy-compliance.md,S1542,unlocated:not-text,,,,,2026-10-10
 366167c61f38,security/privacy-compliance.md,S870,unlocated:fetch-error,,,,,2026-10-10
@@ -15435,6 +15433,8 @@ a5e5af286b3a,security/privacy-compliance.md,S-tzbutlvs,unlocated:no-match,,,,,20
 b4cd1c4d54a3,security/privacy-compliance.md,S1553,unlocated:not-text,,,,,2026-10-10
 bb6e62e3af1c,security/privacy-compliance.md,S1550,unlocated:no-match,,,,,2026-10-10
 bb6e62e3af1c,security/privacy-compliance.md,S-5jbvhlmx,unlocated:no-match,,,,,2026-10-10
+c57453ff57bd,security/privacy-compliance.md,S-k2bxn62w,unlocated:no-match,,,,,2026-10-21
+c57453ff57bd,security/privacy-compliance.md,S-nzqme6xu,located,,full;notify;opinion;reason;sent;status;commission;transposition,0de6c531aa9d7d3a,Status of transposition On 7 May 2025 the Commission sent a reasoned opinion for failure to notify full transposition.,2026-10-21
 d1370672e261,security/privacy-compliance.md,S1555,unlocated:fetch-error,,,,,2026-10-10
 dd3809d69687,security/privacy-compliance.md,S-xvc5ligo,unlocated:not-text,,,,,2026-10-10
 f042307324af,security/privacy-compliance.md,S1553,unlocated:not-text,,,,,2026-10-10

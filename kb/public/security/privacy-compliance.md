@@ -72,7 +72,7 @@ conditional note; and the EU AI Act classification/timeline including the 2026 D
 - Member States had to transpose NIS2 by 2024-10-17; on 2025-05-07 the Commission sent reasoned opinions to 19
   Member States, Poland among them, for failing to notify full transposition, giving them two months to respond
   before a possible referral to the Court of Justice. The Commission's Poland page still gives that reasoned
-  opinion as the transposition status (read 2026-09-27). [DOC S-k2bxn62w, S-nzqme6xu]
+  opinion as the transposition status (read 2026-10-21). [DOC S-k2bxn62w, S-nzqme6xu]
 - NIS2 essential/important entity status depends on sector (Annexes I/II of the Directive) and size thresholds
   (broadly, medium-or-larger enterprises in listed sectors, with some entities in scope regardless of size); the
   Directive does not decide a given operator's status. [DOC S1552]
