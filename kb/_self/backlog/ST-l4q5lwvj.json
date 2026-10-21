@@ -22,7 +22,7 @@
     "kb/public/**"
   ],
   "depends_on": [
-    "ST-ywqj4gva"
+    "ST-zpe7qxtv"
   ],
   "notes": "2026-10-20 planning: the sprint's items are research items themselves; this story only settles what they share before the first is claimed: the routes kb_pack gives for their topics after the census, and the live docs server each needs (microsoft-learn for the endpoint, identity and security topics; the web for arch, gitlab and logs). It waits for the census tag ST-ywqj4gva."
 }
