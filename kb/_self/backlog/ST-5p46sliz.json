@@ -2,7 +2,7 @@
   "id": "ST-5p46sliz",
   "kind": "story",
   "title": "Sprint C review fixes: the run-based claude gap closings cite DER facts, and an answer CODE tag gets its pointer",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-5cyrnkw7",
   "priority": "P2",
@@ -46,5 +46,7 @@
     "kb/public/_sources.csv",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
-  "notes": "Sprint C review (reviewer run 2026-10-21, $1.58): S2 _gaps.md:1216,1220,1222 closings rest only on our own claude -p runs, no official source and no article fact; S3 _answers.md:4358 [CODE S-wazay7xw, S-4xllwpsz; DOC S-sjuwcuhk] has no pointer, the article fact in python/stdlib-windows-portability.md has them. Write each run's fact with its Claude Code version, platform and date; word the note Tried, Narrowed or Partly resolved where no official page states it. Premise: both checks fail on 08c698f386 (3 entries: lines 1215, 1219, 1221; 1 answer line 4358). The review's two other S2 findings (_gaps.md:609 ConfigMgr event channels, :1392 Windows process-creation cost) resolve by first topic to mecm/log-files and defender/asr-and-antivirus, so SP-z6wolmvm's ST-qgojhpot covers them."
+  "notes": "Sprint C review (reviewer run 2026-10-21, $1.58): S2 _gaps.md:1216,1220,1222 closings rest only on our own claude -p runs, no official source and no article fact; S3 _answers.md:4358 [CODE S-wazay7xw, S-4xllwpsz; DOC S-sjuwcuhk] has no pointer, the article fact in python/stdlib-windows-portability.md has them. Write each run's fact with its Claude Code version, platform and date; word the note Tried, Narrowed or Partly resolved where no official page states it. Premise: both checks fail on 08c698f386 (3 entries: lines 1215, 1219, 1221; 1 answer line 4358). The review's two other S2 findings (_gaps.md:609 ConfigMgr event channels, :1392 Windows process-creation cost) resolve by first topic to mecm/log-files and defender/asr-and-antivirus, so SP-z6wolmvm's ST-qgojhpot covers them.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
