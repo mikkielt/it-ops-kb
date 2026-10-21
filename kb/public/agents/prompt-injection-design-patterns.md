@@ -16,8 +16,8 @@ trading agent flexibility for structural resistance to injected instructions in 
 Research) is a working Dual-LLM/Plan-Then-Execute hybrid with a measured utility cost (77% vs. 84% task success).
 Microsoft's Spotlighting marks untrusted tool/document content as lower-trust via base64 transformation; Prompt
 Shields classifies both direct and "document" (indirect/tool-response) attacks. Anthropic's own published defenses
-are model training plus a content classifier plus red-teaming; Claude Code adds isolated context windows for
-web-fetch, MCP allowlisting, and mandatory approval for network-touching tools. A device-management agent with a
+are model training plus a content classifier plus red-teaming; Claude Code adds a separate summarising model
+call for web fetches, MCP server restriction via managed settings, and default approval for network-touching tools. A device-management agent with a
 tier-confirm gate and a fixed query set already functions as an Action-Selector; such a design typically has no
 Dual-LLM-style isolation step ahead of an in-process PII filter.
 
@@ -49,17 +49,25 @@ Dual-LLM-style isolation step ahead of an in-process PII filter.
   can push a document over the input limit; available only via the Chat Completions API path in Foundry guardrails;
   off by default. [DOC S2008]
 - Prompt Shields (formerly "jailbreak risk detection") classifies **user prompt attacks** (direct) and **document
-  attacks** (hidden instructions in documents/emails/web pages/tool responses), scanning at the user-input and
-  tool-response intervention points; annotations report `detected`/`filtered` booleans. [DOC S2008]
+  attacks** (hidden instructions in documents/emails/web pages); for model API calls both are scanned at the
+  user-input intervention point, and for Foundry agents document attacks can also be scanned at the tool-response
+  intervention point for supported tools (preview). User prompt attack detection is on by default in Foundry,
+  document attack detection off. Annotations report `detected`/`filtered` booleans. [DOC S2008]
 - Anthropic (2025-11-24, re: Claude for Chrome): defenses are (1) RL training exposing the model to injected content
   and rewarding correct refusal, (2) a classifier scanning "all untrusted content that enters the model's context
   window" for adversarial commands in hidden text, manipulated images or deceptive UI elements, (3) ongoing red-teaming and external benchmark participation.
   Anthropic states a 1% attack success rate is still "meaningful risk" and "no browser agent is immune." [DOC S2009]
-- Claude Code's documented tool-result-relevant defenses: isolated context window for web-fetch results; "context-
-  aware analysis" of the full request; in Manual mode, approval required by default for most tools that make
-  network requests; MCP servers configured only from source-controlled settings (see `managed-mcp.md`); "Validate tool results before
-  passing to LLM" and "show tool inputs to the user before calling the server" are MCP-spec-level client SHOULDs,
-  not Claude-Code-specific inventions. [DOC S2010]
+- Claude Code's documented tool-result-relevant defenses (page re-read 2026-10-21): for most fetches WebFetch runs
+  a separate model call over the page and Claude receives that call's answer instead of the raw page; in Manual
+  mode, approval required by default for most tools that make network requests, and `curl`/`wget` are not
+  auto-approved; Bash commands it cannot fully analyze prompt in Manual mode (command injection detection) and
+  unmatched commands fail closed; a workspace trust dialog and a separate approval prompt for project `.mcp.json`
+  servers; MCP servers at other scopes, claude.ai connectors and plugins are configured outside the repository,
+  so reviewing `.mcp.json` does not show every server a session can load (restrict with `managed-mcp.md`); the
+  page itself says no system is completely immune. The earlier "isolated context window" and "context-aware
+  analysis" wording no longer appears on the page. "Validate tool results before passing to LLM" and "show tool
+  inputs to the user before calling the server" are MCP-spec-level client SHOULDs, not Claude-Code-specific
+  inventions. [DOC S2010]
 
 ## Reference
 | Pattern | Core idea | Main trade-off | Source |

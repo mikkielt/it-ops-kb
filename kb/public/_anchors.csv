@@ -769,7 +769,8 @@ d1658536bb95,agents/anthropic-materials.md,S2137,located,Engineering at Anthropi
 de5c948b6b9d,agents/anthropic-materials.md,S2137,unlocated:no-match,,,,,2026-10-10
 0081de9718b1,agents/api-tokens-issue-and-store.md,S-h7wl75vd,unlocated:no-match,,,,,2026-10-18
 0081de9718b1,agents/api-tokens-issue-and-store.md,S-uyzwls57,unlocated:no-match,,,,,2026-10-18
-24b86864dabc,agents/api-tokens-issue-and-store.md,S2041,located,Authentication > Credential management,inherit;userprofil;control;linux;mac;maco;credentials.json;directory,fc77f28e09a328c0,"On Linux, credentials are stored in ~/.claude/.credentials.json with file mode 0600. On Windows, credentials are stored in %USERPROFILE%\.claude\.credentials.json and inherit the access controls of your",2026-10-10
+070413b42980,agents/api-tokens-issue-and-store.md,S449,unlocated:no-match,,,,,2026-10-21
+070413b42980,agents/api-tokens-issue-and-store.md,S2055,located,Use external secrets in CI/CD,explicitly;variabl;git;gitlab;jobs;lab;secret,dbee0558678d1e70,"Unlike CI/CD variables which are always available in jobs, secrets must be explicitly requested by a job. GitLab supports several secret management providers, including:",2026-10-21
 25e7cbb053b6,agents/api-tokens-issue-and-store.md,S2043,unlocated:no-match,,,,,2026-10-10
 33e8ea3797dd,agents/api-tokens-issue-and-store.md,S2046,unlocated:no-match,,,,,2026-10-10
 3421315dea48,agents/api-tokens-issue-and-store.md,S2043,unlocated:no-match,,,,,2026-10-10
@@ -784,6 +785,7 @@ de5c948b6b9d,agents/anthropic-materials.md,S2137,unlocated:no-match,,,,,2026-10-
 59aa936e7937,agents/api-tokens-issue-and-store.md,S2044,located,Microsoft Authentication Extensions for Python,apps;desktop;performanc;scal;such;issu;web;client,d31110ba3f2c0c2b,"Note: It is recommended to use this library for cache persistance support for Public client applications such as Desktop apps only. In web applications, this",2026-10-10
 5dc7e577c1f5,agents/api-tokens-issue-and-store.md,S-75p7zmds,located,Secret push protection workflow,hook;pre-receiv;pre;receiv;protection;push;secret,ef02c5e72ddd2e2e,Secret push protection takes place in the pre-receive hook.,2026-10-18
 6124eb6a6e4c,agents/api-tokens-issue-and-store.md,S449,unlocated:no-match,,,,,2026-10-10
+6b240e69ec26,agents/api-tokens-issue-and-store.md,S2044,unlocated:no-match,,,,,2026-10-21
 6c68dfcb24c7,agents/api-tokens-issue-and-store.md,S-75p7zmds,located,Secret push protection workflow > Resolve a blocked push > Skip secret push protection,pipelin;content;detection;enabl;scan;commit;push;secret,5dca04488c5d3c4f,"If pipeline secret detection is enabled, the content of all commits is scanned after they are pushed to the repository.",2026-10-18
 749bcfb43dcd,agents/api-tokens-issue-and-store.md,S2054,unlocated:no-match,,,,,2026-10-10
 77748b47d6b3,agents/api-tokens-issue-and-store.md,S-75p7zmds,located,Secret push protection workflow > Detected secrets,chosen;confidenc;high;fals;pattern;push,760006fe6ade1109,Only high-confidence patterns were chosen for secret push protection,2026-10-18
@@ -791,13 +793,17 @@ de5c948b6b9d,agents/anthropic-materials.md,S2137,unlocated:no-match,,,,,2026-10-
 832a83577782,agents/api-tokens-issue-and-store.md,S2041,unlocated:no-match,,,,,2026-10-10
 832a83577782,agents/api-tokens-issue-and-store.md,S2057,located,Settings files and precedence > Change a setting > When edits take effect,apikeyhelper;watch;credential;helper;reload;restart;api;hook,e8e27f045a57a263,"Claude Code watches your settings files and reloads them when they change, so it applies most edits to the running session without a restart, including",2026-10-12
 89e04707b27c,agents/api-tokens-issue-and-store.md,S-75p7zmds,unlocated:no-match,,,,,2026-10-18
+8f724977ddb1,agents/api-tokens-issue-and-store.md,S2056,unlocated:no-match,,,,,2026-10-21
 90a1a8b0be60,agents/api-tokens-issue-and-store.md,S2055,unlocated:no-match,,,,,2026-10-10
 9b8dc12070ec,agents/api-tokens-issue-and-store.md,S449,unlocated:no-match,,,,,2026-10-10
 b464d03f3790,agents/api-tokens-issue-and-store.md,S1297,unlocated:no-match,,,,,2026-10-10
 b9b8940d23cd,agents/api-tokens-issue-and-store.md,S2055,located,Use external secrets in CI/CD,alway;availabl;explicitly;job;must;request;variabl;jobs,a7e7595b98f13b21,"Unlike CI/CD variables which are always available in jobs, secrets must be explicitly requested by a job.",2026-10-20
+ca345b9a46be,agents/api-tokens-issue-and-store.md,S2041,located,Authentication > Credential management,fallback;inherit;userprofil;different;entry;under;claude_config_dir;control,fc77f28e09a328c0,"On Linux, credentials are stored in ~/.claude/.credentials.json with file mode 0600. On Windows, credentials are stored in %USERPROFILE%\.claude\.credentials.json and inherit the access controls of your",2026-10-21
 cbeac38fd2fd,agents/api-tokens-issue-and-store.md,S2046,unlocated:no-match,,,,,2026-10-10
 d27435038c6d,agents/api-tokens-issue-and-store.md,S-75p7zmds,located,Secret push protection workflow > Coverage > Diff scanning,already;present;part;chang;detect;file;secret,bd30732222fc5878,"If a secret is already present in a file and not part of the changes, it is not detected.",2026-10-18
+d710c0da965c,agents/api-tokens-issue-and-store.md,S2047,located,Azure Key Vault Overview - Azure Key Vault | Microsoft Learn > Why use Azure Key Vault? > Securely store secrets and keys,design;doesn;extract;140-3;both;softwar;fips;microsoft,0c933c3f3f1139f3,"These Premium tier HSMs utilize Marvell LiquidSecurity hardware with FIPS 140-3 Level 3 validation, ensuring the most stringent cryptographic protection available. Both Standard and Premium",2026-10-21
 ecc6dc4b26c2,agents/api-tokens-issue-and-store.md,S2041,unlocated:no-match,,,,,2026-10-10
+f0b9fbd80277,agents/api-tokens-issue-and-store.md,S2047,unlocated:no-match,,,,,2026-10-21
 f0bfc2e3807a,agents/api-tokens-issue-and-store.md,S2044,located,Microsoft Authentication Extensions for Python > Usage > Creating an encrypted token cache file to be used by MSAL,opting;plain;text,51365aa9fd2aecf3,Opting in to plain text.,2026-10-20
 f35f6d374978,agents/api-tokens-issue-and-store.md,S2056,located,Use JWT/OIDC authentication > Configuration > Bound claims,exactly;bound_audienc;aud;audienc;match;must;bound;claim,911f436fc323a122,the boundaudiences parameter must exactly match at least one of provided aud claims.,2026-10-20
 fb5121e560ae,agents/api-tokens-issue-and-store.md,S-2spmezqp,unlocated:no-match,,,,,2026-10-21
@@ -3162,13 +3168,13 @@ ee8aacf3b822,agents/policy-as-code.md,S-tcvnt2sk,located,,against;decision;evalu
 f4233f311345,agents/policy-as-code.md,S-fd4vxmr2,located,Basic policy construction in Cedar {#syntax-policy} > Effect {#term-policy-effect} > Effect examples {#term-policy-effect-examples} > `forbid` {#term-policy-effect-examples-forbid},forbid;allow,df92a31a28e57184,This policy doesn't explicitly allow anything; it only forbids when it matches.,2026-10-15
 fc74dec9f57a,agents/policy-as-code.md,S-fnw2pa3v,located,Why use Rego? > Default Keyword,undefin;default;name;valu;rule,aaade49ba7eb906b,The default value is used when all the rules sharing the same name are undefined.,2026-10-15
 fdec06a385fd,agents/policy-as-code.md,S-ksyczslf,located,How Cedar authorization works {#how-cedar-authorization-works} > Request authorization {#request-authorization} > Algorithm {#request-authorization-algorithm},forbid;deny;policy,de5371a6d8c67229,"If any forbid policy evaluates to true, then the final result is Deny.",2026-10-15
+10371fe56388,agents/prompt-injection-design-patterns.md,S2007,unlocated:no-match,,,,,2026-10-21
 15bd41ca3f94,agents/prompt-injection-design-patterns.md,S2008,unlocated:no-match,,,,,2026-10-10
-42c162e77e5b,agents/prompt-injection-design-patterns.md,S2010,unlocated:no-match,,,,,2026-10-10
 44567b7a9b77,agents/prompt-injection-design-patterns.md,S2009,unlocated:no-match,,,,,2026-10-10
+5633a84861f0,agents/prompt-injection-design-patterns.md,S2010,unlocated:no-match,,,,,2026-10-21
 a2250e1523d0,agents/prompt-injection-design-patterns.md,S2005,unlocated:no-match,,,,,2026-10-10
-b403c195470f,agents/prompt-injection-design-patterns.md,S2008,located,Prompt Shields in Azure AI Content Safety - Azure AI services | Microsoft Learn,page;hidden;tool;web;email;scan;intervention;point,b795cc3578677bc9,"Document attacks are hidden instructions in third-party content, such as documents, emails, and web pages, that attempt to take control of the model session. In",2026-10-10
+cd7b49d90e61,agents/prompt-injection-design-patterns.md,S2008,located,Prompt Shields in Azure AI Content Safety - Azure AI services | Microsoft Learn,hidden;page;support;web;call;email;tool;preview,5a1de6509cc5723e,"Document attacks - Hidden instructions embedded in document content (documents, emails, web pages) that try to hijack the model session. For model API calls, Prompt",2026-10-21
 cf6e94b73939,agents/prompt-injection-design-patterns.md,S2006,located,Title:Defeating Prompt Injections by Design,agentdojo;capability;control;dojo;exfiltration;extract;never;provabl,49faa055a76f4cd3,"To operate, CaMeL explicitly extracts the control and data flows from the (trusted) query; therefore, the untrusted data retrieved by the LLM can never impact",2026-10-10
-d3d099a78485,agents/prompt-injection-design-patterns.md,S2007,unlocated:no-match,,,,,2026-10-10
 d71af5d9122e,agents/prompt-injection-design-patterns.md,S2005,unlocated:no-match,,,,,2026-10-10
 118921e77c46,agents/repository-ingestion.md,S-drdhmn2b,unlocated:no-match,,,,,2026-10-10
 2019f02a1009,agents/repository-ingestion.md,S-czqctq3z,located,Overrides > Using gitattributes,git-styl;styl;linguist-generat;git;linguist-documentation;linguist-vendor;attribut;linguist-detectabl,9a2bab1d6cd3462a,"Add a .gitattributes file to your project and use standard git-style path matchers for the files you want to override using the linguist-documentation, linguist-language, linguist-vendored,",2026-10-10
