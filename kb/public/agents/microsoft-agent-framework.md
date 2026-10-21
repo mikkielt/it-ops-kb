@@ -83,14 +83,14 @@ status: complete
 ### MCP tool integration (Python: MCPStdioTool, MCPStreamableHTTPTool, MCPWebsocketTool)
 - Three Python MCP client tool types: **`MCPStdioTool`** (local subprocess servers over stdio),
   **`MCPStreamableHTTPTool`** (HTTP/SSE remote servers), **`MCPWebsocketTool`** (WebSocket servers).
-  .NET uses the official MCP C# SDK (`McpClientFactory`, `StdioClientTransport`) with tools converted
+  .NET uses the official MCP C# SDK (`McpClient.CreateAsync`, `StdioClientTransport`) with tools converted
   to `AITool`/`AIFunction`; Go has an `mcptool` package with `mcptool.Connect`/`ListTools`, supporting
   HTTP/SSE (`mcp.StreamableClientTransport`) and stdio transports. [DOC S-7ziha7pr]
 - On minimal Python installs, MCP support is optional: `pip install mcp --pre` for `MCPStdioTool`,
   `MCPStreamableHTTPTool`, or `Agent.as_mcp_server()`; `pip install mcp[ws] --pre` additionally for
   `MCPWebsocketTool`. [DOC S-7ziha7pr]
-- `MCPStreamableHTTPTool(name=..., url=..., headers={...}, description=...)` connects to an HTTP/SSE
-  MCP server; pass it (or a list of MCP tool instances) as `tools=` to an `Agent`/`ChatAgent`, and use
+- `MCPStreamableHTTPTool(name=..., url=..., static_headers={...}, description=...)` connects to an HTTP/SSE
+  MCP server; pass it as `tools=` to an `Agent` or to `agent.run(...)`, and use
   it as an async context manager (`async with mcp_tool: ...`) so the session is opened and closed.
   [DOC S-esun5f2n, S-7ziha7pr]
 - The HTTP client `MCPStreamableHTTPTool` builds does **not** persist response cookies by default; a
@@ -216,7 +216,7 @@ status: complete
   overlapped.
 
 ## Examples
-- Minimal `ChatAgent` calling a remote MCP server over streamable HTTP (placeholder endpoint; API-key
+- Minimal `Agent` calling a remote MCP server over streamable HTTP (placeholder endpoint; API-key
   auth via `header_provider` so the secret never appears in tool arguments):
 
 - SNIPPET: an `Agent` using an `OpenAIChatClient`, connected to a remote MCP server via
