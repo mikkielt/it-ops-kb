@@ -3,7 +3,7 @@ topic: defender/mde-onboarding
 priority: P1
 applies_to: "Microsoft Defender for Endpoint device onboarding/offboarding (Windows client and server), docs retrieved 2026-09-26"
 retrieved_utc: 2026-10-21
-sources: [S-tkwapxy3, S-5ic2ryhm, S-ka3u6g4r, S-3wd7aoot, S-7aahdyrw, S-kgoe3xkx, S-jzszwiht, S-ptvxamvq, S-v7jhlfyz, S-gmhqowfa, S-bw54wpjr, S-qulvb6va, S-xzhocopu, S-qt5r5zbp, S-wqwf7kt5, S-mrquhzdn, S-6yngu4zf, S-tetnxwlo, S-g53qt6ya, S-334n7pqs, S-zimmfodc, S-vmgy5mjp, S-hssydh4l, S-okh6b7oc]
+sources: [S-tkwapxy3, S-5ic2ryhm, S-ka3u6g4r, S-3wd7aoot, S-7aahdyrw, S-kgoe3xkx, S-jzszwiht, S-ptvxamvq, S-v7jhlfyz, S-gmhqowfa, S-bw54wpjr, S-qulvb6va, S-xzhocopu, S-qt5r5zbp, S-wqwf7kt5, S-mrquhzdn, S-6yngu4zf, S-tetnxwlo, S-g53qt6ya, S-334n7pqs, S-zimmfodc, S-vmgy5mjp, S-hssydh4l, S-okh6b7oc, S-mlogi6an]
 status: complete
 ---
 
@@ -88,6 +88,10 @@ connectivity for the EDR sensor is configured separately from Defender Antivirus
 - EDR in block mode requires a Defender for Endpoint **Plan 2** license and is recommended primarily for devices running Defender Antivirus in **passive mode** (a non-Microsoft antivirus is the active real-time engine); it remediates post-breach, behavioral EDR detections that the non-Microsoft AV missed. [DOC S-wqwf7kt5]
 - Enable tenant-wide in the Defender portal (**Settings > Endpoints > General > Advanced features > Enable EDR in block mode**), or, from Defender Antivirus platform `4.18.2202.X` and later, target specific device groups via the Intune-deployed `Defender CSP` node `Configuration/PassiveRemediation`, or via Group Policy. [DOC S-wqwf7kt5]
 - See `defender/asr-and-antivirus.md` for the Defender Antivirus active/passive/EDR-block-mode state model that ASR rules and EDR in block mode both depend on. [DER: same active/passive AV state gates both features, S-wqwf7kt5]
+- Microsoft Purview endpoint DLP and insider risk management need the device onboarded into the service; the Windows builds are Windows 11 21H2 to 24H2 and Windows 10 22H2 on x64 (Windows 11 only on ARM64), and Windows Server 2019 from 1809 or Windows Server 2022 from 21H2. [DOC S-mlogi6an]
+- Device onboarding is shared between Microsoft 365 and Defender for Endpoint: a device already onboarded to Defender for Endpoint appears in the Purview managed devices list with no further step, and onboarding it in the Purview portal also onboards it into Defender for Endpoint. [DOC S-mlogi6an]
+- Purview endpoint DLP also asks for anti-malware client version 4.18.2110 or newer with real-time protection and behavior monitoring on, and a device that is Microsoft Entra joined, hybrid joined or registered; the page names no licence and links to the Microsoft 365 plans and service descriptions. [DOC S-mlogi6an]
+- Endpoint DLP is off for Windows servers after onboarding until "Endpoint DLP support for onboarded servers" is turned on in the endpoint DLP settings; to enable device management the account needs the Security admin, Compliance admin or Global admin Entra role. [DOC S-mlogi6an]
 
 ## Reference
 - `defender/asr-and-antivirus.md`: Defender AV active/passive/off state model (required for EDR in block mode and for ASR rules), and the MDEClientAnalyzer/ASR-rule conflict noted above.

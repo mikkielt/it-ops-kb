@@ -163,7 +163,7 @@ claude/powershell-tool,P3,partial,claude/powershell-tool.md,6
 claude/statusline,P3,complete,claude/statusline.md,3
 claude/terminal-split-pane,P3,partial,claude/terminal-split-pane.md,8
 defender/machine-resource,P1,complete,defender/machine-resource.md;defender/machine-properties.csv,9
-defender/mde-onboarding,P1,complete,defender/mde-onboarding.md,24
+defender/mde-onboarding,P1,complete,defender/mde-onboarding.md,25
 defender/permissions-limits,P1,complete,defender/permissions-limits.md,6
 defender/response-actions-api,P1,complete,defender/response-actions-api.md;defender/machine-actions.csv,18
 defender/advanced-hunting,P2,complete,defender/advanced-hunting.md;defender/advanced-hunting-tables.csv,25
@@ -282,7 +282,7 @@ mecm/client-notification,P0,complete,mecm/client-notification.md;mecm/client-ope
 mecm/client-settings,P0,complete,mecm/client-settings.md,2
 mecm/cmpivot,P0,complete,mecm/cmpivot.md;mecm/cmpivot-entities.csv,12
 mecm/compliance-script-ci,P0,complete,mecm/compliance-script-ci.md,8
-mecm/log-files,P0,complete,mecm/log-files.md;mecm/log-files.csv,2
+mecm/log-files,P0,complete,mecm/log-files.md;mecm/log-files.csv,3
 mecm/logging,P0,complete,mecm/logging.md,6
 mecm/rbac,P0,complete,mecm/rbac.md;mecm/rbac-permissions.csv,15
 mecm/run-scripts,P0,complete,mecm/run-scripts.md,14
