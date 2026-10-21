@@ -35,6 +35,25 @@
   "depends_on": [
     "ST-27k6puoc"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which Learn path segments count as a locale, so raw_url leaves the url alone?",
+      "options": [
+        "pattern",
+        "fixed set"
+      ],
+      "recommendation": "pattern",
+      "do": {
+        "pattern": "ST-bvmqojkw",
+        "fixed set": "ST-bvmqojkw"
+      },
+      "class": "design",
+      "answer": "pattern",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ilje65fa review"
   ],
