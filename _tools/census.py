@@ -2653,21 +2653,38 @@ def schema_errors(value, schema, where="$"):
 def head_cited_lines(ids):
     """`kbfacts.cited_lines` as the files stand at HEAD: {id: [(qualified path, line)]}. A group's rows are the same
     before and after its worker rewrote the facts (a fact re-pointed to a new row no longer names the old id), so the
-    owner of a row is read from the tree the worker started from, as `git grep` finds it; the working tree when git
-    cannot say."""
+    owner of a row is read from the tree the worker started from: every text blob under kb/ at HEAD through one
+    `git cat-file --batch` (a `git grep` of an alternation of every queued id takes minutes), binary blobs left out as
+    `git grep -I` does; the working tree when git cannot say."""
     if not ids:
         return {}
     kb = kbcommon.repo_rel(kbcommon.KB_DIR, kbcommon.HOME)
-    code, out, _ = g(kbcommon.HOME, "grep", "-n", "-I", "-E", "|".join(sorted(map(re.escape, ids))), "HEAD", "--", kb)
-    if code not in (0, 1):
+    try:
+        ls = subprocess.run(["git", "ls-tree", "-r", "-z", "HEAD", "--", kb], cwd=kbcommon.HOME, capture_output=True,
+                            timeout=300, check=True).stdout
+        blobs = []
+        for ent in filter(None, ls.split(b"\0")):
+            meta, _, path = ent.partition(b"\t")
+            mode, kind, sha = meta.decode("ascii").split()
+            if kind == "blob" and mode != "120000":
+                blobs.append((sha, path.decode("utf-8")))
+        batch = subprocess.run(["git", "cat-file", "--batch"], cwd=kbcommon.HOME, capture_output=True, timeout=300,
+                               check=True, input="".join(f"{sha}\n" for sha, _ in blobs).encode("ascii")).stdout
+    except (subprocess.SubprocessError, OSError, ValueError, IndexError):
         return kbfacts.cited_lines(ids)
-    found = defaultdict(list)
-    for ln in out.splitlines():
-        path, _, rest = ln.removeprefix("HEAD:").partition(":")
-        n, _, text = rest.partition(":")
-        if n.isdigit() and path.startswith(kb + "/"):
-            for i in set(kbfacts.ID.findall(text)) & set(ids):
-                found[i].append((path[len(kb) + 1:], int(n)))
+    want, found, pos = set(ids), defaultdict(list), 0
+    for _, path in blobs:
+        end = batch.index(b"\n", pos)
+        size = int(batch[pos:end].split()[2])
+        data, pos = batch[end + 1:end + 1 + size], end + size + 2
+        if b"\0" in data[:8000] or not path.startswith(kb + "/"):
+            continue
+        text = data.decode("utf-8", "replace")
+        if not any(m.group() in want for m in kbfacts.ID.finditer(text)):
+            continue
+        for n, line in enumerate(text.split("\n"), 1):
+            for i in set(kbfacts.ID.findall(line)) & want:
+                found[i].append((path[len(kb) + 1:], n))
     return found
 
 
