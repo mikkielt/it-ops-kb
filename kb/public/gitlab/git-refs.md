@@ -3,7 +3,7 @@ topic: gitlab/git-refs
 priority: P3
 applies_to: "git v2.55.0 documentation (git/git tag v2.55.0): git-update-ref and git-for-each-ref with its included options page; the observed exit statuses and outputs were run with git 2.50.1 (Apple Git-155) on macOS"
 retrieved_utc: 2026-10-21
-sources: [S-sgbkwka4, S-cacomkjs, S-xahbgevi]
+sources: [S-sgbkwka4, S-cacomkjs, S-xahbgevi, S-xbgkguy3, S-udwlzday, S-lla5xd6s]
 status: complete
 ---
 
@@ -41,6 +41,7 @@ ones below come from one local run. Facts are from the git 2.55.0 documentation;
 - A field that does not apply to the object a ref points at expands to an empty string instead of causing an error; `--omit-empty` prints no newline for a ref whose format expands to an empty string. [DOC S-cacomkjs, S-xahbgevi]
 - `--start-after=<marker>` pages through the output by skipping refs up to and including the marker, and cannot be combined with `--sort`, `--stdin` or pattern arguments. [DOC S-xahbgevi]
 - A tool that keeps one marker ref per item under its own namespace can create it with `git update-ref <ref> <oid> ""` (fails if it already exists), list the ids with `git for-each-ref --format=%(refname:lstrip=2) refs/<namespace>/`, and delete it with `git update-ref -d <ref> <oid>` so that a marker someone moved in the meantime is not removed; a plain `-d <ref>` also succeeded on an already deleted ref with git 2.50.1, so a cleanup that must stay quiet on a missing ref need not pass the old value (unconfirmed for other versions, see `_gaps.md`). [DER S-sgbkwka4, S-xahbgevi, S-cacomkjs: composed from the create, delete and pattern rules above and the 2026-10-08 run with git 2.50.1]
+- At `v2.55.0` `cmd_update_ref` without `-d` returns `refs_update_ref(..., UPDATE_REFS_DIE_ON_ERR)`, and `refs_update_ref` then calls `die("update_ref failed for ref '%s': %s")` on any transaction failure (a wrong old id, an existing ref under the create form with a zero old id), so the status is 128; with `-d` it returns `refs_delete_ref`, which prints `error()` and returns 1 on any failure (a wrong old id gives 1) and returns 0 on success, so deleting a missing ref without an old id exits 0. `for_each_ref_core` in `builtin/for-each-ref.c` ends in `return 0` with no check of how many refs matched, so no match exits 0. This agrees with the run of git 2.50.1 above. [CODE S-xbgkguy3: builtin/update-ref.c#cmd_update_ref; CODE S-udwlzday: refs.c#refs_update_ref; CODE S-udwlzday: refs.c#refs_delete_ref; CODE S-lla5xd6s: builtin/for-each-ref.c#for_each_ref_core]
 
 ## Reference
 | Need | Command | Source |

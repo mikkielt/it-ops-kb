@@ -3,7 +3,7 @@ topic: defender/mde-onboarding
 priority: P1
 applies_to: "Microsoft Defender for Endpoint device onboarding/offboarding (Windows client and server), docs retrieved 2026-09-26"
 retrieved_utc: 2026-10-21
-sources: [S-tkwapxy3, S-5ic2ryhm, S-ka3u6g4r, S-3wd7aoot, S-7aahdyrw, S-kgoe3xkx, S-jzszwiht, S-ptvxamvq, S-v7jhlfyz, S-gmhqowfa, S-bw54wpjr, S-qulvb6va, S-xzhocopu, S-qt5r5zbp, S-wqwf7kt5, S-mrquhzdn, S-6yngu4zf, S-tetnxwlo, S-g53qt6ya, S-334n7pqs, S-zimmfodc, S-vmgy5mjp, S-hssydh4l, S-okh6b7oc, S-mlogi6an]
+sources: [S-tkwapxy3, S-5ic2ryhm, S-ka3u6g4r, S-3wd7aoot, S-7aahdyrw, S-kgoe3xkx, S-jzszwiht, S-ptvxamvq, S-v7jhlfyz, S-gmhqowfa, S-bw54wpjr, S-qulvb6va, S-xzhocopu, S-qt5r5zbp, S-wqwf7kt5, S-mrquhzdn, S-6yngu4zf, S-tetnxwlo, S-g53qt6ya, S-334n7pqs, S-zimmfodc, S-vmgy5mjp, S-hssydh4l, S-okh6b7oc, S-mlogi6an, S-ssxadcek]
 status: complete
 ---
 
@@ -92,6 +92,7 @@ connectivity for the EDR sensor is configured separately from Defender Antivirus
 - Device onboarding is shared between Microsoft 365 and Defender for Endpoint: a device already onboarded to Defender for Endpoint appears in the Purview managed devices list with no further step, and onboarding it in the Purview portal also onboards it into Defender for Endpoint. [DOC S-mlogi6an]
 - Purview endpoint DLP also asks for anti-malware client version 4.18.2110 or newer with real-time protection and behavior monitoring on, and a device that is Microsoft Entra joined, hybrid joined or registered; the page names no licence and links to the Microsoft 365 plans and service descriptions. [DOC S-mlogi6an]
 - Endpoint DLP is off for Windows servers after onboarding until "Endpoint DLP support for onboarded servers" is turned on in the endpoint DLP settings; to enable device management the account needs the Security admin, Compliance admin or Global admin Entra role. [DOC S-mlogi6an]
+- The endpoint DLP getting started page also names no licence: it links the Microsoft 365 Enterprise plans and the Microsoft 365 service descriptions, and lists Windows Server 2019 and Windows Server 2022 as supported guests on virtualization platforms such as Azure Virtual Desktop and Hyper-V (Hyper-V needs Hybrid AD join for those servers). [DOC S-ssxadcek]
 
 ## Reference
 - `defender/asr-and-antivirus.md`: Defender AV active/passive/off state model (required for EDR in block mode and for ASR rules), and the MDEClientAnalyzer/ASR-rule conflict noted above.

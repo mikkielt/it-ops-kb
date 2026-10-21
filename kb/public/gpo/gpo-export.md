@@ -3,7 +3,7 @@ topic: gpo/gpo-export
 priority: P2
 applies_to: "GroupPolicy PowerShell module (RSAT/GPMC), windowsserver2025-ps reference"
 retrieved_utc: 2026-10-21
-sources: [S920, S921, S922, S923, S-moam7wlp]
+sources: [S920, S921, S922, S923, S-moam7wlp, S-sxznlh57, S-mpefr5wx]
 status: complete
 ---
 
@@ -29,7 +29,10 @@ The reference pages carry ms.date 12/20/2016 in all docsets (2016/2019/2022/2025
 - `Backup-GPO -Path` (alias `BackupLocation`) is required and may be local or UNC; `-Comment` is stored in the backup; supports `-WhatIf`/`-Confirm`. [DOC S921]
 - `Backup-GPO` returns `Microsoft.GroupPolicy.GpoBackup` (DisplayName, GpoId, Id = backup id, BackupDirectory, CreationTime, DomainName, Comment in the example). [DOC S921]
 - A GPMC backup transfers a GPO's contents from Active Directory to the file system and includes its policy settings, its GPO ID and its ACLs; the same method is used to export GPOs. [DOC S-moam7wlp]
-- No page describes the on-disk layout of a backup folder (files such as `Backup.xml`, `bkupInfo.xml` or `gpreport.xml`): re-read 2026-09-27, the Backup-GPO reference and the GPMC Backup method give only the directory and the returned backup object. Treat the folder as opaque and restore with `Restore-GPO` / `Import-GPO` rather than parsing it. [DER S921, S-moam7wlp: absence on both pages]
+- No page for the GroupPolicy cmdlets or GPMC describes the on-disk layout of a `Backup-GPO` backup folder: re-read 2026-09-27, the Backup-GPO reference and the GPMC Backup method give only the directory and the returned backup object. Treat the folder as opaque and restore with `Restore-GPO` / `Import-GPO` rather than parsing it. [DER S921, S-moam7wlp: absence on both pages]
+- The Microsoft Entra Domain Services GPO backup feature (public preview) keeps backups on the PDC in the hidden share `GPOBackupsShare$`, path `GPO\Backups`, as timestamp folders named `MMddyyyyHHmm` that hold one `{GPO-GUID}` folder per GPO; the page's layout recap lists `backup.xml` (metadata, if present), `GPO.tmf`, `Gpt.ini`, `Machine` and `User`, and says the exact file set may vary with the provider implementation. [DOC S-sxznlh57]
+- An archived GPO in the Advanced Group Policy Management (AGPM) archive holds `gpreport.xml` (settings, GPO name and times, security descriptor), `Backup.xml` (security principals, the GPO's settings, security descriptor, options, user and machine version numbers, CSE GUIDs) and a hidden `bkupInfo.xml`, an excerpt of the archive's hidden `Manifest.xml` for that GPO; the post says AGPM's archive copy closely resembles a standard GPMC backup and that GPMC logs it as a backup. [DOC S-mpefr5wx]
+- Caveat: the managed-domain layout and the AGPM archive layout are not `Backup-GPO` output (one is a service feature of Entra Domain Services, the other the AGPM archive of a 2011 post on Windows Server 2008 R2), so the files of a `Backup-GPO` backup folder stay unconfirmed until a listing of one is read from a lab domain. [DER S-sxznlh57, S-mpefr5wx, S921: neither page describes Backup-GPO output]
 - `Get-GPResultantSetOfPolicy [-Computer] [-User] -ReportType <Xml|Html> -Path` writes RSoP for a user, computer or both to a file. [DOC S923]
 
 ## Reference

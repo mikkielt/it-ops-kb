@@ -24,7 +24,8 @@ Prose is CC BY 4.0 (MicrosoftDocs/memdocs); the table was normalized (markdown, 
 - WSUS server logs are in `%ProgramFiles%\Update Services\LogFiles`. [DOC S-5lqbi3py]
 - Default log folders: client `C:\Windows\CCM\logs`; server `C:\Program Files\Microsoft Configuration Manager\Logs`; MP `C:\SMS_CCM\Logs`; console `...\AdminConsole\AdminUILog`. [DOC S-jtvk6o4y]
 - CmRcService.log has no location column in the doc; its description says "in the Client logs folder". [DOC S-5lqbi3py]
-- The only ConfigMgr component the docs give Windows event channels instead of log files is BitLocker management: the channel under Applications and Services Logs, Microsoft, Windows is `MBAM` for the agent on a client and `MBAM-Web` for the recovery service on the management point, the self-service portal and the administration and monitoring website. [DOC S-pepts6gz]
+- BitLocker management logs to Windows event channels, not log files: the channel under Applications and Services Logs, Microsoft, Windows is `MBAM` for the agent on a client and `MBAM-Web` for the recovery service on the management point, the self-service portal and the administration and monitoring website. [DOC S-pepts6gz]
+- BitLocker management is the only ConfigMgr component whose docs give Windows event channels in place of log files that this article found: the BitLocker event logs page states the channels and no exclusivity, and the log file reference and the other ConfigMgr pages read give log files. [DER S-pepts6gz, S-5lqbi3py: absence of a second event-channel page]
 - Each BitLocker management channel has Admin and Operational logs by default, and Analytic and Debug logs appear after Show Analytic and Debug Logs; every log is 1028 KB by default, Admin and Operational overwrite the oldest events, Analytic and Debug do not overwrite. [DOC S-pepts6gz]
 
 ## Reference

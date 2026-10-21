@@ -169,7 +169,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `claude/statusline` | P3 | complete | `claude/statusline.md` | 3 |
 | `claude/terminal-split-pane` | P3 | partial | `claude/terminal-split-pane.md` | 8 |
 | `defender/machine-resource` | P1 | complete | `defender/machine-resource.md`, `defender/machine-properties.csv` | 9 |
-| `defender/mde-onboarding` | P1 | complete | `defender/mde-onboarding.md` | 25 |
+| `defender/mde-onboarding` | P1 | complete | `defender/mde-onboarding.md` | 26 |
 | `defender/permissions-limits` | P1 | complete | `defender/permissions-limits.md` | 6 |
 | `defender/response-actions-api` | P1 | complete | `defender/response-actions-api.md`, `defender/machine-actions.csv` | 18 |
 | `defender/advanced-hunting` | P2 | complete | `defender/advanced-hunting.md`, `defender/advanced-hunting-tables.csv` | 25 |
@@ -195,19 +195,19 @@ Every topic of this root with its priority (the research order, not importance),
 | `entra/stale-devices` | P1 | complete | `entra/stale-devices.md` | 3 |
 | `entra/pim-and-governance` | P2 | complete | `entra/pim-and-governance.md` | 16 |
 | `gitlab/codeowners` | P0 | complete | `gitlab/codeowners.md` | 4 |
-| `gitlab/mr-approvals` | P0 | complete | `gitlab/mr-approvals.md` | 7 |
+| `gitlab/mr-approvals` | P0 | complete | `gitlab/mr-approvals.md` | 11 |
 | `gitlab/pipelines-rules` | P0 | partial | `gitlab/pipelines-rules.md` | 7 |
-| `gitlab/protected-branches-tags` | P0 | partial | `gitlab/protected-branches-tags.md` | 15 |
+| `gitlab/protected-branches-tags` | P0 | partial | `gitlab/protected-branches-tags.md` | 19 |
 | `gitlab/variables` | P0 | complete | `gitlab/variables.md` | 2 |
-| `gitlab/automated-merge-requests` | P3 | complete | `gitlab/automated-merge-requests.md` | 52 |
-| `gitlab/commit-signing-and-provenance` | P3 | partial | `gitlab/commit-signing-and-provenance.md` | 34 |
+| `gitlab/automated-merge-requests` | P3 | complete | `gitlab/automated-merge-requests.md` | 64 |
+| `gitlab/commit-signing-and-provenance` | P3 | partial | `gitlab/commit-signing-and-provenance.md` | 39 |
 | `gitlab/deploy-keys-and-tokens` | P3 | partial | `gitlab/deploy-keys-and-tokens.md` | 10 |
 | `gitlab/detecting-mr-merges-in-ci` | P3 | complete | `gitlab/detecting-mr-merges-in-ci.md` | 16 |
 | `gitlab/git-commit-paths-and-symlinks` | P3 | complete | `gitlab/git-commit-paths-and-symlinks.md` | 7 |
 | `gitlab/git-history-queries` | P3 | complete | `gitlab/git-history-queries.md` | 8 |
-| `gitlab/git-refs` | P3 | complete | `gitlab/git-refs.md` | 3 |
-| `gitlab/git-test-repositories` | P3 | complete | `gitlab/git-test-repositories.md` | 53 |
-| `gitlab/git-trailers-and-hooks` | P3 | partial | `gitlab/git-trailers-and-hooks.md` | 21 |
+| `gitlab/git-refs` | P3 | complete | `gitlab/git-refs.md` | 6 |
+| `gitlab/git-test-repositories` | P3 | complete | `gitlab/git-test-repositories.md` | 57 |
+| `gitlab/git-trailers-and-hooks` | P3 | partial | `gitlab/git-trailers-and-hooks.md` | 27 |
 | `gitlab/github-branch-rules-and-auto-merge` | P3 | complete | `gitlab/github-branch-rules-and-auto-merge.md` | 18 |
 | `gitlab/hosted-runners-windows` | P3 | complete | `gitlab/hosted-runners-windows.md` | 5 |
 | `gitlab/issue-closing-patterns` | P3 | complete | `gitlab/issue-closing-patterns.md` | 5 |
@@ -218,12 +218,12 @@ Every topic of this root with its priority (the research order, not importance),
 | `gitlab/package-registries` | P3 | partial | `gitlab/package-registries.md` | 11 |
 | `gitlab/project-settings-api` | P3 | complete | `gitlab/project-settings-api.md` | 7 |
 | `gitlab/repository-mirroring` | P3 | complete | `gitlab/repository-mirroring.md` | 10 |
-| `gitlab/runner-registration` | P3 | partial | `gitlab/runner-registration.md` | 5 |
+| `gitlab/runner-registration` | P3 | partial | `gitlab/runner-registration.md` | 10 |
 | `gitlab/webhooks` | P3 | complete | `gitlab/webhooks.md` | 4 |
 | `gitlab/work-items-planning` | P3 | complete | `gitlab/work-items-planning.md` | 11 |
 | `gpo/admx-central-store` | P1 | complete | `gpo/admx-central-store.md` | 8 |
 | `gpo/dsc-group-policy-adapter` | P2 | complete | `gpo/dsc-group-policy-adapter.md` | 3 |
-| `gpo/gpo-export` | P2 | complete | `gpo/gpo-export.md` | 5 |
+| `gpo/gpo-export` | P2 | complete | `gpo/gpo-export.md` | 7 |
 | `graph/batching-and-query` | P1 | complete | `graph/batching-and-query.md`, `graph/change-notification-lifetimes.csv` | 13 |
 | `graph/csdl-device` | P1 | complete | `graph/csdl-device.md`, `graph/csdl-device.properties.csv`, `graph/csdl/device.v1.0.xml`, `graph/csdl/device.beta.xml` | 5 |
 | `graph/csdl-managedDevice` | P1 | complete | `graph/csdl-managedDevice.md`, `graph/csdl-managedDevice.properties.csv`, `graph/csdl/managedDevice.v1.0.xml`, `graph/csdl/managedDevice.beta.xml` | 6 |

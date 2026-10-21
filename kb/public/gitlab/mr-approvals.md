@@ -3,7 +3,7 @@ topic: gitlab/mr-approvals
 priority: P0
 applies_to: "GitLab 19.5 docs (gitlab-org/gitlab master @56c82a97, 2026-09-23); GitLab.com, Self-Managed, Dedicated"
 retrieved_utc: 2026-10-21
-sources: [S440, S441, S442, S443, S444, S450, S452]
+sources: [S440, S441, S442, S443, S444, S450, S452, S-vl2fbqnl, S-kxbl5nbd, S-uhdu56vm, S-cmu633gn]
 status: complete
 ---
 
@@ -36,6 +36,8 @@ GitLab's repository LICENSE puts all content under `doc/` under CC BY-SA 4.0, so
 - MR authors don't count as eligible approvers on their own MRs by default. [DOC S442]
 - "Require Code Owner approval" on protected branches is Premium, Ultimate. [DOC S444]
 - CODEOWNERS is Premium, Ultimate. [DOC S450]
+- On Free, a merge request author is not excluded from approving by the code that decides eligibility: `EE::Approvable#eligible_for_approval_by?` returns `super` unless the `merge_request_approvers` feature is licensed (a Premium and Ultimate feature), and the CE `Approvable#eligible_for_approval_by?` is only "user present, has not approved yet, and `user.can?(:approve_merge_request, self)`". [CODE S-vl2fbqnl: ee/app/models/concerns/ee/approvable.rb#eligible_for_approval_by?; CODE S-kxbl5nbd: app/models/concerns/approvable.rb#eligible_for_approval_by?]
+- `MergeRequestPolicy#can_approve?` is `can?(:update_merge_request) && is_container_member?`, and it enables the `approve_merge_request` ability; the author exclusion (`return false if !authors_can_approve? && merge_request.author == user`) is only in `ApprovalState#eligible_for_approval_by?` under `ee/`, reached through the licensed path above. Read from code at master @29a9622b, not run on a Free instance. [CODE S-uhdu56vm: app/policies/merge_request_policy.rb#can_approve?; CODE S-cmu633gn: ee/app/models/approval_state.rb#eligible_for_approval_by?]
 
 ## Reference
 | Capability | Tier | Offering | Source |

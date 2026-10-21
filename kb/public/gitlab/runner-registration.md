@@ -3,7 +3,7 @@ topic: gitlab/runner-registration
 priority: P3
 applies_to: "GitLab 19.x docs (gitlab-org/gitlab master @a1faf261a899, 2026-10-21); GitLab Runner docs (gitlab-org/gitlab-runner main @a278fd05, 2026-10-09); Free, Premium and Ultimate unless stated"
 retrieved_utc: 2026-10-21
-sources: [S-ytnvr75r, S-udvn7k24, S-ssfsxd2n, S-5ohrrj7d, S-jk4rtq6g]
+sources: [S-ytnvr75r, S-udvn7k24, S-ssfsxd2n, S-5ohrrj7d, S-jk4rtq6g, S-jhize63s, S-gnpi6mmx, S-tomjjvqf, S-oyprya25, S-ka7ncysn]
 status: partial
 ---
 
@@ -32,6 +32,7 @@ A runner is created first in GitLab and registered after: `POST /user/runners` (
 - A runner authentication token gives no API access and no direct repository access; it can only authenticate runners that then run jobs which do. [DOC S-5ohrrj7d]
 - So an unattended registration is two calls with two credentials of different standing: an access token with `create_runner` held by an Owner (the creation), and the new `glrt-` token (the registration), which should be written to `config.toml` by the registration step and kept out of logs; the documented non-interactive form passes it as `--token`, a command-line value. [DER S-udvn7k24, S-ssfsxd2n, S-5ohrrj7d: the prerequisites, the register command and where the token lives]
 - Open: the documents say `POST /user/runners` is for "the current user" and list the Owner role as a prerequisite, but none says whether a group access token (a bot user) may call it. [UNK: not stated on the Users API, access token scopes or token overview pages]
+- A group access token's bot user can call `POST /user/runners` when it has the Owner role on the group and the token has the `create_runner` scope; nothing in the code excludes bot users, and Maintainer is not enough for a group runner (the Maintainer role file lists `create_runners` for projects only, as the Owner file does for groups). The API route allows the `create_runner` scope for POST, runs `authenticate!` and passes `current_user` to `Ci::Runners::CreateRunnerService`, which for `group_type` uses `GroupRunnerStrategy`, whose `authorized_user?` is `user.can?(:create_runners, scope)`; the Owner role file lists `create_runners` in its group permissions, and `GroupPolicy` prevents it only for a group where runner registration is switched off (and the user is not an admin). Read from code at master @29a9622b, no call made. [CODE S-jhize63s: lib/api/user_runners.rb#create_runner; CODE S-gnpi6mmx: app/services/ci/runners/create_runner_service.rb#execute; CODE S-tomjjvqf: app/services/ci/runners/runner_creation_strategies/group_runner_strategy.rb#authorized_user?; CODE S-oyprya25: config/authz/roles/owner.yml#create_runners; CODE S-ka7ncysn: app/policies/group_policy.rb#create_runners]
 
 ## Reference
 | Step | Call | Credential | Source |

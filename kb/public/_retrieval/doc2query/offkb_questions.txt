@@ -36,7 +36,6 @@ user profile size limit
 How do I configure VMware Horizon instant clones?
 How do I deploy SAP GUI to Windows clients?
 How does ServiceNow discovery find Windows servers?
-Purview endpoint DLP onboarding requirements for Windows devices
 How do I install the SAP GUI for Windows silently?
 What ports does VMware Horizon Connection Server use?
 How do I integrate ServiceNow with Intune?
