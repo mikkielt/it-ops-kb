@@ -9,13 +9,13 @@ status: complete
 # MCP Python SDK 2.x
 
 ## Summary
-2.x exists and is the stable line: v2.0.0 (2026-07-28), v2.1.0/2.1.1, v2.0.1, v2.2.0 (2026-09-07, latest); 1.x is
+2.x exists and is the stable line: v2.0.0 (2026-07-28), v2.1.0/2.1.1, v2.0.1, v2.2.0 (2026-09-07), v2.3.0 (2026-10-02, latest); 1.x is
 maintained in parallel (v1.30.0). `FastMCP` was renamed `MCPServer` (`from mcp.server import MCPServer`); the old
 import raises `ModuleNotFoundError`. 2.x speaks 2026-07-28 and serves legacy clients on the same server.
 Elicitation: `Resolve(...)`+`Elicit` is era-portable; `ctx.elicit()` works only on legacy (handshake) connections.
 
 ## Facts
-- Releases: v2.0.0 2026-07-28, v2.1.0 2026-08-24, v2.1.1 2026-08-25, v2.0.1 2026-08-26, v2.2.0 2026-09-07 (latest), v1.30.0 2026-09-07. [DOC S731]
+- Releases: v2.0.0 2026-07-28, v2.1.0 2026-08-24, v2.1.1 2026-08-25, v2.0.1 2026-08-26, v2.2.0 2026-09-07, v1.30.0 2026-09-07, v2.3.0 2026-10-02 (latest). [DOC S731]
 - Licence MIT; requires Python >=3.11 and its `pyproject.toml` classifiers list Python 3.11-3.15. [DOC S-rl5u7f33]
 - Semver: minor = features/non-breaking, patch = fixes; breaking changes only in a major; 2.x gets fixes and features, 1.x critical/security fixes only. [DOC S730]
 - `mcp` and `mcp-types` release in lockstep; each `mcp` requires the exact matching `mcp-types`. [DOC S730]
