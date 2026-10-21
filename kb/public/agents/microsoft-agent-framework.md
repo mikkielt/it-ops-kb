@@ -16,8 +16,8 @@ status: complete
   (session state, type safety, middleware, telemetry) and adding graph-based **Workflows** for
   explicit multi-agent orchestration. [DOC S-kzoop7qs]
 - Release status: no page uses the word "GA", but stable 1.x releases exist. Python `agent-framework` and
-  .NET `Microsoft.Agents.AI` 1.0.0 were both published on 2026-04-02 (PyPI 1.19.0 and NuGet 1.22.0 current
-  in September 2026) [DOC S-bayhkj2j, S-y76ymaxp]. The repository's package-status file marks
+  .NET `Microsoft.Agents.AI` 1.0.0 were both published on 2026-04-02 (PyPI 1.22.0 current on 2026-10-21; NuGet 1.22.0
+  as of September 2026) [DOC S-bayhkj2j, S-y76ymaxp]. The repository's package-status file marks
   `agent-framework`, `-core`, `-foundry`, `-declarative`, `-ag-ui` and `-github-copilot` as `released`
   (stable, no breaking changes between versions) while most integrations, e.g. `-anthropic`, `-claude`,
   `-a2a` and `-devui`, are `beta` or `alpha` [DOC S-x7eqxwa3]. Go stays in public preview [DOC S-kzoop7qs].
