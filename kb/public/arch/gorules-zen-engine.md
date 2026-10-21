@@ -18,7 +18,7 @@ ZEN Engine is an MIT-licensed business rules engine written in Rust that runs de
 - ZEN Engine describes itself as a cross-platform open-source business rules engine written in Rust, with bindings for Node.js, Python, Go, Java, Kotlin and .NET; decisions are stored as portable JSON and "loading the JSON is up to you". [DOC S-kvbchryu]
 - The README calls version 2.0 the first stable release of the new engine line (policy documents, workspace analysis, per-column collect, pre-compiled engine), and the project accepts no code contributions at present. [DOC S-kvbchryu]
 - The repository LICENSE at the 2.1.3 tag is the MIT licence text. [DOC S-jq7z2od2]
-- At the retrieval date crates.io lists zen-engine 2.1.3 (published 2026-10-09, licence MIT), PyPI lists zen-engine 2.1.3 and npm lists @gorules/zen-engine 2.1.4. [DOC S-ywjkyve4, S-zuff3zj3, S-mrvrg4c7]
+- At the retrieval date crates.io lists zen-engine 2.1.3 (published 2026-10-09, licence MIT), PyPI lists zen-engine 2.1.3 and npm lists @gorules/zen-engine 2.1.8 as `latest`. [DOC S-ywjkyve4, S-zuff3zj3, S-mrvrg4c7]
 - The engine's own version string is a compile-time constant taken from the crate version. [CODE S-trcil35r: core/engine/src/lib.rs#ENGINE_VERSION]
 
 ### The JDM file

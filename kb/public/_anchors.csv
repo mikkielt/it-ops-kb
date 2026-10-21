@@ -4096,6 +4096,74 @@ aaf19e2707d3,arch/gitlab-ci-components.md,S1701,unlocated:no-match,,,,,2026-10-1
 c2ee83703bb1,arch/gitlab-ci-components.md,S1700,located,CI/CD components > Component project > Directory structure,subdirectory;template.yml;yml;templat;name;component,40ab1ecb7f284a7f,"Component filenames and subdirectory names can contain letters, numbers, underscores (), hyphens (-), and periods (.). For example, templates/secret-detection.enterprise.yml and templates/secret-detection.enterprise/template.yml are valid component filenames.",2026-10-10
 cfcfab2aa0b1,arch/gitlab-ci-components.md,S1700,unlocated:no-match,,,,,2026-10-10
 ff267c8143db,arch/gitlab-ci-components.md,S447,located,Keywords > Job keywords > `release` > `release:tag_name`,ci_commit_tag;tag;commit;name;rule,838077d005ecdc96,Use the $CICOMMITTAG CI/CD variable as the tagname. Use rules:if to configure the job to run only for new tags.,2026-10-10
+007a012985fd,arch/gorules-zen-engine.md,S-5jpgqrfy,unlocated:no-match,,,,,2026-10-21
+007a012985fd,arch/gorules-zen-engine.md,S-g6tbk57j,located,Crate rquickjs > §High-level bindings to QuickJS,engin;high;high-level;level;rquickj;bind;quick;quickj,6158cdcc3de95608,The rquickjs crate provides safe high-level bindings to the QuickJS JavaScript engine.,2026-10-21
+0847e74248e8,arch/gorules-zen-engine.md,S-mrvrg4c7,unlocated:no-match,,,,,2026-10-21
+0847e74248e8,arch/gorules-zen-engine.md,S-ywjkyve4,located,,2.1.3;mit;zen-engin;crat;engin;zen,7e8c86222bf72255,"""license"": ""MIT"", ""links"": { ""dependencies"": ""/api/v1/crates/zen-engine/2.1.3/dependencies"",",2026-10-21
+0847e74248e8,arch/gorules-zen-engine.md,S-zuff3zj3,unlocated:no-match,,,,,2026-10-21
+1606eefcdd2a,arch/gorules-zen-engine.md,S-cdmzxvsn,located,Node types > Switch node > Connecting switch outputs,sourceid;target;targetid;sourcehandl;handl;edge;sourc;type,e6654702fa392f36,"{ ""id"": ""e1"", ""sourceId"": ""switch-1"", ""targetId"": ""enterprise-node"", ""sourceHandle"": ""s1"", ""type"": ""edge"" },",2026-10-21
+1b7835aa02fd,arch/gorules-zen-engine.md,S-heikuvcn,unlocated:no-match,,,,,2026-10-21
+2144a49095c9,arch/gorules-zen-engine.md,S-5dy4gz6x,unlocated:no-match,,,,,2026-10-21
+2144a49095c9,arch/gorules-zen-engine.md,S-ccvh7i4b,unlocated:no-match,,,,,2026-10-21
+2198ce6236e7,arch/gorules-zen-engine.md,S-heikuvcn,unlocated:no-match,,,,,2026-10-21
+2198ce6236e7,arch/gorules-zen-engine.md,S-xfsmauei,unlocated:no-match,,,,,2026-10-21
+228d7c41fa63,arch/gorules-zen-engine.md,S-cdmzxvsn,unlocated:no-match,,,,,2026-10-21
+228d7c41fa63,arch/gorules-zen-engine.md,S-heikuvcn,unlocated:no-match,,,,,2026-10-21
+2412a3cd6f53,arch/gorules-zen-engine.md,S-su332252,located,,auth;context;function;function_timeout_millis;http;http_auth;millis;node,d81153288ccdfdf6,"pub nodesincontext: AtomicBool, pub functiontimeoutmillis: AtomicU64, pub httpauth: AtomicBool,",2026-10-21
+312d52190fff,arch/gorules-zen-engine.md,S-osv63lk3,located,,overrid;override_config;node;stor;zen_config;zen;config,822fe27682c65d42,"pub fn overrideconfig(config: ZenConfig) { if let Some(val) = config.nodesincontext { ZENCONFIG.nodesincontext.store(val, Ordering::Relaxed);",2026-10-21
+3212e5c4c4b7,arch/gorules-zen-engine.md,S-q6ajn7wa,located,,object;block;key;policy;content,fb3acd3867fa9284,".issomeand(|object| object.containskey(""blocks"")); let content = if ispolicy {",2026-10-21
+393b9570780c,arch/gorules-zen-engine.md,S-5jpgqrfy,unlocated:no-match,,,,,2026-10-21
+393b9570780c,arch/gorules-zen-engine.md,S-heikuvcn,unlocated:no-match,,,,,2026-10-21
+393b9570780c,arch/gorules-zen-engine.md,S-ltzwimxf,unlocated:no-match,,,,,2026-10-21
+393b9570780c,arch/gorules-zen-engine.md,S-su332252,unlocated:no-match,,,,,2026-10-21
+403a141d3a2a,arch/gorules-zen-engine.md,S-z4pp6bkj,located,,create_decision;creat;error;kind;key;loader;content;decision,a70e6ae1b3bcbb95,") -> LoaderResult<Result<Decision, ContentKindError>> { let content = self.loader.load(key).await?; Ok(self.createdecision(content))",2026-10-21
+44833d5887a6,arch/gorules-zen-engine.md,S-kwztlqad,unlocated:no-match,,,,,2026-10-21
+44833d5887a6,arch/gorules-zen-engine.md,S-z4pp6bkj,located,,depth;none;evaluation,e30eda69f1641b4a,"trace: EvaluationTraceKind::None, maxdepth: 10,",2026-10-21
+45ae55dd2f91,arch/gorules-zen-engine.md,S-3tbh2eg2,unlocated:no-match,,,,,2026-10-21
+45ae55dd2f91,arch/gorules-zen-engine.md,S-z2auesug,unlocated:no-match,,,,,2026-10-21
+52293d63bbca,arch/gorules-zen-engine.md,S-kwehxqwf,unlocated:no-match,,,,,2026-10-21
+626d0e5a3ca9,arch/gorules-zen-engine.md,S-z4pp6bkj,located,,decisionengin;engin;default;decision,f81c3950ee86066d,impl Default for DecisionEngine {,2026-10-21
+66b327f00cc4,arch/gorules-zen-engine.md,S-cdmzxvsn,located,Node types > Decision table node > Output column,across;first-hit;rest;stay;whil;cell;rows;collect,ad225580c538d3d1,field | string | Output field path; end it with [] to collect the column across all matching rows while the rest of the table,2026-10-21
+6bfdb1bf61bc,arch/gorules-zen-engine.md,S-i3rxlppy,located,Rust Rules Engine > Tracing,evaluate_with_opt;opts;evaluationoption;option;trac;true;evaluation;evaluat,96c7a829915c9e30,"let response = decision.evaluatewithopts(input, EvaluationOptions { trace: true,",2026-10-21
+6cbbd94ad47f,arch/gorules-zen-engine.md,S-cdmzxvsn,unlocated:no-match,,,,,2026-10-21
+705975f92e72,arch/gorules-zen-engine.md,S-k5bcjgda,unlocated:no-match,,,,,2026-10-21
+855dd08c4012,arch/gorules-zen-engine.md,S-5dy4gz6x,unlocated:no-match,,,,,2026-10-21
+8bfaf6afe1fe,arch/gorules-zen-engine.md,S-dxo62u4b,located,BRE and BRMS > ZEN Engine > Standalone usage,distribut;stor;jdm;file;standalon;version;engin,9c9b764113c16f0e,"When using the ZEN Engine standalone, you're responsible for storing, versioning, and distributing JDM files to your applications.",2026-10-21
+8bfaf6afe1fe,arch/gorules-zen-engine.md,S-q6ajn7wa,unlocated:no-match,,,,,2026-10-21
+90ebad0e6a02,arch/gorules-zen-engine.md,S-ccvh7i4b,unlocated:no-match,,,,,2026-10-21
+929d1b360657,arch/gorules-zen-engine.md,S-yi5pmj5x,unlocated:no-match,,,,,2026-10-21
+92b6aedff315,arch/gorules-zen-engine.md,S-xfsmauei,located,JDM Standard > File structure > Additional fields,engin;ignor;level;part;top;top-level;unknown;field,6b9c427b4b264d70,"The engine ignores unknown top-level fields, so tools can attach their own metadata without breaking evaluation. Only nodes and edges are part of the format.",2026-10-21
+955a6aab6c8a,arch/gorules-zen-engine.md,S-zuff3zj3,unlocated:no-match,,,,,2026-10-21
+96d21b4ccbc0,arch/gorules-zen-engine.md,S-ltzwimxf,located,,functionnod;functionnodehandler;function;kind;handler;decision;node,110f82c43159fc4f,"DecisionNodeKind::FunctionNode { content } => { handlenode(basectx, content.clone(), FunctionNodeHandler).await",2026-10-21
+a1a6d700b3c3,arch/gorules-zen-engine.md,S-kvbchryu,unlocated:no-match,,,,,2026-10-21
+a4cb6bc1dca9,arch/gorules-zen-engine.md,S-ujerrwih,unlocated:no-match,,,,,2026-10-21
+a593ca011de9,arch/gorules-zen-engine.md,S-ipghmg2f,unlocated:no-match,,,,,2026-10-21
+a593ca011de9,arch/gorules-zen-engine.md,S-xfsmauei,located,JDM Standard > Loading JDM files,load;rule;file;jdm,8841762190782717,Load and evaluate JDM files using any GoRules SDK:,2026-10-21
+a9c4c525cbbc,arch/gorules-zen-engine.md,S-5jpgqrfy,located,,arbitrary;arbitrary_precision;precision;bindgen;json;default,005434f9afa72c45,"default = [] bindgen = [""rquickjs/bindgen""] arbitraryprecision = [""serdejson/arbitraryprecision"", ""zen-expression/arbitraryprecision"", ""zen-types/arbitraryprecision"", ""zen-tmpl/arbitraryprecision""]",2026-10-21
+b2dd74a95f3e,arch/gorules-zen-engine.md,S-cdmzxvsn,unlocated:no-match,,,,,2026-10-21
+b2dd74a95f3e,arch/gorules-zen-engine.md,S-xfsmauei,located,JDM Standard > File structure > Edges,input;output;node,6c9f1f8af7b0932b,"""sourceId"": ""input-node"", ""targetId"": ""decision-table-node"", ""sourceHandle"": ""output""",2026-10-21
+b4d9ed039c62,arch/gorules-zen-engine.md,S-heikuvcn,unlocated:no-match,,,,,2026-10-21
+b4d9ed039c62,arch/gorules-zen-engine.md,S-ltzwimxf,unlocated:no-match,,,,,2026-10-21
+b76f3a393b56,arch/gorules-zen-engine.md,S-5dy4gz6x,located,,file;zen;expression;function,03865c168f71812f,Use this file to discover all available pages before exploring further. Built-in functions Complete reference for ZEN expression language built-in functions.,2026-10-21
+b76f3a393b56,arch/gorules-zen-engine.md,S-dxj7zgns,unlocated:no-match,,,,,2026-10-21
+b76f3a393b56,arch/gorules-zen-engine.md,S-wgtknkrb,located,,function;node;modul;crat;http,768759bc10f0f238,use crate::nodes::function::v2::module::http::auth::HttpConfigAuth;,2026-10-21
+c2a7c1a5c353,arch/gorules-zen-engine.md,S-wgtknkrb,unlocated:no-match,,,,,2026-10-21
+c56a71c894c0,arch/gorules-zen-engine.md,S-enz7mrzn,unlocated:no-match,,,,,2026-10-21
+c56a71c894c0,arch/gorules-zen-engine.md,S-ibnjc3rf,unlocated:no-match,,,,,2026-10-21
+c56a71c894c0,arch/gorules-zen-engine.md,S-y7nfpahm,unlocated:no-match,,,,,2026-10-21
+d31c2c5fc217,arch/gorules-zen-engine.md,S-kvbchryu,located,ZEN Engine,matrix;support;linux;python;mark,878664310e22bc75,Support matrix Arch | Rust | Node.js | Python | Go | Java / Kotlin | .NET linux-x64-gnu | :heavycheckmark: | :heavycheckmark: | :heavycheckmark: |,2026-10-21
+d53c2e3e3969,arch/gorules-zen-engine.md,S-yi5pmj5x,located,Python Rules Engine > Tracing,trac;decision;evaluat,2baef1cfb9e3bbf1,"response = decision.evaluate(inputdata, {""trace"": True})",2026-10-21
+d6409e189b63,arch/gorules-zen-engine.md,S-5jpgqrfy,unlocated:no-match,,,,,2026-10-21
+d6409e189b63,arch/gorules-zen-engine.md,S-wgtknkrb,located,,function;node;http,768759bc10f0f238,use crate::nodes::function::v2::module::http::auth::HttpConfigAuth;,2026-10-21
+d6409e189b63,arch/gorules-zen-engine.md,S-zuff3zj3,located,,process;runtim;call;node;rust;graph;zen-engin;wheel,c3852df6e7e025ca,"Type flow, exhaustiveness checking, write-conflict detection and precise diagnostics, all available before anything runs.\n- Per-column collect: decision table output columns can collect across all matching",2026-10-21
+da9406e94671,arch/gorules-zen-engine.md,S-ipghmg2f,unlocated:no-match,,,,,2026-10-21
+db80f6340256,arch/gorules-zen-engine.md,S-jq7z2od2,unlocated:no-match,,,,,2026-10-21
+dde2e4ffe2d0,arch/gorules-zen-engine.md,S-3tbh2eg2,unlocated:no-match,,,,,2026-10-21
+dde2e4ffe2d0,arch/gorules-zen-engine.md,S-q6ajn7wa,unlocated:no-match,,,,,2026-10-21
+de91a066e7ee,arch/gorules-zen-engine.md,S-trcil35r,unlocated:no-match,,,,,2026-10-21
+df5ddad9bb74,arch/gorules-zen-engine.md,S-kvbchryu,located,ZEN Engine,cross;cross-platform;portabl;stor;open-sourc;written;bind;business,a1c5b46245863947,"ZEN Engine is a cross-platform, open-source Business Rules Engine (BRE) written in Rust, with native bindings for Node.js, Python, Go, Java, Kotlin and .NET, plus",2026-10-21
+e48c414d0654,arch/gorules-zen-engine.md,S-2fdfhonb,located,,custom;customhandler;handler;engin;loader;option,9df11055e9dd62e0,"class ZenEngineOptions(TypedDict, total=False): loader: Union[ZenLoaderCallback, ZenLoaderConfig] customHandler: Callable",2026-10-21
+f59baa4f4fa4,arch/gorules-zen-engine.md,S-ytvtdwbp,located,ZEN expression language > Two modes,node;output;decision;tabl;standard;unary;test;input,bb09581855408c91,"Standard | Expression nodes, output columns | price quantity (1 - discount) Unary test | Decision table input columns | >= 100, [1..10], 'US', 'CA'",2026-10-21
 7cfccebaeadd,arch/http-rate-limit-429-retry-after.md,S-wct3uoax,unlocated:no-match,,,,,2026-10-13
 0737d0e7665e,arch/k8s-gmsa-windows.md,S400,unlocated:no-match,,,,,2026-10-10
 0737d0e7665e,arch/k8s-gmsa-windows.md,S1600,unlocated:no-match,,,,,2026-10-10
