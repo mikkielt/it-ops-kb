@@ -4,7 +4,7 @@ SKILL.md,description,string,first non-empty body line if omitted,What Claude rea
 SKILL.md,when_to_use,string,(none),Extra trigger phrases/examples appended to description; counts toward the 1536-char cap,S2158
 SKILL.md,argument-hint,string,(none),Autocomplete hint for expected arguments e.g. [issue-number],S2158
 SKILL.md,arguments,space-separated string or YAML list,(none),Named positional arguments for $name substitution in the body,S2158
-SKILL.md,disable-model-invocation,boolean,false,Claude cannot auto-load the skill; also blocks preload into subagents and firing from a scheduled task,S2158
+SKILL.md,disable-model-invocation,boolean,false,Claude cannot auto-load the skill; also blocks preload into subagents and firing from a session-scoped scheduled task,S2158
 SKILL.md,user-invocable,boolean,true,false hides it from the / menu and blocks /name; for Claude-only background knowledge,S2158
 SKILL.md,allowed-tools,space/comma-separated string or YAML list,(none),Tools pre-approved without asking for the turn that invokes the skill; clears on next message,S2158
 SKILL.md,disallowed-tools,space/comma-separated string or YAML list,(none),Tools removed from the pool while the skill is active; clears on next message; cannot remove EndConversation while another tool remains,S2158

@@ -23,7 +23,7 @@ shared task list and direct inter-agent messaging on top of ordinary subagent de
   table exactly is silently ignored, no error. [DOC S2158]
 - `description` + `when_to_use` combined is truncated at 1,536 characters in the skill listing. [DOC S2158]
 - `disable-model-invocation: true` also stops the skill from being preloaded into subagents and from running when a
-  scheduled task fires it as its prompt. [DOC S2158]
+  session-scoped scheduled task fires it as its prompt. [DOC S2158]
 - `context: fork` runs the skill body in a forked subagent context; `agent` picks which subagent type; `background`
   (default `true`, requires v2.1.218+) controls whether the invoking turn waits for the fork's result. [DOC S2158]
 - Boolean skill fields accept `yes/no/on/off/1/0` in any case plus `true/false`; before v2.1.218 only `true/false`
