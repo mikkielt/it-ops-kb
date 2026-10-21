@@ -2868,7 +2868,6 @@ fb587e5834ff,agents/microsoft-agent-framework.md,S-kzoop7qs,located,Microsoft Ag
 00e8128e1b24,agents/onnx-runtime-rust-ort.md,S-onqi3s6s,located,,mlas;power;default;provider;cpu,308e1950b03ccbcf,"/// The default CPU execution provider, powered by MLAS.",2026-10-21
 03e927dc22e1,agents/onnx-runtime-rust-ort.md,S-yliumtdz,located,ONNX Runtime Execution Providers > Build ONNX Runtime package with EPs,built;combination;default;packag;cpu;runtim;onnx;provider,b6c8ce6e81865c5f,The ONNX Runtime package can be built with any combination of the EPs along with the default CPU execution provider.,2026-10-13
 09611b803f18,agents/onnx-runtime-rust-ort.md,S-5bx2p3mo,located,cargo-tree(1) > DESCRIPTION,flow;show;packag;featur,faae5b59aae87995,can be helpful to use -i flag to show how the features flow into a package,2026-10-13
-0b28264baade,agents/onnx-runtime-rust-ort.md,S-msk5qtcf,unlocated:no-match,,,,,2026-10-13
 0f7062072769,agents/onnx-runtime-rust-ort.md,S-6z4pv23l,located,,check;load;byte;session,30518c4166a52846,"/// For .ort models, we enable session.useortmodelbytesdirectly. /// For more information, check [Load ORT format model from an in-memory byte array](https://onnxruntime.ai/docs/performance/model-optimizations/ort-format-models.html#load-ort-format-model-from-an-in-memory-byte-array).",2026-10-13
 0f7062072769,agents/onnx-runtime-rust-ort.md,S-ktoxup5h,unlocated:no-match,,,,,2026-10-13
 0f7062072769,agents/onnx-runtime-rust-ort.md,S-l3go6sje,unlocated:no-match,,,,,2026-10-13
@@ -2913,6 +2912,7 @@ fb587e5834ff,agents/microsoft-agent-framework.md,S-kzoop7qs,located,Microsoft Ag
 5db865dddade,agents/onnx-runtime-rust-ort.md,S-hmcb2gfz,unlocated:no-match,,,,,2026-10-13
 5db865dddade,agents/onnx-runtime-rust-ort.md,S-ixcjfodz,unlocated:no-match,,,,,2026-10-13
 5f31594b5127,agents/onnx-runtime-rust-ort.md,S-pwbxp7jw,located,,binary;download;download-binary;tls-nativ;api-27;copy;copy-dylib;nativ,a29a083ebf598cc8,"default = [ ""std"", ""ndarray"", ""tracing"", ""download-binaries"", ""tls-native"", ""copy-dylibs"", ""api-27"" ]",2026-10-13
+65aebffc0c6a,agents/onnx-runtime-rust-ort.md,S-msk5qtcf,located,,max_stable_version;stabl;max;2.0.0-rc.15;version;2.0.0;null,0eaf0dbf3b2d4f99,"""newestversion"": ""2.0.0-rc.15"", ""maxstableversion"": null,",2026-10-21
 6eafbf5db88a,agents/onnx-runtime-rust-ort.md,S-ah7l36rr,unlocated:no-match,,,,,2026-10-13
 6fb92e87411a,agents/onnx-runtime-rust-ort.md,S-5xaderxo,located,Prebuilt binaries,clang;haswell;later;libc;linux;ryzen;x86-64;depend,aa63d641cb4e449f,"All x86-64 binaries are compiled with a baseline requirement of x86-64-v3 - that's Intel Haswell (Cores/Xeons after 2013), Intel Gracemont (Atoms after Nov 2021), AMD",2026-10-13
 74c40d6da98b,agents/onnx-runtime-rust-ort.md,S-5xaderxo,unlocated:no-match,,,,,2026-10-13
@@ -2928,7 +2928,7 @@ fb587e5834ff,agents/microsoft-agent-framework.md,S-kzoop7qs,located,Microsoft Ag
 7d378e969478,agents/onnx-runtime-rust-ort.md,S-mw6rc3qq,unlocated:no-match,,,,,2026-10-13
 7d378e969478,agents/onnx-runtime-rust-ort.md,S-u3hzriiy,unlocated:no-match,,,,,2026-10-13
 7d378e969478,agents/onnx-runtime-rust-ort.md,S-x6bpplvz,located,,ort_cache_dir;ort;default;cach;dir;path,b2ea7767cdec51df,"std::env::varos(""ORTCACHEDIR"").map(PathBuf::from).orelse(cachedirdefault)",2026-10-13
-7ee36e68c078,agents/onnx-runtime-rust-ort.md,S-msk5qtcf,located,,max_stable_version;stabl;max;version;2.0.0;null,ec080a3b449115b0,"""newestversion"": ""2.0.0-rc.14"", ""maxstableversion"": null,",2026-10-13
+81637c60d9e8,agents/onnx-runtime-rust-ort.md,S-msk5qtcf,located,,1.92;version;rust,5d8b98eae79d390c,"""rustversion"": ""1.92"",",2026-10-21
 87408874eb65,agents/onnx-runtime-rust-ort.md,S-gs7u2ou5,located,Getting started,commit;commit_from_fil;file,3f2076d2f1be52e0,".commitfromfile(""yolov8m.onnx"")?;",2026-10-13
 892d71bb8c0f,agents/onnx-runtime-rust-ort.md,S-co3g3h4o,located,Using a Plugin Execution Provider Library,automatic;policy;register;runtim;selection;onnx;plugin;library,669dff09bf957913,Session creation with automatic EP selection The application code below uses the API function SessionOptionsSetEpSelectionPolicy to have ONNX Runtime automatically select an EP based on,2026-10-13
 89fdb733e906,agents/onnx-runtime-rust-ort.md,S-6z4pv23l,unlocated:no-match,,,,,2026-10-13
@@ -2940,10 +2940,6 @@ fb587e5834ff,agents/microsoft-agent-framework.md,S-kzoop7qs,located,Microsoft Ag
 9fc337d2cff7,agents/onnx-runtime-rust-ort.md,S-45rrlyyd,unlocated:no-match,,,,,2026-10-13
 9fe1157d54a9,agents/onnx-runtime-rust-ort.md,S-mw6rc3qq,unlocated:no-match,,,,,2026-10-13
 a24f866f36a4,agents/onnx-runtime-rust-ort.md,S-ktoxup5h,located,,fail_silently;log;registration;silently;fail;default;error_on_failur;failur,4d971f33dad83f01,/// Configures this execution provider to silently log an error if registration of the EP fails. /// This is the default behavior; it can be,2026-10-13
-a29750581cce,agents/onnx-runtime-rust-ort.md,S-gs7u2ou5,unlocated:no-match,,,,,2026-10-13
-a29750581cce,agents/onnx-runtime-rust-ort.md,S-msk5qtcf,located,,2.0.0-rc.13;version;2.0.0;api;ort,5ac69ebb16171ee8,"""versiondownloads"": ""/api/v1/crates/ort/2.0.0-rc.13/downloads"",",2026-10-13
-a29750581cce,agents/onnx-runtime-rust-ort.md,S-o3nqheje,unlocated:no-match,,,,,2026-10-13
-a29750581cce,agents/onnx-runtime-rust-ort.md,S-pwbxp7jw,located,,2.0.0;2.0.0-rc.13;default;featur;version;ort,b4ef9fdc6017b499,"ort-sys = { version = ""=2.0.0-rc.13"", path = ""ort-sys"", default-features = false }",2026-10-13
 a3230ca0ee6b,agents/onnx-runtime-rust-ort.md,S-ixcjfodz,unlocated:no-match,,,,,2026-10-13
 a5a7277ad8ba,agents/onnx-runtime-rust-ort.md,S-45rrlyyd,unlocated:no-match,,,,,2026-10-13
 a5a7277ad8ba,agents/onnx-runtime-rust-ort.md,S-atc7uhx5,located,ONNX Runtime v1.28.3 > No results found,memory;memory-safety;model;model-validation;patch;safety;validation;fixe,38d370a10259287a,"This is a patch release on top of v1.28.2, containing memory-safety and model-validation fixes, a plugin execution fix, and packaging infrastructure updates.",2026-10-13

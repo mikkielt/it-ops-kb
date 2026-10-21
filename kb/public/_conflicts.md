@@ -30,6 +30,7 @@ pay-as-you-go rate." This is not a contradiction — S1961 is the vendor's own n
 was renamed, and the quotas page (S1960) still uses "prepaid message packs" as the capacity-tier
 label even while credits are the billed unit. Treat "message pack" as the tier name and "Copilot
 Credit" as the metered unit; both are current per S1960/S1961. [DOC S1960, S1961] (topic: agents/copilot-studio-inventory)
+  - Reviewed 2026-10-21, not a source disagreement: S1961 states the unit rename to Copilot Credits and S1960 keeps "message pack" as the capacity-tier label, so both names are current for different things. [DOC S1960, S1961]
 
 ### MCP transport support
 
@@ -39,6 +40,7 @@ here only because a search snippet independently surfaced the same claim, confir
 one-off wording accident. [DOC S1964]
 
 No other direct factual conflicts between official sources were found in this part's source set. (topic: agents/copilot-studio-inventory)
+  - Reviewed 2026-10-21, not a source disagreement: one source (S1964) states the Streamable-only transport and no page read contradicts it; a record of a corroborating search snippet, not a conflict. [DOC S1964]
 
 ## agents-errors
 
@@ -51,6 +53,7 @@ to the auto-generated `MEMORY.md`, not `CLAUDE.md`. The two-part gate (line-coun
 the earlier community claim likely conflated `MEMORY.md`'s limit with `CLAUDE.md`'s. Not a DOC-vs-DOC conflict — the
 community claim never had a first-party source — but recorded here so a future session does not re-cite the 40KB
 figure. See `agents/instruction-and-context-limits.csv` (superseded row retained for the audit trail) and S1863.
+  - Resolved 2026-10-21: the memory page (S1863, read in full in the census of 2026-10-21) documents the 200-line target and the 4 MiB skip and no kilobyte warning; the kb states the ~40KB figure as refuted in `agents/instruction-and-context-limits` and keeps the old csv row superseded. [DOC S1863]
 
 ### Copilot Studio instructions limit: documented 8,000-character field cap vs. observed lower effective ceiling
 Microsoft's own product surfaces present agent/generative-answer-node instructions as capped at 8,000 characters per
@@ -64,6 +67,7 @@ under the visible 8,000-character counter can still hit a hard failure. Recorded
 than a strict DOC/DOC conflict, since one side (the internal threshold) has no official page describing its exact
 value. (topic: agents/instruction-and-context-limits)
   - Update 2026-09-27: a Microsoft Q&A user report (S-f3chtt24) adds an observed failure at about 5,300 combined characters with `OpenAIAdditionalInstructionsLengthExceededLimit`; still documented-vs-observed, kept open. (topic: agents/instruction-and-context-limits)
+  - Still open 2026-10-21: re-checked the Copilot Studio prompt-modification page (S-jexpr3gv; a Learn search of 2026-10-21 returns "Prompt instructions are limited to 8,000 characters") and found no Microsoft page that names the combined-prompt ceiling the failures report (S-f3chtt24 about 5,300 characters). A Microsoft page naming that ceiling, or a deployed Copilot Studio test agent with instructions near 5,000 characters, would settle it.
 
 ### GitHub Copilot custom-instructions limit: "silently ignored" (docs) vs. "no limit now" (changelog) are not in
 tension — sequential, not contradictory
@@ -71,6 +75,7 @@ The removal of the 4,000-character limit (S1852, dated 2026-06-12) supersedes th
 describes the pre-removal silent-truncation behavior). Not a conflict, but flagged because a session reading only the
 older cached version of S1851 could believe the limit still applies; both sources' dates should be checked before
 citing GitHub Copilot's instructions handling. (topic: agents/instruction-and-context-limits)
+  - Reviewed 2026-10-21, not a source disagreement: the changelog (S1852, 2026-06-12) removes the limit that the older page (S1851) describes, so the two statements are sequential; the article carries both dates. [DOC S1851, S1852]
 
 ## agents-eval
 
@@ -81,6 +86,7 @@ hosted Evals **platform** goes read-only 2026-10-31 and shuts down 2026-11-30, w
 These are two different things under one brand name (a hosted product being sunset vs. an open-source
 framework/registry that is not), not a genuine disagreement — flagged here so a later reader does not
 conflate "OpenAI evals is being deprecated" with the open-source framework used in QG9's tool list. (topic: agents/agent-evaluation)
+  - Reviewed 2026-10-21, not a source disagreement: S1894 describes the hosted Evals platform and S1893 the open-source repository, two different things under one brand; the article keeps them apart. [DOC S1893, S1894]
 
 ### garak's licence: code vs. site content
 The garak GitHub repository's own `LICENSE` file (S1891) is GPL-3.0. A WebSearch summary separately
@@ -91,6 +97,7 @@ Apache-2.0 claim is not repeated as a `DOC` fact about the *code*.
 Resolved in the census of 2026-09-25: the LICENSE file at `main` is the Apache License 2.0, as are the README badge
 and `pyproject.toml`; the repository moved from a brief GPLv3 licence to Apache-2.0 in June 2023. The GPL-3.0 reading
 was wrong and the kb now says Apache-2.0. [DOC S1891] (topic: agents/agent-evaluation)
+  - Resolved 2026-10-21: the LICENSE file of the repository (S1891) is the Apache License 2.0 and `agents/agent-evaluation` states Apache-2.0 for the code; the GPL-3.0 reading was wrong. [DOC S1891]
 
 ## agents-extra
 
@@ -100,6 +107,7 @@ was wrong and the kb now says Apache-2.0. [DOC S1891] (topic: agents/agent-evalu
   `open-telemetry/semantic-conventions` (used by `claude/otel-monitoring.md` and `logs/` for the general
   logs/code conventions, which have not moved). Cite the new repo (S2001-S2004) for GenAI-specific spans/metrics;
   the old repo commits already in `_sources.csv` (S639-S646) remain correct for logs/code conventions only.
+  - Reviewed 2026-10-21, not a source disagreement: a repository move for the GenAI conventions only; `agents/genai-telemetry` cites the new repository (S2000, S2001) and the old one stays correct for logs and code conventions. [DOC S2000, S2001]
 - CaMeL's own paper title on arXiv is "Defeating Prompt Injections by Design" (S2006); the PROMPT-agents brief
   refers to it by the informal name "CaMeL" only. No factual conflict, just a naming note. (topic: agents/prompt-injection-design-patterns)
   - Reviewed 2026-09-28, not a source disagreement: a naming note; closed.
@@ -136,6 +144,7 @@ was wrong and the kb now says Apache-2.0. [DOC S1891] (topic: agents/agent-evalu
   `concepts/data-limits` page in this session — flagged so a future session re-checks the exact figure
   before relying on it. (topic: agents/shared-ner-service)
   - Explained 2026-09-27: the 50,000-character figure is the Azure AI Search PII skill (S-ulqlpnc5) and 10 MB the Document-based PII request limit (S-alyohfil); neither is cloud Text PII. (topic: agents/shared-ner-service)
+  - Resolved 2026-10-21: the cloud service's limits are on the Azure Language data-limits page (S2093, confirmed in the census of 2026-10-21): 5,120 characters per synchronous document and 125,000 characters across up to 25 documents asynchronously; the container limit (S2091) is a separate feature path, and the 50,000-character figure belongs to the Azure AI Search PII skill (S-ulqlpnc5). [DOC S2091, S2093, S-ulqlpnc5]
 - **Google Sensitive Data Protection per-GB pricing.** One fetched search summary (S2101) gives three
   specific rates (~$1.00/$1.50/$0.05 per GB for discovery/storage inspection/streaming); a second summary
   reviewed while forming the same answer instead described pricing only as "$1-3 per GB depending on the
@@ -163,12 +172,15 @@ prefer the simpler end of whichever spectrum they draw. Recorded here for comple
 
 ### routine "next run time" bug window
 `code.claude.com/docs/en/routines` documents its own now-fixed bug: before Claude Code v2.1.211, the CLI reported a routine with no schedule trigger (API/GitHub-only) as having a next run time "in the year 1"; v2.1.211 or later shows none. This is a self-reported vendor changelog note inside the current page, not a disagreement between two sources, but is recorded here because a session reading an older cached copy of this page or an older Claude Code build could see the stale behaviour. [DOC S1803] (topic: agents/headless-agent-runtimes)
+  - Reviewed 2026-10-21, not a source disagreement: a fixed bug the routines page itself reports for builds before v2.1.211, kept so an older cached copy is not misread; no second source differs. [DOC S1803]
 
 ### routine fire-payload trust framing changed
 The same page states that before Claude Code v2.1.213, a routine's saved prompt was delivered to the session framed as an *untrusted background notification* (and could be refused), whereas v2.1.213+ delivers it as the session's *assigned task*. An agent-runtime description written against a pre-2026-04 build of Claude Code would describe the opposite trust behaviour from what ships now. [DOC S1803] (topic: agents/headless-agent-runtimes)
+  - Reviewed 2026-10-21, not a source disagreement: the routines page itself dates the change of framing to v2.1.213; a version difference, not two sources differing. [DOC S1803]
 
 ### no cost-cap flag despite brief expecting one
 The deepening-pass brief asked to cover a `--max-budget-usd` flag "if exists" for Claude Code headless mode. The `headless.md`, `github-actions.md`, and `gitlab-ci-cd.md` pages (retrieved 2026-09-25) named no such flag; the only cost controls they named were `--max-turns`, job/workflow timeouts, concurrency limits, and post-hoc `total_cost_usd` reporting via `--output-format json`. This was not a disagreement between sources but an absence on those three pages. [DOC S1800,S1801,S1802] Resolved 2026-10-12: the CLI reference page (S1824) documents `--max-budget-usd` (print mode only): it stops the run once estimated spend reaches the amount, counts subagent spend, can be passed by spend (the page advises leaving headroom) and from v2.1.217 fails a further subagent spawn with `Budget limit reached`; the headless page (S1800) now names it too. The GitHub Actions and GitLab CI/CD pages (S1801, S1802) still do not. The kb states it in `agents/headless-agent-runtimes.md:52`. [DOC S1824,S1800] (topic: agents/headless-agent-runtimes)
+  - Resolved 2026-10-21: the CLI reference (S1824, read in full in the census of 2026-10-21) documents `--max-budget-usd` for print mode and the kb states it in `agents/headless-agent-runtimes`; the absence was a gap of three pages, not a disagreement. [DOC S1824, S1800]
 
 ### GitHub's own doc-drift pattern lives outside Copilot coding agent
 GitHub's official Copilot coding-agent best-practices page names no scheduled/issue-triggered documentation-update feature, while GitHub Next's separate `gh-aw` project ships a "Documentation Maintenance" sample workflow doing exactly that. A session reading only the Copilot coding-agent docs would conclude GitHub has no such capability; it exists, but under a different GitHub-affiliated project with its own trigger/guardrail model (`schedule:` frontmatter + safe-outputs, not Copilot's issue-assignment model). [DOC S1818, S-qso27noq, S1821] (topic: agents/docs-maintenance-agents)
@@ -183,6 +195,7 @@ None found. AWS's `credentials-fetcher` (COMMUNITY, S1607/S1608) does not contra
 ### tooling, texts, readiness
 
 No direct factual conflicts found between official sources in this batch.
+  - Closed 2026-10-21: a record that no two sources disagree in this batch, with no claim to settle.
 
 - `arch/twelve-factor-readiness.md`: Kubernetes official docs treat Secrets-as-env-vars and
   Secrets-as-mounted-files as equally valid (S1725, S1729), which is weaker than a stricter
@@ -290,6 +303,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 - ZDR scope for Claude Code: code.claude.com ZDR page (S748) says ZDR for Claude Code is "available to qualified accounts on Claude for Enterprise"; platform.claude.com API retention page (S749) also lists Claude Code with API keys from a Commercial organization as covered. Differs in whether non-Enterprise API-key use is in scope (S748 mentions existing pay-as-you-go ZDR only as a migration path). (topic: claude/data-retention)
   - Resolved 2026-09-28: not a disagreement. The Privacy Center ZDR article (S-qrxvz4ph, 2026-06-09) lists both routes: products that use a Commercial organization's API key, including Claude Code through the API, and Claude Code for Enterprise plans. The code.claude.com page describes the Enterprise route and names pay-as-you-go API-key ZDR as a migration source. (topic: claude/data-retention)
 - Claude Code docs (S740) confirm a default MCP output cap of 25,000 tokens, and add a fixed 10,000-token warning and per-tool `anthropic/maxResultSizeChars` override (not a conflict, recorded for completeness). (topic: mcp/python-sdk)
+  - Reviewed 2026-10-21, not a source disagreement: the entry itself says it records an addition to the 25,000-token cap, not a conflict. [DOC S740]
 - A project pinning `mcp>=2.2,<2.3` would need to note: SDK docs (S720/S728) state `ctx.elicit()` fails on 2026-07-28 connections, while Claude Code (S740) connects stdio servers on the earlier protocol by default: behaviour depends on the client's negotiation setting (`MCP_PROTOCOL_NEGOTIATION`), not on the SDK alone. (topic: claude/elicitation)
   - Reviewed 2026-09-28, not a source disagreement: a negotiation-dependent behaviour, not two sources disagreeing.
 - Claude Code changelog 2.1.76 (S746) says elicitation was added for "form fields or browser URL"; 2.1.281 (S746) says URL-mode elicitation was "Added ... on 2026-07-28 protocol connections" — URL mode existed on legacy connections before, and was only added for the new protocol later. (topic: claude/elicitation)
@@ -394,6 +408,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
   mixed-licence structure rather than an absence of licensing. [S1002,S1009,S1014,S1018 vs S1102,S1103,S1104,S1105,S1106]
   - Resolved 2026-09-28: settled by the LICENSE files, now pinned at commits in `_sources.csv`.
 - No other disagreements found between sources this session.
+  - Closed 2026-10-21: a record that no other disagreement was found for that session, with no claim to settle.
 
 ## security
 
@@ -424,6 +439,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 - No other cross-source disagreement was established this pass (most rows are UNK rather than
   conflicting DOC facts, since the machine-readable sources needed for a real crosswalk were not
   downloaded — see `gaps.A.md`).
+  - Closed 2026-10-21: a record that no other cross-source disagreement was established, with no claim to settle.
 
 ### B: management plane
 
@@ -495,7 +511,9 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 
 ## agents/agent-rbac
 - Which Microsoft Entra directory roles an agent identity can hold: "Agent identities, service principals, and applications" (S-2iq53pkf, read 2026-10-15) says agent identities can be assigned Azure RBAC roles and Microsoft Entra built-in roles "the same as standard service principals", while the authorization page and FAQ (S-fwzaxe7i, S-pmj4jc4f) say they can't hold highly privileged directory roles or custom roles and only lower-privileged roles such as readers. The kb states both; the narrower pages are the specific statement, so plan on the restriction. [DOC S-2iq53pkf vs DOC S-fwzaxe7i, S-pmj4jc4f, unresolved] (topic: agents/agent-rbac)
+  - Narrowed 2026-10-21: the authorization page (S-fwzaxe7i) and the FAQ (S-pmj4jc4f), read 2026-10-21, both still say Global Administrator, Privileged Role Administrator and User Administrator are blocked and only lower-privileged roles can be assigned, and the authorization page lists the allowed built-in roles; S-2iq53pkf still says "the same as standard service principals" in general terms. No Microsoft page reconciles the wording; the kb plans on the restriction, which the two specific pages state. Settles when Microsoft aligns the service principals page. [DOC S-2iq53pkf, S-fwzaxe7i, S-pmj4jc4f]
 - The Entra Agent ID authorization page (S-fwzaxe7i) now says custom roles can be assigned to agent identities; kb line 89 also cites S-pmj4jc4f for the older claim that they cannot. Check whether S-pmj4jc4f still says so (topic: agents/agent-rbac)
+  - Resolved 2026-10-21: the FAQ (S-pmj4jc4f, read 2026-10-21) names only the blocked highly privileged roles and says only lower-privileged roles can be assigned, with no statement on custom roles, and the authorization page (S-fwzaxe7i) says "Custom roles can be assigned to agents"; `agents/agent-rbac` states the custom-role change from the authorization page. [DOC S-fwzaxe7i, S-pmj4jc4f]
 
 ## agents/windows-agentic-platform
 
@@ -507,6 +525,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
   the separate "Manage Recall" guide, which repeats the same "disabled by default" wording). Still a live
   disagreement; treat Recall as off-by-default on any Intune/GPO-managed device regardless of the table's
   stated default value. (rechecked 2026-09-26, kept) (topic: agents/windows-agentic-platform)
+  - Still open 2026-10-21: re-read the Policy CSP page (S-2ypn2ron): its text still says "By default, Recall is disabled for managed commercial devices" while the properties table still says Default Value 1 and "1 (Default) Recall is available". No source reconciles them; a managed Windows 11 24H2 device with the policy unset (state of the Recall optional component) or a change of the page would settle it.
 - `DisableClickToDo` applicability: rechecked 2026-09-26 — the Policy CSP page still lists this policy's
   **Applicable OS** as "Windows Insider Preview" only (no stable OS/KB build given), while the companion
   "Manage Click to Do" admin article (rechecked 2026-09-26) still documents it and its Settings UI toggle
@@ -514,6 +533,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
   requirements that are themselves GA. Until the CSP page adds a stable-build requirement, treat
   `DisableClickToDo` itself as preview even though Click to Do the feature is GA on Copilot+ PCs. (rechecked
   2026-09-26, kept) (topic: agents/windows-agentic-platform)
+  - Still open 2026-10-21: re-read the Policy CSP page (S-2ypn2ron): `DisableClickToDo` still lists "Windows Insider Preview" as its applicable OS. It settles when Microsoft adds a stable build to the page, or by a test of the policy on a stable Copilot+ PC build.
 
 ## security/vulnerability-prioritization
 
@@ -565,10 +585,12 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## agents/agent-overuse-patterns
 
 - S2174 (dev.to decision matrix) disagrees with itself: it puts the pipeline at 50,000 runs/day at ~$1.50/day for 3,000 tokens/run and ~$15/day for 30,000 tokens/run (10x), but later calls the 30,000-token case 'roughly 15x more'. Re-read 2026-09-27. (topic: agents/agent-overuse-patterns)
+  - Reviewed 2026-10-21, not a disagreement between sources: one community post's own wording; its table gives 3,000 to 30,000 tokens per run as $1.50 to $15 a day, which is 10x, and the article states the 10x figures with the post's "15x" passage as the post's own. [COMMUNITY S2174]
 
 ## agents/azure-openai-deployments
 
 - S-pntdruql (azure/ai-foundry/openai/concepts/provisioned-throughput, fetched 2026-09-27) no longer contains the utilization / leaky-bucket section that Learn search still indexes under azure/foundry/.../provisioned-throughput#monitor-utilization-and-performance; the same content is now on how-to/provisioned-get-started (S-gueirwxw). Facts re-cited there. (topic: agents/azure-openai-deployments)
+  - Resolved 2026-10-21: the utilization and leaky-bucket section now stands on the provisioned-get-started page (S-gueirwxw, confirmed in the census of 2026-10-21), where `agents/azure-openai-deployments` cites it. [DOC S-gueirwxw]
 
 ## agents/content-safety-prompt-shields
 
@@ -578,6 +600,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## agents/shared-ner-service
 
 - Resolves the 'Azure Text PII character-limit figures' entry: S2093 (concepts/data-limits) re-read 2026-09-27 states no 50,000-character analyze-with-warning behaviour and no 10 MB document limit. It gives 5,120 characters per document for synchronous requests (over-length documents get an invalid-document error, others still processed), 5 PII documents and 1 MB per request, and 125,000 characters across up to 25 documents asynchronously (one over-length document fails the whole request with 400). The 50,000 figure is now an UNK line in the article. (topic: agents/shared-ner-service)
+  - Resolved 2026-10-21: the data-limits page (S2093, confirmed in the census of 2026-10-21) is the source of the figures; the article states them and keeps the 50,000-character figure as UNK. [DOC S2093]
 
 ## auth/sql-authz
 
@@ -593,6 +616,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 
 - A2A Agent Card well-known path: the A2A spec (S2120) registers `/.well-known/agent-card.json`, while Microsoft Copilot Studio's A2A connector docs (S2126, re-read 2026-09-27) tell makers to find the card at the endpoint plus `/.well-known/agent.json`. (topic: agents/a2a-protocol)
   - Explained 2026-09-27, still open: the A2A v0.3.0 release notes (S-xasyjfgi, 2025-07-30) changed the well-known URI from `agent.json` to `agent-card.json`, so the Copilot Studio page gives the pre-v0.3.0 path; the Learn page, re-read 2026-09-27, still says `agent.json`. Kept until Microsoft updates it. (topic: agents/a2a-protocol)
+  - Still open 2026-10-21: the Copilot Studio page (S2126) was fetched again on 2026-10-21 and still says the card is at the endpoint plus `/.well-known/agent.json`, while the A2A specification (S2120) registers `agent-card.json` and the v0.3.0 notes (S-xasyjfgi) record the rename. It settles when Microsoft updates the page; the kb states both.
 
 ## agents/docs-maintenance-agents
 
@@ -662,6 +686,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## prior-art/secret-vault-encryption
 
 - reuse/secret-vault-encryption.md:22 (outside this unit) still states age has no expiry/revocation/audit log as confirmed by its own README; S1001 README re-read 2026-09-27 does not state it (now UNK in prior-art/secret-vault-encryption.md). (topic: prior-art/secret-vault-encryption)
+  - Resolved 2026-10-21: `reuse/secret-vault-encryption` and `prior-art/secret-vault-encryption` now state it as derived from the age format specification (a header of recipient stanzas, a header MAC and a payload, no field for expiry, revocation or audit), not as the README's own statement. [DER S-f4s2xnfz]
 
 ## security/policy-precedence
 
@@ -744,6 +769,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## agents/decision-records
 
 - Editing an accepted decision record: AWS (S-jqks66nz) says a record is immutable once accepted and a change needs a new record that supersedes it, and Azure (S-efm54uef) calls the log append-only and says not to edit accepted records, while Google's overview (S-l52pzhgp) says to revisit the ADR as the team learns and, when adjusting, to include the previous decision and why it changed in the same record. Read 2026-10-01. Not settled by a source: the article records both, and the append-only form is the one two of three cloud vendors and Nygard (S-neg7qqfq) give. [DOC S-jqks66nz, S-efm54uef vs S-l52pzhgp] (topic: agents/decision-records)
+  - Reviewed 2026-10-21, not a source disagreement: the sources give differing advice on practice (an accepted record is immutable or may be revised in place), not differing facts; the article records both and names which form two of three cloud vendors and Nygard give. [DOC S-jqks66nz, S-efm54uef, S-l52pzhgp]
 
 ## agents/agent-caching
 
@@ -779,6 +805,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## agents/mmlw-e5-polish-embeddings
 
 - **Reported PIRB NDCG@10 of the `mmlw-e5-large` distilled model.** The model card (S-pxbj347n, repo sha a7d9af002b46) states NDCG@10 of 56.09 on the Polish Information Retrieval Benchmark; the PIRB paper's Table 3 (S-sbuv7mtf, arXiv v2) lists 56.00 for the distilled multilingual-e5 (large) student with `bge-large-en` as teacher before fine-tuning. For small (47.64) and base (53.56) card and paper agree to the digit. Not settled which run the card's figure comes from; a difference of 0.09. [DOC S-pxbj347n vs DOC S-sbuv7mtf, unresolved] (topic: agents/mmlw-e5-polish-embeddings)
+  - Still open 2026-10-21: the model card (S-pxbj347n), re-read 2026-10-21, still says NDCG@10 of 56.09 and the PIRB paper's Table 3 (S-sbuv7mtf) lists 56.00; neither names the run behind its figure. The PIRB leaderboard entry for the model or its authors would settle which run the card reports.
 
 ## privacy
 - spaCy `pl_core_news_*` versions: GitHub releases have 3.8.0 (2024-09-30, S-haoeqge5, S-pxcitvg3, S-sirpm4j2, spaCy `>=3.8.0,<3.9.0`). The Hugging Face repos were last modified 2023-10-10 with card version 3.7.0 (spaCy `>=3.7.0,<3.8.0`, S-tzw22ffl for sm). Both say GPL-3.0. (topic: privacy/morfeusz-polish-lemmatisation)
@@ -786,9 +813,13 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## agents/onnx-runtime-rust-ort
 
 - The default API level of `ort` 2.0.0-rc.13. The Multiversioning page (S-o3nqheje) says the latest API version, `api-28`, "is enabled by default"; the manifest at the same tag (S-pwbxp7jw) lists `api-27` in `default` and carries `api-28` as an opt-in feature. The source at the tag decides what a build gets (`api-27`), so a build that needs a method marked `api-28` sets that feature itself; a later release or a docs fix settles which one is meant. [DOC S-o3nqheje vs CODE S-pwbxp7jw, unresolved] (topic: agents/onnx-runtime-rust-ort)
+  - Narrowed 2026-10-21: the disagreement is specific to `rc.13`; the manifest of tag `v2.0.0-rc.15` (read 2026-10-21 from the repository; not a source row) lists `api-31` in `default`, so neither the `api-27` of the `rc.13` manifest nor the `api-28` of the docs holds for the newest release. The article pins its facts to `rc.13`; rc.15 docs and manifest stay a gap. [DOC S-o3nqheje vs CODE S-pwbxp7jw]
 - The `default-features = false` example. The Multiversioning page (S-o3nqheje) shows features `std`, `ndarray`, `download-binaries` and `api-20`; the build script of `ort-sys` at the same tag (S-7srl2gyq) stops with a `compile_error!` when `download-binaries` is on and no `tls-*` feature is, and the Cargo features page (S-m5r2fcso) says a TLS feature is required. By the code the example as printed stops at that check (not built here); the code is the authority. [DOC S-o3nqheje vs CODE S-7srl2gyq, unresolved] (topic: agents/onnx-runtime-rust-ort)
+  - Narrowed 2026-10-21: the example and the build script are both `rc.13` facts and the code is the authority there; the `rc.15` build script and docs example were not read (gap), and a build of the printed example on `rc.13` would show the `compile_error!`. [DOC S-o3nqheje vs CODE S-7srl2gyq]
 - The review item for S-msk5qtcf shows crates.io `newest_version` `2.0.0-rc.15` where the kb (line 19, and the rc.13 pin advice at lines 20 and 95) says `2.0.0-rc.13` is the highest. The census run could not fetch the crates.io API (curl returned empty), so the version list, MSRV per version and the rc.13 pin were not re-checked. (topic: agents/onnx-runtime-rust-ort)
+  - Resolved 2026-10-21: the crates.io API (S-msk5qtcf) was fetched again on 2026-10-21 and lists `2.0.0-rc.15` (2026-10-19) as newest after `rc.14` (2026-10-12), with MSRV 1.92 for both; `agents/onnx-runtime-rust-ort` now states the version list and MSRVs from it and says its docs and manifest facts were read at `rc.13`. [DOC S-msk5qtcf]
 - S-msk5qtcf (crates.io API for ort) now shows newest_version 2.0.0-rc.15 (the cache had rc.14), while the article says rc.13 (published 2026-07-28) is the highest version and pins =2.0.0-rc.13. The page could not be fetched in this run (empty response), so the highest-version claim at line 19, the MSRV list at line 22 and the pin advice at line 95 are not re-verified. The next run should read the full API output and decide whether to pin rc.13 or move to a newer rc. (topic: agents/onnx-runtime-rust-ort)
+  - Resolved 2026-10-21: see the entry above; the highest version, the MSRV list and the pin advice of the article now name `rc.15` as the highest and `rc.13` as the version whose docs and manifest were read, and the rc.14 and rc.15 docs stay a gap. [DOC S-msk5qtcf]
 
 ## logs/otel-collector-otlp-pipeline
 - **Number of official Collector distributions: five or six.** The opentelemetry.io page on building a custom Collector (S-iylg5wv4, site vers 0.162.0) says the Collector "has five official distributions", while the distributions repository README at v0.162.0 (S-vnjcetlc) lists six: `otelcol`, `otelcol-contrib`, `otelcol-k8s`, `otelcol-otlp`, `otelcol-prometheus` and `otelcol-ebpf-profiler`. The kb states the repository list as the current one in `logs/otel-collector-otlp-pipeline`; the page's count is probably stale. (topic: logs/otel-collector-otlp-pipeline)
@@ -814,7 +845,9 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 
 ## agents/agent-sandboxes
 - Default access of the Docker Sandboxes shared agent skills store: the security model page (S-qfhwf42v, read 2026-10-15) says supported agents mount the host-side store read-only by default, and the architecture page (S-4kmihytd) says the same, while the security page's own isolation diagram says supported agents mount it read-write unless the user opts out, and the isolation layers page (S-5hrbuirw) says it is shared for agents that have not opted out. The kb states both and does not choose; `--skills` or `skills.defaultMode` sets the mode at creation either way. (topic: agents/agent-sandboxes)
+  - Still open 2026-10-21: the security model page (S-qfhwf42v) was read again on 2026-10-21 and still says read-only by default in its summary and read-write unless the user opts out in its isolation overview. Inspecting the mount mode of the skills store in a default sandbox with `sbx` would settle it.
 - Value spelling in a Windows Sandbox configuration: the CLI page (S-5hntws7z, read 2026-10-15) passes `<Networking>Disabled</Networking>` to `wsb start --config`, while the .wsb configuration page (S-hlmmxoye) lists `Enable`, `Disable` and `Default` as the values. Not run here; the kb's example follows the configuration page. (topic: agents/agent-sandboxes)
+  - Still open 2026-10-21: the Windows Sandbox CLI page (S-5hntws7z) still passes `<Networking>Disabled</Networking>` and the configuration page (S-hlmmxoye) still lists `Enable`, `Disable` and `Default`, read 2026-10-21. Running `wsb start --config` with `Disabled` on a Windows 11 host would settle it.
 
 ## arch/podman-rootless-config
 - Storage drivers usable by a rootless user: the project's `rootless.md` (S-rif3pi6x, read 2026-10-15 at v6.1.4) says the only supported storage drivers are overlay (optionally through `fuse-overlayfs`) and VFS, while the `containers-storage.conf(5)` page (S-b2bqmd6c, container-libs commit 7eac5c25c6b6) says the valid rootless drivers are btrfs, overlay and vfs. The kb states both and does not choose; the two pages are in different repositories and the storage page is the more specific one for the option's values. (topic: arch/podman-rootless-config)
@@ -841,10 +874,12 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## agents/typescript-tsconfig-and-compiler-options
 
 - **Defaults of `strict`, `module`, `target`, `moduleResolution`, `types` and `rootDir`.** The live TSConfig reference (S-lq5mn2bc, read 2026-10-15) and the pinned website data (S-34pqpd75, commit 6556b08) print the 5.x defaults: `module` is CommonJS if `target` is ES5 and ES6/ES2015 otherwise, `target` is ES5, `moduleResolution` is `Classic` unless `module` selects another, and the page gives no default for `strict` itself (it is listed as "Recommended"), with the strict-family options "true if strict; false otherwise". The TypeScript 6.0 announcement (S-sp2a6svk) says `strict` is true, `module` esnext, `target` the current-year ES version, `rootDir` the config directory and `types` `[]`; the 7.0 announcement (S-eq3gt72a) adopts them, and the 7.0.2 source (S-sipjyeoi) declares `strict` true and `moduleResolution` bundler by default. The kb states the 6.0 and 7.0 defaults as the current ones and records the reference page as stale; the website's reference pages describe 5.x. (topic: agents/typescript-tsconfig-and-compiler-options)
+  - Resolved 2026-10-21: the 6.0 and 7.0 announcements (S-sp2a6svk, S-eq3gt72a, both read in full in the census of 2026-10-21) state the new defaults, which the kb gives as current; the reference pages (S-lq5mn2bc, S-34pqpd75) describe 5.x and are recorded as stale. [DOC S-sp2a6svk, S-eq3gt72a]
 
 ## agents/typescript-native-compiler
 
 - **Watch mode of the native compiler.** The typescript-go README at tag `typescript/v7.0.2` (S-mtnr5emw) marks watch mode "prototype" ("no incremental rechecking. Not optimized"), while the 7.0 announcement (S-eq3gt72a, 2026-07-08) says 7.0 ships a "completely rebuilt" `--watch` on a Parcel-watcher foundation. Both read 2026-10-15; the README text appears not to have been updated for the release, and no measurement of 7.0.2's watch mode was made. (topic: agents/typescript-native-compiler)
+  - Resolved 2026-10-21: the README of the repository at `main` (read 2026-10-21) now lists watch mode as done, so the README at tag `typescript/v7.0.2` (S-mtnr5emw) is the stale side and the 7.0 announcement (S-eq3gt72a) stands; the article records both and says the README is behind. Watch mode itself was not measured. [DOC S-eq3gt72a, S-mtnr5emw]
 
 ## gitlab/git-trailers-and-hooks
 
@@ -853,6 +888,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## agents/headless-agent-runtimes
 
 - kb/public/agents/headless-agent-runtimes.md lines 41 and 45 say the cloud-environment GitHub proxy's push protection lets `git push` work only against the session's current working branch. The cloud-environments page (S-gu5aqnrl, 'GitHub proxy', read 2026-10-21) says the proxy only rejects branch deletions and pushes of anything other than a branch (such as a tag), and states it does not limit which branches a push can update; it mentions no working-branch restriction. Unresolved: lines 41 and 45 contradict the page; line 45's conclusion about reaching `main` also rests on that claim. (topic: agents/headless-agent-runtimes)
+  - Resolved 2026-10-21: `agents/headless-agent-runtimes` now says, from the cloud-environments page (S-gu5aqnrl, read in the census of 2026-10-21), that the proxy rejects branch deletions and non-branch pushes and does not limit which branches a push can update, and its conclusion about reaching `main` rests on that. [DOC S-gu5aqnrl]
 
 ## privacy/gliner-models
 
