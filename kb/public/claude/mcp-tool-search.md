@@ -1,7 +1,7 @@
 ---
 topic: claude/mcp-tool-search
 priority: P3
-applies_to: "Claude Code and Agent SDK docs as read on 2026-10-20 (Agent SDK tool-search page dateModified 2026-10-14)"
+applies_to: "Claude Code and Agent SDK docs as read on 2026-10-20 (Agent SDK tool-search page dateModified 2026-10-14); MCP page re-read 2026-10-21"
 retrieved_utc: 2026-10-21
 sources: [S1862, S-sug3dznu, S-bisz7fay, S2159, S2132]
 status: complete
@@ -25,10 +25,10 @@ character limits. The docs publish no exact token figure for one tool definition
 - The search matches the query against tool names and descriptions, so a descriptive name such as `search_slack_messages` surfaces for more requests than `query_slack`. [DOC S-sug3dznu]
 - Server instructions tell Claude when to search for the server's tools, much as a skill description does; the docs advise stating the task category, when to search and the key capabilities. [DOC S1862]
 - Tool search is on by default and applies on Opus 4, Sonnet 4, Haiku 4.5 and later models (on Google Cloud's Agent Platform: Opus 4.5, Sonnet 4.5, Haiku 4.5 and later); on earlier models all MCP tools load upfront and `ENABLE_TOOL_SEARCH=true` does not change that. [DOC S1862]
-- Claude Code turns tool search off when `ANTHROPIC_BASE_URL` is a non-first-party host (most proxies do not forward `tool_reference` blocks); `ENABLE_TOOL_SEARCH=true` overrides that, and requests then fail on a proxy without `tool_reference` support. [DOC S1862]
+- When `ANTHROPIC_BASE_URL` points to a gateway, tool search is on by default (from v2.1.304; earlier it was off unless `ENABLE_TOOL_SEARCH` was `true`, `auto` or `auto:N`), so requests carry `defer_loading` fields and `tool_reference` blocks for the gateway to forward; `ENABLE_TOOL_SEARCH=false` loads every tool upfront, and from v2.1.305 Claude Code can retry without tool search after a `400` or `422` whose cause it does not recognize. [DOC S1862]
 - Microsoft Foundry deployments hosted on Azure reject tool search server-side; Claude Code detects the rejection and loads MCP tools upfront, and `ENABLE_TOOL_SEARCH` cannot override it. [DOC S1862]
 - `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` keeps tool search off, and `ENABLE_TOOL_SEARCH` cannot override it; from v2.1.227 managed settings can keep tool search on under that variable; a HIPAA-configured session has it off with no override. [DOC S1862]
-- `ENABLE_TOOL_SEARCH` values: unset (all MCP tools deferred), `true` (stay deferred behind a non-first-party base URL), `auto` (load the deferrable tools upfront while their definitions total under 10% of the context window, defer all of them from 10%), `auto:N` (the same with a threshold of N percent, 0-100), `false` (all loaded upfront). [DOC S1862]
+- `ENABLE_TOOL_SEARCH` values: unset (all MCP tools deferred), `true` (deferred, with the same fallbacks as unset), `auto` (threshold mode: the deferrable tools load upfront while their definitions total under 10% of the context window; from 10% tool search turns on, and the tools can stay deferred even if the total later falls under 10%), `auto:N` (the same with a threshold of N percent, 0-100), `false` (all loaded upfront). [DOC S1862]
 - Setting `permissions.deny` to `["ToolSearch"]` disables the `ToolSearch` tool itself. [DOC S1862]
 - The Claude Code context-window guide lists MCP tool names among what loads before the first prompt, next to CLAUDE.md, auto memory and skill descriptions; the page as read 2026-10-21 does not mention deferral or the `ENABLE_TOOL_SEARCH` values. [DOC S-bisz7fay]
 - In SDK `auto` mode the counted definitions are every MCP tool not marked `alwaysLoad`, from any server, plus built-in tools that load on demand; core built-ins such as Bash, Read and Edit load upfront and do not count. [DOC S-sug3dznu]
