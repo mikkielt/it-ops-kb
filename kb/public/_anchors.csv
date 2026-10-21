@@ -6593,6 +6593,7 @@ af9594beb983,claude/messages-api.md,S-bcbpadtc,located,API overview > Authentica
 b454896feb52,claude/messages-api.md,S-b4bqwu2v,located,Files API > How to use the Files API > Working with other file formats,container_upload;container;plain;execution;tool;code;block;messag,57768cffd77c03e3,"For file types that the document block doesn't support (for example, .docx and .xlsx), convert the files to plain text and include the content directly",2026-10-10
 bceaab67adf5,claude/messages-api.md,S-b4bqwu2v,located,Read the text file > File storage and limits > File lifecycle,never;untrust;warn;access;scop;accept;sourc;workspac,db8239f78fe11973,Files are scoped to the workspace they were uploaded in. Any request in the same workspace can reference them; never accept file IDs from untrusted,2026-10-10
 c1b3d6f79003,claude/messages-api.md,S-b4bqwu2v,located,Read the text file > Error handling,0-31;1-25;character;forbidden;unicod;filenam;organization;storag,7e6c849c21938845,"Invalid filename (400): The file name doesn't meet the length requirements (1-255 characters) or contains forbidden characters (<, >, :, "", |, ?, , \,",2026-10-10
+d76c6ce989b6,claude/messages-api.md,S-jrsntqfg,located,Count tokens in a Message > Headers,acting;anthropic-user-profile-id;attribut;behalf;organization;other;party;profil,2a7f245958f6cba4,"""anthropic-user-profile-id"": optional string The user profile ID to attribute this request to. Use when acting on behalf of a party other than your organization.",2026-10-21
 d912fcbc5c18,claude/messages-api.md,S-osulh6sh,unlocated:no-match,,,,,2026-10-12
 dd14068045d7,claude/messages-api.md,S-osulh6sh,located,Messages > Create a Message > Count tokens in a Message > Models,output_token;token;output,f8b9f1a9e36cd400,Always ≤ outputtokens;,2026-10-12
 ebffb7b166b4,claude/messages-api.md,S-3pftmimx,unlocated:no-match,,,,,2026-10-10
@@ -6605,7 +6606,6 @@ f314f46c5c7c,claude/messages-api.md,S-jrsntqfg,unlocated:no-match,,,,,2026-10-10
 f314f46c5c7c,claude/messages-api.md,S-osulh6sh,unlocated:no-match,,,,,2026-10-12
 f314f46c5c7c,claude/messages-api.md,S-qso6o6wu,unlocated:no-match,,,,,2026-10-10
 f314f46c5c7c,claude/messages-api.md,S-wbsmegvl,unlocated:no-match,,,,,2026-10-10
-f3a9f3eadf52,claude/messages-api.md,S-jrsntqfg,located,Count tokens in a Message > Headers,anthropic-workspace-id;beta;user-profil;header;profil;requir;anthropic;workspac,c8d8398bdfd066f4,"Requires the user-profiles beta header.  ""anthropic-workspace-id"": optional string",2026-10-10
 ff50112c5220,claude/messages-api.md,S-3pftmimx,located,Message Batches API > How the Message Batches API works > Batch limitations,creation;whichever;complet;days;first;hour;within;expir,f78ddd7ac7ce5066,"You can access batch results when all messages have completed or after 24 hours, whichever comes first. Batches expire if processing does not complete within",2026-10-10
 02501624eb9b,claude/models.csv,S2131,unlocated:no-match,,,,,2026-10-12
 02501624eb9b,claude/models.csv,S-eu3n3hyf,unlocated:no-match,,,,,2026-10-12

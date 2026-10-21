@@ -79,8 +79,9 @@ repeat prompt caching (`agents/agent-caching.md`) or the HTTP/tool-pairing error
 - `POST /v1/messages/count_tokens`: same `messages` (and optional `system`, `tools`) shape as `/v1/messages` but no
   `max_tokens`; counts tokens including tools, images and documents without creating a Message. Response:
   `{"input_tokens": <n>}` [DOC S-jrsntqfg].
-- Optional headers `anthropic-user-profile-id` (requires the `user-profiles` beta) and `anthropic-workspace-id`
-  are shared with the Messages endpoint [DOC S-jrsntqfg].
+- Optional headers `anthropic-user-profile-id` (the user profile to attribute the request to, for acting on behalf
+  of a party other than your organization; the page no longer states a beta requirement) and
+  `anthropic-workspace-id` are shared with the Messages endpoint [DOC S-jrsntqfg].
 
 ### Message Batches API
 - A batch is limited to 100,000 requests or 256 MB, whichever is reached first; each batched request needs
