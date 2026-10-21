@@ -37,8 +37,8 @@ capability/safety-eval ground for an agent that happens to be hosted in Azure AI
   test harness, but its principles (clear namespacing, meaningful context in responses, token-efficient
   output, pagination/filtering/truncation with sensible defaults) are the properties a stress-test should
   check for. [DOC S1935]
-- **promptfoo**'s MCP provider calls MCP tools directly against a `command`/`args` (stdio) or `path`
-  target, and asserts on the tool's response (contains, valid-JSON, which tool was routed to); it does not
+- **promptfoo**'s MCP provider calls MCP tools directly against a `command`/`args` (stdio), `path`
+  (a `.js`/`.py` stdio script) or remote `url` target, and asserts on the tool's response (contains, valid-JSON, which tool was routed to); it does not
   compute a benchmark-style pass rate on its own — assertions are configured per test case. [DOC S1883]
   Promptfoo itself is MIT-licensed. [DOC S1885]
 - promptfoo's red-team mode adds MCP-specific plugins (an "mcp" plugin for protocol vulnerabilities),

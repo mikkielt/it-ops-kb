@@ -292,8 +292,6 @@ fda0783897cc,agents/agent-error-catalogue.md,S1843,located,"Your Copilot Studio 
 1a9dd10c8e50,agents/agent-evaluation.md,S1887,unlocated:no-match,,,,,2026-10-10
 1a9dd10c8e50,agents/agent-evaluation.md,S-wwrpen3s,unlocated:no-match,,,,,2026-10-10
 1ed9ef15f397,agents/agent-evaluation.md,S-lkcsn2fs,located,Test plugins with evals > Run evals > Command options,every-chang;predictabl;quick;chart;paid;skippedpaidgrader;trend;skip,89f273893447ec8d,"To keep costs predictable, give quick every-change suites only graders that don't call a judge, use --ablation none where you don't need Δ, and leave",2026-10-12
-1fef5bb0435a,agents/agent-evaluation.md,S1883,unlocated:no-match,,,,,2026-10-10
-1fef5bb0435a,agents/agent-evaluation.md,S1885,unlocated:no-match,,,,,2026-10-10
 2106912d3358,agents/agent-evaluation.md,S1896,located,Demystifying evals for AI agents > Why build evaluations?,cost;error;latency;usag;rate;token;task,5ad333442a548d26,"Once evals exist, you get baselines and regression tests for free: latency, token usage, cost per task, and error rates can be tracked on a",2026-10-10
 24839f457d82,agents/agent-evaluation.md,S-lkcsn2fs,located,Test plugins with evals > Create your first eval suite > Write a case manually,comput;file_exist;tool_order;order;transcript;exist;noth;tool_us,bd40602e2dce6b2e,"Of the six types, regex, toolused, toolorder, and fileexists are computed from the transcript and files and cost nothing, while llm and baseline call a",2026-10-12
 2763261cc018,agents/agent-evaluation.md,S-bdecdv65,located,Test and Evaluate AI Workloads on Azure - Microsoft Azure Well-Architected Framework | Microsoft Learn > Guidance for testing model training and fine-tuning > Data to evaluate and test,build;thre;tune;distinct;final;sourc;dataset;train,993376d1632e4866,"Partition source data into three distinct datasets: training, evaluation, and testing. Use the training dataset to build the model, the evaluation dataset to tune it,",2026-10-10
@@ -352,6 +350,8 @@ c16293a821ef,agents/agent-evaluation.md,S-6jcocxnl,unlocated:no-match,,,,,2026-1
 c8374ca0116b,agents/agent-evaluation.md,S-m2glighe,unlocated:no-match,,,,,2026-10-10
 c84616315950,agents/agent-evaluation.md,S-zfg6jhgr,unlocated:no-match,,,,,2026-10-10
 ccc477c302d3,agents/agent-evaluation.md,S1896,unlocated:no-match,,,,,2026-10-10
+cd95102270c5,agents/agent-evaluation.md,S1883,unlocated:no-match,,,,,2026-10-21
+cd95102270c5,agents/agent-evaluation.md,S1885,unlocated:no-match,,,,,2026-10-21
 df7368dbd7a0,agents/agent-evaluation.md,S1888,unlocated:no-match,,,,,2026-10-10
 e1bd1130363a,agents/agent-evaluation.md,S1896,unlocated:no-match,,,,,2026-10-10
 e619a41d189d,agents/agent-evaluation.md,S-6jcocxnl,unlocated:no-match,,,,,2026-10-21
@@ -2803,9 +2803,9 @@ fa93ccc1e1ef,agents/mcp-server-lifecycle.md,S2135,unlocated:no-match,,,,,2026-10
 02c4e59226e4,agents/mcp-stress-testing.md,S1904,unlocated:no-match,,,,,2026-10-10
 02c4e59226e4,agents/mcp-stress-testing.md,S1905,unlocated:no-match,,,,,2026-10-10
 04f007a1f314,agents/mcp-stress-testing.md,S1884,unlocated:no-match,,,,,2026-10-10
-43d374efa890,agents/mcp-stress-testing.md,S1883,unlocated:no-match,,,,,2026-10-10
 6d2eb6883961,agents/mcp-stress-testing.md,S1890,unlocated:no-match,,,,,2026-10-10
 6d2eb6883961,agents/mcp-stress-testing.md,S1891,located,LICENSE > File metadata and controls,nvidia;2.0;apach;file;licens,7ce61a5b6c05a99b,"Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES Licensed under the Apache License, Version 2.0 (the ""License""); you may not use this file except in compliance",2026-10-10
+761621c62dc4,agents/mcp-stress-testing.md,S1883,unlocated:no-match,,,,,2026-10-21
 82abbe023aa9,agents/mcp-stress-testing.md,S1903,located,MCP Server Security Scanning: OWASP MCP Top 10 coverage #1639 > Why this is relevant to garak > Links,prob;garak;scan;top;owasp;mcp,2fbc13ba29b45052,OWASP MCP Top 10: https://owasp.org/www-project-mcp-top-10/ MCPS IETF Draft: https://datatracker.ietf.org/doc/draft-sharif-mcps-secure-mcp/ Happy to discuss how MCP-specific scanning could complement garak's existing probe system.,2026-10-21
 943c7075ce91,agents/mcp-stress-testing.md,S1884,unlocated:no-match,,,,,2026-10-10
 943c7075ce91,agents/mcp-stress-testing.md,S1892,unlocated:no-match,,,,,2026-10-10
