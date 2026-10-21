@@ -2,7 +2,7 @@
 topic: privacy/gdpr-pseudonymisation
 priority: P0
 applies_to: "Regulation (EU) 2016/679; EDPB Guidelines 01/2025; CJEU C-413/23 P"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S870, S871, S872, S873, S874, S875, S-2s2xlwgf, S-eickk3hp]
 status: complete
 ---
@@ -21,8 +21,8 @@ status: complete
 - EDPB Guidelines 01/2025 on Pseudonymisation: "Adopted on 16 January 2025", with every page marked "Adopted - version for public consultation". [DOC S873]
 - The EDPB news (2025-01-17) says the guidelines hold that pseudonymised data that could be attributed with additional information remains personal data. It gives a consultation deadline of 2025-02-28. [DOC S873]
 - The EDPB consultation page shows the feedback period as "17 January - 14 March 2025", now closed. [DOC S872]
-- The EDPB anonymisation/pseudonymisation topic page (news up to 2026-07-08) mentions a 2025 stakeholder event and anonymisation work, but no final pseudonymisation guidelines. [DOC S874]
-- No final (post-consultation) version of Guidelines 01/2025 has been published: re-read 2026-09-27, the consultation page still offers only the January 2025 guidelines and summary PDFs, the EDPB consultations list shows them under closed consultations, and the topic page's newest items (to 2026-07-08) name no final version. [DER S872, S874, S-eickk3hp: absence across the three pages]
+- The EDPB anonymisation/pseudonymisation topic page (re-read 2026-10-21) lists Guidelines 02/2026 on Anonymisation (2026-07-08), the 2025 annual report and the 2024 AI-models opinion; its newest news items run to 2026-10-09 (an Italian DPA fine) and name no final pseudonymisation guidelines. [DOC S874]
+- No final (post-consultation) version of Guidelines 01/2025 has been published: re-read 2026-10-21, the consultation page still offers only the January 2025 guidelines and summary PDFs and is marked closed for feedback, and the topic page's newest items (to 2026-10-09) name no final version. [DER S872, S874, S-eickk3hp: absence across the three pages]
 - On 2026-07-08 the EDPB adopted **guidelines on anonymisation**, taking into account C-413/23 P, for public consultation until 2026-10-30. Whether data is anonymous may vary from one entity to another; the framework tests three criteria (no record isolation, no linkage, no inference), applied either contextually (differences in capability between entities) or in a simplified way that ignores those differences. [DOC S-eickk3hp]
 - C-413/23 P, judgment 2025-09-04: the Court of Justice set aside General Court judgment T-557/20 and referred the case back. [DOC S875]
 - In our own words: personal opinions in comments "relate" to their authors, with no need to examine content or effects. The General Court was right that pseudonymised data is not personal data in all cases and for every person, because pseudonymisation may stop people other than the controller from identifying the person. For the controller's duty to inform, identifiability is judged when the data is collected, from the controller's point of view, before any transfer. [DOC S875]
