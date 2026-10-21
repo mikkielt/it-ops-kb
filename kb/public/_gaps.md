@@ -1932,3 +1932,8 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## windows/gitlab-runner-windows
 
 - Whether issue 30963 (gMSA docs update) is still open: the work-items page is client-side rendered and the state is absent from the static HTML fetched with curl on 2026-10-21; a browser or API read is needed. (topic: windows/gitlab-runner-windows)
+
+## security/privacy-compliance
+
+- Commission AI system definition guidelines (C(2025) 5053): the PDF at ec.europa.eu/newsroom/dae/redirection/document/112455 is live but its text could not be extracted in the census run, so the Recital 12 exclusion and the IT-assistant reading remain unverified against the current text (topic: security/privacy-compliance)
+- Commission press release ip_26_1024 is a JavaScript page; its body could not be read, so the omnibus dates, SME and small mid-cap extension and AI Office powers at line 90 are unverified beyond the title and description (topic: security/privacy-compliance)
