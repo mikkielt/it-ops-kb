@@ -44,7 +44,7 @@ kind, a worktree only where one was made.
 ### What each one shares or isolates
 - Each subagent starts with a fresh, isolated context window that does not see the conversation history, the skills already invoked or the files already read; a fork is the exception, inheriting the whole conversation. [DOC S2157]
 - An agent teammate has its own context window and loads the same project context as a regular session (CLAUDE.md, MCP servers, skills) plus the lead's spawn prompt, but not the lead's conversation history. [DOC S-qdxfqzln]
-- Teammates share a task list (for agents with the Task tools) and message each other by name; the task list directory persists locally, is never uploaded, and the team config directory is removed when the session ends. [DOC S-qdxfqzln]
+- Teammates share a task list (for agents with the Task tools) and message each other by name; the task list directory stays on disk after the session ends (retention follows `cleanupPeriodDays`), and the team config directory is removed when the session ends. [DOC S-qdxfqzln]
 - Agent-team limits: one team per session (a team cannot be shared across sessions), no nested teams, a fixed lead, and no restoring of in-process teammates by `/resume` or `/rewind`. [DOC S-qdxfqzln]
 - A worktree gives a session its own files and branch but shares the repository's `.git` directory, project-scope plugins, and permission approvals (a "don't ask again" rule from a worktree session is saved to the main checkout's `.claude/settings.local.json`, since v2.1.211). [DOC S-j22fjuka]
 - A worktree session also reads the main checkout's untracked project skills, agents and commands when its own checkout has no such directory (skills need v2.1.277+). [DOC S-j22fjuka]

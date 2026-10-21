@@ -176,7 +176,7 @@ shared task list and direct inter-agent messaging on top of ordinary subagent de
   each other), and the main agent manages all work. [DOC S-qdxfqzln]
 - Team storage is session-derived, named `session-<first 8 chars of session id>`: team config at
   `~/.claude/teams/{team-name}/config.json` (removed when the session ends) and task list at
-  `~/.claude/tasks/{team-name}/` (persists locally, never uploaded, survives resume; retention follows
+  `~/.claude/tasks/{team-name}/` (stays on disk after the session ends; retention follows
   `cleanupPeriodDays`). Each agent's mailbox is `~/.claude/teams/{team-name}/inboxes/{agent-name}.json`. [DOC
   S-qdxfqzln]
 - A subagent definition (project/user/managed scope) can be reused as a teammate role: Claude Code applies its
