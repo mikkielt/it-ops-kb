@@ -921,6 +921,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 - `New-M365DSCDeltaReport`/`Test-M365DSCAgent` parameter-level syntax (dedicated cmdlet page 404s) and the individual `Intune*`-prefixed resource names were not confirmed on a working page this pass (1 lookup: Microsoft Learn/GitHub search for "Microsoft365DSC New-M365DSCDeltaReport cmdlet reference"). (topic: graph/microsoft365dsc)
   - Resolved 2026-09-28: both read from source at tag 1.26.909.1 (S-dlzkqwix, S-fbhq2yc2); `Test-M365DSCAgent` turns out to check the agent machine, not drift, and the article is corrected. The 166 `MSFT_Intune*` resources are counted from the release tree (S-qkxsdf32). The docs site still has no cmdlet pages. (topic: graph/microsoft365dsc)
+- Could not re-diff the pinned files M365DSCAgent.psm1 (294f4fdc..ec5bf30e), M365DSCResourceBase.psm1 (e44228cb..7c2e9790) and the DscResources tree (294f4fdc..ec5bf30e) because git commands were denied in dontAsk mode; the Test-M365DSCAgent facts (line 89), the _Base facts (lines 93-96) and the 168 Intune resource count (line 97) were not rechecked against the latest tree. (topic: graph/microsoft365dsc)
 
 ## intune/app-protection-mam
 

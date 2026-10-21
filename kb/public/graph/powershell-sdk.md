@@ -2,7 +2,7 @@
 topic: graph/powershell-sdk
 priority: P1
 applies_to: "Microsoft Graph PowerShell SDK (Microsoft.Graph / Microsoft.Graph.Beta modules)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-10-21
 sources: [S-5q4kuvo5, S-d7byvsls, S-qqaa5jqp, S-h7l5c7uo, S-v5rdr5la, S-6jt4shfp, S-ldeuc3e7, S-deabo43u]
 status: complete
 ---
@@ -25,15 +25,17 @@ status: complete
 ### Connect-MgGraph
 - `Connect-MgGraph` must be invoked before any cmdlet that accesses Microsoft Graph; it acquires the access token via the Microsoft Authentication Library (MSAL). [DOC S-d7byvsls]
 - Delegated sign-in: `Connect-MgGraph -Scopes "User.Read.All","Group.ReadWrite.All"`; the user signs in once per PowerShell session (until the window closes or `Disconnect-MgGraph` runs); repeat the command with new scopes to add permissions. [DOC S-5q4kuvo5]
-- `UserParameterSet` (default) accepts `-Scopes`, `-TenantId`, `-ClientId`, `-ContextScope`, `-Environment`, `-UseDeviceCode`, `-ClientTimeout`, `-NoWelcome`, `-Break`. [DOC S-d7byvsls]
+- `UserParameterSet` (default) accepts `-Scopes`, `-TenantId`, `-ClientId`, `-ContextScope`, `-Environment`, `-UseDeviceCode`, `-LoginHint` (pre-populates the account in the interactive prompt), `-ClientTimeout`, `-NoWelcome`, `-Break`. [DOC S-d7byvsls]
 - `AppCertificateParameterSet` (app-only, certificate): `-ClientId` (required), plus `-CertificateSubjectName` (aliases `CertificateSubject`, `CertificateName`), `-CertificateThumbprint`, `-Certificate <X509Certificate2>`, `-SendCertificateChain <bool>`, `-TenantId`. [DOC S-d7byvsls]
 - `IdentityParameterSet` (managed identity): `-Identity` switch, plus `-ClientId` (to target a user-assigned identity), `-ContextScope`, `-Environment`, `-ClientTimeout`, `-NoWelcome`, `-Break`. [DOC S-d7byvsls]
-- `-Environment` selects the cloud (default: global public cloud); `Get-MgEnvironment` lists built-in environments including `China`, `USGov`, `USGovDoD`, each with its own `AzureADEndpoint`/`GraphEndpoint`. [DOC S-d7byvsls]
+- `-Environment` selects the cloud (default: global public cloud); `Get-MgEnvironment` lists built-in environments including `Global`, `China`, `USGov`, `USGovDoD` and the sovereign clouds `BleuCloud`, `DelosCloud`, `GovSGCloud`, each with its own `AzureADEndpoint`/`GraphEndpoint`. [DOC S-d7byvsls]
+- The sovereign clouds (`BleuCloud`, `DelosCloud`, `GovSGCloud`) need your own app registration (the default Microsoft Graph PowerShell app does not work there), with the extra redirect URI `ms-appx-web://Microsoft.AAD.BrokerPlugin/<app client id>` for WAM sign-in; this needs Microsoft.Graph.Authentication 2.36.1 or later. If the sign-in popup hangs (for example on a jumpbox), `Set-MgGraphOption -DisableLoginByWAM $true` (persists across sessions) switches to interactive browser sign-in. [DOC S-d7byvsls]
+- `-ContextScope Process` keeps the connection to the current process so a different identity can be used than the `CurrentUser` default. [DOC S-d7byvsls]
 - `Disconnect-MgGraph` ends the session and revokes the token for that PowerShell session. [DOC S-5q4kuvo5]
 
 ### Invoke-MgGraphRequest
 - `Invoke-MgGraphRequest` issues a REST request to any Graph API endpoint given a URI, method and optional body; it is the way to call an API for which no dedicated cmdlet yet exists. [DOC S-qqaa5jqp]
-- Parameters include `-Method`, `-Uri` (required), `-Body`, `-Headers`, `-OutputFilePath`/`-InputFilePath`, `-ContentType`, `-SessionVariable`, `-ResponseHeadersVariable`, `-StatusCodeVariable`, `-OutputType`, `-InferOutputFileName`, `-PassThru`, `-SkipHeaderValidation`, `-SkipHttpErrorCheck`. [DOC S-qqaa5jqp]
+- Parameters include `-Method`, `-Uri` (required), `-Body`, `-Headers`, `-OutputFilePath`/`-InputFilePath`, `-ContentType`, `-SessionVariable`, `-ResponseHeadersVariable`, `-StatusCodeVariable`, `-GraphRequestSession`, `-UserAgent`, `-OutputType`, `-InferOutputFileName`, `-PassThru`, `-SkipHeaderValidation`, `-SkipHttpErrorCheck`. [DOC S-qqaa5jqp]
 - Example usage for an operation with no cmdlet coverage: `Confirm-MgDomain` does not expose `forceTakeover`, so the Entra admin-takeover guide calls `Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/v1.0/domains/<domain>/verify" -Body $body -ContentType "application/json"` with `forceTakeover = $true` in the body. [DOC S-ldeuc3e7]
 
 ### Discovery: Find-MgGraphCommand / Find-MgGraphPermission
