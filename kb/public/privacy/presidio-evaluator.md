@@ -14,7 +14,7 @@ status: complete
 
 ## Facts
 - The Presidio docs point to Presidio-Research for evaluating the analyzer (precision, recall, F-beta; β=2 is recommended when recall matters), with notebooks for data generation and evaluation. [DOC S837]
-- GitHub repo `data-privacy-stack/presidio-research`: licence MIT, `archived: false`, default branch `main`, last push 2026-09-23. [DOC S838]
+- GitHub repo `data-privacy-stack/presidio-research`: licence MIT, `archived: false`, default branch `main`, last push 2026-10-19. [DOC S838]
 - PyPI `presidio-evaluator`: latest 0.3.2, licence MIT, `requires_python <3.14,>=3.11`. [DOC S839]
 - GitHub releases: 0.3.2 (2026-08-04), 0.3.1 (2026-07-28), 0.3 (2026-07-21). [DOC S840]
 - Python 3.13 is inside the declared range. [DER S839: 3.11 <= 3.13 < 3.14]

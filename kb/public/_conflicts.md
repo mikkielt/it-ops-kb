@@ -850,3 +850,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## agents/headless-agent-runtimes
 
 - kb/public/agents/headless-agent-runtimes.md lines 41 and 45 say the cloud-environment GitHub proxy's push protection lets `git push` work only against the session's current working branch. The cloud-environments page (S-gu5aqnrl, 'GitHub proxy', read 2026-10-21) says the proxy only rejects branch deletions and pushes of anything other than a branch (such as a tag), and states it does not limit which branches a push can update; it mentions no working-branch restriction. Unresolved: lines 41 and 45 contradict the page; line 45's conclusion about reaching `main` also rests on that claim. (topic: agents/headless-agent-runtimes)
+
+## privacy/gliner-models
+
+- gliner-models.csv row urchade/gliner_multi_pii-v1 says base_model 'not stated in card', but the card (S856) says it was fine-tuned from urchade/gliner_multi-v2.1. The csv cell is not in a cited fact; left unedited pending a decision on whether to fill it in. (topic: privacy/gliner-models)

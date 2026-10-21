@@ -13598,8 +13598,8 @@ dd6194d4d450,privacy/nist-sp800-38g.md,S869,unlocated:gone,,,,,2026-10-10
 788b981f4d28,privacy/presidio-entities.md,S817,located,Generic recognizers,address;mac;macaddressrecognizer;recognizer,56c8ab0c2c9f66ba,from .generic.macrecognizer import MacAddressRecognizer,2026-10-10
 b8ea00d27cba,privacy/presidio-entities.md,S809,located,,flag;global;global_regex_flag;regex;supported_languag;support;country;languag,a86281b014e5e82e,"globalregexflags: 26 To restrict the loaded predefined recognizers to a subset of countries (mirrors supportedlanguages), uncomment supportedcountries and",2026-10-10
 5ecb5399ed79,privacy/presidio-evaluator.md,S837,located,Evaluating PII detection with Presidio > How to evaluate PII detection with Presidio,generation;analyzer;data;presidio-research;research;evaluation;evaluat;presidio,4c46fcd17da4f0e7,"In addition, it provides simple data generation tools to help you create a dataset for evaluation. Evaluating the Presidio Analyzer using Presidio-Research",2026-10-10
+65e0aa2e07ea,privacy/presidio-evaluator.md,S838,unlocated:no-match,,,,,2026-10-21
 7f23addfd544,privacy/presidio-evaluator.md,S839,unlocated:no-match,,,,,2026-10-10
-ae5e007cc6a2,privacy/presidio-evaluator.md,S838,unlocated:no-match,,,,,2026-10-10
 d5548c503e37,privacy/presidio-evaluator.md,S840,located,,0.3;0.3.1;github,457fedc0fdace506,"""body"": ""## What's Changed\r\n chore(notebooks): trim oversized outputs in notebooks 4 and 5 by @omri374 in https://github.com/data-privacy-stack/presidio-research/pull/177\r\n Bump the uv group across 1 directory with",2026-10-10
 f8d989cda15f,privacy/presidio-evaluator.md,S839,located,,0.3.2;3.1;3.14;requires_python;requir;python;presidio,f4f33829345c9610,"""requirespython"": ""<3.14,>=3.11"", ""summary"": ""A framework for evaluating Presidio's Named Entity Recognition performance"", ""version"": ""0.3.2"",",2026-10-10
 0bc4a1bb5e1b,privacy/presidio-operators-deanonymize.md,S800,unlocated:no-match,,,,,2026-10-10
