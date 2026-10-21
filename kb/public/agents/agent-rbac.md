@@ -85,7 +85,7 @@ group claims/overage, PIM-for-Groups sync latency).
   more access-management, security and governance capabilities and for agents from Security Copilot,
   Microsoft 365 Copilot and third-party solutions. [DOC S2051]
 - Agent ID is now available to all Microsoft Entra customers; extending Entra security features to agents needs a Microsoft Agent 365 licence per user, included in Microsoft 365 E7 and sold as an add-on to E5/A5/Business Premium. [DOC S-ooc6gvno]
-- The "What is Agent ID" page still says Agent ID and Agent 365 are available through the Frontier program, which needs a Microsoft 365 Copilot licence with Frontier enabled; the licensing page is the newer statement. [DOC S-4zkj3ag3]
+- The "What is Agent ID" page now agrees with the licensing page: Agent ID is available to all Microsoft Entra customers, while extending Entra security features to agents requires Microsoft Agent 365 (included in Microsoft 365 E7, an add-on to E5/A5/Business Premium); it no longer mentions the Frontier program. [DOC S-4zkj3ag3]
 - Agent identities can't be members of role-assignable groups, can't hold highly privileged directory roles (Global Administrator, Privileged Role Administrator, User Administrator) or custom roles, and only lower-privileged roles such as readers can be assigned to them. [DOC S-fwzaxe7i, S-pmj4jc4f]
 - So an agent identity can't be a PIM-eligible member of a role-assignable group either: the membership itself is blocked, eligible or active. [DER S-fwzaxe7i, S2052: role-assignable membership is blocked for agents; PIM for Groups only manages memberships]
 
