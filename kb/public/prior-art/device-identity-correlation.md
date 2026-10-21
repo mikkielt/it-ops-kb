@@ -2,7 +2,7 @@
 topic: prior-art/device-identity-correlation
 priority: P2
 applies_to: "one device record across AD/Entra/Intune/Autopilot/ConfigMgr/Defender"
-retrieved_utc: 2026-09-28
+retrieved_utc: 2026-10-21
 sources: [S1011, S1012, S1013, S1014, S-awv4qk3v, S-53yzqgkc, S-y47upe33]
 status: complete
 ---

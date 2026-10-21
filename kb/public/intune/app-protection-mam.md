@@ -2,7 +2,7 @@
 topic: intune/app-protection-mam
 priority: P2
 applies_to: "Microsoft Intune app protection policies (APP/MAM) for iOS/iPadOS, Android and Windows; Microsoft Graph v1.0 managedAppPolicies (docs retrieved 2026-09-26)"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-ngcvmu22, S-msbbtbup, S-qing6dzr, S-qjixnw4g, S-t4g3ekea, S-5cbvuypc, S-jgesqj52, S-eaeb5jdz, S-lu7ablj2, S-36mghzxu, S-27fiskhq, S-5fxhm5mr, S-qj62oq2o, S-xsnx4hlp, S-b3l5wbk6, S-p3vtkyrq, S-ssexz2ef, S-ehjdk3sn, S-gqqrls57, S-2jxyk3ra, S-j6tphfq3, S-x44btgzh, S-rvpreeft, S-d4yd34s7, S-hkj4rbxk]
 status: complete
 ---

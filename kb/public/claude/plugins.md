@@ -2,7 +2,7 @@
 topic: claude/plugins
 priority: P2
 applies_to: "Claude Code 2.1.281 docs (retrieved 2026-10-12; marketplace git credentials and failures read 2026-10-19)"
-retrieved_utc: 2026-10-12
+retrieved_utc: 2026-10-21
 sources: [S-n5myb3fn, S-3peuisvr, S-3xyywfcr, S-4m2kbuls, S-havfntgx, S-toe7z3kj, S-rp4dtt4w, S-gxuoqjzy, S-r3nam2zs, S-pelzabjq, S-i7if5i7z, S-lkcsn2fs, S-cgtbvuug, S-3yod3u7q, S2158, S-j22fjuka, S-wa4ujzvn, S-hvuk3dqt]
 status: complete
 files: [claude/plugins.csv]

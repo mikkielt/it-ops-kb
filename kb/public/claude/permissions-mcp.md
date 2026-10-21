@@ -2,7 +2,7 @@
 topic: claude/permissions-mcp
 priority: P1
 applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23)"
-retrieved_utc: 2026-09-28
+retrieved_utc: 2026-10-21
 sources: [S742, S740, S743, S746, S-vrff4evh]
 status: complete
 ---

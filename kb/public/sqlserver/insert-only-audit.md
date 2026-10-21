@@ -2,7 +2,7 @@
 topic: sqlserver/insert-only-audit
 priority: P0
 applies_to: "SQL Server 2016+ / Azure SQL (permission model)"
-retrieved_utc: 2026-09-28
+retrieved_utc: 2026-10-21
 sources: [S468, S469, S470, S-deeqomz3, S-qkecle6c, S-yjcvd3to, S-y7vdaohs]
 status: complete
 ---

@@ -2,7 +2,7 @@
 topic: windows/openssh-estate-deployment
 priority: P3
 applies_to: "Windows 10 1809+/Windows 11, Windows Server 2019/2022/2025 (in-box OpenSSH Feature on Demand), Group Policy, WSUS and Intune"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-tvueruxa, S-gceir6ge, S-yk5jqwiu, S-45qw32rr, S-worv22b3, S-ju4lek45, S-nl6j4vzt, S-cuqswt4k, S430, S-p4fis3e4]
 status: partial
 ---

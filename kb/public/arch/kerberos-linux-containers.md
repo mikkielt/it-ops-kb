@@ -2,7 +2,7 @@
 topic: arch/kerberos-linux-containers
 priority: P1
 applies_to: "MIT Kerberos, SQL Server on Linux, msodbcsql18, Python gssapi/requests-gssapi (docs current 2026-09-24)"
-retrieved_utc: 2026-09-28
+retrieved_utc: 2026-10-21
 sources: [S1604, S1605, S1606, S1607, S1608, S-n4ns4gdd]
 status: complete
 ---

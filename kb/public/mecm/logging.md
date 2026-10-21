@@ -2,7 +2,7 @@
 topic: mecm/logging
 priority: P0
 applies_to: "ConfigMgr current branch 2603 (memdocs 4b5429df)"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-jtvk6o4y, S-hvtmunqo, S-m6tydsnh, S234, S-hmjlvsck, S-3ed5gfct]
 status: complete
 ---

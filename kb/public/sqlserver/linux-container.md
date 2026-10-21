@@ -2,7 +2,7 @@
 topic: sqlserver/linux-container
 priority: P0
 applies_to: "mcr.microsoft.com/mssql/server (tag list retrieved 2026-09-24)"
-retrieved_utc: 2026-09-28
+retrieved_utc: 2026-10-21
 sources: [S460, S466, S473, S475, S476, S477, S478, S-m5cz4kbp]
 status: complete
 files: [sqlserver/mssql-server-tags.json]

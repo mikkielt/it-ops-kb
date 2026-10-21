@@ -2,7 +2,7 @@
 topic: intune/endpoint-privilege-management
 priority: P1
 applies_to: "Microsoft Intune Endpoint Privilege Management (EPM), Windows client only; Intune Suite or standalone EPM add-on (docs current 2026-09-26)"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-eba3mlij, S-r5sb2fwp, S-apvm4dlk, S-3wkz47cw, S-6bhjc6zo, S-a5yicrda, S-qehphrta, S-2ht6rnrq, S-jjclu3pw, S-pfomdecu, S-7ljvlp5e, S-kv5b4jlr, S-7giv7rol, S-6epv7qzl, S-hepxqkky]
 status: complete
 ---

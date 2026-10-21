@@ -2,7 +2,7 @@
 topic: logs/otel-python-sdk
 priority: P3
 applies_to: "OpenTelemetry Python: opentelemetry-sdk and OTLP/HTTP exporters 1.45.1, prometheus and OTLP JSON exporters 0.66b1 (tag v1.45.1, commit 14971cef9c84, read 2026-10-18; the logs names also read at tags v1.37.0, v1.38.0 and v1.39.0 on 2026-10-20); OTLP specification (opentelemetry-proto commit b3f75588eb23)"
-retrieved_utc: 2026-10-20
+retrieved_utc: 2026-10-21
 sources: [S-4cxou2yj, S-bpum5cvg, S-ozms3wkb, S-wz5eea44, S-omxbv3ul, S-ozi35eb7, S-3lbw2wrz, S-rto5it2w, S-4kd2fl7f, S-6avl2ftj, S-mi6kw3ft, S-3ocg3rma, S-gn4cbgug, S-d46zfljm, S-yt3dat5p, S-xemeq5o7, S-5chmnjba, S-lsg4pugj, S-qpknqjro, S-kzsjk7w6, S-adxo34qo, S-ai2idcjy, S-x74lzie5, S-tx2jwcse, S-ybidjd44, S-qtwfnvws, S-xzukzvfm, S-rcmsm2rb, S-56w77twg, S-v2wnj4qk, S-3ylk7y4h, S-l56uc2eg, S744, S-yzqhseki, S-52mua5pm, S-s7takfin, S-tnh7ueae, S-gblekxya, S-vxzgzrne, S-xburgjcs]
 status: partial
 ---

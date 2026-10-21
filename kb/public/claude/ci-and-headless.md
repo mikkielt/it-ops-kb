@@ -2,7 +2,7 @@
 topic: claude/ci-and-headless
 priority: P2
 applies_to: "Claude Code v2.1.x (code.claude.com docs, retrieved 2026-09-26)"
-retrieved_utc: 2026-10-20
+retrieved_utc: 2026-10-21
 sources: [S1800, S1801, S1802, S-32ilsmsf, S-l6l42j6e, S-pilcrlei, S1824, S-isqfh6pr, S-fmj24q2u, S-fksbud2r, S-ezqg74ki, S-eu3n3hyf, S2131, S-ehhvgjky, S2130, S1864, S2157, S-e5rrs4ee, S-fzkqxhmg, S-wf2dmtu6, S-frvnva4f, S743, S745, S-rkp4qc7b, S744, S-hvuk3dqt, S-gu5aqnrl, S-6qjf3y2l, S-n4ujkcj7]
 status: partial
 ---

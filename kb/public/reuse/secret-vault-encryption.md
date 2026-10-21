@@ -2,7 +2,7 @@
 topic: reuse/secret-vault-encryption
 priority: P2
 applies_to: "a per-conversation, short-TTL, encrypted-at-rest, audited-reveal secret vault, and long-lived site secrets committed to a repository"
-retrieved_utc: 2026-09-28
+retrieved_utc: 2026-10-21
 sources: [S1000, S1001, S1002, S1003, S1004, S-b43o3ma3, S-6onf7joh, S-3eg2zeqb, S-wqbnua3h, S-6osxhfhb, S-f4s2xnfz, S-ls53sliy]
 status: complete
 ---

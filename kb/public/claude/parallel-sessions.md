@@ -2,7 +2,7 @@
 topic: claude/parallel-sessions
 priority: P3
 applies_to: "Claude Code docs: run agents in parallel, agent view (research preview), worktrees, dynamic workflows, agent teams (experimental), subagents; retrieved 2026-10-16"
-retrieved_utc: 2026-10-17
+retrieved_utc: 2026-10-21
 sources: [S-76oyiuez, S-qulnsg4e, S-aishnkok, S-j22fjuka, S-qdxfqzln, S-wzatkg4o, S-hvuk3dqt, S2157, S-sdxhnx3i, S-2ip5zngf, S-eumxht6x]
 status: partial
 ---

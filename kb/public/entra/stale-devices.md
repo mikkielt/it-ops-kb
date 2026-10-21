@@ -2,7 +2,7 @@
 topic: entra/stale-devices
 priority: P1
 applies_to: "Microsoft Entra ID (doc ms.date 06/27/2025)"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S545, S547, S-vdp4zb6i]
 status: complete
 ---

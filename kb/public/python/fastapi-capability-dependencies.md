@@ -2,7 +2,7 @@
 topic: python/fastapi-capability-dependencies
 priority: P3
 applies_to: "FastAPI 0.143.0 docs and Uvicorn 0.54.0 docs (release tags)"
-retrieved_utc: 2026-10-19
+retrieved_utc: 2026-10-21
 sources: [S-ayprwh67, S-ejipyz2z, S-taoszxoo, S-a67xbp56, S-fwvusq4t, S-7ows5rub, S-uhdkuqjs, S-fwsrgnx2, S-dnaai5ya, S-b6za35dg, S-xvyw57kk, S-neu52zjd]
 status: partial
 ---

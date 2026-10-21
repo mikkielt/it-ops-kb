@@ -2,7 +2,7 @@
 topic: logs/otel-log-semconv
 priority: P1
 applies_to: "OpenTelemetry semantic conventions main @838e414 (CHANGELOG top v1.44.0)"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S640, S641, S643, S646, S-wklg4cch]
 status: complete
 files: [logs/otel-semconv-log-registry.yaml, logs/otel-semconv-code-registry.yaml]

@@ -2,7 +2,7 @@
 topic: security/linux-nftables
 priority: P3
 applies_to: "nftables ruleset files, sets and atomic load with nft -f on Linux hosts"
-retrieved_utc: 2026-10-14
+retrieved_utc: 2026-10-21
 sources: [S-nvc4ejpk, S-oz7g4upk, S-h3233m5r, S-ycjp6jnv, S-t7vpftda]
 status: partial
 ---

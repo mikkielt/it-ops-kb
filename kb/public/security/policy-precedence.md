@@ -2,7 +2,7 @@
 topic: security/policy-precedence
 priority: P0
 applies_to: "Windows 11 Enterprise 24H2/25H2, AD DS Group Policy, Intune MDM, ConfigMgr current branch co-management, DSC 3.3.0"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S1412, S1592, S1593, S1591, S1477, S-oeh7ui3h, S-ycuzbjvk, S-d24ri6px, S-vzmmy23x, S-37hjm3ml, S-z4y7mew3, S-is2wluoa, S-jtwizv2p]
 status: complete
 ---

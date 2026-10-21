@@ -2,7 +2,7 @@
 topic: agents/agent-sandboxes
 priority: P3
 applies_to: "Docker Sandboxes and the sbx CLI (docs.docker.com, read 2026-10-15); Kubernetes agent-sandbox v1.0.6 (Sandbox CRD agents.x-k8s.io/v1beta1); gVisor (runsc, gvisor.dev docs read 2026-10-15) and GKE Sandbox; Windows containers with Hyper-V isolation (Windows Server 2016 to 2025); Windows Sandbox and its CLI (Windows 11 24H2)"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-pdqpy37l, S-4kmihytd, S-qfhwf42v, S-5hrbuirw, S-6rab4vhg, S-caegbfbq, S-bk6r64wx, S-eu4rwlo5, S-5jhx5xwe, S-bnpfuvpa, S-q7wv7okn, S-boekjhxx, S-4mp7uube, S-5hntws7z, S-3uzebbx5, S-woxmpwse, S-hlmmxoye, S-nuzkw2aa]
 status: partial
 ---

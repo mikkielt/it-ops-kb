@@ -2,7 +2,7 @@
 topic: agents/github-copilot-admin
 priority: P2
 applies_to: "GitHub Copilot Business and Enterprise, organization/enterprise admin surfaces (2026-09)"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-ovxxqqbw, S-tn4wwzyx, S-ftbeo3o7, S1805, S-unwwieso, S-udcaydkb, S-5mca3vxo, S-kvkn5bq2, S-7vu7gftp, S-z7qwhjoa, S-hjnsjtb6, S-5yxttqw4]
 status: complete
 ---

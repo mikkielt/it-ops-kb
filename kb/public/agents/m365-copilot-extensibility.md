@@ -2,7 +2,7 @@
 topic: agents/m365-copilot-extensibility
 priority: P1
 applies_to: "Microsoft 365 Copilot extensibility: declarative agents, custom engine agents, API/MCP plugins, Copilot connectors; docs current 2026-09-26"
-retrieved_utc: 2026-09-28
+retrieved_utc: 2026-10-21
 sources: [S1840, S-gum2njhe, S-46ndqgay, S-3r3y76di, S-nztel442, S-4rvc364j, S-atzopgi7, S-j46dza7u, S-ipjygran, S-dfgcii3c, S-u2bv3zsu, S-7gjdhgh5, S-qgctvfuf, S-rymoydzk, S-nmxo2lu7, S-3wxcangs, S-7qtumoxt, S-aag4xzbw, S-xasz2mbx, S-bjnw7imn, S-rqk5odum, S-xgl6s552, S-x5qiebqy, S-lgyskerc, S-w32jevfq, S-7f2wrltf]
 status: complete
 files: [agents/declarative-agent-manifest.csv]

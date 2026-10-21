@@ -2,7 +2,7 @@
 topic: windows/windows-sandbox
 priority: P3
 applies_to: "Windows Sandbox on Windows 10 1903+ and Windows 11 (Pro, Enterprise, Education); .wsb configuration files; Policy CSP WindowsSandbox and WindowsSandbox.admx (Learn pages read 2026-09-28)"
-retrieved_utc: 2026-09-28
+retrieved_utc: 2026-10-21
 sources: [S-woxmpwse, S-yexfxr4v, S-hlmmxoye, S-bgz3uymb]
 status: complete
 ---

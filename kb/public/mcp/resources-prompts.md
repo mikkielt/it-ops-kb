@@ -2,7 +2,7 @@
 topic: mcp/resources-prompts
 priority: P2
 applies_to: "MCP specification 2026-07-28"
-retrieved_utc: 2026-10-16
+retrieved_utc: 2026-10-21
 sources: [S-uq2hafxi, S-mjxgvchf, S-dwlcyci7, S-twgov237, S-3s4qysez, S-7uw4d77y, S-onc3gpse, S-iw3x3th7, S1862, S704, S718]
 status: complete
 ---

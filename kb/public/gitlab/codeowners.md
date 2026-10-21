@@ -2,7 +2,7 @@
 topic: gitlab/codeowners
 priority: P0
 applies_to: "GitLab 19.5 docs (master @56c82a97)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-10-21
 sources: [S450, S444, S440, S-iavvx4cz]
 status: complete
 ---

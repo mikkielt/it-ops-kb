@@ -2,7 +2,7 @@
 topic: intune/ios-android-management
 priority: P2
 applies_to: "Microsoft Intune service, iOS/iPadOS and Android device enrollment/management, docs retrieved 2026-09-26"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-wdoafrjc, S-yiwjr2wo, S-w2fd3dgm, S-3v22wodo, S-zdoohqe4, S-jq73dzml, S-pcr6rjdl, S-7synnxi2, S-fdtw5sil, S-27rerlcs, S-4hhozw7m, S-lz7th2mw, S-h36g7sd3, S-dprypamg, S-jyy6biwj, S-ischppkc]
 status: complete
 ---

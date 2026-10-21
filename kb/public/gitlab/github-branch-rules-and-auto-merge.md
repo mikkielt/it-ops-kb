@@ -2,7 +2,7 @@
 topic: gitlab/github-branch-rules-and-auto-merge
 priority: P3
 applies_to: "GitHub Docs (github/docs @aff94963b07a8) for github.com plans; GitHub CLI manual read 2026-09-29; rulesets, branch protection rules, required status checks, pull request auto-merge, merge methods, CODEOWNERS; the counterpart of gitlab/protected-branches-tags.md for a public GitHub repository"
-retrieved_utc: 2026-09-29
+retrieved_utc: 2026-10-21
 sources: [S-owfsdkff, S-o766dsv5, S-kyamdmco, S-ai4fbdo7, S-dqd2wyad, S-bhojoaw6, S-fuytyyvw, S-t7yg2o2s, S-dzbnhthc, S-6xcdstb3, S-vf2dvnlt, S-ldxeltib, S-gifxe3nj, S-le6auopv, S-ra4wu36u, S-g6kufkad, S-uhi2oo32, S-54krfv6d]
 status: complete
 ---

@@ -2,7 +2,7 @@
 topic: security/fish-variables-scopes-export
 priority: P3
 applies_to: "fish 4.9.3 variables: the four scopes (universal, global, function, local), export to child processes, universal variables on disk, lists and slices, PATH variables, argv and argparse, status variables"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-irnsu4to, S-4tb7t5c2, S-bdc6dn7m, S-eg4rjgcz]
 status: complete
 ---

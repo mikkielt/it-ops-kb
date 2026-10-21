@@ -2,7 +2,7 @@
 topic: python/stdlib-cprofile-pstats
 priority: P3
 applies_to: [python, cProfile, pstats, runpy]
-retrieved_utc: 2026-10-09
+retrieved_utc: 2026-10-21
 sources: [S-5y7wwygh, S-tkdyngyx, S-vydvtba3, S-4ydukkiy]
 status: partial
 ---

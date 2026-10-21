@@ -2,7 +2,7 @@
 topic: claude/agent-sdk
 priority: P2
 applies_to: "Claude Agent SDK (Python claude-agent-sdk, TypeScript @anthropic-ai/claude-agent-sdk); code.claude.com docs retrieved 2026-10-12"
-retrieved_utc: 2026-10-14
+retrieved_utc: 2026-10-21
 sources: [S-22nastju, S-fksbud2r, S-fmj24q2u, S-rjw74jiz, S-pbd7pui3, S-isqfh6pr, S-gztpah4d, S-llf2m5cf, S-5be7mkzk, S-av5665nf, S-nuzkw2aa, S449]
 status: complete
 files: [claude/agent-sdk-options.csv]

@@ -2,7 +2,7 @@
 topic: python/pytest-xdist
 priority: P2
 applies_to: [pytest-xdist, pytest]
-retrieved_utc: 2026-10-14
+retrieved_utc: 2026-10-21
 sources: [S-t7c2nvll, S-vt5s6nsz, S-lthpihsc, S-ng5lgn3p, S-qejsavhl, S-ew7mucsg, S-d77lvlq4, S-eaoeu53g, S-g7bkixrp, S-tt4fugbi, S-3cbnj3pk]
 status: complete
 ---

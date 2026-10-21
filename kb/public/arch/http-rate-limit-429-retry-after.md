@@ -2,7 +2,7 @@
 topic: arch/http-rate-limit-429-retry-after
 priority: P3
 applies_to: "RFC 6585 (April 2012); RFC 9110 (June 2022, STD 97); draft-ietf-httpapi-ratelimit-headers-11 (Internet-Draft, 23 May 2026); limits 5.8.0; slowapi v0.1.10 (FastAPI/Starlette)"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-uhsdbxii, S-wct3uoax, S-fdye2dae, S-6xunll63, S-l7o2xn5e, S-bnosg22i, S-455diive, S-5uxkh3j5, S623]
 status: partial
 ---

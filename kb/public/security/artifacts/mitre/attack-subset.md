@@ -2,7 +2,7 @@
 topic: security/artifacts/mitre/attack-subset
 priority: P2
 applies_to: "MITRE ATT&CK Enterprise v19.2 (STIX bundle, tag v19.2)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-10-21
 sources: [S1576, S-xauiidpb]
 status: complete
 ---

@@ -2,7 +2,7 @@
 topic: arch/rust-clippy-criterion-gates
 priority: P3
 applies_to: "Clippy book at rust-clippy commit 51a5a0b (2026-10-11, Cargo 1.97 guidance); rustfmt README at commit ff02051 (2026-10-10); Criterion.rs 0.7.0 (book, README and manifest at the release tag)"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-ly5mrvjt, S-beipcwki, S-j673gwjb, S-42h57lgl, S-ffsltmbi, S-4cuivnem, S-ba2xucuh, S-hqm43pk6, S-luxqgdxs, S-n33p6asx, S-a6r5knm6, S-wgv6gj2w, S-cqq3yuwa, S-zz5esdao, S-5b57smet]
 status: partial
 ---

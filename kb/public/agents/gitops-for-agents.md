@@ -2,7 +2,7 @@
 topic: agents/gitops-for-agents
 priority: P3
 applies_to: "OpenGitOps Principles and Glossary (open-gitops/documents at commit 747050b5); GitOps with Flux v2 (microsoft.flux cluster extension; kustomize-controller v1.9.6) and Argo CD (microsoft.argocd cluster extension; Argo CD v3.5.5) on AKS and Azure Arc-enabled Kubernetes; applied to Claude Code agent configuration (settings, CLAUDE.md, .mcp.json, skills, managed settings) and Windows endpoints"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-43ycwzdw, S-5pzuphp4, S2057, S-rfpmkpck, S2158, S2042, S1802, S-fzkqxhmg, S-7na2vvh5, S-htplz4gp, S-6eib7udh, S-kfmk5l6f, S-4jndm2w6, S-2k3bcw7n, S-2mzbvpov, S-ures7t57, S-4xar7ise, S-zfc5iphl, S1592, S-v5cttaej, S-wbcdphyr, S-hu4wtonu]
 status: partial
 ---

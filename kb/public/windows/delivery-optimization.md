@@ -2,7 +2,7 @@
 topic: windows/delivery-optimization
 priority: P2
 applies_to: "Windows 10/11 Delivery Optimization (DeliveryOptimization CSP/GPO); Microsoft Connected Cache for Enterprise and Education (GA)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-10-21
 sources: [S-7olkz3h6, S-3dmxye5u, S-op3zxbbu, S-yrwncj3y, S-4h5a6snd, S-k64d62id, S-wlvfiru4, S-kyd2lkfv, S-6t23b25h, S-3ul4mkos, S-vil7lhvw, S-ufysm5nk, S-5igis2cq, S-s4n26zjf, S-umnfbn5b]
 status: complete
 files: [windows/delivery-optimization.csv]

@@ -2,7 +2,7 @@
 topic: gitlab/pipelines-rules
 priority: P0
 applies_to: "GitLab 19.5 docs (master @56c82a97); pipeline schedules API @9f1632e2 (2026-09-27)"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S446, S447, S448, S453, S-zh7oqkup, S-aibu3bke, S-vpnjd6ww]
 status: partial
 ---

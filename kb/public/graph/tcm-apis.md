@@ -2,7 +2,7 @@
 topic: graph/tcm-apis
 priority: P3
 applies_to: "Microsoft Graph v1.0 and beta, Tenant Configuration Management (docs-contrib @ 4ad99fd3, metadata @ b8cbef92)"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S940, S941, S942, S943, S944, S945, S946, S947, S948, S949, S950, S951, S952, S953, S954, S955, S956, S957, S-b254clmj, S-kkjfoqcq, S-iqgnl5eu, S-wt4gwfbs, S-bpw5jqqu, S-jyf5znt2, S-uvavmxwe, S-nmejqpqf, S-vbygwljt, S-jmkuh33h, S-loe5y6ph, S-764hwjk5, S-qdep2dpy, S-hm5x2mzz]
 status: complete
 files: [graph/tcm-csdl-v1.0.xml, graph/tcm-csdl-beta.xml]

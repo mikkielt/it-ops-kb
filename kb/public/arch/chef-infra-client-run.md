@@ -2,7 +2,7 @@
 topic: arch/chef-infra-client-run
 priority: P3
 applies_to: "Chef Infra Client 19 (docs.chef.io Chef Infra Client 19 pages; source at chef/chef commit 9322fa4): the run and its order, the run list, why-run, scheduling, licensing and status"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-kj2xytgs, S-zskepmir, S-yddwaulv, S-z5kgh6p7, S-ddprubpp, S-og5svrch, S-ljusqk46, S-qdnvehti, S-d6oc2jt7]
 status: partial
 ---

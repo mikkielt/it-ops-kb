@@ -2,7 +2,7 @@
 topic: security/fish-on-windows-wsl-cygwin-msys2
 priority: P3
 applies_to: "fish 3.2 to 4.9.3 on a Windows host: Windows Subsystem for Linux (WSL 1 and 2), Cygwin and MSYS2, what the release notes and manual say about PATH, background jobs, completions of .exe commands, terminals and universal variables there"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-eg4rjgcz, S-kcajyom3]
 status: complete
 ---

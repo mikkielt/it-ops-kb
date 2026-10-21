@@ -2,7 +2,7 @@
 topic: agents/content-safety-prompt-shields
 priority: P2
 applies_to: "Azure AI Content Safety Prompt Shields API (GA, api-version 2024-09-01), Microsoft Foundry guardrails Prompt Shields/Spotlighting, groundedness/protected-material/custom-categories/blocklist APIs, docs retrieved 2026-09-26"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-547mfaj7, S-zlqf57iu, S-c66bl3xp, S-b4vld673, S-qhrwmfgo, S-unoiabov, S-56tu3aqk, S-plv2ekwg, S-lqvaqwxx, S-3svp3sap, S-lmtdz3eq, S-47nwz53u, S-jbhevlal]
 status: complete
 files: [agents/content-safety-limits.csv]

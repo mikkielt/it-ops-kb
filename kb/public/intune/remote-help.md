@@ -2,7 +2,7 @@
 topic: intune/remote-help
 priority: P2
 applies_to: "Microsoft Intune Suite/standalone add-on Remote Help, Windows/macOS/Android/web app (docs current 2026-09-26)"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-f7i5faki, S-5h4qjmdq, S-f6g2wc4u, S-co4oj66f, S-xa4m3w2n]
 status: complete
 ---

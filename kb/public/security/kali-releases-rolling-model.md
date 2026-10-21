@@ -2,7 +2,7 @@
 topic: security/kali-releases-rolling-model
 priority: P3
 applies_to: "Kali Linux release cadence and version names, the kali-rolling and kali-last-snapshot branches, how kali-dev feeds them, the Debian relation and update policy, and what the 2026.2 release changed"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-2p6jllwx, S-5455keob, S-srhdbl23, S-4fzpivdx, S-nc74uv2o, S-a3rz5fyq, S-o6curntz, S-4ikfjmsv]
 status: partial
 ---

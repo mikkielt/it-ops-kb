@@ -2,7 +2,7 @@
 topic: agents/typescript-tsconfig-and-compiler-options
 priority: P3
 applies_to: "TypeScript 5.x, 6.0 (2026-03-23) and 7.0 (2026-07-08, native compiler): tsconfig.json structure (files, include, exclude, extends), compilerOptions defaults and how 6.0 changed them, the strict family, deprecations, the tsc command line; website reference pages pinned at TypeScript-Website commit 6556b08"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-jdmnhjds, S-eumnm3tn, S-4bj5u3yk, S-ff6may7t, S-3e3kl7vi, S-34pqpd75, S-7nvzlf7l, S-iudxgieq, S-f2d7bode, S-huriuyvo, S-4gncoeuv, S-pgt5grct, S-el5lfrsb, S-2yfpg4cd, S-iyxaeenu, S-2oseqdau, S-fdzam7lv, S-5egapxtq, S-sp2a6svk, S-eq3gt72a, S-lq5mn2bc, S-sipjyeoi, S-j645b5a2, S-4xfmso3u, S-jfnkownz, S-yuhdbie6, S-ybwhbhxi, S-vdfo2blu, S-cblfylm6, S-gssvmwmg]
 status: complete
 ---

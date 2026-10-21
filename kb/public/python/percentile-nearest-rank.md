@@ -2,7 +2,7 @@
 topic: python/percentile-nearest-rank
 priority: P3
 applies_to: [python, statistics, percentile, p95, kql, t-sql, quartiles, interquartile-range, outlier-fence]
-retrieved_utc: 2026-10-19
+retrieved_utc: 2026-10-21
 sources: [S-g5oa4uyp, S-35bztnbb, S-dh7f43kc, S-or2wocyn, S-4hnlw34j]
 status: partial
 ---

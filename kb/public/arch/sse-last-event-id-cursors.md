@@ -2,7 +2,7 @@
 topic: arch/sse-last-event-id-cursors
 priority: P3
 applies_to: "WHATWG HTML Standard section 9.2 server-sent events (Living Standard, last updated 20 October 2026); FastAPI 0.135.0+ (fastapi.sse); Starlette 1.7.0; nginx ngx_http_proxy_module"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-6r5cdtdk, S-e5yw2g7y, S-ciivqlqu, S-6nbqywql, S-l4qgsnr4]
 status: partial
 ---

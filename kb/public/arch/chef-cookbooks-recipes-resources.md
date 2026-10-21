@@ -2,7 +2,7 @@
 topic: arch/chef-cookbooks-recipes-resources
 priority: P3
 applies_to: "Chef Infra Client 19 (docs.chef.io Chef Infra Client 19 pages): cookbook layout, recipes, resource syntax, default actions, common properties, guards and notifications"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-u7h6xkoa, S-y6y7akrz, S-ttgsowye, S-gwzouzk5, S-kqb3kad4, S-k62unlt6, S-fhqrcrzk, S-xgkshne3, S-yz335vyz, S-oh6erfbm, S-zskepmir]
 status: complete
 ---

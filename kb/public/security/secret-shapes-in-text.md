@@ -2,7 +2,7 @@
 topic: security/secret-shapes-in-text
 priority: P2
 applies_to: "free text (a command line, a log line, a pasted note) that a redactor or scanner reads for credentials: HTTP Authorization headers, URL userinfo, PEM, OpenSSH and OpenPGP private key blocks, key=value assignments, SQL Server connection strings"
-retrieved_utc: 2026-10-18
+retrieved_utc: 2026-10-21
 sources: [S-wct3uoax, S-neu52zjd, S-3mhhoprh, S-bs6jgunr, S-kskf5yv7, S-as3c23xb, S-cr2wj4s2, S-xnlryf7y, S-lglgs6wg, S-k57sryj7, S-spzetxhy, S-d2kitjup, S-imedhmhc, S-bcbpadtc, S-4rjxcq6v, S-jkdywrys, S-vstqd426, S-mi4dlpr3, S-4tr3garn]
 status: partial
 ---

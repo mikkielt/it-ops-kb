@@ -2,7 +2,7 @@
 topic: arch/postgres-dump-canonical-hash
 priority: P3
 applies_to: "PostgreSQL 18 pg_dump (docs 18, source tag REL_18_6): which parts of a plain-format dump vary between runs, which options change the bytes, and a derived recipe for hashing a dump"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-vykvhstk, S-aae3vzxi, S-vor6jmfj, S-v246rdbb]
 status: partial
 ---

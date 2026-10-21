@@ -2,7 +2,7 @@
 topic: auth/issuer-token-rotation
 priority: P3
 applies_to: "Credential ceilings and rotation at the issuer: GitLab access tokens (rotate API), Cloudflare API tokens (TTL, roll), R2 S3 credentials, Discord bot token reset"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-mhouxzvy, S-7bs3m5z2, S-pu7alvhx, S-i7k2yzu3, S-mk66h6ri, S-olzs5pbh, S-pj2f4zxz, S-gvnx776h, S-34drdif4, S-xaij2xlf, S-azsoi3uw, S-jnot5rsp, S-5wetycnr, S-udvn7k24]
 status: partial
 ---

@@ -2,7 +2,7 @@
 topic: windows/openssh-server
 priority: P0
 applies_to: "Windows 10 1809+/Windows 11, Windows Server 2019/2022/2025 (in-box OpenSSH)"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S430, S431, S432, S-ju4lek45, S-tvueruxa, S-3sejzzve, S-gceir6ge]
 status: complete
 ---

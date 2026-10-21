@@ -2,7 +2,7 @@
 topic: windows/app-control
 priority: P2
 applies_to: "Windows 10/11 clients, Windows Server 2016+ (feature availability varies by version; CiTool.exe requires Windows 11 22H2+ or Windows Server 2025)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-10-21
 sources: [S-whvei7wr, S-k6lcrjix, S-bdcygezh, S-fq54pkea, S-wk4roik4, S-vawypjoe, S-ickvylma, S-frmf22fa, S-salso3t6, S2202, S-oartdvpr, S2200, S-xju6ufhr, S-y3vftsou]
 status: complete
 ---

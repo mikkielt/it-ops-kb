@@ -2,7 +2,7 @@
 topic: agents/agent-memory-services
 priority: P3
 applies_to: "Claude API memory tool (memory_20250818); Claude Managed Agents memory stores (Beta, header agent-memory-2026-07-22); Memory in Microsoft Foundry Agent Service and the Memory Store API (preview, Learn 2026-10); Cloudflare Agents SDK state and Durable Objects (docs 2026-06 to 2026-10)"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-n5jx3ykg, S749, S-ovnqfusm, S-gybzd4tj, S-qwkcddyd, S-akyurl2s, S-4wv4j3r2, S-3bnq55fu, S-x5vpwiqv, S-2oqpgch6]
 status: complete
 ---

@@ -2,7 +2,7 @@
 topic: claude/hooks
 priority: P1
 applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23; UserPromptSubmit, common input, async and Stop sections re-read 2026-09-27; SessionEnd and Windows command hooks read 2026-09-28; tool event input, Stop input and disableAllHooks read 2026-09-28; SessionStart, systemMessage and output caps read 2026-09-28; subagent input fields read 2026-09-28; subagent agent_type values and failure input re-read 2026-10-01; permission, compaction, failure and instructions events read 2026-10-04; hooks in `-p` runs and the `cwd` input field read 2026-10-07; transcript storage, resume and fork, SessionStart and SessionEnd input, and the SessionEnd budget read 2026-10-07; Stop background_tasks entries, background Bash and background Agent results and the Agent SDK's Bash output read 2026-10-08; SDK tool_use_result, BashOutput fields and the transcript entry format re-read 2026-10-08; SessionEnd at the normal end of a `-p` run re-read in the live docs 2026-10-10; `CLAUDECODE` and `CLAUDE_CODE_CHILD_SESSION` on the plugin CLI-hint page read 2026-10-12; `UserPromptExpansion` and the `Skill` tool read 2026-10-16; `Notification` input, types and timing read 2026-10-17; SessionStart waiting, `timeout` and async hooks re-read 2026-10-19; sessions page re-read 2026-10-21)"
-retrieved_utc: 2026-10-20
+retrieved_utc: 2026-10-21
 sources: [S-exebozns, S743, S744, S745, S746, S747, S1800, S1824, S2157, S-h5sble4p, S-sjuwcuhk, S-3yod3u7q, S-av5665nf, S-uzkb4duq, S-npnkw4t2, S-j22fjuka, S-2ip5zngf, S-pmhgjvef, S-hvuk3dqt, S-svt73npe, S-fmj24q2u, S-eumxht6x, S-wgllyvwc, S-osulh6sh, S-wzatkg4o, S-toe7z3kj]
 status: complete
 ---

@@ -2,7 +2,7 @@
 topic: logs/otel-collector-otlp-pipeline
 priority: P3
 applies_to: "OpenTelemetry Collector core v0.162.0 (modules v1.68.0, 2026-09-28) and contrib v0.162.0; OTLP specification (opentelemetry-proto v1.11.1); Prometheus v3.15.0; Loki v3.7.8; Tempo v3.1.0"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-2k6jmt4p, S-42ulxlwb, S-iylg5wv4, S-idpr2htc, S-4efsem2g, S-oodxsnls, S-ixy3elbb, S-tb2kr6j6, S-v4swo5wh, S-ypu7twsm, S-zgo6e6dk, S-gkgmlv5b, S-ix5z63av, S-h52nhp55, S-jdyoyfwa, S-p23y4jgk, S-2blrcu72, S-j5eil3ej, S-o36nadfz, S-e4bf6k75, S-hbpi7gg6, S-a6ldut5r, S-vnjcetlc, S-r3lv4n27, S-ina32am5, S-xvaz44vc, S-v2wnj4qk, S-5tvo6y34, S-one7nth5, S-j7chz4co, S-n4qvimrb, S-wpvglutf, S-su2aihea, S-f2cwt6i6]
 status: partial
 ---

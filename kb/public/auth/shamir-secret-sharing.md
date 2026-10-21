@@ -2,7 +2,7 @@
 topic: auth/shamir-secret-sharing
 priority: P3
 applies_to: "Shamir secret sharing of a root key or identity among K of N holders: scheme limits and maintained split and combine tools (dsprenkels sss and sss-cli, SLIP-0039, Vault's shamir package, sops key groups)"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-tmotj3si, S-eb3lde4q, S-ujdydznw, S-pidk4hju, S-qt5gzwb2, S-pkor3bz3, S-kanbehag, S-r3t6wvk5, S-bi6fdfos]
 status: partial
 ---

@@ -2,7 +2,7 @@
 topic: security/gentoo-binary-packages-binhost
 priority: P3
 applies_to: "Gentoo Linux binary packages with Portage: GPKG and XPAK formats, using the official binhost or your own through binrepos.conf, signature verification, building and maintaining a package directory"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-vr4evhob, S-rzs2uo4g, S-ch2quvvc, S-5rih6fam, S-5lblcwaf, S-5dnrfnng, S-uhuj7vad]
 status: partial
 ---

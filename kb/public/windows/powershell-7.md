@@ -2,7 +2,7 @@
 topic: windows/powershell-7
 priority: P2
 applies_to: "PowerShell 7.0-7.7 (pwsh); side-by-side with Windows PowerShell 5.1; Microsoft.PowerShell.SecretManagement/SecretStore, PSResourceGet"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-10-21
 sources: [S-7rfzq5p7, S-rwd5gx6b, S-qb6m7uly, S-iw3ehpxb, S-x4puowoc, S-onrxwhf7, S-z7wzbalz, S-6vnttaga, S-62djuv2f, S-66rxa5r3, S-awsrthdz, S-zghw4ytw, S-fzd5uvn2, S-vx532wl3, S-cfculwad, S-gzff3gao, S-54flhyvx]
 status: complete
 files: [windows/powershell-lifecycle.csv]

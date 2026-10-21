@@ -2,7 +2,7 @@
 topic: intune/mdmdiagnosticstool
 priority: P1
 applies_to: "Windows 10 1809+ / Windows 11, doc ms.date 2025-08-04"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S617, S618, S-6epv7qzl]
 status: complete
 ---

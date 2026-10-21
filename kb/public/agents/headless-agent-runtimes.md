@@ -2,7 +2,7 @@
 topic: agents/headless-agent-runtimes
 priority: P2
 applies_to: "Claude Code v2.1.x (code.claude.com docs, retrieved 2026-09-25); GitHub Copilot coding agent; GitLab Duo Agent Platform (GA 2026-01-15)"
-retrieved_utc: 2026-10-20
+retrieved_utc: 2026-10-21
 sources: [S1800, S1801, S1802, S1803, S1804, S1805, S1806, S1807, S1818, S1824, S-qso27noq, S-szgomxsz, S-xpfrl54v, S-5paxdbvt, S-ulr4lcp4, S-gu5aqnrl, S-mkqjh4ac, S743, S-ezqg74ki, S-fksbud2r, S-eu3n3hyf, S2131, S-hobjhakf, S-bcbpadtc, S-3pftmimx, S-fvspfpxd, S-rleo3k4b, S-frvnva4f, S-rmzenq4r, S-qne4hqox, S-nrlbtzhc, S-65kz6itt, S-n7cnr4i5]
 status: partial
 ---

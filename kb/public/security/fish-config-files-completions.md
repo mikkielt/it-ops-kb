@@ -2,7 +2,7 @@
 topic: security/fish-config-files-completions
 priority: P3
 applies_to: "fish 4.9.3 startup configuration (config.fish, conf.d snippets, vendor directories, login shell choice, invocation flags) and the completion system (complete, completions directories, fish_complete_path, wrapping)"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-irnsu4to, S-bdc6dn7m, S-f6olkobv, S-c5jost2j, S-eg4rjgcz, S-kcajyom3, S-pmqazcbs, S116]
 status: complete
 ---

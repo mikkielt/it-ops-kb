@@ -2,7 +2,7 @@
 topic: gitlab/webhooks
 priority: P3
 applies_to: "GitLab 19.x docs (gitlab-org/gitlab master @9f1632e2, 2026-09-27); project webhooks Free, Premium and Ultimate, group webhooks Premium and Ultimate"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-wqhdylac, S-3exaesy6, S-ulsd42b4, S-jz6gfnwh]
 status: complete
 ---

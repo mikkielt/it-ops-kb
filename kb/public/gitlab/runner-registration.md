@@ -2,7 +2,7 @@
 topic: gitlab/runner-registration
 priority: P3
 applies_to: "GitLab 19.x docs (gitlab-org/gitlab master @a1faf261a899, 2026-10-21); GitLab Runner docs (gitlab-org/gitlab-runner main @a278fd05, 2026-10-09); Free, Premium and Ultimate unless stated"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-ytnvr75r, S-udvn7k24, S-ssfsxd2n, S-5ohrrj7d, S-jk4rtq6g]
 status: partial
 ---

@@ -2,7 +2,7 @@
 topic: arch/postgres-advisory-locks
 priority: P3
 applies_to: "PostgreSQL 18 documentation; PgBouncer features page (site listing 1.26.0)"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-xf26uevo, S-utkuhqw3, S-5oeurmkp, S-o45hawqq, S-zwhssqbz]
 status: complete
 ---

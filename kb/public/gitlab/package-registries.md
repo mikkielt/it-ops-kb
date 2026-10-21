@@ -2,7 +2,7 @@
 topic: gitlab/package-registries
 priority: P3
 applies_to: "GitLab 19.x docs (gitlab-org/gitlab master @9f1632e2, 2026-09-27); PyPI, generic packages and container registry; Free, Premium and Ultimate"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-v25mipeh, S-fo6cckzx, S-5lpubwd5, S-gqpmeuse, S-owkwtkdm, S-n3qvicph, S-ocjsmgvx, S-jk4rtq6g, S-cx5yd4ae, S-2fkrq2c6, S1507]
 status: partial
 ---

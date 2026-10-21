@@ -2,7 +2,7 @@
 topic: arch/podman-images-registries
 priority: P3
 applies_to: "Podman 6.1.x on Linux: registries.conf (container-libs image library), short-name resolution, podman login credentials"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-ef6jtpqs, S-pfoyirmn, S-rylxmcjm]
 status: partial
 ---

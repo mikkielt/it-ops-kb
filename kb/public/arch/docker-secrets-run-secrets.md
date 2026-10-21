@@ -2,7 +2,7 @@
 topic: arch/docker-secrets-run-secrets
 priority: P3
 applies_to: "Docker secrets (Swarm and Compose) mounted under /run/secrets in Linux containers"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-5wya5dr3, S-tu43jdaj]
 status: complete
 ---

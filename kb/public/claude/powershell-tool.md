@@ -2,7 +2,7 @@
 topic: claude/powershell-tool
 priority: P3
 applies_to: "Claude Code docs as of 2026-09-29 (permissions, tools reference, skills, hooks pages; the permissions page's Read-only commands section as of 2026-10-13): the PowerShell tool on Windows, its permission rules, and how skills and hooks choose between Bash and PowerShell; the tool is documented as a preview"
-retrieved_utc: 2026-10-13
+retrieved_utc: 2026-10-21
 sources: [S742, S-3yod3u7q, S-dfhq4kbv, S743, S-h5sble4p, S-zcuxapgb]
 status: partial
 ---

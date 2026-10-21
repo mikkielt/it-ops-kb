@@ -2,7 +2,7 @@
 topic: arch/puppet-language-resources-types
 priority: P3
 applies_to: "Puppet 8.x manifest language (Puppet Core 8.22.0 docs; reference files at commit e227c27): resource declarations, titles and namevars, ordering and relationships, metaparameters, classes, built-in and removed resource types"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-3nlx3lke, S-4dquzyfj, S-kletprvx, S-w5xtdsyr, S-ef4b5npw, S-2xntzgfj, S-cttzm2qq, S-se4kjnw2]
 status: partial
 ---

@@ -2,7 +2,7 @@
 topic: windows/kiosk-assigned-access
 priority: P2
 applies_to: "Windows 10/11 client (single-app kiosk since 1803, ShellLauncher since 1803/v2, multi-app via provisioning/CSP), Intune kiosk profile template and settings catalog, Microsoft Edge kiosk mode 87+"
-retrieved_utc: 2026-09-28
+retrieved_utc: 2026-10-21
 sources: [S-c6tea7ux, S-ocgh5a3g, S-snqf6qj3, S-hkbq4xlj, S-grpxcouj, S-mti33mjr, S-pjgeqktu, S-jnbupokh, S-qd4qftlt, S-lz7th2mw, S-jqkumeuj]
 status: complete
 ---

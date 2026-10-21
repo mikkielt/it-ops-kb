@@ -2,7 +2,7 @@
 topic: claude/large-codebases
 priority: P3
 applies_to: "Claude Code docs: large codebases, how Claude Code works, best practices (retrieved 2026-09-28); several repositories: agent view, Desktop, settings, cloud environments (retrieved 2026-10-15)"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-4jj4dtg4, S-eubvc22d, S-o3v6ozch, S-aishnkok, S-3qhgxjky, S2057, S-gu5aqnrl]
 status: complete
 ---

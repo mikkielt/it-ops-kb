@@ -2,7 +2,7 @@
 topic: mecm/osd-task-sequences
 priority: P1
 applies_to: "ConfigMgr current branch (osd/* docs, checked 2026-09-26)"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-lydse5ww, S-nmfqbv57, S-dz6j2643, S-kwn2lclu, S-ruy2unms, S-6pxhq347, S-jjjidz73, S-bf2nomrq, S-xigzahvp, S-qethz2s6, S-5lqbi3py, S-ohy3ejva, S-n2n6jxit, S-pcnabydm, S-qyxi4l4m, S-4eqz4ngg, S-gppz6zvr]
 status: complete
 files: [mecm/task-sequence-variables.csv]

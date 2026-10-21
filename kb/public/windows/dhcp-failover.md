@@ -2,7 +2,7 @@
 topic: windows/dhcp-failover
 priority: P2
 applies_to: "Windows Server DHCP Server role (IPv4 scopes); DhcpServer PowerShell module"
-retrieved_utc: 2026-10-12
+retrieved_utc: 2026-10-21
 sources: [S-45mj3bt5, S-xl2d4tuq, S-x2hxgchj]
 status: complete
 ---

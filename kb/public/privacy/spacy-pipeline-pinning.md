@@ -2,7 +2,7 @@
 topic: privacy/spacy-pipeline-pinning
 priority: P3
 applies_to: "spaCy 3.8.16 (tag release-v3.8.16), weasel 1.0.0, pip 26.2.1"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-pxs757ky, S-pmc3phpi, S-kcn56y7v, S-7dzxtyeg, S-yo4p2wby, S-y7fy5phu, S-afy77hze, S-eem3ebzg, S-2rokayfc, S-kmhasvx6, S-w2iwn6ac, S-mvtjqg65, S-7cypj7la, S-tzx4jroa, S-ufedwopa, S-uyjpiflf, S-q6tsebaa, S-szqctyjx, S-b5ddf5wg, S-eqnfvpps, S-ix7uqv2r, S-kzxs7o5q, S-fpqwvm77, S-5wch47ce, S-bdjuufne, S-umcvzek3, S-zd7e6qfm]
 status: partial
 ---

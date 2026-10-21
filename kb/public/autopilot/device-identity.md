@@ -2,7 +2,7 @@
 topic: autopilot/device-identity
 priority: P1
 applies_to: "Windows Autopilot (memdocs), Graph v1.0/beta windowsAutopilotDeviceIdentity"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S508, S509, S545, S553, S554, S555, S-jjyryhyn, S-q7ach7kp, S-frph46kv, S-d3ml3kug, S-6i4enlqz, S-vdp4zb6i]
 status: complete
 ---

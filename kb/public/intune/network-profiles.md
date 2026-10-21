@@ -2,7 +2,7 @@
 topic: intune/network-profiles
 priority: P2
 applies_to: "Microsoft Intune service 2026-09, Windows 10/11 device configuration profiles (Wi-Fi, wired network, VPN), Microsoft Tunnel, Microsoft Entra Private Access"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-t6z76jtq, S-qftwfatf, S-pp7wx433, S-j3m2icav, S-2ne6yzmx, S-qbkbk5wb, S-y3enttcg, S-sq5keqpx, S-3xdtjgi4, S-kdhgvxwh, S-lkrznc4c, S-aprlzyvz, S-eyziqbja, S-wu3jl52b]
 status: complete
 ---

@@ -2,7 +2,7 @@
 topic: auth/audit-log-apis
 priority: P2
 applies_to: "Office 365 Management Activity API, Microsoft Purview Audit (Standard/Premium), Microsoft Graph auditLogQuery (security namespace), Intune deviceManagement/auditEvents, Entra ID directoryAudits/signIns; docs retrieved 2026-09-26"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-10-21
 sources: [S-2xp7a2zn, S-5mkng6kh, S-vkmx3p22, S-pzhjwitg, S-p7uijoop, S-ojti56n4, S-wsetw6to, S-llv35yw5, S-tmpjr3zu, S-otcf27ix, S-mubyxer3, S-kt6usubu, S-s7cz6clh, S-iaxywacb, S-raqjhvyk, S-p26bti63, S-n5ozkko3, S-htpihbqv, S-2yxrvyer]
 status: complete
 ---

@@ -2,7 +2,7 @@
 topic: security/fish-syntax-bash-differences
 priority: P3
 applies_to: "fish 4.9.3 as a scripting language: how its syntax departs from Bash and POSIX shells (quoting, expansion, globbing, redirection, conditions, blocks, subshells, exit statuses) and the limits a script author meets"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-irnsu4to, S-2l7kac72, S-bdc6dn7m, S-c5jost2j, S-mepkq6ry, S-eg4rjgcz]
 status: complete
 ---

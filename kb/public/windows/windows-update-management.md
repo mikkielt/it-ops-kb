@@ -2,7 +2,7 @@
 topic: windows/windows-update-management
 priority: P2
 applies_to: "Windows 10/11 Update policy CSP; Intune update rings/feature/quality/driver update policies; Windows Autopatch (incl. hotpatch); Microsoft Graph windowsUpdates (beta); Windows Update for Business reports"
-retrieved_utc: 2026-09-28
+retrieved_utc: 2026-10-21
 sources: [S-6soaabdg, S-nxcrbrj4, S-2z6lunfo, S-dlg7lumx, S-4oi245yf, S-xoerk6of, S-qffa6b5k, S-jpgvmrt5, S-vrrtfarn, S-hdprezk3, S-p4dpx2og, S-34u26yld, S-rek3chkd, S-bujcbcpv, S-m6wsqtyu, S-ee46ukhy, S-pfc25kvx, S-j63ax7eh, S-fllu73v2]
 status: complete
 files: [windows/windows-update-management.csv]

@@ -2,7 +2,7 @@
 topic: auth/spiffe-workload-identity
 priority: P3
 applies_to: "SPIFFE standards (spiffe/spiffe@f97c46df), SPIRE 1.15.3, Kubernetes projected ServiceAccount tokens (stable since v1.20; kubernetes/website@e91eff3b): workload identity for agents outside Entra"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-xc5uusz2, S-goybn4yq, S-c5bctcpw, S-yp5feoc6, S-zwfvgfuh, S-i256dvri, S-2vob2pwv, S-b6gp3bv7, S-ugw52imj, S-y3sapuqy, S-fpedei7j, S-qatk6hho, S-2eo2ncgf, S-322kmkky]
 status: complete
 ---

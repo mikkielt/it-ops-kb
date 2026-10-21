@@ -2,7 +2,7 @@
 topic: agents/typescript-module-resolution
 priority: P3
 applies_to: "TypeScript 5.x to 7.0: the module and moduleResolution options (node16, node18, node20, nodenext, preserve, esnext, bundler, node10, classic), module format detection, paths and baseUrl, package.json exports, verbatimModuleSyntax and isolatedModules; handbook pages pinned at TypeScript-Website commit 6556b08"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-e5r3w2iq, S-ipmh5e4a, S-eofsccvy, S-sc6whm2s, S-xkdynti4, S-lq5mn2bc, S-sp2a6svk, S-eq3gt72a, S-sipjyeoi]
 status: complete
 ---

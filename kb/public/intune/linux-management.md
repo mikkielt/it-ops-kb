@@ -2,7 +2,7 @@
 topic: intune/linux-management
 priority: P3
 applies_to: "Microsoft Intune Linux device management (Ubuntu Desktop, RedHat Enterprise Linux), docs retrieved 2026-09-26"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-nvad3j6y, S-dvnl6gdu, S-5vopvhhm, S-vbmaayv5, S-37nh7xwg, S-iw63dqdc, S-qnpsgfc5, S-sdxlqqs5, S-mrquhzdn, S-ogsl4hbo, S-dnply3ya, S-kakqvkfa]
 status: complete
 ---

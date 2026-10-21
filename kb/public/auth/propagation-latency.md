@@ -2,7 +2,7 @@
 topic: auth/propagation-latency
 priority: P1
 applies_to: "AD DS, Entra ID, ConfigMgr 2603, Intune, SQL Server 2022/2025, GitLab (docs.gitlab.com current)"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S1344, S-fn2rot77, S1346, S1347, S1354, S1355, S1306, S1380, S1378, S-ffrzumip, S-ltkr37vz, S-v5wjmc3h, S-ivhcma7e, S-r6vi3iik, S-pq22l6q6, S-n6x3ci6g, S-jpsjsa5i, S-ljhugmcx, S1375, S-sjlqevgj]
 status: complete
 ---

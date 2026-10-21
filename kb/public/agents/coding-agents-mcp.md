@@ -2,7 +2,7 @@
 topic: agents/coding-agents-mcp
 priority: P2
 applies_to: "GitHub Copilot coding agent (2026-09); VS Code MCP support (2026-09); OpenAI Agents SDK (Python, mcp>=1.19.0,<3); OpenAI Responses API remote MCP tool; Codex CLI config.toml (2026-09)"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-udcaydkb, S-y4l4chtg, S-caxeb7wx, S-shpwh3m7, S-r4egujgz, S-b5ptbcql, S-2q2hcluk, S-4fmcb5i2, S-zqlgscwv]
 status: complete
 ---

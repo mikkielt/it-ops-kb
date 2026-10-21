@@ -2,7 +2,7 @@
 topic: arch/uuidv7-identifiers
 priority: P3
 applies_to: "UUIDv7 as a primary key: RFC 9562 layout and monotonicity, and PostgreSQL 18 uuidv7()"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-chjxpvbv, S-a6c5zane, S-5rgjgp6v]
 status: complete
 ---

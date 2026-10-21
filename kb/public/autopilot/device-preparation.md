@@ -2,7 +2,7 @@
 topic: autopilot/device-preparation
 priority: P1
 applies_to: "Windows Autopilot device preparation (v2), memdocs, docs retrieved 2026-09-26"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-10-21
 sources: [S-6htyzc3j, S-xp44rfad, S-7cxticpd, S-ogiphajf, S-3w5igyu3, S-kcoqv2wr, S-pvo4qjfp, S-ubpss7bf, S-oyfbtzrp, S-2dqskpmr, S-ww4g7luc, S-otgnfdud, S-lfd7criv, S-s3auwm6y, S-iqksiiaq, S-b6krqeqe, S-mgri56wc, S-nxjyvkmx, S-ec3hg7rx, S-kqvek5fm, S-6p7kyiau]
 status: complete
 files: [autopilot/v1-vs-v2.csv]

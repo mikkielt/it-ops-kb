@@ -2,7 +2,7 @@
 topic: windows/dev-drive
 priority: P3
 applies_to: "Windows 11 Dev Drive (ReFS developer volume) and Microsoft Defender Antivirus performance mode, as documented on Microsoft Learn (read 2026-09-29)"
-retrieved_utc: 2026-10-07
+retrieved_utc: 2026-10-21
 sources: [S-mmdoupim, S-zhrbtrgz, S-rxcgi365, S-wnoqgewy, S-et27ccvn, S-c5vcqkia]
 status: partial
 ---

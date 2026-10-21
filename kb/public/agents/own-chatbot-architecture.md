@@ -2,7 +2,7 @@
 topic: agents/own-chatbot-architecture
 priority: P1
 applies_to: "Microsoft 365 Agents SDK (GA), Bot Framework SDK (retiring), Azure AI Foundry Agent Service, docs current 2026-10-21"
-retrieved_utc: 2026-09-28
+retrieved_utc: 2026-10-21
 sources: [S1961, S1964, S1965, S1966, S1967, S1968, S1969, S1970, S1971, S1972, S1974, S1975, S1976, S1977, S1985, S-2rginmyk, S-cwgzp4nu]
 status: complete
 ---

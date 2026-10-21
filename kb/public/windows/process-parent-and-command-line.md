@@ -2,7 +2,7 @@
 topic: windows/process-parent-and-command-line
 priority: P3
 applies_to: "Windows desktop (Win32 Toolhelp, the native NtQueryInformationProcess and the PEB, WMI Win32_Process) for finding a process's parent and a process's command line, as documented on Microsoft Learn (read 2026-10-07)"
-retrieved_utc: 2026-10-07
+retrieved_utc: 2026-10-21
 sources: [S-u6fzpqel, S-fvl2zjrg, S-xppzzo3g, S-vav6jyoa, S-kgfngudi, S-rstjssao, S-kgv326f5, S-hgt26zgs]
 status: partial
 ---

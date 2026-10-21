@@ -2,7 +2,7 @@
 topic: auth/sops-age-recipients
 priority: P3
 applies_to: "sops 3.13.x with age 1.3.x recipients: .sops.yaml creation_rules, key groups, updatekeys and rotate, what a committed encrypted file keeps"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-r3t6wvk5, S-ax3gmu7j, S-bi6fdfos]
 status: complete
 ---

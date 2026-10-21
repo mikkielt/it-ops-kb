@@ -2,7 +2,7 @@
 topic: agents/coding-agent-codebase-context
 priority: P3
 applies_to: "Aider v0.86.2; GitHub Copilot repository indexing (github/docs @3a444c0); VS Code Copilot workspace context (vscode-docs @0fc6a01); Cursor docs (retrieved 2026-09-28); OpenAI Codex AGENTS.md (docs retrieved 2026-09-28, code rust-v0.158.0); Gemini CLI v0.61.0; Anthropic context-engineering article (2025-09-29)"
-retrieved_utc: 2026-09-29
+retrieved_utc: 2026-10-21
 sources: [S1855, S-yq3633pk, S-pht5euzf, S-q4hcjmq7, S-g6eifvzw, S-oqjcjt4q, S-wtku6tkc, S-v2sqknkh, S-4owuypm5, S-iuskapuz, S-zsi4cru4, S-c5olve2h, S-jomschqn, S-c4vaxr7q, S-mer4fr7g, S-bci74yyr, S-fema44tc, S-clksl3oh, S-e7vrnq3a, S-mxqyhxx7]
 status: complete
 ---

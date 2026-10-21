@@ -2,7 +2,7 @@
 topic: logs/prometheus-retention-exposition
 priority: P3
 applies_to: "Prometheus v3.15.0 (released 2026-09-24); Python prometheus_client 0.26.0; Rust prometheus 0.14.0, prometheus-client 0.25.1, metrics-exporter-prometheus 0.18.3; prometheus/docs at commit 605cf81f"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-cgscrv4s, S-one7nth5, S-fpf6c56i, S-42nwx5i6, S-a3vg5qlu, S-fauxu5ws, S-bfvveghs, S-eo46iizs, S-zirdyvds, S-ptmbzpgw, S-5tvo6y34, S-zbmhggt3, S-4hvb3m5w, S-bpsk5rak, S-dn4wxw4r, S-wr47t6mb, S-4gvbwjju, S-3ylk7y4h, S-f5e4slzj, S-fr4rpivt, S-lggz7o42, S-fmkur47t, S-uc4rdiul, S-ced5z4pp, S-4dcfdr4h, S-rm4q4usy, S-pf4gtprf, S-sxme5fjq, S744]
 status: partial
 ---

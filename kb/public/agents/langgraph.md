@@ -2,7 +2,7 @@
 topic: agents/langgraph
 priority: P3
 applies_to: "LangGraph (Python `langgraph` package, MIT licence); docs retrieved 2026-10-12"
-retrieved_utc: 2026-10-14
+retrieved_utc: 2026-10-21
 sources: [S-bivxzhtv, S-thsymqx6, S-pxkxmmn5, S-5pmoh6xp, S-j54mtzby, S-dir5xyqr, S-v5hqqcqx, S-43xr27dp, S-woho7bmc, S-ujkfhzif, S-bygurlbr, S-wrrbygrl, S-vscgh245, S-26trg6rj, S-f3dlrjtw]
 status: complete
 ---

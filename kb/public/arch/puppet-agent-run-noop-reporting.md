@@ -2,7 +2,7 @@
 topic: arch/puppet-agent-run-noop-reporting
 priority: P3
 applies_to: "Puppet 8.x (Puppet Core 8.22.0 docs; source at commit e227c27, in-tree version 8.11.0): the agent run and its order, run settings, noop mode, run reports, exit codes"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-rg67vl44, S-5tsldiae, S-z6kl5grq, S-uqxc7z4f, S-cttzm2qq, S-w5xtdsyr, S-4dquzyfj, S-fhswdmzt, S-e7vpuvbk, S-wwls72e7, S-xsvufwtx]
 status: partial
 ---

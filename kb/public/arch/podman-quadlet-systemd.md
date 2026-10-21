@@ -2,7 +2,7 @@
 topic: arch/podman-quadlet-systemd
 priority: P3
 applies_to: "Podman 6.1.x Quadlet (podman-systemd.unit(5)) on Linux with systemd: .container, .pod, .volume, .network and .kube units, podman auto-update"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-bw3wuvly, S-62kbyvpm, S-h4qvlvgv, S-rylxmcjm]
 status: partial
 ---

@@ -2,7 +2,7 @@
 topic: windows/cmd-exe-syntax-quoting-redirection
 priority: P3
 applies_to: "cmd.exe, the Windows command interpreter: invocation switches, special characters and quoting, command operators, redirection and the command-line string limits, as documented on Microsoft Learn (Windows Commands reference; read 2026-10-15)"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-yna7gijv, S-ikuzvclu, S-gp367igh, S-gydqaolr, S-jbeh3qg6, S-5h7fuwx3, S-5b57ykp4, S-akgat5ss, S-e4zz24dq, S-6bobcclf, S-dabwnzz5, S-hrrqkjbi]
 status: partial
 ---

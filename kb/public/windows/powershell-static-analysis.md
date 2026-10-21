@@ -2,7 +2,7 @@
 topic: windows/powershell-static-analysis
 priority: P3
 applies_to: "PowerShell 7.5 and Windows PowerShell 5.1 (#Requires, module manifests, Import-PowerShellDataFile, Get-Command); System.Management.Automation.Language parser API (SDK 7.4 to 7.6); PSScriptAnalyzer 1.18+"
-retrieved_utc: 2026-09-29
+retrieved_utc: 2026-10-21
 sources: [S-oodal3ol, S-iass75od, S-3olari7o, S-62qzauot, S-k7hdd27i, S-6jyt4xkf, S-tsdqt57s, S-gw24iv7o, S-f3ndzkct, S-jhjw7ppr, S-oeqxq56y, S-o6gamymj, S-ffmai4hf, S-g6na73gp, S-yx6xgjzj, S-f4p734lc, S-z65pkysn, S-ia7is5xj, S-4bjgu6jw, S-ouafwanl, S-vbfv4per]
 status: complete
 ---

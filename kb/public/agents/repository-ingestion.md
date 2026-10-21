@@ -2,7 +2,7 @@
 topic: agents/repository-ingestion
 priority: P3
 applies_to: "git v2.55.0 (check-attr); GitHub Linguist v9.7.0 (linguist-* attributes); GitLab merge request diffs (gitlab-generated, docs @9f1632e2); Go go1.27.1 (generated-code header)"
-retrieved_utc: 2026-09-28
+retrieved_utc: 2026-10-21
 sources: [S-rhxv4cuv, S-czqctq3z, S-drdhmn2b, S-me5pwvu4]
 status: complete
 ---

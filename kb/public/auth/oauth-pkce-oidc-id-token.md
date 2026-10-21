@@ -2,7 +2,7 @@
 topic: auth/oauth-pkce-oidc-id-token
 priority: P3
 applies_to: "OAuth 2.0 authorization code with PKCE (RFC 7636) for a public client, OIDC id_token validation (OpenID Connect Core 1.0), and what Discord documents for each"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-cc7tmfsl, S-z7jhscsu, S-5wetycnr, S-btzqf4mj, S-fhpwukk7, S-xrzcvqcp]
 status: partial
 ---

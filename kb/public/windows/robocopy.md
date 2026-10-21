@@ -2,7 +2,7 @@
 topic: windows/robocopy
 priority: P3
 applies_to: "Robocopy (robocopy.exe) in Windows and Windows Server: copy, mirror, retry, logging, ACL, timestamp and attribute options, exit codes and multithreaded copy, with xcopy for comparison, as documented on Microsoft Learn (Windows Commands reference, robocopy page ms.date 03/17/2025, xcopy page ms.date 05/28/2024; read 2026-10-15)"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-3lm4tsvh, S-w4neuhkd, S-7varc2ty]
 status: partial
 ---

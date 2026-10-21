@@ -2,7 +2,7 @@
 topic: python/alembic-migrations
 priority: P3
 applies_to: "Alembic 1.20.0 (tag rel_1_20_0) with PostgreSQL 18 documentation; SQLAlchemy async engine"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-2ggil3io, S-772ppm55, S-7zk6ggvu, S-plfldpyl, S-b6msep5g, S-zcvw2nun, S-h2z7tktj, S-4k3e652e, S-hqy2uu3t, S-qh5ieidx, S-xf26uevo, S-7losxrcq, S-5mw7raax]
 status: partial
 ---

@@ -2,7 +2,7 @@
 topic: gitlab/jira-issue-keys-in-commits
 priority: P3
 applies_to: "Jira Cloud support pages Process work items with smart commits (modified 2025-10-07) and Reference work items in your development spaces (modified 2026-05-29); GitLab Jira issues integration (doc/ of gitlab-org/gitlab master at a9490a0e, 2026-10-10); the trailer reading was run with git 2.50.1 on macOS, not against a Jira site"
-retrieved_utc: 2026-10-10
+retrieved_utc: 2026-10-21
 sources: [S-kzztizwv, S-hmqwtvjy, S-pnktrw4x]
 status: partial
 ---

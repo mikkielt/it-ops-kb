@@ -2,7 +2,7 @@
 topic: privacy/spacy-model-licence
 priority: P0
 applies_to: "en_core_web_lg 3.8.0 (GitHub) / 3.7.1 (Hugging Face)"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S850, S851, S852, S833, S-kujx3zxn]
 status: complete
 ---

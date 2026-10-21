@@ -2,7 +2,7 @@
 topic: agents/agent-planning-and-done
 priority: P3
 applies_to: "planning multi-session agent work and deciding when a task is done: Scrum Guide 2020, Anthropic long-running harness guidance (2025-11-26), Claude Code best practices and /goal (retrieved 2026-09-28), Kanban Guide v2025.5 (retrieved 2026-10-08)"
-retrieved_utc: 2026-10-08
+retrieved_utc: 2026-10-21
 sources: [S-2wwcyoa4, S2150, S-o3v6ozch, S-vp5onm7b, S1896, S-v2ztgtdn, S-cbzadytw]
 status: complete
 ---

@@ -2,7 +2,7 @@
 topic: windows/laps
 priority: P2
 applies_to: "Windows LAPS (Windows 10 22H2+/11 21H2+/Server 2019+ with April 2023 update; automatic account management and passphrases need Windows 11 24H2/Server 2025); Microsoft Entra ID; Intune"
-retrieved_utc: 2026-09-28
+retrieved_utc: 2026-10-21
 sources: [S1226, S-twjwzzdw, S-djs7xprf, S-d67v4ujp, S-pqlq3zuw, S-krw7psw7, S-rsgl4z3v, S-pfq3p4yz, S-b2kbbt73, S-kqvek5fm, S-m6dgyqa2, S-jmzxsdjr, S-lnzspig4, S-tn4hpddq, S-4as52t5e]
 status: complete
 files: [windows/laps.csv]

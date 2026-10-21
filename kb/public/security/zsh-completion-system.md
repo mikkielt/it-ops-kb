@@ -2,7 +2,7 @@
 topic: security/zsh-completion-system
 priority: P3
 applies_to: "Zsh 5.9.2 programmable completion: compinit and the dump file, fpath and underscore-named completion functions, #compdef and compdef, zstyle contexts, the insecure-directory check, and bashcompinit"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-wkxevnxu, S-e6mo6lhk, S-jpnt2s3d, S116]
 status: partial
 ---

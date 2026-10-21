@@ -2,7 +2,7 @@
 topic: auth/token-lifetimes-cae
 priority: P1
 applies_to: "Microsoft Entra Continuous Access Evaluation, Token Protection (docs current 2026-09-24)"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S1291, S1292, S1227, S1348, S1347, S1355, S-yc5geeul, S1306]
 status: complete
 ---

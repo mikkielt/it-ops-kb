@@ -2,7 +2,7 @@
 topic: mcp/transports-stdio
 priority: P1
 applies_to: "MCP specification 2026-07-28; MCP Python SDK 2.2.0"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S705, S706, S703, S707, S724, S-wumieutb]
 status: complete
 ---

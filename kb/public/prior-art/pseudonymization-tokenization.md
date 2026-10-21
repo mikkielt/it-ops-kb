@@ -2,7 +2,7 @@
 topic: prior-art/pseudonymization-tokenization
 priority: P2
 applies_to: "model-only pseudonymization before any data reaches the LLM"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-10-21
 sources: [S1005, S1006, S1007, S827, S-nvdbj7bz, S-mn7nbj7n]
 status: complete
 ---

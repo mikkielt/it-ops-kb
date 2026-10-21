@@ -2,7 +2,7 @@
 topic: agents/test-suite-size-and-agent-overengineering
 priority: P3
 applies_to: "keeping a test suite small and fast, deciding which tests to delete, running a slow full suite less often than per merge, and keeping a coding agent from over-engineering it: GitLab testing guide, pipelines page and quarantine handbook (master), Software Engineering at Google (2020), Google SRE book (2017), Bazel test encyclopedia, Microsoft Learn DevOps (2022), Anthropic prompting guidance for Claude Opus 4.5 to Opus 5 and Sonnet 5.5, Claude Code best practices (retrieved 2026-10-10)"
-retrieved_utc: 2026-10-12
+retrieved_utc: 2026-10-21
 sources: [S-zec4acor, S-pf2bzwco, S-xpnhjuy4, S-topmk5kh, S-3dlofilm, S-wxn7kar4, S-claarsij, S-flv3lmzn, S-3jc54vsg, S-xxsfmdk5, S-krlfjqxg, S-o3v6ozch, S-bmz46flb, S-ocdzembr, S-xnp4p5cj, S-f65kifg4, S-jg2qnt5d]
 status: partial
 ---

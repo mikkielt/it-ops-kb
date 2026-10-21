@@ -2,7 +2,7 @@
 topic: windows/azure-arc-servers
 priority: P2
 applies_to: "Azure Arc-enabled servers, Azure Connected Machine agent (azcmagent), Azure Machine Configuration (docs current 2026-09-26)"
-retrieved_utc: 2026-09-28
+retrieved_utc: 2026-10-21
 sources: [S-gma7exwg, S-arygyiia, S-ojs4qilv, S-3ajkoikd, S-lpj5aefn, S-szyeetyp, S-efadnhwv, S-nevhri3m, S-5d7caeeq, S-h7fejg6k, S-oacfa6ee, S-wwbtoald, S-jfzhzjgu, S-nibv7ci5, S-4xar7ise, S-zfc5iphl, S-w3pkna2x, S-ldykf7ob, S-wftu7kvv, S-ucwyn46f, S-d4ny3ufk, S-epoqec7s, S-nofzkxdn, S-vetttstu, S-obkcr6hb, S-xjcjnwtx, S-43ldqczf, S-lkmpjpnp, S-2akwz2fk, S-alputngy, S-3jpzrkqj, S-orth4d7r, S-fio2gurk, S-i2fkwqg2, S-uoxtujn6, S-jduwmt53, S-qhjsqrr5, S-3pxztrbk]
 status: complete
 files: [windows/azcmagent-config.csv]

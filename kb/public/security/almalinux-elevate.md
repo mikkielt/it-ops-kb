@@ -2,7 +2,7 @@
 topic: security/almalinux-elevate
 priority: P3
 applies_to: "ELevate: in-place major-version upgrades of RHEL-family hosts to AlmaLinux with Leapp (7 to 8, 8 to 9, 9 to 10), its steps, the --target option and the offline mirror variant"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-fvvvkcwq, S-zdchbjj6, S-leb3x6jn, S-4jok2hag, S-23s23lr2]
 status: partial
 ---

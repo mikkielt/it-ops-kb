@@ -2,7 +2,7 @@
 topic: auth/key-management-options
 priority: P1
 applies_to: "Windows 11/Server 2025, SQL Server 2022/2025, mssql-python (main branch 2026-09), pyodbc + ODBC Driver 18, age/sops (pure-Python)"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S1340, S1341, S1342, S1343, S1349, S1350, S1351, S1000, S1001, S-53ajdzoj, S402, S-kqm5iv43, S-3acopzkn, S-sp6pux45, S-ax3gmu7j, S-duamtyj7, S-ftk5lzj7, S-wk6ahp72, S-zb4abl74, S-r3t6wvk5]
 status: complete
 ---
