@@ -1616,6 +1616,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 - **Anthropic terms automated unattended use Claude Code subscription token Pro Max loop scripted usage ban** The kb was asked this in a logged lookup of 2026-10-04, and no article answered it (query log finding F-633d7691b544). Looked in the kb 2026-10-12: `rag.py pack` gives `good`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: agents/headless-agent-runtimes)
   - Resolved 2026-10-20: Claude Code's legal page puts usage under the Anthropic Usage Policy and says the Pro and Max limits assume ordinary, individual usage of Claude Code and the Agent SDK (S-fvspfpxd), and the Consumer Terms forbid access through automated or non-human means, whether through a bot or script, except through an API key or where Anthropic explicitly permits it (S-rleo3k4b); the `claude setup-token` and GitHub Action routes are the documented subscription ones (S-frvnva4f, S1801). No page defines "ordinary" or states a ban rule for scripted loops; that stays an [UNK] fact in `agents/headless-agent-runtimes.md`. (topic: agents/headless-agent-runtimes)
+- Whether the Copilot cloud agent's environment is powered by GitHub Actions and what a session consumes (Actions minutes, AI credits): the about-cloud-agent page no longer says so; looked at docs.github.com about-cloud-agent on 2026-10-21. Billing-and-usage pages may carry it. (topic: agents/headless-agent-runtimes)
 
 ## security/policy-precedence
 
@@ -1878,3 +1879,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## python/ruff
 
 - The `# noqa` semantics (line, multi-line string, import block, file-level `# ruff: noqa`, `# flake8: noqa`) and the check exit codes 0/1/2 in ruff.md:48-57 are cited to the 0.16.9 docs/configuration.md, which does not state them. Looked in that page's text and CLI help only. A source that covers them is needed, e.g. the ruff linter docs. (topic: python/ruff)
+
+## agents/foundry-agent-service
+
+- The claim that the toolbox/MCP endpoint does not block tools/call when require_approval is always is not on the MCP tool page (S-5ygcb6vm) as of 2026-10-21; only S-3axje6py was left to support it. (topic: agents/foundry-agent-service)

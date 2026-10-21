@@ -2333,26 +2333,29 @@ ff9576e1fef3,agents/gitops-for-agents.md,S-7na2vvh5,located,Application deployme
 54bdf6f6c5cc,agents/headless-agent-runtimes.md,S-qne4hqox,located,Scheduling Timed Jobs > Effects of Sleeping and Powering Off,other;skip;asleep;designat;until;computer;next;off,e21b23fb26f540a0,All other launchd jobs are skipped when the computer is turned off or asleep,2026-10-21
 55a9c2c4742f,agents/headless-agent-runtimes.md,S-gu5aqnrl,located,Configure cloud environments > Network access > GitHub proxy,deployment;opt;authenticat;provid;credential;self;self-host;git,2c9dacdb1857c15d,"Sessions in a self-hosted environment authenticate git operations with credentials your deployment provides; Configure git covers the options, including per-session minted credentials and an opt-in",2026-10-10
 589bc9a032fa,agents/headless-agent-runtimes.md,S-mkqjh4ac,located,Use Claude Code in the cloud > Limitations,bitbucket;gitlab;lab;result;ccr;ccr_force_bundl;forc;creation,66477de0acf1290d,Platform restrictions: repository cloning and pull request creation require GitHub. Self-hosted GitHub Enterprise Server instances are supported for Team and Enterprise plans. You can send,2026-10-10
-5de9a4a601df,agents/headless-agent-runtimes.md,S-5paxdbvt,unlocated:no-match,,,,,2026-10-10
-5de9a4a601df,agents/headless-agent-runtimes.md,S-ulr4lcp4,located,Customizing or disabling the firewall for GitHub Copilot > Overview,body;command;comment;exist;new;pull;added;block,b0909418e6cde8ad,"If Copilot tries to make a request which is blocked by the firewall, a warning is added to the pull request body (for new pull",2026-10-10
 68bf3870e8fe,agents/headless-agent-runtimes.md,S1802,unlocated:no-match,,,,,2026-10-12
 6a1452ba307a,agents/headless-agent-runtimes.md,S1801,located,Claude Code GitHub Actions > Interactive and automation modes > Who can trigger runs,attribut;human;last;actor;allowed_bot;apply;bots;unless,7e64d14c58dd4d11,"Human actor: on every event, the Claude Code GitHub Action rejects a bot actor unless you list it in allowedbots, which keeps bots from triggering",2026-10-12
 6d8393787266,agents/headless-agent-runtimes.md,S1800,unlocated:no-match,,,,,2026-10-12
 6d8393787266,agents/headless-agent-runtimes.md,S2131,unlocated:no-match,,,,,2026-10-12
 70b5c03dbbcb,agents/headless-agent-runtimes.md,S2131,unlocated:no-match,,,,,2026-10-12
 7111c36d5f8a,agents/headless-agent-runtimes.md,S1802,located,Claude Code GitLab CI/CD > How it works,apply;container;dif;every;reviewer;sandbox;still;workspac,0d48a4b670c9c595,Sandboxed execution: Each interaction runs in a container with strict network and filesystem rules. Claude Code enforces workspace-scoped permissions to constrain writes. Every change flows,2026-10-12
+72aec8b555dd,agents/headless-agent-runtimes.md,S-hobjhakf,unlocated:no-match,,,,,2026-10-21
 73a098449867,agents/headless-agent-runtimes.md,S-gu5aqnrl,located,Configure cloud environments > What's available in cloud sessions > Link output back to the session,attribution;attribution.sessionurl;claude-session;fals;sessionurl;trailer;url;commit,120089470a075e75,"Commits that Claude creates in a cloud session include a Claude-Session: <url> git trailer, and PR bodies include the session URL on its own line.",2026-10-10
 7449343f1ca4,agents/headless-agent-runtimes.md,S1801,located,Claude Code GitHub Actions > Interactive and automation modes,subject;direct;result;automation;log;post;mode;default,e243b173a1450228,"Automation mode: when the workflow provides a prompt input, Claude runs without waiting for a mention, subject only to the checks on who can trigger",2026-10-12
 7fa502463c3a,agents/headless-agent-runtimes.md,S1818,unlocated:no-match,,,,,2026-10-10
 7fa502463c3a,agents/headless-agent-runtimes.md,S-qso27noq,unlocated:no-match,,,,,2026-10-10
 81b63e2360aa,agents/headless-agent-runtimes.md,S1802,unlocated:no-match,,,,,2026-10-12
 83912bd06d1a,agents/headless-agent-runtimes.md,S1800,unlocated:no-match,,,,,2026-10-12
+856e546fd39c,agents/headless-agent-runtimes.md,S-5paxdbvt,unlocated:no-match,,,,,2026-10-21
+856e546fd39c,agents/headless-agent-runtimes.md,S-ulr4lcp4,located,Customizing or disabling the firewall for GitHub Copilot > Overview,body;command;comment;exist;new;pull;added;block,b0909418e6cde8ad,"If Copilot tries to make a request which is blocked by the firewall, a warning is added to the pull request body (for new pull",2026-10-21
 892190f5a2fa,agents/headless-agent-runtimes.md,S1818,unlocated:no-match,,,,,2026-10-10
 892190f5a2fa,agents/headless-agent-runtimes.md,S-qso27noq,located,GitHub Agentic Workflows,appli;safe-output;output;safe;scop;validat;permission;agent,7de9205ce3e580f5,"Agent jobs are read-only and sandboxed by default, and configured GitHub writes are normally applied through validated safe-outputs jobs with scoped permissions.",2026-10-10
 8fae9251ddab,agents/headless-agent-runtimes.md,S2131,unlocated:no-match,,,,,2026-10-12
 8fae9251ddab,agents/headless-agent-runtimes.md,S-eu3n3hyf,unlocated:no-match,,,,,2026-10-12
 9235625b1265,agents/headless-agent-runtimes.md,S1801,unlocated:no-match,,,,,2026-10-12
 940c9e5b023a,agents/headless-agent-runtimes.md,S1800,unlocated:no-match,,,,,2026-10-12
+940c9e5b023a,agents/headless-agent-runtimes.md,S-3pftmimx,unlocated:no-match,,,,,2026-10-21
+940c9e5b023a,agents/headless-agent-runtimes.md,S-bcbpadtc,unlocated:no-match,,,,,2026-10-21
 940c9e5b023a,agents/headless-agent-runtimes.md,S-fvspfpxd,unlocated:no-match,,,,,2026-10-21
 9a69d03d1cb8,agents/headless-agent-runtimes.md,S-rmzenq4r,located,"run at 10 pm on weekdays, annoy Joe > NOTES top",instead;twic;execut;every;hour;minut,201e6fe9dd2de89c,"it will be executed twice every hour,",2026-10-21
 9afe6ffbd7e7,agents/headless-agent-runtimes.md,S1800,located,Run Claude Code programmatically > Examples > Auto-approve tools,dont;dontask;down;lock;locked-down;manual;otherwis;classifier,09a53c44f4d8b529,"auto: pass --permission-mode auto to have a classifier review most actions instead of you dontAsk: Claude Code denies every call that would otherwise prompt, which",2026-10-12
