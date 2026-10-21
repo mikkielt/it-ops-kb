@@ -124,7 +124,6 @@ b0c26162383b,agents/a2a/a2a-proto-digest.md,S2120,located,Agent2Agent (A2A) Prot
 481b7c603816,agents/agent-caching.md,S1512,unlocated:no-match,,,,,2026-10-12
 4ec590410e48,agents/agent-caching.md,S2132,located,Manage costs effectively > Why usage climbs in a long session,itself;larg;summariz;compact;clear;read;conversation;request,2893dd4218025351,"Compaction: /compact reads the conversation it summarizes, so compacting a large context is itself a large request. When you want a fresh start instead of",2026-10-12
 589588c88a2d,agents/agent-caching.md,S2130,located,...long conversation so far > Data retention,delet;promptly;immediately;standard;extend;hour;minut;entry,ec89f1c88efb9997,"Cached entries have a minimum lifetime of 5 minutes (standard) or 1 hour (extended), after which they are promptly, though not immediately, deleted.",2026-10-16
-5b41524fb3df,agents/agent-caching.md,S2159,unlocated:no-match,,,,,2026-10-12
 5e998f9e734d,agents/agent-caching.md,S2130,unlocated:no-match,,,,,2026-10-21
 5e998f9e734d,agents/agent-caching.md,S2132,unlocated:no-match,,,,,2026-10-21
 5e998f9e734d,agents/agent-caching.md,S2133,unlocated:no-match,,,,,2026-10-21
@@ -156,6 +155,7 @@ a8f3dcbdb85e,agents/agent-caching.md,S2133,unlocated:no-match,,,,,2026-10-12
 b15c5b47ea84,agents/agent-caching.md,S2131,located,Pricing > Feature-specific pricing > Prompt caching,1.25x;off;1-hour;25x;5-minut;minut;one;pays,6f39f61b71f42f0e,"A cache hit costs 10% of the standard input price, which means caching pays off after one cache read for the 5-minute duration (1.25x write),",2026-10-21
 b5e0c3c4f709,agents/agent-caching.md,S2132,located,Manage costs effectively > Track your costs > Using the `/usage` command > Prompt cache statistics,re-cach;tool-result;serv;ttl;whether;rebuild;result;warm,16b05256870679da,"After the main conversation's first API response, Claude Code also adds a Prompt cache (main) line to the Session block, summarizing the session's prompt cache",2026-10-12
 b760c39c3933,agents/agent-caching.md,S2132,unlocated:no-match,,,,,2026-10-21
+bd90bbd11960,agents/agent-caching.md,S2159,unlocated:no-match,,,,,2026-10-21
 c04b8036c05d,agents/agent-caching.md,S2135,located,Tools > Capabilities,hit;improv;reliably;deterministic;order;rate;cach;context,faea098453bdff07,Deterministic ordering enables clients to reliably cache the tool list and improves LLM prompt cache hit rates when tools are included in model context.,2026-10-12
 c3ad899e10b8,agents/agent-caching.md,S2133,unlocated:no-match,,,,,2026-10-21
 c86ac9b0bef2,agents/agent-caching.md,S2131,located,Pricing > Claude Managed Agents pricing > Worked example,0.008;0.04;uncach;0.05;read;cach;input,8e218128975f678b,"Uncached input tokens10,000 × $4 / 1,000,000$0.04 Cache read tokens40,000 × $4 × 0.05 / 1,000,000$0.008",2026-10-21
