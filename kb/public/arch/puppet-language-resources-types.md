@@ -3,7 +3,7 @@ topic: arch/puppet-language-resources-types
 priority: P3
 applies_to: "Puppet 8.x manifest language (Puppet Core 8.22.0 docs; reference files at commit e227c27): resource declarations, titles and namevars, ordering and relationships, metaparameters, classes, built-in and removed resource types"
 retrieved_utc: 2026-10-21
-sources: [S-3nlx3lke, S-4dquzyfj, S-kletprvx, S-w5xtdsyr, S-ef4b5npw, S-2xntzgfj, S-cttzm2qq, S-se4kjnw2]
+sources: [S-3nlx3lke, S-4dquzyfj, S-kletprvx, S-w5xtdsyr, S-ef4b5npw, S-2xntzgfj, S-cttzm2qq, S-se4kjnw2, S-ycxlxetd, S-52gfn3wf]
 status: partial
 ---
 
@@ -41,6 +41,8 @@ A Puppet manifest declares resources (a type, a title, attributes); the agent co
 - A provider implements a type on a kind of system and Puppet picks a default one; the `provider` attribute overrides it, and a provider may support only some of a type's features (for example `ensure => purged` needs the `purgeable` feature). [DOC S-ef4b5npw]
 - The `service` type's `enable` property accepts `true`, `false`, `manual`, `mask` and `delayed` (it requires the `enableable` feature), and leaving it out leaves the boot behaviour to the operating system. [DOC S-ef4b5npw]
 - How it fits: because an omitted resource is ignored and not removed, a Puppet catalog is a statement of what to enforce, not a full inventory; drift in anything the catalog does not name is invisible to a noop run. [DER S-3nlx3lke, S-cttzm2qq: unmanaged resources are not touched; noop checks only catalog resources]
+- Puppet Core's relationships page says resources are included and applied in the order they are defined in their manifest, but only if the resource has no implicit relationship. [DOC S-52gfn3wf]
+- `lib/puppet/defaults.rb` at Puppet 8.11.0 (commit e227c27) defines no `ordering` setting; its one hit for the word is the deferred-function text "deferred functions follow Puppet relationships and ordering". [CODE S-ycxlxetd: lib/puppet/defaults.rb#define_settings]
 
 ## Reference
 | need | where | source |

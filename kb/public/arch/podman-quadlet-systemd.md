@@ -3,7 +3,7 @@ topic: arch/podman-quadlet-systemd
 priority: P3
 applies_to: "Podman 6.1.x Quadlet (podman-systemd.unit(5)) on Linux with systemd: .container, .pod, .volume, .network and .kube units, podman auto-update"
 retrieved_utc: 2026-10-21
-sources: [S-bw3wuvly, S-62kbyvpm, S-h4qvlvgv, S-rylxmcjm]
+sources: [S-bw3wuvly, S-62kbyvpm, S-h4qvlvgv, S-rylxmcjm, S-3acg7evq]
 status: partial
 ---
 
@@ -40,7 +40,9 @@ Quadlet is Podman's systemd generator. You write a `name.container` (or `.pod`, 
 - `podman generate systemd` is marked deprecated in favour of Quadlet; the page says there are no plans to remove it, and that it gets urgent bug fixes only, no new features. [DOC S-h4qvlvgv]
 - The `podman(1)` page points to Quadlet files as the way to manage containers, pods, volumes, networks and images declaratively through systemd. [DOC S-rylxmcjm]
 - For a pull-based configuration agent, a Quadlet file in `/etc/containers/systemd/` is the unit of change: the agent writes the file, runs `systemctl daemon-reload`, and checks the generated unit with the generator's dry run or `systemd-analyze verify` before it starts the service. [DER S-bw3wuvly: generator runs at boot and on daemon-reload; dry run and verify as debugging tools]
-- A container that must start without a login session needs a rootful unit or a lingering user; the Quadlet page does not state the lingering requirement for rootless units, and the socket page's own example uses `loginctl enable-linger` for a user socket. [UNK: Quadlet page silent; logged in `_gaps.md`]
+- A container that must start without a login session needs a rootful unit or a lingering user; the Quadlet page does not state the lingering requirement for rootless units, and the socket page's own example uses `loginctl enable-linger` for a user socket. The loginctl manual's lingering sentence and a derived fact are below (2026-10-21). [UNK: Quadlet page silent; logged in `_gaps.md`]
+- The loginctl manual (systemd v262.1) says that with lingering enabled for a user, a user manager is spawned for that user at boot and kept around after logouts. [DOC S-3acg7evq]
+- Quadlet generates ordinary systemd units, so a rootless Quadlet unit wanted by `default.target` can start at boot without a login only when lingering is enabled for its user; no Podman page read states this for Quadlet. [DER S-3acg7evq: lingering starts the user manager at boot, Quadlet output is user units]
 
 ## Reference
 | file | generated service | Podman object | source |

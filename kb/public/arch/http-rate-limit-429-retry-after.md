@@ -3,7 +3,7 @@ topic: arch/http-rate-limit-429-retry-after
 priority: P3
 applies_to: "RFC 6585 (April 2012); RFC 9110 (June 2022, STD 97); draft-ietf-httpapi-ratelimit-headers-11 (Internet-Draft, 23 May 2026); limits 5.8.0; slowapi v0.1.10 (FastAPI/Starlette)"
 retrieved_utc: 2026-10-21
-sources: [S-uhsdbxii, S-wct3uoax, S-fdye2dae, S-6xunll63, S-l7o2xn5e, S-bnosg22i, S-455diive, S-5uxkh3j5, S623]
+sources: [S-uhsdbxii, S-wct3uoax, S-fdye2dae, S-6xunll63, S-l7o2xn5e, S-bnosg22i, S-455diive, S-5uxkh3j5, S623, S-xfy2tqqb]
 status: partial
 ---
 
@@ -96,6 +96,7 @@ in process memory and send no `Retry-After` unless header injection is switched 
   follows from separate process memory]
 - No FastAPI or Starlette documentation page on rate limiting was found by a code search of their docs
   directories for "rate limit", so the framework's own stance is not confirmed. [UNK]
+- The IETF Internet-Draft draft-ietf-httpapi-ratelimit-headers (May 2026, still a draft) defines the `RateLimit-Policy` and `RateLimit` fields and says that when a response has both `RateLimit` and `Retry-After`, `Retry-After` takes precedence. [DOC S-xfy2tqqb]
 
 ## Reference
 | Header | Defined by | Status |

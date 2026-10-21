@@ -83,6 +83,7 @@ transport dropped `Last-Event-ID` resumability in 2026-07-28 (see
   so the mapping to a query is an application convention]
 - The page text read does not state a maximum length for the `id` value, nor how long a server must
   retain events for replay; both are the server's choice. [UNK]
+- The only constraint the HTML Standard puts on an event stream `id` field is that its value must not contain U+0000 NULL (a value with NULL is ignored); the page states no maximum length and no replay window, which stays with the server. [DOC S-6r5cdtdk]
 
 ## Reference
 | Item | Value | Source tag |

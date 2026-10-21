@@ -3,7 +3,7 @@ topic: arch/podman-images-registries
 priority: P3
 applies_to: "Podman 6.1.x on Linux: registries.conf (container-libs image library), short-name resolution, podman login credentials"
 retrieved_utc: 2026-10-21
-sources: [S-ef6jtpqs, S-pfoyirmn, S-rylxmcjm]
+sources: [S-ef6jtpqs, S-pfoyirmn, S-rylxmcjm, S-fqljd2oz]
 status: partial
 ---
 
@@ -28,7 +28,8 @@ Which registries Podman pulls from is set in `registries.conf` (TOML, shared by 
 - Podman's own page describes `${XDG_RUNTIME_DIR}/containers` as the place for temporary rootless configuration data. [DOC S-rylxmcjm]
 - A registry credential that a unit or a CI job must still find after logout or reboot belongs in an explicit `--authfile` outside the runtime directory (the login page's own example uses `~/.config/containers/auth.json`), not in the default path; the file is a secret and stays out of argv and out of git. [DER S-pfoyirmn, S-rylxmcjm: default path under the runtime directory described as temporary; `--authfile` override]
 - A script or unit that pulls a bare name such as `postgres:16` is only reproducible when the name is fully qualified, or when `unqualified-search-registries` and `short-name-mode` are set deliberately; with `enforcing` and several search registries, a job without a terminal fails instead of guessing. [DER S-ef6jtpqs: short-name modes and non-terminal behaviour]
-- Which registries the distribution's shipped `registries.conf` lists, and which `short-name-mode` it sets, are not in the upstream pages read and differ by distribution. [UNK: logged in `_gaps.md`]
+- Which registries the distribution's shipped `registries.conf` lists, and which `short-name-mode` it sets, are not in the upstream pages read and differ by distribution. Fedora's drop-in is now a fact below (2026-10-21); Debian's and a pinned RHEL file were not read. [UNK: logged in `_gaps.md`]
+- Fedora's `00-fedora-registries.conf` drop-in in containers/container-libs (commit 0a95c3ca) sets `unqualified-search-registries` to registry.fedoraproject.org, registry.access.redhat.com and docker.io, and `short-name-mode="enforcing"`. [CODE S-fqljd2oz: common/rpm/00-fedora-registries.conf#short-name-mode]
 
 ## Reference
 | setting | meaning | source |

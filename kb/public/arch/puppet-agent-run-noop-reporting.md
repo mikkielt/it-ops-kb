@@ -3,7 +3,7 @@ topic: arch/puppet-agent-run-noop-reporting
 priority: P3
 applies_to: "Puppet 8.x (Puppet Core 8.22.0 docs; source at commit e227c27, in-tree version 8.11.0): the agent run and its order, run settings, noop mode, run reports, exit codes"
 retrieved_utc: 2026-10-21
-sources: [S-rg67vl44, S-5tsldiae, S-z6kl5grq, S-uqxc7z4f, S-cttzm2qq, S-w5xtdsyr, S-4dquzyfj, S-fhswdmzt, S-e7vpuvbk, S-wwls72e7, S-xsvufwtx]
+sources: [S-rg67vl44, S-5tsldiae, S-z6kl5grq, S-uqxc7z4f, S-cttzm2qq, S-w5xtdsyr, S-4dquzyfj, S-fhswdmzt, S-e7vpuvbk, S-wwls72e7, S-xsvufwtx, S-o4hirh7b, S-y5y7ikkk]
 status: partial
 ---
 
@@ -46,7 +46,10 @@ The Puppet agent fetches a node's configuration from a primary server and applie
 - `compute_status` takes only the resource metrics and the change total, so `noop_pending` is a separate field: a consumer that wants to know a noop run found drift reads it (or the `noop` events), not the status. [DER S-wwls72e7: compute_status arguments; noop_pending set in finalize_report]
 - A resource status sets `out_of_sync` when it receives an event whose status is not `audit`, and `corrective_change` when any event is corrective; the report's `corrective_change` is true when any resource status has one, noop corrective changes included. [CODE S-xsvufwtx: lib/puppet/resource/status.rb#out_of_sync]
 - How it fits: a read-only drift check on a Puppet node is one noop run followed by reading `noop_pending` (or the noop events) from `last_run_report.yaml` or from the report the primary server received; enforcement is the same run without noop, so the check needs no second tool but does need the node's own agent, its certificate and a primary server. [DER S-cttzm2qq, S-wwls72e7, S-uqxc7z4f: noop semantics; report fields; run order]
-- This kb found no Puppet source stating the exit code of a `--noop --detailed-exitcodes` run; the man page lists the codes without a noop case. [UNK: logged in `_gaps.md`]
+- This kb found no Puppet source stating the exit code of a `--noop --detailed-exitcodes` run; the man page lists the codes without a noop case. The code at Puppet 8.11.0 gives status 0 for a noop run without failures (facts below, 2026-10-21); a lab run would confirm it. [UNK: logged in `_gaps.md`]
+- At Puppet 8.11.0 (commit e227c27) the report's `exit_status` sets bit 2 when the total of changes is above zero and bit 4 for failures, and only a resource event with status 'success' adds to the change count. [CODE S-o4hirh7b: lib/puppet/transaction/report.rb#exit_status, S-y5y7ikkk: lib/puppet/resource/status.rb#change_count]
+- At Puppet 8.11.0 a noop run whose events have status "noop" therefore reports exit status 0 with `--detailed-exitcodes` when nothing failed, even if changes are pending; this is derived from the code, not observed on a lab node. [DER S-o4hirh7b, S-y5y7ikkk: noop events do not add to the change count]
+- In the same report code `noop_pending` is documented as "Whether there are changes that we decided not to apply because of noop", and `corrective_change` as true when the report has events and resources with corrective changes, including noop corrective changes; they are separate report fields and neither feeds the exit status. [CODE S-o4hirh7b: lib/puppet/transaction/report.rb#noop_pending]
 
 ## Reference
 | need | where | source |

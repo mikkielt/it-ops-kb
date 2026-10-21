@@ -2,8 +2,8 @@
 topic: arch/gorules-zen-engine
 priority: P3
 applies_to: "GoRules ZEN Engine (zen-engine, zen-expression) 2.1.3 and the JDM decision format: Rust crate, Python wheel (zen-engine), Node.js; GoRules docs as read 2026-10-11"
-retrieved_utc: 2026-10-11
-sources: [S-kvbchryu, S-jq7z2od2, S-5jpgqrfy, S-trcil35r, S-z4pp6bkj, S-su332252, S-heikuvcn, S-wgtknkrb, S-ltzwimxf, S-dxj7zgns, S-ccvh7i4b, S-ipghmg2f, S-osv63lk3, S-2fdfhonb, S-kwztlqad, S-ywjkyve4, S-zuff3zj3, S-mrvrg4c7, S-xfsmauei, S-cdmzxvsn, S-kwehxqwf, S-5dy4gz6x, S-k5bcjgda, S-ytvtdwbp, S-3tbh2eg2, S-dxo62u4b, S-yi5pmj5x, S-y7nfpahm, S-ibnjc3rf, S-enz7mrzn, S-z2auesug, S-q6ajn7wa, S-g6tbk57j, S-ujerrwih, S-i3rxlppy]
+retrieved_utc: 2026-10-21
+sources: [S-kvbchryu, S-jq7z2od2, S-5jpgqrfy, S-trcil35r, S-z4pp6bkj, S-su332252, S-heikuvcn, S-wgtknkrb, S-ltzwimxf, S-dxj7zgns, S-ccvh7i4b, S-ipghmg2f, S-osv63lk3, S-2fdfhonb, S-kwztlqad, S-ywjkyve4, S-zuff3zj3, S-mrvrg4c7, S-xfsmauei, S-cdmzxvsn, S-kwehxqwf, S-5dy4gz6x, S-k5bcjgda, S-ytvtdwbp, S-3tbh2eg2, S-dxo62u4b, S-yi5pmj5x, S-y7nfpahm, S-ibnjc3rf, S-enz7mrzn, S-z2auesug, S-q6ajn7wa, S-g6tbk57j, S-ujerrwih, S-i3rxlppy, S-qkrv4p3x, S-bdo4bhef]
 status: partial
 ---
 
@@ -28,10 +28,10 @@ ZEN Engine is an MIT-licensed business rules engine written in Rust that runs de
 - The docs list seven node types and omit `customNode`, which carries a `kind` string and a `config` object and is handled by a host-supplied adapter. [DER S-cdmzxvsn, S-heikuvcn: the docs table has seven rows; the enum has eight variants]
 - A decision table has `hitPolicy` `first` (default) or `collect`; an output field ending in `[]` collects across all matching rows while the rest of the table stays first-hit, and an empty rule cell matches any value. [DOC S-cdmzxvsn]
 - An expression node is a list of key and ZEN-expression pairs and `$` refers to a value computed earlier in the same node; a switch node holds conditions whose statement ids are the edge `sourceHandle`s; a decision node names another decision by `key`. [DOC S-cdmzxvsn]
-- The docs call the `passThrough` property true by default, while the Rust struct marks it `#[serde(default)]` on a `bool`, which is false when the key is absent; the effective default was not run. [UNK: logged in `_gaps.md`]
+- The docs call the `passThrough` property true by default, while the Rust struct marks it `#[serde(default)]` on a `bool`, which is false when the key is absent; the effective default was not run. The code and the editor schema both read false for an absent key (facts below, 2026-10-21); no built wheel was run. [UNK: logged in `_gaps.md`]
 - Content is either a graph or a policy document: a JSON object with a `blocks` key is read as a policy and anything else as a graph. [CODE S-q6ajn7wa: core/engine/src/model/decision_content.rs#DecisionContent]
 - `create_decision` refuses policy content with a content-kind error; a policy is evaluated by key through a loader. [CODE S-z4pp6bkj: core/engine/src/engine.rs#DecisionEngine]
-- The docs say a complete JSON Schema for JDM files is in the zen repository; no such file is in the repository tree at the tag, and the JDM editor package is documented to export a Zod schema for validation. [UNK: logged in `_gaps.md`]
+- The docs say a complete JSON Schema for JDM files is in the zen repository; no such file is in the repository tree at the tag, and the JDM editor package is documented to export a Zod schema for validation. The editor's Zod schema is the complete definition (fact below, 2026-10-21); no JSON Schema file exists. [UNK: logged in `_gaps.md`]
 
 ### Function nodes and I/O
 - A function node holds JavaScript `source` that exports a `handler`; the docs list the built-in modules `dayjs`, `big.js`, `zod`, `http` and `zen` and a default execution timeout of 5000 ms. [DOC S-kwehxqwf]
@@ -45,7 +45,7 @@ ZEN Engine is an MIT-licensed business rules engine written in Rust that runs de
 - The crate's Cargo features are `default = []`, `bindgen` and `arbitrary_precision`; none concerns function nodes, and the HTTP client and JSON-schema libraries are compiled in on non-wasm targets. [CODE S-5jpgqrfy: core/engine/Cargo.toml#features]
 - Node dispatch in the graph walker is a fixed `match` on the node kind (`FunctionNode` goes to `FunctionNodeHandler`), and `Decision::validate` checks only that there is exactly one input node and no cycle. [CODE S-ltzwimxf: core/engine/src/decision_graph/graph.rs#DecisionGraph]
 - No loader, engine setting, crate feature, `NodeHandler` override or validation hook that rejects function nodes was found at 2.1.3; the observable route is to inspect each node's `type` before loading (a Rust host can match `DecisionNodeKind::FunctionNode` on the parsed model, a Python host scans the JSON), and sub-decisions named by `decisionNode` and `zen.evaluate` must be scanned too. [DER S-5jpgqrfy, S-su332252, S-ltzwimxf, S-heikuvcn: absence over the manifest, config, dispatch and node types read]
-- Whether a later release, the BRMS or the GoRules Agent adds a switch to disable function nodes is not in the pages read. [UNK: logged in `_gaps.md`]
+- Whether a later release, the BRMS or the GoRules Agent adds a switch to disable function nodes is not in the pages read. The Project Settings page, engine options and environment-variable lists searched on 2026-10-21 show no such switch. [UNK: logged in `_gaps.md`]
 
 ### Expression language
 - ZEN has a standard mode (expression and switch nodes, output cells) and a unary-test mode (decision table input cells with a field name, for example `>= 100` or `'US', 'CA'`); `#` is the current element in closures and `$` the tested value. [DOC S-ytvtdwbp]
@@ -57,7 +57,7 @@ ZEN Engine is an MIT-licensed business rules engine written in Rust that runs de
 ### Versions, loading and bindings
 - The in-memory model `GraphContent` has `nodes`, `edges`, optional `imports` and compiled caches and no version or date field, and the docs tell a standalone user that storing, versioning and distributing JDM files is their job; the engine therefore has no version or effective-date concept for a decision. [DER S-q6ajn7wa, S-dxo62u4b: struct fields read plus the standalone note]
 - The BRMS publishes releases as immutable snapshots with semantic versions (patch, minor, major), drafts without a version, and environments that each serve one release; v2 (git-like) projects add branches and commit history. [DOC S-3tbh2eg2, S-z2auesug]
-- Whether the BRMS can schedule a release to take effect at a date is not stated on the release and project-version pages read. [UNK: logged in `_gaps.md`]
+- Whether the BRMS can schedule a release to take effect at a date is not stated on the release and project-version pages read. The environments, releases, webhook and CI pages searched on 2026-10-21 document no timed activation. [UNK: logged in `_gaps.md`]
 - A self-hosted BRMS needs a licence key from the vendor's portal and outbound HTTPS for validation (`LICENSE_MODE` online or offline), whereas the JDM Editor React component and the standalone editor repository carry MIT licence files. [DOC S-y7nfpahm, S-ibnjc3rf, S-enz7mrzn]
 - `LoaderConfig` builds a static (in-memory), filesystem or zip loader, and a zip loader turns every `.json` entry into a decision keyed by its path, which the docs pair with BRMS release ZIPs. [CODE S-ipghmg2f: core/engine/src/loader/config.rs#LoaderConfig]
 - In Python, `zen.ZenEngine().create_decision(json_text)` returns a decision whose `evaluate(context, {"trace": True})` result has `result`, `performance` and a per-node `trace`; loaders are static, `fs`, `zip` or a callback. [DOC S-yi5pmj5x]
@@ -72,6 +72,9 @@ ZEN Engine is an MIT-licensed business rules engine written in Rust that runs de
 - Refusing function nodes and `customNode` is the caller's job: scan `type` before `create_decision`, refuse `functionNode` (and, if unused, `customNode`), and follow `decisionNode` keys. [DER S-heikuvcn, S-ltzwimxf: node enum and fixed dispatch]
 - Effective dating has to live outside the engine, for example a manifest that maps a rule-set id and a valid-from date to a file hash which the host selects before loading; the BRMS release number is not an effective date. [DER S-q6ajn7wa, S-3tbh2eg2: no date field in the model; releases are semantic versions]
 - To keep results reproducible, pass the evaluation date in the input rather than calling `d()`, and avoid `rand`. [DER S-ccvh7i4b, S-5dy4gz6x: clock and random functions]
+- The jdm-editor package defines the full decision-graph schema as a Zod schema in `packages/jdm-editor/src/helpers/schema.ts` (commit 283bb11d, MIT): `nodes` and `edges` arrays, with node types decision, expression, function, decision table, switch, custom, input and output; the repository tree holds no JSON Schema file. [CODE S-qkrv4p3x: packages/jdm-editor/src/helpers/schema.ts#decisionModelSchema]
+- At zen-engine-v2.1.3 the node content struct marks `pass_through` with `#[serde(default)]`, so a node JSON that omits `passThrough` reads as false; the editor's Zod schema maps a missing or null value to false as well. [CODE S-heikuvcn: core/types/src/decision/mod.rs#TransformAttributes, S-qkrv4p3x: packages/jdm-editor/src/helpers/schema.ts#decisionModelSchema]
+- The JDM node-types page lists `passThrough` as a boolean with default `true` ("Include input data in output"), which differs from the false the engine code reads for an absent key; a hand-written JDM should set it explicitly. [DOC S-bdo4bhef]
 
 ## Reference
 - Node types (docs table at S-cdmzxvsn, enum at S-heikuvcn):

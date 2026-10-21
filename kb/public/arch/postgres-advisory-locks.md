@@ -3,7 +3,7 @@ topic: arch/postgres-advisory-locks
 priority: P3
 applies_to: "PostgreSQL 18 documentation; PgBouncer features page (site listing 1.26.0)"
 retrieved_utc: 2026-10-21
-sources: [S-xf26uevo, S-utkuhqw3, S-5oeurmkp, S-o45hawqq, S-zwhssqbz]
+sources: [S-xf26uevo, S-utkuhqw3, S-5oeurmkp, S-o45hawqq, S-zwhssqbz, S-mzlpyy34, S-uj5dassi]
 status: complete
 ---
 
@@ -76,6 +76,9 @@ a database-layer single-writer guard for a sync job is in `arch/twelve-factor-re
   other application in that database, so a fixed two-integer key (application id, resource id) avoids
   accidental collisions. [DER S-xf26uevo, S-5oeurmkp: server does not enforce; keys are local to each
   database and their meaning is up to the user]
+- asyncpg's pool runs `Connection.reset()` by default when a connection is released, which executes `pg_advisory_unlock_all()`, `CLOSE ALL`, `UNLISTEN *` and `RESET ALL`; a custom reset callable replaces it. [DOC S-mzlpyy34]
+- SQLAlchemy's pool has "reset on return" behaviour that calls the DBAPI connection's `rollback()` when the connection is returned to the pool. [DOC S-uj5dassi]
+- Because a rollback does not release a session-level advisory lock, a lock taken on a SQLAlchemy pooled connection stays on that connection for the next checkout unless a reset hook runs `pg_advisory_unlock_all()`, while asyncpg's default reset drops it. [DER S-mzlpyy34, S-uj5dassi: asyncpg reset unlocks all, SQLAlchemy resets by rollback only]
 
 ## Reference
 | Need | Call | Waits | Released |

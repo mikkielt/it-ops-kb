@@ -2,8 +2,8 @@
 topic: arch/oxigraph-embedded-rdf
 priority: P3
 applies_to: "Oxigraph 0.5.11 (Rust crate oxigraph, pyoxigraph, oxigraph-cli; tag v0.5.11, released 2026-09-02) as an embedded RDF quad store with SPARQL 1.1; retrieved 2026-10-11"
-retrieved_utc: 2026-10-11
-sources: [S-z4kbze7e, S-bytyyxb4, S-5ty62hy3, S-rw3phgvf, S-c4gfzuad, S-4ucs6ogm, S-dcliqq63, S-3qbz2t4u, S-jgxzxayp, S-nxnd5tsp, S-bfv5hqkn, S-guwnayzo, S-fi3wa4vw, S-iqad4pe3, S-mzu53xnc, S-z2qagps6, S-uohdppyd, S-45qncmsz, S-axwbq3bp, S-a5hei6wa, S-coloiwrz, S-ifojpzaw, S-3etbob6s, S-mryj4twm]
+retrieved_utc: 2026-10-21
+sources: [S-z4kbze7e, S-bytyyxb4, S-5ty62hy3, S-rw3phgvf, S-c4gfzuad, S-4ucs6ogm, S-dcliqq63, S-3qbz2t4u, S-jgxzxayp, S-nxnd5tsp, S-bfv5hqkn, S-guwnayzo, S-fi3wa4vw, S-iqad4pe3, S-mzu53xnc, S-z2qagps6, S-uohdppyd, S-45qncmsz, S-axwbq3bp, S-a5hei6wa, S-coloiwrz, S-ifojpzaw, S-3etbob6s, S-mryj4twm, S-goatdkoj, S-4oyia4j3, S-uelwbqms, S-eyhniuqs, S-hfk7pdoy]
 status: partial
 ---
 
@@ -17,7 +17,7 @@ Oxigraph is a SPARQL graph database written in Rust, usable as a library (`oxigr
 ### What it is, status, licence
 - Oxigraph is a graph database implementing SPARQL, written in Rust, built on the RocksDB key-value store, with utilities to read and write RDF files; the README says it "is in heavy development and SPARQL query evaluation has not been optimized yet". [DOC S-z4kbze7e]
 - The newest `oxigraph` version on crates.io is now 0.5.12 (its release date and MSRV were not re-read; 0.5.11 was released 2026-09-02 with MSRV 1.87) and its version list holds only 0.x entries, so no 1.0 release or vendor "stable" statement exists to cite. [DER S-uohdppyd: the registry's version list (newest 0.5.11, no 1.x entry) and the README's own "heavy development" wording]
-- The README points to GitHub milestones for the roadmap; whether a 1.0 milestone or a stability promise exists there is not known, because the milestone list could not be read (the GitHub API answered with a rate-limit error). [UNK: logged in `_gaps.md`]
+- The README points to GitHub milestones for the roadmap; whether a 1.0 milestone or a stability promise exists there is not known, because the milestone list could not be read (the GitHub API answered with a rate-limit error). The milestones page was read on 2026-10-21: a 1.0 milestone exists without a date (fact below). [UNK: logged in `_gaps.md`]
 - Licence: the repository is dual-licensed Apache-2.0 or MIT at the user's option, and the `oxigraph` crate is `MIT OR Apache-2.0` on crates.io. [DOC S-z4kbze7e, S-uohdppyd]
 - The project has four deliverables: the Rust library crate `oxigraph` (the `Store`), `pyoxigraph` (Python bindings), JavaScript/WebAssembly bindings, and the `oxigraph` binary from the crate `oxigraph-cli` (earlier called Oxigraph server), which serves the SPARQL 1.1 Protocol and Graph Store Protocol over HTTP with `oxigraph serve --location DIR`. [DOC S-z4kbze7e, S-3qbz2t4u]
 - PyPI lists `pyoxigraph` 0.5.11 with the classifier `Development Status :: 3 - Alpha`, `requires_python >=3.8`, binary wheels for manylinux_2_28 (x86_64, aarch64), musllinux, macOS and Windows, and an sdist. [DOC S-45qncmsz]
@@ -47,7 +47,7 @@ Oxigraph is a SPARQL graph database written in Rust, usable as a library (`oxigr
 - `SERVICE` calls use "a simple HTTP 1.1 client" only if the optional `http-client` feature is enabled; otherwise a custom `ServiceHandler` or `DefaultServiceHandler` must be supplied through `with_service_handler` or `with_default_service_handler`. [DOC S-guwnayzo]
 - A running query is aborted with a `CancellationToken` passed to `with_cancellation_token`, and the CLI `query` command gained `--timeout-s` in 0.5.0-beta.5. [DOC S-dcliqq63, S-guwnayzo]
 - The library has no general query timeout setting: `SparqlEvaluator` has no such method, its only timeout setter (`with_http_timeout`) exists only under `http-client` and bounds HTTP requests, and pyoxigraph's `Store.query` signature has no timeout argument. [DER S-guwnayzo, S-jgxzxayp, S-nxnd5tsp: method lists and the cfg-gated `with_http_timeout`; absence read from the docs of 0.5.11]
-- What a `SERVICE` clause does in a build without `http-client` and without a handler (an error or a silent empty result) is not stated on the pages read. [UNK: logged in `_gaps.md`]
+- What a `SERVICE` clause does in a build without `http-client` and without a handler (an error or a silent empty result) is not stated on the pages read. At v0.5.11 it is an error, `UnsupportedService` (fact below, 2026-10-21). [UNK: logged in `_gaps.md`]
 
 ### Serialisation formats and crates
 - `RdfFormat` (oxrdfio, re-exported as `oxigraph::io`) has the variants `N3`, `NQuads`, `NTriples`, `RdfXml`, `TriG`, `Turtle` and `JsonLd`, is non-exhaustive, and `supports_datasets()` tells graph formats from dataset formats. [DOC S-z2qagps6]
@@ -58,7 +58,7 @@ Oxigraph is a SPARQL graph database written in Rust, usable as a library (`oxigr
 - The store ensures "repeatable read" isolation: only committed changes are visible and the visible state does not change during one read operation or one SPARQL update; `start_transaction()` gives atomic transactions that keep "the complete set of changes into memory", so they are not for loading tens of millions of triples. `Store` is `Clone`, `Send` and `Sync`. [DOC S-bfv5hqkn]
 - `flush()` "ensures that all writes are saved on disk", but flushes happen on background threads and "might lag a little bit"; `backup(dir)` creates an independent database openable with `Store::open`, using hard links when on the same file system. [DOC S-bfv5hqkn]
 - Recent fixes touch the transaction layer: 0.5.8 fixed RocksDB transactions where reading your own writes did not work, and 0.5.9 made `Transaction` and `BulkLoader` `Send` and `Sync`. [DOC S-dcliqq63]
-- The pages read use "repeatable read" and "atomic" and do not claim ACID, serializable isolation or crash-safety guarantees for the RocksDB store. [UNK: logged in `_gaps.md`]
+- The pages read use "repeatable read" and "atomic" and do not claim ACID, serializable isolation or crash-safety guarantees for the RocksDB store. RocksDB's default process-crash consistency is in the facts below (2026-10-21); Oxigraph states nothing of its own. [UNK: logged in `_gaps.md`]
 
 ### How it fits (a self-hosted CPU-only text-corpus service, Python over a Rust core)
 - Embedding choices: a Python shell can use the `pyoxigraph` wheels (bundled RocksDB, no compiler on the target), while a Rust core links the `oxigraph` crate and can set `default-features = false` to drop RocksDB and the C++20 and Clang build requirements, at the price of an in-memory-only store. [DER S-45qncmsz, S-5ty62hy3, S-bytyyxb4, S-rw3phgvf: wheels exist for the platforms listed; build needs follow from the build script and the feature list]
@@ -67,6 +67,11 @@ Oxigraph is a SPARQL graph database written in Rust, usable as a library (`oxigr
 - Reproducibility: pin the exact crate or wheel version and keep the data rebuildable from an N-Quads dump (`dump_to_writer`), since the format has been migrated in place on open between 0.x releases and no downgrade path is documented. [DER S-bfv5hqkn, S-dcliqq63: dump is the documented move-away path; migration on first open]
 - Provenance and rule versions as graphs: one named graph per source document or per rule-set version lets a `GRAPH` clause or `default_graph`/`named_graphs` scope a query, and one SPARQL update request applies "in a transactional manner", so a graph can be replaced in one request. [DER S-a5hei6wa, S-nxnd5tsp, S-fi3wa4vw: dataset model, transactional update docstring, per-query dataset specification]
 - Scope: the lists of features, crates and specifications read name no full-text index, analyzer or vector index, so text search and embedding retrieval stay with the existing retrieval design (see `agents/hybrid-retrieval.md`) and Oxigraph holds the graph-shaped metadata. [DER S-z4kbze7e, S-5ty62hy3: absence in the feature and specification lists]
+- The Oxigraph GitHub milestones page has a "1.0" milestone ("Stable 1.0 version") without a due date; its goals are usability with a large amount of data and storage stability, meaning safe automated forward migration between Oxigraph versions. [DOC S-goatdkoj]
+- At v0.5.11 the spareval service handler registry returns `QueryEvaluationError::UnsupportedService` for a SERVICE IRI with no registered handler and no default handler, so a SERVICE clause fails with an error in a build without the `http-client` feature (a `SERVICE SILENT` clause passes the input row through). [CODE S-4oyia4j3: lib/spareval/src/service.rs#ServiceHandlerRegistry]
+- The Oxigraph Architecture wiki states the "repeatable read" isolation level (the store exposes only committed changes) and makes no durability, ACID or crash-safety statement for the RocksDB store. [DOC S-uelwbqms]
+- RocksDB's WAL page says that in the default configuration it guarantees process crash consistency by flushing the WAL after every user write; whether Oxigraph changes the write options was read only in its wrapper source, which sets none. [DOC S-eyhniuqs]
+- Oxigraph 0.5.12 was published on crates.io on 2026-10-18 under MIT OR Apache-2.0 with `rust_version` 1.87 (edition 2024). [DOC S-hfk7pdoy]
 
 ## Reference
 | need | Rust (0.5.11) | pyoxigraph | source |

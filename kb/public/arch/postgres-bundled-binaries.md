@@ -2,8 +2,8 @@
 topic: arch/postgres-bundled-binaries
 priority: P3
 applies_to: "PostgreSQL 18 docs (initdb, pg_ctl, pg_upgrade, file layout) for binaries shipped inside a Python platform wheel; projects pixeltable-pgserver 0.6.0 (PG 16.14 and 18.4), postgresql-wheel 14.1.2, zonky embedded-postgres-binaries 18.6.0"
-retrieved_utc: 2026-10-11
-sources: [S-nmcdzdpf, S-rqvdmzku, S-zwrjh2bl, S-yz6be5ru, S-ltydjlxa, S-4o7okj5l, S-qudkq4hc, S-czyjfw3k, S-6kqqnivq, S-4dmek4hw, S-f3p4t6bi, S-bwd7sjme, S-cso734yx, S-piorrsz5, S-ewbubv2q, S-p3k7q3uv, S-pcnmerd5, S-shixdny6, S-nohekodh, S-clzjtcjg, S-c243glba, S-2nm5jzh5, S-uthirkoa, S-cpppwj2n, S-xuh26of4, S-mkyhrun3]
+retrieved_utc: 2026-10-21
+sources: [S-nmcdzdpf, S-rqvdmzku, S-zwrjh2bl, S-yz6be5ru, S-ltydjlxa, S-4o7okj5l, S-qudkq4hc, S-czyjfw3k, S-6kqqnivq, S-4dmek4hw, S-f3p4t6bi, S-bwd7sjme, S-cso734yx, S-piorrsz5, S-ewbubv2q, S-p3k7q3uv, S-pcnmerd5, S-shixdny6, S-nohekodh, S-clzjtcjg, S-c243glba, S-2nm5jzh5, S-uthirkoa, S-cpppwj2n, S-xuh26of4, S-mkyhrun3, S-r76zhmhp, S-l27ufv76]
 status: partial
 ---
 
@@ -42,7 +42,7 @@ A package that carries its own PostgreSQL has four jobs: ship the server executa
 - `unix_socket_directories` normally defaults to `/tmp` (a build-time choice), is empty on Windows (no Unix socket by default), accepts several comma-separated directories, and creates `.s.PGSQL.<port>` plus a `.s.PGSQL.<port>.lock` file in each, neither of which may be removed by hand. [DOC S-qudkq4hc]
 - `unix_socket_permissions` defaults to 0777 (anyone can connect); 0700 restricts to the server user. [DOC S-qudkq4hc]
 - The socket path must fit in the `sun_path` field of `struct sockaddr_un`, which the source comment calls "usually only 100 or so bytes". [CODE S-f3p4t6bi: src/include/libpq/pqcomm.h#UNIXSOCK_PATH_BUFLEN]
-- The PostgreSQL 18 pages read here state no numeric byte limit for the socket directory path; the limit is the platform's `sun_path` size. [UNK]
+- The PostgreSQL 18 pages read here state no numeric byte limit for the socket directory path; the limit is the platform's `sun_path` size. unix(7) gives 108 bytes on Linux (fact below, 2026-10-21). [UNK]
 
 ### Major and minor upgrades
 - Minor releases never change the storage format; to move between them replace the executables while the server is down and restart on the same data directory. [DOC S-zwrjh2bl]
@@ -66,7 +66,7 @@ A package that carries its own PostgreSQL has four jobs: ship the server executa
 - A wheel file name ends in `{python tag}-{abi tag}-{platform tag}.whl`; `py27-none-any` means any implementation of that Python, no ABI requirement, any platform. [DOC S-piorrsz5]
 - The simple platform tag is `sysconfig.get_platform()` with hyphens and periods replaced by underscores (`linux_x86_64`, `win32`); it is "insufficient" for public Linux wheels, for which `manylinux_{x}_{y}_{arch}` (glibc x.y or newer) and `musllinux_{x}_{y}_{arch}` exist. [DOC S-piorrsz5]
 - The wheel spec unpacks the archive into `purelib` when `Root-Is-Purelib` is true and into `platlib` otherwise, and scripts go to `{distribution}-{version}.data/scripts/`. [DOC S-ewbubv2q]
-- The wheel spec reads here says nothing about the executable permission bit of binaries inside the package tree (it mentions the `+x` bit only for `scripts/`). [UNK]
+- The wheel spec reads here says nothing about the executable permission bit of binaries inside the package tree (it mentions the `+x` bit only for `scripts/`). The installer library keeps the bit for any member that has it (fact below, 2026-10-21). [UNK]
 - A wheel holding `initdb`, `pg_ctl` and `postgres` should carry a platform tag (`py3-none-<platform>` if Python-independent, or a `cpXY` tag as below), because the `any` platform tag claims compatibility with every platform. [DER S-piorrsz5, S-ewbubv2q: `any` is defined as "any platform"; the specs have no rule specific to executables]
 
 ### Existing Python wheels that ship PostgreSQL
@@ -97,6 +97,8 @@ A package that carries its own PostgreSQL has four jobs: ship the server executa
 - Major upgrade needs the old binaries: a dump needs a running old server and `pg_upgrade` needs the old `bin` directory, so a package that ships only the new major cannot upgrade an older cluster by itself and either ships both majors (as pixeltable-pgserver does) or requires the old server's dump beforehand. [DER S-yz6be5ru, S-zwrjh2bl, S-p3k7q3uv: pg_upgrade takes `-b` old bindir; dump and restore runs against a live old server; the project ships 16 and 18]
 - Extension libraries such as pgvector are compiled against one server major, so each bundled major needs its own build of them and the upgrade step must install the new major's libraries before `pg_upgrade`. [DER S-yz6be5ru, S-nohekodh: shared objects must match the new server; the project builds pgvector per PostgreSQL version]
 - Redistributing the binaries in a wheel is permitted by the licence if the licence text travels with them, so the wheel should include the PostgreSQL License notice. [DER S-6kqqnivq: the notice and two paragraphs must appear in all copies]
+- unix(7) says that on Linux `sun_path` is 108 bytes in size and that some implementations have it as short as 92 bytes, so a socket directory path plus the `.s.PGSQL.<port>` name should stay well under that. [DOC S-r76zhmhp]
+- At installer 1.1.0 the wheel source reads each file's Unix mode from the zip member's `external_attr` and treats a regular file with any execute bit as executable, for files in the whole package tree, not only `scripts/`. [CODE S-l27ufv76: src/installer/sources.py#WheelFile]
 
 ## Reference
 

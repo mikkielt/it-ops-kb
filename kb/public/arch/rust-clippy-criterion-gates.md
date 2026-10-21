@@ -3,7 +3,7 @@ topic: arch/rust-clippy-criterion-gates
 priority: P3
 applies_to: "Clippy book at rust-clippy commit 51a5a0b (2026-10-11, Cargo 1.97 guidance); rustfmt README at commit ff02051 (2026-10-10); Criterion.rs 0.7.0 (book, README and manifest at the release tag)"
 retrieved_utc: 2026-10-21
-sources: [S-ly5mrvjt, S-beipcwki, S-j673gwjb, S-42h57lgl, S-ffsltmbi, S-4cuivnem, S-ba2xucuh, S-hqm43pk6, S-luxqgdxs, S-n33p6asx, S-a6r5knm6, S-wgv6gj2w, S-cqq3yuwa, S-zz5esdao, S-5b57smet]
+sources: [S-ly5mrvjt, S-beipcwki, S-j673gwjb, S-42h57lgl, S-ffsltmbi, S-4cuivnem, S-ba2xucuh, S-hqm43pk6, S-luxqgdxs, S-n33p6asx, S-a6r5knm6, S-wgv6gj2w, S-cqq3yuwa, S-zz5esdao, S-5b57smet, S-zsha5mya]
 status: partial
 ---
 
@@ -104,6 +104,7 @@ counterpart of these gates is in `python/mypy-strict.md` and `python/ruff.md`.
 - `cargo-criterion` is an experimental Cargo extension that can replace `cargo bench`
   (`cargo install cargo-criterion`, then `cargo criterion`); the book describes it as stable, says it
   did not support baselines, and says it adds machine-readable output via `--message-format=json`. [DOC S-cqq3yuwa]
+- In Criterion 0.7.0 a "regressed" comparison only sets report text, colour and HTML (`ComparisonResult::Regressed` appears only in the report and HTML modules); the only `process::exit` calls in `src/` are in `lib.rs` for baseline and profile-time errors, so a regression does not change the exit status and a CI gate needs a comparison outside Criterion. [CODE S-zsha5mya: src/report.rs#ComparisonResult]
 
 ## Reference
 | Gate | Command | Exit status |

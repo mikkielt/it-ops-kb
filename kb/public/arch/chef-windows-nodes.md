@@ -3,7 +3,7 @@ topic: arch/chef-windows-nodes
 priority: P3
 applies_to: "Chef Infra Client 19 on Windows (docs.chef.io Chef Infra Client 19 pages; source at chef/chef commit 9322fa4): install, elevation, scheduling, bootstrap and the Windows-specific resources"
 retrieved_utc: 2026-10-21
-sources: [S-3x3s2jec, S-ejunjyza, S-mqmjglrs, S-yz335vyz, S-arkeshhj, S-xw5o3wsc, S-6guysc4r, S-oh6erfbm, S-xgkshne3, S-zskepmir, S-yddwaulv, S-z5kgh6p7, S-ddprubpp, S-og5svrch, S-qdnvehti]
+sources: [S-3x3s2jec, S-ejunjyza, S-mqmjglrs, S-yz335vyz, S-arkeshhj, S-xw5o3wsc, S-6guysc4r, S-oh6erfbm, S-xgkshne3, S-zskepmir, S-yddwaulv, S-z5kgh6p7, S-ddprubpp, S-og5svrch, S-qdnvehti, S-jope3m63]
 status: partial
 ---
 
@@ -22,7 +22,7 @@ Chef Infra Client on Windows is installed by bootstrap over WinRM, by the MSI, o
 - Supported Windows versions in the page's table are x64 Windows 10 and 11 and Server 2016, 2019 and 2022; the recommended minimum RAM during a run is 512 MB and nodes need HTTPS access to the server. [DOC S-3x3s2jec]
 - The same page names two install locations, `C:\opscode` and `C:\hab`, with the main configuration file at `C:\chef\client.rb`. [DOC S-3x3s2jec]
 - The 19.3.15 release notes say Habitat-related paths follow `SYSTEMDRIVE` (for example `D:\hab`) while Omnibus-related paths stay hardcoded to `C:\opscode`. [DOC S-qdnvehti]
-- Which Chef Infra Client 19 distribution installs under which of the two roots is not stated on the pages read. [UNK]
+- Which Chef Infra Client 19 distribution installs under which of the two roots is not stated on the pages read. Re-read on 2026-10-21: the Windows page names `C:\hab` and still gives no mapping. [UNK]
 - 19.3.15 fixed an issue where Chef Infra Client 19 could not be installed on a Windows drive other than `C:`, and Windows supports a direct upgrade to 19.3.15 from every earlier 19.x. [DOC S-qdnvehti]
 - Running without elevation can fail silently on Windows: the run looks successful but the changes were not made, so the client should run as administrator (an account in the Administrators group is not enough: log in as the administrator account or use a run-as). [DOC S-3x3s2jec]
 - The source checks administrator privileges on Windows after building the node and before setting up the run context, and only logs a warning that unexpected resource failures may follow; with `fatal_windows_admin_check` on (`-A` / `--fatal-windows-admin-check`) it raises `WindowsNotAdmin`. [CODE S-z5kgh6p7: lib/chef/client.rb#L929-L941]
@@ -51,6 +51,8 @@ Chef Infra Client on Windows is installed by bootstrap over WinRM, by the MSI, o
 - The `reboot` resource is supported on Windows, macOS and Linux with actions `:reboot_now`, `:request_reboot` (end of run), `:cancel` and the default `:nothing`; notifications to it should be immediate. [DOC S-oh6erfbm]
 - How it fits: on Windows the unattended path is the scheduled task running as `System`, so the account that applies cookbooks is a local administrator-level identity on every node; the client key and the licence key stay on the node and never belong in a cookbook, and a `powershell_script` that needs another user takes a `password` property, which the resource marks sensitive. [DER S-3x3s2jec, S-arkeshhj: scheduled task as System; `password` sets `sensitive`; kb frame: secrets never in repositories or argv]
 - How it fits: where a stack has chosen DSC v3 as its declared source of truth, Chef can still carry DSC resources through `dsc_resource`, but composite resources are excluded, so a Chef-over-DSC arrangement is limited to binary and script resources; see `dsc/what-if.md` for DSC's own read-only check. [DER S-xw5o3wsc: composite resources not usable; kb frame: DSC v3 as source of truth]
+- The Chef Infra Client 19 Windows page says that after installation the client is located at `C:\hab`; it also names `C:\opscode` paths without labelling which installer each belongs to. [DOC S-3x3s2jec]
+- The `chef_client_scheduled_task` resource page (Chef Infra Client 19) gives `chef_binary_path` the default `C:/opscode/chef/bin/chef-client`, an Omnibus-style path. [DOC S-jope3m63]
 
 ## Reference
 | need | where | source |

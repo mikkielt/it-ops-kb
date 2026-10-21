@@ -2,8 +2,8 @@
 topic: arch/puppet-windows-nodes
 priority: P3
 applies_to: "Puppet 8.x agent on Windows (Puppet Core 8.22.0 docs; type reference at commit e227c27): agent service, default paths, path and line-ending rules, and the Windows behaviour and limits of exec, file, package, service, user and group"
-retrieved_utc: 2026-10-15
-sources: [S-dk5ixeab, S-i7ihql2k, S-wgecldol, S-eutggisu, S-hrrqkjbi, S-syu6rsv6, S-6gagioik, S-cttzm2qq, S-ef4b5npw, S-b4kil6ln]
+retrieved_utc: 2026-10-21
+sources: [S-dk5ixeab, S-i7ihql2k, S-wgecldol, S-eutggisu, S-hrrqkjbi, S-syu6rsv6, S-6gagioik, S-cttzm2qq, S-ef4b5npw, S-b4kil6ln, S-imvda52s, S-mc6w3p62]
 status: partial
 ---
 
@@ -49,6 +49,8 @@ The Puppet installer sets the agent up as a Windows service that runs a catalog 
 - Windows external facts live in `C:\ProgramData\PuppetLabs\facter\facts.d\`. [DOC S-b4kil6ln]
 - How it fits: manifests that set a user password hold it in cleartext, so a manifest in a repository would carry a secret; the kb's rule that secrets never sit in code or argv means the value has to come from a store resolved at run time, outside the manifest text. [DER S-6gagioik: passwords must be cleartext on Windows; kb frame: secrets never in repositories]
 - How it fits: Puppet enforces through its own agent service, which needs an administrator-level account on every node, and it brings its own catalog model; a stack that has already chosen DSC v3 as its declared source of truth keeps DSC for read-only drift and treats Puppet noop as prior art, as `reuse/drift-detection.md` concludes. [DER S-dk5ixeab, S-eutggisu: agent service with Administrators membership; `reuse/drift-detection.md` verdict]
+- The `puppetlabs/dsc` module (v1.9.3) uses a DSC resource by prefixing the resource name and each parameter with `dsc_` and lowercasing the values. [DOC S-imvda52s]
+- The `puppetlabs/dsc_lite` module (v5.1.0) manages target nodes using arbitrary Windows PowerShell DSC resources. [DOC S-mc6w3p62]
 
 ## Reference
 | need | where | source |

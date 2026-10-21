@@ -2,8 +2,8 @@
 topic: arch/chef-attributes-policyfiles
 priority: P3
 applies_to: "Chef Infra Client 19 (docs.chef.io Chef Infra Client 19 pages): attribute types, sources, precedence, deep merge and persistence; Policyfile.rb, Policyfile.lock.json and the chef CLI commands that build and push a lock"
-retrieved_utc: 2026-10-15
-sources: [S-hacsn2hl, S-kfuw3ueg, S-6rblahwp, S-ohmkm4e7, S-ajlt32j5, S-fypqy7jh, S-zskepmir]
+retrieved_utc: 2026-10-21
+sources: [S-hacsn2hl, S-kfuw3ueg, S-6rblahwp, S-ohmkm4e7, S-ajlt32j5, S-fypqy7jh, S-zskepmir, S-u5nsu5mz]
 status: partial
 ---
 
@@ -41,9 +41,10 @@ Chef Infra Client applies six attribute types from up to five source locations, 
 - A node is attached to a policy with `policy_name` and `policy_group` in `client.rb` or the first-boot JSON, or with `knife bootstrap --policy-name` and `--policy-group`, or `knife node policy set`; in a Kitchen `chef_zero` converge there is no server, so the policy group is set to `local`. [DOC S-fypqy7jh]
 - The documentation says a Policyfile replaces roles and environments (versioned automatically, applied when promoted) and the environment-cookbook pattern, but not all Berkshelf scenarios. [DOC S-fypqy7jh]
 - A node's rebuilt node object holds the attributes set in Policyfiles or cookbooks, and during the attribute step all attributes from attribute files, Policyfiles and Ohai load before precedence is applied. [DOC S-zskepmir]
-- Where Policyfile `default` and `override` attributes sit in the 15-level precedence table is not stated: the precedence page names roles and environments but never mentions Policyfiles. [UNK]
+- Where Policyfile `default` and `override` attributes sit in the 15-level precedence table is not stated: the precedence page names roles and environments but never mentions Policyfiles. The policy builder code puts them at the role levels (fact below, 2026-10-21); no docs page says so. [UNK]
 - How it fits: for drift or compliance reasoning, a lock is the artefact to compare (`chef diff` of two revisions), because it fixes cookbook versions by content hash; a node on a policy cannot silently pick up a newer cookbook version the way a run-list node with open constraints can. [DER S-fypqy7jh: lock content hash, per-group association, pre-computed solution]
 - How it fits: attributes feed `default` from a cookbook, so a node-specific override should be written at `override` or in the policy, and a secret should never be in an attribute: all saved attributes reach the server and are searchable, so sensitive keys need the blocklist settings or a secret store resolved at run time, not a role file in a repository. [DER S-ohmkm4e7, S-6rblahwp: attributes saved to the server and indexed; kb frame: secrets never in repositories]
+- The Chef policy builder at commit 9322fa4 sets Policyfile attributes on the node "using the role priority": the policy's default attributes go to the role-default level and its override attributes to the role-override level. [CODE S-u5nsu5mz: lib/chef/policy_builder/policyfile.rb#apply_policyfile_attributes]
 
 ## Reference
 | need | where | source |

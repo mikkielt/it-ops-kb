@@ -3,7 +3,7 @@ topic: arch/podman-api-socket
 priority: P3
 applies_to: "Podman 6.1.x on Linux: podman system service, podman.socket and podman.service, Docker-compatible API for DOCKER_HOST clients"
 retrieved_utc: 2026-10-21
-sources: [S-noii6ew2, S-rylxmcjm, S742]
+sources: [S-noii6ew2, S-rylxmcjm, S742, S-avsadsng, S-hvoioxjn]
 status: partial
 ---
 
@@ -31,7 +31,9 @@ status: partial
 - Handing the socket to a container, a CI job or an agent hands over the right to run any container as that user (root for the rootful socket), so it is held to the same tier as a root or service-account credential: a rootless socket owned by a dedicated account, a path not shared between accounts, and no `tcp` endpoint. [DER S-noii6ew2: full access, no limits or audit; Unix permissions are the only barrier]
 - Testcontainers, which the kb's Postgres test article documents as needing a Docker-API runtime with Podman reached through `DOCKER_HOST`, therefore needs `podman.socket` started in the same account as the tests and `DOCKER_HOST` set to that account's socket path; because socket activation is on demand, the first connection starts the service. [DER S-noii6ew2: socket path and activation; Testcontainers' documented `DOCKER_HOST` use is in `python/testcontainers-postgres-pytest.md`]
 - Claude Code's read-only command set prompts for `docker` with a flag that selects another daemon and lists Podman's `--url` and `--connection` among them, which matches the client switching to a remote service. [DER S742, S-rylxmcjm: `claude/powershell-tool.md` permission rule; `--url` and `--connection` in `podman(1)`]
-- How completely the compatibility layer covers Docker features that newer Docker API versions added, and which docker-compose features work, are not stated on the page read. [UNK: logged in `_gaps.md`]
+- How completely the compatibility layer covers Docker features that newer Docker API versions added, and which docker-compose features work, are not stated on the page read. Podman's own announcement says some endpoints are not emulated (fact below, 2026-10-21); no list was found. [UNK: logged in `_gaps.md`]
+- The Podman 2 announcement says there are Docker endpoints Podman cannot or chooses not to emulate because of incompatibilities between Docker and Podman; the pages read give no list of them. [DOC S-avsadsng]
+- `podman compose` is a thin wrapper around an external compose provider such as docker-compose or podman-compose. [DOC S-hvoioxjn]
 
 ## Reference
 | mode | socket | unit | source |

@@ -3,7 +3,7 @@ topic: arch/chef-infra-client-run
 priority: P3
 applies_to: "Chef Infra Client 19 (docs.chef.io Chef Infra Client 19 pages; source at chef/chef commit 9322fa4): the run and its order, the run list, why-run, scheduling, licensing and status"
 retrieved_utc: 2026-10-21
-sources: [S-kj2xytgs, S-zskepmir, S-yddwaulv, S-z5kgh6p7, S-ddprubpp, S-og5svrch, S-ljusqk46, S-qdnvehti, S-d6oc2jt7]
+sources: [S-kj2xytgs, S-zskepmir, S-yddwaulv, S-z5kgh6p7, S-ddprubpp, S-og5svrch, S-ljusqk46, S-qdnvehti, S-d6oc2jt7, S-uajt3oqr, S-6w355jmj]
 status: partial
 ---
 
@@ -49,6 +49,8 @@ Chef Infra Client is the agent on each managed node. A run reads its configurati
 - The `interval` setting itself defaults to `nil` in the configuration, so no repeat happens unless `daemonize` supplies 1800 or the interval is set. [CODE S-og5svrch: chef-config/lib/chef-config/config.rb#L487]
 - How it fits: a run reads and compiles the whole run list before the first resource acts, and the node object is saved only after a successful converge; for drift checks the useful split is that `--why-run` stops short of provider mapping, so a resource whose provider cannot be chosen until an earlier resource installs it is reported by assumption, not by observation. [DER S-yddwaulv, S-zskepmir, S-z5kgh6p7: why-run stops before provider mapping; node saved after converge]
 - How it fits: a Windows node has no daemon, so unattended runs need a scheduled task (the MSI feature or a `chef_client_scheduled_task` resource, see `arch/chef-windows-nodes.md`) or the cookbook's service wrapper; the licence key and the validator or client key are secrets, so they belong in the node's protected store, not in a cookbook or on a command line. [DER S-yddwaulv, S-ddprubpp, S-ljusqk46: no daemonize on Windows; licence key env or option; kb frame: secrets never in argv or repositories]
+- `lib/chef/application/exit_code.rb` at commit 9322fa4 defines the chef-client exit codes: SUCCESS 0, GENERIC_FAILURE 1, SIGINT_RECEIVED 2, SIGTERM_RECEIVED 3, REBOOT_SCHEDULED 35, REBOOT_NEEDED 37, REBOOT_FAILED 41 and CONFIG_FAILURE 43. [CODE S-uajt3oqr: lib/chef/application/exit_code.rb#VALID_RFC_062_EXIT_CODES]
+- The Chef versions page says Chef Infra Client 19.x is the current LTS release and 18.x is deprecated (end-of-life date August 31, 2027 in its table), with any version lower than 18 end of life. [DOC S-6w355jmj]
 
 ## Reference
 | need | where | source |

@@ -46,7 +46,7 @@ Three Rust crates run Datalog-style rules inside an ordinary program: Crepe and 
 ### Rules at runtime and result order
 - Rust's `HashSet` iterates in arbitrary order and its default hasher is randomly seeded, so the sets Crepe's `run()` returns are not in a stable order from one process to the next unless the caller sorts them or passes a fixed hasher. [DER S-vy6ewhyh, S-tnv3dwqy: `HashSet` docs state arbitrary order and random seeding; `run()` uses `RandomState`]
 - Crepe and Ascent take their rules as the tokens of a macro invocation, expanded when the crate is built, and Datafrog's rules are Rust statements in the caller's loop; none of the READMEs describes reading rules from a file or string at runtime. [DER S-vebfsq3a, S-qwtlpuec, S-34fj2zgp: macros expand at compile time; Datafrog "has no runtime"]
-- Whether any of the three plans or rules out loading rules at runtime is not stated in the READMEs or crate documentation read. [UNK]
+- Whether any of the three plans or rules out loading rules at runtime is not stated in the READMEs or crate documentation read. Ascent issue comments (fact below, 2026-10-21) say runtime rule loading is not implemented; Crepe and Datafrog stay silent. [UNK]
 
 ### How it fits
 - For a CPU-only, offline service the three engines are alike: each is a Rust library compiled into the host program, so no daemon, network call or model file is involved at runtime. [DER S-vebfsq3a, S-qwtlpuec, S-34fj2zgp: "compiled directly with the rest of your Rust code", "embedded in Rust via macros", "intended to be embedded"]
