@@ -2,7 +2,7 @@
 topic: python/sqlalchemy-asyncio-asyncpg
 priority: P3
 applies_to: "SQLAlchemy 2.0.54 (rel_2_0_54) asyncio extension with the postgresql+asyncpg dialect; asyncpg 0.32.0; PostgreSQL"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-4zo5mcqa, S-4eztl5ck, S-ukfbblnj, S-xhpt3onl, S-oh5jmzp6, S-4dfwedi7, S-anvb7ol7, S-stp2kczx]
 status: complete
 ---
@@ -90,8 +90,9 @@ not covered here. Starting a test database with `driver="asyncpg"` is in
   Options: use asyncpg's own connection pool, pass `statement_cache_size=0` to `asyncpg.connect()` /
   `create_pool()` (and avoid `Connection.prepare()`), or set PgBouncer's `pool_mode` to `session`. [DOC S-4dfwedi7]
 - The asyncpg-level `statement_cache_size` is not the SQLAlchemy URL option above. The dialect's
-  `connect` pops `prepared_statement_cache_size`, `prepared_statement_name_func` and `async_fallback` and
-  forwards the remaining keyword arguments to `asyncpg.connect`, so `connect_args={"statement_cache_size": 0}`
+  `connect` pops `async_fallback`, `async_creator_fn`, `prepared_statement_cache_size` and
+  `prepared_statement_name_func`, and passes the remaining keyword arguments to the creator function
+  (`asyncpg.connect` by default), so `connect_args={"statement_cache_size": 0}`
   reaches asyncpg. [DER S-4eztl5ck, S-4dfwedi7: dialect `connect` forwards leftover kwargs; FAQ names the asyncpg parameter]
 - asyncpg's docs recommend its pool (`asyncpg.create_pool()`) for server-type applications and say it
   removes the need for an external pooler such as PgBouncer. [DOC S-oh5jmzp6]

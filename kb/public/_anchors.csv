@@ -13580,6 +13580,37 @@ d87d46ddf760,python/ruff.md,S-7e63teyx,located,,graph;map;import,3b6d9ab482c400b
 db3d6a81dd43,python/ruff.md,S-yfbe6ete,unlocated:no-match,,,,,2026-10-10
 debb8922de45,python/ruff.md,S-szaj7ze7,located,The Ruff Formatter > `ruff format`,in-plac;plac;unformat;writ;directory;check;run;whil,9a8ce31f4fa3403c,"Similar to Black, running ruff format /path/to/file.py will format the given file or directory in-place, while ruff format --check /path/to/file.py will avoid writing any formatted",2026-10-21
 debb8922de45,python/ruff.md,S-y3zhzpmv,unlocated:no-match,,,,,2026-10-10
+00264566cada,python/sqlalchemy-asyncio-asyncpg.md,S-anvb7ol7,located,Drop type codec cache for all connections in the pool.,300.0;max_inactive_connection_lifetim;lifetim;max_query;max_siz;inactiv;query;max,54c4d7a46b4d9616,"maxsize=10, maxqueries=50000, maxinactiveconnectionlifetime=300.0,",2026-10-21
+07bedefdaf2b,python/sqlalchemy-asyncio-asyncpg.md,S-4eztl5ck,located,"used, however the test suite looks for these in a few cases.",fallbackasyncadaptedqueuepool;queu;async_fallback;pool;url;fallback;adapt;async,76139271a2e89b97,"asyncfallback = url.query.get(""asyncfallback"", False) if util.asbool(asyncfallback): return pool.FallbackAsyncAdaptedQueuePool",2026-10-21
+11306e61697c,python/sqlalchemy-asyncio-asyncpg.md,S-4eztl5ck,located,mypy: ignore-errors,expensiv;metadata;mitigat;emit;jit;query;may;set,007ea1a138546e90,"connections, an expensive query may be emitted in order to retrieve metadata regarding custom types which has been shown to negatively affect performance. To mitigate",2026-10-21
+1e1d8a3ee9fa,python/sqlalchemy-asyncio-asyncpg.md,S-4zo5mcqa,unlocated:no-match,,,,,2026-10-21
+2019181a13e0,python/sqlalchemy-asyncio-asyncpg.md,S-4zo5mcqa,unlocated:no-match,,,,,2026-10-21
+2029fd55c87a,python/sqlalchemy-asyncio-asyncpg.md,S-4eztl5ck,unlocated:no-match,,,,,2026-10-21
+26843deb6b41,python/sqlalchemy-asyncio-asyncpg.md,S-4zo5mcqa,unlocated:no-match,,,,,2026-10-21
+2c85a626d997,python/sqlalchemy-asyncio-asyncpg.md,S-4eztl5ck,unlocated:no-match,,,,,2026-10-21
+2c85a626d997,python/sqlalchemy-asyncio-asyncpg.md,S-xhpt3onl,unlocated:no-match,,,,,2026-10-21
+4390372e626b,python/sqlalchemy-asyncio-asyncpg.md,S-4dfwedi7,located,,mode;pgbouncer;transaction;pool,05d62ce7ad1e1c76,"pgbouncer <https://pgbouncer.github.io/>. pgbouncer, when in the ""transaction"" or ""statement"" pooling mode, does not support",2026-10-21
+4390372e626b,python/sqlalchemy-asyncio-asyncpg.md,S-4eztl5ck,located,mypy: ignore-errors,bouncer;pgbouncer;pool,5ed58fbfad111b43,"your application, it's important to use the :class:.NullPool pool class, and to configure PgBouncer to use DISCARD <https://www.postgresql.org/docs/current/sql-discard.html>",2026-10-21
+452fcb1f8910,python/sqlalchemy-asyncio-asyncpg.md,S-4zo5mcqa,unlocated:no-match,,,,,2026-10-21
+4814612aafa0,python/sqlalchemy-asyncio-asyncpg.md,S-4zo5mcqa,unlocated:no-match,,,,,2026-10-21
+5028dbde93ca,python/sqlalchemy-asyncio-asyncpg.md,S-4zo5mcqa,unlocated:no-match,,,,,2026-10-21
+6d99e48ecab3,python/sqlalchemy-asyncio-asyncpg.md,S-4eztl5ck,unlocated:no-match,,,,,2026-10-21
+6d99e48ecab3,python/sqlalchemy-asyncio-asyncpg.md,S-4zo5mcqa,unlocated:no-match,,,,,2026-10-21
+6dcb86baac3d,python/sqlalchemy-asyncio-asyncpg.md,S-4eztl5ck,unlocated:no-match,,,,,2026-10-21
+6f8f752625c5,python/sqlalchemy-asyncio-asyncpg.md,S-stp2kczx,located,,2.0;apach;apache-2.0;requires-python;requir;python,d91ecaecfbb4d04a,"requires-python = '>=3.9.0' readme = ""README.rst"" license = ""Apache-2.0""",2026-10-21
+81aa041aef90,python/sqlalchemy-asyncio-asyncpg.md,S-4zo5mcqa,unlocated:no-match,,,,,2026-10-21
+844b4c541aba,python/sqlalchemy-asyncio-asyncpg.md,S-xhpt3onl,located,people the real error is queue.Empty which it isn't.,default;create_async_engin;engin;creat;async;class;pool,f96d425cc21649c3,This pool is used by default when using :class:.AsyncEngine engines that were generated from :func:asyncio.createasyncengine.,2026-10-21
+a51f8aceb87a,python/sqlalchemy-asyncio-asyncpg.md,S-ukfbblnj,unlocated:no-match,,,,,2026-10-21
+a9c4f8eeb501,python/sqlalchemy-asyncio-asyncpg.md,S-ukfbblnj,unlocated:no-match,,,,,2026-10-21
+ab195261f6de,python/sqlalchemy-asyncio-asyncpg.md,S-4dfwedi7,located,,asyncpg.connect;cach;pass;size;statement_cache_siz;connect;func;prepar,44cfcf21fd5eeab7,disable automatic use of prepared statements by passing statementcachesize=0 to :func:asyncpg.connect() <asyncpg.connection.connect> and,2026-10-21
+ab195261f6de,python/sqlalchemy-asyncio-asyncpg.md,S-4eztl5ck,unlocated:no-match,,,,,2026-10-21
+b7c87609b017,python/sqlalchemy-asyncio-asyncpg.md,S-4zo5mcqa,unlocated:no-match,,,,,2026-10-21
+d7a31736257e,python/sqlalchemy-asyncio-asyncpg.md,S-oh5jmzp6,located,Close the connection.,bouncer;pgbouncer;pooler;such;asyncpg.create_pool;create_pool;creat;pool,6e2ed659be0988b1,"pooler such as PgBouncer. To create a connection pool, use the :func:asyncpg.createpool() <asyncpg.pool.createpool> function.",2026-10-21
+e5759f555102,python/sqlalchemy-asyncio-asyncpg.md,S-4zo5mcqa,unlocated:no-match,,,,,2026-10-21
+e8ba1b2b1866,python/sqlalchemy-asyncio-asyncpg.md,S-4zo5mcqa,unlocated:no-match,,,,,2026-10-21
+f63c3b4b9737,python/sqlalchemy-asyncio-asyncpg.md,S-4zo5mcqa,unlocated:no-match,,,,,2026-10-21
+fa5286068585,python/sqlalchemy-asyncio-asyncpg.md,S-4dfwedi7,unlocated:no-match,,,,,2026-10-21
+fcc750171691,python/sqlalchemy-asyncio-asyncpg.md,S-4eztl5ck,unlocated:no-match,,,,,2026-10-21
 0563e804e7cb,python/stdlib-argparse-json.md,S-a3h5eijf,unlocated:no-match,,,,,2026-10-18
 0563e804e7cb,python/stdlib-argparse-json.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-18
 0563e804e7cb,python/stdlib-argparse-json.md,S-jqewtaii,unlocated:no-match,,,,,2026-10-18
