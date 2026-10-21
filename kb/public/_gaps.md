@@ -1808,6 +1808,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## agents/agent-caching
 
 - **Whether two users or sessions of one workspace read each other's prompt-cache entries, and the cache scope of Claude Code on a Claude subscription.** Looked 2026-10-16 in the prompt-caching page's "Cache storage and sharing", data-retention and FAQ passages and in the Claude Code prompt-caching and costs pages (S2130, S2132): the API page isolates caches per organization and per workspace (Bedrock and Google Cloud per organization) and keys an entry on an identical prefix, but names no per-user or per-session boundary and does not say that sessions of one workspace share entries; the Claude Code pages give the lifetime and say nothing of scope. The shared hit is derived, not quoted. Needs an official statement, or a probe with two sessions on one workspace key reading `cache_read_input_tokens`. [UNK] (topic: agents/agent-caching)
+- Claude Code cache lifetime by billing surface (1h on a subscription, 5 min once usage credits are drawn on or on an API key or cloud provider) is no longer stated on code.claude.com/docs/en/costs; the page defers to the prompt-caching page (S2159), which this part did not read. Re-verify against S2159 and restore the fact with that tag. (topic: agents/agent-caching)
 
 ## claude/enterprise-admin
 
