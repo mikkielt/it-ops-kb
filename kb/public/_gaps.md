@@ -1865,3 +1865,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 - **Which process becomes the parent of an orphan on macOS, and whether a macOS process can declare itself a subreaper.** Looked 2026-10-20 in POSIX.1-2024 `_Exit` (S-xp4b2g5v: an implementation-defined system process, `init` with pid 1 only as the historical case) and the Linux `getppid(2)` and `PR_SET_CHILD_SUBREAPER` pages (S-fcdwaly4, S-6xelj6je): Linux only. No Apple page on `launchd` or reparenting was read. Needs an Apple developer page or `launchd.plist` documentation that states it, or a run on a macOS host (start a child that outlives its parent, read `ps -o ppid`). [UNK] (topic: python/process-orphans-and-cwd)
 - **Whether macOS's own `lsof` and `proc_pidinfo(PROC_PIDVNODEPATHINFO)` return another user's process working directory without elevation.** Looked 2026-10-20 in the upstream `lsof` 4.99.5 manual (S-ppkjvumt) and the xnu `libproc.h` and `proc_info.h` headers at xnu-12377.1.9 (S-ifgjakdt, S-4qybivhq): they give the `cwd` descriptor and the flavour, and no access rule. Needs Apple's `lsof(1)` and `proc_pidinfo` man pages, or a run as a standard user against a root-owned process. [UNK] (topic: python/process-orphans-and-cwd)
+
+## agents/a2a-protocol
+
+- AAIF 'Growth Stage' label and the exact MCP 'vertical integration layer' wording on the 2026-08-27 announcement were not re-verified on 2026-10-21 (fetch partly denied); recheck the page. (topic: agents/a2a-protocol)
