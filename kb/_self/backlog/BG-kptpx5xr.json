@@ -1,0 +1,20 @@
+{
+  "id": "BG-kptpx5xr",
+  "kind": "bug",
+  "title": "census.py fetch answers error: InvalidURL for a source url with a literal space, so its check never asks the server",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "census.fetch_once quotes a url's spaces (the url is stored with a literal space in two live public sources, S-56n7jfkc and S-5qxktcen) so such a source gets the server's answer, not error: InvalidURL; found 2026-10-21 probing every live host of the public root",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import census; st=census.fetch_once('https://example.invalid/a?$filter=x eq 1',5,100)[0]; sys.exit(1 if 'InvalidURL' in str(st) else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/census.py"
+  ]
+}
