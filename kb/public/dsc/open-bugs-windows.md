@@ -1,7 +1,7 @@
 ---
 topic: dsc/open-bugs-windows
 priority: P0
-applies_to: "PowerShell/DSC GitHub issues, state=open, label Issue-Bug, snapshot 2026-09-23, re-checked 2026-10-21"
+applies_to: "PowerShell/DSC GitHub issues, state=open, label Issue-Bug, snapshot 2026-10-21"
 retrieved_utc: 2026-10-21
 sources: [S126]
 status: complete
@@ -11,7 +11,7 @@ files: [dsc/open-bugs.csv]
 # Open DSC bugs affecting Windows resources
 
 ## Summary
-- 56 open issues carry the label `Issue-Bug` (re-checked 2026-10-21; 54 on 2026-09-26, 55 on 2026-09-23, #1727 has since closed). `open-bugs.csv` lists the 2026-09-23 snapshot with number, title, labels, created date, affected area (keyword-classified), platform and URL.
+- 56 open issues carry the label `Issue-Bug` (re-checked 2026-10-21; 54 on 2026-09-26, 55 on 2026-09-23, #1727 has since closed). `open-bugs.csv` lists the 2026-10-21 snapshot with number, title, labels, created date, affected area (keyword-classified), platform and URL.
 - 18 of them touch Windows-side components, all in the PowerShell / Windows PowerShell adapters (class-based resources, CIM serialization, WinPS module scope) or packaging. #1727 on the new `Microsoft.Filesystem.File/Content` (3.4.0-preview.1 only) was in the 2026-09-23 snapshot and is closed as of 2026-09-26.
 - No open `Issue-Bug` issue names `Microsoft.Windows/Registry`, `Service`, `FirewallRuleList`, `WindowsFeatureList`, `OptionalFeatureList` or `UpdateList` in its title.
 - The `directives.version` lib-version defect and the trace-level secret leak found for this kb (`directives.md`, `secrets.md`) have no matching open bug title in this snapshot.
