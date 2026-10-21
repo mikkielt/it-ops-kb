@@ -1,0 +1,30 @@
+{
+  "id": "ST-tm5cwieq",
+  "kind": "story",
+  "title": "The _conflicts.md entries the conflict stories left with only a 2026-09-28 still-open note get a dated note or a close",
+  "status": "todo",
+  "parent": "EP-mkzkd7in",
+  "sprint": "SP-rmp5zm5a",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "every _conflicts.md entry that is neither closed nor noted on or after 2026-10-21 (42 on 47328f5b24 in dsc, graph, windows, intune, powerbi, privacy, agents, sqlserver, defender, security, entra, python and one untopiced entry) is re-read against its sources and closed by a source or given a note dated 2026-10-21 or later on what would settle it; the Resolved notes at _conflicts.md:859 (gliner header size) and :702/:839 (S444 read at a commit the source row does not pin) say only what their sources state",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re, sys\nsys.path.insert(0, '_tools')\nimport kbfacts\nL, F = 'public/_conflicts.md', '2026-10-21'\nN = re.compile(r'\\b(?:Looked|Tried|Still open|Resolved|Reviewed|Closed|Narrowed|Partly resolved|Mostly resolved|Superseded):? (20\\d\\d-\\d\\d-\\d\\d)')\nC = re.compile(r'(?:^|\\s)- (?:Resolved|Superseded|Closed|Partly resolved|Mostly resolved|Narrowed)\\b|(?:^|\\s)- Reviewed [0-9-]+, (?!still open)')\nes = kbfacts.ledger_entries(L)\nleft = [e['line'] for e in es if not C.search(e['text']) and max(N.findall(e['text']) or ['0']) < F]\nprint(len(left), 'entries of', L, 'neither closed nor noted on or after', F, left[:40])\nsys.exit(1 if left else 0)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "every _conflicts.md entry that is neither closed nor noted on or after 2026-10-21 (42 on 47328f5b24 in dsc, graph, windows, intune, powerbi, privacy, agents, sqlserver, defender, security, entra, python and one untopiced entry) is re-read against its sources and closed by a source or given a note dated 2026-10-21 or later on what would settle it",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ],
+  "notes": "Found by the fresh-context review of SP-rmp5zm5a (headless reviewer over 2f256438ea..47328f5b24), verified by the manager: the four conflict stories' checks counted 'Reviewed <date>, still open' as closing, and dsc and powerbi were in no story. Premise: the check exits 1 with 42 entries on 47328f5b24. Review findings folded in: _conflicts.md:859 claims the article marks the API value as matching the file (gliner-glirel-zero-shot.md:32 marks neither; the 32,096-byte header is arithmetic, not measured); :702/:839 cite [DOC S444] for text read at master @1eec2f23f670 while S444 pins 56c82a97."
+}

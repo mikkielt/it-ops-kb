@@ -1,0 +1,26 @@
+{
+  "id": "BG-fazgr64q",
+  "kind": "bug",
+  "title": "census.py head_cited_lines raises on a cat-file missing line, and the dispatch docstrings still say a session reads only the group's files",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "head_cited_lines parses the cat-file --batch output inside the try that falls back to kbfacts.cited_lines, so a missing blob falls back instead of raising IndexError; the module and dispatch_rules docstrings say the session also reads every clone under _cache/census/repos through --add-dir",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,inspect;sys.path.insert(0,'_tools');import census;s=inspect.getsource(census.head_cited_lines);i=s.find('try:');j=s.find('split()[2]');sys.exit(0 if (i>=0 and j>i and 'except' in s[j:]) else 1)"
+    ]
+  },
+  "repro_reason": "a missing blob needs a ref whose tree names a blob the object store lacks, which a planted repository can build but a one-line command cannot; the repro reads where the parse sits relative to its try",
+  "touches": [
+    "_tools/census.py"
+  ],
+  "links": [
+    "parked: SP-rmp5zm5a review"
+  ],
+  "notes": "Found by the fresh-context review of SP-rmp5zm5a (2f256438ea..47328f5b24), verified by the manager: the repro fails on 47328f5b24."
+}

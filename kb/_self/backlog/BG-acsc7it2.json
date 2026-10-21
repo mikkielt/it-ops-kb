@@ -1,0 +1,26 @@
+{
+  "id": "BG-acsc7it2",
+  "kind": "bug",
+  "title": "Bench pool rows ask about decisions the 2026-10-21 sweep invalidated, so their operator check cannot match",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "every bench_pool.csv row that names a decision id names one whose status is decided in kb/_self/_decisions.csv, so its checks read an active operator decision",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import csv,re,sys;st={r['id']:r['status'] for r in csv.DictReader(open('kb/_self/_decisions.csv',encoding='utf-8'))};bad=[(r['id'],d) for r in csv.DictReader(open('kb/public/_retrieval/bench_pool.csv',encoding='utf-8')) for d in re.findall(r'D-[a-z0-9]{8}',r['question']) if st.get(d)!='decided'];print(bad);sys.exit(1 if bad else 0)"
+    ]
+  },
+  "repro_reason": "the defect is pool data out of step with the decision ledger; the repro joins the two files, as the fix's own pool rebuild must",
+  "touches": [
+    "kb/public/_retrieval/bench_pool.csv"
+  ],
+  "links": [
+    "parked: SP-rmp5zm5a review"
+  ],
+  "notes": "Found by the fresh-context review of SP-rmp5zm5a (2f256438ea..47328f5b24), verified by the manager: the repro fails on 47328f5b24 (BP-1d1ce7a7 D-psgfq7le, BP-65eb74a7 D-xk65w44m)."
+}
