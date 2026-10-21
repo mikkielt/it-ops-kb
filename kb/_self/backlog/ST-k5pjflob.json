@@ -55,6 +55,25 @@
   "depends_on": [
     "ST-zpe7qxtv"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "The ort article's version facts: state the crates.io list as read on 2026-10-21 (rc.15 newest, rc.14 and rc.15 MSRV 1.92) and keep rc.13 as the version whose docs and manifest were read, or move the whole article and its rc.13 pin advice to rc.15?",
+      "options": [
+        "Reword the crates.io facts and keep the rc.13 reading and pin advice, with the rc.15 docs and manifest left in the existing gap",
+        "Refresh the whole ort article to rc.15"
+      ],
+      "recommendation": "Reword the crates.io facts and keep the rc.13 reading and pin advice, with the rc.15 docs and manifest left in the existing gap",
+      "do": {
+        "Reword the crates.io facts and keep the rc.13 reading and pin advice, with the rc.15 docs and manifest left in the existing gap": "ST-k5pjflob",
+        "Refresh the whole ort article to rc.15": "ST-k5pjflob"
+      },
+      "class": "design",
+      "answer": "Reword the crates.io facts and keep the rc.13 reading and pin advice, with the rc.15 docs and manifest left in the existing gap",
+      "by": "agent"
+    }
+  ],
   "notes": "Research item (/kb-research, sources read against the census of ST-zpe7qxtv): an entry closes only when a source settles it or it is no source disagreement (Reviewed); one that needs a lab, a login or unpublished information stays open with a dated note (maintaining.md, Conduct for changes). A gap the reading finds goes to _gaps.md under the same topic. Premise on 2026-10-20 (the first check fails): 32 open public/_conflicts.md entries under ('agents/', 'claude/', 'mcp/', 'prior-art/', '?') with no note dated 2026-10-21 or later, lines: [23, 34, 45, 55, 68, 77, 85, 97, 130, 164, 167, 170, 183, 292, 396, 424, 497, 501, 509, 566, 570, 579, 593, 663, 745] Fact units under the topics on 2026-10-20: 4892. check.py and the fact-count check pass before the work and must stay passing: they pin the kb's structure rules and that no fact is deleted across the rewrites (2026-10-20 planning).",
   "claimed_by": "manager-dfa692a0",
   "operator": "op-f618a13e"
