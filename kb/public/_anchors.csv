@@ -9583,6 +9583,9 @@ c7043d552115,graph/delta-query.md,S510,unlocated:no-match,,,,,2026-10-10
 0be28b031a37,graph/microsoft365dsc.md,S-zmngjhe5,located,Installing Microsoft365DSC¶ > Dependencies¶,availabl;get-modul;listavailabl;modulebas;select;base;list;version,05ec7a97e03ad3ec,"Get-Module Microsoft365DSC -ListAvailable | select ModuleBase, Version",2026-10-21
 10f6947eff8d,graph/microsoft365dsc.md,S-3aphi7n2,unlocated:no-match,,,,,2026-10-10
 10f6947eff8d,graph/microsoft365dsc.md,S-fylt7wwn,unlocated:no-match,,,,,2026-10-21
+252653cccdba,graph/microsoft365dsc.md,S-5htwkeoz,unlocated:no-match,,,,,2026-10-21
+252653cccdba,graph/microsoft365dsc.md,S-f7j4lqgl,unlocated:no-match,,,,,2026-10-21
+252653cccdba,graph/microsoft365dsc.md,S-n6v6mw4o,unlocated:no-match,,,,,2026-10-21
 2969ba7946b9,graph/microsoft365dsc.md,S-2fvvbt5t,located,Drift Monitoring¶,apply;applyandautocorrect;automatically;configur;stat;engin;mode;dsc,db087d3124babf52,"Configuration Mode¶ Just like for any DSC module, you can also configure the DSC engine to automatically attempt to automatically fix a detected drift and",2026-10-10
 3a70b0d1a38b,graph/microsoft365dsc.md,S-ahgkqifj,unlocated:no-match,,,,,2026-10-21
 3c4e752989ea,graph/microsoft365dsc.md,S-c6kla37l,located,Comparing Configurations,one;export;another;html;tenant;two;report;compar,f5c0dc7beee6bc59,The Microsoft365DSC solution includes a built-in engine to compare two configurations and generate a delta report in HTML that reveals any discrepancies between them. You,2026-10-10
@@ -9611,7 +9614,11 @@ d404314235aa,graph/microsoft365dsc.md,S-ahgkqifj,located,Snapshot of an Existing
 d9ef3695b241,graph/microsoft365dsc.md,S-jya6izpo,unlocated:no-match,,,,,2026-10-21
 d9ef3695b241,graph/microsoft365dsc.md,S-l6j5dpwj,unlocated:no-match,,,,,2026-10-21
 e7a1e8ac1df0,graph/microsoft365dsc.md,S-44mrima5,located,"For Service Principals, the command looks a little bit different > Power Apps Permissions¶",key;privat;cert;currentuser;pfx;underly;apps;stor,b061c090b8563a6e,"Additionally, to be able to authenticate using a Certificate Thumbprint, the underlying Power Apps PowerShell module used by Microsoft365DSC requires the certificate's private key (.pfx)",2026-10-10
+e8b7f4eda946,graph/microsoft365dsc.md,S-n6v6mw4o,unlocated:no-match,,,,,2026-10-21
+e8b7f4eda946,graph/microsoft365dsc.md,S-qkxsdf32,unlocated:no-match,,,,,2026-10-21
 eb2c08208359,graph/microsoft365dsc.md,S-l6j5dpwj,unlocated:no-match,,,,,2026-10-21
+f4fa8b58c4d5,graph/microsoft365dsc.md,S-5htwkeoz,unlocated:no-match,,,,,2026-10-21
+f4fa8b58c4d5,graph/microsoft365dsc.md,S-fbhq2yc2,unlocated:no-match,,,,,2026-10-21
 f8369b06020c,graph/microsoft365dsc.md,S-ahgkqifj,unlocated:no-match,,,,,2026-10-21
 022b46ea9d0d,graph/permission-ids.csv,S524,located,Microsoft Graph permissions reference > All permissions,2b13;3404d2bf;457e;5b07b0d;703f09a0dc3c;a330;a38d;c24615765193,a18b627c96669ea3,,2026-10-10
 0a84772e2ea7,graph/permission-ids.csv,S524,located,Microsoft Graph permissions reference > All permissions,19a2eaaf2f6;4d6a;57f1cf28;57f1cf28-c0c4-4ec3-9a30-19a2eaaf2f6;b126;b27a61ec;b99c;bitlockerkey.read.all,f3d9a53952e3f2cc,,2026-10-10

@@ -3,7 +3,7 @@ topic: graph/microsoft365dsc
 priority: P3
 applies_to: "Microsoft365DSC PowerShell module 2.26.1015.1 (2026-10-14); resource-shape facts for 1.26.909.1 (2026-09-11)"
 retrieved_utc: 2026-10-21
-sources: [S1010, S-jya6izpo, S-l6j5dpwj, S-44mrima5, S-ahgkqifj, S-2fvvbt5t, S-zmngjhe5, S-prjyny3b, S-3aphi7n2, S-f7j4lqgl, S-5htwkeoz, S-n6v6mw4o, S-c6kla37l, S-fylt7wwn, S-acz6ela7, S-q7dr7aea]
+sources: [S1010, S-jya6izpo, S-l6j5dpwj, S-44mrima5, S-ahgkqifj, S-2fvvbt5t, S-zmngjhe5, S-prjyny3b, S-3aphi7n2, S-f7j4lqgl, S-5htwkeoz, S-fbhq2yc2, S-n6v6mw4o, S-qkxsdf32, S-c6kla37l, S-fylt7wwn, S-acz6ela7, S-q7dr7aea]
 status: complete
 ---
 
@@ -86,7 +86,7 @@ now superseded; `prior-art/drift-detection.md` and `prior-art/projects.csv`, sou
   the declared state, as opposed to report-only monitoring. [COMMUNITY S-2fvvbt5t]
 - `New-M365DSCDeltaReport` compares two configurations: mandatory `-Source` and `-Destination`, with `-OutputPath`, `-Type` (`HTML` or `JSON`), `-DriftOnly`, `-HeaderFilePath`, `-ExcludedProperties`, `-ExcludedResources` and variable-substitution options. [CODE S-acz6ela7: Modules/Microsoft365DSC/Modules/M365DSCReport.psm1#New-M365DSCDeltaReport]
 - The project's guide uses it to compare two exported configurations, or one tenant's snapshot with another tenant's, writing an HTML report. [DOC S-c6kla37l]
-- `Test-M365DSCAgent` takes no parameters and checks the agent machine, not a tenant: the PowerShell version (at 2.26.1015.1 it raises an issue unless the session is PowerShell 7.6 or later, Core edition; earlier it recommended 5.1), the WinRM MaxEnvelopeSize (recommends at least 10 MB) and the module dependencies, and reports issues and recommendations. It is not a drift report. [CODE S-5htwkeoz: Modules/Microsoft365DSC/Modules/M365DSCAgent.psm1#Test-M365DSCAgent]
+- `Test-M365DSCAgent` takes no parameters and checks the agent machine, not a tenant: the PowerShell version (at 2.26.1015.1 it raises an issue unless the session is PowerShell 7.6 or later, Core edition; earlier it recommended 5.1), the WinRM MaxEnvelopeSize (recommends at least 10 MB) and the module dependencies, and reports issues and recommendations. It is not a drift report. [CODE S-5htwkeoz, S-fbhq2yc2: Modules/Microsoft365DSC/Modules/M365DSCAgent.psm1#Test-M365DSCAgent]
 - In release 1.26.909.1 each Microsoft365DSC resource follows classic PowerShell DSC's `Get-TargetResource`/`Test-TargetResource`/
   `Set-TargetResource` (MOF-based) pattern rather than DSC v3's resource-manifest model, so `Test-DscConfiguration`
   reports drift without applying `Set`, matching the report-only mode covered in `prior-art/drift-detection.md`. [DER S-3aphi7n2, S-fylt7wwn: MSFT_AADUser at the release tag has a `.schema.mof` and Get/Set/Test-TargetResource functions; Test-DscConfiguration only tests]
@@ -95,7 +95,7 @@ now superseded; `prior-art/drift-detection.md` and `prior-art/projects.csv`, sou
   (`DscResources/_Base/M365DSCResourceBase.psm1`, defining `M365DSCResourceBase` plus property/resource metadata classes; at commit 7c2e9790e17b it is source-only and
   emitted into a generated `Classes/_Shared.psm1`). The 2.26.1015.1 release tree also contains the `_Base` directory and its agent check requires PowerShell 7.6, so 2.x releases are
   probably not the MOF-based, Windows PowerShell 5.1 shape described for 1.26.909.1; this was not confirmed from a resource file at the release tag, and the install docs still say Windows PowerShell 5.1. [COMMUNITY S-f7j4lqgl, S-5htwkeoz, S-n6v6mw4o]
-- Release 2.26.1015.1 ships 168 Intune resources named `MSFT_Intune*` (for example `MSFT_IntuneAccountProtectionLocalAdministratorPasswordSolutionPolicy`, `MSFT_IntuneAntivirusPolicyLinux`; 1.26.909.1 had 166). [DER S-n6v6mw4o: count of the `DscResources` directory at the release commit]
+- Release 2.26.1015.1 ships 168 Intune resources named `MSFT_Intune*` (for example `MSFT_IntuneAccountProtectionLocalAdministratorPasswordSolutionPolicy`, `MSFT_IntuneAntivirusPolicyLinux`; 1.26.909.1 had 166). [DER S-n6v6mw4o, S-qkxsdf32: count of the `DscResources` directory at each release commit]
 
 ## Reference
 - Tenant-level configuration monitoring/drift at the Graph API layer (not PowerShell/DSC-based): `graph/tcm-apis.md`

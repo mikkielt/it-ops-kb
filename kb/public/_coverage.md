@@ -117,7 +117,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `auth/ldap-smb-signing` | P0 | complete | `auth/ldap-smb-signing.md` | 17 |
 | `auth/msal-public-client` | P0 | complete | `auth/msal-public-client.md` | 10 |
 | `auth/ntlm-deprecation` | P0 | complete | `auth/ntlm-deprecation.md` | 7 |
-| `auth/permissions-matrix` | P0 | partial | `auth/permissions-matrix.csv` | 24 |
+| `auth/permissions-matrix` | P0 | partial | `auth/permissions-matrix.csv` | 25 |
 | `auth/sql-authz` | P0 | complete | `auth/sql-authz.md` | 5 |
 | `auth/workload-identity` | P0 | complete | `auth/workload-identity.md` | 23 |
 | `auth/ad-jit-membership` | P1 | complete | `auth/ad-jit-membership.md` | 9 |
@@ -232,7 +232,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `graph/permissions` | P1 | complete | `graph/permissions.md`, `graph/permissions.csv`, `graph/permission-ids.csv` | 15 |
 | `graph/powershell-sdk` | P1 | complete | `graph/powershell-sdk.md` | 8 |
 | `graph/throttling` | P1 | complete | `graph/throttling.md` | 6 |
-| `graph/microsoft365dsc` | P3 | complete | `graph/microsoft365dsc.md` | 16 |
+| `graph/microsoft365dsc` | P3 | complete | `graph/microsoft365dsc.md` | 18 |
 | `graph/tcm-apis` | P3 | complete | `graph/tcm-apis.md`, `graph/tcm-csdl-v1.0.xml`, `graph/tcm-csdl-beta.xml` | 32 |
 | `intune/assignment-filters-and-rbac` | P1 | complete | `intune/assignment-filters-and-rbac.md` | 9 |
 | `intune/co-management` | P1 | complete | `intune/co-management.md` | 6 |
