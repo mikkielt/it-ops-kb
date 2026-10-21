@@ -148,9 +148,11 @@ status: complete
   becomes `MCPAdapter` (an async context manager with `list_tools()`), and helpers are renamed, e.g.
   `convert_mcp_tool_to_langchain_tool` to `as_langchain_tool`. [DOC S-bygurlbr]
 - The MCP adapter infers transport automatically from the target passed to it: an HTTP/HTTPS URL
-  is reached over **streamable HTTP**; a script path is launched as a **subprocess over stdio**;
-  an in-process **FastMCP** server instance is connected in-memory (no subprocess or socket); or a
-  pre-built transport object can be passed directly. [DOC S-dir5xyqr]
+  given as a `str` is reached over **streamable HTTP**; a script path given as a `Path` is launched
+  as a **subprocess over stdio** (a `str` target must be an http(s) URL); an in-process **FastMCP**
+  server instance is connected in-memory (no subprocess or socket); a pre-built transport object, an
+  `MCPConfig` dict for several servers, or a prebuilt `fastmcp.Client` can be passed directly.
+  [DOC S-dir5xyqr]
 
 ### LangGraph Platform / LangSmith Deployment
 - LangGraph itself is the open-source framework; **LangSmith Deployment** (the current name,
