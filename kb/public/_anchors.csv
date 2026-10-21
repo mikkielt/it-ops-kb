@@ -15539,6 +15539,8 @@ e3d26148bae4,security/script-and-code-signing.md,S1519,located,Script Enforcemen
 ecd9963e7dd1,security/script-and-code-signing.md,S1513,unlocated:no-match,,,,,2026-10-21
 edf3ba9209a3,security/script-and-code-signing.md,S-5kvx24wm,unlocated:no-match,,,,,2026-10-21
 0823c6e9586e,security/secret-shapes-in-text.md,S-k57sryj7,located,SQL Server connection string entity definition | Microsoft Learn > Pattern,7-128;brac;bracket;dollar;left;percent;greater;equal,17c5f76bfe673d3f,"an equal sign (=) any character that isn't a dollar sign ($), percent symbol (%), greater than symbol (&gt;), at symbol (@), quotation mark (""),",2026-10-18
+0ceaa520a893,security/secret-shapes-in-text.md,S-k57sryj7,unlocated:no-match,,,,,2026-10-21
+0ceaa520a893,security/secret-shapes-in-text.md,S-xnlryf7y,located,SqlConnection.ConnectionString Property > Remarks,abov;match;less;character;fals;must;client;valu,a644fbae6a66c046,"Encrypt | 'true' in 4.0 and above'false' in 3.x and below | Recognized values are:versions 1 - 4: true/yes and false/noversions 5+: true/yes/mandatory, false/no/optional and",2026-10-21
 102dad358f89,security/secret-shapes-in-text.md,S-kskf5yv7,located,,encrypt;privat;label;key,4fe39422d215fc9b,"using the ""ENCRYPTED PRIVATE KEY"" label.",2026-10-21
 152b559b0891,security/secret-shapes-in-text.md,S-spzetxhy,unlocated:no-match,,,,,2026-10-17
 186c8e865f65,security/secret-shapes-in-text.md,S-bs6jgunr,unlocated:no-match,,,,,2026-10-17
@@ -15575,8 +15577,6 @@ edf3ba9209a3,security/script-and-code-signing.md,S-5kvx24wm,unlocated:no-match,,
 913bb646242a,security/secret-shapes-in-text.md,S-cr2wj4s2,unlocated:no-match,,,,,2026-10-17
 913bb646242a,security/secret-shapes-in-text.md,S-kskf5yv7,unlocated:no-match,,,,,2026-10-17
 92522b4b1a66,security/secret-shapes-in-text.md,S-spzetxhy,unlocated:no-match,,,,,2026-10-17
-96f1781d2e8f,security/secret-shapes-in-text.md,S-k57sryj7,located,SQL Server connection string entity definition | Microsoft Learn > Definition,connection;sql;character;string;match,5abc1cbcb0565ebb,"A DLP policy has high confidence that it's detected this type of sensitive information if, within a proximity of 300 characters: The regular expression CEPRegexSQLServerConnectionString",2026-10-18
-96f1781d2e8f,security/secret-shapes-in-text.md,S-xnlryf7y,unlocated:no-match,,,,,2026-10-18
 997010376c4f,security/secret-shapes-in-text.md,S-4rjxcq6v,located,,001f;control;revers;quotation;solidus;escap;mark;must,9c5af39c771c9b2f,"characters that MUST be escaped: quotation mark, reverse solidus, and the control characters (U+0000 through U+001F)",2026-10-17
 9a703c548b00,security/secret-shapes-in-text.md,S-jkdywrys,unlocated:no-match,,,,,2026-10-18
 a00f3086ff43,security/secret-shapes-in-text.md,S-jkdywrys,unlocated:no-match,,,,,2026-10-18
