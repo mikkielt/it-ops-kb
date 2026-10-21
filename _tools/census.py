@@ -3023,11 +3023,15 @@ def dispatch_argv(exe, model, turns, usd, schema_text, allow, tools, mcp):
     """The `claude -p` argument list of a part's session: no hooks, user settings or MCP servers but the Learn one,
     nothing saved, `--output-format json` with `--json-schema` (the result as `structured_output`), the turn and
     dollar caps, `dontAsk` (a tool no rule allows is denied: nobody is there to answer) and the rules last, as
-    `--allowedTools` takes every argument after it. The brief goes on stdin."""
+    `--allowedTools` takes every argument after it. A rule with a `git -C` line adds the census clones directory
+    (`REPOS`) with `--add-dir`: the CLI refuses the exact `git -C <clone> diff` line its rule names while the clone
+    sits outside the working directory and the added ones. The brief goes on stdin."""
+    git_lines = any(rule.startswith("Bash(git -C ") for rule in allow)
     return [exe, "-p", "--model", model, *kbcommon.NO_HOOKS, "--setting-sources", "project,local", "--strict-mcp-config",
             *(["--mcp-config", mcp] if mcp else []), "--no-session-persistence", "--output-format", "json",
             "--json-schema", schema_text, "--max-turns", str(turns), "--max-budget-usd", f"{usd:.2f}",
-            "--permission-mode", "dontAsk", "--tools", ",".join(tools), "--allowedTools", *allow]
+            "--permission-mode", "dontAsk", *(["--add-dir", REPOS] if git_lines else []), "--tools", ",".join(tools),
+            "--allowedTools", *allow]
 
 
 def dispatch_prompt(brief, plan, scratch):
