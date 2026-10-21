@@ -2,8 +2,8 @@
 topic: python/version-lifecycle
 priority: P2
 applies_to: [python]
-retrieved_utc: 2026-09-27
-sources: [S-4sqhclzg, S-gcphwjqj, S-pdx6wxru, S-sgovapjd, S-lob25y46, S-tqvuutrg, S-mpeiuyoe, S-2ue7gffd]
+retrieved_utc: 2026-10-21
+sources: [S-4sqhclzg, S-gcphwjqj, S-pdx6wxru, S-sgovapjd, S-lob25y46, S-kqxoxsdr, S-mpeiuyoe, S-2ue7gffd]
 status: complete
 files: [python/version-lifecycle.csv]
 ---
@@ -41,10 +41,9 @@ moved its floor to `requires-python = ">=3.11"` on 2026-09-27 and develops on 3.
 - Python **3.12** (final release 2023-10-02) had its last regular bugfix release with installers on
   2025-04-08 (3.12.10); source-only security fixes are documented as provided "until October 2028".
   [DOC S-lob25y46]
-- Python **3.13** (final release 2024-10-07) is, as of this article's retrieval date, still in its
-  regular bugfix phase; its documented schedule expects the final regular bugfix release with
-  installers (3.13.16) on 2026-10-06, after which only source-only security fixes continue, documented
-  as provided "until October 2029". [DOC S-tqvuutrg]
+- Python **3.13** (final release 2024-10-07): PEP 719, as of 2026-10-21, lists 3.13.16 on 2026-10-01
+  as the final regular bugfix release with binary installers, so only source-only security fixes
+  continue, documented as provided "until October 2029". [DOC S-kqxoxsdr]
 - Python **3.14** (final release 2025-10-07) is the newest released feature version; it is documented
   as expected to "receive bugfix updates approximately every two months for approximately 24 months"
   (longer than the ~18 months typical of 3.9-3.12), with source-only security fixes thereafter
