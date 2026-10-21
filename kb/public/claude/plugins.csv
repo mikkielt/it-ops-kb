@@ -81,7 +81,7 @@ managed setting,disableSideloadFlags,boolean,no,false,"rejects --plugin-dir, --p
 managed setting,disableCommandPluginSources,boolean,no,(value of allowManagedHooksOnly),blocks command-source plugins from installing/updating/loading,DOC,S-rp4dtt4w
 managed setting,strictPluginOnlyCustomization,boolean or array,no,false,"true or array of skills/agents/hooks/mcp; requires plugin/managed/built-in origin only",DOC,S-rp4dtt4w
 CLI flag,claude plugin install --scope,enum,no,user,user|project|local,DOC,S-gxuoqjzy
-CLI flag,claude plugin update --scope,enum,no,(install scope),user|project|local|managed,DOC,S-gxuoqjzy
+CLI flag,claude plugin update --scope,enum,no,(auto-detected: local>project>user>managed; user before v2.1.281),user|project|local|managed,DOC,S-gxuoqjzy
 CLI flag,claude plugin eval --ablation,enum,no,with-without (when plugin resolves) else none,none runs with-arm only; with-without adds no-plugin baseline,DOC,S-lkcsn2fs
 CLI flag,claude plugin eval --runs,integer,no,3 (or case's own runs),runs per case per arm,DOC,S-lkcsn2fs
 CLI flag,claude plugin eval --judge-model,string,no,the model Claude Code uses for background tasks,model used for llm/baseline graders,DOC,S-lkcsn2fs

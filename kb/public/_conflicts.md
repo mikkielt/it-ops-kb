@@ -846,3 +846,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## gitlab/git-trailers-and-hooks
 
 - **Whether a trailer configured with only `trailer.<alias>.cmd` is added without a `--trailer` argument.** The trailer configuration page at `v2.55.0` (S-wjfrtzpf, read 2026-10-19) says `.cmd` "will be called once to automatically add a trailer"; `parse_trailers_from_config` in `trailer.c` at the same tag (S-kbwvfzcv) adds a configured trailer by itself only when the alias has a `.command`, and a run of git 2.50.1 printed a message unchanged for a `.cmd`-only alias and added the trailer for `.command` or for `--trailer <alias>`. The kb states the code's behaviour; the page's sentence is read as describing the call for a named alias. Not settled: the pages and code of later releases, and git 2.55.0 itself, were not run. (topic: gitlab/git-trailers-and-hooks)
+
+## agents/headless-agent-runtimes
+
+- kb/public/agents/headless-agent-runtimes.md lines 41 and 45 say the cloud-environment GitHub proxy's push protection lets `git push` work only against the session's current working branch. The cloud-environments page (S-gu5aqnrl, 'GitHub proxy', read 2026-10-21) says the proxy only rejects branch deletions and pushes of anything other than a branch (such as a tag), and states it does not limit which branches a push can update; it mentions no working-branch restriction. Unresolved: lines 41 and 45 contradict the page; line 45's conclusion about reaching `main` also rests on that claim. (topic: agents/headless-agent-runtimes)
