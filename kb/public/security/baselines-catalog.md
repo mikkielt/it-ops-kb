@@ -72,11 +72,11 @@ attribution. NCSC (UK), BSI and ANSSI publish narrower guidance (Intune packs, W
   launch, applies Mark of the Web, sets the print RPC listener to Kerberos on member servers and adds
   `RESTRICTED SERVICES\PrintSpoolerService` to Impersonate a client after authentication [DOC S1419].
 - Intune lists separate baselines for Windows (Security Baseline for Windows 10 and later, latest
-  version 25H2), Defender for Endpoint (latest version 24H1; optimized for physical devices and *not
+  version 26H2), Defender for Endpoint (latest version 24H1; optimized for physical devices and *not
   recommended* for virtual machines or VDI endpoints) and Edge (latest version 139, April 2026; its
   settings moved to a new format in May 2023), besides Microsoft 365 Apps, HoloLens 2, Windows 365,
   Windows 365 for Agents, a Local AI Agent (OpenClaw) preview and a GCC High-only STIG audit
-  baseline (re-read 2026-09-27) [DOC S1421, S1422, S1423].
+  baseline (re-read 2026-10-21) [DOC S1421, S1422, S1423].
 - OSConfig for Windows Server 2025 ships as the `Microsoft.OSConfig` PowerShell module (PSGallery),
   with role-based baseline profiles (Domain Controller, Member Server, Workgroup Member); examples
   of its settings are TLS 1.2 or higher, a minimum of SMB 3.0 and credential-theft protections such

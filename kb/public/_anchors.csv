@@ -14704,20 +14704,20 @@ fe0b09d05a4a,security/almalinux-repositories-vault-pins.md,S-sjuiftqx,located,In
 12ae5ecf94b5,security/baselines-catalog.csv,S-3vkajr2c,unlocated:no-match,,,,,2026-10-10
 13e87e495db6,security/baselines-catalog.csv,S-nwnif62g,unlocated:fetch-error,,,,,2026-10-10
 13e87e495db6,security/baselines-catalog.csv,S-uzuvf3vo,unlocated:fetch-error,,,,,2026-10-10
-21ca5a668d90,security/baselines-catalog.csv,S1402,unlocated:fetch-error,,,,,2026-10-10
+21ca5a668d90,security/baselines-catalog.csv,S1402,unlocated:no-match,,,,,2026-10-21
 24a043789d69,security/baselines-catalog.csv,S1406,unlocated:no-match,,,,,2026-10-10
 24a043789d69,security/baselines-catalog.csv,S-ycjlut3h,unlocated:no-match,,,,,2026-10-10
 36efeb49dbef,security/baselines-catalog.csv,S1470,unlocated:not-text,,,,,2026-10-10
 5dadf3a98a8d,security/baselines-catalog.csv,S1421,located,Learn about Intune security baselines for Windows devices - Microsoft Intune | Microsoft Learn > Available security baselines,physical;vdi;endpoint;recommend;defender;devic;microsoft;security,830608adaabc9d3f,The Microsoft Defender for Endpoint security baseline is optimized for physical devices and is currently not recommended for use on virtual machines (VMs) or VDI,2026-10-10
 5dadf3a98a8d,security/baselines-catalog.csv,S1422,unlocated:no-match,,,,,2026-10-21
 78fe491fad92,security/baselines-catalog.csv,S-cvu2vf7c,unlocated:no-match,,,,,2026-10-10
-847fb9ba91b6,security/baselines-catalog.csv,S1418,unlocated:fetch-error,,,,,2026-10-10
+7a7fb897f049,security/baselines-catalog.csv,S1421,unlocated:no-match,,,,,2026-10-21
+847fb9ba91b6,security/baselines-catalog.csv,S1418,unlocated:no-match,,,,,2026-10-21
 997fbdaba022,security/baselines-catalog.csv,S1598,unlocated:no-match,,,,,2026-10-10
-9b378e02de14,security/baselines-catalog.csv,S1419,unlocated:fetch-error,,,,,2026-10-10
+9b378e02de14,security/baselines-catalog.csv,S1419,unlocated:no-match,,,,,2026-10-21
 9e6b75e13da6,security/baselines-catalog.csv,S1472,unlocated:not-text,,,,,2026-10-10
 a3dffb389325,security/baselines-catalog.csv,S1421,unlocated:no-match,,,,,2026-10-10
 a3dffb389325,security/baselines-catalog.csv,S1423,unlocated:no-match,,,,,2026-10-21
-a456dfb88bd2,security/baselines-catalog.csv,S1421,unlocated:no-match,,,,,2026-10-10
 b8361d5120a0,security/baselines-catalog.csv,S1471,unlocated:not-text,,,,,2026-10-10
 c7b3087cf878,security/baselines-catalog.csv,S-vxnukaep,unlocated:no-match,,,,,2026-10-10
 e7c11a0c0a1a,security/baselines-catalog.csv,S-aljzuasy,unlocated:no-match,,,,,2026-10-10
@@ -14745,6 +14745,9 @@ e7c11a0c0a1a,security/baselines-catalog.csv,S-cwnwnkri,unlocated:no-match,,,,,20
 8df4a1b966fa,security/baselines-catalog.md,S1424,located,Configure Security Baselines for Windows Server 2025 | Microsoft Learn > Why security baselines matter > Network exposure reduction,1.2;tls;higher;baselin,c3f8e4c9cb0e606d,The baseline restricts TLS to version 1.2 or higher with modern cipher suites and disables IP source routing.,2026-10-20
 918616431bfd,security/baselines-catalog.md,S1471,unlocated:not-text,,,,,2026-10-10
 93ad10d5e9a5,security/baselines-catalog.md,S1598,located,,csp;ruleid;cis;stig;expect;rule;path;valu,337f6b6771561dc2,"""Name"",""ExtraId"",""Control Name"",""Registry Key"",""Registry Value"",""Registry Value Type"",""CSP Name"",""CSP Path"",""CSP Value Type"",""Default Value: Domain Controller"",""Default Value: Member Server"",""Default Value: Workgroup Member"",""Allowed Value"",""Expected Value: Domain Controller"",""Expected Value: Member",2026-10-10
+9c8ea0a2ecdc,security/baselines-catalog.md,S1421,unlocated:no-match,,,,,2026-10-21
+9c8ea0a2ecdc,security/baselines-catalog.md,S1422,unlocated:no-match,,,,,2026-10-21
+9c8ea0a2ecdc,security/baselines-catalog.md,S1423,unlocated:no-match,,,,,2026-10-21
 9e6cb72b1fc2,security/baselines-catalog.md,S1470,unlocated:not-text,,,,,2026-10-10
 9e6cb72b1fc2,security/baselines-catalog.md,S1471,unlocated:not-text,,,,,2026-10-10
 9e6cb72b1fc2,security/baselines-catalog.md,S1472,unlocated:not-text,,,,,2026-10-10
@@ -14755,9 +14758,6 @@ d56348f4187d,security/baselines-catalog.md,S1470,unlocated:not-text,,,,,2026-10-
 e4938e12f10c,security/baselines-catalog.md,S-vxnukaep,unlocated:no-match,,,,,2026-10-10
 ee29b144d459,security/baselines-catalog.md,S1405,unlocated:no-match,,,,,2026-10-10
 ee29b144d459,security/baselines-catalog.md,S-m3qbkeev,unlocated:no-match,,,,,2026-10-10
-f7cacab84af6,security/baselines-catalog.md,S1421,unlocated:no-match,,,,,2026-10-10
-f7cacab84af6,security/baselines-catalog.md,S1422,unlocated:no-match,,,,,2026-10-21
-f7cacab84af6,security/baselines-catalog.md,S1423,unlocated:no-match,,,,,2026-10-21
 f89c7258e4ff,security/baselines-catalog.md,S1405,unlocated:no-match,,,,,2026-10-10
 f89c7258e4ff,security/baselines-catalog.md,S1406,located,Microsoft Windows Desktop > This CIS Benchmark is the product of a community consensus process and consists of secure configuration guidelines developed for Microsoft Windows Desktop > CIS Benchmark,version;benchmark;enterpris;cis;window;microsoft,ceb6b86639ef7e76,,2026-10-10
 f89c7258e4ff,security/baselines-catalog.md,S1407,located,CIS Benchmarks March 2026 Update > CIS Benchmarks Updated Last Month,enterpris;v5.0.0;window;microsoft;benchmark;cis,a346d03121731d5e,CIS Microsoft Windows 11 Enterprise Benchmark v5.0.0,2026-10-10
