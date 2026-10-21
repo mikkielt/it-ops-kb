@@ -10,7 +10,7 @@ status: complete
 # Entra workload identity federation for on-prem/self-managed Kubernetes
 
 ## Summary
-- Workload identity federation needs the cluster to act as an OIDC token issuer: Entra must be able to reach `{IssuerURL}/.well-known/openid-configuration` and `{IssuerURL}/openid/v1/jwks` to validate the projected service-account token before exchanging it for an Entra token — i.e. the issuer discovery + JWKS endpoints must be publicly (Entra-)reachable. [DOC S1609, S-vspquxtf]
+- Workload identity federation needs the cluster to act as an OIDC token issuer: Entra must be able to reach `{IssuerURL}/.well-known/openid-configuration` and `{IssuerURL}/openid/v1/jwks` to validate the projected service-account token before exchanging it for an Entra token — i.e. the issuer discovery + JWKS endpoints must be publicly (Entra-)reachable. [DOC S1609]
 - Self-managed/on-prem clusters get this through **Azure Arc-enabled Kubernetes workload identity federation**, generally available since agent 1.32.7 (February 2026) though the conceptual page is still labelled preview, requiring Arc agent version ≥1.21, Azure CLI ≥2.64, `az connectedk8s` ≥1.10.0. [DOC S1609]
 - The federated credential subject is `system:serviceaccount:<namespace>:<service-account-name>` (the Arc deploy guide passes it to `az identity federated-credential create --subject`). [DOC S-snz3myo2]
 - Service accounts map to Entra objects one-to-one, many-to-one or one-to-many (via changing the client-ID annotation). [DOC S1609]
