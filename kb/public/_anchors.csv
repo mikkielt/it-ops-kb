@@ -2799,16 +2799,16 @@ f9ada1d74130,agents/m365-copilot-extensibility.md,S-j46dza7u,unlocated:no-match,
 b5d622d31e8d,agents/mcp-client-config-formats.csv,S-shpwh3m7,unlocated:no-match,,,,,2026-10-10
 c1bd53814bb5,agents/mcp-client-config-formats.csv,S-b5ptbcql,unlocated:no-match,,,,,2026-10-10
 e1f4e03acaaf,agents/mcp-client-config-formats.csv,S-udcaydkb,unlocated:no-match,,,,,2026-10-10
+253e2c81fba1,agents/mcp-server-lifecycle.md,S2135,unlocated:no-match,,,,,2026-10-21
 617dd6600b67,agents/mcp-server-lifecycle.md,S-qpqoaaqj,located,MCP connector > Pin an MCP server's tool list (beta),everyth;lets;sees;record;conversation;mcp-client-2025-11-20;chang;mcp-client-2026-09-15,4b13aa6a844ac497,"The mcp-client-2026-09-15 beta header records the tool list each server returns and lets you pin it, so a server that changes its tools doesn't change",2026-10-11
-689718c6b8e2,agents/mcp-server-lifecycle.md,S2135,located,Tools > Protocol Messages > List Changed Notification,stream;listen;open;declar;send;subscription;listchang;notification,dafbec0dfd2fbf9f,"When the list of available tools changes, servers that declared the listChanged capability SHOULD send a notification to clients that have opened a subscriptions/listen stream",2026-10-12
 70025daa1878,agents/mcp-server-lifecycle.md,S2135,located,Tools > Capabilities,deterministic;order;cach;context;prompt;llm;list;client,faea098453bdff07,Deterministic ordering enables clients to reliably cache the tool list and improves LLM prompt cache hit rates when tools are included in model context.,2026-10-12
+7cd1491afa92,agents/mcp-server-lifecycle.md,S2135,unlocated:no-match,,,,,2026-10-21
 8895b98bc7b4,agents/mcp-server-lifecycle.md,S1862,unlocated:no-match,,,,,2026-10-10
+9a65046d6af2,agents/mcp-server-lifecycle.md,S2135,unlocated:no-match,,,,,2026-10-21
 9bf0f5748e83,agents/mcp-server-lifecycle.md,S1862,located,Connect Claude Code to tools via MCP > Installing MCP servers > Dynamic tool updates,list_chang;refresh;notification;send;chang;reconnect;resourc;without,392ddc5b7a7bff96,"Claude Code supports MCP listchanged notifications, allowing MCP servers to dynamically update their available tools, prompts, and resources without requiring you to disconnect and reconnect.",2026-10-10
 a3e558eb3b64,agents/mcp-server-lifecycle.md,S-7xsfc3ct,unlocated:no-match,,,,,2026-10-10
-a7187c6215af,agents/mcp-server-lifecycle.md,S2135,unlocated:no-match,,,,,2026-10-12
 bde78bd91e0a,agents/mcp-server-lifecycle.md,S2135,unlocated:no-match,,,,,2026-10-12
 dd69446897fd,agents/mcp-server-lifecycle.md,S2012,unlocated:no-match,,,,,2026-10-10
-fa93ccc1e1ef,agents/mcp-server-lifecycle.md,S2135,unlocated:no-match,,,,,2026-10-12
 02c4e59226e4,agents/mcp-stress-testing.md,S1901,unlocated:no-match,,,,,2026-10-10
 02c4e59226e4,agents/mcp-stress-testing.md,S1902,unlocated:no-match,,,,,2026-10-10
 02c4e59226e4,agents/mcp-stress-testing.md,S1904,unlocated:no-match,,,,,2026-10-10
