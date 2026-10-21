@@ -25,6 +25,25 @@
   "depends_on": [
     "ST-wim24u46"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does factdiff.py anchors --min take its share and combine with other listings?",
+      "options": [
+        "fraction, counts line only",
+        "percent, also with --breakdown"
+      ],
+      "recommendation": "fraction, counts line only",
+      "do": {
+        "fraction, counts line only": "ST-a62jazsp",
+        "percent, also with --breakdown": "ST-a62jazsp"
+      },
+      "class": "design",
+      "answer": "fraction, counts line only",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ilje65fa close"
   ],
