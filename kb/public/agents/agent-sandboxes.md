@@ -61,7 +61,7 @@ A plain container shares the host kernel, so four stronger boundaries are used t
 - gVisor releases run the regression tests of the Python, Java, Node.js, PHP and Go runtimes, so most programs in those languages work. [DOC S-q7wv7okn]
 
 ### gVisor: unsupported workloads and features
-- gVisor implements only a subset of the Linux syscall ABI, and does not implement every system call, `/proc` file or `/sys` file; its docs say the only real way to know whether a workload runs is to try it. [DOC S-q7wv7okn]
+- gVisor implements only a subset of the Linux syscall ABI, and has unimplemented features and bugs; the unimplemented part is mostly alternatives to syscalls it does support, and its docs say the only real way to know whether a workload runs is to try it. [DOC S-q7wv7okn]
 - In-sandbox cgroups account for CPU and memory but do not enforce limits; a host cgroup can limit the whole sandbox, but not processes competing inside it. [DOC S-q7wv7okn]
 - Block-device filesystems (fat32, ext3, ext4) cannot be mounted inside the sandbox; a host can mount them and expose the result. [DOC S-q7wv7okn]
 - iptables is only partly supported (enough to run Docker in gVisor), device files for custom hardware are not supported apart from NVIDIA GPUs and TPUs, io_uring is off by default and limited to basic I/O when on, nftables is similarly limited, and KVM cannot be used from inside the sandbox. [DOC S-q7wv7okn]
