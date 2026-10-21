@@ -42,7 +42,11 @@
         "Keep layout file": "ST-bh3yjx7o",
         "Recompute each time": "ST-bh3yjx7o"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Keep layout file",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -57,7 +61,11 @@
         "Print that and exit 0": "ST-bh3yjx7o",
         "Refuse with exit 2": "ST-bh3yjx7o"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Print that and exit 0",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
