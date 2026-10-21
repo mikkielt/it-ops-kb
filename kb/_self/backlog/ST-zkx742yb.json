@@ -2,7 +2,7 @@
   "id": "ST-zkx742yb",
   "kind": "story",
   "title": "The open gaps of the agents articles whose name starts with c or d are researched from official sources or noted with what was tried",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-aolytxc5",
   "sprint": "SP-5cyrnkw7",
   "priority": "P2",
@@ -54,5 +54,7 @@
     "ST-k5pjflob",
     "ST-ziznjmd5"
   ],
-  "notes": "Research item (/kb-research). Operator 2026-10-20: all open gaps, including those already tried: each gets a fresh search (live docs, then the web) and a dated note; a gap that still needs a lab, a login or unpublished information stays open as state. Premise on 2026-10-20 (the first check fails): 43 open public/_gaps.md entries under ('agents/c', 'agents/d') with no note dated 2026-10-21 or later, lines: [70, 806, 808, 811, 816, 823, 824, 825, 826, 827, 828, 1032, 1033, 1034, 1035, 1036, 1037, 1038, 1039, 1040, 1214, 1216, 1220, 1235, 1237] Fact units under the topics on 2026-10-20: 869. check.py and the fact-count check pass before the work and must stay passing: they pin the kb's structure rules and that no fact is deleted across the rewrites (2026-10-20 planning). An entry asking for a count or list a kb tool answers is closed naming the tool."
+  "notes": "Research item (/kb-research). Operator 2026-10-20: all open gaps, including those already tried: each gets a fresh search (live docs, then the web) and a dated note; a gap that still needs a lab, a login or unpublished information stays open as state. Premise on 2026-10-20 (the first check fails): 43 open public/_gaps.md entries under ('agents/c', 'agents/d') with no note dated 2026-10-21 or later, lines: [70, 806, 808, 811, 816, 823, 824, 825, 826, 827, 828, 1032, 1033, 1034, 1035, 1036, 1037, 1038, 1039, 1040, 1214, 1216, 1220, 1235, 1237] Fact units under the topics on 2026-10-20: 869. check.py and the fact-count check pass before the work and must stay passing: they pin the kb's structure rules and that no fact is deleted across the rewrites (2026-10-20 planning). An entry asking for a count or list a kb tool answers is closed naming the tool.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
