@@ -3,7 +3,7 @@ topic: agents/decision-records
 priority: P3
 applies_to: "architecture decision records (ADRs) and decision logs as the vendors and the ADR community describe them: Nygard 2011, MADR 4.0.0, AWS Prescriptive Guidance, Azure Well-Architected Framework, Google Cloud Architecture Center, the UK GDS ADR framework, adr-tools README at commit b3279ba (retrieved 2026-10-01)"
 retrieved_utc: 2026-10-21
-sources: [S-neg7qqfq, S-2u3gjgpw, S-cs7vd6kx, S-jqks66nz, S-ebr4i7g5, S-gb6pcwtm, S-efm54uef, S-l52pzhgp, S-6ek6kqhq, S-lrsbmzgx]
+sources: [S-neg7qqfq, S-2u3gjgpw, S-cs7vd6kx, S-jqks66nz, S-ebr4i7g5, S-gb6pcwtm, S-efm54uef, S-l52pzhgp, S-6ek6kqhq, S-lrsbmzgx, S-mzo2wbzm]
 status: partial
 ---
 
@@ -32,6 +32,7 @@ An architecture decision record (ADR) is a short document that records one signi
 - AWS process: the owner presents the ADR in the Proposed state; the team, owner included, reviews it and decides to accept, to rework it (it stays Proposed, with assigned actions) or to reject it (the owner records the reason and sets Rejected). On approval the owner adds a timestamp, a version and the list of stakeholders and sets Accepted. [DOC S-jqks66nz]
 - AWS treats ADRs as immutable after acceptance or rejection: a change needs a new ADR with its own review and approval, and when that is approved the owner sets the old ADR to Superseded. [DOC S-jqks66nz]
 - AWS expects code review to apply the log: a reviewer who finds a change that violates an ADR asks the author to update the change and shares a link to the ADR. [DOC S-jqks66nz]
+- The ADR guide's document history lists one entry, "Initial publication", dated March 16, 2022, and no later change. [DOC S-mzo2wbzm]
 - AWS best practices: each ADR has a change history with an owner per change, the superseded ADR stays in the log, and ADRs are stored where every project member can reach them, in a Git repository (easy to version) or on a wiki (easy to reach). [DOC S-ebr4i7g5]
 - AWS best practices also advise letting each team member own ADRs so that decisions are adopted faster than ones imposed from above, regular review meetings (a greenfield project's ADRs stabilise in two or three sprints), and handling legacy code that does not match an ADR by gradual updates or explicit technical-debt tasks. [DOC S-ebr4i7g5]
 - The AWS example ADR has the sections Title, Status (Accepted), Date, Context, Decision, Consequences, Compliance and Notes, where Notes holds the author, a version and a changelog. [DOC S-gb6pcwtm]

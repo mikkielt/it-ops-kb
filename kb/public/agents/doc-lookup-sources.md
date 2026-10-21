@@ -2,8 +2,8 @@
 topic: agents/doc-lookup-sources
 priority: P2
 applies_to: "stable (GA) MCP servers and public APIs that return current official documentation for this kb's domains, as of 2026-09-25"
-retrieved_utc: 2026-10-20
-sources: [S2176, S2177, S2178, S2179, S2180, S2181, S2182, S2183, S2184, S2185, S2186, S2187, S2188, S2189, S2190, S2191, S2192, S2193, S2194, S2195, S2197, S1809, S-el34o4bb, S-eutmp4xp, S-j7xzzcxj, S-u2afup7q, S-rgpijsmb, S2196, S-yuwxbqz3, S-xmqy75h7, S-b6tooge2, S-ybuoluc4, S-rgy4dvjf, S452, S717, S-fvspfpxd, S-pxvdwitn, S-gupervu4, S-ke227men, S-fqi6xbbc, S-autbwi4y, S-eluaxz73, S-ekcs6zhr, S-3yod3u7q, S742, S745, S1824, S-soqo5xvt, S-cig7twfc, S-7ppiqh3x, S-u5diy2cr, S-ezhoiiyb, S-t36jnjsm, S-y6wauqrp, S-mz6tic2a, S-5uo7eb2c, S-jkl2kuth, S-ywdbre2n, S-yftp4qw3, S-4yvdwu5c, S2006, S1002, S-5lkuonr6, S1811]
+retrieved_utc: 2026-10-21
+sources: [S2176, S2177, S2178, S2179, S2180, S2181, S2182, S2183, S2184, S2185, S2186, S2187, S2188, S2189, S2190, S2191, S2192, S2193, S2194, S2195, S2197, S-vbtxqsbj, S-sr6eoeoc, S1809, S-el34o4bb, S-eutmp4xp, S-j7xzzcxj, S-u2afup7q, S-rgpijsmb, S2196, S-yuwxbqz3, S-xmqy75h7, S-b6tooge2, S-ybuoluc4, S-rgy4dvjf, S452, S717, S-fvspfpxd, S-pxvdwitn, S-gupervu4, S-ke227men, S-fqi6xbbc, S-autbwi4y, S-eluaxz73, S-ekcs6zhr, S-3yod3u7q, S742, S745, S1824, S-soqo5xvt, S-cig7twfc, S-7ppiqh3x, S-u5diy2cr, S-ezhoiiyb, S-t36jnjsm, S-y6wauqrp, S-mz6tic2a, S-5uo7eb2c, S-jkl2kuth, S-ywdbre2n, S-yftp4qw3, S-4yvdwu5c, S2006, S1002, S-5lkuonr6, S1811]
 status: complete
 ---
 
@@ -42,6 +42,7 @@ reading the current page.
 - Microsoft MCP Server for Enterprise (Graph/Entra data) is titled "(preview)" on its Learn overview page, so it is excluded. [DOC S2190]
 - `https://graph.microsoft.com/v1.0/$metadata` is downloadable without authentication; `/beta` is out of scope as a preview surface. [DOC S2191]
 - PyPI's JSON API (`https://pypi.org/pypi/<package>/json`) returns a project's latest-version metadata, its releases and project URLs without authentication; the `releases` key is marked deprecated in favour of the Index API, and `/pypi/<package>/<version>/json` gives one release. [DOC S2192]
+- PyPI's XML-RPC reference lists a `search(spec[, operator])` method and marks it permanently disabled because of excessive, presumably automated, traffic, and warns that the XML-RPC API will be deprecated; docs.pypi.org carries no XML-RPC page (`/api/xml-rpc/` answered `404` on 2026-10-21), the reference is on warehouse.pypa.io. [DOC S-sr6eoeoc]
 - DeepWiki's MCP server is free, remote and needs no authentication, but its wikis are generated automatically from the repositories (Devin indexes them and produces the wikis), so it can only supply leads. [COMMUNITY S2193, S1809]
 - Context7 indexes library docs contributed by its community and states that it cannot guarantee their accuracy. [COMMUNITY S2194]
 - Context7 (Upstash) serves library docs through a remote MCP server at `https://mcp.context7.com/mcp` with two tools, `resolve-library-id` (library name to a Context7 id such as `/vercel/next.js`) and `query-docs` (docs for that id and a query), or through the `ctx7` CLI; a free API key, sent as `Authorization: Bearer`, is recommended for higher rate limits. [DOC S-eutmp4xp]
@@ -68,6 +69,7 @@ reading the current page.
 - For the licence census, a Learn page's reuse class follows its public mirror's LICENSE when the mirror is live (CC BY 4.0 or MIT: copy with attribution), else the Learn terms (paraphrase, short quotes); a mirror that no longer receives the page's updates, such as `memdocs` (archived at its last reading, since then answering `404`), covers only the text it held, so the live page falls under the Learn terms. [DER S2195, S-b6tooge2, S-xmqy75h7: the terms defer to explicit licences; Learn still points at the repository that answers `404`]
 - GitHub's documentation repository `github/docs` is dual-licensed: CC BY 4.0 for documentation and content in its `assets`, `content` and `data` folders, MIT for code. [DOC S-rgy4dvjf]
 - GitLab's repository licence puts `doc/` under CC BY-SA 4.0, a share-alike licence: verbatim copies would have to carry the same licence. [DOC S452]
+- The source of a `docs.gitlab.com` page of the main GitLab project is a file under the `/doc` directory of `gitlab-org/gitlab`, and the contributing guide says the page's own URL on docs.gitlab.com lists the path. [DOC S-vbtxqsbj]
 - The MCP repository licenses new specification contributions under Apache-2.0 (earlier unrelicensed ones stay MIT) and documentation other than the specification under CC BY 4.0. [DOC S717]
 - The Claude Code docs pages end "© Anthropic PBC. All rights reserved. Use is subject to applicable Anthropic Terms of Service." [DOC S-fvspfpxd]
 - Anthropic's Commercial Terms grant neither party rights to the other's content or intellectual property except as expressly stated. [DOC S-pxvdwitn]

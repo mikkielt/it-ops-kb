@@ -3,7 +3,7 @@ topic: agents/copilot-studio-mcp-client
 priority: P2
 applies_to: "Microsoft Copilot Studio as an MCP client (standard harness; GitHub Copilot harness preview) reaching a self-hosted MCP server through Power Platform connectors, docs current 2026-09-29"
 retrieved_utc: 2026-10-21
-sources: [S1964, S2126, S703, S-l4qgsnr4, S-oh3ybprh, S-nt2bmgtl, S-kyrgum3q, S-gcbkqdo3, S-6x6bb2f3, S-wpjbqofq, S-rvnsf5ty, S-rstajp7g, S-m75y4u2y, S-adugdkcv]
+sources: [S1964, S2126, S703, S-l4qgsnr4, S-oh3ybprh, S-nt2bmgtl, S-kyrgum3q, S-gcbkqdo3, S-6x6bb2f3, S-wpjbqofq, S-rvnsf5ty, S-rstajp7g, S-m75y4u2y, S-adugdkcv, S-eznm7yab]
 status: partial
 ---
 
@@ -39,8 +39,9 @@ status: partial
 - Power Platform requires the endpoint to present a TLS certificate with the complete chain from a well-known root CA; a custom root CA cannot be added. [DOC S-kyrgum3q]
 - Copilot Studio's VNet page requires a Managed Environment and a tenant or Environment Admin, and names three private-endpoint scenarios (Key Vault over an HTTP node, Application Insights telemetry, VNet-supported connectors such as SQL Server); it does not name MCP. [DOC S-gcbkqdo3]
 - Copilot Studio's A2A connections use the custom connector infrastructure, which Microsoft says lets them reach agents on-premises or in a virtual network. [DOC S2126]
+- Microsoft's launch post for MCP in Copilot Studio says MCP servers are made available through connector infrastructure and can therefore use controls such as Virtual Network integration and Data Loss Prevention, so the virtual network path is stated for MCP servers there, in general terms and not for a named connector setting. [DOC S-eznm7yab]
 - The on-premises data gateway in Power Automate supports "custom connectors that you create" (standard mode only; personal mode is Power BI only). [DOC S-6x6bb2f3]
-- Whether an MCP connector (`x-ms-agentic-protocol: mcp-streamable-1.0`) can use the on-premises data gateway or the delegated subnet was not stated on any page read; custom connectors in general can, so it is plausible but unconfirmed. [UNK: no Copilot Studio or connector page read on 2026-09-29 names MCP connectors for either path]
+- Whether an MCP connector (`x-ms-agentic-protocol: mcp-streamable-1.0`) can use the on-premises data gateway was not stated on any page read; custom connectors in general can, so it is plausible but unconfirmed, and the delegated subnet is covered by the launch post's virtual network sentence above only in general terms. [UNK: no Copilot Studio or connector page read on 2026-10-21 names MCP connectors for the gateway; a search of the web on 2026-10-21 found no gateway statement either]
 
 ### Connector definition
 - The custom-connector path imports an OpenAPI (Swagger 2.0) file whose operation is a `post` with `x-ms-agentic-protocol: mcp-streamable-1.0`; Microsoft's sample uses path `/mcp`, scheme `https`, operationId `InvokeMCP` and a `200` response. [DOC S1964]

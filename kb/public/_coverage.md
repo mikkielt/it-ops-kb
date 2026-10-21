@@ -32,9 +32,9 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/coding-agents-mcp` | P2 | complete | `agents/coding-agents-mcp.md` | 9 |
 | `agents/content-safety-prompt-shields` | P2 | complete | `agents/content-safety-prompt-shields.md`, `agents/content-safety-limits.csv` | 13 |
 | `agents/coordination-messages` | P2 | complete | `agents/coordination-messages.md` | 7 |
-| `agents/copilot-studio-mcp-client` | P2 | partial | `agents/copilot-studio-mcp-client.md` | 14 |
+| `agents/copilot-studio-mcp-client` | P2 | partial | `agents/copilot-studio-mcp-client.md` | 15 |
 | `agents/dataverse-mcp-server` | P2 | complete | `agents/dataverse-mcp-server.md` | 7 |
-| `agents/doc-lookup-sources` | P2 | complete | `agents/doc-lookup-sources.md`, `agents/doc-lookup-sources.csv` | 64 |
+| `agents/doc-lookup-sources` | P2 | complete | `agents/doc-lookup-sources.md`, `agents/doc-lookup-sources.csv` | 66 |
 | `agents/docs-maintenance-agents` | P2 | complete | `agents/docs-maintenance-agents.md` | 30 |
 | `agents/genai-telemetry` | P2 | complete | `agents/genai-telemetry.md` | 5 |
 | `agents/github-copilot-admin` | P2 | complete | `agents/github-copilot-admin.md` | 12 |
@@ -51,7 +51,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/agent-troubleshooting-method` | P3 | complete | `agents/agent-troubleshooting-method.md` | 15 |
 | `agents/codebase-mapping` | P3 | complete | `agents/codebase-mapping.md`, `agents/codebase-mapping.csv` | 112 |
 | `agents/coding-agent-codebase-context` | P3 | complete | `agents/coding-agent-codebase-context.md` | 20 |
-| `agents/decision-records` | P3 | partial | `agents/decision-records.md`, `agents/decision-records.csv` | 10 |
+| `agents/decision-records` | P3 | partial | `agents/decision-records.md`, `agents/decision-records.csv` | 11 |
 | `agents/doc-change-detection` | P3 | complete | `agents/doc-change-detection.md` | 90 |
 | `agents/gitops-for-agents` | P3 | partial | `agents/gitops-for-agents.md` | 22 |
 | `agents/langgraph` | P3 | complete | `agents/langgraph.md` | 15 |
