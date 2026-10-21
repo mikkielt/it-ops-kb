@@ -18108,12 +18108,14 @@ f5796865dc66,security/settings-crosswalk.md,S-oeh7ui3h,located,"Default configur
 59613a461a5c,security/supply-chain.md,S-l6ia2wz4,unlocated:no-match,,,,,2026-10-10
 64a36c002e3a,security/supply-chain.md,S1525,located,gh-action-pypi-publish uses TWINE_PASSWORD automatically,keyword;gitlab;id_token;pypi_id_token;lab;request;git;audienc,d0b39f74b2332b3f,The keyword idtokens is used to request an OIDC token from GitLab with name PYPIIDTOKEN and audience,2026-10-10
 6c91c73c6b35,security/supply-chain.md,S1502,located,Secure Software Development Practices for Generative AI and Dual-Use Foundation Models: An SSDF Community Profile > Author(s) > Abstract,companion;800-218;community;dual;dual-us;foundation;generativ;profil,caf92deb5949bfe6,"These additions are documented in the form of an SSDF Community Profile to support Executive Order (EO) 14110, Safe, Secure, and Trustworthy Development and Use",2026-10-10
+79250816269d,security/supply-chain.md,S1522,located,uv pip compile - -o requirements.txt > Syncing an environment,pep;pylock;pylock.toml;sync;requirements.txt;toml;txt;file,1ce888ef64f2fad0,$ uv pip sync requirements.txt To sync an environment with a PEP 751 pylock.toml file:,2026-10-21
+79250816269d,security/supply-chain.md,S-dlc2x6gf,unlocated:no-match,,,,,2026-10-21
+7ea88df49d61,security/supply-chain.md,S1505,located,,availabl;exchang;freely;iec;international;iso;packag;data,2b129966d94bf61f,The System Package Data Exchange™ (SPDX®) An open standard capable of representing systems with software components in as SBOMs (Software Bill of Materials) and other,2026-10-21
 8959aa57b052,security/supply-chain.md,S1597,located,Adding a Trusted Publisher to an existing PyPI project,currently;host;self;self-manag;gitlab.com;instanc;manag;support,20b59937417b0c32,"Currently, only projects hosted on https://gitlab.com are supported. Self-managed instances are not supported.",2026-10-10
 8b6b8e746a00,security/supply-chain.md,S-cos7wdpw,unlocated:no-match,,,,,2026-10-10
 980cc93da0c0,security/supply-chain.md,S1504,unlocated:no-match,,,,,2026-10-10
 984be54be90c,security/supply-chain.md,S1597,located,Adding a Trusted Publisher to an existing PyPI project,definition;authoriz;level;top-level;upload;pipelin;lab;top,aa1436ac0d495f81,"repository's name, and the filepath of the top-level GitLab CI/CD pipeline definition that's authorized to upload to PyPI.",2026-10-10
 9f5f443d3714,security/supply-chain.md,S1523,unlocated:no-match,,,,,2026-10-10
-a30e17cb802b,security/supply-chain.md,S1505,unlocated:no-match,,,,,2026-10-10
 b696151a5d97,security/supply-chain.md,S1512,unlocated:no-match,,,,,2026-10-12
 b696151a5d97,security/supply-chain.md,S-sxp3exzp,unlocated:no-match,,,,,2026-10-10
 bb07b7816722,security/supply-chain.md,S-paztzzud,unlocated:no-match,,,,,2026-10-10
@@ -18122,11 +18124,9 @@ c18e4430d4b1,security/supply-chain.md,S1508,unlocated:no-match,,,,,2026-10-10
 c18e4430d4b1,security/supply-chain.md,S1597,unlocated:no-match,,,,,2026-10-10
 c43a28c50bbf,security/supply-chain.md,S1597,unlocated:no-match,,,,,2026-10-10
 c43a28c50bbf,security/supply-chain.md,S-5ry5zerr,unlocated:no-match,,,,,2026-10-10
-c6c5eec4bcc7,security/supply-chain.md,S1522,located,uv pip compile - -o requirements.txt > Syncing an environment,pep;pylock;pylock.toml;requirements.txt;toml;txt;file;pip,1ce888ef64f2fad0,$ uv pip sync requirements.txt To sync an environment with a PEP 751 pylock.toml file:,2026-10-10
-c6c5eec4bcc7,security/supply-chain.md,S-dlc2x6gf,unlocated:no-match,,,,,2026-10-10
 e014ae118a36,security/supply-chain.md,S1501,located,Secure Software Development Framework SSDF > Project Links > Overview,mitigat;recommendation;1.1;800-218;framework;risk;version;vulnerability,f11979ae43b44460,"NIST Special Publication (SP) 800-218, Secure Software Development Framework (SSDF) Version 1.1: Recommendations for Mitigating the Risk of Software Vulnerabilities has been posted as final,",2026-10-10
 e3f3b48c6898,security/supply-chain.md,S1517,located,Command-based DSC Resource manifest schema reference > Properties > exitCodes,format;sign;code,9a919c2da58c78d6,The exit code must be a literal signed integer. You can't use alternate formats for the exit,2026-10-10
-f01a322666cb,security/supply-chain.md,S1506,unlocated:no-match,,,,,2026-10-10
+e922a6fedbec,security/supply-chain.md,S1506,located,,ecma-424;foundation;tc54;ecma;international;owasp;standard;bill,2779f22ade85f545,CycloneDX: The International Standard for Bill of Materials (ECMA-424) The OWASP Foundation and Ecma International Technical Committee for Software & System Transparency (TC54) drive the,2026-10-21
 32d80ad46cf2,security/threat-model-inputs.md,S1569,unlocated:no-match,,,,,2026-10-10
 5fc6b2659795,security/threat-model-inputs.md,S1573,located,LINDDUN > A framework for,data;detect;disclosur;non;non-complianc;non-repudiation;repudiation;unawareness,92125446517971cb,"It revolves around the key LINDDUN privacy threat types of Linking, Identifying, Non-repudiation, Detecting, Data Disclosure, Unawareness, Non-compliance.",2026-10-10
 68bd1ed5a1a6,security/threat-model-inputs.md,S1572,unlocated:no-match,,,,,2026-10-10

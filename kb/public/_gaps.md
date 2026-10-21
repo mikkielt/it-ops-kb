@@ -1893,3 +1893,11 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## claude/permissions-mcp
 
 - Minimum Claude Code version for the `anthropic/requiresUserInteraction` annotation (previously v2.1.199) is no longer stated on the MCP page (S740, 2026-10-21); look in the changelog (S746) for the release that added it. (topic: claude/permissions-mcp)
+
+## security/supply-chain
+
+- SPDX current spec version (3.0.x), its profile list and the ISO/IEC status of SPDX 3.0: spdx.dev home page (read 2026-10-21) does not state them; look at the SPDX specification pages. (topic: security/supply-chain)
+
+## security/logging-monitoring
+
+- OWASP Top 10 for Agentic Applications 2026 body text on observability and NIST AI 600-1 provisions GV-6.1-008 / MG-2.2-007: the OWASP page is a landing page and the NIST PDF text could not be extracted, so the logging claims are not re-verified. Look at the OWASP PDF download and a text-extractable copy of AI 600-1. (topic: security/logging-monitoring)
