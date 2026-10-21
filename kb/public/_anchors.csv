@@ -1241,11 +1241,11 @@ fee8b50a17f0,agents/coding-agent-codebase-context.md,S-v2sqknkh,unlocated:no-mat
 835b726d21d1,agents/coding-agents-mcp.md,S-2q2hcluk,located,Model Context Protocol > Connect Codex to an MCP server,project;trust;cli;scop;config.toml;toml;config;default,63e594f0b2565820,"By default this is ~/.codex/config.toml, but you can also scope MCP servers to a project with .codex/config.toml (trusted projects only). The ChatGPT desktop app, Codex",2026-10-10
 835b726d21d1,agents/coding-agents-mcp.md,S-b5ptbcql,unlocated:no-match,,,,,2026-10-10
 86cfa1e672d4,agents/coding-agents-mcp.md,S-shpwh3m7,unlocated:no-match,,,,,2026-10-10
+893a9873ca12,agents/coding-agents-mcp.md,S-caxeb7wx,unlocated:no-match,,,,,2026-10-21
 93da3a95fafe,agents/coding-agents-mcp.md,S-shpwh3m7,located,Prefix local MCP tool names with their server name.,every;cach;call;list;agent;tool;server;mcp,2c9cd8fe08d44739,Caching Every agent run calls listtools() on each MCP server.,2026-10-10
 a104d364f205,agents/coding-agents-mcp.md,S-b5ptbcql,unlocated:no-match,,,,,2026-10-10
 aea7d642dace,agents/coding-agents-mcp.md,S-shpwh3m7,unlocated:no-match,,,,,2026-10-10
 b83da5e1bafc,agents/coding-agents-mcp.md,S-shpwh3m7,unlocated:no-match,,,,,2026-10-10
-d3442e13cae3,agents/coding-agents-mcp.md,S-caxeb7wx,located,MCP configuration reference > Configuration file > Sandbox configuration,approv;auto;auto-approv;becaus;confirmation;controll;runs;tool,c5a9394ccd3b4d0c,"When sandboxing is enabled, tool confirmations are auto-approved because the server runs in a controlled environment.",2026-10-10
 d40eb6517346,agents/coding-agents-mcp.md,S-r4egujgz,located,MCP servers,restrict;allow;remot;call;requir;approval;tool;mcp,12e3eaa510bc8dd2,"These tool calls can either be allowed automatically, or restricted with explicit approval required by you as the developer. Remote MCP servers can be any",2026-10-10
 e288ba716de2,agents/coding-agents-mcp.md,S-udcaydkb,located,Configure MCP servers for your repository > Writing a JSON configuration for MCP servers,array;stdio;sse;http;local;type;agent;tool,a9bb865b0c0270d1,"You can also enable all tools by including in the array. type (string): Copilot cloud agent accepts ""local"", ""stdio"", ""http"", or ""sse"".",2026-10-10
 ebda62a43d28,agents/coding-agents-mcp.md,S-r4egujgz,located,MCP servers > Authentication,visibl;every;must;field;object;authorization;token;api,6b696b20c9adbaf7,"To prevent the leakage of sensitive tokens, the Responses API does not store the value you provide in the authorization field. This value will also",2026-10-10
@@ -2780,9 +2780,9 @@ efbdf3dfa5cc,agents/m365-copilot-extensibility.md,S-nmxo2lu7,located,Licensing a
 f58a9abd1350,agents/m365-copilot-extensibility.md,S-x5qiebqy,unlocated:no-match,,,,,2026-10-21
 f9ada1d74130,agents/m365-copilot-extensibility.md,S-j46dza7u,unlocated:no-match,,,,,2026-10-10
 09786b8c80df,agents/mcp-client-config-formats.csv,S-r4egujgz,unlocated:no-match,,,,,2026-10-10
+7e18179d8945,agents/mcp-client-config-formats.csv,S-caxeb7wx,unlocated:no-match,,,,,2026-10-21
 b5d622d31e8d,agents/mcp-client-config-formats.csv,S-shpwh3m7,unlocated:no-match,,,,,2026-10-10
 c1bd53814bb5,agents/mcp-client-config-formats.csv,S-b5ptbcql,unlocated:no-match,,,,,2026-10-10
-c477da9d37ba,agents/mcp-client-config-formats.csv,S-caxeb7wx,unlocated:no-match,,,,,2026-10-10
 e1f4e03acaaf,agents/mcp-client-config-formats.csv,S-udcaydkb,unlocated:no-match,,,,,2026-10-10
 617dd6600b67,agents/mcp-server-lifecycle.md,S-qpqoaaqj,located,MCP connector > Pin an MCP server's tool list (beta),everyth;lets;sees;record;conversation;mcp-client-2025-11-20;chang;mcp-client-2026-09-15,4b13aa6a844ac497,"The mcp-client-2026-09-15 beta header records the tool list each server returns and lets you pin it, so a server that changes its tools doesn't change",2026-10-11
 689718c6b8e2,agents/mcp-server-lifecycle.md,S2135,located,Tools > Protocol Messages > List Changed Notification,stream;listen;open;declar;send;subscription;listchang;notification,dafbec0dfd2fbf9f,"When the list of available tools changes, servers that declared the listChanged capability SHOULD send a notification to clients that have opened a subscriptions/listen stream",2026-10-12

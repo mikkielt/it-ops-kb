@@ -94,7 +94,8 @@ Responses API instead expose `require_approval` as an explicit opt-in control pe
   `annotations.readOnlyHint: true`. [DOC S-udcaydkb]
 - VS Code: with `sandboxEnabled: true` on a server, "tool confirmations are auto-approved because the server
   runs in a controlled environment"; otherwise VS Code prompts to confirm each tool invocation. The
-  `chat.mcp.access` setting governs which servers can be used at all, and **MCP: Reset Trust** clears saved
+  experimental `chat.mcp.access` setting only controls whether **MCP: Add Server** offers the workspace-root
+  `.mcp.json` destination (existing `.mcp.json` files stay available when it is off), and **MCP: Reset Trust** clears saved
   trust decisions for non-workspace-sourced servers (workspace-sourced servers instead inherit VS Code's
   Workspace Trust). [DOC S-caxeb7wx]
 - OpenAI Agents SDK: `create_static_tool_filter(allowed_tool_names=[...], blocked_tool_names=[...])` is the
