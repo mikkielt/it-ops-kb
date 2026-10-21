@@ -103,7 +103,7 @@ status: complete
 
 - **Billing** → Copilot Studio bills standard-harness agents in Copilot Credits (since 2025-09-01), with usage by Microsoft 365 Copilot-licensed users inside Microsoft 365 Copilot zero-rated. [DOC S1961]
 - **Custom MCP server** → Copilot Studio's own guidance builds one with an MCP SDK from `github.com/modelcontextprotocol`, with optional API-key or OAuth 2.0 authentication. [DOC S1965]
-- **Governance** → Copilot Studio puts MCP connectors under Power Platform data policies like any other connector. [DOC S1974]
+- **Governance** → Copilot Studio puts MCP connectors under Power Platform data policies like any other connector; MCP-capable connectors can also be restricted through advanced connector policies. [DOC S1974]
 - **SSO on a custom canvas** → Copilot Studio already needs two separate Entra app registrations, a custom scope, a token-exchange URL and MSAL code in the canvas. [DOC S1966]
 - **Channels and surfaces** → Copilot Studio publishes to Teams, Microsoft 365 Copilot, websites, SharePoint and Azure Bot Service channels, can be blocked per channel by admins, and accepts no user attachments on any channel; an agent for Microsoft 365 Copilot is a declarative agent that is not auto-deployed and can be downloaded as a .zip for the Teams or org catalog. [DOC S1977, S1975]
 

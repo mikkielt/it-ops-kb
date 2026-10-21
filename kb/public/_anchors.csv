@@ -1376,6 +1376,8 @@ fed6555c1ade,agents/coordination-messages.md,S1935,located,Writing effective too
 6167a674fe07,agents/copilot-studio-feature-map.csv,S1974,unlocated:no-match,,,,,2026-10-10
 68b2ab148e3f,agents/copilot-studio-feature-map.csv,S1961,unlocated:no-match,,,,,2026-10-10
 6b41cdc13404,agents/copilot-studio-feature-map.csv,S1979,located,Agent flows overview - Microsoft Copilot Studio | Microsoft Learn > Convert a Power Automate flow to an agent flow,conversion;one-way;way;requir;one;automat;capacity;power,cc03632c377d2156,"You can still access the flow from Power Automate. Converting the flow requires that Copilot Studio capacity, either prepaid or pay-as-you-go, is available in the",2026-10-10
+6cfc0695ef9a,agents/copilot-studio-feature-map.csv,S1964,unlocated:no-match,,,,,2026-10-21
+6cfc0695ef9a,agents/copilot-studio-feature-map.csv,S1974,unlocated:no-match,,,,,2026-10-21
 6d96f032e4d3,agents/copilot-studio-feature-map.csv,S1960,unlocated:no-match,,,,,2026-10-10
 6d96f032e4d3,agents/copilot-studio-feature-map.csv,S1984,unlocated:no-match,,,,,2026-10-10
 79c68a6a2466,agents/copilot-studio-feature-map.csv,S1973,unlocated:no-match,,,,,2026-10-21
@@ -1400,12 +1402,8 @@ d8a8c5d2e70a,agents/copilot-studio-feature-map.csv,S1970,unlocated:no-match,,,,,
 d8a8c5d2e70a,agents/copilot-studio-feature-map.csv,S1975,unlocated:no-match,,,,,2026-10-10
 e1d0749981a5,agents/copilot-studio-feature-map.csv,S1977,unlocated:no-match,,,,,2026-10-10
 e24985d134ca,agents/copilot-studio-feature-map.csv,S1960,unlocated:no-match,,,,,2026-10-10
-f3906d60a1da,agents/copilot-studio-feature-map.csv,S1964,unlocated:no-match,,,,,2026-10-10
-f3906d60a1da,agents/copilot-studio-feature-map.csv,S1974,unlocated:no-match,,,,,2026-10-10
 fe596ea28c93,agents/copilot-studio-feature-map.csv,S1963,unlocated:no-match,,,,,2026-10-21
 0542b976b1a3,agents/copilot-studio-inventory.md,S1965,located,Create a new Model Context Protocol (MCP) server - Microsoft Copilot Studio | Microsoft Learn > Authentication support,api;key;2.0;copilot;oauth;studio;credential;identity,8b148e1415d46e27,The credentials are either an application key for API key authentication or a client ID and client secret for OAuth 2.0 authentication. Provide the authentication,2026-10-21
-11bf098f34d3,agents/copilot-studio-inventory.md,S1964,located,Connect your agent to an existing Model Context Protocol (MCP) server - Microsoft Copilot Studio | Microsoft Learn > MCP servers and data policies,regulat;platform;policy;data;copilot;power;studio;access,ab9206a4bada2209,Access to MCP servers in Copilot Studio relies on Power Platform connectors for connectivity. This condition means that if a data policy regulates Power Platform,2026-10-10
-11bf098f34d3,agents/copilot-studio-inventory.md,S1974,unlocated:no-match,,,,,2026-10-10
 15fdc0b1bbbe,agents/copilot-studio-inventory.md,S1960,unlocated:no-match,,,,,2026-10-10
 15fdc0b1bbbe,agents/copilot-studio-inventory.md,S1983,unlocated:no-match,,,,,2026-10-21
 19009896fd5f,agents/copilot-studio-inventory.md,S1960,unlocated:no-match,,,,,2026-10-10
@@ -1439,13 +1437,15 @@ c6e492f500e8,agents/copilot-studio-inventory.md,S1960,located,Quotas and limits 
 ca41cd811f46,agents/copilot-studio-inventory.md,S1977,located,Key concepts - Publish and deploy your agent - Microsoft Copilot Studio | Microsoft Learn,default;entra;manual;setup;allow;anyon;apps;authenticat,5e17a6620cb89ff5,"Agents have the Authenticate with Microsoft option turned on by default. With this option, agents automatically use Microsoft Entra ID authentication for Teams, Power Apps,",2026-10-10
 d5db5f5a5fa3,agents/copilot-studio-inventory.md,S1964,located,Connect your agent to an existing Model Context Protocol (MCP) server - Microsoft Copilot Studio | Microsoft Learn > Supported transports,august;deprecat;sse;streamabl;transport;support;mcp,e853e719fece155d,"Currently, Copilot Studio supports the Streamable transport type. Note Given that SSE transport is deprecated, Copilot Studio no longer supports SSE for MCP after August",2026-10-10
 db31d764444c,agents/copilot-studio-inventory.md,S1962,located,Overview - Microsoft Copilot Studio | Microsoft Learn > Choose a harness,heavy;multi;multi-step;reasoning-heavy;rule;rule-ba;chat;conversation,57d625834a453d58,"The GitHub Copilot harness for reasoning-heavy, multi-step work and complex business processes. The standard harness for rule-based agents and structured, repeatable conversations. The Copilot chat",2026-10-21
-dca0e5d16c88,agents/copilot-studio-inventory.md,S1974,unlocated:no-match,,,,,2026-10-10
+ddb2b4097d29,agents/copilot-studio-inventory.md,S1974,unlocated:no-match,,,,,2026-10-21
 e103dd6fe6fc,agents/copilot-studio-inventory.md,S1980,unlocated:no-match,,,,,2026-10-10
 e14f2401dda7,agents/copilot-studio-inventory.md,S1963,unlocated:no-match,,,,,2026-10-21
 e23d5c2a9d06,agents/copilot-studio-inventory.md,S1960,unlocated:no-match,,,,,2026-10-10
 e6c94e9b5437,agents/copilot-studio-inventory.md,S1960,unlocated:no-match,,,,,2026-10-10
 e86b31a65dc3,agents/copilot-studio-inventory.md,S1982,unlocated:no-match,,,,,2026-10-21
 eb3859b88d08,agents/copilot-studio-inventory.md,S1964,unlocated:no-match,,,,,2026-10-10
+ec023a5b5e7b,agents/copilot-studio-inventory.md,S1964,located,Connect your agent to an existing Model Context Protocol (MCP) server - Microsoft Copilot Studio | Microsoft Learn > MCP servers and data policies,regulat;platform;policy;data;copilot;power;studio;access,ab9206a4bada2209,Access to MCP servers in Copilot Studio relies on Power Platform connectors for connectivity. This condition means that if a data policy regulates Power Platform,2026-10-21
+ec023a5b5e7b,agents/copilot-studio-inventory.md,S1974,located,Data policies - Power Platform | Microsoft Learn > Connectors > Model Context Protocol (MCP) connectors,many;nonblockabl;now;restrict;through;server;advanc;support,d10bd5c67ebc2149,MCP connectors extend typical connector functionality and enable richer experiences for generative AI in Microsoft Copilot Studio. Many of the nonblockable connectors in Microsoft Power,2026-10-21
 f09f01f7641a,agents/copilot-studio-inventory.md,S1973,unlocated:no-match,,,,,2026-10-21
 fbba6bfbb22c,agents/copilot-studio-inventory.md,S1960,unlocated:no-match,,,,,2026-10-10
 fdf9827722f9,agents/copilot-studio-inventory.md,S1984,unlocated:no-match,,,,,2026-10-10
@@ -2979,8 +2979,8 @@ dfb753858e3a,agents/onnx-runtime-rust-ort.md,S-d7xuprcc,located,Dependency Resol
 e82baf84052e,agents/onnx-runtime-rust-ort.md,S-ah7l36rr,unlocated:no-match,,,,,2026-10-13
 eb1b4685edd1,agents/onnx-runtime-rust-ort.md,S-wl3gkg3g,located,Features > Dependency features,ensur;may;disabl;default;featur,10724ba635b2c511,This may not ensure the default features are disabled,2026-10-13
 06ab45c8944d,agents/own-chatbot-architecture.md,S1970,located,What is Microsoft Foundry Agent Service? - Microsoft Foundry | Microsoft Learn > Enterprise capabilities,isolat;sandbox;vm-isolat;vnet;bring-your-own;privat;session;bring,d017f290bc93e109,"Private networking is available for prompt agents. Hosted agents support bring-your-own Azure Virtual Network (BYO VNet), where each session runs in a VM-isolated sandbox connected",2026-10-10
-0b8c77262223,agents/own-chatbot-architecture.md,S1974,located,Data policies - Power Platform | Microsoft Learn > Connectors > Virtual connectors,governanc;studio;copilot;platform;power;data;policy;connector,6320bdb2bce299bc,The proliferation of virtual connectors comes from data policies being one of the most popular governance controls in Power Platform. More of these types of,2026-10-10
 1421b6d68307,agents/own-chatbot-architecture.md,S1970,unlocated:no-match,,,,,2026-10-10
+25b16fd5c8de,agents/own-chatbot-architecture.md,S1974,located,Data policies - Power Platform | Microsoft Learn > Connectors > Model Context Protocol (MCP) connectors,restrict;through;advanc;copilot;studio;mcp;platform;power,d10bd5c67ebc2149,MCP connectors extend typical connector functionality and enable richer experiences for generative AI in Microsoft Copilot Studio. Many of the nonblockable connectors in Microsoft Power,2026-10-21
 2b829af109e7,agents/own-chatbot-architecture.md,S1967,unlocated:no-match,,,,,2026-10-10
 2ff5cb3d1dcf,agents/own-chatbot-architecture.md,S1971,unlocated:no-match,,,,,2026-10-10
 2ff5cb3d1dcf,agents/own-chatbot-architecture.md,S1972,located,Hand off to a live agent - Microsoft Copilot Studio | Microsoft Learn > Trigger handoff to a live agent > Explicit triggers,code;custom;human;handof;engagement;hub;transfer;node,088955d51748ae78,"Once you add a Transfer conversation node into a conversation, each time you trigger handoff your users see a ""No renderer for this activity"" message",2026-10-21

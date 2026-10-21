@@ -91,7 +91,8 @@ files: [agents/copilot-studio-feature-map.csv]
   [DOC S1981]
 - Access to any MCP server in Copilot Studio is regulated by **Power Platform data policies**
   exactly like any other Power Platform connector — MCP connectors are one of the connector classes
-  (certified, custom, virtual, MCP) that DLP can block. [DOC S1964, S1974]
+  (certified, custom, virtual, MCP) that data policies cover; many nonblockable connectors now
+  support MCP, and those MCP servers can be restricted through advanced connector policies. [DOC S1964, S1974]
 
 ### Adaptive cards and channels
 - Rendering of surveys/multiple-choice options is channel-dependent: a full adaptive card on a
@@ -149,7 +150,8 @@ files: [agents/copilot-studio-feature-map.csv]
   experience) and runtime (suspends/quarantines running apps, flows, chatbots; disables blocked
   connections). Propagation of a policy change takes up to 24 hours in the most extreme cases and
   usually under an hour. Copilot Studio virtual connectors are migrating to their own dedicated
-  governance rules, separate from classic DLP and from Advanced Connector Policies. [DOC S1974]
+  governance rules, separate from classic DLP and from Advanced Connector Policies (which don't
+  support virtual connectors). [DOC S1974]
 - Message-throughput **quotas** scale with prepaid-pack tier: 50 RPM/1,000 RPH at 1-10 packs, up to
   100 RPM/2,000 RPH at 51-150 packs, +1 RPM/+20 RPH per extra 10 packs above 150; trial/developer
   environments are capped at 10 RPM/200 RPH; pay-as-you-go and Microsoft 365 Copilot-licensed usage
