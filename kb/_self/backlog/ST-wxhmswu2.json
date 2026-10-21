@@ -2,7 +2,7 @@
   "id": "ST-wxhmswu2",
   "kind": "story",
   "title": "Review sprint: The census tools and skill are fixed before the full census runs",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gavrmuvx",
   "review": true,
   "priority": "P1",
@@ -23,6 +23,27 @@
       ]
     }
   ],
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "9fb316ad4d01e1bf863964589d160159fb3df973",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "1faa42677027ae22"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "b08a6f047d880dde"
+      }
+    ]
+  }
 }
