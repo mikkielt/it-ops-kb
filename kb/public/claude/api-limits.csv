@@ -16,7 +16,7 @@ batch size,all tiers,"100,000 requests or 256 MB per batch, whichever first",bat
 batch processing window,all tiers,"most finish <1h; results after all done or 24h; expires if not done in 24h",,S-3pftmimx
 batch results retention,all tiers,29 days after creation,metadata viewable after that; results not downloadable,S-3pftmimx
 batch discount,all tiers,50% off standard Messages price,stacks with prompt-cache discount; batch cache hit rate 30-98% best-effort,S-3pftmimx
-batch max_tokens beta,output-300k-2026-03-24,"300,000 max_tokens (vs 128K standard)","Opus 5.5/5/4.8/4.7/4.6 and Sonnet 5.5/5/4.6 only",S-3pftmimx
+batch max_tokens beta,output-300k-2026-03-24,"300,000 max_tokens (vs 128K standard)","Opus 5.5/5/4.8/4.7/4.6, Sonnet 5.5/5/4.6 and Haiku 5.5 only",S-3pftmimx
 files storage,per file,500 MB max size,,S-b4bqwu2v
 files storage,per organization,1 TB total,,S-b4bqwu2v
 files storage,per organization,up to 100 workspaces,contact account team for more,S-b4bqwu2v
