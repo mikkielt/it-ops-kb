@@ -29,7 +29,7 @@ Chef Infra Client is the agent on each managed node. A run reads its configurati
 - After the run the compliance phase executes a Chef InSpec run from within the client, with tests taken from a legacy audit cookbook or a current InSpec profile, and then sends or saves the report. [DOC S-zskepmir]
 - A run list is an ordered list of roles and recipes, specific to the node, stored in its node object and maintained with knife or Chef Automate; a recipe that appears more than once runs only once. [DOC S-zskepmir]
 - Run list items are written `role[NAME]` or `recipe[COOKBOOK::RECIPE]`, both quoted, comma separated; the cookbook form `COOKBOOK::RECIPE` and the bare cookbook name (its default recipe) are also accepted. [DOC S-zskepmir]
-- An empty run list is the quick test of whether a failing run is caused by the recipes: if the failure persists, check `client.rb` and the permissions of the user on the server and on the node. [DOC S-zskepmir]
+- An empty run list is the quick test of whether a failing run is caused by the recipes: if the failure persists, check the settings in `config.rb` and the permissions of the user on the server and on the node. [DOC S-zskepmir]
 - `knife node run_list add` places an item after or before another item with `--after` and `--before`; `knife node run_list set` replaces the whole list. [DOC S-zskepmir]
 - On `knife bootstrap`, the first Chef Infra Client run has an empty run list by default and `--run-list` adds one to the bootstrap. [DOC S-zskepmir]
 - `-o` / `--override-runlist` replaces the run list for one run without clearing the cookbooks cached on the node and without persisting node data at the end of the run; `-r` / `--runlist` replaces it permanently. [DOC S-yddwaulv]
