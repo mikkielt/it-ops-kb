@@ -2,7 +2,7 @@
   "id": "ST-bler2hy7",
   "kind": "story",
   "title": "A batch judge call whose reply matches no item is retried once, and an empty verdict list is refused",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-gavrmuvx",
   "priority": "P3",
@@ -45,5 +45,7 @@
   "links": [
     "parked: SP-yojt6y7v review"
   ],
-  "notes": "Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft. 2026-10-20 planning: the logs census of 2026-10-11 lost 20 items to one call that answered 'no entry matched an item'. The raw-reply clause is dropped: a failed call's record already names its cause. The first check drives judge_items with a call that answers no verdict, then one. Premises: 1 call made, no verdict; JUDGE_SCHEMA minItems is 0."
+  "notes": "Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft. 2026-10-20 planning: the logs census of 2026-10-11 lost 20 items to one call that answered 'no entry matched an item'. The raw-reply clause is dropped: a failed call's record already names its cause. The first check drives judge_items with a call that answers no verdict, then one. Premises: 1 call made, no verdict; JUDGE_SCHEMA minItems is 0.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
