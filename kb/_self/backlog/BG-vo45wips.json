@@ -1,0 +1,24 @@
+{
+  "id": "BG-vo45wips",
+  "kind": "bug",
+  "title": "census.py brief and dispatch build the review items of every queued source, so each part spends minutes on other groups' rows",
+  "status": "todo",
+  "parent": "EP-mkzkd7in",
+  "sprint": "SP-rmp5zm5a",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "census.py brief and dispatch build review items and repin items only for the rows of the group they name, so one part's brief no longer reads every queued source's fact diff; groups still sizes every group, and a group's brief text is the same as before",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import argparse, contextlib, io, sys\nsys.path.insert(0, '_tools')\nimport census, kbfacts\nrow = lambda i: {'id': i, 'bucket': 'CHANGED', 'note': '', 'outcome': '', 'kind': 'page', 'url': 'https://corp.example.com/' + i}\nrows = [row('S-aaaaaaaa'), row('S-bbbbbbbb')]\nasked = set()\ndef rbs(ids, fd):\n    asked.update(ids)\n    return {}\ncensus.phase2_args = lambda a: (rows, None)\ncensus.factdiff_log_rows = lambda *a, **k: []\nkbfacts.cited_lines = lambda ids: {}\ncensus.read_judged = lambda log: {}\ncensus.review_by_source = rbs\ncensus.repin_items = lambda todo, have=None: {}\ncensus.reading_queue = lambda rows, fd, items=None, cited=None: [{'id': r['id'], 'chars': 1} for r in rows]\ncensus.citing_files = lambda r, cited, root: ['g1/x.md' if r['id'] == 'S-aaaaaaaa' else 'g2/y.md']\ncensus.owner_of = lambda files: files[0].split('/')[0]\ncensus.brief_parts = lambda group, members, ctx: ['part of ' + r['id'] for r, _, _ in members]\na = argparse.Namespace(log='kb/public/_census/2026-10-21.csv', factdiff=None, group='g1', part=1)\nwith contextlib.redirect_stdout(io.StringIO()):\n    code = census.cmd_brief(a, None)\nprint('brief --group g1 exit', code, 'review items built for', sorted(asked))\nsys.exit(0 if code == 0 and asked == {'S-aaaaaaaa'} else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/census.py",
+    "kb/_self/web-sources.md"
+  ],
+  "notes": "Found 2026-10-21 in the census of ST-zpe7qxtv: cProfile of `census.py brief --group mcp --part 2` on the 2026-10-21 log took 684 s, 516 s of it in review_by_source over 5601 sources and 160 s in repin_items, while the part reads 9 rows; each dispatch pays it, so the agents group (106 parts in order) would spend about 20 h on it. phase2_context is shared by groups, brief and dispatch: keep groups' sizes (it needs every row's queue record) and scope brief and dispatch to the named group's rows (owners come from cited lines, which are cheap). The census driver resumes on the fixed code once this lands."
+}
