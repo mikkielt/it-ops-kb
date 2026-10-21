@@ -97,7 +97,7 @@ capability/safety-eval ground for an agent that happens to be hosted in Azure AI
   `tool_definitions` when scoring an agent's groundedness against the tool outputs it received; both, plus `IntentResolutionEvaluator` and
   `TaskAdherenceEvaluator`, accept either simple `query`/`response` strings or full OpenAI-style message lists (`query` must start with the
   agent's system message). All built-in AI-assisted quality/agentic evaluators output a numeric score plus a `pass`/`fail` result against a
-  configurable threshold and a natural-language reason. [DOC S-zfg6jhgr, S-6jcocxnl]
+  configurable threshold and a natural-language reason (`SimilarityEvaluator` has no reason field). [DOC S-zfg6jhgr, S-6jcocxnl]
 - AI-assisted evaluators need a GPT judge model (`gpt-35-turbo`, `gpt-4`, `gpt-4-turbo`, `gpt-4o` or `gpt-4o-mini` in `model_config`) except
   risk-and-safety evaluators and `GroundednessProEvaluator`, which instead take `azure_ai_project` and call a Foundry backend service;
   reasoning-model judges (e.g. Azure OpenAI/OpenAI o-series) are supported for the agentic/quality evaluators by passing

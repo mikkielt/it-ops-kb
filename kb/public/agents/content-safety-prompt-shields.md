@@ -45,9 +45,10 @@ preview code), custom categories (preview, standard variant retiring 2026-09-01)
 - Document attack subtypes: Manipulated content, Access to system infrastructure, Information gathering,
   Availability, Fraud, Malware, plus the same four subtypes as user prompt attacks (change system rules,
   conversation mockup, role-play, encoding). [DOC S-zlqf57iu]
-- Attack-type comparison: user prompt attacks are attacker=user, entry point=user prompts, objective=alter
-  intended LLM behavior; document attacks are attacker=third party, entry point=third-party content
-  (documents/emails/web pages), objective=gain unauthorized access/control via misinterpreted instructions.
+- Attack-type comparison: user prompt attacks arrive in the `userPrompt` request field and circumvent or alter
+  system instructions to change intended LLM behavior; document attacks arrive in the `documents` field and
+  inject instructions into document content to gain unauthorized access or control (the page no longer names
+  the attacker as user vs. third party: the service does not verify provenance, the integration defines it).
   [DOC S-zlqf57iu]
 
 ### Foundry guardrails integration
