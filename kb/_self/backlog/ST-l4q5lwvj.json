@@ -2,7 +2,7 @@
   "id": "ST-l4q5lwvj",
   "kind": "story",
   "title": "Research sprint goal: The open gaps of the endpoint, identity, security, arch, gitlab and logs articles are researched against the census",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-z6wolmvm",
   "goal_research": true,
   "priority": "P1",
@@ -24,5 +24,7 @@
   "depends_on": [
     "ST-zpe7qxtv"
   ],
-  "notes": "2026-10-20 planning: the sprint's items are research items themselves; this story only settles what they share before the first is claimed: the routes kb_pack gives for their topics after the census, and the live docs server each needs (microsoft-learn for the endpoint, identity and security topics; the web for arch, gitlab and logs). It waits for the census tag ST-ywqj4gva."
+  "notes": "2026-10-20 planning: the sprint's items are research items themselves; this story only settles what they share before the first is claimed: the routes kb_pack gives for their topics after the census, and the live docs server each needs (microsoft-learn for the endpoint, identity and security topics; the web for arch, gitlab and logs). It waits for the census tag ST-ywqj4gva.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
