@@ -14485,6 +14485,7 @@ e4246e5de1f6,reuse/device-identity-correlation.md,S-ivg7xp7y,unlocated:no-match,
 45302181b3f4,reuse/drift-detection.md,S-3aphi7n2,unlocated:no-match,,,,,2026-10-10
 70c19634abaa,reuse/drift-detection.md,S1010,located,,power;shell;powershell,2c99ef0c8866ea64,"""language"": ""PowerShell"",",2026-10-10
 70c19634abaa,reuse/drift-detection.md,S-3aphi7n2,located,,power;powershell;shell,58c1783e41d4b610,Assuming the provided PowerShell script is part of a larger context and the variable $Filter is defined elsewhere,2026-10-10
+a4cf0c4bee91,reuse/drift-detection.md,S-3aphi7n2,unlocated:no-match,,,,,2026-10-21
 c9ef500ee205,reuse/drift-detection.md,S1009,unlocated:no-match,,,,,2026-10-10
 c9ef500ee205,reuse/drift-detection.md,S-tvp7vziq,unlocated:no-match,,,,,2026-10-10
 e9f0fc528d4d,reuse/drift-detection.md,S1010,located,,configur;extract;manag;tenant;configuration;microsoft;monitor,72f24c60a73b0e0e,"""description"": ""Manages, configures, extracts and monitors Microsoft 365 tenant configurations"",",2026-10-10
