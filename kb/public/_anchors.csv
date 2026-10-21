@@ -7919,8 +7919,8 @@ c7ac254db2c3,dsc/mcp-server.md,S108,unlocated:no-match,,,,,2026-10-10
 ec9d641edff7,dsc/mcp-server.md,S108,located,,struct;request;operation,fbe3540575ad7be9,"pub struct InvokeDscConfigRequest { #[schemars(description = ""The operation to perform on the DSC configuration"")]",2026-10-10
 ec9d641edff7,dsc/mcp-server.md,S-catcwj3d,located,,struct;request;operation,6137d03d9ea7fcf2,"pub struct InvokeDscResourceRequest { #[schemars(description = ""The operation to perform on the DSC resource"")]",2026-10-10
 2ce3592b467d,dsc/open-bugs-windows.md,S126,located,,securestr;secur;validat;defin;discovery;parameter;trac;exit,78cfec2698843eba,"Parameters file\n\nyaml\n\nparameters:\n SafemodeAdministratorPassword: mySecretTest!!\n\n\n\n### Expected behavior\n\nconsole\ndsc config --parameters-file .\\dscresources.parameters.yaml test --file .\\parameters.groups.dsc.yaml\n\n\n### Actual behavior\n\nconsole\n2025-11-26T06:26:41.114556Z ERROR tracemessage=\""PID 8264: Parser: Parameter 'SafemodeAdministratorPassword' not found in context\"" \n2025-11-26T06:26:41.117017Z",2026-10-10
-7ff7b9af9f58,dsc/open-bugs-windows.md,S126,unlocated:no-match,,,,,2026-10-10
-abe95af1fb3d,dsc/open-bugs-windows.md,S126,unlocated:no-match,,,,,2026-10-10
+4ce3a57a3c3e,dsc/open-bugs-windows.md,S126,unlocated:no-match,,,,,2026-10-21
+aa1d192fc0db,dsc/open-bugs-windows.md,S126,unlocated:no-match,,,,,2026-10-21
 bf49d36fe886,dsc/open-bugs-windows.md,S126,unlocated:no-match,,,,,2026-10-10
 06fce013b163,dsc/releases-feature-matrix.md,S113,located,,3.2.3,1ef09fc5e38e373d,"""tagname"": ""v3.2.3"",",2026-10-20
 09c179aa6f69,dsc/releases-feature-matrix.md,S114,unlocated:not-text,,,,,2026-10-10

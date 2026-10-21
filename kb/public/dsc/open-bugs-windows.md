@@ -1,8 +1,8 @@
 ---
 topic: dsc/open-bugs-windows
 priority: P0
-applies_to: "PowerShell/DSC GitHub issues, state=open, label Issue-Bug, snapshot 2026-09-23, re-checked 2026-09-26"
-retrieved_utc: 2026-09-26
+applies_to: "PowerShell/DSC GitHub issues, state=open, label Issue-Bug, snapshot 2026-09-23, re-checked 2026-10-21"
+retrieved_utc: 2026-10-21
 sources: [S126]
 status: complete
 files: [dsc/open-bugs.csv]
@@ -11,14 +11,14 @@ files: [dsc/open-bugs.csv]
 # Open DSC bugs affecting Windows resources
 
 ## Summary
-- 54 open issues carry the label `Issue-Bug` (re-checked 2026-09-26; 55 on 2026-09-23, #1727 has since closed). `open-bugs.csv` lists the 2026-09-23 snapshot with number, title, labels, created date, affected area (keyword-classified), platform and URL.
+- 56 open issues carry the label `Issue-Bug` (re-checked 2026-10-21; 54 on 2026-09-26, 55 on 2026-09-23, #1727 has since closed). `open-bugs.csv` lists the 2026-09-23 snapshot with number, title, labels, created date, affected area (keyword-classified), platform and URL.
 - 18 of them touch Windows-side components, all in the PowerShell / Windows PowerShell adapters (class-based resources, CIM serialization, WinPS module scope) or packaging. #1727 on the new `Microsoft.Filesystem.File/Content` (3.4.0-preview.1 only) was in the 2026-09-23 snapshot and is closed as of 2026-09-26.
 - No open `Issue-Bug` issue names `Microsoft.Windows/Registry`, `Service`, `FirewallRuleList`, `WindowsFeatureList`, `OptionalFeatureList` or `UpdateList` in its title.
 - The `directives.version` lib-version defect and the trace-level secret leak found for this kb (`directives.md`, `secrets.md`) have no matching open bug title in this snapshot.
 
 ## Facts
-- The repo's bug label is `Issue-Bug`. Other labels include `Resolution-*`, `Needs Triage`, `Backport-Needed`. [DOC S126]
-- Open Issue-Bug count on 2026-09-26: 54 (pull requests excluded; 55 on 2026-09-23). The one that left the list is #1727, now closed. [DOC S126]
+- The repo's bug label is `Issue-Bug`. Other labels on the open bugs on 2026-10-21 include `Need-Review`, `Resolution-Answered`, `Doc-Impact`, `Schema-Impact`, `Area-Bicep`, `WG-Reviewed`; `Needs Triage` and `Backport-Needed` did not appear on any of them. [DOC S126]
+- Open Issue-Bug count on 2026-10-21: 56 (pull requests excluded; 54 on 2026-09-26, 55 on 2026-09-23). #1727 is closed; #1765 and #1736 are new since 2026-09-26 and neither is Windows-side. All 18 Windows-side issues in the table below are still open. [DOC S126]
 - Engine issues that also affect Windows use: #1245 "Exit codes not reliable", #817 "DSC doesnt propagate exit code correctly", #962 "DSC does not validate Test method returns _inDesiredState", #963 "DSC Set does not error when return is not defined and resource returns stdout", #1209 "Parameter `secureString` transforms input incorrectly on adapter", #677 "Tracing is not being flushed before `dsc` exits", #883 "DSC config does discovery on every resource instance". [DOC S126]
 - The affected-area column in the CSV comes from keywords in each title, not from the issue body. [DER S126: keyword match on title]
 
