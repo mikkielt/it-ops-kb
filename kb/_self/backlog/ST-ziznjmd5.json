@@ -2,7 +2,7 @@
   "id": "ST-ziznjmd5",
   "kind": "story",
   "title": "The open gaps of the agents articles whose name starts with a are researched from official sources or noted with what was tried",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-aolytxc5",
   "sprint": "SP-5cyrnkw7",
   "priority": "P2",
@@ -53,5 +53,7 @@
     "ST-k5pjflob",
     "ST-qlkmftut"
   ],
-  "notes": "Research item (/kb-research). Operator 2026-10-20: all open gaps, including those already tried: each gets a fresh search (live docs, then the web) and a dated note; a gap that still needs a lab, a login or unpublished information stays open as state. Premise on 2026-10-20 (the first check fails): 24 open public/_gaps.md entries under ('agents/a',) with no note dated 2026-10-21 or later, lines: [9, 17, 23, 24, 25, 26, 27, 28, 35, 142, 179, 191, 250, 257, 484, 862, 863, 1138, 1635, 1638, 1644, 1647, 1794, 1799] Fact units under the topics on 2026-10-20: 714. check.py and the fact-count check pass before the work and must stay passing: they pin the kb's structure rules and that no fact is deleted across the rewrites (2026-10-20 planning). An entry asking for a count or list a kb tool answers is closed naming the tool."
+  "notes": "Research item (/kb-research). Operator 2026-10-20: all open gaps, including those already tried: each gets a fresh search (live docs, then the web) and a dated note; a gap that still needs a lab, a login or unpublished information stays open as state. Premise on 2026-10-20 (the first check fails): 24 open public/_gaps.md entries under ('agents/a',) with no note dated 2026-10-21 or later, lines: [9, 17, 23, 24, 25, 26, 27, 28, 35, 142, 179, 191, 250, 257, 484, 862, 863, 1138, 1635, 1638, 1644, 1647, 1794, 1799] Fact units under the topics on 2026-10-20: 714. check.py and the fact-count check pass before the work and must stay passing: they pin the kb's structure rules and that no fact is deleted across the rewrites (2026-10-20 planning). An entry asking for a count or list a kb tool answers is closed naming the tool.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
