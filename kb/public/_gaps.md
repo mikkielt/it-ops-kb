@@ -1902,3 +1902,12 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## security/logging-monitoring
 
 - OWASP Top 10 for Agentic Applications 2026 body text on observability and NIST AI 600-1 provisions GV-6.1-008 / MG-2.2-007: the OWASP page is a landing page and the NIST PDF text could not be extracted, so the logging claims are not re-verified. Look at the OWASP PDF download and a text-extractable copy of AI 600-1. (topic: security/logging-monitoring)
+
+## security/framework-control-map
+
+- CIS Controls v8.1 counts (18 Controls, 153 Safeguards), the March 2025 date and the CC BY-NC-ND 4.0 licence are not on the cisecurity.org/controls/v8-1 landing page (looked there 2026-10-21); need the CIS licence page or v8.1 PDF as a source. (topic: security/framework-control-map)
+
+## security/threat-model-inputs
+
+- LINDDUN description (S1573) could not be re-verified: www.linddun.org fetch returned an unrelated KU Leuven status page on 2026-10-21; retry later. (topic: security/threat-model-inputs)
+- ATT&CK v20.0 (released 2026-10-13) supersedes v19.2; technique ids and mitigation/detection ids in attack-subset.csv were not re-extracted from a v20.0 STIX bundle. (topic: security/threat-model-inputs)

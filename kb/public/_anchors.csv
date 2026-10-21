@@ -18134,12 +18134,12 @@ e922a6fedbec,security/supply-chain.md,S1506,located,,ecma-424;foundation;tc54;ec
 68bd1ed5a1a6,security/threat-model-inputs.md,S1572,unlocated:no-match,,,,,2026-10-10
 68bd1ed5a1a6,security/threat-model-inputs.md,S1574,unlocated:no-match,,,,,2026-10-21
 6dd1a23df39a,security/threat-model-inputs.md,S1566,located,Sub-techniques (2),escalat;evad;defen;federation;gpos;may;privileg;adversary,a0945f167a9e0378,Adversaries may modify the configuration settings of a domain or identity tenant to evade defenses and/or escalate privileges in centrally managed environments. Such services provide,2026-10-10
-75aea6f9befa,security/threat-model-inputs.md,S1564,unlocated:no-match,,,,,2026-10-10
-75aea6f9befa,security/threat-model-inputs.md,S1576,unlocated:no-match,,,,,2026-10-10
 803d70d9ab00,security/threat-model-inputs.md,S1576,unlocated:no-match,,,,,2026-10-10
 8643a6cc494e,security/threat-model-inputs.md,S1570,unlocated:no-match,,,,,2026-10-10
 92987c4b0bfa,security/threat-model-inputs.md,S1571,unlocated:no-match,,,,,2026-10-10
 92987c4b0bfa,security/threat-model-inputs.md,S1576,unlocated:no-match,,,,,2026-10-10
+a3f5aec9a13b,security/threat-model-inputs.md,S1564,unlocated:no-match,,,,,2026-10-21
+a3f5aec9a13b,security/threat-model-inputs.md,S1576,unlocated:no-match,,,,,2026-10-21
 b441c78bf9c6,security/threat-model-inputs.md,S1567,located,Sub-techniques (7),maintain;credential;adversary;manipulation;may;access;permission;group,6777bd81a1b38268,Adversaries may manipulate accounts to maintain and/or elevate access to victim systems. Account manipulation may consist of any action that preserves or modifies adversary access,2026-10-10
 b741c7e5fc9b,security/threat-model-inputs.md,S1574,located,Microsoft Threat Modeling Tool overview - Azure | Microsoft Learn,guid;report;strid;draw;element;guidanc;mitigation;analysis,247ffe1219fbe82f,Automation: Guidance and feedback in drawing a model STRIDE per Element: Guided analysis of threats and mitigations Reporting: Security activities and testing in the verification,2026-10-21
 bb08462c6e5d,security/threat-model-inputs.md,S1568,unlocated:no-match,,,,,2026-10-10
