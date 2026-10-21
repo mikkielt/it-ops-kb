@@ -2,7 +2,7 @@
   "id": "ST-vhtpgjb5",
   "kind": "story",
   "title": "The open conflicts of the arch, auth, privacy, security, gitlab and logs articles are settled by a source or noted with what would settle them",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-aolytxc5",
   "sprint": "SP-rmp5zm5a",
   "priority": "P2",
@@ -58,5 +58,7 @@
     "ST-zpe7qxtv",
     "ST-wzieawvd"
   ],
-  "notes": "Research item (/kb-research, sources read against the census of ST-zpe7qxtv): an entry closes only when a source settles it or it is no source disagreement (Reviewed); one that needs a lab, a login or unpublished information stays open with a dated note (maintaining.md, Conduct for changes). A gap the reading finds goes to _gaps.md under the same topic. Premise on 2026-10-20 (the first check fails): 41 open public/_conflicts.md entries under ('arch/', 'auth/', 'privacy/', 'security/', 'gitlab/', 'logs/') with no note dated 2026-10-21 or later, lines: [179, 187, 200, 376, 380, 418, 432, 437, 562, 613, 615, 619, 620, 624, 634, 638, 667, 671, 727, 754, 758, 762, 763, 766, 767] Fact units under the topics on 2026-10-20: 5441. check.py and the fact-count check pass before the work and must stay passing: they pin the kb's structure rules and that no fact is deleted across the rewrites (2026-10-20 planning)."
+  "notes": "Research item (/kb-research, sources read against the census of ST-zpe7qxtv): an entry closes only when a source settles it or it is no source disagreement (Reviewed); one that needs a lab, a login or unpublished information stays open with a dated note (maintaining.md, Conduct for changes). A gap the reading finds goes to _gaps.md under the same topic. Premise on 2026-10-20 (the first check fails): 41 open public/_conflicts.md entries under ('arch/', 'auth/', 'privacy/', 'security/', 'gitlab/', 'logs/') with no note dated 2026-10-21 or later, lines: [179, 187, 200, 376, 380, 418, 432, 437, 562, 613, 615, 619, 620, 624, 634, 638, 667, 671, 727, 754, 758, 762, 763, 766, 767] Fact units under the topics on 2026-10-20: 5441. check.py and the fact-count check pass before the work and must stay passing: they pin the kb's structure rules and that no fact is deleted across the rewrites (2026-10-20 planning).",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
