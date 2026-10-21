@@ -37,7 +37,7 @@ scope are covered in `claude/data-retention.md` (not repeated here).
 - User/Member: most restricted role; can create/modify chats and use projects; no access to billing, membership management, integrations, security controls, or analytics (data exports are Primary Owner only). [DOC S-2ym4fr2c]
 - Enterprise plans support custom roles that control feature access at the group level: members whose role is set to "Custom" have no default permissions, and their access comes entirely from the custom roles assigned to their groups. [DOC S-2ym4fr2c]
 - Custom roles can also grant admin permissions for areas such as billing, identity or privacy without making the member an Owner; each admin area is set to No access, Can view or Can manage, and roles are managed under Organization settings > Roles by Owners, Primary Owners and custom roles with Identity & Access set to Can manage. [DOC S-7cq3hwv7]
-- Only Owners and Primary Owners can view/pay invoices and add or modify billing methods, and only the Primary Owner can provision new seats; Admins can manage membership but have no billing permissions. [DOC S-2ym4fr2c]
+- Only Owners and Primary Owners can view/pay invoices and add or modify billing methods, and Owners and the Primary Owner can provision new seats; Admins can manage membership but have no billing permissions. [DOC S-2ym4fr2c]
 
 ### Claude Code seats on Team/Enterprise
 - Claude Code is included with every seat on Team plans and on new/self-serve Enterprise plans; Premium seats add more usage for heavier workloads. [DOC S-xsggrooz]
