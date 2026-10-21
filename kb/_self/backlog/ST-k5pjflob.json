@@ -2,7 +2,7 @@
   "id": "ST-k5pjflob",
   "kind": "story",
   "title": "The open conflicts of the agents, claude, mcp and prior-art articles, and the entries that name no topic are settled by a source or noted with what would settle them",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-aolytxc5",
   "sprint": "SP-rmp5zm5a",
   "priority": "P2",
@@ -75,6 +75,36 @@
     }
   ],
   "notes": "Research item (/kb-research, sources read against the census of ST-zpe7qxtv): an entry closes only when a source settles it or it is no source disagreement (Reviewed); one that needs a lab, a login or unpublished information stays open with a dated note (maintaining.md, Conduct for changes). A gap the reading finds goes to _gaps.md under the same topic. Premise on 2026-10-20 (the first check fails): 32 open public/_conflicts.md entries under ('agents/', 'claude/', 'mcp/', 'prior-art/', '?') with no note dated 2026-10-21 or later, lines: [23, 34, 45, 55, 68, 77, 85, 97, 130, 164, 167, 170, 183, 292, 396, 424, 497, 501, 509, 566, 570, 579, 593, 663, 745] Fact units under the topics on 2026-10-20: 4892. check.py and the fact-count check pass before the work and must stay passing: they pin the kb's structure rules and that no fact is deleted across the rewrites (2026-10-20 planning).",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "1f6405124c773de619d564e8836c8bdb6506a8c7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re, sys\nsys.path.insert(0, '_tools')\nimport kbfacts\nL, P, F = 'public/_conflicts.md', ('agents/', 'claude/', 'mcp/', 'prior-art/', '?'), '2026-10-21'\nN = re.compile(r'\\b(?:Looked|Tried|Still open|Resolved|Reviewed|Closed|Narrowed|Partly resolved|Mostly resolved|Superseded):? (20\\d\\d-\\d\\d-\\d\\d)')\nC = re.compile(r'(?:^|\\s)- (?:Resolved|Superseded|Closed|Reviewed|Partly resolved|Mostly resolved|Narrowed)\\b')\nes = kbfacts.ledger_entries(L)\nkbfacts.link_entries(es)\ntop = lambda e: (e['explicit'] or e['via_sources'] or ['public/?'])[0].split('/', 1)[1]\nleft = [e['line'] for e in es if not C.search(e['text']) and top(e).startswith(P) and max(N.findall(e['text']) or ['0']) < F]\nprint(len(left), 'open', L, 'entries under', P, 'with no note dated', F, 'or later, lines:', left[:25])\nsys.exit(1 if left else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "2752127eede6814b"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "5a9a98bcfccfea52"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0, '_tools')\nimport kbfacts\nP, B = ('agents/', 'claude/', 'mcp/', 'prior-art/'), 4892\nn = sum(len(kbfacts.units('public/' + p)) for p in P)\nprint(n, 'fact units under', P, '- at least', B, 'on 2026-10-20')\nsys.exit(0 if n >= B else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3fc6b9a78914123"
+      }
+    ]
+  }
 }
