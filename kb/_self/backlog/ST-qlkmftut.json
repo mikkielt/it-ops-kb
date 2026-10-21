@@ -2,7 +2,7 @@
   "id": "ST-qlkmftut",
   "kind": "story",
   "title": "Research sprint goal: The open gaps of the agents, claude, mcp, prior-art and python articles are researched against the census",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5cyrnkw7",
   "goal_research": true,
   "priority": "P1",
@@ -24,5 +24,7 @@
   "depends_on": [
     "ST-zpe7qxtv"
   ],
-  "notes": "2026-10-20 planning: the sprint's items are research items themselves; this story only settles what they share before the first is claimed: the routes kb_pack gives for their topics after the census, and the live docs servers each needs (claude-code-docs, mcp-docs, the web for prior-art and python). It waits for the census tag ST-ywqj4gva."
+  "notes": "2026-10-20 planning: the sprint's items are research items themselves; this story only settles what they share before the first is claimed: the routes kb_pack gives for their topics after the census, and the live docs servers each needs (claude-code-docs, mcp-docs, the web for prior-art and python). It waits for the census tag ST-ywqj4gva.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
