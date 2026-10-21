@@ -1,0 +1,25 @@
+{
+  "id": "BG-acur6iym",
+  "kind": "bug",
+  "title": "kbid.py add titles a raw source code file by its first comment line, which can hold an author email address",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "a source row kbid.py add writes for a raw source code file (a text/plain page such as a raw.githubusercontent.com file) never takes its title from a comment line of the file: the title names the repository path, or add refuses and asks for --title",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '_tools'); import provider\nt = '#\\n# Author:: Jan Kowalski (<' + 'jan.kowalski' + '@corp.example.com>)\\n# License:: Apache License, Version 2.0\\n\\nclass Chef\\nend\\n'\ntitle = provider._page_head(t, 'text/plain; charset=utf-8')[0]\nprint('title read from a plain-text code file:', repr(title))\nsys.exit(1 if '@' in title or title.startswith('Author::') else 0)\n"
+    ]
+  },
+  "touches": [
+    "_tools/provider.py"
+  ],
+  "links": [
+    "parked: SP-z6wolmvm review"
+  ],
+  "notes": "Found 2026-10-21 landing ST-polh634k: rows S-u5nsu5mz and S-uajt3oqr were titled 'Author:: <name> (<email>)' from the chef/chef file headers, and test_leaks failed the sync gate on the two email addresses; the worker also recorded MIT while the files state Apache-2.0 (provider.read_licence got 403 from the GitHub REST API, unauthenticated limit). Fixed by hand in 28d31c7590. Premise: provider._page_head on a planted text/plain header returns the Author:: line as the title; the repro exits 1."
+}
