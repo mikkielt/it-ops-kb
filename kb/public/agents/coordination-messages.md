@@ -2,7 +2,7 @@
 topic: agents/coordination-messages
 priority: P2
 applies_to: "Anthropic engineering posts on context engineering, multi-agent research and tool writing; Claude Code subagents, agent teams and costs docs (2026-10); A2A spec 1.0.0 for message parts (see agents/a2a-protocol.md)"
-retrieved_utc: 2026-10-19
+retrieved_utc: 2026-10-21
 sources: [S1855, S1921, S1935, S-wf2dmtu6, S-qdxfqzln, S2132, S2157]
 status: complete
 ---

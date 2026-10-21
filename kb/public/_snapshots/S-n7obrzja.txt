@@ -3,19 +3,36 @@ url: https://github.com/microsoft/MSRC-Microsoft-Security-Updates-API
 title: MSRC Security Updates API (CVRF) repository
 publisher: Microsoft (GitHub)
 licence: MIT (microsoft/MSRC-Microsoft-Security-Updates-API LICENSE)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-microsoft
-/
+## Repository navigation
 MSRC-Microsoft-Security-Updates-API
 Public
-Notifications
-You must be signed in to change notification settings
-Fork
-203
-Star
-525
+NotificationsYou must be signed in to change notification settings
+Fork205 (205)
+Star528 (528)You must be signed in to star a repository
+## About
+Repo with getting started projects for the Microsoft Security Updates API (msrc.microsoft.com/update-guide)
+msrc.microsoft.com/update-guide
+### Topics
+microsoftmsrcpowershellsecurity-tools
+### Resources
+Readme
+MIT license
+### Code of conduct
+Code of conduct
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+528 stars
+### Watchers
+54 watching
+### Forks
+205 forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit
@@ -78,11 +95,11 @@ Security policy
 Activity
 Custom properties
 ### Stars
-525 stars
+528 stars
 ### Watchers
 54 watching
 ### Forks
-203 forks
+205 forks
 Report repository
 ## Releases
 ## Packages

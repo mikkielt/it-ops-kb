@@ -1,0 +1,52 @@
+source: S-atc7uhx5
+url: https://github.com/microsoft/onnxruntime/releases/tag/v1.28.3
+title: ONNX Runtime v1.28.3 release notes and assets
+publisher: Microsoft (microsoft/onnxruntime)
+licence: MIT (microsoft/onnxruntime LICENSE)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+## Repository navigation
+# ONNX Runtime v1.28.3
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+adrastogi
+released this
+02 Oct 20:48
+v1.28.3
+0d68ff6
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+This is a patch release on top of v1.28.2, containing memory-safety and model-validation fixes, a plugin execution fix, and packaging infrastructure updates.
+## Highlights
+### Bug Fixes
+Fixed an out-of-bounds read in EmbedLayerNormalization shape inference when beta is a scalar (#32610).
+Fixed a heap buffer overflow when reusing a packed sub-byte buffer for a full-byte tensor (#32611).
+Fixed an out-of-bounds read when a Loop or Scan body input is also an initializer (#32609).
+Hardened shape inference for applicable contrib operators, including GroupQueryAttention, SparseAttention, and CausalConvWithState (#32607).
+Fixed out-of-bounds reads in ConvTransposeWithDynamicPads and InferenceContextImpl::getInputData (#32679, #32681).
+Rejected invalid graph structures: inputs to a zero-input operator schema and subgraphs on non-control-flow nodes (#32633, #32641).
+Preserved streams during single-tensor data transfers in the plugin EP (#32666).
+### Build and Test Reliability
+Unblocked packaging with Linux image prerequisites and an authenticated ARM64 pip index, mirrored Dawn checkouts, authenticated Android pip and Gradle feeds, and authenticated NuGet feeds for mobile workloads (#31724, #29743, #32400, #32005).
+Installed uuid-dev for the Linux minimal CoreML build and removed the Hugging Face download dependency from a quantization test (#32491, #32443).
+## Contributors
+Thanks to our 10 contributors for this release!
+@wangw-1991, @bbernhar, @shiyi9801, @tianleiwu, @adrastogi, @eserscor, @jiafatom, @miaobin, @sanaa-hamel-microsoft, @xiaofeihan1
+Full Changelog: v1.28.2...v1.28.3
+These release notes were drafted with assistance from GitHub Copilot.
+Assets
+12
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.

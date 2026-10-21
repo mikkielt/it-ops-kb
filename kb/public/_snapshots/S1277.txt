@@ -3,7 +3,7 @@ url: https://docs.gitlab.com/ci/secrets/id_token_authentication/
 title: ID token authentication (GitLab)
 publisher: GitLab
 licence: CC BY-SA 4.0 (GitLab docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 /
@@ -72,6 +72,10 @@ job_project_idAlwaysID of the project running the job. Use this to scope to the 
 job_project_pathAlwaysPath of the project running the job. Use this to scope to the project by path. Introduced in GitLab 18.4.
 job_namespace_idAlwaysNamespace ID of the project running the job. Use this to scope to group or user level namespace by ID. Introduced in GitLab 18.4.
 job_namespace_pathAlwaysNamespace path of the project running the job. Use this to scope to group or user level namespace by path. Introduced in GitLab 18.4.
+source_project_idAlwaysID of the project that contains the source code. In a merge request pipeline, this is the ID of the source project of the merge request. Introduced in GitLab 19.5.
+source_project_pathAlwaysPath of the project that contains the source code. In a merge request pipeline, this is the path of the source project of the merge request. Introduced in GitLab 19.5.
+source_namespace_idAlwaysNamespace ID of the project that contains the source code. In a merge request pipeline, this is the namespace ID of the source project of the merge request. Introduced in GitLab 19.5.
+source_namespace_pathAlwaysNamespace path of the project that contains the source code. In a merge request pipeline, this is the namespace path of the source project of the merge request. Introduced in GitLab 19.5.
 user_identitiesUser Preference settingList of the user’s external identities.
 pipeline_idAlwaysID of the pipeline.
 pipeline_sourceAlwaysPipeline source.
@@ -101,7 +105,7 @@ json
 "project_path": "my-group/my-project",
 "user_id": "1",
 "user_login": "sample-user",
-"user_email": "sample-user@example.com",
+"user_email": "[email protected]",
 "user_identities": [
 {"provider": "github", "extern_uid": "2435223452345"},
 {"provider": "bitbucket", "extern_uid": "john.smith"}
@@ -188,13 +192,16 @@ sub (subject) is mapped in the service’s Identity Provider settings.
 preferred_username is not present by default in GitLab ID tokens.
 ### Error: ID token issuance is disabled
 You might receive this error when a CI/CD job requests an ID token:
-ID token issuance is disabled in CI because this project's path was previously used by a different project.
-GitLab blocks ID token issuance when the configured sub claim contains a project_path with a path that another
-project previously used.
+ID token issuance is disabled in CI because a project path in the `sub` claim was previously used by a different project.
+GitLab blocks ID token issuance when the configured sub claim contains a project_path, job_project_path,
+or source_project_path with a path that another project previously used.
 This restriction prevents a new project from inheriting external trust policies that belong to the
 previous project.
 To resolve the error, use the projects API to set
-ci_id_token_sub_claim_components with project_id as the first value:
+ci_id_token_sub_claim_components with an ID component as the first value.
+Use the ID component that matches the path component you had: project_id for project_path,
+job_project_id for job_project_path, or source_project_id for source_project_path.
+For example:
 json
 {
 "ci_id_token_sub_claim_components": ["project_id", "ref_type", "ref"]

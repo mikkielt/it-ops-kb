@@ -2,7 +2,7 @@
 topic: agents/typescript-native-compiler
 priority: P3
 applies_to: "TypeScript 6.0 (JavaScript-based, last of that line) against TypeScript 7.0 (native compiler written in Go, microsoft/typescript-go, npm typescript 7.0.2): compatibility, new flags, intentional differences, feature status and what is not ready"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-eq3gt72a, S-sp2a6svk, S-mtnr5emw, S-e6jwgvmc, S-sipjyeoi, S-7elpuzi2]
 status: partial
 ---

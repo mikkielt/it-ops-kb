@@ -3,7 +3,7 @@ url: https://pydantic.dev/docs/validation/latest/concepts/pydantic_settings/
 title: Settings Management (pydantic-settings documentation)
 publisher: Pydantic
 licence: MIT (docs in pydantic/pydantic)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Settings Management
@@ -101,6 +101,28 @@ foo: int = Field('test', validate_default=False)
 print(Settings1())
 #> foo='test'
 Check the validation of default values for more information.
+## Runtime validation arguments
+BaseSettings defines a custom __init__ to load values from settings sources, so model_validate(),
+model_validate_json() and model_validate_strings() build the instance by calling that __init__.
+As a consequence:
+Settings sources are still applied, so values from environment variables, dotenv files, etc. are loaded
+just as when calling Settings().
+Runtime validation arguments such as extra, strict and context are not applied. Validation uses
+the behaviour from model_config instead (for example, the default extra='forbid').
+If you need different behaviour, set it in model_config or prepare the input data before validating.
+For example, to build a parent settings class from an instance of a subclass, keep only the parent’s fields:
+from pydantic_settings import BaseSettings
+class BaseAppSettings(BaseSettings):
+name: str = 'app'
+class AppSettings(BaseAppSettings):
+debug: bool = False
+settings = AppSettings(debug=True)
+# `extra='ignore'` is not applied here, so `debug` is rejected as an extra input:
+# BaseAppSettings.model_validate(settings.model_dump(), extra='ignore')
+fields = BaseAppSettings.model_fields
+data = {k: v for k, v in settings.model_dump().items() if k in fields}
+print(BaseAppSettings.model_validate(data))
+#> name='app'
 ## Environment variable names
 By default, the environment variable name is the same as the field name.
 You can change the prefix for all environment variables by setting the env_prefix config setting,
@@ -627,6 +649,7 @@ CLI argument parsing of lists supports intermixing of any of the below three sty
 JSON style --field='[1,2]'
 Argparse style --field 1 --field 2
 Lazy style --field=1,2
+Use the JSON style --field='[]' to pass an empty list. Empty arrays contribute no items when mixed with other list arguments.
 import sys
 from pydantic_settings import BaseSettings
 class Settings(BaseSettings, cli_parse_args=True):
@@ -640,6 +663,12 @@ print(Settings().model_dump())
 sys.argv = ['example.py', '--my_list', '1,2']
 print(Settings().model_dump())
 #> {'my_list': [1, 2]}
+sys.argv = ['example.py', '--my_list', '[]']
+print(Settings().model_dump())
+#> {'my_list': []}
+sys.argv = ['example.py', '--my_list', '[]', '--my_list', '3']
+print(Settings().model_dump())
+#> {'my_list': [3]}
 #### Dictionaries
 CLI argument parsing of dictionaries supports intermixing of any of the below two styles:
 JSON style --field='{"k1": 1, "k2": 2}'
@@ -1074,6 +1103,12 @@ ignored_args: CliUnknownArgs
 sys.argv = ['example.py', '--bad-arg=bad', 'ANOTHER_BAD_ARG', '--good_arg=hello world']
 print(Settings().model_dump())
 #> {'good_arg': 'hello world', 'ignored_args': ['--bad-arg=bad', 'ANOTHER_BAD_ARG']}
+With subcommands, unknown arguments are captured by the innermost parser that declares a CliUnknownArgs field.
+Arguments appearing before a subcommand remain with the parent parser. If a child parser has no capture field,
+its leftovers are passed back to its parent. Captured lists are reset when a CliSettingsSource parses new arguments.
+Ordinary nested models share their parent’s parser. Declaring multiple CliUnknownArgs fields on that same parser
+still duplicates its leftovers; this case is not covered by the subcommand behavior above. Custom parsers whose
+parse_known_args method cannot be replaced also cannot capture subcommand leftovers independently.
 #### CLI Kebab Case for Arguments
 Change whether CLI arguments should use kebab case by enabling cli_kebab_case. By default, cli_kebab_case=True will
 ignore enum fields, and is equivalent to cli_kebab_case='no_enums'. To apply kebab case to everything, including
@@ -1554,6 +1589,10 @@ a large file under secrets_dir.
 If multiple secrets_dir passed, the limit applies to each directory independently.
 #### secrets_case_sensitive
 Same as case_sensitive, but works for secrets only. If not specified, defaults to case_sensitive.
+Unlike case_sensitive for environment variables, this option is honored on every platform.
+os.environ is case-insensitive on Windows, so EnvSettingsSource falls back to
+case-insensitive matching there; secrets are files and keep their case, so no such fallback
+applies.
 #### secrets_nested_delimiter
 Same as env_nested_delimiter, but works for secrets only. If not specified, defaults to env_nested_delimiter.
 This option is used to implement nested secrets directory layout and allows you to do even nasty things
@@ -1718,18 +1757,21 @@ return (az_key_vault_settings,)
 This setup will load Azure Key Vault secrets (e.g., MySetting, mySetting, my-secret or MY-SECRET), mapping them to the snake case version (my_setting in this case).
 ### Dash to underscore mapping
 The Azure Key Vault source accepts a dash_to_underscore option, disabled by default, to support Key Vault kebab-case secret names by mapping them to Python’s snake_case field names. When enabled, dashes (-) in secret names are mapped to underscores (_) in field names during validation.
-This mapping applies only to field names, not to aliases. Consider snake case conversion if you need aliases or nested fields.
+This mapping applies only to field names, not to aliases. Use -- to separate nested model fields; dashes in their names are mapped the same way, while dictionary keys are kept as-is.
 import os
 from azure.identity import DefaultAzureCredential
-from pydantic import Field
+from pydantic import BaseModel, Field
 from pydantic_settings import (
 AzureKeyVaultSettingsSource,
 BaseSettings,
 PydanticBaseSettingsSource,
 )
+class DatabaseSettings(BaseModel):
+sql_password: str
 class AzureKeyVaultSettings(BaseSettings):
 field_with_underscore: str
 field_with_alias: str = Field(..., alias='Alias-With-Dashes')
+database: DatabaseSettings
 @classmethod
 def settings_customise_sources(
 cls,
@@ -1746,7 +1788,7 @@ DefaultAzureCredential(),
 dash_to_underscore=True,
 )
 return (az_key_vault_settings,)
-This setup will load Azure Key Vault secrets named field-with-underscore and Alias-With-Dashes, mapping them to the field_with_underscore and field_with_alias fields, respectively.
+This setup will load Azure Key Vault secrets named field-with-underscore, Alias-With-Dashes and database--sql-password, mapping them to the field_with_underscore, field_with_alias and database.sql_password fields, respectively.
 ## Google Cloud Secret Manager
 Google Cloud Secret Manager allows you to store, manage, and access sensitive information as secrets in Google Cloud Platform. This integration lets you retrieve secrets directly from GCP Secret Manager for use in your Pydantic settings.
 ### Installation
@@ -1967,6 +2009,7 @@ hello = "world"
 foo = 3
 bar = 2
 If you want to load from a specific table in the file, you can provide toml_table_header as a tuple of header parts. For example, toml_table_header=('my-table',) will load variables from the [my-table] table.
+Passing toml_table_header directly to TomlConfigSettingsSource overrides the model configuration. Use toml_table_header=() to load from the root of the file, even when the model configures a table header. Omitting the argument or passing None uses the model configuration.
 from pydantic_settings import (
 BaseSettings,
 PydanticBaseSettingsSource,

@@ -2,7 +2,7 @@
 topic: gitlab/package-registries
 priority: P3
 applies_to: "GitLab 19.x docs (gitlab-org/gitlab master @9f1632e2, 2026-09-27); PyPI, generic packages and container registry; Free, Premium and Ultimate"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-v25mipeh, S-fo6cckzx, S-5lpubwd5, S-gqpmeuse, S-owkwtkdm, S-n3qvicph, S-ocjsmgvx, S-jk4rtq6g, S-cx5yd4ae, S-2fkrq2c6, S1507]
 status: partial
 ---
@@ -21,7 +21,7 @@ All three registries are project-scoped for publishing: a PyPI package or a gene
 - The group index is `.../api/v4/groups/<group_id>/-/packages/pypi/simple`; pip authenticates with a personal access token name and token with the `read_api` scope, or with the job token in CI (username `gitlab-ci-token`). [DOC S-v25mipeh]
 - A job token also reaches the PyPI packages of other projects in the same top-level group, if each such project allows the job token of the calling project. [DOC S-v25mipeh]
 - A request for a package not found in the GitLab registry is forwarded to `pypi.org` by default, even with `--index-url`; a group Owner turns this off in **Settings > Packages and registries** (**Forward PyPI package requests**), an administrator globally. [DOC S-v25mipeh]
-- The page advises turning forwarding off or using `--index-url` and `--no-index` together for private packages, and calls `--extra-index-url` more open to dependency confusion because pip checks the default index and the extra one. [DOC S-v25mipeh]
+- The page advises turning forwarding off and setting the registry with `--index-url` rather than `--extra-index-url` for private packages, and warns against `--no-index`, which makes pip ignore every index including the GitLab one; it calls `--extra-index-url` more open to dependency confusion because pip checks the default index and the extra one. [DOC S-v25mipeh]
 - Package names are matched by the PEP 503 normalized name (`-`, `_` and `.` equal, repeats collapsed). [DOC S-v25mipeh]
 - The package registry supports MD5 and SHA256 hashes for PyPI packages, and SHA256 for generic packages; they can be read in the interface or with the Packages API. [DOC S-ocjsmgvx]
 ### Generic packages
@@ -38,11 +38,11 @@ All three registries are project-scoped for publishing: a PyPI package or a gene
 - `GET /projects/:id/registry/repositories/:repository_id/tags/:tag_name` returns the tag's `digest` (`sha256:...`), `revision`, `short_revision`, `location`, `created_at` and `total_size`; the Tag Details page also shows the manifest and configuration digests. [DOC S-gqpmeuse, S-5lpubwd5]
 - The page documents no pull by digest; Docker documents `docker image pull` with `NAME[:TAG|@DIGEST]`. [DOC S-cx5yd4ae]
 - GitLab's pipeline security page asks to always use SHA digests for Docker images, as `image: python@sha256:...` instead of `image: python:3.9`. [DOC S-2fkrq2c6]
-- Authentication: GitLab username and password (not with 2FA), a personal, deploy, project or group access token, or the GitLab CLI; a token needs `read_registry` to pull and `write_registry` together with `read_registry` to push. [DOC S-owkwtkdm, S-jk4rtq6g]
+- Authentication: GitLab username and password (not with 2FA), a personal, fine-grained personal, deploy, project or group access token, or the GitLab CLI; a token needs `read_registry` to pull and `write_registry` together with `read_registry` to push, while a fine-grained personal token can pull (**Container Repository**: **Read**) but is not supported for push. [DOC S-owkwtkdm, S-jk4rtq6g]
 - In CI, `CI_REGISTRY_USER` and `CI_REGISTRY_PASSWORD` hold a per-job user with read-write access, or the job token logs in with `gitlab-ci-token`; the job token reads and writes the running project's registry and, for others, the job token allowlist decides. [DOC S-owkwtkdm]
 - Registry JWTs from a login last 5 minutes by default on GitLab Self-Managed and 15 minutes on GitLab.com, so a push that outlasts them fails with `unauthorized: authentication required`. [DOC S-owkwtkdm]
 - The registry accepts Docker V2 and OCI images, and an OCI 1.1 manifest `subject` field links Cosign signatures to an image; the OCI 1.1 Referrers API is not fully implemented. [DOC S-5lpubwd5]
-- Open: whether `--index-url` with `--no-index` installs from the GitLab index as the page advises, and whether an image can be pulled by `@sha256:` digest from the GitLab registry, are not shown on any GitLab page read. [UNK: the PyPI page states the advice only; no registry page shows a digest pull]
+- Open: whether an image can be pulled by `@sha256:` digest from the GitLab registry is not shown on any GitLab page read. [UNK: no registry page shows a digest pull]
 ### Visibility
 - `container_registry_access_level` is `enabled` (default: visible to everyone with access to the project, public if the project is public), `private` (project members with Reporter or higher) or `disabled`. [DOC S-gqpmeuse, S-5lpubwd5]
 - With `private`, anonymous users and Guests can neither view the registry nor pull, in a public, internal or private project; with `enabled`, a public project's registry is open to anonymous users, an internal project's to Guests and above, and a private project's to Reporter and above. [DOC S-5lpubwd5]

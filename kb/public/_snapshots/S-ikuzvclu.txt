@@ -1,0 +1,883 @@
+source: S-ikuzvclu
+url: https://learn.microsoft.com/windows-server/administration/windows-commands/windows-commands
+title: Windows Commands (command-line reference)
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/windowsserverdocs)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Windows commands | Microsoft Learn
+
+All supported versions of Windows and Windows Server have a set of Win32 console commands built in. This set of documentation describes the Windows Commands you can use to automate tasks by using scripts or scripting tools.
+
+## Command-line shells
+
+Windows has two command-line shells: the Command shell and PowerShell. Each shell is a software program that provides direct communication between you and the operating system or application, providing an environment to automate IT operations.
+
+The Command shell was the first shell built into Windows to automate routine tasks, like user account management or nightly backups, with batch (.bat) files. With Windows Script Host, you could run more sophisticated scripts in the Command shell. For more information, see `cscript` or `wscript`. You can perform operations more efficiently by using scripts than you can by using the user interface. Scripts accept all commands that are available at the command line.
+
+PowerShell was designed to extend the capabilities of the Command shell to run PowerShell commands called cmdlets. Cmdlets are similar to Windows Commands but provide a more extensible scripting language. You can run both Windows Commands and PowerShell cmdlets in PowerShell, but the Command shell can only run Windows Commands and not PowerShell cmdlets.
+
+For the most robust, up-to-date Windows automation, we recommend using PowerShell instead of Windows Commands or Windows Script Host for Windows automation.
+
+A reference of exit and error codes for Windows Commands can be found in the Debug system error codes articles that may be helpful to understanding errors produced. Windows Commands also include command redirection operators. To learn more of their use, see Using command redirection operators.
+
+Note
+
+You can also download and install PowerShell Core, the open source version of PowerShell.
+
+## Command shell file and directory name automatic completion
+
+You can configure the Command shell to automatically complete file and directory names on a computer or user session when a specified control character is pressed. By default this control character is configured to be the **tab** key for both file and directory names, although they can be different. To change this control character, run `regedit.exe` and navigate to either of the following registry keys and entries, depending on whether you wish to change the value for the current user only, or for all users of the computer.
+
+Caution
+
+Incorrectly editing the registry may severely damage your system. Before making the following changes to the registry, you should back up any valued data on the computer.
+
+```registry
+HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Command Processor\CompletionChar
+HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Command Processor\PathCompletionChar
+```
+
+Set these values to that of the control character you wish to use. See virtual key codes for a complete list. To disable a particular completion character in the registry, use the value for **space** (0x20) as it isn't a valid control character. The type of value for this registry entry is REG_DWORD, and can also be specified by hexadecimal or decimal value.
+
+You can also enable or disable file and directory name completion per instance of a Command shell by running `cmd.exe` with the parameter and switch `/F:ON` or `/F:OFF`. If name completion is enabled with the `/F:ON` parameter and switch, the two control characters used are `Ctrl-D` for directory name completion and `Ctrl-F` for file name completion. User-specified settings take precedence over computer settings, and command-line options take precedence over registry settings.
+
+## Command-line reference A-Z
+
+To find information about a specific command, in the following A-Z menu, select the letter that the command starts with, and then select the command name.
+
+A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T | U | V | W | X | Y | Z
+
+### A
+
+- `active`
+- `add`
+- `add alias`
+- `add volume`
+- `adprep`
+- `append`
+- `arp`
+- `assign`
+- `assoc`
+- `at`
+- `atmadm`
+- `attach-vdisk`
+- `attrib`
+- `attributes`
+    - `attributes disk`
+    - `attributes volume`
+- `auditpol`
+    - `auditpol backup`
+    - `auditpol clear`
+    - `auditpol get`
+    - `auditpol list`
+    - `auditpol remove`
+    - `auditpol resourcesacl`
+    - `auditpol restore`
+    - `auditpol set`
+- `autochk`
+- `autoconv`
+- `autofmt`
+- `automount`
+
+### B
+
+- `bcdboot`
+- `bcdedit`
+- `bdehdcfg`
+    - `bdehdcfg driveinfo`
+    - `bdehdcfg newdriveletter`
+    - `bdehdcfg quiet`
+    - `bdehdcfg restart`
+    - `bdehdcfg size`
+    - `bdehdcfg target`
+- `begin backup`
+- `begin restore`
+- `bitsadmin`
+    - `bitsadmin addfile`
+    - `bitsadmin addfileset`
+    - `bitsadmin addfilewithranges`
+    - `bitsadmin cache`
+        - `bitsadmin cache and delete`
+        - `bitsadmin cache and deleteurl`
+        - `bitsadmin cache and getexpirationtime`
+        - `bitsadmin cache and getlimit`
+        - `bitsadmin cache and help`
+        - `bitsadmin cache and info`
+        - `bitsadmin cache and list`
+        - `bitsadmin cache and setexpirationtime`
+        - `bitsadmin cache and setlimit`
+        - `bitsadmin cache and clear`
+    - `bitsadmin cancel`
+    - `bitsadmin complete`
+    - `bitsadmin create`
+    - `bitsadmin examples`
+    - `bitsadmin getaclflags`
+    - `bitsadmin getbytestotal`
+    - `bitsadmin getbytestransferred`
+    - `bitsadmin getclientcertificate`
+    - `bitsadmin getcompletiontime`
+    - `bitsadmin getcreationtime`
+    - `bitsadmin getcustomheaders`
+    - `bitsadmin getdescription`
+    - `bitsadmin getdisplayname`
+    - `bitsadmin geterror`
+    - `bitsadmin geterrorcount`
+    - `bitsadmin getfilestotal`
+    - `bitsadmin getfilestransferred`
+    - `bitsadmin gethelpertokenflags`
+    - `bitsadmin gethelpertokensid`
+    - `bitsadmin gethttpmethod`
+    - `bitsadmin getmaxdownloadtime`
+    - `bitsadmin getminretrydelay`
+    - `bitsadmin getmodificationtime`
+    - `bitsadmin getnoprogresstimeout`
+    - `bitsadmin getnotifycmdline`
+    - `bitsadmin getnotifyflags`
+    - `bitsadmin getnotifyinterface`
+    - `bitsadmin getowner`
+    - `bitsadmin getpeercachingflags`
+    - `bitsadmin getpriority`
+    - `bitsadmin getproxybypasslist`
+    - `bitsadmin getproxylist`
+    - `bitsadmin getproxyusage`
+    - `bitsadmin getreplydata`
+    - `bitsadmin getreplyfilename`
+    - `bitsadmin getreplyprogress`
+    - `bitsadmin getsecurityflags`
+    - `bitsadmin getstate`
+    - `bitsadmin gettemporaryname`
+    - `bitsadmin gettype`
+    - `bitsadmin getvalidationstate`
+    - `bitsadmin help`
+    - `bitsadmin info`
+    - `bitsadmin list`
+    - `bitsadmin listfiles`
+    - `bitsadmin makecustomheaderswriteonly`
+    - `bitsadmin monitor`
+    - `bitsadmin nowrap`
+    - `bitsadmin peercaching`
+        - `bitsadmin peercaching and getconfigurationflags`
+        - `bitsadmin peercaching and help`
+        - `bitsadmin peercaching and setconfigurationflags`
+    - `bitsadmin peers`
+        - `bitsadmin peers and clear`
+        - `bitsadmin peers and discover`
+        - `bitsadmin peers and help`
+        - `bitsadmin peers and list`
+    - `bitsadmin rawreturn`
+    - `bitsadmin removeclientcertificate`
+    - `bitsadmin removecredentials`
+    - `bitsadmin replaceremoteprefix`
+    - `bitsadmin reset`
+    - `bitsadmin resume`
+    - `bitsadmin setaclflag`
+    - `bitsadmin setclientcertificatebyid`
+    - `bitsadmin setclientcertificatebyname`
+    - `bitsadmin setcredentials`
+    - `bitsadmin setcustomheaders`
+    - `bitsadmin setdescription`
+    - `bitsadmin setdisplayname`
+    - `bitsadmin sethelpertoken`
+    - `bitsadmin sethelpertokenflags`
+    - `bitsadmin sethttpmethod`
+    - `bitsadmin setmaxdownloadtime`
+    - `bitsadmin setminretrydelay`
+    - `bitsadmin setnoprogresstimeout`
+    - `bitsadmin setnotifycmdline`
+    - `bitsadmin setnotifyflags`
+    - `bitsadmin setpeercachingflags`
+    - `bitsadmin setpriority`
+    - `bitsadmin setproxysettings`
+    - `bitsadmin setreplyfilename`
+    - `bitsadmin setsecurityflags`
+    - `bitsadmin setvalidationstate`
+    - `bitsadmin suspend`
+    - `bitsadmin takeownership`
+    - `bitsadmin transfer`
+    - `bitsadmin util`
+        - `bitsadmin util and enableanalyticchannel`
+        - `bitsadmin util and getieproxy`
+        - `bitsadmin util and help`
+        - `bitsadmin util and repairservice`
+        - `bitsadmin util and setieproxy`
+        - `bitsadmin util and version`
+    - `bitsadmin wrap`
+- `bootcfg`
+    - `bootcfg addsw`
+    - `bootcfg copy`
+    - `bootcfg dbg1394`
+    - `bootcfg debug`
+    - `bootcfg default`
+    - `bootcfg delete`
+    - `bootcfg ems`
+    - `bootcfg query`
+    - `bootcfg raw`
+    - `bootcfg rmsw`
+    - `bootcfg timeout`
+- `break`
+
+### C
+
+- `cacls`
+- `call`
+- `cd`
+- `certreq`
+- `certutil`
+- `change`
+    - `change logon`
+    - `change port`
+    - `change user`
+- `chcp`
+- `chdir`
+- `chglogon`
+- `chgport`
+- `chgusr`
+- `chkdsk`
+- `chkntfs`
+- `choice`
+- `cipher`
+- `clean`
+- `cleanmgr`
+- `clip`
+- `cls`
+- `cmd`
+- `cmdkey`
+- `cmstp`
+- `color`
+- `comp`
+- `compact`
+- `compact vdisk`
+- `convert`
+    - `convert basic`
+    - `convert dynamic`
+    - `convert gpt`
+    - `convert mbr`
+- `copy`
+- `create`
+    - `create partition efi`
+    - `create partition extended`
+    - `create partition logical`
+    - `create partition msr`
+    - `create partition primary`
+    - `create volume mirror`
+    - `create volume raid`
+    - `create volume simple`
+    - `create volume stripe`
+- `cscript`
+
+### D
+
+- `date`
+- `dcdiag`
+- `dcgpofix`
+- `dcpromo`
+- `defrag`
+- `del`
+- `delete`
+    - `delete disk`
+    - `delete partition`
+    - `delete shadows`
+    - `delete volume`
+- `detach vdisk`
+- `detail`
+    - `detail disk`
+    - `detail partition`
+    - `detail vdisk`
+    - `detail volume`
+- `dfsdiag`
+    - `dfsdiag testdcs`
+    - `dfsdiag testdfsconfig`
+    - `dfsdiag testdfsintegrity`
+    - `dfsdiag testreferral`
+    - `dfsdiag testsites`
+- `dfsrmig`
+- `diantz`
+- `dir`
+- `diskcomp`
+- `diskcopy`
+- `diskpart`
+- `diskperf`
+- `diskraid`
+- `diskshadow`
+- `dispdiag`
+- `dnscmd`
+- `doskey`
+- `driverquery`
+- `dtrace`
+
+### E
+
+- `echo`
+- `edit`
+- `endlocal`
+- `end restore`
+- `erase`
+- `eventcreate`
+- `Evntcmd`
+- `exec`
+- `exit`
+- `expand`
+- `expand vdisk`
+- `expose`
+- `extend`
+- `extract`
+
+### F
+
+- `fc`
+- `filesystems`
+- `find`
+- `findstr`
+- `finger`
+- `flattemp`
+- `fondue`
+- `for`
+- `forfiles`
+- `format`
+- `freedisk`
+- `fsutil`
+    - `fsutil 8dot3name`
+    - `fsutil behavior`
+    - `fsutil devdrv`
+    - `fsutil dirty`
+    - `fsutil file`
+    - `fsutil fsinfo`
+    - `fsutil hardlink`
+    - `fsutil objectid`
+    - `fsutil quota`
+    - `fsutil repair`
+    - `fsutil reparsepoint`
+    - `fsutil resource`
+    - `fsutil sparse`
+    - `fsutil tiering`
+    - `fsutil transaction`
+    - `fsutil usn`
+    - `fsutil volume`
+    - `fsutil wim`
+- `ftp`
+    - `ftp append`
+    - `ftp ascii`
+    - `ftp bell`
+    - `ftp binary`
+    - `ftp bye`
+    - `ftp cd`
+    - `ftp close`
+    - `ftp debug`
+    - `ftp delete`
+    - `ftp dir`
+    - `ftp disconnect`
+    - `ftp get`
+    - `ftp glob`
+    - `ftp hash`
+    - `ftp lcd`
+    - `ftp literal`
+    - `ftp ls`
+    - `ftp mget`
+    - `ftp mkdir`
+    - `ftp mls`
+    - `ftp mput`
+    - `ftp open`
+    - `ftp prompt`
+    - `ftp put`
+    - `ftp pwd`
+    - `ftp quit`
+    - `ftp quote`
+    - `ftp recv`
+    - `ftp remotehelp`
+    - `ftp rename`
+    - `ftp rmdir`
+    - `ftp send`
+    - `ftp status`
+    - `ftp trace`
+    - `ftp type`
+    - `ftp user`
+    - `ftp verbose`
+    - `ftp mdelete`
+    - `ftp mdir`
+- `ftype`
+- `fveupdate`
+
+### G
+
+- `getmac`
+- `gettype`
+- `goto`
+- `gpfixup`
+- `gpresult`
+- `gpt`
+- `gpupdate`
+- `graftabl`
+
+### H
+
+- `help`
+- `helpctr`
+- `hostname`
+
+### I
+
+- `icacls`
+- `if`
+- `import (shadowdisk)`
+- `import (diskpart)`
+- `inactive`
+- `ipconfig`
+- `ipxroute`
+- `irftp`
+
+### J
+
+- `jetpack`
+
+### K
+
+- `klist`
+- `ksetup`
+    - `ksetup addenctypeattr`
+    - `ksetup addhosttorealmmap`
+    - `ksetup addkdc`
+    - `ksetup addkpasswd`
+    - `ksetup addrealmflags`
+    - `ksetup changepassword`
+    - `ksetup delenctypeattr`
+    - `ksetup delhosttorealmmap`
+    - `ksetup delkdc`
+    - `ksetup delkpasswd`
+    - `ksetup delrealmflags`
+    - `ksetup domain`
+    - `ksetup dumpstate`
+    - `ksetup getenctypeattr`
+    - `ksetup listrealmflags`
+    - `ksetup mapuser`
+    - `ksetup removerealm`
+    - `ksetup server`
+    - `ksetup setcomputerpassword`
+    - `ksetup setenctypeattr`
+    - `ksetup setrealm`
+    - `ksetup setrealmflags`
+- `ktmutil`
+- `ktpass`
+
+### L
+
+- `label`
+- `list`
+    - `list providers`
+    - `list shadows`
+    - `list writers`
+- `load metadata`
+- `lodctr`
+- `logman`
+    - `logman create`
+    - `logman create alert`
+    - `logman create api`
+    - `logman create cfg`
+    - `logman create counter`
+    - `logman create trace`
+    - `logman delete`
+    - `logman import and logman export`
+    - `logman query`
+    - `logman start and logman stop`
+    - `logman update`
+    - `logman update alert`
+    - `logman update api`
+    - `logman update cfg`
+    - `logman update counter`
+    - `logman update trace`
+- `logoff`
+- `lpq`
+- `lpr`
+
+### M
+
+- `macfile`
+- `makecab`
+- `manage bde`
+    - `manage bde status`
+    - `manage bde on`
+    - `manage bde off`
+    - `manage bde pause`
+    - `manage bde resume`
+    - `manage bde lock`
+    - `manage bde unlock`
+    - `manage bde autounlock`
+    - `manage bde protectors`
+    - `manage bde tpm`
+    - `manage bde setidentifier`
+    - `manage bde forcerecovery`
+    - `manage bde changepassword`
+    - `manage bde changepin`
+    - `manage bde changekey`
+    - `manage bde keypackage`
+    - `manage bde upgrade`
+    - `manage bde wipefreespace`
+- `mapadmin`
+- `md`
+- `merge vdisk`
+- `mkdir`
+- `mklink`
+- `mmc`
+- `mode`
+- `more`
+- `mount`
+- `mountvol`
+- `move`
+- `mqbkup`
+- `mqsvc`
+- `mqtgsvc`
+- `msdt`
+- `msg`
+- `msiexec`
+- `msinfo32`
+- `mstsc`
+
+### N
+
+- `nbtstat`
+- `netcfg`
+- `netdom`
+    - `netdom add`
+    - `netdom computername`
+    - `netdom join`
+    - `netdom move`
+    - `netdom movent4bdc`
+    - `netdom query`
+    - `netdom remove`
+    - `netdom renamecomputer`
+    - `netdom reset`
+    - `netdom resetpwd`
+    - `netdom trust`
+    - `netdom verify`
+- `net print`
+- `net user`
+- `netsh`
+    - `netsh add`
+    - `netsh advfirewall`
+    - `netsh branchcache`
+    - `netsh bridge`
+    - `netsh delete`
+    - `netsh dhcpclient`
+    - `netsh dnsclient`
+    - `netsh dump`
+    - `netsh exec`
+    - `netsh http`
+    - `netsh interface`
+    - `netsh ipsec`
+    - `netsh lan`
+    - `netsh mbn`
+    - `netsh namespace`
+    - `netsh netio`
+    - `netsh nlm`
+    - `netsh ras`
+    - `netsh rpc`
+    - `netsh set`
+    - `netsh show`
+    - `netsh trace`
+    - `netsh wcn`
+    - `netsh wfp`
+    - `netsh winhttp`
+    - `netsh winsock`
+    - `netsh wlan`
+- `netstat`
+- `nfsadmin`
+- `nfsshare`
+- `nfsstat`
+- `nlbmgr`
+- nltest
+- `nslookup`
+    - `nslookup exit Command`
+    - `nslookup finger Command`
+    - `nslookup help`
+    - `nslookup ls`
+    - `nslookup lserver`
+    - `nslookup root`
+    - `nslookup server`
+    - `nslookup set`
+    - `nslookup set all`
+    - `nslookup set class`
+    - `nslookup set d2`
+    - `nslookup set debug`
+    - `nslookup set domain`
+    - `nslookup set port`
+    - `nslookup set querytype`
+    - `nslookup set recurse`
+    - `nslookup set retry`
+    - `nslookup set root`
+    - `nslookup set search`
+    - `nslookup set srchlist`
+    - `nslookup set timeout`
+    - `nslookup set type`
+    - `nslookup set vc`
+    - `nslookup view`
+- `ntbackup`
+- `ntcmdprompt`
+- `ntfrsutl`
+
+### O
+
+- `offline`
+    - `offline disk`
+    - `offline volume`
+- `online`
+    - `online disk`
+    - `online volume`
+- `openfiles`
+
+### P
+
+- `pagefileconfig`
+- `path`
+- `pathping`
+- `pause`
+- `pbadmin`
+- `pentnt`
+- `perfmon`
+- `ping`
+- `pktmon`
+- `pnpunattend`
+- `pnputil`
+- `popd`
+- `powershell`
+- `powershell ise`
+- `print`
+- `prncnfg`
+- `prndrvr`
+- `prnjobs`
+- `prnmngr`
+- `prnport`
+- `prnqctl`
+- `prompt`
+- `pubprn`
+- `pushd`
+- `pushprinterconnections`
+- `pwlauncher`
+- pwsh
+
+### Q
+
+- `qappsrv`
+- `qprocess`
+- `query`
+    - `query process`
+    - `query session`
+    - `query termserver`
+    - `query user`
+- `quser`
+- `qwinsta`
+
+### R
+
+- `rd`
+- `rdpsign`
+- `recover`
+- `recover disk group`
+- `refsutil`
+    - `refsutil compression`
+    - `refsutil dedup`
+    - `refsutil fixboot`
+    - `refsutil iometrics`
+    - `refsutil leak`
+    - `refsutil salvage`
+    - `refsutil streamsnapshot`
+    - `refsutil triage`
+- `reg`
+    - `reg add`
+    - `reg compare`
+    - `reg copy`
+    - `reg delete`
+    - `reg export`
+    - `reg import`
+    - `reg load`
+    - `reg query`
+    - `reg restore`
+    - `reg save`
+    - `reg unload`
+- `regini`
+- `regsvr32`
+- `relog`
+- `rem`
+- `remove`
+- `ren`
+- `rename`
+- repadmin
+- `repair`
+    - `repair bde`
+- `replace`
+- `rescan`
+- `reset`
+    - `reset session`
+- `retain`
+- `revert`
+- `rexec`
+- `risetup`
+- `rmdir`
+- `robocopy`
+- `route ws2008`
+- `rpcinfo`
+- `rpcping`
+- `rsh`
+- `rundll32`
+- `rundll32 printui`
+- `rwinsta`
+
+### S
+
+- `san`
+- `sc config`
+- `sc create`
+- `sc delete`
+- `sc query`
+- `schtasks`
+- `scwcmd`
+    - `scwcmd analyze`
+    - `scwcmd configure`
+    - `scwcmd register`
+    - `scwcmd rollback`
+    - `scwcmd transform`
+    - `scwcmd view`
+- `secedit`
+    - `secedit analyze`
+    - `secedit configure`
+    - `secedit export`
+    - `secedit generaterollback`
+    - `secedit import`
+    - `secedit validate`
+- `select`
+    - `select disk`
+    - `select partition`
+    - `select vdisk`
+    - `select volume`
+- `serverceipoptin`
+- `servermanagercmd`
+- `serverweroptin`
+- `set environmental variables`
+- `set shadow copy`
+    - `set context`
+    - `set id`
+    - `setlocal`
+    - `set metadata`
+    - `set option`
+    - `set verbose`
+- `setlocal`
+- `setspn`
+- `setx`
+- `sfc`
+- `shadow`
+- `shift`
+- `showmount`
+- `shrink`
+- `shutdown`
+- `simulate restore`
+- `sort`
+- `start`
+- `subcommand set device`
+- `subcommand set drivergroup`
+- `subcommand set drivergroupfilter`
+- `subcommand set driverpackage`
+- `subcommand set image`
+- `subcommand set imagegroup`
+- `subcommand set server`
+- `subcommand set transportserver`
+- `subcommand set multicasttransmission`
+- `subcommand start namespace`
+- `subcommand start server`
+- `subcommand start transportserver`
+- `subcommand stop server`
+- `subcommand stop transportserver`
+- `subst`
+- `sxstrace`
+- `sysmon`
+- `sysocmgr`
+- `systeminfo`
+
+### T
+
+- `takeown`
+- `tapicfg`
+- `taskkill`
+- `tasklist`
+- `tcmsetup`
+- `telnet`
+    - `telnet close`
+    - `telnet display`
+    - `telnet open`
+    - `telnet quit`
+    - `telnet send`
+    - `telnet set`
+    - `telnet status`
+    - `telnet unset`
+- `tftp`
+- `time`
+- `timeout`
+- `title`
+- `tlntadmn`
+- `tpmtool`
+- `tpmvscmgr`
+- `tracerpt`
+- `tracert`
+- `tree`
+- `tscon`
+- `tsdiscon`
+- `tsecimp`
+- `tskill`
+- `tsprof`
+- `type`
+- `typeperf`
+- `tzutil`
+
+### U
+
+- `unexpose`
+- `uniqueid`
+- `unlodctr`
+
+### V
+
+- `ver`
+- `verifier`
+- `verify`
+- `vol`
+- `vssadmin`
+    - `vssadmin delete shadows`
+    - `vssadmin list shadows`
+    - `vssadmin list writers`
+    - `vssadmin resize shadowstorage`
+
+### W
+
+- `waitfor`
+- `wbadmin`
+    - `wbadmin delete catalog`
+    - `wbadmin delete systemstatebackup`
+    - `wbadmin disable backup`
+    - `wbadmin enable backup`
+    - `wbadmin get disks`
+    - `wbadmin get items`
+    - `wbadmin get status`
+    - `wbadmin get versions`
+    - `wbadmin restore catalog`
+    - `wbadmin start backup`
+    - `wbadmin start recovery`
+    - `wbadmin start sysrecovery`
+    - `wbadmin start systemstatebackup`
+    - `wbadmin start systemstaterecovery`
+    - `wbadmin stop job`
+- `wdsutil`
+- `wecutil`
+- `wevtutil`
+- `where`
+- `whoami`
+- `winnt`
+- `winnt32`
+- `winrs`
+- `winsat mem`
+- `winsat mfmedia`
+- `wmic`
+- `writer`
+- `wscript`
+
+### X
+
+- `xcopy`

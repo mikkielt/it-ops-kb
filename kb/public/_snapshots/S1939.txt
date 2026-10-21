@@ -3,25 +3,44 @@ url: https://github.com/microsoft/agent-framework
 title: microsoft/agent-framework
 publisher: Microsoft (GitHub)
 licence: MIT
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-microsoft
-/
+## Repository navigation
 agent-framework
 Public
-Notifications
-You must be signed in to change notification settings
-Fork
-2.4k
-Star
-13.8k
+NotificationsYou must be signed in to change notification settings
+Fork2.5k (2.5k)
+Star14.2k (14.2k)You must be signed in to star a repository
+## About
+A framework for building, orchestrating and deploying AI agents and multi-agent workflows with support for Python and .NET.
+aka.ms/agent-framework
+### Topics
+agent-frameworkagentic-aiagentsaidotnetmulti-agentorchestrationpythonsdkworkflows
+### Resources
+Readme
+MIT license
+### Code of conduct
+Code of conduct
+### Contributing
+Contributing
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+14.2k stars
+### Watchers
+112 watching
+### Forks
+2.5k forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit
 ## History
-3,297 Commits
-3,297 Commits
+3,630 Commits
+3,630 Commits
 ## Folders and files
 NameName
 Last commit message
@@ -46,6 +65,8 @@ python
 .gitattributes
 .gitignore
 .gitignore
+AI_CONTRIBUTIONS.md
+AI_CONTRIBUTIONS.md
 CODE_OF_CONDUCT.md
 CODE_OF_CONDUCT.md
 COMMUNITY.md
@@ -149,7 +170,7 @@ agent = Agent(
 client=FoundryChatClient(
 credential=AzureCliCredential(),
 # project_endpoint=os.environ["FOUNDRY_PROJECT_ENDPOINT"],
-# model=os.environ["FOUNDRY_MODEL_DEPLOYMENT_NAME"],
+# model=os.environ["FOUNDRY_MODEL"],
 ),
 name="HaikuAgent",
 instructions="You are an upbeat assistant that writes beautifully.",
@@ -163,8 +184,8 @@ Create a simple Agent, using Microsoft Foundry that writes a haiku about the Mic
 using Azure.AI.Projects;
 using Azure.Identity;
 using Microsoft.Agents.AI;
-string endpoint = Environment.GetEnvironmentVariable("AZURE_AI_PROJECT_ENDPOINT") ?? throw new InvalidOperationException("AZURE_AI_PROJECT_ENDPOINT is not set.");
-string deploymentName = Environment.GetEnvironmentVariable("AZURE_AI_MODEL_DEPLOYMENT_NAME") ?? "gpt-5.4-mini";
+string endpoint = Environment.GetEnvironmentVariable("FOUNDRY_PROJECT_ENDPOINT") ?? throw new InvalidOperationException("FOUNDRY_PROJECT_ENDPOINT is not set.");
+string deploymentName = Environment.GetEnvironmentVariable("FOUNDRY_MODEL") ?? "gpt-5.4-mini";
 AIAgent agent =
 new AIProjectClient(new Uri(endpoint), new DefaultAzureCredential())
 .AsAIAgent(model: deploymentName, instructions: "You are an upbeat assistant that writes beautifully.", name: "HaikuAgent");
@@ -204,6 +225,7 @@ Tip: DefaultAzureCredential is convenient for development but in production, con
 For environment variable configuration specific to each sample, refer to the README in the sample directory (Python samples | .NET samples).
 ## Contributor Resources
 Contributing Guide
+AI-Assisted Contributions Policy
 Code of Conduct
 Python Development Guide
 Design Documents
@@ -230,11 +252,11 @@ Security policy
 Activity
 Custom properties
 ### Stars
-13.8k stars
+14.2k stars
 ### Watchers
 112 watching
 ### Forks
-2.4k forks
+2.5k forks
 Report repository
 ## Releases
 ## Packages

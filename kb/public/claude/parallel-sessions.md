@@ -2,7 +2,7 @@
 topic: claude/parallel-sessions
 priority: P3
 applies_to: "Claude Code docs: run agents in parallel, agent view (research preview), worktrees, dynamic workflows, agent teams (experimental), subagents; retrieved 2026-10-16"
-retrieved_utc: 2026-10-17
+retrieved_utc: 2026-10-21
 sources: [S-76oyiuez, S-qulnsg4e, S-aishnkok, S-j22fjuka, S-qdxfqzln, S-wzatkg4o, S-hvuk3dqt, S2157, S-sdxhnx3i, S-2ip5zngf, S-eumxht6x]
 status: partial
 ---
@@ -31,7 +31,7 @@ kind, a worktree only where one was made.
 - Projects are one ongoing conversation at claude.ai/code or in the desktop app in which Claude starts parallel threads in the cloud or, when asked, on your computer through Remote Control; the page names them public beta on Pro and Max and for work that spans days or weeks and should keep running when your machine is off. [DOC S-76oyiuez]
 - Dynamic workflows are a script that runs many subagents and cross-checks their results; the page's use cases are a job that outgrows a handful of subagents or needs findings verified against each other: a codebase-wide audit, a 500-file migration, cross-checked research, a plan drafted from several angles. [DOC S-76oyiuez]
 - Worktrees, cross-session messaging and `/batch` are listed as supporting tools, not ways to run agents; `/batch` is a skill that splits one large change into 5 to 30 worktree-isolated subagents, a packaged use of subagents and worktrees. [DOC S-76oyiuez]
-- A background Bash command spawns no agent; a forked subagent (`/subtask`) is a subagent that inherits the whole conversation, and `/fork` copies the session into a new background session; a routine runs a session on a schedule in the cloud, not in parallel on your machine. [DOC S-76oyiuez]
+- A background Bash command spawns no agent; a forked subagent (`/subtask`) is a subagent that inherits the whole conversation, and `/fork` copies the session into a new background session (with agent view turned off, `/fork` is the forked-subagent command instead and `/subtask` is not available); a cloud scheduled task (a routine) runs a session on a schedule in the cloud, not in parallel on your machine. [DOC S-76oyiuez]
 - In every approach the workers are Claude sessions; a different tool is exposed to Claude as an MCP server. Running several sessions or subagents at once multiplies token usage. [DOC S-76oyiuez]
 
 ### Choosing by coordination need
@@ -44,7 +44,7 @@ kind, a worktree only where one was made.
 ### What each one shares or isolates
 - Each subagent starts with a fresh, isolated context window that does not see the conversation history, the skills already invoked or the files already read; a fork is the exception, inheriting the whole conversation. [DOC S2157]
 - An agent teammate has its own context window and loads the same project context as a regular session (CLAUDE.md, MCP servers, skills) plus the lead's spawn prompt, but not the lead's conversation history. [DOC S-qdxfqzln]
-- Teammates share a task list (for agents with the Task tools) and message each other by name; the task list directory persists locally, is never uploaded, and the team config directory is removed when the session ends. [DOC S-qdxfqzln]
+- Teammates share a task list (for agents with the Task tools) and message each other by name; the task list directory stays on disk after the session ends (retention follows `cleanupPeriodDays`), and the team config directory is removed when the session ends. [DOC S-qdxfqzln]
 - Agent-team limits: one team per session (a team cannot be shared across sessions), no nested teams, a fixed lead, and no restoring of in-process teammates by `/resume` or `/rewind`. [DOC S-qdxfqzln]
 - A worktree gives a session its own files and branch but shares the repository's `.git` directory, project-scope plugins, and permission approvals (a "don't ask again" rule from a worktree session is saved to the main checkout's `.claude/settings.local.json`, since v2.1.211). [DOC S-j22fjuka]
 - A worktree session also reads the main checkout's untracked project skills, agents and commands when its own checkout has no such directory (skills need v2.1.277+). [DOC S-j22fjuka]

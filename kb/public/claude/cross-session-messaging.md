@@ -2,7 +2,7 @@
 topic: claude/cross-session-messaging
 priority: P3
 applies_to: "Claude Code v2.1.224+ (macOS, Linux, WSL 2), native Windows per the docs page v2.1.234+; cross-session messaging page and changelog, retrieved 2026-09-30 (Claude Code 2.1.285 current); Remote Control and channels pages read 2026-10-17"
-retrieved_utc: 2026-10-17
+retrieved_utc: 2026-10-21
 sources: [S-sdxhnx3i, S746, S-3yod3u7q, S-wzatkg4o, S748, S-d3ythwgb, S2057, S2042, S-fk46gdey, S-4jj4dtg4, S-s67nwj2e, S-yhad7wiu, S-m6qlxza7, S-uw2bn2un]
 status: complete
 ---
@@ -29,9 +29,10 @@ and listing.
   has no Windows line. [DOC S746]
 - The week 34 digest (releases v2.1.234 to v2.1.239, August 17-21, 2026) announces that sessions on native Windows can
   now message each other with `SendMessage` and `ListAgents`. [DOC S-d3ythwgb]
-- For native Windows, plan on v2.1.239 or later: it is the release the changelog and the week 34 digest announce
-  Windows support in, and it satisfies the docs page's stated v2.1.234 floor too; v2.1.234 to v2.1.238 on Windows are
-  unverified. [DER S-sdxhnx3i, S746, S-d3ythwgb: the stated floor and the release that announced it]
+- For native Windows, plan on v2.1.239 or later: it is the release the changelog announces Windows support in (the
+  week 34 digest covers v2.1.234 to v2.1.239 without naming a release for it), and it satisfies the docs page's stated
+  v2.1.234 floor too; v2.1.234 to v2.1.238 on Windows are unverified. [DER S-sdxhnx3i, S746, S-d3ythwgb: the stated
+  floor and the release that announced it]
 - Same-machine messaging works on every provider (Amazon Bedrock, Claude Platform on AWS, Google Cloud's Agent
   Platform, Microsoft Foundry) and with feature-flag fetching off, but on those providers and with flag fetching off
   it needs v2.1.248 or later. [DOC S-sdxhnx3i]

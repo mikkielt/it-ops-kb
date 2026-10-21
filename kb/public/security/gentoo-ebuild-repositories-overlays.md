@@ -2,7 +2,7 @@
 topic: security/gentoo-ebuild-repositories-overlays
 priority: P3
 applies_to: "Gentoo Linux ebuild repositories (the main ::gentoo tree and overlays): repos.conf, priority, synchronization with emaint, eselect repository and masking an overlay"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-aguccvdb, S-3v7thb2n, S-46ys6oow, S-cvsv6e4z, S-5rih6fam, S-5dnrfnng]
 status: complete
 ---

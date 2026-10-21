@@ -2,7 +2,7 @@
 topic: agents/mcp-server-lifecycle
 priority: P2
 applies_to: "MCP specification 2026-07-28; modelcontextprotocol/registry (preview, API freeze v0.1 since 2025-10-24)"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S2135, S2012, S-7xsfc3ct, S1862, S-qpqoaaqj]
 status: complete
 ---
@@ -20,9 +20,8 @@ the spec's own SHOULD-level validation guidance.
 ## Facts
 - A server declares `"capabilities": {"tools": {"listChanged": true}}` to promise change notifications; on a
   change it sends `notifications/tools/list_changed` to clients that opened a `subscriptions/listen` stream with
-  `toolsListChanged: true`; clients then re-issue `tools/list`. [DOC S2135 (modelcontextprotocol.io/specification/
-  2026-07-28/server/tools; identical URL already recorded under id S2135 in `_sources.csv`
-  — reused per the id-reuse rule)]
+  `toolsListChanged: true`; clients then re-issue `tools/list`. `tools/list` results also carry `ttlMs` and
+  `cacheScope` caching hints, and the notification invalidates a cached list that is still fresh. [DOC S2135]
 - Servers SHOULD return tools in a deterministic order across calls when the set is unchanged, specifically to let
   clients cache the list and to keep LLM prompt caches warm when tool definitions sit in the cached system context.
   [DOC S2135]
@@ -32,7 +31,8 @@ the spec's own SHOULD-level validation guidance.
   `DATA_EXPORT_v2` shows version-in-name as the de facto approach. [DOC S2135]
 - Security guidance: servers MUST validate all tool inputs, implement access controls, rate-limit invocations, and
   sanitize outputs; clients SHOULD prompt for confirmation on sensitive operations, show tool inputs to the user
-  before calling, validate results against `outputSchema`, implement call timeouts, and log tool usage for audit.
+  before calling, validate tool results before passing them to the LLM (structured results against `outputSchema`,
+  following the spec's `$ref` resolution rules), implement call timeouts, and log tool usage for audit.
   [DOC S2135]
 - The MCP Registry (`github.com/modelcontextprotocol/registry`, community Registry Working Group; licence in
   transition from MIT to Apache-2.0: new code Apache-2.0, documentation CC-BY-4.0, contributions without
@@ -71,8 +71,10 @@ framework (MCP Apps, Skills over MCP, auth extensions), is documented in `mcp/re
 ## Examples
 If a stdio MCP server renamed a tool such as `client.refresh_policy` to `device.refresh`, a long-lived client
 session with a stale cached tool list would keep offering the old name until it re-lists; sending
-`notifications/tools/list_changed` at startup after any such rename (or simply restarting the server process, which
-is often such a server's only deployment path) forces a fresh `tools/list` on next connect [DER S2135].
+`notifications/tools/list_changed` after any such rename reaches only clients that hold a `subscriptions/listen`
+stream with `toolsListChanged: true`, while others rely on the `ttlMs` freshness window of the cached list, so a short
+`ttlMs` (or restarting the server process, often such a server's only deployment path, so clients re-discover) bounds
+how long the old name lingers [DER S2135].
 
 ### Contract-testing implication
 A generated `contracts/mcp-tools.json` compared byte-for-byte in CI is already stricter than the MCP spec's

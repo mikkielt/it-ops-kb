@@ -3,7 +3,7 @@ url: https://docs.langchain.com/oss/python/langgraph/checkpointers
 title: LangGraph checkpointers
 publisher: LangChain
 licence: MIT (langchain-ai/docs LICENSE)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Checkpointers
@@ -105,7 +105,8 @@ next=(),
 config={'configurable': {'thread_id': '1', 'checkpoint_ns': '', 'checkpoint_id': '1ef663ba-28fe-6528-8002-5a559208592c'}},
 metadata={'source': 'loop', 'writes': {'node_b': {'foo': 'b', 'bar': ['b']}}, 'step': 2},
 created_at='2024-08-29T19:19:38.821749+00:00',
-parent_config={'configurable': {'thread_id': '1', 'checkpoint_ns': '', 'checkpoint_id': '1ef663ba-28f9-6ec4-8001-31981c2c39f8'}}, tasks=()
+parent_config={'configurable': {'thread_id': '1', 'checkpoint_ns': '', 'checkpoint_id': '1ef663ba-28f9-6ec4-8001-31981c2c39f8'}},
+tasks=()
 )
 ####
 ​

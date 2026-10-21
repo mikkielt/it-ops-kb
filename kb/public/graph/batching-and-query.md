@@ -2,7 +2,7 @@
 topic: graph/batching-and-query
 priority: P1
 applies_to: "Microsoft Graph v1.0 and beta"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-10-21
 sources: [S-l6y7tegw, S-6jt4shfp, S-onem7my3, S-v5rdr5la, S530, S-z2jpontw, S-mutvll3h, S-xtkia775, S529, S-lxgocwmb, S525, S-w5dgb6zq, S501]
 status: complete
 files: [graph/change-notification-lifetimes.csv]

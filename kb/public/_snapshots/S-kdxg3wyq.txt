@@ -1,0 +1,388 @@
+source: S-kdxg3wyq
+url: https://wiki.gentoo.org/wiki/OpenRC
+title: OpenRC (Gentoo Wiki)
+publisher: Gentoo Wiki
+licence: CC-BY-SA-4.0
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+Jump to: content
+Get Gentoo!
+gentoo.org sites
+gentoo.org
+Wiki
+Bugs
+Packages
+Forums
+Planet
+Archives
+Devmanual
+Gitweb
+Infra status
+Wiki
+#
+OpenRC
+From Gentoo Wiki
+Jump to:navigation
+Jump to:search
+This page contains changes which are not marked for translation.
+Some of the information in this article may have drifted out of sync with current practices. Please help out by checking over the content (how to get started).
+User services section might need updating to reflect Current Best Practices.
+Other languages:
+Deutsch
+English
+español
+italiano
+magyar
+čeština
+русский
+中文（中国大陆）‎
+中文（台灣）‎
+日本語
+Resources
+Project
+Official documentation
+Official documentation
+Package information
+Wikipedia
+GitHub
+#openrc (webchat)
+Article status
+This article has some todo items:
+Review for accuracy & test.
+Complete to cover most basic usage under Gentoo.
+Rework for precision, readability, concision...
+Section BusyBox Integration needs testing and documenting (or removing).
+OpenRC is a dependency-based init system for Unix-like systems that maintains compatibility with the system-provided init system, normally located in /sbin/init.
+OpenRC will start necessary system services in the correct order at boot, manage them while the system is in use, and stop them at shutdown. It can manage daemons installed from the Gentoo repository, can optionally supervise the processes it launches, and has the possibility to start processes in parallel - when possible - to shorten boot time.
+Gentoo officially supports both OpenRC and systemd, but other init systems are available.
+OpenRC was developed for Gentoo, but is designed to be used in other Linux distributions and BSD systems. By default, OpenRC is invoked by sysvinit, on Gentoo.
+Daemons installed from outside the Gentoo repository, e.g. software downloaded as source code and compiled manually, may sometimes need to be adapted to work with OpenRC (which is sometimes trivial).
+Note
+See the OpenRC documentation section for links to the documentation provided by the OpenRC project itself, including information about writing service scripts.
+See the Handbook for information on how OpenRC works with the init system.
+## Contents
+1 Implementation
+2 Installation
+2.1 USE flags
+3 Configuration
+3.1 Files
+3.2 Logging
+3.3 Network management
+3.4 Dependency behavior
+3.4.1 Multiple network interfaces
+3.4.2 Multiple network interfaces in multiple runlevels
+3.5 Selecting a specific runlevel at boot
+4 Usage
+4.1 Runlevels
+4.1.1 Listing
+4.1.2 Named runlevels
+4.1.3 Stacked runlevels
+4.2 Prefix
+4.3 Hotplug
+4.4 CGroups support
+4.5 Chroot support
+4.6 User services
+4.6.1 Lingering
+4.6.2 Service start on boot (lingering)
+4.6.3 Service start on login (no lingering)
+4.6.3.1 PAM-based auto-start
+4.6.3.2 KDE compatibility
+4.6.4 Logging
+5 System integration
+5.1 systemd compatibility
+5.1.1 logind
+5.1.2 tmpfiles.d
+5.2 udev and mdev
+5.3 BusyBox integration
+6 Troubleshooting
+6.1 Respawning crashed services
+6.2 Manually recovering crashed services
+7 See also
+8 External resources
+8.1 OpenRC documentation
+8.1.1 Man pages
+## Implementation
+OpenRC does not require large, fundamental, changes to the traditional Unix-like system. OpenRC integrates with other system software as a component of a modular and flexible system. It is designed to be fast, lightweight, easily configurable, and adaptable. OpenRC has only a few basic dependencies, on core system components.
+As a modern init system, OpenRC provides a number of useful features:
+cgroups support.
+Process supervision.
+Dependency-based launch, with parallel startup of services.
+Automatic resolving, and ordering, of dependencies.
+Hardware initiated initscripts.
+Setting ulimit and nice values per service through the rc_ulimit variable.
+Permits complex init scripts that start multiple components.
+Modular architecture, fitting into existing infrastructure.
+OpenRC has its own optional init system called openrc-init, see OpenRC/openrc-init for details.
+OpenRC has its own optional process supervisor, see OpenRC/supervise-daemon for details.
+See the comparison of init systems article for more information on init systems.
+## Installation
+OpenRC generally does not need installing manually, and is provided as part of an OpenRC profile on installation. It will be present in the stage 3 tarball, and will be maintained across system updates.
+### USE flags
+###
+USE flags for
+sys-apps/openrc
+OpenRC manages the services, startup and shutdown of a host
++netifrc
+enable Gentoo's network stack (net.* scripts)
++sysvinit
+control the dependency on sysvinit (experimental)
+audit
+Enable support for Linux audit subsystem using sys-process/audit
+bash
+enable the use of bash in service scripts (experimental)
+debug
+Enable extra debug codepaths, like asserts and extra output. If you want to get meaningful backtraces see https://wiki.gentoo.org/wiki/Project:Quality_Assurance/Backtraces
+newnet
+enable the new network stack (experimental)
+pam
+Add support for PAM (Pluggable Authentication Modules) - DANGEROUS to arbitrarily flip
+s6
+install s6-linux-init
+selinux
+!!internal use only!! Security Enhanced Linux support, this must be set by the selinux profile or breakage will occur
+sysv-utils
+Install sysvinit compatibility scripts for halt, init, poweroff, reboot and shutdown
+unicode
+Add support for Unicode
+Data provided by the Gentoo Package Database
+·
+Last update: 2026-09-23 08:25
+More information about USE flags
+If the USE flags are modified, the package may be rebuilt to apply changes. For OpenRC profiles, sys-apps/openrc is pulled in as a dependency of virtual/service-manager, thus it should never be added to the selected-packages set (/var/lib/portage/world file) - the --oneshot option avoids adding OpenRC to this set.
+root #emerge --ask --oneshot sys-apps/openrc
+## Configuration
+### Files
+/etc/rc.conf
+The global OpenRC configuration file.
+Includes extensive comments documenting OpenRC configuration.
+/etc/conf.d
+Contains configuration files for individual initscripts.
+### Logging
+OpenRC doesn't log anything by default. To log OpenRC's output during boot, uncomment and set the rc_logger option in /etc/rc.conf. The log will be saved at /var/log/rc.log by default.
+FILE /etc/rc.conf
+rc_logger="YES"
+#rc_log_path="/var/log/rc.log"
+### Network management
+Although OpenRC doesn't require use of a network manager, it can nevertheless be used with a variety of network managers. By default, with Gentoo's OpenRC profiles, netifrc scripts manage network connections.
+Refer to the Network management article for network management options.
+### Dependency behavior
+More complex setups might require changing the default dependencies of services; for details, refer to the rc_depend_strict option in /etc/rc.conf. The following examples show how flexible OpenRC can be.
+#### Multiple network interfaces
+If the sshd service must come up only on the internal network, and not on the external network, e.g. only on when eth0 is active and not when only wlan0 is active, overrule the net dependency from /etc/init.d/sshd to instead depend on net.eth0:
+FILE /etc/conf.d/sshd
+rc_need="!net net.eth0"
+#### Multiple network interfaces in multiple runlevels
+If the sshd service must start with eth0 and not wlan0 in the "default" runlevel, but must start with wlan0 and not eth0 in the "office" runlevel, keep the default value of YES for the rc_depend_strict option:
+FILE /etc/rc.conf
+#rc_depend_strict="YES"
+Then make additional symlinks to the sshd service with the relevant interface names:
+root #ln -s /etc/init.d/sshd /etc/init.d/sshd.eth0
+root #ln -s /etc/init.d/sshd /etc/init.d/sshd.wlan0
+Create the associated /etc/conf.d/sshd.eth0 and /etc/conf.d/sshd.wlan0 configuration files:
+root #cp /etc/conf.d/sshd /etc/conf.d/sshd.eth0
+root #cp /etc/conf.d/sshd /etc/conf.d/sshd.wlan0
+Add the dependencies:
+root #echo 'rc_need="!net net.eth0"' >> /etc/conf.d/sshd.eth0
+root #echo 'rc_need="!net net.wlan0"' >> /etc/conf.d/sshd.wlan0
+Then, to have net.eth0 and net.wlan0 read their settings from /etc/conf.d/net or /etc/conf.d/net.office, depending on the active runlevel, add them to the appropriate runlevels:
+root #rc-update add sshd.eth0 default
+root #rc-update add sshd.wlan0 office
+root #rc-update add net.eth0 default office
+root #rc-update add net.wlan0 default office
+Finally, to switch between the "default" runlevel and the "office" runlevel without rebooting the computer, change to the "nonetwork" runlevel in between:
+"default" runlevel <---> "nonetwork" runlevel <---> "office" runlevel
+This way, the network interfaces will be stopped, and their runlevel-specific configuration subsequently re-read.
+This works best when "nonetwork" is a stacked runlevel in both the "default" and "office" runlevels, and non-network services (e.g. the display manager) are added to the "nonetwork" runlevel only:
+root #openrc nonetwork && openrc office
+root #openrc nonetwork && openrc default
+### Selecting a specific runlevel at boot
+OpenRC reads the kernel command-line used at boot time, and will start the runlevel specified by the softlevel parameter if provided. If no softlevel parameter is provided, the default runlevel will be used.
+The following example shows a grub configuration allowing to choose to boot into either the default or nonetwork runlevels:
+FILE /boot/grub/grub.confExample grub.conf (GRUB Legacy)
+title=Regular Start-up
+kernel (hd0,0)/boot/kernel-3.7.10-gentoo-r1 root=/dev/sda3
+title=Start without Networking
+kernel (hd0,0)/boot/kernel-3.7.10-gentoo-r1 root=/dev/sda3 softlevel=nonetwork
+See below for a description of how to add additional runlevels.
+## Usage
+### Runlevels
+OpenRC can be controlled and configured using openrc, rc-update and rc-status commands.
+Delete a service from default runlevel, where <service> is the name of the service to be removed:
+root #rc-update delete <service> default
+#### Listing
+It is not necessary to have root permissions to list runlevels and services (init scripts) assigned to them.
+Use rc-update show -v to display all available init scripts and their current runlevel (if they have been added to one):
+user $rc-update show -v
+Running rc-update or rc-update show will display only the init scripts that have been added to a runlevel.
+Alternatively, the rc-status command can be used with the --servicelist (-s) option to view the state of all services:
+user $rc-status --servicelist
+#### Named runlevels
+OpenRC runlevels are implemented as directories living in /etc/runlevels. Additional runlevels (indicated as <runlevel> below) may be created by using:
+root #install -d /etc/runlevels/<runlevel>
+Additional runlevels are helpful to provide alternative system start-up profiles.
+#### Stacked runlevels
+Stacked runlevels are used to allow a runlevel to inherit the actions of one or more other runlevels. The command variant used to create stacked runlevels is rc-update -s. Adding a runlevel to another runlevel causes a dependency to be created such that any init scripts (services) in any dependent (stacked) runlevels are started or stopped when the target runlevel is started or stopped.
+An usage example for using stacked runlevel on laptop to group networking services based on location is at OpenRC/Stacked runlevel.
+### Prefix
+Gentoo Prefix installs Gentoo within an offset, known as a prefix, allowing users to install Gentoo in another location in the filesystem hierarchy, hence avoiding conflicts. Next to this offset, Gentoo Prefix runs unprivileged, meaning no root user or rights are required to use it.
+By using an offset (the "prefix" location), it is possible for many "alternative" user groups to benefit from a large part of the packages in the Gentoo Linux Portage tree. Currently users of the following systems successfully run Gentoo Prefix: Mac OS X on PPC and x86, Linux on x86, x86_64 and ia64, Solaris 10 on Sparc, Sparc/64, x86 and x86_64, FreeBSD on x86, AIX on PPC, Interix on x86, Windows on x86 (with the help of Interix), HP-UX on PARISC and ia64.
+OpenRC runscript already support prefix-installed daemons, during the Summer of Code 2012 work will be done to implement full secondary/session daemon behavior to complete the overall feature set provided by Prefix.
+OpenRC/Prefix, a tutorial for trying it out.
+### Hotplug
+OpenRC can be triggered by external events, such as new hardware from udev. This is what the configuration file says about hotplugged services:
+FILE /etc/rc.confrc_hotplug
+# rc_hotplug controls which services we allow to be hotplugged.
+# A hotplugged service is one started by a dynamic dev manager when a matching
+# hardware device is found.
+# Hotplugged services appear in the "hotplugged" runlevel.
+# If rc_hotplug is set to any value, we compare the name of this service
+# to every pattern in the value, from left to right, and we allow the
+# service to be hotplugged if it matches a pattern, or if it matches no
+# patterns. Patterns can include shell wildcards.
+# To disable services from being hotplugged, prefix patterns with "!".
+# If rc_hotplug is not set or is empty, all hotplugging is disabled.
+# Example - rc_hotplug="net.wlan !net.*"
+# This allows net.wlan and any service not matching net.* to be hotplugged.
+# Example - rc_hotplug="!net.*"
+# This allows services that do not match "net.*" to be hotplugged.
+### CGroups support
+OpenRC starting with version 0.12 has extended cgroups support. See OpenRC/CGroups for details. Since OpenRC 0.51, unified cgroups (v2) is enabled by default.
+### Chroot support
+root #mkdir -p /lib64/rc/init.d
+root #ln -s /lib64/rc/init.d /run/openrc
+root #touch /run/openrc/softlevel
+root #emerge --oneshot sys-apps/openrc
+FILE /etc/rc.confOpenRC config file
+rc_sys="prefix"
+rc_controller_cgroups="NO"
+rc_depend_strict="NO"
+rc_need="!net !dev !udev-mount !sysfs !checkfs !fsck !netmount !logger !clock !modules"
+The system may report the following message upon attempting to start a service:
+* WARNING: <service> is already starting
+This may be fixed by issuing the following command:
+root #rc-update --update
+### User services
+User services are services that run as the specific user they belong to. OpenRC has support for user services, starting with version 0.60.
+OpenRC user services require XDG_RUNTIME_DIR to be set, since user services store state in ${XDG_RUNTIME_DIR}/openrc/; thus, a mechanism for setting XDG_RUNTIME_DIR is required. That could be elogind, sys-auth/pam_xdg, the shell's configuration file(s), or any other method of creating the directory and setting the environment variable, e.g. as described here.
+While system OpenRC service scripts are loaded from /etc/init.d/, scripts for user services are loaded from /etc/user/init.d/ and ${XDG_CONFIG_HOME}/rc/init.d/.
+Configurations for particular user services are located in /etc/user/conf.d/. Configuration options defined in ${XDG_CONFIG_HOME}/rc/conf.d/ override options set in /etc/user/conf.d/, and options set in ${XDG_CONFIG_HOME}/rc/rc.conf override those in /etc/rc.conf. If XDG_CONFIG_HOME is unset, OpenRC uses ~/.config as a default value.
+#### Lingering
+In the context of systemd, lingering is a mechanism ensuring the presence of a user session for a specific user. A session is created on system startup and this session is guaranteed to persist until shutdown, even if the user logs in or out. Thus, services run on behalf of this user are preserved throughout the entire runtime of the system. While lingering itself is implemented by the session daemon (logind in case of systemd), there are methods to achieve the similar results on an OpenRC-based system.
+Although sys-auth/elogind has an --enable-linger <user> option that should work with the PAM-based auto-start, it is recommended to enable the OpenRC user-specific session that achieves the same effect.
+#### Service start on boot (lingering)
+Note
+Due to a bug, this currently does not work when the PAM-based auto-start is enabled (which it is by default). PAM-based auto-start can be disabled by adding rc_autostart_user="NO" to /etc/rc.conf.
+To enable per-user services for a user (<user> is the name of the user), create a symlink /etc/init.d/user.<user> pointing to /etc/init.d/user. This service starts an OpenRC user session that then handles all services enabled for the user.
+root #ln -s /etc/init.d/user /etc/init.d/user.<user>
+root #rc-update add user.<user>
+Enable a service for a user with:
+user $rc-update --user add <service>
+The service to enable must be present in /etc/user/init.d. All OpenRC commands (rc-update, rc-service, rc-status etc.) have a --user (-U) flag to act on the OpenRC user session instead of the system session.
+#### Service start on login (no lingering)
+The OpenRC session is only active while the user is logged in (see #lingering). As soon as the user logs out, the session is terminated.
+##### PAM-based auto-start
+Note
+This behavior is enabled by default since the stabilization of user services.
+The provided pam_openrc.so can automatically start openrc on login. It's loaded from /etc/pam.d/system-login, and dynamically starts /etc/init.d/user script, multiplexed for the user logging in, which launches the openrc-user daemon.
+openrc-user opens another pam session for the user, which will last as long as any given session using pam_openrc is active. It loads /etc/pam.d/openrc-user as the pam stack for the new session, then proceeds to launch the default runlevel for the user via calling the user's login shell with -c as an argument, and creating ${XDG_CONFIG_HOME}/rc/runlevels/default should it not exist.
+In order to make use of the PAM-based auto-start, XDG_RUNTIME_DIR must be set during the login process, either by a pam module or shell rc file.
+##### KDE compatibility
+As at OpenRC 0.62.10, using OpenRC user services with KDE requires some configuration changes.
+Firstly, KDE/Qt fails to find the socket for the D-Bus session bus created by the dbus user service at ${XDG_RUNTIME_DIR}/bus. (Note that this is distinct from the dbus system service, which provides a D-Bus system bus.)
+As a result, the following script is needed, in either /etc/profile.d/ or the appropriate configuration file for the user's shell (e.g. ~/.bash_profile):
+CODE /etc/profile.d/zz-dbus-hack.sh
+#!/bin/sh
+if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
+export DBUS_SESSION_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR:-"/run/user/$(id -u)"}/bus"
+fi
+Secondly, Gentoo bundles an autostart desktop file for PipeWire which conflicts with the PipeWire user services (bug #964059); refer also to PipeWire).
+To disable the conflicting autostart file, add Hidden=true to it. It's also possible to copy pipewire.desktop to ${XDG_CONFIG_HOME}/autostart/ to create a local override for only the current user (where XDG_CONFIG_HOME is ~/.config/ by default).
+CODE Disable autostart file: /etc/xdg/autostart/pipewire.desktop
+echo 'Hidden=true' >> /etc/xdg/autostart/pipewire.desktop
+Once this is done, the dbus, pipewire, pipewire-pulse and wireplumber services can be enabled via:
+user $rc-update --user add <service> default
+where <service> should be replaced by the name of each service in turn.
+After logging out and logging back in, all services should now be running and able to be used by KDE.
+#### Logging
+To enable logging, add the following lines to ${XDG_CONFIG_HOME}/rc/rc.conf, creating that file if it doesn't already exist:
+FILE ${XDG_CONFIG_HOME}/rc/rc.conf
+rc_logger="YES"
+rc_log_path="<location>/rc.log"
+where <location> should be replaced by a literal directory path, e.g. /home/larry/logs/.
+## System integration
+### systemd compatibility
+#### logind
+Some setups require systemd-logind. Elogind can be a suitable replacement as a standalone logind running with OpenRC.
+#### tmpfiles.d
+systemd has a special tmpfiles.d file syntax for managing temporary files. sys-apps/systemd-utils[tmpfiles] is a standalone provider for OpenRC systems.
+Both can also be used to manage volatile entries in /sys or /proc.
+### udev and mdev
+udev and mdev are systems available on Gentoo to manage /dev. eudev used to be available as well, but has been removed. udev is available for OpenRC via the sys-apps/systemd-utils[udev] package, however should be able to work with both on Gentoo.
+Older Gentoo installs used udev as the main virtual/udev provider. Based on bug #575718 this was changed to eudev, but it was changed back to udev in bug #807193. However, the rc service is still /etc/init.d/udev.
+See mdev, for possible use, e.g. for embedded systems.
+### BusyBox integration
+N.B. This section lacks information on how to actually use BusyBox with OpenRC.
+Please note that there are currently many BusyBox applets that are incompatible with OpenRC, see bug #529086 for details. Be warned that using OpenRC with BusyBox may require some work to set up. BusyBox is more adapted to embedded use, see previous section about mdev.
+BusyBox can be used to replace most of the userspace utilities needed by OpenRC (init, shell, awk, and other POSIX tools), by using a complete BusyBox as the shell for OpenRC [1], all the calls that normally would cause a fork/exec would be spared, improving the overall speed.
+The SysV-init /etc/inittab file provided by Gentoo is not compatible with the BusyBox init. Here is an example inittab compatible with BusyBox:
+FILE /etc/inittabExample inittab compatible with BusyBox init
+::sysinit:/sbin/openrc sysinit
+::wait:/sbin/openrc boot
+::wait:/sbin/openrc
+BusyBox provides a number of applets that could be used to replace third party software like acpid or dhcp/dhcpcd.
+See the OpenRC documentation on using BusyBox with OpenRC.
+## Troubleshooting
+### Respawning crashed services
+OpenRC can return state of services to runlevel setting state, to provide stateful init scripts and automatic respawning.
+To respawn crashed services from the default runlevel, run openrc: crashed services will be started and any manually-run services will be stopped. To keep manually-started services running, run openrc --no-stop or openrc -n, for short.
+By default openrc will attempt to start crashed services, not to restart them. This can be controlled by the rc_crashed_stop (default NO) and rc_crashed_start (default YES) options in /etc/rc.conf.
+### Manually recovering crashed services
+When a process crashes while starting, an error or warning message will be printed when trying to start, stop, or show the status of a service. For example, when using the docker service:
+root #rc-service docker status
+* status: crashed
+root #rc-service docker start
+* WARNING: docker has already been started
+root #rc-service docker stop
+* Caching service dependencies ... [ ok ]
+* Stopping docker ...
+* Failed to stop docker [ !! ]
+* ERROR: docker failed to stop
+To remedy this situation, zap the service:
+root #rc-service docker zap
+## See also
+OpenRC/CGroups — OpenRC includes support for cgroups.
+OpenRC/openrc-init — OpenRC's own init system
+OpenRC/Prefix — The following guideline applies to a Gentoo Prefix on RHEL-5.6 amd64 and on Debian 6.0 amd64, for other setups it should be similar.
+OpenRC/Stacked runlevel — a tutorial for setting up complicated networking with the help of stacked runlevel.
+OpenRC/supervise-daemon — OpenRC's daemon supervisor
+OpenRC/Users — an (incomplete) list of distributions and operating systems using OpenRC.
+/etc/local.d — /etc/local.d/ can contain small programs or light scripts to be run when the local service is started or stopped.
+Gentoo AMD64 Handbook - Initscript system
+The main OpenRC configuration file, /etc/rc.conf, contains extensive comments documenting OpenRC configuration.
+## External resources
+### OpenRC documentation
+OpenRC has its own useful documentation, maintained by the OpenRC developers themselves. Be aware that Gentoo does not use all of OpenRC's functionality by default:
+README
+User Guide
+OpenRC init process guide - How to use OpenRC's own init system (not used by default in Gentoo).
+agetty guide - Setting up the agetty service in OpenRC (By default, ttys are spawned with sysvinit in Gentoo).
+Using runit with OpenRC
+Using S6 with OpenRC
+Using supervise-daemon - Optional process supervision.
+Using BusyBox with OpenRC
+Service script writing guide - For developers or packagers.
+NEWS - Important information about each release.
+HISTORY - History of how OpenRC came to be.
+#### Man pages
+openrc(8) - Stops and starts services for the specified runlevel.
+openrc-run(8) - Interpreter used to process OpenRC service scripts.
+rc-service(8) - Locate and run an OpenRC service with the given arguments.
+rc-status(8) - Show status info about runlevels.
+rc-update(8) - Add and remove services to and from a runlevel.
+Retrieved from "https://wiki.gentoo.org/index.php?title=OpenRC&oldid=1459863"
+Categories:
+Stale
+Todo articles
+OpenRC
+Logging

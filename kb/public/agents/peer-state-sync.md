@@ -2,7 +2,7 @@
 topic: agents/peer-state-sync
 priority: P3
 applies_to: "Syncing agent state between workstations without a shared server: Syncthing (docs at commit 25904513, 2026-10-07), DFS Replication (Windows Server), Automerge (docs at commit b4cfd9a1, 2026-09-04), git v2.55.0 documentation; read 2026-10-15"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-zdnk4m6k, S-fmrgts5l, S-bskvvicf, S-trssy6ht, S-y6tixlbj, S-vpl4l5cd, S-5nz523b7, S-5fvc6but, S-tfj3n5g7, S-qinq7hxq, S-zmmh2aoz, S-o3lg5zce, S-syegds5m, S-3ztu6fdi, S-ygtpb7no, S-nv6io42x, S-l6s4hfqp]
 status: complete
 ---

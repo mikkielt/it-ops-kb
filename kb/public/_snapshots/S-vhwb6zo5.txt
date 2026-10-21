@@ -3,20 +3,34 @@ url: https://github.com/microsoft/New-KrbtgtKeys.ps1
 title: New-KrbtgtKeys.ps1 (archived repository)
 publisher: Microsoft (GitHub)
 licence: MIT
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 This repository was archived by the owner on Mar 8, 2024. It is now read-only.
-microsoftarchive
-/
+## Repository navigation
 New-KrbtgtKeys.ps1
 Public archive
-Notifications
-You must be signed in to change notification settings
-Fork
-114
-Star
-468
+NotificationsYou must be signed in to change notification settings
+Fork113 (113)
+Star468 (468)You must be signed in to star a repository
+## About
+This script will enable you to reset the krbtgt account password and related keys while minimizing the likelihood of Kerberos authentication issues being caused by the operation.
+### Resources
+Readme
+MIT license
+### Code of conduct
+Code of conduct
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+468 stars
+### Watchers
+2 watching
+### Forks
+113 forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit
@@ -74,9 +88,9 @@ Custom properties
 ### Stars
 468 stars
 ### Watchers
-1 watching
+2 watching
 ### Forks
-114 forks
+113 forks
 Report repository
 ## Releases
 ## Packages

@@ -2,7 +2,7 @@
 topic: gpo/dsc-group-policy-adapter
 priority: P2
 applies_to: "PowerShell/DSC main @ 30ced1f5"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S924, S118, S-3yuoi2qa]
 status: complete
 ---

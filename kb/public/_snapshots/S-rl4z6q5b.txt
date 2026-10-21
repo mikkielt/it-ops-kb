@@ -3,7 +3,7 @@ url: https://modelcontextprotocol.io/registry/versioning
 title: Versioning Published MCP Servers
 publisher: modelcontextprotocol.io
 licence: CC BY 4.0 (MCP documentation other than the specification), per modelcontextprotocol LICENSE
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 > ## Documentation Index
@@ -12,9 +12,9 @@ changes: normalized to text by _tools/provider.py (raw form; front matter, link 
 
 # Versioning Published MCP Servers
 
-<Note>
-  The MCP Registry is currently in preview. Breaking changes or data resets may occur before general availability. If you encounter any issues, please report them on GitHub.
-</Note>
+> [!NOTE]
+>
+> The MCP Registry is currently in preview. Breaking changes or data resets may occur before general availability. If you encounter any issues, please report them on GitHub.
 
 MCP servers **MUST** define a version string in `server.json`. For example:
 
@@ -44,33 +44,33 @@ The version string **MUST** be unique for each publication of the server. Once p
 
 The MCP Registry recommends semantic versioning, but supports any version string format. When a server is published, the MCP Registry will attempt to parse its version as a semantic version string for sorting purposes, and will mark the version as "latest" if appropriate. If parsing fails, the version will always be marked as "latest".
 
-<Warning>
-  If a server uses semantic version strings but publishes a new version that does *not* conform to semantic versioning, the new version will be marked as "latest" even if it would otherwise be sorted before the semantic version strings.
-</Warning>
+> [!WARNING]
+>
+> If a server uses semantic version strings but publishes a new version that does *not* conform to semantic versioning, the new version will be marked as "latest" even if it would otherwise be sorted before the semantic version strings.
 
 As an error prevention mechanism, the MCP Registry prohibits version strings that appear to refer to ranges of versions.
 
-| Example        | Type                | Guidance                       |
-| -------------- | ------------------- | ------------------------------ |
-| `1.0.0`        | semantic version    | **Recommended**                |
-| `2.1.3-alpha`  | semantic prerelease | **Recommended**                |
-| `1.0.0-beta.1` | semantic prerelease | **Recommended**                |
-| `3.0.0-rc.2`   | semantic prerelease | **Recommended**                |
-| `2025.11.25`   | semantic date       | Recommended                    |
-| `2025.6.18`    | semantic date       | Recommended **(⚠️Caution!⚠️)** |
-| `2025.06.18`   | non-semantic date   | Allowed **(⚠️Caution!⚠️)**     |
-| `2025-06-18`   | non-semantic date   | Allowed                        |
-| `v1.0`         | prefixed version    | Allowed                        |
-| `^1.2.3`       | version range       | Prohibited                     |
-| `~1.2.3`       | version range       | Prohibited                     |
-| `>=1.2.3`      | version range       | Prohibited                     |
-| `<=1.2.3`      | version range       | Prohibited                     |
-| `>1.2.3`       | version range       | Prohibited                     |
-| `<1.2.3`       | version range       | Prohibited                     |
-| `1.x`          | version range       | Prohibited                     |
-| `1.2.*`        | version range       | Prohibited                     |
-| `1 - 2`        | version range       | Prohibited                     |
-| `1.2 \|\| 1.3` | version range       | Prohibited                     |
+| Example | Type | Guidance |
+| - | - | - |
+| `1.0.0` | semantic version | **Recommended** |
+| `2.1.3-alpha` | semantic prerelease | **Recommended** |
+| `1.0.0-beta.1` | semantic prerelease | **Recommended** |
+| `3.0.0-rc.2` | semantic prerelease | **Recommended** |
+| `2025.11.25` | semantic date | Recommended |
+| `2025.6.18` | semantic date | Recommended **(⚠️Caution!⚠️)** |
+| `2025.06.18` | non-semantic date | Allowed **(⚠️Caution!⚠️)** |
+| `2025-06-18` | non-semantic date | Allowed |
+| `v1.0` | prefixed version | Allowed |
+| `^1.2.3` | version range | Prohibited |
+| `~1.2.3` | version range | Prohibited |
+| `>=1.2.3` | version range | Prohibited |
+| `<=1.2.3` | version range | Prohibited |
+| `>1.2.3` | version range | Prohibited |
+| `<1.2.3` | version range | Prohibited |
+| `1.x` | version range | Prohibited |
+| `1.2.*` | version range | Prohibited |
+| `1 - 2` | version range | Prohibited |
+| `1.2 \|\| 1.3` | version range | Prohibited |
 
 ## Best Practices
 
@@ -160,9 +160,9 @@ If you anticipate publishing a server multiple times *without* changing the unde
 }
 ```
 
-<Warning>
-  According to semantic versioning, prerelease versions such as `1.2.3-1` are sorted before regular semantic versions such as `1.2.3`. Therefore, if you publish a prerelease version *after* its corresponding regular version, the prerelease version will **not** be marked as "latest".
-</Warning>
+> [!WARNING]
+>
+> According to semantic versioning, prerelease versions such as `1.2.3-1` are sorted before regular semantic versions such as `1.2.3`. Therefore, if you publish a prerelease version *after* its corresponding regular version, the prerelease version will **not** be marked as "latest".
 
 ## Aggregator Recommendations
 

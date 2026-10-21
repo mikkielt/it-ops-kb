@@ -2,7 +2,7 @@
 topic: logs/python-rust-json-stdout-logs
 priority: P3
 applies_to: "Python 3.14 logging (CPython 3.14.7 docs); Rust tracing-subscriber 0.3.23 with its `json` feature"
-retrieved_utc: 2026-10-13
+retrieved_utc: 2026-10-21
 sources: [S-7v3dgzq4, S-6l23ubol, S-2ciukzt5, S-zzvrhdyd, S-fmhy7rbl, S-bkz7cb64, S-md4evt46, S1720]
 status: partial
 ---

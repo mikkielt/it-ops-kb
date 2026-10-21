@@ -127,8 +127,9 @@ because no observed failure yet justifies scripting them.
   free text the model must re-parse each run. [DOC S1928, S1935]
 - **Tool annotations replace some subagent judgment**: `readOnlyHint` (does not modify its environment),
   `destructiveHint`, `idempotentHint` and `openWorldHint` describe tool behaviour to clients — but they are
-  hints only, clients MUST treat them as untrusted unless they come from trusted servers, and should never
-  base tool-use decisions on annotations from untrusted servers. [DOC S1928, S-teeldzof]
+  hints only, not guaranteed to be a faithful description, and clients should never base tool-use decisions
+  on annotations from untrusted servers (the tools page adds that clients MUST treat them as untrusted
+  unless they come from trusted servers). [DOC S1928, S-teeldzof]
 - A host can use such hints from a trusted server to auto-approve reads and force confirmation on
   destructive calls deterministically. [DER S-teeldzof: readOnlyHint/destructiveHint semantics applied to an
   approval policy]

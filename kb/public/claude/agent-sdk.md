@@ -2,7 +2,7 @@
 topic: claude/agent-sdk
 priority: P2
 applies_to: "Claude Agent SDK (Python claude-agent-sdk, TypeScript @anthropic-ai/claude-agent-sdk); code.claude.com docs retrieved 2026-10-12"
-retrieved_utc: 2026-10-14
+retrieved_utc: 2026-10-21
 sources: [S-22nastju, S-fksbud2r, S-fmj24q2u, S-rjw74jiz, S-pbd7pui3, S-isqfh6pr, S-gztpah4d, S-llf2m5cf, S-5be7mkzk, S-av5665nf, S-nuzkw2aa, S449]
 status: complete
 files: [claude/agent-sdk-options.csv]
@@ -54,7 +54,7 @@ directory, and local session transcripts.
 
 ### Permission model: modes, rules, canUseTool
 - Six-step evaluation order for every tool request: (1) hooks -> (2) deny rules (`disallowed_tools`/settings.json) -> (3) ask rules (settings.json) -> (4) active permission mode -> (5) allow rules (`allowed_tools`/settings.json) -> (6) `canUseTool` callback. A hook `allow` does not skip steps 2-3; deny rules block even in `bypassPermissions`. [DOC S-rjw74jiz]
-- Permission modes: `default` (no mode auto-approvals), `dontAsk` (deny instead of prompting; `canUseTool` never called), `acceptEdits` (auto-approve file edits and filesystem ops `mkdir`/`touch`/`rm`/`rmdir`/`mv`/`cp`/`sed` inside the working directory/`additionalDirectories`), `bypassPermissions` (approve everything reaching this step except critical-path `rm`/`rmdir`; refuses to start as root/sudo outside a recognized sandbox on Linux/macOS), `plan` (file edits never auto-approved, sent to `canUseTool`; on Claude Code v2.1.212+ file-modifying shell commands like `touch`/`rm` also route to `canUseTool`), `auto` (a model classifier approves/denies prompts). [DOC S-rjw74jiz]
+- Permission modes: `default` (no mode auto-approvals), `dontAsk` (deny instead of prompting; `canUseTool` never called; connector tools set to `ask`, tools that need user interaction, network-path reads and critical-path `rm`/`rmdir` are denied even when pre-approved), `acceptEdits` (auto-approve file edits and filesystem ops `mkdir`/`touch`/`rm`/`rmdir`/`mv`/`cp`/`sed` inside the working directory/`additionalDirectories`), `bypassPermissions` (approve everything reaching this step except critical-path `rm`/`rmdir`; refuses to start as root/sudo outside a recognized sandbox on Linux/macOS), `plan` (file edits never auto-approved, sent to `canUseTool`; on Claude Code v2.1.212+ file-modifying shell commands like `touch`/`rm` also route to `canUseTool`), `auto` (a model classifier approves/denies prompts). [DOC S-rjw74jiz]
 - `canUseTool`/`can_use_tool` is invoked only when the six-step flow falls through to a prompt; it is never called for calls auto-approved by `allowed_tools`, allow rules, or the active permission mode. In `dontAsk` mode the callback step is skipped entirely. [DOC S-fksbud2r,S-pbd7pui3]
 - Callback signature: Python `async def can_use_tool(tool_name: str, input_data: dict, context: ToolPermissionContext) -> PermissionResultAllow | PermissionResultDeny`; TypeScript `async (toolName, input, {signal, suggestions}) => {behavior:"allow", updatedInput} | {behavior:"deny", message}`. [DOC S-pbd7pui3]
 - `PermissionResultAllow(updated_input=...)` / `{behavior:"allow", updatedInput}` lets the tool run with a possibly-modified input; before Claude Code v2.1.207 an allow result omitting `updatedInput` was rejected with a validation error. `PermissionResultDeny(message=...)` / `{behavior:"deny", message}` blocks the call and shows Claude the reason. [DOC S-pbd7pui3]

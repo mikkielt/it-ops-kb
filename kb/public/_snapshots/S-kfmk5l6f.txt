@@ -1,0 +1,48 @@
+source: S-kfmk5l6f
+url: https://learn.microsoft.com/en-us/azure/azure-arc/kubernetes/conceptual-gitops-argocd
+title: Application deployments with GitOps (Argo CD) for AKS and Azure Arc-enabled Kubernetes
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-management-docs)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Application deployments with GitOps (Argo CD) - Azure Arc | Microsoft Learn
+
+When you use Argo CD for GitOps on Azure Kubernetes Service (AKS) and Azure Arc-enabled Kubernetes clusters, your Git repository becomes the source of truth for the desired state of your applications and cluster configurations. This approach offers several benefits:
+
+- **Continuous synchronization**: Argo CD runs natively within your cluster, pulling manifests, Helm charts, or Kustomize configurations directly from Git.
+- **Drift detection and remediation**: The system constantly monitors the cluster's live state against the desired state in Git. It instantly detects any drift and reconciles it based on your specific automation policies.
+- **Security-first pull model**: Unlike traditional CI/CD, Argo CD uses a pure pull-based architecture. Since the cluster initiates the connection, you don't need to open inbound firewall ports or grant Git repositories network access to your private clusters. This architecture makes Argo CD ideal for high-security environments, edge computing, and massive hybrid-cloud scales.
+
+## Argo CD cluster extension
+
+To streamline management, Azure provides Argo CD as a managed cluster extension (`Microsoft.KubernetesConfiguration/extensions/microsoft.argocd`). To manage applications via GitOps, deploy the Argo CD extension to your cluster.
+
+## Managed components and controllers
+
+The Argo CD extension packages and manages the core components required for enterprise-grade GitOps:
+
+| **Component name** | **Kubernetes service name** | **Primary responsibility** |
+| --- | --- | --- |
+| Application controller | `argocd-application-controller` | Continuously monitors running applications and compares the live state against the desired target state in Git. |
+| API server | `argocd-server` | Acts as the gRPC/REST server that exposes the API used by the Web UI, CLI, and external CI/CD systems. |
+| Repository server | `argocd-repo-server` | Maintains a local cache of Git repositories and is responsible for generating Kubernetes manifests from source (Helm, Kustomize, etc.). |
+| Redis | `argocd-redis` | Provides an ephemeral, in-memory data store used for caching manifest generation results and application state. |
+| Dex and notifications | `argocd-dex-server` | An open-source OpenID Connect provider that brokers identity from external providers like GitHub, SAML, or LDAP. |
+| Notifications controller | `argocd-notifications-controller` | Monitors application state changes and triggers alerts to external services like Slack, Email, or Webhooks. |
+| ApplicationSet controller | `argocd-applicationset-controller` | Automates the creation of multiple applications across multiple clusters. |
+
+## Argo CD constructs
+
+After you deploy the Argo CD extension to your cluster, you can manage your workloads by using Argo CD constructs, such as:
+
+- **Application and ApplicationSet**: Define individual applications for single-target deployments, or use ApplicationSets to automate the creation of multiple applications across different clusters and environments based on templates.
+- **Management interfaces**: Manage and monitor resources through the Argo CD Web UI for a visual representation of cluster health, or by using the Argo CD CLI for terminal-based operations and automation.
+
+For more information, see the Argo CD documentation.
+
+## Identity and access
+
+To align with enterprise security requirements, the Argo CD extension integrates with Azure identity for both AKS and Azure Arc‑enabled Kubernetes clusters.
+
+The extension supports workload identity federation, which enables Argo CD to securely access Azure resources such as Azure Container Registry (ACR) and Azure DevOps without relying on long‑lived secrets. The Argo CD extension also supports single sign‑on (SSO) by using Microsoft Entra ID, which allows users to authenticate to Argo CD by using their existing enterprise identities. By using this model, Azure centrally governs credentials and access policies, rather than embedding them directly in cluster configuration or Git repositories.

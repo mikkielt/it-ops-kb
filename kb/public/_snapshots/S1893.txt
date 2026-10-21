@@ -3,19 +3,31 @@ url: https://github.com/openai/evals
 title: evals: a framework for evaluating LLMs (repository)
 publisher: OpenAI
 licence: MIT (openai/evals LICENSE.md)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-openai
-/
+## Repository navigation
 evals
 Public
-Notifications
-You must be signed in to change notification settings
-Fork
-3.1k
-Star
-19.5k
+NotificationsYou must be signed in to change notification settings
+Fork3.1k (3.1k)
+Star19.6k (19.6k)You must be signed in to star a repository
+## About
+Evals is a framework for evaluating LLMs and LLM systems, and an open-source registry of benchmarks.
+### Resources
+Readme
+License
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+19.6k stars
+### Watchers
+278 watching
+### Forks
+3.1k forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit
@@ -118,9 +130,9 @@ Security policy
 Activity
 Custom properties
 ### Stars
-19.5k stars
+19.6k stars
 ### Watchers
-281 watching
+278 watching
 ### Forks
 3.1k forks
 Report repository

@@ -21,7 +21,7 @@ agents/shared-ner-service,P1,complete,agents/shared-ner-service.md,35
 agents/subagents-vs-deterministic-tools,P1,complete,agents/subagents-vs-deterministic-tools.md,31
 agents/a2a-protocol,P2,complete,agents/a2a-protocol.md;agents/a2a/a2a-proto-digest.md;agents/a2a/a2a.proto,15
 agents/agent-cost-governance,P2,complete,agents/agent-cost-governance.md,4
-agents/anthropic-materials,P2,complete,agents/anthropic-materials.md;agents/anthropic-materials.csv,23
+agents/anthropic-materials,P2,partial,agents/anthropic-materials.md;agents/anthropic-materials.csv,23
 agents/azure-openai-deployments,P2,complete,agents/azure-openai-deployments.md;agents/azure-openai-deployment-types.csv,16
 agents/coding-agents-mcp,P2,complete,agents/coding-agents-mcp.md,9
 agents/content-safety-prompt-shields,P2,complete,agents/content-safety-prompt-shields.md;agents/content-safety-limits.csv,13
@@ -52,7 +52,7 @@ agents/langgraph,P3,complete,agents/langgraph.md,15
 agents/mmlw-e5-polish-embeddings,P3,partial,agents/mmlw-e5-polish-embeddings.md,31
 agents/onnx-runtime-rust-ort,P3,partial,agents/onnx-runtime-rust-ort.md,44
 agents/peer-state-sync,P3,complete,agents/peer-state-sync.md,17
-agents/policy-as-code,P3,partial,agents/policy-as-code.md,22
+agents/policy-as-code,P3,partial,agents/policy-as-code.md,23
 agents/repository-ingestion,P3,complete,agents/repository-ingestion.md,4
 agents/shared-state-concurrency,P3,partial,agents/shared-state-concurrency.md,35
 agents/test-suite-size-and-agent-overengineering,P3,partial,agents/test-suite-size-and-agent-overengineering.md,17
@@ -108,7 +108,7 @@ auth/flows,P0,complete,auth/flows.md;auth/flows.csv,28
 auth/gitlab-ci-identity,P0,complete,auth/gitlab-ci-identity.md,4
 auth/gmsa-dmsa,P0,complete,auth/gmsa-dmsa.md,5
 auth/kerberos,P0,complete,auth/kerberos.md,16
-auth/ldap-smb-signing,P0,complete,auth/ldap-smb-signing.md,16
+auth/ldap-smb-signing,P0,complete,auth/ldap-smb-signing.md,17
 auth/msal-public-client,P0,complete,auth/msal-public-client.md,10
 auth/ntlm-deprecation,P0,complete,auth/ntlm-deprecation.md,7
 auth/permissions-matrix,P0,partial,auth/permissions-matrix.csv,25
@@ -117,7 +117,7 @@ auth/workload-identity,P0,complete,auth/workload-identity.md,23
 auth/ad-jit-membership,P1,complete,auth/ad-jit-membership.md,9
 auth/audit-events,P1,complete,auth/audit-events.md;auth/audit-events.csv,27
 auth/entra-intune-rbac,P1,complete,auth/entra-intune-rbac.md,7
-auth/group-claims,P1,complete,auth/group-claims.md,4
+auth/group-claims,P1,complete,auth/group-claims.md,5
 auth/key-management-options,P1,complete,auth/key-management-options.md,20
 auth/propagation-latency,P1,complete,auth/propagation-latency.md;auth/propagation-latency.csv,20
 auth/revocation,P1,complete,auth/revocation.md,17
@@ -131,7 +131,7 @@ auth/threats,P2,complete,auth/threats.md;auth/threats.csv,10
 auth/transport-crypto,P2,complete,auth/transport-crypto.md,14
 auth/enrolment-tokens,P3,complete,auth/enrolment-tokens.md,7
 auth/http-message-signatures,P3,partial,auth/http-message-signatures.md,8
-auth/issuer-token-rotation,P3,partial,auth/issuer-token-rotation.md,13
+auth/issuer-token-rotation,P3,partial,auth/issuer-token-rotation.md,14
 auth/oauth-pkce-oidc-id-token,P3,partial,auth/oauth-pkce-oidc-id-token.md,6
 auth/postgres-column-encryption,P3,partial,auth/postgres-column-encryption.md,7
 auth/shamir-secret-sharing,P3,partial,auth/shamir-secret-sharing.md,9
@@ -163,7 +163,7 @@ claude/powershell-tool,P3,partial,claude/powershell-tool.md,6
 claude/statusline,P3,complete,claude/statusline.md,3
 claude/terminal-split-pane,P3,partial,claude/terminal-split-pane.md,7
 defender/machine-resource,P1,complete,defender/machine-resource.md;defender/machine-properties.csv,9
-defender/mde-onboarding,P1,complete,defender/mde-onboarding.md,23
+defender/mde-onboarding,P1,complete,defender/mde-onboarding.md,24
 defender/permissions-limits,P1,complete,defender/permissions-limits.md,6
 defender/response-actions-api,P1,complete,defender/response-actions-api.md;defender/machine-actions.csv,18
 defender/advanced-hunting,P2,complete,defender/advanced-hunting.md;defender/advanced-hunting-tables.csv,25
@@ -180,12 +180,12 @@ dsc/secrets,P0,complete,dsc/secrets.md,12
 dsc/settings-and-paths,P0,complete,dsc/settings-and-paths.md,8
 dsc/what-if,P0,complete,dsc/what-if.md,12
 entra/agent-id,P1,complete,entra/agent-id.md,25
-entra/bitlocker-key-deletion,P1,complete,entra/bitlocker-key-deletion.md,4
-entra/conditional-access-devices,P1,complete,entra/conditional-access-devices.md;entra/ca-device-filter-properties.csv,18
+entra/bitlocker-key-deletion,P1,complete,entra/bitlocker-key-deletion.md,5
+entra/conditional-access-devices,P1,complete,entra/conditional-access-devices.md;entra/ca-device-filter-properties.csv,19
 entra/connect-and-cloud-sync,P1,complete,entra/connect-and-cloud-sync.md,19
-entra/device-identity,P1,complete,entra/device-identity.md,6
+entra/device-identity,P1,complete,entra/device-identity.md,7
 entra/dsregcmd,P1,complete,entra/dsregcmd.md;entra/dsregcmd-fields.csv,2
-entra/hybrid-deviceid-objectguid,P1,complete,entra/hybrid-deviceid-objectguid.md,7
+entra/hybrid-deviceid-objectguid,P1,complete,entra/hybrid-deviceid-objectguid.md,8
 entra/stale-devices,P1,complete,entra/stale-devices.md,3
 entra/pim-and-governance,P2,complete,entra/pim-and-governance.md,16
 gitlab/codeowners,P0,complete,gitlab/codeowners.md,4
@@ -211,7 +211,7 @@ gitlab/multi-project-pipelines,P3,complete,gitlab/multi-project-pipelines.md,5
 gitlab/multi-repository-layouts,P3,partial,gitlab/multi-repository-layouts.md,45
 gitlab/package-registries,P3,partial,gitlab/package-registries.md,11
 gitlab/project-settings-api,P3,complete,gitlab/project-settings-api.md,7
-gitlab/repository-mirroring,P3,complete,gitlab/repository-mirroring.md,9
+gitlab/repository-mirroring,P3,complete,gitlab/repository-mirroring.md,10
 gitlab/runner-registration,P3,partial,gitlab/runner-registration.md,5
 gitlab/webhooks,P3,complete,gitlab/webhooks.md,4
 gitlab/work-items-planning,P3,complete,gitlab/work-items-planning.md,11
@@ -226,7 +226,7 @@ graph/delta-query,P1,complete,graph/delta-query.md,6
 graph/permissions,P1,complete,graph/permissions.md;graph/permissions.csv;graph/permission-ids.csv,15
 graph/powershell-sdk,P1,complete,graph/powershell-sdk.md,8
 graph/throttling,P1,complete,graph/throttling.md,6
-graph/microsoft365dsc,P3,complete,graph/microsoft365dsc.md,15
+graph/microsoft365dsc,P3,complete,graph/microsoft365dsc.md,18
 graph/tcm-apis,P3,complete,graph/tcm-apis.md;graph/tcm-csdl-v1.0.xml;graph/tcm-csdl-beta.xml,32
 intune/assignment-filters-and-rbac,P1,complete,intune/assignment-filters-and-rbac.md,9
 intune/co-management,P1,complete,intune/co-management.md,6
@@ -343,7 +343,7 @@ python/typer-cli,P3,partial,python/typer-cli.md,16
 python/uv-windows-install,P3,partial,python/uv-windows-install.md,3
 python/windows-python-install,P3,partial,python/windows-python-install.md,6
 reuse/device-identity-correlation,P2,complete,reuse/device-identity-correlation.md,7
-reuse/drift-detection,P2,complete,reuse/drift-detection.md,5
+reuse/drift-detection,P2,complete,reuse/drift-detection.md,6
 reuse/layered-settings-resolution,P2,complete,reuse/layered-settings-resolution.md,3
 reuse/log-collection-normalization,P2,complete,reuse/log-collection-normalization.md,6
 reuse/mcp-microsoft-endpoint-mgmt,P2,complete,reuse/mcp-microsoft-endpoint-mgmt.md,3
@@ -397,7 +397,7 @@ security/zsh-startup-files-invocation,P3,complete,security/zsh-startup-files-inv
 sqlserver/insert-only-audit,P0,complete,sqlserver/insert-only-audit.md,7
 sqlserver/linux-container,P0,complete,sqlserver/linux-container.md;sqlserver/mssql-server-tags.json,8
 sqlserver/sp-getapplock,P0,complete,sqlserver/sp-getapplock.md,1
-sqlserver/temporal-tables,P0,complete,sqlserver/temporal-tables.md,7
+sqlserver/temporal-tables,P0,complete,sqlserver/temporal-tables.md,8
 sqlserver/availability-group-seeding,P2,complete,sqlserver/availability-group-seeding.md,2
 standards/owasp,P2,complete,standards/owasp.md;standards/owasp.csv,8
 windows/execution-policy-signing,P0,complete,windows/execution-policy-signing.md,9

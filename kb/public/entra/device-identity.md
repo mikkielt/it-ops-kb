@@ -3,7 +3,7 @@ topic: entra/device-identity
 priority: P1
 applies_to: "Microsoft Entra ID (docs ms.date 06/27/2025), Graph v1.0"
 retrieved_utc: 2026-09-26
-sources: [S504, S540, S541, S542, S543, S544]
+sources: [S504, S540, S541, S542, S543, S544, S-vdp4zb6i]
 status: complete
 ---
 
@@ -19,10 +19,10 @@ status: complete
 - Entra hybrid join is described as an interim step on the road to Entra join. [DOC S540]
 - Registered: device signed in with a local or Microsoft account; ownership user or organization; Windows 10+, macOS, iOS, Android, some Linux. [DOC S541]
 - Joined: organizational account required to sign in; organization owned; all Windows 10/11 except Home; provisioning by OOBE, bulk enrollment or Autopilot. [DOC S542]
-- Hybrid joined: joined to on-premises AD and Entra ID; Windows 10/11 except Home and Windows Server 2016/2019/2022; autojoin via Entra Connect or AD FS; needs periodic line of sight to domain controllers. [DOC S543]
-- `trustType` values: `Workplace` (bring your own personal devices), `AzureAd` (cloud-only joined), `ServerAd` (on-premises domain joined devices joined to Entra ID). [DOC S504]
+- Hybrid joined: joined to on-premises AD and Entra ID; Windows 10/11 except Home and Windows Server 2016/2019/2022; autojoin via Entra Connect or AD FS; needs periodic line of sight to domain controllers. Entra Cloud Sync, when enabled, can also sync AD computer objects for hybrid join (it doesn't configure AD FS or federation). [DOC S543]
+- `trustType` values: `Workplace` (bring your own personal devices), `AzureAd` (cloud-only joined), `ServerAd` (on-premises domain joined devices joined to Entra ID). [DOC S-vdp4zb6i]
 - dsregcmd state table: AzureAdJoined YES + DomainJoined NO = Entra joined; AzureAdJoined YES + DomainJoined YES = hybrid joined; DomainJoined only = domain joined; EnterpriseJoined YES + DomainJoined YES = on-premises DRS joined. [DOC S544]
-- Mapping of dsregcmd states to `trustType`: joined -> `AzureAd`, hybrid joined -> `ServerAd`, registered -> `Workplace`. [DER S504,S544: same join type names in both docs]
+- Mapping of dsregcmd states to `trustType`: joined -> `AzureAd`, hybrid joined -> `ServerAd`, registered -> `Workplace`. [DER S-vdp4zb6i,S544: same join type names in both docs]
 
 ## Reference
 | Join type | trustType | dsregcmd | Ownership | Source |

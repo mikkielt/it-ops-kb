@@ -2,7 +2,7 @@
 topic: windows/cmd-exe-variables-expansion-errorlevel
 priority: P3
 applies_to: "cmd.exe and batch files: environment variables, %var% and delayed (!var!) expansion, batch parameters and %~ modifiers, for variables, errorlevel and exit codes, call/goto, and which commands are built in, as documented on Microsoft Learn (Windows Commands reference; read 2026-10-15)"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-yna7gijv, S-33ugnqz2, S-7varc2ty, S-jbeh3qg6, S-z3njred5, S-5h7fuwx3, S-akgat5ss, S-5b57ykp4, S-ikuzvclu, S-hrrqkjbi, S-dabwnzz5]
 status: partial
 ---

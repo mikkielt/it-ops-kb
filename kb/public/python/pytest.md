@@ -2,7 +2,7 @@
 topic: python/pytest
 priority: P2
 applies_to: [pytest]
-retrieved_utc: 2026-10-13
+retrieved_utc: 2026-10-21
 sources: [S-kobs45hd, S-f5tpmzia, S-mgv7bfqe, S-h5gurdir, S-tivsgmaq, S-7pmymrvf, S-447ck3rx, S-4riqrsyi, S-kthrpvjf, S-6rttndpw, S-ljxwhc7m, S-gmz4iyf3, S-ju3i6uxq, S-o7ja7dp2, S-muz57uar]
 status: complete
 ---

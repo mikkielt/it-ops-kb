@@ -3,13 +3,12 @@ url: https://www.mintlify.com/docs/guides/configure-automerge
 title: Configure auto-merge (Mintlify)
 publisher: Mintlify (mintlify/docs)
 licence: MIT (mintlify/docs LICENSE)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 AI
 # Configure automerge for GitHub Apps
 Set up GitHub workflows to automatically merge Mintlify pull requests by adding the Mintlify bot to your repository’s ruleset bypass list.
-Listen to this pageabout 2 min
 Add the Mintlify GitHub App to a ruleset’s bypass list so that the app can create and merge pull requests without review and status check requirements blocking it. This lets you configure automations to automatically merge changes to main.
 The Mintlify GitHub App must have bypass permissions on every ruleset that targets your deploy branch, including rulesets defined at the organization level and the repository level. If any ruleset is missing the bypass entry, the automation creates a PR, but does not merge it.
 ##

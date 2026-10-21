@@ -2,7 +2,7 @@
 topic: windows/windows-365
 priority: P2
 applies_to: "Windows 365 Cloud PC (Enterprise, Frontline/Flex, Business, Government, Link, Boot), Graph v1.0, docs retrieved 2026-09-26"
-retrieved_utc: 2026-09-28
+retrieved_utc: 2026-10-21
 sources: [S-3vcy7oqc, S-7haqmv5t, S-6bbkebpi, S-n5j76cvh, S-cklvv7d5, S-egljiuze, S-5alhdr35, S-lvqy67bp, S-vavpj2l2, S-pixm6i65, S-77ejmtcy, S-s4d4qbht, S-j3m43d2a, S-i3gqas6g, S-n3hgvxzn, S-k6rj6uel, S-qrxf7f4h, S-mbwkcgji, S-yqegtsih]
 status: complete
 ---
@@ -55,12 +55,12 @@ AI-agent variant "Windows 365 for Agents" (preview). [DOC S-7haqmv5t, S-3vcy7oqc
   image or a custom image), optional **Configuration**, and **Assignment** (one or more Entra user groups —
   licensed users in the group are auto-provisioned, including ones added later). [DOC S-6bbkebpi]
 - Changing a provisioning policy does not reprovision existing Cloud PCs and does not affect them; only newly
-  (re)provisioned Cloud PCs get the new settings. Experience type, License type, and Frontline type can't be
-  changed after creation; for Flex Shared-mode policies, Experience, Entra join type, Network, Geography, and
+  (re)provisioned Cloud PCs get the new settings. Experience type, License type, and Windows 365 Flex type
+  (formerly Frontline type) can't be changed after creation; for Flex Shared-mode policies, Experience, Entra join type, Network, Geography, and
   Region also can't be changed (create a new policy instead). [DOC S-6bbkebpi]
 - A provisioning policy can be deleted only if it has no assignment; removing the assignment puts its Cloud PCs
   into a grace period, after which they're auto-deleted (Flex Shared-mode and Reserve Cloud PCs have no grace
-  period — they're deleted immediately). [DOC S-6bbkebpi]
+  period — they're deleted automatically). [DOC S-6bbkebpi]
 - Policy assignment style: **Discrete** (a dedicated group per policy, preferred for distinct configurations) or
   **Hybrid** (policy assigned directly to the group-based licensing group; simpler for small/uniform deployments).
   [DOC S-6bbkebpi]

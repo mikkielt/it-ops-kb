@@ -1,0 +1,44 @@
+source: S-5vbo75zy
+url: https://www.sqlite.org/c3ref/busy_timeout.html
+title: Set A Busy Timeout
+publisher: SQLite Consortium (Hipp, Wyrick & Company)
+licence: Public domain (SQLite copyright page)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+Small. Fast. Reliable.
+Choose any three.
+Home
+Menu
+About
+Documentation
+Download
+License
+Support
+Purchase
+Search
+About
+Documentation
+Download
+Support
+Purchase
+## SQLite C Interface
+## Set A Busy Timeout
+int sqlite3_busy_timeout(sqlite3*, int ms);
+This routine sets a busy handler that sleeps
+for a specified amount of time when a table is locked. The handler
+will sleep multiple times until at least "ms" milliseconds of sleeping
+have accumulated. After at least "ms" milliseconds of sleeping,
+the handler returns 0 which causes sqlite3_step() to return
+SQLITE_BUSY.
+Calling this routine with an argument less than or equal to zero
+turns off all busy handlers.
+There can only be a single busy handler for a particular
+database connection at any given moment. If another busy handler
+was defined (using sqlite3_busy_handler()) prior to calling
+this routine, that other busy handler is cleared.
+See also: PRAGMA busy_timeout
+See also lists of
+Objects,
+Constants, and
+Functions.

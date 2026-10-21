@@ -3,14 +3,14 @@ url: https://learn.microsoft.com/azure/foundry/how-to/develop/run-scans-ai-red-t
 title: Run AI Red Teaming Agent locally (preview)
 publisher: Microsoft Learn
 licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-ai-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Run AI Red Teaming Agent Locally (Azure AI Evaluation SDK) - Microsoft Foundry | Microsoft Learn
 
 Important
 
-Items marked (preview) in this article are currently in public preview. This preview is provided without a service-level agreement, and we don't recommend it for production workloads. Certain features might not be supported or might have constrained capabilities. For more information, see Supplemental Terms of Use for Microsoft Azure Previews.
+Items marked preview in this article are currently in preview. This preview is provided without a service-level agreement, and Microsoft doesn't recommend it for production workloads. Certain features might not be supported or might have constrained capabilities. For more information, see Supplemental Terms of Use for Microsoft Azure Previews.
 
 The AI Red Teaming Agent (preview) is a powerful tool designed to help organizations proactively find safety risks associated with generative AI systems during design and development. The AI red teaming capabilities of Microsoft's open-source framework for Python Risk Identification Tool (PyRIT) are integrated directly into Microsoft Foundry. Teams can automatically scan their model and application endpoints for risks, simulate adversarial probing, and generate detailed reports.
 

@@ -2,8 +2,8 @@
 topic: entra/conditional-access-devices
 priority: P1
 applies_to: "Microsoft Entra Conditional Access, device-based grant controls and Filter for devices condition, Microsoft Graph v1.0 conditionalAccessPolicy (docs retrieved 2026-09-26)"
-retrieved_utc: 2026-09-27
-sources: [S-2gcjipq5, S-tkmjbvgn, S-bpayn5ic, S-isovad24, S-frxelebk, S-r7wru3uo, S-evafm3dr, S-hk7ngup4, S-ovycuo7g, S-lsnr7k3y, S504, S-ac6jmj3f, S-qu7z6wlo, S-nuh4ep7w, S-735ghpq5, S-6ecweang, S-ic4sj2rr, S1358]
+retrieved_utc: 2026-10-21
+sources: [S-2gcjipq5, S-tkmjbvgn, S-bpayn5ic, S-isovad24, S-frxelebk, S-r7wru3uo, S-evafm3dr, S-hk7ngup4, S-ovycuo7g, S-lsnr7k3y, S-ac6jmj3f, S-qu7z6wlo, S-nuh4ep7w, S-735ghpq5, S-6ecweang, S-gea7m5um, S-ic4sj2rr, S1358, S-vdp4zb6i]
 status: complete
 files: [entra/ca-device-filter-properties.csv]
 ---
@@ -14,7 +14,7 @@ files: [entra/ca-device-filter-properties.csv]
 - Two independent device mechanisms in a Conditional Access policy: a **grant control** ("Require device to be marked as compliant", "Require Microsoft Entra hybrid joined device") decides pass/fail for the whole policy, while the **Filter for devices condition** narrows *which* devices the policy (any grant) applies to, using a rule expression over device properties. [DOC S-tkmjbvgn, S-2gcjipq5]
 - "Require device to be marked as compliant" uses the compliance verdict Intune (any OS) or a supported non-Microsoft MDM (Windows) sends to Entra ID, and the device must be registered in Entra ID first; "Require Microsoft Entra hybrid joined device" requires a Microsoft Entra hybrid joined device (domain-joined Windows only). [DOC S-tkmjbvgn]
 - Device state (deprecated) has been replaced by Filter for devices, which can express the same and more via `trustType` and `isCompliant`; the two conditions can't be combined in one policy. [DOC S-r7wru3uo]
-- New: Conditional Access **for agents** — agent user sessions get only a restricted grant set (Block access, or Grant + Require device to be marked as compliant), and agent identities (non-interactive) support only Block access; licensed via Entra ID P1/P2 plus a Microsoft Agent 365 license per user (enforcement "coming soon" as of retrieval). Cross-link `entra/agent-id.md`. [DOC S-tkmjbvgn, S-735ghpq5]
+- New: Conditional Access **for agents** — agent user sessions get only a restricted grant set (Block access, or Grant + Require device to be marked as compliant), and agent identities (non-interactive) support only Block access; licensed via Microsoft 365 E7 or a Microsoft Agent 365 license paired with at least Entra ID P1 or Microsoft 365 E3 (as re-read 2026-10-21). Cross-link `entra/agent-id.md`. [DOC S-tkmjbvgn, S-735ghpq5]
 
 ## Facts
 
@@ -33,7 +33,7 @@ files: [entra/ca-device-filter-properties.csv]
 - `Contains`/`NotContains` behave differently by attribute type: for string attributes (`operatingSystem`, `model`) it's substring match; for string-collection attributes (`physicalIds`, `systemLabels`) it matches one whole string in the collection. [DOC S-2gcjipq5]
 - `extensionAttribute1-15` values are only populated at policy-evaluation time if the device is Intune managed, compliant, or Entra hybrid joined. [DOC S-2gcjipq5]
 - For agents' user accounts, the Filter for devices condition applies only when the agent session is initiated from an endpoint; combine with the "Agent execution environments" condition to target specific approved devices for agents. [DOC S-r7wru3uo]
-- `trustType` values match the Graph `device.trustType` enum used elsewhere in the kb: `AzureAD`/`AzureAd` = Entra joined, `ServerAD`/`ServerAd` = Entra hybrid joined, `Workplace` = Entra registered — same three states as `entra/device-identity.md`. [DER S-2gcjipq5, S504]
+- `trustType` values match the Graph `device.trustType` enum used elsewhere in the kb: `AzureAD`/`AzureAd` = Entra joined, `ServerAD`/`ServerAd` = Entra hybrid joined, `Workplace` = Entra registered — same three states as `entra/device-identity.md`. [DER S-2gcjipq5, S-vdp4zb6i]
 
 ### Report-only mode and What If
 - Report-only is a policy enablement state (alongside On/Off) that evaluates a policy during sign-in and logs the outcome without enforcing grant or session controls; users are never prompted (no MFA challenge, no ToU). [DOC S-isovad24]
@@ -44,7 +44,7 @@ files: [entra/ca-device-filter-properties.csv]
 
 ### Licensing and permissions
 - Conditional Access (device-based grant controls and Filter for devices included) requires Microsoft Entra ID P1; Microsoft 365 Business Premium licenses also grant access to Conditional Access features; risk-based conditions (sign-in/user risk) additionally require Entra ID P2 (Identity Protection). [DOC S-ovycuo7g]
-- Conditional Access for agents requires Entra ID P1 or P2 **and** a Microsoft Agent 365 license per user; enforcement of the Agent 365 licensing requirement is described as "coming soon" at retrieval. The agent-targeting how-to lists Microsoft 365 E7 (Agent 365 plus Entra Suite) or Agent 365 with at least Entra P1 or Microsoft 365 E3. [DOC S-735ghpq5, S-6ecweang]
+- Conditional Access for agents requires Microsoft 365 E7 (Agent 365 plus Entra Suite) or a Microsoft Agent 365 license paired with at least Entra ID P1 or Microsoft 365 E3; the earlier "P1 or P2 plus Agent 365 per user, enforcement coming soon" wording is gone from the page (re-read 2026-10-21). The autonomous-agents page adds that agent-risk-based policies need Entra ID P2 or Microsoft 365 E5 alongside Agent 365. [DOC S-735ghpq5, S-6ecweang, S-gea7m5um]
 - When Conditional Access licenses expire, existing policies are neither auto-disabled nor deleted (a graceful degrade); admins can still view/delete them but not update them. [DOC S-ovycuo7g]
 - Graph `conditionalAccessPolicy` create/update least-privileged permission: **Policy.Read.All + Policy.ReadWrite.ConditionalAccess** (delegated or application; personal Microsoft accounts not supported); a higher-privileged alternative is Application.Read.All + Policy.ReadWrite.ConditionalAccess. Built-in Entra roles that satisfy delegated calls: Security Administrator, Conditional Access Administrator. A documented known issue means this call may prompt for consent to additional permissions. [DOC S-evafm3dr]
 - `POST /identity/conditionalAccess/policies` requires the request body to include at least one of: an `application` rule (e.g. `includeApplications: 'none'`), a `user` rule (e.g. `includeUsers: 'none'`), or a grant/session control. [DOC S-evafm3dr]

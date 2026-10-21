@@ -3,25 +3,42 @@ url: https://github.com/microsoft/Agents
 title: microsoft/Agents (Microsoft 365 Agent SDK monorepo)
 publisher: Microsoft (github.com/microsoft)
 licence: MIT
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-microsoft
-/
+## Repository navigation
 Agents
 Public
-Notifications
-You must be signed in to change notification settings
-Fork
-343
-Star
-1.1k
+NotificationsYou must be signed in to change notification settings
+Fork347 (347)
+Star1.1k (1.1k)You must be signed in to star a repository
+## About
+The Microsoft 365 Agent SDK simplifies building full stack, multichannel, trusted agents for platforms including M365, Teams, Copilot Studio, and Webchat.
+aka.ms/agentsdkdocs
+### Topics
+agentsbotbotframeworkcopilotcopilotstudiosdkteams
+### Resources
+Readme
+MIT license
+### Code of conduct
+Code of conduct
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+1.1k stars
+### Watchers
+31 watching
+### Forks
+347 forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit
 ## History
-1,045 Commits
-1,045 Commits
+1,058 Commits
+1,058 Commits
 ## Folders and files
 NameName
 Last commit message
@@ -191,9 +208,9 @@ Custom properties
 ### Stars
 1.1k stars
 ### Watchers
-29 watching
+31 watching
 ### Forks
-343 forks
+347 forks
 Report repository
 ## Releases
 ## Packages

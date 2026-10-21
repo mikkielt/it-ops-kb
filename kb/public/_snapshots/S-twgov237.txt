@@ -3,7 +3,7 @@ url: https://modelcontextprotocol.io/specification/2026-07-28/server/utilities/c
 title: Completion (MCP specification 2026-07-28)
 publisher: modelcontextprotocol.io
 licence: Apache-2.0 (specification; unrelicensed contributions MIT), per modelcontextprotocol LICENSE
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 > ## Documentation Index
@@ -12,21 +12,19 @@ changes: normalized to text by _tools/provider.py (raw form; front matter, link 
 
 # Completion
 
-<div id="enable-section-numbers" />
-
 The Model Context Protocol (MCP) provides a standardized way for servers to offer
 autocompletion suggestions for the arguments of prompts and resource templates. When
 users are filling in argument values for a specific prompt (identified by name) or
 resource template (identified by URI), servers can provide contextual suggestions.
 
-<Note>
-  For brevity, the request examples on this page omit the `_meta` request
-  metadata (`io.modelcontextprotocol/protocolVersion`,
-  `io.modelcontextprotocol/clientInfo`, and
-  `io.modelcontextprotocol/clientCapabilities`). Every request **MUST** include
-  the required `_meta` fields; see
-  `_meta`.
-</Note>
+> [!NOTE]
+>
+> For brevity, the request examples on this page omit the `_meta` request
+> metadata (`io.modelcontextprotocol/protocolVersion`,
+> `io.modelcontextprotocol/clientInfo`, and
+> `io.modelcontextprotocol/clientCapabilities`). Every request **MUST** include
+> the required `_meta` fields; see
+> `_meta`.
 
 ## User Interaction Model
 
@@ -144,9 +142,9 @@ For prompts or URI templates with multiple arguments, clients should include pre
 
 The protocol supports two types of completion references:
 
-| Type           | Description                               | Example                                             |
-| -------------- | ----------------------------------------- | --------------------------------------------------- |
-| `ref/prompt`   | References a prompt by name               | `{"type": "ref/prompt", "name": "code_review"}`     |
+| Type | Description | Example |
+| - | - | - |
+| `ref/prompt` | References a prompt by name | `{"type": "ref/prompt", "name": "code_review"}` |
 | `ref/resource` | References a resource URI or URI template | `{"type": "ref/resource", "uri": "file:///{path}"}` |
 
 ### Completion Results

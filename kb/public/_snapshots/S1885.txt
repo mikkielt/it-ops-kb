@@ -3,27 +3,44 @@ url: https://github.com/promptfoo/promptfoo
 title: promptfoo repository (README + LICENSE)
 publisher: Promptfoo Inc.
 licence: MIT
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-promptfoo
-/
+## Repository navigation
 promptfoo
 Public
-### Uh oh!
-There was an error while loading. Please reload this page.
-Notifications
-You must be signed in to change notification settings
-Fork
-2.4k
-Star
-25.5k
+NotificationsYou must be signed in to change notification settings
+Fork2.5k (2.5k)
+Star26.2k (26.2k)You must be signed in to star a repository
+## About
+Test your prompts, agents, and RAGs. Red teaming/pentesting/vulnerability scanning for AI. Compare performance of GPT, Claude, Gemini, DeepSeek, and more. Simple declarative configs with command line and CI/CD integration. Used by OpenAI and Anthropic.
+promptfoo.dev
+### Topics
+cici-cdcicdevaluationevaluation-frameworkllmllm-evalllm-evaluationllm-evaluation-frameworkllmopspentestingprompt-engineeringprompt-testingpromptsragred-teamingtestingvulnerability-scanners
+### Resources
+Readme
+MIT license
+### Code of conduct
+Code of conduct
+### Contributing
+Contributing
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+26.2k stars
+### Watchers
+78 watching
+### Forks
+2.5k forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit
 ## History
-9,925 Commits
-9,925 Commits
+10,426 Commits
+10,426 Commits
 ## Folders and files
 NameName
 Last commit message
@@ -158,7 +175,7 @@ Also available via brew install promptfoo and pip install promptfoo. Or use npx 
 Most LLM providers require an API key. Set yours as an environment variable:
 export OPENAI_API_KEY=sk-abc123
 Run an eval and view results:
-cd examples/getting-started
+cd getting-started
 promptfoo eval
 promptfoo view
 See Getting Started (evals) or Red Teaming (vulnerability scanning) for more!
@@ -207,11 +224,11 @@ Security policy
 Activity
 Custom properties
 ### Stars
-25.5k stars
+26.2k stars
 ### Watchers
-75 watching
+78 watching
 ### Forks
-2.4k forks
+2.5k forks
 Report repository
 ## Releases
 ## Sponsor this project

@@ -2,7 +2,7 @@
 topic: claude/data-retention
 priority: P1
 applies_to: "Claude Code docs and Claude API retention page (retrieved 2026-09-23)"
-retrieved_utc: 2026-09-28
+retrieved_utc: 2026-10-21
 sources: [S747, S748, S749, S-6lfftobj, S-nqy6npap, S-qrxvz4ph]
 status: complete
 ---
@@ -25,8 +25,8 @@ chat, Cowork, analytics metadata, or data processed by MCP servers. Local transc
 - Not covered by ZDR: claude.ai chat, Cowork, Claude Code Analytics metadata, user/seat admin data, and data processed by third-party tools or MCP servers. [DOC S748]
 - Disabled under ZDR: cloud sessions, Claude Tag, Artifacts, feedback submission, Remote Control. [DOC S748]
 - Under ZDR, flagged policy-violation sessions may be retained up to 2 years. [DOC S748]
-- API page: ZDR covers Messages and Token Counting APIs for eligible features, Claude Code with API keys from a Commercial organization or Claude Enterprise with ZDR, and Claude Platform on AWS on request. [DOC S749]
-- API page: Claude Teams and Enterprise product interfaces are not ZDR-eligible (except Claude Code via Enterprise with ZDR); Claude for Excel not eligible. [DOC S749]
+- API page: ZDR covers Messages and Token Counting APIs for eligible features, Claude Code with API keys from a Commercial organization (Claude Code on Claude Enterprise is not part of this arrangement and has its own ZDR offering), and Claude Platform on AWS on request. [DOC S749]
+- API page: Claude Teams and Enterprise product interfaces are not ZDR-eligible (the one exception is Claude Code on Claude Enterprise, which has its own ZDR offering separate from the API page's arrangement); Claude for Excel not eligible. [DOC S749]
 - Covered Models (Fable 5.1, Mythos 5.1, Fable 5, Mythos 5) require 30-day retention and are not available under ZDR unless expressly authorized. [DOC S749]
 - Under ZDR the API does not block non-eligible features; using one steps outside ZDR for that data. [DOC S749]
 - Privacy Center (consumer, 2026-07-01): a deleted chat leaves chat history at once and back-end storage within 30 days; if model training is allowed, data may be kept de-identified for up to 5 years; Incognito chats are never used for training. [DOC S-6lfftobj]

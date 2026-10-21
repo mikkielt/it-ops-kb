@@ -2,7 +2,7 @@
 topic: gitlab/git-refs
 priority: P3
 applies_to: "git v2.55.0 documentation (git/git tag v2.55.0): git-update-ref and git-for-each-ref with its included options page; the observed exit statuses and outputs were run with git 2.50.1 (Apple Git-155) on macOS"
-retrieved_utc: 2026-10-08
+retrieved_utc: 2026-10-21
 sources: [S-sgbkwka4, S-cacomkjs, S-xahbgevi]
 status: complete
 ---

@@ -3,7 +3,7 @@ url: https://docs.langchain.com/oss/python/langgraph/persistence
 title: LangGraph persistence
 publisher: LangChain
 licence: MIT (langchain-ai/docs LICENSE)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Persistence
@@ -46,8 +46,8 @@ Troubleshooting common issues
 PostgresSaver: thread_id too long
 When using PostgresSaver (or AsyncPostgresSaver), the thread_id is stored in a column with limited length. If your thread_id exceeds the column size, you will see a database error.
 Fix: Keep thread_id values under 255 characters. Use a UUID or hash if you need deterministic IDs:
-import uuid
-config = {"configurable": {"thread_id": str(uuid.uuid4())[:255]}}
+from langchain_core.utils.uuid import uuid7
+config = {"configurable": {"thread_id": str(uuid7())[:255]}}
 ###
 ​
 MemorySaver does not persist between restarts

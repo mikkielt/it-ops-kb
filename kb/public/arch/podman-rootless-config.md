@@ -2,7 +2,7 @@
 topic: arch/podman-rootless-config
 priority: P3
 applies_to: "Podman 6.1.x (man pages at tag v6.1.4) on Linux: rootless and rootful runs, state and configuration files (containers.conf, storage.conf)"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-rylxmcjm, S-rif3pi6x, S-l5z3fi2w, S-b2bqmd6c]
 status: complete
 ---

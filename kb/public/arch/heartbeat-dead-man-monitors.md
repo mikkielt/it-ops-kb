@@ -2,7 +2,7 @@
 topic: arch/heartbeat-dead-man-monitors
 priority: P3
 applies_to: "Dead-man heartbeat monitors (Healthchecks) for agents that must report on a schedule"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-fgzitvvz, S-agjtc4hy, S-mwxrr7ac]
 status: partial
 ---

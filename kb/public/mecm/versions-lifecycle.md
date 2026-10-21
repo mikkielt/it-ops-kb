@@ -1,8 +1,8 @@
 ---
 topic: mecm/versions-lifecycle
 priority: P0
-applies_to: "ConfigMgr current branch 2603 (latest as of memdocs 4b5429df, 2026-09-02)"
-retrieved_utc: 2026-09-26
+applies_to: "ConfigMgr current branch 2609 (latest per Learn updates page, checked 2026-10-21; 2603 details per memdocs 4b5429df)"
+retrieved_utc: 2026-10-21
 sources: [S-334svlym, S-qfo4gvbb, S-qhlzdpie, S-ebuvm65r, S-actyzzlw]
 status: complete
 ---
@@ -10,16 +10,17 @@ status: complete
 # ConfigMgr versions and lifecycle
 
 ## Summary
-2603 exists and is the latest current branch version (5.00.9146.1000, early ring 2026-05-05, globally available
-2026-05-27, support ends 2027-11-05). Supported: 2603, 2509, 2503 (2503 ends 2026-09-30). Each version is supported 18
+2609 (5.00.9152.1000, early ring 2026-09-28, support ends 2028-03-28, baseline and in-console update) is the latest
+current branch version. 2603 (5.00.9146.1000, early ring 2026-05-05, globally available 2026-05-27, support ends
+2027-11-05) and 2509 are also supported; 2503 support ended 2026-09-30. Each version is supported 18
 months; only the latest gets critical (non-security) fixes. 2603 highlights: SQL Server 2025 support, SQL Native Client
 dependency removed, NAA hardening, CMG weak ciphers off, and management points need internet access for Entra token
 validation (MISE) where Entra auth is used.
 
 ## Facts
 - Each current branch version is supported 18 months from GA; latest version is in "Security and Critical Updates", older supported ones get security updates only. [DOC S-334svlym]
-- Supported versions table: 2603 (5.00.9146.1000) available 2026-05-05, support end 2027-11-05, in-console only; 2509 (5.00.9141) 2025-11-12 to 2027-05-12, baseline and update; 2503 (5.00.9135) 2025-03-31 to 2026-09-30, in-console only. [DOC S-qfo4gvbb]
-- 2409 support ended 2026-06-04. [DOC S-qfo4gvbb]
+- Supported versions table: 2609 (5.00.9152.1000) available 2026-09-28, support end 2028-03-28, baseline and in-console update; 2603 (5.00.9146.1000) 2026-05-05 to 2027-11-05, in-console only; 2509 (5.00.9141) 2025-11-12 to 2027-05-12, baseline and update. [DOC S-qfo4gvbb]
+- 2503 (5.00.9135, 2025-03-31) support ended 2026-09-30 and is now in the historical (out of support) table. 2409 support ended 2026-06-04. [DOC S-qfo4gvbb]
 - Availability date = early update ring release. [DOC S-qfo4gvbb]
 - 2603 is an in-console update for sites on 2409 or later. [DOC S-qhlzdpie]
 - As of 2026-05-27, 2603 is globally available. [DOC S-qhlzdpie]
@@ -36,10 +37,11 @@ validation (MISE) where Entra auth is used.
 ## Reference
 | Version | Build | Available | Support end | Baseline |
 |---|---|---|---|---|
+| 2609 | 5.00.9152.1000 | 2026-09-28 | 2028-03-28 | Yes |
 | 2603 | 5.00.9146.1000 | 2026-05-05 | 2027-11-05 | No |
 | 2509 | 5.00.9141 | 2025-11-12 | 2027-05-12 | Yes |
 | 2503 | 5.00.9135 | 2025-03-31 | 2026-09-30 | No |
 | 2409 | 5.00.9132 | 2024-12-04 | 2026-06-04 | No |
 
 ## Examples
-A new lab site is installed from the 2509 baseline media, then updated in-console to 2603 (per S-qfo4gvbb baseline guidance).
+A new lab site is installed from the latest baseline media (2609, or 2509 if 2609 media isn't available yet), then updated in-console to the newest version (per S-qfo4gvbb baseline guidance).

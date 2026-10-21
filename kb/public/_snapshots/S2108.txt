@@ -3,7 +3,7 @@ url: https://docs.cloud.google.com/sensitive-data-protection/docs
 title: Sensitive Data Protection documentation
 publisher: Google
 licence: CC BY 4.0 (Google Developers site policies; code Apache-2.0)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 Cloud Data Loss Prevention (Cloud DLP) is now a part of Sensitive Data Protection. The API name remains the same: Cloud Data Loss Prevention API (DLP API). For information about the services that make up Sensitive Data Protection, see Sensitive Data Protection overview.
@@ -93,4 +93,4 @@ sensitive data in Google Cloud.
 ##
 Related videos
 Except as otherwise noted, the content of this page is licensed under the Creative Commons Attribution 4.0 License, and code samples are licensed under the Apache 2.0 License. For details, see the Google Developers Site Policies. Java is a registered trademark of Oracle and/or its affiliates.
-Last updated 2026-09-24 UTC.
+Last updated 2026-10-20 UTC.

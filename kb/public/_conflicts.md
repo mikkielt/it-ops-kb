@@ -495,6 +495,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 
 ## agents/agent-rbac
 - Which Microsoft Entra directory roles an agent identity can hold: "Agent identities, service principals, and applications" (S-2iq53pkf, read 2026-10-15) says agent identities can be assigned Azure RBAC roles and Microsoft Entra built-in roles "the same as standard service principals", while the authorization page and FAQ (S-fwzaxe7i, S-pmj4jc4f) say they can't hold highly privileged directory roles or custom roles and only lower-privileged roles such as readers. The kb states both; the narrower pages are the specific statement, so plan on the restriction. [DOC S-2iq53pkf vs DOC S-fwzaxe7i, S-pmj4jc4f, unresolved] (topic: agents/agent-rbac)
+- The Entra Agent ID authorization page (S-fwzaxe7i) now says custom roles can be assigned to agent identities; kb line 89 also cites S-pmj4jc4f for the older claim that they cannot. Check whether S-pmj4jc4f still says so (topic: agents/agent-rbac)
 
 ## agents/windows-agentic-platform
 
@@ -786,6 +787,8 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 
 - The default API level of `ort` 2.0.0-rc.13. The Multiversioning page (S-o3nqheje) says the latest API version, `api-28`, "is enabled by default"; the manifest at the same tag (S-pwbxp7jw) lists `api-27` in `default` and carries `api-28` as an opt-in feature. The source at the tag decides what a build gets (`api-27`), so a build that needs a method marked `api-28` sets that feature itself; a later release or a docs fix settles which one is meant. [DOC S-o3nqheje vs CODE S-pwbxp7jw, unresolved] (topic: agents/onnx-runtime-rust-ort)
 - The `default-features = false` example. The Multiversioning page (S-o3nqheje) shows features `std`, `ndarray`, `download-binaries` and `api-20`; the build script of `ort-sys` at the same tag (S-7srl2gyq) stops with a `compile_error!` when `download-binaries` is on and no `tls-*` feature is, and the Cargo features page (S-m5r2fcso) says a TLS feature is required. By the code the example as printed stops at that check (not built here); the code is the authority. [DOC S-o3nqheje vs CODE S-7srl2gyq, unresolved] (topic: agents/onnx-runtime-rust-ort)
+- The review item for S-msk5qtcf shows crates.io `newest_version` `2.0.0-rc.15` where the kb (line 19, and the rc.13 pin advice at lines 20 and 95) says `2.0.0-rc.13` is the highest. The census run could not fetch the crates.io API (curl returned empty), so the version list, MSRV per version and the rc.13 pin were not re-checked. (topic: agents/onnx-runtime-rust-ort)
+- S-msk5qtcf (crates.io API for ort) now shows newest_version 2.0.0-rc.15 (the cache had rc.14), while the article says rc.13 (published 2026-07-28) is the highest version and pins =2.0.0-rc.13. The page could not be fetched in this run (empty response), so the highest-version claim at line 19, the MSRV list at line 22 and the pin advice at line 95 are not re-verified. The next run should read the full API output and decide whether to pin rc.13 or move to a newer rc. (topic: agents/onnx-runtime-rust-ort)
 
 ## logs/otel-collector-otlp-pipeline
 - **Number of official Collector distributions: five or six.** The opentelemetry.io page on building a custom Collector (S-iylg5wv4, site vers 0.162.0) says the Collector "has five official distributions", while the distributions repository README at v0.162.0 (S-vnjcetlc) lists six: `otelcol`, `otelcol-contrib`, `otelcol-k8s`, `otelcol-otlp`, `otelcol-prometheus` and `otelcol-ebpf-profiler`. The kb states the repository list as the current one in `logs/otel-collector-otlp-pipeline`; the page's count is probably stale. (topic: logs/otel-collector-otlp-pipeline)
@@ -846,3 +849,19 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## gitlab/git-trailers-and-hooks
 
 - **Whether a trailer configured with only `trailer.<alias>.cmd` is added without a `--trailer` argument.** The trailer configuration page at `v2.55.0` (S-wjfrtzpf, read 2026-10-19) says `.cmd` "will be called once to automatically add a trailer"; `parse_trailers_from_config` in `trailer.c` at the same tag (S-kbwvfzcv) adds a configured trailer by itself only when the alias has a `.command`, and a run of git 2.50.1 printed a message unchanged for a `.cmd`-only alias and added the trailer for `.command` or for `--trailer <alias>`. The kb states the code's behaviour; the page's sentence is read as describing the call for a named alias. Not settled: the pages and code of later releases, and git 2.55.0 itself, were not run. (topic: gitlab/git-trailers-and-hooks)
+
+## agents/headless-agent-runtimes
+
+- kb/public/agents/headless-agent-runtimes.md lines 41 and 45 say the cloud-environment GitHub proxy's push protection lets `git push` work only against the session's current working branch. The cloud-environments page (S-gu5aqnrl, 'GitHub proxy', read 2026-10-21) says the proxy only rejects branch deletions and pushes of anything other than a branch (such as a tag), and states it does not limit which branches a push can update; it mentions no working-branch restriction. Unresolved: lines 41 and 45 contradict the page; line 45's conclusion about reaching `main` also rests on that claim. (topic: agents/headless-agent-runtimes)
+
+## privacy/gliner-models
+
+- gliner-models.csv row urchade/gliner_multi_pii-v1 says base_model 'not stated in card', but the card (S856) says it was fine-tuned from urchade/gliner_multi-v2.1. The csv cell is not in a cited fact; left unedited pending a decision on whether to fill it in. (topic: privacy/gliner-models)
+
+## auth/audit-log-apis
+
+- audit-log-apis.md line 83 lists `serviceFilters` (a collection) for the auditLogQuery body, but the Create auditLogQuery page (S-wsetw6to, read 2026-10-21) lists `serviceFilter` as a String; confirm against the resource page S-ojti56n4 and fix the property name/type. (topic: auth/audit-log-apis)
+
+## python/testcontainers-postgres-pytest
+
+- testcontainers-python v4.15.0 configuration.md is internally inconsistent on precedence: 'Configuration Locations' says environment variables are read before ~/.testcontainers.properties, but the 'Docker Host Detection' list reads the tc.host property (step 1) before TC_HOST / DOCKER_HOST (steps 2-3). The kb line 70 says env vars win over the properties file; this holds for the general rule but not for tc.host in the detection order. (topic: python/testcontainers-postgres-pytest)

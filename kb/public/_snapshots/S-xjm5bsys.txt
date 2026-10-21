@@ -1,0 +1,129 @@
+source: S-xjm5bsys
+url: https://github.com/microsoft/onnxruntime/releases/tag/v1.31.0
+title: ONNX Runtime v1.31.0 release (latest at retrieval)
+publisher: Microsoft (microsoft/onnxruntime)
+licence: MIT (microsoft/onnxruntime LICENSE)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+## Repository navigation
+# ONNX Runtime v1.31.0
+Latest
+Latest
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+tianleiwu
+released this
+09 Oct 04:51
+v1.31.0
+402979a
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+ONNX Runtime 1.31.0 stabilizes model-package and EPContext data APIs, improves CPU model loading and quantized MoE inference, expands device-based execution-provider selection, and strengthens model-loading and runtime reliability. These notes cover changes since ONNX Runtime 1.30.0. CUDA and WebGPU kernel updates are summarized here; detailed provider notes are covered by their separate plugin EP releases.
+## Highlights
+Promoted the model-package API and EPContext data callbacks to stable C and C++ APIs, with EPContext callback support added across language bindings (#33166, #32265).
+Reduced CPU session-initialization overhead by parallelizing eligible weight prepacking, and accelerated block-wise INT4/INT8 QMoE experts with MLAS QNBit kernels and grouped expert dispatch (#31691, #32644, #32668).
+Added x86 FP16 LayerNorm/RMSNorm acceleration, Arm KleidiAI SVE2.1 FP16 GEMM support, and additional RISC-V vector kernels (#32715, #32670, #32710).
+Enabled CoreML participation in device-based EP selection, including Apple Neural Engine selection through PREFER_NPU (#31975).
+Added workspace-memory accounting and verification for constrained-memory graph partitioning, alongside broader model, graph, and tensor validation (#31962, #32189).
+## Announcements & Compatibility
+CUDA Plugin EP v0.3.0 and WebGPU Plugin EP v0.5.0 are matched with ONNX Runtime 1.31.0. For contrib-op compatibility, core and the plugin must use the same contributed-operator schemas; building both from the same ONNX Runtime revision is recommended. Schema mismatches can cause incorrect execution or crashes and may not be detected during plugin registration.
+GatherBlockQuantized behavior change: out-of-range indices now produce zero output slices across CPU, CUDA, and WebGPU for both integer and floating-point quantized formats. This deliberately differs from ONNX Gather error semantics (#32480).
+Experimental API migration: model-package consumers should use OrtApi::GetModelPackageApi and the stable OrtModelPackageApi table. EPContext callback registration now uses stable APIs; the corresponding experimental lookup entries were removed. The stable native callback contract carries callback/state pointers, with payload limits enforced by application callbacks, bindings, or EPs rather than a native read-options policy (#33166, #32265).
+ACL EP is deprecated and will be removed in a future release. Source builds using --use_acl now receive a deprecation warning (#32564).
+The ONNX dependency remains at 1.22.0. The initial ONNX 1.23 integration was reverted pending upstream fixes; this release does not ship that integration's new opset or FLOAT6 support (#33073).
+Supported native builds now default to 1DS telemetry. Windows TraceLogging remains selectable with --use_windows_telemetry or onnxruntime_USE_WINDOWS_TELEMETRY=ON; telemetry can be disabled with --no_telemetry (#32384).
+## New Features
+### Core APIs & Runtime
+Stabilized the model-package C and C++ APIs for loading packages, selecting compatible model variants, and creating sessions (#33166).
+Stabilized named EPContext data read/write callbacks for application-managed storage. Added EP support negotiation so registered callbacks do not silently fall back to filesystem I/O (#32265).
+Extended the Compile API to write external initializers and EP context data to buffers, enabling in-memory compilation workflows for models larger than 2 GB (#31347).
+Added workspace-memory accounting, source reporting, and post-partition reservation verification. Set session.strict_workspace_verification=1 to fail initialization on workspace declaration overruns or nonzero orphaned reservations; strict verification is not supported for ORT-format model loads (#31962, #32189).
+Added the opt-in source-build option onnxruntime_DISABLE_DEVICE_DISCOVERY=ON to skip platform accelerator probing and report only the CPU device (#32592).
+### Shared Contrib Operators
+These updates affect core operator schemas and cross-provider behavior, not only the separately released GPU plugins.
+Extended EngramGate and NGramHashMapping for Qwen4-Exp, and added VarlenNGramHashMapping for packed DeepSeek Engram batching with request-local history. Packed hashing also supports Qwen4-Exp head offsets, EOS resets, and segment boundaries (#32285, #32358, #32467).
+Added the activation attribute to GatedRMSNorm for SiLU, its Swish alias, and Sigmoid gating across CPU, CUDA, and WebGPU. SiLU remains the default (#32512).
+Added weightless hyper-connection operators BranchwiseRMSNorm, ScaledSiLU, HyperConnectionPreMix, and HyperConnectionPostMix, with CPU, CUDA, and WebGPU implementations (#32687).
+Extended GatherBlockQuantized to FP8/FP4 data, full-axis blocks, and scale broadcasting, and improved CPU UINT8 dequantization. See the out-of-range-index behavior change above (#32480, #32621).
+### Plugin Execution Provider Infrastructure
+Added support for statically linked plugin EPs, with a static WebGPU plugin build configuration (#32395).
+Preserved caller streams in single-tensor plugin data transfers and handled null plugin allocator returns (#32666, #32683).
+Deduplicated AutoEP custom-op domains and corrected EP assignment reporting after NHWC layout transformation (#32711, #33184).
+Added reference guidance for compiled-model compatibility validation, including multi-device scenarios (#29168).
+## Execution Provider Updates
+### CUDA EP
+CUDA updates include sparse attention and packed continuous batching, expanded paged speculative decoding, INT2 and mixed-width QMoE execution, opt-in MatMul auto-tuning, improved MXFP4 support on Blackwell consumer GPUs, and reliability fixes.
+See the CUDA Plugin EP v0.3.0 release notes for detailed features, configuration options, limitations, and fixes. Most CUDA-specific PRs are covered there rather than repeated here. Use the matched core/plugin combination and observe the contrib-op schema compatibility requirements above.
+### WebGPU EP
+Expanded generative AI support with sparse attention, packed continuous-batching indexers, GatedDeltaNet, and broader quantized MoE support, including block-scaled FP8 and INT2/mixed-width weights (#32528, #32529, #32533, #32618, #32510, #32794, #32878).
+Improved native provider integration and performance, including explicit session-stream concurrency, subgroup-matrix kernels on AMD GPUs, and standalone Dawn API package support (#32587, #32667, #33006).
+Detailed WebGPU kernel additions, optimizations, and correctness fixes will be covered in the separate WebGPU Plugin EP v0.5.0 release notes.
+### CoreML EP
+Exposed CoreML through OrtEpFactory, device enumeration, SessionOptionsAppendExecutionProvider_V2, and EP selection policies. NPU selection requires iOS 16/macOS 13 or later; GPU selection requires iOS 15/macOS 12 or later. In builds advertising both CoreML and WebGPU for the same Apple GPU, PREFER_GPU/MAX_PERFORMANCE select CoreML through the existing EP-name tie-breaker; WebGPU remains available through explicit device selection (#31975).
+### WebNN EP
+Added GroupNormalization, GroupNorm, and SkipGroupNorm support (#32606).
+Supported NHWC Resize by inferring resample2d axes and fixed ConvTranspose shape-arithmetic overflow (#32628, #32661).
+### Other Execution Providers
+Fixed a CANN deadlock during parallel execution and concurrent XNNPACK allocator initialization (#29740, #32489).
+Validated DirectML upload-heap allocations and corrected Resize ROI axis expansion (#32745, #32747).
+## CPU & Core Optimizations
+### Model Loading, MLAS, and CPU Kernels
+Parallelized eligible CPU weight prepacking during session initialization using the intra-op thread pool. Cross-session shared prepacked-weight caching retains its serialized path (#31691).
+Accelerated block-wise INT4/INT8 QMoE CPU experts with prepacked MLAS QNBit kernels and grouped dispatch. Added a QMoE accuracy_level attribute and the ORT_QMOE_CPU_QNBIT_GEMM override; INT4 uses FP32 activations by default, while accuracy_level=4 opts into INT8 activation computation. INT8-weight experts use INT8 activations on the new path (#32644, #32668).
+Added opt-in CPU MatMulNBits FP32 throughput mode with mlas.qnbit.force_fp32=1 for eligible x86/x64 FP32-input, 4-bit, block-size-32, accuracy-level-4 nodes. It selects one numerical path for the whole session, is disabled by default, and trades single-request latency for batched throughput (#31723).
+Added AVX2/FMA/F16C FP16 LayerNorm/RMSNorm kernels and an AVX-512 sliding-window NCHWc depthwise-convolution kernel (#32715, #32749).
+Integrated KleidiAI SVE2.1 FP16 GEMM with per-thread vector-length validation, retaining SME/SME2 priority where available. Updated KleidiAI to 1.30.0 (#32670).
+Optimized RISC-V RVV kernels and added RVV LinearAttention and FP32 minimum/maximum reduction kernels (#32540, #32710).
+Reduced coordinate and memory-access work in CPU Col2Im/Im2col, accelerated adjacent-axis-group Transpose, reduced repeated scans in 1D MaxPool, and optimized BatchNormalization for NC inputs (#32698, #32800, #32817, #32891, #32936, #33113).
+Enabled CPU INT8/UINT32 Where kernels and independent scale/output types in DequantizeLinear; avoided unused dynamic QGEMM packed-buffer allocations (#32846, #32728, #32879).
+### Graph Optimization & Quantization Tools
+Added BatchNormalization fusion into ConvTranspose (#29542).
+Prevented unsupported CPU GELU/QuickGELU fusions, preserved public and shared graph values during fusion, and limited transpose movement through shared outputs to cases where it can cancel (#32427, #32431, #32991, #32868).
+Fixed LayerNorm fusion with zero normalized dimensions, Reshape fusion with node-produced shape inputs, duplicate node names during QDQ fusion, and MatMulNBits bias fusion with prepacked weights (#33079, #33091, #33115, #32973).
+Retained optimized models when quantization preprocessing skips shape inference, raised model IR to version 10 when the quantizer emits INT4/UINT4 tensors, and avoided intermediate overflow when computing quantization ranges (#32803, #33068, #33104).
+Corrected symbolic shape inference for Shape start/end, missing ConstantOfShape values during FP16 conversion, and packed GatedDeltaNet inputs. Preserved nested-graph serialization and FP16 Cast fallback consistency (#33157, #33089, #32708, #32727).
+## Security & Reliability
+### Model Loading and Graph Validation
+Limited sparse-initializer dense allocations, checked sparse value cardinality, validated inline raw initializer sizes and ORT-format string initializers, and included string payloads in initializer size limits (#32684, #32753, #32866, #32751, #32867).
+Rejected duplicate model-local functions, recursive function graph attributes, non-control-flow nodes carrying subgraphs, and inputs supplied to zero-input schemas; bounded AOT function expansion (#32750, #32864, #32641, #32633, #32662).
+Validated optional graph inputs, Constant nodes, ORT-format input argument counts, and contrib-op shape inference; fixed out-of-bounds reads involving Loop/Scan initializers and shape-inference input data (#32940, #32865, #32607, #32609, #32681).
+Bound external-data validation to opened files and rejected model-package-controlled output-file options, including optimized-model output paths (#33063, #33059, #33096).
+Strengthened optimizer validation for initializer types, shape propagation, QDQ weight shapes and axes, and LabelEncoder fusion attributes (#32647, #32653, #32648, #32649, #32726).
+### Runtime and Operator Correctness
+Serialized captured-graph replay with session runs and graph release for EPs that disallow concurrent runs. Checked CPU fallback assignments recursively in nested subgraphs (#32902, #32862).
+Corrected conversions between ABI-stable C API tensor element types and ONNX TensorProto numbering, particularly UINT2, INT2, and FLOAT8E8M0, without renumbering public enum values. Fixed reuse of packed sub-byte buffers for full-byte tensors (#33066, #32611).
+Strengthened recurrent-input rank, LayerNormalization axis, NCHWc layout, dynamic-pad, and Resize scale validation; used checked arithmetic for CPU LSTM and DynamicQuantizeLSTM state extents (#32348, #32555, #32552, #32557, #33060, #32654, #32722, #33128).
+Fixed CPU MHA shared-cache length handling, large wrap-mode padding, empty TopK/DFT inputs, zero-channel ConvTranspose, and real-window handling for complex STFT signals (#32723, #32725, #32724, #33064, #33136).
+Corrected Arm64 FP16 GEMM Inf/NaN comparisons and NEON/SVE GELU/Erf overflow handling, fixed CPU INT2 per-axis QuantizeLinear output on the last axis, and avoided degenerate CPU GQA FlashAttention tiles when L2 cache size is unknown (#31761, #32631, #33040, #32786, #33202).
+## Language Bindings & Web
+Added EPContext read/write callbacks in C#, Python, and Java (#32270, #32271, #32305).
+Added EPContext read callbacks in Node.js/React Native, Objective-C/Swift, and Rust. The JavaScript option is read-only and explicitly unsupported on Web/WASM (#32308, #32309, #32310).
+Added LoRA adapter support to the standard, non-proxy ONNX Runtime Web run path (#32886).
+Added Boolean tensor support in the Swift package and validated DLPack capsules before conversion (#32215, #33100).
+## Build, Packaging & Dependencies
+Validated CPU kernel registrations at compile time and improved CPU provider build time with an Eigen precompiled header (#29649, #32616).
+Fixed Windows ARM64 --enable_arm_neon_nchwc handling and added Windows ARM64 GitHub Actions coverage (#32094, #32791).
+Improved no-exceptions error handling for provider bridge initialization, optional OpenVINO probing, model-package metadata parsing, and partition configuration; fixed Clang portability issues (#33051, #33112, #32883, #32894, #32853, #33140).
+Validated Protobuf consistency when ONNX comes from an installed package and repaired free-threaded Python wheel builds after the ONNX rollback (#31346, #33105).
+Updated Transformers to 5.3.0 and coremltools to 9.0, standardized telemetry dependency handling, and refreshed JavaScript dependencies and test lockfiles (#32752, #32586, #32705, #32996, #33003, #33194).
+## Contributors
+Thanks to our 80 human contributors for this release!
+@1duo, @abeclowicz, @aciddelgado, @adrastogi, @AkZGhost, @andife, @anubhavagr, @apsonawane, @artyomrabosh, @baijumeswani, @bbernhar, @bheu, @bingcheng1998, @bmehta001, @chilo-ms, @crvineeth97, @cursoragent, @damdoo001-arm, @danielsongmicrosoft, @edgchen1, @eserscor, @feich-ms, @galleonli, @GopalakrishnanN, @gramalingam, @gyagp, @hanbitmyths, @hariharans29, @Honry, @Hosi121, @hulkbig, @javier-intel, @jchen10, @jiafatom, @justinchuby, @kjg0724, @kuanyul-qti, @kunal-vaishnavi, @kylo5aby, @linzuojian, @maxim-davgalev, @mei1127, @melkap01-Arm, @miaobin, @mirounga, @mustjab, @NVMadhava, @prathikr, @pratikgx, @qjia7, @qti-yuduo, @raashish1601, @rohan-patnaik, @rvandermeulen, @saiyambharara, @saravanan-a-r, @sayanshaw24, @SharmaRithik, @shiyi9801, @SIDDARTHAREDDY8, @SiluPanda, @skottmckay, @sylvesterkaczmarek, @TANGBUDU, @the0cp, @tianleiwu, @titaiwangms, @velonica0, @vijay-kapse, @wangw-1991, @xadupre, @xhcao, @xiaofeihan1, @xiaohanAMD, @xiaoyu-work, @yairbenavraham, @ykhrustalev, @Yuhx141, Zapakio6, @Zestion
+Full Changelog: rel-1.30.0...rel-1.31.0
+Release highlights were prepared with AI assistance.
+Assets
+12
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.

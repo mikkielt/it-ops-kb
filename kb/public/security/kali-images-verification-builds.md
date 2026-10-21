@@ -2,7 +2,7 @@
 topic: security/kali-images-verification-builds
 priority: P3
 applies_to: "Kali Linux image types (Installer, NetInstaller, Live, Everything, VM, ARM), verifying a download with SHA256SUMS and the archive signing key, and building a custom or last-release ISO with the kali-live and kali-installer build scripts"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-h46mfwhy, S-2sdbla22, S-dxg7xu5h, S-a3rz5fyq, S-2p6jllwx, S-o5qyuho5]
 status: partial
 ---

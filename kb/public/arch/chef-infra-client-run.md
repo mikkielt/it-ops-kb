@@ -2,7 +2,7 @@
 topic: arch/chef-infra-client-run
 priority: P3
 applies_to: "Chef Infra Client 19 (docs.chef.io Chef Infra Client 19 pages; source at chef/chef commit 9322fa4): the run and its order, the run list, why-run, scheduling, licensing and status"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-kj2xytgs, S-zskepmir, S-yddwaulv, S-z5kgh6p7, S-ddprubpp, S-og5svrch, S-ljusqk46, S-qdnvehti, S-d6oc2jt7]
 status: partial
 ---
@@ -29,7 +29,7 @@ Chef Infra Client is the agent on each managed node. A run reads its configurati
 - After the run the compliance phase executes a Chef InSpec run from within the client, with tests taken from a legacy audit cookbook or a current InSpec profile, and then sends or saves the report. [DOC S-zskepmir]
 - A run list is an ordered list of roles and recipes, specific to the node, stored in its node object and maintained with knife or Chef Automate; a recipe that appears more than once runs only once. [DOC S-zskepmir]
 - Run list items are written `role[NAME]` or `recipe[COOKBOOK::RECIPE]`, both quoted, comma separated; the cookbook form `COOKBOOK::RECIPE` and the bare cookbook name (its default recipe) are also accepted. [DOC S-zskepmir]
-- An empty run list is the quick test of whether a failing run is caused by the recipes: if the failure persists, check `client.rb` and the permissions of the user on the server and on the node. [DOC S-zskepmir]
+- An empty run list is the quick test of whether a failing run is caused by the recipes: if the failure persists, check the settings in `config.rb` and the permissions of the user on the server and on the node. [DOC S-zskepmir]
 - `knife node run_list add` places an item after or before another item with `--after` and `--before`; `knife node run_list set` replaces the whole list. [DOC S-zskepmir]
 - On `knife bootstrap`, the first Chef Infra Client run has an empty run list by default and `--run-list` adds one to the bootstrap. [DOC S-zskepmir]
 - `-o` / `--override-runlist` replaces the run list for one run without clearing the cookbooks cached on the node and without persisting node data at the end of the run; `-r` / `--runlist` replaces it permanently. [DOC S-yddwaulv]
@@ -44,7 +44,7 @@ Chef Infra Client is the agent on each managed node. A run reads its configurati
 - Chef Infra Client 19 needs a licence key when it is downloaded from unofficial sources (the public Ruby gem) or used in runtime installations, and no key from the customer portal, the Habitat package, the migration tool or the native installer; the EULA must be accepted on the first run. [DOC S-ljusqk46]
 - The licence key is set with the `CHEF_LICENSE_KEY` environment variable, the `--chef-license-key` option or an interactive dialog, and is validated against Progress Chef's licensing service; EULA acceptance options are `accept`, `accept-silent` and `accept-no-persist`. [DOC S-ljusqk46]
 - The Chef Infra Client overview lists Agentless mode, which runs Infra Client on a target node over SSH without Infra Client installed on it. [DOC S-kj2xytgs]
-- The latest Chef Infra Client entry in the release notes read on 2026-10-15 is 19.3.15 of 2026-05-22. [DOC S-qdnvehti]
+- The latest Chef Infra Client entry in the release notes read on 2026-10-21 is 19.4.46 of 2026-10-19; it follows 19.3.15 of 2026-05-22, and its improvements include removing the experimental tag and warning from Agentless Mode. [DOC S-qdnvehti]
 - The Chef documentation home page announces that Chef Infra Server is deprecated and reaches end of life on 2026-11-30, with Chef 360 Platform named as the replacement. [DOC S-d6oc2jt7]
 - The `interval` setting itself defaults to `nil` in the configuration, so no repeat happens unless `daemonize` supplies 1800 or the interval is set. [CODE S-og5svrch: chef-config/lib/chef-config/config.rb#L487]
 - How it fits: a run reads and compiles the whole run list before the first resource acts, and the node object is saved only after a successful converge; for drift checks the useful split is that `--why-run` stops short of provider mapping, so a resource whose provider cannot be chosen until an earlier resource installs it is reported by assumption, not by observation. [DER S-yddwaulv, S-zskepmir, S-z5kgh6p7: why-run stops before provider mapping; node saved after converge]

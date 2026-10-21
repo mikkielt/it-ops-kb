@@ -2,7 +2,7 @@
 topic: arch/incus-test-bed
 priority: P3
 applies_to: "Incus system containers and virtual machines as a Linux test bed: images, launch, exec, snapshot"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-ffguw2vw, S-65ttwu4c, S-24r24rv2, S-jccjrysc]
 status: partial
 ---

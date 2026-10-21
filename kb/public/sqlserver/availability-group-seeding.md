@@ -2,7 +2,7 @@
 topic: sqlserver/availability-group-seeding
 priority: P2
 applies_to: "SQL Server 2016 and later (Always On availability groups, traditional and distributed); Learn documentation version sql-server-ver17"
-retrieved_utc: 2026-10-12
+retrieved_utc: 2026-10-21
 sources: [S-7u5iv73w, S-bvigwggq]
 status: complete
 ---

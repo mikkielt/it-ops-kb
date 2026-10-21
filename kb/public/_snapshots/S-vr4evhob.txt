@@ -1,0 +1,387 @@
+source: S-vr4evhob
+url: https://wiki.gentoo.org/wiki/Binary_package_guide
+title: Binary package guide (Gentoo Wiki)
+publisher: Gentoo Wiki
+licence: CC-BY-SA-4.0
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+Jump to: content
+Get Gentoo!
+gentoo.org sites
+gentoo.org
+Wiki
+Bugs
+Packages
+Forums
+Planet
+Archives
+Devmanual
+Gitweb
+Infra status
+Wiki
+#
+Binary package guide
+From Gentoo Wiki
+Jump to:navigation
+Jump to:search
+This page contains changes which are not marked for translation.
+Other languages:
+Deutsch
+English
+español
+français
+italiano
+magyar
+čeština
+русский
+中文（中国大陆）‎
+日本語
+한국어
+Portage - the heart of Gentoo
+emerge — configuration — ebuild repository — dispatch-conf
+world file — USE flags — ebuilds — profiles
+upgrades — using testing packages — Gentoo binhost
+tools — gentoolkit — eselect
+Portage FAQ — cheat sheet — FAQ
+all articles
+Gentoo binhost
+Gentoo Binary Host Quickstart
+Available packages and configurations
+Gentoo Binhost project
+Binary packages
+Binary package guide
+Building cross
+Building native
+Binhost creation
+See also
+To use the publicly available pre-built binary packages provided by Gentoo, see the Gentoo Binary Host Quickstart article.
+This guide covers in-depth binary package creation, distribution, use, and maintenance, and a few more advanced topics near the end. This page focuses on self-built binary packages rather than the official Gentoo binhost.
+Portage fully supports binary packages in addition to its well-known support for source-based ebuilds. Portage may be used to create binary packages, to install them, or to update packages already on the system from binary packages. Portage has support for fetching binary packages from binary package hosts.
+Note
+All tools used in this guide are part of sys-apps/portage, unless otherwise stated.
+## Contents
+1 Why use binary packages on Gentoo?
+2 Binary package formats
+3 Using binary packages
+3.1 General prerequisites
+3.2 Handling *FLAGS in detail
+3.3 Installing binary packages
+3.4 Verify binary package OpenPGP signatures
+3.5 Pulling packages from a binary package host
+3.6 Reinstalling modified binary packages
+3.7 Additional client settings
+3.8 Updating packages on the binary package host
+4 Creating binary packages
+4.1 Using --buildpkg as an emerge option
+4.2 Implementing buildpkg as a Portage feature
+4.3 Excluding creation of some packages
+4.4 Binary package compression formats
+4.5 Binary package OpenPGP signing
+4.6 Using quickpkg
+5 Setting up a binary package host
+6 Maintaining binary packages
+6.1 Removing outdated binary packages
+6.2 Maintaining the Packages file
+7 Building for different systems
+7.1 Same architecture (Native)
+7.2 Building for other architectures (Cross)
+7.3 Creating snapshots of the packages directory
+7.4 Understanding the binary package format
+7.4.1 XPAK format
+7.4.2 GPKG format
+7.5 The PKGDIR layout
+7.6 Unpacking with quickunpkg
+8 Troubleshooting
+8.1 Undefined Reference Compiler Errors
+9 See also
+10 External resources
+## Why use binary packages on Gentoo?
+Some reasons for using binary packages on Gentoo are:
+Save time when keeping similar systems updated. Building from source can take more time than installing from binaries. When maintaining several similar systems, possibly some of them with older hardware, it can be easier if only one system has to compile everything from source and the other systems use the resultant binary packages.
+Do safe updates. For mission-critical systems in production it is important to stay usable as much as possible. This can be done by a staging server that performs all updates first to itself. Once the staging server is in a good state the updates can then be applied to the critical systems via binary packages. A variant of this approach is to do the updates in a chroot on the same system and use the binaries created there to update the real system.
+As a backup. Often, binary packages are the only way of recovering a broken system (i.e. broken compiler). Having pre-compiled binaries around, either on a binary package server or locally, can be of great help in case of a broken toolchain.
+It can aid in updating very old systems. It is usually helpful to install binary packages on old systems because they do not require build-time dependencies to be installed/updated. Binaries packages also avoid failures in build processes.
+## Binary package formats
+Two binary package formats for use in Gentoo exist, XPAK and GPKG. Starting with v3.0.31, Portage supports the new binary package format GPKG. The GPKG format solves issues with the legacy XPAK format and offers the benefit of new features, however it is not backward compatible with the legacy XPAK format.
+System administrators using older versions of Portage <=v3.0.30 (Systems older then 2021) should continue to use the legacy XPAK format, which is Portage's default setting on those versions.
+Motivation for the newer GPKG format design can be found in GLEP 78: Gentoo binary package container format. Bugs bug #672672 and bug #820578 also provide helpful details.
+To instruct Portage to use the GPKG format, change the BINPKG_FORMAT value in /etc/portage/make.conf. Note that current versions of Portage use gpkg by default.
+FILE /etc/portage/make.confSpecify GPKG binary package format
+BINPKG_FORMAT="gpkg"
+This guide mostly applies to both formats; where this is not the case it will be noted. See the Understanding the binary package format section for technical details on the binary package formats themselves.
+## Using binary packages
+### General prerequisites
+For binary packages made on one system to be usable on other systems they must fulfill some requirements:
+The builder and client architecture and CHOST must match.
+The CFLAGS and CXXFLAGS variables used to build the binary packages must be compatible with all clients.
+USE flags for processor specific instruction set features (like MMX, SSE, etc.) must be carefully selected; all clients must support them.
+Note
+Binary packages that are distributed as part of Gentoo's official Binhost project use a minimum instruction set and conservative compiler settings in order to be as widely usable as possible. By way of example, amd64 keyworded packages are built with -march=x86-64 -mtune=generic, which works for any machine which runs the x86-64 (amd64) instruction set.
+Important
+Portage can not validate if these requirements match. In case of doubt, it is the responsibility of the system administrator to guard these settings.
+### Handling *FLAGS in detail
+The app-misc/resolve-march-native utility can be used to find a subset of CFLAGS that is supported by both the server and client(s). For example, the host might return:
+user $resolve-march-native
+-march=skylake -mabm -mrtm --param=l1-cache-line-size=64 --param=l1-cache-size=32 --param=l2-cache-size=12288
+While the client might return:
+user $resolve-march-native
+-march=ivybridge -mno-rdrnd --param=l1-cache-line-size=64 --param=l1-cache-size=32 --param=l2-cache-size=3072
+In this example CFLAGS could be set to -march=ivybridge -mno-rdrnd since -march=ivybridge is a full subset of -march=skylake. -mabm and -mrtm are not included as these are not supported by the client. However, -mno-rdrnd is included as the client does not support -mrdrnd. To find which -march's are subsets of others, check the gcc manual, if there is no suitable subset set e.g. -march=x86-64.
+Optionally, it is also possible to set -mtune=some-arch or -mtune=native to tell gcc to tune code to a specific arch. In contrast to -march, the -mtune argument does not prevent code from being executed on other processors. For example, to compile code which is compatible with ivybridge and up but is tuned to run best on skylake set CFLAGS to -march=ivybridge -mtune=skylake. When -mtune is not set it defaults to whatever -march is set to.
+When changing -march to a lower subset for using binary packages on a client, a full recompilation is required to make sure that all binaries are compatible with the client's processor, to save time packages that are not compiled with e.g. gcc/clang can be excluded:
+user $emerge -e @world --exclude="acct-group/* acct-user/* virtual/* app-eselect/* sys-kernel/* sys-firmware/* dev-python/* dev-java/* dev-ruby/* dev-perl/* dev-lua/* dev-php/* dev-tex/* dev-texlive/* x11-themes/* */*-bin"
+Similarly, app-portage/cpuid2cpuflags can be used to find a suitable subset of processor specific instruction set USE flags. For example, the host might return:
+user $cpuid2cpuflags
+*/* CPU_FLAGS_X86: aes avx avx2 f16c fma3 mmx mmxext pclmul popcnt rdrand sse sse2 sse3 sse4_1 sse4_2 ssse3
+While the client might return:
+user $cpuid2cpuflags
+*/* CPU_FLAGS_X86: avx f16c mmx mmxext pclmul popcnt sse sse2 sse3 sse4_1 sse4_2 ssse3
+In this example CPU_FLAGS_X86 can be set to avx f16c mmx mmxext pclmul popcnt sse sse2 sse3 sse4_1 sse4_2 ssse3 in /etc/portage/make.conf because these flags are supported by both the client and the host
+Next to these, Portage can check if the binary package is built using the same USE flags as expected on the client. Unless using --usepkgonly (-K) or --getbinpkgonly (-G), if a package is built with a different USE flag combination, Portage will either ignore the binary package (and use source-based build) or fail, depending on the options passed to the emerge command upon invocation (see Installing binary packages).
+On clients, a few configuration changes are needed in order for the binary packages to be used.
+### Installing binary packages
+There are a few options that can be passed on to the emerge command that inform Portage about using binary packages:
+Option
+Description
+--usepkg (-k)
+Tries to use the binary package(s) in the locally available packages directory. Useful when using NFS or SSHFS mounted binary package hosts. If the binary packages are not found, a regular (source-based) installation will be performed.
+--usepkgonly (-K)
+Similar to --usepkg (-k) but fail if the binary package cannot be found. This option is useful if only pre-built binary packages are to be used.
+--getbinpkg (-g)
+Download the binary package(s) from a remote binary package host. If the binary packages are not found, a regular (source-based) installation will be performed.
+--getbinpkgonly (-G)
+Similar to --getbinpkg (-g) but will fail if the binary package(s) cannot be downloaded. This option is useful if only pre-built binary packages are to be used.
+In order to automatically use binary package installations, the appropriate option can be added to the EMERGE_DEFAULT_OPTS variable:
+FILE /etc/portage/make.confAutomatically fetch binary packages and build from source if not available
+EMERGE_DEFAULT_OPTS="${EMERGE_DEFAULT_OPTS} --getbinpkg"
+There is a Portage feature that forces emerge to always try to fetch files from the binary package host:
+FILE /etc/portage/make.confEnabling getbinpkg in the FEATURES variable
+FEATURES="getbinpkg"
+Warning
+Currently, if a package with user patches is installed, it will be fetched from the binary package host anyway, and the user patches themselves won't be applied. bug #917047
+This can be fixed by excluding any packages with user patches from using the binhost:
+FILE /etc/portage/make.confExclude package ATOM from using the binhost
+EMERGE_DEFAULT_OPTS="${EMERGE_DEFAULT_OPTS} --usepkg-exclude ATOM"
+### Verify binary package OpenPGP signatures
+Important
+OpenPGP signing and verification is only available for the GPKG binpkg format.
+Portage will try to verify the binary package's signature whenever possible, but users must first set up trusted local keys.
+app-portage/getuto can be used to set up a local trust anchor and update the keys in /etc/portage/gnupg. Portage calls getuto automatically with --getbinpkg or --getbinpkgonly.
+This configures portage such that it trusts the Gentoo Release Engineering keys
+as also contained in the package sec-keys/openpgp-keys-gentoo-release for binary installation purposes.
+Changes to the configuration can be done as root using gpg with the parameter --homedir=/etc/portage/gnupg. This way allows importing additional signing keys (e.g. for non-standard installation sources) and declare them as trusted.
+To add a custom signing key:
+Generate (or use an existing) key with signing abilities, and export the public key to a file. This is distinct from the key and keyring that getuto will generate. The signing key should reside in /root/.gnupg by default (BINPKG_GPG_SIGNING_GPG_HOME controls this).
+Set BINPKG_GPG_SIGNING_KEY to be the fingerprint for the public key of the signing key just-created.
+Run getuto if it has never run (for the verification keyring in /etc/portage/gnupg:
+root #getuto
+Use gpg --homedir=/etc/portage/gnupg --import public.key to import the public key of the signing key in Portage's verification keyring.
+Trust and sign the signing key created in Step 1 using the verification key created by getuto. In order to do this, first get the password to unlock the key at /etc/portage/gnupg/pass, then use:
+root #gpg --homedir=/etc/portage/gnupg --edit-key YOURKEYID
+Type sign, yes, paste (or type) the password. The key is now signed. To trust it, type trust, then 4 to trust it fully. Finally, type save.
+Update the trustdb so that GPG considers the key valid:
+root #gpg --homedir=/etc/portage/gnupg --check-trustdb
+If you hit any issues, check if a pre-existing /etc/portage/gnupg existed. If it did, move it away and then repeat the above steps.
+Congratulations, Portage now has a working keyring!
+Important
+Trusting the key marginally or less will not work.
+By default, Portage will require valid OpenPGP signatures for any remote binhost since 2026-05.
+If the user wishes to force signature verification even for binpkgs created locally, the binpkg-request-signature feature needs to be enabled. This feature assumes that all packages should be signed and rejects any unsigned package.
+FILE /etc/portage/make.confEnabling Portage's binpkg-request-signature feature
+# Require that all binpkgs be signed and reject them if they are not (or have an invalid sig)
+FEATURES="binpkg-request-signature"
+For remote binhosts, this can be configured via verify-signature in /etc/portage/binrepos.conf.
+### Pulling packages from a binary package host
+Warning
+"The PORTAGE_BINHOST variable is deprecated in favor of the /etc/portage/binrepos.conf configuration file" - make.conf(5)
+When using a binary package host, clients need to have the sync-uri variable in /etc/portage/binrepos.conf (preferred) or the PORTAGE_BINHOST variable set in /etc/portage/make.conf. Without this configuration, the client will not know where the binary packages are stored which results in Portage being unable to retrieve them.
+FILE /etc/portage/binrepos.confSetting binhost sync-uri
+[mybinhost]
+sync-uri = https://example.com/binhost
+priority = 10
+# Introduced in portage-3.0.74 for per-repo verification choices
+#verify-signature = true
+# Defaults to /var/cache/binhost/$NAME with >=portage-3.0.77
+#location = /var/cache/binhost/mybinhost
+For each binhost, a name can be configured in the brackets. sync-uri must point to the directory in which the Packages file resides. Optionally, priority can be set. When a package exists in multiple binary package repositories, the package is pulled from the binary package host with the highest priority. This way, a preferred binary package host can be set up.
+Many Gentoo stages already come with a preinstalled /etc/portage/binrepos.conf file, which points to the corresponding binary packages generated during the stage builds.
+Note
+The support for multiple binary package servers is somewhat incomplete. If several servers serve a binary package for the same package version, then only the first one will be considered. This can be problematic when these binary packages differ in their USE variable configuration and the USE variable configuration of a later binary package would match the systems configuration.
+### Reinstalling modified binary packages
+Passing the --rebuilt-binaries option to emerge will reinstall every binary that has been rebuilt since the package was installed. This is useful in case rebuilding tools like revdep-rebuild are run on the binary package server.
+A related option is --rebuilt-binaries-timestamp. It causes emerge not to consider binary packages for a re-install if those binary packages have been built before the given time stamp. This is useful to avoid re-installing all packages, if the binary package server had to be rebuild from scratch but --rebuilt-binaries is used otherwise.
+### Additional client settings
+Next to the getbinpkg feature, Portage also listens to the binpkg-logs feature. It controls if log files for successful binary package installations should be kept. It is only relevant if the PORT_LOGDIR variable has been set and is enabled by default.
+Similar to excluding binary packages for a certain set of packages or categories, clients can be configured to exclude binary package installations for a certain set of packages or categories.
+To accomplish this, use the --usepkg-exclude option:
+root #emerge -uDNg @world --usepkg-exclude "sys-kernel/gentoo-sources virtual/* sys-kernel/gentoo-kernel"
+To enable such additional settings for each emerge command, add the options to the EMERGE_DEFAULT_OPTS variable in the make.conf file:
+FILE /etc/portage/make.confEnabling emerge settings on every invocation
+EMERGE_DEFAULT_OPTS="${EMERGE_DEFAULT_OPTS} --usepkg-exclude 'sys-kernel/gentoo-sources virtual/*'"
+### Updating packages on the binary package host
+Important
+Do not use --changed-use(-U) when updating packages on the binary package host, doing so will cause packages with added or removed USE flags to be skipped, which will cause their installation from binary package on the client to fail due to non-matching USE between the source ebuild and binary package (if the client's --binpkg-respect-use=y, the default). Use --newuse(-N), which will always rebuild packages even for added or removed USE flags, ensuring the binary package stays in sync with the source ebuild.
+## Creating binary packages
+There are three main methods for creating binary packages:
+After a regular installation, using the quickpkg application.
+Explicitly during an emerge operation by using the --buildpkg (-b) option.
+Automatically through the use of the buildpkg (build binary packages for all packages) or buildsyspkg (build binary packages only for the system set) values in Portage's FEATURES variable.
+All three methods will create a binary package in the directory pointed to by the PKGDIR variable (which defaults to /var/cache/binpkgs).
+### Using --buildpkg as an emerge option
+When installing software using emerge, Portage can be asked to create binary packages by using --buildpkg (-b) option:
+root #emerge --ask --buildpkg sys-devel/gcc
+It is also possible to ask Portage to only create a binary package but not to install the software on the live system. For this, the --buildpkgonly (-B) option can be used:
+root #emerge --ask --buildpkgonly sys-devel/gcc
+The latter approach however requires all build time dependencies to be previously installed.
+### Implementing buildpkg as a Portage feature
+The most common way to automatically create binary packages whenever a package is installed by Portage is to use the buildpkg feature, which can be set in /etc/portage/make.conf like so:
+FILE /etc/portage/make.confEnabling Portage's buildpkg feature
+FEATURES="buildpkg"
+With this feature enabled, every time Portage installs software, it will create a binary package as well.
+### Excluding creation of some packages
+It is possible to tell Portage not to create binary packages for a select few packages or categories. This is done by passing the --buildpkg-exclude option to emerge:
+root #emerge -uDN @world --buildpkg --buildpkg-exclude "acct-*/* sys-kernel/*-sources virtual/*"
+This could be used for packages that have little to no benefit in having a binary package available. Examples would be the Linux kernel source packages or upstream binary packages (those ending with -bin like www-client/firefox-bin).
+### Binary package compression formats
+It is possible to use a specific compression type on binary packages. Currently, the following formats are supported: bzip2, gzip, lz4, lzip, lzop, xz, and zstd. Defaults to zstd. Review man make.conf and search for BINPKG_COMPRESS for the most up-to-date information.
+The compression format can be specified via make.conf.
+FILE /etc/portage/make.confSpecify binary package compression format
+BINPKG_COMPRESS="lz4"
+Note that the compression type used might require extra dependencies to be installed, for example, in this case app-arch/lz4.
+### Binary package OpenPGP signing
+Important
+OpenPGP signing and verification is only available for the GPKG binpkg format.
+A PGP signature enables Portage to check the creator and integrity of a binary package, and to perform trust management based on PGP keys. The binary package signing feature is disabled by default. To use it, enable the binpkg-signing feature. Note that whether this feature is enabled does not affect the signature verification feature.
+FILE /etc/portage/make.confEnabling Portage's binpkg-signing feature
+FEATURES="binpkg-signing"
+Users also need to set the BINPKG_GPG_SIGNING_GPG_HOME and BINPKG_GPG_SIGNING_KEY variables for Portage to find the signing key.
+FILE /etc/portage/make.confConfiguring Portage's signing key
+BINPKG_GPG_SIGNING_GPG_HOME="/root/.gnupg"
+BINPKG_GPG_SIGNING_KEY="0x1234567890ABCDEF"
+Portage will only try to unlock the PGP private key at the beginning. If the user's key will expire over time, then consider enabling gpg-keepalive to prevent signing failures.
+FILE /etc/portage/make.confEnabling Portage's gpg-keepalive feature
+FEATURES="gpg-keepalive"
+Tip
+gpg-agent by default expires cache entries after 2 hours. This means that, by default, if an emerge session lasts longer than 2 hours, signing of binpkgs will eventually fail regardless of FEATURES="gpg-keepalive". To prevent this problem, set max-cache-ttl to some large value (e.g. 34560000) in $BINPKG_GPG_SIGNING_GPG_HOME/gpg-agent.conf.
+Existing binpkgs are not signed by default. You can use the gpkg-sign --allow-unsigned command to sign them in place, without updating the package index. To sign all unsigned binpkgs:
+root #find /var/cache/binpkgs -name '*.gpkg.tar' | xargs -n 1 -P $(nproc) gpkg-sign --skip-signed --allow-unsigned
+root #emaint binhost --fix
+### Using quickpkg
+The quickpkg application (included in Portage) takes one or more dependency atoms (or package sets) and creates binary packages for all installed packages that match that atom.
+Warning
+There is a caveat with this method: it relies on the installed files, which can be a problem in case of configuration files. Administrators often change configuration files after installing software. Because this could leak out important (perhaps even confidential) data into the packages, quickpkg by default does not include configuration files that are protected through the CONFIG_PROTECT method. To force inclusion of configuration files, use the --include-config or --include-unmodified-config options.
+For instance, to create binary packages of all installed GCC versions:
+root #quickpkg sys-devel/gcc
+To create binary packages for the system set:
+root #quickpkg @system
+To create binary packages of all installed packages on the system, use the * glob:
+root #quickpkg "*/*"
+## Setting up a binary package host
+Portage supports a number of protocols for downloading binary packages: FTP, FTPS, HTTP, HTTPS, and SSH/SFTP. This leaves room for many possible binary package host implementations.
+These are all detailed in the setting up article.
+## Maintaining binary packages
+Exporting and distributing the binary packages will lead to useless storage consumption if the binary package list is not actively maintained.
+### Removing outdated binary packages
+In the gentoolkit package an application called eclean is provided. It allows for maintaining Portage-related variable files, such as downloaded source code files, but also binary packages.
+The following command will remove all binary packages that have no corresponding ebuild in the installed ebuild repositories:
+root #eclean packages
+For more details please read the eclean article.
+Another tool that can be used is the qpkg tool from the app-portage/portage-utils package. However, this tool is a bit less configurable.
+To clean up unused binary packages (in the sense of used by the server on which the binary packages are stored):
+root #qpkg -c
+### Maintaining the Packages file
+Tip
+As of portage-3.0.52, Portage defaults to FEATURES=pkgdir-index-trusted for performance, which requires an accurate Packages index. This can be disabled if it is an inconvenience to regularly fix up the index with emaint after manual changes.
+Inside the packages directory exists a manifest file called Packages. This file acts as a cache for the metadata of all binary packages in the packages directory. The file is updated whenever Portage adds a binary package to the directory. Similarly, eclean updates it when it removes binary packages.
+If for some reason binary packages are simply deleted or copied into the packages directory, or the Packages file gets corrupted or deleted, then it must be recreated. This is done using emaint command:
+root #emaint binhost --fix
+To clear the cache of all binary packages:
+root #rm -r /var/cache/binpkgs/*
+## Building for different systems
+### Same architecture (Native)
+If building for two systems that share the same architecture but use different profiles, then chroot building sub-article is likely the best choice for this need.
+Binary_package_guide/Building_native
+### Building for other architectures (Cross)
+When building for different architectures such as AMD64 host and ARM64 client, then cross compiling is the method needed to create binpkgs.
+These are outlined in Binary_package_guide/Building_cross
+### Creating snapshots of the packages directory
+When deploying binary packages for a large number of client systems it might become worthwhile to create snapshots of the packages directory. The client systems then do not use the packages directory directly but use binary packages from the snapshot.
+Snapshots can be created using the /usr/lib/portage/python3.11/binhost-snapshot tool that comes with Portage (note that the path to that tool may need to be adjusted to match the python version with which Portage is installed). It takes four arguments:
+A source directory (the path to the packages directory).
+A target directory (that must not exist).
+A URI.
+A binary package server directory.
+The files from the package directory are copied to the target directory. A Packages file is then created inside the binary package server directory (fourth argument) with the provided URI.
+Client systems need to use an URI that points to the binary package server directory. From there they will be redirected to the URI that was given to binhost-snapshot. This URI has to refer to the target directory.
+### Understanding the binary package format
+#### XPAK format
+XPAK format binary packages created by Portage have the file name ending with .tbz2. These files consist of two parts:
+A .tar.bz2 archive containing the files that will be installed on the system.
+A xpak archive containing package metadata, the ebuild, and the environment file.
+See man xpak for a description of the format.
+In app-portage/portage-utils some tools exists that are able to split or create tbz2 and xpak files.
+The following command will split the tbz2 into a .tar.bz2 and an .xpak file:
+user $qtbz2 -s <package>.tbz2
+The .xpak file can be examined using the qxpak utility.
+To list the contents:
+user $qxpak -l <package>.xpak
+The next command will extract a file called USE which contains the enabled USE flags for this package:
+user $qxpak -x package-manager-0.xpak USE
+#### GPKG format
+GPKG format binary packages created by Portage have the file name ending with .gpkg.tar. These files consist of four parts at least:
+A gpkg-1 empty file used to identify the format.
+A C/PV/metadata.tar{.compression} archive containing package metadata, the ebuild, and the environment file.
+A C/PV/image.tar{.compression} archive containing the files that will be installed on the system.
+A Manifest file containing checksums to protect against file corruption.
+Multiple optional .sig files containing OpenPGP signature are used for integrity checking and verification of trust.
+The format can be extracted by tar without the need for additional tools.
+### The PKGDIR layout
+The currently used format version 2 has the following layout:
+CODE Packages directory layout (version 2)
+PKGDIR
+`+- Packages
++- app-accessibility/
+| +- pkg1-version.tbz2
+| `- pkgN-version.tbz2
++- app-admin/
+| `- ...
+`- ...
+The Packages file is the major improvement (and also the trigger for Portage to know that the binary package directory uses version 2) over the first binary package directory layout (version 1). In version 1, all binary packages were also hosted inside a single directory (called All/) and the category directories only had symbolic links to the binary packages inside the All/ directory.
+In portage-3.0.15 and later, FEATURES=binpkg-multi-instance is enabled by default:
+CODE Packages directory layout (version 2 + FEATURES=binpkg-multi-instance)
+PKGDIR
+`+- Packages
++- app-accessibility/
+| +- pkg1/
+| +- pkg1-version-build_id.xpak
+| `- pkgN-version-build_id.xpak
++- app-admin/
+| `- ...
+`- ...
+### Unpacking with quickunpkg
+Zoobab wrote a simple shell tool named quickunpkg to quickly unpack tbz2 files.
+## Troubleshooting
+### Undefined Reference Compiler Errors
+When using binary packages built on a different host, it's important to ensure the build host is using the same, or a lower version of sys-devel/gcc or llvm-core/clang.
+In other words, the system using the binary packages must have a compiler version greater than or equal to the binary host.
+Failure to use appropriate versions can result in errors similar to:
+CODE
+/usr/libexec/gcc/x86_64-pc-linux-gnu/ld: /usr/lib/gcc/x86_64-pc-linux-gnu/12/../../../../lib64/libSPIRV-Tools-opt.so: undefined reference to `std::ios_base_library_init()@GLIBCXX_3.4.32
+Note
+The official Gentoo binary host delays changing the default compiler to a new stable GCC version to avoid this problem. Binary packages built on the official binhost have a lengthy window where they are still compatible with systems that have not yet upgraded GCC.
+Tip
+Doing an oneshot update of the system compiler is generally sufficient to ensure remotely obtained binary packages function.
+## See also
+Binary package quickstart — how to install packages from the Gentoo binary package host, how to set up Portage to do this by default, and associated information on Gentoo binhost usage
+Emerge — the main command-line interface to Portage
+Portage — the official package manager and distribution system for Gentoo.
+Project:Binhost — aims to provide readily installable, precompiled packages for a subset of configurations, via central binary package hosting
+## External resources
+quickpkg man page.
+Retrieved from "https://wiki.gentoo.org/index.php?title=Binary_package_guide&oldid=1460013"
+Categories:
+Binary packages
+Guide
+Portage
+NFS example

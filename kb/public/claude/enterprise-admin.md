@@ -2,7 +2,7 @@
 topic: claude/enterprise-admin
 priority: P2
 applies_to: "Claude Code docs and Anthropic help center (retrieved 2026-09-26)"
-retrieved_utc: 2026-10-16
+retrieved_utc: 2026-10-21
 sources: [S-gxtvjkv7, S-hoagpet2, S-xsggrooz, S-fqe5wkdo, S-2ym4fr2c, S-dkaaodgp, S-i3esfwsh, S-7cq3hwv7, S-4fzxly7f, S-7kqj6c7m, S-gu5aqnrl, S-fk46gdey, S748]
 status: complete
 ---
@@ -37,7 +37,7 @@ scope are covered in `claude/data-retention.md` (not repeated here).
 - User/Member: most restricted role; can create/modify chats and use projects; no access to billing, membership management, integrations, security controls, or analytics (data exports are Primary Owner only). [DOC S-2ym4fr2c]
 - Enterprise plans support custom roles that control feature access at the group level: members whose role is set to "Custom" have no default permissions, and their access comes entirely from the custom roles assigned to their groups. [DOC S-2ym4fr2c]
 - Custom roles can also grant admin permissions for areas such as billing, identity or privacy without making the member an Owner; each admin area is set to No access, Can view or Can manage, and roles are managed under Organization settings > Roles by Owners, Primary Owners and custom roles with Identity & Access set to Can manage. [DOC S-7cq3hwv7]
-- Only Owners and Primary Owners can view/pay invoices and add or modify billing methods, and only the Primary Owner can provision new seats; Admins can manage membership but have no billing permissions. [DOC S-2ym4fr2c]
+- Only Owners and Primary Owners can view/pay invoices and add or modify billing methods, and Owners and the Primary Owner can provision new seats; Admins can manage membership but have no billing permissions. [DOC S-2ym4fr2c]
 
 ### Claude Code seats on Team/Enterprise
 - Claude Code is included with every seat on Team plans and on new/self-serve Enterprise plans; Premium seats add more usage for heavier workloads. [DOC S-xsggrooz]
@@ -71,8 +71,8 @@ scope are covered in `claude/data-retention.md` (not repeated here).
 - Claude Tag is among the features zero data retention disables for an Enterprise organization, with the stated reason that it retains channel memory and session transcripts (see `claude/data-retention.md`). [DOC S748]
 
 ### Compliance API (org-wide audit, distinct from data retention/ZDR)
-- The Compliance API is available to Enterprise plan organizations (excluding Public Sector) and to Claude Platform customers, covering Claude chats, Cowork (Claude, Desktop, Mobile), Claude Code (CLI and Desktop), and beta coverage of Claude for Microsoft 365 add-ins (Excel, Word, PowerPoint, Outlook) and Claude Science. [DOC S-fqe5wkdo]
-- It explicitly excludes Claude Code cloud sessions, Claude Code via the Claude Platform, other Microsoft 365 apps, and sessions run on Amazon Bedrock or Google Vertex AI. [DOC S-fqe5wkdo]
+- The Compliance API is available to Enterprise plan organizations and to Claude Platform customers in Claude chats; organizations on Anthropic's dedicated government deployments use a separate government Compliance API page. [DOC S-fqe5wkdo]
+- [UNK] Which products the Compliance API covers beyond Claude chats (Cowork, Claude Code CLI/Desktop, Microsoft 365 add-ins, Claude Science) and which it excludes (Claude Code cloud sessions, Claude Code via the Claude Platform, Bedrock/Vertex sessions): the 2026-10-21 version of the article no longer lists them.
 - Only the organization's Primary Owner can enable the Compliance API, from Organization settings > API; once enabled, Primary Owners can create keys covering all linked organizations while Owners can create keys limited to their own organization, and Admins cannot access that settings page at all. [DOC S-fqe5wkdo]
 - The API returns activity feed events, chat data, and file content across Claude deployments, and now includes audit log events. [DOC S-fqe5wkdo]
 - Audit logs (Enterprise only; Owners/Primary Owners export the last 180 days) record events such as sign-in/sign-out, invites, and conversation/project/document creation and deletion; chat and project titles and content are not in audit logs, only their identifiers. [DOC S-i3esfwsh]

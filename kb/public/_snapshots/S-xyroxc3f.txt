@@ -1,0 +1,37 @@
+source: S-xyroxc3f
+url: https://dora.dev/research/2024/dora-report/
+title: DORA: 2024 Accelerate State of DevOps Report
+publisher: DORA (dora.dev, Google Cloud)
+licence: CC BY 4.0 (page footer)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# DORA Research: 2024
+Errata
+Overview
+DORA Report
+Questions
+AI Preview
+## Download the 2024 DORA Report
+The 2024 DORA Report is available in the following languages:
+English
+Español
+Español - América Latina
+Français
+Português - Brasil
+中文 – 简体
+繁體中文
+日本語
+한국어
+The 2024 report highlights that navigating today’s rapidly shifting technological landscape requires balancing emerging tools with a steadfast focus on the human element of software development. While Artificial Intelligence is creating a paradigm shift in daily workflows, teams that prioritize end-user needs and operate under stable organizational priorities are the ones truly driving product quality and organizational success.
+Taking an experimental approach to continuous improvement remains essential for modern teams. Organizations are encouraged to assess their current baseline, formulate hypotheses, and measure the impact of changes iteratively. Embracing transformational leadership and fostering an environment of continuous learning are critical to navigating the growing pains associated with new technologies and platforms.
+Key findings include:
+AI brings clear benefits but unexpected tradeoffs: AI adoption significantly increases individual productivity, flow, and job satisfaction. However, it also negatively impacts software delivery stability and throughput, reminding teams that fundamentals like small batch sizes and robust testing remain crucial.
+User-centricity is the ultimate driver of performance: Organizations that prioritize the end-user experience build higher-quality products. Developers working with a user-centric mindset are more productive, more satisfied, and less likely to experience burnout.
+Stable priorities are critical for well-being: Unstable organizational priorities cause meaningful decreases in productivity and substantial increases in burnout. This negative impact is highly resistant to mitigation and persists even in environments with strong leaders and high-quality documentation.
+Platform engineering boosts productivity, but monitor stability: Utilizing an internal developer platform improves individual productivity, team performance, and overall organizational performance. However, it can also lead to decreased change stability and throughput, requiring careful implementation focused on developer independence.
+Transformational leadership matters: Leaders who inspire, intellectually stimulate, and support their teams significantly improve employee productivity, organizational performance, and job satisfaction while simultaneously decreasing burnout.
+Infrastructure flexibility remains essential: Leveraging flexible cloud infrastructure directly increases organizational performance. Conversely, simply migrating to the cloud without adopting its inherent flexibility can be more harmful than staying in a traditional data center.
+### Gold Sponsors
+The DORA report is published by Google Cloud with support from the following gold sponsors.
+Last updated: April 13, 2026

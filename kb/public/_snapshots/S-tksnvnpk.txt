@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/entra/id-governance/entitlement-management-acce
 title: Configure an automatic assignment policy for an access package in entitlement management
 publisher: Microsoft Learn
 licence: MIT (public mirror MicrosoftDocs/entra-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Configure an automatic assignment policy for an access package in entitlement management - Microsoft Entra - Microsoft Entra ID Governance | Microsoft Learn
@@ -12,7 +12,7 @@ You can use rules to determine access package assignment based on identity prope
 
 Note
 
-It is suggested to only use one automatic assignment policy per access package. Configuring more than one auto-assignment policy is supported ONLY if you ensure there is no overlap with users in scope for each policy. If a user matches more than one automatic assignment policy, this is not supported and there may be subsequent problems losing access should a user fall out of scope of one policy but not the other.
+It is suggested to only use one automatic assignment policy per access package. Configuring more than one automatic assignment policy is supported ONLY if you ensure there is no overlap with users in scope for each policy. This includes ensuring that users do not match multiple policies at the same time and do not transition from the scope of one policy to another. If a user matches more than one automatic assignment policy, or transitions from one policy to another, this is not supported and there may be subsequent problems losing access.
 
 Important
 

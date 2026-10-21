@@ -2,7 +2,7 @@
 topic: reuse/layered-settings-resolution
 priority: P2
 applies_to: "layered settings resolution: flags > env vars > config file > built-in defaults, unknown-key refusal"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S1022, S1023, S-ovuvyg6h]
 status: complete
 ---

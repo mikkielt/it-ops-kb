@@ -2,7 +2,7 @@
 topic: security/linux-time-sync
 priority: P3
 applies_to: "chrony and systemd-timesyncd on Linux hosts"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-fdtse7p7, S-hur3aczb, S-6uvypfv2, S-ycjp6jnv]
 status: complete
 ---

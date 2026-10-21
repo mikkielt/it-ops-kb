@@ -1,0 +1,159 @@
+source: S-46ys6oow
+url: https://wiki.gentoo.org/wiki/Eselect/Repository
+title: eselect repository (Gentoo Wiki)
+publisher: Gentoo Wiki
+licence: CC-BY-SA-4.0
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+Jump to: content
+Get Gentoo!
+gentoo.org sites
+gentoo.org
+Wiki
+Bugs
+Packages
+Forums
+Planet
+Archives
+Devmanual
+Gitweb
+Infra status
+Wiki
+#
+eselect/repository
+From Gentoo Wiki
+< Eselect
+Jump to:navigation
+Jump to:search
+Other languages:
+English
+español
+français
+magyar
+русский
+தமிழ்
+中文（中国大陆）‎
+日本語
+Resources
+GitHub
+Package information
+eselect-repository is an eselect module for configuring ebuild repositories for Portage. Ebuild repository configuration files are stored in /etc/portage/repos.conf.
+See also
+For further options see man repository.eselect.
+Note
+This utility supersedes layman for listing, configuring, and handling synchronization of alternate repositories. There are still some exceptions for which layman can supplement eselect-repository, when using version control systems that Portage does not natively sync (e.g. darcs and g-sorcery).
+eselect-repository is written and maintained by Gentoo's Michał Górny (mgorny) .
+## Contents
+1 Installation
+1.1 USE flags
+1.2 Emerge
+2 Configuration
+2.1 Initial setup
+2.2 Files
+3 Usage
+3.1 repos.gentoo.org
+3.1.1 Listing ebuild repositories registered with repos.gentoo.org
+3.1.2 Add ebuild repositories from repos.gentoo.org
+3.2 Add repositories
+3.3 Disable repositories without removing contents
+3.4 Disable repositories and remove contents
+3.5 Create a new ebuild repository
+4 See also
+## Installation
+### USE flags
+###
+USE flags for
+app-eselect/eselect-repository
+Manage repos.conf via eselect
++git
+Enable git (version control system) support
+mercurial
+Support mercurial sync-type.
+test
+Enable dependencies and/or preparations necessary to run tests (usually controlled by FEATURES=test but can be toggled independently)
+Data provided by the Gentoo Package Database
+·
+Last update: 2026-04-05 06:55
+More information about USE flags
+### Emerge
+root #emerge --ask app-eselect/eselect-repository
+## Configuration
+### Initial setup
+The repos.conf file or directory as configured by the REPOS_CONF variable in /etc/eselect/repository.conf, must exist before the module will function properly. The Gentoo Handbook prefers to have it as a directory, and some tools will not work otherwise:
+root #mkdir -p /etc/portage/repos.conf
+### Files
+Paths and options can be changed in /etc/eselect/repository.conf. This file has comments and is self-explanatory.
+## Usage
+Tip
+Repositories can be synced after being configured, using Portage's emaint:
+root #emaint sync -r foo
+### repos.gentoo.org
+Gentoo allows users and developers to register repositories on repos.gentoo.org, for public consumption.
+eselect repository will fetch and read the known list.
+#### Listing ebuild repositories registered with repos.gentoo.org
+eselect repository can print all repositories listed on repos.gentoo.org:
+user $eselect repository list
+Available repositories:
+[1] foo
+[2] bar
+[3] baz
+[4] cross #
+[5] good *
+[6] my_overlay @
+Installed, enabled repositories are suffixed with a * character.
+Repositories suffixed with #, need their sync information updated (via disable/enable) or were customized by the user.
+Repositories suffixed with @ are not listed by name in the official, published list.
+Use the -i option to show currently configured repositories only:
+user $eselect repository list -i
+#### Add ebuild repositories from repos.gentoo.org
+Syntax: enable (<name>|<index>)...
+root #eselect repository enable foo bar baz
+### Add repositories
+Syntax:
+root #eselect repository add <name> <sync-type> <sync-uri>
+The most common sync methods are git and rsync. Other options are cvs, mercurial, svn, websync and zipfile.
+The formats and required packages are as follows:
+git (dev-vcs/git) installed by default.
+root #eselect repository add test git https://github.com/test/test.git
+rsync (net-misc/rsync) installed by default.
+root #eselect repository add test rsync rsync://example.com/path
+mercurial (dev-vcs/mercurial, note that app-eselect/eselect-repository should be compiled with the mercurial USE flag).
+root #eselect repository add test hg https://example.com/path
+cvs (dev-vcs/cvs).
+root #eselect repository add test cvs :ext:anoncvs@example.com:/var/cvsroot
+svn (dev-vcs/subversion).
+root #eselect repository add test svn https://example.com/repos/name/trunk
+webrsync installed with portage, app-portage/emerge-delta-webrsync can be installed to reduce bandwidth usage.
+root #eselect repository add test webrsync https://example.com/path
+zipfile installed by default.
+root #eselect repository add test zipfile https://example.com/file.zip
+To sync the new repository which is called test in this example:
+root #emaint sync --repo test
+For more information on synchronization in Gentoo, please see Ebuild repository before use.
+Warning
+While the Gentoo ebuild repository is either written or reviewed by Gentoo developers, and the GURU repository has some developer oversight, that is not always the case for other ebuild repositories. It is possible that some ebuilds repositories might contain vulnerable, badly broken or, theoretically, even malicious software.
+### Disable repositories without removing contents
+Syntax: disable [-f] (<name>|<index>)...
+root #eselect repository disable foo bar
+The -f option is required for repositories not registered with repos.gentoo.org, and those without sync attributes. Use with care.
+### Disable repositories and remove contents
+Syntax: remove [-f] (<name>|<index>)...
+root #eselect repository remove bar baz
+The -f option is required for repositories not registered with repos.gentoo.org, and those without sync attributes. Use with care.
+### Create a new ebuild repository
+The create subcommand will create an ebuild repository skeleton, and configure it with Portage:
+Syntax: create <name> [<path>]
+root #eselect repository create <ebuild_repository_name>
+Adding <ebuild_repository_name> to /etc/portage/repos.conf ...
+Repository <ebuild_repository_name> created and added
+## See also
+Eselect — a tool for administration and configuration on Gentoo systems.
+Useful Portage tools — provides a list of Gentoo-specific system management tools, notably for Portage, available in the ebuild repository.
+Project:Portage/Sync
+Retrieved from "https://wiki.gentoo.org/index.php?title=Eselect/Repository&oldid=1457761"
+Categories:
+Gentoo community software
+Portage
+Core system
+Command line tools

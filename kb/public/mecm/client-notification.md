@@ -2,7 +2,7 @@
 topic: mecm/client-notification
 priority: P0
 applies_to: "ConfigMgr current branch 2603"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-e5qqwdcj, S-hmjlvsck, S-43sy3dqq, S-6rr2wgl6, S-z7zcccd3, S-wquiagrh, S-qa267hnk, S-vkpl2xpq, S-ihvcmxec, S334, S-lef2ok5a, S352]
 status: complete
 files: [mecm/client-operation-types.csv]

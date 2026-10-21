@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/en-us/sql/linux/security/authentication/adutil-
 title: Introduction to adutil - Active Directory Utility - SQL Server
 publisher: Microsoft (MicrosoftDocs/sql-docs)
 licence: CC BY 4.0 (public mirror MicrosoftDocs/sql-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Introduction to adutil - Active Directory Utility - SQL Server | Microsoft Learn
@@ -14,11 +14,11 @@ The **`adutil`** tool is a command-line interface (CLI) utility for configuring 
 
 Note
 
-Support for **`adutil`** is limited to SQL Server use cases only. You can also use other utilities like **ktpass** to enable Active Directory authentication, as explained in Tutorial: Use Active Directory authentication with SQL Server on Linux.
+Support for **`adutil`** is limited to SQL Server use cases only. You can also use other utilities like **`ktpass`** to enable Active Directory authentication, as explained in Tutorial: Use Active Directory authentication with SQL Server on Linux.
 
-Before you get started, make sure you download **`adutil`** to a host that is already joined to an Active Directory domain.
+Before you get started, make sure you install **`adutil`** on a host that is already joined to an Active Directory domain.
 
-The **`adutil`** tool is designed as a series of commands and subcommands, with extra flags that you specify as further input. Each top-level command represents a category of administrative functions. Within that category, each subcommand is an operation. This article shows you how to download and get started with **`adutil`**.
+The **`adutil`** tool is designed as a series of commands and subcommands, with extra flags that you specify as further input. Each top-level command represents a category of administrative functions. Within that category, each subcommand is an operation. This article shows you how to install and get started with **`adutil`**.
 
 ## Configure `adutil` for LDAP over Secure Sockets Layer (SSL)
 
@@ -150,9 +150,9 @@ If you don't accept the end user license agreement (EULA) during installation, w
 
 ## Use `adutil` to manage Windows Active Directory
 
-Make sure that you download **adutil** to a host that is already joined to an Active Directory domain. You also need to obtain or renew the Kerberos TGT (ticket-granting ticket), using the **kinit** command and a privileged domain account. The account you use must have permission to create accounts and Service Principal Names (SPNs) on the domain.
+Make sure that you install **`adutil`** on a host that is already joined to an Active Directory domain. You also need to obtain or renew the Kerberos ticket-granting ticket (TGT), using the **`kinit`** command and a privileged domain account. The account you use must have permission to create accounts and Service Principal Names (SPNs) on the domain.
 
-Here are some examples of actions that you can perform using **adutil**. To see a list of top-level commands, type `adutil --help`. This command shows you the top-level commands that you can use to manage and interact with Active Directory.
+Here are some examples of actions that you can perform using **`adutil`**. To see a list of top-level commands, type `adutil --help`. This command shows you the top-level commands that you can use to manage and interact with Active Directory.
 
 ```bash
 adutil --help

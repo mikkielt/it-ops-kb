@@ -2,7 +2,7 @@
 topic: claude/terminal-split-pane
 priority: P3
 applies_to: "tmux 3.8 manual (tag published 2026-09-09), WezTerm docs and release 20240203-110809-5046fc22, Windows Terminal command-line-arguments page (updated 2025-11-12); read 2026-10-18"
-retrieved_utc: 2026-10-18
+retrieved_utc: 2026-10-21
 sources: [S-3gv2hqon, S-ul3bejly, S-jrp4n5ie, S-z4bixz66, S-4ingl4hx, S-fsgzj2gz, S-rwjcajd5]
 status: partial
 ---

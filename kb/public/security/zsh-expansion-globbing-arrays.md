@@ -2,7 +2,7 @@
 topic: security/zsh-expansion-globbing-arrays
 priority: P3
 applies_to: "Zsh 5.9.2 expansion: the order of expansions, parameter expansion and word splitting, filename generation (globbing, extended operators, recursive globs, qualifiers), and array and associative array parameters"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-vqwwekes, S-zlyzov2u, S-e6mo6lhk, S-3gkyn5mu, S-cbs5knac]
 status: complete
 ---

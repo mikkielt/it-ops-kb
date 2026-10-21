@@ -2,7 +2,7 @@
 topic: intune/certificates-pki
 priority: P2
 applies_to: "Microsoft Intune service 2026-09, Certificate Connector for Microsoft Intune, Microsoft Cloud PKI (Intune Suite/standalone add-on)"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-h44fxget, S-lcamnncm, S-hxbyw5pm, S-qe32ky2d, S-6fwniw6n, S-weleekge, S-4txttdx2, S-7war6bpq, S-wlkxstj4, S-hv24mjpy, S1224]
 status: complete
 files: [intune/certificate-variables.csv]

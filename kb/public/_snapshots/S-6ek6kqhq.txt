@@ -1,0 +1,83 @@
+source: S-6ek6kqhq
+url: https://www.gov.uk/government/publications/architectural-decision-record-framework/architectural-decision-record-framework
+title: Architectural Decision Record Framework (GOV.UK)
+publisher: UK Department for Science, Innovation and Technology; Government Digital Service
+licence: Open Government Licence v3.0 (stated on the page; Crown copyright 2025)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+Department for
+Science, Innovation
+& Technology
+Government
+Digital Service
+Guidance
+#
+Architectural Decision Record Framework
+Published 4 November 2025
+© Crown copyright 2025
+This publication is licensed under the terms of the Open Government Licence v3.0 except where otherwise stated. To view this licence, visit nationalarchives.gov.uk/doc/open-government-licence/version/3 or write to the Information Policy Team, The National Archives, Kew, London TW9 4DU, or email: psi@nationalarchives.gov.uk.
+Where we have identified any third party copyright information you will need to obtain permission from the copyright holders concerned.
+This publication is available at https://www.gov.uk/government/publications/architectural-decision-record-framework/architectural-decision-record-framework
+## Introduction
+The architectural decision record (ADR) framework is designed to establish the practice of documenting architectural decisions across teams, programmes, and departments in order to ensure visibility, traceability, and strategic alignment.
+Adoption of the ADR framework will empower teams and organisations to make architectural decisions themselves by following agile service delivery governance principles, without unnecessary overhead approval. The framework also provides clear guidance on when and how to escalate decisions that carry broader strategic or technical impact. By balancing autonomy with accountability, the framework supports a culture of responsible decision-making and enables cross-government alignment.
+## What is an architectural decision?
+An architecture decision (AD) is a choice that affects the structure, quality attributes, or behaviour of a system.
+## What is an architectural decision record?
+An ADR is a formal document used to capture significant architectural decisions made during the design and development of systems. One example of an ADR template is the ADR-000: subject of decision.
+Further information on ADRs can be found on Microsoft Azure’s well-architected framework architecture decision record.
+To access practical guidance, templates, and examples, visit architecture decision record.
+## What is the ADR framework?
+The ADR framework is designed to ensure that architectural decisions are made at the appropriate level, with the right stakeholders, and with proper visibility and traceability.
+### Who should use it?
+The ADR framework is intended for use across the UK public sector. It is designed to be utilised by various stakeholders involved in architectural decision-making processes, particularly those with a technical focus. This includes, but is not limited to:
+team and project leads who are responsible for making decisions that are local to a single team or project
+programme architecture forums involved in decisions that affect multiple teams or shared services within a programme
+departmental architecture boards who handle decisions that impact multiple programmes or product groups or set a precedent for future work
+the Technical Design Council (TDC), which includes the government CTO, departmental CTOs, government chief architect, and enterprise architects, and is responsible for decisions that affect multiple departments or organisations or require alignment with central government strategy
+We recommend ADR framework adoption at all levels, as this is inline with industry best practice as stated within the International Organization for Standardization’s (ICO) software, systems and enterprise — architecture description. However, the ADR framework will only be mandated for cross-government and cross-public sector decisions.
+## How to use this ADR framework
+The ADR framework is designed to guide stakeholders through the process of making informed architectural decisions. The following are the steps to effectively use this framework.
+1. Determine the scope of the decision and identify the appropriate decision-making level. This could be at the team or project level, programme level, departmental level, or cross-department level.
+2. Engage with the relevant stakeholders to gather input and ensure that all perspectives are considered. This may include team leads, programme architecture forums, departmental architecture boards, and the Technical Design Council (TDC).
+3. Use an agreed ADR template to record the decision. Each ADR should contain:
+title
+date
+status
+context
+decision
+consequences
+stakeholders consulted
+links to supporting documents
+4. Submit the ADR for review and approval by the appropriate decision-making body. Ensure that the decision is aligned with the strategic goals and policies.
+5. Share the approved ADR with all relevant stakeholders and ensure that it is accessible for future reference. This helps to maintain transparency and provides a record of the decision-making process.
+6. Regularly review and update the ADR to reflect any changes in the context or consequences of the decision. This ensures that the ADR remains relevant and useful over time.
+### Decision levels and escalation criteria
+Level
+Scope of decision
+Decision-makers
+Escalation criteria
+Team and working group
+Local to a single team or working group
+Head of team or working group lead
+No impact on other teams or shared platforms
+Cross-team and programme
+Affects multiple teams or shared services within a programme
+Architectural sync, such as the programme architecture forum
+Impacts integration, shared components, or delivery timelines across teams
+Department-wide and Strategic
+Impacts multiple programmes and products groups or sets a precedent for future work
+Departmental architecture board or equivalent
+Introduces new standards, platforms, or significant cost or tech debt implications
+Cross-government and national
+Affects multiple departments or requires alignment with central gov strategy
+Technical Design Council (TDC), including gov CTO, Department CTOs, gov Chief Architect and enterprise architects
+Strategic alignment, cross-departmental platforms, or national digital infrastructure
+## Contact
+For further information email GDS Team at: publicsector.architecture@dsit.gov.uk.
+You can ask for assistance with:
+implementing the ADR framework in your team or organisation
+bringing a cross-government or national decision to the Technical Design Council
+feedback on the framework
+Back to top

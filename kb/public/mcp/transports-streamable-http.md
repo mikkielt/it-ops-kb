@@ -2,7 +2,7 @@
 topic: mcp/transports-streamable-http
 priority: P2
 applies_to: "MCP specification 2026-07-28"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-10-21
 sources: [S-l4qgsnr4, S-cm7rkvrx, S-iw3x3th7, S708, S706, S703, S-ssijfmsu, S-gm6b6ci6, S704, S716, S707]
 status: complete
 ---

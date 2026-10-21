@@ -3,27 +3,38 @@ url: https://github.com/DavidAnson/markdownlint
 title: DavidAnson/markdownlint
 publisher: David Anson (GitHub)
 licence: MIT
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-DavidAnson
-/
+## Repository navigation
 markdownlint
 Public
-### Uh oh!
-There was an error while loading. Please reload this page.
-Notifications
-You must be signed in to change notification settings
-Fork
-945
-Star
-6.4k
+NotificationsYou must be signed in to change notification settings
+Fork946 (946)
+Star6.4k (6.4k)You must be signed in to star a repository
+## About
+A Node.js style checker and lint tool for Markdown/CommonMark files.
+### Topics
+commonmarklintmarkdownnodejs
+### Resources
+Readme
+MIT license
+### Contributing
+Contributing
+Activity
+### Stars
+6.4k stars
+### Watchers
+75 watching
+### Forks
+946 forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit
 ## History
-2,570 Commits
-2,570 Commits
+2,703 Commits
+2,703 Commits
 ## Folders and files
 NameName
 Last commit message
@@ -74,7 +85,7 @@ package.json
 package.json
 ## Repository files navigation
 # markdownlint
-A Node.js style checker and lint tool for Markdown/CommonMark files.
+A Node.js style checker and lint tool for Markdown/CommonMark files
 ## Install
 npm install markdownlint --save-dev
 ## Overview
@@ -458,7 +469,7 @@ Content is passed to each parser function until one returns a value (vs.
 throwing an exception). As such, strict parsers should come before flexible
 ones.
 For example:
-[ JSON.parse, require("toml").parse, require("js-yaml").load ]
+[ JSON.parse, require("smol-toml").parse, require("js-yaml").load ]
 ##### options.customRules
 Type: Array of Object
 List of custom rules to include with the default rule set for linting.
@@ -614,7 +625,7 @@ The contents of a configuration file are passed to each parser function until
 one of them returns a value (vs. throwing an exception). Consequently, strict
 parsers should come before flexible parsers.
 For example:
-[ JSON.parse, require("toml").parse, require("js-yaml").load ]
+[ JSON.parse, require("smol-toml").parse, require("js-yaml").load ]
 #### fs
 Type: Optional Object implementing the file system API
 In advanced scenarios, it may be desirable to bypass the default file system
@@ -698,7 +709,7 @@ All of which return an object like:
 { "lineNumber": 3,
 "ruleNames": [ "MD010", "no-hard-tabs" ],
 "ruleDescription": "Hard tabs",
-"ruleInformation": "https://github.com/DavidAnson/markdownlint/blob/v0.41.1/doc/md010.md",
+"ruleInformation": "https://github.com/DavidAnson/markdownlint/blob/v0.42.0/doc/md010.md",
 "errorDetail": "Column: 17",
 "errorContext": null,
 "errorRange": [ 17, 1 ],
@@ -707,7 +718,7 @@ All of which return an object like:
 { "lineNumber": 1,
 "ruleNames": [ "MD018", "no-missing-space-atx" ],
 "ruleDescription": "No space after hash on atx style heading",
-"ruleInformation": "https://github.com/DavidAnson/markdownlint/blob/v0.41.1/doc/md018.md",
+"ruleInformation": "https://github.com/DavidAnson/markdownlint/blob/v0.42.0/doc/md018.md",
 "errorDetail": null,
 "errorContext": "#bad.md",
 "errorRange": [ 1, 2 ],
@@ -716,7 +727,7 @@ All of which return an object like:
 { "lineNumber": 3,
 "ruleNames": [ "MD018", "no-missing-space-atx" ],
 "ruleDescription": "No space after hash on atx style heading",
-"ruleInformation": "https://github.com/DavidAnson/markdownlint/blob/v0.41.1/doc/md018.md",
+"ruleInformation": "https://github.com/DavidAnson/markdownlint/blob/v0.42.0/doc/md018.md",
 "errorDetail": null,
 "errorContext": "#This file fails\tsome rules.",
 "errorRange": [ 1, 2 ],
@@ -725,7 +736,7 @@ All of which return an object like:
 { "lineNumber": 1,
 "ruleNames": [ "MD041", "first-line-heading", "first-line-h1" ],
 "ruleDescription": "First line in a file should be a top-level heading",
-"ruleInformation": "https://github.com/DavidAnson/markdownlint/blob/v0.41.1/doc/md041.md",
+"ruleInformation": "https://github.com/DavidAnson/markdownlint/blob/v0.42.0/doc/md041.md",
 "errorDetail": null,
 "errorContext": "#bad.md",
 "errorRange": null,
@@ -786,9 +797,9 @@ Activity
 ### Stars
 6.4k stars
 ### Watchers
-74 watching
+75 watching
 ### Forks
-945 forks
+946 forks
 Report repository
 ## Releases
 ## Sponsor this project

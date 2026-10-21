@@ -3,11 +3,13 @@ url: https://owasp.org/www-project-non-human-identities-top-10/
 title: OWASP Non-Human Identities Top 10
 publisher: OWASP
 licence: CC BY-SA 4.0 (OWASP)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
+Sign inDonate
 # OWASP Non-Human Identities Top 10
 OWASP Non-Human Identities Top 10 - An OWASP incubator project
+View on GitHubDocumentation
 ## About OWASP Non-Human Identities Top 10
 ### What is Non-Human Identities top 10?
 The Non-human identity (NHI) top 10 is a comprehensive list of the most pressing security risks and vulnerabilities that non-human identities present to organizations.
@@ -105,10 +107,11 @@ HTML
 Contributors
 26
 GitHub Stars
-56
+58
 Downloads
 0
 Corporate Supporters
+Become a Corporate SupporterMeet our Corporate SupportersSupporter Job Postings
 OWASP is a nonprofit foundation improving software security through open-source projects, global communities, and education. All resources are free and open to everyone.
 Quick Links
 AwardsChaptersCommunityContactCorporate SupportersEventsNewsOWASP CommunityProjectsSecurityStaffOWASP Merch
@@ -116,5 +119,6 @@ Legal & Governance
 About OWASPBoardBoard EUFinance (all documents)Finance & GovernancePoliciesImpact Report 2025Strategic Plan 2026
 Socials
 BlueskyGitHubLinkedInMastodonSlackXYouTube
+Make a DonationJoin NowJoin Slack
 OWASP, the OWASP logo, and Global AppSec are registered trademarks and AppSec Days, AppSec California, AppSec Cali, SnowFROC, OWASP Boston Application Security Conference, and LASCON are trademarks of the OWASP Foundation, Inc.
 © 2026, OWASP Foundation Inc. All rights reserved.

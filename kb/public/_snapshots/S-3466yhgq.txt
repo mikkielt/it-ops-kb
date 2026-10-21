@@ -3,7 +3,7 @@ url: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/man
 title: Managing deploy keys
 publisher: GitHub Docs
 licence: CC BY 4.0 (github/docs LICENSE; code MIT)
-retrieved: 2026-10-19
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Managing deploy keys
@@ -157,7 +157,7 @@ For more information, see Generating an installation access token for a GitHub A
 
 If your server needs to access multiple repositories, you can create a new account on GitHub.com and attach an SSH key that will be used exclusively for automation. Since this account on GitHub.com won't be used by a human, it's called a *machine user*. You can add the machine user as a collaborator on a personal repository (granting read and write access), as an outside collaborator on an organization repository (granting read, write, or admin access), or to a team with access to the repositories it needs to automate (granting the permissions of the team).
 
-> \[!TIP]
+> [!TIP]
 > Our terms of service state:
 >
 > > *Accounts registered by "bots" or other automated methods are not permitted.*

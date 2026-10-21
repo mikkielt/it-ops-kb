@@ -3,7 +3,7 @@ topic: python/uv-projects
 priority: P2
 applies_to: [uv, python]
 retrieved_utc: 2026-10-11
-sources: [S-wmmyfoun, S-f2okeu6a, S-47yzu2ea, S-ixzgi6xe, S-sqwzg5ex, S-y4cg63ji, S-j7nlfpkd, S-7xvirecf, S-x7kevebo, S-pwf7njbf, S-qo6uqong, S-4odritdm, S-2xpbl25y, S-e2utk2wn, S-dejuwanz]
+sources: [S-wmmyfoun, S-f2okeu6a, S-47yzu2ea, S-sqwzg5ex, S-y4cg63ji, S-j7nlfpkd, S-7xvirecf, S-x7kevebo, S-pwf7njbf, S-qo6uqong, S-4odritdm, S-2xpbl25y, S-dejuwanz, S-xeomedeo, S-dxvgh2py]
 status: complete
 ---
 
@@ -47,7 +47,7 @@ this article does not repeat.
 - The `dev` group is special-cased and synced by default; `--no-dev`/`--only-dev` are shorthand for
   `--group dev`/`--only-group dev`. The set of groups included by default is controlled by
   `tool.uv.default-groups` (a list of group names, or `"all"`); `--no-default-groups` disables this
-  behaviour entirely for one invocation. [DOC S-ixzgi6xe]
+  behaviour entirely for one invocation. [DOC S-dxvgh2py]
 - `uv.lock` is a *universal* (cross-platform) lockfile: during resolution, all required packages must
   be installable somewhere across the project's entire `requires-python` range and across operating
   system/architecture markers, so the same `uv.lock` is used by every contributor and every platform.
@@ -114,7 +114,7 @@ this article does not repeat.
 - Every workspace needs a root, and the root is itself a member. [DOC S-4odritdm]
 - The uv source distinguishes two kinds of workspace root: a project root, and a non-project root
   that has the `[tool.uv.workspace]` table but no `[project]` table (the source calls it a virtual
-  manifest). [CODE S-e2utk2wn: crates/uv-workspace/src/workspace.rs#Workspace::discover]
+  manifest). [CODE S-xeomedeo: crates/uv-workspace/src/workspace.rs#Workspace::discover]
 - `tool.uv.package = false` is a separate switch on a project: uv ignores a declared build system, so
   the project is not built or installed into the environment (an explicit `uv build` still builds
   it). [DOC S-qo6uqong]
@@ -155,7 +155,7 @@ this article does not repeat.
 - `uv init --no-workspace` avoids workspace discovery and creates a standalone project. [CODE S-2xpbl25y: crates/uv-cli/src/lib.rs#InitArgs]
 
 ## Reference
-- SNIPPET: a project with a `requires-python` lower bound and a `dev` dependency group; context: PEP 735 `[dependency-groups]`, uv; checked: syntax [DOC S-qo6uqong,S-pwf7njbf: `requires-python` bounds; DOC S-ixzgi6xe: the `dev` group is special-cased]
+- SNIPPET: a project with a `requires-python` lower bound and a `dev` dependency group; context: PEP 735 `[dependency-groups]`, uv; checked: syntax [DOC S-qo6uqong,S-pwf7njbf: `requires-python` bounds; DOC S-dxvgh2py: the `dev` group is special-cased]
 ```toml
 [project]
 name = "example-tool"

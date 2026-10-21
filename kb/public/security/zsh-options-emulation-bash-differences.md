@@ -2,7 +2,7 @@
 topic: security/zsh-options-emulation-bash-differences
 priority: P3
 applies_to: "Zsh 5.9.2 options: how an option is named, set and listed, which defaults depend on the emulation mode, the emulate builtin and LOCAL_OPTIONS, and the documented differences from sh, ksh and Bash"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-e6mo6lhk, S-ehyugoua, S-3gkyn5mu, S-cbs5knac]
 status: complete
 ---

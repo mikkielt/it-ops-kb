@@ -2,7 +2,7 @@
 topic: agents/security-copilot-endpoint
 priority: P2
 applies_to: "Microsoft Security Copilot embedded in Microsoft Intune (Copilot in Intune) and Intune's Security Copilot agents; Windows/Windows 365 endpoints; docs retrieved 2026-09-26"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-wqwk4szg, S-w5rlacck, S-dge3w4di, S-ynnu52s5, S-ofjtvdgq, S-v2cnpcup, S-rnafxj57, S-qyv3zd3o, S-27puhgbj, S-tgliyduf, S-k27gpb6k, S-prhvpzpf, S-gi5rakio, S-5cjhp7co, S-no67bvqx, S-meh6fmlt, S-lnvgonfb, S-7jwkrwar, S-qbjmoh5m, S-h3bs4xjt, S-7x2lmxhr, S-27c7i7uy, S-gykoucrb, S-nizafwvn]
 status: complete
 ---

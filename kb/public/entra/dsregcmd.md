@@ -2,7 +2,7 @@
 topic: entra/dsregcmd
 priority: P1
 applies_to: "Windows 10/11 dsregcmd (doc ms.date 06/27/2025)"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S544, S548]
 status: complete
 files: [entra/dsregcmd-fields.csv]

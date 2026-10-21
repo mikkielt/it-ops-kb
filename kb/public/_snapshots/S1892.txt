@@ -3,25 +3,42 @@ url: https://github.com/microsoft/PyRIT
 title: PyRIT: Python Risk Identification Tool (repository)
 publisher: Microsoft
 licence: MIT
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-microsoft
-/
+## Repository navigation
 PyRIT
 Public
-Notifications
-You must be signed in to change notification settings
-Fork
-915
-Star
-4.6k
+NotificationsYou must be signed in to change notification settings
+Fork973 (973)
+Star4.7k (4.7k)You must be signed in to star a repository
+## About
+The Python Risk Identification Tool for generative AI (PyRIT) is an open source framework built to empower security professionals and engineers to proactively identify risks in generative AI systems.
+microsoft.github.io/PyRIT/
+### Topics
+ai-red-teamgenerative-aired-team-toolsresponsible-ai
+### Resources
+Readme
+MIT license
+### Code of conduct
+Code of conduct
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+4.7k stars
+### Watchers
+52 watching
+### Forks
+973 forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit
 ## History
-2,094 Commits
-2,094 Commits
+2,441 Commits
+2,441 Commits
 ## Folders and files
 NameName
 Last commit message
@@ -48,6 +65,8 @@ infra
 infra
 pyrit
 pyrit
+test_support
+test_support
 tests
 tests
 third_party
@@ -132,11 +151,11 @@ Security policy
 Activity
 Custom properties
 ### Stars
-4.6k stars
+4.7k stars
 ### Watchers
-49 watching
+52 watching
 ### Forks
-915 forks
+973 forks
 Report repository
 ## Releases
 ## Packages

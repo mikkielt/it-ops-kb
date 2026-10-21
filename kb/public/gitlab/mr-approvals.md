@@ -2,7 +2,7 @@
 topic: gitlab/mr-approvals
 priority: P0
 applies_to: "GitLab 19.5 docs (gitlab-org/gitlab master @56c82a97, 2026-09-23); GitLab.com, Self-Managed, Dedicated"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S440, S441, S442, S443, S444, S450, S452]
 status: complete
 ---
@@ -26,9 +26,9 @@ GitLab's repository LICENSE puts all content under `doc/` under CC BY-SA 4.0, so
 - Settings on that page: Prevent approval by merge request creator; Prevent approvals by users who add commits; Prevent editing approval rules in merge requests; Require user re-authentication (password or SAML) to approve; code owner approval removal (Keep approvals / Remove all approvals / Remove approvals by Code Owners if their files changed). [DOC S440]
 - By default the MR creator (author) cannot approve. Clearing **Prevent approval by merge request creator (author)** allows it. [DOC S440]
 - Authors can override that per MR by editing the approval rule, unless *Prevent editing approval rules in merge requests* is set at project level, or the instance setting is set (Self-Managed only). [DOC S440]
-- By default committers can approve. **Prevent approvals by users who add commits** stops them. [DOC S440,S442]
+- By default the Git author and Git committer of each commit can approve. **Prevent approvals by users who add commits** excludes both identities (when one person applies another's work, both are excluded). [DOC S440,S442]
 - Code owners who commit to an MR can't approve it if the MR touches files they own. [DOC S440]
-- Warning: if someone other than the original committer rebases the MR, the commit history gets a new committer. Earlier committers may then become able to approve. [DOC S440]
+- Warning: a rebase changes the Git committer but preserves the Git author. GitLab excludes the original author and the user who rebases the MR from approval. [DOC S440]
 - An instance setting locks the equivalent setting for all groups and projects. When a top-level group enables a prevention setting, the project setting is locked. [DOC S440]
 - Instance approval settings (Admin > Push rules > Merge request approvals) are Premium, Ultimate on Self-Managed and Dedicated only. They are: prevent creator approval, prevent committer approval, prevent editing approval rules in projects and MRs. The last one also locks the project rule list. [DOC S443]
 - "Remove all approvals when commits are added to the source branch" is on by default. GitLab uses `git patch-id` to decide whether to reset approvals. [DOC S440]

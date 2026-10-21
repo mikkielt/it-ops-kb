@@ -2,7 +2,7 @@
 topic: intune/assignment-filters-and-rbac
 priority: P1
 applies_to: "Microsoft Intune admin center, current channel (docs current 2026-09-26)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-10-21
 sources: [S-4ls6gbe6, S-hddmxunx, S-ljhugmcx, S-bh6rnbtj, S-kv5b4jlr, S-lsavpnha, S-guis2g6u, S-gjnpib5p, S-cunjuxe3]
 status: complete
 ---

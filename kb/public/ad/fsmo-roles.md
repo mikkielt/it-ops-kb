@@ -2,7 +2,7 @@
 topic: ad/fsmo-roles
 priority: P2
 applies_to: "Active Directory Domain Services (all supported Windows Server versions); ActiveDirectory PowerShell module (Move-ADDirectoryServerOperationMasterRole); Ntdsutil.exe"
-retrieved_utc: 2026-10-12
+retrieved_utc: 2026-10-21
 sources: [S-qbxv7o56, S-hnfdk22k, S-3ya57dju, S-uyoeu33z]
 status: complete
 ---

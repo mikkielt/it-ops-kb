@@ -1,0 +1,299 @@
+source: S-z2qagps6
+url: https://docs.rs/oxigraph/0.5.11/oxigraph/io/enum.RdfFormat.html
+title: docs.rs oxigraph 0.5.11: enum oxigraph::io::RdfFormat (oxrdfio)
+publisher: docs.rs (oxigraph crate rustdoc)
+licence: MIT OR Apache-2.0
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+oxigraph::io
+# Enum RdfFormat
+Source
+#[non_exhaustive]
+pub enum RdfFormat {
+N3,
+NQuads,
+NTriples,
+RdfXml,
+TriG,
+Turtle,
+JsonLd {
+profile: JsonLdProfileSet,
+},
+}
+Expand description
+RDF serialization formats.
+This enumeration is non exhaustive. New formats might be added in the future.
+## Variants (Non-exhaustive)§
+This enum is marked as non-exhaustive
+Non-exhaustive enums could have additional variants added in future. Therefore, when matching against variants of non-exhaustive enums, an extra wildcard arm must be added to account for any future variants.
+§
+### N3
+N3
+§
+### NQuads
+N-Quads
+§
+### NTriples
+N-Triples
+§
+### RdfXml
+RDF/XML
+§
+### TriG
+TriG
+§
+### Turtle
+Turtle
+§
+### JsonLd
+JSON-LD
+#### Fields
+§profile: JsonLdProfileSet
+## Implementations§
+Source§
+### impl RdfFormat
+Source
+#### pub const fn iri(self) -> &'static str
+The format canonical IRI according to the Unique URIs for file formats registry.
+use oxrdfio::RdfFormat;
+assert_eq!(
+RdfFormat::NTriples.iri(),
+"http://www.w3.org/ns/formats/N-Triples"
+)
+Source
+#### pub const fn media_type(self) -> &'static str
+The format IANA media type.
+use oxrdfio::RdfFormat;
+assert_eq!(RdfFormat::NTriples.media_type(), "application/n-triples")
+Source
+#### pub const fn file_extension(self) -> &'static str
+The format IANA-registered file extension.
+use oxrdfio::RdfFormat;
+assert_eq!(RdfFormat::NTriples.file_extension(), "nt")
+Source
+#### pub const fn name(self) -> &'static str
+The format name.
+use oxrdfio::RdfFormat;
+assert_eq!(RdfFormat::NTriples.name(), "N-Triples")
+Source
+#### pub const fn supports_datasets(self) -> bool
+Checks if the formats supports RDF datasets and not only RDF graphs.
+use oxrdfio::RdfFormat;
+assert_eq!(RdfFormat::NTriples.supports_datasets(), false);
+assert_eq!(RdfFormat::NQuads.supports_datasets(), true);
+Source
+#### pub fn from_media_type(media_type: &str) -> Option<RdfFormat>
+Looks for a known format from a media type.
+It supports some media type aliases.
+For example, “application/xml” is going to return RdfFormat::RdfXml even if it is not its canonical media type.
+Example:
+use oxjsonld::JsonLdProfile;
+use oxrdfio::RdfFormat;
+assert_eq!(
+RdfFormat::from_media_type("text/turtle; charset=utf-8"),
+Some(RdfFormat::Turtle)
+);
+assert_eq!(
+RdfFormat::from_media_type(
+"application/ld+json ; profile = http://www.w3.org/ns/json-ld#streaming"
+),
+Some(RdfFormat::JsonLd {
+profile: JsonLdProfile::Streaming.into()
+})
+)
+Source
+#### pub fn from_extension(extension: &str) -> Option<RdfFormat>
+Looks for a known format from an extension.
+It supports some aliases.
+Example:
+use oxrdfio::RdfFormat;
+assert_eq!(RdfFormat::from_extension("nt"), Some(RdfFormat::NTriples))
+## Trait Implementations§
+Source§
+### impl Clone for RdfFormat
+Source§
+#### fn clone(&self) -> RdfFormat
+Returns a duplicate of the value. Read more
+1.0.0 (const: unstable) · Source§
+#### fn clone_from(&mut self, source: &Self)
+Performs copy-assignment from source. Read more
+Source§
+### impl Copy for RdfFormat
+Source§
+### impl Debug for RdfFormat
+Source§
+#### fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error>
+Formats the value using the given formatter. Read more
+Source§
+### impl Display for RdfFormat
+Source§
+#### fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error>
+Formats the value using the given formatter. Read more
+Source§
+### impl Eq for RdfFormat
+Source§
+### impl From<RdfFormat> for RdfParser
+Source§
+#### fn from(format: RdfFormat) -> RdfParser
+Converts to this type from the input type.
+Source§
+### impl From<RdfFormat> for RdfSerializer
+Source§
+#### fn from(format: RdfFormat) -> RdfSerializer
+Converts to this type from the input type.
+Source§
+### impl Hash for RdfFormat
+Source§
+#### fn hash<__H>(&self, state: &mut __H)
+where
+__H: Hasher,
+Feeds this value into the given Hasher. Read more
+1.3.0 · Source§
+#### fn hash_slice<H>(data: &[Self], state: &mut H)
+where
+H: Hasher,
+Self: Sized,
+Feeds a slice of this type into the given Hasher. Read more
+Source§
+### impl PartialEq for RdfFormat
+Source§
+#### fn eq(&self, other: &RdfFormat) -> bool
+Equality operator ==. Read more
+1.0.0 (const: unstable) · Source§
+#### fn ne(&self, other: &Rhs) -> bool
+Inequality operator !=. Read more
+Source§
+### impl StructuralPartialEq for RdfFormat
+## Auto Trait Implementations§
+§
+### impl Freeze for RdfFormat
+§
+### impl RefUnwindSafe for RdfFormat
+§
+### impl Send for RdfFormat
+§
+### impl Sync for RdfFormat
+§
+### impl Unpin for RdfFormat
+§
+### impl UnsafeUnpin for RdfFormat
+§
+### impl UnwindSafe for RdfFormat
+## Blanket Implementations§
+Source§
+### impl<T> Any for T
+where
+T: 'static + ?Sized,
+Source§
+#### fn type_id(&self) -> TypeId
+Gets the TypeId of self. Read more
+Source§
+### impl<T> Borrow<T> for T
+where
+T: ?Sized,
+Source§
+#### fn borrow(&self) -> &T
+Immutably borrows from an owned value. Read more
+Source§
+### impl<T> BorrowMut<T> for T
+where
+T: ?Sized,
+Source§
+#### fn borrow_mut(&mut self) -> &mut T
+Mutably borrows from an owned value. Read more
+Source§
+### impl<ST, DT> CastableFrom<ST, Initialized, Initialized> for DT
+where
+ST: ?Sized,
+DT: ?Sized,
+Source§
+### impl<ST, DT> CastableFrom<ST, Uninit, Uninit> for DT
+where
+ST: ?Sized,
+DT: ?Sized,
+Source§
+### impl<T> CloneToUninit for T
+where
+T: Clone,
+Source§
+#### unsafe fn clone_to_uninit(&self, dest: *mut u8)
+🔬This is a nightly-only experimental API. (clone_to_uninit)
+Performs copy-assignment from self to dest. Read more
+Source§
+### impl<Q, K> Equivalent<K> for Q
+where
+Q: Eq + ?Sized,
+K: Borrow<Q> + ?Sized,
+Source§
+#### fn equivalent(&self, key: &K) -> bool
+Checks if this value is equivalent to the given key. Read more
+Source§
+### impl<T> From<T> for T
+Source§
+#### fn from(t: T) -> T
+Returns the argument unchanged.
+Source§
+### impl<T, U> Into<U> for T
+where
+U: From<T>,
+Source§
+#### fn into(self) -> U
+Calls U::from(self).
+That is, this conversion is whatever the implementation of
+From<T> for U chooses to do.
+Source§
+### impl<T> Read<Exclusive, BecauseExclusive> for T
+where
+T: ?Sized,
+Source§
+### impl<T> Same for T
+Source§
+#### type Output = T
+Should always be Self
+Source§
+### impl<T> ToOwned for T
+where
+T: Clone,
+Source§
+#### type Owned = T
+The resulting type after obtaining ownership.
+Source§
+#### fn to_owned(&self) -> T
+Creates owned data from borrowed data, usually by cloning. Read more
+Source§
+#### fn clone_into(&self, target: &mut T)
+Uses borrowed data to replace owned data, usually by cloning. Read more
+Source§
+### impl<T> ToString for T
+where
+T: Display + ?Sized,
+Source§
+#### fn to_string(&self) -> String
+Converts the given value to a String. Read more
+Source§
+### impl<T, U> TryFrom<U> for T
+where
+U: Into<T>,
+Source§
+#### type Error = !
+The type returned in the event of a conversion error.
+Source§
+#### fn try_from(value: U) -> Result<T, !>
+Performs the conversion.
+Source§
+### impl<T, U> TryInto<U> for T
+where
+U: TryFrom<T>,
+Source§
+#### type Error = <U as TryFrom<T>>::Error
+The type returned in the event of a conversion error.
+Source§
+#### fn try_into(self) -> Result<U, <U as TryFrom<T>>::Error>
+Performs the conversion.
+Source§
+### impl<V, T> VZip<V> for T
+where
+V: MultiLane<T>,
+Source§
+#### fn vzip(self) -> V

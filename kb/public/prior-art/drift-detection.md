@@ -2,7 +2,7 @@
 topic: prior-art/drift-detection
 priority: P2
 applies_to: "detecting configuration drift without applying fixes (DSC test mode, no remediation)"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S1008, S1009, S1010, S-e4iemhin, S-2fvvbt5t, S-fylt7wwn, S-qlnd73w2, S-c6kla37l, S-wbcdphyr, S-im2mzbgr, S-cttzm2qq, S-wwls72e7]
 status: partial
 ---

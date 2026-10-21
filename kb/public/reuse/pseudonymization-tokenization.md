@@ -2,7 +2,7 @@
 topic: reuse/pseudonymization-tokenization
 priority: P2
 applies_to: "a model-boundary pseudonymization layer: schema-aware tokenizing, strict restore, token kinds"
-retrieved_utc: 2026-09-28
+retrieved_utc: 2026-10-21
 sources: [S1005, S1006, S1007, S827, S-rxee6wqu, S-7t5ulcii, S-h2cmbqvf, S-dcjdn73r]
 status: complete
 ---
@@ -32,7 +32,7 @@ draft withdrew FF3 and FF3-1.
   the originals in the model's output. [DOC S-rxee6wqu]
 - In the source, LLM Guard's `Vault` is an in-memory list of `(placeholder, original)` tuples with `append`, `extend`, `remove`, `get` and `placeholder_exists`; it has no persistence, expiry or encryption code, which confirms the class is a mapping pattern only. [CODE S-7t5ulcii: llm_guard/vault.py#Vault]
 - LLM Guard is MIT licensed, so this `Vault` class shape (not its Presidio-style detection layer,
-  when a detector is already chosen separately) can be copied with an attribution header. [DOC S1006]
+  when a detector is already chosen separately) can be copied with an attribution header. The `protectai/llm-guard` repository is now archived (read-only) on GitHub (API check 2026-10-21), so a copy gets no upstream fixes. [DOC S1006]
 - LLM Guard's own docs do not define a TTL or encryption-at-rest for its `Vault` -- both are left to
   the embedding application, i.e. LLM Guard's vault is a mapping-object pattern only, not a solved
   TTL/encryption-at-rest implementation (see `reuse/secret-vault-encryption.md` for that). [DER S-rxee6wqu: the Vault is described only as remembering the Anonymize changes; no TTL or encryption setting is documented]

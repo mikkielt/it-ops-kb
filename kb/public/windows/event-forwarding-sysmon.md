@@ -2,7 +2,7 @@
 topic: windows/event-forwarding-sysmon
 priority: P2
 applies_to: "Windows Event Forwarding/Collector (Vista+, Server 2008 R2+), Sysmon (Sysinternals v15.22, and built-in Windows 11/Server 2025 optional feature), docs ms.date through 2026-09"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-10-21
 sources: [S-xbogq5nf, S-5pkzlomo, S-uzewrile, S-odr3mgme, S-zcba3zc7, S-iuugqauq, S-benv5fbb, S-k5vpsayn, S-uea253lb]
 status: complete
 files: [windows/sysmon-events.csv]
@@ -58,7 +58,7 @@ receiver), `defender/advanced-hunting.md` (querying ingested device events centr
 - Built-in Sysmon events are localized for display (rendered message text matches the device's configured language) while the underlying XML event data stays consistent across languages; this differs from standalone Sysmon and can require updating pipelines that parse rendered text instead of the XML. [DOC S-5pkzlomo]
 - Non-security enhancements to built-in Sysmon ship through normal Windows quality updates (first in optional/preview updates, then broad rollout); binaries update whether or not Sysmon is enabled, and if enabled the new binaries take effect without a restart and preserve the existing configuration. Critical security fixes ship in the Update Tuesday cumulative release regardless of preview opt-in. [DOC S-5pkzlomo]
 - Built-in Sysmon is explicitly documented as compatible with Windows Event Forwarding/Collection, Microsoft Defender for Endpoint/other EDR, and SIEM ingestion of its telemetry. [DOC S-5pkzlomo]
-- Prerequisite for built-in Sysmon: a supported Windows 11 version (Windows Server 2025 is also named as a supported OS in the overview, though the how-to page's prerequisite step lists only Windows 11). [DOC S-uzewrile, S-5pkzlomo]
+- Prerequisite for built-in Sysmon: a supported Windows 11 version "or later" (Windows Server 2025 is also named as a supported OS in the overview, though the how-to page's prerequisite step names only Windows 11 or later). [DOC S-uzewrile, S-5pkzlomo]
 
 ## Reference
 - `sysmon-events.csv`: event_id, name, records, source_id -- all 29 numbered Sysmon event types plus the 255 Error event.

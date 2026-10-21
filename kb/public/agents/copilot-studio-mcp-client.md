@@ -2,7 +2,7 @@
 topic: agents/copilot-studio-mcp-client
 priority: P2
 applies_to: "Microsoft Copilot Studio as an MCP client (standard harness; GitHub Copilot harness preview) reaching a self-hosted MCP server through Power Platform connectors, docs current 2026-09-29"
-retrieved_utc: 2026-09-29
+retrieved_utc: 2026-10-21
 sources: [S1964, S2126, S703, S-l4qgsnr4, S-oh3ybprh, S-nt2bmgtl, S-kyrgum3q, S-gcbkqdo3, S-6x6bb2f3, S-wpjbqofq, S-rvnsf5ty, S-rstajp7g, S-m75y4u2y, S-adugdkcv]
 status: partial
 ---

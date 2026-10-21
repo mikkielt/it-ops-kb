@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/powershell/module/microsoft.graph.authenticatio
 title: Connect-MgGraph
 publisher: Microsoft Learn
 licence: CC BY 4.0 (public mirror MicrosoftDocs/microsoftgraph-docs-powershell)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Connect-MgGraph
@@ -25,6 +25,7 @@ Connect-MgGraph
     [-ContextScope <ContextScope>]
     [-Environment <string>]
     [-UseDeviceCode]
+    [-LoginHint <string>]
     [-ClientTimeout <double>]
     [-NoWelcome]
     [-Break]
@@ -170,15 +171,33 @@ Uses a user created managed identity as a standalone Azure resource.
 
 PS C:&gt; Get-MgEnvironment Name AzureADEndpoint GraphEndpoint Type
 
-China https://login.chinacloudapi.cnhttps://microsoftgraph.chinacloudapi.cn Built-in Global `https://login.microsoftonline.com``https://graph.microsoft.com` Built-in USGov https://login.microsoftonline.ushttps://graph.microsoft.us Built-in USGovDoD https://login.microsoftonline.ushttps://dod-graph.microsoft.us Built-in PS C:&gt; Connect-MgGraph -Environment USGov
+BleuCloud https://login.sovcloud-identity.frhttps://graph.svc.sovcloud.fr Built-in China https://login.chinacloudapi.cnhttps://microsoftgraph.chinacloudapi.cn Built-in DelosCloud https://login.sovcloud-identity.dehttps://graph.svc.sovcloud.de Built-in Global `https://login.microsoftonline.com``https://graph.microsoft.com` Built-in GovSGCloud https://login.sovcloud-identity.sghttps://graph.svc.sovcloud.sg Built-in USGov https://login.microsoftonline.ushttps://graph.microsoft.us Built-in USGovDoD https://login.microsoftonline.ushttps://dod-graph.microsoft.us Built-in PS C:&gt; Connect-MgGraph -Environment USGov
 
 When you use Connect-MgGraph, you can choose to target other environments. By default, Connect-MgGraph targets the global public cloud.
+
+### Connecting to a sovereign cloud with a custom application
+
+PS C:&gt; Connect-MgGraph -ClientId "YOUR\_APP\_CLIENT\_ID" -TenantId "YOUR\_TENANT\_ID" -Environment BleuCloud -Scopes "User.Read.All"
+
+Sovereign cloud environments (BleuCloud, DelosCloud, GovSGCloud) require a custom application registration. You cannot use the default Microsoft Graph PowerShell application in these environments. When registering your application, add an additional redirect URI of `ms-appx-web://Microsoft.AAD.BrokerPlugin/<YOUR_APP_CLIENT_ID>` to support WAM broker-based authentication. Requires Microsoft.Graph.Authentication v2.36.1 or later.
+
+### Connecting to a sovereign cloud when WAM authentication hangs
+
+PS C:&gt; Set-MgGraphOption -DisableLoginByWAM $true PS C:&gt; Connect-MgGraph -ClientId "YOUR\_APP\_CLIENT\_ID" -TenantId "YOUR\_TENANT\_ID" -Environment BleuCloud
+
+If the authentication popup hangs or times out when connecting to a sovereign cloud (for example, from a jumpbox), WAM broker-based login may not work in that environment. Disable WAM to use interactive browser sign-in instead. You only need to run `Set-MgGraphOption -DisableLoginByWAM $true` once; the setting persists across sessions.
 
 ### Connecting to an environment as a different identity
 
 PS C:&gt; Connect-MgGraph -ContextScope Process
 
 To connect as a different identity other than CurrentUser, specify the -ContextScope parameter with the value Process.
+
+### Delegated access: Pre-populating the account during interactive sign-in
+
+PS C:&gt; Connect-MgGraph -Scopes "User.Read.All" -LoginHint "user@contoso.com"
+
+Use the -LoginHint parameter to pre-populate the account (login\_hint) shown in the interactive browser sign-in prompt. On Windows, WAM may still display the account picker on the first sign-in for an account; later sign-ins with the same -LoginHint are silent.
 
 ## Parameters
 
@@ -600,6 +619,28 @@ Login using a Managed Identity.
  IdentityParameterSet
 
 | Position: | 1 |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -LoginHint
+
+The login hint (typically a username or email) used to pre-populate the account field during interactive browser authentication.
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ UserParameterSet
+
+| Position: | Named |
 | --- | --- |
 | Mandatory: | False |
 | Value from pipeline: | False |

@@ -3,25 +3,40 @@ url: https://github.com/confident-ai/deepeval
 title: deepeval repository (README + LICENSE)
 publisher: Confident AI
 licence: Apache-2.0
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-confident-ai
-/
+## Repository navigation
 deepeval
 Public
-Notifications
-You must be signed in to change notification settings
-Fork
-2k
-Star
-18.5k
+NotificationsYou must be signed in to change notification settings
+Fork2.1k (2.1k)
+Star19k (19k)You must be signed in to star a repository
+## About
+The LLM Evaluation Framework
+deepeval.com
+### Topics
+evaluation-frameworkevaluation-metricsllm-evaluationllm-evaluation-frameworkllm-evaluation-metricspython
+### Resources
+Readme
+Apache-2.0 license
+### Contributing
+Contributing
+Activity
+Custom properties
+### Stars
+19.0k stars
+### Watchers
+70 watching
+### Forks
+2.1k forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit
 ## History
-10,296 Commits
-10,296 Commits
+10,438 Commits
+10,438 Commits
 ## Folders and files
 NameName
 Last commit message
@@ -46,6 +61,8 @@ examples
 examples
 scripts
 scripts
+setup-wizard
+setup-wizard
 skills
 skills
 sqlite
@@ -107,22 +124,22 @@ Português |
 Русский |
 中文
 DeepEval is a simple-to-use, open-source LLM evaluation framework, for evaluating large-language model systems. It is similar to Pytest but specialized for unit testing LLM apps. DeepEval incorporates the latest research to run evals via metrics such as G-Eval, task completion, answer relevancy, hallucination, etc., which use LLM-as-a-judge and other NLP models that run locally on your machine.
-Whether you're building AI agents, RAG pipelines, or chatbots, implemented via LangChain or OpenAI, DeepEval has you covered. With it, you can easily evaluate:
+Whether you're building AI agents, multi-turn chatbots, voice agents, RAG pipelines, or anything else, implemented via LangChain or OpenAI, DeepEval has you covered. With it, you can easily evaluate:
 LLM apps end-to-end as black boxes
-Complete agent trajectories across every decision and action
-Individual agent steps such as LLM calls, tool use, retrieval, and sub-agent handoffs
+Complete AI agent trajectories across every decision and action
+Individual AI agent steps such as LLM calls, tool use, retrieval, and sub-agent handoffs
 Use these evaluations to determine the optimal models, prompts, and architecture to improve your AI quality, prevent prompt drifting, or even transition from OpenAI to Claude with confidence.
 Jev is now available in DeepEval, both in existing metrics and the latest JevEval.
 Important
-Want to compare iterations, share evaluation reports, and monitor your AI in production? Sign up for Confident AI, the enterprise AI evals and observability platform.
+If you're already in production, Confident AI surfaces failing traces before anyone has written an eval for them, clusters them into failure modes, and turns them into your next eval.
 # 🔥 Metrics and Features
 📐 Large variety of ready-to-use LLM eval metrics (all with explanations) powered by ANY LLM of your choice, statistical methods, or NLP models that run locally on your machine covering all use cases:
 Custom, All-Purpose Metrics:
 JevEval — a custom metric scored by Jev, a System One model that answers your questions with calibrated probabilities instead of generated text
 G-Eval — a research-backed LLM-as-a-judge metric for evaluating on any custom criteria with human-like accuracy
 DAG — DeepEval's graph-based deterministic LLM-as-a-judge metric builder
-Agentic Metrics
-Task Completion — evaluate whether an agent accomplished its goal
+AI Agent Metrics
+Task Completion — evaluate whether an AI agent accomplished its goal
 Tool Correctness — check if the right tools were called with the right arguments
 Goal Accuracy — measure how accurately the agent achieved the intended goal
 Step Efficiency — evaluate whether the agent took unnecessary steps
@@ -130,19 +147,25 @@ Plan Adherence — check if the agent followed the expected plan
 Plan Quality — evaluate the quality of the agent's plan
 Tool Use — measure quality of tool usage
 Argument Correctness — validate tool call arguments
-RAG Metrics
-Answer Relevancy — measure how relevant the RAG pipeline's output is to the input
-Faithfulness — evaluate whether the RAG pipeline's output factually aligns with the retrieval context
-Contextual Recall — measure how well the RAG pipeline's retrieval context aligns with the expected output
-Contextual Precision — evaluate whether relevant nodes in the RAG pipeline's retrieval context are ranked higher
-Contextual Relevancy — measure the overall relevance of the RAG pipeline's retrieval context to the input
-RAGAS — average of answer relevancy, faithfulness, contextual precision, and contextual recall
 Multi-Turn Metrics
 Knowledge Retention — evaluate whether the chatbot retains factual information throughout a conversation
 Conversation Completeness — measure whether the chatbot satisfies user needs throughout a conversation
 Turn Relevancy — evaluate whether the chatbot generates consistently relevant responses throughout a conversation
 Turn Faithfulness — check if the chatbot's responses are factually grounded in retrieval context across turns
 Role Adherence — evaluate whether the chatbot adheres to its assigned role throughout a conversation
+Voice Agent Metrics
+Agent Responsiveness — check whether the voice agent answered when it was spoken to
+Turn-Taking Naturalness — measure response latency and interruptions across the call
+Voice Naturalness — evaluate how natural the voice agent sounds
+Transcription Accuracy — check whether the voice agent's speech-to-text heard the caller correctly
+Audio Glitch — detect audio artifacts in the voice agent's speech
+RAG Metrics
+Answer Relevancy — measure how relevant the output is to the input
+Faithfulness — evaluate whether the RAG pipeline's output factually aligns with the retrieval context
+Contextual Recall — measure how well the RAG pipeline's retrieval context aligns with the expected output
+Contextual Precision — evaluate whether relevant nodes in the RAG pipeline's retrieval context are ranked higher
+Contextual Relevancy — measure the overall relevance of the RAG pipeline's retrieval context to the input
+RAGAS — average of answer relevancy, faithfulness, contextual precision, and contextual recall
 MCP Metrics
 MCP Task Completion — evaluate how effectively an MCP-based agent accomplishes a task
 MCP Use — measure how effectively an agent uses its available MCP servers
@@ -167,7 +190,7 @@ Prompt Alignment — measure whether the output aligns with instructions in the 
 🧬 Optimize prompts automatically based on evaluation results.
 🏆 Easily benchmark ANY LLM on popular LLM benchmarks in under 10 lines of code., including MMLU, HellaSwag, DROP, BIG-Bench Hard, TruthfulQA, HumanEval, GSM8K.
 # 🔌 Integrations
-DeepEval plugs into any LLM framework — OpenAI Agents, LangChain, CrewAI, and more. For enterprise teams standardizing evals and observability across the organization, Confident AI provides a native DeepEval integration.
+DeepEval plugs into any LLM framework — OpenAI Agents, LangChain, CrewAI, and more. The same traces can go to Confident AI once you're live, where evals run on every production trace.
 ## Frameworks
 LangChain — evaluate LangChain applications with a callback handler
 LangGraph — evaluate LangGraph agents with a callback handler
@@ -180,17 +203,18 @@ AI SDK — evaluate AI SDK generations and tool-loop trajectories
 Mastra — evaluate Mastra agents and workflows with native tracing
 OpenAI — evaluate and trace OpenAI applications via a client wrapper
 OpenAI Agents — evaluate OpenAI Agents end-to-end in under a minute
-LlamaIndex — evaluate RAG applications built with LlamaIndex
+LlamaIndex — evaluate AI agents and RAG applications built with LlamaIndex
 ## ☁️ Platform + Ecosystem
-Confident AI is the enterprise AI evals and observability platform. It gives organizations one consistent standard across product teams, integrates natively with DeepEval, and remains model- and framework-agnostic.
-Product teams manage datasets, evaluate AI applications before launch, and monitor live traces with online evals and signals in production.
-Platform teams define one organization-wide quality standard and enforce it through governance and native red teaming.
-Don't need a UI? Use Confident AI as your persistence layer to run evals, pull datasets, and inspect traces from Claude Code or Cursor through Confident AI's MCP server.
+Confident AI is AI monitoring for applications in production. DeepEval tests what you know to test before you ship; Confident AI finds what you didn't, and it's model- and framework-agnostic.
+Failing traces surface before anyone has written an eval for them, clustered into failure modes, with user sentiment and behavior across traces.
+Failing traces route to the right annotators and become goldens, so production issues turn into your next eval.
+For enterprise teams, one system for AI quality: governance as release gates and native red teaming.
+Prefer to stay in your editor? Inspect failing traces and pull the datasets built from them in Claude Code or Cursor through Confident AI's MCP server.
 # 🤖 Vibe-Coder QuickStart
-Want your coding agent to add evals and fix failures for you? Install the DeepEval skill, point it at your agent, RAG pipeline, or chatbot, and ask it to generate a dataset, write the eval suite, run deepeval test run, and iterate on the failing metrics.
+Want your coding agent to add evals and fix failures for you? Install the DeepEval skill, point it at your AI agent, multi-turn chatbot, voice agent, RAG pipeline, or any other LLM app, and ask it to generate a dataset, write the eval suite, run deepeval test run, and iterate on the failing metrics.
 Start with the 5-minute vibe-coder guide.
 # 🚀 Human QuickStart
-Let's pretend your LLM application is a RAG based customer support chatbot; here's how DeepEval can help test what you've built.
+Let's pretend your LLM application is a customer support AI agent; here's how DeepEval can help test what you've built.
 ## Installation
 Deepeval works with Python>=3.9+.
 pip install -U deepeval
@@ -201,8 +225,8 @@ deepeval login
 Follow the instructions in the CLI to create an account, copy your API key, and paste it into the CLI. All test cases will automatically be logged (find more information on data privacy here).
 ## Write your first test case
 Create a test file:
-touch test_chatbot.py
-Open test_chatbot.py and write your first test case to run an end-to-end evaluation using DeepEval, which treats your LLM app as a black-box:
+touch test_ai_agent.py
+Open test_ai_agent.py and write your first test case to run an end-to-end evaluation using DeepEval, which treats your LLM app as a black-box:
 import pytest
 from deepeval import assert_test
 from deepeval.metrics import GEval
@@ -219,13 +243,12 @@ input="What if these shoes don't fit?",
 # Replace this with the actual output from your LLM application
 actual_output="You have 30 days to get a full refund at no extra cost.",
 expected_output="We offer a 30-day full refund at no extra costs.",
-retrieval_context=["All customers are eligible for a 30 day full refund at no extra costs."]
 )
 assert_test(test_case, [correctness_metric])
 Set your OPENAI_API_KEY as an environment variable (you can also evaluate using your own custom model, for more details visit this part of our docs):
 export OPENAI_API_KEY="..."
-And finally, run test_chatbot.py in the CLI:
-deepeval test run test_chatbot.py
+And finally, run test_ai_agent.py in the CLI:
+deepeval test run test_ai_agent.py
 Congratulations! Your test case should have passed ✅ Let's break down what happened.
 The variable input mimics a user input, and actual_output is a placeholder for what your application's supposed to output based on this input.
 The variable expected_output represents the ideal answer for a given input, and GEval is a research-backed metric provided by deepeval for you to evaluate your LLM outputs on any custom criteria with human-like accuracy.
@@ -233,7 +256,7 @@ In this example, the metric criteria is correctness of the actual_output based o
 All metric scores range from 0 - 1, which the threshold=0.5 ultimately determines if your test has passed or not.
 Read our documentation for more information!
 ## Evals With Full Traceability
-Use evals_iterator() to run the same dataset through your app, whether you instrument it manually or through one of DeepEval's framework integrations. Because tracing captures the ordered sequence of model decisions, tool calls, and intermediate steps, you can run trajectory-based evaluations over the complete path your agent takes.
+Use evals_iterator() to run the same dataset through your app, whether you instrument it manually or through one of DeepEval's framework integrations. Because tracing captures the ordered sequence of model decisions, tool calls, and intermediate steps, you can run trajectory-based evaluations over the complete path your AI agent takes.
 Here's an example of manual instrumentation:
 from deepeval.tracing import observe, update_current_span
 from deepeval.test_case import LLMTestCase
@@ -413,7 +436,7 @@ answer_relevancy_metric.measure(test_case)
 print(answer_relevancy_metric.score)
 # All metrics also offer an explanation
 print(answer_relevancy_metric.reason)
-Note that some metrics are for RAG pipelines, while others are for fine-tuning. Make sure to use our docs to pick the right one for your use case.
+Note that some metrics are built for specific use cases, such as AI agents, multi-turn chatbots, voice agents, RAG, and more. Make sure to use our docs to pick the right one for your use case.
 ## A Note on Env Variables (.env / .env.local)
 DeepEval auto-loads .env.local then .env from the current working directory at import time.
 Precedence: process env -> .env.local -> .env.
@@ -421,12 +444,11 @@ Opt out with DEEPEVAL_DISABLE_DOTENV=1.
 cp .env.example .env.local
 # then edit .env.local (ignored by git)
 # DeepEval With Confident AI
-Confident AI — the AI observability and evaluation platform for production LLM systems. Trace agent executions, run online evals on live traffic, alert on quality regressions, and let PMs, QA, and domain experts review outputs without writing code. DeepEval traces stream to it with no code changes.
-Log in from the CLI to get started:
+Confident AI monitors AI applications in production. Evals run on every production trace, failing traces are clustered into failure modes, and each one can be routed to the right annotators — engineers, QA, domain experts or PMs — and turned into a golden for your next eval. The traces your app already produces with DeepEval stream to it with no code changes.
+Log in from the CLI to connect:
 deepeval login
-Then run your tests as usual — results are automatically synced to the platform:
-deepeval test run test_chatbot.py
-Prefer to stay in your IDE? Use DeepEval via Confident AI's MCP server as the persistent layer to run evals, pull datasets, and inspect traces without leaving your editor.
+Test runs also appear on the platform once you're logged in.
+Prefer to stay in your IDE? Inspect failing traces and pull the datasets built from them through Confident AI's MCP server without leaving your editor.
 Learn more in the Confident AI documentation.
 # Contributing
 Please read CONTRIBUTING.md for details on our code of conduct, and the process for submitting pull requests to us.
@@ -457,11 +479,11 @@ Contributing
 Activity
 Custom properties
 ### Stars
-18.5k stars
+19.0k stars
 ### Watchers
-73 watching
+70 watching
 ### Forks
-2.0k forks
+2.1k forks
 Report repository
 ## Releases
 ## Packages

@@ -1,0 +1,110 @@
+source: S-xaij2xlf
+url: https://developers.cloudflare.com/r2/api/tokens/
+title: Cloudflare R2 docs: API tokens (S3-compatible Access Key and Secret Access Key)
+publisher: Cloudflare
+licence: CC-BY-4.0 (cloudflare/cloudflare-docs)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Authentication
+Last updated Oct 1, 2026||View as Markdown|Agent setup
+You can generate an API token to serve as the Access Key for usage with existing S3-compatible SDKs or XML APIs.
+You must purchase R2 before you can generate an API token.
+To create an API token:
+In the Cloudflare dashboard, go to the R2 object storage page.
+Go to Overview ↗
+Under the Account Details section, select Manage next to API Tokens.
+Choose to create either:
+Create Account API token - These tokens are tied to the Cloudflare account itself and can be used by any authorized system or user. Refer to Account API tokens for role and permission requirements. These tokens remain valid until manually revoked or until they reach a preset expiration date.
+Create User API token - These tokens are tied to your individual Cloudflare user. They inherit your personal permissions and become inactive if your user is removed from the account.
+Under Permissions, choose a permission types for your token. Refer to Permissions for information about each option.
+(Optional) If you select the Object Read and Write or Object Read permissions, you can scope your token to a set of buckets.
+Select Create Account API token or Create User API token.
+After your token has been successfully created, review your Secret Access Key and Access Key ID values. These may often be referred to as Client Secret and Client ID, respectively.
+You will also need to configure the endpoint in your S3 client to https://<ACCOUNT_ID>.r2.cloudflarestorage.com.
+Find your account ID in the Cloudflare dashboard.
+Buckets created with jurisdictions must be accessed via jurisdiction-specific endpoints:
+European Union (EU): https://<ACCOUNT_ID>.eu.r2.cloudflarestorage.com
+FedRAMP: https://<ACCOUNT_ID>.fedramp.r2.cloudflarestorage.com
+United States (US): https://<ACCOUNT_ID>.us.r2.cloudflarestorage.com
+## Permissions
+Permission
+Description
+Admin Read & Write
+Allows the ability to create, list, and delete buckets, edit bucket configuration, read, write, and list objects, and read and write to data catalog tables and associated metadata.
+Admin Read only
+Allows the ability to list buckets and view bucket configuration, read and list objects, and read from the data catalog tables and associated metadata.
+Object Read & Write
+Allows the ability to read, write, and list objects in specific buckets.
+Object Read only
+Allows the ability to read and list objects in specific buckets.
+## Create API tokens via API
+You can create API tokens via the API and use them to generate corresponding Access Key ID and Secret Access Key values. To get started, refer to Create API tokens via the API. Below are the specifics for R2.
+### Access Policy
+An Access Policy specifies what resources the token can access and the permissions it has.
+#### Resources
+There are two relevant resource types for R2: Account and Bucket. For more information on the Account resource type, refer to Account.
+##### Bucket
+Include a set of R2 buckets or all buckets in an account.
+A specific bucket is represented as:
+"com.cloudflare.edge.r2.bucket.<ACCOUNT_ID>_<JURISDICTION>_<BUCKET_NAME>": "*"
+ACCOUNT_ID: Refer to Find zone and account IDs.
+JURISDICTION: The jurisdiction where the R2 bucket lives. For buckets not created in a specific jurisdiction this value will be default.
+BUCKET_NAME: The name of the bucket your Access Policy applies to.
+All buckets in an account are represented as:
+"com.cloudflare.api.account.<ACCOUNT_ID>": {
+"com.cloudflare.edge.r2.bucket.*": "*"
+}
+ACCOUNT_ID: Refer to Find zone and account IDs.
+#### Permission groups
+Determine what permission groups should be applied.
+Permission group
+Resource
+Description
+Workers R2 Storage Write
+Account
+Can create, delete, and list buckets, edit bucket configuration, and
+read, write, and list objects.
+Workers R2 Storage Read
+Account
+Can list buckets and view bucket configuration, and read and list
+objects.
+Workers R2 Storage Bucket Item Write
+Bucket
+Can read, write, and list objects in buckets.
+Workers R2 Storage Bucket Item Read
+Bucket
+Can read and list objects in buckets.
+Workers R2 Data Catalog Write
+Account
+Can read from and write to data catalogs. This permission allows
+access to the Iceberg REST catalog interface.
+Workers R2 Data Catalog Read
+Account
+Can read from data catalogs. This permission allows read-only
+access to the Iceberg REST catalog interface.
+#### Example Access Policy
+[
+{
+"id": "f267e341f3dd4697bd3b9f71dd96247f",
+"effect": "allow",
+"resources": {
+"com.cloudflare.edge.r2.bucket.4793d734c0b8e484dfc37ec392b5fa8a_default_my-bucket": "*",
+"com.cloudflare.edge.r2.bucket.4793d734c0b8e484dfc37ec392b5fa8a_eu_my-eu-bucket": "*"
+},
+"permission_groups": [
+{
+"id": "6a018a9f2fc74eb6b293b0c548f38b39",
+"name": "Workers R2 Storage Bucket Item Read"
+}
+]
+}
+]
+### Get S3 API credentials from an API token
+You can get the Access Key ID and Secret Access Key values from the response of the Create Token API:
+Access Key ID: The id of the API token.
+Secret Access Key: The SHA-256 hash of the API token value.
+Refer to Authenticate against R2 API using auth tokens for a tutorial with JavaScript, Python, and Go examples.
+## Temporary credentials
+To issue short-lived, scoped credentials derived from an API token, use temporary credentials. R2 supports generating them via the Temporary Credentials API or locally by signing a JWT with the parent token's secret access key.
+Was this helpful?

@@ -2,7 +2,7 @@
 topic: gitlab/multi-project-pipelines
 priority: P3
 applies_to: "GitLab 19.x docs (gitlab-org/gitlab master @9f1632e2, retrieved 2026-10-15): downstream pipelines, the `trigger` keyword, pipeline trigger API, CI/CD job token allowlist and fine-grained permissions; Free, Premium and Ultimate on GitLab.com, Self-Managed and Dedicated"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-pt32lcdt, S-s67nwj2e, S-xz7iisq3, S-7zthwzzb, S-5pu4zmds]
 status: complete
 ---

@@ -2,8 +2,8 @@
 topic: autopilot/device-identity
 priority: P1
 applies_to: "Windows Autopilot (memdocs), Graph v1.0/beta windowsAutopilotDeviceIdentity"
-retrieved_utc: 2026-09-27
-sources: [S504, S508, S509, S545, S553, S554, S555, S-jjyryhyn, S-q7ach7kp, S-frph46kv, S-d3ml3kug, S-6i4enlqz]
+retrieved_utc: 2026-10-21
+sources: [S508, S509, S545, S553, S554, S555, S-jjyryhyn, S-q7ach7kp, S-frph46kv, S-d3ml3kug, S-6i4enlqz, S-vdp4zb6i]
 status: complete
 ---
 
@@ -23,7 +23,7 @@ status: complete
 - Intune's group tag maps to the `OrderID` attribute on Entra devices: `[OrderID]:<tag>` in `devicePhysicalIds`. [DOC S-frph46kv,S554]
 - `devicePhysicalIds` values used by Autopilot include `[ZTDId]`, `[OrderID]`, `[PurchaseOrderId]`. [DOC S554]
 - Graph query for Autopilot devices: `devices?$filter=physicalIds/any(p: startswith(p, '[ZTDID]'))`. [DOC S-d3ml3kug]
-- Graph `device.physicalIds` is documented as "For internal use only". [DOC S504]
+- Graph `device.physicalIds` is documented as "For internal use only". [DOC S-vdp4zb6i]
 - Import CSV header: `Device Serial Number,Windows Product ID,Hardware Hash,Group Tag,Assigned User`; serial number and hardware hash required; up to 500 rows per file. [DOC S-q7ach7kp]
 - `windowsAutopilotDeviceIdentity.id` is described as "The GUID for the object". [DOC S508]
 - The Autopilot identity carries `azureActiveDirectoryDeviceId` ("to be deprecated") and `managedDeviceId`; beta adds `azureAdDeviceId`. [DOC S508,S509]

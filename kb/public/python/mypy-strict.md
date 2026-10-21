@@ -2,7 +2,7 @@
 topic: python/mypy-strict
 priority: P3
 applies_to: "mypy 2.4.0 (docs and source read at release tag v2.4.0); ruff 0.16.9 FAQ; maturin 1.15.0 project-layout guide"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-butt7tqv, S-itulia5o, S-dsu27qym, S-djet36tw, S-cmxorblf, S-2ial3y55, S-3zldz37q, S-hec62m7j]
 status: partial
 ---

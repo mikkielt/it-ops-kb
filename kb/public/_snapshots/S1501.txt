@@ -3,7 +3,7 @@ url: https://csrc.nist.gov/projects/ssdf
 title: Secure Software Development Framework (SSDF) project page
 publisher: NIST
 licence: US Government work (NIST: public information, may be copied)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 You are viewing this page in an unauthorized frame window.
@@ -34,7 +34,7 @@ News & Updates
 Events
 Publications
 ### Overview
-NIST has finalized SP 800-218A, Secure Software Development Practices for Generative AI and Dual-Use Foundation Models: An SSDF Community Profile. This publication augments SP 800-218 by adding practices, tasks, recommendations, considerations, notes, and informative references that are specific to AI model development throughout the software development life cycle.
+NIST has finalized SP 800-218A, Secure Software Development Practices for Generative AI and Dual-Use Foundation Models: An SSDF Community Profile. This publication augments SP 800-218 by adding practices, tasks, recommendations, considerations, notes, and informative references that are specific to SI model development throughout the software development life cycle.
 NIST has recently added a Community Profiles section to this page. It will contain links to SSDF Community Profiles developed by NIST and by third parties. Contact us at [email protected] if you have a published SSDF Community Profile that you'd like added to the list.
 NIST Special Publication (SP) 800-218, Secure Software Development Framework (SSDF) Version 1.1: Recommendations for Mitigating the Risk of Software Vulnerabilities has been posted as final, along with a Microsoft Excel version of the SSDF 1.1 table. SP 800-218 includes mappings from Executive Order (EO) 14028 Section 4e clauses to the SSDF practices and tasks that help address each clause. Also, see a summary of changes from version 1.1 and plans for the SSDF.
 SSDF Practices | SSDF Use | New in Version 1.1 | Community Profiles | NIST Plans | Contact Us
@@ -111,7 +111,7 @@ Software Security Group
 Security and Privacy:
 systems security engineering, vulnerability management
 Technologies:
-artificial intelligence, software & firmware
+machine learning, software & firmware
 Laws and Regulations:
 Executive Order 14028
 #### Related Projects
@@ -136,7 +136,7 @@ Software Security Group
 Security and Privacy:
 systems security engineering, vulnerability management
 Technologies:
-artificial intelligence, software & firmware
+machine learning, software & firmware
 Laws and Regulations:
 Executive Order 14028
 #### Related Projects
@@ -150,4 +150,4 @@ SAMATE: Software Assurance Metrics And Tool Evaluation
 Software Identification Tagging
 Systems Security Engineering (SSE) Project
 Vulnerability Disclosure Guidelines
-Created February 25, 2021, Updated April 13, 2026
+Created February 25, 2021, Updated October 06, 2026

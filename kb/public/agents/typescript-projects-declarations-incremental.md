@@ -2,7 +2,7 @@
 topic: agents/typescript-projects-declarations-incremental
 priority: P3
 applies_to: "TypeScript 3.0 to 7.0: project references and composite projects, tsc --build (build mode), incremental builds and .tsbuildinfo, declaration output (declaration, declarationDir, declarationMap, emitDeclarationOnly, isolatedDeclarations); handbook pages pinned at TypeScript-Website commit 6556b08"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-fzozdweh, S-7sglzzpd, S-xgfiu5jf, S-fe6375ln, S-hhmjdvsd, S-6a5dvcgm, S-mghofndm, S-trc6i7ti, S-rklpxnqt, S-ff6may7t, S-lq5mn2bc, S-vdfo2blu, S-sp2a6svk, S-eq3gt72a, S-e6jwgvmc, S-mtnr5emw]
 status: complete
 ---

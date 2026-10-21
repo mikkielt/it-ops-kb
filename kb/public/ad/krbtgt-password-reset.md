@@ -2,7 +2,7 @@
 topic: ad/krbtgt-password-reset
 priority: P1
 applies_to: "Active Directory Domain Services (all supported Windows Server versions); Microsoft Defender for Identity"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-10-21
 sources: [S-4ikiakpi, S-nl7th7fi, S-6mj4jpce, S-4cv3kd2v, S-6ca4b7bg, S-vhwb6zo5, S-sgkepbws]
 status: complete
 ---

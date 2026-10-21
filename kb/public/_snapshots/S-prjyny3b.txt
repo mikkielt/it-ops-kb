@@ -3,25 +3,44 @@ url: https://github.com/microsoft/Microsoft365DSC
 title: Microsoft365DSC repository (README)
 publisher: GitHub (microsoft/Microsoft365DSC)
 licence: MIT
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-Microsoft365DSC
-/
+## Repository navigation
 Microsoft365DSC
 Public
-Notifications
-You must be signed in to change notification settings
-Fork
-679
-Star
-2.4k
+NotificationsYou must be signed in to change notification settings
+Fork681 (681)
+Star2.4k (2.4k)You must be signed in to star a repository
+## About
+Manages, configures, extracts and monitors Microsoft 365 tenant configurations
+microsoft365dsc.com/
+### Topics
+azureadconfiguration-as-codedesiredstateconfigurationdevopsexchangeonlinehacktoberfestintunemicrosoftmicrosoft365monitoringoffice365onedrivepowerplatformpowershellsecurityandcompliancesharepointskypeforbusinessteams
+### Resources
+Readme
+MIT license
+### Code of conduct
+Code of conduct
+### Contributing
+Contributing
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+2.4k stars
+### Watchers
+114 watching
+### Forks
+681 forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit
 ## History
-19,499 Commits
-19,499 Commits
+19,561 Commits
+19,561 Commits
 ## Folders and files
 NameName
 Last commit message
@@ -181,9 +200,9 @@ Custom properties
 ### Stars
 2.4k stars
 ### Watchers
-113 watching
+114 watching
 ### Forks
-679 forks
+681 forks
 Report repository
 ## Releases
 ## Packages

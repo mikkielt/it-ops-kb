@@ -2,7 +2,7 @@
 topic: agents/agent-evaluation
 priority: P1
 applies_to: "MCP Inspector v2, Inspect 0.x (AISI), DeepEval, promptfoo, PyRIT 1.1.0, garak, OpenAI evals (deprecating), tau-bench/tau2-bench v1.0.1, Anthropic eval guidance 2026-01, azure-ai-evaluation SDK + AI Red Teaming Agent (preview), OpenAI cookbook self-evolving agents (commit 2182005b), promptfoo assertions (commit e6b46046), Claude Code plugin evals (2026-09), held-out evaluation sets (Azure WAF AI testing, AutoML test data (preview), Azure Databricks evaluation sets, retrieved 2026-10-08)"
-retrieved_utc: 2026-10-08
+retrieved_utc: 2026-10-21
 sources: [S-w2g2bnsw, S-h7tjbts3, S-bdecdv65, S-rwgksb6h, S-qmfejifr, S1880, S1881, S1883, S1884, S1885, S1886, S1887, S1888, S1889, S1890, S1891, S1892, S1893, S1894, S1895, S1896, S1898, S1899, S1900, S1901, S1902, S1903, S1904, S1905, S1935, S-zfg6jhgr, S-onkwuwst, S-p7dq3fku, S-6jcocxnl, S-wwrpen3s, S1920, S-lkcsn2fs, S-m2glighe, S-ll5srdcw]
 status: complete
 ---
@@ -37,8 +37,8 @@ capability/safety-eval ground for an agent that happens to be hosted in Azure AI
   test harness, but its principles (clear namespacing, meaningful context in responses, token-efficient
   output, pagination/filtering/truncation with sensible defaults) are the properties a stress-test should
   check for. [DOC S1935]
-- **promptfoo**'s MCP provider calls MCP tools directly against a `command`/`args` (stdio) or `path`
-  target, and asserts on the tool's response (contains, valid-JSON, which tool was routed to); it does not
+- **promptfoo**'s MCP provider calls MCP tools directly against a `command`/`args` (stdio), `path`
+  (a `.js`/`.py` stdio script) or remote `url` target, and asserts on the tool's response (contains, valid-JSON, which tool was routed to); it does not
   compute a benchmark-style pass rate on its own — assertions are configured per test case. [DOC S1883]
   Promptfoo itself is MIT-licensed. [DOC S1885]
 - promptfoo's red-team mode adds MCP-specific plugins (an "mcp" plugin for protocol vulnerabilities),
@@ -97,7 +97,7 @@ capability/safety-eval ground for an agent that happens to be hosted in Azure AI
   `tool_definitions` when scoring an agent's groundedness against the tool outputs it received; both, plus `IntentResolutionEvaluator` and
   `TaskAdherenceEvaluator`, accept either simple `query`/`response` strings or full OpenAI-style message lists (`query` must start with the
   agent's system message). All built-in AI-assisted quality/agentic evaluators output a numeric score plus a `pass`/`fail` result against a
-  configurable threshold and a natural-language reason. [DOC S-zfg6jhgr, S-6jcocxnl]
+  configurable threshold and a natural-language reason (`SimilarityEvaluator` has no reason field). [DOC S-zfg6jhgr, S-6jcocxnl]
 - AI-assisted evaluators need a GPT judge model (`gpt-35-turbo`, `gpt-4`, `gpt-4-turbo`, `gpt-4o` or `gpt-4o-mini` in `model_config`) except
   risk-and-safety evaluators and `GroundednessProEvaluator`, which instead take `azure_ai_project` and call a Foundry backend service;
   reasoning-model judges (e.g. Azure OpenAI/OpenAI o-series) are supported for the agentic/quality evaluators by passing
@@ -161,8 +161,8 @@ capability/safety-eval ground for an agent that happens to be hosted in Azure AI
   model available, prefer pairwise or pass/fail judgments and control for length bias, and validate the
   judge's agreement with human labels before scaling up, since model grading carries its own error rate. [DOC S1894]
 - τ-bench (Sierra) is the origin of the `pass^k` metric applied to tool-agent-user interaction tasks and
-  reported a reliability gap (e.g. GPT-4o at 61% pass@1 but 25% pass@8 on retail tasks in the original
-  2024 paper); τ2-bench/τ3-bench (MIT-licensed repository, v1.0.1, 2026-07) continue the line and define
+  reported a reliability gap (the original 2024 paper reports GPT-4o succeeding on under 50% of tasks and
+  under 25% pass^8 in retail); τ2-bench/τ3-bench (MIT-licensed repository, v1.0.1, 2026-07) continue the line and define
   task grading via `evaluation_criteria.actions` and a `reward_basis` gate. [DOC S1899, S1900]
 
 ### Judging a retriever against labelled queries

@@ -3,19 +3,29 @@ url: https://github.com/dsccommunity/AuditPolicyDsc
 title: AuditPolicyDsc repository (dsccommunity)
 publisher: dsccommunity
 licence: MIT
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-dsccommunity
-/
+## Repository navigation
 AuditPolicyDsc
 Public
-Notifications
-You must be signed in to change notification settings
-Fork
-12
-Star
-25
+NotificationsYou must be signed in to change notification settings
+Fork12 (12)
+Star25 (25)You must be signed in to star a repository
+## About
+No description, website, or topics provided.
+### Resources
+Readme
+MIT license
+Activity
+Custom properties
+### Stars
+25 stars
+### Watchers
+7 watching
+### Forks
+12 forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit

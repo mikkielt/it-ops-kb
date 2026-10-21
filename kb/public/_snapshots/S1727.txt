@@ -3,7 +3,7 @@ url: https://kubernetes.io/docs/concepts/workloads/controllers/job/
 title: Job
 publisher: Kubernetes (kubernetes.io docs)
 licence: CC BY 4.0 (kubernetes/website LICENSE)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Jobs
@@ -402,7 +402,7 @@ backoff limit per index (only Indexed Job) is specified.
 When .spec.backoffLimitPerIndex is specified, then .spec.backoffLimit defaults
 to 2147483647 (MaxInt32).
 Failed Pods associated with the Job are recreated by the Job controller with an
-exponential back-off delay (10s, 20s, 40s ...) capped at six minutes.
+exponential back-off delay (10s, 20s, 40s ...) capped at ten minutes.
 The number of retries is calculated in two ways:
 The number of Pods with .status.phase = "Failed".
 When using restartPolicy = "OnFailure", the number of retries in all the
@@ -1141,4 +1141,4 @@ Open an issue in the GitHub Repository if you want to
 report a problem
 or
 suggest an improvement.
-Last modified July 31, 2026 at 9:45 PM PST: Address feedback (a717a622bb)
+Last modified October 12, 2026 at 2:53 PM PST: bugfix: replace six minutes with ten minutes (80312c26b3)

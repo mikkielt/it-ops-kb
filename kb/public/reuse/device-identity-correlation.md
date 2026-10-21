@@ -2,7 +2,7 @@
 topic: reuse/device-identity-correlation
 priority: P2
 applies_to: "a cross-plane device identity graph: merge keys, stale thresholds, temporal history"
-retrieved_utc: 2026-09-28
+retrieved_utc: 2026-10-21
 sources: [S1011, S1012, S1013, S1014, S-y47upe33, S-ivg7xp7y, S-53yzqgkc]
 status: complete
 ---

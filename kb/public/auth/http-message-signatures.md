@@ -2,7 +2,7 @@
 topic: auth/http-message-signatures
 priority: P3
 applies_to: "Ed25519 request signing over HTTP with RFC 9421 HTTP Message Signatures: created, expires, nonce and replay; relation of an Ed25519 key to an age X25519 identity, including XEdDSA signing with the X25519 identity itself"
-retrieved_utc: 2026-10-13
+retrieved_utc: 2026-10-21
 sources: [S-vm4x5dhi, S-s3lqlvdi, S-n3swpr6x, S-xzzrbowg, S-bi6fdfos, S-ax3gmu7j, S-r3t6wvk5, S-lzpaeug7]
 status: partial
 ---

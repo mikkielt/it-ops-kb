@@ -1,0 +1,108 @@
+source: S-sui7jilt
+url: https://docs.rs/intl-memoizer/0.5.3/intl_memoizer/concurrent/struct.IntlLangMemoizer.html
+title: docs.rs: intl_memoizer::concurrent::IntlLangMemoizer 0.5.3
+publisher: docs.rs / Project Fluent
+licence: Apache-2.0 OR MIT (crate intl-memoizer 0.5.3)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+intl_memoizer::concurrent
+# Struct IntlLangMemoizer
+Source
+pub struct IntlLangMemoizer { /* private fields */ }
+Expand description
+A thread-safe version of the intl_memoizer::IntlLangMemoizer.
+See the single-thread version for more documentation.
+## Implementations§
+Source§
+### impl IntlLangMemoizer
+Source
+#### pub fn new(lang: LanguageIdentifier) -> Self
+Create a new IntlLangMemoizer that is unique to a specific LanguageIdentifier
+Source
+#### pub fn with_try_get<I, R, U>(&self, args: I::Args, cb: U) -> Result<R, I::Error>
+where
+Self: Sized,
+I: Memoizable + Sync + Send + 'static,
+I::Args: Send + Sync + 'static,
+U: FnOnce(&I) -> R,
+Lazily initialize and run a formatter. See
+intl_memoizer::IntlLangMemoizer::with_try_get
+for documentation.
+## Trait Implementations§
+Source§
+### impl Debug for IntlLangMemoizer
+Source§
+#### fn fmt(&self, f: &mut Formatter<'_>) -> Result
+Formats the value using the given formatter. Read more
+## Auto Trait Implementations§
+§
+### impl !Freeze for IntlLangMemoizer
+§
+### impl RefUnwindSafe for IntlLangMemoizer
+§
+### impl Send for IntlLangMemoizer
+§
+### impl Sync for IntlLangMemoizer
+§
+### impl Unpin for IntlLangMemoizer
+§
+### impl UnsafeUnpin for IntlLangMemoizer
+§
+### impl UnwindSafe for IntlLangMemoizer
+## Blanket Implementations§
+Source§
+### impl<T> Any for T
+where
+T: 'static + ?Sized,
+Source§
+#### fn type_id(&self) -> TypeId
+Gets the TypeId of self. Read more
+Source§
+### impl<T> Borrow<T> for T
+where
+T: ?Sized,
+Source§
+#### fn borrow(&self) -> &T
+Immutably borrows from an owned value. Read more
+Source§
+### impl<T> BorrowMut<T> for T
+where
+T: ?Sized,
+Source§
+#### fn borrow_mut(&mut self) -> &mut T
+Mutably borrows from an owned value. Read more
+Source§
+### impl<T> From<T> for T
+Source§
+#### fn from(t: T) -> T
+Returns the argument unchanged.
+Source§
+### impl<T, U> Into<U> for T
+where
+U: From<T>,
+Source§
+#### fn into(self) -> U
+Calls U::from(self).
+That is, this conversion is whatever the implementation of
+From<T> for U chooses to do.
+Source§
+### impl<T, U> TryFrom<U> for T
+where
+U: Into<T>,
+Source§
+#### type Error = !
+The type returned in the event of a conversion error.
+Source§
+#### fn try_from(value: U) -> Result<T, !>
+Performs the conversion.
+Source§
+### impl<T, U> TryInto<U> for T
+where
+U: TryFrom<T>,
+Source§
+#### type Error = <U as TryFrom<T>>::Error
+The type returned in the event of a conversion error.
+Source§
+#### fn try_into(self) -> Result<U, <U as TryFrom<T>>::Error>
+Performs the conversion.

@@ -2,7 +2,7 @@
 topic: security/almalinux-lifecycle-rhel-relation
 priority: P3
 applies_to: "AlmaLinux OS 8, 9 and 10: support windows per major and minor release, release table, ABI compatibility with RHEL and what the distribution adds"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-w2hsvwk5, S-23s23lr2, S-frwlmyiy, S-76yqvj4g, S-46pbwuai, S-abrr4vdk, S-ecy4u4kc]
 status: partial
 ---

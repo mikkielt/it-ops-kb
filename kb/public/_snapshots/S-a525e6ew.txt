@@ -1,0 +1,23 @@
+source: S-a525e6ew
+url: https://raw.githubusercontent.com/testcontainers/testcontainers-python/testcontainers-v4.15.0/src/testcontainers/postgres.py
+title: testcontainers-python source: testcontainers/postgres.py (deprecated import shim)
+publisher: Testcontainers
+licence: Apache-2.0
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+import warnings
+
+from testcontainers.community.postgres import (
+    PostgresContainer,
+)
+
+warnings.warn(
+    "testcontainers.postgres is deprecated, use testcontainers.community.postgres instead",
+    DeprecationWarning,
+    stacklevel=2,
+)
+
+__all__ = [
+    "PostgresContainer",
+]

@@ -2,7 +2,7 @@
 topic: agents/agent-rbac
 priority: P1
 applies_to: "MCP specification draft (post 2026-07-28), Claude Code 2.1.x, Microsoft Entra Agent ID (public preview, 2026-03 docs), Microsoft Entra role-assignable groups / PIM for Groups"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S707, S740, S742, S1282, S1297, S2040, S2041, S2042, S2045, S2050, S2051, S2052, S2053, S2058, S-fwzaxe7i, S-pmj4jc4f, S-ooc6gvno, S-4zkj3ag3, S-etygtiqw, S-uva2ob4g, S-2iq53pkf, S-wpj4qsjg, S-xt5vc46a]
 status: complete
 ---
@@ -21,7 +21,10 @@ group claims/overage, PIM-for-Groups sync latency).
 - Claude Code layers two independent tool-level controls on top of MCP's own auth: local permission rules
   (allow/ask/deny) that name MCP tools as `mcp__<server>__<tool>` or a server-anchored glob, and, for
   claude.ai connectors, an organization per-tool `ask`/`blocked` setting that prompts even in
-  `bypassPermissions` mode. [DOC S742, S740]
+  `bypassPermissions` mode. Claude Code reads the setting at startup and enforces it locally, except
+  in the desktop app's local and SSH sessions: there the app withholds `blocked` tools before
+  delivering a connector, `ask` does not reach Claude Code, and the session's ordinary permission
+  rules apply to those tools. [DOC S742, S740]
 - Microsoft Entra Agent ID makes "agent identity vs the user's delegated identity" a first-class,
   named platform construct: an agent identity is a credential-less service principal that a shared
   **blueprint** acquires tokens for, in three modes (app token as itself, user token acting on behalf of
@@ -85,8 +88,8 @@ group claims/overage, PIM-for-Groups sync latency).
   more access-management, security and governance capabilities and for agents from Security Copilot,
   Microsoft 365 Copilot and third-party solutions. [DOC S2051]
 - Agent ID is now available to all Microsoft Entra customers; extending Entra security features to agents needs a Microsoft Agent 365 licence per user, included in Microsoft 365 E7 and sold as an add-on to E5/A5/Business Premium. [DOC S-ooc6gvno]
-- The "What is Agent ID" page still says Agent ID and Agent 365 are available through the Frontier program, which needs a Microsoft 365 Copilot licence with Frontier enabled; the licensing page is the newer statement. [DOC S-4zkj3ag3]
-- Agent identities can't be members of role-assignable groups, can't hold highly privileged directory roles (Global Administrator, Privileged Role Administrator, User Administrator) or custom roles, and only lower-privileged roles such as readers can be assigned to them. [DOC S-fwzaxe7i, S-pmj4jc4f]
+- The "What is Agent ID" page now agrees with the licensing page: Agent ID is available to all Microsoft Entra customers, while extending Entra security features to agents requires Microsoft Agent 365 (included in Microsoft 365 E7, an add-on to E5/A5/Business Premium); it no longer mentions the Frontier program. [DOC S-4zkj3ag3]
+- Agent identities can't be members of role-assignable groups, can't hold highly privileged directory roles (Global Administrator, Privileged Role Administrator, User Administrator), and only lower-privileged roles such as readers can be assigned to them; the authorization page lists the allowed built-in roles and, as of 2026-10-21, states that custom roles can be assigned to agents (its earlier text said they couldn't). [DOC S-fwzaxe7i, S-pmj4jc4f]
 - So an agent identity can't be a PIM-eligible member of a role-assignable group either: the membership itself is blocked, eligible or active. [DER S-fwzaxe7i, S2052: role-assignable membership is blocked for agents; PIM for Groups only manages memberships]
 
 ### Attribute-based conditions (Azure ABAC) on data access
@@ -192,7 +195,7 @@ group claims/overage, PIM-for-Groups sync latency).
 | MCP `WWW-Authenticate: scope=` least-privilege challenge | per resource/operation | HTTP-transport MCP servers only | S2045 |
 | MCP step-up (`insufficient_scope`) | per operation, additive | HTTP-transport MCP servers only | S2045 |
 | Claude Code permission rules on `mcp__<server>__<tool>` | per tool, local policy | any MCP server the client connects to | S742 |
-| Claude Code connector `ask`/`blocked` | per tool, org policy | claude.ai connectors only | S740 |
+| Claude Code connector `ask`/`blocked` | per tool, org policy | claude.ai connectors only; in desktop local/SSH sessions `ask` is not enforced by Claude Code | S740 |
 | Entra Agent ID agent identity | per agent instance | any product adopting Agent 365 / Agent ID | S2040, S2051 |
 | App role on a service principal (direct) | per app registration | agents/service principals; no group claim path | S2053 |
 | Role-assignable group + PIM for Groups | per Entra role, per group; 2-10 min app provisioning, "within seconds" write | Entra ID P1/P2 tenants | S2050, S2052, S1282 |

@@ -3,7 +3,7 @@ topic: auth/ldap-smb-signing
 priority: P0
 applies_to: "Windows Server 2025, Windows 11 24H2, ldap3 2.10.x"
 retrieved_utc: 2026-09-27
-sources: [S1228, S1201, S1202, S1203, S1208, S1209, S1220, S1221, S-7u4b7p5q, S-tcoyec5r, S-63f6rimh, S-mc5jjnfr, S-qscera6a, S-eu32xfgv, S-lzhs4uhl, S-77zvblfr]
+sources: [S1228, S1201, S-x3ggfdaj, S1202, S1203, S1208, S1209, S1220, S1221, S-7u4b7p5q, S-tcoyec5r, S-63f6rimh, S-mc5jjnfr, S-qscera6a, S-eu32xfgv, S-lzhs4uhl, S-77zvblfr]
 status: complete
 ---
 
@@ -15,8 +15,8 @@ status: complete
 - Python: the stable `ldap3` release (2.9.1) uses Kerberos (GSSAPI) SASL for authentication only and fails when the server demands a SASL security layer, so against a DC that requires signing it needs LDAPS; the current `ldap3` documentation (2.10.2, still a pre-release on PyPI) adds a Kerberos data security layer for encryption, enabled with `session_security=ENCRYPT`. [DOC S1208, S-7u4b7p5q; CODE S-63f6rimh: ldap3/protocol/sasl/kerberos.py#_common_process_end_token_get_security_layers]
 
 ## Facts
-- Windows Server 2025 new AD forests/domains enable "Domain controller: LDAP server signing requirements" enforcement by default; existing upgraded domains keep prior settings unless changed. [DOC S1201]
-- LDAP channel binding on Server 2025 defaults to "When supported" (accept CBT when the client offers it), channel binding auditing is enabled by default, and LDAP client encryption is "preferred" by default. [DOC S1201]
+- Windows Server 2025 new AD deployments enable "Domain controller: LDAP server signing requirements enforcement" by default; on upgrade, existing server- or client-side signing policies are preserved, but where no server signing policy exists Server 2025 requires signing by default. [DOC S1201]
+- LDAP channel binding on Server 2025 (new deployments) defaults to "When supported" (clients that support CBT must provide it, others are still allowed) and channel binding auditing is on by default; Server 2022 and earlier default to "Never". Windows Server 2025 and Windows 11 24H2 LDAP clients use encrypted connections by default (SASL sealing or TLS), and request signing on unencrypted connections. LDAP signing applies only to non-TLS SASL sessions; channel binding applies only to TLS SASL sessions. [DOC S1201, S-x3ggfdaj]
 - SMB signing: Windows 11 24H2 Enterprise, Pro and Education require outbound and inbound SMB signing by default; Windows Server 2025 requires outbound signing only; 24H2 Home requires neither. [DOC S1202]
 - Before Windows 11 24H2 / Server 2025, SMB signing was required by default only for connections to the SYSVOL and NETLOGON shares, and domain controllers required it of their clients. The same releases let the SMB client block NTLM for outbound connections (with per-server exceptions) and make the SMB server wait 2 seconds after each failed NTLM or local KDC Kerberos authentication by default. [DOC S1203]
 - SMB encryption: SMB encryption is not mandatory by default. Windows 11 24H2 / Server 2025 add a client option to mandate encryption for all outbound connections; once enabled, the client connects only to SMB 3.0+ servers that support encryption. [DOC S1228]

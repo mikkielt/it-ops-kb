@@ -84,7 +84,9 @@ Encrypted, DPAPI-NG, age/sops) and `mcp/authorization.md` (MCP OAuth 2.1, DCR de
 - Claude Code's own login credentials: the encrypted macOS Keychain on macOS, falling back to
   `~/.claude/.credentials.json` (mode `0600`) when the Keychain rejects the write (e.g. locked in an SSH
   session); `~/.claude/.credentials.json` (mode `0600`) on Linux; `%USERPROFILE%\.claude\.credentials.json`
-  on Windows, protected by the user-profile directory's inherited access controls. [DOC S2041]
+  on Windows, protected by the user-profile directory's inherited access controls. With `CLAUDE_CONFIG_DIR` set,
+  the `.credentials.json` file (including the macOS fallback) lives under that directory and the macOS Keychain
+  entry is keyed to it, so sessions with different config directories read different entries. [DOC S2041]
 - `apiKeyHelper`: a configurable shell script returning an API key, re-run on a 5-minute default TTL
   (`CLAUDE_CODE_API_KEY_HELPER_TTL_MS` to change it) — documented explicitly for "dynamic or rotating
   credentials, such as short-lived tokens fetched from a vault," a directly reusable integration point for

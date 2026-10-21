@@ -2,7 +2,7 @@
 topic: intune/device-inventory-analytics
 priority: P2
 applies_to: "Intune Endpoint analytics, Intune Advanced Analytics (Intune Suite), docs retrieved 2026-09-26"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-7dabdnod, S-emqg5tvg, S-rjiy4cip, S-6jy3vnik, S-mldzfsv6, S-sbldpqec, S-mhtox7ch, S-v26wvp2b, S-uiolk6la, S-ylp2o7ml, S-tiumn4r3, S-nwf5cf5q, S-pnhn6vx2, S-x35diqus, S-boionyor, S-hr6egysd, S-m5aovwzr, S-3l57sxrb, S-3itrgwhj, S-vdrnoalt, S-6i4enlqz]
 status: complete
 ---

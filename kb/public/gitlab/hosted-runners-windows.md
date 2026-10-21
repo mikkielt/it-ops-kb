@@ -2,7 +2,7 @@
 topic: gitlab/hosted-runners-windows
 priority: P3
 applies_to: "GitLab.com hosted runners on Windows (beta), docs at gitlab-org/gitlab master @a128b3dc and the runner image repository at main @6c5f0fef, both 2026-09-28"
-retrieved_utc: 2026-09-28
+retrieved_utc: 2026-10-21
 sources: [S-klcfyqim, S-lfuz2ssn, S-6kqbpp6w, S-pq764ux2, S-4ph3gylm]
 status: complete
 ---

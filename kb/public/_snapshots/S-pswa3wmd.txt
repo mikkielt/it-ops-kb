@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/powershell/module/microsoft.graph.reports/get-m
 title: Get-MgDeviceManagementReportExportJob (Microsoft.Graph.Reports)
 publisher: Microsoft
 licence: CC BY 4.0 (public mirror MicrosoftDocs/microsoftgraph-docs-powershell)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Get-MgDeviceManagementReportExportJob
@@ -88,9 +88,9 @@ Entity representing a job to export a report.
 
 | Permission type | Permissions (from least to most privileged) |
 | --- | --- |
-| Delegated (work or school account) | DeviceManagementConfiguration.Read.All, DeviceManagementManagedDevices.ReadWrite.All, DeviceManagementManagedDevices.Read.All, DeviceManagementConfiguration.ReadWrite.All, DeviceManagementApps.ReadWrite.All, DeviceManagementApps.Read.All, |
+| Delegated (work or school account) | DeviceManagementConfiguration.Read.All, DeviceManagementApps.Read.All, DeviceManagementApps.ReadWrite.All, DeviceManagementConfiguration.ReadWrite.All, DeviceManagementManagedDevices.Read.All, DeviceManagementManagedDevices.ReadWrite.All, |
 | Delegated (personal Microsoft account) | Not supported |
-| Application | DeviceManagementConfiguration.Read.All, DeviceManagementManagedDevices.ReadWrite.All, DeviceManagementManagedDevices.Read.All, DeviceManagementConfiguration.ReadWrite.All, DeviceManagementApps.ReadWrite.All, DeviceManagementApps.Read.All, |
+| Application | DeviceManagementConfiguration.Read.All, DeviceManagementApps.Read.All, DeviceManagementApps.ReadWrite.All, DeviceManagementConfiguration.ReadWrite.All, DeviceManagementManagedDevices.Read.All, DeviceManagementManagedDevices.ReadWrite.All, |
 
 ## Examples
 

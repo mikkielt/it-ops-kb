@@ -2,7 +2,7 @@
 topic: agents/agent-troubleshooting-method
 priority: P3
 applies_to: "a troubleshooting method for agentic work: Google's Site Reliability Engineering book (2017), chapters 12 (Effective Troubleshooting) and 15 (Postmortem Culture); DORA's 2024 Accelerate State of DevOps report and 2025 State of AI-assisted Software Development report; Claude Code best practices, troubleshooting and configuration debugging pages (retrieved 2026-10-15)"
-retrieved_utc: 2026-10-17
+retrieved_utc: 2026-10-21
 sources: [S-bykh7vnm, S-u2rergzb, S-2k5yy4cc, S-acskf4b2, S-xyroxc3f, S-hs7ypnlx, S-o3v6ozch, S-odq4ke5n, S-aqddt7m6, S-aishnkok, S-qulnsg4e, S-qdxfqzln, S2157, S1921]
 status: complete
 ---

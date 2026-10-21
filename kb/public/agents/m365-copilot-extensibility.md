@@ -2,8 +2,8 @@
 topic: agents/m365-copilot-extensibility
 priority: P1
 applies_to: "Microsoft 365 Copilot extensibility: declarative agents, custom engine agents, API/MCP plugins, Copilot connectors; docs current 2026-09-26"
-retrieved_utc: 2026-09-28
-sources: [S1840, S-gum2njhe, S-46ndqgay, S-3r3y76di, S-nztel442, S-4rvc364j, S-atzopgi7, S-j46dza7u, S-ipjygran, S-dfgcii3c, S-u2bv3zsu, S-7gjdhgh5, S-qgctvfuf, S-rymoydzk, S-nmxo2lu7, S-3wxcangs, S-5kn2m73o, S-aag4xzbw, S-xasz2mbx, S-bjnw7imn, S-rqk5odum, S-xgl6s552, S-x5qiebqy, S-lgyskerc, S-w32jevfq, S-7f2wrltf]
+retrieved_utc: 2026-10-21
+sources: [S1840, S-gum2njhe, S-46ndqgay, S-3r3y76di, S-nztel442, S-4rvc364j, S-atzopgi7, S-j46dza7u, S-ipjygran, S-dfgcii3c, S-u2bv3zsu, S-7gjdhgh5, S-qgctvfuf, S-rymoydzk, S-nmxo2lu7, S-3wxcangs, S-7qtumoxt, S-aag4xzbw, S-xasz2mbx, S-bjnw7imn, S-rqk5odum, S-xgl6s552, S-x5qiebqy, S-lgyskerc, S-w32jevfq, S-7f2wrltf]
 status: complete
 files: [agents/declarative-agent-manifest.csv]
 ---
@@ -119,7 +119,8 @@ files: [agents/declarative-agent-manifest.csv]
   policy and technical review. [DOC S-aag4xzbw]
 - Admins can monitor approved MCP server invocations tenant-wide through **Microsoft Defender
   advanced hunting** on `CloudAppEvents` where `ActionType == "ExecuteToolByGateway"`, which surfaces
-  agent name, MCP server name, and other invocation metadata. [DOC S-5kn2m73o]
+  agent name, MCP server name, and other invocation metadata (the sample query is on the BYO MCP
+  server page, not on the Tools page overview). [DOC S-7qtumoxt]
 
 ### Custom engine agents and toolkits
 - Custom engine agents can be built with Copilot Studio (low-code) or pro-code tooling (Visual

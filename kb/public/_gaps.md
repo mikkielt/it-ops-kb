@@ -826,6 +826,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - **Whether PyPI states that it has no keyword search API.** Looked 2026-10-12: the PyPI API index (S-y6wauqrp) lists Index, JSON, Upload, Integrity, Stats, BigQuery, RSS and secret reporting APIs and no search; `docs.pypi.org/api/xml-rpc/` answered 404, so the XML-RPC page that once named a `search` method could not be read. The kb records the absence as derived. Needs the current XML-RPC page or a PyPI statement on `search`. [UNK] (topic: agents/doc-lookup-sources)
 - **Whether an arXiv abstract page of a versioned address (`abs/<id>v1`) links that version's own licence.** Looked 2026-10-12: the licence page says each version can have its own licence (S-soqo5xvt) and two unversioned abstract pages were read (S-u5diy2cr, S2006); no paper with differing versions was read. Needs one versioned page of a paper whose licence changed. [UNK] (topic: agents/doc-lookup-sources)
 - **Which vocabulary GitLab's `license.key` uses.** Looked 2026-10-12 in the Projects API page (S-4yvdwu5c): the attribute table gives "Key identifier for the license" and the example `lgpl-3.0`, with no list of keys and no SPDX statement. Needs a GitLab page or the licence template source that lists the keys. [UNK] (topic: agents/doc-lookup-sources)
+- The abs-license div claim for arXiv abstract pages was not re-checked in the 2026-10-21 census: the arXiv API does not expose the page markup. (topic: agents/doc-lookup-sources)
 
 ## windows/smart-app-control
 
@@ -921,6 +922,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 - `New-M365DSCDeltaReport`/`Test-M365DSCAgent` parameter-level syntax (dedicated cmdlet page 404s) and the individual `Intune*`-prefixed resource names were not confirmed on a working page this pass (1 lookup: Microsoft Learn/GitHub search for "Microsoft365DSC New-M365DSCDeltaReport cmdlet reference"). (topic: graph/microsoft365dsc)
   - Resolved 2026-09-28: both read from source at tag 1.26.909.1 (S-dlzkqwix, S-fbhq2yc2); `Test-M365DSCAgent` turns out to check the agent machine, not drift, and the article is corrected. The 166 `MSFT_Intune*` resources are counted from the release tree (S-qkxsdf32). The docs site still has no cmdlet pages. (topic: graph/microsoft365dsc)
+- Could not re-diff the pinned files M365DSCAgent.psm1 (294f4fdc..ec5bf30e), M365DSCResourceBase.psm1 (e44228cb..7c2e9790) and the DscResources tree (294f4fdc..ec5bf30e) because git commands were denied in dontAsk mode; the Test-M365DSCAgent facts (line 89), the _Base facts (lines 93-96) and the 168 Intune resource count (line 97) were not rechecked against the latest tree. (topic: graph/microsoft365dsc)
 
 ## intune/app-protection-mam
 
@@ -1038,6 +1040,8 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - **Does any standard or vendor give a period for remembering that a host refused or did not answer a connection?** Looked for on 2026-10-13: RFC 8305 (read in full; connection attempt delay and DNS caching only), Microsoft's Circuit Breaker pattern ("a few seconds" then "a few minutes", no number), Polly's and Envoy's configuration defaults (5 s, 30 s growing to 300 s). The defaults are of libraries, not rules for a documentation host. Needs a statement from a documentation provider or a standard that fixes a period, which may not exist. (topic: agents/doc-change-detection)
 - **A method and threshold for the agreement of two agents' research runs over the same briefs (set overlap of added facts and cited sources, Jaccard or otherwise).** Looked 2026-10-15 in the kb (`rag.py pack` on agreement and Jaccard overlap of research runs; the only Jaccard fact is the snapshot-text comparison of S-wcrrjfwh, a different measure on a different object) and in the Claude Code and MCP docs, which define no comparison of runs. Needs a published method for inter-run agreement of LLM research outputs, or the benchmark's own definition recorded as a decision. [UNK] (topic: agents/doc-change-detection)
 - **How do browsers and screen readers expose an `aside` inside a `nav`, and is `data-type="sidebar"` (the SRE book's `aside` markup) a published convention?** Looked for on 2026-10-17 in the HTML Standard's `aside` and `nav` entries, ARIA in HTML, HTML-AAM and WAI-ARIA 1.2: they give the roles and the accessible-name rule but no sentence on an `aside` in a `nav`, and none defines `data-type="sidebar"`. Needs a browser accessibility tree dump of such a page, or the publisher's markup notes. [UNK] (topic: agents/doc-change-detection)
+- The `api/` prefix fact at line 57 (404 on learn.microsoft.com/en-us/api/, no api_en-us sitemap, repo mapping for rest/api/azure/) could not be re-verified from the Learn markdown fetch of /en-us/rest/api/azure/, which carries no head tags or sitemap data. (topic: agents/doc-change-detection)
+- The memdocs root listing at commit 4b5429df (https://api.github.com/repos/MicrosoftDocs/memdocs/contents/?ref=4b5429df8b47046c6b251e572ee61199fb5d4a5d) returned 404 Not Found on 2026-10-21; the per-product redirection file names can no longer be re-read. (topic: agents/doc-change-detection)
 
 ## agents/hybrid-retrieval
 
@@ -1053,6 +1057,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
   - Partly resolved 2026-10-12: the Azure facts are in the article's "Tokenizing hyphenated strings and identifiers". Still open: how Elasticsearch's standard tokenizer and `word_delimiter_graph` read `5-5` and a SID, which needs the Elasticsearch or Lucene reference pages. (topic: agents/hybrid-retrieval)
 - **lookup_eval.csv expect_paths: must the lead article be one of them, or any article in the pack** The kb was asked this in a logged lookup of 2026-10-15, and no article answered it (query log finding F-78a048b38e77). Looked in the kb 2026-10-15: `rag.py pack` gives `weak`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: agents/hybrid-retrieval)
   - Resolved 2026-10-20: the question is about this project's own eval tool, so no vendor source settles it; the code does: in `_tools/rag.py` (`judge` of `eval`), a row's path check passes when any one of its `;`-separated `expect_paths` is among the article paths of the row's pack, the lead article or not, and a row with no `expect_paths` skips the check. the `_self` root's content-rules doc (its ledgers section) names the column and not this rule: a rules finding for the `_self` root, no public gap. (topic: agents/hybrid-retrieval)
+- Which cloud platforms (Amazon Bedrock, Google Cloud) support Claude search result blocks: the platform.claude.com search-results page read 2026-10-21 no longer states it; look at the Bedrock and Vertex pages. (topic: agents/hybrid-retrieval)
 
 ## agents/instruction-and-context-limits
 
@@ -1148,6 +1153,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - **Whether `claude -p --agent <plugin-agent>` runs a plugin's agent, with the plugin loaded by `--plugin-dir` or enabled in settings.** Asked in a backlog research item (2026-10-10). Looked in the Claude Code docs 2026-10-10 (`cli-reference`, `sub-agents`, `headless`, `plugins/components`): `--agent` takes a plugin agent by bare or scoped name and the flag has no print-mode restriction in the CLI table, but no page shows `-p` and `--agent` together or says a `--plugin-dir` plugin's agents are resolvable at that point. Needs a sentence on the headless or sub-agents page, or one capped real run of `claude -p --plugin-dir <dir> --agent <name> "<prompt>"` with the startup `system` event kept. [UNK] (topic: claude/skills-and-subagents)
 
 - **Whether `${CLAUDE_PLUGIN_ROOT}` is substituted in a plugin agent's frontmatter fields (for example `description` or `tools`) and in a skill's other frontmatter fields, not only in the Markdown body and `allowed-tools`.** Asked in a backlog research item (2026-10-10). Looked in the Claude Code docs 2026-10-10 (`plugins/manifest-reference` "Where each variable resolves", `skills` "Available string substitutions", `sub-agents`): the docs name "anywhere in the Markdown body" for skill, command and agent content and add the `allowed-tools` Bash rules for skills; agent frontmatter is not mentioned. Needs a sentence on the sub-agents page or a recorded run. [UNK] (topic: claude/skills-and-subagents)
+- Whether a subagent has the parent's MCP servers and skills, and whether the main session's auto memory reaches it: the context-window page no longer says so (looked 2026-10-21 at code.claude.com/docs/en/context-window); the claim is now [UNK] unless re-sourced from the sub-agents page. (topic: claude/skills-and-subagents)
 
 ## claude/hooks
 
@@ -1189,6 +1195,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 - **what benchmarks tell us?** The kb was asked this in a logged lookup of 2026-09-28, and no article answered it (query log finding F-27b9b6ccd368). Looked in the kb 2026-09-28: `rag.py pack` gives `weak`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: security/management-plane-hardening)
   - Superseded 2026-09-28: not a gap: the judge found the logged lookup answered, and a weak pack with such a judgement is not a miss. (topic: security/management-plane-hardening)
+- CIS Benchmarks list (S1485) could not be re-read on 2026-10-21 because cisecurity.org returned a Cloudflare block to curl. The SQL Server 2022/2025 versions, GitLab v1.0.1, and the absence of Alpine Linux and Configuration Manager entries are unverified this census (topic: security/management-plane-hardening)
 
 ## claude/plugins
 
@@ -1473,6 +1480,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - **Whether the vendor's prebuilt CPU binary of ONNX Runtime (`ms@1.28.0`, feature set `none`) is built with OpenMP, which would make `with_intra_threads` have no effect.** Looked 2026-10-11 in the prebuilt binaries page (S-5xaderxo), `dist.tsv` (S-togouwq3) and the `SetIntraOpNumThreads` note of the C API header (S-gzswlsft, "If built with OpenMP"): the build flags of the pyke archives are not stated. Needs the build workflow in the vendor's artifacts repository or a run of `ort::info()` on the archive. [UNK] (topic: agents/onnx-runtime-rust-ort)
 - **A documented offline build route for `ort`.** Looked 2026-10-11 in the linking, Cargo features and prebuilt binaries pages (S-mw6rc3qq, S-m5r2fcso, S-5xaderxo): none mentions `ORT_OFFLINE`, `ORT_SKIP_DOWNLOAD`, `CARGO_NET_OFFLINE` or `ORT_CACHE_DIR`; they are read from the build script (S-u3hzriiy, S-x6bpplvz, S-cxzftyij) and the cache-filled build is derived from its control flow, not run. Needs a build of a test crate with the cache filled and the network cut. [UNK] (topic: agents/onnx-runtime-rust-ort)
 - **Guidance on loading a model with `commit_from_memory` against `commit_from_file`.** Looked 2026-10-11 in the docs index, the execution providers page and the linking page (S-gs7u2ou5, S-vzhh6a43, S-mw6rc3qq): every example uses `commit_from_file`; the in-memory methods appear only in the source doc comments (S-6z4pv23l). Needs the API reference page of `SessionBuilder` at docs.rs for the version. [UNK] (topic: agents/onnx-runtime-rust-ort)
+- Newer pinned versions not read: pykeio/ort v2.0.0-rc.15 docs/content/index.mdx and onnxruntime v1.31.0 onnxruntime_c_api.h. The census allowed only the rc.13 and v1.28.3 fetches, so the version-pin facts still describe rc.13 and v1.28.3. (topic: agents/onnx-runtime-rust-ort)
 
 ## logs/otel-collector-otlp-pipeline
 - **Whether Prometheus accepts OTLP logs or traces.** Looked 2026-10-11 in the Prometheus OpenTelemetry guide (S-5tvo6y34) and the v3.15.0 command-line flags page (S-one7nth5): both document only the metrics path `/api/v1/otlp/v1/metrics` and the flag text says "OTLP write requests"; no page read states what happens to logs or traces. Needs the Prometheus OTLP receiver source or a statement on prometheus.io. [UNK] (topic: logs/otel-collector-otlp-pipeline)
@@ -1491,6 +1499,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - **Whether Oxigraph's roadmap names a 1.0 milestone or a stability promise.** Looked 2026-10-11 in the repository README (S-z4kbze7e: "heavy development", points to GitHub milestones), the crates.io version list (S-uohdppyd: 0.x only) and the changelog (S-dcliqq63: no 1.0 plan); the GitHub milestones page and API were not readable (api.github.com answered with a rate-limit error). Needs the milestones page of oxigraph/oxigraph. [UNK] (topic: arch/oxigraph-embedded-rdf)
 - **What a `SERVICE` clause does in a build without the `http-client` feature and without a registered handler (error or empty result).** Looked 2026-10-11 in the docs.rs pages of SparqlEvaluator and DefaultServiceHandler (S-guwnayzo) and `lib/oxigraph/src/sparql/mod.rs` at v0.5.11 (S-jgxzxayp): they show that the HTTP handler is attached only with the feature, not the fallback behaviour. Needs the `spareval` evaluator source or a run of such a query. [UNK] (topic: arch/oxigraph-embedded-rdf)
 - **An ACID, serializable-isolation or crash-safety statement for the RocksDB store.** Looked 2026-10-11 in the docs.rs `Store` page (S-bfv5hqkn), the crate and repository READMEs (S-bytyyxb4, S-z4kbze7e) and the changelog (S-dcliqq63): they say "repeatable read" and "atomic", never ACID, and `flush()` is documented as lagging. Needs the Oxigraph wiki Architecture page or the RocksDB write-ahead-log and sync settings the storage layer uses. [UNK] (topic: arch/oxigraph-embedded-rdf)
+- Release date and MSRV of oxigraph 0.5.12 on crates.io not read: the crates.io API refuses a bare curl (empty body); looked at the review passage only. (topic: arch/oxigraph-embedded-rdf)
 
 ## logs/prometheus-retention-exposition
 - **Whether the Rust `prometheus` crate (tikv/rust-prometheus) 0.14.0 appends `_total` or unit suffixes and rewrites invalid metric names.** Looked 2026-10-11 in the crate's README, Cargo.toml, `src/lib.rs` and `src/encoder/text.rs` at v0.14.0 (S-fr4rpivt, S-lggz7o42, S-fmkur47t): only the format constant and the gather-and-encode flow are stated. Needs the crate's `src/desc.rs` and counter/histogram modules at the same tag. [UNK] (topic: logs/prometheus-retention-exposition)
@@ -1554,6 +1563,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## arch/postgres-dump-canonical-hash
 - **Row order of table data in a `pg_dump`.** Looked 2026-10-11 in the pg_dump page (S-vykvhstk) and the dump source (S-vor6jmfj): COPY runs without ORDER BY and no sentence promises an order. Needs the PostgreSQL statement or a clustered-table test. [UNK] (topic: arch/postgres-dump-canonical-hash)
 - **Whether `-Z` gzip output of a plain dump is byte-stable.** Not checked; the article advises hashing the uncompressed output. [UNK] (topic: arch/postgres-dump-canonical-hash)
+- Whether pg_dump rejects --restrict-key for non-plain formats with a fatal error is not shown in dumputils.c (REL_18_6); would need pg_dump.c at the same tag, which this run was not permitted to fetch. (topic: arch/postgres-dump-canonical-hash)
 
 ## arch/postgres-backup-age-s3-git-bundle
 - **Object Lock, versioning, additional checksums and multipart minimums on S3-compatible stores other than Amazon S3.** Looked 2026-10-11 in the Amazon S3 user guide pages (S-wec2qrob, S-2faaoioj, S-izv6sxd6, S-srrxgn7s): they document Amazon S3 only; no official compatibility page for another store was read. [UNK] (topic: arch/postgres-backup-age-s3-git-bundle)
@@ -1612,6 +1622,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 - **Anthropic terms automated unattended use Claude Code subscription token Pro Max loop scripted usage ban** The kb was asked this in a logged lookup of 2026-10-04, and no article answered it (query log finding F-633d7691b544). Looked in the kb 2026-10-12: `rag.py pack` gives `good`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: agents/headless-agent-runtimes)
   - Resolved 2026-10-20: Claude Code's legal page puts usage under the Anthropic Usage Policy and says the Pro and Max limits assume ordinary, individual usage of Claude Code and the Agent SDK (S-fvspfpxd), and the Consumer Terms forbid access through automated or non-human means, whether through a bot or script, except through an API key or where Anthropic explicitly permits it (S-rleo3k4b); the `claude setup-token` and GitHub Action routes are the documented subscription ones (S-frvnva4f, S1801). No page defines "ordinary" or states a ban rule for scripted loops; that stays an [UNK] fact in `agents/headless-agent-runtimes.md`. (topic: agents/headless-agent-runtimes)
+- Whether the Copilot cloud agent's environment is powered by GitHub Actions and what a session consumes (Actions minutes, AI credits): the about-cloud-agent page no longer says so; looked at docs.github.com about-cloud-agent on 2026-10-21. Billing-and-usage pages may carry it. (topic: agents/headless-agent-runtimes)
 
 ## security/policy-precedence
 
@@ -1797,10 +1808,12 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## agents/agent-caching
 
 - **Whether two users or sessions of one workspace read each other's prompt-cache entries, and the cache scope of Claude Code on a Claude subscription.** Looked 2026-10-16 in the prompt-caching page's "Cache storage and sharing", data-retention and FAQ passages and in the Claude Code prompt-caching and costs pages (S2130, S2132): the API page isolates caches per organization and per workspace (Bedrock and Google Cloud per organization) and keys an entry on an identical prefix, but names no per-user or per-session boundary and does not say that sessions of one workspace share entries; the Claude Code pages give the lifetime and say nothing of scope. The shared hit is derived, not quoted. Needs an official statement, or a probe with two sessions on one workspace key reading `cache_read_input_tokens`. [UNK] (topic: agents/agent-caching)
+- Claude Code cache lifetime by billing surface (1h on a subscription, 5 min once usage credits are drawn on or on an API key or cloud provider) is no longer stated on code.claude.com/docs/en/costs; the page defers to the prompt-caching page (S2159), which this part did not read. Re-verify against S2159 and restore the fact with that tag. (topic: agents/agent-caching)
 
 ## claude/enterprise-admin
 
 - **What Claude Tag remembers per channel and who can see it, and how Claude Tag differs from Cowork and Claude Code in the vendor's own comparison.** Looked 2026-10-16 in the Claude Code docs Claude Tag page and the claude.com Claude Tag overview (S-4fzxly7f, S-7kqj6c7m): the overview names "channel memory" and the comparison page only as links ("How Claude Tag works", "What does Claude Tag remember?", the Cowork and Claude Code comparison); those claude.com pages were not read. Needs those pages read and sourced. [UNK] (topic: claude/enterprise-admin)
+- Compliance API product coverage (Cowork, Claude Code CLI/Desktop, Microsoft 365 add-ins, Claude Science) and exclusions (Claude Code cloud sessions, Claude Code via the Claude Platform, Bedrock/Vertex sessions): the support article https://support.claude.com/en/articles/13015708-access-the-compliance-api no longer lists them as of 2026-10-21. Looked only at that article. (topic: claude/enterprise-admin)
 
 ## claude/parallel-sessions
 
@@ -1817,6 +1830,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## mcp/registry-and-extensions
 
 - **SEP-2567 sessionless MCP** The kb was asked this in a logged lookup of 2026-10-16, and no article answered it (query log finding F-0b28ea9edbd0). Looked in the kb 2026-10-16: `rag.py pack` gives `none`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: mcp/registry-and-extensions)
+- Client support matrix: the markdown rendering of https://modelcontextprotocol.io/extensions/client-matrix drops the checkmark cells, so which clients support MCP Apps, Enterprise Auth and OAuth Client Credentials could not be re-verified in the 2026-10-21 census. Only the 'Partial' Skills entries (ChatGPT, fast-agent, MCP Inspector) were confirmed. Looked at the .md export only. (topic: mcp/registry-and-extensions)
 
 ## claude/powershell-tool
 
@@ -1865,3 +1879,61 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 - **Which process becomes the parent of an orphan on macOS, and whether a macOS process can declare itself a subreaper.** Looked 2026-10-20 in POSIX.1-2024 `_Exit` (S-xp4b2g5v: an implementation-defined system process, `init` with pid 1 only as the historical case) and the Linux `getppid(2)` and `PR_SET_CHILD_SUBREAPER` pages (S-fcdwaly4, S-6xelj6je): Linux only. No Apple page on `launchd` or reparenting was read. Needs an Apple developer page or `launchd.plist` documentation that states it, or a run on a macOS host (start a child that outlives its parent, read `ps -o ppid`). [UNK] (topic: python/process-orphans-and-cwd)
 - **Whether macOS's own `lsof` and `proc_pidinfo(PROC_PIDVNODEPATHINFO)` return another user's process working directory without elevation.** Looked 2026-10-20 in the upstream `lsof` 4.99.5 manual (S-ppkjvumt) and the xnu `libproc.h` and `proc_info.h` headers at xnu-12377.1.9 (S-ifgjakdt, S-4qybivhq): they give the `cwd` descriptor and the flavour, and no access rule. Needs Apple's `lsof(1)` and `proc_pidinfo` man pages, or a run as a standard user against a root-owned process. [UNK] (topic: python/process-orphans-and-cwd)
+
+## agents/a2a-protocol
+
+- AAIF 'Growth Stage' label and the exact MCP 'vertical integration layer' wording on the 2026-08-27 announcement were not re-verified on 2026-10-21 (fetch partly denied); recheck the page. (topic: agents/a2a-protocol)
+
+## python/ruff
+
+- The `# noqa` semantics (line, multi-line string, import block, file-level `# ruff: noqa`, `# flake8: noqa`) and the check exit codes 0/1/2 in ruff.md:48-57 are cited to the 0.16.9 docs/configuration.md, which does not state them. Looked in that page's text and CLI help only. A source that covers them is needed, e.g. the ruff linter docs. (topic: python/ruff)
+
+## agents/foundry-agent-service
+
+- The claim that the toolbox/MCP endpoint does not block tools/call when require_approval is always is not on the MCP tool page (S-5ygcb6vm) as of 2026-10-21; only S-3axje6py was left to support it. (topic: agents/foundry-agent-service)
+
+## claude/messages-api
+
+- Whether the MCP connector is available on Amazon Bedrock and Google Cloud: the earlier 'not available' statement is no longer on the MCP connector page (read 2026-10-21; only the mcp-client-2026-09-15 header is said to be on the Claude API). Check the Bedrock and Google Cloud feature pages. (topic: claude/messages-api)
+
+## claude/permissions-mcp
+
+- Minimum Claude Code version for the `anthropic/requiresUserInteraction` annotation (previously v2.1.199) is no longer stated on the MCP page (S740, 2026-10-21); look in the changelog (S746) for the release that added it. (topic: claude/permissions-mcp)
+
+## security/supply-chain
+
+- SPDX current spec version (3.0.x), its profile list and the ISO/IEC status of SPDX 3.0: spdx.dev home page (read 2026-10-21) does not state them; look at the SPDX specification pages. (topic: security/supply-chain)
+
+## security/logging-monitoring
+
+- OWASP Top 10 for Agentic Applications 2026 body text on observability and NIST AI 600-1 provisions GV-6.1-008 / MG-2.2-007: the OWASP page is a landing page and the NIST PDF text could not be extracted, so the logging claims are not re-verified. Look at the OWASP PDF download and a text-extractable copy of AI 600-1. (topic: security/logging-monitoring)
+
+## security/framework-control-map
+
+- CIS Controls v8.1 counts (18 Controls, 153 Safeguards), the March 2025 date and the CC BY-NC-ND 4.0 licence are not on the cisecurity.org/controls/v8-1 landing page (looked there 2026-10-21); need the CIS licence page or v8.1 PDF as a source. (topic: security/framework-control-map)
+
+## security/threat-model-inputs
+
+- LINDDUN description (S1573) could not be re-verified: www.linddun.org fetch returned an unrelated KU Leuven status page on 2026-10-21; retry later. (topic: security/threat-model-inputs)
+- ATT&CK v20.0 (released 2026-10-13) supersedes v19.2; technique ids and mitigation/detection ids in attack-subset.csv were not re-extracted from a v20.0 STIX bundle. (topic: security/threat-model-inputs)
+
+## agents/copilot-studio-inventory
+
+- The warning that Copilot Studio support can't remediate code-editor syntax errors was not on the guidance/topics-code-editor page as re-read 2026-10-21; looked at that page only, not at other pages. Feature-map row 3 and the inventory topics bullet now carry it as UNK. (topic: agents/copilot-studio-inventory)
+
+## agents/prompt-injection-design-patterns
+
+- Six-pattern details of arXiv 2506.08837 could not be re-read in the 2026-10-21 census: only the API abstract was reachable, not the full text. (topic: agents/prompt-injection-design-patterns)
+
+## agents/anthropic-materials
+
+- Engineering index page 2026-10-21 shows posts newer than the CSV (e.g. redesigning-source-control, 2026-10-13) and older posts (2024-09-19, 2024-12-19) were not visible in the first page load, so the full current post count was not established (topic: agents/anthropic-materials)
+
+## windows/gitlab-runner-windows
+
+- Whether issue 30963 (gMSA docs update) is still open: the work-items page is client-side rendered and the state is absent from the static HTML fetched with curl on 2026-10-21; a browser or API read is needed. (topic: windows/gitlab-runner-windows)
+
+## security/privacy-compliance
+
+- Commission AI system definition guidelines (C(2025) 5053): the PDF at ec.europa.eu/newsroom/dae/redirection/document/112455 is live but its text could not be extracted in the census run, so the Recital 12 exclusion and the IT-assistant reading remain unverified against the current text (topic: security/privacy-compliance)
+- Commission press release ip_26_1024 is a JavaScript page; its body could not be read, so the omnibus dates, SME and small mid-cap extension and AI Office powers at line 90 are unverified beyond the title and description (topic: security/privacy-compliance)

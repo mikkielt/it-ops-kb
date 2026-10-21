@@ -3,33 +3,52 @@ url: https://github.com/github/gh-aw
 title: github/gh-aw (GitHub Agentic Workflows)
 publisher: GitHub
 licence: MIT
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-github
-/
+## Repository navigation
 gh-aw
 Public
-Notifications
-You must be signed in to change notification settings
-Fork
-562
-Star
-5.2k
+NotificationsYou must be signed in to change notification settings
+Fork596 (596)
+Star5.4k (5.4k)You must be signed in to star a repository
+## About
+GitHub Agentic Workflows
+gh.io/gh-aw
+### Topics
+actionscaiciclaude-codecodexcopilotgh-extensiongithub-actions
+### Resources
+Readme
+MIT license
+### Code of conduct
+Code of conduct
+### Contributing
+Contributing
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+5.4k stars
+### Watchers
+54 watching
+### Forks
+596 forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit
 ## History
-17,966 Commits
-17,966 Commits
+19,010 Commits
+19,010 Commits
 ## Folders and files
 NameName
 Last commit message
 Last commit date
 .changeset
 .changeset
-.claude/skills/playwright-cli
-.claude/skills/playwright-cli
+.claude
+.claude
 .devcontainer
 .devcontainer
 .github
@@ -68,8 +87,6 @@ scripts
 scripts
 specs
 specs
-tmp
-tmp
 .architecture.yml
 .architecture.yml
 .gitattributes
@@ -146,10 +163,6 @@ package.md
 package.md
 test-setup-local.sh
 test-setup-local.sh
-test_dup_import
-test_dup_import
-{outname}.f
-{outname}.f
 ## Repository files navigation
 # GitHub Agentic Workflows
 Agent quick links
@@ -202,12 +215,13 @@ make golint-custom builds cmd/linters and runs the custom analyzers against ./cm
 Community members whose issues were resolved — updated automatically.
 @a-sjogren-accenture (2)
 @aaronspindler (1)
-@abbottdev (1)
+@abbottdev (3)
 @abillingsley (2)
 @adam-cobb (1)
 @adamhenson (2)
 @adamtasteslikegood (1)
 @adhikjoshi (1)
+@aharper-srsacquiom (1)
 @ahmadabdalla (1)
 @ajfeldman6 (1)
 @akkikumar72 (1)
@@ -217,14 +231,17 @@ Community members whose issues were resolved — updated automatically.
 @AlexanderWert (1)
 @AlexDeMichieli (1)
 @alexsiilvaa (2)
-@alondahari (17)
+@alirezamirian (1)
+@alondahari (18)
 @alvistar (2)
 @AmoebaChant (1)
+@AnandhaSivam-00 (1)
 @anthonymastreanvae (11)
 @aoxiangtianyu-go (1)
 @apenab (1)
 @arabkin (1)
 @arezero (6)
+@Arithmomaniac (1)
 @arthurfvives (8)
 @Artur- (1)
 @asatara (1)
@@ -238,23 +255,26 @@ Community members whose issues were resolved — updated automatically.
 @bartul (1)
 @bbonafed (23)
 @beardofedu (1)
-@benissimo (10)
+@beingminimal (1)
+@benissimo (15)
+@BenjaminMichaelis (1)
 @benvillalobos (12)
+@bjartenilsen (1)
 @blavity-machine-user (1)
-@blozano-tt (9)
+@blozano-tt (11)
 @bmerkle (3)
 @boydj (2)
 @Bra1nFartz (1)
 @BrandonLewis (1)
 @brendanlapuma (1)
-@bryanchen-d (24)
+@bryanchen-d (25)
 @bryanknox (1)
 @bshore-bf (1)
 @Calidus (8)
 @camposbrunocampos (2)
 @carlincherry (1)
 @carlosflorencio (1)
-@CatsMiaow (1)
+@CatsMiaow (2)
 @chepa92 (1)
 @chrisfregly (2)
 @chrizbo (7)
@@ -265,8 +285,9 @@ Community members whose issues were resolved — updated automatically.
 @cogni-ai-ee (2)
 @consulthys (3)
 @Corb3nik (3)
-@corygehr (20)
-@corymhall (1)
+@corygehr (22)
+@corymhall (2)
+@cristiano-turba (2)
 @crmitchelmore (3)
 @DaanLucas (1)
 @dagecko (1)
@@ -276,10 +297,10 @@ Community members whose issues were resolved — updated automatically.
 @danielmeppiel (8)
 @danquirk (2)
 @darwin-gonzales (1)
-@davidahmann (3)
+@davidkarlsen (1)
 @davidslater (4)
 @dbudym-cs (1)
-@DeagleGross (4)
+@DeagleGross (5)
 @devantler (2)
 @deyaaeldeen (10)
 @dfrysinger (2)
@@ -287,6 +308,7 @@ Community members whose issues were resolved — updated automatically.
 @dholmes (3)
 @dhrapson (2)
 @DimaBir (1)
+@DjShah99 (1)
 @dkurepa (1)
 @dneimke (1)
 @DogeAmazed (1)
@@ -294,7 +316,7 @@ Community members whose issues were resolved — updated automatically.
 @doughgle (1)
 @drehelis (4)
 @DrPye (1)
-@dsfaccini (4)
+@dsfaccini (6)
 @dsibilio (4)
 @dsolteszopyn (2)
 @dsyme (39)
@@ -302,24 +324,25 @@ Community members whose issues were resolved — updated automatically.
 @eaftan (3)
 @edburns (1)
 @edgeq (2)
-@ekbritecore (3)
+@ekbritecore (9)
 @elefthei (1)
 @elika56 (1)
 @emexelem (1)
 @enbw-mmattes (1)
+@envygit-bot (2)
 @eran-medan (1)
 @ericchansen (1)
 @ericstj (2)
 @Esomoire-consultancy-Company (1)
 @Etienne-M (5)
-@Evangelink (5)
+@Evangelink (6)
 @fbecar22 (3)
 @fchareyr (1)
 @FDevTakima (1)
 @ferryhinardi (1)
 @flatiron32 (2)
 @florianbader (1)
-@fr4nc1sc0-r4m0n (3)
+@fr4nc1sc0-r4m0n (4)
 @funkymonkeyjam (2)
 @G1Vh (1)
 @GandrotulaRajesh (1)
@@ -327,40 +350,44 @@ Community members whose issues were resolved — updated automatically.
 @github-antoine-brechon (4)
 @GKersten (1)
 @glitch-ux (1)
-@golivax (1)
+@golivax (2)
 @grahame-white (9)
 @graphaelli (1)
-@GregoireW (1)
+@GregoireW (2)
 @gregsmi (2)
 @h-no (1)
 @h3y6e (2)
 @haavamoa (1)
 @haolpku (1)
-@HardMax71 (1)
+@HardMax71 (2)
 @harrisoncramer (2)
 @heaversm (1)
 @heiskr (9)
 @hermanho (1)
 @holwerda (3)
+@holymaloney (1)
 @hpsin (1)
 @hrishikeshathalye (1)
 @ianreay (1)
 @IEvangelist (14)
+@igolaizola (2)
 @ilja (5)
 @Infinnerty (1)
 @insop (1)
-@ivancea (9)
+@ivancea (10)
 @j-srodka (6)
 @JaganGopalkrish (1)
 @jamesadevine (4)
-@JamesNK (4)
+@JamesNK (5)
 @JanKrivanek (4)
-@jaroslawgajewski (29)
+@JanProvaznik (1)
+@jaroslawgajewski (43)
 @JasonYeMSFT (1)
 @Jasper13006 (1)
 @jbaruch (1)
 @jcooklin (1)
 @jeffhandley (12)
+@JeffreyCA (5)
 @jeremiah-snee-openx (1)
 @jfomhover (1)
 @jhamon (2)
@@ -371,7 +398,7 @@ Community members whose issues were resolved — updated automatically.
 @johndowns (1)
 @johnpreed (5)
 @johnwilliams-12 (11)
-@jonas-harmoney (1)
+@jonas-harmoney (2)
 @jonathanpeppers (5)
 @joperezr (1)
 @JoshGreenslade (2)
@@ -381,9 +408,12 @@ Community members whose issues were resolved — updated automatically.
 @jsoref (2)
 @jsquire (1)
 @jtracey93 (1)
+@JTrillo (1)
 @kaovilai (4)
 @karl-petter-sj (1)
 @katriendg (1)
+@kaush (1)
+@KB1RMA (1)
 @kbreit-insight (5)
 @KGoovaer (1)
 @kkruel8100 (4)
@@ -393,38 +423,43 @@ Community members whose issues were resolved — updated automatically.
 @kubaflo (1)
 @labudis (2)
 @ladamski (1)
+@laysa-enmacc (1)
 @lecoursen (1)
 @lilseyi (2)
 @lindeberg (1)
 @lkraav (1)
-@loganrosen (7)
+@loganrosen (9)
 @look (1)
 @lpcox (8)
 @ludoviclafole (1)
 @lukeed (1)
 @lupinthe14th (3)
 @lw396 (1)
+@lxghtless (1)
 @m-titov (1)
 @maikelvdh (2)
 @mark-hingston (1)
-@mason-tim (8)
+@mason-tim (9)
 @massirr (1)
 @matiloti (4)
 @mattcosta7 (1)
 @MatthewBunker (2)
 @MatthewLabasan-NBCU (2)
-@MattSkala (7)
+@MattSkala (12)
 @MauroDruwel (4)
+@mavam (1)
 @maxbeizer (1)
 @maxknv (1)
 @mcantrell (1)
 @mdashrraf (1)
-@MH0386 (1)
+@MH0386 (2)
 @mhavelock (1)
 @michen00 (2)
 @microsasa (10)
 @misrarim (1)
 @mlinksva (1)
+@mmatur (2)
+@mmeeuwa (1)
 @mnkiefer (13)
 @molson504x (2)
 @Mossaka (3)
@@ -435,18 +470,23 @@ Community members whose issues were resolved — updated automatically.
 @mthalman (1)
 @mur6 (1)
 @Muradbarakat1986 (1)
+@MureedSultan (2)
 @mvdbos (2)
-@mwpastore (1)
+@mwpastore (2)
+@myaschmitz (1)
 @NadyaDrozdova (1)
+@nateberkopec (1)
 @nestele (2)
 @neta-vega (3)
 @NicoAvanzDev (3)
 @NicolasRannou (1)
+@niebloomj (12)
 @nihal467 (1)
 @Nikhil-Anand-DSG (1)
 @NikolajBjorner (2)
 @norrietaylor (11)
 @not-mksv (3)
+@ns-jcavarroc (1)
 @octatone (1)
 @oscarvalenzuelab (1)
 @PaulAylward2 (1)
@@ -462,8 +502,9 @@ Community members whose issues were resolved — updated automatically.
 @polmichel (2)
 @ppusateri (1)
 @praveenkuttappan (1)
-@prpercival (1)
+@prpercival (2)
 @PureWeen (10)
+@pvds (1)
 @qwert666 (1)
 @r-garcia-de-oliveira (2)
 @rabo-unumed (4)
@@ -471,6 +512,7 @@ Community members whose issues were resolved — updated automatically.
 @radiantspace (3)
 @rafael-unloan (1)
 @rbstp (5)
+@rdoume (1)
 @reggie-k (4)
 @remypanicker (1)
 @rhardouin (4)
@@ -483,6 +525,7 @@ Community members whose issues were resolved — updated automatically.
 @Rubyj (3)
 @ruokun-niu (1)
 @ryckmansm (2)
+@SadriG91 (1)
 @salekseev (3)
 @salmanmkc (1)
 @samuelkahessay (30)
@@ -491,14 +534,16 @@ Community members whose issues were resolved — updated automatically.
 @sbodapati-gfm (1)
 @seangibeault (2)
 @sebastianbiallas (1)
-@seesharprun (6)
+@seesharprun (7)
 @sg650 (16)
 @shaeck (1)
 @shawnHartsell (1)
 @Shazwazza (2)
+@shea-parkes (1)
 @shiran-gutsy (1)
 @shubhamtanwar23 (3)
-@sigh71 (3)
+@sigh71 (4)
+@SivaKesava1 (7)
 @siyo-rms (1)
 @srgibbs99 (6)
 @ssulei7 (1)
@@ -509,40 +554,47 @@ Community members whose issues were resolved — updated automatically.
 @stephlocke (1)
 @straub (6)
 @strawgate (48)
-@susmahad (3)
+@susmahad (4)
 @swimmesberger (1)
-@syarihu (1)
+@syarihu (2)
 @szabta89 (3)
 @tadelesh (1)
 @talk2MeGooseman (1)
 @Tarekchehahde (2)
-@theletterf (26)
+@thatapplefreak (1)
+@theletterf (29)
 @thi-feonir (1)
+@ThomasStarkInc (1)
 @timdittler (3)
 @tinytelly (1)
 @tobio (1)
 @tomasmed (1)
 @tomforsell525 (1)
-@tore-unumed (16)
+@tore-unumed (17)
 @trask (4)
-@tsm-harmoney (5)
+@tsm-harmoney (6)
+@tsotnikov (1)
 @tspascoal (2)
 @tvu4-wowcorp (1)
 @tylersmalley (1)
 @UncleBats (2)
-@v1v (7)
+@v1v (9)
 @verkyyi (2)
 @veverkap (3)
 @ViktorHofer (3)
 @virenpepper (1)
 @vishalagrawal-jisr (2)
+@vrumiantsev (1)
 @whoschek (1)
+@WilliamBerryiii (5)
+@williammartin (1)
 @wizardofosmium (1)
 @wtgodbe (4)
 @xirzec (1)
 @xpepper (1)
 @yaananth (1)
-@Yoyokrazy (2)
+@yldgio (1)
+@Yoyokrazy (3)
 @yskopets (53)
 @zarenner (5)
 @zkoppert (2)
@@ -566,11 +618,11 @@ Security policy
 Activity
 Custom properties
 ### Stars
-5.2k stars
+5.4k stars
 ### Watchers
-49 watching
+54 watching
 ### Forks
-562 forks
+596 forks
 Report repository
 ## Releases
 ## Packages

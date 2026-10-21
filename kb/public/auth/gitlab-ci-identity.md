@@ -2,7 +2,7 @@
 topic: auth/gitlab-ci-identity
 priority: P0
 applies_to: "GitLab CI/CD (docs current 2026-09-26)"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S1276, S1277, S1293, S1294]
 status: complete
 ---

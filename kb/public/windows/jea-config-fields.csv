@@ -17,7 +17,7 @@ file,field,purpose,example,source
 .pssc,RequiredGroups,conditional-access rule (And/Or hashtable) requiring connecting users to also belong to named groups (e.g. a JIT-elevation or MFA/smartcard-logon group) beyond RoleDefinitions membership,"RequiredGroups = @{ Or = '2FA-logon','smartcard-logon' }",S-xe3uwlpq
 .pssc,VisibleCmdlets/VisibleFunctions/VisibleProviders,"session configuration files accept the same fields as a .psrc, applying to every connecting user regardless of role","VisibleCmdlets = 'Get-Date'",S-xe3uwlpq
 .pssc,LanguageMode,"FullLanguage, ConstrainedLanguage, RestrictedLanguage or NoLanguage; when omitted: NoLanguage for Empty and RestrictedRemoteServer sessions, FullLanguage for Default","LanguageMode = 'ConstrainedLanguage'",S-s4yqv6lz
-.pssc,SessionType (values),"Default (the default value; adds Microsoft.PowerShell.Core), Empty (adds nothing) or RestrictedRemoteServer (eight default commands and NoLanguage mode)","SessionType = 'Empty'",S-s4yqv6lz
+.pssc,SessionType (values),"Default (the default value; adds Microsoft.PowerShell.Core), Empty (adds nothing) or RestrictedRemoteServer (seven proxy functions and NoLanguage mode)","SessionType = 'Empty'",S-s4yqv6lz
 .pssc,ExecutionPolicy,execution policy of the sessions; the key is written as Restricted when the parameter is omitted,"ExecutionPolicy = 'RemoteSigned'",S-s4yqv6lz
 .pssc,ModulesToImport,modules and snap-ins imported automatically into every session of the endpoint,"ModulesToImport = 'PSDiagnostics'",S-s4yqv6lz
 .pssc,AliasDefinitions,"aliases added to the session; keys Name and Value required, Description and Options (None, ReadOnly, Constant, Private, AllScope; default None) optional","AliasDefinitions = @{ Name='hlp'; Value='Get-Help' }",S-s4yqv6lz

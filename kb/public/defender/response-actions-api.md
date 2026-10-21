@@ -2,7 +2,7 @@
 topic: defender/response-actions-api
 priority: P1
 applies_to: "Microsoft Defender for Endpoint API v1.0 (api.security.microsoft.com), docs retrieved 2026-09-26"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-ipjyevd4, S-7zqska24, S-irvlwznc, S-drrejdmz, S-uv2mdacd, S-o76pzpoe, S-x3it6rkh, S-4ccloker, S-hvfrvt73, S-kw755ajt, S-yksr3dnu, S-4qod6hyu, S-ad63a4vv, S-mcsdxl4e, S623, S-x6wwggq6, S-mx6w5ffh, S-bxbx2kp5]
 status: complete
 files: [defender/machine-actions.csv]

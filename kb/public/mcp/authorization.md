@@ -2,7 +2,7 @@
 topic: mcp/authorization
 priority: P1
 applies_to: "MCP specification 2026-07-28"
-retrieved_utc: 2026-10-19
+retrieved_utc: 2026-10-21
 sources: [S707, S701, S702, S-neu52zjd, S-e5aahjao]
 status: complete
 ---

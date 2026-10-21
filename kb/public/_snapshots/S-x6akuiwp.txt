@@ -1,0 +1,19 @@
+source: S-x6akuiwp
+url: https://learn.microsoft.com/en-us/visualstudio/msbuild/errors/msb1027?view=visualstudio
+title: MSB1027 diagnostic code
+publisher: Microsoft Learn (visualstudio-docs)
+licence: CC BY 4.0 (public mirror MicrosoftDocs/visualstudio-docs; code MIT)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# MSB1027 diagnostic code - MSBuild | Microsoft Learn
+
+This article describes the MSB1027 error code.
+
+## Message text
+
+`MSB1027: The -noAutoResponse switch cannot be specified in the MSBuild.rsp auto-response file, nor in any response file that is referenced by the auto-response file.`
+
+## Applies to
+
+All versions of MSBuild

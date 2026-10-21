@@ -2,7 +2,7 @@
 topic: windows/bitlocker
 priority: P2
 applies_to: "Windows 10 1703+/11, BitLocker CSP; Intune endpoint security disk encryption and device configuration Endpoint protection policies"
-retrieved_utc: 2026-09-28
+retrieved_utc: 2026-10-21
 sources: [S-pfrwongj, S-cqv5zeve, S-sr7tk6jz, S-jdytzqlj, S-dwu7auzi, S-prkgx2hs, S-kszikunl, S-c4224tvs, S-mld6grwd, S-a7iwz7je, S-wzeeikuf, S-pi5lmjbg, S-77cduhcg, S-2cojjewu, S-7qrbvran, S531, S-m5inbpyi]
 status: complete
 files: [windows/bitlocker.csv]

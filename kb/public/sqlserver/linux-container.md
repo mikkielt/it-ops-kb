@@ -2,8 +2,8 @@
 topic: sqlserver/linux-container
 priority: P0
 applies_to: "mcr.microsoft.com/mssql/server (tag list retrieved 2026-09-24)"
-retrieved_utc: 2026-09-28
-sources: [S460, S466, S473, S474, S475, S476, S477, S478]
+retrieved_utc: 2026-10-21
+sources: [S460, S466, S473, S475, S476, S477, S478, S-m5cz4kbp]
 status: complete
 files: [sqlserver/mssql-server-tags.json]
 ---
@@ -19,21 +19,21 @@ files: [sqlserver/mssql-server-tags.json]
 ## Facts
 - Docs examples use `2017-latest`, `2019-latest`, `2022-latest` and `2025-latest`. To pin, pull a specific tag such as `2019-CU18-ubuntu-20.04`. [DOC S473,S477]
 - All tags can be listed at `https://mcr.microsoft.com/v2/mssql/server/tags/list`. [DOC S473]
-- Tag list on 2026-09-24: 284 tags. Highest CUs: 2022-CU27, 2025-CU9 (`2025-CU9-ubuntu-22.04`, `2025-CU9-ubuntu-24.04`). Moving tags: `latest`, `latest-ubuntu`, `2017-latest`, `2017-latest-ubuntu`, `2019-latest`, `2022-latest`, `2025-latest`. [DOC S478]
-- `ACCEPT_EULA` is required for the image. `MSSQL_SA_PASSWORD` sets the sa password; `SA_PASSWORD` is deprecated. [DOC S474]
-- The quickstart creates a Developer edition container by default. `MSSQL_PID` "specifies the freely licensed Developer Edition of SQL Server for non-production use". [DOC S477,S474]
+- Tag list on 2026-10-21: 290 tags (284 on 2026-09-24, the saved copy). Highest CUs: 2022-CU27, 2025-CU9 (`2025-CU9-ubuntu-22.04`, `2025-CU9-ubuntu-24.04`, plus `2025-CU9-GDR1-ubuntu-22.04` and `-24.04`). Moving tags: `latest`, `latest-ubuntu`, `2017-latest`, `2017-latest-ubuntu`, `2019-latest`, `2022-latest`, `2025-latest`. [DOC S478]
+- `ACCEPT_EULA` is required for the image. `MSSQL_SA_PASSWORD` sets the sa password; `SA_PASSWORD` is deprecated. [DOC S-m5cz4kbp]
+- The quickstart creates a Developer edition container by default. `MSSQL_PID` "specifies the freely licensed Developer Edition of SQL Server for non-production use". [DOC S477,S-m5cz4kbp]
 - MSSQL_PID for 2022 and earlier: Evaluation, Developer, Express, Web, Standard, Enterprise (legacy CAL, max 20 cores), EnterpriseCore, or a product key. [DOC S476]
 - MSSQL_PID for 2025 and later: Evaluation, Express, StandardDeveloper, Standard, EnterpriseDeveloper, Enterprise (legacy), EnterpriseCore, or a product key. [DOC S475]
 - Production use needs a valid licence. With `ACCEPT_EULA=Y` and a production `MSSQL_PID` you state that you have one. The Developer image can run production editions. [DOC S473]
-- Other env vars: `MSSQL_TCP_PORT` (default 1433), `MSSQL_MEMORY_LIMIT_MB` (default 80% of RAM), `MSSQL_COLLATION`, `MSSQL_AGENT_ENABLED` (default off). [DOC S474]
+- Other env vars: `MSSQL_TCP_PORT` (default 1433), `MSSQL_MEMORY_LIMIT_MB` (default 80% of RAM), `MSSQL_COLLATION`, `MSSQL_AGENT_ENABLED` (default off). [DOC S-m5cz4kbp]
 - Developer editions have the Enterprise (or Standard) feature set, so temporal retention works in CI. [DER S466,S460: S466 gives Enterprise Developer the Enterprise and Standard Developer the Standard feature set, both with temporal tables; S460 documents retention for SQL Server 2017 and later with no edition limit]
-- Microsoft's container docs give no digest (`@sha256:`) pinning policy for mssql/server: the deploy, quickstart and environment-variable pages pin by tag only. [DER S473, S474, S477: no digest guidance on any of them, also at sql-docs live 2e21fb07 on 2026-09-28, where no page references `mssql/server@`]
+- Microsoft's container docs give no digest (`@sha256:`) pinning policy for mssql/server: the deploy, quickstart and environment-variable pages pin by tag only. [DER S473, S-m5cz4kbp, S477: no digest guidance on any of them, also at sql-docs live 2e21fb07 on 2026-09-28, where no page references `mssql/server@`]
 
 ## Reference
 Artifact: `sqlserver/mssql-server-tags.json` (sha256 `058736f6cdb5ab26a766cb3a491e785c8f6f26c098cec38b74e7276d27bc4c83`). It is a live endpoint, so re-fetching gives a different hash as tags are added.
 
 ## Examples
-- SNIPPET: run a pinned SQL Server 2025 Enterprise Developer container for CI; context: mcr.microsoft.com/mssql/server, Docker; checked: no [DOC S473, S474, S475: `ACCEPT_EULA`/`MSSQL_SA_PASSWORD` env vars, `MSSQL_PID=EnterpriseDeveloper` for 2025+, and pinning to a specific CU tag]
+- SNIPPET: run a pinned SQL Server 2025 Enterprise Developer container for CI; context: mcr.microsoft.com/mssql/server, Docker; checked: no [DOC S473, S-m5cz4kbp, S475: `ACCEPT_EULA`/`MSSQL_SA_PASSWORD` env vars, `MSSQL_PID=EnterpriseDeveloper` for 2025+, and pinning to a specific CU tag]
 ```bash
 docker run -e ACCEPT_EULA=Y -e MSSQL_PID=EnterpriseDeveloper -e "MSSQL_SA_PASSWORD=$CI_SA_PASSWORD" \
   -p 1433:1433 -d mcr.microsoft.com/mssql/server:2025-CU9-ubuntu-24.04

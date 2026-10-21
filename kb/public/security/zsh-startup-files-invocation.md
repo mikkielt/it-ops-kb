@@ -2,7 +2,7 @@
 topic: security/zsh-startup-files-invocation
 priority: P3
 applies_to: "Zsh 5.9.2 as an interactive and scripting shell: which startup and shutdown files run in which kind of shell, ZDOTDIR, the RCS and GLOBAL_RCS options, invocation flags, sh/ksh emulation at startup, PRIVILEGED and restricted mode"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-jpnt2s3d, S-dqge7eik, S-e6mo6lhk, S-x7azxeah]
 status: complete
 ---

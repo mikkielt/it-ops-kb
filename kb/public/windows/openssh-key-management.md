@@ -2,7 +2,7 @@
 topic: windows/openssh-key-management
 priority: P3
 applies_to: "Windows 10 1809+/Windows 11, Windows Server 2019/2022/2025 (in-box OpenSSH); Win32-OpenSSH releases where marked"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-rsn4nacm, S-ju4lek45, S-tvueruxa, S-rkpdqecu, S-odc5ordf]
 status: partial
 ---

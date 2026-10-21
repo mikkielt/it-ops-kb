@@ -2,7 +2,7 @@
 topic: claude/statusline
 priority: P3
 applies_to: "Claude Code status line docs page, dateModified 2026-10-14, read 2026-10-17 (Claude Code 2.1.29x era; fields carry their own minimum versions)"
-retrieved_utc: 2026-10-17
+retrieved_utc: 2026-10-21
 sources: [S-rkp4qc7b, S743, S745]
 status: complete
 ---

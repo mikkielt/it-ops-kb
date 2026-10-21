@@ -2,7 +2,7 @@
 topic: windows/powershell-remoting-jea
 priority: P2
 applies_to: "WinRM-based PowerShell Remoting (WMF 5.1+/PowerShell 7); Just Enough Administration (JEA); PowerShell remoting over SSH (Windows/Linux/macOS)"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-twfugriu, S-p5lwby5b, S-xe3uwlpq, S-jwo36v2t, S-azyqynh4, S-tabagcvn, S-c7yxdr7e, S-fmtt7m5j, S-o3cdlg27, S-zopt2et4, S-hcszfxta, S-j2g6dv6n, S-sgyc73tt, S-utydlnf7, S-s4yqv6lz, S-iuhtzvem, S-r3cngad7]
 status: complete
 files: [windows/jea-config-fields.csv]

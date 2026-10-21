@@ -2,7 +2,7 @@
 topic: arch/podman-volumes-networks-pods
 priority: P3
 applies_to: "Podman 6.1.x on Linux: podman run --volume, podman network create and --network modes (netavark, pasta), podman pod create"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-mpuaxmzf, S-tzyfmscm, S-hy3fameh, S-v4l2d5bl, S-l5z3fi2w, S-y4qlxukm]
 status: complete
 ---

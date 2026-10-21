@@ -1,0 +1,236 @@
+source: S-adkxxbxo
+url: https://docs.rs/intl-memoizer/0.5.3/intl_memoizer/struct.IntlLangMemoizer.html
+title: docs.rs: intl_memoizer::IntlLangMemoizer 0.5.3
+publisher: docs.rs / Project Fluent
+licence: Apache-2.0 OR MIT (crate intl-memoizer 0.5.3)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+intl_memoizer
+# Struct IntlLangMemoizer
+Source
+pub struct IntlLangMemoizer { /* private fields */ }
+Expand description
+The IntlLangMemoizer can memoize multiple constructed internationalization
+formatters, and their configuration for a single locale. For instance, given “en-US”,
+a memorizer could retain 3 DateTimeFormat instances, and a PluralRules.
+For memoizing with multiple locales, see IntlMemoizer.
+## §Example
+The code example does the following steps:
+Create a static counter
+Create an ExampleFormatter
+Implement Memoizable for ExampleFormatter.
+Use IntlLangMemoizer::with_try_get to run ExampleFormatter::format
+Demonstrate the memoization using the static counter
+use intl_memoizer::{IntlLangMemoizer, Memoizable};
+use unic_langid::LanguageIdentifier;
+// Create a static counter so that we can demonstrate the side effects of when
+// the memoizer re-constructs an API.
+static mut INTL_EXAMPLE_CONSTRUCTS: u32 = 0;
+fn increment_constructs() {
+unsafe {
+INTL_EXAMPLE_CONSTRUCTS += 1;
+}
+}
+fn get_constructs_count() -> u32 {
+unsafe { INTL_EXAMPLE_CONSTRUCTS }
+}
+/// Create an example formatter, that doesn't really do anything useful. In a real
+/// implementation, this could be a PluralRules or DateTimeFormat struct.
+struct ExampleFormatter {
+lang: LanguageIdentifier,
+/// This is here to show how to initiate the API with an argument.
+prefix: String,
+}
+impl ExampleFormatter {
+/// Perform an example format by printing information about the formatter
+/// configuration, and the arguments passed into the individual format operation.
+fn format(&self, example_string: &str) -> String {
+format!(
+"{} lang({}) string({})",
+self.prefix, self.lang, example_string
+)
+}
+}
+/// Multiple classes of structs may be add1ed to the memoizer, with the restriction
+/// that they must implement the `Memoizable` trait.
+impl Memoizable for ExampleFormatter {
+/// The arguments will be passed into the constructor. Here a single `String`
+/// will be used as a prefix to the formatting operation.
+type Args = (String,);
+/// If the constructor is fallible, than errors can be described here.
+type Error = ();
+/// This function wires together the `Args` and `Error` type to construct
+/// the intl API. In our example, there is
+fn construct(lang: LanguageIdentifier, args: Self::Args) -> Result<Self, Self::Error> {
+// Keep track for example purposes that this was constructed.
+increment_constructs();
+Ok(Self {
+lang,
+prefix: args.0,
+})
+}
+}
+// The following demonstrates how these structs are actually used with the memoizer.
+// Construct a new memoizer.
+let lang = "en-US".parse().expect("Failed to parse.");
+let memoizer = IntlLangMemoizer::new(lang);
+// These arguments are passed into the constructor for `ExampleFormatter`.
+let construct_args = (String::from("prefix:"),);
+let message1 = "The format operation will run";
+let message2 = "ExampleFormatter will be re-used, when a second format is run";
+// Run `IntlLangMemoizer::with_try_get`. The name of the method means "with" an
+// intl formatter, "try and get" the result. See the method documentation for
+// more details.
+let result1 = memoizer
+.with_try_get::<ExampleFormatter, _, _>(construct_args.clone(), |intl_example| {
+intl_example.format(message1)
+});
+// The memoized instance of `ExampleFormatter` will be re-used.
+let result2 = memoizer
+.with_try_get::<ExampleFormatter, _, _>(construct_args.clone(), |intl_example| {
+intl_example.format(message2)
+});
+assert_eq!(
+result1.unwrap(),
+"prefix: lang(en-US) string(The format operation will run)"
+);
+assert_eq!(
+result2.unwrap(),
+"prefix: lang(en-US) string(ExampleFormatter will be re-used, when a second format is run)"
+);
+assert_eq!(
+get_constructs_count(),
+1,
+"The constructor was only run once."
+);
+let construct_args = (String::from("re-init:"),);
+// Since the constructor args changed, `ExampleFormatter` will be re-constructed.
+let result1 = memoizer
+.with_try_get::<ExampleFormatter, _, _>(construct_args.clone(), |intl_example| {
+intl_example.format(message1)
+});
+// The memoized instance of `ExampleFormatter` will be re-used.
+let result2 = memoizer
+.with_try_get::<ExampleFormatter, _, _>(construct_args.clone(), |intl_example| {
+intl_example.format(message2)
+});
+assert_eq!(
+result1.unwrap(),
+"re-init: lang(en-US) string(The format operation will run)"
+);
+assert_eq!(
+result2.unwrap(),
+"re-init: lang(en-US) string(ExampleFormatter will be re-used, when a second format is run)"
+);
+assert_eq!(
+get_constructs_count(),
+2,
+"The constructor was invalidated and ran again."
+);
+## Implementations§
+Source§
+### impl IntlLangMemoizer
+Source
+#### pub fn new(lang: LanguageIdentifier) -> Self
+Create a new IntlLangMemoizer that is unique to a specific
+LanguageIdentifier
+Source
+#### pub fn with_try_get<I, R, U>(
+&self,
+construct_args: I::Args,
+callback: U,
+) -> Result<R, I::Error>
+where
+Self: Sized,
+I: Memoizable + 'static,
+U: FnOnce(&I) -> R,
+with_try_get means with an internationalization formatter, try and get a result.
+The (potentially expensive) constructor for the formatter (such as PluralRules or
+DateTimeFormat) will be memoized and only constructed once for a given
+construct_args. After that the format operation can be run multiple times
+inexpensively.
+The first generic argument I must be provided, but the R and U will be
+deduced by the typing of the callback argument that is provided.
+I - The memoizable intl object, for instance a PluralRules instance. This
+must implement the Memoizable trait.
+R - The return result from the callback U.
+U - The callback function. Takes an instance of I as the first parameter and
+returns the R value.
+## Trait Implementations§
+Source§
+### impl Debug for IntlLangMemoizer
+Source§
+#### fn fmt(&self, f: &mut Formatter<'_>) -> Result
+Formats the value using the given formatter. Read more
+## Auto Trait Implementations§
+§
+### impl !Freeze for IntlLangMemoizer
+§
+### impl !RefUnwindSafe for IntlLangMemoizer
+§
+### impl !Send for IntlLangMemoizer
+§
+### impl !Sync for IntlLangMemoizer
+§
+### impl !UnwindSafe for IntlLangMemoizer
+§
+### impl Unpin for IntlLangMemoizer
+§
+### impl UnsafeUnpin for IntlLangMemoizer
+## Blanket Implementations§
+Source§
+### impl<T> Any for T
+where
+T: 'static + ?Sized,
+Source§
+#### fn type_id(&self) -> TypeId
+Gets the TypeId of self. Read more
+Source§
+### impl<T> Borrow<T> for T
+where
+T: ?Sized,
+Source§
+#### fn borrow(&self) -> &T
+Immutably borrows from an owned value. Read more
+Source§
+### impl<T> BorrowMut<T> for T
+where
+T: ?Sized,
+Source§
+#### fn borrow_mut(&mut self) -> &mut T
+Mutably borrows from an owned value. Read more
+Source§
+### impl<T> From<T> for T
+Source§
+#### fn from(t: T) -> T
+Returns the argument unchanged.
+Source§
+### impl<T, U> Into<U> for T
+where
+U: From<T>,
+Source§
+#### fn into(self) -> U
+Calls U::from(self).
+That is, this conversion is whatever the implementation of
+From<T> for U chooses to do.
+Source§
+### impl<T, U> TryFrom<U> for T
+where
+U: Into<T>,
+Source§
+#### type Error = !
+The type returned in the event of a conversion error.
+Source§
+#### fn try_from(value: U) -> Result<T, !>
+Performs the conversion.
+Source§
+### impl<T, U> TryInto<U> for T
+where
+U: TryFrom<T>,
+Source§
+#### type Error = <U as TryFrom<T>>::Error
+The type returned in the event of a conversion error.
+Source§
+#### fn try_into(self) -> Result<U, <U as TryFrom<T>>::Error>
+Performs the conversion.

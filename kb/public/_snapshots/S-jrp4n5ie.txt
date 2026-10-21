@@ -1,0 +1,46 @@
+source: S-jrp4n5ie
+url: https://wezterm.org/cli/cli/index.html
+title: wezterm cli - Wez's Terminal Emulator
+publisher: Wez Furlong (WezTerm)
+licence: MIT (wezterm/wezterm LICENSE.md; the site is built from the repository's docs)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# wezterm cli¶
+The cli subcommand interacts with a running wezterm GUI or multiplexer
+instance, and can be used to spawn programs and manipulate tabs and panes.
+# Targeting the correct instance¶
+There may be multiple GUI processes running in addition to a multiplexer server.
+wezterm uses the following logic to decide which one it should connect to.
+If the --prefer-mux flag is passed, then the wezterm.lua config file is
+consulted to determine the first unix domain defined by the config.
+If the $WEZTERM_UNIX_SOCKET environment variable is set, use that location
+to identify the running instance
+Try to locate a running GUI instance. The --class argument specifies an
+optional window class that can be used to select the appropriate GUI window
+if that GUI window was also spawned using --class to override the default.
+# Targeting Panes¶
+Various subcommands target panes via a (typically optional) --pane-id argument.
+The following rules are used to determine a pane if --pane-id is not specified:
+If the $WEZTERM_PANE environment variable is set, it will be used
+The list of clients is retrieved and sorted by the most recently interacted
+session. The focused pane id from that session is used
+See also: wezterm cli list
+# Available Subcommands¶
+activate-pane-direction
+activate-pane
+activate-tab
+adjust-pane-size
+get-pane-direction
+get-text
+kill-pane
+list-clients
+list
+move-pane-to-new-tab
+rename-workspace
+send-text
+set-tab-title
+set-window-title
+spawn
+split-pane
+zoom-pane

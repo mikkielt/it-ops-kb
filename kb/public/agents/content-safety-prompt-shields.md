@@ -2,7 +2,7 @@
 topic: agents/content-safety-prompt-shields
 priority: P2
 applies_to: "Azure AI Content Safety Prompt Shields API (GA, api-version 2024-09-01), Microsoft Foundry guardrails Prompt Shields/Spotlighting, groundedness/protected-material/custom-categories/blocklist APIs, docs retrieved 2026-09-26"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-547mfaj7, S-zlqf57iu, S-c66bl3xp, S-b4vld673, S-qhrwmfgo, S-unoiabov, S-56tu3aqk, S-plv2ekwg, S-lqvaqwxx, S-3svp3sap, S-lmtdz3eq, S-47nwz53u, S-jbhevlal]
 status: complete
 files: [agents/content-safety-limits.csv]
@@ -45,9 +45,10 @@ preview code), custom categories (preview, standard variant retiring 2026-09-01)
 - Document attack subtypes: Manipulated content, Access to system infrastructure, Information gathering,
   Availability, Fraud, Malware, plus the same four subtypes as user prompt attacks (change system rules,
   conversation mockup, role-play, encoding). [DOC S-zlqf57iu]
-- Attack-type comparison: user prompt attacks are attacker=user, entry point=user prompts, objective=alter
-  intended LLM behavior; document attacks are attacker=third party, entry point=third-party content
-  (documents/emails/web pages), objective=gain unauthorized access/control via misinterpreted instructions.
+- Attack-type comparison: user prompt attacks arrive in the `userPrompt` request field and circumvent or alter
+  system instructions to change intended LLM behavior; document attacks arrive in the `documents` field and
+  inject instructions into document content to gain unauthorized access or control (the page no longer names
+  the attacker as user vs. third party: the service does not verify provenance, the integration defines it).
   [DOC S-zlqf57iu]
 
 ### Foundry guardrails integration
@@ -135,7 +136,8 @@ preview code), custom categories (preview, standard variant retiring 2026-09-01)
 - Blocklists allow only exact text matching and no image matching. [DOC S-plv2ekwg]
 - Text blocklists are part of the GA API: the GA migration guide renames the preview blocklist operations
   (`addBlockItems` to `addOrUpdateBlocklistItems`, `blockItems` to `blocklistItems`) under GA
-  `api-version=2023-10-01` or later, and the region page lists Blocklists in every Content Safety region.
+  `api-version=2023-10-01` or later, and the region page's Foundry guardrail tables list Blocklists in every Foundry region (its direct
+  Content Safety tables have no Blocklists row).
   [DER S-jbhevlal, S-47nwz53u: GA operation names and region table, no preview label]
 - Limits: max 10,000 terms total across all of a resource's blocklists; max 100 `blocklistItems` added per
   API call; a `blocklistItem` `text` value is max 128 characters. [DOC S-56tu3aqk]
@@ -151,11 +153,14 @@ preview code), custom categories (preview, standard variant retiring 2026-09-01)
   authentication is also supported for API/SDK calls, granted via the **Cognitive Services User** and
   **Reader** roles. [DOC S-547mfaj7]
 - Resource must be created in a supported region. Prompt Shields on a direct Content Safety resource is
-  available in: brazilsouth, canadacentral, canadaeast, centralus, eastus, eastus2, northcentralus,
-  southcentralus, westus, westus2, westus3; francecentral, germanywestcentral, italynorth, polandcentral,
-  spaincentral, swedencentral, switzerlandnorth, switzerlandwest, uksouth, westeurope; australiaeast,
-  japaneast, koreacentral, southeastasia, southindia; southafricanorth, uaenorth (page updated 2026-09-18).
-  Groundedness is in fewer regions, and Task Adherence is not processed in-region: it uses global routing. [DOC S-47nwz53u]
+  available in: canadaeast, centralus, eastus, eastus2, northcentralus, southcentralus, westus2, westus3;
+  francecentral, polandcentral, switzerlandnorth, westeurope; australiaeast, japaneast, koreacentral,
+  southeastasia, southindia (page updated 2026-09-18). The direct table has Prompt Shields "-" in
+  brazilsouth, canadacentral, westus, germanywestcentral, italynorth, norwayeast, spaincentral,
+  swedencentral, switzerlandwest, uksouth, southafricanorth and uaenorth; the page's separate Foundry
+  guardrail tables list Prompt shields in every region they show. Groundedness is in fewer regions than
+  Prompt Shields in both tables. In the Foundry tables Task Adherence is only for Global, US Datazone and
+  EU Datazone deployments; the direct table marks it in a subset of regions only. [DOC S-47nwz53u]
 - Prompt Shields input limits: a user prompt of at most 10K characters, and up to five documents totalling
   10K characters. [DOC S-47nwz53u]
 

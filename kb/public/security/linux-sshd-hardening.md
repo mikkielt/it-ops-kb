@@ -2,7 +2,7 @@
 topic: security/linux-sshd-hardening
 priority: P3
 applies_to: "OpenSSH sshd on Linux: sshd_config options graded by the CIS mapping, and sshd -T"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-o5hziwt7, S-rkyl5ijj, S-ycjp6jnv]
 status: complete
 ---

@@ -2,16 +2,16 @@
 topic: agents/anthropic-materials
 priority: P2
 applies_to: "Anthropic engineering blog, docs and reference repositories, retrieved 2026-09-25"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S2137, S2138, S2139, S2140, S2141, S2142, S2143, S2144, S2145, S2146, S2147, S2148, S2149, S2150, S2151, S2152, S2153, S2154, S2156, S2157, S2158, S2159, S-d5e5aem4]
-status: complete
+status: partial
 ---
 
 # Index of Anthropic materials for agent/MCP work
 
 ## Summary
 
-The full row-per-item index with dates and one-line reasons is `agents/anthropic-materials.csv`. This file only records how the index was built and its coverage limits. The engineering blog index page (fetched 2026-09-25) listed 25 posts from 2024-09-19 to 2026-04-23; all 25 are rows in the CSV, plus the cookbook and courses repositories and three docs sections, for 30 rows total [DOC S2137]. No copying of prose beyond the title occurred; each CSV row states its own one-line reason in this session's words.
+The full row-per-item index with dates and one-line reasons is `agents/anthropic-materials.csv`. This file only records how the index was built and its coverage limits. The engineering blog index page (fetched 2026-09-25) listed 25 posts from 2024-09-19 to 2026-04-23; all 25 are rows in the CSV, plus the cookbook and courses repositories and three docs sections, for 30 rows total. A re-read on 2026-10-21 shows the index now also carries newer posts (for example `redesigning-source-control`, 2026-10-13) and links posts under `/research/` paths, so the CSV is behind the live index and needs a refresh [DOC S2137]. No copying of prose beyond the title occurred; each CSV row states its own one-line reason in this session's words.
 
 ## Facts
 
@@ -21,7 +21,7 @@ The full row-per-item index with dates and one-line reasons is `agents/anthropic
 - Two Claude Code docs sections (`sub-agents`, `skills`) were fetched directly and confirmed live on 2026-09-25; a third (`prompt-caching`) is linked from the costs page fetched for the caching topic [DOC S2157,S2158,S2159].
 - Each post's own page, read 2026-09-27, shows the date the CSV gives it: `contextual-retrieval` 2024-09-19, `building-effective-agents` 2024-12-19, `claude-think-tool` 2025-03-20, `multi-agent-research-system` 2025-06-13, `desktop-extensions` 2025-06-26, `writing-tools-for-agents` 2025-09-11, `effective-context-engineering-for-ai-agents` 2025-09-29, `equipping-agents-for-the-real-world-with-agent-skills` 2025-10-16, `claude-code-sandboxing` 2025-10-20, `code-execution-with-mcp` 2025-11-04, `advanced-tool-use` 2025-11-24, `effective-harnesses-for-long-running-agents` 2025-11-26, `demystifying-evals-for-ai-agents` 2026-01-09, `harness-design-long-running-apps` 2026-03-24, `claude-code-auto-mode` 2026-03-25, `managed-agents` 2026-04-08. [DOC S2146, S2138, S2147, S2139, S2148, S2141, S2142, S2143, S2151, S2144, S2149, S2150, S2145, S2153, S2154, S2152]
 - The `claude-code-best-practices` post url now redirects (HTTP 308) to the Claude Code docs page "Best practices for Claude Code" (`code.claude.com/docs/en/best-practices`), which shows no publication date; the CSV's 2025-04-18 comes from the engineering index. [DOC S2140, S2137]
-- The "how we contain Claude across products" post is flagged as "(Featured)" on the index with no date shown; it is included in the CSV with `date: unknown (featured slot)` [DOC S2137].
+- The "how we contain Claude across products" post is now shown on the index with the date 2026-05-25 (the earlier "Featured" slot had no date), and the CSV now carries that date. The index (read 2026-10-21) also lists "Redesigning source control at Anthropic" (2026-10-13), added to the CSV; the sitemap places both posts under `/research/` (`research/how-we-contain-claude`, `research/redesigning-source-control`), and the CSV urls use that path [DOC S2137].
 
 ## Reference
 

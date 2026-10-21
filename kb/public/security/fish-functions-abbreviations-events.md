@@ -2,7 +2,7 @@
 topic: security/fish-functions-abbreviations-events
 priority: P3
 applies_to: "fish 4.9.3 functions, autoloading from fish_function_path, aliases as wrapper functions, abbreviations (abbr), and event handlers (--on-event, --on-variable, --on-signal, --on-job-exit, --on-process-exit)"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-irnsu4to, S-sjzqydvb, S-mmucfvjk, S-bdc6dn7m, S-eg4rjgcz]
 status: complete
 ---

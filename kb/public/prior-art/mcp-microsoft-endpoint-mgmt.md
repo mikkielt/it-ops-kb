@@ -20,7 +20,7 @@ the nearest official server.
 
 ## Facts
 - `microsoft/mcp` is described by its own repository metadata as the catalog of official Microsoft
-  MCP server implementations; licence MIT; default branch `main`, last push 2026-09-26. [DOC S1019]
+  MCP server implementations; licence MIT; default branch `main`, last push 2026-10-21. [DOC S1019]
 - The catalog's top-level `servers/` directory contains exactly three entries at the fetched commit:
   `Azure.Mcp.Server` (Azure resource management), `Fabric.Mcp.Server` (Microsoft Fabric), and
   `Template.Mcp.Server` (a scaffold for adding new official servers). None targets ConfigMgr, Intune,

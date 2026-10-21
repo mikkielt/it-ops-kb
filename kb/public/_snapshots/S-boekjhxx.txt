@@ -1,0 +1,389 @@
+source: S-boekjhxx
+url: https://docs.cloud.google.com/kubernetes-engine/docs/concepts/sandbox-pods
+title: GKE Sandbox
+publisher: Google Cloud
+licence: CC BY 4.0 (page footer; code samples Apache-2.0)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+Home
+Documentation
+Application hosting
+Google Kubernetes Engine (GKE)
+GKE security
+#
+GKE Sandbox
+Stay organized with collections
+Save and categorize content based on your preferences.
+Autopilot
+Standard
+Containers that execute unknown or untrusted code in Google Kubernetes Engine (GKE)
+clusters are a potential security risk to the host kernel of your nodes. You can
+protect your host kernel from these threats by isolating the code from the
+kernel. This document describes how GKE Sandbox creates this layer of
+isolation by using technologies such as gVisor and microVMs.
+This document is intended for Security specialists who want to reduce the
+attack surface in their GKE nodes and protect their nodes from
+untrusted code. You should already be familiar with the following:
+System calls
+GKE node architecture
+Sandboxing in computer systems
+## About sandboxing in GKE
+The container runtime that's installed on nodes, such as containerd, provides
+a degree of isolation between the container's processes and the kernel running
+on the node. However, the container runtime often runs as a privileged user on
+the node and has access to most system calls into the host kernel.
+In Kubernetes and GKE, sandboxing isolates running containers
+to limit the potential impact of exploits or errors that affect other containers
+or the container runtime. You can run containers in sandboxes to protect the
+kernel of the underlying Compute Engine instance from untrusted or unknown
+code. Sandboxing is also a good defense-in-depth measure to protect high-value
+containers from being affected by other workloads. You can run workloads in
+sandboxes by using GKE Sandbox.
+### Potential threats
+A flaw in the container runtime or in the host kernel could allow a process
+running within a container to "escape" the container and affect the node's
+kernel.
+Multi-tenant clusters
+and clusters in which containers run untrusted workloads are more exposed to
+security vulnerabilities than other clusters. Examples include the following:
+Organizations that allow users to upload and run code, such as SaaS
+providers and web-hosting providers.
+AI agents that generate and execute code, often without supervision.
+The sandboxing technologies that GKE Sandbox uses help to mitigate the
+following potential impact of container escapes:
+Malicious or defective code that crashes the host kernel and brings down the
+node.
+Malicious tenants that exfiltrate another tenant's data that's in memory or
+on a disk.
+Untrusted workloads that access other Google Cloud services or cluster
+metadata.
+## Sandbox technologies in GKE
+GKE Sandbox supports the following sandbox technologies, each of which uses
+a different approach to isolate workloads and works well for different use
+cases:
+gVisor: a userspace re-implementation of the Linux kernel API that
+doesn't need elevated privileges. The userspace kernel and the container
+runtime re-implement the majority of system calls and services them on
+behalf of the host kernel. Direct access to the host kernel is limited. For
+more information about how the guest kernel works, see the gVisor
+architecture guide.
+MicroVMs: lightweight virtual machines that run a full Linux kernel and
+operating system. Each Pod runs in its own microVM, which provides strict
+isolation from other Pods and from the host node. GKE Sandbox uses the
+open source
+Kata Containers
+software and the
+Cloud Hypervisor virtual machine monitor
+(VMM) to create and manage microVMs.
+The following table summarizes the key differences between gVisor and microVMs.
+Use this information to choose the appropriate sandbox technology for your use
+case.
+gVisor
+MicroVMs
+Kernel access
+Subset of Linux kernel syscalls
+Full Linux kernel
+Isolation level
+Syscall interception in a userspace kernel
+Full hardware virtualization with a dedicated guest kernel
+CPU and memory overhead
+Dynamic overhead with low base memory for the userspace kernel
+Fixed overhead of 250 mCPU and 130 MiB of memory for each Pod
+Start time
+Less than 200 ms
+Approximately one to two seconds
+GKE node configuration
+Available in any Standard node pools and Autopilot
+nodes. Enabled by default in Autopilot clusters.
+Available only in nodes that enable nested virtualization.
+Node image support
+Container-Optimized OS only
+Container-Optimized OS or Ubuntu
+Machine type compatibility
+Supported by most CPUs, Arm architecture, and accelerator machine types.
+Supported only by machine types that support nested virtualization.
+Accelerator support
+Supports specific GPU models and TPU versions.
+Doesn't support GPUs or TPUs.
+Privileged containers
+Not supported.
+Supported. Privileged containers get root access only to the guest OS
+in the microVM, and not to the host node.
+Example use cases
+Untrusted or third-party applications using runtimes such as Rust,
+Java, Python, PHP, Node.js, or Golang
+Web server frontends, caches, or proxies
+Applications that process external media or data by using CPUs
+GPU- and TPU-intensive workloads
+AI inference workloads that process arbitrary inputs or run code
+Training workloads that process large third-party datasets and models
+AI agents that generate and execute code without supervision
+Autonomous code that runs in browsers, such as Puppeteer
+Workloads that expect access to the full Linux kernel
+Workloads that generate a high volume of low-overhead system calls,
+such as a large number of small I/O operations
+For more information that might help you to decide which applications to run in
+a specific type of sandbox, see Limitations.
+## How requesting sandboxes works
+To run an application in a sandbox, you do the following:
+Enable a sandbox technology in nodes by using ComputeClasses to auto-create
+the nodes or by manually creating node pools.
+Request a sandbox for Pods by using the corresponding RuntimeClass for that
+sandbox type, such as gvisor or microvm. For more information, see
+Harden workload isolation with GKE Sandbox.
+GKE schedules the Pods on nodes that use the requested sandbox
+technology, which then handles running the application in the sandbox. You can
+optionally run Pods that don't request sandboxes on nodes that have
+GKE Sandbox enabled by using node selectors and tolerations, which is
+useful for trusted workloads like monitoring tools that you want to run on
+every node.
+## Additional security recommendations
+When using GKE Sandbox, we recommend that you also follow these
+recommendations:
+Specify
+resource limits
+on all containers running in a sandbox. This protects against the risk of
+a defective or malicious application starving the node of resources and
+negatively impacting other applications or system processes running on the node.
+If you are using Workload Identity Federation for GKE,
+block cluster metadata access using
+Network Policy to block
+access to 169.254.169.254. This protects against the risk of a malicious
+application accessing information to potentially private data like project ID,
+node name and zone. Workload Identity Federation for GKE is always enabled in
+GKE Autopilot clusters.
+## Limitations
+GKE Sandbox works well with many applications, but not all. This section
+provides more information about the current limitations of GKE Sandbox.
+### GPUs in GKE Sandbox
+You can run GPU workloads in sandboxes by using gVisor. gVisor doesn't mitigate
+all NVIDIA driver vulnerabilities, but retains protection against Linux kernel
+vulnerabilities. Don't use GPU time-sharing in sandboxed Pods, because the GPU
+isn't
+fully isolated
+between Pods. For more information about how gVisor protects GPU workloads,
+see GPU Support Guide.
+The following limitations apply to GPU workloads in GKE Sandbox:
+MicroVMs don't support GPUs.
+For gVisor, the following limitations apply:
+Only CUDA workloads are supported.
+Only a subset of the available GPU models are supported. For more
+information, see
+GPU model support.
+Only the latest and the default NVIDIA driver versions are supported
+for each GKE version. Other driver versions might not
+work.
+Not every GPU feature, such as RDMA or IMEX, is supported. Depending on
+customer needs, gVisor might support specific features on a
+case-by-case basis. To request support for a specific feature,
+open a support case or
+open a gVisor feature request.
+#### GPU model support
+The following table describes support for different GPU models on GKE Sandbox:
+Model
+Preview
+GA Support
+Notes
+NVIDIA RTX PRO 6000
+Machine types that have one or more GPUs: 1.34.1-gke.2037001 and later
+Machine types that have less than one GPU: not supported
+-
+-
+NVIDIA GB200
+NVIDIA B200
+NVIDIA H200 141GB
+1.34.0-gke.1713000 and later
+-
+-
+NVIDIA H100 80GB
+NVIDIA A100 80GB
+NVIDIA A100 40GB
+NVIDIA L4
+NVIDIA T4
+-
+1.29.15-gke.1134000 and later
+1.30.11-gke.1093000 and later
+1.31.7-gke.1149000 and later
+1.32.2-gke.1182003 and later
+Supported since initial launch.
+NVIDIA V100
+NVIDIA P100 (approaching end of support)
+not supported
+not supported
+The V100 and P100 use proprietary drivers and won't be supported.
+NVIDIA T4 VWS
+NVIDIA L4 VWS
+-
+-
+GKE Sandbox does not support Windows or Ubuntu node types, which are required for Virtual Workstation Nodes.
+### TPUs in GKE Sandbox
+In GKE version 1.31.3-gke.1111001 and later, you can run TPU
+workloads in sandboxes by using gVisor. gVisor doesn't mitigate all TPU driver vulnerabilities, but retains protection against Linux kernel vulnerabilities. For more information about
+how the gVisor project protects TPU workloads, see
+TPU Support Guide.
+The following limitations apply to TPU workloads in GKE Sandbox:
+MicroVMs don't support TPUs.
+gVisor supports the following TPU versions:
+V4pod
+V4lite
+V5litepod
+V5pod
+V6e
+### Node configuration
+The following limitations apply to the nodes that use GKE Sandbox:
+gVisor and microVMs support only Linux nodes. Windows Server nodes aren't
+supported.
+gVisor supports only the Container-Optimized OS node image. MicroVMs
+support the Container-Optimized OS and Ubuntu node images.
+MicroVMs require nested virtualization to be enabled on the nodes. All of
+the requirements and limitations of nested virtualization
+apply.
+In Standard clusters, you can't enable GKE Sandbox on the
+default node pool. The cluster must always have at least one node pool that
+doesn't use GKE Sandbox. That node pool must contain at least one node,
+even if all of your workloads are sandboxed. This limitation exists to
+separate system services from untrusted workloads.
+### Access to cluster metadata
+If your nodes use the gVisor sandbox type, then Pods on the nodes can't access
+cluster metadata on the node OS level. Pods also can't access Google Cloud
+services unless you use
+Workload Identity Federation for GKE to
+grant roles to the Pod identities.
+This limitation doesn't apply to the microVM sandbox type. To prevent cluster
+metadata access from Pods in microVMs, use a
+NetworkPolicy that denies
+egress traffic to 169.254.169.252/32 on port 988 or, in clusters that use
+GKE Dataplane V2, to 169.254.169.254/32 on port 80.
+### SMT may be disabled
+Simultaneous multithreading (SMT) settings (also known as Hyper-Threading on
+Intel CPUs) are used to mitigate side-channel vulnerabilities that take
+advantage of threads sharing core state, such as
+Microarchitectural Data Sampling (MDS) vulnerabilities.
+To mitigate side channel attacks, gVisor uses
+Linux Core Scheduling.
+SMT settings are unchanged from the default values. Linux Core Scheduling
+applies only to the Pods that run in gVisor sandboxes.
+The default SMT or Hyper-Threading setting for a machine type depends on how
+vulnerable the machine is to MDS, as follows:
+Autopilot Pods that use the
+Scale-Out ComputeClass:
+SMT is always disabled.
+Machine types that use Intel processors:
+Hyper-Threading is disabled by default.
+Machine types that use AMD processors: SMT is enabled by default.
+Machine types that use only one thread per core, such as Arm processors:
+no SMT support. All requested vCPUs are visible.
+#### Enable SMT
+In GKE Standard node pools, you can enable SMT if it's
+disabled by default for your selected machine type. You're charged for every
+vCPU, regardless of whether you turn SMT on or keep it turned off. For more
+information, see the
+pricing when you change the number of threads per core.
+To change the SMT setting, do one of the following:
+Set the --threads-per-core
+flag when you create a GKE Sandbox node pool that uses gVisor:
+gcloud container node-pools create smt-enabled \
+--cluster=CLUSTER_NAME \
+--location=LOCATION \
+--machine-type=MACHINE_TYPE \
+--threads-per-core=2 \
+--sandbox=type=gvisor
+CLUSTER_NAME: the name of an existing cluster where you want to create the new node pool.
+LOCATION: the Compute Engine region or zone of the cluster.
+MACHINE_TYPE: the machine type.
+Use a DaemonSet to enable SMT on an existing node pool:
+Add the cloud.google.com/gke-smt-disabled=false node label to an
+existing node pool that uses gVisor:
+gcloud container node-pools update NODE_POOL_NAME \
+--cluster=CLUSTER_NAME \
+--location=LOCATION \
+--node-labels=cloud.google.com/gke-smt-disabled=false
+Replace the following:
+NODE_POOL_NAME: the name of the existing node pool.
+CLUSTER_NAME: the name of an existing cluster where you want to create the new node pool.
+LOCATION: the Compute Engine region or zone of the cluster.
+Deploy the DaemonSet. The DaemonSet runs only on nodes that have
+the cloud.google.com/gke-smt-disabled=false label.
+kubectl create -f \
+https://raw.githubusercontent.com/GoogleCloudPlatform/k8s-node-tools/master/disable-smt/gke/enable-smt.yaml
+Ensure that the DaemonSet Pods are in the running state.
+kubectl get pods --selector=name=enable-smt -n kube-system
+The output is similar to the following:
+NAME READY STATUS RESTARTS AGE
+enable-smt-2xnnc 1/1 Running 0 6m
+Check that SMT has been enabled appears in the logs of the Pods:
+kubectl logs enable-smt-2xnnc enable-smt -n kube-system
+### Capabilities
+Applies to Standard clusters
+By default, the container is prevented from opening raw sockets, to reduce the
+potential for malicious attacks. Certain network-related tools such as ping
+and tcpdump create raw sockets as part of their core operation. To enable
+raw sockets, you must explicitly add the NET_RAW capability to the
+container's security context:
+spec:
+containers:
+- name: my-container
+securityContext:
+capabilities:
+add: ["NET_RAW"]
+If you use GKE Autopilot, Google Cloud prevents you from
+adding the NET_RAW permission to containers because of the security
+implications of this capability.
+### External dependencies
+Applies to Autopilot and Standard clusters
+Untrusted code running inside the sandbox may be allowed to reach external
+services such as database servers, APIs, other containers, and CSI
+drivers.
+These services are running outside the sandbox boundary and need to be
+individually protected. An attacker can try to exploit vulnerabilities in these
+services to break out of the sandbox. You must consider the risk and impact of
+these services being reachable by the code running inside the sandbox, and apply
+the necessary measures to secure them.
+This includes file system implementations for container volumes such as ext4 and
+CSI drivers. CSI drivers run outside the sandbox isolation and may have
+privileged access to the host and services. An exploit in these drivers can
+affect the host kernel and compromise the entire node. We recommend that you run
+the CSI driver inside a container with the least amount of permissions required,
+to reduce the exposure in case of an exploit. GKE Sandbox supports using the
+Compute Engine Persistent Disk CSI driver.
+### Incompatible features
+The following feature limitations apply to GKE Sandbox:
+The following limitations apply to both gVisor and microVM sandboxes:
+Cloud Service Mesh isn't supported for sandboxes in
+Autopilot clusters.
+Linux kernel security modules such as seccomp, AppArmor, SELinux, the
+No New Privileges flag,
+bidirectional mount propagation,
+and the
+procMount Pod security context
+aren't supported in sandboxed Pods.
+Memory usage metrics at the container level aren't supported. However, Pod
+memory usage is supported.
+The following limitations apply only to gVisor sandboxes:
+Containers that use
+privileged mode
+aren't supported.
+Raw block volumes
+aren't supported.
+Port forwarding,
+such as by using kubectl port-forward, isn't supported.
+Hostpath storage
+isn't supported.
+Setting sysctl kernel parameters
+isn't supported.
+CPU and memory limits are only applied for Pods that have the Guaranteed
+or Burstable QoS classes, and only when CPU and memory limits are
+specified for all of the containers in the Pod.
+The following limitations apply only to microVM sandboxes:
+Pods that use the hostNetwork: true setting aren't supported.
+Pods that run in a microVM sandbox and use the hostNetwork: true
+setting can't access any resources outside of the Pod.
+Any diagnostic tools that rely on socket-level tracing can access only
+the network interfaces that are attached to the microVM.
+## What's next
+Configure GKE Sandbox.
+Read the Security overview.
+Learn about the Pod lifecycle.
+Except as otherwise noted, the content of this page is licensed under the Creative Commons Attribution 4.0 License, and code samples are licensed under the Apache 2.0 License. For details, see the Google Developers Site Policies. Java is a registered trademark of Oracle and/or its affiliates.
+Last updated 2026-10-13 UTC.

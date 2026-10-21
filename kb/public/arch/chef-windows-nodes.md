@@ -2,7 +2,7 @@
 topic: arch/chef-windows-nodes
 priority: P3
 applies_to: "Chef Infra Client 19 on Windows (docs.chef.io Chef Infra Client 19 pages; source at chef/chef commit 9322fa4): install, elevation, scheduling, bootstrap and the Windows-specific resources"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-3x3s2jec, S-ejunjyza, S-mqmjglrs, S-yz335vyz, S-arkeshhj, S-xw5o3wsc, S-6guysc4r, S-oh6erfbm, S-xgkshne3, S-zskepmir, S-yddwaulv, S-z5kgh6p7, S-ddprubpp, S-og5svrch, S-qdnvehti]
 status: partial
 ---

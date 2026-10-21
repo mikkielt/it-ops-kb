@@ -2,7 +2,7 @@
 topic: gitlab/deploy-keys-and-tokens
 priority: P3
 applies_to: "GitLab 19.x docs (gitlab-org/gitlab master @9f1632e2, 2026-09-27); Free, Premium and Ultimate unless stated"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-muzlee2k, S-zsu6jh7l, S-5imiypdp, S-ksmw56nm, S-jz6gfnwh, S-4ziu3orn, S-jk4rtq6g, S-swggstpk, S-5ohrrj7d, S-3exaesy6]
 status: partial
 ---

@@ -2,15 +2,15 @@
 topic: auth/oauth-pkce-oidc-id-token
 priority: P3
 applies_to: "OAuth 2.0 authorization code with PKCE (RFC 7636) for a public client, OIDC id_token validation (OpenID Connect Core 1.0), and what Discord documents for each"
-retrieved_utc: 2026-10-11
-sources: [S-cc7tmfsl, S-z7jhscsu, S-utofkpju, S-btzqf4mj, S-fhpwukk7, S-xrzcvqcp]
+retrieved_utc: 2026-10-21
+sources: [S-cc7tmfsl, S-z7jhscsu, S-5wetycnr, S-btzqf4mj, S-fhpwukk7, S-xrzcvqcp]
 status: partial
 ---
 
 # OAuth2 with PKCE for a public client, OIDC id_token validation and Discord
 
 ## Summary
-PKCE binds an authorization code to a secret the client holds, so a stolen code is useless on its own; it is how a client with no secret (a public client) uses the authorization code grant. An OIDC `id_token` is a signed statement about the sign-in that the client must validate claim by claim; `iss` plus `sub` is the stable user key. Discord documents PKCE through its Social SDK guides and OIDC through its requirements for external identity providers; its general OAuth2 page lists neither.
+PKCE binds an authorization code to a secret the client holds, so a stolen code is useless on its own; it is how a client with no secret (a public client) uses the authorization code grant. An OIDC `id_token` is a signed statement about the sign-in that the client must validate claim by claim; `iss` plus `sub` is the stable user key. Discord documents PKCE through its Social SDK guides and OIDC through its requirements for external identity providers; its general OAuth2 page only recommends PKCE by name and documents no PKCE parameter.
 
 ## Facts
 
@@ -32,8 +32,8 @@ PKCE binds an authorization code to a secret the client holds, so a stolen code 
 - Checks that a signed `exp` and `aud` do not replace: the id_token authenticates the sign-in at the client that started it, so a server must not accept an id_token addressed to another `aud` as a login for itself. [DER S-z7jhscsu: aud must contain the receiving client's client_id]
 
 ### Discord
-- Discord's OAuth2 topic page lists the authorization code, implicit and client credentials grants and bot and webhook flows; token calls use HTTP Basic or `client_id` and `client_secret` in the form body, and the page's examples show `expires_in` 604800 with a refresh token. [DOC S-utofkpju]
-- That page does not mention `code_challenge`, `code_verifier` or PKCE. [DOC S-utofkpju: the page read has no PKCE parameter]
+- Discord's OAuth2 topic page lists the authorization code, implicit and client credentials grants and bot and webhook flows; token calls use HTTP Basic or `client_id` and `client_secret` in the form body, and the page's examples show `expires_in` 604800 with a refresh token. [DOC S-5wetycnr]
+- That page names PKCE once, in the implicit-grant section, which advises production apps to use the authorization code grant with PKCE; it documents no `code_challenge` or `code_verifier` parameter. [DOC S-5wetycnr]
 - The Social SDK account-linking guide uses a code challenge and verifier: `Client::CreateAuthorizationCodeVerifier` makes both, the challenge goes in the authorization arguments and the verifier into the token exchange. [DOC S-btzqf4mj]
 - A backend with a client secret may exchange the code itself by posting `grant_type=authorization_code`, `code`, `redirect_uri` and `code_verifier` with Basic authentication; an app with no backend enables **Public Client** and calls `Client::GetToken` with the verifier. [DOC S-btzqf4mj]
 - Discord says public clients cannot securely store client secrets, recommends confidential clients with proper secret management for production, and warns most games will not want Public Client enabled. [DOC S-fhpwukk7]

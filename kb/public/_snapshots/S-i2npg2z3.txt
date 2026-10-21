@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/entra/identity/hybrid/connect/reference-connect
 title: Microsoft Entra Connect: Version release history
 publisher: Microsoft Learn
 licence: MIT (public mirror MicrosoftDocs/entra-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Microsoft Entra Connect: Version release history - Microsoft Entra ID | Microsoft Learn
@@ -14,9 +14,9 @@ This article helps you keep track of the versions that have released and the cha
 
 Important
 
-**Mandatory Upgrade Required**: All synchronization services in Microsoft Entra Connect Sync will stop working on **September 30, 2026** if you're not on at least version 2.5.79.0. In May 2025, we released this version with a back-end service change that hardens our services. Upgrade before this deadline to avoid any service disruption.
+**Mandatory upgrade required:** Upgrade Microsoft Entra Connect Sync to version 2.6.84.0 or later and configure application-based authentication by April 7, 2027. Legacy authentication is being retired, and synchronization services will stop working after this date if these requirements aren't met.
 
-If you're unable to upgrade before the deadline, all synchronization services will fail until you upgrade to the latest version. The Microsoft Entra Connect Sync .msi installation file is exclusively available on Microsoft Entra Admin Center. Make sure you meet the minimum requirements including .NET Framework 4.7.2 and TLS 1.2.
+If synchronization stops, upgrade to the latest version and configure application-based authentication to restore service. The Microsoft Entra Connect Sync .msi installation file is exclusively available on Microsoft Entra Admin Center. Make sure you meet the minimum requirements including .NET Framework 4.7.2 and TLS 1.2.
 
 ## Known issue: Synchronization fails after upgrade if miiserver.exe.config was previously modified
 
@@ -39,7 +39,7 @@ During upgrade, Microsoft Entra Connect detects that `miiserver.exe.config` has 
 
 1. Go to: %programfiles%\Microsoft Azure AD Sync\Bin
 2. Back up `miiserver.exe.config`.
-3. Open `miiserver.exe.config` and add the following entry inside the assemblyBinding section: `<dependentAssembly> <assemblyIdentity name="System.Diagnostics.DiagnosticSource" publicKeyToken="cc7b13ffcd2ddd51" culture="neutral" /> <bindingRedirect oldVersion="0.0.0.0-8.0.0.0" newVersion="8.0.0.0" />  </dependentAssembly>`
+3. Open `miiserver.exe.config` and add the following entry inside the assemblyBinding section: `<dependentAssembly> <assemblyIdentity name="System.Diagnostics.DiagnosticSource" publicKeyToken="cc7b13ffcd2ddd51" culture="neutral" /> <bindingRedirect oldVersion="0.0.0.0-8.0.0.0" newVersion="8.0.0.0" /> </dependentAssembly>`
 4. Save the file.
 5. Restart the ADSync service.
 
@@ -406,7 +406,7 @@ Auto upgrade runs from the release date until 15 April 2025. If your environment
 - Updated Default Rule: "onPremisesObjectIdentifier" attribute added to the **In from AD - User Account Enabled** sync rule. Adding this rule allows the sync engine to pick the **onPremisesObjectIdentifier** attribute from the user who is enabled, in a scenario where:
 - the same user is represented across different forests, and
 - the user is disabled in one of the forests
-- Introduced a registry key that allows you to set the precedence number for custom rules to be more than 100, if needed. The precedence of the first standard rule can be set using the key **HLKM:\SOFTWARE\Microsoft\Azure AD Connect\FirstStandardRulePrecedence,** allowing for more custom rules. If no value is set, 100 is the default.
+- Introduced a registry key that allows you to set the precedence number for custom rules to be more than 100, if needed. The precedence of the first standard rule can be set using the key **HKLM:\SOFTWARE\Microsoft\Azure AD Connect\FirstStandardRulePrecedence,** allowing for more custom rules. If no value is set, 100 is the default.
 - Cmdlets in ADSync PowerShell module that communicate with Microsoft Entra ID now require Microsoft Entra ID login, for example, `Add-ADSyncAADServiceAccount` or `Get-ADSyncExportDeletionThreshold`
 
 ### Decommissioned features

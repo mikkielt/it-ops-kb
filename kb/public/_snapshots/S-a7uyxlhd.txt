@@ -1,0 +1,105 @@
+source: S-a7uyxlhd
+url: https://github.com/pykeio/ort/releases/tag/v2.0.0-rc.13
+title: ort release notes v2.0.0-rc.13
+publisher: pyke.io (pykeio/ort)
+licence: MIT OR Apache-2.0 (pykeio/ort LICENSE-MIT, LICENSE-APACHE)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+## Repository navigation
+# v2.0.0-rc.13
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+decahedron1
+released this
+28 Jul 08:13
+·
+107 commits
+to main
+since this release
+v2.0.0-rc.13
+002f41a
+This commit was signed with the committer’s verified signature.
+decahedron1
+Carson M.
+GPG key ID: 5E30C893F305E6AF
+Verified
+Learn about vigilant mode.
+# 2.0.0-rc.13
+### 💖 If you find ort useful, please consider sponsoring us on Open Collective 💖
+🤔 Need help upgrading? Ask questions in GitHub Discussions or in the pyke.io Discord server!
+## 🎯 Execution provider clarity
+EP structs like ep::CUDA are now compile-time gated behind their respective Cargo feature flags. The EP feature flags only modifying runtime behavior was a common pain point, and this change brings ort in line with, like, every other Rust crate in existence.
+⚠️ ort will now throw an error at link time if download-binaries is enabled and no binaries contain all of the requested EPs. Previously, if you enabled a nonsensical combination like cuda + coreml, ort would silently fall back to a CPU-only build. This caused great confusion as the only indicator of what went wrong was in log messages that don't show by default. A new lax-feature-matching Cargo feature will fallback to the closest fit instead of erroring.
+## 🍎 ONNX Runtime 1.28
+rc.13 skips ahead 4 ONNX Runtime versions to v1.28, bringing new operator support, bug & security fixes, and performance improvements.
+## ✖️ No CUDA 12
+rc.13 only ships CUDA 13 binaries, as ONNX Runtime has deprecated CUDA 12.
+## 🧩 Custom operator ergonomics
+Custom operators have been reworked to have a more Rusty interface:
+struct MyOperator;
+impl Operator for MyOperator {
++ type Kernel<'attr> = ort::operator::BoxedKernel<'attr>;
+fn name(&self) -> &str {
+"MyOperator"
+}
+- fn inputs(&self) -> Vec<OperatorInput> {
+- vec![OperatorInput::required(TensorElementType::Float32), OperatorInput::required(TensorElementType::Float32)]
++ fn inputs(&self) -> impl IntoIterator<Item = OperatorInput> {
++ [OperatorInput::required(TensorElementType::Float32), OperatorInput::required(TensorElementType::Float32)]
+}
+- fn outputs(&self) -> Vec<OperatorOutput> {
+- vec![OperatorOutput::required(TensorElementType::Float32)]
++ fn outputs(&self) -> impl IntoIterator<Item = OperatorOutput> {
++ [OperatorOutput::required(TensorElementType::Float32)]
+}
+- fn create_kernel(&self, _: &KernelAttributes) -> ort::Result<Box<dyn Kernel>> {
+- Ok(Box::new(|ctx: &KernelContext| {
++ fn create_kernel<'attr>(&self, _: &KernelContext<'attr>) -> ort::Result<Self::Kernel<'attr>> {
++ Ok(Box::new(|ctx: &ComputeContext| {
+...
+}))
+}
+}
+## ℹ️ Custom diagnostic messages
+ort now uses the wonderful #[diagnostic] attributes to drastically improve the clarity of commonly encountered errors.
+## ☑️ Miri-approved
+Test coverage was expanded and ort was ran against Miri, and a few unsoundness bugs were fixed.
+## ✨ Other features
+8db51e7 Add VSINPU EP
+5688cce (ort-web): Allow creating tensors from images.
+726dc7c Expose the DirectML EP API.
+5e669f6 Support string array operator attributes
+5f99738 Support float16 tensor usage with the native f16 type on nightly Rust
+62ad710 (ort-candle): Update candle to 0.11
+d5dc28f (ort-tract): Update tract to 0.23
+## 🔧 Other fixes
+d5eb59f Committing a session which has a map input/output will no longer panic.
+d2838f8 Fixed the fallback behavior when ort-sys can't create a system-wide cache dir.
+26f656b Allow DynTensor to be Cloned.
+e336d6b Allow 0 dimensions in tensors.
+14e9d29 Fix tensor byte size calculation for 8-bit floating point types.
+7bdabcc Allow try_extract_scalar to work on tensors with shape [1].
+85f6074 Fixed retrieving string attributes in custom operator shape inference contexts.
+17ed727 Don't deadlock when load-dynamic fails.
+a5ee3ad Don't force std for ndarray when std is enabled.
+d535605 Allow copy-dylibs to work independently of download-binaries.
+49413ba Rerun build.rs on macOS when Xcode updates.
+bb20575 Warn when AVX-2 isn't supported when using pyke binaries.
+9c840a3 Support FreeBSD.
+01f377b Support Mac Catalyst.
+### ❤️🧡💛💚💙💜
+Assets
+2
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+8 people reacted

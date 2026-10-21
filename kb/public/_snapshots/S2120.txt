@@ -3,7 +3,7 @@ url: https://a2a-protocol.org/latest/specification/
 title: A2A Protocol Specification
 publisher: Linux Foundation / a2aproject
 licence: Apache-2.0 (a2aproject/A2A LICENSE)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Agent2Agent (A2A) Protocol Specification¶
@@ -2247,27 +2247,48 @@ Consistent representation of numbers, strings, and other primitive values
 Removal of insignificant whitespace
 Signature Field Exclusion: The signatures field itself MUST be excluded from the content being signed to avoid circular dependencies.
 Example of Default Value Removal:
-Original Agent Card fragment:
+Original Agent Card:
 {
 "name": "Example Agent",
-"description": "",
+"description": "An example agent that echoes messages.",
+"supportedInterfaces": [
+{
+"url": "https://example.com/a2a/v1",
+"protocolBinding": "JSONRPC",
+"protocolVersion": "1.0"
+}
+],
+"version": "1.0.0",
 "capabilities": {
 "streaming": false,
 "pushNotifications": false,
 "extensions": []
 },
-"skills": []
+"defaultInputModes": ["text/plain"],
+"defaultOutputModes": ["text/plain"],
+"skills": [
+{
+"id": "echo",
+"name": "Echo",
+"description": "Echoes the input.",
+"tags": ["echo"]
+}
+]
 }
 Applying the canonicalization rules:
 name: "Example Agent" - REQUIRED field → include
-description: "" - REQUIRED field → include
+description: "An example agent that echoes messages." - REQUIRED field → include
+supportedInterfaces: array - REQUIRED field → include
+version: "1.0.0" - REQUIRED field → include
 capabilities: object - REQUIRED field → include (after processing children)
 streaming: false - optional field, present in JSON (explicitly set) → include
 pushNotifications: false - optional field, present in JSON (explicitly set) → include
 extensions: [] - repeated field (not REQUIRED) with empty array → omit
-skills: [] - REQUIRED field → include
+defaultInputModes: ["text/plain"] - REQUIRED field → include
+defaultOutputModes: ["text/plain"] - REQUIRED field → include
+skills: array - REQUIRED field → include
 After applying RFC 8785:
-{"capabilities":{"pushNotifications":false,"streaming":false},"description":"","name":"Example Agent","skills":[]}
+{"capabilities":{"pushNotifications":false,"streaming":false},"defaultInputModes":["text/plain"],"defaultOutputModes":["text/plain"],"description":"An example agent that echoes messages.","name":"Example Agent","skills":[{"description":"Echoes the input.","id":"echo","name":"Echo","tags":["echo"]}],"supportedInterfaces":[{"protocolBinding":"JSONRPC","protocolVersion":"1.0","url":"https://example.com/a2a/v1"}],"version":"1.0.0"}
 #### 8.4.2. Signature Format¶
 Signatures use the JSON Web Signature (JWS) format as defined in RFC 7515. The AgentCardSignature object represents JWS components using three fields:
 protected (required, string): Base64url-encoded JSON object containing the JWS Protected Header

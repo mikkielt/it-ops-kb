@@ -90,12 +90,14 @@ choice (Presidio + spaCy `en_core_web_lg`, in-process) is not itself re-argued h
 - Text PII lists two supported API versions, stable **2026-05-01** (GA) and **2026-05-15-preview**, and marks
   some entity types as preview (among them Password, ZipCode, Airport, DateOfBirth, PassportNumber, CVV and
   VIN) — a concrete example of model/version drift a shared consumer must pin against. [DOC S2096]
-- Pricing model: **text records** (1,000 characters = 1 record), 5,000 records/month free across
-  several Language features including PII, then per-1,000-record tiered pricing that steps down at
-  0.5M-2.5M / 2.5M-10M / 10M+ volumes; the container/commitment path prices annual disconnected licences
+- Pricing model: **text records** (1,000 characters = 1 record), a free web tier of 5,000 records/month
+  that lists PII detection among its features, then per-1,000-record tiered pricing for the Standard tier
+  that steps down at 0.5M-2.5M / 2.5M-10M / 10M+ volumes (the page's embedded price data for most
+  regions is $1.00, $0.75, $0.30 and $0.25 per 1,000 records for 0-0.5M / 0.5M-2.5M / 2.5M-10M / 10M+,
+  higher for US Gov regions; the rendered page shows "$-" placeholders, so these come from its data
+  attributes); the container/commitment path prices annual disconnected licences
   by total yearly record volume (documented tiers, e.g. ~120M or ~36M records/year) rather than per call.
-  Exact currency amounts were not retrieved (pricing calculator gated). [DOC S2095 — see `gaps.md` for
-  the unresolved dollar figures]
+  [DOC S2095]
 - Microsoft's stated no-retention posture: "Foundry Tools containers don't send customer data, such as
   the image or text that's being analyzed, to Microsoft" — billing telemetry only, not payload. [DOC
   S2091]

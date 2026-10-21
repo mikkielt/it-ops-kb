@@ -2,8 +2,8 @@
 topic: security/kali-releases-rolling-model
 priority: P3
 applies_to: "Kali Linux release cadence and version names, the kali-rolling and kali-last-snapshot branches, how kali-dev feeds them, the Debian relation and update policy, and what the 2026.2 release changed"
-retrieved_utc: 2026-10-15
-sources: [S-2p6jllwx, S-5455keob, S-srhdbl23, S-4fzpivdx, S-nc74uv2o, S-a3rz5fyq, S-esfl6hqk, S-o6curntz]
+retrieved_utc: 2026-10-21
+sources: [S-2p6jllwx, S-5455keob, S-srhdbl23, S-4fzpivdx, S-nc74uv2o, S-a3rz5fyq, S-o6curntz, S-4ikfjmsv]
 status: partial
 ---
 
@@ -32,7 +32,7 @@ Kali is a Debian-testing derivative that is a rolling distribution: `kali-rollin
 - The 2026.2 post says the polkit and xrdp updates need a reboot (otherwise GUI applications started as root fail), and that for Hyper-V Enhanced Session Mode the fix is to toggle it again in `kali-tweaks`. [DOC S-a3rz5fyq]
 - Kali 2026.2 ships kernel 6.19 to avoid breaking NVIDIA DKMS drivers; the 7.0 kernel is in `kali-experimental` and is also stated as available in `kali-rolling`. [DOC S-a3rz5fyq]
 - The 2026.2 post announces a consistency pass over all image build scripts for 2026.3, and warns that CI pipelines or workflows may need tweaking; it also notes weekly automated builds with newer packages, not QA'd like release images. [DOC S-a3rz5fyq]
-- At commit `e86f126b` the `kali-meta` changelog's newest entry is version `2026.3.9`, uploaded to `kali-dev` on 14 September 2026: the metapackages already carry the 2026.3 series although the release page lists 2026.2 as newest. [CODE S-esfl6hqk: debian/changelog#L1-L5]
+- At commit `e86f126b` the `kali-meta` changelog's newest entry is version `2026.3.9`, uploaded to `kali-dev` on 14 September 2026: the metapackages already carry the 2026.3 series although the release page lists 2026.2 as newest. [CODE S-4ikfjmsv: debian/changelog#L1-L5]
 - An agent that manages a Kali host should treat `kali-rolling` as moving state: pin by image or release date for repeatability, `kali-last-snapshot` for slower change, and `full-upgrade` as a change that can need a reboot. [DER S-5455keob, S-nc74uv2o, S-a3rz5fyq: branches, update steps, reboot note]
 - Whether a 2026.3 image release is published, and the kernel `kali-rolling` installs by default today, were not read. [UNK: logged in `_gaps.md`]
 

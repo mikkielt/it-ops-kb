@@ -1,0 +1,136 @@
+source: S-hs7ypnlx
+url: https://dora.dev/capabilities/
+title: DORA: Capabilities
+publisher: DORA (dora.dev, Google Cloud)
+licence: CC BY 4.0 (page footer)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+#### AI-accessible internal data
+AI
+Connecting AI to your internal documentation and codebases moves it from a generic assistant to a specialized expert.
+Learn more
+#### Clear and communicated AI stance
+AI
+Ambiguity creates risk. A clear policy provides the psychological safety needed for effective experimentation.
+Learn more
+#### Code maintainability
+core
+Make it easy for developers to find, reuse, and change code, and keep dependencies up-to-date.
+Learn more
+#### Continuous delivery
+core
+Make deploying software a reliable, low-risk process that can be performed on demand at any time.
+Learn more
+#### Continuous integration
+core
+Learn about common mistakes, ways to measure, and how to improve on your continuous integration efforts.
+Learn more
+#### Customer feedback
+Drive better organizational outcomes by gathering customer feedback and incorporating it into product and feature design.
+Learn more
+#### Database change management
+core
+Make sure database changes don't cause problems or slow you down.
+Learn more
+#### Deployment automation
+core
+Best practices and approaches for deployment automation and reducing manual intervention in the release process.
+Learn more
+#### Documentation quality
+core
+Maintain accurate, well-organized, user-centric internal documentation to empower teams throughout the software development process.
+Learn more
+#### Empowering teams to choose tools
+core
+Empower teams to make informed decisions on tools and technologies. Learn how these decisions drive more effective software delivery.
+Learn more
+#### Flexible infrastructure
+core
+Find out how to manage cloud infrastructure effectively so you can achieve higher levels of agility, availability, and cost visibility.
+Learn more
+#### Generative organizational culture
+core
+Discover how growing a generative, high-trust culture drives better organizational and software delivery performance.
+Learn more
+#### Healthy data ecosystems
+AI
+The benefits of AI are significantly amplified by high-quality, accessible, and unified internal data.
+Learn more
+#### Job satisfaction
+core
+Find out about the importance of ensuring your people have the tools and resources to do their job, and of making good use of their skills and abilities.
+Learn more
+#### Learning culture
+Grow a learning culture and understand its impact on your organizational performance.
+Learn more
+#### Loosely coupled teams
+core
+Learn about moving from a tightly coupled architecture to service-oriented and microservice architectures without re-architecting everything at once
+Learn more
+#### Monitoring and observability
+core
+Learn how to build tooling to help you understand and debug your production systems.
+Learn more
+#### Monitoring systems to inform business decisions
+Improve monitoring across infrastructure platforms, middleware, and the application tier, so you can provide fast feedback to developers.
+Learn more
+#### Pervasive security
+core
+Build security into the software development lifecycle without compromising delivery speed.
+Learn more
+#### Platform engineering
+AI
+A platform provides the automated, secure pathways that allow AI’s benefits to scale across the organization.
+Learn more
+#### Proactive failure notification
+Set proactive failure notifications to identify critical issues and act on problems before they arise.
+Learn more
+#### Streamlining change approval
+core
+Replace heavyweight change-approval processes with peer review, to get the benefits of a more reliable, compliant release process without sacrificing speed.
+Learn more
+#### Team experimentation
+Innovate faster by building empowered teams that can try out new ideas without approval from people outside the team.
+Learn more
+#### Test automation
+core
+Improve software quality by building reliable automated test suites and performing all kinds of testing throughout the software delivery lifecycle.
+Learn more
+#### Test data management
+core
+Understand the right strategies for managing test data effectively along with approaches to provide fast, secure data access for testing.
+Learn more
+#### Transformational leadership
+Learn how effective leaders influence software delivery performance by driving the adoption of technical and product management capabilities.
+Learn more
+#### Trunk-based development
+Prevent merge-conflict hassles with trunk-based development practices.
+Learn more
+#### User-centric focus
+AI
+A focus on user needs is essential to ensure that AI-accelerated teams are moving quickly in the right direction.
+Learn more
+#### Version control
+core
+AI
+Version control ensures reproducibility and traceability, serving as a critical safety net as AI accelerates the velocity of change.
+Learn more
+#### Visibility of work in the value stream
+Understand and visualize the flow of work from idea to customer outcome in order to drive higher performance.
+Learn more
+#### Visual management
+Learn about the principles of visual management to promote information sharing, get a common understanding of where the team is, and how to improve.
+Learn more
+#### Well-being
+core
+A focus on employee happiness and work environment can improve organizational performance while helping retain talent.
+Learn more
+#### Work in process limits
+Prioritize work, limit the amount of things that people are working on, and focus on getting a small number of high-priority tasks done.
+Learn more
+#### Working in small batches
+core
+AI
+Create shorter lead times and faster feedback loops by working in small batches, counteracting the risk of instability as AI accelerates development.
+Learn more

@@ -2,7 +2,7 @@
 topic: arch/wireguard-hub-and-spoke
 priority: P3
 applies_to: "WireGuard with wg-quick on Linux hosts: one hub, many spokes"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-fqnfqney, S-lyyx35bw]
 status: complete
 ---

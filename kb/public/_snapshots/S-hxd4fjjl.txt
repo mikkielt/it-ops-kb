@@ -1,0 +1,23 @@
+source: S-hxd4fjjl
+url: https://arxiv.org/abs/2506.15862
+title: MoR: Better Handling Diverse Queries with a Mixture of Sparse, Dense, and Human Retrievers
+publisher: arXiv preprint (2506.15862)
+licence: CC BY 4.0 (licence link on the arXiv abstract page)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# MoR: Better Handling Diverse Queries with a Mixture of Sparse, Dense, and Human Retrievers
+id: http://arxiv.org/abs/2506.15862v1
+authors: Jushaan Singh Kalra; Xinran Zhao; To Eun Kim; Fengyu Cai; Fernando Diaz; Tongshuang Wu
+published: 2025-06-18T20:15:23Z
+updated: 2025-06-18T20:15:23Z
+categories: cs.IR; cs.AI; cs.CL
+comment: 19 pages, 3 figures
+
+Retrieval-augmented Generation (RAG) is powerful, but its effectiveness hinges on which retrievers we use and how.
+Different retrievers offer distinct, often complementary signals: BM25 captures lexical matches; dense retrievers, semantic similarity.
+Yet in practice, we typically fix a single retriever based on heuristics, which fails to generalize across diverse information needs.
+Can we dynamically select and integrate multiple retrievers for each individual query, without the need for manual selection?
+In our work, we validate this intuition with quantitative analysis and introduce mixture of retrievers: a zero-shot, weighted combination of heterogeneous retrievers.
+Extensive experiments show that such mixtures are effective and efficient: Despite totaling just 0.8B parameters, this mixture outperforms every individual retriever and even larger 7B models by +10.8% and +3.9% on average, respectively.
+Further analysis also shows that this mixture framework can help incorporate specialized non-oracle human information sources as retrievers to achieve good collaboration, with a 58.9% relative performance improvement over simulated humans alone.

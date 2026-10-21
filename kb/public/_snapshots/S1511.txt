@@ -3,7 +3,7 @@ url: https://docs.gitlab.com/user/application_security/dependency_scanning/depen
 title: Dependency scanning by using SBOM
 publisher: GitLab
 licence: CC BY-SA 4.0 (GitLab docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 /
@@ -148,7 +148,6 @@ Available as a job artifact of the dependency scanning job.
 Uploaded as a dependency_scanning report.
 Saved in the root directory of the project.
 ### Malicious packages
-Status: Beta
 Dependency scanning identifies malicious packages when it ingests a CycloneDX SBOM. GitLab
 compares the components in the SBOM against
 GitLab malware advisories,
@@ -167,7 +166,7 @@ resolve a malicious package finding, remove the package from the project rather 
 These vulnerabilities always have Critical severity. Malware advisories state severity directly
 rather than deriving it from a Common Vulnerability Scoring System (CVSS) score.
 Each vulnerability has an identifier in the form GLAM-<year>-<month>-<sequence>, for example
-GLAM-2026-09-00138. It does not carry a Common Vulnerabilities and Exposures (CVE) identifier.
+GLAM-2026-09-00138.
 Malware advisories cover fewer package types than dependency scanning supports generally. For the
 full list, see
 Supported package types.
@@ -203,6 +202,12 @@ The root directory and its immediate subdirectories are included.
 Hidden directories are excluded.
 To improve performance, you can exclude specific paths, limit the scan directory depth, and exclude
 development and test dependencies.
+### Scan limits
+Each project has a soft throttle of 50 SBOM scans per hour across its pipelines.
+Additional scans are accepted at lower priority, which can increase scan duration for high-volume
+projects such as monorepos.
+You cannot configure this throttle.
+For details, see dependency scanning using SBOM limits.
 ### Exclude paths from scanning
 To improve scanning performance, exclude paths. For example, you might exclude paths that contain
 documentation. When you exclude paths, be selective to avoid hiding vulnerabilities.
@@ -307,7 +312,7 @@ json
 {
 "name": "Iesi.Collections",
 "version": "4.0.4",
-"purl": "pkg:nuget/Iesi.Collections@4.0.4?sha512=8e579b4a3bf66bb6a661f297114b0f0d27f6622f6bd3f164bef4fa0f2ede865ef3f1dbbe7531aa283bbe7d86e713e5ae233fefde9ad89b58e90658ccad8d69f9",
+"purl": "pkg:nuget/[email protected]?sha512=8e579b4a3bf66bb6a661f297114b0f0d27f6622f6bd3f164bef4fa0f2ede865ef3f1dbbe7531aa283bbe7d86e713e5ae233fefde9ad89b58e90658ccad8d69f9",
 "hashes": [
 {
 "alg": "SHA-512",
@@ -315,7 +320,7 @@ json
 }
 ],
 "type": "library",
-"bom-ref": "pkg:nuget/Iesi.Collections@4.0.4?sha512=8e579b4a3bf66bb6a661f297114b0f0d27f6622f6bd3f164bef4fa0f2ede865ef3f1dbbe7531aa283bbe7d86e713e5ae233fefde9ad89b58e90658ccad8d69f9"
+"bom-ref": "pkg:nuget/[email protected]?sha512=8e579b4a3bf66bb6a661f297114b0f0d27f6622f6bd3f164bef4fa0f2ede865ef3f1dbbe7531aa283bbe7d86e713e5ae233fefde9ad89b58e90658ccad8d69f9"
 }
 ## Customizing analyzer behavior
 How to customize the analyzer varies depending on the enablement solution.
@@ -551,13 +556,35 @@ Wrapper requirement: When a Gradle wrapper (gradlew) is present, it must referen
 Plugin and version compatibility: Projects that require specific Gradle plugins, custom toolchains, or Java versions other than Java 17 might fail. Override the resolution image (spec:inputs:gradle_resolution_image) with one that contains the required build environment.
 #### Python resolution known issues
 Default environment: Python 3.12, pip-tools 7
+The resolution job passes requirements files to pip-compile, which supports these options:
+Nested requirements files: -r and --requirement lines are resolved the same way as with
+pip install.
+Dependencies from the included files appear in the generated lockfile.
+Package index options: --index-url and --extra-index-url lines in a requirements file
+apply during resolution.
+The index URLs are not written to the generated lockfile.
 The following limitations apply for Python projects:
 Pipfile unsupported: Pipfile projects (without a Pipfile.lock file) are not supported. The Python resolution job won’t be triggered on the presence of Pipfile file in the repository.
-Git/VCS dependencies: Dependencies specified as Git or VCS URLs (git+https://...) cannot be resolved. The resolution command will fail for this specific manifest file but continue to process the others, if any.
+Git/VCS dependencies: Dependencies specified as Git or VCS URLs (git+https://...) cannot be
+resolved.
+The default resolution image does not include git, so pip-compile fails for the manifest
+file that contains or includes the URL.
+The resolution job continues to process other manifest files, if any.
+To work around this issue, use a
+custom resolution image that includes git.
+To skip a file that does not affect your application, for example, a documentation
+requirements file, exclude its path.
 Local/editable installs: Entries using -e ., file:, or local path references are stripped before resolution and a warning is emitted. Those packages do not appear in the output.
 setup.py with dynamic install_requires: when install_requires reads from a file at runtime, a warning is emitted and pip-compile will attempt resolution but might fail.
 pyproject.toml without a [project] table: A pyproject.toml that contains only build-system configuration is skipped and a warning is emitted.
 DS_INCLUDE_DEV_DEPENDENCIES scope: Development dependency inclusion is implemented only for pyproject.toml with [dependency-groups].
+Native extensions: Packages that need a C compiler (gcc) or a Rust toolchain to build from
+source might fail to resolve when no pre-built wheel is available for the resolution environment.
+The default resolution image does not include these build tools.
+To work around this issue, create the lockfile with pip-compile in an
+environment that has the build tools.
+You can also use a custom resolution image
+that includes them.
 ## Create lockfile or dependency graph export manually
 If your project doesn’t have a supported lockfile or
 dependency graph export committed to its

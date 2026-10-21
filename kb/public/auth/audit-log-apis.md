@@ -2,8 +2,8 @@
 topic: auth/audit-log-apis
 priority: P2
 applies_to: "Office 365 Management Activity API, Microsoft Purview Audit (Standard/Premium), Microsoft Graph auditLogQuery (security namespace), Intune deviceManagement/auditEvents, Entra ID directoryAudits/signIns; docs retrieved 2026-09-26"
-retrieved_utc: 2026-09-26
-sources: [S-2xp7a2zn, S-5mkng6kh, S-vkmx3p22, S-pzhjwitg, S-p7uijoop, S-ojti56n4, S-wsetw6to, S-llv35yw5, S-tmpjr3zu, S-otcf27ix, S-mubyxer3, S-kt6usubu, S-s7cz6clh, S-iaxywacb, S-raqjhvyk, S-p26bti63, S-n5ozkko3, S-5kbhtctd, S-htpihbqv]
+retrieved_utc: 2026-10-21
+sources: [S-2xp7a2zn, S-5mkng6kh, S-vkmx3p22, S-pzhjwitg, S-p7uijoop, S-ojti56n4, S-wsetw6to, S-llv35yw5, S-tmpjr3zu, S-otcf27ix, S-mubyxer3, S-kt6usubu, S-s7cz6clh, S-iaxywacb, S-raqjhvyk, S-p26bti63, S-n5ozkko3, S-htpihbqv, S-2yxrvyer]
 status: complete
 ---
 
@@ -77,8 +77,10 @@ ConfigMgr status messages, SQL Server Audit, GitLab).
 
 ### Microsoft Graph Purview Audit Search API (`security/auditLog/queries`)
 - The newer async query model: `POST /security/auditLog/queries` creates an `auditLogQuery` with optional
-  `displayName`, `filterStartDateTime`, `keywordFilter` (free-text over non-indexed properties),
-  `serviceFilter` (the `Workload` value), `operationFilters`, `userPrincipalNameFilters`, `ipAddressFilters`,
+  `displayName`, `filterStartDateTime`, `keywordFilter` (free text matched only against the non-indexed,
+  workload-specific properties inside `auditData`; indexed properties such as the operation name are not matched
+  by keyword, use `operationFilters` for those),
+  `serviceFilters` (a collection; the `Workload` value), `operationFilters`, `userPrincipalNameFilters`, `ipAddressFilters`,
   `objectIdFilters` and `administrativeUnitIdFilters`; the object's `status` is one of `notStarted`, `running`,
   `succeeded`, `failed` or `cancelled`. [DOC S-ojti56n4, S-wsetw6to]
 - `GET /security/auditLog/queries/{id}` reads the query object (including its `status`);
@@ -125,7 +127,7 @@ ConfigMgr status messages, SQL Server Audit, GitLab).
   storage account; the destination must exist first, and logs can take up to three days to start appearing
   there. [DOC S-s7cz6clh]
 - Integrating Microsoft Entra logs with Azure Monitor (Log Analytics) automatically enables the Microsoft Entra
-  data connector in Microsoft Sentinel. [DOC S-5kbhtctd]
+  data connector in Microsoft Sentinel. [DOC S-2yxrvyer]
 - Custom security attribute audit logs are a subset of the standard audit logs with their own diagnostic
   settings (the **Custom security attributes** tab); Microsoft recommends keeping them separate from directory
   audit logs so attribute assignments are not revealed inadvertently; configuring them needs the

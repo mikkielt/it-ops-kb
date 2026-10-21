@@ -3,19 +3,35 @@ url: https://github.com/PowerShell/DSC/tree/release/v3.3
 title: release/v3.3 branch head (git ls-remote ea572fa)
 publisher: Microsoft (PowerShell/DSC)
 licence: MIT
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-PowerShell
-/
+## Repository navigation
 DSC
 Public
-Notifications
-You must be signed in to change notification settings
-Fork
-76
-Star
-530
+NotificationsYou must be signed in to change notification settings
+Fork78 (78)
+Star541 (541)You must be signed in to star a repository
+## About
+This repo is for the DSC v3 project
+### Resources
+Readme
+License
+### Code of conduct
+Code of conduct
+### Contributing
+Contributing
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+541 stars
+### Watchers
+24 watching
+### Forks
+78 forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit
@@ -171,11 +187,11 @@ Security policy
 Activity
 Custom properties
 ### Stars
-530 stars
+541 stars
 ### Watchers
 24 watching
 ### Forks
-76 forks
+78 forks
 Report repository
 ## Releases
 ## Packages

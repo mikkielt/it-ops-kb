@@ -1,0 +1,221 @@
+source: S-5hbh6sac
+url: https://wiki.gentoo.org/wiki/Emerge
+title: emerge (Gentoo Wiki)
+publisher: Gentoo Wiki
+licence: CC-BY-SA-4.0
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+Jump to: content
+Get Gentoo!
+gentoo.org sites
+gentoo.org
+Wiki
+Bugs
+Packages
+Forums
+Planet
+Archives
+Devmanual
+Gitweb
+Infra status
+Wiki
+#
+emerge
+From Gentoo Wiki
+Jump to:navigation
+Jump to:search
+Other languages:
+Deutsch
+English
+español
+français
+magyar
+русский
+日本語
+Portage - the heart of Gentoo
+emerge — configuration — ebuild repository — dispatch-conf
+world file — USE flags — ebuilds — profiles
+upgrades — using testing packages — Gentoo binhost
+tools — gentoolkit — eselect
+Portage FAQ — cheat sheet — FAQ
+all articles
+Resources
+Project
+Package information
+emerge is the main command-line interface to Portage, the Gentoo package manager.
+emerge is used to download, install, update, and maintain software packages on Gentoo Linux.
+emerge is a very powerful and flexible command that can, among other things, automatically build and install packages "from source", fetch and install "ready-to-use" binary packages, create binary packages, search for packages, report system information, etc.
+Tip
+The emerge command has many possible options. For extensive documentation and a complete list of all options see man emerge.
+See also
+See the Portage article for Portage usage beyond the emerge command.
+The working with Gentoo and working with Portage chapters of the handbook have sections on using the emerge command.
+Some common questions about the emerge command are answered in the FAQ and in the Portage FAQ.
+## Contents
+1 Usage
+1.1 Invocation
+1.2 Install a package
+1.3 Search for packages
+1.4 Remove (uninstall / depclean) packages
+1.4.1 Cleaning out orphaned packages
+1.5 Update packages
+1.6 Get system information
+2 Tips
+2.1 Verifying and (re)downloading distfiles
+2.2 Do not add dependencies to the world file
+2.3 Resume emerge
+2.4 Temporary Portage configuration through environment variables defined for current invocation
+2.5 re-emerging a package that provided a specific File
+3 Troubleshooting
+3.1 Emerging packages fail during 'unpack' stage
+4 See also
+## Usage
+### Invocation
+The emerge command should be followed by appropriate options, actions, and package or set of packages. If emerge is invoked without any parameters or package, it will print a help text and exit.
+For most uses emerge will need to be executed with superuser privileges, though when used simply to report information it may be possible to run it as an unprivileged user.
+If emerge is invoked with a package and no other options, it will immediately attempt to install the corresponding package without requesting confirmation from the user. This is often not the desired behavior, so one of the following options will probably be required.
+The --ask (-a) and --pretend (-p) options allow examination of the planned system changes before they are actually made. The --ask option will make emerge display the intended changes and ask for confirmation before continuing. The --pretend option will simply display the intended changes and halt, and does not require superuser privileges.
+Warning
+When using the --ask option, an accidental press of the Enter key during processing will result in the confirmation prompt being skipped. See the --ask option section of man emerge for more information.
+emerge provides rich output, with information and warnings about individual packages and the system as a whole. The --verbose option is useful to have Portage show even more information, such as what USE flags will be used to install or update a package, what USE flags are available for each package, the size of the package download, overlay name.
+Running emerge with the --help option provides information on command line options:
+user $emerge --help
+emerge: command-line interface to the Portage system
+Usage:
+emerge [ options ] [ action ] [ ebuild | tbz2 | file | @set | atom ] [ ... ]
+emerge [ options ] [ action ] < @system | @world >
+emerge < --sync | --metadata | --info >
+emerge --resume [ --pretend | --ask | --skipfirst ]
+emerge --help
+Options: -[abBcCdDefgGhjkKlnNoOpPqrsStuUvVwW]
+[ --color < y | n > ] [ --columns ]
+[ --complete-graph ] [ --deep ]
+[ --jobs JOBS ] [ --keep-going ] [ --load-average LOAD ]
+[ --newrepo ] [ --newuse ] [ --noconfmem ] [ --nospinner ]
+[ --oneshot ] [ --onlydeps ] [ --quiet-build [ y | n ] ]
+[ --reinstall changed-use ] [ --with-bdeps < y | n > ]
+Actions: [ --depclean | --list-sets | --search | --sync | --version ]
+For more help consult the man page.
+Below is an example invocation of emerge, installing "package". The options -atv are short options for --ask (see above), --tree (display the dependency tree of packages to be installed), and --verbose (see above). Hover the mouse cursor over the red dotted boxes to see an explanation of each section of output:
+# emerge -atv package
+These are the packages that would be merged, in reverse order:
+Calculating dependencies... done!
+[ebuild U ] category/package-3.0-r2::gentoo [2.0::gentoo] USE="enabled -disabled toggled* new% (-unavailable)" MAKE_OPTIONS="-disabled" 777 kB
+[ebuild UD ] category/package-2.0::gentoo [3.0::gentoo] 777 kB
+[ebuild R ] category/package-1.0::gentoo 777 kB
+[ebuild N ] category/package-0.5::some-overlay-name 777 kB
+Total: 4 packages (1 new, 1 reinstall, 1 upgrade, 1 downgrade), Size of downloads: 3108 kB
+Would you like to merge these packages? [Yes/No]
+The U symbol shows a package that will be upgraded, D a package that will be downgraded, R re-emerged, N a new package. In square brackets is the version of the previously installed package. Packages present in the world file are shown in bold - these are the user-installed packages, the other packages will be dependencies, or from the system set.
+See also
+See the OUTPUT section, --verbose, and --pretend options of the emerge man page for complete explanation of how to read Portage output.
+In the context of Portage, the term "package" can have a similar meaning to "atom", see version specifier.
+### Install a package
+Packages are installed ("emerged") using the emerge command followed by a version specifier that indicates which package to install (and optionally a specific version, slot, and from which ebuild repository). emerge is executed with root privileges.
+Package functionality is governed by USE flags which can be set or unset depending on the intended use of a piece of software by editing their configuration in /etc/portage/package.use.
+Tip
+The --ask (-a) option is very useful, it will allow the emerge actions to be reviewed before the actual operation begins. The --verbose (-v) option will show more detailed information about what Portage will do, and is often helpful. Options can be set as default, if desired. Default options can be overridden on the command line, for example --ask=n.
+Warning
+If the --ask option is not provided, requested actions will be performed without asking for confirmation. The --pretend option may also be used.
+Note
+Some things, such as dependencies, should not be installed in this way. See do not add dependencies to the world file section.
+As an example, install the net-proxy/tinyproxy package with --ask and --verbose options:
+root #emerge --ask --verbose net-proxy/tinyproxy
+### Search for packages
+Note
+The emerge command's built-in search function described here may show limited results compared to other tools. The Latest version available is constrained by ACCEPT_KEYWORDS (derived from the current profile, make.conf, package.accept_keywords, etc.). In addition, the Latest version available and the Latest installed version are not slot-aware, so they will not show multiple versions by slot. This can lead to some confusion when tools like eix or eshowkw might show more results than emerge --search.
+See also
+See also eix, equery, and packages.gentoo.org for more advanced ways to search for packages.
+Search for packages with proxy in their names:
+user $emerge --search proxy
+Search for packages with proxy in their names or description:
+user $emerge --searchdesc proxy
+Search packages using a regular expression:
+user $emerge -s '%^python$'
+List all packages in a category:
+user $emerge -s '@^net-ftp/'
+### Remove (uninstall / depclean) packages
+To uninstall a package in Gentoo is colloquially said to depclean them. The --depclean (-c) option will remove the specified packages.
+The depclean option will not remove any packages that are currently dependencies of other installed packages, of the @system, or @profile sets.
+Important
+Make sure to review the list of packages that --depclean would remove by using the --ask or --pretend options.
+--depclean will remove dependencies that become superfluous due to the specified packages being uninstalled, any orphaned packages that might have been present on the system, and any packages that were only present on the system as a consequence of being the default dependency of a virtual package if another package that provides the virtual dependency has been installed. Sometimes, a package present on a system purely through one of these mechanisms may have become expected to be available, even though it has never been specifically installed (included in the @world set). In such cases it may be desirable to use the --noreplace option to add such packages to the world set.
+Some Portage operations, such as system updates, can sometimes orphan important packages (for example compilers or kernels), for example when a more recent version of such a core package gets emerged but before the user performs the steps to transition the system to use the latest version. Using the --depclean option in such cases can try to remove vital system packages. Take particular care not to remove for example current kernel sources or a required version of GCC.
+Here is an example of removing the net-proxy/tinyproxy package:
+root #emerge --ask --verbose --depclean net-proxy/tinyproxy
+An alternative to using --depclean to uninstall packages, is to use emerge --deselect (or -W option), then cleaning out orphaned packages, as described in the following section.
+Note
+Do not confuse the lower case -c switch, which is short for --depclean (and is safe), with the upper case -C switch which risks damaging the system and should only be used when absolutely required (see warning below).
+Warning
+Do not use the --unmerge (-C) option (unless its particular behavior is known to be specifically required). This option will remove important packages that are needed for the system to function, without warning.
+#### Cleaning out orphaned packages
+See also
+See remove orphaned packages for information on how to use emerge --depclean to remove potentially unused packages. See also the Portage FAQ.
+### Update packages
+See Upgrading Gentoo for instructions on how to update packages.
+### Get system information
+emerge can print system information that can be useful for troubleshooting. This information is often required to be posted when asking for support, or when filing a bug.
+user $emerge --info
+Extra information may be output by using the --verbose flag.
+## Tips
+### Verifying and (re)downloading distfiles
+To re-verify the integrity of and re-download previously removed/corrupted distfiles for all currently installed packages, run:
+root #emerge --ask --fetchonly --emptytree @world
+### Do not add dependencies to the world file
+If a dependency must be reinstalled, use the --oneshot (-1) option. Installing dependencies with the emerge package command would add them to the world file and may lead to issues.
+Installing dependencies with Portage for compiling custom source software is also ill advised: it is preferable to write an ebuild.
+See also
+See User:Sam/Portage help/Maintaining a Gentoo_system for more information.
+### Resume emerge
+If an emerge of several packages is interrupted (e.g. ctrl+c, crash...), the emerge may be resumed from the failed package with the --resume option. The --keep-going and --skipfirst options may also be of interest. See the emerge man page for details.
+### Temporary Portage configuration through environment variables defined for current invocation
+Warning
+Passing environment variables to Portage on the command line will only result in temporary changes to system configuration, and all such changes will be reverted by routine maintenance, such as a system update. Though this section can sometimes be useful, for example to preview the effects of configuration changes (e.g. with the --pretend option), it should not usually be used when installing or updating packages.
+Portage is normally configured through the Portage configuration files such as /etc/portage/make.conf, /etc/portage/package.accept_keywords, /etc/portage/package.use, etc. - see Portage configuration.
+The emerge command can be passed temporary configuration values by declaring environment variables on the command line, in order to affect behavior for that invocation alone. For example, to merge app-editors/emacs with the svg USE flag enabled, but not make this USE flag setting permanent:
+root #USE='svg' emerge app-editors/emacs
+Or to pass extra configuration options to packages that use the econf function in their ebuild:
+root #EXTRA_ECONF='--without-compress-install' emerge app-editors/emacs
+Note
+If using sudo to invoke emerge, environment variables may need to be set after the sudo invocation, as sudo won't usually preserve the environment from which it is run:
+user $sudo USE='svg' emerge -av app-editors/emacs
+### re-emerging a package that provided a specific File
+Sometimes it is useful to be able to re-emerge a package simply by specifying a particular file that was provided by that package.
+As an example, if the user wants to reinstall /usr/lib/libunwind.a but it is not known which package provided this file, the package from where that file came can be determined by emerge by simply indicating the file path:
+user $emerge -p /usr/lib/libunwind.a
+These are the packages that would be merged, in order:
+Calculating dependencies... done!
+Dependency resolution took 2.76 s (backtrack: 0/20).
+[ebuild R ] sys-libs/llvm-libunwind-17.0.6
+Only files that have been provided by a currently-installed package may be re-emerged in this way. See Pfl for other ways to find what packages files might "belong" to.
+## Troubleshooting
+See also
+See User:Sam/Portage help for topics on Portage issues.
+### Emerging packages fail during 'unpack' stage
+The following message can occur when emerging packages:
+* Error messages for package dev-libs/libinput-1.16.0:
+* The ebuild phase 'unpack' has exited unexpectedly. This type of behavior
+* is known to be triggered by things such as failed variable assignments
+* (bug #190128) or bad substitution errors (bug #200313). Normally, before
+* exiting, bash should have displayed an error message above. If bash did
+* not produce an error message above, it's possible that the ebuild has
+* called `exit` when it should have called `die` instead. This behavior
+* may also be triggered by a corrupt bash binary or a hardware problem
+* such as memory or cpu malfunction. If the problem is not reproducible or
+* it appears to occur randomly, then it is likely to be triggered by a
+* hardware problem. If you suspect a hardware problem then you should try
+* some basic hardware diagnostics such as memtest. Please do not report
+* this as a bug unless it is consistently reproducible and you are sure
+* that your bash binary and hardware are functioning properly.
+Although this issue may be due to the reasons listed in the output above, it can often be caused by low disk space in the path used by Portage to unpack the ebuild's source files. This location is set via the PORTAGE_TMPDIR variable and can be quickly found by querying Portage:
+user $portageq envvar PORTAGE_TMPDIR
+/var/tmp
+The df command may be used to view available disk space for the partition where PORTAGE_TMPDIR has been mounted (this will likely be the root (/) partition). See Freeing disk space for details on how to free up disk space.
+## See also
+dispatch-conf — a utility included with Portage, used to safely and conveniently manage configuration files after package updates.
+Portage — the official package manager and distribution system for Gentoo.
+Retrieved from "https://wiki.gentoo.org/index.php?title=Emerge&oldid=1441830"
+Categories:
+Portage core
+Command line tools

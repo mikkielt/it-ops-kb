@@ -1,0 +1,203 @@
+source: S-3etbob6s
+url: https://docs.rs/oxigraph/0.5.11/oxigraph/sparql/struct.PreparedSparqlQuery.html
+title: docs.rs oxigraph 0.5.11: struct oxigraph::sparql::PreparedSparqlQuery
+publisher: docs.rs (oxigraph crate rustdoc)
+licence: MIT OR Apache-2.0
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+oxigraph::sparql
+# Struct PreparedSparqlQuery
+Source
+pub struct PreparedSparqlQuery { /* private fields */ }
+Expand description
+A prepared SPARQL query.
+Allows customizing things like the evaluation dataset and substituting variables.
+Usage example:
+use oxigraph::model::{Literal, Variable};
+use oxigraph::sparql::{QueryResults, SparqlEvaluator};
+use oxigraph::store::Store;
+let prepared_query = SparqlEvaluator::new()
+.parse_query("SELECT ?v WHERE {}")?
+.substitute_variable(Variable::new("v")?, Literal::from(1));
+if let QueryResults::Solutions(mut solutions) =
+prepared_query.on_store(&Store::new()?).execute()?
+{
+assert_eq!(
+solutions.next().unwrap()?.get("v"),
+Some(&Literal::from(1).into())
+);
+}
+## Implementations§
+Source§
+### impl PreparedSparqlQuery
+Source
+#### pub fn substitute_variable(
+self,
+variable: impl Into<Variable>,
+term: impl Into<Term>,
+) -> Self
+Substitute a variable with a given RDF term in the SPARQL query.
+The variable must be part of the SELECT clause to be substituted.
+Usage example:
+use oxigraph::model::{Literal, Variable};
+use oxigraph::sparql::{QueryResults, SparqlEvaluator};
+use oxigraph::store::Store;
+let prepared_query = SparqlEvaluator::new()
+.parse_query("SELECT ?x ?v WHERE { BIND(?v+1 AS ?x) }")?
+.substitute_variable(Variable::new("v")?, Literal::from(1));
+if let QueryResults::Solutions(mut solutions) =
+prepared_query.on_store(&Store::new()?).execute()?
+{
+assert_eq!(
+solutions.next().unwrap()?.get("x"),
+Some(&Literal::from(2).into())
+);
+}
+Source
+#### pub fn dataset(&self) -> &QueryDataset
+Returns the query dataset specification of this prepared query.
+Source
+#### pub fn dataset_mut(&mut self) -> &mut QueryDataset
+Returns the query dataset specification of this prepared query.
+Source
+#### pub fn on_store(self, store: &Store) -> BoundPreparedSparqlQuery<'static>
+Bind the prepared query to the Store it should be evaluated on.
+Source
+#### pub fn on_transaction<'b>(
+self,
+transaction: &'b Transaction<'_>,
+) -> BoundPreparedSparqlQuery<'b>
+Bind the prepared query to the Transaction it should be evaluated on.
+Source
+#### pub fn on_queryable_dataset<'a, D: QueryableDataset<'a>>(
+self,
+queryable_dataset: D,
+) -> BoundPreparedSparqlQuery<'a, D>
+Bind the prepared query to the QueryableDataset it should be evaluated on.
+## Trait Implementations§
+Source§
+### impl Clone for PreparedSparqlQuery
+Source§
+#### fn clone(&self) -> PreparedSparqlQuery
+Returns a duplicate of the value. Read more
+1.0.0 (const: unstable) · Source§
+#### fn clone_from(&mut self, source: &Self)
+Performs copy-assignment from source. Read more
+## Auto Trait Implementations§
+§
+### impl !RefUnwindSafe for PreparedSparqlQuery
+§
+### impl !UnwindSafe for PreparedSparqlQuery
+§
+### impl Freeze for PreparedSparqlQuery
+§
+### impl Send for PreparedSparqlQuery
+§
+### impl Sync for PreparedSparqlQuery
+§
+### impl Unpin for PreparedSparqlQuery
+§
+### impl UnsafeUnpin for PreparedSparqlQuery
+## Blanket Implementations§
+Source§
+### impl<T> Any for T
+where
+T: 'static + ?Sized,
+Source§
+#### fn type_id(&self) -> TypeId
+Gets the TypeId of self. Read more
+Source§
+### impl<T> Borrow<T> for T
+where
+T: ?Sized,
+Source§
+#### fn borrow(&self) -> &T
+Immutably borrows from an owned value. Read more
+Source§
+### impl<T> BorrowMut<T> for T
+where
+T: ?Sized,
+Source§
+#### fn borrow_mut(&mut self) -> &mut T
+Mutably borrows from an owned value. Read more
+Source§
+### impl<ST, DT> CastableFrom<ST, Initialized, Initialized> for DT
+where
+ST: ?Sized,
+DT: ?Sized,
+Source§
+### impl<ST, DT> CastableFrom<ST, Uninit, Uninit> for DT
+where
+ST: ?Sized,
+DT: ?Sized,
+Source§
+### impl<T> CloneToUninit for T
+where
+T: Clone,
+Source§
+#### unsafe fn clone_to_uninit(&self, dest: *mut u8)
+🔬This is a nightly-only experimental API. (clone_to_uninit)
+Performs copy-assignment from self to dest. Read more
+Source§
+### impl<T> From<T> for T
+Source§
+#### fn from(t: T) -> T
+Returns the argument unchanged.
+Source§
+### impl<T, U> Into<U> for T
+where
+U: From<T>,
+Source§
+#### fn into(self) -> U
+Calls U::from(self).
+That is, this conversion is whatever the implementation of
+From<T> for U chooses to do.
+Source§
+### impl<T> Read<Exclusive, BecauseExclusive> for T
+where
+T: ?Sized,
+Source§
+### impl<T> Same for T
+Source§
+#### type Output = T
+Should always be Self
+Source§
+### impl<T> ToOwned for T
+where
+T: Clone,
+Source§
+#### type Owned = T
+The resulting type after obtaining ownership.
+Source§
+#### fn to_owned(&self) -> T
+Creates owned data from borrowed data, usually by cloning. Read more
+Source§
+#### fn clone_into(&self, target: &mut T)
+Uses borrowed data to replace owned data, usually by cloning. Read more
+Source§
+### impl<T, U> TryFrom<U> for T
+where
+U: Into<T>,
+Source§
+#### type Error = !
+The type returned in the event of a conversion error.
+Source§
+#### fn try_from(value: U) -> Result<T, !>
+Performs the conversion.
+Source§
+### impl<T, U> TryInto<U> for T
+where
+U: TryFrom<T>,
+Source§
+#### type Error = <U as TryFrom<T>>::Error
+The type returned in the event of a conversion error.
+Source§
+#### fn try_into(self) -> Result<U, <U as TryFrom<T>>::Error>
+Performs the conversion.
+Source§
+### impl<V, T> VZip<V> for T
+where
+V: MultiLane<T>,
+Source§
+#### fn vzip(self) -> V

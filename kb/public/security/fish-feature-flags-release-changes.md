@@ -2,7 +2,7 @@
 topic: security/fish-feature-flags-release-changes
 priority: P3
 applies_to: "fish 3.x to 4.9.3: the future feature flags that stage breaking changes (status features, fish_features, --features) and the release notes that changed scripting behaviour, from the 4.0.0 Rust port to 4.9.3"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-irnsu4to, S-eg4rjgcz, S-f6olkobv, S-mepkq6ry]
 status: complete
 ---

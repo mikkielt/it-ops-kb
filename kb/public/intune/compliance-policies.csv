@@ -37,7 +37,7 @@ compliance_status,inGracePeriod,managedDevice.complianceState,n/a,-,S-sc3fvmp6
 compliance_status,configManager,managedDevice.complianceState,n/a,-,S-sc3fvmp6
 custom_compliance_error,65007,custom compliance discovery script evaluation,n/a,Script returned failure,S-4t5e7ocm
 custom_compliance_error,65008,custom compliance discovery script evaluation,n/a,Setting missing in the script result,S-4t5e7ocm
-custom_compliance_error,65009,custom compliance discovery script evaluation,n/a,Invalid JSON for the discovered setting; can also be caused by output truncated past 2048 characters,S-4t5e7ocm
+custom_compliance_error,65009,custom compliance discovery script evaluation,n/a,Invalid JSON for the discovered setting; can also be caused by output truncated past 2048 characters,S-4t5e7ocm;S-yoeqntwt
 custom_compliance_error,65010,custom compliance discovery script evaluation,n/a,Invalid datatype for the discovered setting,S-4t5e7ocm
 limit,Custom compliance discovery script size,n/a,n/a,1 MB max,S-wjex623z
 limit,Custom compliance discovery script output size,n/a,n/a,1 MB max (the separate 2048-character truncation risk is on the 65009 row),S-wjex623z

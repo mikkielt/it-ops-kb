@@ -24,11 +24,11 @@ attribution. NCSC (UK), BSI and ANSSI publish narrower guidance (Intune packs, W
 
 ## Facts
 
-- The Security Compliance Toolkit 1.0 download page (id 55319) lists separate packages for Windows 11
-  23H2, 24H2 and 25H2 baselines (alongside Windows Server 2025, Edge, Microsoft 365 Apps, LGPO and
+- The Security Compliance Toolkit 1.0 download page (id 55319), read 2026-10-21, lists separate packages for Windows 11
+  23H2, 24H2, 25H2 and 26H2 baselines (alongside Windows Server 2025 version 2602, Edge v151, Microsoft 365 Apps 2512, LGPO and
   Policy Analyzer); the page's HTML embeds a direct `download.microsoft.com` URL for each file, so a
   plain HTTP fetch of the page yields the file list without the interactive selection flow [DOC S1400].
-- The Learn guide to the Security Compliance Toolkit lists Windows 11 baselines only up to version 24H2 (plus Windows 10, Windows Server 2016 to 2025, Microsoft 365 Apps for Enterprise 2412 and Edge 128) and four tools: Policy Analyzer, LGPO, Set Object Security and GPO to Policy Rules (which converts GPO backups to `.PolicyRules` files), so the download page above is newer than the guide. [DOC S1403]
+- The Learn guide to the Security Compliance Toolkit (read 2026-10-21) lists Windows 11 baselines for 23H2 to 26H2 (plus Windows 10 22H2, 21H2, 1809 and 1607, Windows Server 2016 to 2025, Microsoft 365 Apps for Enterprise 2512 and Edge 151) and four tools: Policy Analyzer, LGPO, Set Object Security and GPO to Policy Rules (which converts GPO backups to `.PolicyRules` files), so it now matches the download page. [DOC S1403]
 - Microsoft's security baselines guide says the baselines assume standard users without administrative rights, enforce a setting only if it mitigates a contemporary threat without causing worse operational issues, and can be applied with Group Policy, Configuration Manager or Intune; Windows Pro, Enterprise and Education editions support them. [DOC S1404]
 - Microsoft announced the Windows 11 version 24H2 security baseline on 2024-10-01 (techcommunity post),
   covering changed protections to LAN Manager, Kerberos, UAC and Defender Antivirus; a later update to the
@@ -72,11 +72,11 @@ attribution. NCSC (UK), BSI and ANSSI publish narrower guidance (Intune packs, W
   launch, applies Mark of the Web, sets the print RPC listener to Kerberos on member servers and adds
   `RESTRICTED SERVICES\PrintSpoolerService` to Impersonate a client after authentication [DOC S1419].
 - Intune lists separate baselines for Windows (Security Baseline for Windows 10 and later, latest
-  version 25H2), Defender for Endpoint (latest version 24H1; optimized for physical devices and *not
+  version 26H2), Defender for Endpoint (latest version 24H1; optimized for physical devices and *not
   recommended* for virtual machines or VDI endpoints) and Edge (latest version 139, April 2026; its
   settings moved to a new format in May 2023), besides Microsoft 365 Apps, HoloLens 2, Windows 365,
   Windows 365 for Agents, a Local AI Agent (OpenClaw) preview and a GCC High-only STIG audit
-  baseline (re-read 2026-09-27) [DOC S1421, S1422, S1423].
+  baseline (re-read 2026-10-21) [DOC S1421, S1422, S1423].
 - OSConfig for Windows Server 2025 ships as the `Microsoft.OSConfig` PowerShell module (PSGallery),
   with role-based baseline profiles (Domain Controller, Member Server, Workgroup Member); examples
   of its settings are TLS 1.2 or higher, a minimum of SMB 3.0 and credential-theft protections such

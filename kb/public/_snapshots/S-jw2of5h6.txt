@@ -1,0 +1,107 @@
+source: S-jw2of5h6
+url: https://docs.github.com/en/pull-requests/how-tos/commit-changes/creating-a-commit-with-multiple-authors
+title: Creating a commit with multiple authors or on behalf of an organization
+publisher: GitHub Docs
+licence: CC BY 4.0 (github/docs LICENSE; code MIT)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Creating a commit with multiple authors or on behalf of an organization
+
+Attribute commits to multiple authors or organizations using trailers in commit messages for better collaboration and transparency.
+
+## Creating a commit with multiple authors
+
+Add one or more `Co-authored-by` trailers to a commit message to attribute a commit to multiple authors.
+
+### Required co-author information
+
+Before adding a co-author, get the email address they want used in the trailer. For the commit to count as a contribution, use an email address associated with their account on GitHub.com.
+
+If a co-author keeps their email address private, use their GitHub-provided `no-reply` email. See Setting your commit email address.
+
+### Creating co-authored commits using GitHub Desktop
+
+You can use GitHub Desktop to create a commit with a co-author. See Committing and reviewing changes to your project in GitHub Desktop and GitHub Desktop.
+
+### Creating co-authored commits on the command line
+
+1. Collect the name and email address for each co-author. If a person chooses to keep their email address private, you should use their GitHub-provided `no-reply` email to protect their privacy.
+
+2. Type your commit message and a short, meaningful description of your changes. After your commit description, add an empty line instead of a closing quotation mark.
+
+   ```shell
+   $ git commit -m "Refactor usability tests.
+   >
+   >
+   ```
+
+3. Add one `Co-authored-by: name <name@example.com>` line for each co-author, then add the closing quotation mark.
+
+   ```shell
+   $ git commit -m "Refactor usability tests.
+   >
+   > Co-authored-by: NAME <NAME@EXAMPLE.COM>
+   > Co-authored-by: ANOTHER-NAME <ANOTHER-NAME@EXAMPLE.COM>"
+   ```
+
+The new commit and message appear on GitHub.com after you push. See Pushing commits to a remote repository.
+
+### Creating co-authored commits on GitHub
+
+After you make changes in a file using the web editor on GitHub, add co-author trailers before you commit.
+
+1. Collect the name and email address for each co-author. If a person chooses to keep their email address private, you should use their GitHub-provided `no-reply` email to protect their privacy.
+2. Click **Commit changes...**
+3. In the "Commit message" field, type a short, meaningful commit message that describes the changes you made.
+4. In the text box below your commit message, add one `Co-authored-by: name <name@example.com>` line for each co-author.
+5. Click **Commit changes** or **Propose changes**.
+
+The new commit and message appear on GitHub.com.
+
+## Creating a commit on behalf of an organization
+
+> [!NOTE]
+> Creating a commit on behalf of an organization is not available on GitHub Enterprise Server.
+
+Add an `on-behalf-of:` trailer to a signed commit to attribute it to an organization. To use the trailer, you must be a member of the organization, and both your commit email and the organization email must be in a domain verified by the organization.
+
+### Creating commits with an `on-behalf-of` badge on the command line
+
+1. Type your commit message and a short, meaningful description of your changes. After your commit description, add two empty lines instead of a closing quotation mark.
+
+   ```shell
+   $ git commit -m "Refactor usability tests.
+   >
+   >
+   ```
+
+2. Add `on-behalf-of: @org <name@organization.com>`, then add the closing quotation mark.
+
+   ```shell
+   $ git commit -m "Refactor usability tests.
+   >
+   >
+   on-behalf-of: @ORG NAME@ORGANIZATION.COM"
+   ```
+
+The new commit, message, and badge appear on GitHub after you push. See Pushing commits to a remote repository.
+
+### Creating commits with an `on-behalf-of` badge on GitHub
+
+After you make changes in a file using the web editor on GitHub, add the organization trailer before you commit.
+
+1. Click **Commit changes...**
+2. In the "Commit message" field, type a short, meaningful commit message that describes the changes you made.
+3. In the text box below your commit message, add `on-behalf-of: @org <name@organization.com>`.
+4. Click **Commit changes** or **Propose changes**.
+
+The new commit, message, and badge appear on GitHub.
+
+## Further reading
+
+* Viewing contributions on your profile
+* Troubleshooting missing contributions
+* Viewing a project's contributors
+* Changing a commit message
+* Committing and reviewing changes to your project in GitHub Desktop in the GitHub Desktop documentation

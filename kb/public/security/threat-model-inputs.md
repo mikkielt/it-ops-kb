@@ -16,7 +16,8 @@ a device-management tool's management-plane and identity surface, each with the 
 ids (`M####`) and detection-strategy ids (`DET####`, with their analytic ids and log sources). Detailed threats
 for the identity/auth surface already live in `auth/threats.md`; this file does not duplicate the narrative,
 only adds the ATT&CK ids not already covered there and the modeling-method metadata. ATT&CK version at retrieval:
-v19.2, released 2026-08-06 [DOC S1564]. Full mitigation/detection rows are in
+v19.2, released 2026-08-06; ATT&CK v20 (v20.0, released 2026-10-13) is now the current release, and the ids below
+have not yet been re-extracted from a v20.0 bundle. [DOC S1564] Full mitigation/detection rows are in
 `security/artifacts/mitre/attack-subset.csv`, extracted from the pinned STIX bundle (tag `v19.2`) rather than
 retyped by hand [DOC S1576]. T1562 "Impair Defenses" is revoked in the v19.2 data model and replaced by T1685
 "Disable or Modify Tools" — see Facts.

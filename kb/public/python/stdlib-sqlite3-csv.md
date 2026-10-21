@@ -2,7 +2,7 @@
 topic: python/stdlib-sqlite3-csv
 priority: P2
 applies_to: [python, csv, sqlite3]
-retrieved_utc: 2026-10-18
+retrieved_utc: 2026-10-21
 sources: [S-utoe3wfw, S-rle6nqpc, S-syrr7enn, S-xq53ipsf, S-vc2lihhb, S-nnljaqtm, S-b4zlktyl, S-232dvyc5, S-5vbo75zy, S-mvz475h7]
 status: complete
 ---

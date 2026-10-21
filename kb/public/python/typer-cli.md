@@ -2,7 +2,7 @@
 topic: python/typer-cli
 priority: P3
 applies_to: "Typer 0.27.3 (released 2026-10-06, Python 3.10+); Typer 0.26.0 and later vendor Click"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-dnzxfcsw, S-ztkyr3zd, S-nw2nd4rv, S-syffw7l6, S-hrjguqt3, S-y3grqgpf, S-2txegwyx, S-5j3dqrn3, S-2qjh4vyl, S-tustm6ll, S-y5yampfx, S-fhhfxz7n, S-ioxs4z7o, S-4ykun7b2, S-dggjvarz, S-zzvrhdyd]
 status: partial
 ---

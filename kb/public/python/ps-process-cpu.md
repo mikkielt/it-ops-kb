@@ -2,7 +2,7 @@
 topic: python/ps-process-cpu
 priority: P3
 applies_to: "POSIX.1-2024 ps; procps-ng ps(1) (Linux, man page dated 2025-04-23); Apple ps(1) at adv_cmds-237 (macOS); Windows PowerShell 7.6 Get-Process, Get-Counter and the Win32_Process class"
-retrieved_utc: 2026-10-19
+retrieved_utc: 2026-10-21
 sources: [S-tldzr3mf, S-glwifmco, S-ggxrmcqc, S-5syx7mel, S-js22cswf, S-wh6i6rv4, S-v6442u3l]
 status: partial
 ---

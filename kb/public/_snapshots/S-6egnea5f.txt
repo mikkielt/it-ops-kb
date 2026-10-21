@@ -1,0 +1,136 @@
+source: S-6egnea5f
+url: https://wiki.gentoo.org/wiki/Portage/Profiles
+title: Profile (Portage) (Gentoo Wiki)
+publisher: Gentoo Wiki
+licence: CC-BY-SA-4.0
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+Jump to: content
+Get Gentoo!
+gentoo.org sites
+gentoo.org
+Wiki
+Bugs
+Packages
+Forums
+Planet
+Archives
+Devmanual
+Gitweb
+Infra status
+Wiki
+#
+Portage/Profiles
+From Gentoo Wiki
+< Portage
+Jump to:navigation
+Jump to:search
+Other languages:
+English
+magyar
+日本語
+Portage - the heart of Gentoo
+emerge — configuration — ebuild repository — dispatch-conf
+world file — USE flags — ebuilds — profiles
+upgrades — using testing packages — Gentoo binhost
+tools — gentoolkit — eselect
+Portage FAQ — cheat sheet — FAQ
+all articles
+Profiles
+Profiles
+Structure
+Custom profiles
+Switching profiles
+Customized profiles
+Hardened desktop profiles
+Hardened Plasma profile
+Hardened GNOME profiles
+Clang desktop profile
+LTO profile
+Profiles are a core Portage feature that allow the highly flexible Gentoo metadistribution to be primed for use on target systems. Profiles provide minimal workable baselines to fit system usage-requirements, and allow for a high-degree of customization. A profile is chosen at installation time, though profiles can often be changed if requirements evolve.
+Profiles determine compatible subsets of the metadistribution to provide the user with composable features. By compartmentalizing mutually exclusive components and configurations, they provide one of the pillars of Gentoo's extreme flexibility: 14 supported architectures, many subarchitectures, several platforms, a choice of libc, init systems, toolchains, optional hardening, combined with all the supported Gentoo use-cases - from server, to workstation, to embedded - require such a robust architecture as provided by profiles.
+Technically, profiles define core low-level parameters on different system architectures, they can determine package availability, specify default states for USE flags, set default values for /etc/portage/make.conf variables, adjust the set of system packages, determine default toolchains and core system libraries, amongst other things.
+New profiles are made available when there are fundamental changes to the way Gentoo works, though such releases can be years apart: when the 23.0 profile was released, the previous profile (17.1) was nearly 6 years old. Be aware that many profiles are experimental, and thus can require involved and sometimes difficult work, so stable profiles should be used unless there is a specific requirement not to.
+Some profiles can be switched easily when required, though certain profile changes will require more steps than just switching the profile, and a few specific profiles can be extremely difficult to switch between, and it is not possible to change to profiles with a different ABI (e.g. pure LLVM or musl profiles) without a reinstall.
+Profiles are defined on an ebuild repository basis; the ones from the main repository are maintained by the Gentoo developers, but users can define their own.
+Important
+When a profile update is released, only change profile versions after reading and following the corresponding news item.
+See also
+See the Handbook has information on selecting profiles.
+## Contents
+1 Profile stability
+1.1 Stable (stable)
+1.2 In-development (dev)
+1.3 Experimental (exp)
+2 Available profiles
+2.1 OpenRC and systemd profiles
+2.2 Desktop profiles
+2.3 Hardened profiles
+2.4 amd64 multilib and no-multilib profiles
+2.5 split-usr profiles
+2.6 Experimental and in-development profiles
+3 Switching profiles
+4 Upgrading profiles
+5 See also
+6 External resources
+## Profile stability
+General-usage profiles are marked stable, only use other profiles if fully-cognizant of non-stable profile usage.
+### Stable (stable)
+Stable profiles are fully tested and should provide a just works experience. Gentoo's CI checks that stable profiles have a sound dependency graph. All stable profiles are marked with "(stable)".
+### In-development (dev)
+During the development process that aims to create stable profiles, work in progress profiles are marked as "(dev)". Gentoo's CI checks these profiles for issues in the dependency graph, but issues only a warning and not an error.
+Users running these should only be doing so if they have a certain need that can only be resolved by using them.
+### Experimental (exp)
+An experimental profile is, as the name suggests, an experiment. It may or may not result in a new "permanent" profile. These profiles are marked "(exp)".
+Many profiles of exotic architectures are marked as experimental.
+Experimental profiles should work, as they have undergone some level of testing. However, the fixes to make it run are normally included in testing keyword packages so a user of these should either be running ~ARCH globally or at the very least be prepared to use /etc/portage/package.accept_keywords to pull in the latest versions and fill a bug to stable request the package if found to be safe by the user.
+In short, expect to have random issues when using these profiles.
+## Available profiles
+This section explains what some commonly encountered profiles are used for.
+The full list of profiles for all architectures is available in the Gentoo repository. As evident in the profile names from that list, the current profiles version for most architectures is version 23.0.
+The most basic profiles available are default/linux/<architecture>/23.0 and default/linux/<architecture>/23.0/systemd. These can for example be used for server systems, in container installations, or for machines that will have only a command line interface.
+### OpenRC and systemd profiles
+Profiles are split depending on which init system they use, into OpenRC and systemd variants. systemd profiles include the systemd qualifier, whereas OpenRC profiles are the ones that include no init system qualifier.
+### Desktop profiles
+Desktop profiles include the desktop qualifier, and are to be used for any graphical installation, whether using a desktop environment, window manager, xorg, wayland, etc.
+The desktop profiles provide GNOME and Plasma variants - see the corresponding articles for details of setup using the correct profile.
+These profiles only provide the bare minimum for desktop system usage, and are still as flexible as the less qualified profiles.
+Important
+Failure to use a desktop profile on a graphical system will lead to a heavy setup and maintenance burden and various potential issues.
+### Hardened profiles
+Hardened profiles are available for Hardened Gentoo installations, though these require a more technical setup, and such systems have usage-constraints. These aren't used as frequently as non-hardened profiles.
+### amd64 multilib and no-multilib profiles
+For the amd64 architecture, Gentoo provides support for the x86 architecture and it's x86_64 instruction set extension. For very specific use cases, users fully-cognizant of the constraints of constricting support to x86_64 only have the possibility to use the no-multilib profiles.
+Note that no-multilib profiles are only provided for very specific use-cases, and are not advised for general use. Using these profiles needlessly can result in complex and time-consuming issues whenever still-common non x86_64 software needs to be used. Moving from no-multilib to standard profiles is practically impossible when building from source, and will usually require a full-system re-installation unless binpkgs can be used, so it's particularly important to never use these profiles unless they are specifically required.
+### split-usr profiles
+Split /usr profiles exist to support systems from before all data from /bin, /sbin, /lib, and /lib64 was merged into the /usr/bin, /usr/lib, and /usr/lib64 directories.
+### Experimental and in-development profiles
+These profiles are often used by testers. They should only be used when specifically required, as stated above, for general-use pick a stable profile.
+LLVM
+musl
+Prefix
+x32x32 ABI 0, on amd64
+## Switching profiles
+Sometimes when the usage of a system changes, or when realizing that another profile is a better fit, it can be necessary to switch profiles.
+After the release of a new profile, profiles can need to be upgraded - see the upgrading profiles section.
+## Upgrading profiles
+Warning
+Profile upgrades are not to be taken lightly. Make sure to read and follow proper instructions.
+The user is informed of the availability of a profile update by the publication of a news item, which will be reported after a Gentoo ebuild repository sync. This will include detailed instructions that should be properly followed. A profile upgrade is a non trivial operation and, as always, systems should be regularly backed up - particularly before system changes.
+See the article on upgrading Gentoo for information on profile updates.
+## See also
+/var/db/repos/gentoo/profiles — a directory that contains global profiles that are controlled by developers of the Gentoo ebuild repository (gentoo.git)
+Multilib layout for amd64 architecture.
+How to change to SELinux
+Upgrading Gentoo
+## External resources
+Gentoo news: Profile upgrade to version 23.0 available
+Gentoo: profiles and keywords rather than releases
+For developers:
+Profiles section of Gentoo devmanual
+Profiles section of Package Manager Specification
+Profiles directory section of Package Manager Specification
+Retrieved from "https://wiki.gentoo.org/index.php?title=Portage/Profiles&oldid=1452409"
+Category:
+Profiles

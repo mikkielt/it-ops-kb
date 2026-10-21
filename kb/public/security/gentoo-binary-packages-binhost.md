@@ -2,7 +2,7 @@
 topic: security/gentoo-binary-packages-binhost
 priority: P3
 applies_to: "Gentoo Linux binary packages with Portage: GPKG and XPAK formats, using the official binhost or your own through binrepos.conf, signature verification, building and maintaining a package directory"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-vr4evhob, S-rzs2uo4g, S-ch2quvvc, S-5rih6fam, S-5lblcwaf, S-5dnrfnng, S-uhuj7vad]
 status: partial
 ---
@@ -52,7 +52,7 @@ Portage can build binary packages next to its source builds, install them, and f
 - `eclean packages` removes binaries without a matching ebuild; on the build host `--changed-use` should not be used, since packages with added or removed flags would be skipped, so `--newuse` is used to keep binaries in step with ebuilds. [DOC S-vr4evhob]
 - Portage can fetch from FTP, FTPS, HTTP, HTTPS and SSH/SFTP, so a host is any file server that exposes `PKGDIR` or a snapshot of it. [DOC S-vr4evhob]
 - A build host for several machines should build with the common subset of `CFLAGS` and `CPU_FLAGS_*`, sign every package, and publish a `PKGDIR` that clients verify with `verify-signature = true` in a named `binrepos.conf` file. [DER S-vr4evhob, S-5dnrfnng, S-ch2quvvc: compatibility rules, per-repository verification and signing steps]
-- The wiki's guidance and the news item differ in wording, not in effect: the Handbook and quickstart still show `FEATURES="${FEATURES} binpkg-request-signature"`, which the news item says is no longer needed for the official binhost and which is harmless. [DER S-5rih6fam, S-rzs2uo4g, S-ch2quvvc: both settings require signatures]
+- The wiki's guidance and the news item differ in wording, not in effect: the quickstart still tells the reader to enable the `binpkg-request-signature` feature (`FEATURES="binpkg-request-signature"`) to require GPG signature verification, which the news item says is no longer needed for the official binhost and which is harmless. [DER S-rzs2uo4g, S-ch2quvvc: both settings require signatures]
 - The Portage release in which signature verification became the default for remote hosts is not stated by the news item (it says "newer versions of Portage") or the wiki articles read. [UNK: logged in `_gaps.md`]
 
 ## Reference

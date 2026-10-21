@@ -2,7 +2,7 @@
 topic: logs/loki-tempo-grafana-retention
 priority: P3
 applies_to: "Grafana Loki v3.7.8, Grafana Tempo v3.1.0 (2.x noted), Grafana v13.2.3; single-binary self-hosted deployment"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-olwlij2r, S-yz3o3jci, S-g36sus36, S-qyttpq2z, S-gsjmowie, S-jwoztkhv, S-minmacwi, S-wpvglutf, S-44skzn3g, S-sqfw3i4b, S-f2cwt6i6, S-a6zoom3b, S-cmpa7jl6, S-26xpxrvu, S-j4cjdcxk, S-ypvcpeth, S-pnnsdy4j, S-dvp4qcf3, S-qk6tvbrf, S-aodqvqxz, S-ud3mqhct, S-lajge47c, S-mygulbz4, S-coaeeb63, S-42oztc6t, S-jm3q4nrg, S-ssnqxfb6, S-rmnhrvck, S-drqcqer6, S-nfb3ytwd, S-47axdg7z, S-clqrp4oy, S-xpzp2unk, S-ffx6h64o, S-kx3xmf4o, S-nb36ls35, S-mri72d7r]
 status: partial
 ---

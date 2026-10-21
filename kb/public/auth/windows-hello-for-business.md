@@ -2,7 +2,7 @@
 topic: auth/windows-hello-for-business
 priority: P1
 applies_to: "Windows 10/11, Windows Server 2016+ domain controllers (cloud Kerberos trust: Server 2016 KB4534307+, 2019 KB4534321+, 2022, 2025); Microsoft Entra ID"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-10-21
 sources: [S-pnjd7ogq, S-ui2zukwr, S-do5bf4ea, S-qi55sa4p, S-vymmambu, S-htlj43pv, S-kdtltdvz, S-u2hfxeqe, S-4n7iso27, S-7mgve6s7]
 status: complete
 files: [auth/passportforwork-csp.csv]
@@ -46,7 +46,7 @@ files: [auth/passportforwork-csp.csv]
 - Cloud Kerberos trust doesn't work in a pure on-premises AD environment (no Entra ID) and doesn't require every DC to be fully patched to the prerequisite level — only enough to carry the cloud-Kerberos-trust load. [DOC S-vymmambu]
 
 ### Policy configuration (Intune and GPO)
-- Minimum cloud Kerberos trust policy via Intune settings catalog (category **Windows Hello for Business**): `Use Windows Hello For Business` = true, `Use Cloud Trust For On Prem Auth` = Enabled, `Use Security Device` = true (recommended, not strictly required); if the tenant-wide WHfB policy is already enabled and suits the deployment, only `Use Cloud Trust For On Prem Auth` needs to be set. [DOC S-ui2zukwr]
+- Minimum cloud Kerberos trust policy via Intune settings catalog (category **Windows Hello for Business**): `Use Windows Hello For Business` = true, `Use Cloud Trust For On Prem Auth` = Enabled, `Require Security Device` = true (the page's table lists it; the page calls the matching hardware-security-device policy optional but recommended); if the tenant-wide WHfB policy is already enabled and suits the deployment, only `Use Cloud Trust For On Prem Auth` needs to be set. [DOC S-ui2zukwr]
 - Equivalent custom Intune profile via `PassportForWork` CSP OMA-URIs (bool, value `True`): `./Device/Vendor/MSFT/PassportForWork/{TenantId}/Policies/UsePassportForWork`, `.../UseCloudTrustForOnPremAuth`, `.../RequireSecurityDevice`. [DOC S-ui2zukwr, S-qi55sa4p]
 - Equivalent GPO path `Computer Configuration\Administrative Templates\Windows Components\Windows Hello for Business`: `Use Windows Hello for Business` = Enabled, `Use cloud Kerberos trust for on-premises authentication` = Enabled (computer-only setting, no user-node equivalent), `Use a hardware security device` = Enabled; GPO settings for WHfB ship in `Passport.admx`/`Passport.adml`, which may need copying from a client that supports cloud Kerberos trust into the Central Store. [DOC S-ui2zukwr]
 - `Use Windows Hello for Business` can be deployed as a computer or user GPO node: computer node makes every signed-in user attempt enrollment; user node scopes it to targeted users; if both are deployed, the user setting takes precedence. Recommended rollout technique is security-group filtering on a domain-linked GPO for a phased rollout. [DOC S-ui2zukwr]
@@ -64,7 +64,7 @@ files: [auth/passportforwork-csp.csv]
 
 ### Multi-factor unlock (trusted signal unlock)
 - Trusted signal unlock extends WHfB with a required additional "trust signal" factor (e.g. a known network or companion device) layered on top of the PIN/biometric gesture, for organizations where a device-bound credential plus PIN alone isn't sufficient assurance. [DOC S-htlj43pv]
-- Configured with **First unlock factor credential providers**, **Second unlock factor credential providers**, and **signal rules for the Trusted Signal Credential Provider**; enabled via GPO `Computer Configuration > Administrative Templates > Windows Components > Windows Hello for Business > Configure device unlock factors`. [DOC S-htlj43pv]
+- Configured with **First unlock factor credential providers**, **Second unlock factor credential providers**, and **Signal rules for device unlock** (used by the Trusted Signal credential provider); enabled via GPO `Computer Configuration > Administrative Templates > Windows Components > Windows Hello for Business > Configure device unlock factors`, or through Intune (Settings catalog, `Device Unlock Plugins`) or the PassportForWork CSP `DeviceUnlock` node. [DOC S-htlj43pv]
 - Microsoft recommends disabling all non-Microsoft credential providers when using trusted signal unlock, so users can't unlock without the required factors; the remaining fallback options are password and smart card, which can also be disabled. [DOC S-htlj43pv]
 - Trusted signal unlock events are logged under `Applications and Services Logs\Microsoft\Windows\HelloForBusiness`, category "Device Unlock": 3520 unlock attempt initiated, 5520 unlock policy not configured, 6520 warning, 7520 error, 8520 success. [DOC S-htlj43pv]
 

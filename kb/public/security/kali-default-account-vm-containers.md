@@ -2,7 +2,7 @@
 topic: security/kali-default-account-vm-containers
 priority: P3
 applies_to: "Kali Linux default account and sudo policy, default tool credentials, the network service policy, and Kali as a VM image, a WSL distribution, and a Docker or LXC/LXD container"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-mvp5ewqd, S-kn4vg3wc, S-pggydvhj, S-phypzuod, S-a3rz5fyq, S-xvu7hlvs, S-exxf6zgf, S-yehas5kt, S-lovosk2r, S-drkvieff, S-b6k54ngi]
 status: partial
 ---

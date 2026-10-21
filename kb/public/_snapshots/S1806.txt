@@ -3,7 +3,7 @@ url: https://docs.gitlab.com/user/duo_agent_platform/agents/external/
 title: External agents
 publisher: GitLab (docs.gitlab.com)
 licence: CC BY-SA 4.0 (GitLab docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 /
@@ -145,6 +145,11 @@ gpt-5.3-codex
 gpt-5.4-2026-03-05
 gpt-5.4-mini
 gpt-5.4-nano
+On GitLab.com, the top-level group can restrict Agentic Chat to specific models.
+If it does, external agents can use only those models.
+Add the models your agent uses to the list.
+This restriction is controlled by a feature flag.
+For more information, see the history of that topic.
 ## Configure CI/CD variables
 Add variables to your project to determine how GitLab connects to the third-party provider.
 Prerequisites:

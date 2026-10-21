@@ -1,0 +1,592 @@
+source: S-vrx7t6cc
+url: https://ar5iv.labs.arxiv.org/html/2009.08142
+title: Online Algorithms for Estimating Change Rates of Web Pages (arXiv 2009.08142 v2, HTML rendering)
+publisher: arXiv (Avrachenkov, Patil, Thoppe)
+licence: CC BY-SA 4.0 (licence link on the arXiv abstract page)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+#
+Online Algorithms for Estimating Change Rates of Web Pages
+A shorter version [1] of this paper appeared in the proceedings of VALUETOOLS 2020 conference. The novel contributions here include i.) an additional change rate estimation scheme (this is a stochastic approximation scheme with momentum)
+and its analysis and ii.) additional experiments including one that compares the performance of all our estimators based on real data (Wikitraces).This is the author version of the paper accepted to the International Journal of Performance Evaluation, Elsevier.
+Konstantin Avrachenkov
+Affiliation: INRIA Sophia Antipolis, France 06902
+Kishor Patil
+Affiliation: INRIA Sophia Antipolis, France 06902
+Gugan Thoppe
+Affiliation: k.avrachenkov@inria.fr, kishor88k@gmail.com, gthoppe@iisc.ac.in
+Affiliation: Indian Institute of Science, Bengaluru, India 560012
+###### Abstract
+A search engine maintains local copies of different web pages to provide quick search results. This local cache is kept up-to-date by a web crawler that frequently visits these different pages to track changes in them. Ideally, the local copy should be updated as soon as a page changes on the web. However, finite bandwidth availability and server restrictions limit how frequently different pages can be crawled. This brings forth the following optimization problem: maximize the freshness of the local cache subject to the crawling frequencies being within prescribed bounds. While tractable algorithms do exist to solve this problem, these either assume the knowledge of exact page change rates or use inefficient methods such as MLE for estimating the same. We address this issue here.
+We provide three novel schemes for online estimation of page change rates, all of which have extremely low running times per iteration. The first is based on the law of large numbers and the second on stochastic approximation. The third is an extension of the second and includes a heavy-ball momentum term.
+All these schemes only need partial information about the page change process, i.e., they only need to know if the page has changed or not since the last crawled instance. Our main theoretical results concern asymptotic convergence and convergence rates of these three schemes. In fact, our work is the first to show convergence of the original stochastic heavy-ball method when neither the gradient nor the noise variance is uniformly bounded. We also provide some numerical experiments (based on real and synthetic data) to demonstrate the superiority of our proposed estimators over existing ones such as MLE. We emphasize that our algorithms are also readily applicable to the synchronization of databases and network inventory management.
+## 1 Introduction
+The worldwide web is a highly complex entity: it has a lot of interlinked information, and both the information and the links keep evolving. Nevertheless, even in this challenging setup, one still expects a search engine to provide accurate and up-to-date search results instantaneously. To fulfill this expectation, a search engine maintains a local cache of important web pages, that it updates frequently by using a crawler (also referred to as a web spider or a web robot). Specifically, the job of a crawler [2, 3, 4, 5, 6] is (a) to access various pages on the web at specific frequencies so as to determine if any changes have happened to the content since the last crawled instance; and (b) to update the local cache whenever there is a change11
+1
+A web crawler is also supposed to discover new pages, but we don’t focus on this task in this work.. There are, however, two key constraints on the different crawling frequencies. The first is due to limitations on the available bandwidth. The second one, known as the politeness constraint, arises because of the bounds placed by servers on the number of pages that can be accessed in a short amount of time. The search engine thus needs to solve the following optimization problem: maximize the freshness of the local database subject to the crawling frequencies satisfying the above constraints.
+In the early 2000s, the web crawling problem used to be formulated as follows [7, 8, 9]. The whole web consists of nn pages, all have equal importance, and there are no politeness constraints. Further, the times at which different pages change are independent Poisson point processes with different rates [7, 10]. On the search engine side, the local cache consists of a copy of each of these nn pages. Each copy is updated at regular intervals of time by crawling the original page at a certain (known) frequency. Finally, the freshness of the local cache at time t≥0t\geq 0 is defined to be r∈[0,1]r\in[0,1] if rr fraction of the local elements matches the actual versions on the web. The goal then is to find an update policy that maximizes the time-averaged freshness of the local cache and, also, satisfies the bandwidth constraint.
+Finding an exact solution to this problem is hard. Hence, numerical solutions were obtained in [7, 8] for small values of n.n. These showed that the optimal crawling policy could be very different to both the uniform as well as the proportional policy, i.e., crawling each page at the same frequency or at one that is proportional to its change rate. In fact, somewhat surprisingly, it was also found that the optimal policy may often include ignoring pages that change too frequently, i.e., not crawling them at all.
+In 2003, the freshness definition was modified to include different weights for different pages depending on their importance, e.g., represented as the frequency of requests for different pages [11]. This was done in line with the view that only a finite number of pages can be crawled in any given time frame; hence, to improve the utility of the local database, the freshness criteria should be biased more towards important pages. Numerical solutions, again for small n,n, confirm that page weights do substantially influence the optimal crawling policy.
+While the general nn case is still unsolved, a recent breakthrough work [12] showed how an optimal randomized crawling policy can, nonetheless, be found very efficiently (in just O⁡(n​log⁡n)O(n\log n) operations). In particular, this solution pertains to the case where, for each web page, even the set of access times forms a Poisson point process. An approach to derandomize this policy to handle the original setup with periodic crawling is also discussed there. In synthetic experiments, this resultant policy is claimed to show performances very similar to the one obtained via numerical solutions. This work was recently extended to cover the case with politeness constraints as well [13].
+There is also a separate study [14, 15] which provides a Whittle index based dynamic programming approach to optimize the schedule of a web crawler. In that approach, the page/catalog freshness estimate also influences the optimal crawling policy.
+As can be seen, several algorithms do exist to determine the optimal crawling policy. However, they either presume prior knowledge of the exact page change rates, which is unrealistic in practice, or, alternatively, use inefficient ideas for estimating the same. We now provide a brief overview of such approaches and the issues that plague them.
+To the best of our knowledge, three other estimators exist in the literature: the naive estimator [16, 17, 18], the Maximum Likelihood Estimator (MLE) [19], and the Moment Matching (MM) estimator [20]. The naive estimator is simply the ratio of the observed number of changes to the total monitoring time period. This is clearly biased since the crawler only has access to partial information about the page change process (remember, it only gets to see if a page has changed or not since the last crawled instance). To overcome this bias issue, MLE instead estimates the rate of change by identifying the parameter value that maximizes the likelihood of the page change observations. This idea performs quite well in experiments; in fact, it also works when access to a page is only possible at irregular intervals of time. However, MLE lacks a closed form expression and suffers from two issues: (a) instability, i.e., the estimator value equals ∞\infty as long as a page change is detected in every access; and (b) computational intractability, i.e., the estimate needs to be recomputed from scratch each time a new observation is made. The latter makes MLE impractical to use when the data set of observations is quite large. Finally, in the MM estimator, one looks at the fraction of times no changes were detected during page accesses and then, using a moment matching method, estimates the change rate. Unfortunately, like MLE, the MM estimator also suffers from instability and computational issues.
+Our exact problem statement and the main contributions can now be summarized as follows. We consider a single page and, as in [12], presume that the page change times and page access times are independent homogeneous Poisson point processes. Thus, each of these processes can be characterized by a single parameter, which we denote here by Δ\Delta and p,p, respectively. Importantly, we assume that only pp is known. We then develop three approaches for online estimation of Δ,\Delta, which only need to know if this page has changed or not between two successive accesses. The key word here is ‘online’. This means, unlike MLE and the MM estimator, our estimates can be incrementally updated using extremely simple, low cost formulas as and when a new observation becomes available. Thus, our estimators do not face computational issues of the kind mentioned above. Also, they do not face any instability issues.
+Our first estimator uses the Law of Large Numbers (LLN), while the second and third estimators are based on Stochastic Approximation (SA) principles. Specifically, the update rule for the first estimator is derived using a formula for the probability that there is a page change between two successive accesses. In contrast, the second estimator is constructed via a standard trick in SA. A key ingredient there is a function that is carefully chosen so that it satisfies two properties: (a) noisy estimates of its value for any given input can be easily obtained; and (b) its expected value is linear and, importantly, Δ\Delta is its unique zero. The update rule for the third estimator is similar to that of the second one, except that it has an additional momentum term (in the heavy-ball sense). As we show in Section 3.5, it is also possible to view our second and third estimators as a Stochastic Gradient Descent (SGD) method and as an SGD method with heavy-ball momentum, respectively. We emphasize that even though we present
+our results in the context of web crawling, our algorithms are equally applicable to the synchronization of databases [8] and the problem of network inventory management [21].
+Our main theoretical result is that all our estimators almost surely (a.s.) converge to Δ;\Delta; thus, they all are asymptotically consistent. As far as we know, our result concerning the third estimator is the first to show convergence of an SGD method with heavy-ball momentum when neither the gradient nor the noise variance is a priori assumed to be uniformly bounded. While similar settings have also been dealt with in [22], the analysis there concerns the stochastic analogue of a modified heavy-ball method and not the original one that was proposed in [23]. Separately, we also derive the convergence rates of the first two estimators in the expected error sense. Based on the existing literature, we also provide a loose guess on the convergence rate of the third estimator.
+We also provide numerical simulations to compare the performance of our online schemes to each other and also to that of the (offline) MLE estimator. From these experiments, it can be explicitly seen that our estimators give performances comparable to that of MLE. This was a bit surprise to us since our estimators, compared to MLE, have extremely low running times per iteration. Also, unlike MLE, they ignore the actual lengths of intervals between two page accesses. Among our three estimators, LLN and SAM show similar performances and both typically outperform our SA estimator. In particular, the momentum in the third estimator helps in accelerating the estimation whenever p≪Δp\ll\Delta (the rate at which the page is accessed is much smaller than the rate at which it changes). Our experiments are based on both real (Wikipedia traces) as well as synthetic data sets. In the experiment using Wikipedia traces, we also verify our modeling assumption that the page change process is a Poisson point process.
+The rest of this paper is organized as follows. The next section provides a formal summary of this work in terms of the setup, goals, and key contributions. It also gives explicit update rules for all of our online schemes. In Section 3, we formally analyse their convergence and the rates of convergence. The numerical experiments discussed above are given in Section 4. Then, in Section 5, we provide some motivation on how one can use our estimates to find the optimal crawling rates. Finally, we conclude in Section 6 with some future directions.
+## 2 Setup, Goal, and Key Contributions
+The three topics are individually described below.
+Setup: Without loss of generality, we work with a single web page. We presume that the actual times at which this page changes is a time-homogeneous Poisson point process in [0,∞)[0,\infty) with a constant but unknown rate Δ.\Delta. Independently of everything else, this page is crawled (accessed) at the random instances {tk}k≥0⊂[0,∞),\{t_{k}\}_{k\geq 0}\subset[0,\infty), where t0=0t_{0}=0 and the inter-arrival times, i.e., {tk−tk−1}k≥1,\{t_{k}-t_{k-1}\}_{k\geq 1}, are IID exponential random variables with a known rate p.p. Thus, the times at which this page is crawled is also a time-homogeneous Poisson point process but with rate p.p. At time instance tk,t_{k}, we get to know if the page got modified or not in the interval (tk−1,tk],(t_{k-1},t_{k}], i.e., we can access the value of the indicator
+Ik:={1,if the page got modified in (tk−1,tk],0,otherwise.I_{k}:=\begin{cases}1,&if the page got modified in $(t_{k-1},t_{k}],$\\
+0,&otherwise.\end{cases}
+The above assumptions are standard in the crawling literature. Nevertheless, we now provide a short justification for the same. Our assumption that the page change process is a Poisson point process is based on the experimental evidence collected in [10, 24, 7]. An additional validation is provided by us in this work. Specifically, we selected an arbitrary page from the list of frequently edited Wikipedia pages. We extracted the complete history of this web page (exact dates and times of different changes) for a period of five months (April 01, 2020 to August 31, 2020). Thereafter, we calculated the time between successive changes and then used this data to produce a Q-Q plot. This plot confirms that the set of quantiles for the actual data indeed matches linearly with the quantiles of exponential distribution, as predicted. Further details about this experiment can be found in Section 4. Some generalized models for the page change process have also been considered in the literature [9, 25]; however, we do not pursue them here.
+Our assumption on {Ik}\{I_{k}\} is based on the fact that a crawler can only access incomplete knowledge about the page change process. In particular, a crawler does not know when and how many times a page has changed between two crawling instances. Instead, all it can track is the status of a page at each crawling instance and know if it has changed or not with respect to the previous access. Sometimes, it is possible to also know the time at which the page was last modified [3, 19], but we do not consider this case here.
+Goal: Develop online algorithms for estimating Δ\Delta in the above setup. The motivation for doing this is that such estimates can then be used to estimate the optimal crawling rates [12, 26]; see Section 5 for more details on this.
+Key Contributions:
+We provide three online methods for estimating the page change rate Δ.\Delta. The first is based on the law of large numbers, while the second and third are based on stochastic approximation theory, with the third one having an additional momentum component. If {xk},\{x_{k}\}, {yk},\{y_{k}\}, and {zk},\{z_{k}\}, denote the iterates of these three methods, respectively, then their update rules are as shown below.
+•
+LLN Estimator: Its kk-th estimate is given by
+xk=p​I^k/(k+αk−I^k),k≥1.x_{k}=p\hat{I}_{k}/(k+\alpha_{k}-\hat{I}_{k}),\quad k\geq 1.
+(1)
+Here, I^k=∑j=1kIj;\hat{I}_{k}=\sum_{j=1}^{k}I_{j}; hence, I^k=I^k−1+Ik.\hat{I}_{k}=\hat{I}_{k-1}+I_{k}. Further, {αk}\{\alpha_{k}\} is any positive sequence satisfying the conditions in Theorem 1; e.g., αk\alpha_{k} could be log⁡k,\log k, k,\sqrt{k}, or identically 1.1.
+•
+SA Estimator: Given some initial value y0,y_{0}, the update rule for the SA estimator is
+yk+1=yk+ηk​[Ik+1​(yk+p)−yk],k≥0.y_{k+1}=y_{k}+\eta_{k}[I_{k+1}(y_{k}+p)-y_{k}],\quad k\geq 0.
+(2)
+Here, {ηk}\{\eta_{k}\} is any stepsize sequence that satisfies the conditions in Theorem 2. For example, ηk\eta_{k} could be 1/(k+1)η1/(k+1)^{\eta} for some constant η∈(0,1].\eta\in(0,1].
+•
+SAM Estimator ((SA Estimator with Momentum)): Given some initial values z0,z−1,z_{0},z_{-1}, the SAM estimator satisfies
+zk+1=zk+ηk​[Ik+1​(zk+p)−zk]+ζk​(zk−zk−1),k≥0.z_{k+1}=z_{k}+\eta_{k}[I_{k+1}(z_{k}+p)-z_{k}]+\zeta_{k}(z_{k}-z_{k-1}),\quad k\geq 0.
+(3)
+Here, {ηk}\{\eta_{k}\} and {ζk}\{\zeta_{k}\} are any stepsize sequences that satisfy the conditions given in Theorem 3. For example, one could pick a β∈(1/2,1]\beta\in(1/2,1] and let βk=1/(k+1)β.\beta_{k}=1/(k+1)^{\beta}. Then, {ηk}\{\eta_{k}\} and {ζk}\{\zeta_{k}\} could be {1/(k+1)η}\{1/(k+1)^{\eta}\} and {(βk−ω​ηk)/(βk−1)},\{(\beta_{k}-\omega\eta_{k})/(\beta_{k-1})\}, respectively, where ω>0\omega>0 is some constant and β+1/2<η≤2​β.\beta+1/2<\eta\leq 2\beta. While we do not show it, we conjecture that one can also pick β∈(0,1/2]\beta\in(0,1/2] and then choose η\eta so that β<η≤2​β.\beta<\eta\leq 2\beta. Finally, note that if β=η\beta=\eta and ω=1,\omega=1, then the asymptotic behaviour of (3) will resemble that of (2); this is because ζk≡0\zeta_{k}\equiv 0 then.
+We call these methods online because the estimates can be updated on the fly as and when a new observation IkI_{k} becomes available. This contrasts the MLE estimator in which one needs to start the calculation from scratch each time a new data point arrives. Also, unlike MLE, our estimators are never unstable; see Section 3.4 for the details.
+Our main results include the following. We show that all our three estimators, i.e., xk,yk,x_{k},y_{k}, and zk,z_{k}, converge to Δ\Delta a.s. Further, we show that
+1.
+𝔼|xk−Δ|=O(max{k−1/2,αk/k}),\mathbb{E}|x_{k}-\Delta|=O\left(\max\left\{k^{-1/2},\alpha_{k}/k\right\}\right), and
+2.
+𝔼|yk−Δ|=O(k−η/2)\mathbb{E}|y_{k}-\Delta|=O(k^{-\eta/2}) if ηk=(k+1)η\eta_{k}=(k+1)^{\eta} with η∈(0,1).\eta\in(0,1).
+Separately, based on existing literature [27, 28, 29], we conjecture that 𝔼|zk−Δ|=O~(k−β/2),\mathbb{E}|z_{k}-\Delta|=\tilde{O}(k^{-\beta/2}), where O~\tilde{O} hides logarithmic terms. We also provide several numerical experiments based on real as well as synthetic data for judging the strength of our three proposed estimators.
+## 3 Analysis of the Proposed Online Estimators
+Here, we formally discuss the convergence and convergence rates of our three estimators. Thereafter, we compare their behaviors with those that already exist in the literature—the Naive estimator, MLE, and the MM estimator. We end with a summary of existing results on stochastic momentum methods and a discussion on how our convergence result for the SAM estimator extends our current understanding of such methods.
+### 3.1 LLN Estimator
+Our first aim here is to obtain a formula for 𝔼⁡[I1].\mathbb{E}[I_{1}]. We shall use this later to motivate the form of our LLN estimator.
+Let τ1=t1−t0=t1,\tau_{1}=t_{1}-t_{0}=t_{1}, where the second equality holds since t0=0.t_{0}=0. Then, as per our assumptions in Section 2, τ1\tau_{1} is an exponential random variable with rate p.p. Also, 𝔼⁡[I1|τ1=τ]=1−exp⁡(−Δ​τ).\mathbb{E}[I_{1}|\tau_{1}=\tau]=1-\exp{(-\Delta\tau)}. Hence,
+𝔼⁡[I1]=Δ/(Δ+p).\mathbb{E}\big[I_{1}\big]=\Delta/(\Delta+p).
+(4)
+This gives the desired formula for 𝔼⁡[I1].\mathbb{E}[I_{1}].
+From this latter calculation, we have
+Δ=p​𝔼​[I1]/(1−𝔼⁡[I1]).\Delta=p\mathbb{E}[I_{1}]/(1-\mathbb{E}[I_{1}]).
+(5)
+Separately, because {Ik}\{I_{k}\} is an IID sequence and 𝔼​|I1|≤1\mathbb{E}|I_{1}|\leq 1 , it follows from the strong law of large numbers that 𝔼⁡[I1]=limk→∞∑j=1kIj/k​a.s.\mathbb{E}\big[I_{1}\big]=\lim_{k\to\infty}\sum_{j=1}^{k}I_{j}/k\;\text{a.s.}
+Thus,
+Δ=p​limk→∞∑j=1kIj/k1−limk→∞∑j=1kIj/ka.s.\Delta=p\frac{\lim_{k\to\infty}\sum_{j=1}^{k}I_{j}/k}{1-\lim_{k\to\infty}\sum_{j=1}^{k}I_{j}/k}\quad\text{a.s.}
+Consequently, a natural estimator for Δ\Delta is
+xk′=p​∑j=1kIj/k1−∑j=1kIj/k=p​I^kk−I^k,x_{k}^{\prime}=p\frac{\sum_{j=1}^{k}I_{j}/k}{1-\sum_{j=1}^{k}I_{j}/k}=p\frac{\hat{I}_{k}}{k-\hat{I}_{k}},
+(6)
+where I^k\hat{I}_{k} is as defined below (1).
+Unfortunately, the above estimator faces an instability issue, i.e., xk′=∞x^{\prime}_{k}=\infty when I1,…,IkI_{1},\ldots,I_{k} are all 1.1. To fix this, one can add a non-zero term in the denominator. The different choices then gives rise to the LLN estimator defined in (1).
+The following result discusses the convergence and convergence rate of this estimator.
+###### Theorem 1.
+Consider the estimator given in (1) for some positive sequence {αk}.\{\alpha_{k}\}.
+1.
+If limk→∞αk/k=0,\lim_{k\to\infty}\alpha_{k}/k=0, then limk→∞xk=Δ​a.s.\lim_{k\to\infty}x_{k}=\Delta\;\text{a.s.}
+2.
+Additionally, if limk→∞log⁡(k/αk)/k=0,\lim_{k\to\infty}\log(k/\alpha_{k})/k=0, then
+𝔼|xk−Δ|=O(max{k−1/2,αk/k}).\mathbb{E}|x_{k}-\Delta|=O\left(\max\left\{k^{-1/2},\alpha_{k}/k\right\}\right).
+###### Proof.
+Let μ=𝔼⁡[I1],\mu=\mathbb{E}[I_{1}], I¯k=I^k/k,\overline{I}_{k}=\hat{I}_{k}/k, and α¯k=αk/k.\overline{\alpha}_{k}=\alpha_{k}/k. Then, observe that (1) can be rewritten as xk=p​I¯k/(1+α¯k−I¯k).x_{k}=p\overline{I}_{k}/(1+\overline{\alpha}_{k}-\overline{I}_{k}).
+Now, limk→∞I¯k=μ\lim_{k\to\infty}\overline{I}_{k}=\mu a.s. and limk→∞α¯k=0;\lim_{k\to\infty}\overline{\alpha}_{k}=0; the first claim holds due to the strong law of large numbers, while the second one is true due to our assumption. Statement 1. is now easy to see.
+We now derive Statement 2. From (5), we have
+|xk−Δ|=|xk−p​μ1−μ|≤p⁡(Ak+Bk),|x_{k}-\Delta|=\left|x_{k}-p\frac{\mu}{1-\mu}\right|\leq p\left(A_{k}+B_{k}\right),
+where
+Ak=|I¯kα¯k+1−I¯k−μα¯k+1−μ| and Bk=|μα¯k+1−μ−μ1−μ|.A_{k}=\left|\frac{\overline{I}_{k}}{\overline{\alpha}_{k}+1-\overline{I}_{k}}-\frac{\mu}{\overline{\alpha}_{k}+1-\mu}\right|\quad\text{ and }\quad B_{k}=\left|\frac{\mu}{\overline{\alpha}_{k}+1-\mu}-\frac{\mu}{1-\mu}\right|.
+Since αk>0\alpha_{k}>0 and, hence, α¯k>0,\overline{\alpha}_{k}>0, it follows that
+Bk=α¯k​μ(1−μ)​(α¯k+(1−μ))≤α¯k​μ(1−μ)2.B_{k}=\overline{\alpha}_{k}\frac{\mu}{(1-\mu)(\overline{\alpha}_{k}+(1-\mu))}\leq\overline{\alpha}_{k}\frac{\mu}{(1-\mu)^{2}}.
+Similarly,
+Ak≤(1+α¯k1−μ)​(|I¯k−μ|α¯k+1−I¯k).A_{k}\leq\left(\frac{1+\overline{\alpha}_{k}}{1-\mu}\right)\left(\frac{|\overline{I}_{k}-\mu|}{\overline{\alpha}_{k}+1-\overline{I}_{k}}\right).
+It is now easy to see that 𝔼⁡[Bk]=O⁡(α¯k).\mathbb{E}[B_{k}]=O(\overline{\alpha}_{k}). The rest of our arguments concern how fast 𝔼⁡[Ak]\mathbb{E}[A_{k}] decays to 0.0.
+Let {δk}\{\delta_{k}\} be a deterministic sequence that is both non-negative and decays to 0.0. We will describe how to pick this later. Let kk be such that (1+δk)​μ<1.(1+\delta_{k})\mu<1. Then,
+𝔼⁡[|I¯k−μ|α¯k+1−I¯k]≤𝔼⁡[Ck]+𝔼⁡[Dk],\mathbb{E}\left[\frac{|\overline{I}_{k}-\mu|}{\overline{\alpha}_{k}+1-\overline{I}_{k}}\right]\leq\mathbb{E}[C_{k}]+\mathbb{E}[D_{k}],
+where
+Ck=|I¯k−μ|α¯k+1−I¯k𝟣{I¯k−μ≤δkμ},C_{k}=\frac{|\overline{I}_{k}-\mu|}{\overline{\alpha}_{k}+1-\overline{I}_{k}}\mathsf{1}{\left\{\overline{I}_{k}-\mu\leq\delta_{k}\mu\right\}},
+and
+Dk=|I¯k−μ|α¯k+1−I¯k𝟣{I¯k−μ≥δkμ}.D_{k}=\frac{|\overline{I}_{k}-\mu|}{\overline{\alpha}_{k}+1-\overline{I}_{k}}\mathsf{1}{\left\{\overline{I}_{k}-\mu\geq\delta_{k}\mu\right\}}.
+On the one hand,
+𝔼⁡[Ck]≤𝔼​|I¯k−μ|α¯k+1−(1+δk)​μ≤Var​[I1]k​(α¯k+1−(1+δk)​μ).\mathbb{E}[C_{k}]\leq\frac{\mathbb{E}|\overline{I}_{k}-\mu|}{\overline{\alpha}_{k}+1-(1+\delta_{k})\mu}\leq\frac{\sqrt{\text{Var}[I_{1}]}}{\sqrt{k}(\overline{\alpha}_{k}+1-(1+\delta_{k})\mu)}.
+On the other hand, since |I¯k−μ|≤2|\overline{I}_{k}-\mu|\leq 2 and 1−I¯k≥0,1-\overline{I}_{k}\geq 0, it follows by applying the Chernoff bound that
+𝔼[Dk]≤2α¯kPr{I¯k≥(1+δk)μ}≤2α¯kexp(−kδk2μ/3).\mathbb{E}[D_{k}]\leq\frac{2}{\overline{\alpha}_{k}}\Pr\{\overline{I}_{k}\geq(1+\delta_{k})\mu\}\leq\frac{2}{\overline{\alpha}_{k}}\exp\left(-k\delta_{k}^{2}\mu/3\right).
+Now, pick {δk}\{\delta_{k}\} so that δk2=6​log⁡(1/α¯k)/(k​μ)∨0\delta_{k}^{2}=6\log(1/\,\overline{\alpha}_{k})/(k\mu)\vee 0 for all k≥1.k\geq 1. Notice that this choice is both non-negative and decays to 00 due to our assumptions on {αk};\{\alpha_{k}\}; thus, this is a valid choice. It is now easy to see that 𝔼⁡[Ck]=O⁡(1/k)\mathbb{E}[C_{k}]=O(1/\sqrt{k}) and 𝔼⁡[Dk]=O⁡(α¯k).\mathbb{E}[D_{k}]=O(\overline{\alpha}_{k}).
+The desired result now follows.
+∎
+### 3.2 SA Estimator
+Let II denote a random variable with the same distribution as I1.I_{1}. Also, for y∈ℝ,y\in\mathbb{R}, let H⁡(y,I)=I⁡(y+p)−y.H(y,I)=I(y+p)-y. Next, define h:ℝ→ℝh:\mathbb{R}\to\mathbb{R} using h⁡(y):=𝔼⁡[H⁡(y,I)].h(y):=\mathbb{E}[H(y,I)]. Clearly, h⁡(y)=p⁡(Δ−y)/(Δ+p);h(y)=p(\Delta-y)/(\Delta+p); further, Δ\Delta is its unique zero. The theory of stochastic approximation then suggests using the update rule given in (2) for estimating Δ.\Delta. For later use, also define
+Mk+1=\displaystyle M_{k+1}={}
+[Ik+1​(yk+p)−yk]−h⁡(yk)\displaystyle[I_{k+1}(y_{k}+p)-y_{k}]-h(y_{k})
+=\displaystyle={}
+[Ik+1−ΔΔ+p]​(yk+p).\displaystyle\left[I_{k+1}-\frac{\Delta}{\Delta+p}\right](y_{k}+p).
+(7)
+We now discuss the convergence and convergence rate of (2).
+###### Theorem 2.
+Consider the estimator given in (2) for some positive stepsize sequence {ηk}.\{\eta_{k}\}.
+1.
+Suppose that ∑k=0∞ηk=∞\sum_{k=0}^{\infty}\eta_{k}=\infty and ∑k=0∞ηk2<∞.\sum_{k=0}^{\infty}\eta_{k}^{2}<\infty. Then, limk→∞yk=Δ\lim_{k\to\infty}y_{k}=\Delta a.s.
+2.
+Suppose that ηk=1/(k+1)η\eta_{k}=1/(k+1)^{\eta} for some constant η∈(0,1).\eta\in(0,1). Then,
+𝔼|yk−Δ|=O(k−η/2).\mathbb{E}|y_{k}-\Delta|=O\left(k^{-\eta/2}\right).
+###### Proof.
+For k≥0,k\geq 0, consider the σ−\sigma-field ℱk:=σ⁡(yj,Ij,j≤k).\mathcal{F}_{k}:=\sigma(y_{j},I_{j},j\leq k). Then, from (4) and the fact that {Ik}\{I_{k}\} is an IID sequence, we get
+𝔼⁡[Ik+1​(yk+p)−yk|ℱk]=ΔΔ+p​(yk+p)−yk=h⁡(yk).\mathbb{E}[I_{k+1}(y_{k}+p)-y_{k}|\mathcal{F}_{k}]=\frac{\Delta}{\Delta+p}(y_{k}+p)-y_{k}=h(y_{k}).
+Hence, one can rewrite (2) as
+yk+1=yk+ηk​[h⁡(yk)+Mk+1],y_{k+1}=y_{k}+\eta_{k}[h(y_{k})+M_{k+1}],
+(8)
+where Mk+1M_{k+1} is as in (7).
+Since 𝔼⁡[Mk+1|ℱk]=0\mathbb{E}[M_{k+1}|\mathcal{F}_{k}]=0 for all k≥0,k\geq 0, {Mk}\{M_{k}\} is a martingale difference sequence. Consequently, (8) is a classical SA algorithm whose limiting ODE is
+y˙​(t)=h​(y​(t)).\dot{y}(t)=h(y(t)).
+(9)
+We now make use of Theorem 9 given in the Appendix to establish Statement 1. Accordingly, we verify the four conditions listed there. The stepsize Condition i.) directly holds due to our assumptions on {ηk}.\{\eta_{k}\}. With regards to Condition ii.), recall we have already established above that {Mk}\{M_{k}\} is a martingale difference sequence with respect to {ℱk}\{\mathcal{F}_{k}\}. The square-integrability condition holds since |Mk+1|≤|yk|+p|M_{k+1}|\leq|y_{k}|+p which, in turn, implies that 𝔼⁡[|Mk+1|2|ℱk]≤2​(p2∨1)​(1+|yk|2),\mathbb{E}[|M_{k+1}|^{2}|\mathcal{F}_{k}]\leq 2(p^{2}\vee 1)(1+|y_{k}|^{2}), as desired. Next, due to linearity, hh is trivially Lipschitz continuous. Further, h⁡(y)=0h(y)=0 if and only if y=Δ.y=\Delta. This shows that Δ\Delta is the unique equilibrium point of (9). Now, because the coefficient of yy in h⁡(y)h(y) is negative, it also follows that Δ\Delta is the unique globally asymptotically stable equilibrium of (9). This verifies Condition iii.). We finally consider Condition iv.) Let h∞(y):=−yp/(Δ+p).h_{\infty}(y):=-yp/(\Delta+p). Then, clearly, hc→h∞h_{c}\to h_{\infty} uniformly on compacts as c→∞.c\to\infty. Furthermore, since the coefficient of yy is negative in the definition of h∞,h_{\infty}, it is easy to see that the origin is the unique globally asymptotically stable equilibrium of the ODE y˙​(t)=h∞​(y⁡(t)),\dot{y}(t)=h_{\infty}(y(t)), as required. Statement 1. now follows.
+We now sketch a proof for Statement 2. First, note that
+yk+1−Δ=(1−a​ηk)​(yk−Δ)+ηk​Mk+1,y_{k+1}-\Delta=(1-a\eta_{k})(y_{k}-\Delta)+\eta_{k}M_{k+1},
+where a=p/(Δ+p).a=p/(\Delta+p). Now, since 𝔼⁡[Mk+1|ℱk]=0,\mathbb{E}[M_{k+1}|\mathcal{F}_{k}]=0, we have
+𝔼⁡[(yk+1−Δ)2|ℱk]=(1−a​ηk)2​(yk−Δ)2+ηk2​𝔼​[Mk+12|ℱk].\mathbb{E}[(y_{k+1}-\Delta)^{2}|\mathcal{F}_{k}]=(1-a\eta_{k})^{2}(y_{k}-\Delta)^{2}+\eta_{k}^{2}\mathbb{E}[M_{k+1}^{2}|\mathcal{F}_{k}].
+Recall that 𝔼⁡[Mk+12|ℱk]≤C⁡(1+yk2)\mathbb{E}[M_{k+1}^{2}|\mathcal{F}_{k}]\leq C(1+y_{k}^{2}) for some constant C≥0.C\geq 0. By substituting this above and then repeating all the steps from the proof of [30, Theorem 3.1], it is not difficult to see that Statement 2 holds as well.
+∎
+### 3.3 SA Estimator with Momentum
+As stated before, our SAM estimator is the SA estimator discussed above with an additional heavy-ball momentum term. Simulations in Section 4 show that this simple modification results in a drastic improvement in performance.
+We now discuss the convergence of the SAM estimator under the assumption that, for k≥0,k\geq 0,
+ζk=βk−ω​ηkβk−1,\zeta_{k}=\frac{\beta_{k}-\omega\eta_{k}}{\beta_{k-1}},
+(10)
+where ω>0\omega>0 is some constant and {βk}\{\beta_{k}\} is some positive real sequence. By substituting (10) and letting uk=(zk−zk−1)/βk−1,u_{k}=(z_{k}-z_{k-1})/\beta_{k-1}, observe that the update rule in (3) can be rewritten as
+uk+1=uk+γk​[Ik+1​(zk+pi)−zk]−ω​γk​uk,u_{k+1}=u_{k}+\gamma_{k}\left[I_{k+1}(z_{k}+p_{i})-z_{k}\right]-\omega\gamma_{k}u_{k},
+where γk:=ηk/βk.\gamma_{k}:=\eta_{k}/\beta_{k}.
+For k≥0,k\geq 0, let Mk+1M_{k+1} be as in (7). Also, let ℱk\mathcal{F}_{k} denote the σ\sigma-field σ⁡(z0,u0,I1,…,Ik).\sigma(z_{0},u_{0},I_{1},\ldots,I_{k}). Clearly, uk,zk∈ℱku_{k},z_{k}\in\mathcal{F}_{k} and 𝔼⁡[Mk+1|ℱk]=0.\mathbb{E}[M_{k+1}|\mathcal{F}_{k}]=0. Hence, {Mk}\{M_{k}\} is again a martingale difference sequence with respect to the filtration {ℱk}.\{\mathcal{F}_{k}\}. Furthermore, since |Mk+1|≤|zk|+p,|M_{k+1}|\leq|z_{k}|+p, we have
+𝔼⁡[|Mk+1|2|ℱk]≤2​(p2∨1)​(1+|zk|2).\mathbb{E}[|M_{k+1}|^{2}|\mathcal{F}_{k}]\leq 2(p^{2}\vee 1)(1+|z_{k}|^{2}).
+(11)
+As before, let a=p/(Δ+p).a=p/(\Delta+p). Also, let b=Δ​p/(Δ+p)b=\Delta p/(\Delta+p) and ϵk=uk+1−uk\epsilon_{k}=u_{k+1}-u_{k} for k≥0.k\geq 0. It is then easy to see that one can write down (3) in terms of the following two update rules:
+uk+1=\displaystyle u_{k+1}={}
+uk+γk​[h⁡(uk,zk)+Mk+1]\displaystyle u_{k}+\gamma_{k}[h(u_{k},z_{k})+M_{k+1}]
+(12)
+zk+1=\displaystyle z_{k+1}={}
+zk+βk​[g⁡(uk,zk)+ϵk],\displaystyle z_{k}+\beta_{k}[g(u_{k},z_{k})+\epsilon_{k}],
+(13)
+where h:ℝ2→ℝh:\mathbb{R}^{2}\to\mathbb{R} and g:ℝ2→ℝg:\mathbb{R}^{2}\to\mathbb{R} are the linear functions given by
+h⁡(u,z)=b−ω​u−a​z and g⁡(u,z)=u.h(u,z)=b-\omega u-az\quad\text{ and }\quad g(u,z)=u.
+###### Theorem 3.
+Consider the SAM estimator given in (3) with ζk\zeta_{k} of the form given in (10). Then zk→Δz_{k}\to\Delta a.s., if one of the following conditions holds true.
+1.
+One-timescale : ∑k≥0βk=∞,\sum_{k\geq 0}\beta_{k}=\infty, ∑k≥0βk2<∞,\sum_{k\geq 0}\beta_{k}^{2}<\infty, and βk=γk.\beta_{k}=\gamma_{k}.
+2.
+Two-timescale: ∑k≥0βk=∑k≥0γk=∞,\sum_{k\geq 0}\beta_{k}=\sum_{k\geq 0}\gamma_{k}=\infty, ∑k≥0(βk2+γk2)<∞,\sum_{k\geq 0}\left(\beta_{k}^{2}+\gamma_{k}^{2}\right)<\infty, and limk→∞βkγk=0.\lim_{k\to\infty}\dfrac{\beta_{k}}{\gamma_{k}}=0.
+In both these cases, recall that γk=ηk/βk.\gamma_{k}=\eta_{k}/\beta_{k}.
+We state a few remarks concerning this result before discussing its proof.
+###### Remark 4.
+Examples of {ηk}\{\eta_{k}\} and {βk}\{\beta_{k}\} sequences such that the above conditions are satisfied include the following.
+•
+One-timescale: βk=1/(k+1)β\beta_{k}=1/(k+1)^{\beta} with β∈(1/2,1]\beta\in(1/2,1] and ηk=1/(k+1)η\eta_{k}=1/(k+1)^{\eta} with η=2​β.\eta=2\beta.
+•
+Two-timescale: βk=1/(k+1)β\beta_{k}=1/(k+1)^{\beta} with β∈(1/2,1]\beta\in(1/2,1] and ηk=1/(k+1)η\eta_{k}=1/(k+1)^{\eta} with 12+β<η<2​β.\frac{1}{2}+\beta<\eta<2\beta.
+In either case, note that limk→∞ζk=1.\lim_{k\to\infty}\zeta_{k}=1.
+###### Remark 5.
+The justification for the names given above for the two sets of conditions is as follows.
+Under the first set of conditions, the update rules in (12) and (13) indeed behave like a one-timescale stochastic approximation algorithm, i.e., both uku_{k} and zkz_{k} move on the same timescale. On the other hand, under the second set of conditions, (12) and (13), it behaves like a two-timescale stochastic approximation algorithm. This is because βk\beta_{k} decays to 00 at a much faster rate than γk,\gamma_{k}, in turn implying that the changes in {zk},\{z_{k}\}, i.e., {zk+1−zk}\{z_{k+1}-z_{k}\} are of a smaller magnitude than that in {uk}.\{u_{k}\}.
+###### Remark 6.
+In the spirit of the above remark, a natural question to consider is the following. Can one pick {ηk}\{\eta_{k}\} and {βk}\{\beta_{k}\} so that ηk/βk2→0\eta_{k}/\beta_{k}^{2}\to 0 or, equivalently, γk/βk→0​?\gamma_{k}/\beta_{k}\to 0? That is, can one pick the stepsizes so that uku_{k} now becomes the slowly moving update relative to zk​?z_{k}? The answer to this question seems to be no. This is because a couple of sufficient conditions needed to guarantee convergence (e.g., Condition iii.) and iv.) in Theorem 11) would no longer hold true in this new setup. Furthermore, simulations seem to suggest that the iterates, in fact, race to infinity.
+###### Remark 7.
+Another question to consider is the following. Can one pick ω,\omega, {βk},\{\beta_{k}\}, and {ηk}\{\eta_{k}\} so that ζk→ζ,\zeta_{k}\to\zeta, where ζ\zeta is a constant in (0,1)​?(0,1)? In particular, can one choose ω=(1−ζ),\omega=(1-\zeta), βk=1/(k+1)β\beta_{k}=1/(k+1)^{\beta} with β∈(1/2,1]\beta\in(1/2,1] and then pick ηk=1/(k+1)β\eta_{k}=1/(k+1)^{\beta} (i.e., η=β\eta=\beta) so that ζk→ζ​?\zeta_{k}\to\zeta? The answer to this second question does not seem to be clear. This is because limk→∞γk\lim_{k\to\infty}\gamma_{k} would then equal 1.1. Consequently, again, one of the sufficient conditions to guarantee convergence (e.g., condition i.) of Theorem 11) would no longer hold. However, simulations in this case do show some promise.
+###### Remark 8.
+Based on the existing literature on convergence rates for one-timescale and two-timescale linear stochastic approximation [30, 27, 28, 29], one can conjecture that 𝔼|zk−Δ|=O~(k−β/2)\mathbb{E}|z_{k}-\Delta|=\tilde{O}(k^{-\beta/2}) when {βk}\{\beta_{k}\} and {ηk}\{\eta_{k}\} are chosen as described in Remark 4. This implies the optimal convergence rate would then again be O~​(1/k),\tilde{O}(1/\sqrt{k}), which matches the bound we have obtained in Theorem 2 for the SA estimator. However, it is possible that this bound may not be tight in the case of the SAM estimator. The is because (13) lacks the martingale difference term and, typically, these are the kind of terms that dictate the convergence rates. Furthermore, simulations in Section 4 suggest that the SAM estimator always converges much faster than the SA estimator.
+###### Proof of Theorem 3.
+We discuss the two cases one by one.
+One-timescale Setup: In this case, the update rules given in (12) and (13) together form a one-timescale stochastic approximation algorithm. More specifically, if we let vk=[ukzk],v_{k}=\begin{bmatrix}u_{k}\\
+z_{k}\end{bmatrix}, then it follows that
+vk+1=vk+βk​(H⁡(vk)+[0ϵk]+[Mk+10]),v_{k+1}=v_{k}+\beta_{k}\left(H(v_{k})+\begin{bmatrix}0\\
+\epsilon_{k}\end{bmatrix}+\begin{bmatrix}M_{k+1}\\
+0\end{bmatrix}\right),
+(14)
+where H:ℝ2→ℝ2H:\mathbb{R}^{2}\to\mathbb{R}^{2} is the function defined by
+H⁡(v)=[b0]−[ωa−10]​v.H(v)=\begin{bmatrix}b\\
+0\end{bmatrix}-\begin{bmatrix}\omega&a\\
+-1&0\end{bmatrix}v.
+We now verify the four conditions listed in Theorem 9 and then make use of Proposition 10 (both given in the appendix) to show that vk→[0Δ]=:v∗v_{k}\to\begin{bmatrix}0\\
+\Delta\end{bmatrix}=:v_{*} a.s. This automatically implies zk→Δz_{k}\to\Delta a.s., which is what we need to prove.
+Notice that the stepsize in (14) is βk.\beta_{k}. Condition i.), therefore, trivially holds due to the assumptions made in Statement 1. Next, observe that the martingale difference term in (14) is the vector [Mk+10].\begin{bmatrix}M_{k+1}\\
+0\end{bmatrix}. This, along with (11) and the statements above it, shows that Condition ii.) is true as well.
+With regards to Condition iii.), first note that HH is trivially Lipschitz continuous due to the linearity of both its component functions. Next, since Δ=b/a,\Delta=b/a, we have that H⁡(v)=0H(v)=0 if and only if v=v∗.v=v_{*}. Furthermore, since aa and ω\omega are strictly positive, the real parts of the eigenvalues of the matrix in the definition of HH are also positive. This can be seen from the following set of observations. To begin with, the associated characteristic equation of this matrix is
+λ2−λ​ω+a=0.\lambda^{2}-\lambda\omega+a=0.
+Hence, the roots are λ=(ω±ω2−4​a)/2.\lambda=(\omega\pm\sqrt{\omega^{2}-4a})/2. If ω2<4​a,\omega^{2}<4a, then the roots are complex valued; therefore, the real part of both these roots is ω/2\omega/2 which is clearly positive. On the other hand, if ω2≥4​a,\omega^{2}\geq 4a, then both the roots are real; further, the smallest of the two roots, i.e., (ω−ω2−4​a)/2,(\omega-\sqrt{\omega^{2}-4a})/2, is strictly positive since a>0.a>0. This shows that the negative of the matrix given in the definition of HH is Hurwitz. Together, these observations show that v∗v_{*} is the unique globally asymptotically stable equilibrium of the ODE v˙​(t)=H​(v​(t)).\dot{v}(t)=H(v(t)). This verifies Condition iii.).
+Finally, let
+H∞​(v)=−[ωa−10]​v.H_{\infty}(v)=-\begin{bmatrix}\omega&a\\
+-1&0\end{bmatrix}v.
+Then, it is easy to see that Hc​(v)→H∞​(v)H_{c}(v)\to H_{\infty}(v) uniformly on compact sets as c→∞.c\to\infty.
+Also, H∞​(v)=0H_{\infty}(v)=0 if and only if v=0.v=0. Furthermore, as shown before, the negative of the matrix in the definition of H∞H_{\infty} is Hurwitz. This implies that the origin is the unique globally asymptotically stable equilibrium of the ODE v˙​(t)=H∞​(v).\dot{v}(t)=H_{\infty}(v). This verifies condition iv.).
+It now remains to check if {ϵk}\{\epsilon_{k}\} has the decaying behaviour described in Proposition 10. Towards this, since |Mk+1|≤(p+|zk|),|M_{k+1}|\leq(p+|z_{k}|), we have
+‖[0ϵk]‖≤C′​γk​(1+|uk|+|zk|)≤C​γk​(1+‖vk‖)\left\|\begin{bmatrix}0\\
+\epsilon_{k}\end{bmatrix}\right\|\leq C^{\prime}\gamma_{k}(1+|u_{k}|+|z_{k}|)\leq C\gamma_{k}(1+\|v_{k}\|)
+for some constants C,C′≥0.C,C^{\prime}\geq 0. Now, because γk\gamma_{k} decays to 00 as k→∞k\to\infty due to the assumption in Statement 1., it follows that {ϵk}\{\epsilon_{k}\} indeed has the desired behaviour.
+This completes the proof in the one-timescale setup.
+Two-timescale Setup: Since βk/γk→0,\beta_{k}/\gamma_{k}\to 0, one can perceive uku_{k} to be changing on a faster timescale relative to yk.y_{k}. Hence, the update rules in (12) and (13) can be viewed as a two-timescale stochastic approximation. We now verify the conditions listed in Theorem 11 and then use Proposition 12 (both given in the appendix) to conclude zk→Δz_{k}\to\Delta a.s.
+Conditions i.) and ii.) trivially hold. Hence, we only focus on verifying Conditions iii.) and iv.) Because of linearity, hh and gg are trivially Lipschitz continuous. Next, let ϕ⁡(z)=(b−a​z)/ω\phi(z)=(b-az)/\omega for z∈ℝ.z\in\mathbb{R}. Clearly, ϕ\phi is linear in zz and, hence, Lipschitz continuous. Also, h⁡(ϕ⁡(z),z)=0.h(\phi(z),z)=0. This, along with the fact that the sign in front of uu in h⁡(u,z)h(u,z) is negative, shows that ϕ⁡(z)\phi(z) is indeed the unique globally asymptotically stable equilibrium of the ODE u˙​(t)=h​(u​(t),z).\dot{u}(t)=h(u(t),z). Next, observe that the ODE z˙​(t)=g⁡(ϕ⁡(z⁡(t)),z⁡(t))\dot{z}(t)=g(\phi(z(t)),z(t)) has the form z˙​(t)=(b−a​z​(t))/ω.\dot{z}(t)=(b-az(t))/\omega. Clearly, this ODE has Δ\Delta as its unique globally asymptotically stable equilibrium. This completes the verification of Condition iii.).
+With regards to Condition iv.), first let h∞h_{\infty} be the function defined by h∞​(u,z)=−ω​u−a​z.h_{\infty}(u,z)=-\omega u-az. Also, for z∈ℝ,z\in\mathbb{R}, let ϕ∞(z)=−az/ω.\phi_{\infty}(z)=-az/\omega. This function is linear in zz and, hence, Lipschitz; also, ϕ∞​(0)=0.\phi_{\infty}(0)=0. Then, on the one hand, hc→h∞h_{c}\to h_{\infty} uniformly on compacts as c→∞c\to\infty and, on the other hand, the ODE OPENu˙​(t)=h∞​(u⁡(t),z))=−ω​u​(t)−a​z\dot{u}(t)=h_{\infty}(u(t),z))=-\omega u(t)-az indeed has ϕ∞​(z)\phi_{\infty}(z) as its unique globally asymptotically stable equilibrium. Finally, for z∈ℝ,z\in\mathbb{R}, let g∞(z)=−az/ω.g_{\infty}(z)=-az/\omega. Then, trivially, gc→g∞g_{c}\to g_{\infty} uniformly on compacts, as c→∞.c\to\infty. Further, z˙(t)=g∞(z(t))=−az(t)/ω\dot{z}(t)=g_{\infty}(z(t))=-az(t)/\omega which indeed has the origin as its unique globally asymptotically stable equilibrium. With this, we finish with verifying Condition iv.).
+Now, as per Proposition 12, we need to show that {ϵk}\{\epsilon_{k}\} is asymptotically negligible. However, this is indeed true since |Mk+1|≤(zk+p)|M_{k+1}|\leq(z_{k}+p) which implies |ϵk|≤C​γk​(1+|uk|+|zk|)|\epsilon_{k}|\leq C\gamma_{k}(1+|u_{k}|+|z_{k}|) for some constant C≥0,C\geq 0, and since γk→0.\gamma_{k}\to 0.
+This shows that (uk,zk)→(ϕ⁡(Δ),Δ)=(0,Δ)(u_{k},z_{k})\to(\phi(\Delta),\Delta)=(0,\Delta) a.s., as desired.
+∎
+### 3.4 Comparison with Existing Estimators
+As far as we know, there are three other approaches in the literature for estimating page change rates—the Naive estimator, MLE, and the MM estimator. The details about the first two estimators can be found in [19] while, for the third one, one can look at [20]. We now do a comparison, within the context of our setup, between these estimators and the ones that we have proposed.
+The Naive estimator simply uses the average number of changes detected to approximate the rate at which a page changes. That is, if {qk}\{q_{k}\} denotes the iterates of the Naive estimator then, in our setup, qk=p​I^k/k,q_{k}=p\hat{I}_{k}/k, where I^k\hat{I}_{k} is as defined below (1). The intuition behind this is the following. If τ1\tau_{1} is as defined at the beginning of Section 3.1, then
+𝔼⁡[N⁡(τ1)]=Δ/p.\mathbb{E}[N(\tau_{1})]=\Delta/p.
+(15)
+Thus, the Naive estimator tries to approximate 𝔼⁡[N⁡(τ1)]\mathbb{E}[N(\tau_{1})] with I^k/k\hat{I}_{k}/k then use (15) to determine the change rate.
+Clearly, 𝔼⁡[qk]=p​Δ/(Δ+p)≠Δ.\mathbb{E}[q_{k}]=p\Delta/(\Delta+p)\neq\Delta. Also, from the strong law of large numbers, qk​→a.s.​p​Δ/(Δ+p)≠Δ.q_{k}\overset{a.s.}{\to}p\Delta/(\Delta+p)\neq\Delta. Thus, this estimator is not consistent and is also biased. This is to be expected since this estimator does not account for all the changes that occur between two consecutive accesses.
+Next, we look at the MLE estimator. Informally, this estimator identifies the parameter value that has the highest probability of producing the
+observed set of observations. In our setup, the value of the MLE estimator is obtained by solving the following equation for Δ:\Delta:
+∑j=1kIj​τj/(exp⁡(Δ​τj)−1)=∑j=1k(1−Ij)​τj,\sum_{j=1}^{k}I_{j}\,\tau_{j}/(\exp{(\Delta\,\tau_{j})}-1)=\sum_{j=1}^{k}(1-I_{j})\,\tau_{j},
+(16)
+where τk=tk−tk−1\tau_{k}=t_{k}-t_{k-1} and {tk}\{t_{k}\} is as defined in Section 2.
+The derivation of this relation is given in [19, Appendix C]. As mentioned in [19, Section 4], the above estimator is consistent.
+Note that the MLE estimator makes actual use of the inter-arrival crawl times {τk}\{\tau_{k}\} unlike our two estimators and also the Naive estimator. In this sense, it fully accounts for the information available from the crawling process. Due to this, as we shall see in the experiments section, the quality of the estimate obtained via MLE improves rapidly in comparison to the Naive estimator as the sample size increases.
+However, MLE suffers in two aspects: computational tractability and mathematical instability. Specifically, note that the MLE estimator lacks a closed form expression. Therefore, one has to solve (16) by using numerical methods such as the Newton–Raphson method, Fisher’s Scoring Method, etc. Unfortunately, using these ideas to solve (16) takes more and more time as the number of samples grow. Also note that, under the above solution ideas, the MLE estimator works in an offline fashion. In that, each time we get a new observation, (16) needs to be solved afresh. This is because there is no easy way to efficiently reuse the calculations from one iteration into the next (note that the defining equation (16) changes in a significant and nontrivial way from one iteration to the other).
+Besides the complexity, the MLE estimator is also unstable in two situations. One, when no changes have been detected (Ij=0,∀k∈{1,…,k}I_{j}=0,\,\forall k\in\{1,\ldots,k\}), and the other, when all the accesses detect a change (Ij=1,∀k∈{1,…,k}I_{j}=1,\,\forall k\in\{1,\ldots,k\}). In the first setting, no solution exists; in the second setting, the solution is ∞.\infty. One simple strategy to avoid these instability issues is to clip the estimate to some pre-defined range whenever one of bad observation instances occur.
+Finally, let us discuss the MM estimator. Here, one looks at the fraction of times no changes were detected during page accesses and then, using a moment matching method, tries to approximate the actual page change rate. In our context, the value of this estimator is obtained by solving ∑j=1k(1−Ij)=∑j=1ke−Δ​τj\sum_{j=1}^{k}(1-I_{j})=\sum_{j=1}^{k}e^{-\Delta\tau_{j}} for Δ.\Delta. The details of this equation are given in [20, Section 4]. While the MM idea is indeed simpler than MLE, the associated estimation process continues to suffer from similar instability and computational issues like the ones discussed above.
+We emphasise that none of our estimators suffer from any of the issues mentioned above. In particular, all of our estimators are online and have a significantly simple update rule; thus, improving the estimate whenever a new data point arrives is extremely easy. Moreover, all of them are stable, i.e., the estimated values will almost surely be finite. More importantly, the performance of our estimators is comparable to that of MLE. This can be seen from the numerical experiments in Section 4.
+### 3.5 Comparison of Theorem 3 with the Literature on Stochastic Momentum Methods
+We first provide an alternative characterization of (3). Let f⁡(z)=12​a​(a​z−b)2,f(z)=\frac{1}{2a}(az-b)^{2}, where aa and bb are as defined below (11), and let hh be as defined in Section 3.2. Then, clearly, h​(z)=−∇f​(z).h(z)=-\nabla f(z). Thus, (3) can be rewritten as
+zk+1=zk+ηk​[−∇f​(zk)+Mk+1]+ζk​(zk−zk−1),z_{k+1}=z_{k}+\eta_{k}[-\nabla f(z_{k})+M_{k+1}]+\zeta_{k}(z_{k}-z_{k-1}),
+where Mk+1M_{k+1} is as defined in (7). Consequently, it follows that (3) can also be viewed as an SGD method with a heavy-ball momentum term (similarly, (2) is also an SGD method, but we will not focus on that here).
+The above viewpoint now brings forth an interesting question “How does Theorem 3 compare with the existing results on stochastic heavy-ball method and the stochastic variant of Nesterov’s accelerated gradient method?”
+While there are numerous results on stochastic momentum methods, surprisingly, most of them hold only under extremely restrictive assumptions: they either need
+1.
+that the gradient of the objective function be uniformly bounded [31, 32], or
+2.
+that the noise sequence, i.e., {Mn+1},\{M_{n+1}\}, be independent of the iterates [33] or, alternatively, its variance be uniformly bounded [31, 32, 33, 34, 35, 36, 37, 38].
+In our setup, in contrast, the objective function ff is quadratic; hence, the magnitude of its gradient grows to infinity as |z|→∞.|z|\to\infty. Also, 𝔼⁡[|Mk+1|2|ℱk]=(zk+p)2​𝔼​[Ik+1−Δ/(Δ+p)]2,\mathbb{E}[|M_{k+1}|^{2}|\mathcal{F}_{k}]=(z_{k}+p)^{2}\mathbb{E}[I_{k+1}-\Delta/(\Delta+p)]^{2}, which implies that 𝔼​|Mk+1|2=Δ​p(Δ+p)2​𝔼​(zk+p)2.\mathbb{E}|M_{k+1}|^{2}=\frac{\Delta p}{(\Delta+p)^{2}}\mathbb{E}(z_{k}+p)^{2}. One can thus see that the above assumptions do not directly hold in our case.
+To the best of our knowledge, [39] and [22] are the only other works that similarly do not need the above assumptions. The results in [39], however, only apply to the setup with constant stepsizes. In that case, it is shown there that the iterates converge to a neighborhood of the desired solution but not to the solution itself. On the other hand, [22] does discuss results on convergence and convergence rates of the stochastic heavy-ball method.
+The analysis there, though, does not apply to the stochastic variant of the original heavy-ball method, i.e., the one proposed in [23, (9)]; instead, it applies to a different variant.
+The paper [40] is one other work on stochastic momentum methods that has recently generated significant attention. However, the results there concern a setup where the objective function is of a different nature to the one we consider here. In particular, instead of the gradient, it is assumed there that the objective function itself is defined via an expectation.
+In this sense, our work is the first to analyze the stochastic heavy-ball method (in its original form) without a priori presuming that the above two conditions hold. As a matter of fact, it is proved in [22] that the variant which is considered there cannot be analyzed using the standard ODE based stochastic approximation techniques such as the one proposed in [41, Chapter 6]. Our analysis, in contrast, is able to directly make use of the standard approach.
+(a) Q-Q Plot: Real Data versus exponential distribution
+(b) Δ=1.10,p=0.5\Delta=1.10,\hskip 8.50012ptp=0.5
+(c) Δ=1.10,p=0.1\Delta=1.10,\hskip 8.50012ptp=0.1
+Figure 1: Different Estimators: Real Data
+(a) Performance of single trajectories
+(b) Mean estimate (solid) and 95%95\% Confidence interval
+(c) Root mean square error
+Figure 2: Synthetic data: Δ=5,p=3\Delta=5,\,p=3.
+## 4 Numerical Results
+We now demonstrate the strength of our estimators using three different experiments. The first one involves real data based on Wikipedia traces. It serves two of our goals. First, we use this experiment to validate our model assumption that the page change process is a stationary Poisson point process. Second, we use it to demonstrate that the estimation quality of our online estimators is comparable to that of the offline MLE estimator. In the second experiment, using synthetic data, we study the impact of Δ\Delta and pp on our three estimators. In the third experiment, we similarly study how the choices of {αk},\{\alpha_{k}\}, {ηk}\{\eta_{k}\} and {βk}\{\beta_{k}\} influence the performance. Finally, based on the outcomes of these experiments, we provide some guidelines on which estimator to use in practice.
+### 4.1 Performance on Real Data (Expt. 1)
+As mentioned before, our goal here is provide a validation for our model as well as to compare the performance of the different estimators on real data.
+To generate the data set, we used Wikipedia traces which are openly available on the web. In particular, we selected an arbitrary page from the list of frequently edited pages on Wikipedia. The title of the page we chose was ‘Template talk: Did you know”. Next, we extracted the timestamps at which this page was edited over a period of five months (April 01, 202001,\,2020 to August 31, 202031,\,2020). We found that this page had changed 40434043 times during this period. From the available history, we then calculated the inter-update times of the page change process. The average of these values turned out to be Δ=1.1098.\Delta=1.1098.
+Using a Q-Q plot, we then compared the distribution (specifically quantiles) of the collected data to that of an exponential distribution with this Δ\Delta rate. The result is given in Fig. 1(a). Notice that the points roughly fall on a straight line. Importantly, this line is very close to the 45∘45^{\circ} diagonal. This implies that both the sets of quantiles come from the same distribution, thereby confirming that the collected inter-update times indeed follow an exponential distribution whose rate is close to Δ.\Delta. Equivalently, this implies that the update times come from a Poisson point process with rate close to Δ.\Delta.
+Having verified our assumption, we now compare five different page rate estimators: Naive, MLE, LLN, SA, and SAM. Their performances are given in Fig 1(b) and Fig 1(c).
+The procedure we adopted to obtain these plots was as follows. (Unless specified, we follow the notations from Section 2). Recall that we had access to the actual timestamps at which this Wikipedia page was changed. Keeping this in mind, we artificially generated the crawl instances of this page. These times were sampled from a Poisson point process with rate p=0.5p=0.5 for Fig 1(b) and with p=0.1p=0.1 for Fig 1(c). We then checked if the page had changed or not between each of the successive crawling instances. This then generated the values of the indicator sequence {Ik}.\{I_{k}\}. For p=0.5,p=0.5, the length of this sequence was 17231723 while, for p=0.1,p=0.1, this length turned out to be 340.340. Using these Ik,I_{k}, p,p, and inter-update time lengths, we then used the five different estimators mentioned above to find Δ.\Delta. This gave rise to the trajectories shown in Fig 1(b) and Fig 1(c). Note that the depicted trajectories correspond to exactly one run of each estimator. The trajectory of the estimates obtained by the SA estimator is labeled ΔS​A,\Delta^{SA}, etc. The stepsizes chosen for our different estimators are as follows. For our LLN estimator, we had set αk≡1\alpha_{k}\equiv 1 and, for the SA estimator, we had used ηk=(k+1)−η\eta_{k}=(k+1)^{-\eta} with η=0.75\eta=0.75. In case of the SAM estimator, we had set βk=(k+1)−β\beta_{k}=(k+1)^{-\beta} with β=0.6\beta=0.6 and ηk=(k+1)−η\eta_{k}=(k+1)^{-\eta} with η=1.2\eta=1.2. (Recall that, in the SAM estimator, the main stepsize is ηk\eta_{k} while the stepsize multiplying the momentum term has the form ζk=(βk−ω​ηk)/βk−1\zeta_{k}=(\beta_{k}-\omega\eta_{k})/\beta_{k-1}).
+We now summarise our findings. In Fig 1(b), we observe that performances of the MLE, LLN, SA and SAM estimators are comparable to each other and all of them outperform the Naive estimator. This last observation is not at all surprising since the Naive estimator completely ignores the changes missed between two successive crawling instances. In contrast to this, we observe that the estimators behave somewhat differently in Fig 1(c). Recall that the crawling frequency here is 0.1,0.1, which is quite small compared with the value 0.50.5 that was chosen before. We notice that SAM and MLE estimators perform better than SA and LLN estimators in this scenario.
+(a) Performance of single trajectories
+(b) Mean estimate (solid) and 95%95\% Confidence interval
+(c) Root mean square error
+Figure 3: Synthetic data: Δ=500,p=3\Delta=500,\,p=3.
+(a) Performance of single trajectories
+(b) Mean estimate (solid) and 95%95\% Confidence interval
+(c) Root mean square error
+Figure 4: Synthetic data: Δ=500,p=50\Delta=500,\,p=50.
+### 4.2 Comparison of Estimation Quality using Synthetic Data (Expt. 2)
+Throughout this experiment, we work with synthetic data.
+#### 4.2.1 Sample Variance and Root Mean Squared Error
+Our goal here is to study the sample variance and root mean squared error of the estimates obtained from multiple runs of the different estimators. The output is given in Fig. 2.
+The data for this experiment is generated as follows. We sample points from two different stationary Poisson point processes, one with parameter Δ=5\Delta=5 and the other with parameter p=3.p=3. We treat the samples from the first process as the times at which an imaginary page changes, and the samples from the second process as the times at which this page is crawled. We then check if the page has changed or not between two successive page accesses. This information is then used to generate the values of the indicator sequence {Ik}.\{I_{k}\}.
+We now give {Ik},\{I_{k}\}, p,p, as well as the inter-access lengths as input to the five different estimators mentioned before. The stepsizes we use are as follows. For our LLN estimator, we set αk≡1\alpha_{k}\equiv 1; for the SA estimator, we use ηk=(k+1)−η\eta_{k}=(k+1)^{-\eta} with η=0.75\eta=0.75; and, for the SAM estimator, we choose ζk=(βk−ω​ηk)/βk−1,\zeta_{k}=(\beta_{k}-\omega\eta_{k})/\beta_{k-1}, where ηk=(k+1)−η\eta_{k}=(k+1)^{-\eta} with η=1.3\eta=1.3, ω=1,\omega=1, and βk=(k+1)−β\beta_{k}=(k+1)^{-\beta} with β=0.75\beta=0.75. Fig. 2(a) depicts one single run of each of the five estimators.
+In Fig. 2(b) and Fig. 2(c), the parameter values are exactly the same as in Fig. 2(a). However, we now run the simulation 100100 times; the page change times and the page access times are generated afresh in each run. Fig. 2(b) depicts the 95%95\% confidence interval of the obtained estimates, whereas Fig. 2(c) shows the root mean squared value of the difference between the estimated value and actual change rate of the page.
+We now summarize our findings. Clearly, in each case, we observe that performances of the MLE, LLN, SA and SAM estimators are comparable to each other and all of them outperform the Naive estimator. The fact that the estimates from our approaches are close to that of the MLE estimator was indeed quite surprising to us. This is because, unlike MLE, our estimators completely ignore the actual lengths of the intervals between two accesses. Instead, they use p,p, which only accounts for the mean interval length. Note that the root mean square error of the first few samples for MLE is very high (hence, it is not depicted in Fig. 2(c)). This is due to the instability that MLE faces; see Section 3.4.
+Fig. 2(c) shows that the error in the MLE estimate decays faster as compared to others. We believe this is because the MLE also uses the actual interval lengths in its computation; thus, it uses more information about the crawling process than the other estimators.
+While the plots do not show this, we once again draw attention to the fact that the time taken by each iteration in MLE rapidly grows as kk increases. In contrast, our estimators take roughly the same amount of time for each iteration.
+#### 4.2.2 Impact of Δ\Delta and pp on Performance
+In the previous experiments, recall that our different estimators more or less behaved similarly. Our goal now is to vary the values of Δ\Delta and pp and see if there are any major differences that crop up in their performances. Alongside, we also wish to see the usefulness of the momentum term used in the SAM estimator. The performances in two such interesting scenarios are shown in Fig. 4 and Fig. 4. Note that we no longer consider MLE on account of their impractical run times when the {Ik}\{I_{k}\} sequence lengths are large.
+In Fig. 4, Δ=500\Delta=500 and p=3,p=3, which means the crawling frequency is quite low compared to the frequency at which the page is updated. On the other hand, in Fig. 4, Δ=500\Delta=500 and p=50;p=50; thus, the crawling frequency now is relatively higher. The stepsizes for our different estimators are as follows. For the LLN estimator, we chose αk≡1\alpha_{k}\equiv 1; for the SA estimator, we chose ηk=(k+1)−η\eta_{k}=(k+1)^{-\eta} with η=0.8\eta=0.8; and, for the SAM estimator, we chose ηk\eta_{k} as before, ω=1\omega=1 and βk=(k+1)−β\beta_{k}=(k+1)^{-\beta} with β=0.5\beta=0.5 (note that our stepsize choice for the SAM estimator violates the conditions of Theorem 3, but it satisfies the one we made in the conjecture below (3)).
+Fig. 3(a) and Fig. 4(a) show one single trajectory of our estimators in the two scenarios. We observe that the LLN and SAM estimators perform quite well as compared to the SA estimator in both the scenarios; however, the latter catches up when the pp value becomes higher. The impact of the momentum term can also be clearly seen in the low frequency crawling case. In this scenario, note that the crawler will more or less always detects a change. That is, the {Ik}\{I_{k}\} sequence will mostly consists of all 11s. In turn, this means that the SA estimator’s update rule will almost always have the form yk+1=yk+ηk​p.y_{k+1}=y_{k}+\eta_{k}p.
+We then ran the simulation 100100 times and obtained a plot of the 95%95\% confidence interval and the root mean squared error of our different estimators in the two scenarios. This is shown in Fig. 3(b), 3(c), 4(b), and 4(c). We observe that variance for SA is relatively very low. This is because the SA estimator does not deviate too much from the update rule mentioned in the previous paragraph. The disadvantage, however, is that its estimates typically are quite far away from the actual change rate. Furthermore, this error decreases quite slowly. Another interesting observation from Fig. 3(b) and 3(c) is that the variance of LLN estimator is larger than that of SAM estimator, however, its error decays at much faster rate than that of the SAM estimator.
+Compared to Fig. 4, notice that in Fig. 4 that performance of all our estimators improve . However, as shown in Fig. 4(b), the SAM estimator is quite volatile now. Separately, the zoomed-in plot in 4(c) shows that the average error for the SAM estimator drops quite rapidly compared to others in the initial few iterations. However, this advantage disappears after 400400 iterations; then on the LLN estimator performs much better.
+### 4.3 Impact of Step Size Choices (Expt.3)
+The theoretical results presented in Section 3 show that the convergence rates of LLN, SA, and SAM estimators are affected by the choice of {αk}\{\alpha_{k}\} {ηk},\{\eta_{k}\}, and {ζk},\{\zeta_{k}\}, respectively. Figure 5 provides a numerical verification of the same. The details are as follows. We chose Δ=500\Delta=500 and p=10.p=10. Notice that the page change rate is again very high, whereas the crawling frequency is relatively very low value. We then use the LLN estimator with three different choices of {αk};\{\alpha_{k}\}; these choices are shown in the Fig 5(a) itself. The LLN estimator with αk=k0.75\alpha_{k}=k^{0.75} has the worst performance. This behavior matches the prediction made by Theorem 1. In Fig. 5(b), we again consider the same setup as above. However, this time we run the SA estimator with three different choices of {ηk};\{\eta_{k}\}; the choices are given in the figure itself. We see that the performance for η=0.5\eta=0.5 is better than the other cases.
+We now analyze the impact of varying {ηk}\{\eta_{k}\} and {ζk}\{\zeta_{k}\} on the performance of the SAM estimator. Let ζk\zeta_{k} be of form given in (10). Based on our conjecture below (3), pick ηk=(k+1)−η\eta_{k}=(k+1)^{-\eta} and βk=(k+1)−β\beta_{k}=(k+1)^{-\beta} with β∈(0,1]\beta\in(0,1] and β<η<2​β.\beta<\eta<2\beta. In Fig. 5(c), we fix η=0.8\eta=0.8 and vary β\beta; these choices are shown in the figure itself. The SAM estimator with β=0.4\beta=0.4 reaches the limit very quickly, however, it is very noisy and keeps fluctuating around actual change rate. The fluctuations reduce as the value of β\beta increases; however, larger values of β\beta also slow down the rate at which the error decreases. We observe that the SAM estimator with β=0.6\beta=0.6 has the best performance. In Fig. 5(d), we fix β=0.6\beta=0.6 and vary η\eta. The figure seems to suggest that a larger η\eta increases the convergence rate but, simultaneously, also increases the fluctuations.
+(a) LLN estimator for different {αk}\{\alpha_{k}\} choices
+(b) SA estimator with ηk=(k+1)−η\eta_{k}=(k+1)^{-\eta}for different η\eta choices
+(c) SAM estimator with ηk=k−0.8\eta_{k}=k^{-0.8} for different {βk}\{\beta_{k}\} choices
+(d) SAM estimator with βk=k−0.6\beta_{k}=k^{-0.6} for different {ηk}\{\eta_{k}\} choices
+Figure 5: Impact of {αk}\{\alpha_{k}\}, {ηk}\{\eta_{k}\} and {ζk}\{\zeta_{k}\} choices on Performance; Δ=500\Delta=500 and p=10p=10.
+### 4.4 Practical Recommendations
+Here, we provide some recommendations on which estimator to use in practice. Our conclusions are based on what we have observed in the numerical experiments discussed in Section 4. We summarise them as follows.
+•
+High frequency crawling: If the crawling frequency pp is comparable to Δ\Delta, all estimators (LLN, SA, SAM and MLE) perform well except the Naive estimator. However, we do not recommend MLE as it is offline and very time-consuming. The examples that correspond to this scenario are depicted in Fig. 1(b) and Fig. 2.
+•
+Low frequency crawling: There are two sub-cases depending on the value of pp as compared to Δ\Delta.
+–
+Relatively very low pp: The Naive estimator is very bad for this scenario as there will several missed changes which will be unaccounted for. We recommend LLN or SAM estimator as they both outperform SA estimator; the example that corresponds to this scenario is depicted in Fig. 4. For similar reasons as in the previous case, we do not recommend the MLE estimator.
+–
+Relatively moderate pp: The Naive estimator is again a bad choice here. Amongst the rest, we recommend the LLN estimator when several IkI_{k} values are available. Otherwise, one can use SAM or the MLE estimator; the offline nature of the MLE will be of concern here as well. The examples that corresponds to this scenario are depicted in Fig. 1(c) and Fig. 4.
+## 5 Estimating Optimal Crawling Rates
+In this section, we discuss how our estimators can be used to identify the optimal crawling rates. Formally, we suppose that a search engine’s local cache consists of NN pages. Let pip_{i} denote the rate at which page ii is crawled. The goal then is to find the optimal crawling rates such that the overall freshness of the local cache, i.e.,
+limT→∞𝔼⁡[1T​∫0T(∑i=1Nwi​𝟣​{Fresh​(i,t)})​𝑑t],\lim_{T\to\infty}\mathbb{E}\bigg[\dfrac{1}{T}\int\displaylimits_{0}^{T}\bigg(\sum_{i=1}^{N}w_{i}\mathsf{1}{\left\{\text{Fresh}(i,t)\right\}}\bigg)dt\bigg],
+(17)
+is maximized subject to the constraint ∑i=1npi≤B\sum_{i=1}^{n}p_{i}\leq B. Here, T>0T>0 is the time horizon, wiw_{i} denotes the importance of the ii-th page, B≥0B\geq 0 is a bound on the overall crawling frequency, 𝟣​{Fresh​(i,t)}\mathsf{1}{\left\{\text{Fresh}(i,t)\right\}} is the indicator that page ii is fresh at time t,t, i.e., the local copy matches the actual page.
+In [12], it was shown that maximizing (17) under a bandwidth constraint for large enough TT corresponds to maximizing F⁡(p)=∑i=1N(wi​pi/(pi+Δi)),F(p)=\sum_{i=1}^{N}\big(w_{i}p_{i}/(p_{i}+\Delta_{i})\big), where p≡(p1,…,pN)p\equiv(p_{1},\ldots,p_{N}). Importantly, it was shown there that this latter optimization problem can be solved efficiently (in O⁡(N​log⁡N)O(N\log N) iterations) and provided an algorithm for the same. However, that algorithm requires that the Δi\Delta_{i}’s be known in advance. Our goal here is to combine their algorithm with our estimators and try and determine the optimal crawling rates.
+(a) Frequently changing page
+(b) Slowly changing page
+Figure 6: Adaptive estimation of the optimal crawling rate
+Taking inspiration from [21], we consider the following hypothetical setup. We consider N=50N=50 pages, in which we presume that there are 50≈7\sqrt{50}\approx 7 pages that change very frequently, i.e., they account for (say) 90%90\% of the total changes in the system. Accordingly, we suppose that the change rate Δi\Delta_{i} for each frequently changing page is 4.5/7,4.5/7, while for the others it is 0.5/43.0.5/43. We further assume that the bound on the overall bandwidth is B=5.B=5. We further assume that the frequently changing pages are more important and assign uniform weight of 22. On the other hand every other page presumed to have uniform weight of 1.1.
+We then use the following strategy. We arbitrarily initialize pi=B/N=0.1p_{i}=B/N=0.1 for all ii, i.e., BB is uniformly divided across all the NN pages. Since these pip_{i} values are arbitrarily chosen, these need not be the optimal crawling rates. Thereafter, we run each of our estimators for (say) 50 iterations. We then use the estimates of Δi\Delta_{i} at the 50t​h50^{th} iteration as input to [12, Algorithm 2] and obtain the associated possibly sub-optimal crawling rates. Denoting these new rates as pip_{i} again, we now repeat the above procedure. That is, we use pip_{i}’s for 5050 iterations to estimate the Δi\Delta_{i}’s and, in turn, use the later to obtain estimates for the new pip_{i}’s.
+Fig. 6 compares the estimated crawling rates obtained using our three estimators with the optimal ones obtained by using the actual Δi\Delta_{i} values in [12, Algorithm 2] for the two kinds of pages. In this experiment, the two SA-based estimators appear to perform better than the LLN estimator, at least initially. Note that p5p_{5} denotes the optimal crawling rate for the 55-th page, while p5SAp_{5}^{\text{SA}} denotes the estimate obtained by using the SA estimator, etc. P10,P_{10}, p10S​A,p_{10}^{SA}, etc. have similar meanings in relation to the 1010-th page. The parameters we chose for our different estimators are as follows. For the LLN estimator, we chose αk≡1\alpha_{k}\equiv 1. For the SA estimator, we chose ηk=(k+1)−η\eta_{k}=(k+1)^{-\eta} with η=0.75\eta=0.75. For the SAM estimator, we choose ηk=(k+1)−η\eta_{k}=(k+1)^{-\eta} with η=1.3\eta=1.3 and ζk=(βk−ω​ηk)/βk−1\zeta_{k}=(\beta_{k}-\omega\eta_{k})/\beta_{k-1} with ω=1,\omega=1, and βk=(k+1)−β\beta_{k}=(k+1)^{-\beta} for β=0.75\beta=0.75.
+## 6 Conclusion and Future Work
+We propose three new online approaches for estimating the rate of change of web pages. We provide theoretical guarantees for their convergence and also provide numerical simulations to compare their performances. From experiments, one can verify that the proposed estimators perform significantly better than the Naive estimator. Also, they have extremely simple update rules which make them computationally attractive when compared to MLE. We also provide important insights on which estimator one should use in practice.
+The performance of both our estimators currently depend on the choice of {αk}\{\alpha_{k}\}, {ηk},\{\eta_{k}\}, and {ζk}\{\zeta_{k}\} respectively. One aspect to analyze in the future would be to ask what would be the ideal choice for these sequences that would help attain the fastest convergence rate. Another interesting research direction to pursue is to combine the online estimation with dynamic optimization.
+## Acknowledgment
+This work is partly supported by ANSWER project PIA FSN2 (P15 9564-266178 \DOS0060094) and DST-Inria project “Machine Learning for Network Analytics” IFC/DST-Inria-2016-01/448. Research of Gugan Thoppe is supported by IISc’s start up grants SG/MHRD-19-0054
+and SR/MHRD-19-0040. The authors would also like to thank A. Budhiraja for several useful discussions concerning Theorem 3.
+## References
+[1]
+K. Avrachenkov, K. Patil, G. Thoppe, Change rate estimation and optimal
+freshness in web page crawling, in: Proceedings of the 13th EAI International
+Conference on Performance Evaluation Methodologies and Tools, 2020, pp. 3–10
+(2020).
+[2]
+A. Heydon, M. Najork, Mercator: A scalable, extensible web crawler, World Wide
+Web 2 (4) (1999) 219–229 (1999).
+[3]
+C. Castillo, Effective web crawling, in: Acm sigir forum, Vol. 39, Acm New
+York, NY, USA, Association for Computing Machinery, New York, NY, USA, 2005,
+pp. 55–56 (2005).
+[4]
+C. Olston, M. Najork, et al., Web crawling, Foundations and
+Trends® in Information Retrieval 4 (3) (2010) 175–246
+(2010).
+[5]
+J. Edwards, K. McCurley, J. Tomlin, An adaptive model for optimizing
+performance of an incremental web crawler, in: Proceedings of the 10th
+International Conference on World Wide Web, Vol. 8, Association for Computing
+Machinery, New York, NY, USA, 2001, p. 106–113 (2001).
+[6]
+K. Avrachenkov, A. Dudin, V. Klimenok, P. Nain, O. Semenova, Optimal threshold
+control by the robots of web search engines with obsolescence of documents,
+Computer Networks 55 (8) (2011) 1880–1893 (2011).
+[7]
+J. Cho, H. Garcia-Molina, The evolution of the web and implications for an
+incremental crawler, in: 26th International Conference on Very Large
+Databases, Morgan Kaufmann Publishers Inc., San Francisco, CA, USA, 2000, pp.
+1–18 (2000).
+[8]
+J. Cho, H. Garcia-Molina, Synchronizing a database to improve freshness, ACM
+sigmod record 29 (2) (2000) 117–128 (2000).
+[9]
+N. Matloff, Estimation of internet file-access/modification rates from indirect
+data, ACM Transactions on Modeling and Computer Simulation (TOMACS) 15 (3)
+(2005) 233–253 (2005).
+[10]
+B. E. Brewington, G. Cybenko, How dynamic is the web?, Computer Networks
+33 (1-6) (2000) 257–276 (2000).
+[11]
+J. Cho, H. Garcia-Molina, Effective page refresh policies for web crawlers, ACM
+Transactions on Database Systems (TODS) 28 (4) (2003) 390–426 (2003).
+[12]
+Y. Azar, E. Horvitz, E. Lubetzky, Y. Peres, D. Shahaf, Tractable near-optimal
+policies for crawling, Proceedings of the National Academy of Sciences
+115 (32) (2018) 8099–8103 (2018).
+[13]
+A. Kolobov, Y. Peres, E. Lubetzky, E. Horvitz, Optimal freshness crawl under
+politeness constraints, in: Proceedings of the 42nd International ACM SIGIR
+Conference on Research and Development in Information Retrieval, 2019, pp.
+495–504 (2019).
+[14]
+K. E. Avrachenkov, V. S. Borkar, Whittle index policy for crawling ephemeral
+content, IEEE Transactions on Control of Network Systems 5 (1) (2016)
+446–455 (2016).
+[15]
+J. Niño-Mora, A dynamic page-refresh index policy for web crawlers, in:
+Analytical and Stochastic Modeling Techniques and Applications, Springer
+International Publishing, Cham, 2014, pp. 46–60 (2014).
+[16]
+F. Douglis, A. Feldmann, B. Krishnamurthy, J. C. Mogul, Rate of change and
+other metrics: a live study of the world wide web., in: USENIX Symposium on
+Internet Technologies and Systems, Vol. 119, 1997, p. 35 (1997).
+[17]
+C. E. Wills, M. Mikhailov, Towards a better understanding of web resources and
+server responses for improved caching, Computer Networks 31 (11-16) (1999)
+1231–1243 (1999).
+[18]
+A. Wolman, M. Voelker, N. Sharma, N. Cardwell, A. Karlin, H. M. Levy, On the
+scale and performance of cooperative web proxy caching, in: Proceedings of
+the seventeenth ACM symposium on Operating systems principles, 1999, pp.
+16–31 (1999).
+[19]
+J. Cho, H. Garcia-Molina, Estimating frequency of change, ACM Transactions on
+Internet Technology (TOIT) 3 (3) (2003) 256–290 (2003).
+[20]
+U. Upadhyay, R. Busa-Fekete, W. Kotlowski, D. Pal, B. Szorenyi, Learning to
+crawl, in: Thirty-fourth AAAI Conference on Artificial Intelligence, AAAI
+press, New York, NY, USA, 2020, pp. 8471–8478 (2020).
+[21]
+M. Andrews, S. Borst, J. Lee, E. Martin-Lopez, K. Palyutina, Tracking the state
+of large dynamic networks via reinforcement learning, in: IEEE INFOCOM
+2020-IEEE Conference on Computer Communications, IEEE, 2020, pp. 416–425
+(2020).
+[22]
+S. Gadat, F. Panloup, S. Saadane, Stochastic heavy ball, Electronic Journal of
+Statistics 12 (1) (2018) 461–529 (2018).
+[23]
+B. T. Polyak, Some methods of speeding up the convergence of iteration methods,
+Ussr computational mathematics and mathematical physics 4 (5) (1964) 1–17
+(1964).
+[24]
+B. E. Brewington, G. Cybenko, Keeping up with the changing web, Computer 33 (5)
+(2000) 52–58 (2000).
+[25]
+S. R. Singh, Estimating the rate of web page updates., in: Proc. International
+Joint Conferences on Artificial Intelligence, ACM, San Francisco, CA, USA,
+2007, pp. 2874–2879 (2007).
+[26]
+A. Kolobov, Y. Peres, C. Lu, E. J. Horvitz, Staying up to date with online
+content changes using reinforcement learning for scheduling, in: Advances in
+Neural Information Processing Systems, 2019, pp. 581–591 (2019).
+[27]
+G. Dalal, G. Thoppe, B. Szörényi, S. Mannor, Finite sample analysis of
+two-timescale stochastic approximation with applications to reinforcement
+learning, in: Conference On Learning Theory, PMLR, 2018, pp. 1199–1233
+(2018).
+[28]
+G. Dalal, B. Szörényi, G. Thoppe, A tale of two-timescale reinforcement
+learning with the tightest finite-time bound, in: Thirty-Fourth AAAI
+Conference on Artificial Intelligence, AAAI Press, San Francisco, CA, USA,
+2020, pp. 3701–3708 (2020).
+[29]
+M. Kaledin, E. Moulines, A. Naumov, V. Tadic, H.-T. Wai, Finite time analysis
+of linear two-timescale stochastic approximation with markovian noise, arXiv
+preprint arXiv:2002.01268 (2020).
+[30]
+G. Dalal, B. Szörényi, G. Thoppe, S. Mannor, Finite sample analyses for
+td (0) with function approximation, in: Thirty-Second AAAI Conference on
+Artificial Intelligence, AAAI Press, San Francisco, CA, USA, 2018, pp.
+6144–6160 (2018).
+[31]
+I. Gitman, H. Lang, P. Zhang, L. Xiao, Understanding the role of momentum in
+stochastic gradient methods, arXiv preprint arXiv:1910.13962 (2019).
+[32]
+T. Yang, Q. Lin, Z. Li, Unified convergence analysis of stochastic momentum
+methods for convex and non-convex optimization, arXiv preprint
+arXiv:1604.03257 (2016).
+[33]
+N. S. Aybat, A. Fallah, M. Gurbuzbalaban, A. Ozdaglar, Robust accelerated
+gradient methods for smooth strongly convex functions, SIAM Journal on
+Optimization 30 (1) (2020) 717–751 (2020).
+[34]
+M. Laborde, A. Oberman, A lyapunov analysis for accelerated gradient methods:
+From deterministic to stochastic case, in: International Conference on
+Artificial Intelligence and Statistics, PMLR, 2020, pp. 602–612 (2020).
+[35]
+M. Assran, M. Rabbat, On the convergence of nesterov’s accelerated gradient
+method in stochastic settings, arXiv preprint arXiv:2002.12414 (2020).
+[36]
+A. Kulunchakov, J. Mairal, Estimate sequences for variance-reduced stochastic
+composite optimization, in: International Conference on Machine Learning,
+PMLR, 2019, pp. 3541–3550 (2019).
+[37]
+B. Can, M. Gurbuzbalaban, L. Zhu, Accelerated linear convergence of stochastic
+momentum methods in wasserstein distances, in: International Conference on
+Machine Learning, PMLR, 2019, pp. 891–901 (2019).
+[38]
+M. Cohen, J. Diakonikolas, L. Orecchia, On acceleration with noise-corrupted
+gradients, in: International Conference on Machine Learning, PMLR, 2018, pp.
+1019–1028 (2018).
+[39]
+S. Vaswani, F. Bach, M. Schmidt, Fast and faster convergence of sgd for
+over-parameterized models and an accelerated perceptron, in: The 22nd
+International Conference on Artificial Intelligence and Statistics, PMLR,
+2019, pp. 1195–1204 (2019).
+[40]
+N. Loizou, P. Richtárik, Momentum and stochastic momentum for stochastic
+gradient, newton, proximal point and subspace descent methods, Computational
+Optimization and Applications 77 (3) (2020) 653–710 (2020).
+[41]
+V. S. Borkar, Stochastic approximation: a dynamical systems viewpoint, Vol. 48,
+Springer, India, 2009 (2009).
+[42]
+C. Lakshminarayanan, S. Bhatnagar, A stability criterion for two timescale
+stochastic approximation schemes, Automatica 79 (2017) 108–114 (2017).
+## Appendix A Convergence of Stochastic Approximation Algorithms
+In this section, we discuss results from literature that provide sufficient conditions for convergence of both one-timescale and two-timescale stochastic approximation algorithms.
+We begin by discussing the convergence of a generic one-timescale stochastic approximation algorithm. This result is obtained by combining [41, Chapter 2, Corollary 4,] and [41, Chapter 3, Theorem 7].
+###### Theorem 9 (Convergence of One-timescale Stochastic Approximation [41]).
+Consider the update rule
+yk+1=yk+ηk​[h⁡(yk)+Mk+1],y_{k+1}=y_{k}+\eta_{k}[h(y_{k})+M_{k+1}],
+where ηk\eta_{k} is a positive scalar; yk,Mk∈ℝd;y_{k},M_{k}\in\mathbb{R}^{d}; and h:ℝd→ℝdh:\mathbb{R}^{d}\to\mathbb{R}^{d} is a deterministic function. Suppose the following conditions hold:
+i.)
+∑k=0∞ηk=∞\sum_{k=0}^{\infty}\eta_{k}=\infty and ∑k=0∞ηk2<∞.\sum_{k=0}^{\infty}\eta_{k}^{2}<\infty.
+ii.)
+{Mk}\{M_{k}\} is a martingale difference sequence with respect to the increasing family of σ−\sigma-fields
+ℱk:=σ⁡(yj,Mj,j≤k),k≥0.\mathcal{F}_{k}:=\sigma(y_{j},M_{j},j\leq k),\quad k\geq 0.
+That is, 𝔼⁡[Mk+1|ℱk]=0\mathbb{E}[M_{k+1}|\mathcal{F}_{k}]=0 a.s., k≥0.k\geq 0. Further, there is a constant C≥0C\geq 0 such that 𝔼⁡[‖Mk+1‖2|ℱk]≤C⁡(1+‖yk‖2)​ a.s.\mathbb{E}[\|M_{k+1}\|^{2}|\mathcal{F}_{k}]\leq C(1+\|y_{k}\|^{2})\text{ a.s.} for all k≥0.k\geq 0.
+iii.)
+hh is a globally Lipschitz continuous function. Further, the ODE y˙​(t)=h​(y​(t))\dot{y}(t)=h(y(t)) has an unique globally asymptotically stable equilibrium y∗.y_{*}.
+iv.)
+There exists a continuous function h∞:ℝd→ℝdh_{\infty}:\mathbb{R}^{d}\to\mathbb{R}^{d} such that the functions hc​(x):=h⁡(c​x)/c,h_{c}(x):=h(cx)/c, c≥1,c\geq 1, satisfy hc→h∞h_{c}\to h_{\infty} uniformly on compact sets as c→∞.c\to\infty. Further, the ODE y˙​(t)=h∞​(y⁡(t))\dot{y}(t)=h_{\infty}(y(t)) has the origin as its unique globally asymptotically stable equilibrium.
+Then, yk→y∗y_{k}\to y_{*} a.s.
+Often, stochastic approximation algorithms contain an additional perturbation term that is asymptotically negligible. The next result discusses convergence of such algorithms.
+###### Proposition 10 (Convergence of Perturbed One-timescale Stochastic Approximation).
+Consider the update rule
+yk+1=yk+ηk​[h⁡(yk)+ϵk+Mk+1],y_{k+1}=y_{k}+\eta_{k}[h(y_{k})+\epsilon_{k}+M_{k+1}],
+where ϵk\epsilon_{k} is an additional perturbation term while the other terms have the same meaning as in Theorem 9. Suppose that the four conditions listed in Theorem 9 hold true. Further, suppose ‖ϵk‖≤C​ρk​(1+‖yk‖)\|\epsilon_{k}\|\leq C\rho_{k}(1+\|y_{k}\|) a.s. for k≥0,k\geq 0, where CC is a positive constant and {ρk}\{\rho_{k}\} is a sequence of positive scalars such that limk→∞ρk=0.\lim_{k\to\infty}\rho_{k}=0. Then, yk→y∗y_{k}\to y_{*} a.s.
+###### Proof.
+We only give a sketch of the proof since the arguments are more or less similar to the ones used to derive Theorem 9. As mentioned before, this latter result follows from [41, Chapter 2, Corollary 4] and [41, Chapter3, Theorem 7]. We now briefly discuss how, even in the presence of the additional perturbation term, these two results continue to hold.
+•
+[41, Chapter 2, Corollary 4]: This result follows from [41, Chapter 2, Theorem 2] which, in turn, follows from [41, Chapter 2, Lemma 1]. However, as shown in extension 33 in [41, pg. 17], this latter result goes through even in the presence of the perturbation term {ϵk}.\{\epsilon_{k}\}. This is because ϵk\epsilon_{k} is asymptotically negligible a.s. More specifically, observe that the sequence {yk}\{y_{k}\} is a.s. bounded under assumption (A4) given on [41, pg. 17]. This implies that {ϵk}\{\epsilon_{k}\} is a random bounded sequence which is o⁡(1)o(1) a.s.; the latter is true since ρk→0.\rho_{k}\to 0.
+•
+[41, Chapter3, Theorem 7]: The proof of this result is based on Lemmas 1 to 6 in [41, Chapter 3]. The first three of these lemmas concerns the behaviour of the solution trajectories of the limiting ODE y˙​(t)=h∞​(y⁡(t)).\dot{y}(t)=h_{\infty}(y(t)). Since the perturbation term does not affect the definition of this limiting ODE in any way whatsoever, these three results continue to hold as before. Similarly, Lemma 5 in ibid is unchanged since it only concerns the convergence of the sum of martingale differences ∑kηk​M^k+1\sum_{k}\eta_{k}\hat{M}_{k+1} (recall that the stepsize sequence in our update rule is ηk\eta_{k}). With regards to the proof of Lemma 4 in ibid, observe that our update rule satisfies
+y^​(t⁡(k+1))=y^​(t⁡(k))+ηk​(hr⁡(n)​(y^​(t⁡(k)))+ϵ^k+M^k+1),m⁡(n)≤k≤m⁡(n+1),\hat{y}(t(k+1))=\hat{y}(t(k))+\eta_{k}(h_{r(n)}(\hat{y}(t(k)))+\hat{\epsilon}_{k}+\hat{M}_{k+1}),\quad m(n)\leq k\leq m(n+1),
+where ϵ^k=ϵk/r⁡(n)\hat{\epsilon}_{k}=\epsilon_{k}/r(n) while the other notations are analogous to the ones defined in [41, Chapter 3]. Because ‖ϵk‖≤C​ρk​(1+‖yk‖),\|\epsilon_{k}\|\leq C\rho_{k}(1+\|y_{k}\|), ρk→0,\rho_{k}\to 0, and r⁡(n)≥1,r(n)\geq 1, it follows that
+‖ϵ^k‖≤C1​(1+‖y^​(t⁡(k))‖2)\|\hat{\epsilon}_{k}\|\leq C_{1}(1+\|\hat{y}(t(k))\|^{2})
+for some positive constant C1.C_{1}. Note that this is in similar spirit to (3.2.5) in ibid. It is then easy to see that the rest of the proof goes through as before. This shows that [41, Chapter 3,Lemma 4] continues to be true even in the presence of the the perturbation term. Using exactly the same bound for ‖ϵ^k‖\|\hat{\epsilon}_{k}\| obtained above, one can see that the arguments in the proof of Lemma 6 in ibid hold as well. Thus, [41, Chapter 3, Theorem 7] continues to hold, which is exactly what we wanted to establish.
+The desired result now follows.
+∎
+We next state a result that discusses the convergence of a generic two-timescale stochastic approximation algorithm. The proof of this result is based on [41, Chapter 6, Theorem 2] and [42, Theorem 10].
+###### Theorem 11 (Convergence of Two-timescale Stochastic Approximation [41, 42]).
+Consider the update rules
+uk+1=\displaystyle u_{k+1}={}
+uk+γk​[h⁡(uk,zk)+Mk+1(1)],\displaystyle u_{k}+\gamma_{k}[h(u_{k},z_{k})+M^{(1)}_{k+1}],
+zk+1=\displaystyle z_{k+1}={}
+zk+βk​[g⁡(uk,zk)+Mk+1(2)],\displaystyle z_{k}+\beta_{k}[g(u_{k},z_{k})+M^{(2)}_{k+1}],
+where γk\gamma_{k} and βk\beta_{k} are positive scalars; uk,zk,Mk(1),Mk(2)∈ℝd;u_{k},z_{k},M^{(1)}_{k},M^{(2)}_{k}\in\mathbb{R}^{d}; and h,g:ℝ2​d→ℝdh,g:\mathbb{R}^{2d}\to\mathbb{R}^{d} are two deterministic functions. Suppose the following conditions hold:
+i.)
+∑k≥0γk=∑k≥0βk=∞,\sum_{k\geq 0}\gamma_{k}=\sum_{k\geq 0}\beta_{k}=\infty, ∑k≥0(γk2+βk2)<∞,\sum_{k\geq 0}\left(\gamma_{k}^{2}+\beta_{k}^{2}\right)<\infty, and limk→∞βkγk=0.\lim_{k\to\infty}\dfrac{\beta_{k}}{\gamma_{k}}=0.
+ii.)
+{Mk(1)}\{M_{k}^{(1)}\} and {Mk(2)}\{M_{k}^{(2)}\} are martingale difference sequences with respect to the increasing σ−\sigma-fields
+ℱk:=σ⁡(uj,zj,Mj(1),Mj(2),j≤k),k≥0.\mathcal{F}_{k}:=\sigma(u_{j},z_{j},M_{j}^{(1)},M_{j}^{(2)},j\leq k),\quad k\geq 0.
+Further, there exists a constant C≥0C\geq 0 such that 𝔼⁡[‖Mk+1(i)‖2|ℱk]≤C⁡(1+‖uk‖2+‖zk‖2)\mathbb{E}[\|M_{k+1}^{(i)}\|^{2}|\mathcal{F}_{k}]\leq C(1+\|u_{k}\|^{2}+\|z_{k}\|^{2}) for i=1,2i=1,2 and k≥0.k\geq 0.
+iii.)
+hh and gg are globally Lipschitz continuous functions. For each fixed z,z, the ODE u˙​(t)=h​(u​(t),z)\dot{u}(t)=h(u(t),z) has a unique globally asymptotically stable equilibrium ϕ⁡(z),\phi(z), where ϕ:ℝd→ℝd\phi:\mathbb{R}^{d}\to\mathbb{R}^{d} is Lipschitz continuous. Further, the ODE z˙​(t)=g⁡(ϕ⁡(z⁡(t)),z⁡(t))\dot{z}(t)=g(\phi(z(t)),z(t)) has an unique globally asymptotically stable equilibrium z∗.z_{*}.
+iv.)
+The functions hc​(u,z):=h⁡(c​u,c​z)/c,h_{c}(u,z):=h(cu,cz)/c, c≥1,c\geq 1, satisfy hc→h∞h_{c}\to h_{\infty} as c→∞,c\to\infty, uniformly on compacts for h∞.h_{\infty}. Also, for each fixed z∈ℝd,z\in\mathbb{R}^{d}, the limiting ODE u˙​(t)=h∞​(u⁡(t),z)\dot{u}(t)=h_{\infty}(u(t),z) has a unique globally asymptotically stable equilibrium ϕ∞​(z),\phi_{\infty}(z), where ϕ∞:ℝd→ℝd\phi_{\infty}:\mathbb{R}^{d}\to\mathbb{R}^{d} is a Lipschitz map. Further, ϕ∞​(0)=0.\phi_{\infty}(0)=0. Separately, the functions gc​(z):=g⁡(c​ϕ∞​(z),c​z)/c,g_{c}(z):=g(c\phi_{\infty}(z),cz)/c, c≥1,c\geq 1, satisfy gc→g∞g_{c}\to g_{\infty} as c→∞,c\to\infty, uniformly on compacts for some g∞.g_{\infty}. Also, the limiting ODE z˙​(t)=g∞​(z⁡(t))\dot{z}(t)=g_{\infty}(z(t)) has the origin as its unique globally asymptotically stable equilibrium.
+Then, (uk,zk)→(ϕ⁡(z∗),z∗)(u_{k},z_{k})\to(\phi(z_{*}),z_{*}) a.s.
+The last and final result of this section concerns the convergence of two-timescale stochastic approximation with perturbation terms that are asymptotically negligible.
+###### Proposition 12 (Convergence of Perturbed Two-timescale Stochastic Approximation).
+Consider the update rules
+uk+1=\displaystyle u_{k+1}={}
+uk+γk​[h⁡(uk,zk)+ϵk(1)+Mk+1(1)]\displaystyle u_{k}+\gamma_{k}[h(u_{k},z_{k})+\epsilon^{(1)}_{k}+M^{(1)}_{k+1}]
+zk+1=\displaystyle z_{k+1}={}
+zk+βk​[g⁡(uk,zk)+ϵk(2)+Mk+1(2)],\displaystyle z_{k}+\beta_{k}[g(u_{k},z_{k})+\epsilon^{(2)}_{k}+M^{(2)}_{k+1}],
+where ϵk(1),ϵk(2)\epsilon^{(1)}_{k},\epsilon^{(2)}_{k} are additional perturbation terms while the other terms have the same meaning as in Theorem 11. Suppose that the four conditions listed in Theorem 11 hold true. Further, suppose ‖ϵk(i)‖≤C​ρk(i)​(1+‖uk‖+‖zk‖)\|\epsilon^{(i)}_{k}\|\leq C\rho^{(i)}_{k}(1+\|u_{k}\|+\|z_{k}\|) a.s. for k≥0k\geq 0 and i=1,2,i=1,2, where CC is a positive constant and {ρk(i)},\{\rho^{(i)}_{k}\}, i=1,2,i=1,2, are sequences of positive scalars such that limk→∞ρk(i)=0.\lim_{k\to\infty}\rho^{(i)}_{k}=0. Then, (uk,zk)→(ϕ⁡(z∗),z∗)(u_{k},z_{k})\to(\phi(z_{*}),z_{*}) a.s.
+###### Proof.
+As stated before, this result follows from [41, Chapter 6, Theorem 2] and [42, Theorem 10]. We now briefly discuss how these results continue to hold even in the presence of the perturbation terms ϵk(1)\epsilon^{(1)}_{k} and ϵk(2).\epsilon^{(2)}_{k}.
+•
+[41, Chapter 6, Theorem 2]: This result, as well as [41, Chapter 6, Lemma 1] on which it relies, are essentially proved by defining suitable one-timescale stochastic approximation algorithms and then using convergence results concerning the latter. In our situation, both these will have additional perturbation terms that are asymptotically negligible. Consequently, by arguing as in the third extension given in [41, pg. 27], it can be shown that the asymptotic behaviour of these two algorithms remains unchanged even in the perturbed setup. Therefore, it follows that the conclusions of [41, Chapter 6, Theorem 2] continue to hold as before.
+•
+[42, Theorem 10]: This result is based on Lemmas 2 to 7 and Lemma 9 as well as Theorems 6 and 7 in ibid. Lemmas 2 to 5 in ibid concern the limiting ODEs described in condition iv.) of Theorem 11 above. The definitions of these ODEs do not depend on the presence or absence of the perturbation terms. Therefore, the aforementioned four lemmas continue to hold as before. On the other hand, Lemmas 6 and 9 in ibid rely on the results in Chapter 3 and Chapter 6 of [41]. As argued before, these results continue to hold even in the presence of perturbation terms and, consequently, so do Lemmas 6 and 9 in ibid. Finally, Theorems 8 and 10 in ibid build upon these seven Lemmas. Therefore, they hold as well in the perturbed setup.
+The desired result now follows.
+∎
+◄
+Feeling
+lucky?
+Conversion
+report
+Report
+an issue
+View original
+on arXiv►

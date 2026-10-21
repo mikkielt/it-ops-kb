@@ -1,0 +1,481 @@
+source: S-xxelwvq6
+url: https://docs.rs/fluent-bundle/0.16.0/fluent_bundle/bundle/struct.FluentBundle.html
+title: docs.rs: fluent_bundle::bundle::FluentBundle 0.16.0
+publisher: docs.rs / Project Fluent
+licence: Apache-2.0 OR MIT (crate fluent-bundle 0.16.0)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+fluent_bundle::bundle
+# Struct FluentBundle
+Source
+pub struct FluentBundle<R, M> {
+pub locales: Vec<LanguageIdentifier>,
+/* private fields */
+}
+Expand description
+A collection of localization messages for a single locale, which are meant
+to be used together in a single view, widget or any other UI abstraction.
+## §Examples
+use fluent_bundle::{FluentBundle, FluentResource, FluentValue, FluentArgs};
+use unic_langid::langid;
+// 1. Create a FluentResource
+let ftl_string = String::from("intro = Welcome, { $name }.");
+let resource = FluentResource::try_new(ftl_string)
+.expect("Could not parse an FTL string.");
+// 2. Create a FluentBundle
+let langid_en = langid!("en-US");
+let mut bundle = FluentBundle::new(vec![langid_en]);
+// 3. Add the resource to the bundle
+bundle.add_resource(&resource)
+.expect("Failed to add FTL resources to the bundle.");
+// 4. Retrieve a FluentMessage from the bundle
+let msg = bundle.get_message("intro")
+.expect("Message doesn't exist.");
+let mut args = FluentArgs::new();
+args.set("name", "Rustacean");
+// 5. Format the value of the message
+let mut errors = vec![];
+let pattern = msg.value()
+.expect("Message has no value.");
+assert_eq!(
+bundle.format_pattern(&pattern, Some(&args), &mut errors),
+// The placeholder is wrapper in Unicode Directionality Marks
+// to indicate that the placeholder may be of different direction
+// than surrounding string.
+"Welcome, \u{2068}Rustacean\u{2069}."
+);
+## §FluentBundle Life Cycle
+### §Create a bundle
+To create a bundle, call FluentBundle::new with a locale list that represents the best
+possible fallback chain for a given locale. The simplest case is a one-locale list.
+Fluent uses LanguageIdentifier which can be created using langid! macro.
+### §Add Resources
+Next, call add_resource one or more times, supplying translations in the FTL syntax.
+Since FluentBundle is generic over anything that can borrow a FluentResource,
+one can use FluentBundle to own its resources, store references to them,
+or even Rc<FluentResource> or Arc<FluentResource>.
+The FluentBundle instance is now ready to be used for localization.
+### §Format
+To format a translation, call get_message to retrieve a FluentMessage,
+and then call format_pattern on the message value or attribute in order to
+retrieve the translated string.
+The result of format_pattern is an
+Cow<str>. It is
+recommended to treat the result as opaque from the perspective of the program and use it only
+to display localized messages. Do not examine it or alter in any way before displaying. This
+is a general good practice as far as all internationalization operations are concerned.
+If errors were encountered during formatting, they will be
+accumulated in the Vec<FluentError> passed as the third argument.
+While they are not fatal, they usually indicate problems with the translation,
+and should be logged or reported in a way that allows the developer to notice
+and fix them.
+## §Locale Fallback Chain
+FluentBundle stores messages in a single locale, but keeps a locale fallback chain for the
+purpose of language negotiation with i18n formatters. For instance, if date and time formatting
+are not available in the first locale, FluentBundle will use its locales fallback chain
+to negotiate a sensible fallback for date and time formatting.
+## §Concurrency
+As you may have noticed, fluent_bundle::FluentBundle is a specialization of fluent_bundle::bundle::FluentBundle
+which works with an IntlLangMemoizer over RefCell.
+In scenarios where the memoizer must work concurrently, there’s an implementation of
+IntlLangMemoizer that uses Mutex and there’s FluentBundle::new_concurrent which works with that.
+## Fields§
+§locales: Vec<LanguageIdentifier>
+## Implementations§
+Source§
+### impl<R, M> FluentBundle<R, M>
+Source
+#### pub fn add_resource(&mut self, r: R) -> Result<(), Vec<FluentError>>
+where
+R: Borrow<FluentResource>,
+Adds a resource to the bundle, returning an empty Result<T> on success.
+If any entry in the resource uses the same identifier as an already
+existing key in the bundle, the new entry will be ignored and a
+FluentError::Overriding will be added to the result.
+The method can take any type that can be borrowed to FluentResource:
+FluentResource
+&FluentResource
+Rc<FluentResource>
+Arc<FluentResource>
+This allows the user to introduce custom resource management and share
+resources between instances of FluentBundle.
+##### §Examples
+use fluent_bundle::{FluentBundle, FluentResource};
+use unic_langid::langid;
+let ftl_string = String::from("
+hello = Hi!
+goodbye = Bye!
+");
+let resource = FluentResource::try_new(ftl_string)
+.expect("Could not parse an FTL string.");
+let langid_en = langid!("en-US");
+let mut bundle = FluentBundle::new(vec![langid_en]);
+bundle.add_resource(resource)
+.expect("Failed to add FTL resources to the bundle.");
+assert_eq!(true, bundle.has_message("hello"));
+##### §Whitespace
+Message ids must have no leading whitespace. Message values that span
+multiple lines must have leading whitespace on all but the first line. These
+are standard FTL syntax rules that may prove a bit troublesome in source
+code formatting. The indoc! crate can help with stripping extra indentation
+if you wish to indent your entire message.
+Source
+#### pub fn add_resource_overriding(&mut self, r: R)
+where
+R: Borrow<FluentResource>,
+Adds a resource to the bundle, returning an empty Result<T> on success.
+If any entry in the resource uses the same identifier as an already
+existing key in the bundle, the entry will override the previous one.
+The method can take any type that can be borrowed as FluentResource:
+FluentResource
+&FluentResource
+Rc<FluentResource>
+Arc<FluentResource>
+This allows the user to introduce custom resource management and share
+resources between instances of FluentBundle.
+##### §Examples
+use fluent_bundle::{FluentBundle, FluentResource};
+use unic_langid::langid;
+let ftl_string = String::from("
+hello = Hi!
+goodbye = Bye!
+");
+let resource = FluentResource::try_new(ftl_string)
+.expect("Could not parse an FTL string.");
+let ftl_string = String::from("
+hello = Another Hi!
+");
+let resource2 = FluentResource::try_new(ftl_string)
+.expect("Could not parse an FTL string.");
+let langid_en = langid!("en-US");
+let mut bundle = FluentBundle::new(vec![langid_en]);
+bundle.add_resource(resource)
+.expect("Failed to add FTL resources to the bundle.");
+bundle.add_resource_overriding(resource2);
+let mut errors = vec![];
+let msg = bundle.get_message("hello")
+.expect("Failed to retrieve the message");
+let value = msg.value().expect("Failed to retrieve the value of the message");
+assert_eq!(bundle.format_pattern(value, None, &mut errors), "Another Hi!");
+##### §Whitespace
+Message ids must have no leading whitespace. Message values that span
+multiple lines must have leading whitespace on all but the first line. These
+are standard FTL syntax rules that may prove a bit troublesome in source
+code formatting. The indoc! crate can help with stripping extra indentation
+if you wish to indent your entire message.
+Source
+#### pub fn set_use_isolating(&mut self, value: bool)
+When formatting patterns, FluentBundle inserts
+Unicode Directionality Isolation Marks to indicate
+that the direction of a placeable may differ from
+the surrounding message.
+This is important for cases such as when a
+right-to-left user name is presented in the
+left-to-right message.
+In some cases, such as testing, the user may want
+to disable the isolating.
+Source
+#### pub fn set_transform(&mut self, func: Option<fn(&str) -> Cow<'_, str>>)
+This method allows to specify a function that will
+be called on all textual fragments of the pattern
+during formatting.
+This is currently primarily used for pseudolocalization,
+and fluent-pseudo crate provides a function
+that can be passed here.
+Source
+#### pub fn set_formatter(
+&mut self,
+func: Option<fn(&FluentValue<'_>, &M) -> Option<String>>,
+)
+This method allows to specify a function that will
+be called before any FluentValue is formatted
+allowing overrides.
+It’s particularly useful for plugging in an external
+formatter for FluentValue::Number.
+Source
+#### pub fn has_message(&self, id: &str) -> bool
+where
+R: Borrow<FluentResource>,
+Returns true if this bundle contains a message with the given id.
+##### §Examples
+use fluent_bundle::{FluentBundle, FluentResource};
+use unic_langid::langid;
+let ftl_string = String::from("hello = Hi!");
+let resource = FluentResource::try_new(ftl_string)
+.expect("Failed to parse an FTL string.");
+let langid_en = langid!("en-US");
+let mut bundle = FluentBundle::new(vec![langid_en]);
+bundle.add_resource(&resource)
+.expect("Failed to add FTL resources to the bundle.");
+assert_eq!(true, bundle.has_message("hello"));
+Source
+#### pub fn get_message<'l>(&'l self, id: &str) -> Option<FluentMessage<'l>>
+where
+R: Borrow<FluentResource>,
+Retrieves a FluentMessage from a bundle.
+##### §Examples
+use fluent_bundle::{FluentBundle, FluentResource};
+use unic_langid::langid;
+let ftl_string = String::from("hello-world = Hello World!");
+let resource = FluentResource::try_new(ftl_string)
+.expect("Failed to parse an FTL string.");
+let langid_en = langid!("en-US");
+let mut bundle = FluentBundle::new(vec![langid_en]);
+bundle.add_resource(&resource)
+.expect("Failed to add FTL resources to the bundle.");
+let msg = bundle.get_message("hello-world");
+assert_eq!(msg.is_some(), true);
+Source
+#### pub fn write_pattern<'bundle, W>(
+&'bundle self,
+w: &mut W,
+pattern: &'bundle Pattern<&str>,
+args: Option<&'bundle FluentArgs<'_>>,
+errors: &mut Vec<FluentError>,
+) -> Result
+where
+R: Borrow<FluentResource>,
+W: Write,
+M: MemoizerKind,
+Writes a formatted pattern which comes from a FluentMessage.
+##### §Example
+use fluent_bundle::{FluentBundle, FluentResource};
+use unic_langid::langid;
+let ftl_string = String::from("hello-world = Hello World!");
+let resource = FluentResource::try_new(ftl_string)
+.expect("Failed to parse an FTL string.");
+let langid_en = langid!("en-US");
+let mut bundle = FluentBundle::new(vec![langid_en]);
+bundle.add_resource(&resource)
+.expect("Failed to add FTL resources to the bundle.");
+let msg = bundle.get_message("hello-world")
+.expect("Failed to retrieve a FluentMessage.");
+let pattern = msg.value()
+.expect("Missing Value.");
+let mut errors = vec![];
+let mut s = String::new();
+bundle.write_pattern(&mut s, &pattern, None, &mut errors)
+.expect("Failed to write.");
+assert_eq!(s, "Hello World!");
+Source
+#### pub fn format_pattern<'bundle>(
+&'bundle self,
+pattern: &'bundle Pattern<&'bundle str>,
+args: Option<&FluentArgs<'_>>,
+errors: &mut Vec<FluentError>,
+) -> Cow<'bundle, str>
+where
+R: Borrow<FluentResource>,
+M: MemoizerKind,
+Formats a pattern which comes from a FluentMessage.
+##### §Example
+use fluent_bundle::{FluentBundle, FluentResource};
+use unic_langid::langid;
+let ftl_string = String::from("hello-world = Hello World!");
+let resource = FluentResource::try_new(ftl_string)
+.expect("Failed to parse an FTL string.");
+let langid_en = langid!("en-US");
+let mut bundle = FluentBundle::new(vec![langid_en]);
+bundle.add_resource(&resource)
+.expect("Failed to add FTL resources to the bundle.");
+let msg = bundle.get_message("hello-world")
+.expect("Failed to retrieve a FluentMessage.");
+let pattern = msg.value()
+.expect("Missing Value.");
+let mut errors = vec![];
+let result = bundle.format_pattern(&pattern, None, &mut errors);
+assert_eq!(result, "Hello World!");
+Source
+#### pub fn add_function<F>(&mut self, id: &str, func: F) -> Result<(), FluentError>
+where
+F: for<'a> Fn(&[FluentValue<'a>], &FluentArgs<'_>) -> FluentValue<'a> + Sync + Send + 'static,
+Makes the provided rust function available to messages with the name id. See
+the FTL syntax guide to learn how these are used in messages.
+FTL functions accept both positional and named args. The rust function you
+provide therefore has two parameters: a slice of values for the positional
+args, and a FluentArgs for named args.
+##### §Examples
+use fluent_bundle::{FluentBundle, FluentResource, FluentValue};
+use unic_langid::langid;
+let ftl_string = String::from("length = { STRLEN(\"12345\") }");
+let resource = FluentResource::try_new(ftl_string)
+.expect("Could not parse an FTL string.");
+let langid_en = langid!("en-US");
+let mut bundle = FluentBundle::new(vec![langid_en]);
+bundle.add_resource(&resource)
+.expect("Failed to add FTL resources to the bundle.");
+// Register a fn that maps from string to string length
+bundle.add_function("STRLEN", |positional, _named| match positional {
+[FluentValue::String(str)] => str.len().into(),
+_ => FluentValue::Error,
+}).expect("Failed to add a function to the bundle.");
+let msg = bundle.get_message("length").expect("Message doesn't exist.");
+let mut errors = vec![];
+let pattern = msg.value().expect("Message has no value.");
+let value = bundle.format_pattern(&pattern, None, &mut errors);
+assert_eq!(&value, "5");
+Source
+#### pub fn add_builtins(&mut self) -> Result<(), FluentError>
+Adds the builtin functions described in the FTL syntax guide to the bundle, making them
+available in messages.
+##### §Examples
+use fluent_bundle::{FluentArgs, FluentBundle, FluentResource, FluentValue};
+use unic_langid::langid;
+let ftl_string = String::from(r#"rank = { NUMBER($n, type: "ordinal") ->
+[1] first
+[2] second
+[3] third
+[one] {$n}st
+[two] {$n}nd
+[few] {$n}rd
+*[other] {$n}th
+}"#);
+let resource = FluentResource::try_new(ftl_string)
+.expect("Could not parse an FTL string.");
+let langid_en = langid!("en-US");
+let mut bundle = FluentBundle::new(vec![langid_en]);
+bundle.add_resource(&resource)
+.expect("Failed to add FTL resources to the bundle.");
+// Register the builtin functions (including NUMBER())
+bundle.add_builtins().expect("Failed to add builtins to the bundle.");
+let msg = bundle.get_message("rank").expect("Message doesn't exist.");
+let mut errors = vec![];
+let pattern = msg.value().expect("Message has no value.");
+let mut args = FluentArgs::new();
+args.set("n", 5);
+let value = bundle.format_pattern(&pattern, Some(&args), &mut errors);
+assert_eq!(&value, "\u{2068}5\u{2069}th");
+args.set("n", 12);
+let value = bundle.format_pattern(&pattern, Some(&args), &mut errors);
+assert_eq!(&value, "\u{2068}12\u{2069}th");
+args.set("n", 22);
+let value = bundle.format_pattern(&pattern, Some(&args), &mut errors);
+assert_eq!(&value, "\u{2068}22\u{2069}nd");
+Source§
+### impl<R> FluentBundle<R, IntlLangMemoizer>
+Source
+#### pub fn new(locales: Vec<LanguageIdentifier>) -> Self
+Constructs a FluentBundle. The first element in locales should be the
+language this bundle represents, and will be used to determine the
+correct plural rules for this bundle. You can optionally provide extra
+languages in the list; they will be used as fallback date and time
+formatters if a formatter for the primary language is unavailable.
+##### §Examples
+use fluent_bundle::FluentBundle;
+use fluent_bundle::FluentResource;
+use unic_langid::langid;
+let langid_en = langid!("en-US");
+let mut bundle: FluentBundle<FluentResource> = FluentBundle::new(vec![langid_en]);
+##### §Errors
+This will panic if no formatters can be found for the locales.
+Source§
+### impl<R> FluentBundle<R, IntlLangMemoizer>
+Source
+#### pub fn new_concurrent(locales: Vec<LanguageIdentifier>) -> Self
+A constructor analogous to FluentBundle::new but operating
+on a concurrent version of IntlLangMemoizer over Mutex.
+##### §Example
+use fluent_bundle::concurrent::FluentBundle;
+use fluent_bundle::FluentResource;
+use unic_langid::langid;
+let langid_en = langid!("en-US");
+let mut bundle: FluentBundle<FluentResource> =
+FluentBundle::new_concurrent(vec![langid_en]);
+## Trait Implementations§
+Source§
+### impl<R> Default for FluentBundle<R, IntlLangMemoizer>
+Source§
+#### fn default() -> Self
+Returns the “default value” for a type. Read more
+## Auto Trait Implementations§
+§
+### impl<R, M> !RefUnwindSafe for FluentBundle<R, M>
+§
+### impl<R, M> !UnwindSafe for FluentBundle<R, M>
+§
+### impl<R, M> Freeze for FluentBundle<R, M>
+where
+Vec<R>: Freeze,
+M: Freeze,
+Option<fn(&FluentValue<'_>, &M) -> Option<String>>: Freeze,
+§
+### impl<R, M> Send for FluentBundle<R, M>
+where
+Vec<R>: Send,
+M: Send,
+Option<fn(&FluentValue<'_>, &M) -> Option<String>>: Send,
+§
+### impl<R, M> Sync for FluentBundle<R, M>
+where
+Vec<R>: Sync,
+M: Sync,
+Option<fn(&FluentValue<'_>, &M) -> Option<String>>: Sync,
+§
+### impl<R, M> Unpin for FluentBundle<R, M>
+where
+Vec<R>: Unpin,
+M: Unpin,
+Option<fn(&FluentValue<'_>, &M) -> Option<String>>: Unpin,
+§
+### impl<R, M> UnsafeUnpin for FluentBundle<R, M>
+where
+Vec<R>: UnsafeUnpin,
+M: UnsafeUnpin,
+Option<fn(&FluentValue<'_>, &M) -> Option<String>>: UnsafeUnpin,
+## Blanket Implementations§
+Source§
+### impl<T> Any for T
+where
+T: 'static + ?Sized,
+Source§
+#### fn type_id(&self) -> TypeId
+Gets the TypeId of self. Read more
+Source§
+### impl<T> Borrow<T> for T
+where
+T: ?Sized,
+Source§
+#### fn borrow(&self) -> &T
+Immutably borrows from an owned value. Read more
+Source§
+### impl<T> BorrowMut<T> for T
+where
+T: ?Sized,
+Source§
+#### fn borrow_mut(&mut self) -> &mut T
+Mutably borrows from an owned value. Read more
+Source§
+### impl<T> From<T> for T
+Source§
+#### fn from(t: T) -> T
+Returns the argument unchanged.
+Source§
+### impl<T, U> Into<U> for T
+where
+U: From<T>,
+Source§
+#### fn into(self) -> U
+Calls U::from(self).
+That is, this conversion is whatever the implementation of
+From<T> for U chooses to do.
+Source§
+### impl<T, U> TryFrom<U> for T
+where
+U: Into<T>,
+Source§
+#### type Error = !
+The type returned in the event of a conversion error.
+Source§
+#### fn try_from(value: U) -> Result<T, !>
+Performs the conversion.
+Source§
+### impl<T, U> TryInto<U> for T
+where
+U: TryFrom<T>,
+Source§
+#### type Error = <U as TryFrom<T>>::Error
+The type returned in the event of a conversion error.
+Source§
+#### fn try_into(self) -> Result<U, <U as TryFrom<T>>::Error>
+Performs the conversion.

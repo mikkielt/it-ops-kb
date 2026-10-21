@@ -2,7 +2,7 @@
 topic: agents/decision-records
 priority: P3
 applies_to: "architecture decision records (ADRs) and decision logs as the vendors and the ADR community describe them: Nygard 2011, MADR 4.0.0, AWS Prescriptive Guidance, Azure Well-Architected Framework, Google Cloud Architecture Center, the UK GDS ADR framework, adr-tools README at commit b3279ba (retrieved 2026-10-01)"
-retrieved_utc: 2026-10-01
+retrieved_utc: 2026-10-21
 sources: [S-neg7qqfq, S-2u3gjgpw, S-cs7vd6kx, S-jqks66nz, S-ebr4i7g5, S-gb6pcwtm, S-efm54uef, S-l52pzhgp, S-6ek6kqhq, S-lrsbmzgx]
 status: partial
 ---

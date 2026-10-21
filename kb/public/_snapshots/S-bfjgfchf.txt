@@ -1,0 +1,23 @@
+source: S-bfjgfchf
+url: https://arxiv.org/abs/2312.06648
+title: Dense X Retrieval: What Retrieval Granularity Should We Use?
+publisher: Chen et al. (arXiv; EMNLP 2024 Main Conference)
+licence: CC BY 4.0 (licence link on the arXiv abstract page)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Dense X Retrieval: What Retrieval Granularity Should We Use?
+id: http://arxiv.org/abs/2312.06648v3
+authors: Tong Chen; Hongwei Wang; Sihao Chen; Wenhao Yu; Kaixin Ma; Xinran Zhao; Hongming Zhang; Dong Yu
+published: 2023-12-11T18:57:35Z
+updated: 2024-10-04T05:33:51Z
+categories: cs.CL; cs.AI; cs.IR
+
+Dense retrieval has become a prominent method to obtain relevant context or world knowledge in open-domain NLP tasks.
+When we use a learned dense retriever on a retrieval corpus at inference time, an often-overlooked design choice is the retrieval unit in which the corpus is indexed, e.g. document, passage, or sentence.
+We discover that the retrieval unit choice significantly impacts the performance of both retrieval and downstream tasks.
+Distinct from the typical approach of using passages or sentences, we introduce a novel retrieval unit, proposition, for dense retrieval.
+Propositions are defined as atomic expressions within text, each encapsulating a distinct factoid and presented in a concise, self-contained natural language format.
+We conduct an empirical comparison of different retrieval granularity.
+Our experiments reveal that indexing a corpus by fine-grained units such as propositions significantly outperforms passage-level units in retrieval tasks.
+Moreover, constructing prompts with fine-grained retrieved units for retrieval-augmented language models improves the performance of downstream QA tasks given a specific computation budget.

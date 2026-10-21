@@ -18,7 +18,7 @@ GitLab plans work as work items: epics, issues, tasks, objectives and key result
 - The work items list filters by type, status, health status, iteration, label, milestone, parent, state and weight, among others, and sorts by created, updated, start and due date, title, status and weight. [DOC S-cl4h4f7i]
 - Child items form the hierarchy: a child epic under a parent epic, an issue (a feature or bug) under an epic, and a task as a child of an issue. [DOC S-v2ztgtdn]
 - An epic's Child items header shows the number of descendant work items and their total weight; task weights count in the issue weight. [DOC S-v2ztgtdn]
-- Multi-level epic hierarchies are Ultimate: epics can nest child epics up to 7 levels deep, and a child epic may belong to another group. [DOC S-v2ztgtdn, S-tyuv57qu]
+- Multi-level epic hierarchies are Ultimate: epics can nest child epics up to 7 levels deep, and a child epic may belong to another group. [DOC S-v2ztgtdn]
 - An epic is the parent of one or more issues and, in Ultimate, of child epics; an epic may take issues from a different group hierarchy. [DOC S-tyuv57qu]
 - Linked items are bi-directional relationships between work items, of three types: **Relates to** (a general relationship), **Blocks** (this item prevents progress on another) and **Is blocked by** (this item cannot proceed until another is resolved). [DOC S-evjlv5hf]
 - Blocking links (tracking dependencies) are Premium and Ultimate; with them GitLab warns when an item with open blockers is closed. Linking epics is Ultimate. [DOC S-evjlv5hf]

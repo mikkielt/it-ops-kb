@@ -2,7 +2,7 @@
 topic: agents/langgraph
 priority: P3
 applies_to: "LangGraph (Python `langgraph` package, MIT licence); docs retrieved 2026-10-12"
-retrieved_utc: 2026-10-14
+retrieved_utc: 2026-10-21
 sources: [S-bivxzhtv, S-thsymqx6, S-pxkxmmn5, S-5pmoh6xp, S-j54mtzby, S-dir5xyqr, S-v5hqqcqx, S-43xr27dp, S-woho7bmc, S-ujkfhzif, S-bygurlbr, S-wrrbygrl, S-vscgh245, S-26trg6rj, S-f3dlrjtw]
 status: complete
 ---
@@ -148,16 +148,18 @@ status: complete
   becomes `MCPAdapter` (an async context manager with `list_tools()`), and helpers are renamed, e.g.
   `convert_mcp_tool_to_langchain_tool` to `as_langchain_tool`. [DOC S-bygurlbr]
 - The MCP adapter infers transport automatically from the target passed to it: an HTTP/HTTPS URL
-  is reached over **streamable HTTP**; a script path is launched as a **subprocess over stdio**;
-  an in-process **FastMCP** server instance is connected in-memory (no subprocess or socket); or a
-  pre-built transport object can be passed directly. [DOC S-dir5xyqr]
+  given as a `str` is reached over **streamable HTTP**; a script path given as a `Path` is launched
+  as a **subprocess over stdio** (a `str` target must be an http(s) URL); an in-process **FastMCP**
+  server instance is connected in-memory (no subprocess or socket); a pre-built transport object, an
+  `MCPConfig` dict for several servers, or a prebuilt `fastmcp.Client` can be passed directly.
+  [DOC S-dir5xyqr]
 
 ### LangGraph Platform / LangSmith Deployment
 - LangGraph itself is the open-source framework; **LangSmith Deployment** (the current name,
   rebranded from "LangGraph Platform") is LangChain's managed service for running LangGraph agents
   in production, offering one-click deployment with durable execution, state and streaming, plus a
   **Studio** IDE for visual debugging. [DOC S-43xr27dp]
-- LangSmith pricing (read 2026-10-12): Developer $0 for one seat with up to 5k base traces a month;
+- LangSmith pricing (read 2026-10-21): Developer $0 for one seat with up to 5k base traces a month;
   Plus $39 per seat per month with up to 10k base traces, access to Deployment and one free small
   serverless deployment; Enterprise custom-priced with self-hosted and hybrid deployment options.
   [DOC S-woho7bmc]

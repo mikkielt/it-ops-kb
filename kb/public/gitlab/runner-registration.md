@@ -1,9 +1,9 @@
 ---
 topic: gitlab/runner-registration
 priority: P3
-applies_to: "GitLab 19.x docs (gitlab-org/gitlab master @9f1632e2, 2026-09-27); GitLab Runner docs (gitlab-org/gitlab-runner main @a278fd05, 2026-10-09); Free, Premium and Ultimate unless stated"
-retrieved_utc: 2026-10-11
-sources: [S-ytnvr75r, S-fsqu2grq, S-ssfsxd2n, S-5ohrrj7d, S-jk4rtq6g]
+applies_to: "GitLab 19.x docs (gitlab-org/gitlab master @a1faf261a899, 2026-10-21); GitLab Runner docs (gitlab-org/gitlab-runner main @a278fd05, 2026-10-09); Free, Premium and Ultimate unless stated"
+retrieved_utc: 2026-10-21
+sources: [S-ytnvr75r, S-udvn7k24, S-ssfsxd2n, S-5ohrrj7d, S-jk4rtq6g]
 status: partial
 ---
 
@@ -15,10 +15,10 @@ A runner is created first in GitLab and registered after: `POST /user/runners` (
 ## Facts
 - Connecting a runner takes an authentication token, which the register page says comes from creating an instance, group or project runner in GitLab or from the `config.toml` of an existing runner. The Runners API page names three more sources: registering with a legacy registration token, resetting the token of an existing runner, and `POST /user/runners`. [DOC S-ssfsxd2n, S-ytnvr75r]
 - The authentication token goes into the runner's `config.toml` under `[[runners]]` as `token`; GitLab and the runner are then connected. [DOC S-ytnvr75r]
-- `POST /user/runners` creates a runner linked to the current user, who is listed as its owner for audit; availability follows `runner_type`. [DOC S-fsqu2grq]
-- Prerequisites of `POST /user/runners`: an administrator or the Owner role for the target namespace or project; an administrator for `instance_type`; for `group_type` or `project_type` with an Owner role, runner registration must be allowed in the settings; and an access token with the `create_runner` scope. [DOC S-fsqu2grq]
-- Attributes: `runner_type` (required: `instance_type`, `group_type` or `project_type`), `group_id` (required for `group_type`), `project_id` (required for `project_type`), `description`, `paused`, `locked`, `run_untagged`, `tag_list` (comma-separated), `access_level` (`not_protected` or `ref_protected`), `maximum_timeout` (seconds) and `maintenance_note` (1024 characters). [DOC S-fsqu2grq]
-- `token_expires_at` (ISO 8601, between 5 minutes and 15 days ahead, within any instance, group or project limit, applied to the initial token only) and `token_rotation_deadline` are Premium attributes; the response has `id`, `token` and `token_expires_at`, and the token cannot be retrieved again. [DOC S-fsqu2grq]
+- `POST /user/runners` creates a runner linked to the current user, who is listed as its owner for audit; availability follows `runner_type`. [DOC S-udvn7k24]
+- Prerequisites of `POST /user/runners`: an administrator or the Owner role for the target namespace or project; an administrator for `instance_type`; for `group_type` or `project_type` with an Owner role, runner registration must be allowed in the settings; and an access token with the `create_runner` scope. [DOC S-udvn7k24]
+- Attributes: `runner_type` (required: `instance_type`, `group_type` or `project_type`), `group_id` (required for `group_type`), `project_id` (required for `project_type`), `description`, `paused`, `locked`, `run_untagged`, `tag_list` (comma-separated), `access_level` (`not_protected` or `ref_protected`), `maximum_timeout` (seconds) and `maintenance_note` (1024 characters). [DOC S-udvn7k24]
+- `token_expires_at` (ISO 8601, between 5 minutes and 21 days ahead, within any instance, group or project limit, applied to the initial token only) and `token_rotation_deadline` are Premium attributes; the response has `id`, `token` and `token_expires_at`, and the token cannot be retrieved again. [DOC S-udvn7k24]
 - `create_runner` and `manage_runner` are scopes of personal, group and project access tokens; `manage_runner` was introduced in 17.1. [DOC S-jk4rtq6g]
 - Runner authentication tokens carry the prefix `glrt-`, or `glrtr-` when the runner was created through a registration token. [DOC S-5ohrrj7d]
 - To register, `gitlab-runner register` asks for the GitLab url, the authentication token, a description, tags, a maintenance note and the executor; the non-interactive form takes `--non-interactive --url <url> --token <token> --executor <executor>` and further executor options, and the result is saved to `config.toml`. [DOC S-ssfsxd2n]
@@ -30,13 +30,13 @@ A runner is created first in GitLab and registered after: `POST /user/runners` (
 - `DELETE /runners/:id` needs `manage_runner` and the same rights; `DELETE /runners` with the runner's `token` form field removes a runner and answers `204`. [DOC S-ytnvr75r]
 - The runner authentication token stays on the runner machine; the Docker Machine, Kubernetes, VirtualBox, Parallels and SSH executors' execution environments see only the job token. Anyone who reads `config.toml` can use the token to clone the runner. [DOC S-5ohrrj7d]
 - A runner authentication token gives no API access and no direct repository access; it can only authenticate runners that then run jobs which do. [DOC S-5ohrrj7d]
-- So an unattended registration is two calls with two credentials of different standing: an access token with `create_runner` held by an Owner (the creation), and the new `glrt-` token (the registration), which should be written to `config.toml` by the registration step and kept out of logs; the documented non-interactive form passes it as `--token`, a command-line value. [DER S-fsqu2grq, S-ssfsxd2n, S-5ohrrj7d: the prerequisites, the register command and where the token lives]
+- So an unattended registration is two calls with two credentials of different standing: an access token with `create_runner` held by an Owner (the creation), and the new `glrt-` token (the registration), which should be written to `config.toml` by the registration step and kept out of logs; the documented non-interactive form passes it as `--token`, a command-line value. [DER S-udvn7k24, S-ssfsxd2n, S-5ohrrj7d: the prerequisites, the register command and where the token lives]
 - Open: the documents say `POST /user/runners` is for "the current user" and list the Owner role as a prerequisite, but none says whether a group access token (a bot user) may call it. [UNK: not stated on the Users API, access token scopes or token overview pages]
 
 ## Reference
 | Step | Call | Credential | Source |
 |---|---|---|---|
-| Create runner | `POST /user/runners` | access token, `create_runner`, Owner or administrator | S-fsqu2grq |
+| Create runner | `POST /user/runners` | access token, `create_runner`, Owner or administrator | S-udvn7k24 |
 | Register | `gitlab-runner register --non-interactive --url U --token glrt-... --executor E` | the runner token | S-ssfsxd2n |
 | Verify | `POST /runners/verify` (`token`, `system_id`) | the runner token | S-ytnvr75r |
 | Rotate | `POST /runners/:id/reset_authentication_token` | `manage_runner` | S-ytnvr75r |
@@ -45,7 +45,7 @@ A runner is created first in GitLab and registered after: `POST /user/runners` (
 See also `windows/gitlab-runner-windows.md` (installing and running the runner on Windows), `gitlab/deploy-keys-and-tokens.md` (the access tokens that carry `create_runner`), `gitlab/hosted-runners-windows.md`.
 
 ## Examples
-- SNIPPET: create a group runner and read its authentication token; context: GitLab 19.x, a token with the `create_runner` scope held by the group's Owner, `<group_id>` the numeric group ID; checked: no [DER S-fsqu2grq: attributes from the create table]
+- SNIPPET: create a group runner and read its authentication token; context: GitLab 19.x, a token with the `create_runner` scope held by the group's Owner, `<group_id>` the numeric group ID; checked: no [DER S-udvn7k24: attributes from the create table]
 ```bash
 curl --request POST \
   --header "PRIVATE-TOKEN: $OWNER_TOKEN" \

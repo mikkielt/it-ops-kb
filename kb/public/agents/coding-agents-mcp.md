@@ -2,7 +2,7 @@
 topic: agents/coding-agents-mcp
 priority: P2
 applies_to: "GitHub Copilot coding agent (2026-09); VS Code MCP support (2026-09); OpenAI Agents SDK (Python, mcp>=1.19.0,<3); OpenAI Responses API remote MCP tool; Codex CLI config.toml (2026-09)"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-udcaydkb, S-y4l4chtg, S-caxeb7wx, S-shpwh3m7, S-r4egujgz, S-b5ptbcql, S-2q2hcluk, S-4fmcb5i2, S-zqlgscwv]
 status: complete
 ---
@@ -28,8 +28,11 @@ Responses API instead expose `require_approval` as an explicit opt-in control pe
 - VS Code: workspace file `.vscode/mcp.json` (top-level `servers`), or the portable `.mcp.json` at the
   project root (top-level `mcpServers`, the same key Claude Code's own `.mcp.json` uses — see
   `claude/settings-and-scopes.md`); user-profile scope uses a `mcp.json` opened via **MCP: Open User
-  Configuration**. [DOC S-caxeb7wx] VS Code discovers a configured server's tools and makes them available
-  in chat; the **Configure Tools** button in the chat input lists them with the other available tools. [DOC S-y4l4chtg]
+  Configuration**. [DOC S-caxeb7wx] VS Code's own MCP page now labels the `.vscode/mcp.json` and user-profile
+  `mcp.json` destinations as kept for compatibility and deprecated in the guided flow; the portable files use
+  `mcpServers`, the VS Code format `servers`. To see and switch the available tools, a Copilot session uses
+  **Chat: Open Customizations** > **Tools**, and a Local harness session the **Configure Tools** button in the
+  chat input. [DOC S-y4l4chtg]
 - OpenAI Agents SDK (Python): no config file — servers are instantiated in code as
   `MCPServerStdio(params={...})` / `MCPServerStreamableHttp(params={...})` / the deprecated
   `MCPServerSse(params={...})` and passed to an `Agent`'s `mcp_servers` list. [DOC S-shpwh3m7]
@@ -68,7 +71,7 @@ Responses API instead expose `require_approval` as an explicit opt-in control pe
   OAuth); SSE is not listed as a Codex transport in the vendor sample. [DOC S-2q2hcluk]
 
 ### Auth / secrets
-- Copilot coding agent: only repository/environment secrets and variables **named with a `COPILOT_MCP_`
+- Copilot coding agent: only Agents secrets and variables **named with a `COPILOT_MCP_`
   prefix** are exposed to the MCP configuration; substitution syntax is `$VAR_NAME`, `${VAR_NAME}`, or
   `${VAR_NAME:-default_value}`. OAuth-authenticated remote MCP servers are explicitly **not supported**.
   [DOC S-udcaydkb]
@@ -94,7 +97,8 @@ Responses API instead expose `require_approval` as an explicit opt-in control pe
   `annotations.readOnlyHint: true`. [DOC S-udcaydkb]
 - VS Code: with `sandboxEnabled: true` on a server, "tool confirmations are auto-approved because the server
   runs in a controlled environment"; otherwise VS Code prompts to confirm each tool invocation. The
-  `chat.mcp.access` setting governs which servers can be used at all, and **MCP: Reset Trust** clears saved
+  experimental `chat.mcp.access` setting only controls whether **MCP: Add Server** offers the workspace-root
+  `.mcp.json` destination (existing `.mcp.json` files stay available when it is off), and **MCP: Reset Trust** clears saved
   trust decisions for non-workspace-sourced servers (workspace-sourced servers instead inherit VS Code's
   Workspace Trust). [DOC S-caxeb7wx]
 - OpenAI Agents SDK: `create_static_tool_filter(allowed_tool_names=[...], blocked_tool_names=[...])` is the

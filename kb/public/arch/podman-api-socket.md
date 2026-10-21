@@ -2,7 +2,7 @@
 topic: arch/podman-api-socket
 priority: P3
 applies_to: "Podman 6.1.x on Linux: podman system service, podman.socket and podman.service, Docker-compatible API for DOCKER_HOST clients"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-noii6ew2, S-rylxmcjm, S742]
 status: partial
 ---

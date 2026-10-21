@@ -3,21 +3,31 @@ url: https://github.com/Agent-Hellboy/mcp-server-fuzzer
 title: mcp-server-fuzzer: a generic MCP server fuzzer
 publisher: Agent-Hellboy (community)
 licence: MIT (Agent-Hellboy/mcp-server-fuzzer LICENSE)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-mcp-runtime
-/
+## Repository navigation
 mcp-server-fuzzer
 Public
-### Uh oh!
-There was an error while loading. Please reload this page.
-Notifications
-You must be signed in to change notification settings
-Fork
-7
-Star
-46
+NotificationsYou must be signed in to change notification settings
+Fork7 (7)
+Star46 (46)You must be signed in to star a repository
+## About
+A generic mcp server fuzzer
+### Topics
+agentic-aiagentic-workflowaiai-agentsai-testing-toolgenerative-testing-mcphacktoberfestllm-agentsmcpmcp-clientmcp-fuzzermcp-securitymcp-serversmcp-specification-validationmcp-toolsmutation-testing-mcpproperty-based-testing-mcpprotocol-testingsecurity-researchtesting-tool
+### Resources
+Readme
+MIT license
+Activity
+Custom properties
+### Stars
+46 stars
+### Watchers
+0 watching
+### Forks
+7 forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit

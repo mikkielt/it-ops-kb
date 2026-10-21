@@ -3,7 +3,7 @@ url: https://docs.astral.sh/uv/concepts/projects/sync/
 title: Locking and syncing (uv docs)
 publisher: Astral (uv docs)
 licence: MIT OR Apache-2.0 (docs in astral-sh/uv)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Locking and syncing
@@ -57,7 +57,7 @@ If the project does not define a build system, it will not be installed.
 See the build systems documentation for details.
 ### Handling of extraneous packages
 uv sync performs "exact" syncing by default, which means it will remove any packages that are not
-present in the lockfile.
+selected for installation.
 To retain extraneous packages, use the --inexact flag:
 $ uv sync --inexact
 In contrast, uv run uses "inexact" syncing by default, ensuring that all required packages are
@@ -83,7 +83,7 @@ The --only-dev flag can be used to install the dev group without the project and
 dependencies.
 Additional groups can be included or excluded with the --all-groups, --no-default-groups,
 --group <name>, --only-group <name>, and --no-group <name> options. The semantics of
---only-group are the same as --only-dev, the project will not be included. However,
+--only-group are the same as --only-dev: the project will not be included. However,
 --only-group will also exclude default groups.
 Group exclusions always take precedence over inclusions, so given the command:
 $ uv sync --no-group foo --group foo

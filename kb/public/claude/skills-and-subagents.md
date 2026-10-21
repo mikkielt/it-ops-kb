@@ -2,7 +2,7 @@
 topic: claude/skills-and-subagents
 priority: P2
 applies_to: "Claude Code docs (code.claude.com), skills/sub-agents/agent-teams, retrieved 2026-10-12"
-retrieved_utc: 2026-10-17
+retrieved_utc: 2026-10-21
 sources: [S2158, S2157, S-j22fjuka, S-hvuk3dqt, S-qdxfqzln, S-ezqg74ki, S-bisz7fay, S1824, S-gxuoqjzy, S2132]
 status: complete
 ---
@@ -23,7 +23,7 @@ shared task list and direct inter-agent messaging on top of ordinary subagent de
   table exactly is silently ignored, no error. [DOC S2158]
 - `description` + `when_to_use` combined is truncated at 1,536 characters in the skill listing. [DOC S2158]
 - `disable-model-invocation: true` also stops the skill from being preloaded into subagents and from running when a
-  scheduled task fires it as its prompt. [DOC S2158]
+  session-scoped scheduled task fires it as its prompt. [DOC S2158]
 - `context: fork` runs the skill body in a forked subagent context; `agent` picks which subagent type; `background`
   (default `true`, requires v2.1.218+) controls whether the invoking turn waits for the fork's result. [DOC S2158]
 - Boolean skill fields accept `yes/no/on/off/1/0` in any case plus `true/false`; before v2.1.218 only `true/false`
@@ -78,7 +78,11 @@ shared task list and direct inter-agent messaging on top of ordinary subagent de
 - Subagent frontmatter fields use camelCase (e.g. `maxTurns`, `disallowedTools`) and must match exactly; an
   unrecognized field is silently ignored. Only `name` and `description` are required. [DOC S2157]
 - `name` cannot contain `:` (reserved for plugin-scoped ids like `my-plugin:reviewer`); a name containing one fails
-  to load and logs an error to the debug log (before v2.1.218 such names were accepted). [DOC S2157]
+  to load and logs an error to the debug log (before v2.1.218 such names were accepted); a name that starts with `-` or
+  is longer than 256 characters is skipped the same way. [DOC S2157]
+- `autoCompactWindow` (v2.1.296+) lowers the auto-compact window for one subagent to a token count from `100000` to
+  `1000000`; write a plain integer, since `200k` is read as 200 and ignored; `CLAUDE_CODE_AUTO_COMPACT_WINDOW`
+  overrides it, and it has no effect when the agent runs as the main session agent. [DOC S2157]
 - If no entry in `tools` resolves to a real tool, the subagent usually fails to launch with a "zero tools" error
   naming the unresolved entries. [DOC S2157]
 - `disallowedTools` entries with a specifier such as `Bash(git push *)` still remove the *whole* tool, not just that
@@ -128,16 +132,16 @@ shared task list and direct inter-agent messaging on top of ordinary subagent de
 - A definition's `model: sonnet` keeps a subagent on the Sonnet alias only while nothing assigns a model earlier in the order: an orchestrator that passes a `model` for the invocation, or a session that sets `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` with a model, replaces it. [DER S2157: the resolution order above and the FORCE rule]
 - A non-fork subagent starts with a fresh, isolated context window: it does not see the parent's conversation history, the skills already invoked or the files already read; Claude writes a delegation message that summarises the task and the subagent works from it. A fork is the exception and inherits the parent conversation. [DOC S2157]
 - A non-fork subagent's startup context holds: its own system prompt (its markdown body or `prompt` field, plus appended environment details, not the Claude Code system prompt), the delegation prompt as its task message, every CLAUDE.md level the main conversation loads (including `AGENTS.md` files loaded as project instructions), a repository status snapshot, the full content of skills named in its `skills` field, and (v2.1.206+) a roster of named sibling agents when its tools include `SendMessage`. Explore and Plan skip CLAUDE.md and the status snapshot. [DOC S2157]
-- The context-window page says the subagent also has the same MCP servers and skills as the parent (minus a few tools such as plan-mode controls and, by default, `Agent`), and that the main session's auto memory is not included; a custom agent with `memory:` loads its own separate MEMORY.md instead. [DOC S-bisz7fay]
+- The context-window page says a subagent does its research in its own separate context window, so large reads stay out of the main one. Whether a subagent has the parent's MCP servers and skills, and whether the main session's auto memory reaches it, is [UNK]: the page as read 2026-10-21 no longer says so. [DOC S-bisz7fay]
 - The docs' guidance on rules: the main conversation still holds the full CLAUDE.md when it reads a subagent's result, so most rules need not reach the subagent, but a rule that must, such as ignoring a directory, is restated in the delegation prompt. `omitClaudeMd: true` suits subagents that take everything from the delegation prompt. [DOC S2157]
 - A fork (fork mode is on by default in interactive sessions) sees the same system prompt, tools, model and message history as the main session; a non-fork subagent has a fresh context plus the prompt passed to it, and pays start-up time to gather context, which is the docs' stated reason to prefer a fork when latency matters or phases share context. [DOC S2157]
-- Only the subagent's final text comes back to the parent, plus a small metadata trailer with token counts and duration; the walkthrough's example has 6,100 tokens of file reads stay in the subagent and a 420-token result return. [DOC S-bisz7fay]
+- Only the subagent's summary comes back to the parent, plus a small metadata trailer; the page as read 2026-10-21 gives no token counts for the walkthrough's example. [DOC S-bisz7fay]
 - `CLAUDE_CODE_DISABLE_EXPLORE_PLAN_AGENTS=1` removes only Explore/Plan (Claude reads/explores directly instead);
   `CLAUDE_AGENT_SDK_DISABLE_BUILTIN_AGENTS=1` removes all built-in types in non-interactive mode/Agent SDK sessions.
   [DOC S2157]
 - `--agents` CLI JSON: top-level keys are agent names; each value takes `prompt` (system prompt, may be empty) plus
   the frontmatter fields `description, tools, disallowedTools, model, permissionMode, mcpServers, hooks, maxTurns,
-  skills, initialPrompt, memory, effort, background, omitClaudeMd, isolation`; `color` and `experimental` are
+  autoCompactWindow, skills, initialPrompt, memory, effort, background, omitClaudeMd, isolation`; `color` and `experimental` are
   accepted-but-ignored. The path-to-JSON-file form (non-interactive only) requires v2.1.281+. [DOC S2157]
 - A subagent's file is watched for live edits (few seconds to apply, no restart) except: the first agent file in a
   brand-new `agents` directory (needs restart), agents under `--add-dir` (not watched, needs restart), and sessions
@@ -176,7 +180,7 @@ shared task list and direct inter-agent messaging on top of ordinary subagent de
   each other), and the main agent manages all work. [DOC S-qdxfqzln]
 - Team storage is session-derived, named `session-<first 8 chars of session id>`: team config at
   `~/.claude/teams/{team-name}/config.json` (removed when the session ends) and task list at
-  `~/.claude/tasks/{team-name}/` (persists locally, never uploaded, survives resume; retention follows
+  `~/.claude/tasks/{team-name}/` (stays on disk after the session ends; retention follows
   `cleanupPeriodDays`). Each agent's mailbox is `~/.claude/teams/{team-name}/inboxes/{agent-name}.json`. [DOC
   S-qdxfqzln]
 - A subagent definition (project/user/managed scope) can be reused as a teammate role: Claude Code applies its

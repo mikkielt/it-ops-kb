@@ -1,0 +1,363 @@
+source: S-4dmek4hw
+url: https://www.postgresql.org/docs/18/contrib.html
+title: PostgreSQL 18 documentation: Additional Supplied Modules and Extensions
+publisher: PostgreSQL Global Development Group
+licence: PostgreSQL Licence (postgresql.org documentation copyright notice)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+October 15, 2026: PostgreSQL 19 RC 1 Released!
+Documentation → PostgreSQL 18
+Supported Versions:
+Current
+(18)
+/
+17
+/
+16
+/
+15
+/
+14
+Development Versions:
+19
+/
+devel
+Unsupported versions:
+13
+/
+12
+/
+11
+/
+10
+/
+9.6
+/
+9.5
+/
+9.4
+/
+9.3
+/
+9.2
+/
+9.1
+/
+9.0
+/
+8.4
+/
+8.3
+Appendix F. Additional Supplied Modules and Extensions
+Prev
+Up
+Part VIII. Appendixes
+Home
+Next
+## Appendix F. Additional Supplied Modules and Extensions
+Table of Contents
+F.1. amcheck — tools to verify table and index consistency
+F.1.1. Functions
+F.1.2. Optional heapallindexed Verification
+F.1.3. Using amcheck Effectively
+F.1.4. Repairing Corruption
+F.2. auth_delay — pause on authentication failure
+F.2.1. Configuration Parameters
+F.2.2. Author
+F.3. auto_explain — log execution plans of slow queries
+F.3.1. Configuration Parameters
+F.3.2. Example
+F.3.3. Author
+F.4. basebackup_to_shell — example "shell" pg_basebackup module
+F.4.1. Configuration Parameters
+F.4.2. Author
+F.5. basic_archive — an example WAL archive module
+F.5.1. Configuration Parameters
+F.5.2. Notes
+F.5.3. Author
+F.6. bloom — bloom filter index access method
+F.6.1. Parameters
+F.6.2. Examples
+F.6.3. Operator Class Interface
+F.6.4. Limitations
+F.6.5. Authors
+F.7. btree_gin — GIN operator classes with B-tree behavior
+F.7.1. Example Usage
+F.7.2. Authors
+F.8. btree_gist — GiST operator classes with B-tree behavior
+F.8.1. Example Usage
+F.8.2. Authors
+F.9. citext — a case-insensitive character string type
+F.9.1. Rationale
+F.9.2. How to Use It
+F.9.3. String Comparison Behavior
+F.9.4. Limitations
+F.9.5. Author
+F.10. cube — a multi-dimensional cube data type
+F.10.1. Syntax
+F.10.2. Precision
+F.10.3. Usage
+F.10.4. Defaults
+F.10.5. Notes
+F.10.6. Credits
+F.11. dblink — connect to other PostgreSQL databases
+dblink_connect — opens a persistent connection to a remote database
+dblink_connect_u — opens a persistent connection to a remote database, insecurely
+dblink_disconnect — closes a persistent connection to a remote database
+dblink — executes a query in a remote database
+dblink_exec — executes a command in a remote database
+dblink_open — opens a cursor in a remote database
+dblink_fetch — returns rows from an open cursor in a remote database
+dblink_close — closes a cursor in a remote database
+dblink_get_connections — returns the names of all open named dblink connections
+dblink_error_message — gets last error message on the named connection
+dblink_send_query — sends an async query to a remote database
+dblink_is_busy — checks if connection is busy with an async query
+dblink_get_notify — retrieve async notifications on a connection
+dblink_get_result — gets an async query result
+dblink_cancel_query — cancels any active query on the named connection
+dblink_get_pkey — returns the positions and field names of a relation's primary key fields
+dblink_build_sql_insert — builds an INSERT statement using a local tuple, replacing the primary key field values with alternative supplied values
+dblink_build_sql_delete — builds a DELETE statement using supplied values for primary key field values
+dblink_build_sql_update — builds an UPDATE statement using a local tuple, replacing the primary key field values with alternative supplied values
+F.12. dict_int — example full-text search dictionary for integers
+F.12.1. Configuration
+F.12.2. Usage
+F.13. dict_xsyn — example synonym full-text search dictionary
+F.13.1. Configuration
+F.13.2. Usage
+F.14. earthdistance — calculate great-circle distances
+F.14.1. Cube-Based Earth Distances
+F.14.2. Point-Based Earth Distances
+F.15. file_fdw — access data files in the server's file system
+F.16. fuzzystrmatch — determine string similarities and distance
+F.16.1. Soundex
+F.16.2. Daitch-Mokotoff Soundex
+F.16.3. Levenshtein
+F.16.4. Metaphone
+F.16.5. Double Metaphone
+F.17. hstore — hstore key/value datatype
+F.17.1. hstore External Representation
+F.17.2. hstore Operators and Functions
+F.17.3. Indexes
+F.17.4. Examples
+F.17.5. Statistics
+F.17.6. Compatibility
+F.17.7. Transforms
+F.17.8. Authors
+F.18. intagg — integer aggregator and enumerator
+F.18.1. Functions
+F.18.2. Sample Uses
+F.19. intarray — manipulate arrays of integers
+F.19.1. intarray Functions and Operators
+F.19.2. Index Support
+F.19.3. Example
+F.19.4. Benchmark
+F.19.5. Authors
+F.20. isn — data types for international standard numbers (ISBN, EAN, UPC, etc.)
+F.20.1. Data Types
+F.20.2. Casts
+F.20.3. Functions and Operators
+F.20.4. Configuration Parameters
+F.20.5. Examples
+F.20.6. Bibliography
+F.20.7. Author
+F.21. lo — manage large objects
+F.21.1. Rationale
+F.21.2. How to Use It
+F.21.3. Limitations
+F.21.4. Author
+F.22. ltree — hierarchical tree-like data type
+F.22.1. Definitions
+F.22.2. Operators and Functions
+F.22.3. Indexes
+F.22.4. Example
+F.22.5. Transforms
+F.22.6. Authors
+F.23. pageinspect — low-level inspection of database pages
+F.23.1. General Functions
+F.23.2. Heap Functions
+F.23.3. B-Tree Functions
+F.23.4. BRIN Functions
+F.23.5. GIN Functions
+F.23.6. GiST Functions
+F.23.7. Hash Functions
+F.24. passwordcheck — verify password strength
+F.24.1. Configuration Parameters
+F.25. pg_buffercache — inspect PostgreSQL buffer cache state
+F.25.1. The pg_buffercache View
+F.25.2. The pg_buffercache_numa View
+F.25.3. The pg_buffercache_summary() Function
+F.25.4. The pg_buffercache_usage_counts() Function
+F.25.5. The pg_buffercache_evict() Function
+F.25.6. The pg_buffercache_evict_relation() Function
+F.25.7. The pg_buffercache_evict_all() Function
+F.25.8. Sample Output
+F.25.9. Authors
+F.26. pgcrypto — cryptographic functions
+F.26.1. General Hashing Functions
+F.26.2. Password Hashing Functions
+F.26.3. PGP Encryption Functions
+F.26.4. Raw Encryption Functions
+F.26.5. Random-Data Functions
+F.26.6. OpenSSL Support Functions
+F.26.7. Configuration Parameters
+F.26.8. Notes
+F.26.9. Author
+F.27. pg_freespacemap — examine the free space map
+F.27.1. Functions
+F.27.2. Sample Output
+F.27.3. Author
+F.28. pg_logicalinspect — logical decoding components inspection
+F.28.1. Functions
+F.28.2. Author
+F.29. pg_overexplain — allow EXPLAIN to dump even more details
+F.29.1. EXPLAIN (DEBUG)
+F.29.2. EXPLAIN (RANGE_TABLE)
+F.29.3. Author
+F.30. pg_prewarm — preload relation data into buffer caches
+F.30.1. Functions
+F.30.2. Configuration Parameters
+F.30.3. Author
+F.31. pgrowlocks — show a table's row locking information
+F.31.1. Overview
+F.31.2. Sample Output
+F.31.3. Author
+F.32. pg_stat_statements — track statistics of SQL planning and execution
+F.32.1. The pg_stat_statements View
+F.32.2. The pg_stat_statements_info View
+F.32.3. Functions
+F.32.4. Configuration Parameters
+F.32.5. Sample Output
+F.32.6. Authors
+F.33. pgstattuple — obtain tuple-level statistics
+F.33.1. Functions
+F.33.2. Authors
+F.34. pg_surgery — perform low-level surgery on relation data
+F.34.1. Functions
+F.34.2. Authors
+F.35. pg_trgm — support for similarity of text using trigram matching
+F.35.1. Trigram (or Trigraph) Concepts
+F.35.2. Functions and Operators
+F.35.3. GUC Parameters
+F.35.4. Index Support
+F.35.5. Text Search Integration
+F.35.6. References
+F.35.7. Authors
+F.36. pg_visibility — visibility map information and utilities
+F.36.1. Functions
+F.36.2. Author
+F.37. pg_walinspect — low-level WAL inspection
+F.37.1. General Functions
+F.37.2. Author
+F.38. postgres_fdw — access data stored in external PostgreSQL servers
+F.38.1. FDW Options of postgres_fdw
+F.38.2. Functions
+F.38.3. Connection Management
+F.38.4. Transaction Management
+F.38.5. Remote Query Optimization
+F.38.6. Remote Query Execution Environment
+F.38.7. Cross-Version Compatibility
+F.38.8. Wait Events
+F.38.9. Configuration Parameters
+F.38.10. Examples
+F.38.11. Author
+F.39. seg — a datatype for line segments or floating point intervals
+F.39.1. Rationale
+F.39.2. Syntax
+F.39.3. Precision
+F.39.4. Usage
+F.39.5. Notes
+F.39.6. Credits
+F.40. sepgsql — SELinux-, label-based mandatory access control (MAC) security module
+F.40.1. Overview
+F.40.2. Installation
+F.40.3. Regression Tests
+F.40.4. GUC Parameters
+F.40.5. Features
+F.40.6. Sepgsql Functions
+F.40.7. Limitations
+F.40.8. External Resources
+F.40.9. Author
+F.41. spi — Server Programming Interface features/examples
+F.41.1. refint — Functions for Implementing Referential Integrity
+F.41.2. autoinc — Functions for Autoincrementing Fields
+F.41.3. insert_username — Functions for Tracking Who Changed a Table
+F.41.4. moddatetime — Functions for Tracking Last Modification Time
+F.42. sslinfo — obtain client SSL information
+F.42.1. Functions Provided
+F.42.2. Author
+F.43. tablefunc — functions that return tables (crosstab and others)
+F.43.1. Functions Provided
+F.43.2. Author
+F.44. tcn — a trigger function to notify listeners of changes to table content
+F.45. test_decoding — SQL-based test/example module for WAL logical decoding
+F.46. tsm_system_rows — the SYSTEM_ROWS sampling method for TABLESAMPLE
+F.46.1. Examples
+F.47. tsm_system_time — the SYSTEM_TIME sampling method for TABLESAMPLE
+F.47.1. Examples
+F.48. unaccent — a text search dictionary which removes diacritics
+F.48.1. Configuration
+F.48.2. Usage
+F.48.3. Functions
+F.49. uuid-ossp — a UUID generator
+F.49.1. uuid-ossp Functions
+F.49.2. Building uuid-ossp
+F.49.3. Author
+F.50. xml2 — XPath querying and XSLT functionality
+F.50.1. Deprecation Notice
+F.50.2. Description of Functions
+F.50.3. xpath_table
+F.50.4. XSLT Functions
+F.50.5. Author
+This appendix and the next one contain information on the optional components found in the contrib directory of the PostgreSQL distribution. These include porting tools, analysis utilities, and plug-in features that are not part of the core PostgreSQL system. They are separate mainly because they address a limited audience or are too experimental to be part of the main source tree. This does not preclude their usefulness.
+This appendix covers extensions and other server plug-in module libraries found in contrib. Appendix G covers utility programs.
+When building from the source distribution, these optional components are not built automatically, unless you build the "world" target (see Step 2). You can build and install all of them by running:
+make
+make install
+in the contrib directory of a configured source tree; or to build and install just one selected module, do the same in that module's subdirectory. Many of the modules have regression tests, which can be executed by running:
+make check
+before installation or
+make installcheck
+once you have a PostgreSQL server running.
+If you are using a pre-packaged version of PostgreSQL, these components are typically made available as a separate subpackage, such as postgresql-contrib.
+Many components supply new user-defined functions, operators, or types, packaged as extensions. To make use of one of these extensions, after you have installed the code you need to register the new SQL objects in the database system. This is done by executing a CREATE EXTENSION command. In a fresh database, you can simply do
+CREATE EXTENSION extension_name;
+This command registers the new SQL objects in the current database only, so you need to run it in every database in which you want the extension's facilities to be available. Alternatively, run it in database template1 so that the extension will be copied into subsequently-created databases by default.
+For all extensions, the CREATE EXTENSION command must be run by a database superuser, unless the extension is considered “trusted”. Trusted extensions can be run by any user who has CREATE privilege on the current database. Extensions that are trusted are identified as such in the sections that follow. Generally, trusted extensions are ones that cannot provide access to outside-the-database functionality.
+The following extensions are trusted in a default installation:
+btree_gin
+fuzzystrmatch
+ltree
+tcn
+btree_gist
+hstore
+pgcrypto
+tsm_system_rows
+citext
+intarray
+pg_trgm
+tsm_system_time
+cube
+isn
+seg
+unaccent
+dict_int
+lo
+tablefunc
+uuid-ossp
+Many extensions allow you to install their objects in a schema of your choice. To do that, add SCHEMA schema_name to the CREATE EXTENSION command. By default, the objects will be placed in your current creation target schema, which in turn defaults to public.
+Note, however, that some of these components are not “extensions” in this sense, but are loaded into the server in some other way, for instance by way of shared_preload_libraries. See the documentation of each component for details.
+Prev
+Up
+Next
+E.7. Prior Releases
+Home
+F.1. amcheck — tools to verify table and index consistency
+## Submit correction
+If you see anything in the documentation that is not correct, does not match
+your experience with the particular feature or requires further clarification,
+please use
+this form
+to report a documentation issue.

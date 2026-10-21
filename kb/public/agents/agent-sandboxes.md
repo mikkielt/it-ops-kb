@@ -2,7 +2,7 @@
 topic: agents/agent-sandboxes
 priority: P3
 applies_to: "Docker Sandboxes and the sbx CLI (docs.docker.com, read 2026-10-15); Kubernetes agent-sandbox v1.0.6 (Sandbox CRD agents.x-k8s.io/v1beta1); gVisor (runsc, gvisor.dev docs read 2026-10-15) and GKE Sandbox; Windows containers with Hyper-V isolation (Windows Server 2016 to 2025); Windows Sandbox and its CLI (Windows 11 24H2)"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-pdqpy37l, S-4kmihytd, S-qfhwf42v, S-5hrbuirw, S-6rab4vhg, S-caegbfbq, S-bk6r64wx, S-eu4rwlo5, S-5jhx5xwe, S-bnpfuvpa, S-q7wv7okn, S-boekjhxx, S-4mp7uube, S-5hntws7z, S-3uzebbx5, S-woxmpwse, S-hlmmxoye, S-nuzkw2aa]
 status: partial
 ---
@@ -47,7 +47,7 @@ A plain container shares the host kernel, so four stronger boundaries are used t
 - Against container escape the threat model recommends a secure runtime through `RuntimeClass` in the pod template, adds that agent-sandbox implements no isolation itself, and lets administrators enforce it with a `SandboxTemplate` that sets `runtimeClassName`. [DOC S-eu4rwlo5]
 - With a `SandboxTemplate`, the default managed NetworkPolicy mode allows ingress only from the Sandbox Router and egress only to the public internet (RFC 1918 networks and cloud metadata endpoints blocked); it also blocks sidecar ports unless the template allows them. [DOC S-eu4rwlo5]
 - Pods made from a `SandboxTemplate` get `automountServiceAccountToken` defaulted to `false`; for a bare `Sandbox` the threat model leaves it to admission control such as `ValidatingAdmissionPolicy`. [DOC S-eu4rwlo5]
-- The optional Sandbox Router is an HTTP reverse proxy that routes SDK and external traffic to sandbox pods by header (`X-Sandbox-ID`), for runtimes such as gVisor and Kata Containers where pod port-forwarding is unavailable; Go and Python SDKs (`k8s-agent-sandbox` on PyPI) drive the API. [DOC S-bk6r64wx]
+- The optional Sandbox Router is an HTTP reverse proxy that routes SDK and external traffic to sandbox pods, for runtimes such as gVisor and Kata Containers where pod port-forwarding is unavailable; Go and Python SDKs (`k8s-agent-sandbox` on PyPI) drive the API. [DOC S-bk6r64wx]
 - Deleting the CRDs cascade-deletes every custom resource of those types in all namespaces; the README pins an install to a release manifest for production and GitOps. [DOC S-bk6r64wx]
 
 ### gVisor: how system calls are intercepted
@@ -61,7 +61,7 @@ A plain container shares the host kernel, so four stronger boundaries are used t
 - gVisor releases run the regression tests of the Python, Java, Node.js, PHP and Go runtimes, so most programs in those languages work. [DOC S-q7wv7okn]
 
 ### gVisor: unsupported workloads and features
-- gVisor implements only a subset of the Linux syscall ABI, and does not implement every system call, `/proc` file or `/sys` file; its docs say the only real way to know whether a workload runs is to try it. [DOC S-q7wv7okn]
+- gVisor implements only a subset of the Linux syscall ABI, and has unimplemented features and bugs; the unimplemented part is mostly alternatives to syscalls it does support, and its docs say the only real way to know whether a workload runs is to try it. [DOC S-q7wv7okn]
 - In-sandbox cgroups account for CPU and memory but do not enforce limits; a host cgroup can limit the whole sandbox, but not processes competing inside it. [DOC S-q7wv7okn]
 - Block-device filesystems (fat32, ext3, ext4) cannot be mounted inside the sandbox; a host can mount them and expose the result. [DOC S-q7wv7okn]
 - iptables is only partly supported (enough to run Docker in gVisor), device files for custom hardware are not supported apart from NVIDIA GPUs and TPUs, io_uring is off by default and limited to basic I/O when on, nftables is similarly limited, and KVM cannot be used from inside the sandbox. [DOC S-q7wv7okn]

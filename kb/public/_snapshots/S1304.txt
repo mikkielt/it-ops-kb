@@ -3,12 +3,12 @@ url: https://learn.microsoft.com/en-us/entra/identity-platform/howto-configure-a
 title: How to configure app instance property lock in your applications
 publisher: Microsoft
 licence: MIT (public mirror MicrosoftDocs/entra-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # How to configure app instance property lock in your applications - Microsoft identity platform | Microsoft Learn
 
-Application instance lock is a feature in Microsoft Entra ID that allows sensitive properties of a multitenant application object to be locked for modification after the application is provisioned in another tenant. This feature provides application developers with the ability to lock certain properties if the application doesn't support scenarios that require configuring those properties.
+Application instance lock is a feature in Microsoft Entra ID that allows sensitive properties of an application's service principal to be locked for modification. It applies to both single-tenant and multitenant applications. This feature provides application developers with the ability to lock certain properties if the application doesn't support scenarios that require configuring those properties.
 
 ## What are sensitive properties?
 
@@ -20,7 +20,7 @@ The following property usage scenarios are considered as sensitive:
 
 Note
 
-App instance lock is enabled by default for all new applications created using the Microsoft Entra admin center.
+Since June 2026, the **Enable property lock** setting is **Enabled** by default for new applications. Review the lock settings to ensure they protect the sensitive properties your application uses.
 
 ## Configure an app instance lock
 
@@ -45,4 +45,4 @@ To configure an app instance lock:
 
 ## Configure app instance lock using Microsoft Graph
 
-You manage the app instance lock feature through the **servicePrincipalLockConfiguration** property of the application object of the multitenant app. For more information, see Lock sensitive properties for service principals.
+You manage the app instance lock feature through the **servicePrincipalLockConfiguration** property of the application object. For more information, see Lock sensitive properties for service principals.

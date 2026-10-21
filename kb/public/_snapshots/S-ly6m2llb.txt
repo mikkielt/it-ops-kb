@@ -3,19 +3,10 @@ url: https://github.com/microsoft/osconfig/releases
 title: microsoft/osconfig releases
 publisher: Microsoft (microsoft/osconfig)
 licence: MIT
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-microsoft
-/
-osconfig
-Public
-Notifications
-You must be signed in to change notification settings
-Fork
-8
-Star
-55
+## Repository navigation
 # Releases: microsoft/osconfig
 Releases · microsoft/osconfig
 ## Release list
@@ -274,7 +265,7 @@ ppe-ssh
 66f2386
 Pre-release packages are not intended for production use.
 Assets
-6
+7
 Loading
 ### Uh oh!
 There was an error while loading. Please reload this page.

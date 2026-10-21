@@ -2,7 +2,7 @@
 topic: agents/agent-planning-and-done
 priority: P3
 applies_to: "planning multi-session agent work and deciding when a task is done: Scrum Guide 2020, Anthropic long-running harness guidance (2025-11-26), Claude Code best practices and /goal (retrieved 2026-09-28), Kanban Guide v2025.5 (retrieved 2026-10-08)"
-retrieved_utc: 2026-10-08
+retrieved_utc: 2026-10-21
 sources: [S-2wwcyoa4, S2150, S-o3v6ozch, S-vp5onm7b, S1896, S-v2ztgtdn, S-cbzadytw]
 status: complete
 ---
@@ -46,7 +46,7 @@ Scrum's Definition of Done is one shared quality bar that every item must meet b
 - The same page lists four ways to gate the stop: ask in the prompt; a `/goal` condition re-checked after every turn; a Stop hook that runs the check as a script and blocks the turn from ending; or a verification subagent or workflow so the working agent is not the one grading itself. [DOC S-o3v6ozch]
 - Recommended workflow: explore (plan mode), plan, implement while verifying against the plan, commit. Planning pays when the approach is uncertain, several files change or the code is unfamiliar; if the diff fits in one sentence, skip the plan. [DOC S-o3v6ozch]
 - Before counting unattended work as done, a subagent in a fresh context reviews the diff against the plan and reports gaps; since a reviewer asked for gaps usually finds some, it should flag only gaps that affect correctness or the stated requirements. [DOC S-o3v6ozch]
-- `/goal <condition>` is a session-scoped prompt-based Stop hook: after each turn a small fast model (Haiku by default on the Claude API) returns met, not met or impossible, with a reason; met or impossible clears the goal. It is unavailable when `disableAllHooks` is true. [DOC S-vp5onm7b]
+- `/goal <condition>` is a session-scoped prompt-based Stop hook: after each turn the configured small fast model (`ANTHROPIC_DEFAULT_HAIKU_MODEL` changes it) returns met, not met or impossible, with a reason; met or impossible clears the goal. It is unavailable when `disableAllHooks` is true. [DOC S-vp5onm7b]
 - The `/goal` evaluator does not run commands or read files: it judges only what Claude surfaced in the conversation. A durable condition has one measurable end state, a stated check (for example "`npm test` exits 0") and the constraints that must not change; it can be up to 4,000 characters, and a turn or time clause bounds it. [DOC S-vp5onm7b]
 - If Claude keeps answering the `/goal` evaluator without tool use for several turns, Claude Code stops the loop and returns control with the goal still set. [DOC S-vp5onm7b]
 - A definition of done for one agent subtask can be written as three parts: the end state, the command whose output proves it (so a transcript-only judge such as `/goal` can see it), and what must not change; the project's shared gate (for this kb, `kb/_self/maintaining.md`'s gate) is the Scrum-style minimum every subtask meets as well. [DER S-2wwcyoa4, S-vp5onm7b, S-o3v6ozch: shared Definition of Done as the minimum; `/goal`'s end state, check and constraints]

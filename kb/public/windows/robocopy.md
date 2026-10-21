@@ -2,7 +2,7 @@
 topic: windows/robocopy
 priority: P3
 applies_to: "Robocopy (robocopy.exe) in Windows and Windows Server: copy, mirror, retry, logging, ACL, timestamp and attribute options, exit codes and multithreaded copy, with xcopy for comparison, as documented on Microsoft Learn (Windows Commands reference, robocopy page ms.date 03/17/2025, xcopy page ms.date 05/28/2024; read 2026-10-15)"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-3lm4tsvh, S-w4neuhkd, S-7varc2ty]
 status: partial
 ---
@@ -58,7 +58,7 @@ above 8 or what `/MIR` does with files that `/XF` and `/XD` exclude; they are li
 - `/DCOPY:E` tries to copy extended attributes of directories and carries on if they cannot be copied; it is not part of `/COPYALL`. [DOC S-3lm4tsvh]
 - `/SECFIX` fixes file security on all files, even skipped ones, and `/TIMFIX` fixes file times on all files, even skipped ones. `/SECFIX` must be combined with one of `/COPYALL`, `/COPY:O`, `/COPY:S`, `/COPY:U` or `/SEC`, which name the kind of security information. [DOC S-3lm4tsvh]
 - `/A+:[RASHCNET]` adds and `/A-:[RASHCNETO]` removes attributes on the copied files; the letters are Read-only, Archive, System, Hidden, Compressed, Not content indexed, Encrypted, Temporary (and Offline for removal). [DOC S-3lm4tsvh]
-- `/EFSRAW` copies encrypted files in EFS RAW mode and cannot be combined with `/MT` or `/IPG`. [DOC S-3lm4tsvh]
+- `/EFSRAW` copies encrypted files in EFS RAW mode and cannot be combined with `/MT` (the page's `/MT` row names `/EFSRAW`; `/LFSM` is also incompatible with it). [DOC S-3lm4tsvh]
 
 ### Retry and wait
 - `/R:<n>` is the number of retries on a failed copy; the default is 1,000,000. `/W:<n>` is the wait between retries in seconds; the default is 30. [DOC S-3lm4tsvh]

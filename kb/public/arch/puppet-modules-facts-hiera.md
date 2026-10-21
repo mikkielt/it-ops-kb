@@ -2,7 +2,7 @@
 topic: arch/puppet-modules-facts-hiera
 priority: P3
 applies_to: "Puppet 8.x (Puppet Core 8.22.0 docs): module directory layout, facts (core, custom, external, trusted), Hiera lookup and automatic class parameter lookup"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-v2maahna, S-4wyybawt, S-xzxlvtze, S-b4kil6ln, S-qskusgjk, S-gllyiwia, S-42nnv5q2, S-cttzm2qq, S-uqxc7z4f]
 status: partial
 ---

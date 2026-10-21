@@ -1,0 +1,77 @@
+source: S-qetvxk3e
+url: https://raw.githubusercontent.com/projectfluent/fluent-rs/fluent-bundle@0.16.0/Cargo.toml
+title: fluent-rs workspace Cargo.toml (tag fluent-bundle@0.16.0)
+publisher: Project Fluent (fluent-rs)
+licence: Apache-2.0 OR MIT
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+[workspace]
+resolver = "2"
+members = [
+  "fluent-syntax",
+  "fluent-bundle",
+  "fluent-fallback",
+  "fluent-resmgr",
+  "fluent-pseudo",
+  "fluent-testing",
+  "fluent",
+  "intl-memoizer",
+]
+
+exclude = ["fluent-cli"]
+
+[workspace.package]
+homepage = "https://www.projectfluent.org"
+repository = "https://github.com/projectfluent/fluent-rs"
+license = "Apache-2.0 OR MIT"
+authors = [
+  "Caleb Maclennan <caleb@alerque.com>",
+  "Bruce Mitchener <bruce.mitchener@gmail.com",
+  "Zibi Braniecki <zibi@unicode.org>",
+  "Staś Małolepszy <stas@mozilla.com>",
+]
+categories = ["localization", "internationalization"]
+keywords = ["localization", "l10n", "i18n", "intl", "internationalization"]
+edition = "2021"
+rust-version = "1.67.0"
+
+[workspace.dependencies]
+criterion = "0.5"
+fluent-langneg = "0.13"
+futures = "0.3"
+iai = "0.1"
+intl_pluralrules = "7.0"
+once_cell = "1.21"
+rustc-hash = "2.1"
+serde = "1.0"
+serde_json = "1.0"
+thiserror = "2.0"
+tokio = "1.38"
+unic-langid = "0.9"
+
+fluent-bundle = { version = "0.16.0", path = "fluent-bundle" }
+fluent-fallback = { version = "0.7.2", path = "fluent-fallback" }
+fluent-pseudo = { version = "0.3.3", path = "fluent-pseudo" }
+fluent-syntax = { version = "0.12.0", path = "fluent-syntax" }
+intl-memoizer = { version = "0.5.3", path = "intl-memoizer" }
+
+[workspace.metadata.typos.default]
+locale = "en-us"
+extend-ignore-re = [
+  "(?s)(#|//|/\\*)\\s*typos: ignore start.*?\\n\\s*(#|//|/\\*)\\s*typos: ignore end",
+]
+
+[workspace.metadata.typos.default.extend-words]
+nd = "nd" # appears frequently in inline test messages
+
+[workspace.metadata.typos.files]
+ignore-hidden = false
+extend-exclude = [
+  "/.git",
+  "fluent-bundle/benches/**/*.ftl",
+  "fluent-bundle/examples/**/*.ftl",
+  "fluent-syntax/tests/fixtures/**/*.ftl",
+  "fluent-syntax/tests/fixtures/**/*.json",
+  "fluent-testing/resources/**/*.ftl",
+]

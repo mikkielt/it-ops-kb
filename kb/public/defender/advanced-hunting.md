@@ -2,7 +2,7 @@
 topic: defender/advanced-hunting
 priority: P2
 applies_to: "Microsoft Defender XDR advanced hunting (Defender portal, Graph security API, legacy MDE advancedqueries API), docs ms.date through 2026-09"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-10-21
 sources: [S-a7zqfimk, S-oq2hykox, S-gstozrro, S-5nnb4rik, S-l5g4lirw, S-zaka5sgl, S-fnmkxefn, S627, S621, S-bw46kqrh, S-v5mr4bu5, S-osk3cbyu, S-vjtqqsri, S-x7sbbxju, S-4w7mhn5x, S-ktfxaivl, S-bvp2lhfv, S-yjjcwawd, S-r7vkbj73, S-cctucraa, S-3itm74ex, S-jh7vdeyt, S-tnlgchd2, S-elscbjku, S-6nonrav3]
 status: complete
 files: [defender/advanced-hunting-tables.csv]
@@ -36,7 +36,7 @@ Table reference: `advanced-hunting-tables.csv`.
 - The query resources report (Advanced hunting page or Reports > General) shows per-query CPU resource usage (Low/Medium/High), state (completed/failed/throttled), interface (portal, custom detections, API), and query time, for the last 30 days of queries; only Entra Security Reader-and-above roles see all users' queries. [DOC S-oq2hykox]
 
 ### Schema and tables
-- The schema reference lists its tables alphabetically; they fall into families such as device (`Device*`), email/collaboration (`Email*`, `Message*`), identity (`Identity*`, `EntraId*`), alert (`AlertInfo`, `AlertEvidence`), cloud app (`CloudAppEvents`), vulnerability management (`DeviceTvm*`), and several preview tables (e.g. `AgentsInfo`, `BehaviorInfo`, `OAuthAppInfo`). [DOC S-gstozrro]
+- The schema reference lists its tables alphabetically; they fall into families such as device (`Device*`), email/collaboration (`Email*`, `Message*`), identity (`Identity*`, `EntraId*`), alert (`AlertInfo`, `AlertEvidence`), cloud app (`CloudAppEvents`), vulnerability management (`DeviceTvm*`), and several tables marked (Preview) (e.g. `BehaviorInfo`, `OAuthAppInfo`); `AgentsInfo` (AI agents and their properties) is listed without a preview mark. [DOC S-gstozrro]
 - `DeviceTvm*` (Threat and Vulnerability Management) tables are exposed in Microsoft Sentinel only for schema visibility (autocomplete/query validation); Sentinel accepts queries against them but returns no data — TVM data is available only when the query runs in Defender XDR advanced hunting. [DOC S-cctucraa, S-r7vkbj73, S-3itm74ex]
 - Table reference (kind, what it records, key columns, source): see `advanced-hunting-tables.csv`, covering `DeviceInfo` [DOC S627], `DeviceFileEvents` [DOC S-v5mr4bu5], `DeviceNetworkEvents` [DOC S-osk3cbyu], `DeviceRegistryEvents` [DOC S-x7sbbxju], `DeviceEvents` [DOC S-4w7mhn5x], `DeviceImageLoadEvents` [DOC S-ktfxaivl], `DeviceFileCertificateInfo` [DOC S-bvp2lhfv], `DeviceNetworkInfo` [DOC S-yjjcwawd] and `AlertEvidence` [DOC S-tnlgchd2].
 - `DeviceLogonEvents` collection is not supported on Windows 7 or Windows Server 2008 R2 devices onboarded to Defender for Endpoint. [DOC S-vjtqqsri]

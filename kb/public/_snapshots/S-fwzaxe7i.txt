@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/en-us/entra/agent-id/authorization-agent-id
 title: Authorization in Microsoft Entra Agent ID
 publisher: Microsoft Learn
 licence: MIT (public mirror MicrosoftDocs/entra-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Authorization in Microsoft Entra Agent ID | Microsoft Learn
@@ -24,7 +24,7 @@ For this reason, Microsoft Entra ID limits what agent identities can do. For exa
 
 From an authorization standpoint, an agent identity behaves somewhat like an application or a user with extra safeguards. Each agent identity has a service principal or a user in Microsoft Entra ID, and it can be assigned certain Microsoft Entra roles.
 
-For example, an agent's identity can be assigned a Microsoft Entra role to give it administrator privileges, but many highly privileged directory roles are blocked for agents. Roles such as Global Administrator, Privileged Role Administrator, or User Administrator can't be assigned to agent identities. Only lower privileged roles (such as a reader role) can be assigned to an agent. You can't assign any custom roles to agent identities. Also, agent identities can't be members of role-assignable groups.
+For example, an agent's identity can be assigned a Microsoft Entra role to give it administrator privileges, but many highly privileged directory roles are blocked for agents. Roles such as Global Administrator, Privileged Role Administrator, or User Administrator can't be assigned to agent identities. Only lower privileged roles (such as a reader role) can be assigned to an agent. Agent identities can't be members of role-assignable groups.
 
 Microsoft has created the Agent ID Administrator and Agent ID Developer roles for managing and creating agents themselves.
 
@@ -116,6 +116,8 @@ The following is the list of Microsoft Entra roles that can be assigned to agent
 - Windows 365 Administrator
 - Windows Update Deployment Administrator
 - Yammer Administrator
+
+Custom roles can be assigned to agents.
 
 ## Microsoft Graph permissions for agent IDs
 

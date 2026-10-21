@@ -2,7 +2,7 @@
 topic: python/stdlib-datetime-iso-week
 priority: P3
 applies_to: [python, datetime, iso-8601]
-retrieved_utc: 2026-10-14
+retrieved_utc: 2026-10-21
 sources: [S-gaeidf4e]
 status: complete
 ---

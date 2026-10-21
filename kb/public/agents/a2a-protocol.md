@@ -2,7 +2,7 @@
 topic: agents/a2a-protocol
 priority: P2
 applies_to: "A2A protocol spec v1.0.0 / v1.0.1; A2A Python SDK (a2a-sdk)"
-retrieved_utc: 2026-10-19
+retrieved_utc: 2026-10-21
 sources: [S2120, S2121, S2122, S2123, S2124, S2125, S2126, S2127, S2128, S2129, S-xasyjfgi, S-2jevtssc, S-t24szuu4, S-byrq57yo, S-fpw4ly2l]
 status: complete
 files: [agents/a2a/a2a-proto-digest.md, agents/a2a/a2a.proto]

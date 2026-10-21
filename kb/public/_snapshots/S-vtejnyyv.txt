@@ -3,19 +3,34 @@ url: https://github.com/mitre-atlas/atlas-data
 title: MITRE ATLAS Data (atlas-data repository: README, LICENSE, dist/v6/ATLAS-2026.09.yaml)
 publisher: MITRE
 licence: Apache-2.0
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-mitre-atlas
-/
+## Repository navigation
 atlas-data
 Public
-Notifications
-You must be signed in to change notification settings
-Fork
-49
-Star
-190
+NotificationsYou must be signed in to change notification settings
+Fork51 (51)
+Star201 (201)You must be signed in to star a repository
+## About
+ATLAS tactics, techniques, and case studies data
+atlas.mitre.org
+### Topics
+ai-securitymachine-learningmitre-atlasmitre-attacksecurity
+### Resources
+Readme
+License
+### Contributing
+Contributing
+Activity
+Custom properties
+### Stars
+201 stars
+### Watchers
+8 watching
+### Forks
+51 forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit
@@ -236,11 +251,11 @@ Contributing
 Activity
 Custom properties
 ### Stars
-190 stars
+201 stars
 ### Watchers
 8 watching
 ### Forks
-49 forks
+51 forks
 Report repository
 ## Releases
 ## Used by

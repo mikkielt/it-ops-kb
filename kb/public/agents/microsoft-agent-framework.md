@@ -16,8 +16,8 @@ status: complete
   (session state, type safety, middleware, telemetry) and adding graph-based **Workflows** for
   explicit multi-agent orchestration. [DOC S-kzoop7qs]
 - Release status: no page uses the word "GA", but stable 1.x releases exist. Python `agent-framework` and
-  .NET `Microsoft.Agents.AI` 1.0.0 were both published on 2026-04-02 (PyPI 1.19.0 and NuGet 1.22.0 current
-  in September 2026) [DOC S-bayhkj2j, S-y76ymaxp]. The repository's package-status file marks
+  .NET `Microsoft.Agents.AI` 1.0.0 were both published on 2026-04-02 (PyPI 1.22.0 current on 2026-10-21; NuGet 1.22.0
+  as of September 2026) [DOC S-bayhkj2j, S-y76ymaxp]. The repository's package-status file marks
   `agent-framework`, `-core`, `-foundry`, `-declarative`, `-ag-ui` and `-github-copilot` as `released`
   (stable, no breaking changes between versions) while most integrations, e.g. `-anthropic`, `-claude`,
   `-a2a` and `-devui`, are `beta` or `alpha` [DOC S-x7eqxwa3]. Go stays in public preview [DOC S-kzoop7qs].
@@ -48,10 +48,11 @@ status: complete
   `Microsoft.Agents.AI` is the core namespace package. [DOC S-kzoop7qs, S-sjqmzszi]
 - Go: `go get github.com/microsoft/agent-framework-go` — marked **public preview**, with declarative
   agents, RAG, CodeAct, and functional workflows explicitly not yet available. [DOC S-kzoop7qs]
-- Release tags observed on GitHub Releases (2026-09-26): Python and .NET ship on parallel,
+- Release tags observed on GitHub Releases (2026-10-21): Python and .NET ship on parallel,
   roughly weekly cadences with separate `python-<version>` and `dotnet-<version>` tag prefixes —
-  most recent seen: `python-1.19.0` (2026-09-18) and `dotnet-1.22.0` (2026-09-18, marked latest); no
-  tag was marked pre-release in the 10 most recent of each track. [DOC S-gs56zhuk] — version numbers
+  most recent seen: `python-1.22.0` and `dotnet-1.25.0` (both mid-October 2026, 2026-10-14/15), with
+  the page's "Latest" label on the newest of them; no tag was marked pre-release in the 10 most recent
+  releases listed. [DOC S-gs56zhuk] — version numbers
   and dates will drift; re-check `_tools/fetch.py --diff` before quoting a specific number.
 - `agent-framework` does **not** auto-load `.env` files; call `load_dotenv()` yourself or set
   environment variables directly. [DOC S-kzoop7qs]
@@ -83,14 +84,14 @@ status: complete
 ### MCP tool integration (Python: MCPStdioTool, MCPStreamableHTTPTool, MCPWebsocketTool)
 - Three Python MCP client tool types: **`MCPStdioTool`** (local subprocess servers over stdio),
   **`MCPStreamableHTTPTool`** (HTTP/SSE remote servers), **`MCPWebsocketTool`** (WebSocket servers).
-  .NET uses the official MCP C# SDK (`McpClientFactory`, `StdioClientTransport`) with tools converted
+  .NET uses the official MCP C# SDK (`McpClient.CreateAsync`, `StdioClientTransport`) with tools converted
   to `AITool`/`AIFunction`; Go has an `mcptool` package with `mcptool.Connect`/`ListTools`, supporting
   HTTP/SSE (`mcp.StreamableClientTransport`) and stdio transports. [DOC S-7ziha7pr]
 - On minimal Python installs, MCP support is optional: `pip install mcp --pre` for `MCPStdioTool`,
   `MCPStreamableHTTPTool`, or `Agent.as_mcp_server()`; `pip install mcp[ws] --pre` additionally for
   `MCPWebsocketTool`. [DOC S-7ziha7pr]
-- `MCPStreamableHTTPTool(name=..., url=..., headers={...}, description=...)` connects to an HTTP/SSE
-  MCP server; pass it (or a list of MCP tool instances) as `tools=` to an `Agent`/`ChatAgent`, and use
+- `MCPStreamableHTTPTool(name=..., url=..., static_headers={...}, description=...)` connects to an HTTP/SSE
+  MCP server; pass it as `tools=` to an `Agent` or to `agent.run(...)`, and use
   it as an async context manager (`async with mcp_tool: ...`) so the session is opened and closed.
   [DOC S-esun5f2n, S-7ziha7pr]
 - The HTTP client `MCPStreamableHTTPTool` builds does **not** persist response cookies by default; a
@@ -216,7 +217,7 @@ status: complete
   overlapped.
 
 ## Examples
-- Minimal `ChatAgent` calling a remote MCP server over streamable HTTP (placeholder endpoint; API-key
+- Minimal `Agent` calling a remote MCP server over streamable HTTP (placeholder endpoint; API-key
   auth via `header_provider` so the secret never appears in tool arguments):
 
 - SNIPPET: an `Agent` using an `OpenAIChatClient`, connected to a remote MCP server via

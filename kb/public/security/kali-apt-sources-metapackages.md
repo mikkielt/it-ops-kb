@@ -2,7 +2,7 @@
 topic: security/kali-apt-sources-metapackages
 priority: P3
 applies_to: "Kali Linux package sources (/etc/apt/sources.list.d/kali.sources, suites, components, mirrors, offline media) and the kali-meta metapackages that decide which tools an image installs"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-o6curntz, S-2wfzjaxj, S-b6k54ngi, S-yehas5kt]
 status: partial
 ---

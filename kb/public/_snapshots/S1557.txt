@@ -3,7 +3,7 @@ url: https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai
 title: European Commission: AI Act regulatory framework overview and timeline
 publisher: European Commission
 licence: CC BY 4.0 (European Commission reuse policy, Decision 2011/833/EU)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 The AI Act is the first-ever legal framework on AI, which addresses the risks of AI and positions Europe to play a leading role globally.
@@ -96,50 +96,51 @@ All this complements AI Office's actions already in place to provide clarity for
 #### Quick links
 Any question on the AI Act? Visit our Single Information Platform
 Text of the AI Act in all EU official languages
+Questions & answers on the AI Act
+General-Purpose AI (GPAI) Code of Practice
+Code of Practice on Transparency of AI-generated Content
 AI Pact
-General-Purpose AI (GPAI) code of practice
+Enforcement of the AI Act
 Impact assessment of the regulation
 Study supporting the impact assessment
-Questions & Answers on the AI Act
-European AI Office
-Governance and enforcement of the AI Act
 Overview of the guidelines on the AI Act
 Standardisation of the AI Act
+Quick facts: Transparency rules for AI systems
 ## Latest News
+DIGIBYTE
+| 14 October 2026
+Digital Talent EU Days 2026: Building the skills for Europe's digital future
+DIGIBYTE
+| 13 October 2026
+EU and Ukraine deepen cooperation on cyber security at 5th Cyber Dialogue
 PRESS RELEASE
-| 31 August 2026
-Executive Vice-President Virkkunen in the US for G20 Ministerial meetings
+| 05 October 2026
+Commission holds special meeting of Scientific panel on frontier AI safety and risks
+DIGIBYTE
+| 01 October 2026
+EDIC for Agri-Food launched to support digital innovation across Europe’s food and agriculture sector
 PRESS RELEASE
-| 31 July 2026
-Commission starts enforcing AI Act rules and new transparency requirements on 2 August
+| 30 September 2026
+Three in four EU employees faced cyber threats at work, new Eurobarometer finds
 PRESS RELEASE
-| 30 July 2026
-EU launches AI Gigafactories call to boost Europe's computing capacity and unlock more than €30 billion in investment
-PRESS RELEASE
-| 20 July 2026
-Commission publishes guidelines on transparency obligations for providers and deployers of certain AI systems
-PRESS RELEASE
-| 07 July 2026
-Commission presents EU Action Plan on Cybersecurity and Artificial Intelligence
-PRESS RELEASE
-| 19 June 2026
-Commission selects EUROPA consortium as the winner of the Frontier AI Grand Challenge, a project to build European open-source frontier AI model in all 24 EU languages
+| 29 September 2026
+Commission seeks feedback on challenges and way forward in the area of effect of technology on copyright
 Browse Artificial intelligence
 ## Policy and legislation
+19-10-2026
+First harmonised standard supporting the AI Act published in the Official Journal
 20-07-2026
 Guidelines on transparency obligations for providers and deployers of AI systems
 09-07-2026
 Commission opinion on the assessment of the Code of Practice on Transparency of AI-generated Content
-07-07-2026
-EU Action Plan on Cybersecurity and Artificial Intelligence
 More
 ## Report / Study
+29-09-2026
+Study on the EU's strategic digital technologies for the next EU research & innovation programme
 15-07-2026
 AI Office publishes frontier AI expert findings on EU competitiveness, sovereignty and security
 13-07-2026
 New feasibility study for introducing an EU-level registry of Text and Data Mining opt-out
-19-05-2026
-European Commission and OECD collaborate on monitoring national AI strategies and AI investments
 More
 ## Factsheet / infographic
 07-07-2026
@@ -170,8 +171,8 @@ Standardisation of the AI Act
 Harmonised standards will offer legal certainty under the AI Act, support innovation, and position...
 AI Act Whistleblower Tool
 The AI Act Whistleblower Tool empowers individuals to securely submit a report and contribute...
-AI Act complaints tool
-The AI Act Complaint Tool allows individuals and organisations to submit complaints to the AI...
-#### Last update
-3 August 2026
+AI Act Complaints tool
+The AI Act Complaints Tool allows individuals and organisations to submit complaints to the AI...
+##### Last update
+19 October 2026
 Print as PDF

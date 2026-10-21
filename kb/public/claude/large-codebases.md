@@ -2,7 +2,7 @@
 topic: claude/large-codebases
 priority: P3
 applies_to: "Claude Code docs: large codebases, how Claude Code works, best practices (retrieved 2026-09-28); several repositories: agent view, Desktop, settings, cloud environments (retrieved 2026-10-15)"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-4jj4dtg4, S-eubvc22d, S-o3v6ozch, S-aishnkok, S-3qhgxjky, S2057, S-gu5aqnrl]
 status: complete
 ---
@@ -41,7 +41,7 @@ hold for any coding agent (`agents/codebase-mapping.md`).
 - The guide commits `additionalDirectories` to `.claude/settings.json` for sibling directories everyone needs, and uses `.claude/settings.local.json` or `--add-dir` for a personal or one-off selection. [DOC S-4jj4dtg4]
 - Agent view (`claude agents`) opened in a parent directory dispatches a new session into a child repository named with `@<repo>` in the prompt; the `@` list holds git repositories one level below the launch directory, the repository's own worktrees inside its tree, and directories that already have a session. [DOC S-aishnkok]
 - Agent view passes every configuration flag, `--add-dir` included, through to the sessions it dispatches; `--add-dir` is repeated once per directory and placed after `agents`, since before it `claude agents --json` fails with `unknown option`. [DOC S-aishnkok]
-- Cloud sessions support several repositories: in the Desktop app, after choosing a cloud environment, the **+** button beside the repository adds more, each with its own branch selector, for tasks such as updating a shared library and its consumers. [DOC S-3qhgxjky]
+- Cloud sessions support several repositories: in the Desktop app you choose the repositories in the row under the prompt box once a cloud environment is selected (in the earlier layout, above the prompt box, the **+** button beside the selected repository adds another); the flag table lists `--add-dir` as the way to select several repositories in a cloud session. The page does not mention a per-repository branch selector. [DOC S-3qhgxjky]
 - In an Anthropic-hosted environment a cloud session with several repositories starts above the clones and reads only `enabledPlugins` and `extraKnownMarketplaces` from each repository's `.claude/settings.json`: no permission rules, hooks or `env`. [DOC S2057]
 - So a `SessionStart` hook in a repository's settings does not run in such a session; the cloud environments page installs dependencies there with the environment's setup script instead. [DOC S-gu5aqnrl]
 - Plan a multi-repository cloud session around what it drops: permission rules and hooks that guard one repository locally do not reach it, so the guard has to live in the cloud environment (setup script, network policy) or the session should take one repository. [DER S2057, S-gu5aqnrl: settings read in multi-repository sessions; hooks not run there]

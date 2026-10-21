@@ -2,7 +2,7 @@
 topic: python/uv-windows-install
 priority: P3
 applies_to: "uv 0.12.19 on Windows (x86_64, aarch64): official release archives, per-archive SHA-256 files, the standalone install.ps1 / uv-installer.ps1; release assets read 2026-09-29"
-retrieved_utc: 2026-09-29
+retrieved_utc: 2026-10-21
 sources: [S-xkajf5v5, S-kqisz7ri, S-tqxtar5b]
 status: partial
 ---

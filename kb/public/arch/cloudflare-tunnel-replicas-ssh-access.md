@@ -2,7 +2,7 @@
 topic: arch/cloudflare-tunnel-replicas-ssh-access
 priority: P3
 applies_to: "cloudflared tunnel replicas and Cloudflare Access / Cloudflare One for an SSH admin path"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-cs6tyx3d, S-dbxfjxtf]
 status: partial
 ---

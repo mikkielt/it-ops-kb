@@ -2,7 +2,7 @@
 topic: claude/mods
 priority: P3
 applies_to: "Claude Code mods (function hooks in a plugin), docs pages dateModified 2026-10-08 to 2026-10-17, read 2026-10-18; mods on by default from Claude Code 2.1.287 (Desktop 2.1.286)"
-retrieved_utc: 2026-10-18
+retrieved_utc: 2026-10-21
 sources: [S-oawin5n2, S-y5j64svc, S-sao3dfcq, S-mvuodgli, S-kppz7qns, S-ho47nrnt, S-4vxgduip, S-toe7z3kj, S-3peuisvr, S-hvuk3dqt]
 status: partial
 ---

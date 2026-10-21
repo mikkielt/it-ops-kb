@@ -1,9 +1,9 @@
 ---
 topic: agents/coding-agent-codebase-context
 priority: P3
-applies_to: "Aider v0.86.2; GitHub Copilot repository indexing (github/docs @87a7556); VS Code Copilot workspace context (vscode-docs @0fc6a01); Cursor docs (retrieved 2026-09-28); OpenAI Codex AGENTS.md (docs retrieved 2026-09-28, code rust-v0.158.0); Gemini CLI v0.61.0; Anthropic context-engineering article (2025-09-29)"
-retrieved_utc: 2026-09-29
-sources: [S1855, S-yq3633pk, S-pht5euzf, S-q4hcjmq7, S-g6eifvzw, S-oqjcjt4q, S-5yij7tgr, S-v2sqknkh, S-4owuypm5, S-iuskapuz, S-zsi4cru4, S-c5olve2h, S-jomschqn, S-c4vaxr7q, S-mer4fr7g, S-bci74yyr, S-fema44tc, S-clksl3oh, S-e7vrnq3a, S-mxqyhxx7]
+applies_to: "Aider v0.86.2; GitHub Copilot repository indexing (github/docs @3a444c0); VS Code Copilot workspace context (vscode-docs @0fc6a01); Cursor docs (retrieved 2026-09-28); OpenAI Codex AGENTS.md (docs retrieved 2026-09-28, code rust-v0.158.0); Gemini CLI v0.61.0; Anthropic context-engineering article (2025-09-29)"
+retrieved_utc: 2026-10-21
+sources: [S1855, S-yq3633pk, S-pht5euzf, S-q4hcjmq7, S-g6eifvzw, S-oqjcjt4q, S-wtku6tkc, S-v2sqknkh, S-4owuypm5, S-iuskapuz, S-zsi4cru4, S-c5olve2h, S-jomschqn, S-c4vaxr7q, S-mer4fr7g, S-bci74yyr, S-fema44tc, S-clksl3oh, S-e7vrnq3a, S-mxqyhxx7]
 status: complete
 ---
 
@@ -32,9 +32,9 @@ official statements per product. Claude Code's own settings for this are in `cla
 - At v0.86.2 the default map budget is the model's input window divided by 8, clamped to 1024 to 4096 tokens; with no files in the chat the budget is multiplied, up to the context window minus padding. [CODE S-oqjcjt4q: aider/models.py#Model.get_repo_map_tokens; CODE S-g6eifvzw: aider/repomap.py#RepoMap.get_repo_map]
 
 ### Semantic indexes (GitHub Copilot, VS Code, Cursor)
-- GitHub Copilot keeps a semantic code search index per repository, built automatically when a chat has repository context; the first index of a large repository can take up to 60 seconds, there is no limit on how many repositories are indexed, and indexed repositories are not used for model training. [DOC S-5yij7tgr]
-- Copilot's cloud agent uses semantic code search besides exact-match tools like grep, with no configuration. [DOC S-5yij7tgr]
-- Indexing a repository not hosted on GitHub (GitLab, local) from VS Code uploads the data to GitHub; the feature is policy-controlled and off by default. Content exclusion filters the index. [DOC S-5yij7tgr]
+- GitHub Copilot keeps a semantic code search index per repository, built automatically when a chat has repository context; the first index of a large repository can take up to 60 seconds, there is no limit on how many repositories are indexed, and indexed repositories are not used for model training. [DOC S-wtku6tkc]
+- Copilot's cloud agent uses semantic code search besides exact-match tools like grep, with no configuration. [DOC S-wtku6tkc]
+- Indexing a repository not hosted on GitHub (GitLab, local) from VS Code uploads the data to GitHub; the feature is policy-controlled and off by default. Content exclusion filters the index. [DOC S-wtku6tkc]
 - VS Code's Copilot agents pick among search tools: semantic search (`#codebase`, needs a workspace index), text search, grep (no index needed), file search by glob, usages (definitions, references, implementations), directory listing and file reads; small workspaces may be read whole. [DOC S-v2sqknkh]
 - In VS Code every search match becomes conversation context even if the file is never opened, so `.gitignore` and `files.exclude` (search and index) and `search.exclude` (search only) matter. [DOC S-v2sqknkh]
 - A VS Code workspace index may be partly local and partly remote; remote indexing works for GitHub.com and GitHub Enterprise Cloud, not GitHub Enterprise Server, and binary files are not indexed. [DOC S-v2sqknkh]
@@ -56,12 +56,12 @@ official statements per product. Claude Code's own settings for this are in `cla
 ### How it fits
 - None of these coding agents (Claude Code, GitHub Copilot, Cursor, Codex, Gemini CLI, Aider) loads the whole repository: the durable context is small scoped instruction files plus a map of names (files, symbols, imports), and code is fetched on demand by path, symbol, grep or index query. A kb that answers questions about the products a codebase uses fits the same pattern as an on-demand tool (an MCP server or skill) rather than loaded text. [DER S1855, S-yq3633pk, S-v2sqknkh, S-c5olve2h: just-in-time retrieval, ranked maps and capped instruction files]
 - Instruction-file caps and scopes differ (Codex 32 KiB combined, Cursor's 500-line advice, Gemini's 200-directory discovery, Claude Code's per-directory loading), so one AGENTS.md read by several tools stays short and points to deeper files instead of holding them. [DER S-c5olve2h, S-iuskapuz, S-mer4fr7g: the three stated limits]
-- Semantic indexes differ in where code goes: GitHub Copilot's index is remote (non-GitHub repositories are uploaded), VS Code mixes local and remote, Cursor's Instant Grep index is local; a repository whose code must not leave the machine needs that checked per product. [DER S-5yij7tgr, S-v2sqknkh, S-4owuypm5: each page's statement of index location]
+- Semantic indexes differ in where code goes: GitHub Copilot's index is remote (non-GitHub repositories are uploaded), VS Code mixes local and remote, Cursor's Instant Grep index is local; a repository whose code must not leave the machine needs that checked per product. [DER S-wtku6tkc, S-v2sqknkh, S-4owuypm5: each page's statement of index location]
 
 ## Reference
 - Anthropic, effective context engineering: https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents
 - Aider repository map: https://aider.chat/docs/repomap.html
-- GitHub Copilot repository indexing: https://docs.github.com/en/copilot/concepts/context/repository-indexing
+- GitHub Copilot repository indexing: https://docs.github.com/en/copilot/concepts/prompting-and-context/repository-indexing
 - VS Code workspace context: https://code.visualstudio.com/docs/agents/reference/workspace-context
 - Cursor search, rules, ignore file: https://cursor.com/docs/agent/tools/search, https://cursor.com/docs/rules, https://cursor.com/docs/reference/ignore-file
 - Codex AGENTS.md: https://developers.openai.com/codex/guides/agents-md

@@ -2,7 +2,7 @@
 topic: agents/agent-cost-governance
 priority: P2
 applies_to: "Claude Code docs (code.claude.com, retrieved 2026-09-25); Anthropic Usage & Cost Admin API (platform.claude.com, retrieved 2026-09-25)"
-retrieved_utc: 2026-10-16
+retrieved_utc: 2026-10-21
 sources: [S2013, S2132, S744, S-r7mszxqu]
 status: complete
 ---

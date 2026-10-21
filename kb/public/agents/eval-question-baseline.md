@@ -2,7 +2,7 @@
 topic: agents/eval-question-baseline
 priority: P1
 applies_to: "tiered-confirmation MCP device-management server (example design), operation/tier table"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S1896, S1898, S1899]
 status: complete
 ---

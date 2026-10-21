@@ -2,8 +2,8 @@
 topic: gitlab/pipelines-rules
 priority: P0
 applies_to: "GitLab 19.5 docs (master @56c82a97); pipeline schedules API @9f1632e2 (2026-09-27)"
-retrieved_utc: 2026-10-11
-sources: [S446, S447, S448, S451, S453, S-zh7oqkup, S-aibu3bke]
+retrieved_utc: 2026-10-21
+sources: [S446, S447, S448, S453, S-zh7oqkup, S-aibu3bke, S-vpnjd6ww]
 status: partial
 ---
 
@@ -35,9 +35,9 @@ status: partial
 - A schedule is created with `POST /projects/:id/pipeline_schedules`: `cron`, `description` and `ref` are required (a short ref such as `main` is expanded to the full ref unless it could be a branch or a tag), `active` (default `true`), `cron_timezone` (default `UTC`) and `inputs` (name and value pairs, generally available in 18.1); the creating user becomes the `owner` in the response. [DOC S-aibu3bke]
 - `POST .../pipeline_schedules/:pipeline_schedule_id/take_ownership` makes the caller the owner, `GET .../pipelines` lists the pipelines a schedule triggered, and schedule variables are created, read, updated and deleted under `.../variables`. [DOC S-aibu3bke]
 - So an automation that must start a scheduled job now plays the schedule instead of creating a pipeline, and the run uses the permissions of the user whose token calls `play`, not those of the schedule owner; which `CI_PIPELINE_SOURCE` value a played run carries is not stated. [DER S448, S-aibu3bke: manual runs use the caller's permissions; the play endpoint is the API form of the Run button]
-- Releases tier: Free, Premium, Ultimate. Release Metrics: Ultimate. [DOC S451]
-- The `release` job needs `glab` on `$PATH`. It creates the release with `glab release create`. The release-cli image `v0.24.0` contains glab `v1.58.0`. [DOC S447,S451]
-- The documented release job pattern uses `rules: - if: $CI_COMMIT_TAG` and `tag_name: '$CI_COMMIT_TAG'`. [DOC S451]
+- Releases tier: Free, Premium, Ultimate. Release Metrics: Ultimate. [DOC S-vpnjd6ww]
+- The `release` job needs `glab` on `$PATH`. It creates the release with `glab release create`. The release-cli image `v0.24.0` contains glab `v1.58.0`. [DOC S447,S-vpnjd6ww]
+- The documented release job pattern uses `rules: - if: $CI_COMMIT_TAG` and `tag_name: '$CI_COMMIT_TAG'`. [DOC S-vpnjd6ww]
 
 ## Reference
 | Pipeline source value | Meaning | Source |
@@ -49,7 +49,7 @@ status: partial
 See also `gitlab/automated-merge-requests.md` (push options that open an auto-merging MR, job-token pushes).
 
 ## Examples
-- SNIPPET: a pipeline gated to MR pipelines and tag pushes, with a tag-triggered `release` job using `glab`; context: GitLab CI, `release-cli` image v0.24.0 (glab v1.58.0+); checked: no [DER S446,S447,S451: `merge_request_event` workflow rule, the `if: $CI_COMMIT_TAG` release rule, and the `release:` keyword's `tag_name` field combined into one pipeline]
+- SNIPPET: a pipeline gated to MR pipelines and tag pushes, with a tag-triggered `release` job using `glab`; context: GitLab CI, `release-cli` image v0.24.0 (glab v1.58.0+); checked: no [DER S446,S447,S-vpnjd6ww: `merge_request_event` workflow rule, the `if: $CI_COMMIT_TAG` release rule, and the `release:` keyword's `tag_name` field combined into one pipeline]
 ```yaml
 workflow:
   rules:

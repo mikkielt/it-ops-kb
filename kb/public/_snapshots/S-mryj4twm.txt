@@ -1,0 +1,152 @@
+source: S-mryj4twm
+url: https://docs.rs/oxigraph/0.5.11/oxigraph/sparql/enum.QueryResults.html
+title: docs.rs oxigraph 0.5.11: enum oxigraph::sparql::QueryResults
+publisher: docs.rs (oxigraph crate rustdoc)
+licence: MIT OR Apache-2.0
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+oxigraph::sparql
+# Enum QueryResults
+Source
+pub enum QueryResults<'a> {
+Solutions(QuerySolutionIter<'a>),
+Boolean(bool),
+Graph(QueryTripleIter<'a>),
+}
+Expand description
+Results of a SPARQL query.
+## Variants§
+§
+### Solutions(QuerySolutionIter<'a>)
+Results of a SELECT query.
+§
+### Boolean(bool)
+Result of a ASK query.
+§
+### Graph(QueryTripleIter<'a>)
+Results of a CONSTRUCT or DESCRIBE query.
+## Trait Implementations§
+Source§
+### impl<'a> From<QuerySolutionIter<'a>> for QueryResults<'a>
+Source§
+#### fn from(value: QuerySolutionIter<'a>) -> QueryResults<'a>
+Converts to this type from the input type.
+Source§
+### impl<'a> From<QueryTripleIter<'a>> for QueryResults<'a>
+Source§
+#### fn from(value: QueryTripleIter<'a>) -> QueryResults<'a>
+Converts to this type from the input type.
+Source§
+### impl<'a, R> From<ReaderQueryResultsParserOutput<R>> for QueryResults<'a>
+where
+R: Read + 'a,
+Source§
+#### fn from(output: ReaderQueryResultsParserOutput<R>) -> QueryResults<'a>
+Converts to this type from the input type.
+Source§
+### impl<'a> From<SliceQueryResultsParserOutput<'a>> for QueryResults<'a>
+Source§
+#### fn from(output: SliceQueryResultsParserOutput<'a>) -> QueryResults<'a>
+Converts to this type from the input type.
+Source§
+### impl From<bool> for QueryResults<'_>
+Source§
+#### fn from(value: bool) -> QueryResults<'_>
+Converts to this type from the input type.
+## Auto Trait Implementations§
+§
+### impl<'a> !RefUnwindSafe for QueryResults<'a>
+§
+### impl<'a> !Send for QueryResults<'a>
+§
+### impl<'a> !Sync for QueryResults<'a>
+§
+### impl<'a> !UnwindSafe for QueryResults<'a>
+§
+### impl<'a> Freeze for QueryResults<'a>
+§
+### impl<'a> Unpin for QueryResults<'a>
+§
+### impl<'a> UnsafeUnpin for QueryResults<'a>
+## Blanket Implementations§
+Source§
+### impl<T> Any for T
+where
+T: 'static + ?Sized,
+Source§
+#### fn type_id(&self) -> TypeId
+Gets the TypeId of self. Read more
+Source§
+### impl<T> Borrow<T> for T
+where
+T: ?Sized,
+Source§
+#### fn borrow(&self) -> &T
+Immutably borrows from an owned value. Read more
+Source§
+### impl<T> BorrowMut<T> for T
+where
+T: ?Sized,
+Source§
+#### fn borrow_mut(&mut self) -> &mut T
+Mutably borrows from an owned value. Read more
+Source§
+### impl<ST, DT> CastableFrom<ST, Initialized, Initialized> for DT
+where
+ST: ?Sized,
+DT: ?Sized,
+Source§
+### impl<ST, DT> CastableFrom<ST, Uninit, Uninit> for DT
+where
+ST: ?Sized,
+DT: ?Sized,
+Source§
+### impl<T> From<T> for T
+Source§
+#### fn from(t: T) -> T
+Returns the argument unchanged.
+Source§
+### impl<T, U> Into<U> for T
+where
+U: From<T>,
+Source§
+#### fn into(self) -> U
+Calls U::from(self).
+That is, this conversion is whatever the implementation of
+From<T> for U chooses to do.
+Source§
+### impl<T> Read<Exclusive, BecauseExclusive> for T
+where
+T: ?Sized,
+Source§
+### impl<T> Same for T
+Source§
+#### type Output = T
+Should always be Self
+Source§
+### impl<T, U> TryFrom<U> for T
+where
+U: Into<T>,
+Source§
+#### type Error = !
+The type returned in the event of a conversion error.
+Source§
+#### fn try_from(value: U) -> Result<T, !>
+Performs the conversion.
+Source§
+### impl<T, U> TryInto<U> for T
+where
+U: TryFrom<T>,
+Source§
+#### type Error = <U as TryFrom<T>>::Error
+The type returned in the event of a conversion error.
+Source§
+#### fn try_into(self) -> Result<U, <U as TryFrom<T>>::Error>
+Performs the conversion.
+Source§
+### impl<V, T> VZip<V> for T
+where
+V: MultiLane<T>,
+Source§
+#### fn vzip(self) -> V

@@ -2,7 +2,7 @@
 topic: agents/dataverse-mcp-server
 priority: P2
 applies_to: "Microsoft Dataverse MCP server (remote endpoint /api/mcp and preview endpoint /api/mcp_preview) and the clients that connect to it: Copilot Studio, GitHub Copilot in VS Code and Copilot CLI, Claude desktop, Claude Code; docs current 2026-10-08"
-retrieved_utc: 2026-10-08
+retrieved_utc: 2026-10-21
 sources: [S-f6atlxlo, S-lv2haaxp, S-z3p44lkf, S-odxayrvf, S-evcdmlat, S-evy2xjad, S-oxdtvzaw]
 status: complete
 ---

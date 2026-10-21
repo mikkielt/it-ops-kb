@@ -2,7 +2,7 @@
 topic: agents/copilot-studio-inventory
 priority: P1
 applies_to: "Microsoft Copilot Studio (standard harness, GitHub Copilot harness, Copilot chat harness), docs current 2026-09-25"
-retrieved_utc: 2026-09-28
+retrieved_utc: 2026-10-21
 sources: [S1960, S1961, S1962, S1963, S1964, S1965, S1966, S1967, S1972, S1973, S1974, S1975, S1977, S1978, S1979, S1980, S1981, S1982, S1983, S1984, S-jby7reko, S-vyhrpdjp, S2126]
 status: complete
 files: [agents/copilot-studio-feature-map.csv]
@@ -11,9 +11,10 @@ files: [agents/copilot-studio-feature-map.csv]
 # Copilot Studio feature inventory
 
 ## Summary
-- Copilot Studio ships three "harnesses" (execution engines): **GitHub Copilot harness**
-  (reasoning-heavy multi-step), **standard harness** (rule-based topics, most features below), and
-  **Copilot chat harness** (extends Microsoft 365 Copilot Chat with tenant knowledge). Harness
+- Copilot Studio ships four "harnesses" (execution engines): **GitHub Copilot harness**
+  (reasoning-heavy multi-step), **standard harness** (rule-based topics, most features below),
+  **Copilot chat harness** (extends Microsoft Copilot Chat with organisation knowledge) and
+  **Customer Conversation harness** (customer-facing voice and chat agents). Harness
   choice changes billing and available features. [DOC S1962]
 - Standard-harness agents are billed in **Copilot Credits** (renamed from "messages" 2025-09-01), sold
   as pay-as-you-go, a one-year prepurchase plan, or prepaid packs; unused credits don't roll over, and
@@ -32,13 +33,14 @@ files: [agents/copilot-studio-feature-map.csv]
 - Copilot Credits billing rates: classic answer 1, generative answer 2, agent action 5 (computer use is billed at this rate), tenant graph grounding 10, agent flow actions 13 per 100 actions; text and generative AI tools 0.1 (basic), 1.5 (standard) or 10 (premium) Copilot Credits per 1K tokens; content processing 8 per page. Usage by Microsoft 365 Copilot-licensed users in employee-facing agents is not charged, except computer use. [DOC S-vyhrpdjp]
 - Copilot Studio can connect an agent to any agent that speaks the A2A protocol (Agents page > Add agent > A2A agent, endpoint URL, then None, API key or OAuth 2.0 authentication); A2A connections use the custom connector infrastructure, so they can reach agents on-premises or in a virtual network. [DOC S2126]
 
-- Billing FAQ: publishing needs a Microsoft 365 Copilot licence, or a Copilot Studio User License with credits allocated to the environment or drawn from the tenant pool (trial licences don't qualify); credit usage resets on the first day of each month with no carry-over; a proactive greeting is a billed Copilot Credit even when the user never replies; test-chat messages are not billed; agents built with Copilot Studio for Teams consume no credits. [DOC S1980]
+- Billing FAQ: publishing needs a Microsoft 365 Copilot licence, or a Copilot Studio User License with credits allocated to the environment or drawn from the tenant pool (trial licences don't qualify; an Office-only licence suffices when the agent uses no generative AI features); credit usage resets on the first day of each month with no carry-over; a proactive greeting is a billed Copilot Credit even when the user never replies; test-chat messages are not billed; agents built with Copilot Studio for Teams consume no credits. [DOC S1980]
 
 ### Topics, orchestration, instructions
 - Topics are authored on a visual canvas or in a **YAML code editor** (`kind: AdaptiveDialog`,
-  nodes, conditions, redirects); YAML nodes can be copy-pasted between topics, but Microsoft warns
-  that syntax errors can break the conversation and its own support "can't help remediate code
-  editor errors." [DOC S1963]
+  nodes, conditions, redirects); YAML can be copy-pasted between topics and agents, but Microsoft
+  says designing a topic entirely in the code editor and pasting complex topics isn't fully
+  supported. (The earlier warning that support "can't help remediate code editor errors" is no
+  longer on this page: UNK, not in S1963 as re-read 2026-10-21.) [DOC S1963]
 - **Generative orchestration** adds an LLM planning layer that selects the best combination of
   topics/tools/knowledge per turn, can auto-fill topic inputs from conversation context, and
   generates clarifying questions; it caps SharePoint knowledge sources at 25 site URLs/agent when
@@ -89,7 +91,8 @@ files: [agents/copilot-studio-feature-map.csv]
   [DOC S1981]
 - Access to any MCP server in Copilot Studio is regulated by **Power Platform data policies**
   exactly like any other Power Platform connector — MCP connectors are one of the connector classes
-  (certified, custom, virtual, MCP) that DLP can block. [DOC S1964, S1974]
+  (certified, custom, virtual, MCP) that data policies cover; many nonblockable connectors now
+  support MCP, and those MCP servers can be restricted through advanced connector policies. [DOC S1964, S1974]
 
 ### Adaptive cards and channels
 - Rendering of surveys/multiple-choice options is channel-dependent: a full adaptive card on a
@@ -100,7 +103,7 @@ files: [agents/copilot-studio-feature-map.csv]
   Telegram, Twilio, Line, Kik, GroupMe, Direct Line Speech, Email). Admins can block individual
   channels via **Agent access channels** in the Power Platform admin center or via DLP. [DOC S1977]
 - Users can't send or upload attachments to the agent chat on any channel, even where the channel
-  supports attachments; the exception is a message sent to a Bot Framework skill that processes
+  supports attachments; the exception is a message sent to an Azure Bot Service skill that processes
   attachments. [DOC S1977]
 
 ### Authentication and SSO
@@ -147,7 +150,8 @@ files: [agents/copilot-studio-feature-map.csv]
   experience) and runtime (suspends/quarantines running apps, flows, chatbots; disables blocked
   connections). Propagation of a policy change takes up to 24 hours in the most extreme cases and
   usually under an hour. Copilot Studio virtual connectors are migrating to their own dedicated
-  governance rules, separate from classic DLP and from Advanced Connector Policies. [DOC S1974]
+  governance rules, separate from classic DLP and from Advanced Connector Policies (which don't
+  support virtual connectors). [DOC S1974]
 - Message-throughput **quotas** scale with prepaid-pack tier: 50 RPM/1,000 RPH at 1-10 packs, up to
   100 RPM/2,000 RPH at 51-150 packs, +1 RPM/+20 RPH per extra 10 packs above 150; trial/developer
   environments are capped at 10 RPM/200 RPH; pay-as-you-go and Microsoft 365 Copilot-licensed usage

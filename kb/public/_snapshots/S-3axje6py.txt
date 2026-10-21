@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/azure/foundry/agents/how-to/tools/toolbox
 title: Create and manage a toolbox in Foundry
 publisher: Microsoft Learn
 licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-ai-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Create and manage a toolbox in Microsoft Foundry - Microsoft Foundry | Microsoft Learn
@@ -601,6 +601,8 @@ Tool-specific `tools/call` argument examples:
 | MCP | `{"query": "what is agent service"}` |
 
 ## Integrate the toolbox into your agent
+
+For user delegation with MCP and other tools, connect those tools through a Foundry toolbox. When adding that toolbox to a Microsoft Agent Framework hosted agent, use `FoundryToolbox` in Python or `AddFoundryToolboxes` in .NET. See Use a toolbox with a hosted agent.
 
 ::: zone pivot="python"
 

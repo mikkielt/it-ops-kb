@@ -2,7 +2,7 @@
 topic: windows/winget
 priority: P2
 applies_to: "Windows Package Manager (WinGet) CLI, App Installer package, WinGet Configuration (v2/v3), Group Policy/CSP; Windows 10 1809+, Windows 11, Windows Server 2025; docs retrieved 2026-09-26"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-10-21
 sources: [S-bx6tsyla, S-vrwvsimi, S-x6zzi6h7, S-td3e5ov5, S-bbyce4yg, S-7ddssdnb, S-sgplcdqr, S-ht6fligp, S-dgnfikws, S-fbg5dkgs, S-7symcqej, S-xgfg5ggj, S-ig43wzxm, S-h66nieow]
 status: complete
 files: [windows/winget-policies.csv]

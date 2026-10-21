@@ -1,7 +1,7 @@
 ---
 topic: agents/agent-overuse-patterns
 priority: P1
-applies_to: "Anthropic/OpenAI/Google/Microsoft agent guidance (2025-2026 docs), Thoughtworks Technology Radar Vol 34 (2026-04), jq 1.8, Renovate (docs 44.115.10), conventional-commits v1.0.0, semantic-release, LSP 3.18, DSC 3.3.0, Presidio (pattern_recognizer.py at commit e9895a51)"
+applies_to: "Anthropic/OpenAI/Google/Microsoft agent guidance (2025-2026 docs), Thoughtworks Technology Radar Vol 34 (2026-04), jq 1.8, Renovate (docs 44.175.2), conventional-commits v1.0.0, semantic-release, LSP 3.18, DSC 3.3.0, Presidio (pattern_recognizer.py at commit e9895a51)"
 retrieved_utc: 2026-09-27
 sources: [S2160, S2162, S2163, S2164, S2165, S2166, S2167, S2168, S2169, S2170, S2171, S2172, S2173, S2174, S150, S154, S825, S-2z2zfj3l, S-sxtmngif, S-t5dhva6p, S900, S1920, S1924, S1925, S1935, S1936, S744, S745, S-3zepbhux]
 status: complete
@@ -96,11 +96,11 @@ alongside the deterministic tool that already exists for them.
   aggregate, fixed multi-step tool sequences, task-eligibility and landing-verification scripts, high-volume
   low-latency lookups, exact-reproduction audit trails, and tier/policy gating. [DER — table compiled from
   DOC facts per row, sources cited per row in the CSV]
-- jq (current: 1.8) is "a lightweight and flexible command-line JSON processor" whose programs are
-  composable filters over JSON — the deterministic tool for exactly the extraction/reshaping tasks teams
+- jq (manual for 1.8) treats a program as a "filter" that takes an input and produces an output; filters
+  combine by piping — the deterministic tool for exactly the extraction/reshaping tasks teams
   otherwise hand an LLM prompt. [DOC S2166]
-- Renovate (docs banner version 44.115.10 on 2026-09-26) automates "pull requests to update your
-  dependencies and lock files" from declared configuration/presets, with no LLM/AI step named anywhere in its own docs. [DOC
+- Renovate (docs banner version 44.175.2 on 2026-10-21) provides pull requests to update your
+  dependencies and lock files from declared configuration/presets, with no LLM/AI step named anywhere in its own docs. [DOC
   S2167]
 - GitHub Dependabot version updates are "automated pull requests that keep your dependencies updated,"
   driven by a `dependabot.yml` schedule and semantic-versioning rules, with a default 3-day cooldown for
@@ -111,8 +111,8 @@ alongside the deterministic tool that already exists for them.
   own discontinuation) runs a fixed eight-step pipeline (Verify Conditions → Get Last Release → Analyze
   Commits → Verify Release → Generate Notes → Create Git Tag → Prepare → Publish → Notify) purely from
   commit-message classification, with no model in the loop. [DOC S2170]
-- LSP (spec version 3.18) "standardizes the protocol for how [language] servers and development tools
-  communicate," giving deterministic go-to-definition/find-references/completion without re-implementing
+- LSP (spec version 3.18) aims to standardize the protocol for how language servers and development tools
+  communicate, so one server is reusable across tools, giving deterministic go-to-definition/find-references/completion without re-implementing
   per editor-language pair and without a model reasoning over source text. [DOC S2171]
 - Anthropic's Agent Skills post says some operations suit traditional code execution better than a model: sorting a list via token generation is far more expensive than running a sorting algorithm, and many applications need the deterministic reliability only code provides, so a skill can bundle a script for Claude to run. [DOC S1936]
 - The AgentAssay preprint (arXiv 2603.02601, 2026-03-03) says no principled method existed for checking that an agent has not regressed after changes to its prompts, tools, models or orchestration, and proposes statistical regression testing of non-deterministic agent workflows with three-valued verdicts (PASS, FAIL, INCONCLUSIVE) and CI/CD gates as statistical decision procedures. [COMMUNITY S2172]

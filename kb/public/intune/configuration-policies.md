@@ -2,7 +2,7 @@
 topic: intune/configuration-policies
 priority: P2
 applies_to: "Microsoft Intune service 2026-09, Windows 10/11 client, Graph beta deviceManagementConfigurationPolicy"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-lz7th2mw, S-ld2qiclx, S-hw4p6ks6, S-v3kf7d4m, S-vmpbvsv4, S-ytjbd4n5, S-4krq7dui, S-wz4ujka5, S-4gg3zmhr, S-v5cttaej, S1593, S-l5tq6fyo, S-xggskgmu, S-rhemzip3, S-hyfjrtuc, S-h7ijeucf, S-d2p4emn5, S-sjt243fo, S-jicw45tl, S-77gkdi7q]
 status: complete
 ---

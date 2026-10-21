@@ -2,7 +2,7 @@
 topic: windows/kiosk-assigned-access
 priority: P2
 applies_to: "Windows 10/11 client (single-app kiosk since 1803, ShellLauncher since 1803/v2, multi-app via provisioning/CSP), Intune kiosk profile template and settings catalog, Microsoft Edge kiosk mode 87+"
-retrieved_utc: 2026-09-28
+retrieved_utc: 2026-10-21
 sources: [S-c6tea7ux, S-ocgh5a3g, S-snqf6qj3, S-hkbq4xlj, S-grpxcouj, S-mti33mjr, S-pjgeqktu, S-jnbupokh, S-qd4qftlt, S-lz7th2mw, S-jqkumeuj]
 status: complete
 ---
@@ -54,7 +54,7 @@ allowed-apps list is enforced with generated AppLocker rules under the hood.
 ### Troubleshooting and logs
 - Event log: **Applications and Services Logs > Microsoft > Windows > AssignedAccess > Operational**. [DOC S-grpxcouj]
 - Registry: applied Assigned Access configuration lives under `HKLM\Software\Microsoft\Windows\AssignedAccessConfiguration` and `HKLM\Software\Microsoft\Windows\AssignedAccessCsp`; the per-signed-in-user configuration is under `HKCU\SOFTWARE\Microsoft\Windows\AssignedAccessConfiguration`. [DOC S-grpxcouj]
-- Recommendation: use a least-privilege local standard account for public-facing kiosks (not an AD/Entra domain account, to limit blast radius if the kiosk is compromised); enable auto sign-in via the AutoLogonAccount XML element, or by hand via `HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon` values `AutoAdminLogon=1`, `DefaultUserName`, `DefaultPassword`, and (domain accounts only) `DefaultDomainName`. The Policy CSP `Authentication/PreferredAadTenantDomainName` setting prevents automatic sign-in from working. [DOC S-grpxcouj]
+- Recommendation: use a least-privilege local standard account for public-facing kiosks (not an AD/Entra domain account, to limit blast radius if the kiosk is compromised); enable auto sign-in by configuring the Assigned Access or Shell Launcher XML with an account that signs in automatically (the Assigned Access XML element is `AutoLogonAccount`, see above), or by hand via `HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon` values `AutoAdminLogon=1`, `DefaultUserName`, `DefaultPassword`, and (domain accounts only) `DefaultDomainName`. The Policy CSP `Authentication/PreferredAadTenantDomainName` setting prevents automatic sign-in from working. [DOC S-grpxcouj, S-ocgh5a3g]
 
 ### Intune kiosk profile (Templates > Kiosk)
 - Path: **Devices > Manage devices > Configuration > Create > New policy**, platform **Windows 10 and later**, profile type **Templates > Kiosk**; Intune supports **one kiosk profile per device** — a device needing several kiosk configurations instead needs a custom OMA-URI profile against the CSP. [DOC S-snqf6qj3]

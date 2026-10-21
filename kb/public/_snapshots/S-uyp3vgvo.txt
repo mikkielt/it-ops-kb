@@ -3,10 +3,10 @@ url: https://ai.google.dev/gemini-api/docs/long-context
 title: Long context (Gemini API)
 publisher: Google (ai.google.dev)
 licence: CC BY 4.0 (Google Developers site policies; code Apache-2.0)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-Gemini 3.8 Flash is now available. Try it out.
+Gemini 4 Argon is now available. Try it out.
 Home
 Gemini API
 Docs
@@ -33,6 +33,7 @@ to the model, which will subsequently generate a response. An analogy for the
 context window is short term memory. There is a limited amount of information
 that can be stored in someone's short term memory, and the same is true for
 generative models.
+In Gemini 4 (gemini-4-argon), the 1M-token context window is shared across input, thinking, and output tokens, and the model can generate up to 1M output tokens using long decode. If your input tokens plus max_output_tokens exceed 1,048,576 tokens, the API automatically caps the output limit to the remaining space in the context window (1,048,576 minus your input tokens). Earlier Gemini 3 and 2.5 models use separate 1M input and 64K output budgets.
 You can read more about how models work under the hood in our generative models
 guide.
 ## Getting started with long context
@@ -118,8 +119,7 @@ Real-time video processing
 When working with videos, it is important to consider how the videos are
 processed into tokens, which affects
 billing and usage limits. You can learn more about prompting with video files in
-the Prompting
-guide.
+the Prompting guide.
 ### Long form audio
 The Gemini models were the first natively multimodal large language models
 that could understand audio. Historically, the typical developer workflow would
@@ -184,4 +184,4 @@ There is some fixed amount of latency in any given request, regardless of the
 size, but generally longer queries will have higher latency (time to first
 token).
 Except as otherwise noted, the content of this page is licensed under the Creative Commons Attribution 4.0 License, and code samples are licensed under the Apache 2.0 License. For details, see the Google Developers Site Policies. Java is a registered trademark of Oracle and/or its affiliates.
-Last updated 2026-06-22 UTC.
+Last updated 2026-10-15 UTC.

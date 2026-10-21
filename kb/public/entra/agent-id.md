@@ -2,7 +2,7 @@
 topic: entra/agent-id
 priority: P1
 applies_to: "Microsoft Entra Agent ID (generally available per its What's new page, docs re-read 2026-09-27), Microsoft Agent 365, Microsoft Graph v1.0 agentIdentityBlueprint/agentIdentity resources, Microsoft Copilot Studio (automatic agent identities since May 2026 per the admin page), Microsoft Foundry"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S2040, S-fdnhk2tn, S-lekwizgd, S-nzxr4eg2, S-midck7u4, S-735ghpq5, S-5yopk2hr, S-q6lirjr2, S-uva2ob4g, S-l4557zht, S-3puxctla, S-ifhonpv7, S-6ecweang, S-ch6zrjfg, S-avju6l5n, S-3avzf7db, S-ee22tgci, S-rasraulp, S-sxxqhpa2, S-ketmxnue, S-3tt3ywvk, S-pbkrk3ow, S-gea7m5um, S-xt5vc46a, S-vbqsgiw3]
 status: complete
 ---
@@ -29,8 +29,9 @@ products create them automatically.
   [DOC S2040]
 - Governance (sponsors, access packages, lifecycle workflows) and protection (Conditional Access, ID
   Protection risky-agent detection) are built by re-using Entra ID Governance and Identity Protection
-  machinery already documented for human/group identities, extended to the `agentIdentity`,
-  `agentIdentityBlueprint`, and `agentUser` object types. [DOC S-midck7u4, S-735ghpq5, S-5yopk2hr]
+  machinery already documented for human/group identities, extended to the four Agent ID object types:
+  agent identity blueprint, agent identity blueprint principal, agent identity (`agentIdentity`) and agent
+  user (`agentUser`). [DOC S-midck7u4, S-735ghpq5, S-5yopk2hr]
 - Microsoft Foundry (per-project and per-published-agent) and Microsoft Copilot Studio (per-agent, sharing
   one tenant-wide blueprint, since May 2026 per the Copilot Studio admin page) create agent identities
   and blueprints automatically; in Microsoft Teams a developer creates and manages blueprints in the
@@ -116,8 +117,8 @@ products create them automatically.
 - Access packages (Entra entitlement management) are the recommended mechanism for standardized,
   time-bound, auditable access for fleets of agents with common needs (e.g. many customer-support
   agents), instead of ad-hoc permission assignment; resource roles allowed in an agent access package are
-  **security group memberships, Microsoft Entra directory roles, and OAuth application-permission
-  grants** — explicitly **not** application roles, SAP roles, or SharePoint Online site roles (agent
+  **security group memberships, Microsoft Entra directory roles, and OAuth API-permission grants
+  (application or delegated)** — explicitly **not** application roles, SAP roles, or SharePoint Online site roles (agent
   identities/service principals cannot be added to those via access packages). [DOC S-lekwizgd]
 - Three access-package request pathways for an agent: the agent identity itself (programmatically, via
   `accessPackageAssignmentRequest`), its sponsor requesting on the agent's behalf, or an administrator's
@@ -205,7 +206,7 @@ products create them automatically.
   center, with PowerShell scripts, or with Power Platform APIs. Governance works for both identity types
   during the transition. [DOC S-q6lirjr2]
 - Deleting a Copilot Studio agent also deletes its associated Entra Agent ID. [DOC S-q6lirjr2]
-- Each Copilot Studio Entra Agent ID is provisioned as a directory object at agent-**creation** time and
+- Each Copilot Studio Entra Agent ID is provisioned as a directory object at agent-**creation** time (standard harness; with the GitHub Copilot harness it is provisioned at first publish instead) and
   counts against the tenant's Microsoft Entra directory-object quota: **50,000** objects by default, or
   **300,000** if the tenant has a verified domain (a tenant created through self-service sign-up stays at
   50,000 even after verifying a domain); agent identities plus all other Entra resources can use no more

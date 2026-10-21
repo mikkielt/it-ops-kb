@@ -1,0 +1,54 @@
+source: S-z4bixz66
+url: https://wezterm.org/install/windows.html
+title: Windows - Wez's Terminal Emulator
+publisher: Wez Furlong (WezTerm)
+licence: MIT (wezterm/wezterm LICENSE.md; the site is built from the repository's docs)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Windows
+## Installing on Windows¶
+64-bit Windows 10.0.17763 or later is required to run WezTerm; running on
+earlier versions of Windows is not possible, as WezTerm requires Pseudo
+Console support that was first released in Windows
+10.0.17763.
+You can download a setup.exe style installer to guide the installation
+(requires admin privileges) or a simple zip file and manage the files for
+yourself (no special privileges required).
+Windows (setup.exe)
+Nightly Windows (setup.exe)
+WezTerm is available in a setup.exe style installer; the installer is produced
+with Inno Setup and will install wezterm to your program files directory and
+register that location in your PATH environment. The installer can be run
+as a GUI to guide you through the install, but also offers the standard
+Inno Setup command line options
+to configure/script the installation process.
+Windows (zip)
+Nightly Windows (zip)
+WezTerm is also available in a simple zip file that can be extracted and
+run from anywhere, including a flash drive for a portable/relocatable
+installation.
+Download Release
+Extract the zipfile and double-click wezterm.exe to run the UI
+Configuration instructions can be found here
+### For winget users¶
+If you prefer to use the command line to manage installing software,
+then you may wish to try winget.
+winget is installed as part of the App Installer
+that is available from the Microsoft Store.
+Once you have winget, you can install wezterm like so:
+$ winget install wez.wezterm
+and to later upgrade it:
+$ winget upgrade wez.wezterm
+### For Scoop users¶
+Another option if you prefer to use the command line to manage installing
+software, is Scoop.
+Wezterm is available from the "Extras" bucket and once you have installed
+scoop itself can be installed like so:
+$ scoop bucket add extras
+$ scoop install wezterm
+### For Chocolatey users¶
+If you prefer to use Chocolatey to manage software,
+wezterm is available from the Community Repository. It can be installed like
+so:
+$ choco install wezterm -y

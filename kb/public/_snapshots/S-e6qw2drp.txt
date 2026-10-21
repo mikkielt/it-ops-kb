@@ -1,0 +1,26 @@
+source: S-e6qw2drp
+url: https://arxiv.org/abs/2411.04403
+title: Towards Competitive Search Relevance For Inference-Free Learned Sparse Retrievers
+publisher: arXiv preprint (2411.04403)
+licence: CC BY-SA 4.0 (licence link on the arXiv abstract page)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Towards Competitive Search Relevance For Inference-Free Learned Sparse Retrievers
+id: http://arxiv.org/abs/2411.04403v2
+authors: Zhichao Geng; Yiwen Wang; Dongyu Ru; Yang Yang
+published: 2024-11-07T03:46:43Z
+updated: 2025-07-01T03:06:14Z
+categories: cs.IR; cs.AI
+
+Learned sparse retrieval, which can efficiently perform retrieval through mature inverted-index engines, has garnered growing attention in recent years.
+Particularly, the inference-free sparse retrievers are attractive as they eliminate online model inference in the retrieval phase thereby avoids huge computational cost, offering reasonable throughput and latency.
+However, even the state-of-the-art (SOTA) inference-free sparse models lag far behind in terms of search relevance when compared to both sparse and dense siamese models.
+Towards competitive search relevance for inference-free sparse retrievers, we argue that they deserve dedicated training methods other than using same ones with siamese encoders.
+In this paper, we propose two different approaches for performance improvement.
+First, we propose an IDF-aware penalty for the matching function that suppresses the contribution of low-IDF tokens and increases the model's focus on informative terms.
+Moreover, we propose a heterogeneous ensemble knowledge distillation framework that combines siamese dense and sparse retrievers to generate supervisory signals during the pre-training phase.
+The ensemble framework of dense and sparse retriever capitalizes on their strengths respectively, providing a strong upper bound for knowledge distillation.
+To concur the diverse feedback from heterogeneous supervisors, we normalize and then aggregate the outputs of the teacher models to eliminate score scale differences.
+On the BEIR benchmark, our model outperforms existing SOTA inference-free sparse model by \textbf{3.3 NDCG@10 score}.
+It exhibits search relevance comparable to siamese sparse retrievers and client-side latency only \textbf{1.1x that of BM25}.

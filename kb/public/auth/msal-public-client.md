@@ -2,7 +2,7 @@
 topic: auth/msal-public-client
 priority: P0
 applies_to: "MSAL Python (msal[broker] 1.33.x), Windows 10/11, Windows Server 2019+"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S1270, S1271, S1272, S1273, S1274, S1227, S1296, S-o4jltpni, S-muxg36ky, S-2tlwkw6u]
 status: complete
 ---

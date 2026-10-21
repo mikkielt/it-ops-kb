@@ -2,7 +2,7 @@
 topic: python/stdlib-os-loadavg
 priority: P3
 applies_to: "Python stdlib os.getloadavg (docs and source at CPython v3.14.7); its macOS path through Apple Libc-1752.120.2 and XNU xnu-12377.121.6; one run on Python 3.13.2, macOS, 2026-10-13"
-retrieved_utc: 2026-10-13
+retrieved_utc: 2026-10-21
 sources: [S-ew7mucsg, S-ctjl4gek, S-pfq6vvwq, S-7bno7nz5, S-e6rzsvfi, S-fm6og32s, S-itsqgyii]
 status: partial
 ---

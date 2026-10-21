@@ -1,0 +1,77 @@
+source: S-hfgxhfhm
+url: https://wiki.gentoo.org/wiki//etc/portage
+title: /etc/portage (Gentoo Wiki)
+publisher: Gentoo Wiki
+licence: CC-BY-SA-4.0
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+Jump to: content
+Get Gentoo!
+gentoo.org sites
+gentoo.org
+Wiki
+Bugs
+Packages
+Forums
+Planet
+Archives
+Devmanual
+Gitweb
+Infra status
+Wiki
+#
+/etc/portage
+From Gentoo Wiki
+< /etc
+Jump to:navigation
+Jump to:search
+/etc/portage is the primary configuration directory for Portage, Gentoo's package manager.
+This article can be used as a quick reference for commonly used files in the Portage configuration directory. For a complete list, see the Portage man page.
+Some of these file names are simply optional (e.g. eselect-repo.conf) or conventional, and may vary.
+Tree
+/etc/portage
+├── bashrc
+├── binrepos.conf
+├── categories
+├── color.map
+├── env
+│ └── ...
+├── license_groups
+├── make.conf
+├── make.profile
+│ └── ...
+├── mirrors
+├── modules
+├── package.accept_keywords
+├── package.env
+├── package.license
+├── package.mask
+├── package.properties
+├── package.unmask
+├── package.use
+├── patches
+│ └── ...
+├── postsync.d
+│ └── ...
+├── profile
+│ ├── use.mask
+│ ├── package.use.mask
+│ └── package.provided
+├── repo.postsync.d
+│ └── ...
+├── repos.conf
+│ ├── eselect-repo.conf
+│ ├── gentoo.conf
+│ ├── local.conf
+│ └── ...
+├── savedconfig
+│ └── ...
+└── sets
+└── ...
+## See also
+Repository format — A quick reference to Gentoo ebuild repository (overlay) format.
+/var/db/repos/gentoo — the default path for the Gentoo ebuild repository, as configured in the location setting in the /usr/share/portage/config/repos.conf file.
+Retrieved from "https://wiki.gentoo.org/index.php?title=/etc/portage&oldid=1460734"
+Category:
+Portage configuration

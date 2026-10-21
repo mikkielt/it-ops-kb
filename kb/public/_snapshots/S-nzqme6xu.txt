@@ -3,7 +3,7 @@ url: https://digital-strategy.ec.europa.eu/en/policies/nis2-directive-poland
 title: NIS2 Directive implementation in Poland (Commission state of play)
 publisher: European Commission
 licence: CC BY 4.0 (European Commission reuse policy, Decision 2011/833/EU)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 This page gives state of play of the implementation of the NIS2 Directive in Poland and points of contact.
@@ -90,6 +90,6 @@ Phone: +48 22 58 59 373
 ### Big Picture
 NIS2 Directive transposition in EU countries
 The Commission, together with European Union Agency for Network and Information Security, works closely with the Member States to ensure the transposition of the NIS2 Directive into national legislation.
-#### Last update
+##### Last update
 7 July 2025
 Print as PDF

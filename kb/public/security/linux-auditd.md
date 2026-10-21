@@ -2,7 +2,7 @@
 topic: security/linux-auditd
 priority: P3
 applies_to: "Linux Audit (auditd): rules.d fragments, augenrules and the immutable flag"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-5anwnaht, S-inxocyfb, S-pay33npd, S-ycjp6jnv]
 status: complete
 ---

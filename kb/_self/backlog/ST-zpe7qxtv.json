@@ -2,7 +2,7 @@
   "id": "ST-zpe7qxtv",
   "kind": "story",
   "title": "A census of the whole public root dated after 2026-10-20 records a verdict or a reading outcome for every live source, and dates only what it confirmed",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-aolytxc5",
   "sprint": "SP-rmp5zm5a",
   "priority": "P2",
@@ -55,6 +55,36 @@
     "ST-2dagptub"
   ],
   "notes": "Run with /kb-census <date> from the main checkout (census.py dispatch refuses inside .claude/worktrees), after every EP-mkzkd7in story is done. Phases 0 to 3: census.py run, the phase-2 groups by census.py dispatch and apply, census.py finish. A census.py rule found wrong in phase 1 is filed as a bug, not worked around in the log. Premise on 2026-10-20 (the first check fails): no census log dated after 2026-10-20; the newest full census is kb/public/_census/2026-09-26.csv (1907 rows), and 2754 of 4508 live sources are in no full census log. Fact units of the public root on 2026-10-20: 16886. check.py and the fact-count check pass before the work and must stay passing: they pin the kb's structure rules and that no fact is deleted across the rewrites (2026-10-20 planning).",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "433f593400dde3d67cab735c8d7e95d8283bebeb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv, glob, os, sys\nF = '2026-10-20'\nlogs = sorted(p for p in glob.glob('kb/public/_census/20*.csv') if os.path.basename(p)[:10] > F)\nif not logs:\n    print('no census log dated after', F); sys.exit(1)\nd = os.path.basename(logs[-1])[:10]\nrows = list(csv.DictReader(open(logs[-1], encoding='utf-8')))\nsrc = {r['id']: r for r in csv.DictReader(open('kb/public/_sources.csv', encoding='utf-8'))}\nids = {r['id'] for r in rows}\nmiss = [i for i, r in src.items() if not r.get('superseded_by') and i not in ids and r['retrieved_utc'][:10] < d]\nunread = [r['id'] for r in rows if r['bucket'] != 'OK' and not r['outcome']]\nundated = [r['id'] for r in rows if (r['bucket'] == 'OK' or r['outcome'] == 'confirmed') and r['id'] in src and src[r['id']]['retrieved_utc'][:10] < d]\nprint(logs[-1], len(rows), 'rows;', len(miss), 'live sources not in it;', len(unread), 'non-OK rows with no outcome;', len(undated), 'confirmed sources dated before', d)\nsys.exit(1 if miss or unread or undated else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "c8cdbe2b5aaa1730"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "d2aec510b5b1018c"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0, '_tools')\nimport kbfacts\nP, B = ('',), 16886\nn = sum(len(kbfacts.units('public/' + p)) for p in P)\nprint(n, 'fact units under', P, '- at least', B, 'on 2026-10-20')\nsys.exit(0 if n >= B else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "f855d3ee24ebe29d"
+      }
+    ]
+  }
 }
