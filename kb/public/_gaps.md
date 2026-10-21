@@ -1870,3 +1870,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## agents/a2a-protocol
 
 - AAIF 'Growth Stage' label and the exact MCP 'vertical integration layer' wording on the 2026-08-27 announcement were not re-verified on 2026-10-21 (fetch partly denied); recheck the page. (topic: agents/a2a-protocol)
+
+## python/ruff
+
+- The `# noqa` semantics (line, multi-line string, import block, file-level `# ruff: noqa`, `# flake8: noqa`) and the check exit codes 0/1/2 in ruff.md:48-57 are cited to the 0.16.9 docs/configuration.md, which does not state them. Looked in that page's text and CLI help only. A source that covers them is needed, e.g. the ruff linter docs. (topic: python/ruff)
