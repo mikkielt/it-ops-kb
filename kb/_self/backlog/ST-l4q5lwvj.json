@@ -2,7 +2,7 @@
   "id": "ST-l4q5lwvj",
   "kind": "story",
   "title": "Research sprint goal: The open gaps of the endpoint, identity, security, arch, gitlab and logs articles are researched against the census",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-z6wolmvm",
   "goal_research": true,
   "priority": "P1",
@@ -25,6 +25,20 @@
     "ST-zpe7qxtv"
   ],
   "notes": "2026-10-20 planning: the sprint's items are research items themselves; this story only settles what they share before the first is claimed: the routes kb_pack gives for their topics after the census, and the live docs server each needs (microsoft-learn for the endpoint, identity and security topics; the web for arch, gitlab and logs). It waits for the census tag ST-ywqj4gva. 2026-10-21 findings. (1) Open gaps per sibling (no closing note, none dated 2026-10-21 or later): 68 security and privacy, 48 arch, 55 mecm, intune, autopilot, entra, graph, defender and auth, 47 gitlab and logs, 35 windows, dsc, ad and gpo: 253, none outside these groups. (2) Routes: kb_pack on a sampled gap question per group gave coverage good with the owning article and its UNK line (mecm/client-notification, logs/otel-python-sdk, gitlab/detecting-mr-merges-in-ci, arch/fluent-rust-typescript, entra/hybrid-deviceid-objectguid); one weak, a broad security question, still named security/secret-shapes-in-text. Read a gap's own article with rag.py show. (3) Live docs: microsoft-learn answers without login (endpoint, identity, security items use it first). For arch, gitlab and logs WebSearch needs allowed_domains (docs.gitlab.com, github.com, pypi.org, opentelemetry.io) and gives summaries: WebFetch the official page or pinned raw file for the fact. A sampled search found no page stating CI_PIPELINE_SOURCE for the default-branch pipeline after a merge. No outside facts: the questions were about this repository's pack routes, the ledger and which live servers answer here; no fact about an outside source was written.",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "1bcff54a436c5b6d7a389d053990f4452f222291",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-l4q5lwvj"
+        ],
+        "exit": 0,
+        "sha256": "71a3878bae7f1830"
+      }
+    ]
+  }
 }
