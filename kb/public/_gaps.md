@@ -1924,3 +1924,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## agents/prompt-injection-design-patterns
 
 - Six-pattern details of arXiv 2506.08837 could not be re-read in the 2026-10-21 census: only the API abstract was reachable, not the full text. (topic: agents/prompt-injection-design-patterns)
+
+## agents/anthropic-materials
+
+- Engineering index page 2026-10-21 shows posts newer than the CSV (e.g. redesigning-source-control, 2026-10-13) and older posts (2024-09-19, 2024-12-19) were not visible in the first page load, so the full current post count was not established (topic: agents/anthropic-materials)

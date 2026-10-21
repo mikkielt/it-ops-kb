@@ -768,10 +768,10 @@ ff926d16eac4,agents/agent-troubleshooting-method.md,S-o3v6ozch,unlocated:no-matc
 3595ddd93aae,agents/anthropic-materials.md,S2157,unlocated:no-match,,,,,2026-10-12
 3595ddd93aae,agents/anthropic-materials.md,S2158,unlocated:no-match,,,,,2026-10-12
 3595ddd93aae,agents/anthropic-materials.md,S2159,unlocated:no-match,,,,,2026-10-12
+3973c39e5b05,agents/anthropic-materials.md,S2137,located,"builds the infrastructure that makes Claude reliable and trustworthy. They translate our research into production systems, and share what they learn about building, evaluating, and deploying AI agents",across;contain;product;updat;claud,f0b8e3cdd646a179,"How we contain Claude across products Apr 23, 2026 An update on recent Claude Code quality reports",2026-10-21
 4816e502b548,agents/anthropic-materials.md,S-d5e5aem4,unlocated:no-match,,,,,2026-10-10
+c13286ade6cf,agents/anthropic-materials.md,S2137,unlocated:no-match,,,,,2026-10-21
 ca692da0d54c,agents/anthropic-materials.md,S2137,unlocated:no-match,,,,,2026-10-10
-d1658536bb95,agents/anthropic-materials.md,S2137,located,Engineering at Anthropic: Inside the team building reliable AI systems,across;contain;featur;product;claud,f7f764c9e2256cf4,Featured How we contain Claude across products,2026-10-10
-de5c948b6b9d,agents/anthropic-materials.md,S2137,unlocated:no-match,,,,,2026-10-10
 0081de9718b1,agents/api-tokens-issue-and-store.md,S-h7wl75vd,unlocated:no-match,,,,,2026-10-18
 0081de9718b1,agents/api-tokens-issue-and-store.md,S-uyzwls57,unlocated:no-match,,,,,2026-10-18
 070413b42980,agents/api-tokens-issue-and-store.md,S449,unlocated:no-match,,,,,2026-10-21
