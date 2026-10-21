@@ -1928,3 +1928,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## agents/anthropic-materials
 
 - Engineering index page 2026-10-21 shows posts newer than the CSV (e.g. redesigning-source-control, 2026-10-13) and older posts (2024-09-19, 2024-12-19) were not visible in the first page load, so the full current post count was not established (topic: agents/anthropic-materials)
+
+## windows/gitlab-runner-windows
+
+- Whether issue 30963 (gMSA docs update) is still open: the work-items page is client-side rendered and the state is absent from the static HTML fetched with curl on 2026-10-21; a browser or API read is needed. (topic: windows/gitlab-runner-windows)
