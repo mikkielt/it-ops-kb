@@ -2988,13 +2988,13 @@ eb1b4685edd1,agents/onnx-runtime-rust-ort.md,S-wl3gkg3g,located,Features > Depen
 32949a1aba7b,agents/own-chatbot-architecture.md,S1970,unlocated:no-match,,,,,2026-10-10
 344bca01de7c,agents/own-chatbot-architecture.md,S1964,unlocated:no-match,,,,,2026-10-10
 344bca01de7c,agents/own-chatbot-architecture.md,S1970,unlocated:no-match,,,,,2026-10-10
+36d18ccee893,agents/own-chatbot-architecture.md,S1970,unlocated:no-match,,,,,2026-10-21
 38a944828f73,agents/own-chatbot-architecture.md,S1969,unlocated:no-match,,,,,2026-10-10
 4c685756922e,agents/own-chatbot-architecture.md,S1971,unlocated:no-match,,,,,2026-10-10
-580725d0c639,agents/own-chatbot-architecture.md,S1970,unlocated:no-match,,,,,2026-10-10
 59cb38b9b82a,agents/own-chatbot-architecture.md,S1961,located,Standard harness licensing - Microsoft Copilot Studio | Microsoft Learn > Copilot Studio in Microsoft 365 Copilot,rated;zero;zero-rat;usag;user;licen;agent;microsoft,e845d9132fba12ae,"For example, when Microsoft 365 Copilot licensed users use agents in Microsoft 365 services or apps, classic answers, generative answers, or Microsoft Graph tenant grounding",2026-10-10
+6433506b8aac,agents/own-chatbot-architecture.md,S1970,located,What is Microsoft Foundry Agent Service? - Microsoft Foundry | Microsoft Learn > Agent types > Hosted agents,imag;zip;anthropic;git;github;graph;hub;lang,055cb22ddde66cef,"Hosted agents are code-based agents you build with Agent Framework, LangGraph, the OpenAI Agents SDK, the Anthropic Agent SDK, the GitHub Copilot SDK, or your",2026-10-21
 67bbd9a2840c,agents/own-chatbot-architecture.md,S1969,located,Microsoft 365 Agents SDK - Python > Packages Overview,multi;multi-turn;turn;waterfall;blob;dialog;storag;agent,151d71c201ce0beb,"Dialog system with waterfall dialogs, prompts, and multi-turn conversation management. botbuilder-dialogs microsoft-agents-storage-blob",2026-10-10
 67bbd9a2840c,agents/own-chatbot-architecture.md,S1971,located,What is the Microsoft 365 Agents SDK | Microsoft Learn > Three problems the Agents SDK solves,concept;storag;turn;logic;stat;sdk,adf62c3eb897a8f4,The SDK provides built-in state and storage management. It introduces the concept of a turn (a single unit of work in a conversation) and tracks,2026-10-10
-778b02f98a24,agents/own-chatbot-architecture.md,S1970,located,What is Microsoft Foundry Agent Service? - Microsoft Foundry | Microsoft Learn > Agent types > Hosted agents,anthropic;git;github;graph;hub;lang;langgraph;openai,055cb22ddde66cef,"Hosted agents are code-based agents you build with Agent Framework, LangGraph, the OpenAI Agents SDK, the Anthropic Agent SDK, the GitHub Copilot SDK, or your",2026-10-10
 7f451c22d976,agents/own-chatbot-architecture.md,S1969,unlocated:no-match,,,,,2026-10-10
 7f451c22d976,agents/own-chatbot-architecture.md,S1971,unlocated:no-match,,,,,2026-10-10
 82350285def0,agents/own-chatbot-architecture.md,S1976,unlocated:no-match,,,,,2026-10-10
