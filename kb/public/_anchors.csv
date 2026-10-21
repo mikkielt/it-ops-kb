@@ -6558,8 +6558,8 @@ e1a73261edab,claude/mcp-tool-search.md,S1862,located,Connect Claude Code to tool
 f8df1362d6c3,claude/mcp-tool-search.md,S1862,located,Connect Claude Code to tools via MCP > Installing MCP servers > Managing your servers > Tool availability,finish;next;turn;request;search;list;connect;name,4016929030f1b681,Claude Code lists the server's tool names to Claude on its next request,2026-10-20
 fa8738c35b21,claude/mcp-tool-search.md,S1862,located,Connect Claude Code to tools via MCP > Scale with MCP tool search > Configure tool search,earlier;enable_tool_search;model;upfront;true;enabl;load;search,6fc1d198011caff6,"On earlier models, Claude Code loads all MCP tools upfront",2026-10-20
 02827f20569b,claude/messages-api.md,S-jrsntqfg,located,Count tokens in a Message,post;without;count_token;imag;creat;includ;document;count,536d97b3041cf781,"POST/v1/messages/counttokens Count the number of tokens in a Message. The Token Count API can be used to count the number of tokens in a Message,",2026-10-10
+05570c392734,claude/messages-api.md,S-qpqoaaqj,unlocated:no-match,,,,,2026-10-21
 18418d90d494,claude/messages-api.md,S-osulh6sh,unlocated:no-match,,,,,2026-10-12
-19b15d66213f,claude/messages-api.md,S-qpqoaaqj,located,MCP connector > Key features,bearer;multipl;authentication;oauth;support;request;token;server,da6c724589de944a,OAuth authentication: Support for OAuth Bearer tokens for authenticated servers Multiple servers: Connect to multiple MCP servers in a single request,2026-10-11
 1af43fc69181,claude/messages-api.md,S-qpqoaaqj,unlocated:no-match,,,,,2026-10-11
 1e993eddf800,claude/messages-api.md,S-wbsmegvl,unlocated:no-match,,,,,2026-10-10
 1f3e882ede61,claude/messages-api.md,S-5uxkh3j5,unlocated:no-match,,,,,2026-10-10
@@ -6591,6 +6591,7 @@ fa8738c35b21,claude/mcp-tool-search.md,S1862,located,Connect Claude Code to tool
 6c9be9e30800,claude/messages-api.md,S-osulh6sh,located,Messages > Create a Message > Count tokens in a Message > Models,answer;tool_result;call;full;one;result;tool,795191b4303edac4,"the full inventory of open tabs, which tab is active, and any side effects (tabs opened, download state changes) the call produced. At most one",2026-10-12
 86bd2225c756,claude/messages-api.md,S-osulh6sh,located,Messages > Create a Message > Count tokens in a Message > Models,cache_creation_input_token;cache_read_input_token;input_token;usag;creation;read;token;cach,f86a9d7570adcc8f,"MessageDeltaUsage object{ cachecreationinputtokens, cachereadinputtokens, inputtokens, 3 more }",2026-10-12
 89edb688ce61,claude/messages-api.md,S-5uxkh3j5,unlocated:no-match,,,,,2026-10-10
+9bd521d1c6ef,claude/messages-api.md,S-qpqoaaqj,unlocated:no-match,,,,,2026-10-21
 9cd1ed6f893d,claude/messages-api.md,S-osulh6sh,located,Messages > Create a Message > Count tokens in a Message > Models,input_token;usag;token;cach;input,f86a9d7570adcc8f,"MessageDeltaUsage object{ cachecreationinputtokens, cachereadinputtokens, inputtokens, 3 more }",2026-10-12
 af9594beb983,claude/messages-api.md,S-3pftmimx,unlocated:no-match,,,,,2026-10-13
 af9594beb983,claude/messages-api.md,S-bcbpadtc,located,API overview > Authentication,bearer;lived;short;short-liv;x-api-key;authorization;federation;identity,a708b27750dfa60c,"AuthorizationBearer <token>, where <token> is your API key or a short-lived access token obtained from POST /v1/oauth/token through Workload Identity FederationYes, unless x-api-key is set",2026-10-13

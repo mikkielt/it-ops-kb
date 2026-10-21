@@ -2,7 +2,7 @@
 topic: claude/messages-api
 priority: P1
 applies_to: "Claude API (platform.claude.com/docs), Messages API, Message Batches API, Files API, Token Counting API, MCP connector (mcp-client-2025-11-20 beta), retrieved 2026-09-26"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-osulh6sh, S-eu3n3hyf, S-5uxkh3j5, S-3pftmimx, S-wbsmegvl, S-b4bqwu2v, S-jrsntqfg, S-qpqoaaqj, S-qso6o6wu, S1847, S-bcbpadtc]
 status: complete
 files: [claude/models.csv, claude/api-limits.csv]
@@ -71,7 +71,14 @@ repeat prompt caching (`agents/agent-caching.md`) or the HTTP/tool-pairing error
   "mcp_server_name": "<name>"}` to enable that server's tools (allowlist/denylist and per-tool config are
   supported on the toolset entry) [DOC S-qpqoaaqj].
 - Multiple MCP servers can be attached in one request; OAuth Bearer tokens are the supported authentication
-  mechanism; not available on Amazon Bedrock or Google Cloud as of the fetched page [DOC S-qpqoaaqj].
+  mechanism [DOC S-qpqoaaqj]. The page read on 2026-10-21 no longer states that the connector is unavailable on
+  Amazon Bedrock or Google Cloud; its only availability line is that the newer beta below is on the Claude API, and
+  the feature is marked not eligible for zero data retention [UNK: cloud-platform availability of the connector].
+- Newer beta header `mcp-client-2026-09-15` records the tool list each MCP server returns and lets the caller pin it,
+  so a server that changes its tools does not change what Claude sees mid-conversation; it includes everything
+  `mcp-client-2025-11-20` does, so it is sent in place of that header, and is available on the Claude API. The
+  response then carries `mcp_tool_listing` blocks: code that reads `content[0]` must skip them, and the assistant
+  message goes back unchanged with the header on every request that carries one [DOC S-qpqoaaqj].
 - Claude only calls an MCP tool when the request maps to that tool's described capability (explicit or implicit),
   never for general knowledge questions about the connected service [DOC S-qpqoaaqj].
 

@@ -1883,3 +1883,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## agents/foundry-agent-service
 
 - The claim that the toolbox/MCP endpoint does not block tools/call when require_approval is always is not on the MCP tool page (S-5ygcb6vm) as of 2026-10-21; only S-3axje6py was left to support it. (topic: agents/foundry-agent-service)
+
+## claude/messages-api
+
+- Whether the MCP connector is available on Amazon Bedrock and Google Cloud: the earlier 'not available' statement is no longer on the MCP connector page (read 2026-10-21; only the mcp-client-2026-09-15 header is said to be on the Claude API). Check the Bedrock and Google Cloud feature pages. (topic: claude/messages-api)
