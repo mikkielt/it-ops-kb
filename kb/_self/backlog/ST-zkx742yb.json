@@ -2,7 +2,7 @@
   "id": "ST-zkx742yb",
   "kind": "story",
   "title": "The open gaps of the agents articles whose name starts with c or d are researched from official sources or noted with what was tried",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-aolytxc5",
   "sprint": "SP-5cyrnkw7",
   "priority": "P2",
@@ -55,6 +55,36 @@
     "ST-ziznjmd5"
   ],
   "notes": "Research item (/kb-research). Operator 2026-10-20: all open gaps, including those already tried: each gets a fresh search (live docs, then the web) and a dated note; a gap that still needs a lab, a login or unpublished information stays open as state. Premise on 2026-10-20 (the first check fails): 43 open public/_gaps.md entries under ('agents/c', 'agents/d') with no note dated 2026-10-21 or later, lines: [70, 806, 808, 811, 816, 823, 824, 825, 826, 827, 828, 1032, 1033, 1034, 1035, 1036, 1037, 1038, 1039, 1040, 1214, 1216, 1220, 1235, 1237] Fact units under the topics on 2026-10-20: 869. check.py and the fact-count check pass before the work and must stay passing: they pin the kb's structure rules and that no fact is deleted across the rewrites (2026-10-20 planning). An entry asking for a count or list a kb tool answers is closed naming the tool.",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "bb8b2f59ec5eddc0a2644161bb38fd4821d792b9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re, sys\nsys.path.insert(0, '_tools')\nimport kbfacts\nL, P, F = 'public/_gaps.md', ('agents/c', 'agents/d'), '2026-10-21'\nN = re.compile(r'\\b(?:Looked|Tried|Still open|Resolved|Reviewed|Closed|Narrowed|Partly resolved|Mostly resolved|Superseded):? (20\\d\\d-\\d\\d-\\d\\d)')\nC = re.compile(r'(?:^|\\s)- (?:Resolved|Superseded|Closed|Reviewed|Partly resolved|Mostly resolved|Narrowed)\\b')\nes = kbfacts.ledger_entries(L)\nkbfacts.link_entries(es)\ntop = lambda e: (e['explicit'] or e['via_sources'] or ['public/?'])[0].split('/', 1)[1]\nleft = [e['line'] for e in es if not C.search(e['text']) and top(e).startswith(P) and max(N.findall(e['text']) or ['0']) < F]\nprint(len(left), 'open', L, 'entries under', P, 'with no note dated', F, 'or later, lines:', left[:25])\nsys.exit(1 if left else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "3a4274f5c8522b3a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "bd3774c26d124633"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0, '_tools')\nimport kbfacts\nP, B = ('agents/c', 'agents/d'), 869\nn = sum(len(kbfacts.units('public/' + p)) for p in P)\nprint(n, 'fact units under', P, '- at least', B, 'on 2026-10-20')\nsys.exit(0 if n >= B else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "e6cd5495936f36a6"
+      }
+    ]
+  }
 }
