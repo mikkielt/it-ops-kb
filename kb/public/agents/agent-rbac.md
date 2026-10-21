@@ -21,7 +21,10 @@ group claims/overage, PIM-for-Groups sync latency).
 - Claude Code layers two independent tool-level controls on top of MCP's own auth: local permission rules
   (allow/ask/deny) that name MCP tools as `mcp__<server>__<tool>` or a server-anchored glob, and, for
   claude.ai connectors, an organization per-tool `ask`/`blocked` setting that prompts even in
-  `bypassPermissions` mode. [DOC S742, S740]
+  `bypassPermissions` mode. Claude Code reads the setting at startup and enforces it locally, except
+  in the desktop app's local and SSH sessions: there the app withholds `blocked` tools before
+  delivering a connector, `ask` does not reach Claude Code, and the session's ordinary permission
+  rules apply to those tools. [DOC S742, S740]
 - Microsoft Entra Agent ID makes "agent identity vs the user's delegated identity" a first-class,
   named platform construct: an agent identity is a credential-less service principal that a shared
   **blueprint** acquires tokens for, in three modes (app token as itself, user token acting on behalf of
@@ -192,7 +195,7 @@ group claims/overage, PIM-for-Groups sync latency).
 | MCP `WWW-Authenticate: scope=` least-privilege challenge | per resource/operation | HTTP-transport MCP servers only | S2045 |
 | MCP step-up (`insufficient_scope`) | per operation, additive | HTTP-transport MCP servers only | S2045 |
 | Claude Code permission rules on `mcp__<server>__<tool>` | per tool, local policy | any MCP server the client connects to | S742 |
-| Claude Code connector `ask`/`blocked` | per tool, org policy | claude.ai connectors only | S740 |
+| Claude Code connector `ask`/`blocked` | per tool, org policy | claude.ai connectors only; in desktop local/SSH sessions `ask` is not enforced by Claude Code | S740 |
 | Entra Agent ID agent identity | per agent instance | any product adopting Agent 365 / Agent ID | S2040, S2051 |
 | App role on a service principal (direct) | per app registration | agents/service principals; no group claim path | S2053 |
 | Role-assignable group + PIM for Groups | per Entra role, per group; 2-10 min app provisioning, "within seconds" write | Entra ID P1/P2 tenants | S2050, S2052, S1282 |

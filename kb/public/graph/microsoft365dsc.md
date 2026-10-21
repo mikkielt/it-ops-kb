@@ -3,7 +3,7 @@ topic: graph/microsoft365dsc
 priority: P3
 applies_to: "Microsoft365DSC PowerShell module 2.26.1015.1 (2026-10-14); resource-shape facts for 1.26.909.1 (2026-09-11)"
 retrieved_utc: 2026-10-21
-sources: [S1010, S-jya6izpo, S-l6j5dpwj, S-44mrima5, S-ahgkqifj, S-2fvvbt5t, S-zmngjhe5, S-prjyny3b, S-3aphi7n2, S-f7j4lqgl, S-5htwkeoz, S-n6v6mw4o, S-c6kla37l, S-fylt7wwn, S-acz6ela7]
+sources: [S1010, S-jya6izpo, S-l6j5dpwj, S-44mrima5, S-ahgkqifj, S-2fvvbt5t, S-zmngjhe5, S-prjyny3b, S-3aphi7n2, S-f7j4lqgl, S-5htwkeoz, S-n6v6mw4o, S-c6kla37l, S-fylt7wwn, S-acz6ela7, S-q7dr7aea]
 status: complete
 ---
 
@@ -90,6 +90,7 @@ now superseded; `prior-art/drift-detection.md` and `prior-art/projects.csv`, sou
 - In release 1.26.909.1 each Microsoft365DSC resource follows classic PowerShell DSC's `Get-TargetResource`/`Test-TargetResource`/
   `Set-TargetResource` (MOF-based) pattern rather than DSC v3's resource-manifest model, so `Test-DscConfiguration`
   reports drift without applying `Set`, matching the report-only mode covered in `prior-art/drift-detection.md`. [DER S-3aphi7n2, S-fylt7wwn: MSFT_AADUser at the release tag has a `.schema.mof` and Get/Set/Test-TargetResource functions; Test-DscConfiguration only tests]
+- On the default branch (commit `ec5bf30ecd96`) `MSFT_AADUser` is a class-based DSC resource: `class AADUser : M365DSCResourceBase` with `Get()`, `Set()`, `Test()` and `Export()` methods and no `Get-TargetResource` function. [CODE S-q7dr7aea: Modules/Microsoft365DSC/DscResources/MSFT_AADUser/MSFT_AADUser.psm1#AADUser]
 - The development line converts resources to class-based `[DscResource()]` classes deriving from a shared `M365DSCResourceBase`
   (`DscResources/_Base/M365DSCResourceBase.psm1`, defining `M365DSCResourceBase` plus property/resource metadata classes; at commit 7c2e9790e17b it is source-only and
   emitted into a generated `Classes/_Shared.psm1`). The 2.26.1015.1 release tree also contains the `_Base` directory and its agent check requires PowerShell 7.6, so 2.x releases are

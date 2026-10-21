@@ -149,6 +149,8 @@ b0c26162383b,agents/a2a/a2a-proto-digest.md,S2120,located,Agent2Agent (A2A) Prot
 92a9e8d7dfcd,agents/agent-caching.md,S2130,located,Prompt caching > Caching strategies and considerations > Cache limitations,preview;4.7;length;5.1;fabl;mytho;cacheabl;minimum,08eed27c6cf7ffa6,"On the Claude API, Claude Platform on AWS, Google Cloud, and Microsoft Foundry, the minimum cacheable prompt length is: 512 tokens for Claude Fable 5.1,",2026-10-12
 963fab26ba8b,agents/agent-caching.md,S2132,located,Manage costs effectively > Track your costs > Using the `/usage` command > Prompt cache statistics,old;rebuild;result;expect;compaction;miss;clear;count,c6fb9b09d53bc29d,"Expected rebuilds: when Claude Code has itself just rewritten the conversation, by compaction or by clearing old tool results from context, it counts the same",2026-10-12
 993ff0d27c5b,agents/agent-caching.md,S2135,unlocated:no-match,,,,,2026-10-12
+9ef47a0d1371,agents/agent-caching.md,S2130,unlocated:no-match,,,,,2026-10-21
+9ef47a0d1371,agents/agent-caching.md,S-qulnsg4e,unlocated:no-match,,,,,2026-10-21
 a46aa63d4b1a,agents/agent-caching.md,S2130,unlocated:no-match,,,,,2026-10-12
 a6760776a879,agents/agent-caching.md,S2130,located,Prompt caching > Caching strategies and considerations > Cache limitations,becom;concurrent;begin;availabl;first;entry;respons;request,13a800c65e1dd1df,"For concurrent requests, note that a cache entry only becomes available after the first response begins.",2026-10-18
 a8f3dcbdb85e,agents/agent-caching.md,S2133,unlocated:no-match,,,,,2026-10-12
@@ -163,8 +165,6 @@ d1c252ede56b,agents/agent-caching.md,S1864,located,Changelog > 2.1.284,0.20;mtok
 d9dcdb2ebb5b,agents/agent-caching.md,S2133,unlocated:no-match,,,,,2026-10-21
 eb275435b2f6,agents/agent-caching.md,S2135,located,Tools > Protocol Messages > List Changed Notification,stream;listen;open;declar;send;subscription;listchang;notification,dafbec0dfd2fbf9f,"When the list of available tools changes, servers that declared the listChanged capability SHOULD send a notification to clients that have opened a subscriptions/listen stream",2026-10-12
 eea8aa6eb85f,agents/agent-caching.md,S1864,located,Changelog > 2.1.296,million;0.10;0.20;figur;max-budget-usd;usd;5.5;pric,3cc5126977ecadc0,price Sonnet 5.5 cache reads at $0.10 per million tokens (was $0.20),2026-10-21
-f4013d8f32c9,agents/agent-caching.md,S2130,unlocated:no-match,,,,,2026-10-21
-f4013d8f32c9,agents/agent-caching.md,S-qulnsg4e,unlocated:no-match,,,,,2026-10-21
 f9afed7bacc7,agents/agent-caching.md,S2130,located,"Depending on the model, this non-tool-result user block either keeps prior thinking blocks or strips them (see the next paragraph) > 1-hour cache duration > Mixing different TTLs",ttls;5-minut;ttl;1-hour;hour;minut;cach,083233790aa1c9f1,"You can use both 1-hour and 5-minute cache controls in the same request, but with an important constraint: Cache entries with longer TTL must appear",2026-10-12
 254fafeeae5e,agents/agent-cost-governance.md,S2132,unlocated:no-match,,,,,2026-10-12
 823f32c31cd4,agents/agent-cost-governance.md,S2132,unlocated:no-match,,,,,2026-10-12
@@ -567,6 +567,8 @@ feb51ab6ec5c,agents/agent-planning-and-done.md,S2150,located,Effective harnesses
 477767cd388a,agents/agent-rbac.md,S1282,located,Activate your group membership or ownership in Privileged Identity Management - Microsoft Entra ID Governance | Microsoft Learn > Activate a role,pim-for-group;pim;group,c95cc3f8183aff64,![Screenshot of the list of groups that you have eligible membership or ownership for.](media/pim-for-groups/pim-group-6.png#lightbox),2026-10-21
 477767cd388a,agents/agent-rbac.md,S2052,unlocated:no-match,,,,,2026-10-21
 47d3403d78ef,agents/agent-rbac.md,S-xt5vc46a,located,Update agentIdentity - Microsoft Graph v1.0 | Microsoft Learn > Permissions > Permissions for specific scenarios,microsoft.graph.agentidentity;patch;serviceprincipal;attribut;custom;principal;servic;graph,d080c00d893d09ac,"In app-only scenarios using Microsoft Graph permissions, the app must be granted the CustomSecAttributeAssignment.ReadWrite.All application permission. HTTP request PATCH /servicePrincipals/{id}/microsoft.graph.agentIdentity",2026-10-21
+4873605466b1,agents/agent-rbac.md,S740,located,Connect Claude Code to tools via MCP > Use MCP servers from claude.ai > Organization controls on connector tools,locally;ordinary;per-tool;enforc;except;withhold;ssh;deliver,fdede927e7b509b4,"Your organization can set per-tool controls on claude.ai connectors. Claude Code reads these settings at startup and enforces them locally, except in the desktop app's",2026-10-21
+4873605466b1,agents/agent-rbac.md,S742,unlocated:no-match,,,,,2026-10-21
 4b94b8cc9499,agents/agent-rbac.md,S-etygtiqw,located,What is Azure attribute-based access control (Azure ABAC)? | Microsoft Learn > Where can conditions be added?,microsoft.authorization;queu;roleassignment;data;scop;added;authorization;writ,61fae508029141e4,"Currently, conditions can be added to built-in or custom role assignments that have blob storage or queue storage data actions. Conditions are added at the",2026-10-21
 51a93ffbc1bc,agents/agent-rbac.md,S2051,unlocated:no-match,,,,,2026-10-14
 538e3be9bdec,agents/agent-rbac.md,S1297,unlocated:no-match,,,,,2026-10-10
@@ -586,8 +588,6 @@ feb51ab6ec5c,agents/agent-planning-and-done.md,S2150,located,Effective harnesses
 95d03af54bb9,agents/agent-rbac.md,S-etygtiqw,located,What is Azure attribute-based access control (Azure ABAC)? | Microsoft Learn > What are role assignment conditions?,cannot;deny;explicitly;abac;resourc;azur;access;condition,c3d6d975eb892ad6,You cannot explicitly deny access to specific resources using conditions. Using Azure RBAC and Azure ABAC together integrates the benefits of both access control models.,2026-10-21
 9c5fbd5b97d0,agents/agent-rbac.md,S1282,unlocated:no-match,,,,,2026-10-10
 9eb688730f41,agents/agent-rbac.md,S742,located,Configure permissions > Permission rule syntax > Tool name wildcards,tool-nam;literal;prefix;must;mcp__;glob;server;mcp,384b00932ef662d4,Allow rules accept tool-name globs only after a literal mcp<server> prefix. The server segment must be glob-free so the rule names a specific server you,2026-10-21
-a3359b9b2695,agents/agent-rbac.md,S740,unlocated:no-match,,,,,2026-10-10
-a3359b9b2695,agents/agent-rbac.md,S742,located,Configure permissions > Tool-specific permission rules > MCP,claude.ai;connector;bypasspermission;organization;bypass;even;server;mcp,60db91a2fd4efa35,"The bare mcpreportsv2 and the shorter mcpreports don't match its tools as allow rules, because Claude Code reads both as rules for a server named",2026-10-20
 a357266bf443,agents/agent-rbac.md,S-etygtiqw,located,What is Azure attribute-based access control (Azure ABAC)? | Microsoft Learn > Conditions and Microsoft Entra PIM,eligibl;pim;azur;assignment;role;condition,8ee9d194aead6aab,You can also add conditions to eligible role assignments using Microsoft Entra Privileged Identity Management (Microsoft Entra PIM) for Azure resources.,2026-10-21
 a8cb5e14b099,agents/agent-rbac.md,S707,unlocated:no-match,,,,,2026-10-10
 a8cb5e14b099,agents/agent-rbac.md,S2045,unlocated:no-match,,,,,2026-10-10
@@ -765,10 +765,10 @@ ff926d16eac4,agents/agent-troubleshooting-method.md,S-o3v6ozch,unlocated:no-matc
 07e35712b6f7,agents/anthropic-materials.md,S2156,unlocated:no-match,,,,,2026-10-10
 1608430c425a,agents/anthropic-materials.md,S2137,unlocated:no-match,,,,,2026-10-10
 1608430c425a,agents/anthropic-materials.md,S2140,unlocated:no-match,,,,,2026-10-10
+1e62fdcdef6c,agents/anthropic-materials.md,S2137,located,"builds the infrastructure that makes Claude reliable and trustworthy. They translate our research into production systems, and share what they learn about building, evaluating, and deploying AI agents",across;contain;product;anthropic;redesign;sourc;control;claud,02e7b56ffb77db16,"Redesigning source control at Anthropic May 25, 2026 How we contain Claude across products",2026-10-21
 3595ddd93aae,agents/anthropic-materials.md,S2157,unlocated:no-match,,,,,2026-10-12
 3595ddd93aae,agents/anthropic-materials.md,S2158,unlocated:no-match,,,,,2026-10-12
 3595ddd93aae,agents/anthropic-materials.md,S2159,unlocated:no-match,,,,,2026-10-12
-3973c39e5b05,agents/anthropic-materials.md,S2137,located,"builds the infrastructure that makes Claude reliable and trustworthy. They translate our research into production systems, and share what they learn about building, evaluating, and deploying AI agents",across;contain;product;updat;claud,f0b8e3cdd646a179,"How we contain Claude across products Apr 23, 2026 An update on recent Claude Code quality reports",2026-10-21
 4816e502b548,agents/anthropic-materials.md,S-d5e5aem4,unlocated:no-match,,,,,2026-10-10
 c13286ade6cf,agents/anthropic-materials.md,S2137,unlocated:no-match,,,,,2026-10-21
 ca692da0d54c,agents/anthropic-materials.md,S2137,unlocated:no-match,,,,,2026-10-10
@@ -2333,6 +2333,8 @@ ff9576e1fef3,agents/gitops-for-agents.md,S-7na2vvh5,located,Application deployme
 3277d5faac54,agents/headless-agent-runtimes.md,S1818,unlocated:no-match,,,,,2026-10-10
 334b9e3dbaf9,agents/headless-agent-runtimes.md,S1803,located,Automate work with scheduled tasks > Manage scheduled tasks > Repositories and branch permissions,bypass;protection;ruleset;direct;prefix;rule;another;block,fab6bade21c95fd6,Claude pushes its work to a branch prefixed with claude/ unless your prompt directs it to push to another branch. To control which branches a,2026-10-21
 35ea08270f95,agents/headless-agent-runtimes.md,S1824,located,CLI reference > CLI flags,against;agentic;amount;another;budget;cap;cost;enforcement,9ac384dd9acbdaa9,--max-budget-usd | Stop the run once estimated spend on API calls reaches this amount (print mode only). Claude Code checks the cap against its client-side,2026-10-21
+3a2bac88b5c9,agents/headless-agent-runtimes.md,S-gu5aqnrl,unlocated:no-match,,,,,2026-10-21
+3a2bac88b5c9,agents/headless-agent-runtimes.md,S-mkqjh4ac,unlocated:no-match,,,,,2026-10-21
 3cdb9849f780,agents/headless-agent-runtimes.md,S1800,unlocated:no-match,,,,,2026-10-12
 43456da512b1,agents/headless-agent-runtimes.md,S1818,unlocated:no-match,,,,,2026-10-10
 43456da512b1,agents/headless-agent-runtimes.md,S-qso27noq,located,GitHub Agentic Workflows,frontmatter;markdown;yaml;repository;gh-aw;agent;action;git,47fd6d8a4b418812,GitHub Agentic Workflows (gh-aw) lets developers define AI-powered repository automation in Markdown with YAML frontmatter and run AI agents securely through GitHub Actions.,2026-10-10
@@ -2357,10 +2359,13 @@ ff9576e1fef3,agents/gitops-for-agents.md,S-7na2vvh5,located,Application deployme
 72aec8b555dd,agents/headless-agent-runtimes.md,S-hobjhakf,unlocated:no-match,,,,,2026-10-21
 73a098449867,agents/headless-agent-runtimes.md,S-gu5aqnrl,located,Configure cloud environments > What's available in cloud sessions > Link output back to the session,attribution;attribution.sessionurl;claude-session;fals;sessionurl;trailer;url;commit,120089470a075e75,"Commits that Claude creates in a cloud session include a Claude-Session: <url> git trailer, and PR bodies include the session URL on its own line.",2026-10-10
 7449343f1ca4,agents/headless-agent-runtimes.md,S1801,located,Claude Code GitHub Actions > Interactive and automation modes,subject;direct;result;automation;log;post;mode;default,e243b173a1450228,"Automation mode: when the workflow provides a prompt input, Claude runs without waiting for a mention, subject only to the checks on who can trigger",2026-10-12
+7e720f86d98a,agents/headless-agent-runtimes.md,S1800,unlocated:no-match,,,,,2026-10-21
 81b63e2360aa,agents/headless-agent-runtimes.md,S1802,unlocated:no-match,,,,,2026-10-12
 83912bd06d1a,agents/headless-agent-runtimes.md,S1800,unlocated:no-match,,,,,2026-10-12
 856e546fd39c,agents/headless-agent-runtimes.md,S-5paxdbvt,unlocated:no-match,,,,,2026-10-21
 856e546fd39c,agents/headless-agent-runtimes.md,S-ulr4lcp4,located,Customizing or disabling the firewall for GitHub Copilot > Overview,body;command;comment;exist;new;pull;added;block,b0909418e6cde8ad,"If Copilot tries to make a request which is blocked by the firewall, a warning is added to the pull request body (for new pull",2026-10-21
+87b98323c211,agents/headless-agent-runtimes.md,S1800,located,Run Claude Code programmatically > Examples > Auto-approve tools,down;lock;locked-down;otherwis;though;classifier;dont;dontask,46f5b4d3171c0f1f,"To set a baseline for the whole session instead of listing individual tools, pass a permission mode with --permission-mode, such as auto, dontAsk, or acceptEdits:",2026-10-21
+87b98323c211,agents/headless-agent-runtimes.md,S1801,unlocated:no-match,,,,,2026-10-21
 8909f33553e5,agents/headless-agent-runtimes.md,S1806,unlocated:no-match,,,,,2026-10-21
 892190f5a2fa,agents/headless-agent-runtimes.md,S1818,unlocated:no-match,,,,,2026-10-10
 892190f5a2fa,agents/headless-agent-runtimes.md,S-qso27noq,located,GitHub Agentic Workflows,appli;safe-output;output;safe;scop;validat;permission;agent,7de9205ce3e580f5,"Agent jobs are read-only and sandboxed by default, and configured GitHub writes are normally applied through validated safe-outputs jobs with scoped permissions.",2026-10-10
@@ -2372,11 +2377,7 @@ ff9576e1fef3,agents/gitops-for-agents.md,S-7na2vvh5,located,Application deployme
 940c9e5b023a,agents/headless-agent-runtimes.md,S-bcbpadtc,unlocated:no-match,,,,,2026-10-21
 940c9e5b023a,agents/headless-agent-runtimes.md,S-fvspfpxd,unlocated:no-match,,,,,2026-10-21
 9a69d03d1cb8,agents/headless-agent-runtimes.md,S-rmzenq4r,located,"run at 10 pm on weekdays, annoy Joe > NOTES top",instead;twic;execut;every;hour;minut,201e6fe9dd2de89c,"it will be executed twice every hour,",2026-10-21
-9afe6ffbd7e7,agents/headless-agent-runtimes.md,S1800,located,Run Claude Code programmatically > Examples > Auto-approve tools,dont;dontask;down;lock;locked-down;manual;otherwis;classifier,09a53c44f4d8b529,"auto: pass --permission-mode auto to have a classifier review most actions instead of you dontAsk: Claude Code denies every call that would otherwise prompt, which",2026-10-12
-9afe6ffbd7e7,agents/headless-agent-runtimes.md,S1801,unlocated:no-match,,,,,2026-10-12
 9bc945b9060a,agents/headless-agent-runtimes.md,S-n7cnr4i5,located,schtasks create | Microsoft Learn > Syntax > Parameters,given;interactively;non-interactively;resourc;stor;non;log;password,d663c2596fbb908c,/it | Specifies to run the scheduled task only when the run as user (the user account under which the task runs) is logged on,2026-10-21
-9be9aa0d6cdb,agents/headless-agent-runtimes.md,S-gu5aqnrl,unlocated:no-match,,,,,2026-10-10
-9be9aa0d6cdb,agents/headless-agent-runtimes.md,S-mkqjh4ac,unlocated:no-match,,,,,2026-10-10
 a421ed70bf9e,agents/headless-agent-runtimes.md,S1800,unlocated:no-match,,,,,2026-10-12
 a5f887843ac6,agents/headless-agent-runtimes.md,S-fvspfpxd,unlocated:no-match,,,,,2026-10-21
 a5f887843ac6,agents/headless-agent-runtimes.md,S-rleo3k4b,unlocated:no-match,,,,,2026-10-20
@@ -2397,8 +2398,7 @@ bf2a8e9894dc,agents/headless-agent-runtimes.md,S1818,unlocated:no-match,,,,,2026
 bf2a8e9894dc,agents/headless-agent-runtimes.md,S-qso27noq,located,GitHub Agentic Workflows > Security and permissions,apply;buffer;job;separat;them;access;default;output,a1ac261bdf16343c,"The supported agent-job path defaults to read-only GitHub access and sandboxed execution. Safe outputs buffer configured writes, validate them, and apply them in separate jobs",2026-10-10
 c37bad023cb6,agents/headless-agent-runtimes.md,S-rleo3k4b,located,Consumer Terms of Service > 3. Use of our Services.,automat;bot;explicitly;non-human;script;api;human;key,3e090ea665d1101d,"to access the Services through automated or non-human means, whether through a bot, script, or otherwise.",2026-10-20
 c6232606d180,agents/headless-agent-runtimes.md,S1800,unlocated:no-match,,,,,2026-10-12
-c879ead4e741,agents/headless-agent-runtimes.md,S-gu5aqnrl,unlocated:no-match,,,,,2026-10-10
-cf80a512300a,agents/headless-agent-runtimes.md,S1800,located,Run Claude Code programmatically > Basic usage > Start faster with bare mode,dialog;per-server;settings.json;workspac;mcp.json;approval;even;show,9e341cfeae3b4314,"Skills from additional directories covers what does and doesn't load. Without --bare, a -p session runs the hooks in a project's .claude/settings.json and connects the",2026-10-21
+d37b319e54e2,agents/headless-agent-runtimes.md,S-gu5aqnrl,unlocated:no-match,,,,,2026-10-21
 d7c9e3ddae20,agents/headless-agent-runtimes.md,S-rmzenq4r,located,crontab(5) — Linux manual page > DESCRIPTION top,examin;entry;every;minut;cron,a5a32baadc1cf9f5,cron(8) examines cron entries every minute.,2026-10-21
 e03e013719b8,agents/headless-agent-runtimes.md,S-n7cnr4i5,unlocated:no-match,,,,,2026-10-20
 e03e013719b8,agents/headless-agent-runtimes.md,S-nrlbtzhc,unlocated:no-match,,,,,2026-10-20
@@ -9578,40 +9578,41 @@ b4adcc06aa92,graph/delta-query.md,S510,located,Use delta query to track changes 
 c7043d552115,graph/delta-query.md,S502,unlocated:no-match,,,,,2026-10-10
 c7043d552115,graph/delta-query.md,S503,unlocated:no-match,,,,,2026-10-10
 c7043d552115,graph/delta-query.md,S510,unlocated:no-match,,,,,2026-10-10
+00189566219b,graph/microsoft365dsc.md,S-prjyny3b,located,Microsoft365DSC,automat;desir;stat;deployment;monitor;report;power;powershell,48089c14cd61bab5,"This module allows organizations to automate the deployment, configuration, reporting and monitoring of Microsoft 365 Tenants via PowerShell Desired State Configuration.",2026-10-21
 04cdb5b0899f,graph/microsoft365dsc.md,S-44mrima5,located,"For Service Principals, the command looks a little bit different > Microsoft Graph Permissions¶ > Providing Consent For Graph Permissions¶",m365dscallowedgraphscop;update-m365dscallowedgraphscop;allow;delegat;read;list;consent;updat,7a91d91f9b32256b,"We provide an easy way of consenting permissions to the Delegated Permissions application ""Microsoft Graph PowerShell"" in your tenant with the Update-M365DSCAllowedGraphScopes cmdlet. This cmdlet",2026-10-10
-0ecc46f220c9,graph/microsoft365dsc.md,S-44mrima5,unlocated:no-match,,,,,2026-10-10
-0ecc46f220c9,graph/microsoft365dsc.md,S-ahgkqifj,unlocated:no-match,,,,,2026-10-10
-0ecc46f220c9,graph/microsoft365dsc.md,S-zmngjhe5,unlocated:no-match,,,,,2026-10-10
+0be28b031a37,graph/microsoft365dsc.md,S-zmngjhe5,located,Installing Microsoft365DSC¶ > Dependencies¶,availabl;get-modul;listavailabl;modulebas;select;base;list;version,05ec7a97e03ad3ec,"Get-Module Microsoft365DSC -ListAvailable | select ModuleBase, Version",2026-10-21
 10f6947eff8d,graph/microsoft365dsc.md,S-3aphi7n2,unlocated:no-match,,,,,2026-10-10
 10f6947eff8d,graph/microsoft365dsc.md,S-fylt7wwn,unlocated:no-match,,,,,2026-10-21
-144b1fabeb28,graph/microsoft365dsc.md,S-qkxsdf32,unlocated:no-match,,,,,2026-10-10
-161bfecdf57a,graph/microsoft365dsc.md,S-ahgkqifj,located,Snapshot of an Existing Tenant¶ > Unattended Capture¶ > Running An Export Using Service Principal¶,mechanism;certificat;secret;thumbprint;application;authentication;implement;principal,aab4ffd36e6d8853,Using a service principal with an application secret Using a service principal with a certificate thumbprint It is important to understand that the resulting file,2026-10-10
-21bdf7a46ba1,graph/microsoft365dsc.md,S-omyb2en3,unlocated:no-match,,,,,2026-10-10
-23fb1cf1cd9d,graph/microsoft365dsc.md,S-zmngjhe5,located,Installing Microsoft365DSC¶ > Dependencies¶,availabl;get-modul;listavailabl;modulebas;select;base;list;version,05ec7a97e03ad3ec,"Get-Module Microsoft365DSC -ListAvailable | select ModuleBase, Version",2026-10-10
 2969ba7946b9,graph/microsoft365dsc.md,S-2fvvbt5t,located,Drift Monitoring¶,apply;applyandautocorrect;automatically;configur;stat;engin;mode;dsc,db087d3124babf52,"Configuration Mode¶ Just like for any DSC module, you can also configure the DSC engine to automatically attempt to automatically fix a detected drift and",2026-10-10
-333e36af3625,graph/microsoft365dsc.md,S-jya6izpo,located,1.26.909.1 > Minimum PowerShell version,1.26.909.1;version;packag,93702f48cb64876c,Copy and Paste the following command to install this package using PowerShellGet More Info Install-Module -Name Microsoft365DSC -RequiredVersion 1.26.909.1,2026-10-10
-333e36af3625,graph/microsoft365dsc.md,S-l6j5dpwj,unlocated:no-match,,,,,2026-10-10
-39de4600a199,graph/microsoft365dsc.md,S-44mrima5,located,"For Service Principals, the command looks a little bit different > Microsoft Graph Permissions¶ > Determine Required Permissions¶",aadapplication;aaduser;resourcenamelist;get-m365dsccompiledpermissionlist;m365dsccompiledpermissionlist;compil;read;list,de725acdbeb42ff1,"Get-M365DSCCompiledPermissionList -ResourceNameList @('AADUser', 'AADApplication') -PermissionType 'Application' -AccessType 'Read'",2026-10-10
+3a70b0d1a38b,graph/microsoft365dsc.md,S-ahgkqifj,unlocated:no-match,,,,,2026-10-21
 3c4e752989ea,graph/microsoft365dsc.md,S-c6kla37l,located,Comparing Configurations,one;export;another;html;tenant;two;report;compar,f5c0dc7beee6bc59,The Microsoft365DSC solution includes a built-in engine to compare two configurations and generate a delta report in HTML that reveals any discrepancies between them. You,2026-10-10
-3c8b80f800e4,graph/microsoft365dsc.md,S-prjyny3b,located,Microsoft365DSC,automat;desir;stat;monitor;report;deployment;power;powershell,48089c14cd61bab5,"This module allows organizations to automate the deployment, configuration, reporting and monitoring of Microsoft 365 Tenants via PowerShell Desired State Configuration.",2026-10-10
-422d388c64f4,graph/microsoft365dsc.md,S-ahgkqifj,located,Snapshot of an Existing Tenant¶ > Available Parameters¶ > FileName¶,m365tenantconfig.ps1;config;m365tenantconfig;ps1;omit;tenant;name;file,7779167b5e3a632c,Omitting to specify this parameter will name the resulting file as M365TenantConfig.ps1,2026-10-10
-4a44b7d193fb,graph/microsoft365dsc.md,S-prjyny3b,unlocated:no-match,,,,,2026-10-10
+44bd76bc865e,graph/microsoft365dsc.md,S-q7dr7aea,located,,m365dscresourcebas;base;class;aaduser;resourc;dsc,10f7031c9f87da35,class AADUser : M365DSCResourceBase,2026-10-21
+49a682e1b12f,graph/microsoft365dsc.md,S-44mrima5,located,"For Service Principals, the command looks a little bit different > Microsoft Graph Permissions¶ > Determine Required Permissions¶",fail;includ;initializ;without;alway;manually;organization.read.all;client,6af90ea87a5e50cb,"Get-M365DSCCompiledPermissionList always includes it, but the permission list on each resource page does not. If you grant permissions manually from a resource page, add Organization.Read.All",2026-10-21
+5ef474878cda,graph/microsoft365dsc.md,S-44mrima5,located,"For Service Principals, the command looks a little bit different > Microsoft Graph Permissions¶ > Creating a custom Service Principal¶",createselfsignedcertificat;self;sign;adminconsent;certificatepath;managedidentity;client;display,2a870c856593c99b,Update-M365DSCAzureAdApplication -ApplicationName 'Microsoft365DSC' -Permissions @(@{Api='SharePoint';PermissionName='Sites.FullControl.All'}) -AdminConsent -Type Certificate -CreateSelfSignedCertificate -CertificatePath c:\Temp\M365DSC.cer -Credential (Get-Credential) The same cmdlet assigns the permissions to an existing managed identity when,2026-10-21
+641a2fa5d1c6,graph/microsoft365dsc.md,S-zmngjhe5,located,Installing Microsoft365DSC¶ > Dependencies¶,assistant;authentication;both;cloud;component;core;exampl;login,1a6ebd4d4e792485,"For example, it uses the MSCloudLoginAssistant module to delegate all authentication logic to the various workloads and many more modules from the PowerShell Gallery. When",2026-10-21
 6544a6d2eedf,graph/microsoft365dsc.md,S-ahgkqifj,unlocated:no-match,,,,,2026-10-10
 67cba86206b7,graph/microsoft365dsc.md,S-acz6ela7,located,return all mandatory parameters,m365dscdeltareport;new-m365dscdeltareport;headerfilepath;exclud;header;substitution;outputpath;delta,09ece741c0c5a5ba,PS> New-M365DSCDeltaReport -Source 'C:\DSC\Source.ps1' -Destination 'C:\DSC\Destination.ps1' -OutputPath 'C:\DSC\DeltaReport.html' -HeaderFilePath 'C:\DSC\CustomHeader.html' -SourceConfigurationDataPath 'C:\DSC\SourceConfigData.psd1' -DestinationConfigurationDataPath 'C:\DSC\DestinationConfigData.psd1' -ExcludedSubstitutionProperties @('TenantEnvironment'),2026-10-21
 7061aa6828ef,graph/microsoft365dsc.md,S1010,located,,configur;extract;manag;tenant;configuration;microsoft;monitor,72f24c60a73b0e0e,"""description"": ""Manages, configures, extracts and monitors Microsoft 365 tenant configurations"",",2026-10-10
-754e9398da12,graph/microsoft365dsc.md,S-zmngjhe5,located,Installing Microsoft365DSC¶ > Dependencies¶,assistant;cloud;default;graph;login;longer;microsoft;mscloudloginassistant,cf1441833af92a9f,"For example, it uses the MSCloudLoginAssistant module to delegate all authentication logic to the various workloads, it leverages a dozen Microsoft Graph PowerShell modules to",2026-10-10
-766b780e7e85,graph/microsoft365dsc.md,S-44mrima5,unlocated:no-match,,,,,2026-10-10
+7b8dc9cb215c,graph/microsoft365dsc.md,S-44mrima5,unlocated:no-match,,,,,2026-10-21
+7b8dc9cb215c,graph/microsoft365dsc.md,S-ahgkqifj,unlocated:no-match,,,,,2026-10-21
+7b8dc9cb215c,graph/microsoft365dsc.md,S-zmngjhe5,unlocated:no-match,,,,,2026-10-21
+80c1d6b2b070,graph/microsoft365dsc.md,S-44mrima5,located,"For Service Principals, the command looks a little bit different > Microsoft Graph Permissions¶ > Determine Required Permissions¶",aadapplication;aaduser;accesstyp;permissiontyp;output;resourcenamelist;delegat;get-m365dsccompiledpermissionlist,e44e5c22c3fb29ff,"By default, this cmdlet outputs the permissions required for Delegated permissions. To output the Application permissions, use the PermissionType and AccessType parameters Get-M365DSCCompiledPermissionList -ResourceNameList @('AADUser',",2026-10-21
 85279f6e6bd8,graph/microsoft365dsc.md,S-2fvvbt5t,located,Drift Monitoring¶,against;default;every;minut;perform;regular;remot;check,01d2b94584ba4de9,"Once a configuration has been applied to a Microsoft 365 tenant using Microsoft365DSC, the local system will perform regular checks to analyze the configuration of",2026-10-10
 9674db2ec48e,graph/microsoft365dsc.md,S-44mrima5,located,Authentication And Permissions¶,granular;introduc;risk;send;stat;wire;having;level,a830f26c6ab0f559,Service Principals offer the most granular levels of security and do not introduce the risk of having to send high privileged credentials across the wire,2026-10-10
+9d9df6d2e5b9,graph/microsoft365dsc.md,S-44mrima5,unlocated:no-match,,,,,2026-10-21
+a6286d651e4a,graph/microsoft365dsc.md,S-ahgkqifj,unlocated:no-match,,,,,2026-10-21
 a80207eb3986,graph/microsoft365dsc.md,S-44mrima5,unlocated:no-match,,,,,2026-10-10
+bbe2013af3fc,graph/microsoft365dsc.md,S-prjyny3b,unlocated:no-match,,,,,2026-10-21
+bf25383d3971,graph/microsoft365dsc.md,S-ahgkqifj,unlocated:no-match,,,,,2026-10-21
 bf864dbd7dd1,graph/microsoft365dsc.md,S-zmngjhe5,located,Installing Microsoft365DSC¶,5.1;elevat;scop;user;work;window;current;run,357d520c0350af5e,NOTE: Make sure you run the above command in an elevated Windows PowerShell 5.1 window. In a regular window the module will be installed in,2026-10-10
 c361f82f76f4,graph/microsoft365dsc.md,S-ahgkqifj,located,Snapshot of an Existing Tenant¶ > Available Parameters¶ > Components¶,list;omit;resourc;default;component;captur,93579c41b3d04e56,Omitting this parameter will default the capture process to capture all components that are part of the default components list (see parameter Mode). Example of,2026-10-10
 d240fe813b15,graph/microsoft365dsc.md,S-ahgkqifj,located,Snapshot of an Existing Tenant¶ > Available Parameters¶ > Path¶,destination;end;path;prompt;omit;captur,7570f39e370846b6,Omitting to specify this parameter will prompt the user to provide the destination path at the end of the capture process.,2026-10-10
 d404314235aa,graph/microsoft365dsc.md,S-ahgkqifj,located,Snapshot of an Existing Tenant¶ > Available Parameters¶ > Mode¶,data;full;object;mode;default;configuration;export,8ed2d20b8917e2a0,"Full (Configuration and data objects) Omitting this parameter will default to the Default mode. To keep track of what resources are available in what mode,",2026-10-10
-dd3e7666346b,graph/microsoft365dsc.md,S-fbhq2yc2,unlocated:no-match,,,,,2026-10-10
-e28088f78456,graph/microsoft365dsc.md,S-ahgkqifj,unlocated:no-match,,,,,2026-10-10
+d9ef3695b241,graph/microsoft365dsc.md,S-jya6izpo,unlocated:no-match,,,,,2026-10-21
+d9ef3695b241,graph/microsoft365dsc.md,S-l6j5dpwj,unlocated:no-match,,,,,2026-10-21
 e7a1e8ac1df0,graph/microsoft365dsc.md,S-44mrima5,located,"For Service Principals, the command looks a little bit different > Power Apps Permissions¶",key;privat;cert;currentuser;pfx;underly;apps;stor,b061c090b8563a6e,"Additionally, to be able to authenticate using a Certificate Thumbprint, the underlying Power Apps PowerShell module used by Microsoft365DSC requires the certificate's private key (.pfx)",2026-10-10
-fbee76af2de3,graph/microsoft365dsc.md,S-44mrima5,located,"For Service Principals, the command looks a little bit different > Microsoft Graph Permissions¶ > Creating a custom Service Principal¶",createselfsignedcertificat;self;sign;adminconsent;certificatepath;managedidentity;m365dscazureadapplication;update-m365dscazureadapplication,d6ebdd1db5f85f02,Update-M365DSCAzureAdApplication -ApplicationName 'Microsoft365DSC' -Permissions @(@{Api='SharePoint';PermissionName='Sites.FullControl.All'}) -AdminConsent -Type Certificate -CreateSelfSignedCertificate -CertificatePath c:\Temp\M365DSC.cer -Credential (Get-Credential) The same cmdlet assigns the permissions to an existing managed identity when,2026-10-10
+eb2c08208359,graph/microsoft365dsc.md,S-l6j5dpwj,unlocated:no-match,,,,,2026-10-21
+f8369b06020c,graph/microsoft365dsc.md,S-ahgkqifj,unlocated:no-match,,,,,2026-10-21
 022b46ea9d0d,graph/permission-ids.csv,S524,located,Microsoft Graph permissions reference > All permissions,2b13;3404d2bf;457e;5b07b0d;703f09a0dc3c;a330;a38d;c24615765193,a18b627c96669ea3,,2026-10-10
 0a84772e2ea7,graph/permission-ids.csv,S524,located,Microsoft Graph permissions reference > All permissions,19a2eaaf2f6;4d6a;57f1cf28;57f1cf28-c0c4-4ec3-9a30-19a2eaaf2f6;b126;b27a61ec;b99c;bitlockerkey.read.all,f3d9a53952e3f2cc,,2026-10-10
 2e7a9b19dc58,graph/permission-ids.csv,S524,located,Microsoft Graph permissions reference > All permissions,243333ab;36241daa0842;40cb;44642bf;4adc;4d21;8fc6;fe3cb2c375c3,bc4c2a500ba68aaa,,2026-10-10
@@ -13321,6 +13322,7 @@ cdf8f450f77c,prior-art/log-collection-normalization.md,S1021,unlocated:no-match,
 2e91a6428b0e,prior-art/projects.csv,S1017,unlocated:no-match,,,,,2026-10-10
 3224a82f78a1,prior-art/projects.csv,S1023,located,,mit;sourc;github;github.com;python;com;http;dynaconf,16005b7cc228fea9,![MIT License](/LICENSE) ![PyPI](https://pypi.python.org/pypi/dynaconf) ![PyPI]() ![CI](https://github.com/dynaconf/dynaconf/actions/workflows/main.yml) ![codecov](https://codecov.io/gh/dynaconf/dynaconf) ![Codacy Badge](https://www.codacy.com/gh/dynaconf/dynaconf/dashboard?utmsource=github.com&amp;utmmedium=referral&amp;utmcontent=dynaconf/dynaconf&amp;utmcampaign=BadgeGrade) ![Code Style Black](https://github.com/astral-sh/ruff),2026-10-10
 44ce486028c5,prior-art/projects.csv,S1005,unlocated:no-match,,,,,2026-10-21
+45f3e609d459,prior-art/projects.csv,S1000,unlocated:no-match,,,,,2026-10-21
 618bbd71274c,prior-art/projects.csv,S1001,unlocated:no-match,,,,,2026-10-10
 690361be1c2c,prior-art/projects.csv,S1012,unlocated:no-match,,,,,2026-10-10
 713fcdef442b,prior-art/projects.csv,S1014,unlocated:no-match,,,,,2026-10-10
@@ -13330,6 +13332,7 @@ cdf8f450f77c,prior-art/log-collection-normalization.md,S1021,unlocated:no-match,
 a1e80ddb3e57,prior-art/projects.csv,S1021,unlocated:no-match,,,,,2026-10-10
 bc5e0d592720,prior-art/projects.csv,S1006,unlocated:no-match,,,,,2026-10-10
 bc5e0d592720,prior-art/projects.csv,S-4skd5gks,unlocated:no-match,,,,,2026-10-21
+c6625865d66a,prior-art/projects.csv,S1010,unlocated:no-match,,,,,2026-10-21
 ccd449bf73f4,prior-art/projects.csv,S1008,unlocated:no-match,,,,,2026-10-10
 ced907ccd4a8,prior-art/projects.csv,S1018,unlocated:no-match,,,,,2026-10-10
 ced907ccd4a8,prior-art/projects.csv,S-lscdap53,unlocated:no-match,,,,,2026-10-10
@@ -13337,8 +13340,6 @@ d02622c4becb,prior-art/projects.csv,S1019,unlocated:no-match,,,,,2026-10-21
 dc420c290cb6,prior-art/projects.csv,S1016,unlocated:no-match,,,,,2026-10-10
 dd9b178303f6,prior-art/projects.csv,S1007,unlocated:no-match,,,,,2026-10-10
 e174cfc13d48,prior-art/projects.csv,S1015,unlocated:no-match,,,,,2026-10-10
-ea9c0f942d0d,prior-art/projects.csv,S1000,unlocated:no-match,,,,,2026-10-10
-ec67f641b383,prior-art/projects.csv,S1010,unlocated:no-match,,,,,2026-10-10
 eda0bd02e8d8,prior-art/projects.csv,S1009,unlocated:no-match,,,,,2026-10-21
 eda0bd02e8d8,prior-art/projects.csv,S-tvp7vziq,unlocated:no-match,,,,,2026-10-21
 f2065cb4bbaa,prior-art/projects.csv,S1004,unlocated:no-match,,,,,2026-10-10
@@ -14503,11 +14504,11 @@ fb2f544e9ad9,python/windows-python-install.md,S-sjuwcuhk,located,,accidental;cat
 8eeae5e03916,reuse/device-identity-correlation.md,S-y47upe33,located,,4.0;by-sa;client;docs;expat;mit;repository;directory,7251acd6f3510825,"All content residing under the ""docs/"" directory of this repository, if that directory exists, is licensed under ""Creative Commons: CC BY-SA 4.0 license"". All content",2026-10-10
 b75fb57cb5e8,reuse/device-identity-correlation.md,S1013,unlocated:no-match,,,,,2026-10-10
 e4246e5de1f6,reuse/device-identity-correlation.md,S-ivg7xp7y,unlocated:no-match,,,,,2026-10-10
+17b6bffde3e3,reuse/drift-detection.md,S-q7dr7aea,unlocated:no-match,,,,,2026-10-21
 34fad0f81eea,reuse/drift-detection.md,S1008,unlocated:no-match,,,,,2026-10-10
 45302181b3f4,reuse/drift-detection.md,S-3aphi7n2,unlocated:no-match,,,,,2026-10-10
 70c19634abaa,reuse/drift-detection.md,S1010,located,,power;shell;powershell,2c99ef0c8866ea64,"""language"": ""PowerShell"",",2026-10-10
 70c19634abaa,reuse/drift-detection.md,S-3aphi7n2,located,,power;powershell;shell,58c1783e41d4b610,Assuming the provided PowerShell script is part of a larger context and the variable $Filter is defined elsewhere,2026-10-10
-a4cf0c4bee91,reuse/drift-detection.md,S-3aphi7n2,unlocated:no-match,,,,,2026-10-21
 c9ef500ee205,reuse/drift-detection.md,S1009,unlocated:no-match,,,,,2026-10-10
 c9ef500ee205,reuse/drift-detection.md,S-tvp7vziq,unlocated:no-match,,,,,2026-10-10
 e9f0fc528d4d,reuse/drift-detection.md,S1010,located,,configur;extract;manag;tenant;configuration;microsoft;monitor,72f24c60a73b0e0e,"""description"": ""Manages, configures, extracts and monitors Microsoft 365 tenant configurations"",",2026-10-10
@@ -14551,17 +14552,17 @@ fc087ff04a96,reuse/log-collection-normalization.md,S-unpitz6t,located,OpenTeleme
 82144f842658,reuse/matrix.csv,S1001,unlocated:no-match,,,,,2026-10-10
 82144f842658,reuse/matrix.csv,S-65g54lxf,unlocated:no-match,,,,,2026-10-10
 8e25c3128cca,reuse/matrix.csv,S1019,unlocated:no-match,,,,,2026-10-10
+992aaf24ccbe,reuse/matrix.csv,S1010,unlocated:no-match,,,,,2026-10-21
+992aaf24ccbe,reuse/matrix.csv,S-3aphi7n2,unlocated:no-match,,,,,2026-10-21
 9eb0897cf0f3,reuse/matrix.csv,S1002,unlocated:no-match,,,,,2026-10-10
 9eb0897cf0f3,reuse/matrix.csv,S-b43o3ma3,unlocated:no-match,,,,,2026-10-10
 bac9769e2f86,reuse/matrix.csv,S1009,unlocated:no-match,,,,,2026-10-10
 bac9769e2f86,reuse/matrix.csv,S-tvp7vziq,unlocated:no-match,,,,,2026-10-10
-cc83b1475931,reuse/matrix.csv,S1010,unlocated:no-match,,,,,2026-10-10
-cc83b1475931,reuse/matrix.csv,S-3aphi7n2,unlocated:no-match,,,,,2026-10-10
+c45c580c4d9d,reuse/matrix.csv,S1006,unlocated:no-match,,,,,2026-10-21
+c45c580c4d9d,reuse/matrix.csv,S-rxee6wqu,unlocated:no-match,,,,,2026-10-21
 d420a5ea7943,reuse/matrix.csv,S1017,unlocated:no-match,,,,,2026-10-10
 de0fc85d53ab,reuse/matrix.csv,S1013,unlocated:no-match,,,,,2026-10-10
 df12d3b79390,reuse/matrix.csv,S1004,unlocated:no-match,,,,,2026-10-10
-e00c87cfd72a,reuse/matrix.csv,S1006,unlocated:no-match,,,,,2026-10-10
-e00c87cfd72a,reuse/matrix.csv,S-rxee6wqu,unlocated:no-match,,,,,2026-10-10
 e396cef94afc,reuse/matrix.csv,S1011,unlocated:no-match,,,,,2026-10-10
 ef0cce3b9504,reuse/matrix.csv,S-ovuvyg6h,unlocated:no-match,,,,,2026-10-10
 8627ad5c4d37,reuse/mcp-microsoft-endpoint-mgmt.md,S1019,unlocated:no-match,,,,,2026-10-10
@@ -14574,6 +14575,7 @@ f509c190c087,reuse/mcp-microsoft-endpoint-mgmt.md,S-vouhh5ur,unlocated:no-match,
 2efdac2631e9,reuse/pseudonymization-tokenization.md,S-rxee6wqu,located,Deanonymize Scanner > Usage,anonymiz;original;model;replac;output;deanonymiz;placeholder;vault,ee7e1754eba92e0c,"the Anonymize scanner. When Deanonymize scanner sees a placeholder in the model's output, it checks the Vault to find the original info and uses it",2026-10-10
 38c9d75929be,reuse/pseudonymization-tokenization.md,S1007,unlocated:no-match,,,,,2026-10-10
 3a42f0efc15c,reuse/pseudonymization-tokenization.md,S-h2cmbqvf,unlocated:no-match,,,,,2026-10-10
+3df300214460,reuse/pseudonymization-tokenization.md,S1006,unlocated:no-match,,,,,2026-10-21
 4179feeb54bd,reuse/pseudonymization-tokenization.md,S827,unlocated:no-match,,,,,2026-10-10
 8fb1b2b4aa1f,reuse/pseudonymization-tokenization.md,S1007,unlocated:no-match,,,,,2026-10-10
 919868b59c86,reuse/pseudonymization-tokenization.md,S-dcjdn73r,unlocated:no-match,,,,,2026-10-21
@@ -14583,7 +14585,6 @@ cf70cad38f67,reuse/pseudonymization-tokenization.md,S-dcjdn73r,located,User Name
 d45d2a1fac64,reuse/pseudonymization-tokenization.md,S-rxee6wqu,unlocated:no-match,,,,,2026-10-10
 da38a7c53f0d,reuse/pseudonymization-tokenization.md,S-h2cmbqvf,unlocated:no-match,,,,,2026-10-10
 dab2d71196bc,reuse/pseudonymization-tokenization.md,S-7t5ulcii,unlocated:no-match,,,,,2026-10-10
-de6911d698cd,reuse/pseudonymization-tokenization.md,S1006,unlocated:no-match,,,,,2026-10-10
 04555150eea2,reuse/secret-vault-encryption.md,S1004,unlocated:no-match,,,,,2026-10-10
 6542502fc7c0,reuse/secret-vault-encryption.md,S-3eg2zeqb,unlocated:no-match,,,,,2026-10-10
 711e0c30bcdd,reuse/secret-vault-encryption.md,S-wqbnua3h,located,Advanced usage > Auditing,configur;pre;pre-configur;timestamp;entry;log;postgresql;sql,7060ddd1c6f5682e,"will write a log entry into a pre-configured PostgreSQL database when a file is decrypted. The log includes a timestamp, the username SOPS is",2026-10-10

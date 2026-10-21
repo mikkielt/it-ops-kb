@@ -3,7 +3,7 @@ topic: security/artifacts/mitre/attack-subset
 priority: P2
 applies_to: "MITRE ATT&CK Enterprise v19.2 (STIX bundle, tag v19.2)"
 retrieved_utc: 2026-09-26
-sources: [S1576]
+sources: [S1576, S-xauiidpb]
 status: complete
 ---
 
@@ -19,6 +19,7 @@ mapping with `x-mitre-detection-strategy` objects (`DET####`) that reference `x-
 (`AN####`), each naming log sources. Mitigation ids remain `M####` as before.
 
 ## Facts
+- ATT&CK v20.0 (2026-10-13) is now current; the counts and ids below still reflect the pinned v19.2 bundle and have not been re-extracted from a v20.0 bundle, so a new pinned row is needed for that. [DOC S-xauiidpb]
 - Technique mitigation counts in this bundle: T1558 (6), T1219 (5), T1072 (10), T1098 (7), T1078 (8), T1484 (3),
   T1685/T1562 (7). [DOC S1576]
 - Each of the 7 techniques has exactly one detection strategy object in this bundle, each referencing 2-7

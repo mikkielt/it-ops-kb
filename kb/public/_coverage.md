@@ -232,7 +232,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `graph/permissions` | P1 | complete | `graph/permissions.md`, `graph/permissions.csv`, `graph/permission-ids.csv` | 15 |
 | `graph/powershell-sdk` | P1 | complete | `graph/powershell-sdk.md` | 8 |
 | `graph/throttling` | P1 | complete | `graph/throttling.md` | 6 |
-| `graph/microsoft365dsc` | P3 | complete | `graph/microsoft365dsc.md` | 15 |
+| `graph/microsoft365dsc` | P3 | complete | `graph/microsoft365dsc.md` | 16 |
 | `graph/tcm-apis` | P3 | complete | `graph/tcm-apis.md`, `graph/tcm-csdl-v1.0.xml`, `graph/tcm-csdl-beta.xml` | 32 |
 | `intune/assignment-filters-and-rbac` | P1 | complete | `intune/assignment-filters-and-rbac.md` | 9 |
 | `intune/co-management` | P1 | complete | `intune/co-management.md` | 6 |
@@ -349,7 +349,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `python/uv-windows-install` | P3 | partial | `python/uv-windows-install.md` | 3 |
 | `python/windows-python-install` | P3 | partial | `python/windows-python-install.md` | 6 |
 | `reuse/device-identity-correlation` | P2 | complete | `reuse/device-identity-correlation.md` | 7 |
-| `reuse/drift-detection` | P2 | complete | `reuse/drift-detection.md` | 5 |
+| `reuse/drift-detection` | P2 | complete | `reuse/drift-detection.md` | 6 |
 | `reuse/layered-settings-resolution` | P2 | complete | `reuse/layered-settings-resolution.md` | 3 |
 | `reuse/log-collection-normalization` | P2 | complete | `reuse/log-collection-normalization.md` | 6 |
 | `reuse/mcp-microsoft-endpoint-mgmt` | P2 | complete | `reuse/mcp-microsoft-endpoint-mgmt.md` | 3 |

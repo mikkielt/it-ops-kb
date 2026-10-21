@@ -448,9 +448,6 @@ d30c42262cf4,"LDAP filter special characters: asterisk, parenthesis, backslash, 
 03c5e50a4eb0,LDAP filter objectGUID
 03c5e50a4eb0,How do you filter by GUID in LDAP search?
 03c5e50a4eb0,objectGUID binary data representation in filter expressions
-960566f82e6f,Anthropic prompt caching architecture
-960566f82e6f,How does Anthropic's prompt caching store and invalidate cached content?
-960566f82e6f,"Claude prompt cache: cache_control breakpoints, TTL, pricing structure"
 33da81b5cafd,cache_control breakpoints limit
 33da81b5cafd,How many cache breakpoints can be used in a single request?
 33da81b5cafd,prompt cache: maximum number of explicit cache boundaries
@@ -475,9 +472,6 @@ b5e0c3c4f709,/usage command output: Prompt cache (main) information
 7a8f46aa0cb1,prompt cache miss counting
 7a8f46aa0cb1,When does a cache miss get counted?
 7a8f46aa0cb1,"Claude cache: 5% threshold and 2,000 token minimum for miss"
-c3eaaab60663,prompt cache TTL by account
-c3eaaab60663,How long does the prompt cache persist on different Claude subscriptions?
-c3eaaab60663,"cache lifetime: subscription credits, API key, cloud deployment differences"
 6e9e030080e9,deferred MCP tool definitions
 6e9e030080e9,How does Claude Code handle MCP tool definitions for caching?
 6e9e030080e9,prompt cache impact when MCP servers added or reconfigured
@@ -490,9 +484,6 @@ e90af99d0253,"Claude Code /usage, OTel export for cache monitoring"
 a8f3dcbdb85e,OpenAI GPT prompt caching
 a8f3dcbdb85e,How is prompt caching different on OpenAI models?
 a8f3dcbdb85e,"GPT-5.6 cache: minimum tokens, discount, cross-organization isolation"
-763859936dd3,OpenAI prompt cache TTL
-763859936dd3,What cache retention options does OpenAI support?
-763859936dd3,GPT-5.6+ prompt_cache_options.ttl and prompt_cache_retention
 86411328ff25,Azure OpenAI prompt cache
 86411328ff25,How does prompt caching work on Azure OpenAI?
 86411328ff25,Microsoft Foundry Models: prompt cache on Standard and Provisioned
@@ -724,9 +715,6 @@ fd8a436263f8,How does GDPR Article 4(5) define data processing to prevent attrib
 a752ffc9b9d0,EDPB consultation deadline
 a752ffc9b9d0,When was the consultation period for EDPB guidelines?
 a752ffc9b9d0,What was the comment deadline for pseudonymisation guidance?
-13a076753a3d,EDPB pseudonymisation work status
-13a076753a3d,Has EDPB published final pseudonymisation guidelines?
-13a076753a3d,What pseudonymisation resources does EDPB offer?
 0ff3c43a5ee4,Court of Justice pseudonymisation case
 0ff3c43a5ee4,What did the Court of Justice decide about pseudonymisation?
 0ff3c43a5ee4,What was the outcome of case C-413/23 P?
@@ -800,9 +788,6 @@ ff91bfbf1644,Is it safe to allow unsigned scripts?
 62145c690d3d,NTLM retirement phases timeline
 62145c690d3d,When will Microsoft disable NTLM by default?
 62145c690d3d,What is the schedule for removing NTLM from Windows?
-109143caba3c,NTLMv1 SSO block by default date BlockNtlmv1SSO
-109143caba3c,When does NTLMv1 become disabled by default on Windows?
-109143caba3c,When are NTLMv1-derived single sign-on credentials blocked by default?
 bfa480789707,enhanced NTLM auditing Windows Server 2025 24H2
 bfa480789707,Which Windows versions support enhanced NTLM auditing?
 bfa480789707,How can I find where NTLM is still used on Windows 11?
@@ -812,8 +797,6 @@ bfa480789707,How can I find where NTLM is still used on Windows 11?
 c77b3fed05ef,IAKerb local KDC NTLM phase two
 c77b3fed05ef,What does phase two of the NTLM deprecation bring?
 c77b3fed05ef,How does Windows avoid NTLM fallback without a line of sight to a domain controller?
-8d6122df1892,BlockNtlmv1SSO registry value default Audit Enforce October 2026
-8d6122df1892,Which registry setting's default flips when NTLMv1 is blocked by default?
 f0413c165b26,network NTLM disabled by default next Windows Server
 f0413c165b26,Can NTLM be re-enabled after it is disabled by default?
 f0413c165b26,When is network NTLM turned off by default?
