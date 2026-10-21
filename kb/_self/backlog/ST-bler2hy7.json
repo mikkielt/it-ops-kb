@@ -42,6 +42,25 @@
   "depends_on": [
     "ST-a62jazsp"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which replies does the batch judge ask again?",
+      "options": [
+        "Only a reply with no error and no entry matching an item",
+        "Every call that judged no item, an errored one too"
+      ],
+      "recommendation": "Only a reply with no error and no entry matching an item",
+      "do": {
+        "Only a reply with no error and no entry matching an item": "ST-bler2hy7",
+        "Every call that judged no item, an errored one too": "ST-bler2hy7"
+      },
+      "class": "design",
+      "answer": "Only a reply with no error and no entry matching an item",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-yojt6y7v review"
   ],

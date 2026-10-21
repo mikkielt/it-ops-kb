@@ -2034,7 +2034,7 @@ JUDGE_USAGE = (("input_tokens", "input-tokens"), ("cache_creation_input_tokens",
                ("cache_read_input_tokens", "cache-read-tokens"), ("output_tokens", "output-tokens"))
 JUDGE_SCHEMA = {
     "type": "object", "additionalProperties": False, "required": ["verdicts"],
-    "properties": {"verdicts": {"type": "array", "items": {
+    "properties": {"verdicts": {"type": "array", "minItems": 1, "items": {
         "type": "object", "additionalProperties": False, "required": ["n", "verdict", "sentence"],
         "properties": {"n": {"type": "integer", "minimum": 1}, "verdict": {"type": "string", "enum": list(JUDGE_VERDICTS)},
                        "sentence": {"type": "string"}}}}}}
@@ -2186,7 +2186,8 @@ def judge_items(items, model=JUDGE_MODEL, size=JUDGE_BATCH, jobs=4, cap_usd=None
     """(verdicts, calls) of the judgeable `items` (those with a new passage), in batches of one call each: `verdicts`
     is {index in `items`: {verdict, sentence, note}} for the items a reply judged, `calls` one record per batch
     ({items, cost_usd, usage, error}). `cap_usd` is each call's --max-budget-usd (else from its estimate); `call`
-    replaces judge_call."""
+    replaces judge_call. A call that answered with no error and no entry matching an item is made once more, and its
+    record holds both calls' spend and tokens and the second one's error."""
     call = call or judge_call
     idx, batches, at = judge_candidates(items), [], 0
     for b in judge_batches([items[i] for i in idx], size):
@@ -2196,7 +2197,14 @@ def judge_items(items, model=JUDGE_MODEL, size=JUDGE_BATCH, jobs=4, cap_usd=None
 
     def one(job):
         b, cap = job
-        return call(judge_prompt([items[i] for i in b]), model, cap)
+        batch = [items[i] for i in b]
+        reply = call(judge_prompt(batch), model, cap)
+        if reply["error"] or judge_verdicts(batch, reply["verdicts"] or []):
+            return reply
+        again = call(judge_prompt(batch), model, cap)  # a reply that matched no item is asked once more; both calls are billed
+        usage = collections.Counter(reply["usage"])
+        usage.update(again["usage"])
+        return {**again, "cost_usd": reply["cost_usd"] + again["cost_usd"], "usage": dict(usage)}
 
     with cf.ThreadPoolExecutor(max(1, min(jobs, len(batches) or 1))) as ex:
         replies = list(ex.map(one, zip(batches, caps)))
