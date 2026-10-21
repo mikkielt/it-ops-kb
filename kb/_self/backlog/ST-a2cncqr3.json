@@ -55,6 +55,25 @@
     "ST-k5pjflob",
     "ST-pulgbtl5"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where are the results of the 2026-10-21 Claude Code runs recorded (hook payloads, permission denials, cost fee, resume transcript path)?",
+      "options": [
+        "ledger-notes-only",
+        "also-der-facts"
+      ],
+      "recommendation": "ledger-notes-only",
+      "do": {
+        "ledger-notes-only": "ST-a2cncqr3",
+        "also-der-facts": "ST-a2cncqr3"
+      },
+      "class": "design",
+      "answer": "ledger-notes-only",
+      "by": "agent"
+    }
+  ],
   "notes": "Research item (/kb-research). Operator 2026-10-20: all open gaps, including those already tried: each gets a fresh search (live docs, then the web) and a dated note; a gap that still needs a lab, a login or unpublished information stays open as state. Premise on 2026-10-20 (the first check fails): 60 open public/_gaps.md entries under ('claude/', 'mcp/', 'prior-art/', '?') with no note dated 2026-10-21 or later, lines: [193, 319, 498, 499, 504, 516, 588, 1116, 1117, 1118, 1119, 1123, 1124, 1125, 1136, 1137, 1139, 1140, 1144, 1146, 1148, 1150, 1154, 1155, 1158] Fact units under the topics on 2026-10-20: 1830. check.py and the fact-count check pass before the work and must stay passing: they pin the kb's structure rules and that no fact is deleted across the rewrites (2026-10-20 planning). An entry asking for a count or list a kb tool answers is closed naming the tool.",
   "claimed_by": "manager-dfa692a0",
   "operator": "op-f618a13e"

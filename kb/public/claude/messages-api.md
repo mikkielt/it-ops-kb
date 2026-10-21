@@ -71,10 +71,9 @@ repeat prompt caching (`agents/agent-caching.md`) or the HTTP/tool-pairing error
   "mcp_server_name": "<name>"}` to enable that server's tools (allowlist/denylist and per-tool config are
   supported on the toolset entry) [DOC S-qpqoaaqj].
 - Multiple MCP servers can be attached in one request; OAuth Bearer tokens are the supported authentication
-  mechanism [DOC S-qpqoaaqj]. The connector page's front matter lists Claude API, Claude Platform on AWS and Microsoft
-  Foundry as its beta platforms, the Features overview's Availability column for the MCP connector names the same three,
-  so Amazon Bedrock and Google Cloud are not listed for it, and the feature is marked not eligible for zero data
-  retention [DOC S-qpqoaaqj, S-aaaxxqtu].
+  mechanism [DOC S-qpqoaaqj]. The connector page's front matter lists Claude API, Claude Platform on AWS and Microsoft Foundry as its beta
+  platforms, the Features overview's Availability column for the MCP connector names the same three, so Amazon Bedrock and Google Cloud
+  are not listed for it, and the feature is marked not eligible for zero data retention [DOC S-qpqoaaqj, S-aaaxxqtu].
 - Newer beta header `mcp-client-2026-09-15` records the tool list each MCP server returns and lets the caller pin it,
   so a server that changes its tools does not change what Claude sees mid-conversation; it includes everything
   `mcp-client-2025-11-20` does, so it is sent in place of that header, and is available on the Claude API. The
