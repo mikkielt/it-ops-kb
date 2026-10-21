@@ -2,7 +2,7 @@
   "id": "ST-2lhcwufe",
   "kind": "story",
   "title": "The open conflicts of the mecm, intune, sqlserver, ad and gpo articles are settled by a source or noted with what would settle them",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-aolytxc5",
   "sprint": "SP-rmp5zm5a",
   "priority": "P2",
@@ -57,5 +57,7 @@
     "ST-zpe7qxtv",
     "ST-k5pjflob"
   ],
-  "notes": "Research item (/kb-research, sources read against the census of ST-zpe7qxtv): an entry closes only when a source settles it or it is no source disagreement (Reviewed); one that needs a lab, a login or unpublished information stays open with a dated note (maintaining.md, Conduct for changes). A gap the reading finds goes to _gaps.md under the same topic. Premise on 2026-10-20 (the first check fails): 24 open public/_conflicts.md entries under ('mecm/', 'intune/', 'sqlserver/', 'ad/', 'gpo/') with no note dated 2026-10-21 or later, lines: [279, 302, 304, 306, 308, 310, 318, 320, 322, 324, 326, 328, 330, 335, 337, 345, 347, 470, 474, 529, 643, 659, 800, 807] Fact units under the topics on 2026-10-20: 2607. check.py and the fact-count check pass before the work and must stay passing: they pin the kb's structure rules and that no fact is deleted across the rewrites (2026-10-20 planning)."
+  "notes": "Research item (/kb-research, sources read against the census of ST-zpe7qxtv): an entry closes only when a source settles it or it is no source disagreement (Reviewed); one that needs a lab, a login or unpublished information stays open with a dated note (maintaining.md, Conduct for changes). A gap the reading finds goes to _gaps.md under the same topic. Premise on 2026-10-20 (the first check fails): 24 open public/_conflicts.md entries under ('mecm/', 'intune/', 'sqlserver/', 'ad/', 'gpo/') with no note dated 2026-10-21 or later, lines: [279, 302, 304, 306, 308, 310, 318, 320, 322, 324, 326, 328, 330, 335, 337, 345, 347, 470, 474, 529, 643, 659, 800, 807] Fact units under the topics on 2026-10-20: 2607. check.py and the fact-count check pass before the work and must stay passing: they pin the kb's structure rules and that no fact is deleted across the rewrites (2026-10-20 planning).",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
