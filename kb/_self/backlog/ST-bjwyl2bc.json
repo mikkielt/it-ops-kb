@@ -1,0 +1,23 @@
+{
+  "id": "ST-bjwyl2bc",
+  "kind": "story",
+  "title": "The cited sources the 2026-10-21 census left unconfirmed are read and recorded confirmed, updated, superseded or gone",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Each row of kb/public/_census/2026-10-21.csv with outcome unconfirmed and a used_in value is read by a path that works for it (a PDF or archive extracted, the newer release's page fetched, a blocked host read through its Learn or mirror route) and recorded with census.py record, its facts fixed where the page differs, so census.py summary shows no unconfirmed cited source and kbgit.py tag-census 2026-10-21 can run",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,sys;r=list(csv.DictReader(open('kb/public/_census/2026-10-21.csv',encoding='utf-8')));n=[x['id'] for x in r if x['outcome']=='unconfirmed' and x['used_in'].strip()];print(len(n),'cited sources unconfirmed');sys.exit(1 if n else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ],
+  "notes": "Census 2026-10-21 (ST-zpe7qxtv) ended with 206 cited sources unconfirmed after two phase-2 passes: PDF or archive with no text extraction allowed 47, other 36, cap or partial read 35, newer version not readable (only the pinned url allowed) 32, HTTP 403/429/5xx 15, page does not settle 15, tool refused 14, no fetch command 6, 404 6. The tag census-2026-10-21 was not created for them."
+}

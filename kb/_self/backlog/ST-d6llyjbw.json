@@ -1,0 +1,23 @@
+{
+  "id": "ST-d6llyjbw",
+  "kind": "story",
+  "title": "The sources the 2026-10-21 census found cited by no article or data line are dropped, re-cited or kept with a reason",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Each row of kb/public/_census/2026-10-21.csv with outcome unconfirmed and no used_in value is judged with rag.py src ID --cited: a source only front matter or a ledger note names is dropped from them or re-cited by the fact it backs, and its census row recorded",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,sys;r=list(csv.DictReader(open('kb/public/_census/2026-10-21.csv',encoding='utf-8')));n=[x['id'] for x in r if x['outcome']=='unconfirmed' and not x['used_in'].strip()];print(len(n),'uncited sources unconfirmed');sys.exit(1 if n else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ],
+  "notes": "Census 2026-10-21 (ST-zpe7qxtv): the _uncited group's 149 rows were read in phase 2; 136 rows with no used_in value stay unconfirmed. The census skill files them as one story."
+}
