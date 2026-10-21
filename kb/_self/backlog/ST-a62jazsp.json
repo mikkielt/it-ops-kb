@@ -2,7 +2,7 @@
   "id": "ST-a62jazsp",
   "kind": "story",
   "title": "factdiff.py anchors can fail below a located share, so a goal's share figure is read by a check",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-gavrmuvx",
   "priority": "P3",
@@ -28,5 +28,7 @@
   "links": [
     "parked: SP-ilje65fa close"
   ],
-  "notes": "2026-10-20 planning: answers SP-ilje65fa, where ST-kbrsd24q's check factdiff.py anchors exited 0 whatever the share. The fixed source set of the old goal is --source, which anchors has. Premise: --min is unknown (exit 2)."
+  "notes": "2026-10-20 planning: answers SP-ilje65fa, where ST-kbrsd24q's check factdiff.py anchors exited 0 whatever the share. The fixed source set of the old goal is --source, which anchors has. Premise: --min is unknown (exit 2).",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
