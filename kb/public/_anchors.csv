@@ -5064,13 +5064,14 @@ ff96f9aa2664,auth/http-message-signatures.md,S-lzpaeug7,unlocated:no-match,,,,,2
 ff96f9aa2664,auth/http-message-signatures.md,S-n3swpr6x,unlocated:no-match,,,,,2026-10-13
 072c35d60fec,auth/kerberos.md,S-5yckwasl,located,Configuring Kerberos for IP Address | Microsoft Learn,attempt;other;protocol;back;default;enabl;fall;host,1501fc7281a1717f,By default Windows will not attempt Kerberos authentication for a host if the hostname is an IP address. It will fall back to other enabled,2026-10-21
 1482cf265ed3,auth/kerberos.md,S1205,unlocated:no-match,,,,,2026-10-10
-168891f0e92c,auth/kerberos.md,S1200,unlocated:fetch-error,,,,,2026-10-10
+168891f0e92c,auth/kerberos.md,S1200,unlocated:no-match,,,,,2026-10-21
 256665c5bd1c,auth/kerberos.md,S1214,located,Windows Server 2025,lanman;ntlmv2;negotiat;ntlmv1;work;kerbero;futur;releas,af6649560cee578d,NTLM | NTLMv1 is removed. LANMAN and NTLMv2 are no longer under active feature development and are deprecated. NTLMv2 will continue to work but will,2026-10-10
-3102becfe85a,auth/kerberos.md,S1217,unlocated:fetch-error,,,,,2026-10-10
-3a7eb05f6be9,auth/kerberos.md,S1200,unlocated:fetch-error,,,,,2026-10-10
+3102becfe85a,auth/kerberos.md,S1217,unlocated:no-match,,,,,2026-10-21
+3a7eb05f6be9,auth/kerberos.md,S1200,unlocated:no-match,,,,,2026-10-21
 5e54d8977d8e,auth/kerberos.md,S-5yckwasl,unlocated:no-match,,,,,2026-10-21
 5e54d8977d8e,auth/kerberos.md,S-7bouxzdg,unlocated:no-match,,,,,2026-10-21
 5e54d8977d8e,auth/kerberos.md,S-7jumyiid,unlocated:no-match,,,,,2026-10-21
+6199f7693360,auth/kerberos.md,S-q5hl3fyg,located,Manage NTLMv1 changes and prevent network authentication issues in Windows > Rollout of changes,default;relea;ntlmv;server;valu;blockntlmv1sso;sso;security,94789c2711506445,"In this mode, Event ID: 4024 was logged whenever NTLMv1-derived credentials were used, but the authentication continued to work. The rollout reached Windows Server 2025",2026-10-21
 625e19fae6bb,auth/kerberos.md,S1215,located,"How to manage Kerberos KDC usage of RC4 for service account ticket issuance changes related to CVE-2026-20833 > Timing of updates > April 14, 2026 - Enforcement Phase with manual rollback",0x18;explicit;sha1;defaultdomainsupportedenctyp;enc;account;updat;chang,e78c8c6ae4f8bb9a,This update changes the default DefaultDomainSupportedEncTypes value for KDC operations to leverage AES-SHA1 for accounts that do not have an explicit msds-SupportedEncryptionTypes active directory attribute,2026-10-10
 67f00c0460eb,auth/kerberos.md,S1205,located,Protected Users Security Group in Windows Server | Microsoft Learn > Protections applied by Active Directory > Domain controller protections for Protected Users,constrain;hour;unconstrain;preauthentication;delegat;delegation;des;rc4,36bd9317990461a8,Use DES or RC4 encryption types in Kerberos preauthentication. Delegate with unconstrained or constrained delegation. Renew Kerberos TGTs beyond their initial four-hour lifetime.,2026-10-10
 6ba8cd0caa5c,auth/kerberos.md,S1604,unlocated:no-match,,,,,2026-10-10
@@ -5089,7 +5090,6 @@ d039c6bc7fe0,auth/kerberos.md,S-ffangyfp,located,Share > How to detect Kerberoas
 d84566094aec,auth/kerberos.md,S-7jumyiid,unlocated:no-match,,,,,2026-10-21
 e5397aa207ed,auth/kerberos.md,S1205,located,Protected Users Security Group in Windows Server | Microsoft Learn > Protections applied by Active Directory > Device protections for signed in Protected Users,long-term;offlin;term;verifier;creat;initial;plaintext;stop,6b5e63ea8ac9b398,"Kerberos stops creating Data Encryption Standard (DES) or RC4 keys. Kerberos also doesn't cache the user's plaintext credentials, or long-term keys after acquiring the initial",2026-10-10
 e8b77837f03c,auth/kerberos.md,S-7jumyiid,unlocated:no-match,,,,,2026-10-21
-fef69bd87f7b,auth/kerberos.md,S-q5hl3fyg,located,"Upcoming changes to NTLMv1 in Windows 11, version 24H2 and Windows Server 2025 > Rollout of changes",deploy;october;valu;blockntlmv1sso;sso;default;enforc;block,2b48a596bebc19a6,"In this mode, Event ID: 4024 will be logged whenever NTLMv1-derived credentials are used but the authentication will continue to work. The rollout will reach",2026-10-10
 040724bc0033,auth/key-management-options.md,S1341,located,Create and store column master keys for Always Encrypted > Selecting a Key Store for your Column Master Key,replicat;each;run;centraliz;computer;local;application;stor,6c0232007412c759,Local or Centralized Key Store? Local Key Stores - can only be used by applications on computers that contain the local key store. In other,2026-10-10
 180c14cad23c,auth/key-management-options.md,S-3acopzkn,unlocated:no-match,,,,,2026-10-10
 19e82be3c1e6,auth/key-management-options.md,S1340,located,Using Always Encrypted with the ODBC Driver for SQL Server > Introduction > Enabling Always Encrypted in an ODBC application,odbc;alway;driver;encrypt,eea9987212764674,"The following code is an example of a connection string that enables Always Encrypted: SQLWCHAR connString = L""Driver={ODBC Driver 18 for SQL Server};Server={myServer};Encrypt=yes;TrustedConnection=yes;ColumnEncryption=Enabled;"";",2026-10-10
@@ -5182,18 +5182,18 @@ f45a0d22590f,auth/msal-public-client.md,S1296,unlocated:no-match,,,,,2026-10-10
 fd4ab41cae48,auth/msal-public-client.md,S-muxg36ky,located,Custom token cache serialization (MSAL Python) - Microsoft Authentication Library for Python | Microsoft Learn,default;memory;persist;access;serialization;session;file;msal,379cb26e1581c9b0,"In Microsoft Authentication Library (MSAL) for Python, an in-memory token cache that persists for the duration of the app session, is provided by default when",2026-10-21
 fd8cd45cf722,auth/msal-public-client.md,S1272,located,Authentication flows as a condition in Conditional Access policy - Microsoft Entra ID | Microsoft Learn > Enforcement of Authentication Flows policies on Device Registration Service resource,target;conditional;access;authentication;code;devic;flow,9c098888c844b22b,"If your organization currently uses Device Code Flow for device registration purposes, and you have an authentication flows policy targeting all resources, you need to",2026-10-10
 fd8cd45cf722,auth/msal-public-client.md,S1273,located,Block authentication flows with Conditional Access policy - Microsoft Entra ID | Microsoft Learn > Authentication transfer policies,condition;devic;block;flow;authentication;conditional;access,b715faa0812d3c8b,Use the Authentication flows condition in Conditional Access to manage the feature. Block authentication transfer if you don't want users to transfer authentication from their,2026-10-10
-109143caba3c,auth/ntlm-deprecation.md,S-q5hl3fyg,located,"Upcoming changes to NTLMv1 in Windows 11, version 24H2 and Windows Server 2025 > Rollout of changes",october;blockntlmv1sso;sso;default;block;deriv;ntlmv1-deriv;audit,2b48a596bebc19a6,"In this mode, Event ID: 4024 will be logged whenever NTLMv1-derived credentials are used but the authentication will continue to work. The rollout will reach",2026-10-10
-62145c690d3d,auth/ntlm-deprecation.md,S1200,unlocated:fetch-error,,,,,2026-10-10
+62145c690d3d,auth/ntlm-deprecation.md,S1200,unlocated:no-match,,,,,2026-10-21
 6ee7fc7f4be1,auth/ntlm-deprecation.md,S-q5hl3fyg,unlocated:no-match,,,,,2026-10-10
-8d6122df1892,auth/ntlm-deprecation.md,S-q5hl3fyg,unlocated:no-match,,,,,2026-10-10
-bfa480789707,auth/ntlm-deprecation.md,S1200,unlocated:fetch-error,,,,,2026-10-10
-c77b3fed05ef,auth/ntlm-deprecation.md,S1200,unlocated:fetch-error,,,,,2026-10-10
+6f634d58790b,auth/ntlm-deprecation.md,S-q5hl3fyg,located,Manage NTLMv1 changes and prevent network authentication issues in Windows > Rollout of changes,default;relea;ntlmv;sign;sign-on;singl;blockntlmv1sso;sso,da9565daa1d10c14,"Beginning with the October 2026 Windows security update, released on October 13, 2026, Microsoft strengthens NTLMv1 security by changing the internal default behavior when the",2026-10-21
+bfa480789707,auth/ntlm-deprecation.md,S1200,unlocated:no-match,,,,,2026-10-21
+c4825e051298,auth/ntlm-deprecation.md,S-q5hl3fyg,unlocated:no-match,,,,,2026-10-21
+c77b3fed05ef,auth/ntlm-deprecation.md,S1200,unlocated:no-match,,,,,2026-10-21
 ca9e09f7f8d3,auth/ntlm-deprecation.md,S1214,unlocated:no-match,,,,,2026-10-10
 e466141bd1c2,auth/ntlm-deprecation.md,S-wg5cdpjs,located,"Enable NTLM 2 authentication - Windows Client | Microsoft Learn > More information > Enabling NTLM 2 for Windows 95, Windows 98, or Windows 98 Second Edition clients",control;current;currentcontrolset;lsa;compatibility;lmcompatibilitylevel;system;level,36a361aa05cdce0d,These values are dependent on the LMCompatibilityLevel value: Start Registry Editor (Regedit.exe). Locate the following key in the registry: HKEYLOCALMACHINE\System\CurrentControlSet\control\LSA\MSV10,2026-10-21
 ebe0da739647,auth/ntlm-deprecation.md,S1215,located,How to manage Kerberos KDC usage of RC4 for service account ticket issuance changes related to CVE-2026-20833 > Summary,cve-2026-2083;kdc;cve;ticket;key;relea;mode;rc4,3bfb8e2c180d3065,The Windows updates address an information disclosure vulnerability in CVE-2026-20833 that might allow an attacker to obtain service tickets with weak or legacy encryption types,2026-10-10
 ebe0da739647,auth/ntlm-deprecation.md,S1216,unlocated:no-match,,,,,2026-10-10
-ebe0da739647,auth/ntlm-deprecation.md,S1217,unlocated:fetch-error,,,,,2026-10-10
-f0413c165b26,auth/ntlm-deprecation.md,S1200,unlocated:fetch-error,,,,,2026-10-10
+ebe0da739647,auth/ntlm-deprecation.md,S1217,unlocated:no-match,,,,,2026-10-21
+f0413c165b26,auth/ntlm-deprecation.md,S1200,unlocated:no-match,,,,,2026-10-21
 067952e816eb,auth/permissions-matrix.csv,S445,unlocated:no-match,,,,,2026-10-10
 0ed2d85fec66,auth/permissions-matrix.csv,S512,unlocated:no-match,,,,,2026-10-10
 0ed2d85fec66,auth/permissions-matrix.csv,S517,located,,delegat;entra;least;sign;signed-in;operation;privileg;user,ef1e239ae84d22af,"For delegated access using work or school accounts, the signed-in user must be assigned a supported Microsoft Entra role or a custom role that grants",2026-10-10
