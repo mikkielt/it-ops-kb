@@ -77,8 +77,10 @@ ConfigMgr status messages, SQL Server Audit, GitLab).
 
 ### Microsoft Graph Purview Audit Search API (`security/auditLog/queries`)
 - The newer async query model: `POST /security/auditLog/queries` creates an `auditLogQuery` with optional
-  `displayName`, `filterStartDateTime`, `keywordFilter` (free-text over non-indexed properties),
-  `serviceFilter` (the `Workload` value), `operationFilters`, `userPrincipalNameFilters`, `ipAddressFilters`,
+  `displayName`, `filterStartDateTime`, `keywordFilter` (free text matched only against the non-indexed,
+  workload-specific properties inside `auditData`; indexed properties such as the operation name are not matched
+  by keyword, use `operationFilters` for those),
+  `serviceFilters` (a collection; the `Workload` value), `operationFilters`, `userPrincipalNameFilters`, `ipAddressFilters`,
   `objectIdFilters` and `administrativeUnitIdFilters`; the object's `status` is one of `notStarted`, `running`,
   `succeeded`, `failed` or `cancelled`. [DOC S-ojti56n4, S-wsetw6to]
 - `GET /security/auditLog/queries/{id}` reads the query object (including its `status`);
