@@ -5457,12 +5457,13 @@ f89532515505,auth/spiffe-workload-identity.md,S-xc5uusz2,located,The SPIFFE Iden
 302b1899c479,auth/threats.csv,S-mifutdb3,unlocated:no-match,,,,,2026-10-21
 7fe10a3e5474,auth/threats.csv,S1227,located,How Token Protection Enhances Conditional Access Policies - Microsoft Entra ID | Microsoft Learn > Overview,accept;attack;issu;prt;refresh;replay;session;bound,58c41c3018e233ce,"Token Protection is a Conditional Access session control that attempts to reduce token replay attacks by ensuring only device bound sign-in session tokens, like Primary",2026-10-10
 7fe10a3e5474,auth/threats.csv,S1347,unlocated:no-match,,,,,2026-10-10
-ba9d07d1ede7,auth/threats.csv,S1352,unlocated:no-match,,,,,2026-10-10
-ba9d07d1ede7,auth/threats.csv,S1353,unlocated:no-match,,,,,2026-10-10
+ad8a4ffa03fc,auth/threats.csv,S1352,unlocated:no-match,,,,,2026-10-21
+ad8a4ffa03fc,auth/threats.csv,S1353,unlocated:no-match,,,,,2026-10-21
 cc54e79ac49b,auth/threats.csv,S-ft7nubbn,unlocated:no-match,,,,,2026-10-21
 ea6a5a0ec89d,auth/threats.csv,S-6ca4b7bg,unlocated:no-match,,,,,2026-10-21
 ea6a5a0ec89d,auth/threats.csv,S-p6zdxvtp,unlocated:no-match,,,,,2026-10-21
 0bb26ede7d59,auth/threats.md,S1353,located,Mitigating NTLM Relay Attacks by Default,protection;protocol;microsoft;mitigation;servic;against;ldap;exchang,5be213002c1f373d,"Enabling NTLM Relay mitigations In the past, Microsoft observed threat actors exploiting services that lack NTLM relaying protections. These include CVE-2023-23397 (an Outlook entry point",2026-10-10
+3271ebe5487a,auth/threats.md,S1352,unlocated:no-match,,,,,2026-10-21
 47f37421b89b,auth/threats.md,S-ft7nubbn,unlocated:no-match,,,,,2026-10-21
 a2bcef9ea0f3,auth/threats.md,S-6ca4b7bg,unlocated:no-match,,,,,2026-10-21
 a2bcef9ea0f3,auth/threats.md,S-p6zdxvtp,located,Identity infrastructure - Microsoft Defender for Identity | Microsoft Learn > Disable Print spooler service on domain controllers,admin;disabl;system;spooler;print;servic;controller;domain,49d761714875619d,"Due to the possibility for exposure, domain controllers and Active Directory admin systems need to have the Print spooler service disabled.",2026-10-21
@@ -5470,7 +5471,6 @@ a6e6f33e65bf,auth/threats.md,S-7o47ht7q,located,Deprecated features in the Windo
 a838c13468f2,auth/threats.md,S-ffangyfp,located,Share > Recommendations to help prevent Kerberoasting from succeeding,character;them;gmsa;msa;window;password,1f03a28d424c6c04,"Passwords for gMSAs are 120 characters long, complex, and randomly generated, making them highly resistant to brute-force cyberattacks using currently known methods. Delegated Managed Service",2026-10-10
 a838c13468f2,auth/threats.md,S-mifutdb3,located,Secure group managed service accounts - Microsoft Entra | Microsoft Learn > Benefits of gMSAs,240-byt;byte;days;every;chang;window;password;msa,769bc303317980ea,"Set strong passwords - 240-byte, randomly generated passwords: the complexity and length of gMSA passwords minimizes the likelihood of compromise by brute force or dictionary",2026-10-21
 a87e0a642aa3,auth/threats.md,S1347,unlocated:no-match,,,,,2026-10-10
-af9e61b10e5a,auth/threats.md,S1352,unlocated:no-match,,,,,2026-10-10
 b2fa0675d569,auth/threats.md,S-6ca4b7bg,located,Microsoft Defender for Identity classic security alerts - Microsoft Defender for Identity | Microsoft Learn > Credential access alerts,exposur;spn;event;type;ticket;kerbero;suspect;identity,60eb184d027bbe31,Security principal reconnaissance (LDAP) <br>Description:Security principal reconnaissance is used by attackers to gain critical information about the domain environment. Information that helps attackers map the,2026-10-21
 b2fa0675d569,auth/threats.md,S-7bjorbzz,unlocated:no-match,,,,,2026-10-21
 b2fa0675d569,auth/threats.md,S-ffangyfp,located,Share > How to detect Kerberoasting?,event;external;rais;suspect;exposur;spn;defender;kerbero,0e92ebd95bc293c6,Admins can check the events in the Microsoft Defender XDR and filter the results based on the ticket encryption type to check for weaker encryption,2026-10-10
