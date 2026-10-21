@@ -20,7 +20,7 @@ Source pages are Microsoft Learn HTML (the repo `powerbi-docs-pr` is not public)
 - A Power BI semantic model that imports from an on-premises SQL Server needs a data gateway in the Power BI service; Desktop connects directly. [DOC S902]
 - Gateway types: on-premises data gateway in standard mode (centrally managed connections that many users share; the choice for shared sources, DirectQuery, live connections and high-availability clusters), personal mode (one Power BI user, not shareable; refreshes that user's own import semantic models), and the VNet data gateway (a Microsoft-managed service for sources inside a virtual network, no local install). [DOC S903]
 - The gateway needs no inbound ports; it opens outbound connections and receives cloud requests as responses to polling over them. [DOC S904]
-- Outbound ports: TCP 80, 443, 433, 5671, 5672 and 9350-9354; relay endpoints are `*.servicebus.windows.net` (5671-5672 AMQP; 443 and 9350-9354 relay). Full FQDN table in Reference. [DOC S905]
+- Outbound ports: TCP 80, 443, 1433, 5671, 5672 and 9350-9354; relay endpoints are `*.servicebus.windows.net` (5671-5672 AMQP; 443 and 9350-9354 relay). Full FQDN table in Reference. [DOC S905]
 - Microsoft supports only the last six gateway releases; a new release ships monthly. [DOC S904]
 - Limits: 1,000 data sources per gateway cluster; DirectQuery uncompressed response limit 16 MB; read requests 2 MB request / 8 MB compressed response. [DOC S904]
 - Gateway caches data-source credentials client-side for hours; changed credentials can take about 5 hours to be used. [DOC S904]
@@ -55,7 +55,7 @@ Source pages are Microsoft Learn HTML (the repo `powerbi-docs-pr` is not public)
 | `*.dc.services.visualstudio.com` | 443 | AppInsights telemetry |
 | `ecs.office.com` | 443 | ECS config (Mashup) |
 | `gatewayadminportal.azure.com` | 443 | gateway management |
-| `*.cloudapp.azure.com` | 1443 | Azure Cloud Services / VMs |
+| `*.cloudapp.azure.com` | 1433 | Azure Cloud Services / VMs |
 
 ## Examples
 Gateway connection for a device-inventory store (example names): Connection type `SQL Server`, Server `PL-SRV-0042.corp.example.com`,
