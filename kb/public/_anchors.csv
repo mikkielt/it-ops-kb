@@ -8417,11 +8417,11 @@ a98edda26635,gitlab/automated-merge-requests.md,S-rivqro7b,unlocated:no-match,,,
 a9d34c919588,gitlab/automated-merge-requests.md,S-7dwkyip6,unlocated:no-match,,,,,2026-10-10
 a9d34c919588,gitlab/automated-merge-requests.md,S-ygtpb7no,unlocated:no-match,,,,,2026-10-10
 b2da1843287c,gitlab/automated-merge-requests.md,S-7zthwzzb,unlocated:no-match,,,,,2026-10-10
-b845040ad544,gitlab/automated-merge-requests.md,S-3dktkos7,located,This check can only fail in EE,approv;approval;approvals_sync;not_approv;sync;temporarily;unapprov;request,36cee0e6493aa4dc,if checkresults.payload[:unsuccessfulcheck] == :notapproved && mergerequest.temporarilyunapproved? return :approvalssyncing,2026-10-21
-b845040ad544,gitlab/automated-merge-requests.md,S-hhzv5qd6,unlocated:no-match,,,,,2026-10-21
-b845040ad544,gitlab/automated-merge-requests.md,S-onak4imw,unlocated:no-match,,,,,2026-10-21
-b845040ad544,gitlab/automated-merge-requests.md,S-r22oenkd,unlocated:no-match,,,,,2026-10-21
-b845040ad544,gitlab/automated-merge-requests.md,S-ydwwcn45,unlocated:no-match,,,,,2026-10-21
+b558120023b6,gitlab/automated-merge-requests.md,S-3dktkos7,unlocated:no-match,,,,,2026-10-21
+b558120023b6,gitlab/automated-merge-requests.md,S-hhzv5qd6,unlocated:no-match,,,,,2026-10-21
+b558120023b6,gitlab/automated-merge-requests.md,S-onak4imw,unlocated:no-match,,,,,2026-10-21
+b558120023b6,gitlab/automated-merge-requests.md,S-r22oenkd,unlocated:no-match,,,,,2026-10-21
+b558120023b6,gitlab/automated-merge-requests.md,S-ydwwcn45,unlocated:no-match,,,,,2026-10-21
 b9ae506aa97b,gitlab/automated-merge-requests.md,S-hxibhwxc,unlocated:no-match,,,,,2026-10-10
 b9ae506aa97b,gitlab/automated-merge-requests.md,S-rivqro7b,unlocated:no-match,,,,,2026-10-10
 b9ae506aa97b,gitlab/automated-merge-requests.md,S-tnx2t4le,unlocated:no-match,,,,,2026-10-21
