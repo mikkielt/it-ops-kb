@@ -37,6 +37,8 @@ original format (e.g. a digit string staying the same length).
   entity with a placeholder such as `[REDACTED_PERSON_1]`, and records the original values in a `Vault`
   object (an LLM Guard class) passed to the scanner; `Deanonymize` looks up placeholders found in the
   model's *output* in that same `Vault` to put the original values back. [DOC S-nvdbj7bz, S-mn7nbj7n, S1006]
+- The `protectai/llm-guard` repository (MIT) is flagged as archived on GitHub (read-only), with its last push on
+  2026-07-08, so it should be treated as unmaintained prior art rather than a dependency to track. [DOC S1006]
 - The LLM Guard vault's default lifetime and scope is the lifetime of the Python `Vault` object the
   caller constructs and passes to both scanners — LLM Guard's own docs do not define a TTL or
   encryption-at-rest for the vault; both are left to the embedding application. [DER S-nvdbj7bz, S-mn7nbj7n: both scanner pages only construct `Vault()` and mention no TTL or encryption]

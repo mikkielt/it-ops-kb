@@ -13291,16 +13291,12 @@ cdf8f450f77c,prior-art/log-collection-normalization.md,S1021,unlocated:no-match,
 5c544ee03f1a,prior-art/mcp-microsoft-endpoint-mgmt.md,S-vouhh5ur,unlocated:no-match,,,,,2026-10-10
 c7ba40840c45,prior-art/mcp-microsoft-endpoint-mgmt.md,S1019,unlocated:no-match,,,,,2026-10-10
 0f3f09ff19a0,prior-art/projects.csv,S1011,unlocated:no-match,,,,,2026-10-10
-1911babc1389,prior-art/projects.csv,S1003,unlocated:no-match,,,,,2026-10-10
-1911babc1389,prior-art/projects.csv,S-6onf7joh,unlocated:no-match,,,,,2026-10-10
-1911babc1389,prior-art/projects.csv,S-npedejwn,unlocated:no-match,,,,,2026-10-10
 28dc763d0657,prior-art/projects.csv,S1002,unlocated:no-match,,,,,2026-10-10
 28dc763d0657,prior-art/projects.csv,S-b43o3ma3,unlocated:no-match,,,,,2026-10-10
 2a1ce59c9708,prior-art/projects.csv,S1022,located,pydantic-settings,project;python;com;github;github.com;http;pydantic-set;set,522a555ecd11c69a,![pypi](https://pypi.python.org/pypi/pydantic-settings) ![license](https://github.com/pydantic/pydantic-settings/blob/main/LICENSE) ![downloads](https://pepy.tech/project/pydantic-settings),2026-10-10
 2e91a6428b0e,prior-art/projects.csv,S1017,unlocated:no-match,,,,,2026-10-10
 3224a82f78a1,prior-art/projects.csv,S1023,located,,mit;sourc;github;github.com;python;com;http;dynaconf,16005b7cc228fea9,![MIT License](/LICENSE) ![PyPI](https://pypi.python.org/pypi/dynaconf) ![PyPI]() ![CI](https://github.com/dynaconf/dynaconf/actions/workflows/main.yml) ![codecov](https://codecov.io/gh/dynaconf/dynaconf) ![Codacy Badge](https://www.codacy.com/gh/dynaconf/dynaconf/dashboard?utmsource=github.com&amp;utmmedium=referral&amp;utmcontent=dynaconf/dynaconf&amp;utmcampaign=BadgeGrade) ![Code Style Black](https://github.com/astral-sh/ruff),2026-10-10
-6161553fe270,prior-art/projects.csv,S1009,unlocated:no-match,,,,,2026-10-10
-6161553fe270,prior-art/projects.csv,S-tvp7vziq,unlocated:no-match,,,,,2026-10-10
+44ce486028c5,prior-art/projects.csv,S1005,unlocated:no-match,,,,,2026-10-21
 618bbd71274c,prior-art/projects.csv,S1001,unlocated:no-match,,,,,2026-10-10
 690361be1c2c,prior-art/projects.csv,S1012,unlocated:no-match,,,,,2026-10-10
 713fcdef442b,prior-art/projects.csv,S1014,unlocated:no-match,,,,,2026-10-10
@@ -13308,7 +13304,6 @@ c7ba40840c45,prior-art/mcp-microsoft-endpoint-mgmt.md,S1019,unlocated:no-match,,
 7472ae40d5a1,prior-art/projects.csv,S1020,unlocated:no-match,,,,,2026-10-10
 7824c0703953,prior-art/projects.csv,S1013,unlocated:no-match,,,,,2026-10-10
 a1e80ddb3e57,prior-art/projects.csv,S1021,unlocated:no-match,,,,,2026-10-10
-a948b4097d52,prior-art/projects.csv,S1005,unlocated:no-match,,,,,2026-10-10
 bc5e0d592720,prior-art/projects.csv,S1006,unlocated:no-match,,,,,2026-10-10
 bc5e0d592720,prior-art/projects.csv,S-4skd5gks,unlocated:no-match,,,,,2026-10-21
 bcb5c6b8ab68,prior-art/projects.csv,S1019,unlocated:no-match,,,,,2026-10-10
@@ -13320,7 +13315,12 @@ dd9b178303f6,prior-art/projects.csv,S1007,unlocated:no-match,,,,,2026-10-10
 e174cfc13d48,prior-art/projects.csv,S1015,unlocated:no-match,,,,,2026-10-10
 ea9c0f942d0d,prior-art/projects.csv,S1000,unlocated:no-match,,,,,2026-10-10
 ec67f641b383,prior-art/projects.csv,S1010,unlocated:no-match,,,,,2026-10-10
+eda0bd02e8d8,prior-art/projects.csv,S1009,unlocated:no-match,,,,,2026-10-21
+eda0bd02e8d8,prior-art/projects.csv,S-tvp7vziq,unlocated:no-match,,,,,2026-10-21
 f2065cb4bbaa,prior-art/projects.csv,S1004,unlocated:no-match,,,,,2026-10-10
+fffc2e585dc3,prior-art/projects.csv,S1003,unlocated:no-match,,,,,2026-10-21
+fffc2e585dc3,prior-art/projects.csv,S-6onf7joh,unlocated:no-match,,,,,2026-10-21
+fffc2e585dc3,prior-art/projects.csv,S-npedejwn,unlocated:no-match,,,,,2026-10-21
 12e121daf3f3,prior-art/pseudonymization-tokenization.md,S1007,unlocated:no-match,,,,,2026-10-10
 1389e5b87b80,prior-art/pseudonymization-tokenization.md,S1005,located,,across;anonymiz;detect;framework;open-sourc;redact;sourc;structur,b2967a8867538a33,"""description"": ""An open-source framework for detecting, redacting, masking, and anonymizing sensitive data (PII) across text, images, and structured data.",2026-10-10
 4090d9e3d2a0,prior-art/pseudonymization-tokenization.md,S827,unlocated:no-match,,,,,2026-10-10
@@ -13329,6 +13329,7 @@ f2065cb4bbaa,prior-art/projects.csv,S1004,unlocated:no-match,,,,,2026-10-10
 7075b2cd614c,prior-art/pseudonymization-tokenization.md,S-mn7nbj7n,unlocated:no-match,,,,,2026-10-10
 7075b2cd614c,prior-art/pseudonymization-tokenization.md,S-nvdbj7bz,unlocated:no-match,,,,,2026-10-10
 accec3c8c343,prior-art/pseudonymization-tokenization.md,S827,unlocated:no-match,,,,,2026-10-10
+db05890b058b,prior-art/pseudonymization-tokenization.md,S1006,unlocated:no-match,,,,,2026-10-21
 f49e5bab9c9f,prior-art/pseudonymization-tokenization.md,S-mn7nbj7n,unlocated:no-match,,,,,2026-10-10
 f49e5bab9c9f,prior-art/pseudonymization-tokenization.md,S-nvdbj7bz,unlocated:no-match,,,,,2026-10-10
 35c1e4cfd3c6,prior-art/secret-vault-encryption.md,S1002,unlocated:no-match,,,,,2026-10-10
