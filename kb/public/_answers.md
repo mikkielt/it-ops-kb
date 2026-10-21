@@ -4213,7 +4213,8 @@ _Agent: kb-research_
 - The Agent SDK reads managed settings, `~/.claude.json` and auto memory whatever `settingSources` says, and claude.ai connectors of a claude.ai login unless `strictMcpConfig`, `disableClaudeAiConnectors` or `ENABLE_CLAUDEAI_MCP_SERVERS=false` is set. [DOC S-hfho3uwe]
 - A dynamic workflow runs up to 16 agents at once by default and stops at 1,000 agents per run. [DOC S-qulnsg4e]
 - Conclusion: a benchmark that starts its kb agents and their bare twins at once measures neither cache reuse (the siblings write, none reads) nor a saving from a warm start; the cache effect shows only in a staggered or sequential start, and the model comparison must price cache reads per model. A bare twin priced from its four token counts leaves out any web search fee, whose presence in `total_cost_usd` the docs do not state, so its dollar figure is a lower bound and its token counts are the like-for-like figure. A twin's isolation rests on `--strict-mcp-config`, a settings-source limit and a fresh directory, because auto memory of the working directory and the global config are read whatever the settings sources say. [DER S2130, S2131, S-isqfh6pr, S1824, S-hfho3uwe]
-- Open: whether `--setting-sources ""` is accepted and loads nothing, whether the web search fee is in `total_cost_usd`, and how many concurrent `claude -p` processes a subscription login takes. [UNK]
+- Open: how many concurrent `claude -p` processes a subscription login takes. [UNK]
+- Run on 2026-10-21 (Claude Code 2.1.303, macOS): `--setting-sources ""` was accepted and its init message listed no user plugin and no MCP server, and one `WebSearch` run's `total_cost_usd` exceeded its priced token counts by exactly the $10-per-1,000 fee (`claude/ci-and-headless.md:142-143`); no page states either. [DER S1824, S2131, S-isqfh6pr: two result objects read against the documented fields and the list prices]
 - See agents/agent-caching.md, claude/ci-and-headless.md, claude/cli-flags.csv, claude/settings-and-scopes.md, claude/parallel-sessions.md.
 
 _Agent: kb-research_
@@ -4355,7 +4356,7 @@ _Agent: kb-research_
 - The path maximum is 260 characters; `\\?\` lifts it to about 32,767 and turns off "/" conversion; the opt-in without the prefix needs `LongPathsEnabled` and a `longPathAware` manifest. [DOC S1591]
 - Drive letters and names are case-insensitive; `normcase` lowercases and flips slashes as pure string work; `realpath` resolves links, junctions (3.8+) and 8.3 names, returns the disk's case with a capital drive letter and strips the `\\?\` prefix it added; `samefile` compares device and index. [DOC S-5ck3iec5, S-zyrhexwo; CODE S-elctquww]
 - Conclusion: a tool that guards a directory compares `samefile` or `normcase(realpath())` of both paths, never `normcase` alone, and treats a holder process as the reason for a refused rename, not the path spelling. [DER S-zyrhexwo, S-elctquww, S-qz6kfi4i]
-- `python.exe` is built `longPathAware`: the 3.14.7 `PC/python.manifest`, embedded through `PC/python_exe.rc`, sets the element to `true`, and the Python docs say that with `LongPathsEnabled` set and a reboot "no further configuration is required". [CODE S-wazay7xw, S-4xllwpsz; DOC S-sjuwcuhk]
+- `python.exe` is built `longPathAware`: the 3.14.7 `PC/python.manifest`, embedded through `PC/python_exe.rc`, sets the element to `true`, and the Python docs say that with `LongPathsEnabled` set and a reboot "no further configuration is required". [CODE S-wazay7xw: PC/python.manifest#longPathAware; S-4xllwpsz: PC/python_exe.rc#RT_MANIFEST; DOC S-sjuwcuhk]
 - See python/stdlib-windows-portability.md.
 
 _Agent: kb-research_
