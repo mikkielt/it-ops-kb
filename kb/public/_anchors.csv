@@ -4433,6 +4433,24 @@ d95ccede3bd3,arch/sql-auth-containers.md,S1605,unlocated:no-match,,,,,2026-10-10
 f1bb143695e2,arch/sql-auth-containers.md,S1207,unlocated:no-match,,,,,2026-10-10
 f1bb143695e2,arch/sql-auth-containers.md,S1610,located,Using Microsoft Entra ID with the ODBC Driver - ODBC Driver for SQL Server | Microsoft Learn > New and/or Modified DSN and Connection String Keywords,exist;mode;instanc;activedirectorymsi;msi;client;identity;window,48f6bf06268a1dd4,"Authentication | (not set)(default), (empty string), SqlPassword, ActiveDirectoryIntegrated, ActiveDirectoryInteractive, ActiveDirectoryMsi, ActiveDirectoryServicePrincipal, ActiveDirectoryPassword [DEPRECATED] | Controls the authentication mode.(not set) - Authentication mode determined by other",2026-10-10
 f7a6a8d0ca2d,arch/sql-auth-containers.md,S1610,unlocated:no-match,,,,,2026-10-10
+0108dfff550a,arch/sse-last-event-id-cursors.md,S-l4qgsnr4,unlocated:no-match,,,,,2026-10-21
+03a7aadf2ce0,arch/sse-last-event-id-cursors.md,S-6r5cdtdk,unlocated:no-match,,,,,2026-10-21
+0ac5c82392d4,arch/sse-last-event-id-cursors.md,S-6r5cdtdk,unlocated:no-match,,,,,2026-10-21
+0de2538e5b09,arch/sse-last-event-id-cursors.md,S-6r5cdtdk,located,,living;october;9.2;server-sent;standard;html;sent;updat,4f29dbdc0b834209,HTML Living Standard - Last Updated 20 October 2026 9.2 Server-sent events,2026-10-21
+1f5d5caf5107,arch/sse-last-event-id-cursors.md,S-6r5cdtdk,unlocated:no-match,,,,,2026-10-21
+40746808362b,arch/sse-last-event-id-cursors.md,S-6r5cdtdk,located,HTML > 9.2 Server-sent events > 9.2.1 Introduction > 9.2.7 Authoring notes,every;timeout;comment;second;start;author;proxy;line,14646ff6fd4e7a9b,"timeout. To protect against such proxy servers, authors can include a comment line (one starting with a ':' character) every 15 seconds or so.",2026-10-21
+51576770f922,arch/sse-last-event-id-cursors.md,S-6r5cdtdk,located,HTML > 9.2 Server-sent events > 9.2.1 Introduction,stop;told;code;content;reconnect;client;respons;http,ab0fc83b8ad6b334,Clients will reconnect if the connection is closed; a client can be told to stop reconnecting using the HTTP 204 No Content response code.,2026-10-21
+6ecdd7a6f417,arch/sse-last-event-id-cursors.md,S-e5yw2g7y,located,Server-Sent Events (SSE) { #server-sent-events-sse },last;last-event-id;resum;event,3336311e7b18c58d,Resuming with Last-Event-ID { #resuming-with-last-event-id },2026-10-21
+71714831b4b7,arch/sse-last-event-id-cursors.md,S-ciivqlqu,located,Response > Set Cookie > StreamingResponse,iterator;normal;generator;body;streamingrespons;take;stream;async,faa9c52d895fae8f,Takes an async generator or a normal generator/iterator and streams the response body. from starlette.responses import StreamingResponse,2026-10-21
+76a5a33668ca,arch/sse-last-event-id-cursors.md,S-6r5cdtdk,located,HTML > 9.2 Server-sent events > 9.2.1 Introduction > 9.2.6 Interpreting an event stream,incomplet;discard;final;end;must;line;data;event,a4a5fac20ce89a73,"Once the end of the file is reached, any pending data must be discarded. (If the file ends in the middle of an event, before",2026-10-21
+77807df5ccda,arch/sse-last-event-id-cursors.md,S-e5yw2g7y,unlocated:no-match,,,,,2026-10-21
+8e60454137cd,arch/sse-last-event-id-cursors.md,S-6r5cdtdk,unlocated:no-match,,,,,2026-10-21
+9ed439fee1f3,arch/sse-last-event-id-cursors.md,S-6nbqywql,located,Module ngx_http_proxy_module > Example Configuration > Directives,capability;x-accel-buffer;proxy_ignore_header;ignor;accel;disabl;buffer;respons,2d4a5751eed7e219,"""X-Accel-Buffering"" response header field. This capability can be disabled using the proxyignoreheaders directive.",2026-10-21
+c052521050fc,arch/sse-last-event-id-cursors.md,S-6r5cdtdk,unlocated:no-match,,,,,2026-10-21
+c276a84b681e,arch/sse-last-event-id-cursors.md,S-e5yw2g7y,unlocated:no-match,,,,,2026-10-21
+d3e834d4f75d,arch/sse-last-event-id-cursors.md,S-6r5cdtdk,unlocated:no-match,,,,,2026-10-21
+dc343154affd,arch/sse-last-event-id-cursors.md,S-6r5cdtdk,unlocated:no-match,,,,,2026-10-21
+dc343154affd,arch/sse-last-event-id-cursors.md,S-e5yw2g7y,unlocated:no-match,,,,,2026-10-21
 16903281c4b3,arch/texts-catalogue-formats.md,S1709,located,,install;pip;fluent.runtim;0.4.0;runtim;fluent,f78aa50bea55fdc0,fluent.runtime 0.4.0 Localization library for expressive translations. pip install fluent.runtime,2026-10-14
 21f2ef299372,arch/texts-catalogue-formats.md,S1717,unlocated:no-match,,,,,2026-10-10
 22e03167ccff,arch/texts-catalogue-formats.md,S-zqoo6bqj,located,Tabular Model Definition Language (TMDL) | Microsoft Learn > TMDL folder structure,schema;linguistic;cultur;each;one;file,dda3797ab83a7c91,One file for each culture linguistic schema.,2026-10-21

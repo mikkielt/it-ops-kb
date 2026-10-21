@@ -1,7 +1,7 @@
 ---
 topic: arch/sse-last-event-id-cursors
 priority: P3
-applies_to: "WHATWG HTML Standard section 9.2 server-sent events (Living Standard, last updated 9 October 2026); FastAPI 0.135.0+ (fastapi.sse); Starlette 1.7.0; nginx ngx_http_proxy_module"
+applies_to: "WHATWG HTML Standard section 9.2 server-sent events (Living Standard, last updated 20 October 2026); FastAPI 0.135.0+ (fastapi.sse); Starlette 1.7.0; nginx ngx_http_proxy_module"
 retrieved_utc: 2026-10-11
 sources: [S-6r5cdtdk, S-e5yw2g7y, S-ciivqlqu, S-6nbqywql, S-l4qgsnr4]
 status: partial
@@ -21,7 +21,7 @@ transport dropped `Last-Event-ID` resumability in 2026-07-28 (see
 
 ## Facts
 - The HTML Standard is a Living Standard (no numbered versions); its server-sent events section is 9.2
-  and the rendered page read for this article states "Last Updated 9 October 2026". [DOC S-6r5cdtdk]
+  and the rendered page read for this article states "Last Updated 20 October 2026". [DOC S-6r5cdtdk]
 - Stream format: MIME type `text/event-stream`, always UTF-8 (no way to select another encoding), lines
   ended by CRLF, LF or CR. A blank line dispatches the event being built; a line starting with `:` is a
   comment and is ignored; recognised field names are `event`, `data`, `id` and `retry` (compared
