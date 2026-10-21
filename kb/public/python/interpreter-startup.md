@@ -3,7 +3,7 @@ topic: python/interpreter-startup
 priority: P3
 applies_to: "CPython 3.14.7 command-line options and environment variables that change what the interpreter does at start (documentation at the v3.14.7 tag); Popen on Windows versus POSIX; compile-time warnings and the warnings filter (CPython 3.14.8 documentation and source)"
 retrieved_utc: 2026-10-08
-sources: [S-d77lvlq4, S-dabwnzz5, S-ew7mucsg, S-uhm2nnel, S-nidh245i, S-q5frtccp, S-4yatj52m, S-6wxmp67t, S-j7sjakc5]
+sources: [S-d77lvlq4, S-dabwnzz5, S-ew7mucsg, S-nidh245i, S-q5frtccp, S-4yatj52m, S-j7sjakc5, S-mggaarah, S-gmtatolh]
 status: partial
 ---
 
@@ -39,9 +39,9 @@ into a `SyntaxError`.
 ### Compile-time warnings and turning them into errors
 - Python leaves an unrecognized escape sequence in a string literal unchanged, backslash included (`'\q'` is
   `\q`); since 3.12 such a sequence produces a `SyntaxWarning` (a `DeprecationWarning` from 3.6 to 3.11), and
-  the docs say a future version will raise a `SyntaxError`. [DOC S-uhm2nnel]
+  the docs say a future version will raise a `SyntaxError`. [DOC S-gmtatolh]
 - Octal escapes with a value above `0o377` also produce a `SyntaxWarning` since 3.12 (a `DeprecationWarning`
-  in 3.11), with the same future `SyntaxError`. [DOC S-uhm2nnel]
+  in 3.11), with the same future `SyntaxError`. [DOC S-gmtatolh]
 - `SyntaxWarning` is the base class for warnings about dubious syntax, typically emitted when compiling source
   and usually not reported when already compiled code runs, so a module loaded from its `.pyc` cache does
   not warn again. [DOC S-q5frtccp]
@@ -60,7 +60,7 @@ into a `SyntaxError`.
   replaces the warning with a `SyntaxError` at the escape's position "to get a more accurate error report".
   [CODE S-4yatj52m: Parser/string_parser.c#warn_invalid_escape_sequence]
 - CPython's shared helper for emitting a `SyntaxWarning`, `_PyErr_EmitSyntaxWarning`, does the same: a
-  `SyntaxWarning` raised as an error is replaced with a `SyntaxError`. [CODE S-6wxmp67t:
+  `SyntaxWarning` raised as an error is replaced with a `SyntaxError`. [CODE S-mggaarah:
   Python/errors.c#_PyErr_EmitSyntaxWarning]
 - `py_compile.compile(file, doraise=True)` raises `PyCompileError` on a compile error; with the default
   `doraise=False` it writes an error string to `sys.stderr` and returns `None`, and `quiet=2` writes

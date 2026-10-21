@@ -3,7 +3,7 @@ topic: agents/policy-as-code
 priority: P3
 applies_to: "Open Policy Agent v1.21.2 (Rego, bundles, REST API); Cedar docs at commit 3a37098e (2026-09-25); Amazon Verified Permissions (Cedar 4.7); Policy in Amazon Bedrock AgentCore (GA 2026-03-03); Azure Policy effects, remediation and Policy as Code workflow (Learn, 2026-10)"
 retrieved_utc: 2026-10-15
-sources: [S-tcvnt2sk, S-iq6vp7q2, S-hvug6eux, S-fnw2pa3v, S-qbgkkkgs, S-lyw4ziag, S-ksyczslf, S-fd4vxmr2, S-gbndonu5, S-mflbdcpq, S-o6ybh6w2, S-tlwezbfd, S-3wgje3ri, S-sfwmzlty, S-dyazlyh5, S-nfmfjmf4, S-y5rp4spd, S-xgmsiz27, S-yzbv3f7p, S-gca2wrxp, S-prq2x4xt, S-ady4i6kn]
+sources: [S-tcvnt2sk, S-iq6vp7q2, S-hvug6eux, S-fnw2pa3v, S-qbgkkkgs, S-lyw4ziag, S-ksyczslf, S-fd4vxmr2, S-gbndonu5, S-mflbdcpq, S-o6ybh6w2, S-tlwezbfd, S-3wgje3ri, S-sfwmzlty, S-dyazlyh5, S-nfmfjmf4, S-y5rp4spd, S-xgmsiz27, S-yzbv3f7p, S-gca2wrxp, S-prq2x4xt, S-ady4i6kn, S-o43a4uum]
 status: partial
 ---
 
@@ -20,13 +20,13 @@ Policy-as-code moves an authorization or governance rule out of the code that en
 - Rego's `default` keyword gives a rule a fallback value that applies when every rule of that name is undefined; a rule with no default and no matching body produces no value at all (undefined). [DOC S-fnw2pa3v]
 - OPA's Data API takes a query as `POST /v1/data/{path}` with the input in the body; a path that is undefined still returns HTTP 200, but the response carries no `result` property. [DOC S-hvug6eux]
 - So the caller that enforces an OPA decision has to treat a missing `result` as a refusal, or the policy has to declare `default allow := false`: otherwise an undefined decision answers 200 and an enforcement point that checks only the status code fails open. [DER S-hvug6eux, S-fnw2pa3v: undefined path returns 200 without result; default supplies a value when all rules are undefined]
-- Bundles let OPA download policy and data from a remote HTTP server instead of having them pushed through the REST API; loaded policy is enforced immediately, and by default the REST API refuses to change policy and data that came from a bundle. [DOC S-iq6vp7q2]
-- A bundle is a gzipped tarball of policy and data files built with `opa build`, which can also sign it; data files are placed in the `data` document by their directory path inside the tarball. [DOC S-iq6vp7q2]
-- OPA polls for bundles between `min_delay_seconds` and `max_delay_seconds`, sends the last `Etag` in `If-None-Match` so the server can answer 304 Not Modified, and can use HTTP long polling (`long_polling_timeout_seconds`), falling back to periodic polling when the server does not support it. [DOC S-iq6vp7q2]
-- With `persist: true` OPA writes each activated bundle to disk and starts from the most recently activated one when the bundle server cannot be reached. [DOC S-iq6vp7q2]
-- A signed bundle carries a `.signatures.json` file of JWTs listing the files and their hashes; remote bundles take their verification keys from the configuration's `keys` section, and a bundle that holds signatures while its configuration names no signing fails verification. [DOC S-iq6vp7q2]
-- `opa eval` and `opa test` do not verify bundle signatures, so signature checking protects a running OPA that downloads bundles, not the pre-production commands. [DOC S-iq6vp7q2]
-- OPA can also download bundles stored as images in OCI-compatible registries, with one bundle layer per image. [DOC S-iq6vp7q2]
+- Bundles let OPA download policy and data from a remote HTTP server instead of having them pushed through the REST API; loaded policy is enforced immediately, and by default the REST API refuses to change policy and data that came from a bundle. [DOC S-o43a4uum]
+- A bundle is a gzipped tarball of policy and data files built with `opa build`, which can also sign it; data files are placed in the `data` document by their directory path inside the tarball. [DOC S-o43a4uum]
+- OPA polls for bundles between `min_delay_seconds` and `max_delay_seconds`, sends the last `Etag` in `If-None-Match` so the server can answer 304 Not Modified, and can use HTTP long polling (`long_polling_timeout_seconds`), falling back to periodic polling when the server does not support it. [DOC S-o43a4uum]
+- With `persist: true` OPA writes each activated bundle to disk and starts from the most recently activated one when the bundle server cannot be reached. [DOC S-o43a4uum]
+- A signed bundle carries a `.signatures.json` file of JWTs listing the files and their hashes; remote bundles take their verification keys from the configuration's `keys` section, and a bundle that holds signatures while its configuration names no signing fails verification. [DOC S-o43a4uum]
+- `opa eval` and `opa test` do not verify bundle signatures, so signature checking protects a running OPA that downloads bundles, not the pre-production commands. [DOC S-o43a4uum]
+- OPA can also download bundles stored as images in OCI-compatible registries, with one bundle layer per image. [DOC S-o43a4uum]
 - OPA's decision logs record each policy query with the policy queried, its input and the bundle metadata, for auditing and offline debugging; with decision logging on, API responses include a `decision_id`. [DOC S-qbgkkkgs]
 - Rego policies are unit-tested with `opa test`, whose test rules replace the input with `with input as {...}` and report PASS or FAIL per test. [DOC S-lyw4ziag]
 

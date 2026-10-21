@@ -3,7 +3,7 @@ topic: agents/onnx-runtime-rust-ort
 priority: P3
 applies_to: "ort 2.0.0-rc.13 (pykeio/ort, ONNX Runtime 1.28 API), ONNX Runtime 1.28.3 release assets, ONNX 1.23.2 model format, Hugging Face Hub API as of 2026-10-11"
 retrieved_utc: 2026-10-13
-sources: [S-wl3gkg3g, S-d7xuprcc, S-5bx2p3mo, S-miwhfdzy, S-7zyahsl3, S-jdu5egnj, S-bzhegec5, S-msk5qtcf, S-jpjnjgqg, S-pwbxp7jw, S-gs7u2ou5, S-m5r2fcso, S-mw6rc3qq, S-o3nqheje, S-vzhh6a43, S-5xaderxo, S-3mftdvfg, S-ktoxup5h, S-xt54q2gr, S-l3go6sje, S-6z4pv23l, S-omvw5ahk, S-45rrlyyd, S-cxzftyij, S-7srl2gyq, S-ah7l36rr, S-togouwq3, S-u3hzriiy, S-x6bpplvz, S-a7uyxlhd, S-atc7uhx5, S-xjm5bsys, S-gzswlsft, S-i65jlupl, S-ujreltcp, S-yliumtdz, S-co3g3h4o, S-hmcb2gfz, S-ixcjfodz, S-rlepjcn5, S-7o37zl5s, S-anwc4b5l, S-y7gpyp7l, S-rmgaatpo]
+sources: [S-wl3gkg3g, S-d7xuprcc, S-5bx2p3mo, S-miwhfdzy, S-7zyahsl3, S-jdu5egnj, S-bzhegec5, S-msk5qtcf, S-pwbxp7jw, S-gs7u2ou5, S-m5r2fcso, S-mw6rc3qq, S-o3nqheje, S-5xaderxo, S-3mftdvfg, S-ktoxup5h, S-l3go6sje, S-6z4pv23l, S-omvw5ahk, S-45rrlyyd, S-cxzftyij, S-7srl2gyq, S-ah7l36rr, S-togouwq3, S-u3hzriiy, S-x6bpplvz, S-a7uyxlhd, S-atc7uhx5, S-xjm5bsys, S-gzswlsft, S-i65jlupl, S-ujreltcp, S-yliumtdz, S-co3g3h4o, S-hmcb2gfz, S-ixcjfodz, S-rlepjcn5, S-7o37zl5s, S-anwc4b5l, S-y7gpyp7l, S-rmgaatpo, S-hvv2dftt, S-qfs4airs, S-onqi3s6s]
 status: partial
 ---
 
@@ -15,7 +15,7 @@ status: partial
 ## Facts
 
 ### What `ort` is and where it stands
-- `ort` is a Rust interface for hardware-accelerated inference and training on ONNX models; its README says it is "primarily a wrapper for Microsoft's ONNX Runtime library" and that it also supports other pure-Rust runtimes. [DOC S-jpjnjgqg]
+- `ort` is a Rust interface for hardware-accelerated inference and training on ONNX models; its README says it is "primarily a wrapper for Microsoft's ONNX Runtime library" and that it also supports other pure-Rust runtimes. [DOC S-hvv2dftt]
 - crates.io lists `2.0.0-rc.13` (published 2026-07-28) as the highest version and has no stable version (`max_stable_version` is null): the only versions not yanked are `2.0.0-rc.0` (2024-02-06) to `2.0.0-rc.13`, and every `1.x` release and the `2.0.0-alpha.*` ones are yanked. [DOC S-msk5qtcf]
 - The docs site for `2.0.0-rc.13` says "This version is production-ready and we recommend new & existing projects use it", and its install snippet pins the exact version `ort = "=2.0.0-rc.13"`; the README names no release-candidate caveat. [DOC S-gs7u2ou5]
 - The manifest of tag `v2.0.0-rc.13` declares `rust-version = "1.88"`, edition 2024, `license = "MIT OR Apache-2.0"` and a maintenance badge `actively-developed`. [CODE S-pwbxp7jw: Cargo.toml#package]
@@ -47,11 +47,11 @@ status: partial
 - Each provider type is compiled only with its feature (`#[cfg(feature = "cuda")] pub mod cuda`), while `ep::CPU` always exists and always reports itself available, so without the feature a provider type cannot be named in code. [CODE S-ktoxup5h: src/ep/mod.rs#CPU]
 - The release notes of `2.0.0-rc.13` say: "ort will now throw an error at link time if download-binaries is enabled and no binaries contain all of the requested EPs", where earlier versions silently built a CPU-only binary. [DOC S-a7uyxlhd]
 - ONNX Runtime's own provider list includes a "Cloud - Azure" provider beside the hardware ones, and its docs say a package can be built with any combination of providers together with the default CPU provider. [DOC S-yliumtdz]
-- Registration order is the priority order; a provider that cannot take an operator falls back to the next one or the CPU, and the docs state "ort will silently fail and fall back to executing on the CPU if all execution providers fail to register". [DOC S-vzhh6a43]
+- Registration order is the priority order; a provider that cannot take an operator falls back to the next one or the CPU, and the docs state "ort will silently fail and fall back to executing on the CPU if all execution providers fail to register". [DOC S-qfs4airs]
 - In code, `ExecutionProviderDispatch::fail_silently()` is the default (log the error, continue), and `error_on_failure()` makes `with_execution_providers` return the registration error; `ExecutionProvider::is_available` only says ONNX Runtime was compiled with the provider, not that it can run. [CODE S-ktoxup5h: src/ep/mod.rs#ExecutionProviderDispatch]
 - `SessionBuilder::new` sets an automatic device selection policy `MaxEfficiency` when `api-22` or later is on, and `with_execution_providers` or `with_auto_device` overrides it. [CODE S-omvw5ahk: src/session/builder/mod.rs#SessionBuilder::new]
 - ONNX Runtime's automatic selection offers devices from execution provider libraries registered with the environment ("plugin" libraries); the page's example registers one before setting a policy. [DOC S-co3g3h4o]
-- The CPU provider is "powered by MLAS"; `ep::CPU::default().with_arena_allocator(bool)` toggles the memory arena and its registration cannot fail. [CODE S-xt54q2gr: src/ep/cpu.rs#CPU]
+- The CPU provider is "powered by MLAS"; `ep::CPU::default().with_arena_allocator(bool)` toggles the memory arena and its registration cannot fail. [CODE S-onqi3s6s: src/ep/cpu.rs#CPU]
 
 ### Session options for CPU inference
 - ONNX Runtime defaults for the CPU provider: intra-op threads 0 (one per physical core), sequential execution mode, graph optimisation `ORT_ENABLE_ALL`, thread spinning on; inter-op threads only matter in parallel mode, and explicitly set thread counts get no core affinity. [DOC S-i65jlupl]

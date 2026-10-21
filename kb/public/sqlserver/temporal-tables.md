@@ -3,7 +3,7 @@ topic: sqlserver/temporal-tables
 priority: P0
 applies_to: "SQL Server 2016-2025 (Windows and Linux), Azure SQL Database, Azure SQL Managed Instance"
 retrieved_utc: 2026-09-26
-sources: [S460, S461, S462, S463, S464, S465, S466]
+sources: [S460, S461, S463, S464, S466, S-4mpc75qy, S-dwr4aj6v, S-tgzy2och]
 status: complete
 ---
 
@@ -17,9 +17,9 @@ status: complete
 
 ## Facts
 - The retention article's monikerRange covers Azure SQL Database, SQL Server 2017 and later, SQL Server on Linux 2017 and later, Azure SQL MI, and Fabric SQL database. [DOC S460]
-- `SYSTEM_VERSIONING = ON` in CREATE TABLE applies to SQL Server 2016 and later, Azure SQL Database and Azure SQL MI. [DOC S461]
-- If you don't name a history table, it is `MSSQL_TemporalHistoryFor<object_id>` and is PAGE-compressed by default. [DOC S461]
-- Edition tables list "Temporal" as Yes for Enterprise, Standard, Web, Express with Advanced Services and Express (2017, 2019, 2022). SQL Server 2025 lists "Temporal tables" as Yes for Enterprise, Standard and Express. [DOC S463,S464,S465,S466]
+- `SYSTEM_VERSIONING = ON` in CREATE TABLE applies to SQL Server 2016 and later, Azure SQL Database and Azure SQL MI. [DOC S-4mpc75qy]
+- If you don't name a history table, it is `MSSQL_TemporalHistoryFor<object_id>` and is PAGE-compressed by default. [DOC S-4mpc75qy]
+- Edition tables list "Temporal" as Yes for Enterprise, Standard, Web, Express with Advanced Services and Express (2017, 2019, 2022). SQL Server 2025 lists "Temporal tables" as Yes for Enterprise, Standard and Express. [DOC S463,S464,S-tgzy2och,S466]
 - In SQL Server 2025, Enterprise Developer and Evaluation editions have the Enterprise feature set. Standard Developer has the Standard feature set. [DOC S466]
 - Retention is set with `HISTORY_RETENTION_PERIOD` at CREATE or through `ALTER TABLE ... SET (SYSTEM_VERSIONING = ON (HISTORY_RETENTION_PERIOD = n UNIT))`. Units: DAYS, WEEKS, MONTHS, YEARS. The default is INFINITE. [DOC S460]
 - Setting SYSTEM_VERSIONING OFF loses the retention value. Turning it ON again without the parameter gives INFINITE. [DOC S460]
@@ -28,7 +28,7 @@ status: complete
 - Finite retention needs a clustered rowstore index whose first column is the period end column, or a clustered columnstore index. Otherwise configuration fails. That index can't be dropped while retention is finite. [DOC S460]
 - Rowstore cleanup deletes in chunks of up to 10,000 rows, in no guaranteed order. Columnstore cleanup removes whole row groups (about 1 million rows each). [DOC S460]
 - Catalog columns: `sys.databases.is_temporal_history_retention_enabled`; `sys.tables.history_retention_period` and `history_retention_period_unit_desc`. [DOC S460]
-- `sys.sp_cleanup_temporal_history` removes all aged rows immediately in a single transaction. It works only for tables with finite retention. [DOC S462]
+- `sys.sp_cleanup_temporal_history` removes all aged rows immediately in a single transaction. It works only for tables with finite retention. [DOC S-dwr4aj6v]
 
 ## Reference
 | Platform | Temporal tables | HISTORY_RETENTION_PERIOD | Source |
@@ -39,7 +39,7 @@ status: complete
 | Azure SQL Database / MI | yes | yes | S460 |
 
 ## Examples
-- SNIPPET: create a system-versioned temporal table with a named history table and finite retention; context: SQL Server 2017+, Azure SQL Database/MI; checked: no [DOC S460, S461: `SYSTEM_VERSIONING`/`HISTORY_TABLE`/`HISTORY_RETENTION_PERIOD` syntax]
+- SNIPPET: create a system-versioned temporal table with a named history table and finite retention; context: SQL Server 2017+, Azure SQL Database/MI; checked: no [DOC S460, S-4mpc75qy: `SYSTEM_VERSIONING`/`HISTORY_TABLE`/`HISTORY_RETENTION_PERIOD` syntax]
 ```sql
 CREATE TABLE dbo.device_assignment (
   device_key  UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,

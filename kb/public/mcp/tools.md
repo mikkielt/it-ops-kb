@@ -3,7 +3,7 @@ topic: mcp/tools
 priority: P1
 applies_to: "MCP specification 2026-07-28; MCP Python SDK 2.2.0"
 retrieved_utc: 2026-09-27
-sources: [S708, S711, S701, S710, S725, S726, S736]
+sources: [S708, S711, S701, S710, S726, S736, S-jwonq6go]
 status: complete
 ---
 # Tools: annotations, outputSchema, structuredContent (2026-07-28)
@@ -31,7 +31,7 @@ JSON SHOULD also appear as a TextContent block. `tools/call` may answer with `In
 - Stateful tools: no protocol session; servers return explicit handles and SHOULD validate caller authorization against the handle on every call. [DOC S708]
 - Servers MUST validate inputs, implement access control, rate-limit invocations and sanitize outputs; clients SHOULD show inputs before calling, implement timeouts, and log tool usage. [DOC S708]
 - `x-mcp-header` mirrors parameters into HTTP headers; clients on other transports (e.g. stdio) MAY ignore it. [DOC S708]
-- Python SDK: `@mcp.tool(title=..., annotations=ToolAnnotations(read_only_hint=True, open_world_hint=False))`; snake_case fields in Python. [DOC S725, S736]
+- Python SDK: `@mcp.tool(title=..., annotations=ToolAnnotations(read_only_hint=True, open_world_hint=False))`; snake_case fields in Python. [DOC S-jwonq6go, S736]
 - Python SDK: return type annotation is the output schema; scalars/lists are wrapped as `{"result": ...}`; results validated against the schema, mismatch becomes a tool error; `structured_output=False` opts out. [DOC S726]
 
 ## Reference

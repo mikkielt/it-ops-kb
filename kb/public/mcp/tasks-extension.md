@@ -3,7 +3,7 @@ topic: mcp/tasks-extension
 priority: P1
 applies_to: "MCP Tasks extension io.modelcontextprotocol/tasks for 2026-07-28"
 retrieved_utc: 2026-10-19
-sources: [S713, S714, S715, S718, S701, S740, S746, S-2j2leiio]
+sources: [S713, S714, S718, S701, S740, S746, S-2j2leiio, S-mqa2z3kr]
 status: partial
 ---
 # Tasks extension (`io.modelcontextprotocol/tasks`)
@@ -30,7 +30,7 @@ and may `tasks/cancel`. `tasks/result` (blocking) and `tasks/list` were removed.
 - Security section: a server MAY use task ids as bearer tokens for stored state and MUST generate them with enough entropy that a third party cannot guess them, and it MUST authenticate and authorize every task-related request; with no `tasks/list`, one caller's tasks cannot leak to another. [DOC S718]
 - The spec text does not say whether a task created by one principal may be read or updated by another (a subagent, a second client) when the server's authorization allows it; it names only "permission to access a task". [UNK S718: security section read 2026-10-16]
 - Extensions are disabled by default and need explicit opt-in; SDKs may choose whether to implement them. [DOC S714]
-- The community-maintained extension matrix lists no Tasks column and no Claude Code row. [DOC S715]
+- The community-maintained extension matrix lists no Tasks column and no Claude Code row. [DOC S-mqa2z3kr]
 - Claude Code's MCP page lists the client capabilities it declares on 2026-07-28 connections (elicitation form and URL) and names no Tasks extension; the changelog has no Tasks entry either. [DER S740, S746: pages searched 2026-09-28]
 - Each task is uniquely identified by a server-generated task id. [DOC S718]
 - The extension text read 2026-10-19 holds neither the word "idempot" nor a client-chosen key, so a client that times out on `tools/call` has no key in the spec to retry under that the server would recognise as the same task; a second claimant of the same work gets a second task unless the server dedups by its own means. [DER S718: absence across the extension text, with the server-generated id above]

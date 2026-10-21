@@ -3,7 +3,7 @@ topic: entra/bitlocker-key-deletion
 priority: P1
 applies_to: "Microsoft Entra ID (manage-device-identities ms.date 06/17/2026; soft delete preview ms.date 04/05/2026)"
 retrieved_utc: 2026-09-27
-sources: [S545, S546, S547, S531]
+sources: [S545, S546, S547, S531, S-mhg33vsy]
 status: complete
 ---
 
@@ -17,14 +17,14 @@ status: complete
 ## Facts
 - BitLocker keys for Windows 10+ devices are stored on the device object; deleting a stale device also deletes those keys. [DOC S545]
 - Caution: back up BitLocker recovery keys, or confirm they are no longer needed, before deleting devices; otherwise data may be lost. [DOC S545]
-- Deleting a device removes all details attached to it, for example BitLocker keys, and is a nonrecoverable activity. [DOC S546]
-- Deleting requires Cloud Device Administrator, Intune Administrator or Windows 365 Administrator; Autopilot devices can't be deleted before they're deleted from Intune. [DOC S546]
+- Deleting a device removes all details attached to it, for example BitLocker keys, and is a nonrecoverable activity. [DOC S-mhg33vsy]
+- Deleting requires Cloud Device Administrator, Intune Administrator or Windows 365 Administrator; Autopilot devices can't be deleted before they're deleted from Intune. [DOC S-mhg33vsy]
 - Soft delete (preview): a deleted device moves to a soft-deleted container; BitLocker keys and LAPS passwords remain accessible; after 30 days it's hard deleted automatically. [DOC S547]
 - Soft-deleted devices are hidden from portal, Intune and Graph queries (HTTP 404); their DeviceId stays reserved. [DOC S547]
 - Soft delete covers joined, hybrid joined and registered devices; devices without a recognized trust type (for example created via Graph) and some specialty types are hard deleted immediately. [DOC S547]
 - Hard-deleted devices, BitLocker keys and LAPS passwords can't be recovered. [DOC S547]
 - Entra Connect can auto-restore a soft-deleted hybrid device on the next sync when it recreates a device with the same DeviceId. [DOC S547]
-- Viewing a key (Show Recovery Key) creates an audit entry in the `KeyManagement` category. [DOC S546]
+- Viewing a key (Show Recovery Key) creates an audit entry in the `KeyManagement` category. [DOC S-mhg33vsy]
 - A device's keys can be listed before a delete with `GET /informationProtection/bitlocker/recoveryKeys`, filtered by the `deviceId` of the device the key was most recently backed up to; the list omits the `key` value itself, which Get bitlockerRecoveryKey reads. [DOC S531]
 
 ## Reference

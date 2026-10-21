@@ -3,7 +3,7 @@ topic: graph/microsoft365dsc
 priority: P3
 applies_to: "Microsoft365DSC PowerShell module 1.26.909.1 (2026-09-11)"
 retrieved_utc: 2026-09-28
-sources: [S1010, S-jya6izpo, S-l6j5dpwj, S-44mrima5, S-ahgkqifj, S-2fvvbt5t, S-zmngjhe5, S-prjyny3b, S-3aphi7n2, S-omyb2en3, S-dlzkqwix, S-fbhq2yc2, S-qkxsdf32, S-c6kla37l, S-fylt7wwn]
+sources: [S1010, S-jya6izpo, S-l6j5dpwj, S-44mrima5, S-ahgkqifj, S-2fvvbt5t, S-zmngjhe5, S-prjyny3b, S-3aphi7n2, S-omyb2en3, S-fbhq2yc2, S-qkxsdf32, S-c6kla37l, S-fylt7wwn, S-acz6ela7]
 status: complete
 ---
 
@@ -71,7 +71,7 @@ and `prior-art/projects.csv`, source `S1010`). Docs below (microsoft365dsc.com) 
   journal/log. [COMMUNITY S-2fvvbt5t]
 - The DSC engine can be configured in `ApplyAndAutoCorrect` mode to automatically remediate detected drift and restore
   the declared state, as opposed to report-only monitoring. [COMMUNITY S-2fvvbt5t]
-- `New-M365DSCDeltaReport` compares two configurations: mandatory `-Source` and `-Destination`, with `-OutputPath`, `-Type` (`HTML` or `JSON`), `-DriftOnly`, `-HeaderFilePath`, `-ExcludedProperties`, `-ExcludedResources` and variable-substitution options. [CODE S-dlzkqwix: Modules/Microsoft365DSC/Modules/M365DSCReport.psm1#New-M365DSCDeltaReport]
+- `New-M365DSCDeltaReport` compares two configurations: mandatory `-Source` and `-Destination`, with `-OutputPath`, `-Type` (`HTML` or `JSON`), `-DriftOnly`, `-HeaderFilePath`, `-ExcludedProperties`, `-ExcludedResources` and variable-substitution options. [CODE S-acz6ela7: Modules/Microsoft365DSC/Modules/M365DSCReport.psm1#New-M365DSCDeltaReport]
 - The project's guide uses it to compare two exported configurations, or one tenant's snapshot with another tenant's, writing an HTML report. [DOC S-c6kla37l]
 - `Test-M365DSCAgent` takes no parameters and checks the agent machine, not a tenant: PowerShell version (5.1 recommended), the WinRM MaxEnvelopeSize and the module dependencies, and reports issues and recommendations. It is not a drift report. [CODE S-fbhq2yc2: Modules/Microsoft365DSC/Modules/M365DSCAgent.psm1#Test-M365DSCAgent]
 - In release 1.26.909.1 each Microsoft365DSC resource follows classic PowerShell DSC's `Get-TargetResource`/`Test-TargetResource`/

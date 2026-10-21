@@ -3,7 +3,7 @@ topic: entra/conditional-access-devices
 priority: P1
 applies_to: "Microsoft Entra Conditional Access, device-based grant controls and Filter for devices condition, Microsoft Graph v1.0 conditionalAccessPolicy (docs retrieved 2026-09-26)"
 retrieved_utc: 2026-09-27
-sources: [S-2gcjipq5, S-tkmjbvgn, S-bpayn5ic, S-isovad24, S-frxelebk, S-r7wru3uo, S-evafm3dr, S-hk7ngup4, S-ovycuo7g, S-lsnr7k3y, S504, S-ac6jmj3f, S-qu7z6wlo, S-nuh4ep7w, S-735ghpq5, S-6ecweang, S-ic4sj2rr, S1358]
+sources: [S-2gcjipq5, S-tkmjbvgn, S-bpayn5ic, S-isovad24, S-frxelebk, S-r7wru3uo, S-evafm3dr, S-hk7ngup4, S-ovycuo7g, S-lsnr7k3y, S-ac6jmj3f, S-qu7z6wlo, S-nuh4ep7w, S-735ghpq5, S-6ecweang, S-ic4sj2rr, S1358, S-vdp4zb6i]
 status: complete
 files: [entra/ca-device-filter-properties.csv]
 ---
@@ -33,7 +33,7 @@ files: [entra/ca-device-filter-properties.csv]
 - `Contains`/`NotContains` behave differently by attribute type: for string attributes (`operatingSystem`, `model`) it's substring match; for string-collection attributes (`physicalIds`, `systemLabels`) it matches one whole string in the collection. [DOC S-2gcjipq5]
 - `extensionAttribute1-15` values are only populated at policy-evaluation time if the device is Intune managed, compliant, or Entra hybrid joined. [DOC S-2gcjipq5]
 - For agents' user accounts, the Filter for devices condition applies only when the agent session is initiated from an endpoint; combine with the "Agent execution environments" condition to target specific approved devices for agents. [DOC S-r7wru3uo]
-- `trustType` values match the Graph `device.trustType` enum used elsewhere in the kb: `AzureAD`/`AzureAd` = Entra joined, `ServerAD`/`ServerAd` = Entra hybrid joined, `Workplace` = Entra registered — same three states as `entra/device-identity.md`. [DER S-2gcjipq5, S504]
+- `trustType` values match the Graph `device.trustType` enum used elsewhere in the kb: `AzureAD`/`AzureAd` = Entra joined, `ServerAD`/`ServerAd` = Entra hybrid joined, `Workplace` = Entra registered — same three states as `entra/device-identity.md`. [DER S-2gcjipq5, S-vdp4zb6i]
 
 ### Report-only mode and What If
 - Report-only is a policy enablement state (alongside On/Off) that evaluates a policy during sign-in and logs the outcome without enforcing grant or session controls; users are never prompted (no MFA challenge, no ToU). [DOC S-isovad24]

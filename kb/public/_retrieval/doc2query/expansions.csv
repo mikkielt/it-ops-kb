@@ -308,14 +308,14 @@ caebc1ca66f8,Is Vault considered open source software?
 418a85bf9dd7,Python Fernet symmetric encryption
 418a85bf9dd7,How does Python's cryptography Fernet class implement encryption?
 418a85bf9dd7,Can Fernet tokens have an expiration time without external scheduling?
-b619823e5d71,recognizer type field default value
-b619823e5d71,How do you distinguish a predefined recognizer from a custom one?
-2c6e7635dff5,deny_list_score default value
-2c6e7635dff5,What is the default deny_list_score for recognizers?
-2c6e7635dff5,Has the default deny_list_score changed between versions?
-d5bc6ba8175c,supported_languages registry analyzer match
-d5bc6ba8175c,How should the registry's supported_languages match the analyzer?
-d5bc6ba8175c,What languages must be consistent between recognizer registry and analyzer engine?
+b7c3ca2f48e8,recognizer type field default value
+b7c3ca2f48e8,How do you distinguish a predefined recognizer from a custom one?
+63ceec72becf,deny_list_score default value
+63ceec72becf,What is the default deny_list_score for recognizers?
+63ceec72becf,Has the default deny_list_score changed between versions?
+e2dcf922c855,supported_languages registry analyzer match
+e2dcf922c855,How should the registry's supported_languages match the analyzer?
+e2dcf922c855,What languages must be consistent between recognizer registry and analyzer engine?
 9b3ab6172c9a,score_thresholds recognizer entity confidence
 9b3ab6172c9a,How do you set custom confidence thresholds for recognizers?
 9b3ab6172c9a,Can different entity types have different score thresholds?
@@ -534,12 +534,12 @@ f5986a17b8c8,SMB client outbound signing encryption settings
 1f8a019a9c9c,What happens to encryption keys on the device when it's removed?
 aaa54ddd4e53,BitLocker recovery key backup device deletion
 aaa54ddd4e53,What should you do with BitLocker keys before deleting a device?
-757a7f85d9a0,Device deletion data loss BitLocker
-757a7f85d9a0,Is device deletion reversible?
-757a7f85d9a0,What information is lost when you delete a device?
-39a7be25ae21,Device deletion required roles Autopilot
-39a7be25ae21,Who can delete devices in Entra?
-39a7be25ae21,What restrictions apply to deleting Autopilot devices?
+dc7a37fe97b0,Device deletion data loss BitLocker
+dc7a37fe97b0,Is device deletion reversible?
+dc7a37fe97b0,What information is lost when you delete a device?
+03a2b3c71ca6,Device deletion required roles Autopilot
+03a2b3c71ca6,Who can delete devices in Entra?
+03a2b3c71ca6,What restrictions apply to deleting Autopilot devices?
 3904bed9cee0,Soft delete device grace period recovery keys
 3904bed9cee0,What happens during soft deletion of devices?
 3904bed9cee0,How long can you recover data from a soft-deleted device?
@@ -555,9 +555,9 @@ b52be0e7c5f6,Does soft delete work on all Entra join types?
 21ce5467cc34,Entra Connect soft-deleted device auto-restore
 21ce5467cc34,Can Azure AD Connect restore soft-deleted hybrid devices automatically?
 21ce5467cc34,What happens when Entra Connect syncs a previously deleted device?
-32db7168e571,BitLocker recovery key view audit log
-32db7168e571,What audit log captures BitLocker key access?
-32db7168e571,Where is showing a recovery key logged?
+d36da8ef96dc,BitLocker recovery key view audit log
+d36da8ef96dc,What audit log captures BitLocker key access?
+d36da8ef96dc,Where is showing a recovery key logged?
 298677b5c1ab,Graph delta device supported resources
 298677b5c1ab,Which resources support delta queries in Microsoft Graph?
 298677b5c1ab,Can you incrementally query device changes?

@@ -3,7 +3,7 @@ topic: gitlab/repository-mirroring
 priority: P3
 applies_to: "GitLab 19.x docs (gitlab-org/gitlab master @9f1632e2, 2026-09-27): repository mirroring, push and pull mirroring, bidirectional mirroring, remote mirrors API, GitHub importer; GitLab.com, Self-Managed and Dedicated"
 retrieved_utc: 2026-09-29
-sources: [S-7iutmaw5, S-4o7kkuoi, S-5qb34k6p, S-ci4g3efd, S-7i4mq2ge, S-d24ftlvy, S-sg3osg2z, S-7zthwzzb, S-fa7zbfwo]
+sources: [S-7iutmaw5, S-4o7kkuoi, S-5qb34k6p, S-ci4g3efd, S-7i4mq2ge, S-d24ftlvy, S-sg3osg2z, S-7zthwzzb, S-fa7zbfwo, S-ltef5j4x]
 status: complete
 ---
 
@@ -21,7 +21,7 @@ Push mirroring (GitLab to another repository) is in every tier, on GitLab.com, S
 - A push mirror receives a change five minutes after the push to the upstream repository, or one minute with **Only mirror protected branches** on; it also updates when an administrator force-updates the mirror. [DOC S-4o7kkuoi]
 - A branch merged into the default branch and deleted in the source project is deleted from the push mirror on the next push; branches with unmerged changes are kept; a diverged branch shows an error in **Mirroring repositories**. [DOC S-4o7kkuoi]
 - By default, if a ref on the push mirror has diverged from the local repository, the upstream repository overwrites the remote change. With **Keep divergent refs**, the diverged ref on the mirror is left as it is and the update is marked failed; after creation the value can be changed only through the remote mirrors API. [DOC S-4o7kkuoi]
-- Each project can have at most 10 enabled push mirrors (limit introduced in GitLab 18.9); the docs suggest disabling unused mirrors or consolidating destinations. [DOC S-4o7kkuoi, S-d24ftlvy]
+- Each project can have at most 10 enabled push mirrors (limit introduced in GitLab 18.9); the docs suggest disabling unused mirrors or consolidating destinations. [DOC S-4o7kkuoi, S-ltef5j4x]
 - **Only mirror protected branches** limits a mirror, in either direction, to the project's protected branches; for a pull mirror the unprotected branches of the mirroring project are not mirrored and can diverge. **Mirror specific branches** (an RE2 regular expression on branch names) is Premium and Ultimate. [DOC S-7iutmaw5]
 - To push to GitHub the docs use a fine-grained personal access token with read and write on repository contents, plus read and write on Workflows when the repository has a `.github/workflows` directory; the url is `https://github.com/GROUP/PROJECT.git`, the username is the token's owner and the password is the token. GitHub attributes commits by email address. [DOC S-4o7kkuoi]
 - Mirror authentication is SSH (public key or password, with a host key verified by fingerprint) or username and password; for a project or group access token, use any non-blank username and the token as password. [DOC S-7iutmaw5]

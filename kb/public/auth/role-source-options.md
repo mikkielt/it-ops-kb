@@ -3,7 +3,7 @@ topic: auth/role-source-options
 priority: P1
 applies_to: "Microsoft Graph v1.0 checkMemberGroups/getMemberGroups (docs current 2026-09-24)"
 retrieved_utc: 2026-09-27
-sources: [S1310, S1286, S1287, S524, S526, S1355, S-yc5geeul]
+sources: [S1286, S1287, S524, S526, S1355, S-yc5geeul, S-x422g5p6]
 status: complete
 ---
 
@@ -20,7 +20,7 @@ covers only the two Graph calls this agent was assigned.
 - `/me/checkMemberGroups` requires a signed-in user (delegated only); application permissions are not usable against `/me`. [DOC S1286]
 
 ## Facts
-- Group-based assignment to an application (and so app roles assigned to a group) reaches only direct members: it does not cascade to nested groups, and it requires Entra ID P1 or P2. [DOC S1310]
+- Group-based assignment to an application (and so app roles assigned to a group) reaches only direct members: it does not cascade to nested groups, and it requires Entra ID P1 or P2. [DOC S-x422g5p6]
 - `checkMemberGroups` on a device object: see the per-target tables on the API page; `Directory.Read.All` covers every object type. [DOC S1286]
 - An engineer role check by a workstation `client` (`/me/checkMemberGroups` against a small set of role-group ids) needs only delegated `User.Read`. [DER S1286: signed-in user table, ≤20 ids]
 - `getMemberGroups` on `/directoryObjects/{id}` (any object type) needs `Directory.Read.All` (delegated or application); the page has lower-privileged per-type tables for users, groups, service principals and devices. It is transitive and returns at most 11,000 group ids (beyond that a 400 `Directory_ResultSizeLimitExceeded`; use transitive memberOf instead). [DOC S1287]
