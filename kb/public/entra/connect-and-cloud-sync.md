@@ -35,7 +35,7 @@ status: complete
 - gMSA creation prerequisites: the AD schema in the gMSA domain's forest must be at Windows Server 2012 level or later; PowerShell RSAT modules on a domain controller; at least one Windows Server 2012+ domain controller in the domain; a domain-joined agent host running Windows Server 2025, 2022, 2019, or 2016. [DOC S-ze3aud2j]
 - Cloud Sync agent install (PowerShell): `Add-AADCloudSyncGMSA -CustomGMSAName <name>$` for a precreated gMSA; `Add-AADCloudSyncADDomain -DomainName <domain> -Credential <cred> [-PreferredDomainControllers @(...)]` to add a domain (optionally pinning preferred DCs); `Restart-Service -Name AADConnectProvisioningAgent` after configuration changes. [DOC S-dhrhl2jz]
 - Sign-in role for both installing the provisioning agent and running the Connect-to-Cloud-Sync migration tool: Hybrid Identity Administrator (minimum). [DOC S-6clhfher, S-qj44i4mg]
-- Cloud Sync device sync (preview, `AD2AADDeviceSync` job, disabled by default) is distinct from user/group provisioning; its attribute mapping includes `DeviceId <- objectGUID` and `DeviceTrustType` always `ServerAd` (see `entra/hybrid-deviceid-objectguid.md`). [DOC S550]
+- Cloud Sync device sync (no longer labelled preview as of the 2026-09-29 page; `AD2AADDeviceSync` job, disabled by default) is distinct from user/group provisioning; its attribute mapping includes `DeviceId <- objectGUID` and `DeviceTrustType` always `ServerAd` (see `entra/hybrid-deviceid-objectguid.md`). [DOC S550]
 - Connect Sync filtering methods, combinable with a logical AND: domain-based, OU-based, attribute-based, and group-based (pilot-only, set only at initial custom install, cannot be re-enabled once disabled, and not supported to configure outside the wizard). [DOC S-rb7ssjjy]
 - Both Connect Sync and Cloud Sync filter out AD objects with `isCriticalSystemObject=True` by default (e.g., built-in `Administrator`, `DomainAdmins`, `EnterpriseAdmins`), so those two groups do not sync to Entra ID by default; other objects later added to those groups are not filtered and do sync. [DOC S-rb7ssjjy]
 - OU-based filtering hazard: renaming a filtered-in OU changes its DistinguishedName, silently dropping it from sync scope; the next full import then obsoletes (deletes) its objects in Entra ID unless the OU is reselected in the wizard first. [DOC S-rb7ssjjy]
@@ -48,7 +48,7 @@ status: complete
 
 ## Reference
 - `entra/sync-capability-comparison.csv`: the Connect Sync vs Cloud Sync feature table (users/groups, device sync, scale limits, filtering, writeback, provisioning direction).
-- `entra/hybrid-deviceid-objectguid.md`: hybrid-join `deviceId`/`objectGUID` mapping for both Connect Sync and Cloud Sync device sync (preview); this article's Reference now also links back here for scheduler/staging/version-lifecycle context (back-link added).
+- `entra/hybrid-deviceid-objectguid.md`: hybrid-join `deviceId`/`objectGUID` mapping for both Connect Sync and Cloud Sync device sync; this article's Reference now also links back here for scheduler/staging/version-lifecycle context (back-link added).
 - `entra/device-identity.md`: join types and `trustType` values that Connect Sync/Cloud Sync-driven hybrid join produces.
 - `auth/propagation-latency.md`: the 30-minute default/minimum Connect Sync delta-sync interval and `Start-ADSyncSyncCycle -PolicyType Delta` as the documented propagation-delay mechanism; not repeated here in full.
 

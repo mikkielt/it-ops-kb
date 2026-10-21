@@ -1,7 +1,7 @@
 ---
 topic: entra/hybrid-deviceid-objectguid
 priority: P1
-applies_to: "Microsoft Entra Connect Sync, Entra Cloud Sync device sync (preview), hybrid join"
+applies_to: "Microsoft Entra Connect Sync, Entra Cloud Sync device sync, hybrid join"
 retrieved_utc: 2026-09-27
 sources: [S504, S544, S548, S549, S550, S551, S552, S-vdp4zb6i]
 status: complete
@@ -17,7 +17,7 @@ status: complete
 
 ## Facts
 - Entra Connect "Windows 10" attribute table: `objectGUID` — "Also called deviceID"; `objectSID` — "Also called onPremisesSecurityIdentifier"; `userCertificate` is synced; a Windows 10 domain-joined computer is identified by a populated `userCertificate`. [DOC S549]
-- Entra Cloud Sync device sync (preview) mapping: Entra `DeviceId` <- AD `objectGUID` (Direct); `SourceAnchor` <- `objectGUID`; `OnPremiseSecurityIdentifier` <- `objectSid`; `DeviceTrustType` always `ServerAd`. [DOC S550]
+- Entra Cloud Sync device sync mapping (the page no longer carries a preview label): Entra `DeviceId` <- AD `objectGUID` (Direct); `SourceAnchor` <- `objectGUID`; `OnPremiseSecurityIdentifier` <- `objectSid`; `DeviceTrustType` always `ServerAd`. [DOC S550]
 - Managed hybrid join: Entra Connect sends `userCertificate`, object GUID and computer SID to Azure DRS, which uses them to create the device object; later DRS "creates a device ID" and updates the device object. [DOC S548]
 - Federated hybrid join: the enterprise DRS token carries claims for object GUID, computer SID and domain-joined state; AD FS must issue the `onpremobjectguid` claim with the computer account's `objectGUID`. [DOC S548,S551]
 - Hybrid-join certificates in `userCertificate` are identified by a subject name matching `CN={ObjectGUID}`. [DOC S552]
@@ -31,7 +31,7 @@ status: complete
 | Doc | Statement | Source |
 |---|---|---|
 | Entra Connect synchronized attributes | objectGUID "Also called deviceID" | S549 |
-| Cloud Sync device sync (preview) | DeviceId <- objectGUID, Direct | S550 |
+| Cloud Sync device sync | DeviceId <- objectGUID, Direct | S550 |
 | How device registration works | DRS "creates a device ID" | S548 |
 | Graph device resource | deviceId set by DRS at registration | S504 |
 
