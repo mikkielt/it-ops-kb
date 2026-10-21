@@ -328,6 +328,8 @@ fda0783897cc,agents/agent-error-catalogue.md,S1843,located,"Your Copilot Studio 
 8b4947e166ba,agents/agent-evaluation.md,S-h7tjbts3,located,Retrieval-Augmented Generation (RAG) Evaluators for Generative AI - Microsoft Foundry | Microsoft Learn > Document retrieval,known;out;total;number;dataset;fidelity;good;return,062ab6bd571df5dd,"As a composite evaluator useful for RAG scenario with ground truth, it computes a list of useful search quality metrics for debugging your RAG pipelines:",2026-10-10
 8ba1f97ceb63,agents/agent-evaluation.md,S1920,unlocated:no-match,,,,,2026-10-10
 8c7058e5cc8a,agents/agent-evaluation.md,S-m2glighe,unlocated:no-match,,,,,2026-10-10
+9bab848b12b7,agents/agent-evaluation.md,S1899,unlocated:no-match,,,,,2026-10-21
+9bab848b12b7,agents/agent-evaluation.md,S1900,unlocated:no-match,,,,,2026-10-21
 a15d0eba160f,agents/agent-evaluation.md,S-onkwuwst,unlocated:no-match,,,,,2026-10-21
 a1fc656eea89,agents/agent-evaluation.md,S-onkwuwst,unlocated:no-match,,,,,2026-10-21
 a1fc656eea89,agents/agent-evaluation.md,S-p7dq3fku,unlocated:no-match,,,,,2026-10-21
@@ -340,8 +342,6 @@ a8b41b01e4b4,agents/agent-evaluation.md,S1895,unlocated:no-match,,,,,2026-10-10
 aace3e2d7068,agents/agent-evaluation.md,S-rwgksb6h,located,"What is automated ML? AutoML - Azure Machine Learning | Microsoft Learn > Training, validation, and test data",evaluation;bias;final;fit;introduc;tuning;appli;evaluat,19df541f0d498223,"However, the same validation data is used for each iteration of tuning, which introduces model evaluation bias since the model continues to improve and fit",2026-10-10
 ad16f77079b5,agents/agent-evaluation.md,S-ll5srdcw,unlocated:no-match,,,,,2026-10-10
 aece9f2ca5c0,agents/agent-evaluation.md,S-w2g2bnsw,located,BEIR: A Heterogeneous Benchmark for Zero-shot Evaluation of Information Retrieval Models > 3 The BEIR Benchmark > 3.2 BEIR Software and Framework,standard;mrr;top-k;map;precision;dcg;metric;ndcg,4e2977f39d75c952,"The software also provides you with all IR-based metrics from Precision, Recall, MAP (Mean Average Precision), MRR (Mean Reciprocal Rate) to nDCG (Normalised Cumulative Discount",2026-10-11
-b1e2dd011ecf,agents/agent-evaluation.md,S1899,located,Title:$τ$-bench: A Benchmark for Tool-Agent-User Interaction in Real-World Domains,evaluation;gpt;gpt-4o;metric;reliability;retail;task;pass,711123293942abd9,We employ an efficient and faithful evaluation process that compares the database state at the end of a conversation with the annotated goal state. We,2026-10-10
-b1e2dd011ecf,agents/agent-evaluation.md,S1900,unlocated:no-match,,,,,2026-10-10
 b4194d67baeb,agents/agent-evaluation.md,S-onkwuwst,unlocated:no-match,,,,,2026-10-21
 b4194d67baeb,agents/agent-evaluation.md,S-p7dq3fku,unlocated:no-match,,,,,2026-10-21
 bc4285d03017,agents/agent-evaluation.md,S-6jcocxnl,unlocated:no-match,,,,,2026-10-21

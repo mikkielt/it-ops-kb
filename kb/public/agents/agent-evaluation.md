@@ -161,8 +161,8 @@ capability/safety-eval ground for an agent that happens to be hosted in Azure AI
   model available, prefer pairwise or pass/fail judgments and control for length bias, and validate the
   judge's agreement with human labels before scaling up, since model grading carries its own error rate. [DOC S1894]
 - τ-bench (Sierra) is the origin of the `pass^k` metric applied to tool-agent-user interaction tasks and
-  reported a reliability gap (e.g. GPT-4o at 61% pass@1 but 25% pass@8 on retail tasks in the original
-  2024 paper); τ2-bench/τ3-bench (MIT-licensed repository, v1.0.1, 2026-07) continue the line and define
+  reported a reliability gap (the original 2024 paper reports GPT-4o succeeding on under 50% of tasks and
+  under 25% pass^8 in retail); τ2-bench/τ3-bench (MIT-licensed repository, v1.0.1, 2026-07) continue the line and define
   task grading via `evaluation_criteria.actions` and a `reward_basis` gate. [DOC S1899, S1900]
 
 ### Judging a retriever against labelled queries
