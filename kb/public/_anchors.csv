@@ -8828,6 +8828,7 @@ f9e69d474f69,gitlab/git-test-repositories.md,S-j4qkzgvv,located,,mark;upstream;r
 a087518feaca,gitlab/git-trailers-and-hooks.md,S-d6iv4nbm,unlocated:no-match,,,,,2026-10-10
 a57d8f6cb75d,gitlab/git-trailers-and-hooks.md,S-wtbq3lvm,located,,non;non-whitespac;prec;whitespace-only;group;must;befor;last,57ca0e629986bb92,The group must be preceded by one or more empty (or whitespace-only) lines. The group must either be at the end of the input or,2026-10-10
 afd8fc43a49f,gitlab/git-trailers-and-hooks.md,S-wjfrtzpf,unlocated:no-match,,,,,2026-10-10
+afe94bc1ad90,gitlab/git-trailers-and-hooks.md,S-wtbq3lvm,unlocated:no-match,,,,,2026-10-21
 b7ce9d923c18,gitlab/git-trailers-and-hooks.md,S-wk436jat,unlocated:no-match,,,,,2026-10-20
 b97112093f4b,gitlab/git-trailers-and-hooks.md,S-kbwvfzcv,located,,fail;run;error;command;trailer,cd7bba423f112b13,"error((""running trailer command '%s' failed""), cmd.buf);",2026-10-19
 c15a16a6daf3,gitlab/git-trailers-and-hooks.md,S-wtbq3lvm,unlocated:no-match,,,,,2026-10-10
@@ -8842,7 +8843,6 @@ d54cd07dbcdf,gitlab/git-trailers-and-hooks.md,S-zhftykfq,unlocated:no-match,,,,,
 d679b08d420b,gitlab/git-trailers-and-hooks.md,S-kbwvfzcv,located,,configur;command;trailer,ba9409c8e4bd6040,Add an arg item for each configured trailer with a command,2026-10-19
 dc9c55ccf279,gitlab/git-trailers-and-hooks.md,S-7dwkyip6,unlocated:no-match,,,,,2026-10-19
 dc9c55ccf279,gitlab/git-trailers-and-hooks.md,S-kbwvfzcv,unlocated:no-match,,,,,2026-10-19
-df7dadc16951,gitlab/git-trailers-and-hooks.md,S-wtbq3lvm,located,,prec;whitespace-only;one;whitespac;empty;line,2cefcf276e78673e,The group must be preceded by one or more empty (or whitespace-only) lines.,2026-10-10
 e1f65009539f,gitlab/git-trailers-and-hooks.md,S-kr4uocm7,located,,select;modifi;copi;delet;added;renam;file,eded7476e806e6a9,"Select only files that are Added (A), Copied (C), Deleted (D), Modified (M), Renamed (R)",2026-10-20
 e3e23fad2e39,gitlab/git-trailers-and-hooks.md,S-gvt5wbk7,unlocated:no-match,,,,,2026-10-17
 e3e23fad2e39,gitlab/git-trailers-and-hooks.md,S-iz4bgagx,unlocated:no-match,,,,,2026-10-17
