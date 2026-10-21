@@ -2854,14 +2854,20 @@ def docs_mcp_config():
 
 def dispatch_plan(group, members, ctx):
     """What one brief part's session may touch, from the part's rows: {files: the group's owned files in it (absolute),
-    clones: the census clones its `git show` and `git diff` commands read, fetch: {row id: the `curl` argv of its page},
-    learn: [row id] read with the Learn tool, skipped: [row id] whose page no permission rule can name exactly}."""
-    clones, fetch, learn, skipped = set(), {}, set(), []
+    git: the argv of each `git show` and `git diff` line of its rows (the clone as an absolute path), fetch: {row id:
+    the `curl` argv of its page}, learn: [row id] read with the Learn tool, skipped: [row id] whose page no permission
+    rule can name exactly}."""
+    git, fetch, learn, skipped = set(), {}, set(), []
     for r, _, _ in members:
         for line in read_commands(r, ctx):
-            git, page = re.match(r"git -C (\S+) (?:show|diff) ", line), FETCH_LINE.fullmatch(line)
-            if git:
-                clones.add(os.path.join(kbcommon.HOME, git.group(1)))
+            page = FETCH_LINE.fullmatch(line)
+            if re.match(r"git -C \S+ (?:show|diff) ", line):
+                _, _, clone, *args = line.split(" ")
+                if "*" in line or shlex.join(args) != " ".join(args):  # `*` is a wildcard; a quote differs
+                    if r["id"] not in skipped:
+                        skipped.append(r["id"])
+                else:
+                    git.add(("git", "-C", os.path.join(kbcommon.HOME, clone), *args))
             elif line.startswith("microsoft_docs_fetch ") or line == MEMDOCS_LINE:
                 learn.add(r["id"])
             elif page:
@@ -2870,7 +2876,7 @@ def dispatch_plan(group, members, ctx):
                     fetch[r["id"]] = ["curl", "-sSL", *[x for k, v in heads for x in ("-H", f"{k}: {v}")], page.group(1)]
                 else:
                     skipped.append(r["id"])
-    return {"files": [os.path.join(KB, rel) for rel in owned_files(group, members)], "clones": sorted(clones),
+    return {"files": [os.path.join(KB, rel) for rel in owned_files(group, members)], "git": sorted(git),
             "fetch": fetch, "learn": sorted(learn), "skipped": skipped}
 
 
@@ -2889,8 +2895,8 @@ def worktrees_file(files):
 def dispatch_rules(plan, scratch):
     """(allow, tools) of a session: the `--allowedTools` rules and the `--tools` set. Read and Edit rules name each
     owned file as an absolute path (`//` is the filesystem root), so no other repository file is readable or editable
-    (the working directory is the empty scratch directory, and `dontAsk` denies the rest); Bash holds only the clone's
-    `git show` and `git diff`, each page's own `curl` line and `kbid.py url`."""
+    (the working directory is the empty scratch directory, and `dontAsk` denies the rest); Bash holds only the exact
+    `git show` and `git diff` lines of the brief (no wildcard), each page's own `curl` line and `kbid.py url`."""
     def at(tool, path, tail=""):
         return f"{tool}(//{path.replace(os.sep, '/').lstrip('/')}{tail})"
 
@@ -2898,8 +2904,7 @@ def dispatch_rules(plan, scratch):
     for path in plan["files"]:
         allow += [at("Read", path), at("Edit", path)]
     allow += [at(tool, scratch, "/**") for tool in ("Read", "Edit", "Write")]
-    for clone in plan["clones"]:
-        allow += [f"Bash({shlex.join(['git', '-C', clone, verb])} *)" for verb in ("show", "diff")]
+    allow += [f"Bash({shlex.join(argv)})" for argv in plan["git"]]
     allow += sorted({f"Bash({shlex.join(argv)})" for argv in plan["fetch"].values()})
     allow.append(f"Bash({shlex.join(['python3', os.path.join(kbcommon.TOOLS, 'kbid.py'), 'url'])} *)")
     if plan["learn"]:
@@ -2928,8 +2933,8 @@ def dispatch_prompt(brief, plan, scratch):
            "- You run unattended in permission mode dontAsk: a tool, file or command not named here is denied. Do "
            "not look for another route: record that source as `unconfirmed` with the reason.",
            "- Files you may read and edit: " + (", ".join(plan["files"]) or "none") + ".", "- Commands you may run:"]
-    out += [f"  - {shlex.join(['git', '-C', c, 'show'])} <revision>:<path>, and {shlex.join(['git', '-C', c, 'diff'])} "
-            "<arguments> (the brief's relative `git -C` lines, with this absolute path)" for c in plan["clones"]]
+    out += [f"  - {shlex.join(argv)} (the brief's `git -C` line with the absolute path; write it exactly so)"
+            for argv in plan["git"]]
     out += [f"  - {sid}: {shlex.join(argv)} (what the brief's `fetch` line for it means; write it exactly so)"
             for sid, argv in sorted(plan["fetch"].items())]
     out.append(f"  - {shlex.join(['python3', os.path.join(kbcommon.TOOLS, 'kbid.py'), 'url'])} <URL> (the id of a new row)")

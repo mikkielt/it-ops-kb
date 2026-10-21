@@ -25,6 +25,25 @@
   "depends_on": [
     "ST-yvvpxspq"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "A brief git line that a permission rule cannot name exactly (it holds a * or a character shlex would quote): what does dispatch do with it?",
+      "options": [
+        "Leave its row in the plan's skipped list, so the session judges it from review items else unconfirmed",
+        "Allow it with a wildcard rule"
+      ],
+      "recommendation": "Leave its row in the plan's skipped list, so the session judges it from review items else unconfirmed",
+      "do": {
+        "Leave its row in the plan's skipped list, so the session judges it from review items else unconfirmed": "ST-27k6puoc",
+        "Allow it with a wildcard rule": "ST-27k6puoc"
+      },
+      "class": "design",
+      "answer": "Leave its row in the plan's skipped list, so the session judges it from review items else unconfirmed",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-yojt6y7v review"
   ],
