@@ -4208,6 +4208,71 @@ c55c05a003b9,arch/kerberos-linux-containers.md,S1605,unlocated:no-match,,,,,2026
 d1eb884252d5,arch/kerberos-linux-containers.md,S1606,unlocated:no-match,,,,,2026-10-10
 e25743944a42,arch/kerberos-linux-containers.md,S1604,unlocated:no-match,,,,,2026-10-10
 fb34585ef252,arch/kerberos-linux-containers.md,S1604,unlocated:no-match,,,,,2026-10-10
+00ec01973f41,arch/oxigraph-embedded-rdf.md,S-5ty62hy3,unlocated:no-match,,,,,2026-10-21
+00ec01973f41,arch/oxigraph-embedded-rdf.md,S-guwnayzo,located,Struct SparqlEvaluator,featur;http-client;client;call;federat;servic;http,e0bde769cf80d1ae,"If the ""http-client"" optional feature is enabled, a simple HTTP 1.1 client is used to execute SPARQL 1.1 Federated Query SERVICE calls.",2026-10-21
+05b6f4950d78,arch/oxigraph-embedded-rdf.md,S-45qncmsz,located,,build;crat;default;featur;memory;stor;rust;oxigraph,a8f3434bdbdfd42e,"""description"": ""# Pyoxigraph (Oxigraph for Python)\n\n[![PyPI](https://img.shields.io/pypi/v/pyoxigraph)](https://pypi.org/project/pyoxigraph/)\n[![Conda](https://img.shields.io/conda/vn/conda-forge/pyoxigraph)](https://anaconda.org/conda-forge/pyoxigraph)\n![PyPI - Implementation](https://img.shields.io/pypi/implementation/pyoxigraph)\n![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyoxigraph)\n[![actions status](https://github.com/oxigraph/oxigraph/workflows/build/badge.svg)](https://github.com/oxigraph/oxigraph/actions)\n[![Gitter](https://badges.gitter.im/oxigraph/community.svg)](https://gitter.im/oxigraph/community)\n\nPyoxigraph is a graph database library implementing the [SPARQL](https://www.w3.org/TR/sparql11-overview/) standard.\nIt is a Python library",2026-10-21
+05b6f4950d78,arch/oxigraph-embedded-rdf.md,S-5ty62hy3,unlocated:no-match,,,,,2026-10-21
+05b6f4950d78,arch/oxigraph-embedded-rdf.md,S-bytyyxb4,located,,build;default-featur;fals;memory;rock;rocksdb;featur;default,bca4fe9ce74ac078,"To build the library locally, don't forget to clone the submodules using git clone --recursive https://github.com/oxigraph/oxigraph.git to clone the repository including submodules or git submodule",2026-10-21
+05b6f4950d78,arch/oxigraph-embedded-rdf.md,S-rw3phgvf,unlocated:no-match,,,,,2026-10-21
+0ac7bfdf1302,arch/oxigraph-embedded-rdf.md,S-bytyyxb4,located,,backend;compil;default-featur;disabl;fallback;fals;in-memory;memory,94f71e82a014fd1c,It is possible to disable the RocksDB storage backend to only use the in-memory fallback by disabling the rocksdb default feature: oxigraph = { version,2026-10-21
+0db462ea0dd9,arch/oxigraph-embedded-rdf.md,S-a5hei6wa,unlocated:no-match,,,,,2026-10-21
+0db462ea0dd9,arch/oxigraph-embedded-rdf.md,S-fi3wa4vw,unlocated:no-match,,,,,2026-10-21
+0db462ea0dd9,arch/oxigraph-embedded-rdf.md,S-nxnd5tsp,unlocated:no-match,,,,,2026-10-21
+1b2f45188a36,arch/oxigraph-embedded-rdf.md,S-bfv5hqkn,unlocated:no-match,,,,,2026-10-21
+1b2f45188a36,arch/oxigraph-embedded-rdf.md,S-dcliqq63,unlocated:no-match,,,,,2026-10-21
+2532fd18c8d5,arch/oxigraph-embedded-rdf.md,S-bfv5hqkn,unlocated:no-match,,,,,2026-10-21
+2582b133f22e,arch/oxigraph-embedded-rdf.md,S-bytyyxb4,located,,1.2;behind;csv;json;preliminary;rdf-12;support;tsv,d787c2be9834ec85,"SPARQL Query Results XML Format, SPARQL 1.1 Query Results JSON Format and SPARQL 1.1 Query Results CSV and TSV Formats. Support for RDF 1.2 and",2026-10-21
+2582b133f22e,arch/oxigraph-embedded-rdf.md,S-z4kbze7e,located,Oxigraph,1.2;csv;draft;tsv;1.1;preliminary;result;support,2c6604f28c9eecb4,"SPARQL Query Results XML Format, SPARQL Query Results JSON Format and SPARQL Query Results CSV and TSV Formats. RDF Dataset Canonicalization. Most implementations are nearly",2026-10-21
+2794c3af794d,arch/oxigraph-embedded-rdf.md,S-bfv5hqkn,located,"Struct Store > Implementations§ > impl Store > pub fn flush(&self) -> Result<(), StorageError>",background;bit;lag;littl;saved;thread;ensur;flush,2aac89cda86f5b11,Flushes all buffers and ensures that all writes are saved on disk. Flushes are automatically done using background threads but might lag a little bit.,2026-10-21
+291cd89c093b,arch/oxigraph-embedded-rdf.md,S-nxnd5tsp,located,,argument;fals;default_graph;union;use_default_graph_as_union;named_graph;query;default,dcc07f8c391efee4,"#[expect(clippy::toomanyarguments, clippy::doclinkwithquotes)] #[pyo3(signature = (query, , baseiri = None, prefixes = None, usedefaultgraphasunion = false, defaultgraph = None, namedgraphs = None, substitutions = None, customfunctions",2026-10-21
+2c19d788931a,arch/oxigraph-embedded-rdf.md,S-3etbob6s,located,,prepar;query,f6408fb5ac1bb4c1,Struct PreparedSparqlQuery,2026-10-21
+2c19d788931a,arch/oxigraph-embedded-rdf.md,S-fi3wa4vw,located,Struct QueryDatasetSpecification > Implementations§ > impl QueryDatasetSpecification > pub fn default_graph_graphs(&self) -> Option<&[GraphName]>,union;default;graph;query,df4dd39bb13e1303,Returns the list of the store graphs that are available to the query as the default graph or None if the union of all graphs,2026-10-21
+2d9cbd49771a,arch/oxigraph-embedded-rdf.md,S-uohdppyd,located,,2.0;apach;apache-2.0;mit;crat;oxigraph,3c7c9d697481ee08,"""license"": ""MIT OR Apache-2.0"", ""links"": { ""dependencies"": ""/api/v1/crates/oxigraph/0.5.12/dependencies"",",2026-10-21
+2d9cbd49771a,arch/oxigraph-embedded-rdf.md,S-z4kbze7e,located,Oxigraph > License,apache-2.0;dual;option;2.0;apach;licen;oxigraph,a88981d3a50eb953,"at your option. Contribution Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in Oxigraph by you, as defined in the Apache-2.0 license,",2026-10-21
+324bcaff9884,arch/oxigraph-embedded-rdf.md,S-45qncmsz,unlocated:no-match,,,,,2026-10-21
+341960ff6dc1,arch/oxigraph-embedded-rdf.md,S-rw3phgvf,unlocated:no-match,,,,,2026-10-21
+3d354e18e288,arch/oxigraph-embedded-rdf.md,S-nxnd5tsp,located,,on-disk;disk;stor,2a219ab1c363e0ef,/// Warning: Backups are only possible for on-disk databases created by providing a path to :py:class:Store constructor.,2026-10-21
+43431bb0cd60,arch/oxigraph-embedded-rdf.md,S-coloiwrz,unlocated:no-match,,,,,2026-10-21
+43431bb0cd60,arch/oxigraph-embedded-rdf.md,S-ifojpzaw,unlocated:no-match,,,,,2026-10-21
+53eeb2775776,arch/oxigraph-embedded-rdf.md,S-guwnayzo,unlocated:no-match,,,,,2026-10-21
+53eeb2775776,arch/oxigraph-embedded-rdf.md,S-jgxzxayp,unlocated:no-match,,,,,2026-10-21
+53eeb2775776,arch/oxigraph-embedded-rdf.md,S-nxnd5tsp,unlocated:no-match,,,,,2026-10-21
+55e6c81b9d59,arch/oxigraph-embedded-rdf.md,S-dcliqq63,unlocated:no-match,,,,,2026-10-21
+57101a9b6aab,arch/oxigraph-embedded-rdf.md,S-guwnayzo,located,Struct SparqlEvaluator > Implementations§ > impl SparqlEvaluator > pub fn parse_query(,graph;select;parse_query;on_stor;execut;queryresult;solution;pars,f4a920bd87d6b8d3,"store.insert(QuadRef::new(ex, ex, ex, GraphNameRef::DefaultGraph))?; let preparedquery = SparqlEvaluator::new().parsequery(""SELECT ?s WHERE { ?s ?p ?o }"")?; if let QueryResults::Solutions(mut solutions) = preparedquery.onstore(&store).execute()? {",2026-10-21
+57101a9b6aab,arch/oxigraph-embedded-rdf.md,S-iqad4pe3,located,Type Alias QueryOptions,0.5.0;deprecat;sinc;evaluator;sparqlevaluator;option;query;queryoption,0922cd80c30161a0,pub type QueryOptions = SparqlEvaluator; 👎Deprecated since 0.5.0:,2026-10-21
+57101a9b6aab,arch/oxigraph-embedded-rdf.md,S-mryj4twm,unlocated:no-match,,,,,2026-10-21
+77870c7d2233,arch/oxigraph-embedded-rdf.md,S-dcliqq63,located,[0.5.0-beta.1] - 2025-06-20 > Added > Removed,0.5;databa;first;automatically;migrat;open;rdf-star;star,9589e55220b5f625,The rdf-star feature is not available anymore but triple terms are supported using rdf-12. RDF 1.2 does not support triple terms in the subject position,2026-10-21
+8453f8dfbe22,arch/oxigraph-embedded-rdf.md,S-bytyyxb4,located,,json;1.1;n-quad;n-tripl;tri;trig;tripl;turtl,f2a056bd8808cbf4,"Turtle, TriG, N-Triples, N-Quads, and RDF/XML RDF serialization formats for both data ingestion and retrieval. SPARQL Query Results XML Format, SPARQL 1.1 Query Results JSON",2026-10-21
+8453f8dfbe22,arch/oxigraph-embedded-rdf.md,S-dcliqq63,unlocated:no-match,,,,,2026-10-21
+8453f8dfbe22,arch/oxigraph-embedded-rdf.md,S-z4kbze7e,unlocated:no-match,,,,,2026-10-21
+8ca876330f2c,arch/oxigraph-embedded-rdf.md,S-z2qagps6,unlocated:no-match,,,,,2026-10-21
+925fea1bea93,arch/oxigraph-embedded-rdf.md,S-uohdppyd,located,,newest;stabl;0.5.12;version,9176351cffa81da4,"""newestversion"": ""0.5.12"", ""maxstableversion"": ""0.5.12"",",2026-10-21
+952251030174,arch/oxigraph-embedded-rdf.md,S-3etbob6s,located,Struct PreparedSparqlQuery > Implementations§ > impl PreparedSparqlQuery,dataset_mut;specification;dataset;mut;prepar;query,354f2b7282b5ce6a,pub fn datasetmut(&mut self) -> &mut QueryDataset Returns the query dataset specification of this prepared query.,2026-10-21
+952251030174,arch/oxigraph-embedded-rdf.md,S-fi3wa4vw,unlocated:no-match,,,,,2026-10-21
+a366b324854a,arch/oxigraph-embedded-rdf.md,S-bfv5hqkn,unlocated:no-match,,,,,2026-10-21
+a3df6a122004,arch/oxigraph-embedded-rdf.md,S-3qbz2t4u,unlocated:no-match,,,,,2026-10-21
+a3df6a122004,arch/oxigraph-embedded-rdf.md,S-z4kbze7e,unlocated:no-match,,,,,2026-10-21
+a983bcd50c23,arch/oxigraph-embedded-rdf.md,S-z4kbze7e,located,Oxigraph,file;key;key-valu;read;rock;rocksdb;utility;valu,aa418ffc77b851ec,"Its goal is to provide a compliant, safe, and fast graph database based on the RocksDB key-value store. It is written in Rust. It also",2026-10-21
+b5536d7e4821,arch/oxigraph-embedded-rdf.md,S-bfv5hqkn,unlocated:no-match,,,,,2026-10-21
+c411e7c8d7b6,arch/oxigraph-embedded-rdf.md,S-dcliqq63,located,,0.5.0-beta.5;cancellation;cancellationtoken;token;run;0.5.0;beta;query,2a3094bee99c98f7,[0.5.0-beta.5] - 2025-09-07 Added spareval: a CancellationToken to easily cancel a running SPARQL query.,2026-10-21
+c411e7c8d7b6,arch/oxigraph-embedded-rdf.md,S-guwnayzo,located,Struct SparqlEvaluator > Implementations§ > impl SparqlEvaluator > pub fn with_cancellation_token(,with_cancellation_token;cancellationtoken;cancellation;token;query,e17b3227b9d65222,let cancellationtoken = CancellationToken::new(); if let QueryResults::Solutions(mut solutions) = SparqlEvaluator::new() .withcancellationtoken(cancellationtoken.clone()),2026-10-21
+c67bd0da95b1,arch/oxigraph-embedded-rdf.md,S-bfv5hqkn,unlocated:no-match,,,,,2026-10-21
+c786be6d3c90,arch/oxigraph-embedded-rdf.md,S-a5hei6wa,unlocated:no-match,,,,,2026-10-21
+c786be6d3c90,arch/oxigraph-embedded-rdf.md,S-axwbq3bp,unlocated:no-match,,,,,2026-10-21
+ca79e3e49b02,arch/oxigraph-embedded-rdf.md,S-bfv5hqkn,unlocated:no-match,,,,,2026-10-21
+ca79e3e49b02,arch/oxigraph-embedded-rdf.md,S-mzu53xnc,unlocated:no-match,,,,,2026-10-21
+cff158d7d35d,arch/oxigraph-embedded-rdf.md,S-bfv5hqkn,unlocated:no-match,,,,,2026-10-21
+cff158d7d35d,arch/oxigraph-embedded-rdf.md,S-z4kbze7e,unlocated:no-match,,,,,2026-10-21
+db5829cdfe20,arch/oxigraph-embedded-rdf.md,S-guwnayzo,located,Struct SparqlEvaluator,enabl;featur;http-client;optional;client;simpl;1.1;call,e0bde769cf80d1ae,"If the ""http-client"" optional feature is enabled, a simple HTTP 1.1 client is used to execute SPARQL 1.1 Federated Query SERVICE calls.",2026-10-21
+de4931e094e8,arch/oxigraph-embedded-rdf.md,S-bytyyxb4,located,,build;memory;rock;rocksdb,3c8e680c09e13286,"To build the library locally, don't forget to clone the submodules using git clone --recursive https://github.com/oxigraph/oxigraph.git to clone the repository including submodules or git submodule",2026-10-21
+e2081465b04b,arch/oxigraph-embedded-rdf.md,S-nxnd5tsp,located,,store.read_only;read_only;static;open;read;stor,29546c39659dd014,/// To open a static read-only instance use :py:func:Store.readonly.,2026-10-21
+ee5c57ad508d,arch/oxigraph-embedded-rdf.md,S-3qbz2t4u,located,Installation,link;pkg;pkg-config;shar;config;featur;rocksdb;default,ec124bca33e4dd6c,Some build options (cargo features) are available: rocksdb-pkg-config: links against an already compiled rocksdb shared library found using pkg-config. native-tls: Enables Oxigraph HTTP client for,2026-10-21
+ee5c57ad508d,arch/oxigraph-embedded-rdf.md,S-4ucs6ogm,located,,build;featur;part;bind;config;crat;default;link,648d14ac332e2257,RocksDB bindings for Oxigraph. By default it builds RocksDB as part of this crate. It is also possible to dynamically link to RocksDB using the,2026-10-21
+f27b045b0005,arch/oxigraph-embedded-rdf.md,S-5ty62hy3,unlocated:no-match,,,,,2026-10-21
+f27b045b0005,arch/oxigraph-embedded-rdf.md,S-z4kbze7e,unlocated:no-match,,,,,2026-10-21
+f3d7de44b64a,arch/oxigraph-embedded-rdf.md,S-c4gfzuad,located,,2.0;apach;apache-2.0;gpl;gpl-2.0-only;oxrocksdb;oxrocksdb-sy;sys,58fd794222c38fa4,"license = ""GPL-2.0-only OR Apache-2.0"" repository = ""https://github.com/oxigraph/oxigraph/tree/main/oxrocksdb-sys""",2026-10-21
+fede458047bd,arch/oxigraph-embedded-rdf.md,S-5ty62hy3,unlocated:no-match,,,,,2026-10-21
+ff001cee0789,arch/oxigraph-embedded-rdf.md,S-bfv5hqkn,located,"Struct Store > Implementations§ > impl Store > pub fn open_read_only(path: impl AsRef<Path>) -> Result<Self, StorageError>",behavior;other;process;undefin;read-only;whil;having;databas,db747377b5c8f68b,Opening as read-only while having an other process writing the database is undefined behavior.,2026-10-21
 078fd3f0d114,arch/podman-api-socket.md,S-noii6ew2,located,NAME > DESCRIPTION > Security,arbitrary;audit;code;execution;full;functionality;grant;limit,fce4c89fb2589283,"allows arbitrary code execution as the user running the API, with no ability to limit or audit this access.",2026-10-15
 2adeb00888a5,arch/podman-api-socket.md,S-noii6ew2,located,NAME > DESCRIPTION > Run the command in a systemd service,one;support;listen;command;api;socket,5ecfd9f6b5f37257,The podman system service command does not support more than one listening socket for the API service.,2026-10-15
 5584ed79dae0,arch/podman-api-socket.md,S742,located,Configure permissions > Tool-specific permission rules > Bash > Read-only commands,connection;daemon;podman;docker;select;another;url;flag,bd22a396bbc01c10,"docker pointed at another daemon: read-only forms of docker prompt when the command carries a flag that selects a different daemon, such as -H, --context,",2026-10-21
