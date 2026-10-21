@@ -2009,28 +2009,37 @@ def owner_of(files):
     return min(weight, key=lambda d: (-weight[d], d)) if weight else UNCITED
 
 
-def phase2_context(rows, log, flog=None):
+def phase2_context(rows, log, flog=None, group=None):
     """What groups and brief share, with no network and no model: the date, the rows phase 2 reads by owner group
     (`members`: group -> [(row, citing files, queue record)]), the fact diff items, the cited lines and the providers.
     A group with a row left to read also lists the rows of its that `apply` gave an outcome (`applied_rows`, an empty
     queue record), so its brief parts keep their numbers once an earlier part is applied; a group with none left is
-    dropped."""
+    dropped. `groups` names every such group. With `group`, only that group's rows get review items, repin items and a
+    queue record (the owners come from the cited lines alone), so `members` holds that group only."""
     todo, held = phase2_rows(rows), applied_rows(rows)
     ids = {r["id"] for r in todo}
     fd_rows = factdiff_log_rows(rows, log, flog) if ids else []
     cited = kbfacts.cited_lines(ids | {r["id"] for r in held}) if ids else {}
     judged = read_judged(log) if ids else {}
-    items = with_repin_items(unsupported(review_by_source(ids, fd_rows), judged), todo) if ids else {}
-    queue = {q["id"]: q for q in reading_queue(rows, fd_rows, items, cited)}
-    root, members = os.path.basename(KB), defaultdict(list)
+    root, owned = os.path.basename(KB), defaultdict(list)
     for r in sorted(todo + held if ids else [], key=lambda r: r["id"]):
         files = citing_files(r, cited, root)
-        members[owner_of(files)].append((r, files, queue.get(r["id"]) or {
-            "id": r["id"], "facts": 0, "items": 0, "partial": 0, "cached": True, "mode": "applied", "chars": 0}))
-    members = {g: ms for g, ms in members.items() if unread(ms)}
+        owned[owner_of(files)].append((r, files))
+    owned = {g: ms for g, ms in owned.items() if any(not r["outcome"] for r, _ in ms)}
+    names = sorted(owned)
+    if group is not None:
+        owned = {g: ms for g, ms in owned.items() if g == group}
+    mine = {r["id"] for ms in owned.values() for r, _ in ms}
+    todo = [r for r in todo if r["id"] in mine]
+    ids = {r["id"] for r in todo}
+    items = with_repin_items(unsupported(review_by_source(ids, fd_rows), judged), todo) if ids else {}
+    queue = {q["id"]: q for q in reading_queue(todo, fd_rows, items, cited)}
+    members = {g: [(r, files, queue.get(r["id"]) or {
+        "id": r["id"], "facts": 0, "items": 0, "partial": 0, "cached": True, "mode": "applied", "chars": 0}) for r, files in ms]
+        for g, ms in owned.items()}
     date = ql_capture.phase_date(path=log)
     flog_rel = os.path.relpath(os.path.abspath(flog), kbcommon.HOME).replace(os.sep, "/") if flog else census_path(f"factdiff-{date}.csv")
-    return {"date": date, "root": root, "members": dict(sorted(members.items())), "items": items, "judged": judged, "flog": flog_rel,
+    return {"date": date, "root": root, "groups": names, "members": dict(sorted(members.items())), "items": items, "judged": judged, "flog": flog_rel,
             "log": os.path.relpath(os.path.abspath(log), kbcommon.HOME).replace(os.sep, "/"),
             "providers": provider.providers(factdiff.ROOT)}
 
@@ -2245,9 +2254,9 @@ def cmd_brief(a, tally):
     if err:
         print(err)
         return 2
-    ctx = phase2_context(rows, a.log, a.factdiff)
+    ctx = phase2_context(rows, a.log, a.factdiff, a.group)
     if a.group not in ctx["members"]:
-        print(f"no group {a.group!r} in the queue of {a.log}; groups: " + (", ".join(ctx["members"]) or "none"))
+        print(f"no group {a.group!r} in the queue of {a.log}; groups: " + (", ".join(ctx["groups"]) or "none"))
         return 2
     parts = brief_parts(a.group, ctx["members"][a.group], ctx)
     if not 1 <= a.part <= len(parts):
@@ -3098,9 +3107,9 @@ def cmd_dispatch(a, tally):
     if a.max_turns < 1 or a.max_budget_usd <= 0:
         print("--max-turns and --max-budget-usd must be positive")
         return 2
-    ctx = phase2_context(rows, a.log, a.factdiff)
+    ctx = phase2_context(rows, a.log, a.factdiff, a.group)
     if a.group not in ctx["members"]:
-        print(f"no group {a.group!r} in the queue of {a.log}; groups: " + (", ".join(ctx["members"]) or "none"))
+        print(f"no group {a.group!r} in the queue of {a.log}; groups: " + (", ".join(ctx["groups"]) or "none"))
         return 2
     packed, rules = brief_packs(a.group, ctx["members"][a.group], ctx)
     if not 1 <= a.part <= len(packed):
