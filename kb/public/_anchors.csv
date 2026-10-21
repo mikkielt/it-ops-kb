@@ -14725,11 +14725,13 @@ e7c11a0c0a1a,security/baselines-catalog.csv,S-cwnwnkri,unlocated:no-match,,,,,20
 16a989171159,security/baselines-catalog.md,S-uzuvf3vo,unlocated:fetch-error,,,,,2026-10-10
 17a017110cfd,security/baselines-catalog.md,S1598,located,,folder;version;security,3534e4baed028312,"""RecoveryConsoleAllowFloppyCopyAndAllDrives"",""AZ-WIN-00148"",""Recovery console: Allow floppy copy and access to all drives and all folders"",""HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Setup\RecoveryConsole"",""SetCommand"",""REGDWORD"",""./Vendor/MSFT/Policy"",""Config/LocalPoliciesSecurityOptions/RecoveryConsoleAllowFloppyCopyAndAccessToAllDrivesAndAllFolders"",""Integer"",""0"",""0"",""0"",""Range(0, 1)"",""Equals(0)"",""Equals(0)"",""Equals(0)"",""Critical"",""Domain Controller, Member Server, Workgroup Member"",""Security Options"",""Configures 'Recovery console: Allow floppy",2026-10-10
 2523b68a4925,security/baselines-catalog.md,S1470,unlocated:not-text,,,,,2026-10-10
+264054f84607,security/baselines-catalog.md,S1400,unlocated:no-match,,,,,2026-10-21
+27be6e61181c,security/baselines-catalog.md,S1403,unlocated:no-match,,,,,2026-10-21
 506f7d1fa907,security/baselines-catalog.md,S-cvu2vf7c,unlocated:no-match,,,,,2026-10-10
 5cf9499519dd,security/baselines-catalog.md,S1470,unlocated:not-text,,,,,2026-10-10
-5e4e41af03ce,security/baselines-catalog.md,S1403,unlocated:no-match,,,,,2026-10-10
-6b0c4a36f93a,security/baselines-catalog.md,S1418,unlocated:fetch-error,,,,,2026-10-10
-6b0c4a36f93a,security/baselines-catalog.md,S1419,unlocated:fetch-error,,,,,2026-10-10
+6147d4a3ab89,security/baselines-catalog.md,S1424,unlocated:no-match,,,,,2026-10-21
+6b0c4a36f93a,security/baselines-catalog.md,S1418,unlocated:no-match,,,,,2026-10-21
+6b0c4a36f93a,security/baselines-catalog.md,S1419,unlocated:no-match,,,,,2026-10-21
 71a2f6637e99,security/baselines-catalog.md,S-li2s6pgb,unlocated:no-match,,,,,2026-10-10
 71a2f6637e99,security/baselines-catalog.md,S-ycjlut3h,unlocated:no-match,,,,,2026-10-10
 741ce8e0b1f5,security/baselines-catalog.md,S1404,located,Security baselines guide | Microsoft Learn > Baseline principles,caus;contemporary;issu;operational;wors;administrativ;mitigat;right,8df4aec85a203ba9,"The baselines are designed for well-managed, security-conscious organizations in which standard end users don't have administrative rights. A baseline enforces a setting only if it",2026-10-21
@@ -14738,12 +14740,11 @@ e7c11a0c0a1a,security/baselines-catalog.csv,S-cwnwnkri,unlocated:no-match,,,,,20
 7627aa1c9200,security/baselines-catalog.md,S-vxnukaep,unlocated:no-match,,,,,2026-10-10
 7fdc30fcc6b2,security/baselines-catalog.md,S-nwnif62g,unlocated:fetch-error,,,,,2026-10-10
 7fdc30fcc6b2,security/baselines-catalog.md,S-uzuvf3vo,unlocated:fetch-error,,,,,2026-10-10
-802da98f0009,security/baselines-catalog.md,S1402,unlocated:fetch-error,,,,,2026-10-10
-8d2843eccc76,security/baselines-catalog.md,S1401,unlocated:fetch-error,,,,,2026-10-10
+802da98f0009,security/baselines-catalog.md,S1402,unlocated:no-match,,,,,2026-10-21
+8d2843eccc76,security/baselines-catalog.md,S1401,unlocated:no-match,,,,,2026-10-21
 8df4a1b966fa,security/baselines-catalog.md,S1424,located,Configure Security Baselines for Windows Server 2025 | Microsoft Learn > Why security baselines matter > Network exposure reduction,1.2;tls;higher;baselin,c3f8e4c9cb0e606d,The baseline restricts TLS to version 1.2 or higher with modern cipher suites and disables IP source routing.,2026-10-20
 918616431bfd,security/baselines-catalog.md,S1471,unlocated:not-text,,,,,2026-10-10
 93ad10d5e9a5,security/baselines-catalog.md,S1598,located,,csp;ruleid;cis;stig;expect;rule;path;valu,337f6b6771561dc2,"""Name"",""ExtraId"",""Control Name"",""Registry Key"",""Registry Value"",""Registry Value Type"",""CSP Name"",""CSP Path"",""CSP Value Type"",""Default Value: Domain Controller"",""Default Value: Member Server"",""Default Value: Workgroup Member"",""Allowed Value"",""Expected Value: Domain Controller"",""Expected Value: Member",2026-10-10
-9c1f418c3b22,security/baselines-catalog.md,S1400,unlocated:no-match,,,,,2026-10-10
 9e6cb72b1fc2,security/baselines-catalog.md,S1470,unlocated:not-text,,,,,2026-10-10
 9e6cb72b1fc2,security/baselines-catalog.md,S1471,unlocated:not-text,,,,,2026-10-10
 9e6cb72b1fc2,security/baselines-catalog.md,S1472,unlocated:not-text,,,,,2026-10-10

@@ -114,7 +114,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `auth/gitlab-ci-identity` | P0 | complete | `auth/gitlab-ci-identity.md` | 4 |
 | `auth/gmsa-dmsa` | P0 | complete | `auth/gmsa-dmsa.md` | 5 |
 | `auth/kerberos` | P0 | complete | `auth/kerberos.md` | 16 |
-| `auth/ldap-smb-signing` | P0 | complete | `auth/ldap-smb-signing.md` | 16 |
+| `auth/ldap-smb-signing` | P0 | complete | `auth/ldap-smb-signing.md` | 17 |
 | `auth/msal-public-client` | P0 | complete | `auth/msal-public-client.md` | 10 |
 | `auth/ntlm-deprecation` | P0 | complete | `auth/ntlm-deprecation.md` | 7 |
 | `auth/permissions-matrix` | P0 | partial | `auth/permissions-matrix.csv` | 24 |
