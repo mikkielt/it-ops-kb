@@ -103,7 +103,7 @@ files: [agents/copilot-studio-feature-map.csv]
   Telegram, Twilio, Line, Kik, GroupMe, Direct Line Speech, Email). Admins can block individual
   channels via **Agent access channels** in the Power Platform admin center or via DLP. [DOC S1977]
 - Users can't send or upload attachments to the agent chat on any channel, even where the channel
-  supports attachments; the exception is a message sent to a Bot Framework skill that processes
+  supports attachments; the exception is a message sent to an Azure Bot Service skill that processes
   attachments. [DOC S1977]
 
 ### Authentication and SSO
