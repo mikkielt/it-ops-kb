@@ -8353,6 +8353,11 @@ fbd6bcd794a8,entra/stale-devices.md,S545,located,How To: Manage stale devices in
 42f6f9d42d97,gitlab/automated-merge-requests.md,S-ld3az336,unlocated:no-match,,,,,2026-10-10
 445d02fb1636,gitlab/automated-merge-requests.md,S446,located,,free;premium;ultimat,1079027ea7378e53,"Tier: Free, Premium, Ultimate",2026-10-10
 445d02fb1636,gitlab/automated-merge-requests.md,S-zh7oqkup,located,,sourc;result;branch;merg;pipelin,d22da98d8614aac2,Merged results pipelines test a temporary merged commit that combines code from the source and target branches.,2026-10-10
+44deae5882aa,gitlab/automated-merge-requests.md,S-3dktkos7,unlocated:no-match,,,,,2026-10-21
+44deae5882aa,gitlab/automated-merge-requests.md,S-hhzv5qd6,unlocated:no-match,,,,,2026-10-21
+44deae5882aa,gitlab/automated-merge-requests.md,S-onak4imw,unlocated:no-match,,,,,2026-10-21
+44deae5882aa,gitlab/automated-merge-requests.md,S-r22oenkd,unlocated:no-match,,,,,2026-10-21
+44deae5882aa,gitlab/automated-merge-requests.md,S-ydwwcn45,unlocated:no-match,,,,,2026-10-21
 453a60a8d1a4,gitlab/automated-merge-requests.md,S-2d2dlaeq,unlocated:no-match,,,,,2026-10-10
 45924f51abcb,gitlab/automated-merge-requests.md,S-rivqro7b,unlocated:no-match,,,,,2026-10-10
 4a1d015dbb92,gitlab/automated-merge-requests.md,S-b5jz4lop,unlocated:no-match,,,,,2026-10-10
@@ -8417,11 +8422,6 @@ a98edda26635,gitlab/automated-merge-requests.md,S-rivqro7b,unlocated:no-match,,,
 a9d34c919588,gitlab/automated-merge-requests.md,S-7dwkyip6,unlocated:no-match,,,,,2026-10-10
 a9d34c919588,gitlab/automated-merge-requests.md,S-ygtpb7no,unlocated:no-match,,,,,2026-10-10
 b2da1843287c,gitlab/automated-merge-requests.md,S-7zthwzzb,unlocated:no-match,,,,,2026-10-10
-b558120023b6,gitlab/automated-merge-requests.md,S-3dktkos7,unlocated:no-match,,,,,2026-10-21
-b558120023b6,gitlab/automated-merge-requests.md,S-hhzv5qd6,unlocated:no-match,,,,,2026-10-21
-b558120023b6,gitlab/automated-merge-requests.md,S-onak4imw,unlocated:no-match,,,,,2026-10-21
-b558120023b6,gitlab/automated-merge-requests.md,S-r22oenkd,unlocated:no-match,,,,,2026-10-21
-b558120023b6,gitlab/automated-merge-requests.md,S-ydwwcn45,unlocated:no-match,,,,,2026-10-21
 b9ae506aa97b,gitlab/automated-merge-requests.md,S-hxibhwxc,unlocated:no-match,,,,,2026-10-10
 b9ae506aa97b,gitlab/automated-merge-requests.md,S-rivqro7b,unlocated:no-match,,,,,2026-10-10
 b9ae506aa97b,gitlab/automated-merge-requests.md,S-tnx2t4le,unlocated:no-match,,,,,2026-10-21
@@ -9233,8 +9233,6 @@ fcf108481737,gitlab/multi-repository-layouts.md,S-umm7t5f4,located,,file;user;de
 2554cc4216ee,gitlab/package-registries.md,S-ocjsmgvx,located,Supported package managers > Supported hash types,interfac;api;hash;support;registry;packag,678ba03bc64adc7e,You can view these values in the user interface or with the API. The package registry supports the following hash types:,2026-10-21
 2e1173173fc0,gitlab/package-registries.md,S-5lpubwd5,unlocated:no-match,,,,,2026-10-21
 3b826f628190,gitlab/package-registries.md,S-ocjsmgvx,located,Supported package managers,generally;availabl;pypi,741fbb78faabf55a,PyPI | Generally available,2026-10-21
-3c7b4db0d1ab,gitlab/package-registries.md,S-jk4rtq6g,located,,authentication;write_registry;read_registry;push;pull;writ;registry;git,a32451324d1f4b9f,"writerepository | Personal, group, project | Grants read and write access (pull and push) to repositories for the token's scope: private projects for a personal",2026-10-21
-3c7b4db0d1ab,gitlab/package-registries.md,S-owkwtkdm,located,Authenticate with username and password > Troubleshooting > Error: `docker login` fails with an authentication error,deploy;personal;pull;write_registry;writ;read_registry;read;push,b54456fa03ef3e88,"Confirm a personal access token or deploy token has the readregistry scope for pull access, or the readregistry and writeregistry scopes for push access.",2026-10-21
 3cf0711382d6,gitlab/package-registries.md,S-5lpubwd5,located,View the container registry > Container registry visibility permissions,anonymous;guest;reporter;public;enabl;privat;pull;view,ed47472e89b287ee,"| | Anonymous<br/>(Everyone on internet) | Guest | Reporter, Developer, Maintainer, Owner Public project with container registry visibility <br/> set to Everyone With Access (UI)",2026-10-21
 3d5682f1df42,gitlab/package-registries.md,S-5lpubwd5,unlocated:no-match,,,,,2026-10-21
 3d5682f1df42,gitlab/package-registries.md,S-n3qvicph,unlocated:no-match,,,,,2026-10-21
@@ -9252,6 +9250,8 @@ ad863f5b6a68,gitlab/package-registries.md,S-n3qvicph,unlocated:no-match,,,,,2026
 b08604d071c5,gitlab/package-registries.md,S-ocjsmgvx,located,Supported package managers > Publishing packages,publish;instanc;group;project;packag,3bf220b9504c6c8a,"Packages can be published to your project, group, or instance.",2026-10-21
 b4422f26d98b,gitlab/package-registries.md,S-5lpubwd5,located,View the container registry > Container registry visibility permissions,reporter;public;member;access;enabl;everyon;privat;project,ed47472e89b287ee,"| | Anonymous<br/>(Everyone on internet) | Guest | Reporter, Developer, Maintainer, Owner Public project with container registry visibility <br/> set to Everyone With Access (UI)",2026-10-21
 b4422f26d98b,gitlab/package-registries.md,S-gqpmeuse,located,Change the visibility of the container registry,everyon;disabl;visibl;container_registry_access_level;enabl;level;default;privat,27ffdb2ec00e9476,"containerregistryaccesslevel | string | no | The desired visibility of the container registry. One of enabled (default), private, or disabled. Descriptions of the possible values",2026-10-21
+b70ec1bb03fe,gitlab/package-registries.md,S-jk4rtq6g,located,,authentication;support;write_registry;read_registry;push;repository;pull;writ,a32451324d1f4b9f,"writerepository | Personal, group, project | Grants read and write access (pull and push) to repositories for the token's scope: private projects for a personal",2026-10-21
+b70ec1bb03fe,gitlab/package-registries.md,S-owkwtkdm,unlocated:no-match,,,,,2026-10-21
 b8dee46c4b3b,gitlab/package-registries.md,S-owkwtkdm,located,Authenticate with username and password > Use GitLab CI/CD to authenticate,per-job;read-writ;hold;ci_registry_password;ci_registry_user;job;user;writ,f0d2c64091d2a48b,"The CIREGISTRYUSER and CIREGISTRYPASSWORD CI/CD variables. CIREGISTRYUSER holds a per-job user with read-write access to the container registry,",2026-10-21
 ba473a8676d1,gitlab/package-registries.md,S-ocjsmgvx,located,Supported package managers > Publishing packages,publish;instanc;group;project;packag,3bf220b9504c6c8a,"Packages can be published to your project, group, or instance.",2026-10-21
 ba473a8676d1,gitlab/package-registries.md,S-v25mipeh,located,Package request forwarding security notice > Publish a PyPI package,availabl;publish;registry;group;project;packag,477d30d453913619,"If your project is in a group, PyPI packages published to the project registry are also available in the group registry.",2026-10-21
