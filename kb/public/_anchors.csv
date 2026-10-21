@@ -463,7 +463,7 @@ ff1fca0e995b,agents/agent-overuse-patterns.csv,S2167,unlocated:no-match,,,,,2026
 ff1fca0e995b,agents/agent-overuse-patterns.csv,S2168,located,Dependabot version updates > Updates for packages,decid;semver;packag;check;dependency;version;updat;dependabot,1efec5db92f4b580,Dependabot uses this information to check for outdated packages and applications. Dependabot determines if there is a new version of a dependency by looking at,2026-10-10
 00c4178176eb,agents/agent-overuse-patterns.md,S2173,unlocated:no-match,,,,,2026-10-10
 0277412a3494,agents/agent-overuse-patterns.md,S2174,unlocated:no-match,,,,,2026-10-10
-17e3fd14177d,agents/agent-overuse-patterns.md,S2163,unlocated:fetch-error,,,,,2026-10-10
+17e3fd14177d,agents/agent-overuse-patterns.md,S2163,unlocated:no-match,,,,,2026-10-21
 2e4f9cf8ad6e,agents/agent-overuse-patterns.md,S2164,unlocated:not-text,,,,,2026-10-10
 4677a1d54c8f,agents/agent-overuse-patterns.md,S150,unlocated:no-match,,,,,2026-10-10
 4677a1d54c8f,agents/agent-overuse-patterns.md,S154,unlocated:no-match,,,,,2026-10-10
@@ -471,9 +471,9 @@ ff1fca0e995b,agents/agent-overuse-patterns.csv,S2168,located,Dependabot version 
 4677a1d54c8f,agents/agent-overuse-patterns.md,S-sxtmngif,unlocated:no-match,,,,,2026-10-21
 4677a1d54c8f,agents/agent-overuse-patterns.md,S-t5dhva6p,unlocated:no-match,,,,,2026-10-21
 46e0ef4d7a78,agents/agent-overuse-patterns.md,S2174,located,,1.50;frontier;pric;day;roughly;current;case;run,6501b20e4db837ad,"A high-volume, low-margin workflow running 50,000 times per day at 3,000 tokens per run costs roughly $1.50/day at current frontier model prices - acceptable. The",2026-10-10
-47adac78056b,agents/agent-overuse-patterns.md,S2162,unlocated:fetch-error,,,,,2026-10-10
+47adac78056b,agents/agent-overuse-patterns.md,S2162,unlocated:no-match,,,,,2026-10-21
 4a7342013d80,agents/agent-overuse-patterns.md,S1925,located,AI Agent Orchestration Patterns - Azure Architecture Center | Microsoft Learn > Start with the right level of complexity,lowest;single-step;translation;direct;meet;summarization;classification;call,1275c563f7e4695a,Use the lowest level of complexity that reliably meets your requirements. Level | Description | When to use | Considerations Direct model call | A,2026-10-21
-4fc44b9d4fc0,agents/agent-overuse-patterns.md,S2171,unlocated:no-match,,,,,2026-10-10
+4ca1ec764cd3,agents/agent-overuse-patterns.md,S2166,unlocated:no-match,,,,,2026-10-21
 5358fdf481e4,agents/agent-overuse-patterns.md,S150,unlocated:no-match,,,,,2026-10-10
 5358fdf481e4,agents/agent-overuse-patterns.md,S825,unlocated:no-match,,,,,2026-10-10
 5358fdf481e4,agents/agent-overuse-patterns.md,S2166,unlocated:no-match,,,,,2026-10-10
@@ -485,20 +485,20 @@ ff1fca0e995b,agents/agent-overuse-patterns.csv,S2168,located,Dependabot version 
 8b25df56bd60,agents/agent-overuse-patterns.md,S1924,unlocated:not-text,,,,,2026-10-10
 8b66869a773a,agents/agent-overuse-patterns.md,S2164,unlocated:not-text,,,,,2026-10-10
 8b66869a773a,agents/agent-overuse-patterns.md,S2165,unlocated:no-match,,,,,2026-10-10
+8eb941ac1f6c,agents/agent-overuse-patterns.md,S2171,unlocated:no-match,,,,,2026-10-21
 9cce97184222,agents/agent-overuse-patterns.md,S1936,located,Equipping agents for the real world with Agent Skills > The anatomy of a skill > Skills and code execution,algorithm;application;expensiv;far;generation;list;reliability;sort,0a9959be11c3b1b5,"Large language models excel at many tasks, but certain operations are better suited for traditional code execution. For example, sorting a list via token generation",2026-10-10
-9fb08b86a64a,agents/agent-overuse-patterns.md,S2166,unlocated:no-match,,,,,2026-10-10
 a13b84045077,agents/agent-overuse-patterns.md,S-3zepbhux,unlocated:no-match,,,,,2026-10-10
 a7542e712a60,agents/agent-overuse-patterns.md,S1924,unlocated:not-text,,,,,2026-10-10
 ab2343bf1869,agents/agent-overuse-patterns.md,S2168,unlocated:no-match,,,,,2026-10-10
 b7a5e7b407be,agents/agent-overuse-patterns.md,S2170,unlocated:no-match,,,,,2026-10-10
 c1e967813286,agents/agent-overuse-patterns.md,S2169,located,Conventional Commits 1.0.0 > FAQ > How does this relate to SemVer?,major;minor;patch;version;fix;feat;conventional;break,36dce12b6ec90ba9,"fix type commits should be translated to PATCH releases. feat type commits should be translated to MINOR releases. Commits with BREAKING CHANGE in the commits,",2026-10-10
-d3cd6b4635f7,agents/agent-overuse-patterns.md,S2167,located,Renovate documentation¶ > Why use Renovate?¶,lock;pull;request;dependency;file;updat,33d7f39966785207,Get pull requests to update your dependencies and lock files.,2026-10-10
 d655b13ec984,agents/agent-overuse-patterns.md,S2173,located,The Hidden Economics of AI Agents: Managing Token Costs and Latency Trade-offs > The Latency Versus Accuracy Trade-off,flow;orchestrator-worker;might;second;worker;loop;call;llm,19544d8c45eb8811,A single LLM call might take 800 milliseconds. An Orchestrator-Worker flow with a Reflexion loop might take 10 to 30 seconds.,2026-10-10
 d655b13ec984,agents/agent-overuse-patterns.md,S2174,located,,least;add;commonly;react-styl;under;act;issu;react,114842cc6aa1b985,"Deterministic pipelines can execute individual steps in under 10ms; model-driven pipelines add at least 300-600ms per LLM call, and ReAct-style agents commonly issue 8-15 calls",2026-10-10
 d98e19e17a62,agents/agent-overuse-patterns.md,S2160,unlocated:no-match,,,,,2026-10-10
 de7eb98c5d74,agents/agent-overuse-patterns.md,S825,unlocated:no-match,,,,,2026-10-10
 f2824f6cf1c6,agents/agent-overuse-patterns.md,S2172,unlocated:not-text,,,,,2026-10-10
-f664e0080ad3,agents/agent-overuse-patterns.md,S2163,unlocated:fetch-error,,,,,2026-10-10
+f4d9b4943b75,agents/agent-overuse-patterns.md,S2167,located,Renovate documentation¶ > Why use Renovate?¶,lock;pull;request;dependency;file;updat,33d7f39966785207,Get pull requests to update your dependencies and lock files.,2026-10-21
+f664e0080ad3,agents/agent-overuse-patterns.md,S2163,unlocated:no-match,,,,,2026-10-21
 f9093e852e03,agents/agent-overuse-patterns.md,S1920,located,Building effective agents > When (and when not) to use agents,increa;simplest;find;latency;mean;possibl;trad;cost,9e8882e4386613de,"When building applications with LLMs, we recommend finding the simplest solution possible, and only increasing complexity when needed. This might mean not building agentic systems",2026-10-10
 079cb35fa7ad,agents/agent-planning-and-done.md,S-2wwcyoa4,located,The 2020 Scrum GuideTM > Scrum Events > Sprint Planning > Topic Three: How will the chosen work get done?,decompo;less;day;often;one;item;done;backlog,2b0027bfe19607a0,is often done by decomposing Product Backlog items into smaller work items of one day or less.,2026-10-21
 11d1cb86ca06,agents/agent-planning-and-done.md,S-2wwcyoa4,unlocated:no-match,,,,,2026-10-21
