@@ -2,7 +2,7 @@
   "id": "SP-5cyrnkw7",
   "kind": "sprint",
   "title": "The open gaps of the agents, claude, mcp, prior-art and python articles are researched against the census",
-  "status": "planned",
+  "status": "active",
   "goal": "every _gaps.md entry open on 2026-10-20 under the agents, claude, mcp, prior-art and python articles, or naming no topic, is researched into its article from official sources and closed, or carries a Tried note dated 2026-10-21 or later on what would answer it",
   "gates": [
     {
@@ -14,7 +14,11 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "creator": "op-f618a13e"
