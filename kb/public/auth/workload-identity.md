@@ -73,11 +73,12 @@ status: complete
 - Rotation without downtime: register the new certificate alongside the existing one, since Entra ID
   accepts tokens signed by any registered certificate, then switch the app and remove the old one;
   `keyCredentials` is multi-valued, so several certificates can be registered at once. [DOC S-rye46ky7, S-zb4abl74]
-- App instance property lock: for a multitenant app, this locks sensitive properties (credentials of
-  usage type `Sign` or `Verify`, and `tokenEncryptionKeyId`) from being modified after the app is
-  provisioned in another tenant; the lock can cover all properties at once and is on by default for apps
-  created in the Microsoft Entra admin center. It is a multitenant-app control, so single-tenant app
-  registrations (`sync-app`, `client-app`, etc.) are not the scenario it protects. [DOC S1304]
+- App instance property lock: locks sensitive properties of an application's service principal
+  (credentials of usage type `Sign` or `Verify`, and `tokenEncryptionKeyId`) against modification; the
+  lock can cover all properties at once. It applies to both single-tenant and multitenant applications,
+  so single-tenant registrations (`sync-app`, `client-app`, etc.) can use it too. Since June 2026 the
+  property lock is enabled by default for new applications; review the settings so they cover the
+  properties the app uses. [DOC S1304]
 
 ### Design implication
 - MSAL Python's certificate `client_credential` options need a private key MSAL can read (PEM or PFX),

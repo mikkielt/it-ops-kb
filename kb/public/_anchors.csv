@@ -5574,6 +5574,7 @@ e65c43c10a51,auth/windows-hello-for-business.md,S-ui2zukwr,located,GPO > Migrate
 1f3d32b50462,auth/workload-identity.md,S-zb4abl74,unlocated:no-match,,,,,2026-10-10
 228917f82910,auth/workload-identity.md,S1276,unlocated:no-match,,,,,2026-10-10
 228917f82910,auth/workload-identity.md,S1302,unlocated:no-match,,,,,2026-10-10
+2681990104e8,auth/workload-identity.md,S1304,unlocated:no-match,,,,,2026-10-21
 2bb05069a148,auth/workload-identity.md,S-ftk5lzj7,located,ConfidentialClientApplication Class > Constructor > Parameters,1.13.0;auth;certificat;client_assertion;completely;jwt;pem;pfx,81e3a77b43173ca7,"client\credential | Union[dict, str, None] <br><br><br>For PublicClientApplication, you use None here.<br><br>For ConfidentialClientApplication, it supports many different input formats for different scenarios.<br>Support using a client secret.Just",2026-10-21
 2bb05069a148,auth/workload-identity.md,S-wk6ahp72,unlocated:no-match,,,,,2026-10-10
 2bb05069a148,auth/workload-identity.md,S-zb4abl74,unlocated:no-match,,,,,2026-10-10
@@ -5582,7 +5583,6 @@ e65c43c10a51,auth/windows-hello-for-business.md,S-ui2zukwr,located,GPO > Migrate
 353b179b5e35,auth/workload-identity.md,S1289,unlocated:no-match,,,,,2026-10-21
 353b179b5e35,auth/workload-identity.md,S1305,unlocated:no-match,,,,,2026-10-10
 353b179b5e35,auth/workload-identity.md,S1306,unlocated:no-match,,,,,2026-10-10
-38ab73eddcf6,auth/workload-identity.md,S1304,unlocated:no-match,,,,,2026-10-10
 3c21dda0dea0,auth/workload-identity.md,S1293,located,Workload identity federation for app considerations - Microsoft Entra Workload ID | Microsoft Learn > General federated identity credential considerations,consum;don;object;principal;quota;servic;tenant;user-assign,1337ca7e9192a47a,Federated identity credentials don't consume the Microsoft Entra tenant service principal object quota. A maximum of 20 federated identity credentials can be added to an,2026-10-10
 44efa1ef22d0,auth/workload-identity.md,S-e2hdn5as,located,Tutorial: Enforce secret and certificate standards using application management policies - Microsoft Entra ID | Microsoft Learn > Recommended practices for secrets and certificates,azur;every;highly;shorter;vault;rotation;rotat;sensitiv,842e96500f642307,This means that you should rotate your certificates at least every 180 days. Setting a shorter lifetime for highly sensitive applications can further reduce the,2026-10-10
 4aa3b87c7e8a,auth/workload-identity.md,S1294,located,GitLab,mutabl;project;project_id;lab;gitlab;subject;git;sub,4577cb60b634e02f,"When you use mutable subjects with GitLab, your flexible federated identity credential expression must match the sub and projectid claims.",2026-10-10
