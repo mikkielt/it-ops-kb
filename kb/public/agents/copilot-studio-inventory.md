@@ -11,9 +11,10 @@ files: [agents/copilot-studio-feature-map.csv]
 # Copilot Studio feature inventory
 
 ## Summary
-- Copilot Studio ships three "harnesses" (execution engines): **GitHub Copilot harness**
-  (reasoning-heavy multi-step), **standard harness** (rule-based topics, most features below), and
-  **Copilot chat harness** (extends Microsoft 365 Copilot Chat with tenant knowledge). Harness
+- Copilot Studio ships four "harnesses" (execution engines): **GitHub Copilot harness**
+  (reasoning-heavy multi-step), **standard harness** (rule-based topics, most features below),
+  **Copilot chat harness** (extends Microsoft Copilot Chat with organisation knowledge) and
+  **Customer Conversation harness** (customer-facing voice and chat agents). Harness
   choice changes billing and available features. [DOC S1962]
 - Standard-harness agents are billed in **Copilot Credits** (renamed from "messages" 2025-09-01), sold
   as pay-as-you-go, a one-year prepurchase plan, or prepaid packs; unused credits don't roll over, and
@@ -36,9 +37,10 @@ files: [agents/copilot-studio-feature-map.csv]
 
 ### Topics, orchestration, instructions
 - Topics are authored on a visual canvas or in a **YAML code editor** (`kind: AdaptiveDialog`,
-  nodes, conditions, redirects); YAML nodes can be copy-pasted between topics, but Microsoft warns
-  that syntax errors can break the conversation and its own support "can't help remediate code
-  editor errors." [DOC S1963]
+  nodes, conditions, redirects); YAML can be copy-pasted between topics and agents, but Microsoft
+  says designing a topic entirely in the code editor and pasting complex topics isn't fully
+  supported. (The earlier warning that support "can't help remediate code editor errors" is no
+  longer on this page: UNK, not in S1963 as re-read 2026-10-21.) [DOC S1963]
 - **Generative orchestration** adds an LLM planning layer that selects the best combination of
   topics/tools/knowledge per turn, can auto-fill topic inputs from conversation context, and
   generates clarifying questions; it caps SharePoint knowledge sources at 25 site URLs/agent when

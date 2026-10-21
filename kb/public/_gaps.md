@@ -1914,3 +1914,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 - LINDDUN description (S1573) could not be re-verified: www.linddun.org fetch returned an unrelated KU Leuven status page on 2026-10-21; retry later. (topic: security/threat-model-inputs)
 - ATT&CK v20.0 (released 2026-10-13) supersedes v19.2; technique ids and mitigation/detection ids in attack-subset.csv were not re-extracted from a v20.0 STIX bundle. (topic: security/threat-model-inputs)
+
+## agents/copilot-studio-inventory
+
+- The warning that Copilot Studio support can't remediate code-editor syntax errors was not on the guidance/topics-code-editor page as re-read 2026-10-21; looked at that page only, not at other pages. Feature-map row 3 and the inventory topics bullet now carry it as UNK. (topic: agents/copilot-studio-inventory)

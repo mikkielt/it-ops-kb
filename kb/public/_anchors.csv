@@ -1355,8 +1355,6 @@ ef1ee75675e7,agents/coordination-messages.md,S2132,located,Manage costs effectiv
 fed6555c1ade,agents/coordination-messages.md,S1935,located,Writing effective tools for agents — with agents > Principles for writing effective tools > Returning meaningful context from your tools,0-index;hallucination;index;precision;resolv;retrieval;schem;significantly,5a5d416d33e8d233,alphanumeric UUIDs to more semantically meaningful and interpretable language (or even a 0-indexed ID scheme) significantly improves Claude's precision in retrieval tasks by reducing hallucinations.,2026-10-16
 088d0da87452,agents/copilot-studio-feature-map.csv,S1977,unlocated:no-match,,,,,2026-10-10
 08c2f2e29ca5,agents/copilot-studio-feature-map.csv,S1960,unlocated:no-match,,,,,2026-10-10
-1441a94a1c55,agents/copilot-studio-feature-map.csv,S1963,unlocated:no-match,,,,,2026-10-10
-1441a94a1c55,agents/copilot-studio-feature-map.csv,S1967,unlocated:no-match,,,,,2026-10-10
 231684d5fe90,agents/copilot-studio-feature-map.csv,S1975,unlocated:no-match,,,,,2026-10-10
 2ab363b89db4,agents/copilot-studio-feature-map.csv,S1965,unlocated:no-match,,,,,2026-10-21
 2ea253abdfbd,agents/copilot-studio-feature-map.csv,S1966,unlocated:no-match,,,,,2026-10-10
@@ -1392,17 +1390,19 @@ fed6555c1ade,agents/coordination-messages.md,S1935,located,Writing effective too
 a3dd17d9626c,agents/copilot-studio-feature-map.csv,S1974,unlocated:no-match,,,,,2026-10-10
 b6d9027cf86d,agents/copilot-studio-feature-map.csv,S1962,unlocated:no-match,,,,,2026-10-10
 b6d9027cf86d,agents/copilot-studio-feature-map.csv,S1975,unlocated:no-match,,,,,2026-10-10
+c50a93f28026,agents/copilot-studio-feature-map.csv,S1963,unlocated:no-match,,,,,2026-10-21
+c50a93f28026,agents/copilot-studio-feature-map.csv,S1967,unlocated:no-match,,,,,2026-10-21
 c73801c9af10,agents/copilot-studio-feature-map.csv,S1967,unlocated:no-match,,,,,2026-10-10
 c917d2ab8f05,agents/copilot-studio-feature-map.csv,S1960,unlocated:no-match,,,,,2026-10-10
 c917d2ab8f05,agents/copilot-studio-feature-map.csv,S1966,unlocated:no-match,,,,,2026-10-10
 c917d2ab8f05,agents/copilot-studio-feature-map.csv,S1977,unlocated:no-match,,,,,2026-10-10
-d436f7fbd333,agents/copilot-studio-feature-map.csv,S1963,unlocated:no-match,,,,,2026-10-10
 d8a8c5d2e70a,agents/copilot-studio-feature-map.csv,S1970,unlocated:no-match,,,,,2026-10-10
 d8a8c5d2e70a,agents/copilot-studio-feature-map.csv,S1975,unlocated:no-match,,,,,2026-10-10
 e1d0749981a5,agents/copilot-studio-feature-map.csv,S1977,unlocated:no-match,,,,,2026-10-10
 e24985d134ca,agents/copilot-studio-feature-map.csv,S1960,unlocated:no-match,,,,,2026-10-10
 f3906d60a1da,agents/copilot-studio-feature-map.csv,S1964,unlocated:no-match,,,,,2026-10-10
 f3906d60a1da,agents/copilot-studio-feature-map.csv,S1974,unlocated:no-match,,,,,2026-10-10
+fe596ea28c93,agents/copilot-studio-feature-map.csv,S1963,unlocated:no-match,,,,,2026-10-21
 0542b976b1a3,agents/copilot-studio-inventory.md,S1965,located,Create a new Model Context Protocol (MCP) server - Microsoft Copilot Studio | Microsoft Learn > Authentication support,api;key;2.0;copilot;oauth;studio;credential;identity,8b148e1415d46e27,The credentials are either an application key for API key authentication or a client ID and client secret for OAuth 2.0 authentication. Provide the authentication,2026-10-21
 11bf098f34d3,agents/copilot-studio-inventory.md,S1964,located,Connect your agent to an existing Model Context Protocol (MCP) server - Microsoft Copilot Studio | Microsoft Learn > MCP servers and data policies,regulat;platform;policy;data;copilot;power;studio;access,ab9206a4bada2209,Access to MCP servers in Copilot Studio relies on Power Platform connectors for connectivity. This condition means that if a data policy regulates Power Platform,2026-10-10
 11bf098f34d3,agents/copilot-studio-inventory.md,S1974,unlocated:no-match,,,,,2026-10-10
@@ -1424,7 +1424,6 @@ f3906d60a1da,agents/copilot-studio-feature-map.csv,S1974,unlocated:no-match,,,,,
 74af16d84b6e,agents/copilot-studio-inventory.md,S1960,unlocated:no-match,,,,,2026-10-10
 8287d2dff3b8,agents/copilot-studio-inventory.md,S2126,unlocated:no-match,,,,,2026-10-10
 82f3e45c09c8,agents/copilot-studio-inventory.md,S1975,located,Extend Microsoft 365 Copilot with the Copilot chat harness - Microsoft Copilot Studio | Microsoft Learn > Publish and configure an agent for Microsoft 365 Copilot > Set availability options for the ag,download;security;zip;group;org;upload;availability;shar,36b1151bc8583947,"Show to my teammates and shared users | Grant access to others to participate in authoring the agent, or to security groups to use the",2026-10-10
-8a7db8d9fae4,agents/copilot-studio-inventory.md,S1963,unlocated:no-match,,,,,2026-10-10
 90f15f3de6e4,agents/copilot-studio-inventory.md,S1972,unlocated:no-match,,,,,2026-10-21
 9a19d7a1f83d,agents/copilot-studio-inventory.md,S1961,unlocated:no-match,,,,,2026-10-10
 9dbf429f5f21,agents/copilot-studio-inventory.md,S1961,located,Standard harness licensing - Microsoft Copilot Studio | Microsoft Learn > Copilot Studio in Microsoft 365 Copilot,against;rated;zero;zero-rat;classic;generativ;graph;ground,ac543b435b832654,"If you have a Microsoft 365 Copilot license, using agents in Copilot Chat, Microsoft Teams, or SharePoint for classic answers, generative answers, or Microsoft Graph",2026-10-10
@@ -1439,9 +1438,10 @@ c6af59980573,agents/copilot-studio-inventory.md,S1966,unlocated:no-match,,,,,202
 c6e492f500e8,agents/copilot-studio-inventory.md,S1960,located,Quotas and limits - Microsoft Copilot Studio | Microsoft Learn > Limits > Copilot Studio web app limits,community;government;cloud;connector;payload;plan,c64e4149b443a716,"^1^ For better search results from SharePoint and support of files up to 200 MB in size, use a Microsoft 365 Copilot license in the",2026-10-10
 ca41cd811f46,agents/copilot-studio-inventory.md,S1977,located,Key concepts - Publish and deploy your agent - Microsoft Copilot Studio | Microsoft Learn,default;entra;manual;setup;allow;anyon;apps;authenticat,5e17a6620cb89ff5,"Agents have the Authenticate with Microsoft option turned on by default. With this option, agents automatically use Microsoft Entra ID authentication for Teams, Power Apps,",2026-10-10
 d5db5f5a5fa3,agents/copilot-studio-inventory.md,S1964,located,Connect your agent to an existing Model Context Protocol (MCP) server - Microsoft Copilot Studio | Microsoft Learn > Supported transports,august;deprecat;sse;streamabl;transport;support;mcp,e853e719fece155d,"Currently, Copilot Studio supports the Streamable transport type. Note Given that SSE transport is deprecated, Copilot Studio no longer supports SSE for MCP after August",2026-10-10
-dc9b25545117,agents/copilot-studio-inventory.md,S1962,located,Overview - Microsoft Copilot Studio | Microsoft Learn > Choose a harness,heavy;multi;multi-step;reasoning-heavy;rule;rule-ba;chat;extend,52ba75e3ee7f5c62,"The GitHub Copilot harness for reasoning-heavy, multi-step work and complex business processes. The standard harness for rule-based agents and structured, repeatable conversations. The Copilot chat",2026-10-10
+db31d764444c,agents/copilot-studio-inventory.md,S1962,located,Overview - Microsoft Copilot Studio | Microsoft Learn > Choose a harness,heavy;multi;multi-step;reasoning-heavy;rule;rule-ba;chat;conversation,57d625834a453d58,"The GitHub Copilot harness for reasoning-heavy, multi-step work and complex business processes. The standard harness for rule-based agents and structured, repeatable conversations. The Copilot chat",2026-10-21
 dca0e5d16c88,agents/copilot-studio-inventory.md,S1974,unlocated:no-match,,,,,2026-10-10
 e103dd6fe6fc,agents/copilot-studio-inventory.md,S1980,unlocated:no-match,,,,,2026-10-10
+e14f2401dda7,agents/copilot-studio-inventory.md,S1963,unlocated:no-match,,,,,2026-10-21
 e23d5c2a9d06,agents/copilot-studio-inventory.md,S1960,unlocated:no-match,,,,,2026-10-10
 e6c94e9b5437,agents/copilot-studio-inventory.md,S1960,unlocated:no-match,,,,,2026-10-10
 e86b31a65dc3,agents/copilot-studio-inventory.md,S1982,unlocated:no-match,,,,,2026-10-21
