@@ -13345,7 +13345,6 @@ e486eade00a7,python/imports-and-modules.md,S-pnak2iyz,unlocated:no-match,,,,,202
 e486eade00a7,python/imports-and-modules.md,S-y3vaig55,unlocated:no-match,,,,,2026-10-10
 09aa977feed7,python/interpreter-startup.md,S-d77lvlq4,located,,site-dependent;later;dependent;sys.path;call;site;disabl;import,fc7d3442c12a5517,Disable the import of the module :mod:site and the site-dependent manipulations of :data:sys.path that it entails. Also disable these manipulations if :mod:site is explicitly imported,2026-10-14
 0aaba0a7c7a0,python/interpreter-startup.md,S-4yatj52m,located,,accurat;replac;exception;report;syntaxerror;syntax;err;error,39f32e241293ec12,if (PyErrExceptionMatches(category)) { / Replace the Syntax/DeprecationWarning exception with a SyntaxError to get a more accurate error report /,2026-10-10
-1793f77d52f0,python/interpreter-startup.md,S-4yatj52m,unlocated:no-match,,,,,2026-10-10
 2dfd4b08fa7b,python/interpreter-startup.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-14
 2e356f2838bc,python/interpreter-startup.md,S-4yatj52m,unlocated:no-match,,,,,2026-10-10
 2e356f2838bc,python/interpreter-startup.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-14
@@ -13362,6 +13361,7 @@ e486eade00a7,python/imports-and-modules.md,S-y3vaig55,unlocated:no-match,,,,,202
 8cb909d9556a,python/interpreter-startup.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-14
 8cb909d9556a,python/interpreter-startup.md,S-nidh245i,unlocated:no-match,,,,,2026-10-10
 988f6b809ac2,python/interpreter-startup.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-14
+a2ba30886fee,python/interpreter-startup.md,S-4yatj52m,unlocated:no-match,,,,,2026-10-21
 a9a19a05a0d2,python/interpreter-startup.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-14
 a9a19a05a0d2,python/interpreter-startup.md,S-dabwnzz5,unlocated:no-match,,,,,2026-10-10
 ad8013215d88,python/interpreter-startup.md,S-nidh245i,unlocated:no-match,,,,,2026-10-10

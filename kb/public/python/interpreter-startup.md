@@ -72,7 +72,8 @@ into a `SyntaxError`.
   S-nidh245i, S-4yatj52m, S-q5frtccp, S-j7sjakc5]
 - Observed 2026-10-08 with CPython 3.13.2 on macOS, non-interactive shell: `python3 -I -W error::SyntaxWarning
   -c` running `compile('x = "\\d"', 'f.py', 'exec')` exited 1 with `SyntaxError: invalid escape sequence
-  '\d'` pointing at `f.py` line 1; 3.14 and Windows were not run. [DER S-4yatj52m: one run of ours, matching
+  '\d'` pointing at `f.py` line 1; 3.14 and Windows were not run; the 3.14.8 source words the same error as `"\d" is an
+  invalid escape sequence. Did you mean "\\d"?` followed by the raw-string hint, so the message text differs between versions. [DER S-4yatj52m: one run of ours, matching
   the replacement in string_parser.c, not a rule]
 
 ## Reference
