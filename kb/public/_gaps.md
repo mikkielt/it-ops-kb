@@ -1803,6 +1803,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## claude/enterprise-admin
 
 - **What Claude Tag remembers per channel and who can see it, and how Claude Tag differs from Cowork and Claude Code in the vendor's own comparison.** Looked 2026-10-16 in the Claude Code docs Claude Tag page and the claude.com Claude Tag overview (S-4fzxly7f, S-7kqj6c7m): the overview names "channel memory" and the comparison page only as links ("How Claude Tag works", "What does Claude Tag remember?", the Cowork and Claude Code comparison); those claude.com pages were not read. Needs those pages read and sourced. [UNK] (topic: claude/enterprise-admin)
+- Compliance API product coverage (Cowork, Claude Code CLI/Desktop, Microsoft 365 add-ins, Claude Science) and exclusions (Claude Code cloud sessions, Claude Code via the Claude Platform, Bedrock/Vertex sessions): the support article https://support.claude.com/en/articles/13015708-access-the-compliance-api no longer lists them as of 2026-10-21. Looked only at that article. (topic: claude/enterprise-admin)
 
 ## claude/parallel-sessions
 
