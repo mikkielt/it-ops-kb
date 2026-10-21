@@ -29,9 +29,10 @@ and listing.
   has no Windows line. [DOC S746]
 - The week 34 digest (releases v2.1.234 to v2.1.239, August 17-21, 2026) announces that sessions on native Windows can
   now message each other with `SendMessage` and `ListAgents`. [DOC S-d3ythwgb]
-- For native Windows, plan on v2.1.239 or later: it is the release the changelog and the week 34 digest announce
-  Windows support in, and it satisfies the docs page's stated v2.1.234 floor too; v2.1.234 to v2.1.238 on Windows are
-  unverified. [DER S-sdxhnx3i, S746, S-d3ythwgb: the stated floor and the release that announced it]
+- For native Windows, plan on v2.1.239 or later: it is the release the changelog announces Windows support in (the
+  week 34 digest covers v2.1.234 to v2.1.239 without naming a release for it), and it satisfies the docs page's stated
+  v2.1.234 floor too; v2.1.234 to v2.1.238 on Windows are unverified. [DER S-sdxhnx3i, S746, S-d3ythwgb: the stated
+  floor and the release that announced it]
 - Same-machine messaging works on every provider (Amazon Bedrock, Claude Platform on AWS, Google Cloud's Agent
   Platform, Microsoft Foundry) and with feature-flag fetching off, but on those providers and with flag fetching off
   it needs v2.1.248 or later. [DOC S-sdxhnx3i]
