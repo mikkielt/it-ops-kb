@@ -1217,12 +1217,12 @@ fc04111ee94a,agents/coding-agent-codebase-context.md,S-fema44tc,unlocated:no-mat
 fc04111ee94a,agents/coding-agent-codebase-context.md,S-mxqyhxx7,unlocated:no-match,,,,,2026-10-10
 fee8b50a17f0,agents/coding-agent-codebase-context.md,S-4owuypm5,located,Search > Privacy and security,machin;upload;code;index;instant;cursor;grep,3c0df195d5084896,"Instant Grep builds and queries its index on your machine. Cursor does not upload file paths or code to build a search index, and it",2026-10-21
 fee8b50a17f0,agents/coding-agent-codebase-context.md,S-v2sqknkh,unlocated:no-match,,,,,2026-10-21
+1272332f9187,agents/coding-agents-mcp.md,S-caxeb7wx,unlocated:no-match,,,,,2026-10-21
+1272332f9187,agents/coding-agents-mcp.md,S-y4l4chtg,located,Add MCP servers in VS Code > Choose a configuration destination,compatibility;deprecat;label;level;mcpserver;profil;top;top-level,e3936ecbf766fb49,Workspace .vscode/mcp.json or user-profile mcp.json. These destinations remain available for compatibility and are labeled deprecated in the guided flow. Portable files use a top-level mcpServers,2026-10-21
 236aa9a63257,agents/coding-agents-mcp.md,S-2q2hcluk,unlocated:no-match,,,,,2026-10-10
 2b0a291aef7b,agents/coding-agents-mcp.md,S-4fmcb5i2,unlocated:no-match,,,,,2026-10-10
 2b0a291aef7b,agents/coding-agents-mcp.md,S-zqlgscwv,unlocated:no-match,,,,,2026-10-10
 2e8185c5c336,agents/coding-agents-mcp.md,S-r4egujgz,unlocated:no-match,,,,,2026-10-10
-2fd5965b9ff5,agents/coding-agents-mcp.md,S-caxeb7wx,unlocated:no-match,,,,,2026-10-10
-2fd5965b9ff5,agents/coding-agents-mcp.md,S-y4l4chtg,unlocated:no-match,,,,,2026-10-10
 369e200f30ee,agents/coding-agents-mcp.md,S-b5ptbcql,unlocated:no-match,,,,,2026-10-10
 37bb21a58be1,agents/coding-agents-mcp.md,S-caxeb7wx,located,MCP configuration reference > Configuration file,vscod;mcp.json;json;input;code;mcp;server,e1f05c8dd92a8056,"VS Code forwards servers from .vscode/mcp.json to the Agent Host, except servers that require interactive input, such as ${input:...} variables.",2026-10-10
 39930466223a,agents/coding-agents-mcp.md,S-2q2hcluk,unlocated:no-match,,,,,2026-10-10
