@@ -1,8 +1,8 @@
 ---
 topic: gitlab/project-settings-api
 priority: P3
-applies_to: "GitLab 19.x docs (gitlab-org/gitlab master @9f1632e2, 2026-09-27); Free tier and CE unless stated"
-retrieved_utc: 2026-10-11
+applies_to: "GitLab 19.x docs (gitlab-org/gitlab master @a1faf261, 2026-10-21); Free tier and CE unless stated"
+retrieved_utc: 2026-10-21
 sources: [S-4yvdwu5c, S-gqpmeuse, S-j2fhtiru, S-6aknk2k6, S-rivqro7b, S-zn23gmjw, S-2d2dlaeq]
 status: complete
 ---
@@ -14,8 +14,8 @@ status: complete
 
 ## Facts
 - Reading a project's properties needs any default role on the project; editing them needs the Maintainer or Owner role. [DOC S-4yvdwu5c]
-- A project is edited with `PUT /projects/:id` and created with `POST /projects`; `:id` is the project ID or its URL-encoded path. Most attributes below appear in both the create and the update table. `container_registry_access_level` and `merge_requests_access_level` appear in neither: both calls take them from the page's shared **Project feature visibility level** table. `automatic_rebase_enabled`, `squash_commit_template`, `merge_commit_template`, `ci_skip_branch_pipelines_for_mrs`, `protect_merge_request_pipelines`, `ci_push_repository_for_job_token_allowed` and `ci_pipeline_variables_minimum_override_role` appear in the update table only. [DOC S-4yvdwu5c]
-- `only_allow_merge_if_pipeline_succeeds` (boolean) is the API name of the **Pipelines must succeed** setting: merge requests merge only with a successful pipeline. The create table words it as successful "pipelines" and the update table as successful "jobs". [DOC S-4yvdwu5c]
+- A project is edited with `PUT /projects/:id` and created with `POST /projects`; `:id` is the project ID or its URL-encoded path. Most attributes below appear in both the create and the update table. `container_registry_access_level` and `merge_requests_access_level` appear in neither: both calls take them from the page's shared **Project feature visibility level** table. `automatic_rebase_enabled`, `ci_skip_branch_pipelines_for_mrs`, `protect_merge_request_pipelines`, `ci_push_repository_for_job_token_allowed` and `ci_pipeline_variables_minimum_override_role` appear in the update table only; `squash_commit_template` and `merge_commit_template` appear in the update table and in the table of `POST /projects/user/:user_id`, but not in the `POST /projects` table. [DOC S-4yvdwu5c]
+- `only_allow_merge_if_pipeline_succeeds` (boolean) is the API name of the **Pipelines must succeed** setting: merge requests merge only with a successful pipeline. The `POST /projects` table words it as successful "pipelines" and names the setting; the update table and the `POST /projects/user/:user_id` table word it as successful "jobs". [DOC S-4yvdwu5c]
 - `allow_merge_on_skipped_pipeline` (boolean) sets whether a merge request can merge with skipped jobs; the setting of that behaviour in the user interface is **Skipped pipelines are considered successful**, which matters only when **Pipelines must succeed** is on. [DER S-4yvdwu5c, S-rivqro7b: the attribute's description against the setting's page]
 - `only_allow_merge_if_all_discussions_are_resolved` (boolean) requires every discussion to be resolved before a merge; `only_allow_merge_if_all_status_checks_passed` (boolean, Ultimate only) blocks a merge until the external status checks have passed. [DOC S-4yvdwu5c]
 - `remove_source_branch_after_merge` (boolean) turns the **Delete source branch** option on by default for all new merge requests. [DOC S-4yvdwu5c]
@@ -33,7 +33,7 @@ status: complete
 - `public_jobs` (boolean) is written as "jobs can be viewed by non-project members" and read back as whether job logs are publicly accessible; `public_builds` is its deprecated name. [DOC S-4yvdwu5c]
 - `container_registry_access_level` and `merge_requests_access_level` are feature-visibility attributes: each takes `disabled`, `private` (**Only project members**) or `enabled` (**Everyone with access**); `public` exists only for `pages_access_level`. [DOC S-4yvdwu5c]
 - For the container registry, `private` means visible only to project members with the Reporter role or higher, and `enabled` (the default) follows the project's own visibility. [DOC S-gqpmeuse]
-- `container_registry_enabled` is deprecated in favour of `container_registry_access_level`, and `merge_requests_enabled` in favour of `merge_requests_access_level`; the deprecation table spells the second alternative `merge_request_access_level`, a name that no attribute table lists. [DOC S-4yvdwu5c]
+- `container_registry_enabled` is deprecated in favour of `container_registry_access_level`, and `merge_requests_enabled` in favour of `merge_requests_access_level`; the deprecation table now spells both alternatives as the attribute tables do. [DOC S-4yvdwu5c]
 - Attributes of the same call that bear on automated merges and pipelines: `merge_pipelines_enabled` (merged results pipelines), `merge_trains_enabled`, `merge_train_enforcement` (generally available in 19.3; `allow_bypass`, `enforce_for_all_users` or `enforce_with_owner_override`), `ci_skip_branch_pipelines_for_mrs` (19.4), `protect_merge_request_pipelines` (18.10), `ci_push_repository_for_job_token_allowed` (17.2) and `ci_pipeline_variables_minimum_override_role`. [DOC S-4yvdwu5c]
 - A project's merge regime is therefore read with one `GET /projects/:id` and compared field by field with the wanted values; the page says the fields returned vary with the permissions of the authenticated user, so a token with a lower role may see fewer of them. [DER S-4yvdwu5c: the read tables and the permissions note]
 
