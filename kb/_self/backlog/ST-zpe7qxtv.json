@@ -7,7 +7,7 @@
   "sprint": "SP-rmp5zm5a",
   "priority": "P2",
   "rank": 0,
-  "goal": "kb/public/_census/<date>.csv, dated after 2026-10-20, holds a row for every source of kb/public/_sources.csv with no superseded_by; every row not OK has an outcome from phase 2 (confirmed, updated, superseded, gone or unconfirmed); phase 3 dated each OK or confirmed source to the census date and no earlier; the fact count of the public root does not fall, since a changed fact is reworded or superseded, never deleted",
+  "goal": "kb/public/_census/<date>.csv, dated after 2026-10-20, holds a row for every source of kb/public/_sources.csv with no superseded_by that predates the census (a row the census added carries its date); every row not OK has an outcome from phase 2 (confirmed, updated, superseded, gone or unconfirmed); phase 3 dated each OK or confirmed source to the census date and no earlier; the fact count of the public root does not fall, since a changed fact is reworded or superseded, never deleted (anchor rows re-checked in phase 2 for: S-7ziha7pr S-esun5f2n S-i6b6z3is S-jbhevlal S-ka3u6g4r S-kzoop7qs S-l4557zht S-lekwizgd S-lsfxdurw S-nonpog4d S-ntqzc5fg S-t7fbkn25 S-tkwapxy3 S-udcaydkb S-v53altt3 S-woho7bmc S-x7eqxwa3 S-zlqf57iu S1200 S1217 S1400 S1401 S1402 S1418 S1419 S1805 S1885 S1899 S1900 S1962 S1970 S1977 S2162 S2163 S2166 S2167 S2171)",
   "checks": [
     {
       "run": [
@@ -32,7 +32,7 @@
   ],
   "clauses": [
     {
-      "clause": "kb/public/_census/<date>.csv, dated after 2026-10-20, holds a row for every source of kb/public/_sources.csv with no superseded_by",
+      "clause": "kb/public/_census/<date>.csv, dated after 2026-10-20, holds a row for every source of kb/public/_sources.csv with no superseded_by that predates the census (a row the census added carries its date)",
       "check": 0
     },
     {
@@ -44,7 +44,7 @@
       "check": 0
     },
     {
-      "clause": "the fact count of the public root does not fall, since a changed fact is reworded or superseded, never deleted",
+      "clause": "the fact count of the public root does not fall, since a changed fact is reworded or superseded, never deleted (anchor rows re-checked in phase 2 for: S-7ziha7pr S-esun5f2n S-i6b6z3is S-jbhevlal S-ka3u6g4r S-kzoop7qs S-l4557zht S-lekwizgd S-lsfxdurw S-nonpog4d S-ntqzc5fg S-t7fbkn25 S-tkwapxy3 S-udcaydkb S-v53altt3 S-woho7bmc S-x7eqxwa3 S-zlqf57iu S1200 S1217 S1400 S1401 S1402 S1418 S1419 S1805 S1885 S1899 S1900 S1962 S1970 S1977 S2162 S2163 S2166 S2167 S2171)",
       "check": 2
     }
   ],
