@@ -2,7 +2,7 @@
 topic: entra/agent-id
 priority: P1
 applies_to: "Microsoft Entra Agent ID (generally available per its What's new page, docs re-read 2026-09-27), Microsoft Agent 365, Microsoft Graph v1.0 agentIdentityBlueprint/agentIdentity resources, Microsoft Copilot Studio (automatic agent identities since May 2026 per the admin page), Microsoft Foundry"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S2040, S-fdnhk2tn, S-lekwizgd, S-nzxr4eg2, S-midck7u4, S-735ghpq5, S-5yopk2hr, S-q6lirjr2, S-uva2ob4g, S-l4557zht, S-3puxctla, S-ifhonpv7, S-6ecweang, S-ch6zrjfg, S-avju6l5n, S-3avzf7db, S-ee22tgci, S-rasraulp, S-sxxqhpa2, S-ketmxnue, S-3tt3ywvk, S-pbkrk3ow, S-gea7m5um, S-xt5vc46a, S-vbqsgiw3]
 status: complete
 ---

@@ -2,7 +2,7 @@
 topic: entra/pim-and-governance
 priority: P2
 applies_to: "Microsoft Entra Privileged Identity Management (PIM) for Entra roles and Azure resource roles, Entitlement Management access packages, Access reviews (docs current 2026-09-26)"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-h6zdsnii, S-jpsjsa5i, S-5hprvqbx, S-aioepkro, S-xnr7ugsj, S-upv53vkh, S-kzv67wmw, S-bcq2wujf, S-byjcvmyn, S-6psxvqdi, S-a2iaeb54, S-2ooklp7p, S-ay5o5ism, S-efsglmmy, S-tksnvnpk, S-c7vbii6z]
 status: complete
 ---
@@ -41,7 +41,7 @@ status: complete
 - Access packages can hold membership of security groups and Microsoft 365 groups/Teams, enterprise application assignments, SharePoint Online site membership, and in preview API permissions for agents/service principals and SAP IAG business roles; Entra roles can be governed by putting role-assignable groups in an access package. [DOC S-a2iaeb54]
 - Automatic assignment policies assign an access package from a membership rule over user attributes (supported properties plus extension attributes); a policy can include at most 15,000 identities in its rule, and the feature needs Microsoft Entra ID Governance or Microsoft Entra Suite licenses. [DOC S-tksnvnpk]
 - Access reviews of access packages can be scheduled periodically to catch stale assignments; enabling them requires Microsoft Entra ID Governance or Microsoft Entra Suite. [DOC S-2ooklp7p]
-- Licensing is counted per in-scope user, not per license assigned to that specific feature: e.g. an access review of a 500-member group with 3 owners as reviewers needs 503 Governance/P2 licenses (500 reviewed users + 3 reviewer owners); a self-review of the same group needs only 500 (reviewers are the reviewed users themselves). [DOC S-ay5o5ism]
+- Licensing is counted per in-scope user, not per license assigned to that specific feature: users need not be individually assigned a Governance license, but the tenant needs as many licenses as there are member users in scope of, or configuring, the Identity Governance features. The earlier worked example on the page (a 500-member group with 3 owner-reviewers) is no longer there; by that rule it would come to 503 licenses (500 reviewed users + 3 reviewers), or 500 for a self-review. [DOC S-ay5o5ism] [DER S-ay5o5ism: the 503/500 arithmetic is derived from the per-user rule, no longer printed on the page]
 - Agent identity governance (service-principal/agent access via Entitlement Management, agent sponsorship in Lifecycle Workflows) requires either Microsoft 365 E7 (bundles Agent 365 + Entra Suite) or a Microsoft Agent 365 license paired with at least Entra ID P1 or Microsoft 365 E3 — this is a separate prerequisite track from the P2/Governance track used for PIM and standard entitlement management. [DOC S-ay5o5ism]
 - Managing PIM role settings in the portal requires at least the Privileged Role Administrator role; settings are defined per role, and all assignments of that role share the same policy. [DOC S-5hprvqbx]
 - A tenant lockout risk is explicitly called out: if every Privileged Role Administrator/Global Administrator only has an *eligible* (not active) assignment, activation for that role requires approval, and no specific approvers are configured, no one can approve the first activation — mitigated by configuring emergency access (break-glass) accounts and always naming specific approvers. [DOC S-5hprvqbx]
