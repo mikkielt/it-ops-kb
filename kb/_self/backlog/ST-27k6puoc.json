@@ -2,7 +2,7 @@
   "id": "ST-27k6puoc",
   "kind": "story",
   "title": "census.py dispatch allows only the git show and git diff argument shapes its briefs print",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-gavrmuvx",
   "priority": "P3",
@@ -48,6 +48,19 @@
     "parked: SP-yojt6y7v review"
   ],
   "notes": "Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft. 2026-10-20 planning: the goal's other branch (the docs state the two commands as the exception) is dropped: the check drives dispatch_plan and dispatch_rules over two planted brief lines. Premise: it fails, the rules are 'git -C <clone> show *' and 'diff *'. Research ST-77p3ppiz 2026-10-21 (kb public/claude/settings-and-scopes.md:92-94): a Bash rule with no * matches one exact command; a trailing ' *' is prefix matching with the space as word boundary (Bash(git diff*) also matches git diff-index); --allowedTools uses the same rule syntax; a command containing a * is read as a wildcard pattern, not exact.",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "8b9d736315f53fcb490f8e80a6b4a4b7ac610bf8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0, '_tools')\nimport census\nL = ['git -C _cache/census/clones/r show abc1234:docs/x.md', 'git -C _cache/census/clones/r diff abc1234 def5678 -- docs/x.md']\ncensus.read_commands = lambda r, ctx: L\ncensus.owned_files = lambda g, m: []\nplan = census.dispatch_plan('g1', [({'id': 'S1'}, None, None)], None)\nallow, _ = census.dispatch_rules(plan, '/s')\ng = sorted(r for r in allow if r.startswith('Bash(git '))\nprint(g)\nok = (len(g) == 2 and not any('*' in r for r in g) and any(r.endswith(' show abc1234:docs/x.md)') for r in g)\n      and any(r.endswith(' diff abc1234 def5678 -- docs/x.md)') for r in g))\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "acc97eebd873c05e"
+      }
+    ]
+  }
 }
