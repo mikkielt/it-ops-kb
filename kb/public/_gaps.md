@@ -826,6 +826,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - **Whether PyPI states that it has no keyword search API.** Looked 2026-10-12: the PyPI API index (S-y6wauqrp) lists Index, JSON, Upload, Integrity, Stats, BigQuery, RSS and secret reporting APIs and no search; `docs.pypi.org/api/xml-rpc/` answered 404, so the XML-RPC page that once named a `search` method could not be read. The kb records the absence as derived. Needs the current XML-RPC page or a PyPI statement on `search`. [UNK] (topic: agents/doc-lookup-sources)
 - **Whether an arXiv abstract page of a versioned address (`abs/<id>v1`) links that version's own licence.** Looked 2026-10-12: the licence page says each version can have its own licence (S-soqo5xvt) and two unversioned abstract pages were read (S-u5diy2cr, S2006); no paper with differing versions was read. Needs one versioned page of a paper whose licence changed. [UNK] (topic: agents/doc-lookup-sources)
 - **Which vocabulary GitLab's `license.key` uses.** Looked 2026-10-12 in the Projects API page (S-4yvdwu5c): the attribute table gives "Key identifier for the license" and the example `lgpl-3.0`, with no list of keys and no SPDX statement. Needs a GitLab page or the licence template source that lists the keys. [UNK] (topic: agents/doc-lookup-sources)
+- The abs-license div claim for arXiv abstract pages was not re-checked in the 2026-10-21 census: the arXiv API does not expose the page markup. (topic: agents/doc-lookup-sources)
 
 ## windows/smart-app-control
 
@@ -1918,3 +1919,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## agents/copilot-studio-inventory
 
 - The warning that Copilot Studio support can't remediate code-editor syntax errors was not on the guidance/topics-code-editor page as re-read 2026-10-21; looked at that page only, not at other pages. Feature-map row 3 and the inventory topics bullet now carry it as UNK. (topic: agents/copilot-studio-inventory)
+
+## agents/prompt-injection-design-patterns
+
+- Six-pattern details of arXiv 2506.08837 could not be re-read in the 2026-10-21 census: only the API abstract was reachable, not the full text. (topic: agents/prompt-injection-design-patterns)

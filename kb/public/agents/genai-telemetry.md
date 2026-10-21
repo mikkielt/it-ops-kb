@@ -1,9 +1,9 @@
 ---
 topic: agents/genai-telemetry
 priority: P2
-applies_to: "open-telemetry/semantic-conventions-genai @ e57c543b4889619eb2a05702471937db5119165d (2026-09-24)"
-retrieved_utc: 2026-09-26
-sources: [S2000, S2001, S2002, S2003, S2004]
+applies_to: "open-telemetry/semantic-conventions-genai @ 8538971bd11d (latest change 2026-10-17)"
+retrieved_utc: 2026-10-21
+sources: [S2000, S2001, S-vmbuafno, S-sjwxdnmd, S-sipdw6z3]
 status: complete
 ---
 
@@ -24,21 +24,21 @@ file extends, and does not repeat, `claude/otel-monitoring.md`, which documents 
   `.id`, `.description`, `.version`, `error.type`, and `server.port` when `server.address` is set; recommended `server.address`. `invoke_agent` —
   name `"invoke_agent {gen_ai.agent.name}"` (or bare `"invoke_agent"`); CLIENT variant requires `gen_ai.provider.name`
   and adds `gen_ai.conversation.id`, token-usage counts, `gen_ai.response.finish_reasons`; an INTERNAL-span variant
-  exists for a purely in-process invocation and drops the provider-name requirement. [DOC S2002]
+  exists for a purely in-process invocation and drops the provider-name requirement. [DOC S-vmbuafno]
 - Tool-call span: `execute_tool`, span kind INTERNAL, name `"execute_tool {gen_ai.tool.name}"`; required
-  `gen_ai.operation.name=execute_tool` and `gen_ai.tool.name`; conditionally required `error.type` (on failure);
-  recommended when available `gen_ai.tool.call.id`, `gen_ai.tool.description` and `gen_ai.tool.type`. [DOC
-  S2004]
+  `gen_ai.operation.name=execute_tool` and `gen_ai.tool.name`; conditionally required `error.type` (on failure) and
+  `gen_ai.tool.call.id` (only when the model or provider supplied an identifier); recommended when available
+  `gen_ai.tool.description` and `gen_ai.tool.type`. [DOC S-sipdw6z3]
 - MCP conventions: `mcp.method.name` (required; e.g. `tools/call`, `initialize`, `prompts/list`),
   `mcp.protocol.version` (recommended; e.g. `2025-06-18`), `mcp.session.id` (recommended), `mcp.resource.uri`
   (conditional). Span kinds `mcp.client` (CLIENT, outbound) and `mcp.server` (SERVER, inbound); name pattern
   `"{mcp.method.name} {target}"`. `network.transport`: stdio → `"pipe"`; Streamable HTTP → `"tcp"`/`"quic"` with
   `network.protocol.name="http"`; a custom WebSocket transport → `"tcp"` with `network.protocol.name="websocket"`.
   Four Development-status histogram metrics: `mcp.client.operation.duration`, `mcp.server.operation.duration`,
-  `mcp.client.session.duration`, `mcp.server.session.duration`. [DOC S2003]
+  `mcp.client.session.duration`, `mcp.server.session.duration`. [DOC S-sjwxdnmd]
 - No documented off-the-shelf Python instrumentation package auto-emits these MCP/GenAI spans as of this fetch; a
   Python MCP server would set the attributes above manually around its `tools/call`/`initialize` handlers. [DER
-  S2003, S2004: inferred from the attribute registry, no how-to guide found — recorded as a minor gap]
+  S-sjwxdnmd, S-sipdw6z3: inferred from the attribute registry, no how-to guide found — recorded as a minor gap]
 
 ## Reference
 | Span/metric | Kind | Status | Key attributes |
@@ -56,7 +56,7 @@ A Python stdio MCP server handling `tools/call` for a `device.recheck`-style ope
 `mcp.protocol.version=2025-06-18`, and nest an `execute_tool` INTERNAL span with `gen_ai.tool.name=device.recheck`,
 `gen_ai.tool.type=function`, distinct from whatever `claude_code.tool_result` event the calling Claude Code session
 emits on its own side (`claude/otel-monitoring.md`) — the two telemetry vocabularies are complementary, not
-overlapping [DER S2003, S2004].
+overlapping [DER S-sjwxdnmd, S-sipdw6z3].
 
 ### Sensitive-data-declaration tension
 A "secrets declared and redacted at every sink" policy would need to cover any OTel exporter path exactly as it

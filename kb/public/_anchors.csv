@@ -1404,6 +1404,7 @@ e1d0749981a5,agents/copilot-studio-feature-map.csv,S1977,unlocated:no-match,,,,,
 e24985d134ca,agents/copilot-studio-feature-map.csv,S1960,unlocated:no-match,,,,,2026-10-10
 fe596ea28c93,agents/copilot-studio-feature-map.csv,S1963,unlocated:no-match,,,,,2026-10-21
 0542b976b1a3,agents/copilot-studio-inventory.md,S1965,located,Create a new Model Context Protocol (MCP) server - Microsoft Copilot Studio | Microsoft Learn > Authentication support,api;key;2.0;copilot;oauth;studio;credential;identity,8b148e1415d46e27,The credentials are either an application key for API key authentication or a client ID and client secret for OAuth 2.0 authentication. Provide the authentication,2026-10-21
+108b72c36268,agents/copilot-studio-inventory.md,S1980,unlocated:no-match,,,,,2026-10-21
 15fdc0b1bbbe,agents/copilot-studio-inventory.md,S1960,unlocated:no-match,,,,,2026-10-10
 15fdc0b1bbbe,agents/copilot-studio-inventory.md,S1983,unlocated:no-match,,,,,2026-10-21
 19009896fd5f,agents/copilot-studio-inventory.md,S1960,unlocated:no-match,,,,,2026-10-10
@@ -1438,7 +1439,6 @@ ca41cd811f46,agents/copilot-studio-inventory.md,S1977,located,Key concepts - Pub
 d5db5f5a5fa3,agents/copilot-studio-inventory.md,S1964,located,Connect your agent to an existing Model Context Protocol (MCP) server - Microsoft Copilot Studio | Microsoft Learn > Supported transports,august;deprecat;sse;streamabl;transport;support;mcp,e853e719fece155d,"Currently, Copilot Studio supports the Streamable transport type. Note Given that SSE transport is deprecated, Copilot Studio no longer supports SSE for MCP after August",2026-10-10
 db31d764444c,agents/copilot-studio-inventory.md,S1962,located,Overview - Microsoft Copilot Studio | Microsoft Learn > Choose a harness,heavy;multi;multi-step;reasoning-heavy;rule;rule-ba;chat;conversation,57d625834a453d58,"The GitHub Copilot harness for reasoning-heavy, multi-step work and complex business processes. The standard harness for rule-based agents and structured, repeatable conversations. The Copilot chat",2026-10-21
 ddb2b4097d29,agents/copilot-studio-inventory.md,S1974,unlocated:no-match,,,,,2026-10-21
-e103dd6fe6fc,agents/copilot-studio-inventory.md,S1980,unlocated:no-match,,,,,2026-10-10
 e14f2401dda7,agents/copilot-studio-inventory.md,S1963,unlocated:no-match,,,,,2026-10-21
 e23d5c2a9d06,agents/copilot-studio-inventory.md,S1960,unlocated:no-match,,,,,2026-10-10
 e6c94e9b5437,agents/copilot-studio-inventory.md,S1960,unlocated:no-match,,,,,2026-10-10

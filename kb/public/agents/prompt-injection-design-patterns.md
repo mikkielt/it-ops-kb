@@ -39,9 +39,11 @@ Dual-LLM-style isolation step ahead of an in-process PII filter.
   run next, and applies capability-based restrictions to data flow to block unintended exfiltration; it solved 77%
   of AgentDojo tasks with provable security vs. 84% for an undefended baseline. [COMMUNITY S2006]
 - The dual-LLM pattern (Simon Willison, 2023-04-25): a privileged, tool-calling LLM receives only opaque variable
-  tokens (`$VAR1`) for untrusted content; a non-AI Controller resolves them only for specific, vetted tool
-  arguments; a tool-less quarantined LLM processes the raw untrusted text. Willison calls it "pretty bad" —
-  complexity and UX cost, and it does not stop social engineering of the human. [COMMUNITY S2007]
+  tokens (`$VAR1`) for untrusted content; a non-AI Controller stores the variables, passes them to and from a
+  tool-less quarantined LLM that processes the raw untrusted text, and displays their content to the user when
+  the privileged LLM directs it. Willison calls it "pretty bad" — implementation complexity and a degraded user
+  experience, and it does not stop social engineering of the human. A 2025-04-11 update points to CaMeL as
+  addressing flaws in the proposal. [COMMUNITY S2007]
 - Microsoft Spotlighting (Azure AI Content Safety Prompt Shields, preview, ms.date 2026-08-28): tags third-party
   content as lower-trust by base64-encoding it before the model sees it; no direct cost but raises token count and
   can push a document over the input limit; available only via the Chat Completions API path in Foundry guardrails;
