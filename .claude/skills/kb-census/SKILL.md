@@ -6,7 +6,7 @@ argument-hint: "[YYYY-MM-DD, default today] [--resume]"
 
 # Census of it-ops-kb
 
-Census date: the argument, else today (`YYYY-MM-DD`). `--resume`: continue from the existing `kb/public/_census/<date>.csv` (skip phases done: its `outcome` column shows what phase 2 already read). Below, `<log>` is `kb/public/_census/<date>.csv` and `<flog>` is `kb/public/_census/factdiff-<date>.csv`.
+Census date: the argument, else today (`YYYY-MM-DD`). `--resume`: continue from the existing `kb/public/_census/<date>.csv` (skip phases done: its `outcome` column shows what phase 2 already read); pass it on as `census.py run --date <date> --resume`, since `run` without it exits 2 on a log that already holds phase-2 outcomes. Below, `<log>` is `kb/public/_census/<date>.csv` and `<flog>` is `kb/public/_census/factdiff-<date>.csv`.
 
 Read the conduct rules first (`selfdoc.py section` prints one section with its line numbers):
 
