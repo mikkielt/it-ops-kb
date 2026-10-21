@@ -2,7 +2,7 @@
   "id": "BG-g465p2ql",
   "kind": "bug",
   "title": "census.py dispatch sessions are refused their brief's own git diff line, since the clone sits outside the session's working directory",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-rmp5zm5a",
   "priority": "P1",
@@ -21,6 +21,19 @@
     "kb/_self/web-sources.md"
   ],
   "notes": "Found in the 2026-10-21 census phase 2: 175 dispatched sessions were refused the exact 'git -C <clone> diff <pin> <tip> -- <path>' line their --allowedTools rule names (permission_denials in _cache/census/dispatch/2026-10-21/*/reply-*.json); 149 rows ended unconfirmed for it. Bisected on claude -p (haiku, dontAsk, the census argv): denied when the working directory (the TMPDIR scratch) does not hold the clone; allowed from a directory that holds it, and allowed with --add-dir <census clones dir>. git show of the same clone is not refused. Premise: the repro exits 1 on 7650aac2a7.",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "10b6a8a53cc46841225a20d520cd58c03d5b4ca7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, sys\nsys.path.insert(0, '_tools')\nimport census as c\nplan = {'files': [], 'git': [('git', '-C', os.path.join(c.REPOS, 'x.git'), 'diff', 'a', 'b', '--', 'p')],\n        'fetch': {}, 'learn': [], 'skipped': []}\nallow, tools = c.dispatch_rules(plan, '/tmp/s')\nv = c.dispatch_argv('claude', 'm', 1, 1.0, '{}', allow, tools, None)\ndirs = [v[i + 1] for i in range(len(v) - 1) if v[i] == '--add-dir']\nsys.exit(0 if any(c.REPOS == d.rstrip('/') or c.REPOS.startswith(d.rstrip('/') + '/') for d in dirs) else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
