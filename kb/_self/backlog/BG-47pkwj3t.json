@@ -1,0 +1,28 @@
+{
+  "id": "BG-47pkwj3t",
+  "kind": "bug",
+  "title": "census.py apply and factdiff.py apply write the same census.phase token, so the query log report cannot tell the phase-2 outcomes from factdiff's apply",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "census.py apply records its census.phase row under a phase token factdiff.py does not write, and querylog.md and tools.md name it",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\nsys.path.insert(0, '_tools')\nimport census, factdiff\nboth = sorted(set(census.PHASES) & set(factdiff.PHASES))\nprint('phase tokens census.py and factdiff.py both write:', both)\nsys.exit(1 if both else 0)\n"
+    ]
+  },
+  "touches": [
+    "_tools/census.py",
+    "kb/_self/querylog.md",
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md"
+  ],
+  "links": [
+    "parked: SP-gavrmuvx review"
+  ],
+  "notes": "Found by the fresh-context review of SP-gavrmuvx on 2026-10-21 (headless reviewer over git diff a4b91d2f1e..ae798b6984), verified by the manager; premise: the repro fails on ae798b6984."
+}

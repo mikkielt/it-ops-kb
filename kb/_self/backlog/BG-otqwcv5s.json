@@ -1,0 +1,26 @@
+{
+  "id": "BG-otqwcv5s",
+  "kind": "bug",
+  "title": "A batch judge call retried after a reply that matched no item counts as one call in the census.phase row",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "judge_tally counts each model call a batch made, the retry included, so the census.phase row's calls match the calls billed",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import collections, sys\nsys.path.insert(0, '_tools')\nimport factdiff as f\nitems = [{'fact': 'The setting is on by default. [DOC S1]', 'old': 'The setting is on by default.', 'new': 'The setting is on by default.'}]\nseen = []\ndef call(prompt, model, cap):\n    seen.append(1)\n    v = [] if len(seen) == 1 else [{'n': 1, 'verdict': 'supported', 'sentence': 'The setting is on by default.'}]\n    return {'verdicts': v, 'cost_usd': 0.01, 'usage': {}, 'error': ''}\nverdicts, calls = f.judge_items(items, size=5, jobs=1, cap_usd=0.1, call=call)\ntally = collections.Counter()\nf.judge_tally(tally, verdicts, calls)\nprint('model calls made', len(seen), 'calls tallied', tally['calls'])\nsys.exit(0 if tally['calls'] == len(seen) else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/factdiff.py",
+    "kb/_self/web-sources.md"
+  ],
+  "links": [
+    "parked: SP-gavrmuvx review"
+  ],
+  "notes": "Found by the fresh-context review of SP-gavrmuvx on 2026-10-21 (headless reviewer over git diff a4b91d2f1e..ae798b6984), verified by the manager; premise: the repro fails on ae798b6984."
+}
