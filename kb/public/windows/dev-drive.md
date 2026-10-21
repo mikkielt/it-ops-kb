@@ -53,9 +53,9 @@ Exclusions themselves are in `defender/asr-and-antivirus.md`.
 
 ### NTFS behaviour settings (volumes that are not a Dev Drive)
 - `fsutil behavior set disablelastaccess 1` stops NTFS from updating the Last Access Time stamp on every access; Microsoft says disabling it improves the speed of file and directory access, that NTFS defers an on-disk update by at most one hour, that queries still return the correct value from memory, and that programs such as Backup and Remote Storage which rely on the stamp can be affected. The parameter table says a restart is needed for it to take effect. [DOC S-c5vcqkia]
-- `fsutil behavior set disable8dot3 [<volumepath>] 1` stops NTFS from creating an 8.3 short name next to every long file name; with the default `0`, NTFS makes a second directory entry per file and must look up the short names when it creates files in a directory. [DOC S-c5vcqkia]
+- `fsutil behavior set disable8dot3 [<volumepath>] 1` stops NTFS from creating an 8.3 short name next to every long file name; while it is `0`, NTFS makes a second directory entry per file and must look up the short names when it creates files in a directory. [DOC S-c5vcqkia]
 - `fsutil behavior set memoryusage 2` raises the NTFS paged-pool limit and may help a system that opens and closes many files of the same set, but costs other processes pool memory when memory is already tight; a restart is needed. [DOC S-c5vcqkia]
-- The page introduces `fsutil behavior` as setting NTFS volume behaviour, so these three concern a scratch root on an NTFS volume, not a Dev Drive (ReFS). [DER S-c5vcqkia: "Queries or sets NTFS volume behavior" and the NTFS-only parameter descriptions]
+- The page introduces `fsutil behavior` as setting NTFS volume behaviour, and `disablelastaccess` and `memoryusage` are described only for NTFS (`disable8dot3` for FAT- and NTFS-formatted volumes), so these three concern a scratch root on an NTFS volume, not a Dev Drive (ReFS). [DER S-c5vcqkia: "Queries or sets NTFS volume behavior" and the parameter descriptions]
 - Microsoft gives no figure for how much any of these shortens a build or a Python test run. [UNK: the `fsutil behavior` page states effects, not timings; measure on the host]
 
 ### How it fits
