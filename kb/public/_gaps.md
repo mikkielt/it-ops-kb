@@ -1557,6 +1557,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## arch/postgres-dump-canonical-hash
 - **Row order of table data in a `pg_dump`.** Looked 2026-10-11 in the pg_dump page (S-vykvhstk) and the dump source (S-vor6jmfj): COPY runs without ORDER BY and no sentence promises an order. Needs the PostgreSQL statement or a clustered-table test. [UNK] (topic: arch/postgres-dump-canonical-hash)
 - **Whether `-Z` gzip output of a plain dump is byte-stable.** Not checked; the article advises hashing the uncompressed output. [UNK] (topic: arch/postgres-dump-canonical-hash)
+- Whether pg_dump rejects --restrict-key for non-plain formats with a fatal error is not shown in dumputils.c (REL_18_6); would need pg_dump.c at the same tag, which this run was not permitted to fetch. (topic: arch/postgres-dump-canonical-hash)
 
 ## arch/postgres-backup-age-s3-git-bundle
 - **Object Lock, versioning, additional checksums and multipart minimums on S3-compatible stores other than Amazon S3.** Looked 2026-10-11 in the Amazon S3 user guide pages (S-wec2qrob, S-2faaoioj, S-izv6sxd6, S-srrxgn7s): they document Amazon S3 only; no official compatibility page for another store was read. [UNK] (topic: arch/postgres-backup-age-s3-git-bundle)

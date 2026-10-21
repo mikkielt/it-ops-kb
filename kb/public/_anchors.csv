@@ -4397,6 +4397,27 @@ d825700555af,arch/podman-volumes-networks-pods.md,S-v4l2d5bl,located,`DisableDNS
 e74c444bebc2,arch/podman-volumes-networks-pods.md,S-tzyfmscm,located,"`Network=mode` > **--network**=*mode*, **--net**",ones;privat;rootful;uses;rootless;bridg;mode;pasta,3cea6db5afb202f4,Create a new namespace for the container. This uses the bridge mode for rootful containers and pasta for rootless ones.,2026-10-15
 e760d8140b46,arch/podman-volumes-networks-pods.md,S-y4qlxukm,located,NAME > OPTIONS > **--cpus**=*amount* > **--pod-id-file**=*path*,port;publish;container;pod,930e38a946541af8,"You must not publish ports of containers in the pod individually,",2026-10-15
 ed51566bbf3e,arch/podman-volumes-networks-pods.md,S-y4qlxukm,located,NAME > OPTIONS > **--cpus**=*amount* > **--exit-policy**=**continue** | *stop*,aliv;keep;continu;last;exit;default;infra;container,07f8c28aa0534846,"The pod continues running, by keeping its infra container alive, when the last container exits. Used by default.",2026-10-15
+0a7558ae6509,arch/postgres-dump-canonical-hash.md,S-vykvhstk,located,pg_dump > Options > Note,advanc;alphanumeric;compar;e.g;general;inject;keys;malicious,8e6270eb6a5bbe9e,"Keys may contain only alphanumeric characters. This option is primarily intended for testing purposes and other scenarios that require repeatable output (e.g., comparing dump files).",2026-10-21
+11769ad4952f,arch/postgres-dump-canonical-hash.md,S-aae3vzxi,unlocated:no-match,,,,,2026-10-21
+1e274094aaa4,arch/postgres-dump-canonical-hash.md,S-aae3vzxi,unlocated:no-match,,,,,2026-10-21
+294d2967a4a4,arch/postgres-dump-canonical-hash.md,S-vor6jmfj,unlocated:no-match,,,,,2026-10-21
+332df05049a1,arch/postgres-dump-canonical-hash.md,S-vykvhstk,unlocated:no-match,,,,,2026-10-21
+34150dcc0a34,arch/postgres-dump-canonical-hash.md,S-aae3vzxi,unlocated:no-match,,,,,2026-10-21
+3534cf2fd518,arch/postgres-dump-canonical-hash.md,S-vykvhstk,unlocated:no-match,,,,,2026-10-21
+3921121a05be,arch/postgres-dump-canonical-hash.md,S-vykvhstk,located,pg_dump > Options > Note,nonzero;through;lz4;zstd;gzip;plain;compress;level,ca180b64f6a15915,"For plain text output, setting a nonzero compression level causes the entire output file to be compressed, as though it had been fed through gzip,",2026-10-21
+697cfeca9e3d,arch/postgres-dump-canonical-hash.md,S-vor6jmfj,unlocated:no-match,,,,,2026-10-21
+697cfeca9e3d,arch/postgres-dump-canonical-hash.md,S-vykvhstk,unlocated:no-match,,,,,2026-10-21
+797e73f76846,arch/postgres-dump-canonical-hash.md,S-vor6jmfj,unlocated:no-match,,,,,2026-10-21
+8cbca9401d76,arch/postgres-dump-canonical-hash.md,S-v246rdbb,unlocated:no-match,,,,,2026-10-21
+943469b332fc,arch/postgres-dump-canonical-hash.md,S-aae3vzxi,unlocated:no-match,,,,,2026-10-21
+b834724f5be0,arch/postgres-dump-canonical-hash.md,S-vykvhstk,located,pg_dump > Options > Note,fed;moderat;segment;table-data;custom;gzip;plain;compress,d7ce89b0e003d769,"For the custom and directory archive formats, this specifies compression of individual table-data segments, and the default is to compress using gzip at a moderate",2026-10-21
+b9397f438724,arch/postgres-dump-canonical-hash.md,S-vykvhstk,located,pg_dump > Options > Note,primary;standby;9.2;snapshot;synchroniz;parallel;need;postgresql,f6d80d51e05d44a4,"To perform a parallel dump, the database server needs to support synchronized snapshots, a feature that was introduced in PostgreSQL 9.2 for primary servers and",2026-10-21
+bba30d206502,arch/postgres-dump-canonical-hash.md,S-vykvhstk,unlocated:no-match,,,,,2026-10-21
+d3bc7f93074a,arch/postgres-dump-canonical-hash.md,S-vykvhstk,unlocated:no-match,,,,,2026-10-21
+d5bb4f7607f0,arch/postgres-dump-canonical-hash.md,S-vykvhstk,unlocated:no-match,,,,,2026-10-21
+e8b0fa4fbb81,arch/postgres-dump-canonical-hash.md,S-aae3vzxi,unlocated:no-match,,,,,2026-10-21
+e8b0fa4fbb81,arch/postgres-dump-canonical-hash.md,S-v246rdbb,unlocated:no-match,,,,,2026-10-21
+e8b0fa4fbb81,arch/postgres-dump-canonical-hash.md,S-vykvhstk,unlocated:no-match,,,,,2026-10-21
 0440f2d56c7e,arch/puppet-agent-run-noop-reporting.md,S-cttzm2qq,located,Configuration Reference > Configuration settings > splay,sleep;random;splaylimit;first;befor;time;run;agent,4409463e2b2bf1cf,"Whether to sleep for a random amount of time, ranging from immediately up to its $splaylimit",2026-10-15
 04f900870e8a,arch/puppet-agent-run-noop-reporting.md,S-uqxc7z4f,located,Agent-server HTTPS communications > The process of Agent-side checks and HTTPS requests during a single Puppet run.,activat;against;between;deployment;evaluat;independently;them;code,b849af7570114f5f,Pluginsync and catalog compilation resolve the deployed code independently,2026-10-21
 09272962d865,arch/puppet-agent-run-noop-reporting.md,S-z6kl5grq,located,Man Page: puppet agent > OPTIONS,code;onetim;work;exit;test,784568cf638fbd00,works only if '--test' or '--onetime' is also specified.,2026-10-21
