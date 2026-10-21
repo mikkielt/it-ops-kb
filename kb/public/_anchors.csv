@@ -3994,7 +3994,8 @@ f7f4098dbc18,arch/chef-windows-nodes.md,S-oh6erfbm,located,reboot Resource,mac;m
 511a94dd3903,arch/docs-home-options.md,S1733,located,Tutorial: Create a GitLab Pages website from scratch > Other options for your CI/CD file > Specify a stage to deploy,publish;main;site;git;lab;gitlab;job;page,6c4536640d9c357b,"all branches except main. The test job does not publish to GitLab Pages, so its output is stored only as a job artifact. To view",2026-10-10
 876df89617b2,arch/docs-home-options.md,S1730,unlocated:no-match,,,,,2026-10-10
 876df89617b2,arch/docs-home-options.md,S1733,unlocated:no-match,,,,,2026-10-10
-c2361928e28c,arch/docs-home-options.md,S1731,located,GitLab Pages access control,disabl;enabl;default;login;manag;redirect;self;self-manag,bed1fe9026baa307,Group SAML SSO support for Pages introduced in GitLab 18.2 with a feature flag named ffoauthredirecttossologin. Disabled by default. Group SAML SSO support for OAuth,2026-10-10
+9cf2f5e0948d,arch/docs-home-options.md,S1730,unlocated:no-match,,,,,2026-10-21
+9cf2f5e0948d,arch/docs-home-options.md,S1731,located,GitLab Pages access control,disabl;enabl;default;login;manag;redirect;self;self-manag,bed1fe9026baa307,Group SAML SSO support for Pages introduced in GitLab 18.2 with a feature flag named ffoauthredirecttossologin. Disabled by default. Group SAML SSO support for OAuth,2026-10-21
 d4e43dc46cbe,arch/docs-home-options.md,S1730,unlocated:no-match,,,,,2026-10-10
 00599b0732a9,arch/fluent-rust-typescript.md,S-dftqctth,located,,format_valu;args;dict;valu;format;msg_id;union;msg,b95a1e7706e463fa,"def formatvalue(self, msgid: str, args: Union[Dict[str, Any], None] = None) -> str:",2026-10-14
 00599b0732a9,arch/fluent-rust-typescript.md,S-jjpbp7g2,unlocated:no-match,,,,,2026-10-14

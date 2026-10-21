@@ -21,7 +21,7 @@ OAuth.
 - GitLab Pages access control is disabled by default on self-managed instances; enabling it requires
   admin configuration (`/etc/gitlab/gitlab.rb` + reconfigure), after which an unauthenticated request
   to a private Pages site is redirected to GitLab for OAuth login, with the resulting token persisted
-  in a signed cookie. [DOC S1731]
+  in a signed cookie. [DOC S1730][DOC S1731]
 - GitLab Pages can be built and published from any project via `.gitlab-ci.yml`, including one where
   the docs source lives in a subdirectory (e.g. `docs/`) of a repository that also holds application
   code. The job is marked with `pages: true` (publishes the `public` directory) or `pages.publish:
