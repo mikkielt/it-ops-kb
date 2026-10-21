@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "notes": "Fresh-context review 2026-10-21 of 088d347ea1..84feabe193 (40 files, 27 facts checked against sources, $1.89): 7 findings. Six go to ST-xfuucxk2. Rejected one S2: the entries it lists end with a 2026-09 Partly resolved or Narrowed note, which the item goals count as closing notes, so they were not open on 2026-10-20; no _gaps.md entry in any domain is open without a note dated 2026-10-21."
 }
