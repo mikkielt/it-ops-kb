@@ -3,7 +3,7 @@ topic: agents/agent-evaluation
 priority: P1
 applies_to: "MCP Inspector v2, Inspect 0.x (AISI), DeepEval, promptfoo, PyRIT 1.1.0, garak, OpenAI evals (deprecating), tau-bench/tau2-bench v1.0.1, Anthropic eval guidance 2026-01, azure-ai-evaluation SDK + AI Red Teaming Agent (preview), OpenAI cookbook self-evolving agents (commit 2182005b), promptfoo assertions (commit e6b46046), Claude Code plugin evals (2026-09), held-out evaluation sets (Azure WAF AI testing, AutoML test data (preview), Azure Databricks evaluation sets, retrieved 2026-10-08)"
 retrieved_utc: 2026-10-21
-sources: [S-w2g2bnsw, S-h7tjbts3, S-bdecdv65, S-rwgksb6h, S-qmfejifr, S1880, S1881, S1883, S1884, S1885, S1886, S1887, S1888, S1889, S1890, S1891, S1892, S1893, S1894, S1895, S1896, S1898, S1899, S1900, S1901, S1902, S1903, S1904, S1905, S1935, S-zfg6jhgr, S-onkwuwst, S-p7dq3fku, S-6jcocxnl, S-wwrpen3s, S1920, S-lkcsn2fs, S-m2glighe, S-ll5srdcw]
+sources: [S-w2g2bnsw, S-h7tjbts3, S-bdecdv65, S-rwgksb6h, S-qmfejifr, S1880, S1881, S1883, S1884, S1885, S1886, S1887, S1888, S1889, S1890, S1891, S1892, S1893, S1894, S1895, S1896, S1898, S1899, S1900, S1901, S1902, S1903, S1904, S1905, S1935, S-zfg6jhgr, S-onkwuwst, S-p7dq3fku, S-6jcocxnl, S-wwrpen3s, S1920, S-lkcsn2fs, S-m2glighe, S-ll5srdcw, S-azh3wkvp, S-d55hgtp4]
 status: complete
 ---
 
@@ -37,6 +37,7 @@ capability/safety-eval ground for an agent that happens to be hosted in Azure AI
   test harness, but its principles (clear namespacing, meaningful context in responses, token-efficient
   output, pagination/filtering/truncation with sensible defaults) are the properties a stress-test should
   check for. [DOC S1935]
+- The same post's guidance on token-efficient tools: implement "some combination of pagination, range selection, filtering, and/or truncation with sensible default parameter values" for any tool response that could use up lots of context, noting that Claude Code restricts tool responses to 25,000 tokens by default; expose a `response_format` enum parameter so the agent chooses "concise" or "detailed" output; and let truncation and error responses steer the agent towards filters or pagination, or show a correctly formatted input. It names no default page size, no filter parameter and no truncation message wording; it advises analysing tool-call metrics, where many redundant calls suggest resizing the pagination or token limit parameters. [DOC S1935]
 - **promptfoo**'s MCP provider calls MCP tools directly against a `command`/`args` (stdio), `path`
   (a `.js`/`.py` stdio script) or remote `url` target, and asserts on the tool's response (contains, valid-JSON, which tool was routed to); it does not
   compute a benchmark-style pass rate on its own — assertions are configured per test case. [DOC S1883]
@@ -45,6 +46,7 @@ capability/safety-eval ground for an agent that happens to be hosted in Azure AI
   general jailbreak/multi-turn strategies, authorization probes (`bfla`, `bola`), `pii` and `sql-injection`
   plugins, with "Tool Poisoning Attacks" (hidden instructions in tool descriptions) called out as a primary
   MCP-specific concern. [DOC S1884]
+- promptfoo's LLM-as-a-judge guide documents a staged grading order as guidance, not as a runtime switch: it says to stack deterministic checks with LLM judges (layer 1 deterministic, fast and cheap) and, to avoid paying for model-graded assertions on invalid outputs, to run the deterministic checks in a separate preflight eval; its tiered evaluation for production runs tier 1 (deterministic) and tier 2 (a cheap judge) on every row and tier 3, an expensive judge, only for failures, borderline cases or high-risk routes, by marking those rows with metadata and running the expensive tier as a filtered eval. [DOC S-azh3wkvp]
 - **Inspect (`inspect_ai`)**, from the UK AI Security Institute, is MIT-licensed and built for "prompt
   engineering, tool usage, multi-turn dialog, and model graded evaluations," including a built-in ReAct
   agent and bridges to run externally-built agents (e.g. LangChain) inside its eval harness; it ships 200+
@@ -68,6 +70,8 @@ capability/safety-eval ground for an agent that happens to be hosted in Azure AI
 - **garak** (NVIDIA) is an Apache-2.0 LLM vulnerability scanner (its LICENSE file) that probes
   for hallucination, data leakage, prompt injection, misinformation, toxicity and jailbreaks against a
   configured generator/target; the repository ships no MCP generator or probe. [DOC S1890, S1891]
+- garak's reference documentation site states its licence in the page footer: "Copyright 2023-2026, NVIDIA Corporation. Content provided under Apache License 2.0", the same licence as the code. [DER S-d55hgtp4: the footer read in the page's HTML, which the page's extracted text leaves out]
+- promptfoo's documentation site footer carries only "© 2026 Promptfoo, Inc." and no licence statement, while the repository whose `site/docs` directory the site is built from is MIT-licensed, so the docs text falls under that licence. [DER S-ll5srdcw: the site footer read on 2026-10-21 against the repository's GitHub licence field]
 - A community NVIDIA/garak issue proposing native MCP/OWASP-MCP-Top-10 scanning was closed by its author on
   2026-05-12 without an MCP probe or generator shipping in garak, so MCP-specific target support exists only
   through third-party wrappers (e.g. a community "Garak-MCP" MCP server exposing garak) rather than a

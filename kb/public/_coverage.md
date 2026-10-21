@@ -9,11 +9,11 @@ Every topic of this root with its priority (the research order, not importance),
 | `ad/krbtgt-password-reset` | P1 | complete | `ad/krbtgt-password-reset.md` | 7 |
 | `ad/ldap-paging-filters` | P1 | complete | `ad/ldap-paging-filters.md` | 6 |
 | `ad/fsmo-roles` | P2 | complete | `ad/fsmo-roles.md` | 4 |
-| `agents/agent-caching` | P1 | complete | `agents/agent-caching.md` | 11 |
+| `agents/agent-caching` | P1 | complete | `agents/agent-caching.md` | 14 |
 | `agents/agent-dispatch-and-shared-services` | P1 | complete | `agents/agent-dispatch-and-shared-services.md` | 10 |
 | `agents/agent-error-catalogue` | P1 | complete | `agents/agent-error-catalogue.md`, `agents/agent-error-catalogue.csv` | 23 |
-| `agents/agent-evaluation` | P1 | complete | `agents/agent-evaluation.md` | 39 |
-| `agents/agent-overuse-patterns` | P1 | complete | `agents/agent-overuse-patterns.md`, `agents/agent-overuse-patterns.csv` | 29 |
+| `agents/agent-evaluation` | P1 | complete | `agents/agent-evaluation.md` | 41 |
+| `agents/agent-overuse-patterns` | P1 | complete | `agents/agent-overuse-patterns.md`, `agents/agent-overuse-patterns.csv` | 31 |
 | `agents/agent-rbac` | P1 | complete | `agents/agent-rbac.md` | 23 |
 | `agents/api-tokens-issue-and-store` | P1 | partial | `agents/api-tokens-issue-and-store.md`, `agents/api-tokens.csv`, `agents/secret-storage-options.csv` | 18 |
 | `agents/copilot-studio-inventory` | P1 | complete | `agents/copilot-studio-inventory.md`, `agents/copilot-studio-feature-map.csv` | 23 |
@@ -48,7 +48,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/agent-memory-services` | P3 | complete | `agents/agent-memory-services.md` | 10 |
 | `agents/agent-planning-and-done` | P3 | complete | `agents/agent-planning-and-done.md` | 7 |
 | `agents/agent-sandboxes` | P3 | partial | `agents/agent-sandboxes.md` | 18 |
-| `agents/agent-troubleshooting-method` | P3 | complete | `agents/agent-troubleshooting-method.md` | 14 |
+| `agents/agent-troubleshooting-method` | P3 | complete | `agents/agent-troubleshooting-method.md` | 15 |
 | `agents/codebase-mapping` | P3 | complete | `agents/codebase-mapping.md`, `agents/codebase-mapping.csv` | 112 |
 | `agents/coding-agent-codebase-context` | P3 | complete | `agents/coding-agent-codebase-context.md` | 20 |
 | `agents/decision-records` | P3 | partial | `agents/decision-records.md`, `agents/decision-records.csv` | 10 |

@@ -3,7 +3,7 @@ topic: agents/agent-troubleshooting-method
 priority: P3
 applies_to: "a troubleshooting method for agentic work: Google's Site Reliability Engineering book (2017), chapters 12 (Effective Troubleshooting) and 15 (Postmortem Culture); DORA's 2024 Accelerate State of DevOps report and 2025 State of AI-assisted Software Development report; Claude Code best practices, troubleshooting and configuration debugging pages (retrieved 2026-10-15)"
 retrieved_utc: 2026-10-21
-sources: [S-bykh7vnm, S-u2rergzb, S-2k5yy4cc, S-acskf4b2, S-xyroxc3f, S-hs7ypnlx, S-o3v6ozch, S-odq4ke5n, S-aqddt7m6, S-aishnkok, S-qulnsg4e, S-qdxfqzln, S2157, S1921]
+sources: [S-bykh7vnm, S-u2rergzb, S-2k5yy4cc, S-acskf4b2, S-xyroxc3f, S-hs7ypnlx, S-o3v6ozch, S-odq4ke5n, S-aqddt7m6, S-aishnkok, S-qulnsg4e, S-qdxfqzln, S2157, S1921, S-gj77pkic]
 status: complete
 ---
 
@@ -53,6 +53,10 @@ Google's Site Reliability Engineering (SRE) book treats troubleshooting as the h
 - The 2025 research identified seven capabilities that magnify AI's positive impact (the DORA AI Capabilities Model); DORA advises treating AI adoption as an organisational transformation. [DOC S-acskf4b2]
 - DORA's capability catalogue tags seven capabilities as AI ones: AI-accessible internal data, clear and communicated AI stance, healthy data ecosystems, platform engineering, user-centric focus, version control, and working in small batches. [DOC S-hs7ypnlx]
 - DORA's catalogue calls version control a critical safety net as AI speeds up the velocity of change, and small batches the counter to AI-driven instability through shorter lead times and faster feedback. [DOC S-hs7ypnlx]
+- The 2025 report itself (v. 2025.2) gives its effect sizes for AI adoption only as a chart: standardised beta weights, the estimated standard-deviation difference in an outcome per standard-deviation increase in AI adoption, with 89% credible intervals on an axis from -0.05 to 0.20, and no per-outcome numbers in its text; it states them as comparisons between two people with the same traits, environment and processes, not as causal effects. [DOC S-gj77pkic]
+- In the report's reading, the person with higher AI adoption reports higher individual effectiveness, software delivery instability, organisational performance, product performance, software delivery throughput, team performance and code quality and a higher percentage of time doing valuable work, and similar levels of burnout and friction; its conclusion says AI has no measurable relationship with burnout and friction and continues its detrimental relationship with software delivery stability. [DOC S-gj77pkic]
+- The report's AI Capabilities Model names the seven capabilities as a clear and communicated AI stance, healthy data ecosystems, AI-accessible internal data, strong version control practices, working in small batches, a user-centric focus and quality internal platforms, chosen from 15 candidates because each showed an interaction with AI use that amplified the difference AI made across outcomes. [DOC S-gj77pkic]
+- The report measures AI adoption in general, not coding agents: it asks how often respondents use AI in four modes (chat, predictive text, collaborative, and agent, in which AI operates relatively unsupervised and makes changes without direct oversight), and for the agent mode a majority (61%) reported never interacting in it, so its findings are not findings about coding agents alone. [DOC S-gj77pkic]
 
 ### Debugging a coding agent (Claude Code)
 - Claude Code best practices: correct Claude as soon as it goes off track. `Esc` stops it mid-action with context kept; `Esc` twice or `/rewind` restores earlier conversation and code; `/clear` resets context between unrelated tasks. [DOC S-o3v6ozch]

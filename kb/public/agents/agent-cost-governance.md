@@ -55,7 +55,8 @@ for any team running a multi-operation MCP tool set that wants per-operation cos
   own context window; agent teams are opt-in (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`). [DOC S2132]
 - `/usage`'s attribution breakdown covers skills, subagents, plugins, and MCP servers — but attribution is per MCP
   *server*, not per individual tool inside a server (a server's share counts requests that consumed any one of its
-  tool results). [DOC S2132; gap: no per-tool attribution documented, see `gaps.md`]
+  tool results). [DOC S2132]
+- The OpenTelemetry cost and token counters do attribute by individual MCP tool: `mcp_server.name` and `mcp_tool.name` name the server and the tool whose result the request consumed (absent when it consumed none), and with `OTEL_LOG_TOOL_DETAILS=1` they carry the real names, otherwise user-configured server names are replaced by `custom`; before v2.1.273 the counters carried the redacted values even with the flag set. The attribution is by requests that consumed a tool's result, so a stdio server's tool cost per engineer is the counters grouped by `mcp_tool.name` and `user.email`. [DER S744: the two attributes read together with the grouping in the next fact]
 - Central, per-user and per-session token and cost telemetry for every developer: deliver `CLAUDE_CODE_ENABLE_TELEMETRY` and the `OTEL_*` exporter variables in the managed settings `env` block, which locks the collector endpoint against developer overrides, and group `claude_code.cost.usage` and `claude_code.token.usage` by `user.email` and `session.id`; `OTEL_RESOURCE_ATTRIBUTES` adds team or cost-centre labels, and a Claude apps gateway can stamp the IdP identity and relay the data without per-machine configuration. Details and sources: `claude/otel-monitoring.md`, "Collecting every member's telemetry centrally". [DER S744, S-r7mszxqu: the managed `env` delivery, endpoint lock, standard attributes and gateway relay read together]
 
 ## Reference

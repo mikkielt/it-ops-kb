@@ -3,7 +3,7 @@ topic: agents/agent-overuse-patterns
 priority: P1
 applies_to: "Anthropic/OpenAI/Google/Microsoft agent guidance (2025-2026 docs), Thoughtworks Technology Radar Vol 34 (2026-04), jq 1.8, Renovate (docs 44.175.2), conventional-commits v1.0.0, semantic-release, LSP 3.18, DSC 3.3.0, Presidio (pattern_recognizer.py at commit e9895a51)"
 retrieved_utc: 2026-09-27
-sources: [S2160, S2162, S2163, S2164, S2165, S2166, S2167, S2168, S2169, S2170, S2171, S2172, S2173, S2174, S150, S154, S825, S-2z2zfj3l, S-sxtmngif, S-t5dhva6p, S900, S1920, S1924, S1925, S1935, S1936, S744, S745, S-3zepbhux]
+sources: [S2160, S2162, S2163, S2164, S2165, S2166, S2167, S2168, S2169, S2170, S2171, S2172, S2173, S2174, S150, S154, S825, S-2z2zfj3l, S-sxtmngif, S-t5dhva6p, S900, S1920, S1924, S1925, S1935, S1936, S744, S745, S-3zepbhux, S2157, S1921]
 status: complete
 ---
 
@@ -157,6 +157,9 @@ alongside the deterministic tool that already exists for them.
   same fields, read as "this sequence never changes across N runs," are the concrete signal for "this
   whole task could have skipped the agent." [DER from `agents/subagents-vs-deterministic-tools.md`
   (reused S744/S745 there), not re-fetched here]
+- Claude Code documents two caps on runaway subagent spawning, though no cost multiplier for it: by default a subagent can spawn subagents up to three layers below the main conversation (`CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` changes it, `1` turns nesting off), and when 20 subagents are running, spawning another fails with `Concurrent subagent limit reached` (`CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`, v2.1.217 or later; sessions with ultracode active are exempt); the page adds that there is no limit on the total number of subagents spawned over a session. [DOC S2157]
+- The only vendor figures read for multi-agent token use are Anthropic's multi-agent research post ("agents typically use about 4× more tokens than chat interactions, and multi-agent systems use about 15× more tokens than chats") and Claude Code's "about 7x more tokens" for agent teams in plan mode (`agents/agent-cost-governance.md`); neither is a multiplier for a runaway or recursive spawn. [DOC S1921]
+- A search on 2026-10-21 for an official post-mortem of an agent used where a deterministic tool sufficed, and for a same-task agent-against-script benchmark with cost, latency and error rate, found only community pages. [DER S1921, S2157: the absence of a vendor figure or write-up across the pages read and the searches]
 
 ## Reference
 
