@@ -68,7 +68,7 @@ Responses API instead expose `require_approval` as an explicit opt-in control pe
   OAuth); SSE is not listed as a Codex transport in the vendor sample. [DOC S-2q2hcluk]
 
 ### Auth / secrets
-- Copilot coding agent: only repository/environment secrets and variables **named with a `COPILOT_MCP_`
+- Copilot coding agent: only Agents secrets and variables **named with a `COPILOT_MCP_`
   prefix** are exposed to the MCP configuration; substitution syntax is `$VAR_NAME`, `${VAR_NAME}`, or
   `${VAR_NAME:-default_value}`. OAuth-authenticated remote MCP servers are explicitly **not supported**.
   [DOC S-udcaydkb]

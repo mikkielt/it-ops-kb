@@ -1217,7 +1217,6 @@ fc04111ee94a,agents/coding-agent-codebase-context.md,S-fema44tc,unlocated:no-mat
 fc04111ee94a,agents/coding-agent-codebase-context.md,S-mxqyhxx7,unlocated:no-match,,,,,2026-10-10
 fee8b50a17f0,agents/coding-agent-codebase-context.md,S-4owuypm5,located,Search > Privacy and security,machin;upload;code;index;instant;cursor;grep,3c0df195d5084896,"Instant Grep builds and queries its index on your machine. Cursor does not upload file paths or code to build a search index, and it",2026-10-21
 fee8b50a17f0,agents/coding-agent-codebase-context.md,S-v2sqknkh,unlocated:no-match,,,,,2026-10-21
-0ff99a63f713,agents/coding-agents-mcp.md,S-udcaydkb,unlocated:no-match,,,,,2026-10-10
 236aa9a63257,agents/coding-agents-mcp.md,S-2q2hcluk,unlocated:no-match,,,,,2026-10-10
 2b0a291aef7b,agents/coding-agents-mcp.md,S-4fmcb5i2,unlocated:no-match,,,,,2026-10-10
 2b0a291aef7b,agents/coding-agents-mcp.md,S-zqlgscwv,unlocated:no-match,,,,,2026-10-10
@@ -1235,6 +1234,7 @@ fee8b50a17f0,agents/coding-agent-codebase-context.md,S-v2sqknkh,unlocated:no-mat
 5a6ded60bd1c,agents/coding-agents-mcp.md,S-r4egujgz,located,MCP servers > Quickstart,array;one;request;api;server;tool;mcp,bf453cc749f18059,"The API will return new items in the output array of the model response. If the model decides to use an MCP server, it will",2026-10-10
 60297d42b562,agents/coding-agents-mcp.md,S-r4egujgz,unlocated:no-match,,,,,2026-10-10
 7cbca4a05df7,agents/coding-agents-mcp.md,S-udcaydkb,located,documentation. > Customizing the built-in GitHub MCP server,remot;agent;configuration;git;hub;github;server;mcp,d53b62752fc3ad71,"For more information on toolsets, refer to the README in the GitHub Remote MCP Server documentation. Click Save MCP configuration. Add your Agents secrets and",2026-10-10
+7cd55b34a623,agents/coding-agents-mcp.md,S-udcaydkb,unlocated:no-match,,,,,2026-10-21
 7dc09fa61e0d,agents/coding-agents-mcp.md,S-udcaydkb,located,Configure MCP servers for your repository > Introduction,level;set;cloud;json;agent;configuration;git;hub,a6a6408d131e82b0,You enter the JSON configuration directly into the settings for the repository on GitHub.com. This repository-level MCP configuration is shared by Copilot cloud agent and,2026-10-10
 7fa2e0612c9c,agents/coding-agents-mcp.md,S-udcaydkb,located,Configure MCP servers for your repository > Writing a JSON configuration for MCP servers,annotations.readonlyhint;hint;readonlyhint;respons;annotation;list;true;read,337715fda093fb5c,"For Copilot code review, each tool in the MCP server's tools/list response must set annotations.readOnlyHint to true to allow Copilot to use it.",2026-10-10
 8186c6610524,agents/coding-agents-mcp.md,S-shpwh3m7,unlocated:no-match,,,,,2026-10-10
