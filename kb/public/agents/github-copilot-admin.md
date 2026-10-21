@@ -12,7 +12,7 @@ status: complete
 ## Summary
 Copilot admin controls span four surfaces: organization/enterprise **policies** (models, MCP servers,
 coding-agent/partner-agent enablement, preview features), **content exclusion** (YAML path rules that hide
-files from completions and github.com Chat, but not from agent mode or the coding agent), the **audit log**
+files from completions and IDE Chat, but not from agent mode in IDEs, Copilot CLI or the coding agent), the **audit log**
 (a single `copilot` category, 180-day retention), and the **usage metrics REST API** (daily/28-day report
 downloads at org and enterprise scope). The coding agent additionally has its own outbound-traffic firewall,
 separate from content exclusion, configured per organization or repository.
@@ -42,10 +42,11 @@ separate from content exclusion, configured per organization or repository.
 - Path rules are plain YAML lists of path strings matched with **fnmatch** pattern notation, case-insensitive,
   supporting `*`, `**`, and character sets such as `[dk]`; a repository-level list is a flat array, an
   org/enterprise-level document keys each array by repository reference (or `"*"`). [DOC S-tn4wwzyx]
-- Content exclusion suppresses inline code completions and blocks the excluded files from being used as
-  context or referenced in **Copilot Chat on github.com**. [DOC S-tn4wwzyx]
-- Content exclusion explicitly does **not** apply to **agent mode in Copilot Chat in IDEs** — the docs state
-  this in plain language, so agent-mode sessions can still read excluded files. [DOC S-tn4wwzyx]
+- Content exclusion suppresses inline code suggestions for an excluded file, and Copilot Chat in the IDE
+  cannot use an excluded file to generate a response and does not list it as a reference; the page's test
+  steps describe exactly these two checks. [DOC S-tn4wwzyx]
+- The page's note says **GitHub Copilot CLI** and **agent mode in Copilot Chat in IDEs** do **not** support
+  content exclusion, so those sessions can still read excluded files. [DOC S-tn4wwzyx]
 - Changes to content exclusion take roughly 30 minutes to propagate to IDEs; VS Code, JetBrains IDEs, and
   Visual Studio expose a manual "reload" action to pick up new rules immediately, while Vim/Neovim clients
   poll and pick up changes automatically. [DOC S-tn4wwzyx]
