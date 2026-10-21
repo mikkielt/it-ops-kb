@@ -47,7 +47,7 @@ A plain container shares the host kernel, so four stronger boundaries are used t
 - Against container escape the threat model recommends a secure runtime through `RuntimeClass` in the pod template, adds that agent-sandbox implements no isolation itself, and lets administrators enforce it with a `SandboxTemplate` that sets `runtimeClassName`. [DOC S-eu4rwlo5]
 - With a `SandboxTemplate`, the default managed NetworkPolicy mode allows ingress only from the Sandbox Router and egress only to the public internet (RFC 1918 networks and cloud metadata endpoints blocked); it also blocks sidecar ports unless the template allows them. [DOC S-eu4rwlo5]
 - Pods made from a `SandboxTemplate` get `automountServiceAccountToken` defaulted to `false`; for a bare `Sandbox` the threat model leaves it to admission control such as `ValidatingAdmissionPolicy`. [DOC S-eu4rwlo5]
-- The optional Sandbox Router is an HTTP reverse proxy that routes SDK and external traffic to sandbox pods by header (`X-Sandbox-ID`), for runtimes such as gVisor and Kata Containers where pod port-forwarding is unavailable; Go and Python SDKs (`k8s-agent-sandbox` on PyPI) drive the API. [DOC S-bk6r64wx]
+- The optional Sandbox Router is an HTTP reverse proxy that routes SDK and external traffic to sandbox pods, for runtimes such as gVisor and Kata Containers where pod port-forwarding is unavailable; Go and Python SDKs (`k8s-agent-sandbox` on PyPI) drive the API. [DOC S-bk6r64wx]
 - Deleting the CRDs cascade-deletes every custom resource of those types in all namespaces; the README pins an install to a release manifest for production and GitOps. [DOC S-bk6r64wx]
 
 ### gVisor: how system calls are intercepted
