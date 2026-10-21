@@ -19,7 +19,7 @@ files: [sqlserver/mssql-server-tags.json]
 ## Facts
 - Docs examples use `2017-latest`, `2019-latest`, `2022-latest` and `2025-latest`. To pin, pull a specific tag such as `2019-CU18-ubuntu-20.04`. [DOC S473,S477]
 - All tags can be listed at `https://mcr.microsoft.com/v2/mssql/server/tags/list`. [DOC S473]
-- Tag list on 2026-09-24: 284 tags. Highest CUs: 2022-CU27, 2025-CU9 (`2025-CU9-ubuntu-22.04`, `2025-CU9-ubuntu-24.04`). Moving tags: `latest`, `latest-ubuntu`, `2017-latest`, `2017-latest-ubuntu`, `2019-latest`, `2022-latest`, `2025-latest`. [DOC S478]
+- Tag list on 2026-10-21: 290 tags (284 on 2026-09-24, the saved copy). Highest CUs: 2022-CU27, 2025-CU9 (`2025-CU9-ubuntu-22.04`, `2025-CU9-ubuntu-24.04`, plus `2025-CU9-GDR1-ubuntu-22.04` and `-24.04`). Moving tags: `latest`, `latest-ubuntu`, `2017-latest`, `2017-latest-ubuntu`, `2019-latest`, `2022-latest`, `2025-latest`. [DOC S478]
 - `ACCEPT_EULA` is required for the image. `MSSQL_SA_PASSWORD` sets the sa password; `SA_PASSWORD` is deprecated. [DOC S-m5cz4kbp]
 - The quickstart creates a Developer edition container by default. `MSSQL_PID` "specifies the freely licensed Developer Edition of SQL Server for non-production use". [DOC S477,S-m5cz4kbp]
 - MSSQL_PID for 2022 and earlier: Evaluation, Developer, Express, Web, Standard, Enterprise (legacy CAL, max 20 cores), EnterpriseCore, or a product key. [DOC S476]
