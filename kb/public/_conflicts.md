@@ -191,6 +191,7 @@ GitHub's official Copilot coding-agent best-practices page names no scheduled/is
 ### containers, gMSA, workload identity
 
 None found. AWS's `credentials-fetcher` (COMMUNITY, S1607/S1608) does not contradict Microsoft's own Linux Kerberos docs (S1605, S1606) — it fills a gap Microsoft's own docs leave open (gMSA-to-Linux-keytab) rather than disagreeing with them. Flagging as a gap, not a conflict, since Microsoft makes no claim in either direction about gMSA-on-Linux beyond silence.
+  - Reviewed 2026-10-21, not a source disagreement: the entry records a gap (Microsoft's Linux Kerberos pages are silent on gMSA-to-keytab; the AWS tool is COMMUNITY), so no two sources differ and none can settle it. [COMMUNITY S1607, S1608; DOC S1605, S1606]
 
 ### tooling, texts, readiness
 
@@ -202,6 +203,7 @@ No direct factual conflicts found between official sources in this batch.
   no-secrets-in-env-of-child-processes policy some teams adopt. This is not a conflict between sources — it is
   a stricter house policy going further than the platform requires — but is worth flagging since a reader
   might expect K8s docs to mandate the stricter file-based pattern and they do not.
+  - Reviewed 2026-10-21, not a source disagreement: the entry itself says a stricter house policy goes further than the platform; the Kubernetes pages (S1725, S1729) treat both secret delivery forms as valid and no page says otherwise. [DOC S1725, S1729]
 
 ## auth
 
@@ -214,6 +216,7 @@ No direct factual conflicts found between official sources in this batch.
 
 None found this pass. No direct contradiction surfaced between the sources fetched (S1270-S1292);
 several items are simply undocumented (see gaps.md) rather than disagreeing.
+  - Closed 2026-10-21: a record that no two sources disagree in this batch; the undocumented items it mentions are gaps in `_gaps.md`, not conflicts.
 
 ### keys, propagation, revocation, audit, threats
 
@@ -410,9 +413,11 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
   - Reviewed 2026-09-28, still open: no new release since 2.2.364 (PyPI, 2026-09-28), so the CHANGELOG still has no section for it.
 - EDPB Guidelines 01/2025 consultation end: the news item (S873) says "until 28 February 2025". The consultation page (S872) shows the feedback period "17 January - 14 March 2025". (topic: privacy/gdpr-pseudonymisation)
   - Re-read 2026-09-27, still open: the consultation page and the EDPB consultations list both show 17 January - 14 March 2025 (23:59 CET); the news item keeps 28 February 2025. The consultation page is the operative record. (topic: privacy/gdpr-pseudonymisation)
+  - Resolved 2026-10-21: the EDPB consultation page (S872) is the EDPB's record of the feedback period itself; read again in the census of 2026-10-21 it still shows 17 January - 14 March 2025 and marks it closed, while the news item (S873) is the older statement of 2025-01-17 ("until 28 February 2025"). `privacy/gdpr-pseudonymisation` states the consultation page's period. [DOC S872, S873]
 - spaCy en_core_web_lg versions: GitHub releases have 3.8.0 (2024-09-30, S850). The Hugging Face repo was last modified 2023-11-21 with 3.7.1 (S851). Both say MIT. (topic: privacy/spacy-model-licence)
   - Reviewed 2026-09-28, still open: two distribution channels at different versions; the kb follows GitHub releases.
 - Nemotron-PII size: the dataset card (S-dcu4qhyp) says 100,000 records, 50k train and 50k test; the Hugging Face datasets-server `size` endpoint (read 2026-09-27) reports 100,000 rows in each of the train and test splits (200,000 in all). The kb states the card's figure. (topic: privacy/gliner-models)
+  - Still open 2026-10-21: re-read the live datasets-server `size` endpoint (not partial: 100,000 rows in `train` and 100,000 in `test`) against the dataset card (S-dcu4qhyp, last modified 2025-12-17), which still says 100,000 records, 50k train and 50k test; the kb states the card's figure and says so. Counting the rows of the train and test Parquet files in the dataset repository, or a corrected card, would settle which count the files hold.
 - NIST SP 800-38G: the page at /pubs/sp/800/38/g/final is the 2016-03-29 version, marked withdrawn (S865). The current final is /upd1/final (S866). Both carry the same number, "SP 800-38G". (topic: privacy/nist-sp800-38g)
   - Reviewed 2026-09-28, not a source disagreement: a withdrawn edition and its update; the kb cites the update. Closed.
 
@@ -457,6 +462,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
   (the CIS PDF itself is behind registration). Flag before citing CIS L1 items as validated for
   24H2/25H2 without checking v5.1.0's own applicability statement. (topic: security/baselines-catalog)
   - Re-read 2026-09-27, still open: CIS's September 2026 update (S-m3qbkeev) lists v5.1.0's changes (Defender AV recommendations moved to their own benchmark, 3 updated, 1 removed) but no tested release; the PDF is behind registration. (topic: security/baselines-catalog)
+  - Still open 2026-10-21: the CIS September 2026 update (S-m3qbkeev, confirmed in the census of 2026-10-21) still lists v5.1.0's changes without a tested Windows 11 release, and the Benchmark PDF is behind CIS registration. Reading the applicability statement in the v5.1.0 PDF after a free CIS login would settle it.
 - No other cross-source disagreement was established this pass (most rows are UNK rather than
   conflicting DOC facts, since the machine-readable sources needed for a real crosswalk were not
   downloaded — see `gaps.A.md`).
@@ -468,6 +474,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
   - Reviewed 2026-09-28, not a source disagreement: a design check, not a source conflict.
 - **PyPI Trusted Publishing and self-managed GitLab.** A third-party blog (S1510, COMMUNITY) claims PyPI supports self-managed GitLab. The official *Adding a Trusted Publisher* page (S1597, retrieved 2026-09-24) says only gitlab.com projects are supported, and the official page wins. (topic: security/supply-chain)
   - Re-read 2026-09-27, now a PyPI-internal disagreement: PyPI's own blog (S-5ry5zerr, 2025-11-10) and 2025 review (S-cos7wdpw) confirm the GitLab Self-Managed beta, and Warehouse supports custom GitLab issuers (CODE S-5t26tmbz); the user docs (S1597) and troubleshooting page still say gitlab.com only. The article states both; the blog is the newer statement. (topic: security/supply-chain)
+  - Narrowed 2026-10-21: re-read the PyPI user docs (S1597), which still say "Currently, only projects hosted on https://gitlab.com are supported. Self-managed instances are not supported."; the PyPI blog (S-5ry5zerr, 2025-11-10) and 2025 review (S-cos7wdpw) report the GitLab Self-Managed beta and the Warehouse code (CODE S-5t26tmbz, main HEAD 02dae5a1510b) accepts custom GitLab issuers, so the disagreement is inside PyPI's own pages and the docs page is the older statement. A PyPI docs update, or registering a publisher from a self-managed instance during the beta, would settle whether the page is stale. [DOC S1597, S-5ry5zerr, S-cos7wdpw; COMMUNITY S1510]
 
 ### C: frameworks, regulation, AI
 
@@ -475,6 +482,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
   `framework-control-map.csv` rows now use safeguard IDs plus a short own-words paraphrase instead of the
   official safeguard titles, matching the treatment of CIS Benchmark recommendation IDs elsewhere in the kb
   (part A). (topic: security/framework-control-map)
+  - Resolved 2026-10-21: the CIS Controls v8.1 licence (S1563) is unchanged and the `framework-control-map.csv` rows already carry safeguard IDs and an own-words paraphrase, not the official titles; no source disagrees. [DOC S1563]
 - No direct DOC-vs-DOC factual conflicts found in Part C's sources; the EU AI Act Digital Omnibus deferral dates
   come from law-firm/community summaries (S1558, S1559) rather than the consolidated regulation text itself,
   since EUR-Lex had not yet published a consolidated version reflecting Regulation (EU) 2026/1744 at retrieval
@@ -608,6 +616,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## auth/ntlm-deprecation
 
 - S1200's _sources.csv row says 'published 2025-09-24'; the fetched page's postTime is 2026-01-29 (read 2026-09-27). Row date should be corrected by the census owner. (topic: auth/ntlm-deprecation)
+  - Reviewed 2026-10-21, not a source disagreement: the entry records a metadata date in S1200's `_sources.csv` row against the page's own post time (2026-01-29, read in the census); the row now carries both and no fact in `auth/ntlm-deprecation` states the post date. [DOC S1200]
 
 ## agents/agent-overuse-patterns
 
@@ -664,17 +673,22 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 
 - SMB signing default on Windows Server 2025: S1202 (Control SMB signing behavior) says Windows Server 2025 requires outbound signing only; S1228 (SMB security hardening, HEAD 2026-09) says starting with Windows 11 24H2 and Windows Server 2025 all outbound and inbound SMB connections must be signed by default. Kb keeps S1202's outbound-only for Server 2025. (topic: auth/ldap-smb-signing)
   - Re-read 2026-09-27, still open: S1203 (Microsoft blog) and S-77zvblfr (SMB features, updated 2025-11-27) also say outbound only for Server 2025; S1228 alone says outbound and inbound. The kb keeps outbound-only. (topic: auth/ldap-smb-signing)
+  - Resolved 2026-10-21: read raw at main, the signing page S1202 (ms.date 2025-08-13) says Windows 11 24H2 Enterprise, Pro and Education require outbound and inbound signing and Windows Server 2025 "requires outbound SMB signing only"; the hardening page S1228 (ms.date 2024-10-25) is the older page and itself points to S1202 for signing behaviour, and S1203 and S-77zvblfr agree with S1202. The kb keeps outbound-only for Server 2025. [DOC S1202, S1228, S1203, S-77zvblfr]
 - SMB encryption default on Windows Server 2025 / Windows 11 24H2: the SMB features page (S-77zvblfr, updated 2025-11-27) has a table row saying encryption is required by default for all outbound client connections, while S1228 says encryption isn't mandatory by default and S1203 says it is not required by default. The kb keeps not-mandatory. Found 2026-09-27. (topic: auth/ldap-smb-signing)
+  - Still open 2026-10-21: re-read the raw SMB features page (S-77zvblfr, ms.date 2025-11-27): its encryption table still says "Encryption required by default" for Windows Server 2025 / Windows 11 24H2 on outbound client connections, while the hardening page (S1228) only says the client "can now mandate encryption" and the blog (S1203) says it is not required by default. No page reconciles them. On a 24H2 lab client with default settings, `(Get-SmbClientConfiguration).RequireEncryption` and a connection to a share on a server without encryption would settle it.
 
 ## auth/propagation-latency
 
 - Cloud Sync interval: the Cloud Sync FAQ (S1280) says user and group provisioning is scheduled approximately every 10 to 20 minutes, while What is Cloud Sync (S-2vza23mx) says the provisioning service synchronizes every two minutes. Both read 2026-09-27; the kb table states both. (topic: auth/propagation-latency)
+  - Still open 2026-10-21: re-read both live pages: the FAQ (S1280, updated 2026-06-15) still says user and group provisioning is scheduled "approximately every 10 to 20 minutes" and the overview (S-2vza23mx, ms.date 2026-10-06) still says the provisioning service synchronizes "every two minutes" as its scheduler model; they may describe the scheduler tick and the end-to-end latency, but neither page says so. Timing a user change from AD to Entra ID with the provisioning logs of a lab Cloud Sync agent would settle it.
 - TGT renewal window: the VPN group-membership support article (S-ffrzumip) says a TGT can be renewed for 10 days, while the Kerberos policy page (S-fn2rot77) gives 7 days as the default for Maximum lifetime for user ticket renewal. Both read 2026-09-27; the kb keeps 7 days as the policy default. (topic: auth/propagation-latency)
+  - Still open 2026-10-21: re-read both pages: the VPN support article (S-ffrzumip, updated 2026-02-12) still says "A TGT can be renewed for 10 days" while the Kerberos policy page (S-fn2rot77, last updated 2017-04-19) lists 7 days as the Default Domain Policy value; no page ties the 10 days to a setting. `klist tgt` on a lab domain-joined client (its `Renew Time` against the start time) with the domain's policy value would settle it.
 
 ## auth/group-claims
 
 - Implicit-flow group limit: S1284 (Configure group claims) says five groups and hasgroups only above five; S1285 (Zero Trust: group claims and app roles) says six groups for the implicit flow. (topic: auth/group-claims)
   - Re-read 2026-09-27, still open: a third Microsoft page, Customize tokens (S-azppyixp), says six for implicit grant in a hybrid flow; S1284 still says five. (topic: auth/group-claims)
+  - Still open 2026-10-21: re-read all three pages: S1284 (updated 2025-04-09) says five groups and `hasgroups` only above five; S1285 (updated 2025-10-24) and Customize tokens (S-azppyixp, updated 2024-03-14) say six for the implicit flow, the latter "as part of a hybrid flow". The newest page says six but none explains the difference. An Entra test app with implicit grant enabled and a user in six groups, checking whether the ID token carries `groups` or `hasgroups`, would settle it.
 
 ## entra/connect-and-cloud-sync
 
@@ -685,11 +699,13 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## gitlab/protected-branches-tags
 
 - S444 (protected.md @56c82a97) is internally inconsistent on an unconfigured 'Allowed to push and merge': the Push and merge permissions table says 'No one can push' (and the Developer table shows no direct push), but a note on the same page says an unconfigured setting 'does not restrict push access' and must be set to 'No one' explicitly. protected-branches-tags.md line 22 follows the table. (topic: gitlab/protected-branches-tags)
+  - Resolved 2026-10-21: read raw at the current master (@1eec2f23f670), the page now states the same rule in both places: the table row for **Allowed to push and merge** says "No one can push" when every selection is cleared, and the note says "When you clear every selection in **Allowed to push and merge** on an existing rule, no one can push" and that a new branch rule selects Maintainers by default. The pinned S444 text was the older, inconsistent wording; `gitlab/protected-branches-tags` follows the table, which the current note confirms. [DOC S444]
 
 ## auth/workload-identity
 
 - GitLab flexible federated identity credential claims: the flexible FIC page (S1294) lists only `sub` (eq, matches) and `project_id` (eq) as supported and requires sub plus project_id for mutable subjects; the mutable-subjects page (S1278) says a GitLab flexible FIC must match sub and one or more of project_id, namespace_id, user_id, and shows examples using namespace_id and user_id. Both re-read 2026-09-27. (topic: auth/workload-identity)
   - Re-read 2026-09-27: unchanged on both live pages (S1294 updated 2026-09-23; S1278 updated 2026-07-30). (topic: auth/workload-identity)
+  - Still open 2026-10-21: re-read both live pages: S1294 (updated 2026-09-23) still lists only `sub` and `project_id` for GitLab and requires both; S1278 (updated 2026-07-30) still says `sub` plus one or more of `project_id`, `namespace_id`, `user_id`, though every example it shows also matches `project_id`. Creating a flexible federated identity credential with `sub` and `namespace_id` only, and checking whether Entra ID accepts it, would settle it.
 
 ## intune/platform-scripts
 
@@ -722,11 +738,13 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## security/policy-precedence
 
 - Policies-key cleanup: the FSLogix Group Policy page (S-z4y7mew3) says settings under `HKLM\SOFTWARE\Policies\FSLogix\ODFC` reset themselves when the GPO is removed or set to *Not Configured*; the `Remove-GPRegistryValue` page (S-is2wluoa) says removing a registry-based policy setting (example under `...\Policies\...`) from a GPO does not delete the value on clients, and the setting must be disabled to delete it. Both read 2026-09-27; the pages describe different actions (GPO removed vs one setting removed from a GPO that still applies) but no page states the general rule. (topic: security/policy-precedence)
+  - Still open 2026-10-21: both pages were confirmed unchanged in the census of 2026-10-21 (FSLogix S-z4y7mew3, updated 2026-03-30; Remove-GPRegistryValue S-is2wluoa): one says ODFC values under `Policies\FSLogix\ODFC` reset when the GPO is removed or set to Not Configured, the other that removing one setting from a still-applied GPO leaves the client value. They describe different actions and no page states the general rule. In a lab, removing one `Policies` registry setting from an applied GPO and checking the client value after `gpupdate` would settle it.
 
 ## security/privacy-compliance
 
 - AI Omnibus political agreement date: privacy-compliance.md:74-76 (COMMUNITY S1558) says provisional agreement 2026-05-06; the Commission page S1557 re-read 2026-09-27 says a political agreement was reached on 7 May 2026 (and entry into force 27 July 2026). (topic: security/privacy-compliance)
   - Re-read 2026-09-27, still open: the Commission press release IP/26/1024 (S-tzbutlvs, published 2026-05-07 07:59 CEST) says the agreement was "reached today"; the Council release (dated 2026-05-07 in its url, a search snippet says 6 May) could not be read past its browser check. The article now leads with the Commission's date and keeps S1558's 6 May as COMMUNITY. (topic: security/privacy-compliance)
+  - Resolved 2026-10-21: the Commission press release IP/26/1024 (S-tzbutlvs, published 2026-05-07) says the agreement was reached "today", and the Commission page S1557 gives 7 May 2026; both are the primary record and `privacy-compliance` leads with that date. S1558 (COMMUNITY) keeps 6 May as a lead only; the Council release stayed unreadable behind its browser check. [DOC S1557, S-tzbutlvs; COMMUNITY S1558]
 
 ## windows/azure-arc-servers
 
@@ -788,6 +806,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## arch/sql-auth-containers
 
 - ODBC `ActiveDirectoryDefault`: the Microsoft SQL driver feature matrix (S-g2zvqta5) marks "Microsoft Entra default Azure authentication" as not supported by the ODBC driver on Windows or Linux/macOS, and the ODBC `Authentication` keyword list (S1610) has no `ActiveDirectoryDefault`, while the mssql-django Entra page (S-67zasdym) shows `Authentication=ActiveDirectoryDefault` with ODBC Driver 18 and says mssql-django 1.7.3+ passes it through to the driver. Read 2026-09-28; a driver test settles it. (topic: arch/sql-auth-containers)
+  - Narrowed 2026-10-21: re-read the driver feature matrix (S-g2zvqta5, updated 2026-09-30), which still lists "Microsoft Entra default Azure authentication" as No for the ODBC driver on Windows and on Linux and macOS; the ODBC Entra page (S1610, updated 2026-10-20) names no `ActiveDirectoryDefault`; the mssql-django page (S-67zasdym, updated 2026-09-29) says 1.7.3+ passes the mode through "when the installed Microsoft ODBC Driver for SQL Server supports that mode", so it does not claim ODBC support. Connecting with ODBC Driver 18 and `Authentication=ActiveDirectoryDefault` would settle whether the driver accepts it.
 
 ## windows/windows-sandbox
 
@@ -817,28 +836,37 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## gitlab/protected-branches-tags
 
 - Re-read 2026-10-11 at master @9f1632e2 of the conflict recorded above under this heading: the Push and merge permissions table and the note under the protection strategies of S444 are unchanged and still disagree on an unset **Allowed to push and merge**; the Protected branches API page (S-ozrs7es3) gives `40` as the default `push_access_level` of a rule created without one and does not say how that default relates to an unset list in the interface. (topic: gitlab/protected-branches-tags)
+  - Resolved 2026-10-21: read raw at the current master (@1eec2f23f670), the table and the note under the protection strategies of S444 now agree that clearing every selection in **Allowed to push and merge** leaves no one able to push, and the note adds that a new branch rule selects Maintainers (`40` in the API page's access-level list, S-ozrs7es3), which is the API default the entry asked about. See the entry above. [DOC S444, S-ozrs7es3]
 
 ## privacy/coreference-resolution-options
 
 - **Licence of the Polish Coreference Corpus: CC BY-NC 4.0 or CC BY 3.0.** The IPI PAN corpus page (S-kdsj7amh, last edited 2023-04-24) says it "offers the official Creative Commons Attribution-NonCommercial 4.0 International License release" and lists `License: CC BY-NC 4.0`. The CorefUD v1.4 licence page (S-el226szq, dated 2026-02-18) lists `CorefUD_Polish-PCC` as CC BY 3.0, with each corpus under its own licence in its directory. Read 2026-10-11. The pages describe two distributions (the IPI PAN release and its CorefUD conversion), so both may be right for their own copy; no source states which terms govern models trained on either. Not settled by a source: the article records both. [DOC S-kdsj7amh vs S-el226szq] (topic: privacy/coreference-resolution-options)
+  - Narrowed 2026-10-21: both pages were re-read in the census of 2026-10-21 and are unchanged (S-kdsj7amh last edited 2023-04-24; S-el226szq dated 2026-02-18); they describe two distributions, so the two licences are not a contradiction. What stays open is only which terms govern a model trained on either copy, which no source states; a statement from the corpus authors at IPI PAN would settle it. [DOC S-kdsj7amh, S-el226szq]
 
 ## arch/fluent-rust-typescript
 
 - **fluent-bundle README example vs the 0.16.0 API.** The README at tag `fluent-bundle@0.16.0` (S-pz6n3xzv) reads the message value as a field, `msg.value.expect(...)`, while `message.rs` at the same tag (S-2xwgfues) defines `FluentMessage` with a private `node` field and a `value()` method, and the crate-level and `FluentBundle` doc examples (S-vktfavae) call `msg.value()`. Read 2026-10-11. The code is the API; the README snippet does not compile against 0.16.0. [CODE S-2xwgfues, S-vktfavae vs DOC S-pz6n3xzv] (topic: arch/fluent-rust-typescript)
+  - Resolved 2026-10-21: `fluent-bundle@0.16.0` is the newest tag (census of 2026-10-21); its code defines `FluentMessage` with a private `node` field and a `value()` method (S-2xwgfues) and its own doc examples call `msg.value()` (S-vktfavae), so the code is the API and the README's `msg.value.expect(...)` snippet (S-pz6n3xzv) is the stale statement; the article states `value()`. [CODE S-2xwgfues, S-vktfavae; DOC S-pz6n3xzv]
 - **`eslint-plugin-i18next` licence.** The repository LICENSE file at tag `v6.1.5` is the MIT text, while `package.json` at the same tag (S-nmwvmitf) and the npm registry metadata declare `ISC`. Read 2026-10-11. Not settled by the project; the article records MIT from the LICENSE file and notes the mismatch. [COMMUNITY S-l53lrqoz vs S-nmwvmitf] (topic: arch/fluent-rust-typescript)
+  - Still open 2026-10-21: `v6.1.5` is still the newest tag (census of 2026-10-21); its LICENSE file is the MIT text and `package.json` (S-nmwvmitf) says `ISC`, and the project states no rule for which governs. A maintainer statement or a corrected `package.json` or LICENSE file would settle it; the article keeps recording MIT from the LICENSE file and the mismatch. [COMMUNITY S-l53lrqoz vs S-nmwvmitf]
 
 ## privacy
 - GLiREL licence: the README at v1.2.1 and the `jackboyla/glirel-large-v0` card text say CC BY-NC-SA 4.0 (S-ngy65th6, S-w6u6mtcx), while `pyproject.toml` at v1.2.1 and the PyPI metadata say Apache-2.0 (S-uu7ov3pw, S-pjp4rzor); the repository has no `LICENSE` file at v1.2.1 or on main and the model card has no licence field. The kb states both and does not choose. (topic: privacy/gliner-glirel-zero-shot)
+  - Still open 2026-10-21: v1.2.1 is still the newest tag (census of 2026-10-21); the README and the model card still say CC BY-NC-SA 4.0 while `pyproject.toml` and PyPI say Apache-2.0, with no `LICENSE` file at the tag. A `LICENSE` file or a maintainer statement from the GLiREL authors would settle it; until then the article states both. [DOC S-ngy65th6, S-w6u6mtcx vs S-uu7ov3pw, S-pjp4rzor]
 - `urchade/gliner_large-v2.1` language: the card front matter (and HF tags) say `multilingual`, while the same card's model table lists it as English and its config names `microsoft/deberta-v3-large`, not the multilingual mDeBERTa encoder of `gliner_multi-v2.1` (S-dwg2wis7, S-2fmzqhdr). The kb reports the table and the encoder, and the front matter as a tag only. (topic: privacy/gliner-glirel-zero-shot)
+  - Resolved 2026-10-21: the `gliner_large-v2.1` config (S-2fmzqhdr) names `microsoft/deberta-v3-large`, an English-only encoder, so the model is English by construction; the card's front matter `multilingual` (S-dwg2wis7) is a tag that contradicts the card's own table, and the article reports the table and the encoder. [DER S-dwg2wis7, S-2fmzqhdr]
 - `urchade/gliner_multi-v2.1` size: the card table gives 209M parameters (S-7ke3sttd), the HF API safetensors metadata gives 288,949,504 F32 parameters in a 1,155,830,112-byte file (S-wrx2q5ya). The kb states both; the API value matches the file size. (topic: privacy/gliner-glirel-zero-shot)
+  - Resolved 2026-10-21: the Hugging Face API metadata (S-wrx2q5ya) is measured from the stored file: 288,949,504 F32 parameters at 4 bytes each is 1,155,798,016 bytes, which with a 32,096-byte header gives the file's 1,155,830,112 bytes, so the file holds about 289M parameters; the card's 209M (S-7ke3sttd) is the author's stated figure and does not match the file. The article states both and marks the API value as the one that matches the file. [DOC S-wrx2q5ya, S-7ke3sttd]
 
 ## arch/gorules-zen-engine
 
 - **`passThrough` default on table, expression and decision nodes: docs say true, the Rust struct reads as false.** The node-types page (S-cdmzxvsn, read raw 2026-10-11) lists `passThrough` with default `true`; `TransformAttributes` at zen-engine-v2.1.3 (S-heikuvcn) declares `#[serde(default)] pub pass_through: bool`, which is false when the key is absent, and the handlers branch on `self.pass_through`. Files saved by the editor write the key, so the difference shows only for hand-written JDM. Not run, so not settled: a hand-written file should set `passThrough` explicitly. [DOC S-cdmzxvsn vs CODE S-heikuvcn: core/types/src/decision/mod.rs#TransformAttributes] (topic: arch/gorules-zen-engine)
+  - Still open 2026-10-21: the census of 2026-10-21 re-read the docs page (S-cdmzxvsn, `passThrough` default `true`); the code at zen-engine-v2.1.3 (S-heikuvcn) still reads as `false` for an absent key, and no newer tag was checked. Running a hand-written JDM file without `passThrough` through the engine (`zen-engine` Python or Node binding) would settle it; the article advises setting the key explicitly. [DOC S-cdmzxvsn vs CODE S-heikuvcn]
 
 ## arch/python-single-package-extras
 
 - **Workspace members "always" editable vs editable by default with an opt-out (arch/python-single-package-extras and python/uv-projects).** uv's dependencies page (S1706, read raw 2026-10-13; the 0.12.19 `dependencies.md` matches) says in its workspace-member section "Workspace members are always editable", and in its editable-dependencies section "uv uses editable installation for workspace packages by default" with `uv add --no-editable ./path/foo` to opt out in a workspace. The locking and syncing page (S-wmmyfoun) says `uv sync` installs the project and other members as editable packages and `--no-editable` opts out. The page's own two sentences differ; not settled by a source. `arch/python-single-package-extras.md` states editable by default with the opt-out and gives "always editable" as the page's dependency-source wording; `python/uv-projects.md` (editable lines) states editable with the opt-out and has no "always editable" text. [DOC S1706 vs itself; DOC S-wmmyfoun] (topic: arch/python-single-package-extras)
+  - Narrowed 2026-10-21: re-read uv's dependencies page at main: the workspace-member section still says members "are always editable" and the editable-dependencies section still says editable by default with `uv add --no-editable ./path/foo` to opt out in a workspace, so the page still differs from itself. The first sentence sits in the section on declaring a member with `{ workspace = true }`, which reads as the source declaration, not the install mode; no page says so. Running `uv add --no-editable` for a member and checking `uv pip show` for an editable location would settle it. [DOC S1706, S-wmmyfoun]
 
 ## agents/mmlw-e5-polish-embeddings
 
@@ -847,6 +875,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 
 ## privacy
 - spaCy `pl_core_news_*` versions: GitHub releases have 3.8.0 (2024-09-30, S-haoeqge5, S-pxcitvg3, S-sirpm4j2, spaCy `>=3.8.0,<3.9.0`). The Hugging Face repos were last modified 2023-10-10 with card version 3.7.0 (spaCy `>=3.7.0,<3.8.0`, S-tzw22ffl for sm). Both say GPL-3.0. (topic: privacy/morfeusz-polish-lemmatisation)
+  - Reviewed 2026-10-21, not a source disagreement: the GitHub releases (3.8.0, 2024-09-30) and the Hugging Face repos (last modified 2023-10-10, card 3.7.0) are two distribution channels with different dates, both GPL-3.0; the article states each with its date. [DOC S-haoeqge5, S-pxcitvg3, S-sirpm4j2, S-tzw22ffl]
 
 ## agents/onnx-runtime-rust-ort
 
@@ -861,12 +890,15 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 
 ## logs/otel-collector-otlp-pipeline
 - **Number of official Collector distributions: five or six.** The opentelemetry.io page on building a custom Collector (S-iylg5wv4, site vers 0.162.0) says the Collector "has five official distributions", while the distributions repository README at v0.162.0 (S-vnjcetlc) lists six: `otelcol`, `otelcol-contrib`, `otelcol-k8s`, `otelcol-otlp`, `otelcol-prometheus` and `otelcol-ebpf-profiler`. The kb states the repository list as the current one in `logs/otel-collector-otlp-pipeline`; the page's count is probably stale. (topic: logs/otel-collector-otlp-pipeline)
+  - Resolved 2026-10-21: the repository that builds the distributions lists six (S-vnjcetlc, identical at v0.163.1 and, read 2026-10-21, at main), while the ocb page still says "five official distributions" in prose (S-iylg5wv4; the live site page read 2026-10-21 still says so); the repository README is the list itself, so the page's count is the stale statement and the article states the six. [DOC S-vnjcetlc, S-iylg5wv4]
 
 ## logs/otel-python-sdk
 - **Unit of the OTLP exporter timeout variables.** The OpenTelemetry specification v1.61.0 (S-rcmsm2rb, S-56w77twg) types `OTEL_EXPORTER_OTLP_TIMEOUT` and its per-signal forms as a Timeout, an integer number of milliseconds (`12000` is 12 seconds); the Python `_resolve_timeout` at v1.45.1 (S-4kd2fl7f) parses the same variables as a float and hands it to the HTTP client as seconds, with 10 as the default. By the code a Python process given `10000` waits 10000 seconds; the code is the authority for Python until a release changes it. Both read 2026-10-18. [DOC S-rcmsm2rb, S-56w77twg vs CODE S-4kd2fl7f, unresolved] (topic: logs/otel-python-sdk)
+  - Narrowed 2026-10-21: re-read `_resolve_timeout` at main of opentelemetry-python: it still parses `OTEL_EXPORTER_OTLP_TIMEOUT` and the per-signal forms as a float number of seconds with default 10 and warns "using default of 10 seconds", while the specification types them in milliseconds, so the disagreement stands; the code is the authority for Python's behaviour. An upstream release that changes the parsing, or running the exporter with `10000` against a silent endpoint, would settle whether it waits 10000 seconds. [DOC S-rcmsm2rb, S-56w77twg vs CODE S-4kd2fl7f]
 
 ## privacy/spacy-pipeline-pinning
 - spaCy `download --url` at release-v3.8.16: the CLI table describes the option as "Download from a mirror repository at the given url" (S-pmc3phpi), but `download_model` in `spacy/cli/download.py` (S-kmhasvx6) raises `ValueError` when the joined URL does not start with `about.__download_url__` (the GitHub releases prefix), and replaces a `--url` value without a trailing slash by that prefix, so a mirror on another host is not reachable through it in the code read. Both read 2026-10-11 at the same tag; installing a mirrored wheel with a direct `pip install <url>` is unaffected. (topic: privacy/spacy-pipeline-pinning)
+  - Narrowed 2026-10-21: re-read `download_model` at master of spaCy: it still builds the URL from the given `--url` and raises `ValueError` unless the result starts with the GitHub releases prefix (`about.__download_url__`), so the code still does not reach a mirror on another host while the CLI table calls it a mirror option (S-pmc3phpi); the code is the authority for behaviour. A spaCy release that accepts other hosts or a docs fix would settle it. [DOC S-pmc3phpi vs CODE S-kmhasvx6]
 
 ## ad/fsmo-roles
 - Group needed for the schema master: the transfer-or-seize page (S-hnfdk22k, read 2026-10-12) names Enterprise Administrators for transferring the schema master and domain naming master, while the forest-recovery seize page (S-uyoeu33z, read 2026-10-12) lists Schema Admins for `seize schema master` and Enterprise Admins for the domain naming master. The two pages cover transfer and seizure in different scenarios; the kb states both and does not choose. (topic: ad/fsmo-roles)
@@ -884,6 +916,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 
 ## auth/postgres-column-encryption
 - CipherSweet FIPS fast blind index: the security page (S-qt7piebc, read 2026-10-13) says fast blind indexes under FIPSCrypto calculate a hash using HMAC-SHA384 and truncate it, while the blind-index internals page (S-rqc6efd7, read 2026-10-13) lists the FIPSCrypto fast index as PBKDF2-SHA384 with 1 iteration (three arguments: plaintext, key, bit length). Both pages name PBKDF2-SHA384 for the slow index (the internals page adds a default of 50,000 iterations). The kb states both and does not choose. (topic: auth/postgres-column-encryption)
+  - Narrowed 2026-10-21: the CipherSweet source at master (`src/Backend/FIPSCrypto.php`, read 2026-10-21) documents `blindIndexFast` as "PBKDF2-SHA384 with only 1 iteration" and calls `hash_pbkdf2('sha384', ...)`, which matches the internals page (S-rqc6efd7) and not the security page's "HMAC-SHA384 ... truncated" wording (S-qt7piebc, unchanged in the census of 2026-10-21); the security page is the one out of line. The article states both until the docs are corrected. [CODE paragonie/ciphersweet master; DOC S-rqc6efd7, S-qt7piebc]
 
 ## agents/agent-sandboxes
 - Default access of the Docker Sandboxes shared agent skills store: the security model page (S-qfhwf42v, read 2026-10-15) says supported agents mount the host-side store read-only by default, and the architecture page (S-4kmihytd) says the same, while the security page's own isolation diagram says supported agents mount it read-write unless the user opts out, and the isolation layers page (S-5hrbuirw) says it is shared for agents that have not opted out. The kb states both and does not choose; `--skills` or `skills.defaultMode` sets the mode at creation either way. (topic: agents/agent-sandboxes)
@@ -893,22 +926,29 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 
 ## arch/podman-rootless-config
 - Storage drivers usable by a rootless user: the project's `rootless.md` (S-rif3pi6x, read 2026-10-15 at v6.1.4) says the only supported storage drivers are overlay (optionally through `fuse-overlayfs`) and VFS, while the `containers-storage.conf(5)` page (S-b2bqmd6c, container-libs commit 7eac5c25c6b6) says the valid rootless drivers are btrfs, overlay and vfs. The kb states both and does not choose; the two pages are in different repositories and the storage page is the more specific one for the option's values. (topic: arch/podman-rootless-config)
+  - Narrowed 2026-10-21: re-read both pages at main: `rootless.md` (S-rif3pi6x) still says "Only supported storage drivers are overlay (optionally using `fuse-overlayfs`) and VFS" while `containers-storage.conf(5)` (S-b2bqmd6c) still says "Valid rootless drivers are btrfs, overlay, and vfs"; the storage page is the reference for the option's values, and `rootless.md` is a summary of limits in another repository. Running `podman --storage-driver btrfs info` as a rootless user on a btrfs path would settle it.
 
 ## arch/puppet-language-resources-types
 - `ordering` setting: the Puppet Core 8 resources page (S-3nlx3lke, read 2026-10-15) says the default manifest order can be customised "with the ordering setting" and points to the configuration page, but the configuration reference (S-cttzm2qq) and `lib/puppet/defaults.rb` (S-se4kjnw2), both at commit e227c27, define no such setting (the word occurs only in the deferred-function text). The kb states both and does not choose. (topic: arch/puppet-language-resources-types)
+  - Narrowed 2026-10-21: `lib/puppet/defaults.rb` at main still defines no `ordering` setting (the word appears only in the deferred-function text), while the Puppet Core 8 resources page (S-3nlx3lke, published 2026-10-12, confirmed in the census of 2026-10-21) still points to "the ordering setting"; the code is the authority for what a user can set. A docs correction, or `puppet config print ordering` on a Puppet 8 agent, would settle it. [DOC S-3nlx3lke vs CODE S-se4kjnw2]
 
 ## arch/puppet-windows-nodes
 - Running a Windows service as a specific user: the type reference's `windows` service provider text (S-ef4b5npw, read 2026-10-15) says running services as a specific user is not supported, while the same provider's supported features include `manages_logon_credentials` (the provider can specify the logon credentials of a service). The kb states both and does not choose. (topic: arch/puppet-windows-nodes)
+  - Narrowed 2026-10-21: the provider's own file at main holds both statements: its `desc` still says services cannot be run "as a specific user", and the same file declares `has_feature ... :manages_logon_credentials` and implements `logonaccount` and `logonpassword` handling (`logonaccount_insync?`), so the code supports setting a service's logon account and the `desc` sentence reads as the older one. Setting `logonaccount` on a `service` resource on a Windows lab node would settle it. [DOC S-ef4b5npw; CODE puppetlabs/puppet main, `provider/service/windows.rb`]
 
 ## arch/chef-windows-nodes
 - Chef Infra Client install location on Windows: the Chef for Windows page (S-3x3s2jec, read 2026-10-15) says in one place that after installation the client is located at `C:\opscode` and in the next line at `C:\hab`, and its PATH section names `C:\opscode\chef\bin`; the 19.3.15 release notes (S-qdnvehti) say Habitat-related paths follow `SYSTEMDRIVE` and Omnibus-related paths stay at `C:\opscode`. The kb states both and does not choose; which distribution uses which root is open. (topic: arch/chef-windows-nodes)
+  - Still open 2026-10-21: the Chef for Windows page (S-3x3s2jec) and the 19.3.15 release notes (S-qdnvehti) were re-read in the census of 2026-10-21 and are unchanged; the page still names both `C:\opscode` and `C:\hab` and no page says which installer uses which root. Installing the Omnibus MSI and the Habitat package on a lab Windows node and reading the install paths would settle it.
 
 ## security/gentoo-use-flags-profiles-keywords
 - Default `USE_ORDER`: the Gentoo wiki page for the variable (S-w323r75a, read 2026-10-15) gives `env:pkg:conf:defaults:pkginternal:repo:env.d`, while the `make.conf(5)` manual page (S-5lblcwaf) and `cnf/make.globals` (S-uhuj7vad), both at Portage commit `27abd048bffa`, give `env:pkg:conf:defaults:pkginternal:features:repo:env.d`, with `features` for flags implied by `FEATURES` (currently `test`). The kb states both and prefers the implementation, since the wiki page lists the same table without a `features` row; the wiki page is likely older. (topic: security/gentoo-use-flags-profiles-keywords)
+  - Resolved 2026-10-21: `make.conf(5)` and `cnf/make.globals` at the same Portage commit (S-5lblcwaf, S-uhuj7vad) are the implementation and give `USE_ORDER` with `features`; the wiki page (S-w323r75a, unchanged in the census of 2026-10-21) lists the same table without the `features` row and is the older statement; the article states both and prefers the implementation. [CODE S-5lblcwaf, S-uhuj7vad; COMMUNITY S-w323r75a]
 
 ## security/fish-syntax-bash-differences
 - Which commands expand a failed glob to nothing: the language chapter at tag 4.9.3 (S-irnsu4to, read 2026-10-15) names `set`, `path`, `count`, `for` and variable overrides, while the "fish for Bash users" page of the same tag (S-2l7kac72) names `for`, `set`, `count` and variable overrides, without `path`. The kb states both and prefers the language chapter, the fuller list of the two. (topic: security/fish-syntax-bash-differences)
+  - Reviewed 2026-10-21, not a source disagreement: both pages are at tag 4.9.3 and differ only in how many commands they list (the language chapter adds `path`, so the Bash-users list is the shorter of the two and neither page says the other's list is wrong); the article states both and prefers the fuller language chapter. [DOC S-irnsu4to, S-2l7kac72]
 - Braces as grouping: the "fish for Bash users" page (S-2l7kac72) shows `{ ... }` becoming `begin ... end` and lists no brace form, while the 4.1.0 release notes (S-eg4rjgcz) say compound commands can be written with braces. The kb states both and prefers the release notes, which are the later statement. (topic: security/fish-syntax-bash-differences)
+  - Reviewed 2026-10-21, not a source disagreement: the Bash-users page (S-2l7kac72) lists only `begin ... end` and the 4.1.0 release notes (S-eg4rjgcz) add brace-delimited compound commands; the later statement adds a form the older page does not list, and the article states both. [DOC S-2l7kac72, S-eg4rjgcz]
 
 ## windows/cmd-exe-syntax-quoting-redirection
 - Size of an individual environment variable under cmd: the command-line string limitation article (S-e4zz24dq, read 2026-10-15) gives 8191 characters for the string `cmd` processes and for each inherited variable, while the `cmd` page (S-yna7gijv, read 2026-10-15) says the maximum individual variable is 8,192 bytes and all variables of a process 65,536 characters. The kb states both and does not choose; the first is an old KB article that names Windows 7 and Server 2008 R2 / 2012 R2, the second is the current reference page, and whether the two figures are the same limit is open. (topic: windows/cmd-exe-syntax-quoting-redirection)
@@ -927,6 +967,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## gitlab/git-trailers-and-hooks
 
 - **Whether a trailer configured with only `trailer.<alias>.cmd` is added without a `--trailer` argument.** The trailer configuration page at `v2.55.0` (S-wjfrtzpf, read 2026-10-19) says `.cmd` "will be called once to automatically add a trailer"; `parse_trailers_from_config` in `trailer.c` at the same tag (S-kbwvfzcv) adds a configured trailer by itself only when the alias has a `.command`, and a run of git 2.50.1 printed a message unchanged for a `.cmd`-only alias and added the trailer for `.command` or for `--trailer <alias>`. The kb states the code's behaviour; the page's sentence is read as describing the call for a named alias. Not settled: the pages and code of later releases, and git 2.55.0 itself, were not run. (topic: gitlab/git-trailers-and-hooks)
+  - Still open 2026-10-21: read `parse_trailers_from_config` in `trailer.c` at master (ahead of v2.55.0 and the v2.56.0 release candidates): it still adds a configured trailer by itself only when the alias has a `.command`, while the trailer config page at master still says `.cmd` is "called once to automatically add a trailer". Running git 2.55.0 or a v2.56 build with a `.cmd`-only alias (as on 2.50.1) would settle whether a later release changed the behaviour. [DOC S-wjfrtzpf vs CODE S-kbwvfzcv]
 
 ## agents/headless-agent-runtimes
 
@@ -936,10 +977,12 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## privacy/gliner-models
 
 - gliner-models.csv row urchade/gliner_multi_pii-v1 says base_model 'not stated in card', but the card (S856) says it was fine-tuned from urchade/gliner_multi-v2.1. The csv cell is not in a cited fact; left unedited pending a decision on whether to fill it in. (topic: privacy/gliner-models)
+  - Resolved 2026-10-21: the card (S856) says "trained by fine-tuning `urchade/gliner_multi-v2.1`", so the `base_model` cell of the `urchade/gliner_multi_pii-v1` row in `gliner-models.csv` now reads `urchade/gliner_multi-v2.1`. [DOC S856]
 
 ## auth/audit-log-apis
 
 - audit-log-apis.md line 83 lists `serviceFilters` (a collection) for the auditLogQuery body, but the Create auditLogQuery page (S-wsetw6to, read 2026-10-21) lists `serviceFilter` as a String; confirm against the resource page S-ojti56n4 and fix the property name/type. (topic: auth/audit-log-apis)
+  - Resolved 2026-10-21: the resource page (S-ojti56n4, updated 2026-10-10) types the property `serviceFilters` (a string collection) and `audit-log-apis.md` line 83 already states `serviceFilters` as a collection; the Create page (S-wsetw6to, updated 2026-09-18) still shows the older `serviceFilter` string in its request body, so the resource-type page is the newer statement. [DOC S-ojti56n4, S-wsetw6to]
 
 ## python/testcontainers-postgres-pytest
 
