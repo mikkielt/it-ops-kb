@@ -52,20 +52,6 @@
     "kb/public/**"
   ],
   "depends_on": [
-    "ST-bh3yjx7o",
-    "ST-odidbteq",
-    "ST-s4gapsl4",
-    "ST-wim24u46",
-    "ST-wwcn5iij",
-    "ST-xe6ury3c",
-    "ST-yvvpxspq",
-    "ST-27k6puoc",
-    "ST-2c4om47e",
-    "ST-3xyi2rjo",
-    "ST-a62jazsp",
-    "ST-bler2hy7",
-    "ST-bvmqojkw",
-    "ST-jtvvjw5x",
     "ST-2dagptub"
   ],
   "notes": "Run with /kb-census <date> from the main checkout (census.py dispatch refuses inside .claude/worktrees), after every EP-mkzkd7in story is done. Phases 0 to 3: census.py run, the phase-2 groups by census.py dispatch and apply, census.py finish. A census.py rule found wrong in phase 1 is filed as a bug, not worked around in the log. Premise on 2026-10-20 (the first check fails): no census log dated after 2026-10-20; the newest full census is kb/public/_census/2026-09-26.csv (1907 rows), and 2754 of 4508 live sources are in no full census log. Fact units of the public root on 2026-10-20: 16886. check.py and the fact-count check pass before the work and must stay passing: they pin the kb's structure rules and that no fact is deleted across the rewrites (2026-10-20 planning)."
