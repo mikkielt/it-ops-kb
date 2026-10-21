@@ -2,7 +2,7 @@
   "id": "ST-2dagptub",
   "kind": "story",
   "title": "Research sprint goal: The public root is confirmed current by a tagged census, and its open conflicts are worked against it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rmp5zm5a",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "2026-10-20 planning: the census ST-zpe7qxtv waits for this story. Open questions: which hosts the census network policy blocks here (census.py check notes blocked), and what the sprint-A tool changes (judge before groups, Learn locale form, LEARN_MAP) change in the census.py run --dry-run steps and the summary's queue block; the census is run by the orchestrator from a checkout outside .claude/worktrees (census.py dispatch refuses there)."
+  "notes": "2026-10-20 planning: the census ST-zpe7qxtv waits for this story. Open questions: which hosts the census network policy blocks here (census.py check notes blocked), and what the sprint-A tool changes (judge before groups, Learn locale form, LEARN_MAP) change in the census.py run --dry-run steps and the summary's queue block; the census is run by the orchestrator from a checkout outside .claude/worktrees (census.py dispatch refuses there).",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
