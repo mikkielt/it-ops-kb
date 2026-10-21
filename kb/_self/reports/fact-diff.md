@@ -127,6 +127,24 @@ Both runs read 3,013 sources on 191 hosts. Exit 1 is facts to review, no failure
 
 **What a request costs now.** The per-source cost of the git route is one `ls-tree` and one `git log --since` in the clone: the verdicts of all 140 mapped sources took 3.3 s in the warm clones, against about 154 s of requests at one per 1.1 s. The route's reach is the map's: more entries in `LEARN_MAP` move more sources off the 1.1 s per request path, and a docset with no public repository (intune: `MicrosoftDocs/memdocs` is archived) stays on it.
 
+## Detect wall time: LEARN_MAP for intune/ and windows/, 2026-10-21
+
+Two runs of `python3 _tools/factdiff.py detect --sitemaps` on 2026-10-21, one on the tree before the change to `census.LEARN_MAP` and one on the tree after it, each from a fresh clone of the repository in a scratch directory with a cold `_cache` and the committed `_fetch_state.csv` as the baseline, one after the other:
+
+| run | tree | started (UTC) | wall time | exit | result line |
+|---|---|---|---|---|---|
+| before | the map of five entries | 00:15:28 | 36 min 22 s | 1 | `unchanged=761 changed=405 new=884 moved=883 gone=9 soft-404=3 replaced=25 error=49 pinned=1469`; facts `verbatim=5608 moved=1 modified=123 not-found=19 unanchored=4526 dead=1900` |
+| after | the map with `intune/` and ten `windows/` entries | 00:51:59 | 36 min 25 s | 1 | `unchanged=751 changed=377 new=878 moved=878 gone=7 soft-404=3 replaced=23 error=102 pinned=1469`; facts `verbatim=5581 moved=1 modified=121 not-found=20 unanchored=4409 dead=1892` |
+
+Both runs read 4,488 sources on 264 hosts. The wall time did not fall: the difference is 3 s. The after run fetched ten docs repositories into the clone cache (five before) and decided 94 Learn sources by git history (signal `git`) against 86 before: 8 more, all of the `windows/` prefix (`windows-dev-docs` 6, `sdk-api` 2). The other differences between the logs are `error` rows outside Learn (the run-to-run spread of the network: 53 more `error` rows in the after log, none of them a map entry).
+
+**What each entry reached.** The entries follow the repository the pages' `github_feedback_content_git_url` head tag names (`kb/public/agents/doc-change-detection.md`, "Learn page to source file and its git history").
+- `intune/` names `MicrosoftDocs/memdocs` and the `windows/` fallback names `MicrosoftDocs/windows-itpro-docs`; both answer 404, so their clone fails and their pages stay on Learn: 135 `intune/` sources (129 decided by version id, 5 a redirect, 1 by hash) and 44 `windows/` sources of the fallback.
+- `windows/win32/` names `MicrosoftDocs/win32`, whose directories under `desktop-src/` are mixed case (`ADSI`, `FileIO`) where the Learn path is lower case, so the file is not found by name: 9 sources decided by version id, 7 `new`.
+- `windows/win32/api/` (`sdk-api`) and `windows/apps/`, `windows/dev-drive/`, `windows/dev-environment/`, `windows/package-manager/` (`windows-dev-docs`) have a public repository and a matching path; of their Learn sources, 8 had a baseline day and were decided by git, and 14 had none in the committed state (`new`: the anchors decide, with no request to either route). `windows/terminal/` (`terminal`) and `windows/wsl/` (`wsl`) have 3 sources, all `new`. The three large repositories clone shallow since `SHALLOW_SINCE`, about 1 s each (a full blobless clone of `sdk-api` took 53 s).
+
+**Why the map does not shorten the run.** The map reaches the sources whose repository is public, whose file is found by the mapped path and whose baseline names a day. Of the Learn sources of `intune/` and `windows/`, most sit in a repository that answers 404 (`memdocs`, `windows-itpro-docs`), so the requests that make the wall time (one per 1.1 s per host) are the same in both runs. A shorter run needs a public source for those two repositories, or a signal that does not ask Learn.
+
 ## Haiku 5.5 on the census's judging steps, 2026-10-11
 
 Two census steps are one model call with no tools: the batch judge of fact diff review items (`census.py judge`, step `judge`) and the phase-4 checker's passage judgments (`census.py sample --brief`, step `check`). Haiku 5.5 (`claude-haiku-5-5`) was measured against the model each step ran on, `claude-sonnet-5-5` for the judge and `claude-opus-5-5` (the model the census sessions run on) for the checker, and became the default of both: `census.STEP_MODELS`. `factdiff.py review --judge` keeps `factdiff.JUDGE_MODEL`.
