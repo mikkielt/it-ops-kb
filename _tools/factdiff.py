@@ -22,9 +22,10 @@
   factdiff.py [--root NAME] calibrate history --repo DIR [--path P] [--since D] [--pairs N] | soft404 [--hosts N]
       measure the cut-offs of _tools/factdiff.toml on real history (consecutive page versions in a documentation
       repository) or on live hosts (made-up sibling urls); prints JSON with the suggested cut and its accuracy
-  factdiff.py [--root NAME] anchors [--unlocated] [--stale] [--breakdown] [--source ID]
+  factdiff.py [--root NAME] anchors [--unlocated] [--stale] [--breakdown] [--min SHARE] [--source ID]
       list anchors: counts by status, the unlocated facts, the anchors whose fact text is gone (exit 1 when any), or
-      the no-match and located pairs by provider host and tag kind
+      the no-match and located pairs by provider host and tag kind; --min SHARE (a fraction) prints the located
+      share of the pairs whose source returned text after the counts and exits 1 when it is below SHARE
 
 SELECTION is fetch.py's: --topic T, --dir D, --file F, --source ID (repeatable, a union); none = every source.
 
@@ -69,7 +70,7 @@ the same.
       `supported` whose sentence is not in the new passage is not believed. The calls' total_cost_usd and tokens go to
       the review row; --dry-run prints the batches and the estimated tokens and USD and calls nothing.
       `census.py judge` applies it to a census log's queue and confirms a source whose every fact is supported.
-Exit: 0 ok; 1 anchors --stale found stale anchors; 2 bad arguments.
+Exit: 0 ok; 1 anchors --stale found stale anchors or anchors --min found the located share below it; 2 bad arguments.
 """
 import argparse, collections, concurrent.futures as cf, csv, datetime, hashlib, json, math, os, re, shutil, subprocess, sys, tempfile
 import threading, time, unicodedata, urllib.parse
@@ -2506,6 +2507,25 @@ def select_ids(a, srcs):
     return fetch.select(ns, srcs, {})
 
 
+def text_pairs(anchors, srcs):
+    """(key, "located" | "no-match") of the fact-source pairs whose source returned text."""
+    for k, r in anchors.items():
+        if r["status"] in ("located", "unlocated:no-match") and k[2] in srcs:
+            yield k, "located" if r["status"] == "located" else "no-match"
+
+
+def check_min_share(anchors, least):
+    """Exit 1 when the located share of the pairs whose source returned text is below `least` (a fraction; no such
+    pair: a share of 0)."""
+    c = collections.Counter(status for _, status in text_pairs(anchors, sources()))
+    total = c["located"] + c["no-match"]
+    share = c["located"] / total if total else 0.0
+    ok = share >= least
+    print(f"located share {100 * share:.1f}% ({c['located']} of {total} fact-source pairs whose source returned text) "
+          f"{'>=' if ok else '<'} --min {100 * least:.1f}%")
+    return 0 if ok else 1
+
+
 def print_breakdown(anchors):
     """Located and no-match pairs by provider host and by tag kind (the pairs whose source returned text), most
     no-match first: where an anchoring rule has most to gain."""
@@ -2516,10 +2536,7 @@ def print_breakdown(anchors):
             for sid in part["ids"] if part["kind"] != "UNK" else ():
                 kinds[(kbfacts.fact_key(u["text"]), kbfacts.bare(u["path"]), sid)].add(part["kind"])
     by = {"host": collections.defaultdict(collections.Counter), "kind": collections.defaultdict(collections.Counter)}
-    for k, r in anchors.items():
-        if r["status"] not in ("located", "unlocated:no-match") or k[2] not in srcs:
-            continue
-        status = "located" if r["status"] == "located" else "no-match"
+    for k, status in text_pairs(anchors, srcs):
         by["host"][urllib.parse.urlsplit(srcs[k[2]]["url"]).netloc][status] += 1
         by["kind"]["+".join(sorted(kinds.get(k, {"?"})))][status] += 1
     for name, groups in by.items():
@@ -2557,7 +2574,7 @@ def cmd_anchors(a):
     facts = cited_facts()
     pairs = sum(len(v) for v in facts.values())
     print(f"anchors={len(anchors)} of {pairs} fact-source pairs; " + " ".join(f"{k}={v}" for k, v in sorted(c.items())))
-    return 0
+    return check_min_share(anchors, a.min) if a.min is not None else 0
 
 
 PHASES = {"detect": cmd_detect, "review": cmd_review, "apply": cmd_apply}  # each writes a census.phase ops row
@@ -2647,6 +2664,8 @@ def main():
     ls.add_argument("--stale", action="store_true")
     ls.add_argument("--breakdown", action="store_true", help="no-match and located pairs by provider host and tag kind")
     ls.add_argument("--source", action="append", default=[])
+    ls.add_argument("--min", type=float, metavar="SHARE", help="exit 1 when the located share (a fraction, 0.62 for 62%%) of the "
+                                                               "pairs whose source returned text is below SHARE")
     a = ap.parse_args()
     try:
         ROOT = kbcommon.root(a.root)
@@ -2659,6 +2678,8 @@ def main():
         ap.error("--lines needs exactly one --file and no other selector and no --propose: its lines are that file's")
     if a.cmd == "anchor" and a.propose and (a.quotes or a.topic or a.dir or a.source):
         ap.error("--propose takes one --file and no other selector and no --quotes")
+    if a.cmd == "anchors" and a.min is not None and (a.min < 0 or a.min != a.min or a.stale or a.unlocated or a.breakdown):
+        ap.error("--min takes a share of at least 0 and no --stale, --unlocated or --breakdown: it checks the counts line")
     if a.cmd == "calibrate" and a.what == "history" and not a.repo:
         ap.error("calibrate history needs --repo")
     if a.cmd == "review" and not a.judge and (a.dry_run or a.batch_size or a.max_budget_usd):
