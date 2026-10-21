@@ -2,7 +2,7 @@
   "id": "ST-wim24u46",
   "kind": "story",
   "title": "LEARN_MAP maps the large Learn docsets to their public MicrosoftDocs repositories, so detect decides most Learn pages by git history",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-gavrmuvx",
   "priority": "P2",
@@ -84,6 +84,28 @@
     "parked: SP-ilje65fa review"
   ],
   "notes": "Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft. 2026-10-20 planning: the api/ and azure/ prefixes stay out of the goal: the work maps them too only where their pages name a public repository. A prefix whose pages name no public repository is a gate, not a guess. Premises: LEARN_MAP has no intune/ or windows/ entry; fact-diff.md has no LEARN_MAP sitemaps line dated after 2026-10-20. Research ST-77p3ppiz 2026-10-21 (kb public/agents/doc-change-detection.md:54-58): intune/ pages name MicrosoftDocs/memdocs, which answers 404; windows/ and azure/ split by subpath across repositories with a repository-path rewrite each (desktop-src/, hub/, articles/), several of them 404 (windows-itpro-docs, azure-ai-docs, defender-docs); no top-level api/ prefix exists (/en-us/api/ is 404). A prefix-level intune/ or windows/ entry cannot decide pages by git history, so the goal's first clause needs the gate this note's earlier text names.",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "8395ff6c7bb705c4d77efa7db7587bc554597d32",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import census\nsys.exit(0 if all(any(p.startswith(x) for p,_,_ in census.LEARN_MAP) for x in ('intune/','windows/')) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re, sys\nt = open('kb/_self/reports/fact-diff.md', encoding='utf-8').read()\nL = [l for l in t.splitlines() if 'LEARN_MAP' in l and 'sitemaps' in l and any(d > '2026-10-20' for d in re.findall(r'20\\d\\d-\\d\\d-\\d\\d', l))]\nprint(L[:2])\nsys.exit(0 if L else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "c7e96dad0b943328"
+      }
+    ]
+  }
 }
