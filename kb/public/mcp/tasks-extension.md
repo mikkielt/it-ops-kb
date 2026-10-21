@@ -2,7 +2,7 @@
 topic: mcp/tasks-extension
 priority: P1
 applies_to: "MCP Tasks extension io.modelcontextprotocol/tasks for 2026-07-28"
-retrieved_utc: 2026-10-19
+retrieved_utc: 2026-10-21
 sources: [S713, S714, S718, S701, S740, S746, S-2j2leiio, S-mqa2z3kr]
 status: partial
 ---
@@ -45,4 +45,4 @@ and may `tasks/cancel`. `tasks/result` (blocking) and `tasks/list` were removed.
 | tasks/cancel | C→S | request cancellation |
 
 ## Examples
-A `logs.collect` call for PL-LT-00123 could return `{"resultType":"task","task":{"taskId":"...","status":"working","ttlMs":3600000,"pollIntervalMs":5000}}` (shape per S718 examples).
+A `logs.collect` call for PL-LT-00123 could return `{"resultType":"task","taskId":"...","status":"working","createdAt":"...","lastUpdatedAt":"...","ttlMs":3600000,"pollIntervalMs":5000}` (shape per S718 examples: `CreateTaskResult` is the result plus the `Task` fields, flat, not nested under a `task` key).
