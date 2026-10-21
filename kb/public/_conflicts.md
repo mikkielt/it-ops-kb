@@ -854,3 +854,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## privacy/gliner-models
 
 - gliner-models.csv row urchade/gliner_multi_pii-v1 says base_model 'not stated in card', but the card (S856) says it was fine-tuned from urchade/gliner_multi-v2.1. The csv cell is not in a cited fact; left unedited pending a decision on whether to fill it in. (topic: privacy/gliner-models)
+
+## auth/audit-log-apis
+
+- audit-log-apis.md line 83 lists `serviceFilters` (a collection) for the auditLogQuery body, but the Create auditLogQuery page (S-wsetw6to, read 2026-10-21) lists `serviceFilter` as a String; confirm against the resource page S-ojti56n4 and fix the property name/type. (topic: auth/audit-log-apis)
