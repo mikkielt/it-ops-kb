@@ -39,8 +39,8 @@ article records the vendor statements; the project's choices are not recorded he
   `.gitignore` are included in the sdist and wheel, so `.pyi` stubs go there; the empty `py.typed`
   marker must be added by hand. [DOC S-hec62m7j]
 - maturin detects pyo3 bindings automatically when `pyo3` is a dependency in `Cargo.toml`;
-  `-b`/`--bindings` (or `bindings` under `[tool.maturin]`) accepts `pyo3`, `pyo3-ffi`, `cffi`,
-  `uniffi` and `bin`. [DOC S-26hqxvrn]
+  `-b`/`--bindings` (or `bindings` under `[tool.maturin]`) selects the bindings manually; the guide
+  documents `pyo3`, `cffi`, `bin` and `uniffi`. [DOC S-26hqxvrn]
 - abi3 is opted into with a PyO3 feature naming the minimum Python version, for example
   `pyo3 = { version = "0.29.0", features = ["abi3-py310"] }`; the maturin guide states an `abi3-py310`
   wheel supports all GIL-enabled CPython versions from 3.10 and newer. [DOC S-26hqxvrn]
