@@ -2,7 +2,7 @@
 topic: claude/skills-and-subagents
 priority: P2
 applies_to: "Claude Code docs (code.claude.com), skills/sub-agents/agent-teams, retrieved 2026-10-12"
-retrieved_utc: 2026-10-17
+retrieved_utc: 2026-10-21
 sources: [S2158, S2157, S-j22fjuka, S-hvuk3dqt, S-qdxfqzln, S-ezqg74ki, S-bisz7fay, S1824, S-gxuoqjzy, S2132]
 status: complete
 ---
@@ -78,7 +78,11 @@ shared task list and direct inter-agent messaging on top of ordinary subagent de
 - Subagent frontmatter fields use camelCase (e.g. `maxTurns`, `disallowedTools`) and must match exactly; an
   unrecognized field is silently ignored. Only `name` and `description` are required. [DOC S2157]
 - `name` cannot contain `:` (reserved for plugin-scoped ids like `my-plugin:reviewer`); a name containing one fails
-  to load and logs an error to the debug log (before v2.1.218 such names were accepted). [DOC S2157]
+  to load and logs an error to the debug log (before v2.1.218 such names were accepted); a name that starts with `-` or
+  is longer than 256 characters is skipped the same way. [DOC S2157]
+- `autoCompactWindow` (v2.1.296+) lowers the auto-compact window for one subagent to a token count from `100000` to
+  `1000000`; write a plain integer, since `200k` is read as 200 and ignored; `CLAUDE_CODE_AUTO_COMPACT_WINDOW`
+  overrides it, and it has no effect when the agent runs as the main session agent. [DOC S2157]
 - If no entry in `tools` resolves to a real tool, the subagent usually fails to launch with a "zero tools" error
   naming the unresolved entries. [DOC S2157]
 - `disallowedTools` entries with a specifier such as `Bash(git push *)` still remove the *whole* tool, not just that
@@ -137,7 +141,7 @@ shared task list and direct inter-agent messaging on top of ordinary subagent de
   [DOC S2157]
 - `--agents` CLI JSON: top-level keys are agent names; each value takes `prompt` (system prompt, may be empty) plus
   the frontmatter fields `description, tools, disallowedTools, model, permissionMode, mcpServers, hooks, maxTurns,
-  skills, initialPrompt, memory, effort, background, omitClaudeMd, isolation`; `color` and `experimental` are
+  autoCompactWindow, skills, initialPrompt, memory, effort, background, omitClaudeMd, isolation`; `color` and `experimental` are
   accepted-but-ignored. The path-to-JSON-file form (non-interactive only) requires v2.1.281+. [DOC S2157]
 - A subagent's file is watched for live edits (few seconds to apply, no restart) except: the first agent file in a
   brand-new `agents` directory (needs restart), agents under `--add-dir` (not watched, needs restart), and sessions
