@@ -860,3 +860,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## auth/audit-log-apis
 
 - audit-log-apis.md line 83 lists `serviceFilters` (a collection) for the auditLogQuery body, but the Create auditLogQuery page (S-wsetw6to, read 2026-10-21) lists `serviceFilter` as a String; confirm against the resource page S-ojti56n4 and fix the property name/type. (topic: auth/audit-log-apis)
+
+## python/testcontainers-postgres-pytest
+
+- testcontainers-python v4.15.0 configuration.md is internally inconsistent on precedence: 'Configuration Locations' says environment variables are read before ~/.testcontainers.properties, but the 'Docker Host Detection' list reads the tc.host property (step 1) before TC_HOST / DOCKER_HOST (steps 2-3). The kb line 70 says env vars win over the properties file; this holds for the general rule but not for tc.host in the detection order. (topic: python/testcontainers-postgres-pytest)
