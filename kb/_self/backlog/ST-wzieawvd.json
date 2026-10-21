@@ -2,7 +2,7 @@
   "id": "ST-wzieawvd",
   "kind": "story",
   "title": "The open conflicts of the windows, entra, graph and defender articles are settled by a source or noted with what would settle them",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-aolytxc5",
   "sprint": "SP-rmp5zm5a",
   "priority": "P2",
@@ -57,6 +57,36 @@
     "ST-2lhcwufe"
   ],
   "notes": "Research item (/kb-research, sources read against the census of ST-zpe7qxtv): an entry closes only when a source settles it or it is no source disagreement (Reviewed); one that needs a lab, a login or unpublished information stays open with a dated note (maintaining.md, Conduct for changes). A gap the reading finds goes to _gaps.md under the same topic. Premise on 2026-10-20 (the first check fails): 19 open public/_conflicts.md entries under ('windows/', 'entra/', 'graph/', 'defender/') with no note dated 2026-10-21 or later, lines: [245, 247, 341, 343, 478, 494, 544, 629, 652, 676, 678, 690, 691, 707, 723, 731, 803, 804, 836] Fact units under the topics on 2026-10-20: 2478. check.py and the fact-count check pass before the work and must stay passing: they pin the kb's structure rules and that no fact is deleted across the rewrites (2026-10-20 planning).",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "5929156f27ac8e28f15f0a449674588b78846f99",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re, sys\nsys.path.insert(0, '_tools')\nimport kbfacts\nL, P, F = 'public/_conflicts.md', ('windows/', 'entra/', 'graph/', 'defender/'), '2026-10-21'\nN = re.compile(r'\\b(?:Looked|Tried|Still open|Resolved|Reviewed|Closed|Narrowed|Partly resolved|Mostly resolved|Superseded):? (20\\d\\d-\\d\\d-\\d\\d)')\nC = re.compile(r'(?:^|\\s)- (?:Resolved|Superseded|Closed|Reviewed|Partly resolved|Mostly resolved|Narrowed)\\b')\nes = kbfacts.ledger_entries(L)\nkbfacts.link_entries(es)\ntop = lambda e: (e['explicit'] or e['via_sources'] or ['public/?'])[0].split('/', 1)[1]\nleft = [e['line'] for e in es if not C.search(e['text']) and top(e).startswith(P) and max(N.findall(e['text']) or ['0']) < F]\nprint(len(left), 'open', L, 'entries under', P, 'with no note dated', F, 'or later, lines:', left[:25])\nsys.exit(1 if left else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "46e8dbfd26b21f34"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "5a9a98bcfccfea52"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0, '_tools')\nimport kbfacts\nP, B = ('windows/', 'entra/', 'graph/', 'defender/'), 2478\nn = sum(len(kbfacts.units('public/' + p)) for p in P)\nprint(n, 'fact units under', P, '- at least', B, 'on 2026-10-20')\nsys.exit(0 if n >= B else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "3d0f5044df1a64c9"
+      }
+    ]
+  }
 }
