@@ -2,7 +2,7 @@
   "id": "BG-nawzd6lt",
   "kind": "bug",
   "title": "census.py apply finds row owners with one git grep alternation of every queued id, which takes minutes a part",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-rmp5zm5a",
   "priority": "P1",
@@ -40,6 +40,19 @@
     }
   ],
   "notes": "Found 2026-10-21 in the census of ST-zpe7qxtv: each census.py apply of a part spent about 5 min in head_cited_lines' `git grep -n -I -E <2200-id alternation> HEAD -- kb` (1277% CPU); `git grep -F -f` of the same ids ran over 12 min. A Python scan of the 9751 HEAD blobs of kb/ through `git cat-file --batch`, kbfacts.ID.findall per line intersected with the ids, found 2274 ids on 54206 lines in 1.1 s. apply runs once per part under one lock (shared ledgers), so 355 parts would take about 30 h. Keep the result equal to the git grep's on this clone (the check can compare both on a small id set).",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "1b723d48f9ec01db41f6a9c8a9bf3d529c264804",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv, glob, subprocess, sys\nlogs = {g: sorted({r['id'] for r in csv.DictReader(open(g, encoding='utf-8')) if r.get('bucket') not in ('OK', None)}) for g in glob.glob('kb/public/_census/20*.csv')}\nlog = max(logs, key=lambda g: len(logs[g]))\nids = logs[log]\ncode = (\"import sys; sys.path.insert(0, '_tools'); import census; ids = sys.stdin.read().split(); \"\n        \"found = census.head_cited_lines(set(ids)); print(len(ids), 'ids,', len(found), 'cited')\")\ntry:\n    p = subprocess.run([sys.executable, '-c', code], input='\\n'.join(ids), capture_output=True, text=True, timeout=30)\n    print(p.stdout.strip() or p.stderr.strip()[-300:])\n    sys.exit(p.returncode)\nexcept subprocess.TimeoutExpired:\n    print('head_cited_lines over the', len(ids), 'queued ids of', log, 'took over 30 s')\n    sys.exit(1)\n"
+        ],
+        "exit": 0,
+        "sha256": "c94ec9d6664a44fc"
+      }
+    ]
+  }
 }
