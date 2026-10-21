@@ -2,7 +2,7 @@
 topic: agents/agent-caching
 priority: P1
 applies_to: "Anthropic prompt caching (Claude Developer Platform, retrieved 2026-09-25); Claude Code >=2.1.251; OpenAI Responses/Completions API; Azure OpenAI/Foundry Models; MCP spec 2026-07-28"
-retrieved_utc: 2026-10-18
+retrieved_utc: 2026-10-21
 sources: [S2130, S2131, S2132, S2133, S2134, S2135, S2136, S2159, S1512, S1864, S-qulnsg4e]
 status: complete
 ---
@@ -26,7 +26,7 @@ Anthropic prompt caching stores the KV state for an unchanged prefix, keyed by u
 - Per-million-token prices (uncached input / 5-minute write / 1-hour write / cache read): Opus 4.5 to Opus 5 $5 / $6.25 / $10 / $0.50; Opus 5.5 $4 / $5 / $8 / $0.20; Sonnet 4.5 and 4.6 $3 / $3.75 / $6 / $0.30; Sonnet 5 $2 / $2.50 / $4 / $0.20; Sonnet 5.5 $2 / $2.50 / $4 / $0.10; Fable 5 and Mythos 5 $10 / $12.50 / $20 / $1; Fable 5.1 and Mythos 5.1 $10 / $12.50 / $20 / $0.25; Haiku 4.5 $1 / $1.25 / $2 / $0.10 [DOC S2130, S2131].
 - Claude Haiku 5.5 is priced by prompt length: up to 100,000 tokens $0.10 uncached input / $0.125 5-minute write / $0.20 1-hour write / $0.01 read; over 100,000 tokens $0.50 / $0.625 / $1 / $0.05 [DOC S2130, S2131].
 - Break-even: a cache hit at 0.1x pays off the 5-minute write (1.25x) after one read, and the 1-hour write (2x) after two reads [DOC S2131].
-- Worked example (Claude Opus 5, $5 per million base input): 40,000 cache-read tokens plus 10,000 uncached input tokens cost $0.02 for the reads (40,000 x $5 x 0.1 / 1,000,000) and $0.05 for the uncached tokens (10,000 x $5 / 1,000,000) [DOC S2131].
+- Worked example (Claude Opus 5.5, $4 per million base input): 40,000 cache-read tokens plus 10,000 uncached input tokens cost $0.008 for the reads (40,000 x $4 x 0.05 / 1,000,000) and $0.04 for the uncached tokens (10,000 x $4 / 1,000,000) [DOC S2131].
 - The caching multipliers stack with other price modifiers: the Batch API discount, and the 1.1x data-residency multiplier for US-only inference (`inference_geo`), which applies to input, output, cache writes and cache reads on Claude 4.6 and later models [DOC S2131].
 - Invalidation hierarchy: caching follows the order **tools → system → messages**; a change to tool definitions invalidates everything (tools, system, messages); toggling web search or citations, or switching `speed`, invalidates system+messages but not tools; a change to `tool_choice` or adding/removing images invalidates only the messages cache; thinking parameters and `output_config.effort` always invalidate messages and, depending on the model, tools and system too [DOC S2130]. This is the concrete "invalidation hierarchy" the assignment asked for.
 - Usage fields: responses report `cache_creation_input_tokens` (tokens newly written to cache) and `cache_read_input_tokens` (tokens served from cache); `input_tokens` covers only what follows the last cache breakpoint; total input = read + creation + input [DOC S2130].
