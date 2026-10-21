@@ -495,6 +495,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 
 ## agents/agent-rbac
 - Which Microsoft Entra directory roles an agent identity can hold: "Agent identities, service principals, and applications" (S-2iq53pkf, read 2026-10-15) says agent identities can be assigned Azure RBAC roles and Microsoft Entra built-in roles "the same as standard service principals", while the authorization page and FAQ (S-fwzaxe7i, S-pmj4jc4f) say they can't hold highly privileged directory roles or custom roles and only lower-privileged roles such as readers. The kb states both; the narrower pages are the specific statement, so plan on the restriction. [DOC S-2iq53pkf vs DOC S-fwzaxe7i, S-pmj4jc4f, unresolved] (topic: agents/agent-rbac)
+- The Entra Agent ID authorization page (S-fwzaxe7i) now says custom roles can be assigned to agent identities; kb line 89 also cites S-pmj4jc4f for the older claim that they cannot. Check whether S-pmj4jc4f still says so (topic: agents/agent-rbac)
 
 ## agents/windows-agentic-platform
 

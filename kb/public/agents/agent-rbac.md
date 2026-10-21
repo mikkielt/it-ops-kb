@@ -2,7 +2,7 @@
 topic: agents/agent-rbac
 priority: P1
 applies_to: "MCP specification draft (post 2026-07-28), Claude Code 2.1.x, Microsoft Entra Agent ID (public preview, 2026-03 docs), Microsoft Entra role-assignable groups / PIM for Groups"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S707, S740, S742, S1282, S1297, S2040, S2041, S2042, S2045, S2050, S2051, S2052, S2053, S2058, S-fwzaxe7i, S-pmj4jc4f, S-ooc6gvno, S-4zkj3ag3, S-etygtiqw, S-uva2ob4g, S-2iq53pkf, S-wpj4qsjg, S-xt5vc46a]
 status: complete
 ---
@@ -86,7 +86,7 @@ group claims/overage, PIM-for-Groups sync latency).
   Microsoft 365 Copilot and third-party solutions. [DOC S2051]
 - Agent ID is now available to all Microsoft Entra customers; extending Entra security features to agents needs a Microsoft Agent 365 licence per user, included in Microsoft 365 E7 and sold as an add-on to E5/A5/Business Premium. [DOC S-ooc6gvno]
 - The "What is Agent ID" page now agrees with the licensing page: Agent ID is available to all Microsoft Entra customers, while extending Entra security features to agents requires Microsoft Agent 365 (included in Microsoft 365 E7, an add-on to E5/A5/Business Premium); it no longer mentions the Frontier program. [DOC S-4zkj3ag3]
-- Agent identities can't be members of role-assignable groups, can't hold highly privileged directory roles (Global Administrator, Privileged Role Administrator, User Administrator) or custom roles, and only lower-privileged roles such as readers can be assigned to them. [DOC S-fwzaxe7i, S-pmj4jc4f]
+- Agent identities can't be members of role-assignable groups, can't hold highly privileged directory roles (Global Administrator, Privileged Role Administrator, User Administrator), and only lower-privileged roles such as readers can be assigned to them; the authorization page lists the allowed built-in roles and, as of 2026-10-21, states that custom roles can be assigned to agents (its earlier text said they couldn't). [DOC S-fwzaxe7i, S-pmj4jc4f]
 - So an agent identity can't be a PIM-eligible member of a role-assignable group either: the membership itself is blocked, eligible or active. [DER S-fwzaxe7i, S2052: role-assignable membership is blocked for agents; PIM for Groups only manages memberships]
 
 ### Attribute-based conditions (Azure ABAC) on data access
