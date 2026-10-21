@@ -3,7 +3,7 @@ topic: python/typer-cli
 priority: P3
 applies_to: "Typer 0.27.3 (released 2026-10-06, Python 3.10+); Typer 0.26.0 and later vendor Click"
 retrieved_utc: 2026-10-21
-sources: [S-dnzxfcsw, S-ztkyr3zd, S-nw2nd4rv, S-syffw7l6, S-hrjguqt3, S-y3grqgpf, S-2txegwyx, S-5j3dqrn3, S-2qjh4vyl, S-tustm6ll, S-y5yampfx, S-fhhfxz7n, S-ioxs4z7o, S-4ykun7b2, S-dggjvarz, S-zzvrhdyd]
+sources: [S-dnzxfcsw, S-ztkyr3zd, S-nw2nd4rv, S-syffw7l6, S-hrjguqt3, S-y3grqgpf, S-2txegwyx, S-5j3dqrn3, S-2qjh4vyl, S-tustm6ll, S-y5yampfx, S-fhhfxz7n, S-ioxs4z7o, S-4ykun7b2, S-dggjvarz, S-zzvrhdyd, S-bes5qgkf]
 status: partial
 ---
 
@@ -64,6 +64,10 @@ a command-line tool is in `python/stdlib-argparse-json.md` and is not restated h
 - Typer's own colour handling forces a terminal when `GITHUB_ACTIONS`, `FORCE_COLOR` or `PY_COLORS`
   is set and disables it when `_TYPER_FORCE_DISABLE_TERMINAL` is set; the Typer source read does not
   reference `NO_COLOR`, and no page read says whether Rich or Typer honours it. [CODE S-fhhfxz7n: typer/rich_utils.py#FORCE_TERMINAL]
+- Typer's help tutorial documents `rich_markup_mode`: `"rich"` (the default) allows Rich console markup in
+  docstrings and in the help of arguments and options, `"markdown"` allows Markdown in the docstring, and
+  `None` turns rich formatting off for that app; the environment variable `TYPER_USE_RICH` set to `False` or `0`
+  disables it globally. [DOC S-bes5qgkf]
 - `envvar=` lets a parameter fall back to an environment variable (a list tries several in order),
   command-line values take precedence, and the help shows `[env var: NAME]` unless
   `show_envvar=False`; the docs page shows this for `typer.Argument`. [DOC S-2txegwyx]

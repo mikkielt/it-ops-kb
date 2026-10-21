@@ -50,11 +50,11 @@ since it sets `select = ["F"]` explicitly.
   quote and covers the whole string; for an import block, it goes at the end of the first import line
   and covers the whole block. A file-level `# ruff: noqa` (or `# ruff: noqa: CODE`) anywhere in the
   file (preferably near the top) suppresses that violation kind across the entire file; Ruff also
-  honours Flake8's `# flake8: noqa` as equivalent. [DOC S-7fmtkrv5]
+  honours Flake8's `# flake8: noqa` as equivalent. [DOC S-y3zhzpmv]
 - `ruff check` exits `0` when no violations remain (including when `--fix` fixed everything), `1` when
   violations were found, `2` on abnormal termination (invalid config/CLI options or an internal
   error). `--exit-zero` forces exit `0` even with remaining violations; `--exit-non-zero-on-fix` forces
-  exit `1` if violations were found even though `--fix` fixed all of them. [DOC S-7fmtkrv5]
+  exit `1` if violations were found even though `--fix` fixed all of them. [DOC S-y3zhzpmv]
 - `--output-format` accepts `concise`, `full` (default), `json`, `json-lines`, `junit`, `grouped`,
   `github`, `gitlab`, `pylint`, `rdjson`, `azure`, `sarif`; only `full`, `concise` and `grouped` are
   "human-readable" (include header/footer text) rather than machine-oriented. [CODE S-guaor3a5: crates/ruff_linter/src/settings/types.rs#OutputFormat]

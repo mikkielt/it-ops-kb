@@ -3,7 +3,7 @@ topic: python/percentile-nearest-rank
 priority: P3
 applies_to: [python, statistics, percentile, p95, kql, t-sql, quartiles, interquartile-range, outlier-fence]
 retrieved_utc: 2026-10-21
-sources: [S-g5oa4uyp, S-35bztnbb, S-dh7f43kc, S-or2wocyn, S-4hnlw34j]
+sources: [S-g5oa4uyp, S-35bztnbb, S-dh7f43kc, S-or2wocyn, S-4hnlw34j, S-t5dhva6p]
 status: partial
 ---
 
@@ -115,8 +115,12 @@ Python 3.13.2, macOS (Darwin 25.5.0), 2026-10-13 and 2026-10-19.
   stated by the handbook page or the `statistics` page: the handbook shows one worked example with the `(N + 1)`
   rule and the `statistics` page only says the data should hold more points than `n`. [UNK: no page read names the
   quartile method for fences or a minimum sample for them]
-- Whether CMPivot's `percentile` aggregation (listed in `mecm/cmpivot.md`) takes its value at the nearest rank is
-  not stated by the pages read here; its page is not the Kusto one. [UNK: CMPivot's percentile method not stated]
+- The CMPivot overview's list of `summarize` aggregation functions describes `percentile()` as returning "an estimate
+  for the specified nearest-rank percentile of the population defined by Expr", the same rule the Kusto page states.
+  [DOC S-t5dhva6p]
+- So a nearest-rank percentile computed in Python (as above) is the rule CMPivot documents for `percentile()`; the page
+  says "an estimate", and gives no worked list, so a run over a known list on a site would show whether the two agree
+  to the last rank. [DER S-t5dhva6p, S-g5oa4uyp: the two pages' wording of the same method]
 
 ## Reference
 - Related: `mecm/cmpivot.md` (CMPivot's aggregation functions), `python/stdlib-cprofile-pstats.md` and

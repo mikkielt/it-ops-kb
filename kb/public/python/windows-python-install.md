@@ -3,7 +3,7 @@ topic: python/windows-python-install
 priority: P3
 applies_to: "CPython 3.14.7 for Windows: the python.org full installer (deprecated since 3.14), the Python install manager, the py launcher, PEP 514 registry entries and the Microsoft Store python alias; python.org release API read 2026-09-29"
 retrieved_utc: 2026-09-29
-sources: [S-sjuwcuhk, S-lkt7o42d, S-jzqdphnx, S-srwea6un, S-4jodaif5, S-omr5o3jv]
+sources: [S-sjuwcuhk, S-lkt7o42d, S-jzqdphnx, S-srwea6un, S-4jodaif5, S-omr5o3jv, S-2jrm4fpu]
 status: partial
 ---
 
@@ -43,7 +43,8 @@ A scripted per-user install of the pinned CPython from python.org uses the full 
 - Verifying needs the artifact, its `.sigstore` bundle, the expected signer identity (the release manager's email for that version, listed on the page) and OIDC issuer; for 3.14 the issuer is `https://github.com/login/oauth`. [DOC S-jzqdphnx]
 - python.org recommends the `sigstore` client from PyPI: `python -m sigstore verify identity --bundle <file>.sigstore --cert-identity <email> --cert-oidc-issuer <issuer> <file>`, which prints `OK: <file>` on success; `cosign` is the suggested standalone binary. [DOC S-jzqdphnx]
 - A pinned sha256 value can be checked against the bundle instead of the file (`sha256:<hex>` in place of the path), which needs sigstore-python 3.3.0 or later; verifying a bundle is offline by default, and `--offline` also stops TUF metadata updates. [DOC S-jzqdphnx]
-- A script that pins the release API's sha256 and then checks the installer's Windows Authenticode signature does not use the Sigstore bundle; the Python docs pages read here do not describe Authenticode signing of the installer. [DER S-jzqdphnx, S-sjuwcuhk: Sigstore is the documented release signature; the Windows usage page names Authenticode only for install manager index signatures]
+- python.org's download page states that the Windows installers and all binaries of each release are signed with an Authenticode certificate issued to the Python Software Foundation, with the full subject `CN = Python Software Foundation, O = Python Software Foundation, L = Beaverton, S = Oregon, C = US`, and that since 14 October 2024 the certificate authority is the Microsoft Identity Verification Root Certificate Authority (earlier certificates came from DigiCert). [DOC S-2jrm4fpu]
+- A script that pins the release API's sha256 and then checks the installer's Windows Authenticode signature does not use the Sigstore bundle: Authenticode is a second signature, stated on the download page, while the Python docs' Windows usage page names Authenticode only for install manager index signatures. [DER S-2jrm4fpu, S-jzqdphnx, S-sjuwcuhk: Sigstore is the documented release signature; the download page states the Authenticode one]
 
 ### py launcher and the Python install manager
 - The Python install manager is installed from the Microsoft Store or from an MSIX downloaded from python.org (`Add-AppxPackage <path to MSIX>`); the two are identical, and Store, WinGet, MSIX and MSI installs can coexist and share configuration and runtimes. [DOC S-sjuwcuhk]

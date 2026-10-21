@@ -3,7 +3,7 @@ topic: python/imports-and-modules
 priority: P3
 applies_to: [python]
 retrieved_utc: 2026-10-05
-sources: [S-y3vaig55, S-pnak2iyz, S-uwxacpum, S-d77lvlq4, S-kzlfvktk, S-o7nczrbn, S-nmpccgft, S-ci5jq2sq, S-q5frtccp, S-27tycl3n]
+sources: [S-lebxvs2r, S-y3vaig55, S-pnak2iyz, S-uwxacpum, S-d77lvlq4, S-kzlfvktk, S-o7nczrbn, S-nmpccgft, S-ci5jq2sq, S-q5frtccp, S-27tycl3n]
 status: complete
 ---
 
@@ -32,7 +32,8 @@ modes) and `python/ruff.md` (lint and size rules), and `agents/codebase-mapping.
 - `ast.parse` turns source into a tree without running it. An `ast.Import` node has `names`, a list of `alias` nodes; an `ast.ImportFrom` node has `module` (a string without leading dots, `None` for `from . import foo`), `names` and `level` (0 means absolute). `ast.walk` yields every descendant node in no specified order. [DOC S-ci5jq2sq]
 - A check of import direction between flat modules can parse each file, walk all `Import` and `ImportFrom` nodes (the walk also reaches imports inside function bodies, so a lazy import that avoids a cycle still counts), map `module` or `alias.name` to a sibling file, and flag an import of the facade or of a name starting with `_`; sort the findings, since the walk order is unspecified. The language itself blocks neither. [DER S-ci5jq2sq, S-y3vaig55, S-pnak2iyz: node fields and the underscore convention as documented above]
 - A prefix such as `kg_` or `bench_` on sibling modules is a naming choice within PEP 8's lowercase-with-underscores form, and a facade script run as `python _tools/kbgit.py` puts `_tools/` first on `sys.path`, so its helper modules import by bare name from any working directory. [DER S-nmpccgft, S-kzlfvktk: naming rule and the sys.path[0] rule]
-- Not found in the official pages read: what happens when a file run as a script is also imported by another module under its own name. The documentation says only that a script's `__name__` is `"__main__"`, so whether the file loads a second time as a separate module is left as a lead. [UNK: looked in the tutorial, the reference and library/__main__ at v3.14.7]
+- The import reference's section "Special considerations for `__main__`" says that even when `__main__` corresponds to an importable module, the two are "still considered distinct modules", because the blocks guarded by `if __name__ == "__main__":` run only when the module populates the `__main__` namespace, not during a normal import. [DOC S-lebxvs2r]
+- So a file run as a script (`python _tools/kbgit.py`) that a helper module then imports by its own name (`import kbgit`) is executed a second time as a separate module object, with its top-level statements run again and its `__main__` guard skipped; a helper that imports its facade back therefore gets a second copy, not the running script's state. [DER S-lebxvs2r, S-y3vaig55: distinct modules; top-level statements run on each first import]
 - `ModuleNotFoundError` (added in 3.6) is "A subclass of ImportError which is raised by import when a module
   could not be located"; `ImportError` is also raised when a name in the "from list" of `from ... import`
   cannot be found, while a failed attribute reference such as `module.name` raises `AttributeError`,

@@ -13509,6 +13509,7 @@ d04ce44229c0,privacy/spacy-model-licence.md,S850,located,en_core_web_lg-3.8.0 > 
 9f0629d76ce0,python/imports-and-modules.md,S-q5frtccp,unlocated:no-match,,,,,2026-10-10
 b072e56e02e1,python/imports-and-modules.md,S-kzlfvktk,located,,current;input;interactiv;script;entry;shell;first;directory,db736824e529812f,"input script, if there is one. Otherwise, the first entry is the current directory, which is the case when executing the interactive shell, a :option:-c",2026-10-10
 c4e486678baf,python/imports-and-modules.md,S-27tycl3n,unlocated:no-match,,,,,2026-10-10
+c6fb4f9c9831,python/imports-and-modules.md,S-lebxvs2r,located,namespace package,normal;__name__;populat;__main__;during;main;namespac;name,9dffabde48e1c563,checks only execute when the module is used to populate the,2026-10-21
 d0801aff45d4,python/imports-and-modules.md,S-nmpccgft,unlocated:no-match,,,,,2026-10-10
 d0801aff45d4,python/imports-and-modules.md,S-pnak2iyz,unlocated:no-match,,,,,2026-10-10
 d39bc357aecb,python/imports-and-modules.md,S-ci5jq2sq,unlocated:no-match,,,,,2026-10-10
@@ -13544,6 +13545,8 @@ eeae9431b9e2,python/interpreter-startup.md,S-gmtatolh,located,Compute the list o
 f0c169bcd9c3,python/interpreter-startup.md,S-j7sjakc5,located,,none;return;stder;string;sys;sys.stder;fals;quiet,8868f80511d6ef27,"If quiet is 0 or 1, and doraise is false, the default behaviour is enabled: an error string is written to sys.stderr, and the function",2026-10-10
 fd385ca5aec7,python/interpreter-startup.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-14
 fd385ca5aec7,python/interpreter-startup.md,S-ew7mucsg,located,release semaphore,python_cpu_count;overrid;cpu_count;cpu;count;3.13;python,2530d652d55ded52,".. versionchanged:: 3.13 If :option:-X cpucount <-X> is given or :envvar:PYTHONCPUCOUNT is set, :func:cpucount returns the override value n.",2026-10-14
+0851e72209af,python/maturin-pyo3-wheels.md,S-yua2ucez,located,Changelog > [0.9.1] - 2021-01-13,singl;x86;universal2;aarch64;file;wheel;build;support,98af172e8bc1bf6e,Support building universal2 wheels (x86 and aarch64 in a single file),2026-10-21
+09de6aee0a89,python/maturin-pyo3-wheels.md,S-yua2ucez,located,Changelog > [1.0.0] - 2023-05-23,universal2-apple-darwin;darwin;appl;universal2;instead;target,8cef9f80d3d973a8,Remove deprecated --universal2 cli option in #1620 use --target universal2-apple-darwin instead,2026-10-21
 0e30f622fb22,python/maturin-pyo3-wheels.md,S-26hqxvrn,located,Bindings > `pyo3`,cargo.toml;cargo;dependency;automatically;detect;toml;pyo3;maturin,c1576ef5932983fd,maturin automatically detects pyo3 bindings when it's added as a dependency in Cargo.toml.,2026-10-21
 2e13c21b25f3,python/maturin-pyo3-wheels.md,S-26hqxvrn,located,Bindings > `pyo3` > `Py_LIMITED_API`/abi3,3.14;cp314;cp314-cp314t;cp314t;free;free-thread;thread;specific,377dfec4a15eb845,"Free-threaded CPython 3.14 does not support the abi3t stable ABI, so maturin builds a version-specific cp314-cp314t wheel for it instead.",2026-10-21
 73cf75a0180a,python/maturin-pyo3-wheels.md,S-26hqxvrn,unlocated:no-match,,,,,2026-10-21
@@ -13578,6 +13581,7 @@ f4adf2ec89e1,python/maturin-pyo3-wheels.md,S-yfykoru4,unlocated:no-match,,,,,202
 b0fba6c5235a,python/percentile-nearest-rank.md,S-g5oa4uyp,located,"percentile(), percentiles() - Kusto | Microsoft Learn",ascend;percent;wikipedia;list;smallest;nearest;nearest-rank;rank,ad2e3bd0f551873f,"Nearest-rank percentile P-th percentile (0 &lt; P &lt;= 100) of a list of ordered values, sorted in ascending order, is the smallest value in the",2026-10-21
 b2936907fa0a,python/percentile-nearest-rank.md,S-or2wocyn,located,Percentile > Calculation methods > The nearest-rank method,alway;distinct;fewer;largest;member;100th;result;list,e103682830fd451c,Using the nearest-rank method on lists with fewer than 100 distinct values can result in the same value being used for more than one percentile.,2026-10-21
 c3cf35d382ca,python/percentile-nearest-rank.md,S-dh7f43kc,located,Decile cut points for empirically sampled data,longer;3.13;singl;rais;input;point;data,dff8abbe3117691e,Changed in version 3.13: No longer raises an exception for an input with only a single data point.,2026-10-19
+d839ac3664f1,python/percentile-nearest-rank.md,S-t5dhva6p,located,CMPivot overview - Configuration Manager | Microsoft Learn > Aggregation functions,defin;estimat;nearest;nearest-rank;percentil;population;rank;expr,cd3e84ead24f710b,percentile() | Returns an estimate for the specified nearest-rank percentile of the population defined by Expr,2026-10-21
 ec0817459bce,python/percentile-nearest-rank.md,S-4hnlw34j,located,7.1.6. > What are outliers in the data?,1679.75;742.25;312.5;outer;upper;fenc,48f8b5f829f3b7d4,,2026-10-21
 0515e7055570,python/process-orphans-and-cwd.md,S-dwwfdbtg,located,setsid(2) — Linux manual page > DESCRIPTION top,creat;new;leader;setsid;group;session;process,f6cc45d7cb727038,setsid() creates a new session if the calling process is not a process group leader.,2026-10-21
 09f9d510c467,python/process-orphans-and-cwd.md,S-w6stdctp,located,3. Definitions > 3.1 Abortive Release > 3.247 Orphaned Process Group,every;itself;parent;member;either;session;group;process,a2824cb796569189,the parent of every member is either itself a member of the group or is not a member of the group's session,2026-10-21
@@ -13621,6 +13625,8 @@ f018fa5d1e12,python/process-orphans-and-cwd.md,S-vvqjpqvl,located,proc_pid_cwd(5
 3800d7644620,python/ps-process-cpu.md,S-tldzr3mf,unlocated:no-match,,,,,2026-10-19
 5a80905c7c79,python/ps-process-cpu.md,S-tldzr3mf,located,NAME > SYNOPSIS > DESCRIPTION > STDOUT,null;written;line;text;header,7e70c482256de47c,"If all header text fields are null, no header line shall be written.",2026-10-21
 7b31bff9681d,python/ps-process-cpu.md,S-glwifmco,located,ps(1) — Linux manual page > OUTPUT FORMAT CONTROL top,empty;line;header;com;output;column;pid,1a8795b33efa2b27,If all column headers are empty (ps -o pid= -o comm=) then the header line will not be output.,2026-10-21
+7d7cdef92dc6,python/ps-process-cpu.md,S-ocglo5m3,located,,pcpu;cpu;alia,998040128477359a,percentage CPU usage (alias pcpu),2026-10-21
+82e1709db6b6,python/ps-process-cpu.md,S-d4mf4bbv,located,COMMAND DESCRIPTIONS,col1;col2;select;column;header;display,679890afec762221,-o col1 col2=header Select columns for display,2026-10-21
 8945978adc1a,python/ps-process-cpu.md,S-wh6i6rv4,located,Get-Counter > Parameters > -SampleInterval,one-second;one;second;sampl,2757d625693077f0,"If the SampleInterval parameter isn't specified, Get-Counter uses a one-second interval.",2026-10-21
 9f81ad66505d,python/ps-process-cpu.md,S-v6442u3l,located,Decode a PowerShell command from a running process - PowerShell | Microsoft Learn > View the process,cim;ciminstanc;classnam;get-ciminstanc;instanc;query;result;administrator,8ecd15d7336a0759,"It's vital that PowerShell is running as administrator, otherwise no results are returned when querying the running processes. Execute the following command to get all",2026-10-21
 aaad454ed4e9,python/ps-process-cpu.md,S-ggxrmcqc,located,,percentag;usag;alia;cpu,8da9a7cee73969ca,percentage CPU usage (alias,2026-10-21
@@ -13732,7 +13738,6 @@ f71e0d12709c,python/pytest.md,S-mgv7bfqe,unlocated:no-match,,,,,2026-10-10
 1286aa84ec23,python/ruff.md,S-h2lscnwe,unlocated:no-match,,,,,2026-10-10
 14683d93263c,python/ruff.md,S-fy5sn7ch,unlocated:no-match,,,,,2026-10-10
 1f10c79a93ac,python/ruff.md,S-gzliwomt,located,for available dict keys/values see the optik parser 'add_option' method,max-module-lin;modul;max;default;line,fcec76bc4bfc7c5a,"""max-module-lines"", { ""default"": 1000,",2026-10-21
-23e13f6167f5,python/ruff.md,S-7fmtkrv5,unlocated:no-match,,,,,2026-10-10
 414a6c1c1e28,python/ruff.md,S-7e63teyx,located,,current;relativ;work;directory;graph;ruf;analyz;path,ea0eb9f63d305f73,"warnuser!(""ruff analyze graph is experimental and may change without warning""); } // Write all paths relative to the current working directory.",2026-10-10
 423f82bda653,python/ruff.md,S-y3zhzpmv,located,The Ruff Linter > Rule selection,tool;lint;ruf,1a9398a4e6111315,[tool.ruff.lint],2026-10-10
 4555775a81f9,python/ruff.md,S-7fmtkrv5,located,Configuring Ruff,docs;format;ruf,17a80dc40b5004c8,"""/{tests,docs,tools}/"" = [""E402""] [tool.ruff.format]",2026-10-10
@@ -13741,15 +13746,16 @@ f71e0d12709c,python/pytest.md,S-mgv7bfqe,unlocated:no-match,,,,,2026-10-10
 4e95f6d0dfaa,python/ruff.md,S-s3ytflwh,unlocated:no-match,,,,,2026-10-10
 513b49cc77d8,python/ruff.md,S-my7mtswb,unlocated:no-match,,,,,2026-10-10
 513b49cc77d8,python/ruff.md,S-y3zhzpmv,unlocated:no-match,,,,,2026-10-10
+62e247b694ea,python/ruff.md,S-y3zhzpmv,located,The Ruff Linter > Exit codes,fixed;found;violation,36985cc061b1f9f6,if no violations were found or if all present violations were fixed automatically,2026-10-21
 67d85436e4d6,python/ruff.md,S-y3zhzpmv,unlocated:no-match,,,,,2026-10-10
 6fa152eaf293,python/ruff.md,S-s3ytflwh,unlocated:no-match,,,,,2026-10-10
 8386e72b03f9,python/ruff.md,S-7e63teyx,located,,chang;experimental;may;preview;without;graph;ruf;analyz,8b8fd97f77de772c,"if pyprojectconfig.settings.analyze.preview.isdisabled() { warnuser!(""ruff analyze graph is experimental and may change without warning"");",2026-10-10
 8386e72b03f9,python/ruff.md,S-s3ytflwh,unlocated:no-match,,,,,2026-10-10
 882266672645,python/ruff.md,S-guaor3a5,unlocated:no-match,,,,,2026-10-10
 8e88d61fe8a6,python/ruff.md,S-7fmtkrv5,unlocated:no-match,,,,,2026-10-10
-9a23cf6eab55,python/ruff.md,S-7fmtkrv5,unlocated:no-match,,,,,2026-10-10
 9b2c760f9443,python/ruff.md,S-my7mtswb,unlocated:no-match,,,,,2026-10-10
 b8aed8babe77,python/ruff.md,S-okwkut4q,unlocated:no-match,,,,,2026-10-10
+bb2942ccbcf1,python/ruff.md,S-y3zhzpmv,located,The Ruff Linter > Error suppression > Comments > Line-level,block;import,84bc6bfe32f63292,will apply to all imports in the block,2026-10-21
 c296240f351b,python/ruff.md,S-ntllah3f,located,,target-version;requires-python;target;python;pyproject.toml;requir;version;pyproject,ddcbef7c0a243fe9,/// Extract target-version from pyproject.toml in the given directory /// if the file exists and has requires-python.,2026-10-10
 c296240f351b,python/ruff.md,S-s3ytflwh,unlocated:no-match,,,,,2026-10-10
 ceaa701e94db,python/ruff.md,S-y3zhzpmv,unlocated:no-match,,,,,2026-10-10
@@ -13763,12 +13769,14 @@ debb8922de45,python/ruff.md,S-y3zhzpmv,unlocated:no-match,,,,,2026-10-10
 057793372ef8,python/stdlib-argparse-json.md,S-lcvgoknn,located,Unicode HOWTO¶ > Introduction to Unicode¶ > Encodings¶,thre;each;between;four;two;represent;valu;sequenc,c4915425a02e7ec2,"If the code point is < 128, it's represented by the corresponding byte value. If the code point is >= 128, it's turned into a",2026-10-10
 0a15f869a39b,python/stdlib-argparse-json.md,S-36yy3wcx,located,end first line with \ to avoid the empty line!,3.4;appear;most;end;max;max_lin;none;added,bccfd9152186c88e,"(default: None) If not None, then the output will contain at most maxlines lines, with placeholder appearing at the end of the output. Added in",2026-10-10
 0e495da1da4f,python/stdlib-argparse-json.md,S-a3h5eijf,located,only query if necessary,sys.__stdout__.fileno;__stdout__;os.get_terminal_siz;stdout;get_terminal_siz;fileno;terminal;size,cb2285396e2d5db6,size = os.getterminalsize(sys.stdout.fileno()),2026-10-18
+0f600f541f4f,python/stdlib-argparse-json.md,S-tbohxt23,located,,show;lost;rst;data;send,4aa13bc360b8a472,SHOULD send a RST to show that data was lost,2026-10-21
 14a29f3310a6,python/stdlib-argparse-json.md,S-zzvrhdyd,unlocated:no-match,,,,,2026-10-10
 1bf7f1b06d5b,python/stdlib-argparse-json.md,S-w47ijsvq,unlocated:no-match,,,,,2026-10-10
 1d415994f725,python/stdlib-argparse-json.md,S-hqcmecwc,located,Examine the headers and look for a Connection directive.,rfil;pars;header;http,89367131d83074a1,"self.headers = http.client.parseheaders(self.rfile,",2026-10-18
 21c43f554ef8,python/stdlib-argparse-json.md,S-zzvrhdyd,unlocated:no-match,,,,,2026-10-10
 228b2987bc16,python/stdlib-argparse-json.md,S-ew7mucsg,located,,connect;terminal;oserror;descriptor;file,d77ecdac9d8778c2,"If the file descriptor is not connected to a terminal, an",2026-10-18
 234ee60b2afd,python/stdlib-argparse-json.md,S-zzvrhdyd,located,,sort_key;ensure_ascii;encoder;ensur;separator;sort;ascii;keys,c3f7da7ef7d639bb,".. class:: JSONEncoder(, skipkeys=False, ensureascii=True, checkcircular=True, allownan=True, sortkeys=False, indent=None, separators=None, default=None) Extensible JSON encoder for Python data structures.",2026-10-10
+24b84f4f1e97,python/stdlib-argparse-json.md,S-u7n437dn,located,devoted to the long word that we can't handle right now.,larg;valueerror;rais;valu;error;too;max;placeholder,e5917af8b615e6ac,"raise ValueError(""placeholder too large for max width"")",2026-10-21
 25a618d65a28,python/stdlib-argparse-json.md,S-rs27i36t,located,,obtain;server_address;port;address;server;http,3fdea34dc71a7b17,The HTTP server's port number obtained from serveraddress.,2026-10-16
 25a618d65a28,python/stdlib-argparse-json.md,S-uj2rumru,located,,arbitrary;select;unus;mean;port,0e79f0e6b6ae81a3,Port 0 means to select an arbitrary unused port,2026-10-16
 266ec9c193dc,python/stdlib-argparse-json.md,S-kvldeb34,located,- The executor that owns the worker has been shutdown.,none;shutdown,68bdc8349ebffe0b,if shutdown or executor is None or executor.shutdown:,2026-10-18
@@ -13867,6 +13875,7 @@ fa8b9b691b12,python/stdlib-cprofile-pstats.md,S-5y7wwygh,located,... do somethin
 1adca2f49c9f,python/stdlib-datetime-iso-week.md,S-gaeidf4e,unlocated:no-match,,,,,2026-10-14
 279fddca1109,python/stdlib-datetime-iso-week.md,S-gaeidf4e,unlocated:no-match,,,,,2026-10-10
 37c168b860f8,python/stdlib-datetime-iso-week.md,S-gaeidf4e,located,datetime — Basic date and time types¶ > datetime objects¶,utcnow;over;prefer;today;function,b686485fb51389a5,This function is preferred over today() and utcnow().,2026-10-20
+5b1763600d24,python/stdlib-datetime-iso-week.md,S-4hcwbrfl,located,"strftime, wcsftime, _strftime_l, _wcsftime_l | Microsoft Learn > Remarks > Generic-text routine mappings",january;last;based;week-ba;monday;iso;week;year,b51997135f77d370,"The ISO 8601 week and week-based year produced by %V, %g, and %G, uses a week that begins on Monday. Week 1 is the week",2026-10-21
 61ecc4ccad72,python/stdlib-datetime-iso-week.md,S-gaeidf4e,unlocated:no-match,,,,,2026-10-10
 7e5f919a442c,python/stdlib-datetime-iso-week.md,S-gaeidf4e,located,datetime — Basic date and time types¶ > date objects¶,monday;sunday;first;iso;week;year,513e25a20d11ba0c,Monday and ends on a Sunday. The first week of an ISO year is the first,2026-10-10
 8a7b5d1f4bd6,python/stdlib-datetime-iso-week.md,S-gaeidf4e,unlocated:no-match,,,,,2026-10-10
@@ -13986,11 +13995,6 @@ dc0ca92d51fb,python/stdlib-urllib-errors.md,S-kudz6dke,unlocated:no-match,,,,,20
 0aab8a1afd6b,python/stdlib-windows-portability.md,S-ntbllsvy,located,,getencod;locale.getencod;dependent;platform;encod;text;mode;local,651fe98993252eed,"In text mode, if encoding is not specified the encoding used is platform-dependent: :func:locale.getencoding is called to get the current locale encoding.",2026-10-10
 0c37e66a63be,python/stdlib-windows-portability.md,S-sjuwcuhk,located,,accidental;catch;posix;widely;meant;uses;recommend;command,106a4fcebae4fe35,"catch accidental uses of the typical POSIX command on Windows, but is not meant to be widely used or recommended.",2026-10-12
 0e0b4c186190,python/stdlib-windows-portability.md,S-t5ahy22o,located,RemoveDirectoryA function (fileapi.h) - Win32 apps | Microsoft Learn > Remarks,creat;createdirectory;found;posix;whil;fail;handl;open,983d479ca2375644,The use of POSIX delete causes the directory to be deleted while handles remain open. Subsequent calls to CreateDirectory to open the directory fail with,2026-10-10
-101c180f2336,python/stdlib-windows-portability.md,S-4a5xeg5l,unlocated:no-match,,,,,2026-10-18
-101c180f2336,python/stdlib-windows-portability.md,S-ctjl4gek,unlocated:no-match,,,,,2026-10-18
-101c180f2336,python/stdlib-windows-portability.md,S-iv3usyoz,unlocated:no-match,,,,,2026-10-18
-101c180f2336,python/stdlib-windows-portability.md,S-kkrnrh7n,located,SetConsoleMode function - Windows Console | Microsoft Learn > Parameters,page;print;stat;whil;off;reach;sequenc;flag,16de7ed0e9ca4aab,"DISABLE\NEWLINE\AUTO\RETURN 0x0008 | When writing with WriteFile or WriteConsole, this adds an additional state to end-of-line wrapping that can delay the cursor move and buffer",2026-10-21
-101c180f2336,python/stdlib-windows-portability.md,S-qvjkxdub,unlocated:no-match,,,,,2026-10-18
 1362548df905,python/stdlib-windows-portability.md,S-elctquww,located,(this is done by normpath).,make;backslash;lowercas;character;slash,1104556505322990,Makes all characters lowercase and all slashes into backslashes.,2026-10-20
 1372d5a7463a,python/stdlib-windows-portability.md,S-ujjrcinq,located,Job Objects - Win32 apps | Microsoft Learn > Managing Processes in Jobs,createprocess;default;child;creat;associat;process;job,67fae0aedbc84ddd,"After a process is associated with a job, by default any child processes it creates using CreateProcess are also associated with the job.",2026-10-10
 13d1074fbd9b,python/stdlib-windows-portability.md,S-ew7mucsg,located,,excl;o_creat;o_excl;creat,c838c5394ac23386,OCREAT OEXCL,2026-10-14
@@ -14000,6 +14004,7 @@ dc0ca92d51fb,python/stdlib-urllib-errors.md,S-kudz6dke,unlocated:no-match,,,,,20
 1cc518dc8459,python/stdlib-windows-portability.md,S-ujjrcinq,located,Job Objects - Win32 apps | Microsoft Learn > Managing Processes in Jobs,chang;default;silent;flag;breakaway;child;creat;limit,375bc1e4ad71ff6b,(Child processes created using Win32\Process.Create are not associated with the job.) This default behavior can be changed by setting the extended limit JOB\OBJECT\LIMIT\BREAKAWAY\OK or JOB\OBJECT\LIMIT\SILENT\BREAKAWAY\OK,2026-10-10
 1d50e1c536a5,python/stdlib-windows-portability.md,S-edjp43o7,located,NAME > SYNOPSIS > DESCRIPTION > APPLICATION USAGE,between;some;allow;system;implementation;hard;file;link,662df3201399cbd6,Some implementations do allow hard links between file systems.,2026-10-10
 1e61b3e351ea,python/stdlib-windows-portability.md,S-5brdhqgo,unlocated:no-match,,,,,2026-10-10
+206d7dd3535e,python/stdlib-windows-portability.md,S-sjuwcuhk,located,With -ExcludeVersion,reboot;further;requir;configuration,9fd1c5dd02b0d010,After changing the above option and rebooting no further configuration is required,2026-10-21
 24dbcc644cea,python/stdlib-windows-portability.md,S-2cf7ptty,located,iOS Manual Pages,ebusy;mount;point;system;file;directory,edb442bed1f63d82,The directory to be removed is the mount point for a mounted file system,2026-10-21
 2c888b021599,python/stdlib-windows-portability.md,S-zch3x2zi,located,NO_COLOR > Frequently Asked Questions,overrid;variabl;environment;no_color;color,bbece4c49d1e780e,should override the NOCOLOR environment variable,2026-10-21
 2e36ec81198d,python/stdlib-windows-portability.md,S-ymqlfpgy,located,Process Creation Flags (WinBase.h) - Win32 apps | Microsoft Learn > Flags,0x00000008;alloc;allocconsol;later;cannot;detach;inherit;parent,c8edecc05947dcc5,"- DETACHED\PROCESS<br>- 0x00000008 | For console processes, the new process does not inherit its parent's console (the default). The new process can call the AllocConsole",2026-10-10
@@ -14065,6 +14070,7 @@ dc0ca92d51fb,python/stdlib-urllib-errors.md,S-kudz6dke,unlocated:no-match,,,,,20
 91406b95a1ed,python/stdlib-windows-portability.md,S-ymqlfpgy,unlocated:no-match,,,,,2026-10-10
 93523914709a,python/stdlib-windows-portability.md,S-ujjrcinq,located,Job Objects - Win32 apps | Microsoft Learn > Managing Job Objects,destroy;kill;last;clos;handl;limit;associat;object,2e0378c24c526c85,"However, if the job has the JOB\OBJECT\LIMIT\KILL\ON\JOB\CLOSE flag specified, closing the last job object handle terminates all associated processes and then destroys the job object",2026-10-10
 945cf42fde93,python/stdlib-windows-portability.md,S-5brdhqgo,located,os — Miscellaneous operating system interfaces¶,thereof;inaccessibl;invalid;subclass;oserror;modul;operat;accept,3187314fa1ef2188,"All functions in this module raise OSError (or subclasses thereof) in the case of invalid or inaccessible file names and paths, or other arguments that",2026-10-10
+98a89df00582,python/stdlib-windows-portability.md,S-bq7uyypb,located,High-Level Console Modes - Windows Console | Microsoft Learn,page;end;wrap;flag;terminal;virtual;follow;line,16de7ed0e9ca4aab,"DISABLE\NEWLINE\AUTO\RETURN 0x0008 | When writing with WriteFile or WriteConsole, this adds an additional state to end-of-line wrapping that can delay the cursor move and buffer",2026-10-21
 998b479205ed,python/stdlib-windows-portability.md,S-qz6kfi4i,located,SetCurrentDirectory function (winbase.h) - Win32 apps | Microsoft Learn > Remarks,delet;execut;lock;moved;prevent;renam;whil;being,0623f6e4edacd421,"The current directory for a process is locked while the process is executing. That prevents the directory from being deleted, moved, or renamed.",2026-10-10
 99c781ecb282,python/stdlib-windows-portability.md,S-2cf7ptty,unlocated:no-match,,,,,2026-10-15
 99c781ecb282,python/stdlib-windows-portability.md,S-hlwenztu,unlocated:no-match,,,,,2026-10-15
@@ -14084,6 +14090,9 @@ a806f50a8153,python/stdlib-windows-portability.md,S-hlwenztu,located,rmdir(2) �
 a9df22e1bd5e,python/stdlib-windows-portability.md,S-ntbllsvy,located,,fail;creation;exclusiv;already;exist;open;file,b9cc58808515e18e,"'x' open for exclusive creation, failing if the file already exists",2026-10-10
 aa7894657f5a,python/stdlib-windows-portability.md,S-6bobcclf,located,CreateProcessW function (processthreadsapi.h) - Win32 apps | Microsoft Learn > Parameters,work;start;driv;current;call;null;directory;new,55cd1be3350c1628,"If this parameter is NULL, the new process will have the same current drive and directory as the calling process. (This feature is provided primarily",2026-10-10
 ae65873cefe9,python/stdlib-windows-portability.md,S-oqrlzkwe,located,CreateHardLinkW function (winbase.h) - Win32 apps | Microsoft Learn > Remarks,volum;must;createhardlink;creat;hard;link;file,a36d2529a2863a36,"An additional hard link that is created with the CreateHardLink function allows you to have multiple directory entries for a file, that is, multiple hard",2026-10-10
+ae7f2956a5b1,python/stdlib-windows-portability.md,S-4xllwpsz,located,,python.manifest;manifest;python,a36377c845575e10,"1 RTMANIFEST ""python.manifest""",2026-10-21
+ae7f2956a5b1,python/stdlib-windows-portability.md,S-6wdqctea,located,,python_ex;python_exe.rc;resourc;compil;exe;python,f2d75cb77fdf052e,"<ResourceCompile Include=""..\PC\pythonexe.rc"" />",2026-10-21
+ae7f2956a5b1,python/stdlib-windows-portability.md,S-wazay7xw,located,,awar;longpathawar;path;true,70ef6b0993c655eb,"<longPathAware xmlns=""http://schemas.microsoft.com/SMI/2016/WindowsSettings"">true</longPathAware>",2026-10-21
 aef7cb26c281,python/stdlib-windows-portability.md,S-ntbllsvy,located,,linesep;os.linesep;newlin;writ;none;default,40ec9a086434ce45,"When writing output to the stream, if newline is None, any '\n' characters written are translated to the system default line separator, :data:os.linesep.",2026-10-10
 af2fbb0d64e8,python/stdlib-windows-portability.md,S-j6wqryzp,located,,faint;neither;nor;bold;normal,35d55ba3f7e56777,Normal (neither bold nor faint),2026-10-21
 afa81617b6e1,python/stdlib-windows-portability.md,S-vfd5kpka,located,NAME > SYNOPSIS > DESCRIPTION,root;suc;unspecifi;current;ebusy;whether;work;fail,afbf40c0ac0f6d01,it is unspecified whether the function succeeds,2026-10-21
@@ -14124,6 +14133,7 @@ f3b8e0966502,python/stdlib-windows-portability.md,S-oqrlzkwe,unlocated:no-match,
 f767b58f21cc,python/stdlib-windows-portability.md,S-jwv5eevl,located,shutil — High-level file operations¶ > Directory and files operations¶,shutil.copytre;dirs;dirs_exist_ok;copy_function;copy2;copytre;exist;function,d26112e8ff4df136,"shutil.copytree(src, dst, symlinks=False, ignore=None, copyfunction=copy2, ignoredanglingsymlinks=False, dirsexistok=False)¶",2026-10-10
 fc7962c5b134,python/stdlib-windows-portability.md,S-dabwnzz5,located,,breakaway;create_breakaway_from_job;job;creationflag;creat;process,4a2f67de8110c3eb,.. data:: CREATEBREAKAWAYFROMJOB A :class:Popen creationflags parameter to specify that a new process,2026-10-10
 fda066bf3d91,python/stdlib-windows-portability.md,S-ymqlfpgy,located,Process Creation Flags (WinBase.h) - Win32 apps | Microsoft Learn > Flags,0x0100000;associat;breakaway;effect;job;limit;object;must,cefa31b762c4d11e,- CREATE\BREAKAWAY\FROM\JOB<br>- 0x01000000 | The child processes of a process associated with a job are not associated with the job. If the calling process is,2026-10-10
+4f927c4f8d73,python/typer-cli.md,S-bes5qgkf,located,Command Help > Rich Markdown and Markup,none;disabl;mode;rich_markup_mod;format;app;markup;rich,ffa0d73e04d985fa,You can disable rich text formatting by setting richmarkupmode to None for your specific app,2026-10-21
 05125dd840fa,python/uv-projects.md,S-7xvirecf,unlocated:no-match,,,,,2026-10-10
 056ad5535232,python/uv-projects.md,S-4odritdm,located,Using workspaces > Getting started,need;every;root;member;workspac,e8cf0ff45e6a65dd,"Every workspace needs a root, which is also a workspace member.",2026-10-13
 06d718baefab,python/uv-projects.md,S-4odritdm,located,Using workspaces > When (not) to use workspaces,critical;extension;modul;performanc;performance-critical;rust;library,8c734a94d1145061,"A library with a performance-critical subroutine implemented in an extension module (Rust, C++,",2026-10-13
@@ -14133,6 +14143,7 @@ fda066bf3d91,python/stdlib-windows-portability.md,S-ymqlfpgy,located,Process Cre
 15b8467033ba,python/uv-projects.md,S-sqwzg5ex,unlocated:no-match,,,,,2026-10-10
 15ce71d457ba,python/uv-projects.md,S-4odritdm,unlocated:no-match,,,,,2026-10-13
 2176e3f21341,python/uv-projects.md,S-wmmyfoun,unlocated:no-match,,,,,2026-10-10
+30996ea418ce,python/uv-projects.md,S-sa5uywzm,located,TLS certificates > System certificates,mozilla;root;uses;default;bundl;tls;certificat,2fde8bf0d05e4b3e,uv uses bundled Mozilla root certificates for TLS verification,2026-10-21
 3179747714cc,python/uv-projects.md,S-dxvgh2py,located,Managing dependencies > Development dependencies > Group `requires-python`,requires-python;requir;python;group;project;dependency,9cd17a5d10b9668c,"By default, dependency groups must be compatible with your project's requires-python range.",2026-10-21
 3179747714cc,python/uv-projects.md,S-pwf7njbf,located,Resolution > Universal resolution,requires-python;lower;bound;project;requir;python;dependency,433506af052a00b5,"For example, if a project's requires-python is >=3.8, resolution will fail if all versions of given dependency require Python 3.9 or later, since the dependency",2026-10-10
 3179747714cc,python/uv-projects.md,S-qo6uqong,located,Configuring projects > Python version requirement,requires-python;python;requir;dependency;project,aefc101fc107022f,"requires-python = "">=3.12"" The Python version requirement determines the Python syntax that is allowed in the project and affects selection of dependency versions (they must",2026-10-10
@@ -14143,14 +14154,19 @@ fda066bf3d91,python/stdlib-windows-portability.md,S-ymqlfpgy,located,Process Cre
 3cd8d559c5a3,python/uv-projects.md,S-x7kevebo,unlocated:no-match,,,,,2026-10-10
 479558501f0f,python/uv-projects.md,S-wmmyfoun,located,Locking and syncing > Automatic lock and sync,error;instead;rais;frozen;without;updat;date;check,deb7d742ccbfbf36,"If the lockfile is not up-to-date, uv will raise an error instead of updating the lockfile. To use the lockfile without checking if it is",2026-10-10
 4a769cdeea84,python/uv-projects.md,S-4odritdm,located,Using workspaces > When (not) to use workspaces,import;another;isolation;declar;python;dependency;packag;member,8b326d21cad5fe92,"As Python does not provide dependency isolation, uv can't ensure that a package uses its declared dependencies and nothing else. For workspaces specifically, uv can't",2026-10-13
+4f329fa97b39,python/uv-projects.md,S-tat3ywrz,located,Package indexes > `--index-url` and `--extra-index-url`,maps;default-index;extra;extra-index-url;index-url;default;url;index,027c25b1496a94b7,--index-url maps to --default-index,2026-10-21
+54530646a1bc,python/uv-projects.md,S-dlc2x6gf,located,CLI Reference > uv export,export;member;however;workspac;select;specific;root;option,5e2a1615d0d76de8,specific members can be selected using the --package option,2026-10-21
 5aa676a26bd3,python/uv-projects.md,S-7xvirecf,unlocated:no-match,,,,,2026-10-10
 5b896eda4353,python/uv-projects.md,S-sqwzg5ex,unlocated:no-match,,,,,2026-10-10
+5b97c899cc34,python/uv-projects.md,S-sa5uywzm,located,TLS certificates > Custom certificates,pip;invocation;bundl;pem;cert;certificat,16c70939a735bf33,pass --cert with the path to a PEM-encoded certificate bundle,2026-10-21
 6052cf651fc3,python/uv-projects.md,S-2xpbl25y,located,,standalon;avoid;creat;workspac;project,ca9dda72405d6b0a,/// Avoid discovering a workspace and create a standalone project.,2026-10-13
+6b4c5612bbf7,python/uv-projects.md,S-tat3ywrz,located,Package indexes > Defining an index,lowest;priority;alway;default;index,85a7ea031154d365,The default index is always treated as lowest priority,2026-10-21
 74b7a669a41d,python/uv-projects.md,S-4odritdm,unlocated:no-match,,,,,2026-10-13
 796a524b6c8b,python/uv-projects.md,S-wmmyfoun,located,Locking and syncing > Checking the lockfile,outdat;constraint;such;consider;exclud;chang;version;lockfil,1c6d9974c67a649b,"Similarly, if you change the version constraints for a dependency such that the locked version is excluded, the lockfile will be considered outdated.",2026-10-10
 7f7e07898dfc,python/uv-projects.md,S-y4cg63ji,unlocated:no-match,,,,,2026-10-10
 80ba7800d734,python/uv-projects.md,S-y4cg63ji,unlocated:no-match,,,,,2026-10-10
 8bdbbb402aec,python/uv-projects.md,S-xeomedeo,located,,two;non-project;tabl;non;kind;root;project;workspac,820114d594f5c025,"/// Note that there are two kinds of workspace roots: projects, and non-project roots. /// The non-project roots lack a [project] table, and so are",2026-10-21
+92fc60328192,python/uv-projects.md,S-sa5uywzm,located,TLS certificates > Custom certificates,empty;entirely;non;non-empty;overrid;valu;sourc;default,8acf6f165abe88e0,these environment variables override the default certificate source entirely,2026-10-21
 93294ddcf26e,python/uv-projects.md,S-dxvgh2py,located,Managing dependencies > Development dependencies,cased;special;special-ca;no-dev;only-dev;no-default-group;disabl;default,c0ca3909c4d672da,"The dev group is special-cased; there are --dev, --only-dev, and --no-dev flags to toggle inclusion or exclusion of its dependencies. See --no-default-groups to disable all",2026-10-21
 96c9fe65a60f,python/uv-projects.md,S-2xpbl25y,unlocated:no-match,,,,,2026-10-13
 ad833e7039df,python/uv-projects.md,S-wmmyfoun,unlocated:no-match,,,,,2026-10-10
@@ -14170,6 +14186,7 @@ ec4831410eda,python/uv-projects.md,S-f2okeu6a,unlocated:no-match,,,,,2026-10-10
 eccddd4c6486,python/uv-projects.md,S-dejuwanz,unlocated:no-match,,,,,2026-10-13
 f31bfbdd03bb,python/uv-projects.md,S-4odritdm,located,Using workspaces > Getting started,exist;insid;creat;default;init;tool.uv.workspac;root;tool,453505f80f725d7e,"By default, running uv init inside an existing package will add the newly created member to the workspace, creating a tool.uv.workspace table in the workspace",2026-10-13
 f358a6a78c92,python/uv-projects.md,S-4odritdm,unlocated:no-match,,,,,2026-10-13
+fd8eea1197c6,python/uv-projects.md,S-pqjyeifm,located,Configuration > Environment Variables,line;overrid;variabl;command;option;environment,aa3280c5eab2ddd3,Command line options override environment variables,2026-10-21
 10a2903f5693,python/uv-windows-install.md,S-xkajf5v5,located,Installing uv > Installation methods > Standalone installer,0.12.19;bypass;executionpolicy;pass;request;url;execution;iex,70965dd019630c12,"Request a specific version by including it in the URL: PS> powershell -ExecutionPolicy ByPass -c ""irm https://astral.sh/uv/0.12.19/install.ps1 | iex""",2026-10-10
 1db78c79d712,python/uv-windows-install.md,S-xkajf5v5,unlocated:no-match,,,,,2026-10-10
 419ce16fbc02,python/uv-windows-install.md,S-kqisz7ri,unlocated:no-match,,,,,2026-10-10
@@ -14235,6 +14252,7 @@ feaceba7e90a,python/version-lifecycle.md,S-2ue7gffd,unlocated:no-match,,,,,2026-
 77647fe19105,python/windows-python-install.md,S-4jodaif5,located,PEP 514 – Python registration in the Windows registry > Structure,reserv;sys.winver;winver;pylauncher;relea;launcher;official;sys,dbd834051eee1ffa,"Official Python releases use PythonCore for Company, and the value of sys.winver for Tag. The Company PyLauncher is reserved.",2026-10-21
 7cc658474080,python/windows-python-install.md,S-jzqdphnx,located,Sigstore Information,method;older;openpgp;pgp;seri;open;3.14;relea,3ebbac46e4be619c,"Starting with the Python 3.11.0, Python 3.10.7, Python 3.9.14, Python 3.8.14, and Python 3.7.14 releases, CPython release artifacts are additionally signed with Sigstore. Starting with",2026-10-10
 8259ddea6cc9,python/windows-python-install.md,S-lkt7o42d,unlocated:no-match,,,,,2026-10-21
+92336a6104e8,python/windows-python-install.md,S-2jrm4fpu,located,Download the latest version of Python > How to verify your downloaded files are genuine > Sigstore verification > Windows,authenticod;each;binary;foundation;softwar;issu;certificat;window,4137ec0fbdfb5ebd,signed using an Authenticode signing certificate issued to the Python Software Foundation,2026-10-21
 97342c008eb3,python/windows-python-install.md,S-srwea6un,unlocated:no-match,,,,,2026-10-10
 998ee0838951,python/windows-python-install.md,S-jzqdphnx,unlocated:no-match,,,,,2026-10-10
 9a42f0a265eb,python/windows-python-install.md,S-sjuwcuhk,located,With -ExcludeVersion,usually;disabl;enabl;valu;name;other;option;path,37e8c3cc5dab5578,"All other options are passed as name=value, where the value is usually 0 to disable a feature, 1 to enable a feature, or a path.",2026-10-12
@@ -14259,8 +14277,6 @@ e7c1674de159,python/windows-python-install.md,S-4jodaif5,unlocated:no-match,,,,,
 ebdc9da17cd3,python/windows-python-install.md,S-sjuwcuhk,located,Optionally run the configuration checker and accept all changes,profil;userprofil;appdata;windowsap;apps;data;app;microsoft,8e53039de11e5a5a,"%UserProfile%\AppData\Local\Microsoft\WindowsApps. The operating system includes this entry once by default, after other",2026-10-12
 ef57cdc4bcfe,python/windows-python-install.md,S-sjuwcuhk,located,,python3.14.ex;localappdata;data;app;bin;local;python3;exe,4a679e91c47e0b36,"as python3.14.exe) to be available. The directory will be :file:%LocalAppData%\\Python\\bin by default, but may be customized by an",2026-10-12
 ef773d1026be,python/windows-python-install.md,S-omr5o3jv,located,Manual installation > Frequently Asked Questions,alia;entry;execution;start;switch;manag;off;without,13a82a793b9c4cf6,"You can disable the shortcuts without installing Python by opening ""Manage app execution aliases"" from Start, finding the ""App Installer"" Python entries and switching them",2026-10-21
-f544e8d4aa7f,python/windows-python-install.md,S-jzqdphnx,unlocated:no-match,,,,,2026-10-10
-f544e8d4aa7f,python/windows-python-install.md,S-sjuwcuhk,unlocated:no-match,,,,,2026-10-12
 f90babfdc400,python/windows-python-install.md,S-sjuwcuhk,located,With -ExcludeVersion,maintenanc;mode;modify;entry;featur;chang;uninstall;installer,bb09e4d9e56b96f5,"Select the Python entry and choose ""Uninstall/Change"" to open the installer in maintenance mode. ""Modify"" allows you to add or remove features by modifying the",2026-10-12
 fa23e137a1f3,python/windows-python-install.md,S-sjuwcuhk,located,With -ExcludeVersion,3.16;modern;produc;sinc;later;deprecat;3.14;installer,8857984bd6fe6d48,This installer is deprecated since 3.14 and will not be produced for Python 3.16 or later. See :ref:pymanager for the modern installer.,2026-10-12
 fb2f544e9ad9,python/windows-python-install.md,S-sjuwcuhk,located,,accidental;catch;mimic;posix;meant;includ;command;python,bb83a79f44f883a5,"command is also included that mimics the python command. It is intended to catch accidental uses of the typical POSIX command on Windows, but is",2026-10-12

@@ -3,7 +3,7 @@ topic: python/maturin-pyo3-wheels
 priority: P3
 applies_to: "maturin 1.15.0, PyO3 0.29.3, maturin-action 1.51.0 (release tags read 2026-10-11); CPython wheels for linux x86_64/aarch64 and macOS arm64"
 retrieved_utc: 2026-10-11
-sources: [S-c6fbhzyz, S-hec62m7j, S-26hqxvrn, S-hisnadiu, S-cr3vzki4, S-oeklvsgw, S-romblyjt, S-yfykoru4, S-pyhwnq4g, S-65rohhd6, S-g5ef7rue, S-sne3yj7b, S-xpr6ww5t]
+sources: [S-c6fbhzyz, S-hec62m7j, S-26hqxvrn, S-hisnadiu, S-cr3vzki4, S-oeklvsgw, S-romblyjt, S-yfykoru4, S-pyhwnq4g, S-65rohhd6, S-g5ef7rue, S-sne3yj7b, S-xpr6ww5t, S-yua2ucez]
 status: partial
 ---
 
@@ -137,7 +137,13 @@ article records the vendor statements; the project's choices are not recorded he
   S-c6fbhzyz, S-sne3yj7b, S-hisnadiu, S-yfykoru4: abi3 naming and manylinux tagging pattern applied
   to the three targets]
 - A `universal2` macOS wheel (`--target universal2-apple-darwin`) is not mentioned in the maturin
-  guide at 1.15.0 that was read, so whether and how maturin produces one is not confirmed here. [UNK]
+  guide at 1.15.0 that was read; the project's changelog records it instead. [DOC S-yua2ucez]
+- The changelog says maturin 0.9.1 added support for building universal2 wheels ("x86 and aarch64 in a single
+  file"), 0.14.13 deprecated the `--universal2` option in favour of the `universal2-apple-darwin` target, and
+  1.0.0 removed the option ("use `--target universal2-apple-darwin` instead"); 0.15.3 fixed cross compiling
+  Apple universal2 wheels on non-macOS platforms. [DOC S-yua2ucez]
+- So at 1.15.0 a universal2 macOS wheel is requested with `--target universal2-apple-darwin`; the changelog gives
+  no wheel filename or platform tag for it, so the tag stays to be read from a built wheel. [DER S-yua2ucez: the removal and the replacement target; no tag stated]
 
 ## Reference
 - SNIPPET: Cargo.toml and pyproject.toml for a mixed project built as one abi3 wheel with minimum Python 3.9; context: maturin 1.15.0, PyO3 0.29.x; checked: no [DER S-26hqxvrn, S-hec62m7j, S-hisnadiu: key names and the abi3-pyXY feature as documented; crate and package names are placeholders]

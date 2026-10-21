@@ -3,7 +3,7 @@ topic: python/ps-process-cpu
 priority: P3
 applies_to: "POSIX.1-2024 ps; procps-ng ps(1) (Linux, man page dated 2025-04-23); Apple ps(1) at adv_cmds-237 (macOS); Windows PowerShell 7.6 Get-Process, Get-Counter and the Win32_Process class"
 retrieved_utc: 2026-10-21
-sources: [S-tldzr3mf, S-glwifmco, S-ggxrmcqc, S-5syx7mel, S-js22cswf, S-wh6i6rv4, S-v6442u3l]
+sources: [S-tldzr3mf, S-glwifmco, S-ggxrmcqc, S-5syx7mel, S-js22cswf, S-wh6i6rv4, S-v6442u3l, S-ocglo5m3, S-d4mf4bbv]
 status: partial
 ---
 
@@ -78,9 +78,15 @@ a minute. A sum of the column can exceed 100% on both. Windows has no `ps` listi
   time and no command line, the counter gives a percentage over a sampling interval, and the command line
   needs a `Win32_Process` query, so a Windows host needs its own collector. [DER S-5syx7mel, S-wh6i6rv4,
   S-v6442u3l: three different sources for the three values]
-- Only the procps-ng page and Apple's `ps` page were read. A Linux image with another `ps` (for example one
-  that is a BusyBox applet) was not checked for `-A`, empty headers or `pcpu`. [UNK: other `ps` implementations
-  were not read]
+- FreeBSD's `ps(1)` page accepts the same argument list: `-A` ("information about all processes in the
+  system", equivalent to `-a` plus `-x`), `-o` keywords with `=` header texts (a header line is not written when
+  every keyword has an empty header text), `pcpu` as an alias of `%cpu` and `args` as "command and arguments". [DOC S-ocglo5m3]
+- BusyBox's command help lists for `ps` only `-o col1,col2=header` ("select columns for display") and `-T`
+  (show threads): it names no `-A` and no column names, so whether a BusyBox `ps` accepts `-A`, `pcpu` and
+  `args` is not stated by that page and needs a run on such an image. [DOC S-d4mf4bbv]
+- So the one argument list is documented for procps-ng (Linux), Apple's `ps` and FreeBSD's; a BusyBox applet
+  documents the `=header` form and nothing else of it, and a script for a minimal image checks for failure. [DER S-ocglo5m3, S-d4mf4bbv: the FreeBSD page against the BusyBox help]
+- A Linux image whose `ps` is a BusyBox applet was not run for `-A`, empty headers or `pcpu`. [UNK: BusyBox's page lists too few options to settle it]
 
 ## Reference
 - Related: `python/stdlib-os-loadavg.md` (the kernel's run-queue average and how to read it against the CPU

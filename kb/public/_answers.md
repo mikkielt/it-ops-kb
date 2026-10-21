@@ -2162,7 +2162,8 @@ _Agent: kb-research_
 - The installer's executables MSI installs `python.exe` and `pythonw.exe`; no `Tools/msi/` file at v3.14.7 names a `python3.exe`. [DER S-srwea6un: exe_python component group and a search of the MSI sources]
 - The release API lists per file `sha256_sum` and `sigstore_bundle_file`; from 3.14 Sigstore is the only release signature, verified with `python -m sigstore verify identity` against the release manager's identity and OIDC issuer. [DOC S-lkt7o42d, S-jzqdphnx]
 - Conclusion: `/quiet InstallAllUsers=0 InstallLauncherAllUsers=0 PrependPath=1 Include_test=0 Shortcuts=0` installs per user without elevation, a script must add `python3.exe` itself, and the pinned sha256 comes from the release API, with the Sigstore bundle as the documented signature check. [DER S-sjuwcuhk, S-srwea6un, S-lkt7o42d, S-jzqdphnx]
-- Open: whether the installers carry an Authenticode signature and its expected subject; whether a quiet per-user run with the default all-users launcher elevates or fails. [UNK]
+- The installers also carry an Authenticode signature: python.org's download page names the certificate issued to the Python Software Foundation (subject `CN = Python Software Foundation, O = Python Software Foundation, L = Beaverton, S = Oregon, C = US`). [DOC S-2jrm4fpu]
+- Open: whether a quiet per-user run with the default all-users launcher elevates or fails. [UNK]
 - See python/windows-python-install.md.
 
 _Agent: kb-research_
@@ -2412,7 +2413,7 @@ _Agent: kb-research_
 - `TextWrapper` takes `max_lines`, `placeholder` (the string that ends truncated output) and `break_long_words`; `width` counts characters. [DOC S-36yy3wcx]
 - `str.encode()` encodes to UTF-8 with `errors='strict'` by default; a code point of 128 or more takes two to four bytes. [DOC S-lyf4dv2j, S-lcvgoknn]
 - Conclusion: `len(s.encode())` is the UTF-8 byte size of a printed answer, and U+2026 costs three bytes, the same as three ASCII dots, though it is one character. [DER S-lyf4dv2j, S-lcvgoknn: the encode default and the byte rule; the exact three is the UTF-8 table]
-- Open: what `shorten` does when the placeholder alone is wider than `width`; the page is silent. [UNK]
+- When the placeholder alone is wider than `width`, `shorten` raises `ValueError("placeholder too large for max width")` in the 3.14.7 source; the docs page is silent. [CODE S-u7n437dn: Lib/textwrap.py#TextWrapper._wrap_chunks]
 - See python/stdlib-argparse-json.md.
 
 _Agent: kb-research_
@@ -2485,7 +2486,8 @@ _Agent: kb-research_
 - `%G` is the ISO year of `%V` (week 01 contains Jan 4) and `%u` the weekday with 1 as Monday; the docs say `%G` and `%Y` are not interchangeable, and the codes may be missing on some platforms, so `%G-W%V` is the label and `%Y-W%V` is wrong at a year boundary. (`python/stdlib-datetime-iso-week.md:40`, `:43`, `:45`, `:50`) [DOC S-gaeidf4e]
 - A `date` plus `timedelta` moves by `timedelta.days` days. (`python/stdlib-datetime-iso-week.md:62`) [DOC S-gaeidf4e]
 - Conclusion: the first day after ISO week `(y, w)` is `date.fromisocalendar(y, w, 1) + timedelta(days=7)`, a week has closed on every date on or after it (its Sunday is still inside it), the latest closed week of a date is the ISO week of that date minus seven days, and `fromisocalendar(y, w + 1, 1)` fails for a year's last week, which is 52 or 53 by year (read from the week of 28 December). A timestamp is put in one zone before its week is taken, because `isocalendar()` does no conversion. (`python/stdlib-datetime-iso-week.md:64`, `:68`, `:71`) [DER S-gaeidf4e: the week, Monday, `timedelta` and `datetime.isocalendar` rules, run on Python 3.13.2]
-- Open: which platforms lack `%G`, `%V` and `%u` in `strftime()`, and whether Windows is one of them (see `_gaps.md`). [UNK]
+- Windows' C runtime lists `%G`, `%g`, `%u` and `%V` for `strftime`. [DOC S-4hcwbrfl]
+- Open: which platforms lack `%G`, `%V` and `%u` in `strftime()` (see `_gaps.md`). [UNK]
 - See python/stdlib-datetime-iso-week.md, python/pytest.md.
 
 _Agent: kb-research_
@@ -3060,7 +3062,8 @@ _Agent: kb-research_
 - PyO3's `abi3-pyXY` feature (for example `abi3-py39`) gives one wheel per OS and architecture for that Python and newer GIL-enabled CPython, at the price of some stable-ABI limits. [DOC S-pyhwnq4g]
 - linux amd64 builds in a manylinux container; linux arm64 uses `--target aarch64-unknown-linux-gnu --zig` or manylinux-cross containers through maturin-action; macOS arm64 builds natively on an arm64 macOS runner; `maturin generate-ci github` emits that matrix for GitHub Actions only. [DOC S-c6fbhzyz, S-sne3yj7b, S-hisnadiu]
 - Conclusion: one abi3 wheel per platform from three jobs (linux amd64, linux arm64, macOS arm64) covers every newer CPython; the manylinux and macOS wheel tags for the arm64 jobs are inferred from examples, and no GitLab CI generator exists. [DER S-pyhwnq4g, S-c6fbhzyz, S-sne3yj7b]
-- Open: macOS `universal2`, the exact arm64 wheel tags and a GitLab CI recipe are not stated by the pages read. [UNK]
+- A macOS `universal2` wheel is requested with `--target universal2-apple-darwin` (maturin changelog: the `--universal2` option was removed in 1.0.0). [DOC S-yua2ucez]
+- Open: the exact arm64 wheel tags and a GitLab CI recipe are not stated by the pages read. [UNK]
 - See python/uv-projects.md, python/maturin-pyo3-wheels.md.
 
 _Agent: kb-research_
@@ -3506,7 +3509,7 @@ _Agent: kb-research_
 - The ordinal rank is `ceil(P / 100 * N)`, counted from 1 (Wikipedia's formula), so the p95 of N sorted timings is the element at index `ceil(0.95 * N) - 1`; it is always a measured value, and for N up to 19 it is the largest. [COMMUNITY S-or2wocyn; DER S-g5oa4uyp, S-35bztnbb]
 - `statistics.quantiles` interpolates between the two nearest points, so it is not the nearest rank; a floor (`int(0.95 * n) - 1`) or a `round` index reads a rank low for most N (4,749 and 2,375 of N = 1 to 5000 on Python 3.13.2). [DOC S-dh7f43kc; DER S-or2wocyn]
 - Conclusion: take the p95 as `ordered[max(1, ceil(0.95 * N)) - 1]` or, in integers, `-(-95 * N // 100)` for the rank; the Python probe found no float error up to N = 5000. [DER S-g5oa4uyp, S-35bztnbb, S-dh7f43kc, S-or2wocyn]
-- Open: whether CMPivot's `percentile` is nearest rank is not stated. [UNK]
+- CMPivot's `percentile()` is described as returning "an estimate for the specified nearest-rank percentile" of the population. [DOC S-t5dhva6p]
 - See python/percentile-nearest-rank.md.
 
 _Agent: kb-research_
@@ -4195,7 +4198,8 @@ _Agent: kb-research_
 - macOS (Apple `ps`, adv_cmds-237) accepts them too, and its `%cpu` (alias `pcpu`) is a decaying average over up to a minute of previous real time; the sum can exceed 100%. [DOC S-ggxrmcqc]
 - Windows `Get-Process` gives CPU seconds, not a percentage; a percentage per process is the two-sample `\Process(*)\% Processor Time` counter, up to 100 times the processor count; the command line is `Win32_Process.CommandLine`. [DOC S-5syx7mel, S-wh6i6rv4, S-js22cswf, S-v6442u3l]
 - Conclusion: one `ps -A -o pid=,pcpu=,args=` call serves macOS and Linux with the same parsing, but its `pcpu` is a lifetime ratio on Linux and a one-minute decaying average on macOS, so a report names which it shows; Windows needs a separate collector for CPU percentage and command line. [DER S-tldzr3mf, S-glwifmco, S-ggxrmcqc, S-5syx7mel, S-wh6i6rv4, S-v6442u3l]
-- Open: `ps` implementations other than procps-ng and Apple's (for example BusyBox) were not read. [UNK]
+- FreeBSD's `ps(1)` accepts the same `-A`, empty `-o` headers, `pcpu` and `args`. [DOC S-ocglo5m3]
+- Open: a BusyBox `ps` (its command help lists only `-o` and `-T`) was not run for them. [UNK]
 - See python/ps-process-cpu.md, python/stdlib-os-loadavg.md.
 
 _Agent: kb-research_
@@ -4351,7 +4355,7 @@ _Agent: kb-research_
 - The path maximum is 260 characters; `\\?\` lifts it to about 32,767 and turns off "/" conversion; the opt-in without the prefix needs `LongPathsEnabled` and a `longPathAware` manifest. [DOC S1591]
 - Drive letters and names are case-insensitive; `normcase` lowercases and flips slashes as pure string work; `realpath` resolves links, junctions (3.8+) and 8.3 names, returns the disk's case with a capital drive letter and strips the `\\?\` prefix it added; `samefile` compares device and index. [DOC S-5ck3iec5, S-zyrhexwo; CODE S-elctquww]
 - Conclusion: a tool that guards a directory compares `samefile` or `normcase(realpath())` of both paths, never `normcase` alone, and treats a holder process as the reason for a refused rename, not the path spelling. [DER S-zyrhexwo, S-elctquww, S-qz6kfi4i]
-- Open: whether `python.exe` is `longPathAware` is not read. [UNK]
+- `python.exe` is built `longPathAware`: the 3.14.7 `PC/python.manifest`, embedded through `PC/python_exe.rc`, sets the element to `true`, and the Python docs say that with `LongPathsEnabled` set and a reboot "no further configuration is required". [CODE S-wazay7xw, S-4xllwpsz; DOC S-sjuwcuhk]
 - See python/stdlib-windows-portability.md.
 
 _Agent: kb-research_

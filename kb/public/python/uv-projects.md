@@ -3,8 +3,8 @@ topic: python/uv-projects
 priority: P2
 applies_to: [uv, python]
 retrieved_utc: 2026-10-11
-sources: [S-wmmyfoun, S-f2okeu6a, S-47yzu2ea, S-sqwzg5ex, S-y4cg63ji, S-j7nlfpkd, S-7xvirecf, S-x7kevebo, S-pwf7njbf, S-qo6uqong, S-4odritdm, S-2xpbl25y, S-dejuwanz, S-xeomedeo, S-dxvgh2py]
-status: complete
+sources: [S-wmmyfoun, S-f2okeu6a, S-47yzu2ea, S-sqwzg5ex, S-y4cg63ji, S-j7nlfpkd, S-7xvirecf, S-x7kevebo, S-pwf7njbf, S-qo6uqong, S-4odritdm, S-2xpbl25y, S-dejuwanz, S-xeomedeo, S-dxvgh2py, S-sa5uywzm, S-tat3ywrz, S-pqjyeifm, S-dlc2x6gf]
+status: partial
 ---
 
 # uv project workflow
@@ -153,6 +153,18 @@ this article does not repeat.
 - Inside an existing package, `uv init` adds the new project to the workspace by default, creating
   `[tool.uv.workspace]` in the root if absent. [DOC S-4odritdm]
 - `uv init --no-workspace` avoids workspace discovery and creates a standalone project. [CODE S-2xpbl25y: crates/uv-cli/src/lib.rs#InitArgs]
+- The current uv CLI reference lists no `--package` option under `uv lock` (the option list runs to the `uv export` section); `uv export` says that in a workspace "the root will be exported by default; however, specific members can be selected using the --package option", and `uv tree` takes `--package` to display only the named packages. [DOC S-dlc2x6gf]
+- So `uv lock` always locks the whole workspace into its one lockfile and has no per-member selection; `--package` narrows what is exported or displayed from that lockfile, and a workspace keeps no lockfile per member. [DER S-4odritdm, S-dlc2x6gf: one lockfile for the workspace; no `--package` for lock, `--package` for export and tree]
+
+### Package indexes, custom CA certificates and pip configuration
+- uv uses PyPI as the default index; `[[tool.uv.index]]` entries add indexes, and the default index is always the lowest priority however it is defined. [DOC S-tat3ywrz]
+- pip-style `--index-url` maps to uv's `--default-index` and `--extra-index-url` to `--index`; an index can also come from the environment variables `UV_INDEX` and `UV_DEFAULT_INDEX`, and a credential for a named index from environment variables too. [DOC S-tat3ywrz]
+- By default uv verifies TLS against bundled Mozilla root certificates; `--system-certs`, `UV_SYSTEM_CERTS=true` or `system-certs = true` in `uv.toml` uses the platform's certificate store instead, which uv's docs name for a corporate trust root behind a mandatory proxy. [DOC S-sa5uywzm]
+- `SSL_CERT_FILE` (a PEM bundle) or `SSL_CERT_DIR` (directories of PEM files, separated by `:` on Unix and `;` on Windows) supplies custom CA certificates; when set to a non-empty value it overrides the default certificate source entirely, so a missing path or one with no valid certificate leaves uv trusting no default certificates. [DOC S-sa5uywzm]
+- `uv pip --cert` takes a PEM bundle for one invocation and `SSL_CLIENT_CERT` names a PEM file holding a client certificate followed by its private key for mTLS; `allow-insecure-host` (a host or host:port, HTTPS only) turns verification off for named hosts. [DOC S-sa5uywzm]
+- pip reads configuration files, then environment variables, then command-line options, each overriding the one before; on Windows the global file is `C:\ProgramData\pip\pip.ini` and the per-user one `%APPDATA%\pip\pip.ini`, and `PIP_CONFIG_FILE` names another file. [DOC S-pqjyeifm]
+- A pip option becomes an environment variable as `PIP_<UPPER_LONG_NAME>` with dashes replaced by underscores (`PIP_TIMEOUT=60` is `--timeout=60`), so the index is set with `PIP_INDEX_URL`. [DER S-pqjyeifm: the naming rule and its `PIP_TIMEOUT` example; the variable named is the rule applied to `--index-url`]
+- The uv index and TLS pages read (0.12.19) say nothing of proxy environment variables (`HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY`) or of an offline install; the environment-variable reference page is generated at build time and is absent from the pinned tag's sources. [UNK: S-sa5uywzm, S-tat3ywrz]
 
 ## Reference
 - SNIPPET: a project with a `requires-python` lower bound and a `dev` dependency group; context: PEP 735 `[dependency-groups]`, uv; checked: syntax [DOC S-qo6uqong,S-pwf7njbf: `requires-python` bounds; DOC S-dxvgh2py: the `dev` group is special-cased]
