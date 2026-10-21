@@ -3,25 +3,37 @@ url: https://github.com/vishalhabib99/mcp-fuzz
 title: mcp-fuzz: runtime behavioral testing for MCP servers
 publisher: vishalhabib99 (community)
 licence: MIT (vishalhabib99/mcp-fuzz LICENSE)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-vishalhabib99
-/
+## Repository navigation
 mcp-fuzz
 Public
-Notifications
-You must be signed in to change notification settings
-Fork
-0
-Star
-1
+NotificationsYou must be signed in to change notification settings
+Fork0 (0)
+Star1 (1)You must be signed in to star a repository
+## About
+Runtime behavioral testing for MCP servers: calls every tool with schema-derived inputs and checks whether it actually behaves the way its description and schema claim.
+pypi.org/project/mcp-runtime-check/
+### Topics
+ai-agentsclifuzzingllmmcpmcp-servermodel-context-protocoltesting
+### Resources
+Readme
+MIT license
+Activity
+### Stars
+1 star
+### Watchers
+0 watching
+### Forks
+0 forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit
 ## History
-53 Commits
-53 Commits
+60 Commits
+60 Commits
 ## Folders and files
 NameName
 Last commit message
@@ -44,6 +56,7 @@ pyproject.toml
 pyproject.toml
 ## Repository files navigation
 # mcp-fuzz
+Moved into mcp-doctor (v1.25.0). Run mcp-doctor fuzz -- python server.py (pip install 'mcp-server-lint[runtime]'): same checks and flags, plus fuzz --truth and a one-line verdict. This package keeps working, but new work goes to mcp-doctor.
 Runtime behavioral testing for MCP servers.
 Real output from a live --include-destructive run against the official @modelcontextprotocol/server-memory reference server — not a synthetic example.
 mcp-doctor reads an MCP server's source code and checks whether its tools are well-documented. mcp-fuzz does the opposite: it actually launches the server and calls its tools, with inputs derived from each tool's own declared JSON schema, and checks whether the server behaves the way that schema and its description claim — does a missing required field get a structured error back, or does the server crash? Does a wrong-typed field get rejected cleanly, or does it hang?
@@ -163,7 +176,7 @@ modelcontextprotocol/server-everything
 TS
 Official reference server, run cross-language via npx. Clean pass — 9/9 read-only tools handled every bad-input case cleanly (100%/A). trigger-long-running-operation's valid call correctly timed out — it's deliberately a long-running operation, exactly the kind of result the report's own "may be a false positive" framing exists for.
 blazickjp/arxiv-mcp-server
-3.1k
+3.2k
 Python
 Found a real bug in mcp-fuzz itself, not the target: installing this repo (which pins mcp<2.0) into the same environment downgraded the shared mcp package from 2.1.1 to 1.29.1. mcp<2.0 exposes several fields under their raw camelCase wire name (isError, inputSchema, readOnlyHint); mcp>=2.0 renamed them to snake_case. Every hardcoded snake_case attribute access broke with an AttributeError the moment an older mcp happened to be installed. Fixed with a small compatibility helper that tries the current name first, falls back to the old one. 11 tools tested cleanly afterward (100%/A) — the several "valid call errored" flags are exactly the documented synthetic-input false-positive case (a placeholder "paper_id": "test" isn't a real arXiv ID).
 punitarani/fli
@@ -179,11 +192,11 @@ modelcontextprotocol/server-filesystem
 TS
 Official reference server, run against a throwaway sandbox directory. Clean pass — 6 of 10 read-only tools "valid call errored" on ENOENT: no such file, exactly the documented synthetic-input false positive: a generic placeholder string isn't a real path that exists in the sandbox. The 4 write/edit/move/create tools were correctly skipped as not read-only.
 antvis/mcp-server-chart
-4.3k
+4.4k
 TS
 The strongest real finding yet — 37.85%/F. All 27 read-only chart/diagram tools crash (not a graceful structured error) on realistic bad input: 133 of 214 missing-required/wrong-type calls raised a raw internal exception through as a protocol-level error instead. generate_bar_chart alone: omitting the required data array → Cannot read properties of null (reading 'map'); passing the wrong type for data → e.map is not a function; a wrong-typed title even crashed a downstream call to a remote rendering API with an HTTP 500. Every one of these is a completely realistic mistake a real LLM agent could make (a hallucinated missing or wrong-typed argument), not an artifact of unrealistic synthetic data — the strongest, most legitimate signal this tool has produced. Filed upstream — traced to an already-merged-but-unreleased fix (main's 9fd0bb4/#292), confirmed and commented.
 haris-musa/excel-mcp-server
-4.1k
+4.2k
 Python
 Clean pass — 6 read-only tools handled all 31 bad-input cases cleanly (100%/A). 19 write tools correctly skipped as not read-only.
 czlonkowski/n8n-mcp
@@ -207,11 +220,11 @@ qdrant/mcp-server-qdrant
 Python
 Clean pass — 100%/A, 0 crashes across 8 bad-input calls on both tools, tested with --include-destructive against a fully local embedded store (QDRANT_LOCAL_PATH, no external service). Both "valid" calls errored with "All connection attempts failed" — likely qdrant-client's AsyncQdrantClient not fully supporting its own embedded local-storage mode, not confirmed as an mcp-server-qdrant or mcp-fuzz bug, and not chased further (out of scope for today's pass; the bad-input crash-resilience score itself is unaffected).
 upstash/context7
-62k
+62.6k
 TS
 Widely-used documentation-lookup server (@upstash/context7-mcp). Clean pass — 100%/A, 0 crashes across 8 bad-input calls on both of its tools (resolve-library-id, query-docs), both annotated read-only and tested. Largest-star repo checked so far.
 wonderwhy-er/DesktopCommanderMCP
-9k
+9.9k
 TS
 Clean pass — 100%/A, 0 crashes across 49 bad-input calls on 14 of 26 tools (the other 12 — write_file, start_process, kill_process, etc. — correctly skipped as not read-only). 5 "valid call errored" flags (read_file, get_file_info, get_more_search_results, read_process_output, get_prompts) are all the documented synthetic-input false positive: a placeholder path/PID/session ID that genuinely doesn't exist on the runner, not a real bug.
 modelcontextprotocol/server-sqlite
@@ -227,7 +240,7 @@ GongRzhe/Office-Word-MCP-Server
 Python
 Clean pass — 100%/A, 0 crashes across 31 bad-input calls on 11 of 54 tools (the other 43 correctly skipped as not read-only). One notable side-observation, not a scored crash: the process prints "Loading configuration from .env file..." to stdout at import time (main.py:12, a plain print() before load_dotenv()), which is a real stdio-transport protocol hygiene issue — any unguarded stdout write can corrupt the JSON-RPC stream for a client that doesn't defensively skip malformed lines. Didn't affect this run's scored results (the mcp SDK's client logged and skipped the bad line rather than dying), but a stricter client could break on it.
 brave/brave-search-mcp-server
-1.4k
+1.5k
 TS
 Official Brave server. Couldn't be run at all until --env existed (see below) — refuses to start without BRAVE_API_KEY. Tested with a dummy key and --include-destructive (none of its 8 tools are annotated readOnlyHint): clean, 100%/A, 0 crashes across 95 bad-input calls. Every "valid call errored" flag is the real API correctly rejecting the fake key (SUBSCRIPTION_TOKEN_INVALID) — the standard synthetic-input caveat, one layer removed (a fake credential rather than a fake data value).
 financial-datasets/mcp-server
@@ -235,19 +248,19 @@ financial-datasets/mcp-server
 Python
 Run with a dummy FINANCIAL_DATASETS_API_KEY and --include-destructive (none of its 11 tools are annotated readOnlyHint). Clean, 100%/A, 0 crashes across 45 bad-input calls — every call gracefully returns a generic "unable to fetch" message rather than raising, because make_request catches every exception itself (see mcp-reality-check's dogfooding of the same repo for the double-edged side of that same design: crash-proof here, but also unable to signal a real failure as an error).
 DeusData/codebase-memory-mcp
-42.7k
+45.7k
 C
-Native binary (darwin-arm64 release, checksum-verified), run directly with no build step. Default run tested only 1 of 15 tools — pulling the raw tools/list response showed 13 of 15 tools are annotated destructiveHint:true/readOnlyHint:false despite being pure read/query ops (search_graph, get_architecture, etc. all carry the identical annotation object, apparently a shared default rather than per-tool). Not a bug in mcp-fuzz — it correctly respected the (mislabeled) hints. Re-run with --include-destructive: clean, 100%/A, 0 crashes across 99 bad-input calls on all 15 tools; every "valid call errored" flag is the standard synthetic-input false positive (a placeholder project/path that was never indexed), with a genuinely helpful structured error message every time, even for index_repository against a nonexistent repo path. Filed upstream on the annotation mislabeling.
+Native binary (darwin-arm64 release, checksum-verified), run directly with no build step. Default run tested only 1 of 15 tools — pulling the raw tools/list response showed 13 of 15 tools are annotated destructiveHint:true/readOnlyHint:false despite being pure read/query ops (search_graph, get_architecture, etc. all carry the identical annotation object, apparently a shared default rather than per-tool). Not a bug in mcp-fuzz — it correctly respected the (mislabeled) hints. Re-run with --include-destructive: clean, 100%/A, 0 crashes across 99 bad-input calls on all 15 tools; every "valid call errored" flag is the standard synthetic-input false positive (a placeholder project/path that was never indexed), with a genuinely helpful structured error message every time, even for index_repository against a nonexistent repo path. Filed upstream on the annotation mislabeling. The maintainer relabeled the ten read-only query tools in v0.11.0 and opened a fix for the last two (in review as of 2026-09-28).
 arabold/docs-mcp-server
-1.7k
+1.8k
 TS
 Run via npx. Well-annotated server (6 tools correctly readOnlyHint, unlike codebase-memory-mcp above). Clean on both passes — default: 100%/A, 0 crashes across 15 bad-input calls on the 6 read-only tools; --include-destructive: still 100%/A, 0 crashes across all 10 tools. All "valid call errored" flags are the standard synthetic-input false positive (a placeholder library/job ID that doesn't exist). No mcp-fuzz bug this round — see mcp-doctor's pass on the same repo for two real security-heuristic false positives found there instead.
 oraios/serena
-29.2k
+29.9k
 Python
 The deepest run yet: rather than the usual synthetic/placeholder target, actually stood up a real Python language server (installed uv, which serena shells out to) against a small real project so the LSP-backed symbol tools (find_symbol, get_symbols_overview, rename_symbol, etc.) could genuinely execute instead of failing on missing tooling. --include-destructive: 100%/A, 0 crashes across 149 bad-input calls on all 28 real tools. Every "valid call errored" flag is a well-typed, specific exception (FileNotFoundError, NotADirectoryError, a symbol-resolution ValueError with a clear message) — never a raw traceback — the standard synthetic-input pattern, just against a real LSP backend this time instead of a stub. No mcp-fuzz bug this round; see mcp-doctor's pass on the same repo for a real description-detection bug found there instead. Re-run after the latency check shipped: 28/28 tools checked, 92.9%/B — create_text_file (966ms, 9.4x the server's own 102ms median) and get_current_config (469ms, 4.6x median) both flagged as real relative outliers among otherwise-fast tools. Consistent with this check's own documented honesty caveat (one real call per tool, not a load test) — worth a manual look, not filed as a confirmed bug on a single sample. Re-run again after the response-size check shipped: 28/28 tools checked, 85.7%/C — none crossed the 20,000-char absolute threshold (the test project is small), but 4 real relative outliers: onboarding (2,023 chars, 17.2x median — plausibly by design, it's a full onboarding-instructions dump), get_current_config (1,578 chars, 13.4x), get_diagnostics_for_file (422 chars, 3.6x), activate_project (379 chars, 3.2x). Same caveat as the latency findings — worth a look, not a confirmed bug on a single small-project sample.
 sooperset/mcp-atlassian
-5.9k
+6k
 Python
 Run with dummy Jira/Confluence credentials via --env — the biggest real target for the full expanded checklist so far. 58/98 tools tested (40 correctly skipped as not read-only), 100%/A crash resilience, 100%/A latency, 100%/A response size, and (with --concurrency 3) 100%/A concurrency, 0 flagged across all four. A genuinely clean pass on a large, real, actively-maintained repo — an honest result, not a weak search for something to find.
 WillDent/pipedrive-mcp-server
@@ -255,9 +268,29 @@ WillDent/pipedrive-mcp-server
 TS
 First real --url/--header (Streamable HTTP) run, not the fixture server — built from source, started with MCP_TRANSPORT=http and a dummy PIPEDRIVE_API_TOKEN, called with --header "Authorization=Bearer ...". 16/16 tools connected and tested over real HTTP with a real auth header, 100%/A crash resilience, latency, and response size. Every "valid call errored" flag is the expected shape for a dummy token: PIPEDRIVE_REQUEST_FAILED, a clean structured error the server's own code produces wrapping the real (rejected) Pipedrive API call — not a crash, and not mcp-fuzz's to fix.
 ChromeDevTools/chrome-devtools-mcp
-52.6k
+52.8k
 TS
 Google's official Chrome DevTools server (v1.10.1, run headless and isolated via npx). Clean on crash resilience: 100%/A, 0 crashes and 0 timeouts across 38 bad-input calls on the 8 tools annotated read-only (22 others skipped as not read-only). One real latency flag: get_console_message took 436ms against a ~1ms server median (85.7%/C on latency), the same flag the v0.10.1 run found and one that survives the new 100ms floor. Response size 100%/A.
+datalayer/jupyter-mcp-server
+1.3k
+Python
+Run against a throwaway local JupyterLab with --include-destructive (all 18 tools; every write lands in a scratch workspace). 100%/A crash resilience: 0 crashes, 0 timeouts across 52 bad-input calls. A real bug showed up in what happened next, not in any single call: after the fuzz called connect_to_jupyter with an invalid URL, every later tool failed. Reproduced by hand: connect_to_jupyter returned "Successfully connected" for a URL with no scheme, a wrong token and a dead port alike, because it only updates config and never contacts the server. Fix sent upstream as PR #480: it checks GET /api/status with the token before switching, and if the check fails it errors and keeps the old connection. 10 tests. Open, not merged.
+doobidoo/mcp-memory-service + chrisryugj/korean-law-mcp
+2k + 2.6k
+Python + TS
+Clean passes from the same batch. mcp-memory-service ran on a scratch SQLite database with --include-destructive: all 28 tools, 158 bad-input calls, 100%/A. Launch it with python -m mcp_memory_service.server: the mcp-memory-server script starts Streamable HTTP, and a stdio fuzz just waits. korean-law-mcp ran with no API key: its 10 exposed tools returned a structured error on all 63 bad-input calls, 100%/A (valid calls fail on the missing key, as expected).
+atomicstrata/llm-wiki-compiler
+2.2k
+TS
+llmwiki serve run against a scratch wiki with --include-destructive and no provider key: 16 tools, 37 bad-input calls, 100%/A (LLM-backed tools fail fast on the missing key, as intended). The bug was in the transport, not the grade: the stderr log showed the client rejecting a line it couldn't parse, * \x1b[34mIngesting [file]: test\x1b[0m. A raw stdio client confirmed that ingest_source prints its progress and a short-content warning to stdout, which is the JSON-RPC stream in stdio mode. The repo's OKF tools already wrap their handlers in a withQuiet "stdio-stream guard"; its 10 wiki tools didn't. Fix sent upstream as PR #270, with a test that fails on main. Open, not merged. Gap in mcp-fuzz itself: the SDK client skips the bad line, so nothing in the report flags it. A server that writes non-JSON to stdout should be its own finding.
+chunkhound/chunkhound
+1.4k
+Python
+Doesn't start on a fresh install: pip install chunkhound (6.0.0) resolves mcp 2.3.0, and startup fails with 'Server' object has no attribute 'call_tool', because mcp>=1.16.0 has no upper bound and the server uses the 1.x decorator API. Already reported upstream (#405); a maintainer had asked whether 6.0.0 fixed it, so I confirmed it doesn't and offered the one-line <2 pin rather than taking the fix over. With mcp 1.30.0 it starts, and both tools are 100%/A (11 bad-input calls, --no-embeddings).
+bytebase/dbhub
+3.6k
+TS
+Run on a scratch SQLite file with --include-destructive. Clean: both default tools (execute_sql, search_objects), 9 bad-input calls, 100%/A. DSN note: the path goes after sqlite://, so an absolute path is sqlite:///abs/path (with an extra slash, startup fails with "unable to open database file").
 ### Remote servers: HTTP-only crashes are unrecoverable, unlike stdio
 Adding --url/--header support surfaced a real robustness bug, not just a missing feature. _call_with_outcome's crash handler always reconnects after a crash/timeout — for a stdio target that reconnect (relaunch the subprocess) virtually always succeeds, so a reconnect-after-crash itself failing was never really exercised. Over HTTP it's the expected outcome the moment a tool kills the remote server (verified with the fixture's own kills_process tool, which calls os._exit()): mcp-fuzz doesn't own that process and has no way to relaunch it. Before the fix, that failed reconnect raised an unhandled ConnectError straight out of run_fuzz, crashing the entire run instead of being reported. Fixed by tracking conn.unreachable and reporting report.terminated_early with the tool that caused it, marking every tool after it as skipped rather than repeating the same doomed call. 6 new tests, including a real end-to-end one (launches the fixture over Streamable HTTP as its own subprocess, confirms terminated_early names kills_process and later tools are skipped) alongside a matching stdio test confirming the opposite — relaunch still succeeds there, terminated_early stays None.
 ### A real usability gap: no way to pass an API key to the target server

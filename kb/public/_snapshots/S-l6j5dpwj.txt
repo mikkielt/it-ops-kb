@@ -3,23 +3,16 @@ url: https://github.com/microsoft/Microsoft365DSC/releases
 title: Microsoft365DSC GitHub releases
 publisher: GitHub (microsoft/Microsoft365DSC)
 licence: MIT
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-Microsoft365DSC
-/
-Microsoft365DSC
-Public
-Notifications
-You must be signed in to change notification settings
-Fork
-679
-Star
-2.4k
+## Repository navigation
 # Releases: Microsoft365DSC/Microsoft365DSC
 Releases · Microsoft365DSC/Microsoft365DSC
 ## Release list
 Previous Next
+Release 2.26.1015.1
+Release 2.26.1007.1
 Release 1.26.909.1
 Release 1.26.902.1
 Release 1.26.819.1
@@ -28,13 +21,244 @@ Release 1.26.805.1
 Release 1.26.729.2
 Release 1.26.729.1
 Release 1.26.722.1
-Release 1.26.715.1
-Release 1.26.708.1
 Previous Next
+## Release 2.26.1015.1
+Release 2.26.1015.1
+Latest
+Latest
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+github-actions
+released this
+14 Oct 22:44
+2.26.1015.1
+ec5bf30
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+AADCustomSecurityAttributeDefinition
+Updated the allowedValues property to be sorted by Id.
+AADDomainFederation
+Added support for the SystemBrowserEnabledOn property.
+FIXES #7536
+SCDLPCompliancePolicy
+Added support for the DisplayName property.
+FIXES #7535
+Fixed an issue where creating or updating a policy failed when EndpointDlpLocation
+or EndpointDlpLocationException was set.
+FIXES #7522
+SCDLPComplianceRule
+Added support for the DisplayName property.
+FIXES #7535
+DEPENDENCIES
+Updated DSCParser to version 3.1.0.7.
+Updated M365DSC.PSDSC to version 3.1.10.
+Assets
+2
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+## Release 2.26.1007.1
+Release 2.26.1007.1
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+github-actions
+released this
+08 Oct 10:45
+2.26.1007.1
+b89a5c6
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+AADAccessReviewDefinition
+[BREAKING CHANGE] Renamed property SettingsValue to Settings to match the
+name Microsoft Graph uses.
+AADAdministrativeUnit
+Fixed an issue where resolving a scoped role member could throw an error.
+FIXES #7457
+AADAgreement
+[BREAKING CHANGE] Removed property AcceptanceStatement. It was not part of the
+Graph Schema definition for the resource.
+Added support for the TermsExpiration property.
+Fixed an issue where an update reset IsViewingBeforeAcceptanceRequired and
+silently ignored properties that can only be set at creation.
+Fixed an issue where TermsExpiration.StartDateTime was reported as drifted when
+written with fractional seconds.
+Added support for publishing localized agreement files through FileName, Language
+and FileData. FileData accepts a base64-encoded PDF or the text of a PDF.
+Fixed an issue where FileName and Language were reported from the default file
+instead of the file of the configured language.
+AADApplication
+[BREAKING CHANGE] Renamed property Permissions to RequiredResourceAccess
+to match the name Microsoft Graph uses.
+Added support for the IsDeviceOnlyAuthSupported, IsDisabled,
+NativeAuthenticationApisEnabled, Notes, SamlMetadataUrl, Tags and
+TokenEncryptionKeyId properties.
+Updated Owners to use DisplayName for Service Principal objects.
+AADAppManagementPolicy
+Fixed an issue where an existing policy was not found by its display name and a
+duplicate was created on every run.
+Fixed an issue where MaxLifetime and RestrictForAppsCreatedAfterDateTime were
+always reported as drifted.
+AADAuthenticationMethodPolicyVoice
+Added support for the CallerIdNumber property.
+AADAuthenticationMethodPolicyX509
+Added support for the CertificateAuthorityScopes and IssuerHintsConfiguration
+properties.
+AADAuthorizationPolicy
+[BREAKING CHANGE] Moved all DefaultUserRole* properties to the new
+DefaultUserRolePermissions complex property type for separation.
+Added support for the EnabledPreviewFeatures property.
+Fixed an issue where a comparison threw when the tenant returned no value for a
+collection property.
+AADB2BManagementPolicy
+Fixed an issue where the settings were reported as in the desired state when they
+could not be read.
+AADB2CAuthenticationMethodsPolicy
+[BREAKING CHANGE] Removed the Ensure property. The settings always exist and cannot
+be removed.
+AADClaimsMappingPolicy
+[BREAKING CHANGE] Removed the Description property.
+Fixed an issue where creating or updating a policy failed with
+A 'StartArray' node was expected.
+AADConditionalAccessPolicy
+[BREAKING CHANGE] Changed TermsOfUse to a collection, so a policy that requires
+more than one agreement carries all of them.
+Added support for the SignInFrequencyAuthenticationType property.
+Added value hidden to property ServicePrincipalRiskLevels.
+An agreement that cannot be found in the tenant is now reported with a warning and
+left out of the policy.
+Fixed an issue where creating or updating a policy with IncludePlatforms or
+ExcludePlatforms failed.
+Fixed an issue where DisableResilienceDefaultsIsEnabled = $false always reported
+drift.
+AADCrossTenantAccessPolicyConfigurationDefault
+Added support for the AutomaticUserConsentSettings, AppServiceConnectInbound,
+BlockServiceProviderOutboundAccess, M365CollaborationOutbound and
+M365CollaborationInbound properties.
+FIXES #7436
+Fixed an issue where the loop resolving user and group targets walked one entry past
+the end of the collection.
+AADCrossTenantAccessPolicyConfigurationPartner
+Added support for the AppServiceConnectInbound,
+BlockServiceProviderOutboundAccess, M365CollaborationInbound, TenantRestrictions
+and M365CollaborationOutbound properties.
+FIXES #7436
+Fixed an issue where creating a partner configuration with IdentitySynchronization
+failed with Directory_ObjectNotFound: Unable to read the company information from the directory.
+Fixed an issue where updating IdentitySynchronization failed when the partner had
+no identity synchronization policy yet.
+AADCrossTenantIdentitySyncPolicyPartner
+Added support for the ExternalCloudAuthorizedApplicationId and
+IsRoleEnabledGroupSyncAllowed properties.
+AADCustomAuthenticationExtension
+[BREAKING CHANGE] Renamed the property ClientConfigurationTimeoutMilliseconds to
+ClientConfigurationTimeoutInMilliseconds to match the name Microsoft Graph uses.
+Fixed an issue where updating an extension with claims failed.
+AADCustomSecurityAttributeDefinition
+Fixed an issue where allowed values were not created with a new definition.
+Fixed an issue where existing allowed values were added again.
+Fixed an issue where a deactivated definition was reported as present.
+Fixed an issue where a definition from another attribute set was returned.
+AADDeviceRegistrationPolicy
+[BREAKING CHANGE] Changed MultiFactorAuthConfiguration from a boolean to the
+values notRequired and required, matching the type Microsoft Graph defines.
+Added support for the AzureADRegistration property.
+Fixed an issue where properties left out of the configuration were reset to their
+types initial value, e.g. UserDeviceQuota to 0. They now preserve their value.
+AADDomain
+Fixed an issue where creating a domain failed with ResourceWriteException.
+AADFederationConfiguration
+Fixed an issue where updating a configuration failed with
+Directory_ConcurrencyViolation and changes to Domains were not applied.
+AADFilteringProfile
+Changed Priority, on the profile and on its associated policies, to a 64 bit
+integer to match the type Microsoft Graph defines.
+Fixed an issue where linked policies that do not exist were silently ignored.
+AADGroup
+Added support for the Theme and WritebackConfiguration properties.
+Fixed a failed license assignment only being written to verbose output instead of
+failing the operation.
+Fixed an issue where specifying a filter during export would throw a Graph exception.
+FIXES #7489
+Fixed an issue where creating or updating a group failed with
+Request_ResourceNotFound.
+Fixed an issue where adding owners or members to a new group failed.
+Fixed an issue where creating a group failed with Request_ResourceNotFound when a
+deleted group with the same name was restored.
+Fixed an issue where the application used to authenticate was added as an owner of a
+new group.
+AADGroupEligibilitySchedule
+[BREAKING CHANGE] Renamed the embedded class MSFT_MicrosoftGraphRecurrenceRange1 to
+MSFT_MicrosoftGraphRecurrenceRange.
+[BREAKING CHANGE] Renamed the embedded class MSFT_MicrosoftGraphRecurrencePattern1
+to MSFT_MicrosoftGraphPrivilegedAccessRecurrencePattern.
+[BREAKING CHANGE] Renamed the embedded class MSFT_MicrosoftGraphPatternedRecurrence1
+to MSFT_MicrosoftGraphPrivilegedAccessPatternedRecurrence.
+The export now only queries groups that are enabled in PIM for Groups instead of every
+group in the tenant. Requires the PrivilegedAccess.Read.AzureADGroup permission.
+Fixed an issue where Ensure = 'Absent' did not remove the schedule when PrincipalType was
+not specified.
+Fixed an issue where ScheduleInfo dates were reported as drifted.
+AADGroupEligibilityScheduleSettings
+Replaced the deprecated /beta/privilegedAccess/aadGroups/resources API, which stops
+returning data on October 28, 2026, with the PIM for Groups resources API. Requires the
+PrivilegedAccess.Read.AzureADGroup and GroupMember.Read.All permissions.
+AADHomeRealmDiscoveryPolicy
+[BREAKING CHANGE] Removed the Description property.
+AADIdentityAPIConnector
+[BREAKING CHANGE] Replaced the flattened Username, Password and Certificates
+properties with the AuthenticationConfiguration complex property. Its dataType
+member carries the odata subtype and CertificateList carries the certificates.
+Excluded Password and Pkcs12Value from the comparison, because Microsoft Graph
+returns neither the password nor the certificate material on a read.
+AADEntitlementManagementAccessPackage
+Fixed an issue where a resource role scope naming its resource by object id reported
+drift on every run and re-applied the access package.
+FIXES #7412
+Fixed an issue where updating an access package without
+AccessPackageResourceRoleScopes failed and removed its role scopes.
+AADEntitlementManagementAccessPackageAssignmentPolicy
+[BREAKING CHANGE] Renamed sub-property Sequence to SequencePosition to
+avoid a conflict with a reserved PowerShell keyword.
+Added support for the AccessPackageNotificationSettings and
+VerifiableCredentialSettings properties.
+Fixed an issue where AccessReviewSettings.StartDateTime was parsed with the
+culture of the machine.
+AADEntitlementManagementAccessPackageCatalogResource
+[BREAKING CHANGE] Renamed sub-property Sequence to SequencePosition to
+avoid a conflict with a reserved PowerShell keyword.
+Fixed an issue where naming the catalog by its identifier reported drift on every
+run and never converged.
+Fixed an issue where naming an AadGroup or AadApplication resource by object id
+reported drift on every run and never converged.
+FIXES [#7386](https://g...
+Read more
+Assets
+2
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
 ## Release 1.26.909.1
 Release 1.26.909.1
-Latest
-Latest
 #
 Choose a tag to compare
 ## Sorry, something went wrong.
@@ -413,238 +637,6 @@ Updated MSCloudLoginAssistant to version 1.1.71.
 MISC
 Reduced time to export Intune policies by up to 50%.
 Updated function help descriptions and added / removed parameters.
-Assets
-2
-Loading
-### Uh oh!
-There was an error while loading. Please reload this page.
-## Release 1.26.715.1
-Release 1.26.715.1
-#
-Choose a tag to compare
-## Sorry, something went wrong.
-Filter
-Loading
-## Sorry, something went wrong.
-### Uh oh!
-There was an error while loading. Please reload this page.
-## No results found
-View all tags
-FabienTschanz
-released this
-15 Jul 21:27
-1.26.715.1
-8c0f234
-This commit was created on GitHub.com and signed with GitHub’s verified signature.
-GPG key ID: B5690EEEBB952194
-Verified
-Learn about vigilant mode.
-AADConditionalAccessPolicy
-Updated the code to return a GUID for IncludeApplications and
-ExcludeApplications if the input already contains that GUID.
-FIXES #7118
-AADIdentityGovernanceProgram
-Deprecated resource. It is superseded by the access review resources.
-AADServicePrincipal
-Fixed an issue where attempting to resolve 3rd-party SPNs would fail.
-Fixed several issues when creating or updating an SPN.
-AADUser
-Deprecate property PasswordNeverExpires
-FIXES #7339
-Fixed issue with how BusinessPhones property was being sent when trying to
-set that value
-AzureBillingAccountPolicy
-Added SubscriptionId parameter to specify the Azure subscription
-that is used to connect to.
-AzureBillingAccountsAssociatedTenant
-Added SubscriptionId parameter to specify the Azure subscription
-that is used to connect to.
-AzureBillingAccountScheduledAction
-Added SubscriptionId parameter to specify the Azure subscription
-that is used to connect to.
-AzureBillingAccountsRoleAssignment
-Added SubscriptionId parameter to specify the Azure subscription
-that is used to connect to.
-AzureDiagnosticSettings
-Added SubscriptionId parameter to specify the Azure subscription
-that is used to connect to.
-AzureDiagnosticSettingsCustomSecurityAttribute
-Added SubscriptionId parameter to specify the Azure subscription
-that is used to connect to.
-AzureRoleAssignmentScheduleRequest
-Added SubscriptionId parameter to specify the Azure subscription
-that is used to connect to.
-AzureRoleAssignmentScheduleRequest
-Added SubscriptionId parameter to specify the Azure subscription
-that is used to connect to.
-AzureRoleDefinition
-Added SubscriptionId parameter to specify the Azure subscription
-that is used to connect to.
-FIXES #7321
-AzureRoleEligibilityScheduleRequest
-Added SubscriptionId parameter to specify the Azure subscription
-that is used to connect to.
-AzureRoleEligibilityScheduleSettings
-Added SubscriptionId parameter to specify the Azure subscription
-that is used to connect to.
-EXOAvailabilityAddressSpace
-Fixed an issue where the Credentials property had the correct
-parameter type in its definition.
-EXODistributionGroup
-Deprecate property Notes
-EXOIRMConfiguration
-Deprecate property EnablePortalTrackingLogs
-EXOManagementRoleEntry
-Deprecate property Type
-EXOMigration
-Fixed unit-tests so datetimes are parsed in US-format
-EXOPlace
-Deprecate property Desks
-IntuneDeviceEnrollmentScopeConfigurationMam
-Fixed issue where function Get-CompareParameters was not being exported
-IntuneDeviceEnrollmentScopeConfigurationMdm
-Fixed issue where function Get-CompareParameters was not being exported
-IntuneWifiConfigurationPolicyIOS
-Added wpa3Personal to the WifiSecurityType property.
-SettingsCatalogHelper
-Fixed an issue where complex administrative template names
-were not handled correctly.
-Teams
-Updated resource settings to use the Teams Reader role and remove Graph
-permissions from resources that do not require Microsoft Graph modules.
-TeamsCallQueue
-Added new properties AutoRecordingTemplateId, CallbackEmailNotificationTarget,
-CallbackOfferAudioFilePromptResourceId, CallbackOfferTextToSpeechPrompt,
-CallbackRequestDtmf, CallToAgentRatioThresholdBeforeOfferingCallback,
-ComplianceRecordingForCallQueueTemplateId, CustomAudioFileAnnouncementForCR,
-CustomAudioFileAnnouncementForCRFailure, EnableNoAgentSharedVoicemailSystemPromptSuppression,
-EnableNoAgentSharedVoicemailTranscription, EnableOverflowSharedVoicemailSystemPromptSuppression,
-EnableTimeoutSharedVoicemailSystemPromptSuppression, IsCallbackEnabled, NoAgentAction,
-NoAgentActionCallPriority, NoAgentActionTarget, NoAgentApplyTo,
-NoAgentDisconnectAudioFilePrompt, NoAgentDisconnectTextToSpeechPrompt,
-NoAgentRedirectPersonAudioFilePrompt, NoAgentRedirectPersonTextToSpeechPrompt,
-NoAgentRedirectPhoneNumberAudioFilePrompt, NoAgentRedirectPhoneNumberTextToSpeechPrompt,
-NoAgentRedirectVoiceAppAudioFilePrompt, NoAgentRedirectVoiceAppTextToSpeechPrompt,
-NoAgentRedirectVoicemailAudioFilePrompt, NoAgentRedirectVoicemailTextToSpeechPrompt,
-NoAgentSharedVoicemailAudioFilePrompt, NoAgentSharedVoicemailTextToSpeechPrompt,
-NumberOfCallsInQueueBeforeOfferingCallback, OverflowActionCallPriority,
-ServiceLevelThresholdResponseTimeInSecond, SharedCallQueueHistoryTemplateId,
-ShiftsSchedulingGroupId, ShiftsTeamId,
-ShouldOverwriteCallableChannelProperty, TimeoutActionCallPriority,
-WaitTimeBeforeOfferingCallbackInSecond, WelcomeTextToSpeechPrompt
-TeamsGuestMessagingConfiguration
-Deprecated property UsersCanDeleteBotMessages
-TeamsOnlineVoicemailUserSettings
-Deprecated property OofGreetingFollowCalendarEnabled
-TeamsTenantNetworkSite
-Deprecated property SiteAddress
-M365DSCCheckProperties
-Fixed an issue with function Get-PropertyReport where it wasn't working
-because the Teams module was being loaded last and causing conflicts
-Added authentication methods ApplicationSecret, AccesstTokens and
-ManagedIdentity as internal M365DSC properties that should to be ignored
-M365DSCDllLoader
-Fixed an issue when trying to load assemblies that were already loaded.
-M365DSCDocGenerator
-Moved function Get-TemporaryPath to M365DSCUtil and use $env:TEMP
-directly instead of the function's output
-M365DSCErrorHandler
-Fixed an issue when writing in parallel to the same export file.
-M365DSCExportUtil
-Fixed a formatting issue with CertificatePassword during export.
-Removed usage of function Resolve-Credentials and instead just use the
-appropriate hardcoded strings
-M365DSCModuleMgmt
-Fixed invalid arg used in Confirm-M365DSCLoadedModule when run in Windows Powershell 5.1
-M365DSCReverse
-Fixed an issue with Credential and CertificatePassword parameters.
-Fixed an issue generating the blueprint if using Azure Automation with
-Credential parameter.
-Fixed an issue when exporting resources in parallel.
-Removed usage of function Save-Credentials since it's not required any
-longer.
-M365DSCUtil
-Added function Get-TemporaryPath taken from M365DSCDocGenerator and use
-its output to assign $env:TEMP variable
-Enabled parallel export on Assert-M365DSCBlueprint
-DEPENDENCIES
-Updated MSCloudLoginAssistant to version 1.1.69.
-MISC
-Added Docker image publishing for Windows and Linux platforms.
-Updated workflow triggers for GitHub Actions.
-Stopped pinning Pester dependency to 5.7.1 on Docker images since all
-tests were made compatible in previous release with version 6.x
-Added License Requirements section to README.md documenting Microsoft
-365 E5 / Defender for Office 365 Plan 2 licensing requirements for EXO
-Defender resources.
-Assets
-2
-Loading
-### Uh oh!
-There was an error while loading. Please reload this page.
-## Release 1.26.708.1
-Release 1.26.708.1
-#
-Choose a tag to compare
-## Sorry, something went wrong.
-Filter
-Loading
-## Sorry, something went wrong.
-### Uh oh!
-There was an error while loading. Please reload this page.
-## No results found
-View all tags
-FabienTschanz
-released this
-08 Jul 22:31
-1.26.708.1
-f8946b4
-This commit was created on GitHub.com and signed with GitHub’s verified signature.
-GPG key ID: B5690EEEBB952194
-Verified
-Learn about vigilant mode.
-AADAdministrativeUnit
-Added test for duplicated DisplayName across AUs
-Fixed an issue that made unit tests under Windows PowerShell fail.
-AADCustomSecurityAttributeDefinition
-Fixed an issue where missing allowed values were not added to existing
-custom security attribute definitions.
-FIXES #7305
-AADEntitlementManagementAccessPackageCatalog
-Fixed an issue that made unit tests under Windows PowerShell fail.
-AADGroup
-Fixed an issue where GroupTypes would be returned as a null object.
-FIXES #7253
-AADTenantAppManagementPolicy
-Fixed an issue where the RestrictForAppsCreatedAfterDateTime timestamp
-was incorrectly converted to a DateTime object.
-FIXES #7291
-AzureBillingAccountScheduledAction
-Fixed an issue that made unit tests under Windows PowerShell fail.
-IntuneDeviceCompliancePolicyMacOS
-Fixed an issue where ScheduledActionsForRule was not compared correctly.
-M365DSCExportUtil
-Updated the export to use the Microsoft365DSC module path as base for the
-resource import.
-M365DSCReport
-Removed check for PowerShell remoting.
-M365DSCTelemetryEngine
-Removed the output when connecting to Microsoft Graph for telemetry.
-FIXES #7302
-M365DSCUtil
-Added ApplicationSecret, ManagedIdentity AccessTokens to the
-Assert-M365DSCBlueprint function.
-Fixed an issue with the foreground color when run under Linux.
-Fixed an issue where $env:TEMP was not defined when run under Linux.
-MISC
-Added Dockerfile and an ancillary script which is used to install
-Microsoft365DSC module and its dependencies on that Windows docker image.
-Fixed an issue where assignments through a policy set were exported for
-resources that were not of the IntunePolicySets type.
-Fixed unit tests so that they all pass under both Windows PowerShell and
-PowerShell 7.
-Updated all unit tests for Pester v6.0.0.
-Updated the drift event to mask authentication parameters in the message.
 Assets
 2
 Loading

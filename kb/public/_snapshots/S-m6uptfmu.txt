@@ -3,7 +3,7 @@ url: https://www.nist.gov/artificial-intelligence/ai-agent-standards-initiative
 title: NIST AI Agent Standards Initiative
 publisher: NIST (CAISI)
 licence: US Government work (NIST: public information, may be copied)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 Skip to main content
@@ -15,7 +15,7 @@ Secure .gov websites use HTTPS
 A lock (
 ) or https:// means you’ve safely connected to the .gov website. Share sensitive information only on official, secure websites.
 https://www.nist.gov/artificial-intelligence/ai-agent-standards-initiative
-## Artificial intelligence
+## Super intelligence
 # AI Agent Standards Initiative
 ## Ensuring a Trusted, Interoperable, and Secure Agentic Frontier
 The AI Agent Standards Initiative ensures that the next generation of AI—agents capable of autonomous actions—is widely adopted with confidence. By fostering industry-led technical standards and open protocols, NIST aims to catalyze an ecosystem where agents function securely on behalf of users and interoperate smoothly across the digital landscape while cementing U.S. dominance at the technological frontier.
@@ -36,6 +36,6 @@ Listening Sessions on Barriers to AI Adoption: CAISI will host virtual workshops
 Respond to RFIProvide input on AI agent security to shape the InitiativeDeadline: March 9
 Comment on the paperShare feedback on the Identity and Authorization concept paperDeadline: April 2
 Join listening sessionsRegister interest for upcoming sector-specific listening sessionsDeadline: March 20
-Artificial intelligence and Standards
+Super intelligence and Standards
 Created February 17, 2026, Updated August 14, 2026
 Was this page helpful?

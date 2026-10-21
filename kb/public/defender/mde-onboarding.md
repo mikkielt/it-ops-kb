@@ -3,7 +3,7 @@ topic: defender/mde-onboarding
 priority: P1
 applies_to: "Microsoft Defender for Endpoint device onboarding/offboarding (Windows client and server), docs retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
-sources: [S-tkwapxy3, S-5ic2ryhm, S-ka3u6g4r, S-3wd7aoot, S-7aahdyrw, S-kgoe3xkx, S-jzszwiht, S-ptvxamvq, S-v7jhlfyz, S-gmhqowfa, S-bw54wpjr, S-qulvb6va, S-xzhocopu, S-qt5r5zbp, S-wqwf7kt5, S-mrquhzdn, S-6yngu4zf, S-tetnxwlo, S-g53qt6ya, S-334n7pqs, S-zimmfodc, S-vmgy5mjp, S-hssydh4l]
+sources: [S-tkwapxy3, S-5ic2ryhm, S-ka3u6g4r, S-3wd7aoot, S-7aahdyrw, S-kgoe3xkx, S-jzszwiht, S-ptvxamvq, S-v7jhlfyz, S-gmhqowfa, S-bw54wpjr, S-qulvb6va, S-xzhocopu, S-qt5r5zbp, S-wqwf7kt5, S-mrquhzdn, S-6yngu4zf, S-tetnxwlo, S-g53qt6ya, S-334n7pqs, S-zimmfodc, S-vmgy5mjp, S-hssydh4l, S-okh6b7oc]
 status: complete
 ---
 
@@ -31,7 +31,7 @@ connectivity for the EDR sensor is configured separately from Defender Antivirus
 - Server onboarding methods for Windows Server 2012 R2+, Windows Server 1803+, and Azure Stack HCI OS 23H2+: local script (onboarding package), Microsoft Defender for Cloud/"Defender for Servers", Microsoft Configuration Manager, Group Policy, VDI scripts, or onboarding through Defender for Cloud, using the "modern, unified solution" for Server 2016 and 2012 R2. [DOC S-5ic2ryhm]
 - On the Onboarding page, an admin selects the OS group, then **Connectivity type** (Streamlined or Standard; see prerequisites for streamlined connectivity), then **Deployment method**, and downloads the onboarding package/script for that combination. [DOC S-tkwapxy3]
 - The local script is explicitly scoped to **10 or fewer devices**, for evaluation before selecting a deployment method for a larger environment; production deployments should use Group Policy, Configuration Manager, Intune, or the Defender deployment tool. [DOC S-ka3u6g4r]
-- The Defender deployment tool is a lightweight, self-updating application that can deploy Defender endpoint security to Windows and (preview) Linux devices, as an alternative to the local script. [DOC S-ka3u6g4r, S-5ic2ryhm, S-tkwapxy3]
+- The Defender deployment tool is a lightweight, self-updating application that can deploy Defender endpoint security to Windows and (preview) Linux devices, as an alternative to the local script. [DOC S-ka3u6g4r, S-okh6b7oc, S-tkwapxy3]
 - Downloading onboarding/offboarding packages requires full access to Defender for Endpoint; the Entra **Security Administrator** role grants this. [DOC S-ka3u6g4r]
 - Repackaging the Defender for Endpoint installation package is unsupported and can trigger tampering alerts or break updates. [DOC S-tkwapxy3]
 - Non-persistent VDI, single-entry model: recreated desktops that keep the same final device name share one device entry; `Onboard-NonPersistentMachine.ps1` (which runs `WindowsDefenderATPOnboardingScript.cmd`) runs only after the VM has its final name and final provisioning restart. Existing legacy MMA-based single-entry deployments also need a `DeviceTagging\VDI = NonPersistent` (`REG_SZ`) registry value (registry import or `reg add`); Server 2012 R2 and later follow the server onboarding process. [DOC S-jzszwiht]

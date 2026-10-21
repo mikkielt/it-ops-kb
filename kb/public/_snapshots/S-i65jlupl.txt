@@ -1,0 +1,160 @@
+source: S-i65jlupl
+url: https://onnxruntime.ai/docs/performance/tune-performance/threading.html
+title: ONNX Runtime docs: Thread management
+publisher: Microsoft (ONNX Runtime)
+licence: MIT (microsoft/onnxruntime gh-pages LICENSE)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Thread management
+## Contents
+Set number of intra-op threads
+Thread spinning behavior
+Spin duration
+Spin backoff (exponential)
+Set number of inter-op threads
+Set intra-op thread affinity
+Numa support and performance tuning
+Custom threading callbacks
+Usage in custom ops
+For the default CPU execution provider, setting defaults are provided to get fast inference performance. You can customize the performance using the following knobs in the API to control the thread count and other settings:
+Python (Defaults):
+import onnxruntime as rt
+sess_options = rt.SessionOptions()
+sess_options.intra_op_num_threads = 0
+sess_options.execution_mode = rt.ExecutionMode.ORT_SEQUENTIAL
+sess_options.graph_optimization_level = rt.GraphOptimizationLevel.ORT_ENABLE_ALL
+sess_options.add_session_config_entry("session.intra_op.allow_spinning", "1")
+INTRA Thread Count
+Controls the total number of INTRA threads to use to run the model.
+INTRA = parallelize computation inside each operator
+Default: (not specified or 0). sess_options.intra_op_num_threads = 0
+INTRA Threads Total = Number of physical CPU Cores. Leaving at default also enables some affinitization (explained below)
+E.g. 6-core machine (with 12 HT logical processors) = 6 total INTRA threads
+Sequential vs Parallel Execution
+Controls whether multiple operators in the graph (across nodes) run sequentially or in parallel.
+Default: sess_options.execution_mode = rt.ExecutionMode.ORT_SEQUENTIAL
+Usually when a model has many branches, setting this option to ORT_PARALLEL will provide better performance. This could also hurt performance on some models without many branches.
+When sess_options.execution_mode = rt.ExecutionMode.ORT_PARALLEL, you can set sess_options.inter_op_num_threads to control the number of threads used to parallelize the execution of the graph (across nodes).
+Graph Optimization Level
+Default: sess_options.graph_optimization_level = rt.GraphOptimizationLevel.ORT_ENABLE_ALL enables all optimizations.
+Please see onnxruntime_c_api.h (enum GraphOptimizationLevel) for the full list of all optimization levels. For details regarding available optimizations and usage, please refer to the Graph Optimizations documentation.
+Thread-Pool Spinning Behavior
+Controls whether additional INTRA or INTER threads spin waiting for work. Provides faster inference but consumes more CPU cycles, resources, and power
+Default: 1 (Enabled)
+spin_duration_us: optional time-bounded spin window in microseconds (not set by default; uses legacy fixed iteration count)
+spin_backoff_max: optional exponential-backoff cap for spin pause density (default 1, no backoff). Set to a power of two (e.g. 8) to reduce CPU/power usage during the spin window
+## Set number of intra-op threads
+Onnxruntime sessions utilize multi-threading to parallelize computation inside each operator.
+By default with intra_op_num_threads=0 or not set, each session will start with the main thread on the 1st core (not affinitized). Then extra threads per additional physical core are created, and affinitized to that core (1 or 2 logical processors).
+Customer could manually configure the total number of threads like:
+Python (below) - C/C++ - .NET/C#
+sess_opt = SessionOptions()
+sess_opt.intra_op_num_threads = 3
+sess = ort.InferenceSession('model.onnx', sess_opt)
+With the above configuration of 3 total threads, two extra threads will be created in the addtional INTRA pool, so along with the main calling thread, there will be three threads in total to participate in intra-op computation. However, if customer explicitly set the number of threads like showcased above, there will be no affinity set to any of the created thread.
+In addition, Onnxruntime also allow customers to create a global intra-op thread pool to prevent overheated contentions among session thread pools, please find its usage here.
+## Thread spinning behavior
+Controls whether additional INTRA or INTER threads spin waiting for work. Provides faster inference but consumes more CPU cycles, resources, and power.
+Example disabling spinning so WorkerLoop doesn’t consume extra active cycles spinning waiting or attempting to steal work
+Python (below) - C++ - .NET/C# - Keys
+sess_opt = SessionOptions()
+sess_opt.AddConfigEntry("session.intra_op.allow_spinning", "0")
+sess_opt.AddConfigEntry("session.inter_op.allow_spinning", "0")
+### Spin duration
+By default, thread pool workers spin for a fixed number of iterations before going to sleep. The session.intra_op.spin_duration_us and session.inter_op.spin_duration_us config keys let you specify a time-bounded spin window in microseconds instead. At session creation the runtime calibrates how many spin-loop iterations fit into the requested duration, so the actual spin time adapts to the host CPU speed.
+Default: not set (uses the legacy fixed iteration count).
+Setting the value to 0 disables spinning entirely (equivalent to allow_spinning = 0).
+A positive value (e.g. 1000 for 1 ms) caps the spin window to that duration.
+sess_opt = SessionOptions()
+# Spin for at most 1 ms before sleeping
+sess_opt.add_session_config_entry("session.intra_op.spin_duration_us", "1000")
+sess_opt.add_session_config_entry("session.inter_op.spin_duration_us", "1000")
+sess = ort.InferenceSession('model.onnx', sess_opt)
+### Spin backoff (exponential)
+When spinning is enabled, each spin iteration normally executes a single SpinPause() instruction. The session.intra_op.spin_backoff_max and session.inter_op.spin_backoff_max config keys activate an exponential-backoff mode: each successive iteration doubles the number of SpinPause() calls (1, 2, 4, … capped at spin_backoff_max). This reduces pause-instruction density and lowers CPU/power usage during the spin window — particularly beneficial on hybrid (P-core / E-core) and mobile platforms.
+The iteration count is automatically scaled so the total wall-clock spin budget (set by spin_duration_us or the legacy default) is preserved.
+Default: 1 (one SpinPause() per iteration — identical to existing behavior).
+Must be a power of two (e.g. 1, 2, 4, 8, …). Values that are not a power of two are rounded down.
+Subordinate to allow_spinning — when spinning is disabled, this setting is ignored.
+Composable with spin_duration_us — the two knobs are orthogonal and can be combined.
+sess_opt = SessionOptions()
+# Combine 1 ms time-bounded spinning with exponential backoff capped at 8
+sess_opt.add_session_config_entry("session.intra_op.spin_duration_us", "1000")
+sess_opt.add_session_config_entry("session.intra_op.spin_backoff_max", "8")
+sess = ort.InferenceSession('model.onnx', sess_opt)
+In benchmarks, spin_duration_us=1000 combined with spin_backoff_max=8 was the most consistent best performer across models and thread counts.
+## Set number of inter-op threads
+A inter-op thread pool is for parallelism between operators, and will only be created when session execution mode set to parallel:
+By default, inter-op thread pool will also have one thread per physical core.
+Python (below) - C/C++ - .NET/C#
+sess_opt = SessionOptions()
+sess_opt.execution_mode = ExecutionMode.ORT_PARALLEL
+sess_opt.inter_op_num_threads = 3
+sess = ort.InferenceSession('model.onnx', sess_opt)
+## Set intra-op thread affinity
+It is normally best to not set thread affinity and let the OS handle thread assignment for perf and power reasons. However, for certain scenarios, it may be beneficial to customize intra-op thread affinities, for example:
+There are multiple sessions run in parallel, customer might prefer their intra-op thread pools run on separate cores to avoid contention.
+Customer want to limit a intra-op thread pool to run on only one of the NUMA nodes to reduce overhead of expensive cache miss among nodes.
+For session intra-op thread pool, please read the configuration and consume it like:
+Python (below) - C++ - .NET/C# - Keys
+sess_opt = SessionOptions()
+sess_opt.intra_op_num_threads = 3
+sess_opt.add_session_config_entry('session.intra_op_thread_affinities', '1;2')
+sess = ort.InferenceSession('model.onnx', sess_opt, ...)
+For global thread pool, please read the API and usage.
+## Numa support and performance tuning
+Since release 1.14, Onnxruntime thread pool could utilize all physical cores that are available over NUMA nodes. The intra-op thread pool will create an extra thread on every physical core (except the 1st core). E.g. assume there is a system of 2 NUMA nodes, each has 24 cores. Hence intra-op thread pool will create 47 threads, and set thread affinity to each core.
+For NUMA systems, it is recommended to test a few thread settings to explore for best performance, in that threads allocated among NUMA nodes might has higher cache-miss overhead when cooperating with each other. For example, when number of intra-op threads has to be 8, there are different ways to set affinity:
+Python (below) - C++ - .NET/C#
+sess_opt = SessionOptions()
+sess_opt.intra_op_num_threads = 8
+sess_opt.add_session_config_entry('session.intra_op_thread_affinities', '3,4;5,6;7,8;9,10;11,12;13,14;15,16') # set affinities of all 7 threads to cores in the first NUMA node
+# sess_opt.add_session_config_entry('session.intra_op_thread_affinities', '3,4;5,6;7,8;9,10;49,50;51,52;53,54') # set affinities for first 4 threads to the first NUMA node, and others to the second
+sess = ort.InferenceSession('resnet50.onnx', sess_opt, ...)
+Test showed that setting affinities to a single NUMA node has nearly 20 percent performance improvement aginst the other case.
+## Custom threading callbacks
+Occasionally, users may prefer to use their own fine-tuned threads for multithreading. ORT offers thread creation and joining callbacks in the C++ API:
+std::vector<std::thread> threads;
+void* custom_thread_creation_options = nullptr;
+// initialize custom_thread_creation_options
+// On thread pool creation, ORT calls CreateThreadCustomized to create a thread
+OrtCustomThreadHandle CreateThreadCustomized(void* custom_thread_creation_options, OrtThreadWorkerFn work_loop, void* param) {
+threads.push_back(std::thread(work_loop, param));
+// configure the thread by custom_thread_creation_options
+return reinterpret_cast<OrtCustomThreadHandle>(threads.back().native_handle());
+}
+// On thread pool destruction, ORT calls JoinThreadCustomized for each created thread
+void JoinThreadCustomized(OrtCustomThreadHandle handle) {
+for (auto& t : threads) {
+if (reinterpret_cast<OrtCustomThreadHandle>(t.native_handle()) == handle) {
+// recycling resources ...
+t.join();
+}
+}
+}
+int main(...) {
+...
+Ort::Env ort_env;
+Ort::SessionOptions session_options;
+session_options.SetCustomCreateThreadFn(CreateThreadCustomized);
+session_options.SetCustomThreadCreationOptions(&custom_thread_creation_options);
+session_options.SetCustomJoinThreadFn(JoinThreadCustomized);
+Ort::Session session(*ort_env, MODEL_URI, session_options);
+...
+}
+For global thread pool:
+int main() {
+const OrtApi* g_ort = OrtGetApiBase()->GetApi(ORT_API_VERSION);
+OrtThreadingOptions* tp_options = nullptr;
+g_ort->CreateThreadingOptions(&tp_options);
+g_ort->SetGlobalCustomCreateThreadFn(tp_options, CreateThreadCustomized);
+g_ort->SetGlobalCustomThreadCreationOptions(tp_options, &custom_thread_creation_options);
+g_ort->SetGlobalCustomJoinThreadFn(tp_options, JoinThreadCustomized);
+// disable per-session thread pool, create a session for inferencing
+g_ort->ReleaseThreadingOptions(tp_options);
+}
+Note that CreateThreadCustomized and JoinThreadCustomized, once set, will be applied to both ORT intra op and inter op thread pools uniformly.
+## Usage in custom ops
+Since 1.17, custom op developers are entitled to parallelize their cpu code with ort intra-op thread pool.
+Please refer to the API, and example for usage.

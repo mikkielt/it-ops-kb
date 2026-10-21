@@ -1,0 +1,51 @@
+source: S-coloiwrz
+url: https://docs.rs/spargebra/0.4.7/spargebra/
+title: docs.rs spargebra 0.4.7: crate page (SPARQL parser)
+publisher: docs.rs (spargebra crate rustdoc)
+licence: MIT OR Apache-2.0
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Crate spargebra
+Source
+Expand description
+## §Spargebra
+Spargebra is a SPARQL parser.
+It supports both SPARQL 1.1 Query and SPARQL 1.1 Update.
+The emitted tree is based on SPARQL 1.1 Query Algebra objects.
+The API entry point for SPARQL queries is the Query struct and the API entry point for SPARQL updates is the Update struct.
+Support for SPARQL 1.2 is also available behind the sparql-12 feature.
+This crate is intended to be a building piece for SPARQL implementations in Rust like Oxigraph.
+Note that, opposite to the SPARQL specification, the parser does not allow \uXXXX escape sequences anywhere in the SPARQL syntax but only in IRIs and string literals, just like in Turtle.
+To use the standard SPARQL behavior (i.e. allow \uXXXX escape sequences in all strings), enable the standard-unicode-escaping feature.
+Usage example:
+use spargebra::SparqlParser;
+let query_str = "SELECT ?s ?p ?o WHERE { ?s ?p ?o . }";
+let query = SparqlParser::new().parse_query(query_str).unwrap();
+assert_eq!(query.to_string(), query_str);
+### §License
+This project is licensed under either of
+Apache License, Version 2.0, (LICENSE-APACHE or
+<http://www.apache.org/licenses/LICENSE-2.0>)
+MIT license (LICENSE-MIT or
+<http://opensource.org/licenses/MIT>)
+at your option.
+#### §Contribution
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in Oxigraph by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
+## Modules§
+algebra
+SPARQL 1.1 Query Algebra representation.
+term
+Data structures for RDF 1.1 Concepts like IRI, literal or triples.
+## Structs§
+SparqlParser
+A SPARQL parser
+SparqlSyntaxError
+Error returned during SPARQL parsing.
+Update
+A parsed SPARQL update.
+## Enums§
+GraphUpdateOperation
+The graph update operations.
+Query
+A parsed SPARQL query.

@@ -3,7 +3,7 @@ url: https://openai.github.io/openai-agents-python/mcp/
 title: Model context protocol (MCP) - OpenAI Agents SDK
 publisher: OpenAI
 licence: MIT (openai/openai-agents-python LICENSE)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Model context protocol (MCP)
@@ -28,6 +28,7 @@ HTTP with SSE MCP servers via MCPServerSse
 Launch a local process and communicate over stdin/stdout
 stdio MCP servers via MCPServerStdio
 The sections below walk through each option, how to configure it, and when to prefer one transport over another.
+For a remote MCP server, obtain the endpoint URL and authentication requirements from the server provider's documentation. You can also find published servers in the official MCP Registry. Configure the SDK with the provider's MCP endpoint URL, which may differ from the provider's website URL.
 ## MCP Python SDK v1 and v2
 The Agents SDK supports both major versions of the mcp Python package through the dependency range mcp>=1.19.0,<3. The installed mcp package version is separate from the MCP protocol version negotiated with a server. The Agents SDK detects the installed package major version and adapts stdio, SSE, and Streamable HTTP connections automatically, so ordinary server configuration does not need a version switch.
 When MCP Python SDK v2 is installed, the Agents SDK creates the v2 mcp.Client with mode="auto" around the configured local transport. The client first sends a server/discover probe at the newest protocol version supported by the installed MCP SDK. A modern server answers the probe, and the client adopts the result. If an older server does not support server/discover, the client falls back to the legacy initialize handshake and uses the protocol version negotiated there. Installing MCP Python SDK v2 therefore does not force every connection to use the newest MCP protocol version. See the MCP Python SDK's protocol version negotiation guide.
@@ -197,12 +198,16 @@ Supported forms:
 True requires approval for all tools, and False requires approval for none (equivalent to "always" and "never", respectively).
 A per-tool map, for example {"delete_file": "always", "read_file": "never"}.
 A grouped object: {"always": {"tool_names": [...]}, "never": {"tool_names": [...]}}.
+A synchronous or asynchronous callable with the signature (run_context, agent, tool) -> bool | Awaitable[bool]. Return True to require approval or False to allow the call without approval.
 async with MCPServerStreamableHttp(
 name="Filesystem MCP",
 params={"url": "http://localhost:8000/mcp"},
 require_approval={"always": {"tool_names": ["delete_file"]}},
 ) as server:
 ...
+The callable receives the current RunContextWrapper, the agent, and the original MCP SDK Tool, including tool.annotations. The callable can use application context or tool metadata to decide whether approval is required. Server-provided annotations are advisory hints; use them to bypass approval only when your application trusts the server's classification.
+Unlike a FunctionTool.needs_approval callable, a local MCP require_approval callable does not receive the specific call's arguments or call ID.
+If you call MCPUtil.to_function_tool() directly without supplying an agent, a callable policy is not invoked and the converted tool requires approval. This fail-closed fallback applies to legacy direct conversion calls.
 For a full pause/resume flow, see Human-in-the-loop and examples/mcp/get_all_mcp_tools_example/main.py.
 ### Per-call metadata with tool_meta_resolver
 Use tool_meta_resolver when your MCP server expects request metadata in _meta (for example, tenant IDs or trace context). The example below assumes you pass a dict as context to Runner.run(...).

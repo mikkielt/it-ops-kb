@@ -3,7 +3,7 @@ url: https://inspect.aisi.org.uk/tools-mcp.html
 title: Model Context Protocol - Inspect
 publisher: UK AI Security Institute (AISI)
 licence: MIT (docs in UKGovernmentBEIS/inspect_ai)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Model Context Protocol
@@ -106,6 +106,7 @@ execution="remote"
 This is what indicates that the MCP Server should be executed remotely. Pass execution="local" for local execution (the default).
 Note that some remote MCP servers will require credentials—in this case pass the authorization option (as shown above) to provide an OAuth Bearer Token or pass headers to provide credentials using another scheme.
 Before using remote servers, you should review OpenAI’s Risks and Safety guidance for Remote MCP.
+The model provider calls a remote server’s tools during generation, so Inspect never sees those calls and can’t approve them. For this reason a remote server can’t be used while an approval policy is active: Inspect raises an error rather than sending the server to the provider. Use execution="local" so that the server’s tool calls go through the approval policy.
 ## Tool Selection
 To narrow the list of tools made available from an MCP Server you can use the mcp_tools() function. For example, to make only the geocode oriented functions available from the Google Maps server:
 return Task(
@@ -161,6 +162,7 @@ state.messages.extend(messages)
 return state
 return execute
 ```
+The web_browser() tool used above is deprecated; it appears here only to illustrate mcp_connection().
 Note that the mcp_connection() function can take an arbitrary list of tools and will discover and connect to any MCP-based ToolSource in the list. So if your agent takes a tools parameter you can just forward it on. For example:
 @agent
 def my_agent(tools: Sequence[Tool | ToolDef | ToolSource]):

@@ -3,10 +3,10 @@ url: https://attack.mitre.org/techniques/T1098/
 title: MITRE ATT&CK T1098 Account Manipulation
 publisher: MITRE
 licence: ATT&CK terms of use (copy with MITRE copyright notice and licence)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-ATT&CKcon 7.0 in-person tickets are open! Join us October 27-28, 2026 in McLean, VA. Register here for in-person tickets; hotel and location details can be found in the FAQ.
+ATT&CK v20 has been released! Check out the blog post for more information. ATT&CKcon 7.0 is October 27-28, 2026 in McLean, VA.
 Home
 Techniques
 Enterprise
@@ -65,18 +65,23 @@ Lazarus Group malware WhiskeyDelta-Two contains a function that attempts to rena
 S0002
 Mimikatz
 The Mimikatz credential dumper has been extended to include Skeleton Key domain controller authentication bypass functionality. The LSADUMP::ChangeNTLM and LSADUMP::SetNTLM modules can also manipulate the password hash of an account without knowing the clear text value.[8][9]
+G1059
+NIMBUS MANTICORE
+NIMBUS MANTICORE has reset passwords of valid accounts to include domain accounts in order to obtain persistence and escalate privileges.[10]
+NIMBUS MANTICORE has reset passwords for domain controller accounts using net.exe through the command net user DC-01$ P@ssw0rd.[10]
+NIMBUS MANTICORE has also abused Resource-Based Constrained Delegation (RBCD) assignments to impersonate high-privileged users and gain unauthorized access to services and resources.[10]
 G1015
 Scattered Spider
-Scattered Spider has added accounts to the ESX Admins group to grant them full admin rights in vSphere.[10]
+Scattered Spider has added accounts to the ESX Admins group to grant them full admin rights in vSphere.[11]
 S9008
 Shai-Hulud
-Shai-Hulud has modified GitHub account settings for private repositories and changed them to public.[11][12][13][14]
+Shai-Hulud has modified GitHub account settings for private repositories and changed them to public.[12][13][14][15]
 G1056
 TeamPCP
-TeamPCP has modified settings to publish private Aqua Security repositories to GitHub as public.[15]
+TeamPCP has modified settings to publish private Aqua Security repositories to GitHub as public.[16]
 G1055
 VOID MANTICORE
-VOID MANTICORE has leveraged access to administrative control systems to achieve disruptive effects, consistent with administrative account abuse or privilege escalation within existing access.[16][17]
+VOID MANTICORE has leveraged access to administrative control systems to achieve disruptive effects, consistent with administrative account abuse or privilege escalation within existing access.[17][18]
 ## Mitigations
 ID
 Mitigation
@@ -131,6 +136,7 @@ Novetta Threat Research Group. (2016, February 24). Operation Blockbuster: Unrav
 Novetta Threat Research Group. (2016, February 24). Operation Blockbuster: Destructive Malware Report. Retrieved November 17, 2024.
 Metcalf, S. (2015, November 13). Unofficial Guide to Mimikatz & Command Reference. Retrieved December 23, 2015.
 Metcalf, S. (2015, January 19). Attackers Can Now Use Mimikatz to Implant Skeleton Key on Domain Controllers & BackDoor Your Active Directory Forest. Retrieved February 3, 2015.
+El-Banna, M., et al. (2025, November 17). Frontline Intelligence: Analysis of UNC1549 TTPs, Custom Tools, and Malware Targeting the Aerospace and Defense Ecosystem. Retrieved September 28, 2026.
 Mandiant Incident Response. (2025, July 23). From Help Desk to Hypervisor: Defending Your VMware vSphere Estate from UNC3944. Retrieved October 13, 2025.
 Charlie Eriksen. (2025, September 16). S1ngularity/nx attackers strike again. Retrieved April 9, 2026.
 Gianpietro Cutolo. (2025, November 26). Shai-Hulud 2.0: Aggressive, Automated, and Fast Spreading. Retrieved April 9, 2026.

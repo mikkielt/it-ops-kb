@@ -1,0 +1,16 @@
+source: S-iqad4pe3
+url: https://docs.rs/oxigraph/0.5.11/oxigraph/sparql/type.QueryOptions.html
+title: docs.rs oxigraph 0.5.11: type alias oxigraph::sparql::QueryOptions (deprecated)
+publisher: docs.rs (oxigraph crate rustdoc)
+licence: MIT OR Apache-2.0
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+oxigraph::sparql
+# Type Alias QueryOptions
+Source
+pub type QueryOptions = SparqlEvaluator;
+👎Deprecated since 0.5.0:
+Use SparqlEvaluator instead
+## Aliased Type§
+pub struct QueryOptions { /* private fields */ }

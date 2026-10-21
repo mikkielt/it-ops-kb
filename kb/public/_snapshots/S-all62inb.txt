@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/azure/foundry/agents/how-to/enable-agent-to-age
 title: Enable incoming A2A on a Foundry agent
 publisher: Microsoft Learn
 licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-ai-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Enable incoming A2A on a Foundry agent - Microsoft Foundry | Microsoft Learn
@@ -14,7 +14,7 @@ Foundry Agent Service supports generally available A2A protocol **version 1.0** 
 
 Important
 
-Items marked (preview) in this article are currently in public preview. This preview is provided without a service-level agreement, and we don't recommend it for production workloads. Certain features might not be supported or might have constrained capabilities. For more information, see Supplemental Terms of Use for Microsoft Azure Previews.
+Items marked preview in this article are currently in preview. This preview is provided without a service-level agreement, and Microsoft doesn't recommend it for production workloads. Certain features might not be supported or might have constrained capabilities. For more information, see Supplemental Terms of Use for Microsoft Azure Previews.
 
 ## Supported agent types
 

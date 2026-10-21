@@ -3,19 +3,35 @@ url: https://github.com/aws/credentials-fetcher
 title: aws/credentials-fetcher: Linux daemon fetching gMSA credentials from AD over LDAP
 publisher: AWS (aws/credentials-fetcher)
 licence: Apache-2.0
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-aws
-/
+## Repository navigation
 credentials-fetcher
 Public
-Notifications
-You must be signed in to change notification settings
-Fork
-35
-Star
-133
+NotificationsYou must be signed in to change notification settings
+Fork35 (35)
+Star134 (134)You must be signed in to star a repository
+## About
+Credentials-fetcher is a Linux daemon that retrieves gMSA credentials from Active Directory over LDAP. It creates and refreshes kerberos tickets from gMSA credentials. Kerberos tickets can be used by containers to run apps/services that authenticate using Active Directory.
+### Resources
+Readme
+Apache-2.0 license
+### Code of conduct
+Code of conduct
+### Contributing
+Contributing
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+134 stars
+### Watchers
+13 watching
+### Forks
+35 forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit
@@ -300,7 +316,7 @@ Security policy
 Activity
 Custom properties
 ### Stars
-133 stars
+134 stars
 ### Watchers
 13 watching
 ### Forks

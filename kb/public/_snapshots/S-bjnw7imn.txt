@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/microsoft-365/admin/manage/agent-registry
 title: Manage agent registry in Microsoft 365 admin center
 publisher: Microsoft Learn
 licence: CC BY 4.0 (public mirror MicrosoftDocs/microsoft-365-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Agent Registry in Microsoft 365 admin center - Microsoft 365 admin | Microsoft Learn
@@ -27,6 +27,22 @@ The agent **Registry** lists all agents that are available to your organization.
 | **External partner-built agents** | Agents built by trusted non-Microsoft developers and published for broader or public availability. |
 | **Published by your org** | Custom agents approved and published by your organization for broader use. These agents might be referred to as LOB (Line of Business) agents. |
 | **Shared by creator** | Agents created and shared by individual users or developers at your organization. These agents are commonly referred to as Shared agents. |
+
+Note
+
+The same Copilot Studio agent (declarative or custom engine) can appear more than once in the registry with different publisher types, such as **Shared by creator** and **Published by your org**. These duplicate-looking rows are expected and by design. They represent separate lifecycle and publisher records for the same underlying agent, not an inventory error.
+
+For lifecycle details and available admin actions, see How one agent can appear as multiple entries.
+
+### How one agent can appear as multiple entries
+
+For a custom engine agent, how it appears in the registry depends on its publishing lifecycle and on the actions that creators and admins take:
+
+- Publishing the agent in Copilot Studio alone might not make it visible in the admin center.
+- Selecting **See agent in Microsoft 365** creates a **Shared by creator** entry, which creators often use to test the agent before sharing it more broadly.
+- Choosing to show the agent to everyone in the organization and submitting it for admin approval, followed by an admin publishing it, creates a **Published by your org** entry.
+
+Available admin actions differ by agent type and publisher state. For example, some entries offer **Delete**, others offer **Remove**, and some offer only **Block**. Removing one entry doesn't remove the other. For more information, see Agent types you can manage.
 
 ## Agent registry summary
 

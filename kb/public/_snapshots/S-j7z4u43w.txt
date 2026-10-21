@@ -1,0 +1,24 @@
+source: S-j7z4u43w
+url: https://arxiv.org/abs/2310.11405
+title: On Coherence-based Predictors for Dense Query Performance Prediction
+publisher: arXiv
+licence: CC BY 4.0 (licence link on the arXiv abstract page)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# On Coherence-based Predictors for Dense Query Performance Prediction
+id: http://arxiv.org/abs/2310.11405v1
+authors: Maria Vlachou; Craig Macdonald
+published: 2023-10-17T17:13:13Z
+updated: 2023-10-17T17:13:13Z
+categories: cs.IR
+
+Query Performance Prediction (QPP) estimates the effectiveness of a search engine's results in response to a query without relevance judgments.
+Traditionally, post-retrieval predictors have focused upon either the distribution of the retrieval scores, or the coherence of the top-ranked documents using traditional bag-of-words index representations.
+More recently, BERT-based models using dense embedded document representations have been used to create new predictors, but mostly applied to predict the performance of rankings created by BM25.
+Instead, we aim to predict the effectiveness of rankings created by single-representation dense retrieval models (ANCE & TCT-ColBERT).
+Therefore, we propose a number of variants of existing unsupervised coherence-based predictors that employ neural embedding representations.
+In our experiments on the TREC Deep Learning Track datasets, we demonstrate improved accuracy upon dense retrieval (up to 92% compared to sparse variants for TCT-ColBERT and 188% for ANCE).
+Going deeper, we select the most representative and best performing predictors to study the importance of differences among predictors and query types on query performance.
+Using existing distribution-based evaluation QPP measures and a particular type of linear mixed models, we find that query types further significantly influence query performance (and are up to 35% responsible for the unstable performance of QPP predictors), and that this sensitivity is unique to dense retrieval models.
+Our approach introduces a new setting for obtaining richer information on query differences in dense QPP that can explain potential unstable performance of existing predictors and outlines the unique characteristics of different query types on dense retrieval models.

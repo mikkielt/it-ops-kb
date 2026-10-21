@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/azure/azure-monitor/data-collection/data-collec
 title: Data collection endpoints in Azure Monitor
 publisher: Microsoft Learn
 licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-monitor-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Data collection endpoints in Azure Monitor - Azure Monitor | Microsoft Learn
@@ -28,7 +28,7 @@ Since Azure Monitor Private Link Scope (AMPLS) is dependent on DNS Private Link 
 
 View the agents associated with a DCE from its **Resources** page. Select **Add** to add more agents. To remove them, select one or more agents and select **Disassociate**.
 
-![Screenshot resources for a DCE in the Azure portal.](media/data-collection-endpoint-overview/data-collection-endpoint-resources.png#lightbox)
+![Screenshot of resources for a DCE in the Azure portal.](media/data-collection-endpoint-overview/data-collection-endpoint-resources.png#lightbox)
 
 A DCE is required for certain AMA data sources. In this case, the DCE is specified in the DCR using that data source. If an agent is associated with multiple DCRs, a DCE is only required in those DCRs with data sources that require it. Other data sources can continue to use the public endpoint.
 
@@ -43,7 +43,7 @@ The following data sources currently require a DCE:
 
 View the DCE for a DCR from the **Overview** page of the DCR. Select **Configure DCE** to modify it.
 
-![Screenshot showing DCR overview page with DCE.](media/data-collection-endpoint-overview/data-collection-rule-dce.png#lightbox)
+![Screenshot of the DCR overview page with DCE.](media/data-collection-endpoint-overview/data-collection-rule-dce.png#lightbox)
 
 ### Logs ingestion API
 
@@ -69,20 +69,20 @@ This table describes the components of a data collection endpoint, related regio
 
     Set up one data collection endpoint to send configuration files and receive collected data.
 
-    ![A diagram that shows resources in a single region sending data and receiving configuration files using a data collection endpoint.](media/data-collection-endpoint-overview/data-collection-endpoint-one-region.png#lightbox)
+    ![Screenshot of a diagram that shows resources in a single region sending data and receiving configuration files using a data collection endpoint.](media/data-collection-endpoint-overview/data-collection-endpoint-one-region.png#lightbox)
 - **Scenario: Monitored resources send data to a Log Analytics workspace in a different region**
 
     - Create a data collection endpoint in each region where you have Azure Monitor Agent deployed to send configuration files to the agents in that region.
     - Send data from all resources to a data collection endpoint in the region where your destination Log Analytics workspaces are located.
 
-    ![A diagram that shows resources in two regions sending data and receiving configuration files using data collection endpoints.](media/data-collection-endpoint-overview/data-collection-endpoint-regionality.png#lightbox)
+    ![Screenshot of a diagram that shows resources in two regions sending data and receiving configuration files using data collection endpoints.](media/data-collection-endpoint-overview/data-collection-endpoint-regionality.png#lightbox)
 - **Scenario: Monitored resources in one or more regions send data to multiple Log Analytics workspaces in different regions**
 
     - Create a data collection endpoint in each region where you have Azure Monitor Agent deployed to send configuration files to the agents in that region.
     - Create a data collection endpoint in each region with a destination Log Analytics workspace to send data to the Log Analytics workspaces in that region.
     - Send data from each monitored resource to the data collection endpoint in the region where the destination Log Analytics workspace is located.
 
-    ![A diagram that shows monitored resources in multiple regions sending data to multiple Log Analytics workspaces in different regions using data collection endpoints.](media/data-collection-endpoint-overview/data-collection-endpoint-regionality-multiple-workspaces.png#lightbox)
+    ![Screenshot of a diagram that shows monitored resources in multiple regions sending data to multiple Log Analytics workspaces in different regions using data collection endpoints.](media/data-collection-endpoint-overview/data-collection-endpoint-regionality-multiple-workspaces.png#lightbox)
 
 ## Prerequisites
 
@@ -117,34 +117,10 @@ az monitor data-collection endpoint create \
 
 Verify that the endpoint was created and review its provisioning state by using az monitor data-collection endpoint show:
 
-```azurecli
-az monitor data-collection endpoint show \
-    --name "myCollectionEndpoint" \
-    --resource-group "myResourceGroup" \
-    --query "provisioningState"
-```
-
-Create associations between endpoints and your target machines or resources by using az monitor data-collection rule association create.
-
 # REST API
-Create a data collection endpoint by using the DCE REST API. Send a `PUT` request to the resource URI, replacing the placeholder values with your own. The following example uses API version `2024-03-11`.
+Create DCEs by using the DCE REST APIs.
 
-```http
-PUT https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Insights/dataCollectionEndpoints/{dataCollectionEndpointName}?api-version=2024-03-11
-
-{
-  "location": "eastus",
-  "properties": {
-    "networkAcls": {
-      "publicNetworkAccess": "Disabled"
-    }
-  }
-}
-```
-
-A successful response returns the created endpoint, including its `configurationAccess`, `logsIngestion`, and `metricsIngestion` endpoints and a `provisioningState` of `Succeeded`, which verifies that the DCE was created. For more operations, see the DCE REST APIs.
-
-Create associations between endpoints and your target machines or resources by using the DCRA REST APIs.
+Create associations between endpoints to your target machines or resources by using the DCRA REST APIs.
 
 ---
 

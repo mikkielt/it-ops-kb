@@ -3,7 +3,7 @@ url: https://inspect.aisi.org.uk/
 title: Inspect AI documentation home
 publisher: UK AI Security Institute (AISI)
 licence: MIT (docs in UKGovernmentBEIS/inspect_ai)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Inspect
@@ -33,10 +33,10 @@ export OPENAI_API_KEY=your-openai-api-key
 inspect eval simpleqa.py --model openai/gpt-4o
 pip install anthropic
 export ANTHROPIC_API_KEY=your-anthropic-api-key
-inspect eval simpleqa.py --model anthropic/claude-sonnet-4-0
+inspect eval simpleqa.py --model anthropic/claude-sonnet-4-6
 pip install google-genai
 export GOOGLE_API_KEY=your-google-api-key
-inspect eval simpleqa.py --model google/gemini-2.5-pro
+inspect eval simpleqa.py --model google/gemini-3.5-flash-lite
 pip install torch transformers
 export HF_TOKEN=your-hf-token
 inspect eval simpleqa.py --model hf/meta-llama/Llama-2-7b-chat-hf

@@ -3,25 +3,37 @@ url: https://github.com/anthropics/claude-cookbooks
 title: anthropics/claude-cookbooks (Claude Cookbooks)
 publisher: Anthropic
 licence: MIT
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-anthropics
-/
+## Repository navigation
 claude-cookbooks
 Public
-Notifications
-You must be signed in to change notification settings
-Fork
-6.4k
-Star
-53k
+NotificationsYou must be signed in to change notification settings
+Fork6.5k (6.5k)
+Star53.6k (53.6k)You must be signed in to star a repository
+## About
+A collection of notebooks/recipes showcasing some fun and effective ways of using Claude.
+### Resources
+Readme
+MIT license
+### Contributing
+Contributing
+Activity
+Custom properties
+### Stars
+53.6k stars
+### Watchers
+628 watching
+### Forks
+6.5k forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit
 ## History
-639 Commits
-639 Commits
+645 Commits
+645 Commits
 ## Folders and files
 NameName
 Last commit message
@@ -164,11 +176,11 @@ Contributing
 Activity
 Custom properties
 ### Stars
-53.0k stars
+53.6k stars
 ### Watchers
-627 watching
+628 watching
 ### Forks
-6.4k forks
+6.5k forks
 Report repository
 ## Releases
 ## Packages

@@ -3,21 +3,14 @@ url: https://learn.microsoft.com/entra/identity/conditional-access/howto-target-
 title: Target agent identities in Conditional Access policies
 publisher: Microsoft
 licence: MIT (public mirror MicrosoftDocs/entra-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-# Target agent identities in Conditional Access policies - Microsoft Entra ID | Microsoft Learn
+# Target agents in Microsoft Entra Conditional Access policies - Microsoft Entra ID | Microsoft Learn
 
-Conditional Access policies for agent identities let you control how AI agents access corporate resources. As your organization deploys more agents, you need policies that target the right agents, evaluate the right signals, and enforce the right controls. To learn more about how Conditional Access policies for agents work for different scenarios, see Conditional Access policies for agents.
+Use this article to select agent identities or agent user accounts in a Conditional Access policy, choose target resources, configure supported conditions, and select access controls.
 
-This article walks through each section of the Conditional Access policy builder for agents:
-
-- Selecting which agents the policy applies to
-- Choosing target resources
-- Configuring conditions
-- Setting access controls.
-
-Each section builds on the previous one to form a complete policy.
+The available conditions and controls depend on the token subject. To choose the right subject before you build the policy, see Conditional Access for agents overview.
 
 ## Prerequisites
 
@@ -29,10 +22,10 @@ Each section builds on the previous one to form a complete policy.
 
 ## Create a Conditional Access policy for agent identities
 
-Policies that target agent identities introduce unique assignment options, conditions, and control limitations that differ from user-targeted policies.
+Policies that target agent identities or agent user accounts have assignment options, conditions, and controls that differ from user-targeted policies.
 
-- Configure policy for autonomous agent access
-- Configure policy for on-behalf-of agent access
+- For policies that target agent identities, see Secure autonomous agents with Conditional Access.
+- For policies that target agent user accounts, see Secure agents that act as users with Conditional Access.
 
 To create a new Conditional Access policy for agent identities:
 
@@ -60,7 +53,7 @@ Keep in mind the following important details when selecting agent assignments:
 - Policies targeting all users don't include agent's user accounts.
 - The **agent users** option targets agents' user accounts. This option is currently in Preview.
 - Agent-based policies apply when agents access resources using their own identity, not on behalf of a user.
-- Targeting a blueprint automatically covers all agent identities derived from it, including ones added in the future. For more information about targeting agent identity blueprints, see Conditional Access for agent identities: Agent identity blueprints.
+- Targeting a blueprint automatically covers all agent identities derived from it, including ones added in the future. For more information, see Agent identity blueprints.
 
 ## Target resources
 
@@ -156,7 +149,7 @@ Access controls determine what happens when conditions are met. For more informa
 
 - **Block access**: Deny the agent user account access to resources.
 - **Grant access**with:
-    - **Require device to be marked as compliant**: Requires agents to run on Intune-managed compliant devices, such as Windows 365 Cloud PCs for Agents. For more information, seeWhat is Windows 365 for Agents?. ![Screenshot of the Conditional Access policy builder showing the grant option for device compliance.](media/howto-target-agent-identities/agent-policy-grant-device-compliant.png#lightbox)
+    - **Require device to be marked as compliant**: Requires agents to run on Intune-managed compliant devices, such as Windows 365 Cloud PCs for Agents. For more information, see What is Windows 365 for Agents?. ![Screenshot of the Conditional Access policy builder showing the grant option for device compliance.](media/howto-target-agent-identities/agent-policy-grant-device-compliant.png#lightbox)
 
 Important
 

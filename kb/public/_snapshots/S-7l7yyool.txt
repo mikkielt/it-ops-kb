@@ -1,0 +1,46 @@
+source: S-7l7yyool
+url: https://cli.github.com/manual/gh_pr_checks
+title: gh pr checks (GitHub CLI manual)
+publisher: GitHub (cli.github.com)
+licence: MIT (cli/cli LICENSE; the manual is generated from it)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+## gh pr checks
+gh pr checks [<number> | <url> | <branch>] [flags]
+Show CI status for a single pull request.
+Without an argument, the pull request that belongs to the current branch
+is selected.
+When the --json flag is used, it includes a bucket field, which categorizes
+the state field into pass, fail, pending, skipping, or cancel.
+Additional exit codes:
+8: Checks pending
+### Options
+--fail-fast
+Exit watch mode on first check failure
+-i,
+--interval <int> (default 10)
+Refresh interval in seconds in watch mode
+-q,
+--jq <expression>
+Filter JSON output using a jq expression
+--json <fields>
+Output JSON with the specified fields
+--required
+Only show checks that are required
+-t,
+--template <string>
+Format JSON output using a Go template; see "gh help formatting"
+--watch
+Watch checks until they finish
+-w,
+--web
+Open the web browser to show details about checks
+### Options inherited from parent commands
+-R,
+--repo <[HOST/]OWNER/REPO>
+Select another repository using the [HOST/]OWNER/REPO format
+### JSON Fields
+bucket, completedAt, description, event, link, name, startedAt, state, workflow
+### See also
+gh pr

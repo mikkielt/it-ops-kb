@@ -3,10 +3,10 @@ url: https://attack.mitre.org/techniques/T1072/
 title: MITRE ATT&CK T1072 Software Deployment Tools
 publisher: MITRE
 licence: ATT&CK terms of use (copy with MITRE copyright notice and licence)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-ATT&CKcon 7.0 in-person tickets are open! Join us October 27-28, 2026 in McLean, VA. Register here for in-person tickets; hotel and location details can be found in the FAQ.
+ATT&CK v20 has been released! Check out the blog post for more information. ATT&CKcon 7.0 is October 27-28, 2026 in McLean, VA.
 Home
 Techniques
 Enterprise
@@ -48,24 +48,30 @@ Medusa Group has utilized software deployment and management solutions to deploy
 G0129
 Mustang Panda
 Mustang Panda has leveraged legitimate software tools such as AntiVirus Agents, Security Services, and App Development tools to execute scripts and to side-load dlls.[7][8]
+G1059
+NIMBUS MANTICORE
+NIMBUS MANTICORE has utilized commercial remote access tools such as Atelier Web Remote Commander (AWRC) and Microsoft System Center Configuration Manager (SCCM) within victim environments.[9]
+G1045
+Salt Typhoon
+Salt Typhoon has abused network management tools to include RANCID to facilitate actions in victims’ environments.[10]
 G0034
 Sandworm Team
-Sandworm Team has used the commercially available tool RemoteExec for agentless remote code execution.[9]
+Sandworm Team has used the commercially available tool RemoteExec for agentless remote code execution.[11]
 G1057
 ShinyHunters
-ShinyHunters has abused software deployment tools for lateral movement.[10]
+ShinyHunters has abused software deployment tools for lateral movement.[12]
 G0091
 Silence
-Silence has used RAdmin, a remote software tool used to remotely control workstations and ATMs.[11]
+Silence has used RAdmin, a remote software tool used to remotely control workstations and ATMs.[13]
 G0028
 Threat Group-1314
-Threat Group-1314 actors used a victim's endpoint management platform, Altiris, for lateral movement.[12]
+Threat Group-1314 actors used a victim's endpoint management platform, Altiris, for lateral movement.[14]
 G1055
 VOID MANTICORE
-VOID MANTICORE has leveraged legitimate built-in features of cloud-based management platforms to include mobile device management (MDM) and Remote Monitoring and Management (RMM) solutions.[13][14] VOID MANTICORE has also initiated built-in remote wipe instructions using a privileged account within Microsoft Intune.[13][14]
+VOID MANTICORE has leveraged legitimate built-in features of cloud-based management platforms to include mobile device management (MDM) and Remote Monitoring and Management (RMM) solutions.[15][16] VOID MANTICORE has also initiated built-in remote wipe instructions using a privileged account within Microsoft Intune.[15][16]
 S0041
 Wiper
-It is believed that a patch management system for an anti-virus product commonly installed among targeted companies was used to distribute the Wiper malware.[15]
+It is believed that a patch management system for an anti-virus product commonly installed among targeted companies was used to distribute the Wiper malware.[17]
 ## Mitigations
 ID
 Mitigation
@@ -126,6 +132,8 @@ Venere, G. Neal, C. (2022, June 21). Avos ransomware group expands with new atta
 Cybersecurity and Infrastructure Security Agency. (2025, March 12). AA25-071A #StopRansomware: Medusa Ransomware. Retrieved October 15, 2025.
 Lior Rochberger, Tom Fakterman, Robert Falcone. (2023, September 22). Cyberespionage Attacks Against Southeast Asian Government Linked to Stately Taurus, Aka Mustang Panda. Retrieved September 9, 2025.
 Nathaniel Morales, Nick Dai. (2025, February 18). Earth Preta Mixes Legitimate and Malicious Components to Sidestep Detection. Retrieved September 10, 2025.
+El-Banna, M., et al. (2025, November 17). Frontline Intelligence: Analysis of UNC1549 TTPs, Custom Tools, and Malware Targeting the Aerospace and Defense Ecosystem. Retrieved September 28, 2026.
+CISA. (2025, September 3). Countering Chinese State-Sponsored Actors Compromise of Networks Worldwide to Feed Global Espionage System. Retrieved September 22, 2026.
 MSTIC. (2022, October 14). New “Prestige” ransomware impacts organizations in Ukraine and Poland. Retrieved January 19, 2023.
 SOCRadar. (2024, March 18). Dark Web Profile: ShinyHunters. Retrieved May 18, 2026.
 Group-IB. (2018, September). Silence: Moving Into the Darkside. Retrieved May 5, 2020.

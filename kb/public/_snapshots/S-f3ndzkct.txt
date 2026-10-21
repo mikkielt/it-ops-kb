@@ -1,0 +1,169 @@
+source: S-f3ndzkct
+url: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/import-powershelldatafile?view=powershell-7.5
+title: Import-PowerShellDataFile
+publisher: Microsoft Learn (PowerShell-Docs)
+licence: CC BY 4.0 (public mirror MicrosoftDocs/PowerShell-Docs)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Import-PowerShellDataFile
+
+- Module:
+    - Microsoft.PowerShell.Utility Module
+
+Imports values from a `.psd1` file without invoking its contents.
+
+## Syntax
+
+### ByPath (Default)
+
+```Syntax
+Import-PowerShellDataFile
+    [-Path] <String[]>
+    [-SkipLimitCheck]
+    [<CommonParameters>]
+```
+
+### ByLiteralPath
+
+```Syntax
+Import-PowerShellDataFile
+    [-LiteralPath] <String[]>
+    [-SkipLimitCheck]
+    [<CommonParameters>]
+```
+
+## Description
+
+The `Import-PowerShellDataFile` cmdlet safely imports key-value pairs from hashtables defined in a `.psd1` file. The values could be imported using `Invoke-Expression` on the contents of the file. However, `Invoke-Expression` runs any code contained in the file. This could produce unwanted results or execute unsafe code. `Import-PowerShellDataFile` imports the data without invoking the code.
+
+## Examples
+
+### Example 1: Retrieve values from PSD1
+
+This example retrieves the key-value pairs stored in the hashtable kept inside the `Configuration.psd1` file. `Get-Content` is used to show the contents of the `Configuration.psd1` file.
+
+```powershell
+Get-Content .\Configuration.psd1
+$config = Import-PowerShellDataFile .\Configuration.psd1
+$config.AllNodes
+```
+
+```Output
+@{
+    AllNodes = @(
+        @{
+            NodeName = 'DSC-01'
+        }
+        @{
+            NodeName = 'DSC-02'
+        }
+    )
+}
+
+Name                           Value
+----                           -----
+NodeName                       DSC-01
+NodeName                       DSC-02
+```
+
+## Parameters
+
+### -LiteralPath
+
+The path to the file being imported. All characters in the path are treated as literal values. Wildcard characters aren't processed.
+
+#### Parameter properties
+
+| Type: | String[] |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | PSPath, LP |
+
+#### Parameter sets
+
+ ByLiteralPath
+
+| Position: | 0 |
+| --- | --- |
+| Mandatory: | True |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | True |
+| Value from remaining arguments: | False |
+
+### -Path
+
+The path to the file being imported. Wildcards are allowed but only the first matching file is imported.
+
+#### Parameter properties
+
+| Type: | String[] |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | True |
+| DontShow: | False |
+
+#### Parameter sets
+
+ ByPath
+
+| Position: | 0 |
+| --- | --- |
+| Mandatory: | True |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -SkipLimitCheck
+
+By default `Import-PowerShellDataFile` is limited to 500 keys containing a maximum of 5000 AST nodes when importing from a `.psd1` file. Use **SkipLimitCheck** to bypass these limits.
+
+Important
+
+You should only bypass the limits if you are sure the file is safe to import. It's possible for a malicious actor to create a `.psd1` file with a large number of keys or AST nodes that could result in a denial of service.
+
+#### Parameter properties
+
+| Type: | Switch |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ All
+
+| Position: | 0 |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable, -ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters.
+
+## Outputs
+
+### Hashtable
+
+This cmdlet returns the data from the file as a hash table.
+
+## Related Links
+
+- Invoke-Expression
+- Import-LocalizedData
+- about_Data_Files
+
+---
+
+## Other Supported Versions
+
+- powershell-5.1
+- powershell-7.4
+- powershell-7.6
+- powershell-7.7

@@ -3,10 +3,10 @@ url: https://ai.google.dev/gemini-api/docs/function-calling
 title: Function calling with the Gemini API
 publisher: Google (ai.google.dev)
 licence: CC BY 4.0 (Google Developers site policies; code Apache-2.0)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-Gemini 3.8 Flash is now available. Try it out.
+Gemini 4 Argon is now available. Try it out.
 Home
 Gemini API
 Docs

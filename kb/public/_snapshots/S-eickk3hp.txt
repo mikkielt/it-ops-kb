@@ -3,7 +3,7 @@ url: https://www.edpb.europa.eu/news/edpb-sheds-light-on-anonymisation-and-web-s
 title: EDPB news: anonymisation and web scraping guidelines, final blockchain guidelines (2026-07-08)
 publisher: EDPB
 licence: EDPB reuse notice (reuse authorised, source acknowledged, meaning not distorted)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 ##
@@ -44,14 +44,14 @@ Basic principles
 ## Latest news
 RSS Feed
 National News
-ie
-### The Irish Data Protection Commission fines Google 403 000 000 EUR following Inquiry into Google’s processing of location data
-23 September 2026
-National News
-es
-### The Spanish DPA fined Securitas Direct 100 000 EUR for making the exercise of data subject rights more difficult by directing individuals to a chargeable telephone number
-22 September 2026
+no
+### Norwegian DPA fines Xandr EUR 8 600 000 for unlawful processing of personal data
+16 October 2026
 EDPB News
-### EDPB harmonises fining methodology and adopts final DSA-GDPR guidelines
-21 September 2026
+### EDPB publishes statement on the data protection challenges of smart glasses
+13 October 2026
+National News
+it
+### Italian DPA fines security company EUR 39 000 for violations concerning employees’ data
+09 October 2026
 All news

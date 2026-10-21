@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/en-us/power-platform/admin/wp-data-loss-prevent
 title: Data policies - Power Platform
 publisher: Microsoft (learn.microsoft.com)
 licence: CC BY 4.0 (public mirror MicrosoftDocs/power-platform)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Data policies - Power Platform | Microsoft Learn
@@ -38,15 +38,15 @@ Learn more about creating and managing custom connectors.
 
 Virtual connectors are connectors that appear in data policies for administrators to control, but they're not based on a RESTful API. The proliferation of virtual connectors comes from data policies being one of the most popular governance controls in Power Platform. More of these types of "on/off" capabilities are expected to surface as rules within Environment groups.
 
-Microsoft provides several virtual connectors for governing Microsoft Copilot Studio. These connectors facilitate the ability to turn off various features of Copilots and chatbots.
+Microsoft provides several virtual connectors for governing Microsoft Copilot Studio. These connectors facilitate the ability to turn off various features of agents.
 
 Learn about virtual connectors and their role in data loss prevention in Microsoft Copilot Studio.
 
 Important
 
-Advanced connector policies (ACP) **don't support** virtual connectors and won't add support in the future. ACP's singular focus is to be the most robust governance feature for real certified connectors. The following transition paths apply to virtual connectors:
+Advanced connector policies (ACP) **don't support** virtual connectors and there are no plans to add support in the future. ACP's singular focus is to be the most robust governance feature for real certified connectors. The following transition paths apply to virtual connectors:
 
-- **Copilot Studio virtual connectors** are evolving into their own dedicated governance rules, separate from both data policies and ACP.
+- **Copilot Studio virtual connectors** are evolving into their own dedicated governance rules, separate from both data policies and ACP. See Configure skills in the Power Platform admin center.
 - **Desktop Flow virtual connectors** are transitioning to certified connectors, at which point ACP manages them.
 
 ### Model Context Protocol (MCP) connectors

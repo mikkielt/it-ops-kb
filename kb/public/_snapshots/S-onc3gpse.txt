@@ -3,7 +3,7 @@ url: https://modelcontextprotocol.io/specification/2026-07-28/basic/patterns/sub
 title: Subscriptions (MCP specification 2026-07-28)
 publisher: modelcontextprotocol.io
 licence: Apache-2.0 (specification; unrelicensed contributions MIT), per modelcontextprotocol LICENSE
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 > ## Documentation Index
@@ -11,8 +11,6 @@ changes: normalized to text by _tools/provider.py (raw form; front matter, link 
 > Use this file to discover all available pages before exploring further.
 
 # Subscriptions
-
-<div id="enable-section-numbers" />
 
 `subscriptions/listen` opens a long-lived notification stream from the server to the
 client. Unlike one-off requests, the stream stays open and delivers notifications until
@@ -49,11 +47,11 @@ notification types the client has not explicitly requested.
 
 ### Notification Filter
 
-| Field                   | Type       | Description                                                       |
-| ----------------------- | ---------- | ----------------------------------------------------------------- |
-| `toolsListChanged`      | `boolean`  | Receive `notifications/tools/list_changed` when tools change      |
-| `promptsListChanged`    | `boolean`  | Receive `notifications/prompts/list_changed` when prompts change  |
-| `resourcesListChanged`  | `boolean`  | Receive `notifications/resources/list_changed` when list changes  |
+| Field | Type | Description |
+| - | - | - |
+| `toolsListChanged` | `boolean` | Receive `notifications/tools/list_changed` when tools change |
+| `promptsListChanged` | `boolean` | Receive `notifications/prompts/list_changed` when prompts change |
+| `resourcesListChanged` | `boolean` | Receive `notifications/resources/list_changed` when list changes |
 | `resourceSubscriptions` | `string[]` | Receive `notifications/resources/updated` for these resource URIs |
 
 All fields are optional. Omitting a field is equivalent to not subscribing to that

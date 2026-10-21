@@ -3,7 +3,7 @@ url: https://docs.langchain.com/langsmith/deploy-to-self-hosted-overview
 title: Self-hosted deployment overview (LangSmith)
 publisher: LangChain (langchain-ai/docs)
 licence: MIT (langchain-ai/docs LICENSE)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Deploy to self-hosted
@@ -43,8 +43,8 @@ In return, you can integrate with your own Postgres and Redis, size CPU and memo
 Next steps
 ## Pick a topology
 Compare standalone server, full platform, and hybrid to find the right fit.
-## Install the full platform
-Deploy LangSmith on Kubernetes with the control plane and data plane.
+## Enable LangSmith Deployment
+Add a control plane and data plane to deploy and manage agents on self-hosted LangSmith.
 Connect these docs to your agent of choice via MCP for real-time answers.
 Edit this page on GitHub or file an issue.
 Was this page helpful?

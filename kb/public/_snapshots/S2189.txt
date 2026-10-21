@@ -3,7 +3,7 @@ url: https://docs.gitlab.com/user/model_context_protocol/mcp_server/
 title: GitLab MCP server
 publisher: GitLab
 licence: CC BY-SA 4.0 (GitLab docs)
-retrieved: 2026-10-17
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 /
@@ -54,7 +54,8 @@ These tokens cannot have the mcp scope, so the GitLab MCP server rejects them, e
 Legacy personal access tokens
 Project access tokens
 Group access tokens
-If you use one of these tokens, the GitLab MCP server returns 403 Forbidden.
+If you use one of these tokens, the GitLab MCP server returns 403 Forbidden with the insufficient_scope error.
+The response names the mcp scope, which you can’t add to these tokens.
 Support for these authentication methods is proposed in issue 586184.
 ## Connect a client to the GitLab MCP server
 The GitLab MCP server supports two transport types:

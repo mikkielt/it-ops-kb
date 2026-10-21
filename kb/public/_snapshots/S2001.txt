@@ -3,25 +3,41 @@ url: https://github.com/open-telemetry/semantic-conventions-genai
 title: semantic-conventions-genai repository
 publisher: OpenTelemetry Authors
 licence: Apache-2.0
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-open-telemetry
-/
+## Repository navigation
 semantic-conventions-genai
 Public
-Notifications
-You must be signed in to change notification settings
-Fork
-108
-Star
-394
+NotificationsYou must be signed in to change notification settings
+Fork129 (129)
+Star464 (464)You must be signed in to star a repository
+## About
+opentelemetry.io
+### Resources
+Readme
+Apache-2.0 license
+### Code of conduct
+Code of conduct
+### Contributing
+Contributing
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+464 stars
+### Watchers
+8 watching
+### Forks
+129 forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit
 ## History
-640 Commits
-640 Commits
+669 Commits
+669 Commits
 ## Folders and files
 NameName
 Last commit message
@@ -103,11 +119,11 @@ Security policy
 Activity
 Custom properties
 ### Stars
-394 stars
+464 stars
 ### Watchers
-9 watching
+8 watching
 ### Forks
-108 forks
+129 forks
 Report repository
 ## Releases
 ## Packages

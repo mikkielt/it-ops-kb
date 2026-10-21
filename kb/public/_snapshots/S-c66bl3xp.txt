@@ -3,14 +3,14 @@ url: https://learn.microsoft.com/azure/ai-services/content-safety/quickstart-jai
 title: Quickstart: Detect prompt attacks with Prompt Shields
 publisher: Microsoft Learn
 licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-ai-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Quickstart: Detect prompt attacks with Prompt Shields - Azure AI services | Microsoft Learn
 
-In this quickstart, you use Prompt Shields to detect potential security threats in user inputs and documents.
+In this quickstart, you use the Azure AI Content Safety Prompt Shields API to detect user prompt attacks and document attack patterns in supplied text.
 
-Prompt Shields in Azure AI Content Safety detects both User Prompt Attacks (malicious inputs) and Document Attacks (harmful content embedded in documents). For a comprehensive background on Prompt Shields capabilities and objectives, see the Prompt Shields concept page. For API input limits, see the Input requirements section of the Overview.
+Provide text to be analyzed for user prompt attacks in the `userPrompt` field and text to be analyzed for document attacks in the `documents` array. These fields select the corresponding Prompt Shields analyses. Azure AI Content Safety doesn't independently verify the submitted content's provenance; customers define provenance through their integration and can interpret results in that application context. The API returns a Boolean `attackDetected` result for the `userPrompt` value and for each supplied document. Document attacks are injected instructions in document content, not harmful document content generally. For a comprehensive background on Prompt Shields capabilities and objectives, see the Prompt Shields concept page. For API input limits, see the Input requirements section of the Overview.
 
 ## Quick example
 
@@ -26,7 +26,7 @@ curl --location --request POST '<endpoint>/contentsafety/text:shieldPrompt?api-v
 }'
 ```
 
-Expected response:
+The following example illustrates the response structure. The `attackDetected` values depend on the submitted content:
 
 ```json
 {

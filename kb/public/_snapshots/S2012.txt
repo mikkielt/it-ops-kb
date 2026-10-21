@@ -3,25 +3,44 @@ url: https://github.com/modelcontextprotocol/registry
 title: MCP Registry (community-driven server registry; server.json schema)
 publisher: Model Context Protocol community (Registry Working Group)
 licence: Apache-2.0 (new code; unrelicensed contributions MIT; docs CC BY 4.0)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-modelcontextprotocol
-/
+## Repository navigation
 registry
 Public
-Notifications
-You must be signed in to change notification settings
-Fork
-1k
-Star
-7.3k
+NotificationsYou must be signed in to change notification settings
+Fork1k (1k)
+Star7.4k (7.4k)You must be signed in to star a repository
+## About
+A community driven registry service for Model Context Protocol (MCP) servers.
+github.com/modelcontextprotocol/registry/tree/main/docs
+### Topics
+mcpmcp-servers
+### Resources
+Readme
+License
+### Code of conduct
+Code of conduct
+### Contributing
+Contributing
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+7.4k stars
+### Watchers
+84 watching
+### Forks
+1.0k forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit
 ## History
-716 Commits
-716 Commits
+727 Commits
+727 Commits
 ## Folders and files
 NameName
 Last commit message
@@ -62,6 +81,8 @@ tools
 .ko.dockerignore
 .ko.yaml
 .ko.yaml
+AGENTS.md
+AGENTS.md
 CLAUDE.md
 CLAUDE.md
 CONTRIBUTING.md
@@ -127,6 +148,7 @@ Releases: latest, v1.0.0, v1.1.0, etc.
 Continuous: main (latest main branch build)
 Development: main-<date>-<sha> (specific commit builds)
 #### Publishing a server
+Publishing an MCP server does not happen through a pull request to this repository. Adding a server.json, a server directory, or an entry in data/seed.json will not publish or list your server, even if the PR is merged. Use the mcp-publisher CLI from your server's own project instead.
 To publish a server, we've built a simple CLI. You can use it with:
 # Build the latest CLI
 make publisher
@@ -193,9 +215,9 @@ Security policy
 Activity
 Custom properties
 ### Stars
-7.3k stars
+7.4k stars
 ### Watchers
-83 watching
+84 watching
 ### Forks
 1.0k forks
 Report repository

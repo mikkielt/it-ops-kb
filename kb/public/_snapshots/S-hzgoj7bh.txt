@@ -3,7 +3,7 @@ url: https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/function-c
 title: Introduction to function calling (Vertex AI)
 publisher: Google Cloud
 licence: CC BY 4.0 (Google Developers site policies; code Apache-2.0)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 Home
@@ -37,6 +37,8 @@ cases.
 The following models support function calling:
 Gemini models:
 #### Click to expand supported models
+Gemini 4 Argon Cyber Permissive
+Gemini 4 Argon
 Gemini 3.8 Live
 Gemini 3.8 Flash
 Gemini 3.7 Flash
@@ -1782,4 +1784,4 @@ its answers.
 ## What's next
 See the API reference for function calling.
 Except as otherwise noted, the content of this page is licensed under the Creative Commons Attribution 4.0 License, and code samples are licensed under the Apache 2.0 License. For details, see the Google Developers Site Policies. Java is a registered trademark of Oracle and/or its affiliates.
-Last updated 2026-09-25 UTC.
+Last updated 2026-10-20 UTC.

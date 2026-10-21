@@ -3,7 +3,7 @@ url: https://deepeval.com/docs/evaluation-mcp
 title: Model Context Protocol (MCP) — DeepEval docs
 publisher: Confident AI
 licence: Apache-2.0 (docs in confident-ai/deepeval)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 💥 Introducing JevEval: Jev-as-a-Judge for LLM evaluation. Read the post →
@@ -235,8 +235,8 @@ How do I attach MCP data to a test case?
 For single-turn, populate the MCP call parameters on your LLMTestCase. For multi-turn, pass your MCPServer instances to a ConversationalTestCase via mcp_servers, and optionally set per-turn calls like mcp_tools_called on each Turn.
 Which metrics work with MCP test cases?
 Use the MCP metrics (such as MultiTurnMCPMetric) to score whether your app called the right tools, resources, and prompts correctly.
-Can my team visualize MCP tool/resource calls on the cloud in a UI?
-MCP evals run locally. For teams that want to inspect which tools, resources, and prompts were invoked across runs, Confident AI (the platform from the deepeval team) can visualize MCP interactions and their scores in a shared cloud UI — optional, with no change to your evaluation code.
+Can I catch failing MCP tool calls in production?
+MCP evals run locally. Once you're live, Confident AI surfaces production traces where tool, resource, or prompt calls went wrong and turns them into your next eval — optional, with no change to your evaluation code.
 Prompts
 Previous Page
 End-to-End Evals

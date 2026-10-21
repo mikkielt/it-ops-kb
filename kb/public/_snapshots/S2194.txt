@@ -3,7 +3,7 @@ url: https://github.com/upstash/context7
 title: upstash/context7
 publisher: Upstash (community-contributed library index)
 licence: MIT
-retrieved: 2026-10-17
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 ## Repository navigation
@@ -11,7 +11,7 @@ context7
 Public
 NotificationsYou must be signed in to change notification settings
 Fork3.1k (3.1k)
-Star63.2k (63.2k)You must be signed in to star a repository
+Star63.4k (63.4k)You must be signed in to star a repository
 ## About
 Context7 Platform -- Up-to-date docs for AI agents
 context7.com
@@ -25,7 +25,7 @@ Security policy
 Activity
 Custom properties
 ### Stars
-63.2k stars
+63.4k stars
 ### Watchers
 164 watching
 ### Forks
@@ -35,8 +35,8 @@ BranchesTags
 Open more actions menu
 ## Latest commit
 ## History
-1,055 Commits
-1,055 Commits
+1,068 Commits
+1,068 Commits
 ## Folders and files
 NameName
 Last commit message
@@ -197,7 +197,7 @@ Security policy
 Activity
 Custom properties
 ### Stars
-63.2k stars
+63.4k stars
 ### Watchers
 164 watching
 ### Forks

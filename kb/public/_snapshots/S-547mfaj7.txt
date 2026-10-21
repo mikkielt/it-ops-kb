@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/azure/ai-services/content-safety/overview
 title: What is Azure AI Content Safety?
 publisher: Microsoft Learn
 licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-ai-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # What is Azure AI Content Safety? - Azure AI services | Microsoft Learn
@@ -118,33 +118,7 @@ See the What's new page for upcoming deprecations.
 
 ### Input requirements
 
-See the following list for the input requirements for each feature.
-
-- **Analyze text API**:
-    - Default maximum length: 10K characters (split longer texts as needed).
-- **Analyze image API**:
-    - Maximum image file size: 4 MB
-    - Dimensions between 50 x 50 and 7200 x 7,200 pixels.
-    - Images can be in JPEG, PNG, GIF, BMP, TIFF, or WEBP formats.
-- **Analyze multimodal API (preview)**:
-    - Default maximum text length: 1K characters.
-    - Maximum image file size: 4 MB
-    - Dimensions between 50 x 50 and 7200 x 7,200 pixels.
-    - Images can be in JPEG, PNG, GIF, BMP, TIFF, or WEBP formats.
-- **Prompt Shields API**:
-    - Maximum prompt length: 10K characters.
-    - Up to five documents with a total of 10K characters.
-- **Groundedness detection API (preview)**:
-    - Maximum length for grounding sources: 55,000 characters (per API call).
-    - Maximum text and query length: 7,500 characters.
-    - Minimum query length: 3 words.
-- **Protected material detection APIs**:
-    - Default maximum length: 10K characters.
-    - Default minimum length: 110 characters (for scanning LLM completions, not user prompts).
-- **Custom categories (standard) API (preview)**:
-    - Maximum inference input length: 1K characters.
-- **Task adherence (preview)**:
-    - Maximum input length: 100K characters.
+For more information, see Input requirements.
 
 ### Language support
 

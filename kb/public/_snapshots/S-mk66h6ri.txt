@@ -1,0 +1,17 @@
+source: S-mk66h6ri
+url: https://developers.cloudflare.com/fundamentals/api/how-to/roll-token/
+title: Cloudflare docs: Roll tokens
+publisher: Cloudflare
+licence: CC-BY-4.0 (cloudflare/cloudflare-docs)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Roll tokens
+Last updated Apr 20, 2026||View as Markdown|Agent setup
+If your token is lost or compromised, you can either create a new token or roll your token to generate a new secret. Rolling your API token into a new one will invalidate the previous token, but the access and permissions will be the same as the previous API token. The new token uses the scannable format, which allows credential scanning tools to detect leaked tokens.
+To roll your API token:
+Go to My Profile > API Tokens.
+Go to API Tokens ↗
+Next to the API token you want to roll, select the three dot icon > Roll.
+Select Confirm to generate a new API token.
+Was this helpful?

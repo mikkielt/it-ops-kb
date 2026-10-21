@@ -1,0 +1,54 @@
+source: S-43gqmseb
+url: https://github.com/projectfluent/python-fluent/tree/fluent.runtime@0.4.0/fluent.runtime/fluent/runtime
+title: python-fluent: fluent.runtime 0.4.0 package directory listing
+publisher: Project Fluent
+licence: Apache-2.0 (repository LICENSE)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+## Repository navigation
+## Expand file tree
+/
+# runtime
+/
+Copy path
+## Directory actions
+## More options
+More options
+## Directory actions
+## More options
+More options
+## Latest commit
+## History
+History
+History
+/
+# runtime
+/
+Copy path
+## Folders and files
+NameName
+Last commit message
+Last commit date
+### parent directory
+..
+__init__.py
+__init__.py
+builtins.py
+builtins.py
+bundle.py
+bundle.py
+errors.py
+errors.py
+fallback.py
+fallback.py
+prepare.py
+prepare.py
+py.typed
+py.typed
+resolver.py
+resolver.py
+types.py
+types.py
+utils.py
+utils.py

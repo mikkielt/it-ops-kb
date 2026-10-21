@@ -1,0 +1,99 @@
+source: S-dn5ck62j
+url: https://cli.github.com/manual/gh_pr_list
+title: gh pr list (GitHub CLI manual)
+publisher: GitHub (cli.github.com)
+licence: MIT (cli/cli LICENSE; the manual is generated from it)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+## gh pr list
+gh pr list [flags]
+List pull requests in a GitHub repository. By default, this only lists open PRs.
+The search query syntax is documented here:
+https://docs.github.com/en/search-github/searching-on-github/searching-issues-and-pull-requests
+On supported GitHub hosts, advanced issue search syntax can be used in the
+--search query. For more information about advanced issue search, see:
+https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/filtering-and-searching-issues-and-pull-requests#building-advanced-filters-for-issues
+### Options
+--app <string>
+Filter by GitHub App author
+-a,
+--assignee <string>
+Filter by assignee
+-A,
+--author <string>
+Filter by author (use --app to filter by a GitHub App)
+-B,
+--base <string>
+Filter by base branch
+-d,
+--draft
+Filter by draft state
+-H,
+--head <string>
+Filter by head branch ("<owner>:<branch>" syntax not supported)
+-q,
+--jq <expression>
+Filter JSON output using a jq expression
+--json <fields>
+Output JSON with the specified fields
+-l,
+--label <strings>
+Filter by label
+-L,
+--limit <int> (default 30)
+Maximum number of items to fetch
+-S,
+--search <query>
+Search pull requests with query
+-s,
+--state <string> (default "open")
+Filter by state: {open|closed|merged|all}
+-t,
+--template <string>
+Format JSON output using a Go template; see "gh help formatting"
+-w,
+--web
+List pull requests in the web browser
+### Options inherited from parent commands
+-R,
+--repo <[HOST/]OWNER/REPO>
+Select another repository using the [HOST/]OWNER/REPO format
+### ALIASES
+gh pr ls
+### JSON Fields
+additions, assignees, author, autoMergeRequest, baseRefName, baseRefOid, body, changedFiles, closed, closedAt, closingIssuesReferences, comments, commits, createdAt, deletions, files, fullDatabaseId, headRefName, headRefOid, headRepository, headRepositoryOwner, id, isCrossRepository, isDraft, labels, latestReviews, maintainerCanModify, mergeCommit, mergeStateStatus, mergeable, mergedAt, mergedBy, milestone, number, potentialMergeCommit, projectCards, projectItems, reactionGroups, reviewDecision, reviewRequests, reviews, state, statusCheckRollup, title, updatedAt, url
+### Examples
+# List PRs authored by you
+$ gh pr list --author "@me"
+# List PRs opened by a GitHub App such as Dependabot
+$ gh pr list --app dependabot
+# List PRs with a specific head branch name
+$ gh pr list --head "typo"
+# List only PRs with all of the given labels
+$ gh pr list --label bug --label "priority 1"
+# Filter PRs using search syntax
+$ gh pr list --search "status:success review:required"
+# Find a PR that introduced a given commit
+$ gh pr list --search "<SHA>" --state merged
+### See also
+gh pr
+### In use
+#### Default behavior
+You will see the most recent 30 open items.
+# Viewing a list of open pull requests
+~/Projects/my-project$ gh pr list
+Pull requests for owner/repo
+#14 Upgrade to Prettier 1.19 prettier
+#14 Extend arrow navigation in lists for MacOS arrow-nav
+#13 Add Support for Windows Automatic Dark Mode dark-mode
+#8 Create and use keyboard shortcut react component shortcut
+~/Projects/my-project$
+#### Filtering with flags
+You can use flags to filter the list for your specific use cases.
+# Viewing a list of closed pull requests assigned to a user
+~/Projects/my-project$ gh pr list --state closed --assignee user
+Pull requests for owner/repo
+#13 Upgrade to Electron 7 electron-7
+#8 Release Notes Writing Guide release-notes
+~/Projects/my-project$

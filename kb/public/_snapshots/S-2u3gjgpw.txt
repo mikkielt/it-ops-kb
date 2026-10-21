@@ -1,0 +1,9 @@
+source: S-2u3gjgpw
+url: https://adr.github.io/
+title: Architectural Decision Records (ADRs)
+publisher: adr GitHub organization
+licence: MIT (adr/adr.github.io LICENSE); the page footer states CC BY 4.0
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+

@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/azure/ai-foundry/openai/how-to/deployment-types
 title: Deployment types for Microsoft Foundry Models
 publisher: Microsoft Learn
 licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-ai-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Understanding deployment types in Microsoft Foundry Models - Microsoft Foundry | Microsoft Learn
@@ -136,7 +136,7 @@ Global Standard deployments use Azure's global infrastructure to dynamically rou
 
 Customers with high consistent volume might experience greater latency variability. The threshold is set per model. To learn more, see the Quotas page. For applications that require lower latency variance at large workload usage, consider provisioned throughput.
 
-Global Standard supports priority processing for faster response times on a pay-as-you-go basis. To learn more, see Priority processing for Foundry models.
+Global Standard supports request-level processing tiers. Use Flex processing for lower-cost, delay-tolerant workloads, or use Priority processing for faster response times on a pay-as-you-go basis.
 
 ## Global Provisioned
 

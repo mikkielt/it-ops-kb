@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/agent-framework/agents/observability
 title: Observability
 publisher: Microsoft Learn
 licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-ai-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Observability | Microsoft Learn
@@ -374,7 +374,7 @@ These are wrappers of the OpenTelemetry API that return a tracer or meter from t
 The following environment variables control Agent Framework observability:
 
 - `ENABLE_INSTRUMENTATION` - Default is `true`; set to `false` to disable OpenTelemetry instrumentation.
-- `ENABLE_SENSITIVE_DATA` - Default is `false`, set to `true` to enable logging of sensitive data (prompts, responses, function call arguments, and results). Be careful with this setting as it might expose sensitive data.
+- `ENABLE_SENSITIVE_DATA` - Default is `false`, set to `true` to enable logging of sensitive data (prompts, responses, function call arguments, function call results, and exception messages). Be careful with this setting as it might expose sensitive data.
 - `ENABLE_MESSAGE_EVENTS` - Default is `true`; values of `true`, `1`, `yes`, or `on` enable the v1.36 message and choice log events, case-insensitively. Any other set value disables them. These events are emitted only when instrumentation and sensitive data are also enabled.
 - `ENABLE_CONSOLE_EXPORTERS` - Default is `false`, set to `true` to enable console output for telemetry.
 - `VS_CODE_EXTENSION_PORT` - Port for AI Toolkit or Microsoft Foundry VS Code extension integration.
@@ -389,7 +389,7 @@ Agent Framework also adds its package and version to the User-Agent of supported
 
 Warning
 
-Sensitive information includes prompts, responses, and more, and should only be enabled in development or test environments. It is not recommended to enable this in production as it may expose sensitive data.
+Sensitive information includes prompts, responses, tool inputs and outputs, and exception messages. Enable it only when your telemetry exporter, access controls, and retention policy are appropriate for that data.
 
 #### Standard OpenTelemetry environment variables
 
@@ -557,6 +557,10 @@ The metrics that are created are:
 - For function invocation during the `execute_tool` operations:
 
     - `agent_framework.function.invocation.duration` (histogram): This metric measures the duration of each function execution, in seconds.
+
+Function invocation metrics never include tool arguments or results, even when sensitive-data capture adds those values to eligible `execute_tool` spans.
+
+When sensitive-data capture is disabled, failed Python operations retain an `ERROR` span status and the low-cardinality `error.type` attribute. Exception events, exception messages, and message-bearing status descriptions are omitted. Enabling sensitive-data capture adds those detailed diagnostics; runtime exception propagation is unchanged.
 
 ### Example trace output
 

@@ -3,19 +3,29 @@ url: https://github.com/AzureAD/microsoft-authentication-extensions-for-python
 title: microsoft-authentication-extensions-for-python (msal-extensions)
 publisher: Microsoft (AzureAD)
 licence: MIT
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-AzureAD
-/
+## Repository navigation
 microsoft-authentication-extensions-for-python
 Public
-Notifications
-You must be signed in to change notification settings
-Fork
-37
-Star
-44
+NotificationsYou must be signed in to change notification settings
+Fork37 (37)
+Star44 (44)You must be signed in to star a repository
+## About
+Microsoft Authentication Library extensions (MSAL EX) provides a persistence API that can save your data on disk, encrypted on Windows, macOS and Linux. Concurrent data access will be coordinated by a file lock mechanism.
+### Resources
+Readme
+MIT license
+Activity
+Custom properties
+### Stars
+44 stars
+### Watchers
+40 watching
+### Forks
+37 forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit

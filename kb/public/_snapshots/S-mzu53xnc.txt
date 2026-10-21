@@ -1,0 +1,332 @@
+source: S-mzu53xnc
+url: https://docs.rs/oxigraph/0.5.11/oxigraph/store/struct.BulkLoader.html
+title: docs.rs oxigraph 0.5.11: struct oxigraph::store::BulkLoader
+publisher: docs.rs (oxigraph crate rustdoc)
+licence: MIT OR Apache-2.0
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+oxigraph::store
+# Struct BulkLoader
+Source
+pub struct BulkLoader<'a> { /* private fields */ }
+Expand description
+A bulk loader allowing to load a lot of data quickly into the store.
+Memory usage is configurable using with_max_memory_size_in_megabytes
+and the number of used threads with with_num_threads.
+By default, the memory consumption target (excluding the system and RocksDB internal consumption)
+is around 2GB per thread and 2 threads.
+These targets are considered per loaded file.
+Usage example a dataset:
+use oxigraph::io::RdfFormat;
+use oxigraph::model::*;
+use oxigraph::store::Store;
+let store = Store::new()?;
+// quads file insertion
+let file =
+"<http://example.com> <http://example.com> <http://example.com> <http://example.com> .";
+let mut loader = store.bulk_loader();
+loader.load_from_slice(RdfFormat::NQuads, file)?;
+loader.commit()?;
+// we inspect the store contents
+let ex = NamedNodeRef::new("http://example.com")?;
+assert!(store.contains(QuadRef::new(ex, ex, ex, ex))?);
+## Implementations§
+Source§
+### impl BulkLoader<'_>
+Source
+#### pub fn with_num_threads(self, num_threads: usize) -> Self
+Sets the maximal number of background threads to be used by the bulk loader.
+The default value is the number of threads on the machine.
+Source
+#### pub fn with_max_memory_size_in_megabytes(self, max_memory_size: usize) -> Self
+Sets a rough idea about the maximal amount of memory to be used by this operation.
+This number must be at least a few megabytes per thread.
+Memory used by RocksDB and the system is not taken into account in this limit.
+Note that depending on the system behavior, this amount might never be reached or be blown up
+(for example, if the data contains very long IRIs or literals).
+By default, a target 2GB per used thread is used.
+Source
+#### pub fn without_atomicity(self) -> Self
+Allow the bulk loader to save also data to the database during the bulk loading instead of only when commit is called.
+When used with the RocksDB storage, it allows the storage to compact the data while the loading continues.
+Source
+#### pub fn on_progress(self, callback: impl Fn(u64) + Send + Sync + 'static) -> Self
+Adds a callback evaluated from time to time with the number of loaded triples.
+Source
+#### pub fn on_parse_error(
+self,
+callback: impl Fn(RdfParseError) -> Result<(), RdfParseError> + Send + Sync + 'static,
+) -> Self
+Adds a callback catching all parse errors and choosing if the parsing should continue
+by returning Ok or fail by returning Err.
+By default, the parsing fails.
+Source
+#### pub fn load_from_reader(
+&mut self,
+parser: impl Into<RdfParser>,
+reader: impl Read,
+) -> Result<(), LoaderError>
+Loads a file using the bulk loader.
+This function is optimized for large dataset loading speed. For small files, Store::load_from_reader might be more convenient.
+See the struct documentation for more details.
+To get better speed on valid datasets, consider enabling RdfParser::lenient option to skip some validations.
+Usage example:
+use oxigraph::store::Store;
+use oxigraph::io::{RdfParser, RdfFormat};
+use oxigraph::model::*;
+let store = Store::new()?;
+// insert a dataset file
+let file = "<http://example.com> <http://example.com> <http://example.com> <http://example.com/g> .";
+let mut loader = store.bulk_loader();
+loader.load_from_reader(
+RdfParser::from_format(RdfFormat::NQuads).lenient(), // we inject a custom parser with options
+file.as_bytes()
+)?;
+loader.commit()?;
+// insert a graph file
+let file = "<> <> <> .";
+let mut loader = store.bulk_loader();
+loader.load_from_reader(
+RdfParser::from_format(RdfFormat::Turtle)
+.with_base_iri("http://example.com")?
+.without_named_graphs() // No named graphs allowed in the input
+.with_default_graph(NamedNodeRef::new("http://example.com/g2")?), // we put the file default graph inside of a named graph
+file.as_bytes()
+)?;
+loader.commit()?;
+// we inspect the store contents
+let ex = NamedNodeRef::new("http://example.com")?;
+assert!(store.contains(QuadRef::new(ex, ex, ex, NamedNodeRef::new("http://example.com/g")?))?);
+assert!(store.contains(QuadRef::new(ex, ex, ex, NamedNodeRef::new("http://example.com/g2")?))?);
+Source
+#### pub fn load_from_slice(
+&mut self,
+parser: impl Into<RdfParser>,
+slice: &(impl AsRef<[u8]> + ?Sized),
+) -> Result<(), LoaderError>
+Loads serialized RDF in a slice using the bulk loader.
+This function is optimized for large dataset loading speed. For small files, Store::load_from_reader might be more convenient.
+See the struct documentation for more details.
+To get better speed on valid datasets, consider enabling RdfParser::lenient option to skip some validations.
+Usage example:
+use oxigraph::store::Store;
+use oxigraph::io::{RdfParser, RdfFormat};
+use oxigraph::model::*;
+let store = Store::new()?;
+// insert a dataset file
+let file = "<http://example.com> <http://example.com> <http://example.com> <http://example.com/g> .";
+let mut loader = store.bulk_loader();
+loader.load_from_slice(
+RdfParser::from_format(RdfFormat::NQuads).lenient(), // we inject a custom parser with options
+file
+)?;
+loader.commit()?;
+// insert a graph file
+let file = "<> <> <> .";
+let mut loader = store.bulk_loader();
+loader.load_from_slice(
+RdfParser::from_format(RdfFormat::Turtle)
+.with_base_iri("http://example.com")?
+.without_named_graphs() // No named graphs allowed in the input
+.with_default_graph(NamedNodeRef::new("http://example.com/g2")?), // we put the file default graph inside of a named graph
+file
+)?;
+loader.commit()?;
+// we inspect the store contents
+let ex = NamedNodeRef::new("http://example.com")?;
+assert!(store.contains(QuadRef::new(ex, ex, ex, NamedNodeRef::new("http://example.com/g")?))?);
+assert!(store.contains(QuadRef::new(ex, ex, ex, NamedNodeRef::new("http://example.com/g2")?))?);
+Source
+#### pub fn parallel_load_from_file(
+&mut self,
+parser: impl Into<RdfParser>,
+path: impl AsRef<Path>,
+) -> Result<(), LoaderError>
+Available on non-target_family=wasm only.
+Loads RDF file using the bulk loader.
+If the input format is N-Triples or N-Quads, it will spawn multiple parallel threads to parse the file.
+This function is optimized for large dataset loading speed. For small files, Store::load_from_reader might be more convenient.
+See the struct documentation for more details.
+To get better speed on valid datasets, consider enabling RdfParser::lenient option to skip some validations.
+Usage example:
+use oxigraph::store::Store;
+use oxigraph::io::{RdfParser, RdfFormat};
+use oxigraph::model::*;
+let store = Store::new()?;
+// insert a dataset file
+let file = "<http://example.com> <http://example.com> <http://example.com> <http://example.com/g> .";
+let mut loader = store.bulk_loader();
+loader.parallel_load_from_slice(
+RdfParser::from_format(RdfFormat::NQuads).lenient(), // we inject a custom parser with options
+file,
+)?;
+loader.commit()?;
+// insert a graph file
+let file = "<http://example.com> <http://example.com> <http://example.com> .";
+let mut loader = store.bulk_loader();
+loader.parallel_load_from_slice(
+RdfParser::from_format(RdfFormat::NTriples)
+.with_base_iri("http://example.com")?
+.without_named_graphs() // No named graphs allowed in the input
+.with_default_graph(NamedNodeRef::new("http://example.com/g2")?), // we put the file default graph inside of a named graph
+file,
+)?;
+loader.commit()?;
+// we inspect the store contents
+let ex = NamedNodeRef::new("http://example.com")?;
+assert!(store.contains(QuadRef::new(ex, ex, ex, NamedNodeRef::new("http://example.com/g")?))?);
+assert!(store.contains(QuadRef::new(ex, ex, ex, NamedNodeRef::new("http://example.com/g2")?))?);
+Source
+#### pub fn parallel_load_from_slice(
+&mut self,
+parser: impl Into<RdfParser>,
+slice: &(impl AsRef<[u8]> + ?Sized),
+) -> Result<(), LoaderError>
+Available on non-target_family=wasm only.
+Loads serialized RDF in a slice using the bulk loader.
+If the input format is N-Triples or N-Quads, it will spawn multiple parallel threads to parse the file.
+This function is optimized for large dataset loading speed. For small files, Store::load_from_reader might be more convenient.
+See the struct documentation for more details.
+To get better speed on valid datasets, consider enabling RdfParser::lenient option to skip some validations.
+Usage example:
+use oxigraph::store::Store;
+use oxigraph::io::{RdfParser, RdfFormat};
+use oxigraph::model::*;
+let store = Store::new()?;
+// insert a dataset file
+let file = "<http://example.com> <http://example.com> <http://example.com> <http://example.com/g> .";
+let mut loader = store.bulk_loader();
+loader.parallel_load_from_slice(
+RdfParser::from_format(RdfFormat::NQuads).lenient(), // we inject a custom parser with options
+file,
+)?;
+loader.commit()?;
+// insert a graph file
+let file = "<http://example.com> <http://example.com> <http://example.com> .";
+let mut loader = store.bulk_loader();
+loader.parallel_load_from_slice(
+RdfParser::from_format(RdfFormat::NTriples)
+.with_base_iri("http://example.com")?
+.without_named_graphs() // No named graphs allowed in the input
+.with_default_graph(NamedNodeRef::new("http://example.com/g2")?), // we put the file default graph inside of a named graph
+file
+)?;
+loader.commit()?;
+// we inspect the store contents
+let ex = NamedNodeRef::new("http://example.com")?;
+assert!(store.contains(QuadRef::new(ex, ex, ex, NamedNodeRef::new("http://example.com/g")?))?);
+assert!(store.contains(QuadRef::new(ex, ex, ex, NamedNodeRef::new("http://example.com/g2")?))?);
+Source
+#### pub fn load_quads(
+&mut self,
+quads: impl IntoIterator<Item = impl Into<Quad>>,
+) -> Result<(), StorageError>
+Adds a set of quads using the bulk loader.
+See the struct documentation for more details.
+Source
+#### pub fn load_ok_quads<EI, EO: From<StorageError> + From<EI>>(
+&mut self,
+quads: impl IntoIterator<Item = Result<impl Into<Quad>, EI>>,
+) -> Result<(), EO>
+Adds a set of quads using the bulk loader while breaking in the middle of the process in case of error.
+See the struct documentation for more details.
+Source
+#### pub fn commit(self) -> Result<(), StorageError>
+Saves all the quads loaded using the bulk loader into the store.
+## Auto Trait Implementations§
+§
+### impl<'a> !RefUnwindSafe for BulkLoader<'a>
+§
+### impl<'a> !UnwindSafe for BulkLoader<'a>
+§
+### impl<'a> Freeze for BulkLoader<'a>
+§
+### impl<'a> Send for BulkLoader<'a>
+§
+### impl<'a> Sync for BulkLoader<'a>
+§
+### impl<'a> Unpin for BulkLoader<'a>
+§
+### impl<'a> UnsafeUnpin for BulkLoader<'a>
+## Blanket Implementations§
+Source§
+### impl<T> Any for T
+where
+T: 'static + ?Sized,
+Source§
+#### fn type_id(&self) -> TypeId
+Gets the TypeId of self. Read more
+Source§
+### impl<T> Borrow<T> for T
+where
+T: ?Sized,
+Source§
+#### fn borrow(&self) -> &T
+Immutably borrows from an owned value. Read more
+Source§
+### impl<T> BorrowMut<T> for T
+where
+T: ?Sized,
+Source§
+#### fn borrow_mut(&mut self) -> &mut T
+Mutably borrows from an owned value. Read more
+Source§
+### impl<ST, DT> CastableFrom<ST, Initialized, Initialized> for DT
+where
+ST: ?Sized,
+DT: ?Sized,
+Source§
+### impl<ST, DT> CastableFrom<ST, Uninit, Uninit> for DT
+where
+ST: ?Sized,
+DT: ?Sized,
+Source§
+### impl<T> From<T> for T
+Source§
+#### fn from(t: T) -> T
+Returns the argument unchanged.
+Source§
+### impl<T, U> Into<U> for T
+where
+U: From<T>,
+Source§
+#### fn into(self) -> U
+Calls U::from(self).
+That is, this conversion is whatever the implementation of
+From<T> for U chooses to do.
+Source§
+### impl<T> Read<Exclusive, BecauseExclusive> for T
+where
+T: ?Sized,
+Source§
+### impl<T> Same for T
+Source§
+#### type Output = T
+Should always be Self
+Source§
+### impl<T, U> TryFrom<U> for T
+where
+U: Into<T>,
+Source§
+#### type Error = !
+The type returned in the event of a conversion error.
+Source§
+#### fn try_from(value: U) -> Result<T, !>
+Performs the conversion.
+Source§
+### impl<T, U> TryInto<U> for T
+where
+U: TryFrom<T>,
+Source§
+#### type Error = <U as TryFrom<T>>::Error
+The type returned in the event of a conversion error.
+Source§
+#### fn try_into(self) -> Result<U, <U as TryFrom<T>>::Error>
+Performs the conversion.
+Source§
+### impl<V, T> VZip<V> for T
+where
+V: MultiLane<T>,
+Source§
+#### fn vzip(self) -> V

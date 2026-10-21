@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/entra/id-governance/agent-id-governance-overvie
 title: Governing Agent Identities
 publisher: Microsoft
 licence: MIT (public mirror MicrosoftDocs/entra-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Governing Agent Identities - Microsoft Entra ID Governance | Microsoft Learn
@@ -42,7 +42,7 @@ The agent identity and the agent user allow AI agents to take on digital identit
 When created, agent identities have limited permissions, such as OAuth 2 delegated permission scopes inherited from their parent agent identity blueprint. In addition, agent identities can have resource access assigned to them directly via access packages. Agents can request an access package for own agent IDs, or have their owner or sponsor request one on their behalf. With access packages, you're able to assign agent identities access to the following resources:
 
 - Security Group memberships
-- Application OAuth API permissions, including Graph application permissions
+- OAuth API permissions, delegated and application permissions for Microsoft Graph and applications
 - Microsoft Entra roles
 
 To use access packages for agent identities, configure an access package with the required policy settings. When creating an access package assignment policy, in the **Who can get access** section, select **For users, service principals, and agent identities in your directory**, and then select the option of **All agents**.

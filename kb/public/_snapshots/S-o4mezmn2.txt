@@ -1,0 +1,27 @@
+source: S-o4mezmn2
+url: https://raw.githubusercontent.com/projectfluent/python-fluent/fluent.runtime@0.4.0/fluent.runtime/fluent/runtime/__init__.py
+title: python-fluent: fluent.runtime 0.4.0 package __init__.py
+publisher: Project Fluent
+licence: Apache-2.0 (repository LICENSE)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+from fluent.syntax import FluentParser
+from fluent.syntax.ast import Resource
+
+from .bundle import FluentBundle
+from .fallback import FluentLocalization, AbstractResourceLoader, FluentResourceLoader
+
+
+__all__ = [
+    'FluentLocalization',
+    'AbstractResourceLoader',
+    'FluentResourceLoader',
+    'FluentResource',
+    'FluentBundle',
+]
+
+
+def FluentResource(source: str) -> Resource:
+    parser = FluentParser()
+    return parser.parse(source)

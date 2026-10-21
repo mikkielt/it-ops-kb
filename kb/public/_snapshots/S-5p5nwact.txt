@@ -1,0 +1,67 @@
+source: S-5p5nwact
+url: https://csrc.nist.gov/pubs/sp/800/107/r1/final
+title: SP 800-107 Rev. 1 publication page (CSRC; planning note: NIST has decided to withdraw)
+publisher: NIST
+licence: US Government work (NIST: public information, may be copied)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+You are viewing this page in an unauthorized frame window.
+This is a potential security issue, you are being redirected to https://csrc.nist.gov.
+An official website of the United States government
+Here’s how you know
+Official websites use .gov
+A
+.gov website belongs to an official government
+organization in the United States.
+Secure .gov websites use HTTPS
+A
+lock (
+) or https:// means you’ve safely connected to
+the .gov website. Share sensitive information only on official,
+secure websites.
+Information Technology Laboratory
+Computer Security Resource Center
+Publications
+###
+NIST SP 800-107 Rev. 1
+# Recommendation for Applications Using Approved Hash Algorithms
+Share to Facebook
+Share to X
+Share to LinkedIn
+Share ia Email
+Documentation
+Topics
+Date Published: August 2012
+Supersedes:
+SP 800-107 (02/25/2009)
+Planning Note (12/20/2022):
+NIST has decided to withdraw SP 800-107 Rev. 1.
+The supplementary material currently in SP 800-107 Rev. 1 has been moved to the hash functions webpage.
+Next, the requirements listed in SP 800-107 Rev.1 that are not currently addressed in other standards will be moved to a new Implementation Guidance (IG) developed by the Cryptographic Module Validation Program (CMVP). These requirements will again be considered when hash-function-related standards are revised. Once the new IG has been published, NIST will withdraw SP 800-107 Rev. 1.
+See the full announcement and Crypto Publication Review Project for more details.
+#### Author(s)
+Quynh Dang (NIST)
+#### Abstract
+Hash functions that compute a fixed-length message digest from arbitrary length messages are widely used for many purposes in information security. This document provides security guidelines for achieving the required or desired security strengths when using cryptographic applications that employ the approved hash functions specified in Federal Information Processing Standard (FIPS) 180-4. These include functions such as digital signatures, Keyed-hash Message Authentication Codes (HMACs) and Hash-based Key Derivation Functions (Hash-based KDFs).
+Hash functions that compute a fixed-length message digest from arbitrary length messages are widely used for many purposes in information security. This document provides security guidelines for achieving the required or desired security strengths when using cryptographic applications that employ...
+See full abstract
+Hash functions that compute a fixed-length message digest from arbitrary length messages are widely used for many purposes in information security. This document provides security guidelines for achieving the required or desired security strengths when using cryptographic applications that employ the approved hash functions specified in Federal Information Processing Standard (FIPS) 180-4. These include functions such as digital signatures, Keyed-hash Message Authentication Codes (HMACs) and Hash-based Key Derivation Functions (Hash-based KDFs).
+Hide full abstract
+#### Keywords
+hash function; hash-based key derivation algorithms; hash value; HMAC; message digest; randomized hashing; random number generation; SHA; truncated hash values.; Digital signatures; cryptographic hash function; hash algorithms
+##### Control Families
+Identification and Authentication; System and Communications Protection; System and Information Integrity
+#### Documentation
+Publication:
+https://doi.org/10.6028/NIST.SP.800-107r1
+Download URL
+Supplemental Material:
+None available
+Document History:
+08/24/12: SP 800-107 Rev. 1 (Final)
+#### Topics
+Security and Privacy
+digital signatures
+Laws and Regulations
+Federal Information Security Modernization Act, OMB Circular A-130

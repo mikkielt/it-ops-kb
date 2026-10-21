@@ -2,7 +2,7 @@
 topic: mecm/software-updates
 priority: P1
 applies_to: "ConfigMgr current branch (sum/* docs, checked 2026-09-26)"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-3srrd54u, S-52r2vxes, S-qhg622vy, S-o6zrfc26, S-db7ytzl6, S-kwxqaq5a, S-clekmxkf, S-zmtevvp6, S-z37n7cfj, S-n25n5lgu, S-ydpvgyqk, S-f62oqjxw, S-7opbzkmt, S-2w3gpaiz, S-fq4xtwh3, S-ix237xay, S-doi7gc6l, S-a2rafanj, S-pm6pjuef, S-mtm4s4tw, S1593, S-7y4ltexp, S-u2cmp56o]
 status: complete
 ---

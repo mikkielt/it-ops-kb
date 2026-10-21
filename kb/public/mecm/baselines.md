@@ -2,7 +2,7 @@
 topic: mecm/baselines
 priority: P0
 applies_to: "ConfigMgr current branch 2603 (docs at MicrosoftDocs/memdocs 4b5429df)"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-f6ejsacc, S-smzttlyd, S-6war5y2t, S-pm6pjuef, S-xcvlnpgb, S-eswaciiy, S-g5gii62f]
 status: complete
 ---

@@ -3,18 +3,14 @@ url: https://docs.gitlab.com/ci/components/
 title: CI/CD components
 publisher: GitLab
 licence: CC BY-SA 4.0 (GitLab docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 /
 # CI/CD components
 Tier: Free, Premium, Ultimate
 Offering: GitLab.com, GitLab Self-Managed, GitLab Dedicated
-Introduced as an experimental feature in GitLab 16.0, with a feature flag named ci_namespace_catalog_experimental. Disabled by default.
-Enabled on GitLab.com and GitLab Self-Managed in GitLab 16.2.
-Feature flag ci_namespace_catalog_experimental removed in GitLab 16.3.
-Moved to beta in GitLab 16.6.
-Made generally available in GitLab 17.0.
+Generally available in GitLab 17.0.
 A CI/CD component is a reusable single pipeline configuration unit. Use components
 to create a small part of a larger pipeline, or even to compose a complete pipeline configuration.
 A component can be configured with input parameters for more
@@ -103,7 +99,7 @@ keyword. The component reference is formatted as <fully-qualified-domain-name>/<
 for example:
 yaml
 include:
-- component: $CI_SERVER_FQDN/my-org/security-components/secret-detection@1.0.0
+- component: $CI_SERVER_FQDN/my-org/security-components/[email protected]
 inputs:
 stage: build
 In this example:
@@ -376,7 +372,7 @@ In a project using the component:
 yaml
 stages: [verify, release]
 include:
-- component: $CI_SERVER_FQDN/myorg/ruby/test@1.0.0
+- component: $CI_SERVER_FQDN/myorg/ruby/[email protected]
 inputs:
 stage: verify
 #### Define job names with inputs
@@ -424,7 +420,7 @@ script: my-scan --output $[[ inputs.scanner-output ]]
 In the project using the component:
 yaml
 include:
-- component: $CI_SERVER_FQDN/path/to/project/my-scanner@1.0.0
+- component: $CI_SERVER_FQDN/path/to/project/[email protected]
 inputs:
 scanner-output: yaml
 In other cases, CI/CD variables might still be preferred. For example:
@@ -434,9 +430,7 @@ Ask users to store sensitive values as masked or protected CI/CD variables in pr
 ## CI/CD Catalog
 Tier: Free, Premium, Ultimate
 Offering: GitLab.com, GitLab Self-Managed, GitLab Dedicated
-Introduced as an experiment in GitLab 16.1.
-Moved to beta in GitLab 16.7.
-Made generally available in GitLab 17.0.
+Generally available in GitLab 17.0.
 The CI/CD Catalog is a list of projects with published CI/CD components you can use
 to extend your CI/CD workflow.
 Anyone can create a component project and add it to

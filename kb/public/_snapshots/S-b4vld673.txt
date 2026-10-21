@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/azure/ai-services/content-safety/concepts/harm-
 title: Harm categories and severity levels
 publisher: Microsoft Learn
 licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-ai-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Harm categories in Azure AI Content Safety - Azure AI services | Microsoft Learn
@@ -14,7 +14,11 @@ The content safety system uses neural multiclass classification models to detect
 
 Note
 
-The text content safety models for the hate, sexual, violence, and self-harm categories are trained and tested on the following languages: English, German, Japanese, Spanish, French, Italian, Portuguese, and Chinese. The service can work in many other languages, but detection accuracy and false positive rates may vary. In call cases, conduct thorough testing to validate performance meets your requirements.
+The text classifiers for Hate, Sexual, Violence, and Self-harm are trained and tested on Chinese, English, French, German, Italian, Japanese, Portuguese, and Spanish. The classifiers have multilingual capabilities and can classify content in other languages, but those languages aren't included in the trained-and-tested set and performance can vary. Evaluate both false positives and false negatives with representative content in every language used by your application.
+
+Important
+
+Core-harm classifications are model outputs, not definitive determinations about content. Classification models can produce false positives and false negatives. A **Safe** result means that the classifier didn't identify the content at a higher severity for that harm category. It doesn't establish that the content is free of other risks, factually accurate, compliant with policy, or appropriate for your application.
 
 ## Harm category descriptions
 
@@ -28,7 +32,7 @@ The following table summarizes the harm categories supported:
 | **Self-Harm** | Self-harm describes language related to physical actions intended to purposely hurt, injure, damage one's body or kill oneself.This category includes, but isn't limited to:• Eating disorders• Bullying and intimidation |
 | **Task Adherence** | Helps ensure AI Agents consistently behave in alignment with user instructions and task objectives. It identifies discrepancies, such as misaligned tool invocations, improper tool input or output relative to user intent, and inconsistencies between responses and customer input. |
 
-## Severity levels for guardrails
+## Severity levels for Guardrails
 
 Guardrails classifies harmful content into four severity levels:
 
@@ -41,16 +45,16 @@ Guardrails classifies harmful content into four severity levels:
 
 ### How severity levels map to guardrail configuration
 
-When you configure a guardrail control for a harm category, you set a severity threshold that determines which content is flagged:
+When you configure a guardrail control for a core-harm category, you select a blocking level. The blocking level determines which classified severity levels are blocked:
 
-| Threshold setting | Behavior |
-| --- | --- |
-| **Off** | Detection is disabled for this category. No content is flagged or blocked. |
-| **Low** | Flags content at low severity and higher. Least restrictive setting. |
-| **Medium** | Flags content at medium severity and higher. |
-| **High** | Flags only the most severe content. Most restrictive setting. |
+| Blocking level | Behavior | Availability |
+| --- | --- | --- |
+| **Off** | No content is blocked for this category. Depending on the configuration, detection results can still be returned as annotations. | Requires approval for modified Guardrails on output. |
+| **Low** | Blocks high-severity content only. Least restrictive. | Available to all customers. |
+| **Medium** | Blocks medium- and high-severity content. | Available to all customers. |
+| **High** | Blocks low-, medium-, and high-severity content. Most restrictive. | Available to all customers. |
 
-Content at the **Safe** level is always annotated but never blocked, regardless of threshold setting.
+Content at the **Safe** level is always annotated but never blocked, regardless of blocking level.
 
 ## Severity levels for Azure AI Content Safety
 
@@ -295,6 +299,26 @@ The **Severity definitions** tab in this document contains examples of harmful c
 
 ---
 
+## Choose blocking levels
+
+No single blocking level works for every workload. A higher blocking level blocks a broader range of classified content, but it doesn't guarantee that it blocks all harmful content. A lower blocking level blocks a narrower range, but it isn't inherently appropriate for every low-risk application.
+
+Choose a blocking level separately for each core-harm category and applicable intervention point. Base your decision on:
+
+- The consequences of allowing harmful content.
+- The consequences of blocking legitimate content.
+- Whether the workload legitimately discusses sensitive subjects, such as health, safety, history, or current events.
+- The needs and characteristics of the intended users.
+- Whether the application has other mitigations, such as human review, access controls, monitoring, or a safe fallback experience.
+
+Review the documented severity definitions for each harm category before selecting a blocking level. The same named severity level represents category-specific classification criteria, and lower-severity content can include legitimate sensitive material such as educational, medical, historical, fictional, or personal content. Consider whether your application should allow that content.
+
+Evaluate each candidate configuration with representative content from your workload. Include examples that should be allowed and examples that should be blocked. Then, review both unwanted blocks and harmful content that passes. The default configuration isn't a certification that the controls meet your application's requirements.
+
+Changing a blocking level doesn't change how content is classified. It changes which classified severity levels are blocked. For example, if content is classified as **Medium** for Violence, a **Low** blocking level allows it, while **Medium** and **High** blocking levels block it. The classification remains **Medium** in each case.
+
+Classification models can produce false positives and false negatives. Monitor production behavior and repeat your evaluation when the model, guardrail configuration, workload, or input pipeline changes.
+
 ## Troubleshooting
 
 ### Understanding severity classifications
@@ -310,6 +334,6 @@ If content is classified at an unexpected severity level:
 
 If you see too many false positives or negatives:
 
-- Review your threshold settings.
+- Review your blocking level settings in the guardrail configuration.
 - Consider whether the content type (educational, medical, creative) requires a custom content policy.
 - For Guardrails supported use cases, request a custom content filter configuration.

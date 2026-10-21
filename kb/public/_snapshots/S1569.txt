@@ -3,10 +3,10 @@ url: https://attack.mitre.org/techniques/T1078/
 title: MITRE ATT&CK T1078 Valid Accounts
 publisher: MITRE
 licence: ATT&CK terms of use (copy with MITRE copyright notice and licence)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-ATT&CKcon 7.0 in-person tickets are open! Join us October 27-28, 2026 in McLean, VA. Register here for in-person tickets; hotel and location details can be found in the FAQ.
+ATT&CK v20 has been released! Check out the blog post for more information. ATT&CKcon 7.0 is October 27-28, 2026 in McLean, VA.
 Home
 Techniques
 Enterprise
@@ -51,202 +51,211 @@ During the 2015 Ukraine Electric Power Attack, Sandworm Team used valid accounts
 C0057
 3CX Supply Chain Attack
 During 3CX Supply Chain Attack, AppleJeus has gained access to the 3CX corporate environment through legitimate VPN credentials.[5]
+C0064
+AI-Assisted Breach of Mexico's Government Infrastructure
+During the AI-Assisted Breach of Mexico's Government Infrastructure, the adversary tasked Claude Code to leverage compromised valid credentials to authenticate to victim hosts and services.[6]
 G1024
 Akira
-Akira uses valid account information to remotely access victim networks, such as VPN credentials.[6][7][8]
+Akira uses valid account information to remotely access victim networks, such as VPN credentials.[7][8][9]
 C0062
 Anthropic AI-orchestrated Campaign
-During the Anthropic AI-orchestrated Campaign, the adversary used harvested credentials to authenticate against internal APIs, database systems, container registries, and logging infrastructure across targeted networks.[9]
+During the Anthropic AI-orchestrated Campaign, the adversary used harvested credentials to authenticate against internal APIs, database systems, container registries, and logging infrastructure across targeted networks.[10]
 G0026
 APT18
-APT18 actors leverage legitimate credentials to log into external remote services.[10]
+APT18 actors leverage legitimate credentials to log into external remote services.[11]
 G0007
 APT28
-APT28 has used legitimate credentials to gain initial access, maintain access, and exfiltrate data from a victim network. The group has specifically used credentials stolen through a spearphishing email to login to the DCCC network. The group has also leveraged default manufacturer's passwords to gain initial access to corporate networks via IoT devices such as a VOIP phone, printer, and video decoder.[11][12][13][14]
+APT28 has used legitimate credentials to gain initial access, maintain access, and exfiltrate data from a victim network. The group has specifically used credentials stolen through a spearphishing email to login to the DCCC network. The group has also leveraged default manufacturer's passwords to gain initial access to corporate networks via IoT devices such as a VOIP phone, printer, and video decoder.[12][13][14][15]
 G0016
 APT29
-APT29 has used a compromised account to access an organization's VPN infrastructure.[15]
+APT29 has used a compromised account to access an organization's VPN infrastructure.[16]
 G0064
 APT33
-APT33 has used valid accounts for initial access and privilege escalation.[16][17]
+APT33 has used valid accounts for initial access and privilege escalation.[17][18]
 G0087
 APT39
-APT39 has used stolen credentials to compromise Outlook Web Access (OWA).[18]
+APT39 has used stolen credentials to compromise Outlook Web Access (OWA).[19]
 G0096
 APT41
-APT41 used compromised credentials to log on to other systems.[19][20]
+APT41 used compromised credentials to log on to other systems.[20][21]
 G0001
 Axiom
-Axiom has used previously compromised administrative accounts to escalate privileges.[21]
+Axiom has used previously compromised administrative accounts to escalate privileges.[22]
 G1043
 BlackByte
-BlackByte has gained access to victim environments through legitimate VPN credentials.[22]
+BlackByte has gained access to victim environments through legitimate VPN credentials.[23]
 C0032
 C0032
-During the C0032 campaign, TEMP.Veles used compromised VPN accounts.[23]
+During the C0032 campaign, TEMP.Veles used compromised VPN accounts.[24]
 G0008
 Carbanak
-Carbanak actors used legitimate credentials of banking employees to perform operations that sent them millions of dollars.[24]
+Carbanak actors used legitimate credentials of banking employees to perform operations that sent them millions of dollars.[25]
 G0114
 Chimera
-Chimera has used a valid account to maintain persistence via scheduled task.[25]
+Chimera has used a valid account to maintain persistence via scheduled task.[26]
 G1021
 Cinnamon Tempest
-Cinnamon Tempest has used compromised user accounts to deploy payloads and create system services.[26]
+Cinnamon Tempest has used compromised user accounts to deploy payloads and create system services.[27]
 G0035
 Dragonfly
-Dragonfly has compromised user credentials and used valid accounts for operations.[27][28][29]
+Dragonfly has compromised user credentials and used valid accounts for operations.[28][29][30]
 S0567
 Dtrack
-Dtrack used hard-coded credentials to gain access to a network share.[30]
+Dtrack used hard-coded credentials to gain access to a network share.[31]
 S0038
 Duqu
-Adversaries can instruct Duqu to spread laterally by copying itself to shares it has enumerated and for which it has obtained legitimate credentials (via keylogging or other means). The remote host is then infected by using the compromised credentials to schedule a task on remote machines that executes the malware.[31]
+Adversaries can instruct Duqu to spread laterally by copying itself to shares it has enumerated and for which it has obtained legitimate credentials (via keylogging or other means). The remote host is then infected by using the compromised credentials to schedule a task on remote machines that executes the malware.[32]
 G0051
 FIN10
-FIN10 has used stolen credentials to connect remotely to victim networks using VPNs protected with only a single factor.[32]
+FIN10 has used stolen credentials to connect remotely to victim networks using VPNs protected with only a single factor.[33]
 G0085
 FIN4
-FIN4 has used legitimate credentials to hijack email communications.[33][34]
+FIN4 has used legitimate credentials to hijack email communications.[34][35]
 G0053
 FIN5
-FIN5 has used legitimate VPN, RDP, Citrix, or VNC credentials to maintain access to a victim environment.[35][36][37]
+FIN5 has used legitimate VPN, RDP, Citrix, or VNC credentials to maintain access to a victim environment.[36][37][38]
 G0037
 FIN6
-To move laterally on a victim network, FIN6 has used credentials stolen from various systems on which it gathered usernames and password hashes.[38][39][40]
+To move laterally on a victim network, FIN6 has used credentials stolen from various systems on which it gathered usernames and password hashes.[39][40][41]
 G0046
 FIN7
-FIN7 has harvested valid administrative credentials for lateral movement.[41]
+FIN7 has harvested valid administrative credentials for lateral movement.[42]
 G0061
 FIN8
-FIN8 has used valid accounts for persistence and lateral movement.[42]
+FIN8 has used valid accounts for persistence and lateral movement.[43]
 G0117
 Fox Kitten
-Fox Kitten has used valid credentials with various services during lateral movement.[43]
+Fox Kitten has used valid credentials with various services during lateral movement.[44]
 G0093
 GALLIUM
-GALLIUM leveraged valid accounts to maintain access to a victim network.[44]
+GALLIUM leveraged valid accounts to maintain access to a victim network.[45]
 C0038
 HomeLand Justice
-During HomeLand Justice, threat actors used a compromised Exchange account to search mailboxes and create new Exchange accounts.[45]
+During HomeLand Justice, threat actors used a compromised Exchange account to search mailboxes and create new Exchange accounts.[46]
 G1032
 INC Ransom
-INC Ransom has used compromised valid accounts for access to victim environments.[46][47][48][49]
+INC Ransom has used compromised valid accounts for access to victim environments.[47][48][49][50]
 G0119
 Indrik Spider
-Indrik Spider has used valid accounts for initial access and lateral movement.[50] Indrik Spider has also maintained access to the victim environment through the VPN infrastructure.[50]
+Indrik Spider has used valid accounts for initial access and lateral movement.[51] Indrik Spider has also maintained access to the victim environment through the VPN infrastructure.[51]
 S0604
 Industroyer
-Industroyer can use supplied user credentials to execute processes and stop services.[51]
+Industroyer can use supplied user credentials to execute processes and stop services.[52]
 G0004
 Ke3chang
-Ke3chang has used credential dumpers or stealers to obtain legitimate credentials, which they used to gain access to victim accounts.[52]
+Ke3chang has used credential dumpers or stealers to obtain legitimate credentials, which they used to gain access to victim accounts.[53]
 S0599
 Kinsing
-Kinsing has used valid SSH credentials to access remote hosts.[53]
+Kinsing has used valid SSH credentials to access remote hosts.[54]
 G1004
 LAPSUS$
-LAPSUS$ has used compromised credentials and/or session tokens to gain access into a victim's VPN, VDI, RDP, and IAMs.[54][55]
+LAPSUS$ has used compromised credentials and/or session tokens to gain access into a victim's VPN, VDI, RDP, and IAMs.[55][56]
 G0032
 Lazarus Group
-Lazarus Group has used administrator credentials to gain access to restricted network segments.[56]
+Lazarus Group has used administrator credentials to gain access to restricted network segments.[57]
 G0065
 Leviathan
-Leviathan has obtained valid accounts to gain initial access.[57][58][59]
+Leviathan has obtained valid accounts to gain initial access.[58][59][60]
 C0049
 Leviathan Australian Intrusions
-Leviathan used captured, valid account information to log into victim web applications and appliances during Leviathan Australian Intrusions.[59]
+Leviathan used captured, valid account information to log into victim web applications and appliances during Leviathan Australian Intrusions.[60]
 S0362
 Linux Rabbit
-Linux Rabbit acquires valid SSH accounts through brute force. [60]
+Linux Rabbit acquires valid SSH accounts through brute force. [61]
 S9036
 LP-Notes
-LP-Notes has used stolen Windows credentials to log in as the users.[61]
+LP-Notes has used stolen Windows credentials to log in as the users.[62]
 G1051
 Medusa Group
-Medusa Group has utilized compromised legitimate local and domain accounts within the victim environment to facilitate remote access and lateral movement sometimes in combination with PsExec.[62]
+Medusa Group has utilized compromised legitimate local and domain accounts within the victim environment to facilitate remote access and lateral movement sometimes in combination with PsExec.[63]
 G0045
 menuPass
-menuPass has used valid accounts including shared between Managed Service Providers and clients to move between the two environments.[63][64][65][66]
+menuPass has used valid accounts including shared between Managed Service Providers and clients to move between the two environments.[64][65][66][67]
 C0002
 Night Dragon
-During Night Dragon, threat actors used compromised VPN accounts to gain access to victim systems.[67]
+During Night Dragon, threat actors used compromised VPN accounts to gain access to victim systems.[68]
 G0049
 OilRig
-OilRig has used compromised credentials to access other systems on a victim network.[68][69][20][70]
+OilRig has used compromised credentials to access other systems on a victim network.[69][70][21][71]
 C0048
 Operation MidnightEclipse
-During Operation MidnightEclipse, threat actors extracted sensitive credentials while moving laterally through compromised networks.[71]
+During Operation MidnightEclipse, threat actors extracted sensitive credentials while moving laterally through compromised networks.[72]
 C0014
 Operation Wocao
-During Operation Wocao, threat actors used valid VPN credentials to gain initial access.[72]
+During Operation Wocao, threat actors used valid VPN credentials to gain initial access.[73]
 G0011
 PittyTiger
-PittyTiger attempts to obtain legitimate credentials during operations.[73]
+PittyTiger attempts to obtain legitimate credentials during operations.[74]
 G1040
 Play
-Play has used valid VPN accounts to achieve initial access.[74]
+Play has used valid VPN accounts to achieve initial access.[75]
 G1005
 POLONIUM
-POLONIUM has used valid compromised credentials to gain access to victim environments.[75]
+POLONIUM has used valid compromised credentials to gain access to victim environments.[76]
 C0056
 RedPenguin
-During RedPenguin, UNC3886 used legitimate credentials to gain priviliged access to Juniper routers.[76][77]
+During RedPenguin, UNC3886 used legitimate credentials to gain priviliged access to Juniper routers.[77][78]
+G1045
+Salt Typhoon
+Salt Typhoon has used logged into accounts on Cisco devices by cracking weak hashed passwords from configuration files.[79]
 G0034
 Sandworm Team
-Sandworm Team have used previously acquired legitimate credentials prior to attacks.[78]
+Sandworm Team have used previously acquired legitimate credentials prior to attacks.[80]
 G1015
 Scattered Spider
-Scattered Spider has used compromised credentials for initial access.[79][80]
+Scattered Spider has used compromised credentials for initial access.[81][82]
 G1041
 Sea Turtle
-Sea Turtle used compromised credentials to maintain long-term access to victim environments.[81]
+Sea Turtle used compromised credentials to maintain long-term access to victim environments.[83]
 S0053
 SeaDuke
-Some SeaDuke samples have a module to extract email from Microsoft Exchange servers using compromised credentials.[82]
+Some SeaDuke samples have a module to extract email from Microsoft Exchange servers using compromised credentials.[84]
 G1057
 ShinyHunters
-ShinyHunters has used valid high-privileged SSO users as leverage during negotiations.[83]
+ShinyHunters has used valid high-privileged SSO users as leverage during negotiations.[85]
 G0091
 Silence
-Silence has used compromised credentials to log on to other systems and escalate privileges.[84]
+Silence has used compromised credentials to log on to other systems and escalate privileges.[86]
 G0122
 Silent Librarian
-Silent Librarian has used compromised credentials to obtain unauthorized access to online accounts.[85]
+Silent Librarian has used compromised credentials to obtain unauthorized access to online accounts.[87]
 C0024
 SolarWinds Compromise
-During the SolarWinds Compromise, APT29 used different compromised credentials for remote access and to move laterally.[86][87][88]
+During the SolarWinds Compromise, APT29 used different compromised credentials for remote access and to move laterally.[88][89][90]
 G1033
 Star Blizzard
-Star Blizzard has used stolen credentials to sign into victim email accounts.[89][90]
+Star Blizzard has used stolen credentials to sign into victim email accounts.[91][92]
 G0039
 Suckfly
-Suckfly used legitimate account credentials that they dumped to navigate the internal victim network as though they were the legitimate account owner.[91]
+Suckfly used legitimate account credentials that they dumped to navigate the internal victim network as though they were the legitimate account owner.[93]
 G1056
 TeamPCP
-TeamPCP has compromised credentials associated with open source security scanning tools and used them to push malicious code to all the resources the tools had access to.[92]
+TeamPCP has compromised credentials associated with open source security scanning tools and used them to push malicious code to all the resources the tools had access to.[94]
+G1058
+The Gentlemen
+The Gentlemen has leveraged compromised user credentials to gain access to victim hosts.[95][96][97]
 G0027
 Threat Group-3390
-Threat Group-3390 actors obtain legitimate credentials using a variety of methods and use them to further lateral movement on victim networks.[93]
+Threat Group-3390 actors obtain legitimate credentials using a variety of methods and use them to further lateral movement on victim networks.[98]
 G1048
 UNC3886
-UNC3886 has used tools to hijack valid SSH accounts.[94]
+UNC3886 has used tools to hijack valid SSH accounts.[99]
 G1055
 VOID MANTICORE
-VOID MANTICORE has leveraged valid accounts to log into VPN infrastructure.[95] VOID MANTICORE has used compromised valid credentials to gain access to management infrastructure and enterprise control systems.[96] VOID MANTICORE has also validated and tested authentication using compromised credentials prior to malicious actions.[95]
+VOID MANTICORE has leveraged valid accounts to log into VPN infrastructure.[100] VOID MANTICORE has used compromised valid credentials to gain access to management infrastructure and enterprise control systems.[101] VOID MANTICORE has also validated and tested authentication using compromised credentials prior to malicious actions.[100]
 G1017
 Volt Typhoon
-Volt Typhoon relies primarily on valid credentials for persistence.[97]
+Volt Typhoon relies primarily on valid credentials for persistence.[102]
 G0102
 Wizard Spider
-Wizard Spider has used valid credentials for privileged accounts with the goal of accessing domain controllers.[98][99]
+Wizard Spider has used valid credentials for privileged accounts with the goal of accessing domain controllers.[103][104]
 ## Mitigations
 ID
 Mitigation
 Description
 M1036
 Account Use Policies
-Use conditional access policies to block logins from non-compliant devices or from outside defined organization IP ranges.[100]
+Use conditional access policies to block logins from non-compliant devices or from outside defined organization IP ranges.[105]
 M1015
 Active Directory Configuration
 Disable legacy authentication, which does not support MFA, and require the use of modern authentication protocols instead.
@@ -258,11 +267,11 @@ Multi-factor Authentication
 Implement multi-factor authentication (MFA) across all account types, including default, local, domain, and cloud accounts, to prevent unauthorized access, even if credentials are compromised. MFA provides a critical layer of security by requiring multiple forms of verification beyond just a password. This measure significantly reduces the risk of adversaries abusing valid accounts to gain initial access, escalate privileges, maintain persistence, or evade defenses within your network.
 M1027
 Password Policies
-Applications and appliances that utilize default username and password should be changed immediately after the installation, and before deployment to a production environment.[101] When possible, applications that use SSH keys should be updated periodically and properly secured.
+Applications and appliances that utilize default username and password should be changed immediately after the installation, and before deployment to a production environment.[106] When possible, applications that use SSH keys should be updated periodically and properly secured.
 Policies should minimize (if not eliminate) reuse of passwords between different user accounts, especially employees using the same credentials for personal accounts that may not be defended by enterprise security resources.
 M1026
 Privileged Account Management
-Audit domain and local accounts as well as their permission levels routinely to look for situations that could allow an adversary to gain wide access by obtaining credentials of a privileged account. [3] [102] These audits should also include if default accounts have been enabled, or if new local accounts are created that have not been authorized. Follow best practices for design and administration of an enterprise network to limit privileged account use across administrative tiers. [103]
+Audit domain and local accounts as well as their permission levels routinely to look for situations that could allow an adversary to gain wide access by obtaining credentials of a privileged account. [3] [107] These audits should also include if default accounts have been enabled, or if new local accounts are created that have not been authorized. Follow best practices for design and administration of an enterprise network to limit privileged account use across administrative tiers. [108]
 M1018
 User Account Management
 Regularly audit user accounts for activity and deactivate or remove any that are no longer needed.
@@ -292,6 +301,7 @@ Cybersecurity and Infrastructure Security Agency. (2022, March 15). Russian Stat
 Microsoft. (2016, April 15). Attractive Accounts for Credential Theft. Retrieved June 3, 2016.
 Electricity Information Sharing and Analysis Center; SANS Industrial Control Systems. (2016, March 18). Analysis of the Cyber Attack on the Ukranian Power Grid: Defense Use Case. Retrieved March 27, 2018.
 Agathocles Prodromou. (2023, April 20). Security Update Thursday 20 April 2023 – Initial Intrusion Vector Found. Retrieved August 25, 2025.
+Eyal Sela. (2026, April). The AI-Assisted Breach of Mexico's Government Infrastructure. Retrieved September 2, 2026.
 Secureworks. (n.d.). GOLD SAHARA. Retrieved February 20, 2024.
 Steven Campbell, Akshay Suthar, & Connor Belfiorre. (2023, July 26). Conti and Akira: Chained Together. Retrieved February 20, 2024.
 Nutland, J. and Szeliga, M. (2024, October 21). Akira ransomware continues to evolve. Retrieved December 10, 2024.
@@ -364,6 +374,7 @@ CISA. (2023, December 18). #StopRansomware: Play Ransomware AA23-352A. Retrieved
 Microsoft. (2022, June 2). Exposing POLONIUM activity and infrastructure targeting Israeli organizations. Retrieved July 1, 2022.
 Lamparski, L. et al. (2025, March 11). Ghost in the Router: China-Nexus Espionage Actor UNC3886 Targets Juniper Routers. Retrieved June 24, 2025.
 Censys Research Team. (2025, March 14). JunOS and RedPenguin. Retrieved June 24, 2025.
+CISA. (2025, September 3). Countering Chinese State-Sponsored Actors Compromise of Networks Worldwide to Feed Global Espionage System. Retrieved September 22, 2026.
 US-CERT. (2016, February 25). ICS Alert (IR-ALERT-H-16-056-01) Cyber-Attack Against Ukrainian Critical Infrastructure. Retrieved June 10, 2020.
 Mandiant Incident Response. (2025, May 6). Defending Against UNC3944: Cybercrime Hardening Guidance from the Frontlines. Retrieved October 13, 2025.
 Mandiant Incident Response. (2025, July 23). From Help Desk to Hypervisor: Defending Your VMware vSphere Estate from UNC3944. Retrieved October 13, 2025.
@@ -379,6 +390,9 @@ Microsoft Threat Intelligence. (2022, August 15). Disrupting SEABORGIUM’s ongo
 CISA, et al. (2023, December 7). Russian FSB Cyber Actor Star Blizzard Continues Worldwide Spear-phishing Campaigns. Retrieved June 13, 2024.
 DiMaggio, J. (2016, May 17). Indian organizations targeted in Suckfly attacks. Retrieved August 3, 2016.
 Eriksen, C. (2026, March 27). Popular telnyx package compromised on PyPI by TeamPCP. Retrieved July 16, 2026.
+Intel 471. (2026, August 11). Threat Hunting Case Study: The Gentlemen. Retrieved September 18, 2026.
+Brady, M. (2026, July 10). No Manners Here: The Ruthless Rise of The Gentlemen Ransomware. Retrieved September 18, 2026.
+Carvey, H., O'Donnell-Welch, L. (2026, May 21). The Gentlemen (Ransomware) in Disguise: Defense Evasion and other TTPs. Retrieved September 18, 2026.
 Dell SecureWorks Counter Threat Unit Threat Intelligence. (2015, August 5). Threat Group-3390 Targets Organizations for Cyberespionage. Retrieved August 18, 2018.
 Punsaen Boonyakarn, Shawn Chew, Logeswaran Nadarajan, Mathew Potaczek, Jakub Jozwiak, and Alex Marvi. (2024, June 18). Cloaked and Covert: Uncovering UNC3886 Espionage Operations. Retrieved September 24, 2024.
 Check Point Research. (2026, March 12). “Handala Hack” – Unveiling Group’s Modus Operandi. Retrieved April 20, 2026.

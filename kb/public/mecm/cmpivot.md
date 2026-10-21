@@ -2,7 +2,7 @@
 topic: mecm/cmpivot
 priority: P0
 applies_to: "ConfigMgr current branch 2603"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-igpzfey7, S-ebuvm65r, S-2z2zfj3l, S-sxtmngif, S-t5dhva6p, S-e5qqwdcj, S-dyvqhf4u, S-bprslswi, S-v5d6zvne, S-5v5lco6w, S-6l4nubjq, S-uispggqe]
 status: complete
 files: [mecm/cmpivot-entities.csv]

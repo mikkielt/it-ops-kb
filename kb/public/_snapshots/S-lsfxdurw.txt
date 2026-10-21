@@ -1,0 +1,25 @@
+source: S-lsfxdurw
+url: https://arxiv.org/abs/2504.01101
+title: Uncovering the Limitations of Query Performance Prediction: Failures, Insights, and Implications for Selective Query Processing
+publisher: arXiv preprint (2504.01101)
+licence: CC BY 4.0 (licence link on the arXiv abstract page)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Uncovering the Limitations of Query Performance Prediction: Failures, Insights, and Implications for Selective Query Processing
+id: http://arxiv.org/abs/2504.01101v1
+authors: Adrian-Gabriel Chifu; Sébastien Déjean; Josiane Mothe; Moncef Garouani; Diego Ortiz; Md Zia Ullah
+published: 2025-04-01T18:18:21Z
+updated: 2025-04-01T18:18:21Z
+categories: cs.IR; cs.LG
+comment: 18 pages, 4 figures
+
+Query Performance Prediction (QPP) estimates retrieval systems effectiveness for a given query, offering valuable insights for search effectiveness and query processing.
+Despite extensive research, QPPs face critical challenges in generalizing across diverse retrieval paradigms and collections.
+This paper provides a comprehensive evaluation of state-of-the-art QPPs (e.g.
+NQC, UQC), LETOR-based features, and newly explored dense-based predictors.
+Using diverse sparse rankers (BM25, DFree without and with query expansion) and hybrid or dense (SPLADE and ColBert) rankers and diverse test collections ROBUST, GOV2, WT10G, and MS MARCO; we investigate the relationships between predicted and actual performance, with a focus on generalization and robustness.
+Results show significant variability in predictors accuracy, with collections as the main factor and rankers next.
+Some sparse predictors perform somehow on some collections (TREC ROBUST and GOV2) but do not generalise to other collections (WT10G and MS-MARCO).
+While some predictors show promise in specific scenarios, their overall limitations constrain their utility for applications.
+We show that QPP-driven selective query processing offers only marginal gains, emphasizing the need for improved predictors that generalize across collections, align with dense retrieval architectures and are useful for downstream applications.

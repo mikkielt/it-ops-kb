@@ -2,7 +2,7 @@
 topic: intune/platform-scripts
 priority: P2
 applies_to: "Intune Devices > Scripts and remediations > Platform scripts (Windows 10 and later), docs ms.date/retrieved 2026-09-26"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-10-21
 sources: [S-p4fis3e4, S-s27f6na4, S-4elqlqiz, S-ta4g5get, S-q7b6fqko, S-ssg5k6nr]
 status: complete
 ---

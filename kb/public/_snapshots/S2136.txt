@@ -3,7 +3,7 @@ url: https://modelcontextprotocol.io/specification/2026-07-28/server/utilities/c
 title: Caching (MCP specification 2026-07-28)
 publisher: modelcontextprotocol.io
 licence: Apache-2.0 (specification; unrelicensed contributions MIT), per modelcontextprotocol LICENSE
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 > ## Documentation Index
@@ -11,8 +11,6 @@ changes: normalized to text by _tools/provider.py (raw form; front matter, link 
 > Use this file to discover all available pages before exploring further.
 
 # Caching
-
-<div id="enable-section-numbers" />
 
 The Model Context Protocol (MCP) supports caching for some results. This allows clients to cache responses and reduce unnecessary re-fetching.
 Caching is complementary to change notifications—both
@@ -50,8 +48,8 @@ as they depend on inputs that are not part of the cache key.
 
 Cacheable Results in MCP use two fields to provide caching hints to clients:
 
-* The <b>Time-to-live (TTL) Field</b>,`ttlMs`, is an integer value in milliseconds specifying how long the client MAY consider the result fresh.
-* The <b>Cache Scope Field</b>,`cacheScope`, indicates the intended scope of the cached response, either `"public"` or `"private"`.
+* The **Time-to-live (TTL) Field**,`ttlMs`, is an integer value in milliseconds specifying how long the client MAY consider the result fresh.
+* The **Cache Scope Field**,`cacheScope`, indicates the intended scope of the cached response, either `"public"` or `"private"`.
 
 ### Time-to-Live (TTL) Field
 
@@ -69,12 +67,12 @@ analogous to HTTP `Cache-Control: max-age`.
 
 Servers **MUST** provide a `ttlMs` value that is `>= 0`.
 
-<Note>
-  TTL is a **freshness hint**, not a guarantee. Servers MAY change the
-  underlying data before the TTL expires. The TTL tells the client how long it
-  can reasonably avoid re-fetching, not how long the data is guaranteed to
-  remain unchanged.
-</Note>
+> [!NOTE]
+>
+> TTL is a **freshness hint**, not a guarantee. Servers MAY change the
+> underlying data before the TTL expires. The TTL tells the client how long it
+> can reasonably avoid re-fetching, not how long the data is guaranteed to
+> remain unchanged.
 
 #### Freshness Calculation
 
@@ -105,9 +103,9 @@ issues, server downtime).
 The `cacheScope` field controls who may cache a response, analogous to HTTP
 `Cache-Control: public` vs `Cache-Control: private`.
 
-| Value       | Meaning                                                                                                                                                                                                                                                                           |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `"public"`  | The response does not contain user-specific data. Any client, shared gateway, or caching proxy **MAY** store and serve the cached response to any user.                                                                                                                           |
+| Value | Meaning |
+| - | - |
+| `"public"` | The response does not contain user-specific data. Any client, shared gateway, or caching proxy **MAY** store and serve the cached response to any user. |
 | `"private"` | The response contains private data that is not meant to be shared between callers. Cached responses **MAY** be reused for the same authorization context. Caches **MUST NOT** be shared across authorization contexts (e.g. a different access token requires a different cache). |
 
 #### Choosing a Cache Scope

@@ -1,0 +1,757 @@
+source: S-bfv5hqkn
+url: https://docs.rs/oxigraph/0.5.11/oxigraph/store/struct.Store.html
+title: docs.rs oxigraph 0.5.11: struct oxigraph::store::Store
+publisher: docs.rs (oxigraph crate rustdoc)
+licence: MIT OR Apache-2.0
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+oxigraph::store
+# Struct Store
+Source
+pub struct Store { /* private fields */ }
+Expand description
+An on-disk RDF dataset.
+Allows querying and updating it using SPARQL.
+It is based on the RocksDB key-value store.
+This store ensures the “repeatable read” isolation level: the store only exposes changes that have
+been “committed” (i.e., no partial writes), and the exposed state does not change for the complete duration
+of a read operation (e.g., a SPARQL query) or a read/write operation (e.g., a SPARQL update).
+Usage example:
+use oxigraph::model::*;
+use oxigraph::sparql::{QueryResults, SparqlEvaluator};
+use oxigraph::store::Store;
+let store = Store::new()?;
+// insertion
+let ex = NamedNode::new("http://example.com")?;
+let quad = Quad::new(ex.clone(), ex.clone(), ex.clone(), GraphName::DefaultGraph);
+store.insert(&quad)?;
+// quad filter
+let results: Result<Vec<Quad>, _> = store.quads_for_pattern(None, None, None, None).collect();
+assert_eq!(vec![quad], results?);
+// SPARQL query
+if let QueryResults::Solutions(mut solutions) = SparqlEvaluator::new()
+.parse_query("SELECT ?s WHERE { ?s ?p ?o }")?
+.on_store(&store)
+.execute()?
+{
+assert_eq!(solutions.next().unwrap()?.get("s"), Some(&ex.into()));
+};
+## Implementations§
+Source§
+### impl Store
+Source
+#### pub fn new() -> Result<Self, StorageError>
+New in-memory Store without RocksDB.
+Source
+#### pub fn open(path: impl AsRef<Path>) -> Result<Self, StorageError>
+Available on crate feature rocksdb and non-target_family=wasm only.
+Opens a read-write Store and creates it if it does not exist yet.
+Only one read-write Store can exist at the same time.
+If you want to have extra Store instance opened on the same data
+use Store::open_read_only.
+Source
+#### pub fn open_with_options(
+path: impl AsRef<Path>,
+options: StoreOptions,
+) -> Result<Self, StorageError>
+Available on crate feature rocksdb and non-target_family=wasm only.
+Opens a read-write Store with explicit RocksDB options and creates it if it does not exist yet.
+Only one read-write Store can exist at the same time.
+If you want to have extra Store instance opened on the same data
+use Store::open_read_only.
+Lower max_open_files values reduce open file descriptor usage but might increase read I/O and cache misses.
+Source
+#### pub fn open_read_only(path: impl AsRef<Path>) -> Result<Self, StorageError>
+Available on crate feature rocksdb and non-target_family=wasm only.
+Opens a read-only Store from disk.
+Opening as read-only while having an other process writing the database is undefined behavior.
+Source
+#### pub fn query(
+&self,
+query: impl TryInto<Query, Error = impl Into<QueryEvaluationError>>,
+) -> Result<QueryResults<'static>, QueryEvaluationError>
+👎Deprecated since 0.5.0:
+Use SparqlEvaluator interface instead
+Executes a SPARQL 1.1 query.
+Usage example:
+use oxigraph::model::*;
+use oxigraph::sparql::{QueryResults, SparqlEvaluator};
+use oxigraph::store::Store;
+let store = Store::new()?;
+// insertions
+let ex = NamedNodeRef::new("http://example.com")?;
+store.insert(QuadRef::new(ex, ex, ex, GraphNameRef::DefaultGraph))?;
+// SPARQL query
+if let QueryResults::Solutions(mut solutions) = SparqlEvaluator::new()
+.parse_query("SELECT ?s WHERE { ?s ?p ?o }")?
+.on_store(&store)
+.execute()?
+{
+assert_eq!(
+solutions.next().unwrap()?.get("s"),
+Some(&ex.into_owned().into())
+);
+}
+Source
+#### pub fn query_opt(
+&self,
+query: impl TryInto<Query, Error = impl Into<QueryEvaluationError>>,
+options: SparqlEvaluator,
+) -> Result<QueryResults<'static>, QueryEvaluationError>
+👎Deprecated since 0.5.0:
+Use SparqlEvaluator interface instead
+Executes a SPARQL 1.1 query with some options.
+Usage example with a custom function serializing terms to N-Triples:
+use oxigraph::model::*;
+use oxigraph::sparql::{QueryResults, SparqlEvaluator};
+use oxigraph::store::Store;
+if let QueryResults::Solutions(mut solutions) = SparqlEvaluator::new()
+.with_custom_function(
+NamedNode::new("http://www.w3.org/ns/formats/N-Triples")?,
+|args| args.get(0).map(|t| Literal::from(t.to_string()).into()),
+)
+.parse_query("SELECT (<http://www.w3.org/ns/formats/N-Triples>(1) AS ?nt) WHERE {}")?
+.on_store(&Store::new()?)
+.execute()?
+{
+assert_eq!(
+solutions.next().unwrap()?.get("nt"),
+Some(&Literal::from("\"1\"^^<http://www.w3.org/2001/XMLSchema#integer>").into())
+);
+}
+Source
+#### pub fn query_opt_with_substituted_variables(
+&self,
+query: impl TryInto<Query, Error = impl Into<QueryEvaluationError>>,
+options: SparqlEvaluator,
+substitutions: impl IntoIterator<Item = (Variable, Term)>,
+) -> Result<QueryResults<'static>, QueryEvaluationError>
+👎Deprecated since 0.5.0:
+Use SparqlEvaluator interface instead
+Executes a SPARQL 1.1 query with some options while substituting some variables with the given values.
+Substitution follows RDF-dev SEP-0007.
+Usage example:
+use oxigraph::model::{Literal, Variable};
+use oxigraph::sparql::{QueryResults, SparqlEvaluator};
+use oxigraph::store::Store;
+if let QueryResults::Solutions(mut solutions) = SparqlEvaluator::new()
+.parse_query("SELECT ?v WHERE {}")?
+.substitute_variable(Variable::new("v")?, Literal::from(1))
+.on_store(&Store::new()?)
+.execute()?
+{
+assert_eq!(
+solutions.next().unwrap()?.get("v"),
+Some(&Literal::from(1).into())
+);
+}
+Source
+#### pub fn explain_query_opt(
+&self,
+query: impl TryInto<Query, Error = impl Into<QueryEvaluationError>>,
+options: SparqlEvaluator,
+with_stats: bool,
+) -> Result<(Result<QueryResults<'static>, QueryEvaluationError>, QueryExplanation), QueryEvaluationError>
+👎Deprecated since 0.5.0:
+Use SparqlEvaluator interface instead
+Executes a SPARQL 1.1 query with some options and
+returns a query explanation with some statistics (if enabled with the with_stats parameter).
+If you want to compute statistics, you need to exhaust the results iterator before having a look at them.
+Usage example serializing the explanation with statistics in JSON:
+use oxigraph::sparql::{QueryResults, SparqlEvaluator};
+use oxigraph::store::Store;
+if let (Ok(QueryResults::Solutions(solutions)), explanation) = SparqlEvaluator::new()
+.parse_query("SELECT ?s WHERE { VALUES ?s { 1 2 3 } }")?
+.on_store(&Store::new()?)
+.compute_statistics()
+.explain()
+{
+// We make sure to have read all the solutions
+for _ in solutions {}
+let mut buf = Vec::new();
+explanation.write_in_json(&mut buf)?;
+}
+Source
+#### pub fn explain_query_opt_with_substituted_variables(
+&self,
+query: impl TryInto<Query, Error = impl Into<QueryEvaluationError>>,
+options: SparqlEvaluator,
+with_stats: bool,
+substitutions: impl IntoIterator<Item = (Variable, Term)>,
+) -> Result<(Result<QueryResults<'static>, QueryEvaluationError>, QueryExplanation), QueryEvaluationError>
+👎Deprecated since 0.5.0:
+Use SparqlEvaluator interface instead
+Executes a SPARQL 1.1 query with some options and
+returns a query explanation with some statistics (if enabled with the with_stats parameter).
+If you want to compute statistics, you need to exhaust the results iterator before having a look at them.
+Usage example serializing the explanation with statistics in JSON:
+use oxigraph::model::{Literal, Variable};
+use oxigraph::sparql::{QueryResults, SparqlEvaluator};
+use oxigraph::store::Store;
+if let (Ok(QueryResults::Solutions(solutions)), explanation) = SparqlEvaluator::new()
+.parse_query("SELECT ?s WHERE {}")?
+.substitute_variable(Variable::new("s")?, Literal::from(1))
+.on_store(&Store::new()?)
+.compute_statistics()
+.explain()
+{
+// We make sure to have read all the solutions
+for _ in solutions {}
+let mut buf = Vec::new();
+explanation.write_in_json(&mut buf)?;
+}
+Source
+#### pub fn quads_for_pattern(
+&self,
+subject: Option<NamedOrBlankNodeRef<'_>>,
+predicate: Option<NamedNodeRef<'_>>,
+object: Option<TermRef<'_>>,
+graph_name: Option<GraphNameRef<'_>>,
+) -> QuadIter<'static> ⓘ
+Retrieves quads with a filter on each quad component
+Usage example:
+use oxigraph::model::*;
+use oxigraph::store::Store;
+let store = Store::new()?;
+// insertion
+let ex = NamedNode::new("http://example.com")?;
+let quad = Quad::new(ex.clone(), ex.clone(), ex.clone(), GraphName::DefaultGraph);
+store.insert(&quad)?;
+// quad filter by object
+let results = store
+.quads_for_pattern(None, None, Some((&ex).into()), None)
+.collect::<Result<Vec<_>, _>>()?;
+assert_eq!(vec![quad], results);
+Source
+#### pub fn iter(&self) -> QuadIter<'static> ⓘ
+Returns all the quads contained in the store.
+Usage example:
+use oxigraph::model::*;
+use oxigraph::store::Store;
+let store = Store::new()?;
+// insertion
+let ex = NamedNode::new("http://example.com")?;
+let quad = Quad::new(ex.clone(), ex.clone(), ex.clone(), GraphName::DefaultGraph);
+store.insert(&quad)?;
+// quad filter by object
+let results = store.iter().collect::<Result<Vec<_>, _>>()?;
+assert_eq!(vec![quad], results);
+Source
+#### pub fn contains<'a>(
+&self,
+quad: impl Into<QuadRef<'a>>,
+) -> Result<bool, StorageError>
+Checks if this store contains a given quad.
+Usage example:
+use oxigraph::model::*;
+use oxigraph::store::Store;
+let ex = NamedNodeRef::new("http://example.com")?;
+let quad = QuadRef::new(ex, ex, ex, ex);
+let store = Store::new()?;
+assert!(!store.contains(quad)?);
+store.insert(quad)?;
+assert!(store.contains(quad)?);
+Source
+#### pub fn len(&self) -> Result<usize, StorageError>
+Returns the number of quads in the store.
+This function executes a full scan.
+Usage example:
+use oxigraph::model::*;
+use oxigraph::store::Store;
+let ex = NamedNodeRef::new("http://example.com")?;
+let store = Store::new()?;
+store.insert(QuadRef::new(ex, ex, ex, ex))?;
+store.insert(QuadRef::new(ex, ex, ex, GraphNameRef::DefaultGraph))?;
+assert_eq!(2, store.len()?);
+Source
+#### pub fn is_empty(&self) -> Result<bool, StorageError>
+Returns if the store is empty.
+Usage example:
+use oxigraph::model::*;
+use oxigraph::store::Store;
+let store = Store::new()?;
+assert!(store.is_empty()?);
+let ex = NamedNodeRef::new("http://example.com")?;
+store.insert(QuadRef::new(ex, ex, ex, ex))?;
+assert!(!store.is_empty()?);
+Source
+#### pub fn start_transaction(&self) -> Result<Transaction<'_>, StorageError>
+Start a transaction.
+Transactions ensure the “repeatable read” isolation level: the store only exposes changes that have
+been “committed” (i.e., no partial writes are done),
+and the exposed state does not change for the complete duration of a read operation
+(e.g., a SPARQL query) or a read/write operation (e.g., a SPARQL update).
+Transactional operations are also atomic.
+Note that the transaction keeps the complete set of changes into memory, do not use them to load
+tens of millions of triples.
+Usage example:
+use oxigraph::model::*;
+use oxigraph::store::Store;
+let store = Store::new()?;
+let a = NamedNodeRef::new("http://example.com/a")?;
+let b = NamedNodeRef::new("http://example.com/b")?;
+// Copy all triples about ex:a to triples about ex:b
+let mut transaction = store.start_transaction()?;
+let triples = transaction
+.quads_for_pattern(Some(a.into()), None, None, None)
+.collect::<Result<Vec<_>, _>>()?;
+for triple in triples {
+transaction.insert(QuadRef::new(
+b,
+&triple.predicate,
+&triple.object,
+&triple.graph_name,
+));
+}
+transaction.commit()?;
+Source
+#### pub fn update(
+&self,
+update: impl TryInto<Update, Error = impl Into<UpdateEvaluationError>>,
+) -> Result<(), UpdateEvaluationError>
+Executes a SPARQL 1.1 update.
+Usage example:
+use oxigraph::model::*;
+use oxigraph::sparql::SparqlEvaluator;
+use oxigraph::store::Store;
+let store = Store::new()?;
+// insertion
+SparqlEvaluator::new()
+.parse_update(
+"INSERT DATA { <http://example.com> <http://example.com> <http://example.com> }",
+)?
+.on_store(&store)
+.execute()?;
+// we inspect the store contents
+let ex = NamedNodeRef::new("http://example.com")?;
+assert!(store.contains(QuadRef::new(ex, ex, ex, GraphNameRef::DefaultGraph))?);
+Source
+#### pub fn update_opt(
+&self,
+update: impl TryInto<Update, Error = impl Into<UpdateEvaluationError>>,
+options: SparqlEvaluator,
+) -> Result<(), UpdateEvaluationError>
+Executes a SPARQL 1.1 update with some options.
+use oxigraph::store::Store;
+use oxigraph::model::*;
+use oxigraph::sparql::QueryOptions;
+let store = Store::new()?;
+store.update_opt(
+"INSERT { ?s <http://example.com/n-triples-representation> ?n } WHERE { ?s ?p ?o BIND(<http://www.w3.org/ns/formats/N-Triples>(?s) AS ?nt) }",
+QueryOptions::default().with_custom_function(
+NamedNode::new("http://www.w3.org/ns/formats/N-Triples")?,
+|args| args.get(0).map(|t| Literal::from(t.to_string()).into())
+)
+)?;
+Source
+#### pub fn load_from_reader(
+&self,
+parser: impl Into<RdfParser>,
+reader: impl Read,
+) -> Result<(), LoaderError>
+Loads an RDF file under into the store.
+This function is atomic, quite slow and memory hungry. To get much better performances, you might want to use the bulk_loader.
+Usage example:
+use oxigraph::store::Store;
+use oxigraph::io::{RdfFormat, RdfParser};
+use oxigraph::model::*;
+let store = Store::new()?;
+// insert a dataset file
+let file = "<http://example.com> <http://example.com> <http://example.com> <http://example.com/g> .";
+store.load_from_reader(RdfFormat::NQuads, file.as_bytes())?;
+// insert a graph file
+let file = "<> <> <> .";
+store.load_from_reader(
+RdfParser::from_format(RdfFormat::Turtle)
+.with_base_iri("http://example.com")?
+.without_named_graphs() // No named graphs allowed in the input
+.with_default_graph(NamedNodeRef::new("http://example.com/g2")?), // we put the file default graph inside of a named graph
+file.as_bytes()
+)?;
+// we inspect the store contents
+let ex = NamedNodeRef::new("http://example.com")?;
+assert!(store.contains(QuadRef::new(ex, ex, ex, NamedNodeRef::new("http://example.com/g")?))?);
+assert!(store.contains(QuadRef::new(ex, ex, ex, NamedNodeRef::new("http://example.com/g2")?))?);
+Source
+#### pub fn load_from_slice(
+&self,
+parser: impl Into<RdfParser>,
+slice: &(impl AsRef<[u8]> + ?Sized),
+) -> Result<(), LoaderError>
+Loads an RDF file under into the store.
+This function is atomic, quite slow and memory hungry. To get much better performances, you might want to use the bulk_loader.
+Usage example:
+use oxigraph::store::Store;
+use oxigraph::io::{RdfParser, RdfFormat};
+use oxigraph::model::*;
+let store = Store::new()?;
+// insert a dataset file
+let file = "<http://example.com> <http://example.com> <http://example.com> <http://example.com/g> .";
+store.load_from_slice(RdfFormat::NQuads, file)?;
+// insert a graph file
+let file = "<> <> <> .";
+store.load_from_slice(
+RdfParser::from_format(RdfFormat::Turtle)
+.with_base_iri("http://example.com")?
+.without_named_graphs() // No named graphs allowed in the input
+.with_default_graph(NamedNodeRef::new("http://example.com/g2")?), // we put the file default graph inside of a named graph
+file
+)?;
+// we inspect the store contents
+let ex = NamedNodeRef::new("http://example.com")?;
+assert!(store.contains(QuadRef::new(ex, ex, ex, NamedNodeRef::new("http://example.com/g")?))?);
+assert!(store.contains(QuadRef::new(ex, ex, ex, NamedNodeRef::new("http://example.com/g2")?))?);
+Source
+#### pub fn insert<'a>(
+&self,
+quad: impl Into<QuadRef<'a>>,
+) -> Result<(), StorageError>
+Adds a quad to this store.
+Usage example:
+use oxigraph::model::*;
+use oxigraph::store::Store;
+let ex = NamedNodeRef::new("http://example.com")?;
+let quad = QuadRef::new(ex, ex, ex, GraphNameRef::DefaultGraph);
+let store = Store::new()?;
+store.insert(quad)?;
+assert!(store.contains(quad)?);
+Source
+#### pub fn extend(
+&self,
+quads: impl IntoIterator<Item = impl Into<Quad>>,
+) -> Result<(), StorageError>
+Atomically adds a set of quads to this store.
+This operation uses a memory heavy transaction internally, use the bulk_loader if you plan to add ten of millions of triples.
+Source
+#### pub fn remove<'a>(
+&self,
+quad: impl Into<QuadRef<'a>>,
+) -> Result<(), StorageError>
+Removes a quad from this store.
+Usage example:
+use oxigraph::model::*;
+use oxigraph::store::Store;
+let ex = NamedNodeRef::new("http://example.com")?;
+let quad = QuadRef::new(ex, ex, ex, GraphNameRef::DefaultGraph);
+let store = Store::new()?;
+store.insert(quad)?;
+store.remove(quad)?;
+assert!(!store.contains(quad)?);
+Source
+#### pub fn dump_to_writer<W: Write>(
+&self,
+serializer: impl Into<RdfSerializer>,
+writer: W,
+) -> Result<W, SerializerError>
+Dumps the store into a file.
+use oxigraph::io::RdfFormat;
+use oxigraph::store::Store;
+let file =
+"<http://example.com> <http://example.com> <http://example.com> <http://example.com> .\n";
+let store = Store::new()?;
+store.load_from_slice(RdfFormat::NQuads, file)?;
+let buffer = store.dump_to_writer(RdfFormat::NQuads, Vec::new())?;
+assert_eq!(file.as_bytes(), buffer.as_slice());
+Source
+#### pub fn dump_graph_to_writer<'a, W: Write>(
+&self,
+from_graph_name: impl Into<GraphNameRef<'a>>,
+serializer: impl Into<RdfSerializer>,
+writer: W,
+) -> Result<W, SerializerError>
+Dumps a store graph into a file.
+Usage example:
+use oxigraph::io::RdfFormat;
+use oxigraph::model::GraphNameRef;
+use oxigraph::store::Store;
+let file = "<http://example.com> <http://example.com> <http://example.com> .\n";
+let store = Store::new()?;
+store.load_from_slice(RdfFormat::NTriples, file)?;
+let mut buffer = Vec::new();
+store.dump_graph_to_writer(GraphNameRef::DefaultGraph, RdfFormat::NTriples, &mut buffer)?;
+assert_eq!(file.as_bytes(), buffer.as_slice());
+Source
+#### pub fn named_graphs(&self) -> GraphNameIter<'static> ⓘ
+Returns all the store named graphs.
+Usage example:
+use oxigraph::model::*;
+use oxigraph::store::Store;
+let ex = NamedNode::new("http://example.com")?;
+let store = Store::new()?;
+store.insert(QuadRef::new(&ex, &ex, &ex, &ex))?;
+store.insert(QuadRef::new(&ex, &ex, &ex, GraphNameRef::DefaultGraph))?;
+assert_eq!(
+vec![NamedOrBlankNode::from(ex)],
+store.named_graphs().collect::<Result<Vec<_>, _>>()?
+);
+Source
+#### pub fn contains_named_graph<'a>(
+&self,
+graph_name: impl Into<NamedOrBlankNodeRef<'a>>,
+) -> Result<bool, StorageError>
+Checks if the store contains a given graph
+Usage example:
+use oxigraph::model::{NamedNode, QuadRef};
+use oxigraph::store::Store;
+let ex = NamedNode::new("http://example.com")?;
+let store = Store::new()?;
+store.insert(QuadRef::new(&ex, &ex, &ex, &ex))?;
+assert!(store.contains_named_graph(&ex)?);
+Source
+#### pub fn insert_named_graph<'a>(
+&self,
+graph_name: impl Into<NamedOrBlankNodeRef<'a>>,
+) -> Result<(), StorageError>
+Inserts a graph into this store.
+Usage example:
+use oxigraph::model::NamedNodeRef;
+use oxigraph::store::Store;
+let ex = NamedNodeRef::new("http://example.com")?;
+let store = Store::new()?;
+store.insert_named_graph(ex)?;
+assert_eq!(
+store.named_graphs().collect::<Result<Vec<_>, _>>()?,
+vec![ex.into_owned().into()]
+);
+Source
+#### pub fn clear_graph<'a>(
+&self,
+graph_name: impl Into<GraphNameRef<'a>>,
+) -> Result<(), StorageError>
+Clears a graph from this store.
+Usage example:
+use oxigraph::model::{NamedNodeRef, QuadRef};
+use oxigraph::store::Store;
+let ex = NamedNodeRef::new("http://example.com")?;
+let quad = QuadRef::new(ex, ex, ex, ex);
+let store = Store::new()?;
+store.insert(quad)?;
+assert_eq!(1, store.len()?);
+store.clear_graph(ex)?;
+assert!(store.is_empty()?);
+assert_eq!(1, store.named_graphs().count());
+Source
+#### pub fn remove_named_graph<'a>(
+&self,
+graph_name: impl Into<NamedOrBlankNodeRef<'a>>,
+) -> Result<(), StorageError>
+Removes a graph from this store.
+Usage example:
+use oxigraph::model::{NamedNodeRef, QuadRef};
+use oxigraph::store::Store;
+let ex = NamedNodeRef::new("http://example.com")?;
+let quad = QuadRef::new(ex, ex, ex, ex);
+let store = Store::new()?;
+store.insert(quad)?;
+assert_eq!(1, store.len()?);
+store.remove_named_graph(ex)?;
+assert!(store.is_empty()?);
+assert_eq!(0, store.named_graphs().count());
+Source
+#### pub fn clear(&self) -> Result<(), StorageError>
+Clears the store.
+Usage example:
+use oxigraph::model::*;
+use oxigraph::store::Store;
+let ex = NamedNodeRef::new("http://example.com")?;
+let store = Store::new()?;
+store.insert(QuadRef::new(ex, ex, ex, ex))?;
+store.insert(QuadRef::new(ex, ex, ex, GraphNameRef::DefaultGraph))?;
+assert_eq!(2, store.len()?);
+store.clear()?;
+assert!(store.is_empty()?);
+Source
+#### pub fn flush(&self) -> Result<(), StorageError>
+Available on crate feature rocksdb and non-target_family=wasm only.
+Flushes all buffers and ensures that all writes are saved on disk.
+Flushes are automatically done using background threads but might lag a little bit.
+Source
+#### pub fn optimize(&self) -> Result<(), StorageError>
+Available on crate feature rocksdb and non-target_family=wasm only.
+Optimizes the database for future workload.
+Useful to call after a batch upload or another similar operation.
+Can take hours on huge databases.
+Source
+#### pub fn backup(
+&self,
+target_directory: impl AsRef<Path>,
+) -> Result<(), StorageError>
+Available on crate feature rocksdb and non-target_family=wasm only.
+Creates database backup into the target_directory.
+After its creation, the backup is usable using Store::open
+like a regular Oxigraph database and operates independently from the original database.
+Backups are only possible for on-disk databases created using Store::open.
+Temporary in-memory databases created using Store::new are not compatible with RocksDB backup system.
+An error is raised if the `target_directory` already exists.
+If the target directory is in the same file system as the current database,
+the database content will not be fully copied
+but hard links will be used to point to the original database immutable snapshots.
+This allows cheap regular backups.
+If you want to move your data to another RDF storage system, you should have a look at the Store::dump_to_writer function instead.
+Source
+#### pub fn bulk_loader(&self) -> BulkLoader<'_>
+Creates a bulk loader allowing to load at a lot of data quickly into the store.
+Usage example:
+use oxigraph::io::RdfFormat;
+use oxigraph::model::*;
+use oxigraph::store::Store;
+let store = Store::new()?;
+// quads file insertion
+let file =
+"<http://example.com> <http://example.com> <http://example.com> <http://example.com> .";
+let mut loader = store.bulk_loader();
+loader.load_from_slice(RdfFormat::NQuads, file)?;
+loader.commit()?;
+// we inspect the store contents
+let ex = NamedNodeRef::new("http://example.com")?;
+assert!(store.contains(QuadRef::new(ex, ex, ex, ex))?);
+## Trait Implementations§
+Source§
+### impl Clone for Store
+Source§
+#### fn clone(&self) -> Store
+Returns a duplicate of the value. Read more
+1.0.0 (const: unstable) · Source§
+#### fn clone_from(&mut self, source: &Self)
+Performs copy-assignment from source. Read more
+Source§
+### impl Display for Store
+Source§
+#### fn fmt(&self, f: &mut Formatter<'_>) -> Result
+Formats the value using the given formatter. Read more
+Source§
+### impl IntoIterator for &Store
+Source§
+#### type IntoIter = QuadIter<'static>
+Which kind of iterator are we turning this into?
+Source§
+#### type Item = Result<Quad, StorageError>
+The type of the elements being iterated over.
+Source§
+#### fn into_iter(self) -> Self::IntoIter
+Creates an iterator from a value. Read more
+## Auto Trait Implementations§
+§
+### impl !RefUnwindSafe for Store
+§
+### impl !UnwindSafe for Store
+§
+### impl Freeze for Store
+§
+### impl Send for Store
+§
+### impl Sync for Store
+§
+### impl Unpin for Store
+§
+### impl UnsafeUnpin for Store
+## Blanket Implementations§
+Source§
+### impl<T> Any for T
+where
+T: 'static + ?Sized,
+Source§
+#### fn type_id(&self) -> TypeId
+Gets the TypeId of self. Read more
+Source§
+### impl<T> Borrow<T> for T
+where
+T: ?Sized,
+Source§
+#### fn borrow(&self) -> &T
+Immutably borrows from an owned value. Read more
+Source§
+### impl<T> BorrowMut<T> for T
+where
+T: ?Sized,
+Source§
+#### fn borrow_mut(&mut self) -> &mut T
+Mutably borrows from an owned value. Read more
+Source§
+### impl<ST, DT> CastableFrom<ST, Initialized, Initialized> for DT
+where
+ST: ?Sized,
+DT: ?Sized,
+Source§
+### impl<ST, DT> CastableFrom<ST, Uninit, Uninit> for DT
+where
+ST: ?Sized,
+DT: ?Sized,
+Source§
+### impl<T> CloneToUninit for T
+where
+T: Clone,
+Source§
+#### unsafe fn clone_to_uninit(&self, dest: *mut u8)
+🔬This is a nightly-only experimental API. (clone_to_uninit)
+Performs copy-assignment from self to dest. Read more
+Source§
+### impl<T> From<T> for T
+Source§
+#### fn from(t: T) -> T
+Returns the argument unchanged.
+Source§
+### impl<T, U> Into<U> for T
+where
+U: From<T>,
+Source§
+#### fn into(self) -> U
+Calls U::from(self).
+That is, this conversion is whatever the implementation of
+From<T> for U chooses to do.
+Source§
+### impl<T> Read<Exclusive, BecauseExclusive> for T
+where
+T: ?Sized,
+Source§
+### impl<T> Same for T
+Source§
+#### type Output = T
+Should always be Self
+Source§
+### impl<T> ToOwned for T
+where
+T: Clone,
+Source§
+#### type Owned = T
+The resulting type after obtaining ownership.
+Source§
+#### fn to_owned(&self) -> T
+Creates owned data from borrowed data, usually by cloning. Read more
+Source§
+#### fn clone_into(&self, target: &mut T)
+Uses borrowed data to replace owned data, usually by cloning. Read more
+Source§
+### impl<T> ToString for T
+where
+T: Display + ?Sized,
+Source§
+#### fn to_string(&self) -> String
+Converts the given value to a String. Read more
+Source§
+### impl<T, U> TryFrom<U> for T
+where
+U: Into<T>,
+Source§
+#### type Error = !
+The type returned in the event of a conversion error.
+Source§
+#### fn try_from(value: U) -> Result<T, !>
+Performs the conversion.
+Source§
+### impl<T, U> TryInto<U> for T
+where
+U: TryFrom<T>,
+Source§
+#### type Error = <U as TryFrom<T>>::Error
+The type returned in the event of a conversion error.
+Source§
+#### fn try_into(self) -> Result<U, <U as TryFrom<T>>::Error>
+Performs the conversion.
+Source§
+### impl<V, T> VZip<V> for T
+where
+V: MultiLane<T>,
+Source§
+#### fn vzip(self) -> V

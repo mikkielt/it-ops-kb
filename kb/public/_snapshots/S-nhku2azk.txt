@@ -3,7 +3,7 @@ url: https://docs.github.com/en/pull-requests/reference/forks
 title: Forks
 publisher: GitHub Docs
 licence: CC BY 4.0 (github/docs LICENSE; code MIT)
-retrieved: 2026-10-19
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Forks
@@ -56,7 +56,7 @@ Deleting a repository or changing its visibility can affect the network. If you 
 
 ## What happens to forks when a repository is deleted or changes visibility
 
-> \[!WARNING]
+> [!WARNING]
 >
 > * If you remove a person’s access to a private repository, any of their forks of that private repository are deleted. Local clones of the private repository are retained. If a team's access to a private repository is revoked or a team with access to a private repository is deleted, and team members do not have access to the repository through another team, private forks of the repository will be deleted.
 > * You are responsible for ensuring that people who have lost access to a repository delete any confidential information or intellectual property.
@@ -77,7 +77,7 @@ Changing a public repository to private can also affect stars, watchers, depende
 
 Private forks inherit the permissions structure of the upstream repository. This helps owners of private repositories maintain control over their code. For example, if the upstream repository is private and gives read/write access to a team, then the same team will have read/write access to any forks of the private upstream repository. Only team permissions (not individual permissions) are inherited by private forks.
 
-> \[!NOTE]
+> [!NOTE]
 > When you change base permissions for an organization, permissions for private forks are not automatically updated. For more information, see Setting base permissions for an organization.
 
 Public forks do not inherit the permissions structure of the upstream repository. Fork owners control access to their forks, but repository networks still share Git data. Commits pushed to any repository in a network can be accessible from other repositories in that network, including the upstream repository.

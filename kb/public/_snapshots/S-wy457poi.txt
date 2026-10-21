@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/azure/foundry/agents/how-to/tools/use-toolbox-h
 title: Use a toolbox with a hosted agent
 publisher: Microsoft Learn
 licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-ai-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Use a toolbox with a hosted agent in Microsoft Foundry - Microsoft Foundry | Microsoft Learn
@@ -38,6 +38,8 @@ https://<account>.services.ai.azure.com/api/projects/<project>/toolboxes/<toolbo
 
 ## Authenticate the agent to the toolbox
 
+For user delegation with MCP and other tools, connect those tools through a Foundry toolbox. When adding that toolbox to a Microsoft Agent Framework hosted agent, use `FoundryToolbox` in Python or `AddFoundryToolboxes` in .NET.
+
 The agent authenticates to the toolbox endpoint with its Microsoft Entra identity and the `https://ai.azure.com/.default` scope. The connection for each toolbox tool determines which identity or credential reaches the downstream service.
 
 Don't put downstream API keys or OAuth tokens in the agent code. Configure those credentials on the project connection that the toolbox tool references. For details about supported authentication types, consent, and role requirements, see Toolbox authentication.
@@ -56,7 +58,7 @@ Install Python 3.12 or later, Azure Developer CLI (`azd`) 1.25 or later, and the
 
     ```bash
     mkdir my-toolbox-agent && cd my-toolbox-agent
-    azd ai agent init -m https://github.com/microsoft-foundry/foundry-samples/blob/main/samples/python/hosted-agents/agent-framework/responses/04-foundry-toolbox/azure.yaml
+    azd ai agent init -t https://github.com/microsoft-foundry/foundry-samples/blob/main/samples/python/hosted-agents/agent-framework/responses/04-foundry-toolbox/azure.yaml
     ```
 2. Set the toolbox name. The sample constructs the consumer endpoint from the project endpoint and this name:
 
@@ -216,5 +218,6 @@ Use `require_approval: never` unless your runtime can pause the pending tool cal
 | The agent returns no toolbox tools. | Confirm that the toolbox has a default version, the toolbox name matches, and the agent identity can access the Foundry project. |
 | Startup or readiness fails. | A toolbox enumerates all its tool sources together. Check agent logs for a failing connection, unavailable MCP server, or invalid allowed-tool name. Fix or remove that source, create a new version, and promote it. |
 | A tool returns `401` or `403`. | Verify the agent-to-toolbox identity and the downstream authentication configured on the tool's project connection. These are separate authorization boundaries. |
+| A tool call succeeds without `401` or `403`, but uses an unexpected user identity or returns data outside the expected user's permissions. | Check for missing or stale caller context and confirm that the tool's connection uses per-user authentication. Use `FoundryToolbox` in Python or `AddFoundryToolboxes` in .NET with the Foundry hosting integration to forward the current request's caller context. Don't hard-code or reuse the call ID across user requests. Test the deployed agent through the intended client or channel with two users who have different permissions, and verify that each receives only data they can access. A successful call alone doesn't prove correct user delegation. See Connect the agent to the toolbox. |
 | A tool requests consent. | Return the consent request to the signed-in user and resume the call after consent. Review the tenant and role requirements in Toolbox authentication. |
 | A version change doesn't appear. | Confirm that the agent uses the unversioned consumer endpoint and that you promoted the intended version to `default_version`. |

@@ -2,7 +2,7 @@
 topic: gpo/admx-central-store
 priority: P1
 applies_to: "Group Policy Central Store, Windows Server domain controllers, Windows 10/11 clients (incl. 24H2/25H2)"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-iymw4lcl, S-z4lluk64, S-xtwd545o, S-2lf5j2iv, S-6glsfens, S-gvgapsup, S-63xwapyo, S-6es3rktr]
 status: complete
 ---

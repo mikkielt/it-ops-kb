@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/azure/azure-monitor/agents/azure-monitor-agent-
 title: Set up the Azure Monitor Agent on Windows client devices
 publisher: Microsoft Learn
 licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-monitor-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Set Up the Azure Monitor Agent on Windows Client Devices - Azure Monitor | Microsoft Learn
@@ -555,6 +555,8 @@ Each of the following scripts combines all four steps into a single runnable scr
 # Azure CLI
 The following Azure CLI example uses az rest to run all four steps in sequence. It calls the Role Assignments - Create and Data Collection Rule Associations - Create REST API operations.
 
+Create a monitored object and associate a data collection rule
+
 ```bash
 # Set variables
 tenantId="<TenantId>"
@@ -637,6 +639,8 @@ az rest --method get --url "$listUrl"
 
 # Azure PowerShell
 The following Azure PowerShell example uses Invoke-AzRestMethod to run all four steps in sequence. It calls the Role Assignments - Create and Data Collection Rule Associations - Create REST API operations.
+
+Create a monitored object and associate a data collection rule
 
 ```powershell
 # Set variables

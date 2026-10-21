@@ -3,7 +3,7 @@ url: https://modelcontextprotocol.io/registry/quickstart
 title: Quickstart: Publish an MCP Server to the MCP Registry
 publisher: modelcontextprotocol.io
 licence: CC BY 4.0 (MCP documentation other than the specification), per modelcontextprotocol LICENSE
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 > ## Documentation Index
@@ -12,9 +12,9 @@ changes: normalized to text by _tools/provider.py (raw form; front matter, link 
 
 # Quickstart: Publish an MCP Server to the MCP Registry
 
-<Note>
-  The MCP Registry is currently in preview. Breaking changes or data resets may occur before general availability. If you encounter any issues, please report them on GitHub.
-</Note>
+> [!NOTE]
+>
+> The MCP Registry is currently in preview. Breaking changes or data resets may occur before general availability. If you encounter any issues, please report them on GitHub.
 
 This tutorial will show you how to publish an MCP server written in TypeScript to the MCP Registry using the official `mcp-publisher` CLI tool.
 
@@ -104,20 +104,18 @@ You can verify your package is published by visiting its npm URL, such as https:
 
 Install the `mcp-publisher` CLI tool using a pre-built binary or Homebrew:
 
-<CodeGroup>
-  ```bash macOS/Linux theme={null}
-  curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher && sudo mv mcp-publisher /usr/local/bin/
-  ```
+```bash macOS/Linux theme={null}
+curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher && sudo mv mcp-publisher /usr/local/bin/
+```
 
-  ```powershell Windows theme={null}
-  $arch = if ([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture -eq "Arm64") { "arm64" } else { "amd64" }; Invoke-WebRequest -Uri "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_windows_$arch.tar.gz" -OutFile "mcp-publisher.tar.gz"; tar xf mcp-publisher.tar.gz mcp-publisher.exe; rm mcp-publisher.tar.gz
-  # Move mcp-publisher.exe to a directory in your PATH
-  ```
+```powershell Windows theme={null}
+$arch = if ([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture -eq "Arm64") { "arm64" } else { "amd64" }; Invoke-WebRequest -Uri "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_windows_$arch.tar.gz" -OutFile "mcp-publisher.tar.gz"; tar xf mcp-publisher.tar.gz mcp-publisher.exe; rm mcp-publisher.tar.gz
+# Move mcp-publisher.exe to a directory in your PATH
+```
 
-  ```bash theme={null}
-  brew install mcp-publisher
-  ```
-</CodeGroup>
+```bash theme={null}
+brew install mcp-publisher
+```
 
 Verify that `mcp-publisher` is correctly installed by running:
 
@@ -282,10 +280,10 @@ You should see your server's metadata in the search results JSON:
 
 ## Troubleshooting
 
-| Error Message                                       | Action                                                                                                                                                  |
-| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| "Registry validation failed for package"            | Ensure your package includes the required validation information (e.g, `mcpName` property in `package.json`).                                           |
-| "Invalid or expired Registry JWT token"             | Re-authenticate by running `mcp-publisher login github`.                                                                                                |
+| Error Message | Action |
+| - | - |
+| "Registry validation failed for package" | Ensure your package includes the required validation information (e.g, `mcpName` property in `package.json`). |
+| "Invalid or expired Registry JWT token" | Re-authenticate by running `mcp-publisher login github`. |
 | "You do not have permission to publish this server" | Your authentication method doesn't match your server's namespace format. With GitHub auth, your server name must start with `io.github.your-username/`. |
 
 ## Next Steps

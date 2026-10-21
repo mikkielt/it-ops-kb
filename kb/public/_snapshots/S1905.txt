@@ -3,19 +3,34 @@ url: https://github.com/manthanghasadiya/mcpsec
 title: mcpsec: dynamic protocol fuzzer for MCP
 publisher: manthanghasadiya (community)
 licence: MIT (manthanghasadiya/mcpsec LICENSE)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-manthanghasadiya
-/
+## Repository navigation
 mcpsec
 Public
-Notifications
-You must be signed in to change notification settings
-Fork
-3
-Star
-26
+NotificationsYou must be signed in to change notification settings
+Fork3 (3)
+Star27 (27)You must be signed in to star a repository
+## About
+An AI-driven dynamic protocol fuzzer for the Model Context Protocol (MCP). Prove runtime exploitability by discovering state violations, transport crashes, and application-layer logic flaws (SSRF, LFI) before your AI agents do.
+### Topics
+ai-securityappseccybersecurityfuzzermcpmcp-servermcp-toolsmodel-context-protocolpentestingssrfvulnerability-scanners
+### Resources
+Readme
+MIT license
+### Contributing
+Contributing
+### Security policy
+Security policy
+Activity
+### Stars
+27 stars
+### Watchers
+0 watching
+### Forks
+3 forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit
@@ -291,7 +306,7 @@ Contributing
 Security policy
 Activity
 ### Stars
-26 stars
+27 stars
 ### Watchers
 0 watching
 ### Forks

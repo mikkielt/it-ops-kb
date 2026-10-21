@@ -1,0 +1,92 @@
+source: S-jcuv5ggt
+url: https://wiki.gentoo.org/wiki//etc/portage/package.use
+title: /etc/portage/package.use (Gentoo Wiki)
+publisher: Gentoo Wiki
+licence: CC-BY-SA-4.0
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+Jump to: content
+Get Gentoo!
+gentoo.org sites
+gentoo.org
+Wiki
+Bugs
+Packages
+Forums
+Planet
+Archives
+Devmanual
+Gitweb
+Infra status
+Wiki
+#
+/etc/portage/package.use
+From Gentoo Wiki
+< /etc‎ | portage
+Jump to:navigation
+Jump to:search
+Other languages:
+Deutsch
+English
+español
+français
+italiano
+magyar
+русский
+українська
+中文（中国大陆）‎
+日本語
+/etc/portage/package.use provides a more fine grained per-package control of USE flags than the USE variable in /etc/portage/make.conf.
+Note
+/etc/portage/package.use can either be a single file or a directory containing per-package files.
+With the default USE_ORDER setting, the /etc/portage/package.use file or directory will override individual package settings coming from all locations except for the USE environment variable.
+## Contents
+1 Example
+2 Format
+3 Automatically generated content
+4 Finding USE flags set
+5 External resources
+## Example
+FILE /etc/portage/package.useExample with this location as a single file
+# Globally disable the unwanted USE flags which were enabled by the profile
+*/* -bluetooth -dbus -ldap -libnotify -nls -udisks
+# enable the offensive USE flag for app-admin/sudo
+app-admin/sudo offensive
+# disable mysql support for dev-lang/php
+dev-lang/php -mysql
+# enable java and set the python interpreter version for libreoffice
+app-office/libreoffice java PYTHON_SINGLE_TARGET: python3_11
+FILE /etc/portage/package.use/openrctExample with this location as a directory
+# Disable Vorbis support in OpenRCT2
+games-simulation/openrct2 -vorbis
+For more details see the Handbook.
+## Format
+One DEPEND atom per line with space-delimited USE flags.
+Comment lines begin with # (hash).
+Note
+See version specifier for information on how to format the package atoms.
+Tip
+If a package atom specifies a version, a comparison operator must be used.
+## Automatically generated content
+emerge has the --autounmask option enabled by default (see man 1 emerge), so it can generate package.use settings as necessary to satisfy dependencies.
+Tip
+When /usr/portage/package.use is a directory, --autounmask will write its changes to the lexicographically last file in that directory. Users might find it useful to create such a file ahead of time. Otherwise, a confusing (but otherwise harmless) situation can result where changes for one package are appended to a file pertaining to a different package.
+## Finding USE flags set
+With all the will in the world, mistakes will happen so below are some tips to help find a USE flag that was set and can no longer be found.
+In this example, the lua USE flag was set for media-video/obs-studio, but is no longer required.
+user $grep --recursive "lua" /etc/portage/
+/etc/portage/package.use/obs:media-video/obs-studio nvenc browser speex fdk lua python qsv v4l vlc
+/etc/portage/package.use/scummvm:games-engines/scummvm fluidsynth -fribidi lua mpeg2 sndio speech theora unsupported
+/etc/portage/package.use/zz-automask:>=dev-lua/lgi-0.9.2-r100 lua_targets_luajit
+It can be seen that the USE flag is in /etc/portage/package.use/obs and can be quickly added and removed.
+## External resources
+https://packages.gentoo.org/useflags - USE flags on Gentoo Packages Database
+Portage man page
+Setting USE_EXPAND flags in package.use - blog post by Bernard Cafarelli
+Cleaning /etc/portage/package.* from unused entries
+Find obsolete USE flags in /etc/portage/package.use - Gentoo forums thread
+Retrieved from "https://wiki.gentoo.org/index.php?title=/etc/portage/package.use&oldid=1400115"
+Categories:
+Portage
+Portage configuration

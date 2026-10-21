@@ -3,25 +3,44 @@ url: https://github.com/a2aproject/A2A
 title: a2aproject/A2A repository
 publisher: Linux Foundation / a2aproject
 licence: Apache-2.0
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-a2aproject
-/
+## Repository navigation
 A2A
 Public
-Notifications
-You must be signed in to change notification settings
-Fork
-2.6k
-Star
-25.9k
+NotificationsYou must be signed in to change notification settings
+Fork2.7k (2.7k)
+Star26.2k (26.2k)You must be signed in to star a repository
+## About
+Agent2Agent (A2A) is an open protocol enabling communication and interoperability between opaque agentic applications.
+a2a-protocol.org/
+### Topics
+a2aa2a-mcpa2a-protocola2a-serveragentsgenerative-ailinux-foundation
+### Resources
+Readme
+Apache-2.0 license
+### Code of conduct
+Code of conduct
+### Contributing
+Contributing
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+26.2k stars
+### Watchers
+240 watching
+### Forks
+2.7k forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit
 ## History
-631 Commits
-631 Commits
+655 Commits
+655 Commits
 ## Folders and files
 NameName
 Last commit message
@@ -180,11 +199,11 @@ Security policy
 Activity
 Custom properties
 ### Stars
-25.9k stars
+26.2k stars
 ### Watchers
-238 watching
+240 watching
 ### Forks
-2.6k forks
+2.7k forks
 Report repository
 ## Releases
 ## Used by

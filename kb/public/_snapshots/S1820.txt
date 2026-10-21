@@ -3,7 +3,7 @@ url: https://agents.md/
 title: AGENTS.md
 publisher: Agentic AI Foundation (Linux Foundation)
 licence: MIT (agentsmd/agents.md LICENSE)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # AGENTS.md
@@ -97,15 +97,15 @@ Augment Code
 ### openai/codex
 General-purpose CLI tooling for AI coding agents.
 Rust
-+ 631
++ 675
 ### apache/airflow
 Platform to programmatically author, schedule, and monitor workflows.
 Python
-+ 4665
++ 4731
 ### temporalio/sdk-java
 Java SDK for Temporal, workflow orchestration defined in code.
 Java
-+ 155
++ 159
 ### PlutoLang/Pluto
 A superset of Lua 5.4 with a focus on general-purpose programming.
 C++

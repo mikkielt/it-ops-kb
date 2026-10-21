@@ -1,0 +1,124 @@
+source: S-kqisz7ri
+url: https://github.com/astral-sh/uv/releases/tag/0.12.19
+title: uv 0.12.19 GitHub release (assets and per-file digests)
+publisher: Astral (uv release)
+licence: MIT OR Apache-2.0 (astral-sh/uv LICENSE-MIT, LICENSE-APACHE)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+## Repository navigation
+# 0.12.19
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+astral-releases-bot
+released this
+25 Sep 00:33
+Immutable
+release. Only release title and notes can be modified.
+0.12.19
+bea1384
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+## Release Notes
+Released on 2026-09-24.
+### Python
+Add PyPy 3.11.16 and 3.12.14 (#21847)
+Update GraalPy 3.13.0 to build 25.4.4 (#21847)
+### Enhancements
+Format upload URLs with backticks in uv publish errors (#21934)
+### Preview features
+Run build-backend hooks with lazy imports on CPython 3.15 and later using the build-lazy-imports preview feature (#21967)
+Omit unused resolution settings from uv.lock and ignore changes to them when checking lockfile freshness with the resolution-inputs preview feature (#21913)
+### Bug fixes
+Preserve signed and encoded query parameters in direct-URL metadata to avoid reinstalling unchanged packages (#21971)
+Recognize 1.0.0 as satisfying ===1 during installed-package checks, matching resolution (#21931)
+Avoid collisions between Git checkout readiness markers and .ok files in dependencies (#21891)
+Preserve always-false python_version markers when parsing their serialized form (#21939)
+### Rust API
+Restore the public FlatDistributions export and its BTreeMap conversion for downstream resolvers (#21965)
+### Documentation
+Make individual preview-feature reference entries linkable by name (#21950)
+## Install uv 0.12.19
+### Install prebuilt binaries via shell script
+curl --proto '=https' --tlsv1.2 -LsSf https://releases.astral.sh/github/uv/releases/download/0.12.19/uv-installer.sh | sh
+### Install prebuilt binaries via powershell script
+powershell -ExecutionPolicy Bypass -c "irm https://releases.astral.sh/github/uv/releases/download/0.12.19/uv-installer.ps1 | iex"
+## Download uv 0.12.19
+File
+Platform
+Checksum
+uv-aarch64-apple-darwin.tar.gz
+Apple Silicon macOS
+checksum
+uv-x86_64-apple-darwin.tar.gz
+Intel macOS
+checksum
+uv-aarch64-pc-windows-msvc.zip
+ARM64 Windows
+checksum
+uv-i686-pc-windows-msvc.zip
+x86 Windows
+checksum
+uv-x86_64-pc-windows-msvc.zip
+x64 Windows
+checksum
+uv-aarch64-unknown-linux-gnu.tar.gz
+ARM64 Linux
+checksum
+uv-i686-unknown-linux-gnu.tar.gz
+x86 Linux
+checksum
+uv-powerpc64le-unknown-linux-gnu.tar.gz
+PPC64LE Linux
+checksum
+uv-riscv64gc-unknown-linux-gnu.tar.gz
+RISCV Linux
+checksum
+uv-s390x-unknown-linux-gnu.tar.gz
+S390x Linux
+checksum
+uv-x86_64-unknown-linux-gnu.tar.gz
+x64 Linux
+checksum
+uv-armv7-unknown-linux-gnueabihf.tar.gz
+ARMv7 Linux
+checksum
+uv-aarch64-unknown-linux-musl.tar.gz
+ARM64 MUSL Linux
+checksum
+uv-i686-unknown-linux-musl.tar.gz
+x86 MUSL Linux
+checksum
+uv-riscv64gc-unknown-linux-musl.tar.gz
+RISCV MUSL Linux
+checksum
+uv-x86_64-unknown-linux-musl.tar.gz
+x64 MUSL Linux
+checksum
+uv-arm-unknown-linux-musleabihf.tar.gz
+ARMv6 MUSL Linux (Hardfloat)
+checksum
+uv-armv7-unknown-linux-musleabihf.tar.gz
+ARMv7 MUSL Linux
+checksum
+## Verifying GitHub Artifact Attestations
+The artifacts in this release have attestations generated with GitHub Artifact Attestations. These can be verified by using the GitHub CLI:
+gh attestation verify <file-path of downloaded artifact> --repo astral-sh/uv
+You can also download the attestation from GitHub and verify against that directly:
+gh attestation verify <file-path of downloaded artifact> --bundle <file-path of downloaded attestation>
+Assets
+45
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+28 people reacted

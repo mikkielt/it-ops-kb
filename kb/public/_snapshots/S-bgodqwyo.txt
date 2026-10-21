@@ -3,7 +3,7 @@ url: https://modelcontextprotocol.io/registry/package-types
 title: MCP Registry Supported Package Types
 publisher: modelcontextprotocol.io
 licence: CC BY 4.0 (MCP documentation other than the specification), per modelcontextprotocol LICENSE
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 > ## Documentation Index
@@ -12,9 +12,9 @@ changes: normalized to text by _tools/provider.py (raw form; front matter, link 
 
 # MCP Registry Supported Package Types
 
-<Note>
-  The MCP Registry is currently in preview. Breaking changes or data resets may occur before general availability. If you encounter any issues, please report them on GitHub.
-</Note>
+> [!NOTE]
+>
+> The MCP Registry is currently in preview. Breaking changes or data resets may occur before general availability. If you encounter any issues, please report them on GitHub.
 
 # Package Types
 

@@ -1,0 +1,77 @@
+source: S-vpvmrtpz
+url: https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-versioning
+title: C# language versioning
+publisher: Microsoft Learn (dotnet/docs)
+licence: CC BY 4.0 (public mirror dotnet/docs; code MIT)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Language versioning - C# reference | Microsoft Learn
+
+The latest C# compiler determines a default language version based on your project's target framework or frameworks. Visual Studio doesn't provide a UI to change the value, but you can change it by editing the *csproj* file. The choice of default ensures that you use the latest language version compatible with your target framework. You benefit from access to the latest language features compatible with your project's target. This default choice also ensures you don't use a language version that requires types or runtime behavior unavailable in your target framework. Choosing a language version newer than the default can cause hard-to-diagnose compile-time and runtime errors.
+
+The C# language reference documents the most recently released version of the C# language. It also contains initial documentation for features in public previews for the upcoming language release.
+
+The documentation identifies any feature first introduced in the last three versions of the language or in current public previews.
+
+Tip
+
+To find when a feature was first introduced in C#, consult the article on the C# language version history.
+
+C# 15 is supported only on .NET 11 and newer versions. C# 14 is supported only on .NET 10 and newer versions. C# 13 is supported only on .NET 9 and newer versions. Using a C# language version newer than the version associated with your target TFM is unsupported.
+
+For details on which .NET versions are supported by versions of Visual Studio, see the Visual Studio platform compatibility page.
+
+## Defaults
+
+The compiler determines a default based on these rules:
+
+| Target | Version | C# language version default |
+| --- | --- | --- |
+| .NET | 11.x | C# 15 |
+| .NET | 10.x | C# 14 |
+| .NET | 9.x | C# 13 |
+| .NET | 8.x | C# 12 |
+| .NET | 7.x | C# 11 |
+| .NET | 6.x | C# 10 |
+| .NET | 5.x | C# 9.0 |
+| .NET Core | 3.x | C# 8.0 |
+| .NET Core | 2.x | C# 7.3 |
+| .NET Standard | 2.1 | C# 8.0 |
+| .NET Standard | 2.0 | C# 7.3 |
+| .NET Standard | 1.x | C# 7.3 |
+| .NET Framework | all | C# 7.3 |
+
+If your project targets a `preview` framework that has a corresponding preview language version, the language version used is the preview language version. You use the latest features with that preview in any environment, without affecting projects that target a released .NET Core version.
+
+## C# language version reference
+
+The following table shows all current C# language versions. Older compilers might not understand every value. If you install the latest .NET SDK, you have access to everything listed.
+
+| Value | Meaning |
+| --- | --- |
+| `preview` | The compiler accepts all valid language syntax from the latest preview version. |
+| `latest` | The compiler accepts syntax from the latest released version of the compiler (including minor version). |
+| `latestMajor`or `default` | The compiler accepts syntax from the latest released major version of the compiler. |
+| `15.0` | The compiler accepts only syntax that is included in C# 15 or lower. |
+| `14.0` | The compiler accepts only syntax that is included in C# 14 or lower. |
+| `13.0` | The compiler accepts only syntax that is included in C# 13 or lower. |
+| `12.0` | The compiler accepts only syntax that is included in C# 12 or lower. |
+| `11.0` | The compiler accepts only syntax that is included in C# 11 or lower. |
+| `10.0` | The compiler accepts only syntax that is included in C# 10 or lower. |
+| `9.0` | The compiler accepts only syntax that is included in C# 9 or lower. |
+| `8.0` | The compiler accepts only syntax that is included in C# 8.0 or lower. |
+| `7.3` | The compiler accepts only syntax that is included in C# 7.3 or lower. |
+| `7.2` | The compiler accepts only syntax that is included in C# 7.2 or lower. |
+| `7.1` | The compiler accepts only syntax that is included in C# 7.1 or lower. |
+| `7` | The compiler accepts only syntax that is included in C# 7.0 or lower. |
+| `6` | The compiler accepts only syntax that is included in C# 6.0 or lower. |
+| `5` | The compiler accepts only syntax that is included in C# 5.0 or lower. |
+| `4` | The compiler accepts only syntax that is included in C# 4.0 or lower. |
+| `3` | The compiler accepts only syntax that is included in C# 3.0 or lower. |
+| `ISO-2`or `2` | The compiler accepts only syntax that is included in ISO/IEC 23270:2006 C# (2.0). |
+| `ISO-1`or `1` | The compiler accepts only syntax that is included in ISO/IEC 23270:2003 C# (1.0/1.2). |
+
+Note
+
+Specifying **LangVersion** with the `default` value is different from omitting the **LangVersion** option. Specifying `default` uses the latest version of the language that the compiler supports, without taking into account the target framework. For example, building a project that targets .NET 6 from the current version of Visual Studio 2022 uses C# 10 if **LangVersion** isn't specified, but uses C# 12 if **LangVersion** is set to `default`.

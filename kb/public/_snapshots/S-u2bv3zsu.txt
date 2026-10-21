@@ -3,10 +3,14 @@ url: https://learn.microsoft.com/microsoft-365/copilot/extensibility/plugin-mani
 title: Plugin manifest schema 2.4 for Microsoft 365 Copilot
 publisher: Microsoft Learn
 licence: CC BY 4.0 (public mirror MicrosoftDocs/m365copilot-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Plugin manifest schema 2.4 for Microsoft 365 Copilot | Microsoft Learn
+
+Note
+
+In this reference, *plugin* means the technical MCP or API custom action configured through a plugin manifest for a declarative agent. For the broader customer-facing plugin product, package, registry, and lifecycle, see Plugins for Microsoft 365 Copilot.
 
 Plugins enable Microsoft 365 Copilot to interact with MCP servers or REST APIs described by an OpenAPI description. A plugin includes a plugin manifest file that provides metadata about the plugin, such as the plugin's name, description, and version. The plugin manifest also includes information about the plugin's capabilities, such as the MCP tools or APIs it supports and the operations it can perform.
 

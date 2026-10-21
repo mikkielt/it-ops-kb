@@ -1,0 +1,20 @@
+source: S-tiudfpoz
+url: https://arxiv.org/abs/2601.17339
+title: Beyond Correlations: A Downstream Evaluation Framework for Query Performance Prediction
+publisher: arXiv preprint (2601.17339)
+licence: CC BY 4.0 (licence link on the arXiv abstract page)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Beyond Correlations: A Downstream Evaluation Framework for Query Performance Prediction
+id: http://arxiv.org/abs/2601.17339v1
+authors: Payel Santra; Partha Basuchowdhuri; Debasis Ganguly
+published: 2026-01-24T06:58:30Z
+updated: 2026-01-24T06:58:30Z
+categories: cs.IR
+
+The standard practice of query performance prediction (QPP) evaluation is to measure a set-level correlation between the estimated retrieval qualities and the true ones.
+However, neither this correlation-based evaluation measure quantifies QPP effectiveness at the level of individual queries, nor does this connect to a downstream application, meaning that QPP methods yielding high correlation values may not find a practical application in query-specific decisions in an IR pipeline.
+In this paper, we propose a downstream-focussed evaluation framework where a distribution of QPP estimates across a list of top-documents retrieved with several rankers is used as priors for IR fusion.
+While on the one hand, a distribution of these estimates closely matching that of the true retrieval qualities indicates the quality of the predictor, their usage as priors on the other hand indicates a predictor's ability to make informed choices in an IR pipeline.
+Our experiments firstly establish the importance of QPP estimates in weighted IR fusion, yielding substantial improvements of over 4.5% over unweighted CombSUM and RRF fusion strategies, and secondly, reveal new insights that the downstream effectiveness of QPP does not correlate well with the standard correlation-based QPP evaluation.

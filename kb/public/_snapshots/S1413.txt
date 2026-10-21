@@ -3,19 +3,33 @@ url: https://github.com/dsccommunity/SecurityPolicyDsc
 title: SecurityPolicyDsc repository (dsccommunity)
 publisher: dsccommunity / Microsoft (community)
 licence: MIT
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-dsccommunity
-/
+## Repository navigation
 SecurityPolicyDsc
 Public
-Notifications
-You must be signed in to change notification settings
-Fork
-52
-Star
-180
+NotificationsYou must be signed in to change notification settings
+Fork52 (52)
+Star180 (180)You must be signed in to star a repository
+## About
+A wrapper around secedit.exe to configure local security policies
+### Resources
+Readme
+MIT license
+### Code of conduct
+Code of conduct
+### Contributing
+Contributing
+Activity
+Custom properties
+### Stars
+180 stars
+### Watchers
+17 watching
+### Forks
+52 forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit

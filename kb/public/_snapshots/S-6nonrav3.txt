@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/powershell/module/microsoft.graph.security/star
 title: Start-MgSecurityHuntingQuery (Microsoft.Graph.Security)
 publisher: Microsoft
 licence: CC BY 4.0 (public mirror MicrosoftDocs/microsoftgraph-docs-powershell)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Start-MgSecurityHuntingQuery
@@ -27,6 +27,7 @@ Start-MgSecurityHuntingQuery
     [-AdditionalProperties <hashtable>]
     [-Query <string>]
     [-Timespan <string>]
+    [-WorkspaceId <string>]
     [-Break]
     [-Headers <IDictionary>]
     [-HttpPipelineAppend <SendAsyncStep[]>]
@@ -369,6 +370,26 @@ Runs the command in a mode that only reports what would happen without performin
 | Value from pipeline by property name: | False |
 | Value from remaining arguments: | False |
 
+### -WorkspaceId
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ RunExpanded
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
 ### CommonParameters
 
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable, -ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters.
@@ -395,7 +416,7 @@ COMPLEX PARAMETER PROPERTIES
 
 To create the parameters described below, construct a hash table containing the appropriate properties. For information on hash tables, run Get-Help about\_Hash\_Tables.
 
-BODYPARAMETER `<IPathsU5PqctSecurityMicrosoftGraphSecurityRunhuntingqueryPostRequestbodyContentApplicationJsonSchema>`: . [(Any) &lt;Object&gt;]: This indicates any property can be added to this object. [Query &lt;String&gt;]: [Timespan &lt;String&gt;]:
+BODYPARAMETER `<IPathsU5PqctSecurityMicrosoftGraphSecurityRunhuntingqueryPostRequestbodyContentApplicationJsonSchema>`: . [(Any) &lt;Object&gt;]: This indicates any property can be added to this object. [Query &lt;String&gt;]: [Timespan &lt;String&gt;]: [WorkspaceId &lt;String&gt;]:
 
 ## Related Links
 

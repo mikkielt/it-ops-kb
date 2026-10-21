@@ -1,0 +1,160 @@
+source: S-w5jn4cwh
+url: https://maven.apache.org/plugins/maven-dependency-plugin/tree-mojo.html
+title: Maven Dependency Plugin: dependency:tree
+publisher: Apache Software Foundation
+licence: Apache-2.0 (ASF licence header in the site source)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# dependency:tree
+Full name:
+org.apache.maven.plugins:maven-dependency-plugin:3.11.0:tree
+Description:
+Displays the dependency tree for this project. Multiple formats are supported: text (by default), but also DOT, GraphML, TGF and JSON.
+Attributes:
+Requires a Maven project to be executed.
+The goal is thread-safe and supports parallel builds.
+Since version: 2.0-alpha-5.
+## Optional Parameters
+Name
+Type
+Since
+Description
+<appendOutput>
+boolean
+2.2
+Whether to append outputs into the output file or overwrite it.
+Default: false
+User Property: appendOutput
+<excludes>
+List<String>
+2.0-alpha-6
+A comma-separated list of artifacts to filter from the serialized dependency tree, or null not to filter any artifacts from the dependency tree. The filter syntax is:
+[groupId]:[artifactId]:[type]:[version]
+where each pattern segment is optional and supports full and partial * wildcards. An empty pattern segment is treated as an implicit wildcard.
+For example, org.apache.* will match all artifacts whose group id starts with org.apache., and :::*-SNAPSHOT will match all snapshot artifacts.
+See also: org.apache.maven.shared.artifact.filter.StrictPatternExcludesArtifactFilter
+User Property: excludes
+<includes>
+List<String>
+2.0-alpha-6
+A comma-separated list of artifacts to filter the serialized dependency tree by, or null not to filter the dependency tree. The filter syntax is:
+[groupId]:[artifactId]:[type]:[version]
+where each pattern segment is optional and supports full and partial * wildcards. An empty pattern segment is treated as an implicit wildcard.
+For example, org.apache.* will match all artifacts whose group id starts with org.apache., and :::*-SNAPSHOT will match all snapshot artifacts.
+See also: org.apache.maven.shared.artifact.filter.StrictPatternIncludesArtifactFilter
+User Property: includes
+<outputEncoding>
+String
+-
+No description.
+Default: ${project.reporting.outputEncoding}
+User Property: outputEncoding
+<outputFile>
+File
+2.0-alpha-5
+If specified, this parameter will cause the dependency tree to be written to the path specified, instead of writing to the console.
+User Property: outputFile
+<outputType>
+String
+2.2
+If specified, this parameter will cause the dependency tree to be written using the specified format. Currently supported formats are: text (default), dot, graphml, tgf and json (since 3.7.0). These additional formats can be plotted to image files.
+Default: text
+User Property: outputType
+<scope>
+String
+2.0-alpha-5
+The scope to filter by when resolving the dependency tree, or null to include dependencies from all scopes.
+User Property: scope
+<skip>
+boolean
+2.7
+Skip plugin execution completely.
+Default: false
+User Property: skip
+<tokens>
+String
+2.0-alpha-6
+The token set name to use when outputting the dependency tree. Possible values are whitespace, standard or extended, which use whitespace, standard (ie ASCII) or extended character sets respectively.
+Default: standard
+User Property: tokens
+<verbose>
+boolean
+2.0-alpha-6
+Whether to include omitted nodes in the serialized dependency tree.
+Default: false
+User Property: verbose
+## Parameter Details
+### <appendOutput>
+Whether to append outputs into the output file or overwrite it.
+Type: boolean
+Since: 2.2
+Required: No
+User Property: appendOutput
+Default: false
+### <excludes>
+A comma-separated list of artifacts to filter from the serialized dependency tree, or null not to filter any artifacts from the dependency tree. The filter syntax is:
+[groupId]:[artifactId]:[type]:[version]
+where each pattern segment is optional and supports full and partial * wildcards. An empty pattern segment is treated as an implicit wildcard.
+For example, org.apache.* will match all artifacts whose group id starts with org.apache., and :::*-SNAPSHOT will match all snapshot artifacts.
+See also: org.apache.maven.shared.artifact.filter.StrictPatternExcludesArtifactFilter
+Type: java.util.List<java.lang.String>
+Since: 2.0-alpha-6
+Required: No
+User Property: excludes
+### <includes>
+A comma-separated list of artifacts to filter the serialized dependency tree by, or null not to filter the dependency tree. The filter syntax is:
+[groupId]:[artifactId]:[type]:[version]
+where each pattern segment is optional and supports full and partial * wildcards. An empty pattern segment is treated as an implicit wildcard.
+For example, org.apache.* will match all artifacts whose group id starts with org.apache., and :::*-SNAPSHOT will match all snapshot artifacts.
+See also: org.apache.maven.shared.artifact.filter.StrictPatternIncludesArtifactFilter
+Type: java.util.List<java.lang.String>
+Since: 2.0-alpha-6
+Required: No
+User Property: includes
+### <outputEncoding>
+No description.
+Type: java.lang.String
+Required: No
+User Property: outputEncoding
+Default: ${project.reporting.outputEncoding}
+### <outputFile>
+If specified, this parameter will cause the dependency tree to be written to the path specified, instead of writing to the console.
+Type: java.io.File
+Since: 2.0-alpha-5
+Required: No
+User Property: outputFile
+### <outputType>
+If specified, this parameter will cause the dependency tree to be written using the specified format. Currently supported formats are: text (default), dot, graphml, tgf and json (since 3.7.0). These additional formats can be plotted to image files.
+Type: java.lang.String
+Since: 2.2
+Required: No
+User Property: outputType
+Default: text
+### <scope>
+The scope to filter by when resolving the dependency tree, or null to include dependencies from all scopes.
+Type: java.lang.String
+Since: 2.0-alpha-5
+Required: No
+User Property: scope
+### <skip>
+Skip plugin execution completely.
+Type: boolean
+Since: 2.7
+Required: No
+User Property: skip
+Default: false
+### <tokens>
+The token set name to use when outputting the dependency tree. Possible values are whitespace, standard or extended, which use whitespace, standard (ie ASCII) or extended character sets respectively.
+Type: java.lang.String
+Since: 2.0-alpha-6
+Required: No
+User Property: tokens
+Default: standard
+### <verbose>
+Whether to include omitted nodes in the serialized dependency tree.
+Type: boolean
+Since: 2.0-alpha-6
+Required: No
+User Property: verbose
+Default: false

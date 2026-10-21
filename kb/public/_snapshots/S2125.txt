@@ -3,25 +3,44 @@ url: https://github.com/a2aproject/a2a-python
 title: a2aproject/a2a-python (a2a-sdk)
 publisher: Linux Foundation / a2aproject
 licence: Apache-2.0
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-a2aproject
-/
+## Repository navigation
 a2a-python
 Public
-Notifications
-You must be signed in to change notification settings
-Fork
-499
-Star
-2.2k
+NotificationsYou must be signed in to change notification settings
+Fork518 (518)
+Star2.2k (2.2k)You must be signed in to star a repository
+## About
+Official Python SDK for the Agent2Agent (A2A) Protocol
+a2a-protocol.org/latest/sdk/python/api/
+### Topics
+a2aa2a-clienta2a-mcpa2a-protocola2a-serveragent2agentagentsgenerative-ai
+### Resources
+Readme
+Apache-2.0 license
+### Code of conduct
+Code of conduct
+### Contributing
+Contributing
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+2.2k stars
+### Watchers
+28 watching
+### Forks
+518 forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit
 ## History
-770 Commits
-770 Commits
+813 Commits
+813 Commits
 ## Folders and files
 NameName
 Last commit message
@@ -213,7 +232,7 @@ Custom properties
 ### Watchers
 28 watching
 ### Forks
-499 forks
+518 forks
 Report repository
 ## Releases
 ## Used by

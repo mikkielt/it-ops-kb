@@ -3,7 +3,7 @@ url: https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/s
 title: stdio transport - Model Context Protocol Specification
 publisher: Model Context Protocol (modelcontextprotocol.io)
 licence: Apache-2.0 (specification; unrelicensed contributions MIT), per modelcontextprotocol LICENSE
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 > ## Documentation Index
@@ -11,8 +11,6 @@ changes: normalized to text by _tools/provider.py (raw form; front matter, link 
 > Use this file to discover all available pages before exploring further.
 
 # stdio
-
-<div id="enable-section-numbers" />
 
 In the **stdio** transport, the client launches the MCP server as a subprocess.
 The two ends communicate over the subprocess's standard streams:

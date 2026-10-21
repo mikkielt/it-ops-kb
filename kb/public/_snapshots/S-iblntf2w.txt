@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/agent-framework/support/upgrade/python-2026-sig
 title: Python 2026 Significant Changes Guide - Microsoft Agent Framework
 publisher: Microsoft Learn
 licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-ai-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Python 2026 Significant Changes Guide | Microsoft Learn
@@ -16,6 +16,78 @@ This document lists all significant changes in Python releases since the start o
 This document tracks significant Python changes across all 2026 releases, so please refer to it when upgrading between versions to ensure you don't miss any important changes. For detailed upgrade instructions on specific topics (e.g., options migration), refer to the linked upgrade guides or the linked PR's.
 
 ## Unreleased
+
+### 🔴 Content execution ownership, metadata, and stream merging are consolidated
+
+**PR:**#8886
+
+Python `Content` now uses first-class fields for framework behavior. Function-call content serializes `hosted`; set it to `True` when the provider or service executes the call. `server_name` describes the server boundary but doesn't control execution. Framework and provider-owned metadata now uses one-level `additional_properties` namespaces such as `core`, `openai`, `foundry`, and `a2a`.
+
+Stream adapters must set `merge_mode="append"` for deltas and `merge_mode="replace"` for authoritative content or message snapshots. Aggregation consumes these instructions, including update-level replacement of heterogeneous message contents.
+
+Upgrade core, providers, protocol adapters, UI packages, and hosts together. The new runtime reads legacy `server_label` and metadata locations, but older runtimes reject newly serialized `hosted` and `merge_mode` fields. Don't roll back or run old and new workers against the same persisted session or history store after new records are written.
+
+### 🟡 Python 3.15 is supported, and Python 3.10 is deprecated
+
+**PR:**#9363
+
+Compatible Agent Framework packages now support Python 3.15. Python 3.10 remains supported and tested for this release, but it's soft-deprecated because upstream Python 3.10 reached end of life. Use Python 3.11 or later for new environments.
+
+On Python 3.15, the standard `agent-framework` installation omits Redis and Hyperlight because their upstream dependencies aren't compatible, and the AG-UI package works without its optional A2UI extra. Declarative Power Fx values remain unevaluated with a warning on Python 3.14 and 3.15. Check an integration's Python requirement before adding it to a Python 3.15 environment.
+
+### 🔴 Foundry Invocations defaults to JSON and framed SSE
+
+**PR:**#8894
+
+`InvocationsHostServer` now returns non-streaming success as `{"response": "..."}` instead of plain text. Streaming now uses framed server-sent events: `delta` for text updates, `done` after the final response is finalized and the `AgentSession` is saved, and `error` for failures. A stream can emit deltas before an error, so treat `done`, not a delta, as successful completion.
+
+Update clients to parse JSON and SSE. The `session_id` in a `done` event is the platform sandbox route ID, not the serialized `AgentSession.session_id`. Same-session requests are serialized only within one host process, and a cross-process state conflict can still occur after external tool effects.
+
+Existing callers can temporarily set `legacy_wire_format=True` to preserve the old successful plain-text response and raw text-chunk stream. The compatibility mode is deprecated and doesn't return failures as successful text. Applications can also accept custom payloads with `parse_request` returning `InvocationRun` and filter caller options with `prepare_options`; the host validates reserved controls after the hook. For details, see Foundry Hosted Agents.
+
+### 🔴 Declarative workflow object attributes require safe names
+
+**PR:**#8893
+
+Python standalone `WorkflowState` and factory-created declarative workflow state now use the same object-attribute policy. When a dot-notated path traverses a Python object, each attribute segment must match `[A-Za-z][A-Za-z0-9_]*`. An unsafe segment, such as `_private`, `display-name`, or a value with trailing whitespace, returns the lookup default without accessing the attribute.
+
+Dictionary keys are unchanged. For example, `Local.obj._private` no longer reads an object attribute, while `Local.bag._private` still reads the `"_private"` key when `Local.bag` is a dictionary. Expose public object attributes that match the supported pattern, or store irregular names, including UUIDs and hyphenated values, as dictionary keys. For details, see Object attribute paths.
+
+### 🔴 Foundry Responses hosting separates history, storage, and background execution
+
+**PR:**#8794
+
+`ResponsesHostServer` now treats the caller's `store` field, the outer response store, model history, and provider-native background execution as separate choices. Rename the constructor's `store=` argument to `response_store=`. The old name remains a deprecated alias and doesn't set the caller's per-request storage behavior.
+
+Review your `history_source` configuration. The default `"agent_server"` mode reconstructs the outer Responses transcript and disables downstream storage. Use `"service"` to continue a private storing-provider session, or `"agent"` to preserve an agent-owned history provider or downstream storage default. Requests with `store=false` no longer write host-managed state or downstream service history.
+
+Provider-native background polling now requires `history_source="service"` and `background_source="provider"`. Steering is temporarily unavailable, and enabling `steerable_conversations` raises `RuntimeError` during host construction. For migration and configuration details, see Foundry Hosted Agents.
+
+### 🔴 Gemini uses `GOOGLE_*` settings and adds Embedding 2
+
+**PR:**#8798
+
+`GeminiChatClient` no longer reads `GEMINI_API_KEY` or `GEMINI_MODEL`, and the `GeminiSettings` export is removed. Rename configuration to `GOOGLE_API_KEY` and `GOOGLE_MODEL`, or pass the values explicitly. Configure embeddings with `GOOGLE_EMBEDDING_MODEL`.
+
+The new `GeminiEmbeddingClient` defaults to `gemini-embedding-2`. Text embedding calls require an explicit task type, such as `RETRIEVAL_DOCUMENT` for indexing and `RETRIEVAL_QUERY` for search. Vector upserts, searches, and generated search tools now accept per-operation embedding options, while vector field dimensions remain authoritative.
+
+For setup and examples, see Google Gemini and Vector store integrations.
+
+### 🔴 Foundry invocation sessions now use persistent storage
+
+**PR:**#8593
+
+`InvocationsHostServer` now saves serialized `AgentSession` state through an `AgentSessionStoreProvider` instead of retaining arbitrary live session objects for the process lifetime. The default provider uses Foundry storage when hosted and file-backed storage locally, with a separate `invocation_sessions` logical store.
+
+Make custom session state serializable, and register codecs for custom types with `register_state_type()`. Restored state doesn't preserve Python object identity. New default stores expire sessions 30 days after their last write; custom providers control retention. Coordinate overlapping requests for the same session, and use separate local storage roots or providers for independent applications. For details, see Foundry Hosted Agents.
+
+### 🔴 Local tool approvals require the issuing session
+
+**PR:**#8750
+
+A local `function_approval_response` now authorizes a tool call only when it matches a pending approval request recorded in the same authoritative `AgentSession`. Pass the same session to the run that produces the approval request and the run that resumes it. Without that session, the framework drops the unbound response and logs a warning.
+
+Hosted approvals and replayed conversations whose tool calls already have terminal results are unchanged. Set `disable_approval_response_binding=True` only when your application enforces equivalent binding before messages reach the agent. For the recommended session-backed flow, see Tool approval.
 
 ### 🔴 Persisted approval transcripts must use typed approval controls
 
@@ -1002,7 +1074,7 @@ from agent_framework.foundry import FoundryChatClient
 from azure.identity import AzureCliCredential
 
 client = FoundryChatClient(
-    project_endpoint="https://your-project.services.ai.azure.com",
+    project_endpoint="https://your-account.services.ai.azure.com/api/projects/your-project",
     model="gpt-4.1",
     credential=AzureCliCredential(),
 )
@@ -1669,7 +1741,7 @@ from azure.identity import DefaultAzureCredential
 from agent_framework.foundry import FoundryChatClient
 
 client = FoundryChatClient(
-    project_endpoint="https://<your-project>.services.ai.azure.com",
+    project_endpoint="https://<your-account>.services.ai.azure.com/api/projects/<your-project>",
     model="gpt-4o-mini",
     credential=DefaultAzureCredential(),
 )

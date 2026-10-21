@@ -3,7 +3,7 @@ url: https://modelcontextprotocol.io/specification/2026-07-28/server/discover
 title: Discovery (MCP specification 2026-07-28)
 publisher: modelcontextprotocol.io
 licence: Apache-2.0 (specification; unrelicensed contributions MIT), per modelcontextprotocol LICENSE
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 > ## Documentation Index
@@ -11,8 +11,6 @@ changes: normalized to text by _tools/provider.py (raw form; front matter, link 
 > Use this file to discover all available pages before exploring further.
 
 # Discovery
-
-<div id="enable-section-numbers" />
 
 `server/discover` lets a client query a server's supported protocol versions,
 capabilities, and identity before sending any other requests. Servers **MUST**
@@ -110,9 +108,9 @@ A discovery result includes:
 * `instructions`: Optional natural-language guidance for LLMs on how to use
   this server effectively
 
-<Note>
-  `serverInfo` is self-reported by the server and is not verified by the
-  protocol. It is intended for display, logging, and debugging. Clients **SHOULD
-  NOT** use it to change their behavior, and **SHOULD NOT** rely on it for
-  security decisions.
-</Note>
+> [!NOTE]
+>
+> `serverInfo` is self-reported by the server and is not verified by the
+> protocol. It is intended for display, logging, and debugging. Clients **SHOULD
+> NOT** use it to change their behavior, and **SHOULD NOT** rely on it for
+> security decisions.

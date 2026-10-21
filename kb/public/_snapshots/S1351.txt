@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/en-us/sql/connect/python/mssql-python/python-sq
 title: Learn: Microsoft Python Driver for SQL Server (mssql-python) overview
 publisher: Microsoft Learn
 licence: CC BY 4.0 (public mirror MicrosoftDocs/sql-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Microsoft Python Driver for SQL Server - mssql-python - Python driver for SQL Server | Microsoft Learn
@@ -165,7 +165,7 @@ For deeper guidance on each concern in this sample, see Microsoft Entra authenti
 - **Native data type support**: JSON, XML, spatial, sparse columns, datetimeoffset, and decimal/money with precise handling.
 - **Apache Arrow integration**: Zero-copy result sets for fast data interchange with pandas, Polars, and DuckDB.
 - **Async patterns**: Use the driver with `asyncio`-based applications and FastAPI through ThreadPoolExecutor workarounds. See Async patterns for integration patterns.
-- **TLS by default**: TLS encryption and certificate validation on by default (via ODBC Driver 18). TDS 8.0 encryption available when you set `Encrypt=strict`.
+- **TLS by default**: TLS encryption and certificate validation on by default with either native ODBC provider. TDS 8.0 encryption available when you set `Encrypt=strict`.
 
 ## Get started
 

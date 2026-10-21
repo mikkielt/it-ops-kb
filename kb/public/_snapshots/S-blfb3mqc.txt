@@ -3,7 +3,7 @@ url: https://modelcontextprotocol.io/extensions/client-matrix
 title: Extension Support Matrix (MCP clients)
 publisher: modelcontextprotocol.io
 licence: CC BY 4.0 (MCP documentation other than the specification), per modelcontextprotocol LICENSE
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 > ## Documentation Index
@@ -14,46 +14,43 @@ changes: normalized to text by _tools/provider.py (raw form; front matter, link 
 
 > Which MCP clients implement which official extensions
 
-export const CHECK = () => <span className="flex justify-center">
-    <Icon icon="check" iconType="solid" size={18} className="text-green-500" />
-  </span>;
-
 This matrix shows which MCP clients support each official extension. Extensions are always opt-in: a client only uses an extension if both client and server declare support in the `extensions` field of their capabilities.
 
-<Note>
-  This list is maintained by the community. If you notice any inaccuracies or would like to add or update information, please submit a pull request.
-</Note>
+> [!NOTE]
+>
+> This list is maintained by the community. If you notice any inaccuracies or would like to add or update information, please submit a pull request.
 
 ## Extension overview
 
-| Extension                                                                             | Identifier                                                 | Description                                                      |
-| ------------------------------------------------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------- |
-| MCP Apps                                                 | `io.modelcontextprotocol/ui`                               | Interactive HTML interfaces rendered inline in the conversation  |
-| OAuth Client Credentials                 | `io.modelcontextprotocol/oauth-client-credentials`         | Machine-to-machine auth without interactive user login           |
-| Enterprise-Managed Authorization | `io.modelcontextprotocol/enterprise-managed-authorization` | Centralized access control via enterprise IdP                    |
-| Skills over MCP                                        | `io.modelcontextprotocol/skills`                           | Discover skills and read their instructions and supporting files |
+| Extension | Identifier | Description |
+| - | - | - |
+| MCP Apps | `io.modelcontextprotocol/ui` | Interactive HTML interfaces rendered inline in the conversation |
+| OAuth Client Credentials | `io.modelcontextprotocol/oauth-client-credentials` | Machine-to-machine auth without interactive user login |
+| Enterprise-Managed Authorization | `io.modelcontextprotocol/enterprise-managed-authorization` | Centralized access control via enterprise IdP |
+| Skills over MCP | `io.modelcontextprotocol/skills` | Discover skills and read their instructions and supporting files |
 
 ## Support matrix
 
-| Client                                                                   | MCP Apps | OAuth Client Credentials | Enterprise Auth |                                           Skills                                          |
-| ------------------------------------------------------------------------ | :-----------------------------------: | :-------------------------------------------------------------------: | :------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------: |
-| Claude (web)                                        |               <CHECK />               |                                                                       |                                                                      |                                                                                                                          |
-| Claude Desktop                             |               <CHECK />               |                                                                       |                                                                      |                                                                                                                          |
-| VS Code GitHub Copilot                 |               <CHECK />               |                                                                       |                                                                      |                                                                                                                          |
-| Microsoft 365 Copilot |               <CHECK />               |                                                                       |                                                                      |                                                                                                                          |
-| Goose                                  |               <CHECK />               |                                                                       |                                                                      |                                                                                                                          |
-| Postman                                           |               <CHECK />               |                                                                       |                                                                      |                                                                                                                          |
-| MCPJam                                        |               <CHECK />               |                                                                       |                                                                      |                                                                                                                          |
-| ChatGPT                                          |               <CHECK />               |                                                                       |                                                                      |            Partial           |
-| Cursor                                            |               <CHECK />               |                                                                       |                                                                      |                                                                                                                          |
-| Archestra.AI                                |               <CHECK />               |                                                                       |                               <CHECK />                              |                                                                                                                          |
-| PostHog Code                                |               <CHECK />               |                                                                       |                                                                      |                                                                                                                          |
-| fast-agent                    |                                       |                                                                       |                                                                      |               Partial              |
-| MCP Inspector       |                                       |                                                                       |                                                                      | Partial |
+| Client | MCP Apps | OAuth Client Credentials | Enterprise Auth | Skills |
+| - | :-: | :-: | :-: | :-: |
+| Claude (web) | | | | |
+| Claude Desktop | | | | |
+| VS Code GitHub Copilot | | | | |
+| Microsoft 365 Copilot | | | | |
+| Goose | | | | |
+| Postman | | | | |
+| MCPJam | | | | |
+| ChatGPT | | | | Partial |
+| Cursor | | | | |
+| Archestra.AI | | | | |
+| PostHog Code | | | | |
+| fast-agent | | | | Partial |
+| MCP Inspector | | | | Partial |
+| mcpc MCP CLI | | | | |
 
-<Note>
-  Auth extension support (OAuth Client Credentials and Enterprise-Managed Authorization) is tracked separately from the core MCP authorization features (DCR, CIMD). Check each extension's specification and the ext-auth repository for the latest implementation status.
-</Note>
+> [!NOTE]
+>
+> Auth extension support (OAuth Client Credentials and Enterprise-Managed Authorization) is tracked separately from the core MCP authorization features (DCR, CIMD). Check each extension's specification and the ext-auth repository for the latest implementation status.
 
 ## Adding extension support to your client
 

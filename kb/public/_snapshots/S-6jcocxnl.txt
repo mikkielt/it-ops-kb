@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/azure/foundry-classic/how-to/develop/agent-eval
 title: Evaluate your AI agents (preview) (classic)
 publisher: Microsoft Learn
 licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-ai-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Agent Evaluation with the Microsoft Foundry SDK (classic) - Microsoft Foundry (classic) portal | Microsoft Learn
@@ -16,7 +16,7 @@ Links in this article might open content in the new Microsoft Foundry documentat
 
 Important
 
-Items marked (preview) in this article are currently in public preview. This preview is provided without a service-level agreement, and we don't recommend it for production workloads. Certain features might not be supported or might have constrained capabilities. For more information, see Supplemental Terms of Use for Microsoft Azure Previews.
+Items marked preview in this article are currently in preview. This preview is provided without a service-level agreement, and Microsoft doesn't recommend it for production workloads. Certain features might not be supported or might have constrained capabilities. For more information, see Supplemental Terms of Use for Microsoft Azure Previews.
 
 AI agents are powerful productivity assistants that create workflows for business needs. However, observability is challenging because of their complex interaction patterns. In this article, you learn how to evaluate Microsoft Foundry agents or other agents using built-in evaluators.
 

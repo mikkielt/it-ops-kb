@@ -1,0 +1,133 @@
+source: S-dkzzajvo
+url: https://wiki.gentoo.org/wiki/USE_flag
+title: USE flag (Gentoo Wiki)
+publisher: Gentoo Wiki
+licence: CC-BY-SA-4.0
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+Jump to: content
+Get Gentoo!
+gentoo.org sites
+gentoo.org
+Wiki
+Bugs
+Packages
+Forums
+Planet
+Archives
+Devmanual
+Gitweb
+Infra status
+Wiki
+#
+USE flag
+From Gentoo Wiki
+Jump to:navigation
+Jump to:search
+Other languages:
+Deutsch
+English
+français
+magyar
+polski
+русский
+中文（中国大陆）‎
+日本語
+Portage - the heart of Gentoo
+emerge — configuration — ebuild repository — dispatch-conf
+world file — USE flags — ebuilds — profiles
+upgrades — using testing packages — Gentoo binhost
+tools — gentoolkit — eselect
+Portage FAQ — cheat sheet — FAQ
+all articles
+Resources
+Home
+USE flags are keywords that embody support and dependency-information for a certain concept. They are a core feature of Gentoo, and a good understanding of how to deal with them is needed for administering a Gentoo system.
+USE flags serve to configure Portage to determine how each package will be configured on installation or update. USE flags can configure many aspects of a package, and the available USE flags and corresponding optional functionality depend on each individual piece of software.
+USE flags can change an array of package behavior. They often set compile-time options, though these configure options are not systematically exposed through USE flags - it's up to the package maintainers to decide what options are useful to provide as USE flags. USE flags can specify which optional libraries or utilities will be linked with a package, often determining dependencies. Another example of what USE flags can change is which files are included in an installation, such as whether documentation is provided or not.
+This ability to choose options only available when installing a package is one of the great advantages Gentoo leverages from being source based.
+The whole distribution comes with reasonable USE flags by default, and these are further refined by selecting a profile to suit planned system usage. Packages each have their own set of available USE flags, depending on what can be configured for the package, and these are also set to reasonable defaults. The order in which USE flags are applied is specified by the USE_ORDER variable.
+See also
+Basic concepts on how to work with USE flags can be found in the Handbook. See also /etc/portage/package.use about setting a flag for a package, and /etc/portage/make.conf for flags that to be set globally.
+## Contents
+1 Declaring USE flags
+2 USEful commands
+3 Emerge command options
+4 "Local" vs "global" USE flags
+5 Tools
+6 See also
+7 External resources
+## Declaring USE flags
+Technically, the Gentoo ebuild repository comes with a small set of default USE flags. Default USE flags are further defined by the selected profile. Each package comes with a set of available USE flags, and these can also have a default state, if this is justified in the context of the package. Each layer overrides the previous, to configure Portage to set up the installation of each package.
+A USE flag can have three states: set, unset, or default. USE flags may be set or unset globally in the USE variable in make.conf, or for specific packages in /etc/portage/package.use.
+The presence of a USE flag in one of these files will set that USE flag. Including a USE flag preceded by a minus sign ("-") will unset that USE flag. If a USE flag is not present in one of these places, the default will be used.
+See also
+For more information see the Using USE flags section of the amd64 Handbook.
+Note
+It is often preferable to set USE flags per package rather than system wide. Use flag defaults are usually set to a sane default - carefully consider what flags to set globally in make.conf.
+Warning
+Though a USE flag may in theory be temporarily set on the command line in an environment variable (for example USE="<flags>" emerge -av <package>), do not use this to install packages. Any USE flag set in this way will be lost when upgrading or re-emerging the package.
+## USEful commands
+To see which USE flags are presently enabled:
+user $portageq envvar USE | xargs -n 1
+To see USE flags enabled by default:
+user $USE_ORDER="defaults:pkginternal:repo" emerge --info|grep USE
+USE="X a52 aac acl acpi activities alsa amd64 bluetooth branding bzip2 cairo cdda cdr cet crypt cups dbus declarative dri dts dvd dvdr elogind encode exif flac gdbm gif gpm gtk gui iconv icu ipv6 jpeg kde kf6compat kwallet lcms libnotify libtirpc mad mng mp3 mp4 mpeg multilib ncurses networkmanager nls ogg opengl openmp pam pango pcre pdf pipewire plasma png policykit ppds pulseaudio qml qt5 qt6 readline screencast sdl seccomp semantic-desktop sound spell ssl startup-notification svg test-rust tiff truetype udev udisks unicode upower usb vorbis vulkan wayland widgets wxwidgets x264 xattr xcb xft xml xv xvid zlib" ABI_X86="64" ADA_TARGET="gcc_12" APACHE2_MODULES="authn_core authz_core socache_shmcb unixd actions alias auth_basic authn_anon authn_dbm authn_file authz_dbm authz_groupfile authz_host authz_owner authz_user autoindex cache cgi cgid dav dav_fs dav_lock deflate dir env expires ext_filter file_cache filter headers include info log_config logio mime mime_magic negotiation rewrite setenvif speling status unique_id userdir usertrack vhost_alias" CALLIGRA_FEATURES="karbon sheets words" COLLECTD_PLUGINS="df interface irq load memory rrdtool swap syslog" CPU_FLAGS_X86="mmx mmxext sse sse2" ELIBC="glibc" GPSD_PROTOCOLS="ashtech aivdm earthmate evermore fv18 garmin garmintxt gpsclock greis isyncitrax navcom oceanserver oncore rtcm104v2 rtcm104v3 sirf skytraq superstar2 tsip tripmate tnt ublox" GUILE_SINGLE_TARGET="3-0" GUILE_TARGETS="3-0" INPUT_DEVICES="libinput" KERNEL="linux" LCD_DEVICES="bayrad cfontz glk hd44780 lb216 lcdm001 mtxorb text" LUA_SINGLE_TARGET="lua5-1" LUA_TARGETS="lua5-1" OFFICE_IMPLEMENTATION="libreoffice" PHP_TARGETS="php8-2" POSTGRES_TARGETS="postgres16" PYTHON_SINGLE_TARGET="python3_12" PYTHON_TARGETS="python3_12" RUBY_TARGETS="ruby32" VIDEO_CARDS="amdgpu dummy fbdev intel nouveau radeon radeonsi vesa" XTABLES_ADDONS="quota2 psd pknock lscan length2 ipv4options ipp2p iface geoip fuzzy condition tarpit sysrq proto logmark ipmark dhcpmac delude chaos account"
+To check if a certain USE flag is activated and which packages use it, run:
+user $euse -I <use_flag> # included with app-portage/gentoolkit
+user $quse <use_flag> # included with app-portage/portage-utils
+user $eix --installed-with-use <use_flag> # included with app-portage/eix
+Replace <use_flag> with the USE flag to be checked.
+Check which USE flags are enabled when merging a package and its dependencies:
+root #emerge --ask --verbose chromium
+These are the packages that would be merged, in order:
+Calculating dependencies... done!
+Dependency resolution took 5.95 s (backtrack: 0/20).
+[ebuild N ] media-libs/openh264-2.4.1:0/7::gentoo USE="plugin -test -utils" ABI_X86="(64) -32 (-x32)" CPU_FLAGS_X86="avx2" 58895 KiB
+[ebuild R ] dev-lang/rust-bin-1.77.1:stable::gentoo USE="profiler* (-big-endian) -clippy -doc (-prefix) -rust-analyzer -rust-src -rustfmt -verify-sig" ABI_X86="(64) -32 (-x32)" CPU_FLAGS_X86="sse2" 0 KiB
+[ebuild R ] virtual/rust-1.77.1:0/llvm-17::gentoo USE="profiler* -rustfmt" ABI_X86="(64) -32 (-x32)" 0 KiB
+[ebuild N ] dev-build/gn-0.2157::gentoo 731 KiB
+[ebuild R ] net-libs/nodejs-20.12.1:0/20::gentoo USE="icu inspector* npm snapshot ssl system-icu system-ssl -corepack -debug -doc (-lto) -pax-kernel -test" CPU_FLAGS_X86="sse2" 0 KiB
+[ebuild N ] www-client/chromium-124.0.6367.60:0/stable::gentoo USE="X cups custom-cflags hangouts official proprietary-codecs pulseaudio qt5 screencast system-harfbuzz system-icu system-png system-toolchain system-zstd vaapi wayland widevine -bindist -debug -ffmpeg-chromium -gtk4 (-headless) -kerberos (-libcxx) (-lto) -pax-kernel (-pgo) -qt6 (-selinux)" L10N="af am ar bg bn ca cs da de el en-GB es es-419 et fa fi fil fr gu he hi hr hu id it ja kn ko lt lv ml mr ms nb nl pl pt-BR pt-PT ro ru sk sl sr sv sw ta te th tr uk ur vi zh-CN zh-TW" 3352285 KiB
+Would you like to merge these packages? [Yes/No]
+Check which USE flags are enabled for a single package, without calculating all of its dependencies:
+user $emerge --nodeps --pretend chromium
+[ebuild N ] www-client/chromium-124.0.6367.60 USE="X cups custom-cflags hangouts official proprietary-codecs pulseaudio qt5 screencast system-harfbuzz system-icu system-png system-toolchain system-zstd vaapi wayland widevine -bindist -debug -ffmpeg-chromium -gtk4 (-headless) -kerberos (-libcxx) (-lto) -pax-kernel (-pgo) -qt6 (-selinux)" L10N="af am ar bg bn ca cs da de el en-GB es es-419 et fa fi fil fr gu he hi hr hu id it ja kn ko lt lv ml mr ms nb nl pl pt-BR pt-PT ro ru sk sl sr sv sw ta te th tr uk ur vi zh-CN zh-TW"
+USE flags in () parenthesis are forced, masked or removed. This forcing may come from the selected profile or architecture. To understand why, you may need to analyse the profile file, such as "profiles/base/package.use.stable.mask". If you think the masking in the profile is in error, you may try to unmask it by adding the package (with no flags) to the "package.accept_keywords" file. If the masking was not in error, you will likely end up with either a broken build or no change at all (because the USE flag was not functional).
+## Emerge command options
+The emerge command has some USE flag related options like:
+--changed-use (-U)
+--complete-graph-if-new-use < y | n >
+--newuse (-N)
+For details see man 1 emerge.
+## "Local" vs "global" USE flags
+This section is a work in progress; treat its contents with caution - ris (talk | contribs).
+The technical difference between "local" and "global" flags is simply a difference of where their descriptions are saved in the ebuild repository:
+"Global" USE flags are described in use.desc files for a whole profile (example)
+"Local" USE flags are described in metadata.xml files for a single package (example)
+When deciding where to define them, developers determine if a USE flag has a general function common to several packages, or a specific function for a single package.
+For the end user, whether a USE flag is "global" or "local" has little importance. "Global" flags may sometimes be more suited to being set in the USE variable in make.conf, but there is absolutely no hard rule. In any case, as much as possible, no USE flags should be set in make.conf unless necessary, and /etc/portage/package.use should be preferred to set USE flags on a per-package basis. Following this advice should ease system administration in the long run.
+## Tools
+Some tools are available for analyzing and managing USE flags:
+euse
+quse - for details see man 1 quse
+equery hasuse (USE flag)
+equery uses (package name)
+ufed
+app-portage/euses
+eix - See --use, --installed-with-use and --installed-without-use options
+## See also
+/etc/portage/package.use — provides a more fine grained per-package control of USE flags than the USE variable in /etc/portage/make.conf
+Complete Handbook/Finishing off
+Gentoo Handbook documentation on USE flags
+Gentoo Java USE flags
+Toolkit USE Flags — summarizes main points from discussions about toolkit (GTK, Qt) USE flags (gtk2, gtk3, qt4, qt5, etc.).
+## External resources
+https://packages.gentoo.org/useflags - USE flags on Gentoo Packages Database.
+cat /var/db/repos/gentoo/profiles/use.desc - The common USE flag description list can be seen locally on systems with Portage installed.
+https://devmanual.gentoo.org/general-concepts/use-flags/ - USE flags conceptually explained in the Gentoo Developer Handbook.
+Retrieved from "https://wiki.gentoo.org/index.php?title=USE_flag&oldid=1426106"
+Categories:
+Work in Progress
+Portage

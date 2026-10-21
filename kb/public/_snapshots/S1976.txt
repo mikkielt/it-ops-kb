@@ -3,20 +3,38 @@ url: https://github.com/microsoft/botframework-sdk
 title: microsoft/botframework-sdk (README: retirement notice)
 publisher: Microsoft (github.com/microsoft)
 licence: MIT
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 This repository was archived by the owner on Jan 5, 2026. It is now read-only.
-microsoft
-/
+## Repository navigation
 botframework-sdk
 Public archive
-Notifications
-You must be signed in to change notification settings
-Fork
-2.4k
-Star
-7.8k
+NotificationsYou must be signed in to change notification settings
+Fork2.4k (2.4k)
+Star7.8k (7.8k)You must be signed in to star a repository
+## About
+Bot Framework provides the most comprehensive experience for building conversation applications.
+### Topics
+azure-bot-servicebotbot-builderbot-frameworkcsharpdotnetcorejavajavascriptmicrosoft-bot-frameworknodejspythonsdktypescript
+### Resources
+Readme
+MIT license
+### Code of conduct
+Code of conduct
+### Contributing
+Contributing
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+7.8k stars
+### Watchers
+32 watching
+### Forks
+2.4k forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit

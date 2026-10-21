@@ -3,18 +3,18 @@ url: https://vale.sh/
 title: Vale: a prose linter
 publisher: Vale project (errata-ai)
 licence: MIT (vale-cli/vale LICENSE)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-OPEN SOURCE · MIT · 6K STARS ↗
+OPEN SOURCE · MIT · 6.3K STARS ↗
 # Your style.
 Our editor.
 GitHub stars
-6K
+6.3K
 downloads
-13.2M
+15.4M
 teams listed
-159
+170
 Vale brings code-like linting to prose. Turn a team’s style guide, a house voice, or a
 journal’s author guidelines into checks that run in your editor and alongside your code.
 Get started See how it works
@@ -45,6 +45,7 @@ Supporting the project
 ## Sponsor spotlights #
 These companies support Vale's future — and put it to work in their own products today.
 Mintlify Sponsor Ships Vale as a built-in CI check. Read the story Promptless Sponsor Runs Vale on every doc its agents write. Read the story
+Funded by FLOSS/fund. A $10,000 grant in the second 2025 tranche, alongside FFmpeg, Zig, Wireshark, and Blender.
 See everyone who funds Vale
 Used in production
 ## Read their configs #
@@ -66,25 +67,25 @@ GOV.UK
 Discord
 SAP
 Spotify
-159
+170
 teams
 across 9 sectors
-98 / 137
+111 / 156
 run Vale in CI
 of the repos checked
-4,192
+4,194
 repos using the Vale Action
 GitHub's dependents count
 AI & machine learning 8
 Cloud & infrastructure 23
-Data & observability 30
-Developer tools 33
-Enterprise software 10
+Data & observability 29
+Developer tools 39
+Enterprise software 12
 Hardware & semiconductors 8
-Open source & communities 23
-Academia & public sector 17
-Web3 & blockchain 7
-Browse all 159
+Open source & communities 25
+Academia & public sector 18
+Web3 & blockchain 8
+Browse all 170
 Why Vale
 ## Most tools see text. Vale sees a document. #
 Check the writing in context. Target a heading, a comment, or a description, while leaving the code around it alone.
@@ -185,29 +186,29 @@ Start to finish
 Distribution
 ## Where Vale is downloaded #
 Seven registries publish a download count, and each counts a different window, so they sit side by side here rather than in one total.
-13.2M
+15.4M
 downloads to date
 GitHub Releases, Docker Hub, conda-forge, Chocolatey · the channels reporting a lifetime total
-6K
+6.3K
 stars on GitHub
 vale-cli/vale
-63
+65
 contributors
 across the main repository
-GitHub Releases 10.7M lifetime
+GitHub Releases 12.9M lifetime
 Docker Hub 2.3M lifetime
-PyPI 1.7M past 6 mo · community-maintained wrapper
-npm 183.8K past mo · community-maintained wrapper
-conda-forge 169.4K lifetime
-Homebrew 76.9K past 12 mo
+PyPI 1.8M past 6 mo · community-maintained wrapper
+npm 286.3K past mo · community-maintained wrapper
+conda-forge 185K lifetime
+Homebrew 77.8K past 12 mo
 Chocolatey 19.5K lifetime
 GitHub Action 4.2K repositories · using it today
 Also ships on
-WI WinGet v3.23.0
-Snap Store v3.17.1
+WI WinGet v3.24.0
+Snap Store v3.24.0
 LI Linux & BSD 17 repositories
 Sources: GitHub, Docker Hub, PyPI, npm, conda-forge, Homebrew, Chocolatey, WinGet, Snapcraft,
-and Repology · updated 2026-08-28
+and Repology · updated 2026-10-19
 One tool, every app
 ## More than just a command-line interface. #
 Vale runs where you already write—in your editor, in your notes app, and in CI before anything merges.
@@ -236,38 +237,25 @@ Learn more about our integrations
 From the blog
 ## Notes from building Vale. #
 Releases, the standard library, and prose linting in the age of agents. Every post ships with Vale's own report on it.
-vale docs/
-Tutorial 5:60
-How-to 3:15
-Explanation 7:4
-Reference 5:1
-Sep 24, 2026
-### Linting the four kinds of documentation
-Diataxis is a Vale package for the four kinds of documentation in Diátaxis: tutorials, how-to guides, reference, and explanation, each checked against the job it claims to do.
-0 alerts 6 min
-vale trial.md
-# A randomized trial of zetaprol in adults
-## Abstract
-Blood pressure fell 12mmHg (p = 0.002). 5:21
-## Methods 7:4
-Adults aged 18–65 years were eligible.
-## Results
-We analyzed 60 participants per group.
-Sep 17, 2026
-### Linting a manuscript
-Journals is a Vale package for scientific papers: the conventions every journal shares, the Nature and PLOS ONE author guidelines, and the CONSORT, STROBE, and PRISMA checklists, read section by section.
-0 alerts 7 min
-vale --path=COMMIT_EDITMSG
-fix!: report the shortfall at the scope that fell short. 1:56
-Zero matches leave no occurence to point at, but the scope 3:23
-has a position of its own.
-BREAKING CHANGE: the alert lands on the scope's first line.
-Signed-off-by: Jane Doe <jane@example.com>
-Sep 10, 2026
-### Linting commit messages
-Commits is a Vale package for the log: nine conventions, the rule sets of commitlint, gitlint, committed, conform, and commitizen, spelling on the body, and a hook that runs in 12 ms.
-0 alerts 6 min
-Read all 6 posts RSS
+vale test
+✗ flags the fourth paragraph of a section — output does not match
+from styles/House/Sections.yml
+- 9:1:House.Sections:Consider inserting a new section…
++ 7:1:House.Sections:Consider inserting a new section…
+ERROR 1 file — 1 passed, 1 failed
+Oct 1, 2026
+### Testing your rules with vale test
+Keep test cases beside your rules, script rules included, and run them in CI. A rule that matches nothing no longer fails in silence.
+0 alerts 4 min
+Sep 28, 2026
+### How Epic Games keeps Lore from sounding like Git
+Lore is Epic's open source version control system, and its docs run a 62-rule Vale style whose job is to make a new product speak its own language. The config, the rules, and the script that runs them.
+0 alerts 5 min
+Sep 28, 2026
+### How GOV.UK turned its style guide into a build step
+The UK government's plain-English rules, packaged as a Vale style, run by ten GOV.UK One Login repositories, and wired into an Android app's Gradle build so the source comments are checked too.
+0 alerts 5 min
+Read all 9 posts RSS
 ## A few lines of config.
 A consistent first draft.
 Start with an existing style guide. Keep the configuration in your project so everyone runs

@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/en-us/entra/workload-id/workload-identities-fle
 title: Flexible federated identity credentials (preview)
 publisher: Microsoft
 licence: MIT (public mirror MicrosoftDocs/entra-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Flexible federated identity credentials (preview) - Microsoft Entra Workload ID | Microsoft Learn
@@ -78,10 +78,14 @@ These claims are required regardless of whether `sub` uses a name-based, customi
 
 Supported claims and operators per claim:
 
-- Claim `sub` supports operators `eq` and `matches`.
-- Claim `job_workflow_ref` supports operators `eq` and `matches`.
-- Claim `repository_id` supports operator `eq`.
-- Claim `repository_owner_id` supports operator `eq`.
+- Claim `sub` supports operators `eq` and `matches`
+- Claim `job_workflow_ref` supports operators `eq` and `matches`
+- Claim `repository_id` supports operators `eq`
+- Claim `repository_owner_id` supports operators `eq`
+
+Note
+
+Starting July 15, 2026, GitHub applies the immutable format automatically to repositories that are created, renamed, or transferred. Existing repositories keep the name-based format until you opt in. For details, see Immutable subject claims for GitHub Actions OIDC tokens in the GitHub Changelog.
 
 # GitLab
 Supported issuer URLs: `https://gitlab.com`, `https://gitlab.example.com`, and `https://gitlab.example.ca` where `example` can be any string.

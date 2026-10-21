@@ -1,0 +1,61 @@
+source: S-pdqpy37l
+url: https://docs.docker.com/ai/sandboxes/
+title: Docker Sandboxes
+publisher: Docker
+licence: Apache-2.0 (docker/docs LICENSE)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+Manuals
+Get started
+Guides
+Reference
+# Docker Sandboxes
+Table of contents
+Docker Sandboxes run AI coding agents in isolated environments on your machine
+or on Docker-managed cloud infrastructure. Use the sbx CLI to create and
+manage either kind of sandbox.
+The sbx CLI and local sandbox compute are free to use, including for commercial
+work. Cloud compute uses a
+pay-as-you-go subscription.
+Model-provider charges are separate.
+Organization admins can
+centrally manage sandbox network, filesystem, and MCP policies,
+for local sandboxes across developer machines.
+Available on a separate paid subscription.
+## Get started
+Install the sbx CLI and sign in, then choose where to run your
+agent:
+EnvironmentUse it forStart here
+Local sandboxesWork with files and supported hardware on your machineGet started locally
+Cloud sandboxesRun on Docker-managed compute without local virtualizationGet started in the cloud
+The two environments have separate credentials, network policies, and lifecycle
+controls. See Compare local and cloud sandboxes
+before adapting a workflow.
+To create and manage cloud sandboxes from your application, see
+Sandboxes API and SDK.
+## Learn more
+The following guides describe local sandbox workflows. For cloud workflows,
+see Cloud sandboxes.
+Agents — supported agents and per-agent configuration
+Workflows — patterns for Git, local development,
+authentication, agent skills, and automation
+Configuration — manage credentials, declare project
+environments, turn on GPU passthrough, and configure an upstream proxy
+Integrations — connect editors and apps like VS Code and
+Cursor to a sandbox over SSH
+MCP gateway — register MCP servers and connect them to
+sandboxed agents
+Kits — package tools and configuration into reusable
+sandbox environments
+Architecture — microVM isolation, workspace mounting,
+networking
+Security — isolation model, credential handling, and
+network policies
+CLI reference — full list of sbx commands and options
+Troubleshooting — common issues and fixes
+FAQ — login requirements, telemetry, etc
+## Feedback
+Your feedback shapes what gets built next. If you run into a bug, hit a
+missing feature, or have a suggestion, open an issue at
+github.com/docker/sbx-releases/issues.

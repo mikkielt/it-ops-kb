@@ -1,0 +1,74 @@
+source: S-6icauyji
+url: https://csrc.nist.gov/pubs/fips/202/final
+title: FIPS 202 publication page (CSRC; planning note: NIST has decided to update)
+publisher: NIST
+licence: US Government work (NIST: public information, may be copied)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+You are viewing this page in an unauthorized frame window.
+This is a potential security issue, you are being redirected to https://csrc.nist.gov.
+An official website of the United States government
+Here’s how you know
+Official websites use .gov
+A
+.gov website belongs to an official government
+organization in the United States.
+Secure .gov websites use HTTPS
+A
+lock (
+) or https:// means you’ve safely connected to
+the .gov website. Share sensitive information only on official,
+secure websites.
+Information Technology Laboratory
+Computer Security Resource Center
+Publications
+###
+FIPS 202
+# SHA-3 Standard: Permutation-Based Hash and Extendable-Output Functions
+Share to Facebook
+Share to X
+Share to LinkedIn
+Share ia Email
+Documentation
+Topics
+Date Published: August 2015
+Planning Note (03/13/2025):
+NIST has decided to update this publication. See this announcement for more details.
+A typographical error has been identified in (non-normative) Appendix B, on page 26. In the description of Algorithm 10, step 1 begins:
+1. For each integer \(i\) such that \(0 \leq i < 2m-1 , \dots\)
+but instead the correct notation should be:
+1. For each integer \(i\) such that \(0 \leq i < 2m, \dots\)
+This correction will be incorporated in any future revision of this standard.
+#### Author(s)
+National Institute of Standards and Technology
+#### Abstract
+This Standard specifies the Secure Hash Algorithm-3 (SHA-3) family of functions on binary data. Each of the SHA-3 functions is based on an instance of the KECCAK algorithm that NIST selected as the winner of the SHA-3 Cryptographic Hash Algorithm Competition. This Standard also specifies the KECCAK-p family of mathematical permutations, including the permutation that underlies KECCAK, in order to facilitate the development of additional permutation-based cryptographic functions. The SHA-3 family consists of four cryptographic hash functions, called SHA3-224, SHA3-256, SHA3-384, and SHA3-512, and two extendable-output functions (XOFs), called SHAKE128 and SHAKE256. Hash functions are components for many important information security applications, including 1) the generation and verification of digital signatures, 2) key derivation, and 3) pseudorandom bit generation. The hash functions specified in this Standard supplement the SHA-1 hash function and the SHA-2 family of hash functions that are specified in FIPS 180-4, the Secure Hash Standard. Extendable-output functions are different from hash functions, but it is possible to use them in similar ways, with the flexibility to be adapted directly to the requirements of individual applications, subject to additional security considerations.
+This Standard specifies the Secure Hash Algorithm-3 (SHA-3) family of functions on binary data. Each of the SHA-3 functions is based on an instance of the KECCAK algorithm that NIST selected as the winner of the SHA-3 Cryptographic Hash Algorithm Competition. This Standard also specifies the...
+See full abstract
+This Standard specifies the Secure Hash Algorithm-3 (SHA-3) family of functions on binary data. Each of the SHA-3 functions is based on an instance of the KECCAK algorithm that NIST selected as the winner of the SHA-3 Cryptographic Hash Algorithm Competition. This Standard also specifies the KECCAK-p family of mathematical permutations, including the permutation that underlies KECCAK, in order to facilitate the development of additional permutation-based cryptographic functions. The SHA-3 family consists of four cryptographic hash functions, called SHA3-224, SHA3-256, SHA3-384, and SHA3-512, and two extendable-output functions (XOFs), called SHAKE128 and SHAKE256. Hash functions are components for many important information security applications, including 1) the generation and verification of digital signatures, 2) key derivation, and 3) pseudorandom bit generation. The hash functions specified in this Standard supplement the SHA-1 hash function and the SHA-2 family of hash functions that are specified in FIPS 180-4, the Secure Hash Standard. Extendable-output functions are different from hash functions, but it is possible to use them in similar ways, with the flexibility to be adapted directly to the requirements of individual applications, subject to additional security considerations.
+Hide full abstract
+#### Keywords
+hash function; information security; message digest; permutation; SHA-3; sponge construction; sponge function; cryptography; extendable-output function; Federal Information Processing Standard; KECCAK; XOF; hash algorithm; computer security
+##### Control Families
+None selected
+#### Documentation
+Publication:
+https://doi.org/10.6028/NIST.FIPS.202
+Download URL
+Supplemental Material:
+Federal Register Notice
+Press Release
+Comments received on Draft FIPS 202 (pdf)
+Draft FIPS 202 (May 2014) (pdf)
+Related NIST Publications:
+ITL Bulletin
+SP 800-185
+IR 7896
+IR 7764
+IR 7620
+Document History:
+08/04/15: FIPS 202 (Final)
+#### Topics
+Security and Privacy
+authentication, secure hashing

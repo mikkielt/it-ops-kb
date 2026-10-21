@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/agent-framework/workflows/orchestrations/sequen
 title: Microsoft Agent Framework workflows: sequential orchestration
 publisher: Microsoft
 licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-ai-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Microsoft Agent Framework Workflows Orchestrations - Sequential | Microsoft Learn
@@ -384,6 +384,8 @@ async for event in workflow.run("Write a tagline for a budget-friendly eBike.", 
             print(update.text, end="", flush=True)
 ```
 
+When streamed updates are combined into messages, a change between two nonempty `author_name` values starts a new message. This change keeps each agent's streamed output separate in the final response. A missing author doesn't start a new message.
+
 ## Sequential Orchestration with Human-in-the-Loop
 
 Sequential orchestrations support human-in-the-loop interactions in two ways: **tool approval** for controlling sensitive tool calls, and **request info** for pausing after each agent response to gather feedback.
@@ -436,6 +438,8 @@ For a complete runnable example, see `sequential_builder_tool_approval.py`. Tool
 ### Request Info for Agent Feedback
 
 Use `.with_request_info()` to pause after specific agents respond, allowing external input (such as human review) before the next agent begins:
+
+Values in `agents` must exactly match orchestration agent identifiers, including case. The workflow raises `ValueError` during construction for an unknown or case-mismatched identifier.
 
 The `request_info` event includes the response under review. The workflow doesn't emit that response as normal output until you approve it. If resuming the workflow reaches another request-info pause, the workflow still emits no output for the newly pending response.
 

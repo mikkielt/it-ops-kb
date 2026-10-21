@@ -3,7 +3,7 @@ url: https://semantic-release.gitbook.io/semantic-release
 title: semantic-release docs (discontinued mirror; canonical now semantic-release.org)
 publisher: semantic-release maintainers
 licence: MIT (semantic-release/semantic-release LICENSE)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 For the complete documentation index, see llms.txt. This page is also available as Markdown.
@@ -123,4 +123,4 @@ Finn Pauls
 Christoph Witzko
 Kill all humans
 NextGetting started
-Last updated 3 months ago
+Last updated 4 months ago

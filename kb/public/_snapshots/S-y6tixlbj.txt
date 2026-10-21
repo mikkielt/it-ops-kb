@@ -1,0 +1,57 @@
+source: S-y6tixlbj
+url: https://learn.microsoft.com/troubleshoot/windows-server/networking/conflictanddeleted-folder-size-exceed-configured-limitation
+title: The ConflictAndDeleted folder size may exceed its configured limitation (KB 951010)
+publisher: Microsoft
+licence: CC BY 4.0 (public mirror MicrosoftDocs/SupportArticles-docs)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# ConflictAndDeleted folder size exceeds - Windows Server | Microsoft Learn
+
+This article provides a resolution for the issue that the ConflictAndDeleted folder size may exceed its configured limitation.
+
+*Original KB number:* 951010
+
+## Symptoms
+
+In Windows Server, the size of the ConflictAndDeleted folder may exceed its configured limitation. By default, the limitation of the ConflictAndDeleted folder is 660 megabytes (MB). When this problem occurs, the ConflictAndDeleted folder may exhaust available disk space on the volume on which the folder resides. Additionally, the Distributed File System (DFS) Replication service cannot replicate any files.
+
+## Cause
+
+This problem occurs because the ConflictAndDeletedManifest.xml file is corrupted. This file stores information about the current contents of the ConflictAndDeleted folder. The DFS Replication service writes to the ConflictAndDeletedManifest.xml file when files are added or removed from the ConflictAndDeleted folder.
+
+## Resolution
+
+To resolve this problem, use WMIC commands to delete the contents of the ConflictAndDeleted folder and the ConflictAndDeletedManifest.xml file. Run the WMIC commands in a Command Prompt window (cmd.exe). To clean up the ConflictAndDeleted folder content of a replicated folder, run the following command:
+
+```console
+wmic /namespace:\\root\microsoftdfs path dfsrreplicatedfolderinfo where "replicatedfoldername='<ReplicatedFolderName>'" call cleanupconflictdirectory
+```
+
+Note
+
+In this command, &lt;ReplicatedFolderName&gt; represents the name of the replicated folder.
+
+To clean up the ConflictAndDeleted folder content of all of the replicated folders in a replication group, enter the following command:
+
+```console
+wmic /namespace:\\root\microsoftdfs path dfsrreplicatedfolderinfo where "replicationgroupname='<ReplicationGroupName>'" call cleanupconflictdirectory
+```
+
+Note
+
+In this command,&lt;ReplicationGroupName&gt; represents the name of the replication group.
+
+Note
+
+If you have not run a WMIC command on the computer before, a short pause occurs while the computer installs WMIC.
+
+Depending on the size of the ConflictAndDeleted folder, this process may take a few minutes. The process empties the ConflictAndDeleted folder and reduces or deletes the ConflictAndDeletedManifest.xml file.
+
+Note
+
+If any conflicts or deletions occur while **cleanupconflictdirectory** runs, the information that is related to those conflicts or deletions remains in the ConflictAndDeleted folder and the ConflictAndDeletedManifest.xml file when the process finishes. After the cleanup, the file is much smaller, and the total size of the ConflictAndDeleted folder is less than the quota maximum mark.
+
+## Status
+
+Microsoft has confirmed that it is a problem in the Microsoft products that are listed in the "Applies to" section.

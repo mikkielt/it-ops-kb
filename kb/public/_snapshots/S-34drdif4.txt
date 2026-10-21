@@ -1,0 +1,99 @@
+source: S-34drdif4
+url: https://developers.cloudflare.com/api/resources/user/subresources/tokens/subresources/value/methods/update/
+title: Cloudflare API reference: Roll Token (PUT /user/tokens/{token_id}/value)
+publisher: Cloudflare
+licence: CC-BY-4.0 (cloudflare/cloudflare-docs)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+API Reference
+User
+Tokens
+Value
+# Roll Token
+PUT/user/tokens/{token_id}/value
+Roll the token secret.
+##### Security
+API Token
+The preferred authorization scheme for interacting with the Cloudflare API. Create a token.
+Example:Authorization: Bearer Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY
+##### Accepted Permissions (at least one required)
+API Tokens Write
+##### Path ParametersExpand Collapse
+token_id: string
+Token identifier tag.
+maxLength32
+##### ReturnsExpand Collapse
+errors: array of object { code, message, documentation_url, source }
+code: number
+minimum1000
+message: string
+documentation_url: optional string
+source: optional object { pointer }
+pointer: optional string
+messages: array of object { code, message, documentation_url, source }
+code: number
+minimum1000
+message: string
+documentation_url: optional string
+source: optional object { pointer }
+pointer: optional string
+success: true
+Whether the API call was successful.
+result: optional TokenValue
+The token value.
+maxLength80
+minLength40
+### Roll Token
+curl https://api.cloudflare.com/client/v4/user/tokens/$TOKEN_ID/value \
+-X PUT \
+-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN"
+{
+"errors": [
+{
+"code": 1000,
+"message": "message",
+"documentation_url": "documentation_url",
+"source": {
+"pointer": "pointer"
+}
+}
+],
+"messages": [
+{
+"code": 1000,
+"message": "message",
+"documentation_url": "documentation_url",
+"source": {
+"pointer": "pointer"
+}
+}
+],
+"success": true,
+"result": "8M7wS6hCpXVc-DoRnPPY_UCWPgy8aea4Wy6kCe5T"
+}
+##### Returns Examples
+{
+"errors": [
+{
+"code": 1000,
+"message": "message",
+"documentation_url": "documentation_url",
+"source": {
+"pointer": "pointer"
+}
+}
+],
+"messages": [
+{
+"code": 1000,
+"message": "message",
+"documentation_url": "documentation_url",
+"source": {
+"pointer": "pointer"
+}
+}
+],
+"success": true,
+"result": "8M7wS6hCpXVc-DoRnPPY_UCWPgy8aea4Wy6kCe5T"
+}

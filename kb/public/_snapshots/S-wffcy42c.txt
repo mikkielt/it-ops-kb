@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/agent-framework/integrations/by-component/tools
 title: Microsoft Foundry Toolbox (Agent Framework)
 publisher: Microsoft Learn
 licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-ai-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Microsoft Foundry Toolbox | Microsoft Learn
@@ -18,7 +18,65 @@ Important
 
 ::: zone pivot="programming-language-csharp"
 
-For a service-managed `FoundryAgent`, attach the Toolbox to the agent definition in Foundry. Client-side .NET Toolbox consumption guidance isn't currently documented.
+For a service-managed `FoundryAgent`, attach the Toolbox to the agent definition in Foundry.
+
+For a hosted agent built with Microsoft Agent Framework, use `AddFoundryToolboxes` from `Microsoft.Agents.AI.Foundry.Hosting`, as shown in the following example.
+
+Use a .NET 10 web project with implicit usings enabled, matching versions of `Microsoft.Agents.AI.Foundry` and `Microsoft.Agents.AI.Foundry.Hosting`, and `DotNetEnv`. Set `TOOLBOX_NAME` to an existing toolbox and `FOUNDRY_MODEL` to your model deployment. Foundry supplies `FOUNDRY_PROJECT_ENDPOINT` to the deployed host. For local model access, set `FOUNDRY_PROJECT_ENDPOINT` and sign in with Azure CLI. Hosted deployments fall back to the azd-managed `AZURE_AI_MODEL_DEPLOYMENT_NAME`. The hosting integration loads toolbox tools when `FOUNDRY_PROJECT_ENDPOINT` is available.
+
+```csharp
+using DotNetEnv;
+using Microsoft.Agents.AI;
+using Microsoft.Agents.AI.Foundry.Hosting;
+
+// Load .env file if present (for local development)
+Env.TraversePath().Load();
+
+string endpoint = System.Environment.GetEnvironmentVariable("FOUNDRY_PROJECT_ENDPOINT")
+    ?? throw new InvalidOperationException("FOUNDRY_PROJECT_ENDPOINT is not set.");
+string deploymentName = FirstNonBlank(
+    System.Environment.GetEnvironmentVariable("FOUNDRY_MODEL"),
+    System.Environment.GetEnvironmentVariable("AZURE_AI_MODEL_DEPLOYMENT_NAME"),
+    "gpt-4o")!;
+string toolboxName = FirstNonBlank(
+    System.Environment.GetEnvironmentVariable("TOOLBOX_NAME"),
+    "my-toolset")!;
+
+// WARNING: DefaultAzureCredential is convenient for development but requires careful consideration in production.
+// In production, consider using a specific credential (e.g., ManagedIdentityCredential) to avoid
+// latency issues, unintended credential probing, and potential security risks from fallback mechanisms.
+// Use a chained credential: try a temporary dev token first (for local Docker debugging),
+// then fall back to DefaultAzureCredential (for local dev via dotnet run / managed identity in production).
+    .AsAIAgent(
+        model: deploymentName,
+            Use the available tools to answer user questions.
+            If a tool is not available for a request, let the user know clearly.
+            """,
+        name: System.Environment.GetEnvironmentVariable("AGENT_NAME") ?? "hosted-toolbox-agent",
+        description: "Hosted agent backed by Foundry Toolbox MCP tools");
+
+// ── Build the host ────────────────────────────────────────────────────────────
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Register the agent and response handler
+// Register Foundry Toolbox: connects to the MCP proxy at startup and makes tools available.
+// The toolbox name must match a toolbox registered in your Foundry project.
+// When FOUNDRY_PROJECT_ENDPOINT is absent (e.g., in local development without Foundry
+// infrastructure), startup succeeds without error and no toolbox tools are loaded.
+builder.Services.AddFoundryToolboxes(credential, toolboxName);
+
+app.Run();
+
+static string? FirstNonBlank(params string?[] candidates) =>
+    Array.Find(candidates, candidate => !string.IsNullOrWhiteSpace(candidate));
+
+// ── DevTemporaryTokenCredential ───────────────────────────────────────────────
+```
+
+The same hosting registration supports tools configured for per-user OAuth consent on their toolbox connections. Users still need the required permissions and consent; no separate host-registration block is needed.
+
+For the project files and deployment instructions, see Hosted-Toolbox. For per-user consent setup, see Hosted-Toolbox-AuthPaths.
 
 ::: zone-end
 
@@ -47,54 +105,69 @@ FOUNDRY_PROJECT_ENDPOINT="https://<account>.services.ai.azure.com/api/projects/<
 TOOLBOX_NAME="<toolbox-name>"
 ```
 
-The hosted-agent samples also use `AZURE_AI_MODEL_DEPLOYMENT_NAME` for `FoundryChatClient`.
+The hosted-agent samples prefer `FOUNDRY_MODEL` locally and fall back to the azd-managed `AZURE_AI_MODEL_DEPLOYMENT_NAME` when hosted.
 
 ## Use `FoundryToolbox` with a hosted agent
 
-`FoundryToolbox` resolves its endpoint, authenticates every MCP request with the supplied Azure credential, forwards the Foundry per-request call ID, and participates in the agent's connection lifecycle.
+`FoundryToolbox` resolves its endpoint, authenticates every MCP request with the supplied Azure credential, forwards the Foundry per-request call ID, and participates in the agent's connection lifecycle. It resolves platform headers at each operation boundary and reconnects its MCP session when the effective request identity changes. A long-lived Toolbox therefore doesn't retain an earlier caller's call ID.
+
+The sample creates the Toolbox, client, and credential inside the request-scoped agent factory for deterministic ownership and cleanup. Use this factory pattern when related resources are request-owned, but it isn't required solely to keep Toolbox call IDs current.
 
 ```python
 import asyncio
 import os
+from contextlib import AsyncExitStack
+from types import TracebackType
 
 from agent_framework import Agent
-from agent_framework.foundry import FoundryChatClient, FoundryToolbox, ResponsesHostServer
-from azure.identity import DefaultAzureCredential
+from agent_framework.foundry import FoundryChatClient, FoundryToolbox
+from agent_framework_foundry_hosting import ResponsesHostServer
+from azure.ai.agentserver.core import AgentConfig, get_request_context
+from azure.identity.aio import AzureCliCredential, ManagedIdentityCredential
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
-
-async def main():
-    credential = DefaultAzureCredential()
-
-    # FoundryToolbox resolves the toolbox endpoint from the environment
-    # (TOOLBOX_ENDPOINT, or FOUNDRY_PROJECT_ENDPOINT + TOOLBOX_NAME), authenticates
-    # every request with the credential, and transparently forwards the platform
-    # per-request call-id to the toolbox. The hosting server enters the agent, which
-    # connects the toolbox on first use and closes it at shutdown.
-    toolbox = FoundryToolbox(credential)
-
-    # Create the chat client
-    client = FoundryChatClient(
-        project_endpoint=os.environ["FOUNDRY_PROJECT_ENDPOINT"],
-        model=os.environ["AZURE_AI_MODEL_DEPLOYMENT_NAME"],
-        credential=credential,
+def create_agent() -> Agent:
+    """Create request-owned SDK resources and close them with the agent."""
+    endpoint = os.environ["FOUNDRY_PROJECT_ENDPOINT"]
+    model = os.environ.get("FOUNDRY_MODEL") or os.environ["AZURE_AI_MODEL_DEPLOYMENT_NAME"]
+    credential = (
+        ManagedIdentityCredential(client_id=os.environ.get("FOUNDRY_AGENT_INSTANCE_CLIENT_ID"))
+        if AgentConfig.from_env().is_hosted
+        else AzureCliCredential()
     )
 
-    agent = Agent(
+    class RequestClient(FoundryChatClient):
+        async def __aenter__(self) -> RequestClient:
+            return self
+
+        async def __aexit__(
+            self, exc_type: type[BaseException] | None, exc_value: BaseException | None, traceback: TracebackType | None
+        ) -> None:
+            async with AsyncExitStack() as cleanup:
+                cleanup.push_async_callback(credential.close)
+                cleanup.push_async_callback(self.project_client.close)
+                cleanup.push_async_callback(self.client.close)
+
+    toolbox = FoundryToolbox(credential)
+    client = RequestClient(
+        project_endpoint=endpoint,
+        model=model,
+        credential=credential,
+        default_headers=get_request_context().platform_headers(),
+    )
+    return Agent(
         client=client,
         instructions="You are a friendly assistant. Keep your answers brief.",
         tools=toolbox,
-        # History will be managed by the hosting infrastructure, thus there
-        # is no need to store history by the service. Learn more at:
-        # https://developers.openai.com/api/reference/resources/responses/methods/create
-        default_options={"store": False},
     )
 
-    server = ResponsesHostServer(agent)
+async def main() -> None:
+    load_dotenv()
+    server = ResponsesHostServer(agent=create_agent, history_source="agent_server")
     await server.run_async()
 ```
+
+When Toolbox Code Interpreter produces a file and the assistant response names that file, the hosted Responses adapter emits a native `container_file_citation` annotation with the container and file IDs. Responses clients can use those IDs to discover and download the generated file through the container files API.
 
 ## Expose Toolbox skills
 
@@ -103,115 +176,132 @@ A Toolbox can expose Agent Skills over MCP. Set `load_tools=False` when only ski
 ```python
 import asyncio
 import os
+from contextlib import AsyncExitStack
+from types import TracebackType
 
 from agent_framework import Agent
-from agent_framework.foundry import FoundryChatClient, FoundryToolbox, ResponsesHostServer
-from azure.identity import DefaultAzureCredential
+from agent_framework.foundry import FoundryChatClient, FoundryToolbox
+from agent_framework_foundry_hosting import ResponsesHostServer
+from azure.ai.agentserver.core import AgentConfig, get_request_context
+from azure.identity.aio import AzureCliCredential, ManagedIdentityCredential
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
-
-async def main() -> None:
-    credential = DefaultAzureCredential()
-
-    # FoundryToolbox resolves the toolbox endpoint from the environment
-    # (TOOLBOX_ENDPOINT, or FOUNDRY_PROJECT_ENDPOINT + TOOLBOX_NAME), authenticates
-    # every request with the credential, and forwards the platform per-request
-    # call-id. ``load_tools=False`` keeps the toolbox's tools hidden so only its
-    # Agent Skills (SEP-2640) are surfaced; passing it via ``tools=`` connects the
-    # MCP session that ``as_skills_provider()`` reads from.
-    toolbox = FoundryToolbox(credential, load_tools=False)
-
-    # as_skills_provider() discovers skills from skill://index.json on the toolbox
-    # MCP session and exposes them as an agent context provider; SKILL.md bodies are
-    # fetched on demand via resources/read. disable_load_skill_approval=True registers
-    # the load_skill tool with approval_mode="never_require" so this unattended agent
-    # can load skills without an approval round-trip -- the Responses host runs the
-    # agent without an AgentSession, which the default approval flow requires.
-    skills_provider = toolbox.as_skills_provider(disable_load_skill_approval=True)
-
-    client = FoundryChatClient(
-        project_endpoint=os.environ["FOUNDRY_PROJECT_ENDPOINT"],
-        model=os.environ["AZURE_AI_MODEL_DEPLOYMENT_NAME"],
-        credential=credential,
+def create_agent() -> Agent:
+    """Keep skill caches, credentials and the MCP lifecycle request-owned."""
+    endpoint = os.environ["FOUNDRY_PROJECT_ENDPOINT"]
+    model = os.environ.get("FOUNDRY_MODEL") or os.environ["AZURE_AI_MODEL_DEPLOYMENT_NAME"]
+    credential = (
+        ManagedIdentityCredential(client_id=os.environ.get("FOUNDRY_AGENT_INSTANCE_CLIENT_ID"))
+        if AgentConfig.from_env().is_hosted
+        else AzureCliCredential()
     )
 
-    agent = Agent(
+    class RequestClient(FoundryChatClient):
+        async def __aenter__(self) -> RequestClient:
+            return self
+
+        async def __aexit__(
+            self, exc_type: type[BaseException] | None, exc_value: BaseException | None, traceback: TracebackType | None
+        ) -> None:
+            async with AsyncExitStack() as cleanup:
+                cleanup.push_async_callback(credential.close)
+                cleanup.push_async_callback(self.project_client.close)
+                cleanup.push_async_callback(self.client.close)
+
+    # tools= connects the MCP session; context_providers= reads skills from that same session.
+    toolbox = FoundryToolbox(credential, load_tools=False)
+    skills_provider = toolbox.as_skills_provider(disable_load_skill_approval=True)
+    client = RequestClient(
+        project_endpoint=endpoint,
+        model=model,
+        credential=credential,
+        default_headers=get_request_context().platform_headers(),
+    )
+    return Agent(
         client=client,
         name=os.environ.get("AGENT_NAME", "hosted-toolbox-mcp-skills"),
         instructions="You are a helpful assistant.",
         tools=toolbox,
         context_providers=[skills_provider],
-        # History will be managed by the hosting infrastructure, thus there
-        # is no need to store history by the service. Learn more at:
-        # https://developers.openai.com/api/reference/resources/responses/methods/create
-        default_options={"store": False},
     )
 
-    server = ResponsesHostServer(agent)
+async def main() -> None:
+    load_dotenv()
+    server = ResponsesHostServer(agent=create_agent, history_source="agent_server")
     await server.run_async()
 ```
 
-Approval remains enabled by default for skill operations. Disable individual approvals only for trusted, unattended scenarios.
+Approval remains enabled by default for skill operations. Disable individual approvals only for trusted, unattended scenarios. Keep the Toolbox and its skills provider together so both use the same MCP session. For a long-lived Toolbox, the skill discovery cache is replaced when the effective platform-header identity changes. A custom `header_provider` used with skills must resolve from ambient state, such as a closure or `ContextVar`, because skill and resource reads don't receive function runtime arguments.
 
 ## Use a Toolbox with `FoundryAgent`
 
 Attach the Toolbox to the Prompt or Hosted Agent definition in Foundry. `FoundryAgent` uses that stored tool configuration; passing a Toolbox client-side doesn't add it to the managed agent.
 
-## Connect through raw MCP
+## Connect through MCP with `FoundryToolbox`
 
-Use `MCPStreamableHTTPTool` directly when the application doesn't use the `FoundryToolbox` hosting wrapper. Supply the Toolbox endpoint and an Entra ID bearer token through `header_provider`.
+Use `FoundryToolbox` with `ResponsesHostServer` to connect a hosted agent to the Toolbox MCP endpoint. The wrapper authenticates MCP requests and forwards the current hosted request's caller context for per-user identity passthrough. The request-scoped `agent` factory remains the simplest option when the client, credential, and Toolbox need one cleanup boundary. A long-lived Toolbox is also supported and reconnects before an operation when the platform-header identity changes.
 
 ```python
 import asyncio
 import os
-from collections.abc import Callable
-from typing import Any, cast
+from contextlib import AsyncExitStack
+from types import TracebackType
 
-from agent_framework import Agent, MCPStreamableHTTPTool
-from agent_framework.foundry import FoundryChatClient
-from azure.core.credentials import TokenCredential
-from azure.identity import AzureCliCredential, DefaultAzureCredential, get_bearer_token_provider
+from agent_framework import Agent
+from agent_framework.foundry import FoundryChatClient, FoundryToolbox
+from agent_framework_foundry_hosting import ResponsesHostServer
+from azure.ai.agentserver.core import AgentConfig, get_request_context
+from azure.identity.aio import AzureCliCredential, ManagedIdentityCredential
 from dotenv import load_dotenv
-def make_toolbox_header_provider(credential: TokenCredential) -> Callable[[dict[str, Any]], dict[str, str]]:
-    """Build a header_provider that injects a fresh Azure AI bearer token on every MCP request."""
-    get_token = get_bearer_token_provider(credential, "https://ai.azure.com/.default")
 
-    def provide(_kwargs: dict[str, Any]) -> dict[str, str]:
-        return {
-            "Authorization": f"Bearer {get_token()}",
-        }
-
-    return provide
-
-async def main() -> None:
-    credential = DefaultAzureCredential()
-
-    toolbox_tool = MCPStreamableHTTPTool(
-        name="foundry_toolbox",
-        description="Tools exposed by the configured Foundry toolbox",
-        url=os.environ["FOUNDRY_TOOLBOX_ENDPOINT"],
-        header_provider=make_toolbox_header_provider(credential),
-        load_prompts=False,
+def create_agent() -> Agent:
+    """Create request-owned SDK resources and close them with the agent."""
+    endpoint = os.environ["FOUNDRY_PROJECT_ENDPOINT"]
+    model = os.environ.get("FOUNDRY_MODEL") or os.environ["AZURE_AI_MODEL_DEPLOYMENT_NAME"]
+    credential = (
+        ManagedIdentityCredential(client_id=os.environ.get("FOUNDRY_AGENT_INSTANCE_CLIENT_ID"))
+        if AgentConfig.from_env().is_hosted
+        else AzureCliCredential()
     )
 
-    async with Agent(
-        client=FoundryChatClient(
-            project_endpoint=os.environ["FOUNDRY_PROJECT_ENDPOINT"],
-            model=os.environ["FOUNDRY_MODEL"],
-            credential=credential,
-        ),
-        instructions="You are a helpful assistant. Use the available toolbox tools to answer the user.",
-        tools=toolbox_tool,
-    ) as agent:
-        query = "What tools do you have access to?"
-        print(f"User: {query}")
-        result = await agent.run(query)
-        print(f"Assistant: {result}")
+    class RequestClient(FoundryChatClient):
+        async def __aenter__(self) -> RequestClient:
+            return self
+
+        async def __aexit__(
+            self, exc_type: type[BaseException] | None, exc_value: BaseException | None, traceback: TracebackType | None
+        ) -> None:
+            async with AsyncExitStack() as cleanup:
+                cleanup.push_async_callback(credential.close)
+                cleanup.push_async_callback(self.project_client.close)
+                cleanup.push_async_callback(self.client.close)
+
+    toolbox = FoundryToolbox(credential)
+    client = RequestClient(
+        project_endpoint=endpoint,
+        model=model,
+        credential=credential,
+        default_headers=get_request_context().platform_headers(),
+    )
+    return Agent(
+        client=client,
+        instructions="You are a friendly assistant. Keep your answers brief.",
+        tools=toolbox,
+    )
+
+async def main() -> None:
+    load_dotenv()
+    server = ResponsesHostServer(agent=create_agent, history_source="agent_server")
+    await server.run_async()
 ```
 
-The lower-level sample uses `FOUNDRY_TOOLBOX_ENDPOINT`. The Toolbox skills sample uses `FOUNDRY_TOOLBOX_MCP_SERVER_URL`; these names belong to those samples and are separate from the `FoundryToolbox` class's `TOOLBOX_ENDPOINT` and `TOOLBOX_NAME` settings.
+Set `TOOLBOX_ENDPOINT`, or set both `FOUNDRY_PROJECT_ENDPOINT` and `TOOLBOX_NAME`, as described in Configure the Toolbox. Set `FOUNDRY_MODEL` for local runs; hosted deployments fall back to the azd-managed `AZURE_AI_MODEL_DEPLOYMENT_NAME`.
+
+## Handle OAuth consent requests
+
+When a Toolbox or MCP operation requires OAuth consent, streaming and non-streaming `FoundryAgent` and `FoundryChatClient` calls return `Content(type="oauth_consent_request")` with the consent link instead of an empty assistant message. Handle this content as a user-input request and present its `consent_link` to the user.
+
+The client surfaces only links with an HTTPS scheme and valid host. Missing or invalid links are omitted and logged.
 
 ## Limitations
 

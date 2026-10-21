@@ -1,0 +1,103 @@
+source: S-lxrnlf4d
+url: https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/configure-language-version
+title: Configure C# language version
+publisher: Microsoft Learn (dotnet/docs)
+licence: CC BY 4.0 (public mirror dotnet/docs; code MIT)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Configure language version - C# reference | Microsoft Learn
+
+The information in this article applies to .NET 5 and later. For UWP projects, see the article on Choosing a UWP version.
+
+The C# language reference documents the most recently released version of the C# language. It also contains initial documentation for features in public previews for the upcoming language release.
+
+The documentation identifies any feature first introduced in the last three versions of the language or in current public previews.
+
+Tip
+
+To find when a feature was first introduced in C#, consult the article on the C# language version history.
+
+In Visual Studio, the option to change the language version through the UI is disabled because the default version aligns with the project's target framework (`TFM`). This default configuration ensures compatibility between language features and runtime support. To change the language version in Visual Studio, change the project's target framework.
+
+For example, changing the target `TFM` (for example, from .NET 6 to .NET 9) updates the language version accordingly, from C# 10 to C# 13. This approach prevents issues with runtime compatibility and minimizes unexpected build errors due to unsupported language features.
+
+If you need a specific language version that differs from the one automatically selected, use the methods in this article to override the default settings directly in the project file.
+
+Warning
+
+Don't set the `LangVersion` element to `latest`. The `latest` setting means the installed compiler uses its latest version. The value of `latest` can change from machine to machine, making builds unreliable. In addition, it enables language features that might require runtime or library features not included in the current SDK.
+
+If you must specify your C# version explicitly, you can do so in several ways:
+
+- Manually edit the project file.
+- Set the language version for multiple projects in a subdirectory.
+- Configure the LangVersion compiler option.
+
+Tip
+
+You can see the language version in Visual Studio in the project properties page. Under the *Build* tab, the *Advanced* pane displays the version selected.
+
+To know what language version you're currently using, put `#error version` (case sensitive) in your code. This pragma makes the compiler report a compiler error, CS8304, with a message containing the compiler version and the current selected language version. For more information about this pragma, see #error (C# Reference).
+
+## Edit the project file
+
+Set the language version in your project file. The project file is the `*.csproj` file in the root folder for your project. For example, if you want explicit access to preview features, add an element like the following example:
+
+```xml
+<PropertyGroup>
+   <LangVersion>preview</LangVersion>
+</PropertyGroup>
+```
+
+The value `preview` uses the latest available preview C# language version your compiler supports.
+
+## Configure multiple projects
+
+To configure multiple C# projects, create a *Directory.Build.props* file, typically in your solution directory, that contains the `<LangVersion>` element. Add the following setting to the *Directory.Build.props* file:
+
+```xml
+<Project>
+ <PropertyGroup>
+   <LangVersion>preview</LangVersion>
+ </PropertyGroup>
+</Project>
+```
+
+Builds in all subdirectories of the directory containing that file now use the preview C# version. For more information, see Customize your build.
+
+Note
+
+The versions for C# and Visual Basic are different. Don't use the *Directory.Build.Props* file for a folder where subdirectories contain projects for both languages. The versions don't match.
+
+## C# language version reference
+
+Important
+
+Using a C# language version newer than the version associated with your target TFM isn't supported.
+
+The following table shows all current C# language versions. Older compilers might not understand every value. If you install the latest .NET SDK, you have access to everything listed.
+
+| Value | Meaning |
+| --- | --- |
+| `preview` | The compiler accepts all valid language syntax from the latest preview version. |
+| `latest` | The compiler accepts syntax from the latest released version of the compiler (including minor version). |
+| `latestMajor`or `default` | The compiler accepts syntax from the latest released major version of the compiler. |
+| `15.0` | The compiler accepts only syntax that is included in C# 15 or lower. |
+| `14.0` | The compiler accepts only syntax that is included in C# 14 or lower. |
+| `13.0` | The compiler accepts only syntax that is included in C# 13 or lower. |
+| `12.0` | The compiler accepts only syntax that is included in C# 12 or lower. |
+| `11.0` | The compiler accepts only syntax that is included in C# 11 or lower. |
+| `10.0` | The compiler accepts only syntax that is included in C# 10 or lower. |
+| `9.0` | The compiler accepts only syntax that is included in C# 9 or lower. |
+| `8.0` | The compiler accepts only syntax that is included in C# 8.0 or lower. |
+| `7.3` | The compiler accepts only syntax that is included in C# 7.3 or lower. |
+| `7.2` | The compiler accepts only syntax that is included in C# 7.2 or lower. |
+| `7.1` | The compiler accepts only syntax that is included in C# 7.1 or lower. |
+| `7` | The compiler accepts only syntax that is included in C# 7.0 or lower. |
+| `6` | The compiler accepts only syntax that is included in C# 6.0 or lower. |
+| `5` | The compiler accepts only syntax that is included in C# 5.0 or lower. |
+| `4` | The compiler accepts only syntax that is included in C# 4.0 or lower. |
+| `3` | The compiler accepts only syntax that is included in C# 3.0 or lower. |
+| `ISO-2`or `2` | The compiler accepts only syntax that is included in ISO/IEC 23270:2006 C# (2.0). |
+| `ISO-1`or `1` | The compiler accepts only syntax that is included in ISO/IEC 23270:2003 C# (1.0/1.2). |

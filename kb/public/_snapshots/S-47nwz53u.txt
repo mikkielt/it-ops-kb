@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/azure/ai-services/content-safety/region-availab
 title: Azure AI Content Safety region availability
 publisher: Microsoft Learn
 licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-ai-docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Region availability and service limits - Azure AI Content Safety - Azure AI services | Microsoft Learn
@@ -75,52 +75,46 @@ When you use Azure AI Content Safety directly, create the resource in the region
 # Americas
 | **Guardrail** | **brazilsouth** | **canadacentral** | **canadaeast** | **centralus** | **eastus** | **eastus2** | **northcentralus** | **southcentralus** | **westus** | **westus2** | **westus3** |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Content harms | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Prompt shields | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Protected material | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Groundedness | - | - | ✅ | - | ✅ | ✅ | - | - | ✅ | - | - |
-| Task Adherence\* | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Content provenance detection | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Blocklists | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| PII | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Content harms text | - | - | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | - | ✅ | ✅ |
+| Content harms image | - | - | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | - | ✅ | ✅ |
+| Prompt shields | - | - | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | - | ✅ | ✅ |
+| Protected material | - | - | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | - | ✅ | ✅ |
+| Groundedness | - | - | - | - | ✅ | ✅ | - | - | ✅ | - | - |
+| Task Adherence | - | - | - | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Content provenance detection | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | - | ✅ | ✅ |
 
 # Europe
-| **Guardrail** | **francecentral** | **germanywestcentral** | **italynorth** | **polandcentral** | **spaincentral** | **swedencentral** | **switzerlandnorth** | **switzerlandwest** | **uksouth** | **westeurope** |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Content harms | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Prompt shields | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Protected material | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Groundedness | - | - | - | - | - | ✅ | - | - | ✅ | - |
-| Task Adherence\* | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Content provenance detection | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Blocklists | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| PII | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Guardrail** | **francecentral** | **germanywestcentral** | **italynorth** | **norwayeast** | **polandcentral** | **spaincentral** | **swedencentral** | **switzerlandnorth** | **switzerlandwest** | **uksouth** | **westeurope** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Content harms text | ✅ | - | - | - | ✅ | - | - | ✅ | - | - | - |
+| Content harms image | ✅ | - | - | - | ✅ | - | - | ✅ | - | - | - |
+| Prompt shields | ✅ | - | - | - | ✅ | - | - | ✅ | - | - | ✅ |
+| Protected material | ✅ | - | - | - | ✅ | - | - | ✅ | - | - | - |
+| Groundedness | ✅ | - | - | - | - | - | ✅ | - | - | ✅ | - |
+| Task Adherence | - | - | - | ✅ | - | - | - | - | - | - | - |
+| Content provenance detection | ✅ | ✅ | - | - | ✅ | ✅ | - | ✅ | ✅ | - | - |
 
 # Asia Pacific
 | **Guardrail** | **australiaeast** | **japaneast** | **koreacentral** | **southeastasia** | **southindia** |
 | --- | --- | --- | --- | --- | --- |
-| Content harms | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Content harms text | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Content harms image | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Prompt shields | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Protected material | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Groundedness | - | - | - | - | - |
-| Task Adherence\* | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Task Adherence | - | - | - | - | - |
 | Content provenance detection | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Blocklists | ✅ | ✅ | ✅ | ✅ | ✅ |
-| PII | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 # Middle East &amp; Africa
 | **Guardrail** | **southafricanorth** | **uaenorth** |
 | --- | --- | --- |
-| Content harms | ✅ | ✅ |
-| Prompt shields | ✅ | ✅ |
-| Protected material | ✅ | ✅ |
+| Content harms text | - | - |
+| Content harms image | - | - |
+| Prompt shields | - | - |
+| Protected material | - | - |
 | Groundedness | - | - |
-| Task Adherence\* | ✅ | ✅ |
+| Task Adherence | - | - |
 | Content provenance detection | ✅ | ✅ |
-| Block lists | ✅ | ✅ |
-| PII | ✅ | ✅ |
-
-\*Not available for in-region, global routing is used
 
 ---
 
@@ -160,6 +154,14 @@ See the following list for the input requirements for each feature.
 - **Task adherence (preview)**:
     - Maximum input length: 100K characters.
 
-## Language availability
+## Language considerations
 
-The Azure AI Content Safety features for content harms were trained and tested on the following languages: Chinese, English, French, German, Spanish, Italian, Japanese, and Portuguese. You tested prompt shields, protected material, groundedness detection, task adherence, and custom categories (standard) with English only. However, these features can work in many other languages, but the quality might vary. In all cases, you should do your own testing to ensure that it works for your application.
+Guardrail classification performance can vary by language. A model's ability to process a language doesn't mean that the control was specifically trained and tested for that language or that performance is equivalent across languages.
+
+The text classifiers for Hate, Sexual, Violence, and Self-harm are trained and tested on Chinese, English, French, German, Italian, Japanese, Portuguese, and Spanish. These classifiers have multilingual capabilities and can classify content in other languages, but those languages aren't included in the trained-and-tested set and performance can vary.
+
+Prompt Shields for user prompt attacks and document attacks also have multilingual capabilities, but they're primarily trained and evaluated on English content. Performance can vary for non-English content.
+
+Protected material, groundedness detection, task adherence, and custom categories (standard) were trained and evaluated on English content. However, these features can work in many other languages, but the quality might vary.
+
+In all cases, you should do your own testing to ensure that it works for your application. Evaluate each control with representative harmful, attack, and benign content in every language used by your application. Review both false positives and false negatives. Language-specific vocabulary can affect results; for example, a word that is benign in one language might resemble harmful terminology in another language and produce a false positive.

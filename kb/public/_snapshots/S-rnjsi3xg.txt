@@ -1,0 +1,86 @@
+source: S-rnjsi3xg
+url: https://wiki.gentoo.org/wiki/ACCEPT_KEYWORDS
+title: ACCEPT_KEYWORDS (Gentoo Wiki)
+publisher: Gentoo Wiki
+licence: CC-BY-SA-4.0
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+Jump to: content
+Get Gentoo!
+gentoo.org sites
+gentoo.org
+Wiki
+Bugs
+Packages
+Forums
+Planet
+Archives
+Devmanual
+Gitweb
+Infra status
+Wiki
+#
+ACCEPT_KEYWORDS
+From Gentoo Wiki
+Jump to:navigation
+Jump to:search
+Other languages:
+Deutsch
+English
+Nederlands
+Türkçe
+español
+français
+italiano
+magyar
+português
+português do Brasil
+svenska
+čeština
+русский
+中文
+中文（中国大陆）‎
+日本語
+한국어
+The ACCEPT_KEYWORDS variable informs the package manager which ebuilds' KEYWORDS values it is allowed to accept. This variable is used to select either stable or testing branch as default.
+## Contents
+1 Where the variable is set?
+2 Stable and unstable keywords
+3 See also
+4 References
+## Where the variable is set?
+The variable is usually set through the Gentoo profile but can be overruled system wide in /etc/portage/make.conf, per-package in /etc/portage/package.accept_keywords, or even for a single emerge on the command line, though this is not recommended.
+Important
+It is generally considered a bad idea to override the ACCEPT_KEYWORDS variable on the command line, such as by using ACCEPT_KEYWORDS=<keyword> emerge -av <packagename>, as this is not persistent and might result in unwanted behavior from the package manager.
+## Stable and unstable keywords
+Warning
+A common misconception is that when a package requires testing, applying ~amd64 in make.conf seems like a solution, but instead it may cause conflicts in future updates, and system breakage when attempting to downgrade glibc since it applies to ALL packages to be on ~amd64. Refer to applying it to individual packages via package.accept_keywords directory.
+The default value of most profiles' ACCEPT_KEYWORDS variable is the architecture itself, like amd64 or arm. In these cases, the package manager will only accept ebuilds whose KEYWORDS variable contains this architecture. If the user wants to be able to install and work with ebuilds that are not considered production-ready yet, they can add the same architecture but with the ~ prefix to it, like so:
+FILE /etc/portage/make.conf
+ACCEPT_KEYWORDS="~amd64"
+One should not specify the stable keyword (amd64) when adding the testing keyword (~amd64) because ACCEPT_KEYWORDS is an incremental variable.
+If the setting is not to be made system-wide, then it can be set per-package in the package.accept_keywords file or directory:
+Important
+/etc/portage/package.accept_keywords has a full overview of using this feature and the below should only be considered an overview.
+FILE /etc/portage/package.accept_keywords
+# games
+games-fps/doomsday ~amd64
+In addition to the normal values from ACCEPT_KEYWORDS, package.accept_keywords supports three special tokens[1]:
+* — Package is visible if it is stable on any architecture.
+~* — Package is visible if it is in testing on any architecture.
+** — Package is always visible (KEYWORDS are ignored completely).
+The last choice is useful for live package versions (e.g. SVN/Git/Mercurial package versions) because live ebuilds don't have a KEYWORDS variable.
+Note
+The behavior of ~arch and ~* differ: ~arch includes arch, ~* doesn't include *. To use the most recent version of a package which is marked stable or unstable on any architecture, specify "* ~*".
+## See also
+/etc/portage/package.accept_keywords — files or directories of files containing definitions for per-package ACCEPT_KEYWORDS statements.
+KEYWORDS — the KEYWORDS variable informs in which architectures the ebuild is stable or still in testing phase.
+Knowledge Base:Accepting a keyword for a single package
+Knowledge Base:Accepting a keyword for all packages
+## References
+↑ Gentoo Portage, Manual page for Portage. Retrieved on January 30th, 2015.
+Retrieved from "https://wiki.gentoo.org/index.php?title=ACCEPT_KEYWORDS&oldid=1426104"
+Categories:
+Portage variables
+Keywords

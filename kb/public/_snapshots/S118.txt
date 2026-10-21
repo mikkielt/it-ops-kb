@@ -3,19 +3,10 @@ url: https://github.com/PowerShell/DSC/releases/tag/v3.3.0
 title: DSC v3.3.0 release notes
 publisher: Microsoft (PowerShell/DSC)
 licence: MIT
-retrieved: 2026-09-28
+retrieved: 2026-10-21
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-PowerShell
-/
-DSC
-Public
-Notifications
-You must be signed in to change notification settings
-Fork
-76
-Star
-530
+## Repository navigation
 # v3.3.0
 Latest
 Latest
@@ -33,7 +24,7 @@ SteveL-MSFT
 released this
 17 Sep 14:53
 ·
-7 commits
+27 commits
 to main
 since this release
 v3.3.0
@@ -114,6 +105,6 @@ Assets
 Loading
 ### Uh oh!
 There was an error while loading. Please reload this page.
-3 people reacted
+4 people reacted
 1
 Join discussion

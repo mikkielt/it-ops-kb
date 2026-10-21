@@ -1,0 +1,60 @@
+source: S-zg5iu4oe
+url: https://cli.github.com/manual/gh_run_list
+title: gh run list (GitHub CLI manual)
+publisher: GitHub (cli.github.com)
+licence: MIT (cli/cli LICENSE; the manual is generated from it)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+## gh run list
+gh run list [flags]
+List recent workflow runs.
+Note that providing the workflow_name to the -w flag will not fetch disabled workflows.
+Also pass the -a flag to fetch disabled workflow runs using the workflow_name and the -w flag.
+Runs created by organization and enterprise ruleset workflows will not display a workflow name due to GitHub API limitations.
+To see runs associated with a pull request, users should run gh pr checks.
+### Options
+-a,
+--all
+Include disabled workflows
+-b,
+--branch <string>
+Filter runs by branch
+-c,
+--commit <SHA>
+Filter runs by the SHA of the commit
+--created <date>
+Filter runs by the date it was created
+-e,
+--event <event>
+Filter runs by which event triggered the run
+-q,
+--jq <expression>
+Filter JSON output using a jq expression
+--json <fields>
+Output JSON with the specified fields
+-L,
+--limit <int> (default 20)
+Maximum number of runs to fetch
+-s,
+--status <string>
+Filter runs by status: {queued|completed|in_progress|requested|waiting|pending|action_required|cancelled|failure|neutral|skipped|stale|startup_failure|success|timed_out}
+-t,
+--template <string>
+Format JSON output using a Go template; see "gh help formatting"
+-u,
+--user <string>
+Filter runs by user who triggered the run
+-w,
+--workflow <string>
+Filter runs by workflow
+### Options inherited from parent commands
+-R,
+--repo <[HOST/]OWNER/REPO>
+Select another repository using the [HOST/]OWNER/REPO format
+### ALIASES
+gh run ls
+### JSON Fields
+attempt, conclusion, createdAt, databaseId, displayTitle, event, headBranch, headSha, name, number, startedAt, status, updatedAt, url, workflowDatabaseId, workflowName
+### See also
+gh run

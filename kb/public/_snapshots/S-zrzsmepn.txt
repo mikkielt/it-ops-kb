@@ -1,0 +1,1416 @@
+source: S-zrzsmepn
+url: https://html.spec.whatwg.org/multipage/sections.html
+title: HTML Standard: Sections (4.3)
+publisher: WHATWG
+licence: CC-BY-4.0
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+HTML Standard
+# HTML
+Living Standard — Last Updated 20 October 2026
+4.3 Sections
+4.3.1 The body element
+4.3.2 The article element
+4.3.3 The section element
+4.3.4 The nav element
+4.3.5 The aside element
+4.3.6 The h1, h2, h3, h4, h5, and h6
+elements
+4.3.7 The hgroup element
+4.3.8 The header element
+4.3.9 The footer element
+4.3.10 The address element
+4.3.11 Headings and outlines
+4.3.11.1 Heading levels & offsets
+4.3.11.2 Sample outlines
+4.3.11.3 Exposing outlines to users
+4.3.12 Usage summary
+4.3.12.1 Article or section?
+### 4.3 Sections
+Introduction_to_HTML/Document_and_website_structure#HTML_for_structuring_content
+Support in all current engines.
+Firefox4+Safari5+Chrome5+Opera11.1+Edge79+Edge (Legacy)12+Internet Explorer9+Firefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android11.1+
+#### 4.3.1 The body element
+Element/body
+Support in all current engines.
+Firefox1+Safari1+Chrome1+Opera?Edge79+Edge (Legacy)12+Internet ExplorerYesFirefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android?
+HTMLBodyElement
+Support in all current engines.
+Firefox1+Safari3+Chrome1+Opera12.1+Edge79+Edge (Legacy)12+Internet Explorer4+Firefox Android?Safari iOS1+Chrome Android?WebView Android?Samsung Internet?Opera Android12.1+
+Categories:
+None.
+Contexts in which this element can be used:
+As the second element in an html element.
+Content model:
+Flow content.
+Tag omission in text/html:
+A body element's start tag can be omitted
+if the element is empty, or if the first thing inside the body element is not
+ASCII whitespace or a comment, except if the
+first thing inside the body element is a meta, noscript,
+link, script, style, or template element.
+A body element's end tag can be omitted if the
+body element is not immediately followed by a comment.
+Content attributes:
+Global attributes
+onafterprint
+onbeforeprint
+onbeforeunload
+onhashchange
+onlanguagechange
+onmessage
+onmessageerror
+onoffline
+ononline
+onpageswap
+onpagehide
+onpagereveal
+onpageshow
+onpopstate
+onrejectionhandled
+onstorage
+onunhandledrejection
+onunload
+Accessibility considerations:
+For authors.
+For implementers.
+Sanitization:
+Default.
+DOM interface:
+[Exposed=Window]
+interface HTMLBodyElement : HTMLElement {
+[HTMLConstructor] constructor();
+// also has obsolete members
+};
+HTMLBodyElement includes WindowEventHandlers;
+The body element represents the contents of the document.
+In conforming documents, there is only one body element. The document.body IDL attribute provides scripts with easy access to
+a document's body element.
+Some DOM operations (for example, parts of the drag and drop model)
+are defined in terms of "the body element". This refers to a particular element in
+the DOM, as per the definition of the term, and not any arbitrary body element.
+The body element exposes as event handler content attributes a number
+of the event handlers of the Window object. It also mirrors their
+event handler IDL attributes.
+The event handlers of the Window object named by the
+Window-reflecting body element event handler set, exposed on the
+body element, replace the generic event handlers with the same names
+normally supported by HTML elements.
+Thus, for example, a bubbling error event
+dispatched on a child of the body element of a Document would first
+trigger the onerror event handler content
+attributes of that element, then that of the root html element, and only
+then would it trigger the onerror event handler content attribute on the
+body element. This is because the event would bubble from the target, to the
+body, to the html, to the Document, to the
+Window, and the event handler on the
+body is watching the Window not the body. A regular event
+listener attached to the body using addEventListener(),
+however, would be run when the event bubbled through the body and not when it reaches
+the Window object.
+This page updates an indicator to show whether or not the user is online:
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Online or offline?</title>
+<script>
+function update(online) {
+document.getElementById('status').textContent =
+online ? 'Online' : 'Offline';
+}
+</script>
+</head>
+<body ononline="update(true)"
+onoffline="update(false)"
+onload="update(navigator.onLine)">
+<p>You are: <span id="status">(Unknown)</span></p>
+</body>
+</html>
+#### 4.3.2 The article element
+Element/article
+Support in all current engines.
+Firefox4+Safari5+Chrome5+Opera11.1+Edge79+Edge (Legacy)12+Internet Explorer9+Firefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android11.1+
+Categories:
+Flow content.
+Sectioning content.
+Palpable content.
+Contexts in which this element can be used:
+Where sectioning content is expected.
+Content model:
+Flow content.
+Tag omission in text/html:
+Neither tag is omissible.
+Content attributes:
+Global attributes
+Accessibility considerations:
+For authors.
+For implementers.
+Sanitization:
+Default.
+DOM interface:
+Uses HTMLElement.
+The article element represents a complete, or self-contained,
+composition in a document, page, application, or site and that is, in principle, independently
+distributable or reusable, e.g. in syndication. This could be a forum post, a magazine or
+newspaper article, a blog entry, a user-submitted comment, an interactive widget or gadget, or any
+other independent item of content.
+When article elements are nested, the inner article elements
+represent articles that are in principle related to the contents of the outer article. For
+instance, a blog entry on a site that accepts user-submitted comments could represent the comments
+as article elements nested within the article element for the blog
+entry.
+Author information associated with an article element (q.v. the
+address element) does not apply to nested article elements.
+When used specifically with content to be redistributed in syndication, the
+article element is similar in purpose to the entry element in
+Atom. [ATOM]
+The schema.org microdata vocabulary can be used to provide the publication date
+for an article element, using one of the CreativeWork subtypes.
+When the main content of the page (i.e. excluding footers, headers, navigation blocks, and
+sidebars) is all one single self-contained composition, that content may be marked with an
+article, but it is technically redundant in that case (since it's self-evident that
+the page is a single composition, as it is a single document).
+This example shows a blog post using the article element, with some schema.org
+annotations:
+<article itemscope itemtype="http://schema.org/BlogPosting">
+<header>
+<h2 itemprop="headline">The Very First Rule of Life</h2>
+<p><time itemprop="datePublished" datetime="2009-10-09">3 days ago</time></p>
+<link itemprop="url" href="?comments=0">
+</header>
+<p>If there's a microphone anywhere near you, assume it's hot and
+sending whatever you're saying to the world. Seriously.</p>
+<p>...</p>
+<footer>
+<a itemprop="discussionUrl" href="?comments=1">Show comments...</a>
+</footer>
+</article>
+Here is that same blog post, but showing some of the comments:
+<article itemscope itemtype="http://schema.org/BlogPosting">
+<header>
+<h2 itemprop="headline">The Very First Rule of Life</h2>
+<p><time itemprop="datePublished" datetime="2009-10-09">3 days ago</time></p>
+<link itemprop="url" href="?comments=0">
+</header>
+<p>If there's a microphone anywhere near you, assume it's hot and
+sending whatever you're saying to the world. Seriously.</p>
+<p>...</p>
+<section>
+<h1>Comments</h1>
+<article itemprop="comment" itemscope itemtype="http://schema.org/Comment" id="c1">
+<link itemprop="url" href="#c1">
+<footer>
+<p>Posted by: <span itemprop="creator" itemscope itemtype="http://schema.org/Person">
+<span itemprop="name">George Washington</span>
+</span></p>
+<p><time itemprop="dateCreated" datetime="2009-10-10">15 minutes ago</time></p>
+</footer>
+<p>Yeah! Especially when talking about your lobbyist friends!</p>
+</article>
+<article itemprop="comment" itemscope itemtype="http://schema.org/Comment" id="c2">
+<link itemprop="url" href="#c2">
+<footer>
+<p>Posted by: <span itemprop="creator" itemscope itemtype="http://schema.org/Person">
+<span itemprop="name">George Hammond</span>
+</span></p>
+<p><time itemprop="dateCreated" datetime="2009-10-10">5 minutes ago</time></p>
+</footer>
+<p>Hey, you have the same first name as me.</p>
+</article>
+</section>
+</article>
+Notice the use of footer to give the information for each comment (such as who
+wrote it and when): the footer element can appear at the start of its
+section when appropriate, such as in this case. (Using header in this case wouldn't
+be wrong either; it's mostly a matter of authoring preference.)
+In this example, article elements are used to host widgets on a portal page. The
+widgets are implemented as customized built-in
+elements in order to get specific styling and scripted behavior.
+<!DOCTYPE HTML>
+<html lang=en>
+<title>eHome Portal</title>
+<script src="/scripts/widgets.js"></script>
+<link rel=stylesheet href="/styles/main.css">
+<article is="stock-widget">
+<h2>Stocks</h2>
+<table>
+<thead> <tr> <th> Stock <th> Value <th> Delta
+<tbody> <template> <tr> <td> <td> <td> </template>
+</table>
+<p> <input type=button value="Refresh" onclick="this.parentElement.refresh()">
+</article>
+<article is="news-widget">
+<h2>News</h2>
+<ul>
+<template>
+<li>
+<p><img> <strong></strong>
+<p>
+</template>
+</ul>
+<p> <input type=button value="Refresh" onclick="this.parentElement.refresh()">
+</article>
+#### 4.3.3 The section element
+Element/section
+Support in all current engines.
+Firefox4+Safari5+Chrome5+Opera11.1+Edge79+Edge (Legacy)12+Internet Explorer9+Firefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android11.1+
+Categories:
+Flow content.
+Sectioning content.
+Palpable content.
+Contexts in which this element can be used:
+Where sectioning content is expected.
+Content model:
+Flow content.
+Tag omission in text/html:
+Neither tag is omissible.
+Content attributes:
+Global attributes
+Accessibility considerations:
+For authors.
+For implementers.
+Sanitization:
+Default.
+DOM interface:
+Uses HTMLElement.
+The section element represents a generic section of a document or
+application. A section, in this context, is a thematic grouping of content, typically with a
+heading.
+Examples of sections would be chapters, the various tabbed pages in a tabbed
+dialog box, or the numbered sections of a thesis. A web site's home page could be split into
+sections for an introduction, news items, and contact information.
+Authors are encouraged to use the article element instead of the
+section element when it would make sense to syndicate the contents of the
+element.
+The section element is not a generic
+container element. When an element is needed only for styling purposes or as a convenience for
+scripting, authors are encouraged to use the div element instead. A general rule is
+that the section element is appropriate only if the element's contents would be
+listed explicitly in the document's outline.
+In the following example, we see an article (part of a larger web page) about apples,
+containing two short sections.
+<article>
+<hgroup>
+<h2>Apples</h2>
+<p>Tasty, delicious fruit!</p>
+</hgroup>
+<p>The apple is the pomaceous fruit of the apple tree.</p>
+<section>
+<h3>Red Delicious</h3>
+<p>These bright red apples are the most common found in many
+supermarkets.</p>
+</section>
+<section>
+<h3>Granny Smith</h3>
+<p>These juicy, green apples make a great filling for
+apple pies.</p>
+</section>
+</article>
+Here is a graduation programme with two sections, one for the list of people graduating, and
+one for the description of the ceremony. (The markup in this example features an uncommon style
+sometimes used to minimize the amount of inter-element whitespace.)
+<!DOCTYPE Html>
+<Html Lang=En
+><Head
+><Title
+>Graduation Ceremony Summer 2022</Title
+></Head
+><Body
+><H1
+>Graduation</H1
+><Section
+><H2
+>Ceremony</H2
+><P
+>Opening Procession</P
+><P
+>Speech by Valedictorian</P
+><P
+>Speech by Class President</P
+><P
+>Presentation of Diplomas</P
+><P
+>Closing Speech by Headmaster</P
+></Section
+><Section
+><H2
+>Graduates</H2
+><Ul
+><Li
+>Molly Carpenter</Li
+><Li
+>Anastasia Luccio</Li
+><Li
+>Ebenezar McCoy</Li
+><Li
+>Karrin Murphy</Li
+><Li
+>Thomas Raith</Li
+><Li
+>Susan Rodriguez</Li
+></Ul
+></Section
+></Body
+></Html>
+In this example, a book author has marked up some sections as chapters and some as appendices,
+and uses CSS to style the headers in these two classes of section differently.
+<style>
+section { border: double medium; margin: 2em; }
+section.chapter h2 { font: 2em Roboto, Helvetica Neue, sans-serif; }
+section.appendix h2 { font: small-caps 2em Roboto, Helvetica Neue, sans-serif; }
+</style>
+<header>
+<hgroup>
+<h1>My Book</h1>
+<p>A sample with not much content</p>
+</hgroup>
+<p><small>Published by Dummy Publicorp Ltd.</small></p>
+</header>
+<section class="chapter">
+<h2>My First Chapter</h2>
+<p>This is the first of my chapters. It doesn't say much.</p>
+<p>But it has two paragraphs!</p>
+</section>
+<section class="chapter">
+<h2>It Continues: The Second Chapter</h2>
+<p>Bla dee bla, dee bla dee bla. Boom.</p>
+</section>
+<section class="chapter">
+<h2>Chapter Three: A Further Example</h2>
+<p>It's not like a battle between brightness and earthtones would go
+unnoticed.</p>
+<p>But it might ruin my story.</p>
+</section>
+<section class="appendix">
+<h2>Appendix A: Overview of Examples</h2>
+<p>These are demonstrations.</p>
+</section>
+<section class="appendix">
+<h2>Appendix B: Some Closing Remarks</h2>
+<p>Hopefully this long example shows that you <em>can</em> style
+sections, so long as they are used to indicate actual sections.</p>
+</section>
+#### 4.3.4 The nav element
+Element/nav
+Support in all current engines.
+Firefox4+Safari5+Chrome5+Opera11.1+Edge79+Edge (Legacy)12+Internet Explorer9+Firefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android11.1+
+Categories:
+Flow content.
+Sectioning content.
+Palpable content.
+Contexts in which this element can be used:
+Where sectioning content is expected.
+Content model:
+Flow content.
+Tag omission in text/html:
+Neither tag is omissible.
+Content attributes:
+Global attributes
+Accessibility considerations:
+For authors.
+For implementers.
+Sanitization:
+Default.
+DOM interface:
+Uses HTMLElement.
+The nav element represents a section of a page that links to other
+pages or to parts within the page: a section with navigation links.
+Not all groups of links on a page need to be in a nav element —
+the element is primarily intended for sections that consist of major navigation blocks. In
+particular, it is common for footers to have a short list of links to various pages of a site,
+such as the terms of service, the home page, and a copyright page. The footer element
+alone is sufficient for such cases; while a nav element can be used in such cases, it
+is usually unnecessary.
+User agents (such as screen readers) that are targeted at users who can benefit
+from navigation information being omitted in the initial rendering, or who can benefit from
+navigation information being immediately available, can use this element as a way to determine
+what content on the page to initially skip or provide on request (or both).
+In the following example, there are two nav elements, one for primary navigation
+around the site, and one for secondary navigation around the page itself.
+<body>
+<h1>The Wiki Center Of Exampland</h1>
+<nav>
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="/events">Current Events</a></li>
+...more...
+</ul>
+</nav>
+<article>
+<header>
+<h2>Demos in Exampland</h2>
+<p>Written by A. N. Other.</p>
+</header>
+<nav>
+<ul>
+<li><a href="#public">Public demonstrations</a></li>
+<li><a href="#destroy">Demolitions</a></li>
+...more...
+</ul>
+</nav>
+<div>
+<section id="public">
+<h2>Public demonstrations</h2>
+<p>...more...</p>
+</section>
+<section id="destroy">
+<h2>Demolitions</h2>
+<p>...more...</p>
+</section>
+...more...
+</div>
+<footer>
+<p><a href="?edit">Edit</a> | <a href="?delete">Delete</a> | <a href="?Rename">Rename</a></p>
+</footer>
+</article>
+<footer>
+<p><small>© copyright 1998 Exampland Emperor</small></p>
+</footer>
+</body>
+In the following example, the page has several places where links are present, but only one of
+those places is considered a navigation section.
+<body itemscope itemtype="http://schema.org/Blog">
+<header>
+<h1>Wake up sheeple!</h1>
+<p><a href="news.html">News</a> -
+<a href="blog.html">Blog</a> -
+<a href="forums.html">Forums</a></p>
+<p>Last Modified: <span itemprop="dateModified">2009-04-01</span></p>
+<nav>
+<h2>Navigation</h2>
+<ul>
+<li><a href="articles.html">Index of all articles</a></li>
+<li><a href="today.html">Things sheeple need to wake up for today</a></li>
+<li><a href="successes.html">Sheeple we have managed to wake</a></li>
+</ul>
+</nav>
+</header>
+<main>
+<article itemprop="blogPosts" itemscope itemtype="http://schema.org/BlogPosting">
+<header>
+<h2 itemprop="headline">My Day at the Beach</h2>
+</header>
+<div itemprop="articleBody">
+<p>Today I went to the beach and had a lot of fun.</p>
+...more content...
+</div>
+<footer>
+<p>Posted <time itemprop="datePublished" datetime="2009-10-10">Thursday</time>.</p>
+</footer>
+</article>
+...more blog posts...
+</main>
+<footer>
+<p>Copyright ©
+<span itemprop="copyrightYear">2010</span>
+<span itemprop="copyrightHolder">The Example Company</span>
+</p>
+<p><a href="about.html">About</a> -
+<a href="policy.html">Privacy Policy</a> -
+<a href="contact.html">Contact Us</a></p>
+</footer>
+</body>
+You can also see microdata annotations in the above example that use the schema.org vocabulary
+to provide the publication date and other metadata about the blog post.
+A nav element doesn't have to contain a list, it can contain other kinds of
+content as well. In this navigation block, links are provided in prose:
+<nav>
+<h1>Navigation</h1>
+<p>You are on my home page. To the north lies <a href="/blog">my
+blog</a>, from whence the sounds of battle can be heard. To the east
+you can see a large mountain, upon which many <a
+href="/school">school papers</a> are littered. Far up thus mountain
+you can spy a little figure who appears to be me, desperately
+scribbling a <a href="/school/thesis">thesis</a>.</p>
+<p>To the west are several exits. One fun-looking exit is labeled <a
+href="https://games.example.com/">"games"</a>. Another more
+boring-looking exit is labeled <a
+href="https://isp.example.net/">ISP™</a>.</p>
+<p>To the south lies a dark and dank <a href="/about">contacts
+page</a>. Cobwebs cover its disused entrance, and at one point you
+see a rat run quickly out of the page.</p>
+</nav>
+In this example, nav is used in an email application, to let the user switch
+folders:
+<p><input type=button value="Compose" onclick="compose()"></p>
+<nav>
+<h1>Folders</h1>
+<ul>
+<li> <a href="/inbox" onclick="return openFolder(this.href)">Inbox</a> <span class=count></span>
+<li> <a href="/sent" onclick="return openFolder(this.href)">Sent</a>
+<li> <a href="/drafts" onclick="return openFolder(this.href)">Drafts</a>
+<li> <a href="/trash" onclick="return openFolder(this.href)">Trash</a>
+<li> <a href="/customers" onclick="return openFolder(this.href)">Customers</a>
+</ul>
+</nav>
+#### 4.3.5 The aside element
+Element/aside
+Support in all current engines.
+Firefox4+Safari5+Chrome5+Opera11.1+Edge79+Edge (Legacy)12+Internet Explorer9+Firefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android11.1+
+Categories:
+Flow content.
+Sectioning content.
+Palpable content.
+Contexts in which this element can be used:
+Where sectioning content is expected.
+Content model:
+Flow content.
+Tag omission in text/html:
+Neither tag is omissible.
+Content attributes:
+Global attributes
+Accessibility considerations:
+For authors.
+For implementers.
+Sanitization:
+Default.
+DOM interface:
+Uses HTMLElement.
+The aside element represents a section of a page that consists of
+content that is tangentially related to the content around the aside element, and
+which could be considered separate from that content. Such sections are often represented as
+sidebars in printed typography.
+The element can be used for typographical effects like pull quotes or sidebars, for
+advertising, for groups of nav elements, and for other content that is considered
+separate from the main content of the page.
+It's not appropriate to use the aside element just for
+parentheticals, since those are part of the main flow of the document.
+The following example shows how an aside is used to mark up background material on Switzerland
+in a much longer news story on Europe.
+<aside>
+<h2>Switzerland</h2>
+<p>Switzerland, a land-locked country in the middle of geographic
+Europe, has not joined the geopolitical European Union, though it is
+a signatory to a number of European treaties.</p>
+</aside>
+The following example shows how an aside is used to mark up a pull quote in a longer
+article.
+...
+<p>He later joined a large company, continuing on the same work.
+<q>I love my job. People ask me what I do for fun when I'm not at
+work. But I'm paid to do my hobby, so I never know what to
+answer. Some people wonder what they would do if they didn't have to
+work... but I know what I would do, because I was unemployed for a
+year, and I filled that time doing exactly what I do now.</q></p>
+<aside>
+<q>People ask me what I do for fun when I'm not at work. But I'm
+paid to do my hobby, so I never know what to answer.</q>
+</aside>
+<p>Of course his work — or should that be hobby? —
+isn't his only passion. He also enjoys other pleasures.</p>
+...
+The following extract shows how aside can be used for blogrolls and other side
+content on a blog:
+<body>
+<header>
+<h1>My wonderful blog</h1>
+<p>My tagline</p>
+</header>
+<aside>
+<!-- this aside contains two sections that are tangentially related
+to the page, namely, links to other blogs, and links to blog posts
+from this blog -->
+<nav>
+<h2>My blogroll</h2>
+<ul>
+<li><a href="https://blog.example.com/">Example Blog</a>
+</ul>
+</nav>
+<nav>
+<h2>Archives</h2>
+<ol reversed>
+<li><a href="/last-post">My last post</a>
+<li><a href="/first-post">My first post</a>
+</ol>
+</nav>
+</aside>
+<aside>
+<!-- this aside is tangentially related to the page also, it
+contains twitter messages from the blog author -->
+<h1>Twitter Feed</h1>
+<blockquote cite="https://twitter.example.net/t31351234">
+I'm on vacation, writing my blog.
+</blockquote>
+<blockquote cite="https://twitter.example.net/t31219752">
+I'm going to go on vacation soon.
+</blockquote>
+</aside>
+<article>
+<!-- this is a blog post -->
+<h2>My last post</h2>
+<p>This is my last post.</p>
+<footer>
+<p><a href="/last-post" rel=bookmark>Permalink</a>
+</footer>
+</article>
+<article>
+<!-- this is also a blog post -->
+<h2>My first post</h2>
+<p>This is my first post.</p>
+<aside>
+<!-- this aside is about the blog post, since it's inside the
+<article> element; it would be wrong, for instance, to put the
+blogroll here, since the blogroll isn't really related to this post
+specifically, only to the page as a whole -->
+<h2>Posting</h2>
+<p>While I'm thinking about it, I wanted to say something about
+posting. Posting is fun!</p>
+</aside>
+<footer>
+<p><a href="/first-post" rel=bookmark>Permalink</a>
+</footer>
+</article>
+<footer>
+<p><a href="/archives">Archives</a> -
+<a href="/about">About me</a> -
+<a href="/copyright">Copyright</a></p>
+</footer>
+</body>
+#### 4.3.6 The h1, h2, h3, h4, h5, and h6
+elements
+Element/Heading_Elements
+Support in all current engines.
+Firefox1+Safari4+Chrome1+Opera?Edge79+Edge (Legacy)12+Internet ExplorerYesFirefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android?
+Element/Heading_Elements
+Support in all current engines.
+Firefox1+Safari4+Chrome1+Opera?Edge79+Edge (Legacy)12+Internet ExplorerYesFirefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android?
+Element/Heading_Elements
+Support in all current engines.
+Firefox1+Safari4+Chrome1+Opera?Edge79+Edge (Legacy)12+Internet ExplorerYesFirefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android?
+Element/Heading_Elements
+Support in all current engines.
+Firefox1+Safari4+Chrome1+Opera?Edge79+Edge (Legacy)12+Internet ExplorerYesFirefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android?
+Element/Heading_Elements
+Support in all current engines.
+Firefox1+Safari4+Chrome1+Opera?Edge79+Edge (Legacy)12+Internet ExplorerYesFirefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android?
+Element/Heading_Elements
+Support in all current engines.
+Firefox1+Safari4+Chrome1+Opera?Edge79+Edge (Legacy)12+Internet ExplorerYesFirefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android?
+HTMLHeadingElement
+Support in all current engines.
+Firefox1+Safari3+Chrome1+Opera12.1+Edge79+Edge (Legacy)12+Internet Explorer5.5+Firefox Android?Safari iOS1+Chrome Android?WebView Android?Samsung Internet?Opera Android12.1+
+Categories:
+Flow content.
+Heading content.
+Palpable content.
+Contexts in which this element can be used:
+As a child of an hgroup element.
+Where heading content is expected.
+Content model:
+Phrasing content.
+Tag omission in text/html:
+Neither tag is omissible.
+Content attributes:
+Global attributes
+Accessibility considerations:
+For authors.
+For implementers.
+Sanitization:
+Default.
+DOM interface:
+[Exposed=Window]
+interface HTMLHeadingElement : HTMLElement {
+[HTMLConstructor] constructor();
+// also has obsolete members
+};
+These elements represent headings for their sections.
+The semantics and meaning of these elements are defined in the section on headings and outlines.
+These elements have a heading level given by the number in their name. The
+heading level corresponds to the levels of nested sections. The h1
+element is for a top-level section, h2 for a subsection, h3 for a
+sub-subsection, and so on.
+As far as their respective document outlines (their heading and section structures) are
+concerned, these two snippets are semantically equivalent:
+<body>
+<h1>Let's call it a draw(ing surface)</h1>
+<h2>Diving in</h2>
+<h2>Simple shapes</h2>
+<h2>Canvas coordinates</h2>
+<h3>Canvas coordinates diagram</h3>
+<h2>Paths</h2>
+</body>
+<body>
+<h1>Let's call it a draw(ing surface)</h1>
+<section>
+<h2>Diving in</h2>
+</section>
+<section>
+<h2>Simple shapes</h2>
+</section>
+<section>
+<h2>Canvas coordinates</h2>
+<section>
+<h3>Canvas coordinates diagram</h3>
+</section>
+</section>
+<section>
+<h2>Paths</h2>
+</section>
+</body>
+Authors might prefer the former style for its terseness, or the latter style for its
+additional styling hooks. Which is best is purely an issue of preferred authoring style.
+#### 4.3.7 The hgroup element
+Element/hgroup
+Support in all current engines.
+Firefox4+Safari5+Chrome5+Opera11.1+Edge79+Edge (Legacy)12+Internet Explorer9+Firefox Android?Safari iOS?Chrome Android?WebView Android2.2+Samsung Internet?Opera Android11.1+
+Categories:
+Flow content.
+Heading content.
+Palpable content.
+Contexts in which this element can be used:
+Where heading content is expected.
+Content model:
+Zero or more p elements, followed by one h1, h2,
+h3, h4, h5, or h6 element, followed by zero
+or more p elements, optionally intermixed with script-supporting
+elements.
+Tag omission in text/html:
+Neither tag is omissible.
+Content attributes:
+Global attributes
+Accessibility considerations:
+For authors.
+For implementers.
+Sanitization:
+Default.
+DOM interface:
+Uses HTMLElement.
+The hgroup element represents a heading and related content. The
+element may be used to group an h1–h6 element with one or more
+p elements containing content representing a subheading, alternative title, or
+tagline.
+Here are some examples of valid headings contained within an hgroup element.
+<hgroup>
+<h1>The reality dysfunction</h1>
+<p>Space is not the only void</p>
+</hgroup>
+<hgroup>
+<h1>Dr. Strangelove</h1>
+<p>Or: How I Learned to Stop Worrying and Love the Bomb</p>
+</hgroup>
+#### 4.3.8 The header element
+Element/header
+Support in all current engines.
+Firefox4+Safari5+Chrome5+Opera11.1+Edge79+Edge (Legacy)12+Internet Explorer9+Firefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android11.1+
+Categories:
+Flow content.
+Palpable content.
+Contexts in which this element can be used:
+Where flow content is expected.
+Content model:
+Flow content, but with no header or footer element
+descendants.
+Tag omission in text/html:
+Neither tag is omissible.
+Content attributes:
+Global attributes
+Accessibility considerations:
+If there is an ancestor sectioning content element: for authors; for implementers.
+Otherwise: for authors; for implementers.
+Sanitization:
+Default.
+DOM interface:
+Uses HTMLElement.
+The header element represents a group of introductory or navigational
+aids.
+A header element is intended to usually contain a heading
+(an h1–h6 element or an hgroup element), but this is
+not required. The header element can also be used to wrap a section's table of
+contents, a search form, or any relevant logos.
+Here are some sample headers. This first one is for a game:
+<header>
+<p>Welcome to...</p>
+<h1>Voidwars!</h1>
+</header>
+The following snippet shows how the element can be used to mark
+up a specification's header:
+<header>
+<hgroup>
+<h1>Fullscreen API</h1>
+<p>Living Standard — Last Updated 19 October 2015<p>
+</hgroup>
+<dl>
+<dt>Participate:</dt>
+<dd><a href="https://github.com/whatwg/fullscreen">GitHub whatwg/fullscreen</a></dd>
+<dt>Commits:</dt>
+<dd><a href="https://github.com/whatwg/fullscreen/commits">GitHub whatwg/fullscreen/commits</a></dd>
+</dl>
+</header>
+The header element is not sectioning content; it doesn't
+introduce a new section.
+In this example, the page has a page heading given by the h1 element, and two
+subsections whose headings are given by h2 elements. The content after the
+header element is still part of the last subsection started in the
+header element, because the header element doesn't take part in the
+outline algorithm.
+<body>
+<header>
+<h1>Little Green Guys With Guns</h1>
+<nav>
+<ul>
+<li><a href="/games">Games</a>
+<li><a href="/forum">Forum</a>
+<li><a href="/download">Download</a>
+</ul>
+</nav>
+<h2>Important News</h2> <!-- this starts a second subsection -->
+<!-- this is part of the subsection entitled "Important News" -->
+<p>To play today's games you will need to update your client.</p>
+<h2>Games</h2> <!-- this starts a third subsection -->
+</header>
+<p>You have three active games:</p>
+<!-- this is still part of the subsection entitled "Games" -->
+...
+#### 4.3.9 The footer element
+Element/footer
+Support in all current engines.
+Firefox4+Safari5+Chrome5+Opera11.1+Edge79+Edge (Legacy)12+Internet Explorer9+Firefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android11.1+
+Categories:
+Flow content.
+Palpable content.
+Contexts in which this element can be used:
+Where flow content is expected.
+Content model:
+Flow content, but with no header or footer element
+descendants.
+Tag omission in text/html:
+Neither tag is omissible.
+Content attributes:
+Global attributes
+Accessibility considerations:
+If there is an ancestor sectioning content element: for authors; for implementers.
+Otherwise: for authors; for implementers.
+Sanitization:
+Default.
+DOM interface:
+Uses HTMLElement.
+The footer element represents a footer for its nearest ancestor
+sectioning content element, or for the body element if there is no such
+ancestor. A footer typically contains information about its section such as who wrote it, links
+to related documents, copyright data, and the like.
+When the footer element contains entire sections, they represent appendices, indices, long colophons, verbose license
+agreements, and other such content.
+Contact information for the author or editor of a section belongs in an
+address element, possibly itself inside a footer. Bylines and other
+information that could be suitable for both a header or a footer can be
+placed in either (or neither). The primary purpose of these elements is merely to help the author
+write self-explanatory markup that is easy to maintain and style; they are not intended to impose
+specific structures on authors.
+Footers don't necessarily have to appear at the end of a section, though they usually
+do.
+When there is no ancestor sectioning content element, then it applies to the whole
+page.
+The footer element is not itself sectioning content; it
+doesn't introduce a new section.
+Here is a page with two footers, one at the top and one at the bottom, with the same
+content:
+<body>
+<footer><a href="../">Back to index...</a></footer>
+<hgroup>
+<h1>Lorem ipsum</h1>
+<p>The ipsum of all lorems</p>
+</hgroup>
+<p>A dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
+veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex
+ea commodo consequat. Duis aute irure dolor in reprehenderit in
+voluptate velit esse cillum dolore eu fugiat nulla
+pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+culpa qui officia deserunt mollit anim id est laborum.</p>
+<footer><a href="../">Back to index...</a></footer>
+</body>
+Here is an example which shows the footer element being used both for a site-wide
+footer and for a section footer.
+<!DOCTYPE HTML>
+<HTML LANG="en"><HEAD>
+<TITLE>The Ramblings of a Scientist</TITLE>
+<BODY>
+<H1>The Ramblings of a Scientist</H1>
+<ARTICLE>
+<H1>Episode 15</H1>
+<VIDEO SRC="/fm/015.ogv" CONTROLS PRELOAD>
+<P><A HREF="/fm/015.ogv">Download video</A>.</P>
+</VIDEO>
+<FOOTER> <!-- footer for article -->
+<P>Published <TIME DATETIME="2009-10-21T18:26-07:00">on 2009/10/21 at 6:26pm</TIME></P>
+</FOOTER>
+</ARTICLE>
+<ARTICLE>
+<H1>My Favorite Trains</H1>
+<P>I love my trains. My favorite train of all time is a Köf.</P>
+<P>It is fun to see them pull some coal cars because they look so
+dwarfed in comparison.</P>
+<FOOTER> <!-- footer for article -->
+<P>Published <TIME DATETIME="2009-09-15T14:54-07:00">on 2009/09/15 at 2:54pm</TIME></P>
+</FOOTER>
+</ARTICLE>
+<FOOTER> <!-- site wide footer -->
+<NAV>
+<P><A HREF="/credits.html">Credits</A> —
+<A HREF="/tos.html">Terms of Service</A> —
+<A HREF="/index.html">Blog Index</A></P>
+</NAV>
+<P>Copyright © 2009 Gordon Freeman</P>
+</FOOTER>
+</BODY>
+</HTML>
+Some site designs have what is sometimes referred to as "fat footers" — footers that
+contain a lot of material, including images, links to other articles, links to pages for sending
+feedback, special offers... in some ways, a whole "front page" in the footer.
+This fragment shows the bottom of a page on a site with a "fat footer":
+...
+<footer>
+<nav>
+<section>
+<h1>Articles</h1>
+<p><img src="images/somersaults.jpeg" alt=""> Go to the gym with
+our somersaults class! Our teacher Jim takes you through the paces
+in this two-part article. <a href="articles/somersaults/1">Part
+1</a> · <a href="articles/somersaults/2">Part 2</a></p>
+<p><img src="images/kindplus.jpeg"> Tired of walking on the edge of
+a clif<!-- sic -->? Our guest writer Lara shows you how to bumble
+your way through the bars. <a href="articles/kindplus/1">Read
+more...</a></p>
+<p><img src="images/crisps.jpeg"> The chips are down, now all
+that's left is a potato. What can you do with it? <a
+href="articles/crisps/1">Read more...</a></p>
+</section>
+<ul>
+<li> <a href="/about">About us...</a>
+<li> <a href="/feedback">Send feedback!</a>
+<li> <a href="/sitemap">Sitemap</a>
+</ul>
+</nav>
+<p><small>Copyright © 2015 The Snacker —
+<a href="/tos">Terms of Service</a></small></p>
+</footer>
+</body>
+#### 4.3.10 The address element
+Element/address
+Support in all current engines.
+Firefox1+Safari1+Chrome1+Opera?Edge79+Edge (Legacy)12+Internet ExplorerYesFirefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android?
+Categories:
+Flow content.
+Palpable content.
+Contexts in which this element can be used:
+Where flow content is expected.
+Content model:
+Flow content, but with no heading
+content descendants, no sectioning content
+descendants, and no header, footer, or
+address element descendants.
+Tag omission in text/html:
+Neither tag is omissible.
+Content attributes:
+Global attributes
+Accessibility considerations:
+For authors.
+For implementers.
+Sanitization:
+Default.
+DOM interface:
+Uses HTMLElement.
+The address element represents the contact information for its
+nearest article or body element ancestor. If that is the body
+element, then the contact information applies to the document as a whole.
+For example, a page at the W3C web site related to HTML might
+include the following contact information:
+<ADDRESS>
+<A href="../People/Raggett/">Dave Raggett</A>,
+<A href="../People/Arnaud/">Arnaud Le Hors</A>,
+contact persons for the <A href="Activity">W3C HTML Activity</A>
+</ADDRESS>
+The address element must not be used to represent arbitrary addresses (e.g. postal
+addresses), unless those addresses are in fact the relevant contact information. (The
+p element is the appropriate element for marking up postal addresses in general.)
+The address element must not contain information other than contact
+information.
+For example, the following is non-conforming use of the
+address element:
+<ADDRESS>Last Modified: 1999/12/24 23:37:50</ADDRESS>
+Typically, the address element would be included along with other information in a
+footer element.
+The contact information for a node node is a collection of
+address elements defined by the first applicable entry from the following list:
+If node is an article element
+If node is a body element
+The contact information consists of all the address elements that have node as an ancestor and do not have another body or
+article element ancestor that is a descendant of node.
+If node has an ancestor element that is an article element
+If node has an ancestor element that is a body element
+The contact information of node is the same as the contact information of
+the nearest article or body element ancestor, whichever is
+nearest.
+If node's node document has a body
+element
+The contact information of node is the same as the contact information of
+the body element of the Document.
+Otherwise
+There is no contact information for node.
+User agents may expose the contact information of a node to the user, or use it for other
+purposes, such as indexing sections based on the sections' contact information.
+In this example the footer contains contact information and a copyright notice.
+<footer>
+<address>
+For more details, contact
+<a href="mailto:js@example.com">John Smith</a>.
+</address>
+<p><small>© copyright 2038 Example Corp.</small></p>
+</footer>
+#### 4.3.11 Headings and outlines
+h1–h6 elements have a heading level, which is
+given by getting the element's computed
+heading level.
+These elements represent headings. The lower a heading's heading level is, the fewer ancestor
+sections the heading has.
+The outline is all headings in a
+document, in tree order.
+The outline should be used for generating document outlines, for example when
+generating tables of contents. When creating an interactive table of contents, entries should
+jump the user to the relevant heading.
+If a document has one or more headings, at least a
+single heading within the outline should have
+a heading level of 1.
+Each heading following another heading lead in the outline must
+have a heading level that is less than, equal to, or 1 greater than lead's
+heading level.
+The following example is non-conforming:
+<body>
+<h1>Apples</h1>
+<p>Apples are fruit.</p>
+<section>
+<h3>Taste</h3>
+<p>They taste lovely.</p>
+</section>
+</body>
+It could be written as follows and then it would be conforming:
+<body>
+<h1>Apples</h1>
+<p>Apples are fruit.</p>
+<section>
+<h2>Taste</h2>
+<p>They taste lovely.</p>
+</section>
+</body>
+##### 4.3.11.1 Heading levels & offsets
+The headingoffset
+content attribute allows authors to offset heading levels for descendants.
+If the headingoffset attribute is specified, it must
+have a value that is a valid non-negative integer between 0 and 8, inclusive.
+The headingreset
+content attribute is a boolean attribute. It allows authors to prevent a heading
+offset computation from traversing beyond the element with the attribute.
+To get an element's computed heading level, given an element
+element:
+Let level be 0.
+If element's local name is h1, then set
+level to 1.
+If element's local name is h2, then set
+level to 2.
+If element's local name is h3, then set
+level to 3.
+If element's local name is h4, then set
+level to 4.
+If element's local name is h5, then set
+level to 5.
+If element's local name is h6, then set
+level to 6.
+Assert: level is not 0.
+Increment level by the result of getting an element's computed heading
+offset given element.
+If level is greater than 9, then return 9.
+Return level.
+To get an element's computed heading offset, given an element element,
+perform the following steps. They return a non-negative integer.
+Let offset be 0.
+Let inclusiveAncestor be element.
+While inclusiveAncestor is not null:
+Let nextOffset be 0.
+If inclusiveAncestor is an HTML element and
+has a headingoffset attribute, then parse its value
+using the rules for parsing non-negative integers.
+If the result of parsing the value is not an error, then set nextOffset to that
+value.
+Increment offset by nextOffset.
+If inclusiveAncestor is an HTML element
+and has a headingreset attribute, then return
+offset.
+If inclusiveAncestor's parent is a shadow root, then set
+inclusiveAncestor to that shadow root's host and continue.
+Set inclusiveAncestor to inclusiveAncestor's parent
+element.
+Return offset.
+This example shows a combination of headingoffset,
+headingreset, and aria-level attributes with comments demonstrating the respective
+heading levels. This example illustrates the various combinations and is not a best practice
+example.
+<body>
+<main>
+<h1>This is a heading level 1</h1>
+<article headingoffset="1">
+<h1>This is a heading level 2</h1>
+<section headingoffset="1">
+<h1>This is a heading level 3</h1>
+<dialog headingreset>
+<h1>This is a heading level 1</h1>
+</dialog>
+</section>
+</article>
+<h1 aria-level="2">This is a heading level 2</h1>
+</main>
+</body>
+##### 4.3.11.2 Sample outlines
+The following markup fragment:
+<body>
+<hgroup id="document-title">
+<h1>HTML: Living Standard</h1>
+<p>Last Updated 12 August 2016</p>
+</hgroup>
+<p>Some intro to the document.</p>
+<h2>Table of contents</h2>
+<ol id=toc>...</ol>
+<h2>First section</h2>
+<p>Some intro to the first section.</p>
+</body>
+...results in 3 document headings:
+<h1>HTML: Living Standard</h1>
+<h2>Table of contents</h2>.
+<h2>First section</h2>.
+A rendered view of the outline might look like:
+First, here is a document, which is a book with very short chapters and subsections:
+<!DOCTYPE HTML>
+<html lang=en>
+<title>The Tax Book (all in one page)</title>
+<h1>The Tax Book</h1>
+<h2>Earning money</h2>
+<p>Earning money is good.</p>
+<h3>Getting a job</h3>
+<p>To earn money you typically need a job.</p>
+<h2>Spending money</h2>
+<p>Spending is what money is mainly used for.</p>
+<h3>Cheap things</h3>
+<p>Buying cheap things often not cost-effective.</p>
+<h3>Expensive things</h3>
+<p>The most expensive thing is often not the most cost-effective either.</p>
+<h2>Investing money</h2>
+<p>You can lend your money to other people.</p>
+<h2>Losing money</h2>
+<p>If you spend money or invest money, sooner or later you will lose money.
+<h3>Poor judgement</h3>
+<p>Usually if you lose money it's because you made a mistake.</p>
+Its outline could be presented as follows:
+The Tax Book
+Earning money
+Getting a job
+Spending money
+Cheap things
+Expensive things
+Investing money
+Losing money
+Poor judgement
+Notice that the title element is not a heading.
+A document can contain multiple top-level headings:
+<!DOCTYPE HTML>
+<html lang=en>
+<title>Alphabetic Fruit</title>
+<h1>Apples</h1>
+<p>Pomaceous.</p>
+<h1>Bananas</h1>
+<p>Edible.</p>
+<h1>Carambola</h1>
+<p>Star.</p>
+The document's outline could be presented as follows:
+Apples
+Bananas
+Carambola
+header elements do not influence the outline of a
+document:
+<!DOCTYPE HTML>
+<html lang="en">
+<title>We're adopting a child! — Ray's blog</title>
+<h1>Ray's blog</h1>
+<article>
+<header>
+<nav>
+<a href="?t=-1d">Yesterday</a>;
+<a href="?t=-7d">Last week</a>;
+<a href="?t=-1m">Last month</a>
+</nav>
+<h2>We're adopting a child!</h2>
+</header>
+<p>As of today, Janine and I have signed the papers to become
+the proud parents of baby Diane! We've been looking forward to
+this day for weeks.</p>
+</article>
+</html>
+The document's outline could be presented as follows:
+Ray's blog
+We're adopting a child!
+The following example is conforming, but not encouraged as it has no heading whose heading level is 1:
+<!DOCTYPE HTML>
+<html lang=en>
+<title>Alphabetic Fruit</title>
+<section>
+<h2>Apples</h2>
+<p>Pomaceous.</p>
+</section>
+<section>
+<h2>Bananas</h2>
+<p>Edible.</p>
+</section>
+<section>
+<h2>Carambola</h2>
+<p>Star.</p>
+</section>
+The document's outline could be presented as follows:
+Apples
+Bananas
+Carambola
+The following example is conforming, but not encouraged as the first heading's heading level is not 1:
+<!DOCTYPE HTML>
+<html lang=en>
+<title>Feathers on The Site of Encyclopedic Knowledge</title>
+<h2>A plea from our caretakers</h2>
+<p>Please, we beg of you, send help! We're stuck in the server room!</p>
+<h1>Feathers</h1>
+<p>Epidermal growths.</p>
+The document's outline could be presented as follows:
+A plea from our caretakers
+Feathers
+##### 4.3.11.3 Exposing outlines to users
+User agents are encouraged to expose page outlines to users to
+aid in navigation. This is especially true for non-visual media, e.g. screen readers.
+For instance, a user agent could map the arrow keys as follows:
+Shift + ← Left
+Go to previous heading
+Shift + → Right
+Go to next heading
+Shift + ↑ Up
+Go to next heading whose level is one less than the
+current heading's level
+Shift + ↓ Down
+Go to next heading whose level is the same as the
+current heading's level
+#### 4.3.12 Usage summary
+This section is non-normative.
+Element
+Purpose
+Example
+body
+The contents of the document.
+<!DOCTYPE HTML>
+<html lang="en">
+<head> <title>Steve Hill's Home Page</title> </head>
+<body> <p>Hard Trance is My Life.</p> </body>
+</html>
+article
+A complete, or self-contained,
+composition in a document, page, application, or site and that is, in principle, independently
+distributable or reusable, e.g. in syndication. This could be a forum post, a magazine or
+newspaper article, a blog entry, a user-submitted comment, an interactive widget or gadget, or any
+other independent item of content.
+<article>
+<img src="/tumblr_masqy2s5yn1rzfqbpo1_500.jpg" alt="Yellow smiley face with the caption 'masif'">
+<p>My fave Masif tee so far!</p>
+<footer>Posted 2 days ago</footer>
+</article>
+<article>
+<img src="/tumblr_m9tf6wSr6W1rzfqbpo1_500.jpg" alt="">
+<p>Happy 2nd birthday Masif Saturdays!!!</p>
+<footer>Posted 3 weeks ago</footer>
+</article>
+section
+A generic section of a document or
+application. A section, in this context, is a thematic grouping of content, typically with a
+heading.
+<h1>Biography</h1>
+<section>
+<h1>The facts</h1>
+<p>1500+ shows, 14+ countries</p>
+</section>
+<section>
+<h1>2010/2011 figures per year</h1>
+<p>100+ shows, 8+ countries</p>
+</section>
+nav
+A section of a page that links to other
+pages or to parts within the page: a section with navigation links.
+<nav>
+<p><a href="/">Home</a>
+<p><a href="/biog.html">Bio</a>
+<p><a href="/discog.html">Discog</a>
+</nav>
+aside
+A section of a page that consists of
+content that is tangentially related to the content around the aside element, and
+which could be considered separate from that content. Such sections are often represented as
+sidebars in printed typography.
+<h1>Music</h1>
+<p>As any burner can tell you, the event has a lot of trance.</p>
+<aside>You can buy the music we played at our <a href="buy.html">playlist page</a>.</aside>
+<p>This year we played a kind of trance that originated in Belgium, Germany, and the Netherlands in the mid-90s.</p>
+h1–h6
+A heading
+<h1>The Guide To Music On The Playa</h1>
+<h2>The Main Stage</h2>
+<p>If you want to play on a stage, you should bring one.</p>
+<h2>Amplified Music</h2>
+<p>Amplifiers up to 300W or 90dB are welcome.</p>
+hgroup
+A heading and related content. The
+element may be used to group an h1–h6 element with one or more
+p elements containing content representing a subheading, alternative title, or
+tagline.
+<hgroup>
+<h1>Burning Music</h1>
+<p>The Guide To Music On The Playa</p>
+</hgroup>
+<section>
+<hgroup>
+<h1>Main Stage</h1>
+<p>The Fiction Of A Music Festival</p>
+</hgroup>
+<p>If you want to play on a stage, you should bring one.</p>
+</section>
+<section>
+<hgroup>
+<h1>Loudness!</h1>
+<p>Questions About Amplified Music</p>
+</hgroup>
+<p>Amplifiers up to 300W or 90dB are welcome.</p>
+</section>
+header
+A group of introductory or navigational
+aids.
+<article>
+<header>
+<h1>Hard Trance is My Life</h1>
+<p>By DJ Steve Hill and Technikal</p>
+</header>
+<p>The album with the amusing punctuation has red artwork.</p>
+</article>
+footer
+A footer for its nearest ancestor
+sectioning content element, or for the body element if there is no such
+ancestor. A footer typically contains information about its section such as who wrote it, links
+to related documents, copyright data, and the like.
+<article>
+<h1>Hard Trance is My Life</h1>
+<p>The album with the amusing punctuation has red artwork.</p>
+<footer>
+<p>Artists: DJ Steve Hill and Technikal</p>
+</footer>
+</article>
+##### 4.3.12.1 Article or section?
+This section is non-normative.
+A section forms part of something else. An article is its own thing.
+But how does one know which is which? Mostly the real answer is "it depends on author intent".
+For example, one could imagine a book with a "Granny Smith" chapter that just said "These
+juicy, green apples make a great filling for apple pies."; that would be a section
+because there'd be lots of other chapters on (maybe) other kinds of apples.
+On the other hand, one could imagine a tweet or reddit comment or tumblr post or newspaper
+classified ad that just said "Granny Smith. These juicy, green apples make a great filling for
+apple pies."; it would then be articles because that was the whole thing.
+A comment on an article is not part of the article on which it is commenting,
+therefore it is its own article.

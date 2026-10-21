@@ -1,0 +1,50 @@
+source: S-6omn4l4d
+url: https://cli.github.com/manual/gh_auth_status
+title: gh auth status (GitHub CLI manual)
+publisher: GitHub (cli.github.com)
+licence: MIT (cli/cli LICENSE; the manual is generated from it)
+retrieved: 2026-10-21
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+## gh auth status
+gh auth status [flags]
+Display active account and authentication state on each known GitHub host.
+For each host, the authentication state of each known account is tested and any issues are included in the output.
+Each host section will indicate the active account, which will be used when targeting that host.
+If an account on any host (or only the one given via --hostname) has authentication issues,
+the command will exit with 1 and output to stderr. Note that when using the --json option, the command
+will always exit with zero regardless of any authentication issues, unless there is a fatal error.
+To change the active account for a host, see gh auth switch.
+### Options
+-a,
+--active
+Display the active account only
+-h,
+--hostname <string>
+Check only a specific hostname's auth status
+--jq <expression>
+Filter JSON output using a jq expression
+--json <fields>
+Output JSON with the specified fields
+-t,
+--show-token
+Display the auth token
+--template <string>
+Format JSON output using a Go template; see "gh help formatting"
+### JSON Fields
+hosts
+### Examples
+# Display authentication status for all accounts on all hosts
+$ gh auth status
+# Display authentication status for the active account on a specific host
+$ gh auth status --active --hostname github.example.com
+# Display tokens in plain text
+$ gh auth status --show-token
+# Format authentication status as JSON
+$ gh auth status --json hosts
+# Include plain text token in JSON output
+$ gh auth status --json hosts --show-token
+# Format hosts as a flat JSON array
+$ gh auth status --json hosts --jq '.hosts | add'
+### See also
+gh auth
