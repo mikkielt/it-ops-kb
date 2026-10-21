@@ -2011,6 +2011,8 @@ fd2f3b12aadd,agents/doc-lookup-sources.md,S2177,unlocated:fetch-error,,,,,2026-1
 120caa30d746,agents/docs-maintenance-agents.md,S1822,unlocated:no-match,,,,,2026-10-10
 120caa30d746,agents/docs-maintenance-agents.md,S1823,unlocated:no-match,,,,,2026-10-10
 120caa30d746,agents/docs-maintenance-agents.md,S-xote3xa2,unlocated:no-match,,,,,2026-10-10
+16734c0bd493,agents/docs-maintenance-agents.md,S1818,unlocated:no-match,,,,,2026-10-21
+16734c0bd493,agents/docs-maintenance-agents.md,S-qso27noq,unlocated:no-match,,,,,2026-10-21
 19d974494320,agents/docs-maintenance-agents.md,S1811,unlocated:no-match,,,,,2026-10-10
 19d974494320,agents/docs-maintenance-agents.md,S1812,unlocated:no-match,,,,,2026-10-10
 1bbed2e9c0a0,agents/docs-maintenance-agents.md,S1810,unlocated:no-match,,,,,2026-10-10
@@ -2028,8 +2030,6 @@ fd2f3b12aadd,agents/doc-lookup-sources.md,S2177,unlocated:fetch-error,,,,,2026-1
 45bbb2a3d2be,agents/docs-maintenance-agents.md,S1816,located,About GitHub Copilot Spaces > In this article,issu;note;file;context;copilot;spac,66c35955f7549232,"Copilot Spaces let you organize the context that Copilot uses to answer your questions. Spaces can include repositories, code, pull requests, issues, free-text content like",2026-10-10
 45bbb2a3d2be,agents/docs-maintenance-agents.md,S1817,located,Copilot Spaces is now generally available > Ever wish Copilot understood your project as well as your teammates do? Now it can.,repo;context;issu;file;git;hub;github;spac,a49996456bb70d8f,"With GitHub Copilot Spaces, you can bring together the context it needs - files, pull requests, issues, and repos - so that Copilot's responses are",2026-10-10
 473763df569f,agents/docs-maintenance-agents.md,S-rqjvl632,located,Auto-Generated Codebase Documentation and Intelligence at Scale > Technical Implementation: From Heuristics to Graphs to Agents,directory;git;history;runtim;symbol;connection;data;heuristic,0836f786598f08ef,The DeepWiki system combines multiple technical approaches in production. The process begins with heuristic-based scoring of files and file connections. These heuristics incorporate diverse features,2026-10-10
-47b1490d3632,agents/docs-maintenance-agents.md,S1818,unlocated:no-match,,,,,2026-10-10
-47b1490d3632,agents/docs-maintenance-agents.md,S-qso27noq,located,GitHub Agentic Workflows > Security and permissions,apply;buffer;job;separat;output;safe;validat;writ,a1ac261bdf16343c,"The supported agent-job path defaults to read-only GitHub access and sandboxed execution. Safe outputs buffer configured writes, validate them, and apply them in separate jobs",2026-10-10
 5f2a00ac2d15,agents/docs-maintenance-agents.md,S1813,unlocated:no-match,,,,,2026-10-10
 70aceee56a79,agents/docs-maintenance-agents.md,S1811,located,llms.txt,every;mintlify;llms-full.txt;full;page;llms.txt;txt;llms,0f6063102b245fdf,"Mintlify adds HTTP headers to every response, including Markdown responses and 404 pages, so AI tools can discover your llms.txt files and other agent resources",2026-10-10
 70aceee56a79,agents/docs-maintenance-agents.md,S1812,located,How to generate llms.txt > Share this article > Share this article,already;llms-full.txt;full;mintlify;llms.txt;txt;llms,3d15b9b96cf5b92b,"It covers hosting requirements and emphasizes that Mintlify automatically generates llms.txt, llms-full.txt, and markdown versions for all documentation to make content AI-ready out of the",2026-10-10
@@ -2043,8 +2043,6 @@ fd2f3b12aadd,agents/doc-lookup-sources.md,S2177,unlocated:fetch-error,,,,,2026-1
 97a1c3c703ed,agents/docs-maintenance-agents.md,S1822,unlocated:no-match,,,,,2026-10-10
 980ed8e07298,agents/docs-maintenance-agents.md,S1821,unlocated:no-match,,,,,2026-10-10
 980ed8e07298,agents/docs-maintenance-agents.md,S-h6jpev6e,unlocated:no-match,,,,,2026-10-10
-9bd62c6f844c,agents/docs-maintenance-agents.md,S1818,unlocated:no-match,,,,,2026-10-10
-9bd62c6f844c,agents/docs-maintenance-agents.md,S-qso27noq,unlocated:no-match,,,,,2026-10-10
 9eea95f54ded,agents/docs-maintenance-agents.md,S-ivq5edtq,unlocated:no-match,,,,,2026-10-10
 9eea95f54ded,agents/docs-maintenance-agents.md,S-vmz33l7n,unlocated:no-match,,,,,2026-10-10
 9eea95f54ded,agents/docs-maintenance-agents.md,S-wane77q5,unlocated:no-match,,,,,2026-10-10
@@ -2071,6 +2069,10 @@ ce8fc83cc5e0,agents/docs-maintenance-agents.md,S1815,located,7 reasons continuou
 d327fb8d7ba5,agents/docs-maintenance-agents.md,S-f2vfcma6,located,Configure automerge for GitHub Apps,every;automation;deploy;list;app;branch;target;merg,bdd22ca3ea3ff6ad,Add the Mintlify GitHub App to a ruleset's bypass list so that the app can create and merge pull requests without review and status check,2026-10-10
 d59da5e56df5,agents/docs-maintenance-agents.md,S1814,located,Sync don’t sink: why we built Swimm for dev teams > Swimm is the new knowledge operating system for your code > Documentation for documentation’s sake is not the goal,merg;pull;test;verify;auto-sync;auto;sync;docs,0169811124239054,"Our patented Swimm Verify and Auto-sync features automatically updates their docs at any relevant pull, merge, or CI test.",2026-10-10
 d59da5e56df5,agents/docs-maintenance-agents.md,S1815,unlocated:no-match,,,,,2026-10-10
+d99e6a9e10bb,agents/docs-maintenance-agents.md,S1809,located,DeepWiki repository wikis,automatic;based;document,e868004a694df884,"When a config file is present, we bypass the default cluster-based planning and create exactly the pages you specify - so list every page you",2026-10-21
+d99e6a9e10bb,agents/docs-maintenance-agents.md,S-tpvi7ohn,located,DeepWiki > README badge,auto;auto-refresh;refresh;badg,2d137f9497c4c659,We auto-refresh DeepWikis if their repo has a badge.,2026-10-21
+de9b067f2ef2,agents/docs-maintenance-agents.md,S1818,unlocated:no-match,,,,,2026-10-21
+de9b067f2ef2,agents/docs-maintenance-agents.md,S-qso27noq,located,GitHub Agentic Workflows > Security and permissions,apply;buffer;job;separat;output;safe;validat;writ,a1ac261bdf16343c,"The supported agent-job path defaults to read-only GitHub access and sandboxed execution. Safe outputs buffer configured writes, validate them, and apply them in separate jobs",2026-10-21
 f38127834e4a,agents/docs-maintenance-agents.md,S-xote3xa2,located,Table of Contents > Commandline usage > Commandline Parameters,mail;broken;checker;websit;address;markdown;html;link,eda6d54508315e71,"lychee is a fast, asynchronous link checker which detects broken URLs and mail addresses in local files and websites. It supports Markdown and HTML and",2026-10-10
 f82fc2b788a8,agents/docs-maintenance-agents.md,S1808,located,DeepWiki: AI docs for any repo,already;git;github.com;hub;index;launch;over;replac,84dc1de8301b4b27,"Now, we're launching DeepWiki, the free public version of Devin Wiki and Devin Search. Visit the DeepWiki for any repo by replacing github.com with deepwiki.com",2026-10-10
 37cd4c2484d6,agents/eval-question-baseline.md,S1896,located,Demystifying evals for AI agents > Going from zero to one: a roadmap to great evals for agents > Collect tasks for the initial eval dataset,20-50;drawn;small;great;simpl;failur;real;start,66133d35a82568f3,"In reality, 20-50 simple tasks drawn from real failures is a great start. After all, in early agent development, each change to the system often",2026-10-10
@@ -2344,8 +2346,6 @@ ff9576e1fef3,agents/gitops-for-agents.md,S-7na2vvh5,located,Application deployme
 72aec8b555dd,agents/headless-agent-runtimes.md,S-hobjhakf,unlocated:no-match,,,,,2026-10-21
 73a098449867,agents/headless-agent-runtimes.md,S-gu5aqnrl,located,Configure cloud environments > What's available in cloud sessions > Link output back to the session,attribution;attribution.sessionurl;claude-session;fals;sessionurl;trailer;url;commit,120089470a075e75,"Commits that Claude creates in a cloud session include a Claude-Session: <url> git trailer, and PR bodies include the session URL on its own line.",2026-10-10
 7449343f1ca4,agents/headless-agent-runtimes.md,S1801,located,Claude Code GitHub Actions > Interactive and automation modes,subject;direct;result;automation;log;post;mode;default,e243b173a1450228,"Automation mode: when the workflow provides a prompt input, Claude runs without waiting for a mention, subject only to the checks on who can trigger",2026-10-12
-7fa502463c3a,agents/headless-agent-runtimes.md,S1818,unlocated:no-match,,,,,2026-10-10
-7fa502463c3a,agents/headless-agent-runtimes.md,S-qso27noq,unlocated:no-match,,,,,2026-10-10
 81b63e2360aa,agents/headless-agent-runtimes.md,S1802,unlocated:no-match,,,,,2026-10-12
 83912bd06d1a,agents/headless-agent-runtimes.md,S1800,unlocated:no-match,,,,,2026-10-12
 856e546fd39c,agents/headless-agent-runtimes.md,S-5paxdbvt,unlocated:no-match,,,,,2026-10-21
@@ -2399,6 +2399,8 @@ e813d3116b05,agents/headless-agent-runtimes.md,S-rleo3k4b,unlocated:no-match,,,,
 ebfa15490ed6,agents/headless-agent-runtimes.md,S1806,unlocated:no-match,,,,,2026-10-10
 ebfa15490ed6,agents/headless-agent-runtimes.md,S1807,located,GitLab Announces the General Availability of GitLab Duo Agent Platform,premium;ultimat;credit;user;includ;duo;platform;agent,33a8ad475810cf48,"Pricing: For new usage-based products, including GitLab Duo Agent Platform, GitLab is introducing GitLab Credits, a virtual currency. All customers with active Premium and Ultimate",2026-10-10
 ec87d8aa5587,agents/headless-agent-runtimes.md,S-nrlbtzhc,located,XML,asleep;next;wake;time;start;launchd;job,a870d776ae0ba964,launchd will start the job the next time the computer wakes up.,2026-10-21
+ecc001268032,agents/headless-agent-runtimes.md,S1818,unlocated:no-match,,,,,2026-10-21
+ecc001268032,agents/headless-agent-runtimes.md,S-qso27noq,unlocated:no-match,,,,,2026-10-21
 f33232145b89,agents/headless-agent-runtimes.md,S1801,unlocated:no-match,,,,,2026-10-12
 f80d1c3c758e,agents/headless-agent-runtimes.md,S1803,unlocated:no-match,,,,,2026-10-21
 fa42bb4e9400,agents/headless-agent-runtimes.md,S-n7cnr4i5,located,schtasks create | Microsoft Learn > Syntax > Parameters,directory;folder;uniqu;character;system32;path;onidl;onstart,1cf9d882a7ba0ce8,/sc <scheduletype> | Specifies the schedule type. The valid values include:<br>- MINUTE - Specifies the number of minutes before the task should run.<br>- HOURLY -,2026-10-21
