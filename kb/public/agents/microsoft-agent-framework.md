@@ -48,10 +48,11 @@ status: complete
   `Microsoft.Agents.AI` is the core namespace package. [DOC S-kzoop7qs, S-sjqmzszi]
 - Go: `go get github.com/microsoft/agent-framework-go` — marked **public preview**, with declarative
   agents, RAG, CodeAct, and functional workflows explicitly not yet available. [DOC S-kzoop7qs]
-- Release tags observed on GitHub Releases (2026-09-26): Python and .NET ship on parallel,
+- Release tags observed on GitHub Releases (2026-10-21): Python and .NET ship on parallel,
   roughly weekly cadences with separate `python-<version>` and `dotnet-<version>` tag prefixes —
-  most recent seen: `python-1.19.0` (2026-09-18) and `dotnet-1.22.0` (2026-09-18, marked latest); no
-  tag was marked pre-release in the 10 most recent of each track. [DOC S-gs56zhuk] — version numbers
+  most recent seen: `python-1.22.0` and `dotnet-1.25.0` (both mid-October 2026, 2026-10-14/15), with
+  the page's "Latest" label on the newest of them; no tag was marked pre-release in the 10 most recent
+  releases listed. [DOC S-gs56zhuk] — version numbers
   and dates will drift; re-check `_tools/fetch.py --diff` before quoting a specific number.
 - `agent-framework` does **not** auto-load `.env` files; call `load_dotenv()` yourself or set
   environment variables directly. [DOC S-kzoop7qs]
