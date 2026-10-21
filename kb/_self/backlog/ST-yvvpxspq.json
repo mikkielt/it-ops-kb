@@ -2,7 +2,7 @@
   "id": "ST-yvvpxspq",
   "kind": "story",
   "title": "The kb-census skill runs the batch judge before it groups phase 2",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-gavrmuvx",
   "priority": "P2",
@@ -46,5 +46,7 @@
   "links": [
     "parked: SP-yojt6y7v review"
   ],
-  "notes": "Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft. 2026-10-20 planning: Premises: census.py judge is absent from the skill (find -1, groups at 5097); the Report section lacks supported, contradicted and not enough information."
+  "notes": "Blocks: operator request 2026-10-20, the whole census tooling epic EP-mkzkd7in before the census of EP-aolytxc5 (ST-zpe7qxtv depends on this item), so a sprint may take this parked draft. 2026-10-20 planning: Premises: census.py judge is absent from the skill (find -1, groups at 5097); the Report section lacks supported, contradicted and not enough information.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
