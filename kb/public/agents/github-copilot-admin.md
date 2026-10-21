@@ -76,8 +76,8 @@ separate from content exclusion, configured per organization or repository.
 - GitHub's current docs call the coding agent "Copilot cloud agent"; the firewall pages use that name. [DOC S1805]
 - The coding agent's outbound-traffic firewall is enabled by default with a recommended allowlist covering:
   OS package repositories (Debian, Ubuntu, Red Hat), container registries (Docker Hub, Azure Container
-  Registry, AWS ECR), language package registries (npm/PyPI/Maven/RubyGems/crates.io/Go proxy-class
-  registries), certificate authorities needed for TLS validation, and the browser hosts the Playwright MCP
+  Registry, AWS Elastic Container Registry), package registries of popular languages (C#, Dart, Go,
+  Haskell, Java, JavaScript, Perl, PHP, Python, Ruby, Rust, Swift), certificate authorities needed for TLS validation, and the browser hosts the Playwright MCP
   server needs. [DOC S1805]
 - Organizations add custom allowed destinations under **Settings > Copilot > Internet access > Organization
   custom allowlist**, as either a bare domain (matches the domain and all subdomains) or a full URL (matches
