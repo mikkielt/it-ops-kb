@@ -2,7 +2,7 @@
   "id": "ST-xfuucxk2",
   "kind": "story",
   "title": "Sprint D review fixes: gitlab gap closings cite article facts, gap notes sit on sub-bullets, four article defects",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-z6wolmvm",
   "priority": "P2",
@@ -52,5 +52,7 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Sprint D review (reviewer run 2026-10-21, $1.89, range 088d347ea1..84feabe193, 27 facts checked): S1 about 15 gitlab closings (e.g. _gaps.md:521, 1355, 1511-1523: glab auth status exit code, failure_reason list, EE merge checks, ls-remote 128, index.lock, ref-lock timeout, Free-tier self-approval) rest on code reads and local runs with no gitlab article change and no source row for the code (29a9622b, v1.124.0 absent from _sources.csv); S2 arch/k8s-gmsa-windows.md:30 contradicts :32; S3 105 notes appended on entry lines instead of sub-bullets; S3 gpo-export note not written to gpo/gpo-export.md (still says no page describes the layout); S3 mecm/log-files.md:27 'only ConfigMgr component' tagged DOC though S-pepts6gz states no exclusivity; S3 _gaps.md:1201 names a second DLP page with no source row. Rejected: S2 'entries open on 2026-10-20 with only a 2026-09 Partly resolved or Narrowed note' - the item goals count Partly resolved and Narrowed as closing notes, so those entries were not open on 2026-10-20; across every domain no entry is left open without a note dated 2026-10-21. Premise on origin/main of 23:15: check 0 lists 34 gitlab entries, check 1 lists 105 lines, check 2 lists 4 defects. Note 2 (sub-bullets): move each note to a line '  - <note>' under its entry, unchanged in text."
+  "notes": "Sprint D review (reviewer run 2026-10-21, $1.89, range 088d347ea1..84feabe193, 27 facts checked): S1 about 15 gitlab closings (e.g. _gaps.md:521, 1355, 1511-1523: glab auth status exit code, failure_reason list, EE merge checks, ls-remote 128, index.lock, ref-lock timeout, Free-tier self-approval) rest on code reads and local runs with no gitlab article change and no source row for the code (29a9622b, v1.124.0 absent from _sources.csv); S2 arch/k8s-gmsa-windows.md:30 contradicts :32; S3 105 notes appended on entry lines instead of sub-bullets; S3 gpo-export note not written to gpo/gpo-export.md (still says no page describes the layout); S3 mecm/log-files.md:27 'only ConfigMgr component' tagged DOC though S-pepts6gz states no exclusivity; S3 _gaps.md:1201 names a second DLP page with no source row. Rejected: S2 'entries open on 2026-10-20 with only a 2026-09 Partly resolved or Narrowed note' - the item goals count Partly resolved and Narrowed as closing notes, so those entries were not open on 2026-10-20; across every domain no entry is left open without a note dated 2026-10-21. Premise on origin/main of 23:15: check 0 lists 34 gitlab entries, check 1 lists 105 lines, check 2 lists 4 defects. Note 2 (sub-bullets): move each note to a line '  - <note>' under its entry, unchanged in text.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
