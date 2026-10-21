@@ -41,7 +41,9 @@
       },
       "class": "design",
       "answer": "Leave its row in the plan's skipped list, so the session judges it from review items else unconfirmed",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
