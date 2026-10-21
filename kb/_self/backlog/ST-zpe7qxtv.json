@@ -2,7 +2,7 @@
   "id": "ST-zpe7qxtv",
   "kind": "story",
   "title": "A census of the whole public root dated after 2026-10-20 records a verdict or a reading outcome for every live source, and dates only what it confirmed",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-aolytxc5",
   "sprint": "SP-rmp5zm5a",
   "priority": "P2",
@@ -54,5 +54,7 @@
   "depends_on": [
     "ST-2dagptub"
   ],
-  "notes": "Run with /kb-census <date> from the main checkout (census.py dispatch refuses inside .claude/worktrees), after every EP-mkzkd7in story is done. Phases 0 to 3: census.py run, the phase-2 groups by census.py dispatch and apply, census.py finish. A census.py rule found wrong in phase 1 is filed as a bug, not worked around in the log. Premise on 2026-10-20 (the first check fails): no census log dated after 2026-10-20; the newest full census is kb/public/_census/2026-09-26.csv (1907 rows), and 2754 of 4508 live sources are in no full census log. Fact units of the public root on 2026-10-20: 16886. check.py and the fact-count check pass before the work and must stay passing: they pin the kb's structure rules and that no fact is deleted across the rewrites (2026-10-20 planning)."
+  "notes": "Run with /kb-census <date> from the main checkout (census.py dispatch refuses inside .claude/worktrees), after every EP-mkzkd7in story is done. Phases 0 to 3: census.py run, the phase-2 groups by census.py dispatch and apply, census.py finish. A census.py rule found wrong in phase 1 is filed as a bug, not worked around in the log. Premise on 2026-10-20 (the first check fails): no census log dated after 2026-10-20; the newest full census is kb/public/_census/2026-09-26.csv (1907 rows), and 2754 of 4508 live sources are in no full census log. Fact units of the public root on 2026-10-20: 16886. check.py and the fact-count check pass before the work and must stay passing: they pin the kb's structure rules and that no fact is deleted across the rewrites (2026-10-20 planning).",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
