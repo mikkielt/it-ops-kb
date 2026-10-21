@@ -8115,11 +8115,10 @@ fbd6bcd794a8,entra/stale-devices.md,S545,located,How To: Manage stale devices in
 055821b2bab9,gitlab/automated-merge-requests.md,S-ag7ica4f,unlocated:no-match,,,,,2026-10-10
 055821b2bab9,gitlab/automated-merge-requests.md,S-fuytyyvw,unlocated:no-match,,,,,2026-10-10
 055821b2bab9,gitlab/automated-merge-requests.md,S-l6s4hfqp,unlocated:no-match,,,,,2026-10-10
-055821b2bab9,gitlab/automated-merge-requests.md,S-naq3uqba,unlocated:fetch-error,,,,,2026-10-10
-055821b2bab9,gitlab/automated-merge-requests.md,S-qcamxpw6,unlocated:fetch-error,,,,,2026-10-10
+055821b2bab9,gitlab/automated-merge-requests.md,S-naq3uqba,unlocated:no-match,,,,,2026-10-21
+055821b2bab9,gitlab/automated-merge-requests.md,S-qcamxpw6,unlocated:no-match,,,,,2026-10-21
 055821b2bab9,gitlab/automated-merge-requests.md,S-sraelr2g,unlocated:no-match,,,,,2026-10-10
 055821b2bab9,gitlab/automated-merge-requests.md,S-vtgbttzo,unlocated:no-match,,,,,2026-10-10
-06194fad5fe8,gitlab/automated-merge-requests.md,S-4abgkvor,unlocated:no-match,,,,,2026-10-10
 068138970c3b,gitlab/automated-merge-requests.md,S-2d2dlaeq,located,Add and commit local changes > Push options > Push options for merge requests,merge_request.remove_source_branch;remove_source_branch;sourc;merge_request.auto_merg;remov;auto_merg;auto;branch,ffeab709e41962a1,mergerequest.automerge | Set the merge request to auto merge. mergerequest.removesourcebranch | Set the merge request to remove the source branch when it's merged.,2026-10-10
 068138970c3b,gitlab/automated-merge-requests.md,S-rivqro7b,unlocated:no-match,,,,,2026-10-10
 0af35188d5f0,gitlab/automated-merge-requests.md,S-qoxgdoqb,unlocated:not-text,,,,,2026-10-10
@@ -8133,30 +8132,28 @@ fbd6bcd794a8,entra/stale-devices.md,S545,located,How To: Manage stale devices in
 14dc8a163770,gitlab/automated-merge-requests.md,S-2d2dlaeq,located,Add and commit local changes > Push options > Push options for merge requests,17.1;merge_request.merge_when_pipeline_suc;merge_when_pipeline_suc;suc;deprecat;merge_request.auto_merg;auto_merg;auto,119fe3f35ba22b0d,mergerequest.mergewhenpipelinesucceeds | Deprecated in GitLab 17.11 favor of the automerge option. mergerequest.automerge | Set the merge request to auto merge.,2026-10-10
 14dc8a163770,gitlab/automated-merge-requests.md,S-rivqro7b,located,Auto-merge a merge request,command;line;merge_request;merge_request.merge_when_pipeline_suc;merge_when_pipeline_suc;option;suc;git,f93e5c3956f830cd,"To do this when pushing from the command line, use the mergerequest.mergewhenpipelinesucceeds push option. To do this from the GitLab user interface:",2026-10-10
 15cc431a5428,gitlab/automated-merge-requests.md,S-qoxgdoqb,unlocated:not-text,,,,,2026-10-10
-1614002123d1,gitlab/automated-merge-requests.md,S-4abgkvor,located,Removals in API v5 > Rebase a merge request,source_branch;target_branch;target;iid;sourc;branch;request;merg,8eaf81ba659f4c56,Automatically rebase the sourcebranch of the merge request against its targetbranch. PUT /projects/:id/mergerequests/:mergerequestiid/rebase,2026-10-10
 1786468f0297,gitlab/automated-merge-requests.md,S-2d2dlaeq,located,Add and commit local changes > Push options > Push options for merge requests,merge_request.squash;squash;17.2;merge_request.titl;titl;merge_request.description;description;merge_request,6c8d1891e8b4e63c,"mergerequest.squash | Set the merge request to squash all commits into a single commit on merge. Introduced in GitLab 17.2. mergerequest.title=""<title>"" | Set the title",2026-10-10
 185bf2be3bd1,gitlab/automated-merge-requests.md,S-2d2dlaeq,unlocated:no-match,,,,,2026-10-10
 1b1d193793af,gitlab/automated-merge-requests.md,S-7zthwzzb,located,Job token access > Control job token access to your project > Allow cross-project Git push requests from allowlisted projects,19.1;generally;availabl;push;allowlist;project,d5b1957d69052adf,Generally available in GitLab 19.1. Feature flag allowpushtoallowlistedprojects removed.,2026-10-10
 1b68ca22aa5c,gitlab/automated-merge-requests.md,S-x34uot4t,located,List pipelines > List project pipelines,order;default;encod;url-encod;path;return;url;project,09dce3b4d79c4e24,id | integer or string | Yes | The ID or URL-encoded path of the project. name | string | No | Return pipelines with,2026-10-21
-2046fd253d83,gitlab/automated-merge-requests.md,S-4abgkvor,located,Removals in API v5 > List merge requests,source_branch;target_branch;default;open;given;target;lock;clos,d55e2c42ce980d47,sourcebranch | string | No | Returns merge requests with the given source branch. state | string | No | Returns all merge requests (all),2026-10-10
 206dd0032deb,gitlab/automated-merge-requests.md,S-x34uot4t,located,List pipelines > List project pipelines,callback;manual;prepar;resourc;schedul;wait;waiting_for_callback;waiting_for_resourc,a996f85f06b6b222,"status | string | No | Return pipelines with the specified status: created, waitingforresource, preparing, waitingforcallback, pending, running, success, failed, canceling, canceled, skipped, manual, or",2026-10-21
 2668417fd7fc,gitlab/automated-merge-requests.md,S-6omn4l4d,located,gh auth status,alway;error;fatal;unless;exit;issu;authentication;account,f794cfefe44d436f,"will always exit with zero regardless of any authentication issues, unless there is a fatal error. To change the active account for a host, see",2026-10-10
-273d36e4a4d4,gitlab/automated-merge-requests.md,S-ydwwcn45,unlocated:fetch-error,,,,,2026-10-10
+273d36e4a4d4,gitlab/automated-merge-requests.md,S-ydwwcn45,located,primary.,ci_skip_branch_pipelines_for_mr;merge_request_event;mrs;event;skip;pipelin;branch;project,1d57ffd5dcc97a95,pipelines = pipelines.withpipelinesource(:mergerequestevent) if project.ciskipbranchpipelinesformrs?,2026-10-21
 28f01ce44970,gitlab/automated-merge-requests.md,S-rivqro7b,located,Auto-merge a merge request > Pipeline success for auto-merge,fast;fast-forward;forward;linear;semi;semi-linear;target;automatic,b13c03f112e066b7,"If you add new commits to the target branch, and your project uses the Merge commit with semi-linear history or Fast-forward merge method without automatic",2026-10-10
 298eb1196595,gitlab/automated-merge-requests.md,S-ijtwicvp,located,Responses > Retrieve a commit,last_pipelin;last;pipelin;sha;commit,734156cc63bdff53,id | string | SHA of the commit. lastpipeline | object | Information about the last pipeline for this commit.,2026-10-10
 3104ad53b923,gitlab/automated-merge-requests.md,S-54krfv6d,unlocated:no-match,,,,,2026-10-10
 3151816a57f5,gitlab/automated-merge-requests.md,S-fa7zbfwo,located,Synopsis > Options,gitlab.com;host;hostnam;com;authenticat;directory;current;default,cbdf44c24f5c2e27,"--hostname string The GitLab hostname for the request. Defaults to gitlab.com, or the authenticated host in the current Git directory.",2026-10-10
 322468dfac1d,gitlab/automated-merge-requests.md,S-3dktkos7,located,This check can only fail in EE,approv;approval;approvals_sync;not_approv;sync;temporarily;unapprov;request,36cee0e6493aa4dc,if checkresults.payload[:unsuccessfulcheck] == :notapproved && mergerequest.temporarilyunapproved? return :approvalssyncing,2026-10-10
 322468dfac1d,gitlab/automated-merge-requests.md,S-hhzv5qd6,unlocated:no-match,,,,,2026-10-10
-322468dfac1d,gitlab/automated-merge-requests.md,S-onak4imw,unlocated:fetch-error,,,,,2026-10-10
-322468dfac1d,gitlab/automated-merge-requests.md,S-r22oenkd,unlocated:fetch-error,,,,,2026-10-10
-322468dfac1d,gitlab/automated-merge-requests.md,S-ydwwcn45,unlocated:fetch-error,,,,,2026-10-10
+322468dfac1d,gitlab/automated-merge-requests.md,S-onak4imw,unlocated:no-match,,,,,2026-10-21
+322468dfac1d,gitlab/automated-merge-requests.md,S-r22oenkd,unlocated:no-match,,,,,2026-10-21
+322468dfac1d,gitlab/automated-merge-requests.md,S-ydwwcn45,unlocated:no-match,,,,,2026-10-21
 36b725f149fb,gitlab/automated-merge-requests.md,S-7zthwzzb,unlocated:no-match,,,,,2026-10-10
 36b725f149fb,gitlab/automated-merge-requests.md,S-rivqro7b,unlocated:no-match,,,,,2026-10-10
 39318c6968bc,gitlab/automated-merge-requests.md,S-7dwkyip6,located,,git_push_option_0;git_push_option_1;negotiat;phas;git_push_option_count;count;variabl;option,deecbdae2399f79d,"variable GITPUSHOPTIONCOUNT, and the options themselves are found in GITPUSHOPTION0, GITPUSHOPTION1,... If it is negotiated to not use the push options phase, the",2026-10-10
 3d6cb9ecb991,gitlab/automated-merge-requests.md,S-fuytyyvw,located,About branch protection rules > About branch protection settings > Require pull request reviews before merging,gh006;main;refs;remot;error;fail;head;updat,4c0ee364f1db51b8,remote: error: GH006: Protected branch update failed for refs/heads/main. remote: error: Changes have been requested.,2026-10-10
 3e6c7d043c8c,gitlab/automated-merge-requests.md,S-ygtpb7no,located,,advertisepushoption;receive.advertisepushoption;capability;client;advertis;option;true;git-receive-pack,a88f9c9d7eb85fb3,"receive.advertisePushOptions:: When set to true, git-receive-pack will advertise the push options capability to its clients.",2026-10-10
-41e7793db6cd,gitlab/automated-merge-requests.md,S-qcamxpw6,unlocated:fetch-error,,,,,2026-10-10
+41e7793db6cd,gitlab/automated-merge-requests.md,S-qcamxpw6,located,frozen_string_literal: true,code;forc;allow;project;push;protect;branch,cb040ece1183eae5,"forcepushprotectedbranch: 'You are not allowed to force push code to a protected branch on this project.',",2026-10-21
 42f6f9d42d97,gitlab/automated-merge-requests.md,S-3dktkos7,unlocated:no-match,,,,,2026-10-10
 42f6f9d42d97,gitlab/automated-merge-requests.md,S-ld3az336,unlocated:no-match,,,,,2026-10-10
 445d02fb1636,gitlab/automated-merge-requests.md,S446,located,,free;premium;ultimat,1079027ea7378e53,"Tier: Free, Premium, Ultimate",2026-10-10
@@ -8166,42 +8163,41 @@ fbd6bcd794a8,entra/stale-devices.md,S545,located,How To: Manage stale devices in
 4a1d015dbb92,gitlab/automated-merge-requests.md,S-b5jz4lop,unlocated:no-match,,,,,2026-10-10
 4a1d015dbb92,gitlab/automated-merge-requests.md,S-byugreld,located,rubocop:disable Lint/DuplicateBranch -- Need to check this first,can_be_merg;commit;dif;head;sha;sourc;branch;check,5c1e51cf1dde207a,if mergerequest.sourcebranchsha != mergerequest.mergerequestdiff&.headcommitsha checking elsif mergerequest.canbemerged?,2026-10-10
 4a1d015dbb92,gitlab/automated-merge-requests.md,S-ld3az336,unlocated:no-match,,,,,2026-10-10
+4c7726b829fb,gitlab/automated-merge-requests.md,S-4yvdwu5c,unlocated:no-match,,,,,2026-10-21
 4c9332a540fd,gitlab/automated-merge-requests.md,S-pj72raea,unlocated:no-match,,,,,2026-10-10
 4c9332a540fd,gitlab/automated-merge-requests.md,S-sraelr2g,unlocated:no-match,,,,,2026-10-10
 51c9b51d19a1,gitlab/automated-merge-requests.md,S-7zthwzzb,located,,manual;schedul;trigger;user;pipelin;push;access;job,073126a6f7eee116,"but has access to fewer resources than a personal access token. A user can trigger a job by pushing a commit, running a manual job,",2026-10-10
 532b844e29cf,gitlab/automated-merge-requests.md,S-hxibhwxc,unlocated:no-match,,,,,2026-10-10
-532b844e29cf,gitlab/automated-merge-requests.md,S-pr6irhfg,unlocated:fetch-error,,,,,2026-10-10
-532b844e29cf,gitlab/automated-merge-requests.md,S-qjtuh6hs,unlocated:fetch-error,,,,,2026-10-10
+532b844e29cf,gitlab/automated-merge-requests.md,S-pr6irhfg,located,This method returns the names of jobs that have a stopped status,allow;allow_failur;failur;job;status,a4902e3db7ac4d30,"JOBATTRS = [ :id, :name, :status, :allowfailure,",2026-10-21
+532b844e29cf,gitlab/automated-merge-requests.md,S-qjtuh6hs,unlocated:no-match,,,,,2026-10-21
 552576042995,gitlab/automated-merge-requests.md,S-k53wkeos,located,gh pr view > Options,check;decision;draft;isdraft;merg;mergeabl;mergestatestatus;review,156d71ef0153a394,"JSON Fields additions, assignees, author, autoMergeRequest, baseRefName, baseRefOid, body, changedFiles, closed, closedAt, closingIssuesReferences, comments, commits, createdAt, deletions, files, fullDatabaseId, headRefName, headRefOid, headRepository, headRepositoryOwner, id, isCrossRepository,",2026-10-21
 552576042995,gitlab/automated-merge-requests.md,S-lpepysja,unlocated:no-match,,,,,2026-10-10
 552576042995,gitlab/automated-merge-requests.md,S-qoxgdoqb,unlocated:not-text,,,,,2026-10-10
-59f1883f77bf,gitlab/automated-merge-requests.md,S-3dktkos7,unlocated:no-match,,,,,2026-10-10
-59f1883f77bf,gitlab/automated-merge-requests.md,S-4abgkvor,unlocated:no-match,,,,,2026-10-10
-59f1883f77bf,gitlab/automated-merge-requests.md,S-6pmtkm7y,unlocated:no-match,,,,,2026-10-10
-59f1883f77bf,gitlab/automated-merge-requests.md,S-byugreld,unlocated:no-match,,,,,2026-10-10
-59f1883f77bf,gitlab/automated-merge-requests.md,S-ld3az336,unlocated:no-match,,,,,2026-10-10
-59f1883f77bf,gitlab/automated-merge-requests.md,S-onak4imw,unlocated:fetch-error,,,,,2026-10-10
-59f1883f77bf,gitlab/automated-merge-requests.md,S-qjtuh6hs,unlocated:fetch-error,,,,,2026-10-10
-59f1883f77bf,gitlab/automated-merge-requests.md,S-ydwwcn45,unlocated:fetch-error,,,,,2026-10-10
+59a56dbc7310,gitlab/automated-merge-requests.md,S-3dktkos7,unlocated:no-match,,,,,2026-10-21
+59a56dbc7310,gitlab/automated-merge-requests.md,S-6pmtkm7y,unlocated:no-match,,,,,2026-10-21
+59a56dbc7310,gitlab/automated-merge-requests.md,S-byugreld,unlocated:no-match,,,,,2026-10-21
+59a56dbc7310,gitlab/automated-merge-requests.md,S-ld3az336,unlocated:no-match,,,,,2026-10-21
+59a56dbc7310,gitlab/automated-merge-requests.md,S-onak4imw,unlocated:no-match,,,,,2026-10-21
+59a56dbc7310,gitlab/automated-merge-requests.md,S-qjtuh6hs,unlocated:no-match,,,,,2026-10-21
+59a56dbc7310,gitlab/automated-merge-requests.md,S-ydwwcn45,unlocated:no-match,,,,,2026-10-21
 5b881c25a410,gitlab/automated-merge-requests.md,S-3dktkos7,unlocated:no-match,,,,,2026-10-10
-5b881c25a410,gitlab/automated-merge-requests.md,S-ydwwcn45,unlocated:fetch-error,,,,,2026-10-10
+5b881c25a410,gitlab/automated-merge-requests.md,S-ydwwcn45,unlocated:no-match,,,,,2026-10-21
 5d661afaf2ce,gitlab/automated-merge-requests.md,S-rivqro7b,located,Auto-merge a merge request > Troubleshooting > Merge request can still be merged despite a failed pipeline,highest;priority;type;run;suc;git;gitlab;lab,af9038806ac4b868,"Merge request pipelines have the highest priority for the Pipelines must succeed setting. If multiple pipeline types run for the same merge request, GitLab checks",2026-10-10
-5e9219d7c838,gitlab/automated-merge-requests.md,S-tnx2t4le,unlocated:fetch-error,,,,,2026-10-10
-5e9219d7c838,gitlab/automated-merge-requests.md,S-ydwwcn45,unlocated:fetch-error,,,,,2026-10-10
+5e9219d7c838,gitlab/automated-merge-requests.md,S-tnx2t4le,unlocated:no-match,,,,,2026-10-21
+5e9219d7c838,gitlab/automated-merge-requests.md,S-ydwwcn45,unlocated:no-match,,,,,2026-10-21
 5fafb71d3724,gitlab/automated-merge-requests.md,S-zg5iu4oe,located,gh run list > Options > JSON Fields,attempt;conclusion;createdat;databas;databaseid;displaytitl;head;headbranch,4d4b40579d600ae7,"attempt, conclusion, createdAt, databaseId, displayTitle, event, headBranch, headSha, name, number, startedAt, status, updatedAt, url, workflowDatabaseId, workflowName",2026-10-10
 5fb83aa20629,gitlab/automated-merge-requests.md,S-6pmtkm7y,unlocated:no-match,,,,,2026-10-10
 66adcbbf0608,gitlab/automated-merge-requests.md,S-7zthwzzb,located,Job token access > Control job token access to your project > Allow cross-project Git push requests from allowlisted projects,pull;warn;mirror;trigger;pipelin;push;set;job,24a1242ca5ca9b35,"When a job token push succeeds, no CI/CD pipelines are triggered in the target project. [!warning] Do not enable this setting on projects configured as",2026-10-10
 6ae2d3db7da9,gitlab/automated-merge-requests.md,S-7dwkyip6,unlocated:no-match,,,,,2026-10-10
 6bd4d6fc84f3,gitlab/automated-merge-requests.md,S-jvu5ctb6,unlocated:no-match,,,,,2026-10-10
-6e864b47c1b9,gitlab/automated-merge-requests.md,S-ou7ze25b,unlocated:fetch-error,,,,,2026-10-10
-6e864b47c1b9,gitlab/automated-merge-requests.md,S-ydwwcn45,unlocated:fetch-error,,,,,2026-10-10
+6e864b47c1b9,gitlab/automated-merge-requests.md,S-ou7ze25b,unlocated:no-match,,,,,2026-10-21
+6e864b47c1b9,gitlab/automated-merge-requests.md,S-ydwwcn45,unlocated:no-match,,,,,2026-10-21
 77c568c192ae,gitlab/automated-merge-requests.md,S-rivqro7b,located,Auto-merge a merge request,thread;developer;resolv;maintainer;role;owner;requir;merg,54fa0cca3abdcad2,"You must have the Developer, Maintainer, or Owner role for the project. If your project configuration requires it, all threads in the merge request must",2026-10-10
 7c7bbcee00a5,gitlab/automated-merge-requests.md,S-2d2dlaeq,located,Add and commit local changes > Push options > Formats for push options,auto-merg;auto;branch;merg,0ec46060f44b8184,"new merge request, targets a branch (my-target-branch), and sets auto-merge:",2026-10-10
 7f1bb5cef302,gitlab/automated-merge-requests.md,S-l6s4hfqp,unlocated:no-match,,,,,2026-10-10
-84203f978709,gitlab/automated-merge-requests.md,S-4hzaehlu,unlocated:no-match,,,,,2026-10-10
+7fc6def63c2f,gitlab/automated-merge-requests.md,S-4hzaehlu,unlocated:no-match,,,,,2026-10-21
 843694c4b0b6,gitlab/automated-merge-requests.md,S-4darq3cp,located,Create a job that must be run manually > Types of manual jobs,even;fail;suc;allow_failur;failur;default;fals;allow,8e872b22d7bde1b3,"succeed even if all of its manual jobs fail. In blocking manual jobs: allowfailure is false, which is the default setting for jobs that have",2026-10-10
 850abeaaf2f2,gitlab/automated-merge-requests.md,S-rivqro7b,unlocated:no-match,,,,,2026-10-10
-860932de0da3,gitlab/automated-merge-requests.md,S-4abgkvor,unlocated:no-match,,,,,2026-10-10
 88cdfd1d8a5e,gitlab/automated-merge-requests.md,S-ag7ica4f,located,changes are. This is also what gitlab-shell does.,lab;git;allow;code;gitlab;push;project,9054697686051e64,"cannotpushtoreadonly: ""You can't push code to a read-only GitLab instance."", pushcode: 'You are not allowed to push code to this project.'",2026-10-10
 8c7335ecc00f,gitlab/automated-merge-requests.md,S-iwjdorgq,unlocated:no-match,,,,,2026-10-10
 8c7335ecc00f,gitlab/automated-merge-requests.md,S-l6s4hfqp,unlocated:no-match,,,,,2026-10-10
@@ -8213,22 +8209,18 @@ fbd6bcd794a8,entra/stale-devices.md,S545,located,How To: Manage stale devices in
 951fede1ef9a,gitlab/automated-merge-requests.md,S-p62bjeiz,unlocated:no-match,,,,,2026-10-10
 96d930a075a1,gitlab/automated-merge-requests.md,S-2d2dlaeq,located,Add and commit local changes > Push options,2.10;later;option;git;push,f6dbba0299c2aeed,"In Git 2.10 and later, use Git push options to:",2026-10-10
 96ef1b70f8d8,gitlab/automated-merge-requests.md,S-oil5cwkh,unlocated:no-match,,,,,2026-10-10
-9a1372201787,gitlab/automated-merge-requests.md,S-qjtuh6hs,unlocated:fetch-error,,,,,2026-10-10
-9a1372201787,gitlab/automated-merge-requests.md,S-ydwwcn45,unlocated:fetch-error,,,,,2026-10-10
+9a1372201787,gitlab/automated-merge-requests.md,S-qjtuh6hs,located,frozen_string_literal: true,activ;callback;prepar;skip;waiting_for_callback;resourc;waiting_for_resourc;pend,42c950f82f674c1f,ACTIVESTATUSES = %w[waitingforresource preparing waitingforcallback pending running].freeze COMPLETEDSTATUSES = %w[success failed canceled skipped].freeze,2026-10-21
+9a1372201787,gitlab/automated-merge-requests.md,S-ydwwcn45,unlocated:no-match,,,,,2026-10-21
 9f9e52a67997,gitlab/automated-merge-requests.md,S-zg5iu4oe,unlocated:no-match,,,,,2026-10-10
 a39e3e744bec,gitlab/automated-merge-requests.md,S-lnu6swmq,located,Synopsis,configuration;gitlab_host;host;remot;context;current;git;stat,a05723ed5e07d748,"By default, this command checks the authentication state of the GitLab instance determined by your current context (git remote, GITLABHOST environment variable, or configuration).",2026-10-21
 a451485ec0eb,gitlab/automated-merge-requests.md,S-cscuur4r,unlocated:no-match,,,,,2026-10-10
 a98edda26635,gitlab/automated-merge-requests.md,S-rivqro7b,unlocated:no-match,,,,,2026-10-10
 a9d34c919588,gitlab/automated-merge-requests.md,S-7dwkyip6,unlocated:no-match,,,,,2026-10-10
 a9d34c919588,gitlab/automated-merge-requests.md,S-ygtpb7no,unlocated:no-match,,,,,2026-10-10
-aed33f496799,gitlab/automated-merge-requests.md,S-4abgkvor,unlocated:no-match,,,,,2026-10-10
-aed33f496799,gitlab/automated-merge-requests.md,S-dn5ck62j,located,gh pr list > Options,headrefnam;ref;url;name;number;base;merg;head,156d71ef0153a394,"JSON Fields additions, assignees, author, autoMergeRequest, baseRefName, baseRefOid, body, changedFiles, closed, closedAt, closingIssuesReferences, comments, commits, createdAt, deletions, files, fullDatabaseId, headRefName, headRefOid, headRepository, headRepositoryOwner, id, isCrossRepository,",2026-10-10
 b2da1843287c,gitlab/automated-merge-requests.md,S-7zthwzzb,unlocated:no-match,,,,,2026-10-10
 b9ae506aa97b,gitlab/automated-merge-requests.md,S-hxibhwxc,unlocated:no-match,,,,,2026-10-10
 b9ae506aa97b,gitlab/automated-merge-requests.md,S-rivqro7b,unlocated:no-match,,,,,2026-10-10
-b9ae506aa97b,gitlab/automated-merge-requests.md,S-tnx2t4le,unlocated:fetch-error,,,,,2026-10-10
-bd19d466a33d,gitlab/automated-merge-requests.md,S-4abgkvor,unlocated:no-match,,,,,2026-10-10
-bde337b17033,gitlab/automated-merge-requests.md,S-4abgkvor,unlocated:no-match,,,,,2026-10-10
+b9ae506aa97b,gitlab/automated-merge-requests.md,S-tnx2t4le,unlocated:no-match,,,,,2026-10-21
 c2ba0cd36181,gitlab/automated-merge-requests.md,S-7dwkyip6,unlocated:no-match,,,,,2026-10-10
 c2ba0cd36181,gitlab/automated-merge-requests.md,S-l6s4hfqp,unlocated:no-match,,,,,2026-10-10
 c8dcc6051f53,gitlab/automated-merge-requests.md,S-54krfv6d,located,gh pr create,fully;offer;prompt;fork;push;branch,41b910394790fc9a,"When the current branch isn't fully pushed to a git remote, a prompt will ask where to push the branch and offer an option to",2026-10-10
@@ -8237,10 +8229,10 @@ e3713f18204c,gitlab/automated-merge-requests.md,S-k53wkeos,located,gh pr view > 
 e463399ea4b0,gitlab/automated-merge-requests.md,S-4darq3cp,unlocated:no-match,,,,,2026-10-10
 e463399ea4b0,gitlab/automated-merge-requests.md,S-4hzaehlu,unlocated:no-match,,,,,2026-10-10
 e463399ea4b0,gitlab/automated-merge-requests.md,S-x34uot4t,located,List pipelines > List project pipelines,manual;skip;pend;cancel;fail;run;creat;pipelin,a996f85f06b6b222,"status | string | No | Return pipelines with the specified status: created, waitingforresource, preparing, waitingforcallback, pending, running, success, failed, canceling, canceled, skipped, manual, or",2026-10-21
-e56cbac14218,gitlab/automated-merge-requests.md,S-4abgkvor,unlocated:no-match,,,,,2026-10-10
+e4f2919a8ebf,gitlab/automated-merge-requests.md,S-dn5ck62j,located,gh pr list > Options,headrefnam;ref;url;name;number;base;merg;head,156d71ef0153a394,"JSON Fields additions, assignees, author, autoMergeRequest, baseRefName, baseRefOid, body, changedFiles, closed, closedAt, closingIssuesReferences, comments, commits, createdAt, deletions, files, fullDatabaseId, headRefName, headRefOid, headRepository, headRepositoryOwner, id, isCrossRepository,",2026-10-21
 e606e2aebc67,gitlab/automated-merge-requests.md,S-7zthwzzb,unlocated:no-match,,,,,2026-10-10
 f49e5b93df41,gitlab/automated-merge-requests.md,S-7l7yyool,located,gh pr checks > Options > JSON Fields,complet;completedat;description;event;link;name;start;startedat,d81eafdadfcd2184,"bucket, completedAt, description, event, link, name, startedAt, state, workflow",2026-10-21
-fa48ead62fe6,gitlab/automated-merge-requests.md,S-naq3uqba,unlocated:fetch-error,,,,,2026-10-10
+fa48ead62fe6,gitlab/automated-merge-requests.md,S-naq3uqba,unlocated:no-match,,,,,2026-10-21
 0108840f7791,gitlab/codeowners.md,S440,located,Edit merge request approval settings > Prevent approvals by users who add commits,own;file;code;owner;commit;approv,dfc50c3b6e2f3033,"Code owners who commit to a merge request cannot approve it, if the merge request affects files they own.",2026-10-10
 16acdc20c7a8,gitlab/codeowners.md,S450,located,Code Owners and approval rules > `CODEOWNERS` file,first;found;ignor;order;other;file,7f8269ee1df0ff46,"in your repository in this order. The first CODEOWNERS file found is used, and all others are ignored:",2026-10-10
 697ea288d79d,gitlab/codeowners.md,S450,located,,dedicat;gitlab.com;manag;offer;premium;self;self-manag;tier,6af4abb4e246eb74,"Tier: Premium, Ultimate Offering: GitLab.com, GitLab Self-Managed, GitLab Dedicated",2026-10-10
