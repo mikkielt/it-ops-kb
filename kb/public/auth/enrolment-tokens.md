@@ -2,7 +2,7 @@
 topic: auth/enrolment-tokens
 priority: P3
 applies_to: "Short-lived enrolment (bootstrap) tokens for joining a host to a service: Kubernetes bootstrap tokens and kubeadm token TTL, with GitLab runner authentication tokens for comparison"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-gblkbdxn, S-x6ikrxdb, S-ionrxcnv, S-udvn7k24, S-ytnvr75r, S-ssfsxd2n, S-5ohrrj7d]
 status: complete
 ---
