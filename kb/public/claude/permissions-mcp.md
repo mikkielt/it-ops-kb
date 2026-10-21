@@ -3,7 +3,7 @@ topic: claude/permissions-mcp
 priority: P1
 applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23)"
 retrieved_utc: 2026-10-21
-sources: [S742, S740, S743, S746, S-vrff4evh]
+sources: [S742, S740, S-rjw74jiz, S743, S746, S-vrff4evh]
 status: complete
 ---
 # Permission rules for MCP tools
@@ -23,7 +23,7 @@ Parameter-level matching for MCP tools is only possible via `--disallowedTools` 
 - A bare-name deny removes the tool from Claude's context entirely. [DOC S742]
 - Settings files skip any `mcp__` rule with parentheses; MCP parameter matching requires a deny rule via `--disallowedTools`. [DOC S742]
 - `allowManagedPermissionRulesOnly` makes managed settings the only source of permission rules. [DOC S742]
-- `_meta["anthropic/requiresUserInteraction"]: true` (the JSON boolean only) on a tool in `tools/list` forces its permission prompt on every call, even in acceptEdits/auto/bypassPermissions, with no "don't ask again"; matching allow rules do not skip it; `dontAsk` mode denies it; with `--permission-prompt-tool` an `allow` result is converted to a deny, while the Agent SDK `canUseTool` callback can approve it. The minimum Claude Code version is no longer stated on the MCP page. [DOC S740]
+- `_meta["anthropic/requiresUserInteraction"]: true` (the JSON boolean only) on a tool in `tools/list` forces its permission prompt on every call, even in acceptEdits/auto/bypassPermissions, with no "don't ask again"; matching allow rules do not skip it; `dontAsk` mode denies it; with `--permission-prompt-tool` an `allow` result is converted to a deny, while the Agent SDK `canUseTool` callback can approve it. The MCP page no longer states the minimum Claude Code version; the Agent SDK permissions page says the MCP annotation requires Claude Code v2.1.199 or later. [DOC S740, S-rjw74jiz]
 - Plugin-bundled server tools are named `mcp__plugin_<plugin>_<server>__<tool>`. [DOC S743]
 - Claude Code displays tool annotations and titles in the `/mcp` view (since 1.0.44). [DOC S746]
 - In the Agent SDK, `readOnlyHint` (default false) decides whether a custom tool may run in parallel with other read-only tools, and `destructiveHint` (default true) is informational only. [DOC S-vrff4evh]

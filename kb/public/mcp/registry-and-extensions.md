@@ -3,7 +3,7 @@ topic: mcp/registry-and-extensions
 priority: P2
 applies_to: "MCP Registry (preview, registry.modelcontextprotocol.io, server.json schema 2025-12-11); MCP extensions framework (spec 2026-07-28 and draft)"
 retrieved_utc: 2026-09-26
-sources: [S-gg2bczek, S-3j6fi7yk, S-bgodqwyo, S-w5egb2fu, S-rl4z6q5b, S-xmxnlqbx, S-uussqmqn, S-vl6444k5, S-vouhh5ur, S-wvioh66u, S-rji5dyla, S-blfb3mqc, S-4zkeipor, S-2hsm4de7, S-ovo7i7xn, S-rxtqmq47, S-3zrbebvf]
+sources: [S-gg2bczek, S-3j6fi7yk, S-bgodqwyo, S-w5egb2fu, S-rl4z6q5b, S-xmxnlqbx, S-uussqmqn, S-vl6444k5, S-vouhh5ur, S-wvioh66u, S-rji5dyla, S-blfb3mqc, S-mqa2z3kr, S-hrri7kcy, S-4zkeipor, S-2hsm4de7, S-ovo7i7xn, S-rxtqmq47, S-3zrbebvf]
 status: complete
 ---
 
@@ -137,11 +137,14 @@ the Skills extension (serving Agent Skills over `resources/read`) and two author
   extensions — OAuth Client Credentials (`io.modelcontextprotocol/oauth-client-credentials`) and
   Enterprise-Managed Authorization (`io.modelcontextprotocol/enterprise-managed-authorization`). [DOC
   S-rji5dyla, S-blfb3mqc]
+- Enterprise-Managed Authorization's specification file in the ext-auth repository carries the status Stable (the file
+  gives no date; the day it was promoted is recorded in `auth/delegation-kcd-obo.md`). [DOC S-hrri7kcy]
 - Client support matrix (community-maintained, as of the 2026-07-28-era snapshot): MCP Apps is supported
   by Claude (web), Claude Desktop, VS Code GitHub Copilot, Microsoft 365 Copilot, Goose, Postman, MCPJam,
-  ChatGPT, Cursor, Archestra.AI and PostHog Code; Enterprise-Managed Auth is supported by Archestra.AI;
-  Skills over MCP has partial support in ChatGPT, fast-agent and MCP Inspector; no client in the table
-  yet shows a full checkmark for OAuth Client Credentials. [DOC S-blfb3mqc]
+  ChatGPT, Cursor, Archestra.AI and PostHog Code; Enterprise-Managed Auth is supported by Archestra.AI and
+  mcpc; Skills over MCP has partial support in ChatGPT, fast-agent and MCP Inspector and a checkmark for mcpc; the only
+  client with a checkmark for OAuth Client Credentials is mcpc (the page's rendered markdown export drops the checkmark
+  cells, so the mcpc row is read from the page's source file). [DOC S-blfb3mqc, S-mqa2z3kr]
 - MCP Apps: a tool declares an interactive UI via `_meta.ui.resourceUri` pointing to a `ui://` resource;
   the host fetches and renders that HTML resource inside a sandboxed iframe (no access to parent DOM,
   cookies, or localStorage); the resource's `_meta.ui` object can set `permissions` (e.g. microphone,

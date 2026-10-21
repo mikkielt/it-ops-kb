@@ -3,7 +3,7 @@ topic: claude/enterprise-admin
 priority: P2
 applies_to: "Claude Code docs and Anthropic help center (retrieved 2026-09-26)"
 retrieved_utc: 2026-10-21
-sources: [S-gxtvjkv7, S-hoagpet2, S-xsggrooz, S-fqe5wkdo, S-2ym4fr2c, S-dkaaodgp, S-i3esfwsh, S-7cq3hwv7, S-4fzxly7f, S-7kqj6c7m, S-gu5aqnrl, S-fk46gdey, S748]
+sources: [S-gxtvjkv7, S-hoagpet2, S-xsggrooz, S-fqe5wkdo, S-2ym4fr2c, S-dkaaodgp, S-i3esfwsh, S-7cq3hwv7, S-4fzxly7f, S-7kqj6c7m, S-lcj5vy6h, S-ujqehbek, S-gu5aqnrl, S-fk46gdey, S748]
 status: complete
 ---
 
@@ -69,10 +69,11 @@ scope are covered in `claude/data-retention.md` (not repeated here).
 - Projects, by contrast, are one person's conversation that coordinates parallel cloud sessions for that person with shared repositories, instructions and memory; they are public beta on Pro and Max, rolling out gradually, and not yet on Team or Enterprise. [DOC S-fk46gdey]
 - A team in a Slack channel therefore gets what Projects do not: a shared visible thread, an organization identity with admin-set connectors, channel-level environments and organization billing under a spend limit, on the plans (Team, Enterprise) where Projects are not available. The docs' own summary: team work in shared channels is Claude Tag, personal work is Cowork or Claude Code. [DER S-4fzxly7f, S-7kqj6c7m, S-fk46gdey: the plan lists, the shared identity and the per-user scope of Projects compared]
 - Claude Tag is among the features zero data retention disables for an Enterprise organization, with the stated reason that it retains channel memory and session transcripts (see `claude/data-retention.md`). [DOC S748]
+- Claude Tag keeps context per channel and per workspace, and the support article says Owners can view, edit and delete that memory (another passage says admins can review or delete what Claude remembers, so the two pages name different roles); a channel set up for legal work keeps its tools and memory separate from an engineering channel, and a workspace inherits the organization's permissions and memory. [DOC S-lcj5vy6h]
 
 ### Compliance API (org-wide audit, distinct from data retention/ZDR)
 - The Compliance API is available to Enterprise plan organizations and to Claude Platform customers in Claude chats; organizations on Anthropic's dedicated government deployments use a separate government Compliance API page. [DOC S-fqe5wkdo]
-- [UNK] Which products the Compliance API covers beyond Claude chats (Cowork, Claude Code CLI/Desktop, Microsoft 365 add-ins, Claude Science) and which it excludes (Claude Code cloud sessions, Claude Code via the Claude Platform, Bedrock/Vertex sessions): the 2026-10-21 version of the article no longer lists them.
+- The Claude Platform page on the Compliance API says that for Claude Enterprise organizations its session endpoints return transcripts of sessions in Cowork, Claude Code, Claude Science, Claude for Microsoft 365, the Claude add-ins for Google Docs, Google Sheets and Google Slides, and Claude in Chrome: local sessions captured while users are signed in with their Claude Enterprise account, and Cowork sessions started on claude.ai web or mobile that run in Anthropic-managed cloud environments; a standalone Claude Console organization, with no parent organization, can query the Activity Feed only. [DOC S-ujqehbek]
 - Only the organization's Primary Owner can enable the Compliance API, from Organization settings > API; once enabled, Primary Owners can create keys covering all linked organizations while Owners can create keys limited to their own organization, and Admins cannot access that settings page at all. [DOC S-fqe5wkdo]
 - The API returns activity feed events, chat data, and file content across Claude deployments, and now includes audit log events. [DOC S-fqe5wkdo]
 - Audit logs (Enterprise only; Owners/Primary Owners export the last 180 days) record events such as sign-in/sign-out, invites, and conversation/project/document creation and deletion; chat and project titles and content are not in audit logs, only their identifiers. [DOC S-i3esfwsh]

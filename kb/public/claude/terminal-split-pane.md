@@ -3,7 +3,7 @@ topic: claude/terminal-split-pane
 priority: P3
 applies_to: "tmux 3.8 manual (tag published 2026-09-09), WezTerm docs and release 20240203-110809-5046fc22, Windows Terminal command-line-arguments page (updated 2025-11-12); read 2026-10-18"
 retrieved_utc: 2026-10-21
-sources: [S-3gv2hqon, S-ul3bejly, S-jrp4n5ie, S-z4bixz66, S-4ingl4hx, S-fsgzj2gz, S-rwjcajd5]
+sources: [S-3gv2hqon, S-ul3bejly, S-jrp4n5ie, S-z4bixz66, S-4ingl4hx, S-fsgzj2gz, S-rwjcajd5, S-hkjfrerh]
 status: partial
 ---
 
@@ -76,9 +76,12 @@ zip and a `setup.exe` for Windows and a zip for macOS, each beside a `.sha256` f
 - From PowerShell the semicolon between commands must be escaped with a backtick (or the line follows `--%`); from a WSL
   shell the execution alias does not work, and the page spawns it through `cmd.exe /c "wt.exe" ... \; split-pane ...`.
   [DOC S-fsgzj2gz]
-- The command-line page says `-H` splits horizontally and `-V` vertically but does not say on which side of the active pane
-  the new pane appears, whether `wt -w 0 split-pane` splits the pane the command was typed in or the active pane of the
-  last used window, or that any environment variable names the caller's pane. [UNK: looked in the command-line-arguments and actions pages, 2026-10-18; needs a run on Windows Terminal]
+- The Panes page says that splitting vertically opens the new pane to the right of the focused pane and splitting
+  horizontally opens it below, and that the `splitPane` action's `right` and `down` values equal `vertical` and `horizontal`
+  while `up` and `left` put the pane above or to the left. [DOC S-hkjfrerh]
+- The command-line page says `-H` splits horizontally and `-V` vertically but does not say whether `wt -w 0 split-pane` splits
+  the pane the command was typed in or the active pane of the last used window, or that any environment variable names the
+  caller's pane. [UNK: looked in the command-line-arguments and actions pages, 2026-10-18 and the Panes page, 2026-10-21; needs a run on Windows Terminal]
 - To make `wt` resolvable, the "app execution alias" for Windows Terminal (on by default) must be on in the Manage app
   execution aliases page; `%LOCALAPPDATA%\Microsoft\WindowsApps` should be on `PATH`. [DOC S-fsgzj2gz]
 

@@ -3,7 +3,7 @@ topic: mcp/tasks-extension
 priority: P1
 applies_to: "MCP Tasks extension io.modelcontextprotocol/tasks for 2026-07-28"
 retrieved_utc: 2026-10-21
-sources: [S713, S714, S718, S701, S740, S746, S-2j2leiio, S-mqa2z3kr]
+sources: [S713, S714, S-kkc22tjk, S718, S701, S740, S746, S-2j2leiio, S-mqa2z3kr]
 status: partial
 ---
 # Tasks extension (`io.modelcontextprotocol/tasks`)
@@ -33,6 +33,9 @@ and may `tasks/cancel`. `tasks/result` (blocking) and `tasks/list` were removed.
 - The community-maintained extension matrix lists no Tasks column and no Claude Code row. [DOC S-mqa2z3kr]
 - Claude Code's MCP page lists the client capabilities it declares on 2026-07-28 connections (elicitation form and URL) and names no Tasks extension; the changelog has no Tasks entry either. [DER S740, S746: pages searched 2026-09-28]
 - Each task is uniquely identified by a server-generated task id. [DOC S718]
+- In the earlier 2025-11-25 specification a tool declared task support in its `tools/list` entry as `execution.taskSupport`
+  with the values `"required"`, `"optional"` or `"forbidden"`; an absent field or `"forbidden"` is the default, and a client
+  must not then invoke the tool as a task. [DOC S-kkc22tjk]
 - The extension text read 2026-10-19 holds neither the word "idempot" nor a client-chosen key, so a client that times out on `tools/call` has no key in the spec to retry under that the server would recognise as the same task; a second claimant of the same work gets a second task unless the server dedups by its own means. [DER S718: absence across the extension text, with the server-generated id above]
 - The earlier experimental design (SEP-1686, in the 2025-11-25 specification) had clients generate the task id so that a retry after a timeout could not create a duplicate task: the SEP says the server "will recognize the duplicate task ID and return an error". The SEP is kept as a historical record and says the draft specification moved tasks into the extension. [DOC S-2j2leiio]
 

@@ -3,7 +3,7 @@ topic: claude/skills-and-subagents
 priority: P2
 applies_to: "Claude Code docs (code.claude.com), skills/sub-agents/agent-teams, retrieved 2026-10-12"
 retrieved_utc: 2026-10-21
-sources: [S2158, S2157, S-j22fjuka, S-hvuk3dqt, S-qdxfqzln, S-ezqg74ki, S-bisz7fay, S1824, S-gxuoqjzy, S2132]
+sources: [S2158, S2157, S-ik3kz64f, S-j22fjuka, S-hvuk3dqt, S-qdxfqzln, S-ezqg74ki, S-bisz7fay, S1824, S-gxuoqjzy, S2132]
 status: complete
 ---
 
@@ -24,6 +24,17 @@ shared task list and direct inter-agent messaging on top of ordinary subagent de
 - `description` + `when_to_use` combined is truncated at 1,536 characters in the skill listing. [DOC S2158]
 - `disable-model-invocation: true` also stops the skill from being preloaded into subagents and from running when a
   session-scoped scheduled task fires it as its prompt. [DOC S2158]
+- `/loop` (a bundled skill) re-runs a prompt while the session stays open: with an interval and a prompt (`/loop 5m check
+  the deploy`, units `s`, `m`, `h`, `d`) it makes a fixed cron schedule, rounding seconds up to a minute and an interval
+  that is no clean cron step (`7m`, `90m`) to the nearest one; with a prompt only, Claude picks a delay of one minute to
+  one hour after each iteration; with no prompt it runs a built-in maintenance prompt or the project's `.claude/loop.md`
+  (else `~/.claude/loop.md`), and a skill can be the prompt (`/loop 20m /review-pr 1234`) when Claude may invoke it on its
+  own. [DOC S-ik3kz64f]
+- A self-paced `/loop` is stopped with `Esc` while it waits, or `Ctrl+C` when Claude is idle; a fixed-interval loop and any
+  task scheduled by asking Claude directly ignore both keys, so Claude is asked to cancel it. The tools behind it are
+  `CronCreate`, `CronList` and `CronDelete` (an 8-character task id, up to 50 tasks in a session); recurring tasks expire
+  7 days after creation (one final fire), and tasks are restored by `--resume` or `--continue` unless they have expired.
+  [DOC S-ik3kz64f]
 - `context: fork` runs the skill body in a forked subagent context; `agent` picks which subagent type; `background`
   (default `true`, requires v2.1.218+) controls whether the invoking turn waits for the fork's result. [DOC S2158]
 - Boolean skill fields accept `yes/no/on/off/1/0` in any case plus `true/false`; before v2.1.218 only `true/false`
@@ -132,7 +143,8 @@ shared task list and direct inter-agent messaging on top of ordinary subagent de
 - A definition's `model: sonnet` keeps a subagent on the Sonnet alias only while nothing assigns a model earlier in the order: an orchestrator that passes a `model` for the invocation, or a session that sets `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` with a model, replaces it. [DER S2157: the resolution order above and the FORCE rule]
 - A non-fork subagent starts with a fresh, isolated context window: it does not see the parent's conversation history, the skills already invoked or the files already read; Claude writes a delegation message that summarises the task and the subagent works from it. A fork is the exception and inherits the parent conversation. [DOC S2157]
 - A non-fork subagent's startup context holds: its own system prompt (its markdown body or `prompt` field, plus appended environment details, not the Claude Code system prompt), the delegation prompt as its task message, every CLAUDE.md level the main conversation loads (including `AGENTS.md` files loaded as project instructions), a repository status snapshot, the full content of skills named in its `skills` field, and (v2.1.206+) a roster of named sibling agents when its tools include `SendMessage`. Explore and Plan skip CLAUDE.md and the status snapshot. [DOC S2157]
-- The context-window page says a subagent does its research in its own separate context window, so large reads stay out of the main one. Whether a subagent has the parent's MCP servers and skills, and whether the main session's auto memory reaches it, is [UNK]: the page as read 2026-10-21 no longer says so. [DOC S-bisz7fay]
+- The context-window page says a subagent does its research in its own separate context window, so large reads stay out of the main one. [DOC S-bisz7fay]
+- A subagent inherits the built-in tools and MCP tools available in the main conversation, narrowed by two filters: one removes a short list of tools from every subagent, the other reduces the built-in tools of a background subagent, which keeps every MCP tool. The `skills` field preloads the full content of the listed skills at startup, and a subagent can still invoke unlisted project, user and plugin skills through the Skill tool; the `memory` field gives it a persistent directory of its own (`user`, `project` or `local` scope) and has no effect when auto memory is off. [DOC S2157]
 - The docs' guidance on rules: the main conversation still holds the full CLAUDE.md when it reads a subagent's result, so most rules need not reach the subagent, but a rule that must, such as ignoring a directory, is restated in the delegation prompt. `omitClaudeMd: true` suits subagents that take everything from the delegation prompt. [DOC S2157]
 - A fork (fork mode is on by default in interactive sessions) sees the same system prompt, tools, model and message history as the main session; a non-fork subagent has a fresh context plus the prompt passed to it, and pays start-up time to gather context, which is the docs' stated reason to prefer a fork when latency matters or phases share context. [DOC S2157]
 - Only the subagent's summary comes back to the parent, plus a small metadata trailer; the page as read 2026-10-21 gives no token counts for the walkthrough's example. [DOC S-bisz7fay]

@@ -3,7 +3,7 @@ topic: claude/messages-api
 priority: P1
 applies_to: "Claude API (platform.claude.com/docs), Messages API, Message Batches API, Files API, Token Counting API, MCP connector (mcp-client-2025-11-20 beta), retrieved 2026-09-26"
 retrieved_utc: 2026-10-21
-sources: [S-osulh6sh, S-eu3n3hyf, S-5uxkh3j5, S-3pftmimx, S-wbsmegvl, S-b4bqwu2v, S-jrsntqfg, S-qpqoaaqj, S-qso6o6wu, S1847, S-bcbpadtc]
+sources: [S-osulh6sh, S-aaaxxqtu, S-eu3n3hyf, S-5uxkh3j5, S-3pftmimx, S-wbsmegvl, S-b4bqwu2v, S-jrsntqfg, S-qpqoaaqj, S-qso6o6wu, S1847, S-bcbpadtc]
 status: complete
 files: [claude/models.csv, claude/api-limits.csv]
 ---
@@ -71,9 +71,10 @@ repeat prompt caching (`agents/agent-caching.md`) or the HTTP/tool-pairing error
   "mcp_server_name": "<name>"}` to enable that server's tools (allowlist/denylist and per-tool config are
   supported on the toolset entry) [DOC S-qpqoaaqj].
 - Multiple MCP servers can be attached in one request; OAuth Bearer tokens are the supported authentication
-  mechanism [DOC S-qpqoaaqj]. The page read on 2026-10-21 no longer states that the connector is unavailable on
-  Amazon Bedrock or Google Cloud; its only availability line is that the newer beta below is on the Claude API, and
-  the feature is marked not eligible for zero data retention [UNK: cloud-platform availability of the connector].
+  mechanism [DOC S-qpqoaaqj]. The connector page's front matter lists Claude API, Claude Platform on AWS and Microsoft
+  Foundry as its beta platforms, the Features overview's Availability column for the MCP connector names the same three,
+  so Amazon Bedrock and Google Cloud are not listed for it, and the feature is marked not eligible for zero data
+  retention [DOC S-qpqoaaqj, S-aaaxxqtu].
 - Newer beta header `mcp-client-2026-09-15` records the tool list each MCP server returns and lets the caller pin it,
   so a server that changes its tools does not change what Claude sees mid-conversation; it includes everything
   `mcp-client-2025-11-20` does, so it is sent in place of that header, and is available on the Claude API. The
