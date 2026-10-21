@@ -13,5 +13,6 @@ operatingSystemVersion,"Android DA/Enterprise/AOSP, iOS/iPadOS, macOS, Windows (
 osVersion (deprecated; superseded by operatingSystemVersion),"Android DA/Enterprise/AOSP, iOS/iPadOS, macOS, Windows (managed devices and managed apps)","-eq, -ne, -in, -notIn, -startsWith, -contains, -notContains","(device.osVersion -startsWith ""10.0.18362"")",S-hddmxunx
 operatingSystemSKU,"Windows only (managed devices)","-eq, -ne, -in, -notIn, -startsWith, -contains, -notContains","(device.operatingSystemSKU -in [""Enterprise"",""EnterpriseN""])",S-hddmxunx
 appVersion,"Android, iOS/iPadOS, Windows (managed apps)","-eq, -ne, -in, -notIn, -startsWith, -contains, -notContains","(app.appVersion -startsWith ""10.0"")",S-hddmxunx
+deviceManagementType (app),"Android, iOS/iPadOS (managed apps)","-eq, -ne","(app.deviceManagementType -eq ""Unmanaged"")",S-hddmxunx
 deviceManufacturer (app),"Android, iOS/iPadOS, Windows (managed apps)","-eq, -ne, -in, -notIn, -startsWith, -contains, -notContains","(app.deviceManufacturer -eq ""Microsoft"")",S-hddmxunx
 deviceModel (app),"Android, iOS/iPadOS/visionOS, Windows (managed apps)","-eq, -ne, -in, -notIn, -startsWith, -contains, -notContains","(app.deviceModel -startsWith ""Surface Duo"")",S-hddmxunx
