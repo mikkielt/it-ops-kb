@@ -4082,7 +4082,6 @@ ef8a812033d3,arch/fluent-rust-typescript.md,S-wo2rtyeb,unlocated:no-match,,,,,20
 f0fc0ccf798a,arch/fluent-rust-typescript.md,S1709,unlocated:no-match,,,,,2026-10-14
 f0fc0ccf798a,arch/fluent-rust-typescript.md,S-c7rozbcf,located,Open Source,1.0;fluent;python;rust;syntax,a62da25da9c98067,"Fluent Syntax 1.0 was released in April 2019. Client- and server-side implementations in JS, Python, and Rust.",2026-10-14
 f0fc0ccf798a,arch/fluent-rust-typescript.md,S-vktfavae,located,,one;syntax;ftl;bundl;fluent,df2d6bc2db21c528,"/// Next, call [addresource](FluentBundle::addresource) one or more times, supplying translations in the FTL syntax.",2026-10-14
-0720df36e6b0,arch/gitlab-ci-components.md,S1700,located,Not recommended > CI/CD Catalog > View the CI/CD Catalog,guest;reporter;privat;visibl;role;sourc;user;project,61cde999b4863c82,"Private are visible only to users assigned the Guest, Planner, Reporter, Developer, Maintainer, or Owner role for the source component project.",2026-10-10
 086dca5695ae,arch/gitlab-ci-components.md,S1512,unlocated:no-match,,,,,2026-10-12
 086dca5695ae,arch/gitlab-ci-components.md,S1700,unlocated:no-match,,,,,2026-10-10
 28ca06bab0f0,arch/gitlab-ci-components.md,S1700,located,Not recommended > CI/CD Catalog > Publish a component project > Publish a new release,api;keyword;relea;publish;job;releas;catalog,3ae1e582ea4bcb37,"You must use the release keyword in a CI/CD job to create the release, not the Releases API. To publish a new version of the",2026-10-10
@@ -4091,6 +4090,7 @@ f0fc0ccf798a,arch/fluent-rust-typescript.md,S-vktfavae,located,,one;syntax;ftl;b
 4bc66ba3b333,arch/gitlab-ci-components.md,S1512,unlocated:no-match,,,,,2026-10-12
 711a57aa14eb,arch/gitlab-ci-components.md,S1700,unlocated:no-match,,,,,2026-10-10
 74ac6cd3ced8,arch/gitlab-ci-components.md,S1700,located,Not recommended > CI/CD Catalog > Publish a component project > Semantic versioning,1.0.0-alpha;alpha;1.0.0;semantic;version,48546622d06809ee,"For example, 1.0.0, 2.3.4, and 1.0.0-alpha are all valid semantic versions.",2026-10-10
+7db125cfe69a,arch/gitlab-ci-components.md,S1700,located,Not recommended > CI/CD Catalog > View the CI/CD Catalog,guest;planner;developer;reporter;privat;visibl;owner;role,61cde999b4863c82,"Private are visible only to users assigned the Guest, Planner, Reporter, Developer, Maintainer, or Owner role for the source component project.",2026-10-21
 87a6b3a79371,arch/gitlab-ci-components.md,S1512,unlocated:no-match,,,,,2026-10-12
 89657a159163,arch/gitlab-ci-components.md,S445,unlocated:no-match,,,,,2026-10-10
 a93b081bc99c,arch/gitlab-ci-components.md,S1704,located,Problem to solve,error;pipelin;component;includ;privat;project;catalog;guest,7a76246584e037a1,"Private are visible only to users assigned at least the Guest role for the source component project. After that, the users can see the project",2026-10-10

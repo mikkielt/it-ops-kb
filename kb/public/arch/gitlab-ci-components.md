@@ -35,8 +35,8 @@ a release tag pattern (e.g. `cfg-*`) fits the "release on protected tag" model c
   GitLab Dedicated and GitLab Self-Managed alike — no separate self-managed lag. [DOC S1702][DOC S1700]
 - Catalog visibility follows the source project's visibility: public components are visible to
   anyone with access to the instance, internal ones to signed-in users, and private ones only to
-  users with at least the Guest role on the source project; *using* a component additionally
-  requires at least the Reporter role. [DOC S1700]
+  users with the Guest, Planner, Reporter, Developer, Maintainer or Owner role on the source project;
+  *using* a component requires Reporter or higher. [DOC S1700]
 - A community forum thread reports the same split in practice: a Guest on a private component
   project sees the component in the Catalog but gets a permission error when a pipeline includes
   it, while Developer works. [COMMUNITY S1704]
