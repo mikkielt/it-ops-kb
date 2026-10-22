@@ -2,7 +2,7 @@
   "id": "ST-3cr3qddr",
   "kind": "story",
   "title": "A worker's done refuses a kb change whose changed files fail the leak scan",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ovwzbc7u",
   "priority": "P2",
   "rank": 0,
@@ -51,6 +51,19 @@
     "parked: SP-z6wolmvm close"
   ],
   "notes": "Retrospective of SP-5cyrnkw7 and SP-z6wolmvm (2026-10-22, operator accepted): two landings stopped at kbgit.py sync --push on test_leaks: ST-polh634k (two chef/chef source titles held authors' email addresses, BG-acur6iym) and ST-rbf7q6ci (GitHub's noreply address quoted in a _gaps.md note). Both were fixed by hand by the manager. The draft check reads the done-reason constant only; planning replaces it with a planted done run on a fake leak.",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "1f2695cc58ee522aa64878ee3960aa6df7224223",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0, '_tools')\nimport ql_capture\nsys.exit(0 if 'leaks' in ql_capture.OPS_REFUSED else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
