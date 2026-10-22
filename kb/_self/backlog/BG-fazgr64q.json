@@ -4,6 +4,7 @@
   "title": "census.py head_cited_lines raises on a cat-file missing line, and the dispatch docstrings still say a session reads only the group's files",
   "status": "draft",
   "parent": "EP-mkzkd7in",
+  "sprint": "SP-ovwzbc7u",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -16,8 +17,32 @@
     ]
   },
   "repro_reason": "a missing blob needs a ref whose tree names a blob the object store lacks, which a planted repository can build but a one-line command cannot; the repro reads where the parse sits relative to its try",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport census\nmiss = [n for n, d in (('module', census.__doc__), ('dispatch_rules', census.dispatch_rules.__doc__)) if '--add-dir' not in (d or '')]\nprint(len(miss), 'census docstrings that do not name --add-dir:', miss)\nsys.exit(1 if miss else 0)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "head_cited_lines parses the cat-file --batch output inside the try that falls back to kbfacts.cited_lines, so a missing blob falls back instead of raising IndexError",
+      "check": 1
+    },
+    {
+      "clause": "the module and dispatch_rules docstrings say the session also reads every clone under _cache/census/repos through --add-dir",
+      "check": 0
+    }
+  ],
   "touches": [
-    "_tools/census.py"
+    "_tools/census.py",
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md"
+  ],
+  "depends_on": [
+    "BG-rwo53eba"
   ],
   "links": [
     "parked: SP-rmp5zm5a review"

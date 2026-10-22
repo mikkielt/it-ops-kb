@@ -4,6 +4,7 @@
   "title": "The census result schema leaves new_rows reuse free text, so a session writes 'cite and paraphrase' and apply refuses the whole part",
   "status": "draft",
   "parent": "EP-mkzkd7in",
+  "sprint": "SP-ovwzbc7u",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -16,7 +17,8 @@
     ]
   },
   "touches": [
-    "_tools/census_result.schema.json"
+    "_tools/census_result.schema.json",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-rmp5zm5a close"

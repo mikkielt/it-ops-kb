@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "A content landing runs the lookup eval when it changes kb facts",
   "status": "draft",
+  "sprint": "SP-ovwzbc7u",
   "priority": "P2",
   "rank": 0,
   "goal": "backlog.py land runs the land_eval step (rag.py eval) for a landing that changes kb articles or data, not only for one that changes _tools/, so a fact that turns an off-kb eval row into a good answer stops the landing instead of reaching main",
@@ -16,7 +17,12 @@
     }
   ],
   "touches": [
-    "_tools/bl_land.py"
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-3cr3qddr"
   ],
   "links": [
     "parked: SP-z6wolmvm close"

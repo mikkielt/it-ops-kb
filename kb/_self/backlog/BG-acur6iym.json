@@ -4,6 +4,7 @@
   "title": "kbid.py add titles a raw source code file by its first comment line, which can hold an author email address",
   "status": "draft",
   "parent": "EP-mkzkd7in",
+  "sprint": "SP-ovwzbc7u",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -16,7 +17,9 @@
     ]
   },
   "touches": [
-    "_tools/provider.py"
+    "_tools/provider.py",
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md"
   ],
   "links": [
     "parked: SP-z6wolmvm review"

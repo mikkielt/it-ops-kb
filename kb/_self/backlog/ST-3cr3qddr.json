@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "A worker's done refuses a kb change whose changed files fail the leak scan",
   "status": "draft",
+  "sprint": "SP-ovwzbc7u",
   "priority": "P2",
   "rank": 0,
   "goal": "backlog.py done refuses, with reason leaks, an item whose commits change a kb file that the leak scan of test_leaks flags (an email address, a real-looking id or a secret outside the allowlist), so the worker fixes it in its worktree instead of the landing's sync gate failing",
@@ -18,7 +19,12 @@
   "touches": [
     "_tools/bl_land.py",
     "_tools/ql_capture.py",
-    "_tools/kbpublic.py"
+    "_tools/kbpublic.py",
+    "kb/_self/backlog.md",
+    "kb/_self/git.md",
+    "kb/_self/querylog.md",
+    "kb/_self/tools.md",
+    "kb/_self/usage.md"
   ],
   "links": [
     "parked: SP-z6wolmvm close"

@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "A research story's plan says where its findings go: gap notes only or also article facts",
   "status": "draft",
+  "sprint": "SP-ovwzbc7u",
   "priority": "P2",
   "rank": 0,
   "goal": "the sprint plan step of the kb-sprint skill has a research or gap story's goal state whether its findings go into dated ledger notes only or also into article facts with source rows, so no worker settles it with a provisional gate",
@@ -16,7 +17,10 @@
     }
   ],
   "touches": [
-    ".claude/skills/kb-sprint/SKILL.md"
+    "skills/sprint/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/backlog.md",
+    "kb/_self/maintaining.md"
   ],
   "links": [
     "parked: SP-5cyrnkw7 close"

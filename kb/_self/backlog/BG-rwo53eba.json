@@ -4,10 +4,11 @@
   "title": "A census.py dispatch session that stops at its cap leaves its edits in the group's files, so the next part commits unchecked edits and source ids with no row",
   "status": "draft",
   "parent": "EP-mkzkd7in",
+  "sprint": "SP-ovwzbc7u",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "cmd_dispatch restores each owned file of the part to its content before the session when the run returns no valid result, and prints the files it restored, so a capped or failed session leaves nothing in the tree; a check runs dispatch with a fake claude on PATH that edits an owned file and exits with a cap error, and finds the file unchanged",
+  "goal": "cmd_dispatch restores each owned file of the part to its content before the session when the run returns no valid result and prints the files it restored, so a capped or failed session leaves nothing in the tree",
   "repro": {
     "run": [
       "python3",
@@ -16,12 +17,19 @@
     ]
   },
   "repro_reason": "the behaviour needs a paid claude -p session that edits a file and then stops at its --max-budget-usd cap; the planted equivalent needs a fake claude on PATH and a census log with open rows, which the fix's check builds",
+  "clauses": [
+    {
+      "clause": "cmd_dispatch restores each owned file of the part to its content before the session when the run returns no valid result and prints the files it restored, so a capped or failed session leaves nothing in the tree",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/census.py",
-    "kb/_self/web-sources.md"
+    "kb/_self/web-sources.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-rmp5zm5a close"
   ],
-  "notes": "Found in the 2026-10-21 census phase 2 (ST-zpe7qxtv): sessions stopped at their cap after re-pointing facts to new pinned urls; dispatch discarded the result but the edits stayed, the retry and the next part's commit took them, and check.py then found 78 citations of 21 ids with no _sources.csv row (fixed by hand in the census branch, commit 'source rows for facts re-pointed by capped sessions'). The manager's phase-2 driver now snapshots and restores owned files around a failed dispatch as a stopgap. Blocks the next census run's integrity: a capped session's unchecked edits land."
+  "notes": "Found in the 2026-10-21 census phase 2 (ST-zpe7qxtv): sessions stopped at their cap after re-pointing facts to new pinned urls; dispatch discarded the result but the edits stayed, the retry and the next part's commit took them, and check.py then found 78 citations of 21 ids with no _sources.csv row (fixed by hand in the census branch, commit 'source rows for facts re-pointed by capped sessions'). The manager's phase-2 driver now snapshots and restores owned files around a failed dispatch as a stopgap. Blocks the next census run's integrity: a capped session's unchecked edits land. Planning 2026-10-22: the repro reads cmd_dispatch's source only; the worker adds a check that runs dispatch with a fake claude on PATH that edits an owned file and exits with a cap error, and finds the file unchanged (the scratchpad driver phase2.py snapshot/restore of 2026-10-21 is the model)."
 }
