@@ -36,7 +36,9 @@
       },
       "class": "design",
       "answer": "group parameter on phase2_context",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Found 2026-10-21 in the census of ST-zpe7qxtv: cProfile of `census.py brief --group mcp --part 2` on the 2026-10-21 log took 684 s, 516 s of it in review_by_source over 5601 sources and 160 s in repin_items, while the part reads 9 rows; each dispatch pays it, so the agents group (106 parts in order) would spend about 20 h on it. phase2_context is shared by groups, brief and dispatch: keep groups' sizes (it needs every row's queue record) and scope brief and dispatch to the named group's rows (owners come from cited lines, which are cheap). The census driver resumes on the fixed code once this lands.",
