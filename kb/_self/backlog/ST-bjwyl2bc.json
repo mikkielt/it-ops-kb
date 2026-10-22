@@ -2,7 +2,7 @@
   "id": "ST-bjwyl2bc",
   "kind": "story",
   "title": "The cited sources the 2026-10-21 census left unconfirmed are read and recorded confirmed, updated, superseded or gone",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-rmp5zm5a",
   "priority": "P2",
@@ -29,5 +29,7 @@
   "depends_on": [
     "ST-bbxlwm4b"
   ],
-  "notes": "Census 2026-10-21 (ST-zpe7qxtv) ended with 206 cited sources unconfirmed after two phase-2 passes: PDF or archive with no text extraction allowed 47, other 36, cap or partial read 35, newer version not readable (only the pinned url allowed) 32, HTTP 403/429/5xx 15, page does not settle 15, tool refused 14, no fetch command 6, 404 6. The tag census-2026-10-21 was not created for them."
+  "notes": "Census 2026-10-21 (ST-zpe7qxtv) ended with 206 cited sources unconfirmed after two phase-2 passes: PDF or archive with no text extraction allowed 47, other 36, cap or partial read 35, newer version not readable (only the pinned url allowed) 32, HTTP 403/429/5xx 15, page does not settle 15, tool refused 14, no fetch command 6, 404 6. The tag census-2026-10-21 was not created for them.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
