@@ -2,7 +2,7 @@
   "id": "ST-xfuucxk2",
   "kind": "story",
   "title": "Sprint D review fixes: gitlab gap closings cite article facts, gap notes sit on sub-bullets, four article defects",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-z6wolmvm",
   "priority": "P2",
@@ -93,6 +93,37 @@
     }
   ],
   "notes": "Sprint D review (reviewer run 2026-10-21, $1.89, range 088d347ea1..84feabe193, 27 facts checked): S1 about 15 gitlab closings (e.g. _gaps.md:521, 1355, 1511-1523: glab auth status exit code, failure_reason list, EE merge checks, ls-remote 128, index.lock, ref-lock timeout, Free-tier self-approval) rest on code reads and local runs with no gitlab article change and no source row for the code (29a9622b, v1.124.0 absent from _sources.csv); S2 arch/k8s-gmsa-windows.md:30 contradicts :32; S3 105 notes appended on entry lines instead of sub-bullets; S3 gpo-export note not written to gpo/gpo-export.md (still says no page describes the layout); S3 mecm/log-files.md:27 'only ConfigMgr component' tagged DOC though S-pepts6gz states no exclusivity; S3 _gaps.md:1201 names a second DLP page with no source row. Rejected: S2 'entries open on 2026-10-20 with only a 2026-09 Partly resolved or Narrowed note' - the item goals count Partly resolved and Narrowed as closing notes, so those entries were not open on 2026-10-20; across every domain no entry is left open without a note dated 2026-10-21. Premise on origin/main of 23:15: check 0 lists 34 gitlab entries, check 1 lists 105 lines, check 2 lists 4 defects. Note 2 (sub-bullets): move each note to a line '  - <note>' under its entry, unchanged in text.",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "e552d9b46b9ef1ccb593dc9d99b6c797a071e126",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re, sys\nsys.path.insert(0, '_tools')\nimport kbfacts\nes = kbfacts.ledger_entries('public/_gaps.md')\nkbfacts.link_entries(es)\ntop = lambda e: (e['explicit'] or e['via_sources'] or ['public/?'])[0].split('/', 1)[1]\nSEG = re.compile(r'(?:^|\\s)- (?=(?:Resolved|Partly resolved|Narrowed|Closed|Tried) 20)')\nREF = re.compile(r'\\b([a-z0-9-]+/[a-z0-9-]+\\.md):(\\d+)')\nTAG = re.compile(r'\\[(?:DOC|CODE|DER)\\b')\ncache, bad = {}, []\nfor e in es:\n    if not top(e).startswith('gitlab/'):\n        continue\n    for seg in SEG.split(e['text'])[1:]:\n        if not re.match(r'(?:Resolved|Partly resolved|Narrowed|Closed) 2026-10-2\\d', seg):\n            continue\n        refs = REF.findall(seg)\n        def tagged(p, n):\n            if p not in cache:\n                try:\n                    cache[p] = open('kb/public/' + p, encoding='utf-8').read().split('\\n')\n                except OSError:\n                    cache[p] = []\n            L = cache[p]\n            return 0 < int(n) <= len(L) and TAG.search(L[int(n) - 1])\n        if not refs or not all(tagged(p, n) for p, n in refs):\n            bad.append(e['line'])\n            break\nprint(len(bad), 'gitlab gap entries with a 2026-10-2x closing note that cites no tagged article fact by path:line', bad)\nsys.exit(1 if bad else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "acf4b5cc65332507"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re, sys\nP = re.compile(r'^- .*\\) - (?:Tried|Resolved|Partly resolved|Narrowed|Closed|Superseded) 20\\d\\d-')\nbad = [n for n, t in enumerate(open('kb/public/_gaps.md', encoding='utf-8'), 1) if P.match(t)]\nprint(len(bad), '_gaps.md entry lines that carry a note on the entry line instead of a sub-bullet', bad[:30])\nsys.exit(1 if bad else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "5cc2fd6e6adb3bfb"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re, sys\ndef lines(p):\n    return open('kb/public/' + p, encoding='utf-8').read().split('\\n')\nbad = []\nif any(l.startswith('- No Microsoft or kubernetes.io page states a Windows-Server-version floor') for l in lines('arch/k8s-gmsa-windows.md')):\n    bad.append('arch/k8s-gmsa-windows.md still says no kubernetes.io page states a Windows Server floor')\nif any('only ConfigMgr component' in l and '[DER' not in l for l in lines('mecm/log-files.md')):\n    bad.append('mecm/log-files.md: the \"only ConfigMgr component\" claim has no DER tag')\nif not any('AGPM' in l and '[DOC' in l for l in lines('gpo/gpo-export.md')):\n    bad.append('gpo/gpo-export.md has no DOC fact on the AGPM or managed-domain backup layout')\nids = {r.split(',', 1)[0] for r in open('kb/public/_sources.csv', encoding='utf-8')}\nfor n, l in enumerate(lines('_gaps.md'), 1):\n    if re.search(r'(?i)getting started', l) and 'DLP' in l:\n        cited = set(re.findall(r'\\bS-[a-z0-9]{8}\\b', l)) & ids\n        if len(cited) < 2:\n            bad.append('_gaps.md:%d names the endpoint DLP getting started page with %d known source id(s)' % (n, len(cited)))\nprint(len(bad), 'sprint D review article defects left:', bad)\nsys.exit(1 if bad else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3a09f9d85ed4916"
+      }
+    ]
+  }
 }
