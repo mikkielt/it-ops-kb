@@ -65,7 +65,9 @@
       },
       "class": "design",
       "answer": "UNK-with-gap",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Sprint B second-half review 2026-10-22 ($2.26, 26 files, 21 census rows): S2 _artifacts.csv:148 registers mecm/sql-views-compliance.csv under S-tnbxhz6o while 66 of its 67 rows cite S206 (manager's hand fix 1c8c847c5 assumed only the id column changed, true for log-files.csv only); S2 S206 and S212 keep artifact_sha256 for memdocs urls that answer 404, so fetch.py --verify reports them UNKNOWN; S2 gitlab/job-log-timestamps.md:22 points flags.go#L344-L349, the lines at HEAD 07bef88f52dc, while S-4pm7parz pins 49138a48 where UseTimestamps sits at L338-L343; S2 S-c7yqvidh, S-f7arhttw, S-lpohskwn recorded superseded (new Learn rows S-toiw24gw, S-54iyoh5q, S-keowoi6l) although the new page does not state the fact and agents/azure-openai-deployments.md:6,63,156,181 still cite the old ids; S3 the S-fsqu2grq note says it is cited only by the ledgers, but used_in names auth/enrolment-tokens.md, auth/issuer-token-rotation.md and gitlab/runner-registration.md. Do not record any of these unconfirmed: ST-bjwyl2bc's check allows only the 19 parked ones. Premise on origin/main of 2026-10-22: check 0 lists 3 register defects, check 1 lists 5 data defects.",
