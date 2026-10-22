@@ -46,7 +46,10 @@ Columns (one row per provider):
   raw_form        how the text is fetched: `-` (the url itself), `query:accept=text/markdown` (added query),
                   `suffix:.md` (added to the path), `header:text/markdown` (Accept header), `blob-to-raw` (a GitHub
                   or GitLab blob page read as the raw file at the same ref), `arxiv-api` (an arXiv abstract page
-                  read as its entry of the export API, an Atom feed that doc_text reduces to lines)
+                  read as its entry of the export API, an Atom feed that doc_text reduces to lines), `pypi-json` (a
+                  PyPI project page read as its JSON), `npm-registry` (an npm package page read as its registry
+                  document), `terraform-docs` (an azurerm registry docs page read as the provider's docs file on
+                  GitHub), `ec-presscorner` (a press corner page read through its documents API)
   sitemap         sitemap index url, or `-`
   sitemap_lastmod per-page (usable per page) | added-removed (only to list added and removed urls) | none | -
   redirects       where moves are recorded (redirection files, 301 chains)
@@ -803,6 +806,26 @@ def raw_url(url, row):
         m = re.match(r"https?://(?:www\.)?arxiv\.org/abs/([^?]+?)/?(?:\?.*)?$", base)
         if m:
             return f"https://export.arxiv.org/api/query?id_list={m.group(1)}", {}
+    if kind == "pypi-json":  # a project page (optionally of a release) -> its JSON, which the site's page chrome hides
+        m = re.match(r"https?://pypi\.org/project/([^/?]+)(?:/([^/?]+))?/?(?:\?.*)?$", base)
+        if m:
+            return f"https://pypi.org/pypi/{m.group(1)}/{m.group(2) + '/' if m.group(2) else ''}json", {}
+    if kind == "npm-registry":  # a package page -> its registry document (a scoped name has its slash as %2f)
+        m = re.match(r"https?://(?:www\.)?npmjs\.com/package/((?:@[^/?]+/)?[^/?]+)(?:/v/([^/?]+))?/?(?:\?.*)?$", base)
+        if m:
+            return "https://registry.npmjs.org/" + m.group(1).replace("/", "%2f") + (f"/{m.group(2)}" if m.group(2) else ""), {}
+    if kind == "terraform-docs":  # azurerm registry docs page -> the provider's docs file on GitHub (latest = main)
+        m = re.match(r"https?://registry\.terraform\.io/providers/hashicorp/azurerm/([^/]+)/docs/(resources|data-sources)/([^/?]+)/?(?:\?.*)?$", base)
+        if m:
+            ref = "main" if m.group(1) == "latest" else "v" + m.group(1).lstrip("v")
+            sub = "r" if m.group(2) == "resources" else "d"
+            return ("https://raw.githubusercontent.com/hashicorp/terraform-provider-azurerm/"
+                    f"{ref}/website/docs/{sub}/{m.group(3)}.html.markdown"), {}
+    if kind == "ec-presscorner":  # a press corner page -> its documents API (the page is client-rendered)
+        m = re.match(r"https?://ec\.europa\.eu/commission/presscorner/detail/([a-z]{2})/([a-z_]+_\d+_\d+)/?(?:\?.*)?$", base, re.I)
+        if m:
+            return ("https://ec.europa.eu/commission/presscorner/api/documents?reference="
+                    f"{m.group(2).upper().replace('_', '/')}&language={m.group(1).lower()}"), {}
     return base, {}
 
 
