@@ -1,0 +1,54 @@
+{
+  "id": "ST-aml4xyrf",
+  "kind": "story",
+  "title": "Census sessions read package and registry pages through their APIs, arXiv papers in full, gzip files and wiki remotes",
+  "status": "todo",
+  "parent": "EP-mkzkd7in",
+  "sprint": "SP-rmp5zm5a",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "python3 _tools/fetch.py text URL prints the text of a single gzip-compressed file that is no archive and of a response sent with Content-Encoding gzip; a census session reads a PyPI project page through its JSON API, an npm package page through the registry, a Terraform registry azurerm page through the provider's docs on GitHub and an EC press corner page through its documents API (provider.raw_url); an arXiv abstract source also gets a read of its PDF; a .wiki.git source gets a git ls-remote line instead of a page fetch",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import gzip, http.server, subprocess, sys, threading\nbody = {'/sgjp.tab.gz': (gzip.compress(b'planted gz row 5e6f\\n'), 'application/gzip', None),\n        '/index.json': (gzip.compress(b'{\"v\": \"planted json 7a8b\"}'), 'application/json', 'gzip')}\nclass H(http.server.BaseHTTPRequestHandler):\n    def log_message(self, *a):\n        pass\n    def do_GET(self):\n        b, t, enc = body.get(self.path, (b'', 'text/plain', None))\n        self.send_response(200 if b else 404); self.send_header('Content-Type', t)\n        if enc:\n            self.send_header('Content-Encoding', enc)\n        self.end_headers(); self.wfile.write(b)\nsrv = http.server.ThreadingHTTPServer(('127.0.0.1', 0), H)\nthreading.Thread(target=srv.serve_forever, daemon=True).start()\nbase, bad = 'http://127.0.0.1:%d' % srv.server_address[1], []\nfor path, want in (('/sgjp.tab.gz', 'planted gz row 5e6f'), ('/index.json', 'planted json 7a8b')):\n    p = subprocess.run([sys.executable, '_tools/fetch.py', 'text', base + path], capture_output=True, text=True, timeout=60)\n    if p.returncode or want not in p.stdout:\n        bad.append('%s: exit %d %r' % (path, p.returncode, (p.stdout + p.stderr)[-160:]))\nsrv.shutdown()\nprint(len(bad), 'planted gzip bodies fetch.py text did not read:', bad)\nsys.exit(1 if bad else 0)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport census, provider\nP = provider.providers(None)\nwant = {'https://pypi.org/project/keyring/': 'https://pypi.org/pypi/keyring/json',\n        'https://www.npmjs.com/package/@microsoft/learn-cli': 'https://registry.npmjs.org/@microsoft%2flearn-cli',\n        'https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace':\n            'https://raw.githubusercontent.com/hashicorp/terraform-provider-azurerm/main/website/docs/r/log_analytics_workspace.html.markdown',\n        'https://ec.europa.eu/commission/presscorner/detail/en/ip_26_1024':\n            'https://ec.europa.eu/commission/presscorner/api/documents?reference=IP/26/1024&language=en'}\nbad = []\nfor u, w in want.items():\n    got = provider.raw_url(u, provider.for_url(u, P))[0]\n    if got.lower() != w.lower():\n        bad.append((u, got))\ndef lines(u):\n    return census.read_commands(dict(kind='page', repo='', pin='', path='', evidence='', proof='', note='', url=u), {'providers': P})\nif not any('arxiv.org/pdf/1706.03762' in l for l in lines('https://arxiv.org/abs/1706.03762')):\n    bad.append(('arxiv abs gives no pdf read', lines('https://arxiv.org/abs/1706.03762')))\nif not any(l.startswith('git ls-remote ') for l in lines('https://github.com/rust-lang/rust.wiki.git')):\n    bad.append(('.wiki.git gives no git ls-remote line', lines('https://github.com/rust-lang/rust.wiki.git')))\nprint(len(bad), 'census read routes missing:', bad)\nsys.exit(1 if bad else 0)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "python3 _tools/fetch.py text URL prints the text of a single gzip-compressed file that is no archive and of a response sent with Content-Encoding gzip",
+      "check": 0
+    },
+    {
+      "clause": "a census session reads a PyPI project page through its JSON API, an npm package page through the registry, a Terraform registry azurerm page through the provider's docs on GitHub and an EC press corner page through its documents API (provider.raw_url)",
+      "check": 1
+    },
+    {
+      "clause": "an arXiv abstract source also gets a read of its PDF",
+      "check": 1
+    },
+    {
+      "clause": "a .wiki.git source gets a git ls-remote line instead of a page fetch",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/census.py",
+    "_tools/fetch.py",
+    "_tools/provider.py",
+    "_tools/providers.csv",
+    "kb/_self/web-sources.md",
+    "kb/_self/tools.md"
+  ],
+  "notes": "Operator 2026-10-22: third pass on the 54 cited sources two reruns of ST-bjwyl2bc left unconfirmed. This story covers 17 of them: S2043 S-7u4b7p5q (PyPI pages now an error page; https://pypi.org/pypi/keyring/json answers 200 JSON), S2178 (npm 403; registry.npmjs.org/@microsoft%2flearn-cli answers 200), S-5kjwbj3c S-ofreafga S-ycrujjsf (Terraform registry JavaScript-only; the provider's website/docs/r/*.html.markdown on GitHub answers 200), S-k2bxn62w S-tzbutlvs (EC press corner JavaScript-only; /presscorner/api/documents?reference=IP/26/1024&language=en answers 200 JSON), S-7uckhkxr S-u5diy2cr (arXiv abs routed to the export API, abstract only), S-te5pgsg3 S-jzqdphnx S-y76ymaxp (single .gz file, gzip content: fetch.py text tries tar and fails), S-d3lsp242 S-jhuny2li (archive members skipped as binary: the worker decides whether a printable-strings view is in scope), S-may2otwt S-y23orbo7 (.wiki.git remotes fetched as pages, 404). providers.csv raw_form drives provider.raw_url; arXiv's row maps abs to export.arxiv.org/api/query. Premise on origin/main of 2026-10-22: check 0 exits 1 (both planted gzip bodies refused), check 1 exits 1 (6 routes missing). Out of scope: EUR-Lex, cyber.gov.au, Alpine wiki, NCP, NVD, Kaggle (blocked from this host; the operator declined a browser read; filed separately)."
+}

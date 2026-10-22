@@ -28,7 +28,8 @@
   ],
   "depends_on": [
     "ST-bbxlwm4b",
-    "ST-o367qbqn"
+    "ST-o367qbqn",
+    "ST-aml4xyrf"
   ],
   "notes": "Census 2026-10-21 (ST-zpe7qxtv) ended with 206 cited sources unconfirmed after two phase-2 passes: PDF or archive with no text extraction allowed 47, other 36, cap or partial read 35, newer version not readable (only the pinned url allowed) 32, HTTP 403/429/5xx 15, page does not settle 15, tool refused 14, no fetch command 6, 404 6. The tag census-2026-10-21 was not created for them.",
   "claimed_by": "manager-dfa692a0",
