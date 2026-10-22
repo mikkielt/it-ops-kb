@@ -74,6 +74,17 @@ def last_eval(root):
     return {"state": "passed" if last.get("exit") == 0 else "failed", "when": last.get("ts")}
 
 
+def alerts(data):
+    """The alerts of the panel's data: one `eval` alert (id `kb.eval`) while the newest recorded lookup eval at a landing
+    failed; none while it passed or none is recorded."""
+    ev = data.get("eval")
+    if not isinstance(ev, dict) or ev.get("state") != "failed":
+        return []
+    when = ev.get("when")
+    return [{"kind": "eval", "id": "kb.eval", "panel": "kb", "message": "lookup eval FAILED at the last landing",
+             "since": str(when)[:16].replace("T", " ") if when else ""}]
+
+
 def tree_signature(kbcommon):
     """The name, time and size of every file under the roots: what the counts are read from."""
     out = []
