@@ -109,7 +109,7 @@ conditional note; and the EU AI Act classification/timeline including the 2026 D
   actions is the component that makes the whole an AI system; whether that system is high-risk under Annex III
   (e.g. employment, critical infrastructure) is a per-deployment question, not decided here. [DER S-twztbg3z:
   the definition's inference test and Recital 12 exclusion applied to the tool's parts]
-- Controller and processor for an internal shared service: EDPB Guidelines 07/2020 (v2.0, 2021-07-07) say it is
+- Controller and processor for an internal shared service: EDPB Guidelines 07/2020 (v2.0 adopted 2021-07-07; current v2.1, 2022-09-20, minor corrections) say it is
   usually the organisation, not a department, that is the controller; a processor must be a **separate entity**,
   so a department cannot be a processor to another department of the same entity, and staff processing under
   the controller's direct authority are not processors, while another company in the same group can be one.
