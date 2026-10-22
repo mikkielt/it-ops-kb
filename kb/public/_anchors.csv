@@ -4038,10 +4038,80 @@ f7f4098dbc18,arch/chef-windows-nodes.md,S-oh6erfbm,located,reboot Resource,mac;m
 35352e007b65,arch/cloudflare-tunnel-replicas-ssh-access.md,S-typ6g7bt,located,Configuration > Replicas and high availability > Deploy a replica,credential;locally;locally-manag;manag;name;host;run;replica,a3ba3e74f287f2f0,"To deploy a replica for a locally-managed tunnel, run cloudflared tunnel run <NAME> on an additional host using the same tunnel credentials.",2026-10-21
 9a3d15b9db2c,arch/cloudflare-tunnel-replicas-ssh-access.md,S-5u5725sq,located,Tunnel tokens,anyon;manag;remotely;remotely-manag;run;tunnel;token,27f134413993f850,A remotely-managed tunnel only requires a token to run. Anyone with the token can run the tunnel.,2026-10-21
 b9173870f94d,arch/cloudflare-tunnel-replicas-ssh-access.md,S-yaxvixjr,located,SSH with Access for Infrastructure > 5. Add an infrastructure application,unix;usernam;log;user;ssh,c13e46d7f32d0f1b,"SSH user: Enter the UNIX usernames that users can log in as (for example, root or ec2-user).",2026-10-21
+03a66519c63f,arch/content-addressed-ids-jsonl.md,S-4rjxcq6v,unlocated:no-match,,,,,2026-10-22
+088b5ff024df,arch/content-addressed-ids-jsonl.md,S-pn5cpaof,unlocated:no-match,,,,,2026-10-22
+088b5ff024df,arch/content-addressed-ids-jsonl.md,S-y6i5zuly,unlocated:no-match,,,,,2026-10-22
+175dd857e8d5,arch/content-addressed-ids-jsonl.md,S-hqrgt5kx,unlocated:no-match,,,,,2026-10-22
+184e286be45b,arch/content-addressed-ids-jsonl.md,S-7lqazmox,unlocated:no-match,,,,,2026-10-22
+184e286be45b,arch/content-addressed-ids-jsonl.md,S-c5k5fslm,unlocated:not-text,,,,,2026-10-22
+184e286be45b,arch/content-addressed-ids-jsonl.md,S-tvrordiw,unlocated:not-text,,,,,2026-10-22
+1cad4dd7dec7,arch/content-addressed-ids-jsonl.md,S-4rjxcq6v,unlocated:no-match,,,,,2026-10-22
+1e049a456a49,arch/content-addressed-ids-jsonl.md,S-wux7hanj,located,,application;mime;standardiz;type;yet;jsonl;may,81647fd2006ec85e,,2026-10-22
+1eb321d3a36b,arch/content-addressed-ids-jsonl.md,S-7lqazmox,unlocated:no-match,,,,,2026-10-22
+1eb321d3a36b,arch/content-addressed-ids-jsonl.md,S-h7eqeryo,unlocated:no-match,,,,,2026-10-22
+1eb321d3a36b,arch/content-addressed-ids-jsonl.md,S-zzvrhdyd,unlocated:no-match,,,,,2026-10-22
+20519c4339d7,arch/content-addressed-ids-jsonl.md,S-c5k5fslm,unlocated:not-text,,,,,2026-10-22
+20519c4339d7,arch/content-addressed-ids-jsonl.md,S-h7eqeryo,unlocated:no-match,,,,,2026-10-22
+20519c4339d7,arch/content-addressed-ids-jsonl.md,S-wtlhziak,unlocated:no-match,,,,,2026-10-22
+2b8c344348c2,arch/content-addressed-ids-jsonl.md,S-4rjxcq6v,unlocated:no-match,,,,,2026-10-22
+2b8c344348c2,arch/content-addressed-ids-jsonl.md,S-wtlhziak,unlocated:no-match,,,,,2026-10-22
+2b8c344348c2,arch/content-addressed-ids-jsonl.md,S-zzvrhdyd,unlocated:no-match,,,,,2026-10-22
 36071b15760c,arch/content-addressed-ids-jsonl.md,S-yhrjz7fk,located,JSON Lines > Documentation for the JSON Lines text file format,application;mime;standardiz;type;yet;jsonl;may,2c2476e48bb9f7b3,"MIME type may be application/jsonl, but this is not yet standardized",2026-10-21
+371fae5dc238,arch/content-addressed-ids-jsonl.md,S-za3ghpu4,located,,base16;base32hex;lowercas;final;experimental;case;case-insensitiv;insensitiv,3867c07ff6e27e0c,"U+0066, f, base16, Hexadecimal (lowercase), final U+0046, F, base16upper, Hexadecimal (uppercase), final U+0076, v, base32hex, RFC4648 case-insensitive - no padding - highest char, experimental",2026-10-22
+448694575437,arch/content-addressed-ids-jsonl.md,S-dgbl4wgb,unlocated:no-match,,,,,2026-10-22
+448694575437,arch/content-addressed-ids-jsonl.md,S-eperpanz,unlocated:no-match,,,,,2026-10-22
+4aaf3991052c,arch/content-addressed-ids-jsonl.md,S-h7eqeryo,unlocated:no-match,,,,,2026-10-22
+4bd60deb093a,arch/content-addressed-ids-jsonl.md,S-y6i5zuly,unlocated:no-match,,,,,2026-10-22
+5ffbf5c520c5,arch/content-addressed-ids-jsonl.md,S-wtlhziak,unlocated:no-match,,,,,2026-10-22
 6498f8e4a942,arch/content-addressed-ids-jsonl.md,S-hacajbds,located,serde_json_canonicalizer > Compare to serde_jcs,abandon;becaus;differ;issu;list;seem;serde_jc;crat,92d4691753ded869,serdejcs seems to be abandoned and the issues in that repository list a few things where it differs from the RFC.,2026-10-21
+71344144a77e,arch/content-addressed-ids-jsonl.md,S-c5k5fslm,unlocated:not-text,,,,,2026-10-22
+71344144a77e,arch/content-addressed-ids-jsonl.md,S-y6p3nnub,unlocated:no-match,,,,,2026-10-22
+7545c319d200,arch/content-addressed-ids-jsonl.md,S-wux7hanj,unlocated:no-match,,,,,2026-10-22
+76e31b4b8153,arch/content-addressed-ids-jsonl.md,S-4rjxcq6v,unlocated:no-match,,,,,2026-10-22
+8e85cf4f39ec,arch/content-addressed-ids-jsonl.md,S-h7eqeryo,unlocated:no-match,,,,,2026-10-22
+96dc64ef4a1b,arch/content-addressed-ids-jsonl.md,S-2wxyobvm,unlocated:no-match,,,,,2026-10-22
+96dc64ef4a1b,arch/content-addressed-ids-jsonl.md,S-3yvyv65p,unlocated:no-match,,,,,2026-10-22
+96dc64ef4a1b,arch/content-addressed-ids-jsonl.md,S-nv6io42x,unlocated:no-match,,,,,2026-10-22
+9a60bb87ace4,arch/content-addressed-ids-jsonl.md,S-5m7fpuo3,unlocated:no-match,,,,,2026-10-22
+9a60bb87ace4,arch/content-addressed-ids-jsonl.md,S-wux7hanj,unlocated:no-match,,,,,2026-10-22
+9d61921f75bd,arch/content-addressed-ids-jsonl.md,S-2lsfwean,unlocated:no-match,,,,,2026-10-22
+9d61921f75bd,arch/content-addressed-ids-jsonl.md,S-wtlhziak,unlocated:no-match,,,,,2026-10-22
+9e0f86133641,arch/content-addressed-ids-jsonl.md,S-6icauyji,unlocated:no-match,,,,,2026-10-22
+9e0f86133641,arch/content-addressed-ids-jsonl.md,S-tvrordiw,unlocated:not-text,,,,,2026-10-22
+9e216efbbd91,arch/content-addressed-ids-jsonl.md,S-zzvrhdyd,unlocated:no-match,,,,,2026-10-22
+a5ff3d63acf5,arch/content-addressed-ids-jsonl.md,S-7lqazmox,unlocated:no-match,,,,,2026-10-22
+a5ff3d63acf5,arch/content-addressed-ids-jsonl.md,S-c5k5fslm,unlocated:not-text,,,,,2026-10-22
+a5ff3d63acf5,arch/content-addressed-ids-jsonl.md,S-eperpanz,unlocated:no-match,,,,,2026-10-22
+a5ff3d63acf5,arch/content-addressed-ids-jsonl.md,S-pn5cpaof,unlocated:no-match,,,,,2026-10-22
+a5ff3d63acf5,arch/content-addressed-ids-jsonl.md,S-y6i5zuly,unlocated:no-match,,,,,2026-10-22
+aacd38e95d21,arch/content-addressed-ids-jsonl.md,S-dbs2gjpc,unlocated:no-match,,,,,2026-10-22
+aacd38e95d21,arch/content-addressed-ids-jsonl.md,S-silsshto,unlocated:no-match,,,,,2026-10-22
 adaa43d10128,arch/content-addressed-ids-jsonl.md,S-x5tojgxe,located,Testsuite for `rfc8785`,comput;input;known;pre;pre-comput;verbatim;implementation;referenc,2fd5a9dc9887b5ab,numgen.go and the pre-computed test inputs and known answers are taken verbatim from,2026-10-21
+bea8e8cb4427,arch/content-addressed-ids-jsonl.md,S-7lqazmox,unlocated:no-match,,,,,2026-10-22
+c367e034703e,arch/content-addressed-ids-jsonl.md,S-ndrgfovo,unlocated:not-text,,,,,2026-10-22
+c367e034703e,arch/content-addressed-ids-jsonl.md,S-tvrordiw,unlocated:not-text,,,,,2026-10-22
+c76ca58bd279,arch/content-addressed-ids-jsonl.md,S-5m7fpuo3,unlocated:no-match,,,,,2026-10-22
+c76ca58bd279,arch/content-addressed-ids-jsonl.md,S-wtlhziak,unlocated:no-match,,,,,2026-10-22
+c76ca58bd279,arch/content-addressed-ids-jsonl.md,S-wux7hanj,unlocated:no-match,,,,,2026-10-22
+cce6c6d0a93f,arch/content-addressed-ids-jsonl.md,S-5m7fpuo3,unlocated:no-match,,,,,2026-10-22
+ce6b79e6bdca,arch/content-addressed-ids-jsonl.md,S-f2cirt63,unlocated:no-match,,,,,2026-10-22
+db87e6d70b7f,arch/content-addressed-ids-jsonl.md,S-wtlhziak,unlocated:no-match,,,,,2026-10-22
+dee68e001335,arch/content-addressed-ids-jsonl.md,S-wtlhziak,unlocated:no-match,,,,,2026-10-22
+e23f83cca46e,arch/content-addressed-ids-jsonl.md,S-22wqxchx,unlocated:no-match,,,,,2026-10-22
+e23f83cca46e,arch/content-addressed-ids-jsonl.md,S-k4oiaaw2,unlocated:no-match,,,,,2026-10-22
+e23f83cca46e,arch/content-addressed-ids-jsonl.md,S-pn5cpaof,unlocated:no-match,,,,,2026-10-22
+e23f83cca46e,arch/content-addressed-ids-jsonl.md,S-szv7ubhm,unlocated:no-match,,,,,2026-10-22
+e23f83cca46e,arch/content-addressed-ids-jsonl.md,S-zf4axfjq,unlocated:no-match,,,,,2026-10-22
 e31497ee573f,arch/content-addressed-ids-jsonl.md,S-qekmtdbw,located,,pure;pure-python;rfc;implementation;python,547fc1f7c9f6426c,A pure-Python implementation of RFC 8785 (JSON Canonicalization Scheme),2026-10-21
+ef3fd3c2ae66,arch/content-addressed-ids-jsonl.md,S-wtlhziak,unlocated:no-match,,,,,2026-10-22
+ef3fd3c2ae66,arch/content-addressed-ids-jsonl.md,S-zzvrhdyd,unlocated:no-match,,,,,2026-10-22
+f4ae6e5238ea,arch/content-addressed-ids-jsonl.md,S-3yvyv65p,unlocated:no-match,,,,,2026-10-22
+f4ae6e5238ea,arch/content-addressed-ids-jsonl.md,S-dgbl4wgb,unlocated:no-match,,,,,2026-10-22
+f4ae6e5238ea,arch/content-addressed-ids-jsonl.md,S-ndrgfovo,unlocated:not-text,,,,,2026-10-22
+f9b79c2ba5bd,arch/content-addressed-ids-jsonl.md,S-5p5nwact,unlocated:no-match,,,,,2026-10-22
+f9b79c2ba5bd,arch/content-addressed-ids-jsonl.md,S-ndrgfovo,unlocated:not-text,,,,,2026-10-22
+fe577589d877,arch/content-addressed-ids-jsonl.md,S-7lqazmox,unlocated:no-match,,,,,2026-10-22
+fe577589d877,arch/content-addressed-ids-jsonl.md,S-zzvrhdyd,unlocated:no-match,,,,,2026-10-22
 db7f05c772b5,arch/datalog-engines-rust.md,S-ajbhdhhp,located,"Compiling ascent at runtime #16 > Activity > kmicinski commented on Dec 13, 2023",compilation;plan;incremental;now;ascent,0cedadd5bd7c81f3,the current Ascent has no plans to grow towards incremental compilation right now.,2026-10-21
 db7f05c772b5,arch/datalog-engines-rust.md,S-hwygscyq,located,"does ascent offer extensions for meta-programming or dynamic rule updates? #66 > Activity > kmicinski commented on Apr 16, 2025",isn;now;implement;ascent,ee6257d9dd72284a,"I believe that's been discussed before, but isn't implemented now in Ascent.",2026-10-21
 136e9810c845,arch/docs-home-options.md,S1732,located,mkdocs > mkdocs build,strict;warn;build;mkdoc,4ad6666e6f5c637e,Enable strict mode. This will cause MkDocs to abort the build on any warnings.,2026-10-10
