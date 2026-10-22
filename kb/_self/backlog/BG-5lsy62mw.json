@@ -2,7 +2,7 @@
   "id": "BG-5lsy62mw",
   "kind": "bug",
   "title": "The census result schema leaves new_rows reuse free text, so a session writes 'cite and paraphrase' and apply refuses the whole part",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-ovwzbc7u",
   "priority": "P3",
@@ -23,5 +23,7 @@
   "links": [
     "parked: SP-rmp5zm5a close"
   ],
-  "notes": "Found in the 2026-10-21 census rerun: gitlab parts 3 and 17 were refused twice each at apply for reuse 'cite and paraphrase with attribution' / 'cite and paraphrase' (logs of the manager's phase-2 driver). Premise: the repro exits 1 on main."
+  "notes": "Found in the 2026-10-21 census rerun: gitlab parts 3 and 17 were refused twice each at apply for reuse 'cite and paraphrase with attribution' / 'cite and paraphrase' (logs of the manager's phase-2 driver). Premise: the repro exits 1 on main.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
