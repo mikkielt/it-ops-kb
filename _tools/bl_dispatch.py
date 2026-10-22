@@ -575,8 +575,11 @@ def budget_line(budget):
 def claude_argv(bl, iid, model=None, turns=None, budget=None):
     """The headless session's argument list: the brief goes on stdin, never as a trailing prompt argument, which
     `--add-dir` swallows (it takes several paths: the scratch directory and, for an item with required repositories,
-    the directory of their worktrees). BUDGET (`budget_usd`) adds the spend cap."""
+    the directory of their worktrees), and the plugin root when the brief names the plugin's role file (`role_file_line`:
+    the project has none), which the session could not read else. BUDGET (`budget_usd`) adds the spend cap."""
     dirs = [scratch_path(bl.root, iid)] + ([repos_dir(bl.root, iid)] if repo_checkouts(bl, iid) else [])
+    if not (Path(bl.root) / ROLE_FILE).is_file():
+        dirs.append(PLUGIN_ROOT)
     return ["claude", "-p", "--model", model or DEFAULT_MODEL, "--effort", EFFORT, "--output-format", "json",
             "--add-dir", *map(str, dirs), "--max-turns", str(turns or max_turns(bl, iid)),
             *([BUDGET_FLAG, budget] if budget else [])]
