@@ -82,8 +82,10 @@
         "Drop the header and send the page bare": "ST-o367qbqn"
       },
       "class": "design",
-      "answer": "fetch.py text gains a repeatable --header 'Name: value' option and fetch_argv appends it after the url",
-      "by": "agent"
+      "answer": "fetch.py text keeps --header for the provider's fixed headers inside the exact fetch_argv line; a session cannot add its own (ST-enbc6v5h)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
