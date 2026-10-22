@@ -3306,6 +3306,9 @@ e91c7737ef9e,agents/security-copilot-endpoint.md,S-5cjhp7co,located,Learn about 
 eb50e6aa7bb3,agents/security-copilot-endpoint.md,S-meh6fmlt,unlocated:no-match,,,,,2026-10-21
 f1070e20c9af,agents/security-copilot-endpoint.md,S-27puhgbj,unlocated:no-match,,,,,2026-10-21
 ffa5d042f10d,agents/security-copilot-endpoint.md,S-meh6fmlt,located,Model Context Protocol (MCP) plugins in Microsoft Security Copilot (Preview) | Microsoft Learn > Known limitations,chang;destructiv;destructivehint;edit;even;hint;must;discover,18b616faf3c54a6a,"When tools are updated (for example, added or edited) in an MCP server, Security Copilot does not dynamically discover and reflect these changes. To update",2026-10-21
+0222af652975,agents/shared-ner-service.md,S-g33kybfp,unlocated:no-match,,,,,2026-10-22
+0222af652975,agents/shared-ner-service.md,S-gpnrqpjt,unlocated:no-match,,,,,2026-10-22
+0222af652975,agents/shared-ner-service.md,S-tks3v5p5,unlocated:no-match,,,,,2026-10-22
 05f7ebd92c82,agents/shared-ner-service.md,S2101,unlocated:no-match,,,,,2026-10-10
 15587638aab1,agents/shared-ner-service.md,S-alyohfil,unlocated:no-match,,,,,2026-10-21
 15587638aab1,agents/shared-ner-service.md,S-ulqlpnc5,unlocated:no-match,,,,,2026-10-21
@@ -3329,11 +3332,9 @@ ffa5d042f10d,agents/security-copilot-endpoint.md,S-meh6fmlt,located,Model Contex
 6b9b496b7114,agents/shared-ner-service.md,S-hocpkynn,unlocated:no-match,,,,,2026-10-10
 6c85262cf39f,agents/shared-ner-service.md,S2092,located,What is the Personally Identifiable Information (PII) detection feature in Azure Language? - Foundry Tools | Microsoft Learn > Get started,as-is;perform;customization;analysis;model;data;text;pii,f4ab1dd34764ac22,"To use PII detection, you submit text for analysis and handle the API output in your application. Analysis is performed as-is, with no customization to",2026-10-21
 76090bbb7d0a,agents/shared-ner-service.md,S2093,located,Data limits for Language service features - Foundry Tools | Microsoft Learn > Rate limits,minut;multi;multi-servic;second;servic;tier;rate;text,9e86cb62e77eb15e,"These rate limits don't apply to the Text Analytics for health container, which doesn't have a set rate limit. Tier | Requests per second |",2026-10-21
-8059322a15d0,agents/shared-ner-service.md,S2088,located,Deploy presidio services to an Azure App Service,demo;team;uses;environment;azur;presidio;app;servic,b966e74894232e7a,The presidio team uses Azure App Service for both its development environment and the presidio demo website.,2026-10-10
-8059322a15d0,agents/shared-ner-service.md,S-azdam24d,unlocated:no-match,,,,,2026-10-10
-8059322a15d0,agents/shared-ner-service.md,S-g33kybfp,unlocated:no-match,,,,,2026-10-10
 841bf12339a3,agents/shared-ner-service.md,S-g6nzyems,located,,westeurop;retail;pric,be0031f581429f08,retailPrice 1.0 unitPrice 1.0 armRegionName westeurope,2026-10-20
 888a77910948,agents/shared-ner-service.md,S2093,unlocated:no-match,,,,,2026-10-21
+92ebb3ec6b09,agents/shared-ner-service.md,S-hfymbj4j,unlocated:no-match,,,,,2026-10-22
 97a96a9f8bce,agents/shared-ner-service.md,S2095,unlocated:no-match,,,,,2026-10-21
 9e4f61940dcc,agents/shared-ner-service.md,S2087,located,microsoft/presidio-analyzer repository overview > ⁠Presidio Analyzer > ⁠About this Image > ⁠Full Tag Listing,longer;pin;ghcr.io;releas;updat;data-privacy-stack;ghcr;privacy,1c0ab522e6a9ace7,No longer updated with the latest Presidio version; use ghcr.io/data-privacy-stack/presidio-analyzer:latest or a pinned GHCR release tag instead.,2026-10-20
 9e4f61940dcc,agents/shared-ner-service.md,S-azdam24d,located,Installing Presidio > Using Docker,explicit;legacy;longer;new;organization;pin;prefer;production,d245c15d8c4e5718,New Presidio container releases are published to GitHub Container Registry under the Data Privacy Stack packages organization. The legacy Microsoft Container Registry images at mcr.microsoft.com/presidio-,2026-10-20
@@ -3346,12 +3347,15 @@ b0abfe21c364,agents/shared-ner-service.md,S2097,located,Detecting PII entities >
 b0abfe21c364,agents/shared-ner-service.md,S2098,located,PII real-time analysis (API),utf;utf-8;text;amazon;comprehend;real;real-tim;time,810e65f8edd3592a,"Locating PII real-time entities (API) To locate PII in a single document, you can use the Amazon Comprehend DetectPiiEntities operation. Your input text can include",2026-10-10
 b0abfe21c364,agents/shared-ner-service.md,S2099,unlocated:no-match,,,,,2026-10-10
 bbb8576becce,agents/shared-ner-service.md,S2095,unlocated:no-match,,,,,2026-10-21
+bbb8576becce,agents/shared-ner-service.md,S-g6nzyems,unlocated:no-match,,,,,2026-10-22
 bdf90517471a,agents/shared-ner-service.md,S-blcom642,located,LICENSE > File metadata and controls,contributor;mit;presidio;copyright,7375fea32549f72b,The MIT License (MIT) Copyright (c) Presidio Contributors.,2026-10-10
 c5432a565719,agents/shared-ner-service.md,S2097,unlocated:no-match,,,,,2026-10-10
 c5432a565719,agents/shared-ner-service.md,S2107,located,"Amazon Comprehend detects and redacts 14 new PII entity types across the U.S., U.K., Canada, and India",category;credit;e.g;financial;localiz;name;passport;password,88aa51f3a2c6d1f8,"Previously, Amazon Comprehend supported 22 PII entities across multiple categories, including Financial (e.g., credit card number, bank account number), Personal (e.g., name, email, age), Technical",2026-10-10
 c813b0702738,agents/shared-ner-service.md,S2105,unlocated:no-match,,,,,2026-10-10
 c813b0702738,agents/shared-ner-service.md,S2111,unlocated:no-match,,,,,2026-10-10
 c813b0702738,agents/shared-ner-service.md,S-gpnrqpjt,unlocated:no-match,,,,,2026-10-10
+cc0cd3101560,agents/shared-ner-service.md,S2088,located,Deploy presidio services to an Azure App Service,demo;team;uses;environment;azur;presidio;app;servic,b966e74894232e7a,The presidio team uses Azure App Service for both its development environment and the presidio demo website.,2026-10-22
+cc0cd3101560,agents/shared-ner-service.md,S-g33kybfp,unlocated:no-match,,,,,2026-10-22
 d4f0fe9abacc,agents/shared-ner-service.md,S-g33kybfp,unlocated:no-match,,,,,2026-10-10
 d82c433047c1,agents/shared-ner-service.md,S2091,unlocated:no-match,,,,,2026-10-21
 dc280cac7584,agents/shared-ner-service.md,S2096,unlocated:no-match,,,,,2026-10-21

@@ -36,7 +36,7 @@ choice (Presidio + spaCy `en_core_web_lg`, in-process) is not itself re-argued h
   (`POST /analyze`) and the anonymizer on port 5001 (`POST /anonymize`). [DOC S-tks3v5p5, S2086]
 - Presidio's documented deployment targets for the analyzer/anonymizer REST services are Docker Compose,
   Kubernetes/AKS, and Azure App Service; the App Service sample is also what the Presidio team uses for
-  its own demo site and dev environment. [DOC S-azdam24d, S2088, S-g33kybfp]
+  its own demo site and dev environment. [DOC S2088, S-g33kybfp]
 - Presidio's Kubernetes sample installs locally with KIND or as a Helm-deployed service on Kubernetes 1.18+
   with RBAC (AKS enables RBAC by default), with an NGINX ingress by default; its only sizing guidance is a
   note to check the pods' CPU and memory requirements and plan the cluster accordingly — no autoscaling
