@@ -40,7 +40,11 @@
         "whole-files-no-value": "ST-3cr3qddr",
         "added-lines-with-value": "ST-3cr3qddr"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "whole-files-no-value",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
