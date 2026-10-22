@@ -46,6 +46,8 @@ HTML is reduced to the text of <main> (or the whole body) before hashing, so pag
 Text of one url (`text URL`, no kb root, nothing saved): prints a page's normalized text; a PDF's through `pdftotext`
 (on PATH, else exit 2); the text members of a zip or tar archive (gzip, bzip2, xz), each after a `== name ==` line, read
 in memory and never extracted, with a cap on bytes; a spreadsheet's (.xlsx) shared strings. Exit 2 when it cannot read it.
+`--grep PATTERN` prints only the lines that match the regular expression (exit 1 when none do), so a long document is read
+without a pipe; `--header 'Name: value'` (repeatable) sends a request header beside the kb User-Agent.
 
 A failed download is reported as `unknown`, never as a match.
 
@@ -65,8 +67,9 @@ DELAY, TIMEOUT = 1.1, 180
 _last = {}
 
 
-def fetch(url):
-    """(bytes, content-type) of `url`, at most one request per DELAY seconds per host."""
+def fetch(url, headers=None):
+    """(bytes, content-type) of `url`, at most one request per DELAY seconds per host; `headers` ({name: value}) are
+    sent beside the kb User-Agent."""
     if urllib.parse.urlparse(url).scheme not in ("http", "https"):
         raise ValueError(f"not an http(s) url: {url}")
     host = urllib.parse.urlparse(url).hostname
@@ -74,7 +77,7 @@ def fetch(url):
     if wait > 0:
         time.sleep(wait)
     _last[host] = time.time()
-    req = urllib.request.Request(url, headers={"User-Agent": "it-ops-kb-fetch/1.0"})
+    req = urllib.request.Request(url, headers={"User-Agent": "it-ops-kb-fetch/1.0", **(headers or {})})
     try:
         with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
             body = r.read()
@@ -305,18 +308,28 @@ def read_text(url, body, ctype):
 
 
 def text_cmd(a):
-    """`text URL`: print the text of the page, PDF, archive or spreadsheet at URL (exit 2 when it cannot be read)."""
+    """`text URL [--grep PATTERN] [--header 'Name: value']`: print the text of the page, PDF, archive or spreadsheet at
+    URL, or only its lines that match the regular expression PATTERN (exit 1 when none do, as grep; exit 2 when it
+    cannot be read)."""
     try:
-        body, ctype = fetch(a.url)
+        pattern = re.compile(a.grep) if a.grep is not None else None
+        body, ctype = fetch(a.url, {k.strip(): v.strip() for k, _, v in (h.partition(":") for h in a.header)})
         text = read_text(a.url, body, ctype)
-    except (OSError, ValueError, zipfile.BadZipFile, tarfile.TarError, ElementTree.ParseError,
+    except (OSError, ValueError, re.error, zipfile.BadZipFile, tarfile.TarError, ElementTree.ParseError,
             subprocess.SubprocessError) as e:
         print(f"{a.url}: {str(e)[:300]}", file=sys.stderr)
         sys.exit(2)
     if text is None:
         print(f"{a.url}: no text in this content ({ctype or 'unknown type'})", file=sys.stderr)
         sys.exit(2)
-    sys.stdout.write(text)
+    if pattern is None:
+        sys.stdout.write(text)
+        return
+    hits = [ln for ln in text.splitlines() if pattern.search(ln)]
+    sys.stdout.write("".join(ln + "\n" for ln in hits))
+    if not hits:
+        print(f"{a.url}: no line matches {a.grep!r}", file=sys.stderr)
+        sys.exit(1)
 
 
 def now_utc():
@@ -486,6 +499,10 @@ def main():
         tp = argparse.ArgumentParser(prog="fetch.py text", description=text_cmd.__doc__)
         tp.add_argument("url")
         tp.add_argument("--timeout", type=float, default=60, help="per-request timeout in seconds (default 60)")
+        tp.add_argument("--grep", metavar="PATTERN", help="print only the lines of the text that match this regular "
+                        "expression (exit 1 when none do)")
+        tp.add_argument("--header", action="append", default=[], metavar="'NAME: VALUE'",
+                        help="send this request header beside the User-Agent (repeatable)")
         ta = tp.parse_args(sys.argv[2:])
         TIMEOUT = ta.timeout
         return text_cmd(ta)

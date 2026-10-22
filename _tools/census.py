@@ -184,8 +184,8 @@ that name the repository root and what the run may do, `--output-format json` an
 _tools/census_result.schema.json, `--max-turns` (DISPATCH_TURNS) and `--max-budget-usd` (DISPATCH_BUDGET_USD), no hooks,
 user settings or MCP server but the Microsoft Learn one, and `--permission-mode dontAsk` with rules that allow Read and
 Edit of the group's owned files alone (absolute paths; the working directory is a scratch directory of its own, removed
-after the run), `git show` and `git diff` in the census clones the part's rows read, each page's own `curl` line and
-`kbid.py url`. The child's environment is passed explicitly and `claude` is taken from PATH, never from the current
+after the run), `git show` and `git diff` in the census clones the part's rows read, each page's own `fetch.py text` line (options such as
+`--grep PATTERN` may follow its url) and `kbid.py url`. The child's environment is passed explicitly and `claude` is taken from PATH, never from the current
 directory. The `structured_output` of the reply, when it is valid against the schema, is written to
 _cache/census/dispatch/<D>/<group>/RESULTS.json (RESULTS-<N>.json for part N of a group of several) and the command
 that applies it is printed; a run that hits a cap, errors, times out or returns no valid result writes none (an earlier
@@ -2065,6 +2065,15 @@ def owned_files(group, members):
 
 MEMDOCS_LINE = ("MicrosoftDocs/memdocs is archived: re-source to the live Learn page (microsoft_docs_fetch), "
                 "outcome `superseded` with its new row")  # the line of a memdocs pin row that sends the reader to Learn
+NO_CLONE_LINE = ("the census has no clone of this MicrosoftDocs repository (renamed, archived or private): re-source to "
+                 "the live Learn page (microsoft_docs_fetch), outcome `superseded` with its new row")  # the same, for a pin
+# row of any other MicrosoftDocs repository whose clone is missing
+
+
+def encode_url(url):
+    """`url` with every character a Bash permission rule cannot hold as written (a quote, a space, `$`, a bracket,
+    a non-ASCII character) percent-encoded as UTF-8, and an escape it already holds left as it is."""
+    return quote(url, safe=URL_SAFE)
 
 
 def read_commands(r, ctx):
@@ -2080,11 +2089,14 @@ def read_commands(r, ctx):
                else f"git -C {clone} diff {r['pin']} {tip} -- {r['path']}"]
         if r["note"] == "memdocs":
             out.append(MEMDOCS_LINE)
+        elif r["repo"].lower().startswith("github.com/microsoftdocs/") and not os.path.isdir(
+                os.path.join(REPOS, clone_name(r["repo"]) + ".git")):
+            out.append(NO_CLONE_LINE)
         return out
     if r["kind"] == "learn" or urlparse(r["url"]).netloc.lower() == "learn.microsoft.com":
         return [f"microsoft_docs_fetch {r['url']}"]
     url, headers = provider.raw_url(r["url"], provider.for_url(r["url"], ctx["providers"]))
-    return [f"fetch {url}" + "".join(f" (header {k}: {v})" for k, v in headers.items())]
+    return [f"fetch {encode_url(url)}" + "".join(f" (header {k}: {v})" for k, v in headers.items())]
 
 
 def row_block(r, files, q, group, ctx):
@@ -2903,11 +2915,11 @@ DISPATCH_TURNS_PER_ROW = 4  # a source takes about a fetch, a read of each citin
 DISPATCH_REPLY_TOKENS = 800  # output of one turn, its thinking included (Haiku 5.5 cannot turn thinking off)
 DOCS_MCP = os.path.join(kbcommon.HOME, ".claude-plugin", "it-ops-kb-docs", ".mcp.json")
 LEARN_SERVER, LEARN_TOOL = "microsoft-learn", "mcp__microsoft-learn__microsoft_docs_fetch"
+URL_SAFE = ":/?#@&+=%,;"  # the url characters beside letters, digits and `._~-` that `encode_url` leaves as they are
 FETCHABLE = re.compile(r"[A-Za-z0-9._~:/?#@&+=%,;-]+")  # a url a Bash permission rule holds as written
 FETCH_HEADER = re.compile(r"[A-Za-z0-9._/+=;,: -]+")  # a `Name: value` header a rule holds as written
 FETCH_LINE = re.compile(r"fetch (\S+)((?: \(header [^:()]+: [^()]*\))*)")  # the line `read_commands` prints for a page
 HEADER = re.compile(r"\(header ([^:()]+): ([^()]*)\)")
-FETCH_TEXT_EXT = (".pdf", ".zip", ".tar.gz", ".tgz", ".xlsx")  # a url ending so is read by `fetch.py text`, not `curl`
 
 
 def claude_exe(path=None):
@@ -2961,18 +2973,18 @@ def docs_mcp_config():
 
 
 def fetch_argv(url, heads=(), tools=None):
-    """The argv that reads the page at `url` in a census session: `python3 <tools>/fetch.py text URL` for a url whose
-    path ends in .pdf, .zip, .tar.gz, .tgz or .xlsx (a body a session cannot read as `curl` prints it; `tools` is the
-    tools directory, default the relative `_tools`), else `curl -sSL` with each (name, value) of `heads` as `-H`."""
-    if urlparse(url).path.lower().endswith(FETCH_TEXT_EXT):
-        return ["python3", f"{tools or '_tools'}/fetch.py", "text", url]
-    return ["curl", "-sSL", *[x for k, v in heads for x in ("-H", f"{k}: {v}")], url]
+    """The argv that reads the page at `url` in a census session: `python3 <tools>/fetch.py text URL` (`tools` is the
+    tools directory, default the relative `_tools`), with `encode_url` of the url so a rule names it exactly and each
+    (name, value) of `heads` as `--header 'name: value'`. `fetch.py text` sends the kb User-Agent, which some hosts
+    require, and reads a PDF, an archive or a spreadsheet by its bytes, which `curl` prints unread."""
+    return ["python3", f"{tools or '_tools'}/fetch.py", "text", encode_url(url),
+            *[x for k, v in heads for x in ("--header", f"{k}: {v}")]]
 
 
 def dispatch_plan(group, members, ctx):
     """What one brief part's session may touch, from the part's rows: {files: the group's owned files in it (absolute),
     git: the argv of each `git show` and `git diff` line of its rows (the clone as an absolute path), fetch: {row id:
-    the `curl` or `fetch.py text` argv of its page, `fetch_argv`}, learn: [row id] read with the Learn tool, skipped: [row id] whose page no permission
+    the `fetch.py text` argv of its page, `fetch_argv`}, learn: [row id] read with the Learn tool, skipped: [row id] whose page no permission
     rule can name exactly}."""
     git, fetch, learn, skipped = set(), {}, set(), []
     for r, _, _ in members:
@@ -2985,7 +2997,7 @@ def dispatch_plan(group, members, ctx):
                         skipped.append(r["id"])
                 else:
                     git.add(("git", "-C", os.path.join(kbcommon.HOME, clone), *args))
-            elif line.startswith("microsoft_docs_fetch ") or line == MEMDOCS_LINE:
+            elif line.startswith("microsoft_docs_fetch ") or line in (MEMDOCS_LINE, NO_CLONE_LINE):
                 learn.add(r["id"])
             elif page:
                 heads = HEADER.findall(page.group(2))
@@ -3013,7 +3025,8 @@ def dispatch_rules(plan, scratch):
     """(allow, tools) of a session: the `--allowedTools` rules and the `--tools` set. Read and Edit rules name each
     owned file as an absolute path (`//` is the filesystem root), so no other repository file is readable or editable
     (the working directory is the empty scratch directory, and `dontAsk` denies the rest); Bash holds only the exact
-    `git show` and `git diff` lines of the brief (no wildcard), each page's own `fetch_argv` line (`curl`, or `fetch.py text`) and `kbid.py url`."""
+    `git show` and `git diff` lines of the brief (no wildcard), each page's own `fetch_argv` line followed by ` *` (the `fetch.py text` options `--grep` and `--timeout` after its url)
+    and `kbid.py url`."""
     def at(tool, path, tail=""):
         return f"{tool}(//{path.replace(os.sep, '/').lstrip('/')}{tail})"
 
@@ -3022,7 +3035,7 @@ def dispatch_rules(plan, scratch):
         allow += [at("Read", path), at("Edit", path)]
     allow += [at(tool, scratch, "/**") for tool in ("Read", "Edit", "Write")]
     allow += [f"Bash({shlex.join(argv)})" for argv in plan["git"]]
-    allow += sorted({f"Bash({shlex.join(argv)})" for argv in plan["fetch"].values()})
+    allow += sorted({f"Bash({shlex.join(argv)} *)" for argv in plan["fetch"].values()})
     allow.append(f"Bash({shlex.join(['python3', os.path.join(kbcommon.TOOLS, 'kbid.py'), 'url'])} *)")
     if plan["learn"]:
         allow.append(LEARN_TOOL)
@@ -3056,7 +3069,7 @@ def dispatch_prompt(brief, plan, scratch):
            "- Files you may read and edit: " + (", ".join(plan["files"]) or "none") + ".", "- Commands you may run:"]
     out += [f"  - {shlex.join(argv)} (the brief's `git -C` line with the absolute path; write it exactly so)"
             for argv in plan["git"]]
-    out += [f"  - {sid}: {shlex.join(argv)} (what the brief's `fetch` line for it means; write it exactly so)"
+    out += [f"  - {sid}: {shlex.join(argv)} (what the brief's `fetch` line for it means; write it exactly so, then add `--grep PATTERN` to print only the lines of a long document that match, never a pipe)"
             for sid, argv in sorted(plan["fetch"].items())]
     out.append(f"  - {shlex.join(['python3', os.path.join(kbcommon.TOOLS, 'kbid.py'), 'url'])} <URL> (the id of a new row)")
     if plan["learn"]:
