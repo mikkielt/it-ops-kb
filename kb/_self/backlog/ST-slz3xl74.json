@@ -1,0 +1,27 @@
+{
+  "id": "ST-slz3xl74",
+  "kind": "story",
+  "title": "census.py apply keeps the artifact register in step and writes no address into a note",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "census.py apply updates the sha256 of each kb/public/_artifacts.csv row whose file it changes, or refuses the part, and refuses a session result whose notes or rows hold a value the leak scan flags",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import inspect, sys\nsys.path.insert(0, '_tools')\nimport census\ns = inspect.getsource(census)\ni = s.find('def cmd_apply')\nsys.exit(0 if i >= 0 and '_artifacts' in s[i:i + 20000] and 'leak' in s[i:i + 20000] else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/census.py",
+    "kb/_self/web-sources.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-rmp5zm5a close"
+  ],
+  "notes": "Retrospective of SP-rmp5zm5a (2026-10-22, operator accepted): fetch.py --offline failed after census apply changed privacy/gliner-models.csv (ST-vhtpgjb5) and mecm/log-files.csv and sql-views-compliance.csv (ST-bjwyl2bc) without their register hashes; test_leaks failed on a session note quoting the Python 3.14 release manager's address. Each was fixed by hand. The draft check reads source text."
+}

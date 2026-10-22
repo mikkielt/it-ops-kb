@@ -1,0 +1,26 @@
+{
+  "id": "ST-hycsjg2l",
+  "kind": "story",
+  "title": "done accepts the anchor rows a census run adds for the sources its census log records",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py done counts the _anchors.csv rows an item's census commits add as named when the census log rows those commits change record the same source ids, so a census item no longer needs its goal to list them",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import inspect, sys\nsys.path.insert(0, '_tools')\nimport bl_land\nsys.exit(0 if '_census' in inspect.getsource(bl_land.unrelated_baselines) else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-rmp5zm5a close"
+  ],
+  "notes": "Retrospective of SP-rmp5zm5a (2026-10-22, operator accepted): done refused ST-zpe7qxtv (186 sources) and ST-bjwyl2bc (100 sources) for anchor rows of sources the goal does not name; the manager dropped 357 anchor rows for the first and listed 100 ids in the second goal (TEXT_MAX 2000 limits that). The draft check reads source text; planning replaces it with a planted census item."
+}

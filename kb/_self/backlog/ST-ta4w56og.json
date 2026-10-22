@@ -1,0 +1,28 @@
+{
+  "id": "ST-ta4w56og",
+  "kind": "story",
+  "title": "A sprint plan checks shared code by its behaviour, not its shape",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the sprint plan step of the kb-sprint skill tells the planner to give stories that change the same function checks on its behaviour, not on its internal shape, so a later story does not break an earlier done story's check",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re, sys\ns = open('skills/sprint/SKILL.md', encoding='utf-8').read()\ni, j = s.find('## plan'), s.find('## start')\nsys.exit(0 if re.search(r'(?i)behaviou?r, not (?:its |their )?(?:internal )?shape', s[i:j]) else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/backlog.md",
+    "kb/_self/maintaining.md"
+  ],
+  "links": [
+    "parked: SP-rmp5zm5a close"
+  ],
+  "notes": "Retrospective of SP-rmp5zm5a (2026-10-22, operator accepted): landing ST-o367qbqn broke ST-bbxlwm4b's check (asserted curl for an .html url), and landing ST-aml4xyrf broke ST-o367qbqn's (planted one argv per source); a done item's checks change only after a reopen."
+}

@@ -1,0 +1,26 @@
+{
+  "id": "ST-xjmx4pjc",
+  "kind": "story",
+  "title": "A gate is classed push by a push action, not by the words origin or remote",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bl_authority classes a gate push when its question or options name a push, publish or remote write, not when they only mention origin/main or a remote url, so a worker's read-only question is not operator-only",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport bl_authority as b\nitem = {'id': 'ST-x', 'touches': ['kb/public/**'], 'goal': 'research gaps'}\nqs = ['How is the stale eval row, which fails the eval on origin/main, resolved?', 'How does a census brief give a session a git ls-remote line?']\nbad = [q for q in qs if b.gate_class(item, {'question': q, 'options': ['a', 'b'], 'recommendation': 'a'}) == 'push']\nprint(len(bad), 'read-only questions classed push:', bad)\nsys.exit(1 if bad else 0)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-rmp5zm5a close"
+  ],
+  "notes": "Retrospective of SP-rmp5zm5a (2026-10-22, operator accepted): ST-xfuucxk2 g2 ('fails the eval on origin/main') and ST-aml4xyrf g4 ('git ls-remote') were classed push and blocking only by these words; the first stalled sprint SP-z6wolmvm overnight. Premise: the check exits 1 on origin/main of 2026-10-22 (both classed push)."
+}
