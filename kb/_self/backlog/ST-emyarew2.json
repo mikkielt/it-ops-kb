@@ -2,7 +2,7 @@
   "id": "ST-emyarew2",
   "kind": "story",
   "title": "Review sprint: The operator watches the kb's health and landings: an eval alert, a local Prometheus scrape and landing-step timings",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4f4m3noq",
   "review": true,
   "priority": "P1",
@@ -23,6 +23,27 @@
       ]
     }
   ],
-  "claimed_by": "d72ea2f1",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "7bcb7543c9916a36a191dde5d3c0ae90ab11b178",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "5c2b7fdea3c634b7"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "43c84d957478ea12"
+      }
+    ]
+  }
 }
