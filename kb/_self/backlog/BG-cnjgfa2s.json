@@ -17,5 +17,10 @@
   "touches": [
     "_tools/redact.py",
     "kb/_self/querylog.md"
-  ]
+  ],
+  "links": [
+    "_tools/redact.py",
+    "_tools/kbcommon.py"
+  ],
+  "notes": "Found 2026-10-22: query-log delivery was refused from 2026-10-21 15:38 to 2026-10-22 (59 runs, 49 entries undelivered) because fetches[6].path of two run files ended in a docs URL GUID slug: redact.GUID (_tools/redact.py:52) has (?<![\\w-]) so it skips a GUID after '-', while kbcommon.LEAK_GUID (_tools/kbcommon.py:219) uses \\b and flags it. Worked around with querylog.py reredact (backup store-reredact-20261022T221812Z), check then problems=0. The next such fetch stalls delivery again."
 }
