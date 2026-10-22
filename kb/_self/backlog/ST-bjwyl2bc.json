@@ -2,7 +2,7 @@
   "id": "ST-bjwyl2bc",
   "kind": "story",
   "title": "The cited sources the 2026-10-21 census left unconfirmed are read and recorded confirmed, updated, superseded or gone",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-rmp5zm5a",
   "priority": "P2",
@@ -40,6 +40,19 @@
     "ST-aml4xyrf"
   ],
   "notes": "Census 2026-10-21 (ST-zpe7qxtv) ended with 206 cited sources unconfirmed after two phase-2 passes: PDF or archive with no text extraction allowed 47, other 36, cap or partial read 35, newer version not readable (only the pinned url allowed) 32, HTTP 403/429/5xx 15, page does not settle 15, tool refused 14, no fetch command 6, 404 6. The tag census-2026-10-21 was not created for them. Operator 2026-10-22: land the reruns and park the rest. Three reruns (phase2c $13.79, phase2d $10.52, phase2e $1.37), a research worker on 22 sources ($3.00) and three census route fixes (ST-bbxlwm4b, ST-o367qbqn, ST-aml4xyrf) settled 187 of the 206; 19 stay unconfirmed: 15 blocked from this host and 4 whose detail no official page states (S1563 CIS licence and date, S-d3lsp242 and S-jhuny2li dictionary ids in binary files, S-u5diy2cr arXiv licence).",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "50b117fb4fc416619a016c27f74bb3f5a9fabf1c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv, sys\nparked = set(['S-2s2xlwgf', 'S-6w34pn5d', 'S-d3lsp242', 'S-forvn2ly', 'S-jhuny2li', 'S-mt66jy4n', 'S-nwnif62g', 'S-qzdkyvqx', 'S-u5diy2cr', 'S-uzuvf3vo', 'S1405', 'S1425', 'S1552', 'S1555', 'S1556', 'S1563', 'S2161', 'S870', 'S871'])\nr = list(csv.DictReader(open('kb/public/_census/2026-10-21.csv', encoding='utf-8')))\nleft = [x for x in r if x['outcome'] == 'unconfirmed' and x['used_in'].strip()]\nbad = [x['id'] for x in left if x['id'] not in parked or not x['outcome_note'].strip()]\nprint(len(left), 'cited sources unconfirmed;', len(bad), 'outside the parked 19 or with no note:', bad[:20])\nsys.exit(1 if bad else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "6d81797f287e4663"
+      }
+    ]
+  }
 }
