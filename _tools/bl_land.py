@@ -204,6 +204,14 @@ def stale_docs(root, commits):
     return out, since
 
 
+def leak_hits(root, commits):
+    """[(path, line, kind)] of the leak scan (`kbpublic.tree_hits`, the scan `test_leaks` runs over tracked files) of
+    each file the item's COMMITS ({commit: [paths]}) changed, as HEAD holds it: an email address, a real-looking id or a
+    secret outside the allowlist, so the worker fixes it in its worktree and not at the sync gate of the landing."""
+    import kbpublic
+    return kbpublic.tree_hits("HEAD", sorted({p for paths in commits.values() for p in paths}), root)
+
+
 STATE_LEDGER, ANCHOR_LEDGER = "_fetch_state.csv", "_anchors.csv"
 STATE_BASELINE = ("sha256", "text_sha256")  # fetch.py's hashes; with factdiff.BASELINE_KEYS, what detect compares a page with
 GENERATED_DIRS = ("_census", "_snapshots", "_retrieval", "_querylog")  # written by tools over every source: cite none
@@ -551,6 +559,18 @@ def cmd_done(bl, a):
         for sha, path in out_of_scope(bl.root, commits, mine):
             problems.append(f"commit {sha[:10]} changed {path}, outside touches (revert it, or widen touches)")
             reasons.append("outside-touches")
+        try:
+            leaks = leak_hits(bl.root, commits)
+        except Exception as e:  # noqa: BLE001 - a git error is said, not raised
+            leaks = []
+            say(f"warning: the leak scan could not run: {e}")
+        if leaks:
+            reasons.append("leaks")
+            problems.append("leaks: the leak scan (test_leaks, which the sync gate runs) flags a file the item's commits "
+                            "changed: " + "; ".join(f"{path}{f':{n}' if n else ''} ({kind})" for path, n, kind in leaks[:8])
+                            + (f"; and {len(leaks) - 8} more" if len(leaks) > 8 else "")
+                            + " (use a placeholder, or give the value a reviewed line in _tools/tests_allowlist.txt; the "
+                              "value itself is not printed)")
         try:
             behind, since = stale_docs(bl.root, commits)
         except Exception as e:  # noqa: BLE001 - selfdoc's own error (a git failure, an unreadable map) is said, not raised

@@ -443,6 +443,43 @@ def file_hits(path, text, allow, pinned=()):
     return [h for h in hits if h[0] == "secret" or not vendored]
 
 
+def internal_prefixes(rev, files, cwd):
+    """The path prefixes of REV's tree (FILES, its paths) that the tracked-file scan leaves out of its placeholders rule:
+    the directory of each root whose `_root.md` does not say `visibility: public`, and `kb/<name>` of each pointer file
+    that does not (no `visibility` line counts as internal, as kbcommon reads it)."""
+    import kbcommon
+    pdir = f"kb/{kbcommon.POINTERS_DIR}/"
+    out = []
+    for x, text in sorted(blobs(rev, [f for f in files if f.rsplit("/", 1)[-1] == kbcommon.ROOT_FILE
+                                      or (f.startswith(pdir) and f.endswith(".md") and "/" not in f[len(pdir):])], cwd).items()):
+        if kbcommon._meta(text).get("visibility", "internal") != "public":
+            out.append(f"kb/{x[len(pdir):-len('.md')]}/" if x.startswith(pdir) else root_dir(x) + "/")
+    return tuple(p for p in out if p != "/")  # a root at the top of the tree would make every file internal
+
+
+def tree_hits(rev, paths, cwd):
+    """[(path, line, kind)] of the leak scan of the files PATHS of REV's tree, as the scan of tracked files
+    (`test_leaks`) reads them: `file_hits` with the allowlist of REV, vendor exports, snapshots, pinned artifacts and the
+    query log store for secrets only, and the files of an internal root or pointer for secrets only. A path REV does
+    not hold, or holds as binary, is left out. LINE is the first line the value stands on, 0 when it is not found; the
+    value is never returned, since a secret must not be copied into a message."""
+    import kbcommon
+    files = tree_files(rev, cwd) or []
+    held = [p for p in dict.fromkeys(paths) if p in set(files)]
+    if not held:
+        return []
+    allow, pins = allowlist(rev, cwd), pinned_paths(rev, files, cwd)
+    internal = internal_prefixes(rev, files, cwd)
+    out = []
+    for path, text in sorted(blobs(rev, held, cwd).items()):
+        secret_only = path.startswith(internal) or any(path.startswith(f"{p}/") for p in PRIVATE)
+        for kind, value in file_hits(path, text, allow, pins):
+            if kind == "secret" or not secret_only:
+                at = text.find(value)
+                out.append((path, text.count("\n", 0, at) + 1 if at >= 0 else 0, kind))
+    return out
+
+
 def scan_form():
     """The leak scan's form as a cache key: SCAN_FORM and a digest of the registry's private patterns (kbcommon's), so a
     private name the registry gains or loses reads no verdict or value cached before it."""
