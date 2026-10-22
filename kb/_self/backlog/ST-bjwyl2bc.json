@@ -7,7 +7,7 @@
   "sprint": "SP-rmp5zm5a",
   "priority": "P2",
   "rank": 0,
-  "goal": "every cited source the 2026-10-21 census left unconfirmed is re-read through the widened census routes and recorded confirmed, updated, superseded or gone with census.py record, its facts fixed where the page differs; only the 19 sources parked in ST-6wsgvy3z stay unconfirmed, each with a note naming what failed",
+  "goal": "every cited source the 2026-10-21 census left unconfirmed is re-read through the widened census routes and recorded confirmed, updated, superseded or gone with census.py record, its facts fixed where the page differs; only the 19 sources parked in ST-6wsgvy3z stay unconfirmed, each with a note naming what failed; the anchor rows it adds are those of the sources its sessions re-read: S-2b4qw6yv S-2fdfhonb S-2lsfwean S-2wxyobvm S-3tbh2eg2 S-3yvyv65p S-4rjxcq6v S-5dy4gz6x S-5jpgqrfy S-5m7fpuo3 S-5p5nwact S-6icauyji S-7lqazmox S-7mdjthbr S-a3n34lxa S-acm2juhd S-bxionmbk S-c2dp6hok S-c3pmsz4l S-caclcxya S-ccvh7i4b S-cdmzxvsn S-d3lsp242 S-dbs2gjpc S-dgbl4wgb S-dxj7zgns S-dxo62u4b S-enz7mrzn S-eperpanz S-f2cirt63 S-fgod2hh4 S-fkosk2vn S-g6tbk57j S-g6zhzddt S-gpnrqpjt S-gs7u2ou5 S-h7eqeryo S-haoeqge5 S-hfymbj4j S-hqrgt5kx S-i3rxlppy S-i6a2ijlk S-igmmjjid S-ipghmg2f S-ix7uqv2r S-jhuny2li S-k5bcjgda S-kpfntmtz S-kvbchryu S-kwehxqwf S-kwztlqad S-kzoop7qs S-lbstvu2m S-ltzwimxf S-lylm4eqz S-nv6io42x S-ny2cx7aq S-o3nqheje S-ohpwxaqx S-ojya3ghv S-pwbxp7jw S-pxcitvg3 S-q6ajn7wa S-qkrv4p3x S-silsshto S-sirpm4j2 S-su332252 S-tks3v5p5 S-trcil35r S-tzw22ffl S-u2afup7q S-ujerrwih S-uk5qyhwi S-vg37lid6 S-wgtknkrb S-wtlhziak S-wux7hanj S-x7eqxwa3 S-xfsmauei S-xmqy75h7 S-y6i5zuly S-y6p3nnub S-y7nfpahm S-yi5pmj5x S-ytvtdwbp S-z2auesug S-z4pp6bkj S-z7tb6v5x S-za3ghpu4 S-zb3jd525 S-zzvrhdyd S1221 S1478 S2008 S2087 S2176 S2177 S2180 S2198 S850",
   "checks": [
     {
       "run": [
@@ -24,6 +24,10 @@
     },
     {
       "clause": "only the 19 sources parked in ST-6wsgvy3z stay unconfirmed, each with a note naming what failed",
+      "check": 0
+    },
+    {
+      "clause": "the anchor rows it adds are those of the sources its sessions re-read: S-2b4qw6yv S-2fdfhonb S-2lsfwean S-2wxyobvm S-3tbh2eg2 S-3yvyv65p S-4rjxcq6v S-5dy4gz6x S-5jpgqrfy S-5m7fpuo3 S-5p5nwact S-6icauyji S-7lqazmox S-7mdjthbr S-a3n34lxa S-acm2juhd S-bxionmbk S-c2dp6hok S-c3pmsz4l S-caclcxya S-ccvh7i4b S-cdmzxvsn S-d3lsp242 S-dbs2gjpc S-dgbl4wgb S-dxj7zgns S-dxo62u4b S-enz7mrzn S-eperpanz S-f2cirt63 S-fgod2hh4 S-fkosk2vn S-g6tbk57j S-g6zhzddt S-gpnrqpjt S-gs7u2ou5 S-h7eqeryo S-haoeqge5 S-hfymbj4j S-hqrgt5kx S-i3rxlppy S-i6a2ijlk S-igmmjjid S-ipghmg2f S-ix7uqv2r S-jhuny2li S-k5bcjgda S-kpfntmtz S-kvbchryu S-kwehxqwf S-kwztlqad S-kzoop7qs S-lbstvu2m S-ltzwimxf S-lylm4eqz S-nv6io42x S-ny2cx7aq S-o3nqheje S-ohpwxaqx S-ojya3ghv S-pwbxp7jw S-pxcitvg3 S-q6ajn7wa S-qkrv4p3x S-silsshto S-sirpm4j2 S-su332252 S-tks3v5p5 S-trcil35r S-tzw22ffl S-u2afup7q S-ujerrwih S-uk5qyhwi S-vg37lid6 S-wgtknkrb S-wtlhziak S-wux7hanj S-x7eqxwa3 S-xfsmauei S-xmqy75h7 S-y6i5zuly S-y6p3nnub S-y7nfpahm S-yi5pmj5x S-ytvtdwbp S-z2auesug S-z4pp6bkj S-z7tb6v5x S-za3ghpu4 S-zb3jd525 S-zzvrhdyd S1221 S1478 S2008 S2087 S2176 S2177 S2180 S2198 S850",
       "check": 0
     }
   ],
