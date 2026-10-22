@@ -2,8 +2,9 @@
   "id": "BG-cmvwrpbr",
   "kind": "bug",
   "title": "backlog.json defaults are the kb's own values, so a host project must override review_checks, research_checks, the land steps, docs_map and kb_root (second-project run)",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4fawjprq",
+  "sprint": "SP-ovwzbc7u",
   "priority": "P1",
   "rank": 0,
   "severity": "S3",
@@ -12,8 +13,38 @@
     "run": [
       "python3",
       "-c",
-      "import os,subprocess,sys,tempfile; d=tempfile.mkdtemp(); subprocess.run(['git','init','-q',d]); o=subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'config'],capture_output=True,text=True).stdout; sys.exit(1 if 'kb_root = \"_self\"  (default)' in o else 0)"
+      "import subprocess,sys,tempfile; d=tempfile.mkdtemp(); subprocess.run(['git','init','-q',d]); o=subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'config'],capture_output=True,text=True).stdout; keys=('review_checks','research_checks','land_stale','land_eval','land_lint','docs_map','kb_root'); bad=[l.split(' = ')[0] for l in o.splitlines() if l.split(' = ')[0] in keys and l.split(' = ',1)[1].split('  (')[0] not in ('[]','\"\"')]; print('non-empty defaults:', bad); sys.exit(1 if bad else 0)"
     ]
   },
-  "notes": "Run setup: backlog.py --root <empty project> config printed review_checks = [... _tools/backlog.py check ... _tools/tests.py], land_eval = [\"_tools/rag.py\", \"eval\"], docs_map = \"kb/_self/map.csv\", kb_root = \"_self\", all (default); the host's backlog.json had to set each to [] or \"\". Blocks the Nerthus workspace adoption (BG-42dg5ryi's host); raised to P1 by the operator."
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys; o=subprocess.run([sys.executable,'_tools/backlog.py','config'],capture_output=True,text=True).stdout; keys=('review_checks','research_checks','land_stale','land_eval','land_lint','docs_map','kb_root'); got={l.split(' = ')[0]: l.rstrip().endswith('(file)') for l in o.splitlines() if l.split(' = ')[0] in keys}; print(got); sys.exit(0 if len(got)==7 and all(got.values()) else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "A project with no backlog.json, or one naming none of these keys, gets defaults that name no kb file: review_checks, research_checks, land_stale, land_eval, land_lint, docs_map and kb_root default to empty",
+      "check": 1
+    },
+    {
+      "clause": "the kb's backlog.json names its own values, so its behaviour is unchanged",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/bl_base.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md",
+    "kb/_self/querylog.md"
+  ],
+  "depends_on": [
+    "BG-cnjgfa2s",
+    "BG-duzrzr2d"
+  ],
+  "notes": "Run setup: backlog.py --root <empty project> config printed review_checks = [... _tools/backlog.py check ... _tools/tests.py], land_eval = [\"_tools/rag.py\", \"eval\"], docs_map = \"kb/_self/map.csv\", kb_root = \"_self\", all (default); the host's backlog.json had to set each to [] or \"\". Blocks the Nerthus workspace adoption (BG-42dg5ryi's host); raised to P1 by the operator. Planned: the filed repro tested only kb_root; rewritten to read the config of a planted empty git project for all seven keys. Ran it: review_checks, research_checks, land_stale, land_eval, land_lint, docs_map and kb_root all print a kb value (default), exit 1. Fix: the SETTINGS rows at _tools/bl_base.py:32-49 (defaults to [] and \"\"); the kb's own backlog.json already names all seven (lines 16-60), checked by check 0 (config at the kb prints (file) for each). Readers of an empty value: bl_base.py:243 and 248 (review_checks, research_checks), bl_land.py:652-661 (land steps), bl_dispatch.py:429 (docs_map, kb_root), bl_precheck.py:159 (kb_root); the worker should confirm each takes empty as no step. Docs: kb/_self/backlog.md:421 lists the keys with defaults, tools.md:108-109 describe config and SETTINGS, plugin.md:24 names the kb-only steps. Depends on BG-cnjgfa2s and BG-duzrzr2d: they share tools.md and backlog.md. bl_base.py is also in BG-c7pjl3mi's reach (forge)."
 }
