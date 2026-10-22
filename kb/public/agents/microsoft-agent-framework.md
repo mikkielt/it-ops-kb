@@ -16,8 +16,8 @@ status: complete
   (session state, type safety, middleware, telemetry) and adding graph-based **Workflows** for
   explicit multi-agent orchestration. [DOC S-kzoop7qs]
 - Release status: no page uses the word "GA", but stable 1.x releases exist. Python `agent-framework` and
-  .NET `Microsoft.Agents.AI` 1.0.0 were both published on 2026-04-02 (PyPI 1.22.0 current on 2026-10-21; NuGet 1.22.0
-  as of September 2026) [DOC S-bayhkj2j, S-y76ymaxp]. The repository's package-status file marks
+  .NET `Microsoft.Agents.AI` 1.0.0 were both published on 2026-04-02 (PyPI 1.22.0 current on 2026-10-21; NuGet 1.25.0,
+  published 2026-10-14) [DOC S-bayhkj2j, S-y76ymaxp]. The repository's package-status file marks
   `agent-framework`, `-core`, `-foundry`, `-declarative`, `-ag-ui` and `-github-copilot` as `released`
   (stable, no breaking changes between versions) while most integrations, e.g. `-anthropic`, `-claude`,
   `-a2a` and `-devui`, are `beta` or `alpha` [DOC S-x7eqxwa3]. Go stays in public preview [DOC S-kzoop7qs].
@@ -33,7 +33,7 @@ status: complete
 - Model providers documented: **Microsoft Foundry, Anthropic, Azure OpenAI, OpenAI, Ollama**, and
   others via the integrations catalogue. [DOC S-kzoop7qs]
 - Licences: the NuGet `Microsoft.Agents.AI` package declares licence expression MIT for every version from
-  1.0.0 to 1.22.0, and the separate `microsoft/agent-framework-go` repository is MIT. [DOC S-y76ymaxp,
+  1.0.0 to 1.25.0 (and every earlier preview), and the separate `microsoft/agent-framework-go` repository is MIT. [DOC S-y76ymaxp,
   S-a3n34lxa]
 
 ## Facts
