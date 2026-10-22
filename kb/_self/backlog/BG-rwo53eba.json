@@ -28,6 +28,25 @@
     "kb/_self/web-sources.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does cmd_dispatch undo a failed session's edits: restore each owned file from an in-memory byte snapshot (also on an interrupt), or revert with git checkout?",
+      "options": [
+        "In-memory byte snapshot",
+        "git checkout of the owned files"
+      ],
+      "recommendation": "In-memory byte snapshot",
+      "do": {
+        "In-memory byte snapshot": "BG-rwo53eba",
+        "git checkout of the owned files": "BG-rwo53eba"
+      },
+      "class": "design",
+      "answer": "In-memory byte snapshot",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-rmp5zm5a close"
   ],

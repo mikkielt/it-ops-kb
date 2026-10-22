@@ -189,7 +189,8 @@ after the run), `git show` and `git diff` in the census clones the part's rows r
 directory. The `structured_output` of the reply, when it is valid against the schema, is written to
 _cache/census/dispatch/<D>/<group>/RESULTS.json (RESULTS-<N>.json for part N of a group of several) and the command
 that applies it is printed; a run that hits a cap, errors, times out or returns no valid result writes none (an earlier
-one is removed), prints `UNAPPLIED` with the reason and exits 1. The raw reply is kept beside it. The ops row
+one is removed), prints `UNAPPLIED` with the reason, puts each owned file back to its content before the session and
+prints the files it restored, and exits 1. The raw reply is kept beside it. The ops row
 `census.phase` (phase `dispatch`) holds `runs`, `ok` or `failed`, `turns`, the tokens of each kind and `cost-usd-micro`;
 its `ms` is the command's wall time. --dry-run starts nothing and prints the caps, the rules and the argv, and an estimate
 of the run (turns, tokens, USD at list price, and the --max-budget-usd to pass: factdiff.call_cap of the USD).
@@ -3160,10 +3161,44 @@ def dispatch_call(argv, prompt, cwd, env):
     return p.stdout, (p.stderr.strip().splitlines() or [f"claude -p exited {p.returncode}"])[-1][:200], p.returncode
 
 
+def snapshot_files(files):
+    """{path: its bytes, or None when it does not exist} of `files` (absolute paths), read before a session edits them."""
+    out = {}
+    for path in files:
+        try:
+            with open(path, "rb") as f:
+                out[path] = f.read()
+        except FileNotFoundError:
+            out[path] = None
+    return out
+
+
+def restore_files(snapshot):
+    """The paths of `snapshot` (`snapshot_files`) whose content differs now, put back to the snapshot (a file that did
+    not exist is removed), in path order."""
+    restored = []
+    for path, was in sorted(snapshot.items()):
+        try:
+            with open(path, "rb") as f:
+                now = f.read()
+        except FileNotFoundError:
+            now = None
+        if now == was:
+            continue
+        if was is None:
+            os.remove(path)
+        else:
+            with open(path, "wb") as f:
+                f.write(was)
+        restored.append(path)
+    return restored
+
+
 def cmd_dispatch(a, tally):
     """census.py dispatch: one brief part of one group as a headless `claude -p` session; its schema-valid result is
     written to RESULTS.json for `apply`. Exit 0, 1 when the run stopped or returned no valid result (nothing is
-    written: the group stays unapplied), 2 refused."""
+    written: the group stays unapplied, and each owned file the session changed is restored to its content before
+    the run, the files printed), 2 refused."""
     rows, err = phase2_args(a)
     if err:
         print(err)
@@ -3226,12 +3261,17 @@ def cmd_dispatch(a, tally):
     if os.path.exists(results):
         os.remove(results)  # a result of an earlier run is no result of this one
     os.makedirs(out_dir, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix="census-dispatch-") as scratch:
-        scratch = os.path.realpath(scratch)
-        allow, tools = dispatch_rules(plan, scratch)
-        argv = dispatch_argv(exe, a.model, a.max_turns, a.max_budget_usd, schema_text, allow, tools, mcp)
-        began = time.monotonic()
-        stdout, why, code = dispatch_call(argv, dispatch_prompt(brief, plan, scratch), scratch, dispatch_env())
+    snapshot = snapshot_files(plan["files"])
+    try:
+        with tempfile.TemporaryDirectory(prefix="census-dispatch-") as scratch:
+            scratch = os.path.realpath(scratch)
+            allow, tools = dispatch_rules(plan, scratch)
+            argv = dispatch_argv(exe, a.model, a.max_turns, a.max_budget_usd, schema_text, allow, tools, mcp)
+            began = time.monotonic()
+            stdout, why, code = dispatch_call(argv, dispatch_prompt(brief, plan, scratch), scratch, dispatch_env())
+    except BaseException:  # an interrupt leaves no half-run session's edits either
+        restore_files(snapshot)
+        raise
     wall = round(time.monotonic() - began, 1)
     with open(os.path.join(out_dir, f"reply-{a.part}.json"), "w", encoding="utf-8", newline="\n") as f:
         f.write(stdout)
@@ -3252,6 +3292,9 @@ def cmd_dispatch(a, tally):
     if not ok:
         print(f"{label} UNAPPLIED: {reply['error']}; no RESULTS.json was written (the reply is "
               f"{kbcommon.repo_rel(os.path.join(out_dir, f'reply-{a.part}.json'))})")
+        restored = [kbcommon.repo_rel(p) for p in restore_files(snapshot)]
+        print("restored " + (f"{len(restored)} file(s) the session changed: " + ", ".join(restored) if restored
+                             else "no file: the session changed none of the group's owned files"))
         return 1
     with open(results, "w", encoding="utf-8", newline="\n") as f:
         json.dump(reply["result"], f, indent=1)
