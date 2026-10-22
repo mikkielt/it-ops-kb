@@ -42,7 +42,9 @@
       },
       "class": "design",
       "answer": "Name a1faf261a899, the commit the row records for the census read, and say the pin holds the older wording",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Found by the fresh-context review of SP-rmp5zm5a (headless reviewer over 2f256438ea..47328f5b24), verified by the manager: the four conflict stories' checks counted 'Reviewed <date>, still open' as closing, and dsc and powerbi were in no story. Premise: the check exits 1 with 42 entries on 47328f5b24. Review findings folded in: _conflicts.md:859 claims the article marks the API value as matching the file (gliner-glirel-zero-shot.md:32 marks neither; the 32,096-byte header is arithmetic, not measured); :702/:839 cite [DOC S444] for text read at master @1eec2f23f670 while S444 pins 56c82a97.",
