@@ -84,8 +84,10 @@
         "in fetch.py text only": "ST-aml4xyrf"
       },
       "class": "design",
-      "answer": "in fetch.fetch for every caller",
-      "by": "agent"
+      "answer": "gzip is decoded only for text; fetch.get, --verify and --diff keep the raw bytes (ST-enbc6v5h)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
