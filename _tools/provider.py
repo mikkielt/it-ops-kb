@@ -1441,6 +1441,7 @@ def read_licence(url):
 PAGE_DATE_KEYS = ("updated_at", "dateModified", "article:modified_time", "last-modified", "ms.date", "datePublished",
                   "article:published_time", "citation_date")  # a page's own date keys, a modification before a publication
 TITLE_SEP = re.compile(r"\s+[|\u2013\u2014\u00b7-]\s+")  # the separator of a page title and its site name
+MARKDOWN_EXT = (".md", ".markdown", ".mdx")  # the paths whose text is read for a front matter title or a `# ` heading
 DATE_FORMS = (re.compile(r"(\d{4})[-/](\d\d?)[-/](\d\d?)"), re.compile(r"(\d\d?)/(\d\d?)/(\d{4})"))  # ISO and slash, then M/D/Y
 
 
@@ -1484,9 +1485,10 @@ def iso_date(value):
         return ""
 
 
-def _page_head(text, ctype):
+def _page_head(text, ctype, path=""):
     """(title, site, meta) of a page text: an HTML page's og:title (or <title>) and og:site_name (else application-name); a Markdown file's
-    front matter title, else its first `# ` heading."""
+    front matter title, else its first `# ` heading. A file is Markdown only by its `path` (MARKDOWN_EXT): any other text
+    (a source code file, where `# ` opens a comment line that can hold an author's address) gives no title."""
     if "html" in (ctype or "") or text.lstrip()[:15].lower().startswith(("<!doctype html", "<html")):
         head = _Head()
         try:
@@ -1499,9 +1501,21 @@ def _page_head(text, ctype):
             if m:
                 meta.setdefault(k.lower(), m.group(1))
         return (meta.get("og:title") or meta.get("citation_title") or " ".join(head.title.split())), meta.get("og:site_name") or meta.get("application-name", ""), meta
+    if not path.lower().endswith(MARKDOWN_EXT):
+        return "", "", {}
     fm = front_matter(text)
     heading = re.search(r"^# +(.+?)\s*$", FRONT.sub("", text, count=1), re.M)
     return fm.get("title") or (heading.group(1) if heading else ""), "", {k.lower(): v for k, v in fm.items()}
+
+
+def _file_title(page):
+    """The repository path a raw file url names (`owner/repo/dir/file`, a raw.githubusercontent.com ref left out): the title of
+    a plain-text file that is not Markdown, which has no title of its own."""
+    u = urllib.parse.urlsplit(page)
+    parts = [p for p in urllib.parse.unquote(u.path).split("/") if p]
+    if u.netloc == "raw.githubusercontent.com" and len(parts) > 3:
+        parts.pop(2)
+    return "/".join(parts)
 
 
 def read_page(url, rows=None):
@@ -1526,7 +1540,10 @@ def read_page(url, rows=None):
         return out
     out["evidence"] = page
     text = r["body"].decode("utf-8", "replace")
-    title, site, meta = _page_head(text, r["headers"].get("content-type", ""))
+    ctype = r["headers"].get("content-type", "")
+    title, site, meta = _page_head(text, ctype, urllib.parse.urlsplit(page).path)
+    if not title and ctype.lower().startswith("text/plain"):
+        title = _file_title(page)
     known = [x.lower() for x in (out["organisation"], site) if x]
     parts = TITLE_SEP.split(title)
     if len(parts) > 1 and parts[-1].strip().lower() in known:
