@@ -2,7 +2,7 @@
   "id": "ST-yzp4y2jx",
   "kind": "story",
   "title": "Review sprint: The open gaps of the agents, claude, mcp, prior-art and python articles are researched against the census",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5cyrnkw7",
   "review": true,
   "priority": "P1",
@@ -24,6 +24,27 @@
     }
   ],
   "notes": "Fresh-context review 2026-10-21 of cc8b7197be..08c698f386 (44 files, 33 facts checked against sources, $1.58): 4 findings. Two S2 (_gaps.md:609, :1392) are entries whose first topic is mecm/log-files and defender/asr-and-antivirus, so SP-z6wolmvm ST-qgojhpot carries them. One S2 (three run-based claude closings) and one S3 (an _answers.md CODE tag without a pointer) go to ST-5p46sliz. Not confirmed by the reviewer and dropped: the compact_boundary fact in claude/hooks.md (S-fmj24q2u).",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "fd7b4adff02e90d52a48a0aebfaf6d9ba9079fac",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "9bfbc77b39b2789b"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "154ecf44ef2c4845"
+      }
+    ]
+  }
 }
