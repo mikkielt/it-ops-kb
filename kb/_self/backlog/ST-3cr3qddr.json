@@ -26,6 +26,27 @@
     "kb/_self/tools.md",
     "kb/_self/usage.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which text does done scan for leaks, and what does its refusal print? Recommended: whole files, no value, as test_leaks judges them at the sync gate and a secret is never copied into a message",
+      "options": [
+        "whole-files-no-value",
+        "added-lines-with-value"
+      ],
+      "recommendation": "whole-files-no-value",
+      "do": {
+        "whole-files-no-value": "ST-3cr3qddr",
+        "added-lines-with-value": "ST-3cr3qddr"
+      },
+      "class": "secrets",
+      "answer": "whole-files-no-value",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-z6wolmvm close"
   ],
