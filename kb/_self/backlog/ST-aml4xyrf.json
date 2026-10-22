@@ -115,7 +115,11 @@
         "plan fetch holds a list of argvs per source; ls-remote is an exact git rule": "ST-aml4xyrf",
         "one argv per source; the PDF and ls-remote left out of the rules": "ST-aml4xyrf"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "plan fetch holds a list of argvs per source; ls-remote is an exact git rule",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Operator 2026-10-22: third pass on the 54 cited sources two reruns of ST-bjwyl2bc left unconfirmed. This story covers 17 of them: S2043 S-7u4b7p5q (PyPI pages now an error page; https://pypi.org/pypi/keyring/json answers 200 JSON), S2178 (npm 403; registry.npmjs.org/@microsoft%2flearn-cli answers 200), S-5kjwbj3c S-ofreafga S-ycrujjsf (Terraform registry JavaScript-only; the provider's website/docs/r/*.html.markdown on GitHub answers 200), S-k2bxn62w S-tzbutlvs (EC press corner JavaScript-only; /presscorner/api/documents?reference=IP/26/1024&language=en answers 200 JSON), S-7uckhkxr S-u5diy2cr (arXiv abs routed to the export API, abstract only), S-te5pgsg3 S-jzqdphnx S-y76ymaxp (single .gz file, gzip content: fetch.py text tries tar and fails), S-d3lsp242 S-jhuny2li (archive members skipped as binary: the worker decides whether a printable-strings view is in scope), S-may2otwt S-y23orbo7 (.wiki.git remotes fetched as pages, 404). providers.csv raw_form drives provider.raw_url; arXiv's row maps abs to export.arxiv.org/api/query. Premise on origin/main of 2026-10-22: check 0 exits 1 (both planted gzip bodies refused), check 1 exits 1 (6 routes missing). Out of scope: EUR-Lex, cyber.gov.au, Alpine wiki, NCP, NVD, Kaggle (blocked from this host; the operator declined a browser read; filed separately).",
