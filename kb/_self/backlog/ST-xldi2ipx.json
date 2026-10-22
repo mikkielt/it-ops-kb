@@ -73,7 +73,9 @@
       },
       "class": "design",
       "answer": "Notes on every gap, plus article facts only where a finding fills a stated hole of an article (dsc directives, trace levels, what-if, MCP, completer, CLI pages; Python parent-process facts)",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Research item (/kb-research). Operator 2026-10-20: all open gaps, including those already tried: each gets a fresh search (live docs, then the web) and a dated note; a gap that still needs a lab, a login or unpublished information stays open as state. Premise on 2026-10-20 (the first check fails): 34 open public/_gaps.md entries under ('windows/', 'dsc/', 'ad/', 'gpo/') with no note dated 2026-10-21 or later, lines: [431, 433, 435, 437, 439, 441, 469, 486, 832, 834, 981, 1002, 1004, 1006, 1014, 1277, 1280, 1330, 1729, 1757, 1758, 1759, 1762, 1763, 1764] Fact units under the topics on 2026-10-20: 1784. check.py and the fact-count check pass before the work and must stay passing: they pin the kb's structure rules and that no fact is deleted across the rewrites (2026-10-20 planning). An entry asking for a count or list a kb tool answers is closed naming the tool.",
