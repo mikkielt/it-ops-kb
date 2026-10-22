@@ -1,0 +1,18 @@
+{
+  "id": "BG-qqrktk2x",
+  "kind": "bug",
+  "title": "An item that changes only the workspace's own files cannot carry touches in a multi-repository workspace: check asks for repos, and repos refuses workspace (Nerthus adoption)",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "In a workspace whose backlog.json declares repositories, an item whose touches are all workspace/<glob> is accepted with no repos, so a sprint sweep or a ledger task that edits only the workspace can be moved into an active sprint and dispatched; touches naming a declared repository still require repos",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess,sys,tempfile; d=tempfile.mkdtemp(); subprocess.run([\"git\",\"init\",\"-q\",d]); os.makedirs(os.path.join(d,\"r\")); open(os.path.join(d,\"backlog.json\"),\"w\").write(json.dumps({\"repositories\":{\"r\":\"r\"}})); b=[sys.executable,os.path.abspath(\"_tools/backlog.py\"),\"--root\",d]; o=subprocess.run(b+[\"new\",\"story\",\"--title\",\"w\",\"--goal\",\"g\",\"--check\",\"true\"],capture_output=True,text=True).stdout; i=o.split()[2]; r=subprocess.run(b+[\"set\",i,\"--touch\",\"workspace/notes.md\"],capture_output=True,text=True); sys.exit(1 if r.returncode else 0)"
+    ]
+  }
+}
