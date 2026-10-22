@@ -21,6 +21,8 @@
 census.py --root NAME <command> works on that root of this repository's kb/ (default public): its _sources.csv,
 _fetch_state.csv, articles and _census/ log. The clone cache (_cache/census/repos) is shared: a repository at a
 commit is the same for every root, and source ids never collide across roots (each root has its own prefix).
+A dispatched phase-2 session reads and edits only its group's owned files, and also reads every clone under that
+directory: `dispatch` adds it with `--add-dir` when the part has `git` lines.
 
 check (no judgment, network read-only) writes the verdict log LOG, by default _census/<D>.csv, one row per source:
   id,url,kind,repo,pin,path,retrieved_utc,http_status,bucket,evidence,proof,note,used_in,outcome,outcome_note
@@ -2676,7 +2678,8 @@ def head_cited_lines(ids):
     before and after its worker rewrote the facts (a fact re-pointed to a new row no longer names the old id), so the
     owner of a row is read from the tree the worker started from: every text blob under kb/ at HEAD through one
     `git cat-file --batch` (a `git grep` of an alternation of every queued id takes minutes), binary blobs left out as
-    `git grep -I` does; the working tree when git cannot say."""
+    `git grep -I` does; the working tree when git cannot say (also when a listed blob is missing from the object
+    store, `cat-file --batch` printing `<sha> missing` for it)."""
     if not ids:
         return {}
     kb = kbcommon.repo_rel(kbcommon.KB_DIR, kbcommon.HOME)
@@ -2691,21 +2694,21 @@ def head_cited_lines(ids):
                 blobs.append((sha, path.decode("utf-8")))
         batch = subprocess.run(["git", "cat-file", "--batch"], cwd=kbcommon.HOME, capture_output=True, timeout=300,
                                check=True, input="".join(f"{sha}\n" for sha, _ in blobs).encode("ascii")).stdout
+        want, found, pos = set(ids), defaultdict(list), 0
+        for _, path in blobs:
+            end = batch.index(b"\n", pos)
+            size = int(batch[pos:end].split()[2])
+            data, pos = batch[end + 1:end + 1 + size], end + size + 2
+            if b"\0" in data[:8000] or not path.startswith(kb + "/"):
+                continue
+            text = data.decode("utf-8", "replace")
+            if not any(m.group() in want for m in kbfacts.ID.finditer(text)):
+                continue
+            for n, line in enumerate(text.split("\n"), 1):
+                for i in set(kbfacts.ID.findall(line)) & want:
+                    found[i].append((path[len(kb) + 1:], n))
     except (subprocess.SubprocessError, OSError, ValueError, IndexError):
         return kbfacts.cited_lines(ids)
-    want, found, pos = set(ids), defaultdict(list), 0
-    for _, path in blobs:
-        end = batch.index(b"\n", pos)
-        size = int(batch[pos:end].split()[2])
-        data, pos = batch[end + 1:end + 1 + size], end + size + 2
-        if b"\0" in data[:8000] or not path.startswith(kb + "/"):
-            continue
-        text = data.decode("utf-8", "replace")
-        if not any(m.group() in want for m in kbfacts.ID.finditer(text)):
-            continue
-        for n, line in enumerate(text.split("\n"), 1):
-            for i in set(kbfacts.ID.findall(line)) & want:
-                found[i].append((path[len(kb) + 1:], n))
     return found
 
 
@@ -3044,7 +3047,8 @@ def fetch_argvs(value):
 def dispatch_rules(plan, scratch):
     """(allow, tools) of a session: the `--allowedTools` rules and the `--tools` set. Read and Edit rules name each
     owned file as an absolute path (`//` is the filesystem root), so no other repository file is readable or editable
-    (the working directory is the empty scratch directory, and `dontAsk` denies the rest); Bash holds only the exact
+    (the working directory is the empty scratch directory, and `dontAsk` denies the rest); the session also reads every
+    clone under `_cache/census/repos`, which `dispatch_argv` adds with `--add-dir` for a part with `git` lines; Bash holds only the exact
     `git show` and `git diff` lines of the brief (no wildcard), each page's own `fetch_argv` line followed by ` *` (the `fetch.py text` options `--grep` and `--timeout` after its url)
     and `kbid.py url`."""
     def at(tool, path, tail=""):
