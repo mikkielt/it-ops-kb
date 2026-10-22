@@ -23,18 +23,18 @@ TRACKER_NAME_RE = re.compile(r"[a-z][a-z0-9_-]*")  # a tracker's name in backlog
 HOOK_NAMES = ("horizon", "intake")  # the SessionStart hooks of the plugin that a project's `hooks` setting turns on
 # One place lists the settings: key -> (type, the default). A type is a TYPES name; a key not here is refused in
 # backlog.json, and a key the file leaves out takes its value from here (the kb's own file names the keys whose value
-# differs from the default: item_dir and always_in_scope).
+# differs from the default: item_dir, always_in_scope, review_checks, research_checks, land_stale, land_eval, land_lint,
+# docs_map and kb_root, the last seven of which default to no step and no kb file).
 SETTINGS = {
     "item_dir": ("path", "_backlog"),  # the item files, under the root; outside .claude/, which a headless worker cannot write
     "id_prefixes": ("prefixes", {"epic": "EP", "story": "ST", "task": "TK", "subtask": "SB", "bug": "BG",
                                  "sprint": "SP"}),
     "always_in_scope": ("strs", ["_backlog/**", "kb/*/_coverage.csv", "kb/*/_coverage.md"]),  # any item's
-    "review_checks": ("checks", [{"run": ["python3", "_tools/backlog.py", "check"]},
-                                 {"run": ["python3", "_tools/tests.py"]}]),  # the review story's, once
-    "research_checks": ("checks", [{"run": ["python3", "_tools/backlog.py", "researched", "{id}"]}]),  # `{id}`: the story
-    "land_stale": ("argv", ["_tools/selfdoc.py", "stale", "--since"]),  # + the integration main; [] = no such step
-    "land_eval": ("argv", ["_tools/rag.py", "eval"]),
-    "land_lint": ("argv", [".claude/skills/kb-verify/lint.py"]),
+    "review_checks": ("checks", []),  # the review story's, once; [] = none (the kb's file names its own)
+    "research_checks": ("checks", []),  # the goal research story's; `{id}` in a command: the story; [] = none
+    "land_stale": ("argv", []),  # + the integration main; [] = no such step
+    "land_eval": ("argv", []),  # [] = no such step
+    "land_lint": ("argv", []),  # [] = no such step
     "lane_module": ("optmodule", "kblane"),  # the module that says which lane a path belongs to; "" = no code lane
     # the landing's push, the argv of the command (a first element ending in .py runs under this interpreter, any
     # other is the program) that sends the landed work to the integration main; the kb's is its gate script's sync
@@ -45,8 +45,8 @@ SETTINGS = {
     "forge_project": ("str", ""),  # the forge project of the integration remote; "" = read from the remote's URL
     # the external trackers an item's `external` ids may name: tracker -> {pattern, url, ref?}; {} = none accepted
     "trackers": ("trackers", {}),
-    "docs_map": ("optpath", "kb/_self/map.csv"),  # a doc,pattern CSV: the docs a brief lists for an item's touches; "" = none
-    "kb_root": ("rootname", "_self"),  # the kb root whose cited fact lines a brief carries; "" = the project is no root
+    "docs_map": ("optpath", ""),  # a doc,pattern CSV: the docs a brief lists for an item's touches; "" = none
+    "kb_root": ("rootname", ""),  # the kb root whose cited fact lines a brief carries; "" = the project is no root
     # the repositories of a multi-repository workspace: name -> checkout path under the workspace, which an item's
     # `repos` and `repos_if_needed` name; {} = the project is the one repository the root is
     "repositories": ("repositories", {}),
