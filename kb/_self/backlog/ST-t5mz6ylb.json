@@ -36,7 +36,11 @@
         "skill plus backlog.md": "ST-t5mz6ylb",
         "skill only": "ST-t5mz6ylb"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "skill plus backlog.md",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
