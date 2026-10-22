@@ -3321,6 +3321,10 @@ ffa5d042f10d,agents/security-copilot-endpoint.md,S-meh6fmlt,located,Model Contex
 3a79be71805c,agents/shared-ner-service.md,S2112,located,Identify and extract Personally Identifiable Information (PII) from text - Foundry Tools | Microsoft Learn > Submitting data,account;hour;stateless;stor;respons;result;detection;pii,ba7af5008fbc15b4,"Using the PII detection feature synchronously is stateless. No data is stored in your account, and results are returned immediately in the response. When using",2026-10-21
 468585631cbe,agents/shared-ner-service.md,S2097,unlocated:no-match,,,,,2026-10-10
 468585631cbe,agents/shared-ner-service.md,S2098,located,PII real-time analysis (API),singl;detectpiientity;detect;document;amazon;comprehend;api;entity,c568b8860f0e1c61,"Locating PII real-time entities (API) To locate PII in a single document, you can use the Amazon Comprehend DetectPiiEntities operation.",2026-10-10
+4fdd04731c38,agents/shared-ner-service.md,S2087,unlocated:no-match,,,,,2026-10-22
+4fdd04731c38,agents/shared-ner-service.md,S-azdam24d,located,Installing Presidio > Using Docker,explicit;legacy;longer;new;organization;pin;prefer;production,d245c15d8c4e5718,New Presidio container releases are published to GitHub Container Registry under the Data Privacy Stack packages organization. The legacy Microsoft Container Registry images at mcr.microsoft.com/presidio-,2026-10-22
+4fdd04731c38,agents/shared-ner-service.md,S-clgh6hxa,unlocated:no-match,,,,,2026-10-22
+4fdd04731c38,agents/shared-ner-service.md,S-g33kybfp,unlocated:no-match,,,,,2026-10-22
 561a91adf2d7,agents/shared-ner-service.md,S2091,located,Use personally identifiable information (PII) detection Docker containers on-premises - Foundry Tools | Microsoft Learn > Billing > Connect to Azure,every;interval;report;minut;serv;window;time;usag,af729a8f9c147b81,"The container reports usage about every 10 to 15 minutes. If the container doesn't connect to Azure within the allowed time window, the container continues",2026-10-21
 5cde6481946f,agents/shared-ner-service.md,S830,unlocated:no-match,,,,,2026-10-10
 5cde6481946f,agents/shared-ner-service.md,S-5gpkixnx,unlocated:no-match,,,,,2026-10-10
@@ -3336,10 +3340,6 @@ ffa5d042f10d,agents/security-copilot-endpoint.md,S-meh6fmlt,located,Model Contex
 888a77910948,agents/shared-ner-service.md,S2093,unlocated:no-match,,,,,2026-10-21
 92ebb3ec6b09,agents/shared-ner-service.md,S-hfymbj4j,unlocated:no-match,,,,,2026-10-22
 97a96a9f8bce,agents/shared-ner-service.md,S2095,unlocated:no-match,,,,,2026-10-21
-9e4f61940dcc,agents/shared-ner-service.md,S2087,located,microsoft/presidio-analyzer repository overview > ⁠Presidio Analyzer > ⁠About this Image > ⁠Full Tag Listing,longer;pin;ghcr.io;releas;updat;data-privacy-stack;ghcr;privacy,1c0ab522e6a9ace7,No longer updated with the latest Presidio version; use ghcr.io/data-privacy-stack/presidio-analyzer:latest or a pinned GHCR release tag instead.,2026-10-20
-9e4f61940dcc,agents/shared-ner-service.md,S-azdam24d,located,Installing Presidio > Using Docker,explicit;legacy;longer;new;organization;pin;prefer;production,d245c15d8c4e5718,New Presidio container releases are published to GitHub Container Registry under the Data Privacy Stack packages organization. The legacy Microsoft Container Registry images at mcr.microsoft.com/presidio-,2026-10-20
-9e4f61940dcc,agents/shared-ner-service.md,S-clgh6hxa,located,,community;community-own;owned;project;transition;presidio,11ae5eef1fe25c67,Presidio has transitioned to a community-owned project.,2026-10-20
-9e4f61940dcc,agents/shared-ner-service.md,S-g33kybfp,located,,data;data-privacy-stack;ghcr;ghcr.io;privacy;stack;tag,1c03579e08d89aa2,"Choose the tag from ghcr.io/data-privacy-stack, e.g. latest",2026-10-20
 ac896880bb76,agents/shared-ner-service.md,S2091,located,Use personally identifiable information (PII) detection Docker containers on-premises - Foundry Tools | Microsoft Learn,limit;synchronous;document;character;call;data;api;pii,ec9e375badebf561,"The data limits in a single synchronous API call for the PII container are 5,120 characters per document and up to 10 documents per call.",2026-10-21
 ade8d088f861,agents/shared-ner-service.md,S2086,unlocated:no-match,,,,,2026-10-10
 ade8d088f861,agents/shared-ner-service.md,S-tks3v5p5,unlocated:no-match,,,,,2026-10-10

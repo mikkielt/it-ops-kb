@@ -26,7 +26,7 @@ choice (Presidio + spaCy `en_core_web_lg`, in-process) is not itself re-argued h
   `ghcr.io/data-privacy-stack/presidio-analyzer` / `presidio-anonymizer`; the legacy
   `mcr.microsoft.com/presidio-*` images are no longer updated, so a consumer pinning the old registry
   path is pinning a frozen image; for production the installation guide prefers pinning an explicit
-  release tag. Presidio is transitioning to a community-owned project under the Data Privacy Stack
+  release tag. Presidio has transitioned to a community-owned project under the Data Privacy Stack
   organization (`github.com/data-privacy-stack/presidio`); the Kubernetes Helm sample
   pulls the default images from `ghcr.io/data-privacy-stack`. [DOC S-azdam24d, S-clgh6hxa, S2087, S-g33kybfp]
 - The sample and
