@@ -90,8 +90,8 @@ BP-4fccbf63,count,reuse,original,articles:reuse,How many articles does the kb ho
 BP-c09c409f,cites,python,original,source:S-4sqhclzg,Which kb articles cite source S-4sqhclzg?,"[""python/version\\-lifecycle\\.md""]",tool
 BP-e7c67642,cites,agents,original,source:S-7e63teyx,Which kb articles cite source S-7e63teyx?,"[""agents/codebase\\-mapping\\.md"", ""python/ruff\\.md""]",tool
 BP-7ac8c094,cites,claude,original,source:S-qdxfqzln,Which kb articles cite source S-qdxfqzln?,"[""claude/skills\\-and\\-subagents\\.md""]",tool
-BP-1d1ce7a7,decision,self,original,decision:D-psgfq7le,What does the kb record for decision D-psgfq7le?,"[""operator"", ""(?i)autopilot""]",tool
-BP-65eb74a7,decision,self,original,decision:D-xk65w44m,What does the kb record for decision D-xk65w44m?,"[""operator"", ""(?i)subscription""]",tool
+BP-0715a273,decision,self,original,decision:D-buuvxut2,What does the kb record for decision D-buuvxut2?,"[""operator"", ""(?i)terms""]",tool
+BP-c160f34c,decision,self,original,decision:D-ocy63n4a,What does the kb record for decision D-ocy63n4a?,"[""operator"", ""(?i)exceptions""]",tool
 BP-29bf8f5b,conflict,agents,original,_conflicts.md#9e12e0e5,Which sources disagree on: no cost-cap flag despite brief expecting one?,"[""S1800"", ""S1801""]",tool
 BP-e8ceff39,conflict,auth,original,_conflicts.md#afe8695f,Which sources disagree on: on-prem / Windows / ConfigMgr / SQL?,"[""S1213"", ""S307""]",tool
 BP-d2e7a1ba,snippet,agents,original,agents/agent-planning-and-done.md:73,"Show a working example: a /goal condition with an end state, a check and a constraint","[""/goal""]",good

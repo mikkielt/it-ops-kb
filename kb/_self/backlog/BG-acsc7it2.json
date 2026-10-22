@@ -23,6 +23,25 @@
   "depends_on": [
     "ST-kydwtruh"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "The repro and goal name the ledger status 'decided', but kb/_self/_decisions.csv holds only 'active' and 'invalidated'; how do the two decision rows satisfy the check?",
+      "options": [
+        "Rebuild the two rows from the active operator decisions the pool builder now picks (D-buuvxut2, D-ocy63n4a); the repro's status word becomes 'active'",
+        "Drop the two decision rows so the repro as written exits 0 (the pool then holds no decision rows)"
+      ],
+      "recommendation": "Rebuild the two rows from the active operator decisions the pool builder now picks (D-buuvxut2, D-ocy63n4a); the repro's status word becomes 'active'",
+      "do": {
+        "Rebuild the two rows from the active operator decisions the pool builder now picks (D-buuvxut2, D-ocy63n4a); the repro's status word becomes 'active'": "BG-acsc7it2",
+        "Drop the two decision rows so the repro as written exits 0 (the pool then holds no decision rows)": "BG-acsc7it2"
+      },
+      "class": "design",
+      "answer": "Rebuild the two rows from the active operator decisions the pool builder now picks (D-buuvxut2, D-ocy63n4a); the repro's status word becomes 'active'",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-rmp5zm5a review"
   ],
