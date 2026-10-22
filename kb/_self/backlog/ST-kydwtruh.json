@@ -2,7 +2,7 @@
   "id": "ST-kydwtruh",
   "kind": "story",
   "title": "Research sprint goal: Census and source tools fail safe, and gap research and landings follow the 2026-10-21 lessons",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ovwzbc7u",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,7 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
