@@ -1,0 +1,71 @@
+{
+  "id": "ST-6oidkcqv",
+  "kind": "story",
+  "title": "otel/ holds a Prometheus scrape config and alert rules the adapter's --check-rules proves against its /metrics",
+  "status": "todo",
+  "parent": "EP-wqgicmmj",
+  "sprint": "SP-4f4m3noq",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "otel/prometheus.yml scrapes the adapter's /metrics on 127.0.0.1:9464 and loads otel/kbmon.rules.yml, whose alert rules fire while the lookup eval failed (kbmon_kb_eval_passed == 0), while kbmon holds any alert (kbmon_alerts > 0) and while an orphan process is listed (kbmon_sessions_procs with class orphan above 0); kbmon_otel.py --check-rules FILE reads one kbmon snapshot through the SDK's Prometheus reader in the process, with no listener and no OTLP send, and exits 0 when every kbmon_ metric name the file's expressions use is one /metrics serves, else exits 1 naming each missing name; kb/_self/monitoring.md has a section A local Prometheus that says how to start the adapter with --prometheus-port 9464 and a Prometheus the operator installs with otel/prometheus.yml, and documents --check-rules, with no host service file in the repository",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, subprocess, sys; env = dict(os.environ, OTEL_EXPORTER_OTLP_ENDPOINT='http://127.0.0.1:9'); r = subprocess.run(['uv', 'run', '--frozen', '--project', 'otel', 'python', 'otel/kbmon_otel.py', '--check-rules', 'otel/kbmon.rules.yml'], capture_output=True, text=True, env=env); out = r.stdout + r.stderr; print(out[-800:]); sys.exit(0 if r.returncode == 0 and 'serving' not in out and 'sent' not in out else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, subprocess, sys, tempfile; d = tempfile.mkdtemp(); p = os.path.join(d, 'bad.rules.yml'); open(p, 'w').write('groups:\\n- name: t\\n  rules:\\n  - alert: X\\n    expr: kbmon_no_such_metric > 0 or kbmon_alerts > 0\\n'); r = subprocess.run(['uv', 'run', '--frozen', '--project', 'otel', 'python', 'otel/kbmon_otel.py', '--check-rules', p], capture_output=True, text=True); out = r.stdout + r.stderr; sys.exit(0 if r.returncode == 1 and 'kbmon_no_such_metric' in out and 'kbmon_alerts' not in out.replace('kbmon_alerts > 0', '') else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, sys; rd = lambda p: open(p).read() if os.path.exists(p) else ''; t = rd('otel/kbmon.rules.yml'); c = rd('otel/prometheus.yml'); sys.exit(0 if all(n in t for n in ('kbmon_kb_eval_passed', 'kbmon_alerts', 'kbmon_sessions_procs')) and 'orphan' in t and '127.0.0.1:9464' in c and 'kbmon.rules.yml' in c else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, subprocess, sys; r = subprocess.run([sys.executable, '_tools/selfdoc.py', 'section', 'monitoring', 'A local Prometheus'], capture_output=True, text=True); svc = [f for f in os.listdir('otel') if f.endswith(('.plist', '.service', '.timer'))]; sys.exit(0 if r.returncode == 0 and all(s in r.stdout for s in ('--prometheus-port 9464', 'otel/prometheus.yml', '--check-rules')) and not svc else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "otel/prometheus.yml scrapes the adapter's /metrics on 127.0.0.1:9464 and loads otel/kbmon.rules.yml, whose alert rules fire while the lookup eval failed (kbmon_kb_eval_passed == 0), while kbmon holds any alert (kbmon_alerts > 0) and while an orphan process is listed (kbmon_sessions_procs with class orphan above 0)",
+      "check": 2
+    },
+    {
+      "clause": "kbmon_otel.py --check-rules FILE reads one kbmon snapshot through the SDK's Prometheus reader in the process, with no listener and no OTLP send",
+      "check": 0
+    },
+    {
+      "clause": "exits 0 when every kbmon_ metric name the file's expressions use is one /metrics serves, else exits 1 naming each missing name",
+      "check": 1
+    },
+    {
+      "clause": "kb/_self/monitoring.md has a section A local Prometheus that says how to start the adapter with --prometheus-port 9464 and a Prometheus the operator installs with otel/prometheus.yml",
+      "check": 3
+    },
+    {
+      "clause": "documents --check-rules, with no host service file in the repository",
+      "check": 3
+    }
+  ],
+  "touches": [
+    "otel/prometheus.yml",
+    "otel/kbmon.rules.yml",
+    "otel/kbmon_otel.py",
+    "otel/otel_prom.py",
+    "kb/_self/monitoring.md"
+  ],
+  "notes": "Premise (run 2026-10-22): kbmon_otel.py has no --check-rules (argparse: unrecognized arguments) and otel/ holds no Prometheus config or rules. A live run of the adapter with --prometheus-port 9464 served kbmon_kb_eval_passed, kbmon_alerts and kbmon_sessions_procs{class=orphan}; names gain a unit suffix (kbmon.kb.index_age, unit s, is kbmon_kb_index_age_seconds) and a sum gains _total, which is why the names are proven against the reader, not derived by hand. The operator installs Prometheus outside the repository (operator choice 2026-10-22: doc recipe only, no host service file). SP-qh2j24z2 items ST-wic5d76z and BG-fjfoh3p4 also change kbmon_otel.py and otel_prom.py; that sprint is queued, so the two do not run at once."
+}
