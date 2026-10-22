@@ -13599,7 +13599,75 @@ e34635ade693,privacy/gliner-models.md,S856,unlocated:no-match,,,,,2026-10-10
 e34635ade693,privacy/gliner-models.md,S858,located,GLiNER-PII: Zero-shot PII model > 💡 Use Cases > 🌟 **Extended Applications** > Secure Mobile & Edge Processing,devic;card;name,c642231a027c2f0e,"piitypes = [""name"", ""phone number"", ""email address"", ""ssn"", ""credit card""] # All processing happens locally - no data leaves device",2026-10-10
 e34635ade693,privacy/gliner-models.md,S860,located,Usage Recommendation,name;label,d0c4337d0ad0bd11,"labels = [""email"", ""phonenumber"", ""username""]",2026-10-10
 f9a616af2583,privacy/gliner-models.md,S-zw4luelo,unlocated:no-match,,,,,2026-10-10
+0453a3d6901f,privacy/morfeusz-polish-lemmatisation.md,S-lbstvu2m,unlocated:no-match,,,,,2026-10-22
+0ca3aa211e41,privacy/morfeusz-polish-lemmatisation.md,S-d3lsp242,unlocated:not-text,,,,,2026-10-22
+0ca3aa211e41,privacy/morfeusz-polish-lemmatisation.md,S-jhuny2li,unlocated:not-text,,,,,2026-10-22
+0ca3aa211e41,privacy/morfeusz-polish-lemmatisation.md,S-jvn5jnee,located,Index of /morfeusz/20260823/,morfeusz2-dictionary-sgjp-20260823.tgz;dictionary;morfeusz2;polimorf;sgjp;tgz,6a425e7fde3a130a,morfeusz2-dictionary-polimorf-20260823.tgz 23-Aug-2026 23:21 8M morfeusz2-dictionary-sgjp-20260823.tgz 23-Aug-2026 23:20 7M,2026-10-22
+0f46594ae387,privacy/morfeusz-polish-lemmatisation.md,S-xz7r3unc,unlocated:not-text,,,,,2026-10-22
+0f46594ae387,privacy/morfeusz-polish-lemmatisation.md,S-zfdnyluh,unlocated:not-text,,,,,2026-10-22
+151d7ac996c4,privacy/morfeusz-polish-lemmatisation.md,S-7mdjthbr,unlocated:no-match,,,,,2026-10-22
+151d7ac996c4,privacy/morfeusz-polish-lemmatisation.md,S-ix7uqv2r,located,,pypi;spa;3.8;3.0;core;packag;version;spacy,1fb63413d7293750,"It features\nstate-of-the-art speed and neural network models for tagging, parsing,\nnamed entity recognition, text classification and more, multi-task\nlearning with pretrained transformers like BERT, as well as",2026-10-22
+151d7ac996c4,privacy/morfeusz-polish-lemmatisation.md,S-tzw22ffl,unlocated:no-match,,,,,2026-10-22
+1aac9e2601e0,privacy/morfeusz-polish-lemmatisation.md,S-caclcxya,unlocated:no-match,,,,,2026-10-22
+1aac9e2601e0,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-22
+1aac9e2601e0,privacy/morfeusz-polish-lemmatisation.md,S-zfdnyluh,unlocated:not-text,,,,,2026-10-22
+1cb11f523e49,privacy/morfeusz-polish-lemmatisation.md,S-igmmjjid,located,,lookup;pos;pos_lookup;spacy;mode;lemmatizer,c932dbf55b751be8,"""mode"": ""poslookup"", ""overwrite"": False, ""scorer"": {""@scorers"": ""spacy.lemmatizerscorer.v1""},",2026-10-22
+1fe00388449d,privacy/morfeusz-polish-lemmatisation.md,S-zfdnyluh,unlocated:not-text,,,,,2026-10-22
+23ca2a337c09,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-22
+24ae8d683b5e,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-22
+24d7afdd8f33,privacy/morfeusz-polish-lemmatisation.md,S-jvn5jnee,unlocated:no-match,,,,,2026-10-22
+24d7afdd8f33,privacy/morfeusz-polish-lemmatisation.md,S-zfdnyluh,unlocated:not-text,,,,,2026-10-22
+2d1923e85599,privacy/morfeusz-polish-lemmatisation.md,S-te5pgsg3,unlocated:not-text,,,,,2026-10-22
+2d1923e85599,privacy/morfeusz-polish-lemmatisation.md,S-xz7r3unc,unlocated:not-text,,,,,2026-10-22
+36a4f52e44e2,privacy/morfeusz-polish-lemmatisation.md,S-caclcxya,located,,releas;pypi;1.99.15;morfeusz2,b37b4cb25ce235a0,"""releaseurl"": ""https://pypi.org/project/morfeusz2/1.99.15/"",",2026-10-22
+36a4f52e44e2,privacy/morfeusz-polish-lemmatisation.md,S-jvn5jnee,unlocated:no-match,,,,,2026-10-22
+3898de0363ec,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-22
+3babbe845271,privacy/morfeusz-polish-lemmatisation.md,S-haoeqge5,unlocated:no-match,,,,,2026-10-22
+3babbe845271,privacy/morfeusz-polish-lemmatisation.md,S-pxcitvg3,unlocated:no-match,,,,,2026-10-22
+3babbe845271,privacy/morfeusz-polish-lemmatisation.md,S-sirpm4j2,unlocated:no-match,,,,,2026-10-22
+403c57acfebd,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-22
+4ee5200af74b,privacy/morfeusz-polish-lemmatisation.md,S-ohpwxaqx,located,fmt: off,adp;adv;aux;lemma_lookup_adj;num;part;pron;adj,39b5b0ffeb5d4288,"""lemmalookupadj"", ""lemmalookupadp"", ""lemmalookupadv"", ""lemmalookupaux"", ""lemmalookupnoun"", ""lemmalookupnum"", ""lemmalookuppart"", ""lemmalookuppron"", ""lemmalookupverb""",2026-10-22
+5580c8b63097,privacy/morfeusz-polish-lemmatisation.md,S-fgod2hh4,unlocated:not-text,,,,,2026-10-22
+5580c8b63097,privacy/morfeusz-polish-lemmatisation.md,S-haoeqge5,unlocated:no-match,,,,,2026-10-22
+5580c8b63097,privacy/morfeusz-polish-lemmatisation.md,S-pxcitvg3,unlocated:no-match,,,,,2026-10-22
+5580c8b63097,privacy/morfeusz-polish-lemmatisation.md,S-sirpm4j2,unlocated:no-match,,,,,2026-10-22
+5c092c73d228,privacy/morfeusz-polish-lemmatisation.md,S-caclcxya,unlocated:no-match,,,,,2026-10-22
+5c092c73d228,privacy/morfeusz-polish-lemmatisation.md,S-g6zhzddt,unlocated:no-match,,,,,2026-10-22
+75d884bc8502,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-22
+7a6fcc850e8c,privacy/morfeusz-polish-lemmatisation.md,S-fkosk2vn,located,Analizator morfologiczny Morfeusz > Podstawowe pojęcia > Program Morfeusz,ipi;system;tagset;pan,ae8bfb20ca9fe7ac,"Z niewielkimi zmianami używany jest system znaczników (ang. tagset) opisany w artykule System znaczników morfosyntaktycznych w korpusie IPI PAN opublikowanym w Polonikach XXII/XXIII, 2003, s.",2026-10-22
+7a6fcc850e8c,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-22
+7ad367c27bfc,privacy/morfeusz-polish-lemmatisation.md,S-haoeqge5,unlocated:no-match,,,,,2026-10-22
+7ad367c27bfc,privacy/morfeusz-polish-lemmatisation.md,S-xz7r3unc,unlocated:not-text,,,,,2026-10-22
+7b9cfa39708b,privacy/morfeusz-polish-lemmatisation.md,S-xz7r3unc,unlocated:not-text,,,,,2026-10-22
+8786f2a002cd,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-22
+8786f2a002cd,privacy/morfeusz-polish-lemmatisation.md,S-zfdnyluh,unlocated:not-text,,,,,2026-10-22
+88bc72ad4dd6,privacy/morfeusz-polish-lemmatisation.md,S-xz7r3unc,unlocated:not-text,,,,,2026-10-22
 8eb4ec6631c2,privacy/morfeusz-polish-lemmatisation.md,S-u2shnqdn,unlocated:no-match,,,,,2026-10-21
+938a2bcb18c2,privacy/morfeusz-polish-lemmatisation.md,S-jvn5jnee,unlocated:no-match,,,,,2026-10-22
+938a2bcb18c2,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-22
+990f9399b1af,privacy/morfeusz-polish-lemmatisation.md,S-c3pmsz4l,unlocated:no-match,,,,,2026-10-22
+990f9399b1af,privacy/morfeusz-polish-lemmatisation.md,S-kpfntmtz,unlocated:no-match,,,,,2026-10-22
+9becc676674b,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-22
+a4f69027ef32,privacy/morfeusz-polish-lemmatisation.md,S-te5pgsg3,unlocated:not-text,,,,,2026-10-22
+a4f69027ef32,privacy/morfeusz-polish-lemmatisation.md,S-xz7r3unc,unlocated:not-text,,,,,2026-10-22
+aabce30804e7,privacy/morfeusz-polish-lemmatisation.md,S-fgod2hh4,unlocated:not-text,,,,,2026-10-22
+aea083fb2f7a,privacy/morfeusz-polish-lemmatisation.md,S-2b4qw6yv,unlocated:no-match,,,,,2026-10-22
+aea083fb2f7a,privacy/morfeusz-polish-lemmatisation.md,S-c2dp6hok,unlocated:no-match,,,,,2026-10-22
+aea083fb2f7a,privacy/morfeusz-polish-lemmatisation.md,S-i6a2ijlk,unlocated:no-match,,,,,2026-10-22
+b8278601bd36,privacy/morfeusz-polish-lemmatisation.md,S-xz7r3unc,unlocated:not-text,,,,,2026-10-22
+bde955348bd6,privacy/morfeusz-polish-lemmatisation.md,S-te5pgsg3,unlocated:not-text,,,,,2026-10-22
+bde955348bd6,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-22
+dadd06057b75,privacy/morfeusz-polish-lemmatisation.md,S850,unlocated:no-match,,,,,2026-10-22
+dadd06057b75,privacy/morfeusz-polish-lemmatisation.md,S-haoeqge5,unlocated:no-match,,,,,2026-10-22
+dadd06057b75,privacy/morfeusz-polish-lemmatisation.md,S-lbstvu2m,unlocated:no-match,,,,,2026-10-22
+e3ec518e4d2f,privacy/morfeusz-polish-lemmatisation.md,S-fkosk2vn,located,Analizator morfologiczny Morfeusz > Podstawowe pojęcia > Warianty programu Morfeusz,polimorf;sjp;sjp.pl;sgjp;siat,e1e39df44019a1aa,"Polimorf, wykorzystujący słownik fleksyjny Polimorf stanowiący połączenie danych SGJP z tworzonymi społecznościowo danymi Morfologika/sjp.pl. Dane Morfeusza SIaT miały z natury charakter przybliżony, ponieważ Indeks Tokarskiego-Saloniego",2026-10-22
+e3ec518e4d2f,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-22
+f0f7cdc23320,privacy/morfeusz-polish-lemmatisation.md,S-lbstvu2m,unlocated:no-match,,,,,2026-10-22
+f1995846b7b3,privacy/morfeusz-polish-lemmatisation.md,S-haoeqge5,unlocated:no-match,,,,,2026-10-22
+f1995846b7b3,privacy/morfeusz-polish-lemmatisation.md,S-ohpwxaqx,unlocated:no-match,,,,,2026-10-22
+f607d305e635,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-22
+f6ce7405723c,privacy/morfeusz-polish-lemmatisation.md,S-ohpwxaqx,unlocated:no-match,,,,,2026-10-22
+fc6e819ea1f0,privacy/morfeusz-polish-lemmatisation.md,S-caclcxya,located,,macosx;macosx_11_0_universal2;universal;1.99.15;abi3;cp310;packag;morfeusz2,4fe3355ef900c673,"""url"": ""https://files.pythonhosted.org/packages/a3/cf/87a496f0632b2c7d97bfbbf5f38000510d16c9b2e7c5d6ea8ffe11eebe07/morfeusz2-1.99.15-20260601-cp310-abi3-macosx110universal2.whl"",",2026-10-22
 0515845f4b26,privacy/nist-sp800-38g.md,S869,unlocated:gone,,,,,2026-10-10
 11d11c51f622,privacy/nist-sp800-38g.md,S866,unlocated:no-match,,,,,2026-10-10
 11d11c51f622,privacy/nist-sp800-38g.md,S867,unlocated:no-match,,,,,2026-10-10
