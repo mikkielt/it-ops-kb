@@ -32,7 +32,7 @@
           "title": {"type": "string", "minLength": 1},
           "publisher": {"type": "string", "minLength": 1},
           "licence": {"type": "string", "minLength": 1},
-          "reuse": {"type": "string", "minLength": 1},
+          "reuse": {"type": "string", "enum": ["copy", "quote", "paraphrase", "unknown"]},
           "retrieved_utc": {"type": "string"},
           "version_or_date": {"type": "string"},
           "artifact_sha256": {"type": "string"},
