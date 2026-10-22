@@ -2,7 +2,7 @@
   "id": "ST-rupsi7pz",
   "kind": "story",
   "title": "kbmon raises an eval alert while the newest recorded lookup eval at a landing failed",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-4f4m3noq",
   "priority": "P2",
@@ -54,5 +54,7 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
-  "notes": "Premise (run 2026-10-22): a planted snapshot whose kb panel eval state is failed and whose host disk is at 5% free, run through kbmon --once --from-snapshot, exits 1 with only '!! ALERT disk low'; no eval alert. mon_kb has no alerts() while mon_host, mon_sessions and mon_querylog do (mon_view.py:87 calls module.alerts). kbmon's existing alerts: orphan, disk, delivery."
+  "notes": "Premise (run 2026-10-22): a planted snapshot whose kb panel eval state is failed and whose host disk is at 5% free, run through kbmon --once --from-snapshot, exits 1 with only '!! ALERT disk low'; no eval alert. mon_kb has no alerts() while mon_host, mon_sessions and mon_querylog do (mon_view.py:87 calls module.alerts). kbmon's existing alerts: orphan, disk, delivery.",
+  "claimed_by": "d72ea2f1",
+  "operator": "op-f618a13e"
 }
