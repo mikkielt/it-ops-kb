@@ -1,0 +1,48 @@
+{
+  "id": "ST-bbxlwm4b",
+  "kind": "story",
+  "title": "Census sessions can read a source that is a PDF, an archive or a spreadsheet",
+  "status": "todo",
+  "parent": "EP-mkzkd7in",
+  "sprint": "SP-rmp5zm5a",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "python3 _tools/fetch.py text URL prints the text of a zip or tar archive's members with the standard library and of a PDF through pdftotext when it is on PATH; census.fetch_argv(url) gives a census session that fetch.py text command for a url ending in .pdf, .zip, .tar.gz, .tgz or .xlsx and the curl command for any other url; census.py dispatch builds each session's fetch rule from census.fetch_argv, so the session's --allowedTools names the fetch.py text command exactly",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import io, os, subprocess, sys, tarfile, tempfile, threading, zipfile, functools, http.server\nd = tempfile.mkdtemp()\nwith zipfile.ZipFile(os.path.join(d, 'a.zip'), 'w') as z:\n    z.writestr('docs/readme.txt', 'planted zip line 7f3a')\nwith tarfile.open(os.path.join(d, 'b.tar.gz'), 'w:gz') as t:\n    b = b'planted tar line 9c1e'\n    i = tarfile.TarInfo('docs/notes.md'); i.size = len(b); t.addfile(i, io.BytesIO(b))\ndef pdf(text):\n    objs = ['<< /Type /Catalog /Pages 2 0 R >>', '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',\n            '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 100] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>',\n            None, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>']\n    s = 'BT /F1 12 Tf 10 50 Td (%s) Tj ET' % text\n    objs[3] = '<< /Length %d >>\\nstream\\n%s\\nendstream' % (len(s), s)\n    out, offs = b'%PDF-1.4\\n', []\n    for i, o in enumerate(objs, 1):\n        offs.append(len(out)); out += ('%d 0 obj\\n%s\\nendobj\\n' % (i, o)).encode()\n    x = len(out)\n    out += ('xref\\n0 %d\\n0000000000 65535 f \\n' % (len(objs) + 1)).encode() + b''.join(b'%010d 00000 n \\n' % o for o in offs)\n    out += ('trailer\\n<< /Size %d /Root 1 0 R >>\\nstartxref\\n%d\\n%%%%EOF\\n' % (len(objs) + 1, x)).encode()\n    return out\nopen(os.path.join(d, 'c.pdf'), 'wb').write(pdf('planted pdf line 4b2d'))\nh = functools.partial(http.server.SimpleHTTPRequestHandler, directory=d)\nh.log_message = lambda *a: None\nsrv = http.server.ThreadingHTTPServer(('127.0.0.1', 0), h)\nthreading.Thread(target=srv.serve_forever, daemon=True).start()\nport, bad = srv.server_address[1], []\nfor name, want in (('a.zip', 'planted zip line 7f3a'), ('b.tar.gz', 'planted tar line 9c1e'), ('c.pdf', 'planted pdf line 4b2d')):\n    p = subprocess.run([sys.executable, '_tools/fetch.py', 'text', 'http://127.0.0.1:%d/%s' % (port, name)], capture_output=True, text=True, timeout=60)\n    if p.returncode or want not in p.stdout:\n        bad.append('%s: exit %d, %r' % (name, p.returncode, (p.stdout + p.stderr)[-200:]))\nsrv.shutdown()\nprint(len(bad), 'planted archives and PDF files fetch.py text did not read:', bad)\nsys.exit(1 if bad else 0)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport census\nbad = []\nfor u in ('https://example.org/a/report.pdf', 'https://example.org/b/pkg.zip', 'https://example.org/c/src.tar.gz', 'https://example.org/c/src.tgz', 'https://example.org/d/list.xlsx'):\n    a = census.fetch_argv(u)\n    if a[:3] != ['python3', '_tools/fetch.py', 'text'] or a[-1] != u:\n        bad.append((u, a))\na = census.fetch_argv('https://example.org/e/page.html')\nif a[0] != 'curl':\n    bad.append(('page', a))\nprint(len(bad), 'urls given the wrong census fetch command:', bad)\nsys.exit(1 if bad else 0)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "python3 _tools/fetch.py text URL prints the text of a zip or tar archive's members with the standard library and of a PDF through pdftotext when it is on PATH",
+      "check": 0
+    },
+    {
+      "clause": "census.fetch_argv(url) gives a census session that fetch.py text command for a url ending in .pdf, .zip, .tar.gz, .tgz or .xlsx and the curl command for any other url",
+      "check": 1
+    },
+    {
+      "clause": "census.py dispatch builds each session's fetch rule from census.fetch_argv, so the session's --allowedTools names the fetch.py text command exactly",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/census.py",
+    "_tools/fetch.py",
+    "kb/_self/web-sources.md",
+    "kb/_self/tools.md"
+  ],
+  "notes": "Operator 2026-10-22: confirm the 206 cited sources the 2026-10-21 census left unconfirmed before the census tag, by widening the census sessions and rerunning those rows (ST-bjwyl2bc). 34 of the 206 have a .pdf (23), .zip (5), .gz (3), .tgz (2) or .xlsx (1) url; dispatch_plan gives every page row `curl -sSL URL`, whose binary body a session cannot read. pdftotext is at /opt/homebrew/bin on this host; fetch.py has no PDF or archive text route (its normalized text returns None for zip, pdf and octet-stream). The other 172 failed on caps, newer releases, HTTP errors and missing rules; ST-bjwyl2bc reruns them with a higher cap. Premise on origin/main of 2026-10-22: check 0 exits 1 (fetch.py has no text subcommand, exit 2 on all three planted files), check 1 exits 1 (census has no fetch_argv). Clause 3 is read by check 1 only through fetch_argv; the worker adds a dispatch --dry-run line on a planted census log if one is cheap. A new fetch.py subcommand is documented in kb/_self/tools.md and kb/_self/web-sources.md (docs map rows 37, 38, 95, 96). An .xlsx url may print the sheet's shared strings only."
+}
