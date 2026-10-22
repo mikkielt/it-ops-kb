@@ -2,7 +2,7 @@
 topic: security/gentoo-stage-files-init-systems
 priority: P3
 applies_to: "Gentoo Linux stage files (what stage 3 contains, naming, verification and unpacking), the profile that goes with them, and the OpenRC and systemd init system choice"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-qfnocjvf, S-rq7fzez5, S-kdxg3wyq, S-6er43wub, S-5rih6fam, S-6egnea5f, S-ak5nrgfs, S-rzs2uo4g]
 status: partial
 ---

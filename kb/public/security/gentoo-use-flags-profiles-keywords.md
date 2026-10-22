@@ -2,7 +2,7 @@
 topic: security/gentoo-use-flags-profiles-keywords
 priority: P3
 applies_to: "Gentoo Linux Portage: what a USE flag, a profile and a keyword do, where each is set (make.conf, package.use, package.accept_keywords, the profile) and the order they are layered in"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-dkzzajvo, S-w323r75a, S-jcuv5ggt, S-c5iscbp4, S-6egnea5f, S-rnjsi3xg, S-cl6ijk7g, S-cvsv6e4z, S-5rih6fam, S-5lblcwaf, S-uhuj7vad]
 status: complete
 ---

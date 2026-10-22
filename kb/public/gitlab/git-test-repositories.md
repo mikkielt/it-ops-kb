@@ -2,7 +2,7 @@
 topic: gitlab/git-test-repositories
 priority: P3
 applies_to: "Git 2.55.0 (documentation and source at the v2.55.0 tag): throwaway repositories built by test suites (local clones, templates, fast-import, automatic maintenance, per-process configuration), and how tools read revisions, worktree links, a branch a worktree holds, index bits and a temporary index (`GIT_INDEX_FILE`, `git write-tree`), and how `git merge-file`, the built-in merge drivers and a rebase resolve two edits of one line; Git for Windows v2.56.0.windows.2 (core.longpaths)"
-retrieved_utc: 2026-10-18
+retrieved_utc: 2026-10-21
 sources: [S-r4j6qovt, S-njfmq56u, S-oyhmktnd, S-uea2fdpv, S-vmz33l7n, S-7kl4eeso, S-f5whqkwk, S-3qf7ndi6, S-ali5r4n7, S-sx4rosvv, S-i3btr2xr, S-udwlzday, S-3au2dknw, S-hwicl2h6, S-hnrqsiz4, S-xcnkwrn4, S-j3galfta, S-2u6tfn4r, S-rzi7mtmw, S-r6wgcwme, S-33l7g2u2, S-k2jlpd4u, S-nv6io42x, S-miw74ti3, S-zflhytlw, S-waqn37nq, S-4aovy2cm, S-kzv2kznr, S-dcbs6vpj, S-vupwsv3m, S-fqaj6jn5, S-wyfuoqs5, S-lnlroicz, S-j4qkzgvv, S-rscocily, S-b6uvvu45, S-nftrmgem, S-nxowyi4h, S-zwbgb73y, S-tdddef3t, S-qovha7ae, S-y5k6dlda, S-slmllv74, S-6foknrbi, S-tx5lxmr3, S-lr3jwdq2, S-4h6wi6hb, S-vif3vb3s, S-3iovxrkf, S-q2ovao5z, S-jzx3qobt, S-xrbt6ox6, S-f52w3kq4, S-wso54hzy, S-omk45lhu, S-mswhg54i, S-dtfp5rjf]
 status: complete
 ---

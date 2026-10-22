@@ -2,7 +2,7 @@
 topic: logs/microsoft-sentinel
 priority: P2
 applies_to: "Microsoft Sentinel (Defender portal unified SecOps and Azure portal), docs ms.date through 2026-09"
-retrieved_utc: 2026-09-28
+retrieved_utc: 2026-10-21
 sources: [S-qmi72hvd, S-56eqdqa6, S-btmphtyp, S-6c6jslfs, S-cmyl6p5v, S-guca45p3, S-etccrdda, S-hya3uz6p, S-34uiuy35, S-tf6fezvb, S-vjefvouf, S-ur2l6cs3, S-luprngvc, S-me4bxp52, S-ycrujjsf, S-5kjwbj3c, S-ofreafga, S-w47nempm, S-3dcvyq2z, S-r4klpeuf, S-apxtyshr, S-hvr4bpb2, S-qkyfycn6, S-vicgida6, S-bxionmbk]
 status: complete
 ---

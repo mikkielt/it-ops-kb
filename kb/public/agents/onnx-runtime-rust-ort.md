@@ -2,7 +2,7 @@
 topic: agents/onnx-runtime-rust-ort
 priority: P3
 applies_to: "ort 2.0.0-rc.13 (pykeio/ort, ONNX Runtime 1.28 API), ONNX Runtime 1.28.3 release assets, ONNX 1.23.2 model format, Hugging Face Hub API as of 2026-10-11"
-retrieved_utc: 2026-10-13
+retrieved_utc: 2026-10-21
 sources: [S-wl3gkg3g, S-d7xuprcc, S-5bx2p3mo, S-miwhfdzy, S-7zyahsl3, S-jdu5egnj, S-bzhegec5, S-msk5qtcf, S-pwbxp7jw, S-gs7u2ou5, S-m5r2fcso, S-mw6rc3qq, S-o3nqheje, S-5xaderxo, S-3mftdvfg, S-ktoxup5h, S-l3go6sje, S-6z4pv23l, S-omvw5ahk, S-45rrlyyd, S-cxzftyij, S-7srl2gyq, S-ah7l36rr, S-togouwq3, S-u3hzriiy, S-x6bpplvz, S-a7uyxlhd, S-atc7uhx5, S-xjm5bsys, S-gzswlsft, S-i65jlupl, S-ujreltcp, S-yliumtdz, S-co3g3h4o, S-hmcb2gfz, S-ixcjfodz, S-rlepjcn5, S-7o37zl5s, S-anwc4b5l, S-y7gpyp7l, S-rmgaatpo, S-hvv2dftt, S-qfs4airs, S-onqi3s6s, S-y5htwc5q, S-g5w4t2p3, S-daq6j6ac]
 status: partial
 ---

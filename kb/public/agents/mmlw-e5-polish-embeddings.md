@@ -2,7 +2,7 @@
 topic: agents/mmlw-e5-polish-embeddings
 priority: P3
 applies_to: "sdadas/mmlw-e5-small, -base, -large at repo shas 2c03d4d83448, 9ba15feff8a1, a7d9af002b46 and intfloat/multilingual-e5-small, -base, -large at 614241f622f5, d12875059715, 3d7cfbdacd47 (Hugging Face model cards, configs and API, retrieved 2026-10-11); PIRB paper (arXiv v2); pgvector README at master@7db2345ed99b"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-jwdbazk2, S-rd6qosor, S-pxbj347n, S-lbvzxugb, S-gh576tom, S-pbbsyo47, S-mskmsg2n, S-glyyxkhx, S-7chuxblv, S-mu7bkyzy, S-n3nnodaf, S-355aqkqx, S-m4jimv5l, S-6f3rjo5w, S-lgzmhh4v, S-dgww3las, S-fncwoz4o, S-tmatlfei, S-7v4o3ypv, S-ywnspvi2, S-fanrscfv, S-c6piuw5s, S-vk2qahbe, S-qhb5i45k, S-m6getpdd, S-4ptfxskc, S-sbuv7mtf, S-62hqvrkt, S-whovpca2, S-3rkj7rco, S-524t5qtl]
 status: partial
 ---

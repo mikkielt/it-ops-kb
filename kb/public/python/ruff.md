@@ -2,7 +2,7 @@
 topic: python/ruff
 priority: P2
 applies_to: [ruff]
-retrieved_utc: 2026-09-29
+retrieved_utc: 2026-10-21
 sources: [S-fy5sn7ch, S-h2lscnwe, S-y3zhzpmv, S-7fmtkrv5, S-s3ytflwh, S-yfbe6ete, S-guaor3a5, S-my7mtswb, S-ntllah3f, S-okwkut4q, S-7e63teyx, S-gzliwomt, S-szaj7ze7]
 status: complete
 ---

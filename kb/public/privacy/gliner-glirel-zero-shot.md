@@ -2,7 +2,7 @@
 topic: privacy/gliner-glirel-zero-shot
 priority: P3
 applies_to: "gliner 0.2.29 (tag v0.2.29), glirel 1.2.1 (tag v1.2.1), gline-rs 1.1.0 (tag v1.1.0); Hugging Face repos at the shas cited in each source row"
-retrieved_utc: 2026-10-13
+retrieved_utc: 2026-10-21
 sources: [S-pwbxp7jw, S-miwhfdzy, S-jdu5egnj, S-7bjdu5bv, S-rvd2zkel, S-y42nqxiw, S-hfifhdhx, S-sislku4q, S-w7vp7g4j, S-vdhsig6s, S-ewb6gt73, S-sw4xvzwh, S-wrx2q5ya, S-7ke3sttd, S-pvemvpkp, S-hpdsbqwa, S-dwg2wis7, S-2fmzqhdr, S-gzvx6zzv, S-kd2ecakr, S-snmqzq62, S-zmg7nlby, S-gtbynljf, S-7w6x3tvz, S-z3khz6q6, S-zeyni7ox, S-7p4fya6x, S-vqqlqtwg, S-pefl6gq2, S-fxeklpmh, S-bfttmynz, S-n5dkd37b, S-7aohd7sc, S-ulch3bqh, S-o4aom6i2, S-qkyjirm6, S-ngy65th6, S-uu7ov3pw, S-edkar7xu, S-pjp4rzor, S-gc45kgud, S-eu53rrws, S-w6u6mtcx, S-nshkwezk, S-hesowhet, S-bzhegec5, S-gtp7oa24]
 status: partial
 ---

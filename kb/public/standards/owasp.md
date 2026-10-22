@@ -2,7 +2,7 @@
 topic: standards/owasp
 priority: P2
 applies_to: "OWASP Agentic Top 10 2026; OWASP MCP Top 10 (2025 beta); OWASP LLM Top 10 2025 and 2026"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-s3hkw2h4, S761, S762, S763, S764, S765, S1540, S-mq77ii5m]
 status: complete
 ---

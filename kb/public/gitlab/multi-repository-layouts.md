@@ -2,7 +2,7 @@
 topic: gitlab/multi-repository-layouts
 priority: P3
 applies_to: "git v2.55.0 documentation (gitsubmodules, git-submodule, protocol.* configuration, git-sparse-checkout, partial clone design notes, git-clone, git-push and push.* configuration, uploadpack.allowFilter, submodule.c, transport.c and builtin/push.c at v2.55.0, contrib git-subtree); GitLab CI/CD submodules, forks and merge requests from forks (gitlab-org/gitlab @9f1632e2); git-cherry-pick, git-cherry, git-rebase, list-objects.c, connected.c and builtin/pack-objects.c at v2.55.0; GitHub pull requests from forks; GitLab clone and monorepo pages; GitHub forks, a GitHub Blog post on partial clone and the GHES 3.21 Git traffic page; a local probe with git 2.50.1 (Apple Git-155) on macOS"
-retrieved_utc: 2026-10-19
+retrieved_utc: 2026-10-21
 sources: [S-tzjw5vut, S-vvarw4uu, S-umm7t5f4, S-dcbs6vpj, S-kzv2kznr, S-zflhytlw, S-53fmero7, S-bhnnr3li, S-6mfmfuft, S-thoitei2, S-gt67rjc2, S1591, S-y5k6dlda, S-hvg7hx3q, S-dhea6atb, S-k2jlpd4u, S-lu3mudsw, S-7ozb4qou, S-hvhro6n5, S-p6qwirq5, S-nhku2azk, S-pmhgjvef, S-hvuk3dqt, S-l6s4hfqp, S-ph2mlwwa, S-mvqt325m, S-5obxyibm, S-7gx5uugz, S-zniasdly, S-oewizkwq, S-vck2yl5v, S-lwtajpn7, S-mjtf6vif, S-2f2bbr7f, S-7otaqc5c, S-mhjsbdfr, S-rl2loiqt, S-3o2ashyn, S-esk5mh7z, S-7vhtlusy, S-7pysmrqf, S-acpw7zsh, S-askrbg64, S-7kl4eeso, S-wt7v2674]
 status: partial
 ---

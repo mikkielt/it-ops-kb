@@ -2,7 +2,7 @@
 topic: python/imports-and-modules
 priority: P3
 applies_to: [python]
-retrieved_utc: 2026-10-05
+retrieved_utc: 2026-10-21
 sources: [S-lebxvs2r, S-y3vaig55, S-pnak2iyz, S-uwxacpum, S-d77lvlq4, S-kzlfvktk, S-o7nczrbn, S-nmpccgft, S-ci5jq2sq, S-q5frtccp, S-27tycl3n]
 status: complete
 ---

@@ -2,7 +2,7 @@
 topic: gitlab/git-commit-paths-and-symlinks
 priority: P3
 applies_to: "Git 2.55.0 (documentation and source at the v2.55.0 tag): `git commit` with named paths (`--only`, `--include`), and how `git add`, `git commit` and `git log` treat a path under a symbolic link; the observed exit statuses and outputs were run with git 2.50.1 (Apple Git-155) on macOS"
-retrieved_utc: 2026-10-13
+retrieved_utc: 2026-10-21
 sources: [S-ziyhuwyc, S-kg2qicnp, S-piib4adi, S-eud6nij7, S-xixlwvap, S-4aovy2cm, S-zflhytlw]
 status: complete
 ---

@@ -2,7 +2,7 @@
 topic: reuse/log-collection-normalization
 priority: P2
 applies_to: "reading and normalizing CMTrace/CCM/event logs from an on-workstation search/tail/collect tool"
-retrieved_utc: 2026-09-28
+retrieved_utc: 2026-10-21
 sources: [S1020, S1021, S-5ub6genn, S-knqivzgt, S-unpitz6t, S-mblcg5ds]
 status: complete
 ---

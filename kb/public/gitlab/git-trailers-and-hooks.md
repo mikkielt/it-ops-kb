@@ -2,7 +2,7 @@
 topic: gitlab/git-trailers-and-hooks
 priority: P3
 applies_to: "git v2.55.0 documentation (git/git tag v2.55.0): git-interpret-trailers, pretty-formats, git-commit, git-push, githooks, trailer.* configuration, and for the push facts git-merge (`--ff-only` and its refusal over local changes), git-status and rev-list (ahead and behind counts), diff (`--name-only`, `--diff-filter`), git-merge-base, git-ls-remote and the remote.* and receive.* configuration; the parse examples were run with a local git; behaviour is the same on GitHub and GitLab remotes because the trailer rules are client-side"
-retrieved_utc: 2026-10-20
+retrieved_utc: 2026-10-21
 sources: [S-njfmq56u, S-dwkxab7d, S-2kqcgcf3, S-kr4uocm7, S-iz4bgagx, S-wtbq3lvm, S-d6iv4nbm, S-ziyhuwyc, S-wjfrtzpf, S-7dwkyip6, S-l6s4hfqp, S-ygtpb7no, S-zhftykfq, S-j3galfta, S-rzi7mtmw, S-gvt5wbk7, S-r6wgcwme, S-33l7g2u2, S-wk436jat, S-kbwvfzcv, S-zpfwc342, S-5wbgg3zy, S-5uzxo3eu, S-udwlzday, S-kg2qicnp, S-j6ns5cd4, S-yewzkyvz]
 status: partial
 ---

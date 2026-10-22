@@ -2,7 +2,7 @@
 topic: python/testcontainers-postgres-pytest
 priority: P3
 applies_to: "testcontainers-python 4.15.0 (PostgresContainer, Python >=3.10), pytest, Docker-API compatible runtime; GitLab docker:dind notes from GitLab docs master@55bfaf7f"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-2ibe4s6m, S-a525e6ew, S-geebp6gt, S-xbqajqu2, S-iastzky2, S-pw5sn74s, S-x7ub2eqf, S-pgxen5ty, S-ld5hflyc, S-futhpvg4, S-qx4duaky, S-xevnmrbh, S-y6d7rxoj, S-epepjb6f, S-bb3uummy]
 status: partial
 ---

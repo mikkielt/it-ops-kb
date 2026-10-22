@@ -2,7 +2,7 @@
 topic: agents/hybrid-retrieval
 priority: P2
 applies_to: "Azure AI Search hybrid/vector/semantic search (api-version 2026-04-01, retrieved 2026-09-26); Anthropic Contextual Retrieval (engineering post, retrieved 2026-09-26); pgvector (README/LICENSE at master, retrieved 2026-09-26); Elasticsearch RRF retriever (docs, retrieved 2026-09-26); Claude API search result blocks (retrieved 2026-09-27); doc2query and Doc2Query-- papers; Model2Vec v0.9.0; Sufficient Context paper; Anthropic reduce-hallucinations guide; Azure AI Search traffic analytics (retrieved 2026-09-27); Azure AI Search fuzzy search (retrieved 2026-10-11); Azure AI Search partial-term and special-character search (retrieved 2026-10-12); RRF (SIGIR 2009), MoR, RouterRetriever, SPLADE, inference-free learned sparse, ColBERTv2, BEIR, BRIGHT and GraphRAG papers; GraphRAG query docs at commit 4c8ef97; query performance prediction papers (2023-2026)"
-retrieved_utc: 2026-10-12
+retrieved_utc: 2026-10-21
 sources: [S-bfjgfchf, S-adb2hv5q, S-pgtfj4fh, S-btrwp2yj, S-dh75h5qt, S-jt6qyh46, S-jaycbw5k, S-net4uvqm, S-idqwhfg2, S-z7wh2sbr, S-4hditql5, S-524t5qtl, S-76smovmo, S-fn6fxrr5, S-4c46o537, S2135, S-qpqoaaqj, S-jnq56sj3, S-sqbfbcyk, S-aqnin65g, S-yi5xka25, S-fovhkyzc, S-enf2tnxi, S-5y6g7iij, S-dghvtpkr, S-yknt2enl, S-zapphi2u, S-fjxhj6uv, S-tjpagk62, S-3hg4s7nu, S-typv6xpp, S-lom3gqqn, S-63ms6dc7, S-ilzlwkww, S-tfxaexfl, S-rzdl5ab6, S-mtxzhduu, S-2w5ehbab, S-g2bbx2bz, S-hxd4fjjl, S-gcgkws5h, S-43qs4mfw, S-e6qw2drp, S-f2sg2wfn, S-w2g2bnsw, S-zrpjwjip, S-dmhfxnon, S-eow7dyxc, S-qsdk3esx, S-lsfxdurw, S-tiudfpoz, S-i6b6z3is, S-nhrhhimz, S-a2wa7lbg, S-j7z4u43w, S-qns6wzwe, S-aaaxxqtu, S-vjobnwrv, S-vg37lid6, S-z7tb6v5x, S-acm2juhd, S-ojya3ghv]
 status: complete
 ---

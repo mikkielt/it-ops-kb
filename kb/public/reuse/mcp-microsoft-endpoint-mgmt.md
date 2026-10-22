@@ -2,7 +2,7 @@
 topic: reuse/mcp-microsoft-endpoint-mgmt
 priority: P2
 applies_to: "a stdio MCP server for engineers, targeting ConfigMgr/Intune/Graph/Entra"
-retrieved_utc: 2026-09-28
+retrieved_utc: 2026-10-21
 sources: [S1019, S-eiluqiui, S-vouhh5ur]
 status: complete
 ---

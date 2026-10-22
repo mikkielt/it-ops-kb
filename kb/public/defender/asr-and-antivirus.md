@@ -2,7 +2,7 @@
 topic: defender/asr-and-antivirus
 priority: P2
 applies_to: "Microsoft Defender Antivirus and Attack Surface Reduction (ASR) rules on Windows 10/11 and Windows Server, managed via Intune, Configuration Manager, Group Policy, MDM CSP or local PowerShell; docs retrieved 2026-09-26"
-retrieved_utc: 2026-10-08
+retrieved_utc: 2026-10-21
 sources: [S-oc7bghb6, S-jlx5q3eb, S-tn7i36es, S-4adqmykc, S-bmoruabr, S-mxlwzhw5, S-3odg3w3u, S-tateky4b, S-kp35fytq, S-sfs6hoqq, S-f4gw3rhj, S-3ed4q5kx, S1472, S-oeh7ui3h, S-wqwf7kt5, S-pfbl6p36, S1402, S-bzyxqg37, S-rxcgi365, S-lkbn5y6v, S-go2hxmtt, S-wwlnekbg, S-idhc2ard, S-cbmoutip, S-3ecopsoa, S-e76qb37t]
 status: complete
 files: [defender/asr-rules.csv]

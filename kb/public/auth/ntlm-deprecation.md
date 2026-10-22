@@ -2,7 +2,7 @@
 topic: auth/ntlm-deprecation
 priority: P0
 applies_to: "Windows 11 24H2/25H2, Windows Server 2025"
-retrieved_utc: 2026-09-28
+retrieved_utc: 2026-10-21
 sources: [S1200, S-q5hl3fyg, S1214, S1215, S1216, S1217, S-wg5cdpjs]
 status: complete
 ---

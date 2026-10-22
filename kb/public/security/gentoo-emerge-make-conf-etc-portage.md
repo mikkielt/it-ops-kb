@@ -2,7 +2,7 @@
 topic: security/gentoo-emerge-make-conf-etc-portage
 priority: P3
 applies_to: "Gentoo Linux Portage: how emerge resolves, installs, updates and removes packages, the make.conf variables and defaults, and the files under /etc/portage"
-retrieved_utc: 2026-10-22
+retrieved_utc: 2026-10-21
 sources: [S-5hbh6sac, S-cvsv6e4z, S-c5iscbp4, S-hfgxhfhm, S-5lblcwaf, S-5dnrfnng, S-uhuj7vad, S-jcuv5ggt, S-cl6ijk7g, S-3v7thb2n, S-5rih6fam]
 status: complete
 ---

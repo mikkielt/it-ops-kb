@@ -2,7 +2,7 @@
 topic: python/stdlib-argparse-json
 priority: P3
 applies_to: [python, argparse, json]
-retrieved_utc: 2026-10-18
+retrieved_utc: 2026-10-21
 sources: [S-w47ijsvq, S-zzvrhdyd, S-glgntdsx, S-reb2jhbs, S-6gpxsapp, S-uj2rumru, S-36yy3wcx, S-lyf4dv2j, S-lcvgoknn, S-rs27i36t, S-hqcmecwc, S-5x4j2vvx, S-j5cbrmig, S-kli6pbvd, S-cddhnbl6, S-prllewm6, S-fp4roe5t, S-kvldeb34, S-jqewtaii, S-ew7mucsg, S-a3h5eijf, S-u7n437dn, S-tbohxt23]
 status: complete
 ---

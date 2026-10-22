@@ -2,7 +2,7 @@
 topic: security/management-plane-hardening
 priority: P1
 applies_to: "ConfigMgr current branch 2603; SQL Server 2022/2025; GitLab self-managed; Windows GitLab Runner"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S1480, S1481, S1482, S1483, S1484, S1485, S1486, S1487, S1488, S1489, S1490, S1491, S-thjpegto, S-psoai6ce, S-uixd54ua, S-56n7jfkc, S-7nbamxyc]
 status: complete
 ---

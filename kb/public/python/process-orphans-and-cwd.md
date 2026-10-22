@@ -2,7 +2,7 @@
 topic: python/process-orphans-and-cwd
 priority: P3
 applies_to: "POSIX.1-2024 process model (orphaned process group, parent id after exit, setsid, ps ppid and pgid); Linux man-pages 6.19 (getppid, setsid, subreaper, /proc/PID/cwd); macOS reading of a process's working directory through lsof 4.99.5's manual and the xnu-12377.1.9 libproc headers"
-retrieved_utc: 2026-10-20
+retrieved_utc: 2026-10-21
 sources: [S-w6stdctp, S-xp4b2g5v, S-tldzr3mf, S-dwwfdbtg, S-fcdwaly4, S-6xelj6je, S-vvqjpqvl, S-ppkjvumt, S-ifgjakdt, S-4qybivhq, S-dabwnzz5]
 status: partial
 ---

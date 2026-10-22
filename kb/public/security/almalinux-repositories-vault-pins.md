@@ -2,7 +2,7 @@
 topic: security/almalinux-repositories-vault-pins
 priority: P3
 applies_to: "AlmaLinux 8, 9 and 10 repositories (ids, enabling, mirrorlist and baseurl), the vault layout for old minor releases, and holding a host on one minor with dnf releasever or versionlock"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-46pbwuai, S-abrr4vdk, S-radwxzmz, S-k5qsqa2h, S-ecy4u4kc, S-7dwilv5i, S-gyovlkot, S-sjuiftqx, S-5z37fswu, S-b3frgffj, S-mhtf6uy4, S-il5vgghs]
 status: partial
 ---

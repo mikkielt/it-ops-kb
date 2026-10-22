@@ -2,7 +2,7 @@
 topic: auth/kerberos
 priority: P0
 applies_to: "Windows Server 2025 / Windows 11 24H2, ConfigMgr 2603, SQL Server 2022/2025"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-7jumyiid, S1604, S-6m7klb4f, S1200, S-q5hl3fyg, S1205, S1213, S1214, S1215, S1216, S1217, S-5yckwasl, S-7bouxzdg, S-7bjorbzz, S-ffangyfp, S-6ca4b7bg]
 status: complete
 ---

@@ -2,7 +2,7 @@
 topic: python/windows-python-install
 priority: P3
 applies_to: "CPython 3.14.7 for Windows: the python.org full installer (deprecated since 3.14), the Python install manager, the py launcher, PEP 514 registry entries and the Microsoft Store python alias; python.org release API read 2026-09-29"
-retrieved_utc: 2026-09-29
+retrieved_utc: 2026-10-21
 sources: [S-sjuwcuhk, S-lkt7o42d, S-jzqdphnx, S-srwea6un, S-4jodaif5, S-omr5o3jv, S-2jrm4fpu]
 status: partial
 ---

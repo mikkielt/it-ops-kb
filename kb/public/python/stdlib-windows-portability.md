@@ -2,7 +2,7 @@
 topic: python/stdlib-windows-portability
 priority: P3
 applies_to: "CPython 3.14.7 documentation (release tag); stdlib behaviour on Windows versus POSIX for detached processes, file locks, text files and interpreter names"
-retrieved_utc: 2026-10-18
+retrieved_utc: 2026-10-21
 sources: [S-vfd5kpka, S-hlwenztu, S-kyzwo2d6, S-2cf7ptty, S-dabwnzz5, S-ew7mucsg, S-oavxfpsn, S-f5bnvamj, S-ntbllsvy, S-sjuwcuhk, S-6bobcclf, S-e4zz24dq, S-ttcgrkbl, S-obrkrr52, S-hjy5rcb2, S743, S-5brdhqgo, S-jwv5eevl, S-ymqlfpgy, S-ujjrcinq, S-t5ahy22o, S-qz6kfi4i, S-qo63gfo7, S-edjp43o7, S-oqrlzkwe, S-ip5ugdeb, S-5qbsemqm, S-7ctlvynr, S-qvjkxdub, S-kkrnrh7n, S-j6wqryzp, S-iv3usyoz, S-ctjl4gek, S-4a5xeg5l, S-zch3x2zi, S1591, S-5ck3iec5, S-zyrhexwo, S-elctquww, S-cxfkxpxt, S-bq7uyypb, S-wazay7xw, S-4xllwpsz, S-6wdqctea]
 status: partial
 ---

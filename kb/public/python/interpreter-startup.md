@@ -2,7 +2,7 @@
 topic: python/interpreter-startup
 priority: P3
 applies_to: "CPython 3.14.7 command-line options and environment variables that change what the interpreter does at start (documentation at the v3.14.7 tag); Popen on Windows versus POSIX; compile-time warnings and the warnings filter (CPython 3.14.8 documentation and source)"
-retrieved_utc: 2026-10-08
+retrieved_utc: 2026-10-21
 sources: [S-d77lvlq4, S-dabwnzz5, S-ew7mucsg, S-nidh245i, S-q5frtccp, S-4yatj52m, S-j7sjakc5, S-mggaarah, S-gmtatolh]
 status: partial
 ---

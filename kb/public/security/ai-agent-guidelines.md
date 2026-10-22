@@ -2,7 +2,7 @@
 topic: security/ai-agent-guidelines
 priority: P2
 applies_to: "OWASP GenAI 2025-2026 lists; NIST AI RMF 1.0 / AI 600-1; MITRE ATLAS; ISO/IEC 42001:2023; Claude Code / MCP current; a tool-using agent with a tiered confirm gate, a model boundary and an audit table"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-s3hkw2h4, S761, S762, S763, S764, S765, S1540, S1541, S1542, S-vtejnyyv, S-fr4o3437, S1862, S1547, S1548, S-rfm4qs32, S1480, S-uvrn2v43, S-txcdv36f, S-ipluqqp5, S-m6uptfmu]
 status: complete
 ---

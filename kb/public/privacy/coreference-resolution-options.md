@@ -2,7 +2,7 @@
 topic: privacy/coreference-resolution-options
 priority: P3
 applies_to: "spacy-experimental 0.6.4; fastcoref 2.1.6 (PyPI) and main @ae22413; coreferee 1.5.0; herference @657eda2; CorPipe 24 @aaf90f0; allennlp 2.10.1; neuralcoref 4.0.0; IPI PAN Ruler and Bartek"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-gz6vychk, S-kp4hr5hg, S-zymyxmg5, S-2icfoxql, S-35hkzfyb, S-5twstxnc, S-ocgbnk4i, S-wd6aqhk3, S-ix7uqv2r, S-ygt5635t, S-ix32u5vu, S-lvf4vsum, S-oetpt5t7, S-cbfcxnwp, S-m6gdqyyo, S-7f4d52ha, S-xf7ynxdt, S-ixa2vaqw, S-yydpfutu, S-mxdbr2k2, S-blq5nxf2, S-6qgprb3q, S-fvrqnhop, S-xg33uza6, S-chminfqh, S-kdsj7amh, S-zcu63phy, S-lva6e5k2, S-h5hcpb6z, S-2egs3y3u, S-6j4ijcxo, S-el226szq, S-uznr3g4z, S-gur4fjbl, S-ukgogmmx, S-zynjjt6b, S-vfwwrhjc, S-537stu5l, S-6owdinqk, S-p6ormh2r, S-zt6artnx, S-6wb3kouw, S-rarraofb, S-hodbmqjs, S-36c52acv, S-5qzwrdja, S-c6kvn3ps, S-oa5ipfj6, S-xhyyf6km, S-36nisfrm, S-mo3khkbn]
 status: partial
 ---

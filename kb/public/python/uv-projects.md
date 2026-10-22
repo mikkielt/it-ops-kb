@@ -2,7 +2,7 @@
 topic: python/uv-projects
 priority: P2
 applies_to: [uv, python]
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-wmmyfoun, S-f2okeu6a, S-47yzu2ea, S-sqwzg5ex, S-y4cg63ji, S-j7nlfpkd, S-7xvirecf, S-x7kevebo, S-pwf7njbf, S-qo6uqong, S-4odritdm, S-2xpbl25y, S-dejuwanz, S-xeomedeo, S-dxvgh2py, S-sa5uywzm, S-tat3ywrz, S-pqjyeifm, S-dlc2x6gf]
 status: partial
 ---

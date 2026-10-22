@@ -2,7 +2,7 @@
 topic: security/gentoo-in-wsl
 priority: P3
 applies_to: "Gentoo Linux run under Windows Subsystem for Linux (WSL 2): importing a stage file or WSL tarball, .wslconfig and /etc/wsl.conf, init systems, drives and graphical programs"
-retrieved_utc: 2026-10-15
+retrieved_utc: 2026-10-21
 sources: [S-lxqjpj53, S-qfnocjvf]
 status: complete
 ---

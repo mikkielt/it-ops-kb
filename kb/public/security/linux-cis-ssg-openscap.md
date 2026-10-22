@@ -2,7 +2,7 @@
 topic: security/linux-cis-ssg-openscap
 priority: P3
 applies_to: "CIS Benchmarks, SCAP Security Guide profiles, OpenSCAP and Lynis for Debian, Ubuntu, AlmaLinux (and the RHEL products it is built from) and Alpine servers"
-retrieved_utc: 2026-10-13
+retrieved_utc: 2026-10-21
 sources: [S-dibgi2xt, S-2yuq6xw2, S-kbvw7lhl, S1485, S-c3ytabe2, S-kvmwtqw2, S-3ccfvo3t, S-vvr4ensf, S-e3oi3dog, S-5ucxfabx, S-q7m3pvv2, S-4qyumgua, S-n6xxzrrl, S-ovklfzvf, S-afsk2gm4, S-v6qk7hcn, S-3yrjvfu3, S-4oqrbtvs, S-cxnklaym, S-g4lr43wm, S-z7bfg2a3, S-sotu6mmv, S-fzqtd2e3, S-mn6raxsi, S-hdm6j6sh, S-c7zaz35y, S-m2ry72iv, S-v65tqmnq, S-suunbp43, S-fwapji3y, S-xff3wkn5, S-fbnsylla]
 status: partial
 ---

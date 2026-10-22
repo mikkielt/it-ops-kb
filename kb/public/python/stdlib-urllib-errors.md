@@ -2,7 +2,7 @@
 topic: python/stdlib-urllib-errors
 priority: P3
 applies_to: "Python stdlib urllib.request, urllib.error, socket and http.client exceptions (docs and source at CPython v3.13.2; probes on Python 3.13.2, macOS, 2026-10-10; redirect handling and its probe 2026-10-17)"
-retrieved_utc: 2026-10-17
+retrieved_utc: 2026-10-21
 sources: [S-mktiemgc, S-ia6oszzb, S-dh7elejp, S-kudz6dke, S-mv5seea3]
 status: partial
 ---

@@ -2,7 +2,7 @@
 topic: gitlab/job-log-timestamps
 priority: P3
 applies_to: "GitLab CI job logs and GitLab Runner feature flag FF_TIMESTAMPS; docs at gitlab-org/gitlab master @a128b3dc and gitlab-org/gitlab-runner main @49138a48 (VERSION 19.5.0)"
-retrieved_utc: 2026-10-10
+retrieved_utc: 2026-10-21
 sources: [S-fn452qtu, S-5qytzl6u, S-crjqbibt, S-yfgczc7d, S-4pm7parz, S-rq5vugs5]
 status: complete
 ---

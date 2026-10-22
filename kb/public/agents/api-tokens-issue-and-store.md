@@ -2,7 +2,7 @@
 topic: agents/api-tokens-issue-and-store
 priority: P1
 applies_to: "GitLab (docs current 2026-09), python keyring 25.7.0, msal-extensions (main branch 2026-09), Azure Key Vault (docs 2025-12), HashiCorp Vault (docs current 2026-09), Claude Code 2.1.x"
-retrieved_utc: 2026-10-19
+retrieved_utc: 2026-10-21
 sources: [S449, S740, S1297, S2041, S2043, S2044, S2046, S2047, S2048, S2049, S2054, S2055, S2056, S2057, S-2spmezqp, S-75p7zmds, S-h7wl75vd, S-uyzwls57]
 status: partial
 files: [agents/api-tokens.csv, agents/secret-storage-options.csv]

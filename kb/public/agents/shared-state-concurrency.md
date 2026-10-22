@@ -2,7 +2,7 @@
 topic: agents/shared-state-concurrency
 priority: P3
 applies_to: "Concurrency control for state several agents write: Amazon S3 conditional writes, Azure Blob Storage ETags and leases, Redis distributed locks (Redlock), LangGraph PostgresStore; self-hosted MinIO, Garage and SeaweedFS conditional writes, NATS JetStream key-value, Valkey without persistence, etcd leases and transactions; docs read 2026-10-14 and 2026-10-15"
-retrieved_utc: 2026-10-20
+retrieved_utc: 2026-10-21
 sources: [S-7my6ujm5, S-qdltospe, S-4qurlvvy, S-4oanvdmr, S-2fthx3xp, S-srqpsf7c, S-5lu6lddr, S-f3dlrjtw, S-26trg6rj, S-ukfteilx, S-opdaj4dk, S-oa3slfgh, S-a3umo362, S-ntlmfsuw, S-zv2dqsow, S-ulnpjwb7, S-pheyvvix, S-x3firlbx, S-eoyz3p4t, S-6hgplow2, S-vseohdra, S-75jmw3lf, S-s7uvhjek, S-3l6vhq2q, S-jnn4ww4t, S-bayxg4xz, S-523ddbfr, S-v7s32e7q, S-gxbtrq7d, S704, S718, S-onc3gpse, S2157, S-bisz7fay, S-jxkwd67p, S-3az5pk5l]
 status: partial
 ---

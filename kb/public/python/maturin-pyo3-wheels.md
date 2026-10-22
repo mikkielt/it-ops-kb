@@ -2,7 +2,7 @@
 topic: python/maturin-pyo3-wheels
 priority: P3
 applies_to: "maturin 1.15.0, PyO3 0.29.3, maturin-action 1.51.0 (release tags read 2026-10-11); CPython wheels for linux x86_64/aarch64 and macOS arm64"
-retrieved_utc: 2026-10-11
+retrieved_utc: 2026-10-21
 sources: [S-c6fbhzyz, S-hec62m7j, S-26hqxvrn, S-hisnadiu, S-cr3vzki4, S-oeklvsgw, S-romblyjt, S-yfykoru4, S-pyhwnq4g, S-65rohhd6, S-g5ef7rue, S-sne3yj7b, S-xpr6ww5t, S-yua2ucez]
 status: partial
 ---

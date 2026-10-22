@@ -2,7 +2,7 @@
 topic: agents/microsoft-agent-framework
 priority: P2
 applies_to: "Microsoft Agent Framework (Python `agent-framework`, .NET `Microsoft.Agents.AI`, Go public preview); docs and GitHub retrieved 2026-09-26"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S-kzoop7qs, S-7ziha7pr, S-esun5f2n, S-lkto4w7b, S-sjqmzszi, S-j2yxzynm, S-cjxn455h, S-mhvboogr, S-do52zses, S1939, S-gs56zhuk, S-4yhrlzez, S-ayrhsrlp, S-nghojxuy, S-iblntf2w, S-fkamc745, S-y76ymaxp, S-bayhkj2j, S-x7eqxwa3, S-a3n34lxa, S-p6darnca]
 status: complete
 ---

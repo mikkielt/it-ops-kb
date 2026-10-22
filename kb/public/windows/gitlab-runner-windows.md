@@ -2,7 +2,7 @@
 topic: windows/gitlab-runner-windows
 priority: P0
 applies_to: "GitLab Runner 19.5 (main @49138a48, 2026-09-23) on Windows"
-retrieved_utc: 2026-09-30
+retrieved_utc: 2026-10-21
 sources: [S406, S407, S410, S411, S413, S-xiyru25z, S414, S415, S400, S-5x5wqdjs, S-c7hn5f2e, S-z2riv2e3, S-wlt4mta2, S-kw4zko43, S-74r2p6k2, S-bpdul6bi, S-rgza4cnn, S-zhbsgbc5, S-xebrwqbv]
 status: complete
 ---

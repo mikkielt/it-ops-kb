@@ -2,7 +2,7 @@
 topic: auth/workload-identity
 priority: P0
 applies_to: "Microsoft Entra workload identity federation, Azure Arc-enabled servers (docs current 2026-09-24)"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-10-21
 sources: [S1302, S1278, S1276, S1289, S1290, S1293, S1294, S1296, S1303, S1304, S1305, S1306, S1308, S1309, S-w6ryunvm, S-e2hdn5as, S-uoxtujn6, S-rye46ky7, S-zb4abl74, S-ftk5lzj7, S-wk6ahp72, S-5qxktcen, S-gyp6fxzq]
 status: complete
 ---
