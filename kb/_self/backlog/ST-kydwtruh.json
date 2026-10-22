@@ -21,6 +21,25 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where do the research findings on archive read errors and the Terraform registry's docs versions go?",
+      "options": [
+        "A new python/stdlib-archive-read-errors article, and the registry fact in logs/microsoft-sentinel next to its Terraform azurerm section",
+        "Fold the archive facts into python/stdlib-urllib-errors and open a new Terraform article"
+      ],
+      "recommendation": "A new python/stdlib-archive-read-errors article, and the registry fact in logs/microsoft-sentinel next to its Terraform azurerm section",
+      "do": {
+        "A new python/stdlib-archive-read-errors article, and the registry fact in logs/microsoft-sentinel next to its Terraform azurerm section": "ST-kydwtruh",
+        "Fold the archive facts into python/stdlib-urllib-errors and open a new Terraform article": "ST-kydwtruh"
+      },
+      "class": "design",
+      "answer": "A new python/stdlib-archive-read-errors article, and the registry fact in logs/microsoft-sentinel next to its Terraform azurerm section",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "manager-dfa692a0",
   "operator": "op-f618a13e"
 }
