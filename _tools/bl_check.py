@@ -20,7 +20,7 @@ from bl_base import (
     APPROVALS, FIELDS, GATE_KINDS, IN_SPRINT, NEEDS_CHECKS, NEEDS_TOUCHES, PARENTS,
     PRIORITIES, Refused, SEVERITIES, SPRINT_STATUSES, START_GATE, STATUSES, TEXT_MAX, WORKED,
     always_in_scope, canonical, clause_commands, external_problems, glob_re, goal_clauses, id_re, kinds, prefix_kind, rel_dir, repositories, sprint_id_re, host_user_pieces, items_holding_names, research_in_planned, say, scope,
-    touches_overlap, withhold_names, EMAIL_RE, operator_problem,
+    touches_overlap, withhold_names, EMAIL_RE, operator_problem, WORKSPACE,
 )
 from bl_plan import (docs_after_code, docs_warnings, linked_touch_warnings, shared_file_warnings, stale_touches,
                      unordered_overlap_warnings)
@@ -529,7 +529,8 @@ def leak_errors(bl):
 def repos_problems(it, kind, declared):
     """What is wrong with the repositories an item names against backlog.json's `repositories` map (DECLARED, name to
     path): `repos` and `repos_if_needed` are lists of declared names, no name is in both, and while the map is declared
-    an open item with touches names at least one repository in `repos`. [] = nothing wrong."""
+    an open item with touches names at least one repository in `repos`, unless every touch is `workspace/<glob>` (the
+    workspace's own files, which are no repository). [] = nothing wrong."""
     out, named = [], {}
     for f in ("repos", "repos_if_needed"):
         if f not in it:
@@ -551,7 +552,9 @@ def repos_problems(it, kind, declared):
     if both:
         out.append(f"{', '.join(map(repr, both))} is in both repos and repos_if_needed: name it in one")
     touches = it.get("touches")
-    if declared and isinstance(touches, list) and touches and "repos" not in named \
+    workspace_only = isinstance(touches, list) and all(
+        isinstance(t, str) and t.startswith(WORKSPACE + "/") for t in touches)
+    if declared and isinstance(touches, list) and touches and "repos" not in named and not workspace_only \
             and it.get("status") not in CLOSED_STATUSES:
         out.append("touches without repos: backlog.json declares repositories "
                    f"({', '.join(declared)}), so the item names the ones it changes (set ID --repos NAME)")
