@@ -2,7 +2,7 @@
   "id": "ST-o367qbqn",
   "kind": "story",
   "title": "Census sessions read pages that refuse a bare request, long documents and vanished MicrosoftDocs pins",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-rmp5zm5a",
   "priority": "P2",
@@ -48,5 +48,7 @@
     "kb/_self/web-sources.md",
     "kb/_self/tools.md"
   ],
-  "notes": "Operator 2026-10-22: second pass on the 116 cited sources the widened rerun of ST-bjwyl2bc left unconfirmed (90 of 206 settled, $13.79). Measured on this host 2026-10-22: techcommunity.microsoft.com answers 403 to curl with no User-Agent and 200 with 'it-ops-kb census' (13 sources); crates.io API 403 without, 200 with a User-Agent (17); cisecurity.org 200 with one; arXiv /pdf/ID urls serve application/pdf with no .pdf suffix, which fetch_argv sends to curl (8); fetch.py text already reads such a PDF by its bytes. Sessions piped curl output to head or grep and were denied, so long documents were read in part (about 10); urls with quotes or spaces (prices.azure.com, PowerShell Gallery OData, MSRC API) got no rule (about 6). github.com/MicrosoftDocs/memdocs and azure-ai-docs now answer 404 (repo page and raw files), so census.repo_dir fails to clone them and their 8 pin rows have no route; MEMDOCS_LINE covers only rows noted memdocs at check time. Premise on origin/main of 2026-10-22: check 0 exits 1 (fetch.py text has no --grep), check 1 exits 1 (fetch_argv gives curl; read_commands gives git lines only). Clause 4 is read by no check: the worker adds a dispatch_rules assertion to check 1 if the rule's form allows it. Out of scope: EUR-Lex, PyPI and npm bot challenges, JavaScript-only pages, .wiki.git remotes. Planning 2026-10-22: check 1 now also reads clause 4 through census.dispatch_rules on a planted plan (the fetch rule must end in \" *)\", as the kbid.py url rule does)."
+  "notes": "Operator 2026-10-22: second pass on the 116 cited sources the widened rerun of ST-bjwyl2bc left unconfirmed (90 of 206 settled, $13.79). Measured on this host 2026-10-22: techcommunity.microsoft.com answers 403 to curl with no User-Agent and 200 with 'it-ops-kb census' (13 sources); crates.io API 403 without, 200 with a User-Agent (17); cisecurity.org 200 with one; arXiv /pdf/ID urls serve application/pdf with no .pdf suffix, which fetch_argv sends to curl (8); fetch.py text already reads such a PDF by its bytes. Sessions piped curl output to head or grep and were denied, so long documents were read in part (about 10); urls with quotes or spaces (prices.azure.com, PowerShell Gallery OData, MSRC API) got no rule (about 6). github.com/MicrosoftDocs/memdocs and azure-ai-docs now answer 404 (repo page and raw files), so census.repo_dir fails to clone them and their 8 pin rows have no route; MEMDOCS_LINE covers only rows noted memdocs at check time. Premise on origin/main of 2026-10-22: check 0 exits 1 (fetch.py text has no --grep), check 1 exits 1 (fetch_argv gives curl; read_commands gives git lines only). Clause 4 is read by no check: the worker adds a dispatch_rules assertion to check 1 if the rule's form allows it. Out of scope: EUR-Lex, PyPI and npm bot challenges, JavaScript-only pages, .wiki.git remotes. Planning 2026-10-22: check 1 now also reads clause 4 through census.dispatch_rules on a planted plan (the fetch rule must end in \" *)\", as the kbid.py url rule does).",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
