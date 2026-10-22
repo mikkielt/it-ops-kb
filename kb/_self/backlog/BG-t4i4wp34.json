@@ -2,7 +2,7 @@
   "id": "BG-t4i4wp34",
   "kind": "bug",
   "title": "kbotel.py drops a tool_result's duration, success flag and size because Claude Code sends them as strings",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4f4m3noq",
   "priority": "P3",
   "rank": 0,
@@ -65,5 +65,7 @@
     "_tools/kbotel.py",
     "kb/_self/usage.md"
   ],
-  "notes": "Found 2026-10-22: a claude -p --model haiku session (Claude Code telemetry on, OTEL_EXPORTER_OTLP_LOGS_PROTOCOL=http/json) sent tool_result attributes as {\"success\": {\"stringValue\": \"true\"}, \"duration_ms\": {\"stringValue\": \"716\"}, \"tool_result_size_bytes\": {\"stringValue\": \"29\"}} while api_request sent intValue/doubleValue; kbotel.kept() (number and flag shapes) accepts only int/float/bool, so every tool_result line lacks the three fields although EVENT_KEYS allows them and usage.md promises tool results' durations. kbotel join is unaffected (it counts tool_result events, it reads no duration)."
+  "notes": "Found 2026-10-22: a claude -p --model haiku session (Claude Code telemetry on, OTEL_EXPORTER_OTLP_LOGS_PROTOCOL=http/json) sent tool_result attributes as {\"success\": {\"stringValue\": \"true\"}, \"duration_ms\": {\"stringValue\": \"716\"}, \"tool_result_size_bytes\": {\"stringValue\": \"29\"}} while api_request sent intValue/doubleValue; kbotel.kept() (number and flag shapes) accepts only int/float/bool, so every tool_result line lacks the three fields although EVENT_KEYS allows them and usage.md promises tool results' durations. kbotel join is unaffected (it counts tool_result events, it reads no duration).",
+  "claimed_by": "d72ea2f1",
+  "operator": "op-f618a13e"
 }
