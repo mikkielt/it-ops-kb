@@ -2,7 +2,7 @@
   "id": "ST-epvfo6xr",
   "kind": "story",
   "title": "Research sprint goal: The operator watches the kb's health and landings: an eval alert, a local Prometheus scrape and landing-step timings",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4f4m3noq",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,7 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "d72ea2f1",
+  "operator": "op-f618a13e"
 }
