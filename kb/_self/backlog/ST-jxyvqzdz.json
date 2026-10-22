@@ -24,6 +24,25 @@
   "depends_on": [
     "ST-3cr3qddr"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which changed files make a content landing run the lookup eval?",
+      "options": [
+        "facts files",
+        "articles only",
+        "all kb files"
+      ],
+      "recommendation": "facts files",
+      "do": {
+        "facts files": "ST-jxyvqzdz",
+        "articles only": "ST-jxyvqzdz",
+        "all kb files": "ST-jxyvqzdz"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-z6wolmvm close"
   ],
