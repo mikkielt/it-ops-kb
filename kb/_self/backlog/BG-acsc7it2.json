@@ -2,7 +2,7 @@
   "id": "BG-acsc7it2",
   "kind": "bug",
   "title": "Bench pool rows ask about decisions the 2026-10-21 sweep invalidated, so their operator check cannot match",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-ovwzbc7u",
   "priority": "P3",
@@ -46,6 +46,19 @@
     "parked: SP-rmp5zm5a review"
   ],
   "notes": "Found by the fresh-context review of SP-rmp5zm5a (2f256438ea..47328f5b24), verified by the manager: the repro fails on 47328f5b24 (BP-1d1ce7a7 D-psgfq7le, BP-65eb74a7 D-xk65w44m).",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "d608eb572c5e764c04e9801d98f360e2f2bf7dbd",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,re,sys;st={r['id']:r['status'] for r in csv.DictReader(open('kb/_self/_decisions.csv',encoding='utf-8'))};bad=[(r['id'],d) for r in csv.DictReader(open('kb/public/_retrieval/bench_pool.csv',encoding='utf-8')) for d in re.findall(r'D-[a-z0-9]{8}',r['question']) if st.get(d)!='active'];print(bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
