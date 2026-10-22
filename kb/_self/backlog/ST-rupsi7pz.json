@@ -2,7 +2,7 @@
   "id": "ST-rupsi7pz",
   "kind": "story",
   "title": "kbmon raises an eval alert while the newest recorded lookup eval at a landing failed",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-4f4m3noq",
   "priority": "P2",
@@ -55,6 +55,37 @@
     "kb/_self/tools.md"
   ],
   "notes": "Premise (run 2026-10-22): a planted snapshot whose kb panel eval state is failed and whose host disk is at 5% free, run through kbmon --once --from-snapshot, exits 1 with only '!! ALERT disk low'; no eval alert. mon_kb has no alerts() while mon_host, mon_sessions and mon_querylog do (mon_view.py:87 calls module.alerts). kbmon's existing alerts: orphan, disk, delivery.",
-  "claimed_by": "d72ea2f1",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "172ccab7fd987ec5e6fca589768d5bdb5920d1ee",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, '_tools'); import mon_kb; al = getattr(mon_kb, 'alerts', lambda d: []); f = al({'eval': {'state': 'failed', 'when': '2026-10-22T00:00:00Z'}}); ok = al({'eval': {'state': 'passed', 'when': '2026-10-22T00:00:00Z'}}) + al({'eval': None}) + al({}); sys.exit(0 if len(f) == 1 and (f[0].get('kind'), f[0].get('id'), f[0].get('panel')) == ('eval', 'kb.eval', 'kb') and ok == [] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json, os, subprocess, sys, tempfile; d = tempfile.mkdtemp(); snap = lambda s: json.dumps({'schema': 1, 'taken': '2026-10-22T00:00:00Z', 'alerts': [], 'panels': {'kb': {'state': 'ok', 'seconds': 0.1, 'data': {'eval': {'state': s, 'when': '2026-10-22T00:00:00Z'}}}}}); [open(os.path.join(d, s + '.json'), 'w').write(snap(s)) for s in ('failed', 'passed')]; run = lambda s: subprocess.run([sys.executable, '_tools/kbmon.py', '--once', '--from-snapshot', os.path.join(d, s + '.json')], capture_output=True, text=True); f = run('failed'); p = run('passed'); sys.exit(0 if f.returncode == 1 and any('ALERT' in l and 'eval' in l for l in f.stdout.splitlines()) and p.returncode == 0 and 'ALERT' not in p.stdout else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, sys; runs = [subprocess.run([sys.executable, '_tools/selfdoc.py', 'section', 'monitoring', h], capture_output=True, text=True) for h in ('The snapshot', 'The kb panel')]; sys.exit(0 if all(r.returncode == 0 and 'kb.eval' in r.stdout for r in runs) and 'kb.eval' in open('kb/_self/tools.md').read() else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
