@@ -3035,6 +3035,11 @@ def worktrees_file(files):
     return None
 
 
+def fetch_argvs(value):
+    """The fetch argvs of one source in a plan: a list of argvs, or one argv (a list of strings) taken as a list of one."""
+    return [value] if value and isinstance(value[0], str) else list(value)
+
+
 def dispatch_rules(plan, scratch):
     """(allow, tools) of a session: the `--allowedTools` rules and the `--tools` set. Read and Edit rules name each
     owned file as an absolute path (`//` is the filesystem root), so no other repository file is readable or editable
@@ -3049,7 +3054,7 @@ def dispatch_rules(plan, scratch):
         allow += [at("Read", path), at("Edit", path)]
     allow += [at(tool, scratch, "/**") for tool in ("Read", "Edit", "Write")]
     allow += [f"Bash({shlex.join(argv)})" for argv in plan["git"]]
-    allow += sorted({f"Bash({shlex.join(argv)} *)" for argvs in plan["fetch"].values() for argv in argvs})
+    allow += sorted({f"Bash({shlex.join(argv)} *)" for v in plan["fetch"].values() for argv in fetch_argvs(v)})
     allow.append(f"Bash({shlex.join(['python3', os.path.join(kbcommon.TOOLS, 'kbid.py'), 'url'])} *)")
     if plan["learn"]:
         allow.append(LEARN_TOOL)
@@ -3085,7 +3090,7 @@ def dispatch_prompt(brief, plan, scratch):
             else f"  - {shlex.join(argv)} (the brief's `git -C` line with the absolute path; write it exactly so)"
             for argv in plan["git"]]
     out += [f"  - {sid}: {shlex.join(argv)} (what the brief's `fetch` line for it means; write it exactly so, then add `--grep PATTERN` to print only the lines of a long document that match, never a pipe)"
-            for sid, argvs in sorted(plan["fetch"].items()) for argv in argvs]
+            for sid, v in sorted(plan["fetch"].items()) for argv in fetch_argvs(v)]
     out.append(f"  - {shlex.join(['python3', os.path.join(kbcommon.TOOLS, 'kbid.py'), 'url'])} <URL> (the id of a new row)")
     if plan["learn"]:
         out.append(f"- `microsoft_docs_fetch <url>` in the brief is the tool `{LEARN_TOOL}`.")
