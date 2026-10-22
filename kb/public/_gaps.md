@@ -2417,3 +2417,8 @@ Still open: (topic: auth/configmgr-rbac-auth)
   - Tried 2026-10-22: the live Learn page (S-keowoi6l) was read in full and has no section on either version; the `2024-10-21` GA release itself is still documented by S-2l76try5. Still needs a page that states the replacement. (topic: agents/azure-openai-deployments)
 - Source S-f7arhttw (the content-filters how-to of MicrosoftDocs/azure-ai-docs at commit 8056f707) is gone: its 2025-11-11 statement that the GPT-image-1 series does not support content-filter configuration is no longer confirmed. [UNK] (topic: agents/azure-openai-deployments)
   - Tried 2026-10-22: the live Learn page (S-54iyoh5q) was read in full: it states no such restriction and says the content filtering system runs alongside the core models, including image generation models. Still needs a page that states whether GPT-image-1 is configurable. (topic: agents/azure-openai-deployments)
+
+## claude/otel-monitoring
+
+- The Claude Code docs (S744) give no type for the `tool_result` attributes `success`, `duration_ms` and `tool_result_size_bytes`, and the version of the one session that sent them as `stringValue` was not recorded, so whether every version does is not known. [UNK] (topic: claude/otel-monitoring)
+  - Looked 2026-10-22 in S744 (the monitoring page) and the OTLP page (S-v2wnj4qk): neither says how a number attribute is typed in the JSON; still needs a rerun with a recorded `claude --version`. (topic: claude/otel-monitoring)

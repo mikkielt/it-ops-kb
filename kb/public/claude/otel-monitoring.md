@@ -2,9 +2,9 @@
 topic: claude/otel-monitoring
 priority: P1
 applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23; metrics and correlation read 2026-09-29)"
-retrieved_utc: 2026-10-21
+retrieved_utc: 2026-10-22
 sources: [S744, S745, S741, S743, S-kumwk4fp, S-v2wnj4qk, S-iekncbeu, S-r7mszxqu, S-ggeduchu]
-status: complete
+status: partial
 ---
 # OpenTelemetry monitoring events (MCP-relevant)
 
@@ -38,6 +38,8 @@ Enable with `CLAUDE_CODE_ENABLE_TELEMETRY=1` plus OTLP exporter variables. MCP a
 - The OTLP exporter's protocol is one of `grpc`, `http/protobuf` or `http/json`; a per-signal endpoint such as `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT` is used as-is, while `OTEL_EXPORTER_OTLP_ENDPOINT` is a base URL to which `v1/logs` is appended for logs. [DOC S-kumwk4fp]
 - An OTLP/HTTP log request is a POST to `/v1/logs` whose body is an `ExportLogsServiceRequest`; the default OTLP/HTTP port is 4318, and on success the server answers `HTTP 200 OK` with an `ExportLogsServiceResponse`. [DOC S-v2wnj4qk]
 - In OTLP's JSON encoding the request and response carry `Content-Type: application/json`, object keys are field names in lowerCamelCase, 64-bit integers such as `timeUnixNano` are decimal strings, and enum values are integers. [DOC S-v2wnj4qk]
+- OTLP JSON payloads encode 64-bit integer fields as decimal strings and decoders accept either numbers or strings; the pinned OTLP specification text does not mention `AnyValue` or how an attribute that holds a number is typed. [DOC S-v2wnj4qk]
+- In one headless `claude -p` session on 2026-10-22 with `OTEL_EXPORTER_OTLP_LOGS_PROTOCOL=http/json`, a `tool_result` event carried `success`, `duration_ms` and `tool_result_size_bytes` as `stringValue` (`"true"`, `"716"`, `"29"`) while its `api_request` event carried `duration_ms` as `intValue` and `cost_usd` as `doubleValue`; the Claude Code version was not recorded, the docs list these attributes without a type, and other versions and modes were not run. [UNK: one unversioned observation, to repeat with a recorded version]
 - A logs request nests `resourceLogs`, then `scopeLogs`, then `logRecords`; each log record carries `timeUnixNano`, a `body` (`AnyValue`), `attributes` (a list of key and value pairs) and an `eventName`, which names the event's schema. [DOC S-iekncbeu]
 - A standard-library local receiver for Claude Code's events needs only an HTTP server on `127.0.0.1` that accepts `POST /v1/logs` with `Content-Type: application/json`, reads each log record's `eventName` and `attributes`, and answers `200` with an empty JSON object; the session runs with `CLAUDE_CODE_ENABLE_TELEMETRY=1`, `OTEL_LOGS_EXPORTER=otlp`, `OTEL_EXPORTER_OTLP_LOGS_PROTOCOL=http/json`, `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT` set to that URL and `OTEL_LOG_TOOL_DETAILS` and `OTEL_LOG_USER_PROMPTS` unset, so no tool input or prompt text arrives. [DER S744, S-kumwk4fp, S-v2wnj4qk, S-iekncbeu: the variables, endpoint rules, path, encoding and record layout above]
 

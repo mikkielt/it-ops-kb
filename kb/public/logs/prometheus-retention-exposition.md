@@ -2,8 +2,8 @@
 topic: logs/prometheus-retention-exposition
 priority: P3
 applies_to: "Prometheus v3.15.0 (released 2026-09-24); Python prometheus_client 0.26.0; Rust prometheus 0.14.0, prometheus-client 0.25.1, metrics-exporter-prometheus 0.18.3; prometheus/docs at commit 605cf81f"
-retrieved_utc: 2026-10-21
-sources: [S-cgscrv4s, S-one7nth5, S-fpf6c56i, S-42nwx5i6, S-a3vg5qlu, S-fauxu5ws, S-bfvveghs, S-eo46iizs, S-zirdyvds, S-ptmbzpgw, S-5tvo6y34, S-zbmhggt3, S-4hvb3m5w, S-bpsk5rak, S-dn4wxw4r, S-wr47t6mb, S-4gvbwjju, S-3ylk7y4h, S-f5e4slzj, S-fr4rpivt, S-lggz7o42, S-fmkur47t, S-uc4rdiul, S-ced5z4pp, S-4dcfdr4h, S-rm4q4usy, S-pf4gtprf, S-sxme5fjq, S744]
+retrieved_utc: 2026-10-22
+sources: [S-cgscrv4s, S-one7nth5, S-fpf6c56i, S-42nwx5i6, S-a3vg5qlu, S-fauxu5ws, S-bfvveghs, S-eo46iizs, S-zirdyvds, S-ptmbzpgw, S-5tvo6y34, S-zbmhggt3, S-4hvb3m5w, S-bpsk5rak, S-dn4wxw4r, S-wr47t6mb, S-4gvbwjju, S-3ylk7y4h, S-f5e4slzj, S-fr4rpivt, S-lggz7o42, S-fmkur47t, S-uc4rdiul, S-ced5z4pp, S-4dcfdr4h, S-rm4q4usy, S-pf4gtprf, S-sxme5fjq, S744, S-r55gd5ar, S-vjphqfve]
 status: partial
 ---
 
@@ -45,6 +45,16 @@ exporter (`claude/otel-monitoring.md`) is one such scrape target.
 - `scrape_configs` entries need a `job_name`; `scrape_interval` defaults to `1m` and `scrape_timeout` to `10s` (never above the interval), both overridable per job; `metrics_path` defaults to `/metrics` and `scheme` to `http`; targets come from `static_configs` (a `targets` list and a `labels` map) or service discovery. [DOC S-fpf6c56i]
 - `honor_labels` defaults to `false`: labels in scraped data that clash with server-side ones are renamed `exported_<label>`; `true` keeps the scraped values, which the docs recommend for federation and the Pushgateway. [DOC S-fpf6c56i]
 - With native histograms off, the default `scrape_protocols` order offered to a target is OpenMetricsText1.0.0, OpenMetricsText0.0.1, PrometheusText1.0.0, PrometheusText0.0.4. [DOC S-fpf6c56i]
+
+### Rule files and alerting rules
+- `rule_files` in `prometheus.yml` is a list of file path globs: rules and alerts are read from every matching file; `evaluation_interval` (global, default `1m`) sets how often rules are evaluated. [DOC S-fpf6c56i]
+- A rule file holds `groups`, each with a `name` and a list of `rules`; an alerting rule has `alert` (the name), `expr` (a PromQL expression), and optionally `for`, `keep_firing_for`, `labels` and `annotations`. [DOC S-r55gd5ar]
+- An alert is active while its `expr` returns one or more vector elements; without `for` it becomes active on the first evaluation, with `for` it stays pending until the condition has held in every evaluation of that period and then fires. [DOC S-r55gd5ar]
+- Annotation values can be templated: `$labels` holds an alert instance's label pairs and `$value` its evaluated value. [DOC S-r55gd5ar]
+- Pending and firing alerts are also stored as synthetic series `ALERTS{alertname="...", alertstate="pending|firing", ...}` with the value `1` while the alert is in that state. [DOC S-r55gd5ar]
+- Prometheus only evaluates alerts and shows them in its Alerts tab; sending notifications is the job of a separate Alertmanager, which Prometheus is configured to push firing alerts to. [DOC S-r55gd5ar]
+- `promtool check rules` checks whether rule files are valid and takes `--lint` (default `duplicate-rules`), `--lint-fatal` (lint errors exit 3) and `--ignore-unknown-fields`. [DOC S-vjphqfve]
+- The `promtool` page lists no option of `check rules` that reads a target or a scrape, so the command is documented as a check of the file, not of whether the metric names an expression uses are served; a check of those names needs another tool. [DER S-vjphqfve: the flag list read in full for `check rules`]
 
 ### Client libraries
 - Python `prometheus_client` 0.26.0: `start_http_server(port)` serves metrics from a daemon thread and returns the server and thread so it can be shut down; `make_wsgi_app()` returns a WSGI application that gzips when the client sends `Accept-Encoding: gzip` (`disable_compression=True` turns that off). [DOC S-bpsk5rak, S-dn4wxw4r]

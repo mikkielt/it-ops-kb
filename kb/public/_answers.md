@@ -4420,3 +4420,15 @@ _Agent: kb-research_
 - See agents/doc-change-detection.md, claude/settings-and-scopes.md.
 
 _Agent: kb-research_
+
+## QK-operator-alert-scrape-kb-s-monitor. How does an operator alert on and scrape the kb's monitor with a local Prometheus: the alerting rule file format, the metric names the OpenTelemetry Python Prometheus reader serves, and the number forms Claude Code sends in OTLP JSON?
+- A Prometheus config names rule files with `rule_files` globs and evaluates them every `evaluation_interval` (default `1m`); a rule file holds `groups` of `rules`, and an alerting rule is an `alert` name with an `expr`, optionally `for`, `labels` and `annotations`. [DOC S-fpf6c56i, S-r55gd5ar]
+- An alert is active while its `expr` returns any element; without `for` it is active on the first evaluation, and Prometheus does not notify, an Alertmanager does. [DOC S-r55gd5ar]
+- `promtool check rules` checks a rule file, with `--lint`, `--lint-fatal` and `--ignore-unknown-fields`, and has no option that reads a target. [DOC S-vjphqfve]
+- The OpenTelemetry Python Prometheus reader replaces characters outside `[a-zA-Z0-9:]` with `_`, adds a unit suffix (`s` becomes `seconds`) and `_total` for a monotonic sum, and exposes a cumulative non-monotonic sum as a gauge. [CODE S-qpknqjro, S-jthqtwbn, S-tmgjqugk]
+- OTLP JSON accepts a number or a string for a 64-bit integer field. [DOC S-v2wnj4qk]
+- Conclusion: an alert expression has to use the served name (`kbmon.kb.index_age` in seconds is `kbmon_kb_index_age_seconds`), which `promtool` cannot prove, so the names need a check against the reader's own output in the process; a receiver of Claude Code's events cannot rely on a number being sent as `intValue`. [DER S-fpf6c56i, S-r55gd5ar, S-vjphqfve, S-qpknqjro, S-jthqtwbn, S-tmgjqugk, S-v2wnj4qk]
+- Open: the Claude Code version that sent `tool_result` numbers as strings was not recorded, and whether other versions do the same was not run. [UNK]
+- See logs/prometheus-retention-exposition.md, logs/otel-python-sdk.md, claude/otel-monitoring.md.
+
+_Agent: kb-research_
