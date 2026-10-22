@@ -2,7 +2,7 @@
   "id": "ST-bbxlwm4b",
   "kind": "story",
   "title": "Census sessions can read a source that is a PDF, an archive or a spreadsheet",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-rmp5zm5a",
   "priority": "P2",
@@ -63,5 +63,7 @@
       "by": "agent"
     }
   ],
-  "notes": "Operator 2026-10-22: confirm the 206 cited sources the 2026-10-21 census left unconfirmed before the census tag, by widening the census sessions and rerunning those rows (ST-bjwyl2bc). 34 of the 206 have a .pdf (23), .zip (5), .gz (3), .tgz (2) or .xlsx (1) url; dispatch_plan gives every page row `curl -sSL URL`, whose binary body a session cannot read. pdftotext is at /opt/homebrew/bin on this host; fetch.py has no PDF or archive text route (its normalized text returns None for zip, pdf and octet-stream). The other 172 failed on caps, newer releases, HTTP errors and missing rules; ST-bjwyl2bc reruns them with a higher cap. Premise on origin/main of 2026-10-22: check 0 exits 1 (fetch.py has no text subcommand, exit 2 on all three planted files), check 1 exits 1 (census has no fetch_argv). Clause 3 is read by check 1 only through fetch_argv; the worker adds a dispatch --dry-run line on a planted census log if one is cheap. A new fetch.py subcommand is documented in kb/_self/tools.md and kb/_self/web-sources.md (docs map rows 37, 38, 95, 96). An .xlsx url may print the sheet's shared strings only."
+  "notes": "Operator 2026-10-22: confirm the 206 cited sources the 2026-10-21 census left unconfirmed before the census tag, by widening the census sessions and rerunning those rows (ST-bjwyl2bc). 34 of the 206 have a .pdf (23), .zip (5), .gz (3), .tgz (2) or .xlsx (1) url; dispatch_plan gives every page row `curl -sSL URL`, whose binary body a session cannot read. pdftotext is at /opt/homebrew/bin on this host; fetch.py has no PDF or archive text route (its normalized text returns None for zip, pdf and octet-stream). The other 172 failed on caps, newer releases, HTTP errors and missing rules; ST-bjwyl2bc reruns them with a higher cap. Premise on origin/main of 2026-10-22: check 0 exits 1 (fetch.py has no text subcommand, exit 2 on all three planted files), check 1 exits 1 (census has no fetch_argv). Clause 3 is read by check 1 only through fetch_argv; the worker adds a dispatch --dry-run line on a planted census log if one is cheap. A new fetch.py subcommand is documented in kb/_self/tools.md and kb/_self/web-sources.md (docs map rows 37, 38, 95, 96). An .xlsx url may print the sheet's shared strings only.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
