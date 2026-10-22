@@ -2372,6 +2372,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - CIS Controls v8.1 counts (18 Controls, 153 Safeguards), the March 2025 date and the CC BY-NC-ND 4.0 licence are not on the cisecurity.org/controls/v8-1 landing page (looked there 2026-10-21); need the CIS licence page or v8.1 PDF as a source. (topic: security/framework-control-map)
   - Tried 2026-10-21, still open: the cisecurity.org/controls/v8-1 landing page and the CIS Controls FAQ state neither the counts (18 Controls, 153 Safeguards), the March 2025 date nor the licence ('free to use by anyone' is the only wording); it needs the v8.1 download or the CIS licence page. (topic: security/framework-control-map)
 - CIS Controls v8.1 licence (CC BY-NC-ND 4.0), March 2025 date, 18 Controls / 153 Safeguards counts and the safeguard IDs in csv rows 15-19 are not stated on https://www.cisecurity.org/controls/v8-1 (landing page only; the guide is a gated download). Need the v8.1 guide PDF or CIS licence page to confirm. (topic: security/framework-control-map)
+- CIS Controls v8.1 licence (CC BY-NC-ND 4.0), release date (March 2025), counts (18 Controls, 153 Safeguards) and safeguard IDs 4.1, 5.4, 6.8, 8.2, 8.10 are not stated on https://www.cisecurity.org/controls/v8-1 (landing page only); the PDF/Excel download or CIS's licence page would be needed to confirm them. (topic: security/framework-control-map)
 
 ## security/threat-model-inputs
 
