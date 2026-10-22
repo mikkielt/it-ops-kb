@@ -1,0 +1,27 @@
+{
+  "id": "BG-7nfpe3s6",
+  "kind": "bug",
+  "title": "kbmon_otel --check-rules misses a kbmon_ name inside a YAML-quoted expr or a __name__ matcher and misreads a recording-rule name",
+  "status": "draft",
+  "parent": "EP-wqgicmmj",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "--check-rules reads a kbmon_ metric name inside a YAML-quoted expression (single or double quoted) and inside a {__name__=\"...\"} matcher, and reads a recording-rule name with a colon (kbmon_foo:rate5m) as one name, so it neither passes a rules file that uses an unserved name nor fails one that uses only served names; this replaces the provisional answer of ST-6oidkcqv gate g1 (scan expr: lines) where it misread",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os, subprocess, sys, tempfile; q, dq = chr(39), chr(34); d = tempfile.mkdtemp(); p = os.path.join(d, 'q.rules.yml'); open(p, 'w').write('groups:\\n- name: t\\n  rules:\\n  - alert: X\\n    expr: ' + q + 'kbmon_no_such_metric{a=' + dq + 'b' + dq + '} > 0' + q + '\\n  - alert: Y\\n    expr: kbmon_alerts > 0\\n'); r = subprocess.run(['uv', 'run', '--frozen', '--project', 'otel', 'python', 'otel/kbmon_otel.py', '--check-rules', p], capture_output=True, text=True); sys.exit(0 if r.returncode == 1 and 'kbmon_no_such_metric' in r.stdout + r.stderr else 1)"
+    ]
+  },
+  "touches": [
+    "otel/otel_prom.py",
+    "otel/kbmon_otel.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-4f4m3noq review"
+  ],
+  "notes": "Review of SP-4f4m3noq (2026-10-22): otel_prom.rule_exprs/rule_names blank a whole YAML-quoted expression with the quote stripper (a file of only quoted exprs exits 2 'no kbmon_ metric'), miss {__name__=\"kbmon_x\"} (false pass) and read kbmon_foo:rate5m as kbmon_foo (false fail). Multi-line | blocks, inline comments and a commented-out expr are read right. The shipped rules file is plain, so nothing fails today. The reviewer recommends changing the provisional answer of ST-6oidkcqv g1 this way, and keeping the line scan otherwise."
+}

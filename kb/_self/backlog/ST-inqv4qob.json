@@ -1,0 +1,28 @@
+{
+  "id": "ST-inqv4qob",
+  "kind": "story",
+  "title": "backlog.py landings counts only landings of items this clone's history holds",
+  "status": "draft",
+  "parent": "EP-wqgicmmj",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py landings reads only the ops rows whose item has a file in this clone's git history (git log --all of kb/_self/backlog), so rows of other clones' or early synthetic runs' items are left out, and its count line says how many rows it left out",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re, subprocess, sys; sys.path.insert(0, '_tools'); import bl_stall; files = set(re.findall(r'kb/_self/backlog/([A-Z]{2}-[a-z0-9]{8})[.]json', subprocess.run(['git', 'log', '--all', '--name-only', '--format=', '--', 'kb/_self/backlog'], capture_output=True, text=True).stdout)); want = sum(1 for r in bl_stall.ops_rows('.') if r.get('event') == 'land.end' and r.get('item') in files and isinstance(r.get('ms'), (int, float))); r = subprocess.run([sys.executable, '_tools/backlog.py', 'landings'], capture_output=True, text=True); got = [int(m) for m in re.findall(r'^land[.]end\\s+n=(\\d+)', r.stdout, re.M)]; sys.exit(0 if r.returncode == 0 and got == [want] else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_ops.py",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-4f4m3noq review"
+  ],
+  "notes": "Review of SP-4f4m3noq (2026-10-22): of 4867 items with a land.end row only 1263 have an item file in this clone's history; 3374 TK- and 230 ST- have none, ~4700 rows dated 2026-10-02/03; land.end n=6681 failed=2208 p95=195946 are inflated, and a row is an attempt (retries count), not a landing. bl_stall.ops_rows reads the host-wide spool and every committed sidecar."
+}

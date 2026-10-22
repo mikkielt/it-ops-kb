@@ -1,0 +1,35 @@
+{
+  "id": "ST-vodchtq2",
+  "kind": "story",
+  "title": "The session-start kbmon receipt reads the kb panel, so a failed lookup eval reaches the alert line",
+  "status": "draft",
+  "parent": "EP-wqgicmmj",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbmon --receipt reads the kb panel by default beside querylog, sessions, host and sprint, so the kb.eval alert reaches the session-start alert line; kb/_self/monitoring.md (The receipt) names the kb panel",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0, '_tools'); import mon_receipt; sys.exit(0 if 'kb' in mon_receipt.DEFAULT_PANELS else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, sys; r = subprocess.run([sys.executable, '_tools/selfdoc.py', 'section', 'monitoring', 'The receipt'], capture_output=True, text=True); sys.exit(0 if r.returncode == 0 and 'kb.eval' in r.stdout else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/mon_receipt.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-4f4m3noq review"
+  ],
+  "notes": "Review of SP-4f4m3noq (2026-10-22): mon_receipt.DEFAULT_PANELS (_tools/mon_receipt.py:20) is querylog, sessions, host, sprint, so ST-rupsi7pz's kb.eval alert reaches --once, --json, the live view and the exit code but not the session-start line. A planted snapshot holding the kb panel does print it through --receipt --from-snapshot, so only the default panel list is missing. The kb panel takes about 1 s, which may be why it was left out: weigh the receipt's time budget."
+}

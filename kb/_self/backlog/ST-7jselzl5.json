@@ -1,0 +1,28 @@
+{
+  "id": "ST-7jselzl5",
+  "kind": "story",
+  "title": "The Prometheus rules alert when the kbmon adapter's scrape target is down",
+  "status": "draft",
+  "parent": "EP-wqgicmmj",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "otel/kbmon.rules.yml has an alert on up{job=\"kbmon\"} == 0, since the kbmon alerts resolve silently once the adapter stops and its series go stale, and otel/prometheus.yml names that scrape job kbmon; --check-rules still exits 0 on the shipped file",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, subprocess, sys; rd = lambda p: open(p).read() if os.path.exists(p) else ''; t = rd('otel/kbmon.rules.yml'); c = rd('otel/prometheus.yml'); r = subprocess.run(['uv', 'run', '--frozen', '--project', 'otel', 'python', 'otel/kbmon_otel.py', '--check-rules', 'otel/kbmon.rules.yml'], capture_output=True, text=True); sys.exit(0 if 'up{job=' in t.replace(' ', '') and 'job_name: kbmon' in c and r.returncode == 0 else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "otel/kbmon.rules.yml",
+    "otel/prometheus.yml",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-4f4m3noq review"
+  ],
+  "notes": "Review of SP-4f4m3noq (2026-10-22): the three shipped rules have no rule on the scrape target, so a dead adapter resolves every alert silently. --check-rules reads only kbmon_ names, so an up rule passes it untouched. Cosmetic: KbmonAlertHeld and KbmonLookupEvalFailed both fire on a failed eval, since kbmon_alerts counts the eval alert."
+}
