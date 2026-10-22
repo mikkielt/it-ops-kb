@@ -3,7 +3,7 @@ topic: agents/azure-openai-deployments
 priority: P2
 applies_to: "Azure OpenAI in Microsoft Foundry Models: deployment types, quota/rate limits, provisioned throughput (PTU), API versions, auth and networking; docs current 2026-09-26"
 retrieved_utc: 2026-09-27
-sources: [S-psa4dspu, S-u75x3q42, S-wxhjirsk, S-pntdruql, S-joexcals, S-mw5epkyz, S-4mutzurm, S-uk5qyhwi, S-dymizpwc, S-vfwdpj2p, S-gueirwxw, S-jbwkdq4e, S-2l76try5, S-lpohskwn, S-c7yqvidh, S-f7arhttw]
+sources: [S-psa4dspu, S-u75x3q42, S-wxhjirsk, S-pntdruql, S-joexcals, S-mw5epkyz, S-4mutzurm, S-uk5qyhwi, S-dymizpwc, S-vfwdpj2p, S-gueirwxw, S-jbwkdq4e, S-2l76try5, S-keowoi6l, S-toiw24gw, S-54iyoh5q]
 status: complete
 files: [agents/azure-openai-deployment-types.csv]
 ---
@@ -59,8 +59,11 @@ inference data plane. Full deployment-type comparison table: `agents/azure-opena
   `DataZoneStandard`, `DataZoneProvisionedManaged`, `DataZoneBatch`, `Standard`, `ProvisionedManaged`
   (Regional Provisioned), `DeveloperTier`. [DOC S-psa4dspu]
 - Data Zone Standard and Data Zone Provisioned deployments are available in the same Foundry resource as all
-  other Foundry deployment types (as the deployment-types page stated at its 2025-12-02 revision); the 2026
-  rewrite dropped that sentence and nothing contradicts it. [DOC S-c7yqvidh]
+  other Foundry deployment types (as the deployment-types page stated at its 2025-12-02 revision, S-c7yqvidh,
+  which can no longer be read). [UNK: logged in `_gaps.md`]
+- The current deployment-types page has no sentence on where Data Zone Standard and Data Zone Provisioned
+  deployments live and no statement that contradicts the one above. [DER S-toiw24gw: page read in full on
+  2026-10-22, nothing found]
 - EU Data Zone follows the Azure EU Data Boundary and can include EFTA countries (e.g. Norway,
   Switzerland) in addition to EU member states; Microsoft can add regions to a data zone without prior
   notice. [DOC S-psa4dspu]
@@ -151,9 +154,11 @@ inference data plane. Full deployment-type comparison table: `agents/azure-opena
 ### API versions and content filtering
 - Before v1, Azure OpenAI shipped new dated API versions monthly, so new features meant updating code and
   environment variables. [DOC S-4mutzurm]
-- Last-generation (versioned) GA data-plane API: `2024-10-21`, which the lifecycle page (2025-11-11 revision)
-  called the replacement for the earlier `2024-06-01` GA release; the current page no longer carries that
-  section. [DOC S-2l76try5, S-lpohskwn]
+- Last-generation (versioned) GA data-plane API: `2024-10-21`. [DOC S-2l76try5]
+- The lifecycle page, at its 2025-11-11 revision, called `2024-10-21` the replacement for the earlier
+  `2024-06-01` GA release (S-lpohskwn; that revision can no longer be read). [UNK: logged in `_gaps.md`]
+- The current lifecycle page (the v1 API page) has no section on `2024-10-21` or `2024-06-01`. [DER
+  S-keowoi6l: page read in full on 2026-10-22, nothing found]
 - The next-generation **v1 API** (opt-in from August 2025) makes `api-version` no longer required for GA
   calls; individual preview features gate on feature-specific request headers (e.g. historically
   `aoai-evals: preview`) or on an `alpha` path segment instead. [DOC S-4mutzurm]
@@ -178,10 +183,11 @@ inference data plane. Full deployment-type comparison table: `agents/azure-opena
   but for completions of Azure OpenAI models require Limited Access approval via the Modified Content
   Filters review form. [DOC S-uk5qyhwi]
 - The content-filters how-to stated at its 2025-11-11 revision that the GPT-image-1 series does not support
-  content-filter configuration and uses only the default filter [DOC S-f7arhttw].
-- The GPT-image-1 content-filter sentence was removed by 2025-12-04 and the current pages do not state the
-  restriction, so treat it as historical [DER S-f7arhttw, S-uk5qyhwi: pinned revision compared with the
-  current page].
+  content-filter configuration and uses only the default filter (S-f7arhttw; that revision can no longer be
+  read). [UNK: logged in `_gaps.md`]
+- The current content-filters page (Foundry classic) states no such restriction and says the content
+  filtering system runs alongside the core models, including image generation models, so treat the
+  2025-11-11 sentence as historical [DOC S-54iyoh5q].
 - Content filter configurations are created at the resource level and then associated with one or more
   deployments. [DOC S-uk5qyhwi]
 
