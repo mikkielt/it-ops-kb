@@ -8963,12 +8963,12 @@ fe21684ae2bb,gitlab/jira-issue-keys-in-commits.md,S-pnktrw4x,unlocated:fetch-err
 1d88644a06a1,gitlab/job-log-timestamps.md,S-fn452qtu,located,Available feature flags,begin;ff_timestamp;timestamp;added;line;trac;log;each,8e777f4d2897e76e,"FFTIMESTAMPS | true | {{< icon name=""dotted-circle"" >}} No | | When disabled timestamps are not added to the beginning of each log trace line.",2026-10-10
 34487e506637,gitlab/job-log-timestamps.md,S-crjqbibt,unlocated:no-match,,,,,2026-10-10
 42183e24ce58,gitlab/job-log-timestamps.md,S-crjqbibt,located,,hex;stder;stdout;flag;append;digit;type;line,ce90717853ecd7cd,// - <stream id> is a 2-digit hex encoded user provided stream identifier // - <stream type> is either 'stdout' or 'stderr' // - <append,2026-10-10
-4846f6d9fb16,gitlab/job-log-timestamps.md,S-4pm7parz,unlocated:no-match,,,,,2026-10-10
 492b4fe45584,gitlab/job-log-timestamps.md,S-crjqbibt,unlocated:no-match,,,,,2026-10-10
 4d200ca0f1a4,gitlab/job-log-timestamps.md,S-fn452qtu,unlocated:no-match,,,,,2026-10-10
 56c51ab4cea1,gitlab/job-log-timestamps.md,S-crjqbibt,unlocated:no-match,,,,,2026-10-10
 603bc0686f8a,gitlab/job-log-timestamps.md,S-5qytzl6u,located,,com;dedicat;free;gitlab.com;premium;tier;ultimat;manag,4e4c4c25c0088d31,"Tier: Free, Premium, Ultimate Offering: GitLab.com, GitLab Self-Managed, GitLab Dedicated",2026-10-10
 679578b9785b,gitlab/job-log-timestamps.md,S-fn452qtu,located,Available feature flags,every;job;flag;runner,1b719740ff019917,"Enable feature flag in runner environment variables To enable the feature for every job a Runner runs, specify the feature",2026-10-10
+6b5a788a28fe,gitlab/job-log-timestamps.md,S-4pm7parz,unlocated:no-match,,,,,2026-10-22
 8cde9fca1be8,gitlab/job-log-timestamps.md,S-5qytzl6u,unlocated:no-match,,,,,2026-10-10
 8cde9fca1be8,gitlab/job-log-timestamps.md,S-fn452qtu,unlocated:no-match,,,,,2026-10-10
 98a6c8154c2a,gitlab/job-log-timestamps.md,S-5qytzl6u,located,View job logs > Timestamps,approximately;spac;storag;uses;timestamp;log;job,2bed86035e33849c,"When timestamps are enabled, the job log uses approximately 10% more storage space.",2026-10-10
