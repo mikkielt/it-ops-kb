@@ -49,7 +49,7 @@ PLACEHOLDERS = {
 _PL_WORDS = {w for v in PLACEHOLDERS.values() for w in re.findall(r"[a-z0-9]+", v.lower())}
 
 # --- shapes -------------------------------------------------------------------------------------------------------
-GUID = re.compile(r"(?<![\w-])[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}(?![\w-])")
+GUID = re.compile(r"(?<!\w)[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}(?!\w)")  # the scan's \b
 GUID_BARE = re.compile(r"(?<![\w-])[0-9A-Fa-f]{32}(?![\w-])")
 IPV4 = re.compile(r"(?<![\w.])\d{1,3}(?:\.\d{1,3}){3}(?![\w]|\.\d)")
 IPV6 = re.compile(r"(?<![\w:.\]])(?:[0-9A-Fa-f]{0,4}:){2,7}[0-9A-Fa-f]{0,4}(?![\w:])")
