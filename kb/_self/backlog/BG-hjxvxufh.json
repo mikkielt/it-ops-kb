@@ -13,5 +13,23 @@
       "-c",
       "import subprocess,sys,tempfile; d=tempfile.mkdtemp(); subprocess.run(['git','init','-q',d]); o=subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'config'],capture_output=True,text=True).stdout; bad=[l for l in o.splitlines() if l.startswith(('lane_module = ','land_push = ')) and 'kblane' in l or 'kbgit.py' in l]; print(bad); sys.exit(1 if bad else 0)"
     ]
-  }
+  },
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What do lane_module and land_push default to in a project whose backlog.json names neither?",
+      "options": [
+        "lane_module empty (no code lane); land_push empty, so land stops before the push and names the key the project must set",
+        "lane_module empty; land_push defaults to git push of HEAD to the main branch"
+      ],
+      "recommendation": "lane_module empty (no code lane); land_push empty, so land stops before the push and names the key the project must set",
+      "do": {
+        "lane_module empty (no code lane); land_push empty, so land stops before the push and names the key the project must set": "BG-hjxvxufh",
+        "lane_module empty; land_push defaults to git push of HEAD to the main branch": "BG-hjxvxufh"
+      },
+      "class": "push"
+    }
+  ],
+  "notes": "Manager 2026-10-23: the repro fails as filed (lane_module = \"kblane\" (default), land_push = [\"_tools/kbgit.py\", \"sync\", \"--push\"] (default)). Kept a draft. The skills (skills/sprint/SKILL.md:16-17, skills/item, skills/backlog) and kb/_self/backlog.md:300,311 document today's defaults, and an empty land_push is a push design choice. Readers once answered: _tools/bl_base.py:38,41, bl_land.py:106,670, bl_precheck.py:312, backlog.json:53 (land_push is not in it yet), kb/_self/plugin.md:24."
 }
