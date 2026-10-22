@@ -22,6 +22,23 @@
     "kb/_self/backlog.md",
     "kb/_self/maintaining.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does the rule sit: the plan step of the skill and the matching Plan bullet in backlog.md, or the skill only?",
+      "options": [
+        "skill plus backlog.md",
+        "skill only"
+      ],
+      "recommendation": "skill plus backlog.md",
+      "do": {
+        "skill plus backlog.md": "ST-t5mz6ylb",
+        "skill only": "ST-t5mz6ylb"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-5cyrnkw7 close"
   ],
