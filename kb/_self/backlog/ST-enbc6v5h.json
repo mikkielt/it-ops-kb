@@ -2,7 +2,7 @@
   "id": "ST-enbc6v5h",
   "kind": "story",
   "title": "Census text fetches mark their cuts, keep raw bytes for verification and allow only --grep after the url",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-ovwzbc7u",
   "priority": "P2",
@@ -62,5 +62,7 @@
     "BG-fazgr64q",
     "BG-acur6iym"
   ],
-  "notes": "Operator 2026-10-22: the census fetch code findings of the SP-rmp5zm5a second-half review go to this sprint. Reviewer findings (S2): _gz_text, _zip_members, _tar_members and _members_text cut at TEXT_MEMBER_CAP or TEXT_TOTAL_CAP with no marker, so a --grep miss in the cut part reads as absence; http.client.HTTPException, zipfile RuntimeError/NotImplementedError and tarfile EOFError escape and exit 1 like 'no line matches'; fetch.fetch decodes gzip for every caller (verify_root hashes get(url): a .gz artifact served with Content-Encoding gzip would mismatch _artifacts.csv; provider.decode_body already decodes safely). (S3): the ' *' rule admits --header, a session-chosen header to the source's host; archive reads lack total bounds (member count, binary strings outside TEXT_TOTAL_CAP, sharedStrings.xml, pdftotext output); one-line JSON makes --grep print the whole document (nuget 1.39 MB); census.py record cuts notes near 300 characters; terraform-docs maps latest to main. Not reproduced here and left out: the query-log spool row fetch.py text would write under dispatch_env (no file under _cache/querylog grew in a planted run on 2026-10-22). The total-bound caps have no check: the worker adds a planted case if cheap. Premise on origin/main of 2026-10-22: check 0 lists 4 defects, check 1 lists 3."
+  "notes": "Operator 2026-10-22: the census fetch code findings of the SP-rmp5zm5a second-half review go to this sprint. Reviewer findings (S2): _gz_text, _zip_members, _tar_members and _members_text cut at TEXT_MEMBER_CAP or TEXT_TOTAL_CAP with no marker, so a --grep miss in the cut part reads as absence; http.client.HTTPException, zipfile RuntimeError/NotImplementedError and tarfile EOFError escape and exit 1 like 'no line matches'; fetch.fetch decodes gzip for every caller (verify_root hashes get(url): a .gz artifact served with Content-Encoding gzip would mismatch _artifacts.csv; provider.decode_body already decodes safely). (S3): the ' *' rule admits --header, a session-chosen header to the source's host; archive reads lack total bounds (member count, binary strings outside TEXT_TOTAL_CAP, sharedStrings.xml, pdftotext output); one-line JSON makes --grep print the whole document (nuget 1.39 MB); census.py record cuts notes near 300 characters; terraform-docs maps latest to main. Not reproduced here and left out: the query-log spool row fetch.py text would write under dispatch_env (no file under _cache/querylog grew in a planted run on 2026-10-22). The total-bound caps have no check: the worker adds a planted case if cheap. Premise on origin/main of 2026-10-22: check 0 lists 4 defects, check 1 lists 3.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
