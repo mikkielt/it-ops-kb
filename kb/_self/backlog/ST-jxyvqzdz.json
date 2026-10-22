@@ -2,7 +2,7 @@
   "id": "ST-jxyvqzdz",
   "kind": "story",
   "title": "A content landing runs the lookup eval when it changes kb facts",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ovwzbc7u",
   "priority": "P2",
   "rank": 0,
@@ -27,5 +27,7 @@
   "links": [
     "parked: SP-z6wolmvm close"
   ],
-  "notes": "Retrospective of SP-z6wolmvm (2026-10-22, operator accepted): ST-qgojhpot added the Purview endpoint DLP onboarding facts (0cc2bf9ff9) and landed; rag.py eval then failed on main on EV-purview-endpoint-dlp-onboarding-requirements-windows (want none, got good) until ST-xfuucxk2 changed the row. bl_land.py runs land_heavy() (land_eval and lint) only when the landing changes _tools/ (the `if any(p.startswith(\"_tools/\")` branch), so content landings skip the eval. The draft check reads the source; planning replaces it with a planted content landing."
+  "notes": "Retrospective of SP-z6wolmvm (2026-10-22, operator accepted): ST-qgojhpot added the Purview endpoint DLP onboarding facts (0cc2bf9ff9) and landed; rag.py eval then failed on main on EV-purview-endpoint-dlp-onboarding-requirements-windows (want none, got good) until ST-xfuucxk2 changed the row. bl_land.py runs land_heavy() (land_eval and lint) only when the landing changes _tools/ (the `if any(p.startswith(\"_tools/\")` branch), so content landings skip the eval. The draft check reads the source; planning replaces it with a planted content landing.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
