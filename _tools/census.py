@@ -184,7 +184,7 @@ that name the repository root and what the run may do, `--output-format json` an
 _tools/census_result.schema.json, `--max-turns` (DISPATCH_TURNS) and `--max-budget-usd` (DISPATCH_BUDGET_USD), no hooks,
 user settings or MCP server but the Microsoft Learn one, and `--permission-mode dontAsk` with rules that allow Read and
 Edit of the group's owned files alone (absolute paths; the working directory is a scratch directory of its own, removed
-after the run), `git show` and `git diff` in the census clones the part's rows read, each page's own `fetch.py text` line (options such as
+after the run), `git show` and `git diff` in the census clones the part's rows read, `git ls-remote` of a wiki's own git url, each page's own `fetch.py text` line (options such as
 `--grep PATTERN` may follow its url) and `kbid.py url`. The child's environment is passed explicitly and `claude` is taken from PATH, never from the current
 directory. The `structured_output` of the reply, when it is valid against the schema, is written to
 _cache/census/dispatch/<D>/<group>/RESULTS.json (RESULTS-<N>.json for part N of a group of several) and the command
@@ -2078,7 +2078,9 @@ def encode_url(url):
 
 def read_commands(r, ctx):
     """The lines that read a source in full: git show and git diff of a pinned file in the census clone, else the fetch
-    route of its page (Learn: microsoft_docs_fetch; otherwise the provider's raw form of the url)."""
+    route of its page (Learn: microsoft_docs_fetch; otherwise the provider's raw form of the url). A github.com wiki's own
+    git url (`.wiki.git`) is no page: it gets a `git ls-remote` line. An arXiv abstract's entry is the abstract only, so
+    the paper's PDF is read too."""
     if r["kind"] in ("raw-pin", "gh-pin") and r["repo"] and r["pin"] and r["path"]:
         clone = kbcommon.repo_rel(os.path.join(REPOS, clone_name(r["repo"]) + ".git"), kbcommon.HOME)
         found = re.search(r"@([0-9a-f]{12})", f"{r['evidence']} {r['proof']}")
@@ -2095,8 +2097,14 @@ def read_commands(r, ctx):
         return out
     if r["kind"] == "learn" or urlparse(r["url"]).netloc.lower() == "learn.microsoft.com":
         return [f"microsoft_docs_fetch {r['url']}"]
+    if re.fullmatch(r"https?://github\.com/[^/?#]+/[^/?#]+\.wiki\.git/?", r["url"]):
+        return [f"git ls-remote {r['url'].rstrip('/')}"]
     url, headers = provider.raw_url(r["url"], provider.for_url(r["url"], ctx["providers"]))
-    return [f"fetch {encode_url(url)}" + "".join(f" (header {k}: {v})" for k, v in headers.items())]
+    out = [f"fetch {encode_url(url)}" + "".join(f" (header {k}: {v})" for k, v in headers.items())]
+    paper = re.match(r"https?://(?:www\.)?arxiv\.org/abs/([^?#]+?)/?(?:[?#].*)?$", r["url"])
+    if paper:
+        out.append(f"fetch {encode_url('https://arxiv.org/pdf/' + paper.group(1))}")
+    return out
 
 
 def row_block(r, files, q, group, ctx):
@@ -2983,14 +2991,20 @@ def fetch_argv(url, heads=(), tools=None):
 
 def dispatch_plan(group, members, ctx):
     """What one brief part's session may touch, from the part's rows: {files: the group's owned files in it (absolute),
-    git: the argv of each `git show` and `git diff` line of its rows (the clone as an absolute path), fetch: {row id:
-    the `fetch.py text` argv of its page, `fetch_argv`}, learn: [row id] read with the Learn tool, skipped: [row id] whose page no permission
+    git: the argv of each `git show` and `git diff` line of its rows (the clone as an absolute path) and each
+    `git ls-remote` line, fetch: {row id: [the `fetch.py text` argv of each page it reads, `fetch_argv`]}, learn: [row id] read with the Learn tool, skipped: [row id] whose page no permission
     rule can name exactly}."""
     git, fetch, learn, skipped = set(), {}, set(), []
     for r, _, _ in members:
         for line in read_commands(r, ctx):
             page = FETCH_LINE.fullmatch(line)
-            if re.match(r"git -C \S+ (?:show|diff) ", line):
+            if line.startswith("git ls-remote "):
+                url = line.split(" ", 2)[2]
+                if FETCHABLE.fullmatch(url):
+                    git.add(("git", "ls-remote", url))
+                elif r["id"] not in skipped:
+                    skipped.append(r["id"])
+            elif re.match(r"git -C \S+ (?:show|diff) ", line):
                 _, _, clone, *args = line.split(" ")
                 if "*" in line or shlex.join(args) != " ".join(args):  # `*` is a wildcard; a quote differs
                     if r["id"] not in skipped:
@@ -3002,7 +3016,7 @@ def dispatch_plan(group, members, ctx):
             elif page:
                 heads = HEADER.findall(page.group(2))
                 if FETCHABLE.fullmatch(page.group(1)) and all(FETCH_HEADER.fullmatch(f"{k}: {v}") for k, v in heads):
-                    fetch[r["id"]] = fetch_argv(page.group(1), heads, kbcommon.TOOLS)
+                    fetch.setdefault(r["id"], []).append(fetch_argv(page.group(1), heads, kbcommon.TOOLS))
                 else:
                     skipped.append(r["id"])
     return {"files": [os.path.join(KB, rel) for rel in owned_files(group, members)], "git": sorted(git),
@@ -3035,7 +3049,7 @@ def dispatch_rules(plan, scratch):
         allow += [at("Read", path), at("Edit", path)]
     allow += [at(tool, scratch, "/**") for tool in ("Read", "Edit", "Write")]
     allow += [f"Bash({shlex.join(argv)})" for argv in plan["git"]]
-    allow += sorted({f"Bash({shlex.join(argv)} *)" for argv in plan["fetch"].values()})
+    allow += sorted({f"Bash({shlex.join(argv)} *)" for argvs in plan["fetch"].values() for argv in argvs})
     allow.append(f"Bash({shlex.join(['python3', os.path.join(kbcommon.TOOLS, 'kbid.py'), 'url'])} *)")
     if plan["learn"]:
         allow.append(LEARN_TOOL)
@@ -3067,10 +3081,11 @@ def dispatch_prompt(brief, plan, scratch):
            "- You run unattended in permission mode dontAsk: a tool, file or command not named here is denied. Do "
            "not look for another route: record that source as `unconfirmed` with the reason.",
            "- Files you may read and edit: " + (", ".join(plan["files"]) or "none") + ".", "- Commands you may run:"]
-    out += [f"  - {shlex.join(argv)} (the brief's `git -C` line with the absolute path; write it exactly so)"
+    out += [f"  - {shlex.join(argv)} (the brief's `git ls-remote` line; write it exactly so)" if argv[1] == "ls-remote"
+            else f"  - {shlex.join(argv)} (the brief's `git -C` line with the absolute path; write it exactly so)"
             for argv in plan["git"]]
     out += [f"  - {sid}: {shlex.join(argv)} (what the brief's `fetch` line for it means; write it exactly so, then add `--grep PATTERN` to print only the lines of a long document that match, never a pipe)"
-            for sid, argv in sorted(plan["fetch"].items())]
+            for sid, argvs in sorted(plan["fetch"].items()) for argv in argvs]
     out.append(f"  - {shlex.join(['python3', os.path.join(kbcommon.TOOLS, 'kbid.py'), 'url'])} <URL> (the id of a new row)")
     if plan["learn"]:
         out.append(f"- `microsoft_docs_fetch <url>` in the brief is the tool `{LEARN_TOOL}`.")

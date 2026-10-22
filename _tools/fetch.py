@@ -44,8 +44,10 @@ detected from the stored hash. The first fetch of a source is `new`; if its _sou
 HTML is reduced to the text of <main> (or the whole body) before hashing, so page chrome does not count.
 
 Text of one url (`text URL`, no kb root, nothing saved): prints a page's normalized text; a PDF's through `pdftotext`
-(on PATH, else exit 2); the text members of a zip or tar archive (gzip, bzip2, xz), each after a `== name ==` line, read
-in memory and never extracted, with a cap on bytes; a spreadsheet's (.xlsx) shared strings. Exit 2 when it cannot read it.
+(on PATH, else exit 2); the text members of a zip or tar archive (gzip, bzip2, xz), each after a `== name ==` line (a binary
+member as its printable strings), read in memory and never extracted, with a cap on bytes; a single gzip file that is no
+archive as its decompressed text; a response sent with Content-Encoding gzip decompressed; a spreadsheet's (.xlsx)
+shared strings. Exit 2 when it cannot read it.
 `--grep PATTERN` prints only the lines that match the regular expression (exit 1 when none do), so a long document is read
 without a pipe; `--header 'Name: value'` (repeatable) sends a request header beside the kb User-Agent.
 
@@ -54,7 +56,7 @@ A failed download is reported as `unknown`, never as a match.
 Every request writes one query log spool row (kb/_self/querylog.md, Capture): host, path and outcome class, never the
 query string or the body.
 """
-import argparse, datetime, difflib, hashlib, html.parser, io, json, os, re, shutil, subprocess, sys, tarfile, tempfile, time
+import argparse, datetime, difflib, hashlib, html.parser, io, json, os, re, shutil, subprocess, sys, tarfile, tempfile, time, zlib
 import urllib.error, urllib.parse, urllib.request, zipfile
 from xml.etree import ElementTree
 import kbcommon, kbid, ql_capture
@@ -64,12 +66,13 @@ STATE = "_fetch_state.csv"
 STATE_COLS = kbcommon.STATE_COLS
 SNAPSHOTS = os.path.join(kbcommon.HOME, "_cache", "snapshots")
 DELAY, TIMEOUT = 1.1, 180
+GUNZIP_CAP = 100_000_000  # bytes a gzip body is decompressed to (a bomb is cut here, not read to its end)
 _last = {}
 
 
 def fetch(url, headers=None):
     """(bytes, content-type) of `url`, at most one request per DELAY seconds per host; `headers` ({name: value}) are
-    sent beside the kb User-Agent."""
+    sent beside the kb User-Agent. A response sent with Content-Encoding gzip is returned decompressed."""
     if urllib.parse.urlparse(url).scheme not in ("http", "https"):
         raise ValueError(f"not an http(s) url: {url}")
     host = urllib.parse.urlparse(url).hostname
@@ -81,6 +84,8 @@ def fetch(url, headers=None):
     try:
         with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
             body = r.read()
+            if (r.headers.get("Content-Encoding") or "").strip().lower() in ("gzip", "x-gzip"):
+                body = _gunzip(body, GUNZIP_CAP)
             ql_capture.record_request(url, ql_capture.request_outcome(r.status, None, len(body), url, r.geturl()),
                                     body)
             return body, r.headers.get("Content-Type", "")
@@ -90,6 +95,11 @@ def fetch(url, headers=None):
     except Exception:
         ql_capture.record_request(url, "error")
         raise
+
+
+def _gunzip(data, cap):
+    """The gzip `data` decompressed, at most `cap` bytes of it."""
+    return zlib.decompressobj(wbits=31).decompress(data, cap)
 
 
 def get(url):
@@ -225,15 +235,16 @@ def _json_text(page):
 
 
 TEXT_MEMBER_CAP, TEXT_TOTAL_CAP = 2_000_000, 8_000_000  # bytes read from one archive member, and printed in all
+STRINGS_CAP = 20_000  # bytes of printable strings printed for one binary member
 
 
 def _members_text(members):
     """`== name ==` and the text of each (name, bytes) member that is text, up to TEXT_TOTAL_CAP bytes in all; a binary
-    member is named and skipped."""
+    member is named with its printable strings (`_strings`)."""
     out, used = [], 0
     for name, data in members:
         if b"\0" in data[:1024]:
-            out.append(f"== {name} == (binary, skipped)")
+            out.append(f"== {name} == (binary, printable strings)\n{_strings(data)}")
             continue
         room = TEXT_TOTAL_CAP - used
         if room <= 0:
@@ -243,6 +254,32 @@ def _members_text(members):
         used += len(text.encode("utf-8"))
         out.append(f"== {name} ==\n{text}")
     return "\n".join(out) + "\n"
+
+
+def _strings(data):
+    """The runs of eight or more printable ASCII characters in binary `data`, one per line, up to STRINGS_CAP bytes (the
+    `strings` tool's view: names, labels and paths a binary file holds)."""
+    out, used = [], 0
+    for m in re.finditer(rb"[\x20-\x7e]{8,}", data):
+        run = m.group().decode("ascii")
+        used += len(run) + 1
+        if used > STRINGS_CAP:
+            out.append(f"... (more strings not printed: cap {STRINGS_CAP} bytes)")
+            break
+        out.append(run)
+    return "\n".join(out) if out else "(no printable strings)"
+
+
+def _gz_text(body):
+    """The text of a gzip body: a tar's members when it holds a tar, else the one decompressed file (a binary one as its
+    printable strings), at most TEXT_TOTAL_CAP bytes of it."""
+    head = zlib.decompressobj(wbits=31).decompress(body, 512)
+    if head[257:262] == b"ustar":
+        return _members_text(_tar_members(body))
+    data = _gunzip(body, TEXT_TOTAL_CAP)
+    if b"\0" in data[:1024]:
+        return _strings(data) + "\n"
+    return data.decode("utf-8", errors="replace").replace("\r\n", "\n")
 
 
 def _zip_members(body):
@@ -302,7 +339,9 @@ def read_text(url, body, ctype):
         if path.endswith(".xlsx") or "spreadsheetml" in (ctype or ""):
             return _xlsx_text(body)
         return _members_text(_zip_members(body))
-    if body[:2] == b"\x1f\x8b" or body[:3] == b"BZh" or body[:6] == b"\xfd7zXZ\x00" or body[257:262] == b"ustar":
+    if body[:2] == b"\x1f\x8b":
+        return _gz_text(body)
+    if body[:3] == b"BZh" or body[:6] == b"\xfd7zXZ\x00" or body[257:262] == b"ustar":
         return _members_text(_tar_members(body))
     return to_text(body, ctype)
 
@@ -316,7 +355,7 @@ def text_cmd(a):
         body, ctype = fetch(a.url, {k.strip(): v.strip() for k, _, v in (h.partition(":") for h in a.header)})
         text = read_text(a.url, body, ctype)
     except (OSError, ValueError, re.error, zipfile.BadZipFile, tarfile.TarError, ElementTree.ParseError,
-            subprocess.SubprocessError) as e:
+            subprocess.SubprocessError, zlib.error) as e:
         print(f"{a.url}: {str(e)[:300]}", file=sys.stderr)
         sys.exit(2)
     if text is None:
