@@ -1,0 +1,17 @@
+{
+  "id": "BG-hjxvxufh",
+  "kind": "bug",
+  "title": "backlog.json defaults lane_module to kblane and land_push to the kb's kbgit.py sync, so a host project must override both (second-project run)",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A project with no backlog.json, or one naming neither key, gets lane_module empty and a land_push that names no kb script, and the kb's backlog.json names its own values; found while fixing BG-cmvwrpbr, whose goal names seven other keys",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys,tempfile; d=tempfile.mkdtemp(); subprocess.run(['git','init','-q',d]); o=subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'config'],capture_output=True,text=True).stdout; bad=[l for l in o.splitlines() if l.startswith(('lane_module = ','land_push = ')) and 'kblane' in l or 'kbgit.py' in l]; print(bad); sys.exit(1 if bad else 0)"
+    ]
+  }
+}
