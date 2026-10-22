@@ -15,5 +15,6 @@
       "import sys,inspect; sys.path.insert(0,\"_tools\"); import bl_land,bl_dispatch; a=\"title_prefix=f\\\"{iid}:\\\"\" in inspect.getsource(bl_land.land_repositories); b=\"WORK_PREFIX + iid\" in inspect.getsource(bl_dispatch.worker_branch); sys.exit(1 if a and b else 0)"
     ]
   },
-  "repro_reason": "landing needs a live forge with merged requests; the names are fixed by these two expressions in land_repositories and worker_branch"
+  "repro_reason": "landing needs a live forge with merged requests; the names are fixed by these two expressions in land_repositories and worker_branch",
+  "notes": "Measured 2026-10-23 in a throwaway clone of the Nerthus workspace: land of a story whose task (P08-05) has a merged '<task id>:' request stops at step requests with \"no merge request titled 'ST-dl7mgwpd:' (state none)\", and done refuses the same item with \"the work of an item with repos is merged in its repositories, which land reads through their merge requests: run land\", so a host whose requests carry its own ids has no landing path at all. The same done printed \"the docs check could not run: cannot read kb/_self/map.csv\" with docs_map empty (ST-m7uk3zpu)."
 }
