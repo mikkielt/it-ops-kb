@@ -2,7 +2,7 @@
   "id": "BG-fazgr64q",
   "kind": "bug",
   "title": "census.py head_cited_lines raises on a cat-file missing line, and the dispatch docstrings still say a session reads only the group's files",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-ovwzbc7u",
   "priority": "P3",

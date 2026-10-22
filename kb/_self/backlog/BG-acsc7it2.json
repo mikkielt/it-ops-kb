@@ -2,7 +2,7 @@
   "id": "BG-acsc7it2",
   "kind": "bug",
   "title": "Bench pool rows ask about decisions the 2026-10-21 sweep invalidated, so their operator check cannot match",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-ovwzbc7u",
   "priority": "P3",

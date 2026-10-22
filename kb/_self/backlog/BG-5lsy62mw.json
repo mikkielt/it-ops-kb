@@ -2,7 +2,7 @@
   "id": "BG-5lsy62mw",
   "kind": "bug",
   "title": "The census result schema leaves new_rows reuse free text, so a session writes 'cite and paraphrase' and apply refuses the whole part",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-ovwzbc7u",
   "priority": "P3",

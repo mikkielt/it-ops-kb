@@ -2,7 +2,7 @@
   "id": "SP-ovwzbc7u",
   "kind": "sprint",
   "title": "Census and source tools fail safe, and gap research and landings follow the 2026-10-21 lessons",
-  "status": "planned",
+  "status": "active",
   "goal": "a census dispatch session that stops at its cap or fails leaves no edit in the group's files; census.py head_cited_lines falls back on a missing blob and its docstrings name --add-dir; the census result schema keeps a new row's reuse to a value apply accepts; kbid.py add never titles a raw code source by a comment line; every bench pool row that names a decision names an active one; a worker's done refuses a kb change that fails the leak scan; a content landing runs the lookup eval; a gap-research story's check counts a closing note only when it cites a tagged article fact; the sprint plan step says where a research story's findings go",
   "gates": [
     {
