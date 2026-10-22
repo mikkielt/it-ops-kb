@@ -2,8 +2,8 @@
 topic: python/stdlib-urllib-errors
 priority: P3
 applies_to: "Python stdlib urllib.request, urllib.error, socket and http.client exceptions (docs and source at CPython v3.13.2; probes on Python 3.13.2, macOS, 2026-10-10; redirect handling and its probe 2026-10-17)"
-retrieved_utc: 2026-10-21
-sources: [S-mktiemgc, S-ia6oszzb, S-dh7elejp, S-kudz6dke, S-mv5seea3]
+retrieved_utc: 2026-10-22
+sources: [S-mktiemgc, S-ia6oszzb, S-dh7elejp, S-kudz6dke, S-mv5seea3, S-uwx4igvv]
 status: partial
 ---
 
@@ -89,7 +89,25 @@ type of `reason` tell them apart.
 - Open: the `socket.EAI_*` values and the exact `reason` of a refused or unreachable connection on Windows and
   Linux were not run, and whether a proxy changes where the failure is raised was not read. [UNK: see `_gaps.md`]
 
+### A body that ends early, and a body the server compressed
+- `HTTPResponse.read()` with no `amt` and a known `Content-Length` reads exactly that many bytes through `_safe_read`, which raises
+  `IncompleteRead(partial, expected)` when the stream ends first, and closes the connection; with no `Content-Length` it reads to the end
+  and cannot tell a cut body from a whole one. [CODE S-uwx4igvv: Lib/http/client.py#HTTPResponse.read, _safe_read, IncompleteRead]
+- `HTTPResponse.read(amt)` is weaker: when the stream returns nothing before `amt` bytes, it only closes the connection and returns what it has, and a comment
+  in the source says an `IncompleteRead` would be the ideal answer "but it might break compatibility". A chunked body that stops before its last chunk raises
+  `IncompleteRead` in both forms. [CODE S-uwx4igvv: Lib/http/client.py#HTTPResponse.read, _read_chunked]
+- `IncompleteRead` keeps the bytes it did get in `partial` and the number still missing in `expected` (`None` for a chunked body). [CODE S-uwx4igvv: Lib/http/client.py#IncompleteRead]
+- `HTTPConnection.putrequest` adds `Accept-Encoding: identity` unless the request's headers already hold an `Accept-Encoding`, and its comment says the module
+  does not support encodings such as `x-gzip` or `x-deflate`; a text search of `http/client.py` and `urllib/request.py` at this tag finds no `zlib` in either, `gzip` only in
+  that comment, and `Content-Encoding` not at all in `request.py`, so neither decompresses a body. [CODE S-uwx4igvv: Lib/http/client.py#HTTPConnection.putrequest; CODE S-dh7elejp: Lib/urllib/request.py#AbstractHTTPHandler.do_open]
+- On Python 3.13.2, macOS, 2026-10-22, against a local `ThreadingHTTPServer`: a plain `urlopen` sent `Accept-Encoding: identity`; a server that answered with `Content-Encoding: gzip`
+  anyway got its body back compressed (`read()` began `1f 8b`), because urllib leaves a body as it came; a response that promised `Content-Length: 1000` and sent ten bytes
+  raised `IncompleteRead` from `read()` (`partial` the ten bytes, `expected` 990), while `read(5)`, `read(50)` and `read(50)` returned `b'only '`, `b'ten b'` and `b''` with no exception.
+  So a caller that must tell a cut body from a whole one reads with `read()`, not in `amt` chunks, or compares the byte count with `Content-Length` itself, and decodes `gzip` itself when it
+  allows or meets that encoding. [DER S-uwx4igvv, S-dh7elejp: the code above; the results of one run]
+
 ## Reference
+- `python/stdlib-archive-read-errors.md`: which exception a downloaded zip or tar archive raises when it is cut, corrupt or encrypted.
 - `python/stdlib-windows-portability.md`: other stdlib behaviour that differs by platform.
 - `agents/doc-change-detection.md`: GitHub and Learn conditional requests, whose `304` urllib raises as `HTTPError`.
 

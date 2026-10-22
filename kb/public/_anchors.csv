@@ -8771,6 +8771,7 @@ f6180b076942,gitlab/git-refs.md,S-xahbgevi,unlocated:no-match,,,,,2026-10-10
 0b6d55388093,gitlab/git-test-repositories.md,S-lr3jwdq2,unlocated:no-match,,,,,2026-10-10
 0dab76d422cc,gitlab/git-test-repositories.md,S-j4qkzgvv,located,,eventually;automatically;see;remov,0fef2d3221c0bc19,will eventually be removed automatically,2026-10-13
 0eade743244a,gitlab/git-test-repositories.md,S-ali5r4n7,located,,register;already;miss;prun;remov;path;worktre,67ac713c0b6de987,'%s' is a missing but already registered worktree;,2026-10-13
+12b6890ed459,gitlab/git-test-repositories.md,S-b6uvvu45,located,,miss;object,26d2e553b21ef228,<object> SP missing LF,2026-10-22
 18341fff068d,gitlab/git-test-repositories.md,S-nv6io42x,unlocated:no-match,,,,,2026-10-10
 1fcfe69afcc1,gitlab/git-test-repositories.md,S-3iovxrkf,unlocated:no-match,,,,,2026-10-10
 1fcfe69afcc1,gitlab/git-test-repositories.md,S-dcbs6vpj,unlocated:no-match,,,,,2026-10-10
@@ -11328,6 +11329,7 @@ ea1f4755377f,logs/ecs-log-fields.md,S644,located,under the License.,core;logger;
 57cd427ff907,logs/microsoft-sentinel.md,S-bxionmbk,located,Configure Table Settings in Microsoft Sentinel | Microsoft Learn > Prerequisites,page;insight;tabl,a630e423d0621cb8,"To use Table insights, you need read access to the Tables page in your workspace.",2026-10-21
 57e4eeca1783,logs/microsoft-sentinel.md,S-etccrdda,unlocated:no-match,,,,,2026-10-21
 5b6a269fadb2,logs/microsoft-sentinel.md,S-56eqdqa6,located,Azure portal > Microsoft Sentinel in the Azure portal retirement timeline,longer;march;support;availabl;defender;azur;portal;sentinel,5c423c8dc00c0a3e,"After March 31, 2027, Microsoft Sentinel will no longer be supported in the Azure portal and will be available only in the Microsoft Defender portal.",2026-10-21
+5d385dea6510,logs/microsoft-sentinel.md,S-yyxzfbbv,located,Provider documentation > Publishing,commit;new;way;releas;git;version;alway;display,babdfc056d7c3433,"given version always displays the documentation from that version's Git commit, and the only way to publish updated documentation is to release a new version",2026-10-22
 5fa3ff43041b,logs/microsoft-sentinel.md,S-ofreafga,unlocated:no-match,,,,,2026-10-22
 61e0ee0700fa,logs/microsoft-sentinel.md,S-6c6jslfs,unlocated:no-match,,,,,2026-10-21
 667785427d05,logs/microsoft-sentinel.md,S-btmphtyp,located,Manage data tiers and retention in Microsoft Sentinel | Microsoft Learn > Manage XDR data in Microsoft Sentinel > XDR data retention and costs,advanc;directly;beyond;availabl;free;storag;hunt;ingest,1771935f42afc570,"Data Lake tier | Configurable. By default, the same as the analytics tier. | Free storage when total retention is the same as analytics tier",2026-10-21
@@ -14081,6 +14083,20 @@ d87d46ddf760,python/ruff.md,S-7e63teyx,located,,graph;map;import,3b6d9ab482c400b
 db3d6a81dd43,python/ruff.md,S-yfbe6ete,unlocated:no-match,,,,,2026-10-10
 debb8922de45,python/ruff.md,S-szaj7ze7,located,The Ruff Formatter > `ruff format`,in-plac;plac;unformat;writ;directory;check;run;whil,9a8ce31f4fa3403c,"Similar to Black, running ruff format /path/to/file.py will format the given file or directory in-place, while ruff format --check /path/to/file.py will avoid writing any formatted",2026-10-21
 debb8922de45,python/ruff.md,S-y3zhzpmv,unlocated:no-match,,,,,2026-10-10
+0afa45a1dff5,python/stdlib-archive-read-errors.md,S-bzzofa6p,located,,readerror;rais;read;error,fac7493870533fbb,:exc:ReadError is raised.,2026-10-22
+0f5f2ea8b7a6,python/stdlib-archive-read-errors.md,S-bzzofa6p,located,,cannot;either;handl;rais;open;archiv;tar,23cd2991e0130acd,"Is raised when a tar archive is opened, that either cannot be handled by the",2026-10-22
+2d892a131fb6,python/stdlib-archive-read-errors.md,S-bzzofa6p,unlocated:no-match,,,,,2026-10-22
+2d892a131fb6,python/stdlib-archive-read-errors.md,S-vpqnb7i6,unlocated:no-match,,,,,2026-10-22
+3592bffab9f1,python/stdlib-archive-read-errors.md,S-bzzofa6p,unlocated:no-match,,,,,2026-10-22
+37bfa4967052,python/stdlib-archive-read-errors.md,S-vpqnb7i6,unlocated:no-match,,,,,2026-10-22
+3dd41fd6f878,python/stdlib-archive-read-errors.md,S-vpqnb7i6,located,,checksum;incorrect;crc;fail;password;format;zip,ad97eaab279110da,Decompression may fail due to incorrect password / CRC checksum / ZIP format or,2026-10-22
+61568e24eace,python/stdlib-archive-read-errors.md,S-vpqnb7i6,located,,notimplementederror;implement;zip_lzma;lzma;rais;error;zip,f0419aa9eadff50c,:const:ZIPLZMA will raise a :exc:NotImplementedError.,2026-10-22
+c4cf04ca5770,python/stdlib-archive-read-errors.md,S-vpqnb7i6,located,,bad;rais;error;zip;file,af94d7b38e240142,The error raised for bad ZIP files.,2026-10-22
+c622fb75c0a8,python/stdlib-archive-read-errors.md,S-vpqnb7i6,unlocated:no-match,,,,,2026-10-22
+ce049f218545,python/stdlib-archive-read-errors.md,S-bzzofa6p,unlocated:no-match,,,,,2026-10-22
+e7b643591408,python/stdlib-archive-read-errors.md,S-bzzofa6p,located,remove this when no longer needed,read;name;member;archiv,951573a99bc5c658,tar.add(name) How to read a gzip compressed tar archive and display some member information::,2026-10-22
+e7b643591408,python/stdlib-archive-read-errors.md,S-vpqnb7i6,located,,read;member;name,18c6f1dc89d1b6cd,Added support for specifying member name encoding for reading,2026-10-22
+f2df1e401ac9,python/stdlib-archive-read-errors.md,S-vpqnb7i6,unlocated:no-match,,,,,2026-10-22
 0563e804e7cb,python/stdlib-argparse-json.md,S-a3h5eijf,unlocated:no-match,,,,,2026-10-18
 0563e804e7cb,python/stdlib-argparse-json.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-18
 0563e804e7cb,python/stdlib-argparse-json.md,S-jqewtaii,unlocated:no-match,,,,,2026-10-18

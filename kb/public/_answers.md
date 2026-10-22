@@ -4432,3 +4432,15 @@ _Agent: kb-research_
 - See logs/prometheus-retention-exposition.md, logs/otel-python-sdk.md, claude/otel-monitoring.md.
 
 _Agent: kb-research_
+
+## QK-census-fetch-tool-tell-cut-compressed. How does a census fetch tool tell a cut, compressed or corrupt download from a missing match: Python http.client short bodies, Content-Encoding gzip, zip and tar read errors, git cat-file --batch missing and Terraform registry docs versions?
+- A body that ends before its `Content-Length` raises `IncompleteRead` from `HTTPResponse.read()` with no size, and from a chunked body in both forms; `read(amt)` on a plain body returns the short data and raises nothing. (`python/stdlib-urllib-errors.md:93`, `:96`) [CODE S-uwx4igvv]
+- `http.client` asks for `Accept-Encoding: identity` unless the caller sets one, and neither it nor `urllib.request` decompresses a body, so a server that sends `Content-Encoding: gzip` anyway gets its raw bytes back. (`python/stdlib-urllib-errors.md:100`) [CODE S-uwx4igvv, S-dh7elejp]
+- A bad zip raises `BadZipFile`, an encrypted member `RuntimeError`, an unsupported method `NotImplementedError` (a `RuntimeError` subclass), damaged deflate data `zlib.error`, and a tar archive `ReadError`; a cut `tar.gz` raises `EOFError`, which the `tarfile` page does not name. (`python/stdlib-archive-read-errors.md:22`, `:31`, `:33`) [DOC S-vpqnb7i6, S-bzzofa6p]
+- `git cat-file --batch` prints a two-field `<object> SP missing LF` line for a name that resolves to no object, not an error, so a parser of the three-field header meets it as a short line. (`gitlab/git-test-repositories.md:337`) [DOC S-b6uvvu45]
+- The Terraform Registry shows a version's docs from that version's Git commit, so a provider's latest docs are the newest release tag's, not the default branch's. (`logs/microsoft-sentinel.md:199`) [DOC S-yyxzfbbv]
+- Conclusion: a fetch that cannot read a whole body, decode it or open the archive says so with its own exit status and a marker, never with the status that means no line matched; a `git cat-file --batch` reader checks the second field for `missing` before it reads a size. [DER S-uwx4igvv, S-dh7elejp, S-vpqnb7i6, S-bzzofa6p, S-b6uvvu45, S-yyxzfbbv]
+- Open: how the registry picks `latest`, whether `--json-schema` refuses an `enum` miss, and the exceptions of xz, bz2 and lzma archives were not confirmed. [UNK]
+- See python/stdlib-urllib-errors.md, python/stdlib-archive-read-errors.md, gitlab/git-test-repositories.md, logs/microsoft-sentinel.md.
+
+_Agent: kb-research_

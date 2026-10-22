@@ -256,7 +256,7 @@ logs/otel-log-data-model,P1,complete,logs/otel-log-data-model.md,1
 logs/otel-log-semconv,P1,complete,logs/otel-log-semconv.md;logs/otel-semconv-log-registry.yaml;logs/otel-semconv-code-registry.yaml,5
 logs/sources,P1,complete,logs/sources.md;logs/sources.csv,19
 logs/azure-monitor-agent,P2,complete,logs/azure-monitor-agent.md,16
-logs/microsoft-sentinel,P2,complete,logs/microsoft-sentinel.md,25
+logs/microsoft-sentinel,P2,complete,logs/microsoft-sentinel.md,27
 logs/loki-tempo-grafana-retention,P3,partial,logs/loki-tempo-grafana-retention.md,37
 logs/otel-collector-otlp-pipeline,P3,partial,logs/otel-collector-otlp-pipeline.md,34
 logs/otel-collector-receivers,P3,complete,logs/otel-collector-receivers.md;logs/otel-filelogreceiver.config.csv;logs/otel-windowseventlogreceiver.config.csv;logs/otel-filelogreceiver.metadata.yaml;logs/otel-windowseventlogreceiver.metadata.yaml,5
@@ -332,11 +332,12 @@ python/percentile-nearest-rank,P3,partial,python/percentile-nearest-rank.md,6
 python/process-orphans-and-cwd,P3,partial,python/process-orphans-and-cwd.md,11
 python/ps-process-cpu,P3,partial,python/ps-process-cpu.md,9
 python/sqlalchemy-asyncio-asyncpg,P3,complete,python/sqlalchemy-asyncio-asyncpg.md,8
+python/stdlib-archive-read-errors,P3,partial,python/stdlib-archive-read-errors.md,2
 python/stdlib-argparse-json,P3,complete,python/stdlib-argparse-json.md,23
 python/stdlib-cprofile-pstats,P3,partial,python/stdlib-cprofile-pstats.md,4
 python/stdlib-datetime-iso-week,P3,complete,python/stdlib-datetime-iso-week.md,2
 python/stdlib-os-loadavg,P3,partial,python/stdlib-os-loadavg.md,7
-python/stdlib-urllib-errors,P3,partial,python/stdlib-urllib-errors.md,5
+python/stdlib-urllib-errors,P3,partial,python/stdlib-urllib-errors.md,6
 python/stdlib-windows-portability,P3,partial,python/stdlib-windows-portability.md,44
 python/testcontainers-postgres-pytest,P3,partial,python/testcontainers-postgres-pytest.md,15
 python/typer-cli,P3,partial,python/typer-cli.md,17

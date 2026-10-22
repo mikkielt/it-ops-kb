@@ -2422,3 +2422,15 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 - The Claude Code docs (S744) give no type for the `tool_result` attributes `success`, `duration_ms` and `tool_result_size_bytes`, and the version of the one session that sent them as `stringValue` was not recorded, so whether every version does is not known. [UNK] (topic: claude/otel-monitoring)
   - Looked 2026-10-22 in S744 (the monitoring page) and the OTLP page (S-v2wnj4qk): neither says how a number attribute is typed in the JSON; still needs a rerun with a recorded `claude --version`. (topic: claude/otel-monitoring)
+
+## python/stdlib-archive-read-errors
+
+- **Which exception a truncated or damaged `.tar.xz`, `.tar.bz2` or bz2/lzma zip member raises in Python's `tarfile` and `zipfile`.** Looked 2026-10-22 in `Doc/library/tarfile.rst` and `Doc/library/zipfile.rst` at CPython v3.13.2 (S-bzzofa6p, S-vpqnb7i6): the pages name `ReadError`, `CompressionError` and `BadZipFile` but no `EOFError`, and no page says what a cut compressed stream raises; the probes ran once on Python 3.13.2, macOS, for gzip and deflate only. Needs the same probe for xz and bz2 members and a damaged ZIP64 record. [UNK] (topic: python/stdlib-archive-read-errors)
+
+## logs/microsoft-sentinel
+
+- **Which version the Terraform Registry's `latest` names for a provider** (the highest semver tag, or the most recent release by date). Looked 2026-10-22 in the registry's provider-documentation page (S-yyxzfbbv): it ties each version's docs to that version's Git commit but does not define `latest`; GitHub's "latest release" rule (S-jfdojvtq) is the most recent non-prerelease, non-draft release by `created_at`, which is not the registry's rule. Needs the registry's own page for the `latest` url or its API reference. [UNK] (topic: logs/microsoft-sentinel)
+
+## claude/ci-and-headless
+
+- **Whether `claude -p --json-schema` keeps a string field to the values of an `enum`.** Looked 2026-10-22 in the headless page and the CLI reference (S1800, S1824) and the kb's structured-output facts: they say the output is validated against the schema and that `format` is an annotation only, and an observed run returned an enum field whole, but no page says that an `enum` value outside the list is refused or retried. Needs a run with a schema whose enum excludes the answer the prompt asks for. [UNK] (topic: claude/ci-and-headless)

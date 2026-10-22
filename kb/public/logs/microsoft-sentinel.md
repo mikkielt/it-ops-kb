@@ -2,8 +2,8 @@
 topic: logs/microsoft-sentinel
 priority: P2
 applies_to: "Microsoft Sentinel (Defender portal unified SecOps and Azure portal), docs ms.date through 2026-09"
-retrieved_utc: 2026-10-21
-sources: [S-qmi72hvd, S-56eqdqa6, S-btmphtyp, S-6c6jslfs, S-cmyl6p5v, S-guca45p3, S-etccrdda, S-hya3uz6p, S-34uiuy35, S-tf6fezvb, S-vjefvouf, S-ur2l6cs3, S-luprngvc, S-me4bxp52, S-ycrujjsf, S-5kjwbj3c, S-ofreafga, S-w47nempm, S-3dcvyq2z, S-r4klpeuf, S-apxtyshr, S-hvr4bpb2, S-qkyfycn6, S-vicgida6, S-bxionmbk]
+retrieved_utc: 2026-10-22
+sources: [S-yyxzfbbv, S-jfdojvtq, S-qmi72hvd, S-56eqdqa6, S-btmphtyp, S-6c6jslfs, S-cmyl6p5v, S-guca45p3, S-etccrdda, S-hya3uz6p, S-34uiuy35, S-tf6fezvb, S-vjefvouf, S-ur2l6cs3, S-luprngvc, S-me4bxp52, S-ycrujjsf, S-5kjwbj3c, S-ofreafga, S-w47nempm, S-3dcvyq2z, S-r4klpeuf, S-apxtyshr, S-hvr4bpb2, S-qkyfycn6, S-vicgida6, S-bxionmbk]
 status: complete
 ---
 
@@ -196,6 +196,11 @@ tables are in `defender/advanced-hunting.md`.
   forces a new resource), required `data_flow` block(s) (routes streams to named destinations, with optional KQL
   transform) and required `destinations` block (e.g. `log_analytics` sub-block with `workspace_resource_id` and a
   destination `name`). [DOC S-ofreafga]
+- The Terraform Registry creates a provider version for each Git tag in semver form, and a version "always displays the documentation from that version's Git commit": the only way to
+  change a version's docs is to release a new version. [DOC S-yyxzfbbv]
+- So the `azurerm` docs of a released version are the docs files of the provider repository at that version's tag, and the repository's default branch can describe a resource, argument or
+  default that no release has yet; a tool that reads the registry's `latest` docs from the repository reads the newest release tag, not the branch. GitHub's own "latest release" is the
+  most recent non-prerelease, non-draft release sorted by `created_at`; which rule the registry uses for `latest` was not read. [DER S-yyxzfbbv, S-jfdojvtq: docs tied to a version's commit; the GitHub rule for a latest release]
 
 ## Reference
 - `auth/audit-log-apis.md` — the diagnostic-settings export path (`AuditLogs`/`SigninLogs` categories) that
