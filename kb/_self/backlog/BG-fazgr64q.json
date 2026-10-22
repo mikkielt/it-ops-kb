@@ -2,7 +2,7 @@
   "id": "BG-fazgr64q",
   "kind": "bug",
   "title": "census.py head_cited_lines raises on a cat-file missing line, and the dispatch docstrings still say a session reads only the group's files",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-ovwzbc7u",
   "priority": "P3",
@@ -48,6 +48,28 @@
     "parked: SP-rmp5zm5a review"
   ],
   "notes": "Found by the fresh-context review of SP-rmp5zm5a (2f256438ea..47328f5b24), verified by the manager: the repro fails on 47328f5b24.",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "dfacb21f41308d30528590a1444a24c24f590c57",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0, '_tools')\nimport census\nmiss = [n for n, d in (('module', census.__doc__), ('dispatch_rules', census.dispatch_rules.__doc__)) if '--add-dir' not in (d or '')]\nprint(len(miss), 'census docstrings that do not name --add-dir:', miss)\nsys.exit(1 if miss else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "c8049b676d49ba32"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,inspect;sys.path.insert(0,'_tools');import census;s=inspect.getsource(census.head_cited_lines);i=s.find('try:');j=s.find('split()[2]');sys.exit(0 if (i>=0 and j>i and 'except' in s[j:]) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
