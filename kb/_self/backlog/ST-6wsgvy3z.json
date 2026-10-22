@@ -6,13 +6,13 @@
   "parent": "EP-mkzkd7in",
   "priority": "P2",
   "rank": 0,
-  "goal": "the 15 cited sources of the 2026-10-21 census that this host cannot read (EUR-Lex bot challenge, cyber.gov.au timeouts, Alpine wiki 403, JavaScript-only NCP, NVD and Kaggle pages) are read by a route the operator approves or re-sourced to a readable official page, and recorded with census.py record",
+  "goal": "the 19 cited sources of the 2026-10-21 census left unconfirmed (15 this host cannot read: EUR-Lex bot challenge, cyber.gov.au timeouts, Alpine wiki 403, JavaScript-only NCP, NVD and Kaggle pages; 4 whose cited detail no page read states: the CIS Controls v8.1 licence and date, two Morfeusz dictionary ids inside binary files, the arXiv licence of 1706.03762) are read by a route the operator approves, re-sourced to an official page that states them, or their facts re-tagged, and recorded with census.py record",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import csv, sys\nids = ['S870', 'S871', 'S1552', 'S1555', 'S1556', 'S-2s2xlwgf', 'S-qzdkyvqx', 'S1425', 'S-nwnif62g', 'S-uzuvf3vo', 'S-6w34pn5d', 'S-mt66jy4n', 'S1405', 'S-forvn2ly', 'S2161']\nr = {x['id']: x for x in csv.DictReader(open('kb/public/_census/2026-10-21.csv', encoding='utf-8'))}\nleft = [i for i in ids if i in r and r[i]['outcome'] in ('unconfirmed', '')]\nprint(len(left), 'of the blocked-host census sources still unconfirmed:', left)\nsys.exit(1 if left else 0)\n"
+        "import csv, sys\nids = ['S1563', 'S-d3lsp242', 'S-jhuny2li', 'S-u5diy2cr', 'S870', 'S871', 'S1552', 'S1555', 'S1556', 'S-2s2xlwgf', 'S-qzdkyvqx', 'S1425', 'S-nwnif62g', 'S-uzuvf3vo', 'S-6w34pn5d', 'S-mt66jy4n', 'S1405', 'S-forvn2ly', 'S2161']\nr = {x['id']: x for x in csv.DictReader(open('kb/public/_census/2026-10-21.csv', encoding='utf-8'))}\nleft = [i for i in ids if i in r and r[i]['outcome'] in ('unconfirmed', '')]\nprint(len(left), 'of the blocked-host census sources still unconfirmed:', left)\nsys.exit(1 if left else 0)\n"
       ]
     }
   ],
@@ -22,5 +22,5 @@
   "links": [
     "parked: SP-rmp5zm5a review"
   ],
-  "notes": "Operator 2026-10-22: after two reruns of ST-bjwyl2bc, 15 cited sources stay unreadable from this host: EUR-Lex S870 S871 S1552 S1555 S1556 S-2s2xlwgf S-qzdkyvqx (HTTP 202 empty challenge, also on /eli/ and publications.europa.eu CELLAR), cyber.gov.au S1425 S-nwnif62g S-uzuvf3vo (Akamai, connection times out), Alpine wiki S-6w34pn5d S-mt66jy4n (403, also action=raw), NCP S1405, NVD S-forvn2ly, Kaggle S2161 (JavaScript-only). The operator declined reading them in their Chrome through the browser extension. The census tag (ST-ywqj4gva) cannot be created while they stay unconfirmed."
+  "notes": "Operator 2026-10-22: after two reruns of ST-bjwyl2bc, 15 cited sources stay unreadable from this host: EUR-Lex S870 S871 S1552 S1555 S1556 S-2s2xlwgf S-qzdkyvqx (HTTP 202 empty challenge, also on /eli/ and publications.europa.eu CELLAR), cyber.gov.au S1425 S-nwnif62g S-uzuvf3vo (Akamai, connection times out), Alpine wiki S-6w34pn5d S-mt66jy4n (403, also action=raw), NCP S1405, NVD S-forvn2ly, Kaggle S2161 (JavaScript-only). The operator declined reading them in their Chrome through the browser extension. The census tag (ST-ywqj4gva) cannot be created while they stay unconfirmed. Operator 2026-10-22: the 4 sources a third census pass could not settle join this story (S1563, S-d3lsp242, S-jhuny2li, S-u5diy2cr); the census tag ST-ywqj4gva now waits on it, outside SP-rmp5zm5a."
 }

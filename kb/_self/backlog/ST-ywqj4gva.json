@@ -2,9 +2,8 @@
   "id": "ST-ywqj4gva",
   "kind": "story",
   "title": "The census's independent sample agrees with its outcomes, and the kb is tagged census-<date> for a date after 2026-10-20",
-  "status": "todo",
+  "status": "draft",
   "parent": "EP-aolytxc5",
-  "sprint": "SP-rmp5zm5a",
   "priority": "P2",
   "rank": 0,
   "goal": "kbgit.py tag-census tags the kb census-<date> for the census of ST-zpe7qxtv, dated after 2026-10-20",
@@ -28,7 +27,8 @@
   ],
   "depends_on": [
     "ST-zpe7qxtv",
-    "ST-bjwyl2bc"
+    "ST-bjwyl2bc",
+    "ST-6wsgvy3z"
   ],
   "notes": "Phase 4 of /kb-census from the main checkout: census.py sample --brief, a fresh checker on its brief, fixes and a resample with another seed, then kbgit.py tag-census. The tag is pushed only when the operator asks. If a source a fact cites is left unconfirmed the tag is not made: what is left is filed as backlog items and this story stays open. Premise on 2026-10-20 (the first check fails): the only census tag is census-2026-09-26. 2026-10-20 planning: the goal states what its check reads. The work is phase 4 of /kb-census: census.py sample of the changed, judged and confirmed sources, a fresh checker that did no phase-2 reading judges them, every disagreement fixed and resampled with another seed, then the tag only when no source a fact cites is left unconfirmed; the sources only front matter or ledger notes cite are filed as one backlog story. check.py passes before the work and must stay passing: it pins the kb's structure rules across the rewrites (2026-10-20 planning). 2026-10-21 census: the phase-4 sample ran three seeds (231 sources each; disagreements 4/170, 2/178, 2/183 of the sources for the checker, each fixed, one rejected); the tag waits on the 206 cited sources left unconfirmed (ST-bjwyl2bc)."
 }
