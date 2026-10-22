@@ -153,7 +153,7 @@ fn load(model_bytes: &[u8]) -> ort::Result<Session> {
 }
 ```
 
-- SNIPPET: list the files of a Hugging Face model at a commit with their LFS digests; context: public model id from the kb, any HTTP client, `blobs=true` adds sizes and `lfs`; checked: no [DER S-ixcjfodz, S-rlepjcn5: endpoint and fields as read in the API output and the OpenAPI description]
+- SNIPPET: list the files of a Hugging Face model at a commit with their LFS digests; context: public model id from the kb, any HTTP client, `blobs=true` adds sizes and `lfs`; checked: no [DER S-ixcjfodz, S-rlepjcn5: endpoint and fields as read in the API output; the OpenAPI description lists no `models/.../revision/{rev}` path (its only `revision/{rev}` path is for kernels) and does not describe `blobs`, but lists `tree/{rev}/{path}`, `paths-info/{rev}` and `lfs-files` for files and LFS digests]
 
 ```sh
 curl -s "https://huggingface.co/api/models/onnx-community/gliner_multi-v2.1/revision/6ddaeb9413b0e71ad8457da1aab378a165b24058?blobs=true"

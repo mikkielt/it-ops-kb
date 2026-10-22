@@ -1711,13 +1711,11 @@ fb236feed15a,agents/declarative-agent-manifest.csv,S-gum2njhe,unlocated:no-match
 0f4215460890,agents/doc-change-detection.md,S-7uckhkxr,unlocated:no-match,,,,,2026-10-12
 0f87db96e894,agents/doc-change-detection.md,S-4e2arcjz,unlocated:no-match,,,,,2026-10-17
 0f87db96e894,agents/doc-change-detection.md,S-inrmedim,unlocated:no-match,,,,,2026-10-17
-1161b96c0360,agents/doc-change-detection.md,S2177,unlocated:fetch-error,,,,,2026-10-13
+1161b96c0360,agents/doc-change-detection.md,S2177,unlocated:gone,,,,,2026-10-22
 124aa0d4379a,agents/doc-change-detection.md,S-7ivxsp4z,located,,api;link;local;next;nextlink;top;search;com,0f96067b1589adf1,"""nextLink"": ""https://learn.microsoft.com/api/Search?search=device%20identity%20overview&locale=en-us&$top=3&accept=text%2Fmarkdown&$skip=3"",",2026-10-13
 1314c7621883,agents/doc-change-detection.md,S-o6lmrcgh,unlocated:no-match,,,,,2026-10-12
 157417510f93,agents/doc-change-detection.md,S-ggcghqgu,unlocated:no-match,,,,,2026-10-12
 157417510f93,agents/doc-change-detection.md,S-phkss6q3,unlocated:no-match,,,,,2026-10-12
-16a4d673d700,agents/doc-change-detection.md,S-oo5kmppv,unlocated:no-match,,,,,2026-10-12
-16a4d673d700,agents/doc-change-detection.md,S-znp63ln6,unlocated:no-match,,,,,2026-10-12
 1998d333c3b5,agents/doc-change-detection.md,S-tyedhnrz,located,Circuit Breaker Pattern - Azure Architecture Center | Microsoft Learn > Problems and considerations,fluctuat;reason;even;quickly;rais;switch;too;resolv,01048d35d987ea99,"For example, if the circuit breaker remains in the Open state for a long period, it can raise exceptions even if the reason for the",2026-10-21
 1b38b6121c60,agents/doc-change-detection.md,S-7jumyiid,unlocated:no-match,,,,,2026-10-21
 1bb312f15462,agents/doc-change-detection.md,S-ybuoluc4,unlocated:no-match,,,,,2026-10-12
@@ -1725,9 +1723,17 @@ fb236feed15a,agents/declarative-agent-manifest.csv,S-gum2njhe,unlocated:no-match
 1c3e328acd66,agents/doc-change-detection.md,S-o6lmrcgh,unlocated:no-match,,,,,2026-10-12
 1c813bed3d0d,agents/doc-change-detection.md,S-vh33l6f5,located,How HTTP status codes affect Google's crawlers > HTTP status codes,empty;soft;suggest;consol;messag;page;search;error,9c213261d46610c1,"If the content suggests an error for Google Search, an empty page or an error message, Search Console will show a soft 404 error.",2026-10-12
 1d4468a67537,agents/doc-change-detection.md,S-2biiolic,located,Adding wiki pages > Adding or editing wiki pages locally > Cloning wikis to your computer,branch;default;exist;live;made;push;clon;chang,9d1620de15471167,"Once you have cloned the wiki, you can add new files, edit existing ones, and commit your changes. You and your collaborators can create branches",2026-10-12
+1e446e25d0df,agents/doc-change-detection.md,S-xmqy75h7,unlocated:no-match,,,,,2026-10-22
+1f02bbd83b34,agents/doc-change-detection.md,S1221,unlocated:no-match,,,,,2026-10-22
+1f02bbd83b34,agents/doc-change-detection.md,S2198,unlocated:no-match,,,,,2026-10-22
+1f02bbd83b34,agents/doc-change-detection.md,S-bxionmbk,unlocated:no-match,,,,,2026-10-22
+1f02bbd83b34,agents/doc-change-detection.md,S-j4ksai6m,unlocated:no-match,,,,,2026-10-22
+1f02bbd83b34,agents/doc-change-detection.md,S-qdfwoaa7,unlocated:no-match,,,,,2026-10-22
+1f02bbd83b34,agents/doc-change-detection.md,S-xmqy75h7,unlocated:no-match,,,,,2026-10-22
 2086710e4899,agents/doc-change-detection.md,S-lldnrkhv,unlocated:no-match,,,,,2026-10-12
 2099abdbac9a,agents/doc-change-detection.md,S-ecrpwvoh,located,Contributing instructions | Microsoft Learn > Editing an existing article,clarification;fixe;grammar;major;ms.dat;date;spell;format,53b9d929e8be75c8,"ms.date: Update the date if you're adding major content to the page, but not for fixes like clarification, formatting, grammar, or spelling.",2026-10-21
 22954d65204f,agents/doc-change-detection.md,S-ghq236rx,located,Detect Website Changes Automatically — Monitor Web Page Changes in Real Time > AI-powered website change detection — smart alerts and plain-language summaries,english;evaluat;plain-english;rule;against;intent;plain;dif,db00751a6ffbc86b,"AI change detection rules - write a plain-English intent once: ""notify me only when the price drops below $50"", ""alert me when the item comes",2026-10-21
+22efdfc5141d,agents/doc-change-detection.md,S-xmqy75h7,unlocated:no-match,,,,,2026-10-22
 2398aff1681c,agents/doc-change-detection.md,S-bykh7vnm,unlocated:no-match,,,,,2026-10-17
 23f538eb3f3c,agents/doc-change-detection.md,S-s6xjctzu,unlocated:no-match,,,,,2026-10-12
 246cc8009b50,agents/doc-change-detection.md,S1217,unlocated:no-match,,,,,2026-10-13
@@ -1735,7 +1741,13 @@ fb236feed15a,agents/declarative-agent-manifest.csv,S-gum2njhe,unlocated:no-match
 258d75fa0dba,agents/doc-change-detection.md,S-ggcghqgu,unlocated:no-match,,,,,2026-10-12
 29f2c90120d4,agents/doc-change-detection.md,S-znp63ln6,unlocated:no-match,,,,,2026-10-12
 2a2ed180e3dc,agents/doc-change-detection.md,S-hgu2bdgi,located,FEVER: a Large-scale Dataset for Fact Extraction and VERification > Correct Metadata for > Abstract,alter;enough;first;notenoughinfo;record;refut;support;two,d9853279cdad7226,"It consists of 185,445 claims generated by altering sentences extracted from Wikipedia and subsequently verified without knowledge of the sentence they were derived from. The",2026-10-12
+2ae9b07fed94,agents/doc-change-detection.md,S1221,unlocated:no-match,,,,,2026-10-22
+2ae9b07fed94,agents/doc-change-detection.md,S1478,unlocated:no-match,,,,,2026-10-22
+2ae9b07fed94,agents/doc-change-detection.md,S2198,unlocated:no-match,,,,,2026-10-22
+2ae9b07fed94,agents/doc-change-detection.md,S-j4ksai6m,unlocated:no-match,,,,,2026-10-22
 2db1a75be387,agents/doc-change-detection.md,S-rcaeqaft,located,FreshLLMs: Refreshing Large Language Models with Search Engine Augmentation,size;struggl;substantially;correctness;fast;fast-chang;both;chang,4ad7329013b5be5c,We benchmark a diverse array of both closed and open-source LLMs under a two-mode evaluation procedure that allows us to measure both correctness and hallucination.,2026-10-12
+2e05dafe06d2,agents/doc-change-detection.md,S2180,unlocated:gone,,,,,2026-10-22
+2e05dafe06d2,agents/doc-change-detection.md,S2181,unlocated:gone,,,,,2026-10-22
 310f5ca9b5a3,agents/doc-change-detection.md,S-5lkuonr6,unlocated:no-match,,,,,2026-10-13
 310f5ca9b5a3,agents/doc-change-detection.md,S-oqvrq2wq,unlocated:no-match,,,,,2026-10-12
 31f819edf09c,agents/doc-change-detection.md,S-umpci7ic,located,Accessible Rich Internet Applications (WAI-ARIA) 1.2 > 5. The Roles Model > 5.4 Definition of Roles,hierarchy;meaningful;complementary;remain;separat;main;similar;level,2c35ffd5916feafb,"complementary to the main content at a similar level in the DOM hierarchy, but remaining meaningful when separated from the main content",2026-10-21
@@ -1757,6 +1769,8 @@ fb236feed15a,agents/declarative-agent-manifest.csv,S-gum2njhe,unlocated:no-match
 4085a15a308e,agents/doc-change-detection.md,S-7jumyiid,unlocated:no-match,,,,,2026-10-21
 4085a15a308e,agents/doc-change-detection.md,S-lldnrkhv,unlocated:no-match,,,,,2026-10-12
 41425439fc61,agents/doc-change-detection.md,S-o6lmrcgh,unlocated:no-match,,,,,2026-10-12
+417168cc3e1a,agents/doc-change-detection.md,S2176,located,Microsoft Learn MCP Server release notes | Microsoft Learn > 2025,convert;markdown;page;fetch;tool,21f79db0a8824898,This release adds the Fetch tool that fetches and converts a page into markdown.,2026-10-22
+417168cc3e1a,agents/doc-change-detection.md,S-lylm4eqz,located,Use the Microsoft Learn CLI | Microsoft Learn > Use CLI commands,markdown;markdown-friendly;page;friendly;output;return;url;fetch,45255863f5cc85a3,fetch <url> fetches a Learn page as Markdown-friendly output. fetch <url> --section <heading> returns a single section.,2026-10-22
 41b515741a2f,agents/doc-change-detection.md,S-setpfkdd,unlocated:fetch-error,,,,,2026-10-13
 4b1a6d22c32b,agents/doc-change-detection.md,S-stitrqhm,unlocated:no-match,,,,,2026-10-12
 4b1a6d22c32b,agents/doc-change-detection.md,S-u2afup7q,unlocated:no-match,,,,,2026-10-21
@@ -1778,6 +1792,8 @@ fb236feed15a,agents/declarative-agent-manifest.csv,S-gum2njhe,unlocated:no-match
 6f529669285c,agents/doc-change-detection.md,S-ea26tgr2,unlocated:not-text,,,,,2026-10-13
 6f529669285c,agents/doc-change-detection.md,S-vrx7t6cc,unlocated:no-match,,,,,2026-10-12
 707d121b9337,agents/doc-change-detection.md,S-zrzsmepn,located,HTML > 4.3 Sections > 4.3.1 The body element > 4.3.2 The article element,expect;content;section,0e98c85bb3b0de80,Where sectioning content is expected.,2026-10-21
+709f2635516e,agents/doc-change-detection.md,S-may2otwt,unlocated:gone,,,,,2026-10-22
+709f2635516e,agents/doc-change-detection.md,S-y23orbo7,unlocated:gone,,,,,2026-10-22
 7119ab8cbca5,agents/doc-change-detection.md,S-xc4ibwg4,unlocated:not-text,,,,,2026-10-13
 716428e80a5e,agents/doc-change-detection.md,S-f6ejsacc,unlocated:no-match,,,,,2026-10-21
 716428e80a5e,agents/doc-change-detection.md,S-xmqy75h7,unlocated:no-match,,,,,2026-10-21
@@ -1802,7 +1818,12 @@ fb236feed15a,agents/declarative-agent-manifest.csv,S-gum2njhe,unlocated:no-match
 89ccbd3bd4c5,agents/doc-change-detection.md,S-m7xkty3c,unlocated:no-match,,,,,2026-10-12
 89fce4e9a811,agents/doc-change-detection.md,S-er62secx,located,HTML Accessibility API Mappings 1.0 > 3. Mapping HTML to Accessibility APIs > 3.5 HTML Element Role Mappings > 3.5.10 aside (scoped to a sectioning content element),complementary;asid;generic;otherwis;name;accessibl;role;element,673629d3b1d049eb,"complementary role if the aside element has an accessible name. Otherwise, generic role.",2026-10-21
 8beef627af48,agents/doc-change-detection.md,S-zrzsmepn,located,HTML > 4.3 Sections > 4.3.1 The body element > 4.3.5 The aside element,around;separat;consider;tangentially;relat;could;asid;content,76aaf62156d31667,"content that is tangentially related to the content around the aside element, and which could be considered separate from that content",2026-10-21
+8c2c53831e8d,agents/doc-change-detection.md,S-oo5kmppv,unlocated:no-match,,,,,2026-10-22
+8c2c53831e8d,agents/doc-change-detection.md,S-znp63ln6,unlocated:no-match,,,,,2026-10-22
+8e296c1a853a,agents/doc-change-detection.md,S-gyfh4qfu,unlocated:no-match,,,,,2026-10-22
+8e296c1a853a,agents/doc-change-detection.md,S-zb3jd525,unlocated:gone,,,,,2026-10-22
 909dd83cd532,agents/doc-change-detection.md,S1217,unlocated:no-match,,,,,2026-10-13
+9179240daafb,agents/doc-change-detection.md,S-ny2cx7aq,unlocated:gone,,,,,2026-10-22
 96eebf1662fb,agents/doc-change-detection.md,S-zb3jd525,located,,intune_en;intune_en-us_1.xml;intun;us_1;_sitemap;com;learn;learn.microsoft.com,095eee3433ce25f5,<loc>https://learn.microsoft.com/sitemaps/intuneen-us1.xml</loc>,2026-10-12
 98465666b107,agents/doc-change-detection.md,S-stitrqhm,located,,chang;metadata;ms.author;ms.servic;servic;move;bulk;updat,25e94a94479f928a,"""message"": ""[BULK UPDATE] Metadata: Move author/ms.author/ms.service/ms.subservice/manager to folder level (3/5)\n\nFolders: identity/devices, identity/monitoring-health\n\nChanges to docfx.json:\n- author/ms.author: Added folder entries for identity/devices, identity/monitoring-health\n- ms.service: Added identity/devices=entra-id, identity/monitoring-health=entra-id\n-",2026-10-12
 98465666b107,agents/doc-change-detection.md,S-ybuoluc4,unlocated:no-match,,,,,2026-10-12
@@ -1825,8 +1846,10 @@ aaa88f7580d0,agents/doc-change-detection.md,S-ods72iyh,unlocated:no-match,,,,,20
 aafceaa1e4ff,agents/doc-change-detection.md,S-tyedhnrz,located,Circuit Breaker Pattern - Azure Architecture Center | Microsoft Learn > Solution,initially;few;increas;minut;plac;second;resolv;time-out,0fea709c17a57d56,"You can place the circuit breaker in the Open state for a few seconds initially. If the failure isn't resolved, increase the time-out to a",2026-10-21
 ab72fb8d60d7,agents/doc-change-detection.md,S-o6lmrcgh,unlocated:no-match,,,,,2026-10-12
 abd690c95eaa,agents/doc-change-detection.md,S-4e2arcjz,located,The Open Graph protocol > Object Types > No Vertical,publish;articl,c42e2faa9c4b7566,When the article was first published.,2026-10-21
+ac96f843995a,agents/doc-change-detection.md,S2176,unlocated:no-match,,,,,2026-10-22
+ac96f843995a,agents/doc-change-detection.md,S-lylm4eqz,located,Use the Microsoft Learn CLI | Microsoft Learn > Use CLI commands,markdown;page;query;return;microsoft;learn,62977ef316d14981,search <query> [--json] searches official Microsoft documentation. fetch <url> fetches a Learn page as Markdown-friendly output. fetch <url> --section <heading> returns a single section.,2026-10-22
 acbb0e1f8477,agents/doc-change-detection.md,S-xc5fkeod,located,Circuit breaker resilience strategy > Defaults > Note > Important,ignor;failureratio;minimumthroughput;samplingduration;throughput;minimum;ratio;sampl,4d85192b9febe242,If the MinimumThroughput is not reached during the SamplingDuration then the FailureRatio is ignored.,2026-10-21
-acfae9242371,agents/doc-change-detection.md,S2177,unlocated:fetch-error,,,,,2026-10-13
+acfae9242371,agents/doc-change-detection.md,S2177,unlocated:gone,,,,,2026-10-22
 acfae9242371,agents/doc-change-detection.md,S2180,unlocated:gone,,,,,2026-10-13
 acfae9242371,agents/doc-change-detection.md,S2181,unlocated:gone,,,,,2026-10-13
 acfae9242371,agents/doc-change-detection.md,S-uq2hafxi,unlocated:no-match,,,,,2026-10-13
@@ -1834,6 +1857,9 @@ b1b7af2b4b2c,agents/doc-change-detection.md,S-2dckbgu5,located,,past;stat;accept
 b31b5b010710,agents/doc-change-detection.md,S-zrzsmepn,located,HTML > 4.3 Sections > 4.3.1 The body element > 4.3.5 The aside element,insid;asid;blog;post;articl,d2d59fc36fbec583,"this aside is about the blog post, since it's inside the <article> element",2026-10-21
 b3c61a5a975a,agents/doc-change-detection.md,S-may2otwt,unlocated:gone,,,,,2026-10-13
 b3c61a5a975a,agents/doc-change-detection.md,S-wze42rd7,unlocated:no-match,,,,,2026-10-12
+b43e8533454d,agents/doc-change-detection.md,S2008,unlocated:no-match,,,,,2026-10-22
+b43e8533454d,agents/doc-change-detection.md,S-bxionmbk,unlocated:no-match,,,,,2026-10-22
+b43e8533454d,agents/doc-change-detection.md,S-qdfwoaa7,unlocated:no-match,,,,,2026-10-22
 b53322c02265,agents/doc-change-detection.md,S-a76fjdhb,located,Rate limit errors,primary;remain;secondary;too;x-ratelimit-remain;forbidden;many;ratelimit,15edbe4054f0dbbf,"If you exceed your primary rate limit, you will receive a 403 Forbidden or 429 Too Many Requests response, and the x-ratelimit-remaining header will be",2026-10-12
 b5517095ad6f,agents/doc-change-detection.md,S-oqvrq2wq,located,,40z;45z;push;pushed_at;updat;updated_at;09t2;2026-10-09t2,5d2b446db8bf92b9,"""updatedat"": ""2026-10-09T22:35:45Z"", ""pushedat"": ""2026-10-09T22:35:40Z"", ""giturl"": ""git://github.com/MicrosoftDocs/entra-docs.git"",",2026-10-12
 b5517095ad6f,agents/doc-change-detection.md,S-u67guolg,unlocated:no-match,,,,,2026-10-12
@@ -1874,7 +1900,7 @@ d61085528514,agents/doc-change-detection.md,S-g3ciqhyh,unlocated:no-match,,,,,20
 d61085528514,agents/doc-change-detection.md,S-oqvrq2wq,unlocated:no-match,,,,,2026-10-12
 d69e224c37a3,agents/doc-change-detection.md,S-5lkuonr6,unlocated:no-match,,,,,2026-10-13
 d69e224c37a3,agents/doc-change-detection.md,S-7tff4woa,unlocated:no-match,,,,,2026-10-12
-d8f317e28bed,agents/doc-change-detection.md,S2177,unlocated:fetch-error,,,,,2026-10-13
+d8f317e28bed,agents/doc-change-detection.md,S2177,unlocated:gone,,,,,2026-10-22
 d8f317e28bed,agents/doc-change-detection.md,S2180,unlocated:gone,,,,,2026-10-13
 d8f317e28bed,agents/doc-change-detection.md,S2181,unlocated:gone,,,,,2026-10-13
 da02e97fa67e,agents/doc-change-detection.md,S-xv7jeuvk,unlocated:no-match,,,,,2026-10-12
@@ -1886,6 +1912,8 @@ e2f37dd1ed57,agents/doc-change-detection.md,S-ecrpwvoh,located,Contributing inst
 e63a1edc300a,agents/doc-change-detection.md,S-ggcghqgu,unlocated:no-match,,,,,2026-10-12
 e63a1edc300a,agents/doc-change-detection.md,S-ny2cx7aq,unlocated:gone,,,,,2026-10-13
 e7b46fadd142,agents/doc-change-detection.md,S-2dckbgu5,unlocated:no-match,,,,,2026-10-12
+ea962bbd50da,agents/doc-change-detection.md,S-u2afup7q,unlocated:no-match,,,,,2026-10-22
+ea962bbd50da,agents/doc-change-detection.md,S-xmqy75h7,unlocated:no-match,,,,,2026-10-22
 eaa325a6632d,agents/doc-change-detection.md,S-a6bblnnl,located,,old;time;new;retriev;dif;content;filter,78a170cb34628efa,"(see :ref:configurationdisplay for details), and the diff output will be between (old content with filter at the time old content was retrieved) and (new content",2026-10-12
 efd9db787fae,agents/doc-change-detection.md,S-4e2arcjz,located,The Open Graph protocol > Basic Metadata > Optional Metadata,larger;overall;part;display;site_nam;site;name;imdb,bd7bddc0f2aa9c64,"If your object is part of a larger web site, the name which should be displayed for the overall site.",2026-10-21
 f13e2588bbd9,agents/doc-change-detection.md,S-s6xjctzu,unlocated:no-match,,,,,2026-10-12
@@ -1905,6 +1933,7 @@ f939a872e323,agents/doc-change-detection.md,S-wcrrjfwh,unlocated:no-match,,,,,20
 fa2cb870740e,agents/doc-change-detection.md,S2196,unlocated:gone,,,,,2026-10-13
 fa2cb870740e,agents/doc-change-detection.md,S-2r7j5aw2,unlocated:no-match,,,,,2026-10-12
 fb7acfd5cce7,agents/doc-change-detection.md,S-yrqtp5aq,located,Understand the JavaScript SEO basics > How Google processes JavaScript,queu;status;http;code;render;googl;page,f62a56c761d1af52,Googlebot queues all pages with a 200 HTTP status code for rendering,2026-10-21
+fe8a6d12bf06,agents/doc-change-detection.md,S-xmqy75h7,unlocated:no-match,,,,,2026-10-22
 fe90da5dc6b5,agents/doc-change-detection.md,S-ea26tgr2,unlocated:not-text,,,,,2026-10-13
 ffc6fc39c93d,agents/doc-change-detection.md,S-g3ciqhyh,located,Avoid polling > Use conditional requests,authoriz;correctly;against;count;primary;authorization;conditional;endpoint,bc2c6381efa0fd24,Making a conditional request does not count against your primary rate limit if a 304 response is returned and the request was made while correctly,2026-10-12
 1674bc8cf9a9,agents/doc-lookup-sources.csv,S2185,unlocated:no-match,,,,,2026-10-13
@@ -2909,10 +2938,12 @@ fb587e5834ff,agents/microsoft-agent-framework.md,S-kzoop7qs,located,Microsoft Ag
 0f7062072769,agents/onnx-runtime-rust-ort.md,S-ktoxup5h,unlocated:no-match,,,,,2026-10-13
 0f7062072769,agents/onnx-runtime-rust-ort.md,S-l3go6sje,unlocated:no-match,,,,,2026-10-13
 13dc80a609e5,agents/onnx-runtime-rust-ort.md,S-pwbxp7jw,located,,acl;armn;azur;can;coreml;cuda;directml;migraphx,5e6834b452304d23,"""cuda"", ""tensorrt"", ""openvino"", ""onednn"", ""directml"", ""nnapi"", ""coreml"", ""xnnpack"", ""rocm"", ""acl"", ""armnn"", ""tvm"", ""migraphx"", ""rknpu"", ""vitis"", ""cann"", ""qnn"", ""webgpu"", ""azure"", ""nvrtx"", ""vsinpu""",2026-10-13
+1a59d92542b3,agents/onnx-runtime-rust-ort.md,S-gs7u2ou5,unlocated:no-match,,,,,2026-10-22
+1a59d92542b3,agents/onnx-runtime-rust-ort.md,S-msk5qtcf,unlocated:no-match,,,,,2026-10-22
+1a59d92542b3,agents/onnx-runtime-rust-ort.md,S-o3nqheje,unlocated:no-match,,,,,2026-10-22
+1a59d92542b3,agents/onnx-runtime-rust-ort.md,S-pwbxp7jw,located,,2.0.0;2.0.0-rc.13;default;featur;version;ort,b4ef9fdc6017b499,"ort-sys = { version = ""=2.0.0-rc.13"", path = ""ort-sys"", default-features = false }",2026-10-22
 1b915aaaae65,agents/onnx-runtime-rust-ort.md,S-bzhegec5,unlocated:no-match,,,,,2026-10-13
 1b915aaaae65,agents/onnx-runtime-rust-ort.md,S-pwbxp7jw,unlocated:no-match,,,,,2026-10-13
-1cc6707fd5f3,agents/onnx-runtime-rust-ort.md,S-ixcjfodz,unlocated:no-match,,,,,2026-10-13
-1cc6707fd5f3,agents/onnx-runtime-rust-ort.md,S-rlepjcn5,unlocated:no-match,,,,,2026-10-13
 1e8f3547070d,agents/onnx-runtime-rust-ort.md,S-45rrlyyd,unlocated:no-match,,,,,2026-10-13
 21b595edbfb5,agents/onnx-runtime-rust-ort.md,S-atc7uhx5,unlocated:no-match,,,,,2026-10-13
 21b595edbfb5,agents/onnx-runtime-rust-ort.md,S-mw6rc3qq,unlocated:no-match,,,,,2026-10-13
@@ -2960,6 +2991,8 @@ fb587e5834ff,agents/microsoft-agent-framework.md,S-kzoop7qs,located,Microsoft Ag
 7869f116b608,agents/onnx-runtime-rust-ort.md,S-o3nqheje,unlocated:no-match,,,,,2026-10-13
 7869f116b608,agents/onnx-runtime-rust-ort.md,S-pwbxp7jw,unlocated:no-match,,,,,2026-10-13
 79ddc477e13b,agents/onnx-runtime-rust-ort.md,S-hmcb2gfz,unlocated:no-match,,,,,2026-10-13
+7b775eb989e9,agents/onnx-runtime-rust-ort.md,S-ixcjfodz,unlocated:no-match,,,,,2026-10-22
+7b775eb989e9,agents/onnx-runtime-rust-ort.md,S-rlepjcn5,unlocated:no-match,,,,,2026-10-22
 7d0283e21444,agents/onnx-runtime-rust-ort.md,S-togouwq3,unlocated:no-match,,,,,2026-10-13
 7d378e969478,agents/onnx-runtime-rust-ort.md,S-cxzftyij,unlocated:no-match,,,,,2026-10-13
 7d378e969478,agents/onnx-runtime-rust-ort.md,S-mw6rc3qq,unlocated:no-match,,,,,2026-10-13
@@ -15503,9 +15536,9 @@ f58f62467bb7,security/linux-nftables.md,S-t7vpftda,unlocated:no-match,,,,,2026-1
 944fd50f484e,security/logging-monitoring.md,S1492,unlocated:no-match,,,,,2026-10-10
 99b94924aa69,security/logging-monitoring.md,S1492,unlocated:no-match,,,,,2026-10-10
 99b94924aa69,security/logging-monitoring.md,S-tqebhz7z,unlocated:no-match,,,,,2026-10-21
-a2e67722eea4,security/logging-monitoring.md,S1526,unlocated:no-match,,,,,2026-10-10
 c1cc5d68d772,security/logging-monitoring.md,S1497,unlocated:no-match,,,,,2026-10-10
 c6297567b6f0,security/logging-monitoring.md,S1499,located,Security,config;configchang;hook;metric;open;opentelemetry;telemetry;block,b7b4483ca8e06f47,Monitor Claude Code usage through OpenTelemetry metrics Audit or block settings changes during sessions with ConfigChange hooks,2026-10-10
+c7852c4a7566,security/logging-monitoring.md,S1526,unlocated:fetch-error,,,,,2026-10-22
 d8fc4e7bf81c,security/logging-monitoring.md,S-xztox6nn,unlocated:no-match,,,,,2026-10-21
 d9b2e7da9852,security/logging-monitoring.md,S1493,unlocated:no-match,,,,,2026-10-10
 d9b2e7da9852,security/logging-monitoring.md,S1494,located,,800-92;guid;computer;nist;log;security;management,9ec4f0dc2402869b,NIST SP 800-92 Guide to Computer Security Log Management,2026-10-10
