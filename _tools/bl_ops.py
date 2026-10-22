@@ -5,6 +5,10 @@
                                with its reasons and `agent.run` (a worker's run: its group is the agent type), oldest
                                first
 
+  landings                     print, as text and read only (exit 0), one line per landing step and one for `land.end`
+                               (whole landings) from every ops row of the clone: `n`, `failed` (exit not 0), `median`
+                               and `p95` in ms (nearest rank), slowest median first; `step_stats(rows)` computes them
+
 The rows are `bl_stall.ops_rows`': this host's spool and the committed ops sidecars, each row id once, a closed event
 with its closed keys only, never event text. A row that names no item (a `sync.gate`, a `test.run`, an `agent.run` of a
 subagent with no item) and a row of an item outside the sprint are left out. An id the backlog holds no file for is
@@ -59,3 +63,65 @@ def cmd_ops(bl, a):
 
 
 bl_cli.register("ops", cmd_ops, args_ops, help="print the operational rows of a sprint's items")
+
+
+def number(v):
+    return isinstance(v, (int, float)) and not isinstance(v, bool)
+
+
+def median(values):
+    """The middle of the sorted `values`; the mean of the two middle ones for an even count."""
+    n = len(values)
+    mid = n // 2
+    if n % 2:
+        return values[mid]
+    total = values[mid - 1] + values[mid]
+    return total // 2 if total % 2 == 0 else total / 2
+
+
+def nearest_rank(values, pct):
+    """The nearest-rank percentile of the sorted `values`: the value at rank ceil(pct/100 * n)."""
+    return values[max(1, -(-len(values) * pct // 100)) - 1]
+
+
+def step_stats(rows):
+    """`{name: {count, failed, median_ms, p95_ms}}` over the ops `rows`: a name for each step of the `land.step` rows
+    and `land.end` for whole landings. `failed` counts the rows whose exit is not 0; a row without a numeric `ms` is
+    left out."""
+    groups = {}
+    for r in rows:
+        name = r.get("step") if r.get("event") == "land.step" else "land.end" if r.get("event") == "land.end" else None
+        if not isinstance(name, str) or not number(r.get("ms")):
+            continue
+        groups.setdefault(name, []).append((r["ms"], r.get("exit") != 0))
+    out = {}
+    for name, pairs in groups.items():
+        ms = sorted(m for m, _ in pairs)
+        out[name] = {"count": len(ms), "failed": sum(1 for _, bad in pairs if bad), "median_ms": median(ms),
+                     "p95_ms": nearest_rank(ms, 95)}
+    return out
+
+
+def stat_line(name, s):
+    return f"{name}  n={s['count']} failed={s['failed']} median={s['median_ms']:.0f} p95={s['p95_ms']:.0f}"
+
+
+def args_landings(p):
+    pass
+
+
+def cmd_landings(bl, a):
+    try:
+        rows = bl_stall.ops_rows(str(bl.root))
+    except Exception:  # noqa: BLE001 - an unreadable log is said, never read as no row
+        say("landings: the ops rows could not be read")
+        return 1
+    stats = step_stats(rows)
+    for name, s in sorted(stats.items(), key=lambda kv: (-kv[1]["median_ms"], kv[0])):
+        say(stat_line(name, s))
+    say(f"landings: {len(stats)} step name(s) (land.end: whole landings), slowest median first")
+    return 0
+
+
+bl_cli.register("landings", cmd_landings, args_landings,
+                help="print each landing step's count, failures, median and 95th percentile duration")
