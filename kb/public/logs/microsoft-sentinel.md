@@ -192,7 +192,7 @@ tables are in `defender/advanced-hunting.md`.
   layered on the workspace); required argument `workspace_id`, optional `customer_managed_key_enabled` (default
   `false`). [DOC S-5kjwbj3c]
 - `azurerm_monitor_data_collection_rule` provisions a DCR (see `logs/azure-monitor-agent.md` for DCR/DCE concepts);
-  optional `kind` (`Linux`, `Windows`, `AgentDirectToStore`, `WorkspaceTransforms` — changing it after creation
+  optional `kind` (`Linux`, `Windows`, `AgentDirectToStore`, `WorkspaceTransforms`, `Direct` — changing it after creation
   forces a new resource), required `data_flow` block(s) (routes streams to named destinations, with optional KQL
   transform) and required `destinations` block (e.g. `log_analytics` sub-block with `workspace_resource_id` and a
   destination `name`). [DOC S-ofreafga]
