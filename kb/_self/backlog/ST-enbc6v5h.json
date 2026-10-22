@@ -62,6 +62,57 @@
     "BG-fazgr64q",
     "BG-acur6iym"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "When a --grep finds no line in a text that a cap cut, which exit does fetch.py text give?",
+      "options": [
+        "exit 2 with the cut lines on stderr",
+        "exit 1 as for any no-match"
+      ],
+      "recommendation": "exit 2 with the cut lines on stderr",
+      "do": {
+        "exit 2 with the cut lines on stderr": "ST-enbc6v5h",
+        "exit 1 as for any no-match": "ST-enbc6v5h"
+      },
+      "class": "design",
+      "answer": "exit 2 with the cut lines on stderr",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does the azurerm docs route name the newest release for a latest url, and what does it read when the registry does not answer?",
+      "options": [
+        "ask the registry's provider document once per process for its newest tag; fall back to the registry page url",
+        "read the repository's default branch"
+      ],
+      "recommendation": "ask the registry's provider document once per process for its newest tag; fall back to the registry page url",
+      "do": {
+        "ask the registry's provider document once per process for its newest tag; fall back to the registry page url": "ST-enbc6v5h",
+        "read the repository's default branch": "ST-enbc6v5h"
+      },
+      "class": "push"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "How does a census session stay unable to add a request header, and which new total bounds does fetch.py text take on archive reads?",
+      "options": [
+        "refuse a --header after --grep in fetch.py text; bounds: 2000 archive members listed, binary strings counted in the 8000000-byte output cap, 50000000 bytes of sharedStrings.xml, pdftotext output cut at the output cap",
+        "rely on the permission rule alone and add no new bounds"
+      ],
+      "recommendation": "refuse a --header after --grep in fetch.py text; bounds: 2000 archive members listed, binary strings counted in the 8000000-byte output cap, 50000000 bytes of sharedStrings.xml, pdftotext output cut at the output cap",
+      "do": {
+        "refuse a --header after --grep in fetch.py text; bounds: 2000 archive members listed, binary strings counted in the 8000000-byte output cap, 50000000 bytes of sharedStrings.xml, pdftotext output cut at the output cap": "ST-enbc6v5h",
+        "rely on the permission rule alone and add no new bounds": "ST-enbc6v5h"
+      },
+      "class": "design",
+      "answer": "refuse a --header after --grep in fetch.py text; bounds: 2000 archive members listed, binary strings counted in the 8000000-byte output cap, 50000000 bytes of sharedStrings.xml, pdftotext output cut at the output cap",
+      "by": "agent"
+    }
+  ],
   "notes": "Operator 2026-10-22: the census fetch code findings of the SP-rmp5zm5a second-half review go to this sprint. Reviewer findings (S2): _gz_text, _zip_members, _tar_members and _members_text cut at TEXT_MEMBER_CAP or TEXT_TOTAL_CAP with no marker, so a --grep miss in the cut part reads as absence; http.client.HTTPException, zipfile RuntimeError/NotImplementedError and tarfile EOFError escape and exit 1 like 'no line matches'; fetch.fetch decodes gzip for every caller (verify_root hashes get(url): a .gz artifact served with Content-Encoding gzip would mismatch _artifacts.csv; provider.decode_body already decodes safely). (S3): the ' *' rule admits --header, a session-chosen header to the source's host; archive reads lack total bounds (member count, binary strings outside TEXT_TOTAL_CAP, sharedStrings.xml, pdftotext output); one-line JSON makes --grep print the whole document (nuget 1.39 MB); census.py record cuts notes near 300 characters; terraform-docs maps latest to main. Not reproduced here and left out: the query-log spool row fetch.py text would write under dispatch_env (no file under _cache/querylog grew in a planted run on 2026-10-22). The total-bound caps have no check: the worker adds a planted case if cheap. Premise on origin/main of 2026-10-22: check 0 lists 4 defects, check 1 lists 3.",
   "claimed_by": "manager-dfa692a0",
   "operator": "op-f618a13e"
