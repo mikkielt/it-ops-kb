@@ -2,7 +2,7 @@
   "id": "ST-k5uzdghe",
   "kind": "story",
   "title": "backlog.py landings prints each landing step's count, failures, median and 95th percentile duration",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-4f4m3noq",
   "priority": "P2",
@@ -55,5 +55,7 @@
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
   ],
-  "notes": "Premise (run 2026-10-22): backlog.py has no landings subcommand; backlog.py ops reads one sprint's rows only and prints them raw. kbmon --events on this clone gave 21 kb.land spans with 151 kb.land.step children; one landing (ST-bjwyl2bc) spent 49271 ms in kbgit.py-sync-push and 35169 ms in rebase of 115550 ms. The operator chose this stdlib summary on 2026-10-22 knowing ops and digest orchestration features were parked on 2026-10-07."
+  "notes": "Premise (run 2026-10-22): backlog.py has no landings subcommand; backlog.py ops reads one sprint's rows only and prints them raw. kbmon --events on this clone gave 21 kb.land spans with 151 kb.land.step children; one landing (ST-bjwyl2bc) spent 49271 ms in kbgit.py-sync-push and 35169 ms in rebase of 115550 ms. The operator chose this stdlib summary on 2026-10-22 knowing ops and digest orchestration features were parked on 2026-10-07.",
+  "claimed_by": "d72ea2f1",
+  "operator": "op-f618a13e"
 }
