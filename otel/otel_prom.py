@@ -4,10 +4,13 @@ Used by kbmon_otel.py (`--prometheus-port N`). The listener binds loopback only:
 host, and `serve()` always passes the address to the server itself, since prometheus_client binds every interface
 when none is given. The reader writes to a registry of its own, never prometheus_client's global one, so /metrics carries
 kbmon's points and not the Python process and GC collectors; any path but /metrics answers 404. The Prometheus packages
-are imported in `reader()` and `serve()`, so the rest of the adapter runs without them.
+are imported in `reader()` and `serve()`, so the rest of the adapter runs without them. `served_names()` reads the names
+the registry would serve without a listener, and `rule_exprs()` and `rule_names()` read the kbmon_ names a rules file uses
+(`kbmon_otel.py --check-rules`).
 """
 
 import ipaddress
+import re
 import socket
 import wsgiref.simple_server
 
@@ -39,6 +42,39 @@ def reader():
 
     _registry = CollectorRegistry()
     return PrometheusMetricReader(registry=_registry)
+
+
+def served_names() -> set[str]:
+    """The metric names /metrics would serve now: every sample name the reader's registry collects. `reader()` runs first."""
+    return {sample.name for family in _registry.collect() for sample in family.samples}
+
+
+def rule_exprs(text: str) -> list[str]:
+    """The `expr:` values of a Prometheus rules file, one string each: a plain value or a `|` / `>` block."""
+    lines = text.splitlines()
+    exprs = []
+    for i, line in enumerate(lines):
+        match = re.match(r"^(\s*)(?:-\s+)?expr:\s*(.*)$", line)
+        if not match:
+            continue
+        value = re.sub(r"\s#.*$", "", match.group(2)).strip()
+        if value[:1] in ("|", ">"):
+            block = []
+            for follow in lines[i + 1:]:
+                if follow.strip() and len(follow) - len(follow.lstrip()) <= len(match.group(1)):
+                    break
+                block.append(follow.strip())
+            value = " ".join(part for part in block if part)
+        exprs.append(value)
+    return exprs
+
+
+def rule_names(exprs: list[str]) -> list[str]:
+    """The kbmon_ metric names the expressions use, sorted and without repeats; a quoted label value is not a name."""
+    names = set()
+    for expr in exprs:
+        names.update(re.findall(r"\bkbmon_\w+", re.sub(r'"[^"]*"|\'[^\']*\'', "", expr)))
+    return sorted(names)
 
 
 class _Quiet(wsgiref.simple_server.WSGIRequestHandler):

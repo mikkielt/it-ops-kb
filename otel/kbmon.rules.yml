@@ -1,0 +1,29 @@
+# Prometheus alert rules over the points the adapter serves at /metrics (kb/_self/monitoring.md, "A local Prometheus").
+# `uv run --frozen --project otel python otel/kbmon_otel.py --check-rules otel/kbmon.rules.yml` proves that every
+# kbmon_ name an expression below uses is one /metrics serves.
+groups:
+  - name: kbmon
+    rules:
+      - alert: KbmonLookupEvalFailed
+        expr: kbmon_kb_eval_passed == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: The kb's lookup eval failed
+
+      - alert: KbmonAlertHeld
+        expr: kbmon_alerts > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: kbmon holds an alert
+
+      - alert: KbmonOrphanProcess
+        expr: kbmon_sessions_procs{class="orphan"} > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: An orphan process is listed

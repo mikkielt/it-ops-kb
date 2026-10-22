@@ -4,6 +4,7 @@ Run it from the clone's root, with the SDK pinned in otel/uv.lock:
 
     uv run --frozen --project otel python otel/kbmon_otel.py [--once] [--count N] [--interval S] [--panel NAME]
         [--store PATH] [--url URL --key-file PATH] [--from-snapshot FILE] [--prometheus-port N [--prometheus-bind HOST]]
+    uv run --frozen --project otel python otel/kbmon_otel.py --check-rules FILE [--panel NAME] [--from-snapshot FILE]
 
 The points come from `python3 _tools/kbmon.py --metrics` and the events from `--events` (otel_logs.py: one OTLP log
 record each, and otel_spans.py: one span each, a cursor per signal kept in memory), run as child processes (the stdlib tools
@@ -11,10 +12,13 @@ import no OpenTelemetry package). The SDK reads the endpoints and the headers it
 (or the _METRICS_, _LOGS_ and _TRACES_ variant of each signal) and OTEL_EXPORTER_OTLP_HEADERS (or its variants); the adapter takes no
 flag or file for either and prints and logs no header value. With no endpoint set it sends nothing and says export
 is off. `--prometheus-port N` also serves the same points at /metrics through the SDK's
-Prometheus reader, on loopback only (otel_prom.py); it is off unless the flag is given. Docs: kb/_self/monitoring.md.
+Prometheus reader, on loopback only (otel_prom.py); it is off unless the flag is given. `--check-rules FILE` proves a
+Prometheus rules file against what /metrics serves, from one snapshot read through the reader in the process. Docs:
+kb/_self/monitoring.md.
 
 Exit codes: 0 sent (or export off), 1 a send failed, 2 kbmon gave no points or events or a bad argument (a
---prometheus-bind that is not loopback included).
+--prometheus-bind that is not loopback included). With --check-rules: 0 every kbmon_ name the file uses is served, 1 a
+name is not (each is named), 2 the file or the snapshot could not be read.
 """
 
 import argparse
@@ -247,6 +251,39 @@ def send_events(args, cursors: dict, exporters: dict) -> int:
     return code
 
 
+def check_rules(args) -> int:
+    """Prove a Prometheus rules file against /metrics: 0 every kbmon_ name its expressions use is served, 1 some are not
+    (each named), 2 the file or the snapshot could not be read. One snapshot goes through the Prometheus reader in this
+    process: no listener is started and nothing is sent over OTLP."""
+    try:
+        exprs = otel_prom.rule_exprs(Path(args.check_rules).read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError) as e:
+        print(f"kbmon_otel: cannot read {args.check_rules}: {e}", file=sys.stderr)
+        return 2
+    used = otel_prom.rule_names(exprs)
+    if not used:
+        print(f"kbmon_otel: {args.check_rules} has no expr: that uses a kbmon_ metric", file=sys.stderr)
+        return 2
+    try:
+        points = collect(args)
+    except (RuntimeError, subprocess.TimeoutExpired) as e:
+        print(f"kbmon_otel: {e}", file=sys.stderr)
+        return 2
+    sender = Sender(export=False, extra_readers=[otel_prom.reader()])
+    try:
+        sender.send(points)
+        served = otel_prom.served_names()
+    finally:
+        sender.close()
+    missing = [name for name in used if name not in served]
+    for name in missing:
+        print(f"kbmon_otel: {args.check_rules} uses {name}, which /metrics does not serve", file=sys.stderr)
+    if missing:
+        return 1
+    print(f"kbmon_otel: {args.check_rules}: all {len(used)} kbmon_ names its expressions use are in /metrics")
+    return 0
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="Send kbmon's metric points over OTLP/HTTP (docs: kb/_self/monitoring.md).")
     ap.add_argument("--root", default=str(ROOT))
@@ -261,7 +298,11 @@ def main(argv=None) -> int:
     ap.add_argument("--timeout", type=float, default=60.0, metavar="S", help="seconds kbmon may take (default 60)")
     ap.add_argument("--prometheus-port", type=int, metavar="N", help="also serve /metrics on loopback port N (0: a free port; default: not served)")
     ap.add_argument("--prometheus-bind", default="127.0.0.1", metavar="HOST", help="the loopback address /metrics binds (default 127.0.0.1)")
+    ap.add_argument("--check-rules", metavar="FILE", help="read one snapshot through the Prometheus reader and exit 0 when every kbmon_ name "
+                    "the rules FILE uses is one /metrics serves, else 1 naming each missing one (no listener, nothing sent)")
     args = ap.parse_args(argv)
+    if args.check_rules:
+        return check_rules(args)
     if args.interval < 1 or args.timeout < 1:
         ap.error("--interval and --timeout are 1 or more")
     if args.count < 0:
