@@ -67,6 +67,59 @@
     "otel/otel_prom.py",
     "kb/_self/monitoring.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does --check-rules read the rules file's expressions, with the SDK project holding no YAML package?",
+      "options": [
+        "Scan expr: lines",
+        "Add a YAML package"
+      ],
+      "recommendation": "Scan expr: lines",
+      "do": {
+        "Scan expr: lines": "ST-6oidkcqv",
+        "Add a YAML package": "ST-6oidkcqv"
+      },
+      "class": "design",
+      "answer": "Scan expr: lines",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What scrape interval and alert hold time do the Prometheus files default to?",
+      "options": [
+        "60s scrape, 5m hold",
+        "15s scrape, no hold"
+      ],
+      "recommendation": "60s scrape, 5m hold",
+      "do": {
+        "60s scrape, 5m hold": "ST-6oidkcqv",
+        "15s scrape, no hold": "ST-6oidkcqv"
+      },
+      "class": "design",
+      "answer": "60s scrape, 5m hold",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "What does --check-rules exit with when the rules file is unreadable or uses no kbmon_ name?",
+      "options": [
+        "Exit 2 with a message",
+        "Exit 0"
+      ],
+      "recommendation": "Exit 2 with a message",
+      "do": {
+        "Exit 2 with a message": "ST-6oidkcqv",
+        "Exit 0": "ST-6oidkcqv"
+      },
+      "class": "design",
+      "answer": "Exit 2 with a message",
+      "by": "agent"
+    }
+  ],
   "notes": "Premise (run 2026-10-22): kbmon_otel.py has no --check-rules (argparse: unrecognized arguments) and otel/ holds no Prometheus config or rules. A live run of the adapter with --prometheus-port 9464 served kbmon_kb_eval_passed, kbmon_alerts and kbmon_sessions_procs{class=orphan}; names gain a unit suffix (kbmon.kb.index_age, unit s, is kbmon_kb_index_age_seconds) and a sum gains _total, which is why the names are proven against the reader, not derived by hand. The operator installs Prometheus outside the repository (operator choice 2026-10-22: doc recipe only, no host service file). SP-qh2j24z2 items ST-wic5d76z and BG-fjfoh3p4 also change kbmon_otel.py and otel_prom.py; that sprint is queued, so the two do not run at once.",
   "claimed_by": "d72ea2f1",
   "operator": "op-f618a13e"
