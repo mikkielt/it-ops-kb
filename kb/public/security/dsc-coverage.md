@@ -30,7 +30,7 @@ status: complete
 - `AuditPolicyDsc` 1.4.0.0 (2019-01-10), its last release, declares the DSC resources `AuditPolicySubcategory`, `AuditPolicyGUID`, `AuditPolicyOption` and `AuditPolicyCsv` in its PowerShell Gallery tags. [DOC S1595]
 - The `AuditPolicyDsc` repository (MIT, not archived, last pushed 2019-02-13) keeps its resources as MOF folders under `DSCResources`: `MSFT_AuditPolicyCsv`, `MSFT_AuditPolicyGUID`, `MSFT_AuditPolicyOption`, `MSFT_AuditPolicySubcategory`. [DOC S1416]
 - The gallery page lists 1.4.0.0 (2019-01-10) as the current version, minimum PowerShell version 4.0. [DOC S1415]
-- So security policy, user rights and audit policy need a Windows PowerShell adapter plus a module whose last stable release is 5 to 7 years old. [DER S1473,S1594,S1595]
+- So security policy, user rights and audit policy need a Windows PowerShell adapter plus a module whose last stable release is more than 5 years old (AuditPolicyDsc: nearly 8). [DER S1473,S1594,S1595]
 - No Microsoft or DSC Community page states that either module was tested with DSC v3 (repositories, gallery pages and DSC release notes read 2026-09-27). [DER S1413, S1416, S118: no such statement on the pages read]
 - A user report in the DSC repository (#1545, 2026-05-23) ran `SecurityPolicyDsc` 2.10.0.0 and `AuditPolicyDsc` 1.4.0.0 through the DSC 3.2.1 Windows PowerShell adapter on Windows Server 2022 and hit an adapter cache-refresh crash caused by other server-role modules, not by these two. [COMMUNITY S-ylqrt4md]
 - The adapter declares `implementsPretest` and has no what-if, so `dsc config set --what-if` returns an error for those resources, not a dry run. [DOC S114, via `dsc/manifests-diff.md`]
