@@ -2367,6 +2367,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 - CIS Controls v8.1 counts (18 Controls, 153 Safeguards), the March 2025 date and the CC BY-NC-ND 4.0 licence are not on the cisecurity.org/controls/v8-1 landing page (looked there 2026-10-21); need the CIS licence page or v8.1 PDF as a source. (topic: security/framework-control-map)
   - Tried 2026-10-21, still open: the cisecurity.org/controls/v8-1 landing page and the CIS Controls FAQ state neither the counts (18 Controls, 153 Safeguards), the March 2025 date nor the licence ('free to use by anyone' is the only wording); it needs the v8.1 download or the CIS licence page. (topic: security/framework-control-map)
+- CIS Controls v8.1 licence (CC BY-NC-ND 4.0), March 2025 date, 18 Controls / 153 Safeguards counts and the safeguard IDs in csv rows 15-19 are not stated on https://www.cisecurity.org/controls/v8-1 (landing page only; the guide is a gated download). Need the v8.1 guide PDF or CIS licence page to confirm. (topic: security/framework-control-map)
 
 ## security/threat-model-inputs
 
@@ -2374,6 +2375,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
   - Resolved 2026-10-21: www.linddun.org now serves the LINDDUN page again ('a recognized privacy threat modeling framework, developed by privacy experts at KU Leuven', categories Linking, Identifying, Non-repudiation, Detecting, Data Disclosure, Unawareness, Non-compliance), matching the article. (topic: security/threat-model-inputs)
 - ATT&CK v20.0 (released 2026-10-13) supersedes v19.2; technique ids and mitigation/detection ids in attack-subset.csv were not re-extracted from a v20.0 STIX bundle. (topic: security/threat-model-inputs)
   - Narrowed 2026-10-21: attack.mitre.org/resources/updates names the page 'Updates - October 2026' for ATT&CK v20 starting 2026-10-13 (Enterprise 9 new, 25 minor version changes) and the mitre-attack/attack-stix-data releases page marks v20.0 (13 Oct) as latest; the ids in attack-subset.csv were still not re-extracted from the v20.0 bundle. (topic: security/threat-model-inputs)
+- The attribution of LINDDUN to KU Leuven's DistriNet research unit is not on https://linddun.org/ (only KU Leuven is named). (topic: security/threat-model-inputs)
 
 ## agents/copilot-studio-inventory
 
