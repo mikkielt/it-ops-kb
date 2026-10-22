@@ -2,7 +2,7 @@
   "id": "ST-u6zrijlc",
   "kind": "story",
   "title": "Review sprint: The open gaps of the endpoint, identity, security, arch, gitlab and logs articles are researched against the census",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-z6wolmvm",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,7 @@
       ]
     }
   ],
-  "notes": "Fresh-context review 2026-10-21 of 088d347ea1..84feabe193 (40 files, 27 facts checked against sources, $1.89): 7 findings. Six go to ST-xfuucxk2. Rejected one S2: the entries it lists end with a 2026-09 Partly resolved or Narrowed note, which the item goals count as closing notes, so they were not open on 2026-10-20; no _gaps.md entry in any domain is open without a note dated 2026-10-21."
+  "notes": "Fresh-context review 2026-10-21 of 088d347ea1..84feabe193 (40 files, 27 facts checked against sources, $1.89): 7 findings. Six go to ST-xfuucxk2. Rejected one S2: the entries it lists end with a 2026-09 Partly resolved or Narrowed note, which the item goals count as closing notes, so they were not open on 2026-10-20; no _gaps.md entry in any domain is open without a note dated 2026-10-21.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
