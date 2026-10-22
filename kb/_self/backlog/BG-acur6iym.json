@@ -21,6 +21,25 @@
     "kb/_self/tools.md",
     "kb/_self/web-sources.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does kbid.py add title a raw plain-text file that is not Markdown: the repository path, or refuse and ask for --title? (Markdown is told by a .md, .markdown or .mdx path)",
+      "options": [
+        "Title by repository path",
+        "Refuse and ask for --title"
+      ],
+      "recommendation": "Title by repository path",
+      "do": {
+        "Title by repository path": "BG-acur6iym",
+        "Refuse and ask for --title": "BG-acur6iym"
+      },
+      "class": "design",
+      "answer": "Title by repository path",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-z6wolmvm review"
   ],
