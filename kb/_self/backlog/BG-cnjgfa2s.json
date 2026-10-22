@@ -2,7 +2,7 @@
   "id": "BG-cnjgfa2s",
   "kind": "bug",
   "title": "redact leaves a GUID that follows a hyphen, which the leak scan flags, so query-log delivery stalls",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ovwzbc7u",
   "priority": "P2",
   "rank": 0,
@@ -53,6 +53,37 @@
     "_tools/kbcommon.py"
   ],
   "notes": "Found 2026-10-22: query-log delivery was refused from 2026-10-21 15:38 to 2026-10-22 (59 runs, 49 entries undelivered) because fetches[6].path of two run files ended in a docs URL GUID slug: redact.GUID (_tools/redact.py:52) has (?<![\\w-]) so it skips a GUID after '-', while kbcommon.LEAK_GUID (_tools/kbcommon.py:219) uses \\b and flags it. Worked around with querylog.py reredact (backup store-reredact-20261022T221812Z), check then problems=0. The next such fetch stalls delivery again. Planned: the filed repro planted a GUID of repeated letters that kb/public already holds, so redact.known() keeps it even without a hyphen and a lookbehind fix would not turn it green; rewritten with a GUID kb/public lacks, built at run time from parts (a literal GUID in repro.run fails check). Ran the rewrite: redact.redact leaves the hyphen-led GUID whole, kbcommon.leak_hits returns a guid hit, exit 1. A plain GUID is replaced, so the defect is the (?<![\\w-]) lookbehind at redact.py:52 against \\b at kbcommon.py:219. _tools/mon_view.py:82 reads redact.GUID.findall on a window, so a lookbehind change reaches it: touched to re-read. Docs map: kb/_self/map.csv:123 maps querylog.md to redact.py. Checks: a plain GUID still becomes the placeholder and the placeholder stays; querylog.md names a hyphen-led GUID (fails until the doc is edited).",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "dcb08cd6b5b9bf0f6c3b260b9f3ce74452a841db",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, '_tools'); import redact; g = '-'.join(('3f2a9c1e', '7b4d', '4e8a', '9c21', '5d6e7f8a9b0c')); z = '00000000-0000-0000-0000-000000000000'; sys.exit(0 if redact.redact('id ' + g + ' and ' + z) == 'id ' + z + ' and ' + z else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; t = open('kb/_self/querylog.md', encoding='utf-8').read(); sys.exit(0 if 'hyphen-led GUID' in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, '_tools'); import redact, kbcommon; g = '-'.join(('3f2a9c1e', '7b4d', '4e8a', '9c21', '5d6e7f8a9b0c')); out = redact.redact('/en-us/troubleshoot/some-page-' + g); sys.exit(0 if not [h for h in kbcommon.leak_hits(out) if h[0] == 'guid'] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
