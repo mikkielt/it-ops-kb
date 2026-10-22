@@ -2,7 +2,7 @@
   "id": "BG-acsc7it2",
   "kind": "bug",
   "title": "Bench pool rows ask about decisions the 2026-10-21 sweep invalidated, so their operator check cannot match",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-ovwzbc7u",
   "priority": "P3",
@@ -26,5 +26,7 @@
   "links": [
     "parked: SP-rmp5zm5a review"
   ],
-  "notes": "Found by the fresh-context review of SP-rmp5zm5a (2f256438ea..47328f5b24), verified by the manager: the repro fails on 47328f5b24 (BP-1d1ce7a7 D-psgfq7le, BP-65eb74a7 D-xk65w44m)."
+  "notes": "Found by the fresh-context review of SP-rmp5zm5a (2f256438ea..47328f5b24), verified by the manager: the repro fails on 47328f5b24 (BP-1d1ce7a7 D-psgfq7le, BP-65eb74a7 D-xk65w44m).",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
