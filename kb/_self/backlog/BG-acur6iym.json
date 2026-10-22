@@ -2,7 +2,7 @@
   "id": "BG-acur6iym",
   "kind": "bug",
   "title": "kbid.py add titles a raw source code file by its first comment line, which can hold an author email address",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-ovwzbc7u",
   "priority": "P2",
@@ -24,5 +24,7 @@
   "links": [
     "parked: SP-z6wolmvm review"
   ],
-  "notes": "Found 2026-10-21 landing ST-polh634k: rows S-u5nsu5mz and S-uajt3oqr were titled 'Author:: <name> (<email>)' from the chef/chef file headers, and test_leaks failed the sync gate on the two email addresses; the worker also recorded MIT while the files state Apache-2.0 (provider.read_licence got 403 from the GitHub REST API, unauthenticated limit). Fixed by hand in 28d31c7590. Premise: provider._page_head on a planted text/plain header returns the Author:: line as the title; the repro exits 1."
+  "notes": "Found 2026-10-21 landing ST-polh634k: rows S-u5nsu5mz and S-uajt3oqr were titled 'Author:: <name> (<email>)' from the chef/chef file headers, and test_leaks failed the sync gate on the two email addresses; the worker also recorded MIT while the files state Apache-2.0 (provider.read_licence got 403 from the GitHub REST API, unauthenticated limit). Fixed by hand in 28d31c7590. Premise: provider._page_head on a planted text/plain header returns the Author:: line as the title; the repro exits 1.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
