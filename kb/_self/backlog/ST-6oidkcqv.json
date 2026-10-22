@@ -2,7 +2,7 @@
   "id": "ST-6oidkcqv",
   "kind": "story",
   "title": "otel/ holds a Prometheus scrape config and alert rules the adapter's --check-rules proves against its /metrics",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-4f4m3noq",
   "priority": "P2",
@@ -67,5 +67,7 @@
     "otel/otel_prom.py",
     "kb/_self/monitoring.md"
   ],
-  "notes": "Premise (run 2026-10-22): kbmon_otel.py has no --check-rules (argparse: unrecognized arguments) and otel/ holds no Prometheus config or rules. A live run of the adapter with --prometheus-port 9464 served kbmon_kb_eval_passed, kbmon_alerts and kbmon_sessions_procs{class=orphan}; names gain a unit suffix (kbmon.kb.index_age, unit s, is kbmon_kb_index_age_seconds) and a sum gains _total, which is why the names are proven against the reader, not derived by hand. The operator installs Prometheus outside the repository (operator choice 2026-10-22: doc recipe only, no host service file). SP-qh2j24z2 items ST-wic5d76z and BG-fjfoh3p4 also change kbmon_otel.py and otel_prom.py; that sprint is queued, so the two do not run at once."
+  "notes": "Premise (run 2026-10-22): kbmon_otel.py has no --check-rules (argparse: unrecognized arguments) and otel/ holds no Prometheus config or rules. A live run of the adapter with --prometheus-port 9464 served kbmon_kb_eval_passed, kbmon_alerts and kbmon_sessions_procs{class=orphan}; names gain a unit suffix (kbmon.kb.index_age, unit s, is kbmon_kb_index_age_seconds) and a sum gains _total, which is why the names are proven against the reader, not derived by hand. The operator installs Prometheus outside the repository (operator choice 2026-10-22: doc recipe only, no host service file). SP-qh2j24z2 items ST-wic5d76z and BG-fjfoh3p4 also change kbmon_otel.py and otel_prom.py; that sprint is queued, so the two do not run at once.",
+  "claimed_by": "d72ea2f1",
+  "operator": "op-f618a13e"
 }
