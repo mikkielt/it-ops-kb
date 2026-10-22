@@ -43,12 +43,18 @@ detected from the stored hash. The first fetch of a source is `new`; if its _sou
 "sha256 at retrieval <hash>", that hash is the baseline. --no-save leaves state and snapshots untouched.
 HTML is reduced to the text of <main> (or the whole body) before hashing, so page chrome does not count.
 
+Text of one url (`text URL`, no kb root, nothing saved): prints a page's normalized text; a PDF's through `pdftotext`
+(on PATH, else exit 2); the text members of a zip or tar archive (gzip, bzip2, xz), each after a `== name ==` line, read
+in memory and never extracted, with a cap on bytes; a spreadsheet's (.xlsx) shared strings. Exit 2 when it cannot read it.
+
 A failed download is reported as `unknown`, never as a match.
 
 Every request writes one query log spool row (kb/_self/querylog.md, Capture): host, path and outcome class, never the
 query string or the body.
 """
-import argparse, datetime, difflib, hashlib, html.parser, io, json, os, re, sys, time, urllib.error, urllib.parse, urllib.request, zipfile
+import argparse, datetime, difflib, hashlib, html.parser, io, json, os, re, shutil, subprocess, sys, tarfile, tempfile, time
+import urllib.error, urllib.parse, urllib.request, zipfile
+from xml.etree import ElementTree
 import kbcommon, kbid, ql_capture
 
 KB = kbcommon.PUBLIC  # the root being checked (--root; the public root by default); the cache stays in the repository
@@ -215,6 +221,104 @@ def _json_text(page):
     return "\n".join(out)
 
 
+TEXT_MEMBER_CAP, TEXT_TOTAL_CAP = 2_000_000, 8_000_000  # bytes read from one archive member, and printed in all
+
+
+def _members_text(members):
+    """`== name ==` and the text of each (name, bytes) member that is text, up to TEXT_TOTAL_CAP bytes in all; a binary
+    member is named and skipped."""
+    out, used = [], 0
+    for name, data in members:
+        if b"\0" in data[:1024]:
+            out.append(f"== {name} == (binary, skipped)")
+            continue
+        room = TEXT_TOTAL_CAP - used
+        if room <= 0:
+            out.append(f"== {name} == (not read: output cap {TEXT_TOTAL_CAP} bytes)")
+            continue
+        text = data[:min(room, TEXT_MEMBER_CAP)].decode("utf-8", errors="replace").replace("\r\n", "\n")
+        used += len(text.encode("utf-8"))
+        out.append(f"== {name} ==\n{text}")
+    return "\n".join(out) + "\n"
+
+
+def _zip_members(body):
+    """(name, bytes) of each file in a zip, read in memory and never written out; at most TEXT_MEMBER_CAP bytes each."""
+    with zipfile.ZipFile(io.BytesIO(body)) as z:
+        for info in z.infolist():
+            if not info.is_dir():
+                with z.open(info) as f:
+                    yield info.filename, f.read(TEXT_MEMBER_CAP)
+
+
+def _tar_members(body):
+    """(name, bytes) of each regular file in a tar (gzip, bzip2 or xz as tarfile detects), read in memory only."""
+    with tarfile.open(fileobj=io.BytesIO(body), mode="r:*") as t:
+        for info in t:
+            if info.isfile():
+                f = t.extractfile(info)
+                if f:
+                    yield info.name, f.read(TEXT_MEMBER_CAP)
+
+
+def _xlsx_text(body):
+    """The shared strings of a spreadsheet (xl/sharedStrings.xml), one per line; numbers and formulas are not read."""
+    with zipfile.ZipFile(io.BytesIO(body)) as z:
+        try:
+            raw = z.read("xl/sharedStrings.xml")
+        except KeyError:
+            return ""
+    root = ElementTree.fromstring(raw)
+    lines = ["".join(t.text or "" for t in si.iter() if t.tag.endswith("}t") or t.tag == "t") for si in root]
+    return "\n".join(ln for ln in lines if ln.strip()) + "\n"
+
+
+def _pdf_text(body):
+    """The text of a PDF through `pdftotext` on PATH (a temporary file in a directory of its own); exit 2 when it is
+    not installed or fails."""
+    exe = shutil.which("pdftotext")
+    if not exe:
+        raise ValueError("pdftotext is not on PATH: cannot read a PDF")
+    with tempfile.TemporaryDirectory(prefix="kb-pdf-") as d:
+        src = os.path.join(d, "in.pdf")
+        with open(src, "wb") as f:
+            f.write(body)
+        p = subprocess.run([exe, "-layout", src, "-"], capture_output=True, timeout=TIMEOUT)
+    if p.returncode:
+        raise ValueError(f"pdftotext failed ({p.returncode}): {p.stderr.decode('utf-8', 'replace').strip()[:200]}")
+    return p.stdout.decode("utf-8", errors="replace")
+
+
+def read_text(url, body, ctype):
+    """Printable text of a fetched body: a PDF through pdftotext, a zip or tar archive's text members, a spreadsheet's
+    shared strings, else `to_text`; None for a body none of these reads."""
+    head, path = body[:8], urllib.parse.urlparse(url).path.lower()
+    if head.startswith(b"%PDF") or path.endswith(".pdf"):
+        return _pdf_text(body)
+    if head.startswith(b"PK"):
+        if path.endswith(".xlsx") or "spreadsheetml" in (ctype or ""):
+            return _xlsx_text(body)
+        return _members_text(_zip_members(body))
+    if body[:2] == b"\x1f\x8b" or body[:3] == b"BZh" or body[:6] == b"\xfd7zXZ\x00" or body[257:262] == b"ustar":
+        return _members_text(_tar_members(body))
+    return to_text(body, ctype)
+
+
+def text_cmd(a):
+    """`text URL`: print the text of the page, PDF, archive or spreadsheet at URL (exit 2 when it cannot be read)."""
+    try:
+        body, ctype = fetch(a.url)
+        text = read_text(a.url, body, ctype)
+    except (OSError, ValueError, zipfile.BadZipFile, tarfile.TarError, ElementTree.ParseError,
+            subprocess.SubprocessError) as e:
+        print(f"{a.url}: {str(e)[:300]}", file=sys.stderr)
+        sys.exit(2)
+    if text is None:
+        print(f"{a.url}: no text in this content ({ctype or 'unknown type'})", file=sys.stderr)
+        sys.exit(2)
+    sys.stdout.write(text)
+
+
 def now_utc():
     return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -378,6 +482,13 @@ def status(a, sources):
 
 def main():
     global DELAY, TIMEOUT
+    if sys.argv[1:2] == ["text"]:  # `text URL`: its own usage, apart from the flag modes below
+        tp = argparse.ArgumentParser(prog="fetch.py text", description=text_cmd.__doc__)
+        tp.add_argument("url")
+        tp.add_argument("--timeout", type=float, default=60, help="per-request timeout in seconds (default 60)")
+        ta = tp.parse_args(sys.argv[2:])
+        TIMEOUT = ta.timeout
+        return text_cmd(ta)
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     g = ap.add_mutually_exclusive_group()
     g.add_argument("--verify", action="store_true")
