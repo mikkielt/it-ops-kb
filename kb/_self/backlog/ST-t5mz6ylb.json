@@ -2,7 +2,7 @@
   "id": "ST-t5mz6ylb",
   "kind": "story",
   "title": "A research story's plan says where its findings go: gap notes only or also article facts",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ovwzbc7u",
   "priority": "P2",
   "rank": 0,
@@ -47,6 +47,19 @@
     "parked: SP-5cyrnkw7 close"
   ],
   "notes": "Retrospective of SP-5cyrnkw7 and SP-z6wolmvm (2026-10-22, operator accepted): six workers answered a provisional gate on notes-only or also-facts each by themselves (ST-a2cncqr3, ST-ho6xyk66, ST-polh634k, ST-qgojhpot, ST-rbf7q6ci, ST-xldi2ipx); the reviews overturned notes-only twice (ST-5p46sliz, ST-xfuucxk2).",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "932e3ce12146bab5dede163441a17da2ec4dfddb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re, sys\ns = open('.claude/skills/kb-sprint/SKILL.md', encoding='utf-8').read()\ni, j = s.find('## plan'), s.find('## start')\nsys.exit(0 if re.search(r'(?i)notes only.{0,200}article facts|article facts.{0,200}notes only', s[i:j]) else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
