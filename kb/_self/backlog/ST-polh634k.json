@@ -69,7 +69,9 @@
       },
       "class": "design",
       "answer": "A fact with a source row and anchor in the article for each answer found, plus the dated note; the note alone where nothing official was found",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
