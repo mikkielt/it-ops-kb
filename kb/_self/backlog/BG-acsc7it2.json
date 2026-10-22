@@ -8,12 +8,12 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "every bench_pool.csv row that names a decision id names one whose status is decided in the _self decisions ledger, so its checks read an active operator decision",
+  "goal": "every bench_pool.csv row that names a decision id names one whose status is active in the _self decisions ledger, so its checks read an active operator decision",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import csv,re,sys;st={r['id']:r['status'] for r in csv.DictReader(open('kb/_self/_decisions.csv',encoding='utf-8'))};bad=[(r['id'],d) for r in csv.DictReader(open('kb/public/_retrieval/bench_pool.csv',encoding='utf-8')) for d in re.findall(r'D-[a-z0-9]{8}',r['question']) if st.get(d)!='decided'];print(bad);sys.exit(1 if bad else 0)"
+      "import csv,re,sys;st={r['id']:r['status'] for r in csv.DictReader(open('kb/_self/_decisions.csv',encoding='utf-8'))};bad=[(r['id'],d) for r in csv.DictReader(open('kb/public/_retrieval/bench_pool.csv',encoding='utf-8')) for d in re.findall(r'D-[a-z0-9]{8}',r['question']) if st.get(d)!='active'];print(bad);sys.exit(1 if bad else 0)"
     ]
   },
   "repro_reason": "the defect is pool data out of step with the decision ledger; the repro joins the two files, as the fix's own pool rebuild must",
