@@ -1,0 +1,25 @@
+{
+  "id": "ST-jxyvqzdz",
+  "kind": "story",
+  "title": "A content landing runs the lookup eval when it changes kb facts",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py land runs the land_eval step (rag.py eval) for a landing that changes kb articles or data, not only for one that changes _tools/, so a fact that turns an off-kb eval row into a good answer stops the landing instead of reaching main",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import inspect, sys\nsys.path.insert(0, '_tools')\nimport bl_land\ns = inspect.getsource(bl_land)\ni = s.find('else:  # lint.py takes')\nsys.exit(0 if i > 0 and 'land_eval()' in s[i:i + 1500] else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py"
+  ],
+  "links": [
+    "parked: SP-z6wolmvm close"
+  ],
+  "notes": "Retrospective of SP-z6wolmvm (2026-10-22, operator accepted): ST-qgojhpot added the Purview endpoint DLP onboarding facts (0cc2bf9ff9) and landed; rag.py eval then failed on main on EV-purview-endpoint-dlp-onboarding-requirements-windows (want none, got good) until ST-xfuucxk2 changed the row. bl_land.py runs land_heavy() (land_eval and lint) only when the landing changes _tools/ (the `if any(p.startswith(\"_tools/\")` branch), so content landings skip the eval. The draft check reads the source; planning replaces it with a planted content landing."
+}

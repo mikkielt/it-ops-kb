@@ -1,0 +1,25 @@
+{
+  "id": "ST-t5mz6ylb",
+  "kind": "story",
+  "title": "A research story's plan says where its findings go: gap notes only or also article facts",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the sprint plan step of the kb-sprint skill has a research or gap story's goal state whether its findings go into dated ledger notes only or also into article facts with source rows, so no worker settles it with a provisional gate",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re, sys\ns = open('.claude/skills/kb-sprint/SKILL.md', encoding='utf-8').read()\ni, j = s.find('## plan'), s.find('## start')\nsys.exit(0 if re.search(r'(?i)notes only.{0,200}article facts|article facts.{0,200}notes only', s[i:j]) else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-5cyrnkw7 close"
+  ],
+  "notes": "Retrospective of SP-5cyrnkw7 and SP-z6wolmvm (2026-10-22, operator accepted): six workers answered a provisional gate on notes-only or also-facts each by themselves (ST-a2cncqr3, ST-ho6xyk66, ST-polh634k, ST-qgojhpot, ST-rbf7q6ci, ST-xldi2ipx); the reviews overturned notes-only twice (ST-5p46sliz, ST-xfuucxk2)."
+}

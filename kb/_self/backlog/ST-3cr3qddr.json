@@ -1,0 +1,27 @@
+{
+  "id": "ST-3cr3qddr",
+  "kind": "story",
+  "title": "A worker's done refuses a kb change whose changed files fail the leak scan",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py done refuses, with reason leaks, an item whose commits change a kb file that the leak scan of test_leaks flags (an email address, a real-looking id or a secret outside the allowlist), so the worker fixes it in its worktree instead of the landing's sync gate failing",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport ql_capture\nsys.exit(0 if 'leaks' in ql_capture.OPS_REFUSED else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/ql_capture.py",
+    "_tools/kbpublic.py"
+  ],
+  "links": [
+    "parked: SP-z6wolmvm close"
+  ],
+  "notes": "Retrospective of SP-5cyrnkw7 and SP-z6wolmvm (2026-10-22, operator accepted): two landings stopped at kbgit.py sync --push on test_leaks: ST-polh634k (two chef/chef source titles held authors' email addresses, BG-acur6iym) and ST-rbf7q6ci (GitHub's noreply address quoted in a _gaps.md note). Both were fixed by hand by the manager. The draft check reads the done-reason constant only; planning replaces it with a planted done run on a fake leak."
+}
