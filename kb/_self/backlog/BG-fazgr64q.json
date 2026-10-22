@@ -2,7 +2,7 @@
   "id": "BG-fazgr64q",
   "kind": "bug",
   "title": "census.py head_cited_lines raises on a cat-file missing line, and the dispatch docstrings still say a session reads only the group's files",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-ovwzbc7u",
   "priority": "P3",
@@ -47,5 +47,7 @@
   "links": [
     "parked: SP-rmp5zm5a review"
   ],
-  "notes": "Found by the fresh-context review of SP-rmp5zm5a (2f256438ea..47328f5b24), verified by the manager: the repro fails on 47328f5b24."
+  "notes": "Found by the fresh-context review of SP-rmp5zm5a (2f256438ea..47328f5b24), verified by the manager: the repro fails on 47328f5b24.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
