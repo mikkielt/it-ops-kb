@@ -1,0 +1,19 @@
+{
+  "id": "BG-42dg5ryi",
+  "kind": "bug",
+  "title": "land and dispatch name a host item's branch and merge request by the kb id, so a workspace whose repositories enforce their own task-id branch and MR-title rules cannot land (Nerthus adoption)",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "A multi-repository item with an external tracker id is dispatched on a branch and landed from merge requests named by a template backlog.json sets from that id (the Nerthus workspace: branch proj/<nn>-<mm>-<slug>, MR title '<task id>: <title>', a 'Task: <task id>' trailer), so a host whose repositories' CI refuses any other branch name, MR title or trailer lands an item without changing those rules; with no template set the kb's work/<id> and '<id>:' stay the default",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,inspect; sys.path.insert(0,\"_tools\"); import bl_land,bl_dispatch; a=\"title_prefix=f\\\"{iid}:\\\"\" in inspect.getsource(bl_land.land_repositories); b=\"WORK_PREFIX + iid\" in inspect.getsource(bl_dispatch.worker_branch); sys.exit(1 if a and b else 0)"
+    ]
+  },
+  "repro_reason": "landing needs a live forge with merged requests; the names are fixed by these two expressions in land_repositories and worker_branch"
+}
