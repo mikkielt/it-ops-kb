@@ -140,7 +140,7 @@ Hybrid retrieval combines a lexical ranker (BM25 or Elasticsearch's equivalent) 
 
 ### Rank fusion: the original RRF paper
 - Cormack, Clarke and Büttcher built RRF as a baseline for combining rankings and found that it "almost invariably improved on the best of the combined results"; as an unsupervised method it needs no training examples. [DOC S-g2bbx2bz]
-- Their pilot fixed `k` = 60 and did not change it afterwards: the pilot "indicated that k = 60 was near-optimal, but that the choice was not critical" (MAP .2145 at 60, .2139 to .2147 for every `k` from 30 to 100). [DOC S-g2bbx2bz]
+- Their pilot fixed `k` = 60 and did not change it afterwards: the pilot "indicated that k = 60 was near-optimal, but that the choice was not critical" (MAP .2145 at 60, .2138 to .2147 for every `k` from 30 to 100). [DOC S-g2bbx2bz]
 - Over the pilot and TREC experiments, "RRF outperforms Condorcet, CombMNZ and the best system by 4% to 5% on average"; on LETOR 3, CombMNZ edged RRF by a small margin that was not significant (p ≈ .2). [DOC S-g2bbx2bz]
 - RRF needs no special voting algorithm or global information: ranks can be computed and summed one system at a time, without keeping all rankings in memory, and it combines ranks without regard to the systems' arbitrary scores. [DOC S-g2bbx2bz]
 - The paper defines the score as the sum over the rankings of `1/(k + r(d))`, where each ranking is "a permutation on 1..|D|" of the one document set. [DOC S-g2bbx2bz]
