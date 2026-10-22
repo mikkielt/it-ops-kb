@@ -1,0 +1,21 @@
+{
+  "id": "BG-cnjgfa2s",
+  "kind": "bug",
+  "title": "redact leaves a GUID that follows a hyphen, which the leak scan flags, so query-log delivery stalls",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "redact.redact replaces every GUID that kbcommon.leak_hits flags as guid, a GUID that follows a hyphen (a docs URL slug such as some-page-<guid>) included, so a redacted query-log row never fails the store's leak scan and apply --push does not stall on it; kb/_self/querylog.md says the redactor and the scan agree on a hyphen-led GUID",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '_tools'); import redact, kbcommon; g = '-'.join(x * n for x, n in (('a', 8), ('b', 4), ('c', 4), ('d', 4), ('e', 12))); out = redact.redact('/en-us/troubleshoot/some-page-' + g); sys.exit(0 if not [h for h in kbcommon.leak_hits(out) if h[0] == 'guid'] else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/redact.py",
+    "kb/_self/querylog.md"
+  ]
+}
