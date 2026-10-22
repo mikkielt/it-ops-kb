@@ -2,7 +2,7 @@
   "id": "ST-p5les624",
   "kind": "story",
   "title": "Review sprint: The public root is confirmed current by a tagged census, and its open conflicts are worked against it",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rmp5zm5a",
   "review": true,
   "priority": "P1",
@@ -24,6 +24,27 @@
     }
   ],
   "notes": "Second-half review 2026-10-22 of the census route code and re-read (26 files, 21 census rows, $2.26): 15 findings, no S1. The census data errors went to ST-jlx3i4u2 (landed). The census fetch code findings went to ST-enbc6v5h in SP-ovwzbc7u, as the operator chose. The operator took the reviewer's verdicts on the provisional answers: confirmed ST-o367qbqn g1 and ST-aml4xyrf g1 and g3; re-answered ST-bbxlwm4b g1, ST-o367qbqn g2 and g3, and ST-aml4xyrf g2. The operator confirmed ST-k5pjflob, ST-vhtpgjb5, ST-tm5cwieq and ST-jlx3i4u2 g1.",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "d117fa413dbfb046074aea3adba218cb16db1127",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "30c66084c6ec06d2"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "1d71e8e74cb8bff8"
+      }
+    ]
+  }
 }
