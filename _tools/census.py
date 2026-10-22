@@ -2907,6 +2907,7 @@ FETCHABLE = re.compile(r"[A-Za-z0-9._~:/?#@&+=%,;-]+")  # a url a Bash permissio
 FETCH_HEADER = re.compile(r"[A-Za-z0-9._/+=;,: -]+")  # a `Name: value` header a rule holds as written
 FETCH_LINE = re.compile(r"fetch (\S+)((?: \(header [^:()]+: [^()]*\))*)")  # the line `read_commands` prints for a page
 HEADER = re.compile(r"\(header ([^:()]+): ([^()]*)\)")
+FETCH_TEXT_EXT = (".pdf", ".zip", ".tar.gz", ".tgz", ".xlsx")  # a url ending so is read by `fetch.py text`, not `curl`
 
 
 def claude_exe(path=None):
@@ -2959,10 +2960,19 @@ def docs_mcp_config():
     return json.dumps({"mcpServers": {LEARN_SERVER: server}}, separators=(",", ":"))
 
 
+def fetch_argv(url, heads=(), tools=None):
+    """The argv that reads the page at `url` in a census session: `python3 <tools>/fetch.py text URL` for a url whose
+    path ends in .pdf, .zip, .tar.gz, .tgz or .xlsx (a body a session cannot read as `curl` prints it; `tools` is the
+    tools directory, default the relative `_tools`), else `curl -sSL` with each (name, value) of `heads` as `-H`."""
+    if urlparse(url).path.lower().endswith(FETCH_TEXT_EXT):
+        return ["python3", f"{tools or '_tools'}/fetch.py", "text", url]
+    return ["curl", "-sSL", *[x for k, v in heads for x in ("-H", f"{k}: {v}")], url]
+
+
 def dispatch_plan(group, members, ctx):
     """What one brief part's session may touch, from the part's rows: {files: the group's owned files in it (absolute),
     git: the argv of each `git show` and `git diff` line of its rows (the clone as an absolute path), fetch: {row id:
-    the `curl` argv of its page}, learn: [row id] read with the Learn tool, skipped: [row id] whose page no permission
+    the `curl` or `fetch.py text` argv of its page, `fetch_argv`}, learn: [row id] read with the Learn tool, skipped: [row id] whose page no permission
     rule can name exactly}."""
     git, fetch, learn, skipped = set(), {}, set(), []
     for r, _, _ in members:
@@ -2980,7 +2990,7 @@ def dispatch_plan(group, members, ctx):
             elif page:
                 heads = HEADER.findall(page.group(2))
                 if FETCHABLE.fullmatch(page.group(1)) and all(FETCH_HEADER.fullmatch(f"{k}: {v}") for k, v in heads):
-                    fetch[r["id"]] = ["curl", "-sSL", *[x for k, v in heads for x in ("-H", f"{k}: {v}")], page.group(1)]
+                    fetch[r["id"]] = fetch_argv(page.group(1), heads, kbcommon.TOOLS)
                 else:
                     skipped.append(r["id"])
     return {"files": [os.path.join(KB, rel) for rel in owned_files(group, members)], "git": sorted(git),
@@ -3003,7 +3013,7 @@ def dispatch_rules(plan, scratch):
     """(allow, tools) of a session: the `--allowedTools` rules and the `--tools` set. Read and Edit rules name each
     owned file as an absolute path (`//` is the filesystem root), so no other repository file is readable or editable
     (the working directory is the empty scratch directory, and `dontAsk` denies the rest); Bash holds only the exact
-    `git show` and `git diff` lines of the brief (no wildcard), each page's own `curl` line and `kbid.py url`."""
+    `git show` and `git diff` lines of the brief (no wildcard), each page's own `fetch_argv` line (`curl`, or `fetch.py text`) and `kbid.py url`."""
     def at(tool, path, tail=""):
         return f"{tool}(//{path.replace(os.sep, '/').lstrip('/')}{tail})"
 
