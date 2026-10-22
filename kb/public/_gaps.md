@@ -914,6 +914,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
   - Narrowed 2026-10-21: GitLab's licence templates API page (`doc/api/templates/licenses.md`, master) uses keys such as `apache-2.0`, `gpl-3.0` and `mit` for `GET /templates/licenses/:key`, and the Projects API example key is `lgpl-3.0`: lowercase licence names, but neither page lists the full set or says they are SPDX identifiers. Still needs a GitLab page or the template source that states the vocabulary (topic: agents/doc-lookup-sources)
 - The abs-license div claim for arXiv abstract pages was not re-checked in the 2026-10-21 census: the arXiv API does not expose the page markup. (topic: agents/doc-lookup-sources)
   - Closed 2026-10-21: plain GETs of `arxiv.org/abs/1706.03762v1` and `arxiv.org/abs/1706.03762v7` return the abstract page markup with `<div class="abs-license">` holding a "view license" link to the non-exclusive distribution licence, so the claim holds as written; the API still does not expose the markup, which is why the abstract page was read directly (topic: agents/doc-lookup-sources)
+- MicrosoftDocs/memdocs README at commit 4b5429df (licence terms: CC BY 4.0 docs, MIT code) could not be re-read on 2026-10-22. The census has no clone, and the raw url, API and github.com page answer 404. No successor repository was found in the MicrosoftDocs organisation. (topic: agents/doc-lookup-sources)
 
 ## windows/smart-app-control
 
