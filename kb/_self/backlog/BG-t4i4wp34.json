@@ -61,6 +61,25 @@
     "kb/_self/usage.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does kbotel.kept read a string-valued number or flag: which strings count? Recommended: ASCII digits with at most one inner decimal point, bounded length; only true/false as flags; id and name shapes untouched",
+      "options": [
+        "whole decimal string only",
+        "any string int() or float() parses"
+      ],
+      "recommendation": "whole decimal string only",
+      "do": {
+        "whole decimal string only": "BG-t4i4wp34",
+        "any string int() or float() parses": "BG-t4i4wp34"
+      },
+      "class": "design",
+      "answer": "whole decimal string only",
+      "by": "agent"
+    }
+  ],
   "links": [
     "_tools/kbotel.py",
     "kb/_self/usage.md"

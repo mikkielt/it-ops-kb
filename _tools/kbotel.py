@@ -32,6 +32,7 @@ EVENT_KEYS = {  # the attributes kept per event, each in its closed shape; any o
 }
 ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,79}")  # an id or a model name: no space, no slash, no text
 NAME = re.compile(r"[A-Za-z][A-Za-z0-9_.:-]{0,59}")
+DECIMAL = re.compile(r"[0-9]{1,18}(?:\.[0-9]{1,18})?")  # a number Claude Code sends as a string: digits, one decimal point
 
 
 def default_out():
@@ -58,10 +59,15 @@ def any_value(v):
 
 
 def kept(shape, v):
-    """`v` in its closed shape, else None."""
+    """`v` in its closed shape, else None. A flag or number may also come as the string Claude Code sends in OTLP
+    JSON for a tool result (`"true"`, `"false"`, a whole decimal string); any other string is dropped."""
     if shape == "flag":
+        if isinstance(v, str):
+            v = {"true": True, "false": False}.get(v)
         return v if isinstance(v, bool) else None
     if shape == "number":
+        if isinstance(v, str):
+            v = (float(v) if "." in v else int(v)) if DECIMAL.fullmatch(v) else None
         return v if isinstance(v, (int, float)) and not isinstance(v, bool) and v >= 0 else None
     if shape == "id":
         return v if isinstance(v, str) and ID.fullmatch(v) else None
