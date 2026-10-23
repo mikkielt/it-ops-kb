@@ -2,7 +2,7 @@
   "id": "ST-2d26ca6z",
   "kind": "story",
   "title": "The maintainer turns an upstream-report GitHub issue back into draft backlog items that link the issue",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3trnelzv",
   "priority": "P1",
   "rank": 0,
@@ -90,6 +90,28 @@
     }
   ],
   "notes": "Operator's answer 2026-10-19: findings travel back as a GitHub issue in a template the agent fills with user stories; the maintainer reads the issue back and converts its stories to backlog items; how the issue is added (paste from the file or automation) is the user's choice. Premise: no import command exists (backlog.py has no upstream-import); the check exits 1 on the base.",
-  "claimed_by": "claude-92aeeb3c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "bccc47db71584119ff50e396e5c74bdbe6ef6ba5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,re,subprocess as s,sys,tempfile\nB=os.path.abspath('_tools/backlog.py');T='.github/ISSUE_TEMPLATE/upstream-report.yml'\nlabels=re.findall(r'^\\s*label:\\s*[\"\\']?(.+?)[\"\\']?\\s*$',open(T,encoding='utf-8').read(),re.M) if os.path.exists(T) else []\nt=tempfile.mkdtemp();u=os.path.join(t,'up');c=os.path.join(t,'team');f=os.path.join(t,'report.md')\ng=lambda d,*a:s.run(['git','-C',d,*a],capture_output=True,text=True)\nb=lambda d,*a:s.run([sys.executable,B,'--root',d,*a],capture_output=True,text=True)\nos.makedirs(u);g(u,'init','-q','-b','main');open(os.path.join(u,'backlog.json'),'w').write(json.dumps({'item_dir':'items'}))\ng(u,'add','-A');g(u,'-c','user.name=t','-c','user.email=t@example.com','commit','-qm','up')\ns.run(['git','clone','-q',u,c]);g(c,'remote','rename','origin','upstream');g(c,'config','kb.upstreamRemote','upstream');g(c,'config','kb.scope','team')\nn=b(c,'new','story','--title','planted field finding for upstream','--goal','planted goal text')\niid=(re.findall(r'ST-[a-z0-9]{8}',n.stdout) or [''])[0]\nr=b(c,'upstream-report',iid,'--out',f)\nbody=open(f,encoding='utf-8').read() if os.path.exists(f) else ''\nok=bool(labels) and bool(iid) and r.returncode==0 and 'planted field finding for upstream' in body and all(l in body for l in labels)\nSTEP='import'\nif ok and STEP=='import':\n    i=b(u,'upstream-import',f,'--issue','https://github.com/example/it-ops-kb/issues/1');i2=b(u,'upstream-import',f,'--issue','https://github.com/example/it-ops-kb/issues/1');l=b(u,'list')\n    items=[json.load(open(os.path.join(u,'items',x))) for x in os.listdir(os.path.join(u,'items'))] if os.path.isdir(os.path.join(u,'items')) else []\n    ok=i.returncode==0 and 'planted field finding for upstream' in l.stdout and any('issues/1' in ' '.join(x.get('links',[])) and x.get('status')=='draft' for x in items) and i2.returncode==0 and l.stdout.count('planted field finding for upstream')==1\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('kb/_self/backlog.md',encoding='utf-8').read();sys.exit(0 if 'upstream-import' in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
