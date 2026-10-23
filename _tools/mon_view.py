@@ -175,17 +175,6 @@ def generic_lines(data):
             for k, v in data.items()]
 
 
-def panel_lines(name, data):
-    try:
-        module = mon_base.panel_module(name)
-        view = getattr(module, "lines", None)
-        if view is not None:
-            return [plain(x) for x in view(data)]
-    except Exception:  # noqa: BLE001 - a saved snapshot may hold data the module's view does not take
-        pass
-    return generic_lines(data)
-
-
 def enable_vt():
     """True when this console takes ANSI escape sequences. Off Windows every terminal does; on Windows the console's
     virtual terminal processing is switched on for standard output, and False says it cannot be (no console, an old
