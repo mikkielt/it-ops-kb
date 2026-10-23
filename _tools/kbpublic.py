@@ -481,11 +481,13 @@ def tree_hits(rev, paths, cwd):
 
 
 def scan_form():
-    """The leak scan's form as a cache key: SCAN_FORM and a digest of the registry's private patterns (kbcommon's), so a
-    private name the registry gains or loses reads no verdict or value cached before it."""
+    """The leak scan's form as a cache key: SCAN_FORM, a digest of the registry's private patterns and a digest of
+    kbcommon.SECRETS (both kbcommon's), so a private name the registry gains or loses, or a secret shape that changes,
+    reads no verdict or value cached before it."""
     import kbcommon
     pats = "\0".join(f"{kind}\0{rx.pattern}" for kind, rx in kbcommon._private_patterns())
-    return f"{SCAN_FORM}-{hashlib.sha256(pats.encode('utf-8')).hexdigest()[:12]}"
+    secrets = hashlib.sha256(kbcommon.secrets_rx().encode("utf-8")).hexdigest()[:12]
+    return f"{SCAN_FORM}-{hashlib.sha256(pats.encode('utf-8')).hexdigest()[:12]}-{secrets}"
 
 
 def cache_load(cwd, name):
