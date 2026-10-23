@@ -39,7 +39,11 @@
         "exit 2 in code": "BG-xyhbfqkv",
         "exit 1 in the docs": "BG-xyhbfqkv"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "exit 2 in code",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "claimed_by": "claude-92aeeb3c",
