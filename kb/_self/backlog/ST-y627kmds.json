@@ -2,7 +2,7 @@
   "id": "ST-y627kmds",
   "kind": "story",
   "title": "A gap-research story's check counts a closing note only when it cites a tagged article fact",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ovwzbc7u",
   "priority": "P2",
   "rank": 0,
@@ -70,6 +70,28 @@
     "parked: SP-z6wolmvm close"
   ],
   "notes": "Retrospective of SP-5cyrnkw7 and SP-z6wolmvm (2026-10-22, operator accepted): the gap stories' checks counted any closing word as closed; the fresh reviews found 3 run-based closings in C (fixed by ST-5p46sliz) and 34 gitlab closings in D with no article fact or source row (fixed by ST-xfuucxk2). On origin/main of 2026-10-22 the draft check lists 213 closings dated 2026-10-2x across other domains that cite no article fact by path:line; many may cite source ids the article holds, so planning decides whether a cited source id counts. Operator 2026-10-22: a closing note is backed when it cites a tagged article fact by path:line or a source id its article cites. Premise on origin/main of 2026-10-22: check 0 lists 118 entries backed by neither; check 1 exits 1 (the plan step names no path:line rule).",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "270bcd67f5128094fc6218080fd63b1bfc820167",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import glob, re, sys\nsys.path.insert(0, '_tools')\nimport kbfacts\nes = kbfacts.ledger_entries('public/_gaps.md')\nkbfacts.link_entries(es)\nSEG = re.compile(r'(?:^|\\s)- (?=(?:Resolved|Partly resolved|Narrowed|Closed|Tried) 20)')\nREF = re.compile(r'\\b([a-z0-9-]+/[a-z0-9-]+\\.md):(\\d+)')\nSID = re.compile(r'\\bS-[a-z0-9]{8}\\b|\\bS\\d{2,5}\\b')\nTAG = re.compile(r'\\[(?:DOC|CODE|DER)\\b')\nart = {p[len('kb/public/'):]: open(p, encoding='utf-8').read() for p in glob.glob('kb/public/*/*.md')}\ndef tagged(p, n):\n    L = art.get(p, '').split('\\n')\n    return 0 < int(n) <= len(L) and TAG.search(L[int(n) - 1])\nbad = []\nfor e in es:\n    tops = [t.split('/', 1)[1] + '.md' for t in (e['explicit'] or []) + (e['via_sources'] or [])]\n    for seg in SEG.split(e['text'])[1:]:\n        if not re.match(r'(?:Resolved|Partly resolved|Narrowed|Closed) 2026-10-2\\d', seg):\n            continue\n        refs = REF.findall(seg)\n        ok = (refs and all(tagged(p, n) for p, n in refs)) or (not refs and set(SID.findall(seg)) & set(SID.findall(' '.join(art.get(t, '') for t in tops))))\n        if not ok:\n            bad.append(e['line'])\n            break\nprint(len(bad), 'gap entries with a 2026-10-2x closing note backed by no tagged article fact (path:line) and no source id its article cites', bad[:40])\nsys.exit(1 if bad else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "c9cd0058cca55dd3"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re, sys\ns = open('skills/sprint/SKILL.md', encoding='utf-8').read()\ni, j = s.find('## plan'), s.find('## start')\nok = re.search(r'(?i)(?:gap|closing)[^.]{0,300}path:line', s[i:j])\nprint('the plan step asks a gap-research check to read a cited fact by path:line:', bool(ok))\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "3af24c354769683e"
+      }
+    ]
+  }
 }
