@@ -3,15 +3,32 @@
   "kind": "bug",
   "title": "coord.py dedup claims research keys from the question's own words, past the id pattern a claim key takes",
   "status": "draft",
+  "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
-  "goal": "coord.py dedup builds research:TOPIC:TERM keys from the words of the question's kb lacks lines (free text with spaces and any punctuation) and claims them past the FIELD_VALUE pattern claim keys take (BG-dn5n7z7k), so a digest --key that overlaps research: prints such a term; found while fixing BG-dn5n7z7k, not fixed there since dedup keys need terms mapped to ids. dedup research keys hold only ids, or digest prints no research key term.",
+  "goal": "coord.py dedup claims a research:TOPIC:TERM key only in the FIELD_VALUE pattern claim keys take (BG-dn5n7z7k), each kb lacks term mapped to an id first, so no digest --key that overlaps research: prints a free-text term",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import sys;sys.exit(1)"
+      "import argparse, os, sys, tempfile, time; sys.path.insert(0, \"_tools\"); import coord; coord.fingerprint = lambda q, t=None: (\"logs/otel-python-sdk\", [\"batch size\", \"a+b (c)\"]); s = os.path.join(tempfile.mkdtemp(), \"c.sqlite\"); b = coord.dedup(argparse.Namespace(store=s, holder=\"h\", topic=None, token=None, ttl=60, question=\"q\"), time.time); bad = [k for k in b[\"claimed\"] if not coord.FIELD_VALUE.fullmatch(k)]; print(\"claimed:\", b[\"claimed\"], \"past FIELD_VALUE:\", bad); sys.exit(1 if bad or not b[\"claimed\"] else 0)"
     ]
-  }
+  },
+  "clauses": [
+    {
+      "clause": "coord.py dedup claims a research:TOPIC:TERM key only in the FIELD_VALUE pattern claim keys take (BG-dn5n7z7k), each kb lacks term mapped to an id first, so no digest --key that overlaps research: prints a free-text term",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/coord.py",
+    "kb/_self/coordination.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-iwr5n7ch"
+  ],
+  "notes": "Planning 2026-10-23 on 35b5b7cb2: the repro was a placeholder (sys.exit(1)); it now plants lack terms with a space and punctuation through coord.dedup and exits 1 (both claimed keys fail FIELD_VALUE). It also needs the dedup to still claim, so a fix that drops every such term passes only if it maps them to ids. Found while fixing BG-dn5n7z7k, not fixed there since dedup keys need terms mapped to ids."
 }

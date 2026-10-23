@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "An EC private key whose lines sit behind a quote, comment or table prefix passes the leak scan",
   "status": "draft",
+  "sprint": "SP-evq2flqc",
   "priority": "P1",
   "rank": 0,
   "severity": "S2",
@@ -19,10 +20,17 @@
     "_tools/kbingest.py",
     "_tools/test_leaks.py",
     "kb/_self/content-rules.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md",
+    ".claude/skills/kb-ingest/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "BG-3txhxbiq"
   ],
   "links": [
     "parked: SP-tsb23kev review"
   ],
-  "notes": "Found by the SP-tsb23kev focused review of BG-3vnu37rq (reviewer session a419aba4) on origin/main 902e961a9; repro fails there."
+  "notes": "Found by the SP-tsb23kev focused review of BG-3vnu37rq (reviewer session a419aba4) on origin/main 902e961a9; repro fails there. Premise 2026-10-23 on 35b5b7cb2: the repro exits 1, all four prefixed shapes pass (quote, hash, slash, table)."
 }

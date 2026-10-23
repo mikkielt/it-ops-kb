@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "token-efficiency.md's today's figure of 12 tools and 12,416 characters is not what the default server's tools/list holds",
   "status": "draft",
+  "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",

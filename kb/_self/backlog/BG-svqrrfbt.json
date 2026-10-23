@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "mon_view.py defines panel_lines twice; the first definition is dead code",
   "status": "draft",
+  "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
@@ -15,7 +16,19 @@
     ]
   },
   "repro_reason": "a duplicate definition has no behaviour of its own: the later one wins, so only the module's definitions show it",
+  "clauses": [
+    {
+      "clause": "_tools/mon_view.py has one panel_lines, the one that takes width",
+      "check": 0
+    },
+    {
+      "clause": "the dead two-parameter definition above it is removed",
+      "check": 0
+    }
+  ],
   "touches": [
-    "_tools/mon_view.py"
+    "_tools/mon_view.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
   ]
 }

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kb-review-workspace pre-approves only the plugin's kb tool names",
   "status": "draft",
+  "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -16,6 +17,9 @@
   },
   "repro_reason": "the defect is the skill's allowed-tools line; its effect, a permission prompt for each kb call in a host whose kb server is registered as the project server kb (tools mcp__kb__*), shows only in an interactive Claude Code session",
   "touches": [
-    ".claude/skills/kb-review-workspace/SKILL.md"
+    ".claude/skills/kb-review-workspace/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/plugin.md"
   ]
 }

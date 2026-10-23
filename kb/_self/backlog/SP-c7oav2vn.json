@@ -1,0 +1,21 @@
+{
+  "id": "SP-c7oav2vn",
+  "kind": "sprint",
+  "title": "Small fixes: docs that mis-state the tools, and tool bugs with a repro",
+  "status": "planned",
+  "goal": "The kb's own docs, docstrings and answers state what the tools do: the tools/list figure, the coord_ tools' place, the Haiku 5.5 price citation, the multi report's claims, the Remote Control answer, kbid's publisher sources, coord's poll interval, the kbask observer's MCP server, merge's exit codes and backlog.py's gate verbs; tests.py passes with KB_BACKLOG_CONFIG set; an agent.run ops row records a failed run as an error span; kbmon --events keeps the write order of ops rows of one millisecond; mon_view.py defines panel_lines once; bench_pool prices cache reads by the run's Claude Code version; coord dedup claims only keys of the claim key pattern; census fetch reads a source url with a space; /kb-review-workspace pre-approves both forms of each kb tool name",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e"
+}

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "agent.run ops rows carry no exit, so a failed worker run is always an ok span",
   "status": "draft",
+  "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -13,5 +14,14 @@
       "-c",
       "import sys;sys.path.insert(0,\"_tools\");import ql_capture;sys.exit(0 if \"exit\" in ql_capture.OPS_EVENTS[\"agent.run\"] else 1)"
     ]
-  }
+  },
+  "touches": [
+    "_tools/ql_capture.py",
+    "_tools/ql_distill.py",
+    "_tools/mon_events.py",
+    "kb/_self/querylog.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md",
+    "kb/_self/usage.md"
+  ]
 }

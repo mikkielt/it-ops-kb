@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "merge refusals other than an empty forge (another branch, no forge project, gh arm) exit 1, where tools.md says 2",
   "status": "draft",
+  "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -13,5 +14,15 @@
       "-c",
       "import sys,os,json,tempfile; sys.path.insert(0,\"_tools\"); t=tempfile.mkdtemp(); open(t+\"/backlog.json\",\"w\").write(json.dumps({\"item_dir\":\"items\",\"forge\":\"github\",\"id_prefixes\":{\"story\":\"ST\"}})); os.makedirs(t+\"/items\"); import backlog,bl_land; bl_land.need=lambda *a,**k: None; sys.argv=[\"backlog.py\",\"--root\",t,\"merge\",\"ST-aaaaaaaa\"]; c=backlog.main(); assert c==2, c"
     ]
-  }
+  },
+  "touches": [
+    "kb/_self/tools.md",
+    "_tools/bl_forge.py",
+    "_tools/backlog.py",
+    "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "BG-wrqd4ytg",
+    "BG-77i2lwmr"
+  ]
 }

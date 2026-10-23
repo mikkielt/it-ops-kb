@@ -3,9 +3,10 @@
   "kind": "story",
   "title": "A paid pool re-run measures the grown held-out set, on the operator's approval",
   "status": "draft",
+  "sprint": "SP-lorofi3i",
   "priority": "P1",
   "rank": 0,
-  "goal": "Once the operator approves its spend, the question pool is rebuilt over the grown kb/public/_retrieval/lookup_heldout.csv (pool build) and one paid pool run (benchmarks.py run pool, the arms the operator names, with its --dry-run estimate in this item's notes before the approval) records the heldout kind's right-answer rate on rows the earlier pool runs never saw, in kb/_self/reports/benchmarks.csv and the report",
+  "goal": "Once the operator approves its spend, the question pool is rebuilt over the grown held-out file lookup_heldout.csv, read only (pool build --ask), and one paid pool run (benchmarks.py run pool over every default arm with --max-usd 40, its --dry-run estimate in this item's notes before the run) records the heldout kind's right-answer rate on rows the earlier pool runs never saw, in kb/_self/reports/benchmarks.csv and the report",
   "checks": [
     {
       "run": [
@@ -13,7 +14,34 @@
         "-c",
         "import csv,sys;r=[x for x in csv.DictReader(open('kb/_self/reports/benchmarks.csv',encoding='utf-8')) if x['scenario']=='pool' and x['date']>'2026-10-14' and 'heldout' in x['case']];print(len(r));sys.exit(0 if r else 1)"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv, io, subprocess, sys; old = subprocess.run([\"git\", \"show\", \"35b5b7cb2:kb/public/_retrieval/bench_pool.csv\"], capture_output=True, text=True, check=True).stdout; seen = {r[\"source\"] for r in csv.DictReader(io.StringIO(old)) if r[\"kind\"] == \"heldout\"}; now = [r[\"source\"] for r in csv.DictReader(open(\"kb/public/_retrieval/bench_pool.csv\", encoding=\"utf-8\")) if r[\"kind\"] == \"heldout\"]; print(\"pool held-out rows:\", len(now), \"seen before:\", len([s for s in now if s in seen])); sys.exit(0 if len(now) >= 20 and not any(s in seen for s in now) else 1)"
+      ]
     }
+  ],
+  "clauses": [
+    {
+      "clause": "Once the operator approves its spend, the question pool is rebuilt over the grown held-out file lookup_heldout.csv, read only (pool build --ask)",
+      "check": 1
+    },
+    {
+      "clause": "one paid pool run (benchmarks.py run pool over every default arm with --max-usd 40, its --dry-run estimate in this item's notes before the run) records the heldout kind's right-answer rate on rows the earlier pool runs never saw, in kb/_self/reports/benchmarks.csv and the report",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "kb/public/_retrieval/bench_pool.csv",
+    "kb/_self/reports/benchmarks.csv",
+    "kb/_self/reports/benchmarks.md",
+    "README.md"
+  ],
+  "depends_on": [
+    "ST-jrbrm5w6",
+    "ST-pth5inlu"
   ],
   "notes": "Filed 2026-10-14 by the correctness + held-out planning session: the operator asked that a paid pool re-run wait for their later approval, so this stays a draft in no sprint. It blocks the held-out fitness test's model-side reading (EP-gzr4mmkm) only once ST-rgfoek35 lands. Never plan it without the operator's approval of the spend. Triage 2026-10-23: the operator approved the spend of this paid pool re-run; plan it next. Operator 2026-10-23: all default arms (haiku-5-5 low and default, haiku-4-5, sonnet-5-5 low and default, router, hook, the two web arms), --max-usd 40. Dry run 2026-10-23 on the 20-row held-out pool before the rebuild: python3 _tools/benchmarks.py run pool --kinds heldout --dry-run estimated 6.03 USD for 140 runs; the rebuilt pool's own dry-run estimate replaces it before the run."
 }

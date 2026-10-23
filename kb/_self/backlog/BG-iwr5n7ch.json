@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "coord.py's docstring says wait polls the store twice a second, but it polls every 50 ms",
   "status": "draft",
+  "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
@@ -15,6 +16,9 @@
     ]
   },
   "touches": [
-    "_tools/coord.py"
+    "_tools/coord.py",
+    "kb/_self/coordination.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
   ]
 }

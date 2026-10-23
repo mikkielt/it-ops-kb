@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "tools.md says the kbask observer session loads no MCP server, but it loads the kb's own with three read-only tools",
   "status": "draft",
+  "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -14,6 +15,16 @@
       "import sys;sys.path.insert(0,'_tools');import kbask;argv=kbask.session_argv('claude');t=open('kb/_self/tools.md',encoding='utf-8').read();assert '--mcp-config' not in argv or 'and no MCP server' not in t,'kb/_self/tools.md says the kbask session loads no MCP server, but session_argv passes --mcp-config'"
     ]
   },
+  "clauses": [
+    {
+      "clause": "kb/_self/tools.md's kbask.py row says what session_argv passes: --mcp-config with --strict-mcp-config for the kb MCP server alone",
+      "check": 0
+    },
+    {
+      "clause": "kb_backlog, kb_querylog and kb_monitor_status among the --allowedTools, as monitoring.md says",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/_self/tools.md"
   ]

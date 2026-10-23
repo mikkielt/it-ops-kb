@@ -4,6 +4,7 @@
   "title": "The sources the 2026-10-21 census found cited by no article or data line are dropped, re-cited or kept with a reason",
   "status": "draft",
   "parent": "EP-mkzkd7in",
+  "sprint": "SP-xznmaurz",
   "priority": "P2",
   "rank": 0,
   "goal": "Each row of kb/public/_census/2026-10-21.csv with outcome unconfirmed and no used_in value is judged with rag.py src ID --cited: a source only front matter or a ledger note names is dropped from them or re-cited by the fact it backs, and its census row recorded",
@@ -16,8 +17,21 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "Each row of kb/public/_census/2026-10-21.csv with outcome unconfirmed and no used_in value is judged with rag.py src ID --cited: a source only front matter or a ledger note names is dropped from them or re-cited by the fact it backs",
+      "check": 0
+    },
+    {
+      "clause": "its census row recorded",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Census 2026-10-21 (ST-zpe7qxtv): the _uncited group's 149 rows were read in phase 2; 136 rows with no used_in value stay unconfirmed. The census skill files them as one story."
+  "depends_on": [
+    "ST-6wsgvy3z"
+  ],
+  "notes": "Census 2026-10-21 (ST-zpe7qxtv): the _uncited group's 149 rows were read in phase 2; 136 rows with no used_in value stay unconfirmed. The census skill files them as one story. Premise 2026-10-23 on 35b5b7cb2: the check exits 1, 136 uncited sources unconfirmed."
 }

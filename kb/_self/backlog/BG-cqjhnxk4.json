@@ -3,18 +3,27 @@
   "kind": "bug",
   "title": "headless-agent-runtimes.md cites the Haiku 5.5 price fact at ci-and-headless.md:91, which is another fact",
   "status": "draft",
+  "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
-  "goal": "the citations of the Haiku 5.5 price fact in kb/public/agents/headless-agent-runtimes.md (lines 62 and 63) name the line that holds that fact in kb/public/claude/ci-and-headless.md",
+  "goal": "each citation of a ci-and-headless.md price fact in kb/public/agents/headless-agent-runtimes.md names the line of kb/public/claude/ci-and-headless.md that holds that price fact",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import re,subprocess,sys,pathlib; t=pathlib.Path('kb/public/agents/headless-agent-runtimes.md').read_text(encoding='utf-8').splitlines()[62]; n=re.search(r'ci-and-headless\\.md:(\\d+)', t).group(1); o=subprocess.run([sys.executable,'_tools/rag.py','show','kb/public/claude/ci-and-headless.md:'+n,'-n','1'],capture_output=True,text=True).stdout; sys.exit(0 if 'Haiku 5.5 list prices' in o else 1)"
+      "import re, sys; art = open(\"kb/public/agents/headless-agent-runtimes.md\", encoding=\"utf-8\").read().splitlines(); src = open(\"kb/public/claude/ci-and-headless.md\", encoding=\"utf-8\").read().splitlines(); bad = [str(i) + \"->:\" + (n[0] or n[1]) for i, line in enumerate(art, 1) if \"price\" in line for n in re.findall(r\"ci-and-headless\\.md:(\\d+)|`:(\\d+)`\", line) if int(n[0] or n[1]) > len(src) or \"prices\" not in src[int(n[0] or n[1]) - 1]]; print(\"price citations that name no price fact:\", bad); sys.exit(1 if bad else 0)"
     ]
   },
+  "repro_reason": "the defect is a wrong path:line citation in an article; a citation is text, so reading both files is the behaviour",
   "touches": [
-    "kb/public/agents/headless-agent-runtimes.md"
-  ]
+    "kb/public/agents/headless-agent-runtimes.md",
+    "kb/public/claude/ci-and-headless.md",
+    "kb/public/_retrieval/doc2query/expansions.csv",
+    "kb/public/_anchors.csv"
+  ],
+  "depends_on": [
+    "ST-ptjkvvnc"
+  ],
+  "notes": "Planning 2026-10-23 on 35b5b7cb2: the facts moved to lines 76-78 and now cite :91 and :88, which hold the SDK result message and another fact, while the Haiku 5.5 prices sit at :110; the old repro read a fixed line index and broke. The new repro reads every price citation and exits 1 (76->:91, 77->:91, 78->:88, 78->:91)."
 }

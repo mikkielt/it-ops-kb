@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kbid.py's module docstring says the publisher is read from the suffix of the page's <title>, which provider.read_page no longer does",
   "status": "draft",
+  "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -14,5 +15,10 @@
       "import sys;sys.exit(1 if \"else the suffix of its <title>\" in open(\"_tools/kbid.py\",encoding=\"utf-8\").read() else 0)"
     ]
   },
-  "repro_reason": "a docstring sentence has no behaviour to run; the text is the defect"
+  "repro_reason": "a docstring sentence has no behaviour to run; the text is the defect",
+  "touches": [
+    "_tools/kbid.py",
+    "kb/_self/content-rules.md",
+    "kb/_self/tools.md"
+  ]
 }

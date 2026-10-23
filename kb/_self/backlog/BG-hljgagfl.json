@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "benchmarks.md says the multi report's claims are rows of the sandbox's coordination store, but bench_multi counts claim events",
   "status": "draft",
+  "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
