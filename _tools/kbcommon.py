@@ -195,12 +195,13 @@ def maker_names_allowed(root, policy=None):
 # The first shape is the armor line of a private key: the RSA, OPENSSH, DSA, PGP, ENCRYPTED and plain lines on their own,
 # the EC line (quoted in the secret-shapes article) and the OpenPGP block line (`PGP PRIVATE KEY BLOCK`, RFC 9580
 # 6.2.1) only when key material follows it: optional `Name: value` header lines, then a run of base64 (a blank line,
-# a newline or an escaped `\n` apart, however many times escaped: `\\n` is JSON inside a JSON string). The lookahead
-# keeps the match to the armor line, so a hit never prints the key; either label quoted alone in prose passes.
+# a newline or an escaped `\n` apart, however many times escaped: `\\n` is JSON inside a JSON string; a Markdown quote
+# `>`, a `#` or `//` comment prefix or a table `|` may sit between the lines or the cells). The lookahead keeps the
+# match to the armor line, so a hit never prints the key; either label quoted alone in prose passes.
 SECRETS = (
     r"-----BEGIN (?:(?:RSA |OPENSSH |DSA |PGP |ENCRYPTED )?PRIVATE KEY-----"
     r"|(?:EC PRIVATE KEY|PGP PRIVATE KEY BLOCK)-----"
-    r"(?=(?:\s|\\+[nr])*(?:[A-Za-z][\w-]*: [^\n]*(?:\s|\\+[nr])+)*[A-Za-z0-9+/]{20}))",
+    r"(?=(?:\s|\\+[nr]|[>#|]|//)*(?:[A-Za-z][\w-]*: [^\n]*(?:\s|\\+[nr]|[>#|]|//)+)*[A-Za-z0-9+/]{20}))",
     r"\bAKIA[0-9A-Z]{16}\b",
     r"\bgh[pousr]_[A-Za-z0-9]{36}\b", r"\bgithub_pat_[A-Za-z0-9_]{22,}\b",
     r"\bglpat-[A-Za-z0-9_-]{20,}\b", r"\bglrt-[A-Za-z0-9_-]{20,}\b",
