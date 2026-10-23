@@ -12,7 +12,7 @@ import bl_authority
 import bl_cli
 from bl_base import (
     IN_SPRINT, PRIORITIES, RESEARCH_ID, Refused, Rejected, SEVERITIES, START_GATE, TEXT_MAX, canonical,
-    claims_ledger, commit_message, commit_written, external_problems, git, in_scope, item_file, kinds, ledger_lock, need,
+    claims_ledger, clone_id, commit_message, commit_written, external_problems, git, in_scope, item_file, kinds, ledger_lock, need,
     new_id, operator_problem, operator_who, rel_dir, research_checks, research_in_planned, review_checks, say, scope,
     trailer_problem, waits, withhold, write_ledger,
 )
@@ -104,6 +104,9 @@ def cmd_new(bl, a):
         if problems:
             raise Rejected("new refuses --external: " + "; ".join(problems))
     it = {"id": new_id(kind), "kind": kind, "title": a.title.strip()}
+    filed_in = clone_id(bl.root, create=True)  # the clone this item is filed in: what tells it from the upstream's items
+    if filed_in:
+        it["filed_in"] = filed_in
     if kind == "sprint":
         it.update(status="planned", goal=a.goal or a.title,
                   gates=[{"id": START_GATE, "kind": "blocking",
@@ -115,6 +118,7 @@ def cmd_new(bl, a):
         bl.save(it)
         rv = {"id": new_id("story"), "kind": "story", "title": f"Review sprint: {it['title']}"[:TEXT_MAX],
               "status": "draft", "sprint": it["id"], "review": True, "priority": "P1", "rank": 999999,
+              **({"filed_in": filed_in} if filed_in else {}),
               "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, "
                       "and a fresh-context review of the sprint's diff found no unfiled defect.",
               "checks": review_checks()}
@@ -122,6 +126,7 @@ def cmd_new(bl, a):
         rid = new_id("story")
         rs = {"id": rid, "kind": "story", "title": f"Research sprint goal: {it['title']}"[:TEXT_MAX],
               "status": "draft", "sprint": it["id"], "goal_research": True, "priority": "P1", "rank": 0,
+              **({"filed_in": filed_in} if filed_in else {}),
               "goal": RESEARCH_DEFAULT_GOAL,
               "checks": [{**c, "run": [rid if w == RESEARCH_ID else w for w in c["run"]]} for c in research_checks()],
               "touches": ["kb/public/**"]}
@@ -484,6 +489,7 @@ SET_REFUSED = {  # a field set refuses, with the rule it states
     "claimed_by": "changes only through claim and release",
     "operator": "is written by claim",
     "creator": "is written by new sprint",
+    "filed_in": "is written by new",
     "evidence": "is written only by done",
     "id": "is the item's identity",
     "kind": "is the item's identity",
