@@ -2,7 +2,7 @@
   "id": "BG-lxjtp2xz",
   "kind": "bug",
   "title": "The upstream push guard misses the upstream given as an absolute path, a file:// url, a trailing slash or a ../ detour",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3trnelzv",
   "priority": "P1",
   "rank": 0,
@@ -21,5 +21,7 @@
     "_tools/test_prepush_e2e.py",
     "kb/_self/git.md"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
