@@ -65,8 +65,10 @@
         "re-tag the facts UNK instead": "ST-6wsgvy3z"
       },
       "class": "design",
-      "answer": "capture counts: record confirmed",
-      "by": "agent"
+      "answer": "changed after review: an Internet Archive capture is no read; the cyber.gov.au sources go gone and their facts UNK with a dated note (ST filed for the change)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",

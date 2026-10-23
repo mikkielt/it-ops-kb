@@ -1,0 +1,29 @@
+{
+  "id": "BG-nkmrgats",
+  "kind": "bug",
+  "title": "Three census leftovers: a capture date that differs between article and census log, stale source-row titles, and an inferred AI Act date tagged DOC",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "security/baselines-catalog.md and the census log name the same capture of S1425; S1563 and S-xvc5ligo's source-row titles hold no detail the facts dropped (v8.1 March 2025, EDPB endorsement 2018-05-25); and privacy-compliance.md's 'Annex III originally from 2026-08-02' is tagged DER or UNK, since its sources do not state it",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('kb/public/_sources.csv',encoding='utf-8').read();sys.exit(1 if 'v8.1 (March 2025)' in t else 0)"
+    ]
+  },
+  "repro_reason": "the defects are a source row's title and two fact tags against their sources; reading the rows is the behaviour",
+  "touches": [
+    "kb/public/_sources.csv",
+    "kb/public/security/baselines-catalog.md",
+    "kb/public/security/privacy-compliance.md",
+    "kb/public/_census/2026-10-21.csv",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-xznmaurz review"
+  ]
+}

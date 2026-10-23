@@ -1,0 +1,36 @@
+{
+  "id": "ST-yurixqzw",
+  "kind": "story",
+  "title": "Census facts read only from archive captures go UNK, and answers that cite gone sources lose their DOC tag",
+  "status": "todo",
+  "sprint": "SP-xznmaurz",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "each 2026-10-21 census source recorded confirmed from an Internet Archive capture (S1425, S-nwnif62g, S-uzuvf3vo) is recorded gone with its facts re-tagged UNK and a dated note of what was tried, security/baselines-catalog.csv no longer calls them current, and every kb/public/_answers.md line whose DOC tag cites only sources the census records gone (QS10, QS12 and the version-pin answer) carries the tag its article now gives",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,re,sys;out={r['id']:r['outcome'] for r in csv.DictReader(open('kb/public/_census/2026-10-21.csv',encoding='utf-8'))};bad=[str(n)+':'+','.join(ids) for n,l in enumerate(open('kb/public/_answers.md',encoding='utf-8'),1) for t in re.findall(r'\\[DOC ([^\\]]+)\\]',l) for ids in [re.findall(r'S-?[a-z0-9]+',t.split(':')[0])] if ids and all(out.get(i)=='gone' for i in ids)];print('DOC tags citing only gone sources:',bad);sys.exit(1 if bad else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,sys;r={x['id']:x['outcome'] for x in csv.DictReader(open('kb/public/_census/2026-10-21.csv',encoding='utf-8'))};c=[i for i in ('S1425','S-nwnif62g','S-uzuvf3vo') if r.get(i)=='confirmed'];print('capture reads still confirmed:',c);sys.exit(1 if c else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ],
+  "notes": "Found 2026-10-23 by the SP-xznmaurz fresh review; operator changed ST-6wsgvy3z g2 the same day. The local tag census-2026-10-21 is moved to the landed tip after this lands (tag-census, never pushed). Premise on d34d8068b: check 0 exits 1 (_answers.md 506, 508: S1552; 525: S1556; 527: S-qzdkyvqx); check 1 exits 1 (all three confirmed)."
+}
