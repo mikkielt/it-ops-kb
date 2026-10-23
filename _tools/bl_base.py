@@ -936,10 +936,10 @@ def naming_fields(it, iid, want):
     runs = re.findall(r"[0-9]+", task)
     title = str(it.get("title", ""))
     slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")[:40].strip("-")
-    have = {"id": iid, "task": task, "nn": runs[0] if runs else "", "mm": runs[1] if len(runs) > 1 else "",
+    have = {"id": iid, "task": task or iid, "nn": runs[0] if runs else "", "mm": runs[1] if len(runs) > 1 else "",
             "title": title, "slug": slug}
-    why = {"task": "an external id", "nn": "a first digit run in its first external id",
-           "mm": "a second digit run in its first external id", "slug": "a title with a letter or digit"}
+    why = {"nn": "first digit run in its first external id",
+           "mm": "second digit run in its first external id", "slug": "title with a letter or digit"}
     for f in sorted(want):
         if not have[f]:
             raise Refused(f"{iid}: the naming setting uses {{{f}}} and the item has no {why.get(f, f)}")
