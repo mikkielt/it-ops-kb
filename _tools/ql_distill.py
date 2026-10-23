@@ -230,7 +230,7 @@ def plan_agents(sessions, held=()):
     """([ops lines], rows skipped): one `agent.run` line per subagent that has a start and a stop row in a closed
     session (ql_capture.agent_row: the salted hash of the agent id, its group and item). SubagentStart can fire more
     than once for one agent, so the earliest start and the latest stop of a hash make the pair, and `ms` is the time
-    between them. A hash with a start and no stop, a stop and no start, or a stop before every start is skipped, one
+    between them; `exit` is the latest stop row's, when it has one (an older row has none). A hash with a start and no stop, a stop and no start, or a stop before every start is skipped, one
     for each hash, and so is a pair whose line is not the closed shape the store keeps (ql_store.ops_line) or that the
     leak scan flags. The line's id is derived from the pair's two row ids, so a pass over the same rows writes it once;
     a line whose id `held` has is not written again."""
@@ -253,8 +253,9 @@ def plan_agents(sessions, held=()):
             seen.add(rid)
             item = next((r["item"] for r in (starts[0], stops[-1]) if r.get("item")), None)
             group = starts[0].get("group") or stops[-1].get("group")
+            code = stops[-1].get("exit")
             row = {"id": rid, "ts": stops[-1]["ts"], "event": "agent.run", "group": group, "agent": agent,
-                   "item": item, "ms": b - a}
+                   "item": item, "ms": b - a, "exit": code if code in (0, 1) and not isinstance(code, bool) else None}
             line = store_.ops_line({k: v for k, v in row.items() if v is not None})
             if line is None or store_.ops_line_leaks(line):
                 bad += 1
