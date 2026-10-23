@@ -2,7 +2,7 @@
   "id": "BG-ctyx2o2a",
   "kind": "bug",
   "title": "Query-log delivery refuses a store row whose fetch host the public root names only inside a url",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-c7oav2vn",
   "priority": "P1",
   "rank": 0,
@@ -50,6 +50,28 @@
     }
   ],
   "notes": "Found 2026-10-23 from the kbmon alert 'query-log delivery REFUSED': apply --push refused since 15:41Z on 2026-10/20261023T120151Z-e3887743.jsonl:17 'fetch host is not a public host' for cas.docs.cisecurity.org. redact.HOST's lookbehind skips a host after //, so known() holds only bare mentions; 66a1f2967 (ST-6wsgvy3z) rewrote kb/public/_census/2026-10-21.csv and dropped the last bare mention. Operator 2026-10-23: count url hosts (P1, this sprint). The leak guard stays: a host the public root never names is still redacted, which the repro's second half plants.",
-  "claimed_by": "claude-92aeeb3c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "aca7caa52557ec878bd47bc3ccd11cf94bc91ba9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/querylog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "ca69e22a961e6b9a"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import ql_store,redact;ok=ql_store.public_host('cas.docs.cisecurity.org');neg=redact.redact('ci7.qzvx-internal.net')=='ci7.qzvx-internal.net';print('source host public:',ok,'| unnamed host kept:',neg);sys.exit(0 if ok and not neg else 1)"
+        ],
+        "exit": 0,
+        "sha256": "336312501ec179c7"
+      }
+    ]
+  }
 }
