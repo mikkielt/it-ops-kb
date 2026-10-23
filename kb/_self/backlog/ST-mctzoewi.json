@@ -4,15 +4,16 @@
   "title": "Research: a local traces backend for the operator's machine (Jaeger all-in-one beside Tempo monolithic) is kb facts",
   "status": "draft",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-r7e7jcep",
   "priority": "P3",
   "rank": 0,
-  "goal": "kb/public/logs/otel-collector-otlp-pipeline.md gains DOC facts with source rows from the Jaeger docs pinned at a release on Jaeger's all-in-one or v2 binary: its OTLP receiver ports (4317 gRPC, 4318 HTTP) and how to bind them to loopback, its in-memory storage and what a restart loses, its UI port, and its install without a container; beside the Tempo monolithic facts the article has, so the later traces-backend story picks one with the kb's citations",
+  "goal": "kb/public/logs/otel-collector-otlp-pipeline.md gains DOC facts with source rows from the Jaeger docs pinned at a release on the Jaeger all-in-one or v2 binary: its OTLP receiver ports (4317 gRPC, 4318 HTTP) and how to bind them to loopback, its in-memory storage and what a restart loses, its UI port, plus its install without a container, beside the Tempo monolithic facts the article has, so the later traces-backend story picks one with the citations of the kb",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import subprocess, sys\nART = 'kb/public/logs/otel-collector-otlp-pipeline.md'\nCASES = [('Which ports does Jaeger all-in-one listen on for OTLP and its UI?', ['all-in-one', '4318'])]\nmiss = []\nfor q, terms in CASES:\n    out = subprocess.run([sys.executable, '_tools/rag.py', 'pack', q, '--root', 'public', '--budget', '2500'],\n                         capture_output=True, text=True).stdout\n    hit = [l for l in out.splitlines() if l.startswith('- ' + ART[len('kb/'):] + ':') and '[DOC' in l\n           and all(t.lower() in l.lower() for t in terms)]\n    if not hit:\n        miss.append((q, terms))\nprint('missing:', miss if miss else 'none')\nsys.exit(1 if miss else 0)\n"
+        "import subprocess, sys\nART = 'kb/public/logs/otel-collector-otlp-pipeline.md'\nCASES = [\n    ('Which ports does Jaeger all-in-one listen on for OTLP and its UI?', ['all-in-one', '4318']),\n    ('How is the Jaeger all-in-one OTLP receiver bound to loopback?', ['Jaeger', '127.0.0.1']),\n    ('What does Jaeger all-in-one in-memory storage lose on a restart?', ['Jaeger', 'memory', 'restart']),\n    ('Which port serves the Jaeger UI?', ['Jaeger', '16686']),\n    ('How is Jaeger installed without a container?', ['Jaeger', 'binary']),\n]\nmiss = []\nfor q, terms in CASES:\n    out = subprocess.run([sys.executable, '_tools/rag.py', 'pack', q, '--root', 'public', '--budget', '2500'],\n                         capture_output=True, text=True).stdout\n    hit = [l for l in out.splitlines() if l.startswith('- ' + ART[len('kb/'):] + ':') and '[DOC' in l\n           and all(t.lower() in l.lower() for t in terms)]\n    if not hit:\n        miss.append((q, terms))\nprint('missing:', miss if miss else 'none')\nsys.exit(1 if miss else 0)\n"
       ]
     }
   ],
@@ -22,5 +23,9 @@
     "kb/public/_anchors.csv",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "depends_on": [
+    "ST-hbxnf2l3"
+  ],
+  "notes": "Planning 2026-10-24: goal reworded into one clause (the install fact and the Tempo comparison no longer split it), read by five cases of the one check (OTLP ports, loopback bind, in-memory restart loss, UI port, binary install). The Tempo monolithic facts already in the article stay. Premise: the check fails on the base (precheck). Planned 2026-10-24 into SP-r7e7jcep: last in the run order (after ST-hbxnf2l3), P3, since the five research stories share the source, anchor and expansions files.",
   "filed_in": "clone-0ea70e5c"
 }
