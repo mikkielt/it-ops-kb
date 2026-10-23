@@ -2,7 +2,7 @@
   "id": "ST-prxgi5cq",
   "kind": "story",
   "title": "Research sprint goal: The leak scan closes its four known misses: PGP key blocks, escaped and prefixed EC keys, and a stale scan cache",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-evq2flqc",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,7 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
