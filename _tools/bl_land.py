@@ -326,14 +326,32 @@ def cited_tokens(root, commits, texts):
     return words
 
 
+def census_ids(root, commits):
+    """The source ids of the census log rows the item's COMMITS ({commit: [paths]}) added or changed, each commit
+    against its own parent: a row of a csv under _census/, read by its `id` or `source_id` column."""
+    ids = set()
+    for sha, paths in commits.items():
+        for path in paths:
+            parts = path.split("/")
+            if not path.endswith(".csv") or "_census" not in parts[:-1]:
+                continue
+            rows = {}
+            for rev in (f"{sha}^", sha):
+                rows[rev] = {tuple(r.items()) for r in csv.DictReader(io.StringIO(blob_text(root, rev, path), newline=""))}
+            ids.update(dict(r).get("id") or dict(r).get("source_id") or "" for r in rows[sha] - rows[f"{sha}^"])
+    ids.discard("")
+    return ids
+
+
 def unrelated_baselines(bl, iid, root, commits):
     """[(source id, [what changed])] of the ledger rows the item's COMMITS changed (ledger_moves) for a source that
-    neither its goal (the family's goals and titles) nor a line it added or removed names, sorted by id."""
+    neither its goal (the family's goals and titles), a line it added or removed nor a census log row it added or
+    changed (census_ids) names, sorted by id."""
     moves = ledger_moves(root, commits)
     if not moves:
         return []
     texts = [str(bl.items[i].get(k) or "") for i in [iid] + bl.descendants(iid) for k in ("goal", "title")]
-    named = cited_tokens(root, commits, texts)
+    named = cited_tokens(root, commits, texts) | census_ids(root, commits)
     return sorted((sid, what) for sid, what in moves.items() if sid not in named)
 
 
