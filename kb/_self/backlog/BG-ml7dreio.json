@@ -20,5 +20,8 @@
     "kb/_self/web-sources.md",
     "kb/_self/code.md"
   ],
+  "links": [
+    "parked: SP-ovwzbc7u review"
+  ],
   "notes": "Found by the SP-ovwzbc7u review on 2026-10-23: _azurerm_tag[\"tag\"] is set only on a valid tag, so with the registry answering 500 three calls make three requests; the operator asked for one ask per process."
 }
