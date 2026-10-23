@@ -637,7 +637,7 @@ def fetch(url, timeout=25, limit=1_000_000):
 
 def fetch_once(url, timeout, limit):
     with _host_sem[urlparse(url).netloc]:
-        req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "*/*"})
+        req = urllib.request.Request(url.replace(" ", "%20"), headers={"User-Agent": UA, "Accept": "*/*"})
         try:
             with urllib.request.urlopen(req, timeout=timeout, context=ssl_ctx()) as resp:
                 body = resp.read(limit)
