@@ -1,0 +1,24 @@
+{
+  "id": "BG-tvkjpp5y",
+  "kind": "bug",
+  "title": "census leak_problems scans the new_rows fields",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "census.leak_problems also scans the string fields of each new_rows entry (url, title, publisher, licence, version_or_date, used_in), naming the field and the kinds but never the value, so a tenant id or email planted in a new source row fails apply and not only the sync gate.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import census; leak='tenant '+'-'.join(['7f3c2a10','5b6d','4e8f','9a1b','2c3d4e5f6a7b']); r=census.leak_problems({'outcomes':[],'gaps':[],'conflicts':[],'new_rows':[{'url':'https://x.example.com/a','title':leak}]}); assert r, r"
+    ]
+  },
+  "touches": [
+    "_tools/census.py",
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md",
+    "kb/_self/code.md"
+  ],
+  "notes": "Found by the SP-ovwzbc7u review on 2026-10-23: leak_problems builds its fields from outcome notes, gap texts and conflict texts only, while new_rows go to the tracked _sources.csv through kbid.add_source, which has no leak check, so a planted GUID in a new_rows title returns no problem. The other leak_problems of ql_deliver.py and ql_store.py are separate functions and stay."
+}

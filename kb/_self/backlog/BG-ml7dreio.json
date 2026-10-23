@@ -1,0 +1,24 @@
+{
+  "id": "BG-ml7dreio",
+  "kind": "bug",
+  "title": "azurerm_latest_tag asks the registry once per process, failure included",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "azurerm_latest_tag asks the Terraform registry once per process whether it answers with a tag or fails (a non-200 status, a body that is no JSON, a tag of the wrong shape), so a failing registry is not asked again on every raw_url call; it still returns the empty string after a failure.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import provider; n=[]; provider.request=lambda u,*a,**k: (n.append(u), {'status':500,'body':b''})[1]; [provider.azurerm_latest_tag() for _ in range(3)]; assert len(n)==1, len(n)"
+    ]
+  },
+  "touches": [
+    "_tools/provider.py",
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md",
+    "kb/_self/code.md"
+  ],
+  "notes": "Found by the SP-ovwzbc7u review on 2026-10-23: _azurerm_tag[\"tag\"] is set only on a valid tag, so with the registry answering 500 three calls make three requests; the operator asked for one ask per process."
+}

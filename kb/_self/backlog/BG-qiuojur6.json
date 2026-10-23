@@ -1,0 +1,25 @@
+{
+  "id": "BG-qiuojur6",
+  "kind": "bug",
+  "title": "backlog.py in the kb's own checkout starts one git process, not several, to find its root",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "One backlog.py config run in the kb's own checkout (or a worktree of it) starts at most one git process: default_root returns the tool's own checkout without the --show-toplevel and the two --git-common-dir calls when the working directory is under it, or caches its result for the process, so the hooks that start backlog.py on every session pay one git call.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys,os; sys.path.insert(0,'_tools'); import backlog; n=[]; o=subprocess.Popen.__init__; subprocess.Popen.__init__=lambda s,a,*r,**k: (n.append(a) if isinstance(a,(list,tuple)) and a and a[0]=='git' else None, o(s,a,*r,**k))[1]; sys.argv=['backlog.py','config']; sys.stdout=open(os.devnull,'w'); backlog.main(); sys.stdout=sys.__stdout__; assert len(n)<=1, 'git processes: %d' % len(n)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_cli.py",
+    "_tools/backlog.py",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md",
+    "kb/_self/code.md"
+  ],
+  "notes": "Found by the SP-ovwzbc7u review on 2026-10-23: default_root (bl_cli.py:127) runs git rev-parse --show-toplevel and two --git-common-dir calls on every backlog.py start, hooks included, and the repro counts 5 git processes for one config run in this checkout where it should count at most 1; the reviewer did not time it. Three of the five are default_root's by reading; the fix must account for the rest."
+}
