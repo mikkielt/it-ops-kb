@@ -2,7 +2,7 @@
   "id": "ST-l6fw46gd",
   "kind": "story",
   "title": "Research: the W3C traceparent format and the OpenTelemetry Python SDK's trace-context propagator are kb facts",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-r7e7jcep",
   "priority": "P2",
@@ -37,5 +37,7 @@
     "ST-e2ijqjsr"
   ],
   "notes": "Planning 2026-10-24: goal reworded without apostrophes into two clauses (DOC format facts, CODE propagator facts), both read by the one check (four DOC cases, one CODE case). Premise: the check fails on the base (precheck). Planned 2026-10-24 into SP-r7e7jcep: third in the run order (after ST-e2ijqjsr), since the five research stories share the source, anchor and expansions files.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
