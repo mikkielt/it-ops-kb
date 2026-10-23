@@ -2,7 +2,7 @@
   "id": "ST-nvmndslp",
   "kind": "story",
   "title": "Research sprint goal: A team clone deploys from the public copy: busy-host ceiling at setup, fetch-only upstream, local fixes and backlog provenance",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3trnelzv",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Open questions for the sprint, kb tools first then live docs: (1) git: a fetch-only remote (remote.<name>.pushurl, git remote set-url --push), what a pre-push hook sees of the remote name and url, merge vs rebase of a projected upstream into a published main (ST-s6iz6z36, ST-cqivdkvt); (2) GitHub issue forms: .github/ISSUE_TEMPLATE/*.yml syntax, field ids and labels, how the rendered body lays out each field, gh issue create --body-file and gh issue view --json body (ST-lnxywo7s, ST-2d26ca6z); (3) Claude Code: MCP local scope keyed to the start directory, .mcp.json project scope parsing and what happens to an invalid file, CLAUDECODE and CLAUDE_CODE_CHILD_SESSION in IDE integrated terminals (ST-rhug6pvg, ST-4vaqzqyr); (4) GitLab pull mirroring for an org remote fed from the public copy (Premium only, kb has public/gitlab/repository-mirroring.md)."
+  "notes": "Open questions for the sprint, kb tools first then live docs: (1) git: a fetch-only remote (remote.<name>.pushurl, git remote set-url --push), what a pre-push hook sees of the remote name and url, merge vs rebase of a projected upstream into a published main (ST-s6iz6z36, ST-cqivdkvt); (2) GitHub issue forms: .github/ISSUE_TEMPLATE/*.yml syntax, field ids and labels, how the rendered body lays out each field, gh issue create --body-file and gh issue view --json body (ST-lnxywo7s, ST-2d26ca6z); (3) Claude Code: MCP local scope keyed to the start directory, .mcp.json project scope parsing and what happens to an invalid file, CLAUDECODE and CLAUDE_CODE_CHILD_SESSION in IDE integrated terminals (ST-rhug6pvg, ST-4vaqzqyr); (4) GitLab pull mirroring for an org remote fed from the public copy (Premium only, kb has public/gitlab/repository-mirroring.md).",
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
