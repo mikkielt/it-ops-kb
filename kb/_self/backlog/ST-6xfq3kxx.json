@@ -1,0 +1,28 @@
+{
+  "id": "ST-6xfq3kxx",
+  "kind": "story",
+  "title": "Review sprint: Research for the coord run states: tracing, traceparent, Alertmanager, Claude Code hooks and a local traces backend",
+  "status": "draft",
+  "sprint": "SP-r7e7jcep",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ],
+  "notes": "Planned 2026-10-24: the review of a content-only research sprint; its checks are the project review_checks (backlog check, whole suite).",
+  "filed_in": "clone-0ea70e5c"
+}
