@@ -1,0 +1,21 @@
+{
+  "id": "BG-3brdh3kd",
+  "kind": "bug",
+  "title": "kb-review-workspace pre-approves only the plugin's kb tool names",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "/kb-review-workspace's allowed-tools names each kb tool in both forms, mcp__plugin_it-ops-kb_kb__X and mcp__kb__X, as /kb-gap, /kb-lookup and the kb-reviewer agent it forks into already do, so a host that serves the kb as a project kb server (alwaysLoad, plugin server disabled) runs the review without a permission prompt per kb call",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re,sys; h=open('.claude/skills/kb-review-workspace/SKILL.md').read().split('\\n---',1)[0]; p=set(re.findall(r'mcp__plugin_it-ops-kb_kb__(\\w+)',h)); k=set(re.findall(r'mcp__kb__(\\w+)',h)); m=sorted(p-k); print('missing mcp__kb__ twins:',m); sys.exit(1 if m else 0)"
+    ]
+  },
+  "repro_reason": "the defect is the skill's allowed-tools line; its effect, a permission prompt for each kb call in a host whose kb server is registered as the project server kb (tools mcp__kb__*), shows only in an interactive Claude Code session",
+  "touches": [
+    ".claude/skills/kb-review-workspace/SKILL.md"
+  ]
+}

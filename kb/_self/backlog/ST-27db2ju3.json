@@ -1,0 +1,56 @@
+{
+  "id": "ST-27db2ju3",
+  "kind": "story",
+  "title": "A host-project session files a kb item into the maintainer's clone with one backlog.py command that lands it on a fresh integration branch",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "From a host project that installs the plugin, one backlog.py command files an epic, story or bug into the kb's own backlog: it finds the maintainer's kb clone, writes the item in a worktree it adds on freshly fetched integration main (never the clone's checked-out branch, which an orchestrator may hold), runs the item's new-time checks there, commits it with KB-Work and lands it through the clone's land_push, then removes the worktree; it prints the item's id and title and the landed commit, and with no maintainer clone it says so and points to the issue route instead of writing into the host's own backlog",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import argparse,sys; sys.path.insert(0,'_tools'); import bl_cli; ap=bl_cli.build_parser('x','.'); sub=next(a for a in ap._actions if isinstance(a,argparse._SubParsersAction)); h=' '.join(sub.choices['new'].format_help().split()).lower(); assert 'integration' in h and 'clone' in h, 'new documents no option that files into the maintainer clone on a fresh integration branch'"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/bl_*.py",
+    "skills/backlog/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/plugin.md"
+  ],
+  "relates_to": [
+    "ST-lnxywo7s",
+    "BG-3brdh3kd"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does a host session find the maintainer's kb clone?",
+      "options": [
+        "git config kb.maintainerClone in the user's global git config, set once per machine by kb-setup",
+        "a plugin userConfig option the operator sets at install",
+        "the clone whose kb_mcp.py a host's registered kb server runs (kb_status registered:)"
+      ],
+      "recommendation": "git config kb.maintainerClone in the user's global git config, set once per machine by kb-setup",
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Does the command land the filed item on main itself, or leave it for the maintainer?",
+      "options": [
+        "land it through the clone's land_push from the throwaway worktree, as a content commit",
+        "commit it on a branch in the clone and print the land command for the maintainer"
+      ],
+      "recommendation": "land it through the clone's land_push from the throwaway worktree, as a content commit",
+      "class": "agents-rule"
+    }
+  ],
+  "notes": "Observed 2026-10-23 in a host-project session (a workspace that installs the plugin) filing BG-3brdh3kd: the session first cloned upstream afresh under the host, then had to find the maintainer's clone by scanning disk for the remote, saw it checked out on an orchestrator branch 153 commits behind main with live worktrees, judged that sync --push would rebase that branch, added a worktree on freshly fetched origin/main by hand and re-filed the item there; five manual steps and one discarded clone. Premise: python3 _tools/backlog.py --root <clone> new bug ... writes into the clone's checked-out branch and lands nothing (new -h names no target or landing option beyond --commit). A host user who is not the maintainer stays on ST-lnxywo7s's issue route."
+}
