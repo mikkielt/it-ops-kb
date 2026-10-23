@@ -50,11 +50,12 @@ NO_ROWS = ("kb/public/_retrieval/lookup_eval.csv", "kb/public/_retrieval/lookup_
            "kb/public/_retrieval/doc2query/")  # what a research session adds no row to
 NO_READ = ("kb/_self/backlog/", "kb/_self/reports/")  # what it reads nothing under
 CLAIMS_LEDGER = "kb-backlog-claims.json"  # bl_base.CLAIMS_LEDGER: the file in a clone's git dir that holds its claims
-# The variables an instance's session must not inherit: the same names as conftest.LEAKY (test_bench.py compares them;
-# a tool module never imports conftest, which clears them from os.environ when it is imported).
+# The variables an instance's session must not inherit: the same names as conftest.LEAKY, with KB_ROOTS (conftest clears
+# that one apart) and kept in step by hand: a tool module never imports conftest, which clears them from os.environ
+# when it is imported.
 LEAKY_ENV = ("KB_VERIFIED", "KB_TESTS_FAST", "KB_SYNC_NO_TESTS", "KB_GATE_DONE", "KB_SESSION", "KB_MAIN_LOCK_HELD",
              "CI_COMMIT_SHA", "CI_COMMIT_BEFORE_SHA", "CLAUDE_CODE_REMOTE_SESSION_ID", "CLAUDE_CODE_BRIDGE_SESSION_ID",
-             kbpublic.NO_HOOK_ENV, "GIT_DIR", "GIT_WORK_TREE", "GIT_IMPLICIT_WORK_TREE", "GIT_INDEX_FILE",
+             kbpublic.NO_HOOK_ENV, "KB_BACKLOG_CONFIG", "GIT_DIR", "GIT_WORK_TREE", "GIT_IMPLICIT_WORK_TREE", "GIT_INDEX_FILE",
              "GIT_COMMON_DIR", "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES", "GIT_GRAFT_FILE",
              "GIT_SHALLOW_FILE", "GIT_REPLACE_REF_BASE", "GIT_NO_REPLACE_OBJECTS", "GIT_PREFIX", "GIT_NAMESPACE",
              "KB_ROOTS")
