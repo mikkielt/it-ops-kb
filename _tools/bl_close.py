@@ -8,7 +8,7 @@ leftovers `close` cleans (`clean_repository_leftovers`).
 Standard library only; imports `bl_base` and `bl_intake` and never `bl_land` or `backlog`: `bl_land` imports this module,
 so every name the other modules read as `bl_land.NAME` stays importable from there. It registers `close` with
 `bl_cli` itself when imported (`backlog.py`'s USAGE puts it in its usage position)."""
-import json, os, re, shlex, shutil, subprocess, time
+import contextlib, json, os, re, shlex, shutil, subprocess, sys, time
 from pathlib import Path
 
 import bl_cli
@@ -353,6 +353,119 @@ def release_worker_worktree(root, path, lock, branch=None, repo=None, check_only
             "(copy it back to kb/_self/backlog/ to triage it)")
     say(f"land: removed the finished worker's worktree {path} ({'unlocked; its lock was: ' + lock if lock else 'it was not locked'})")
     return None
+
+
+LANDING_LOCK = "kb-landing.lock"  # in the clone's git common directory: one landing of the clone runs at a time
+LANDING_NAME = "land-"  # + the item id: the landing worktree's directory name, neither a worker's (agent-*) nor an item id
+
+
+def landing_lock_path(root):
+    """The landing lock file of the clone ROOT belongs to: one for the main checkout and every linked worktree."""
+    return (Path(root) / git(root, "rev-parse", "--git-common-dir").strip()).resolve() / LANDING_LOCK
+
+
+def landing_holder_item(text):
+    """The item id a landing lock file's text names, '?' when it names none."""
+    for ln in (text or "").splitlines():
+        if ln.startswith("item="):
+            return ln[len("item="):] or "?"
+    return "?"
+
+
+@contextlib.contextmanager
+def landing_lock(root, iid, poll=None):
+    """Hold the clone's landing lock for the block: an O_EXCL file whose record names the item being landed (pid,
+    clone, start, item). A second landing of the clone says which item holds it and waits, a holder whose pid no longer
+    runs is cleared, and `kg_lock.max_wait()` seconds of waiting for a live one stop the landing at step `landing
+    lock`. The lock is released on exit, on an error and on SIGTERM. The mechanism is the host main lock's
+    (`kg_lock.main_lock`), on a file of the clone's own."""
+    import signal
+    import tests as tests_py
+    import kg_lock
+    path = str(landing_lock_path(root))
+    poll = poll if poll is not None else float(os.environ.get("KB_HOST_LOCK_POLL", "1"))
+    me = (f"pid={os.getpid()}\nclone={root}\nstarted={time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}\n"
+          f"item={iid}\n")
+    told, waited, bound = None, 0.0, kg_lock.max_wait()
+    while True:
+        try:
+            fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        except FileExistsError:
+            text = tests_py.read_lock(path)
+            if text is None and not os.path.exists(path):  # released: look again
+                continue
+            holder = tests_py.parse_holder(text or "")
+            if holder is None:
+                try:
+                    young = time.time() - os.stat(path).st_mtime < tests_py.lock_grace()
+                except OSError:
+                    continue
+                if young:  # its holder has not written the record yet
+                    time.sleep(poll)
+                    continue
+            if holder is None or not tests_py.pid_alive(holder["pid"]):
+                if tests_py.clear_stale(path, text):
+                    say(f"land: clearing a stale landing lock ({holder['pid'] if holder else 'unreadable'})")
+                continue
+            item = landing_holder_item(text)
+            if holder != told:
+                say(f"land: waiting for the landing lock of this clone, held by the landing of {item} "
+                    f"(pid {holder['pid']}, started {holder['started']})")
+                told = holder
+            if waited >= bound:
+                raise land_stop("landing lock", f"the landing of {item} (pid {holder['pid']}, started "
+                                                f"{holder['started']}) still holds the clone's landing lock after "
+                                                f"{bound:g} s: run land again once it has ended")
+            began = time.monotonic()
+            time.sleep(poll)
+            waited += time.monotonic() - began
+            continue
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
+            f.write(me)
+        break
+    prev = None
+    try:
+        prev = signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))
+    except (ValueError, OSError):  # not the main thread
+        pass
+    try:
+        yield path
+    finally:
+        if prev is not None:
+            with contextlib.suppress(ValueError, OSError):
+                signal.signal(signal.SIGTERM, prev)
+        holder = tests_py.read_holder(path)
+        if holder and holder["pid"] == os.getpid():
+            with contextlib.suppress(OSError):
+                os.unlink(path)
+
+
+def landing_worktree_path(root, iid):
+    """Where item IID's landing worktree is: `land-<id>` in the worker directory of the clone ROOT belongs to."""
+    return next(iter(worker_dirs(root))) / (LANDING_NAME + iid)
+
+
+def remove_landing_worktree(root, path):
+    """Remove the landing worktree PATH, whatever it holds (it is land's own, made detached for one run), and prune
+    the clone's worktree records; the checkout land was started in is never touched."""
+    subprocess.run(["git", "worktree", "remove", "--force", "--force", str(path)], cwd=root, capture_output=True)
+    if Path(path).exists():
+        shutil.rmtree(path, ignore_errors=True)
+    subprocess.run(["git", "worktree", "prune"], cwd=root, capture_output=True)
+
+
+def add_landing_worktree(root, iid, rev):
+    """Make item IID's landing worktree: a detached checkout of REV under the clone's worker directory, and return its
+    path. A leftover of an earlier landing that was killed (the landing lock is held, so none is running) is removed
+    first. Raises the landing stop at step `landing worktree` when git cannot make it."""
+    path = landing_worktree_path(root, iid)
+    remove_landing_worktree(root, path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    p = subprocess.run(["git", "worktree", "add", "--detach", "-q", str(path), rev], cwd=root, capture_output=True,
+                       text=True, encoding="utf-8", errors="replace")
+    if p.returncode:
+        raise land_stop("landing worktree", f"git worktree add {path.name}: {(p.stderr or p.stdout).strip()}")
+    return path
 
 
 def delete_landed_branch(root, branch, upstream, who="land", prefixes=None):
