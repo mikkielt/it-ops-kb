@@ -2,7 +2,7 @@
   "id": "BG-3txhxbiq",
   "kind": "bug",
   "title": "An EC private key with double-escaped newlines (JSON inside a JSON string) passes the leak scan",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-evq2flqc",
   "priority": "P1",
   "rank": 0,
@@ -33,6 +33,19 @@
     "parked: SP-tsb23kev review"
   ],
   "notes": "Found by the SP-tsb23kev focused review of BG-3vnu37rq (reviewer session a419aba4) on origin/main 902e961a9; repro fails there. Premise 2026-10-23 on 35b5b7cb2: the repro exits 1 (double-escaped key flagged: False).",
-  "claimed_by": "claude-92aeeb3c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "66bd6e4fb96aaf980eacb8cc01d691263fefdb0d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import base64, os, sys, time\nsys.path.insert(0, \"_tools\")\nimport kbcommon\nd = \"-\" * 5\narm = d + \"BEGIN EC PRIVATE KEY\" + d\nb = base64.b64encode(os.urandom(96)).decode()\nhit = lambda t: any(k == \"secret\" for k, _ in kbcommon.leak_hits(t))\nbs = chr(92)\nt = arm + bs + bs + \"n\" + b[:64] + bs + bs + \"n\" + b[64:]\nprint(\"double-escaped key flagged:\", hit(t))\nsys.exit(0 if hit(t) else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "02a5117e8aa2ae26"
+      }
+    ]
+  }
 }
