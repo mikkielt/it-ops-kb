@@ -1,0 +1,17 @@
+{
+  "id": "BG-3rhpom4d",
+  "kind": "bug",
+  "title": "bench_multi matches a research key's term in a fact's text, but dedup keys now hold term ids with a hash",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "bench_multi.duplicate_research and worked_key match a research key's term against a fact's text in the form a fact holds it, so a dedup key made from a free-text lack term (batch-size-d2bd91) still counts as worked",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, \"_tools\"); import coord; sys.exit(0 if \"batch size\" == coord.term_id(\"batch size\", 60) else 1)"
+    ]
+  }
+}

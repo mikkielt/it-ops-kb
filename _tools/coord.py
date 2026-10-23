@@ -114,6 +114,7 @@ absent); 2 a bad argument, no store, or a server that refuses (401) or cannot be
 """
 import argparse
 import csv
+import hashlib
 import http.client
 import http.server
 import ipaddress
@@ -292,7 +293,7 @@ def add_event(con, args, kind, fields, now):
 
 
 def term_list(items):
-    """ITEMS (lack terms, which may hold spaces, as the keys made of them do) as one event field value: comma-separated, `-` for none."""
+    """ITEMS (lack term ids) as one event field value: comma-separated, `-` for none."""
     return ",".join(items) or "-"
 
 
@@ -637,6 +638,17 @@ def fingerprint(question, topic=None):
     return (topic or found), terms
 
 
+def term_id(term, room):
+    """A lack term as an id a claim key takes, within ROOM characters: lowercased, each run of characters outside letters,
+    digits and `_ . -` a `-`, and, when that changed the term (or cut it), a short hash of the term after it, so two terms
+    never share an id. WHOLE and a term that is already an id stay as they are."""
+    if term == WHOLE or (re.fullmatch(r"[a-z0-9_.-]+", term) and len(term) <= room):
+        return term
+    slug = re.sub(r"[^a-z0-9_.-]+", "-", term.lower()).strip("-")
+    tag = hashlib.sha256(term.encode("utf-8")).hexdigest()[:6]
+    return f"{slug[:max(0, room - len(tag) - 1)].rstrip('-')}-{tag}".lstrip("-")
+
+
 def research_key(topic, term):
     return f"{RESEARCH}{topic}:{term}"
 
@@ -646,9 +658,15 @@ def dedup(args, clock):
     A claim on the same anchor topic overlaps when it shares at least half of the smaller lack-set's terms. A pack with
     no lack term claims the topic as a whole (the term WHOLE), which overlaps every other holder's claim on the topic,
     and a whole-topic claim of another holder covers every term. A live claim under the caller's own holder name is its
-    own only when --token is that claim's token: the same name from another session is an overlap."""
+    own only when --token is that claim's token: the same name from another session is an overlap. Each lack term is
+    mapped to an id (`term_id`) first, so a key, a claim event and a dedup event hold only the characters a claim key takes."""
     holder = holder_name(args)
-    topic, terms = fingerprint(args.question, args.topic)
+    topic, found = fingerprint(args.question, args.topic)
+    room = max(8, 120 - len(research_key(topic, "")))
+    terms = []
+    for word in found:
+        if term_id(word, room) not in terms:
+            terms.append(term_id(word, room))
     token = secrets.token_hex(16)
     overlapping, covered, own, taken, others = [], set(), set(), [], []
     with Tx(args.store) as con:

@@ -30,6 +30,25 @@
   "depends_on": [
     "BG-iwr5n7ch"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does dedup turn a free-text lack term into a claim-key id?",
+      "options": [
+        "slug plus hash",
+        "slug only"
+      ],
+      "recommendation": "slug plus hash",
+      "do": {
+        "slug plus hash": "BG-v53e2pef",
+        "slug only": "BG-v53e2pef"
+      },
+      "class": "design",
+      "answer": "slug plus hash",
+      "by": "agent"
+    }
+  ],
   "notes": "Planning 2026-10-23 on 35b5b7cb2: the repro was a placeholder (sys.exit(1)); it now plants lack terms with a space and punctuation through coord.dedup and exits 1 (both claimed keys fail FIELD_VALUE). It also needs the dedup to still claim, so a fix that drops every such term passes only if it maps them to ids. Found while fixing BG-dn5n7z7k, not fixed there since dedup keys need terms mapped to ids.",
   "claimed_by": "claude-92aeeb3c",
   "operator": "op-f618a13e"
