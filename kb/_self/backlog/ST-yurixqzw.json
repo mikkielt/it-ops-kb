@@ -32,6 +32,42 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How do the re-tagged cyber.gov.au facts in baselines-catalog.md and its csv show the sources they came from? (lint warns of header sources no DOC/CODE/DER/COMMUNITY tag cites; the goal wants the csv to stop saying current)",
+      "options": [
+        "Drop the ids from the article header, name them in the UNK tag text, csv version columns read UNK with a dated note",
+        "Keep the ids in the header and keep current in the csv"
+      ],
+      "recommendation": "Drop the ids from the article header, name them in the UNK tag text, csv version columns read UNK with a dated note",
+      "do": {
+        "Drop the ids from the article header, name them in the UNK tag text, csv version columns read UNK with a dated note": "ST-yurixqzw",
+        "Keep the ids in the header and keep current in the csv": "ST-yurixqzw"
+      },
+      "class": "design",
+      "answer": "Drop the ids from the article header, name them in the UNK tag text, csv version columns read UNK with a dated note",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "In the QS12 and version-pin answers, what replaces the DOC tag that cited only gone sources?",
+      "options": [
+        "Take the tag the article gives: DOC with the sources the article now cites, and a separate UNK line for the regulation number, publication date and consolidated version",
+        "Mark the whole answer line UNK"
+      ],
+      "recommendation": "Take the tag the article gives: DOC with the sources the article now cites, and a separate UNK line for the regulation number, publication date and consolidated version",
+      "do": {
+        "Take the tag the article gives: DOC with the sources the article now cites, and a separate UNK line for the regulation number, publication date and consolidated version": "ST-yurixqzw",
+        "Mark the whole answer line UNK": "ST-yurixqzw"
+      },
+      "class": "design",
+      "answer": "Take the tag the article gives: DOC with the sources the article now cites, and a separate UNK line for the regulation number, publication date and consolidated version",
+      "by": "agent"
+    }
+  ],
   "notes": "Found 2026-10-23 by the SP-xznmaurz fresh review; operator changed ST-6wsgvy3z g2 the same day. The local tag census-2026-10-21 is moved to the landed tip after this lands (tag-census, never pushed). Premise on d34d8068b: check 0 exits 1 (_answers.md 506, 508: S1552; 525: S1556; 527: S-qzdkyvqx); check 1 exits 1 (all three confirmed).",
   "claimed_by": "claude-92aeeb3c",
   "operator": "op-f618a13e"

@@ -3,7 +3,7 @@ topic: security/baselines-catalog
 priority: P0
 applies_to: "Windows 11 Enterprise 24H2/25H2, Windows Server 2025"
 retrieved_utc: 2026-09-27
-sources: [S1470, S1471, S1472, S1598, S1400, S1401, S1402, S1403, S1404, S1405, S1406, S1407, S1408, S1418, S1419, S1421, S1422, S1423, S1424, S1425, S-uzuvf3vo, S-nwnif62g, S-3vkajr2c, S-ycjlut3h, S-m3qbkeev, S-li2s6pgb, S-aljzuasy, S-cwnwnkri, S-vxnukaep, S-cvu2vf7c]
+sources: [S1470, S1471, S1472, S1598, S1400, S1401, S1402, S1403, S1404, S1405, S1406, S1407, S1408, S1418, S1419, S1421, S1422, S1423, S1424, S-3vkajr2c, S-ycjlut3h, S-m3qbkeev, S-li2s6pgb, S-aljzuasy, S-cwnwnkri, S-vxnukaep, S-cvu2vf7c]
 status: complete
 ---
 
@@ -95,14 +95,18 @@ attribution. NCSC (UK), BSI and ANSSI publish narrower guidance (Intune packs, W
   attributed, once a direct citation is confirmed — recorded as a residual gap.
 - ACSC's Essential Eight maturity model page gives first published 30 June 2017 and last updated
   27 November 2023 (the November 2023 model PDF is its attachment), and defines Maturity Levels Zero to
-  Three; read from the Internet Archive capture of 2026-08-27, since cyber.gov.au times out from here.
-  [DOC S1425]
+  Three. [UNK: taken from an Internet Archive capture of the page (S1425), which is no read of the source, and not
+  re-confirmed on 2026-10-23 because cyber.gov.au times out from this host; logged in `_gaps.md`]
 - ACSC's "Hardening Microsoft Windows 11 workstations" (first published May 2017) was last updated
   January 2026; that edition takes its settings from Windows 11 version 25H2, and ACSC's January 2026
   change log records the move from the September 2025 (24H2) edition, adding measures for auditing,
-  printers, widgets, app installations and SMB sessions [DOC S-uzuvf3vo, S-nwnif62g].
+  printers, widgets, app installations and SMB sessions. [UNK: taken from Internet Archive captures of the guide and its
+  change log (S-uzuvf3vo, S-nwnif62g), which are no read of the sources, and not re-confirmed on 2026-10-23 because
+  cyber.gov.au times out from this host; logged in `_gaps.md`]
 - Apart from the Coat of Arms, the ACSC Windows 11 hardening guide is © Commonwealth of Australia
-  under CC BY 4.0, so it is reusable with attribution [DOC S-uzuvf3vo].
+  under CC BY 4.0, so it is reusable with attribution. [UNK: taken from an Internet Archive capture of the guide
+  (S-uzuvf3vo), which is no read of the source, and not re-confirmed on 2026-10-23 because cyber.gov.au times out from
+  this host; logged in `_gaps.md`]
 - NCSC (UK): the Windows platform guide (version 2.1, reviewed 2025-05-13) points to NCSC's recommended settings as
   Intune `.json` configuration packs on GitHub (Apache-2.0 repository), last tested against Windows 10 22H2 in
   December 2024 and Windows 11 in April 2025. [DOC S-aljzuasy, S-cwnwnkri]

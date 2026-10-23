@@ -14933,17 +14933,16 @@ d610b94e672b,security/almalinux-repositories-vault-pins.md,S-k5qsqa2h,located,ba
 e3ddd896f505,security/almalinux-repositories-vault-pins.md,S-46pbwuai,located,AlmaLinux Repositories,patch;plus;replac;tag;upstream;component;core;functionality,c040dde88991ed1a,Packages have a .plus added to their version tag.,2026-10-15
 fe0b09d05a4a,security/almalinux-repositories-vault-pins.md,S-sjuiftqx,located,Index of /9.4/BaseOS/,i686,708ede49c66425a4,i686/ 03-May-2024 22:40,2026-10-21
 12ae5ecf94b5,security/baselines-catalog.csv,S-3vkajr2c,unlocated:no-match,,,,,2026-10-10
-13e87e495db6,security/baselines-catalog.csv,S-nwnif62g,unlocated:fetch-error,,,,,2026-10-10
-13e87e495db6,security/baselines-catalog.csv,S-uzuvf3vo,unlocated:fetch-error,,,,,2026-10-10
 21ca5a668d90,security/baselines-catalog.csv,S1402,unlocated:no-match,,,,,2026-10-21
 24a043789d69,security/baselines-catalog.csv,S1406,unlocated:no-match,,,,,2026-10-10
 24a043789d69,security/baselines-catalog.csv,S-ycjlut3h,unlocated:no-match,,,,,2026-10-10
-36efeb49dbef,security/baselines-catalog.csv,S1470,unlocated:not-text,,,,,2026-10-10
 5dadf3a98a8d,security/baselines-catalog.csv,S1421,located,Learn about Intune security baselines for Windows devices - Microsoft Intune | Microsoft Learn > Available security baselines,physical;vdi;endpoint;recommend;defender;devic;microsoft;security,830608adaabc9d3f,The Microsoft Defender for Endpoint security baseline is optimized for physical devices and is currently not recommended for use on virtual machines (VMs) or VDI,2026-10-10
 5dadf3a98a8d,security/baselines-catalog.csv,S1422,unlocated:no-match,,,,,2026-10-21
 78fe491fad92,security/baselines-catalog.csv,S-cvu2vf7c,unlocated:no-match,,,,,2026-10-10
 7a7fb897f049,security/baselines-catalog.csv,S1421,unlocated:no-match,,,,,2026-10-21
 847fb9ba91b6,security/baselines-catalog.csv,S1418,unlocated:no-match,,,,,2026-10-21
+956e52eddbad,security/baselines-catalog.csv,S-nwnif62g,unlocated:fetch-error,,,,,2026-10-23
+956e52eddbad,security/baselines-catalog.csv,S-uzuvf3vo,unlocated:fetch-error,,,,,2026-10-23
 997fbdaba022,security/baselines-catalog.csv,S1598,unlocated:no-match,,,,,2026-10-10
 9b378e02de14,security/baselines-catalog.csv,S1419,unlocated:no-match,,,,,2026-10-21
 9e6b75e13da6,security/baselines-catalog.csv,S1472,unlocated:not-text,,,,,2026-10-10
@@ -14953,7 +14952,6 @@ b8361d5120a0,security/baselines-catalog.csv,S1471,unlocated:not-text,,,,,2026-10
 c7b3087cf878,security/baselines-catalog.csv,S-vxnukaep,unlocated:no-match,,,,,2026-10-10
 e7c11a0c0a1a,security/baselines-catalog.csv,S-aljzuasy,unlocated:no-match,,,,,2026-10-10
 e7c11a0c0a1a,security/baselines-catalog.csv,S-cwnwnkri,unlocated:no-match,,,,,2026-10-10
-16a989171159,security/baselines-catalog.md,S-uzuvf3vo,unlocated:fetch-error,,,,,2026-10-10
 17a017110cfd,security/baselines-catalog.md,S1598,located,,folder;version;security,3534e4baed028312,"""RecoveryConsoleAllowFloppyCopyAndAllDrives"",""AZ-WIN-00148"",""Recovery console: Allow floppy copy and access to all drives and all folders"",""HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Setup\RecoveryConsole"",""SetCommand"",""REGDWORD"",""./Vendor/MSFT/Policy"",""Config/LocalPoliciesSecurityOptions/RecoveryConsoleAllowFloppyCopyAndAccessToAllDrivesAndAllFolders"",""Integer"",""0"",""0"",""0"",""Range(0, 1)"",""Equals(0)"",""Equals(0)"",""Equals(0)"",""Critical"",""Domain Controller, Member Server, Workgroup Member"",""Security Options"",""Configures 'Recovery console: Allow floppy",2026-10-10
 2523b68a4925,security/baselines-catalog.md,S1470,unlocated:not-text,,,,,2026-10-10
 264054f84607,security/baselines-catalog.md,S1400,unlocated:no-match,,,,,2026-10-21
@@ -14971,8 +14969,6 @@ e7c11a0c0a1a,security/baselines-catalog.csv,S-cwnwnkri,unlocated:no-match,,,,,20
 7627aa1c9200,security/baselines-catalog.md,S-vxnukaep,unlocated:no-match,,,,,2026-10-10
 79b0a15c8541,security/baselines-catalog.md,S1405,unlocated:no-match,,,,,2026-10-23
 79b0a15c8541,security/baselines-catalog.md,S-m3qbkeev,unlocated:no-match,,,,,2026-10-23
-7fdc30fcc6b2,security/baselines-catalog.md,S-nwnif62g,unlocated:fetch-error,,,,,2026-10-10
-7fdc30fcc6b2,security/baselines-catalog.md,S-uzuvf3vo,unlocated:fetch-error,,,,,2026-10-10
 802da98f0009,security/baselines-catalog.md,S1402,unlocated:no-match,,,,,2026-10-21
 8d2843eccc76,security/baselines-catalog.md,S1401,unlocated:no-match,,,,,2026-10-21
 8df4a1b966fa,security/baselines-catalog.md,S1424,located,Configure Security Baselines for Windows Server 2025 | Microsoft Learn > Why security baselines matter > Network exposure reduction,1.2;tls;higher;baselin,c3f8e4c9cb0e606d,The baseline restricts TLS to version 1.2 or higher with modern cipher suites and disables IP source routing.,2026-10-20
@@ -14984,7 +14980,6 @@ e7c11a0c0a1a,security/baselines-catalog.csv,S-cwnwnkri,unlocated:no-match,,,,,20
 9e6cb72b1fc2,security/baselines-catalog.md,S1470,unlocated:not-text,,,,,2026-10-10
 9e6cb72b1fc2,security/baselines-catalog.md,S1471,unlocated:not-text,,,,,2026-10-10
 9e6cb72b1fc2,security/baselines-catalog.md,S1472,unlocated:not-text,,,,,2026-10-10
-b7c03c91639a,security/baselines-catalog.md,S1425,unlocated:fetch-error,,,,,2026-10-10
 c56b74ff5f88,security/baselines-catalog.md,S-aljzuasy,unlocated:no-match,,,,,2026-10-10
 c56b74ff5f88,security/baselines-catalog.md,S-cwnwnkri,located,Microsoft Windows > Before you start,22h2;against;april;december;last;pack;test;guid,21778c0364950156,This configuration was last tested against Windows 10 22H2 in December 2024 and Windows 11 in April 2025. We recomend you check out the parent,2026-10-10
 e4938e12f10c,security/baselines-catalog.md,S-vxnukaep,unlocated:no-match,,,,,2026-10-10

@@ -503,9 +503,9 @@ _Agent: security_
 - Poland missed the original 2024-10-17 deadline; the Commission opened infringement proceedings (reasoned
   opinion 2025-05-07). [COMMUNITY S1554]
 - Entity criteria come from NIS2 Annexes I/II (sector) plus size thresholds; the Directive itself, not the kb,
-  decides scope. [DOC S1552]
+  decides scope. [UNK: read from the Directive's EUR-Lex text (S1552) on 2026-09-26, not re-confirmed on 2026-10-23 because EUR-Lex answers this host with an empty bot-challenge page; logged in `_gaps.md`]
 - Art. 21(2) letters touching configuration management (d, e), logging (a, g), access control (i, j) and supply
-  chain (d) are listed in `security/privacy-compliance.md`. [DOC S1552]
+  chain (d) are listed in `security/privacy-compliance.md`. [UNK: read from the Directive's EUR-Lex text (S1552) on 2026-09-26, not re-confirmed on 2026-10-23 because EUR-Lex answers this host with an empty bot-challenge page and the Commission's NIS2 page lists no Art. 21(2) measure; logged in `_gaps.md`]
 
 _Agent: security_
 
@@ -522,9 +522,10 @@ _Agent: security_
 ## QS12. EU AI Act classification and timeline for an internal IT-ops assistant
 - The Act applies from 2024-08-01 with staggered dates: AI literacy/prohibited practices from 2025-02-02;
   GPAI-model obligations from 2025-08-02; most remaining obligations (including Annex III high-risk) originally
-  from 2026-08-02. [DOC S1556][DOC S1557]
-- The Digital Omnibus on AI (Regulation (EU) 2026/1744, in force 2026-07-27) defers high-risk Annex III
-  obligations to 2027-12-02, and Annex I embedded-product obligations to 2028-08-02. [DOC S-qzdkyvqx]
+  from 2026-08-02. [DOC S-nnq2ftfq, S1557]
+- The Digital Omnibus on AI (in force 2026-07-27) defers high-risk Annex III
+  obligations to 2027-12-02, and Annex I embedded-product obligations to 2028-08-02. [DOC S-nnq2ftfq, S1557]
+- Its regulation number (2026/1744), its Official Journal publication date and its consolidated AI Act version were read from EUR-Lex (S-qzdkyvqx, S1556) on 2026-09-26 and are not re-confirmed on 2026-10-23: EUR-Lex answers this host with an empty bot-challenge page. [UNK: logged in `_gaps.md`]
 - Whether a given model-boundary component falls under Annex III (e.g. employment-context use cases) depends on
   the specific use case and was not checked here. [UNK]
 
@@ -2765,7 +2766,7 @@ _Agent: kb-research_
 - Baselines: CIS has Debian (13 v1.1.0, 12 v2.0.0), Ubuntu (26.04 v1.0.0, 24.04 v2.0.0, 22.04 v3.0.0) and AlmaLinux (10 v1.0.0, 9 v3.0.0, 8 v4.0.0) benchmarks, the PDF free for non-commercial use and CIS-CAT content members only; no Alpine benchmark is listed. [DOC S-dibgi2xt, S-2yuq6xw2, S-kbvw7lhl, S1485]
 - SSG ships CIS Level 1 and Level 2 Server profiles for Debian 12 and 13 and Ubuntu 24.04, and `cis_server_l1` plus `cis` (Level 2 Server) for AlmaLinux 9, each one benchmark version behind CIS's page; OpenSCAP scans them with `oscap xccdf eval`; Alpine has no SSG product and Lynis is the open scanner to try there. [CODE S-3ccfvo3t, S-vvr4ensf, S-e3oi3dog, S-kvmwtqw2, S-n6xxzrrl; DOC S-afsk2gm4, S-v6qk7hcn]
 - Firewall, audit, sshd and time: `nft -f` swaps a whole ruleset atomically, but loading a file again without a flush adds every rule twice, so the file starts with `add table <family> NAME` (no error when the table exists, so a first run on a missing table works), then `flush table <family> NAME`, which limits the clearing to the agent's own table (a bare `flush ruleset` removes every table on the host), then `flush set` or `destroy set` for each named set it owns (`flush table` leaves a set's elements), `augenrules` merges `rules.d/*.rules` with `-e` last and `-e 2` locks until reboot (CIS Level 2 only), `sshd -T` prints the effective configuration, and the CIS mapping wants one time daemon, chrony or timesyncd. [DOC S-nvc4ejpk, S-5anwnaht, S-inxocyfb, S-rkyl5ijj, S-hur3aczb, S-fdtse7p7; DER S-t7vpftda: `add table` does not fail when the table exists, `flush table` limits the clearing to one table and leaves a named set's elements, `flush ruleset` removes all tables]
-- Upgrades and pins: `APT::Periodic` options and `dnf-automatic*.timer` units control periodic upgrades; snapshot.debian.org and the Ubuntu snapshot service pin by date, the AlmaLinux vault by minor release and Alpine by `vX.Y` branch; no source describes an index-hash pin. [DOC S-4npfgqu6, S-ha4j7gxc, S-jc64e5xb, S-e5dd7vv5, S-l6wf2hvq, S-mt66jy4n, S-6w34pn5d]
+- Upgrades and pins: `APT::Periodic` options and `dnf-automatic*.timer` units control periodic upgrades; snapshot.debian.org and the Ubuntu snapshot service pin by date, the AlmaLinux vault by minor release and Alpine by `vX.Y` branch. [DOC S-4npfgqu6, S-ha4j7gxc, S-jc64e5xb, S-e5dd7vv5, S-l6wf2hvq, S-byvp6fgw] No source describes an index-hash pin. [UNK: no source found, logged in `_gaps.md`]
 - Secrets and connectivity: Docker mounts secrets as files under `/run/secrets`; WireGuard's hub lists each spoke's address in `AllowedIPs` and spokes behind NAT set `PersistentKeepalive`; `cloudflared` replicas give failover and Cloudflare offers four SSH routes without inbound ports. [DOC S-5wya5dr3, S-tu43jdaj, S-lyyx35bw, S-fqnfqney, S-cs6tyx3d, S-dbxfjxtf]
 - Test bed, agent and heartbeat: Incus launches containers and VMs (`--vm`), runs `incus exec` and `incus snapshot restore`; `ansible-pull` and the TUF rollback rule are the documented patterns for pulling from a repository and refusing an older version; a dead-man monitor alerts when a ping is missing. [DOC S-ffguw2vw, S-jccjrysc, S-65ttwu4c, S-wbcdphyr, S-im2mzbgr, S-fgzitvvz]
 - Conclusion: a static pull agent can drive all of this with idempotent steps (one `nft -f` file that starts with `add table` and `flush table <family> NAME` for the agent's own table and empties or destroys each named set it owns, as QK-flush-idempotent-nft-f-file-need says, one `augenrules` merge, one effective-config check with `sshd -T`, one pinned package source per family), test each family in an Incus VM and ping a monitor held at a second provider after every cycle; the pins, the second-provider rule and the agent's check/apply/dry-run split are derived here, not vendor statements. [DER S-nvc4ejpk, S-t7vpftda, S-5anwnaht, S-rkyl5ijj, S-jc64e5xb, S-e5dd7vv5, S-im2mzbgr, S-fgzitvvz]

@@ -359,7 +359,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `reuse/pseudonymization-tokenization` | P2 | complete | `reuse/pseudonymization-tokenization.md` | 8 |
 | `reuse/secret-vault-encryption` | P2 | complete | `reuse/secret-vault-encryption.md` | 12 |
 | `reuse/tiered-approval-ops` | P2 | complete | `reuse/tiered-approval-ops.md` | 5 |
-| `security/baselines-catalog` | P0 | complete | `security/baselines-catalog.md`, `security/baselines-catalog.csv` | 30 |
+| `security/baselines-catalog` | P0 | complete | `security/baselines-catalog.md`, `security/baselines-catalog.csv` | 27 |
 | `security/dsc-coverage` | P0 | complete | `security/dsc-coverage.md` | 21 |
 | `security/first-baseline-candidates` | P0 | complete | `security/first-baseline-candidates.md` | 17 |
 | `security/policy-precedence` | P0 | complete | `security/policy-precedence.md` | 13 |
