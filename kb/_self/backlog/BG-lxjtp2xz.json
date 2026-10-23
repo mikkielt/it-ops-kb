@@ -35,7 +35,11 @@
         "resolved-locations": "BG-lxjtp2xz",
         "git-url-probe": "BG-lxjtp2xz"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "resolved-locations",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "filed_in": "clone-0ea70e5c",
