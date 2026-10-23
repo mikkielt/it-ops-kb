@@ -123,8 +123,9 @@ def last_full_run(root):
 
 
 def ceiling(root):
-    """{max_ids, max_files, max_seconds, ids, files, last_run_s} against the clone's `tests_ceiling.json`; `{"error": ...}`
-    for the file when `tests.read_ceiling` refuses it."""
+    """{max_ids, max_files, max_seconds, profile, ids, files, last_run_s} against the clone's `tests_ceiling.json`, its
+    max_seconds times the CI factor and the factor of the clone's profile (`_private/host.json`); `{"error": ...}` for
+    the file when `tests.read_ceiling` refuses it."""
     import tests
     root = Path(root)
     try:
@@ -133,8 +134,11 @@ def ceiling(root):
         return {"error": " ".join(str(e).split())[:mon_base.ERROR_CHARS]}
     ids, seconds = last_full_run(root)
     files = sum(1 for p in (root / "_tools").glob("test_*.py"))
-    return {"max_ids": c["max_ids"], "max_files": c["max_files"], "max_seconds": c["max_seconds"].get(sys.platform),
-            "ids": ids, "files": files, "last_run_s": seconds}
+    profile = tests.read_profile(root)
+    limit = c["max_seconds"].get(sys.platform)
+    return {"max_ids": c["max_ids"], "max_files": c["max_files"],
+            "max_seconds": None if limit is None else limit * tests.seconds_factor() * tests.PROFILES[profile],
+            "profile": profile, "ids": ids, "files": files, "last_run_s": seconds}
 
 
 def disk(root):
@@ -208,12 +212,14 @@ def lock_row(label, rec):
 
 
 def ceiling_rows(c, width):
-    """The ceiling's three measures: `ids`, `files` and `last run`, as one row of the worst gutter where the joined row
-    fits WIDTH columns, else three aligned rows each with its own gutter."""
+    """The ceiling's three measures: `ids`, `files` and `last run` (named with the clone's profile when it is not
+    `usual`), as one row of the worst gutter where the joined row fits WIDTH columns, else three aligned rows each with
+    its own gutter."""
     if "error" in c:
         return ["! " + "ceiling".ljust(LABEL) + str(c["error"])]
+    run = "last run" + (f" ({c['profile']})" if c.get("profile", "usual") != "usual" else "")
     cells = [("ids", c["ids"], c["max_ids"], ""), ("files", c["files"], c["max_files"], ""),
-             ("last run", c["last_run_s"], c["max_seconds"], " s")]
+             (run, c["last_run_s"], c["max_seconds"], " s")]
     made = [(name, flag(used, limit), bar(used, limit), unit) for name, used, limit, unit in cells]
     text = " · ".join(f"{name} {n}{unit} {b} {p}" for name, _, (n, b, p), unit in made)
     if GUTTER + LABEL + len(text) <= width:

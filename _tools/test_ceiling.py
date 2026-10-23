@@ -43,3 +43,21 @@ def test_counts_over_the_ceiling_are_named_and_the_seconds_factor_applies_only_o
     assert tests.scope(["kb/_self/backlog/ST-aaaaaaaa.json", "kb/_querylog/ops/x.jsonl"]) == "none"
     assert tests.scope(["kb/public/auth/kerberos.md", "kb/_self/backlog/ST-aaaaaaaa.json"]) == "content"
     assert tests.scope(["kb/public/auth/kerberos.md", "_tools/check.py"]) == "all"
+
+
+def test_busy_profile_multiplies_the_seconds_by_15_in_its_clone_only_is_named_in_a_refusal_and_is_set_by_the_operator_outside_an_agent_session(tmp_path):
+    c = {**NUMBERS, "decision": "D-planted"}
+    assert tests.read_profile(tmp_path) == "usual" and tests.profile_factor(tmp_path) == 1
+    with pytest.raises(tests.CeilingError, match="agent session"):
+        tests.set_profile("busy", tmp_path, env={"CLAUDECODE": "1"})
+    assert not (tmp_path / "_private" / "host.json").exists()
+    with pytest.raises(tests.CeilingError, match="usual, busy"):
+        tests.set_profile("fast", tmp_path, env={})
+    tests.set_profile("busy", tmp_path, env={})
+    assert tests.read_profile(tmp_path) == "busy" and tests.profile_factor(tmp_path) == 15
+    assert tests.read_profile(tmp_path / "other") == "usual"  # another clone keeps the usual ceiling
+    (tmp_path / "_private" / "host.json").write_text('{"profile": "huge"}', encoding="utf-8")
+    assert tests.read_profile(tmp_path) == "usual"  # a file that names no profile never loosens the ceiling
+    assert tests.ceiling_problems(c, seconds=75.0, platform="darwin", factor=15.0, profile="busy") == []
+    over = tests.ceiling_problems(c, seconds=76.0, platform="darwin", factor=15.0, profile="busy")
+    assert len(over) == 1 and "75 s" in over[0] and "(profile busy)" in over[0]

@@ -17,7 +17,7 @@
                                                 run tests.py with ARGS and fail when it takes longer than N seconds, or
                                                 fails itself; without N, the bound is the running platform's max_seconds
                                                 in _tools/tests_ceiling.json, times KB_TEST_TIMEOUT_FACTOR on a CI runner
-                                                (as tests.py reads them)
+                                                and times the clone's profile factor (busy: 15; as tests.py reads them)
 
 The ids are what `pytest --collect-only -q` prints for the selection tests.py runs: `_tools`. Nothing runs and nothing
 touches the network.
@@ -223,8 +223,8 @@ def run_suite(args):
 
 
 def ceiling_seconds(platform=None):
-    """The running platform's max_seconds in the test ceiling, times the CI factor, read with tests.py's own functions;
-    PerfError when the ceiling is refused or names no bound for the platform."""
+    """The running platform's max_seconds in the test ceiling, times the CI factor and the clone's profile factor, read
+    with tests.py's own functions; PerfError when the ceiling is refused or names no bound for the platform."""
     tests = tests_module()
     platform = platform or sys.platform
     try:
@@ -234,7 +234,7 @@ def ceiling_seconds(platform=None):
     limit = c["max_seconds"].get(platform)
     if limit is None:
         raise PerfError(f"{os.path.basename(tests.CEILING)} has no max_seconds for {platform}: pass --max-seconds")
-    return limit * tests.seconds_factor()
+    return limit * tests.seconds_factor() * tests.profile_factor()
 
 
 def run_time(a, extra, runner=run_suite, clock=time.monotonic):
@@ -247,7 +247,8 @@ def run_time(a, extra, runner=run_suite, clock=time.monotonic):
         print(f"perfcheck time: the suite run failed (exit {code}) after {seconds:.1f} s")
         return 1
     if seconds > a.max_seconds:
-        print(f"perfcheck time: {seconds:.1f} s is over the bound of {a.max_seconds:g} s")
+        profile = tests_module().read_profile()
+        print(f"perfcheck time: {seconds:.1f} s is over the bound of {a.max_seconds:g} s (profile {profile})")
         return 1
     print(f"perfcheck time: {seconds:.1f} s within the bound of {a.max_seconds:g} s")
     return 0
