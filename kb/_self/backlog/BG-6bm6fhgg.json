@@ -1,0 +1,31 @@
+{
+  "id": "BG-6bm6fhgg",
+  "kind": "bug",
+  "title": "The leak scan misses a key block behind a list-bullet prefix or with a header that has no space after its colon",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbcommon.leak_hits flags an EC or PGP key block whose lines carry a '* ' or '- ' list-bullet prefix, and one whose header is written Comment:Alice with no space, as it flags one behind '> '",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import base64,os,sys;sys.path.insert(0,'_tools');import kbcommon;d='-'*5;b=base64.b64encode(os.urandom(96)).decode();nl=chr(10);hit=lambda t:any(k=='secret' for k,_ in kbcommon.leak_hits(t));a=d+'BEGIN EC PRIVATE KEY'+d;c={'star':a+nl+'* '+b[:64],'dash':a+nl+'- Comment: a'+nl+'- '+b[:64],'nospace':d+'BEGIN PGP PRIVATE KEY BLOCK'+d+nl+'Comment:Alice'+nl+nl+b[:64]};m=[k for k,v in c.items() if not hit(v)];print('passing:',m);sys.exit(1 if m else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kbcommon.py",
+    "_tools/test_leaks.py",
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md",
+    "kb/_self/content-rules.md"
+  ],
+  "relates_to": [
+    "BG-h6y5s45w"
+  ],
+  "links": [
+    "parked: SP-evq2flqc review"
+  ],
+  "notes": "Found 2026-10-23 by the third SP-evq2flqc fresh review on 86d646801; not checked against the earlier shapes. Same gap list as BG-h6y5s45w (/// and //! prefixes): one fix may cover both."
+}
