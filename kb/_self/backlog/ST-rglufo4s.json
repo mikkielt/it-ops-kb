@@ -2,7 +2,7 @@
   "id": "ST-rglufo4s",
   "kind": "story",
   "title": "Research sprint goal: The 2026-10-21 census closes: blocked and uncited sources settled, a new census tag, OpenTelemetry Python aliases",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-xznmaurz",
   "goal_research": true,
   "priority": "P1",
@@ -57,6 +57,20 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "claude-92aeeb3c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "f344f0ad9f6276500aad2af299473b330c6ac526",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-rglufo4s"
+        ],
+        "exit": 0,
+        "sha256": "5883195a240fca49"
+      }
+    ]
+  }
 }
