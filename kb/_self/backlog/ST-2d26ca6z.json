@@ -82,7 +82,11 @@
         "priority P2, the premise and local change as Premise: and Local change: lines of the notes": "ST-2d26ca6z",
         "the premise and local change folded into the goal text": "ST-2d26ca6z"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "priority P2, the premise and local change as Premise: and Local change: lines of the notes",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Operator's answer 2026-10-19: findings travel back as a GitHub issue in a template the agent fills with user stories; the maintainer reads the issue back and converts its stories to backlog items; how the issue is added (paste from the file or automation) is the user's choice. Premise: no import command exists (backlog.py has no upstream-import); the check exits 1 on the base.",
