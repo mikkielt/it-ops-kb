@@ -2,7 +2,7 @@
   "id": "ST-hbxnf2l3",
   "kind": "story",
   "title": "Research: Alertmanager's route, receivers and webhook payload, and Prometheus's alerting block, are kb facts",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-r7e7jcep",
   "priority": "P2",
@@ -49,5 +49,7 @@
     "ST-l6fw46gd"
   ],
   "notes": "Planning 2026-10-24: last clause corrected. The old text said a resolved alert is sent only with send_resolved; the Alertmanager configuration docs (docs/configuration.md, webhook_config) give send_resolved default = true, so the clause now asks what send_resolved does and its default. The goal is split into five clauses, each read by cases of the one check. Premise: the check fails on the base (precheck). Planned 2026-10-24 into SP-r7e7jcep: fourth in the run order (after ST-l6fw46gd), since the five research stories share the source, anchor and expansions files.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
