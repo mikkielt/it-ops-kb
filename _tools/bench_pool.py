@@ -55,6 +55,13 @@ STOP = set("the and for are was what which how does did that this with from have
            "should would could will may might must".split())
 EVAL_FILE = "kb/public/_retrieval/lookup_eval.csv"
 HELDOUT_FILE = "kb/public/_retrieval/lookup_heldout.csv"
+# the held-out cases every earlier pool held: heldout_section leaves them out, so a pool measures the rows the file grew by
+EARLIER_HELDOUT = frozenset("""HO-adr-status-superseded HO-bare-headless-default HO-claude-api-pricing
+    HO-copilot-studio-instructions-limit HO-cross-session-messaging HO-defender-performance-recording HO-git-trailer-block
+    HO-glab-merge-already-merged HO-headless-auth-env-vars HO-job-token-mr-endpoints HO-kerberos-protected-users
+    HO-max-mcp-output-tokens HO-otel-api-request-attributes HO-permission-denied-hook HO-prompt-cache-pricing
+    HO-protected-branches-free HO-rag-chunk-size HO-sandbox-vgpu-intune HO-sessionend-hook-input
+    HO-streamable-http-origin""".split())
 OFFKB_FILE = "kb/public/_retrieval/doc2query/offkb_questions.txt"
 SCENARIO_FILE = "kb/public/_retrieval/bench_scenarios.csv"
 SCENARIO_COLUMNS = ["kind", "domain", "question", "answer", "route", "note"]
@@ -503,12 +510,14 @@ def typo_form(question, rng):
 # -------------------------------------------------------------------------------------------- other public sources
 
 def heldout_section(home, seed):
-    """Rows that name held-out cases by id: no question, the expected articles as the checks."""
-    cases = sorted(read_csv(Path(home) / HELDOUT_FILE), key=lambda c: c["id"])
+    """Rows that name held-out cases by id: no question, the expected articles as the checks. Only cases that name an
+    expected article and that no earlier pool held (EARLIER_HELDOUT) are sampled."""
+    cases = sorted((c for c in read_csv(Path(home) / HELDOUT_FILE) if c["expect_paths"] and c["id"] not in EARLIER_HELDOUT),
+                   key=lambda c: c["id"])
     cases = rng_for(seed, "heldout").sample(cases, min(PLAN["heldout"], len(cases)))
     return [row("heldout", domain_of(c["expect_paths"].split(";")[0]), "held-out", f"lookup_heldout.csv:{c['id']}", "",
                 [esc_path(p) for p in c["expect_paths"].split(";") if p], "good")
-            for c in sorted(cases, key=lambda c: c["id"]) if c["expect_paths"]]
+            for c in sorted(cases, key=lambda c: c["id"])]
 
 
 def offkb_section(home, seed):

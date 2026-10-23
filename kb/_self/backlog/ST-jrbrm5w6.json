@@ -41,6 +41,25 @@
     "kb/_self/benchmarks.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does heldout_section know which held-out cases an earlier pool held? A fixed set keeps every rebuild and --redo on the same rows; reading the committed pool swaps all 20 rows at each rebuild and runs out of unseen rows after three builds.",
+      "options": [
+        "A fixed set of the 20 earlier ids in bench_pool.py",
+        "Read the committed bench_pool.csv at build time and leave its held-out rows out"
+      ],
+      "recommendation": "A fixed set of the 20 earlier ids in bench_pool.py",
+      "do": {
+        "A fixed set of the 20 earlier ids in bench_pool.py": "ST-jrbrm5w6",
+        "Read the committed bench_pool.csv at build time and leave its held-out rows out": "ST-jrbrm5w6"
+      },
+      "class": "design",
+      "answer": "A fixed set of the 20 earlier ids in bench_pool.py",
+      "by": "agent"
+    }
+  ],
   "notes": "Premise 2026-10-23 on 35b5b7cb2: python3 _tools/benchmarks.py pool build --dry-run exits 1 (pool build: kind heldout: 17 rows, the plan has 20); heldout_section samples 20 of all rows and then drops those with no expect_paths, leaving 17, of which 5 the committed pool already held. The paid build (--ask) and run are ST-fsh6rqnc's, not this story's.",
   "claimed_by": "claude-92aeeb3c",
   "operator": "op-f618a13e"
