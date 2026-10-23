@@ -2,7 +2,7 @@
   "id": "ST-fnw45u6r",
   "kind": "story",
   "title": "Review sprint: A paid pool run measures the grown held-out set on rows no earlier run saw",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-lorofi3i",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,27 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "ae9db8cbc600d3a0d5810b90192238905cb3f1a2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "31a4f3d6d25d274a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "3e97fcb747bf89e1"
+      }
+    ]
+  }
 }
