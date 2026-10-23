@@ -2,7 +2,7 @@
   "id": "BG-4wddhkjv",
   "kind": "bug",
   "title": "kbgit.py publish refuses a merge commit's message for an email address its first-parent diff adds, and refuses public example values the allowlist cannot or does not yet hold",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3trnelzv",
   "priority": "P1",
   "rank": 0,
@@ -20,6 +20,12 @@
     "_tools/kbcommon.py",
     "_tools/tests_allowlist.txt",
     "_tools/redact.py",
-    "kb/_self/git.md"
-  ]
+    "kb/_self/git.md",
+    "kb/_self/plugin.md",
+    "kb/_self/querylog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "claimed_by": "claude-b3926d84",
+  "operator": "op-f618a13e"
 }
