@@ -977,8 +977,8 @@ COORD_TOOL_LIST = [
                     "intent, progress, ask, answer) and up to 8 id fields. A value is an id of at most 120 characters of letters, "
                     "digits and _ . : / # @ -; free text is refused. intent takes session, item, topic, touch; an intent "
                     "with a session shows in coord_digest only while coord_claim holds the key session/<that id>: without "
-                    "that claim it is posted and never shown, with no error. progress takes item and state (working, "
-                    "blocked, done). ask takes id, to (a session, item or agent id, or any) and ref (the key whose value holds "
+                    "that claim it is posted and never shown, with no error. progress takes item and state (claimed, working, "
+                    "blocked, returned, failed, staging, landing, landed, refused, released, or done) and the fields exit, gates and step. ask takes id, to (a session, item or agent id, or any) and ref (the key whose value holds "
                     "the question); answer takes id, state (working, input-required, completed, failed, rejected) and "
                     "ref (the key whose value holds the answer): put the text under that key first. Returns seq.",
      "inputSchema": {"type": "object", "properties": {

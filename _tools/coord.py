@@ -18,6 +18,12 @@
                                                      under P per operator, read from the holders behind serve
   coord.py post --kind K --field NAME=VALUE ...      add an event (kinds incl. ask, answer); prints its sequence number as seq
                                                      (exit 2 for a kind off the closed list or a value that is not a short id)
+  coord.py transition run/ITEM --to STATE [--field NAME=VALUE ...]
+                                                     move ITEM's run state to STATE when the state table allows it from the
+                                                     state the key holds (an absent key holds none): writes the state, raises
+                                                     the revision and posts a progress event (item, state, fields exit, gates,
+                                                     step), in one transaction; a move the table does not allow exits 1,
+                                                     naming the state and the states it may move to, and writes nothing
   coord.py digest --key K ... --lines N              print at most N lines (plain text, not JSON), newest first, of the
                                                      live intents and claims that overlap a key K (repeatable)
   coord.py wait --since N --timeout S                print the events after sequence N, blocking until one arrives or
@@ -54,14 +60,20 @@ S passes with no event exits 0 with `timed_out` true, and a post from any other 
 Two kinds carry a session's plan: `intent` (fields session, item, topic, touch, operator; at least one of item, topic and touch;
 item and topic hold a comma-separated list of ids, touch of globs with * and ?, up to 120 characters; operator is the id of
 the operator the session runs for, which a server's own `operator` field replaces) and `progress`
-(fields item and state, state one of working, blocked, done). Two kinds carry a question and its reply between
+(fields item and state, state one of claimed, working, blocked, returned, failed, staging, landing, landed, refused, released or
+done, and the optional fields exit, gates (a comma-separated list of ids) and step). `transition` moves an item's run state, the
+value of the key `run/ITEM` (an absent key holds `none`), by this table, and posts the progress event of the move; the item file
+keeps todo, doing and done, so `done` is no run state: none to claimed; claimed to working or released; working to returned,
+failed or blocked; blocked to working, returned or failed; returned to staging, landing, working or released; failed to working
+or released; staging to returned; landing to landed or refused; refused to working, landing or released; landed and released
+move nowhere. Two kinds carry a question and its reply between
 agents: `ask` (fields id, to, ref: to is a session, item or agent id, or `any`; ref is the coord key whose `put` value
 holds the question) and `answer` (fields id, state, ref: state is one of working, input-required, completed, failed,
 rejected, the names A2A gives its task states; ref is the key whose `put` value holds the answer text). An event keeps
 references only, so the text is put under a key such as `ask/ID` and `answer/ID` first; an ask or answer without id or
 ref, an ask without to, or an answer with another state exits 2. Behind `serve`, an ask carries the server's `operator`
 field like every event. `digest` is the one command that prints text, not JSON:
-one line per live intent (posted within a day, its items not all done by a later progress event, and, when it names a
+one line per live intent (posted within a day, its items not all done, landed or released by a later progress event, and, when it names a
 session, that session's presence lease `session/<id>` still held: a release or an expiry drops the session's intents) or
 live claim (a held lease) with a value that overlaps a key (equal, a directory-style prefix either way, or a glob match either
 way), newest first, cut at N lines; with nothing to show it prints nothing.
@@ -148,15 +160,24 @@ EVENTS_SCHEMA = (
     "seq INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, fields TEXT NOT NULL, at REAL NOT NULL)"
 )
 KINDS = ("claim", "release", "dedup", "fact_added", "gap_opened", "dup_of", "lesson", "heartbeat", "intent", "progress", "ask", "answer")
-KIND_FIELDS = {"intent": ("session", "item", "topic", "touch", "operator"), "progress": ("item", "state"),
+KIND_FIELDS = {"intent": ("session", "item", "topic", "touch", "operator"), "progress": ("item", "state", "exit", "gates", "step"),
                "ask": ("id", "to", "ref"), "answer": ("id", "state", "ref")}
-STATES = ("working", "blocked", "done")
+RUN_STATES = ("claimed", "working", "blocked", "returned", "failed", "staging", "landing", "landed", "refused", "released")
+TRANSITIONS = {"none": ("claimed",), "claimed": ("working", "released"), "working": ("returned", "failed", "blocked"),
+               "blocked": ("working", "returned", "failed"), "returned": ("staging", "landing", "working", "released"),
+               "failed": ("working", "released"), "staging": ("returned",), "landing": ("landed", "refused"),
+               "refused": ("working", "landing", "released"), "landed": (), "released": ()}  # none: a run key no move has written
+STATES = RUN_STATES + ("done",)  # what a progress event may carry; `done` is the item file's own, no run state moves to it
+FINISHED = ("done", "landed", "released")  # the states after which a digest no longer shows an intent
+RUN_KEYS = "run/"  # an item's run state: key run/<item id>, its value the state's name
+STEP_FIELDS = ("exit", "gates", "step")  # the fields of a progress event besides item and state
 ANSWER_STATES = ("working", "input-required", "completed", "failed", "rejected")  # A2A's task states
 FIELD_NAME = re.compile(r"[a-z][a-z0-9_]{0,31}")
 FIELD_VALUE = re.compile(r"[A-Za-z0-9_.:/#@-]{1,120}")
 ID_LIST = re.compile(r"(?=.{1,120}$)[A-Za-z0-9_.:/#@-]+(,[A-Za-z0-9_.:/#@-]+)*")
 GLOB_LIST = re.compile(r"(?=.{1,120}$)[A-Za-z0-9_.:/#@*?-]+(,[A-Za-z0-9_.:/#@*?-]+)*")
-LIST_VALUES = {("intent", "item"): ID_LIST, ("intent", "topic"): ID_LIST, ("intent", "touch"): GLOB_LIST}
+LIST_VALUES = {("intent", "item"): ID_LIST, ("intent", "topic"): ID_LIST, ("intent", "touch"): GLOB_LIST,
+               ("progress", "gates"): ID_LIST}
 INTENT_SECONDS = 86400
 TEAM_KEYS = "team/"  # a team's keys: team/<team>/<name>, written by that team's operators alone behind `serve`
 SESSION_LEASE = "session/"  # the presence lease of a session: key session/<id>, held while the session lives
@@ -481,7 +502,8 @@ def check_kind(kind, fields):
         raise Refused({"ok": False, "error": "an intent names at least one of item, topic and touch"}, 2)
     if kind == "progress":
         if "item" not in fields or fields.get("state") not in STATES:
-            raise Refused({"ok": False, "error": f"progress takes item and state, state one of {', '.join(STATES)}"}, 2)
+            raise Refused({"ok": False, "error": f"progress takes item and state (one of {', '.join(STATES)}) and optionally "
+                                                 f"{', '.join(STEP_FIELDS)}"}, 2)
     if kind == "ask" and not {"id", "to", "ref"} <= set(fields):
         raise Refused({"ok": False, "error": "an ask takes id, to (a session, item or agent id, or any) and ref (the key whose value holds the question)"}, 2)
     if kind == "answer" and ("id" not in fields or "ref" not in fields or fields.get("state") not in ANSWER_STATES):
@@ -504,6 +526,41 @@ def post(args, clock):
         seq = con.execute("INSERT INTO events (kind, fields, at) VALUES (?, ?, ?)",
                           (args.kind, json.dumps(fields, sort_keys=True, ensure_ascii=False), clock())).lastrowid
     return {"ok": True, "seq": seq, "kind": args.kind, "fields": fields}
+
+
+def transition(args, clock):
+    """Move the run state of the item KEY (run/<item id>) to --to, when TRANSITIONS allows it from the state the key holds
+    (an absent key holds `none`): the value, the revision and one progress event are written in one transaction. A move the
+    table does not allow exits 1 naming the state and the states it may move to, and writes nothing."""
+    item = args.key[len(RUN_KEYS):] if args.key.startswith(RUN_KEYS) else ""
+    if not FIELD_VALUE.fullmatch(item) or "/" in item:
+        raise Refused({"ok": False, "error": f"a run key is {RUN_KEYS}<item id>, the id of 1 to 120 characters of letters, digits and _ . : # @ -, not {args.key[:40]!r}"}, 2)
+    if args.to not in RUN_STATES:
+        raise Refused({"ok": False, "error": f"--to is one of {', '.join(RUN_STATES)}, not {args.to[:40]!r}"}, 2)
+    fields = parse_fields(args.field, "progress")
+    extra = sorted(set(fields) - set(STEP_FIELDS))
+    if extra:
+        raise Refused({"ok": False, "error": f"transition takes only the fields {', '.join(STEP_FIELDS)}, not {', '.join(extra)}"}, 2)
+    team_refusal(args)
+    with Tx(args.store) as con:
+        now = clock()
+        row = live_row(con, args.key, now)
+        have = row["value"] if row is not None and row["value"] is not None else "none"
+        allowed = TRANSITIONS.get(have, ())
+        if args.to not in allowed:
+            raise Refused({"ok": False, "key": args.key, "state": have, "allowed": list(allowed),
+                           "revision": row["revision"] if row is not None else 0,
+                           "error": f"{args.key} is {have}, which does not move to {args.to}: it may move to "
+                                    f"{', '.join(allowed) or 'no state'}"})
+        if row is None:
+            con.execute("INSERT INTO entries (key, value, revision) VALUES (?, ?, 1)", (args.key, args.to))
+            revision = 1
+        else:
+            con.execute("UPDATE entries SET value = ?, revision = revision + 1 WHERE key = ?", (args.to, args.key))
+            revision = row["revision"] + 1
+        event = {"item": item, "state": args.to, **fields}
+        seq = add_event(con, args, "progress", event, now)
+    return {"ok": True, "key": args.key, "previous": have, "state": args.to, "revision": revision, "seq": seq, "fields": event}
 
 
 def wait(args, _clock):
@@ -569,7 +626,7 @@ def digest(args, clock):
     for at, seq, fields, items in found:
         if "session" in fields and SESSION_LEASE + fields["session"] not in live:
             continue
-        if items and all(i in state and state[i][0] > seq and state[i][1] == "done" for i in items):
+        if items and all(i in state and state[i][0] > seq and state[i][1] in FINISHED for i in items):
             continue
         values = [v for n in ("item", "topic", "touch") for v in fields.get(n, "").split(",") if v]
         if not any(overlaps(v, k) for v in values for k in args.key):
@@ -804,6 +861,10 @@ def build_parser(parser_class=argparse.ArgumentParser, remote=False):
     p = sub.add_parser("post", parents=parents)
     p.add_argument("--kind", required=True, help="one of " + ", ".join(KINDS))
     p.add_argument("--field", action="append", default=[], metavar="NAME=VALUE", help="an id field, repeatable")
+    p = sub.add_parser("transition", parents=parents)
+    p.add_argument("key", help=f"{RUN_KEYS}<item id>")
+    p.add_argument("--to", required=True, metavar="STATE", help="the state to move to, one of " + ", ".join(RUN_STATES))
+    p.add_argument("--field", action="append", default=[], metavar="NAME=VALUE", help="one of " + ", ".join(STEP_FIELDS) + ", repeatable")
     p = sub.add_parser("digest", parents=parents)
     p.add_argument("--key", action="append", required=True, metavar="K", help="an item id, topic key or path; repeatable")
     p.add_argument("--lines", type=not_negative, required=True, help="at most this many lines")
@@ -824,7 +885,7 @@ def build_parser(parser_class=argparse.ArgumentParser, remote=False):
 
 
 COMMANDS = {"claim": claim, "renew": renew, "release": release, "get": get, "put": put, "list": listing,
-            "post": post, "digest": digest, "wait": wait, "dedup": dedup}
+            "post": post, "transition": transition, "digest": digest, "wait": wait, "dedup": dedup}
 
 
 def run(args, clock):
