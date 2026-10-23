@@ -2,7 +2,7 @@
   "id": "ST-fsh6rqnc",
   "kind": "story",
   "title": "A paid pool re-run measures the grown held-out set, on the operator's approval",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lorofi3i",
   "priority": "P1",
   "rank": 0,
@@ -43,5 +43,7 @@
     "ST-jrbrm5w6",
     "ST-pth5inlu"
   ],
-  "notes": "Filed 2026-10-14 by the correctness + held-out planning session: the operator asked that a paid pool re-run wait for their later approval, so this stays a draft in no sprint. It blocks the held-out fitness test's model-side reading (EP-gzr4mmkm) only once ST-rgfoek35 lands. Never plan it without the operator's approval of the spend. Triage 2026-10-23: the operator approved the spend of this paid pool re-run; plan it next. Operator 2026-10-23: all default arms (haiku-5-5 low and default, haiku-4-5, sonnet-5-5 low and default, router, hook, the two web arms), --max-usd 40. Dry run 2026-10-23 on the 20-row held-out pool before the rebuild: python3 _tools/benchmarks.py run pool --kinds heldout --dry-run estimated 6.03 USD for 140 runs; the rebuilt pool's own dry-run estimate replaces it before the run."
+  "notes": "Filed 2026-10-14 by the correctness + held-out planning session: the operator asked that a paid pool re-run wait for their later approval, so this stays a draft in no sprint. It blocks the held-out fitness test's model-side reading (EP-gzr4mmkm) only once ST-rgfoek35 lands. Never plan it without the operator's approval of the spend. Triage 2026-10-23: the operator approved the spend of this paid pool re-run; plan it next. Operator 2026-10-23: all default arms (haiku-5-5 low and default, haiku-4-5, sonnet-5-5 low and default, router, hook, the two web arms), --max-usd 40. Dry run 2026-10-23 on the 20-row held-out pool before the rebuild: python3 _tools/benchmarks.py run pool --kinds heldout --dry-run estimated 6.03 USD for 140 runs; the rebuilt pool's own dry-run estimate replaces it before the run.",
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
