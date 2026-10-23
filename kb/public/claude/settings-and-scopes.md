@@ -3,7 +3,7 @@ topic: claude/settings-and-scopes
 priority: P2
 applies_to: "Claude Code docs (retrieved 2026-10-13)"
 retrieved_utc: 2026-10-21
-sources: [S2057, S-wzatkg4o, S-hfho3uwe, S2042, S-22qwtmf7, S743, S-gu5aqnrl, S-rp4dtt4w, S-zcuxapgb, S-l6l42j6e, S-pmhgjvef, S1800, S1863, S-rfpmkpck, S-vilbjgtf, S-lreom5ko, S-inpjf36q, S-a2zimsvk, S742, S1824]
+sources: [S2057, S-wzatkg4o, S-hfho3uwe, S2042, S-22qwtmf7, S743, S-gu5aqnrl, S-rp4dtt4w, S-zcuxapgb, S-l6l42j6e, S-pmhgjvef, S1800, S1863, S-rfpmkpck, S-vilbjgtf, S-lreom5ko, S-inpjf36q, S-a2zimsvk, S742, S1824, S-7caoetch]
 status: partial
 files: [claude/settings-keys.csv, claude/env-vars.csv]
 ---
@@ -103,8 +103,8 @@ precedence against settings-file `env` values.
 - A `/path` pattern resolves to `<primary working directory>/path` in project settings (`.claude/settings.json`), in local settings (`.claude/settings.local.json`) and in CLI flags or session rules, to `~/.claude/path` in user settings and to `<directory of the file>/path` for a file passed with `--settings`. [DOC S-pmhgjvef]
 - Local settings rules anchor at the session's primary working directory, not at the repository root where the file is stored, from v2.1.211; in a worktree session a shared rule such as `Edit(/src/**)` matches that worktree's own `src/` directory. [DOC S-pmhgjvef]
 - `Edit(/docs/**)` matches edits in `<primary working directory>/docs/`, not `/docs/` and not `<primary working directory>/.claude/docs/`. [DOC S-pmhgjvef]
-- Path rules are consulted for `Edit(path)` and `Read(path)` only: a path rule written for `Write`, `NotebookEdit`, `Glob` or the legacy `MultiEdit` is accepted, never consulted and warned about at startup (v2.1.210+) except for a `Glob` rule passed in `--allowedTools`, which is not warned about, so `Edit(docs/**)` takes the place of all the write tools. [DOC S-pmhgjvef]
-- The one exception to that startup warning is a `Glob` path rule passed in `--allowedTools`: the page says Claude Code warns "except for a `Glob` rule passed in `--allowedTools`", so `claude -p --allowedTools "Glob(docs/**)"` starts without the warning; `Read(docs/**)` is the rule the page names in place of `Glob(docs/**)`. The page gives no reason for the exception. [DOC S742]
+- Path rules are consulted for `Edit(path)` and `Read(path)` only: a path rule written for `Write`, `NotebookEdit`, `Glob` or the legacy `MultiEdit` is accepted and never matched, and warned about at startup (before v2.1.210 Claude Code accepted these rules without a warning) except for a `Glob` rule passed in `--allowedTools`, which is not warned about, so `Edit(docs/**)` takes the place of all the write tools. [DOC S-pmhgjvef, S-7caoetch]
+- The one exception to that startup warning is a `Glob` path rule passed in `--allowedTools`: the errors page says "Except in `--allowedTools`, where Claude Code accepts a `Glob` rule without warning, replace `Glob(path)` rules with `Read(path)`", so `claude -p --allowedTools "Glob(docs/**)"` starts without the warning; the permissions page names `Read(docs/**)` in place of `Glob(docs/**)`. Neither page gives a reason for the exception. [DOC S-7caoetch, S742]
 - On Windows, paths are normalized to POSIX form before matching: `C:\Users\jan.kowalski` becomes `/c/Users/jan.kowalski`, `//c/**/.env` matches `.env` files anywhere on that drive and `//**/.env` on all drives. [DOC S-pmhgjvef]
 - A rule given as a `claude -p --allowedTools` entry therefore names a path outside the working directory with `//` or `~/`: its `/path` form anchors at the primary working directory. This says nothing about protected paths, which an `Edit` allow rule does not lift (see above). [DER S-pmhgjvef, S-zcuxapgb: the anchor of a `/path` pattern in CLI flags, the protected-path check before allow rules]
 

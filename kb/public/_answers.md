@@ -492,7 +492,7 @@ _Agent: security_
 
 ## QS9. CIS benchmarks for SQL Server and for GitLab
 - A CIS benchmark **exists for Microsoft SQL Server**, published per major version — CIS Microsoft SQL Server 2022 Benchmark (versions up to v1.3.0 seen) and a CIS Microsoft SQL Server 2025 Benchmark (v1.0.0 referenced). Exact current version/date needs direct confirmation on the CIS listing page (`gaps.md`). [DOC S1486]
-- A CIS benchmark **exists for GitLab** — the CIS GitLab Benchmark, first published jointly by GitLab and CIS, announced 2024-04-17, with 125+ configuration recommendations; an open-source scanner (`gitlabcis`) implements its checks and is a live reference for check IDs. Exact current version/date likewise needs direct confirmation on the CIS listing page. [DOC S1487,S1489]
+- A CIS benchmark **exists for GitLab** — the CIS GitLab Benchmark, first published jointly by GitLab and CIS, announced 2024-04-17, with 125+ configuration recommendations; an open-source scanner (`gitlabcis`) audits a GitLab project against it. Exact current version/date likewise needs direct confirmation on the CIS listing page. [DOC S1487,S1489]
 
 _Agent: security_
 
@@ -850,7 +850,7 @@ _Agent: agents-eval_
 - **Grading**: three kinds — code-based (fast, objective, reproducible), model-based (rubric/NL assertions,
   flexible), human (SME/crowd/spot-check, gold standard); prefer deterministic where possible, LLM where
   necessary. [DOC S1896] Anthropic's platform docs add: write hard pass/fail rubrics, and for LLM grading,
-  have the grader reason first then discard the reasoning before scoring. [DOC S1898]
+  use a grader model with thinking on, so it reasons before it gives the score. [DOC S1898]
 - **Metrics**: `pass@k` (≥1 success in k) and `pass^k` (all k succeed, from τ-bench/Sierra), plus token
   usage, latency, cost and error rate. [DOC S1896, S1899]
 - **Regression cadence**: graduated tasks join an ongoing regression suite that should run continuously and

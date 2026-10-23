@@ -47,9 +47,10 @@ separate from content exclusion, configured per organization or repository.
   steps describe exactly these two checks. [DOC S-tn4wwzyx]
 - The page's note says **GitHub Copilot CLI** and **agent mode in Copilot Chat in IDEs** do **not** support
   content exclusion, so those sessions can still read excluded files. [DOC S-tn4wwzyx]
-- Changes to content exclusion take roughly 30 minutes to propagate to IDEs; VS Code, JetBrains IDEs, and
-  Visual Studio expose a manual "reload" action to pick up new rules immediately, while Vim/Neovim clients
-  poll and pick up changes automatically. [DOC S-tn4wwzyx]
+- Changes to content exclusion take up to 30 minutes to take effect in IDEs where the settings are already
+  loaded; to pick up new rules at once, VS Code has a reload command, JetBrains IDEs and Visual Studio need
+  the application closed and reopened, and Vim/Neovim fetch the exclusions from GitHub each time a file is
+  opened. [DOC S-tn4wwzyx]
 - Organization and enterprise owners can manage content exclusion programmatically via the GitHub REST API,
   in addition to the settings UI. [DOC S-tn4wwzyx]
 

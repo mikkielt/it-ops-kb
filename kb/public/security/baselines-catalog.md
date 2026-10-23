@@ -57,14 +57,13 @@ attribution. NCSC (UK), BSI and ANSSI publish narrower guidance (Intune packs, W
 - A DISA STIG for Windows Server 2025 exists: **V1R3**, zip
   `U_MS_Windows_Server_2025_V1R3_STIG.zip` (pinned artifact obtained by the coordinator; its exact
   XCCDF date was not independently confirmed by Part A) [DOC S1471].
-- Unclassified STIGs posted on public.cyber.mil / dl.dod.cyber.mil carry Distribution Statement A
-  ("approved for public release, distribution unlimited") per DoDI 5230.24 and the DoD Cyber
-  Exchange's unclassified-STIG posting policy; no sign-in or licence acceptance click-through is
-  required to download them [DOC S1470, and the DoDI 5230.24 / public.cyber.mil README
-  digest found this pass — the Windows 11 V2R9 zip's own `U_Readme_SRG_and_STIG.pdf` (V3R6) and
-  Overview carry no distribution statement, so the *licence statement wording* stays `COMMUNITY`,
-  while the *fact that STIGs are offered to people without a CAC at public.cyber.mil* is `DOC` per
-  the S1470 Overview, section 1.4].
+- Unclassified STIGs are offered to people without a CAC at public.cyber.mil, per the S1470 Overview
+  (section 1.4), and no sign-in or licence acceptance click-through is required to download them
+  [DOC S1470].
+- That unclassified STIGs carry Distribution Statement A ("approved for public release, distribution
+  unlimited") per DoDI 5230.24 is not confirmed. [UNK: the Windows 11 V2R9 zip's own
+  `U_Readme_SRG_and_STIG.pdf` (V3R6) and Overview carry no distribution statement, so the *licence
+  statement wording* is not confirmed by the source]
 - Windows Server 2025 has its own SCT baseline line, separate from Windows 11's: version 2506
   released 2025-06-25, and version 2602 released 2026-02-23, both via techcommunity announcement
   posts [DOC S1418, S1419]. The 2602 delta vs 2506 (read from the post on 2026-09-27) adds the three

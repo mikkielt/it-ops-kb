@@ -157,9 +157,9 @@ capability/safety-eval ground for an agent that happens to be hosted in Azure AI
 - Anthropic: contamination/flakiness control — "each trial should be isolated by starting from a clean
   environment. Unnecessary shared state... can cause correlated failures." [DOC S1896]
 - Anthropic's platform docs on defining success criteria recommend detailed rubrics with hard pass/fail
-  language (e.g. a required phrase, otherwise automatically "incorrect"), and for LLM-based grading, asking
-  the grading model to reason first and then discarding the reasoning before emitting the score, which the
-  docs state increases grading accuracy on complex judgment tasks. [DOC S1898]
+  language (e.g. a required phrase, otherwise automatically "incorrect"), and for LLM-based grading, using
+  a grader model with thinking on, so that it reasons before it gives the score, which the docs say increases
+  evaluation performance, particularly for tasks requiring complex judgment. [DOC S1898]
 - OpenAI's evaluation best-practices guidance: combine metrics with human judgment, adopt "eval-driven
   development" (evaluate early and often, write scoped tests at every stage), grade with the most capable
   model available, prefer pairwise or pass/fail judgments and control for length bias, and validate the

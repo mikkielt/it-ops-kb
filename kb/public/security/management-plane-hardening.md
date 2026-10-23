@@ -43,7 +43,7 @@ ConfigMgr, its SQL Server site database, GitLab (a configuration repository) and
 ### GitLab self-managed (constrains a no-domain-identity CI runner and the configuration repository)
 - A **CIS GitLab Benchmark** exists (first published by GitLab with CIS, announced 2024-04-17), with 125+ recommended configuration checks. [DOC S1487]
 - `gitlabcis`, an open-source Python package from GitLab's security OSS group, is a Python-based CLI that scans GitLab projects for compliance with the CIS GitLab Benchmark, with its recommendations kept as code ("recommendations-as-code") in the repository. [DOC S1489]
-- The GitLab-authored scanner project is a live reference for the benchmark's check IDs even where the benchmark PDF itself needs a CIS account. [DOC S1489]
+- The GitLab-hosted `gitlabcis` project (its README) describes a Python package that audits a GitLab project against the CIS GitLab Benchmark and includes recommendations-as-code formatted in YAML. [DOC S1489]
 
 ### Windows GitLab Runner host (constrains the CI runner's host)
 - Runner installation and shell/service-account guidance for Windows is in the runner docs; already partly captured in [[../windows/gitlab-runner-windows]] (not duplicated). [DOC S1490]

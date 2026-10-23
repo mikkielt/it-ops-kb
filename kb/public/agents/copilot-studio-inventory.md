@@ -11,11 +11,12 @@ files: [agents/copilot-studio-feature-map.csv]
 # Copilot Studio feature inventory
 
 ## Summary
-- Copilot Studio ships four "harnesses" (execution engines): **GitHub Copilot harness**
-  (reasoning-heavy multi-step), **standard harness** (rule-based topics, most features below),
-  **Copilot chat harness** (extends Microsoft Copilot Chat with organisation knowledge) and
-  **Customer Conversation harness** (customer-facing voice and chat agents). Harness
-  choice changes billing and available features. [DOC S1962]
+- The Copilot Studio overview page, read 2026-10-23, lists three "harnesses" (the engine that carries
+  out the work): **GitHub Copilot harness** (reasoning-heavy multi-step), **standard harness**
+  (rule-based topics, most features below) and **Customer Conversation harness** (customer-facing
+  voice and chat agents). Harness choice changes billing and available features. [DOC S1962] [UNK:
+  whether the Copilot chat harness the feature map names, which the overview page listed on 2026-10-21,
+  is still a harness]
 - Standard-harness agents are billed in **Copilot Credits** (renamed from "messages" 2025-09-01), sold
   as pay-as-you-go, a one-year prepurchase plan, or prepaid packs; unused credits don't roll over, and
   usage beyond purchased capacity triggers technical enforcement that can result in service denial.

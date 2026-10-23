@@ -47,13 +47,13 @@ probes ran on Python 3.13.2, macOS (Darwin 25.5.0), 2026-10-07.
   where `"%Y-W%V"` printed `2024-W01`; so a week label is `%G-W%V`, never `%Y-W%V`. [DER S-gaeidf4e: the `%G`/`%Y` text; the outputs observed on 3.13.2, macOS, 2026-10-07]
 - For `strptime`, `%V` is only used in calculations when the day of the week and the ISO year (`%G`) are also
   in the format string; the leading zero of `%V` is optional when parsing. [DOC S-gaeidf4e]
-- The docs say `%G`, `%u` and `%V` "may not be available on all platforms when used with the `strftime()`
-  method", because Python calls the platform's C `strftime` and "platform variations are common"; the
-  `isocalendar()` entry carries no such caveat. So a tool that must give the same week on Windows, macOS
+- The docs say the full set of format codes `strftime()` supports varies across platforms, because Python
+  calls the platform's C `strftime` and "platform variations are common"; they add `%G`, `%u` and `%V`
+  in 3.6 but name no platform that lacks them, and the `isocalendar()` entry carries no such caveat. So a tool that must give the same week on Windows, macOS
   and Linux takes the week from `isocalendar()` and formats the label itself, for example
   `f"{y}-W{w:02d}"`. [DER S-gaeidf4e: the platform caveat for the codes against the `isocalendar` entry, which has none]
 - The Universal C Runtime's `strftime` page lists `%G` (the ISO 8601 week-based year), `%g` (its last two digits), `%u` (ISO weekday 1 to 7, Monday 1) and `%V` (ISO week 00 to 53), and says the week starts on Monday with week 1 the week that holds 4 January. [DOC S-4hcwbrfl]
-- So Windows' C runtime documents all three codes Python's page warns about; which platforms lack them is named by neither page, and whether a given Python build on Windows calls that runtime function is not stated, so the `isocalendar()` route stays the one that does not depend on the platform. [DER S-gaeidf4e, S-4hcwbrfl: Python's caveat against the runtime's directive list]
+- So Windows' C runtime documents all three codes, though Python's page says the codes supported vary across platforms; which platforms lack them is named by neither page, and whether a given Python build on Windows calls that runtime function is not stated, so the `isocalendar()` route stays the one that does not depend on the platform. [DER S-gaeidf4e, S-4hcwbrfl: Python's caveat against the runtime's directive list]
 - `date.isoformat()` returns only `YYYY-MM-DD`. `date.fromisoformat()` (since 3.7) takes "any valid ISO 8601
   format" with three exceptions, reduced-precision (`YYYY-MM`, `YYYY`), extended-year and ordinal
   (`YYYY-OOO`) dates; it was widened in 3.11 from `YYYY-MM-DD` only, and the docs' example

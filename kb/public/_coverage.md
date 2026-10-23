@@ -158,7 +158,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `claude/ci-and-headless` | P2 | partial | `claude/ci-and-headless.md` | 30 |
 | `claude/enterprise-admin` | P2 | complete | `claude/enterprise-admin.md` | 15 |
 | `claude/plugins` | P2 | complete | `claude/plugins.md`, `claude/plugins.csv` | 18 |
-| `claude/settings-and-scopes` | P2 | partial | `claude/settings-and-scopes.md`, `claude/settings-keys.csv`, `claude/env-vars.csv` | 20 |
+| `claude/settings-and-scopes` | P2 | partial | `claude/settings-and-scopes.md`, `claude/settings-keys.csv`, `claude/env-vars.csv` | 21 |
 | `claude/skills-and-subagents` | P2 | complete | `claude/skills-and-subagents.md`, `claude/skills-and-subagents.csv` | 11 |
 | `claude/cross-session-messaging` | P3 | complete | `claude/cross-session-messaging.md` | 14 |
 | `claude/large-codebases` | P3 | complete | `claude/large-codebases.md` | 7 |

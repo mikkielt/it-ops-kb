@@ -20,7 +20,7 @@ kinds carry declared roles. It is a task input, not a decision. Every row uses e
 - Anthropic recommends starting an agent eval set small: "20-50 simple tasks drawn from real failures is a
   great start," with deterministic graders preferred where possible and LLM graders "where necessary." [DOC S1896]
 - Anthropic's platform docs recommend rubric-based, specific success criteria and, for LLM-based grading,
-  asking the grader to reason before scoring, then discarding the reasoning. [DOC S1898]
+  using a grader model with thinking on, so that it reasons before it produces the score. [DOC S1898]
 - τ-bench's `pass^k` (all of k trials succeed) and `pass@k` (at least one of k succeeds) are defined by
   Sierra's own benchmark and paper. [DOC S1899]
 - Cadence in Anthropic's guidance: automated evals can run on every commit; teams should triage user feedback

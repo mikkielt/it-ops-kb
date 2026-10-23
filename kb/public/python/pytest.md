@@ -56,11 +56,10 @@ the built-in fixtures (`capsys`, `monkeypatch`, `tmp_path`, `tmp_path_factory`) 
   `tmp_path_retention_policy = "failed"` because "a git scenario copies the kb; keeping every
   passing run's copies fills a disk" (comment in `pyproject.toml`).
   [DOC S-mgv7bfqe]
-- `capsys` captures text written to `sys.stdout`/`sys.stderr` during a test (`capsysbinary` captures
-  bytes instead; `capfd`/`capfdbinary` capture at the file-descriptor level, which also catches output
-  from subprocesses). `monkeypatch` (a `pytest.MonkeyPatch` instance) is used to temporarily set or
-  delete attributes, dict items, environment variables, or `sys.path` entries, undoing all changes
-  automatically at the end of the test. [DOC S-h5gurdir]
+- `capsys` captures output to `sys.stdout` and `sys.stderr` as text (`capsysbinary` captures it as
+  bytes; `capfd` and `capfdbinary` capture output to file descriptors `1` and `2` as text and bytes).
+  `monkeypatch` temporarily modifies classes, functions, dictionaries, `os.environ` and other objects.
+  [DOC S-h5gurdir]
 - Running `pytest` can exit with one of seven codes: `0` all collected tests passed; `1` tests ran but
   some failed; `2` execution interrupted by the user (e.g. Ctrl-C); `3` an internal error occurred
   while executing tests; `4` a command-line usage error; `5` no tests were collected; `6` the
