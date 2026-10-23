@@ -2,7 +2,7 @@
   "id": "BG-4huxqka4",
   "kind": "bug",
   "title": "The ceiling and profile deny rules anchor at each session's own checkout, so a worktree session can write the main checkout's files by absolute path",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3trnelzv",
   "priority": "P1",
   "rank": 0,
@@ -43,6 +43,19 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-92aeeb3c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "7cbf3dbbb6e5ecbce00b1058d500f9c1249b0696",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,sys;d=json.load(open('.claude/settings.json'))['permissions']['deny'];w=[x for x in d if x.startswith(('Edit(//','Write(//'))];need=['tests_ceiling.json','host.json','_decisions.csv'];m=[n for n in need if not any(n in x for x in w)];print('files with no absolute-path deny rule:',m);sys.exit(1 if m else 0)"
+        ],
+        "exit": 0,
+        "sha256": "c429358e12492152"
+      }
+    ]
+  }
 }
