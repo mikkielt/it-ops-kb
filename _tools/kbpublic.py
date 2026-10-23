@@ -79,7 +79,7 @@ ALLOWLIST_PATH = "_tools/tests_allowlist.txt"
 URL_RX = re.compile(r"(?:https?|ssh|git)://\S+|(?<![\w.%+-])git@[\w.-]+:[\w./~-]+|\bssh(?:\s+-\w+)*\s+git@[\w.-]+")
 CACHE_DIR = ("_cache", "publish")  # the per-clone scan cache under the repository, never committed (its own .gitignore)
 PROJECTION_FORM = 1  # the projection's form: a change to how commits are projected bumps it, so no older cache is read
-SCAN_FORM = 2  # the leak scan's form (file_hits): a change to what it flags bumps it, so no verdict cached under an older rule is read
+SCAN_FORM = 3  # the leak scan's form (file_hits): a change to what it flags bumps it, so no verdict cached under an older rule is read
 HOOK_BOUND = 150  # uncached commits publish --hook checks at most; a longer range is left to a publish by hand (git.md)
 CI_RUN = None  # a command runner (argv -> (code, stdout, stderr)) for the CI check; None: ql_base.run_cmd. Tests stub it.
 
@@ -715,8 +715,9 @@ def message_refusals(proj, tip, final, cwd, sources=None):
     noreply or no-reply local part nor a placeholder domain the scan allows. A cause names the commit and the field
     (the message, or a trailer of its last paragraph), never the address. Raises RuntimeError on a git error."""
     import kbcommon
-    code, o, e = run(["log", "--topo-order", "--format=%x01%H%x02%B", "--diff-merges=first-parent", "--root",
-                      proj if tip is None else f"{tip}..{proj}"], cwd)
+    # --no-patch: git 2.50 prints a merge's first-parent patch for --diff-merges, which is not its message
+    code, o, e = run(["log", "--topo-order", "--format=%x01%H%x02%B", "--diff-merges=first-parent", "--no-patch",
+                      "--root", proj if tip is None else f"{tip}..{proj}"], cwd)
     if code:
         raise RuntimeError(f"git log: {e.strip()}")
     res = []

@@ -1,0 +1,31 @@
+{
+  "id": "BG-4wddhkjv",
+  "kind": "bug",
+  "title": "kbgit.py publish refuses a merge commit's message for an email address its first-parent diff adds, and refuses public example values the allowlist cannot or does not yet hold",
+  "status": "doing",
+  "sprint": "SP-3trnelzv",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kbgit.py publish reads only a commit's message in its message check: message_refusals no longer gets a merge's first-parent patch from git log (git 2.50 prints one for --diff-merges=first-parent), so a merge whose message holds no address publishes. The public example values in origin/main's history that publish refused on 2026-10-23 pass: tests_allowlist.txt holds, each with its reason, the placeholder session GUID in BG-wt7exlol's repro, the two RFC 1918 scope ids of Microsoft's Add-DhcpServerv4Failover example, the two author addresses in Chef's MIT source headers, GitHub's web-commit noreply address, GitLab's SSH user address and the python.org release manager's sigstore identity; kbcommon.HOME_GENERIC holds admin, so the robocopy doc example's Admin profile path is not a home-directory leak. kbgit.py publish --dry-run then refuses none of those six causes.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys,tempfile; sys.path.insert(0,'_tools'); import kbpublic; d=tempfile.mkdtemp(); g=lambda *a: subprocess.run(['git','-C',d,'-c','user.name=t','-c','user.email=t@example.com',*a],check=True,capture_output=True); g('init','-q','-b','main'); open(d+'/a.txt','w').write('a\\n'); g('add','a.txt'); g('commit','-qm','base'); g('checkout','-qb','side'); open(d+'/b.txt','w').write('jan.kowalski'+'@'+'corp.invalid\\n'); g('add','b.txt'); g('commit','-qm','side'); g('checkout','-q','main'); g('merge','-q','--no-ff','-m','merge side','side'); r=kbpublic.message_refusals('HEAD',None,{},d); print(r or 'ok'); sys.exit(1 if r else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kbpublic.py",
+    "_tools/kbcommon.py",
+    "_tools/tests_allowlist.txt",
+    "_tools/redact.py",
+    "kb/_self/git.md",
+    "kb/_self/plugin.md",
+    "kb/_self/querylog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "claimed_by": "claude-b3926d84",
+  "operator": "op-f618a13e"
+}
