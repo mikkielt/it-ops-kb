@@ -2,19 +2,84 @@
   "id": "BG-5gqy7hln",
   "kind": "bug",
   "title": "selfcheck fails allow-rules and hooks in a host project, on the kb's glab, core.hooksPath and .claude-plugin checks (second-project run)",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4fawjprq",
+  "sprint": "SP-ovwzbc7u",
   "priority": "P1",
   "rank": 0,
   "severity": "S3",
-  "goal": "selfcheck in a host project checks only what that project's backlog.json and settings name: no FAIL for the kb's glab commands, core.hooksPath or a .claude-plugin/plugin.json the host does not have",
+  "goal": "selfcheck in a host project (a root that is not the plugin's own checkout) runs only the checks whose inputs the project names: allow-rules requires the sprint loop's git commands, tools and backlog.py commands plus the commands its backlog.json names (land_push, land_stale, land_eval, land_lint), and the forge's glab or gh command only when backlog.json sets forge, never the kb's kbgit.py, tests.py, check.py, rag.py, selfdoc.py or lint.py ones; a host with no .claude/settings.json reads unknown, not FAIL; hooks is skipped, said so, unless core.hooksPath is set, then it needs only that path to exist; the plugin manifest is checked in the plugin's own checkout only; in the kb's own checkout every check runs as today",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import os,subprocess,sys,tempfile; d=tempfile.mkdtemp(); subprocess.run(['git','init','-q',d]); o=subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'selfcheck'],capture_output=True,text=True).stdout; sys.exit(1 if 'FAIL hooks' in o or 'FAIL allow-rules' in o else 0)"
+      "import json,os,subprocess,sys,tempfile; d=tempfile.mkdtemp(); subprocess.run(['git','init','-q',d]); os.makedirs(os.path.join(d,'.claude')); json.dump({'permissions':{'allow':['Bash(git *)','Bash(python3 *backlog.py *)','Agent','SendMessage','Edit','Write']}},open(os.path.join(d,'.claude','settings.json'),'w')); json.dump({'land_push':['git','push','origin','HEAD:main']},open(os.path.join(d,'backlog.json'),'w')); o=subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'selfcheck'],capture_output=True,text=True).stdout; bad=[l[:90] for l in o.splitlines() if l.startswith(('FAIL hooks','FAIL allow-rules'))]; print(bad); sys.exit(1 if bad else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0,'_tools'); import bl_selfcheck as s; sys.exit(0 if s.check_allow('.')['state']=='ok' and s.plugin_problem('.') is None else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess,sys,tempfile; d=tempfile.mkdtemp(); subprocess.run(['git','init','-q',d]); os.makedirs(os.path.join(d,'.claude')); json.dump({'permissions':{'allow':['Bash(git *)','Bash(python3 *backlog.py *)','Agent','SendMessage','Edit','Write']}},open(os.path.join(d,'.claude','settings.json'),'w')); json.dump({'land_stale':['_tools/selfdoc.py','stale','--since']},open(os.path.join(d,'backlog.json'),'w')); o=subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'selfcheck'],capture_output=True,text=True).stdout; sys.exit(0 if 'FAIL allow-rules' in o else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys,tempfile; d=tempfile.mkdtemp(); subprocess.run(['git','init','-q',d]); o=subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'selfcheck'],capture_output=True,text=True).stdout; sys.exit(1 if 'FAIL allow-rules' in o else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,subprocess,sys,tempfile; d=tempfile.mkdtemp(); subprocess.run(['git','init','-q',d]); os.makedirs(os.path.join(d,'myhooks')); subprocess.run(['git','-C',d,'config','core.hooksPath','myhooks']); o=subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'selfcheck'],capture_output=True,text=True).stdout; sys.exit(1 if 'FAIL hooks' in o else 0)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "selfcheck in a host project (a root that is not the plugin's own checkout) runs only the checks whose inputs the project names: allow-rules requires the sprint loop's git commands, tools and backlog.py commands plus the commands its backlog.json names (land_push, land_stale, land_eval, land_lint)",
+      "check": 1
+    },
+    {
+      "clause": "the forge's glab or gh command only when backlog.json sets forge, never the kb's kbgit.py, tests.py, check.py, rag.py, selfdoc.py or lint.py ones",
+      "check": 4
+    },
+    {
+      "clause": "a host with no .claude/settings.json reads unknown, not FAIL",
+      "check": 2
+    },
+    {
+      "clause": "hooks is skipped, said so, unless core.hooksPath is set, then it needs only that path to exist",
+      "check": 3
+    },
+    {
+      "clause": "the plugin manifest is checked in the plugin's own checkout only",
+      "check": 4
+    },
+    {
+      "clause": "in the kb's own checkout every check runs as today",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/bl_selfcheck.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-hjxvxufh"
+  ],
   "gates": [
     {
       "id": "g1",
@@ -29,12 +94,12 @@
         "only checks whose inputs the host names: forge commands when its forge and land_push name them, hooks when it sets a hooks path, the plugin manifest in the kb only": "BG-5gqy7hln",
         "all checks, with a selfcheck_skip list in the host backlog.json": "BG-5gqy7hln"
       },
-      "class": "design",
+      "class": "agents-rule",
       "answer": "only checks whose inputs the host names: forge commands when its forge and land_push name them, hooks when it sets a hooks path, the plugin manifest in the kb only",
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
     }
   ],
-  "notes": "Run finding 6: FAIL allow-rules: 6 of 31 not covered: git worktree add path -b branch origin/main, glab mr view code/ST-00000000 -F json, tool Agent +3 more; FAIL hooks: core.hooksPath is not set; .claude-plugin/plugin.json is missing or not JSON. Blocks the Nerthus workspace adoption (BG-42dg5ryi's host); raised to P1 by the operator. Not planned into a sprint: the fix needs an operator decision on an agents-rule path (_tools/bl_selfcheck.py). Ran the repro as filed: selfcheck on a fresh git-init project exits 1 with FAIL allow-rules (.claude/settings.json is missing) and FAIL hooks (core.hooksPath is not set; .claude-plugin/plugin.json is missing or not JSON), the stated defect, so it stays as filed. Open choices the goal leaves: (1) which setting gates each part of SKILL_COMMANDS (bl_selfcheck.py:77-105): the forge read by forge, the stale, eval and lint commands by land_stale, land_eval and land_lint, backlog.py merge by lane_module, the _tools/ paths by how a host runs the plugin, and whether the worktree command and the Agent and SendMessage tools stay required; (2) when the hooks check (hooks_problem, line 224, reads kg_hooks, the kb's own gate) and plugin_problem (line 245) apply: only when the project has a .githooks or a .claude-plugin/plugin.json, or by a settings key; (3) whether a missing .claude/settings.json is a FAIL or unknown in a project that names no steps. The rules in backlog.md (Dependencies) want a blocking operator gate before code on a bl_ module. Docs: backlog.md and tools.md (selfcheck row) map to bl_*.py and backlog.py. Next: add the gate with an option per choice, then plan touches (bl_selfcheck.py, bl_base.py if a setting is added, backlog.md, tools.md), depending on BG-c7pjl3mi and BG-cmvwrpbr."
+  "notes": "Run finding 6: in a host, selfcheck printed FAIL allow-rules (glab mr view, git worktree add, tool Agent) and FAIL hooks (core.hooksPath not set; .claude-plugin/plugin.json missing). Blocks the Nerthus adoption (BG-42dg5ryi's host); P1 by the operator. Planned to the operator's answer: only checks whose inputs the host names. Ran the filed repro (git-init project, no settings): FAIL allow-rules (.claude/settings.json is missing) and FAIL hooks (core.hooksPath is not set; .claude-plugin/plugin.json is missing), the stated defect. Rewritten to plant settings that allow git, backlog.py, Agent, SendMessage, Edit and Write and a backlog.json naming land_push: it still fails, FAIL allow-rules: 9 of 31 not covered: python3 _tools/kbgit.py sync --push, plus FAIL hooks. Ran the checks now: kb guard passes (check_allow('.') ok, plugin_problem('.') None), named-command guard passes, no-settings and hooks-path checks fail. Fix is in bl_selfcheck.py: SKILL_COMMANDS (line 12) split into the loop's own and the kb's, gated by land_push, land_stale, land_eval, land_lint and forge from setting() (source file only for forge); read_allow (missing settings: unknown for a host); hooks_problem (line 224) and plugin_problem (line 245) behind check_hooks (line 259). Referrers of SKILL_COMMANDS: backlog.md:373, tools.md:104 (selfcheck rows). Where the root is the plugin's own checkout is for the worker to define (the root holds _tools/kbgit.py); the loop's backlog.py commands are matched with any path before _tools/backlog.py."
 }

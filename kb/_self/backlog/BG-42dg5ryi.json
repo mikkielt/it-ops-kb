@@ -2,20 +2,92 @@
   "id": "BG-42dg5ryi",
   "kind": "bug",
   "title": "land and dispatch name a host item's branch and merge request by the kb id, so a workspace whose repositories enforce their own task-id branch and MR-title rules cannot land (Nerthus adoption)",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4fawjprq",
+  "sprint": "SP-ovwzbc7u",
   "priority": "P1",
   "rank": 0,
   "severity": "S2",
-  "goal": "A multi-repository item with an external tracker id is dispatched on a branch and landed from merge requests named by a template backlog.json sets from that id (the Nerthus workspace: branch proj/<nn>-<mm>-<slug>, MR title '<task id>: <title>', a 'Task: <task id>' trailer), so a host whose repositories' CI refuses any other branch name, MR title or trailer lands an item without changing those rules; with no template set the kb's work/<id> and '<id>:' stay the default",
+  "goal": "backlog.json takes a naming setting, one object of templates (branch, mr_title, trailer) filled from the item: {id} its id, {task} its first external id (P08-05), {nn} and {mm} that id's two digit runs, {title} its title, {slug} the title as a branch word; dispatch makes each repository's worktree on the branch template (proj/{nn}-{mm}-{slug}); land reads each repository's merge request by the mr_title template's text up to the title ('{task}:'); the worker's brief tells it to end each commit in a repository with the trailer template ('Task: {task}'); with no naming set the kb's work/<id> and '<id>:' stay the default; the workspace's own branch stays work/<id>",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import sys,inspect; sys.path.insert(0,\"_tools\"); import bl_land,bl_dispatch; a=\"title_prefix=f\\\"{iid}:\\\"\" in inspect.getsource(bl_land.land_repositories); b=\"WORK_PREFIX + iid\" in inspect.getsource(bl_dispatch.worker_branch); sys.exit(1 if a and b else 0)"
+      "import json,os,subprocess,sys,tempfile; d=tempfile.mkdtemp(); R=lambda *a: subprocess.run(a,cwd=d,capture_output=True,text=True); R('git','init','-q','-b','main','.'); R('git','config','user.email','a@b.c'); R('git','config','user.name','x'); os.makedirs(d+'/api'); subprocess.run(['git','init','-q','-b','main',d+'/api']); cfg={'item_dir':'items','repositories':{'api':'api'},'trackers':{'nerthus':{'pattern':'P[0-9]{2}-[0-9]{2}','url':'https://t.example.com/{id}'}}}; json.dump(cfg,open(d+'/backlog.json','w')); R('git','add','backlog.json'); R('git','commit','-qm','init'); B=[sys.executable,os.path.abspath('_tools/backlog.py'),'--root',d]; subprocess.run(B+['new','story','--title','Add rate limit','--goal','g','--touch','api/**','--external','nerthus=P08-05','--check','python3 _tools/x.py'],capture_output=True,text=True); iid=os.listdir(d+'/items')[0][:-5]; subprocess.run(B+['set',iid,'--repos','api'],capture_output=True,text=True); cfg['naming']={'branch':'proj/{nn}-{mm}-{slug}','mr_title':'{task}: {title}','trailer':'Task: {task}'}; json.dump(cfg,open(d+'/backlog.json','w')); o=subprocess.run(B+['dispatch',iid,'--dry-run'],capture_output=True,text=True).stdout; ls=[l[-80:] for l in o.splitlines() if l.startswith('worktree of api')]; print(ls); sys.exit(0 if ls and 'proj/08-05-add-rate-limit' in ls[0] else 1)"
     ]
   },
-  "repro_reason": "landing needs a live forge with merged requests; the names are fixed by these two expressions in land_repositories and worker_branch",
+  "repro_reason": "the repro runs dispatch --dry-run on a planted workspace; land's request read needs a live forge, so the land check patches that read",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess,sys,tempfile; sys.path.insert(0,'_tools'); import bl_base,bl_land,bl_forge,bl_close; d=tempfile.mkdtemp(); R=lambda *a: subprocess.run(a,cwd=d,capture_output=True,text=True); R('git','init','-q','-b','main','.'); R('git','config','user.email','a@b.c'); R('git','config','user.name','x'); os.makedirs(d+'/api'); subprocess.run(['git','init','-q','-b','main',d+'/api']); cfg={'item_dir':'items','repositories':{'api':'api'},'trackers':{'nerthus':{'pattern':'P[0-9]{2}-[0-9]{2}','url':'https://t.example.com/{id}'}}}; json.dump(cfg,open(d+'/backlog.json','w')); R('git','add','backlog.json'); R('git','commit','-qm','init'); B=[sys.executable,os.path.abspath('_tools/backlog.py'),'--root',d]; subprocess.run(B+['new','story','--title','Add rate limit','--goal','g','--touch','api/**','--external','nerthus=P08-05','--check','python3 _tools/x.py'],capture_output=True,text=True); iid=os.listdir(d+'/items')[0][:-5]; subprocess.run(B+['set',iid,'--repos','api'],capture_output=True,text=True); cfg['naming']={'branch':'proj/{nn}-{mm}-{slug}','mr_title':'{task}: {title}','trailer':'Task: {task}'}; json.dump(cfg,open(d+'/backlog.json','w')); bl_base.load_settings(d); bl_forge.read_request=lambda *a,**k: None; msg=[]; exec('try:'+chr(10)+' bl_land.land_repositories(bl_base.Backlog(d),iid)'+chr(10)+'except bl_close.Refused as e:'+chr(10)+' msg.append(str(e))'); print(msg); sys.exit(0 if msg and \"titled 'P08-05:'\" in msg[0] else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess,sys,tempfile; d=tempfile.mkdtemp(); R=lambda *a: subprocess.run(a,cwd=d,capture_output=True,text=True); R('git','init','-q','-b','main','.'); R('git','config','user.email','a@b.c'); R('git','config','user.name','x'); os.makedirs(d+'/api'); subprocess.run(['git','init','-q','-b','main',d+'/api']); cfg={'item_dir':'items','repositories':{'api':'api'},'trackers':{'nerthus':{'pattern':'P[0-9]{2}-[0-9]{2}','url':'https://t.example.com/{id}'}}}; json.dump(cfg,open(d+'/backlog.json','w')); R('git','add','backlog.json'); R('git','commit','-qm','init'); B=[sys.executable,os.path.abspath('_tools/backlog.py'),'--root',d]; subprocess.run(B+['new','story','--title','Add rate limit','--goal','g','--touch','api/**','--external','nerthus=P08-05','--check','python3 _tools/x.py'],capture_output=True,text=True); iid=os.listdir(d+'/items')[0][:-5]; subprocess.run(B+['set',iid,'--repos','api'],capture_output=True,text=True); cfg['naming']={'branch':'proj/{nn}-{mm}-{slug}','mr_title':'{task}: {title}','trailer':'Task: {task}'}; json.dump(cfg,open(d+'/backlog.json','w')); o=subprocess.run(B+['brief',iid],capture_output=True,text=True).stdout; sys.exit(0 if 'Task: P08-05' in o else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess,sys,tempfile; sys.path.insert(0,'_tools'); import bl_base,bl_land,bl_forge,bl_close; d=tempfile.mkdtemp(); R=lambda *a: subprocess.run(a,cwd=d,capture_output=True,text=True); R('git','init','-q','-b','main','.'); R('git','config','user.email','a@b.c'); R('git','config','user.name','x'); os.makedirs(d+'/api'); subprocess.run(['git','init','-q','-b','main',d+'/api']); cfg={'item_dir':'items','repositories':{'api':'api'},'trackers':{'nerthus':{'pattern':'P[0-9]{2}-[0-9]{2}','url':'https://t.example.com/{id}'}}}; json.dump(cfg,open(d+'/backlog.json','w')); R('git','add','backlog.json'); R('git','commit','-qm','init'); B=[sys.executable,os.path.abspath('_tools/backlog.py'),'--root',d]; subprocess.run(B+['new','story','--title','Add rate limit','--goal','g','--touch','api/**','--external','nerthus=P08-05','--check','python3 _tools/x.py'],capture_output=True,text=True); iid=os.listdir(d+'/items')[0][:-5]; subprocess.run(B+['set',iid,'--repos','api'],capture_output=True,text=True); o=subprocess.run(B+['dispatch',iid,'--dry-run'],capture_output=True,text=True).stdout; ls=[l for l in o.splitlines() if l.startswith('worktree of api')]; bl_base.load_settings(d); bl_forge.read_request=lambda *a,**k: None; msg=[]; exec('try:'+chr(10)+' bl_land.land_repositories(bl_base.Backlog(d),iid)'+chr(10)+'except bl_close.Refused as e:'+chr(10)+' msg.append(str(e))'); sys.exit(0 if ls and ('work/'+iid) in ls[0] and msg and ('titled '+repr(iid+':')) in msg[0] else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess,sys,tempfile; d=tempfile.mkdtemp(); R=lambda *a: subprocess.run(a,cwd=d,capture_output=True,text=True); R('git','init','-q','-b','main','.'); R('git','config','user.email','a@b.c'); R('git','config','user.name','x'); os.makedirs(d+'/api'); subprocess.run(['git','init','-q','-b','main',d+'/api']); cfg={'item_dir':'items','repositories':{'api':'api'},'trackers':{'nerthus':{'pattern':'P[0-9]{2}-[0-9]{2}','url':'https://t.example.com/{id}'}}}; json.dump(cfg,open(d+'/backlog.json','w')); R('git','add','backlog.json'); R('git','commit','-qm','init'); B=[sys.executable,os.path.abspath('_tools/backlog.py'),'--root',d]; subprocess.run(B+['new','story','--title','Add rate limit','--goal','g','--touch','api/**','--external','nerthus=P08-05','--check','python3 _tools/x.py'],capture_output=True,text=True); iid=os.listdir(d+'/items')[0][:-5]; subprocess.run(B+['set',iid,'--repos','api'],capture_output=True,text=True); cfg['naming']={'branch':'proj/{nn}-{mm}-{slug}','mr_title':'{task}: {title}','trailer':'Task: {task}'}; json.dump(cfg,open(d+'/backlog.json','w')); o=subprocess.run(B+['dispatch',iid,'--dry-run'],capture_output=True,text=True).stdout; ls=[l for l in o.splitlines() if l.startswith('worktree: ')]; sys.exit(0 if ls and ('work/'+iid) in ls[0] else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "backlog.json takes a naming setting, one object of templates (branch, mr_title, trailer) filled from the item: {id} its id, {task} its first external id (P08-05), {nn} and {mm} that id's two digit runs, {title} its title, {slug} the title as a branch word",
+      "check": 4
+    },
+    {
+      "clause": "dispatch makes each repository's worktree on the branch template (proj/{nn}-{mm}-{slug})",
+      "check": 4
+    },
+    {
+      "clause": "land reads each repository's merge request by the mr_title template's text up to the title ('{task}:')",
+      "check": 0
+    },
+    {
+      "clause": "the worker's brief tells it to end each commit in a repository with the trailer template ('Task: {task}')",
+      "check": 1
+    },
+    {
+      "clause": "with no naming set the kb's work/<id> and '<id>:' stay the default",
+      "check": 2
+    },
+    {
+      "clause": "the workspace's own branch stays work/<id>",
+      "check": 3
+    }
+  ],
+  "touches": [
+    "_tools/bl_base.py",
+    "_tools/bl_dispatch.py",
+    "_tools/bl_land.py",
+    "_tools/bl_close.py",
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/querylog.md"
+  ],
+  "depends_on": [
+    "BG-5gqy7hln",
+    "BG-hjxvxufh",
+    "BG-c7pjl3mi"
+  ],
   "gates": [
     {
       "id": "g1",
@@ -37,5 +109,5 @@
       "role": "interactive"
     }
   ],
-  "notes": "Measured 2026-10-23 in a throwaway clone of the Nerthus workspace: land of a story whose task (P08-05) has a merged '<task id>:' request stops at step requests with \"no merge request titled 'ST-dl7mgwpd:' (state none)\", and done refuses the same item with \"the work of an item with repos is merged in its repositories, which land reads through their merge requests: run land\", so a host whose requests carry its own ids has no landing path at all. The same done printed \"the docs check could not run: cannot read kb/_self/map.csv\" with docs_map empty (ST-m7uk3zpu). Not planned into a sprint: the goal leaves the template's shape open and the code is agents-rule (bl_land.py, bl_dispatch.py, bl_base.py), so a blocking operator gate comes before code. Ran the repro as filed: both expressions are in the source (title_prefix=f\"{iid}:\" in land_repositories, WORK_PREFIX + iid in worker_branch), exit 1; it reads source text, kept as filed because the template setting has no name yet, and it must be rewritten on a planted workspace once the gate settles it. Open choices: the setting's name and keys (branch, request title, trailer), how an external tracker id P08-05 and an item title fill <nn>-<mm>-<slug> and <task id>, and whether the done and brief checks that read work/<id> (WORK_PREFIX referrers: bl_clean.py:90, bl_close.py:43, bl_dispatch.py:44, bl_land.py:33) follow the template or only land and dispatch do. Referrers to plan then: worker_branch (bl_dispatch.py:266, 9 lines), land_repositories (bl_land.py:1054; backlog.md:302; tools.md:118). The done message about docs_map empty (ST-m7uk3zpu) is that item's, not this one's. Touches will share bl_dispatch.py with BG-duzrzr2d and bl_base.py with BG-cmvwrpbr and BG-c7pjl3mi: depend on those when planned."
+  "notes": "Measured on the Nerthus workspace: land of a story whose task (P08-05) has a merged '<task id>:' request stops at step requests with \"no merge request titled 'ST-dl7mgwpd:' (state none)\", and done refuses the item (the work of an item with repos is merged in its repositories, which land reads through their merge requests), so a host whose requests carry its own ids has no landing path. Planned to the operator's answer (one naming object of templates). Setting name, placeholders ({id}, {task}, {nn}, {mm}, {title}, {slug}) and the scope (dispatch, land, close for repository branches and requests, the brief's trailer; the workspace's own work/<id> branch and the done and tidy checks that read it unchanged) are this plan's reading of that answer. Ran the rewritten repro on a planted workspace (git-init host, repositories {api}, a tracker, a story with external nerthus=P08-05, naming set): dispatch --dry-run prints \"worktree of api: ...(would be made on work/ST-...\", not proj/08-05-add-rate-limit, exit 1. Ran each check: land (patched forge read) stops at \"titled 'ST-...:'\" instead of 'P08-05:' and the brief lacks 'Task: P08-05' (both fail now); the default and workspace-branch guards pass. Referrers: worker_branch (bl_dispatch.py:266; lines 486, 620, 667, 823, 922, 925, 1035), land_repositories (bl_land.py:1054, request title at 1074, branch at 1088, delete_repo_branches 1136), clean_repository_leftovers (bl_close.py:397); docs backlog.md:302, tools.md:118. WORK_PREFIX stays for the workspace (bl_clean.py:90, bl_close.py:43, bl_land.py:33)."
 }

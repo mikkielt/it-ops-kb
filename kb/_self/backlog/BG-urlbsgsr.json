@@ -2,19 +2,44 @@
   "id": "BG-urlbsgsr",
   "kind": "bug",
   "title": "backlog.py run by its full path from a host project reads the plugin's own backlog.json, and the plugin's skills and brief show no --root (second-project run)",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4fawjprq",
+  "sprint": "SP-ovwzbc7u",
   "priority": "P1",
   "rank": 0,
   "severity": "S2",
-  "goal": "A backlog.py command a host project's session runs by the plugin's full path, from the host's working tree, reads the host's backlog.json and item directory (the root is the working tree's repository, or the skills and the brief pass --root), so no host command reads or writes the kb's own backlog",
+  "goal": "A backlog.py command run from outside the tool's own checkout, by a host project's session on the plugin's full path, takes the git top level of its working directory as its root, so it reads the host's backlog.json and item directory and no host command reads or writes the kb's own backlog; run inside the kb's clone or a worktree of it, or given --root, the root stays what it is today",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import os,subprocess,sys,tempfile; d=tempfile.mkdtemp(); subprocess.run(['git','init','-q',d]); o=subprocess.run([sys.executable,os.path.abspath('_tools/backlog.py'),'config'],cwd=d,capture_output=True,text=True).stdout; sys.exit(1 if 'kb/_self/backlog' in o else 0)"
+      "import os,subprocess,sys,tempfile,json; d=tempfile.mkdtemp(); subprocess.run(['git','init','-q',d]); open(os.path.join(d,'backlog.json'),'w').write(json.dumps({'item_dir':'host_items'})); o=subprocess.run([sys.executable,os.path.abspath('_tools/backlog.py'),'config'],cwd=d,capture_output=True,text=True).stdout; sys.exit(0 if 'item_dir = \"host_items\"' in o else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os; sys.path.insert(0,'_tools'); import bl_cli; r=os.path.realpath('.'); a=os.path.realpath(bl_cli.default_root(r, cwd=os.path.join(r,'_tools')))==r; b=bl_cli.root_of(['--root','/x','config'],'/y')=='/x'; sys.exit(0 if a and b else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "A backlog.py command run from outside the tool's own checkout, by a host project's session on the plugin's full path, takes the git top level of its working directory as its root, so it reads the host's backlog.json and item directory and no host command reads or writes the kb's own backlog",
+      "check": 1
+    },
+    {
+      "clause": "run inside the kb's clone or a worktree of it, or given --root, the root stays what it is today",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/bl_cli.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
   "gates": [
     {
       "id": "g1",
@@ -29,12 +54,12 @@
         "default root is the working tree git top level whenever the tool runs from outside it": "BG-urlbsgsr",
         "the skills and the brief pass --root on every command": "BG-urlbsgsr"
       },
-      "class": "design",
+      "class": "agents-rule",
       "answer": "default root is the working tree git top level whenever the tool runs from outside it",
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
     }
   ],
-  "notes": "Run finding 1: python3 <plugin>/_tools/backlog.py config in the host printed item_dir = \"kb/_self/backlog\"  (file); the orchestrator and the reviewer added --root to every command; the reviewer without it got no item ST-... A host worker's gate add without --root would write into the kb's backlog. Review gap 6 of SP-ciqk6gt6 (same cause): with no --root, a tool root that holds .git is its own root (bl_cli.default_root), so with --plugin-dir <kb clone> a host's backlog.json hooks key is never read and the plugin's horizon --hook --opt-in stays silent in the host. Blocks the Nerthus workspace adoption (BG-42dg5ryi's host); raised to P1 by the operator. Not planned into a sprint: the goal leaves a choice open (default_root takes the working tree's repository, or the skills and the brief pass --root) and every route touches an agents-rule path (_tools/bl_cli.py:126 default_root, which returns the tool root when it holds .git, so a --plugin-dir kb clone wins over the host's toplevel; or the plugin's skills/ and the brief), so rules backlog.md Dependencies want a blocking operator gate before code. Ran the repro as filed: python3 _tools/backlog.py config from a fresh git-init dir exits 0 and prints item_dir = \"kb/_self/backlog\"  (file), so it fails for the stated reason and stays as filed. Referrers of default_root: _tools/backlog.py:402 only; of root_of: backlog.py:402 and _tools/kb_mcp.py:283. Docs map: kb/_self/backlog.md and kb/_self/tools.md map to _tools/backlog.py. Next: add a design gate (default_root prefers the cwd's toplevel, or --root in skills and brief), then plan touches."
+  "notes": "Run in a host with the plugin's full path: config printed item_dir = \"kb/_self/backlog\" (file), so a host worker's gate add without --root writes the kb's backlog; with --plugin-dir <kb clone> a host's backlog.json hooks key is never read. Blocks the Nerthus adoption (BG-42dg5ryi's host); P1 by the operator. Planned to the operator's answer (the git top level of the working directory is the root outside the tool's checkout). Ran the rewritten repro (plants backlog.json item_dir host_items in a git-init dir, runs the plugin's backlog.py config there): exit 1, output item_dir = \"kb/_self/backlog\" (file). The guard check passes now: default_root from inside the checkout gives the checkout, --root wins. Fix is bl_cli.default_root (bl_cli.py:126), which returns the tool root whenever it holds .git; its only caller is backlog.py:402; kb_mcp.py has its own root_of. Docs: the settings paragraph of backlog.md that spells the root order, and tools.md, by the map rows for bl_*.py."
 }
