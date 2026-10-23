@@ -49,7 +49,7 @@ Columns (one row per provider):
                   read as its entry of the export API, an Atom feed that doc_text reduces to lines), `pypi-json` (a
                   PyPI project page read as its JSON), `npm-registry` (an npm package page read as its registry
                   document), `terraform-docs` (an azurerm registry docs page read as the provider's docs file on
-                  GitHub), `ec-presscorner` (a press corner page read through its documents API)
+                  GitHub, at the tag of the newest release for `latest`), `ec-presscorner` (a press corner page read through its documents API)
   sitemap         sitemap index url, or `-`
   sitemap_lastmod per-page (usable per page) | added-removed (only to list added and removed urls) | none | -
   redirects       where moves are recorded (redirection files, 301 chains)
@@ -784,6 +784,23 @@ def learn_locale_form(url):
     return urllib.parse.urlunsplit((u.scheme, u.netloc, "/en-us" + (u.path if u.path.startswith("/") else "/" + u.path), u.query, u.fragment))
 
 
+_azurerm_tag = {}
+
+
+def azurerm_latest_tag():
+    """The git tag of the newest azurerm release (`v5.10.0`), from the registry's provider document, asked once for the
+    process after it answered; "" when the registry does not answer with one."""
+    if not _azurerm_tag:
+        r = request("https://registry.terraform.io/v1/providers/hashicorp/azurerm")
+        try:
+            tag = json.loads(r["body"].decode("utf-8")).get("tag") if r["status"] == 200 else ""
+        except ValueError:
+            tag = ""
+        if isinstance(tag, str) and re.fullmatch(r"v\d+(?:\.\d+)*", tag):
+            _azurerm_tag["tag"] = tag
+    return _azurerm_tag.get("tag", "")
+
+
 def raw_url(url, row):
     """(url, extra headers) of the provider's raw form of `url`; a Learn url without a locale is given at /en-us/."""
     form = (row or {}).get("raw_form") or "-"
@@ -814,10 +831,12 @@ def raw_url(url, row):
         m = re.match(r"https?://(?:www\.)?npmjs\.com/package/((?:@[^/?]+/)?[^/?]+)(?:/v/([^/?]+))?/?(?:\?.*)?$", base)
         if m:
             return "https://registry.npmjs.org/" + m.group(1).replace("/", "%2f") + (f"/{m.group(2)}" if m.group(2) else ""), {}
-    if kind == "terraform-docs":  # azurerm registry docs page -> the provider's docs file on GitHub (latest = main)
+    if kind == "terraform-docs":  # azurerm registry docs page -> the provider's docs file on GitHub (latest = the newest release's tag)
         m = re.match(r"https?://registry\.terraform\.io/providers/hashicorp/azurerm/([^/]+)/docs/(resources|data-sources)/([^/?]+)/?(?:\?.*)?$", base)
         if m:
-            ref = "main" if m.group(1) == "latest" else "v" + m.group(1).lstrip("v")
+            ref = azurerm_latest_tag() if m.group(1) == "latest" else "v" + m.group(1).lstrip("v")
+            if not ref:  # the registry did not name the newest release: the page itself, never the main branch
+                return base, {}
             sub = "r" if m.group(2) == "resources" else "d"
             return ("https://raw.githubusercontent.com/hashicorp/terraform-provider-azurerm/"
                     f"{ref}/website/docs/{sub}/{m.group(3)}.html.markdown"), {}

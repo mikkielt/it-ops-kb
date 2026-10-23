@@ -46,17 +46,21 @@ HTML is reduced to the text of <main> (or the whole body) before hashing, so pag
 Text of one url (`text URL`, no kb root, nothing saved): prints a page's normalized text; a PDF's through `pdftotext`
 (on PATH, else exit 2); the text members of a zip or tar archive (gzip, bzip2, xz), each after a `== name ==` line (a binary
 member as its printable strings), read in memory and never extracted, with a cap on bytes; a single gzip file that is no
-archive as its decompressed text; a response sent with Content-Encoding gzip decompressed; a spreadsheet's (.xlsx)
-shared strings. Exit 2 when it cannot read it.
-`--grep PATTERN` prints only the lines that match the regular expression (exit 1 when none do), so a long document is read
-without a pipe; `--header 'Name: value'` (repeatable) sends a request header beside the kb User-Agent.
+archive as its decompressed text; a response sent with Content-Encoding gzip decompressed (for the text only: --verify
+and --diff hash the bytes as sent); a spreadsheet's (.xlsx) shared strings; a JSON body on one line one value per line.
+A cap that cuts the text puts a `[cut at ...]` line in it. Exit 2 when it cannot read the body in full (undecodable,
+truncated, a failed read).
+`--grep PATTERN` prints only the lines that match the regular expression (exit 1 when none do, 2 when none do in a text
+that was cut, and each cut line goes to stderr), so a long document is read without a pipe; `--header 'Name: value'`
+(repeatable, before `--grep`: a `--header` after it is refused, so a permission rule that allows a line up to `--grep`
+lets a session add no header) sends a request header beside the kb User-Agent.
 
 A failed download is reported as `unknown`, never as a match.
 
 Every request writes one query log spool row (kb/_self/querylog.md, Capture): host, path and outcome class, never the
 query string or the body.
 """
-import argparse, datetime, difflib, hashlib, html.parser, io, json, os, re, shutil, subprocess, sys, tarfile, tempfile, time, zlib
+import argparse, datetime, difflib, hashlib, html.parser, http.client, io, json, lzma, os, re, shutil, subprocess, sys, tarfile, tempfile, time, zlib
 import urllib.error, urllib.parse, urllib.request, zipfile
 from xml.etree import ElementTree
 import kbcommon, kbid, ql_capture
@@ -70,9 +74,10 @@ GUNZIP_CAP = 100_000_000  # bytes a gzip body is decompressed to (a bomb is cut 
 _last = {}
 
 
-def fetch(url, headers=None):
-    """(bytes, content-type) of `url`, at most one request per DELAY seconds per host; `headers` ({name: value}) are
-    sent beside the kb User-Agent. A response sent with Content-Encoding gzip is returned decompressed."""
+def fetch_raw(url, headers=None):
+    """(bytes, content-type, gzipped) of `url` as the server sent them, at most one request per DELAY seconds per host;
+    `headers` ({name: value}) are sent beside the kb User-Agent. `gzipped` says the response carried Content-Encoding
+    gzip, which `ungzip` takes off: a hash of the artifact is over these bytes, and its text is read from the decoded ones."""
     if urllib.parse.urlparse(url).scheme not in ("http", "https"):
         raise ValueError(f"not an http(s) url: {url}")
     host = urllib.parse.urlparse(url).hostname
@@ -84,11 +89,10 @@ def fetch(url, headers=None):
     try:
         with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
             body = r.read()
-            if (r.headers.get("Content-Encoding") or "").strip().lower() in ("gzip", "x-gzip"):
-                body = _gunzip(body, GUNZIP_CAP)
             ql_capture.record_request(url, ql_capture.request_outcome(r.status, None, len(body), url, r.geturl()),
                                     body)
-            return body, r.headers.get("Content-Type", "")
+            gz = (r.headers.get("Content-Encoding") or "").strip().lower() in ("gzip", "x-gzip")
+            return body, r.headers.get("Content-Type", ""), gz
     except urllib.error.HTTPError as e:
         ql_capture.record_request(url, f"http-{e.code}")
         raise
@@ -97,13 +101,33 @@ def fetch(url, headers=None):
         raise
 
 
+def ungzip(body):
+    """The gzip `body` of a response sent with Content-Encoding gzip, decompressed; ValueError when it ends early or
+    holds more than GUNZIP_CAP bytes (a bomb is refused, not cut: its text would read as the whole)."""
+    out, cut = _gunzip(body, GUNZIP_CAP)
+    if cut:
+        raise ValueError(f"gzip body is truncated or over {GUNZIP_CAP} bytes decompressed")
+    return out
+
+
+def fetch(url, headers=None):
+    """(bytes, content-type) of `url` for reading its text: a response sent with Content-Encoding gzip is returned
+    decompressed (`fetch_raw` keeps the bytes as sent)."""
+    body, ctype, gz = fetch_raw(url, headers)
+    return (ungzip(body) if gz else body), ctype
+
+
 def _gunzip(data, cap):
-    """The gzip `data` decompressed, at most `cap` bytes of it."""
-    return zlib.decompressobj(wbits=31).decompress(data, cap)
+    """(the gzip `data` decompressed to at most `cap` bytes, cut): cut is True when the stream holds more than `cap`
+    bytes or ends before its end marker."""
+    d = zlib.decompressobj(wbits=31)
+    out = d.decompress(data, cap)
+    return out, not d.eof
 
 
 def get(url):
-    return fetch(url)[0]
+    """The bytes at `url` as the server sent them (what --verify hashes), a Content-Encoding gzip body included."""
+    return fetch_raw(url)[0]
 
 
 def sha(b):
@@ -236,35 +260,73 @@ def _json_text(page):
 
 TEXT_MEMBER_CAP, TEXT_TOTAL_CAP = 2_000_000, 8_000_000  # bytes read from one archive member, and printed in all
 STRINGS_CAP = 20_000  # bytes of printable strings printed for one binary member
+MEMBER_COUNT_CAP = 2_000  # archive members listed
+SHARED_STRINGS_CAP = 50_000_000  # bytes of xl/sharedStrings.xml read
+_cuts = []  # the cut lines of the read in progress (`_cut`), which `--grep` prints beside the matching lines
+
+
+def _cut(n, what):
+    """The line that marks a cut a cap made: `[cut at N bytes: WHAT]`; also kept in `_cuts` for `text_cmd`."""
+    line = f"[cut at {n} bytes: {what}]"
+    _cuts.append(line)
+    return line
+
+
+def _spread_json(text):
+    """`text` with a JSON body that sits on one line printed one value per line (so `--grep` prints the matching
+    values, not the whole document); any other text as it is."""
+    s = (text or "").strip()
+    if not s[:1] in ("{", "[") or "\n" in s:
+        return text
+    try:
+        value = json.loads(s)
+    except ValueError:
+        return text
+    return json.dumps(value, indent=1, ensure_ascii=False) + "\n"
 
 
 def _members_text(members):
-    """`== name ==` and the text of each (name, bytes) member that is text, up to TEXT_TOTAL_CAP bytes in all; a binary
-    member is named with its printable strings (`_strings`)."""
-    out, used = [], 0
-    for name, data in members:
-        if b"\0" in data[:1024]:
-            out.append(f"== {name} == (binary, printable strings)\n{_strings(data)}")
-            continue
+    """`== name ==` and the text of each (name, read) member that is text, up to TEXT_TOTAL_CAP bytes in all and
+    MEMBER_COUNT_CAP members; `read(n)` gives the first n bytes of the member. A binary member is named with its
+    printable strings (`_strings`). Every cut is marked with a `[cut at ...]` line."""
+    out, used, capped = [], 0, False
+    for i, (name, read) in enumerate(members):
+        if i >= MEMBER_COUNT_CAP:
+            out.append(_cut(MEMBER_COUNT_CAP, f"{MEMBER_COUNT_CAP} members listed, the rest not named"))
+            break
         room = TEXT_TOTAL_CAP - used
         if room <= 0:
-            out.append(f"== {name} == (not read: output cap {TEXT_TOTAL_CAP} bytes)")
+            out.append(f"== {name} == (not read)")
+            if not capped:
+                out.append(_cut(TEXT_TOTAL_CAP, "output cap reached, the members from here on are not read"))
+                capped = True
             continue
+        data = read(TEXT_MEMBER_CAP + 1)
+        if b"\0" in data[:1024]:
+            strings = _strings(data[:TEXT_MEMBER_CAP], min(STRINGS_CAP, room))
+            used += len(strings) + 1
+            out.append(f"== {name} == (binary, printable strings)\n{strings}")
+            continue
+        whole = len(data) <= min(room, TEXT_MEMBER_CAP)
         text = data[:min(room, TEXT_MEMBER_CAP)].decode("utf-8", errors="replace").replace("\r\n", "\n")
         used += len(text.encode("utf-8"))
-        out.append(f"== {name} ==\n{text}")
+        out.append(f"== {name} ==\n{_spread_json(text) if whole else text}")
+        if len(data) > TEXT_MEMBER_CAP:
+            out.append(_cut(TEXT_MEMBER_CAP, f"the rest of {name} is not read"))
+        elif len(data) > room:
+            out.append(_cut(room, f"the rest of {name} is not printed: output cap {TEXT_TOTAL_CAP} bytes"))
     return "\n".join(out) + "\n"
 
 
-def _strings(data):
-    """The runs of eight or more printable ASCII characters in binary `data`, one per line, up to STRINGS_CAP bytes (the
+def _strings(data, cap=STRINGS_CAP):
+    """The runs of eight or more printable ASCII characters in binary `data`, one per line, up to `cap` bytes (the
     `strings` tool's view: names, labels and paths a binary file holds)."""
     out, used = [], 0
     for m in re.finditer(rb"[\x20-\x7e]{8,}", data):
         run = m.group().decode("ascii")
         used += len(run) + 1
-        if used > STRINGS_CAP:
-            out.append(f"... (more strings not printed: cap {STRINGS_CAP} bytes)")
+        if used > cap:
+            out.append(_cut(cap, "more printable strings are not printed"))
             break
         out.append(run)
     return "\n".join(out) if out else "(no printable strings)"
@@ -272,50 +334,72 @@ def _strings(data):
 
 def _gz_text(body):
     """The text of a gzip body: a tar's members when it holds a tar, else the one decompressed file (a binary one as its
-    printable strings), at most TEXT_TOTAL_CAP bytes of it."""
+    printable strings), at most TEXT_TOTAL_CAP bytes of it; ValueError when the stream ends early."""
     head = zlib.decompressobj(wbits=31).decompress(body, 512)
     if head[257:262] == b"ustar":
         return _members_text(_tar_members(body))
-    data = _gunzip(body, TEXT_TOTAL_CAP)
+    data, cut = _gunzip(body, TEXT_TOTAL_CAP)
+    if cut and len(data) < TEXT_TOTAL_CAP:
+        raise ValueError("gzip body ends before its end marker")
     if b"\0" in data[:1024]:
-        return _strings(data) + "\n"
-    return data.decode("utf-8", errors="replace").replace("\r\n", "\n")
+        text = _strings(data) + "\n"
+    else:
+        text = _spread_json(data.decode("utf-8", errors="replace").replace("\r\n", "\n"))
+    return text + (_cut(TEXT_TOTAL_CAP, "the rest of the decompressed file is not read") + "\n" if cut else "")
 
 
 def _zip_members(body):
-    """(name, bytes) of each file in a zip, read in memory and never written out; at most TEXT_MEMBER_CAP bytes each."""
+    """(name, read) of each file in a zip, read in memory and never written out; `read(n)` gives its first n bytes."""
     with zipfile.ZipFile(io.BytesIO(body)) as z:
         for info in z.infolist():
             if not info.is_dir():
-                with z.open(info) as f:
-                    yield info.filename, f.read(TEXT_MEMBER_CAP)
+                yield info.filename, lambda n, z=z, info=info: _read_zip(z, info, n)
+
+
+def _read_zip(z, info, n):
+    with z.open(info) as f:
+        return f.read(n)
 
 
 def _tar_members(body):
-    """(name, bytes) of each regular file in a tar (gzip, bzip2 or xz as tarfile detects), read in memory only."""
+    """(name, read) of each regular file in a tar (gzip, bzip2 or xz as tarfile detects), read in memory only."""
     with tarfile.open(fileobj=io.BytesIO(body), mode="r:*") as t:
         for info in t:
             if info.isfile():
-                f = t.extractfile(info)
-                if f:
-                    yield info.name, f.read(TEXT_MEMBER_CAP)
+                yield info.name, lambda n, t=t, info=info: _read_tar(t, info, n)
+
+
+def _read_tar(t, info, n):
+    f = t.extractfile(info)
+    return f.read(n) if f else b""
 
 
 def _xlsx_text(body):
-    """The shared strings of a spreadsheet (xl/sharedStrings.xml), one per line; numbers and formulas are not read."""
+    """The shared strings of a spreadsheet (xl/sharedStrings.xml), one per line, at most TEXT_TOTAL_CAP bytes of them;
+    numbers and formulas are not read; ValueError when the file holds more than SHARED_STRINGS_CAP bytes."""
     with zipfile.ZipFile(io.BytesIO(body)) as z:
         try:
-            raw = z.read("xl/sharedStrings.xml")
+            with z.open("xl/sharedStrings.xml") as f:
+                raw = f.read(SHARED_STRINGS_CAP + 1)
         except KeyError:
             return ""
+    if len(raw) > SHARED_STRINGS_CAP:
+        raise ValueError(f"xl/sharedStrings.xml is over {SHARED_STRINGS_CAP} bytes")
     root = ElementTree.fromstring(raw)
     lines = ["".join(t.text or "" for t in si.iter() if t.tag.endswith("}t") or t.tag == "t") for si in root]
-    return "\n".join(ln for ln in lines if ln.strip()) + "\n"
+    return _cap_text("\n".join(ln for ln in lines if ln.strip()) + "\n")
+
+
+def _cap_text(text):
+    """`text` cut at TEXT_TOTAL_CAP characters with a `[cut at ...]` line, else as it is."""
+    if len(text) <= TEXT_TOTAL_CAP:
+        return text
+    return text[:TEXT_TOTAL_CAP] + "\n" + _cut(TEXT_TOTAL_CAP, "the rest of the text is not printed") + "\n"
 
 
 def _pdf_text(body):
-    """The text of a PDF through `pdftotext` on PATH (a temporary file in a directory of its own); exit 2 when it is
-    not installed or fails."""
+    """The text of a PDF through `pdftotext` on PATH (a temporary file in a directory of its own), at most
+    TEXT_TOTAL_CAP characters; exit 2 when it is not installed or fails."""
     exe = shutil.which("pdftotext")
     if not exe:
         raise ValueError("pdftotext is not on PATH: cannot read a PDF")
@@ -326,7 +410,7 @@ def _pdf_text(body):
         p = subprocess.run([exe, "-layout", src, "-"], capture_output=True, timeout=TIMEOUT)
     if p.returncode:
         raise ValueError(f"pdftotext failed ({p.returncode}): {p.stderr.decode('utf-8', 'replace').strip()[:200]}")
-    return p.stdout.decode("utf-8", errors="replace")
+    return _cap_text(p.stdout.decode("utf-8", errors="replace"))
 
 
 def read_text(url, body, ctype):
@@ -343,20 +427,23 @@ def read_text(url, body, ctype):
         return _gz_text(body)
     if body[:3] == b"BZh" or body[:6] == b"\xfd7zXZ\x00" or body[257:262] == b"ustar":
         return _members_text(_tar_members(body))
-    return to_text(body, ctype)
+    return _spread_json(to_text(body, ctype))
 
 
 def text_cmd(a):
     """`text URL [--grep PATTERN] [--header 'Name: value']`: print the text of the page, PDF, archive or spreadsheet at
-    URL, or only its lines that match the regular expression PATTERN (exit 1 when none do, as grep; exit 2 when it
-    cannot be read)."""
+    URL, or only its lines that match the regular expression PATTERN (exit 1 when none do, as grep). A cap that cuts
+    the text puts a `[cut at ...]` line in it (on stderr with `--grep`); exit 2 when the body cannot be read in full:
+    undecodable, truncated, or no match in a text that was cut, which proves nothing about the part not read."""
+    del _cuts[:]
     try:
         pattern = re.compile(a.grep) if a.grep is not None else None
         body, ctype = fetch(a.url, {k.strip(): v.strip() for k, _, v in (h.partition(":") for h in a.header)})
         text = read_text(a.url, body, ctype)
-    except (OSError, ValueError, re.error, zipfile.BadZipFile, tarfile.TarError, ElementTree.ParseError,
-            subprocess.SubprocessError, zlib.error) as e:
-        print(f"{a.url}: {str(e)[:300]}", file=sys.stderr)
+    except (OSError, ValueError, re.error, zipfile.BadZipFile, zipfile.LargeZipFile, tarfile.TarError, ElementTree.ParseError,
+            subprocess.SubprocessError, zlib.error, lzma.LZMAError, http.client.HTTPException, EOFError, RuntimeError,
+            NotImplementedError) as e:
+        print(f"{a.url}: {type(e).__name__}: {str(e)[:300]}", file=sys.stderr)
         sys.exit(2)
     if text is None:
         print(f"{a.url}: no text in this content ({ctype or 'unknown type'})", file=sys.stderr)
@@ -366,9 +453,11 @@ def text_cmd(a):
         return
     hits = [ln for ln in text.splitlines() if pattern.search(ln)]
     sys.stdout.write("".join(ln + "\n" for ln in hits))
+    for line in _cuts:
+        print(f"{a.url}: {line}", file=sys.stderr)
     if not hits:
-        print(f"{a.url}: no line matches {a.grep!r}", file=sys.stderr)
-        sys.exit(1)
+        print(f"{a.url}: no line matches {a.grep!r}" + (" in the part read" if _cuts else ""), file=sys.stderr)
+        sys.exit(2 if _cuts else 1)
 
 
 def now_utc():
@@ -450,7 +539,8 @@ def diff_sources(a, sources):
                "previous_fetched_utc": (prev or {}).get("fetched_utc") or None, "fetched_utc": None,
                "status": None, "added": 0, "removed": 0}
         try:
-            body, ctype = fetch(src["url"])
+            raw, ctype, gz = fetch_raw(src["url"])
+            body = ungzip(raw) if gz else raw
         except Exception as e:  # noqa: BLE001
             res.update(status="error", error=str(e)[:300])
             if not a.no_save:
@@ -458,7 +548,7 @@ def diff_sources(a, sources):
             results.append(res)
             continue
         text = to_text(body, ctype)
-        raw_sha, text_sha = sha(body), sha(text.encode("utf-8")) if text is not None else sha(body)
+        raw_sha, text_sha = sha(raw), sha(text.encode("utf-8")) if text is not None else sha(raw)
         res["fetched_utc"] = stamp
         old = snapshot(sid) if prev else None
         if prev and prev.get("text_sha256"):
@@ -483,7 +573,7 @@ def diff_sources(a, sources):
             changed = res["status"] in ("changed", "new") or not prev
             state[sid] = {**(prev or {}), "id": sid, "url": src["url"], "checked_utc": stamp, "fetched_utc": stamp,
                           "changed_utc": stamp if changed else prev.get("changed_utc", stamp),
-                          "sha256": raw_sha, "text_sha256": text_sha, "bytes": len(body), "error": ""}
+                          "sha256": raw_sha, "text_sha256": text_sha, "bytes": len(raw), "error": ""}
             if text is not None:
                 snapshot(sid, text)
         results.append(res)
@@ -535,13 +625,17 @@ def status(a, sources):
 def main():
     global DELAY, TIMEOUT
     if sys.argv[1:2] == ["text"]:  # `text URL`: its own usage, apart from the flag modes below
-        tp = argparse.ArgumentParser(prog="fetch.py text", description=text_cmd.__doc__)
+        tp = argparse.ArgumentParser(prog="fetch.py text", description=text_cmd.__doc__, allow_abbrev=False)
         tp.add_argument("url")
         tp.add_argument("--timeout", type=float, default=60, help="per-request timeout in seconds (default 60)")
         tp.add_argument("--grep", metavar="PATTERN", help="print only the lines of the text that match this regular "
                         "expression (exit 1 when none do)")
         tp.add_argument("--header", action="append", default=[], metavar="'NAME: VALUE'",
                         help="send this request header beside the User-Agent (repeatable)")
+        rest = sys.argv[2:]
+        if "--grep" in rest and any(x.startswith("--header") for x in rest[rest.index("--grep"):]):
+            tp.error("--header must come before --grep: a permission rule that allows the line up to --grep and then "
+                     "anything must not let a session send a header of its own")
         ta = tp.parse_args(sys.argv[2:])
         TIMEOUT = ta.timeout
         return text_cmd(ta)

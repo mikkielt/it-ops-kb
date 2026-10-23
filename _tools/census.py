@@ -186,8 +186,8 @@ that name the repository root and what the run may do, `--output-format json` an
 _tools/census_result.schema.json, `--max-turns` (DISPATCH_TURNS) and `--max-budget-usd` (DISPATCH_BUDGET_USD), no hooks,
 user settings or MCP server but the Microsoft Learn one, and `--permission-mode dontAsk` with rules that allow Read and
 Edit of the group's owned files alone (absolute paths; the working directory is a scratch directory of its own, removed
-after the run), `git show` and `git diff` in the census clones the part's rows read, `git ls-remote` of a wiki's own git url, each page's own `fetch.py text` line (options such as
-`--grep PATTERN` may follow its url) and `kbid.py url`. The child's environment is passed explicitly and `claude` is taken from PATH, never from the current
+after the run), `git show` and `git diff` in the census clones the part's rows read, `git ls-remote` of a wiki's own git url, each page's own `fetch.py text` line followed by
+`--grep PATTERN` (no other option, so no request header of the session's own choosing) and `kbid.py url`. The child's environment is passed explicitly and `claude` is taken from PATH, never from the current
 directory. The `structured_output` of the reply, when it is valid against the schema, is written to
 _cache/census/dispatch/<D>/<group>/RESULTS.json (RESULTS-<N>.json for part N of a group of several) and the command
 that applies it is printed; a run that hits a cap, errors, times out or returns no valid result writes none (an earlier
@@ -1120,7 +1120,7 @@ def set_outcomes(rows, items, tally):
             continue
         by_id[it["id"]]["outcome"] = it["outcome"]
         tally[it["outcome"]] += 1
-        by_id[it["id"]]["outcome_note"] = (it.get("note") or "").replace("\n", " ")[:300]
+        by_id[it["id"]]["outcome_note"] = (it.get("note") or "").replace("\n", " ")
     return bad
 
 
@@ -3049,8 +3049,8 @@ def dispatch_rules(plan, scratch):
     owned file as an absolute path (`//` is the filesystem root), so no other repository file is readable or editable
     (the working directory is the empty scratch directory, and `dontAsk` denies the rest); the session also reads every
     clone under `_cache/census/repos`, which `dispatch_argv` adds with `--add-dir` for a part with `git` lines; Bash holds only the exact
-    `git show` and `git diff` lines of the brief (no wildcard), each page's own `fetch_argv` line followed by ` *` (the `fetch.py text` options `--grep` and `--timeout` after its url)
-    and `kbid.py url`."""
+    `git show` and `git diff` lines of the brief (no wildcard), each page's own `fetch_argv` line followed by ` --grep *` (the one `fetch.py text` option a session adds after its
+    url: a session that could add `--header` would send a header of its own choosing to the source's host) and `kbid.py url`."""
     def at(tool, path, tail=""):
         return f"{tool}(//{path.replace(os.sep, '/').lstrip('/')}{tail})"
 
@@ -3059,7 +3059,7 @@ def dispatch_rules(plan, scratch):
         allow += [at("Read", path), at("Edit", path)]
     allow += [at(tool, scratch, "/**") for tool in ("Read", "Edit", "Write")]
     allow += [f"Bash({shlex.join(argv)})" for argv in plan["git"]]
-    allow += sorted({f"Bash({shlex.join(argv)} *)" for v in plan["fetch"].values() for argv in fetch_argvs(v)})
+    allow += sorted({f"Bash({shlex.join(argv)} --grep *)" for v in plan["fetch"].values() for argv in fetch_argvs(v)})
     allow.append(f"Bash({shlex.join(['python3', os.path.join(kbcommon.TOOLS, 'kbid.py'), 'url'])} *)")
     if plan["learn"]:
         allow.append(LEARN_TOOL)
@@ -3094,7 +3094,7 @@ def dispatch_prompt(brief, plan, scratch):
     out += [f"  - {shlex.join(argv)} (the brief's `git ls-remote` line; write it exactly so)" if argv[1] == "ls-remote"
             else f"  - {shlex.join(argv)} (the brief's `git -C` line with the absolute path; write it exactly so)"
             for argv in plan["git"]]
-    out += [f"  - {sid}: {shlex.join(argv)} (what the brief's `fetch` line for it means; write it exactly so, then add `--grep PATTERN` to print only the lines of a long document that match, never a pipe)"
+    out += [f"  - {sid}: {shlex.join(argv)} (what the brief's `fetch` line for it means; write it exactly so, then add `--grep PATTERN` to print only the lines of a long document that match: the line is allowed only with `--grep` and no other option, and never with a pipe)"
             for sid, v in sorted(plan["fetch"].items()) for argv in fetch_argvs(v)]
     out.append(f"  - {shlex.join(['python3', os.path.join(kbcommon.TOOLS, 'kbid.py'), 'url'])} <URL> (the id of a new row)")
     if plan["learn"]:
