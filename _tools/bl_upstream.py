@@ -1,6 +1,8 @@
-"""`backlog.py upstream-report` (kb/_self/backlog.md, Item commands, Upstream reports): the clone's own items written as
-one issue body for the upstream, in the sections of `.github/ISSUE_TEMPLATE/upstream-report.yml`. It writes a file and
-posts nothing; the operator pastes the file into a new issue or runs `gh issue create --body-file` themselves.
+"""`backlog.py upstream-report` and `upstream-import` (kb/_self/backlog.md, Item commands, Upstream reports): the
+clone's own items written as one issue body for the upstream, in the sections of
+`.github/ISSUE_TEMPLATE/upstream-report.yml`, and, in the upstream, that body read back into draft stories. The report
+writes a file and posts nothing; the operator pastes the file into a new issue or runs `gh issue create --body-file`
+themselves. The import reads a saved file and files drafts; it fetches nothing.
 
 Standard library only; imports `bl_base`, `bl_check` (the leak scan) and `bl_cli`, never `backlog`. It registers
 its command with `bl_cli` itself when imported, and `backlog.py`'s USAGE puts it in the usage order."""
@@ -9,7 +11,7 @@ import shlex
 from pathlib import Path
 
 import bl_cli
-from bl_base import Backlog, Refused, Rejected, say, withhold
+from bl_base import TEXT_MAX, Backlog, Refused, Rejected, clone_id, commit_written, new_id, say, withhold
 from bl_check import item_leak_hits
 
 TEMPLATE = ".github/ISSUE_TEMPLATE/upstream-report.yml"
@@ -104,5 +106,118 @@ def args_upstream_report(p):
     p.add_argument("--out", required=True, metavar="FILE", help="the file the issue body is written to")
 
 
+FIELDS = {"title": "Title", "goal": "Goal", "premise": "Premise or repro", "local": "Local change made meanwhile"}
+NO_RESPONSE = {"", "_no response_", NONE_RECORDED}
+SCOPE_HEADING = "Clone scope"
+
+
+def sections(text):
+    """[(heading, content)] of the `### ` sections of an issue body, in order; a `### ` line inside a code fence is text.
+    What precedes the clone scope section (the metadata `gh issue view` prints) is dropped."""
+    rows, fenced = [], False
+    for line in text.replace("\r\n", "\n").split("\n"):
+        if line.lstrip().startswith("```"):
+            fenced = not fenced
+        m = None if fenced else re.match(r"^### (.+?)\s*$", line)
+        if m:
+            rows.append([m.group(1), []])
+        elif rows:
+            rows[-1][1].append(line)
+    out = []
+    for heading, lines in rows:
+        body = re.sub(r"\n*^---\s*$\s*\Z", "", "\n".join(lines).strip(), flags=re.M).strip()
+        out.append((heading, "" if body.lower() in NO_RESPONSE else body))
+    return out
+
+
+def parse_report(text):
+    """(clone scope, [{title, goal, premise, local}]) of an upstream-report issue body; Rejected when it is not one."""
+    rows = sections(text)
+    scope = next((c for h, c in rows if h == SCOPE_HEADING), None)
+    if scope is None:
+        raise Rejected(f"the file holds no `### {SCOPE_HEADING}` section: it is not an upstream-report issue body "
+                       f"({TEMPLATE})")
+    stories, key_of = [], {v: k for k, v in FIELDS.items()}
+    for heading, content in rows:
+        key = key_of.get(heading)
+        if key == "title":
+            stories.append({"title": content})
+        elif key and stories:
+            stories[-1][key] = content
+    if not stories:
+        raise Rejected("the issue body holds no `### Title` section: it has no user story")
+    for n, s in enumerate(stories, 1):
+        for key in ("title", "goal"):
+            if not s.get(key):
+                raise Rejected(f"user story {n} has no {FIELDS[key]} section text: fix the issue or the file")
+        if "\n" in s["title"]:
+            raise Rejected(f"user story {n}: the Title is one line")
+    return (scope.splitlines() or ["unset"])[0].strip(), stories
+
+
+def imported_ids(bl, url):
+    """The items whose links name the issue URL (the first word of a link), as the import wrote them."""
+    key = url.rstrip("/")
+    return [i for i, it in bl.items.items()
+            if any(isinstance(x, str) and x.split()[:1] and x.split()[0].rstrip("/") == key for x in it.get("links") or [])]
+
+
+def story_notes(s, issue):
+    """The notes of an imported draft: where it came from, then the premise and local change as the clone reported them
+    (the `Premise:` and `Local change:` lines `upstream-report` reads back)."""
+    lines = [f"Imported from upstream-report issue {issue}."]
+    for label, key in (("Premise", "premise"), ("Local change", "local")):
+        if s.get(key):
+            lines.append(f"{label}: {s[key]}")
+    return "\n\n".join(lines)[:TEXT_MAX]
+
+
+def cmd_upstream_import(bl, a):
+    path = Path(a.file)
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as e:
+        raise Rejected(f"cannot read {path} as UTF-8 text: {e}") from e
+    url = a.issue.strip()
+    if not re.match(r"^https?://\S+$", url):
+        raise Rejected(f"--issue {url!r} is not the issue's url")
+    have = imported_ids(bl, url)
+    if have:
+        say(f"upstream-import: {url} was imported as {', '.join(bl.label(i) for i in have)}: nothing filed")
+        return 0
+    scope, stories = parse_report(text)
+    allow = clone_allowlist(bl.root)
+    for s in stories:
+        kinds = sorted({k for k, _ in item_leak_hits(" ".join(s.values()), allow)})
+        if kinds:
+            raise Refused(f"the issue holds a leak-scan hit ({', '.join(kinds)}; value not printed) in user story "
+                          f"{s['title']!r}: nothing filed; edit the file to a placeholder first")
+    filed_in = clone_id(bl.root, create=True)
+    ids = []
+    for s in stories:
+        it = {"id": new_id("story"), "kind": "story", "title": s["title"][:TEXT_MAX], "status": "draft",
+              "priority": "P2", "rank": 0, "goal": s["goal"][:TEXT_MAX],
+              "links": [f"{url} (upstream-report, clone scope: {scope})"], "notes": story_notes(s, url)}
+        if filed_in:
+            it["filed_in"] = filed_in
+        bl.save(it)
+        ids.append(it["id"])
+        say(f"upstream-import: draft story {bl.label(it['id'])}")
+    say(f"upstream-import: filed {len(ids)} draft stor{'y' if len(ids) == 1 else 'ies'} outside any sprint from {url} "
+        f"(clone scope {scope}); triage them as any other draft")
+    commit_written(bl, a, "file", ids[0], ids)
+    return 0
+
+
+def args_upstream_import(p):
+    p.add_argument("file", metavar="FILE", help="the issue body, a saved file (gh issue view --json body -q .body, or its plain output)")
+    p.add_argument("--issue", required=True, metavar="URL", help="the issue's url, which every draft links")
+    p.add_argument("--commit", action="store_true", help="commit the item files written, alone, with KB-Work naming them")
+    p.add_argument("--trailer", action="append", default=[], metavar="'KEY: VALUE'",
+                   help="a trailer of the session's own after KB-Work in the --commit commit (repeatable)")
+
+
+bl_cli.register("upstream-import", cmd_upstream_import, args_upstream_import,
+                help="file the user stories of a saved upstream-report issue as draft stories that link the issue")
 bl_cli.register("upstream-report", cmd_upstream_report, args_upstream_report,
                 help="write this clone's items as an upstream issue body (user stories); posts nothing")
