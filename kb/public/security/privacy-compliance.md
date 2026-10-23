@@ -23,7 +23,7 @@ conditional note; and the EU AI Act classification/timeline including the 2026 D
 - That Art. 32 names encryption as a further example and requires a process for regularly testing and evaluating the measures was read from the Regulation's EUR-Lex text (S870) on 2026-09-26 and is not re-confirmed on 2026-10-23: EUR-Lex answers this host with an empty bot-challenge page. [UNK: logged in `_gaps.md`]
 - GDPR Art. 35(1) requires a DPIA where processing is "likely to result in a high risk to the rights and freedoms of natural persons"; Art. 35(3) gives examples that include a systematic and extensive evaluation of personal aspects based on automated processing, including profiling, and processing on a large scale of special categories of data, as WP248 quotes them. [DOC S-xvc5ligo]
 - The GDPR (Regulation (EU) 2016/679) entered into force on 2016-05-24 and applies since 2018-05-25. [DOC S-7ddlgwua]
-- The WP29 Guidelines on DPIA (WP248 rev.01, adopted 2017-04-04, last revised 2017-10-04, endorsed by the EDPB 2018-05-25) set nine criteria;
+- The WP29 Guidelines on DPIA (WP248 rev.01, adopted 2017-04-04, last revised 2017-10-04) set nine criteria;
   meeting two or more usually means a DPIA is required: (1) evaluation or scoring, (2) automated decision-making
   with legal or similarly significant effect, (3) systematic monitoring, (4) sensitive data or data of a highly
   personal nature, (5) data processed on a large scale, (6) matching or combining datasets, (7) data concerning
@@ -116,7 +116,7 @@ conditional note; and the EU AI Act classification/timeline including the 2026 D
 | Instrument | Date | Status as of 2026-09-24 | Source |
 |---|---|---|---|
 | GDPR | in force 2016-05-24, applies since 2018-05-25 | in force | S-7ddlgwua |
-| WP29 WP248 rev.01 (EDPB-endorsed) | adopted 2017-04-04, revised 2017-10-04, endorsed 2018-05-25 | current guidance | S-xvc5ligo |
+| WP29 WP248 rev.01 | adopted 2017-04-04, revised 2017-10-04 | current guidance | S-xvc5ligo |
 | NIS2 Directive | in force January 2023 | transposition deadline 2024-10-17; national transposition ongoing | S-sxwkpb6d |
 | Poland KSC amendment | Dz.U. 2026 poz. 252 | in force 2026-04-03; registration per ministerial schedule; Chapter 3 obligations by 2027-04-03 | S1553 |
 | DORA | in force 2023-01-16 | applies from 2025-01-17 (financial entities only) | S-etw2ppgz |

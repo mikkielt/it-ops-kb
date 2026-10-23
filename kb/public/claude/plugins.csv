@@ -1,7 +1,7 @@
 file,field,type,required,default,notes,tag,source
 plugin.json,name,string,yes,,"kebab-case; no spaces/@/:/path separators/control/bidi chars; namespaces every component",DOC,S-3xyywfcr
 plugin.json,displayName,string,no,name,"shown in UI in place of name; marketplace entry displayName takes precedence when installed from one",DOC,S-3xyywfcr
-plugin.json,version,string,no,(tracks commits),"not semver-checked; pins plugin until changed; not used for command-source or claude.ai-hosted-marketplace plugins",DOC,S-3xyywfcr
+plugin.json,version,string,no,,"not semver-checked; pins plugin until changed; not used for command-source or claude.ai-hosted-marketplace plugins",DOC,S-3xyywfcr
 plugin.json,description,string,no,,short explanation of what the plugin provides,DOC,S-3xyywfcr
 plugin.json,author,object,no,,"{name (required), email, url}",DOC,S-3xyywfcr
 plugin.json,homepage,string,no,,must parse as a URL or plugin fails to load,DOC,S-3xyywfcr

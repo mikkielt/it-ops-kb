@@ -29,7 +29,7 @@ status: partial
 ### Lemma disambiguation suffixes
 - Where lexemes are homonyms, the lemma gets a colon and a distinguishing element: a coarse class (`piec:S` noun, `piec:V` verb), gender or other features (`pływak:Sm1`) or a differing ending (`napaść:Vp~dnę`). Older versions used numbers (`słać:v1`). The authors note that most users drop these marks. [DOC S-v6tu47om]
 - In the SGJP export of 2026-08-24, 76,530 of 387,398 distinct lemmas carry a colon suffix; none has a second colon or starts with one. One run of ours on the pinned file; the count is not a rule. [DER S-te5pgsg3, S-v6tu47om: lemmas counted in column 2 of sgjp-20260823.tab.gz]
-- Not every colon is a suffix: the additional-segment table has the punctuation lemma `:` (tag `interp`), 22 `sym` emoticons such as `:-)`, and four real suffixes (`to:V` with tag `pred`, and `i:i`, `i:j`, `i:q`, written in the table with tags `interj`, `conj` and `qub`). [CODE S-xz7r3unc: Morfeusz/input/dodatki.tab#:]
+- Not every colon is a suffix: the additional-segment table has the punctuation lemma `:` (tag `interp`), 22 `sym` emoticons such as `:-)`, and one real suffix, `to:V` with tag `pred`; the suffixes `i:i`, `i:j` and `i:q` (tags `interj`, `conj` and `qub`) are rows of `input/PoliMorfSmall.tab`, not of the additional-segment table. [CODE S-xz7r3unc: Morfeusz/input/dodatki.tab#:, Morfeusz/input/PoliMorfSmall.tab#i:i]
 
 ### Dictionaries, selection and licence
 - Three inflectional data variants exist: SIaT (oldest, archival only), SGJP (default) and Polimorf (SGJP plus community Morfologik/sjp.pl data); the manual says Morfeusz ships with SGJP and Polimorf. [DOC S-fkosk2vn, S-v6tu47om]
