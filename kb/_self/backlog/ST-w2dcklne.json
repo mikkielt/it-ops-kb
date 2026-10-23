@@ -1,0 +1,22 @@
+{
+  "id": "ST-w2dcklne",
+  "kind": "story",
+  "title": "A filed repro that names a ledger value uses a value the ledger holds",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "new bug and set --repro warn when the repro names a status or tag value of a kb ledger (the decision ledger's statuses, a fact tag) that the ledger never holds, so a repro cannot pass only because it asks for a value that does not exist",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; s=open('kb/_self/backlog.md', encoding='utf-8').read(); sys.exit(0 if 'value the ledger holds' in s else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-ovwzbc7u close"
+  ],
+  "notes": "SP-ovwzbc7u: BG-acsc7it2 done refused twice (check-failed) because its filed repro and goal named the decision status decided, which kb/_self/_decisions.csv never holds (active, invalidated)."
+}

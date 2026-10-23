@@ -1,0 +1,22 @@
+{
+  "id": "ST-vklj3uye",
+  "kind": "story",
+  "title": "A worker's gate on a detail of an answered design gate is provisional, confirmed at review",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "a gate a worker records on an implementation detail under a design gate the operator already answered, whose recommendation the work already follows, is provisional and confirmed at the sprint review, not blocking; a gate that changes the answered design or guards a write to a shared branch stays blocking",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; s=open('kb/_self/backlog.md', encoding='utf-8').read(); sys.exit(0 if 'detail of an answered design gate' in s else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-ovwzbc7u close"
+  ],
+  "notes": "SP-ovwzbc7u: workers stopped 6 times on blocking gates for details already built to the recommendation (BG-hjxvxufh g2, BG-5gqy7hln g2 g3, BG-42dg5ryi g2 g3, ST-xjmx4pjc g2); each needed an operator answer and a relaunch."
+}

@@ -1,0 +1,22 @@
+{
+  "id": "ST-iafxv4sb",
+  "kind": "story",
+  "title": "An answered gate's conditions each get a planted check before the item lands",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "when the operator answers a gate whose chosen option names conditions (a fallback, an exit code, a limit), the item carries one check per condition that runs the behaviour on a planted input before land; land refuses an item whose answered gate added conditions no check reads",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; s=open('kb/_self/backlog.md', encoding='utf-8').read(); sys.exit(0 if 'answered gate adds a check per condition' in s else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-ovwzbc7u close"
+  ],
+  "notes": "SP-ovwzbc7u review: BG-42dg5ryi g2 ({task} falls back to the item id) and BG-c7pjl3mi (merge with an empty forge exits 2) landed contradicting the answers; their checks predated the answers. Fixed by BG-llzhfzrr and BG-xjj5jl6e."
+}

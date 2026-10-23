@@ -1,0 +1,22 @@
+{
+  "id": "ST-e66zdumx",
+  "kind": "story",
+  "title": "A gap-research sprint review reads each closing note against the line it cites",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the sprint review step for a gap-research sprint has the reviewer read every closing note dated in the sprint against the article line it cites and flag a note that claims more than that line states",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; s=open('skills/sprint/SKILL.md', encoding='utf-8').read(); i=s.find('## review'); j=s.find('## close'); sys.exit(0 if 'against the line it cites' in s[i:j] else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-ovwzbc7u close"
+  ],
+  "notes": "SP-ovwzbc7u review: three closing notes in kb/public/_gaps.md (arXiv licence, CIS benchmark list, robocopy KB articles) claimed more than the tagged line they cite; the cite check of ST-y627kmds passes on any tagged line. Fixed by ST-3jedztcz."
+}
