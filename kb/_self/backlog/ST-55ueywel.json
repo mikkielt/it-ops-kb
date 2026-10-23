@@ -74,7 +74,11 @@
         "in place": "ST-55ueywel",
         "refuse": "ST-55ueywel"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "in place (pre-approved by the operator for the 2026-10-24 night run)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
