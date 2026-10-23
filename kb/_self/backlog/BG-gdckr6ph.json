@@ -2,7 +2,7 @@
   "id": "BG-gdckr6ph",
   "kind": "bug",
   "title": "kbcommon.SECRETS misses the real PGP private key block label, whose BEGIN line ends in PRIVATE KEY BLOCK",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-evq2flqc",
   "priority": "P1",
   "rank": 0,
@@ -22,5 +22,7 @@
     "kb/_self/plugin.md",
     "kb/_self/content-rules.md"
   ],
-  "notes": "BG-3vnu37rq (2026-10-20): the first SECRETS shape in kbcommon now flags an armor line only when key material follows it (a lookahead for base64 after optional header lines), still over the kinds RSA, EC, OPENSSH, DSA, PGP, ENCRYPTED and plain. The PGP fix extends that shape: the label with BLOCK, keeping the lookahead, so a label quoted alone still passes. Correction (BG-3vnu37rq, after the operator's answer): the shape in kbcommon.SECRETS flags the RSA, OPENSSH, DSA, PGP, ENCRYPTED and plain armor lines on their own, as before; only the EC line carries the key-material lookahead. The earlier note on this item that all kinds carry it is wrong. Premise 2026-10-23 on 35b5b7cb2: the repro exits 1, SECRETS[0] does not match the PGP PRIVATE KEY BLOCK armor line. Planning 2026-10-23: the repro now plants a PGP armor line with key material after it and the label alone, through kbcommon.leak_hits, since the notes keep the lookahead and the old repro (the label alone against SECRETS[0]) could never pass after the fix; it exits 1 on 35b5b7cb2 (both False)."
+  "notes": "BG-3vnu37rq (2026-10-20): the first SECRETS shape in kbcommon now flags an armor line only when key material follows it (a lookahead for base64 after optional header lines), still over the kinds RSA, EC, OPENSSH, DSA, PGP, ENCRYPTED and plain. The PGP fix extends that shape: the label with BLOCK, keeping the lookahead, so a label quoted alone still passes. Correction (BG-3vnu37rq, after the operator's answer): the shape in kbcommon.SECRETS flags the RSA, OPENSSH, DSA, PGP, ENCRYPTED and plain armor lines on their own, as before; only the EC line carries the key-material lookahead. The earlier note on this item that all kinds carry it is wrong. Premise 2026-10-23 on 35b5b7cb2: the repro exits 1, SECRETS[0] does not match the PGP PRIVATE KEY BLOCK armor line. Planning 2026-10-23: the repro now plants a PGP armor line with key material after it and the label alone, through kbcommon.leak_hits, since the notes keep the lookahead and the old repro (the label alone against SECRETS[0]) could never pass after the fix; it exits 1 on 35b5b7cb2 (both False).",
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
