@@ -2,7 +2,7 @@
   "id": "BG-hljgagfl",
   "kind": "bug",
   "title": "benchmarks.md says the multi report's claims are rows of the sandbox's coordination store, but bench_multi counts claim events",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,
@@ -17,5 +17,7 @@
   },
   "touches": [
     "kb/_self/reports/benchmarks.md"
-  ]
+  ],
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
