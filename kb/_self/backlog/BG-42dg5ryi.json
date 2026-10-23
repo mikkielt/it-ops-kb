@@ -121,7 +121,11 @@
         "{task} is the item's id when it has no external id; {nn}, {mm} and {slug} left empty refuse the dispatch and the land naming the placeholder": "BG-42dg5ryi",
         "every empty placeholder is filled with an empty text and the name is made anyway": "BG-42dg5ryi"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "{task} is the item's id when it has no external id; {nn}, {mm} and {slug} left empty refuse the dispatch and the land naming the placeholder",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
