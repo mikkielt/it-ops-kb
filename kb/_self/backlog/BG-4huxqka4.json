@@ -2,7 +2,7 @@
   "id": "BG-4huxqka4",
   "kind": "bug",
   "title": "The ceiling and profile deny rules anchor at each session's own checkout, so a worktree session can write the main checkout's files by absolute path",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3trnelzv",
   "priority": "P1",
   "rank": 0,
@@ -21,5 +21,7 @@
     "kb/_self/maintaining.md",
     "kb/_self/tools.md"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
