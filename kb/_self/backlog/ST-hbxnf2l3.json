@@ -4,16 +4,39 @@
   "title": "Research: Alertmanager's route, receivers and webhook payload, and Prometheus's alerting block, are kb facts",
   "status": "draft",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-r7e7jcep",
   "priority": "P2",
   "rank": 0,
-  "goal": "kb/public/logs/prometheus-retention-exposition.md gains DOC facts with source rows from the Prometheus and Alertmanager docs pinned at a release tag on: the alerting.alertmanagers block of prometheus.yml (static_configs targets, path prefix); Alertmanager's configuration file (route with receiver, group_by, group_wait, group_interval, repeat_interval; receivers; webhook_configs with url and send_resolved, and how a url or credential can come from a file); the JSON body a webhook receiver gets (version, status, receiver, groupLabels, commonLabels, alerts with status, labels, annotations, startsAt, endsAt, fingerprint); the --web.listen-address flag and its default port; and that a resolved alert is sent only with send_resolved",
+  "goal": "kb/public/logs/prometheus-retention-exposition.md gains DOC facts with source rows from the Prometheus and Alertmanager docs pinned at a release tag on: the alerting.alertmanagers block of prometheus.yml (static_configs targets, path prefix); the Alertmanager configuration file (route with receiver, group_by, group_wait, group_interval and repeat_interval, receivers, webhook_configs with url and send_resolved, plus how a url or credential can come from a file); the JSON body a webhook receiver gets (version, status, receiver, groupLabels, commonLabels, alerts with status, labels, annotations, startsAt, endsAt, fingerprint); the --web.listen-address flag and its default port; that send_resolved decides whether a webhook receiver is notified of resolved alerts (default true)",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import subprocess, sys\nART = 'kb/public/logs/prometheus-retention-exposition.md'\nCASES = [('How does Alertmanager send an alert to a webhook receiver, and what JSON body does it post?', ['webhook_configs']), ('How is Prometheus configured to send firing alerts to an Alertmanager?', ['alertmanagers', 'static_configs']), (\"What does an Alertmanager route's repeat_interval and group_wait control?\", ['repeat_interval'])]\nmiss = []\nfor q, terms in CASES:\n    out = subprocess.run([sys.executable, '_tools/rag.py', 'pack', q, '--root', 'public', '--budget', '2500'],\n                         capture_output=True, text=True).stdout\n    hit = [l for l in out.splitlines() if l.startswith('- ' + ART[len('kb/'):] + ':') and '[DOC' in l\n           and all(t.lower() in l.lower() for t in terms)]\n    if not hit:\n        miss.append((q, terms))\nprint('missing:', miss if miss else 'none')\nsys.exit(1 if miss else 0)\n"
+        "import subprocess, sys\nART = 'kb/public/logs/prometheus-retention-exposition.md'\nCASES = [\n    ('How is Prometheus configured to send firing alerts to an Alertmanager?', 'DOC', ['alertmanagers', 'static_configs']),\n    ('Which path prefix setting does the Prometheus alertmanagers block take?', 'DOC', ['alertmanagers', 'path_prefix']),\n    ('What do the group_wait and group_interval of an Alertmanager route control?', 'DOC', ['group_wait', 'group_interval']),\n    ('What does an Alertmanager route repeat_interval control?', 'DOC', ['repeat_interval']),\n    ('How does Alertmanager send an alert to a webhook receiver?', 'DOC', ['webhook_configs', 'url']),\n    ('Can an Alertmanager webhook url or credential be read from a file?', 'DOC', ['webhook', 'url_file']),\n    ('What JSON body does an Alertmanager webhook receiver get?', 'DOC', ['groupLabels', 'fingerprint']),\n    ('What is the Alertmanager web.listen-address flag and its default port?', 'DOC', ['web.listen-address', '9093']),\n    ('What does the send_resolved setting of an Alertmanager webhook receiver do and what is its default?', 'DOC', ['send_resolved', 'true']),\n]\nmiss = []\nfor q, tag, terms in CASES:\n    out = subprocess.run([sys.executable, '_tools/rag.py', 'pack', q, '--root', 'public', '--budget', '2500'],\n                         capture_output=True, text=True).stdout\n    hit = [l for l in out.splitlines() if l.startswith('- ' + ART[len('kb/'):] + ':') and '[' + tag in l\n           and all(t.lower() in l.lower() for t in terms)]\n    if not hit:\n        miss.append((q, terms))\nprint('missing:', miss if miss else 'none')\nsys.exit(1 if miss else 0)\n"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/public/logs/prometheus-retention-exposition.md gains DOC facts with source rows from the Prometheus and Alertmanager docs pinned at a release tag on: the alerting.alertmanagers block of prometheus.yml (static_configs targets, path prefix)",
+      "check": 0
+    },
+    {
+      "clause": "the Alertmanager configuration file (route with receiver, group_by, group_wait, group_interval and repeat_interval, receivers, webhook_configs with url and send_resolved, plus how a url or credential can come from a file)",
+      "check": 0
+    },
+    {
+      "clause": "the JSON body a webhook receiver gets (version, status, receiver, groupLabels, commonLabels, alerts with status, labels, annotations, startsAt, endsAt, fingerprint)",
+      "check": 0
+    },
+    {
+      "clause": "the --web.listen-address flag and its default port",
+      "check": 0
+    },
+    {
+      "clause": "that send_resolved decides whether a webhook receiver is notified of resolved alerts (default true)",
+      "check": 0
     }
   ],
   "touches": [
@@ -22,5 +45,9 @@
     "kb/public/_anchors.csv",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "depends_on": [
+    "ST-l6fw46gd"
+  ],
+  "notes": "Planning 2026-10-24: last clause corrected. The old text said a resolved alert is sent only with send_resolved; the Alertmanager configuration docs (docs/configuration.md, webhook_config) give send_resolved default = true, so the clause now asks what send_resolved does and its default. The goal is split into five clauses, each read by cases of the one check. Premise: the check fails on the base (precheck). Planned 2026-10-24 into SP-r7e7jcep: fourth in the run order (after ST-l6fw46gd), since the five research stories share the source, anchor and expansions files.",
   "filed_in": "clone-0ea70e5c"
 }
