@@ -2,7 +2,7 @@
   "id": "ST-slz3xl74",
   "kind": "story",
   "title": "census.py apply keeps the artifact register in step and writes no address into a note",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ovwzbc7u",
   "priority": "P2",
   "rank": 0,
@@ -46,6 +46,28 @@
     "parked: SP-rmp5zm5a close"
   ],
   "notes": "Retrospective of SP-rmp5zm5a (2026-10-22, operator accepted): fetch.py --offline failed after census apply changed privacy/gliner-models.csv (ST-vhtpgjb5) and mecm/log-files.csv and sql-views-compliance.csv (ST-bjwyl2bc) without their register hashes; test_leaks failed on a session note quoting the Python 3.14 release manager's address. Each was fixed by hand. The draft check reads source text. Premise run on main with two checks that call census.cmd_apply on a planted root (a register row with a stale hash, an outcome note and a gap text holding an address built in code): check 0 prints 'apply exit 0 - register sha of the edited file is stale'; check 1 prints 'address in a note (0, True, False) | address in a gap (0, True, True)', where the clean result is applied as it must be (0, True, True). The leak scan is kbpublic.file_hits with the allowlist of _tools/tests_allowlist.txt, the scan test_leaks runs. Docs: kb/_self/tools.md and kb/_self/web-sources.md (the map names both for census.py).",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "fa89420948c9c5b5a8b43af518dcd5f0991f7c78",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport csv, hashlib, json, os, sys, tempfile, types\nfrom collections import Counter\nsys.path.insert(0, \"_tools\")\nimport census, factdiff, kbcommon, kbroot\nsha = lambda s: hashlib.sha256(s.encode()).hexdigest()\nd = tempfile.mkdtemp()\nos.makedirs(d + \"/data\")\nos.makedirs(d + \"/_census\")\nopen(d + \"/_root.md\", \"w\").write(kbroot.root_md(\"zz\", \"ZZ\", \"internal\", \"planted root\"))\nopen(d + \"/_sources.csv\", \"w\").write(kbroot.SOURCES_HEADER + \"ZZ1,https://example.com/x,t,p,l,quote,2026-09-01,,,data/t.csv,\\n\")\nopen(d + \"/data/t.csv\", \"w\").write(\"a,b\\n1,3\\n\")\nopen(d + \"/_artifacts.csv\", \"w\").write(\"path,source_id,sha256,zip_member\\ndata/t.csv,ZZ1,\" + sha(\"a,b\\n1,2\\n\") + \",\\n\")\nlog = d + \"/_census/log.csv\"\nopen(log, \"w\").write(\"id,url,kind,repo,pin,path,retrieved_utc,http_status,bucket,evidence,proof,note,used_in,outcome,outcome_note\\nZZ1,https://example.com/x,live,,,,2026-09-01,200,CHANGED,e,,,data/t.csv,,\\n\")\nbefore = open(log).read()\nres = {\"outcomes\": [{\"id\": \"ZZ1\", \"outcome\": \"updated\", \"note\": \"value changed\"}], \"new_rows\": [], \"superseded\": {}, \"gaps\": [], \"conflicts\": [], \"foreign_edits\": [], \"edited_files\": [\"data/t.csv\"]}\njson.dump(res, open(d + \"/res.json\", \"w\"))\ncensus.KB = kbcommon.KB = d\nfactdiff.ROOT = kbcommon.load_root(d)\ncensus.head_cited_lines = lambda ids: {}\ncensus.drive = lambda *a, **k: (0, {})\ncode = census.cmd_apply(types.SimpleNamespace(log=log, group=\"data\", from_json=d + \"/res.json\", dry_run=False), Counter())\nfresh = list(csv.DictReader(open(d + \"/_artifacts.csv\")))[0][\"sha256\"] == sha(\"a,b\\n1,3\\n\")\nrefused = code == 2 and open(log).read() == before\nprint(\"apply exit\", code, \"- register sha of the edited file is\", \"current\" if fresh else \"stale\")\nsys.exit(0 if fresh or refused else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "3d4576e5da2b22b1"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport json, os, sys, tempfile, types\nfrom collections import Counter\nsys.path.insert(0, \"_tools\")\nimport census, factdiff, kbcommon, kbroot\naddr = \"release.manager\" + chr(64) + \"python.org\"\ndef apply(note, gap):\n    d = tempfile.mkdtemp()\n    os.makedirs(d + \"/data\")\n    os.makedirs(d + \"/_census\")\n    open(d + \"/_root.md\", \"w\").write(kbroot.root_md(\"zz\", \"ZZ\", \"internal\", \"planted root\"))\n    open(d + \"/_sources.csv\", \"w\").write(kbroot.SOURCES_HEADER + \"ZZ1,https://example.com/x,t,p,l,quote,2026-09-01,,,data/t.csv,\\n\")\n    open(d + \"/_artifacts.csv\", \"w\").write(\"path,source_id,sha256,zip_member\\n\")\n    open(d + \"/data/t.csv\", \"w\").write(\"a,b\\n1,3\\n\")\n    open(d + \"/data/t.md\", \"w\").write(\"# t\\n\")\n    log = d + \"/_census/log.csv\"\n    open(log, \"w\").write(\"id,url,kind,repo,pin,path,retrieved_utc,http_status,bucket,evidence,proof,note,used_in,outcome,outcome_note\\nZZ1,https://example.com/x,live,,,,2026-09-01,200,CHANGED,e,,,data/t.csv,,\\n\")\n    before = open(log).read()\n    gaps = [{\"topic\": \"data/t\", \"text\": gap}] if gap else []\n    res = {\"outcomes\": [{\"id\": \"ZZ1\", \"outcome\": \"updated\", \"note\": note}], \"new_rows\": [], \"superseded\": {}, \"gaps\": gaps, \"conflicts\": [], \"foreign_edits\": [], \"edited_files\": [\"data/t.csv\"]}\n    json.dump(res, open(d + \"/res.json\", \"w\"))\n    census.KB = kbcommon.KB = d\n    factdiff.ROOT = kbcommon.load_root(d)\n    census.head_cited_lines = lambda ids: {}\n    census.drive = lambda *a, **k: (0, {})\n    code = census.cmd_apply(types.SimpleNamespace(log=log, group=\"data\", from_json=d + \"/res.json\", dry_run=False), Counter())\n    return code, open(log).read() != before, os.path.exists(d + \"/_gaps.md\")\nclean = apply(\"value changed\", \"a gap\")\nnote = apply(\"the release manager is \" + addr, \"\")\ngap = apply(\"value changed\", \"ask \" + addr)\nprint(\"clean result\", clean, \"| address in a note\", note, \"| address in a gap\", gap, \"(exit code, log written, _gaps.md written)\")\nok = clean == (0, True, True) and note == (2, False, False) and gap == (2, False, False)\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "eeb2cfad626959b4"
+      }
+    ]
+  }
 }
