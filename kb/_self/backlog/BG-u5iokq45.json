@@ -2,7 +2,7 @@
   "id": "BG-u5iokq45",
   "kind": "bug",
   "title": "tests.py --set-profile refuses an IDE terminal without naming the standalone-terminal route the ceiling refusal gives",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3trnelzv",
   "priority": "P2",
   "rank": 0,
@@ -21,6 +21,19 @@
     "kb/_self/maintaining.md"
   ],
   "notes": "Found 2026-10-24 by ST-4vaqzqyr's worker: set_profile (ST-tac4z3zk) raises its own short CeilingError, outside that item's touches.",
-  "claimed_by": "claude-92aeeb3c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "09e97a7adfd1e671fdfb334d88a111094c68a38b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;sys.path.insert(0,'_tools');import bl_authority;p=subprocess.run([sys.executable,'_tools/tests.py','--set-profile','busy'],capture_output=True,text=True);print(p.stderr.strip());sys.exit(0 if bl_authority.IDE_ROUTE in p.stderr else 1)"
+        ],
+        "exit": 0,
+        "sha256": "8ef15e6ac395d292"
+      }
+    ]
+  }
 }
