@@ -24,7 +24,7 @@ HOOK_NAMES = ("horizon", "intake")  # the SessionStart hooks of the plugin that 
 # One place lists the settings: key -> (type, the default). A type is a TYPES name; a key not here is refused in
 # backlog.json, and a key the file leaves out takes its value from here (the kb's own file names the keys whose value
 # differs from the default: item_dir, always_in_scope, review_checks, research_checks, land_stale, land_eval, land_lint,
-# docs_map and kb_root, the last seven of which default to no step and no kb file).
+# lane_module, land_push, docs_map and kb_root, the last nine of which default to no step and no kb file).
 SETTINGS = {
     "item_dir": ("path", "_backlog"),  # the item files, under the root; outside .claude/, which a headless worker cannot write
     "id_prefixes": ("prefixes", {"epic": "EP", "story": "ST", "task": "TK", "subtask": "SB", "bug": "BG",
@@ -35,10 +35,11 @@ SETTINGS = {
     "land_stale": ("argv", []),  # + the integration main; [] = no such step
     "land_eval": ("argv", []),  # [] = no such step
     "land_lint": ("argv", []),  # [] = no such step
-    "lane_module": ("optmodule", "kblane"),  # the module that says which lane a path belongs to; "" = no code lane
+    "lane_module": ("optmodule", ""),  # the module that says which lane a path belongs to; "" = no code lane (the kb's file names kblane)
     # the landing's push, the argv of the command (a first element ending in .py runs under this interpreter, any
-    # other is the program) that sends the landed work to the integration main; the kb's is its gate script's sync
-    "land_push": ("command", ["_tools/kbgit.py", "sync", "--push"]),
+    # other is the program) that sends the landed work to the integration main; [] = none, so land stops at the push
+    # step naming this key (the kb's file names its gate script's sync)
+    "land_push": ("argv", []),
     "worktree_dir": ("path", ".claude/worktrees"),  # a worker's worktrees, under the clone's main checkout
     "scratch_dir": ("path", "_cache/scratch"),  # + /<id>/: a worker's throwaway files and staging copies, under the clone's top
     # the integration remote's forge: gitlab (read with glab) or github (read with gh); "" = the project has no forge,
@@ -79,8 +80,6 @@ def _type_problem(kind, v):
         return None if ok else "a kb root's name: lower case letters, digits and hyphens, `_self` allowed (\"\" for none)"
     if kind == "optmodule":
         return None if isinstance(v, str) and (v == "" or v.isidentifier()) else "a Python module name (\"\" for none)"
-    if kind == "command":
-        return None if strs(v) and v else "a non-empty list of strings (the command's arguments)"
     if kind == "strs":
         return None if strs(v) else "a list of strings"
     if kind == "argv":
