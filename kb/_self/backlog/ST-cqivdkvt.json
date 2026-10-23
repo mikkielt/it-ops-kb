@@ -71,7 +71,11 @@
         "print and run the revert in every scope": "ST-cqivdkvt",
         "print the revert line in every scope, never run it": "ST-cqivdkvt"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "me: the rebase drops it, team and org: print the revert line, never run it",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
