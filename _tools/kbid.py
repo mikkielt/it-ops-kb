@@ -37,7 +37,7 @@ The title, publisher and version. A flag omitted is read, never guessed (`provid
 field by field): the title is the fetched page's og:title or <title> (a Markdown file's front matter title or first
 heading), a ` | SITE` suffix cut when SITE is the page's site name or the host's organisation; the publisher (the
 organisation column) is the `organisation` cell of the host's row in _tools/providers.csv (a root's own
-`_providers.csv` row replaces it), else the page's og:site_name, else the suffix of its <title>; the version is
+`_providers.csv` row replaces it), else the page's og:site_name or application-name; the version is
 `<key> <YYYY-MM-DD>` of the page's own date (updated_at, dateModified, article:modified_time, last-modified, ms.date,
 datePublished, article:published_time, citation_date: the first it carries), empty when it has none. A title or
 publisher neither given nor read is refused (exit 2) naming the flag. `--title`, `--publisher` and `--version` always
