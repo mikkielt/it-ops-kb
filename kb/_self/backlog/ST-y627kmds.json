@@ -59,7 +59,11 @@
         "cite-or-tried": "ST-y627kmds",
         "write-facts": "ST-y627kmds"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "cite-or-tried",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
