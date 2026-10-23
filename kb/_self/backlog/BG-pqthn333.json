@@ -1,0 +1,28 @@
+{
+  "id": "BG-pqthn333",
+  "kind": "bug",
+  "title": "A coord ask cannot carry a session id: kbask redacts the UUID, so two sessions cannot tell each other how to be addressed",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "a session can give another session the id to address it by through coord: kbask ask keeps a coord session id it can resolve to a live session/<id> presence lease, or coord offers a short addressable name per session, while redact still replaces every other UUID in ask text",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import redact;s='-'.join(['396fb440','d928','4c33','9f3a','b375f1a2bc1d']);o=redact.redact('address me as '+s);print(o);sys.exit(0 if s in o else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/kbask.py",
+    "_tools/redact.py",
+    "kb/_self/coordination.md",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-3trnelzv work"
+  ],
+  "notes": "Found 2026-10-24 by the SP-3trnelzv orchestrator: an ask to any that named its coord session id reached the other session with the id as 00000000-0000-0000-0000-000000000000 (redact reads a UUID as an object id), and cross-session messages between the two were held by different permission modes, so coord asks were the only channel and carried no address.",
+  "filed_in": "clone-0ea70e5c"
+}

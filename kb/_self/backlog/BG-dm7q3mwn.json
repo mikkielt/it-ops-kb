@@ -1,0 +1,26 @@
+{
+  "id": "BG-dm7q3mwn",
+  "kind": "bug",
+  "title": "upstream-import keeps only the first line of a fenced multi-line premise in its Premise: notes line",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "an imported draft's Premise: notes line holds the whole premise of a fenced multi-line block from the issue body (joined or quoted), so upstream-report reads back the same premise it wrote",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_upstream,inspect;sys.exit(1 if 'Premise' in inspect.getsource(bl_upstream) else 0)"
+    ]
+  },
+  "repro_reason": "the import runs on a saved issue body in a throwaway clone; the worker reported the first-line limit (ST-2d26ca6z), and the repro marks the code path until a planted round-trip check replaces it",
+  "touches": [
+    "_tools/bl_upstream.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-3trnelzv work"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
