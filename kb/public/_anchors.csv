@@ -13506,18 +13506,20 @@ fb900473a31d,prior-art/secret-vault-encryption.md,S-r3t6wvk5,unlocated:no-match,
 cef03e42954e,prior-art/tiered-approval-ops.md,S-askzkdnt,located,,library;moved;ansibl;base;django;django-ansible-bas;rbac;system,3902e33c1c891710,Role-Based Access Control (RBAC) The Role-Based Access Control system has been moved to the django-ansible-base library.,2026-10-10
 e5f3ed9dad9a,prior-art/tiered-approval-ops.md,S1017,unlocated:no-match,,,,,2026-10-10
 ebabf329da5d,prior-art/tiered-approval-ops.md,S-uh67gxyw,located,RBAC security setup,approver;becaus;rule;approval;community;edition;enterpris;teleport,a3213c7b6f694d5d,"There is no role for request approvers, because request approval rules can only be configured for Teleport Enterprise. In Teleport Community Edition, approvals must",2026-10-10
-0ff3c43a5ee4,privacy/gdpr-pseudonymisation.md,S875,unlocated:not-text,,,,,2026-10-10
-3177dcf8cb7d,privacy/gdpr-pseudonymisation.md,S-rebms33k,unlocated:not-text,,,,,2026-10-23
-41b5a139e539,privacy/gdpr-pseudonymisation.md,S-rebms33k,unlocated:not-text,,,,,2026-10-23
-4b6b3d87be45,privacy/gdpr-pseudonymisation.md,S873,unlocated:no-match,,,,,2026-10-10
+4b6b3d87be45,privacy/gdpr-pseudonymisation.md,S873,located,,could;additional;attribut;information;pseudonymis;remain;personal;data,686dc097e5736822,Pseudonymised data which could be attributed to an individual by the use of additional information remains information related to an identifiable natural person,2026-10-23
+5df4f290de75,privacy/gdpr-pseudonymisation.md,S875,unlocated:not-text,,,,,2026-10-23
 7682686c27f9,privacy/gdpr-pseudonymisation.md,S874,unlocated:no-match,,,,,2026-10-21
 8c836402df45,privacy/gdpr-pseudonymisation.md,S873,located,,consultation;public;adopt;guidelin;edpb,d298b79164e12a87,"The guidelines will be subject to public consultation until 28 February 2025, providing stakeholders with the opportunity to comment and allowing for the incorporation of",2026-10-10
+90ee8708e82f,privacy/gdpr-pseudonymisation.md,S873,located,,back;controller;else;link;someon;remain;individual;personal,e45107f09ee11d9c,if the data can be linked back to an individual by the data controller or someone else,2026-10-23
+90ee8708e82f,privacy/gdpr-pseudonymisation.md,S-rebms33k,unlocated:not-text,,,,,2026-10-23
 a752ffc9b9d0,privacy/gdpr-pseudonymisation.md,S872,located,,january;period;march;feedback,abe27d818b174599,Feedback period 17 January 14 March 2025 (23:59 CET),2026-10-10
 aa76552760d8,privacy/gdpr-pseudonymisation.md,S872,unlocated:no-match,,,,,2026-10-21
 aa76552760d8,privacy/gdpr-pseudonymisation.md,S874,unlocated:no-match,,,,,2026-10-21
 aa76552760d8,privacy/gdpr-pseudonymisation.md,S-eickk3hp,unlocated:no-match,,,,,2026-10-21
 aef480da3af0,privacy/gdpr-pseudonymisation.md,S875,unlocated:not-text,,,,,2026-10-10
 b80fd1818a33,privacy/gdpr-pseudonymisation.md,S875,unlocated:not-text,,,,,2026-10-10
+c3b0ba266d71,privacy/gdpr-pseudonymisation.md,S873,located,,identifi;kept;longer;manner;organisational;separately;specific;such,84eb26bd0bc19a42,can no longer be attributed to a specific data subject without the use of additional information,2026-10-23
+c3b0ba266d71,privacy/gdpr-pseudonymisation.md,S-rebms33k,unlocated:not-text,,,,,2026-10-23
 d0ca697cabb6,privacy/gdpr-pseudonymisation.md,S875,unlocated:not-text,,,,,2026-10-10
 d5c99cfd18c7,privacy/gdpr-pseudonymisation.md,S-rebms33k,unlocated:not-text,,,,,2026-10-23
 f733bc75de36,privacy/gdpr-pseudonymisation.md,S-eickk3hp,unlocated:no-match,,,,,2026-10-10
