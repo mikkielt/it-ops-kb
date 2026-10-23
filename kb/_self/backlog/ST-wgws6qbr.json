@@ -2,7 +2,7 @@
   "id": "ST-wgws6qbr",
   "kind": "story",
   "title": "Alias rows for the OpenTelemetry Python SDK topic's other names",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-xznmaurz",
   "priority": "P2",
   "rank": 0,
@@ -47,5 +47,7 @@
   "depends_on": [
     "ST-rglufo4s"
   ],
-  "notes": "Premise 2026-10-23 on 35b5b7cb2: the check exits 1, none of the four rows is in _tools/aliases.csv; rag.py search already reaches the article on body words, so the rows matter for the alias routes only."
+  "notes": "Premise 2026-10-23 on 35b5b7cb2: the check exits 1, none of the four rows is in _tools/aliases.csv; rag.py search already reaches the article on body words, so the rows matter for the alias routes only.",
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
