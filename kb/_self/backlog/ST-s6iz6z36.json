@@ -84,7 +84,11 @@
         "DISABLED push url, every ref refused incl. tags and deletes": "ST-s6iz6z36",
         "DISABLED push url, branches only refused": "ST-s6iz6z36"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "DISABLED push url, every ref refused incl. tags and deletes",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
