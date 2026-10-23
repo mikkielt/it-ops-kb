@@ -2,7 +2,7 @@
   "id": "ST-d6llyjbw",
   "kind": "story",
   "title": "The sources the 2026-10-21 census found cited by no article or data line are dropped, re-cited or kept with a reason",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-xznmaurz",
   "priority": "P2",
@@ -87,6 +87,19 @@
     }
   ],
   "notes": "Census 2026-10-21 (ST-zpe7qxtv): the _uncited group's 149 rows were read in phase 2; 136 rows with no used_in value stay unconfirmed. The census skill files them as one story. Premise 2026-10-23 on 35b5b7cb2: the check exits 1, 136 uncited sources unconfirmed.",
-  "claimed_by": "claude-92aeeb3c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "3e61065827eb3a1ee8c19b5a9367f415a600e57a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,sys;r=list(csv.DictReader(open('kb/public/_census/2026-10-21.csv',encoding='utf-8')));n=[x['id'] for x in r if x['outcome']=='unconfirmed' and not x['used_in'].strip()];print(len(n),'uncited sources unconfirmed');sys.exit(1 if n else 0)"
+        ],
+        "exit": 0,
+        "sha256": "8f02e971ba2cce5d"
+      }
+    ]
+  }
 }
