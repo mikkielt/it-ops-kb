@@ -2802,6 +2802,63 @@ def result_problems(res, group, scope, log, sources, root, today=None):
     return out, new_ids
 
 
+def leak_problems(res):
+    """[problem] for each outcome note, gap text and conflict text that holds a value the leak scan flags (the scan of
+    tracked files, `kbpublic.file_hits`, with the clone's `_tools/tests_allowlist.txt`), naming the field and the kinds,
+    never the value: a note is written to the log and a gap or conflict text to a ledger, both tracked."""
+    import kbpublic
+    path = os.path.join(kbcommon.HOME, kbpublic.ALLOWLIST_PATH)
+    try:
+        with open(path, encoding="utf-8") as f:
+            allow = kbpublic.parse_allowlist(f.read())
+    except (OSError, UnicodeDecodeError):
+        allow = {}
+    fields = [(f"outcomes[{i}] note", o["note"]) for i, o in enumerate(res["outcomes"])]
+    fields += [(f"{kind}[{i}] text", e["text"]) for kind in ("gaps", "conflicts") for i, e in enumerate(res[kind])]
+    out = []
+    for field, text in fields:
+        kinds = sorted({k for k, _ in kbpublic.file_hits("census-result.json", text, allow)})
+        if kinds:
+            out.append(f"{field} has a leak-scan hit ({', '.join(kinds)}; value not printed): write a placeholder instead")
+    return out
+
+
+def register_updates(rels):
+    """([problem], {path: sha256}): the rows of the root's `_artifacts.csv` whose path is one of `rels` (root-relative)
+    and whose recorded sha256 differs from the file as it stands, each with the file's hash; a problem for such a row
+    whose file cannot be read or when the register cannot be read. Nothing is written."""
+    text = kbcommon.read(kbcommon.ARTIFACTS, newline="", strict=True)
+    if text is None:
+        return [], {}
+    try:
+        _, rows = kbcommon.parse_csv(kbcommon.ARTIFACTS, text, ("path", "sha256"))
+    except kbcommon.CsvError as e:
+        return [f"{e}"], {}
+    out, fresh = [], {}
+    for r in rows:
+        if r["path"] not in rels:
+            continue
+        try:
+            with open(os.path.join(KB, r["path"]), "rb") as f:
+                got = hashlib.sha256(f.read()).hexdigest()
+        except OSError as e:
+            out.append(f"edited_files: {r['path']} is in {kbcommon.ARTIFACTS} and cannot be read ({e.strerror}), so its sha256 cannot be set")
+            continue
+        if got != r["sha256"].strip().lower():
+            fresh[r["path"]] = got
+    return out, fresh
+
+
+def write_register(fresh):
+    """Set the sha256 of each row of `_artifacts.csv` whose path is a key of `fresh` (`register_updates`), written
+    atomically with the file's other rows and its header as they were."""
+    path = os.path.join(KB, kbcommon.ARTIFACTS)
+    header, rows = kbcommon.parse_csv(kbcommon.ARTIFACTS, kbcommon.read(path, newline="", strict=True), ("path", "sha256"))
+    for r in rows:
+        r["sha256"] = fresh.get(r["path"], r["sha256"])
+    kbcommon.write_csv(path, header, rows, atomic=True)
+
+
 def edited_rel(res, group, scope):
     """The root-relative paths of the result's `edited_files` (each given as the brief printed it, or relative to the
     root), sorted, once each."""
@@ -2865,9 +2922,12 @@ def cmd_apply(a, tally):
         return fail(f"no group {a.group!r} in {a.log}; groups: " + (", ".join(scope) or "none"))
     problems = schema_errors(res, schema)
     sources = {r["id"]: r for r in kbcommon.read_sources()}
-    new_ids = []
+    new_ids, fresh = [], {}
     if not problems:
         problems, new_ids = result_problems(res, a.group, scope, {r["id"]: r for r in rows}, sources, root)
+        problems += leak_problems(res)
+        more, fresh = register_updates(set(edited_rel(res, a.group, scope)))
+        problems += more
     if problems:
         return fail(f"refused: {len(problems)} problem(s) in {a.from_json}, nothing written:\n" + "\n".join(f"  {p}" for p in problems))
     dry, say = a.dry_run, lambda msg: print(("would " if a.dry_run else "") + msg, flush=True)  # noqa: E731
@@ -2897,6 +2957,10 @@ def cmd_apply(a, tally):
             text = kbcommon.read(path, newline="", strict=True) or ""
             with open(path, "w", encoding="utf-8", newline="") as f:
                 f.write(ledger_with(text, entries))
+    for rel in sorted(fresh):
+        say(f"set sha256 of {rel} in {kbcommon.ARTIFACTS} to {fresh[rel][:12]}")
+    if fresh and not dry:
+        write_register(fresh)
     counts = Counter(o["outcome"] for o in res["outcomes"])
     say(f"record {len(res['outcomes'])} outcome(s) in {a.log}: " + (", ".join(f"{k}={v}" for k, v in sorted(counts.items())) or "none"))
     if not dry and res["outcomes"]:
