@@ -2,7 +2,7 @@
   "id": "ST-tac4z3zk",
   "kind": "story",
   "title": "kb-setup asks for the clone's test ceiling profile, usual or busy, and a busy clone's seconds ceiling is 15 times the platform's",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3trnelzv",
   "priority": "P1",
   "rank": 0,
@@ -88,5 +88,7 @@
       "role": "interactive"
     }
   ],
-  "notes": "Premise (field report 2026-10-19, operator's Windows deploy in a VS Code workspace): the full tests.py run took over 150 s on a busy Windows host, over win32:150 of tests_ceiling.json; the deploy agent raised win32 to 1800 in the local clone with the operator's two answers, an edit of a tracked file that a later fetch from upstream conflicts with. Busy factor 15 gives darwin 435 s, linux 900 s, win32 2250 s, above the local 1800. kb-setup's profile question comes before step 2 runs tests.py. Once landed, the Windows clone drops its local ceiling edit and sets the busy profile."
+  "notes": "Premise (field report 2026-10-19, operator's Windows deploy in a VS Code workspace): the full tests.py run took over 150 s on a busy Windows host, over win32:150 of tests_ceiling.json; the deploy agent raised win32 to 1800 in the local clone with the operator's two answers, an edit of a tracked file that a later fetch from upstream conflicts with. Busy factor 15 gives darwin 435 s, linux 900 s, win32 2250 s, above the local 1800. kb-setup's profile question comes before step 2 runs tests.py. Once landed, the Windows clone drops its local ceiling edit and sets the busy profile. Precheck 2026-10-23: the git diff --quiet origin/main -- _tools/tests_ceiling.json check passes before the work by design: it pins that the profile never edits the shared ceiling file. Operator answered gate ceiling the same day: _private/host.json, written by tests.py --set-profile, refused in an agent session.",
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
