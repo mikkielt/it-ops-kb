@@ -223,7 +223,8 @@ def set_profile(name, home=None, env=None):
     ceiling answer is (`bl_authority.in_agent_session`), and for a name that is neither `usual` nor `busy`."""
     import bl_authority
     if bl_authority.in_agent_session(env):
-        raise CeilingError("the test ceiling profile is set by the operator in a terminal of their own, not in an agent session")
+        raise CeilingError("the test ceiling profile is set by the operator in a terminal of their own, not in an agent "
+                           f"session; {bl_authority.IDE_ROUTE}")
     if name not in PROFILES:
         raise CeilingError(f"profile {name!r}: one of {', '.join(PROFILES)}")
     path = profile_path(home)
