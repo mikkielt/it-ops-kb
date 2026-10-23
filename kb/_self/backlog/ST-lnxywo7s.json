@@ -71,7 +71,11 @@
         "The form's story fields hold one story and the tool repeats the four story sections (Title to Local change made meanwhile) after a rule for each further item": "ST-lnxywo7s",
         "The form has one textarea for all stories": "ST-lnxywo7s"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "The form's story fields hold one story and the tool repeats the four story sections (Title to Local change made meanwhile) after a rule for each further item",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
