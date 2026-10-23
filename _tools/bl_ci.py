@@ -39,9 +39,10 @@ def first_failure(log):
 
 
 def bug_with_fingerprint(bl, fp):
-    """The id of an open bug (not done or dropped) whose links carry `fingerprint <fp>`, or None."""
+    """The id of an open bug (not done or dropped) of this clone, not an upstream one (read-only here), whose links
+    carry `fingerprint <fp>`, or None."""
     for iid, it in sorted(bl.items.items()):
-        if (it.get("kind") == "bug" and it.get("status") not in ("done", "dropped")
+        if (it.get("kind") == "bug" and not bl.is_upstream(iid) and it.get("status") not in ("done", "dropped")
                 and f"fingerprint {fp}" in it.get("links", [])):
             return iid
     return None
