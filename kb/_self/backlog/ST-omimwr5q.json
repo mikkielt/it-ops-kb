@@ -1,0 +1,29 @@
+{
+  "id": "ST-omimwr5q",
+  "kind": "story",
+  "title": "A workspace that installs the plugin gets the coord hook and a coord store of its own, so its sessions coordinate as the clone's do",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the plugin manifest registers the coord hook (SessionStart, SessionEnd, UserPromptExpansion for kb-research, PreToolUse for Bash, Skill, Edit and Write) from the plugin root, and it runs only when the project's backlog.json hooks list names coord, as horizon and intake do; coord.py, the hook, kbask and kbmon resolve the store from the project (CLAUDE_PROJECT_DIR, else the working directory's git common dir) when the script's own clone is not the project, so each workspace has its own store, kbmon --root WS shows that workspace's coord, sessions and sprint panels, and no project writes into the plugin's copy; KB_COORD_STORE and --store still win",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, tempfile, os, sys, json\nR = os.getcwd(); W = tempfile.mkdtemp()\nsubprocess.run(['git', 'init', '-q', W])\nenv = {k: v for k, v in os.environ.items() if k != 'KB_COORD_STORE'}\nenv['CLAUDE_PROJECT_DIR'] = W\nr = subprocess.run([sys.executable, os.path.join(R, '_tools', 'coord.py'), 'list', '--prefix', 'zz-premise/'], cwd=W,\n                   capture_output=True, text=True, env=env)\nstore = os.path.join(W, '.git', 'kb-coord', 'coord.sqlite')\nplugin = json.load(open(os.path.join(R, '.claude-plugin', 'plugin.json'), encoding='utf-8'))\nhooked = 'coord_hook.py' in json.dumps(plugin.get('hooks', {}))\nok = r.returncode == 0 and os.path.exists(store) and hooked\nprint('list exit', r.returncode, '| workspace store made:', os.path.exists(store), '| plugin registers coord hook:', hooked)\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude-plugin/plugin.json",
+    "_tools/coord.py",
+    ".claude/hooks/coord_hook.py",
+    "_tools/kbask.py",
+    "_tools/mon_coord.py",
+    "kb/_self/coordination.md",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md"
+  ]
+}

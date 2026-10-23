@@ -1,0 +1,28 @@
+{
+  "id": "ST-3bmmg73g",
+  "kind": "story",
+  "title": "kbmon --events exports an item's run as a kb.item span with kb.worker and kb.landing children, built from its progress events",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbmon --events builds from the progress events of each run key a kb.item span (claimed to landed, refused or released), a kb.worker child for each working to returned, failed or blocked stretch and a kb.landing child for each landing to landed or refused, with deterministic ids, the item and sprint as attributes and status error for failed and refused; the adapter sends them as it sends the other spans",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\ndef plant(status):\n    for f in glob.glob(T + '/kb/_self/backlog/*.json'):\n        d = json.load(open(f, encoding='utf-8'))\n        if d['id'] == sp: d['status'] = 'active'\n        if d['id'] == iid: d['status'] = status; d['sprint'] = sp\n        json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\n    g('add', '-A'); g('commit', '-q', '-m', 'planted ' + status)\ndef walk(*states): return [c('transition', 'run/' + iid, '--to', s).returncode for s in states]\nplant('doing')\nwalk('claimed', 'working', 'returned', 'landing', 'landed')\nr = subprocess.run([sys.executable, R + '/_tools/kbmon.py', '--events', '--root', T, '--store', S],\n                   capture_output=True, text=True, env=env)\ntry:\n    spans = json.loads(r.stdout)['spans']\nexcept (ValueError, KeyError):\n    spans = []\nitem = [s for s in spans if s['name'] == 'kb.item' and s['attributes'].get('item') == iid]\nkids = {s['name'] for s in spans if item and s.get('parent') == item[0]['id']}\nok = len(item) == 1 and {'kb.worker', 'kb.landing'} <= kids and item[0]['start'] < item[0]['end']\nprint('kb.item', len(item), 'children', sorted(kids))\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/mon_events.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-yrilvcbx"
+  ],
+  "notes": "Premise: with the run key walked claimed to landed, kbmon --events gives no kb.item span (the check prints 'kb.item 0'). Today a landing becomes a span only once its land.end row exists (kb/_self/monitoring.md:76) and a headless worker gives none. Building finished spans with explicit times and a known parent is what the SDK supports (kb/public/logs/otel-python-sdk.md:83-84, DER). A kb.sprint root span over a sprint's kb.item spans is left for refinement: the SP's own start and close are commits, not run keys."
+}

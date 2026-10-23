@@ -1,0 +1,31 @@
+{
+  "id": "ST-56yln2to",
+  "kind": "story",
+  "title": "The coord hook tells a session and its operator who else works on the same items or files, in what run state, and the suggested way to coordinate",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "intents carry their items' touches; the coord hook, at the moments announce.when names (SessionStart, a backlog.py claim, mid-session at a Bash or Skill event at most every 10 seconds, and PreToolUse on Edit or Write of a file inside another live item's touches), finds each other live session whose items or touches meet this session's and shows it once, as systemMessage to the operator and additionalContext to Claude: the other session's label and operator id, its item id and title, its run state and age, the shared files, the strategy the settings suggest for that run state with its command (wait: coord.py wait --kind progress --item; ask: kbask.py ask; after: set --add-depends; join; proceed) and the others; with strategy.decide operator (the default) it tells Claude to tell the operator and ask which, with claude it lets Claude follow the suggestion and say what it did; the hook never blocks a tool call and stays within its 10 second budget",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, tempfile, os, sys, json, uuid, glob\nS = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef c(*a): return subprocess.run([sys.executable, '_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nother, me = str(uuid.uuid4()), str(uuid.uuid4())\nc('claim', 'session/' + other, '--ttl', '600', '--holder', other)\nc('post', '--kind', 'intent', '--field', 'session=' + other, '--field', 'item=ST-ab12cd34', '--field', 'touch=_tools/bl_land.py')\nfor s in ('claimed', 'working', 'returned', 'landing'):\n    c('transition', 'run/ST-ab12cd34', '--to', s)\npayload = {'hook_event_name': 'PreToolUse', 'session_id': me, 'tool_name': 'Edit', 'cwd': os.getcwd(),\n           'tool_input': {'file_path': os.path.join(os.getcwd(), '_tools/bl_land.py'), 'old_string': 'a', 'new_string': 'b'}}\nr = subprocess.run([sys.executable, '.claude/hooks/coord_hook.py'], input=json.dumps(payload), capture_output=True,\n                   text=True, env=env)\nfor f in glob.glob(os.path.join('_cache', 'coord_hook', me + '*')):\n    os.remove(f)\ntry:\n    msg = json.loads(r.stdout).get('systemMessage', '')\nexcept ValueError:\n    msg = ''\nok = r.returncode == 0 and all(w in msg for w in ('landing', 'ST-ab12cd34', '_tools/bl_land.py', 'suggested', 'wait'))\nprint('hook exit', r.returncode, '| message:', msg[:240] or '(none)')\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/hooks/coord_hook.py",
+    ".claude/settings.json",
+    "_tools/coord.py",
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-yrilvcbx",
+    "ST-t2loi3od",
+    "ST-a6ypqjuy"
+  ]
+}

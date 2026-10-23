@@ -1,0 +1,32 @@
+{
+  "id": "ST-vopsopkg",
+  "kind": "story",
+  "title": "kbsettings.py explain and the kb_settings MCP tool answer how coordination is set up here, each setting with its value, the file that set it, its meaning and its doc line",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbsettings.py explain [KEY] [--root WS] [--kb-root NAME] [--json] prints for each effective setting (or the one KEY) its value, its source (the workspace settings.json, a kb root's settings.json, or default), its meaning in plain words from the module's settings table (the one place that text lives) and the kb/_self/coordination.md path:line that states the rule; the read-only kb MCP tool kb_settings returns the same lines to any session, a plugin workspace's included; kb/_self/coordination.md gains a Settings section whose facts the settings table matches (selfdoc's check), with tested _self lookup eval rows so rag.py pack --root _self answers how coordination is set up; no model call, no file read beyond the settings files and the table",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, tempfile, os, sys, json\nT = tempfile.mkdtemp()\nsubprocess.run(['git', 'init', '-q', T])\nos.makedirs(os.path.join(T, 'kb', 'team'))\njson.dump({'coordination': {'strategy': {'working': 'after'}}}, open(os.path.join(T, 'kb', 'team', 'settings.json'), 'w', encoding='utf-8'))\nr = subprocess.run([sys.executable, '_tools/kbsettings.py', 'explain', 'strategy.working', '--root', T, '--kb-root', 'team', '--json'],\n                   capture_output=True, text=True)\ntry:\n    e = json.loads(r.stdout)\nexcept ValueError:\n    e = {}\nmcp = open('_tools/kb_mcp.py', encoding='utf-8').read()\npack = subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', '_self',\n                       'which coordination strategy does a session suggest when another item touching the same files is working'],\n                      capture_output=True, text=True).stdout\nok = (r.returncode == 0 and e.get('value') == 'after' and e.get('source', '').endswith(os.path.join('kb', 'team', 'settings.json'))\n      and len(e.get('meaning', '')) > 20 and 'coordination.md:' in e.get('doc', '') and \"'kb_settings'\" in mcp.replace('\"', \"'\")\n      and 'coverage: good' in pack and 'kb/_self/coordination.md' in pack)\nprint('explain', r.returncode, e, '| mcp tool', \"'kb_settings'\" in mcp.replace('\"', \"'\"), '| _self pack good', 'coverage: good' in pack)\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbsettings.py",
+    "_tools/kb_mcp.py",
+    "_tools/test_redact.py",
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "depends_on": [
+    "ST-t2loi3od"
+  ]
+}

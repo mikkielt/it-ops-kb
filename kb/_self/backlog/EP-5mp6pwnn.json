@@ -1,0 +1,13 @@
+{
+  "id": "EP-5mp6pwnn",
+  "kind": "epic",
+  "title": "An agent finds the deterministic tool that answers a question from one entry point, instead of reading files",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "python3 _tools/kbtools.py, the kb_tools MCP tool and one AGENTS.md line give an agent the catalog of the kb's tools (each _tools command-line tool, skill, agent and kb MCP tool) and, for a need in plain words, the few that answer it with their command lines, read from structured lines in each tool's docstring and the existing frontmatter and tool descriptions; kb_ask.py routes a which-tool question there; a tool without those lines fails the docs check",
+  "relates_to": [
+    "EP-nij36lt7"
+  ],
+  "notes": "Decided at planning (operator asked for a decision): a command plus an MCP tool fed by structured docstring lines, not a skill, since a skill loads text the model must reason over, the cost this avoids; skills and agents enter the catalog by their existing frontmatter descriptions. The coordination settings explainer of EP-nij36lt7 (ST-vopsopkg, kbsettings.py explain and kb_settings) is one catalog entry."
+}

@@ -1,0 +1,25 @@
+{
+  "id": "ST-l6fw46gd",
+  "kind": "story",
+  "title": "Research: the W3C traceparent format and the OpenTelemetry Python SDK's trace-context propagator are kb facts",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/public/logs/otel-python-sdk.md gains facts with source rows on the W3C Trace Context traceparent header (version 00, a 32-hex trace-id, a 16-hex parent-id, the trace-flags byte with the sampled bit, the all-zero ids that are invalid, and tracestate) from the W3C Recommendation (DOC), and on how the Python SDK's TraceContextTextMapPropagator reads and writes it from a carrier such as an environment dict (CODE at a pinned commit), so a tool can hand a child process the context of a span it built with explicit ids",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, sys\nART = 'kb/public/logs/otel-python-sdk.md'\nCASES = [('What is the format of the W3C traceparent header: version, trace-id, parent-id and trace-flags?', ['traceparent', 'trace-id', 'parent-id']), ('Which trace-flags bit marks a W3C traceparent as sampled?', ['sampled', 'trace-flags'])]\nmiss = []\nfor q, terms in CASES:\n    out = subprocess.run([sys.executable, '_tools/rag.py', 'pack', q, '--root', 'public', '--budget', '2500'],\n                         capture_output=True, text=True).stdout\n    hit = [l for l in out.splitlines() if l.startswith('- ' + ART[len('kb/'):] + ':') and '[DOC' in l\n           and all(t.lower() in l.lower() for t in terms)]\n    if not hit:\n        miss.append((q, terms))\nprint('missing:', miss if miss else 'none')\nsys.exit(1 if miss else 0)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/logs/otel-python-sdk.md",
+    "kb/public/_sources.csv",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ]
+}

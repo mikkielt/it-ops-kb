@@ -1,0 +1,25 @@
+{
+  "id": "ST-mctzoewi",
+  "kind": "story",
+  "title": "Research: a local traces backend for the operator's machine (Jaeger all-in-one beside Tempo monolithic) is kb facts",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/public/logs/otel-collector-otlp-pipeline.md gains DOC facts with source rows from the Jaeger docs pinned at a release on Jaeger's all-in-one or v2 binary: its OTLP receiver ports (4317 gRPC, 4318 HTTP) and how to bind them to loopback, its in-memory storage and what a restart loses, its UI port, and its install without a container; beside the Tempo monolithic facts the article has, so the later traces-backend story picks one with the kb's citations",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, sys\nART = 'kb/public/logs/otel-collector-otlp-pipeline.md'\nCASES = [('Which ports does Jaeger all-in-one listen on for OTLP and its UI?', ['all-in-one', '4318'])]\nmiss = []\nfor q, terms in CASES:\n    out = subprocess.run([sys.executable, '_tools/rag.py', 'pack', q, '--root', 'public', '--budget', '2500'],\n                         capture_output=True, text=True).stdout\n    hit = [l for l in out.splitlines() if l.startswith('- ' + ART[len('kb/'):] + ':') and '[DOC' in l\n           and all(t.lower() in l.lower() for t in terms)]\n    if not hit:\n        miss.append((q, terms))\nprint('missing:', miss if miss else 'none')\nsys.exit(1 if miss else 0)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/logs/otel-collector-otlp-pipeline.md",
+    "kb/public/_sources.csv",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ]
+}

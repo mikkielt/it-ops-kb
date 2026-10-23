@@ -1,0 +1,31 @@
+{
+  "id": "ST-wqqpspwl",
+  "kind": "story",
+  "title": "The strategy a session chose is posted as a coord event and shown once to the other session, so both know who waits for whom",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "coord.py post --kind coordinate takes the fields item, other, strategy (wait, ask, after, join, proceed), touch, session and operator, and kbask.py coordinate ITEM OTHER STRATEGY posts it for the session that chose; when announce.to_other_sessions is true the coord hook shows it once, at the other session's next SessionStart, Bash, Skill, Edit or Write event, as a plain line (session s-xxxxxx of operator ID will wait for your landing of ITEM before editing FILES), and kbmon's log panel and --events show it as coord.coordinate",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, tempfile, os, sys, json, uuid, glob\nS = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef c(*a): return subprocess.run([sys.executable, '_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nother = str(uuid.uuid4())\nc('claim', 'session/' + other, '--ttl', '600', '--holder', other)\nc('post', '--kind', 'intent', '--field', 'session=' + other, '--field', 'item=ST-ab12cd34', '--field', 'touch=_tools/bl_land.py')\npost = c('post', '--kind', 'coordinate', '--field', 'item=ST-ef56gh78', '--field', 'other=ST-ab12cd34',\n         '--field', 'strategy=wait', '--field', 'touch=_tools/bl_land.py')\npayload = {'hook_event_name': 'PreToolUse', 'session_id': other, 'tool_name': 'Bash', 'cwd': os.getcwd(),\n           'tool_input': {'command': 'git status'}}\nst = os.path.join('_cache', 'coord_hook', other + '.json')\nos.makedirs(os.path.dirname(st), exist_ok=True)\njson.dump({'items': ['ST-ab12cd34'], 'asks_seq': 0}, open(st, 'w', encoding='utf-8'))\nr = subprocess.run([sys.executable, '.claude/hooks/coord_hook.py'], input=json.dumps(payload), capture_output=True,\n                   text=True, env=env)\nfor f in glob.glob(os.path.join('_cache', 'coord_hook', other + '*')):\n    os.remove(f)\ntry:\n    msg = json.loads(r.stdout).get('systemMessage', '')\nexcept ValueError:\n    msg = ''\nok = post.returncode == 0 and all(w in msg for w in ('will wait', 'ST-ab12cd34', 'ST-ef56gh78'))\nprint('post exit', post.returncode, '| other session sees:', msg[:200] or '(none)')\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/coord.py",
+    "_tools/kbask.py",
+    ".claude/hooks/coord_hook.py",
+    "_tools/kb_mcp.py",
+    "kb/_self/coordination.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-56yln2to"
+  ]
+}

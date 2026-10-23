@@ -1,0 +1,27 @@
+{
+  "id": "ST-w6pz5emu",
+  "kind": "story",
+  "title": "kbtools.py prints the catalog of the kb's tools and the few that answer a need, read from each tool's Answers: and Use: docstring lines and the skills', agents' and MCP tools' descriptions",
+  "status": "draft",
+  "parent": "EP-5mp6pwnn",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "each _tools command-line tool's module docstring ends with Answers: lines (the questions it answers, in plain words), a Use: line (its command) and an MCP: line when a kb MCP tool runs it, read with ast and never imported; kbtools.py with no argument prints the catalog (one line each: tool, command, what it answers) of those tools, the skills and agents by their frontmatter descriptions and the kb MCP tools by their descriptions; kbtools.py NEED [--json] prints the best entries for NEED by word match, deterministic; selfdoc.py check fails a command-line tool with no Answers: or Use: line, naming it; kbmon's kb panel counts the cataloged tools and those missing their lines",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import ast, glob, subprocess, sys, json\nclis = [f for f in sorted(glob.glob('_tools/*.py')) if \"__name__ == '__main__'\" in open(f, encoding='utf-8').read().replace('\"', \"'\")]\ndef lines(f):\n    doc = ast.get_docstring(ast.parse(open(f, encoding='utf-8').read())) or ''\n    return {k for k in ('Answers:', 'Use:') if any(l.strip().startswith(k) for l in doc.splitlines())}\nbare = [f for f in clis if lines(f) != {'Answers:', 'Use:'}]\ndef top(need):\n    r = subprocess.run([sys.executable, '_tools/kbtools.py', need, '--json'], capture_output=True, text=True)\n    try:\n        return [e.get('tool') for e in json.loads(r.stdout)['entries']][:3]\n    except (ValueError, KeyError):\n        return []\ncases = {'what a sprint item cost in tokens and dollars': 'backlog.py', 'which sessions are running and what is stalled': 'kbmon.py',\n         'which docs describe a file I am changing': 'selfdoc.py'}\ngot = {need: top(need) for need in cases}\nok = not bare and all(cases[n] in got[n] for n in cases)\nprint('CLIs without Answers:/Use: lines', len(bare), 'of', len(clis), '| top entries', got)\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/*.py",
+    "kb/_self/map.csv",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "_tools/mon_kb.py",
+    "kb/_self/monitoring.md"
+  ]
+}

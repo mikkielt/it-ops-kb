@@ -1,0 +1,57 @@
+{
+  "id": "ST-54y7al4z",
+  "kind": "story",
+  "title": "Prometheus alerts on a waiting gate, a stalled run and a failed run, and sends them to a local Alertmanager",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbmon --metrics gives the points a rule needs (items by run state, the seconds the oldest blocked item has waited, the seconds since the newest progress event of a working item, failed runs); otel/kbmon.rules.yml adds KbmonGateWaiting, KbmonRunStalled and KbmonRunFailed over them, which --check-rules proves against /metrics; otel/prometheus.yml sends firing alerts to an Alertmanager on loopback and otel/alertmanager.yml routes them to the receiver the operator chose, with no credential in the file",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, re, sys\nrules = open('otel/kbmon.rules.yml', encoding='utf-8').read()\nprom = open('otel/prometheus.yml', encoding='utf-8').read()\nnames = {n for n in ('KbmonGateWaiting', 'KbmonRunStalled', 'KbmonRunFailed') if re.search(r'alert:\\s*' + n + r'\\b', rules)}\nalerting = re.search(r'^alerting:\\s*\\n(?:\\s+.*\\n)*?\\s+-?\\s*targets:\\s*\\[\\s*\"127\\.0\\.0\\.1:\\d+\"\\s*\\]', prom, re.M)\nam = os.path.exists('otel/alertmanager.yml') and 'receivers:' in open('otel/alertmanager.yml', encoding='utf-8').read()\nprint('rules', sorted(names), '| alerting to loopback', bool(alerting), '| alertmanager.yml', am)\nsys.exit(0 if len(names) == 3 and alerting and am else 1)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, sys; sys.exit(subprocess.run(['uv', 'run', '--frozen', '--project', 'otel', 'python', 'otel/kbmon_otel.py', '--check-rules', 'otel/kbmon.rules.yml']).returncode)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/mon_export.py",
+    "otel/kbmon.rules.yml",
+    "otel/prometheus.yml",
+    "otel/alertmanager.yml",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-yrilvcbx",
+    "ST-hbxnf2l3"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does the local Alertmanager send a firing alert?",
+      "options": [
+        "a loopback webhook receiver in the standard library that posts each alert as a coord ask to operator, which kbmon shows",
+        "email to an address the operator sets outside the repository",
+        "a chat or phone service the operator names, its credential kept outside the repository"
+      ],
+      "recommendation": "a loopback webhook receiver in the standard library that posts each alert as a coord ask to operator, which kbmon shows",
+      "class": "secrets",
+      "answer": "a loopback webhook receiver in the standard library that posts each alert as a coord ask to operator, which kbmon shows",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
+  "notes": "Premise: otel/kbmon.rules.yml holds three rules on the kb's health (eval, any alert, an orphan) and none on a sprint run; otel/prometheus.yml has no alerting block and the repository no Alertmanager config (the check prints rules [], alerting False, alertmanager.yml False). Prometheus only evaluates alerts; notifying is a separate Alertmanager (kb/public/logs/prometheus-retention-exposition.md:55, DOC). As for Prometheus itself, the operator installs Alertmanager outside the clone; the repository holds config files only."
+}

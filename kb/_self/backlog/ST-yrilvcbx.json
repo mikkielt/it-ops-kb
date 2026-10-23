@@ -1,0 +1,47 @@
+{
+  "id": "ST-yrilvcbx",
+  "kind": "story",
+  "title": "coord.py transition moves an item's run state and posts its progress event in one transaction, refusing a move the state table does not allow",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "coord.py transition run/<item id> --to STATE [--field NAME=VALUE]... reads the key's current state and, when the state table allows the move, writes the new state, raises the revision and posts a progress event (item, state and the move's fields exit, gates and step) in the same BEGIN IMMEDIATE transaction; a move the table does not allow exits 1 naming the current state and the states it may move to, and changes nothing; the states are claimed, working, blocked, returned, failed, staging, landing, landed, refused and released, and the table is: none to claimed; claimed to working or released; working to returned, failed or blocked; blocked to working, returned or failed; returned to staging, landing, working or released; failed to working or released; staging to returned; landing to landed or refused; refused to working, landing or released; post --kind progress accepts those states and the fields exit, gates and step; digest hides an intent whose items are all landed or released; the coord_post tool's description names the states",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, tempfile, os, sys, json\nS = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\ndef c(*a): return subprocess.run([sys.executable, '_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\npath = ['claimed', 'working', 'returned', 'landing', 'landed']\nwalk = [c('transition', 'run/ST-00000000', '--to', s).returncode for s in path]\ncold = c('transition', 'run/ST-11111111', '--to', 'landing').returncode\nfor s in ['claimed', 'working', 'returned', 'staging']:\n    c('transition', 'run/ST-22222222', '--to', s)\nclash = c('transition', 'run/ST-22222222', '--to', 'landing')\ntry:\n    ev = json.loads(c('wait', '--since', '0', '--timeout', '0').stdout)['events']\nexcept ValueError:\n    ev = []\nstates = [e['fields'].get('state') for e in ev if e['kind'] == 'progress' and e['fields'].get('item') == 'ST-00000000']\ngot = c('get', 'run/ST-00000000').stdout\nok = (walk == [0] * 5 and cold == 1 and clash.returncode == 1 and 'staging' in clash.stdout + clash.stderr\n      and states == path and 'landed' in got)\nprint('walk', walk, 'cold', cold, 'clash', clash.returncode, 'events', states)\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/coord.py",
+    "_tools/kb_mcp.py",
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which run facts does coord hold as the authority, and which stay with the item files and git?",
+      "options": [
+        "coord holds the steps between claim and done; the item file keeps todo, doing and done, and reconcile makes coord follow git",
+        "coord holds every state, done included; the item file's status follows coord"
+      ],
+      "recommendation": "coord holds the steps between claim and done; the item file keeps todo, doing and done, and reconcile makes coord follow git",
+      "do": {
+        "coord holds the steps between claim and done; the item file keeps todo, doing and done, and reconcile makes coord follow git": "ST-yrilvcbx",
+        "coord holds every state, done included; the item file's status follows coord": "ST-yrilvcbx"
+      },
+      "class": "design",
+      "answer": "coord holds the steps between claim and done; the item file keeps todo, doing and done, and reconcile makes coord follow git",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
+  "notes": "Premise: coord.py transition does not exist (the check's walk exits 2 at every step), and post --kind progress --field state=returned exits 2: 'progress takes item and state, state one of working, blocked, done' (_tools/coord.py:150-153). No tool posts progress today (kb/_self/coordination.md:34,40). Ids: the progress event is the record kbmon and wait read; the run key's value is the state an orchestrator reads with coord.py get."
+}

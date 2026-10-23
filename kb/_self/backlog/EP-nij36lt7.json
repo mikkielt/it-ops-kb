@@ -1,0 +1,15 @@
+{
+  "id": "EP-nij36lt7",
+  "kind": "epic",
+  "title": "A sprint run's item states live in coord, moved by the tools that do each step, waited on by the orchestrator and shown to the operator",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "coord holds each sprint item's run state (key run/<item id>: claimed, working, blocked, returned, failed, staging, landing, landed, refused, released) as the authority for the steps between claim and done, moved only by the tool that does the step (claim, dispatch, gate add, stage-back, land) in one transaction with a progress event, an illegal move refused naming the current state; backlog.py runs compares it with the item files, work branches and worker pids and reconciles it to git; an orchestrator waits on one coord.py wait --kind progress --item command instead of polling pids; land works in a landing worktree of its own, so the orchestrator's checkout stays free; kbmon's needs-you line and sprint panel show the run states and a gate on a work branch; Prometheus rules and a local Alertmanager alert on a waiting gate and a stalled or failed run; kbmon --events exports an item's run as a span with its worker and landing as children, under which a dispatched worker's own Claude Code telemetry joins by TRACEPARENT and kb.item.id",
+  "relates_to": [
+    "EP-gzr4mmkm",
+    "EP-ajw3oywi",
+    "EP-wqgicmmj"
+  ],
+  "notes": "Why: orchestrators run sprint loops by hand (pid polling, idle checkout per landing, worker gates seen late, no progress in coord); each story's premise cites the code. Operator's choices at planning: coord is the run-state authority between claim and done, reconciled to git (gates answered 2026-10-24); one wait verb; a landing worktree; sessions announce overlaps by items and files at start, claim, mid-run and edits, with who, run state and a suggested strategy, the operator deciding, and the chosen strategy posted back; settings in <workspace>/settings.json overridden by kb/<root>/settings.json, asked at kb-setup and plugin setup, explained by kbsettings.py explain and kb_settings (a command and MCP tool, not a skill); it all works in a plugin workspace; feedback by kbmon (every change has a panel, needs-you, alert or --events row), the mod's notify, phone push, Prometheus with Alertmanager, a traces backend. Not chosen: events with no authority; a backlog.py run loop (plannable later on these states). EP-gzr4mmkm: serves its second fitness test, so items stay drafts until promoted. Later stories: kb-sprint run step and skills/sprint on these states; mod $.ui.notify on a needs-you change; phone push at blocked or failed; a kb.sprint root span; the traces backend setup after ST-mctzoewi; event-log retention; run keys behind coord.py serve. Fold in: ST-ns3oyl37, ST-vbwxcncr, ST-d7l2rlal, ST-zpcvcyqs, ST-ejx3u3ci, ST-pueudigl, ST-qd4immwv. Out: channels, a status page, the Agent SDK. Checks are planted runs, no new test ids; the ceiling is not raised. Proof: a real sprint's backlog.py runs SP shows no drift at close and its retrospective names no hand-written wait loop and no landing that waited on the checkout."
+}

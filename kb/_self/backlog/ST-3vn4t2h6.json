@@ -1,0 +1,33 @@
+{
+  "id": "ST-3vn4t2h6",
+  "kind": "story",
+  "title": "kbmon shows the landing lock and its queue, which session waits on which items, and alerts while coord's run states drift from git",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the host panel gains land_lock (the item being landed, its step, since when, and the items queued behind it, by title); the sessions panel gains waits (each live session's open coord.py wait --kind progress --item, by session label and item titles, read from a coord key the wait holds while it blocks); the snapshot raises the alert runs.drift (kind drift) while backlog.py runs finds drift, naming the count and the oldest item, and it goes when runs --reconcile has run; --status sprints and --status coord say the same in plain words",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\ndef plant(status):\n    for f in glob.glob(T + '/kb/_self/backlog/*.json'):\n        d = json.load(open(f, encoding='utf-8'))\n        if d['id'] == sp: d['status'] = 'active'\n        if d['id'] == iid: d['status'] = status; d['sprint'] = sp\n        json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\n    g('add', '-A'); g('commit', '-q', '-m', 'planted ' + status)\ndef walk(*states): return [c('transition', 'run/' + iid, '--to', s).returncode for s in states]\nplant('done')\nwalk('claimed', 'working')\nr = subprocess.run([sys.executable, R + '/_tools/kbmon.py', '--json', '--root', T, '--store', S], capture_output=True, text=True, env=env)\ntry:\n    snap = json.loads(r.stdout)\nexcept ValueError:\n    snap = {}\nalerts = [a.get('id') for a in snap.get('alerts', [])]\nhost = ((snap.get('panels') or {}).get('host') or {}).get('data') or {}\nsess = ((snap.get('panels') or {}).get('sessions') or {}).get('data') or {}\nok = 'runs.drift' in alerts and 'land_lock' in host and 'waits' in sess\nprint('alerts', alerts, '| host land_lock', 'land_lock' in host, '| sessions waits', 'waits' in sess)\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/mon_host.py",
+    "_tools/mon_sessions.py",
+    "_tools/mon_status.py",
+    "_tools/mon_base.py",
+    "_tools/coord.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-55ueywel",
+    "ST-pmxnissq",
+    "ST-olagspdh"
+  ]
+}

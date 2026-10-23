@@ -1,0 +1,25 @@
+{
+  "id": "ST-hbxnf2l3",
+  "kind": "story",
+  "title": "Research: Alertmanager's route, receivers and webhook payload, and Prometheus's alerting block, are kb facts",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/public/logs/prometheus-retention-exposition.md gains DOC facts with source rows from the Prometheus and Alertmanager docs pinned at a release tag on: the alerting.alertmanagers block of prometheus.yml (static_configs targets, path prefix); Alertmanager's configuration file (route with receiver, group_by, group_wait, group_interval, repeat_interval; receivers; webhook_configs with url and send_resolved, and how a url or credential can come from a file); the JSON body a webhook receiver gets (version, status, receiver, groupLabels, commonLabels, alerts with status, labels, annotations, startsAt, endsAt, fingerprint); the --web.listen-address flag and its default port; and that a resolved alert is sent only with send_resolved",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, sys\nART = 'kb/public/logs/prometheus-retention-exposition.md'\nCASES = [('How does Alertmanager send an alert to a webhook receiver, and what JSON body does it post?', ['webhook_configs']), ('How is Prometheus configured to send firing alerts to an Alertmanager?', ['alertmanagers', 'static_configs']), (\"What does an Alertmanager route's repeat_interval and group_wait control?\", ['repeat_interval'])]\nmiss = []\nfor q, terms in CASES:\n    out = subprocess.run([sys.executable, '_tools/rag.py', 'pack', q, '--root', 'public', '--budget', '2500'],\n                         capture_output=True, text=True).stdout\n    hit = [l for l in out.splitlines() if l.startswith('- ' + ART[len('kb/'):] + ':') and '[DOC' in l\n           and all(t.lower() in l.lower() for t in terms)]\n    if not hit:\n        miss.append((q, terms))\nprint('missing:', miss if miss else 'none')\nsys.exit(1 if miss else 0)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/logs/prometheus-retention-exposition.md",
+    "kb/public/_sources.csv",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ]
+}

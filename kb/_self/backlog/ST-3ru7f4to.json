@@ -1,0 +1,47 @@
+{
+  "id": "ST-3ru7f4to",
+  "kind": "story",
+  "title": "claim and dispatch move the item's run state: claimed at the claim, working at the worker's start, returned or failed at its exit",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py claim moves run/<id> to claimed; dispatch, detached or not, moves it to working when the worker session starts and, when the session exits, to returned (exit 0 and no error result) or failed (any other end), each move with the session's exit and, on returned, the ids of the open gates the item file on work/<id> holds; each move goes through coord.py transition, so its progress event is posted with it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, tempfile, os, shutil, re, sys, json, glob\nfrom pathlib import Path\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a, e=None): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=e or env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a, e=None: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a, e=e)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\nids = {n: re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Dispatch ' + n, '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\n       for n in ('ok', 'bad')}\nfor f in glob.glob(T + '/kb/_self/backlog/*.json'):\n    d = json.load(open(f, encoding='utf-8'))\n    if d['id'] == sp: d['status'] = 'active'\n    if d['id'] in ids.values(): d['status'] = 'todo'; d['sprint'] = sp\n    json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\ng('add', '-A'); g('commit', '-q', '-m', 'planted sprint')\nruns = {}\nfor name, code in (('ok', 0), ('bad', 1)):\n    iid = ids[name]\n    claim = bl('claim', iid, '--by', 'check')\n    g('add', '-A'); g('commit', '-q', '-m', 'claim ' + iid)\n    bd = Path(T + '-bin-' + name); bd.mkdir()\n    fake = bd / 'claude'\n    fake.write_text('#!' + sys.executable + '\\nimport sys,json\\nsys.stdin.read()\\nprint(json.dumps(dict(session_id=\"sess-' + name\n                    + '\",is_error=' + ('False' if code == 0 else 'True') + ')))\\nsys.exit(' + str(code) + ')\\n')\n    fake.chmod(0o755)\n    d = bl('dispatch', iid, e=dict(env, PATH=str(bd) + os.pathsep + env['PATH']))\n    try:\n        ev = json.loads(c('wait', '--since', '0', '--timeout', '0').stdout)['events']\n    except ValueError:\n        ev = []\n    runs[name] = ([e['fields'].get('state') for e in ev if e['kind'] == 'progress' and e['fields'].get('item') == iid],\n                  c('get', 'run/' + iid).stdout, claim.returncode, d.returncode, (d.stdout + d.stderr)[-200:])\nprint({k: (v[0], v[2], v[3]) for k, v in runs.items()})\nok = (runs['ok'][0] == ['claimed', 'working', 'returned'] and 'returned' in runs['ok'][1]\n      and runs['bad'][0] == ['claimed', 'working', 'failed'] and 'failed' in runs['bad'][1])\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md",
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-yrilvcbx"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "When the coord store cannot be reached or stays locked, what does a tool that must move a run state do?",
+      "options": [
+        "go on and say so: the step runs, the move is skipped with a warning, and backlog.py runs --reconcile repairs it later",
+        "stop: the step refuses until the store answers"
+      ],
+      "recommendation": "go on and say so: the step runs, the move is skipped with a warning, and backlog.py runs --reconcile repairs it later",
+      "class": "agents-rule",
+      "answer": "go on and say so: the step runs, the move is skipped with a warning, and backlog.py runs --reconcile repairs it later",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
+  "notes": "Premise: in a planted clone with an active sprint and a stub claude, claim exits 0 and dispatch exits 0 (stub ok) or 1 (stub error) and the coord store holds no progress event and no run key (the check prints both runs' states as []). Today dispatch records the worker only in the claims ledger and its scratch directory (_tools/bl_dispatch.py:968,984), and a headless worker has no ops row or span: agent.run comes only from Agent-tool subagents after distill (_tools/ql_distill.py:257)."
+}

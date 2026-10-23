@@ -1,0 +1,26 @@
+{
+  "id": "ST-t2loi3od",
+  "kind": "story",
+  "title": "kbsettings.py reads the coordination settings from the workspace's settings.json, overridden key by key by a kb root's settings.json, over built-in defaults",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "_tools/kbsettings.py show --root WS [--kb-root NAME] [--json] prints the effective coordination settings: built-in defaults, then <WS>/settings.json, then kb/<NAME>/settings.json, merged key by key; the keys are announce.when (start, claim, midrun, edit), announce.to_other_sessions, announce.operator (terminal, kbmon, needs_you), announce.needs_you_after_min, strategy.<run state of the other item> and strategy.same_item (wait, ask, after, join, proceed) and strategy.decide (operator or claude, default operator); an unknown key or a value outside its closed set exits 2 naming the file, the key and the allowed values; one function (kbsettings.effective) is what the coord hook, kbmon and the explain command read; a missing file is no error",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, tempfile, os, sys, json\nT = tempfile.mkdtemp()\nsubprocess.run(['git', 'init', '-q', T])\nos.makedirs(os.path.join(T, 'kb', 'team'))\njson.dump({'coordination': {'strategy': {'working': 'ask', 'decide': 'operator'}}},\n          open(os.path.join(T, 'settings.json'), 'w', encoding='utf-8'))\njson.dump({'coordination': {'strategy': {'working': 'after'}}},\n          open(os.path.join(T, 'kb', 'team', 'settings.json'), 'w', encoding='utf-8'))\ndef show(*a): return subprocess.run([sys.executable, '_tools/kbsettings.py', 'show', '--root', T, *a], capture_output=True, text=True)\nws, team = show(), show('--kb-root', 'team')\njson.dump({'coordination': {'strategy': {'landing': 'sometimes'}}}, open(os.path.join(T, 'settings.json'), 'w', encoding='utf-8'))\nbad = show()\ntry:\n    w = json.loads(ws.stdout)['coordination']['strategy']; t = json.loads(team.stdout)['coordination']['strategy']\nexcept (ValueError, KeyError):\n    w = t = {}\nok = (w.get('working') == 'ask' and w.get('landing') == 'wait' and t.get('working') == 'after' and t.get('decide') == 'operator'\n      and bad.returncode == 2 and 'landing' in bad.stderr + bad.stdout)\nprint('workspace', w, '| team', t, '| bad value exit', bad.returncode)\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbsettings.py",
+    "kb/_self/map.csv",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/coordination.md"
+  ]
+}

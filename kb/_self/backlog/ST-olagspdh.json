@@ -1,0 +1,26 @@
+{
+  "id": "ST-olagspdh",
+  "kind": "story",
+  "title": "coord.py wait filters by event kind and item, so an orchestrator waits for its own items' progress in one blocking command",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "coord.py wait --since N --timeout S --kind KIND --item IDS returns only the events of that kind whose item field is one of IDS (comma-separated), blocks until such an event arrives or the timeout passes, and reports as last the newest sequence it scanned, so the next wait skips the events it filtered out; an event of another item or kind does not end the wait; the coord_wait tool takes the same two filters",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, tempfile, os, sys, json, time\nS = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\ndef c(*a): return subprocess.run([sys.executable, '_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nA, B = 'ST-aaaaaaaa', 'ST-bbbbbbbb'\nc('post', '--kind', 'progress', '--field', 'item=' + A, '--field', 'state=working')\nc('post', '--kind', 'progress', '--field', 'item=' + B, '--field', 'state=working')\nc('post', '--kind', 'intent', '--field', 'item=' + A)\nnow = c('wait', '--since', '0', '--timeout', '0', '--kind', 'progress', '--item', A)\ntry:\n    got = json.loads(now.stdout)\nexcept ValueError:\n    got = {'events': [], 'last': 0}\nlisted = [(e['kind'], e['fields'].get('item')) for e in got['events']]\nw = subprocess.Popen([sys.executable, '_tools/coord.py', '--store', S, 'wait', '--since', str(got.get('last', 0)),\n                      '--timeout', '30', '--kind', 'progress', '--item', A], stdout=subprocess.PIPE, text=True)\ntime.sleep(1)\nc('post', '--kind', 'progress', '--field', 'item=' + B, '--field', 'state=done')\ntime.sleep(1)\nearly = w.poll()\nc('post', '--kind', 'progress', '--field', 'item=' + A, '--field', 'state=done')\ntry:\n    out, _ = w.communicate(timeout=20)\n    woke = [(e['kind'], e['fields'].get('item'), e['fields'].get('state')) for e in json.loads(out)['events']]\nexcept (ValueError, subprocess.TimeoutExpired):\n    w.kill(); woke = []\nok = now.returncode == 0 and listed == [('progress', A)] and early is None and woke == [('progress', A, 'done')]\nprint('listed', listed, 'woke early', early, 'woke on', woke)\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/coord.py",
+    "_tools/kb_mcp.py",
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md"
+  ],
+  "notes": "Premise: coord.py wait --since 0 --timeout 0 --kind progress --item ST-00000000 exits 2 (unrecognized arguments). Today an orchestrator waits on a worker with a background loop over its pid and reads result.json by hand (.claude/skills/kb-sprint/SKILL.md:48); this filter is the one wait verb the operator chose, used from a background command or a Monitor watch. The kb-sprint run step and the plugin copy are rewritten to it in a later story, once ST-3ru7f4to and ST-oazktatz post the events."
+}

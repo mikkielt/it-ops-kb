@@ -1,0 +1,32 @@
+{
+  "id": "ST-e6xp5h3u",
+  "kind": "story",
+  "title": "The kb_tools MCP tool, one AGENTS.md line and kb_ask.py's routing send a which-tool question to the catalog",
+  "status": "draft",
+  "parent": "EP-5mp6pwnn",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the kb MCP server lists a read-only kb_tools tool (need, optional) that returns kbtools.py's lines; AGENTS.md names kbtools.py as the first step when an agent does not know which tool answers, staying within its 4096-byte cap by a cut elsewhere; kb_ask.py --route maps a which-tool or how-do-I question (fixed cue words, as mon_status.topic_of does) to kind=tools and answers it with kbtools.py, no pack and no model",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, sys\nmcp = open('_tools/kb_mcp.py', encoding='utf-8').read().replace('\"', \"'\")\nagents = open('AGENTS.md', encoding='utf-8').read()\nroute = subprocess.run([sys.executable, '_tools/kb_ask.py', '--route', 'which tool shows how long each landing step took'],\n                       capture_output=True, text=True).stdout\nok = \"'kb_tools'\" in mcp and 'kbtools.py' in agents and len(agents.encode('utf-8')) <= 4096 and 'kind=tools' in route\nprint('mcp kb_tools', \"'kb_tools'\" in mcp, '| AGENTS.md names kbtools.py', 'kbtools.py' in agents, '| route:', route.strip()[:120])\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py",
+    "_tools/test_redact.py",
+    "_tools/kb_ask.py",
+    "AGENTS.md",
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-w6pz5emu"
+  ],
+  "notes": "Premise: kb_ask.py --route 'which tool shows how long each landing step took' plans kind=split with model=sonnet (a paid researcher) although backlog.py landings answers it; 36 _tools command-line tools exist and none carries Answers: or Use: lines; tools.md, the one table of tools, is too long to read whole, so agents iterate over files. The AGENTS.md cap (4096 bytes, tested) means the line replaces another."
+}

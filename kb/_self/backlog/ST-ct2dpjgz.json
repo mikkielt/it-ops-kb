@@ -1,0 +1,30 @@
+{
+  "id": "ST-ct2dpjgz",
+  "kind": "story",
+  "title": "kb-setup and the plugin's sprint skill ask the operator for the coordination settings and write them with kbsettings.py init, which also turns on the coord hook",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbsettings.py init --root WS [--set KEY=VALUE]... writes the coordination section of <WS>/settings.json (keys it is not given keep their values, defaults where absent), adds coord to backlog.json's hooks list, and changes nothing on a second run with the same values; /kb-setup in the clone and the plugin's sprint skill, at the first run in a workspace with no coordination section, ask the operator in one AskUserQuestion batch (defaults first: announce at start, claim, mid-run and edits; operator decides; strategy wait for landing, ask for working) and run kbsettings.py init with the answers",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, tempfile, os, sys, json\nT = tempfile.mkdtemp()\nsubprocess.run(['git', 'init', '-q', T])\njson.dump({'item_dir': '_backlog', 'hooks': ['horizon']}, open(os.path.join(T, 'backlog.json'), 'w', encoding='utf-8'))\ndef init(*a): return subprocess.run([sys.executable, '_tools/kbsettings.py', 'init', '--root', T, *a], capture_output=True, text=True)\nfirst = init('--set', 'strategy.working=ask', '--set', 'announce.needs_you_after_min=20')\nsnap = open(os.path.join(T, 'settings.json'), encoding='utf-8').read() if os.path.exists(os.path.join(T, 'settings.json')) else ''\nsecond = init('--set', 'strategy.working=ask', '--set', 'announce.needs_you_after_min=20')\nagain = open(os.path.join(T, 'settings.json'), encoding='utf-8').read() if snap else ''\ntry:\n    co = json.loads(snap)['coordination']\n    hooks = json.load(open(os.path.join(T, 'backlog.json'), encoding='utf-8'))['hooks']\nexcept (ValueError, KeyError):\n    co, hooks = {}, []\nskill = open('.claude/skills/kb-setup/SKILL.md', encoding='utf-8').read()\nplug = open('skills/sprint/SKILL.md', encoding='utf-8').read()\nok = (first.returncode == 0 and second.returncode == 0 and snap == again and co.get('strategy', {}).get('working') == 'ask'\n      and co.get('announce', {}).get('needs_you_after_min') == 20 and hooks == ['horizon', 'coord']\n      and 'kbsettings.py init' in skill and 'kbsettings.py init' in plug)\nprint('init', first.returncode, second.returncode, '| coordination', co, '| hooks', hooks)\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbsettings.py",
+    ".claude/skills/kb-setup/SKILL.md",
+    "skills/sprint/SKILL.md",
+    "kb/_self/coordination.md",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-t2loi3od"
+  ]
+}

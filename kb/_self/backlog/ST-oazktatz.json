@@ -1,0 +1,29 @@
+{
+  "id": "ST-oazktatz",
+  "kind": "story",
+  "title": "A blocking gate added on an item moves its run state to blocked with the gate's id, so the orchestrator and the operator learn of it before the worker returns",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py gate add of a blocking gate on an item whose run state is working moves run/<id> to blocked with the field gates naming every open blocking gate of the item, also when the command runs in a worker's worktree on work/<id>, whose coord store is the clone's; answering the last open blocking gate moves it back to working while the worker's recorded pid runs, else to returned",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\ndef plant(status):\n    for f in glob.glob(T + '/kb/_self/backlog/*.json'):\n        d = json.load(open(f, encoding='utf-8'))\n        if d['id'] == sp: d['status'] = 'active'\n        if d['id'] == iid: d['status'] = status; d['sprint'] = sp\n        json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\n    g('add', '-A'); g('commit', '-q', '-m', 'planted ' + status)\ndef walk(*states): return [c('transition', 'run/' + iid, '--to', s).returncode for s in states]\nplant('doing')\nwalk('claimed', 'working')\nr = bl('gate', 'add', iid, '--question', 'Which default?', '--option', 'a', '--option', 'b', '--recommendation', 'a', '--kind', 'blocking')\ntry:\n    ev = json.loads(c('wait', '--since', '0', '--timeout', '0').stdout)['events']\nexcept ValueError:\n    ev = []\nlast = [e['fields'] for e in ev if e['kind'] == 'progress' and e['fields'].get('item') == iid][-1:]\nok = r.returncode == 0 and 'blocked' in c('get', 'run/' + iid).stdout and last and last[0].get('state') == 'blocked' and last[0].get('gates') == 'g1'\nprint('gate add', r.returncode, 'last progress', last)\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "kb/_self/backlog.md",
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-yrilvcbx"
+  ],
+  "notes": "Premise: gate add of a blocking gate exits 0 and posts nothing to coord (the check finds no progress event). A worker's gate lives only in the item file on work/<id> (kb/_self/backlog.md:333) and reaches the orchestrator when it reads the branch after the worker returns (.claude/skills/kb-sprint/SKILL.md:55); on 2026-10-23 such gates reached the operator only through chat questions after each worker finished."
+}

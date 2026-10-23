@@ -1,0 +1,28 @@
+{
+  "id": "ST-55ueywel",
+  "kind": "story",
+  "title": "land works in a landing worktree of its own, so the orchestrator's checkout may hold its own changes while a landing runs",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py land fetches, rebases, runs done, the checks and the push in a landing worktree of its own under the clone's worktree_dir, never switching the invoking checkout's branch or reading its working tree, so an untracked or modified file there no longer stops it at the clean tree step; landings of one clone run one at a time under a landing lock that names the item being landed; the release of the worker's worktree, the intake drafts' move and the fast-forward of a clean invoking checkout after the push stay as they are",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, tempfile, os, shutil, re, sys\nR = os.getcwd(); T = tempfile.mkdtemp()\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True)\nsh('git', 'init', '-q', '.'); sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', 'commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh('python3', R + '/_tools/backlog.py', '--root', T, *a)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Land me', '--goal', 'g').stdout).group(0)\nsh('git', 'add', '-A'); sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', 'commit', '-q', '-m', 'item')\nopen(T + '/scratch-note.txt', 'w').write('an unrelated untracked file in the orchestrator checkout')\nr = bl('land', iid)\nout = r.stdout + r.stderr\nstep = re.search(r'land stopped at step ([\\w -]+?)(?::|$)', out, re.M)\nprint('land exit', r.returncode, 'step', step.group(1) if step else None)\nsys.exit(0 if step and step.group(1).strip() != 'clean tree' else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/bl_close.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/git.md",
+    "skills/sprint/SKILL.md"
+  ],
+  "notes": "Premise: in a planted clone whose item is committed, one untracked unrelated file makes land stop at step clean tree (the check prints 'land exit 1 step clean tree'). land rebases in the invoking checkout and switches its branch (_tools/bl_land.py:1835-1883), holding the host main lock only for the fetch and rebase, so a claim, a gate answer, a new item file or a stage-back made in that checkout during a landing collides with it: the 2026-10-23 sprints idled the checkout for every landing, and BG-3brdh3kd's land ran beside its stage-back and was refused at done (SP-c7oav2vn close)."
+}
