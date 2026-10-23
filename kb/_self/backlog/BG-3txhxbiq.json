@@ -2,7 +2,7 @@
   "id": "BG-3txhxbiq",
   "kind": "bug",
   "title": "An EC private key with double-escaped newlines (JSON inside a JSON string) passes the leak scan",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-evq2flqc",
   "priority": "P1",
   "rank": 0,
@@ -32,5 +32,7 @@
   "links": [
     "parked: SP-tsb23kev review"
   ],
-  "notes": "Found by the SP-tsb23kev focused review of BG-3vnu37rq (reviewer session a419aba4) on origin/main 902e961a9; repro fails there. Premise 2026-10-23 on 35b5b7cb2: the repro exits 1 (double-escaped key flagged: False)."
+  "notes": "Found by the SP-tsb23kev focused review of BG-3vnu37rq (reviewer session a419aba4) on origin/main 902e961a9; repro fails there. Premise 2026-10-23 on 35b5b7cb2: the repro exits 1 (double-escaped key flagged: False).",
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
