@@ -2,7 +2,7 @@
   "id": "ST-enbc6v5h",
   "kind": "story",
   "title": "Census text fetches mark their cuts, keep raw bytes for verification and allow only --grep after the url",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-ovwzbc7u",
   "priority": "P2",
@@ -118,6 +118,28 @@
     }
   ],
   "notes": "Operator 2026-10-22: the census fetch code findings of the SP-rmp5zm5a second-half review go to this sprint. Reviewer findings (S2): _gz_text, _zip_members, _tar_members and _members_text cut at TEXT_MEMBER_CAP or TEXT_TOTAL_CAP with no marker, so a --grep miss in the cut part reads as absence; http.client.HTTPException, zipfile RuntimeError/NotImplementedError and tarfile EOFError escape and exit 1 like 'no line matches'; fetch.fetch decodes gzip for every caller (verify_root hashes get(url): a .gz artifact served with Content-Encoding gzip would mismatch _artifacts.csv; provider.decode_body already decodes safely). (S3): the ' *' rule admits --header, a session-chosen header to the source's host; archive reads lack total bounds (member count, binary strings outside TEXT_TOTAL_CAP, sharedStrings.xml, pdftotext output); one-line JSON makes --grep print the whole document (nuget 1.39 MB); census.py record cuts notes near 300 characters; terraform-docs maps latest to main. Not reproduced here and left out: the query-log spool row fetch.py text would write under dispatch_env (no file under _cache/querylog grew in a planted run on 2026-10-22). The total-bound caps have no check: the worker adds a planted case if cheap. Premise on origin/main of 2026-10-22: check 0 lists 4 defects, check 1 lists 3.",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "376ee5841866291a94632a7bc69cb92aaa88135c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import gzip, http.server, io, json, subprocess, sys, threading, zipfile\nsys.path.insert(0, '_tools')\nimport fetch\nbig = io.BytesIO()\nwith zipfile.ZipFile(big, 'w', zipfile.ZIP_DEFLATED) as z:\n    z.writestr('long.txt', ('planted line 3c4d\\n' * 140000))\nbody = {'/long.zip': (big.getvalue(), 'application/zip', None),\n        '/bad': (b'this is not gzip', 'text/plain', 'gzip'),\n        '/one.json': (json.dumps({'name': 'planted', 'version': '1.2.3', 'items': [1, 2, 3]}).encode(), 'application/json', None),\n        '/short': (b'only ten b', 'text/plain', None),\n        '/raw.gz': (gzip.compress(b'planted raw 9d0e'), 'application/gzip', 'gzip')}\nclass H(http.server.BaseHTTPRequestHandler):\n    def log_message(self, *a):\n        pass\n    def do_GET(self):\n        b, t, enc = body.get(self.path, (b'', 'text/plain', None))\n        self.send_response(200 if b else 404); self.send_header('Content-Type', t)\n        if enc:\n            self.send_header('Content-Encoding', enc)\n        if self.path == '/short':\n            self.send_header('Content-Length', '1000')\n        self.end_headers(); self.wfile.write(b)\nsrv = http.server.ThreadingHTTPServer(('127.0.0.1', 0), H)\nthreading.Thread(target=srv.serve_forever, daemon=True).start()\nbase, bad = 'http://127.0.0.1:%d' % srv.server_address[1], []\ndef text(path):\n    return subprocess.run([sys.executable, '_tools/fetch.py', 'text', base + path], capture_output=True, text=True, timeout=120)\np = text('/long.zip')\nif 'cut at' not in p.stdout + p.stderr:\n    bad.append('a member cut at TEXT_MEMBER_CAP is not marked \"cut at\"')\np = text('/bad')\nif p.returncode != 2:\n    bad.append('a body that claims gzip and is not exits %d, not 2' % p.returncode)\np = text('/short')\nif p.returncode != 2:\n    bad.append('a truncated response (IncompleteRead) exits %d, not 2' % p.returncode)\np = text('/one.json')\nif p.returncode or len([l for l in p.stdout.splitlines() if l.strip()]) < 3:\n    bad.append('a one-line JSON body is not printed one value per line (exit %d)' % p.returncode)\nraw = fetch.get(base + '/raw.gz')\nraw = raw[0] if isinstance(raw, tuple) else raw\nif not bytes(raw[:2]) == b'\\x1f\\x8b':\n    bad.append('fetch.get decodes a gzip Content-Encoding body; --verify and --diff must see the raw bytes')\nsrv.shutdown()\nprint(len(bad), 'fetch.py defects from the SP-rmp5zm5a review:', bad)\nsys.exit(1 if bad else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "92fd710340c7ea2f"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import http.server, os, subprocess, sys, threading\nsys.path.insert(0, '_tools')\nimport census\nbad = []\nplan = {'files': [], 'git': [], 'fetch': {'S1': [census.fetch_argv('https://example.org/a.pdf')]}, 'learn': []}\nallow, _ = census.dispatch_rules(plan, '/tmp/zz-scratch')\nrule = [a for a in allow if 'fetch.py' in a and 'kbid.py' not in a]\nif not rule or not all(a.endswith(' --grep *)') for a in rule):\n    bad.append(('the fetch rule allows more than --grep after the url', rule))\nimport csv, shutil, tempfile, provider\nd = tempfile.mkdtemp()\nlog = os.path.join(d, '2026-10-21.csv')\nshutil.copy('kb/public/_census/2026-10-21.csv', log)\nsid = next(csv.DictReader(open(log, encoding='utf-8')))['id']\nnote = 'planted note 6b7c ' + 'x' * 600 + ' end 8e9f'\nsubprocess.run([sys.executable, '_tools/census.py', 'record', log, '--id', sid, '--outcome', 'confirmed', '--note', note], capture_output=True, text=True, timeout=120)\ngot = next(r for r in csv.DictReader(open(log, encoding='utf-8')) if r['id'] == sid)['outcome_note']\nif not got.endswith('end 8e9f'):\n    bad.append(('census.py record cut a long note', got[-30:]))\nu = 'https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace'\nr = provider.raw_url(u, provider.for_url(u, provider.providers(None)))[0]\nif '/main/' in r:\n    bad.append(('the azurerm latest docs route reads the main branch, not the newest release', r))\nprint(len(bad), 'census session rule, note and route defects:', bad)\nsys.exit(1 if bad else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "204adaf410e26314"
+      }
+    ]
+  }
 }
