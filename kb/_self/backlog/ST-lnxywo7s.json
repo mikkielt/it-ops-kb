@@ -2,7 +2,7 @@
   "id": "ST-lnxywo7s",
   "kind": "story",
   "title": "A GitHub issue template and a skill let an agent write a clone's findings for upstream as user stories in one issue body",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3trnelzv",
   "priority": "P1",
   "rank": 0,
@@ -57,5 +57,7 @@
     "ST-rxn7vu7f",
     "ST-rhug6pvg"
   ],
-  "notes": "Operator's answer 2026-10-19: findings go back as a GitHub issue whose template the agent fills with user stories; how the issue is added (paste the file or automation) is the user's choice, so the tool writes a file and posts nothing. Premise: no template (.github holds only workflows) and no upstream-report command; the check exits 1 on the base. Today's field report (Windows ceiling, workspace .mcp.json, hand-made upstream remote and .venv) is the first planted case worth a dry run. A new skill is listed in AGENTS.md (4 KB cap: a cut elsewhere)."
+  "notes": "Operator's answer 2026-10-19: findings go back as a GitHub issue whose template the agent fills with user stories; how the issue is added (paste the file or automation) is the user's choice, so the tool writes a file and posts nothing. Premise: no template (.github holds only workflows) and no upstream-report command; the check exits 1 on the base. Today's field report (Windows ceiling, workspace .mcp.json, hand-made upstream remote and .venv) is the first planted case worth a dry run. A new skill is listed in AGENTS.md (4 KB cap: a cut elsewhere).",
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
