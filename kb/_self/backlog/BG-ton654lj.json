@@ -26,6 +26,23 @@
     "kb/_self/maintaining.md",
     "_tools/kbingest.py"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the armor lookahead end a header value so a pipe or a backslash-letter stays inside it? boundary = to the first gap (whitespace, escaped newline, pipe) that a header start or a 20-character base64 run follows, never past a real newline or the next armor line, all possessive; line = to the end of the line with a second alternative for single-line forms",
+      "options": [
+        "boundary",
+        "line"
+      ],
+      "recommendation": "boundary",
+      "do": {
+        "boundary": "BG-ton654lj",
+        "line": "BG-ton654lj"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "notes": "Found 2026-10-23 by the second fresh review of SP-evq2flqc (on c927cb22e): the possessive header value ends at a newline, an escaped newline or a pipe, so a free-text armor Comment: holding a pipe or a backslash-letter ends early and no 20-character base64 run follows; kbingest.SECRET_TEXT misses the same inputs. The header-value backslash alternative re-scans the run: 5k/10k/20k/40k backslashes take 0.07/0.28/1.1/4.4 s. Reviewer hints: a possessive backslash run, and end the value at a pipe only when a header or the base64 run follows. Operator 2026-10-23: changed BG-v7e36oqg g1 and fixed here in the sprint. Also a same-line log form (label, Comment: x and base64 space-separated) is lost since c927cb22e; S3, cover it if the fix allows.",
   "claimed_by": "claude-92aeeb3c",
   "operator": "op-f618a13e"

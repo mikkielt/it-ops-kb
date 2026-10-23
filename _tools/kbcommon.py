@@ -196,14 +196,19 @@ def maker_names_allowed(root, policy=None):
 # the EC line (quoted in the secret-shapes article) and the OpenPGP block line (`PGP PRIVATE KEY BLOCK`, RFC 9580
 # 6.2.1) only when key material follows it: optional `Name: value` header lines, then a run of base64 (a blank line,
 # a newline or an escaped `\n` apart, however many times escaped: `\\n` is JSON inside a JSON string; a Markdown quote
-# `>`, a `#` or `//` comment prefix or a table `|` may sit between the lines or the cells). A header value is
-# possessive and ends at a newline, an escaped newline or a `|`, so it and the gap after it never split the same
-# characters (a row of `| Key: value` cells would otherwise backtrack exponentially). The lookahead keeps the
-# match to the armor line, so a hit never prints the key; either label quoted alone in prose passes.
+# `>`, a `#` or `//` comment prefix or a table `|` may sit between the lines or the cells, and a space may be all there
+# is). A header value is free text up to the first gap (those characters, whitespace, an escaped newline, a pipe)
+# that a header or the base64 run follows, never past a real newline and never into the next armor line: a pipe or
+# `C:\new` inside it stays in the value. Every part is possessive, so each character has one reading and a row of
+# `| Key: value` cells, a run of backslashes or a line of armor labels scans linearly. The lookahead keeps the match
+# to the armor line, so a hit never prints the key; either label quoted alone in prose passes.
+_GAP = r"(?:\s|\\+[nr]|[>#|]|//)++"
+_NEXT = r"(?:[A-Za-z][\w-]*+: |[A-Za-z0-9+/]{20})"
+_VALUE = (r"(?:(?!" + _GAP + _NEXT + r")(?:(?:[^\S\r\n]|\\+[nr]|[>#|]|//)++|[^\s\\|>#/-]++|\\++|/|-(?!----BEGIN )))*+")
 SECRETS = (
     r"-----BEGIN (?:(?:RSA |OPENSSH |DSA |PGP |ENCRYPTED )?PRIVATE KEY-----"
     r"|(?:EC PRIVATE KEY|PGP PRIVATE KEY BLOCK)-----"
-    r"(?=(?:\s|\\+[nr]|[>#|]|//)*(?:[A-Za-z][\w-]*: (?:[^\n\\|]|\\(?!\\*[nr]))*+(?:\s|\\+[nr]|[>#|]|//)+)*[A-Za-z0-9+/]{20}))",
+    r"(?=(?:" + _GAP + r")?(?:[A-Za-z][\w-]*+: " + _VALUE + _GAP + r")*[A-Za-z0-9+/]{20}))",
     r"\bAKIA[0-9A-Z]{16}\b",
     r"\bgh[pousr]_[A-Za-z0-9]{36}\b", r"\bgithub_pat_[A-Za-z0-9_]{22,}\b",
     r"\bglpat-[A-Za-z0-9_-]{20,}\b", r"\bglrt-[A-Za-z0-9_-]{20,}\b",
