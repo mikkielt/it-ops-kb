@@ -2,7 +2,7 @@
   "id": "ST-pth5inlu",
   "kind": "story",
   "title": "Research sprint goal: A paid pool run measures the grown held-out set on rows no earlier run saw",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lorofi3i",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,7 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
