@@ -1179,8 +1179,8 @@ def failure_fingerprint(job, failure=""):
 def latest_pipeline(root, job=None, run=None):
     """(pipeline, note): a finished pipeline of origin's main as {id, sha, url, red, jobs, unverified, how}, a red
     one with `failure` and `fingerprint` read from the log of its first failed job by name, and `first` (that job's
-    name, which the bug's repro names) only when its script ran and failed, or None with the note that says why not (no origin, glab or gh not signed in, a failed call, no such
-    pipeline). Which pipeline, newest first among the last MAIN_PIPELINES (on GitLab, which costs one job-list call
+    name, which the bug's repro names) only when its script ran and failed, or None with the note that says why not (the project has no forge, no origin, glab or gh not signed in, a
+    failed call, no such pipeline). Which pipeline, newest first among the last MAIN_PIPELINES (on GitLab, which costs one job-list call
     for each pipeline read, the read stops after IDLE_PIPELINES pipelines in a row in which no job ran, and the answer
     is then None with a note naming the stop (red-pipeline: "not checked"), never a verdict, since a job that ran behind more pipelines
     no one started, red or not, is out of reach):
@@ -1195,6 +1195,8 @@ def latest_pipeline(root, job=None, run=None):
     did not succeed. `how` names the choice for the message."""
     from ql_deliver import any_ran, job_decided, job_verdict, latest_jobs
     import bl_forge, kbpublic
+    if bl_forge.no_forge():
+        return None, bl_forge.NO_FORGE
     run = run or bl_base.run
     remote = kbpublic.integration_remote(root)
     code, url, _ = run(["git", "remote", "get-url", remote], cwd=root)

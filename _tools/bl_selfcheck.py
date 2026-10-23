@@ -28,7 +28,8 @@ The eight checks, each independent and each a result {name, state, detail, remed
   claims       no `doing` item shows `claim-no-commit`, `returned-no-commit`, `returned-staged` or `mr-dead`
                (`bl_stall.collect`'s signals, read from the claims, git, the worktrees' processes and one read of
                each claimed item's `code/<id>` request through `bl_forge`, the one network call of this command; a
-               read that fails is `unknown:forge`, no failure)
+               read that fails is `unknown:forge`, no failure; a project with no forge, an empty `forge` setting,
+               reads none and has no `unknown:forge`)
   orphans      no process in a checkout of the clone runs on after its parent is gone (`bl_procs.snapshot`'s
                `orphan`: a background run a session left behind, named, never signaled; a foreign process is a live
                session's and no failure, nor is a `hook`, a session-end run of the query log's distill that holds
