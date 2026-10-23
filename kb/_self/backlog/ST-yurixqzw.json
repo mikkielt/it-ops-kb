@@ -2,7 +2,7 @@
   "id": "ST-yurixqzw",
   "kind": "story",
   "title": "Census facts read only from archive captures go UNK, and answers that cite gone sources lose their DOC tag",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-xznmaurz",
   "priority": "P1",
   "rank": 0,
@@ -32,5 +32,7 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Found 2026-10-23 by the SP-xznmaurz fresh review; operator changed ST-6wsgvy3z g2 the same day. The local tag census-2026-10-21 is moved to the landed tip after this lands (tag-census, never pushed). Premise on d34d8068b: check 0 exits 1 (_answers.md 506, 508: S1552; 525: S1556; 527: S-qzdkyvqx); check 1 exits 1 (all three confirmed)."
+  "notes": "Found 2026-10-23 by the SP-xznmaurz fresh review; operator changed ST-6wsgvy3z g2 the same day. The local tag census-2026-10-21 is moved to the landed tip after this lands (tag-census, never pushed). Premise on d34d8068b: check 0 exits 1 (_answers.md 506, 508: S1552; 525: S1556; 527: S-qzdkyvqx); check 1 exits 1 (all three confirmed).",
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
