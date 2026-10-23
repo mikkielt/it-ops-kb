@@ -90,7 +90,11 @@
         "abort it, name the conflicting paths and the by-hand commands, exit 3": "ST-cqivdkvt",
         "leave the merge or rebase in progress for /kb-git-sync": "ST-cqivdkvt"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "leave the merge or rebase in progress for /kb-git-sync",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
