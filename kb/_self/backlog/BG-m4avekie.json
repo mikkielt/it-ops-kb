@@ -2,7 +2,7 @@
   "id": "BG-m4avekie",
   "kind": "bug",
   "title": "A change to a kbcommon.SECRETS shape reads the verdicts the old shape cached: the publish scan's cache key holds SCAN_FORM, which no one bumps",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-evq2flqc",
   "priority": "P1",
   "rank": 0,
@@ -40,6 +40,28 @@
     "kb/_self/code.md"
   ],
   "notes": "Premise 2026-10-23 on 35b5b7cb2: the repro exits 1 (scan_form holds no SECRETS digest); a planted SECRETS shape leaves scan_form unchanged.",
-  "claimed_by": "claude-92aeeb3c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "6addc5875c412efc35c575c659ca072c382014d7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kbcommon,kbpublic;a=kbpublic.scan_form();kbcommon.SECRETS=list(kbcommon.SECRETS)+['zzplantedshape[0-9]{9}'];b=kbpublic.scan_form();print('fresh key after a SECRETS change:',a!=b);sys.exit(0 if a!=b else 1)"
+        ],
+        "exit": 0,
+        "sha256": "8c80691d325b990b"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, \"_tools\"); import hashlib, kbcommon, kbpublic; sys.exit(0 if hashlib.sha256(kbcommon.secrets_rx().encode()).hexdigest()[:12] in kbpublic.scan_form() else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
