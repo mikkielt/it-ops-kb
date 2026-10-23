@@ -2,7 +2,7 @@
   "id": "ST-ooxqqoak",
   "kind": "story",
   "title": "Review sprint: Census and source tools fail safe, and gap research and landings follow the 2026-10-21 lessons",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ovwzbc7u",
   "review": true,
   "priority": "P1",
@@ -23,6 +23,27 @@
       ]
     }
   ],
-  "claimed_by": "manager",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "57fe2174ac34bc203938735f7df3e6f91efa244d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "83558b5c2af5ff9e"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "4d4403cb7f77e76f"
+      }
+    ]
+  }
 }
