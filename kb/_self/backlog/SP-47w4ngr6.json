@@ -14,7 +14,11 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Planned 2026-10-24 by the night run's core orchestrator for the operator's standing approval of EP-nij36lt7; ST-olagspdh follows ST-yrilvcbx (both change coord.py and kb_mcp.py).",
