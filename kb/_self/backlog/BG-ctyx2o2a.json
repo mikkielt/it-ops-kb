@@ -30,6 +30,25 @@
     "kb/_self/querylog.md",
     "_tools/ql_store.py"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does redact.known() count url hosts: a separate URL_HOST regex over http/https urls, or a loosened HOST lookbehind that allows a host after //? HOST also drives redaction of text, so loosening it would change what redact.redact flags in every url; URL_HOST only widens the allowlist.",
+      "options": [
+        "separate URL_HOST regex",
+        "loosen HOST lookbehind"
+      ],
+      "recommendation": "separate URL_HOST regex",
+      "do": {
+        "separate URL_HOST regex": "BG-ctyx2o2a",
+        "loosen HOST lookbehind": "BG-ctyx2o2a"
+      },
+      "class": "querylog",
+      "answer": "separate URL_HOST regex",
+      "by": "agent"
+    }
+  ],
   "notes": "Found 2026-10-23 from the kbmon alert 'query-log delivery REFUSED': apply --push refused since 15:41Z on 2026-10/20261023T120151Z-e3887743.jsonl:17 'fetch host is not a public host' for cas.docs.cisecurity.org. redact.HOST's lookbehind skips a host after //, so known() holds only bare mentions; 66a1f2967 (ST-6wsgvy3z) rewrote kb/public/_census/2026-10-21.csv and dropped the last bare mention. Operator 2026-10-23: count url hosts (P1, this sprint). The leak guard stays: a host the public root never names is still redacted, which the repro's second half plants.",
   "claimed_by": "claude-92aeeb3c",
   "operator": "op-f618a13e"
