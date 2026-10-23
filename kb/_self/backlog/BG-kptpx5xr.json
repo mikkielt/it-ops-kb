@@ -2,7 +2,7 @@
   "id": "BG-kptpx5xr",
   "kind": "bug",
   "title": "census.py fetch answers error: InvalidURL for a source url with a literal space, so its check never asks the server",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,
@@ -26,5 +26,7 @@
     "kb/_self/tools.md",
     "kb/_self/web-sources.md"
   ],
-  "notes": "Found 2026-10-21 probing every live host of the public root."
+  "notes": "Found 2026-10-21 probing every live host of the public root.",
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
