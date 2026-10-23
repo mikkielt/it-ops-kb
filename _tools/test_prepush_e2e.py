@@ -67,7 +67,7 @@ def test_upstream_push_refused(world):
     c.git("config", kbpublic.UPSTREAM_KEY, "up")
     c.write("kb/_self/zz_upstream_probe.md", "probe\n")
     c.commit("docs: a content file", "kb/_self/zz_upstream_probe.md")
-    for target in ("up", up.path):  # by name and by url
+    for target in ("up", up.path, up.path + "/", "file://" + up.path):  # by name and by each way to write its url
         p = push_main(c, target)
         assert p.returncode != 0 and "upstream remote" in p.stderr, p.stdout + p.stderr
     assert up.rev("main") == before

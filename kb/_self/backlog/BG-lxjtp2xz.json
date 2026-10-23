@@ -21,6 +21,27 @@
     "_tools/test_prepush_e2e.py",
     "kb/_self/git.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does is_upstream compare a pushed url with the upstream's urls?",
+      "options": [
+        "resolved-locations",
+        "git-url-probe"
+      ],
+      "recommendation": "resolved-locations",
+      "do": {
+        "resolved-locations": "BG-lxjtp2xz",
+        "git-url-probe": "BG-lxjtp2xz"
+      },
+      "class": "push",
+      "answer": "resolved-locations",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-92aeeb3c",
   "operator": "op-f618a13e"
