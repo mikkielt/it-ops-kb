@@ -13,5 +13,9 @@
       "-c",
       "import sys; sys.path.insert(0, \"_tools\"); import coord; sys.exit(0 if \"batch size\" == coord.term_id(\"batch size\", 60) else 1)"
     ]
-  }
+  },
+  "links": [
+    "parked: SP-c7oav2vn work"
+  ],
+  "notes": "Orchestrator 2026-10-23: filed by BG-v53e2pef's worker; its repro (term_id of 'batch size' equals the raw term) can never pass once BG-v53e2pef's slug-plus-hash ids landed, so it needs a repro that runs bench_multi.duplicate_research on a planted fact before it is planned."
 }
