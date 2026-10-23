@@ -21,6 +21,42 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How are the 129 replaced rows among the 136 uncited unconfirmed census rows settled: recorded superseded with the new id (content-rules keeps replaced rows), or dropped from _sources.csv?",
+      "options": [
+        "record superseded",
+        "drop the rows"
+      ],
+      "recommendation": "record superseded",
+      "do": {
+        "record superseded": "ST-rglufo4s",
+        "drop the rows": "ST-rglufo4s"
+      },
+      "class": "design",
+      "answer": "record superseded",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Where are the findings for the 19 blocked sources written: as dated _gaps.md entries with the re-sourcing routes (re-tagging left to ST-6wsgvy3z), or as rewritten facts now?",
+      "options": [
+        "gap entries with routes",
+        "rewrite the facts now"
+      ],
+      "recommendation": "gap entries with routes",
+      "do": {
+        "gap entries with routes": "ST-rglufo4s",
+        "rewrite the facts now": "ST-6wsgvy3z"
+      },
+      "class": "design",
+      "answer": "gap entries with routes",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "claude-92aeeb3c",
   "operator": "op-f618a13e"
 }
