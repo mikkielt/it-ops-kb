@@ -2,7 +2,7 @@
 topic: claude/mods
 priority: P3
 applies_to: "Claude Code mods (function hooks in a plugin), docs pages dateModified 2026-10-08 to 2026-10-17, read 2026-10-18; mods on by default from Claude Code 2.1.287 (Desktop 2.1.286)"
-retrieved_utc: 2026-10-21
+retrieved_utc: 2026-10-24
 sources: [S-oawin5n2, S-y5j64svc, S-sao3dfcq, S-mvuodgli, S-kppz7qns, S-ho47nrnt, S-4vxgduip, S-toe7z3kj, S-3peuisvr, S-hvuk3dqt]
 status: partial
 ---
@@ -110,6 +110,10 @@ route for text only the model reads is a `prompt.submit` hook's `context` (see t
 - Showing something without starting a turn: `$.ui.status(text)` is one line under the prompt that stays until changed,
   starting with a warning mark and the mod's name; `$.ui.toast(text)` is a toast with the mod's name, shown 4 seconds
   unless `{ timeoutMs }` is passed; `$.ui.log(text)` is a dim line in the transcript that Claude does not read. [DOC S-sao3dfcq, S-mvuodgli]
+- `$.ui.notify(text)` is the only one of the `ui` calls that answers, and it sends the way the user's `preferredNotifChannel` setting says: it resolves to `{ isSent: true, channel }` when the channel wrote to the terminal (`channel` is the setting's value, such as `kitty` or `terminal_bell`, which rings the bell and shows neither text nor title) and otherwise to `{ isSent: false, reason }`. [DOC S-sao3dfcq]
+- The `reason` of a `ui.notify` answer with `isSent: false`: `disabled` (`preferredNotifChannel` is `notifications_disabled`), `no-channel` (setting `auto` and the terminal has no notification Claude Code can send), `no-surface` (a session with no terminal: a `-p` run, the Agent SDK, the desktop app, the VS Code extension or a cloud session; also a call before the session starts or while Claude Code exits) and `refused` (another mod's hook on `ui.notify` answered without sending). [DOC S-sao3dfcq]
+- A `ui.notify` call rejects when `text` is not a string, when another mod's hook on `ui.notify` returns `{ deny }` or when the terminal write fails; the title is the mod's name unless a non-empty `{ title }` is passed, a mod cannot choose the channel, `isSent: true` means sent, not seen, and the user's `Notification` hooks run with type `plugin_notification`, also for `disabled` and `no-surface`. [DOC S-sao3dfcq]
+- The `turn.complete` event fires when a turn ends, including one the user interrupted (`e.isAborted` is `true`): `e.answer` is Claude's final text, `e.durationMs` the time it took, `e.usage` the token totals, and a subagent's turn fires it with `e.agentId` set; a hook observes it or returns `{ text }` to show a line under the answer. [DOC S-4vxgduip]
 
 ### What the model reads
 - A `prompt.submit` hook sees each prompt before the turn starts: `next({ ...e, text })` rewrites it (the transcript and

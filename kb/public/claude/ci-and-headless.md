@@ -2,7 +2,7 @@
 topic: claude/ci-and-headless
 priority: P2
 applies_to: "Claude Code v2.1.x (code.claude.com docs, retrieved 2026-09-26)"
-retrieved_utc: 2026-10-21
+retrieved_utc: 2026-10-24
 sources: [S1800, S1801, S1802, S-32ilsmsf, S-l6l42j6e, S-pilcrlei, S1824, S-isqfh6pr, S-fmj24q2u, S-fksbud2r, S-ezqg74ki, S-eu3n3hyf, S2131, S-ehhvgjky, S2130, S1864, S2157, S-e5rrs4ee, S-fzkqxhmg, S-wf2dmtu6, S-frvnva4f, S743, S745, S-rkp4qc7b, S744, S-hvuk3dqt, S-gu5aqnrl, S-6qjf3y2l, S-n4ujkcj7, S-hobjhakf]
 status: partial
 ---
@@ -141,6 +141,10 @@ article's `claude -p` exit-code/`--output-format` summary or its runtime-compari
 - Observed on Claude Code 2.1.303, macOS, two headless `claude -p` runs of 2026-10-21 with Haiku and no tools, each with a `--json-schema` of an array of objects holding an integer, an enum and a string: one returned 60 and the other 300 elements whole in a single `structured_output`, `subtype` `success`, two turns. A list far above the 10 and 11 results of the 2026-10-11 runs (`agents/headless-agent-runtimes.md:65`) therefore passes; the Agent SDK page names `error_max_structured_output_retries` with no retry count and states no size limit, and neither run reached one, so a size limit and the retry count stay unstated. [DER S1800, S-hobjhakf: the two result objects read against the documented `structured_output` field and the retry error]
 - Observed on Claude Code 2.1.303, macOS, 2026-10-21, a headless `claude -p --model haiku --setting-sources "" "reply ok"` run in a scratch project: exit 0 and an answer, and the `system` init message listed only the three built-in plugins (none of the user's installed plugins), no MCP server and permission mode `default`, with the bundled skills and agents still present. The empty value is therefore accepted and loads no user, project or local source; the CLI reference shows only list values, so the empty value is read from the plugin and server lists of this one init message, not from a statement. [DER S1824: one init message read against the documented sources]
 - Observed on Claude Code 2.1.303, macOS, 2026-10-21, a headless `claude -p --model haiku --allowedTools WebSearch` run that made one search: `modelUsage.<model>.webSearchRequests` was 1 and `total_cost_usd` was 0.01528191, while the four token counts priced at the list prices of `claude/models.csv` for that model ($0.10 input, $0.50 output, $0.01 cache read and $0.20 1-hour cache write per million tokens) come to 0.00528191. The difference, exactly 0.0100, is one search at $10 per 1,000, so `total_cost_usd` includes the web search fee on this version; in the same result `usage.server_tool_use.web_search_requests` was 0, so the search count is read from `modelUsage`, not from `usage`. The pages state no such inclusion, and the run covers one search on one model. [DER S2131, S-isqfh6pr: the result object of one run read against the list prices and the cost-tracking page]
+
+### Background work at the end of a `claude -p` run
+- A `claude -p` run waits for these kinds of background work: background commands, background subagents and workflows, Monitor watches and pending `/loop` wakeups; the 10-minute idle cap is changed with `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS`, and a background subagent or workflow keeps the run open until it completes. [DOC S1800]
+- While a `claude -p` run waits for background work and stderr is a terminal, it prints a line starting `Waiting for background work to finish` to stderr after five seconds; with `json` or `stream-json` output the line prints only when stdout is not a terminal, so the JSON a script reads never carries it. [DOC S1800]
 
 ## Reference
 
