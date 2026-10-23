@@ -75,7 +75,11 @@
         "filed_in field holding a clone-<8 hex> id that new writes once to git config kb.cloneId": "ST-rxn7vu7f",
         "filed_in field holding the kb.scope value (me, team or org)": "ST-rxn7vu7f"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "filed_in field holding a clone-<8 hex> id that new writes once to git config kb.cloneId",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
