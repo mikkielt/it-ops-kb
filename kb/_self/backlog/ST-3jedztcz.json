@@ -2,7 +2,7 @@
   "id": "ST-3jedztcz",
   "kind": "story",
   "title": "The SP-ovwzbc7u review's doc and gap-note findings are fixed",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ovwzbc7u",
   "priority": "P2",
   "rank": 0,
@@ -81,6 +81,55 @@
     "kb/_self/doc2query.md"
   ],
   "notes": "Found by the SP-ovwzbc7u review on 2026-10-23: the arXiv Closed note cites doc-lookup-sources.md:102, which says only the unversioned address was read; the CIS Resolved note cites management-plane-hardening.md:41, which has no 2019 or Alpine result; the robocopy notes cite robocopy.md lines that hold none of KB 954404, the archive blog or KB 310316; backlog.md names every key but hooks while backlog.json has no naming; backlog.md and skills/sprint/SKILL.md carry an incident story with sprint and story ids in the rule text. Each check fails on an AssertionError naming its premise.",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "40f51fd819c1c1ee470c953b582873c4f92bb674",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "g=open('kb/public/_gaps.md',encoding='utf-8').read().splitlines();r=open('kb/public/agents/doc-lookup-sources.md',encoding='utf-8').read().splitlines();bad=[l for l in g if 'Closed' in l and '1706.03762v1' in l];art=any('1706.03762' in l and 'v7' in l and l.rstrip().endswith(']') for l in r);assert not bad or art, 'arXiv Closed note stands with no tagged v1/v7 fact in the article'"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "g=open('kb/public/_gaps.md',encoding='utf-8').read().splitlines();r=open('kb/public/security/management-plane-hardening.md',encoding='utf-8').read().splitlines();bad=[l for l in g if 'Resolved 2026-10-21' in l and 'cisecurity.org/cis-benchmarks' in l];art=any('2019' in l and 'Alpine' in l and l.rstrip().endswith(']') for l in r);assert not bad or art, 'CIS Resolved note stands with no tagged 2019/Alpine fact in the article'"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "g=open('kb/public/_gaps.md',encoding='utf-8').read().splitlines();r=open('kb/public/windows/robocopy.md',encoding='utf-8').read().splitlines();bad=[l for l in g if 'Partly resolved 2026-10-21' in l and ('KB 954404' in l or 'KB 310316' in l)];art=all(any(k in l and l.rstrip().endswith(']') for l in r) for k in ('954404','310316','deploymentguys'));assert not bad or art, 'robocopy Partly resolved notes stand with no tagged KB 954404/310316 facts in the article'"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re;t=open('kb/_self/backlog.md',encoding='utf-8').read();m=re.search(r'names every key but ([^,]*),',t);assert m and 'naming' in m.group(1), m and m.group(1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re;N='hat change the same function get checks';P=r'\\b(SP|ST|BG|TK|EP|SB)-[a-z0-9]{8}\\b';a=[l.split(N)[1] for l in open('kb/_self/backlog.md',encoding='utf-8') if N in l];b=open('skills/sprint/SKILL.md',encoding='utf-8').read().split(N)[1].split('A committed item whose touches name code')[0];h=[x for x in a+[b] if re.search(P,x)];assert a and not h, 'ids in the rule text: %d' % len(h)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
