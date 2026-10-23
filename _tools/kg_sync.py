@@ -940,6 +940,10 @@ def cmd_sync(a, host, r=None):
     if busy:
         print(f"refused: {busy[0]} is in progress; finish it first ({busy[1]})")
         return 2
+    if kbpublic.is_upstream(a.remote, KB):
+        print(f"refused: {a.remote} is the upstream remote ({kbpublic.UPSTREAM_KEY}); the upstream is only fetched from, "
+              "sync pushes to the integration remote")
+        return 2
     if kbpublic.is_public(a.remote, KB) and kbpublic.private_commits("HEAD", KB, limit=1):
         print(f"refused: {a.remote} is the public home and HEAD's history touches {', '.join(kbpublic.PRIVATE)}; "
               "sync pushes to the integration remote, publish to the public one (python3 _tools/kbgit.py publish)")

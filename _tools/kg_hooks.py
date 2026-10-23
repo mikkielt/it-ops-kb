@@ -125,13 +125,20 @@ def hook_pre_push(args, stdin, gate, dirty_paths):
     DIRTY_PATHS are the facade's: the sync gate with its trailer audit, and the staged and unstaged paths."""
     remote = args[0] if args else kbpublic.integration_remote(KB)
     pushed = [(p[0], p[1]) for p in (ln.split() for ln in stdin.splitlines()) if len(p) == 4]
-    blocked = kbpublic.guard_push(remote, args[1] if len(args) > 1 else None, pushed, KB)
+    url = args[1] if len(args) > 1 else None
+    frozen = kbpublic.guard_upstream(remote, url, pushed, KB)
+    for ref, why in frozen:
+        print(f"kb pre-push: refused: {remote} is the upstream remote and {ref} cannot go there: {why} "
+              f"({kbpublic.UPSTREAM_KEY}; kb/_self/git.md, Deployment scope)", file=sys.stderr)
+    if frozen:
+        return 1
+    blocked = kbpublic.guard_push(remote, url, pushed, KB)
     for ref, why in blocked:
         print(f"kb pre-push: refused: {remote} is the public home and {ref} {why}; publish with "
               "python3 _tools/kbgit.py publish (kb/_self/git.md, Public home)", file=sys.stderr)
     if blocked:
         return 1
-    refused = lane_refusals(remote, stdin, args[1] if len(args) > 1 else None)
+    refused = lane_refusals(remote, stdin, url)
     for ref, short, code in refused:
         print(f"kb pre-push: refused: {short} is a code-lane commit ({' '.join(code)}) and {ref} of {remote} is main; "
               "code reaches main through a merge request: python3 _tools/kbgit.py sync --push sends it as a "
