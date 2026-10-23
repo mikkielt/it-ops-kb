@@ -30,7 +30,11 @@
         "one naming object of templates (branch, mr_title, trailer) filled from the tracker id, item id and slug": "BG-42dg5ryi",
         "a naming object per repository under repositories": "BG-42dg5ryi"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "one naming object of templates (branch, mr_title, trailer) filled from the tracker id, item id and slug",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Measured 2026-10-23 in a throwaway clone of the Nerthus workspace: land of a story whose task (P08-05) has a merged '<task id>:' request stops at step requests with \"no merge request titled 'ST-dl7mgwpd:' (state none)\", and done refuses the same item with \"the work of an item with repos is merged in its repositories, which land reads through their merge requests: run land\", so a host whose requests carry its own ids has no landing path at all. The same done printed \"the docs check could not run: cannot read kb/_self/map.csv\" with docs_map empty (ST-m7uk3zpu). Not planned into a sprint: the goal leaves the template's shape open and the code is agents-rule (bl_land.py, bl_dispatch.py, bl_base.py), so a blocking operator gate comes before code. Ran the repro as filed: both expressions are in the source (title_prefix=f\"{iid}:\" in land_repositories, WORK_PREFIX + iid in worker_branch), exit 1; it reads source text, kept as filed because the template setting has no name yet, and it must be rewritten on a planted workspace once the gate settles it. Open choices: the setting's name and keys (branch, request title, trailer), how an external tracker id P08-05 and an item title fill <nn>-<mm>-<slug> and <task id>, and whether the done and brief checks that read work/<id> (WORK_PREFIX referrers: bl_clean.py:90, bl_close.py:43, bl_dispatch.py:44, bl_land.py:33) follow the template or only land and dispatch do. Referrers to plan then: worker_branch (bl_dispatch.py:266, 9 lines), land_repositories (bl_land.py:1054; backlog.md:302; tools.md:118). The done message about docs_map empty (ST-m7uk3zpu) is that item's, not this one's. Touches will share bl_dispatch.py with BG-duzrzr2d and bl_base.py with BG-cmvwrpbr and BG-c7pjl3mi: depend on those when planned."
