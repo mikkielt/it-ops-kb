@@ -2,7 +2,7 @@
   "id": "BG-hjxvxufh",
   "kind": "bug",
   "title": "backlog.json defaults lane_module to kblane and land_push to the kb's kbgit.py sync, so a host project must override both (second-project run)",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ovwzbc7u",
   "priority": "P2",
   "rank": 0,
@@ -109,6 +109,46 @@
     }
   ],
   "notes": "Found while fixing BG-cmvwrpbr (seven other keys). Planned to the operator's answer: lane_module and land_push both empty by default, land stops at the push step naming land_push, the kb's backlog.json names both. Ran the filed repro: it fails, printing lane_module = kblane (default) and land_push = the kb gate script argv (default); its bad-line filter mixed and/or and it read a project with no file, so it is rewritten to plant backlog.json {} and filter each line. Ran each added check now: the land-stop check fails (bl_land.land_push() under planted {} settings returns the kb argv and raises no bl_close.Refused naming land_push), the named-command check passes, the kb-file check fails (land_push is default in config). Fix: bl_base.py SETTINGS defaults for lane_module and land_push, and the command kind, which refuses an empty list; bl_land.land_push (bl_land.py:670, one call at :1928) raises land_stop for the push step. Referrers read: bl_land.py:106,109 and bl_precheck.py:312 already treat an empty lane_module as no lane; skills/sprint/SKILL.md:17, kb/_self/backlog.md:300,310,421 and plugin.md:24 document the old defaults; .claude/skills/kb-sprint links to skills/sprint. bench_multi.py sets lane_module in the file, unaffected. Shares backlog.md and tools.md with BG-urlbsgsr.",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "7b333ba23224ac72a47bb78ddba3f9941e056953",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,tempfile,subprocess; sys.path.insert(0,'_tools'); import bl_base,bl_land,bl_close; d=tempfile.mkdtemp(); subprocess.run(['git','init','-q',d]); open(os.path.join(d,'backlog.json'),'w').write('{}'); bl_base.load_settings(d); ok=[]; exec('try:'+chr(10)+' bl_land.land_push()'+chr(10)+'except bl_close.Refused as e:'+chr(10)+' ok.append(\"land_push\" in str(e) and \"land stopped at step\" in str(e))'); print(ok); sys.exit(0 if ok==[True] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "47e6167dbfa2be76"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,subprocess,sys,tempfile; sys.path.insert(0,'_tools'); import bl_base,bl_land; d=tempfile.mkdtemp(); subprocess.run(['git','init','-q',d]); open(os.path.join(d,'backlog.json'),'w').write('{\"land_push\": [\"git\", \"push\", \"origin\", \"HEAD:main\"]}'); bl_base.load_settings(d); sys.exit(0 if bl_land.land_push()[0]=='git push origin HEAD:main' else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys; o=subprocess.run([sys.executable,'_tools/backlog.py','config'],capture_output=True,text=True).stdout; ls=[l for l in o.splitlines() if l.startswith(('lane_module = ','land_push = '))]; sys.exit(0 if len(ls)==2 and all('(file)' in l for l in ls) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,subprocess,sys,tempfile; d=tempfile.mkdtemp(); subprocess.run(['git','init','-q',d]); open(os.path.join(d,'backlog.json'),'w').write('{}'); o=subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'config'],capture_output=True,text=True).stdout; bad=[l for l in o.splitlines() if l.startswith(('lane_module = ','land_push = ')) and ('kblane' in l or 'kbgit' in l)]; print(bad); sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
