@@ -2,7 +2,7 @@
   "id": "BG-v53e2pef",
   "kind": "bug",
   "title": "coord.py dedup claims research keys from the question's own words, past the id pattern a claim key takes",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,
@@ -30,5 +30,7 @@
   "depends_on": [
     "BG-iwr5n7ch"
   ],
-  "notes": "Planning 2026-10-23 on 35b5b7cb2: the repro was a placeholder (sys.exit(1)); it now plants lack terms with a space and punctuation through coord.dedup and exits 1 (both claimed keys fail FIELD_VALUE). It also needs the dedup to still claim, so a fix that drops every such term passes only if it maps them to ids. Found while fixing BG-dn5n7z7k, not fixed there since dedup keys need terms mapped to ids."
+  "notes": "Planning 2026-10-23 on 35b5b7cb2: the repro was a placeholder (sys.exit(1)); it now plants lack terms with a space and punctuation through coord.dedup and exits 1 (both claimed keys fail FIELD_VALUE). It also needs the dedup to still claim, so a fix that drops every such term passes only if it maps them to ids. Found while fixing BG-dn5n7z7k, not fixed there since dedup keys need terms mapped to ids.",
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
