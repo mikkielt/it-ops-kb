@@ -81,7 +81,11 @@
         "KB_TEST_PROFILE environment variable only, no stored setting": "ST-tac4z3zk"
       },
       "class": "ceiling",
-      "host_unchecked": "The gate picks where the profile is stored and who sets it, a design choice; no host has to be set up before the work, and the profile itself is set per clone by the operator after landing"
+      "host_unchecked": "The gate picks where the profile is stored and who sets it, a design choice; no host has to be set up before the work, and the profile itself is set per clone by the operator after landing",
+      "answer": "_private/host.json, written by tests.py --set-profile, refused in an agent session",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Premise (field report 2026-10-19, operator's Windows deploy in a VS Code workspace): the full tests.py run took over 150 s on a busy Windows host, over win32:150 of tests_ceiling.json; the deploy agent raised win32 to 1800 in the local clone with the operator's two answers, an edit of a tracked file that a later fetch from upstream conflicts with. Busy factor 15 gives darwin 435 s, linux 900 s, win32 2250 s, above the local 1800. kb-setup's profile question comes before step 2 runs tests.py. Once landed, the Windows clone drops its local ceiling edit and sets the busy profile."
