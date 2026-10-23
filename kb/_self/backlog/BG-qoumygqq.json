@@ -2,7 +2,7 @@
   "id": "BG-qoumygqq",
   "kind": "bug",
   "title": "kbmon --events orders committed ops rows of one millisecond by row id, not write order",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,

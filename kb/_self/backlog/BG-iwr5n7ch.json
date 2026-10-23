@@ -2,7 +2,7 @@
   "id": "BG-iwr5n7ch",
   "kind": "bug",
   "title": "coord.py's docstring says wait polls the store twice a second, but it polls every 50 ms",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,

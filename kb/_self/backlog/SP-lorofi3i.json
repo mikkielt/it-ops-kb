@@ -2,7 +2,7 @@
   "id": "SP-lorofi3i",
   "kind": "sprint",
   "title": "A paid pool run measures the grown held-out set on rows no earlier run saw",
-  "status": "planned",
+  "status": "active",
   "goal": "The pool's held-out section samples at least 20 rows of the grown kb/public/_retrieval/lookup_heldout.csv that name expected articles, none of them a row an earlier pool held, and benchmarks.py pool build --dry-run refuses none; one paid pool run over every default arm, capped with --max-usd 40, records the heldout kind's right-answer rate in kb/_self/reports/benchmarks.csv and the report",
   "gates": [
     {
@@ -14,7 +14,11 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "creator": "op-f618a13e"

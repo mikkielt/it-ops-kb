@@ -2,7 +2,7 @@
   "id": "BG-v53e2pef",
   "kind": "bug",
   "title": "coord.py dedup claims research keys from the question's own words, past the id pattern a claim key takes",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,

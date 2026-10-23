@@ -2,7 +2,7 @@
   "id": "BG-i7b2elsw",
   "kind": "bug",
   "title": "kbid.py's module docstring says the publisher is read from the suffix of the page's <title>, which provider.read_page no longer does",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,

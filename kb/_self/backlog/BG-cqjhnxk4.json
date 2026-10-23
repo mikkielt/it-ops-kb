@@ -2,7 +2,7 @@
   "id": "BG-cqjhnxk4",
   "kind": "bug",
   "title": "headless-agent-runtimes.md cites the Haiku 5.5 price fact at ci-and-headless.md:91, which is another fact",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,

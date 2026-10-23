@@ -2,7 +2,7 @@
   "id": "BG-wrqd4ytg",
   "kind": "bug",
   "title": "tools.md says the kbask observer session loads no MCP server, but it loads the kb's own with three read-only tools",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,

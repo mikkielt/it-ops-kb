@@ -2,7 +2,7 @@
   "id": "BG-abhnp77r",
   "kind": "bug",
   "title": "agent.run ops rows carry no exit, so a failed worker run is always an ok span",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,

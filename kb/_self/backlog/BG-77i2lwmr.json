@@ -2,7 +2,7 @@
   "id": "BG-77i2lwmr",
   "kind": "bug",
   "title": "backlog.py's module usage text omits the gate host-unchecked verb",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,

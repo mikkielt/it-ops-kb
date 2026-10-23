@@ -2,7 +2,7 @@
   "id": "BG-svqrrfbt",
   "kind": "bug",
   "title": "mon_view.py defines panel_lines twice; the first definition is dead code",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,

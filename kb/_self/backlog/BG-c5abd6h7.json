@@ -2,7 +2,7 @@
   "id": "BG-c5abd6h7",
   "kind": "bug",
   "title": "plugin.md says the coord_ tools come right after kb_feedback, but kb_monitor_status, kb_backlog, kb_querylog and kb_docs come first",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,
