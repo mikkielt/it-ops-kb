@@ -2,7 +2,7 @@
   "id": "BG-xyhbfqkv",
   "kind": "bug",
   "title": "merge refusals other than an empty forge (another branch, no forge project, gh arm) exit 1, where tools.md says 2",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,
@@ -46,6 +46,19 @@
       "role": "interactive"
     }
   ],
-  "claimed_by": "claude-92aeeb3c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "da2c8a48916d63a975b5d070b73c3de5c63820ab",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,json,tempfile; sys.path.insert(0,\"_tools\"); t=tempfile.mkdtemp(); open(t+\"/backlog.json\",\"w\").write(json.dumps({\"item_dir\":\"items\",\"forge\":\"github\",\"id_prefixes\":{\"story\":\"ST\"}})); os.makedirs(t+\"/items\"); import backlog,bl_land; bl_land.need=lambda *a,**k: None; sys.argv=[\"backlog.py\",\"--root\",t,\"merge\",\"ST-aaaaaaaa\"]; c=backlog.main(); assert c==2, c"
+        ],
+        "exit": 0,
+        "sha256": "17b383ed860a851a"
+      }
+    ]
+  }
 }
