@@ -2,7 +2,7 @@
   "id": "ST-s6iz6z36",
   "kind": "story",
   "title": "kb-setup asks the deployment scope (me, team or org) and sets the clone's remotes by it, with a fetch-only upstream every push to which is refused",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3trnelzv",
   "priority": "P1",
   "rank": 0,
@@ -70,5 +70,7 @@
   "depends_on": [
     "ST-tac4z3zk"
   ],
-  "notes": "Premise (field report 2026-10-19): the deploy agent added an upstream remote from GitHub by hand on the Windows clone; nothing in kb-setup, kbpublic or the pre-push hook knows an upstream, so a push to it is guarded only when it is also kb.publishRemote. A production clone has no public home (git.md, Public home) and must never push to the public copy. Operator's answers 2026-10-19 in the planning session: scope table me = origin none or own fork, upstream GitHub, rebase local onto upstream; team = origin team GitLab, upstream GitHub or the org remote, merge upstream/main; org = origin org GitLab, upstream GitHub, merge upstream/main, and team clones fetch from it. The test ceiling profile is a separate setup question, not set by the scope. Check 3 reads the scope through kbpublic.clone_scope(path), the one reader every scope-aware tool (kbgit.py upstream, the backlog's provenance view) calls."
+  "notes": "Premise (field report 2026-10-19): the deploy agent added an upstream remote from GitHub by hand on the Windows clone; nothing in kb-setup, kbpublic or the pre-push hook knows an upstream, so a push to it is guarded only when it is also kb.publishRemote. A production clone has no public home (git.md, Public home) and must never push to the public copy. Operator's answers 2026-10-19 in the planning session: scope table me = origin none or own fork, upstream GitHub, rebase local onto upstream; team = origin team GitLab, upstream GitHub or the org remote, merge upstream/main; org = origin org GitLab, upstream GitHub, merge upstream/main, and team clones fetch from it. The test ceiling profile is a separate setup question, not set by the scope. Check 3 reads the scope through kbpublic.clone_scope(path), the one reader every scope-aware tool (kbgit.py upstream, the backlog's provenance view) calls.",
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
