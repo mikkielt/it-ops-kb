@@ -63,7 +63,11 @@
         "an item's link whose first word is the issue url": "ST-2d26ca6z",
         "a stored imported-issue field on each item": "ST-2d26ca6z"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "an item's link whose first word is the issue url",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
