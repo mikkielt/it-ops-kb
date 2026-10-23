@@ -4,16 +4,43 @@
   "title": "Research: Claude Code's beta tracing, inbound TRACEPARENT in -p sessions and OTEL_RESOURCE_ATTRIBUTES on every point and event are kb facts",
   "status": "draft",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-r7e7jcep",
   "priority": "P2",
   "rank": 0,
-  "goal": "kb/public/claude/otel-monitoring.md gains DOC facts with source rows (code.claude.com/docs/en/monitoring-usage and env-vars) on: the variables that turn tracing on (CLAUDE_CODE_ENABLE_TELEMETRY, CLAUDE_CODE_ENHANCED_TELEMETRY_BETA, OTEL_TRACES_EXPORTER and the per-signal endpoint and protocol) and that it is beta; the span hierarchy (claude_code.interaction, llm_request, tool, hook) and its status rules; that -p and Agent SDK sessions read TRACEPARENT and TRACESTATE from their environment and parent claude_code.interaction under it while interactive sessions ignore it, with the parent.source attribute; that event records carry that trace_id and span_id without a traces exporter; that Bash subprocesses inherit TRACEPARENT and CLAUDE_CODE_PROPAGATE_TRACEPARENT; and that OTEL_RESOURCE_ATTRIBUTES keys go on every metric point and event (OTEL_METRICS_INCLUDE_RESOURCE_ATTRIBUTES) with percent-encoded values; each fact keeps the Claude Code version the page names",
+  "goal": "kb/public/claude/otel-monitoring.md gains DOC facts with source rows (code.claude.com/docs/en/monitoring-usage and env-vars) on: the variables that turn tracing on (CLAUDE_CODE_ENABLE_TELEMETRY, CLAUDE_CODE_ENHANCED_TELEMETRY_BETA, OTEL_TRACES_EXPORTER and the per-signal endpoint and protocol) and that it is beta; the span hierarchy (claude_code.interaction, llm_request, tool, hook) and its status rules; that -p and Agent SDK sessions read TRACEPARENT and TRACESTATE from their environment and parent claude_code.interaction under it while interactive sessions ignore it, with the parent.source attribute; that event records carry that trace_id and span_id without a traces exporter, with the Claude Code version the page names; that Bash subprocesses inherit TRACEPARENT and CLAUDE_CODE_PROPAGATE_TRACEPARENT; that OTEL_RESOURCE_ATTRIBUTES keys go on every metric point and event (OTEL_METRICS_INCLUDE_RESOURCE_ATTRIBUTES) with percent-encoded values",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import subprocess, sys\nART = 'kb/public/claude/otel-monitoring.md'\nCASES = [('Does a claude -p session read TRACEPARENT from its environment and parent its spans under it?', ['TRACEPARENT', '-p']), (\"Which variables turn on Claude Code's distributed tracing?\", ['CLAUDE_CODE_ENHANCED_TELEMETRY_BETA', 'OTEL_TRACES_EXPORTER']), ('Are OTEL_RESOURCE_ATTRIBUTES keys added to every Claude Code metric datapoint and event?', ['OTEL_RESOURCE_ATTRIBUTES', 'OTEL_METRICS_INCLUDE_RESOURCE_ATTRIBUTES'])]\nmiss = []\nfor q, terms in CASES:\n    out = subprocess.run([sys.executable, '_tools/rag.py', 'pack', q, '--root', 'public', '--budget', '2500'],\n                         capture_output=True, text=True).stdout\n    hit = [l for l in out.splitlines() if l.startswith('- ' + ART[len('kb/'):] + ':') and '[DOC' in l\n           and all(t.lower() in l.lower() for t in terms)]\n    if not hit:\n        miss.append((q, terms))\nprint('missing:', miss if miss else 'none')\nsys.exit(1 if miss else 0)\n"
+        "import subprocess, sys\nART = 'kb/public/claude/otel-monitoring.md'\nCASES = [\n    ('Which variables turn on Claude Code distributed tracing and is it beta?', 'DOC', ['CLAUDE_CODE_ENHANCED_TELEMETRY_BETA', 'OTEL_TRACES_EXPORTER'], False),\n    ('What span hierarchy does Claude Code tracing emit?', 'DOC', ['claude_code.interaction', 'llm_request'], False),\n    ('Does a claude -p session read TRACEPARENT and TRACESTATE from its environment and parent its spans under it?', 'DOC', ['TRACEPARENT', 'TRACESTATE', 'claude_code.interaction'], False),\n    ('Which attribute records where the parent of a claude_code.interaction span came from?', 'DOC', ['parent.source'], False),\n    ('Do Claude Code event records carry the trace_id and span_id of the span without a traces exporter?', 'DOC', ['trace_id', 'span_id'], True),\n    ('Do Bash subprocesses started by Claude Code inherit TRACEPARENT?', 'DOC', ['TRACEPARENT', 'CLAUDE_CODE_PROPAGATE_TRACEPARENT'], False),\n    ('Are OTEL_RESOURCE_ATTRIBUTES keys added to every Claude Code metric datapoint and event?', 'DOC', ['OTEL_RESOURCE_ATTRIBUTES', 'OTEL_METRICS_INCLUDE_RESOURCE_ATTRIBUTES'], False),\n    ('How are the values in OTEL_RESOURCE_ATTRIBUTES encoded for Claude Code?', 'DOC', ['OTEL_RESOURCE_ATTRIBUTES', 'percent'], False),\n]\nmiss = []\nfor q, tag, terms, ver in CASES:\n    out = subprocess.run([sys.executable, '_tools/rag.py', 'pack', q, '--root', 'public', '--budget', '2500'],\n                         capture_output=True, text=True).stdout\n    hit = [l for l in out.splitlines() if l.startswith('- ' + ART[len('kb/'):] + ':') and '[' + tag in l\n           and all(t.lower() in l.lower() for t in terms) and (not ver or 'v2.' in l)]\n    if not hit:\n        miss.append((q, terms))\nprint('missing:', miss if miss else 'none')\nsys.exit(1 if miss else 0)\n"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/public/claude/otel-monitoring.md gains DOC facts with source rows (code.claude.com/docs/en/monitoring-usage and env-vars) on: the variables that turn tracing on (CLAUDE_CODE_ENABLE_TELEMETRY, CLAUDE_CODE_ENHANCED_TELEMETRY_BETA, OTEL_TRACES_EXPORTER and the per-signal endpoint and protocol) and that it is beta",
+      "check": 0
+    },
+    {
+      "clause": "the span hierarchy (claude_code.interaction, llm_request, tool, hook) and its status rules",
+      "check": 0
+    },
+    {
+      "clause": "that -p and Agent SDK sessions read TRACEPARENT and TRACESTATE from their environment and parent claude_code.interaction under it while interactive sessions ignore it, with the parent.source attribute",
+      "check": 0
+    },
+    {
+      "clause": "that event records carry that trace_id and span_id without a traces exporter, with the Claude Code version the page names",
+      "check": 0
+    },
+    {
+      "clause": "that Bash subprocesses inherit TRACEPARENT and CLAUDE_CODE_PROPAGATE_TRACEPARENT",
+      "check": 0
+    },
+    {
+      "clause": "that OTEL_RESOURCE_ATTRIBUTES keys go on every metric point and event (OTEL_METRICS_INCLUDE_RESOURCE_ATTRIBUTES) with percent-encoded values",
+      "check": 0
     }
   ],
   "touches": [
@@ -22,5 +49,9 @@
     "kb/public/_anchors.csv",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "depends_on": [
+    "ST-a6ypqjuy"
+  ],
+  "notes": "Planning 2026-10-24: goal reworded into six clauses so each maps to one case of the check (the old last clause 'each fact keeps the Claude Code version the page names' is now the version assertion on the event-record fact, the one the page versions: before v2.1.212). Premise: the check fails on the base (precheck). Planned 2026-10-24 into SP-r7e7jcep: second in the run order (after ST-a6ypqjuy), since the five research stories share the source, anchor and expansions files.",
   "filed_in": "clone-0ea70e5c"
 }
