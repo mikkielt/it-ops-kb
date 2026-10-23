@@ -2,7 +2,7 @@
   "id": "ST-wgws6qbr",
   "kind": "story",
   "title": "Alias rows for the OpenTelemetry Python SDK topic's other names",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-xznmaurz",
   "priority": "P2",
   "rank": 0,
@@ -48,6 +48,28 @@
     "ST-rglufo4s"
   ],
   "notes": "Premise 2026-10-23 on 35b5b7cb2: the check exits 1, none of the four rows is in _tools/aliases.csv; rag.py search already reaches the article on body words, so the rows matter for the alias routes only.",
-  "claimed_by": "claude-92aeeb3c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "b1d7b9abfcbff02d81e6f7b03765af015549a71e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;rows=open('_tools/aliases.csv',encoding='utf-8').read().splitlines();want=['otel python,opentelemetry python','opentelemetry-python,opentelemetry python','otel python sdk,opentelemetry python','otel sdk,opentelemetry python'];sys.exit(0 if all(w in rows for w in want) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kbfacts;a=set(kbfacts.aliases().get('opentelemetry python',[]));w={('otel','python'),('otel','python','sdk'),('otel','sdk')};print('aliases missing:',sorted(w-a));sys.exit(0 if w<=a else 1)"
+        ],
+        "exit": 0,
+        "sha256": "d440d828ad265d61"
+      }
+    ]
+  }
 }
