@@ -1152,8 +1152,12 @@ def mr_stuck(request):
 def read_code_request(root, branch):
     """The `bl_forge.Request` of BRANCH on the integration remote's forge project, read once for a land pass and used
     by every step of it. None, and nothing said, when there is no request, the remote names no forge project (a local
-    path) or the forge cannot be read (a CLI not signed in, a failed or unreadable call): land cannot tell."""
+    path) or the forge cannot be read (a CLI not signed in, a failed or unreadable call): land cannot tell. A project
+    with no forge (an empty `forge` setting) has no request to read: land says so and reads nothing."""
     import bl_forge
+    if bl_forge.no_forge():
+        say(f"land: {bl_forge.NO_FORGE}")
+        return None
     try:
         return bl_forge.read_request(root, branch=branch, run=run)
     except (Refused, bl_forge.ForgeError):

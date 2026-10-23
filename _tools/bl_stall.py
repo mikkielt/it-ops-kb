@@ -25,7 +25,8 @@ sidecars (`ql_store` readers; a row's closed keys only, never event text), never
 
 A signal whose input cannot be read is `unknown:<what>`, never a guess: a request read that fails, a forge CLI not
 signed in or a remote that names no forge project is `unknown:forge`, and so is every claimed item not read when the
-reads' one total deadline (FORGE_DEADLINE_S) passes. Standard library only; imports `bl_base` and
+reads' one total deadline (FORGE_DEADLINE_S) passes; a project with no forge (an empty `forge` setting) reads no
+request, says so and has no `unknown:forge`. Standard library only; imports `bl_base` and
 `bl_cli` at load and never `backlog` (a layer rule); the query log, `tests`, `bl_procs`, `bl_forge` and `kg_lane` are
 imported where used. It registers its own subcommand when imported, so `backlog.py` carries only the import.
 """
@@ -315,11 +316,11 @@ def forge_reads(root, ids, run=None, deadline_s=None):
     first read that fails (a CLI not installed or signed in, a failed call, a remote that names no forge project)
     ends the reads, as the rest would fail the same way, and so does the total deadline (FORGE_DEADLINE_S, or
     DEADLINE_S seconds when given) of all the reads together, a command in flight cut at it: an id left out is
-    `unknown:forge`."""
+    `unknown:forge`. A project with no forge (an empty `forge` setting) reads nothing."""
     import bl_forge
     from kg_lane import CODE_BRANCH_PREFIX
     dead = {}
-    if not ids:
+    if not ids or bl_forge.no_forge():
         return dead
     deadline = time.monotonic() + (FORGE_DEADLINE_S if deadline_s is None else deadline_s)
     bounded = bounded_run(run, deadline)
@@ -339,7 +340,7 @@ def ready_items(bl):
 
 
 def collect(bl, now=None, run=None):
-    """{main, lock, ops_rows, forge_reads, items}: the stall signals of every claimed or ready item. `items` is a list
+    """{main, lock, ops_rows, forge_reads, no_forge, items}: the stall signals of every claimed or ready item. `items` is a list
     of {id, label, state, claimed_by, signals, unknown} in work order, only items with a signal or an unknown. RUN is
     `bl_base.run`'s shape, the runner of the forge reads (the default is `bl_base.run`)."""
     now = now_epoch() if now is None else now
@@ -354,6 +355,8 @@ def collect(bl, now=None, run=None):
     held_long = lock == "held" and lock_detail["age"] > HOST_LOCK_WAIT_S
     doing = [i for i, it in bl.items.items() if it.get("status") == "doing" and it.get("claimed_by")
              and it.get("kind") != "sprint"]
+    import bl_forge
+    no_forge = bl_forge.no_forge()
     dead = forge_reads(root, sorted(doing, key=bl.order_key), run)
     out = []
     for iid in sorted(set(doing) | set(ready_items(bl)), key=bl.order_key):
@@ -361,7 +364,9 @@ def collect(bl, now=None, run=None):
         if iid in doing:
             more, unknown = claim_signals(root, iid, now)
             signals += more
-            if iid not in dead:
+            if no_forge:
+                pass  # the project has no forge: there is no request to read, and no unknown
+            elif iid not in dead:
                 unknown.append("unknown:forge")
             elif dead[iid]:
                 signals.append("mr-dead")
@@ -376,7 +381,8 @@ def collect(bl, now=None, run=None):
             out.append({"id": iid, "label": bl.label(iid), "state": "doing" if iid in doing else "ready",
                         "claimed_by": bl.items[iid].get("claimed_by"), "signals": signals, "unknown": unknown})
     return {"main": {"state": main, "ts": main_ts}, "lock": {"state": lock, "detail": lock_detail},
-            "ops_rows": None if rows is None else len(rows), "forge_reads": len(dead), "items": out}
+            "ops_rows": None if rows is None else len(rows), "forge_reads": len(dead), "no_forge": no_forge,
+            "items": out}
 
 
 # ---------------------------------------------------------------- the command
@@ -397,6 +403,8 @@ def cmd_stalled(bl, a):
         say(f"stalled: the host test lock is held by pid {lk['detail']['pid']} for {lk['detail']['age']}s")
     elif lk["state"] == "unknown":
         say(f"stalled: the host test lock is unknown ({lk['detail']})")
+    if report["no_forge"]:
+        say("stalled: the project has no forge (\"forge\": \"\" in backlog.json): merge requests are not read")
     for r in report["items"]:
         words = r["signals"] + r["unknown"]
         say(f"{r['label']}  {r['state']}" + (f" by {r['claimed_by']}" if r["claimed_by"] else "") +

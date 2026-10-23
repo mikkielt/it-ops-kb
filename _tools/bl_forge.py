@@ -6,6 +6,8 @@ description it carries. The forge is the `forge` setting of backlog.json (`gitla
 through glab; `github`, read through gh, whose merge and description verbs refuse, so no agent writes on the public
 home) and the project is `forge_project`, else the remote's URL; a caller that has only a remote's url (the query
 log's delivery, the CI detector) gets the arm of `url_arm`, which reads the url's forge when the setting names none.
+An empty `forge` setting is a project with no forge: `target` and `arm` raise `NoForge` (a `Refused`) before any call,
+and the callers that read for the project (stalled, land, red-pipeline) skip the read and say so.
 Both arms answer in GitLab's words (`opened`, `merged`, `closed`; a pipeline or job `success`, `failed`, `canceled`,
 `skipped`, `manual`, `running`, `pending`), so a caller reads one vocabulary. A read that cannot be made raises
 `ForgeError`; no such request or pipeline is None; a job list or a log that cannot be read is None or "", which its
@@ -263,12 +265,27 @@ def pinned_project(project):
     return project if bl_base.repositories() else setting("forge_project") or project
 
 
+class NoForge(Refused):
+    """The `forge` setting is empty: the project has no forge, so no merge request or pipeline is read."""
+
+
+NO_FORGE = 'the project has no forge ("forge": "" in backlog.json): no merge request or pipeline is read'
+
+
+def no_forge():
+    """Whether the project has no forge (the `forge` setting is empty)."""
+    return setting("forge") == ""
+
+
 def target(root, run=None):
     """The Target of the `forge` setting and the project: `forge_project`, else the integration remote's URL (always
-    the URL's, under a `repositories` map: each repository's checkout names its own project). Refused when that
-    remote names no forge project (a local path, no url) or names github.com while `forge` is gitlab."""
+    the URL's, under a `repositories` map: each repository's checkout names its own project). NoForge when the
+    setting is empty; Refused when that remote names no forge project (a local path, no url) or names github.com
+    while `forge` is gitlab."""
     import kbpublic
     from ql_deliver import origin_forge
+    if no_forge():
+        raise NoForge(NO_FORGE)
     run = run or bl_base.run
     remote = kbpublic.integration_remote(root)
     code, url, _ = run(["git", "remote", "get-url", remote], cwd=root)
@@ -294,7 +311,8 @@ def url_target(url):
     """The Target of a remote's URL for a read: `forge_project`, else the project the url names (always the url's under
     a `repositories` map, as in `target`); the forge is
     the `forge` setting, except that a github.com url is GitHub while the setting is its default, so a project with
-    no setting reads the url's forge as the tools did before the settings."""
+    no setting reads the url's forge as the tools did before the settings. An empty setting reads the url's forge
+    too: the query log's delivery has no project forge to follow, only the remote's."""
     from ql_deliver import origin_forge
     named, host, project = origin_forge(url)
     return Target("github" if "github" in (named, setting("forge")) else "gitlab", host,
