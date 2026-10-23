@@ -64,6 +64,21 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Which words besides the write verbs keep a gate push: mirror and public repository in the text, and a forge's name in a do or host_check command?",
+      "options": [
+        "Keep mirror, public repository and, in a do or host_check command only, a forge's name; drop origin, remote, release, a forge's name in a question or option, and merge request",
+        "Keep the write verbs push, publish, upload and deploy only, in the text and in commands"
+      ],
+      "recommendation": "Keep mirror, public repository and, in a do or host_check command only, a forge's name; drop origin, remote, release, a forge's name in a question or option, and merge request",
+      "do": {
+        "Keep mirror, public repository and, in a do or host_check command only, a forge's name; drop origin, remote, release, a forge's name in a question or option, and merge request": "ST-xjmx4pjc",
+        "Keep the write verbs push, publish, upload and deploy only, in the text and in commands": "ST-xjmx4pjc"
+      },
+      "class": "push"
     }
   ],
   "links": [
