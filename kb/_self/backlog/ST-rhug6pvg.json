@@ -50,6 +50,38 @@
   "depends_on": [
     "ST-s6iz6z36"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "With --dry-run, does --register-local consult the claude CLI to skip servers already registered, or print the add-json command for every server?",
+      "options": [
+        "Print every command without calling the CLI",
+        "Ask the CLI first and print only the missing servers"
+      ],
+      "recommendation": "Print every command without calling the CLI",
+      "do": {
+        "Print every command without calling the CLI": "ST-rhug6pvg",
+        "Ask the CLI first and print only the missing servers": "ST-rhug6pvg"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Does --status --project DIR print its findings as extra project: lines after the kb_status lines, or only the DIR block?",
+      "options": [
+        "Extra lines after the kb_status lines",
+        "Only the DIR block"
+      ],
+      "recommendation": "Extra lines after the kb_status lines",
+      "do": {
+        "Extra lines after the kb_status lines": "ST-rhug6pvg",
+        "Only the DIR block": "ST-rhug6pvg"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "notes": "Premise (field report 2026-10-19): sessions on the Windows host start in a VS Code workspace directory above the clone, where the clone's local-scope registration does not apply; the deploy agent hand-wrote <workspace>\\.mcp.json with single backslashes, invalid JSON, so the kb server never loaded until fixed by hand. kb_mcp.py has no --project form today: --status and --register-local read only the clone (registered_kb swallows a ValueError from a .mcp.json as no servers). The check plants such a file; on the base it exits 1 at the status step and skips the registration step, so a precheck run registers nothing.",
   "claimed_by": "claude-92aeeb3c",
   "operator": "op-f618a13e"
