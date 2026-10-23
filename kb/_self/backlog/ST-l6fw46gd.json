@@ -2,7 +2,7 @@
   "id": "ST-l6fw46gd",
   "kind": "story",
   "title": "Research: the W3C traceparent format and the OpenTelemetry Python SDK's trace-context propagator are kb facts",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-nij36lt7",
   "sprint": "SP-r7e7jcep",
   "priority": "P2",
@@ -57,6 +57,19 @@
   ],
   "notes": "Planning 2026-10-24: goal reworded without apostrophes into two clauses (DOC format facts, CODE propagator facts), both read by the one check (four DOC cases, one CODE case). Premise: the check fails on the base (precheck). Planned 2026-10-24 into SP-r7e7jcep: third in the run order (after ST-e2ijqjsr), since the five research stories share the source, anchor and expansions files.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "95002f9619ac74b3baff30861d3d89356eec809a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, sys\nART = 'kb/public/logs/otel-python-sdk.md'\nCASES = [\n    ('What is the format of the W3C traceparent header: version, trace-id, parent-id and trace-flags?', 'DOC', ['traceparent', 'trace-id', 'parent-id']),\n    ('Which trace-flags bit marks a W3C traceparent as sampled?', 'DOC', ['sampled', 'trace-flags']),\n    ('Which trace-id and parent-id values in a W3C traceparent are invalid?', 'DOC', ['traceparent', 'invalid']),\n    ('What is the W3C tracestate header for?', 'DOC', ['tracestate']),\n    ('How does the Python SDK TraceContextTextMapPropagator inject and extract a traceparent from a carrier dict?', 'CODE', ['TraceContextTextMapPropagator', 'traceparent']),\n]\nmiss = []\nfor q, tag, terms in CASES:\n    out = subprocess.run([sys.executable, '_tools/rag.py', 'pack', q, '--root', 'public', '--budget', '2500'],\n                         capture_output=True, text=True).stdout\n    hit = [l for l in out.splitlines() if l.startswith('- ' + ART[len('kb/'):] + ':') and '[' + tag in l\n           and all(t.lower() in l.lower() for t in terms)]\n    if not hit:\n        miss.append((q, terms))\nprint('missing:', miss if miss else 'none')\nsys.exit(1 if miss else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "a4d424a9f2f7792e"
+      }
+    ]
+  }
 }
