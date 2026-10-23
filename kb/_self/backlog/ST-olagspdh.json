@@ -22,5 +22,6 @@
     "kb/_self/coordination.md",
     "kb/_self/tools.md"
   ],
-  "notes": "Premise: coord.py wait --since 0 --timeout 0 --kind progress --item ST-00000000 exits 2 (unrecognized arguments). Today an orchestrator waits on a worker with a background loop over its pid and reads result.json by hand (.claude/skills/kb-sprint/SKILL.md:48); this filter is the one wait verb the operator chose, used from a background command or a Monitor watch. The kb-sprint run step and the plugin copy are rewritten to it in a later story, once ST-3ru7f4to and ST-oazktatz post the events."
+  "notes": "Premise: coord.py wait --since 0 --timeout 0 --kind progress --item ST-00000000 exits 2 (unrecognized arguments). Today an orchestrator waits on a worker with a background loop over its pid and reads result.json by hand (.claude/skills/kb-sprint/SKILL.md:48); this filter is the one wait verb the operator chose, used from a background command or a Monitor watch. The kb-sprint run step and the plugin copy are rewritten to it in a later story, once ST-3ru7f4to and ST-oazktatz post the events.",
+  "filed_in": "clone-0ea70e5c"
 }

@@ -29,5 +29,6 @@
   "depends_on": [
     "ST-yrilvcbx"
   ],
-  "notes": "Premise: backlog.py runs does not exist (exit 2 in the check). Run state in coord and lifecycle in git can disagree after a crash, a killed landing or an unreachable store (the gate on ST-3ru7f4to); this command is the reconcile step the coord-authority shape needs. A new bl_ module registers itself through bl_cli and gets its map.csv row and code.md layout line."
+  "notes": "Premise: backlog.py runs does not exist (exit 2 in the check). Run state in coord and lifecycle in git can disagree after a crash, a killed landing or an unreachable store (the gate on ST-3ru7f4to); this command is the reconcile step the coord-authority shape needs. A new bl_ module registers itself through bl_cli and gets its map.csv row and code.md layout line.",
+  "filed_in": "clone-0ea70e5c"
 }

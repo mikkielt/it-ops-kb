@@ -28,5 +28,6 @@
   "depends_on": [
     "ST-w6pz5emu"
   ],
-  "notes": "Premise: kb_ask.py --route 'which tool shows how long each landing step took' plans kind=split with model=sonnet (a paid researcher) although backlog.py landings answers it; 36 _tools command-line tools exist and none carries Answers: or Use: lines; tools.md, the one table of tools, is too long to read whole, so agents iterate over files. The AGENTS.md cap (4096 bytes, tested) means the line replaces another."
+  "notes": "Premise: kb_ask.py --route 'which tool shows how long each landing step took' plans kind=split with model=sonnet (a paid researcher) although backlog.py landings answers it; 36 _tools command-line tools exist and none carries Answers: or Use: lines; tools.md, the one table of tools, is too long to read whole, so agents iterate over files. The AGENTS.md cap (4096 bytes, tested) means the line replaces another.",
+  "filed_in": "clone-0ea70e5c"
 }

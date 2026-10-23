@@ -44,5 +44,6 @@
       "role": "interactive"
     }
   ],
-  "notes": "Premise: with the run state planted as staging, land stops at step branch, not at a run state step, and stage-back refuses for a missing worktree without naming landing; nothing today relates the two commands (kb/_self/backlog.md:330, no lock). The case it answers: BG-3brdh3kd in SP-c7oav2vn, landed before its stage-back and then once more in parallel with it, refused at done twice."
+  "notes": "Premise: with the run state planted as staging, land stops at step branch, not at a run state step, and stage-back refuses for a missing worktree without naming landing; nothing today relates the two commands (kb/_self/backlog.md:330, no lock). The case it answers: BG-3brdh3kd in SP-c7oav2vn, landed before its stage-back and then once more in parallel with it, refused at done twice.",
+  "filed_in": "clone-0ea70e5c"
 }

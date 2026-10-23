@@ -43,5 +43,6 @@
       "role": "interactive"
     }
   ],
-  "notes": "Premise: coord.py transition does not exist (the check's walk exits 2 at every step), and post --kind progress --field state=returned exits 2: 'progress takes item and state, state one of working, blocked, done' (_tools/coord.py:150-153). No tool posts progress today (kb/_self/coordination.md:34,40). Ids: the progress event is the record kbmon and wait read; the run key's value is the state an orchestrator reads with coord.py get."
+  "notes": "Premise: coord.py transition does not exist (the check's walk exits 2 at every step), and post --kind progress --field state=returned exits 2: 'progress takes item and state, state one of working, blocked, done' (_tools/coord.py:150-153). No tool posts progress today (kb/_self/coordination.md:34,40). Ids: the progress event is the record kbmon and wait read; the run key's value is the state an orchestrator reads with coord.py get.",
+  "filed_in": "clone-0ea70e5c"
 }

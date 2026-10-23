@@ -24,5 +24,6 @@
     "kb/_self/git.md",
     "skills/sprint/SKILL.md"
   ],
-  "notes": "Premise: in a planted clone whose item is committed, one untracked unrelated file makes land stop at step clean tree (the check prints 'land exit 1 step clean tree'). land rebases in the invoking checkout and switches its branch (_tools/bl_land.py:1835-1883), holding the host main lock only for the fetch and rebase, so a claim, a gate answer, a new item file or a stage-back made in that checkout during a landing collides with it: the 2026-10-23 sprints idled the checkout for every landing, and BG-3brdh3kd's land ran beside its stage-back and was refused at done (SP-c7oav2vn close)."
+  "notes": "Premise: in a planted clone whose item is committed, one untracked unrelated file makes land stop at step clean tree (the check prints 'land exit 1 step clean tree'). land rebases in the invoking checkout and switches its branch (_tools/bl_land.py:1835-1883), holding the host main lock only for the fetch and rebase, so a claim, a gate answer, a new item file or a stage-back made in that checkout during a landing collides with it: the 2026-10-23 sprints idled the checkout for every landing, and BG-3brdh3kd's land ran beside its stage-back and was refused at done (SP-c7oav2vn close).",
+  "filed_in": "clone-0ea70e5c"
 }

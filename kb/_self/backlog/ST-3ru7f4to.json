@@ -43,5 +43,6 @@
       "role": "interactive"
     }
   ],
-  "notes": "Premise: in a planted clone with an active sprint and a stub claude, claim exits 0 and dispatch exits 0 (stub ok) or 1 (stub error) and the coord store holds no progress event and no run key (the check prints both runs' states as []). Today dispatch records the worker only in the claims ledger and its scratch directory (_tools/bl_dispatch.py:968,984), and a headless worker has no ops row or span: agent.run comes only from Agent-tool subagents after distill (_tools/ql_distill.py:257)."
+  "notes": "Premise: in a planted clone with an active sprint and a stub claude, claim exits 0 and dispatch exits 0 (stub ok) or 1 (stub error) and the coord store holds no progress event and no run key (the check prints both runs' states as []). Today dispatch records the worker only in the claims ledger and its scratch directory (_tools/bl_dispatch.py:968,984), and a headless worker has no ops row or span: agent.run comes only from Agent-tool subagents after distill (_tools/ql_distill.py:257).",
+  "filed_in": "clone-0ea70e5c"
 }

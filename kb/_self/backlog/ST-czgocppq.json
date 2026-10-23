@@ -27,5 +27,6 @@
   "depends_on": [
     "ST-oazktatz"
   ],
-  "notes": "Premise: in a planted clone with a blocking gate committed on the worker's work/<id> branch, kbmon.py --status all --json gives the needs-you line 'needs you: SP-... gate start': the branch gate is invisible, since the sprint panel reads the item files of origin/main or the checkout only (kb/_self/monitoring.md:97,202). The kbmon-pane mod's terminal notification on a needs-you change is a later story of this epic (epic notes)."
+  "notes": "Premise: in a planted clone with a blocking gate committed on the worker's work/<id> branch, kbmon.py --status all --json gives the needs-you line 'needs you: SP-... gate start': the branch gate is invisible, since the sprint panel reads the item files of origin/main or the checkout only (kb/_self/monitoring.md:97,202). The kbmon-pane mod's terminal notification on a needs-you change is a later story of this epic (epic notes).",
+  "filed_in": "clone-0ea70e5c"
 }

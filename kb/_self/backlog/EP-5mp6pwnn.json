@@ -9,5 +9,6 @@
   "relates_to": [
     "EP-nij36lt7"
   ],
-  "notes": "Decided at planning (operator asked for a decision): a command plus an MCP tool fed by structured docstring lines, not a skill, since a skill loads text the model must reason over, the cost this avoids; skills and agents enter the catalog by their existing frontmatter descriptions. The coordination settings explainer of EP-nij36lt7 (ST-vopsopkg, kbsettings.py explain and kb_settings) is one catalog entry."
+  "notes": "Decided at planning (operator asked for a decision): a command plus an MCP tool fed by structured docstring lines, not a skill, since a skill loads text the model must reason over, the cost this avoids; skills and agents enter the catalog by their existing frontmatter descriptions. The coordination settings explainer of EP-nij36lt7 (ST-vopsopkg, kbsettings.py explain and kb_settings) is one catalog entry.",
+  "filed_in": "clone-0ea70e5c"
 }
