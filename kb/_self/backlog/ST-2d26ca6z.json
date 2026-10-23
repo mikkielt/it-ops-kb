@@ -2,7 +2,7 @@
   "id": "ST-2d26ca6z",
   "kind": "story",
   "title": "The maintainer turns an upstream-report GitHub issue back into draft backlog items that link the issue",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3trnelzv",
   "priority": "P1",
   "rank": 0,
@@ -49,5 +49,7 @@
   "depends_on": [
     "ST-lnxywo7s"
   ],
-  "notes": "Operator's answer 2026-10-19: findings travel back as a GitHub issue in a template the agent fills with user stories; the maintainer reads the issue back and converts its stories to backlog items; how the issue is added (paste from the file or automation) is the user's choice. Premise: no import command exists (backlog.py has no upstream-import); the check exits 1 on the base."
+  "notes": "Operator's answer 2026-10-19: findings travel back as a GitHub issue in a template the agent fills with user stories; the maintainer reads the issue back and converts its stories to backlog items; how the issue is added (paste from the file or automation) is the user's choice. Premise: no import command exists (backlog.py has no upstream-import); the check exits 1 on the base.",
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
