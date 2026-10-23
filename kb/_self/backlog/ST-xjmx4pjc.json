@@ -78,7 +78,11 @@
         "Keep mirror, public repository and, in a do or host_check command only, a forge's name; drop origin, remote, release, a forge's name in a question or option, and merge request": "ST-xjmx4pjc",
         "Keep the write verbs push, publish, upload and deploy only, in the text and in commands": "ST-xjmx4pjc"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "Keep mirror, public repository and, in a do or host_check command only, a forge's name; drop origin, remote, release, a forge's name in a question or option, and merge request",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
