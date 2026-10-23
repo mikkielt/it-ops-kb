@@ -126,6 +126,59 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What does the progress field gates hold?",
+      "options": [
+        "a comma-separated list of ids (g1,g2)",
+        "one id"
+      ],
+      "recommendation": "a comma-separated list of ids (g1,g2)",
+      "do": {
+        "a comma-separated list of ids (g1,g2)": "ST-yrilvcbx",
+        "one id": "ST-yrilvcbx"
+      },
+      "class": "design",
+      "answer": "a comma-separated list of ids (g1,g2)",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Does the progress state done stay accepted by post and the digest now that the run states have no done?",
+      "options": [
+        "yes: post accepts done, and the digest hides an intent whose items are all done, landed or released",
+        "no: done is refused by post"
+      ],
+      "recommendation": "yes: post accepts done, and the digest hides an intent whose items are all done, landed or released",
+      "do": {
+        "yes: post accepts done, and the digest hides an intent whose items are all done, landed or released": "ST-yrilvcbx",
+        "no: done is refused by post": "ST-yrilvcbx"
+      },
+      "class": "design",
+      "answer": "yes: post accepts done, and the digest hides an intent whose items are all done, landed or released",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "Does transition need the lease token of the key it moves, and what does the run key hold?",
+      "options": [
+        "no token: the key run/ITEM holds the state's name as its value, written whatever lease holds it",
+        "the holder's token as put takes it"
+      ],
+      "recommendation": "no token: the key run/ITEM holds the state's name as its value, written whatever lease holds it",
+      "do": {
+        "no token: the key run/ITEM holds the state's name as its value, written whatever lease holds it": "ST-yrilvcbx",
+        "the holder's token as put takes it": "ST-yrilvcbx"
+      },
+      "class": "secrets",
+      "answer": "no token: the key run/ITEM holds the state's name as its value, written whatever lease holds it (pre-approved by the operator for the 2026-10-24 night run)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Planned 2026-10-24 (SP-47w4ngr6). Premise: reproduces on base (check 0 walk [2,2,2,2,2], every transition exits 2). Checks 1 and 2 read what check 0 does not: 1 drives every state pair of the table (an allowed move exits 0, raises the revision, posts exactly one event; a refused move exits 1 naming the current state and the states it may move to, changing no value, revision or event); 2 reads post --kind progress (ten states, fields exit, gates, step; unknown state or field exits 2), transition --field on the event, digest hiding landed or released intents, the coord_post tool description naming the ten states and the kb_mcp coord_post handler accepting one. Assumptions, chosen to keep readers working and to be easy to reverse: the run key's value is the state name; an absent key's state is 'none'; post and digest keep accepting and hiding 'done' (the table has none; it stays the item file's). STATES is in _tools/coord.py. Docs of coord.py and kb_mcp.py (coordination, monitoring, tools, plugin, token-efficiency, embedding) are in touches. ST-olagspdh follows this story. Siblings in flight (SP-47w4ngr6): ST-yrilvcbx, ST-t2loi3od and ST-55ueywel share kb/_self/tools.md; edit only your own paragraph or row in a shared doc and keep the diff small, so the rebase at land merges; a doc conflict keeps both sides. Run each check first (it must fail) and after the work (it must pass); a check wrong for its goal clause is rewritten to test the same clause, with the reason here.",
