@@ -45,6 +45,27 @@
     "BG-acsc7it2",
     "ST-kydwtruh"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How are the 118 gap entries with a 2026-10-2x closing note backed by no tagged article fact re-read: cite an existing fact (52) and word the other 65 as Tried, or write each finding into its article as a DER or CODE fact with a source row? The recommendation is the first: the run-based and code-read findings stay in their dated notes and the entries stay open, as the reviews of 2026-10-21 did for the gitlab closings; about 65 new facts with source rows are a research sprint of their own.",
+      "options": [
+        "cite-or-tried",
+        "write-facts"
+      ],
+      "recommendation": "cite-or-tried",
+      "do": {
+        "cite-or-tried": "ST-y627kmds",
+        "write-facts": "ST-y627kmds"
+      },
+      "class": "push",
+      "answer": "cite-or-tried",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-z6wolmvm close"
   ],
