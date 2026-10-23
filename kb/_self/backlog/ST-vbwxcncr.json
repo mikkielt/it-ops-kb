@@ -1,0 +1,25 @@
+{
+  "id": "ST-vbwxcncr",
+  "kind": "story",
+  "title": "The sprint skill logs a background land beside the item's scratch directory, which land removes",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the kb-sprint skill's run step names a land log path outside the item's scratch directory (such as _cache/scratch/<id>-land.txt), since land removes that directory and the log with it on success",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();sys.exit(1 if 'land.log' in t else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-evq2flqc close"
+  ]
+}

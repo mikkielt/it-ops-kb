@@ -1,0 +1,26 @@
+{
+  "id": "ST-uvw3eajr",
+  "kind": "story",
+  "title": "A kb/public change that stops the query-log store passing its gates is refused at the sync gate",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbgit.py sync's gate runs the query-log store gates (ql_store.store_problems over the committed store) for a change to kb/public text, so a cleanup that drops the last mention of a host a store row names is refused before it lands rather than stalling delivery",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/git.md',encoding='utf-8').read();sys.exit(0 if 'store_problems' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kg_sync.py",
+    "kb/_self/git.md",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-c7oav2vn close"
+  ]
+}

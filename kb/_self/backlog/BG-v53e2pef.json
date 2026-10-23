@@ -46,7 +46,9 @@
       },
       "class": "design",
       "answer": "slug plus hash",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Planning 2026-10-23 on 35b5b7cb2: the repro was a placeholder (sys.exit(1)); it now plants lack terms with a space and punctuation through coord.dedup and exits 1 (both claimed keys fail FIELD_VALUE). It also needs the dedup to still claim, so a fix that drops every such term passes only if it maps them to ids. Found while fixing BG-dn5n7z7k, not fixed there since dedup keys need terms mapped to ids.",

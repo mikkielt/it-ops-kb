@@ -1,0 +1,26 @@
+{
+  "id": "ST-3pa5jtfy",
+  "kind": "story",
+  "title": "A planned item that changes a SECRETS or redact shape carries an adversarial timing check and a planted-forms matrix",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/_self/backlog.md's Plan rules and the kb-sprint plan step say that an item changing a kbcommon.SECRETS or redact shape carries one check that times the scan on adversarial input (overlapping alternatives, long runs) and one that plants every armor kind and form the earlier fixes flag, so a regression fails the item's done instead of a later review",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/backlog.md',encoding='utf-8').read();sys.exit(0 if 'adversarial' in t and 'SECRETS' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-evq2flqc close"
+  ]
+}
