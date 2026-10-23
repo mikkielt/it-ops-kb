@@ -70,6 +70,38 @@
   "depends_on": [
     "ST-tac4z3zk"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How is the upstream's push url disabled, and which pushes does the guard refuse?",
+      "options": [
+        "DISABLED push url, every ref refused incl. tags and deletes",
+        "DISABLED push url, branches only refused"
+      ],
+      "recommendation": "DISABLED push url, every ref refused incl. tags and deletes",
+      "do": {
+        "DISABLED push url, every ref refused incl. tags and deletes": "ST-s6iz6z36",
+        "DISABLED push url, branches only refused": "ST-s6iz6z36"
+      },
+      "class": "push"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "What does kb-setup name the upstream remote when the user names none, and may it also be the publish remote?",
+      "options": [
+        "name it upstream; publish refuses it as a target",
+        "no default name; the user always names it"
+      ],
+      "recommendation": "name it upstream; publish refuses it as a target",
+      "do": {
+        "name it upstream; publish refuses it as a target": "ST-s6iz6z36",
+        "no default name; the user always names it": "ST-s6iz6z36"
+      },
+      "class": "push"
+    }
+  ],
   "notes": "Premise (field report 2026-10-19): the deploy agent added an upstream remote from GitHub by hand on the Windows clone; nothing in kb-setup, kbpublic or the pre-push hook knows an upstream, so a push to it is guarded only when it is also kb.publishRemote. A production clone has no public home (git.md, Public home) and must never push to the public copy. Operator's answers 2026-10-19 in the planning session: scope table me = origin none or own fork, upstream GitHub, rebase local onto upstream; team = origin team GitLab, upstream GitHub or the org remote, merge upstream/main; org = origin org GitLab, upstream GitHub, merge upstream/main, and team clones fetch from it. The test ceiling profile is a separate setup question, not set by the scope. Check 3 reads the scope through kbpublic.clone_scope(path), the one reader every scope-aware tool (kbgit.py upstream, the backlog's provenance view) calls.",
   "claimed_by": "claude-92aeeb3c",
   "operator": "op-f618a13e"
