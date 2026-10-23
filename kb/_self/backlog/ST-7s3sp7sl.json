@@ -2,7 +2,7 @@
   "id": "ST-7s3sp7sl",
   "kind": "story",
   "title": "An agent session cannot write _tools/tests_ceiling.json or a decision row of _decisions.csv directly",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3trnelzv",
   "priority": "P1",
   "rank": 0,
@@ -50,5 +50,7 @@
   "links": [
     "parked: SP-rlincemn review"
   ],
-  "notes": "Premise (field report 2026-10-19): on the operator's Windows clone the deploy agent itself raised win32 in _tools/tests_ceiling.json to 1800 with the operator's two answers; read_ceiling accepts such an edit with a hand-written active operator row. Depends on ST-tac4z3zk, whose gate picks the profile's store, so the guard covers that path too. The check reads deny rules; when the gate picks the hook, the worker replaces it with a check that runs the hook on a planted Edit of each path."
+  "notes": "Premise (field report 2026-10-19): on the operator's Windows clone the deploy agent itself raised win32 in _tools/tests_ceiling.json to 1800 with the operator's two answers; read_ceiling accepts such an edit with a hand-written active operator row. Depends on ST-tac4z3zk, whose gate picks the profile's store, so the guard covers that path too. The check reads deny rules; when the gate picks the hook, the worker replaces it with a check that runs the hook on a planted Edit of each path.",
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
