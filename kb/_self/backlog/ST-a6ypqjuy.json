@@ -2,7 +2,7 @@
   "id": "ST-a6ypqjuy",
   "kind": "story",
   "title": "Research: the Monitor tool's limits, a -p run's wait for background work, Edit and Write PreToolUse payloads and a mod's ui.notify are kb facts",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-r7e7jcep",
   "priority": "P2",
@@ -61,5 +61,7 @@
     "ST-2qterjzi"
   ],
   "notes": "Planning 2026-10-24: goal reworded (no apostrophe, no leading and) into four clauses, each mapped to a check. The old ci-and-headless check already passed on the base: ci-and-headless.md:31 holds the cap and CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS. It now also needs the background subagents and workflows the headless page names (code.claude.com/docs/en/headless, Background tasks at exit), which no line holds yet. Monitor timeout_ms (default 300000, max 3600000, effective deadline at most 1800000) is in the tools reference. Premise: all three checks fail on the base (precheck). Planned 2026-10-24 into SP-r7e7jcep: first of five research stories that run one after another, since all share kb/public/_sources.csv, _anchors.csv and the doc2query expansions file; others wait on this one.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
