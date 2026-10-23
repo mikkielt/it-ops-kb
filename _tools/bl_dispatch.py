@@ -38,7 +38,8 @@ import bl_cli
 import bl_items
 import bl_procs
 from bl_base import (RESEARCH_KINDS, ROOT as PLUGIN_ROOT, Refused, Rejected, always_in_scope, canonical, claims_ledger, commit_message,
-                     external_lines, git, id_re, item_repos, link_target, need, repositories, research_touches, resolved_touch,
+                     external_lines, git, id_re, item_repos, link_target, name_for, need, repo_branch, repositories, research_touches,
+                     resolved_touch,
                      run_check, say, scope, scratch_dir, setting, split_touch, touches_overlap, trailer_problem, withhold,
                      operator_who, worker_dir, ledger_lock, write_ledger)
 from bl_land import WORK_PREFIX, WORKER_NAME
@@ -439,17 +440,24 @@ def rules_section(bl, iid):
     return [f"No docs map is set for this project ({why}): follow the role file and the item's touches."]
 
 
-def repo_lines(bl, iid, branch):
+def repo_lines(bl, iid):
     """The brief's lines for a multi-repository workspace: the worktree of each repository the item requires (on the
-    same branch name, from that repository's fetched origin default branch), and the ones it may need, which dispatch
-    makes none for. [] when the item names no declared repository: its one worktree is the workspace's."""
+    item's `naming` branch, `work/<id>` by default, from that repository's fetched origin default branch), the title
+    and trailer the project's `naming` gives a commit and merge request there, and the ones it may need, which
+    dispatch makes none for. [] when the item names no declared repository: its one worktree is the workspace's."""
     required = repo_checkouts(bl, iid)
     if not required:
         return []
+    it = bl.items[iid]
     out = [f"The worktree above is the workspace's own (its files, `_tools/`, the item file); one worktree for each "
-           f"repository the item changes, on `{branch}` from that repository's fetched origin default branch, work "
-           f"only in these (made for you):"]
+           f"repository the item changes, on `{repo_branch(it, iid)}` from that repository's fetched origin default "
+           f"branch, work only in these (made for you):"]
     out += [f"- {n}: {repo_worktree_path(bl.root, iid, n)}" for n, _ in required]
+    if setting("naming").get("mr_title"):
+        out.append(f"Title the merge request of each repository `{name_for(it, iid, 'mr_title')}`: land finds it by that title.")
+    trailer = name_for(it, iid, "trailer")
+    if trailer:
+        out.append(f"End each commit in a repository with the trailer `{trailer}` (its last paragraph).")
     optional = item_repos(bl.items[iid], "repos_if_needed")
     if optional:
         out.append(f"Repositories the item may change if the work needs it: {', '.join(optional)}. None has a "
@@ -493,7 +501,7 @@ def compose_brief(bl, iid, known=(), probe=None, turns=None, known_suite=(), bud
     head = f"{bl.label(iid)} ({', '.join(facts)})"
     out = [role_file_line(bl.root), operator_line(), "",
            f"Worktree (work only here): {wt}, on branch `{branch}` (made for you; the item is already claimed).",
-           *repo_lines(bl, iid, branch),
+           *repo_lines(bl, iid),
            f"Scratch directory for throwaway files: {scratch}/ (never /tmp, never the worktree).", "",
            "## Item", head, "", "```json", canonical(it).rstrip("\n"), "```", "",
            f"Its goal text (`{backlog_cmd(bl.root)} goal {iid}`):", goal_text(bl, iid, turns), ""]
@@ -659,12 +667,13 @@ def fetch_default_branch(name, checkout):
     return found.group(1)
 
 
-def make_repo_worktree(name, checkout, wt, iid, default):
-    """Make repository NAME's worktree at WT on `work/<id>`, branched from `origin/<default>` of its CHECKOUT with
-    no upstream (as the workspace's own, which has none); reuse the one already there, or the branch when it exists."""
+def make_repo_worktree(name, checkout, wt, iid, default, branch=None):
+    """Make repository NAME's worktree at WT on BRANCH (the item's `naming` branch, `repo_branch`; default `work/<id>`),
+    branched from `origin/<default>` of its CHECKOUT with no upstream (as the workspace's own, which has none); reuse
+    the one already there, or the branch when it exists."""
     if wt.is_dir():
         return
-    branch = worker_branch(iid)
+    branch = branch or worker_branch(iid)
     exists = git_in(checkout, "rev-parse", "-q", "--verify", f"refs/heads/{branch}").returncode == 0
     argv = ["git", "-C", str(checkout), "worktree", "add"]
     argv += [str(wt), branch] if exists else ["-b", branch, "--no-track", str(wt), f"origin/{default}"]
@@ -922,7 +931,7 @@ def cmd_dispatch(bl, a):
         say(f"worktree: {wt} (" + ("exists" if wt.is_dir() else f"would be made on {worker_branch(iid)} from HEAD") + ")")
         for n, _ in repo_checkouts(bl, iid):
             rwt = repo_worktree_path(bl.root, iid, n)
-            say(f"worktree of {n}: {rwt} (" + ("exists" if rwt.is_dir() else f"would be made on {worker_branch(iid)} "
+            say(f"worktree of {n}: {rwt} (" + ("exists" if rwt.is_dir() else f"would be made on {repo_branch(it, iid)} "
                                                   "from its fetched origin default branch") + ")")
         say(f"scratch: {scratch}")
         say(f"brief: {brief} (stdin)")
@@ -944,7 +953,7 @@ def cmd_dispatch(bl, a):
     defaults = repo_defaults(bl, iid)  # a repository whose fetch fails refuses the dispatch before anything is made
     make_worktree(bl.root, iid, wt)
     for n, co in repo_checkouts(bl, iid):
-        make_repo_worktree(n, co, repo_worktree_path(bl.root, iid, n), iid, defaults.get(n))
+        make_repo_worktree(n, co, repo_worktree_path(bl.root, iid, n), iid, defaults.get(n), repo_branch(it, iid))
     scratch.mkdir(parents=True, exist_ok=True)
     for where in [wt] + [repo_worktree_path(bl.root, iid, n) for n, _ in repo_checkouts(bl, iid)]:
         own_made(bl, iid, "worktree", where)

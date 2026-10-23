@@ -15,7 +15,7 @@ import bl_cli
 import bl_intake
 from bl_base import (
     Refused, commit_written, git, goal_clauses, id_re, item_repos, line, main_worker_dir, main_worktree, need,
-    rel_dir, repositories, research_touches, run, say, worker_dirs,
+    rel_dir, repo_branch, repositories, research_touches, run, say, worker_dirs,
 )
 
 
@@ -249,7 +249,7 @@ def set_aside_drafts(root, path, drafts):
     return moved
 
 
-def release_worker_worktree(root, path, lock, branch=None, repo=None, check_only=False):
+def release_worker_worktree(root, path, lock, branch=None, repo=None, check_only=False, iid=None):
     """Remove the finished worker's worktree PATH that holds the branch land needs, with `git worktree remove` (never
     --force), unlocking it first when Claude Code locked it: agents' shells may not remove a worktree
     (.claude/settings.json denies it), so land, a process of its own, does. Only a worktree under the clone's
@@ -266,7 +266,7 @@ def release_worker_worktree(root, path, lock, branch=None, repo=None, check_only
     land_removes_clean_unlocked_worker_worktree) or by the item id of BRANCH (`work/<id>`; the test
     land_removes_worker_worktree_of_a_linked_clone_named_by_item_id). Returns None once it is removed,
     else why it was left as it was (a remove that fails puts the lock back). REPO is the checkout of a repository of a
-    multi-repository workspace whose worktree PATH is (`<worker dir>/<id>/<repository>`, `repo_worktree`): the
+    multi-repository workspace (whose branch is the `naming` one, so IID names the item) whose worktree PATH is (`<worker dir>/<id>/<repository>`, `repo_worktree`): the
     worktree commands run there, any lock refuses it (no Claude Code agent made it), and the name rule is the
     directory's, the item id. With CHECK_ONLY it only answers: None means every rule above holds and `land` would
     remove it, and nothing is moved, unlocked or removed."""
@@ -278,7 +278,7 @@ def release_worker_worktree(root, path, lock, branch=None, repo=None, check_only
         return p.returncode, (p.stdout if not p.returncode else (p.stderr or p.stdout)).strip()
 
     state = "not locked" if lock is None else f"locked ({lock})"
-    item_id = branch[len(WORK_PREFIX):] if branch and branch.startswith(WORK_PREFIX) else None
+    item_id = iid or (branch[len(WORK_PREFIX):] if branch and branch.startswith(WORK_PREFIX) else None)
     if lock is not None and (repo is not None or not lock.startswith(WORKER_LOCK)):
         return f"it is locked ({lock or 'no reason given'})" + ("" if repo is not None else
                                                                 ", not by a Claude Code agent")
@@ -388,13 +388,22 @@ def local_default_ref(checkout):
     return None
 
 
-def clean_repository_leftovers(root, iid, checkouts):
+def repo_branch_or_none(it, iid):
+    """The item's repository branch (`bl_base.repo_branch`), None (so the default `work/<id>`) for an item whose naming
+    cannot be filled: close never stops on it."""
+    try:
+        return repo_branch(it, iid)
+    except Refused:
+        return None
+
+
+def clean_repository_leftovers(root, iid, checkouts, branch=None):
     """What `land` left of the item IID's repositories CHECKOUTS ([(name, checkout)]), for close: each worktree
     dispatch made (`repo_worktree`) that is clean, unlocked, free of processes and has every commit on the
     repository's default branch as the checkout has it last fetched (the directory `<worker dir>/<id>` goes with the
-    last one), then the `work/<id>` branch when every commit of it is there. Anything else is kept and `close: kept
+    last one), then BRANCH (the `naming` branch, `repo_branch`; default `work/<id>`) when every commit of it is there. Anything else is kept and `close: kept
     ...: why` says why. Returns the number kept."""
-    kept, branch = 0, WORK_PREFIX + iid
+    kept, branch = 0, branch or WORK_PREFIX + iid
 
     def keep(what, why):
         nonlocal kept
@@ -417,12 +426,13 @@ def clean_repository_leftovers(root, iid, checkouts):
             if not merged_into(checkout, entry["head"], upstream):
                 keep(wt, f"it has commits {upstream} lacks")
                 continue
-            why = release_worker_worktree(root, entry["path"], entry["lock"], branch, repo=checkout)
+            why = release_worker_worktree(root, entry["path"], entry["lock"], branch, repo=checkout, iid=iid)
             if why:
                 keep(wt, why)
                 continue
         if has_ref(checkout, f"refs/heads/{branch}") and not delete_landed_branch(checkout, branch, upstream,
-                                                                                  who=f"close: repository {name}"):
+                                                                                  who=f"close: repository {name}",
+                                                                                  prefixes=(branch,)):
             kept += 1
     try:  # the item's directory of repository worktrees, once nothing is left in it
         repo_worktree(root, iid, "x").parent.rmdir()
@@ -869,8 +879,8 @@ def cmd_close(bl, a):
     for i, gate, opt, target in cleanup_gate_do(bl, dead):  # a gate's do names an item by id too
         say(f"dropped gate {gate} do {opt!r} (item {target}) from {bl.label(i)}")
     declared = repositories()  # each item's repositories, read before the deletion
-    in_repos = {i: [(n, Path(bl.root) / declared[n]) for n in item_repos(bl.items[i])] for i in sorted(gone)
-                if item_repos(bl.items[i])}
+    in_repos = {i: ([(n, Path(bl.root) / declared[n]) for n in item_repos(bl.items[i])], repo_branch_or_none(bl.items[i], i))
+                for i in sorted(gone) if item_repos(bl.items[i])}
     for i in gone:
         bl.delete(i)
     label = bl.label(sid)
@@ -881,8 +891,8 @@ def cmd_close(bl, a):
     commit_written(bl, a, "close", sid, body="\n".join(summary), title=title)
     try:  # the workers' leftovers go last, and whatever goes wrong there never undoes or fails the close
         clean_worker_leftovers(bl.root, sid, sorted(gone))
-        for i, checkouts in in_repos.items():  # what land left of a multi-repository item's repositories
-            clean_repository_leftovers(bl.root, i, checkouts)
+        for i, (checkouts, branch) in in_repos.items():  # what land left of a multi-repository item's repositories
+            clean_repository_leftovers(bl.root, i, checkouts, branch)
     except Exception as e:  # noqa: BLE001
         say(f"close: kept the worker leftovers of {sid}: {e}")
     return 0
