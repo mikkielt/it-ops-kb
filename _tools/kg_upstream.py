@@ -94,7 +94,7 @@ def blocker(branch):
 
 
 def bring_in(scope, up, name):
-    """Bring UP into HEAD by SCOPE. Exit 0 done, 2 git refused, 3 a conflict (aborted: HEAD is as it was)."""
+    """Bring UP into HEAD by SCOPE. Exit 0 done, 2 git refused, 3 a conflict (the merge or rebase is left in progress)."""
     before = out("rev-parse", "HEAD")
     if kbpublic.run(["merge-base", "--is-ancestor", "HEAD", up], KB)[0] == 0:
         code, o = gitx("merge", "--ff-only", up)
@@ -107,12 +107,13 @@ def bring_in(scope, up, name):
         verb = f"merged {name}/{BRANCH} into {BRANCH}"
     if code:
         paths = [p for p in (out("diff", "--name-only", "--diff-filter=U") or "").splitlines() if p]
-        gitx(*(["rebase"] if scope in REBASING else ["merge"]), "--abort")
+        git_op = "rebase" if scope in REBASING else "merge"
         if paths:
-            print(f"conflict in {named(paths)}: stopped and put HEAD back at {short(before)}, nothing changed")
-            print(f"by hand: git {'rebase' if scope in REBASING else 'merge'} {name}/{BRANCH}, resolve, then kbgit.py fix and "
-                  "kbgit.py sync --push (/kb-git-sync)")
+            print(f"conflict in {named(paths)}: the {git_op} is left in progress (HEAD was {short(before)})")
+            print(f"next: /kb-git-sync resolves it, or git {git_op} --continue after resolving by hand, or git {git_op} --abort "
+                  "to put HEAD back; then kbgit.py sync --push")
             return 3
+        gitx(git_op, "--abort")  # a refusal with no conflict: leave no half-made operation
         print("git refused:\n" + o.rstrip())
         return 2
     print(f"{verb}: HEAD {short(before)} -> {short(out('rev-parse', 'HEAD'))}")
@@ -123,7 +124,7 @@ def bring_in(scope, up, name):
 def cmd_upstream(a):
     """Bring the upstream remote's main into the clone by its scope (kb/_self/git.md, Bringing the upstream in). Exit 0
     done, up to date or planned, 2 refused (no scope, no upstream, an unsaved change, another branch) or a git error, 3 a
-    conflict (aborted, nothing changed). `--dry-run` fetches the upstream's main and changes nothing else."""
+    conflict (left in progress for /kb-git-sync). `--dry-run` fetches the upstream's main and changes nothing else."""
     if out("rev-parse", "--is-inside-work-tree") is None or not out("rev-parse", "--verify", "-q", "HEAD^{commit}"):
         print("refused: not a git clone with commits (or git is missing)")
         return 2
