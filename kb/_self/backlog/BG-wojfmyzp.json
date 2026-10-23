@@ -2,7 +2,7 @@
   "id": "BG-wojfmyzp",
   "kind": "bug",
   "title": "close, start and host-check still write an upstream sprint, and intake and red-pipeline can change upstream items",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3trnelzv",
   "priority": "P1",
   "rank": 0,
@@ -25,5 +25,7 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
