@@ -2,7 +2,7 @@
   "id": "ST-jrbrm5w6",
   "kind": "story",
   "title": "The pool's held-out section samples rows of the grown held-out file that no earlier pool held",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-gzr4mmkm",
   "sprint": "SP-lorofi3i",
   "priority": "P1",
@@ -41,5 +41,7 @@
     "kb/_self/benchmarks.md",
     "kb/_self/tools.md"
   ],
-  "notes": "Premise 2026-10-23 on 35b5b7cb2: python3 _tools/benchmarks.py pool build --dry-run exits 1 (pool build: kind heldout: 17 rows, the plan has 20); heldout_section samples 20 of all rows and then drops those with no expect_paths, leaving 17, of which 5 the committed pool already held. The paid build (--ask) and run are ST-fsh6rqnc's, not this story's."
+  "notes": "Premise 2026-10-23 on 35b5b7cb2: python3 _tools/benchmarks.py pool build --dry-run exits 1 (pool build: kind heldout: 17 rows, the plan has 20); heldout_section samples 20 of all rows and then drops those with no expect_paths, leaving 17, of which 5 the committed pool already held. The paid build (--ask) and run are ST-fsh6rqnc's, not this story's.",
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
