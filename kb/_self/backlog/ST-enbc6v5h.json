@@ -93,7 +93,11 @@
         "ask the registry's provider document once per process for its newest tag; fall back to the registry page url": "ST-enbc6v5h",
         "read the repository's default branch": "ST-enbc6v5h"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "ask the registry's provider document once per process for its newest tag; fall back to the registry page url",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
