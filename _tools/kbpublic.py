@@ -63,7 +63,7 @@ only fetches from, so a push of any ref to it or its url is refused by the pre-p
 carries a PRIVATE path) or the push failed, 2 bad arguments, no source, or a git error. Exit (check-public): 0 clean,
 1 a PRIVATE path found, 2 a git error.
 """
-import csv, hashlib, io, json, os, re, subprocess, sys, tempfile
+import csv, hashlib, io, json, os, re, subprocess, sys, tempfile, urllib.parse, urllib.request
 from pathlib import Path
 
 PRIVATE = ("kb/_querylog",)  # repository paths kept on the integration remote only (kb/_self/git.md, Public home)
@@ -139,9 +139,23 @@ def upstream_remote(cwd):
     return out(["config", "--get", UPSTREAM_KEY], cwd) or None
 
 
+def location(url, cwd):
+    """URL as a comparable location: a local path (a path relative to CWD, an absolute one or a file:// url) resolved to
+    its real path, so a trailing slash, a ../ detour or a symlink does not tell two names of one repository apart; any
+    other url as written, less a trailing slash."""
+    if url.startswith("file://"):
+        parsed = urllib.parse.urlparse(url)
+        if parsed.netloc in ("", "localhost"):
+            url = urllib.request.url2pathname(parsed.path)
+    elif re.match(r"^[A-Za-z][A-Za-z0-9+.-]*://", url) or re.match(r"^[^/\\]+@?[^/\\]*:(?![/\\])", url):
+        return url.rstrip("/")  # a remote url, or an scp-like host:path
+    return os.path.realpath(os.path.join(cwd, url))
+
+
 def is_upstream(remote, cwd, url=None):
     """Whether pushing to REMOTE (a remote name or a url; URL is its url when known) reaches the upstream remote: by its
-    name, or by a url equal to one of its fetch or push urls. False in a clone without one."""
+    name, or by a url that names the same location as one of its fetch or push urls (location). False in a clone
+    without one."""
     named = upstream_remote(cwd)
     if not named:
         return False
@@ -153,7 +167,7 @@ def is_upstream(remote, cwd, url=None):
     for flags in ([], ["--push"]):
         urls |= set((out(["remote", "get-url", "--all", *flags, named], cwd) or "").splitlines())
     urls.discard("")
-    return bool(urls & {url, remote})
+    return bool({location(u, cwd) for u in urls} & {location(u, cwd) for u in (url, remote)})
 
 
 def guard_upstream(remote, url, refs, cwd):
