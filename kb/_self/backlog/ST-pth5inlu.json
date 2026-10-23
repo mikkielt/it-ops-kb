@@ -2,7 +2,7 @@
   "id": "ST-pth5inlu",
   "kind": "story",
   "title": "Research sprint goal: A paid pool run measures the grown held-out set on rows no earlier run saw",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-lorofi3i",
   "goal_research": true,
   "priority": "P1",
@@ -22,6 +22,20 @@
     "kb/public/**"
   ],
   "notes": "No outside facts: the sprint's work is internal tooling (bench_pool.heldout_section, a paid pool run). The outside knowledge it needs is already in the kb at coverage good: keeping a held-out set apart from tuning rows (agents/agent-evaluation.md:180-187, with the open point that no source says how often a held-out set may be refreshed), the --max-budget-usd cap and its client-side cost estimate (claude/ci-and-headless.md:44, 97), list prices per model and the web search fee (claude/ci-and-headless.md:107, 111, 121-122).",
-  "claimed_by": "claude-92aeeb3c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "11d1eb5dbc6e715114657fec0974a5b5ea1b4008",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-pth5inlu"
+        ],
+        "exit": 0,
+        "sha256": "f864b2977df623ec"
+      }
+    ]
+  }
 }
