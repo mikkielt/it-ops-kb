@@ -2,7 +2,7 @@
   "id": "BG-xyhbfqkv",
   "kind": "bug",
   "title": "merge refusals other than an empty forge (another branch, no forge project, gh arm) exit 1, where tools.md says 2",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,
@@ -24,5 +24,7 @@
   "depends_on": [
     "BG-wrqd4ytg",
     "BG-77i2lwmr"
-  ]
+  ],
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
