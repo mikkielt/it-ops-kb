@@ -2,8 +2,8 @@
 topic: security/secret-shapes-in-text
 priority: P2
 applies_to: "free text (a command line, a log line, a pasted note) that a redactor or scanner reads for credentials: HTTP Authorization headers, URL userinfo, PEM, OpenSSH and OpenPGP private key blocks, key=value assignments, SQL Server connection strings"
-retrieved_utc: 2026-10-21
-sources: [S-wct3uoax, S-neu52zjd, S-3mhhoprh, S-bs6jgunr, S-kskf5yv7, S-as3c23xb, S-cr2wj4s2, S-xnlryf7y, S-lglgs6wg, S-k57sryj7, S-spzetxhy, S-d2kitjup, S-imedhmhc, S-bcbpadtc, S-4rjxcq6v, S-jkdywrys, S-vstqd426, S-mi4dlpr3, S-4tr3garn]
+retrieved_utc: 2026-10-23
+sources: [S-wct3uoax, S-neu52zjd, S-3mhhoprh, S-bs6jgunr, S-kskf5yv7, S-as3c23xb, S-cr2wj4s2, S-xnlryf7y, S-lglgs6wg, S-k57sryj7, S-spzetxhy, S-d2kitjup, S-imedhmhc, S-bcbpadtc, S-4rjxcq6v, S-jkdywrys, S-vstqd426, S-mi4dlpr3, S-4tr3garn, S-cbxnheng]
 status: partial
 ---
 
@@ -48,6 +48,20 @@ A credential in free text has a grammar its specification fixes, and that gramma
 - OpenPGP armors a private key with the header line `BEGIN PGP PRIVATE KEY BLOCK`: five dashes on each side of the text, and the line must start at the beginning of a line with nothing but whitespace after it; the tail line is the matching `END PGP PRIVATE KEY BLOCK`. [DOC S-4tr3garn]
 - The armor is the header line, armor headers (`Key: value` lines such as `Version` and `Comment`), a blank line, the base64 data, an optional checksum and the tail; the base64 lines are at most 76 characters, so the key material is in the data lines, not on the header line. [DOC S-4tr3garn]
 - The PGP label ends in `PRIVATE KEY BLOCK`, the others in `PRIVATE KEY`: `PRIVATE KEY`, `ENCRYPTED PRIVATE KEY`, `RSA PRIVATE KEY`, `EC PRIVATE KEY`, `DSA PRIVATE KEY` and `OPENSSH PRIVATE KEY` all close with `PRIVATE KEY-----`, the label may be preceded by an algorithm word, and `PGP PRIVATE KEY BLOCK` has ` BLOCK` after those two words, so a match on `PRIVATE KEY-----` alone covers the six and misses the PGP block. [DER S-kskf5yv7, S-as3c23xb, S-cr2wj4s2, S-vstqd426, S-mi4dlpr3, S-4tr3garn: the labels listed above]
+
+### A key block inside other text
+- RFC 7468 lets text stand before the encapsulation boundaries and says a parser should skip stray characters: it should "ignore whitespace and other non-base64 characters". [DOC S-kskf5yv7]
+- A base64 character is a letter, a digit, `+` or `/`, and the RFC's lax grammar allows only whitespace and base64 characters between the two boundary lines; the RFC adds that lax parsing risks accepting text that was only a snippet or sample. [DOC S-kskf5yv7]
+- A key whose lines carry a prefix is therefore no valid PEM to a strict parser, yet its body is still the key: a lenient tool or a person strips the prefix. `>`, `#` and `|` are outside the base64 set and drop out of the data, while `//` is made of base64 characters and would be read as data, so a scanner cannot lean on what a decoder accepts and matches the marker lines and the body lines as written. [DER S-kskf5yv7: the base64 set, the whitespace-only lax grammar and the skip-other-characters advice]
+- A CommonMark block quote marker is `>` with a following space or a single `>` with none, after up to three spaces of indentation, so `> -----BEGIN` and `>-----BEGIN` are both quoted lines. [DOC S-jkdywrys]
+- Prepending a marker to each line of some blocks makes a block quote, and a quote of a quote carries more than one marker on a line (`> > `). [DOC S-jkdywrys]
+- The laziness rule lets a line that would continue a paragraph lose its marker and stay in the quote, so a key pasted behind `> ` on its first line may continue on lines with no `>` at all. [DOC S-jkdywrys]
+- The lines of a key block hold no blank line, so a renderer reads them as one paragraph, which is the case the laziness rule covers. [DER S-jkdywrys, S-kskf5yv7: a PEM block has no empty line between its boundaries, a paragraph is cut at a blank one]
+- A GitHub Flavored Markdown table row is cells "separated by pipes", a leading and a trailing pipe are optional, and spaces between a pipe and the cell text are trimmed. [DOC S-cbxnheng]
+- A pipe inside a cell is written `\|`, block-level elements cannot be put in a table, and the table "is broken at the first empty line" or at the start of another block structure. [DOC S-cbxnheng]
+- The pipe is no base64 character, so a pipe-delimited row that holds an armor line and a body line (or one body line of a key per row) ends each base64 run at the pipe, and the body lines do not form one run of key text between the boundaries. [DER S-cbxnheng, S-kskf5yv7: the cell separator and the base64 set]
+- JSON text cannot hold a raw line break in a string, so a key block written into a JSON string is one line with `\n` between its lines, and the same record carried as a string inside another JSON text has each `\` doubled, so the break is a doubled backslash and `n`. [DER S-4rjxcq6v: the control characters that must be escaped and the `\\` escape]
+- Each further JSON level doubles the backslashes again (one at the first level, two at the second, four at the third), while the `n` stays; a scanner that looks for one backslash and `n`, or for real line breaks, misses the second level. [DER S-4rjxcq6v: the escape of the backslash applied once per level]
 
 ### Assignments and connection strings
 - A SqlClient connection string is semicolon-separated keyword=value pairs; the password keyword is `Password` or `PWD`, and the page advises against it in favour of integrated security. [DOC S-xnlryf7y]
@@ -110,6 +124,8 @@ Open gaps of this topic: `python3 _tools/rag.py audit security/secret-shapes-in-
 | Connection string | `Password=` or `PWD=` | text up to `;`, or a quoted value; Purview: a first character outside 8 symbols, then 7-128 characters | SqlClient docs, Purview |
 | Environment line | `AWS_SECRET_ACCESS_KEY=` | may hold `/` and `+` | AWS docs |
 | JSON string value, escaped | `\"key\": \"` inside another string | `\"` for a quote, `\\` for a backslash | RFC 8259 |
+| Key block behind a prefix | `> ` before each line, or a table row's cells | base64 lines that may lose the quote marker (laziness); a table pipe ends a base64 run | CommonMark, GFM, RFC 7468 |
+| Key block in a nested JSON string | `\\n` between the lines | one `\n` per level, backslashes doubled at each further level | RFC 8259 |
 | Markdown link reference definition | `[label]:` at line start | a destination with no space, or `<...>`, then an optional quoted title | CommonMark 0.31.2 |
 | URL path parameter | `;key=` inside a path segment | text up to `/`, `?` or `#` | RFC 3986 |
 

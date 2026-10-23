@@ -4444,3 +4444,15 @@ _Agent: kb-research_
 - See python/stdlib-urllib-errors.md, python/stdlib-archive-read-errors.md, gitlab/git-test-repositories.md, logs/microsoft-sentinel.md.
 
 _Agent: kb-research_
+
+## QK-leak-scan-s-key-block-misses. What do a PGP private key block, a key with doubled-backslash line breaks and a key behind a quote, comment or table prefix look like in text, and what must a cache of scan verdicts be keyed by?
+- OpenPGP armors a private key with `BEGIN PGP PRIVATE KEY BLOCK`, headers, a blank line and base64 lines; the label ends in `PRIVATE KEY BLOCK`, so a match on `PRIVATE KEY-----` misses it. (`security/secret-shapes-in-text.md:48`, `:49`, `:50`) [DOC S-4tr3garn]
+- A key written into a JSON string is one line with `\n` between its lines, and one level deeper each backslash is doubled. (`security/secret-shapes-in-text.md:63`, `:64`) [DER S-4rjxcq6v]
+- A CommonMark quote marker is `>` with or without a space, and a lazy line loses it; a GFM table row separates cells by pipes. [DOC S-jkdywrys, S-cbxnheng]
+- RFC 7468 tells a parser to skip non-base64 characters, and its lax grammar admits only whitespace and base64 characters between the boundaries. [DOC S-kskf5yv7]
+- A cache of derived results keyed only by its data inputs serves stale results once the rule that derived them changes; a form or hash of the rule in the key makes a rule change a new key. (`agents/agent-caching.md:80`) [DER S1512]
+- Conclusion: a scan has to match a key's marker and body lines as written behind a prefix, through a table pipe and at each JSON escape depth, and its cache key has to carry a digest of every shape it matches with. [DER S-4tr3garn, S-4rjxcq6v, S-jkdywrys, S-cbxnheng, S-kskf5yv7, S1512]
+- Open: the comment prefixes `#` and `//` have no cross-language source, and no PEM reader was run against a prefixed block. [UNK]
+- See security/secret-shapes-in-text.md, agents/agent-caching.md.
+
+_Agent: kb-research_
