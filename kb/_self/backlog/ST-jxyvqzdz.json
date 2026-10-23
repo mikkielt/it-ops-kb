@@ -40,7 +40,11 @@
         "articles only": "ST-jxyvqzdz",
         "all kb files": "ST-jxyvqzdz"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "all kb files",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
