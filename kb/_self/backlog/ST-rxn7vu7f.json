@@ -2,7 +2,7 @@
   "id": "ST-rxn7vu7f",
   "kind": "story",
   "title": "Each backlog item records its provenance, and a clone with an upstream shows only its own items unless asked for all",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3trnelzv",
   "priority": "P1",
   "rank": 0,
@@ -61,5 +61,7 @@
     "ST-s6iz6z36",
     "ST-4vaqzqyr"
   ],
-  "notes": "Premise run 2026-10-19 on the base (the check, on a planted upstream repo and a team clone of it): list shows the upstream item beside the team one, list --all and the claim refusal do not exist; the check exits 1. Operator's answer 2026-10-19: keep upstream items, mark them upstream, read-only, hidden unless --all."
+  "notes": "Premise run 2026-10-19 on the base (the check, on a planted upstream repo and a team clone of it): list shows the upstream item beside the team one, list --all and the claim refusal do not exist; the check exits 1. Operator's answer 2026-10-19: keep upstream items, mark them upstream, read-only, hidden unless --all.",
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
