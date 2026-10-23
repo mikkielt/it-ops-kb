@@ -9,6 +9,9 @@ and the suite is within its ceiling.
                                    when only backlog items or the query log store changed, the suite without the git
                                    scenarios when only kb content changed, the whole suite for any other path
   tests.py --ceiling               collect the test ids without running them and compare ids and files with the ceiling
+  tests.py --show-profile          print the clone's profile and the seconds it gives this platform
+  tests.py --set-profile NAME      record the clone's test ceiling profile, usual or busy, in _private/host.json; refused in
+                                   an agent session
   tests.py --write-lint-baseline   record today's lint errors as known debt in _tools/lint_baseline.txt
   KB_TESTS_FAST=1 tests.py         leave out the git scenarios (-m "not git"); reuse a passing run of the same key
   tests.py --no-reuse              run pytest even when a passing run of the same key is recorded
@@ -40,7 +43,10 @@ decision of kb/_self/_decisions.csv made by the operator whose text holds the fi
 number changes only with the operator's recorded answer. A full run also fails when it ran more ids than max_ids or took
 longer than max_seconds; --ceiling checks the ids without running. On a CI runner (GITLAB_CI or GITHUB_ACTIONS set)
 KB_TEST_TIMEOUT_FACTOR (a number of at least 1) multiplies max_seconds, for a container slower than the host the
-seconds were set on. A new test id needs room under max_ids, else it replaces one. A run over the ids or files says to
+seconds were set on. The clone's profile (`usual`, or `busy`: 15 times each platform's max_seconds, in that clone only)
+is `profile` in _private/host.json, set by `tests.py --set-profile NAME` from the operator's own terminal and refused in
+an agent session (read_profile, set_profile); the factor of the profile is applied beside the CI one, and a refusal
+names the profile. The ceiling file and its decision stay as they are. A new test id needs room under max_ids, else it replaces one. A run over the ids or files says to
 cut a test; a run over max_seconds says to run again once the host is quiet, else record a host finding.
 
 Each run appends one ops row `test.run` to the query log's spool (ql_capture.record, best effort: nothing is written
@@ -71,6 +77,8 @@ import xml.etree.ElementTree as ET
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 KB = os.path.dirname(TOOLS)
 CEILING = os.path.join(TOOLS, "tests_ceiling.json")
+BUSY_FACTOR = 15  # what the busy profile multiplies each platform's max_seconds by
+PROFILES = {"usual": 1, "busy": BUSY_FACTOR}  # a clone's test ceiling profiles and their seconds factors
 DECISIONS = os.path.join(KB, "kb", "_self", "_decisions.csv")
 NO_TESTS = ("kb/_self/backlog/", "kb/_querylog/")  # the gate's own checks cover them (backlog.py check, querylog.py check)
 CONTENT = ("kb/", "AGENTS.md", "README.md", "CLAUDE.md")  # kb content: the git scenarios read none of it
@@ -185,8 +193,48 @@ def seconds_factor(env=None):
         return 1.0
 
 
-def ceiling_problems(c, files=None, ids=None, seconds=None, platform=None, factor=1.0):
-    """What breaks the ceiling `c`: one line for each of the given counts (None: not measured) that is over."""
+def profile_path(home=None):
+    """The clone's profile file: `_private/host.json` of its main worktree (`ql_base.clone_home`, so its linked worktrees
+    share it), or of `home`."""
+    if home is None:
+        import ql_base
+        home = ql_base.clone_home()
+    return pathlib.Path(home) / "_private" / "host.json"
+
+
+def read_profile(home=None):
+    """The clone's test ceiling profile, `usual` or `busy`: what `_private/host.json` holds as `profile`; `usual` when the
+    file is missing or names anything else (a ceiling never loosens by a file that cannot be read)."""
+    try:
+        with open(profile_path(home), encoding="utf-8") as f:
+            p = json.load(f)["profile"]
+    except (OSError, ValueError, KeyError, TypeError):
+        return "usual"
+    return p if p in PROFILES else "usual"
+
+
+def profile_factor(home=None):
+    """What the clone's profile multiplies each platform's max_seconds by: 1 for `usual`, BUSY_FACTOR for `busy`."""
+    return PROFILES[read_profile(home)]
+
+
+def set_profile(name, home=None, env=None):
+    """Write the profile `name` to the clone's `_private/host.json`; refused (CeilingError) in an agent session, as a
+    ceiling answer is (`bl_authority.in_agent_session`), and for a name that is neither `usual` nor `busy`."""
+    import bl_authority
+    if bl_authority.in_agent_session(env):
+        raise CeilingError("the test ceiling profile is set by the operator in a terminal of their own, not in an agent session")
+    if name not in PROFILES:
+        raise CeilingError(f"profile {name!r}: one of {', '.join(PROFILES)}")
+    path = profile_path(home)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"profile": name}, indent=2) + "\n", encoding="utf-8", newline="\n")
+    return path
+
+
+def ceiling_problems(c, files=None, ids=None, seconds=None, platform=None, factor=1.0, profile=None):
+    """What breaks the ceiling `c`: one line for each of the given counts (None: not measured) that is over; `profile`
+    names the clone's profile in the seconds line."""
     out = []
     if files is not None and files > c["max_files"]:
         out.append(f"{files} test files, the ceiling is {c['max_files']}")
@@ -194,7 +242,8 @@ def ceiling_problems(c, files=None, ids=None, seconds=None, platform=None, facto
         out.append(f"{ids} test ids, the ceiling is {c['max_ids']}: a new test id replaces one")
     limit = c["max_seconds"].get(platform or sys.platform)
     if seconds is not None and limit is not None and seconds > limit * factor:
-        out.append(f"the full run took {seconds:.0f} s, the ceiling is {limit * factor:.0f} s on {platform or sys.platform}")
+        out.append(f"the full run took {seconds:.0f} s, the ceiling is {limit * factor:.0f} s on {platform or sys.platform}"
+                   + (f" (profile {profile})" if profile else ""))
     return out
 
 
@@ -218,14 +267,16 @@ def ceiling_report(ids=None, seconds=None):
         print(f"tests.py: ceiling refused: {e}", file=sys.stderr)
         return 1
     over_count = ceiling_problems(c, files=len(test_files()), ids=ids)
-    over_time = ceiling_problems(c, seconds=seconds, factor=seconds_factor())
+    profile = read_profile()
+    over_time = ceiling_problems(c, seconds=seconds, factor=seconds_factor() * PROFILES[profile], profile=profile)
     for b in over_count + over_time:
         print(f"tests.py: over the ceiling: {b}", file=sys.stderr)
     if over_count:
         print("tests.py: cut a test", file=sys.stderr)
     if over_time:
-        print("tests.py: run again once the host is quiet, else record a host finding; the seconds ceiling stays",
-              file=sys.stderr)
+        print("tests.py: run again once the host is quiet, else record a host finding; the seconds ceiling stays"
+              + ("; a host that is busy for good gets the busy profile from its operator (tests.py --set-profile busy)"
+                 if profile == "usual" else ""), file=sys.stderr)
     return 1 if over_count or over_time else 0
 
 
@@ -838,7 +889,38 @@ def wants_host_lock(args):
             and ("--changed" in args or not path_args(args)) and worker_count(args) > 1)
 
 
+def set_profile_main(argv):
+    """`--set-profile usual|busy`: record the clone's profile; 2 for a missing or unknown name, 1 in an agent session."""
+    i = argv.index("--set-profile")
+    name = argv[i + 1] if i + 1 < len(argv) else ""
+    try:
+        path = set_profile(name)
+    except CeilingError as e:
+        print(f"tests.py --set-profile: {e}", file=sys.stderr)
+        return 1 if name in PROFILES else 2
+    print(f"tests.py --set-profile: profile {name} ({PROFILES[name]} times each max_seconds) in {path.name}")
+    return 0
+
+
+def show_profile_main():
+    """`--show-profile`: print the clone's profile and the seconds it gives this platform."""
+    profile = read_profile()
+    try:
+        limit = read_ceiling()["max_seconds"].get(sys.platform)
+    except CeilingError as e:
+        print(f"tests.py --show-profile: ceiling refused: {e}", file=sys.stderr)
+        return 1
+    seconds = ("no max_seconds for this platform" if limit is None
+               else f"{limit * PROFILES[profile] * seconds_factor():g} s on {sys.platform}")
+    print(f"tests.py --show-profile: profile {profile} ({PROFILES[profile]} times each max_seconds): {seconds}")
+    return 0
+
+
 def main(argv):
+    if "--set-profile" in argv:
+        return set_profile_main(argv)
+    if "--show-profile" in argv:
+        return show_profile_main()
     with run_registered():
         if wants_host_lock(argv):
             with host_lock("tests.py"):
