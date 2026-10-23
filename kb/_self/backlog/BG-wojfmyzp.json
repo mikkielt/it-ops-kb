@@ -47,7 +47,11 @@
         "extend in backlog.py": "BG-wojfmyzp",
         "edit bl_base in place": "BG-wojfmyzp"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "extend in backlog.py",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
