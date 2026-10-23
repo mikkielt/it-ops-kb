@@ -1,0 +1,31 @@
+{
+  "id": "ST-cbi2ah5y",
+  "kind": "story",
+  "title": "No DOC fact or answer rests only on a source the 2026-10-21 census records gone",
+  "status": "draft",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "every DOC tag in a kb/public article or kb/public/_answers.md whose cited sources the 2026-10-21 census all records gone is re-sourced to a page this host reads or re-tagged UNK with a dated note, and a DOC tag that mixes a gone source with live ones keeps it only where a live source states the claim",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,re,sys,pathlib;out={r['id']:r['outcome'] for r in csv.DictReader(open('kb/public/_census/2026-10-21.csv',encoding='utf-8'))};bad=[str(p)+':'+str(n) for p in pathlib.Path('kb/public').rglob('*.md') for n,l in enumerate(p.read_text(encoding='utf-8').splitlines(),1) for t in re.findall(r'\\[DOC ([^\\]]+)\\]',l) for ids in [re.findall(r'S-?[a-z0-9]+',t.split(':')[0])] if ids and all(out.get(i)=='gone' for i in ids)];print(len(bad),'DOC tags citing only gone sources');print(bad[:20]);sys.exit(1 if bad else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ],
+  "links": [
+    "parked: SP-xznmaurz review"
+  ],
+  "notes": "Operator 2026-10-23: one kb-wide story, P1, parked, instead of line-by-line fixes in SP-xznmaurz. Premise on 1d779a71f: check 0 lists 17 DOC tags (gitlab/work-items-planning.md:25-28, detecting-mr-merges-in-ci.md:21, automated-merge-requests.md:39, commit-signing-and-provenance.md:20 and :47, privacy/nist-sp800-38g.md:23, agents/doc-change-detection.md:61, :67, :68, ...). The second SP-xznmaurz review also named mixed tags where the gone source is the only support: _answers.md:1800 and :1803 (memdocs S-yuwxbqz3, S-rgpijsmb), :2034 and agents/doc-lookup-sources.md:25, :82 (S2177), _answers.md:1801 (S-lldnrkhv); and S3s: security/baselines-catalog.csv:14-15 plain cells resting on S-uzuvf3vo, baselines-catalog.md:21-23 Summary, _answers.md:524 'applies from' vs 'entered into force'. The local census-2026-10-21 tag is moved after this lands."
+}

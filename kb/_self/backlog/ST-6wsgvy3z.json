@@ -49,7 +49,9 @@
       },
       "class": "design",
       "answer": "gone",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -85,7 +87,9 @@
       },
       "class": "design",
       "answer": "local read counts: record confirmed",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",
@@ -102,7 +106,9 @@
       },
       "class": "design",
       "answer": "leave the rows as they are; the article fact states the source is not re-confirmed",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

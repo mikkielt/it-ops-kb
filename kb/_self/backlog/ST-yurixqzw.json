@@ -48,7 +48,9 @@
       },
       "class": "design",
       "answer": "Drop the ids from the article header, name them in the UNK tag text, csv version columns read UNK with a dated note",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -65,7 +67,9 @@
       },
       "class": "design",
       "answer": "Take the tag the article gives: DOC with the sources the article now cites, and a separate UNK line for the regulation number, publication date and consolidated version",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Found 2026-10-23 by the SP-xznmaurz fresh review; operator changed ST-6wsgvy3z g2 the same day. The local tag census-2026-10-21 is moved to the landed tip after this lands (tag-census, never pushed). Premise on d34d8068b: check 0 exits 1 (_answers.md 506, 508: S1552; 525: S1556; 527: S-qzdkyvqx); check 1 exits 1 (all three confirmed).",
