@@ -21,6 +21,23 @@
     "kb/_self/maintaining.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which absolute-path form guards the three files in every checkout: a //**/ prefix or the main checkout's literal path?",
+      "options": [
+        "//**/ prefix",
+        "literal main-checkout path"
+      ],
+      "recommendation": "//**/ prefix",
+      "do": {
+        "//**/ prefix": "BG-4huxqka4",
+        "literal main-checkout path": "BG-4huxqka4"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-92aeeb3c",
   "operator": "op-f618a13e"
