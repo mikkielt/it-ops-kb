@@ -1,0 +1,21 @@
+{
+  "id": "BG-i355rfzc",
+  "kind": "bug",
+  "title": "census.py confirm exits 1 on a census log that names a source row since deleted from _sources.csv",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "census.py confirm on a census log whose rows include sources deleted from _sources.csv after the census (settled as cited by no article) dates the confirmed sources it still knows and names the others, instead of exiting 1 with 'log ids not in _sources.csv'",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/census.py",
+      "confirm",
+      "kb/public/_census/2026-10-21.csv",
+      "--date",
+      "2026-10-21",
+      "--dry-run"
+    ]
+  }
+}
