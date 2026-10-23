@@ -2,7 +2,7 @@
   "id": "BG-c7pjl3mi",
   "kind": "bug",
   "title": "forge cannot be left unset, so a project with no forge gets unknown:forge from stalled (second-project run)",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4fawjprq",
   "sprint": "SP-ovwzbc7u",
   "priority": "P1",
@@ -83,6 +83,37 @@
     }
   ],
   "notes": "Run setup: backlog.json key 'forge' must be \"gitlab\" or \"github\"; run finding 15: stalled printed ST-... doing by orchestrator  unknown:forge. Blocks the Nerthus workspace adoption (BG-42dg5ryi's host); raised to P1 by the operator. Planned: repro kept as filed; ran it: config on a planted git project whose backlog.json holds forge \"\" exits 2 with backlog.json: key 'forge' must be \"gitlab\" or \"github\", the defect itself. It covers only acceptance, so two checks plant the readers: stalled's collect on a planted doing item (unknown:forge must not appear; today load_settings drops the refused file and the default gitlab forge gives unknown:forge) and red-pipeline --status on a planted origin (must say not checked without running glab or gh; today it prints glab api failed). Fix touches: bl_base.py:44 and the forge type at line 67 (accept \"\"); bl_forge.py target (279), url_target (300), arm and url_arm (the arms of an unset forge); bl_stall.py:313-365 (forge_reads and collect: no read, no unknown:forge); bl_land.py:1057-1075, 1153-1159, 1194-1201, 2068-2087 (merge request reads and merge_own: skip and say so); bl_intake.py:1203 (red-pipeline's pipeline read through url_arm); bl_selfcheck.py:31 (names unknown:forge). Referrers: bl_forge.arm in bl_stall.py:327; bl_forge.target in bl_land.py:2072; url_arm in bl_intake.py:1203 and ql_deliver.py:344,404 (query-log delivery keeps the url's forge: ql_deliver.py is outside the touches on purpose, url_target must keep returning the url's forge when the setting is empty). Docs: kb/_self/backlog.md:421 (settings and defaults), kb/_self/tools.md (config, stalled, red-pipeline, land rows). Depends on BG-cmvwrpbr (shares bl_base.py, backlog.md, tools.md) and through it on BG-duzrzr2d and BG-cnjgfa2s.",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "17c7edc5eed143ff90adcab868ce47e15d6e9850",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,subprocess,sys,tempfile; sys.path.insert(0,'_tools'); import backlog, bl_stall; from bl_base import load_settings; host=tempfile.mkdtemp(); subprocess.run(['git','init','-q',host],check=True); pathlib.Path(host,'backlog.json').write_text('{\"forge\": \"\"}', encoding='utf-8'); load_settings(host); bl=backlog.Backlog(host); bl.items['TK-aaaaaaaa']={'id':'TK-aaaaaaaa','kind':'task','status':'doing','claimed_by':'x'}; c=bl_stall.collect(bl, run=lambda argv, cwd=None: (1,'','')); print(c['items']); sys.exit(1 if any('unknown:forge' in i['unknown'] for i in c['items']) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "bc1db6dcfcaecf4a"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,subprocess,sys,tempfile; host=tempfile.mkdtemp(); subprocess.run(['git','init','-q',host],check=True); subprocess.run(['git','-C',host,'remote','add','origin','https://git.example.com/team/proj.git'],check=True); pathlib.Path(host,'backlog.json').write_text('{\"forge\": \"\"}', encoding='utf-8'); r=subprocess.run([sys.executable,'_tools/backlog.py','--root',host,'red-pipeline','--status'],capture_output=True,text=True); print(r.returncode, r.stdout[:200], r.stderr[:200]); sys.exit(0 if 'not checked' in r.stdout and 'glab' not in r.stdout and 'gh ' not in r.stdout else 1)"
+        ],
+        "exit": 0,
+        "sha256": "ba198ea2bee1d19a"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,subprocess,sys,tempfile; d=tempfile.mkdtemp(); subprocess.run(['git','init','-q',d]); open(os.path.join(d,'backlog.json'),'w').write('{\"forge\": \"\"}'); r=subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'config'],capture_output=True,text=True); sys.exit(1 if r.returncode==2 else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
