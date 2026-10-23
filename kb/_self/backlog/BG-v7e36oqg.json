@@ -37,8 +37,10 @@
         "bounded repeat counts on the header lines and cells": "BG-v7e36oqg"
       },
       "class": "design",
-      "answer": "possessive header value that ends at a newline, an escaped newline or a pipe",
-      "by": "agent"
+      "answer": "changed after review: a pipe or backslash-letter inside a header value is part of the value, the backslash run is possessive, the scan stays linear",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
