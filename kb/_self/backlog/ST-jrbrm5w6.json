@@ -2,7 +2,7 @@
   "id": "ST-jrbrm5w6",
   "kind": "story",
   "title": "The pool's held-out section samples rows of the grown held-out file that no earlier pool held",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-gzr4mmkm",
   "sprint": "SP-lorofi3i",
   "priority": "P1",
@@ -61,6 +61,30 @@
     }
   ],
   "notes": "Premise 2026-10-23 on 35b5b7cb2: python3 _tools/benchmarks.py pool build --dry-run exits 1 (pool build: kind heldout: 17 rows, the plan has 20); heldout_section samples 20 of all rows and then drops those with no expect_paths, leaving 17, of which 5 the committed pool already held. The paid build (--ask) and run are ST-fsh6rqnc's, not this story's.",
-  "claimed_by": "claude-92aeeb3c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "50e3ed939290f830b73064810b72d24da4266685",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv, io, subprocess, sys; sys.path.insert(0, \"_tools\"); import bench_pool; old = subprocess.run([\"git\", \"show\", \"35b5b7cb2:kb/public/_retrieval/bench_pool.csv\"], capture_output=True, text=True, check=True).stdout; seen = {r[\"source\"] for r in csv.DictReader(io.StringIO(old)) if r[\"kind\"] == \"heldout\"}; rows = bench_pool.heldout_section(\".\", bench_pool.SEED); new = [r for r in rows if r[\"source\"] not in seen]; print(\"held-out rows:\", len(rows), \"of them seen before:\", len(rows) - len(new)); sys.exit(0 if len(rows) >= 20 and len(new) == len(rows) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "476140fd8c4e8649"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "pool",
+          "build",
+          "--dry-run"
+        ],
+        "exit": 0,
+        "sha256": "2c4a029d0f7c8900"
+      }
+    ]
+  }
 }
