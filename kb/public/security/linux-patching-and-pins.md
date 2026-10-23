@@ -3,7 +3,7 @@ topic: security/linux-patching-and-pins
 priority: P3
 applies_to: "Automatic upgrades off and package pins by date, point release or branch on Debian, Ubuntu, AlmaLinux and Alpine"
 retrieved_utc: 2026-10-11
-sources: [S-4npfgqu6, S-cgiu2l7l, S-eln4odmb, S-jv7bm5xz, S-ha4j7gxc, S-jc64e5xb, S-e5dd7vv5, S-l6wf2hvq, S-mt66jy4n, S-6w34pn5d]
+sources: [S-4npfgqu6, S-cgiu2l7l, S-eln4odmb, S-jv7bm5xz, S-ha4j7gxc, S-jc64e5xb, S-e5dd7vv5, S-l6wf2hvq, S-mt66jy4n, S-6w34pn5d, S-byvp6fgw]
 status: partial
 ---
 
@@ -28,11 +28,12 @@ Hosts that a pull agent keeps at a known package state need the distribution's o
 - Ubuntu 24.04 and later need no source change; 22.04 needs apt 2.4.11 or later and 20.04 apt 2.0.10 or later, with `[snapshot=yes]` added to each `sources.list` entry; without the option apt reads the normal archive again. [DOC S-e5dd7vv5]
 - The Ubuntu page warns that a snapshot can hold package versions with known vulnerabilities, so a snapshot date is a pin to review, not a security baseline. [DOC S-e5dd7vv5]
 - AlmaLinux moved its vault, the repositories of older versions, to `https://vault.almalinux.org` as the official HTTP(S) endpoint in 2024; `https://repo.almalinux.org/vault` stays as a redirect, and the rsync source became `rsync.vault.almalinux.org`. [DOC S-l6wf2hvq]
-- Each stable Alpine release branch has its own `main` and `community` repositories; `testing` exists only on `edge`; the wiki says not to use `edge` where deterministic, repeatable installation by pinning is wanted. [DOC S-mt66jy4n]
-- `/etc/apk/repositories` lists one repository URL per line; the Alpine wiki's examples use the form `https://dl-cdn.alpinelinux.org/alpine/vX.Y/community`, with an optional `@tag` prefix. [DOC S-mt66jy4n, S-6w34pn5d]
-- `apk add pkg=1.6.0.21-r0` holds a package at a version, `apk add 'pkg=~1.6'` at a minor series; `/etc/apk/world` stores the constraints as `[!]NAME{@tag}{[<>~=]version}`; the wiki warns that a pinned version can disappear from the repository. [DOC S-6w34pn5d]
+- Each stable Alpine release has its own `main` and `community` repositories; `testing` is only available on `edge`; and the user handbook says downgrading packages or versions is currently not supported. [DOC S-byvp6fgw]
+- The Alpine wiki's advice not to use `edge` where deterministic, repeatable installation by pinning is wanted. [UNK: read from the Alpine wiki (S-mt66jy4n) on 2026-10-11, not re-confirmed on 2026-10-23 because the wiki answers this host with HTTP 403; logged in `_gaps.md`]
+- `/etc/apk/repositories` configures the repositories; the handbook's examples give a line as an optional `@tag`, then the protocol, the path, the release and the repository (`@testing http://dl-cdn.alpinelinux.org/alpine/edge/testing`), and `/etc/apk/world` lists the packages explicitly installed. [DOC S-byvp6fgw]
+- `apk add pkg=1.6.0.21-r0` holds a package at a version, `apk add 'pkg=~1.6'` at a minor series; `/etc/apk/world` stores the constraints as `[!]NAME{@tag}{[<>~=]version}`; the wiki warns that a pinned version can disappear from the repository. [UNK: read from the Alpine wiki (S-6w34pn5d) on 2026-10-11, not re-confirmed on 2026-10-23 because the wiki answers this host with HTTP 403; logged in `_gaps.md`]
 - Pinning by an index hash (a hash of a repository index or `Release` file) is described by none of the pages read for apt, dnf or apk; the nearest read mechanisms are the dated snapshots and the release-branch path. [UNK: no source found, logged in `_gaps.md`]
-- A pin per family follows from these facts: Debian a `snapshot.debian.org` timestamp URL, Ubuntu a snapshot id, AlmaLinux a vault minor-release path, Alpine the `vX.Y` branch; each is set in the package source file the agent writes. [DER S-jc64e5xb, S-e5dd7vv5, S-l6wf2hvq, S-mt66jy4n: one dated or versioned source per family]
+- A pin per family follows from these facts: Debian a `snapshot.debian.org` timestamp URL, Ubuntu a snapshot id, AlmaLinux a vault minor-release path, Alpine the `vX.Y` branch; each is set in the package source file the agent writes. [DER S-jc64e5xb, S-e5dd7vv5, S-l6wf2hvq, S-byvp6fgw: one dated or versioned source per family]
 
 ## Reference
 | family | pin by | upgrade jobs to keep off | source |
@@ -40,7 +41,7 @@ Hosts that a pull agent keeps at a known package state need the distribution's o
 | Debian | snapshot.debian.org timestamp | `APT::Periodic` options, apt-daily timers | S-jc64e5xb, S-4npfgqu6 |
 | Ubuntu | `--snapshot YYYYMMDDTHHMMSSZ` | same | S-e5dd7vv5, S-4npfgqu6 |
 | AlmaLinux | vault minor release | `dnf-automatic*.timer` | S-l6wf2hvq, S-ha4j7gxc |
-| Alpine | `vX.Y` repository path, `pkg=ver` | none stated (no periodic job in the pages read) | S-mt66jy4n, S-6w34pn5d |
+| Alpine | `vX.Y` repository path, `pkg=ver` (the wiki's pin form, not re-confirmed) | none stated (no periodic job in the pages read) | S-byvp6fgw, S-mt66jy4n, S-6w34pn5d |
 
 AlmaLinux's release lifecycle, repository layout, vault paths and ELevate upgrades are in `security/almalinux-lifecycle-rhel-relation.md`, `security/almalinux-repositories-vault-pins.md` and `security/almalinux-elevate.md`.
 

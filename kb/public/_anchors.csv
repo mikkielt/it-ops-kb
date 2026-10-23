@@ -481,6 +481,7 @@ ff1fca0e995b,agents/agent-overuse-patterns.csv,S2168,located,Dependabot version 
 1b7fba66f240,agents/agent-overuse-patterns.md,S1921,unlocated:no-match,,,,,2026-10-21
 1b7fba66f240,agents/agent-overuse-patterns.md,S2157,unlocated:no-match,,,,,2026-10-21
 2e4f9cf8ad6e,agents/agent-overuse-patterns.md,S2164,unlocated:not-text,,,,,2026-10-10
+37202f0282ba,agents/agent-overuse-patterns.md,S2160,located,,classify;feedback;translat;customer;text,280bdf963dc65307,"translating text, or classifying customer feedback.",2026-10-23
 4677a1d54c8f,agents/agent-overuse-patterns.md,S150,unlocated:no-match,,,,,2026-10-10
 4677a1d54c8f,agents/agent-overuse-patterns.md,S154,unlocated:no-match,,,,,2026-10-10
 4677a1d54c8f,agents/agent-overuse-patterns.md,S-2z2zfj3l,unlocated:no-match,,,,,2026-10-21
@@ -511,7 +512,6 @@ b7a5e7b407be,agents/agent-overuse-patterns.md,S2170,unlocated:no-match,,,,,2026-
 c1e967813286,agents/agent-overuse-patterns.md,S2169,located,Conventional Commits 1.0.0 > FAQ > How does this relate to SemVer?,major;minor;patch;version;fix;feat;conventional;break,36dce12b6ec90ba9,"fix type commits should be translated to PATCH releases. feat type commits should be translated to MINOR releases. Commits with BREAKING CHANGE in the commits,",2026-10-10
 d655b13ec984,agents/agent-overuse-patterns.md,S2173,located,The Hidden Economics of AI Agents: Managing Token Costs and Latency Trade-offs > The Latency Versus Accuracy Trade-off,flow;orchestrator-worker;might;second;worker;loop;call;llm,19544d8c45eb8811,A single LLM call might take 800 milliseconds. An Orchestrator-Worker flow with a Reflexion loop might take 10 to 30 seconds.,2026-10-10
 d655b13ec984,agents/agent-overuse-patterns.md,S2174,located,,least;add;commonly;react-styl;under;act;issu;react,114842cc6aa1b985,"Deterministic pipelines can execute individual steps in under 10ms; model-driven pipelines add at least 300-600ms per LLM call, and ReAct-style agents commonly issue 8-15 calls",2026-10-10
-d98e19e17a62,agents/agent-overuse-patterns.md,S2160,unlocated:no-match,,,,,2026-10-10
 de7eb98c5d74,agents/agent-overuse-patterns.md,S825,unlocated:no-match,,,,,2026-10-10
 f2824f6cf1c6,agents/agent-overuse-patterns.md,S2172,unlocated:not-text,,,,,2026-10-10
 f4d9b4943b75,agents/agent-overuse-patterns.md,S2167,located,Renovate documentation¶ > Why use Renovate?¶,lock;pull;request;dependency;file;updat,33d7f39966785207,Get pull requests to update your dependencies and lock files.,2026-10-21
@@ -13506,14 +13506,12 @@ fb900473a31d,prior-art/secret-vault-encryption.md,S-r3t6wvk5,unlocated:no-match,
 cef03e42954e,prior-art/tiered-approval-ops.md,S-askzkdnt,located,,library;moved;ansibl;base;django;django-ansible-bas;rbac;system,3902e33c1c891710,Role-Based Access Control (RBAC) The Role-Based Access Control system has been moved to the django-ansible-base library.,2026-10-10
 e5f3ed9dad9a,prior-art/tiered-approval-ops.md,S1017,unlocated:no-match,,,,,2026-10-10
 ebabf329da5d,prior-art/tiered-approval-ops.md,S-uh67gxyw,located,RBAC security setup,approver;becaus;rule;approval;community;edition;enterpris;teleport,a3213c7b6f694d5d,"There is no role for request approvers, because request approval rules can only be configured for Teleport Enterprise. In Teleport Community Edition, approvals must",2026-10-10
-0348fcfd6c31,privacy/gdpr-pseudonymisation.md,S871,unlocated:fetch-error,,,,,2026-10-10
-076881552573,privacy/gdpr-pseudonymisation.md,S870,unlocated:fetch-error,,,,,2026-10-10
 0ff3c43a5ee4,privacy/gdpr-pseudonymisation.md,S875,unlocated:not-text,,,,,2026-10-10
+3177dcf8cb7d,privacy/gdpr-pseudonymisation.md,S-rebms33k,unlocated:not-text,,,,,2026-10-23
+41b5a139e539,privacy/gdpr-pseudonymisation.md,S-rebms33k,unlocated:not-text,,,,,2026-10-23
 4b6b3d87be45,privacy/gdpr-pseudonymisation.md,S873,unlocated:no-match,,,,,2026-10-10
-5001fecd5ccd,privacy/gdpr-pseudonymisation.md,S-2s2xlwgf,unlocated:fetch-error,,,,,2026-10-10
 7682686c27f9,privacy/gdpr-pseudonymisation.md,S874,unlocated:no-match,,,,,2026-10-21
 8c836402df45,privacy/gdpr-pseudonymisation.md,S873,located,,consultation;public;adopt;guidelin;edpb,d298b79164e12a87,"The guidelines will be subject to public consultation until 28 February 2025, providing stakeholders with the opportunity to comment and allowing for the incorporation of",2026-10-10
-9f67b2c377c6,privacy/gdpr-pseudonymisation.md,S870,unlocated:fetch-error,,,,,2026-10-10
 a752ffc9b9d0,privacy/gdpr-pseudonymisation.md,S872,located,,january;period;march;feedback,abe27d818b174599,Feedback period 17 January 14 March 2025 (23:59 CET),2026-10-10
 aa76552760d8,privacy/gdpr-pseudonymisation.md,S872,unlocated:no-match,,,,,2026-10-21
 aa76552760d8,privacy/gdpr-pseudonymisation.md,S874,unlocated:no-match,,,,,2026-10-21
@@ -13521,8 +13519,8 @@ aa76552760d8,privacy/gdpr-pseudonymisation.md,S-eickk3hp,unlocated:no-match,,,,,
 aef480da3af0,privacy/gdpr-pseudonymisation.md,S875,unlocated:not-text,,,,,2026-10-10
 b80fd1818a33,privacy/gdpr-pseudonymisation.md,S875,unlocated:not-text,,,,,2026-10-10
 d0ca697cabb6,privacy/gdpr-pseudonymisation.md,S875,unlocated:not-text,,,,,2026-10-10
+d5c99cfd18c7,privacy/gdpr-pseudonymisation.md,S-rebms33k,unlocated:not-text,,,,,2026-10-23
 f733bc75de36,privacy/gdpr-pseudonymisation.md,S-eickk3hp,unlocated:no-match,,,,,2026-10-10
-fd8a436263f8,privacy/gdpr-pseudonymisation.md,S870,unlocated:fetch-error,,,,,2026-10-10
 078837c0cdac,privacy/gliner-glirel-zero-shot.md,S-ngy65th6,unlocated:no-match,,,,,2026-10-13
 078837c0cdac,privacy/gliner-glirel-zero-shot.md,S-pjp4rzor,located,,between;end;inclusiv;list;allow;allowed_head;allowed_tail;head_text,3dba60de117aff3b,"The company is headquartered in Cupertino, California.\""\n\nlabels = {\""glirellabels\"": {\n 'co-founder': {\""allowedhead\"": [\""PERSON\""], \""allowedtail\"": [\""ORG\""]}, \n 'country of origin': {\""allowedhead\"": [\""PERSON\"", \""ORG\""], \""allowedtail\"": [\""LOC\"", \""GPE\""]},",2026-10-13
 08ae10647792,privacy/gliner-glirel-zero-shot.md,S-edkar7xu,unlocated:no-match,,,,,2026-10-13
@@ -14886,6 +14884,8 @@ e7c11a0c0a1a,security/baselines-catalog.csv,S-cwnwnkri,unlocated:no-match,,,,,20
 7627aa1c9200,security/baselines-catalog.md,S-aljzuasy,unlocated:no-match,,,,,2026-10-10
 7627aa1c9200,security/baselines-catalog.md,S-cvu2vf7c,unlocated:no-match,,,,,2026-10-10
 7627aa1c9200,security/baselines-catalog.md,S-vxnukaep,unlocated:no-match,,,,,2026-10-10
+79b0a15c8541,security/baselines-catalog.md,S1405,unlocated:no-match,,,,,2026-10-23
+79b0a15c8541,security/baselines-catalog.md,S-m3qbkeev,unlocated:no-match,,,,,2026-10-23
 7fdc30fcc6b2,security/baselines-catalog.md,S-nwnif62g,unlocated:fetch-error,,,,,2026-10-10
 7fdc30fcc6b2,security/baselines-catalog.md,S-uzuvf3vo,unlocated:fetch-error,,,,,2026-10-10
 802da98f0009,security/baselines-catalog.md,S1402,unlocated:no-match,,,,,2026-10-21
@@ -14904,8 +14904,6 @@ c56b74ff5f88,security/baselines-catalog.md,S-aljzuasy,unlocated:no-match,,,,,202
 c56b74ff5f88,security/baselines-catalog.md,S-cwnwnkri,located,Microsoft Windows > Before you start,22h2;against;april;december;last;pack;test;guid,21778c0364950156,This configuration was last tested against Windows 10 22H2 in December 2024 and Windows 11 in April 2025. We recomend you check out the parent,2026-10-10
 d56348f4187d,security/baselines-catalog.md,S1470,unlocated:not-text,,,,,2026-10-10
 e4938e12f10c,security/baselines-catalog.md,S-vxnukaep,unlocated:no-match,,,,,2026-10-10
-ee29b144d459,security/baselines-catalog.md,S1405,unlocated:no-match,,,,,2026-10-10
-ee29b144d459,security/baselines-catalog.md,S-m3qbkeev,unlocated:no-match,,,,,2026-10-10
 f89c7258e4ff,security/baselines-catalog.md,S1405,unlocated:no-match,,,,,2026-10-10
 f89c7258e4ff,security/baselines-catalog.md,S1406,located,Microsoft Windows Desktop > This CIS Benchmark is the product of a community consensus process and consists of secure configuration guidelines developed for Microsoft Windows Desktop > CIS Benchmark,version;benchmark;enterpris;cis;window;microsoft,ceb6b86639ef7e76,,2026-10-10
 f89c7258e4ff,security/baselines-catalog.md,S1407,located,CIS Benchmarks March 2026 Update > CIS Benchmarks Updated Last Month,enterpris;v5.0.0;window;microsoft;benchmark;cis,a346d03121731d5e,CIS Microsoft Windows 11 Enterprise Benchmark v5.0.0,2026-10-10
@@ -15109,15 +15107,15 @@ ee3b9c904e78,security/framework-control-map.csv,S-fr4o3437,unlocated:not-text,,,
 ee3b9c904e78,security/framework-control-map.csv,S-n3ela3o4,unlocated:not-text,,,,,2026-10-10
 efa39907a59d,security/framework-control-map.csv,S-fr4o3437,unlocated:not-text,,,,,2026-10-10
 efa39907a59d,security/framework-control-map.csv,S-n3ela3o4,unlocated:not-text,,,,,2026-10-10
+1b764b313222,security/framework-control-map.md,S1563,located,CIS Critical Security Controls Version 8.1 > The CIS Critical Security Controls (CIS Controls) are a prioritized set of CIS Safeguards to defend against the most prevalent cyber attacks against system,govern;iterativ;function;updat;8.1;security;cis;control,e7a100a1ad679d43,CIS Controls v8.1 is an iterative update to v8,2026-10-23
+1b764b313222,security/framework-control-map.md,S-gwraqiuq,located,CIS Critical Security Controls v8.1,publish;june,519edb0fb360c3d0,,2026-10-23
 34571ae95dd5,security/framework-control-map.md,S-riwffp3c,unlocated:not-text,,,,,2026-10-10
-362340a14a4b,security/framework-control-map.md,S1563,unlocated:no-match,,,,,2026-10-10
 6e87d8043f7c,security/framework-control-map.md,S-n3ela3o4,unlocated:not-text,,,,,2026-10-10
 87067cd46d20,security/framework-control-map.md,S-fr4o3437,unlocated:not-text,,,,,2026-10-10
 8a858510df30,security/framework-control-map.md,S-riwffp3c,unlocated:not-text,,,,,2026-10-10
+a6a4a62a149c,security/framework-control-map.md,S-ycjlut3h,located,Terms of Use for Non-Member CIS Products > Definitions,attribution-non;commercial-no;document;guidanc;4.0;associat;attribution;commercial,35749c793f8dd036,,2026-10-23
 a85ca786ebea,security/framework-control-map.md,S-3bypktfc,located,NIST Releases Version 2.0 of Landmark Cybersecurity Framework > Share,detect;govern;identify;newly;recover;respond;six;around,4a51cd6d10a598b8,"The framework's core is now organized around six key functions: Identify, Protect, Detect, Respond and Recover, along with CSF 2.0's newly added Govern function.",2026-10-10
 c094931540c4,security/framework-control-map.md,S1562,located,Cybersecurity Framework > Latest Updates,publish;document;informativ;referenc;nist;profil;guid;quick,59346f36f144b4ba,This draft CSF 2.0 profile describes how components that conform to the security specifications produced by the O-RAN ALLIANCE support various CSF 2.0 outcomes. The,2026-10-10
-e403249ff376,security/framework-control-map.md,S1552,unlocated:fetch-error,,,,,2026-10-10
-eb559ca1874c,security/framework-control-map.md,S1563,unlocated:no-match,,,,,2026-10-10
 fdfae000dfeb,security/framework-control-map.md,S-fr4o3437,unlocated:not-text,,,,,2026-10-10
 fdfae000dfeb,security/framework-control-map.md,S-n3ela3o4,unlocated:not-text,,,,,2026-10-10
 02ca0e49e787,security/gentoo-binary-packages-binhost.md,S-rzs2uo4g,located,Contents > The Gentoo binhost > Available packages and update schedule,daily;architectur;updat;packag,7c9822ea2510a548,"For these architectures, the binary packages are updated daily.",2026-10-21
@@ -15544,6 +15542,8 @@ e9e9219f33b8,security/linux-nftables.md,S-oz7g4upk,unlocated:no-match,,,,,2026-1
 f1637f66c9dc,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Warning about Shell scripting + nftables,read;moment;new;operation;swap;configur;firewall;one,77bdf64e34f0e754,"This is different from bash scripts because nftables will read in all of the included config files, create the config object in memory alongside the",2026-10-13
 f58f62467bb7,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,chain;other;one;tabl;flush;rule;file,072cfe6257306860,,2026-10-14
 f58f62467bb7,security/linux-nftables.md,S-t7vpftda,unlocated:no-match,,,,,2026-10-14
+7a0588ae60fc,security/linux-patching-and-pins.md,S-byvp6fgw,located,"Working with the Alpine Package Keeper (apk) > Normal Usage > Repositories, Releases and Mirrors",etc;repository;apk,c8a7de052649d5d1,,2026-10-23
+8fb09b1a76aa,security/linux-patching-and-pins.md,S-byvp6fgw,located,"Working with the Alpine Package Keeper (apk) > Normal Usage > Repositories, Releases and Mirrors",each;own;community;stabl;main;releas;repository,098da08f9ef4e755,,2026-10-23
 054ada1b6c92,security/logging-monitoring.md,S743,unlocated:no-match,,,,,2026-10-12
 054ada1b6c92,security/logging-monitoring.md,S1498,unlocated:no-match,,,,,2026-10-10
 12ed1069bdaa,security/logging-monitoring.md,S1527,unlocated:not-text,,,,,2026-10-10
@@ -15633,34 +15633,30 @@ fe4bd3281dc4,security/policy-precedence.md,S1412,located,ControlPolicyConflict P
 207d6294d9bf,security/privacy-compliance.md,S-twztbg3z,unlocated:not-text,,,,,2026-10-10
 301d94cc9ad2,security/privacy-compliance.md,S-zg4p62eo,unlocated:not-text,,,,,2026-10-22
 30bb9c4b601a,security/privacy-compliance.md,S1542,unlocated:not-text,,,,,2026-10-10
-366167c61f38,security/privacy-compliance.md,S870,unlocated:fetch-error,,,,,2026-10-10
 373b2dd39e75,security/privacy-compliance.md,S1559,located,"EU AI Act’s High-Risk Deadline: Deferred, Not Cancelled > Key Takeaways",differ;machinery-embed;assess;mandat;registration;self-assess;enact;literacy,b010ce28fe115f88,"Several obligations remained on the original August 2, 2026, schedule: Article 50 transparency and AI-content-labeling duties, the General-Purpose AI (GPAI) provider obligations that have applied",2026-10-10
-3c803280451f,security/privacy-compliance.md,S870,unlocated:fetch-error,,,,,2026-10-10
-425ff5aa3d18,security/privacy-compliance.md,S1552,unlocated:fetch-error,,,,,2026-10-10
+43f9f546c892,security/privacy-compliance.md,S-rebms33k,unlocated:not-text,,,,,2026-10-23
 46ede0c3b529,security/privacy-compliance.md,S-k3lipqns,unlocated:not-text,,,,,2026-10-10
-55680047eb36,security/privacy-compliance.md,S870,unlocated:fetch-error,,,,,2026-10-10
-55680047eb36,security/privacy-compliance.md,S-zg4p62eo,unlocated:not-text,,,,,2026-10-10
 58fbcab1ca43,security/privacy-compliance.md,S-twztbg3z,unlocated:not-text,,,,,2026-10-10
-71fe02f70996,security/privacy-compliance.md,S-qzdkyvqx,unlocated:fetch-error,,,,,2026-10-10
-82218b7d1b6c,security/privacy-compliance.md,S-qzdkyvqx,unlocated:fetch-error,,,,,2026-10-10
-84bebf6f03fe,security/privacy-compliance.md,S1556,unlocated:fetch-error,,,,,2026-10-10
-84bebf6f03fe,security/privacy-compliance.md,S1557,located,Why do we need rules on AI? > Application timeline,annex;iii;enter;literacy;prohibit;governanc;high-risk;application,ddc52ecac6d5612a,prohibited AI practices and AI literacy obligations entered into application from 2 February 2025 the governance rules and the obligations for GPAI models became applicable,2026-10-10
-8a0b30b039b6,security/privacy-compliance.md,S870,unlocated:fetch-error,,,,,2026-10-10
-935c30face1b,security/privacy-compliance.md,S870,unlocated:fetch-error,,,,,2026-10-10
-935c30face1b,security/privacy-compliance.md,S-xvc5ligo,unlocated:not-text,,,,,2026-10-10
+8fe7a5d8cc4e,security/privacy-compliance.md,S-rebms33k,unlocated:not-text,,,,,2026-10-23
 98fb243412b8,security/privacy-compliance.md,S-k3lipqns,unlocated:not-text,,,,,2026-10-10
-991175603462,security/privacy-compliance.md,S1552,unlocated:fetch-error,,,,,2026-10-10
+9b55f5162d25,security/privacy-compliance.md,S-rebms33k,unlocated:not-text,,,,,2026-10-23
 9d5b5679fdb4,security/privacy-compliance.md,S1553,unlocated:not-text,,,,,2026-10-10
+9d6719b4db3f,security/privacy-compliance.md,S-etw2ppgz,located,,enter;forc;apply;regulation;dora,ccfbfbb40d4047da,,2026-10-23
 a5e5af286b3a,security/privacy-compliance.md,S-tzbutlvs,unlocated:no-match,,,,,2026-10-10
 b4cd1c4d54a3,security/privacy-compliance.md,S1553,unlocated:not-text,,,,,2026-10-10
+b67cd76e4888,security/privacy-compliance.md,S-xvc5ligo,unlocated:not-text,,,,,2026-10-23
+b7b48bcf9c18,security/privacy-compliance.md,S-sxwkpb6d,located,Background,had;transpos;until;member;stat;nis2;directiv,beea56ffafc803c1,,2026-10-23
+ba1c61ee7c5e,security/privacy-compliance.md,S-7ddlgwua,located,Overview > Legislation > The General Data Protection Regulation (GDPR),sinc;apply;forc;enter;regulation,eb6c614aee90db9d,,2026-10-23
 bb6e62e3af1c,security/privacy-compliance.md,S1550,unlocated:no-match,,,,,2026-10-10
 bb6e62e3af1c,security/privacy-compliance.md,S-5jbvhlmx,unlocated:no-match,,,,,2026-10-10
+c18b86b2c2fc,security/privacy-compliance.md,S1557,located,Why do we need rules on AI? > Governance and enforcement,act,2d9b2b9cea70aeb3,2 August 2026,2026-10-23
+c18b86b2c2fc,security/privacy-compliance.md,S-nnq2ftfq,located,,governanc;general-purpos;purpos;general;rule,a575742bece4c6fd,,2026-10-23
 c57453ff57bd,security/privacy-compliance.md,S-k2bxn62w,unlocated:no-match,,,,,2026-10-21
 c57453ff57bd,security/privacy-compliance.md,S-nzqme6xu,located,,full;notify;opinion;reason;sent;status;commission;transposition,0de6c531aa9d7d3a,Status of transposition On 7 May 2025 the Commission sent a reasoned opinion for failure to notify full transposition.,2026-10-21
-d1370672e261,security/privacy-compliance.md,S1555,unlocated:fetch-error,,,,,2026-10-10
 dd3809d69687,security/privacy-compliance.md,S-xvc5ligo,unlocated:not-text,,,,,2026-10-10
 f042307324af,security/privacy-compliance.md,S1553,unlocated:not-text,,,,,2026-10-10
-fbbd4af0da91,security/privacy-compliance.md,S870,unlocated:fetch-error,,,,,2026-10-10
+fdbb4ac14e3e,security/privacy-compliance.md,S1557,located,Why do we need rules on AI? > A Risk-based Approach > High risk,high-risk;high;risk;system,7e9189b597361d56,2 December 2027,2026-10-23
+fdbb4ac14e3e,security/privacy-compliance.md,S-nnq2ftfq,located,,iii;annex;high;high-risk;risk;system;rule;apply,25877f1c39a0ff83,,2026-10-23
 12f1edc6a9af,security/script-and-code-signing.md,S1518,unlocated:no-match,,,,,2026-10-10
 369c13ce3bc7,security/script-and-code-signing.md,S-fywaejcb,unlocated:no-match,,,,,2026-10-21
 369c13ce3bc7,security/script-and-code-signing.md,S-zokdk7aw,unlocated:no-match,,,,,2026-10-10
@@ -18306,12 +18302,11 @@ f58c76789fa9,security/threat-model-inputs.md,S1565,located,,saas-ba;based;on-pre
 593326bde3b6,security/vuln-data-apis.csv,S-difowozj,unlocated:no-match,,,,,2026-10-10
 593326bde3b6,security/vuln-data-apis.csv,S-g3zab7vl,unlocated:no-match,,,,,2026-10-10
 593326bde3b6,security/vuln-data-apis.csv,S-vtximkx6,located,,cvrf;v3.0;api;api.msrc.microsoft.com;com;http;microsoft;msrc,beb8ccf0917c13cb,"""CvrfUrl"": ""https://api.msrc.microsoft.com/cvrf/v3.0/cvrf/2021-Apr""",2026-10-10
-5b6dbbfb7122,security/vuln-data-apis.csv,S-forvn2ly,unlocated:no-match,,,,,2026-10-10
-5b6dbbfb7122,security/vuln-data-apis.csv,S-rzvfq3ba,unlocated:no-match,,,,,2026-10-10
 95bed187be03,security/vuln-data-apis.csv,S-o6hwt2kg,unlocated:no-match,,,,,2026-10-10
 95bed187be03,security/vuln-data-apis.csv,S-xjse465h,unlocated:no-match,,,,,2026-10-10
 b2d7de103c5a,security/vuln-data-apis.csv,S-tcpq35hc,unlocated:fetch-error,,,,,2026-10-10
-00eb2fc5af84,security/vulnerability-prioritization.md,S-forvn2ly,unlocated:no-match,,,,,2026-10-10
+ded22b5d9f6a,security/vuln-data-apis.csv,S-forvn2ly,unlocated:no-match,,,,,2026-10-23
+ded22b5d9f6a,security/vuln-data-apis.csv,S-rzvfq3ba,unlocated:no-match,,,,,2026-10-23
 080e45337aaf,security/vulnerability-prioritization.md,S-dgqf24cz,located,Common Vulnerability Scoring System Version 4.0,cvss-b;environmental;nomenclatur;bte;cvss-bt;base;threat;scor,27cdf45a5359658b,Some of the changes incorporated into CVSS v4.0 include: Reinforce the concept that CVSS it not just the Base score New nomenclature has been added,2026-10-10
 1262780f859c,security/vulnerability-prioritization.md,S-6jreovk7,unlocated:no-match,,,,,2026-10-10
 1262780f859c,security/vulnerability-prioritization.md,S-m6mns3xp,unlocated:no-match,,,,,2026-10-10
@@ -18334,7 +18329,6 @@ b2d7de103c5a,security/vuln-data-apis.csv,S-tcpq35hc,unlocated:fetch-error,,,,,20
 717e8d2df00c,security/vulnerability-prioritization.md,S-7uk5ui7z,unlocated:no-match,,,,,2026-10-10
 73393c3edd5d,security/vulnerability-prioritization.md,S-egmyslhi,unlocated:no-match,,,,,2026-10-10
 77ada36e0dc0,security/vulnerability-prioritization.md,S-urlbhr7a,located,,day;rank;cve;every;percentil;probability;publish;epss,b2ec7dbac9658b99,EPSS publishes a 0-1 probability (with ranking percentiles) every day for every CVE and makes the data freely and openly accessible via CSV and API,2026-10-10
-797c40659e5f,security/vulnerability-prioritization.md,S-forvn2ly,unlocated:no-match,,,,,2026-10-10
 7d865d4c4cb9,security/vulnerability-prioritization.md,S-e7zw3fou,unlocated:fetch-error,,,,,2026-10-10
 7f33df98fadf,security/vulnerability-prioritization.md,S-g3zab7vl,unlocated:no-match,,,,,2026-10-10
 83844e930a45,security/vulnerability-prioritization.md,S-vtximkx6,unlocated:no-match,,,,,2026-10-20
@@ -18342,10 +18336,8 @@ b2d7de103c5a,security/vuln-data-apis.csv,S-tcpq35hc,unlocated:fetch-error,,,,,20
 987a8dceea61,security/vulnerability-prioritization.md,S-egmyslhi,unlocated:no-match,,,,,2026-10-10
 9b0404ee7c8f,security/vulnerability-prioritization.md,S-egmyslhi,unlocated:no-match,,,,,2026-10-10
 9c44536f029c,security/vulnerability-prioritization.md,S-rzvfq3ba,unlocated:no-match,,,,,2026-10-10
-9d21592bd362,security/vulnerability-prioritization.md,S-forvn2ly,unlocated:no-match,,,,,2026-10-10
 a31355e522ab,security/vulnerability-prioritization.md,S-ddkkzd4o,unlocated:fetch-error,,,,,2026-10-10
 c43b2b1ef7d2,security/vulnerability-prioritization.md,S-egmyslhi,located,Vector String,mac;mui;mva;mvc;mvi;mat;mav;mpr,25e6f65b7debab4f,CVSS:4.0/AV:L/AC:H/AT:N/PR:N/UI:A/VC:N/VI:N/VA:L/SC:H/SI:H/SA:H/CR:H/IR:H/AR:M/MAV:N/MAC:L/MAT:P/MPR:L/MUI:A/MVC:N/MVI:H/MVA:L/MSC:L/MSI:S/MSA:H,2026-10-10
-c69c8fd222a5,security/vulnerability-prioritization.md,S-forvn2ly,unlocated:no-match,,,,,2026-10-10
 cc26b9f694e5,security/vulnerability-prioritization.md,S-ddkkzd4o,unlocated:fetch-error,,,,,2026-10-10
 cc26b9f694e5,security/vulnerability-prioritization.md,S-xjse465h,located,,cve;epss,8948e7c88af6f5da,"""cve"": ""CVE-2026-9999"", ""epss"": ""0.004080000"",",2026-10-10
 d98778502acf,security/vulnerability-prioritization.md,S-n7obrzja,located,Welcome,definition;openapi;swagger;sampl;open;api;msrc;microsoft,bc6892b4eacf6b4e,sample code for using the MsrcSecurityUpdates PowerShell module OpenAPI/Swagger definition for the Microsoft Security Updates CVRF API,2026-10-10
@@ -18353,6 +18345,7 @@ e0e136083087,security/vulnerability-prioritization.md,S-vtximkx6,located,,marine
 e10fc6f6c4a5,security/vulnerability-prioritization.md,S-xjse465h,unlocated:no-match,,,,,2026-10-10
 e2a6efdff345,security/vulnerability-prioritization.md,S-ddkkzd4o,unlocated:fetch-error,,,,,2026-10-10
 e2a6efdff345,security/vulnerability-prioritization.md,S-e7zw3fou,unlocated:fetch-error,,,,,2026-10-10
+e2b928e0e57b,security/vulnerability-prioritization.md,S-rzvfq3ba,unlocated:no-match,,,,,2026-10-23
 f1e708a960e5,security/vulnerability-prioritization.md,S-o6hwt2kg,located,FIRST API v1 > Rate Limit,abusiv;minut;notic;too;authentication;block;many;without,e725402182a0cc0b,Public endpoints without authentication are limited to 1000 requests per minute. Abusive behavior might be temporarily blocked to all API endpoints without further notice. In,2026-10-10
 f2a43a55ef9d,security/vulnerability-prioritization.md,S-tcpq35hc,unlocated:fetch-error,,,,,2026-10-10
 f3d8f87a6ea5,security/vulnerability-prioritization.md,S-tcpq35hc,unlocated:fetch-error,,,,,2026-10-10

@@ -3,7 +3,7 @@ topic: privacy/gdpr-pseudonymisation
 priority: P0
 applies_to: "Regulation (EU) 2016/679; EDPB Guidelines 01/2025; CJEU C-413/23 P"
 retrieved_utc: 2026-10-21
-sources: [S870, S871, S872, S873, S874, S875, S-2s2xlwgf, S-eickk3hp]
+sources: [S870, S871, S872, S873, S-rebms33k, S874, S875, S-2s2xlwgf, S-eickk3hp]
 status: complete
 ---
 # GDPR pseudonymisation: Art. 4(5), Recital 26, EDPB 01/2025, C-413/23 P
@@ -14,10 +14,10 @@ status: complete
 - CJEU C-413/23 P (EDPS v SRB), judgment of 2025-09-04: pseudonymised data is not always personal data, i.e. not in every case and for every person. Identifiability for the controller's duty to inform is assessed when the data is collected, from the controller's point of view.
 
 ## Facts
-- Art. 4(5), verbatim (EUR-Lex reuse permitted, source: Regulation (EU) 2016/679, EUR-Lex, © European Union): "‘pseudonymisation’ means the processing of personal data in such a manner that the personal data can no longer be attributed to a specific data subject without the use of additional information, provided that such additional information is kept separately and is subject to technical and organisational measures to ensure that the personal data are not attributed to an identified or identifiable natural person". [DOC S870]
-- Recital 26, in summary: pseudonymised data that could be attributed using additional information counts as information on an identifiable person. Identifiability considers all means reasonably likely to be used, by the controller or another person (cost, time, available technology). The principles do not apply to anonymous information. [DOC S870]
-- Recital 28: pseudonymisation can reduce risks, and its explicit introduction does not preclude other measures. [DOC S870]
-- EUR-Lex reuse: under Decision 2011/833/EU, legal documents on EUR-Lex may be reused commercially or non-commercially unless otherwise specified. Only the Official Journal is authentic. EUR-Lex metadata is CC0. [DOC S871]
+- Art. 4(5), as the EDPB Guidelines 01/2025 (paragraph 16) quote it: "the processing of personal data in such a manner that the personal data can no longer be attributed to a specific data subject without the use of additional information, provided that such additional information is kept separately and is subject to technical and organisational measures to ensure that the personal data are not attributed to an identified or identifiable natural person". [DOC S-rebms33k]
+- Recital 26 (Rec. 26 GDPR in the EDPB Guidelines 01/2025): pseudonymised data that could be attributed to a natural person using additional information is to be considered information on an identifiable natural person, and so is personal data; identifiability takes into account the means reasonably likely to be used by the controller or by another person. [DOC S-rebms33k]
+- Recital 28 (Rec. 28 GDPR in the EDPB Guidelines 01/2025): pseudonymising data reduces risks for data subjects, and the explicit introduction of pseudonymisation is not intended to preclude any other measures of data protection. The GDPR imposes no general obligation to use pseudonymisation. [DOC S-rebms33k]
+- Not confirmed since 2026-10-23: the EUR-Lex legal notice (S871, Decision 2011/833/EU reuse of legal documents, only the Official Journal authentic, EUR-Lex metadata CC0) and the Recital 26 sentence that the principles of data protection do not apply to anonymous information; EUR-Lex answers this host with an empty bot-challenge page (S870, S871), so neither can be read again. [UNK: logged in `_gaps.md`]
 - EDPB Guidelines 01/2025 on Pseudonymisation: "Adopted on 16 January 2025", with every page marked "Adopted - version for public consultation". [DOC S873]
 - The EDPB news (2025-01-17) says the guidelines hold that pseudonymised data that could be attributed with additional information remains personal data. It gives a consultation deadline of 2025-02-28. [DOC S873]
 - The EDPB consultation page shows the feedback period as "17 January - 14 March 2025", now closed. [DOC S872]
@@ -28,7 +28,7 @@ status: complete
 - In our own words: personal opinions in comments "relate" to their authors, with no need to examine content or effects. The General Court was right that pseudonymised data is not personal data in all cases and for every person, because pseudonymisation may stop people other than the controller from identifying the person. For the controller's duty to inform, identifiability is judged when the data is collected, from the controller's point of view, before any transfer. [DOC S875]
 - The case applies Regulation (EU) 2018/1725 (EU institutions), not the GDPR directly. [DOC S875]
 - The press release is "unofficial ... not binding on the Court". [DOC S875]
-- The CJEU's full judgment in C-413/23 P (EDPS v SRB) confirms the operative part: it sets aside T-557/20, refers the case back to the General Court and reserves costs. Paragraph 86: pseudonymised data is not always personal data; it must not be regarded as personal data "in all cases and for every person", in so far as pseudonymisation may effectively prevent persons other than the controller from identifying the data subject; paragraph 111: for the duty to inform, identifiability is assessed at the time of collection and from the controller's point of view. [DOC S-2s2xlwgf]
+- The operative part's costs order (costs reserved) and the paragraph numbers 86 and 111 of the full judgment in C-413/23 P (S-2s2xlwgf) are not confirmed since 2026-10-23: the judgment's EUR-Lex page answers this host with an empty bot-challenge page, and the Court's press release (S875) gives the set-aside, the referral back and the two holdings of lines above without paragraph numbers or a costs order. [UNK: logged in `_gaps.md`]
 
 ## Reference
 | Instrument | Status (2026-09-23) | Date |

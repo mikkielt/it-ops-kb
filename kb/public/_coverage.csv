@@ -303,7 +303,7 @@ prior-art/mcp-microsoft-endpoint-mgmt,P2,complete,prior-art/mcp-microsoft-endpoi
 prior-art/pseudonymization-tokenization,P2,complete,prior-art/pseudonymization-tokenization.md,6
 prior-art/secret-vault-encryption,P2,complete,prior-art/secret-vault-encryption.md,12
 prior-art/tiered-approval-ops,P2,complete,prior-art/tiered-approval-ops.md,10
-privacy/gdpr-pseudonymisation,P0,complete,privacy/gdpr-pseudonymisation.md,8
+privacy/gdpr-pseudonymisation,P0,complete,privacy/gdpr-pseudonymisation.md,9
 privacy/gliner-models,P0,complete,privacy/gliner-models.md;privacy/gliner-models.csv,8
 privacy/nist-sp800-38g,P0,complete,privacy/nist-sp800-38g.md,5
 privacy/presidio,P0,complete,privacy/presidio.md,12
@@ -361,8 +361,8 @@ security/management-plane-hardening,P1,complete,security/management-plane-harden
 security/script-and-code-signing,P1,complete,security/script-and-code-signing.md,13
 security/supply-chain,P1,complete,security/supply-chain.md,25
 security/ai-agent-guidelines,P2,complete,security/ai-agent-guidelines.md,20
-security/framework-control-map,P2,complete,security/framework-control-map.md;security/framework-control-map.csv,7
-security/privacy-compliance,P2,complete,security/privacy-compliance.md,19
+security/framework-control-map,P2,complete,security/framework-control-map.md;security/framework-control-map.csv,9
+security/privacy-compliance,P2,complete,security/privacy-compliance.md,24
 security/secret-shapes-in-text,P2,partial,security/secret-shapes-in-text.md,20
 security/threat-model-inputs,P2,complete,security/threat-model-inputs.md;security/artifacts/mitre/attack-subset.csv;security/artifacts/mitre/attack-subset.md,12
 security/vulnerability-prioritization,P2,complete,security/vulnerability-prioritization.md;security/vuln-data-apis.csv,18
@@ -388,7 +388,7 @@ security/kali-releases-rolling-model,P3,partial,security/kali-releases-rolling-m
 security/linux-auditd,P3,complete,security/linux-auditd.md,4
 security/linux-cis-ssg-openscap,P3,partial,security/linux-cis-ssg-openscap.md,32
 security/linux-nftables,P3,partial,security/linux-nftables.md,5
-security/linux-patching-and-pins,P3,partial,security/linux-patching-and-pins.md,10
+security/linux-patching-and-pins,P3,partial,security/linux-patching-and-pins.md,11
 security/linux-sshd-hardening,P3,complete,security/linux-sshd-hardening.md,3
 security/linux-time-sync,P3,complete,security/linux-time-sync.md,4
 security/zsh-completion-system,P3,partial,security/zsh-completion-system.md,4

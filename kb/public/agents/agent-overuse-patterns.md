@@ -49,7 +49,7 @@ alongside the deterministic tool that already exists for them.
   cost-effective, and that tasks like summarizing a document, translating text or classifying customer
   feedback do not need an agentic workflow. [DOC S2160] The further wording about stable logic and speed or
   reliability over flexibility is not on that page; it was attributed to the "Agents Companion" whitepaper
-  (S2161), whose Kaggle page renders no text without JavaScript and was not read.
+  (a Kaggle page that renders no text without JavaScript), which was not read.
 - Thoughtworks Technology Radar Volume 34 (April 2026) places "Agent Skills" in **Trial** ("worth
   pursuing") as a way to modularize context. Its "permission-hungry agents" theme says zero trust, least
   privilege, model improvements and defense in depth "are now table stakes" and expects safe agent systems to

@@ -513,11 +513,13 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
   official safeguard titles, matching the treatment of CIS Benchmark recommendation IDs elsewhere in the kb
   (part A). (topic: security/framework-control-map)
   - Resolved 2026-10-21: the CIS Controls v8.1 licence (S1563) is unchanged and the `framework-control-map.csv` rows already carry safeguard IDs and an own-words paraphrase, not the official titles; no source disagrees. [DOC S1563]
+  - Resolved 2026-10-23: the licence is now cited from CIS's terms-of-use page, which states it for the CIS Controls and associated guidance documents; S1563's own page states no licence. [DOC S-ycjlut3h]
 - No direct DOC-vs-DOC factual conflicts found in Part C's sources; the EU AI Act Digital Omnibus deferral dates
   come from law-firm/community summaries (S1558, S1559) rather than the consolidated regulation text itself,
   since EUR-Lex had not yet published a consolidated version reflecting Regulation (EU) 2026/1744 at retrieval
   time — flagged as `COMMUNITY`, not `DOC`, for that reason, not because sources disagree. (topic: security/privacy-compliance)
   - Resolved 2026-09-26: EUR-Lex now publishes Regulation (EU) 2026/1744 (S-qzdkyvqx) and a consolidated AI Act dated 2026-07-27; the deferral dates are cited as DOC S-qzdkyvqx. (topic: security/privacy-compliance)
+  - Resolved 2026-10-23: the deferral dates are cited from the AI Act Service Desk timeline and the Commission page, since EUR-Lex answers this host with an empty bot-challenge page: Annex III rules from 2027-12-02, Annex I rules from 2028-08-02, Omnibus in force 2026-07-27. [DOC S-nnq2ftfq, S1557] (topic: security/privacy-compliance)
 
 ## prior-art/drift-detection
 

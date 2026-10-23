@@ -3,7 +3,7 @@ topic: security/framework-control-map
 priority: P2
 applies_to: "ISO/IEC 27001:2022 Annex A; NIST CSF 2.0; CIS Controls v8.1; NIS2 Art. 21(2), as of 2026-09-24"
 retrieved_utc: 2026-09-27
-sources: [S1552, S-fr4o3437, S1562, S1563, S-n3ela3o4, S-riwffp3c, S-3bypktfc]
+sources: [S1552, S-fr4o3437, S1562, S1563, S-n3ela3o4, S-riwffp3c, S-3bypktfc, S-ycjlut3h, S-gwraqiuq]
 status: complete
 ---
 
@@ -13,7 +13,7 @@ status: complete
 Full table is `framework-control-map.csv` (framework, control_id, title, control_example, sources). This file gives
 the shape and licence notes only. ISO/IEC 27001:2022 clause text is paid, so the csv gives Annex A control ids
 (confirmed against NIST's crosswalk) with short own-words names. CIS Controls v8.1 is CC BY-NC-ND 4.0 (attribution, no derivatives,
-non-commercial) [DOC S1563], so safeguard IDs and titles are cited but not modified or excerpted at length.
+non-commercial) [DOC S-ycjlut3h], so safeguard IDs and titles are cited but not modified or excerpted at length.
 
 ## Facts
 - The csv's ISO/IEC 27001:2022 Annex A ids 5.15, 5.18, 8.2, 8.8, 8.9, 8.15, 8.16 and 8.32 each appear (written
@@ -34,10 +34,10 @@ non-commercial) [DOC S1563], so safeguard IDs and titles are cited but not modif
 - The csv's CSF titles are shortened from CSWP 29 (for example DE.CM-01 "Networks and network services are monitored
   to find potentially adverse events", RS.MA-01 "The incident response plan is executed in coordination with
   relevant third parties once an incident is declared"). [DOC S-riwffp3c]
-- NIS2 (Directive (EU) 2022/2555) Art. 21(2) lists the minimum risk-management measures (a) to (j); the csv maps four of them to a device-configuration tool: (a) risk analysis and information system security policies, (d) supply chain security, (i) human resources security, access control and asset management, and (j) MFA or continuous authentication. The full list is in `privacy-compliance.md`. [DOC S1552]
-- CIS Controls v8.1 (March 2025) has 18 Controls and 153 Safeguards across three Implementation Groups; licensed
-  CC BY-NC-ND 4.0 (no derivatives). The csv therefore cites safeguard IDs only, with a short own-words paraphrase
-  in place of the official safeguard title, rather than reproducing CIS wording. [DOC S1563]
+- NIS2 (Directive (EU) 2022/2555) Art. 21(2) lists the minimum risk-management measures (a) to (j); the csv maps four of them to a device-configuration tool: (a) risk analysis and information system security policies, (d) supply chain security, (i) human resources security, access control and asset management, and (j) MFA or continuous authentication. The full list is in `privacy-compliance.md`. [UNK: Art. 21(2) read from the Directive's EUR-Lex text (S1552) on 2026-09-26, not re-confirmed on 2026-10-23 because EUR-Lex answers this host with an empty bot-challenge page; logged in `_gaps.md`]
+- CIS's terms of use for non-member products say the CIS Controls and associated guidance documents are under the Creative Commons Attribution-Non Commercial-No Derivatives 4.0 International Public License. The csv therefore cites safeguard IDs only, with a short own-words paraphrase in place of the official safeguard title, rather than reproducing CIS wording. [DOC S-ycjlut3h]
+- CIS's white-paper page for CIS Critical Security Controls v8.1 is dated "Published on June 24, 2024"; the v8.1 page calls v8.1 an iterative update to v8 that adds the Govern function. [DOC S-gwraqiuq, S1563]
+- An earlier reading of this article gave CIS Controls v8.1 a March 2025 date and 18 Controls and 153 Safeguards across three Implementation Groups; no readable CIS page states them (the v8.1 page and the white-paper page give neither) and the guide that carries them is behind a download form. [UNK: logged in `_gaps.md`]
 
 ## Reference
 ### Notes (design notes and cross-references, no external source)

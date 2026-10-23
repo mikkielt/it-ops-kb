@@ -42,9 +42,9 @@ attribution. NCSC (UK), BSI and ANSSI publish narrower guidance (Intune packs, W
 - CIS's September 2026 update summarises the Windows 11 Enterprise Benchmark 5.1.0 changes as 3 recommendations updated, all Microsoft Defender Antivirus
   recommendations removed (Defender now has its own benchmark), 1 recommendation removed and 18 control mappings
   updated; the full changelog is only in the DOCX/PDF. [DOC S-m3qbkeev]
-- The front matter of v5.0.x tests against release 23H2, and no public CIS page states which release v5.1.0 was
-  tested against (the PDF is behind registration), so confirm 24H2/25H2 applicability in the v5.1.0 PDF before
-  use. [DER S-m3qbkeev, S1405: the public pages carry no tested-release statement]
+- The front matter of v5.0.x tests against release 23H2, and the NCP entry's summary for v5.1.0 (read 2026-10-23 from the NCP REST API) repeats "tested against Microsoft Windows 11 Release 23H2 Enterprise"; no public CIS page
+  states a different release for v5.1.0 (the PDF is behind registration), so confirm 24H2/25H2 applicability in the v5.1.0 PDF before
+  use. [DER S-m3qbkeev, S1405: the NCP summary names 23H2 and the other public pages carry no tested-release statement]
 - A CIS Microsoft Intune for Windows 11 benchmark exists; the CIS Intune benchmark page lists it at v5.0.0 on
   2026-09-26 (a third-party mirror of CIS release notes had given v4.0.0), beside Intune benchmarks for Windows 10,
   Edge, Office and Microsoft Defender Antivirus [DOC S-3vkajr2c].

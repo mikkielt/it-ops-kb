@@ -33,6 +33,76 @@
   "depends_on": [
     "ST-rglufo4s"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which census outcome records a source this host cannot read whose cited facts were re-sourced to other pages or re-tagged UNK?",
+      "options": [
+        "gone",
+        "updated"
+      ],
+      "recommendation": "gone",
+      "do": {
+        "gone": "ST-6wsgvy3z",
+        "updated": "ST-6wsgvy3z"
+      },
+      "class": "design",
+      "answer": "gone",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Do raw Internet Archive captures of the cyber.gov.au pages, which time out from this host, count as reading the three sources S1425, S-nwnif62g and S-uzuvf3vo for the census?",
+      "options": [
+        "capture counts: record confirmed",
+        "re-tag the facts UNK instead"
+      ],
+      "recommendation": "capture counts: record confirmed",
+      "do": {
+        "capture counts: record confirmed": "ST-6wsgvy3z",
+        "re-tag the facts UNK instead": "ST-6wsgvy3z"
+      },
+      "class": "design",
+      "answer": "capture counts: record confirmed",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Do local reads of the downloaded and extracted Morfeusz dictionary archives (S-d3lsp242, S-jhuny2li) count as reading those sources, given fetch.py text cuts the binary members?",
+      "options": [
+        "local read counts: record confirmed",
+        "re-tag the id and notice facts UNK instead"
+      ],
+      "recommendation": "local read counts: record confirmed",
+      "do": {
+        "local read counts: record confirmed": "ST-6wsgvy3z",
+        "re-tag the id and notice facts UNK instead": "ST-6wsgvy3z"
+      },
+      "class": "design",
+      "answer": "local read counts: record confirmed",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "framework-control-map.csv rows cite S1552 (NIS2) and S1563 (CIS) as their source column; the NIS2 Art. 21(2) and CIS safeguard ids they name rest on pages this host cannot read. Change those rows?",
+      "options": [
+        "leave the rows as they are; the article fact states the source is not re-confirmed",
+        "re-tag each row's source cell with a not-re-confirmed note"
+      ],
+      "recommendation": "leave the rows as they are; the article fact states the source is not re-confirmed",
+      "do": {
+        "leave the rows as they are; the article fact states the source is not re-confirmed": "ST-6wsgvy3z",
+        "re-tag each row's source cell with a not-re-confirmed note": "ST-6wsgvy3z"
+      },
+      "class": "design",
+      "answer": "leave the rows as they are; the article fact states the source is not re-confirmed",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-rmp5zm5a review"
   ],
