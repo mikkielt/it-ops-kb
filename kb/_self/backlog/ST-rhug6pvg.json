@@ -64,7 +64,11 @@
         "Print every command without calling the CLI": "ST-rhug6pvg",
         "Ask the CLI first and print only the missing servers": "ST-rhug6pvg"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Print every command without calling the CLI",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
