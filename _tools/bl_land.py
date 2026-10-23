@@ -24,7 +24,7 @@ import bl_close
 import bl_intake
 import bl_plan
 from bl_base import (  # run_check lives below bl_land, so bl_ci reaches it without bl_land (ST-ufpxla7r)
-    ANSI_RE, Backlog, REF_HEADER, WORKSPACE, colourless_env, run_check, Refused, commit_written, claims_ledger,
+    ANSI_RE, Backlog, REF_HEADER, WORKSPACE, colourless_env, run_check, Refused, Rejected, commit_written, claims_ledger,
     external_description, git, id_re, in_scope, item_file, item_repos, line, need, rel_dir,
     repo_branch, repo_title_prefix, repositories, research_story, run, say, scope, setting, split_touch, waits,
     worker_dirs, main_worker_dir,
@@ -2118,11 +2118,14 @@ def cmd_merge(bl, a):
     """Merge the item's own code/ID merge request on the integration remote's project, now (`bl_forge.merge_own`:
     `glab mr merge --auto-merge=false --yes`): the one way an agent merges, since .claude/settings.json allows no
     `glab mr merge`. Another item's branch and another project are refused (exit 2), and so is every merge on the gh
-    arm. Its state is read first: one auto-merge already merged is reported merged, exit 0, so land runs next; a
+    arm and a project whose `forge` setting is empty (`bl_forge.NoForge`, raised here as `Rejected`). Its state is read first: one auto-merge already merged is reported merged, exit 0, so land runs next; a
     closed one, no request of the branch and a forge that cannot be read are exit 1; only an open one is merged, by its
     number, the newest open one when the branch has several."""
     import bl_forge
-    branch, project = merge_target(bl, a.id)
+    try:
+        branch, project = merge_target(bl, a.id)
+    except bl_forge.NoForge as e:
+        raise Rejected(str(e)) from None
     try:
         outcome, request, text = bl_forge.merge_own(bl.root, branch, run=run)
     except bl_forge.ForgeError as e:
