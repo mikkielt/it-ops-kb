@@ -2,9 +2,9 @@
 topic: gitlab/repository-mirroring
 priority: P3
 applies_to: "GitLab 19.x docs (gitlab-org/gitlab master @9f1632e2, 2026-09-27): repository mirroring, push and pull mirroring, bidirectional mirroring, remote mirrors API, GitHub importer; GitLab.com, Self-Managed and Dedicated"
-retrieved_utc: 2026-09-29
+retrieved_utc: 2026-10-23
 sources: [S-7iutmaw5, S-4o7kkuoi, S-5qb34k6p, S-ci4g3efd, S-7i4mq2ge, S-d24ftlvy, S-sg3osg2z, S-7zthwzzb, S-fa7zbfwo, S-ltef5j4x]
-status: complete
+status: partial
 ---
 
 # GitLab repository mirroring: push and pull mirrors, tiers and limits
@@ -36,6 +36,8 @@ Push mirroring (GitLab to another repository) is in every tier, on GitLab.com, S
 - After an import, **repository mirroring can keep the imported repository in sync with its GitHub copy** only where the tier has it (the section is Premium and Ultimate), and the docs state that mirroring does not sync new or updated pull requests from the GitHub project. [DOC S-sg3osg2z]
 - The importer maps the GitHub rule "Require a pull request before merging" to **No one** in **Allowed to push and merge**, "Require signed commits" to the Premium push rule **Reject unsigned commits**, and does not import the rule "Require status checks to pass before merging". [DOC S-sg3osg2z]
 - A push mirror has no documented filter by path or content: the options are protected branches only, a branch regex (Premium), keep divergent refs and the branch protections of the mirror itself, so a directory that must stay off the copy (an internal root, `_private/`) cannot be excluded by a mirror; a projection made before the push is needed. [DER S-4o7kkuoi, S-7iutmaw5: the complete option lists]
+- A GitLab project that is a pull mirror of a public copy is a read-only upstream for the clones that fetch from it, not a place they push to: the docs say not to push commits directly to a pull mirror, a branch that diverged from the remote is no longer updated (unless **Overwrite diverged branches** replaces the local changes), and a push to the mirror's default branch is what makes it diverge. Clones that also push their own commits to an organisation remote need that remote to be a separate project; the pull mirror is a second one, refreshed every 30 minutes at most, and only on Premium or Ultimate. [DER S-5qb34k6p, S-7iutmaw5: the pull page's don't-push rule, divergence handling, 30-minute pull and tier]
+- The mirroring page says that when a mirror is created "you must configure the authentication method" (SSH, or username and password, a token as the password); the pages read do not say whether a public https url accepts an empty credential, so whether a pull mirror of a public repository needs a token is not confirmed. [UNK]
 - On Free (including Free self-managed) a GitHub repository that people push branches to reaches GitLab merge requests only through a Git client: fetch the branch from the GitHub remote and push it to a GitLab branch with the merge-request push options; a pull mirror would not bring the pull requests even where the tier has it. [DER S-5qb34k6p, S-sg3osg2z, S-7iutmaw5: pull mirroring is Premium; mirroring does not sync pull requests]
 
 ## Reference

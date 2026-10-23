@@ -162,6 +162,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `claude/skills-and-subagents` | P2 | complete | `claude/skills-and-subagents.md`, `claude/skills-and-subagents.csv` | 11 |
 | `claude/cross-session-messaging` | P3 | complete | `claude/cross-session-messaging.md` | 14 |
 | `claude/large-codebases` | P3 | complete | `claude/large-codebases.md` | 7 |
+| `claude/mcp-install-scopes` | P3 | partial | `claude/mcp-install-scopes.md` | 6 |
 | `claude/mcp-tool-search` | P3 | complete | `claude/mcp-tool-search.md` | 5 |
 | `claude/mods` | P3 | partial | `claude/mods.md` | 10 |
 | `claude/parallel-sessions` | P3 | partial | `claude/parallel-sessions.md` | 11 |
@@ -207,17 +208,18 @@ Every topic of this root with its priority (the research order, not importance),
 | `gitlab/git-history-queries` | P3 | complete | `gitlab/git-history-queries.md` | 8 |
 | `gitlab/git-refs` | P3 | complete | `gitlab/git-refs.md` | 6 |
 | `gitlab/git-test-repositories` | P3 | complete | `gitlab/git-test-repositories.md` | 57 |
-| `gitlab/git-trailers-and-hooks` | P3 | partial | `gitlab/git-trailers-and-hooks.md` | 27 |
+| `gitlab/git-trailers-and-hooks` | P3 | partial | `gitlab/git-trailers-and-hooks.md` | 30 |
 | `gitlab/github-branch-rules-and-auto-merge` | P3 | complete | `gitlab/github-branch-rules-and-auto-merge.md` | 18 |
+| `gitlab/github-issue-forms` | P3 | partial | `gitlab/github-issue-forms.md` | 11 |
 | `gitlab/hosted-runners-windows` | P3 | complete | `gitlab/hosted-runners-windows.md` | 5 |
 | `gitlab/issue-closing-patterns` | P3 | complete | `gitlab/issue-closing-patterns.md` | 5 |
 | `gitlab/jira-issue-keys-in-commits` | P3 | partial | `gitlab/jira-issue-keys-in-commits.md` | 3 |
 | `gitlab/job-log-timestamps` | P3 | complete | `gitlab/job-log-timestamps.md` | 6 |
 | `gitlab/multi-project-pipelines` | P3 | complete | `gitlab/multi-project-pipelines.md` | 5 |
-| `gitlab/multi-repository-layouts` | P3 | partial | `gitlab/multi-repository-layouts.md` | 45 |
+| `gitlab/multi-repository-layouts` | P3 | partial | `gitlab/multi-repository-layouts.md` | 47 |
 | `gitlab/package-registries` | P3 | partial | `gitlab/package-registries.md` | 11 |
 | `gitlab/project-settings-api` | P3 | complete | `gitlab/project-settings-api.md` | 7 |
-| `gitlab/repository-mirroring` | P3 | complete | `gitlab/repository-mirroring.md` | 10 |
+| `gitlab/repository-mirroring` | P3 | partial | `gitlab/repository-mirroring.md` | 10 |
 | `gitlab/runner-registration` | P3 | partial | `gitlab/runner-registration.md` | 10 |
 | `gitlab/webhooks` | P3 | complete | `gitlab/webhooks.md` | 4 |
 | `gitlab/work-items-planning` | P3 | complete | `gitlab/work-items-planning.md` | 11 |

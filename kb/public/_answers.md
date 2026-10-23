@@ -4456,3 +4456,44 @@ _Agent: kb-research_
 - See security/secret-shapes-in-text.md, agents/agent-caching.md.
 
 _Agent: kb-research_
+
+## QK-fetch-only-upstream-remote-work-git. How does a fetch-only upstream remote work in git (a push url, what a pre-push hook sees of the remote's name and url) and should a clone with published local commits merge or rebase a projected upstream main?
+- `git remote set-url --push <name> <url>` sets a remote's push url and `git remote get-url --push` reads it; the push url is used for pushing instead of the fetch url, and the git-remote page says the two "must still refer to the same place", advising two remotes to fetch from one place and push to another. [DOC S-2u6tfn4r, S-j3galfta]
+- `pre-push` gets the remote's name and location as its two arguments; in the code the second is the url the transport was made with, which for a push is the push url, and the hook runs after the remote's refs are listed and before anything is sent. [DOC S-7dwkyip6; CODE S-5obxyibm, S-wt7v2674]
+- A probe (git 2.50.1, macOS) with the push url set to a value that is no repository stopped the push with `fatal: 'DISABLED' does not appear to be a git repository` (exit 128) before the hook ran; with a push url that exists the hook ran with the remote name and that push path; a push by url gave the url as both arguments; an empty `pushurl` value restored the fetch url for pushing. [DER S-2u6tfn4r, S-7dwkyip6: one run of a shell script]
+- For a clone whose local commits are already on a shared remote, `git merge upstream/main` kept their ids and the next push was a fast-forward; `git rebase upstream/main` gave them new ids and the push was rejected as a non-fast-forward. An upstream that re-creates a commit adds a duplicate to a merging clone without a conflict, the "duplicated forever" case of the git-rebase page. [DOC S-7kl4eeso; DER S-7kl4eeso, S-xw4rpv22: the same probe]
+- Conclusion: a disabled push url stops a push by remote name only; the guard that holds for a push by url, by a second remote name, or after the config line is cleared is a `pre-push` hook that compares both arguments with the upstream's fetch and push urls (and it is skipped by `--no-verify`). A clone with unpublished local commits can rebase onto each fetch, one whose commits are on a shared remote merges, and a merge is safe against an upstream that only fast-forwards. [DER S-2u6tfn4r, S-7dwkyip6, S-5obxyibm, S-7kl4eeso, S-xw4rpv22]
+- Open: ssh and https urls, Windows and other git versions were not run. [UNK]
+- See gitlab/git-trailers-and-hooks.md, gitlab/multi-repository-layouts.md.
+
+_Agent: kb-research_
+
+## QK-github-issue-form-yaml-field-ids. How does a GitHub issue form (.github/ISSUE_TEMPLATE yaml) define fields, ids and labels, how does the rendered issue body lay out each field, and how do gh issue create --body-file and gh issue view --json body carry it?
+- An issue form is a YAML file in `.github/ISSUE_TEMPLATE` with `name`, `description` and `body` required and `labels`, `title`, `assignees`, `type` and `projects` optional; the labels apply to issues created with the template and a label the repository lacks is not added. [DOC S-bgmri6cn]
+- Each `body` input has a `type`, an optional `id` (alphanumeric, `-`, `_`, unique) and `attributes` with a `label`; `markdown` elements are not submitted; `required` works only for public repositories. [DOC S-xkr7mklg, S-dwvfa6nv, S-4ophb6ze]
+- The rendered body has a `### <label>` heading per input with the answer under it, `_No response_` for an empty text input or text area and `None` for an empty dropdown, checkboxes as a `- [x]`/`- [ ]` list. [DOC S-otwixj3z]
+- `gh issue create` takes `--body-file` (`-` for standard input), `--title`, `--label` and `--web`; `gh issue view <number|url> --json body` returns the body. [DOC S-4kq7imwd, S-wahjf6r7]
+- Conclusion: an agent can write a body file in the form's layout (the heading text equal to the field label) and leave the posting to the person; an issue made from a body file is not created "with the template", so the form's labels are given with `--label`; and the maintainer parses the saved body by its `###` headings. [DER S-bgmri6cn, S-otwixj3z, S-4kq7imwd, S-wahjf6r7]
+- Open: the rendered layout is documented by GitHub's issue-parser README, not the form schema pages; `--template` with a YAML form and the body length limit were not confirmed. [UNK]
+- See gitlab/github-issue-forms.md.
+
+_Agent: kb-research_
+
+## QK-claude-code-mcp-local-scope-start-directory. How are Claude Code MCP servers scoped (local scope keyed to a project directory, the project .mcp.json), what does an invalid .mcp.json do, and how do CLAUDECODE and CLAUDE_CODE_CHILD_SESSION behave in an IDE integrated terminal?
+- Local scope (the default) is stored in `~/.claude.json` under the entry for the project and loads only there; project scope is a `.mcp.json` at the project root with an `mcpServers` key; user scope is the top level of `~/.claude.json`; local beats project beats user, whole entry. [DOC S1862, S2179]
+- A `.mcp.json` under `.claude/`, or with a `servers` key instead of `mcpServers`, never loads; since Claude Code 2.1.144 `claude mcp list` shows the configuration errors of a file that does not parse, where it used to list no servers. [DOC S-puvxt3jl, S-hvuk3dqt]
+- `CLAUDECODE=1` is set in Bash tool commands, hook commands and also in IDE extensions' integrated terminals, so it alone cannot tell a person's terminal from an agent's shell; `CLAUDE_CODE_CHILD_SESSION` is set only in subprocesses Claude Code itself starts (2.1.172 and later). (`claude/hooks.md:189`, `:190`) [DOC S-exebozns]
+- Conclusion: a registration for a workspace directory above a clone is made by running the add command from that directory; a guard that must refuse an agent session but allow a person in an IDE terminal reads `CLAUDE_CODE_CHILD_SESSION` as well as `CLAUDECODE`, with the caveat that a process can unset either. [DER S1862, S2179, S-exebozns]
+- Open: the key a subdirectory or a directory above the repository takes, whether a parent's `.mcp.json` is read, and what an interactive start shows for an unparsable file. [UNK]
+- See claude/mcp-install-scopes.md, claude/hooks.md.
+
+_Agent: kb-research_
+
+## QK-gitlab-pull-mirror-feed-organisation-remote. Can a GitLab pull mirror feed an organisation remote from a public GitHub copy, and on which tier?
+- Pull mirroring copies the branches, tags and commits of a remote repository, hosted anywhere, into a GitLab project on a schedule; it is Premium and Ultimate only, on GitLab.com, Self-Managed and Dedicated. [DOC S-5qb34k6p, S-7iutmaw5]
+- The mirror pulls 30 minutes after the previous pull (not disableable), when an administrator forces an update, or when an API call triggers one; the docs say not to push commits directly to the mirror, and a branch that diverged from the remote stops updating unless **Overwrite diverged branches** is on. [DOC S-5qb34k6p]
+- Conclusion: a pull-mirror project suits a read-only organisation upstream that clones fetch from; it is not the remote those clones push their own commits to, and on Free the way to bring a GitHub repository's branches in is a Git client (fetch from GitHub, push to GitLab). [DER S-5qb34k6p, S-7iutmaw5, S-4o7kkuoi]
+- Open: whether a public https url needs a token on the mirror form. [UNK]
+- See gitlab/repository-mirroring.md.
+
+_Agent: kb-research_

@@ -21,6 +21,23 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where do the sprint research's new facts live: two new topics (gitlab/github-issue-forms, claude/mcp-install-scopes) with the git, mirroring and merge facts added to their existing articles, or all of it in existing articles?",
+      "options": [
+        "two new topics plus extensions of git-trailers-and-hooks, multi-repository-layouts and repository-mirroring",
+        "no new topic: GitHub issue forms in automated-merge-requests and MCP scopes in settings-and-scopes"
+      ],
+      "recommendation": "two new topics plus extensions of git-trailers-and-hooks, multi-repository-layouts and repository-mirroring",
+      "do": {
+        "two new topics plus extensions of git-trailers-and-hooks, multi-repository-layouts and repository-mirroring": "ST-nvmndslp",
+        "no new topic: GitHub issue forms in automated-merge-requests and MCP scopes in settings-and-scopes": "ST-nvmndslp"
+      },
+      "class": "push"
+    }
+  ],
   "notes": "Open questions for the sprint, kb tools first then live docs: (1) git: a fetch-only remote (remote.<name>.pushurl, git remote set-url --push), what a pre-push hook sees of the remote name and url, merge vs rebase of a projected upstream into a published main (ST-s6iz6z36, ST-cqivdkvt); (2) GitHub issue forms: .github/ISSUE_TEMPLATE/*.yml syntax, field ids and labels, how the rendered body lays out each field, gh issue create --body-file and gh issue view --json body (ST-lnxywo7s, ST-2d26ca6z); (3) Claude Code: MCP local scope keyed to the start directory, .mcp.json project scope parsing and what happens to an invalid file, CLAUDECODE and CLAUDE_CODE_CHILD_SESSION in IDE integrated terminals (ST-rhug6pvg, ST-4vaqzqyr); (4) GitLab pull mirroring for an org remote fed from the public copy (Premium only, kb has public/gitlab/repository-mirroring.md).",
   "claimed_by": "claude-92aeeb3c",
   "operator": "op-f618a13e"
