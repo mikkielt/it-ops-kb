@@ -1,0 +1,23 @@
+{
+  "id": "SP-47w4ngr6",
+  "kind": "sprint",
+  "title": "Coord core: run-state transitions, a filtered wait, coordination settings and a landing worktree",
+  "status": "planned",
+  "goal": "coord.py transition moves an item's run state and posts its progress event in one transaction, refusing a move the state table does not allow; coord.py wait filters by event kind and item; kbsettings.py reads the coordination settings from the workspace's settings.json, overridden by a kb root's settings.json, over built-in defaults; land works in a landing worktree of its own, so the orchestrator's checkout may hold its own changes while a landing runs",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "notes": "Planned 2026-10-24 by the night run's core orchestrator for the operator's standing approval of EP-nij36lt7; ST-olagspdh follows ST-yrilvcbx (both change coord.py and kb_mcp.py).",
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
