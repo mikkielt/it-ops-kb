@@ -2,7 +2,7 @@
   "id": "BG-4wddhkjv",
   "kind": "bug",
   "title": "kbgit.py publish refuses a merge commit's message for an email address its first-parent diff adds, and refuses public example values the allowlist cannot or does not yet hold",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3trnelzv",
   "priority": "P1",
   "rank": 0,
@@ -26,6 +26,19 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
-  "claimed_by": "claude-b3926d84",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "aa115fad3e022a67856f4be2d600a3f8a1d9d741",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys,tempfile; sys.path.insert(0,'_tools'); import kbpublic; d=tempfile.mkdtemp(); g=lambda *a: subprocess.run(['git','-C',d,'-c','user.name=t','-c','user.email=t@example.com',*a],check=True,capture_output=True); g('init','-q','-b','main'); open(d+'/a.txt','w').write('a\\n'); g('add','a.txt'); g('commit','-qm','base'); g('checkout','-qb','side'); open(d+'/b.txt','w').write('jan.kowalski'+'@'+'corp.invalid\\n'); g('add','b.txt'); g('commit','-qm','side'); g('checkout','-q','main'); g('merge','-q','--no-ff','-m','merge side','side'); r=kbpublic.message_refusals('HEAD',None,{},d); print(r or 'ok'); sys.exit(1 if r else 0)"
+        ],
+        "exit": 0,
+        "sha256": "dc51b8c96c2d745d"
+      }
+    ]
+  }
 }
