@@ -2,7 +2,7 @@
   "id": "ST-xjmx4pjc",
   "kind": "story",
   "title": "A gate is classed push by a push action, not by the words origin or remote",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ovwzbc7u",
   "priority": "P2",
   "rank": 0,
@@ -69,5 +69,7 @@
   "links": [
     "parked: SP-rmp5zm5a close"
   ],
-  "notes": "Retrospective of SP-rmp5zm5a (2026-10-22, operator accepted): ST-xfuucxk2 g2 ('fails the eval on origin/main') and ST-aml4xyrf g4 ('git ls-remote') were classed push and blocking only by these words; the first stalled sprint SP-z6wolmvm overnight. Premise: the check exits 1 on origin/main of 2026-10-22 (both classed push). Planned 2026-10-23. Premise run on main: check 0 prints '5 read-only questions classed push' (origin/main, ls-remote, release, gitlab closings, merge request title) and check 1 prints 'host-name question classed push' (docs.gitlab.com, ST-6k546hpz's case). The planted gates are ST-enbc6v5h g2 (release), ST-y627kmds g1 (gitlab), BG-42dg5ryi g1 (merge request) and BG-hjxvxufh g1 (a push word in an option); the last stays classed push under the first gate option and becomes design under the second. After the gate is answered the worker adds a check for the chosen option's boundary case (BG-hjxvxufh g1's question text). _tools/test_authority.py line 74 asserts that release classes push anywhere and changes with the answer. Docs: kb/_self/backlog.md Gate classes and kb/_self/tools.md bl_authority row."
+  "notes": "Retrospective of SP-rmp5zm5a (2026-10-22, operator accepted): ST-xfuucxk2 g2 ('fails the eval on origin/main') and ST-aml4xyrf g4 ('git ls-remote') were classed push and blocking only by these words; the first stalled sprint SP-z6wolmvm overnight. Premise: the check exits 1 on origin/main of 2026-10-22 (both classed push). Planned 2026-10-23. Premise run on main: check 0 prints '5 read-only questions classed push' (origin/main, ls-remote, release, gitlab closings, merge request title) and check 1 prints 'host-name question classed push' (docs.gitlab.com, ST-6k546hpz's case). The planted gates are ST-enbc6v5h g2 (release), ST-y627kmds g1 (gitlab), BG-42dg5ryi g1 (merge request) and BG-hjxvxufh g1 (a push word in an option); the last stays classed push under the first gate option and becomes design under the second. After the gate is answered the worker adds a check for the chosen option's boundary case (BG-hjxvxufh g1's question text). _tools/test_authority.py line 74 asserts that release classes push anywhere and changes with the answer. Docs: kb/_self/backlog.md Gate classes and kb/_self/tools.md bl_authority row.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
