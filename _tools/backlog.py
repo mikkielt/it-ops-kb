@@ -337,6 +337,15 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           touches), a rule between stories; refused (exit 1, no file) when the
                                           text holds a leak-scan hit; writes only FILE and posts nothing, the
                                           operator pastes it into a new issue or runs gh issue create --body-file
+  backlog.py upstream-import FILE --issue URL [--commit [--trailer 'KEY: VALUE']...]
+                                          the maintainer's side: read an upstream-report issue body saved in FILE
+                                          (the form's sections, or gh issue view output: what precedes `### Clone
+                                          scope` is ignored) and file one draft story per user story outside any
+                                          sprint, each with the goal as reported, the premise and local change in its
+                                          notes and a link naming URL and the clone's scope; an issue whose url an
+                                          item's link already names files nothing, exit 0; refused (exit 1, nothing
+                                          filed) on a leak-scan hit, exit 2 for a body that is no report; reads FILE
+                                          only and fetches nothing
   backlog.py config                         the project settings (backlog.json at the root, or the file
                                           KB_BACKLOG_CONFIG names) with each value's source, file or default; a
                                           file with an unknown key or a wrong type is refused naming it, exit 2
@@ -374,7 +383,7 @@ import bl_cli
 import bl_items  # noqa: F401 - registers the item writers (new, fmt, claim, ... goal)
 import bl_land  # noqa: F401 - registers its commands, and those of bl_close and bl_precheck, which it imports
 import bl_plan  # noqa: F401 - registers its commands
-import bl_upstream  # noqa: F401 - registers `upstream-report`
+import bl_upstream  # noqa: F401 - registers `upstream-report` and `upstream-import`
 import bl_view  # noqa: F401 - registers its commands
 from bl_base import Backlog, COMMITS, OUTPUT_ROOT, ROOT, Refused, Rejected, cmd_config, load_settings, rel_dir
 from bl_base import UPSTREAM_WRITERS, setting, trailer_problem, withhold
@@ -408,7 +417,7 @@ bl_cli.register("config", cmd_config, help="print the project settings with each
 USAGE = ("new", "similar", "check", "fmt", "selectors", "list", "tree", "find", "show", "next", "held", "claim",
          "release", "answer", "set", "move", "reopen", "gate", "fire", "done", "researched", "land", "merge", "drop", "start", "precheck",
          "host-check", "close", "tidy", "horizon", "goal", "brief", "dispatch", "stage-back", "referrers", "cost", "red-pipeline", "intake", "procs", "stalled", "ops",
-         "landings", "own", "selfcheck", "upstream-report", "config")
+         "landings", "own", "selfcheck", "upstream-report", "upstream-import", "config")
 bl_cli.order(USAGE)
 
 

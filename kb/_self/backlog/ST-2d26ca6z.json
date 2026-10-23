@@ -49,6 +49,38 @@
   "depends_on": [
     "ST-lnxywo7s"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does upstream-import tell an issue is already imported?",
+      "options": [
+        "an item's link whose first word is the issue url",
+        "a stored imported-issue field on each item"
+      ],
+      "recommendation": "an item's link whose first word is the issue url",
+      "do": {
+        "an item's link whose first word is the issue url": "ST-2d26ca6z",
+        "a stored imported-issue field on each item": "ST-2d26ca6z"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "What does an imported draft story hold besides title, goal and the issue link?",
+      "options": [
+        "priority P2, the premise and local change as Premise: and Local change: lines of the notes",
+        "the premise and local change folded into the goal text"
+      ],
+      "recommendation": "priority P2, the premise and local change as Premise: and Local change: lines of the notes",
+      "do": {
+        "priority P2, the premise and local change as Premise: and Local change: lines of the notes": "ST-2d26ca6z",
+        "the premise and local change folded into the goal text": "ST-2d26ca6z"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "notes": "Operator's answer 2026-10-19: findings travel back as a GitHub issue in a template the agent fills with user stories; the maintainer reads the issue back and converts its stories to backlog items; how the issue is added (paste from the file or automation) is the user's choice. Premise: no import command exists (backlog.py has no upstream-import); the check exits 1 on the base.",
   "claimed_by": "claude-92aeeb3c",
   "operator": "op-f618a13e"
