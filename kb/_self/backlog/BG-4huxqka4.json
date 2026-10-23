@@ -35,7 +35,11 @@
         "//**/ prefix": "BG-4huxqka4",
         "literal main-checkout path": "BG-4huxqka4"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "//**/ prefix",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "filed_in": "clone-0ea70e5c",
