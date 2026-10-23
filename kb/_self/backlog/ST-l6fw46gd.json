@@ -36,6 +36,25 @@
   "depends_on": [
     "ST-e2ijqjsr"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which sources back the propagator facts, and are doc2query expansions added for the new facts?",
+      "options": [
+        "Add tracecontext.py, textmap.py and span.py rows at the article's pinned commit 14971cef9c84 (v1.45.1), no expansions: the item check passes on the facts as worded",
+        "Also generate doc2query expansions for the new facts"
+      ],
+      "recommendation": "Add tracecontext.py, textmap.py and span.py rows at the article's pinned commit 14971cef9c84 (v1.45.1), no expansions: the item check passes on the facts as worded",
+      "do": {
+        "Add tracecontext.py, textmap.py and span.py rows at the article's pinned commit 14971cef9c84 (v1.45.1), no expansions: the item check passes on the facts as worded": "ST-l6fw46gd",
+        "Also generate doc2query expansions for the new facts": "ST-l6fw46gd"
+      },
+      "class": "design",
+      "answer": "Add tracecontext.py, textmap.py and span.py rows at the article's pinned commit 14971cef9c84 (v1.45.1), no expansions: the item check passes on the facts as worded",
+      "by": "agent"
+    }
+  ],
   "notes": "Planning 2026-10-24: goal reworded without apostrophes into two clauses (DOC format facts, CODE propagator facts), both read by the one check (four DOC cases, one CODE case). Premise: the check fails on the base (precheck). Planned 2026-10-24 into SP-r7e7jcep: third in the run order (after ST-e2ijqjsr), since the five research stories share the source, anchor and expansions files.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
