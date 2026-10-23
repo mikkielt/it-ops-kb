@@ -668,8 +668,12 @@ def land_heavy():
 
 
 def land_push():
-    """The push step: the project's `land_push` command, named by its program (`kbgit.py sync --push` for the kb)."""
+    """The push step: the project's `land_push` command, named by its program (`kbgit.py sync --push` for the kb). A
+    project that names none stops the landing here, naming the key."""
     argv = setting("land_push")
+    if not argv:
+        raise land_stop("push", "the project's backlog.json names no `land_push` (the argument list of the command that "
+                                'sends the landed work to the integration main, e.g. ["git", "push", "origin", "HEAD:main"])')
     return (" ".join([Path(argv[0]).name, *argv[1:]]), argv)
 
 

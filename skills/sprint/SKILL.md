@@ -13,8 +13,8 @@ The project's `backlog.json`, at its repository root, names the steps only some 
 - `kb_root`: the kb root whose rule docs the project keeps; empty means the project has none, and every rule-pack command below is skipped.
 - `docs_map`: the CSV that maps an item's touches to the docs it must keep right; empty means no docs warning.
 - `land_stale`, `land_eval`, `land_lint`: the argument lists of the landing's stale-doc check, lookup eval and lint, run from the project's root before the push; `[]` means no such step.
-- `lane_module`: the module that says which lane a path belongs to: a project with a code lane sends code through a merge request, and `done` waits for it; `""` means no code lane, and every commit lands as content (`done --commit`, then the push).
-- `land_push`: the argument list of the push, run from the project's root (a first element ending in `.py` runs under python3, any other is the program, e.g. `["git", "push", "origin", "HEAD:main"]`): the landing's last step and the route for the claim commits. Its default is the kb's own gate script, which a host project has not, so a host names it.
+- `lane_module`: the module that says which lane a path belongs to: a project with a code lane sends code through a merge request, and `done` waits for it; `""` (the default) means no code lane, and every commit lands as content (`done --commit`, then the push).
+- `land_push`: the argument list of the push, run from the project's root (a first element ending in `.py` runs under python3, any other is the program, e.g. `["git", "push", "origin", "HEAD:main"]`): the landing's last step and the route for the claim commits. It has no default: a project that names none stops `land` at the push step, which names this key, so a host names it.
 - `item_dir`, `worktree_dir`, `scratch_dir`: where item files, worker worktrees and scratch directories sit; the brief and `dispatch` print the real paths, so never assume one.
 
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
