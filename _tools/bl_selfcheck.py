@@ -12,13 +12,19 @@ The eight checks, each independent and each a result {name, state, detail, remed
   allow-rules  every command the skills run (`SKILL_COMMANDS`, the list this module keeps as the source of truth, and
                `SKILL_TOOLS`) is covered by an allow rule of `.claude/settings.json` or `.claude/settings.local.json`;
                a `Bash(PATTERN)` rule covers a command that PATTERN matches whole, `*` standing for any text and a
-               trailing ` *` also for no arguments, as Claude Code reads it; a `deny` rule is not read; a bare `Bash` rule covers every command
+               trailing ` *` also for no arguments, as Claude Code reads it; a `deny` rule is not read; a bare `Bash` rule covers every command;
+               in a host project (a root that is not the plugin's own checkout, `own_checkout`) only the sprint loop's
+               commands (`LOOP_COMMANDS`), the commands its `backlog.json` names (`land_push`, `land_stale`, `land_eval`,
+               `land_lint`) and its forge's CLI command, when the file sets `forge`, are required, and settings that
+               are missing or unreadable read `unknown`
   checkout     the clone is no linked worktree of another checkout (`git rev-parse --git-common-dir` is its own
                `--git-dir`), or is one whose workers `land` accepts (`bl_base.main_worker_dir`: the other checkout's
                `.claude/worktrees/`, named with the clone's own in the detail); a linked worktree whose workers it
                refuses fails, and one git cannot be read for is `unknown`
   hooks        `core.hooksPath` runs this checkout's `.githooks` (or the `.githooks` of another worktree of the clone)
-               and each hook script is there; the plugin manifest parses and the files it names exist
+               and each hook script is there; the plugin manifest parses and the files it names exist; in a host
+               project the check is skipped, said so, unless `core.hooksPath` is set, and then it needs only that path
+               to exist, and the plugin manifest is not read
   host         the 5-minute load average is under SUITE_LOAD_PER_CORE times the cores (the load a whole-suite
                tests.py run fits its seconds ceiling at, which `done` of a review story reads too, naming the host;
                it is lower than LOAD_PER_CORE, so a load over that one fails it as well, in one short detail with
@@ -74,8 +80,10 @@ BYTES_BUDGET_S = 3  # the longest all the walks that measure what the removable 
 
 # The commands the skills run (the kb-sprint, kb-item, kb-backlog and kb-verify skills, the runbook's Working on items
 # and Definition of done), each as one real command line; the allow rules are matched against them whole. A command a
-# skill starts to run is added here with its skill in the same change.
-SKILL_COMMANDS = (
+# skill starts to run is added here with its skill in the same change. LOOP_COMMANDS are the sprint loop's own, which
+# every project runs; KB_COMMANDS are the kb's gate and check scripts, which a host project names in its backlog.json
+# (`land_*`) or does not run; FORGE_COMMANDS is the request read of the project's forge, by its `forge` setting.
+LOOP_COMMANDS = (
     "python3 _tools/backlog.py horizon --sprint SP",
     "python3 _tools/backlog.py next --sprint SP --all",
     "python3 _tools/backlog.py claim ST-00000000 --by s --commit",
@@ -84,14 +92,6 @@ SKILL_COMMANDS = (
     "python3 _tools/backlog.py stalled",
     "python3 _tools/backlog.py procs",
     "python3 _tools/backlog.py held --ref origin/main",
-    "python3 _tools/kbgit.py sync --push",
-    "python3 _tools/kbgit.py fix --check",
-    "python3 _tools/tests.py --changed origin/main",
-    "python3 _tools/check.py",
-    "python3 _tools/rag.py eval",
-    "python3 _tools/selfdoc.py section backlog Heading",
-    "python3 _tools/selfdoc.py stale --since origin/main",
-    "python3 .claude/skills/kb-verify/lint.py",
     "git fetch origin",
     "git status --short",
     "git log --grep KB-Work",
@@ -101,9 +101,21 @@ SKILL_COMMANDS = (
     "git commit -m message",
     "git worktree add path -b branch origin/main",
     "git -C clone fetch origin",
-    "glab mr view code/ST-00000000 -F json",
     "python3 _tools/backlog.py merge ST-00000000",
 )
+KB_COMMANDS = (
+    "python3 _tools/kbgit.py sync --push",
+    "python3 _tools/kbgit.py fix --check",
+    "python3 _tools/tests.py --changed origin/main",
+    "python3 _tools/check.py",
+    "python3 _tools/rag.py eval",
+    "python3 _tools/selfdoc.py section backlog Heading",
+    "python3 _tools/selfdoc.py stale --since origin/main",
+    "python3 .claude/skills/kb-verify/lint.py",
+)
+FORGE_COMMANDS = {"gitlab": ("glab mr view code/ST-00000000 -F json",), "github": ("gh pr view code/ST-00000000 --json state",)}
+SKILL_COMMANDS = LOOP_COMMANDS + KB_COMMANDS + FORGE_COMMANDS["gitlab"]  # all of them: what the kb's own checkout needs
+LAND_SETTINGS = ("land_push", "land_stale", "land_eval", "land_lint")  # the backlog.json commands a host names
 SKILL_TOOLS = ("Agent", "SendMessage", "Edit", "Write")  # tools the sprint's loop calls: each needs an allow rule
 
 # The remedies, in the words of the kb-sprint skill's Self-check.
@@ -112,6 +124,7 @@ REMEDY = {
                    "never edit them",
     "checkout": "use a standalone `git clone` as the orchestrator's clone",
     "hooks": "run /kb-setup (`python3 _tools/kbgit.py install-hooks`) before any commit",
+    "hooks-host": "make the directory core.hooksPath names, or unset it (`git config --unset core.hooksPath`)",
     "host-load": "dispatch fewer workers and give the tests a `-k` selection, which takes no host lock",
     "suite-load": "wait for the load to fall (another application or sibling workers hold the CPU) and run the "
                   "whole suite then; a `-k` selection takes no host lock and no ceiling",
@@ -177,10 +190,39 @@ def rule_covers(rule, command):
     return re.fullmatch(".*".join(re.escape(p) for p in pattern.split("*")), command, re.S) is not None
 
 
-def check_allow(root, commands=SKILL_COMMANDS, tools=SKILL_TOOLS):
+def own_checkout(root):
+    """Whether ROOT is the plugin's own checkout, the one that holds the kb's gate script `_tools/kbgit.py`; any other
+    root is a host project, which the plugin serves and whose checks only its own inputs decide."""
+    return (Path(root) / "_tools" / "kbgit.py").is_file()
+
+
+def host_commands(root):
+    """The commands a host project at ROOT needs allowed: the sprint loop's, those its backlog.json names in
+    `LAND_SETTINGS` (a first element ending in `.py` runs under python3; the `land_stale` step takes the integration
+    main as its last argument) and its forge's, only when the file sets `forge`."""
+    import bl_base
+    values, sources, _, _ = bl_base.read_settings(root)
+    commands = list(LOOP_COMMANDS)
+    for key in LAND_SETTINGS:
+        argv = list(values[key])
+        if argv:
+            if argv[0].endswith(".py"):
+                argv.insert(0, "python3")
+            if key == "land_stale":
+                argv.append("origin/main")
+            commands.append(" ".join(argv))
+    if sources["forge"] == "file":
+        commands += FORGE_COMMANDS.get(values["forge"], ())
+    return list(dict.fromkeys(commands))
+
+
+def check_allow(root, commands=None, tools=SKILL_TOOLS):
+    host = not own_checkout(root)
+    if commands is None:
+        commands = host_commands(root) if host else SKILL_COMMANDS
     rules, why = read_allow(root)
     if rules is None:
-        return result("allow-rules", "fail", why, REMEDY["allow-rules"])
+        return result("allow-rules", "unknown" if host else "fail", why, REMEDY["allow-rules"])
     missing = [c for c in commands if not any(rule_covers(r, c) for r in rules)]
     missing += [f"tool {t}" for t in tools if t not in rules and f"{t}(*)" not in rules]
     if missing:
@@ -257,7 +299,25 @@ def plugin_problem(root):
     return f"the plugin names {listing(gone)}, which are not there" if gone else None
 
 
+def host_hooks_problem(root):
+    """(skipped, problem) of a host project's `core.hooksPath`: skipped when it is unset, else the problem is None when
+    the path exists and a line naming it when it does not."""
+    p = subprocess.run(["git", "config", "--get", "core.hooksPath"], cwd=root, capture_output=True, text=True,
+                       encoding="utf-8", errors="replace")
+    cur = p.stdout.strip()
+    if not cur:
+        return True, None
+    return False, None if (Path(root) / cur).is_dir() else f"core.hooksPath {cur} does not exist"
+
+
 def check_hooks(root):
+    if not own_checkout(root):
+        skipped, problem = host_hooks_problem(root)
+        if skipped:
+            return result("hooks", "ok", "skipped: core.hooksPath is not set in this project")
+        if problem:
+            return result("hooks", "fail", problem, REMEDY["hooks-host"])
+        return result("hooks", "ok", "core.hooksPath exists")
     problems = [p for p in (hooks_problem(root), plugin_problem(root)) if p]
     if problems:
         return result("hooks", "fail", "; ".join(problems), REMEDY["hooks"])
@@ -451,8 +511,9 @@ def render(results, full=False):
     check not ok, whole lines dropped from the end past MAX_CHARS (named in the last line) unless FULL."""
     bad = [r for r in results if r["state"] != "ok"]
     failed = sum(r["state"] == "fail" for r in bad)
+    skipped = [f"{r['name']} {r['detail']}" for r in results if r["detail"].startswith("skipped")]
     if not bad:
-        return [f"selfcheck: ok ({len(results)} checks passed)"]
+        return [f"selfcheck: ok ({len(results)} checks passed" + "".join(f"; {x}" for x in skipped) + ")"]
     lines = [f"selfcheck: {failed} failed, {len(bad) - failed} unknown of {len(results)} checks"]
     lines += [line_of(r, not full) for r in bad]
     if full:
