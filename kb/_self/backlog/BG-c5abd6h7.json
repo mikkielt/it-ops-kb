@@ -3,7 +3,7 @@
   "kind": "bug",
   "title": "plugin.md says the coord_ tools come right after kb_feedback, but kb_monitor_status, kb_backlog, kb_querylog and kb_docs come first",
   "status": "draft",
-  "priority": "P2",
+  "priority": "P3",
   "rank": 0,
   "severity": "S4",
   "goal": "kb/_self/plugin.md names the place the eight coord_ tools have in tools/list when KB_COORD_TOOLS is 1: after kb_docs, before kb_backlog_write and the live-docs tools, in the order kb_mcp.py's handle() builds",

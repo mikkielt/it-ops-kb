@@ -3,7 +3,7 @@
   "kind": "bug",
   "title": "mon_view.py defines panel_lines twice; the first definition is dead code",
   "status": "draft",
-  "priority": "P2",
+  "priority": "P3",
   "rank": 0,
   "severity": "S4",
   "goal": "_tools/mon_view.py has one panel_lines, the one that takes width, and the dead two-parameter definition above it is removed",

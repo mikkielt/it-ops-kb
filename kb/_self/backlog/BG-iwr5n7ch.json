@@ -3,7 +3,7 @@
   "kind": "bug",
   "title": "coord.py's docstring says wait polls the store twice a second, but it polls every 50 ms",
   "status": "draft",
-  "priority": "P2",
+  "priority": "P3",
   "rank": 0,
   "severity": "S4",
   "goal": "coord.py's module docstring gives wait's poll interval as POLL_SECONDS has it (50 ms, as monitoring.md says)",

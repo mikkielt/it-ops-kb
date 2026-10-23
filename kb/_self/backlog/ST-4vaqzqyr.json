@@ -66,7 +66,11 @@
         "key on CLAUDE_CODE_CHILD_SESSION, which IDE terminals do not set": "ST-4vaqzqyr",
         "read both: refuse when either is set, and name the IDE route in the refusal": "ST-4vaqzqyr"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "read both: refuse when either is set, and name the IDE route in the refusal",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

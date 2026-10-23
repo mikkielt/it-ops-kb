@@ -3,7 +3,7 @@
   "kind": "bug",
   "title": "merge refusals other than an empty forge (another branch, no forge project, gh arm) exit 1, where tools.md says 2",
   "status": "draft",
-  "priority": "P2",
+  "priority": "P3",
   "rank": 0,
   "severity": "S3",
   "goal": "backlog.py merge on a remote that names no forge project, on the gh arm, or for a branch that is no item's own code/<id> exits 2 as kb/_self/tools.md says (bl_forge.target and merge_own raise a plain Refused, which backlog.py main maps to exit 1), or the doc and the cmd_merge docstring say exit 1.",

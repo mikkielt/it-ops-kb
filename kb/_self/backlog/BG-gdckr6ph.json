@@ -3,7 +3,7 @@
   "kind": "bug",
   "title": "kbcommon.SECRETS misses the real PGP private key block label, whose BEGIN line ends in PRIVATE KEY BLOCK",
   "status": "draft",
-  "priority": "P2",
+  "priority": "P1",
   "rank": 0,
   "severity": "S3",
   "goal": "kbcommon.SECRETS[0] matches the OpenPGP armor line -----BEGIN PGP PRIVATE KEY BLOCK----- (RFC 9580 6.2.1) as redact.KEY_BLOCK does, so the leak scan flags a committed PGP private key block",

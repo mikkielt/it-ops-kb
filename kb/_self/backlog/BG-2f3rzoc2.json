@@ -3,7 +3,7 @@
   "kind": "bug",
   "title": "token-efficiency.md's today's figure of 12 tools and 12,416 characters is not what the default server's tools/list holds",
   "status": "draft",
-  "priority": "P2",
+  "priority": "P3",
   "rank": 0,
   "severity": "S4",
   "goal": "the tools/list figure in kb/_self/token-efficiency.md counts the tools the measuring command lists today, including kb_backlog, kb_querylog and kb_docs, or is worded as a dated measurement that names the tools it counted",

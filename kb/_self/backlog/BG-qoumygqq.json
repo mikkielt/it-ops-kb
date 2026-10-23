@@ -3,7 +3,7 @@
   "kind": "bug",
   "title": "kbmon --events orders committed ops rows of one millisecond by row id, not write order",
   "status": "draft",
-  "priority": "P2",
+  "priority": "P3",
   "rank": 0,
   "severity": "S3",
   "goal": "kbmon --events reads committed ops rows of one millisecond in their write order (mon_events passes the clone root to mon_log.in_spool_order), so a landing whose land.step shares a millisecond with its land.end keeps its step span",

@@ -3,7 +3,7 @@
   "kind": "bug",
   "title": "headless-agent-runtimes.md cites the Haiku 5.5 price fact at ci-and-headless.md:91, which is another fact",
   "status": "draft",
-  "priority": "P2",
+  "priority": "P3",
   "rank": 0,
   "severity": "S4",
   "goal": "the citations of the Haiku 5.5 price fact in kb/public/agents/headless-agent-runtimes.md (lines 62 and 63) name the line that holds that fact in kb/public/claude/ci-and-headless.md",

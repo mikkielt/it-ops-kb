@@ -3,7 +3,7 @@
   "kind": "bug",
   "title": "benchmarks.md says the multi report's claims are rows of the sandbox's coordination store, but bench_multi counts claim events",
   "status": "draft",
-  "priority": "P2",
+  "priority": "P3",
   "rank": 0,
   "severity": "S4",
   "goal": "the multi setup text in kb/_self/reports/benchmarks.md says claims are the claim events of the sandbox's stores (a released claim leaves no row but still counts), as bench_multi.coord_counts reads them",
