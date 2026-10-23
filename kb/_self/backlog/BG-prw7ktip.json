@@ -2,7 +2,7 @@
   "id": "BG-prw7ktip",
   "kind": "bug",
   "title": "tests.py fails when KB_BACKLOG_CONFIG is set in the environment: conftest does not clear it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,
@@ -20,5 +20,7 @@
     "_tools/bench_repro.py",
     "kb/_self/benchmarks.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
