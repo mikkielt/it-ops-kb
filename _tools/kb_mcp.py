@@ -10,6 +10,11 @@ appends a report to the local query log spool. The Claude Code plugin starts it.
                                      servers of .claude-plugin/it-ops-kb-docs/.mcp.json at local scope (`claude mcp
                                      add --scope local`: this machine and this clone only), skipping names already there,
                                      but replacing a `kb` server that runs another clone's kb_mcp.py
+  python3 _tools/kb_mcp.py --register-local --project DIR [--dry-run]   the same for a directory above the clone that
+                                     sessions start in (a VS Code workspace), where the clone's registration does not
+                                     apply; --dry-run prints the `claude mcp` commands and runs none
+  python3 _tools/kb_mcp.py --status --project DIR   also print what DIR registers and any .mcp.json there that does not
+                                     parse (such as a Windows path with single backslashes), with the servers it leaves unloaded
 
 Tools (read-only but kb_feedback; the kb_* tools wrap rag.py and kbfacts.py and read the kb files, never the network, but
 kb_pack on the team's own server, which checks the printed facts' cited sources against their pages when `revalidate`
@@ -1554,16 +1559,20 @@ def common_dir(path):
     return Path(path, d).resolve() if d else None
 
 
-def registered_kb():
+def registered_kb(project=None):
     """(scope, script) of the `kb` server Claude Code starts in this clone, in its order of precedence: local (the
     entry under `projects` in claude_config() of the clone's main worktree, which `claude mcp add` also writes from a
     linked worktree, else of this directory), project (the clone's .mcp.json), user (claude_config()'s own
     `mcpServers`). script is the kb_mcp.py its command or arguments name, as an absolute Path, or None when they name
-    none; (None, None) when no scope has a `kb` server."""
+    none; (None, None) when no scope has a `kb` server. With `project`, a directory above the clone that sessions start
+    in, the same for that directory: its local entry and its .mcp.json (a relative script path is from it)."""
     cfg = claude_config()
     projects = cfg.get("projects") if isinstance(cfg.get("projects"), dict) else {}
     home, common = Path(kbcommon.HOME), common_dir(kbcommon.HOME)
-    keys = ([common.parent] if common and common.name == ".git" else []) + [home]
+    if project:
+        home, keys = Path(project), [Path(project)]
+    else:
+        keys = ([common.parent] if common and common.name == ".git" else []) + [home]
     local = next((v for key in keys for k, v in projects.items() if same_path(k, key)), {})
     try:
         project = json.loads((home / ".mcp.json").read_text(encoding="utf-8"))
@@ -1620,30 +1629,36 @@ def registration():
     return out
 
 
-def register_local():
+def register_local(project=None, dry_run=False):
     """A clone gets the servers a host gets from the plugins, under the names the clone's settings allow: `kb`
     (tools mcp__kb__*) and the docs servers (mcp__microsoft-learn__*, ...). The root has no .mcp.json because a
     plugin sourced from the root would load it. A `kb` server that runs another clone's kb_mcp.py is replaced: removed
-    first when it is at local scope, and shadowed by the local one when it is at project or user scope. Returns the
-    exit code."""
+    first when it is at local scope, and shadowed by the local one at project or user scope. With `project`, a
+    directory above the clone that sessions start in (a VS Code workspace), the servers are registered for that
+    directory instead. `dry_run` prints the commands and runs none. Returns the exit code."""
     with open(DOCS_MCP, encoding="utf-8") as f:
         servers = {"kb": {"command": sys.executable, "args": [str(SCRIPT)]}, **json.load(f)["mcpServers"]}
-    scope, script = registered_kb()
+    where = str(project) if project else kbcommon.HOME
+    scope, script = registered_kb(project)
     other = other_clone(script)
     code = 0
     for name, cfg in servers.items():
+        add = ["claude", "mcp", "add-json", "--scope", "local", name, json.dumps(cfg)]
         try:
             if name == "kb" and other:
                 if scope == "local":
-                    rm = subprocess.run(["claude", "mcp", "remove", "--scope", "local", name], cwd=kbcommon.HOME,
-                                        capture_output=True, text=True, encoding="utf-8", timeout=60)
-                    if rm.returncode != 0:
-                        print(f"{name}: runs {script}; removing it failed: {(rm.stderr or rm.stdout).strip()}")
-                        code = code or rm.returncode
-                        continue
+                    if dry_run:
+                        print(f"{name}: would run in {where}: claude mcp remove --scope local {name}")
+                    else:
+                        rm = subprocess.run(["claude", "mcp", "remove", "--scope", "local", name], cwd=where,
+                                            capture_output=True, text=True, encoding="utf-8", timeout=60)
+                        if rm.returncode != 0:
+                            print(f"{name}: runs {script}; removing it failed: {(rm.stderr or rm.stdout).strip()}")
+                            code = code or rm.returncode
+                            continue
                 print(f"{name}: replacing the {scope} scope server, which runs another clone's {script}")
-            else:
-                have = subprocess.run(["claude", "mcp", "get", name], cwd=kbcommon.HOME, capture_output=True, text=True,
+            elif not dry_run:
+                have = subprocess.run(["claude", "mcp", "get", name], cwd=where, capture_output=True, text=True,
                                       encoding="utf-8", timeout=60)
                 if have.returncode == 0:
                     print(f"{name}: already registered")
@@ -1651,11 +1666,51 @@ def register_local():
         except OSError:
             print("the claude CLI is not installed: nothing registered", file=sys.stderr)
             return 1
-        p = subprocess.run(["claude", "mcp", "add-json", "--scope", "local", name, json.dumps(cfg)], cwd=kbcommon.HOME,
-                           capture_output=True, text=True, encoding="utf-8", timeout=60)
+        if dry_run:
+            print(f"{name}: would run in {where}: claude mcp add-json --scope local {name} '{add[-1]}'")
+            continue
+        p = subprocess.run(add, cwd=where, capture_output=True, text=True, encoding="utf-8", timeout=60)
         print(f"{name}: " + ("registered (local scope)" if p.returncode == 0 else f"failed: {(p.stderr or p.stdout).strip()}"))
         code = code or p.returncode
     return code
+
+
+def project_status(project):
+    """{key: value} for a directory above the clone that sessions start in: which kb_mcp.py its `kb` server runs, and
+    its .mcp.json, when that file does not parse as JSON (Claude Code then loads none of its servers; the usual cause
+    is a Windows path with single backslashes) with the servers it names and would leave unloaded."""
+    root = Path(project)
+    info = {"project": str(root)}
+    if not root.is_dir():
+        info["project_registered"] = "not a directory"
+        return info
+    fix = f"{sys.executable} {SCRIPT} --register-local --project {root}"
+    scope, script = registered_kb(root)
+    info["project_registered"] = (f"no kb server at local, project or user scope for this directory ({fix} registers {SCRIPT})"
+                                  if not scope else f"kb ({scope} scope) runs {script or 'no kb_mcp.py'}")
+    mcp = root / ".mcp.json"
+    if not mcp.is_file():
+        return info
+    try:
+        text = mcp.read_text(encoding="utf-8")
+    except OSError as e:
+        info["project_mcp_json"] = f"{mcp} cannot be read: {e}"
+        return info
+    try:
+        data = json.loads(text)
+        names = data.get("mcpServers") if isinstance(data, dict) else None
+        info["project_mcp_json"] = f"{mcp} parses; servers: " + (", ".join(names) if isinstance(names, dict) and names else "none")
+    except ValueError as e:
+        names = []
+        try:  # the same text with each lone backslash doubled names the servers the file holds
+            fixed = json.loads(re.sub(r'\\(["\\/bfnrtu])|\\', lambda m: m.group(0) if m.group(1) else "\\\\", text))
+            names = list(fixed.get("mcpServers") or {})
+        except (ValueError, AttributeError, TypeError):  # still no JSON, or no server table
+            pass
+        info["project_mcp_json"] = (f"{mcp} does not parse as JSON ({e}); Claude Code loads none of its servers"
+                                    + (f", so it leaves unloaded: {', '.join(names)}" if names else "")
+                                    + f" (a Windows path takes a doubled backslash or a slash; {fix} makes the file unnecessary)")
+    return info
 
 
 def session_script():
@@ -1686,8 +1741,20 @@ def main():
     # JSON-RPC over stdio is UTF-8 with "\n" line ends on every OS; Windows would otherwise write the locale code page
     # and "\r\n"
     sys.stdout.reconfigure(encoding="utf-8", newline="\n")
-    if "--register-local" in sys.argv[1:]:
-        sys.exit(register_local())
+    argv = sys.argv[1:]
+    try:
+        project = project_arg(argv)
+    except ValueError as e:
+        print(f"kb_mcp: {e}", file=sys.stderr)
+        sys.exit(2)
+    if "--dry-run" in argv and "--register-local" not in argv:
+        print("kb_mcp: --dry-run goes with --register-local", file=sys.stderr)
+        sys.exit(2)
+    if project and "--register-local" not in argv and "--status" not in argv:
+        print("kb_mcp: --project goes with --register-local or --status", file=sys.stderr)
+        sys.exit(2)
+    if "--register-local" in argv:
+        sys.exit(register_local(project, "--dry-run" in argv))
     script = session_script()
     if script:
         redirect(script)
@@ -1698,12 +1765,30 @@ def main():
         sys.exit(2)
     if "--status" in sys.argv[1:]:
         print(kb_status({}))
+        if project:
+            print("\n".join(f"{k}: {v}" for k, v in project_status(project).items()))
         return
     # the team's own stdio server offers the live-docs tools; a server limited to named roots (--roots: a host's child, which
     # serves clients outside the team) and kb_http.py, which calls handle() alone, do not
     LIVE_ON[0] = not limited()
     threading.Thread(target=warm, daemon=True).start()
     serve()
+
+
+def project_arg(argv):
+    """The directory `--project DIR` (or `--project=DIR`) gives, as an absolute path, None without the flag;
+    ValueError when it names none."""
+    value = None
+    for i, a in enumerate(argv):
+        if a == "--project":
+            value = argv[i + 1] if i + 1 < len(argv) else ""
+        elif a.startswith("--project="):
+            value = a.split("=", 1)[1]
+    if value is None:
+        return None
+    if not value.strip():
+        raise ValueError("--project needs a directory: --project DIR")
+    return os.path.abspath(value)
 
 
 def roots_arg(argv):
