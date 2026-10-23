@@ -2,7 +2,7 @@
   "id": "BG-urlbsgsr",
   "kind": "bug",
   "title": "backlog.py run by its full path from a host project reads the plugin's own backlog.json, and the plugin's skills and brief show no --root (second-project run)",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4fawjprq",
   "sprint": "SP-ovwzbc7u",
   "priority": "P1",
@@ -61,5 +61,7 @@
       "role": "interactive"
     }
   ],
-  "notes": "Run in a host with the plugin's full path: config printed item_dir = \"kb/_self/backlog\" (file), so a host worker's gate add without --root writes the kb's backlog; with --plugin-dir <kb clone> a host's backlog.json hooks key is never read. Blocks the Nerthus adoption (BG-42dg5ryi's host); P1 by the operator. Planned to the operator's answer (the git top level of the working directory is the root outside the tool's checkout). Ran the rewritten repro (plants backlog.json item_dir host_items in a git-init dir, runs the plugin's backlog.py config there): exit 1, output item_dir = \"kb/_self/backlog\" (file). The guard check passes now: default_root from inside the checkout gives the checkout, --root wins. Fix is bl_cli.default_root (bl_cli.py:126), which returns the tool root whenever it holds .git; its only caller is backlog.py:402; kb_mcp.py has its own root_of. Docs: the settings paragraph of backlog.md that spells the root order, and tools.md, by the map rows for bl_*.py."
+  "notes": "Run in a host with the plugin's full path: config printed item_dir = \"kb/_self/backlog\" (file), so a host worker's gate add without --root writes the kb's backlog; with --plugin-dir <kb clone> a host's backlog.json hooks key is never read. Blocks the Nerthus adoption (BG-42dg5ryi's host); P1 by the operator. Planned to the operator's answer (the git top level of the working directory is the root outside the tool's checkout). Ran the rewritten repro (plants backlog.json item_dir host_items in a git-init dir, runs the plugin's backlog.py config there): exit 1, output item_dir = \"kb/_self/backlog\" (file). The guard check passes now: default_root from inside the checkout gives the checkout, --root wins. Fix is bl_cli.default_root (bl_cli.py:126), which returns the tool root whenever it holds .git; its only caller is backlog.py:402; kb_mcp.py has its own root_of. Docs: the settings paragraph of backlog.md that spells the root order, and tools.md, by the map rows for bl_*.py.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
