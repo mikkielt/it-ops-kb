@@ -90,7 +90,11 @@
         "A bug's repro, else the notes line Premise:, and the notes line Local change:, else a done item's touches; none recorded when absent": "ST-lnxywo7s",
         "New item fields premise and local_change": "ST-lnxywo7s"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "A bug's repro, else the notes line Premise:, and the notes line Local change:, else a done item's touches; none recorded when absent",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Operator's answer 2026-10-19: findings go back as a GitHub issue whose template the agent fills with user stories; how the issue is added (paste the file or automation) is the user's choice, so the tool writes a file and posts nothing. Premise: no template (.github holds only workflows) and no upstream-report command; the check exits 1 on the base. Today's field report (Windows ceiling, workspace .mcp.json, hand-made upstream remote and .venv) is the first planted case worth a dry run. A new skill is listed in AGENTS.md (4 KB cap: a cut elsewhere).",
