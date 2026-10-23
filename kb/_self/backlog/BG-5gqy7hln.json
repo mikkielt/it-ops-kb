@@ -113,7 +113,11 @@
         "a root holding _tools/kbgit.py is the plugin's own checkout, any other root a host": "BG-5gqy7hln",
         "a backlog.json setting names the project as a host": "BG-5gqy7hln"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "a root holding _tools/kbgit.py is the plugin's own checkout, any other root a host",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
