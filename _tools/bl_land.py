@@ -1780,18 +1780,12 @@ def changed_articles(changed):
             if len(parts) > 2 and parts[0] == "kb" and parts[-1].endswith(".md")]
 
 
-def changes_facts(changed):
-    """True when CHANGED (repository paths) holds a .md or .csv file under a kb root that the lookup eval reads: not
-    the backlog's item files, a root's generated coverage files or the query log, which every landing changes."""
-    for p in changed:
-        parts = p.split("/")
-        if len(parts) < 3 or parts[0] != "kb" or parts[1] == "_querylog" or parts[-1].startswith("_coverage."):
-            continue
-        if parts[1] == "_self" and parts[2] == "backlog":
-            continue
-        if parts[-1].endswith((".md", ".csv")):
-            return True
-    return False
+def changes_kb(changed):
+    """True when CHANGED (repository paths) holds any file under a kb root, item files, coverage files and ledgers
+    included. The query log store (`kb/_querylog`) is no kb root: `querylog.py apply --push` delivers it without
+    `land`, and a landing that carries only its files runs no eval."""
+    return any(len(parts) > 2 and parts[0] == "kb" and parts[1] != "_querylog"
+               for parts in (p.split("/") for p in changed))
 
 
 def worktree_back(root, released, branch, iid):
@@ -1811,8 +1805,8 @@ def worktree_back(root, released, branch, iid):
 
 def land_once(bl, a):
     """Land a finished item's branch: rebase it on the integration main, then by lane. Content: done --commit, the
-    heavy checks when _tools/ changed (else the lookup eval when kb articles or data changed, and the lint on the
-    changed articles), sync --push. Code not yet on the integration main: the item's checks and
+    heavy checks when _tools/ changed (else the lookup eval when any file under a kb root changed, and the lint on
+    the changed articles), sync --push. Code not yet on the integration main: the item's checks and
     a bug's repro, the heavy checks, sync --push (a code/<id> merge request; main does not move), and a re-run once
     it has merged finishes it as content does. Stops at the first failing step, naming it. Every run and every stop ends
     on the branch (or the detached commit) it started on: the rebase switches to the landed branch, and a claim
@@ -1937,7 +1931,7 @@ def land_once(bl, a):
         else:  # lint.py takes qualified article paths: the changed articles only, before sync --push
             articles = changed_articles(changed)
             lint = land_lint()
-            if changes_facts(changed) and land_eval()[1]:  # a fact can turn an off-kb eval row into a good answer
+            if changes_kb(changed) and land_eval()[1]:  # a fact can turn an off-kb eval row into a good answer
                 land_run(root, *land_eval())
             if articles and lint[1]:
                 land_run(root, lint[0], [*lint[1], *articles])
