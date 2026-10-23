@@ -2,7 +2,7 @@
   "id": "BG-svqrrfbt",
   "kind": "bug",
   "title": "mon_view.py defines panel_lines twice; the first definition is dead code",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,
@@ -31,6 +31,19 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "claude-92aeeb3c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "a273230689be7b811ac6b00e31ce0c86ef414fa7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import ast,sys; t=ast.parse(open('_tools/mon_view.py',encoding='utf-8').read()); n=sum(isinstance(x,ast.FunctionDef) and x.name=='panel_lines' for x in t.body); print(n); sys.exit(0 if n==1 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "4355a46b19d348dc"
+      }
+    ]
+  }
 }
