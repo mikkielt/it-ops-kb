@@ -2,7 +2,7 @@
   "id": "ST-5uvd4j5s",
   "kind": "story",
   "title": "Review sprint: The 2026-10-21 census closes: blocked and uncited sources settled, a new census tag, OpenTelemetry Python aliases",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-xznmaurz",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,27 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "ee692bbeefa54245abb98e31e1ae51fe72aedd56",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "fd3c592c674c7d37"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "b24a576ee910cdd7"
+      }
+    ]
+  }
 }
