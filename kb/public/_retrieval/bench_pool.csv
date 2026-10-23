@@ -39,26 +39,26 @@ BP-9cdc47a9,fact,logs,original,lookup_eval.csv:EV-terraform-azurerm-resource-cre
 BP-4fa7b2d7,fact,mcp,original,lookup_eval.csv:EV-resources-subscribe-templates,resources subscribe/templates,"[""listChanged|subscribe|resources/templates/list|uriTemplate""]",good
 BP-8f566d80,fact,mecm,original,lookup_eval.csv:EV-memcm-cmpivot-query-timeout,MEMCM CMPivot query timeout,"[""(?i)(?<!\\d\\.)\\b(1|one)[\\s-]*hours?\\b|(?<!\\d\\.)\\b(10|ten|60|sixty)[\\s-]*(minutes?|mins?)\\b""]",good
 BP-6b791ed3,fact,powerbi,original,lookup_eval.csv:EV-power-bi-gateway-ports,power bi gateway ports,"[""outbound-only|no inbound ports|on-premises data gateway""]",good
-BP-70b8a924,heldout,agents,held-out,lookup_heldout.csv:HO-adr-status-superseded,,"[""agents/decision\\-records\\.md""]",good
-BP-eed5a70e,heldout,agents,held-out,lookup_heldout.csv:HO-bare-headless-default,,"[""agents/headless\\-agent\\-runtimes\\.md""]",good
-BP-c263c1b8,heldout,claude,held-out,lookup_heldout.csv:HO-claude-api-pricing,,"[""claude/ci\\-and\\-headless\\.md"", ""agents/agent\\-caching\\.md""]",good
-BP-c8231575,heldout,agents,held-out,lookup_heldout.csv:HO-copilot-studio-instructions-limit,,"[""agents/instruction\\-and\\-context\\-limits\\.md""]",good
-BP-25ee1f97,heldout,claude,held-out,lookup_heldout.csv:HO-cross-session-messaging,,"[""claude/cross\\-session\\-messaging\\.md""]",good
-BP-c6a19a8d,heldout,defender,held-out,lookup_heldout.csv:HO-defender-performance-recording,,"[""defender/asr\\-and\\-antivirus\\.md""]",good
-BP-8d6431d0,heldout,gitlab,held-out,lookup_heldout.csv:HO-git-trailer-block,,"[""gitlab/git\\-trailers\\-and\\-hooks\\.md""]",good
-BP-7a749c56,heldout,gitlab,held-out,lookup_heldout.csv:HO-glab-merge-already-merged,,"[""gitlab/automated\\-merge\\-requests\\.md""]",good
-BP-9b08af0f,heldout,claude,held-out,lookup_heldout.csv:HO-headless-auth-env-vars,,"[""claude/env\\-vars\\.csv""]",good
-BP-eca5eda7,heldout,gitlab,held-out,lookup_heldout.csv:HO-job-token-mr-endpoints,,"[""gitlab/detecting\\-mr\\-merges\\-in\\-ci\\.md""]",good
-BP-1c06ad00,heldout,auth,held-out,lookup_heldout.csv:HO-kerberos-protected-users,,"[""auth/delegation\\-kcd\\-obo\\.md"", ""auth/kerberos\\.md""]",good
-BP-3f7275ab,heldout,claude,held-out,lookup_heldout.csv:HO-max-mcp-output-tokens,,"[""claude/tool\\-output\\-limits\\.md""]",good
-BP-92133773,heldout,claude,held-out,lookup_heldout.csv:HO-otel-api-request-attributes,,"[""claude/otel\\-monitoring\\.md""]",good
-BP-ca960c26,heldout,claude,held-out,lookup_heldout.csv:HO-permission-denied-hook,,"[""claude/hooks\\.md""]",good
-BP-8fe00926,heldout,agents,held-out,lookup_heldout.csv:HO-prompt-cache-pricing,,"[""agents/agent\\-caching\\.md""]",good
-BP-155bab89,heldout,gitlab,held-out,lookup_heldout.csv:HO-protected-branches-free,,"[""gitlab/protected\\-branches\\-tags\\.md""]",good
-BP-e2b21acd,heldout,agents,held-out,lookup_heldout.csv:HO-rag-chunk-size,,"[""agents/hybrid\\-retrieval\\.md""]",good
-BP-59c408a9,heldout,windows,held-out,lookup_heldout.csv:HO-sandbox-vgpu-intune,,"[""windows/windows\\-sandbox\\.md""]",good
-BP-8398709a,heldout,claude,held-out,lookup_heldout.csv:HO-sessionend-hook-input,,"[""claude/hooks\\.md""]",good
-BP-3f572330,heldout,mcp,held-out,lookup_heldout.csv:HO-streamable-http-origin,,"[""mcp/transports\\-streamable\\-http\\.md""]",good
+BP-5326201b,heldout,agents,held-out,lookup_heldout.csv:HO-a2a-task-states,,"[""agents/a2a\\-protocol\\.md""]",good
+BP-5108ee06,heldout,claude,held-out,lookup_heldout.csv:HO-allowed-tools-not-restrictive,,"[""claude/agent\\-sdk\\.md""]",good
+BP-18d961be,heldout,security,held-out,lookup_heldout.csv:HO-augenrules-merge-order,,"[""security/linux\\-auditd\\.md""]",good
+BP-6de1c4d1,heldout,windows,held-out,lookup_heldout.csv:HO-bitlocker-silent-standard-user,,"[""windows/bitlocker\\.md""]",good
+BP-78fcca80,heldout,mecm,held-out,lookup_heldout.csv:HO-cm-run-cmpivot-permissions,,"[""mecm/rbac\\.md""]",good
+BP-e7a7b55e,heldout,mecm,held-out,lookup_heldout.csv:HO-cm-script-detection-exit-codes,,"[""mecm/application\\-model\\.md""]",good
+BP-487f3c68,heldout,gitlab,held-out,lookup_heldout.csv:HO-codeowners-file-lookup-order,,"[""gitlab/codeowners\\.md""]",good
+BP-defbe963,heldout,agents,held-out,lookup_heldout.csv:HO-copilot-prompt-retention-period,,"[""agents/github\\-copilot\\-admin\\.md""]",good
+BP-562fcd53,heldout,defender,held-out,lookup_heldout.csv:HO-defender-api-rate-limits,,"[""defender/permissions\\-limits\\.md""]",good
+BP-f0959b5f,heldout,defender,held-out,lookup_heldout.csv:HO-defender-machine-lastseen,,"[""defender/machine\\-resource\\.md""]",good
+BP-ac27f430,heldout,dsc,held-out,lookup_heldout.csv:HO-dsc-directives-version-mismatch,,"[""dsc/directives\\.md""]",good
+BP-a5079649,heldout,graph,held-out,lookup_heldout.csv:HO-graph-batch-limit-throttled,,"[""graph/batching\\-and\\-query\\.md""]",good
+BP-08376431,heldout,windows,held-out,lookup_heldout.csv:HO-laps-passwordagedays,,"[""windows/laps\\.md""]",good
+BP-745f6dce,heldout,ad,held-out,lookup_heldout.csv:HO-lastlogontimestamp-lag,,"[""ad/computer\\-attributes\\.md""]",good
+BP-65124df6,heldout,claude,held-out,lookup_heldout.csv:HO-mcp-allow-glob-prefix,,"[""claude/permissions\\-mcp\\.md""]",good
+BP-010519b2,heldout,mcp,held-out,lookup_heldout.csv:HO-mcp-protected-resource-metadata,,"[""mcp/authorization\\.md""]",good
+BP-c1db0982,heldout,windows,held-out,lookup_heldout.csv:HO-sac-region-list,,"[""windows/smart\\-app\\-control\\.md""]",good
+BP-516cc666,heldout,windows,held-out,lookup_heldout.csv:HO-shell-launcher-pro-edition,,"[""windows/kiosk\\-assigned\\-access\\.md""]",good
+BP-b82b2da8,heldout,sqlserver,held-out,lookup_heldout.csv:HO-sql-deny-ownership-chain,,"[""sqlserver/insert\\-only\\-audit\\.md""]",good
+BP-21bdbca8,heldout,security,held-out,lookup_heldout.csv:HO-timesyncd-poll-defaults,,"[""security/linux\\-time\\-sync\\.md""]",good
 BP-8b39ca78,offkb,offkb,original,offkb_questions.txt#0d885e21,How do I configure Citrix Workspace app single sign-on?,"[""(?i)(not cover|doesn.t cover|does not cover|no coverage|not in the kb|kb lacks|isn.t in|none)""]",none
 BP-8566a6f7,offkb,offkb,original,offkb_questions.txt#c73b94fa,How do I deploy SAP GUI to Windows clients?,"[""(?i)(not cover|doesn.t cover|does not cover|no coverage|not in the kb|kb lacks|isn.t in|none)""]",none
 BP-7efbcb8d,offkb,offkb,original,offkb_questions.txt#0b9377a0,How do I register RHEL hosts with Red Hat Satellite activation keys?,"[""(?i)(not cover|doesn.t cover|does not cover|no coverage|not in the kb|kb lacks|isn.t in|none)""]",none
