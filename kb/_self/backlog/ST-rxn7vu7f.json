@@ -94,7 +94,11 @@
         "next --upstream adds them and --all keeps its meaning": "ST-rxn7vu7f",
         "next --all adds them and also means every ready item": "ST-rxn7vu7f"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "next --upstream adds them and --all keeps its meaning",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
