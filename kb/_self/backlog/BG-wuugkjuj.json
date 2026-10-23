@@ -1,0 +1,27 @@
+{
+  "id": "BG-wuugkjuj",
+  "kind": "bug",
+  "title": "close of a clone's own sprint can rewrite an upstream item's relates_to or depends_on link to a deleted item",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.py close, when it drops a deleted item's id from the links of remaining items, leaves every item that arrived from the clone's upstream main unchanged, as every other writer does since BG-wojfmyzp",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import inspect,sys;sys.path.insert(0,'_tools');import bl_close;s=inspect.getsource(bl_close);sys.exit(0 if 'is_upstream' in s else 1)"
+    ]
+  },
+  "repro_reason": "a planted run needs a throwaway clone whose upstream item links an own sprint's item; the repro marks that bl_close reads no upstream guard, and the fix's check must plant that clone (BG-wojfmyzp's check shows how)",
+  "touches": [
+    "_tools/bl_close.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-3trnelzv work"
+  ],
+  "notes": "Found 2026-10-24 by BG-wojfmyzp's worker; left out of that fix because workhorse's ST-55ueywel held _tools/bl_close.py.",
+  "filed_in": "clone-0ea70e5c"
+}
