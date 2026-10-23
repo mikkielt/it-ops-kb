@@ -146,7 +146,7 @@ def ops_records(ctx, after, seen=frozenset()):
     """(events, spans, newest time, keys of the rows of that time) of the ops rows newer than AFTER, and those of AFTER's
     millisecond whose key SEEN lacks (the newest FIRST_ROWS rows when AFTER is 0)."""
     import bl_stall
-    rows = mon_log.in_spool_order(bl_stall.ops_rows(str(ctx.root)))
+    rows = mon_log.in_spool_order(bl_stall.ops_rows(str(ctx.root)), ctx.root)
     rows = rows[-FIRST_ROWS:] if after == 0 else rows
     events, spans, steps, newest, keys = [], [], {}, after, set(seen)
     for r in rows:
