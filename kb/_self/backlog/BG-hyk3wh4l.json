@@ -2,7 +2,7 @@
   "id": "BG-hyk3wh4l",
   "kind": "bug",
   "title": "The answer QK-claude-code-status-line-notification-hooks says Remote Control answers prompts one session at a time although server mode runs concurrent sessions (_answers.md)",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,
@@ -28,5 +28,7 @@
   ],
   "depends_on": [
     "ST-ptjkvvnc"
-  ]
+  ],
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
