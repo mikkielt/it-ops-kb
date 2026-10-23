@@ -1,0 +1,25 @@
+{
+  "id": "BG-uoqtn67j",
+  "kind": "bug",
+  "title": "benchmarks.md chains the 2026-10-23 held-out-only record against earlier runs on different rows with no note",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/_self/reports/benchmarks.md says, beside the 2026-10-23 record, that it measured 20 held-out rows no earlier record held, held-out kind only and one rep, so its held-out, all and effort cells do not compare with the earlier records' rows; or the report generator leaves those deltas out for a record whose row set differs",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('kb/_self/reports/benchmarks.md',encoding='utf-8').read();sys.exit(0 if '2026-10-23' in t and ('different row' in t or 'no earlier record held' in t) else 1)"
+    ]
+  },
+  "repro_reason": "the defect is the report's missing wording beside generated figures; the generator's output is the text read",
+  "touches": [
+    "kb/_self/reports/benchmarks.md",
+    "_tools/bench_report.py"
+  ],
+  "links": [
+    "parked: SP-lorofi3i review"
+  ]
+}
