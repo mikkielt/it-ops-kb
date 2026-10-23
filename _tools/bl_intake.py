@@ -297,10 +297,12 @@ def near_duplicates(root, title, goal):
 def file_draft(bl, c, draft, say):
     """File one candidate's draft: merge it into the notes of a near-duplicate open item (once: a second run adds
     nothing; an item of the same detector is no duplicate, for a detector words its findings alike and each has its
-    own fingerprint), else save the draft. Returns (`filed` or `merged`, id). Refused, the draft not saved, when the
-    near-duplicate's notes are full or OPEN_DRAFTS_MAX open drafts are filed already."""
+    own fingerprint, and neither is an upstream item, read-only in this clone), else save the draft. Returns (`filed`
+    or `merged`, id). Refused, the draft not saved, when the near-duplicate's notes are full or OPEN_DRAFTS_MAX open
+    drafts are filed already."""
     title, goal = one(c.title), one(c.goal)
-    dups = [d for d in near_duplicates(bl.root, title, goal) if detector_of(bl.items[d]) != c.detector]
+    dups = [d for d in near_duplicates(bl.root, title, goal)
+            if detector_of(bl.items[d]) != c.detector and not bl.is_upstream(d)]  # an upstream item is read-only
     if dups:
         it = bl.items[dups[0]]
         note = f"Found again by the intake: {title}. {goal} (fingerprint {c.fp})"

@@ -200,6 +200,8 @@ def cmd_new(bl, a):
 def cmd_fmt(bl, a):
     n = 0
     for iid, it in bl.items.items():
+        if bl.is_upstream(iid):  # read-only in this clone: fmt leaves its file as the upstream wrote it
+            continue
         if bl.raw.get(iid) != canonical(it):
             bl.save(it)
             n += 1

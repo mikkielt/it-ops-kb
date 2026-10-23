@@ -386,7 +386,8 @@ import bl_plan  # noqa: F401 - registers its commands
 import bl_upstream  # noqa: F401 - registers `upstream-report` and `upstream-import`
 import bl_view  # noqa: F401 - registers its commands
 from bl_base import Backlog, COMMITS, OUTPUT_ROOT, ROOT, Refused, Rejected, cmd_config, load_settings, rel_dir
-from bl_base import UPSTREAM_WRITERS, setting, trailer_problem, withhold
+import bl_base
+from bl_base import setting, trailer_problem, withhold
 from bl_base import canonical, in_scope, waits  # noqa: F401 - tests read them as backlog.NAME
 from bl_check import item_files_only, validate  # noqa: F401 - tests read them as backlog.NAME
 from bl_land import run_check, own_failure  # noqa: F401 - tests read them as backlog.NAME
@@ -419,6 +420,19 @@ USAGE = ("new", "similar", "check", "fmt", "selectors", "list", "tree", "find", 
          "host-check", "close", "tidy", "horizon", "goal", "brief", "dispatch", "stage-back", "referrers", "cost", "red-pipeline", "intake", "procs", "stalled", "ops",
          "landings", "own", "selfcheck", "upstream-report", "upstream-import", "config")
 bl_cli.order(USAGE)
+
+# The commands that write an item or a sprint file and refuse one that arrived from the upstream main: bl_base's
+# item writers, `land` (which finishes its item through `done`) and the sprint writers `start` and `close`;
+# `host-check` is in bl_base's tuple, but takes a sprint.
+UPSTREAM_WRITERS = bl_base.UPSTREAM_WRITERS + ("land", "start", "close")
+
+
+def upstream_target(a):
+    """The id an upstream-guarded command acts on: its `id`, else, for a sprint writer (`start`, `close`,
+    `host-check`), its `sprint`; None for a read-only form (`done --dry-run`, `close --summary`)."""
+    if getattr(a, "dry_run", False) or getattr(a, "summary", False):
+        return None
+    return getattr(a, "id", None) or getattr(a, "sprint", None)
 
 
 def main(argv=None):
@@ -460,9 +474,9 @@ def main(argv=None):
             why = next(filter(None, map(trailer_problem, a.trailer)), None)
             if why:
                 raise Refused(why)
-        if a.cmd in UPSTREAM_WRITERS and not getattr(a, "dry_run", False) and getattr(a, "id", None) in bl.items \
-                and bl.is_upstream(a.id):
-            raise Refused(f"{bl.label(a.id)} arrived from the upstream main (git config kb.upstreamRemote) and is "
+        target = upstream_target(a) if a.cmd in UPSTREAM_WRITERS else None
+        if target in bl.items and bl.is_upstream(target):
+            raise Refused(f"{bl.label(target)} arrived from the upstream main (git config kb.upstreamRemote) and is "
                           f"read-only in this clone: {a.cmd} refuses it; file the change as an item of this clone, or "
                           "make it in the upstream")
         return bl_cli.handler_of(a.cmd)(bl, a)
