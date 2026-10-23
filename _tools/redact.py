@@ -64,8 +64,9 @@ REGISTRY_ROOTS = ("hklm", "hkcu", "hkcr", "hku", "hkcc")
 TLDS = ("com net org edu gov mil int info biz io ai co me dev app cloud ms tv us uk de pl eu fr nl be ch at se no dk "
         "fi cz sk es it pt ie ca au nz jp cn in ru ua br mx za sg hk kr tw il tr gr hu ro bg hr si lt lv ee lu is "
         "local lan corp internal intra home arpa example test invalid localhost site online tech xyz").split()
-HOST = re.compile(r"(?<![\w.@/\\-])(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+(?:" + "|".join(TLDS) +
-                  r")(?![\w-]|\.[A-Za-z0-9])", re.I)
+_HOST_NAME = (r"(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+(?:" + "|".join(TLDS) + r")(?![\w-]|\.[A-Za-z0-9])")
+HOST = re.compile(r"(?<![\w.@/\\-])" + _HOST_NAME, re.I)
+URL_HOST = re.compile(r"(?i)\bhttps?://(?:[^\s/@\"'<>]*@)?(" + _HOST_NAME + ")")
 PASCAL = re.compile(r"(?:^|\.)[A-Z][a-z]")  # System.IO, Microsoft.Graph.Beta: .NET names, not hosts
 UNC = re.compile(r"(?<![\w\\])\\\\(?![?.]\\)([A-Za-z0-9._$-]+)((?:\\[^\\\s\"'<>|*?:]+)*)")
 DRIVE = re.compile(r"(?<![\w])[A-Za-z]:((?:[\\/]{1,2}[^\\/\r\n\t\"'<>|*?:]+(?=[\\/]))*(?:[\\/]{1,2}[^\\/\s\"'<>|*?:,;)]*)?)")
@@ -125,6 +126,7 @@ def scan_known(texts):
         k.ips.update(m.group(0) for m in IPV4.finditer(low))
         k.ips.update(m.group(0) for m in IPV6.finditer(low))
         k.hosts.update(m.group(0).lower() for m in HOST.finditer(t))
+        k.hosts.update(m.group(1).lower() for m in URL_HOST.finditer(t))
         k.emails.update(m.group(0).lower() for m in EMAIL.finditer(t))
         k.logons.update(m.group(0).lower() for m in LOGON.finditer(t))
         k.computers.update(m.group(0).lower() for m in COMPUTER.finditer(t))
