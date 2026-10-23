@@ -24,7 +24,7 @@ from typing import NamedTuple
 
 import agent_bench
 from bench_core import (HOME, PRICE, RAW, RESULTS, SPEND, WEB_SEARCH_USD, Skip, est_cost, no_plugin_env, pinned,
-                        prompt_tokens, read_rows, resolve_model, run_tokens, scratch_dir, spent_run, spent_usd, usage_sum,
+                        prompt_tokens, read_price, read_rows, resolve_model, run_tokens, scratch_dir, spent_run, spent_usd, usage_sum,
                         write_rate, write_rows)
 from bench_retrieval import numbered, sonnet_json
 
@@ -1354,7 +1354,8 @@ def list_usd(r, name="", cc=""):
     into its pinned model's), the output and the uncached input a request does not
     show (the difference put in the lowest price tier for the input, the highest the requests reached for the output)
     and a model that has no request of the main session at all (the model a WebFetch or WebSearch call runs inside the
-    tool, billed in the lowest tier), each at its own model's prices; a run with no `model_usage` takes its own `out`
+    tool, billed in the lowest tier), each at its own model's prices, its cache reads at `read_price` for Claude Code
+    version `cc`; a run with no `model_usage` takes its own `out`
     in place of the requests' partial counts, shared between models in proportion to them. Plus the web searches the run
     is billed (`web_searches`, else the `searches` counted) at WEB_SEARCH_USD each, on every arm."""
     groups = {}
@@ -1384,7 +1385,8 @@ def list_usd(r, name="", cc=""):
             if model not in PRICE:
                 raise KeyError(f"no price for model {model!r}: add it to bench_core.PRICE")
             p = PRICE[model][0]
-            total += (u["uncached"] * p[1] + u["cache_write"] * write_rate(p) + u["cache_read"] * p[4] + u["out"] * p[2]) / 1e6
+            total += (u["uncached"] * p[1] + u["cache_write"] * write_rate(p) + u["cache_read"] * read_price(model, 0, cc)
+                      + u["out"] * p[2]) / 1e6
     return total + r.get("web_searches", r.get("searches", 0)) * WEB_SEARCH_USD
 
 
