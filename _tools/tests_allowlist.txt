@@ -231,3 +231,13 @@ guid  0e796bdb-100d-47d6-a2d5-f7d2daa51f51  # public Windows power setting GUID 
 guid  d48179be-ec20-11d1-b6b8-00c04fa372a7  # public Windows device setup class GUID in the Microsoft baseline (security/settings-crosswalk.csv)
 guid  35378eac-683f-11d2-a89a-00c04fbbcfa2  # public Group Policy engine extension id (security/settings-crosswalk.csv, source S1598)
 guid  52730886-51aa-4243-9f7b-2776584659d4  # public DSC resource schema setting id (_anchors.csv, dsc/releases-feature-matrix.md, source S122)
+
+# public example and source values in pushed history that kbgit.py publish refused (BG-4wddhkjv)
+guid  aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee  # patterned placeholder session id in a bug item's repro (kb/_self/backlog/BG-wt7exlol.json)
+ip    10.10.10.0     # scope id in Microsoft's Add-DhcpServerv4Failover example (windows/dhcp-failover.md, census judge S-x2hxgchj)
+ip    10.20.20.0     # scope id in Microsoft's Add-DhcpServerv4Failover example (windows/dhcp-failover.md, census judge S-x2hxgchj)
+email adam@chef.io                          # Author:: header of Chef's MIT-licensed policyfile.rb, a public source (_sources.csv S-u5nsu5mz)
+email smurawski@chef.io                     # Author:: header of Chef's MIT-licensed exit_code.rb, a public source (_sources.csv S-uajt3oqr)
+email noreply@github.com                    # GitHub's documented web-commit author address, names no one (_gaps.md)
+email git@gitlab.com                        # GitLab's documented SSH user, not a mailbox (_gaps.md)
+email hugo@python.org                       # python.org's published sigstore identity of a release manager (census of S-jzqdphnx)

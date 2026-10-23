@@ -211,7 +211,7 @@ SECRETS = (
 # The placeholders-only shapes: what the leak scan flags in authored files (`_tools/test_leaks.py`) and what drops a
 # query-log entry after redaction (redact.py). One copy, so the redactor keeps nothing the scan would flag.
 LEAK_HOME = r"(?:/Users/|/home/|[A-Za-z]:\\+Users\\+)(?!<)[A-Za-z][\w.-]+"
-HOME_GENERIC = ("public", "default", "all users", "username", "user", "administrator", "jan.kowalski")
+HOME_GENERIC = ("public", "default", "all users", "username", "user", "administrator", "admin", "jan.kowalski")
 LEAK_IPV4 = (r"(?<![\w.])(?:10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}"
              r"\.\d{1,3})(?![\w.])")
 LEAK_EMAIL = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}\b"
