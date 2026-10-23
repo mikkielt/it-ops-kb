@@ -5,6 +5,7 @@ adds a `register` call in its module, its name in backlog.py's USAGE and no line
 
 Standard library only; imports `bl_base` (for `COMMITS` and the project settings) and never `backlog`."""
 import argparse
+import os
 import re
 import subprocess
 import sys
@@ -124,18 +125,29 @@ def root_of(argv, default):
 
 
 def default_root(tool_root, cwd=None):
-    """The root a command runs on when `--root` is not given: the tool's own checkout when it is a git working tree
-    (the kb's clone, or a worktree of it), else, for a tool installed as a plugin, the git toplevel of the working
-    directory, which is the project; TOOL_ROOT when the working directory is no repository."""
+    """The root a command runs on when `--root` is not given: the git toplevel of the working directory, which is
+    the project, unless the tool's own checkout is a git working tree (the kb's clone, or a worktree of it) and the
+    working directory is in that clone or one of its worktrees, where it is the tool's own checkout; TOOL_ROOT when
+    the working directory is no repository."""
+    def git(*args, at):
+        try:
+            p = subprocess.run(["git", *args], cwd=at, capture_output=True, text=True, encoding="utf-8",
+                               errors="replace", timeout=30)
+        except (OSError, subprocess.SubprocessError):
+            return ""
+        return p.stdout.strip() if p.returncode == 0 else ""
+
+    top = git("rev-parse", "--show-toplevel", at=cwd)
+    if not top:
+        return str(tool_root)
     if (Path(tool_root) / ".git").exists():
-        return str(tool_root)
-    try:
-        p = subprocess.run(["git", "rev-parse", "--show-toplevel"], cwd=cwd, capture_output=True, text=True,
-                           encoding="utf-8", errors="replace", timeout=30)
-    except (OSError, subprocess.SubprocessError):
-        return str(tool_root)
-    top = p.stdout.strip()
-    return top if p.returncode == 0 and top else str(tool_root)
+        def common(at):
+            d = git("rev-parse", "--git-common-dir", at=at)
+            return os.path.realpath(os.path.join(at, d)) if d else ""
+
+        if not common(tool_root) or common(top) == common(tool_root):
+            return str(tool_root)
+    return top
 
 
 def parse(ap, argv=None):
