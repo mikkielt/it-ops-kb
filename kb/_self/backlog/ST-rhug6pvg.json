@@ -2,7 +2,7 @@
   "id": "ST-rhug6pvg",
   "kind": "story",
   "title": "kb_mcp.py registers the kb servers for a workspace directory above the clone, and its status names a .mcp.json there that does not parse",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3trnelzv",
   "priority": "P1",
   "rank": 0,
@@ -50,5 +50,7 @@
   "depends_on": [
     "ST-s6iz6z36"
   ],
-  "notes": "Premise (field report 2026-10-19): sessions on the Windows host start in a VS Code workspace directory above the clone, where the clone's local-scope registration does not apply; the deploy agent hand-wrote <workspace>\\.mcp.json with single backslashes, invalid JSON, so the kb server never loaded until fixed by hand. kb_mcp.py has no --project form today: --status and --register-local read only the clone (registered_kb swallows a ValueError from a .mcp.json as no servers). The check plants such a file; on the base it exits 1 at the status step and skips the registration step, so a precheck run registers nothing."
+  "notes": "Premise (field report 2026-10-19): sessions on the Windows host start in a VS Code workspace directory above the clone, where the clone's local-scope registration does not apply; the deploy agent hand-wrote <workspace>\\.mcp.json with single backslashes, invalid JSON, so the kb server never loaded until fixed by hand. kb_mcp.py has no --project form today: --status and --register-local read only the clone (registered_kb swallows a ValueError from a .mcp.json as no servers). The check plants such a file; on the base it exits 1 at the status step and skips the registration step, so a precheck run registers nothing.",
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
