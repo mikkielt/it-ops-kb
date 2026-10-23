@@ -2,7 +2,7 @@
   "id": "BG-lxjtp2xz",
   "kind": "bug",
   "title": "The upstream push guard misses the upstream given as an absolute path, a file:// url, a trailing slash or a ../ detour",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3trnelzv",
   "priority": "P1",
   "rank": 0,
@@ -43,6 +43,19 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-92aeeb3c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "b730c1293560ff5cc534f3ffebe55fe2666da797",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,subprocess,sys,tempfile;sys.path.insert(0,'_tools');import kbpublic;t=tempfile.mkdtemp();up=os.path.join(t,'up.git');c=os.path.join(t,'clone');g=lambda *a,cwd=None:subprocess.run(['git',*a],cwd=cwd,capture_output=True,text=True);g('init','-q','--bare',up);g('init','-q',c);g('remote','add','upstream','../up.git',cwd=c);g('config','kb.upstreamRemote','upstream',cwd=c);r=os.path.realpath(up);forms=[r,r+'/','file://'+r,'../clone/../up.git'];m=[f for f in forms if not kbpublic.is_upstream(f,c,url=f)];print('upstream url forms not refused:',m);sys.exit(1 if m else 0)"
+        ],
+        "exit": 0,
+        "sha256": "593999d8942f41b6"
+      }
+    ]
+  }
 }
