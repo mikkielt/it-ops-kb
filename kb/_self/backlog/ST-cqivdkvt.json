@@ -109,7 +109,11 @@
         "refuse on an unset scope, an unset upstream remote, a dirty tree, an operation in progress or a branch other than main; read both from the clone's config, no remote flag": "ST-cqivdkvt",
         "refuse the same, and also accept a --remote flag and any branch": "ST-cqivdkvt"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "refuse on an unset scope, an unset upstream remote, a dirty tree, an operation in progress or a branch other than main; read both from the clone's config, no remote flag",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Premise (field report 2026-10-19): the Windows clone carries local edits of tracked upstream files (tests_ceiling.json win32 1800, its decision row) next to its own setup; no tool tells which local commits touch upstream-owned paths or which of them upstream now makes unneeded, so each fetch from GitHub would meet them as conflicts. The public main is a projection that fast-forwards on every publish (git.md, Public home), so a team clone seeded from it can take it by merge without rewriting its own pushed commits. Depends on ST-s6iz6z36 for kb.upstreamRemote. Operator's answer 2026-10-19 replaces the removed gate policy: the bring-in follows the scope table (me rebase, team and org merge; ST-s6iz6z36 notes). The test upstream_merge plants one clone per scope.",
