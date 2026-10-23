@@ -59,7 +59,11 @@
         "anchored to the project root for the ceiling file and host.json, any depth for _decisions.csv, each for Edit and Write": "ST-7s3sp7sl",
         "every path at any depth (**/...)": "ST-7s3sp7sl"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "anchored to the project root for the ceiling file and host.json, any depth for _decisions.csv, each for Edit and Write",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
