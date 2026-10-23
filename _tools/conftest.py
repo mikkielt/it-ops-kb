@@ -33,10 +33,11 @@ if TOOLS not in sys.path:
 import kbpublic  # noqa: E402
 
 # What a scenario must not inherit: a verification date, the gate's own switches, a CI run's range, the session a
-# sync would compare commits with, the main lock a sync above the test run holds, and the publish hook's off switch.
+# sync would compare commits with, the main lock a sync above the test run holds, the publish hook's off switch and the
+# backlog settings file a shell names (a scenario's temporary root reads its own item directory, not that file's).
 LEAKY = ("KB_VERIFIED", "KB_TESTS_FAST", "KB_SYNC_NO_TESTS", "KB_GATE_DONE", "KB_SESSION", "KB_MAIN_LOCK_HELD",
          "CI_COMMIT_SHA", "CI_COMMIT_BEFORE_SHA", "CLAUDE_CODE_REMOTE_SESSION_ID", "CLAUDE_CODE_BRIDGE_SESSION_ID",
-         kbpublic.NO_HOOK_ENV, *GIT_LOCATION)
+         kbpublic.NO_HOOK_ENV, "KB_BACKLOG_CONFIG", *GIT_LOCATION)
 for _k in LEAKY:
     os.environ.pop(_k, None)
 SEED_SKIP = ("kb/_querylog/", ".claude/worktrees/")  # the committed query log store is no part of a scenario's kb
