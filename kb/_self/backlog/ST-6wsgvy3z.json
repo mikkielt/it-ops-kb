@@ -2,7 +2,7 @@
   "id": "ST-6wsgvy3z",
   "kind": "story",
   "title": "The census sources this host cannot read are re-sourced or their facts re-tagged",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-xznmaurz",
   "priority": "P2",
@@ -36,5 +36,7 @@
   "links": [
     "parked: SP-rmp5zm5a review"
   ],
-  "notes": "Operator 2026-10-22: after two reruns of ST-bjwyl2bc, 15 cited sources stay unreadable from this host: EUR-Lex S870 S871 S1552 S1555 S1556 S-2s2xlwgf S-qzdkyvqx (HTTP 202 empty challenge, also on /eli/ and publications.europa.eu CELLAR), cyber.gov.au S1425 S-nwnif62g S-uzuvf3vo (Akamai, connection times out), Alpine wiki S-6w34pn5d S-mt66jy4n (403, also action=raw), NCP S1405, NVD S-forvn2ly, Kaggle S2161 (JavaScript-only). The operator declined reading them in their Chrome through the browser extension. The census tag (ST-ywqj4gva) cannot be created while they stay unconfirmed. Operator 2026-10-22: the 4 sources a third census pass could not settle join this story (S1563, S-d3lsp242, S-jhuny2li, S-u5diy2cr); the census tag ST-ywqj4gva now waits on it, outside SP-rmp5zm5a. Operator 2026-10-23 triage: committed to SP-xznmaurz although parked, by the operator's choice, since the census tag (ST-ywqj4gva) waits on it; the route is re-source or re-tag (UNK with a dated note), no browser or other host read. Premise 2026-10-23 on 35b5b7cb2: the check exits 1, all 19 still unconfirmed."
+  "notes": "Operator 2026-10-22: after two reruns of ST-bjwyl2bc, 15 cited sources stay unreadable from this host: EUR-Lex S870 S871 S1552 S1555 S1556 S-2s2xlwgf S-qzdkyvqx (HTTP 202 empty challenge, also on /eli/ and publications.europa.eu CELLAR), cyber.gov.au S1425 S-nwnif62g S-uzuvf3vo (Akamai, connection times out), Alpine wiki S-6w34pn5d S-mt66jy4n (403, also action=raw), NCP S1405, NVD S-forvn2ly, Kaggle S2161 (JavaScript-only). The operator declined reading them in their Chrome through the browser extension. The census tag (ST-ywqj4gva) cannot be created while they stay unconfirmed. Operator 2026-10-22: the 4 sources a third census pass could not settle join this story (S1563, S-d3lsp242, S-jhuny2li, S-u5diy2cr); the census tag ST-ywqj4gva now waits on it, outside SP-rmp5zm5a. Operator 2026-10-23 triage: committed to SP-xznmaurz although parked, by the operator's choice, since the census tag (ST-ywqj4gva) waits on it; the route is re-source or re-tag (UNK with a dated note), no browser or other host read. Premise 2026-10-23 on 35b5b7cb2: the check exits 1, all 19 still unconfirmed.",
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
