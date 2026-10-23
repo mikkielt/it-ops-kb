@@ -1,9 +1,9 @@
 ---
 topic: logs/prometheus-retention-exposition
 priority: P3
-applies_to: "Prometheus v3.15.0 (released 2026-09-24); Python prometheus_client 0.26.0; Rust prometheus 0.14.0, prometheus-client 0.25.1, metrics-exporter-prometheus 0.18.3; prometheus/docs at commit 605cf81f"
-retrieved_utc: 2026-10-22
-sources: [S-cgscrv4s, S-one7nth5, S-fpf6c56i, S-42nwx5i6, S-a3vg5qlu, S-fauxu5ws, S-bfvveghs, S-eo46iizs, S-zirdyvds, S-ptmbzpgw, S-5tvo6y34, S-zbmhggt3, S-4hvb3m5w, S-bpsk5rak, S-dn4wxw4r, S-wr47t6mb, S-4gvbwjju, S-3ylk7y4h, S-f5e4slzj, S-fr4rpivt, S-lggz7o42, S-fmkur47t, S-uc4rdiul, S-ced5z4pp, S-4dcfdr4h, S-rm4q4usy, S-pf4gtprf, S-sxme5fjq, S744, S-r55gd5ar, S-vjphqfve]
+applies_to: "Prometheus v3.15.0 (released 2026-09-24); Python prometheus_client 0.26.0; Rust prometheus 0.14.0, prometheus-client 0.25.1, metrics-exporter-prometheus 0.18.3; Alertmanager v0.34.1 (exporter-toolkit v0.17.1); prometheus/docs at commit 605cf81f"
+retrieved_utc: 2026-10-23
+sources: [S-cgscrv4s, S-one7nth5, S-fpf6c56i, S-42nwx5i6, S-a3vg5qlu, S-fauxu5ws, S-bfvveghs, S-eo46iizs, S-zirdyvds, S-ptmbzpgw, S-5tvo6y34, S-zbmhggt3, S-4hvb3m5w, S-bpsk5rak, S-dn4wxw4r, S-wr47t6mb, S-4gvbwjju, S-3ylk7y4h, S-f5e4slzj, S-fr4rpivt, S-lggz7o42, S-fmkur47t, S-uc4rdiul, S-ced5z4pp, S-4dcfdr4h, S-rm4q4usy, S-pf4gtprf, S-sxme5fjq, S744, S-r55gd5ar, S-vjphqfve, S-fejzby56, S-rvqk5nmt, S-dl4d3ktf, S-3dvmby3z]
 status: partial
 ---
 
@@ -96,6 +96,24 @@ exporter (`claude/otel-monitoring.md`) is one such scrape target.
 - The Prometheus release publishes a `sha256sums.txt` with one SHA-256 per archive, including `linux-amd64`, `linux-arm64` and `windows-amd64`, so the server binary can be pinned by hash like other artifacts, and retention is a YAML field that applies on reload, so it can live as data beside the scrape jobs. [DER S-sxme5fjq, S-fpf6c56i: checksum file listing and the runtime-reloadable retention note]
 - A Prometheus job for a Claude Code session on the same host needs only a `static_configs` target `127.0.0.1:9464`, because `metrics_path` already defaults to `/metrics`. [DER S744, S-fpf6c56i: exporter port and path plus the scrape defaults]
 
+### Alerting: Prometheus to Alertmanager
+- In `prometheus.yml` the `alerting:` block holds `alert_relabel_configs` and `alertmanagers`, a list of `alertmanager_config` entries; each names the Alertmanager instances the server sends alerts to, either statically through `static_configs` or by service discovery. [DOC S-fpf6c56i]
+- An `alertmanager_config` takes `static_configs` ("List of labeled statically configured Alertmanagers"), and a `static_config` is a `targets` list of hosts plus a common `labels` set. [DOC S-fpf6c56i]
+- Each entry of the `alertmanagers` list (an `alertmanager_config`) sets `path_prefix` (prefix for the HTTP path alerts are pushed to, default `/`), `scheme` (default `http`), `timeout` (per-target push timeout, default `10s`) and `api_version` (default `v2`). [DOC S-fpf6c56i]
+- The Alertmanager configuration file (docs at v0.34.1) has a top-level `route` (the root of the routing tree, which must match all alerts) and a `receivers` list; each receiver has a unique `name` and one list per integration, among them `webhook_configs`. [DOC S-fejzby56]
+- A `route` takes `receiver`, `group_by` (labels by which incoming alerts are grouped; `'...'` as the only label disables aggregation), `group_wait`, `group_interval`, `repeat_interval`, `matchers`, `continue` (default `false`) and child `routes`; unset parameters are inherited from the parent route. [DOC S-fejzby56]
+- A route's `group_wait` (default `30s`) is how long to wait before the first notification for a new group of alerts; an alert resolved before it elapses sends no notification. [DOC S-fejzby56]
+- A route's `group_interval` (default `5m`) is how long to wait before further notifications for an existing group: a recurring timer that starts when `group_wait` ends and, at each tick, sends a notification if alerts have fired or resolved since the last one. [DOC S-fejzby56]
+- A route's `repeat_interval` (default `4h`) is how long to wait before repeating the last notification when nothing new has fired or resolved; it is checked after each `group_interval` and rounded up to a multiple of it. [DOC S-fejzby56]
+- A receiver's `webhook_configs` entries (each a `webhook_config`) take `url` or `url_file` (the endpoint for HTTP POST requests; the two are mutually exclusive, and `url_file` is a file path), `send_resolved`, `http_config`, `max_alerts` (default `0`, all alerts), `timeout` (default `0s`, none) and an optional custom `payload`. [DOC S-fejzby56]
+- Credentials of the receivers' HTTP client can also come from files: `http_config` takes `basic_auth.password_file` and `authorization.credentials_file`, each mutually exclusive with its inline field. [DOC S-fejzby56]
+- `send_resolved` ("Whether to notify about resolved alerts") defaults to `true` for a `webhook_config`; for some other integrations (email, Slack, WeChat) the default is `false`. [DOC S-fejzby56]
+- Alertmanager sends a webhook endpoint HTTP POST requests with a JSON body of `version` (`"4"`), `status` (`resolved` or `firing`), `receiver`, `groupLabels`, `commonLabels` and an `alerts` list, each alert with `status`, `labels`, `annotations`, `startsAt`, `endsAt` and `fingerprint`. [DOC S-fejzby56]
+- The rest of the webhook body: `groupKey` (identifies the group, for deduplication), `truncatedAlerts` (how many alerts `max_alerts` cut), `commonAnnotations`, `externalURL` (a backlink to Alertmanager) and `notification_reason`; each alert also has `generatorURL`, and `startsAt` and `endsAt` are RFC 3339 strings. [DOC S-fejzby56]
+- The README starts a container with `-p 127.0.0.1:9093:9093` and says Alertmanager is then reachable at `http://localhost:9093/`; it names `--cluster.listen-address` (default `0.0.0.0:9094`) for clustering. [DOC S-rvqk5nmt]
+- In `cmd/alertmanager/main.go` the `--web.listen-address` flag comes from the exporter-toolkit helper `webflag.AddFlags(kingpin.CommandLine, ":9093")`, so its default is `:9093`; the toolkit defines the flag as repeatable, with the help text "Addresses on which to expose metrics and web interface". [CODE S-dl4d3ktf: cmd/alertmanager/main.go#webConfig, S-3dvmby3z: web/kingpinflag/flag.go#AddFlags]
+- No Alertmanager documentation page read lists `--web.listen-address` with its default: the configuration page only says to run `alertmanager -h` for the command-line flags, so the default `:9093` rests on the source code above and the README's port, not on a documented flag table. [UNK]
+
 ## Reference
 | Setting | Where | Default | Source |
 |---|---|---|---|
@@ -116,7 +134,8 @@ exporter (`claude/otel-monitoring.md`) is one such scrape target.
 
 Related: `claude/otel-monitoring.md` (Claude Code's `prometheus` exporter and OTLP events).
 Source pages: Prometheus docs at tag v3.15.0 (storage, command line, configuration, HTTPS, stability) and
-prometheus/docs at commit 605cf81f (exposition formats, naming, metric types, data model, security, OpenTelemetry guide).
+prometheus/docs at commit 605cf81f (exposition formats, naming, metric types, data model, security, OpenTelemetry guide),
+Alertmanager at tag v0.34.1 (configuration, README, `cmd/alertmanager/main.go`) and exporter-toolkit at tag v0.17.1 (`web/kingpinflag/flag.go`).
 
 ## Examples
 - SNIPPET: scrape one local target with the default path and interval; context: Prometheus 3.x `prometheus.yml`, target and job name are placeholders; checked: no [DER S-fpf6c56i: keys and defaults from the scrape_config reference]

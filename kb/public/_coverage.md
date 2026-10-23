@@ -269,7 +269,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `logs/otel-collector-otlp-pipeline` | P3 | partial | `logs/otel-collector-otlp-pipeline.md` | 34 |
 | `logs/otel-collector-receivers` | P3 | complete | `logs/otel-collector-receivers.md`, `logs/otel-filelogreceiver.config.csv`, `logs/otel-windowseventlogreceiver.config.csv`, `logs/otel-filelogreceiver.metadata.yaml`, `logs/otel-windowseventlogreceiver.metadata.yaml` | 5 |
 | `logs/otel-python-sdk` | P3 | partial | `logs/otel-python-sdk.md` | 46 |
-| `logs/prometheus-retention-exposition` | P3 | partial | `logs/prometheus-retention-exposition.md` | 31 |
+| `logs/prometheus-retention-exposition` | P3 | partial | `logs/prometheus-retention-exposition.md` | 35 |
 | `logs/python-rust-json-stdout-logs` | P3 | partial | `logs/python-rust-json-stdout-logs.md` | 8 |
 | `mcp/authorization` | P1 | complete | `mcp/authorization.md` | 5 |
 | `mcp/deprecations` | P1 | complete | `mcp/deprecations.md` | 3 |
