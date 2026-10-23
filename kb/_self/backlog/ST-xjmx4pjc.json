@@ -58,7 +58,11 @@
         "Write verbs, except in a question that only asks what a setting, a key or a default is, with no modal asking anyone to run it (the default-key gate of BG-hjxvxufh is then a design gate)": "ST-xjmx4pjc",
         "The gate's do and host_check commands alone; no word of the question or options classes it": "ST-xjmx4pjc"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Write verbs alone: a gate is operator-only when its text holds a verb that writes to a shared branch (the verb words of today's list), wherever it stands, even in a question that only asks what a setting defaults to",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
