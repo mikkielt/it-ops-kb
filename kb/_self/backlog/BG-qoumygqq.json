@@ -2,7 +2,7 @@
   "id": "BG-qoumygqq",
   "kind": "bug",
   "title": "kbmon --events orders committed ops rows of one millisecond by row id, not write order",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,
@@ -24,5 +24,7 @@
   "depends_on": [
     "BG-abhnp77r"
   ],
-  "notes": "Planning 2026-10-23: precheck warns that the repro reads the committed query-log store; it reads a planted store under a temporary CLAUDE_PLUGIN_DATA and CLAUDE_PLUGIN_ROOT, not the clone's, so the proof stays in this item. Premise on 35b5b7cb2: the repro exits 1 (1 span, the land.step span lost)."
+  "notes": "Planning 2026-10-23: precheck warns that the repro reads the committed query-log store; it reads a planted store under a temporary CLAUDE_PLUGIN_DATA and CLAUDE_PLUGIN_ROOT, not the clone's, so the proof stays in this item. Premise on 35b5b7cb2: the repro exits 1 (1 span, the land.step span lost).",
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
