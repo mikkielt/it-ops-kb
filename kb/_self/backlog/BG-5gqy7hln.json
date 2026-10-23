@@ -29,7 +29,11 @@
         "only checks whose inputs the host names: forge commands when its forge and land_push name them, hooks when it sets a hooks path, the plugin manifest in the kb only": "BG-5gqy7hln",
         "all checks, with a selfcheck_skip list in the host backlog.json": "BG-5gqy7hln"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "only checks whose inputs the host names: forge commands when its forge and land_push name them, hooks when it sets a hooks path, the plugin manifest in the kb only",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Run finding 6: FAIL allow-rules: 6 of 31 not covered: git worktree add path -b branch origin/main, glab mr view code/ST-00000000 -F json, tool Agent +3 more; FAIL hooks: core.hooksPath is not set; .claude-plugin/plugin.json is missing or not JSON. Blocks the Nerthus workspace adoption (BG-42dg5ryi's host); raised to P1 by the operator. Not planned into a sprint: the fix needs an operator decision on an agents-rule path (_tools/bl_selfcheck.py). Ran the repro as filed: selfcheck on a fresh git-init project exits 1 with FAIL allow-rules (.claude/settings.json is missing) and FAIL hooks (core.hooksPath is not set; .claude-plugin/plugin.json is missing or not JSON), the stated defect, so it stays as filed. Open choices the goal leaves: (1) which setting gates each part of SKILL_COMMANDS (bl_selfcheck.py:77-105): the forge read by forge, the stale, eval and lint commands by land_stale, land_eval and land_lint, backlog.py merge by lane_module, the _tools/ paths by how a host runs the plugin, and whether the worktree command and the Agent and SendMessage tools stay required; (2) when the hooks check (hooks_problem, line 224, reads kg_hooks, the kb's own gate) and plugin_problem (line 245) apply: only when the project has a .githooks or a .claude-plugin/plugin.json, or by a settings key; (3) whether a missing .claude/settings.json is a FAIL or unknown in a project that names no steps. The rules in backlog.md (Dependencies) want a blocking operator gate before code on a bl_ module. Docs: backlog.md and tools.md (selfcheck row) map to bl_*.py and backlog.py. Next: add the gate with an option per choice, then plan touches (bl_selfcheck.py, bl_base.py if a setting is added, backlog.md, tools.md), depending on BG-c7pjl3mi and BG-cmvwrpbr."
