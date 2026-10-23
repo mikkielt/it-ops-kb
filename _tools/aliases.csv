@@ -230,3 +230,7 @@ managed agents,claude managed agents
 claude managed agents,claude managed agents
 spool,agent
 agent,agent
+otel python,opentelemetry python
+opentelemetry-python,opentelemetry python
+otel python sdk,opentelemetry python
+otel sdk,opentelemetry python
