@@ -9,7 +9,7 @@ and `lowered` names it for `check`. A gate of a class in OPERATOR_CLASSES (ceili
 blocking and takes only the operator's answer; the operator answers every class. The class in TERMINAL_CLASSES (ceiling,
 the test suite's ceiling) is stricter still: `--by operator` from a Claude Code session (`in_agent_session`: the
 environment names one, attended or not, headless or delegated) is no operator's answer, so it is recorded only from a
-terminal of the operator's own.
+terminal of the operator's own, which an IDE's integrated terminal is not (IDE_ROUTE).
 
 Standard library only; imports `bl_base` and never `backlog`, `bl_check` or `bl_plan`."""
 import fnmatch
@@ -24,6 +24,11 @@ CLASSES = ("ceiling", "secrets", "push", "start", "querylog", "agents-rule", "de
 OPERATOR_CLASSES = ("ceiling", "secrets", "push", "agents-rule")  # the classes only the operator answers
 TERMINAL_CLASSES = ("ceiling",)  # of those, the classes no agent session answers, whatever `--by` says
 AGENT_SESSION_ENV = "CLAUDECODE"  # set in the environment of every Claude Code session and of each command it runs
+# CLAUDE_CODE_CHILD_SESSION is set only in subprocesses Claude Code starts, so `CLAUDECODE= ...` alone does not clear it
+AGENT_SESSION_ENVS = (AGENT_SESSION_ENV, "CLAUDE_CODE_CHILD_SESSION")
+# an IDE extension sets CLAUDECODE in its integrated terminals too (DOC S-exebozns): the refusal names that case
+IDE_ROUTE = ("in an IDE's integrated terminal CLAUDECODE is set too, so that terminal is refused as a session is: open a "
+             "standalone terminal outside the IDE, where neither CLAUDECODE nor CLAUDE_CODE_CHILD_SESSION is set, and run it there")
 
 # Paths whose change makes a gate about the item one of the class: a directory ends with `/`, a file is exact. A touch
 # names one when it is the path, a directory above it, or a glob that matches it.
@@ -250,10 +255,12 @@ def command_words(gate):
 
 
 def in_agent_session(env=None):
-    """Whether the process runs in a Claude Code session (its environment, `os.environ` by default, sets
-    AGENT_SESSION_ENV): the operator's own terminal does not. The signal a session's own command line can clear, so
-    it guards against a delegated session passing `--by operator`, not against one set on defeating it."""
-    return bool((os.environ if env is None else env).get(AGENT_SESSION_ENV))
+    """Whether the process runs in a Claude Code session (its environment, `os.environ` by default, sets one of
+    AGENT_SESSION_ENVS): the operator's own terminal does not, and an IDE's integrated terminal does (IDE_ROUTE). The
+    signal is an environment variable a session's own command line can still clear, so it guards against a delegated
+    session passing `--by operator` or clearing one variable, not against one set on defeating it."""
+    env = os.environ if env is None else env
+    return any(env.get(k) for k in AGENT_SESSION_ENVS)
 
 
 def names_ceiling(text):
