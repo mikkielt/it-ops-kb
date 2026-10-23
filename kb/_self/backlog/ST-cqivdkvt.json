@@ -55,6 +55,67 @@
   "depends_on": [
     "ST-s6iz6z36"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does kbgit.py upstream mark a local commit whose change the upstream main already holds, and does it run the revert? The recommended option prints the revert line for team and org only, because a revert in a me rebase, or one run after the merge, would undo the upstream's change",
+      "options": [
+        "me: the rebase drops it, team and org: print the revert line, never run it",
+        "print and run the revert in every scope",
+        "print the revert line in every scope, never run it"
+      ],
+      "recommendation": "me: the rebase drops it, team and org: print the revert line, never run it",
+      "do": {
+        "me: the rebase drops it, team and org: print the revert line, never run it": "ST-cqivdkvt",
+        "print and run the revert in every scope": "ST-cqivdkvt",
+        "print the revert line in every scope, never run it": "ST-cqivdkvt"
+      },
+      "class": "push",
+      "answer": "me: the rebase drops it, team and org: print the revert line, never run it",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "What does kbgit.py upstream do when the merge or rebase conflicts?",
+      "options": [
+        "abort it, name the conflicting paths and the by-hand commands, exit 3",
+        "leave the merge or rebase in progress for /kb-git-sync"
+      ],
+      "recommendation": "abort it, name the conflicting paths and the by-hand commands, exit 3",
+      "do": {
+        "abort it, name the conflicting paths and the by-hand commands, exit 3": "ST-cqivdkvt",
+        "leave the merge or rebase in progress for /kb-git-sync": "ST-cqivdkvt"
+      },
+      "class": "push",
+      "answer": "leave the merge or rebase in progress for /kb-git-sync",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "When does kbgit.py upstream refuse to bring the upstream in, and where does it take the remote and scope from?",
+      "options": [
+        "refuse on an unset scope, an unset upstream remote, a dirty tree, an operation in progress or a branch other than main; read both from the clone's config, no remote flag",
+        "refuse the same, and also accept a --remote flag and any branch"
+      ],
+      "recommendation": "refuse on an unset scope, an unset upstream remote, a dirty tree, an operation in progress or a branch other than main; read both from the clone's config, no remote flag",
+      "do": {
+        "refuse on an unset scope, an unset upstream remote, a dirty tree, an operation in progress or a branch other than main; read both from the clone's config, no remote flag": "ST-cqivdkvt",
+        "refuse the same, and also accept a --remote flag and any branch": "ST-cqivdkvt"
+      },
+      "class": "push",
+      "answer": "refuse on an unset scope, an unset upstream remote, a dirty tree, an operation in progress or a branch other than main; read both from the clone's config, no remote flag",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "notes": "Premise (field report 2026-10-19): the Windows clone carries local edits of tracked upstream files (tests_ceiling.json win32 1800, its decision row) next to its own setup; no tool tells which local commits touch upstream-owned paths or which of them upstream now makes unneeded, so each fetch from GitHub would meet them as conflicts. The public main is a projection that fast-forwards on every publish (git.md, Public home), so a team clone seeded from it can take it by merge without rewriting its own pushed commits. Depends on ST-s6iz6z36 for kb.upstreamRemote. Operator's answer 2026-10-19 replaces the removed gate policy: the bring-in follows the scope table (me rebase, team and org merge; ST-s6iz6z36 notes). The test upstream_merge plants one clone per scope.",
   "claimed_by": "claude-92aeeb3c",
   "operator": "op-f618a13e"
