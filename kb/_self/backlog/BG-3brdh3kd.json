@@ -2,7 +2,7 @@
   "id": "BG-3brdh3kd",
   "kind": "bug",
   "title": "kb-review-workspace pre-approves only the plugin's kb tool names",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,
@@ -22,6 +22,19 @@
     "kb/_self/maintaining.md",
     "kb/_self/plugin.md"
   ],
-  "claimed_by": "claude-92aeeb3c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "0c9d8c37364a050d1be5b35e1d2b23023c44f207",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys; h=open('.claude/skills/kb-review-workspace/SKILL.md').read().split('\\n---',1)[0]; p=set(re.findall(r'mcp__plugin_it-ops-kb_kb__(\\w+)',h)); k=set(re.findall(r'mcp__kb__(\\w+)',h)); m=sorted(p-k); print('missing mcp__kb__ twins:',m); sys.exit(1 if m else 0)"
+        ],
+        "exit": 0,
+        "sha256": "1371391d27b01cee"
+      }
+    ]
+  }
 }
