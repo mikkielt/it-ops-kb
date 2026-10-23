@@ -1,0 +1,29 @@
+{
+  "id": "BG-vywbweiu",
+  "kind": "bug",
+  "title": "Three team-clone promises the tools do not keep: /kb-git-sync resuming an upstream conflict, importing a goal-less report item, and upstream-report's exit code in tools.md",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbgit.py upstream's conflict line and kb/_self/git.md name a resume that works (the kb-git-sync skill covers a merge or rebase upstream left, or the line names git's own commands only); upstream-report writes an item with no goal so that upstream-import files it instead of rejecting the whole issue; kb/_self/tools.md gives upstream-report's exit code for an unknown id or a sprint as 2, as the tool exits",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('kb/_self/tools.md',encoding='utf-8').read();i=t.find('upstream-report');s=t[i:i+1500];sys.exit(1 if 'exit 1' in s else 0)"
+    ]
+  },
+  "repro_reason": "the SP-3trnelzv review ran the other two in throwaway clones (a conflict left by upstream then /kb-git-sync, a goal-less item reported then imported); the repro reads the one wording defect, and the fix's checks must plant the two round trips",
+  "touches": [
+    "_tools/kg_upstream.py",
+    "_tools/bl_upstream.py",
+    "kb/_self/git.md",
+    "kb/_self/tools.md",
+    ".claude/skills/kb-git-sync/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-3trnelzv review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

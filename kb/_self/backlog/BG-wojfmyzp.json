@@ -1,0 +1,29 @@
+{
+  "id": "BG-wojfmyzp",
+  "kind": "bug",
+  "title": "close, start and host-check still write an upstream sprint, and intake and red-pipeline can change upstream items",
+  "status": "todo",
+  "sprint": "SP-3trnelzv",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "every backlog.py command that writes an item or sprint file refuses one that arrived from the clone's upstream main, the commands that take a sprint (close, start, host-check) included, reading the id from the argument each command takes; intake and red-pipeline never change an upstream item; backlog.md's provenance section lists the refusing commands as the code has them",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import backlog;m=[c for c in ('close','start') if c not in backlog.UPSTREAM_WRITERS];print('sprint writers outside the upstream guard:',m);sys.exit(1 if m else 0)"
+    ]
+  },
+  "repro_reason": "the full defect needs a throwaway clone with an upstream holding a sprint (the SP-3trnelzv review ran it: host-check wrote host_checked into an upstream item, close deleted an upstream sprint); the repro reads the guard's command list, and the fix's check must plant that clone",
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/bl_close.py",
+    "_tools/bl_intake.py",
+    "_tools/bl_ci.py",
+    "_tools/bl_items.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

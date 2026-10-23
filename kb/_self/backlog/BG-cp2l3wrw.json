@@ -1,0 +1,25 @@
+{
+  "id": "BG-cp2l3wrw",
+  "kind": "bug",
+  "title": "kb_mcp.py --register-local --project on a missing directory says the claude CLI is not installed",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb_mcp.py --register-local --project DIR names a DIR that does not exist as the cause, exit 2, and keeps 'the claude CLI is not installed' for a missing claude executable only",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys;p=subprocess.run([sys.executable,'_tools/kb_mcp.py','--register-local','--project','/nonexistent-kb-project-dir'],capture_output=True,text=True);o=p.stdout+p.stderr;print(p.returncode,o.strip()[:200]);sys.exit(0 if p.returncode==2 and 'not installed' not in o else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/kb_mcp.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-3trnelzv review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

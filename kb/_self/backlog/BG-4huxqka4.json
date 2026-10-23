@@ -1,0 +1,25 @@
+{
+  "id": "BG-4huxqka4",
+  "kind": "bug",
+  "title": "The ceiling and profile deny rules anchor at each session's own checkout, so a worktree session can write the main checkout's files by absolute path",
+  "status": "todo",
+  "sprint": "SP-3trnelzv",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": ".claude/settings.json's deny rules refuse an agent's Edit or Write of _tools/tests_ceiling.json, a _decisions.csv and _private/host.json in any checkout of the clone, the main checkout's files written by absolute path from a linked worktree included (Claude Code's absolute-path rule form, checked against the live permissions docs), as ST-7s3sp7sl's goal and the operator's deny-rules answer say; maintaining.md states the form and what deny rules cannot cover (Bash redirection)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,sys;d=json.load(open('.claude/settings.json'))['permissions']['deny'];w=[x for x in d if x.startswith(('Edit(//','Write(//'))];need=['tests_ceiling.json','host.json','_decisions.csv'];m=[n for n in need if not any(n in x for x in w)];print('files with no absolute-path deny rule:',m);sys.exit(1 if m else 0)"
+    ]
+  },
+  "repro_reason": "the defect is the deny rules' path form; whether Claude Code refuses an Edit runs only inside a live agent session, so the repro reads the rule forms the fix must add",
+  "touches": [
+    ".claude/settings.json",
+    "kb/_self/maintaining.md",
+    "kb/_self/tools.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

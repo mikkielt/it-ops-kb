@@ -1,0 +1,25 @@
+{
+  "id": "BG-lxjtp2xz",
+  "kind": "bug",
+  "title": "The upstream push guard misses the upstream given as an absolute path, a file:// url, a trailing slash or a ../ detour",
+  "status": "todo",
+  "sprint": "SP-3trnelzv",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kbpublic.is_upstream refuses a push to the upstream remote's repository however its url is written (a relative or absolute path, a trailing slash, file://, a ../ detour of the same repository), by comparing resolved locations, so every push to the fetch-only upstream is refused as ST-s6iz6z36's goal says",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,subprocess,sys,tempfile;sys.path.insert(0,'_tools');import kbpublic;t=tempfile.mkdtemp();up=os.path.join(t,'up.git');c=os.path.join(t,'clone');g=lambda *a,cwd=None:subprocess.run(['git',*a],cwd=cwd,capture_output=True,text=True);g('init','-q','--bare',up);g('init','-q',c);g('remote','add','upstream','../up.git',cwd=c);g('config','kb.upstreamRemote','upstream',cwd=c);r=os.path.realpath(up);forms=[r,r+'/','file://'+r,'../clone/../up.git'];m=[f for f in forms if not kbpublic.is_upstream(f,c,url=f)];print('upstream url forms not refused:',m);sys.exit(1 if m else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kbpublic.py",
+    "_tools/kg_hooks.py",
+    "_tools/test_prepush_e2e.py",
+    "kb/_self/git.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
