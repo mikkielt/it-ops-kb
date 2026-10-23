@@ -2,7 +2,7 @@
   "id": "BG-cqjhnxk4",
   "kind": "bug",
   "title": "headless-agent-runtimes.md cites the Haiku 5.5 price fact at ci-and-headless.md:91, which is another fact",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,
@@ -26,6 +26,19 @@
     "ST-ptjkvvnc"
   ],
   "notes": "Planning 2026-10-23 on 35b5b7cb2: the facts moved to lines 76-78 and now cite :91 and :88, which hold the SDK result message and another fact, while the Haiku 5.5 prices sit at :110; the old repro read a fixed line index and broke. The new repro reads every price citation and exits 1 (76->:91, 77->:91, 78->:88, 78->:91).",
-  "claimed_by": "claude-92aeeb3c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "31af8b8dde1b676784bcf1b71c6ae2cc11e3fb50",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re, sys; art = open(\"kb/public/agents/headless-agent-runtimes.md\", encoding=\"utf-8\").read().splitlines(); src = open(\"kb/public/claude/ci-and-headless.md\", encoding=\"utf-8\").read().splitlines(); bad = [str(i) + \"->:\" + (n[0] or n[1]) for i, line in enumerate(art, 1) if \"price\" in line for n in re.findall(r\"ci-and-headless\\.md:(\\d+)|`:(\\d+)`\", line) if int(n[0] or n[1]) > len(src) or \"prices\" not in src[int(n[0] or n[1]) - 1]]; print(\"price citations that name no price fact:\", bad); sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "59143e826eab8375"
+      }
+    ]
+  }
 }
