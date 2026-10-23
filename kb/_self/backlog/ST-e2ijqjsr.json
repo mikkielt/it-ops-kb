@@ -2,7 +2,7 @@
   "id": "ST-e2ijqjsr",
   "kind": "story",
   "title": "Research: Claude Code's beta tracing, inbound TRACEPARENT in -p sessions and OTEL_RESOURCE_ATTRIBUTES on every point and event are kb facts",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-nij36lt7",
   "sprint": "SP-r7e7jcep",
   "priority": "P2",
@@ -73,6 +73,19 @@
   ],
   "notes": "Planning 2026-10-24: goal reworded into six clauses so each maps to one case of the check (the old last clause 'each fact keeps the Claude Code version the page names' is now the version assertion on the event-record fact, the one the page versions: before v2.1.212). Premise: the check fails on the base (precheck). Planned 2026-10-24 into SP-r7e7jcep: second in the run order (after ST-a6ypqjuy), since the five research stories share the source, anchor and expansions files. Worker 2026-10-24: the live monitoring-usage page no longer names v2.1.212 for event records; it names v2.1.268 for parent.source and v2.1.152 (env-vars) for CLAUDE_CODE_PROPAGATE_TRACEPARENT. The fact for trace_id/span_id cites the docs changelog (S746) for v2.1.212 and v2.1.214 and says the page names none. Check case unchanged.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "056365e332261dd66310fd99f065010a45730edd",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, sys\nART = 'kb/public/claude/otel-monitoring.md'\nCASES = [\n    ('Which variables turn on Claude Code distributed tracing and is it beta?', 'DOC', ['CLAUDE_CODE_ENHANCED_TELEMETRY_BETA', 'OTEL_TRACES_EXPORTER'], False),\n    ('What span hierarchy does Claude Code tracing emit?', 'DOC', ['claude_code.interaction', 'llm_request'], False),\n    ('Does a claude -p session read TRACEPARENT and TRACESTATE from its environment and parent its spans under it?', 'DOC', ['TRACEPARENT', 'TRACESTATE', 'claude_code.interaction'], False),\n    ('Which attribute records where the parent of a claude_code.interaction span came from?', 'DOC', ['parent.source'], False),\n    ('Do Claude Code event records carry the trace_id and span_id of the span without a traces exporter?', 'DOC', ['trace_id', 'span_id'], True),\n    ('Do Bash subprocesses started by Claude Code inherit TRACEPARENT?', 'DOC', ['TRACEPARENT', 'CLAUDE_CODE_PROPAGATE_TRACEPARENT'], False),\n    ('Are OTEL_RESOURCE_ATTRIBUTES keys added to every Claude Code metric datapoint and event?', 'DOC', ['OTEL_RESOURCE_ATTRIBUTES', 'OTEL_METRICS_INCLUDE_RESOURCE_ATTRIBUTES'], False),\n    ('How are the values in OTEL_RESOURCE_ATTRIBUTES encoded for Claude Code?', 'DOC', ['OTEL_RESOURCE_ATTRIBUTES', 'percent'], False),\n]\nmiss = []\nfor q, tag, terms, ver in CASES:\n    out = subprocess.run([sys.executable, '_tools/rag.py', 'pack', q, '--root', 'public', '--budget', '2500'],\n                         capture_output=True, text=True).stdout\n    hit = [l for l in out.splitlines() if l.startswith('- ' + ART[len('kb/'):] + ':') and '[' + tag in l\n           and all(t.lower() in l.lower() for t in terms) and (not ver or 'v2.' in l)]\n    if not hit:\n        miss.append((q, terms))\nprint('missing:', miss if miss else 'none')\nsys.exit(1 if miss else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "a4d424a9f2f7792e"
+      }
+    ]
+  }
 }
