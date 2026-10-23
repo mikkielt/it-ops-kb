@@ -25,6 +25,23 @@
     "BG-wrqd4ytg",
     "BG-77i2lwmr"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Make the merge refusals exit 2 in code, or reword tools.md and the cmd_merge docstring to exit 1?",
+      "options": [
+        "exit 2 in code",
+        "exit 1 in the docs"
+      ],
+      "recommendation": "exit 2 in code",
+      "do": {
+        "exit 2 in code": "BG-xyhbfqkv",
+        "exit 1 in the docs": "BG-xyhbfqkv"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "claimed_by": "claude-92aeeb3c",
   "operator": "op-f618a13e"
 }

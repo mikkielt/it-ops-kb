@@ -19,7 +19,7 @@ from collections import namedtuple
 from pathlib import Path
 
 import bl_base
-from bl_base import Refused, setting
+from bl_base import Refused, Rejected, setting
 
 LIST_LIMIT = 100  # merge requests read to find one: newest first
 STATE_ORDER = ("opened", "merged", "closed")  # which request of a branch with several answers: an open one, else a merged one
@@ -280,8 +280,8 @@ def no_forge():
 def target(root, run=None):
     """The Target of the `forge` setting and the project: `forge_project`, else the integration remote's URL (always
     the URL's, under a `repositories` map: each repository's checkout names its own project). NoForge when the
-    setting is empty; Refused when that remote names no forge project (a local path, no url) or names github.com
-    while `forge` is gitlab."""
+    setting is empty; Rejected (a Refused that exits 2) when that remote names no forge project (a local path, no
+    url) or names github.com while `forge` is gitlab."""
     import kbpublic
     from ql_deliver import origin_forge
     if no_forge():
@@ -291,12 +291,12 @@ def target(root, run=None):
     code, url, _ = run(["git", "remote", "get-url", remote], cwd=root)
     url = (url or "").strip()
     if code or not url or url.lower().startswith("file:") or Path(url).exists():
-        raise Refused(f"the integration remote {remote} names no forge project ({url or 'no url'})")
+        raise Rejected(f"the integration remote {remote} names no forge project ({url or 'no url'})")
     named, host, project = origin_forge(url)
     forge = setting("forge")
     if named == "github" and forge != "github":
-        raise Refused(f"the integration remote {remote} is on {host}, and the forge setting is {forge}: "
-                      f"set \"forge\": \"github\" in backlog.json")
+        raise Rejected(f"the integration remote {remote} is on {host}, and the forge setting is {forge}: "
+                       f"set \"forge\": \"github\" in backlog.json")
     return Target(forge, host, pinned_project(project))
 
 
@@ -370,15 +370,15 @@ def set_description(root, request, text, run=None):
 
 def merge_own(root, branch, run=None):
     """(outcome, request, output) of merging the item's own request: BRANCH must be `code/<id>` of this project,
-    another branch is refused, and so is every merge on the gh arm, before any call. The request is read first, as
-    auto-merge may have merged it seconds before: outcome `already` for a merged one, `closed`, `none` for no request
-    of the branch, else `merged` or `failed` after `glab mr merge`."""
+    another branch is refused, and so is every merge on the gh arm, before any call (Rejected, which exits 2). The
+    request is read first, as auto-merge may have merged it seconds before: outcome `already` for a merged one,
+    `closed`, `none` for no request of the branch, else `merged` or `failed` after `glab mr merge`."""
     from kg_lane import CODE_BRANCH_PREFIX
     if not re.fullmatch(re.escape(CODE_BRANCH_PREFIX) + bl_base.id_re().pattern, branch or ""):
-        raise Refused(f"{branch!r} is no item's own {CODE_BRANCH_PREFIX}<id> branch: only that one merges")
+        raise Rejected(f"{branch!r} is no item's own {CODE_BRANCH_PREFIX}<id> branch: only that one merges")
     a = arm(root, run)
     if a.merge_refusal:
-        raise Refused(a.merge_refusal)
+        raise Rejected(a.merge_refusal)
     req = a.request(branch=branch)
     if req is None:
         return "none", None, ""
