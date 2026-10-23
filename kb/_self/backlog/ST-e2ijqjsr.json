@@ -2,7 +2,7 @@
   "id": "ST-e2ijqjsr",
   "kind": "story",
   "title": "Research: Claude Code's beta tracing, inbound TRACEPARENT in -p sessions and OTEL_RESOURCE_ATTRIBUTES on every point and event are kb facts",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-r7e7jcep",
   "priority": "P2",
@@ -53,5 +53,7 @@
     "ST-a6ypqjuy"
   ],
   "notes": "Planning 2026-10-24: goal reworded into six clauses so each maps to one case of the check (the old last clause 'each fact keeps the Claude Code version the page names' is now the version assertion on the event-record fact, the one the page versions: before v2.1.212). Premise: the check fails on the base (precheck). Planned 2026-10-24 into SP-r7e7jcep: second in the run order (after ST-a6ypqjuy), since the five research stories share the source, anchor and expansions files.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
