@@ -39,7 +39,9 @@
       },
       "class": "design",
       "answer": "Rebuild the two rows from the active operator decisions the pool builder now picks (D-buuvxut2, D-ocy63n4a); the repro's status word becomes 'active'",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

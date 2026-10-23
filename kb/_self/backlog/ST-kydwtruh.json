@@ -37,7 +37,9 @@
       },
       "class": "design",
       "answer": "A new python/stdlib-archive-read-errors article, and the registry fact in logs/microsoft-sentinel next to its Terraform azurerm section",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "operator": "op-f618a13e",
