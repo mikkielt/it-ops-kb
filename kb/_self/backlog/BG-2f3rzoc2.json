@@ -18,6 +18,25 @@
   "touches": [
     "kb/_self/token-efficiency.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does token-efficiency.md fix the stale 'Today's figure' of 12 tools and 12,416 characters?",
+      "options": [
+        "Dated measurement",
+        "Replace by 15 tools figure"
+      ],
+      "recommendation": "Dated measurement",
+      "do": {
+        "Dated measurement": "BG-2f3rzoc2",
+        "Replace by 15 tools figure": "BG-2f3rzoc2"
+      },
+      "class": "design",
+      "answer": "Dated measurement",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "claude-92aeeb3c",
   "operator": "op-f618a13e"
 }
