@@ -100,6 +100,8 @@ kb/_self/backlog.md,_tools/bl_*.py
 kb/_self/backlog.md,.claude/skills/kb-backlog/SKILL.md
 kb/_self/backlog.md,.claude/skills/kb-sprint/SKILL.md
 kb/_self/backlog.md,.claude/skills/kb-item/SKILL.md
+kb/_self/backlog.md,.claude/skills/kb-upstream-report/SKILL.md
+kb/_self/backlog.md,.github/ISSUE_TEMPLATE/upstream-report.yml
 kb/_self/backlog.md,skills/backlog/SKILL.md
 kb/_self/backlog.md,skills/sprint/SKILL.md
 kb/_self/backlog.md,skills/item/SKILL.md

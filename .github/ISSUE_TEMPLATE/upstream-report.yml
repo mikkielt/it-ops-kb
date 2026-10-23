@@ -1,0 +1,54 @@
+name: Upstream report
+description: Findings from a clone of this kb, written as user stories for the upstream backlog
+title: "Upstream report: "
+labels: ["upstream-report"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        One issue holds the findings of one clone. Each finding is a user story: a title, the goal that is
+        missing or wrong, the premise (a command or observation that shows it now), and the change the clone made
+        meanwhile. For several stories, repeat the four story sections (Title to Local change made meanwhile) in
+        the order below; `backlog.py upstream-report ID... --out FILE` writes a body in these sections.
+        Use placeholders (`PL-LT-00123`, `corp.example.com`, `jan.kowalski`), never real host names, tenant or object
+        ids, addresses, people or tokens.
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Clone scope
+      description: The deployment scope of the reporting clone (git config kb.scope).
+      options:
+        - me
+        - team
+        - org
+        - unset
+    validations:
+      required: true
+  - type: input
+    id: title
+    attributes:
+      label: Title
+      description: The story's title, one line, as an outcome.
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What the kb, a tool or a rule should do, stated so that a check can tell done from not done.
+    validations:
+      required: true
+  - type: textarea
+    id: premise
+    attributes:
+      label: Premise or repro
+      description: One command or observation that shows the problem now, and what it printed.
+    validations:
+      required: true
+  - type: textarea
+    id: local-change
+    attributes:
+      label: Local change made meanwhile
+      description: What the clone changed to work around it, or "none".
+    validations:
+      required: true
