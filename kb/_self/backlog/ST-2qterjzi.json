@@ -2,7 +2,7 @@
   "id": "ST-2qterjzi",
   "kind": "story",
   "title": "Research sprint goal: Research for the coord run states: tracing, traceparent, Alertmanager, Claude Code hooks and a local traces backend",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-r7e7jcep",
   "goal_research": true,
   "priority": "P1",

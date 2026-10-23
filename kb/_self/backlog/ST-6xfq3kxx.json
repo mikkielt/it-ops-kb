@@ -2,7 +2,7 @@
   "id": "ST-6xfq3kxx",
   "kind": "story",
   "title": "Review sprint: Research for the coord run states: tracing, traceparent, Alertmanager, Claude Code hooks and a local traces backend",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-r7e7jcep",
   "review": true,
   "priority": "P1",

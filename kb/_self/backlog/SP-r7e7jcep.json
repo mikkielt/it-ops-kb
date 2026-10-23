@@ -2,7 +2,7 @@
   "id": "SP-r7e7jcep",
   "kind": "sprint",
   "title": "Research for the coord run states: tracing, traceparent, Alertmanager, Claude Code hooks and a local traces backend",
-  "status": "planned",
+  "status": "active",
   "goal": "Claude Code's beta tracing with inbound TRACEPARENT and OTEL_RESOURCE_ATTRIBUTES are kb facts; the W3C traceparent format and the OpenTelemetry Python SDK's trace-context propagator are kb facts; Alertmanager's route, receivers and webhook payload and Prometheus's alerting block are kb facts; the Monitor tool's limits, a -p run's wait for background work, Edit and Write PreToolUse payloads and a mod's ui.notify are kb facts; a local traces backend (Jaeger all-in-one beside Tempo monolithic) is kb facts",
   "gates": [
     {

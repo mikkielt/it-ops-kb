@@ -2,7 +2,7 @@
   "id": "ST-e2ijqjsr",
   "kind": "story",
   "title": "Research: Claude Code's beta tracing, inbound TRACEPARENT in -p sessions and OTEL_RESOURCE_ATTRIBUTES on every point and event are kb facts",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
   "sprint": "SP-r7e7jcep",
   "priority": "P2",

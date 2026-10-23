@@ -2,7 +2,7 @@
   "id": "ST-l6fw46gd",
   "kind": "story",
   "title": "Research: the W3C traceparent format and the OpenTelemetry Python SDK's trace-context propagator are kb facts",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
   "sprint": "SP-r7e7jcep",
   "priority": "P2",

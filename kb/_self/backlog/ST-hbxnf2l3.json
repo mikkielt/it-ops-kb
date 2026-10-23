@@ -2,7 +2,7 @@
   "id": "ST-hbxnf2l3",
   "kind": "story",
   "title": "Research: Alertmanager's route, receivers and webhook payload, and Prometheus's alerting block, are kb facts",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
   "sprint": "SP-r7e7jcep",
   "priority": "P2",

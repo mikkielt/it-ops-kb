@@ -2,7 +2,7 @@
   "id": "ST-mctzoewi",
   "kind": "story",
   "title": "Research: a local traces backend for the operator's machine (Jaeger all-in-one beside Tempo monolithic) is kb facts",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
   "sprint": "SP-r7e7jcep",
   "priority": "P3",
