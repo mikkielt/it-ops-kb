@@ -2,7 +2,7 @@
   "id": "BG-ton654lj",
   "kind": "bug",
   "title": "The leak scan misses a key block whose armor header value holds a pipe or a backslash-letter, and a backslash run in a header value is quadratic",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-evq2flqc",
   "priority": "P1",
   "rank": 0,
@@ -48,6 +48,19 @@
     }
   ],
   "notes": "Found 2026-10-23 by the second fresh review of SP-evq2flqc (on c927cb22e): the possessive header value ends at a newline, an escaped newline or a pipe, so a free-text armor Comment: holding a pipe or a backslash-letter ends early and no 20-character base64 run follows; kbingest.SECRET_TEXT misses the same inputs. The header-value backslash alternative re-scans the run: 5k/10k/20k/40k backslashes take 0.07/0.28/1.1/4.4 s. Reviewer hints: a possessive backslash run, and end the value at a pipe only when a header or the base64 run follows. Operator 2026-10-23: changed BG-v7e36oqg g1 and fixed here in the sprint. Also a same-line log form (label, Comment: x and base64 space-separated) is lost since c927cb22e; S3, cover it if the fix allows.",
-  "claimed_by": "claude-92aeeb3c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "de35bb730878125f154947182882f33b56377c5e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import base64,os,sys,time;sys.path.insert(0,'_tools');import kbcommon;d='-'*5;b=base64.b64encode(os.urandom(96)).decode();hit=lambda t:any(k=='secret' for k,_ in kbcommon.leak_hits(t));nl=chr(10);bs=chr(92);cases={'pipe':d+'BEGIN PGP PRIVATE KEY BLOCK'+d+nl+'Comment: Alice | work'+nl+nl+b[:64]+nl,'winpath':d+'BEGIN PGP PRIVATE KEY BLOCK'+d+nl+'Comment: C:'+bs+'new'+nl+nl+b[:64]+nl};miss=[k for k,v in cases.items() if not hit(v)];t=d+'BEGIN EC PRIVATE KEY'+d+nl+'k: a'+bs*20000+'!';s=time.time();kbcommon.leak_hits(t);e=time.time()-s;print('missed:',miss,'| 20k backslash run: %.2f s'%e);sys.exit(1 if miss or e>0.3 else 0)"
+        ],
+        "exit": 0,
+        "sha256": "27d6deac07b44ec0"
+      }
+    ]
+  }
 }
