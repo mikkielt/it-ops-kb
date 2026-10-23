@@ -155,7 +155,13 @@
       "Bash(git checkout -b * *)",
       "PowerShell(git checkout work/* *)",
       "PowerShell(git checkout orch/* *)",
-      "PowerShell(git checkout -b * *)"
+      "PowerShell(git checkout -b * *)",
+      "Edit(/_tools/tests_ceiling.json)",
+      "Write(/_tools/tests_ceiling.json)",
+      "Edit(**/_decisions.csv)",
+      "Write(**/_decisions.csv)",
+      "Edit(/_private/host.json)",
+      "Write(/_private/host.json)"
     ]
   },
   "hooks": {
