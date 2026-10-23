@@ -133,6 +133,11 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           operator (naming the class), so an agent cannot clear a gate only the
                                           operator answers; a reword is remove, then gate add, which classes the new
                                           text again (exit 2 for each refusal, the item file unchanged)
+  backlog.py gate host-unchecked ID GATE --reason TEXT
+                                          keep on a gate that names a host setup the reason it cannot be checked on a
+                                          host (what `start` reads beside the host check); exit 2, the item file
+                                          unchanged, for a gate with a host check, a sprint's start gate, a done or
+                                          dropped item, or an empty or overlong reason
   backlog.py host-check SPRINT            run the host check of each answered gate of the sprint's open items, on this
                                           host, before the start gate is asked, and record each result on the gate
                                           (host_checked: ok, exit); exit 1, naming each gate and the command's output
