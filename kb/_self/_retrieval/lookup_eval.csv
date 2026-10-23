@@ -425,3 +425,4 @@ EV-kb-mcp-coord-tools-turned,how are the kb MCP coord tools turned on,coordinati
 EV-coord-records-tidy-check-before-removes,which coord records does tidy check before it removes a worktree,coordination.md,good,yes,"A candidate is kept while any held key or value contains its path, branch, item or session as text",
 EV-coord-differently-windows,what does coord do differently on Windows,coordination.md,good,yes,"uses SQLite's locking only (no `fcntl`, no signals)",
 EV-see-stuck-coord-claim-failed-ask,how do I see a stuck coord claim or a failed ask in kbmon,coordination.md,good,yes,`--status coord` each claim's key,
+EV-sprint-plan-same-function-checks-behaviour-not-shape,"what kind of checks do stories that change the same function get when a sprint is planned",backlog.md,good,yes,"checks on its behaviour, not its internal shape",kb-sprint:plan
