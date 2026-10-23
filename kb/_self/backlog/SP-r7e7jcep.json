@@ -15,7 +15,7 @@
         "cancel"
       ],
       "recommendation": "approve",
-      "answer": "approve (pre-approved by the operator for the 2026-10-24 night run)",
+      "answer": "approve",
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
