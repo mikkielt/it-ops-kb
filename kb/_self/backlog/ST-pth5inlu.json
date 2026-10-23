@@ -21,6 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: the sprint's work is internal tooling (bench_pool.heldout_section, a paid pool run). The outside knowledge it needs is already in the kb at coverage good: keeping a held-out set apart from tuning rows (agents/agent-evaluation.md:180-187, with the open point that no source says how often a held-out set may be refreshed), the --max-budget-usd cap and its client-side cost estimate (claude/ci-and-headless.md:44, 97), list prices per model and the web search fee (claude/ci-and-headless.md:107, 111, 121-122).",
   "claimed_by": "claude-92aeeb3c",
   "operator": "op-f618a13e"
 }
