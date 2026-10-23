@@ -333,3 +333,4 @@ EV-troubleshooting-methodology-agentic-coding-debugging-coding,"What is a troubl
 EV-etcd-lease-expires-revoked-attached-keys-deleted,Are the keys attached to an etcd lease deleted when the lease expires or is revoked?,agents/shared-state-concurrency.md,good,
 EV-planning-list-goal-that-says-no,what does planning list for a goal that says no secret reaches the spool or the store,agents/agent-planning-and-done.md,good,
 EV-claude-code-commit-attribution-include-co-authored-by,"Which Claude Code setting adds or removes the Co-Authored-By trailer in a commit message (attribution.commit, includeCoAuthoredBy)?",gitlab/commit-signing-and-provenance.md,good,
+EV-bug-severity-table-s1-s2-definitions,bug severity table S1 S2 definitions,security/linux-patching-and-pins.md,good,
