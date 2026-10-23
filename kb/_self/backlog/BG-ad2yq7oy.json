@@ -1,0 +1,25 @@
+{
+  "id": "BG-ad2yq7oy",
+  "kind": "bug",
+  "title": "redact.py's comment says the EC armor line is the only BEGIN line not flagged alone, but the PGP key block line is one too",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "the comment above _tools/redact.py's KEY_BLOCK handling names both armor lines that kbcommon.SECRETS flags only when key material follows them: EC PRIVATE KEY and PGP PRIVATE KEY BLOCK",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('_tools/redact.py',encoding='utf-8').read();sys.exit(1 if 'except the EC one' in t else 0)"
+    ]
+  },
+  "repro_reason": "the defect is a code comment that states the rule; reading the comment is the behaviour",
+  "touches": [
+    "_tools/redact.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-evq2flqc review"
+  ]
+}

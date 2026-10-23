@@ -1,0 +1,31 @@
+{
+  "id": "BG-h6y5s45w",
+  "kind": "bug",
+  "title": "The leak scan passes a key block whose lines carry a /// or //! comment prefix",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbcommon.leak_hits flags an EC or PGP key block whose armor and body lines each carry a /// or //! prefix, as it flags one behind //",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import base64,os,sys;sys.path.insert(0,'_tools');import kbcommon;d='-'*5;b=base64.b64encode(os.urandom(96)).decode();hit=lambda t:any(k=='secret' for k,_ in kbcommon.leak_hits(t));m=[p for p in ('/// ','//! ') if not hit(p+d+'BEGIN EC PRIVATE KEY'+d+chr(10)+p+b[:64]+chr(10)+p+b[64:])];print('prefixes passing:',m);sys.exit(1 if m else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kbcommon.py",
+    "_tools/test_leaks.py",
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md",
+    "kb/_self/content-rules.md"
+  ],
+  "depends_on": [
+    "BG-v7e36oqg"
+  ],
+  "links": [
+    "parked: SP-evq2flqc review"
+  ],
+  "notes": "Found 2026-10-23 by the SP-evq2flqc fresh review: the gap takes // as a pair, so a third / or ! leaves no 20-character base64 run after the label. A table whose delimiter row sits between the label row and the key row also passes (- is no gap character); that case is outside the goal."
+}
