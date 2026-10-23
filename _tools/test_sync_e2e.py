@@ -63,3 +63,59 @@ def test_code_commit_goes_to_a_branch(scenario):
     assert scenario.origin.rev("main") == before
     branches = scenario.origin.git("for-each-ref", "--format=%(refname:short) %(objectname)", "refs/heads/code/")
     assert [ln.split()[1] for ln in branches.splitlines()] == [head], branches
+
+
+@pytest.mark.parametrize("scope", ["me", "team", "org"])
+def test_upstream_merge(scenario, scope):
+    """`kbgit.py upstream` per scope: the dry run plans and changes nothing, `me` rebases the local commits (a commit the
+    upstream main holds drops out), `team` and `org` merge and keep every local commit; only the upstream is fetched."""
+    public = scenario.bare("upstream.git")
+    u = scenario.clone(hooks=False)
+    u.write("probe/a.txt", "base\n")
+    u.write("probe/b.txt", "base\n")
+    u.commit("chore: probe files")
+    u.git("push", "-q", "origin", "HEAD:main")
+    u.git("push", "-q", public.path, "HEAD:main")
+    c = scenario.clone(hooks=False)
+    c.git("config", "core.fileMode", "false")
+    c.git("remote", "add", "upstream", public.path)
+    c.git("remote", "set-url", "--push", "upstream", "DISABLED")
+    c.git("config", "kb.upstreamRemote", "upstream")
+    c.git("config", "kb.scope", scope)
+    c.write("probe/a.txt", "local\n")
+    held = c.commit("chore: local a")
+    c.write("probe/b.txt", "mine\n")
+    kept = c.commit("chore: local b")
+    c.write("local/own.txt", "own\n")
+    c.commit("chore: local own file")
+    c.git("push", "-q", "origin", "HEAD:main")  # the integration remote holds these three
+    pushed = c.rev("HEAD")
+    u.write("probe/a.txt", "local\n")  # the upstream main now holds the change of the first local commit
+    u.write("probe/new.txt", "new\n")
+    u.commit("chore: upstream moves")
+    u.git("push", "-q", public.path, "HEAD:main")
+    w = scenario.clone(hooks=False)  # origin moves too: only the upstream may be fetched
+    w.write("probe/elsewhere.txt", "x\n")
+    w.commit("chore: origin moves")
+    w.git("push", "-q", "origin", "HEAD:main")
+    origin_seen = c.rev("refs/remotes/origin/main")
+
+    r = c.kbgit("upstream", "--dry-run")
+    assert r.returncode == 0, r.stdout + r.stderr
+    lines = r.stdout.splitlines()
+    assert any(held[:9] in ln and "resolved upstream" in ln for ln in lines), r.stdout
+    assert any(kept[:9] in ln and "probe/b.txt" in ln and "resolved" not in ln for ln in lines), r.stdout
+    assert "own.txt" not in r.stdout and "dry run: nothing" in r.stdout, r.stdout
+    assert (c.rev("HEAD"), c.git("status", "--porcelain")) == (pushed, ""), r.stdout
+
+    r = c.kbgit("upstream")
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert c.rev("refs/remotes/origin/main") == origin_seen and c.rev("refs/remotes/upstream/main") == u.rev("HEAD")
+    assert c.read("probe/a.txt") == "local\n" and c.read("probe/b.txt") == "mine\n" and c.read("probe/new.txt") == "new\n"
+    assert scenario.origin.rev("main") == w.rev("HEAD") and public.rev("main") == u.rev("HEAD"), "nothing is pushed"
+    if scope == "me":
+        assert "the rebase drops it" in r.stdout and "git revert" not in r.stdout, r.stdout
+        assert c.rev("upstream/main") == c.rev("HEAD~2") and c.run_git("merge-base", "--is-ancestor", kept, "HEAD").returncode == 1  # rewritten
+    else:
+        assert f"git revert --no-edit {held[:9]}" in r.stdout, r.stdout
+        assert c.git("rev-list", "--parents", "-1", "HEAD").split()[1:] == [pushed, c.rev("upstream/main")]
