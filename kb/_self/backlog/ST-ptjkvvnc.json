@@ -2,7 +2,7 @@
   "id": "ST-ptjkvvnc",
   "kind": "story",
   "title": "Research sprint goal: Small fixes: docs that mis-state the tools, and tool bugs with a repro",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-c7oav2vn",
   "goal_research": true,
   "priority": "P1",
@@ -22,6 +22,20 @@
     "kb/public/**"
   ],
   "notes": "No outside facts: the sprint's items fix this project's own docs, docstrings and tools, and the kb already holds the outside knowledge they cite. Remote Control's one remote session per interactive process and server mode's concurrent sessions are public/claude/cross-session-messaging.md:205 and :252 (pack coverage good). The two MCP tool-name forms, mcp__<server>__<tool> and the plugin form mcp__plugin_<plugin>_<server>__<tool>, are public/claude/permissions-mcp.md:12, :19 and :27. The Haiku 5.5 prices are public/claude/ci-and-headless.md:110 (pack coverage good). The remaining items (tools/list figure, coord_ tools order, multi report, kbid, coord poll, kbask observer, merge exit codes, gate verbs, test env, ops rows, panel_lines, bench_pool, coord dedup, census url) are read from this repository's code and measured records, not from outside sources.",
-  "claimed_by": "claude-92aeeb3c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "dbe66d23430c5f9559bdf144d6ed6f63bef76268",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-ptjkvvnc"
+        ],
+        "exit": 0,
+        "sha256": "e6c249d8ece91857"
+      }
+    ]
+  }
 }
