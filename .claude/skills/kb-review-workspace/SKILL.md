@@ -6,7 +6,7 @@ disable-model-invocation: true
 context: fork
 agent: it-ops-kb:kb-reviewer
 background: false
-allowed-tools: Read Grep Glob mcp__plugin_it-ops-kb_kb__kb_topics_for mcp__plugin_it-ops-kb_kb__kb_facts mcp__plugin_it-ops-kb_kb__kb_pack mcp__plugin_it-ops-kb_kb__kb_show mcp__plugin_it-ops-kb_kb__kb_source
+allowed-tools: Read Grep Glob mcp__plugin_it-ops-kb_kb__kb_topics_for mcp__plugin_it-ops-kb_kb__kb_facts mcp__plugin_it-ops-kb_kb__kb_pack mcp__plugin_it-ops-kb_kb__kb_show mcp__plugin_it-ops-kb_kb__kb_source mcp__kb__kb_topics_for mcp__kb__kb_facts mcp__kb__kb_pack mcp__kb__kb_show mcp__kb__kb_source
 ---
 
 # Review this workspace against it-ops-kb
