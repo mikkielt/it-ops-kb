@@ -2,7 +2,7 @@
   "id": "ST-zf6nqjtx",
   "kind": "story",
   "title": "Research sprint goal: Coord core: run-state transitions, a filtered wait, coordination settings and a landing worktree",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-47w4ngr6",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,7 @@
     "kb/_self/backlog/ST-zf6nqjtx.json"
   ],
   "notes": "No outside facts: the four stories change this repository's own tools (coord.py, kb_mcp.py, kbsettings.py, bl_land.py); the kb already holds the rules they lean on (SQLite BEGIN IMMEDIATE: kb/public/python/stdlib-sqlite3-csv.md:137; git worktree and rebase checkout rules: kb/public/gitlab/git-test-repositories.md:265), and the run-state, wait, settings and landing design is the operator's, recorded in EP-nij36lt7's notes and the answered gate g1 of ST-yrilvcbx. Planned in SP-47w4ngr6 on 2026-10-24. Sprint SP-47w4ngr6 started 2026-10-24. Touches narrowed from kb/public/** to this item file: the story adds no kb fact ('No outside facts:' above), and the manager's research item ST-e2ijqjsr holds files under kb/public, which would have kept this claim waiting.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
