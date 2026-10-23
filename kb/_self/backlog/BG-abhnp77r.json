@@ -2,7 +2,7 @@
   "id": "BG-abhnp77r",
   "kind": "bug",
   "title": "agent.run ops rows carry no exit, so a failed worker run is always an ok span",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,
@@ -43,6 +43,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "claude-92aeeb3c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "89f30dfa5d4b5ea00abfe0b82418020f220494c8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import ql_capture;sys.exit(0 if \"exit\" in ql_capture.OPS_EVENTS[\"agent.run\"] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
