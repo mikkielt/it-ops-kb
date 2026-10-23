@@ -2,7 +2,7 @@
   "id": "ST-ta4w56og",
   "kind": "story",
   "title": "A sprint plan checks shared code by its behaviour, not its shape",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ovwzbc7u",
   "priority": "P2",
   "rank": 0,
@@ -47,5 +47,7 @@
   "links": [
     "parked: SP-rmp5zm5a close"
   ],
-  "notes": "Retrospective of SP-rmp5zm5a (2026-10-22, operator accepted): landing ST-o367qbqn broke ST-bbxlwm4b's check (asserted curl for an .html url), and landing ST-aml4xyrf broke ST-o367qbqn's (planted one argv per source); a done item's checks change only after a reopen. Premise run on main with python3 -c over skills/sprint/SKILL.md and over python3 _tools/rag.py pack --root _self --set kb-sprint:plan: check 0 prints 'step 6 of the plan step tells the planner to check shared code by its behaviour, not its shape: False' and check 1 prints 'the plan set of the sprint rules prints the behaviour-not-shape rule: False (exit 0 )'. The planner reads rules through the pack sets when kb_root is set, so the rule lives in kb/_self/backlog.md (Sprints, Plan) with a tested row in kb/_self/_retrieval/lookup_eval.csv in the set kb-sprint:plan, and in step 6 of skills/sprint/SKILL.md. The two sibling breaks: ST-bbxlwm4b's check asserted curl for an .html url and ST-o367qbqn's change broke it; ST-aml4xyrf's change broke ST-o367qbqn's check, which planted one argv per source."
+  "notes": "Retrospective of SP-rmp5zm5a (2026-10-22, operator accepted): landing ST-o367qbqn broke ST-bbxlwm4b's check (asserted curl for an .html url), and landing ST-aml4xyrf broke ST-o367qbqn's (planted one argv per source); a done item's checks change only after a reopen. Premise run on main with python3 -c over skills/sprint/SKILL.md and over python3 _tools/rag.py pack --root _self --set kb-sprint:plan: check 0 prints 'step 6 of the plan step tells the planner to check shared code by its behaviour, not its shape: False' and check 1 prints 'the plan set of the sprint rules prints the behaviour-not-shape rule: False (exit 0 )'. The planner reads rules through the pack sets when kb_root is set, so the rule lives in kb/_self/backlog.md (Sprints, Plan) with a tested row in kb/_self/_retrieval/lookup_eval.csv in the set kb-sprint:plan, and in step 6 of skills/sprint/SKILL.md. The two sibling breaks: ST-bbxlwm4b's check asserted curl for an .html url and ST-o367qbqn's change broke it; ST-aml4xyrf's change broke ST-o367qbqn's check, which planted one argv per source.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
