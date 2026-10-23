@@ -2,7 +2,7 @@
   "id": "BG-5gqy7hln",
   "kind": "bug",
   "title": "selfcheck fails allow-rules and hooks in a host project, on the kb's glab, core.hooksPath and .claude-plugin checks (second-project run)",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4fawjprq",
   "sprint": "SP-ovwzbc7u",
   "priority": "P1",
@@ -140,6 +140,55 @@
     }
   ],
   "notes": "Run finding 6: in a host, selfcheck printed FAIL allow-rules (glab mr view, git worktree add, tool Agent) and FAIL hooks (core.hooksPath not set; .claude-plugin/plugin.json missing). Blocks the Nerthus adoption (BG-42dg5ryi's host); P1 by the operator. Planned to the operator's answer: only checks whose inputs the host names. Ran the filed repro (git-init project, no settings): FAIL allow-rules (.claude/settings.json is missing) and FAIL hooks (core.hooksPath is not set; .claude-plugin/plugin.json is missing), the stated defect. Rewritten to plant settings that allow git, backlog.py, Agent, SendMessage, Edit and Write and a backlog.json naming land_push: it still fails, FAIL allow-rules: 9 of 31 not covered: python3 _tools/kbgit.py sync --push, plus FAIL hooks. Ran the checks now: kb guard passes (check_allow('.') ok, plugin_problem('.') None), named-command guard passes, no-settings and hooks-path checks fail. Fix is in bl_selfcheck.py: SKILL_COMMANDS (line 12) split into the loop's own and the kb's, gated by land_push, land_stale, land_eval, land_lint and forge from setting() (source file only for forge); read_allow (missing settings: unknown for a host); hooks_problem (line 224) and plugin_problem (line 245) behind check_hooks (line 259). Referrers of SKILL_COMMANDS: backlog.md:373, tools.md:104 (selfcheck rows). Where the root is the plugin's own checkout is for the worker to define (the root holds _tools/kbgit.py); the loop's backlog.py commands are matched with any path before _tools/backlog.py.",
-  "claimed_by": "manager-dfa692a0",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "3e553623ea29b115542e2297dfe5cf99ba415fcb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,'_tools'); import bl_selfcheck as s; sys.exit(0 if s.check_allow('.')['state']=='ok' and s.plugin_problem('.') is None else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess,sys,tempfile; d=tempfile.mkdtemp(); subprocess.run(['git','init','-q',d]); os.makedirs(os.path.join(d,'.claude')); json.dump({'permissions':{'allow':['Bash(git *)','Bash(python3 *backlog.py *)','Agent','SendMessage','Edit','Write']}},open(os.path.join(d,'.claude','settings.json'),'w')); json.dump({'land_stale':['_tools/selfdoc.py','stale','--since']},open(os.path.join(d,'backlog.json'),'w')); o=subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'selfcheck'],capture_output=True,text=True).stdout; sys.exit(0 if 'FAIL allow-rules' in o else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys,tempfile; d=tempfile.mkdtemp(); subprocess.run(['git','init','-q',d]); o=subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'selfcheck'],capture_output=True,text=True).stdout; sys.exit(1 if 'FAIL allow-rules' in o else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,subprocess,sys,tempfile; d=tempfile.mkdtemp(); subprocess.run(['git','init','-q',d]); os.makedirs(os.path.join(d,'myhooks')); subprocess.run(['git','-C',d,'config','core.hooksPath','myhooks']); o=subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'selfcheck'],capture_output=True,text=True).stdout; sys.exit(1 if 'FAIL hooks' in o else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess,sys,tempfile; d=tempfile.mkdtemp(); subprocess.run(['git','init','-q',d]); os.makedirs(os.path.join(d,'.claude')); json.dump({'permissions':{'allow':['Bash(git *)','Bash(python3 *backlog.py *)','Agent','SendMessage','Edit','Write']}},open(os.path.join(d,'.claude','settings.json'),'w')); json.dump({'land_push':['git','push','origin','HEAD:main']},open(os.path.join(d,'backlog.json'),'w')); o=subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'selfcheck'],capture_output=True,text=True).stdout; bad=[l[:90] for l in o.splitlines() if l.startswith(('FAIL hooks','FAIL allow-rules'))]; print(bad); sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
