@@ -2,7 +2,7 @@
   "id": "BG-v53e2pef",
   "kind": "bug",
   "title": "coord.py dedup claims research keys from the question's own words, past the id pattern a claim key takes",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-c7oav2vn",
   "priority": "P3",
   "rank": 0,
@@ -50,6 +50,19 @@
     }
   ],
   "notes": "Planning 2026-10-23 on 35b5b7cb2: the repro was a placeholder (sys.exit(1)); it now plants lack terms with a space and punctuation through coord.dedup and exits 1 (both claimed keys fail FIELD_VALUE). It also needs the dedup to still claim, so a fix that drops every such term passes only if it maps them to ids. Found while fixing BG-dn5n7z7k, not fixed there since dedup keys need terms mapped to ids.",
-  "claimed_by": "claude-92aeeb3c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "7d169d1a158b452eca2fdeb420cfde1427b61946",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import argparse, os, sys, tempfile, time; sys.path.insert(0, \"_tools\"); import coord; coord.fingerprint = lambda q, t=None: (\"logs/otel-python-sdk\", [\"batch size\", \"a+b (c)\"]); s = os.path.join(tempfile.mkdtemp(), \"c.sqlite\"); b = coord.dedup(argparse.Namespace(store=s, holder=\"h\", topic=None, token=None, ttl=60, question=\"q\"), time.time); bad = [k for k in b[\"claimed\"] if not coord.FIELD_VALUE.fullmatch(k)]; print(\"claimed:\", b[\"claimed\"], \"past FIELD_VALUE:\", bad); sys.exit(1 if bad or not b[\"claimed\"] else 0)"
+        ],
+        "exit": 0,
+        "sha256": "1f2a40ebc1ec1120"
+      }
+    ]
+  }
 }
