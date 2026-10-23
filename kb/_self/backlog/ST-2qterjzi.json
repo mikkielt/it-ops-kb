@@ -2,7 +2,7 @@
   "id": "ST-2qterjzi",
   "kind": "story",
   "title": "Research sprint goal: Research for the coord run states: tracing, traceparent, Alertmanager, Claude Code hooks and a local traces backend",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-r7e7jcep",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,7 @@
     "kb/public/**"
   ],
   "notes": "No outside facts: the sprint's five research stories are the research; this story has no question of its own to answer before them. Premise run 2026-10-24: each of the five items' checks fails on the base (precheck). Planned 2026-10-24: first in the run order; the five research stories carry the sprint's research, so it holds no outside facts of its own.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
