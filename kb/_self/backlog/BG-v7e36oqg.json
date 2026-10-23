@@ -2,7 +2,8 @@
   "id": "BG-v7e36oqg",
   "kind": "bug",
   "title": "The leak scan's widened armor-line lookahead backtracks exponentially on a label followed by a row of Key: value cells",
-  "status": "draft",
+  "status": "doing",
+  "sprint": "SP-evq2flqc",
   "priority": "P1",
   "rank": 0,
   "severity": "S2",
@@ -24,5 +25,7 @@
   "links": [
     "parked: SP-evq2flqc review"
   ],
-  "notes": "Found 2026-10-23 by the SP-evq2flqc fresh review: the header-line value and the separator group (\\s, escaped n or r, >, #, |, //) of the widened lookahead in 02ca8dc7d both consume the same characters, so a failed match tries every split; timings N=8/10/12/14 cells: 0.008/0.13/2.1/34 s, the shape before 02ca8dc7d 0.0 s at N=12. No tracked file triggers it today; one that does hangs test_leaks, the publish scan, the sync gate and redact.scan."
+  "notes": "Found 2026-10-23 by the SP-evq2flqc fresh review: the header-line value and the separator group (\\s, escaped n or r, >, #, |, //) of the widened lookahead in 02ca8dc7d both consume the same characters, so a failed match tries every split; timings N=8/10/12/14 cells: 0.008/0.13/2.1/34 s, the shape before 02ca8dc7d 0.0 s at N=12. No tracked file triggers it today; one that does hangs test_leaks, the publish scan, the sync gate and redact.scan. Operator 2026-10-23: fixed in SP-evq2flqc although S2, since the sprint introduced it in a critical guard; the review re-reads the fix.",
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
