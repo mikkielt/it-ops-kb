@@ -65,13 +65,13 @@ def operator_class_is_derived_from_touches_and_question_a_lower_stored_class_cha
     assert ba.lowered(item, {**plain, "class": "push"}) is None
     assert {"ceiling", "secrets", "push", "agents-rule"} == set(ba.OPERATOR_CLASSES)
     assert ("ceiling",) == ba.TERMINAL_CLASSES and ba.rank("ceiling") < ba.rank("agents-rule")
-    # the bare word `rule` classes agents-rule only beside a rule-guarding touch or path; `release` classes push anywhere
+    # the bare word `rule` classes agents-rule only beside a rule-guarding touch or path; `release` is no push word
     for touches, question, cls in ((["kb/public/x.md"], "Which distill rows count by rule?", "design"),
                                    (["kb/public/x.md"], "Do the agents follow which rule?", "design"),
                                    (["kb/public/x.md"], "Which rule does AGENTS.md carry?", "agents-rule"),
                                    (["kb/public/x.md"], "Which rule is in _tools/bl_items.py?", "agents-rule"),
                                    ([".claude/skills/kb-sprint/SKILL.md"], "Which rule?", "agents-rule"),
-                                   (["kb/public/x.md"], "How is the Sonnet 5.5 release question dispositioned?", "push")):
+                                   (["kb/public/x.md"], "How is the Sonnet 5.5 release question dispositioned?", "design")):
         got = ba.class_reasons({"touches": touches}, {**plain, "question": question})
         assert got[0] == cls, (question, got)
     named = ba.class_reasons({"touches": []}, {**plain, "question": "Which rule in AGENTS.md?"})[1]
@@ -84,18 +84,30 @@ def operator_class_is_derived_from_touches_and_question_a_lower_stored_class_cha
         assert ba.gate_class({"touches": []}, {**plain, "question": question}) == "ceiling", question
         assert ba.names_ceiling(question), question
     assert ba.gate_class({"touches": []}, {**plain, "question": "Which retry ceiling does the fetch take?"}) == "design"
-    # the three wordings class design (an upload date, a kb topic path, a display-only count question); a push the
-    # question acts on or asks for, and a `gitlab/` ref that is no kb topic, keep `push`
+    # the two wordings class design (an upload date, a display-only count question); a push the question acts on or asks
+    # for keeps `push`; the names of a push target (origin, remote, release, a forge or a host name, a merge request) are no
+    # push word, but a verb that writes to a shared branch is, in the question as in an option, and a command that pushes
+    # or names a forge keeps the class
+    def klass(question, options=("a", "b"), item=None, **kw):
+        return ba.class_reasons(item or {"touches": []}, {**plain, "question": question, "options": list(options), **kw})[0]
     for question, cls in (("PyPI lists 1.2.15, uploaded 2026-10-12 22:38 UTC, as latest: which version?", "design"),
-                          ("Where do the facts live: gitlab/git-commit-paths-and-symlinks or gitlab/git-refs?", "design"),
                           ("How many unpushed commits does land list by name before its push?", "design"),
                           ("How many times should the worker retry the push after the list is shown?", "push"),
                           ("How many commits does land list, and should the worker run the push?", "push"),
                           ("How many commits does land list before the push, and may the worker force it?", "push"),
-                          ("Should land reset to gitlab/main?", "push"),
-                          ("Should the worker force-update gitlab/main?", "push"),
-                          ("Where do the facts live: gitlab/git-refs or gitlab/hotfix-branch?", "push")):
-        assert ba.class_reasons({"touches": []}, {**plain, "question": question})[0] == cls, question
+                          ("Should the worker push to gitlab/main?", "push"),
+                          ("Does a census brief give a session a git ls-remote line?", "design"),
+                          ("Which eval row fails on origin/main?", "design"),
+                          ("Which remote ref does the release note name in the merge request on GitHub?", "design")):
+        assert klass(question) == cls, question
+    assert klass("How are the four route findings (docs.gitlab.com) closed?",
+                 item={"touches": ["kb/_querylog/findings/**"]}) == "querylog"
+    # the boundary of write verbs alone: a verb in an option classes the gate whatever its question asks
+    assert klass("What do lane_module and land_push default to?",
+                 ("empty, so land stops before the push", "land_push defaults to git push of HEAD to the main branch")) == "push"
+    assert klass("Which branch name?", host_check=["git", "push", "origin", "HEAD:main"]) == "push"
+    assert klass("Which tag name?", do=["curl", "-X", "POST", "https://gitlab.com/api/v4/projects/1/repository/tags"]) == "push"
+    assert klass("Which tag name?", host_check=["git", "ls-remote", "origin"]) == "design"
     # each secrets word planted inside each shape `without_token_counts` and `without_unit_lists` blank keeps `secrets`: an
     # exception that removed the word with the shape would fall the gate to design (SECRET_TOKENS, PASSWORD_TOKENS)
     def secrets(question, *options):

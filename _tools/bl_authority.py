@@ -123,9 +123,11 @@ def without_token_counts(text):
     return TOKEN_COUNT.sub(lambda m: m.group(0) if m.group("cred") or CRED_INSIDE.search(m.group(0)) else " ", text)
 
 
-# A gate's text is its question, its options and the words of its `do` and `host_check` commands. `origin`, `mirror` and
-# `release` are word-bounded (`original` is not `origin`) and take their endings (`releases`, `released`, `mirrored`),
-# so a gate about a release note is `push` too, wherever the word stands: the classifier fails closed. `AGENTS.md` and
+# A gate's text is its question, its options and the words of its `do` and `host_check` commands. The `push` words are
+# the words for a write to a shared branch or a public copy (`push`, `publish`, `upload`, `deploy`, `mirror` with its
+# endings, `public repository`), not the names of the places it goes to: `origin`, `remote`, `release`, a forge's name
+# and `merge request` are nouns that a read-only question holds too (`git ls-remote`, `fails the eval on origin/main`,
+# `the newest release`), so none of them classes a gate by itself. `AGENTS.md` and
 # `CLAUDE.md` are `agents-rule` words only as a whole file name, alone or after a `/` (`skills/x/AGENTS.md`), so a kb
 # article such as `gitops-for-agents.md` is none. The word `rule`
 # is no `agents-rule` word of its own (a design question about which rows count by rule is no rule-guarding work): it
@@ -136,9 +138,8 @@ QUESTION_WORDS = {
                           r"\btests\.py[-_ ]ceiling|\bmax_seconds\b", re.I),
     "secrets": re.compile(r"secret|credential|password|passphrase|token|\bPATs?\b|\bbearer\b|\bssh\b|api[- ]key|"
                           r"private key|\.env\b|rotat\w*\s+(?:\w+\s+){0,2}keys?\b", re.I),
-    "push": re.compile(r"\bpush(?:ing)?\b|publish|force[- ]push|\bremote\b|\bgithub\b|\bgitlab\b|\borigin\b|"
-                       r"\bmirror(?:s|ed|ing)?\b|\breleas(?:e|es|ed|ing)\b|public[- ]repositor(?:y|ies)|"
-                       r"\buploa(?:d|ds|ded|ding)\b|\bdeploy(?:s|ed|ing|ment)?\b|merge[- ]requests?\b", re.I),
+    "push": re.compile(r"\bpush(?:ing)?\b|publish|force[- ]push|\bmirror(?:s|ed|ing)?\b|public[- ]repositor(?:y|ies)|"
+                       r"\buploa(?:d|ds|ded|ding)\b|\bdeploy(?:s|ed|ing|ment)?\b", re.I),
     "querylog": re.compile(r"query[- ]?log|querylog|redact", re.I),
     "agents-rule": re.compile(r"(?<![\w.-])(?:AGENTS|CLAUDE)\.md|\bskill\b|\bagent definition", re.I),
     "delete": re.compile(r"\bdelet|\bremov(?:e|ing) .*(?:kb|content|history)|purge|erase", re.I),
@@ -192,17 +193,14 @@ def rule_paths(text):
     return out
 
 
-# Three wordings that hold a `push` word and are no push: the upload date of a package release (`uploaded` beside a
-# date or a time), a kb topic path (`gitlab/git-commit-paths-and-symlinks`, a domain `gitlab` before the hyphenated slug
-# of an article that exists under `kb/*/gitlab/`: `gitlab/main` and any other ref is no topic) and a display-only count
-# question, where the push is a noun after a preposition (`before its push`) that only places a count or a list
-# (`how many unpushed commits does land list before its push?`) and no word of the question acts on it or asks for it
-# (`should`, `retry`, `run`, `force`). Every other use of those words keeps the class.
+# Two wordings that hold a `push` word and are no push: the upload date of a package release (`uploaded` beside a date
+# or a time) and a display-only count question, where the push is a noun after a preposition (`before its push`) that
+# only places a count or a list (`how many unpushed commits does land list before its push?`) and no word of the
+# question acts on it or asks for it (`should`, `retry`, `run`, `force`). Every other use of those words keeps the class.
 UPLOAD_DATE = re.compile(
     r"\buploaded\s+(?:(?:on|at|in)\s+)?(?=\d{4}-\d{2}-\d{2}\b|\d{1,2}:\d{2}\b|\d{1,2}\s+"
     r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b|"
     r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d{1,2}\b)", re.I)
-TOPIC_PATH = re.compile(r"\bgitlab/([a-z0-9][a-z0-9.-]*[a-z0-9])\b")
 COUNT_QUESTION = re.compile(r"\bhow (?:many|much)\b|\b(?:which|what) (?:count|number)\b", re.I)
 DISPLAY_WORD = re.compile(r"\b(?:list|lists|listed|listing|show|shows|print|prints|count|counts|name|names|report|reports)\b",
                           re.I)
@@ -212,56 +210,34 @@ PUSH_ACTION = re.compile(
     r"undo|skip|repeat|perform|execute|trigger|start|make|allow|approve|abort|cancel|reset|revert|enable|disable)\b",
     re.I)
 
-
-# Vendor and product names that hold a `push` word, blanked only in the question and options of a gate about kb content,
-# never in its `do` and `host_check` command words: a forge's host name (`gitlab.com`, without the url path after it, so
-# `github.com/org/repo/releases/1` keeps `releases`), a forge's name inside a path (`gitlab-org/gitlab`), its bare name
-# unless a `/` follows it (`gitlab/main` is a remote ref), the product `Remote Control`, and `Publish` inside a longer
-# identifier (`datePublished`, `date_published`). `push`, `publish`, `remote`, `origin`, `mirror` and `release` stay as
-# they are.
-VENDOR_HOST = re.compile(r"\bgit(?:hub|lab)\.com\b", re.I)
-VENDOR_PATH_NAME = re.compile(r"(?<=/)git(?:hub|lab)\b", re.I)
-VENDOR_NAME = re.compile(r"\bgit(?:hub|lab)\b(?!/)", re.I)
-PRODUCT_NAME = re.compile(r"\bremote[- ]control\b", re.I)
+# A forge's name in a `do` or `host_check` command acts on that forge (`curl -X POST https://gitlab.com/api/v4/.../tags`,
+# `gh pr merge 12 --repo github`), so a command keeps the class by it; the name in a question or an option, or inside a
+# host name such as `docs.gitlab.com`, is no push word.
+FORGE_COMMAND = re.compile(r"\bgit(?:hub|lab)\b", re.I)
+# `Publish` inside a longer identifier (`datePublished`, `date_published`) names a key, not an act: blanked only in the
+# question and options of a gate about kb content.
 KEY_IN_WORD = re.compile(r"\b\w*(?:[a-z]Publish|[A-Za-z0-9]_publish)\w*\b")
 
 
 def kb_content_only(item):
     """Whether the item's touches all lie under `kb/` and none in the query log store (`kb/_querylog/`): a gate on such
-    an item names a forge or a product as the subject of a fact, not as a push target. An item with no touches is no
-    such item."""
+    an item names a key such as `datePublished` as the subject of a fact. An item with no touches is no such item."""
     touches = [t for t in item.get("touches", []) or [] if isinstance(t, str) and t.strip()]
     return bool(touches) and all(
         norm(t).startswith("kb/") and not touch_names(t, "kb/_querylog/") for t in touches)
 
 
-def without_vendor_names(text):
-    """The text with each forge name or host name (the url path after a host stays), the product `Remote Control` and
-    each identifier that holds `Publish` inside a longer word replaced by a space."""
-    for rx in (KEY_IN_WORD, VENDOR_HOST, VENDOR_PATH_NAME, VENDOR_NAME, PRODUCT_NAME):
-        text = rx.sub(" ", text)
-    return text
-
-
-def topic_slugs():
-    """The hyphenated slugs of the articles under `kb/*/gitlab/` of this checkout (an empty set where there is no
-    `kb/` beside `_tools/`, so a `gitlab/` path then keeps the class)."""
-    kb = Path(__file__).resolve().parent.parent / "kb"
-    return {f.stem for f in kb.glob("*/gitlab/*.md") if "-" in f.stem}
-
-
 def without_benign_push_words(text, question=None, kb_content=False):
-    """The text with the three wordings above replaced by a space: what the `push` words are searched in. `question` is
+    """The text with the two wordings above replaced by a space: what the `push` words are searched in. `question` is
     the gate's question: a count question's push noun is blanked only in it, so an option that says `push` keeps the
     class, and only when the question also holds a display word (`list`, `count`, `show`) and no word that acts on the
-    push or asks for it. `kb_content` (the item's touches all under `kb/`, `kb_content_only`) also blanks the vendor
-    and product names of `without_vendor_names`."""
+    push or asks for it. `kb_content` (the item's touches all under `kb/`, `kb_content_only`) also blanks each
+    identifier that holds `Publish` inside a longer word."""
     if (question and question in text and COUNT_QUESTION.search(question) and DISPLAY_WORD.search(question)
             and not PUSH_ACTION.search(question)):
         text = text.replace(question, PUSH_NOUN.sub(" ", question), 1)
-    slugs = topic_slugs()
-    text = TOPIC_PATH.sub(lambda m: " " if m.group(1) in slugs else m.group(0), UPLOAD_DATE.sub(" ", text))
-    return without_vendor_names(text) if kb_content else text
+    text = UPLOAD_DATE.sub(" ", text)
+    return KEY_IN_WORD.sub(" ", text) if kb_content else text
 
 
 def command_words(gate):
@@ -311,7 +287,6 @@ def class_reasons(item, gate):
             found.setdefault("secrets", []).append(f"touch '{t}'")
     options = [str(o) for o in gate.get("options", []) or []]
     text = f"{gate.get('question', '')} {' '.join(options)} {command_words(gate)}"
-    # the vendor names are blanked in the question and options only: a `do` or `host_check` command that names a forge acts on it
     commands = command_words(gate)
     push_text = " ".join((
         without_benign_push_words(f"{gate.get('question', '')} {' '.join(options)}", str(gate.get("question", "")),
@@ -324,6 +299,9 @@ def class_reasons(item, gate):
         m = rx.search(secrets_text if cls == "secrets" else push_text if cls == "push" else text)
         if m:
             found.setdefault(cls, []).append(f"matched '{m.group(0)}'")
+    m = FORGE_COMMAND.search(commands)
+    if m:  # a `do` or `host_check` command that names a forge acts on it
+        found.setdefault("push", []).append(f"matched '{m.group(0)}' in a command")
     m = RULE_WORD.search(text)
     if m:  # the word `rule` classes only beside a rule-guarding path: a touch of the item or a path in the text
         paths = rule_paths(text)
