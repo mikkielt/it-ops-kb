@@ -22,6 +22,25 @@
     "kb/_self/plugin.md",
     "kb/_self/content-rules.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the armor lookahead stop the header value and the gap from splitting the same characters?",
+      "options": [
+        "possessive header value that ends at a newline, an escaped newline or a pipe",
+        "bounded repeat counts on the header lines and cells"
+      ],
+      "recommendation": "possessive header value that ends at a newline, an escaped newline or a pipe",
+      "do": {
+        "possessive header value that ends at a newline, an escaped newline or a pipe": "BG-v7e36oqg",
+        "bounded repeat counts on the header lines and cells": "BG-v7e36oqg"
+      },
+      "class": "design",
+      "answer": "possessive header value that ends at a newline, an escaped newline or a pipe",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-evq2flqc review"
   ],
