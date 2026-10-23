@@ -25,6 +25,8 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
   - After an install, tell the user to restart Claude Code (the session keeps its old PATH), then run `/kb-setup` again.
 
 ## 2. Repository checks
+Ask first (AskUserQuestion), before the tests run: which test ceiling profile does this clone's host get, `usual` or `busy`? `python3 _tools/tests.py --show-profile` prints the one it has now. `busy` is for a host that is loaded for good (a work laptop with a security agent, a VS Code workspace on a shared Windows host): each platform's `max_seconds` in `_tools/tests_ceiling.json` is multiplied by 15 in this clone only, and the ceiling file stays as it is. The agent cannot set it: `python3 _tools/tests.py --set-profile busy` is refused in an agent session, as a ceiling answer is, so tell the person to run it in a terminal of their own (it writes `_private/host.json`, never committed), then go on. A clone that keeps the default needs no command.
+
 Run each and record exit code and last line:
 - `python3 _tools/check.py` (expect `errors=0`)
 - `python3 _tools/fetch.py --offline` (expect `mismatch=0 unknown=0`)
