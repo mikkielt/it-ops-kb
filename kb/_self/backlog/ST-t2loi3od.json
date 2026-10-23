@@ -60,6 +60,25 @@
     "kb/_self/code.md",
     "kb/_self/coordination.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which value types and built-in defaults does kbsettings.py use for the keys the goal leaves open (announce.when, announce.operator as lists default start+claim and terminal+kbmon; to_other_sessions boolean true; needs_you_after_min whole minutes 10; strategy same_item ask, working ask, landing wait, blocked proceed, returned proceed, decide operator)?",
+      "options": [
+        "lists, boolean, minutes and these defaults",
+        "other defaults chosen by the operator"
+      ],
+      "recommendation": "lists, boolean, minutes and these defaults",
+      "do": {
+        "lists, boolean, minutes and these defaults": "ST-t2loi3od",
+        "other defaults chosen by the operator": "ST-t2loi3od"
+      },
+      "class": "design",
+      "answer": "lists, boolean, minutes and these defaults",
+      "by": "agent"
+    }
+  ],
   "notes": "Planned 2026-10-24 (SP-47w4ngr6): premise reproduces on base (kbsettings.py does not exist; check 0 prints workspace {} | team {}). Shape the checks read, chosen from the goal: show --json prints {\"coordination\": {\"announce\": {...}, \"strategy\": {...}}}; kbsettings.effective(root, kb_root=None) returns that same object; settings files hold the same {\"coordination\": ...} object; an error names the file path (settings.json), the key and the allowed values. Check 0 now passes --json: the goal makes --json the flag that prints JSON, and the check parsed the plain output as JSON (same clause, same assertions). Checks 1 and 2 added: 1 reads the default keys, a missing workspace file and a missing kb root file (no error) and the closed-set values strategy.same_item, strategy.decide and a run-state key accept; 2 reads the exit 2 errors for an unknown key, a value outside its set (workspace file and kb root file) and effective() against show --json. announce.when, announce.operator and announce.needs_you_after_min value types are left to the worker (documented in coordination.md); the checks only require the keys in the defaults. Planned in SP-47w4ngr6 on 2026-10-24. Sprint SP-47w4ngr6 started 2026-10-24. Siblings in flight (SP-47w4ngr6): ST-yrilvcbx, ST-t2loi3od and ST-55ueywel run at once and share kb/_self/tools.md (ST-t2loi3od and ST-yrilvcbx also kb/_self/coordination.md). Edit only your own paragraph or table row in a shared doc and keep the diff small, so the rebase at land merges cleanly; a rebase conflict in a doc keeps both sides' lines. The checks are planted runs: read them first (backlog.py show ID), run each before you start (each must fail) and after the work (each must pass); if one is wrong for its goal clause, rewrite it to test the same clause and give the reason in the notes.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
