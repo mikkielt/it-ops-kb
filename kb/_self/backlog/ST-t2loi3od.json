@@ -2,7 +2,7 @@
   "id": "ST-t2loi3od",
   "kind": "story",
   "title": "kbsettings.py reads the coordination settings from the workspace's settings.json, overridden key by key by a kb root's settings.json, over built-in defaults",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-47w4ngr6",
   "priority": "P2",
@@ -61,5 +61,7 @@
     "kb/_self/coordination.md"
   ],
   "notes": "Planned 2026-10-24 (SP-47w4ngr6): premise reproduces on base (kbsettings.py does not exist; check 0 prints workspace {} | team {}). Shape the checks read, chosen from the goal: show --json prints {\"coordination\": {\"announce\": {...}, \"strategy\": {...}}}; kbsettings.effective(root, kb_root=None) returns that same object; settings files hold the same {\"coordination\": ...} object; an error names the file path (settings.json), the key and the allowed values. Check 0 now passes --json: the goal makes --json the flag that prints JSON, and the check parsed the plain output as JSON (same clause, same assertions). Checks 1 and 2 added: 1 reads the default keys, a missing workspace file and a missing kb root file (no error) and the closed-set values strategy.same_item, strategy.decide and a run-state key accept; 2 reads the exit 2 errors for an unknown key, a value outside its set (workspace file and kb root file) and effective() against show --json. announce.when, announce.operator and announce.needs_you_after_min value types are left to the worker (documented in coordination.md); the checks only require the keys in the defaults. Planned in SP-47w4ngr6 on 2026-10-24. Sprint SP-47w4ngr6 started 2026-10-24.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
