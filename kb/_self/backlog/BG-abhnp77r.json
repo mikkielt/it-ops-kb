@@ -24,6 +24,25 @@
     "kb/_self/tools.md",
     "kb/_self/usage.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What marks a subagent run as failed in its agent.run row, when SubagentStop carries no status field?",
+      "options": [
+        "exit 1 when the closing text opens with API Error, else 0",
+        "no exit: leave the span ok until Claude Code documents a status"
+      ],
+      "recommendation": "exit 1 when the closing text opens with API Error, else 0",
+      "do": {
+        "exit 1 when the closing text opens with API Error, else 0": "BG-abhnp77r",
+        "no exit: leave the span ok until Claude Code documents a status": "BG-abhnp77r"
+      },
+      "class": "design",
+      "answer": "exit 1 when the closing text opens with API Error, else 0",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "claude-92aeeb3c",
   "operator": "op-f618a13e"
 }
