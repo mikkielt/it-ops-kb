@@ -18,8 +18,11 @@
   "touches": [
     "_tools/bl_authority.py"
   ],
+  "depends_on": [
+    "ST-xjmx4pjc"
+  ],
   "links": [
     "parked: SP-vx6eufpj close"
   ],
-  "notes": "Another trigger, 2026-10-23 (ST-y627kmds gate g1): a design question that names 'the gitlab closings' (gap-note closings about GitLab articles, no push action) was classed push by the word gitlab and made blocking."
+  "notes": "Another trigger, 2026-10-23 (ST-y627kmds gate g1): a design question that names 'the gitlab closings' (gap-note closings about GitLab articles, no push action) was classed push by the word gitlab and made blocking. Premise reproduces: python3 -c with its check's item and gate prints ('push', [\"matched 'gitlab'\"]) for the question naming docs.gitlab.com. Left a draft: ST-xjmx4pjc's goal and its second check cover this case (a forge name inside a host name is no push word, on a query log item too), so the fix lands there and this story is dropped once ST-xjmx4pjc is done."
 }
