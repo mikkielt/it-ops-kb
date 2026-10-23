@@ -7,7 +7,7 @@
   "sprint": "SP-xznmaurz",
   "priority": "P2",
   "rank": 0,
-  "goal": "kbgit.py tag-census tags the kb census-<date> for the census of ST-zpe7qxtv, dated after 2026-10-20",
+  "goal": "kbgit.py tag-census tags the kb census-<date> for the census of ST-zpe7qxtv, dated after 2026-10-20, whose sample fixes reword garak's licence fact and drop its unlocated anchor row (S-d55hgtp4)",
   "checks": [
     {
       "run": [
