@@ -87,6 +87,21 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does an empty land_push reach the push step's refusal?",
+      "options": [
+        "land_push takes the argv type (an empty list allowed) and bl_land.land_push raises the push-step stop when it is empty",
+        "keep the command type and add an empty case to it"
+      ],
+      "recommendation": "land_push takes the argv type (an empty list allowed) and bl_land.land_push raises the push-step stop when it is empty",
+      "do": {
+        "land_push takes the argv type (an empty list allowed) and bl_land.land_push raises the push-step stop when it is empty": "BG-hjxvxufh",
+        "keep the command type and add an empty case to it": "BG-hjxvxufh"
+      },
+      "class": "push"
     }
   ],
   "notes": "Found while fixing BG-cmvwrpbr (seven other keys). Planned to the operator's answer: lane_module and land_push both empty by default, land stops at the push step naming land_push, the kb's backlog.json names both. Ran the filed repro: it fails, printing lane_module = kblane (default) and land_push = the kb gate script argv (default); its bad-line filter mixed and/or and it read a project with no file, so it is rewritten to plant backlog.json {} and filter each line. Ran each added check now: the land-stop check fails (bl_land.land_push() under planted {} settings returns the kb argv and raises no bl_close.Refused naming land_push), the named-command check passes, the kb-file check fails (land_push is default in config). Fix: bl_base.py SETTINGS defaults for lane_module and land_push, and the command kind, which refuses an empty list; bl_land.land_push (bl_land.py:670, one call at :1928) raises land_stop for the push step. Referrers read: bl_land.py:106,109 and bl_precheck.py:312 already treat an empty lane_module as no lane; skills/sprint/SKILL.md:17, kb/_self/backlog.md:300,310,421 and plugin.md:24 document the old defaults; .claude/skills/kb-sprint links to skills/sprint. bench_multi.py sets lane_module in the file, unaffected. Shares backlog.md and tools.md with BG-urlbsgsr.",
