@@ -53,11 +53,17 @@ SETTINGS = {
     # the repositories of a multi-repository workspace: name -> checkout path under the workspace, which an item's
     # `repos` and `repos_if_needed` name; {} = the project is the one repository the root is
     "repositories": ("repositories", {}),
+    # how a repository's branch, merge request title and commit trailer are named for an item: templates `branch`,
+    # `mr_title` and `trailer` filled from the item (NAMING_FIELDS); a template left out keeps the kb's own
+    # (NAMING_DEFAULTS); {} = all three
+    "naming": ("naming", {}),
     # the plugin's SessionStart hook entries (`horizon --hook --opt-in`, `intake --file --hook --opt-in`) that run in
     # this project: they do nothing unless their command is named here; [] = none (the kb's own settings.json entries
     # run without the flag)
     "hooks": ("hooks", []),
 }
+NAMING_FIELDS = ("id", "task", "nn", "mm", "title", "slug")  # the placeholders a `naming` template may hold
+NAMING_DEFAULTS = {"branch": "work/{id}", "mr_title": "{id}: {title}", "trailer": ""}  # "" = the brief names no trailer
 WORKSPACE_NAME = "workspace"  # the name the workspace's own files take in a touch, so no repository's
 
 
@@ -122,6 +128,16 @@ def _type_problem(kind, v):
         ok = isinstance(v, dict) and all(tracker_ok(n, t) for n, t in v.items())
         return None if ok else ('an object of tracker name (lower case) to {"pattern": a regex the whole id matches, '
                                 '"url": a template with {id}, "ref": an optional template with {id} and no space}')
+    if kind == "naming":
+        def template_ok(key, t):
+            if not isinstance(t, str) or not t or (key == "branch" and re.search(r"\s", t) is not None):
+                return False
+            return set(re.findall(r"\{([^{}]*)\}", t)) <= set(NAMING_FIELDS) and t.count("{") == t.count("}")
+        ok = (isinstance(v, dict) and set(v) <= set(NAMING_DEFAULTS) and all(template_ok(k, t) for k, t in v.items())
+              and ("mr_title" not in v or v["mr_title"].split("{title}")[0].strip() != ""))
+        return None if ok else ("an object of templates, any of " + ", ".join(NAMING_DEFAULTS) + ", each text holding "
+                                "only the placeholders " + ", ".join("{" + f + "}" for f in NAMING_FIELDS)
+                                + " (a branch with no space; an mr_title with text before {title})")
     raise ValueError(f"unknown settings type {kind!r}")
 
 
@@ -907,6 +923,52 @@ def external_description(it, trackers=None):
     if not rows:
         return ""
     return "\n".join([REF_HEADER] + [f"- {name} {ref}" + (f": {url}" if url else "") for name, _, ref, url in rows])
+
+
+# ------------------------------------------------------------------ names in the item's repositories
+
+def naming_fields(it, iid, want):
+    """{placeholder: text} for the NAMING_FIELDS in the set WANT, filled from the item IT with id IID: `id`, `task` (the
+    first external id of external_refs' order; the id itself when the item has none), `nn` and `mm` (the first two digit
+    runs of the task), `title` and `slug` (the title as a lower-case word of letters and digits joined by hyphens, at
+    most 40 characters). Refused naming the placeholder when the item cannot fill one WANT names."""
+    task = next((x for _, x, _, _ in external_refs(it)), "")
+    runs = re.findall(r"[0-9]+", task)
+    title = str(it.get("title", ""))
+    slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")[:40].strip("-")
+    have = {"id": iid, "task": task, "nn": runs[0] if runs else "", "mm": runs[1] if len(runs) > 1 else "",
+            "title": title, "slug": slug}
+    why = {"task": "an external id", "nn": "a first digit run in its first external id",
+           "mm": "a second digit run in its first external id", "slug": "a title with a letter or digit"}
+    for f in sorted(want):
+        if not have[f]:
+            raise Refused(f"{iid}: the naming setting uses {{{f}}} and the item has no {why.get(f, f)}")
+    return have
+
+
+def name_for(it, iid, key):
+    """The `naming` template KEY (`branch`, `mr_title`, `trailer`) of the project filled for the item, or its default
+    (NAMING_DEFAULTS) when backlog.json sets none. The trailer's default is "" (a project that names none)."""
+    template = setting("naming").get(key, NAMING_DEFAULTS[key])
+    want = set(re.findall(r"\{([^{}]*)\}", template))
+    fields = naming_fields(it, iid, want)
+    return re.sub(r"\{([^{}]*)\}", lambda m: fields[m.group(1)], template)
+
+
+def repo_branch(it, iid):
+    """The branch dispatch makes in each repository of an item and land reads: the `naming` branch template filled
+    (`work/<id>` by default). The workspace's own branch is always `work/<id>`."""
+    return name_for(it, iid, "branch")
+
+
+def repo_title_prefix(it, iid):
+    """The text a repository's merge request title starts with for the item: the `naming` mr_title template filled, up
+    to its `{title}`, without trailing white space (`<id>:` by default, `P08-05:` for `{task}: {title}`)."""
+    template = setting("naming").get("mr_title", NAMING_DEFAULTS["mr_title"])
+    head = template.split("{title}")[0]
+    want = set(re.findall(r"\{([^{}]*)\}", head))
+    fields = naming_fields(it, iid, want)
+    return re.sub(r"\{([^{}]*)\}", lambda m: fields[m.group(1)], head).rstrip()
 
 
 # ------------------------------------------------------------------ output and commits

@@ -26,7 +26,8 @@ import bl_plan
 from bl_base import (  # run_check lives below bl_land, so bl_ci reaches it without bl_land (ST-ufpxla7r)
     ANSI_RE, Backlog, REF_HEADER, WORKSPACE, colourless_env, run_check, Refused, commit_written, claims_ledger,
     external_description, git, id_re, in_scope, item_file, item_repos, line, need, rel_dir,
-    repositories, research_story, run, say, scope, setting, split_touch, waits, worker_dirs, main_worker_dir,
+    repo_branch, repo_title_prefix, repositories, research_story, run, say, scope, setting, split_touch, waits,
+    worker_dirs, main_worker_dir,
 )  # worker_dirs, main_worker_dir: other modules read them as bl_land.NAME
 from bl_check import HOST_BOUND_GATE, host_bound_accepted, is_test_run, noop_output, trivial_command
 from bl_close import (  # the worker's worktree and the repositories' leftovers `land` shares with close and tidy
@@ -1058,7 +1059,8 @@ def merge_commit(checkout, tip, upstream, request_iid):
 def land_repositories(bl, iid):
     """The repositories of a multi-repository item (`bl_base.item_repos`) as land finds them, [RepoLand] in the order
     the item names them; [] for an item with none, whose one worktree and branch land handles as ever. Each
-    repository's merge request, the one titled `<id>:`, is read once through bl_forge in its own checkout; one that is
+    repository's merge request, the one titled `<id>:` (the text of the `naming` setting's mr_title up to its
+    `{title}`, `repo_title_prefix`), is read once through bl_forge in its own checkout; one that is
     not merged (or none, or one that cannot be read) stops the land at step `requests` naming the repository and its
     state, every repository in one message. When all are merged, each repository's origin is fetched and its default
     branch read, every worktree dispatch made (`repo_worktree`) is checked first (a dirty, locked or live-process one
@@ -1068,6 +1070,7 @@ def land_repositories(bl, iid):
     if not names:
         return []
     import bl_forge
+    prefix, branch = repo_title_prefix(bl.items[iid], iid), repo_branch(bl.items[iid], iid)
     root = bl.root
     say(f"land: requests: {iid}: of {', '.join(names)}")
     ops_mark("requests")
@@ -1075,13 +1078,13 @@ def land_repositories(bl, iid):
     for name in names:
         checkout = Path(root) / repositories()[name]
         try:
-            request = bl_forge.read_request(checkout, title_prefix=f"{iid}:", run=run)
+            request = bl_forge.read_request(checkout, title_prefix=prefix, run=run)
         except (Refused, bl_forge.ForgeError) as e:
             bad.append(f"repository {name!r} ({checkout}): the merge request cannot be read: {e}")
             continue
         found.append((name, checkout, request))
         if request is None:
-            bad.append(f"repository {name!r}: no merge request titled '{iid}:' (state none)")
+            bad.append(f"repository {name!r}: no merge request titled '{prefix}' (state none)")
         elif request.state != "merged":
             bad.append(f"repository {name!r}: merge request !{request.iid} ({request.url or 'no url'}) is "
                        f"{request.state}, not merged")
@@ -1089,7 +1092,6 @@ def land_repositories(bl, iid):
         raise land_stop("requests", "; ".join(bad) + "; nothing was removed or changed: merge each, then run land again")
     ops_mark("repositories")
     staged, held = [], []
-    branch = WORK_PREFIX + iid
     for name, checkout, request in found:
         upstream = repo_default_ref(name, checkout)
         p = subprocess.run(["git", "for-each-ref", "--format=%(refname) %(objectname)", f"refs/heads/{branch}", upstream],
@@ -1103,7 +1105,7 @@ def land_repositories(bl, iid):
         wt = repo_worktree(root, iid, name)
         entry = next((e for e in worktree_entries(checkout) if e["path"] == wt.resolve()), None) if wt.is_dir() else None
         why = release_worker_worktree(root, entry["path"], entry["lock"], branch, repo=checkout,
-                                      check_only=True) if entry else None
+                                      check_only=True, iid=iid) if entry else None
         if why:
             held.append(f"repository {name!r}: its worktree {wt} {why}")
         staged.append((name, checkout, request, upstream, refs.get(f"refs/heads/{branch}", ""),
@@ -1133,11 +1135,12 @@ def repo_evidence(repos):
     return {r.name: dict(r.evidence) for r in repos}
 
 
-def delete_repo_branches(repos, iid):
-    """Delete each repository's `work/<id>` once the item has landed, when `git cherry` shows every commit of it on the
+def delete_repo_branches(repos, iid, branch=None):
+    """Delete each repository's BRANCH (the `naming` branch, `repo_branch`; `work/<id>` by default) once the item has landed, when `git cherry` shows every commit of it on the
     repository's default branch (delete_landed_branch: a squashed or unmerged one is kept, and said). Returns the
     names of the repositories whose branch it deleted."""
-    return [r.name for r in repos if r.tip and delete_landed_branch(r.checkout, WORK_PREFIX + iid, r.upstream,
+    branch = branch or WORK_PREFIX + iid
+    return [r.name for r in repos if r.tip and delete_landed_branch(r.checkout, branch, r.upstream, prefixes=(branch,),
                                                                     who=f"land: repository {r.name}")]
 
 
@@ -1979,7 +1982,8 @@ def land_once(bl, a):
                 for done_branch in (branch, agent_branch):
                     if done_branch and start_ref != f"refs/heads/{done_branch}":
                         delete_landed_branch(root, done_branch, upstream)
-                delete_repo_branches(repos, iid)
+                if repos:
+                    delete_repo_branches(repos, iid, repo_branch(bl.items[iid], iid))
                 land_cleanup(bl, iid)
 
 
