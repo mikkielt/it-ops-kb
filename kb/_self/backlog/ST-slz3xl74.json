@@ -2,7 +2,7 @@
   "id": "ST-slz3xl74",
   "kind": "story",
   "title": "census.py apply keeps the artifact register in step and writes no address into a note",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ovwzbc7u",
   "priority": "P2",
   "rank": 0,
@@ -45,5 +45,7 @@
   "links": [
     "parked: SP-rmp5zm5a close"
   ],
-  "notes": "Retrospective of SP-rmp5zm5a (2026-10-22, operator accepted): fetch.py --offline failed after census apply changed privacy/gliner-models.csv (ST-vhtpgjb5) and mecm/log-files.csv and sql-views-compliance.csv (ST-bjwyl2bc) without their register hashes; test_leaks failed on a session note quoting the Python 3.14 release manager's address. Each was fixed by hand. The draft check reads source text. Premise run on main with two checks that call census.cmd_apply on a planted root (a register row with a stale hash, an outcome note and a gap text holding an address built in code): check 0 prints 'apply exit 0 - register sha of the edited file is stale'; check 1 prints 'address in a note (0, True, False) | address in a gap (0, True, True)', where the clean result is applied as it must be (0, True, True). The leak scan is kbpublic.file_hits with the allowlist of _tools/tests_allowlist.txt, the scan test_leaks runs. Docs: kb/_self/tools.md and kb/_self/web-sources.md (the map names both for census.py)."
+  "notes": "Retrospective of SP-rmp5zm5a (2026-10-22, operator accepted): fetch.py --offline failed after census apply changed privacy/gliner-models.csv (ST-vhtpgjb5) and mecm/log-files.csv and sql-views-compliance.csv (ST-bjwyl2bc) without their register hashes; test_leaks failed on a session note quoting the Python 3.14 release manager's address. Each was fixed by hand. The draft check reads source text. Premise run on main with two checks that call census.cmd_apply on a planted root (a register row with a stale hash, an outcome note and a gap text holding an address built in code): check 0 prints 'apply exit 0 - register sha of the edited file is stale'; check 1 prints 'address in a note (0, True, False) | address in a gap (0, True, True)', where the clean result is applied as it must be (0, True, True). The leak scan is kbpublic.file_hits with the allowlist of _tools/tests_allowlist.txt, the scan test_leaks runs. Docs: kb/_self/tools.md and kb/_self/web-sources.md (the map names both for census.py).",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
