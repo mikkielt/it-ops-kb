@@ -56,3 +56,20 @@ def test_public_home_refuses_a_history_with_the_query_log(world):
     p = push_main(c, "pub")
     assert p.returncode != 0 and "_querylog" in p.stderr, p.stdout + p.stderr
     assert pub.rev("main") == before
+
+
+def test_upstream_push_refused(world):
+    sc, c = world
+    fresh(c)
+    up = sc.bare("upstream.git")
+    before = up.rev("main")
+    c.git("remote", "add", "up", up.path)
+    c.git("config", kbpublic.UPSTREAM_KEY, "up")
+    c.write("kb/_self/zz_upstream_probe.md", "probe\n")
+    c.commit("docs: a content file", "kb/_self/zz_upstream_probe.md")
+    for target in ("up", up.path):  # by name and by url
+        p = push_main(c, target)
+        assert p.returncode != 0 and "upstream remote" in p.stderr, p.stdout + p.stderr
+    assert up.rev("main") == before
+    sync = c.kbgit("sync", "--remote", "up")
+    assert sync.returncode == 2 and "only fetched from" in sync.stdout, sync.stdout + sync.stderr

@@ -56,7 +56,10 @@ bridge      the way back: a branch pushed to the public home (a pull request the
 
 The public home is set per clone: `git config kb.publishRemote <remote>`. A remote is public when it is that remote or
 its url is that remote's url. A clone without it (a production clone on its own host) has no public home: nothing is
-guarded there, and the query log pushes its store to `origin` as before. Exit (publish): 0 published or nothing to do, 1 refused (not a fast-forward, or the projection still
+guarded there, and the query log pushes its store to `origin` as before. The clone's deployment scope is `git config kb.scope`
+(me, team or org; clone_scope) and its upstream remote `git config kb.upstreamRemote` (upstream_remote): a remote the clone
+only fetches from, so a push of any ref to it or its url is refused by the pre-push hook (guard_upstream), by `sync` and by
+`publish` as a target. Exit (publish): 0 published or nothing to do, 1 refused (not a fast-forward, or the projection still
 carries a PRIVATE path) or the push failed, 2 bad arguments, no source, or a git error. Exit (check-public): 0 clean,
 1 a PRIVATE path found, 2 a git error.
 """
@@ -69,6 +72,9 @@ PRIVATE_SPECS = (*PRIVATE, *(f":(glob)**/{n}" for n in PRIVATE_NAMES))  # `git l
 PRIVATE_LABEL = ", ".join((*PRIVATE, *(f"{n} (in any directory)" for n in PRIVATE_NAMES)))  # what a refusal names
 CONFIG_KEY = "kb.publishRemote"
 INTEGRATION_KEY = "kb.integrationRemote"
+SCOPE_KEY = "kb.scope"  # the clone's deployment scope, set by kb-setup (kb/_self/git.md, Deployment scope)
+SCOPES = ("me", "team", "org")
+UPSTREAM_KEY = "kb.upstreamRemote"  # the remote the clone only fetches from; its push url is disabled, a push to it is refused
 CLONE_REMOTE = "origin"  # what `git clone` names its source: the integration remote unless INTEGRATION_KEY says otherwise
 PUBLISHED_REF = "refs/kb/published"
 NO_HOOK_ENV = "KB_NO_PUBLISH_HOOK"  # a non-empty value: publish --hook does nothing (a session that must never publish exports it)
@@ -120,6 +126,42 @@ def is_public(remote, cwd, url=None):
     if url is None:
         url = out(["remote", "get-url", remote], cwd) or remote
     return url == out(["remote", "get-url", named], cwd)
+
+
+def clone_scope(cwd):
+    """The clone's deployment scope from git config kb.scope (one of SCOPES), or None when unset or not one of them."""
+    got = (out(["config", "--get", SCOPE_KEY], cwd) or "").lower()
+    return got if got in SCOPES else None
+
+
+def upstream_remote(cwd):
+    """The upstream remote's name (git config kb.upstreamRemote): the remote the clone only fetches from, or None."""
+    return out(["config", "--get", UPSTREAM_KEY], cwd) or None
+
+
+def is_upstream(remote, cwd, url=None):
+    """Whether pushing to REMOTE (a remote name or a url; URL is its url when known) reaches the upstream remote: by its
+    name, or by a url equal to one of its fetch or push urls. False in a clone without one."""
+    named = upstream_remote(cwd)
+    if not named:
+        return False
+    if remote == named:
+        return True
+    if url is None:
+        url = out(["remote", "get-url", remote], cwd) or remote
+    urls = set()
+    for flags in ([], ["--push"]):
+        urls |= set((out(["remote", "get-url", "--all", *flags, named], cwd) or "").splitlines())
+    urls.discard("")
+    return bool(urls & {url, remote})
+
+
+def guard_upstream(remote, url, refs, cwd):
+    """The pre-push guard: [(ref, reason)] of every ref pushed (local ref, local sha) to the upstream remote. A delete
+    counts: the upstream is only fetched from."""
+    if not is_upstream(remote, cwd, url):
+        return []
+    return [(ref, "the upstream is only fetched from; no ref is pushed to it") for ref, _ in refs]
 
 
 def private_commits(rev, cwd, limit=20):
@@ -795,6 +837,9 @@ def cmd_publish(a, cwd):
         return 2
     if remote == src_remote:
         print(f"refused: the public remote {remote!r} is the source's remote; publish goes from integration to public")
+        return 2
+    if is_upstream(remote, cwd):
+        print(f"refused: {remote!r} is the upstream remote ({UPSTREAM_KEY}); the upstream is only fetched from")
         return 2
     for r, b in ((src_remote, src_branch), (remote, a.branch)):
         code, _, e = run(["fetch", "--quiet", r, f"+refs/heads/{b}:refs/remotes/{r}/{b}"], cwd)
