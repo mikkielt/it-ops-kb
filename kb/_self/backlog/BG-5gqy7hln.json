@@ -99,6 +99,44 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does selfcheck tell a host project from the plugin's own checkout?",
+      "options": [
+        "a root holding _tools/kbgit.py is the plugin's own checkout, any other root a host",
+        "a backlog.json setting names the project as a host"
+      ],
+      "recommendation": "a root holding _tools/kbgit.py is the plugin's own checkout, any other root a host",
+      "do": {
+        "a root holding _tools/kbgit.py is the plugin's own checkout, any other root a host": "BG-5gqy7hln",
+        "a backlog.json setting names the project as a host": "BG-5gqy7hln"
+      },
+      "class": "agents-rule",
+      "answer": "a root holding _tools/kbgit.py is the plugin's own checkout, any other root a host",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "How does selfcheck report the hooks check it skips in a host project with no core.hooksPath?",
+      "options": [
+        "state ok, detail starting skipped, named in the passing line",
+        "state unknown"
+      ],
+      "recommendation": "state ok, detail starting skipped, named in the passing line",
+      "do": {
+        "state ok, detail starting skipped, named in the passing line": "BG-5gqy7hln",
+        "state unknown": "BG-5gqy7hln"
+      },
+      "class": "agents-rule",
+      "answer": "state ok, detail starting skipped, named in the passing line",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Run finding 6: in a host, selfcheck printed FAIL allow-rules (glab mr view, git worktree add, tool Agent) and FAIL hooks (core.hooksPath not set; .claude-plugin/plugin.json missing). Blocks the Nerthus adoption (BG-42dg5ryi's host); P1 by the operator. Planned to the operator's answer: only checks whose inputs the host names. Ran the filed repro (git-init project, no settings): FAIL allow-rules (.claude/settings.json is missing) and FAIL hooks (core.hooksPath is not set; .claude-plugin/plugin.json is missing), the stated defect. Rewritten to plant settings that allow git, backlog.py, Agent, SendMessage, Edit and Write and a backlog.json naming land_push: it still fails, FAIL allow-rules: 9 of 31 not covered: python3 _tools/kbgit.py sync --push, plus FAIL hooks. Ran the checks now: kb guard passes (check_allow('.') ok, plugin_problem('.') None), named-command guard passes, no-settings and hooks-path checks fail. Fix is in bl_selfcheck.py: SKILL_COMMANDS (line 12) split into the loop's own and the kb's, gated by land_push, land_stale, land_eval, land_lint and forge from setting() (source file only for forge); read_allow (missing settings: unknown for a host); hooks_problem (line 224) and plugin_problem (line 245) behind check_hooks (line 259). Referrers of SKILL_COMMANDS: backlog.md:373, tools.md:104 (selfcheck rows). Where the root is the plugin's own checkout is for the worker to define (the root holds _tools/kbgit.py); the loop's backlog.py commands are matched with any path before _tools/backlog.py.",
