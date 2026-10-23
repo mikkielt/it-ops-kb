@@ -73,8 +73,8 @@ the store.
     only after the operator said so, because each makes or brings back a decision that holds.
   - A decision that names the test suite's ceiling (`bl_authority.names_ceiling`, as `tests-ceiling ids=N files=N
     seconds=...` does) is stricter: `confirm`, `record`, `supersede` (the new one), `restore` and `ratify` refuse it, exit 2,
-    in a process that runs in an agent session (`bl_authority.in_agent_session`: CLAUDECODE is set), `--by operator`
-    included; the operator runs them in a terminal of their own.
+    in a process that runs in an agent session (`bl_authority.in_agent_session`: CLAUDECODE or CLAUDE_CODE_CHILD_SESSION is
+    set), `--by operator` included; the operator runs them in a terminal of their own, outside an IDE's integrated terminal.
   - A root saves its decision makers by a policy (kbcommon.POLICIES), one reserved row of its decision-makers.csv.
     There is no default: `propose` in a root with none is refused with the question and the options until the
     operator runs `makers R --policy P --by operator`. role-and-name is refused where kbcommon.maker_names_allowed
@@ -357,8 +357,8 @@ def need_terminal(text, what):
     import bl_authority  # only a ceiling decision reads the gate classes: a scratch repository without the backlog has the rest
     if bl_authority.in_agent_session() and bl_authority.names_ceiling(text):
         raise Refused(f"only the operator {what} a decision about the suite ceiling, and from a terminal of their own: "
-                      f"this process runs in an agent session ({bl_authority.AGENT_SESSION_ENV} is set), so --by "
-                      f"{OPERATOR} here is not the operator's")
+                      f"this process runs in an agent session ({' or '.join(bl_authority.AGENT_SESSION_ENVS)} is set), "
+                      f"so --by {OPERATOR} here is not the operator's; {bl_authority.IDE_ROUTE}")
 
 
 def cmd_confirm(a):

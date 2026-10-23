@@ -168,7 +168,8 @@ def test_an_agent_cannot_answer_or_provisionally_answer_an_operator_gate_the_ope
     assert [g["id"] for g in json.loads(path(tmp_path, iid).read_text(encoding="utf-8"))["gates"]] == ["g"]
     # the suite ceiling: no agent session answers it, `--by operator` included; the operator's own terminal does
     agent = {**os.environ, ba.AGENT_SESSION_ENV: "1"}
-    terminal = {k: v for k, v in os.environ.items() if k != ba.AGENT_SESSION_ENV}
+    terminal = {k: v for k, v in os.environ.items() if k not in ba.AGENT_SESSION_ENVS}
+    child = {**terminal, ba.AGENT_SESSION_ENVS[1]: "1"}  # CLAUDECODE cleared by the command line, the child marker left
     for touch, question in (("_tools/tests_ceiling.json", "Which name?"), ("src/a.py", "Which value does the suite ceiling take?")):
         cid = new_item(tmp_path, touch=touch)
         code, out = add_gate(tmp_path, cid, question)
@@ -176,9 +177,11 @@ def test_an_agent_cannot_answer_or_provisionally_answer_an_operator_gate_the_ope
         before = path(tmp_path, cid).read_bytes()
         for args in (("--answer", "a", "--by", "operator"), ("--answer", "a", "--by", "operator", "--record"),
                      ("--answer", "a", "--by", "agent"), ("--provisional",)):
-            code, out = bl(tmp_path, "answer", cid, "g", *args, env=agent)
-            assert code == 2 and "ceiling" in out and "terminal of their own" in out, (args, out)
-            assert path(tmp_path, cid).read_bytes() == before, args
+            for env in (agent, child):  # either variable is an agent session
+                code, out = bl(tmp_path, "answer", cid, "g", *args, env=env)
+                assert code == 2 and "ceiling" in out and "terminal of their own" in out, (args, out)
+                assert "integrated terminal" in out and "standalone terminal outside the IDE" in out, (args, out)
+                assert path(tmp_path, cid).read_bytes() == before, args
         code, out = bl(tmp_path, "answer", cid, "g", "--answer", "a", "--by", "operator", env=terminal)
         assert code == 0, out
         assert (gate(tmp_path, cid)["answer"], gate(tmp_path, cid)["by"]) == ("a", "operator")
@@ -259,7 +262,7 @@ def test_kbdecide_confirm_record_supersede_restore_are_refused_without_the_opera
     record = ("record", "--source", "s", "--context", "item:BG-aaaaaaaa", "--maker", "operator", "--")
 
     def kbdecide(cmd, *by, agent=False):
-        env = {k: v for k, v in os.environ.items() if k not in ("KB_ROOTS", ba.AGENT_SESSION_ENV)}
+        env = {k: v for k, v in os.environ.items() if k not in ("KB_ROOTS", *ba.AGENT_SESSION_ENVS)}
         if agent:
             env[ba.AGENT_SESSION_ENV] = "1"
         p = subprocess.run([sys.executable, str(tmp_path / "_tools" / "kbdecide.py"), cmd[0], "--root", "_self",
@@ -277,6 +280,7 @@ def test_kbdecide_confirm_record_supersede_restore_are_refused_without_the_opera
     for named in (text, "z" + text, "x_" + text, f"note: {text.upper()}"):
         code, out = kbdecide((*record, named), "--by", "operator", agent=True)
         assert code == 2 and "terminal of their own" in out and "suite ceiling" in out, (named, out)
+        assert "integrated terminal" in out and "CLAUDE_CODE_CHILD_SESSION" in out, (named, out)
     assert {p: p.read_bytes() for p in tmp_path.rglob("*") if p.is_file() and p.suffix == ".csv"} == snap
     for words, agent in (("left", True), (text, False)):  # past the ceiling rule: what stops it is the scratch root
         assert "terminal of their own" not in kbdecide((*record, words), "--by", "operator", agent=agent)[1], words
