@@ -2,7 +2,7 @@
   "id": "ST-hycsjg2l",
   "kind": "story",
   "title": "done accepts the anchor rows a census run adds for the sources its census log records",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ovwzbc7u",
   "priority": "P2",
   "rank": 0,
@@ -38,5 +38,7 @@
   "links": [
     "parked: SP-rmp5zm5a close"
   ],
-  "notes": "Retrospective of SP-rmp5zm5a (2026-10-22, operator accepted): done refused ST-zpe7qxtv (186 sources) and ST-bjwyl2bc (100 sources) for anchor rows of sources the goal does not name; the manager dropped 357 anchor rows for the first and listed 100 ids in the second goal (TEXT_MAX 2000 limits that). The draft check reads source text; planning replaces it with a planted census item. Premise: the check builds a throwaway git repo with an _anchors.csv and a _census/ log, one item commit that adds anchor rows for S901, S902 and S903 and a census row for S901 only (S903's census row is older), and calls bl_land.unrelated_baselines with a goal that names no id. On main it prints: anchor rows refused for ['S901', 'S902', 'S903']. The fix reads the ids of census rows the commits add or change; the _census directory stays out of cited_tokens (the files cite no source of their own), so only anchor rows of those ids count as named."
+  "notes": "Retrospective of SP-rmp5zm5a (2026-10-22, operator accepted): done refused ST-zpe7qxtv (186 sources) and ST-bjwyl2bc (100 sources) for anchor rows of sources the goal does not name; the manager dropped 357 anchor rows for the first and listed 100 ids in the second goal (TEXT_MAX 2000 limits that). The draft check reads source text; planning replaces it with a planted census item. Premise: the check builds a throwaway git repo with an _anchors.csv and a _census/ log, one item commit that adds anchor rows for S901, S902 and S903 and a census row for S901 only (S903's census row is older), and calls bl_land.unrelated_baselines with a goal that names no id. On main it prints: anchor rows refused for ['S901', 'S902', 'S903']. The fix reads the ids of census rows the commits add or change; the _census directory stays out of cited_tokens (the files cite no source of their own), so only anchor rows of those ids count as named.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
