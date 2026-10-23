@@ -1,0 +1,26 @@
+{
+  "id": "BG-6gpjcsg6",
+  "kind": "bug",
+  "title": "redact leaves a host inside a url unchanged, so an internal url in a question passes the spool, kbmon output and coord asks",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "redact.redact rewrites the host of an http or https url to the host placeholder when the public root never names it, as it does a bare host, keeping url hosts the public root names, as querylog.md's table says an FQDN becomes corp.example.com",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import redact;o=redact.redact('open https://ci7.qzvx-internal.net/x');print(o);sys.exit(1 if 'qzvx' in o else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/redact.py",
+    "_tools/test_redact.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-c7oav2vn review"
+  ],
+  "notes": "Found 2026-10-23 by the SP-c7oav2vn fresh review; pre-existing (HOST's lookbehind skips a host after //). Not S1: the store never holds question text (querylog.md:149) and a lead url's host passes ql_store's own public-host gate; the url reaches only local surfaces."
+}

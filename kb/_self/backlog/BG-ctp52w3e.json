@@ -1,0 +1,27 @@
+{
+  "id": "BG-ctp52w3e",
+  "kind": "bug",
+  "title": "coord dedup still claims a whole-topic key with a * and keys over 120 characters for a long topic, and drops non-ASCII letters from term ids",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "every key coord.py dedup claims fullmatches FIELD_VALUE, the whole-topic key and a topic of 104 or more characters included, a term id keeps a readable form of a non-ASCII term, and the kb-research skill's text on uncovered names what it holds",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import argparse,os,sys,tempfile,time;sys.path.insert(0,'_tools');import coord;coord.fingerprint=lambda q,t=None:('logs/otel-python-sdk',[]);s=os.path.join(tempfile.mkdtemp(),'c.sqlite');b=coord.dedup(argparse.Namespace(store=s,holder='h',topic=None,token=None,ttl=60,question='q'),time.time);bad=[k for k in b['claimed'] if not coord.FIELD_VALUE.fullmatch(k)];print('claimed past FIELD_VALUE:',bad);sys.exit(1 if bad else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/coord.py",
+    ".claude/skills/kb-research/SKILL.md",
+    "kb/_self/coordination.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-c7oav2vn review"
+  ]
+}

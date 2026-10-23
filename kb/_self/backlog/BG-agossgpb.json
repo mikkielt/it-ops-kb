@@ -1,0 +1,28 @@
+{
+  "id": "BG-agossgpb",
+  "kind": "bug",
+  "title": "agent.run marks a run failed when its answer merely opens with the words API Error, and a run with no closing text as ok",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "ql_capture records an agent.run exit only from a signal Claude Code documents for a failed subagent run, so an answer that opens with 'API Error handling' is not a failed run, and a run with no closing text leaves exit unset rather than 0",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import ql_capture;t='API Error handling in coord.py is fixed.';f=t.startswith(ql_capture.AGENT_FAILED_TEXT);print('plain answer read as failed:',f);sys.exit(1 if f else 0)"
+    ]
+  },
+  "repro_reason": "the agent.run path needs a live subagent stop event to run; the repro applies the module's own failed-text test to a planted answer",
+  "touches": [
+    "_tools/ql_capture.py",
+    "kb/_self/querylog.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md",
+    "kb/_self/usage.md"
+  ],
+  "links": [
+    "parked: SP-c7oav2vn review"
+  ]
+}
