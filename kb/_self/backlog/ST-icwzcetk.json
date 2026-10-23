@@ -1,0 +1,22 @@
+{
+  "id": "ST-icwzcetk",
+  "kind": "story",
+  "title": "The two sources only ledger lines cite, which the 2026-10-21 census left unconfirmed, are read and recorded",
+  "status": "draft",
+  "parent": "EP-aolytxc5",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "S1929 (an X thread, cited at _conflicts.md and _gaps.md) and S-agqpl4si (the Cloudflare Create Token reference, cited at _gaps.md) are read and recorded in the 2026-10-21 census log as confirmed, updated, superseded or gone with census.py record, the ledger entries that cite them fixed where the page differs",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,sys; r=[x for x in csv.DictReader(open('kb/public/_census/2026-10-21.csv',encoding='utf-8')) if x['id'] in ('S1929','S-agqpl4si')]; bad=[x['id'] for x in r if x['outcome'] in ('','unconfirmed')]; print('still unconfirmed:', bad or 'none'); sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ]
+}
