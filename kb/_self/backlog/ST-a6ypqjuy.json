@@ -4,30 +4,49 @@
   "title": "Research: the Monitor tool's limits, a -p run's wait for background work, Edit and Write PreToolUse payloads and a mod's ui.notify are kb facts",
   "status": "draft",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-r7e7jcep",
   "priority": "P2",
   "rank": 0,
-  "goal": "kb/public/claude/hooks.md, ci-and-headless.md and mods.md gain DOC facts with source rows from code.claude.com: the Monitor tool (a command whose stdout lines are events, its timeout_ms default 300000, accepted maximum and 1800000 effective deadline, the notice at the deadline, Bash permission rules); a -p run staying open for background commands, subagents and Monitor watches with the 10-minute idle cap and CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS; the PreToolUse payload of Edit and Write (tool_input.file_path) and a matcher naming them; and a mod's $.ui.notify (the preferredNotifChannel it uses, its isSent and reason answers, no-surface in -p runs) with the turn.complete event",
+  "goal": "kb/public/claude/hooks.md, ci-and-headless.md and mods.md gain DOC facts with source rows from code.claude.com: the Monitor tool (a command whose stdout lines are events, its timeout_ms default 300000, accepted maximum and 1800000 effective deadline, the notice at the deadline, Bash permission rules); a -p run staying open for background commands, subagents and Monitor watches with the 10-minute idle cap and CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS; the PreToolUse payload of Edit and Write (tool_input.file_path) and a matcher naming them; ui.notify in a mod (the preferredNotifChannel it uses, its isSent and reason answers, no-surface in -p runs) with the turn.complete event",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import subprocess, sys\nART = 'kb/public/claude/hooks.md'\nCASES = [('How long can a Claude Code Monitor tool watch run before its deadline?', ['Monitor', '1800000'])]\nmiss = []\nfor q, terms in CASES:\n    out = subprocess.run([sys.executable, '_tools/rag.py', 'pack', q, '--root', 'public', '--budget', '2500'],\n                         capture_output=True, text=True).stdout\n    hit = [l for l in out.splitlines() if l.startswith('- ' + ART[len('kb/'):] + ':') and '[DOC' in l\n           and all(t.lower() in l.lower() for t in terms)]\n    if not hit:\n        miss.append((q, terms))\nprint('missing:', miss if miss else 'none')\nsys.exit(1 if miss else 0)\n"
+        "import subprocess, sys\nART = 'kb/public/claude/hooks.md'\nCASES = [\n    ('How long can a Claude Code Monitor tool watch run before its deadline?', ['Monitor', '1800000']),\n    ('What is the default timeout_ms of the Claude Code Monitor tool?', ['Monitor', '300000']),\n    ('What does the PreToolUse hook input hold for an Edit or Write tool call and how does a matcher name them?', ['PreToolUse', 'tool_input.file_path', 'Write']),\n]\nmiss = []\nfor q, terms in CASES:\n    out = subprocess.run([sys.executable, '_tools/rag.py', 'pack', q, '--root', 'public', '--budget', '2500'],\n                         capture_output=True, text=True).stdout\n    hit = [l for l in out.splitlines() if l.startswith('- ' + ART[len('kb/'):] + ':') and '[DOC' in l\n           and all(t.lower() in l.lower() for t in terms)]\n    if not hit:\n        miss.append((q, terms))\nprint('missing:', miss if miss else 'none')\nsys.exit(1 if miss else 0)\n"
       ]
     },
     {
       "run": [
         "python3",
         "-c",
-        "import subprocess, sys\nART = 'kb/public/claude/ci-and-headless.md'\nCASES = [('Does a claude -p run wait for background work before it exits, and for how long?', ['CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS'])]\nmiss = []\nfor q, terms in CASES:\n    out = subprocess.run([sys.executable, '_tools/rag.py', 'pack', q, '--root', 'public', '--budget', '2500'],\n                         capture_output=True, text=True).stdout\n    hit = [l for l in out.splitlines() if l.startswith('- ' + ART[len('kb/'):] + ':') and '[DOC' in l\n           and all(t.lower() in l.lower() for t in terms)]\n    if not hit:\n        miss.append((q, terms))\nprint('missing:', miss if miss else 'none')\nsys.exit(1 if miss else 0)\n"
+        "import subprocess, sys\nART = 'kb/public/claude/ci-and-headless.md'\nCASES = [('Does a claude -p run wait for background subagents before it exits, and for how long?', ['CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS', 'subagent', 'Monitor'])]\nmiss = []\nfor q, terms in CASES:\n    out = subprocess.run([sys.executable, '_tools/rag.py', 'pack', q, '--root', 'public', '--budget', '2500'],\n                         capture_output=True, text=True).stdout\n    hit = [l for l in out.splitlines() if l.startswith('- ' + ART[len('kb/'):] + ':') and '[DOC' in l\n           and all(t.lower() in l.lower() for t in terms)]\n    if not hit:\n        miss.append((q, terms))\nprint('missing:', miss if miss else 'none')\nsys.exit(1 if miss else 0)\n"
       ]
     },
     {
       "run": [
         "python3",
         "-c",
-        "import subprocess, sys\nART = 'kb/public/claude/mods.md'\nCASES = [('How does a Claude Code mod send a terminal notification with ui.notify?', ['ui.notify', 'no-surface'])]\nmiss = []\nfor q, terms in CASES:\n    out = subprocess.run([sys.executable, '_tools/rag.py', 'pack', q, '--root', 'public', '--budget', '2500'],\n                         capture_output=True, text=True).stdout\n    hit = [l for l in out.splitlines() if l.startswith('- ' + ART[len('kb/'):] + ':') and '[DOC' in l\n           and all(t.lower() in l.lower() for t in terms)]\n    if not hit:\n        miss.append((q, terms))\nprint('missing:', miss if miss else 'none')\nsys.exit(1 if miss else 0)\n"
+        "import subprocess, sys\nART = 'kb/public/claude/mods.md'\nCASES = [\n    ('How does a Claude Code mod send a terminal notification with ui.notify?', ['ui.notify', 'no-surface']),\n    ('Which notification channel does a mod ui.notify use and what does it answer?', ['ui.notify', 'preferredNotifChannel', 'isSent']),\n    ('Which event tells a mod that a turn is complete?', ['turn.complete']),\n]\nmiss = []\nfor q, terms in CASES:\n    out = subprocess.run([sys.executable, '_tools/rag.py', 'pack', q, '--root', 'public', '--budget', '2500'],\n                         capture_output=True, text=True).stdout\n    hit = [l for l in out.splitlines() if l.startswith('- ' + ART[len('kb/'):] + ':') and '[DOC' in l\n           and all(t.lower() in l.lower() for t in terms)]\n    if not hit:\n        miss.append((q, terms))\nprint('missing:', miss if miss else 'none')\nsys.exit(1 if miss else 0)\n"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/public/claude/hooks.md, ci-and-headless.md and mods.md gain DOC facts with source rows from code.claude.com: the Monitor tool (a command whose stdout lines are events, its timeout_ms default 300000, accepted maximum and 1800000 effective deadline, the notice at the deadline, Bash permission rules)",
+      "check": 0
+    },
+    {
+      "clause": "a -p run staying open for background commands, subagents and Monitor watches with the 10-minute idle cap and CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS",
+      "check": 1
+    },
+    {
+      "clause": "the PreToolUse payload of Edit and Write (tool_input.file_path) and a matcher naming them",
+      "check": 0
+    },
+    {
+      "clause": "ui.notify in a mod (the preferredNotifChannel it uses, its isSent and reason answers, no-surface in -p runs) with the turn.complete event",
+      "check": 2
     }
   ],
   "touches": [
@@ -38,5 +57,9 @@
     "kb/public/_anchors.csv",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "depends_on": [
+    "ST-2qterjzi"
+  ],
+  "notes": "Planning 2026-10-24: goal reworded (no apostrophe, no leading and) into four clauses, each mapped to a check. The old ci-and-headless check already passed on the base: ci-and-headless.md:31 holds the cap and CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS. It now also needs the background subagents and workflows the headless page names (code.claude.com/docs/en/headless, Background tasks at exit), which no line holds yet. Monitor timeout_ms (default 300000, max 3600000, effective deadline at most 1800000) is in the tools reference. Premise: all three checks fail on the base (precheck). Planned 2026-10-24 into SP-r7e7jcep: first of five research stories that run one after another, since all share kb/public/_sources.csv, _anchors.csv and the doc2query expansions file; others wait on this one.",
   "filed_in": "clone-0ea70e5c"
 }
