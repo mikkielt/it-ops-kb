@@ -2,7 +2,7 @@
   "id": "BG-hjxvxufh",
   "kind": "bug",
   "title": "backlog.json defaults lane_module to kblane and land_push to the kb's kbgit.py sync, so a host project must override both (second-project run)",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ovwzbc7u",
   "priority": "P2",
   "rank": 0,
@@ -89,5 +89,7 @@
       "role": "interactive"
     }
   ],
-  "notes": "Found while fixing BG-cmvwrpbr (seven other keys). Planned to the operator's answer: lane_module and land_push both empty by default, land stops at the push step naming land_push, the kb's backlog.json names both. Ran the filed repro: it fails, printing lane_module = kblane (default) and land_push = the kb gate script argv (default); its bad-line filter mixed and/or and it read a project with no file, so it is rewritten to plant backlog.json {} and filter each line. Ran each added check now: the land-stop check fails (bl_land.land_push() under planted {} settings returns the kb argv and raises no bl_close.Refused naming land_push), the named-command check passes, the kb-file check fails (land_push is default in config). Fix: bl_base.py SETTINGS defaults for lane_module and land_push, and the command kind, which refuses an empty list; bl_land.land_push (bl_land.py:670, one call at :1928) raises land_stop for the push step. Referrers read: bl_land.py:106,109 and bl_precheck.py:312 already treat an empty lane_module as no lane; skills/sprint/SKILL.md:17, kb/_self/backlog.md:300,310,421 and plugin.md:24 document the old defaults; .claude/skills/kb-sprint links to skills/sprint. bench_multi.py sets lane_module in the file, unaffected. Shares backlog.md and tools.md with BG-urlbsgsr."
+  "notes": "Found while fixing BG-cmvwrpbr (seven other keys). Planned to the operator's answer: lane_module and land_push both empty by default, land stops at the push step naming land_push, the kb's backlog.json names both. Ran the filed repro: it fails, printing lane_module = kblane (default) and land_push = the kb gate script argv (default); its bad-line filter mixed and/or and it read a project with no file, so it is rewritten to plant backlog.json {} and filter each line. Ran each added check now: the land-stop check fails (bl_land.land_push() under planted {} settings returns the kb argv and raises no bl_close.Refused naming land_push), the named-command check passes, the kb-file check fails (land_push is default in config). Fix: bl_base.py SETTINGS defaults for lane_module and land_push, and the command kind, which refuses an empty list; bl_land.land_push (bl_land.py:670, one call at :1928) raises land_stop for the push step. Referrers read: bl_land.py:106,109 and bl_precheck.py:312 already treat an empty lane_module as no lane; skills/sprint/SKILL.md:17, kb/_self/backlog.md:300,310,421 and plugin.md:24 document the old defaults; .claude/skills/kb-sprint links to skills/sprint. bench_multi.py sets lane_module in the file, unaffected. Shares backlog.md and tools.md with BG-urlbsgsr.",
+  "claimed_by": "manager-dfa692a0",
+  "operator": "op-f618a13e"
 }
