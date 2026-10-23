@@ -83,7 +83,11 @@
         "Extra lines after the kb_status lines": "ST-rhug6pvg",
         "Only the DIR block": "ST-rhug6pvg"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Extra lines after the kb_status lines",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Premise (field report 2026-10-19): sessions on the Windows host start in a VS Code workspace directory above the clone, where the clone's local-scope registration does not apply; the deploy agent hand-wrote <workspace>\\.mcp.json with single backslashes, invalid JSON, so the kb server never loaded until fixed by hand. kb_mcp.py has no --project form today: --status and --register-local read only the clone (registered_kb swallows a ValueError from a .mcp.json as no servers). The check plants such a file; on the base it exits 1 at the status step and skips the registration step, so a precheck run registers nothing.",
