@@ -2,7 +2,7 @@
   "id": "BG-3txhxbiq",
   "kind": "bug",
   "title": "An EC private key with double-escaped newlines (JSON inside a JSON string) passes the leak scan",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-evq2flqc",
   "priority": "P1",
   "rank": 0,

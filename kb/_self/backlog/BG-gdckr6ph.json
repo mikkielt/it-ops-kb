@@ -2,7 +2,7 @@
   "id": "BG-gdckr6ph",
   "kind": "bug",
   "title": "kbcommon.SECRETS misses the real PGP private key block label, whose BEGIN line ends in PRIVATE KEY BLOCK",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-evq2flqc",
   "priority": "P1",
   "rank": 0,

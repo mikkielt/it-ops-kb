@@ -2,7 +2,7 @@
   "id": "BG-e3ellttk",
   "kind": "bug",
   "title": "An EC private key whose lines sit behind a quote, comment or table prefix passes the leak scan",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-evq2flqc",
   "priority": "P1",
   "rank": 0,

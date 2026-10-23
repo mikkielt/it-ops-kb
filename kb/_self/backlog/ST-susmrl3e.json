@@ -2,7 +2,7 @@
   "id": "ST-susmrl3e",
   "kind": "story",
   "title": "Review sprint: The leak scan closes its four known misses: PGP key blocks, escaped and prefixed EC keys, and a stale scan cache",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-evq2flqc",
   "review": true,
   "priority": "P1",

@@ -2,7 +2,7 @@
   "id": "SP-evq2flqc",
   "kind": "sprint",
   "title": "The leak scan closes its four known misses: PGP key blocks, escaped and prefixed EC keys, and a stale scan cache",
-  "status": "planned",
+  "status": "active",
   "goal": "The leak scan flags a PGP private key block whose armor line ends in PRIVATE KEY BLOCK and is followed by key material; the leak scan flags an EC private key whose line breaks are written as a doubled backslash and n; the leak scan flags an EC private key whose lines carry a Markdown quote, a # or // comment prefix, or share a table row; the publish scan's cache key changes with every kbcommon.SECRETS shape, so no verdict cached under an old shape is read",
   "gates": [
     {
@@ -14,7 +14,11 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "creator": "op-f618a13e"

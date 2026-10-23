@@ -2,7 +2,7 @@
   "id": "BG-m4avekie",
   "kind": "bug",
   "title": "A change to a kbcommon.SECRETS shape reads the verdicts the old shape cached: the publish scan's cache key holds SCAN_FORM, which no one bumps",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-evq2flqc",
   "priority": "P1",
   "rank": 0,
