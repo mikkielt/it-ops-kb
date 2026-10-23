@@ -47,7 +47,7 @@ adds `over budget` to the line of such a claim. Nothing is stopped: the claim, i
 An event is a kind from a closed list (claim, release, dedup, fact_added, gap_opened, dup_of, lesson, heartbeat, ask, answer) and up to
 eight fields, each NAME=VALUE: an event carries references only, so a VALUE is an id of at most 120 characters of
 letters, digits and `_ . : / # @ -` (a source id, a `path:line` fact key, a QK answer id, a backlog item id, a pack
-handle) and free text is refused. `post` numbers events 1, 2, 3 ... in the store; `wait` polls the store twice a second
+handle) and free text is refused. `post` numbers events 1, 2, 3 ... in the store; `wait` polls the store every 50 ms
 for events past N and prints `events`, `last` (the highest sequence it returned, else N) and `timed_out`; a wait whose
 S passes with no event exits 0 with `timed_out` true, and a post from any other process on the same store wakes it.
 
