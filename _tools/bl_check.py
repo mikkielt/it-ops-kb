@@ -20,7 +20,7 @@ from bl_base import (
     APPROVALS, FIELDS, GATE_KINDS, IN_SPRINT, NEEDS_CHECKS, NEEDS_TOUCHES, PARENTS,
     PRIORITIES, Refused, SEVERITIES, SPRINT_STATUSES, START_GATE, STATUSES, TEXT_MAX, WORKED,
     always_in_scope, canonical, clause_commands, external_problems, glob_re, goal_clauses, id_re, kinds, prefix_kind, rel_dir, repositories, sprint_id_re, host_user_pieces, items_holding_names, research_in_planned, say, scope,
-    touches_overlap, withhold_names, EMAIL_RE, operator_problem, WORKSPACE,
+    touches_overlap, withhold_names, EMAIL_RE, operator_problem, WORKSPACE, CLONE_ID_RE,
 )
 from bl_plan import (docs_after_code, docs_warnings, linked_touch_warnings, shared_file_warnings, stale_touches,
                      unordered_overlap_warnings)
@@ -616,6 +616,8 @@ def validate(bl, pieces=None):
                 isinstance(d, dict) and set(d) == {"name", "by"} and isinstance(d["name"], str)
                 and re.fullmatch(r"[\w.-]+", d["name"]) and d["by"] in ("operator", "agent") for d in it["delegates"])):
             e("delegates is a sprint's list of {name, by} grants (set SP --delegate NAME --by operator)")
+        if "filed_in" in it and not (isinstance(it["filed_in"], str) and CLONE_ID_RE.fullmatch(it["filed_in"])):
+            e("filed_in is the id of the clone the item was filed in (clone-<8 hex>, written by new)")
         for f in ("creator", "owner", "operator"):
             if f in it:
                 why = operator_problem(f, it[f]) if f == "operator" or kind == "sprint" else f"{f} is a sprint's field"

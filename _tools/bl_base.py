@@ -2,7 +2,8 @@
 backlog.json by `read_settings`, with `SETTINGS`' defaults for the keys it leaves out, for the root the process runs on:
 `load_settings`) and the accessors that give them at call time (`setting`, `rel_dir`, `kinds`, `id_re`, ...), the
 two refusals, the Backlog class that reads and writes the item files, git, the claims ledger's path (`claims_ledger`)
-and the command runner, the directories a worker's worktree sits under (`worker_dirs`, `main_worker_dir`), the scope helpers,
+and the command runner, the clone's id and the upstream's item ids behind an item's provenance (`clone_id`, `upstream_ids`,
+`Backlog.upstream_items`), the directories a worker's worktree sits under (`worker_dirs`, `main_worker_dir`), the scope helpers,
 the host and user name guard behind everything the tool prints, the external tracker id helpers (`external_problems`,
 `external_refs`, `external_lines`, `external_trailers`, `external_description`), the helpers that commit the item files a
 command wrote, and what an item waits on (`waits`, `open_gates`) with the one-line `line` that names it. Standard library only;
@@ -282,7 +283,7 @@ NEEDS_CHECKS = ("story", "bug", "task")
 NEEDS_TOUCHES = ("task", "subtask")
 ORDER = ("id", "kind", "title", "status", "parent", "sprint", "review", "goal_research", "priority", "rank", "severity", "goal",
          "repro", "repro_reason", "checks", "clauses", "touches", "repos", "repos_if_needed", "depends_on", "relates_to", "gates", "trigger", "knowledge",
-         "links", "external", "notes", "delegates", "recurs", "creator", "owner", "claimed_by", "operator", "evidence")
+         "links", "external", "notes", "delegates", "recurs", "creator", "filed_in", "owner", "claimed_by", "operator", "evidence")
 FIELDS = set(ORDER)
 OPERATOR_ID_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")  # a pseudonymous operator id (kbwho.py), never an address
 EMAIL_RE = re.compile(r"[^@\s]+@[^@\s]+")
@@ -367,6 +368,7 @@ class Backlog:
         self.items, self.raw, self.load_errors = {}, {}, []
         self.withheld = set()  # items holding a piece of a host or user name: label() never prints their title
         self.written = []  # repository paths of the item files this run wrote or deleted, first first (--commit)
+        self._upstream = None  # upstream_items' answer, read once
         self.load_errors += read_settings(self.root)[3]  # a backlog.json `check` refuses naming its key
         if self.dir.is_dir():
             for p in sorted(self.dir.glob("*.json")):
@@ -405,6 +407,20 @@ class Backlog:
         if iid not in self.items:
             raise KeyError(iid)
         return self.items[iid]
+
+    def upstream_items(self):
+        """The ids of the items that arrived from the upstream main: the item files the clone's upstream remote's main
+        holds (`git config kb.upstreamRemote`), unless the item records this clone as the one it was filed in. Empty in
+        a clone without an upstream."""
+        if self._upstream is None:
+            held = upstream_ids(self.root)
+            me = clone_id(self.root) if held else None
+            self._upstream = {i for i in self.items if held and i in held
+                              and not (me and self.items[i].get("filed_in") == me)}
+        return self._upstream
+
+    def is_upstream(self, iid):
+        return iid in self.upstream_items()
 
     def label(self, iid):
         it = self.items.get(iid)
@@ -601,6 +617,48 @@ def git(root, *args):
     if p.returncode != 0:
         raise Refused(f"git {' '.join(args)}: {(p.stderr or p.stdout).strip()}")
     return p.stdout
+
+
+CLONE_ID_KEY = "kb.cloneId"  # git config: the id `new` gives this clone and records in each item it files (`filed_in`)
+CLONE_ID_RE = re.compile(r"clone-[0-9a-f]{8}")
+UPSTREAM_KEY = "kb.upstreamRemote"  # git config: the remote the clone only fetches from (kbpublic.UPSTREAM_KEY)
+UPSTREAM_WRITERS = ("claim", "release", "set", "done", "answer", "gate", "move", "reopen", "drop", "fire", "host-check")
+
+
+def git_text(root, *args):
+    """The stripped stdout of git ARGS in ROOT, or None when git fails or is missing."""
+    try:
+        return git(root, *args).strip()
+    except (Refused, OSError):
+        return None
+
+
+def clone_id(root, create=False):
+    """This clone's id (git config kb.cloneId), or None. With CREATE, a clone that has none is given one when ROOT is
+    its working tree's top (clone-<8 hex>, written to the clone's config, which its worktrees share)."""
+    got = git_text(root, "config", "--get", CLONE_ID_KEY)
+    if got and CLONE_ID_RE.fullmatch(got):
+        return got
+    if not create:
+        return None
+    top = git_text(root, "rev-parse", "--show-toplevel")
+    if not top or os.path.realpath(top) != os.path.realpath(root):
+        return None
+    new = "clone-" + secrets.token_hex(4)
+    return new if git_text(root, "config", CLONE_ID_KEY, new) is not None else None
+
+
+def upstream_ids(root):
+    """The ids of the item files the upstream remote's main holds (as last fetched), or set() when the clone names no
+    upstream (git config kb.upstreamRemote) or has not fetched its main."""
+    remote = git_text(root, "config", "--get", UPSTREAM_KEY)
+    if not remote:
+        return set()
+    ref = git_text(root, "symbolic-ref", "-q", f"refs/remotes/{remote}/HEAD") or next(
+        (f"refs/remotes/{remote}/{b}" for b in ("main", "master")
+         if git_text(root, "rev-parse", "--verify", "-q", f"refs/remotes/{remote}/{b}")), None)
+    names = git_text(root, "ls-tree", "--name-only", f"{ref}:{rel_dir()}") if ref else None
+    return {n[:-len(".json")] for n in (names or "").splitlines() if n.endswith(".json")}
 
 
 CLAIMS_LEDGER = "kb-backlog-claims.json"  # in the git dir: the claims made in this working tree
@@ -1139,7 +1197,8 @@ def waits(bl, iid, any_sprint=False, by=None):
 def line(bl, iid):
     it = bl.items[iid]
     extra = f" {it['severity']}" if it.get("severity") else ""
-    return f"{iid}  {it['kind']:<7} {it.get('status', ''):<7} {it.get('priority', ''):<2}{extra}  {it.get('title', '')}"
+    mark = "  [upstream]" if bl.is_upstream(iid) else ""
+    return f"{iid}  {it['kind']:<7} {it.get('status', ''):<7} {it.get('priority', ''):<2}{extra}  {it.get('title', '')}{mark}"
 
 
 def colourless_env():

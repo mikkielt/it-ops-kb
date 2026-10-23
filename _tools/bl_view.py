@@ -18,9 +18,10 @@ from bl_check import knowledge_lines
 from bl_plan import land_line, start_approved, touch_files, touches_meet, where_outside
 
 
-def ready(bl, sprint=None, any_sprint=False):
+def ready(bl, sprint=None, any_sprint=False, upstream=False):
+    """The ready item ids in work order; an item that arrived from the clone's upstream is left out unless UPSTREAM."""
     ids = [i for i in bl.items if not waits(bl, i, any_sprint)
-           and (sprint is None or bl.sprint_of(i) == sprint)]
+           and (sprint is None or bl.sprint_of(i) == sprint) and (upstream or not bl.is_upstream(i))]
     return sorted(ids, key=bl.order_key)
 
 
@@ -63,7 +64,8 @@ def cmd_list(bl, a):
                                                if bl.items[i].get("kind") != "sprint" else i)):
         it = bl.items[iid]
         if (a.kind and it.get("kind") != a.kind) or (a.status and it.get("status") != a.status) \
-                or (a.sprint and bl.sprint_of(iid) != a.sprint and iid != a.sprint):
+                or (a.sprint and bl.sprint_of(iid) != a.sprint and iid != a.sprint) \
+                or (bl.is_upstream(iid) and not a.all):
             continue
         say(line(bl, iid))
     return 0
@@ -91,7 +93,7 @@ def cmd_find(bl, a):
 
 def cmd_tree(bl, a):
     def shown(i):
-        return not a.open or bl.items[i].get("status") not in ("done", "dropped")
+        return (a.all or not bl.is_upstream(i)) and (not a.open or bl.items[i].get("status") not in ("done", "dropped"))
 
     def walk(i, depth):
         say("  " * depth + line(bl, i))
@@ -135,7 +137,7 @@ def cmd_show(bl, a):
 
 
 def cmd_next(bl, a):
-    ids = ready(bl, a.sprint, a.any)
+    ids = ready(bl, a.sprint, a.any, a.upstream)
     if not ids:
         say("nothing ready" + (f" in {bl.label(a.sprint)}" if a.sprint else "") + ": python3 _tools/backlog.py horizon")
         return 1
@@ -222,9 +224,11 @@ def cmd_held(bl, a):
     return 1 if hits else 0
 
 
-def horizon(bl, sid):
-    """(reachable open ids, {cause: [stuck ids]}, critical path [ids], level widths) for a sprint."""
-    items = [i for i in bl.sprint_items(sid) if bl.items[i].get("status") not in ("done", "dropped")]
+def horizon(bl, sid, upstream=False):
+    """(reachable open ids, {cause: [stuck ids]}, critical path [ids], level widths) for a sprint; the items that
+    arrived from the clone's upstream are left out unless UPSTREAM."""
+    items = [i for i in bl.sprint_items(sid) if bl.items[i].get("status") not in ("done", "dropped")
+             and (upstream or not bl.is_upstream(i))]
     cause = {}
     if bl.items[sid].get("status") != "active":
         g = next((g for g in bl.items[sid].get("gates", []) if g.get("id") == START_GATE), {})
@@ -318,11 +322,13 @@ def lag_line(root):
 
 def cmd_horizon(bl, a):
     sprints = [a.sprint] if a.sprint else sorted(i for i, it in bl.items.items()
-                                                  if it.get("kind") == "sprint" and it.get("status") == "active")
+                                                  if it.get("kind") == "sprint" and it.get("status") == "active"
+                                                  and (a.all or not bl.is_upstream(i)))
     lines = [lag] if a.hook and (lag := lag_line(bl.root)) else []  # first: the hook's cut drops the last lines
     if not sprints:
-        planned = [i for i, it in bl.items.items() if it.get("kind") == "sprint"]
-        n = sum(1 for it in bl.items.values() if it.get("kind") != "sprint" and it.get("status") not in ("done", "dropped"))
+        planned = [i for i, it in bl.items.items() if it.get("kind") == "sprint" and (a.all or not bl.is_upstream(i))]
+        n = sum(1 for i, it in bl.items.items() if it.get("kind") != "sprint" and it.get("status") not in ("done", "dropped")
+                and (a.all or not bl.is_upstream(i)))
         lines.append(f"backlog: no active sprint; {n} open item(s)"
                      + (", planned: " + ", ".join(bl.label(s) + (f" (approved, not started: backlog.py start {s})"
                                                                  if start_approved(bl.items[s]) else "")
@@ -330,19 +336,19 @@ def cmd_horizon(bl, a):
                      + " (python3 _tools/backlog.py tree)")
     elif not a.sprint:  # an approved sprint waits on start beside the active ones: first, so the hook never cuts it
         for sid in sorted(i for i, it in bl.items.items() if it.get("kind") == "sprint"
-                          and it.get("status") == "planned" and start_approved(it)):
+                          and it.get("status") == "planned" and start_approved(it) and (a.all or not bl.is_upstream(i))):
             title = clip(bl.items[sid].get("title", ""), HOOK_TITLE) if a.hook else bl.items[sid].get("title", "")
             lines.append(f"sprint {sid} “{title}”: approved, not started; next step: "
                          f"python3 _tools/backlog.py start {sid}")
     for sid in sprints:
         need(bl, sid)
-        items = bl.sprint_items(sid)
+        items = [i for i in bl.sprint_items(sid) if a.all or not bl.is_upstream(i)]
         done = sum(1 for i in items if bl.items[i].get("status") in ("done", "dropped"))
-        reach, stuck, path, widths = horizon(bl, sid)
+        reach, stuck, path, widths = horizon(bl, sid, a.all)
         starts = len(stuck.get(STARTS + sid, []))  # approved: they wait on backlog.py start, not on the operator
         waiting = sum(map(len, stuck.values())) - starts
         if a.hook:  # every session reads it: id and title, counts and the next id; horizon without --hook has the rest
-            nxt = ready(bl, sid)
+            nxt = ready(bl, sid, upstream=a.all)
             lines.append(f"sprint {sid} “{clip(bl.items[sid].get('title', ''), HOOK_TITLE)}”: "
                          f"{done}/{len(items)} done, {len(reach)} reachable"
                          + (f", close with backlog.py close {sid}" if items and done == len(items) else "")
@@ -360,7 +366,7 @@ def cmd_horizon(bl, a):
             lines.append(f"  all done: close with python3 _tools/backlog.py close {sid}")
         for i in finishable(bl, items):
             lines.append(f"  finish with python3 _tools/backlog.py done {i}: {bl.label(i)} (every child is done)")
-        nxt = ready(bl, sid)
+        nxt = ready(bl, sid, upstream=a.all)
         if nxt:
             lines.append(f"  next: {bl.label(nxt[0])}")
             if not a.hook:  # the SessionStart hook runs no pack
@@ -415,16 +421,21 @@ def args_similar(p):
     p.add_argument("--goal")
 
 
+UPSTREAM_HELP = "also the items that arrived from the clone's upstream (git config kb.upstreamRemote), read-only here"
+
+
 def args_list(p):
     p.add_argument("--kind", choices=list(kinds()))
     p.add_argument("--status")
     p.add_argument("--sprint")
+    p.add_argument("--all", action="store_true", help=UPSTREAM_HELP)
 
 
 def args_tree(p):
     p.add_argument("id", nargs="?")
     p.add_argument("--sprint")
     p.add_argument("--open", action="store_true")
+    p.add_argument("--all", action="store_true", help=UPSTREAM_HELP)
 
 
 def args_find(p):
@@ -439,6 +450,7 @@ def args_next(p):
     p.add_argument("--sprint")
     p.add_argument("--any", action="store_true")
     p.add_argument("--all", action="store_true")
+    p.add_argument("--upstream", action="store_true", help=UPSTREAM_HELP)
 
 
 def args_held(p):
@@ -448,6 +460,7 @@ def args_held(p):
 
 def args_horizon(p):
     p.add_argument("--sprint")
+    p.add_argument("--all", action="store_true", help=UPSTREAM_HELP)
     p.add_argument("--hook", action="store_true")
     p.add_argument("--opt-in", action="store_true",
                    help="with --hook: do nothing unless backlog.json's `hooks` setting names horizon (the plugin's entry)")

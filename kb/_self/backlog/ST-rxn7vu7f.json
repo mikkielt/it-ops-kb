@@ -61,6 +61,55 @@
     "ST-s6iz6z36",
     "ST-4vaqzqyr"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does an item record the clone it was filed in, and how is the clone named?",
+      "options": [
+        "filed_in field holding a clone-<8 hex> id that new writes once to git config kb.cloneId",
+        "filed_in field holding the kb.scope value (me, team or org)"
+      ],
+      "recommendation": "filed_in field holding a clone-<8 hex> id that new writes once to git config kb.cloneId",
+      "do": {
+        "filed_in field holding a clone-<8 hex> id that new writes once to git config kb.cloneId": "ST-rxn7vu7f",
+        "filed_in field holding the kb.scope value (me, team or org)": "ST-rxn7vu7f"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does next show upstream items, given next --all already means every ready item?",
+      "options": [
+        "next --upstream adds them and --all keeps its meaning",
+        "next --all adds them and also means every ready item"
+      ],
+      "recommendation": "next --upstream adds them and --all keeps its meaning",
+      "do": {
+        "next --upstream adds them and --all keeps its meaning": "ST-rxn7vu7f",
+        "next --all adds them and also means every ready item": "ST-rxn7vu7f"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Which commands refuse an upstream item, and how does sprint start treat one?",
+      "options": [
+        "every item writer refuses it (claim, release, set, done, answer, gate, move, reopen, drop, fire, host-check) and start leaves it out without a flag",
+        "only claim, set and done refuse it and start has an --all flag"
+      ],
+      "recommendation": "every item writer refuses it (claim, release, set, done, answer, gate, move, reopen, drop, fire, host-check) and start leaves it out without a flag",
+      "do": {
+        "every item writer refuses it (claim, release, set, done, answer, gate, move, reopen, drop, fire, host-check) and start leaves it out without a flag": "ST-rxn7vu7f",
+        "only claim, set and done refuse it and start has an --all flag": "ST-rxn7vu7f"
+      },
+      "class": "start",
+      "answer": "every item writer refuses it (claim, release, set, done, answer, gate, move, reopen, drop, fire, host-check) and start leaves it out without a flag",
+      "by": "agent"
+    }
+  ],
   "notes": "Premise run 2026-10-19 on the base (the check, on a planted upstream repo and a team clone of it): list shows the upstream item beside the team one, list --all and the claim refusal do not exist; the check exits 1. Operator's answer 2026-10-19: keep upstream items, mark them upstream, read-only, hidden unless --all.",
   "claimed_by": "claude-92aeeb3c",
   "operator": "op-f618a13e"

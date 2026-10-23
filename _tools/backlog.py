@@ -367,7 +367,7 @@ import bl_land  # noqa: F401 - registers its commands, and those of bl_close and
 import bl_plan  # noqa: F401 - registers its commands
 import bl_view  # noqa: F401 - registers its commands
 from bl_base import Backlog, COMMITS, OUTPUT_ROOT, ROOT, Refused, Rejected, cmd_config, load_settings, rel_dir
-from bl_base import setting, trailer_problem, withhold
+from bl_base import UPSTREAM_WRITERS, setting, trailer_problem, withhold
 from bl_base import canonical, in_scope, waits  # noqa: F401 - tests read them as backlog.NAME
 from bl_check import item_files_only, validate  # noqa: F401 - tests read them as backlog.NAME
 from bl_land import run_check, own_failure  # noqa: F401 - tests read them as backlog.NAME
@@ -441,6 +441,11 @@ def main(argv=None):
             why = next(filter(None, map(trailer_problem, a.trailer)), None)
             if why:
                 raise Refused(why)
+        if a.cmd in UPSTREAM_WRITERS and not getattr(a, "dry_run", False) and getattr(a, "id", None) in bl.items \
+                and bl.is_upstream(a.id):
+            raise Refused(f"{bl.label(a.id)} arrived from the upstream main (git config kb.upstreamRemote) and is "
+                          f"read-only in this clone: {a.cmd} refuses it; file the change as an item of this clone, or "
+                          "make it in the upstream")
         return bl_cli.handler_of(a.cmd)(bl, a)
     except KeyError as e:  # an id with no item file: a closed sprint's item is in git history
         iid = e.args[0]

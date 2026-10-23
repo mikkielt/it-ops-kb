@@ -336,6 +336,7 @@ def recurring_left_out(bl, sid):
     """Open P1 items whose recurs list names RECURRING_MIN sprints or more and that are not in sprint sid."""
     return sorted((i for i, it in bl.items.items()
                    if it.get("kind") != "sprint" and it.get("status") in OPEN and it.get("priority") == "P1"
+                   and not bl.is_upstream(i)
                    and isinstance(it.get("recurs"), list) and len(set(it["recurs"])) >= RECURRING_MIN
                    and bl.sprint_of(i) != sid), key=bl.order_key)
 
@@ -438,7 +439,7 @@ def cmd_start(bl, a):
     g = next(g for g in sp["gates"] if g["id"] == START_GATE)
     if not start_approved(sp):
         raise Refused(f"{bl.label(sid)}: the operator has not approved it (gate {START_GATE}: {g.get('answer', 'open')})")
-    items = bl.sprint_items(sid)
+    items = [i for i in bl.sprint_items(sid) if not bl.is_upstream(i)]  # an upstream item is read-only: start neither checks nor writes it
     if len(items) < 2:
         raise Refused(f"{bl.label(sid)} commits to no item besides its review")
     unchecked = [f"{bl.label(i)} gate {g['id']}: {why}" for i, g in host_gates(bl, sid)
