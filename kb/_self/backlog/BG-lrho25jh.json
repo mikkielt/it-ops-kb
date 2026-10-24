@@ -39,7 +39,11 @@
         "store newest seq": "BG-lrho25jh",
         "item newest progress seq": "BG-lrho25jh"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "store newest seq",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
