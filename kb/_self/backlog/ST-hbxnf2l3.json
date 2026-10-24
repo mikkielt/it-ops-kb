@@ -64,7 +64,9 @@
       },
       "class": "design",
       "answer": "case tests tag CODE",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Planning 2026-10-24: last clause corrected. The old text said a resolved alert is sent only with send_resolved; the Alertmanager configuration docs (docs/configuration.md, webhook_config) give send_resolved default = true, so the clause now asks what send_resolved does and its default. The goal is split into five clauses, each read by cases of the one check. Premise: the check fails on the base (precheck). Planned 2026-10-24 into SP-r7e7jcep: fourth in the run order (after ST-l6fw46gd), since the five research stories share the source, anchor and expansions files. Worker 2026-10-24: the check case for --web.listen-address now tests tag CODE (was DOC). No official Alertmanager doc names the flag or its default (the configuration page only says to run alertmanager -h; the README gives port 9093 for a container); the flag and its default :9093 are in cmd/alertmanager/main.go (webflag.AddFlags with :9093) at v0.34.1 and the flag name in exporter-toolkit v0.17.1 web/kingpinflag/flag.go. Same clause, same terms (web.listen-address, 9093); recorded as gate g1.",
