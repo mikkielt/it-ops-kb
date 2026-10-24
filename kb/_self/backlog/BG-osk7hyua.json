@@ -23,6 +23,25 @@
   "depends_on": [
     "BG-e4sepxng"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does kbroot.py end a git past its bound (run_git_bounded takes its bound from KB_GIT_NETWORK_TIMEOUT and raises a lock-worded GitNetworkTimeout)?",
+      "options": [
+        "kbroot-local run_bounded using kg_lock.end_group",
+        "call kg_lock.run_git_bounded directly"
+      ],
+      "recommendation": "kbroot-local run_bounded using kg_lock.end_group",
+      "do": {
+        "kbroot-local run_bounded using kg_lock.end_group": "BG-osk7hyua",
+        "call kg_lock.run_git_bounded directly": "BG-osk7hyua"
+      },
+      "class": "design",
+      "answer": "kbroot-local run_bounded using kg_lock.end_group",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-mguax5m3 review"
   ],
