@@ -34,6 +34,25 @@
     "_tools/kbcommon.py",
     "_tools/test_leaks.py"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the leak scan keep a // line prefix that is also base64 in a narrow-wrapped EC key body?",
+      "options": [
+        "Alternative gap",
+        "Drop // from the gap everywhere"
+      ],
+      "recommendation": "Alternative gap",
+      "do": {
+        "Alternative gap": "BG-q7lcd6od",
+        "Drop // from the gap everywhere": "BG-q7lcd6od"
+      },
+      "class": "design",
+      "answer": "Alternative gap",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-swavez3g review"
   ],
