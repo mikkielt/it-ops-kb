@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "bl_items.move_run and bl_land.move_run are the same function twice",
   "status": "draft",
+  "sprint": "SP-dx76osrn",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
@@ -15,7 +16,14 @@
     ]
   },
   "touches": [
-    "_tools/bl_items.py"
+    "_tools/bl_items.py",
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
   ],
+  "depends_on": [
+    "ST-al6rvds7"
+  ],
+  "notes": "Planning 2026-10-24: premise ran on today's base: the repro's assert fails (bl_items.move_run is not bl_land.move_run). Plan: delete bl_items.move_run and read it from bl_land (bl_items already imports from bl_land); bl_dispatch calls both names, which then resolve to the one function; kb/_self/coordination.md and tools.md name bl_items.move_run and are reworded to bl_land.move_run. Runs after ST-al6rvds7 and before BG-xn4jrmn7 (cmd_release moves the state through it). Planned into SP-dx76osrn on 2026-10-24, second in the order.",
   "filed_in": "clone-0ea70e5c"
 }
