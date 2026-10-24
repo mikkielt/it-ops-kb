@@ -1,0 +1,26 @@
+{
+  "id": "ST-fzczb63u",
+  "kind": "story",
+  "title": "Research sprint goal: The tools move the run states: claim, dispatch, gates, land and stage-back, runs and reconcile, settings explain, the plugin's coord",
+  "status": "draft",
+  "sprint": "SP-sucr3kfg",
+  "goal_research": true,
+  "priority": "P1",
+  "rank": 0,
+  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "researched",
+        "ST-fzczb63u"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ],
+  "notes": "Planned into SP-sucr3kfg on 2026-10-24.",
+  "filed_in": "clone-0ea70e5c"
+}
