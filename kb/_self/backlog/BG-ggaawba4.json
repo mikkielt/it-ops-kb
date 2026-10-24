@@ -24,6 +24,25 @@
   "depends_on": [
     "BG-4g4ml4jd"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does kbmon --events read the sprint of an item whose file a sprint close deleted: from git history or from a sprint field of the claim move? Git history needs no change outside mon_events.py and covers runs already in the coord store; the claim field would change bl_items and bl_land, outside the touches.",
+      "options": [
+        "git history",
+        "claim move field"
+      ],
+      "recommendation": "git history",
+      "do": {
+        "git history": "BG-ggaawba4",
+        "claim move field": "BG-ggaawba4"
+      },
+      "class": "delete",
+      "answer": "git history",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-hja7yu5k review"
   ],
