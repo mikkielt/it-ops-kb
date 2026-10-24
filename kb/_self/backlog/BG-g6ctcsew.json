@@ -2,7 +2,7 @@
   "id": "BG-g6ctcsew",
   "kind": "bug",
   "title": "kbmon's disk alert compares the rounded free_pct, so 9.96% free gives no alert and a 0-byte total gives a false one",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-swavez3g",
   "priority": "P3",
@@ -41,5 +41,7 @@
   "links": [
     "parked: SP-3hgirkur review"
   ],
-  "notes": "Planner 2026-10-24: check 0 passes before the work on purpose: it pins that the displayed free_pct keeps one decimal (clause 2) while the alert is changed to read the unrounded share (clause 1, the repro)."
+  "notes": "Planner 2026-10-24: check 0 passes before the work on purpose: it pins that the displayed free_pct keeps one decimal (clause 2) while the alert is changed to read the unrounded share (clause 1, the repro).",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
