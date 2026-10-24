@@ -1,0 +1,25 @@
+{
+  "id": "BG-fh4pag2k",
+  "kind": "bug",
+  "title": "The usage text of backlog.py leaves --max-budget-usd off both dispatch entries, though the parser takes it for a new dispatch and for --resume",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "The usage text of _tools/backlog.py names --max-budget-usd on the dispatch entry and on the dispatch --resume entry, as dispatch --help lists it",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re, sys\nsys.path.insert(0, \"_tools\")\nimport backlog\ndoc = backlog.__doc__ or \"\"\nentries = re.findall(r\"\\n  backlog\\.py dispatch .*?(?=\\n  backlog\\.py )\", doc, re.S)\nmissing = [e.split(\"\\n\")[1].strip()[:60] for e in entries if \"--max-budget-usd\" not in e]\nprint(\"dispatch usage entries without --max-budget-usd:\", missing or \"none\")\nsys.exit(1 if missing else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/backlog.py"
+  ],
+  "links": [
+    "parked: SP-f2o3aqm2 review"
+  ],
+  "notes": "Review gap (S4) of SP-f2o3aqm2, fresh-context reviewer 2026-10-24; parked, no fitness test or user report names it.",
+  "filed_in": "clone-0ea70e5c"
+}
