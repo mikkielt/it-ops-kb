@@ -1,7 +1,7 @@
 # A local Alertmanager for the alerts otel/prometheus.yml sends (kb/_self/monitoring.md, "A local Prometheus"). Start it with
 # `--config.file` pointing at this file; it listens on 127.0.0.1:9093 (`--web.listen-address=127.0.0.1:9093`).
-# Every alert goes to one webhook receiver on loopback. The file holds no credential: a receiver that needs one is not
-# configured here.
+# Every alert goes to one webhook receiver on loopback, `python3 _tools/kbask.py webhook` (port 9095), which posts each
+# firing alert as a coord ask to the operator. The file holds no credential: a receiver that needs one is not configured here.
 route:
   receiver: operator
   group_by: [alertname]
