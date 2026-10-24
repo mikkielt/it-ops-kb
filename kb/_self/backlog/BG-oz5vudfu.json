@@ -23,10 +23,31 @@
   "depends_on": [
     "BG-usjnwgqx"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does land keep the failed push step's gate output file after the landing worktree is removed?",
+      "options": [
+        "copy",
+        "run-in-checkout"
+      ],
+      "recommendation": "copy",
+      "do": {
+        "copy": "BG-oz5vudfu",
+        "run-in-checkout": "BG-oz5vudfu"
+      },
+      "class": "push",
+      "answer": "copy",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-47w4ngr6 review"
   ],
-  "notes": "Found by the SP-47w4ngr6 review (S2): the push runs in the landing worktree, so the gate output kept under its _cache/gate is removed with it, and the stop message names a path that no longer exists. The repro plants a push step that keeps a gate output file. Planning 2026-10-24: premise ran on today's base: the repro names /…/clone/.claude/worktrees/land-<id>/_cache/gate/gate-1.txt and it does not exist after the stop. Recommended: land copies the kept gate output file named in the push step's output into the invoking checkout's _cache/gate before it removes the landing worktree, and the stop message names the copy (a copy, not a move: a retry reads the same path); output that names no such file is left as it is. Planned into SP-dx76osrn on 2026-10-24, fifth in the order. Sprint SP-dx76osrn started 2026-10-24 on the standing approval; ready once BG-usjnwgqx is done.",
+  "notes": "Found by the SP-47w4ngr6 review (S2): the push runs in the landing worktree, so the gate output kept under its _cache/gate is removed with it, and the stop message names a path that no longer exists. The repro plants a push step that keeps a gate output file. Planning 2026-10-24: premise ran on today's base: the repro names /…/clone/.claude/worktrees/land-<id>/_cache/gate/gate-1.txt and it does not exist after the stop. Recommended: land copies the kept gate output file named in the push step's output into the invoking checkout's _cache/gate before it removes the landing worktree, and the stop message names the copy (a copy, not a move: a retry reads the same path); output that names no such file is left as it is. Planned into SP-dx76osrn on 2026-10-24, fifth in the order. Sprint SP-dx76osrn started 2026-10-24 on the standing approval; ready once BG-usjnwgqx is done. Gate g1 (class push) answered copy, the recommendation, by the runner on the operator's standing approval (pre-approved by the operator for the 2026-10-24 day run); the copy goes to the invoking checkout's _cache/gate, no push is changed.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
