@@ -56,6 +56,59 @@
   "depends_on": [
     "ST-t2loi3od"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where is the kb_settings tool served, and which workspace does it read?",
+      "options": [
+        "team server only, reading CLAUDE_PROJECT_DIR else the cwd",
+        "every server, a --roots child included"
+      ],
+      "recommendation": "team server only, reading CLAUDE_PROJECT_DIR else the cwd",
+      "do": {
+        "team server only, reading CLAUDE_PROJECT_DIR else the cwd": "ST-vopsopkg",
+        "every server, a --roots child included": "ST-vopsopkg"
+      },
+      "class": "design",
+      "answer": "team server only, reading CLAUDE_PROJECT_DIR else the cwd",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does the doc line in explain stay true when the doc moves, given explain may read no file but the settings files?",
+      "options": [
+        "the SETTINGS table holds the line numbers and a kbsettings.py check subcommand compares each doc line with the table",
+        "explain looks the line up in the doc at run time"
+      ],
+      "recommendation": "the SETTINGS table holds the line numbers and a kbsettings.py check subcommand compares each doc line with the table",
+      "do": {
+        "the SETTINGS table holds the line numbers and a kbsettings.py check subcommand compares each doc line with the table": "ST-vopsopkg",
+        "explain looks the line up in the doc at run time": "ST-vopsopkg"
+      },
+      "class": "design",
+      "answer": "the SETTINGS table holds the line numbers and a kbsettings.py check subcommand compares each doc line with the table",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "What does explain --json print, and what does it do with a kb root name that is not a plain directory name?",
+      "options": [
+        "one object for a KEY and a list of objects without one; a name such as ../x is refused as a bad setting (exit 2)",
+        "always a list; the name is joined into the path as given"
+      ],
+      "recommendation": "one object for a KEY and a list of objects without one; a name such as ../x is refused as a bad setting (exit 2)",
+      "do": {
+        "one object for a KEY and a list of objects without one; a name such as ../x is refused as a bad setting (exit 2)": "ST-vopsopkg",
+        "always a list; the name is joined into the path as given": "ST-vopsopkg"
+      },
+      "class": "design",
+      "answer": "one object for a KEY and a list of objects without one; a name such as ../x is refused as a bad setting (exit 2)",
+      "by": "agent"
+    }
+  ],
   "notes": "Plan 2026-10-24: premise reproduced on base (precheck: explain exits 2, kb_mcp.py has no kb_settings tool). Second check added for the goal's no-model-call, no-extra-file-read clause: it runs explain under an audit hook and fails on any subprocess, socket or file open other than modules and the two settings files; a check that turns out too strict for a correct implementation is rewritten to test the same clause, with the reason in these notes. The kb_settings tool itself is only text-checked; run it through the kb MCP server to prove it. Planned into SP-sucr3kfg on 2026-10-24. Sprint started 2026-10-24.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
