@@ -2,7 +2,7 @@
   "id": "BG-nx6jzvop",
   "kind": "bug",
   "title": "The leak scan passes a single-line EC key body that a period, underscore or hyphen follows, which the scan before BG-7mxo4k6p flagged",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-jopt2c3z",
   "priority": "P2",
   "rank": 0,
@@ -33,5 +33,7 @@
     "parked: SP-4ppjbh4k review"
   ],
   "notes": "Planned in SP-jopt2c3z (2026-10-24 day run). Premise run on base: the repro exits 1 (every suffix of the plain, slash-containing and 24-character bodies passes the scan). Feasibility: in a scratch copy of _tools, replacing the (?![_.]|-(?!----)) lookahead of _KEY by a start lookahead (?!(?:[A-Za-z0-9]{1,16}/)+[A-Za-z0-9]{1,16}[._-]) (a run that is short slash-separated segments before a dot, underscore or hyphen is a repository path) makes the repro exit 0; roughly 70 percent of real 78-character bodies hold a slash, so a no-slash rule would leave most real bodies unflagged. The worker may choose another rule that keeps the repro green. Tests: extend the planted case in an existing test_leaks.py function (the leak scan is a critical component); add no new test id. Severity raised S3 to S2 on the operator's brief (a leak-scan regression).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
