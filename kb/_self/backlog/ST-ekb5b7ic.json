@@ -1,0 +1,41 @@
+{
+  "id": "ST-ekb5b7ic",
+  "kind": "story",
+  "title": "A gate is answered by its option number or its recommendation, not by the option text retyped",
+  "status": "draft",
+  "parent": "EP-sqt62vj2",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "answer ID GATE --option N answers with the Nth option of the gate and --recommended answers with the gate's recommendation, each recording what the equal --answer TEXT records; both refuse a number outside the options and a gate class that refuses a text answer refuses them the same",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile,pathlib as P\nT=os.path.abspath(\"_tools/backlog.py\");r=P.Path(tempfile.mkdtemp())\ng=lambda *a:s.run([\"git\",\"-C\",str(r),*a],check=True,capture_output=True,text=True).stdout.strip()\ng(\"init\",\"-q\");(r/\"backlog.json\").write_text(json.dumps({\"item_dir\":\"items\",\"scratch_dir\":\"_cache/scratch\"}));(r/\"items\").mkdir()\ndef item(i,**k):\n d=dict(id=i,kind=\"story\",title=\"t\",status=\"todo\",priority=\"P3\",goal=\"g\",touches=[\"x.txt\"],checks=[{\"run\":[\"python3\",\"-c\",\"pass\"]}]);d.update(k)\n (r/\"items\"/(i+\".json\")).write_text(json.dumps(d,indent=2)+\"\\n\")\ndef commit():g(\"add\",\"-A\");g(\"-c\",\"user.name=x\",\"-c\",\"user.email=x@x\",\"commit\",\"-qm\",\"i\")\nenv=dict(os.environ,CLAUDE_CODE_SESSION_ID=\"chk\");env.pop(\"KB_BACKLOG_CONFIG\",None)\ndef run(*a):return s.run([sys.executable,T,\"--root\",str(r),*a],capture_output=True,text=True,env=env)\nitem(\"ST-aaaaaaaa\",gates=[{\"id\":\"g1\",\"kind\":\"provisional\",\"question\":\"q\",\"options\":[\"a\",\"b\"],\"recommendation\":\"b\"}]);item(\"ST-bbbbbbbb\",gates=[{\"id\":\"g1\",\"kind\":\"provisional\",\"question\":\"q\",\"options\":[\"a\",\"b\"],\"recommendation\":\"b\"}]);item(\"ST-cccccccc\",gates=[{\"id\":\"g1\",\"kind\":\"blocking\",\"question\":\"q\",\"options\":[\"a\",\"b\"],\"recommendation\":\"b\"}]);commit()\na=run(\"answer\",\"ST-aaaaaaaa\",\"g1\",\"--recommended\",\"--provisional\");b=run(\"answer\",\"ST-bbbbbbbb\",\"g1\",\"--option\",\"1\",\"--provisional\")\nc=run(\"answer\",\"ST-aaaaaaaa\",\"g1\",\"--option\",\"3\",\"--provisional\");d=run(\"answer\",\"ST-cccccccc\",\"g1\",\"--recommended\",\"--provisional\")\ngot=lambda i:json.loads((r/\"items\"/(i+\".json\")).read_text())[\"gates\"][0].get(\"answer\")\nprint(a.returncode,b.returncode,c.returncode,d.returncode,(a.stdout+a.stderr)[-150:])\nok=a.returncode==0 and b.returncode==0 and c.returncode!=0 and d.returncode!=0\nsys.exit(0 if ok and got(\"ST-aaaaaaaa\")==\"b\" and got(\"ST-bbbbbbbb\")==\"a\" and got(\"ST-cccccccc\") is None else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "answer ID GATE --option N answers with the Nth option of the gate and --recommended answers with the gate's recommendation, each recording what the equal --answer TEXT records",
+      "check": 0
+    },
+    {
+      "clause": "both refuse a number outside the options and a gate class that refuses a text answer refuses them the same",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/backlog.py",
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "relates_to": [
+    "ST-ecohnugl",
+    "ST-tvnxvfjp"
+  ],
+  "notes": "From the 2026-10-24 telemetry and query-log analysis: 624 backlog.py answer calls in 146 sessions: 294 '--answer \"<option text>\" --by operator', 186 '--confirm --by operator' (the second call of the provisional flow), 93 '--provisional'; 256 orchestrating turns had an answer as their only call, with 107K output tokens in them. A runner loop was written by hand to read each gate's recommendation and pass it back as --answer. answer takes only the option's exact text (bl_items.py:429), so a retyped text that differs by a character is refused and costs another turn. Saves about 200 turns, about 100K output tokens and about 10 USD a week (estimate). Medium confidence. Gate handling stays the operator's: the change removes retyping, not the authority (the same --by rules, no new right to answer). Different from ST-ecohnugl (answer warns on a pick other than the recommendation) and ST-tvnxvfjp (relayed answers need --free). Lane: parked sprint-orchestration class, EP-gzr4mmkm.",
+  "filed_in": "clone-0ea70e5c"
+}
