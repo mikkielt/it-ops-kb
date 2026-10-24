@@ -2,7 +2,7 @@
   "id": "ST-jbuihocm",
   "kind": "story",
   "title": "kb/_self/coordination.md's list of what kbmon reads names every coord read the coord, sprint and sessions panels make",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-f2o3aqm2",
   "priority": "P3",
@@ -24,5 +24,7 @@
     "parked: SP-d6gbc3tq review"
   ],
   "notes": "Review gap (S2) of SP-d6gbc3tq: coordination.md:154 omits coord.py get of the first 3 open asks' questions, the sprint panel's own list --prefix run/ read and the sessions panel's wait --since 0 read. Plan 2026-10-24: premise runs on base (exit 1, none of the three reads is named). The old check passed a bullet that only held the words 'get' and 'sprint panel' anywhere; tightened to require each read next to its panel: coord.py get of the first open asks' questions (mon_coord.ask_texts, ASKS_READ), the sprint panel's list --prefix run/ with one wait --since 0 (mon_coord.run_rows), the sessions panel's wait --since 0 --kind K reads (mon_sessions, intent, coordinate, progress). The worker reads the three call sites in _tools/mon_coord.py and _tools/mon_sessions.py and writes what they do, not the check's words.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
