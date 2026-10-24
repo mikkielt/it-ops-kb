@@ -1,0 +1,25 @@
+{
+  "id": "BG-l7bkxjx6",
+  "kind": "bug",
+  "title": "An scp-like url with an absolute path escapes the public-home, integration and upstream guards, and an unparseable url crashes the pre-push hook",
+  "status": "todo",
+  "sprint": "SP-3trnelzv",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "kbpublic.location reads an scp-like url whose path starts with a slash (git@example.com:/org/repo.git) as a remote url, so it matches the https, ssh and other spellings of the same repository in all three guards, excluding only a single-letter Windows drive from the scp form; and a url urllib cannot parse makes location fall back to the url text with no traceback, so the pre-push hook still judges the push and names the url",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys;sys.path.insert(0,'_tools');import kbpublic;a=kbpublic.location('git@example.com:/org/repo.git','.');b=kbpublic.location('https://example.com/org/repo.git','.');ok=kbpublic.same_repository(a,b);r=subprocess.run([sys.executable,'-c','import sys;sys.path.insert(0,\"_tools\");import kbpublic;kbpublic.location(\"https://[::1/x\",\".\")'],capture_output=True);c=r.returncode==0;print('scp absolute matches https:',ok,'| bad url handled:',c);sys.exit(0 if ok and c else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/kbpublic.py",
+    "_tools/test_prepush_e2e.py",
+    "kb/_self/git.md"
+  ],
+  "notes": "Found 2026-10-24 by the third SP-3trnelzv review (on 35938e315): SCP_RX's (?![/\\\\]) lookahead after the colon rejects git@host:/path, so location reads it as a local path; a public-home push spelled that way with a kb/_querylog commit exited 0 through the pre-push hook. The fix excludes only a one-letter drive. S1 by the backlog table (a gate lets a bad push through), so it joins the sprint.",
+  "filed_in": "clone-0ea70e5c"
+}

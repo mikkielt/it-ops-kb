@@ -1,0 +1,25 @@
+{
+  "id": "BG-cogka4m3",
+  "kind": "bug",
+  "title": "The url identity helper does not normalise // and dot segments or a trailing-dot host, and reads x, x.git and x/.git as one repository",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbpublic.location normalises a remote url's repository path (repeated slashes, . and .. segments, a trailing-dot host, a doubled .git) and resolves a local path in git's own lookup order (x, then x.git, then x/.git), so the same repository is matched and two different repositories at x and x.git are not",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbpublic;a=kbpublic.location('https://example.com/org//repo','.');b=kbpublic.location('https://example.com/org/repo','.');ok=kbpublic.same_repository(a,b);print('double slash matched:',ok);sys.exit(0 if ok else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/kbpublic.py",
+    "kb/_self/git.md"
+  ],
+  "links": [
+    "parked: SP-3trnelzv review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
