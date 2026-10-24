@@ -31,6 +31,25 @@
     "kb/public/_anchors.csv",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Line 59 states the encrypted-PEM blank line how, given RFC 7468 and RFC 5915 never say an encrypted PEM holds one?",
+      "options": [
+        "State only what the sources read say: RFC 7468 allows empty space between the BEGIN boundary and the base64, and RFC 5915 names the Proc-Type and DEK-INFO header fields; the PGP armor blank line is stated flat",
+        "State that an encrypted PEM holds a blank line after its headers, from RFC 1421 (not read in this item)"
+      ],
+      "recommendation": "State only what the sources read say: RFC 7468 allows empty space between the BEGIN boundary and the base64, and RFC 5915 names the Proc-Type and DEK-INFO header fields; the PGP armor blank line is stated flat",
+      "do": {
+        "State only what the sources read say: RFC 7468 allows empty space between the BEGIN boundary and the base64, and RFC 5915 names the Proc-Type and DEK-INFO header fields; the PGP armor blank line is stated flat": "BG-qad2na5d",
+        "State that an encrypted PEM holds a blank line after its headers, from RFC 1421 (not read in this item)": "BG-qad2na5d"
+      },
+      "class": "design",
+      "answer": "State only what the sources read say: RFC 7468 allows empty space between the BEGIN boundary and the base64, and RFC 5915 names the Proc-Type and DEK-INFO header fields; the PGP armor blank line is stated flat",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-evq2flqc review"
   ],
