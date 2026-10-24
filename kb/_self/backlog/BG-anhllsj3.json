@@ -1,0 +1,19 @@
+{
+  "id": "BG-anhllsj3",
+  "kind": "bug",
+  "title": "kg_hooks.hook_commit_msg comment says the stray-line warnings let the commit go through, which refuse_commit_msg no longer does",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "the comment above the stray-line loop in kg_hooks.hook_commit_msg says the hook prints each stray line and kg_trailers.refuse_commit_msg refuses the commit, not that the commit goes through",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('_tools/kg_hooks.py',encoding='utf-8').read();bad='warnings only: the commit goes through' in t;print('stale comment:',bad);sys.exit(1 if bad else 0)"
+    ]
+  },
+  "repro_reason": "the defect is a stale code comment; no behaviour differs",
+  "filed_in": "clone-0ea70e5c"
+}
