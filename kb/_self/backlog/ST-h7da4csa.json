@@ -2,7 +2,7 @@
   "id": "ST-h7da4csa",
   "kind": "story",
   "title": "Review sprint: Sessions announce overlaps: who else works on the same items or files, the suggested and the chosen strategy, shown in kbmon",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ky7xz6d2",
   "review": true,
   "priority": "P1",
@@ -24,5 +24,7 @@
     }
   ],
   "notes": "Sprint SP-ky7xz6d2 started 2026-10-24 on the operator's standing approval for the night run.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
