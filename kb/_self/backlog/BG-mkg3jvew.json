@@ -46,6 +46,27 @@
   "depends_on": [
     "BG-dwcjaspf"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Does the layout file parts.json stay written by groups, brief and dispatch --dry-run (a cache, documented as such), or only by groups and a real dispatch?",
+      "options": [
+        "keep writes in groups, brief and dispatch, and document the cache",
+        "write only in groups and a real dispatch; brief and --dry-run read only"
+      ],
+      "recommendation": "keep writes in groups, brief and dispatch, and document the cache",
+      "do": {
+        "keep writes in groups, brief and dispatch, and document the cache": "BG-mkg3jvew",
+        "write only in groups and a real dispatch; brief and --dry-run read only": "BG-mkg3jvew"
+      },
+      "class": "agents-rule",
+      "answer": "keep writes in groups, brief and dispatch, and document the cache",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-gavrmuvx review"
   ],
