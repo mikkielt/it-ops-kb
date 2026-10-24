@@ -23,6 +23,14 @@
         "-c",
         "import sys; sys.path.insert(0, \"_tools\"); import kg_sync as k; paths = (\"kb/public/_gaps.md\", \"kb/public/_retrieval/bench_pool.csv\", \"kb/public/_retrieval/bench_scenarios.csv\"); missing = [p for p in paths if not k.gate_needs({p}).get(\"pool\")]; extra = k.gate_needs({\"_tools/kg_sync.py\"}).get(\"pool\"); print(\"pool gate missing for:\", missing, \"| runs for an unrelated path:\", bool(extra)); sys.exit(1 if missing or extra else 0)"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_pool_gate_refuses_only_the_defects_a_landing_adds"
+      ]
     }
   ],
   "touches": [
@@ -53,6 +61,27 @@
       },
       "class": "push",
       "answer": "Refuse only what the landing adds",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does the sync gate tell the problems a landing adds from the pool's old defects? Recommended: run pool check also on the merge base exported with git archive to a temporary directory and refuse the defect lines the working tree prints and the base does not (the printed route left out of a line's identity); with no base, print and refuse nothing.",
+      "options": [
+        "Export the base and compare defect lines",
+        "Compare only gap rows against the base _gaps.md text, no second run",
+        "Keep a file of accepted old defects"
+      ],
+      "recommendation": "Export the base and compare defect lines",
+      "do": {
+        "Export the base and compare defect lines": "BG-2mdkl622",
+        "Compare only gap rows against the base _gaps.md text, no second run": "BG-2mdkl622",
+        "Keep a file of accepted old defects": "BG-2mdkl622"
+      },
+      "class": "push",
+      "answer": "Export the base and compare defect lines",
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
