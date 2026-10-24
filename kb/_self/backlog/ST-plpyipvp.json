@@ -1,0 +1,31 @@
+{
+  "id": "ST-plpyipvp",
+  "kind": "story",
+  "title": "The sprint skill, the worker role file and the worker brief name each command kb_backlog serves",
+  "status": "draft",
+  "parent": "EP-fgtlhyo4",
+  "sprint": "SP-e3qyajjv",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the sprint skill, the worker role file and the worker brief each list held, referrers, find, similar, tree, config, landings, runs, procs, check, report and usage as commands the kb_backlog tool serves",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport subprocess as s,sys\nnames=[\"held\",\"referrers\",\"find\",\"similar\",\"tree\",\"config\",\"landings\",\"runs\",\"procs\",\"check\",\"report\",\"usage\"]\nb=s.run([sys.executable,\"_tools/backlog.py\",\"brief\",\"ST-uruhigy4\"],capture_output=True,text=True).stdout\ndef region(t,key):\n i=t.find(key);return t[i:i+1200] if i>=0 else \"\"\nparts={\"brief\":region(b,\"Read the backlog\"),\"skill\":region(open(\"skills/sprint/SKILL.md\",encoding=\"utf-8\").read(),\"Read the backlog with\"),\"worker\":region(open(\"agents/worker.md\",encoding=\"utf-8\").read(),\"Read the backlog with\")}\nmiss={k:[n for n in names if \"`\"+n+\"`\" not in v] for k,v in parts.items()}\nprint({k:len(v) for k,v in parts.items()},miss)\nsys.exit(0 if all(parts.values()) and not any(miss.values()) else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "agents/worker.md",
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-lp72x5cr"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
