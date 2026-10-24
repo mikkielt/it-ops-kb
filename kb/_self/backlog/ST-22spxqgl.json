@@ -1,0 +1,26 @@
+{
+  "id": "ST-22spxqgl",
+  "kind": "story",
+  "title": "Research sprint goal: kbmon and OpenTelemetry show the run states: spans, needs-you, landing queue, drift, worker trace context and alerts",
+  "status": "draft",
+  "sprint": "SP-d6gbc3tq",
+  "goal_research": true,
+  "priority": "P1",
+  "rank": 0,
+  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "researched",
+        "ST-22spxqgl"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ],
+  "notes": "Plan 2026-10-24: the earlier research sprint SP-r7e7jcep landed the OpenTelemetry, Prometheus and Alertmanager facts (kb/public/logs/otel-python-sdk.md:83, prometheus-retention-exposition.md:55). Left for this story: (1) Claude Code's own telemetry join: TRACEPARENT and TRACESTATE read from the environment of -p sessions, OTEL_RESOURCE_ATTRIBUTES on every event, traces beta flags (live docs code.claude.com/docs/en/monitoring-usage read 2026-10-24 by ST-zlzvqz2w; kb has kb/public/claude/otel-monitoring.md for events only): add them as DOC facts with a source row, or Narrowed gap note if the page lacks one; (2) the Alertmanager webhook payload (version 4 JSON: status, alerts[].labels, annotations, startsAt, fingerprint) a stdlib loopback receiver would read, and webhook_configs keys: check the kb with rag.py pack first, add only what is missing. Write facts only into the article that fits and its _sources.csv; if the kb already holds both, close with a note 'No outside facts: <reason>' naming the lines. Planned into SP-d6gbc3tq on 2026-10-24 (night run).",
+  "filed_in": "clone-0ea70e5c"
+}
