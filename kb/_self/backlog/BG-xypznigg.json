@@ -2,7 +2,7 @@
   "id": "BG-xypznigg",
   "kind": "bug",
   "title": "kbmon's overlaps drop every backlog-claim intent, so two interactive sessions that only claimed items and share a file show no overlap",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-ymnz7b4n",
   "priority": "P2",
@@ -28,5 +28,7 @@
     "parked: SP-ky7xz6d2 review"
   ],
   "notes": "Planned into SP-ymnz7b4n, 2026-10-24 day run. Precheck: repro fails on the base.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
