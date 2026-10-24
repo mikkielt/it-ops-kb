@@ -1,0 +1,22 @@
+{
+  "id": "SP-ky7xz6d2",
+  "kind": "sprint",
+  "title": "Sessions announce overlaps: who else works on the same items or files, the suggested and the chosen strategy, shown in kbmon",
+  "status": "planned",
+  "goal": "the coord hook tells a session and its operator who else works on the same items or files, in what run state, and the suggested way to coordinate; the strategy a session chose is posted as a coord event and shown once to the other session; kbmon's sessions panel lists each overlap with its strategy, and an undecided overlap enters the needs-you line",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
