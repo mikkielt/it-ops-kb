@@ -17,6 +17,7 @@
       "recommendation": "approve"
     }
   ],
+  "notes": "Triage 2026-10-24 (read-only; every repro run once on the base with bl_base.run_check): 96 draft S3 bugs, of which BG-ifcqf4t3 and BG-xudww2ij sit in epics outside the triage. DROPPED, repro already passes: BG-xkkqzhes and BG-pdzcpn4i (3f761ddb3), BG-gd5y7wz6 (05e84dd80), BG-7lf4mkva (ST-i4ejksl2 is done). PICKED 15 by value (a guard that fails open, wrong output, a false alert, a lost id); same-file bugs run one after another by depends_on. LEFT, 42 held now by running sprints (they touch kb/_self/tools.md, backlog.md, monitoring.md, bl_dispatch.py or bench_repro.py; backlog.py held --overlaps ID names them). LEFT, free of held paths: reserve for the next triage BG-d3b2wx43, dlp3mui2, i355rfzc, ijytcujj, jche37b7, kcfbcll2, tcfxsbly, v6bpucd2, zcbcjilf, z4jhxlyx, imuczrcz, ivir5ulw, nkmrgats; operator choice BG-6gpjcsg6 (redact keeps a url host) and BG-pqthn333 (redacted session id in a coord ask); broken repro BG-ax6e6rzc (goal_questions moved to bl_precheck, overlaps BG-fol7jkye and BG-x5us7vpz); BG-orxlqhtn likely delivered by ST-po3pgvrj, recheck when it lands; protected path, role or mod not in use BG-5p3bfm4u, BG-7aoowqsk, BG-tje2kpiv, BG-z2y2hu6p; rare setups BG-wbhy7gr5, BG-beym5b55, BG-nn3wzysr, BG-23wnhrgc, BG-3j62tr6e; text only BG-4ffhited, BG-jc53l3qa, BG-4jbl3jzh, BG-otqwcv5s, BG-qrpq6cdo, BG-uoqtn67j, BG-cogka4m3.",
   "creator": "op-f618a13e",
   "filed_in": "clone-0ea70e5c"
 }
