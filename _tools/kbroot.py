@@ -198,8 +198,17 @@ def cmd_add_remote(a):
 
 
 def fetch_env():
-    """The environment of a git run by a fetch: no credential prompt (a missing credential fails at once)."""
-    env = dict(os.environ, GIT_TERMINAL_PROMPT="0", GCM_INTERACTIVE="never", LC_ALL="C")
+    """The environment of a git run by a fetch: no credential prompt (a missing credential fails at once). No
+    askpass program is named (GIT_ASKPASS, SSH_ASKPASS dropped, `core.askPass` set empty for the run), and GCM is
+    told not to interact."""
+    env = dict(os.environ, GIT_TERMINAL_PROMPT="0", GCM_INTERACTIVE="false", LC_ALL="C")
+    for k in ("GIT_ASKPASS", "SSH_ASKPASS"):
+        env.pop(k, None)
+    try:
+        n = max(int(env.get("GIT_CONFIG_COUNT", "0")), 0)
+    except ValueError:
+        n = 0
+    env.update({"GIT_CONFIG_COUNT": str(n + 1), f"GIT_CONFIG_KEY_{n}": "core.askPass", f"GIT_CONFIG_VALUE_{n}": ""})
     env.setdefault("GIT_SSH_COMMAND", "ssh -o BatchMode=yes")
     return env
 

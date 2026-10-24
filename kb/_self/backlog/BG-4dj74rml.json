@@ -46,6 +46,25 @@
     "_tools/kbroot.py",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does a fetch's git get core.askPass empty and GCM non-interactive? (the first option is in one place, fetch_env, so every git run is covered)",
+      "options": [
+        "GIT_CONFIG_COUNT entry in fetch_env, GCM_INTERACTIVE=false",
+        "git -c core.askPass= on each call, GCM_INTERACTIVE=0"
+      ],
+      "recommendation": "GIT_CONFIG_COUNT entry in fetch_env, GCM_INTERACTIVE=false",
+      "do": {
+        "GIT_CONFIG_COUNT entry in fetch_env, GCM_INTERACTIVE=false": "BG-4dj74rml",
+        "git -c core.askPass= on each call, GCM_INTERACTIVE=0": "BG-4dj74rml"
+      },
+      "class": "design",
+      "answer": "GIT_CONFIG_COUNT entry in fetch_env, GCM_INTERACTIVE=false",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-s2svf5a6 review"
   ],
