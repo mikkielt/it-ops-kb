@@ -2,7 +2,7 @@
   "id": "ST-mcpuabiy",
   "kind": "story",
   "title": "Review sprint: The tool catalog and the repro bench score right: complete MCP entries, better ranking, honest repro passes",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-uhcjxayq",
   "review": true,
   "priority": "P1",
@@ -24,5 +24,27 @@
     }
   ],
   "notes": "Sprint started 2026-10-24; todo.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "evidence": {
+    "commit": "f0a1410f92e95fa8014ac3f483572eb33c9ded0c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "2b400f8616fff382"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "dbc9ea28e8edf9f4"
+      }
+    ]
+  }
 }
