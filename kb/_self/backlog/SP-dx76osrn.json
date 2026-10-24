@@ -2,7 +2,7 @@
   "id": "SP-dx76osrn",
   "kind": "sprint",
   "title": "Landings and run states heal themselves: stale landing worktrees, refused-step names, release and done moves, killed stage-backs",
-  "status": "planned",
+  "status": "active",
   "goal": "A land-<id> worktree left by a killed landing no longer blocks that item's later landings; land's push stop names a gate output file that still exists; land's refused move names a step coord accepts; release and a done without a landing leave no run key at claimed; runs lists drift for a done item whose run state is none; a killed stage-back or land is healed by a rerun or runs --reconcile and land and stage-back cannot both start; one move_run moves the run state; land fast-forwards a checkout holding only untracked files; backlog.py dispatch --resume resumes a worker; a released run key can be claimed again",
   "gates": [
     {
@@ -14,7 +14,11 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Start gate answered approve by the runner on the operator's standing approval for the 2026-10-24 day run (pre-approved by the operator for the 2026-10-24 day run); items planned and prechecked on the base the same day: every repro or check fails there.",
