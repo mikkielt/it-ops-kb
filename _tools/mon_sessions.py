@@ -37,7 +37,7 @@ ancestor, else null) and the items it waits on as {id, title}, a process that no
 item id (by its newest progress event) and `items`, each {item, title, state (the run state), git (the state git shows), why,
 age_s}; it is left out where the store is a url, `runs` cannot read coord or the root has no backlog items. `alerts` raises
 `sessions.orphan` and, while `drift` counts one, `runs.drift` (kind `drift`). Imports `mon_base` and `mon_view`; `bl_procs`,
-`bl_stall`, `bl_base`, `bl_runs`, `bl_cost`, `ql_base`, `ql_distill` and `ql_report` where it reads them.
+`bl_stall`, `bl_base`, `bl_runs`, `bl_items`, `bl_cost`, `ql_base`, `ql_distill` and `ql_report` where it reads them.
 """
 import contextlib
 import datetime
@@ -357,6 +357,41 @@ def coord_store(ctx):
                 os.environ["KB_COORD_STORE"] = before
 
 
+def tree_ledger(root):
+    """(top, claims ledger) of the working tree ROOT as `bl_base.claims_ledger` gives them, read from the tree's `.git`
+    entry (a directory, or a file that names the git dir) instead of a git process; `claims_ledger` itself where the entry
+    says nothing."""
+    import bl_base
+    top = Path(root)
+    entry = top / ".git"
+    try:
+        if entry.is_dir():
+            return str(top), entry / bl_base.CLAIMS_LEDGER
+        line = entry.read_text(encoding="utf-8").splitlines()[0] if entry.is_file() else ""
+    except (OSError, IndexError, UnicodeDecodeError):
+        line = ""
+    if line.startswith("gitdir:"):
+        return str(top), (top / line[len("gitdir:"):].strip()) / bl_base.CLAIMS_LEDGER
+    return bl_base.claims_ledger(root)
+
+
+@contextlib.contextmanager
+def bounded_git():
+    """`bl_runs` and `bl_items` reading each working tree's claims ledger from its `.git` entry and leaving out the open
+    gates of each work branch (one git process each, which the drift read never uses), so the run-state read starts the
+    git processes of the worktree list and nothing that grows with the run keys or the worktrees. Held under STORE_LOCK by
+    the caller, one block at a time."""
+    import bl_items
+    import bl_runs
+    saved = (bl_runs.claims_ledger, bl_items.claims_ledger, bl_runs.branch_gates)
+    bl_runs.claims_ledger = bl_items.claims_ledger = tree_ledger
+    bl_runs.branch_gates = lambda root, iid: None
+    try:
+        yield
+    finally:
+        bl_runs.claims_ledger, bl_items.claims_ledger, bl_runs.branch_gates = saved
+
+
 def drift_data(ctx, bl, found, now):
     """{count, oldest, items: [{item, title, state, git, why, age_s}]} of the run states `backlog.py runs` finds drifted
     from git (`bl_runs.collect` over the default scope), the oldest first (by the item's newest progress event in FOUND;
@@ -367,7 +402,7 @@ def drift_data(ctx, bl, found, now):
     if bl is None or ctx.url or coord_conn(ctx) is None:
         return None
     try:
-        with coord_store(ctx):
+        with coord_store(ctx), bounded_git():
             states = bl_runs.run_states()
             rows = bl_runs.collect(bl, states, bl_runs.scope_of(bl, states, None))
     except bl_base.Refused:
