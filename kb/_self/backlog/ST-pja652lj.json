@@ -70,7 +70,9 @@
       },
       "class": "design",
       "answer": "since the later first intent of the two sessions",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
