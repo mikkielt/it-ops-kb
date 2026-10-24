@@ -2,7 +2,7 @@
   "id": "BG-owfgwtyl",
   "kind": "bug",
   "title": "A credential list qualified by a word outside the fixed credential list (service, Slack, private tokens, units, points) or a credential noun in the question with the unit list in an option is classed design",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4ppjbh4k",
   "priority": "P2",
   "rank": 0,
@@ -44,5 +44,7 @@
   "links": [
     "parked: SP-hlt2tdel review"
   ],
-  "notes": "Evidence 2026-10-15 (ST-v7d2dc2x gate g2): a provisional gate whose option lists the json field names input_tokens, output_tokens, cache_write_tokens and cache_read_tokens (LLM token counts, no credential) was classed secrets (matched 'token') and made blocking. Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. The pin check passes before the work by design: it holds behaviour the fix must keep. The goal's last condition is its own clause now so the pin reads it. Same file as BG-2uki2c73, so it runs after it. Planner 2026-10-24: the pin holds only the plain unit-noun list; the cost line's json field names (input_tokens, output_tokens, cache_write_tokens, cache_read_tokens) are classed secrets on the base and are not part of this goal. Planner 2026-10-24 (run): kb/_self/backlog.md left out of the touches so this item runs beside BG-wuugkjuj; the gate-class paragraph was reworded by BG-2uki2c73. If the qualifier rule needs a doc edit, the worker stops with a report and the touch is widened after BG-wuugkjuj has landed."
+  "notes": "Evidence 2026-10-15 (ST-v7d2dc2x gate g2): a provisional gate whose option lists the json field names input_tokens, output_tokens, cache_write_tokens and cache_read_tokens (LLM token counts, no credential) was classed secrets (matched 'token') and made blocking. Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. The pin check passes before the work by design: it holds behaviour the fix must keep. The goal's last condition is its own clause now so the pin reads it. Same file as BG-2uki2c73, so it runs after it. Planner 2026-10-24: the pin holds only the plain unit-noun list; the cost line's json field names (input_tokens, output_tokens, cache_write_tokens, cache_read_tokens) are classed secrets on the base and are not part of this goal. Planner 2026-10-24 (run): kb/_self/backlog.md left out of the touches so this item runs beside BG-wuugkjuj; the gate-class paragraph was reworded by BG-2uki2c73. If the qualifier rule needs a doc edit, the worker stops with a report and the touch is widened after BG-wuugkjuj has landed.",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
