@@ -22,5 +22,9 @@
     "kb/_self/coordination.md",
     "kb/_self/tools.md"
   ],
+  "links": [
+    "parked: SP-sucr3kfg review"
+  ],
+  "notes": "Found by the SP-sucr3kfg review. redact.redact leaves /Users/<name>/ and C:\\Users\\<name>\\ paths unchanged, so the kb_settings tool returns the home path of the user. The review does not confirm gate g2 of ST-vopsopkg (the table holds the line numbers and check compares them): nothing calls check, and the goal named selfdoc's check. A wiring into selfdoc or kg_sync may need a test file in touches: check the ceiling room first (kb/_self/code.md).",
   "filed_in": "clone-0ea70e5c"
 }
