@@ -51,7 +51,11 @@
         "Token in the lock file; a renamed live lock is linked back": "BG-7efq3pqt",
         "Lock file holds the PID and start time, as distill.lock does": "BG-7efq3pqt"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "Token in the lock file; a renamed live lock is linked back",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
