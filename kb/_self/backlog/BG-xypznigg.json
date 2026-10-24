@@ -1,0 +1,23 @@
+{
+  "id": "BG-xypznigg",
+  "kind": "bug",
+  "title": "kbmon's overlaps drop every backlog-claim intent, so two interactive sessions that only claimed items and share a file show no overlap",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "the sessions panel drops only the claim intent of the session that dispatched a worker on that item, so two sessions that each claimed an item and share a file are one overlap",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "\nimport subprocess, tempfile, os, sys, json, uuid, glob, hashlib, time\nREAL = os.getcwd()\nS = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\ndef c(*a):\n    return subprocess.run([sys.executable, '_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\ndef git(d, *a):\n    return subprocess.run(['git', '-c', 'user.email=a@b.c', '-c', 'user.name=x', '-C', d, *a], capture_output=True, text=True)\ndef ws(branch, items=(), settings=None):\n    d = os.path.realpath(tempfile.mkdtemp())\n    git(d, 'init', '-q', '-b', branch)\n    git(d, 'commit', '-q', '--allow-empty', '-m', 'x')\n    os.makedirs(os.path.join(d, '_backlog'))\n    for i, title, touches in items:\n        json.dump({'id': i, 'title': title, 'touches': touches}, open(os.path.join(d, '_backlog', i + '.json'), 'w'))\n    if settings:\n        json.dump({'coordination': settings}, open(os.path.join(d, 'settings.json'), 'w'))\n    return d\ndef label(sid):\n    return 's-' + hashlib.sha256(sid.lower().encode()).hexdigest()[:6]\ndef hook(sid, op, event, cwd, store=None, **extra):\n    payload = dict(hook_event_name=event, session_id=sid, cwd=cwd, **extra)\n    t = time.time()\n    r = subprocess.run([sys.executable, '.claude/hooks/coord_hook.py'], input=json.dumps(payload), capture_output=True, text=True,\n                       env=dict(os.environ, KB_COORD_STORE=store or S, KB_OPERATOR=op), cwd=REAL)\n    try:\n        out = json.loads(r.stdout)\n    except ValueError:\n        out = {}\n    return r.returncode, time.time() - t, out\ndef msg(out):\n    return out.get('systemMessage', ''), out.get('hookSpecificOutput', {}).get('additionalContext', '')\ndef clean(*sids):\n    for s in sids:\n        for f in glob.glob(os.path.join(REAL, '_cache', 'coord_hook', s + '*')):\n            os.remove(f)\ndef events(kind=None):\n    rows = json.loads(c('wait', '--since', '0', '--timeout', '0').stdout)['events']\n    return [e for e in rows if kind is None or e['kind'] == kind]\ndef bash(command):\n    return dict(tool_name='Bash', tool_input={'command': command})\ndef edit(cwd, name, tool='Edit'):\n    given = {'file_path': os.path.join(cwd, name)}\n    given.update({'content': 'a'} if tool == 'Write' else {'old_string': 'a', 'new_string': 'b'})\n    return dict(tool_name=tool, tool_input=given)\nLAND = ('ST-ab12cd34', 'Lock the landing queue', ['_tools/bl_land.py', '_tools/coord.py'])\nMINE = ('ST-ef56gh78', 'Show the queue in kbmon', ['_tools/bl_land.py'])\ndef other_working(sid='', op='op-aaaa', states=('claimed', 'working')):\n    \"\"\"The other session: its workspace on the branch of ST-ab12cd34, its SessionStart, and the run states of its item.\"\"\"\n    d = ws('work/ST-ab12cd34', [LAND])\n    hook(sid, op, 'SessionStart', d, source='startup')\n    for s in states:\n        c('transition', 'run/ST-ab12cd34', '--to', s)\n    return d\n\nimport sqlite3\ndef age(seconds):\n    con = sqlite3.connect(S)\n    con.execute('UPDATE events SET at = at - ?', (seconds,))\n    con.commit()\n    con.close()\ndef lease(sid):\n    c('claim', 'session/' + sid, '--ttl', '600', '--holder', sid)\ndef intent(sid, item, touch, *extra):\n    c('post', '--kind', 'intent', '--field', 'session=' + sid, '--field', 'item=' + item, '--field', 'touch=' + touch, *extra)\ndef kb(*a, T=None):\n    return subprocess.run([sys.executable, '_tools/kbmon.py', *a, '--root', T, '--store', S], capture_output=True, text=True, env=dict(os.environ, KB_COORD_STORE=S))\ndef overlaps(T):\n    try:\n        return json.loads(kb('--json', '--panel', 'sessions', T=T).stdout)['panels']['sessions']['data'].get('overlaps', [])\n    except (ValueError, KeyError):\n        return []\ndef root():\n    T = os.path.realpath(tempfile.mkdtemp())\n    subprocess.run(['git', 'init', '-q', T])\n    return T\n\nT = root()\nA, B = str(uuid.uuid4()), str(uuid.uuid4())\nfor sid, item in ((A, 'ST-ab12cd34'), (B, 'ST-ef56gh78')):\n    lease(sid)\n    intent(sid, item, '_tools/coord.py', '--field', 'topic=backlog-claim')\nov = overlaps(T)\nprint('overlaps', ov)\nsys.exit(0 if len(ov) == 1 else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/mon_sessions.py",
+    "kb/_self/monitoring.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
