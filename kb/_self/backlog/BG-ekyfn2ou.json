@@ -35,6 +35,27 @@
   "depends_on": [
     "ST-gapgf2ay"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How long is the coord hook's total deadline for all its coord.py calls, under the 10 second kill?",
+      "options": [
+        "8 seconds",
+        "6 seconds"
+      ],
+      "recommendation": "8 seconds",
+      "do": {
+        "8 seconds": "BG-ekyfn2ou",
+        "6 seconds": "BG-ekyfn2ou"
+      },
+      "class": "agents-rule",
+      "answer": "8 seconds",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-ky7xz6d2 review"
   ],
