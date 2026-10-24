@@ -2,7 +2,7 @@
   "id": "BG-5p3bfm4u",
   "kind": "bug",
   "title": "The kb-observer role lists commands its kbask session may not run, and one form that exits 2",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-jopt2c3z",
   "priority": "P3",
   "rank": 0,
@@ -34,6 +34,19 @@
     "parked: SP-w6amecjt review"
   ],
   "notes": "SP-w6amecjt review (and ST-hp5cccy7's worker): under dontAsk the denied commands cost turns of a 30-turn cap; the operator's allow gate on ST-hp5cccy7 holds the list, so the role is the side to narrow unless a gate widens the list. Planned in SP-jopt2c3z (2026-10-24 day run). Scope: the SP-4ppjbh4k reviewer's note that the role still lets the observer run git log and git show in a form the exact allow rules of BG-ylrx5zt7 do not admit is this item's goal (find kb-observer showed no other item for it): the role side is narrowed, kbask.ALLOWED_TOOLS is not widened (the allow list is the operator's, ST-hp5cccy7 gate). Premise run on base: the repro exits 1 (bare git log/status/diff/show and bare python3 _tools/... spans are not admitted; coord.py wait without --since exits 2). Repro rewritten to read every backticked command of the role file, not a fixed list. The cleanup session's flattened role stays ST-ixkxiwb7.",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "6a591f57d2e889f5b71288abd93f05751aecf227",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys, re, subprocess\nsys.path.insert(0, \"_tools\")\nimport kbask\ndef admits(rule, cmd):\n    if not (rule.startswith(\"Bash(\") and rule.endswith(\")\")):\n        return False\n    r = rule[5:-1]\n    for suf in (\":*\", \" *\", \"*\"):\n        if r.endswith(suf):\n            r = r[:-len(suf)]\n            return cmd == r or cmd.startswith(r + \" \")\n    return cmd == r\nt = open(\".claude/agents/kb-observer.md\", encoding=\"utf-8\").read()\ncmds = [s for s in re.findall(r\"`([^`]+)`\", t) if s.startswith((\"git \", \"python3 _tools/\"))]\nmiss = [c for c in cmds if not any(admits(r, c) for r in kbask.ALLOWED_TOOLS)]\nwaits = [c for c in cmds if c.startswith(\"python3 _tools/coord.py wait\")]\nbad = [c for c in waits if subprocess.run(c.split(), capture_output=True, text=True, timeout=60).returncode == 2]\nprint(\"named, not admitted:\", miss, \"wait form exits 2:\", bad)\nsys.exit(1 if miss or bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "6fa303edff9fdbb9"
+      }
+    ]
+  }
 }
