@@ -52,7 +52,11 @@
         "A description of 32 words or fewer that holds 2 or more words of the need counts its words in full; every other description keeps the 0.6 cap and length decay": "BG-eoito4bw",
         "Raise DESC_CAP for every description": "BG-eoito4bw"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "A description of 32 words or fewer that holds 2 or more words of the need counts its words in full; every other description keeps the 0.6 cap and length decay",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
