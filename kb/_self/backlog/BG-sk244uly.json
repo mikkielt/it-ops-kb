@@ -2,7 +2,7 @@
   "id": "BG-sk244uly",
   "kind": "bug",
   "title": "kbmon ages an overlap from an older meeting of the same two sessions on intents they no longer announce, so a fresh overlap on new files enters needs-you at once",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-yisvj7vd",
   "priority": "P2",
   "rank": 0,
@@ -44,6 +44,19 @@
   ],
   "notes": "Found by the review of SP-ymnz7b4n (2026-10-24, S2): meeting_time pairs every past intent event of the two sessions, including intents of items or files they no longer announce, so a fresh overlap is aged from the first time the sessions ever met. BG-rjuqeegj's decision filter starts from the same moment. Fix: pair only the intent events that the live intents of each session still name. Premise run 2026-10-24 on the day-run base: repro exits 1 (overlaps 1, age_s 10790). Planned in SP-yisvj7vd. Docs outside touches that mention mon_sessions (kb/_self/code.md) are read and named in Self-Reviewed if still correct. Planned into SP-yisvj7vd, 2026-10-24. Sprint started 2026-10-24.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "3d9d05dd6f0d7f94c55d0dfa47e3cfec5bf9b2e0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys, time\nsys.path.insert(0, '_tools')\nimport mon_sessions as m\nnow = time.time()\nfound = {'intents': [{'session': 'A', 'item': 'ST-ab12cd34', 'touch': '_tools/y.py'}, {'session': 'B', 'item': 'ST-ef56gh78', 'touch': '_tools/y.py'}],\n         'intent_at': {'A': [(now - 10800, ['ST-aaaaaaaa'], ['_tools/x.py'], False), (now - 60, ['ST-ab12cd34'], ['_tools/y.py'], False)],\n                       'B': [(now - 10790, ['ST-bbbbbbbb'], ['_tools/x.py'], False), (now - 50, ['ST-ef56gh78'], ['_tools/y.py'], False)]},\n         'coordinate': [], 'dispatched': set()}\nrows = m.overlap_rows(found, now) or []\nage = rows[0]['age_s'] if len(rows) == 1 else None\nprint('overlaps', len(rows), '| age_s', age, '(the sessions met on the live files 60 s ago; the older meeting was on files they no longer announce)')\nsys.exit(0 if age is not None and age < 600 else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "ae446bce3bcd59f4"
+      }
+    ]
+  }
 }
