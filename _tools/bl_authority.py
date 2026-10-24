@@ -75,6 +75,9 @@ def names_secret(touch):
 # keep the class: the classifier fails closed.
 TOKENIZE_WORD = re.compile(r"(?<![\w.-])tokeni[sz](?:e|es|ed|er|ers|ing|ation)(?![\w-])", re.I)
 TOKEN_DOC = re.compile(r"[\w./\\-]*token[\w./\\-]*\.md\b", re.I)
+# A secrets word beside `token` in a doc name (`docs/bearer-token.md`, `ssh-token.md`, `passphrase-token-store.md`,
+# `PAT-token.md`): the doc is about that credential, so its name keeps the class (`path` holds no `PAT`).
+DOC_SECRET = re.compile(r"(?<![a-z])(?:bearer|ssh|passphrase|pat)(?![a-z])", re.I)
 CRED_WORDS = "api|access|auth|bearer|refresh|session|personal|oauth|csrf|jwt|id"
 TOKEN_COUNT = re.compile(
     rf"(?P<cred>\b(?:{CRED_WORDS})[-_ ])?"
@@ -120,9 +123,11 @@ def without_token_counts(text):
     """The text with each token-count phrase, each upper-case identifier of token counts, each Markdown doc name that
     holds `token` and each word of the Python `tokenize` module replaced by a space: what the `secrets` words are
     searched in, so a model's token counts, a constant such as `DISPATCH_BASE_TOKENS`, the ops-row `phase token`, a doc
-    such as `token-efficiency.md` and `the tokenize module` are no secret."""
+    such as `token-efficiency.md` and `the tokenize module` are no secret. A doc name that holds a secrets word beside
+    `token` (`bearer-token.md`, `ssh-token.md`) is kept."""
     text = TOKENIZE_WORD.sub(" ", text)
-    text = TOKEN_DOC.sub(lambda m: m.group(0) if names_secret(m.group(0)) else " ", text)
+    text = TOKEN_DOC.sub(
+        lambda m: m.group(0) if names_secret(m.group(0)) or DOC_SECRET.search(m.group(0)) else " ", text)
     text = TOKEN_IDENT.sub(
         lambda m: m.group(0) if any(CRED_PART.match(p) for p in m.group(0).split("_")) else " ", text)
     return TOKEN_COUNT.sub(lambda m: m.group(0) if m.group("cred") or CRED_INSIDE.search(m.group(0)) else " ", text)
