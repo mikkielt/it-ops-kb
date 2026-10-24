@@ -2,7 +2,7 @@
   "id": "BG-s3lnbsjq",
   "kind": "bug",
   "title": "kb_mcp.bash_denied reads a settings file whose permissions.deny is not a list as holding no deny rule",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-jopt2c3z",
   "priority": "P2",
   "rank": 0,
@@ -30,6 +30,19 @@
   ],
   "notes": "Found while fixing BG-syhgfwdr: bash_denied ends with 'for rule in rules if isinstance(rules, list) else []', so a permissions.deny that is a string, an object, false, 0 or null holds no deny rule instead of denying as an unreadable file does. Planned in SP-jopt2c3z (2026-10-24 day run). Premise run on base: the repro exits 1 (a deny that is a string, object, false, 0 or null reads as no rule; the missing-key and empty-list cases already hold no rule). Fix sits at the tail of bash_denied: read the deny value with a missing key as [] and any other non-list as the unreadable-file denial. No test file covers bash_denied today; the check is the planted repro (tests only for critical components, kb/_self/code.md).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "f1502f834c4736b7624f10b3507b923e8e9fd562",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys, os, json, tempfile\nsys.path.insert(0, \"_tools\")\nimport kbcommon, kb_mcp\ndef denied(v, key=True):\n    T = tempfile.mkdtemp()\n    os.makedirs(os.path.join(T, \".claude\"))\n    perm = {\"deny\": v} if key else {}\n    json.dump({\"permissions\": perm}, open(os.path.join(T, \".claude\", \"settings.local.json\"), \"w\"))\n    kbcommon.HOME = type(kbcommon.HOME)(T)\n    return kb_mcp.bash_denied(\"rm -rf x\")\nbad = [repr(v) for v in (\"Bash\", {}, False, 0, None) if denied(v) is None]\nwrong = [n for n, got in [(\"missing key\", denied(None, False)), (\"empty list\", denied([]))] if got is not None]\nprint(\"not-a-list read as no rule:\", bad, \"wrongly denied:\", wrong)\nsys.exit(1 if bad or wrong else 0)"
+        ],
+        "exit": 0,
+        "sha256": "87b2b759b8dd2f4e"
+      }
+    ]
+  }
 }
