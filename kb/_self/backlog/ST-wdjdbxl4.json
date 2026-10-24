@@ -2,7 +2,7 @@
   "id": "ST-wdjdbxl4",
   "kind": "story",
   "title": "kbmon.py --status all shows the run-state row of every active sprint, not only the first rows of the sprints topic",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-ymnz7b4n",
   "priority": "P3",
@@ -26,5 +26,7 @@
     "parked: SP-d6gbc3tq review"
   ],
   "notes": "Review gap (S2) of SP-d6gbc3tq: mon_status.py:564 cuts each topic to four lines, so with several sprints --status all shows two sprint rows and '+N more' and no run-state row; --status sprints shows them. Premise (plan 2026-10-24): the story's check fails on today's base (precheck: --status all names the working state 2 times for 4 working runs); reproduces. Planned into SP-ymnz7b4n, 2026-10-24 day run.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
