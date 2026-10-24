@@ -20,9 +20,31 @@
     "_tools/kblane.py",
     "kb/_self/git.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does kblane classify a submodule root's gitlink?",
+      "options": [
+        "Bare path kb/<name> counts as a root path",
+        "Read the git mode 160000 and classify only gitlinks"
+      ],
+      "recommendation": "Bare path kb/<name> counts as a root path",
+      "do": {
+        "Bare path kb/<name> counts as a root path": "BG-qgulx5sj",
+        "Read the git mode 160000 and classify only gitlinks": "BG-qgulx5sj"
+      },
+      "class": "push",
+      "answer": "Bare path kb/<name> counts as a root path",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-mguax5m3 review"
   ],
+  "notes": "Gate g1 answered with its recommendation by the sprint runner (pre-approved by the operator for the 2026-10-24 day run): a bare path kb/<name> counts as a root path; one-line reason: smallest change, easy to reverse, no git mode lookup in the lane check.",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }
