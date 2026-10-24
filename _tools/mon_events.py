@@ -1,7 +1,9 @@
 """kbmon's event and span records (kb/_self/monitoring.md): the coord events, `done.refused` rows and the query log's apply
-outcome as events, and each landing (with a child span per `land.step`), `agent.run`, `test.run` and timed delivery as spans,
+outcome as events, and each landing (with a child span per `land.step`), `agent.run`, `test.run`, timed delivery and each
+finished run of an item (a `kb.item` span with `kb.worker` and `kb.landing` children, from its progress events) as spans,
 newer than a cursor. Standard library only; imports `mon_log` (its readers of the coord store and the ops rows) and
-`mon_export` (its attribute rules), and `mon_view`, `bl_stall`, `ql_base` and `ql_report` where it reads them.
+`mon_export` (its attribute rules), and `mon_view`, `mon_sprint` (the sprint of a run's item), `bl_stall`, `ql_base` and
+`ql_report` where it reads them.
 
   collect(ctx, since)    {"schema", "cursor", "events", "spans", "problems"}: the records newer than the cursor `since` (None:
                          the newest ones), and the cursor that holds the newest time of the spool rows with the keys of the
@@ -115,12 +117,82 @@ def span(name, row, end, trace=None, parent=None):
     return out
 
 
+def sprint_of(ctx, items):
+    """{item id: its sprint's id} of ITEMS, from the backlog `mon_sprint.backlog_at` reads; {} where it cannot be read."""
+    import mon_sprint
+    try:
+        bl = mon_sprint.backlog_at(ctx.root)[0]
+    except Exception:  # noqa: BLE001 - no backlog: the spans keep no sprint attribute
+        return {}
+    return {i: bl.items[i]["sprint"] for i in items if isinstance(bl.items.get(i), dict) and bl.items[i].get("sprint")}
+
+
+def run_span(name, first, last, end, trace, parent, extra):
+    """A span of the progress events FIRST to LAST: its id the hash of FIRST's sequence and NAME, `error` when LAST is
+    `failed` or `refused`; END the sequence its export waits for."""
+    out = {"name": name, "id": span_id(f"{name}-{first['seq']}"), "trace": trace, "start": first["ns"], "end": last["ns"],
+           "status": "error" if last["state"] in ("failed", "refused") else "ok",
+           "attributes": attributes({**extra, "state": last["state"], "exit": last["fields"].get("exit"),
+                                     **id_list({"gates": last["fields"].get("gates")})})}
+    if parent:
+        out["parent"] = parent
+    return out, end
+
+
+def run_records(ctx, events, after):
+    """The spans of the runs the progress EVENTS (every coord event, oldest first) hold, those finished above sequence AFTER.
+    A run of an item is cut where it ends (`landed`, `refused`, `released`; one that follows `refused` starts at its next
+    move) into a `kb.item` span from its first move to its last, a `kb.worker` child for each `working` to `returned`,
+    `failed` or `blocked` stretch and a `kb.landing` child for each `landing` to `landed` or `refused`."""
+    moves = {}
+    for e in events:
+        fields = e.get("fields") if isinstance(e.get("fields"), dict) else {}
+        at = ns_of_epoch(e.get("at"))
+        if e.get("kind") == "progress" and at is not None and isinstance(fields.get("item"), str) \
+                and isinstance(fields.get("state"), str):
+            moves.setdefault(fields["item"], []).append({"seq": e["seq"], "ns": at, "state": fields["state"], "fields": fields})
+    runs, done = [], []
+    for item, rows in moves.items():
+        run = []
+        for m in rows:
+            run.append(m)
+            if m["state"] in ("landed", "refused", "released"):
+                runs.append((item, run))
+                run = []
+        if run:
+            runs.append((item, run))
+    sprints = sprint_of(ctx, {item for item, run in runs if any(m["seq"] > after for m in run)})
+    for item, run in runs:
+        first = run[0]
+        trace = span_id(f"kb.item-{first['seq']}")
+        extra = {"item": item, "sprint": sprints.get(item)}
+        mark = None
+        for m in run:
+            if m["state"] == "working":
+                mark = m
+            elif mark and m["state"] in ("returned", "failed", "blocked"):
+                done.append(run_span("kb.worker", mark, m, m["seq"], trace, trace, extra))
+                mark = None
+            elif m["state"] == "landing":
+                mark = m
+            elif mark and m["state"] in ("landed", "refused") and mark["state"] == "landing":
+                done.append(run_span("kb.landing", mark, m, m["seq"], trace, trace, extra))
+                mark = None
+        if run[-1]["state"] in ("landed", "refused", "released"):
+            root, seq = run_span("kb.item", first, run[-1], run[-1]["seq"], trace, None, extra)
+            root["id"] = trace
+            done.append((root, seq))
+    return [s for s, seq in done if seq > after]
+
+
 def coord_records(ctx, after):
-    """(events, newest sequence) of the coord events above AFTER, the newest FIRST_EVENTS when AFTER is 0."""
+    """(events, newest sequence, spans) of the coord events above AFTER, the newest FIRST_EVENTS when AFTER is 0, and the run
+    spans finished above it."""
     args = mon_log.coord_args(ctx)
     if args is None:
-        return [], after
+        return [], after, []
     events = [e for e in json.loads(mon_log.coord_wait(args))["events"] if mon_export.number(e.get("seq"))]
+    spans = run_records(ctx, events, after)
     events = [e for e in events if e["seq"] > after][-(FIRST_EVENTS if after == 0 else len(events)):]
     out = []
     for e in events:
@@ -131,7 +203,7 @@ def coord_records(ctx, after):
         values = e.get("fields") if isinstance(e.get("fields"), dict) else {}
         out.append({"name": "coord." + (kind if kind and mon_export.stable(kind) else "event"), "time": at,
                     "attributes": attributes({"seq": e["seq"], **id_list(values)})})
-    return out, max([after] + [e["seq"] for e in events])
+    return out, max([after] + [e["seq"] for e in events]), spans
 
 
 def landing(end_row, end, steps):
@@ -204,7 +276,7 @@ def collect(ctx, since=None):
             problems.append(f"{name} unavailable: {type(e).__name__}: {' '.join(str(e).split())[:120]}")
             continue
         if name == "coord":
-            events, seq = events + got[0], got[1]
+            events, seq, spans = events + got[0], got[1], spans + got[2]
         else:
             events, spans = events + got[0], spans + got[1]
             ops_at, delivery_at = (got[2], delivery_at) if name == "ops" else (ops_at, got[2])

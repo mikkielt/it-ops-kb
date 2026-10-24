@@ -48,7 +48,27 @@
   "touches": [
     "_tools/mon_events.py",
     "kb/_self/monitoring.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "A run that goes on after refused: does kb.item end at refused and a new kb.item start at the next move, or does one kb.item last until landed or released?",
+      "options": [
+        "end at each refused",
+        "one until landed or released"
+      ],
+      "recommendation": "end at each refused",
+      "do": {
+        "end at each refused": "ST-3bmmg73g",
+        "one until landed or released": "ST-3bmmg73g"
+      },
+      "class": "design",
+      "answer": "end at each refused",
+      "by": "agent"
+    }
   ],
   "notes": "Premise: with the run key walked claimed to landed, kbmon --events gives no kb.item span (the check prints 'kb.item 0'). Today a landing becomes a span only once its land.end row exists (kb/_self/monitoring.md:76) and a headless worker gives none. Building finished spans with explicit times and a known parent is what the SDK supports (kb/public/logs/otel-python-sdk.md:83-84, DER). A kb.sprint root span over a sprint's kb.item spans is left for refinement: the SP's own start and close are commits, not run keys. Plan 2026-10-24 (SP-d6gbc3tq): premise reproduced on base by precheck (kb.item 0). Checks added: 1 = a failed and a refused run give error statuses, the sprint attribute and the same ids twice; 2 = the adapter run on a loopback receiver posts a trace holding kb.item, kb.worker and kb.landing (reads the goal's adapter clause; kbmon_otel.py already sends every span of --events, so it may need no change). The kb.landing child of a run needs the landing move of ST-tb6tzrxa to exist in real runs; the planted checks write the moves with coord.py transition. Planned into SP-d6gbc3tq on 2026-10-24 (night run). Sprint SP-d6gbc3tq started 2026-10-24.",
   "filed_in": "clone-0ea70e5c",
