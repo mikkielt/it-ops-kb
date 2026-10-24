@@ -19,7 +19,8 @@
   ],
   "touches": [
     "kb/_self/coordination.md",
-    "kb/_self/monitoring.md"
+    "kb/_self/monitoring.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
   ],
   "depends_on": [
     "ST-jbuihocm"
@@ -27,7 +28,7 @@
   "links": [
     "parked: SP-d6gbc3tq review"
   ],
-  "notes": "Review gap (S2) of SP-d6gbc3tq: coordination.md:173 says the setting delays any open question, monitoring.md:98 and mon_needs.py apply it to an undecided overlap only (ST-n5vf55qk gate g1: asks are named with no delay). If the operator wants the delay for asks, change the code and gate g1 instead. Plan 2026-10-24: premise runs on base (exit 1: the setting line says an open question waits). The old check passed once the words 'open question' were dropped; tightened to also require the bullet to name the overlap and say an ask is named at once (monitoring.md Needs you line, mon_needs.ask_entries). Failure-modes bullet 'An ask nobody answers. Nothing alerts.' (coordination.md) is the same topic: the worker reads it against the Needs you line and fixes it in the same edit if it contradicts it. Noticed, out of this item: _tools/kbsettings.py lines 30 and 91 (SETTINGS meaning, shown by explain and the kb_settings tool) say the same stale 'an open question waits'; filed as a separate draft bug.",
+  "notes": "Review gap (S2) of SP-d6gbc3tq: coordination.md:173 says the setting delays any open question, monitoring.md:98 and mon_needs.py apply it to an undecided overlap only (ST-n5vf55qk gate g1: asks are named with no delay). If the operator wants the delay for asks, change the code and gate g1 instead. Plan 2026-10-24: premise runs on base (exit 1: the setting line says an open question waits). The old check passed once the words 'open question' were dropped; tightened to also require the bullet to name the overlap and say an ask is named at once (monitoring.md Needs you line, mon_needs.ask_entries). Failure-modes bullet 'An ask nobody answers. Nothing alerts.' (coordination.md) is the same topic: the worker reads it against the Needs you line and fixes it in the same edit if it contradicts it. Noticed, out of this item: _tools/kbsettings.py lines 30 and 91 (SETTINGS meaning, shown by explain and the kb_settings tool) say the same stale 'an open question waits'; filed as a separate draft bug. Landing 1 stopped at step rag.py eval: row EV-coordination-needs-you-after-min of kb/_self/_retrieval/lookup_eval.csv anchored on the reworded stale sentence; the file (a code-lane path) added to touches and the worker sent back once to update the row.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
