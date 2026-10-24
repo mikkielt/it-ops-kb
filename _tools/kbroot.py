@@ -17,8 +17,8 @@
                                          when this copy runs as the plugin: the pointer is in the plugin copy). A fetch of a
                                          root with a `pin` checks out the pin, whatever its `ref` has moved to. Only
                                          this command and its --hook form fetch: lookups read what is on disk
-  kbroot.py fetch --hook                 the SessionStart form: fetch each fetch root whose last fetch is older than
-                                         HOOK_MAX_AGE_S, each bounded at HOOK_FETCH_BOUND_S and all within HOOK_BUDGET_S
+  kbroot.py fetch --hook                 the SessionStart form: fetch each fetch root with no clone, whose last fetch is
+                                         older than HOOK_MAX_AGE_S or used another url, ref or pin, each bounded at HOOK_FETCH_BOUND_S and all within HOOK_BUDGET_S
                                          (a root not reached is left to the next session); prints one line per failed
                                          root and nothing else; always exit 0
   kbroot.py push NAME                    push the commits of the checked-out submodule root kb/NAME to its own remote
@@ -47,7 +47,7 @@ Where this copy runs as the plugin (kbcommon.plugin_hosted: the copy is read-onl
 Answers: which roots the kb has, their id prefix, visibility and size, and how to add or fetch one
 Use: python3 _tools/kbroot.py list|add|add-remote|fetch|push [ARGS]
 """
-import argparse, os, re, shutil, subprocess, sys, time
+import argparse, hashlib, os, re, shutil, subprocess, sys, time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build_index, kbcommon, kg_lock  # noqa: E402
@@ -356,20 +356,33 @@ def os_reason(e):
 
 
 def fetched_stamp(name):
-    """The file whose mtime is when root `name` was last fetched without failing (beside its clone)."""
+    """The file whose mtime is when root `name` was last fetched without failing (beside its clone) and whose text is
+    the fingerprint of the pointer that fetch used."""
     return os.path.join(kbcommon.roots_cache_dir(), name + ".fetched")
 
 
+def fingerprint(p):
+    """A short digest of the url, ref and pin of Pointer `p`: what a fetch of it depends on."""
+    return hashlib.sha256("\0".join((p.url, p.ref, p.pin)).encode("utf-8")).hexdigest()[:16]
+
+
 def stale(p, now):
-    """Whether fetch Pointer `p` has no clone or no fetch within HOOK_MAX_AGE_S before `now` (time.time())."""
+    """Whether fetch Pointer `p` has no clone, no fetch within HOOK_MAX_AGE_S before `now` (time.time()), or a url, ref
+    or pin other than the last fetch used (a stamp that holds no fingerprint counts as changed: one more fetch writes it)."""
     try:
-        return now - os.path.getmtime(fetched_stamp(p.name)) > HOOK_MAX_AGE_S
-    except OSError:
+        if not os.path.isfile(os.path.join(kbcommon.pointer_root_dir(p), kbcommon.ROOT_FILE)):
+            return True
+        stamp = fetched_stamp(p.name)
+        if now - os.path.getmtime(stamp) > HOOK_MAX_AGE_S:
+            return True
+        with open(stamp, encoding="utf-8") as f:
+            return f.read().strip() != fingerprint(p)
+    except (OSError, UnicodeError):
         return True
 
 
 def record_fetch(p, why):
-    """Keep the result of a fetch of Pointer `p`: the reason it failed, else its time."""
+    """Keep the result of a fetch of Pointer `p`: the reason it failed, else its time and the pointer it used."""
     err = kbcommon.fetch_error_path(p.name)
     if why:
         with open(err, "w", encoding="utf-8", newline="\n") as f:
@@ -378,7 +391,7 @@ def record_fetch(p, why):
     if os.path.exists(err):
         os.remove(err)
     with open(fetched_stamp(p.name), "w", encoding="utf-8", newline="\n") as f:
-        f.write("")
+        f.write(fingerprint(p) + "\n")
 
 
 def cmd_fetch_hook():
@@ -460,6 +473,10 @@ def cmd_fetch(a):
                 ok, commit = git_out(["rev-parse", "HEAD"], p, kbcommon.pointer_root_dir(p))
                 if ok and write_pin(p, commit):
                     print(f"pinned {p.name} at {commit}")
+                    try:
+                        record_fetch(p._replace(pin=commit), "")
+                    except OSError as e:
+                        print(f"fetch not recorded: {p.name}: {os_reason(e)}", file=sys.stderr)
                 else:
                     failed += 1
                     print(f"pin failed: {p.name}: {commit or 'the pointer has no front matter'}", file=sys.stderr)

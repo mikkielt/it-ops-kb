@@ -42,6 +42,25 @@
   "depends_on": [
     "BG-5bo3yki7"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does fetch --hook know a pointer's url, ref or pin changed since the last fetch (no git call in the staleness test)?",
+      "options": [
+        "stamp digest",
+        "git compare"
+      ],
+      "recommendation": "stamp digest",
+      "do": {
+        "stamp digest": "BG-mejqc3wt",
+        "git compare": "BG-mejqc3wt"
+      },
+      "class": "design",
+      "answer": "stamp digest",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-mguax5m3 review"
   ],
