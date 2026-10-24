@@ -125,6 +125,16 @@ def operator_class_is_derived_from_touches_and_question_a_lower_stored_class_cha
         # a unit-noun list straddling the question and an option is no list of one text: its `tokens` keeps the class
         assert secrets(f"Count {word} units,", "tokens, points", "b") == "secrets", word
         assert secrets(f"Count {word} units, points,", "tokens", "b") == "secrets", word
+    # a credential qualifier of the list's `tokens` keeps the class: a word outside the credential words right before a list
+    # that starts with `tokens`, two spaces or a possessive after one, a credential noun in the question beside a list in an
+    # option; a plain list and one led in by a verb, an article or a colon stay design
+    for question in ("Print service tokens, units, points", "Should the worker print Slack tokens, rows, lines to the log?",
+                     "Print private tokens, rows, lines", "Count API  tokens, units, points", "Count API's tokens, units, points"):
+        assert secrets(question) == "secrets", question
+    assert secrets("Which counts does the cost line name for the API", "tokens, units, points", "units only") == "secrets"
+    for question in ("Print tokens, units, points", "Which counts: tokens, units, points", "Count the tokens, units, points"):
+        assert secrets(question) == "design", question
+    assert secrets("Which counts does the cost line name?", "tokens, units, points", "units only") == "design"
     # a doc name that holds `token` beside a secrets word is no doc about a model's token counts: it keeps `secrets`
     for doc in ("docs/bearer-token.md", "docs/ssh-token.md", "docs/passphrase-token-store.md", "docs/PAT-token.md"):
         assert secrets(f"Should the worker edit {doc}?") == "secrets", doc
