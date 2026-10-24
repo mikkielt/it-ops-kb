@@ -1,0 +1,26 @@
+{
+  "id": "ST-wwdfdigd",
+  "kind": "story",
+  "title": "kbsettings.py init and the first-run question disagree about the default of announce.when, and kb-setup's step writes a tracked backlog.json in the kb clone",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the first-run question of kb-setup and the plugin's sprint skill offers the declared default of announce.when (start,claim) as its default, and kb-setup's coordination step says what it does in the kb clone, whose backlog.json is tracked and whose own settings already run the hook, so it leaves the file as it is",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re, sys\nsys.path.insert(0, '_tools')\nimport kbsettings\ndefault = ','.join(kbsettings.DEFAULTS['announce']['when'])\nskills = {p: open(p, encoding='utf-8').read() for p in ('.claude/skills/kb-setup/SKILL.md', 'skills/sprint/SKILL.md')}\nwrong = [p for p, t in skills.items() if re.search(r'start,claim,midrun,edit[^\\n]{0,80}default|default[^\\n]{0,80}start,claim,midrun,edit', t)]\nsetup = skills['.claude/skills/kb-setup/SKILL.md']\nstep = setup[setup.index('Coordination settings'):] if 'Coordination settings' in setup else ''\nstep = step[:step.find('\\n## ', 10) if step.find('\\n## ', 10) > 0 else len(step)]\nclone_safe = bool(re.search(r'tracked|clone[^\\n]{0,120}(skip|no hooks|already)|(skip|already)[^\\n]{0,120}clone', step, re.I))\nprint('declared default', default, '| skills that call the wider list the default', wrong, '| kb-setup step says what happens in the kb clone', clone_safe)\nsys.exit(0 if not wrong and clone_safe else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbsettings.py",
+    ".claude/skills/kb-setup/SKILL.md",
+    "skills/sprint/SKILL.md",
+    "kb/_self/coordination.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
