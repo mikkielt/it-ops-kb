@@ -62,7 +62,9 @@
       },
       "class": "design",
       "answer": "GIT_CONFIG_COUNT entry in fetch_env, GCM_INTERACTIVE=false",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
