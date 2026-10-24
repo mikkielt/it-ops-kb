@@ -53,7 +53,7 @@
   "links": [
     "parked: SP-tsb23kev review"
   ],
-  "notes": "Plan 2026-10-24: premise reproduces (repro fails on the base). The added check passes before the work by design: it pins the fast-forward line of a branch that is only behind.",
+  "notes": "Plan 2026-10-24: premise reproduces (repro fails on the base). The added check passes before the work by design: it pins the fast-forward line of a branch that is only behind. g1 (agents-rule) answered with its recommendation, pre-approved by the operator for the 2026-10-24 day run.",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }
