@@ -2,7 +2,7 @@
   "id": "BG-rpiyercp",
   "kind": "bug",
   "title": "kbmon's disk alert message says 10% free for a share just under 10 percent",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4ppjbh4k",
   "priority": "P3",
   "rank": 0,
@@ -48,6 +48,19 @@
   ],
   "notes": "Found by the SP-swavez3g review (S3) of BG-g6ctcsew: the message formats the share with %g at two decimals. Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "a5ebadf43213224322874ed6fc473834d7d8b328",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport sys\nsys.path.insert(0, \"_tools\")\nimport mon_host as m\na = m.alerts({\"disk\": {\"free_pct\": 10.0, \"free_bytes\": 9999, \"total_bytes\": 100000}})\nmsg = a[0][\"message\"] if a else \"\"\nprint(msg)\nsys.exit(1 if \"disk low: 10% free\" in msg else 0)"
+        ],
+        "exit": 0,
+        "sha256": "119e9ee24b2ccf2a"
+      }
+    ]
+  }
 }
