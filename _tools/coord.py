@@ -73,8 +73,8 @@ the operator the session runs for, which a server's own `operator` field replace
 (fields item and state, state one of claimed, working, blocked, returned, failed, staging, landing, landed, refused, released or
 done, and the optional fields exit, gates (a comma-separated list of ids) and step). `transition` moves an item's run state, the
 value of the key `run/ITEM` (an absent key holds `none`), by this table, and posts the progress event of the move; the item file
-keeps todo, doing and done, so `done` is no run state: none to claimed; claimed to working or released; working to returned,
-failed or blocked; blocked to working, returned or failed; returned to staging, landing, working or released; failed to working
+keeps todo, doing and done, so `done` is no run state: none to claimed; claimed to working, released or landed; working to
+returned, failed or blocked; blocked to working, returned or failed; returned to staging, landing, working or released; failed to working
 or released; staging to returned; landing to landed or refused; refused to working, landing or released; released to claimed
 (a released item is claimed again); landed moves nowhere. Two kinds carry a question and its reply between
 agents: `ask` (fields id, to, ref: to is a session, item or agent id, or `any`; ref is the coord key whose `put` value
