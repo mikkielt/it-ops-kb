@@ -2,7 +2,7 @@
   "id": "BG-2mdkl622",
   "kind": "bug",
   "title": "No landing gate runs pool check, so a landing that closes a _gaps.md entry a gap row names, or leaves an sc_stale row unstale, lands green",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-s5k72bhd",
   "priority": "P2",
   "rank": 0,
@@ -61,5 +61,7 @@
   "links": [
     "parked: SP-honlhzdc review"
   ],
-  "notes": "Found by the SP-honlhzdc review (S2): BG-viwywxml's goal clause 'the landing that closes an entry fails a check while a row still names it' is not delivered: gap_problems is right, but no gate (sync gate, land_stale/eval/lint, review_checks) runs pool check, and test_bench.py calls check_problems on fixtures only. The repro reads kg_sync's gate table; planning adds a check that drives a landing which closes a named gap entry. Plan 2026-10-17 (SP-4cc36epy, not committed): benchmarks.py pool check exits 1 on origin/main b871374b4 (BP-0181112b: its answer regex matches no line of the pack for its question), so a sync gate that runs it would refuse every landing that changes a _gaps.md now; the pool row is a benchmark matter (operator), so this waits until that row passes or the operator decides. Worker ST-fsh6rqnc 2026-10-23: pool check on the pool file as it stands still fails: gap rows BP-1676858d and BP-0ea743f9 name _gaps.md entries no longer open (0a9e79d0, 32b6021a), BP-d5867677 (sc_absent) expects route web and gets split, BP-0181112b's answer regex matches no pack line; warnings on BP-23c08131 and BP-3d01d974. A paid pool run over every kind would measure those rows wrongly. Plan 2026-10-24: premise reproduces (precheck). g1 answered with its recommendation, refuse only what the landing adds (pre-approved by the operator for the 2026-10-24 day run). The worker plants the second case (a closed entry fails, an old defect passes) and records it with set --add-check."
+  "notes": "Found by the SP-honlhzdc review (S2): BG-viwywxml's goal clause 'the landing that closes an entry fails a check while a row still names it' is not delivered: gap_problems is right, but no gate (sync gate, land_stale/eval/lint, review_checks) runs pool check, and test_bench.py calls check_problems on fixtures only. The repro reads kg_sync's gate table; planning adds a check that drives a landing which closes a named gap entry. Plan 2026-10-17 (SP-4cc36epy, not committed): benchmarks.py pool check exits 1 on origin/main b871374b4 (BP-0181112b: its answer regex matches no line of the pack for its question), so a sync gate that runs it would refuse every landing that changes a _gaps.md now; the pool row is a benchmark matter (operator), so this waits until that row passes or the operator decides. Worker ST-fsh6rqnc 2026-10-23: pool check on the pool file as it stands still fails: gap rows BP-1676858d and BP-0ea743f9 name _gaps.md entries no longer open (0a9e79d0, 32b6021a), BP-d5867677 (sc_absent) expects route web and gets split, BP-0181112b's answer regex matches no pack line; warnings on BP-23c08131 and BP-3d01d974. A paid pool run over every kind would measure those rows wrongly. Plan 2026-10-24: premise reproduces (precheck). g1 answered with its recommendation, refuse only what the landing adds (pre-approved by the operator for the 2026-10-24 day run). The worker plants the second case (a closed entry fails, an old defect passes) and records it with set --add-check.",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
