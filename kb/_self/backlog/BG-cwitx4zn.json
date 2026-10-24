@@ -81,7 +81,11 @@
         "Operator adds one Bash allow rule per script to .claude/settings.json": "BG-cwitx4zn",
         "Leave the rules, selfcheck stays failed until they are added": "BG-cwitx4zn"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Operator adds one Bash allow rule per script to .claude/settings.json",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
