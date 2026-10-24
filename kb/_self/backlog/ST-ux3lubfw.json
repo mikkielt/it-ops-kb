@@ -23,5 +23,9 @@
     "kb/_self/backlog.md",
     "kb/_self/coordination.md"
   ],
+  "links": [
+    "parked: SP-sucr3kfg review"
+  ],
+  "notes": "Found by the SP-sucr3kfg review (two gaps in one). A SIGKILL of stage-back leaves staging: a rerun does not heal it because move_run returns False for staging to staging, and drift_of ignores a key whose claim holds the item. The mutual refusal is check then act: stage-back reads not landing, land moves to landing, stage-back's returned to staging is refused with a warning and both run; a second land that times out at the landing lock moves the first one's landing to refused. The check is a planted run that assumes a staging or landing key with nothing running is dead: tighten it when this is planned (liveness of a stage-back in another tree is the same question as the S1 bug of this sprint's review).",
   "filed_in": "clone-0ea70e5c"
 }
