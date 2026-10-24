@@ -22,7 +22,8 @@
     "_tools/bl_items.py",
     "kb/_self/backlog.md",
     "kb/_self/coordination.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
   ],
   "gates": [
     {
@@ -45,7 +46,7 @@
       "role": "interactive"
     }
   ],
-  "notes": "Found by the SP-sucr3kfg review (ST-66wvfkyu). bl_runs.collect reads the claims ledger of this working tree's git dir, but a run key is shared by every tree and clone: a session in another tree reads the live items of other sessions as drift (the review listed ST-54y7al4z and ST-n5vf55qk as working with the worker pid gone), and runs --reconcile writes failed over them, or released, which is terminal. ST-oazktatz already reads the worker's pid from the coord process record first, then the ledger: runs should use the same source, and dispatch must record the pid there. The check of ST-pmxnissq (a working state with no worker recorded anywhere reconciles to failed) must keep passing. Gate g1 of ST-pmxnissq (a claims-ledger record or item file status doing counts as claimed) needs a second look for the claimed-to-released drift: an item claimed in another tree and not yet fetched here reads as unclaimed.",
+  "notes": "Found by the SP-sucr3kfg review (ST-66wvfkyu). bl_runs.collect reads the claims ledger of this working tree's git dir, but a run key is shared by every tree and clone: a session in another tree reads the live items of other sessions as drift (the review listed ST-54y7al4z and ST-n5vf55qk as working with the worker pid gone), and runs --reconcile writes failed over them, or released, which is terminal. ST-oazktatz already reads the worker's pid from the coord process record first, then the ledger: runs should use the same source, and dispatch must record the pid there. The check of ST-pmxnissq (a working state with no worker recorded anywhere reconciles to failed) must keep passing. Gate g1 of ST-pmxnissq (a claims-ledger record or item file status doing counts as claimed) needs a second look for the claimed-to-released drift: an item claimed in another tree and not yet fetched here reads as unclaimed. Gate g1 answered by the sprint runner with its recommendation, on the operator's standing approval for the 2026-10-24 night run (pre-approved by the operator for the 2026-10-24 night run). kb/_self/code.md added to the touches: its bl_runs.py import line names bl_dispatch and tests and the module now imports bl_dispatch and bl_items.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
