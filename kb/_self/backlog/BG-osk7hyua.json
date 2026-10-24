@@ -39,7 +39,9 @@
       },
       "class": "design",
       "answer": "kbroot-local run_bounded using kg_lock.end_group",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
