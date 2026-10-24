@@ -2,7 +2,7 @@
   "id": "BG-tuqtpuve",
   "kind": "bug",
   "title": "The upstream, integration-remote and public-home push guards miss the same repository written another way",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3trnelzv",
   "priority": "P1",
   "rank": 0,
@@ -48,6 +48,19 @@
   ],
   "notes": "Found 2026-10-24 by BG-lxjtp2xz's worker (kb/_self/git.md:55 names the string match). 2026-10-24: moved into SP-3trnelzv and widened after the sprint's second review (on eeb12dd27) found is_upstream still misses a git-guessed local path (/x/up for /x/up.git, /x/up/.git), a case-insensitive spelling, and every other spelling of a remote url; is_public and to_integration have the same string match. Operator pre-approved the night's fixes.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-92aeeb3c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "b30060956aa4545ccbc79930829b80293bc7dfba",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,subprocess,sys,tempfile;sys.path.insert(0,'_tools');import kbpublic;t=tempfile.mkdtemp();up=os.path.join(t,'up.git');c=os.path.join(t,'clone');g=lambda *a,cwd=None:subprocess.run(['git',*a],cwd=cwd,capture_output=True,text=True);g('init','-q','--bare',up);g('init','-q',c);g('remote','add','upstream',os.path.realpath(up),cwd=c);g('config','kb.upstreamRemote','upstream',cwd=c);r=os.path.realpath(up);forms=[r[:-4]];g('remote','set-url','upstream','https://example.com/org/repo.git',cwd=c);forms2=['git@example.com:org/repo.git','https://example.com/org/repo','ssh://git@example.com/org/repo.git'];m=[f for f in forms2 if not kbpublic.is_upstream(f,c,url=f)];g('remote','set-url','upstream',r,cwd=c);m+=[f for f in forms if not kbpublic.is_upstream(f,c,url=f)];print('same-repository forms not refused:',m);sys.exit(1 if m else 0)"
+        ],
+        "exit": 0,
+        "sha256": "6ce9038fcdb3621e"
+      }
+    ]
+  }
 }
