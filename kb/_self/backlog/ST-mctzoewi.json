@@ -42,7 +42,9 @@
       },
       "class": "design",
       "answer": "keep the check: the DOC fact says the default is localhost, not 127.0.0.1, and a DER fact names JAEGER_LISTEN_HOST=127.0.0.1 as the explicit loopback bind",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Planning 2026-10-24: goal reworded into one clause (the install fact and the Tempo comparison no longer split it), read by five cases of the one check (OTLP ports, loopback bind, in-memory restart loss, UI port, binary install). The Tempo monolithic facts already in the article stay. Premise: the check fails on the base (precheck). Planned 2026-10-24 into SP-r7e7jcep: last in the run order (after ST-hbxnf2l3), P3, since the five research stories share the source, anchor and expansions files. Worker 2026-10-24: Jaeger v2.22.0 docs and the bundled all-in-one.yaml bind OTLP to localhost (JAEGER_LISTEN_HOST default) and never write 127.0.0.1; the check case is met by the DOC line saying so and a DER line for the explicit 127.0.0.1 bind (gate g1). The pages read show no command line for starting the jaeger binary without a container; left as an UNK fact.",
