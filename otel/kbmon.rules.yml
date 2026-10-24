@@ -42,7 +42,7 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: A working run has posted no progress event for more than an hour
+          summary: A working run has shown no sign of life for more than an hour
 
       - alert: KbmonRunFailed
         expr: kbmon_coord_runs{state="failed"} > 0

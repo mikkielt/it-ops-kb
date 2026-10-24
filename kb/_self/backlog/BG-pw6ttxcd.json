@@ -42,6 +42,25 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the working-silent reading tell a live worker from a dead one? Running worker: the lesser of progress age and transcript age, 0 with no transcript known; worker gone or unrecorded: progress age; over a url: progress age. Or the pid test alone.",
+      "options": [
+        "pid test and transcript age",
+        "pid test alone"
+      ],
+      "recommendation": "pid test and transcript age",
+      "do": {
+        "pid test and transcript age": "BG-pw6ttxcd",
+        "pid test alone": "BG-pw6ttxcd"
+      },
+      "class": "design",
+      "answer": "pid test and transcript age",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-d6gbc3tq review"
   ],

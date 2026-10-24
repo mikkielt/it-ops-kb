@@ -99,21 +99,6 @@ def coord_points(data):
     return out
 
 
-def run_points(runs):
-    """The run states of the items: every state's count, the seconds the oldest blocked run has waited and the most seconds a
-    working run has gone with no progress event (0 for none); nothing where the coord data holds no `runs` list."""
-    if not isinstance(runs, list):
-        return []
-    import coord
-    runs = [r for r in runs if isinstance(r, dict)]
-    out = [point("kbmon.coord.runs", "{run}", "gauge", sum(1 for r in runs if r.get("state") == state), state=state)
-           for state in coord.RUN_STATES]
-    for name, state in (("blocked_wait", "blocked"), ("working_silent", "working")):
-        ages = [r["age_s"] for r in runs if r.get("state") == state and number(r.get("age_s"))]
-        out.append(point(f"kbmon.coord.run.{name}", "s", "gauge", max(ages, default=0)))
-    return out
-
-
 def sessions_points(data):
     out = []
     procs = [p for p in data.get("procs", []) if isinstance(p, dict)]
@@ -134,6 +119,23 @@ def cleanup_points(data):
             out.append(point("kbmon.cleanup.leftovers", "{leftover}", "gauge", c.get(verdict), **{"class": cls, "verdict": verdict}))
     out.append(point("kbmon.cleanup.removable_bytes", "By", "gauge", data.get("bytes")))
     out.append(point("kbmon.cleanup.free", "GiBy", "gauge", data.get("free_gib")))
+    return out
+
+
+def run_points(runs):
+    """The run states of the items: every state's count, the seconds the oldest blocked run has waited since its newest progress
+    event and the most seconds a working run has gone silent (`silent_s`: with its worker running, the lesser of the seconds
+    since its newest progress event and since its transcript's last write; with the worker gone, the first of them), 0 for none;
+    nothing where the coord data holds no `runs` list."""
+    if not isinstance(runs, list):
+        return []
+    import coord
+    runs = [r for r in runs if isinstance(r, dict)]
+    out = [point("kbmon.coord.runs", "{run}", "gauge", sum(1 for r in runs if r.get("state") == state), state=state)
+           for state in coord.RUN_STATES]
+    for name, state, field in (("blocked_wait", "blocked", "age_s"), ("working_silent", "working", "silent_s")):
+        secs = [r[field] for r in runs if r.get("state") == state and number(r.get(field))]
+        out.append(point(f"kbmon.coord.run.{name}", "s", "gauge", max(secs, default=0)))
     return out
 
 
