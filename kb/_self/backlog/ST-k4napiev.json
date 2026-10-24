@@ -1,0 +1,28 @@
+{
+  "id": "ST-k4napiev",
+  "kind": "story",
+  "title": "kbmon --events gives two different items in two coord stores different trace and span ids for their kb.item spans",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the trace id and the span id of a kb.item span in kbmon --events hash the item id and the run's first move, so two items whose first moves have the same sequence number, in one store or two, never share a trace or a span id",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\ndef plant(status):\n    for f in glob.glob(T + '/kb/_self/backlog/*.json'):\n        d = json.load(open(f, encoding='utf-8'))\n        if d['id'] == sp: d['status'] = 'active'\n        if d['id'] == iid: d['status'] = status; d['sprint'] = sp\n        json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\n    g('add', '-A'); g('commit', '-q', '-m', 'planted ' + status)\ndef walk(*states): return [c('transition', 'run/' + iid, '--to', s).returncode for s in states]\nimport tempfile as tf\niid2 = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Second', '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\nS2 = os.path.join(tf.mkdtemp(), 'c2.sqlite')\nplant('doing')\nfor f in glob.glob(T + '/kb/_self/backlog/*.json'):\n    d = json.load(open(f, encoding='utf-8'))\n    if d['id'] == iid2: d['status'] = 'doing'; d['sprint'] = sp\n    json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\ng('add', '-A'); g('commit', '-q', '-m', 'planted second')\ndef c2(store, *a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', store, *a], capture_output=True, text=True)\nfor s in ('claimed', 'working', 'returned', 'landing', 'landed'):\n    c2(S, 'transition', 'run/' + iid, '--to', s)\n    c2(S2, 'transition', 'run/' + iid2, '--to', s)\ndef item_span(store, i):\n    r = subprocess.run([sys.executable, R + '/_tools/kbmon.py', '--events', '--root', T, '--store', store], capture_output=True, text=True, env=dict(env, KB_COORD_STORE=store))\n    try:\n        return [s for s in json.loads(r.stdout)['spans'] if s['name'] == 'kb.item' and s['attributes'].get('item') == i][0]\n    except (ValueError, KeyError, IndexError):\n        return {}\na, b = item_span(S, iid), item_span(S2, iid2)\nok = bool(a) and bool(b) and a['trace'] != b['trace'] and a['id'] != b['id']\nprint('trace ids', a.get('trace'), b.get('trace'), '| span ids', a.get('id'), b.get('id'))\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/mon_events.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-d6gbc3tq review"
+  ],
+  "notes": "Review gap (S2) of SP-d6gbc3tq: mon_events.py:147 hashes only the coord event sequence. A recreated store or two clones can give two items the same trace and span ids; ST-zlzvqz2w passes the same ids as TRACEPARENT, so the join to Claude Code telemetry would merge two runs.",
+  "filed_in": "clone-0ea70e5c"
+}
