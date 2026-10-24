@@ -2,7 +2,7 @@
   "id": "BG-mso7kfjq",
   "kind": "bug",
   "title": "apply --push keeps only check's first 10 problem lines, so the redact note is cut from the refusal text when check prints more",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-s5k72bhd",
   "priority": "P3",
   "rank": 0,
@@ -32,5 +32,7 @@
   "links": [
     "parked: SP-vx6eufpj review"
   ],
-  "notes": "Plan 2026-10-24: premise reproduces (the added check, a Pusher.bring run on 12 problem lines and the redact note, fails on the base). The text-only repro stays as the bug's report."
+  "notes": "Plan 2026-10-24: premise reproduces (the added check, a Pusher.bring run on 12 problem lines and the redact note, fails on the base). The text-only repro stays as the bug's report.",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
