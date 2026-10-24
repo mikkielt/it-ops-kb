@@ -1,0 +1,41 @@
+{
+  "id": "ST-fblg3yso",
+  "kind": "story",
+  "title": "backlog.py set applies its options to several items in one call, so putting items in a sprint is one write",
+  "status": "draft",
+  "parent": "EP-sqt62vj2",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "set ID ID... --sprint SP applies the options to every id with one --commit for the batch, and an id the set refuses leaves every item unchanged",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile,pathlib as P\nT=os.path.abspath(\"_tools/backlog.py\");r=P.Path(tempfile.mkdtemp())\ng=lambda *a:s.run([\"git\",\"-C\",str(r),*a],check=True,capture_output=True,text=True).stdout.strip()\ng(\"init\",\"-q\");(r/\"backlog.json\").write_text(json.dumps({\"item_dir\":\"items\",\"scratch_dir\":\"_cache/scratch\"}));(r/\"items\").mkdir()\ndef item(i,**k):\n d=dict(id=i,kind=\"story\",title=\"t\",status=\"todo\",priority=\"P3\",goal=\"g\",touches=[\"x.txt\"],checks=[{\"run\":[\"python3\",\"-c\",\"pass\"]}]);d.update(k)\n (r/\"items\"/(i+\".json\")).write_text(json.dumps(d,indent=2)+\"\\n\")\ndef commit():g(\"add\",\"-A\");g(\"-c\",\"user.name=x\",\"-c\",\"user.email=x@x\",\"commit\",\"-qm\",\"i\")\nenv=dict(os.environ,CLAUDE_CODE_SESSION_ID=\"chk\");env.pop(\"KB_BACKLOG_CONFIG\",None)\ndef run(*a):return s.run([sys.executable,T,\"--root\",str(r),*a],capture_output=True,text=True,env=env)\n(r/\"items\"/\"SP-cccccccc.json\").write_text(json.dumps({\"id\":\"SP-cccccccc\",\"kind\":\"sprint\",\"title\":\"s\",\"status\":\"planned\",\"goal\":\"g\"}))\nfor i in (\"ST-aaaaaaaa\",\"ST-bbbbbbbb\",\"ST-dddddddd\"):item(i,status=\"draft\")\ncommit()\nsp=lambda i:json.loads((r/\"items\"/(i+\".json\")).read_text()).get(\"sprint\")\na=run(\"set\",\"ST-aaaaaaaa\",\"ST-bbbbbbbb\",\"--sprint\",\"SP-cccccccc\");b=run(\"set\",\"ST-dddddddd\",\"ST-nosuch01\",\"--sprint\",\"SP-cccccccc\")\nprint(a.returncode,b.returncode,(a.stdout+a.stderr)[-200:],sp(\"ST-aaaaaaaa\"),sp(\"ST-bbbbbbbb\"),sp(\"ST-dddddddd\"))\nok=a.returncode==0 and sp(\"ST-aaaaaaaa\")==\"SP-cccccccc\" and sp(\"ST-bbbbbbbb\")==\"SP-cccccccc\"\nsys.exit(0 if ok and b.returncode!=0 and sp(\"ST-dddddddd\") is None else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "set ID ID... --sprint SP applies the options to every id with one --commit for the batch",
+      "check": 0
+    },
+    {
+      "clause": "an id the set refuses leaves every item unchanged",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/backlog.py",
+    "_tools/bl_cli.py",
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "relates_to": [
+    "EP-nij36lt7"
+  ],
+  "notes": "From the 2026-10-24 telemetry and query-log analysis: 1,430 backlog.py set calls in 7 days, 1,392 of them alone in their Bash call; 560 consecutive set-set pairs and 404 triples; set takes exactly one id (usage: set [options] id). 176 set calls carry --sprint (103 only 'set ID --sprint SP', in 15 sessions): the same call repeated once per item. Saves about 200 turns (599 turns held only a set call) and about 10 USD a week (estimate). Also wanted, not read by the planted check: the sprint skill stops prescribing a dated 'Planned into the sprint on DATE' or 'Sprint SP started DATE' note (92 such template notes were written by hand in the week, each with --commit and a Co-Authored-By trailer; the date and the sprint are already in the commit and the sprint field): skills/sprint/SKILL.md lines 27-28 and 38. Medium confidence. Lane: parked sprint-orchestration class, EP-gzr4mmkm.",
+  "filed_in": "clone-0ea70e5c"
+}
