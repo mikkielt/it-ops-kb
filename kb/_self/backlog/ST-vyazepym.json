@@ -1,0 +1,25 @@
+{
+  "id": "ST-vyazepym",
+  "kind": "story",
+  "title": "The kbroot docs say what the code does after this sprint: the reason line, and the hook's triggers",
+  "status": "draft",
+  "parent": "EP-eocmyqdx",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/tools.md, plugin.md and the kbroot.py docstring say that a failed git command reports its reason line (the ! [rejected] line of a refused push, hint: lines left out), and that fetch --hook fetches a root with no clone, or an old stamp, or a changed url, ref or pin (any of them, not all) (SP-c6w5hjmc review gap 5)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "row = [l for l in open(\"kb/_self/tools.md\").read().splitlines() if l.startswith(\"| `python3 _tools/kbroot.py list`\")][0]\n\nmiss = []\nif \"git's last line\" in row: miss.append(\"tools.md kbroot row still says git's last line\")\nprint(miss)\nraise SystemExit(1 if miss else 0)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md",
+    "_tools/kbroot.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
