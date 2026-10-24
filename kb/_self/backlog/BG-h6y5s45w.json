@@ -2,7 +2,7 @@
   "id": "BG-h6y5s45w",
   "kind": "bug",
   "title": "The leak scan passes a key block whose lines carry a /// or //! comment prefix",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,
@@ -29,6 +29,19 @@
     "parked: SP-evq2flqc review"
   ],
   "notes": "Found 2026-10-23 by the SP-evq2flqc fresh review: the gap takes // as a pair, so a third / or ! leaves no 20-character base64 run after the label. A table whose delimiter row sits between the label row and the key row also passes (- is no gap character); that case is outside the goal. Planner 2026-10-24: kb/_self/map.csv maps kbcommon.py to docs outside the touches (plugin.md, the kb-ingest skill). The landed sibling BG-ok4itunr named kb/_self/code.md, tools.md, plugin.md, content-rules.md and .claude/skills/kb-ingest/SKILL.md in a Self-Reviewed trailer. Read the part of each that describes the leak scan; if still correct, name each in a Self-Reviewed trailer of your commit (land stops at the stale step otherwise); if one needs an edit, stop and report. Planted gates may be asked with the false class secrets or push (BG-sqmvvtiy); the operator's day-run pre-approval answers them with the recommendation.",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "7b0750b4c6069b8d873a5ca5ecb8b07748836f8b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import base64,os,sys;sys.path.insert(0,'_tools');import kbcommon;d='-'*5;b=base64.b64encode(os.urandom(96)).decode();hit=lambda t:any(k=='secret' for k,_ in kbcommon.leak_hits(t));m=[p for p in ('/// ','//! ') if not hit(p+d+'BEGIN EC PRIVATE KEY'+d+chr(10)+p+b[:64]+chr(10)+p+b[64:])];print('prefixes passing:',m);sys.exit(1 if m else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3bd7461d128a6ea"
+      }
+    ]
+  }
 }
