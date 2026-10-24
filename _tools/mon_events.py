@@ -348,4 +348,5 @@ def render(ctx, since=None):
     out = mon_view.scrub(got)
     for kept, span in zip(out["spans"], got["spans"]):  # redact reads 32 bare hex characters as a GUID; a trace is our hash
         kept["trace"] = span["trace"]
+    out["cursor"] = got["cursor"]  # digits and hex, never a secret; redact reads `1.0.N.0` as an IPv4 address
     return json.dumps(out, ensure_ascii=False, indent=1)
