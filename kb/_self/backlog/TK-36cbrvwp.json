@@ -2,7 +2,7 @@
   "id": "TK-36cbrvwp",
   "kind": "task",
   "title": "Doc-lookup and change-detection articles and answers cite no Learn or memdocs source the census records gone",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-cbi2ah5y",
   "priority": "P1",
   "rank": 0,
@@ -42,5 +42,7 @@
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
   "notes": "Premise run on base 39abe92bb: check 0 fails with 14 DOC tags citing the seven gone ids (agents/doc-change-detection.md:61, 62, 67-69, 172; doc-lookup-sources.md:24, 25, 28, 82; _answers.md:1800, 1801, 1803, 2034). check.py passes before the work on purpose: it pins that the kb stays valid after the edits. doc-lookup-sources.csv cites S2177 too (anchor row unlocated:fetch-error): re-source or drop its mention with the article. Lines may have moved; find tags by the ids.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
