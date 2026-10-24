@@ -494,11 +494,23 @@ def how(name, other, own):
     return "go on, keeping your changes to your own files"
 
 
+def shown_title(value):
+    """An item file's title as the overlap shows it: after redact.redact (an email address, a secret-shaped string or a
+    key=value assignment in it never reaches the terminal or Claude), then cut to 80 characters; empty when redact
+    cannot load."""
+    try:
+        sys.path.insert(0, os.path.join(HOME, "_tools"))
+        import redact
+        return " ".join(redact.redact(" ".join(str(value or "").split()), redact.scan_known([])).split())[:80]
+    except Exception:
+        return ""
+
+
 def entry_lines(entry, ws, mine, mine_touch, strategy):
     """The two lines of one overlap: who works on what in which run state, sharing which files; the suggested strategy
     with its command, then the others."""
     items = entry["items"]
-    title = " ".join(str(item_info(ws, items[0]).get("title") or "").split())[:80] if items else ""
+    title = shown_title(item_info(ws, items[0]).get("title")) if items else ""
     names = (items[0] + (f' "{title}"' if title else "") + "".join(", " + i for i in items[1:3])) if items else "no item"
     who = label(entry["session"], False) if entry["session"] else label(entry.get("holder") or "intent", True)
     if entry.get("operator"):
