@@ -213,7 +213,7 @@ def read_profile(home=None):
             p = json.load(f)["profile"]
     except (OSError, ValueError, KeyError, TypeError):
         return "usual"
-    return p if p in PROFILES else "usual"
+    return p if isinstance(p, str) and p in PROFILES else "usual"
 
 
 def profile_factor(home=None):
