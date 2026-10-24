@@ -2,7 +2,7 @@
   "id": "ST-66wvfkyu",
   "kind": "story",
   "title": "Review sprint: The tools move the run states: claim, dispatch, gates, land and stage-back, runs and reconcile, settings explain, the plugin's coord",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-sucr3kfg",
   "review": true,
   "priority": "P1",
@@ -25,6 +25,27 @@
   ],
   "notes": "Planned into SP-sucr3kfg on 2026-10-24. Sprint started 2026-10-24.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "8029cab430e84617b0270da0ebe456856729c0bf",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "913d4fe9d7a672d4"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "d9542e57971629c1"
+      }
+    ]
+  }
 }
