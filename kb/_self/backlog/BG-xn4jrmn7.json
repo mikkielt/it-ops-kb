@@ -47,6 +47,27 @@
   "depends_on": [
     "BG-q4riyq6i"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does done leave no run key at claimed for an item the orchestrator finished itself?",
+      "options": [
+        "table-move",
+        "put-outside-table"
+      ],
+      "recommendation": "table-move",
+      "do": {
+        "table-move": "BG-xn4jrmn7",
+        "put-outside-table": "BG-xn4jrmn7"
+      },
+      "class": "agents-rule",
+      "answer": "table-move",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-hja7yu5k review"
   ],
