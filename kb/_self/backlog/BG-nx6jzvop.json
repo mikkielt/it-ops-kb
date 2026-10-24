@@ -2,7 +2,7 @@
   "id": "BG-nx6jzvop",
   "kind": "bug",
   "title": "The leak scan passes a single-line EC key body that a period, underscore or hyphen follows, which the scan before BG-7mxo4k6p flagged",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-jopt2c3z",
   "priority": "P2",
   "rank": 0,
@@ -53,6 +53,19 @@
   ],
   "notes": "Planned in SP-jopt2c3z (2026-10-24 day run). Premise run on base: the repro exits 1 (every suffix of the plain, slash-containing and 24-character bodies passes the scan). Feasibility: in a scratch copy of _tools, replacing the (?![_.]|-(?!----)) lookahead of _KEY by a start lookahead (?!(?:[A-Za-z0-9]{1,16}/)+[A-Za-z0-9]{1,16}[._-]) (a run that is short slash-separated segments before a dot, underscore or hyphen is a repository path) makes the repro exit 0; roughly 70 percent of real 78-character bodies hold a slash, so a no-slash rule would leave most real bodies unflagged. The worker may choose another rule that keeps the repro green. Tests: extend the planted case in an existing test_leaks.py function (the leak scan is a critical component); add no new test id. Severity raised S3 to S2 on the operator's brief (a leak-scan regression).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "11ed9dabb8cec46313d10d0927cdc04b90a3a179",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0, \"_tools\")\nimport kbcommon\nd = \"-\" * 5\narm = d + \"BEGIN EC PRIVATE KEY\" + d\nhit = lambda t: any(k == \"secret\" for k, _ in kbcommon.leak_hits(t))\nbodies = {\"plain\": \"MHcCAQEEIGtq3xaH5wq7CUAKmJdZ0PY4RnXqPIYV1S2qt1NWOEHJoAoGCCqGSM49AwEHoUQDQgAE\", \"slashy\": \"MHcCAQEEIGtq3xaH5wq7CU/AKmJdZ0PY4RnXq+IYV1S2qt1NWOEHJoAoGCCqGSM49AwEHoUQ/QgAE\", \"short\": \"MHcCAQEEIGtq3xaH5wq7CUAK\"}\nmiss = [(n, s) for n, b in bodies.items() for s in (\".\", \"_x\", \"-x\", \".pem\") if not hit(arm + \" \" + b + s)]\npaths = [\"the kb/public/mecm/sql2022-views.md page\", \"the kb/public/Intune/Apps/Win32.md page\"]\nfalse = [p for p in paths if hit(arm + \" \" + p)]\nprint(\"key body not flagged:\", miss, \"path flagged:\", false)\nsys.exit(1 if miss or false else 0)"
+        ],
+        "exit": 0,
+        "sha256": "a2344a6b8c2f131f"
+      }
+    ]
+  }
 }
