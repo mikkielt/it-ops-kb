@@ -4,6 +4,7 @@
   "title": "kbroot.py fetch --hook prints an exception with an absolute path and no root name when a stamp write fails",
   "status": "draft",
   "parent": "EP-eocmyqdx",
+  "sprint": "SP-c6w5hjmc",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -17,6 +18,9 @@
   },
   "touches": [
     "_tools/kbroot.py"
+  ],
+  "depends_on": [
+    "BG-syg4awkk"
   ],
   "links": [
     "parked: SP-mguax5m3 review"
