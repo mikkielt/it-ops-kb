@@ -188,7 +188,8 @@ def stalled(root, bl=None):
 
 
 def read_events(conn):
-    """({session id: time of its first intent event}, [(item, other, strategy)] of the `coordinate` events, newest first,
+    """({session id: [(time, items, touch paths)] of its intent events, oldest first, a dispatching session's `backlog-claim`
+    ones left out}, [(item, other, strategy)] of the `coordinate` events, newest first,
     {item: time of its newest `progress` event}) from `coord.py wait` over the connection arguments CONN; empty where the
     events cannot be read."""
     import mon_coord
@@ -203,12 +204,19 @@ def read_events(conn):
     for e in events if isinstance(events, list) else []:
         fields = e.get("fields") if isinstance(e, dict) and isinstance(e.get("fields"), dict) else {}
         if e.get("kind") == "intent" and isinstance(fields.get("session"), str) and isinstance(e.get("at"), (int, float)):
-            first.setdefault(fields["session"], e["at"])
+            if fields.get("topic") != CLAIM_TOPIC:
+                first.setdefault(fields["session"], []).append((e["at"], split_list(fields.get("item")),
+                                                                split_list(fields.get("touch"))))
         elif e.get("kind") == "coordinate" and fields.get("item") and fields.get("other") and fields.get("strategy"):
             chosen.insert(0, (fields["item"], fields["other"], fields["strategy"]))
         elif e.get("kind") == "progress" and isinstance(fields.get("item"), str) and isinstance(e.get("at"), (int, float)):
             moved[fields["item"]] = e["at"]
     return first, chosen, moved
+
+
+def split_list(value):
+    """The words of VALUE, a comma-separated string as an intent field holds it; empty for anything else."""
+    return [w for w in value.split(",") if w] if isinstance(value, str) else []
 
 
 def coord_conn(ctx):
@@ -398,12 +406,23 @@ def merged_intents(found):
     return out
 
 
+def meeting_time(ea, eb):
+    """The time of the oldest moment two sessions met, from the intent events EA and EB of each (`read_events`' lists): the
+    smallest, over the pairs of an intent of each whose items or touch paths meet, of the newer intent of the pair; None
+    where no pair meets."""
+    import coord
+    met = [max(ta, tb) for ta, ia, pa in ea for tb, ib, pb in eb
+           if set(ia) & set(ib) or any(coord.overlaps(p, q) for p in pa for q in pb)]
+    return min(met) if met else None
+
+
 def overlap_rows(found, now=None):
     """[{a, b, files, strategy, age_s}] of the pairs of live sessions in FOUND (`read_coord`'s answer; None gives None)
     whose intents' items or touches meet, OVERLAPS_KEPT at most, longest first. `a` and `b` are {session (the label),
     operator, item} (the session's first item); `files` the touch paths of either that meet a path of the other; `strategy`
     `undecided`, else the one the newest `coordinate` event between an item of each announced; `age_s` the seconds since
-    the later of the two sessions' first intent."""
+    the oldest moment an intent of each met an intent of the other (the newer of the two intents), the later of the two
+    sessions' first intent where no event pair meets."""
     if found is None:
         return None
     import coord
@@ -420,7 +439,10 @@ def overlap_rows(found, now=None):
                 continue
             strategy = next((s for i, o, s in found.get("coordinate", [])
                              if (i in sa["items"] and o in sb["items"]) or (i in sb["items"] and o in sa["items"])), UNDECIDED)
-            since = max(found.get("intent_at", {}).get(ida, now), found.get("intent_at", {}).get(idb, now))
+            at = found.get("intent_at", {})
+            since = meeting_time(at.get(ida, []), at.get(idb, []))
+            if since is None:
+                since = max(at.get(ida, [(now,)])[0][0], at.get(idb, [(now,)])[0][0])
             side = [mon_view.session_fields({"session": i, "operator": s["operator"]}) | {"item": (s["items"] or [None])[0]}
                     for i, s in ((ida, sa), (idb, sb))]
             out.append({"a": side[0], "b": side[1], "files": files, "strategy": strategy, "age_s": max(0, int(now - since))})
