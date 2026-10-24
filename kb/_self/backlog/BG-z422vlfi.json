@@ -20,6 +20,25 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which words in a title or goal name a paid run for kind_of?",
+      "options": [
+        "paid, USD amount or --max-usd",
+        "paid or --max-usd only"
+      ],
+      "recommendation": "paid, USD amount or --max-usd",
+      "do": {
+        "paid, USD amount or --max-usd": "BG-z422vlfi",
+        "paid or --max-usd only": "BG-z422vlfi"
+      },
+      "class": "design",
+      "answer": "paid, USD amount or --max-usd",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-yjfiemha review"
   ],

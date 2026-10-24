@@ -37,6 +37,7 @@ FLOOR_MIN = 5  # minutes an item in progress, or the tail once the review is don
 WORKERS = 4  # items the estimate runs side by side, the number a sprint run takes at once
 KINDS = ("review", "research", "bug", "bench", "content", "code")
 BENCH_RESULTS = "kb/_self/reports/benchmarks.csv"  # the file whose touch makes a paid item a bench one
+PAID = re.compile(r"\bpaid\b|--max-usd\b|\d\s*USD\b|\bUSD\s*\d", re.IGNORECASE)  # words in a title or goal that name a paid run
 CODE_DIRS = ("_tools/", ".claude/", ".claude-plugin/", ".githooks/", "otel/")  # a touch under one makes an item code
 _CACHE = {}  # (root, REF commit) -> read's result
 
@@ -54,7 +55,7 @@ def kind_of(item):
         return "research"
     if item.get("kind") == "bug":
         return "bug"
-    if BENCH_RESULTS in touches and re.search(r"\bpaid\b", str(item.get("goal") or ""), re.IGNORECASE):
+    if BENCH_RESULTS in touches and PAID.search(f"{item.get('title') or ''} {item.get('goal') or ''}"):
         return "bench"
     if not any(t.startswith(CODE_DIRS) or t + "/" in CODE_DIRS for t in touches):
         return "content"
