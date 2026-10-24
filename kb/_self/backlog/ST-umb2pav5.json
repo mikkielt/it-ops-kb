@@ -1,0 +1,27 @@
+{
+  "id": "ST-umb2pav5",
+  "kind": "story",
+  "title": "Review sprint: Landings and run states heal themselves: stale landing worktrees, refused-step names, release and done moves, killed stage-backs",
+  "status": "draft",
+  "sprint": "SP-dx76osrn",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
