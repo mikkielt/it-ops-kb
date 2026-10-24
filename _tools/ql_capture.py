@@ -486,8 +486,8 @@ def written_feedback_ids(spool):
 def _take_ids_lock(path, token=""):
     """Create the lock file `path` (O_EXCL, so one writer at a time on every OS) holding `token`; True once held,
     False when another writer kept it for FEEDBACK_IDS_LOCK_WAIT_S. A lock file older than FEEDBACK_IDS_LOCK_STALE_S
-    is a dead writer's: it is renamed away, and when the file renamed is not the stale one seen (another writer took
-    the stale lock over between the read and the rename) it is put back."""
+    is a dead writer's: a file already holding `token` replaces it in one step, so the path is never without a lock
+    and no third writer can create one beside it."""
     end = time.monotonic() + FEEDBACK_IDS_LOCK_WAIT_S
     while True:
         try:
@@ -496,19 +496,17 @@ def _take_ids_lock(path, token=""):
                 f.write(token)
             return True
         except FileExistsError:
+            take = path.with_name(f"{path.name}.take-{uuid.uuid4().hex[:8]}")
             try:
+                take.write_text(token, encoding="utf-8", newline="\n")
                 if time.time() - path.stat().st_mtime > FEEDBACK_IDS_LOCK_STALE_S:
-                    stale = path.with_name(f"{path.name}.stale-{uuid.uuid4().hex[:8]}")
-                    os.rename(path, stale)  # atomic: of two takers, one wins
-                    if time.time() - stale.stat().st_mtime > FEEDBACK_IDS_LOCK_STALE_S:
-                        stale.unlink()
-                        continue
-                    try:
-                        os.link(stale, path)  # a live lock was renamed: give it back, never replacing a newer one
-                    finally:
-                        stale.unlink()
+                    os.replace(take, path)  # atomic: the path holds a lock before and after
+                    if path.read_text(encoding="utf-8") == token:
+                        return True
             except OSError:
                 pass
+            finally:
+                take.unlink(missing_ok=True)
         if time.monotonic() >= end:
             return False
         time.sleep(0.005)
