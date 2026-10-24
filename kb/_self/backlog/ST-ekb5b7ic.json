@@ -44,6 +44,9 @@
     "skills/sprint/SKILL.md",
     "kb/_self/backlog.md"
   ],
+  "depends_on": [
+    "ST-yuf6gdr6"
+  ],
   "relates_to": [
     "ST-ecohnugl",
     "ST-tvnxvfjp"
