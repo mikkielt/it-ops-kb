@@ -35,5 +35,6 @@
   ],
   "links": [
     "parked: SP-qinvdomv review"
-  ]
+  ],
+  "notes": "Check 0 (a public root's log still refuses a private name) passes before the work by design: it pins behaviour that must stay while the repro (internal root's own source id accepted) fails now. Extra planted checks of this sprint were written by the planner from the shared repro prelude (clause maps record which reads which)."
 }
