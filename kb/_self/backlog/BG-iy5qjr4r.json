@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "repro compare's frozen_pass passes a row that is good without the answer, so eval_passed rewards no answer",
   "status": "draft",
+  "sprint": "SP-uhcjxayq",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "bench_repro.frozen_pass passes a frozen row only when its answer is found, or when its end verdict ranks at least its start-commit verdict and is not good without the answer, so a false good row (good at start and end, answer not found) and a row none at start that turns good without the answer no longer pass and eval_passed, pick's first key, reads the answer gained; the compare part of test_bench.py proves it (no new test id). Found by the SP-75hdeqld review (S2); it carries the change of BG-qztas5u4's gate g1.",
+  "goal": "bench_repro.frozen_pass passes a frozen row only when its answer is found, or when its end verdict ranks at least its start-commit verdict and is not good without the answer, so a false good row (good at start and end, answer not found) and a row none at start that turns good without the answer no longer pass and eval_passed, pick's first key, reads the answer gained (found by the SP-75hdeqld review as S2, carrying the change of BG-qztas5u4's gate g1)",
   "repro": {
     "run": [
       "python3",
@@ -14,11 +15,30 @@
       "import sys;sys.path.insert(0,'_tools');import bench_repro as b;r=(b.frozen_pass('good','good',False),b.frozen_pass('none','good',False));print(r);sys.exit(1 if any(r) else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport bench_repro as b\n\n# (start verdict, end verdict, answer found): whether the row passes\ntable = {('good', 'good', False): False, ('none', 'good', False): False, ('weak', 'good', False): False,\n         ('good', 'weak', False): False, ('none', 'weak', False): True, ('none', 'none', False): True,\n         ('weak', 'weak', False): True, ('none', 'good', True): True, ('good', 'good', True): True, ('weak', 'none', True): True}\ngot = {k: b.frozen_pass(*k) for k in table}\nwrong = {k: v for k, v in got.items() if v != table[k]}\nprint('rows read wrong (start, end, found): passes', wrong)\nsys.exit(0 if not wrong else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "bench_repro.frozen_pass passes a frozen row only when its answer is found, or when its end verdict ranks at least its start-commit verdict and is not good without the answer, so a false good row (good at start and end, answer not found) and a row none at start that turns good without the answer no longer pass and eval_passed, pick's first key, reads the answer gained (found by the SP-75hdeqld review as S2, carrying the change of BG-qztas5u4's gate g1)",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/bench_repro.py",
-    "kb/_self/tools.md"
+    "kb/_self/benchmarks.md"
+  ],
+  "depends_on": [
+    "BG-dyly4qdf"
   ],
   "links": [
     "parked: SP-75hdeqld review"
-  ]
+  ],
+  "notes": "Premise run 2026-10-24 on base f160727aa: repro fails (frozen_pass('good','good',False) and ('none','good',False) both True). The original goal's clause that the compare part of the bench test file proves it is reworded to check 0: that test file is gone since the 2026-10-16 decision to keep tests for critical parts only, so a planted matrix of ten (start verdict, end verdict, found) rows runs the function (fails on base on three rows). Touches: kb/_self/benchmarks.md (the repro compare and repro pick sections say how frozen_pass reads a row) replaces kb/_self/tools.md, which holds no word about frozen_pass or pick; the code-map warning for kb/_self/tools.md is met by naming it in Self-Reviewed when read and still correct. bench_multi.frozen_counts (bench_multi.py:2525) reads the same function and its docstring says 'passing as bench_repro.frozen_pass reads them' (still true, outside touches, not edited). Order: after BG-dyly4qdf (same file, same doc). Planned into the sprint on 2026-10-24 (day run)."
 }
