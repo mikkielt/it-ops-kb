@@ -3,8 +3,8 @@ outcome as events, and each landing (with a child span per `land.step`), `agent.
 finished run of an item (a `kb.item` span with `kb.worker` and `kb.landing` children, from its progress events) as spans,
 and each sprint whose claimed items have all ended their runs (a `kb.sprint` root over its `kb.item` spans),
 newer than a cursor. Standard library only; imports `mon_log` (its readers of the coord store and the ops rows) and
-`mon_export` (its attribute rules), and `mon_view`, `mon_sprint` (the sprint of a run's item), `bl_stall`, `ql_base` and
-`ql_report` where it reads them.
+`mon_export` (its attribute rules), and `mon_view`, `mon_sprint` (the sprint of a run's item; for an item whose file a
+close deleted, git's history of the item files), `bl_base`, `bl_stall`, `ql_base` and `ql_report` where it reads them.
 
   collect(ctx, since)    {"schema", "cursor", "events", "spans", "problems"}: the records newer than the cursor `since` (None:
                          the newest ones), and the cursor that holds the newest time of the spool rows with the keys of the
@@ -26,6 +26,7 @@ import datetime
 import hashlib
 import json
 import re
+import subprocess
 
 import mon_export
 import mon_log
@@ -134,6 +135,49 @@ def sprint_of(backlog, items):
     return {i: backlog[i]["sprint"] for i in items if isinstance(backlog.get(i), dict) and backlog[i].get("sprint")}
 
 
+def closed_sprints(ctx, items):
+    """{item id: its sprint's id} of those ITEMS whose item file a close deleted: the file as the commit before the one that
+    deleted it holds it, read from the ref `mon_sprint.REF` where it can be read, else HEAD; {} where git cannot answer."""
+    import bl_base
+    import mon_sprint
+    if not items:
+        return {}
+    try:
+        bl_base.load_settings(ctx.root)
+        root, rel = ctx.root, bl_base.rel_dir()
+        ref = mon_sprint.REF if bl_base.git_text(root, "rev-parse", "--verify", "-q", mon_sprint.REF + "^{commit}") else "HEAD"
+        deleted, commit = {}, None
+        for line in bl_base.git(root, "log", "--diff-filter=D", "--format=%H", "--name-only", ref, "--", rel).splitlines():
+            if re.fullmatch(r"[0-9a-f]{40}", line):
+                commit = line
+            elif commit and line.startswith(rel + "/") and line.endswith(".json"):
+                name = line[len(rel) + 1:-len(".json")]
+                if name in items:
+                    deleted.setdefault(name, f"{commit}^:{line}")
+        if not deleted:
+            return {}
+        p = subprocess.run(["git", "cat-file", "--batch"], cwd=root, capture_output=True,
+                           input="".join(f"{spec}\n" for spec in deleted.values()).encode("utf-8"))
+        data, out, at = p.stdout, {}, 0
+        for name in deleted:
+            nl = data.find(b"\n", at)
+            head = data[at:nl].split() if nl >= 0 else []
+            if len(head) != 3 or head[1] != b"blob":
+                at = nl + 1 if nl >= 0 else len(data)
+                continue
+            size = int(head[2])
+            body, at = data[nl + 1:nl + 1 + size], nl + 2 + size
+            try:
+                item = json.loads(body.decode("utf-8"))
+            except ValueError:
+                continue
+            if isinstance(item, dict) and item.get("sprint"):
+                out[name] = item["sprint"]
+        return out
+    except Exception:  # noqa: BLE001 - no history to read: the spans keep no sprint attribute
+        return {}
+
+
 def open_of(backlog):
     """{item id: its sprint's id} of the BACKLOG's items that a sprint has claimed or is doing: `doing`, or `todo` with a
     claim, whatever their runs."""
@@ -231,7 +275,8 @@ def run_records(ctx, events, after):
     its `kb.item` span."""
     runs = item_runs(events)
     backlog = backlog_items(ctx)
-    sprints = sprint_of(backlog, {item for item, run in runs})
+    ids = {item for item, run in runs}
+    sprints = {**closed_sprints(ctx, ids - set(backlog)), **sprint_of(backlog, ids)}
     done = sprint_records(runs, sprints, open_of(backlog))
     for item, run in runs:
         first = run[0]
