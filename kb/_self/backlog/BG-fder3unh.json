@@ -25,6 +25,23 @@
   "depends_on": [
     "BG-lrho25jh"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does the hook test announce.to_other_sessions before posting an intent?",
+      "options": [
+        "At the two call sites (SessionStart, claim scan), from the announce settings already loaded there",
+        "Inside announce(), loading the settings again from the workspace"
+      ],
+      "recommendation": "At the two call sites (SessionStart, claim scan), from the announce settings already loaded there",
+      "do": {
+        "At the two call sites (SessionStart, claim scan), from the announce settings already loaded there": "BG-fder3unh",
+        "Inside announce(), loading the settings again from the workspace": "BG-fder3unh"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-ky7xz6d2 review"
   ],
