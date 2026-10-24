@@ -192,22 +192,38 @@ def claim_of(row, now):
 
 
 def runs_of(rows, events, now):
-    """[{item, state, age_s}] of the run states: each `run/<item>` row of `coord.py list` with a state `coord.RUN_STATES` names,
-    and the seconds since the item's newest progress event (None when it has none)."""
+    """[{item, state, age_s, step, gates}] of the run states: each `run/<item>` row of `coord.py list` with a state `coord.RUN_STATES` names,
+    the seconds since the item's newest progress event (None when it has none) and the `step` and `gates` (a list of ids) of the
+    newest progress event that names the state the key holds (None and [] when it has none)."""
     import coord
-    newest = {}
+    newest, moved = {}, {}
     for e in events:
         fields = e.get("fields") if isinstance(e.get("fields"), dict) else {}
         if e.get("kind") == "progress" and isinstance(fields.get("item"), str) and isinstance(e.get("at"), (int, float)):
             newest[fields["item"]] = e["at"]
+            moved[(fields["item"], fields.get("state"))] = fields
     out = []
     for r in rows:
         key, state = str(r.get("key")), r.get("value")
         if key.startswith(coord.RUN_KEYS) and state in coord.RUN_STATES:
             item = key[len(coord.RUN_KEYS):]
-            at = newest.get(item)
-            out.append({"item": item, "state": state, "age_s": None if at is None else max(0, int(now - at))})
+            at, fields = newest.get(item), moved.get((item, state), {})
+            out.append({"item": item, "state": state, "age_s": None if at is None else max(0, int(now - at)),
+                        "step": fields.get("step") or None,
+                        "gates": [g for g in str(fields.get("gates") or "").split(",") if g]})
     return out
+
+
+def run_rows(ctx):
+    """`runs_of` of the store the panels read (`--store`, `KB_COORD_STORE`, the clone's, or `--url`), read with `coord.py list
+    --prefix run/` and one `wait --since 0 --timeout 0`; None where there is no store, the server cannot be reached or coord
+    cannot be read: a reader of the run states then shows none."""
+    try:
+        conn, _ = connection(ctx)
+        out = run_all(conn, {"list": ["list", "--prefix", "run/"], "wait": ["wait", "--since", "0", "--timeout", "0"]})
+        return runs_of(json.loads(out["list"]), json.loads(out["wait"])["events"], time.time())
+    except (mon_base.Absent, mon_base.Unsupported, mon_base.Timeout, RuntimeError, ValueError, KeyError, OSError):
+        return None
 
 
 def event_fields(event):
