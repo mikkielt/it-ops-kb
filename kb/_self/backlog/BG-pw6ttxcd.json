@@ -2,7 +2,7 @@
   "id": "BG-pw6ttxcd",
   "kind": "bug",
   "title": "KbmonRunStalled fires on any worker alive for an hour, because a working run posts one progress event and the silence it measures never ends while the worker lives",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ymnz7b4n",
   "priority": "P3",
   "rank": 0,
@@ -46,5 +46,7 @@
     "parked: SP-d6gbc3tq review"
   ],
   "notes": "Review gap (S2) of SP-d6gbc3tq: otel/kbmon.rules.yml:39 with ST-54y7al4z gate g2 (3600 s, provisional): a working run posts only the move to working, so the rule fires for any worker alive past an hour (ETA history in this clone: bug items p75 58 min, bench items p75 108 min). Needs either the pid test of this bug or a longer threshold. Planned into SP-ymnz7b4n, 2026-10-24 day run. Precheck: both checks fail on the base; the behaviour check plants a live and a dead worker pid with backlog.py own --class process. Fix may read the coord own/process records in mon_coord.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
