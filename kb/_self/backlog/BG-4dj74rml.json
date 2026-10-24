@@ -4,6 +4,7 @@
   "title": "kbroot.fetch_env keeps GIT_ASKPASS and SSH_ASKPASS, so a fetch can show a credential prompt",
   "status": "draft",
   "parent": "EP-eocmyqdx",
+  "sprint": "SP-c6w5hjmc",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
