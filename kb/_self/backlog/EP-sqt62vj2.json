@@ -1,0 +1,15 @@
+{
+  "id": "EP-sqt62vj2",
+  "kind": "epic",
+  "title": "Model work moves to deterministic tools (2026-10-24 analysis)",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A sprint runner's repeated reads and writes are one tool command each, so a model turn is spent only on judgment: a returned worker's outcome, an item's fields, a wait, the start of the next items, a gate answer, a sprint move and a worker's conduct rules",
+  "relates_to": [
+    "EP-nij36lt7",
+    "EP-gzr4mmkm"
+  ],
+  "notes": "From the 2026-10-24 telemetry and query-log analysis: 7 days of this clone's transcripts, 347 sessions, 72 of them orchestrating (13,429 turns, about 678 USD at 0.05 USD a turn, 2.72G cache-read tokens). The chains the stories below replace are about 2,600 turns, 19% of the orchestrating turns and about 130 USD a week after a 15% overlap allowance; the figures are estimates. Workers are cheap (0.84 USD each); the shiftable spend is the runner loop. Lane: new sprint-orchestration features were parked as drafts on 2026-10-07 until EP-gzr4mmkm's fitness tests pass, so these counts are evidence for re-ranking and the operator decides; the stories are the consumer side of EP-nij36lt7 (run states in coord). Checked and not filed: hand-merged docs (8 results in 7 days), grep and sed reads of _tools (editing reads), cat of background output files (harness behaviour), skill text size (4.5% of a runner's cache read), goal-research closing notes (24 calls).",
+  "filed_in": "clone-0ea70e5c"
+}
