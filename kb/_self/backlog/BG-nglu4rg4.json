@@ -1,0 +1,25 @@
+{
+  "id": "BG-nglu4rg4",
+  "kind": "bug",
+  "title": "done's ledger check does not see a hyphen-prefixed source id such as S-5kvx24wm joined to more text",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_land.cited_tokens names the source id S-5kvx24wm when the goal writes S-5kvx24wm-related or S-5kvx24wm-S-abcd1234, as it does for S100-related",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport sys\nsys.path.insert(0, \"_tools\")\nimport bl_land\nw = bl_land.cited_tokens(\".\", {}, [\"Refresh S-5kvx24wm-related facts\"])\nprint(\"goal tokens:\", sorted(t for t in w if \"5kvx24wm\" in t or t == \"S\"))\nsys.exit(0 if \"S-5kvx24wm\" in w else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py"
+  ],
+  "links": [
+    "parked: SP-swavez3g review"
+  ],
+  "notes": "Found by the SP-swavez3g review (S3) of BG-r7c7dxia: splitting at every hyphen yields S, 5kvx24wm and related but never the whole id; most ledger ids are of this S-<8 hex> form. The other gate option, matching source-id shapes inside tokens, would have covered them.",
+  "filed_in": "clone-0ea70e5c"
+}
