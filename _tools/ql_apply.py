@@ -358,13 +358,14 @@ def plain_question(text):
 
 TOOL_QUESTION = re.compile(
     r"^\W*(?:how\s+many|count\b|list\b|number\s+of)\b.*?\b(?:articles?|sources?|topics?|facts?|domains?|roots?)\b"
-    r".*?\b(?:kb|knowledge\s+base|domains?|roots?)\b", re.I)
+    r".*?\b(?:kb|knowledge\s+base)\b", re.I)
 
 
 def tool_question(question):
     """Whether a question asks the kb to count or list what it holds (how many articles or sources a domain holds):
     `rag.py audit`, `topics` and `facts` answer it from the files, so no article lacks a fact for it and the gap
-    step files no entry for it."""
+    step files no entry for it. It names the kb itself (`kb`, `knowledge base`): a product question that counts
+    domains or roots ('list the domains in an AD forest') is not one."""
     return isinstance(question, str) and bool(TOOL_QUESTION.search(question))
 
 
