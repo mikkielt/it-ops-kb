@@ -2,7 +2,7 @@
   "id": "ST-ako2dypu",
   "kind": "story",
   "title": "Research sprint goal: S3 bugs the first triage left: fail-open guards, leak scan, gate class, feedback lock, census confirm, tool ranking, close links, a kb citation",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4ppjbh4k",
   "goal_research": true,
   "priority": "P1",

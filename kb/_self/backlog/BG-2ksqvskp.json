@@ -2,7 +2,7 @@
   "id": "BG-2ksqvskp",
   "kind": "bug",
   "title": "madeup_text caches a 429, 500 or 503 answer of the made-up sibling as a real 404, turning off soft-404 detection for the host",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4ppjbh4k",
   "priority": "P3",
   "rank": 0,

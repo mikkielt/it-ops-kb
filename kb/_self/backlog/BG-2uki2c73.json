@@ -2,7 +2,7 @@
   "id": "BG-2uki2c73",
   "kind": "bug",
   "title": "A token-named .md path with bearer, ssh, passphrase or PAT in its name is blanked by TOKEN_DOC and classed design, and test_authority plants no doc-name shape",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4ppjbh4k",
   "priority": "P2",
   "rank": 0,

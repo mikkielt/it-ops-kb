@@ -2,7 +2,7 @@
   "id": "BG-6ski25jl",
   "kind": "bug",
   "title": "A DOC tag that wraps over two lines in kb/public still cites a census-gone source, which the per-line scan of the sprint check cannot see",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4ppjbh4k",
   "priority": "P2",
   "rank": 0,

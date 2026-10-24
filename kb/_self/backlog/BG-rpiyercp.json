@@ -2,7 +2,7 @@
   "id": "BG-rpiyercp",
   "kind": "bug",
   "title": "kbmon's disk alert message says 10% free for a share just under 10 percent",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4ppjbh4k",
   "priority": "P3",
   "rank": 0,

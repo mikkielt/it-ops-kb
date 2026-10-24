@@ -2,7 +2,7 @@
   "id": "BG-a7ocbxua",
   "kind": "bug",
   "title": "A writer that renamed a live feedback.ids lock away leaves a window with no lock, so a third writer gets in and the first holder's lock is lost",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4ppjbh4k",
   "priority": "P3",
   "rank": 0,

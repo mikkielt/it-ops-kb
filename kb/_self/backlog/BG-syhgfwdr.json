@@ -2,7 +2,7 @@
   "id": "BG-syhgfwdr",
   "kind": "bug",
   "title": "kb_mcp.bash_denied reads a settings file whose permissions is an empty list, false, 0 or an empty string as holding no deny rule",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4ppjbh4k",
   "priority": "P3",
   "rank": 0,

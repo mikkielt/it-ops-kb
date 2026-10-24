@@ -2,7 +2,7 @@
   "id": "BG-q7lcd6od",
   "kind": "bug",
   "title": "The leak scan misses a narrow-wrapped EC key body whose first line starts with //",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4ppjbh4k",
   "priority": "P3",
   "rank": 0,

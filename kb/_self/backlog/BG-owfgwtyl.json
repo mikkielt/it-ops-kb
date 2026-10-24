@@ -2,7 +2,7 @@
   "id": "BG-owfgwtyl",
   "kind": "bug",
   "title": "A credential list qualified by a word outside the fixed credential list (service, Slack, private tokens, units, points) or a credential noun in the question with the unit list in an option is classed design",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4ppjbh4k",
   "priority": "P2",
   "rank": 0,

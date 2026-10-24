@@ -2,7 +2,7 @@
   "id": "BG-eoito4bw",
   "kind": "bug",
   "title": "kbtools.py ranks a command above the skill whose description says it answers install the commit hook and find stale docs, since a description word is capped at 0.6 of a tool word",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-5mp6pwnn",
   "sprint": "SP-4ppjbh4k",
   "priority": "P2",

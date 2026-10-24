@@ -2,7 +2,7 @@
   "id": "BG-tcfxsbly",
   "kind": "bug",
   "title": "tests.py read_profile crashes with TypeError on a host.json profile that is not a string",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4ppjbh4k",
   "priority": "P3",
   "rank": 0,

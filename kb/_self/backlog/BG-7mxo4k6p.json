@@ -2,7 +2,7 @@
   "id": "BG-7mxo4k6p",
   "kind": "bug",
   "title": "The leak scan flags the EC armor label quoted before a repository path that has a digit or an upper-case letter",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4ppjbh4k",
   "priority": "P3",
   "rank": 0,

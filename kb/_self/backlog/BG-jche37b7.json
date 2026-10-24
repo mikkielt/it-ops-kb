@@ -2,7 +2,7 @@
   "id": "BG-jche37b7",
   "kind": "bug",
   "title": "kb_pack root=<missing root> raises no root instead of naming the root as missing with its reason",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-4ppjbh4k",
   "priority": "P2",

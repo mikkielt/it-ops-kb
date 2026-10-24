@@ -2,7 +2,7 @@
   "id": "BG-ylrx5zt7",
   "kind": "bug",
   "title": "kbask's observer allow rules admit git log and git show with --output, which writes a file",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4ppjbh4k",
   "priority": "P3",
   "rank": 0,

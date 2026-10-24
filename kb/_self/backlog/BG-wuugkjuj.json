@@ -2,7 +2,7 @@
   "id": "BG-wuugkjuj",
   "kind": "bug",
   "title": "close of a clone's own sprint can rewrite an upstream item's relates_to or depends_on link to a deleted item",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4ppjbh4k",
   "priority": "P2",
   "rank": 0,

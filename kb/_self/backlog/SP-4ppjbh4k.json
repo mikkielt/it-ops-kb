@@ -2,7 +2,7 @@
   "id": "SP-4ppjbh4k",
   "kind": "sprint",
   "title": "S3 bugs the first triage left: fail-open guards, leak scan, gate class, feedback lock, census confirm, tool ranking, close links, a kb citation",
-  "status": "planned",
+  "status": "active",
   "goal": "bash_denied denies every call when a settings file's permissions is not an object; kb_pack, kb_search and kb_audit name a missing root with its reason instead of raising; no Bash rule kbask gives the observer admits a git command that writes a file; the leak scan flags a narrow-wrapped EC key body whose first lines include one that starts with //; the leak scan passes the EC armor label quoted before a repository path with a digit or an upper-case letter; the feedback.ids takeover never removes the lock path while a live lock stands; the secrets gate class holds for a .md name that holds token beside a secrets word; the secrets gate class holds for a unit-noun list whose tokens carry a credential qualifier; tests.py read_profile reads a host.json profile that is not a string as usual; kbmon's disk alert message never reads 10% free for a share under 10 percent; census.py confirm dates the sources it still knows and names the ones deleted from _sources.csv; kbtools.py puts kb-setup first for install the commit hook and kb-self first for find stale docs; backlog.py close leaves every item that arrived from the upstream main unchanged; no DOC tag in kb/public cites a source the 2026-10-21 census records gone while a live source states the claim; factdiff.madeup_text keeps only a 200, 404 or 410 answer of the made-up sibling",
   "gates": [
     {

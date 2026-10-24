@@ -2,7 +2,7 @@
   "id": "BG-i355rfzc",
   "kind": "bug",
   "title": "census.py confirm exits 1 on a census log that names a source row since deleted from _sources.csv",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4ppjbh4k",
   "priority": "P2",
   "rank": 0,
