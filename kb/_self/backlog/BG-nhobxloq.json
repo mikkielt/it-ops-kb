@@ -2,7 +2,7 @@
   "id": "BG-nhobxloq",
   "kind": "bug",
   "title": "selfdoc.py check fails on main: kbsettings keeps a fixed doc line number per setting, so one line added above the settings list in coordination.md breaks it",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ymnz7b4n",
   "priority": "P2",
   "rank": 0,
@@ -49,6 +49,28 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "78898e339eabf8f3fb1efcd773ac1969bef30971",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys, pathlib; sys.path.insert(0, '_tools'); import kbsettings; t = pathlib.Path('kb/_self/coordination.md').read_text(encoding='utf-8'); bad = kbsettings.check('a line added above the list' + chr(10) + t); print('problems with one line added above the list:', len(bad)); sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "92cfbf128e21baed"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
