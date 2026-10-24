@@ -61,7 +61,8 @@
     "_tools/backlog.py",
     "_tools/bl_cli.py",
     "skills/sprint/SKILL.md",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "ST-ekb5b7ic"
