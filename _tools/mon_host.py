@@ -12,7 +12,7 @@ landing in the ops rows, null before its first), since, pid, clone, queue}, `que
 state is `landing` as {id, title} in id order, each title that of the clone's item file; null while no live process holds
 it. The CPU groups come from one `ps -A -o pid=,pcpu=,args=` listing: each
 command line is matched against fixed patterns in memory and only its kind, clone, CPU and count are kept (`unsupported`
-where there is no `ps`). Imports `mon_base`; `tests`, `kg_lock` and `bl_stall` where it reads them.
+where there is no `ps`). Imports `mon_base`; `tests`, `kg_lock`, `bl_stall`, `bl_close` and `mon_sessions` (the clone's backlog, the run states and the landing steps) where it reads them.
 """
 import os
 import re

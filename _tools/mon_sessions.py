@@ -36,7 +36,7 @@ ancestor, else null) and the items it waits on as {id, title}, a process that no
 item id (by its newest progress event) and `items`, each {item, title, state (the run state), git (the state git shows), why,
 age_s}; it is left out where the store is a url, `runs` cannot read coord or the root has no backlog items. `alerts` raises
 `sessions.orphan` and, while `drift` counts one, `runs.drift` (kind `drift`). Imports `mon_base` and `mon_view`; `bl_procs`,
-`bl_stall`, `bl_base`, `bl_cost`, `ql_base`, `ql_distill` and `ql_report` where it reads them.
+`bl_stall`, `bl_base`, `bl_runs`, `bl_cost`, `ql_base`, `ql_distill` and `ql_report` where it reads them.
 """
 import contextlib
 import datetime
