@@ -49,6 +49,25 @@
     "kb/_self/tools.md",
     "kb/_self/coordination.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the webhook receiver put the alert name into the ask event, whose fields are closed to id, to and ref, and which limits does it set?",
+      "options": [
+        "ask id ALERTNAME-hex, 50 alerts and 1 MiB per post",
+        "add an alert field to the ask kind in coord.py"
+      ],
+      "recommendation": "ask id ALERTNAME-hex, 50 alerts and 1 MiB per post",
+      "do": {
+        "ask id ALERTNAME-hex, 50 alerts and 1 MiB per post": "ST-i4ejksl2",
+        "add an alert field to the ask kind in coord.py": "ST-i4ejksl2"
+      },
+      "class": "design",
+      "answer": "ask id ALERTNAME-hex, 50 alerts and 1 MiB per post",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-d6gbc3tq plan"
   ],

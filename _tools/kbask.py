@@ -35,6 +35,12 @@
                                         key, and start one detached session (Haiku, a lower budget, only `kbmon.py --json`
                                         and `tidy --json` to run) that advises remove or keep for each; its result is
                                         posted as the answer of one ask to `kb-observer`
+  kbask.py webhook [--port N]           listen on 127.0.0.1 only (default port 9095, where otel/alertmanager.yml sends) for an
+                                        Alertmanager version 4 webhook post at /alert, and post one ask to `operator` for each
+                                        firing alert (its id starts with the alertname): the text names the alertname, item and
+                                        sprint labels, no other label or annotation. A
+                                        resolved alert and a body that is no Alertmanager post post nothing (HTTP 400 for the
+                                        latter); runs until stopped
 
   --store PATH | --url URL --key-file PATH [--plain-http]   the coord store or server (as coord.py's; default: the project's store when it is not this clone's, else coord.py's)
 
@@ -46,6 +52,7 @@ Answers: how an alert of the monitor gets a capped read-only diagnosis
 Use: python3 _tools/kbask.py ask TARGET QUESTION | answer ID TEXT | remediate ALERT | summary ID
 """
 import argparse
+import http.server
 import json
 import os
 import re
@@ -124,6 +131,15 @@ SETTLE_SECONDS = 6  # how long `cleanup` waits for its detached session to end b
 MAX_TEXT = 8000  # characters of a question or an answer
 ASK_ID = re.compile(r"[A-Za-z0-9_.:#@-]{1,100}")  # one coord id, with no `/` (the key is ask/ID)
 ALERT_ID = re.compile(r"[A-Za-z0-9_.:/#@-]{1,100}")
+WEBHOOK_HOST = "127.0.0.1"  # loopback only, not an option
+WEBHOOK_PORT = 9095  # the port of the url in otel/alertmanager.yml
+WEBHOOK_PATH = "/alert"
+WEBHOOK_MAX_BODY = 1 << 20  # bytes of one post
+WEBHOOK_MAX_ALERTS = 50  # alerts of one post that get an ask
+WEBHOOK_LABELS = ("alertname", "item", "sprint")  # the only labels an ask names
+WEBHOOK_TIMEOUT = 10  # seconds a client may hold the one thread
+LABEL_VALUE = re.compile(r"[A-Za-z0-9_.:-]{1,100}")
+WEBHOOK_ASK = "Alert {alertname} is firing{where}. See `python3 _tools/kbmon.py --status`."
 
 
 class Stop(Exception):
@@ -514,6 +530,84 @@ def cmd_summary(args):
     return None
 
 
+def firing_alerts(doc):
+    """The label dicts of the firing alerts of DOC, an Alertmanager version 4 webhook post, each cut to WEBHOOK_LABELS whose value
+    is a plain id (so no other label, annotation or free text reaches an ask); None when DOC is no such post. An alert with no
+    alertname is skipped."""
+    if not isinstance(doc, dict) or str(doc.get("version")) != "4" or not isinstance(doc.get("alerts"), list):
+        return None
+    found = []
+    for alert in doc["alerts"][:WEBHOOK_MAX_ALERTS]:
+        if not isinstance(alert, dict) or alert.get("status") != "firing" or not isinstance(alert.get("labels"), dict):
+            continue
+        labels = {k: v for k, v in alert["labels"].items()
+                  if k in WEBHOOK_LABELS and isinstance(v, str) and LABEL_VALUE.fullmatch(v)}
+        if "alertname" in labels:
+            found.append(labels)
+    return found
+
+
+def webhook_ask(labels):
+    where = [f"{name} {labels[name]}" for name in ("item", "sprint") if name in labels]
+    return WEBHOOK_ASK.format(alertname=labels["alertname"], where=f" ({', '.join(where)})" if where else "")
+
+
+def webhook_handler(conn):
+    class Handler(http.server.BaseHTTPRequestHandler):
+        timeout = WEBHOOK_TIMEOUT
+
+        def reply(self, code, text=""):
+            body = text.encode("utf-8")
+            self.send_response(code)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def do_POST(self):
+            try:
+                size = int(self.headers.get("Content-Length", ""))
+            except ValueError:
+                size = -1
+            if self.path != WEBHOOK_PATH or not 0 < size <= WEBHOOK_MAX_BODY:
+                return self.reply(404 if self.path != WEBHOOK_PATH else 400)
+            try:
+                alerts = firing_alerts(json.loads(self.rfile.read(size)))
+            except ValueError:
+                alerts = None
+            if alerts is None:
+                return self.reply(400, "not an Alertmanager version 4 post")
+            try:
+                for labels in alerts:
+                    send_ask(conn, labels["alertname"][:80] + "-" + secrets.token_hex(5), OPERATOR, webhook_ask(labels))
+            except Stop as stop:  # a 5xx makes Alertmanager send the post again
+                print(str(stop), file=sys.stderr)
+                return self.reply(502)
+            self.reply(200, f"{len(alerts)} asked")
+
+        def log_message(self, *_args):
+            pass
+
+    return Handler
+
+
+def cmd_webhook(args):
+    conn = connection(args)
+    if not 0 < args.port < 65536:
+        raise Stop("kbask: --port is 1 to 65535")
+    try:
+        server = http.server.HTTPServer((WEBHOOK_HOST, args.port), webhook_handler(conn))
+    except OSError as error:
+        raise Stop(f"kbask: cannot listen on {WEBHOOK_HOST}:{args.port}: {error.strerror or error.__class__.__name__}")
+    print(f"kbask: webhook on http://{WEBHOOK_HOST}:{args.port}{WEBHOOK_PATH}", file=sys.stderr, flush=True)
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
+    return None
+
+
 def build_parser():
     conn = argparse.ArgumentParser(add_help=False)
     conn.add_argument("--store", default=argparse.SUPPRESS, help="the coord SQLite file (default: coord.py's)")
@@ -542,11 +636,13 @@ def build_parser():
     p = sub.add_parser("cleanup", parents=[conn], help="ask the operator about the leftovers tidy cannot decide")
     p.add_argument("--root", help="the clone whose tidy rows are read (default: this clone)")
     p.add_argument("--older-than", type=float, metavar="HOURS", help="tidy's age limit in hours (default: tidy's)")
+    p = sub.add_parser("webhook", parents=[conn], help="post an ask to the operator for each firing alert of an Alertmanager webhook post")
+    p.add_argument("--port", type=int, default=WEBHOOK_PORT, help=f"the loopback port (default: {WEBHOOK_PORT})")
     sub.add_parser("_watch", parents=[conn])
     return parser
 
 
-COMMANDS = {"ask": cmd_ask, "answer": cmd_answer, "coordinate": cmd_coordinate, "remediate": cmd_remediate, "summary": cmd_summary, "cleanup": cmd_cleanup, "_watch": cmd_watch}
+COMMANDS = {"ask": cmd_ask, "answer": cmd_answer, "coordinate": cmd_coordinate, "remediate": cmd_remediate, "summary": cmd_summary, "cleanup": cmd_cleanup, "webhook": cmd_webhook, "_watch": cmd_watch}
 
 
 def main(argv=None):
