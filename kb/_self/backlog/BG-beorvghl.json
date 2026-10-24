@@ -2,7 +2,7 @@
   "id": "BG-beorvghl",
   "kind": "bug",
   "title": "dispatch's OTEL_RESOURCE_ATTRIBUTES keeps an entry whose key holds an email address",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yisvj7vd",
   "priority": "P2",
   "rank": 0,
@@ -23,6 +23,6 @@
   "links": [
     "parked: SP-ymnz7b4n review"
   ],
-  "notes": "Premise run 2026-10-24 on the day-run base: repro exits 1 (output jan%40corp-mail.test=1,kb.item.id=BG-x). Touches added at planning: _tools/bl_dispatch.py plus kb/_self/tools.md and kb/_self/backlog.md, whose dispatch text says an entry whose value holds an email address is dropped; reword to key or value. kbwho.otel_attributes already drops by key or value. Planned into SP-yisvj7vd, 2026-10-24.",
+  "notes": "Premise run 2026-10-24 on the day-run base: repro exits 1 (output jan%40corp-mail.test=1,kb.item.id=BG-x). Touches added at planning: _tools/bl_dispatch.py plus kb/_self/tools.md and kb/_self/backlog.md, whose dispatch text says an entry whose value holds an email address is dropped; reword to key or value. kbwho.otel_attributes already drops by key or value. Planned into SP-yisvj7vd, 2026-10-24. Sprint started 2026-10-24.",
   "filed_in": "clone-0ea70e5c"
 }
