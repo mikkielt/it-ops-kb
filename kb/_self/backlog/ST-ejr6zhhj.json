@@ -2,7 +2,7 @@
   "id": "ST-ejr6zhhj",
   "kind": "story",
   "title": "Review sprint: An agent finds the deterministic tool that answers a question from one entry point",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-x6eqtsid",
   "review": true,
   "priority": "P1",
@@ -24,5 +24,7 @@
     }
   ],
   "notes": "Reviewer: read each story's checks as planted runs (copies of _tools, fake claude on PATH); the one blocking gate (ST-e6xp5h3u g1, the AGENTS.md cut) was answered with its recommendation under the operator's standing approval for the 2026-10-24 night run. Ready once the stories and the research story are done.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
