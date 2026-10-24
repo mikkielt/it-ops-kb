@@ -66,7 +66,9 @@
     "otel/prometheus.yml",
     "otel/alertmanager.yml",
     "kb/_self/monitoring.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/mon_coord.py",
+    "kb/_self/code.md"
   ],
   "gates": [
     {
@@ -159,7 +161,7 @@
       "role": "interactive"
     }
   ],
-  "notes": "Premise: otel/kbmon.rules.yml holds three rules on the kb's health (eval, any alert, an orphan) and none on a sprint run; otel/prometheus.yml has no alerting block and the repository no Alertmanager config (the check prints rules [], alerting False, alertmanager.yml False). Prometheus only evaluates alerts; notifying is a separate Alertmanager (kb/public/logs/prometheus-retention-exposition.md:55, DOC). As for Prometheus itself, the operator installs Alertmanager outside the clone; the repository holds config files only. Plan 2026-10-24 (SP-d6gbc3tq): check 1 (--check-rules) already passes before the work: it pins that every kbmon_ name in the rules file, the three new rules included, is served by /metrics, so it must keep passing. Checks added: 2 = run points for the blocked, failed and working states plus two seconds points; 3 = alertmanager.yml holds a loopback webhook and neither file holds a credential-like key. Gate g1 (webhook receiver) is answered, the receiver itself is not in the goal: filed as the parked draft ST-i4ejksl2; until it exists the webhook url points at nothing, said in kb/_self/monitoring.md. Planned into SP-d6gbc3tq on 2026-10-24 (night run). Sprint SP-d6gbc3tq started 2026-10-24.",
+  "notes": "Premise: otel/kbmon.rules.yml holds three rules on the kb's health (eval, any alert, an orphan) and none on a sprint run; otel/prometheus.yml has no alerting block and the repository no Alertmanager config (the check prints rules [], alerting False, alertmanager.yml False). Prometheus only evaluates alerts; notifying is a separate Alertmanager (kb/public/logs/prometheus-retention-exposition.md:55, DOC). As for Prometheus itself, the operator installs Alertmanager outside the clone; the repository holds config files only. Plan 2026-10-24 (SP-d6gbc3tq): check 1 (--check-rules) already passes before the work: it pins that every kbmon_ name in the rules file, the three new rules included, is served by /metrics, so it must keep passing. Checks added: 2 = run points for the blocked, failed and working states plus two seconds points; 3 = alertmanager.yml holds a loopback webhook and neither file holds a credential-like key. Gate g1 (webhook receiver) is answered, the receiver itself is not in the goal: filed as the parked draft ST-i4ejksl2; until it exists the webhook url points at nothing, said in kb/_self/monitoring.md. Planned into SP-d6gbc3tq on 2026-10-24 (night run). Sprint SP-d6gbc3tq started 2026-10-24. Night run 2026-10-24: gate g5 answered by the orchestrator under the operator's standing pre-approval (pre-approved by the operator for the 2026-10-24 night run) with the first option, not the worker's recommendation of filing a separate story: that story would sit in no sprint tonight and leave this item waiting; one file widened, easy to reverse. Apply the staged change after ST-n5vf55qk lands (it edits the same file).",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
