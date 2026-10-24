@@ -239,6 +239,61 @@ def open_gate_ids(bl, iid):
     return ",".join(str(g["id"]) for g in open_gates(item if isinstance(item, dict) else {}) if g.get("id"))
 
 
+def run_state_of(iid):
+    """The run state the coord key run/<id> holds ('' when it is absent or coord cannot be read)."""
+    code, body, _err = bl_clean.run_coord("get", f"run/{iid}")
+    return str(body.get("value") or "") if code == 0 and isinstance(body, dict) else ""
+
+
+def worker_running(bl, iid):
+    """Whether the worker `dispatch` started for the item still runs: its pid from the coord `own/` process record of the
+    item (the store a worker's worktree shares), else from this working tree's claims ledger, alive and, where the record
+    holds its start time, the same process."""
+    found = []
+    try:
+        ledger = claims_ledger(bl.root)[1]
+        rec = json.loads(ledger.read_text(encoding="utf-8")).get(iid) if ledger else None
+        if isinstance(rec, dict):
+            found.append((rec.get("worker_pid"), None))
+    except (OSError, ValueError):
+        pass
+    try:
+        found += [(r.get("pid"), r.get("start")) for r in bl_clean.coord_state()["owners"]
+                  if r.get("class") == bl_clean.PROCESS and r.get("item") == iid]
+    except (bl_clean.CoordLocked, Rejected):
+        pass
+    table = bl_clean.host_table(bl.root) or {}
+    for pid, start in found:
+        seen = table.get(pid) if isinstance(pid, int) else None  # the table leaves out a zombie
+        if seen is not None and (start is None or seen[1] == start):
+            return True
+    return False
+
+
+def gate_blocked(bl, iid, it):
+    """After a blocking gate was added to the item IT: its run state working moves to blocked with the ids of every open
+    blocking gate (the field gates), and blocked, which does not move to itself, gets a progress event with the longer
+    list. Any other run state is left as it is."""
+    ids = ",".join(str(g["id"]) for g in open_gates(it) if g.get("id"))
+    state = run_state_of(iid)
+    if state == "working":
+        move_run(iid, "blocked", "gate add", gates=ids)
+    elif state == "blocked":
+        code, _body, err = bl_clean.run_coord("post", "--kind", "progress", "--field", f"item={iid}", "--field",
+                                              "state=blocked", "--field", f"gates={ids}")
+        if code:
+            say(f"gate add: no progress event posted for {iid}: {err or 'coord.py exited ' + str(code)} "
+                "(backlog.py runs --reconcile repairs the run state)")
+
+
+def gate_answered(bl, iid, it):
+    """After a blocking gate of the item IT was answered: when no blocking gate is open any more and the run state is
+    blocked, it moves to working while the worker's recorded pid runs, else to returned."""
+    if open_gates(it) or run_state_of(iid) != "blocked":
+        return
+    move_run(iid, "working" if worker_running(bl, iid) else "returned", "answer")
+
+
 def cmd_claim(bl, a):
     iid = need(bl, a.id)
     it = bl.items[iid]
@@ -443,6 +498,8 @@ def cmd_answer(bl, a):
         commit_answer(bl, a, iid, a.gate)
     else:
         commit_written(bl, a, "answer", iid, body=f"Gate {a.gate}.")
+    if g.get("kind") == "blocking":
+        gate_answered(bl, iid, it)
     return 0
 
 
@@ -978,6 +1035,8 @@ def gate_add(bl, a):
 
     changed_item(bl, iid, edit)
     say(f"gate {gid} ({gate['kind']}) added to {bl.label(iid)}, {why}: {gate['question']}")
+    if gate["kind"] == "blocking":
+        gate_blocked(bl, iid, {"gates": [*gates, gate]})
     return 0
 
 
