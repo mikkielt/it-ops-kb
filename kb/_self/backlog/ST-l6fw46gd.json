@@ -52,7 +52,9 @@
       },
       "class": "design",
       "answer": "Add tracecontext.py, textmap.py and span.py rows at the article's pinned commit 14971cef9c84 (v1.45.1), no expansions: the item check passes on the facts as worded",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Planning 2026-10-24: goal reworded without apostrophes into two clauses (DOC format facts, CODE propagator facts), both read by the one check (four DOC cases, one CODE case). Premise: the check fails on the base (precheck). Planned 2026-10-24 into SP-r7e7jcep: third in the run order (after ST-e2ijqjsr), since the five research stories share the source, anchor and expansions files.",
