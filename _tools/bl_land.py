@@ -2161,12 +2161,12 @@ def land_move_run(bl, a):
     try:
         code = land_pass(bl, a)
     except Exception as e:  # noqa: BLE001 - a stop of any kind leaves the state refused, naming its step
-        move_run(iid, "refused", "land", step=land_refused_step(e))
+        move_run(iid, "refused", "land", step=ops_token(land_refused_step(e)))  # coord takes an id: no spaces
         raise
     if code:
         move_run(iid, "refused", "land", step="land")
     elif LAND_OPS.get("pending") and not getattr(a, "wait_merge", None):  # a merge request still to merge, no wait
-        move_run(iid, "refused", "land", step="merge request")
+        move_run(iid, "refused", "land", step=ops_token("merge request"))
     return code
 
 
