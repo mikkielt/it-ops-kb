@@ -403,15 +403,17 @@ def check_token(run):
     return tok if tok[:1].isalpha() else f"c-{tok}"[:40]
 
 
-def refuse_done(iid, t0, reasons, message, checks=()):
+def refuse_done(iid, t0, reasons, message, checks=(), record=True):
     """Append the `done.refused` ops row (the item, its closed reason classes, the failed checks' names and the
-    milliseconds spent), then refuse with MESSAGE. Best effort: the row never changes the refusal."""
+    milliseconds spent), then refuse with MESSAGE. Best effort: the row never changes the refusal. RECORD false (a
+    `done --dry-run`) writes no row, so `ops` lists only the refusals of real done runs."""
     try:
-        from ql_deliver import ops_row
-        fields = {"item": iid, "reasons": sorted(set(reasons)), "ms": int((time.monotonic() - t0) * 1000)}
-        if checks:
-            fields["checks"] = [check_token(c) for c in checks][:20]
-        ops_row("done.refused", **fields)
+        if record:
+            from ql_deliver import ops_row
+            fields = {"item": iid, "reasons": sorted(set(reasons)), "ms": int((time.monotonic() - t0) * 1000)}
+            if checks:
+                fields["checks"] = [check_token(c) for c in checks][:20]
+            ops_row("done.refused", **fields)
     except Exception:  # noqa: BLE001 - a refusal never fails for its log
         pass
     raise Refused(message)
@@ -629,12 +631,12 @@ def cmd_done(bl, a):
                             + " (restore those rows, or name each source id in the goal: backlog.py set "
                               f"{iid} --goal TEXT)")
     if problems:
-        refuse_done(iid, t0, reasons, f"{bl.label(iid)} is not done:\n  " + "\n  ".join(problems))
+        refuse_done(iid, t0, reasons, f"{bl.label(iid)} is not done:\n  " + "\n  ".join(problems), record=not a.dry_run)
     checks = list(it.get("checks", [])) + ([it["repro"]] if it.get("repro") else [])
     loaded = loaded_host_for_suite(checks) if it.get("review") else None
     if loaded:  # before the run, which on a loaded host takes minutes and refuses over its seconds ceiling
         refuse_done(iid, t0, ["not-ready"], f"{bl.label(iid)} is not done: {loaded}; run done again once the load has "
-                    "fallen (selfcheck's host check names the same limit)")
+                    "fallen (selfcheck's host check names the same limit)", record=not a.dry_run)
     results, failed, passed = [], [], []
     for c in checks:
         ok, code, out = run_check(bl.root, c)
@@ -650,11 +652,12 @@ def cmd_done(bl, a):
             say(f"--- {shlex.join(c['run'])} (want exit {c.get('exit', 0)}"
                 + (f", output matching {c['match']!r}" if c.get("match") else "") + f"):\n{tail}")
         refuse_done(iid, t0, ["check-failed"], f"{bl.label(iid)} is not done: {len(failed)} check(s) failed",
-                    [c["run"] for c, _, _ in failed])
+                    [c["run"] for c, _, _ in failed], record=not a.dry_run)
     try:
         noop_proof(bl, iid, passed)
     except Refused as e:
-        refuse_done(iid, t0, ["no-op-proof"], str(e), [c["run"] for c, out in passed if noop_output(out)])
+        refuse_done(iid, t0, ["no-op-proof"], str(e), [c["run"] for c, out in passed if noop_output(out)],
+                    record=not a.dry_run)
     if it.get("review"):  # every done item's proof, once more on the sprint's tip: one that fails here does not close
         stale = rerun_done_checks(bl, bl.sprint_of(iid), record=not a.dry_run)
         if stale:  # the gone checks it recorded are committed first, so the next landing does not run them again
@@ -664,7 +667,7 @@ def cmd_done(bl, a):
                         "fail on the sprint's tip:\n  " + "\n  ".join(f"{bl.label(i)}: `{shlex.join(c['run'])}` exits "
                                                                      f"{code}" for i, c, code in stale)
                         + "\nreopen each (backlog.py reopen ID --why ...) and fix it, or fix its check",
-                        [c["run"] for _, c, _ in stale])
+                        [c["run"] for _, c, _ in stale], record=not a.dry_run)
     if a.dry_run:
         say(f"{bl.label(iid)} would be done")
         return 0
