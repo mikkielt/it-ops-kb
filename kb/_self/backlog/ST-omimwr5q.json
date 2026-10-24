@@ -4,6 +4,7 @@
   "title": "A workspace that installs the plugin gets the coord hook and a coord store of its own, so its sessions coordinate as the clone's do",
   "status": "draft",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-sucr3kfg",
   "priority": "P2",
   "rank": 0,
   "goal": "the plugin manifest registers the coord hook (SessionStart, SessionEnd, UserPromptExpansion for kb-research, PreToolUse for Bash, Skill, Edit and Write) from the plugin root, and it runs only when the project's backlog.json hooks list names coord, as horizon and intake do; coord.py, the hook, kbask and kbmon resolve the store from the project (CLAUDE_PROJECT_DIR, else the working directory's git common dir) when the script's own clone is not the project, so each workspace has its own store, kbmon --root WS shows that workspace's coord, sessions and sprint panels, and no project writes into the plugin's copy; KB_COORD_STORE and --store still win",
@@ -14,6 +15,35 @@
         "-c",
         "import subprocess, tempfile, os, sys, json\nR = os.getcwd(); W = tempfile.mkdtemp()\nsubprocess.run(['git', 'init', '-q', W])\nenv = {k: v for k, v in os.environ.items() if k != 'KB_COORD_STORE'}\nenv['CLAUDE_PROJECT_DIR'] = W\nr = subprocess.run([sys.executable, os.path.join(R, '_tools', 'coord.py'), 'list', '--prefix', 'zz-premise/'], cwd=W,\n                   capture_output=True, text=True, env=env)\nstore = os.path.join(W, '.git', 'kb-coord', 'coord.sqlite')\nplugin = json.load(open(os.path.join(R, '.claude-plugin', 'plugin.json'), encoding='utf-8'))\nhooked = 'coord_hook.py' in json.dumps(plugin.get('hooks', {}))\nok = r.returncode == 0 and os.path.exists(store) and hooked\nprint('list exit', r.returncode, '| workspace store made:', os.path.exists(store), '| plugin registers coord hook:', hooked)\nsys.exit(0 if ok else 1)\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, tempfile, os, sys, json\nR = os.getcwd()\nbase = {k: v for k, v in os.environ.items() if k not in ('KB_COORD_STORE', 'CLAUDE_PROJECT_DIR')}\nHOOK = os.path.join(R, '.claude', 'hooks', 'coord_hook.py')\nCOORD = os.path.join(R, '_tools', 'coord.py')\ndef workspace(hooks):\n    W = tempfile.mkdtemp(); subprocess.run(['git', 'init', '-q', W])\n    json.dump({'hooks': hooks}, open(os.path.join(W, 'backlog.json'), 'w', encoding='utf-8'))\n    return W\ndef hook(W, event, sid, env):\n    p = json.dumps({'hook_event_name': event, 'session_id': sid, 'cwd': W, 'source': 'startup'})\n    return subprocess.run([sys.executable, HOOK, '--opt-in'], input=p, capture_output=True, text=True, cwd=W, env=env, timeout=60)\nstore = lambda W: os.path.join(W, '.git', 'kb-coord', 'coord.sqlite')\nstate = lambda sid: os.path.join(R, '_cache', 'coord_hook', sid + '.json')\nsessions = []\ntry:\n    off, on, forced = workspace([]), workspace(['coord']), workspace(['coord'])\n    X = os.path.join(tempfile.mkdtemp(), 'x.sqlite')\n    runs = {}\n    for name, W, extra in (('off', off, {}), ('on', on, {}), ('forced', forced, {'KB_COORD_STORE': X})):\n        sid = 'zz-premise-' + name\n        env = dict(base, CLAUDE_PROJECT_DIR=W, **extra)\n        sessions.append((W, sid, env))\n        r = hook(W, 'SessionStart', sid, env)\n        runs[name] = (r.returncode, r.stdout.strip(), os.path.exists(store(W)), os.path.exists(state(sid)))\n    listed = subprocess.run([sys.executable, COORD, 'list', '--prefix', 'session/'], capture_output=True, text=True,\n                            cwd=on, env=dict(base, CLAUDE_PROJECT_DIR=on)).stdout\n    in_x = subprocess.run([sys.executable, COORD, '--store', X, 'list', '--prefix', 'session/'], capture_output=True, text=True).stdout\nfinally:\n    for W, sid, env in sessions:\n        hook(W, 'SessionEnd', sid, env)\nok = (runs['off'][1] == '' and not runs['off'][2]\n      and runs['on'][0] == 0 and runs['on'][2] and 'zz-premise-on' in listed and not runs['on'][3]\n      and not runs['forced'][2] and 'zz-premise-forced' in in_x)\nprint('off (no coord in hooks): output', repr(runs['off'][1][:40]), 'store', runs['off'][2], '| on: store', runs['on'][2], 'lease listed', 'zz-premise-on' in listed,\n      'state file in plugin copy', runs['on'][3], '| KB_COORD_STORE wins: workspace store', runs['forced'][2], 'lease in X', 'zz-premise-forced' in in_x)\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the plugin manifest registers the coord hook (SessionStart, SessionEnd, UserPromptExpansion for kb-research, PreToolUse for Bash, Skill, Edit and Write) from the plugin root",
+      "check": 0
+    },
+    {
+      "clause": "it runs only when the project's backlog.json hooks list names coord, as horizon and intake do",
+      "check": 1
+    },
+    {
+      "clause": "coord.py, the hook, kbask and kbmon resolve the store from the project (CLAUDE_PROJECT_DIR, else the working directory's git common dir) when the script's own clone is not the project, so each workspace has its own store, kbmon --root WS shows that workspace's coord, sessions and sprint panels",
+      "check": 0
+    },
+    {
+      "clause": "no project writes into the plugin's copy",
+      "check": 1
+    },
+    {
+      "clause": "KB_COORD_STORE and --store still win",
+      "check": 1
     }
   ],
   "touches": [
@@ -24,7 +54,14 @@
     "_tools/mon_coord.py",
     "kb/_self/coordination.md",
     "kb/_self/plugin.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/token-efficiency.md",
+    "_tools/bl_base.py",
+    "kb/_self/backlog.md",
+    "kb/_self/querylog.md"
   ],
+  "notes": "Plan 2026-10-24: premise reproduced on base (precheck: coord.py list with CLAUDE_PROJECT_DIR set makes no workspace store, the manifest names no coord hook). Second check added: it runs .claude/hooks/coord_hook.py --opt-in (the flag the plugin's entry passes, as horizon and intake take --opt-in) in three planted workspaces: hooks without coord (no output, no store), hooks with coord (workspace store holds the session lease, no state file under this clone's _cache), KB_COORD_STORE set (wins). bl_base.HOOK_NAMES accepts only horizon and intake today, so a hooks list naming coord is refused by backlog.py config and check: this item adds coord there (touches widened with _tools/bl_base.py and kb/_self/backlog.md) before ST-ct2dpjgz, whose kbsettings.py init writes it. Not read by any check: kbmon --root WS panels and the kbask resolution; implement them as the goal says. Planned into SP-sucr3kfg on 2026-10-24.",
   "filed_in": "clone-0ea70e5c"
 }
