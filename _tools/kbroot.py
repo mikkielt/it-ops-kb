@@ -10,15 +10,18 @@
                                          kb/NAME (a failure removes the pointer again, exit 1)
   kbroot.py fetch [--pin] [NAME ...]     clone or update each fetch root (all, or those named) into _cache/roots/NAME/
                                          (${CLAUDE_PLUGIN_DATA}/roots/NAME/ when this copy runs as the plugin) at its
-                                         `pin` or the tip of its `ref`, with no credential prompt; a failure is kept as the
+                                         `pin` or the tip of its `ref`, with no credential prompt; a failed git command
+                                         reports its reason line (the `! [rejected]` line of a refused push, else the last
+                                         line that is no `hint:` line, the url left out); a failure is kept as the
                                          reason `list` gives for a root with no clone, and the clone of an update that
                                          fails stays as it was. `--pin` writes the commit the clone is at into the
                                          pointer's `pin`, so the root stays there until `pin` is emptied (refused, exit 2,
                                          when this copy runs as the plugin: the pointer is in the plugin copy). A fetch of a
                                          root with a `pin` checks out the pin, whatever its `ref` has moved to. Only
                                          this command and its --hook form fetch: lookups read what is on disk
-  kbroot.py fetch --hook                 the SessionStart form: fetch each fetch root with no clone, whose last fetch is
-                                         older than HOOK_MAX_AGE_S or used another url, ref or pin, each bounded at HOOK_FETCH_BOUND_S and all within HOOK_BUDGET_S
+  kbroot.py fetch --hook                 the SessionStart form: fetch each fetch root for which any one of these holds: it has
+                                         no clone, its last fetch is older than HOOK_MAX_AGE_S, or its last fetch used another
+                                         url, ref or pin (any one of them); each bounded at HOOK_FETCH_BOUND_S and all within HOOK_BUDGET_S
                                          (a root not reached is left to the next session); prints one line per failed
                                          root and nothing else; always exit 0
   kbroot.py push NAME                    push the commits of the checked-out submodule root kb/NAME to its own remote
