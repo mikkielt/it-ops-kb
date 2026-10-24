@@ -37,6 +37,25 @@
   "touches": [
     "_tools/kb_mcp.py"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Is a settings file whose permissions is JSON null a file bash_denied cannot read (denies every call), or one with no deny rule?",
+      "options": [
+        "null denies every call, like any non-object",
+        "null holds no deny rule, like a missing key"
+      ],
+      "recommendation": "null denies every call, like any non-object",
+      "do": {
+        "null denies every call, like any non-object": "BG-syhgfwdr",
+        "null holds no deny rule, like a missing key": "BG-syhgfwdr"
+      },
+      "class": "design",
+      "answer": "null denies every call, like any non-object",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-swavez3g review"
   ],
