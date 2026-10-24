@@ -41,6 +41,9 @@
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
   ],
+  "depends_on": [
+    "ST-4vu4qvd6"
+  ],
   "links": [
     "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],
