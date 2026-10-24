@@ -2,7 +2,7 @@
   "id": "BG-erzl74n6",
   "kind": "bug",
   "title": "done's ledger check turns any error reading the ledgers into a warning and lets the item through with the check off",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,
@@ -22,5 +22,7 @@
   "links": [
     "parked: SP-7nv2ffr2 review"
   ],
-  "notes": "Planner 2026-10-24: the repro reads source text only (the warning string is absent). The worker adds one planted-run check with set --add-check that drives the ledger read error into done and asserts the refusal names it, and keeps the repro passing."
+  "notes": "Planner 2026-10-24: the repro reads source text only (the warning string is absent). The worker adds one planted-run check with set --add-check that drives the ledger read error into done and asserts the refusal names it, and keeps the repro passing.",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
