@@ -2,7 +2,7 @@
   "id": "BG-qad2na5d",
   "kind": "bug",
   "title": "secret-shapes-in-text.md's two DER facts on key-block paragraphs and nested-JSON scanners claim more than their sources",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,
@@ -53,6 +53,19 @@
   "links": [
     "parked: SP-evq2flqc review"
   ],
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "352f61dd7a705d8a9f6a2383ba5b8bf810f74193",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('kb/public/security/secret-shapes-in-text.md',encoding='utf-8').read();bad=[p for p in ('hold no blank line','looks for one backslash') if p in t];print('overclaiming phrases:',bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "824e95c770fe0235"
+      }
+    ]
+  }
 }
