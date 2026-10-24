@@ -214,6 +214,56 @@ def runs_of(rows, events, now):
     return out
 
 
+def transcript_age(sessions, now):
+    """The seconds since the newest write to the transcript of any of SESSIONS (`kbusage.find_transcript`); None when none of them
+    has one."""
+    import kbusage
+    from ql_capture import SAFE_SESSION
+    stamps = []
+    for session in sessions:
+        path = kbusage.find_transcript(session) if SAFE_SESSION.fullmatch(session) else None
+        try:
+            stamps.append(path.stat().st_mtime if path else None)
+        except OSError:
+            stamps.append(None)
+    stamps = [s for s in stamps if s is not None]
+    return max(0, int(now - max(stamps))) if stamps else None
+
+
+def with_silence(runs, rows, events, root, now, local=True):
+    """RUNS (`runs_of`) with `silent_s` added to each working run: the seconds it has gone with no sign of life, which `kbmon.coord.run.working_silent`
+    reads. A worker the coord `own/` records and the claims ledger name (`bl_items.worker_of`) that no longer runs, or that no record
+    names, leaves the seconds since the item's newest progress event; a worker that runs leaves the lesser of that and the seconds since the
+    newest write to the transcript of the item's sessions (the `session` of the item's `own/` records and of its intents that are no
+    claim's), and 0 where none of those has a transcript. A store read over a url (LOCAL false) names workers of another host: no pid is probed there
+    and the seconds are the progress event's. None for a working run with no progress event."""
+    import bl_clean
+    import bl_items
+    from types import SimpleNamespace
+    owners = [r for r in (bl_clean.recorded(x) for x in rows if str(x.get("key")).startswith(bl_clean.PREFIX)) if r]
+    coord = bl_items.coord_workers(owners)
+    table = bl_clean.host_table(root) if local else None
+    sessions = {}
+    for r in owners:
+        if r.get("item") and isinstance(r.get("session"), str):
+            sessions.setdefault(r["item"], set()).add(r["session"])
+    for e in events:
+        f = e.get("fields") if isinstance(e.get("fields"), dict) else {}
+        if e.get("kind") == "intent" and f.get("topic") != "backlog-claim" and isinstance(f.get("item"), str) \
+                and isinstance(f.get("session"), str):
+            sessions.setdefault(f["item"], set()).add(f["session"])
+    out = []
+    for run in runs:
+        if run["state"] == "working":
+            silent = run["age_s"]
+            if local and silent is not None and bl_items.worker_of(SimpleNamespace(root=Path(root)), run["item"], coord, table)[1]:
+                quiet = transcript_age(sorted(sessions.get(run["item"], ())), now)
+                silent = 0 if quiet is None else min(silent, quiet)
+            run = {**run, "silent_s": silent}
+        out.append(run)
+    return out
+
+
 def run_rows(ctx):
     """`runs_of` of the store the panels read (`--store`, `KB_COORD_STORE`, the clone's, or `--url`), read with `coord.py list
     --prefix run/` and one `wait --since 0 --timeout 0`; None where there is no store, the server cannot be reached or coord
@@ -243,7 +293,7 @@ def collect(ctx):
     events = every[-EVENTS_KEPT:]
     asks = open_asks(every)
     settings, bad = settings_of(ctx.root)
-    data = {"source": source, "claims": claims, "runs": runs_of(rows, every, now),
+    data = {"source": source, "claims": claims, "runs": with_silence(runs_of(rows, every, now), rows, every, ctx.root, now, source == "local"),
             "events": [{"seq": e["seq"], "kind": e["kind"], "fields": event_fields(e)} for e in reversed(events)],
             "digest": [mon_view.session_text(x) for x in out["digest"].splitlines() if x.strip()],
             "asks": ask_texts(conn, asks[:ASKS_KEPT]), "asks_open": len(asks), "settings": settings}
