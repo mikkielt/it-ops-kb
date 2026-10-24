@@ -28,7 +28,7 @@
   "links": [
     "parked: SP-evq2flqc review"
   ],
-  "notes": "Found 2026-10-23 by the SP-evq2flqc fresh review: the gap takes // as a pair, so a third / or ! leaves no 20-character base64 run after the label. A table whose delimiter row sits between the label row and the key row also passes (- is no gap character); that case is outside the goal.",
+  "notes": "Found 2026-10-23 by the SP-evq2flqc fresh review: the gap takes // as a pair, so a third / or ! leaves no 20-character base64 run after the label. A table whose delimiter row sits between the label row and the key row also passes (- is no gap character); that case is outside the goal. Planner 2026-10-24: kb/_self/map.csv maps kbcommon.py to docs outside the touches (plugin.md, the kb-ingest skill). The landed sibling BG-ok4itunr named kb/_self/code.md, tools.md, plugin.md, content-rules.md and .claude/skills/kb-ingest/SKILL.md in a Self-Reviewed trailer. Read the part of each that describes the leak scan; if still correct, name each in a Self-Reviewed trailer of your commit (land stops at the stale step otherwise); if one needs an edit, stop and report. Planted gates may be asked with the false class secrets or push (BG-sqmvvtiy); the operator's day-run pre-approval answers them with the recommendation.",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }
