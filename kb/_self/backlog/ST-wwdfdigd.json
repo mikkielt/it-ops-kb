@@ -36,6 +36,25 @@
     "kb/_self/maintaining.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does kb-setup's coordination step leave the tracked backlog.json alone in the kb clone?",
+      "options": [
+        "Run init, then undo the coord entry in backlog.json with git restore",
+        "Skip init in the kb clone and write nothing",
+        "Change init to skip backlog.json when it is tracked"
+      ],
+      "recommendation": "Run init, then undo the coord entry in backlog.json with git restore",
+      "do": {
+        "Run init, then undo the coord entry in backlog.json with git restore": "ST-wwdfdigd",
+        "Skip init in the kb clone and write nothing": "ST-wwdfdigd",
+        "Change init to skip backlog.json when it is tracked": "ST-wwdfdigd"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-sucr3kfg review"
   ],
