@@ -124,7 +124,9 @@
       },
       "class": "design",
       "answer": "Alertmanager 127.0.0.1:9093 (its default), webhook at 127.0.0.1:9095/alert",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",
