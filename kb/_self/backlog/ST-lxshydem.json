@@ -25,7 +25,8 @@
   ],
   "touches": [
     "_tools/fetch.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md"
   ],
   "relates_to": [
     "EP-mkzkd7in"
