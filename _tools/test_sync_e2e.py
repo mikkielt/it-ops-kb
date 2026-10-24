@@ -51,6 +51,22 @@ class TestRedGate:
         assert scenario.origin.rev("main") == pushed
 
 
+def test_pool_gate_refuses_only_the_defects_a_landing_adds(monkeypatch):
+    """The gate's `pool check` fails on the pool's old defects too: a defect line the base also prints is shown and not
+    refused, one the landing adds (the entry a gap row names closed) refuses; the route the pack prints is not part of
+    a defect."""
+    import kg_sync
+    old = "pool check: BP-00000001: expected route web but the pack prints split for its question (gap: Q1)"
+    new = "pool check: BP-00000002: its entry _gaps.md#12345678 is no longer open in _gaps.md (closed, narrowed or gone)"
+    warn = "pool check: BP-00000003: warning: its pack cites no source past its freshness lifetime now"
+    monkeypatch.setattr(kg_sync, "base_tool", lambda rev, name, *a: (1, old.replace("split", "good") + "\n" + warn))
+    code, out = kg_sync.pool_gate(1, "\n".join([old, warn]), "abc")
+    assert code == 0 and "refused=0 old=1" in out, out
+    code, out = kg_sync.pool_gate(1, "\n".join([old, new, warn]), "abc")
+    assert code == 1 and f"added by the landing: {new[len('pool check: '):]}" in out and "refused=1 old=1" in out, out
+    assert kg_sync.pool_gate(1, new, None)[0] == 0  # no base: printed, nothing told apart
+
+
 def test_code_commit_goes_to_a_branch(scenario):
     c = clone(scenario)
     before = scenario.origin.rev("main")
