@@ -2,7 +2,7 @@
   "id": "ST-syd4hyvn",
   "kind": "story",
   "title": "Review sprint: A team clone deploys from the public copy: busy-host ceiling at setup, fetch-only upstream, local fixes and backlog provenance",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-3trnelzv",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,27 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "dad1198c0150b38702c9ca07562186a8833b2a9b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "03f5a7e7b08bde92"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "cfae20b3cf69bc14"
+      }
+    ]
+  }
 }
