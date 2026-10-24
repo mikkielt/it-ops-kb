@@ -2,7 +2,7 @@
   "id": "SP-3i7hcb6i",
   "kind": "sprint",
   "title": "The coord hook announces right: own intents kept out of the cut, a wait that waits, redacted overlaps, a bounded run",
-  "status": "planned",
+  "status": "active",
   "goal": "the items' outcomes (bugs: their repro passes and nothing else breaks)",
   "gates": [
     {
@@ -14,9 +14,14 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
+  "notes": "Start gate answered approve on the operator's standing approval for the 2026-10-24 day run (pre-approved by the operator for the 2026-10-24 day run); answered by the runner on the operator's behalf.",
   "creator": "op-f618a13e",
   "filed_in": "clone-0ea70e5c"
 }
