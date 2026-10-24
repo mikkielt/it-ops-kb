@@ -37,10 +37,31 @@
   "touches": [
     "_tools/ql_capture.py"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does a writer know the feedback.ids lock it releases is its own, and that the stale lock it renamed is the one it saw?",
+      "options": [
+        "Token in the lock file; a renamed live lock is linked back",
+        "Lock file holds the PID and start time, as distill.lock does"
+      ],
+      "recommendation": "Token in the lock file; a renamed live lock is linked back",
+      "do": {
+        "Token in the lock file; a renamed live lock is linked back": "BG-7efq3pqt",
+        "Lock file holds the PID and start time, as distill.lock does": "BG-7efq3pqt"
+      },
+      "class": "secrets",
+      "answer": "Token in the lock file; a renamed live lock is linked back",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-vx6eufpj review"
   ],
-  "notes": "Planner 2026-10-24: the text repro (lock.unlink(missing_ok=True) absent from the function) is replaced by two planted runs: check 0 makes a second writer take over the stale lock between the first writer's stat and rename, the repro makes the lock change hands while the first writer holds it.",
+  "notes": "Planner 2026-10-24: the text repro (lock.unlink(missing_ok=True) absent from the function) is replaced by two planted runs: check 0 makes a second writer take over the stale lock between the first writer's stat and rename, the repro makes the lock change hands while the first writer holds it. Gate g1 (class secrets, set by the word token in a lock design question, the false class of BG-sqmvvtiy): answered with its recommendation, token in the lock file with a renamed live lock linked back (pre-approved by the operator for the 2026-10-24 day run); reason: a random token in the lock file needs no pid or clock and is easy to reverse.",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }
