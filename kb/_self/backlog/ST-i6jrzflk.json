@@ -12,7 +12,7 @@
       "run": [
         "python3",
         "-c",
-        "import re, sys\nt = open('kb/_self/coordination.md', encoding='utf-8').read()\nlines = [l for l in t.splitlines() if 'needs_you_after_min' in l]\nbad = [l[:160] for l in lines if re.search(r'any open (question|ask)', l)]\nprint('lines naming the setting', len(lines), '| say it delays any open question', bad)\nsys.exit(1 if bad or not lines else 0)\n"
+        "import re, sys\nt = open('kb/_self/coordination.md', encoding='utf-8').read()\nline = [l for l in t.splitlines() if l.startswith('- **`announce.needs_you_after_min`**')]\nbad = bool(line) and bool(re.search(r'open (question|ask)', line[0]))\nprint('setting line', line[:1] and line[0][:140], '| says an open question waits', bad)\nsys.exit(1 if bad or not line else 0)\n"
       ]
     }
   ],
