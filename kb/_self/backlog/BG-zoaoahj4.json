@@ -1,0 +1,37 @@
+{
+  "id": "BG-zoaoahj4",
+  "kind": "bug",
+  "title": "A land or pipeline ops row written by a probe run in a temporary clone reaches no real spool",
+  "status": "draft",
+  "parent": "EP-iowijan3",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "an ops row written by a probe whose working directory is not a checkout of the clone that owns the spool is not appended to that clone's spool, unless the caller names its own query-log home",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,shutil,subprocess as s,sys,tempfile,pathlib as P\nt1=P.Path(tempfile.mkdtemp());t2=P.Path(tempfile.mkdtemp())\nshutil.copytree(\"_tools\",t1/\"_tools\",ignore=shutil.ignore_patterns(\"__pycache__\",\"test_*\"))\nfor d in (t1,t2):s.run([\"git\",\"-C\",str(d),\"init\",\"-q\"],check=True)\nenv={k:v for k,v in os.environ.items() if k not in (\"PYTEST_CURRENT_TEST\",\"CLAUDE_PLUGIN_DATA\",\"CLAUDE_PLUGIN_ROOT\",\"CLAUDE_PROJECT_DIR\")}\ncode=\"import sys;sys.path.insert(0,%r);import bl_land;bl_land.ops_write(event='land.step',item='ST-ggggggg2',step='probe',exit=1,ms=5)\"%str(t1/\"_tools\")\np=s.run([sys.executable,\"-c\",code],cwd=t2,env=env,capture_output=True,text=True)\nrows=list((t1/\"_cache\").rglob(\"*.jsonl\"))\nprint(p.returncode,len(rows),\"spool row(s) written by a probe in another working directory\")\nsys.exit(1 if rows else 0)\n"
+    ]
+  },
+  "clauses": [
+    {
+      "clause": "an ops row written by a probe whose working directory is not a checkout of the clone that owns the spool is not appended to that clone's spool, unless the caller names its own query-log home",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/ql_deliver.py",
+    "_tools/bl_land.py",
+    "_tools/ql_capture.py",
+    "_tools/ql_base.py",
+    "kb/_self/querylog.md"
+  ],
+  "relates_to": [
+    "ST-6vyzk4oi",
+    "ST-mi5cjppl"
+  ],
+  "notes": "From the 2026-10-24 telemetry and query-log analysis: ops rows of 10-17 to 24 for item ids that exist in no backlog history of this repository: 43 land.end rows (27 with exit 1) and 127 land.step rows over 25 ids (9 failures), e.g. ST-ggggggg2; four land.step rows are named python3-private-var-folders-nr-3tgqljkx7 (the step label is a temp path, exit 1), written by probes whose clone is under the system temp directory. So 27 of the week's 143 failed land.end rows (19%) are fixture landings; a ci.pipeline row of 2026-10-24T00:03Z has state red and sha aaaaaaaaaaaa (not a commit), which the red-pipeline intake reads and could turn into a filed bug. ql_deliver.ops_row and record_pipeline skip rows only when PYTEST_CURRENT_TEST is set (ql_deliver.py:287-325) and bl_land.ops_write (bl_land.py:733) has no other guard, so a probe script run outside pytest writes to the spool of the clone whose tools it imports (the repro copies the tools to a temporary 'real clone' and runs the probe from another directory; nothing real is written). Honest failure figures are the gain. Partly covered by ST-6vyzk4oi (tells workers to set CLAUDE_PLUGIN_DATA and CLAUDE_PLUGIN_ROOT in sample runs: docs only, no code guard). Medium confidence: the guard must not stop a landing run from a linked worktree of the owning clone or the plugin copy (CLAUDE_PLUGIN_DATA set). Also wanted: land.step labels are built from the program's name, never from an absolute path.",
+  "filed_in": "clone-0ea70e5c"
+}
