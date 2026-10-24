@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: every item of this sprint changes the backlog, landing and coord tools of this clone; the answers are in the code and kb/_self/ (read with rag.py pack --root _self and the landed commits of SP-47w4ngr6 and SP-sucr3kfg), no official source or live doc is involved.",
   "filed_in": "clone-0ea70e5c"
 }
