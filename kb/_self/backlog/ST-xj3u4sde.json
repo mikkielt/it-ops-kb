@@ -61,7 +61,28 @@
     "kb/_self/backlog.md",
     "kb/_self/coordination.md"
   ],
-  "notes": "Premise: today's run step (skills/sprint/SKILL.md step 3) tells the orchestrator to wait for a dispatched worker with a background command that ends when its pid does or a scheduled wakeup that checks the pid, reads a worker's gates on its branch after it returns (step 4.1), and asks `git status --short` to show only its own changes before each landing (step 4.2) although `land` works in a landing worktree of its own; the run step names no `coord.py wait --kind progress --item`, no `blocked`/`returned` state and no `backlog.py runs`. Check 0 prints these on base. Plan 2026-10-24 (night run): .claude/skills/kb-sprint/SKILL.md is a symlink to skills/sprint/SKILL.md (one file, not a protected path), so touches name the one file and no staging copy is needed. Checks 1 and 2 run the command forms the rule text gives (a wait loop over a planted store that sees `blocked` with `gates=g1`; `backlog.py runs SP` on a planted sprint), so the new text gives them in backticks with ${CLAUDE_PLUGIN_ROOT} for the path, SEQ, S and IDS after --since, --timeout and --item, and SP for the sprint. A wait that times out (timed_out true) is read as no move yet: the loop then reads `backlog.py runs SP` and `stalled` before waiting again. Provisional gates do not move the run state, so they are still read on the branch before a landing. The doc line of kb/_self/backlog.md that has the landing after `git status --short` shows only the orchestrator's own changes follows the skill (check 3). Filed 2026-10-24 (night run) as one of the three later stories EP-nij36lt7 names; approved by the operator.",
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How long is one wait the run step starts, and where does its text sit?",
+      "options": [
+        "S 540 in one paragraph under step 3",
+        "S 3000 with a wakeup between waits"
+      ],
+      "recommendation": "S 540 in one paragraph under step 3",
+      "do": {
+        "S 540 in one paragraph under step 3": "ST-xj3u4sde",
+        "S 3000 with a wakeup between waits": "ST-xj3u4sde"
+      },
+      "class": "agents-rule",
+      "answer": "S 540 in one paragraph under step 3",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
+  "notes": "Premise: today's run step (skills/sprint/SKILL.md step 3) tells the orchestrator to wait for a dispatched worker with a background command that ends when its pid does or a scheduled wakeup that checks the pid, reads a worker's gates on its branch after it returns (step 4.1), and asks `git status --short` to show only its own changes before each landing (step 4.2) although `land` works in a landing worktree of its own; the run step names no `coord.py wait --kind progress --item`, no `blocked`/`returned` state and no `backlog.py runs`. Check 0 prints these on base. Plan 2026-10-24 (night run): .claude/skills/kb-sprint/SKILL.md is a symlink to skills/sprint/SKILL.md (one file, not a protected path), so touches name the one file and no staging copy is needed. Checks 1 and 2 run the command forms the rule text gives (a wait loop over a planted store that sees `blocked` with `gates=g1`; `backlog.py runs SP` on a planted sprint), so the new text gives them in backticks with ${CLAUDE_PLUGIN_ROOT} for the path, SEQ, S and IDS after --since, --timeout and --item, and SP for the sprint. A wait that times out (timed_out true) is read as no move yet: the loop then reads `backlog.py runs SP` and `stalled` before waiting again. Provisional gates do not move the run state, so they are still read on the branch before a landing. The doc line of kb/_self/backlog.md that has the landing after `git status --short` shows only the orchestrator's own changes follows the skill (check 3). Filed 2026-10-24 (night run) as one of the three later stories EP-nij36lt7 names; approved by the operator. Gate g1 (class agents-rule) answered with its recommendation by the night-run orchestrator on the operator's standing approval (pre-approved by the operator for the 2026-10-24 night run).",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
