@@ -768,7 +768,7 @@ def cleanup_gate_do(bl, dead):
     emptied `do` goes with its last entry. Returns [(item id, gate id, option, the deleted item's id)]."""
     out = []
     for i, it in sorted(bl.items.items()):
-        if i in dead:
+        if i in dead or bl.is_upstream(i):  # an upstream item is read-only in this clone
             continue
         touched = False
         for g in it.get("gates") or []:
@@ -967,10 +967,11 @@ def cmd_close(bl, a):
         say(f"deleted {line(bl, i)}")
     # a remaining item's relates_to is information only, and a depends_on on a deleted item that is not dropped is
     # satisfied (close refuses while anything is open): drop those ids, or check fails on dangling links and horizon
-    # counts the item as waiting outside its sprint. A dependency on a dropped item stays for check to report.
+    # counts the item as waiting outside its sprint. A dependency on a dropped item stays for check to report. An item
+    # that arrived from the clone's upstream main is read-only here: it stays as the upstream wrote it.
     dead = gone | {sid}
     for i, it in sorted(bl.items.items()):
-        if i in dead:
+        if i in dead or bl.is_upstream(i):
             continue
         cut = []
         for f in ("relates_to", "depends_on"):
