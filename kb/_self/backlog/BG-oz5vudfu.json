@@ -37,7 +37,11 @@
         "copy": "BG-oz5vudfu",
         "run-in-checkout": "BG-oz5vudfu"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "copy",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
