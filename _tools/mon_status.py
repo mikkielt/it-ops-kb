@@ -136,11 +136,12 @@ def titles(root):
 class Reader:
     """What a topic reads from the snapshot: a panel's data, or the line that says why it has none."""
 
-    def __init__(self, snap, titles_of, detail=False):
+    def __init__(self, snap, titles_of, detail=False, compact=False):
         self.panels = snap.get("panels") or {}
         self.now = mon_eta.seconds_of(snap.get("taken"))  # the time estimates are taken at
         self.titles = titles_of
         self.detail = detail  # the sprints answer's full lines in place of one row for each sprint
+        self.compact = compact  # the sprints answer as one line for each sprint, run states included (the `all` answer's)
 
     def data(self, name):
         panel = self.panels.get(name)
@@ -447,6 +448,29 @@ def run_lines(r, s, facts):
     return lines + ["    " + x for x in more(len(running) - ROWS, "runs")]
 
 
+def run_summary(s):
+    """The run states of the open items of the sprint row S as one phrase, `working 2, blocked 1 (ST-abc)`: the count of each
+    state, the id of an item that is blocked, failed or refused (the operator acts); "" where no open item has a run."""
+    running = [x for x in s.get("open") or [] if isinstance(x, dict) and x.get("run")]
+    states = {}
+    for x in running:
+        states.setdefault(x["run"], []).append(x)
+    return ", ".join(f"{state} {len(xs)}" + (f" ({', '.join(str(x.get('id')) for x in xs[:2])})" if state in mon_needs.STOPPED else "")
+                     for state, xs in states.items())
+
+
+def compact_lines(rows, r):
+    """The sprints topic for the `all` answer: one line for each of the ROWS first sprints, the first one led by `Sprints:`,
+    each with its items done of all and the run states of its open items."""
+    lines = []
+    for s in rows[:ROWS]:
+        done, total = sprint_counts(s)
+        state = str(s.get("state"))
+        text = run_summary(s) or ("no run states" if state == "active" else "not started" if state == "approved" else "waits for start gate")
+        lines.append(("Sprints: " if not lines else "  ") + f"{short_name(s.get('title') or r.item(s.get('id'))):<{NAME_CHARS}}  {f'{done}/{total}':>5}  {text}")
+    return lines or ["Sprints: none active or planned."]
+
+
 def sprints(r):
     data, why = r.data("sprint")
     if data is None:
@@ -495,7 +519,7 @@ def sprints(r):
         lines.append(f"  host load {ld[0]:.2f} / {ld[1]:.2f} / {ld[2]:.2f} over 1, 5 and 15 minutes on {cores or '?'} cores{load_word(ld[0], cores)}.")
     else:
         lines.append("  host load: " + (hwhy or "this host gives no load average") + ".")
-    return lines, facts
+    return (compact_lines(rows, r) if r.compact else lines), facts
 
 
 def load_word(load1, cores):
@@ -581,7 +605,7 @@ def clean(lines, facts):
 def answer(snap, topic, root=None, detail=False):
     if topic not in TOPICS:
         raise ValueError(f"no status topic {topic}: {', '.join(TOPICS)}")
-    reader = Reader(snap, titles(root), detail)
+    reader = Reader(snap, titles(root), detail, compact=topic == "all")
     lines, facts = [], {}
     if topic == "all":  # the answer starts with the line the text view prints under its header
         lines.append(mon_needs.line(snap))
