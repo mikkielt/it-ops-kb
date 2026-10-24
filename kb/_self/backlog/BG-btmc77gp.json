@@ -22,6 +22,25 @@
     "kb/_self/tools.md",
     "kb/_self/monitoring.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "When --session ID names a session with no live intent on ITEM, what does coordinate do?",
+      "options": [
+        "exit 1 with no event (no fallback to the newest session)",
+        "fall back to the newest live session on ITEM"
+      ],
+      "recommendation": "exit 1 with no event (no fallback to the newest session)",
+      "do": {
+        "exit 1 with no event (no fallback to the newest session)": "BG-btmc77gp",
+        "fall back to the newest live session on ITEM": "BG-btmc77gp"
+      },
+      "class": "design",
+      "answer": "exit 1 with no event (no fallback to the newest session)",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ky7xz6d2 review"
   ],

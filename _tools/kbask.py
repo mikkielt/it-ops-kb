@@ -6,9 +6,10 @@
                                         the new ID and the key as JSON
   kbask.py answer ID TEXT [--state S]   the same for an answer: the value answer/ID and an `answer` event with the state
                                         (working, input-required, completed, failed or rejected; default completed)
-  kbask.py coordinate ITEM OTHER STRATEGY
+  kbask.py coordinate ITEM OTHER STRATEGY [--session ID]
                                         post a `coordinate` event for the session that chose: the live session whose intent
-                                        names ITEM, with the operator id kbwho gives and the touch paths its intent shares
+                                        names ITEM (--session ID: that one; else the newest), with the operator id kbwho
+                                        gives and the touch paths its intent shares
                                         with those of the sessions working on OTHER. STRATEGY is wait, ask, after, join or
                                         proceed. The session that holds OTHER sees it once at its next hook event; exit 1
                                         when no live session announced ITEM. Prints the event as JSON
@@ -239,11 +240,14 @@ def cmd_coordinate(args):
     item, other = check_id(args.item, "ITEM"), check_id(args.other, "OTHER")
     if item == other:
         raise Stop("kbask: ITEM and OTHER are two items")
+    if args.session:
+        check_id(args.session, "--session")
     intents = live_intents(conn, item, other)
-    mine = [i for i in intents if item in i["item"] and i.get("session")]
+    mine = [i for i in intents if item in i["item"] and i.get("session") and args.session in (None, i["session"])]
     mine = [i for i in mine if i.get("topic") != "backlog-claim"] or mine  # a session's own intent over the claim intent a dispatcher left
     if not mine:
-        raise Stop(f"kbask: no live session announced {item}: its intent is posted at a session's start or a backlog.py claim", 1)
+        who = f"session {args.session} announced" if args.session else "live session announced"
+        raise Stop(f"kbask: no {who} {item}: its intent is posted at a session's start or a backlog.py claim", 1)
     chooser = mine[0]
     theirs = [t for i in intents if other in i["item"] and i.get("session") != chooser["session"] for t in i["touch"]]
     shared, size = [], 0
@@ -529,6 +533,7 @@ def build_parser():
     p.add_argument("item")
     p.add_argument("other")
     p.add_argument("strategy", choices=coord.STRATEGIES)
+    p.add_argument("--session", metavar="ID", help="the session that chose (default: the newest live session whose intent names ITEM)")
     p = sub.add_parser("remediate", parents=[conn], help="start one capped read-only diagnosis of ALERT")
     p.add_argument("alert")
     p = sub.add_parser("summary", parents=[conn], help="start one capped read-only summary of the monitored work")
