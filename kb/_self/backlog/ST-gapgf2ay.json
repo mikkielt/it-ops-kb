@@ -20,5 +20,9 @@
     ".claude/hooks/coord_hook.py",
     "kb/_self/coordination.md"
   ],
+  "links": [
+    "parked: SP-sucr3kfg review"
+  ],
+  "notes": "Found by the SP-sucr3kfg review. INTRO tells the session to run python3 _tools/coord.py wait and python3 _tools/kbask.py, relative paths a plugin workspace does not have (the tools sit under CLAUDE_PLUGIN_ROOT). The review also read show(..., new_asks(sid)) on the Edit and Write path (coord_hook.py near line 451) against gate g3 of ST-omimwr5q: the check below only reads INTRO, so the planner adds a planted hook run for the Edit event.",
   "filed_in": "clone-0ea70e5c"
 }
