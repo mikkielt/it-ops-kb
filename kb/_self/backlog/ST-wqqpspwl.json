@@ -73,6 +73,38 @@
   "depends_on": [
     "ST-56yln2to"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which touch files does kbask.py coordinate post, and which session counts as the chooser?",
+      "options": [
+        "touch = the chooser's intent paths that the intents naming OTHER also list (left out when none); chooser = the newest live session intent naming ITEM, a backlog-claim intent only when no other exists",
+        "touch = all of the chooser's intent paths; chooser = any live intent naming ITEM"
+      ],
+      "recommendation": "touch = the chooser's intent paths that the intents naming OTHER also list (left out when none); chooser = the newest live session intent naming ITEM, a backlog-claim intent only when no other exists",
+      "do": {
+        "touch = the chooser's intent paths that the intents naming OTHER also list (left out when none); chooser = the newest live session intent naming ITEM, a backlog-claim intent only when no other exists": "ST-wqqpspwl",
+        "touch = all of the chooser's intent paths; chooser = any live intent naming ITEM": "ST-wqqpspwl"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does the coord hook show coordinate events: read at every event, first look limit and line cap?",
+      "options": [
+        "one unpaced coord.py wait --kind coordinate per tool event with a state cursor; a first look leaves out events older than an hour; at most 3 lines and a count line; phrases will wait for your landing of / will ask you about / will go after / will join your work on / will proceed alongside",
+        "read the events with the asks' paced read (every 10 seconds), no age limit, one line each"
+      ],
+      "recommendation": "one unpaced coord.py wait --kind coordinate per tool event with a state cursor; a first look leaves out events older than an hour; at most 3 lines and a count line; phrases will wait for your landing of / will ask you about / will go after / will join your work on / will proceed alongside",
+      "do": {
+        "one unpaced coord.py wait --kind coordinate per tool event with a state cursor; a first look leaves out events older than an hour; at most 3 lines and a count line; phrases will wait for your landing of / will ask you about / will go after / will join your work on / will proceed alongside": "ST-wqqpspwl",
+        "read the events with the asks' paced read (every 10 seconds), no age limit, one line each": "ST-wqqpspwl"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "notes": "Premise (run 2026-10-24 on the main branch at 5b032a3f5): all four checks fail today: coord.py post refuses the kind coordinate (exit 2), kbask.py has no coordinate subcommand, no hook line reaches the other session, and kbmon has no coordinate row because no such event can be posted. Plan: the earlier single check seeded the hook's private state file and posted no session or operator field; the checks now start the sessions through the hook and post the fields the goal names, reading the same goal clauses. The coordinate line must show at the next event of the session that holds OTHER, so the lookup is not paced by the asks' 10 second interval (the check posts the event right after that session's start). kbask.py coordinate finds the chooser as the live session whose intent names ITEM; operator is KB_OPERATOR / kbwho. kbmon needs no new code (mon_log and mon_events show any coord kind) so monitoring.md only documents the row. _tools/kb_mcp.py was dropped from touches: nothing in the goal changes the MCP server. Protected path .claude/hooks/coord_hook.py goes through a staging copy and stage-back. Waits for ST-56yln2to (same hook file). Sprint SP-ky7xz6d2 started 2026-10-24 on the operator's standing approval for the night run.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
