@@ -2,7 +2,7 @@
   "id": "BG-kgxtn54i",
   "kind": "bug",
   "title": "redact keeps the tail of a cut-off escaped-quote secret value after a nested escaped quote",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,
@@ -43,6 +43,19 @@
     "parked: SP-5xnbspyp review"
   ],
   "notes": "Found by the SP-5xnbspyp review (S3, BG-saeietup \"redact keeps the tail of an escaped-JSON secret value after a nested escaped quote\"): an unterminated value falls through to the bare-value alternative, which stops at the nested quote. Planner 2026-10-24: provenance moved out of the goal so it is one clause; the repro also asserts the second pass changes nothing.",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "a5d3f1458cdc32798bd89e4152584091c328142c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import redact as R\nb=chr(92);q=chr(34);v='hunter'+'Fake123'\nt1=b+q+'password'+b+q+': '+b+q+'a'+b*3+q+v\nt2=b*3+q+'password'+b*3+q+': '+b*3+q+'a'+b*7+q+v\no=[R.redact(t) for t in (t1,t2)];print(o);sys.exit(1 if any(v in x for x in o) or [R.redact(x) for x in o] != o else 0)"
+        ],
+        "exit": 0,
+        "sha256": "9cc2bb77fb50233f"
+      }
+    ]
+  }
 }
