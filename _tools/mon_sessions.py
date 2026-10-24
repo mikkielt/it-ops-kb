@@ -189,7 +189,7 @@ def stalled(root, bl=None):
 
 def read_events(conn):
     """({session id: [(time, items, touch paths)] of its intent events, oldest first, a dispatching session's `backlog-claim`
-    ones left out}, [(item, other, strategy)] of the `coordinate` events, newest first,
+    ones left out}, [(item, other, strategy, session id, time)] of the `coordinate` events, newest first,
     {item: time of its newest `progress` event}) from `coord.py wait` over the connection arguments CONN; empty where the
     events cannot be read."""
     import mon_coord
@@ -208,7 +208,7 @@ def read_events(conn):
                 first.setdefault(fields["session"], []).append((e["at"], split_list(fields.get("item")),
                                                                 split_list(fields.get("touch"))))
         elif e.get("kind") == "coordinate" and fields.get("item") and fields.get("other") and fields.get("strategy"):
-            chosen.insert(0, (fields["item"], fields["other"], fields["strategy"]))
+            chosen.insert(0, (fields["item"], fields["other"], fields["strategy"], fields.get("session"), e.get("at")))
         elif e.get("kind") == "progress" and isinstance(fields.get("item"), str) and isinstance(e.get("at"), (int, float)):
             moved[fields["item"]] = e["at"]
     return first, chosen, moved
@@ -420,7 +420,8 @@ def overlap_rows(found, now=None):
     """[{a, b, files, strategy, age_s}] of the pairs of live sessions in FOUND (`read_coord`'s answer; None gives None)
     whose intents' items or touches meet, OVERLAPS_KEPT at most, longest first. `a` and `b` are {session (the label),
     operator, item} (the session's first item); `files` the touch paths of either that meet a path of the other; `strategy`
-    `undecided`, else the one the newest `coordinate` event between an item of each announced; `age_s` the seconds since
+    `undecided`, else the one the newest `coordinate` event between an item of each announced, posted by one of the two
+    sessions at or after the moment they met (an older event, or one of a session outside the pair, decides nothing); `age_s` the seconds since
     the oldest moment an intent of each met an intent of the other (the newer of the two intents), the later of the two
     sessions' first intent where no event pair meets."""
     if found is None:
@@ -437,12 +438,13 @@ def overlap_rows(found, now=None):
                            | {u for u in sb["touch"] if any(coord.overlaps(t, u) for t in sa["touch"])})
             if not files and not set(sa["items"]) & set(sb["items"]):
                 continue
-            strategy = next((s for i, o, s in found.get("coordinate", [])
-                             if (i in sa["items"] and o in sb["items"]) or (i in sb["items"] and o in sa["items"])), UNDECIDED)
             at = found.get("intent_at", {})
             since = meeting_time(at.get(ida, []), at.get(idb, []))
             if since is None:
                 since = max(at.get(ida, [(now,)])[0][0], at.get(idb, [(now,)])[0][0])
+            strategy = next((s for i, o, s, who, t in found.get("coordinate", [])
+                             if who in (ida, idb) and isinstance(t, (int, float)) and t >= since
+                             and ((i in sa["items"] and o in sb["items"]) or (i in sb["items"] and o in sa["items"]))), UNDECIDED)
             side = [mon_view.session_fields({"session": i, "operator": s["operator"]}) | {"item": (s["items"] or [None])[0]}
                     for i, s in ((ida, sa), (idb, sb))]
             out.append({"a": side[0], "b": side[1], "files": files, "strategy": strategy, "age_s": max(0, int(now - since))})
