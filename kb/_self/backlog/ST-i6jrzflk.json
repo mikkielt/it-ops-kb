@@ -1,0 +1,28 @@
+{
+  "id": "ST-i6jrzflk",
+  "kind": "story",
+  "title": "coordination.md and monitoring.md say the same about whether an open ask waits announce.needs_you_after_min minutes before it enters the needs-you line",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/coordination.md's description of announce.needs_you_after_min says what kbmon does with an open ask to the operator, the same as kb/_self/monitoring.md and _tools/mon_needs.py do (an ask is named at once, the setting delays an undecided overlap only)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re, sys\nt = open('kb/_self/coordination.md', encoding='utf-8').read()\nlines = [l for l in t.splitlines() if 'needs_you_after_min' in l]\nbad = [l[:160] for l in lines if re.search(r'any open (question|ask)', l)]\nprint('lines naming the setting', len(lines), '| say it delays any open question', bad)\nsys.exit(1 if bad or not lines else 0)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/coordination.md",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-d6gbc3tq review"
+  ],
+  "notes": "Review gap (S2) of SP-d6gbc3tq: coordination.md:173 says the setting delays any open question, monitoring.md:98 and mon_needs.py apply it to an undecided overlap only (ST-n5vf55qk gate g1: asks are named with no delay). If the operator wants the delay for asks, change the code and gate g1 instead.",
+  "filed_in": "clone-0ea70e5c"
+}
