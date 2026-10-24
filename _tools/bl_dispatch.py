@@ -31,6 +31,7 @@ import shlex
 import shutil
 import subprocess
 import sys
+import urllib.parse
 from pathlib import Path
 
 import bl_clean
@@ -545,15 +546,52 @@ def compose_brief(bl, iid, known=(), probe=None, turns=None, known_suite=(), bud
 
 # ------------------------------------------------------------------ the session
 
-def worker_env(oid):
+def resource_entries(raw, iid, sprint):
+    """The `OTEL_RESOURCE_ATTRIBUTES` text RAW with `kb.item.id` IID and `kb.sprint.id` SPRINT (none: left out) added: its
+    other entries as they are (their values stay percent-encoded), except `user.email`, one whose decoded value holds an
+    email address and an earlier `kb.item.id` or `kb.sprint.id`."""
+    import kbwho
+    kept = []
+    for pair in raw.split(","):
+        key, sep, value = pair.partition("=")
+        key = key.strip()
+        if sep and key and key.lower() not in ("user.email", "kb.item.id", "kb.sprint.id") \
+                and not kbwho.EMAIL_RX.search(urllib.parse.unquote(value)):
+            kept.append(f"{key}={value.strip()}")
+    for key, value in (("kb.item.id", iid), ("kb.sprint.id", sprint)):
+        if value:
+            kept.append(f"{key}={urllib.parse.quote(str(value), safe='')}")
+    return ",".join(kept)
+
+
+def worker_traceparent(iid):
+    """The W3C `traceparent` (version 00, sampled) of the `kb.worker` span that the `working` move of the run state of IID
+    gives in `kbmon.py --events` (`mon_events.worker_ids`), None when coord cannot be read or the item is not working."""
+    import mon_events
+    code, body, _err = bl_clean.run_coord("wait", "--since", "0", "--timeout", "0")
+    if code != 0 or not isinstance(body, dict) or not isinstance(body.get("events"), list):
+        return None
+    ids = mon_events.worker_ids([e for e in body["events"] if isinstance(e, dict) and isinstance(e.get("seq"), int)], iid)
+    return f"00-{ids[0]}-{ids[1]}-01" if ids else None
+
+
+def worker_env(oid, iid=None, sprint=None, traceparent=None):
     """The environment of the worker's session: this one's, with `KB_OPERATOR` the dispatching operator's id OID
-    (dropped when none resolved) and `KB_ROLE` the worker's, so a worker never inherits the orchestrator's role."""
+    (dropped when none resolved) and `KB_ROLE` the worker's, so a worker never inherits the orchestrator's role. Given
+    IID, `OTEL_RESOURCE_ATTRIBUTES` names the item and its SPRINT (`resource_entries`); given TRACEPARENT (the worker span's,
+    `worker_traceparent`), `TRACEPARENT` is it and an inherited `TRACESTATE` goes, so Claude Code's own telemetry joins the
+    item's trace when the operator's environment turns it on."""
     env = dict(os.environ)
     if oid:
         env["KB_OPERATOR"] = oid
     else:
         env.pop("KB_OPERATOR", None)
     env["KB_ROLE"] = WORKER_ROLE
+    if iid:
+        env["OTEL_RESOURCE_ATTRIBUTES"] = resource_entries(env.get("OTEL_RESOURCE_ATTRIBUTES", ""), iid, sprint)
+    if traceparent:
+        env["TRACEPARENT"] = traceparent
+        env.pop("TRACESTATE", None)
     return env
 
 
@@ -971,11 +1009,16 @@ def cmd_dispatch(bl, a):
     result, errlog = scratch / RESULT_NAME, scratch / STDERR_NAME
     with open(brief, encoding="utf-8") as stdin, open(result, "w", encoding="utf-8", newline="\n") as out, \
             open(errlog, "w", encoding="utf-8", newline="\n") as err:
-        proc = subprocess.Popen(argv, cwd=str(wt), stdin=stdin, stdout=out, stderr=err,
-                                env=worker_env(oid))
+        bl_items.move_run(iid, "working", "dispatch")  # first: the worker span's ids come from this move
+        traceparent = worker_traceparent(iid)
+        try:
+            proc = subprocess.Popen(argv, cwd=str(wt), stdin=stdin, stdout=out, stderr=err,
+                                    env=worker_env(oid, iid, it.get("sprint"), traceparent))
+        except OSError:
+            bl_items.move_run(iid, "failed", "dispatch")
+            raise
         record_worker(bl.root, iid, worker_pid=proc.pid, role=WORKER_ROLE, **({"operator": oid} if oid else {}))
         own_made(bl, iid, "process", proc.pid)
-        bl_items.move_run(iid, "working", "dispatch")
         say(f"dispatched {bl.label(iid)}: pid {proc.pid}, brief {brief}, output {result}")
         sys.stdout.flush()
         code = proc.wait()

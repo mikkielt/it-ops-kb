@@ -66,9 +66,45 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does dispatch know the kb.worker span's ids before the worker starts?",
+      "options": [
+        "move the run state to working before the session starts and derive the ids from that event",
+        "start the session first and pass only the item context, with no TRACEPARENT"
+      ],
+      "recommendation": "move the run state to working before the session starts and derive the ids from that event",
+      "do": {
+        "move the run state to working before the session starts and derive the ids from that event": "ST-zlzvqz2w",
+        "start the session first and pass only the item context, with no TRACEPARENT": "ST-zlzvqz2w"
+      },
+      "class": "agents-rule",
+      "answer": "move the run state to working before the session starts and derive the ids from that event",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "What trace id width do the run's spans get, since a W3C traceparent carries 32 hex characters?",
+      "options": [
+        "kb.item run spans get a 32 hex trace id, children parent the kb.item span id, and --events keeps the trace out of redaction",
+        "keep 16 hex trace ids and zero-pad them in TRACEPARENT"
+      ],
+      "recommendation": "kb.item run spans get a 32 hex trace id, children parent the kb.item span id, and --events keeps the trace out of redaction",
+      "do": {
+        "kb.item run spans get a 32 hex trace id, children parent the kb.item span id, and --events keeps the trace out of redaction": "ST-zlzvqz2w",
+        "keep 16 hex trace ids and zero-pad them in TRACEPARENT": "ST-zlzvqz2w"
+      },
+      "class": "querylog",
+      "answer": "kb.item run spans get a 32 hex trace id, children parent the kb.item span id, and --events keeps the trace out of redaction",
+      "by": "agent"
     }
   ],
-  "notes": "Premise: a stub claude started by dispatch sees no TRACEPARENT and no OTEL_RESOURCE_ATTRIBUTES (the check prints both empty). Live docs, not in the kb (code.claude.com/docs/en/monitoring-usage, read 2026-10-24): in -p and Agent SDK sessions Claude Code reads TRACEPARENT and TRACESTATE from its environment and makes claude_code.interaction a child of that span; its OTLP event records carry that trace_id and span_id even with no traces exporter; traces are beta (CLAUDE_CODE_ENABLE_TELEMETRY=1, CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1, OTEL_TRACES_EXPORTER); OTEL_RESOURCE_ATTRIBUTES keys go on every metric point and event, values percent-encoded. kbotel.py serve takes /v1/logs only (its EVENT_KEYS allowlist), so a loopback trace receiver is new work if the gate picks it. The span id dispatch passes is computed from the working move's event, so kbmon's kb.worker span gets the same id. Plan 2026-10-24 (SP-d6gbc3tq): gate g1 answered by the operator earlier (pass the context only). Check 1 added: a dispatch env holding team, service.name and a percent-encoded user.email keeps the first two, drops the email entry and adds kb.item.id and kb.sprint.id. Depends on ST-3bmmg73g in this sprint. Planned into SP-d6gbc3tq on 2026-10-24 (night run). Sprint SP-d6gbc3tq started 2026-10-24.",
+  "notes": "Premise: a stub claude started by dispatch sees no TRACEPARENT and no OTEL_RESOURCE_ATTRIBUTES (the check prints both empty). Live docs, not in the kb (code.claude.com/docs/en/monitoring-usage, read 2026-10-24): in -p and Agent SDK sessions Claude Code reads TRACEPARENT and TRACESTATE from its environment and makes claude_code.interaction a child of that span; its OTLP event records carry that trace_id and span_id even with no traces exporter; traces are beta (CLAUDE_CODE_ENABLE_TELEMETRY=1, CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1, OTEL_TRACES_EXPORTER); OTEL_RESOURCE_ATTRIBUTES keys go on every metric point and event, values percent-encoded. kbotel.py serve takes /v1/logs only (its EVENT_KEYS allowlist), so a loopback trace receiver is new work if the gate picks it. The span id dispatch passes is computed from the working move's event, so kbmon's kb.worker span gets the same id. Plan 2026-10-24 (SP-d6gbc3tq): gate g1 answered by the operator earlier (pass the context only). Check 1 added: a dispatch env holding team, service.name and a percent-encoded user.email keeps the first two, drops the email entry and adds kb.item.id and kb.sprint.id. Depends on ST-3bmmg73g in this sprint. Planned into SP-d6gbc3tq on 2026-10-24 (night run). Sprint SP-d6gbc3tq started 2026-10-24. Night run 2026-10-24: gate g2 (blocking, agents-rule) answered with its recommendation by the orchestrator under the operator's standing pre-approval (pre-approved by the operator for the 2026-10-24 night run).",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
