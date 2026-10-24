@@ -1,0 +1,24 @@
+{
+  "id": "ST-34vqqkun",
+  "kind": "story",
+  "title": "land fast-forwards the invoking checkout past an unrelated untracked file, which git merge --ff-only accepts",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "after a pushed landing, backlog.py land brings an invoking checkout that holds only untracked files level with the main branch when git merge --ff-only accepts them, and leaves it behind with a said reason only when a tracked change or a colliding file blocks it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, tempfile, os, shutil, re, sys, time, json\nHOLD = 0\nR = os.getcwd(); D = os.path.realpath(tempfile.mkdtemp()); T = D + \"/clone\"; B = D + \"/origin.git\"\nG = [\"git\", \"-c\", \"user.email=a@b\", \"-c\", \"user.name=n\"]\ndef sh(*a, cwd=None): return subprocess.run(a, cwd=cwd or T, capture_output=True, text=True)\ndef bl(*a): return subprocess.run([sys.executable, R + \"/_tools/backlog.py\", \"--root\", T, *a], cwd=T, capture_output=True, text=True)\nsh(*G, \"init\", \"-q\", \"--bare\", \"-b\", \"main\", B, cwd=D)\nos.makedirs(T + \"/kb/_self/backlog\"); sh(\"git\", \"init\", \"-q\", \"-b\", \"main\", \".\")\ncfg = json.load(open(R + \"/backlog.json\", encoding=\"utf-8\")); cfg.update(land_push=[\"git\", \"push\", \"origin\", \"HEAD:main\"], land_eval=[], land_lint=[], land_stale=[])\njson.dump(cfg, open(T + \"/backlog.json\", \"w\", encoding=\"utf-8\"))\nsp = re.search(r\"SP-\\w+\", bl(\"new\", \"sprint\", \"--title\", \"S\", \"--goal\", \"g\").stdout).group(0)\nids = []\nfor n in \"ab\":\n    ids.append(re.search(r\"ST-\\w+\", bl(\"new\", \"story\", \"--title\", \"Land \" + n, \"--goal\", \"g\", \"--touch\", \"kb/public/work-*.txt\",\n                                      \"--check\", \"python3 -c 'import os, sys, time\\nif \\\"\" + n + \"\\\" == \\\"a\\\" and \" + str(HOLD) + \":\\n    open(\\\"\" + D + \"/held\\\", \\\"w\\\").close(); time.sleep(\" + str(HOLD) + \")\\nsys.exit(0 if os.path.exists(\\\"kb/public/work-\" + n + \".txt\\\") else 1)'\",\n                                      \"--sprint\", sp).stdout).group(0))\nbl(\"answer\", sp, \"start\", \"--answer\", \"approve\", \"--by\", \"operator\"); bl(\"start\", sp)\nopen(T + \"/.gitignore\", \"w\").write(\".claude/worktrees/\\n_cache/\\n\")\nsh(\"git\", \"add\", \"-A\"); sh(*G, \"commit\", \"-q\", \"-m\", \"items\"); sh(\"git\", \"remote\", \"add\", \"origin\", B)\nfor i in ids:\n    bl(\"claim\", i, \"--by\", \"tester\", \"--commit\")\nsh(\"git\", \"push\", \"-q\", \"-u\", \"origin\", \"main\")\nfor n, i in zip(\"ab\", ids):\n    sh(\"git\", \"switch\", \"-q\", \"-c\", \"work/\" + i); os.makedirs(T + \"/kb/public\", exist_ok=True); open(T + \"/kb/public/work-\" + n + \".txt\", \"w\").write(i); sh(\"git\", \"add\", \"-A\")\n    sh(*G, \"commit\", \"-q\", \"-m\", \"work \" + i + \"\\n\\nKB-Work: \" + i); sh(\"git\", \"switch\", \"-q\", \"main\")\nopen(T + \"/next.txt\", \"w\").write(\"n\"); sh(\"git\", \"add\", \"-A\"); sh(*G, \"commit\", \"-q\", \"-m\", \"main moves\"); sh(\"git\", \"push\", \"-q\", \"origin\", \"main\"); sh(\"git\", \"reset\", \"-q\", \"--hard\", \"HEAD~1\")\ndef hook():\n    p = T + \"/.git/hooks/pre-rebase\"\n    open(p, \"w\").write(\"#!/bin/sh\\npwd >> \" + D + \"/rebase-cwd.txt\\nexit 0\\n\")\n    os.chmod(p, 0o755)\ndef step_of(r):\n    m = re.search(r\"land stopped at step ([\\w -]+?)(?::|$)\", r.stdout + r.stderr, re.M)\n    return m.group(1).strip() if m else None\nhook()\nopen(T + \"/scratch-note.txt\", \"w\").write(\"x\")\nr = bl(\"land\", ids[0]); out = r.stdout + r.stderr\nff = sh(\"git\", \"rev-parse\", \"main\").stdout == sh(\"git\", \"rev-parse\", \"refs/remotes/origin/main\").stdout\nprint(\"land exit\", r.returncode, \"| landed\", \"landed\" in out, \"| checkout fast-forwarded past an unrelated untracked file\", ff)\nsys.exit(0 if r.returncode == 0 and \"landed\" in out and ff else 1)\n"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-47w4ngr6 review"
+  ],
+  "notes": "Found by the SP-47w4ngr6 review (S3); parked, no fitness test or user report names it.",
+  "filed_in": "clone-0ea70e5c"
+}
