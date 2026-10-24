@@ -20,8 +20,8 @@
     {
       "run": [
         "python3",
-        "_tools/selfdoc.py",
-        "check"
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport kbtools as k\nbad = [e['tool'] for e in k.tool_entries() if e['missing']]\nprint('tools with no Answers: or Use: line:', bad)\nsys.exit(1 if bad else 0)\n"
       ]
     }
   ],
@@ -37,7 +37,7 @@
   "links": [
     "parked: SP-x6eqtsid review"
   ],
-  "notes": "Parked by the review of SP-x6eqtsid (the ST-e6xp5h3u worker's report, 2026-10-24; S3). kbtools.py's module docstring has no MCP: line although the kb_tools MCP tool now runs it; the worker could not add it because kbtools.py was outside that story's touches. ST-w6pz5emu's check 0 lists only the eight tools that kb_mcp.py ran before, so it did not ask for it. Premise run 2026-10-24 on base f160727aa: repro fails (exit 0, the kbtools.py catalog line holds no kb_tools). Touches stay kbtools.py alone so the item can be claimed while kb/_self/tools.md is held by other sprints; the map row for kbtools.py (kb/_self/tools.md) is read and named in Self-Reviewed if still correct. Order: first of the kbtools.py chain (BG-esbdxtad, BG-rtaub3fk, BG-kfv2qrs4). Check 0 (selfdoc.py check) passes before the work: it pins the docstring format check that must stay green. Planned into the sprint on 2026-10-24 (day run).",
+  "notes": "Parked by the review of SP-x6eqtsid (the ST-e6xp5h3u worker's report, 2026-10-24; S3). kbtools.py's module docstring has no MCP: line although the kb_tools MCP tool now runs it; the worker could not add it because kbtools.py was outside that story's touches. ST-w6pz5emu's check 0 lists only the eight tools that kb_mcp.py ran before, so it did not ask for it. Premise run 2026-10-24 on base f160727aa: repro fails (exit 0, the kbtools.py catalog line holds no kb_tools). Touches stay kbtools.py alone so the item can be claimed while kb/_self/tools.md is held by other sprints; the map row for kbtools.py (kb/_self/tools.md) is read and named in Self-Reviewed if still correct. Order: first of the kbtools.py chain (BG-esbdxtad, BG-rtaub3fk, BG-kfv2qrs4). Check 0 (selfdoc.py check) passes before the work: it pins the docstring format check that must stay green. Planned into the sprint on 2026-10-24 (day run). Check on main: selfdoc.py check is red on main since the kbsettings line numbers of coordination.md moved (another sprint), so the docstring fence reads the same property narrowly: every tool entry has its Answers: and Use: lines.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
