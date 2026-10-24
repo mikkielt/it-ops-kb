@@ -20,6 +20,9 @@ holder is never read. A panel that is not `ok` gives one line that says so. It s
 id only on a line where the operator acts. The sprints answer rests on the sprint panel's data (items read from `origin/main`,
 the commits the checkout is behind it, the duration history) and the host panel's load, so a saved
 snapshot gives the same answer; its ETA is a range from `mon_eta.estimate` taken at the snapshot's time. The
+sprints and coord answers also say whether the run states in coord follow git (the sessions panel's `drift`, as the
+`runs.drift` alert), and the sprints answer names the item that holds the landing lock with its step and the items queued
+behind it (the host panel's `land_lock`); the sessions answer names each session that waits on items (its `waits`). The
 load answer also gives the host panel's CPU groups with a fixed cause and remedy each (GROUP_TEXT), as lines and as a
 top-level `groups` list. It calls no model and writes no file (`run` starts `kbmon.py`, which writes none). Imports `mon_base`, `mon_eta`, `mon_needs`, `mon_querylog` (the key of usage outside a sprint), `mon_sessions` (its
 age text and `session_line`) and `mon_view`; `bl_base` where it reads titles.
@@ -40,8 +43,8 @@ import mon_view
 
 SCHEMA = 1
 TOPICS = ("sessions", "cost", "querylog", "coord", "sprints", "load", "all")
-TOPIC_PANELS = {"sessions": ("sessions",), "cost": ("querylog",), "querylog": ("querylog",), "coord": ("coord",),
-                "sprints": ("sprint", "host"), "load": ("host", "sessions")}
+TOPIC_PANELS = {"sessions": ("sessions",), "cost": ("querylog",), "querylog": ("querylog",), "coord": ("coord", "sessions"),
+                "sprints": ("sprint", "host", "sessions"), "load": ("host", "sessions")}
 ALL_ORDER = ("sessions", "cost", "querylog", "coord", "sprints", "load")  # the topics `all` answers, in this order
 MAX_LINES = 25
 ALL_LINES = 4  # lines each topic gives in `all`
@@ -189,6 +192,27 @@ def more(count, noun):
     return [f"+{count} more {noun}"] if count > 0 else []
 
 
+def drift_lines(r):
+    """([lines], facts) of the run states against git, from the sessions panel's `drift`: one line, the item named by its title
+    with its id; nothing where the panel has no `drift` (an unreadable panel, a url store)."""
+    data, _ = r.data("sessions")
+    drift = data.get("drift") if data and isinstance(data.get("drift"), dict) else None
+    if drift is None:
+        return [], {}
+    items = [i for i in drift.get("items") or [] if isinstance(i, dict)]
+    count = number(drift.get("count"), len(items))
+    if not count or not items:
+        return ["  Run state drift: none; the run states in coord follow git."], {"count": 0, "oldest": None}
+    r.learn([{"id": i.get("item"), "title": i.get("title")} for i in items])
+    first = items[0]
+    age = first.get("age_s")
+    text = (f"  Run state drift: {count} run state{' differs' if count == 1 else 's differ'} from git, the oldest is "
+            f"{r.item(first.get('item'), True)} (run {first.get('state')}, git shows {first.get('git')}"
+            + (f", {mon_sessions.age_text(number(age))} since its last move" if isinstance(age, int) else "") + ")"
+            "; `python3 _tools/backlog.py runs --reconcile` makes coord follow git.")
+    return [text], {"count": count, "oldest": first.get("item"), "git": first.get("git")}
+
+
 def sessions(r):
     data, why = r.data("sessions")
     if data is None:
@@ -214,6 +238,12 @@ def sessions(r):
     rows = [s for s in data.get("sessions") or [] if isinstance(s, dict)]
     lines += [("  " + mon_sessions.session_line(s, r.now)) for s in rows[:ROWS]] \
         + [("  " + x) for x in more(len(rows) - ROWS, "sessions")]
+    waits = [w for w in data.get("waits") or [] if isinstance(w, dict) and w.get("items")]
+    facts["waits"] = len(waits)
+    for w in waits[:ROWS]:
+        r.learn(w["items"])
+        lines.append(f"  {w.get('session') or 'A session'} waits on {'; '.join(short_name(r.item(i.get('id'))) for i in w['items'] if isinstance(i, dict))}.")
+    lines += [("  " + x) for x in more(len(waits) - ROWS, "waits")]
     overlaps = [o for o in data.get("overlaps") or [] if isinstance(o, dict)]
     facts["overlaps"] = len(overlaps)
     if overlaps:
@@ -312,18 +342,19 @@ def coord(r):
     over =[c for c in claims if c.get("over_budget")]
     asks = [a for a in data.get("asks") or [] if isinstance(a, dict)]
     changed, setting_lines = settings_facts(data)
+    drift, drift_facts = drift_lines(r)
     facts = {"claims": len(claims), "over_budget": len(over), "keys": [str(c.get("key")) for c in claims],
-             "asks_to_operator": number(data.get("asks_open"), len(asks)), "settings": changed}
+             "asks_to_operator": number(data.get("asks_open"), len(asks)), "settings": changed, "drift": drift_facts}
     ask_line = [f"  {facts['asks_to_operator']} open ask{'' if facts['asks_to_operator'] == 1 else 's'} to the operator: "
                 + "; ".join(f"{a.get('id')}" for a in asks[:ROWS]) + "."] if facts["asks_to_operator"] else []
     if not claims:
-        return ["Coord: no live claim."] + ask_line + setting_lines, facts
+        return ["Coord: no live claim."] + drift + ask_line + setting_lines, facts
     lines = [f"Coord: {len(claims)} live claim{'' if len(claims) == 1 else 's'}" + (f", {len(over)} over budget:" if over else ":")]
     lines += [f"  {c.get('key')}: {mon_sessions.age_text(number(c.get('left_s')))} left, "
               + ("no budget" if c.get("budget_usd") is None else f"budget {usd(c.get('budget_usd'))}")
               + (f", spent {usd(c.get('spend_usd'))}" if c.get("spend_usd") is not None else "")
               + (" (over budget)" if c.get("over_budget") else "") for c in claims[:ROWS]]
-    return lines + ["  " + x for x in more(len(claims) - ROWS, "claims")] + ask_line + setting_lines, facts
+    return lines + ["  " + x for x in more(len(claims) - ROWS, "claims")] + drift + ask_line + setting_lines, facts
 
 
 def minutes(n):
@@ -434,6 +465,17 @@ def sprints(r):
     lines += ["  " + x for x in more(len(rows) - ROWS, "sprints")]
     lines += [f"  landing {x['title']}, at step {x.get('step')}{ago(r.now, x.get('last'))}" for x in landing[:ROWS]]
     host, hwhy = r.data("host")
+    lock = host.get("land_lock") if host and isinstance(host.get("land_lock"), dict) else None
+    if lock:
+        queue = [q for q in lock.get("queue") or [] if isinstance(q, dict)]
+        r.learn([{"id": lock.get("item"), "title": lock.get("title")}, *queue])
+        facts["land_lock"] = {"item": lock.get("item"), "step": lock.get("step"), "since": lock.get("since"), "queued": len(queue)}
+        lines.append(f"  landing lock held by the landing of {short_name(r.item(lock.get('item')))}, at step {lock.get('step') or '-'}, since "
+                     f"{when(lock.get('since'))}" + (f"; {len(queue)} queued behind it: " + "; ".join(short_name(r.item(q.get('id'))) for q in queue[:ROWS])
+                                                    + (f"; +{len(queue) - ROWS} more" if len(queue) > ROWS else "") if queue else "") + ".")
+    drift, drift_facts = drift_lines(r)
+    facts["drift"] = drift_facts
+    lines += drift
     ld, cores = (host.get("load"), number(host.get("cores"), 0)) if host else (None, 0)
     if isinstance(ld, list) and len(ld) >= 3:
         facts["host_load1"] = ld[0]

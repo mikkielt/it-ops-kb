@@ -62,6 +62,10 @@ S passes with no event exits 0 with `timed_out` true, and a post from any other 
 With `--kind` and `--item` the wait returns only the events of that kind whose `item` field is one of IDS (an intent's
 comma-separated `item` list matches when it holds one of them); an event of another kind or item does not end the wait,
 and `last` is the newest sequence scanned, filtered-out events included, so the next `--since` skips them.
+A local `wait --kind progress --item IDS` that blocks (a `--timeout` above 0) holds a lease on the key `wait/PID/ITEM` for
+each id, PID being its own process id, for its `--timeout` and five seconds more, with the holder KB_COORD_HOLDER (else `anonymous`),
+and ends the leases when it returns: `list --prefix wait/` shows who waits on which item, which `kbmon` reads. A wait that is
+killed leaves its keys until the lease ends; a wait behind `serve` holds none.
 
 Two kinds carry a session's plan: `intent` (fields session, item, topic, touch, operator; at least one of item, topic and touch;
 item and topic hold a comma-separated list of ids, touch of globs with * and ?, up to 120 characters; operator is the id of
@@ -191,6 +195,8 @@ TRANSITIONS = {"none": ("claimed",), "claimed": ("working", "released"), "workin
 STATES = RUN_STATES + ("done",)  # what a progress event may carry; `done` is the item file's own, no run state moves to it
 FINISHED = ("done", "landed", "released")  # the states after which a digest no longer shows an intent
 RUN_KEYS = "run/"  # an item's run state: key run/<item id>, its value the state's name
+WAIT_KEYS = "wait/"  # the lease a blocking `wait --kind progress --item` holds: key wait/<pid>/<item id>
+WAIT_SLACK = 5  # seconds a wait's lease outlasts its --timeout, so a killed wait's key ends by itself
 STEP_FIELDS = ("exit", "gates", "step")  # the fields of a progress event besides item and state
 ANSWER_STATES = ("working", "input-required", "completed", "failed", "rejected")  # A2A's task states
 FIELD_NAME = re.compile(r"[a-z][a-z0-9_]{0,31}")
@@ -588,6 +594,37 @@ def transition(args, clock):
     return {"ok": True, "key": args.key, "previous": have, "state": args.to, "revision": revision, "seq": seq, "fields": event}
 
 
+def hold_wait(args, items):
+    """Lease the key wait/<pid>/<item> for each of ITEMS (the ids a blocking `wait --kind progress --item` waits on) for the
+    wait's --timeout and a few seconds more, held by KB_COORD_HOLDER (else `anonymous`): the keys `kbmon` reads to show who
+    waits on which item. Returns the keys leased; a store that cannot take them leaves the wait as it was."""
+    holder = os.environ.get(HOLDER_ENV) or "anonymous"
+    holder = holder if FIELD_VALUE.fullmatch(holder) else "anonymous"
+    keys = []
+    try:
+        with Tx(args.store) as con:
+            now = time.time()
+            for item in sorted(items):
+                key = f"{WAIT_KEYS}{os.getpid()}/{item}"
+                end_leases(con, now, key)
+                take(con, key, holder, secrets.token_hex(16), args.timeout + WAIT_SLACK, now)
+                keys.append(key)
+    except sqlite3.Error:
+        return []
+    return keys
+
+
+def drop_wait(args, keys):
+    """End the leases `hold_wait` took, a lease that is gone already included."""
+    if not keys:
+        return
+    try:
+        with Tx(args.store) as con:
+            con.executemany("DELETE FROM entries WHERE key = ? AND value IS NULL", [(k,) for k in keys])
+    except sqlite3.Error:
+        pass
+
+
 def wait(args, _clock):
     """Events after --since, held until one arrives or --timeout passes. Behind `serve`, args.recheck says whether the
     caller's token still names its operator: asked about once a second and before any reply, and a revoked caller
@@ -598,6 +635,7 @@ def wait(args, _clock):
     next_recheck = time.monotonic() + RECHECK_SECONDS
     scanned = args.since
     con = connect(args.store)
+    keys = hold_wait(args, items) if kind == "progress" and items and not recheck and args.timeout > 0 else []
     try:
         con.execute(EVENTS_SCHEMA)
         while True:
@@ -617,6 +655,7 @@ def wait(args, _clock):
             time.sleep(min(POLL_SECONDS, max(deadline - time.monotonic(), 0)))
     finally:
         con.close()
+        drop_wait(args, keys)
     if recheck and not recheck():
         raise Revoked
     return {"ok": True, "since": args.since, "last": scanned,

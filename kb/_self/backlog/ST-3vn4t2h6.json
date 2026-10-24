@@ -85,6 +85,42 @@
   "depends_on": [
     "ST-n5vf55qk"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which panel carries the run-state drift data and raises runs.drift (mon_coord.py and mon_sprint.py are outside the touches)? The sessions panel already reads coord, the backlog and processes and is cached for 30 seconds, which the git reads of runs need.",
+      "options": [
+        "sessions panel",
+        "host panel"
+      ],
+      "recommendation": "sessions panel",
+      "do": {
+        "sessions panel": "ST-3vn4t2h6",
+        "host panel": "ST-3vn4t2h6"
+      },
+      "class": "design",
+      "answer": "sessions panel",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does a blocking coord.py wait show which session waits: a key wait/PID/ITEM per item held with the lease of the wait's timeout plus 5 seconds, the session found by climbing the process table from the pid, or a session id written by the waiter?",
+      "options": [
+        "wait/PID/ITEM keys, session by process ancestry",
+        "session id written by the waiter"
+      ],
+      "recommendation": "wait/PID/ITEM keys, session by process ancestry",
+      "do": {
+        "wait/PID/ITEM keys, session by process ancestry": "ST-3vn4t2h6",
+        "session id written by the waiter": "ST-3vn4t2h6"
+      },
+      "class": "design",
+      "answer": "wait/PID/ITEM keys, session by process ancestry",
+      "by": "agent"
+    }
+  ],
   "notes": "Plan 2026-10-24 (SP-d6gbc3tq): premise reproduced on base by precheck (no land_lock, no waits, no runs.drift). Goal reworded at plan so its clauses split cleanly; touches gained kb/_self/coordination.md for the docs map. Ordered after ST-n5vf55qk (shared mon_status.py). Queue design from ST-tb6tzrxa's goal: land moves the run state to landing before its first step, so the items queued behind the lock holder are the other items in run state landing; the landing lock file names the holder (bl_close.landing_lock: pid, clone, started, item). Checks added: 1 = land_lock with the holder, step, since and the queued title; 2 = a blocked coord.py wait shows in the sessions panel waits by item title; 3 = the drift alert names the item and goes after runs --reconcile; 4 = --status sprints and --status coord say drift. Planned into SP-d6gbc3tq on 2026-10-24 (night run). Sprint SP-d6gbc3tq started 2026-10-24.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
