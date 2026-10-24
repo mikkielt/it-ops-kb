@@ -2,7 +2,7 @@
   "id": "BG-fltgucjv",
   "kind": "bug",
   "title": "QG32 in _answers.md keeps a DOC tag on a drift-measurement claim that the presidio evaluation page and README do not state",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6t3z4q54",
   "priority": "P1",
   "rank": 0,
@@ -33,6 +33,27 @@
   ],
   "notes": "Found by the sprint review (2026-10-24): kb/public/_answers.md QG32 line 'recognizer/version drift between independent Presidio (or other) deployments, measurable today with presidio-evaluator's published precision/recall method [DOC S-gpnrqpjt, S2105]'. The evaluation page (https://presidio.dataprivacystack.org/evaluation/) and the presidio-research README state only that the tool evaluates Presidio as a system, an NER model or a recognizer for precision, recall and error analysis; neither says drift between deployments or versions is measured with it. TK-hxz47zul dropped only the gone id S2111 from this tag and left the claim DOC, so it contradicts the UNK lines it added at _answers.md QG30 and agents/shared-ner-service.md. Fix by rewording the clause to what the pages state or tagging it UNK/DER with a dated note; keep the tag of the second clause (detection-quality gaps against a fixed test set) as it is. Reviewer report: the sprint scratch review-report.md. Approved by the sprint's pre-approval (pre-approved by the operator for the 2026-10-24 day run).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "f5c792012ac9142f81460e6f645d71e35ccd71f1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "91f2ef086f70144b"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('kb/public/_answers.md',encoding='utf-8').read();sys.exit(1 if 'precision/recall method [DOC' in t else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
