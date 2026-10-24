@@ -4,10 +4,11 @@
   "title": "backlog.py release leaves the run key at claimed, so runs SP shows drift for a released item and kbmon alerts 'run claimed, git shows released'",
   "status": "draft",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-dx76osrn",
   "priority": "P3",
   "rank": 0,
   "severity": "S2",
-  "goal": "backlog.py release moves the item's run key from claimed to released (the table allows it) and a done of a story the orchestrator finished itself leaves no run key at claimed at the sprint's end",
+  "goal": "backlog.py release moves the item's run key from claimed to released (the table allows it); a done of a story the orchestrator finished itself leaves no run key at claimed at the sprint's end",
   "repro": {
     "run": [
       "python3",
@@ -15,14 +16,40 @@
       "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\ndef story(title): return re.search(r'ST-\\w+', bl('new', 'story', '--title', title, '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\na, b, lone = story('A'), story('B'), story('Lone')\ndef plant(**sprints):\n    for f in glob.glob(T + '/kb/_self/backlog/*.json'):\n        d = json.load(open(f, encoding='utf-8'))\n        if d['id'] == sp: d['status'] = 'active'\n        if d['id'] in sprints:\n            d['status'] = 'doing'\n            if sprints[d['id']]: d['sprint'] = sprints[d['id']]\n        json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\n    g('add', '-A'); g('commit', '-q', '-m', 'planted')\ndef walk(item, *states): return [c('transition', 'run/' + item, '--to', s).returncode for s in states]\ndef events(*extra):\n    doc = {'spans': [], 'cursor': '', 'problems': ['not run']}\n    for _ in range(4):\n        r = subprocess.run([sys.executable, R + '/_tools/kbmon.py', '--events', '--root', T, '--store', S, *extra], capture_output=True, text=True, env=env)\n        try:\n            doc = json.loads(r.stdout)\n        except ValueError:\n            doc = {'spans': [], 'cursor': '', 'problems': ['not json']}\n        if not doc.get('problems'):\n            break\n    return doc\ndef spans(doc, name): return [s for s in doc['spans'] if s['name'] == name]\nRUN = ('claimed', 'working', 'returned', 'landing', 'landed')\nplant(**{a: sp})\nwalk(a, 'claimed')\nr = bl('release', a)\nstate = c('get', 'run/' + a)\nprint('release exit', r.returncode, (r.stdout + r.stderr).strip()[-120:], '| run state:', state.stdout.strip()[:160])\nsys.exit(0 if r.returncode == 0 and '\"released\"' in state.stdout else 1)\n"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = os.path.realpath(tempfile.mkdtemp()); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '-b', 'main', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--touch', 'kb/public/work.txt',\n                              '--check', 'python3 -c \"import os,sys;sys.exit(0 if os.path.exists(\\'kb/public/work.txt\\') else 1)\"').stdout).group(0)\nfor f in glob.glob(T + '/kb/_self/backlog/*.json'):\n    d = json.load(open(f, encoding='utf-8'))\n    if d['id'] == sp: d['status'] = 'active'\n    if d['id'] == iid: d['status'] = 'doing'; d['sprint'] = sp\n    json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\ng('add', '-A'); g('commit', '-q', '-m', 'planted doing')\nc('transition', 'run/' + iid, '--to', 'claimed')\nos.makedirs(T + '/kb/public'); open(T + '/kb/public/work.txt', 'w').write(iid)\ng('add', '-A'); g('commit', '-q', '-m', 'work ' + iid + '\\n\\nKB-Work: ' + iid)\ndone = bl('done', iid, '--commit')\nstate = c('get', 'run/' + iid).stdout\nprint('done', done.returncode, (done.stdout + done.stderr).strip()[-300:], '| run key', state.strip()[-60:])\nsys.exit(0 if done.returncode == 0 and '\"landed\"' in state else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "backlog.py release moves the item's run key from claimed to released (the table allows it)",
+      "check": 1
+    },
+    {
+      "clause": "a done of a story the orchestrator finished itself leaves no run key at claimed at the sprint's end",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/bl_items.py",
     "kb/_self/backlog.md",
-    "kb/_self/coordination.md"
+    "kb/_self/coordination.md",
+    "_tools/bl_land.py",
+    "_tools/coord.py",
+    "kb/_self/tools.md",
+    "kb/_self/monitoring.md"
+  ],
+  "depends_on": [
+    "BG-q4riyq6i"
   ],
   "links": [
     "parked: SP-hja7yu5k review"
   ],
-  "notes": "Found by the review of SP-hja7yu5k: cmd_release (bl_items.py:389) and done write no run state. Live: runs SP-hja7yu5k exits 1 with `drift: ST-cac2ahg5 ... run is claimed; git shows landed` for the goal research story finished with done; kbmon lists nine 'run claimed, git shows released' rows. Related: BG-yo4inwbx and ST-al6rvds7 in EP-nij36lt7. The repro covers release; the done half (claimed to landed for an item done without land) is in the goal.",
+  "notes": "Found by the review of SP-hja7yu5k: cmd_release (bl_items.py:389) and done write no run state. Live: runs SP-hja7yu5k exits 1 with `drift: ST-cac2ahg5 ... run is claimed; git shows landed` for the goal research story finished with done; kbmon lists nine 'run claimed, git shows released' rows. Related: BG-yo4inwbx and ST-al6rvds7 in EP-nij36lt7. The repro covers release; the done half (claimed to landed for an item done without land) is in the goal. Planning 2026-10-24: premise ran on today's base: the repro (release leaves claimed) and the added check (a done --commit of an item whose key is claimed leaves it claimed) both fail. Recommended design: cmd_release moves claimed to released (move_run, a warning never stops it); cmd_done, once the item file is done and the key still holds claimed (no worker, no landing: the orchestrator finished it), moves it to landed, which needs claimed to landed in coord.py TRANSITIONS (ST-al6rvds7 edits the same table first). A key at working or landing is left to dispatch and land: a worker's done in its own worktree and land's done --commit must not end the key early. Check index 0 reads the done clause, the repro (index 1) the release clause. Planned into SP-dx76osrn on 2026-10-24, third in the order.",
   "filed_in": "clone-0ea70e5c"
 }
