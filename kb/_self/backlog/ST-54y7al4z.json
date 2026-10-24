@@ -4,6 +4,7 @@
   "title": "Prometheus alerts on a waiting gate, a stalled run and a failed run, and sends them to a local Alertmanager",
   "status": "draft",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-d6gbc3tq",
   "priority": "P3",
   "rank": 0,
   "goal": "kbmon --metrics gives the points a rule needs (items by run state, the seconds the oldest blocked item has waited, the seconds since the newest progress event of a working item, failed runs); otel/kbmon.rules.yml adds KbmonGateWaiting, KbmonRunStalled and KbmonRunFailed over them, which --check-rules proves against /metrics; otel/prometheus.yml sends firing alerts to an Alertmanager on loopback and otel/alertmanager.yml routes them to the receiver the operator chose, with no credential in the file",
@@ -21,6 +22,42 @@
         "-c",
         "import subprocess, sys; sys.exit(subprocess.run(['uv', 'run', '--frozen', '--project', 'otel', 'python', 'otel/kbmon_otel.py', '--check-rules', 'otel/kbmon.rules.yml']).returncode)"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\ndef plant(status):\n    for f in glob.glob(T + '/kb/_self/backlog/*.json'):\n        d = json.load(open(f, encoding='utf-8'))\n        if d['id'] == sp: d['status'] = 'active'\n        if d['id'] == iid: d['status'] = status; d['sprint'] = sp\n        json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\n    g('add', '-A'); g('commit', '-q', '-m', 'planted ' + status)\ndef walk(*states): return [c('transition', 'run/' + iid, '--to', s).returncode for s in states]\nplant('doing')\npaths = {'blocked': ('claimed', 'working', 'blocked'), 'failed': ('claimed', 'working', 'failed'), 'working': ('claimed', 'working')}\niids = {n: re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Run ' + n, '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0) for n in paths}\nfor f in glob.glob(T + '/kb/_self/backlog/*.json'):\n    d = json.load(open(f, encoding='utf-8'))\n    if d['id'] in iids.values(): d['status'] = 'doing'; d['sprint'] = sp\n    json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\ng('add', '-A'); g('commit', '-q', '-m', 'planted runs')\nfor n, path in paths.items():\n    for s in path: c('transition', 'run/' + iids[n], '--to', s, *(['--field', 'gates=g1'] if s == 'blocked' else []))\nr = subprocess.run([sys.executable, R + '/_tools/kbmon.py', '--metrics', '--root', T, '--store', S], capture_output=True, text=True, env=env)\ntry:\n    pts = json.loads(r.stdout)['points']\nexcept (ValueError, KeyError):\n    pts = []\nruns = [p for p in pts if 'run' in p['name'] and p['name'] != 'kbmon.panel.seconds']\nstates = {p['attributes'].get('state'): p['value'] for p in runs if p['attributes'].get('state')}\nsecs = [p for p in runs if p.get('unit') == 's']\nok = states.get('blocked') == 1 and states.get('failed') == 1 and states.get('working') == 1 and len(secs) >= 2\nprint('run points', sorted((p['name'], p['attributes'].get('state'), p['value']) for p in runs)[:8], '| seconds points', len(secs))\nsys.exit(0 if ok else 1)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re, sys\nam = open('otel/alertmanager.yml', encoding='utf-8').read() if __import__('os').path.exists('otel/alertmanager.yml') else ''\nprom = open('otel/prometheus.yml', encoding='utf-8').read()\nhook = re.search(r'webhook_configs:\\s*\\n\\s*-\\s*url:\\s*[\\'\"]?http://127\\.0\\.0\\.1:\\d+/', am)\nsecret = re.search(r'(?i)password|token|secret|api_url|api_key|auth|bearer|smtp_|url_file', am + prom)\nprint('webhook to a loopback receiver', bool(hook), '| credential-like key', secret.group(0) if secret else None)\nsys.exit(0 if hook and not secret else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbmon --metrics gives the points a rule needs (items by run state, the seconds the oldest blocked item has waited, the seconds since the newest progress event of a working item, failed runs)",
+      "check": 2
+    },
+    {
+      "clause": "otel/kbmon.rules.yml adds KbmonGateWaiting, KbmonRunStalled and KbmonRunFailed over them, which --check-rules proves against /metrics",
+      "check": 0
+    },
+    {
+      "clause": "otel/kbmon.rules.yml adds KbmonGateWaiting, KbmonRunStalled and KbmonRunFailed over them, which --check-rules proves against /metrics",
+      "check": 1
+    },
+    {
+      "clause": "otel/prometheus.yml sends firing alerts to an Alertmanager on loopback and otel/alertmanager.yml routes them to the receiver the operator chose, with no credential in the file",
+      "check": 0
+    },
+    {
+      "clause": "otel/prometheus.yml sends firing alerts to an Alertmanager on loopback and otel/alertmanager.yml routes them to the receiver the operator chose, with no credential in the file",
+      "check": 3
     }
   ],
   "touches": [
@@ -49,6 +86,6 @@
       "role": "interactive"
     }
   ],
-  "notes": "Premise: otel/kbmon.rules.yml holds three rules on the kb's health (eval, any alert, an orphan) and none on a sprint run; otel/prometheus.yml has no alerting block and the repository no Alertmanager config (the check prints rules [], alerting False, alertmanager.yml False). Prometheus only evaluates alerts; notifying is a separate Alertmanager (kb/public/logs/prometheus-retention-exposition.md:55, DOC). As for Prometheus itself, the operator installs Alertmanager outside the clone; the repository holds config files only.",
+  "notes": "Premise: otel/kbmon.rules.yml holds three rules on the kb's health (eval, any alert, an orphan) and none on a sprint run; otel/prometheus.yml has no alerting block and the repository no Alertmanager config (the check prints rules [], alerting False, alertmanager.yml False). Prometheus only evaluates alerts; notifying is a separate Alertmanager (kb/public/logs/prometheus-retention-exposition.md:55, DOC). As for Prometheus itself, the operator installs Alertmanager outside the clone; the repository holds config files only. Plan 2026-10-24 (SP-d6gbc3tq): check 1 (--check-rules) already passes before the work: it pins that every kbmon_ name in the rules file, the three new rules included, is served by /metrics, so it must keep passing. Checks added: 2 = run points for the blocked, failed and working states plus two seconds points; 3 = alertmanager.yml holds a loopback webhook and neither file holds a credential-like key. Gate g1 (webhook receiver) is answered, the receiver itself is not in the goal: filed as the parked draft ST-i4ejksl2; until it exists the webhook url points at nothing, said in kb/_self/monitoring.md. Planned into SP-d6gbc3tq on 2026-10-24 (night run).",
   "filed_in": "clone-0ea70e5c"
 }
