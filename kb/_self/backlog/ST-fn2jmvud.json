@@ -54,7 +54,11 @@
         "Run kbmon.py --status all on every refresh": "ST-fn2jmvud",
         "Notify with the cut --once row": "ST-fn2jmvud"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Run kbmon.py --status all (first line) only when the --once row changed or ends in an ellipsis",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Premise: `claude plugin test` of a copy of .claude/skills/kbmon-pane with a planted test (stubbed process.run, ui.notify and the clock) fails on base: the line changes from nothing to a gate and `ui.notify` is called 0 times, expected 1 (check 0 prints it; check 1 the same). Facts: kb/public/claude/mods.md:113-115 (ui.notify answers {isSent, channel} or {isSent:false, reason} and rejects on a denying hook or a failed write; DOC S-sao3dfcq). Live docs, not in the kb (code.claude.com/docs/en/plugins/mods/create and /test, read 2026-10-24): a hooks module imports only its own files by relative path, `$` passed to a function imported from another file fails `claude plugin validate`, so the notify call stays in register.tsx in a top-level function that takes `$`; `claude plugin test` (a *.test.ts under the mod's directory, run with the real claude binary, not the PATH wrapper that adds --settings) is the planted run; check 0 also runs `claude plugin validate` and needs `$.ui.notify` in its calls line. Plan 2026-10-24 (night run): the 'needs you' row of `kbmon.py --once` (or the first line of `kbmon.py --status all`) is the line; the mod sends it prefixed `needs you: ` (the row is already redacted by kbmon); the first reading of a session is the baseline (like the receipt toast, which skips the first), `nothing` is never sent; a rejected call is caught and the next change is tried again. The register.tsx file is a protected path: edit a staging copy and finish with `stage-back`. A real session shows the notification only with a terminal channel in preferredNotifChannel; the planted run stubs it. Filed 2026-10-24 (night run) as one of the three later stories EP-nij36lt7 names; approved by the operator.",
