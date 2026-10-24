@@ -79,6 +79,42 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Is kb_tools listed by every kb MCP server, or only by the team's own server (as kb_settings, kb_backlog and kb_docs are)?",
+      "options": [
+        "only the team's own server: absent under --roots and from kb_http.py, since the catalog names this clone's tools",
+        "every server, --roots and kb_http.py included"
+      ],
+      "recommendation": "only the team's own server: absent under --roots and from kb_http.py, since the catalog names this clone's tools",
+      "do": {
+        "only the team's own server: absent under --roots and from kb_http.py, since the catalog names this clone's tools": "ST-e6xp5h3u",
+        "every server, --roots and kb_http.py included": "ST-e6xp5h3u"
+      },
+      "class": "agents-rule",
+      "answer": "only the team's own server: absent under --roots and from kb_http.py, since the catalog names this clone's tools (pre-approved by the operator for the 2026-10-24 night run)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Which questions does kb_ask.py send to kbtools.py, and what when the catalog has no entry for one?",
+      "options": [
+        "a tool, command or script word beside which, what (not what does) or how do I find; no catalog entry: the question goes on to the pack; no query log row",
+        "the same cues, and a question with no catalog entry still prints the no-tool line"
+      ],
+      "recommendation": "a tool, command or script word beside which, what (not what does) or how do I find; no catalog entry: the question goes on to the pack; no query log row",
+      "do": {
+        "a tool, command or script word beside which, what (not what does) or how do I find; no catalog entry: the question goes on to the pack; no query log row": "ST-e6xp5h3u",
+        "the same cues, and a question with no catalog entry still prints the no-tool line": "ST-e6xp5h3u"
+      },
+      "class": "querylog",
+      "answer": "a tool, command or script word beside which, what (not what does) or how do I find; no catalog entry: the question goes on to the pack; no query log row",
+      "by": "agent"
     }
   ],
   "notes": "Premise: kb_ask.py --route 'which tool shows how long each landing step took' plans kind=split with model=sonnet (a paid researcher) although backlog.py landings answers it; 36 _tools command-line tools exist and none carries Answers: or Use: lines; tools.md, the one table of tools, is too long to read whole, so agents iterate over files. The AGENTS.md cap (4096 bytes, tested) means the line replaces another. Premise run 2026-10-24 on the base: kb_ask.py --route 'which tool shows how long each landing step took' prints kind=split verdict=weak model=sonnet: reproduces. What the checks read: tools/list holds kb_tools with readOnlyHint, an optional need and a closed schema (an unknown argument is an error), and its text holds kbtools.py's lines for a need and for none; the AGENTS.md line holds a runnable python3 _tools/kbtools.py command (a placeholder in angle or square brackets, or in capitals, is replaced by a need when the check runs it) and says what it is for; --route plans kind=tools for which-tool, which-command and how-do-I-find-the-command questions and never for the three docs questions of check 2 (a docs question that merely holds the word tool or how is not one: pair a cue naming a tool, command or script with one that asks for it, as mon_status.CUES pairs a named thing with a state; the kbmon status route stays first); the answer is kbtools.py's lines and runs no model (check 2 puts a fake claude first on PATH and asserts it is never run). The kb hook's own routing is not part of this item. AGENTS.md has 106 bytes of room now: the new line replaces another. Docs outside this item's touches that other items hold: read each, name it in Self-Reviewed. Depends on ST-w6pz5emu; claimed after it lands, so kbtools.py exists when this item's checks run. The cut of AGENTS.md is settled by gate g1: the new line replaces the routing parenthetical of the kb_ask.py line.",

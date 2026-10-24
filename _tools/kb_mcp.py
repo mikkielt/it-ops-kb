@@ -66,6 +66,9 @@ asks and, unasked, for a source past its freshness lifetime):
              querylog.py (digest, status, show) and selfdoc.py, check.py and rag.py eval (stale, section, map, check, eval) as
              `command` and `args`, answering the text the script prints through redact.redact (kb_docs ends it with
              `(exit 1)` when the command found something); a command or option outside each tool's closed list is a tool error
+  kb_tools   (the team's own server only, as kb_monitor_status) the lines of `kbtools.py [NEED]`: the kb's tools, skills,
+             agents and MCP tools that answer `need` (all of them when it is left out), each with its command and what it
+             answers, through redact.redact; no model is called, an argument other than `need` is a tool error
   kb_backlog_write  (the team's own server only, and only with KB_BACKLOG_WRITE_TOOLS=1 in its environment: otherwise
              not listed and an unknown tool) `claim`, `release` or `answer` of backlog.py as `command` and `args`, run as a
              child with CLAUDECODE=1, so every gate and authority rule of the command line holds (a ceiling-class gate takes
@@ -1464,7 +1467,30 @@ def kb_docs(args):
     return facade_run(script, [*([word] if word else []), *facade_args(rest, allowed)], findings_exit=True)
 
 
-FACADE_HANDLERS = {"kb_querylog": kb_querylog, "kb_docs": kb_docs}
+TOOLS_TOOL_LIST = [
+    {"name": "kb_tools", "title": "Which tool answers a need",
+     "description": "Which of the kb's tools, skills, agents and MCP tools answers a need, read-only (kbtools.py; not kb "
+                    "facts, not live device data): the same lines the command prints, one for each entry with its command "
+                    "and what it answers. Use first when you do not know which tool answers; need left out: the whole "
+                    "catalog. No model call.",
+     "inputSchema": {"type": "object", "properties": {
+         "need": {"type": "string", "description": "what you need, in plain words, e.g. what a sprint item cost in tokens"}},
+         "additionalProperties": False},
+     "annotations": {"title": "Which tool answers a need", **READ_ONLY}},
+]
+
+
+def kb_tools(args):
+    extra = sorted(set(args) - {"need"})
+    if extra:
+        raise ToolError(f"unknown argument(s): {', '.join(extra)}")
+    need = args.get("need") or ""
+    if not isinstance(need, str):
+        raise ToolError("need is a string")
+    return facade_run("kbtools.py", ["--", need] if need.strip() else [])  # `--`: a need that starts with '-' is no option
+
+
+FACADE_HANDLERS = {"kb_querylog": kb_querylog, "kb_docs": kb_docs, "kb_tools": kb_tools}
 
 
 def coord_enabled():
@@ -1523,7 +1549,7 @@ def handle(msg):
         return result(msg_id, {})
     if method == "tools/list":
         return result(msg_id, {"tools": TOOL_LIST + ([] if limited() else [FEEDBACK_TOOL] + MONITOR_TOOL_LIST + SETTINGS_TOOL_LIST + BACKLOG_TOOL_LIST
-                               + QUERYLOG_TOOL_LIST + DOCS_TOOL_LIST)
+                               + QUERYLOG_TOOL_LIST + DOCS_TOOL_LIST + TOOLS_TOOL_LIST)
                                + (COORD_TOOL_LIST if coord_enabled() else [])
                                + (BACKLOG_WRITE_TOOL_LIST if backlog_write_enabled() else [])
                                + (LIVE_TOOL_LIST if live_enabled() else []), "ttlMs": 3600000, "cacheScope": "public"})

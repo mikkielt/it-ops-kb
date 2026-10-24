@@ -6,6 +6,12 @@
                                         log, coord: mon_status.topic_of, fixed cue words) is answered by `kbmon.py --status
                                         TOPIC` before any pack or model; a docs question that merely holds such a word is not
                                         one; it writes no query log row, as `status:` of the kb hook does not;
+                                        a question that asks which tool, command or script answers a need (tools_need:
+                                        fixed cue words, a word naming a tool beside one that asks for it, as
+                                        mon_status.CUES pairs a named thing with a state; a docs question that holds
+                                        only `tool` or `how` is none) is answered next, before any pack or model, by
+                                        the lines of `kbtools.py QUESTION` (--route prints `kind=tools`), no query log
+                                        row; a catalog with no entry for it leaves the question to the steps below;
                                      1. a question of a kind a tool decides (a count or list of articles, a decision
                                         id, which sources disagree, a topic a gaps entry records, which files cite a
                                         source id: kbfacts.routed) is answered by that tool, with path:line: no model;
@@ -70,7 +76,7 @@ Use: python3 _tools/kb_ask.py "QUESTION" [--route] [--no-model]
 import argparse, json, os, re, shutil, subprocess, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import kbcommon, kbfacts, mon_status  # noqa: E402
+import kbcommon, kbfacts, kbtools, mon_status  # noqa: E402
 import ql_capture, selfdoc  # noqa: E402
 
 HOME = kbfacts.kbcommon.HOME  # this repository: the kb server, the sessions' cwd
@@ -128,6 +134,35 @@ def status(topic, route):
         print(f"kb_ask: {error}", file=sys.stderr)
         return 1
     print(text)
+    return 0
+
+
+# ---------------------------------------------------------------- questions about which tool answers
+
+# A word that names a tool beside a word that asks for it, as mon_status.CUES pairs a named thing with a state: "which tool
+# shows ...", "what command prints ...", "how do I find the script that ..."; a docs question that holds only one is none.
+TOOL_NAMED = r"\b(?:tools?|commands?|scripts?)\b"
+TOOL_ASKS = (r"^(?:which|what)\b(?! does\b)",r"\bhow (?:do|can|should|would|could) (?:i|you|we) (?:find|get|know|pick|choose|locate|see|list|print|show)\b",
+             r"\b(?:find|looking for|need) (?:me )?(?:a|an|the)\b")
+
+
+def tools_need(question):
+    """The question when it asks which tool, command or script answers a need (a TOOL_NAMED word and a TOOL_ASKS cue),
+    else None."""
+    text = " ".join(str(question or "").lower().split())
+    named = re.search(TOOL_NAMED, text) and any(re.search(c, text) for c in TOOL_ASKS)
+    return " ".join(str(question).split()) if named else None
+
+
+def tools(question, route):
+    """A which-tool question: the lines of `kbtools.py QUESTION` (kbtools.search), no pack and no model; with `route` the plan
+    line only. None where the catalog holds no entry for it: the question goes on to the pack."""
+    entries = kbtools.search(question, kbtools.catalog())
+    if not entries:
+        return None
+    line = "kind=tools (kbtools.py, no model)"
+    log(line)
+    print(line if route else "\n".join(kbtools.line_of(e) for e in entries))
     return 0
 
 
@@ -512,6 +547,10 @@ def run(row):
     if topic:  # the monitor's own state is no kb lookup: no pack, no model, no query log row
         row.pop("question")
         return status(topic, a.route)
+    need = tools_need(q) if len(split_parts(q)) == 1 else None
+    if need and (code := tools(need, a.route)) is not None:  # the catalog is no kb lookup either: no pack, no model, no row
+        row.pop("question")
+        return code
     res = kbfacts.routed(q) if len(split_parts(q)) == 1 else None  # parts are routed one by one, in their pack
     if res:
         row.update(verdict=res["verdict"], lines=ql_capture.pack_lines(res["text"]))

@@ -5,7 +5,8 @@ An offline knowledge base of facts from official sources on Windows endpoint man
 ## Look things up: deterministic tools first
 
 - Answer lookups in the session that asked. Never start a general-purpose subagent for one; the `kb-lookup` agent only for long research that would fill the context.
-- From a shell or script: `python3 _tools/kb_ask.py "<question>"` answers at the lowest working cost (routing: `kb/_self/tools.md`).
+- Not sure which tool answers, first: `python3 _tools/kbtools.py "<need>"` (MCP `kb_tools`) names the tools, skills and agents that do.
+- From a shell or script: `python3 _tools/kb_ask.py "<question>"` answers at the lowest working cost.
 - One call first: `kb_pack` (MCP) or `rag.py pack "<question>"`; several parts: `questions` / `pack -q PART -q PART`. It prints `coverage: good|weak|none`, the best fact lines by article (`root/path:line`, tag) and a footer of urls; `root` keeps one root.
   - `good`: answer from the pack. A `check:` line flags a possible false `good`: answer only if a cited line itself answers it, else treat as `none`.
   - `weak`: one reworded pack or one `show` of the article.
