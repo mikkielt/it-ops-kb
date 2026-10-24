@@ -31,7 +31,9 @@
     }
   ],
   "touches": [
-    "_tools/kbask.py"
+    "_tools/kbask.py",
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md"
   ],
   "gates": [
     {
@@ -55,7 +57,7 @@
   "links": [
     "parked: SP-w6amecjt review"
   ],
-  "notes": "SP-w6amecjt review: stays a hole after BG-jpzlj4gi's settings fix unless that fix drops Bash. Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. The pin check passes before the work by design: it holds behaviour the fix must keep. The allow list cannot exclude a flag, so the fix drops git log and git show from it or pins them to exact commands; the role file .claude/agents/kb-observer.md lists them too and is a protected path (BG-5p3bfm4u is the parked bug for it): leave it and say so in the report.",
+  "notes": "SP-w6amecjt review: stays a hole after BG-jpzlj4gi's settings fix unless that fix drops Bash. Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. The pin check passes before the work by design: it holds behaviour the fix must keep. The allow list cannot exclude a flag, so the fix drops git log and git show from it or pins them to exact commands; the role file .claude/agents/kb-observer.md lists them too and is a protected path (BG-5p3bfm4u is the parked bug for it): leave it and say so in the report. Touches widened by the orchestrator after the worker reported coordination.md line 94 and tools.md line 59 now state the old allow rules; the manager said shared doc rows are no hold (day run 2026-10-24).",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }
