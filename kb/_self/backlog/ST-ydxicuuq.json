@@ -2,7 +2,7 @@
   "id": "ST-ydxicuuq",
   "kind": "story",
   "title": "Review sprint: kbmon and OpenTelemetry show the run states: spans, needs-you, landing queue, drift, worker trace context and alerts",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-d6gbc3tq",
   "review": true,
   "priority": "P1",
@@ -24,5 +24,27 @@
     }
   ],
   "notes": "Planned into SP-d6gbc3tq on 2026-10-24 (night run). Sprint SP-d6gbc3tq started 2026-10-24.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "evidence": {
+    "commit": "b950692a975812c63e78ae38f267ab9567859ddd",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "bbf8afb1c95e9c44"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "0104fb3cb8300326"
+      }
+    ]
+  }
 }
