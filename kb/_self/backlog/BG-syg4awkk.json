@@ -2,7 +2,7 @@
   "id": "BG-syg4awkk",
   "kind": "bug",
   "title": "kbroot.py push in a plugin host commits the gitlink bump in the plugin copy",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-c6w5hjmc",
   "priority": "P2",
@@ -46,5 +46,7 @@
   "links": [
     "parked: SP-mguax5m3 review"
   ],
-  "notes": "Premise 2026-10-24: repro fails on the base (precheck). Sprint SP-c6w5hjmc started on the operator's standing approval for the day run."
+  "notes": "Premise 2026-10-24: repro fails on the base (precheck). Sprint SP-c6w5hjmc started on the operator's standing approval for the day run.",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
