@@ -7,16 +7,19 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "kbroot.py add-remote and check.py accept a Windows path url such as C:\\Users\\jan@corp.example.com\\team.git (no credential), and keep refusing a user:password@ and an http(s) token@ url; a token in a url's query or fragment is considered (SP-c6w5hjmc review gap 7)",
+  "goal": "kbroot.py add-remote and check.py accept a Windows path url such as C:\\work\\jan@corp.example.com\\team.git (no credential), and keep refusing a user:password@ and an http(s) token@ url; a token in a url's query or fragment is considered (SP-c6w5hjmc review gap 7)",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "\nimport sys\nsys.path.insert(0, \"_tools\")\nimport kbcommon\nbad = kbcommon.url_holds_credential(\"C:\\\\Users\\\\jan@corp.example.com\\\\team.git\")\nprint(\"a Windows path with an @ in a folder name is read as a credential url:\", bad)\nsys.exit(1 if bad else 0)\n"
+      "\nimport sys\nsys.path.insert(0, \"_tools\")\nimport kbcommon\nbad = kbcommon.url_holds_credential(\"C:\\\\work\\\\jan@corp.example.com\\\\team.git\")\nprint(\"a Windows path with an @ in a folder name is read as a credential url:\", bad)\nsys.exit(1 if bad else 0)\n"
     ]
   },
   "touches": [
     "_tools/kbcommon.py"
+  ],
+  "links": [
+    "parked: SP-c6w5hjmc review"
   ],
   "filed_in": "clone-0ea70e5c"
 }
