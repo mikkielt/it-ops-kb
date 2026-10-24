@@ -473,8 +473,22 @@ def met_events(found, session):
             if not (claim and dispatching(found, session, i))]
 
 
+def live_part(events, live):
+    """EVENTS (`met_events`' list) cut to what the LIVE intents ({items, touch}, one session's `merged_intents` entry)
+    still name: each event keeps its items that LIVE names and its touch paths that meet a live one, and an event with
+    neither is dropped."""
+    import coord
+    out = []
+    for t, items, paths in events:
+        kept_items = [i for i in items if i in live["items"]]
+        kept_paths = [p for p in paths if any(coord.overlaps(p, q) for q in live["touch"])]
+        if kept_items or kept_paths:
+            out.append((t, kept_items, kept_paths))
+    return out
+
+
 def meeting_time(ea, eb):
-    """The time of the oldest moment two sessions met, from the intent events EA and EB of each (`met_events`' lists): the
+    """The time of the oldest moment two sessions met, from the intent events EA and EB of each (`live_part`'s lists): the
     smallest, over the pairs of an intent of each whose items or touch paths meet, of the newer intent of the pair; None
     where no pair meets."""
     import coord
@@ -490,7 +504,8 @@ def overlap_rows(found, now=None):
     operator, item} (the session's first item); `files` the touch paths of either that meet a path of the other; `strategy`
     `undecided`, else the one the newest `coordinate` event between an item of each announced, posted by one of the two
     sessions at or after the moment they met (an older event, or one of a session outside the pair, decides nothing); `age_s` the seconds since
-    the oldest moment an intent of each met an intent of the other (the newer of the two intents), the later of the two
+    the oldest moment an intent of each met an intent of the other on the items and paths the two sessions' live intents
+    still name (the newer of the two intents; an older pair on other items or files counts nothing), the later of the two
     sessions' first intent where no event pair meets."""
     if found is None or found.get("events_unread"):
         return None
@@ -507,7 +522,7 @@ def overlap_rows(found, now=None):
             if not files and not set(sa["items"]) & set(sb["items"]):
                 continue
             ea, eb = met_events(found, ida), met_events(found, idb)
-            since = meeting_time(ea, eb)
+            since = meeting_time(live_part(ea, sa), live_part(eb, sb))
             if since is None:
                 since = max((ea or [(now,)])[0][0], (eb or [(now,)])[0][0])
             strategy = next((s for i, o, s, who, t in found.get("coordinate", [])
