@@ -19,5 +19,9 @@
     "_tools/kbtools.py",
     "kb/_self/tools.md"
   ],
+  "links": [
+    "parked: SP-uhcjxayq review"
+  ],
+  "notes": "Found by the SP-uhcjxayq review (S4): kbtools.name_words joins the need's raw words, so a plural does not spell a several-word name.",
   "filed_in": "clone-0ea70e5c"
 }
