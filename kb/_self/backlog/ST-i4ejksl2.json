@@ -1,0 +1,30 @@
+{
+  "id": "ST-i4ejksl2",
+  "kind": "story",
+  "title": "A loopback webhook receiver posts each Alertmanager alert as a coord ask to the operator, so a firing alert reaches kbmon's needs-you line",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbask.py webhook listens on loopback only and reads an Alertmanager version 4 webhook post, and for each firing alert posts one coord ask to operator naming the alert name, the item and the sprint from its labels (redacted, no label value beyond those), and posts nothing for a resolved alert or a body that is not an Alertmanager post; otel/alertmanager.yml's webhook points at it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, sys, os, json, socket, tempfile, time, urllib.request; R = os.getcwd(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite'); s = socket.socket(); s.bind(('127.0.0.1', 0)); port = s.getsockname()[1]; s.close(); p = subprocess.Popen([sys.executable, R + '/_tools/kbask.py', '--store', S, 'webhook', '--port', str(port)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL); time.sleep(2); body = json.dumps({'version': '4', 'status': 'firing', 'alerts': [{'status': 'firing', 'labels': {'alertname': 'KbmonGateWaiting', 'item': 'ST-00000000'}, 'annotations': {}}]}).encode(); code = 0\\ntry:\\n    urllib.request.urlopen(urllib.request.Request('http://127.0.0.1:%d/alert' % port, body, {'Content-Type': 'application/json'}), timeout=10)\\nexcept Exception as e:\\n    code = str(e)\\np.terminate(); r = subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, 'wait', '--since', '0', '--timeout', '0', '--kind', 'ask'], capture_output=True, text=True); print('post', code, r.stdout[:200]); sys.exit(0 if code == 0 and 'KbmonGateWaiting' in r.stdout and 'operator' in r.stdout else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbask.py",
+    "otel/alertmanager.yml",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-d6gbc3tq plan"
+  ],
+  "notes": "Filed at the plan of SP-d6gbc3tq (2026-10-24, night run): gate g1 of ST-54y7al4z chose a stdlib loopback webhook receiver that posts each alert as a coord ask to operator; that story ships the rules, the Alertmanager config and the webhook url, and ST-n5vf55qk shows an unanswered ask in the needs-you line, but no story writes the receiver itself. Not in the sprint: outside the night run's listed items. Until it exists a firing alert is dropped by Alertmanager at the webhook url. Parked draft, in no sprint.",
+  "filed_in": "clone-0ea70e5c"
+}
