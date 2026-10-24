@@ -2,7 +2,7 @@
   "id": "BG-h6y5s45w",
   "kind": "bug",
   "title": "The leak scan passes a key block whose lines carry a /// or //! comment prefix",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "BG-ok4itunr",
   "kind": "bug",
   "title": "Narrow-wrapped, colon-without-space and tab-escaped EC keys pass the leak scan, and the quoted EC label followed by a path is flagged",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,

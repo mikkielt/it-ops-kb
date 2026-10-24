@@ -2,7 +2,7 @@
   "id": "ST-gtdnix3z",
   "kind": "story",
   "title": "Research sprint goal: S3 bugs that give wrong output or fail open: landing ledger check, kbroot fetch, leak scan, redact, disk alert, settings guard",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-swavez3g",
   "goal_research": true,
   "priority": "P1",

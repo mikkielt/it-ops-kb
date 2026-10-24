@@ -2,7 +2,7 @@
   "id": "BG-siwylsev",
   "kind": "bug",
   "title": "kbroot.py fetch --pin ends in a traceback on a pointer file it cannot write and skips the later roots",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-swavez3g",
   "priority": "P3",

@@ -2,7 +2,7 @@
   "id": "BG-r7c7dxia",
   "kind": "bug",
   "title": "done's ledger check does not see a source id the goal writes joined by a hyphen, such as S100-related or S100-S120",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,

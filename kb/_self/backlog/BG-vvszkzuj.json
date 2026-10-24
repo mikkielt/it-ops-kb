@@ -2,7 +2,7 @@
   "id": "BG-vvszkzuj",
   "kind": "bug",
   "title": "The commit-msg hook prints that check-trailers refuses a stray KB-Work line but lets the commit through",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,

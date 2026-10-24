@@ -2,7 +2,7 @@
   "id": "BG-m2jimysq",
   "kind": "bug",
   "title": "kbroot.py fetch --pin fails on a pointer that starts with a byte order mark and prints the commit as the reason",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-swavez3g",
   "priority": "P3",

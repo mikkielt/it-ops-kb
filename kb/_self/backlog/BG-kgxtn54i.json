@@ -2,7 +2,7 @@
   "id": "BG-kgxtn54i",
   "kind": "bug",
   "title": "redact keeps the tail of a cut-off escaped-quote secret value after a nested escaped quote",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,

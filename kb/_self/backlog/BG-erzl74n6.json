@@ -2,7 +2,7 @@
   "id": "BG-erzl74n6",
   "kind": "bug",
   "title": "done's ledger check turns any error reading the ledgers into a warning and lets the item through with the check off",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "ST-45txtp6x",
   "kind": "story",
   "title": "Review sprint: S3 bugs that give wrong output or fail open: landing ledger check, kbroot fetch, leak scan, redact, disk alert, settings guard",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-swavez3g",
   "review": true,
   "priority": "P1",

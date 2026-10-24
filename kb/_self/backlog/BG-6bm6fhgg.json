@@ -2,7 +2,7 @@
   "id": "BG-6bm6fhgg",
   "kind": "bug",
   "title": "The leak scan misses a key block behind a list-bullet prefix or with a header that has no space after its colon",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,
