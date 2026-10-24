@@ -91,7 +91,7 @@
   "links": [
     "parked: SP-ciqk6gt6 review"
   ],
-  "notes": "Review gaps 2 and 3: skills/*/SKILL.md line 8 says to write the clone's top directory where the variable shows; .claude/settings.json allows Bash(python3 _tools/backlog.py *), which an absolute path does not match; bl_selfcheck.SKILL_COMMANDS holds only the relative form; agents/worker.md:10 defines the variable only where the brief names the directory, and the kb's brief names none.",
+  "notes": "Review gaps 2 and 3: skills/*/SKILL.md line 8 says to write the clone's top directory where the variable shows; .claude/settings.json allows Bash(python3 _tools/backlog.py *), which an absolute path does not match; bl_selfcheck.SKILL_COMMANDS holds only the relative form; agents/worker.md:10 defines the variable only where the brief names the directory, and the kb's brief names none. g1, g2 (agents-rule) answered with their recommendations, pre-approved by the operator for the 2026-10-24 day run. g2: the five allow rules (coord, doc2query, factdiff, kbask, kbsettings) are the operator's to add to .claude/settings.json; selfcheck allow-rules fails until then.",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }
