@@ -2,7 +2,7 @@
   "id": "BG-jche37b7",
   "kind": "bug",
   "title": "kb_pack root=<missing root> raises no root instead of naming the root as missing with its reason",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-4ppjbh4k",
   "priority": "P2",
@@ -41,5 +41,7 @@
   "links": [
     "parked: SP-s2svf5a6 review"
   ],
-  "notes": "Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. Check 0 plants the same two-root clone for kb_pack, kb_search and kb_audit; the repro covers kb_pack alone."
+  "notes": "Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. Check 0 plants the same two-root clone for kb_pack, kb_search and kb_audit; the repro covers kb_pack alone.",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
