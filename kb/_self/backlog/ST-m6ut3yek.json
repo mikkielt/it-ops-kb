@@ -1,0 +1,29 @@
+{
+  "id": "ST-m6ut3yek",
+  "kind": "story",
+  "title": "The coord panel's live claims and the claims metric leave out the wait/ leases a blocked coord.py wait holds",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the coord panel's claims list, its --status coord answer and kbmon_coord_claims count the claims of sessions on items and files only, and a wait/ lease shows only in the sessions panel's waits",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\ndef plant(status):\n    for f in glob.glob(T + '/kb/_self/backlog/*.json'):\n        d = json.load(open(f, encoding='utf-8'))\n        if d['id'] == sp: d['status'] = 'active'\n        if d['id'] == iid: d['status'] = status; d['sprint'] = sp\n        json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\n    g('add', '-A'); g('commit', '-q', '-m', 'planted ' + status)\ndef walk(*states): return [c('transition', 'run/' + iid, '--to', s).returncode for s in states]\nplant('doing')\nw = subprocess.Popen([sys.executable, R + '/_tools/coord.py', '--store', S, 'wait', '--since', '0', '--timeout', '25', '--kind', 'progress', '--item', iid],\n                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)\nimport time; time.sleep(2)\nr = subprocess.run([sys.executable, R + '/_tools/kbmon.py', '--json', '--panel', 'coord', '--root', T, '--store', S], capture_output=True, text=True, env=env)\nw.terminate(); w.wait()\ntry:\n    claims = json.loads(r.stdout)['panels']['coord']['data']['claims']\nexcept (ValueError, KeyError):\n    claims = None\nkeys = [c.get('key') for c in (claims or [])]\nprint('coord claims', keys)\nsys.exit(0 if claims is not None and not any(str(k).startswith('wait/') for k in keys) else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/mon_coord.py",
+    "_tools/mon_export.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-d6gbc3tq review"
+  ],
+  "notes": "Review gap (S2) of SP-d6gbc3tq: ST-3vn4t2h6's wait/PID/ITEM leases carry a holder, so mon_coord.py:241 lists them as claims and kbmon_coord_claims{state=live} counts them.",
+  "filed_in": "clone-0ea70e5c"
+}
