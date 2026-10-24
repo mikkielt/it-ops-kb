@@ -2,7 +2,7 @@
   "id": "BG-7mxo4k6p",
   "kind": "bug",
   "title": "The leak scan flags the EC armor label quoted before a repository path that has a digit or an upper-case letter",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4ppjbh4k",
   "priority": "P3",
   "rank": 0,
@@ -41,5 +41,7 @@
     "parked: SP-swavez3g review"
   ],
   "notes": "Found by the SP-swavez3g review (S3) of BG-ok4itunr: the path rule covers only lowercase paths with no digit (the gate option taken provisionally). Three 8+ letter prose lines after the label are flagged too; decide whether that is wanted. Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. The pin check passes before the work by design: it holds behaviour the fix must keep. Same file as BG-q7lcd6od, so it runs after it.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
