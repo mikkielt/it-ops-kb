@@ -2,7 +2,7 @@
   "id": "ST-wlsic62s",
   "kind": "story",
   "title": "Research sprint goal: The coord hook announces right: own intents kept out of the cut, a wait that waits, redacted overlaps, a bounded run",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3i7hcb6i",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: every question of this sprint is about this repository's own coord hook, kbask.py and kbsettings.py code and the kb/_self docs that describe them (looked up with rag.py pack --root _self on 2026-10-24: coordination.md:73, :78-:82 and token-efficiency.md:48 answer the hook's Edit/Write behaviour); no Microsoft, Claude Code or MCP fact is needed. Planned into SP-3i7hcb6i on 2026-10-24. Sprint started 2026-10-24.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "daf661c5bf588764c2c56fa06b6a98759b151844",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-wlsic62s"
+        ],
+        "exit": 0,
+        "sha256": "eecc9e13decd984b"
+      }
+    ]
+  }
 }
