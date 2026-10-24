@@ -1,0 +1,21 @@
+{
+  "id": "BG-ngtix6e2",
+  "kind": "bug",
+  "title": "kbroot.py fetch failure lines keep the tail of an unquoted absolute path that holds a space",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbroot.without_paths removes an unquoted absolute path with a space in it whole, so no fragment of the home directory path reaches a failure line",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\nsys.path.insert(0, \"_tools\")\nimport kbroot\nout = kbroot.without_paths(\"fatal: cannot mkdir /home/jan.kowalski/my cache/roots/x.part: Permission denied\")\nprint(out)\nsys.exit(1 if \"cache\" in out or \"roots\" in out else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kbroot.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
