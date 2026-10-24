@@ -2,7 +2,7 @@
   "id": "ST-pcii2jba",
   "kind": "story",
   "title": "Research sprint goal: Landings and run states heal themselves: stale landing worktrees, refused-step names, release and done moves, killed stage-backs",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-dx76osrn",
   "goal_research": true,
   "priority": "P1",
@@ -20,6 +20,9 @@
   ],
   "touches": [
     "kb/public/**"
+  ],
+  "links": [
+    "planned: SP-dx76osrn started 2026-10-24"
   ],
   "notes": "No outside facts: every item of this sprint changes the backlog, landing and coord tools of this clone; the answers are in the code and kb/_self/ (read with rag.py pack --root _self and the landed commits of SP-47w4ngr6 and SP-sucr3kfg), no official source or live doc is involved.",
   "filed_in": "clone-0ea70e5c"
