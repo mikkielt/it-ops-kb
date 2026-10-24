@@ -22,10 +22,31 @@
   "depends_on": [
     "BG-mejqc3wt"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which stderr line does git() report for a failed git command: how is the reason chosen?",
+      "options": [
+        "Drop hint: lines; prefer the '! [rejected]' status line, else the last remaining line",
+        "Drop hint: lines only; report the last remaining line (error: failed to push some refs)"
+      ],
+      "recommendation": "Drop hint: lines; prefer the '! [rejected]' status line, else the last remaining line",
+      "do": {
+        "Drop hint: lines; prefer the '! [rejected]' status line, else the last remaining line": "BG-rdrzijgr",
+        "Drop hint: lines only; report the last remaining line (error: failed to push some refs)": "BG-rdrzijgr"
+      },
+      "class": "push",
+      "answer": "Drop hint: lines; prefer the '! [rejected]' status line, else the last remaining line",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-mguax5m3 review"
   ],
-  "notes": "Premise 2026-10-24: repro fails on the base (precheck). Sprint SP-c6w5hjmc started on the operator's standing approval for the day run.",
+  "notes": "Premise 2026-10-24: repro fails on the base (precheck). Sprint SP-c6w5hjmc started on the operator's standing approval for the day run. Gate g1 answered with its recommendation by the sprint runner (pre-approved by the operator for the 2026-10-24 day run): drop hint: lines and prefer git's '! [rejected]' status line, else the last remaining line; reason: the rejection line names the reason (fetch first, non-fast-forward) that the goal asks for.",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }

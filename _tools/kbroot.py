@@ -257,7 +257,8 @@ def run_bounded(args, cwd, timeout):
 
 
 def git(args, p, cwd=None, timeout=FETCH_TIMEOUT_S):
-    """Run git with `args`; (True, '') or (False, the last line of its stderr without the pointer's url)."""
+    """Run git with `args`; (True, '') or (False, the line of its stderr that gives the reason, without
+    the pointer's url: the `! [rejected]` line of a refused push, else the last line that is no `hint:`)."""
     try:
         r = run_bounded(args, cwd, timeout)
     except subprocess.TimeoutExpired:
@@ -267,7 +268,10 @@ def git(args, p, cwd=None, timeout=FETCH_TIMEOUT_S):
     if r.returncode == 0:
         return True, ""
     lines = [ln.strip() for ln in (r.stderr or r.stdout).splitlines() if ln.strip()]
-    return False, (lines[-1] if lines else f"git {args[0]} exited {r.returncode}").replace(p.url, "the url")
+    lines = [ln for ln in lines if not ln.startswith("hint:")]
+    # a refused push names its reason on the `! [rejected] HEAD -> main (fetch first)` line, above git's summary line
+    refused = [ln for ln in lines if ln.startswith("!") and "rejected" in ln]
+    return False, (refused[-1] if refused else lines[-1] if lines else f"git {args[0]} exited {r.returncode}").replace(p.url, "the url")
 
 
 def git_out(args, p, cwd):
