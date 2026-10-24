@@ -2,7 +2,7 @@
   "id": "BG-r7c7dxia",
   "kind": "bug",
   "title": "done's ledger check does not see a source id the goal writes joined by a hyphen, such as S100-related or S100-S120",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,
@@ -24,5 +24,7 @@
   "links": [
     "parked: SP-7nv2ffr2 review"
   ],
-  "notes": "Planner 2026-10-24: repro rewritten to read the goal clause through cited_tokens, the function that builds the goal's tokens, with a hyphen range and an underscore case; the first version read TOKEN_RE.findall for one phrase."
+  "notes": "Planner 2026-10-24: repro rewritten to read the goal clause through cited_tokens, the function that builds the goal's tokens, with a hyphen range and an underscore case; the first version read TOKEN_RE.findall for one phrase.",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
