@@ -36,7 +36,8 @@
   ],
   "touches": [
     "_tools/factdiff.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md"
   ],
   "relates_to": [
     "ST-jtui2erv"
