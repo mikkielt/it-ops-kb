@@ -48,7 +48,7 @@ Use: python3 _tools/kbroot.py list|add|add-remote|fetch|push [ARGS]
 import argparse, os, re, shutil, subprocess, sys, time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import build_index, kbcommon  # noqa: E402
+import build_index, kbcommon, kg_lock  # noqa: E402
 
 FETCH_TIMEOUT_S = 120  # one git command of a fetch
 HOOK_MAX_AGE_S = 24 * 3600  # `fetch --hook` fetches a root again once its last fetch is older than this
@@ -217,11 +217,33 @@ def fetch_env():
     return env
 
 
+def run_bounded(args, cwd, timeout):
+    """`git ARGS` as the leader of a process group of its own: a CompletedProcess with text output. Past TIMEOUT
+    seconds (or an interrupt) the whole group ends (git and the ssh or remote helper it started: subprocess.run's
+    timeout kills git alone) and subprocess.TimeoutExpired is raised."""
+    group = {"start_new_session": True} if os.name == "posix" else {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
+    argv = ["git", *args]
+    proc = subprocess.Popen(argv, cwd=cwd, env=fetch_env(), stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="replace", **group)
+    try:
+        out, err = proc.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        kg_lock.end_group(proc)
+        try:
+            proc.communicate(timeout=5)
+        except (subprocess.TimeoutExpired, OSError, ValueError):
+            pass
+        raise
+    except BaseException:
+        kg_lock.end_group(proc)
+        raise
+    return subprocess.CompletedProcess(argv, proc.returncode, out, err)
+
+
 def git(args, p, cwd=None, timeout=FETCH_TIMEOUT_S):
     """Run git with `args`; (True, '') or (False, the last line of its stderr without the pointer's url)."""
     try:
-        r = subprocess.run(["git", *args], cwd=cwd, env=fetch_env(), capture_output=True, text=True, encoding="utf-8",
-                           errors="replace", timeout=timeout, stdin=subprocess.DEVNULL)
+        r = run_bounded(args, cwd, timeout)
     except subprocess.TimeoutExpired:
         return False, f"git {args[0]} timed out after {round(timeout)} s"
     except OSError as e:
@@ -235,8 +257,7 @@ def git(args, p, cwd=None, timeout=FETCH_TIMEOUT_S):
 def git_out(args, p, cwd):
     """Run git with `args` in `cwd`; (True, its stdout stripped) or (False, why) as git() says."""
     try:
-        r = subprocess.run(["git", *args], cwd=cwd, env=fetch_env(), capture_output=True, text=True, encoding="utf-8",
-                           errors="replace", timeout=FETCH_TIMEOUT_S, stdin=subprocess.DEVNULL)
+        r = run_bounded(args, cwd, FETCH_TIMEOUT_S)
     except (subprocess.TimeoutExpired, OSError) as e:
         return False, f"git {args[0]} not run ({e.__class__.__name__})"
     if r.returncode:
