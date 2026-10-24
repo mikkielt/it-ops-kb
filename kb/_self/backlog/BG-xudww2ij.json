@@ -34,7 +34,11 @@
         "read the flag alone": "BG-xudww2ij",
         "unreadable means silent": "BG-xudww2ij"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "read the flag alone",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
