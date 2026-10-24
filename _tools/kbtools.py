@@ -1,7 +1,8 @@
 """The catalog of the kb's tools, and the few that answer a need (stdlib only; kb/_self/tools.md).
 
 The catalog has one entry for each command-line tool of `_tools/` (a `_tools/*.py` with an `if __name__ == "__main__"`
-guard), each skill (`.claude/skills/*/SKILL.md`), each agent (`.claude/agents/*.md`) and each tool the kb MCP server lists.
+guard), each skill (`.claude/skills/*/SKILL.md`), each agent (`.claude/agents/*.md`) and each tool the kb MCP server can serve, whatever the environment of the run (the
+live-docs, coord and backlog-write tools included).
 A tool's entry is read from the end of its module docstring with `ast`, never by importing it: the block from the first
 `Answers:` line to the end holds `Answers:` lines (a question the tool answers, in plain words), `Use:` lines (its command)
 and `MCP:` lines (the kb MCP tools that run it), an indented line continuing the line above it. A skill's or an agent's
@@ -131,11 +132,11 @@ def description_entries(root=ROOT):
 
 
 def mcp_entries(root=ROOT):
-    """The tools the kb MCP server lists, by their descriptions; none when the server cannot be loaded."""
+    """Every tool the kb MCP server can serve, by their descriptions, whatever the environment; none when it cannot be loaded."""
     sys.path.insert(0, str(Path(root, "_tools")))
     try:
         import kb_mcp
-        listed = kb_mcp.handle({"jsonrpc": "2.0", "id": 1, "method": "tools/list"})["result"]["tools"]
+        listed = kb_mcp.tool_list(every=True)
     except Exception:  # noqa: BLE001 - a server that does not load leaves its tools out of the catalog
         return []
     return [{"tool": t["name"], "kind": "mcp", "command": "MCP tool",
