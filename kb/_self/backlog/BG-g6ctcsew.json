@@ -55,7 +55,9 @@
       },
       "class": "design",
       "answer": "Fall back to free_pct, message shows the unrounded share to two decimals",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
