@@ -22,5 +22,6 @@
   "links": [
     "parked: SP-ky7xz6d2 review"
   ],
+  "notes": "Provisional gate g1 of ST-pja652lj (an overlap's age counts from the later first intent of the two sessions) is the choice this gap shows wrong in one case; the review confirmed the answer and parked this fix. SP-ky7xz6d2 review.",
   "filed_in": "clone-0ea70e5c"
 }
