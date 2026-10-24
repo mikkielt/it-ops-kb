@@ -311,19 +311,30 @@ def cites_sources(path):
                 or any(d in parts[:-1] for d in GENERATED_DIRS))
 
 
+def token_words(text):
+    """The tokens of TEXT, and the parts of each joined by a hyphen or underscore: S100-related and S100-S120 name
+    S100 (and S120), S300_old names S300."""
+    words = set()
+    for tok in TOKEN_RE.findall(text):
+        words.add(tok)
+        words.update(p for p in re.split(r"[-_]+", tok) if p)
+    return words
+
+
 def cited_tokens(root, commits, texts):
-    """The words of TEXTS (the item's goal and title) and of every line the item's COMMITS ({commit: [paths]}) added
-    or removed in a file that cites_sources: a source id in it is named, by the goal or by a fact the item touched."""
+    """The words (token_words) of TEXTS (the item's goal and title) and of every line the item's COMMITS ({commit:
+    [paths]}) added or removed in a file that cites_sources: a source id in it is named, by the goal or by a fact the
+    item touched."""
     words = set()
     for t in texts:
-        words.update(TOKEN_RE.findall(t))
+        words.update(token_words(t))
     for sha, paths in commits.items():
         paths = [p for p in paths if cites_sources(p)]
         for i in range(0, len(paths), 100):
             diff = git(root, "show", "--no-renames", "-U0", "--format=", sha, "--", *paths[i:i + 100])
             for ln in diff.splitlines():
                 if ln[:1] in "+-" and not ln.startswith(("+++", "---")):
-                    words.update(TOKEN_RE.findall(ln[1:]))
+                    words.update(token_words(ln[1:]))
     return words
 
 
