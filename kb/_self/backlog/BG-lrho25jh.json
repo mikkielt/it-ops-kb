@@ -49,7 +49,7 @@
   "links": [
     "parked: SP-ky7xz6d2 review"
   ],
-  "notes": "Plan 2026-10-24 (day run): repro fails on base (the suggested wait command returns at once, took 0.0 s). The repro finds the command by the pattern 'python3 _tools/coord.py wait --kind progress --item ID' up to the next parenthesis and rewrites only --timeout: keep that shape and make --since the newest event seq the hook has seen (a coord wait --since 0 --timeout 0 reply's last, or the store's newest seq). Planned into SP-3i7hcb6i on 2026-10-24. Sprint started 2026-10-24.",
+  "notes": "Plan 2026-10-24 (day run): repro fails on base (the suggested wait command returns at once, took 0.0 s). The repro finds the command by the pattern 'python3 _tools/coord.py wait --kind progress --item ID' up to the next parenthesis and rewrites only --timeout: keep that shape and make --since the newest event seq the hook has seen (a coord wait --since 0 --timeout 0 reply's last, or the store's newest seq). Planned into SP-3i7hcb6i on 2026-10-24. Sprint started 2026-10-24. Gate g1 answered by the runner on the operator's standing approval: the worker's recommendation (store newest seq) (pre-approved by the operator for the 2026-10-24 day run).",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
