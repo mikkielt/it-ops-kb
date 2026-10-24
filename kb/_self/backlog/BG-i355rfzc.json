@@ -2,7 +2,7 @@
   "id": "BG-i355rfzc",
   "kind": "bug",
   "title": "census.py confirm exits 1 on a census log that names a source row since deleted from _sources.csv",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4ppjbh4k",
   "priority": "P2",
   "rank": 0,
@@ -38,6 +38,32 @@
     "_tools/census.py"
   ],
   "notes": "Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. The repro runs confirm on this clone's real 2026-10-21 census log; check 0 plants a temporary root and log with one known and one deleted source, so a hand edit of the real log cannot satisfy it.",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "a05186122b3116558dc034ecf5a37da63499e18e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport argparse, contextlib, csv, io, os, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport census, factdiff\nkb = tempfile.mkdtemp()\ncensus.KB = kb\nhead = \"id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by\"\nopen(os.path.join(kb, \"_sources.csv\"), \"w\", encoding=\"utf-8\", newline=\"\").write(head + \"\\nS1,https://example.com/a,t,p,MIT,copy,2026-10-01,,,,\\n\")\nfactdiff.census_baseline = lambda *a, **k: {}\nlog = os.path.join(kb, \"census.csv\")\nrows = [{c: \"\" for c in census.COLS} for _ in range(2)]\nfor r, sid, bucket, outcome in zip(rows, (\"S1\", \"S9\"), (\"OK\", \"GONE\"), (\"\", \"gone\")):\n    r.update(id=sid, url=\"https://example.com/\" + sid, kind=\"page\", bucket=bucket, outcome=outcome, proof=\"read \" + sid)\ncensus.write_log(log, rows)\nout = io.StringIO()\nwith contextlib.redirect_stdout(out):\n    rc = census.cmd_confirm(argparse.Namespace(log=log, date=\"2026-10-21\", dry_run=False), {})\ntext = out.getvalue()\nsrcs = {r[\"id\"]: r for r in csv.DictReader(open(os.path.join(kb, \"_sources.csv\"), encoding=\"utf-8\", newline=\"\"))}\nassert rc == 0, (\"confirm exits non-zero on a census log with a source deleted from _sources.csv\", rc, text[-300:])\nassert \"S9\" in text, (\"confirm does not name the log id it does not know\", text[-300:])\nassert \"confirmed 2026-10-21\" in srcs[\"S1\"][\"version_or_date\"], (\"the source it still knows was not dated\", srcs[\"S1\"])\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/census.py",
+          "confirm",
+          "kb/public/_census/2026-10-21.csv",
+          "--date",
+          "2026-10-21",
+          "--dry-run"
+        ],
+        "exit": 0,
+        "sha256": "468977be52cfe375"
+      }
+    ]
+  }
 }
