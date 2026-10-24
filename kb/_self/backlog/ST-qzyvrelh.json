@@ -2,8 +2,9 @@
   "id": "ST-qzyvrelh",
   "kind": "story",
   "title": "A refused landing and the rework after it stay one kb.item span until the run lands or is released",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-ymnz7b4n",
   "priority": "P3",
   "rank": 0,
   "goal": "kbmon --events gives an item whose landing was refused and whose run then went on to landed one kb.item span, with a kb.landing child for the refused landing, one for the landed one and a kb.worker child for the rework, all in one trace",
@@ -22,9 +23,12 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
+  "depends_on": [
+    "ST-k4napiev"
+  ],
   "links": [
     "parked: SP-d6gbc3tq review"
   ],
-  "notes": "Review gap (S2) of SP-d6gbc3tq: ST-3bmmg73g gate g1 (provisional, kept: it matches the goal text 'claimed to landed, refused or released') ends kb.item at each refused, so a rework worker starts a new trace and a kb.sprint root span closing 'when every item has ended' would close early. This story replaces that answer if the operator takes it.",
+  "notes": "Review gap (S2) of SP-d6gbc3tq: ST-3bmmg73g gate g1 (provisional, kept: it matches the goal text 'claimed to landed, refused or released') ends kb.item at each refused, so a rework worker starts a new trace and a kb.sprint root span closing 'when every item has ended' would close early. This story replaces that answer if the operator takes it. Plan 2026-10-24 (day run, pre-approved by the operator): take the reviewer's choice in these notes: the refused landing and the rework stay one kb.item span (one trace, kb.landing children, kb.worker child), replacing the provisional answer g1 of ST-3bmmg73g that ended kb.item at each refused. The code does not argue otherwise. No gate. Premise (plan 2026-10-24): the story's check fails on today's base (precheck); reproduces. Planned into SP-ymnz7b4n, 2026-10-24 day run.",
   "filed_in": "clone-0ea70e5c"
 }
