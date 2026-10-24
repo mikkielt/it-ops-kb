@@ -589,7 +589,8 @@ def judge_work(work, base):
 
 def refuse_commit_msg(path, base):
     """REFUSED, with the reason on stderr, when the commit-msg hook must refuse the message in file PATH: its KB-Work line
-    fails the checks check-trailers runs on the commit before a push (work_ids_ok, work_state). BASE is amend_base's.
+    fails the checks check-trailers runs on the commit before a push (work_ids_ok, work_state), or it holds a KB-* or
+    Self-Reviewed line git does not read as a trailer (stray_lines, which check-trailers refuses). BASE is amend_base's.
     Merge commits and a rebase's commits are not judged; an error in the check refuses nothing (a hook never blocks
     a commit it cannot judge). The caller runs the hook first, so the message holds its trailers and it has printed
     each problem."""
@@ -601,12 +602,14 @@ def refuse_commit_msg(path, base):
             return 0
         base = "" if base == "root" else (base or rev_parse("HEAD") or "")
         with open(path, encoding="utf-8", errors="replace", newline="") as f:
-            work = message_trailers(f.read())[1].get(WORK, [])
-        refused = judge_work(work, base)
+            kept, parsed = read_message(f.read())
+        refused = judge_work(parse_trailers(parsed).get(WORK, []), base)
+        what = WORK if refused else "KB-* trailer line"
+        refused = refused or stray_lines("\n".join(kept), parsed)
     except Exception:  # noqa: BLE001
         return 0
     if refused:
-        print(f"kbgit.py commit-msg: {WORK} refused: no commit made; fix the message and commit again "
+        print(f"kbgit.py commit-msg: {what} refused: no commit made; fix the message and commit again "
               "(`git commit --no-verify` skips the hook, the pre-push hook and sync's gate still refuse it)",
               file=sys.stderr)
     return REFUSED if refused else 0

@@ -41,6 +41,23 @@
   "depends_on": [
     "BG-bwvgnre2"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which stray trailer lines does refuse_commit_msg refuse: only a KB-Work line outside the last paragraph, or any KB-* or Self-Reviewed line check-trailers counts as stray?",
+      "options": [
+        "Refuse every stray KB-* or Self-Reviewed line",
+        "Refuse only a stray KB-Work line"
+      ],
+      "recommendation": "Refuse every stray KB-* or Self-Reviewed line",
+      "do": {
+        "Refuse every stray KB-* or Self-Reviewed line": "BG-vvszkzuj",
+        "Refuse only a stray KB-Work line": "BG-vvszkzuj"
+      },
+      "class": "push"
+    }
+  ],
   "links": [
     "parked: SP-kbrxa4c4 review"
   ],
