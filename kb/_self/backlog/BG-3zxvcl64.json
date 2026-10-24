@@ -2,7 +2,7 @@
   "id": "BG-3zxvcl64",
   "kind": "bug",
   "title": "backlog.py next and brief run a ready story's checks with no recursion guard, so a check that runs next recurses",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-s5k72bhd",
   "priority": "P2",
   "rank": 0,
@@ -46,5 +46,7 @@
   ],
   "links": [
     "parked: SP-v64egscn review"
-  ]
+  ],
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
