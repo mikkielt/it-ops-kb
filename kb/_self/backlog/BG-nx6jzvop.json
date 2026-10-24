@@ -29,6 +29,25 @@
     "_tools/kbcommon.py",
     "_tools/test_leaks.py"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which rule separates a repository path from an EC key body that a period, underscore or hyphen follows?",
+      "options": [
+        "Start lookahead on short slash-separated segments",
+        "No slash allowed in the run"
+      ],
+      "recommendation": "Start lookahead on short slash-separated segments",
+      "do": {
+        "Start lookahead on short slash-separated segments": "BG-nx6jzvop",
+        "No slash allowed in the run": "BG-nx6jzvop"
+      },
+      "class": "design",
+      "answer": "Start lookahead on short slash-separated segments",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-4ppjbh4k review"
   ],
