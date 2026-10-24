@@ -17,6 +17,7 @@
       "recommendation": "approve"
     }
   ],
+  "notes": "Operator request 2026-10-24: plan telemetry and query-log derived items and stage them in todo state, focus on model work to deterministic tools, bash to deterministic, and the MCP server. This request promotes these sprint-orchestration items, parked since 2026-10-07 until EP-gzr4mmkm's fitness tests pass. Items stay draft while the sprint is planned and become todo at start. Order: gate add, answer, set, runner watch in a chain (they share bl_items.py, backlog.py, bl_cli.py and the sprint skill); factdiff, fetch and kbtools touch their own files and run beside the chain. The first chain item waits on SP-vxdacfpl's last item (begin), which edits the same files. No gate beyond start: the runner watch guard (only a process whose command line names claude) is settled in the goal.",
   "creator": "op-f618a13e",
   "filed_in": "clone-0ea70e5c"
 }
