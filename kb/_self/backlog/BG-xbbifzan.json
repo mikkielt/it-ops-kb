@@ -1,0 +1,26 @@
+{
+  "id": "BG-xbbifzan",
+  "kind": "bug",
+  "title": "The applies_to range of mods.md ends at 2026-10-17 and 2026-10-18, while the create page it now cites is dated 2026-10-20 and was read 2026-10-24",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "The applies_to front matter of kb/public/claude/mods.md gives the dateModified range and the read date of every page the article cites, the create page included",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re, sys\nt = open(\"kb/public/claude/mods.md\", encoding=\"utf-8\").read()\nm = re.search(r\"^applies_to:.*$\", t, re.M)\nline = m.group(0) if m else \"\"\nstale = \"2026-10-08 to 2026-10-17\" in line\nprint(\"applies_to range:\", line[:200], \"| stale (misses the 2026-10-20 create page):\", stale)\nsys.exit(1 if stale else 0)"
+    ]
+  },
+  "repro_reason": "the defect is a front matter line of a kb article; the repro reads the line",
+  "touches": [
+    "kb/public/claude/mods.md"
+  ],
+  "links": [
+    "parked: SP-f2o3aqm2 review"
+  ],
+  "notes": "Review gap (S4) of SP-f2o3aqm2, fresh-context reviewer 2026-10-24; parked, no fitness test or user report names it.",
+  "filed_in": "clone-0ea70e5c"
+}
