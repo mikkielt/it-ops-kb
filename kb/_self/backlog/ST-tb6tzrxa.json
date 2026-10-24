@@ -68,6 +68,21 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "When a code item's first land pass ends at its pushed merge request with no wait (--wait-merge 0), which run state does land leave?",
+      "options": [
+        "refused with step merge request",
+        "landing until the second pass"
+      ],
+      "recommendation": "refused with step merge request",
+      "do": {
+        "refused with step merge request": "ST-tb6tzrxa",
+        "landing until the second pass": "ST-tb6tzrxa"
+      },
+      "class": "agents-rule"
     }
   ],
   "notes": "Premise: with the run state planted as staging, land stops at step branch, not at a run state step, and stage-back refuses for a missing worktree without naming landing; nothing today relates the two commands (kb/_self/backlog.md:330, no lock). The case it answers: BG-3brdh3kd in SP-c7oav2vn, landed before its stage-back and then once more in parallel with it, refused at done twice. Plan 2026-10-24: premise reproduced on base (precheck: land stops at step branch, stage-back refuses for a missing worktree, neither names the run state). Second check added for the landing and refused moves with the step field. Not read by any check: stage-back's staging and back-to-returned moves, and land's landed move once verify finds the done commit (no fixture without a worktree and a main remote); implement them as the goal says, the review reads the diff. After ST-3ru7f4to (shared bl_dispatch.py) and before ST-ct2dpjgz (shared skills/sprint/SKILL.md). Planned into SP-sucr3kfg on 2026-10-24. Sprint started 2026-10-24.",

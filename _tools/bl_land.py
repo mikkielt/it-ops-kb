@@ -1994,6 +1994,7 @@ def land_locked(bl, a):
             pushed = True
         else:
             verify_landed(lroot, remote, upstream, iid)
+            move_run(iid, "landed", "land")
             subprocess.run(["git", "update-ref", "-d", f"{LAND_REF}/{iid}"], cwd=lroot, capture_output=True)
             say(f"land: {bl.label(iid)} landed")
             landed = pushed = True
@@ -2086,12 +2087,61 @@ def wait_merge(root, remote, shas, bound, poll=WAIT_POLL, sleep=time.sleep):
         waited += poll
 
 
-@ops_land
-def cmd_land(bl, a):
-    """Land a finished item's branch (land_once). A code item's first pass is followed by a bounded wait for its merge
-    request, WAIT_MERGE_DEFAULT seconds or --wait-merge SECONDS, read from git (a fetch of the integration main every
-    WAIT_POLL seconds, not the forge CLI), then the second pass in the same run; a wait that runs out stops at step
-    wait-merge naming the merge request; --wait-merge 0 pushes and stops without waiting."""
+def run_state(iid):
+    """The item's run state (the coord key run/<id>); '' when the key is absent or coord cannot be read."""
+    code, body, _ = bl_clean.run_coord("get", f"run/{iid}")
+    return str(body.get("value") or "") if code == 0 and isinstance(body, dict) else ""
+
+
+def move_run(iid, state, who, **fields):
+    """Move the item's run state (the coord key run/<id>) to STATE with `coord.py transition`, which posts the move's
+    progress event with it; FIELDS are the event's exit, gates and step. A coord that does not take the move, or a
+    state the table does not allow it from, is said and never stops the step WHO runs. True when the state moved."""
+    argv = ["transition", f"run/{iid}", "--to", state]
+    for name, value in fields.items():
+        argv += ["--field", f"{name}={value}"]
+    code, body, err = bl_clean.run_coord(*argv)
+    if code == 0:
+        return True
+    if not (isinstance(body, dict) and body.get("state") == state):  # a move to the state the key holds is no news
+        why = (body.get("error") if isinstance(body, dict) else None) or err or f"coord.py exited {code}"
+        say(f"{who}: run state of {iid} not moved to {state}: {why} (backlog.py runs --reconcile repairs it)")
+    return False
+
+
+def land_refused_step(error):
+    """The step a land stop names (`land stopped at step NAME: ...`); 'land' for any other error."""
+    m = re.match(r"land stopped at step ([^:\n]+):", str(error))
+    return m.group(1).strip() if m else "land"
+
+
+def land_move_run(bl, a):
+    """Land with the run state moved: refused, naming `run state`, while a stage-back holds it at staging, before any
+    other step; else landing before the first step, refused with the step's name when land stops (landed is moved by
+    land_locked once verify has found the done commit on main)."""
+    iid = need(bl, a.id)
+    state = run_state(iid)
+    if state == "staging":
+        ops_mark("run state")
+        raise land_stop("run state", f"the run state of {iid} is staging: a stage-back is copying into its worktree; "
+                                     f"wait for it to end (it moves the state back to returned), or, when it died, run "
+                                     f"python3 _tools/coord.py transition run/{iid} --to returned")
+    move_run(iid, "landing", "land")
+    try:
+        code = land_pass(bl, a)
+    except Exception as e:  # noqa: BLE001 - a stop of any kind leaves the state refused, naming its step
+        move_run(iid, "refused", "land", step=land_refused_step(e))
+        raise
+    if code:
+        move_run(iid, "refused", "land", step="land")
+    elif LAND_OPS.get("pending") and not getattr(a, "wait_merge", None):  # a merge request still to merge, no wait
+        move_run(iid, "refused", "land", step="merge request")
+    return code
+
+
+def land_pass(bl, a):
+    """The passes of a landing: land_once, and for a code item whose merge request is pending the bounded wait for it
+    and the second pass."""
     LAND_OPS["pending"] = None
     code = land_once(bl, a)
     pending, bound = LAND_OPS.get("pending"), getattr(a, "wait_merge", None)
@@ -2110,6 +2160,16 @@ def cmd_land(bl, a):
     say(f"land: merged on {remote}/main ({reads} read(s)): second pass")
     LAND_OPS["pending"] = None
     return land_once(Backlog(bl.root), a)
+
+
+@ops_land
+def cmd_land(bl, a):
+    """Land a finished item's branch (land_once). A code item's first pass is followed by a bounded wait for its merge
+    request, WAIT_MERGE_DEFAULT seconds or --wait-merge SECONDS, read from git (a fetch of the integration main every
+    WAIT_POLL seconds, not the forge CLI), then the second pass in the same run; a wait that runs out stops at step
+    wait-merge naming the merge request; --wait-merge 0 pushes and stops without waiting. The item's run state
+    (coord key run/<id>) moves with it: land_move_run."""
+    return land_move_run(bl, a)
 
 
 def args_done(p):
