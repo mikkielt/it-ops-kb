@@ -2,7 +2,7 @@
   "id": "TK-e2khbdmj",
   "kind": "task",
   "title": "GitLab docs articles and answers cite no source the 2026-10-21 census records gone",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-cbi2ah5y",
   "priority": "P1",
   "rank": 0,
@@ -40,5 +40,7 @@
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
   "notes": "Premise run on base 39abe92bb: check 0 fails with 15 DOC tags citing the four gone ids (gitlab work-items-planning.md:25-28, detecting-mr-merges-in-ci.md:21, automated-merge-requests.md:39, commit-signing-and-provenance.md:20 and :47, issue-closing-patterns.md:28-29, _answers.md:1879, 1937, 2092, 2648, 3643). check.py passes before the work on purpose: it pins that the kb stays valid after the edits. Census says the four sources 'file deleted upstream (not at HEAD)': a pinned raw url may still read; the census outcome decides, so re-source to the current docs page of the same content or retag UNK with a dated note, or remove the fact.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
