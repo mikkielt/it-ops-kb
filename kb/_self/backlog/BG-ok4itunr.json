@@ -2,7 +2,7 @@
   "id": "BG-ok4itunr",
   "kind": "bug",
   "title": "Narrow-wrapped, colon-without-space and tab-escaped EC keys pass the leak scan, and the quoted EC label followed by a path is flagged",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,
@@ -38,5 +38,7 @@
   "links": [
     "parked: SP-tsb23kev review"
   ],
-  "notes": "Found by the SP-tsb23kev focused review of BG-3vnu37rq (reviewer session a419aba4) on origin/main 902e961a9; repro fails there."
+  "notes": "Found by the SP-tsb23kev focused review of BG-3vnu37rq (reviewer session a419aba4) on origin/main 902e961a9; repro fails there.",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
