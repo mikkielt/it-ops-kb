@@ -42,7 +42,9 @@
     "_tools/kb_mcp.py",
     "_tools/test_redact.py",
     "kb/_self/plugin.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/embedding.md",
+    "kb/_self/token-efficiency.md"
   ],
   "depends_on": [
     "ST-zrnmqob2"
