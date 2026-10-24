@@ -2,7 +2,7 @@
   "id": "BG-3ui3szcq",
   "kind": "bug",
   "title": "selfcheck allow-rules reads every skill under the root's skills/ directory, so a host project's own skill scripts fail it",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-yisvj7vd",
   "priority": "P3",
   "rank": 0,
@@ -25,6 +25,19 @@
   ],
   "notes": "Found by the SP-s5k72bhd review of BG-cwitx4zn (headless reviewer session 1b63a864, verified by the reviewer with the repro). In the kb's own clone skills/ holds only backlog, item and sprint, so nothing shows there. Premise run 2026-10-24 on the day-run base: repro exits 1 (fail 1 of 1 not covered: python3 _tools/myown.py). kb/_self/tools.md added to touches at planning for the selfcheck row; if its text stays correct, edit nothing there. Planned into SP-yisvj7vd, 2026-10-24. Sprint started 2026-10-24.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "1db9d9b069e607787a354cb1925cbb5cc5b57a35",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport os, sys, tempfile, json\nsys.path.insert(0, \"_tools\")\nimport bl_selfcheck as sc\nroot = tempfile.mkdtemp()\nos.makedirs(os.path.join(root, \"skills\", \"mine\")); os.makedirs(os.path.join(root, \".claude\"))\nopen(os.path.join(root, \"skills\", \"mine\", \"SKILL.md\"), \"w\").write(\"Run python3 _tools/myown.py go first.\\n\")\njson.dump({\"permissions\": {\"allow\": [\"Bash(git status)\"]}}, open(os.path.join(root, \".claude\", \"settings.json\"), \"w\"))\nres = sc.check_allow(root, commands=[], tools=())\nprint(res[\"state\"], res.get(\"detail\"))\nsys.exit(1 if \"myown\" in str(res.get(\"detail\")) else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "fd842442a9ec52f7"
+      }
+    ]
+  }
 }
