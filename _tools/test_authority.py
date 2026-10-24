@@ -125,6 +125,12 @@ def operator_class_is_derived_from_touches_and_question_a_lower_stored_class_cha
         # a unit-noun list straddling the question and an option is no list of one text: its `tokens` keeps the class
         assert secrets(f"Count {word} units,", "tokens, points", "b") == "secrets", word
         assert secrets(f"Count {word} units, points,", "tokens", "b") == "secrets", word
+    # a doc name that holds `token` beside a secrets word is no doc about a model's token counts: it keeps `secrets`
+    for doc in ("docs/bearer-token.md", "docs/ssh-token.md", "docs/passphrase-token-store.md", "docs/PAT-token.md"):
+        assert secrets(f"Should the worker edit {doc}?") == "secrets", doc
+        assert secrets("Which one?", f"edit {doc}", "b") == "secrets", doc
+    assert secrets("Should the worker edit docs/token-efficiency.md?") == "design"
+    assert secrets("Should the worker edit docs/path-token-efficiency.md?") == "design"
 
 
 def gate_add_makes_an_operator_class_gate_blocking_whatever_kind_says(tmp_path):
