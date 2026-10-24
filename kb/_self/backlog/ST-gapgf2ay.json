@@ -1,28 +1,34 @@
 {
   "id": "ST-gapgf2ay",
   "kind": "story",
-  "title": "The coord hook's SessionStart line in a plugin workspace names paths that exist only in the kb clone, and an Edit or Write event shows asks",
+  "title": "The coord hook's SessionStart line in a plugin workspace names paths that exist only in the kb clone",
   "status": "draft",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-3i7hcb6i",
   "priority": "P2",
   "rank": 0,
-  "goal": "the hook's SessionStart line names commands that run in a plugin workspace (the plugin root's coord.py and kbask.py), and a PreToolUse event of Edit or Write only renews the presence lease, as gate g3 of ST-omimwr5q and kb/_self/coordination.md say",
+  "goal": "the hook's SessionStart line names commands that run in a plugin workspace (the plugin root's coord.py and kbask.py) and still runs in the kb clone (its _tools/ paths)",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import re, sys\nsrc = open('.claude/hooks/coord_hook.py', encoding='utf-8').read()\nintro = src[src.index('INTRO = ('):src.index('FOOTER = (')]\npre = src[src.index('def pre_tool'):] if 'def pre_tool' in src else src\npaths_ok = 'CLAUDE_PLUGIN_ROOT' in intro or '{coord}' in intro or '{tools}' in intro or 'python3 _tools/' not in intro\nedit_quiet = not re.search(r'Edit\\W{0,6}Write[^\\n]{0,200}\\n[^\\n]{0,200}show\\(', src)\nprint('INTRO names a path that exists in a plugin workspace:', paths_ok, '| Edit or Write event shows no asks:', edit_quiet)\nsys.exit(0 if paths_ok and edit_quiet else 1)\n"
+        "\nimport subprocess, tempfile, os, sys, json, re, uuid\nREAL = os.getcwd()\nHOOK = os.path.join(REAL, \".claude\", \"hooks\", \"coord_hook.py\")\ndef intro(cwd, env, opt):\n    sid = str(uuid.uuid4())\n    start = json.dumps({\"hook_event_name\": \"SessionStart\", \"session_id\": sid, \"cwd\": cwd, \"source\": \"startup\"})\n    r = subprocess.run([sys.executable, HOOK] + opt, input=start, capture_output=True, text=True, cwd=cwd, env=env, timeout=60)\n    end = json.dumps({\"hook_event_name\": \"SessionEnd\", \"session_id\": sid, \"cwd\": cwd})\n    subprocess.run([sys.executable, HOOK] + opt, input=end, capture_output=True, text=True, cwd=cwd, env=env, timeout=60)\n    try:\n        return json.loads(r.stdout).get(\"hookSpecificOutput\", {}).get(\"additionalContext\", \"\")\n    except ValueError:\n        return \"\"\ndef runnable(text, cwd):\n    paths = re.findall(r\"python3 (\\S*(?:coord|kbask)\\.py)\", text)\n    names = {os.path.basename(p) for p in paths}\n    return names == {\"coord.py\", \"kbask.py\"} and all(os.path.exists(os.path.join(cwd, os.path.expanduser(p))) for p in paths), sorted(set(paths))[:2]\nbase = {k: v for k, v in os.environ.items() if k not in (\"KB_COORD_STORE\", \"CLAUDE_PROJECT_DIR\")}\nT = os.path.realpath(tempfile.mkdtemp())\nsubprocess.run([\"git\", \"init\", \"-q\", T])\njson.dump({\"hooks\": [\"coord\"]}, open(os.path.join(T, \"backlog.json\"), \"w\"))\nplugin_ok, plugin_paths = runnable(intro(T, dict(base, CLAUDE_PROJECT_DIR=T), [\"--opt-in\"]), T)\nclone_ok, clone_paths = runnable(intro(REAL, dict(base, KB_COORD_STORE=os.path.join(tempfile.mkdtemp(), \"c.sqlite\")), []), REAL)\nprint(\"plugin workspace: the INTRO commands exist\", plugin_ok, plugin_paths, \"| kb clone: they exist\", clone_ok, clone_paths)\nsys.exit(0 if plugin_ok and clone_ok else 1)\n"
       ]
     }
   ],
   "touches": [
     ".claude/hooks/coord_hook.py",
-    "kb/_self/coordination.md"
+    "kb/_self/coordination.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "BG-fder3unh"
   ],
   "links": [
     "parked: SP-sucr3kfg review"
   ],
-  "notes": "Found by the SP-sucr3kfg review. INTRO tells the session to run python3 _tools/coord.py wait and python3 _tools/kbask.py, relative paths a plugin workspace does not have (the tools sit under CLAUDE_PLUGIN_ROOT). The review also read show(..., new_asks(sid)) on the Edit and Write path (coord_hook.py near line 451) against gate g3 of ST-omimwr5q: the check below only reads INTRO, so the planner adds a planted hook run for the Edit event.",
+  "notes": "Found by the SP-sucr3kfg review. INTRO tells the session to run python3 _tools/coord.py wait and python3 _tools/kbask.py, relative paths a plugin workspace does not have (the tools sit under CLAUDE_PLUGIN_ROOT). The review also read show(..., new_asks(sid)) on the Edit and Write path (coord_hook.py near line 451) against gate g3 of ST-omimwr5q: the check below only reads INTRO, so the planner adds a planted hook run for the Edit event. Plan 2026-10-24 (day run, pre-approved): premise of clause 1 reproduced on base (new planted check: the INTRO of a SessionStart in a plugin workspace names _tools/coord.py and _tools/kbask.py, which that workspace lacks; the old check crashed on FOOTER, a name the hook does not have, and was replaced). Clause 2 (an Edit or Write event only renews the lease) dropped from the goal: gate g3 of ST-omimwr5q answered the lease question for the plugin entry, and the hook since gained documented Edit/Write behaviour: coordination.md:73 (overlaps when announce.when names edit), coordination.md:80 (asks reach a session at its next Bash, Skill, Edit or Write call) and token-efficiency.md:48 (an Edit or Write prints nothing unless an ask or coordinate event is new or announce.when names edit); with default announce.when and no new ask the Edit path prints nothing today, so nothing is left to fix. Change the INTRO only: how() keeps its relative commands (BG-lrho25jh's repro reads them). Hint for the path: the plugin root is HOME of the hook (COORD is HOME/_tools/coord.py); relative _tools/ stays right when the project is the clone itself (state_dir()/FOREIGN knows which). Planned into SP-3i7hcb6i on 2026-10-24.",
   "filed_in": "clone-0ea70e5c"
 }
