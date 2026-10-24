@@ -1,0 +1,18 @@
+{
+  "id": "BG-poaoxavw",
+  "kind": "bug",
+  "title": "kbmon's Needs-you disk line compares the rounded free_pct, so 9.96% free shows no line and a 0-byte total shows a false one",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "mon_needs.disk_entries lists the disk line when the unrounded free share (free_bytes over total_bytes) is under 10% and never for a file system that reports a total of 0 bytes, as mon_host.alerts does",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import mon_needs as m;a=m.disk_entries({'disk':{'free_pct':10.0,'free_bytes':996,'total_bytes':10000}});b=m.disk_entries({'disk':{'free_pct':0.0,'free_bytes':0,'total_bytes':0}});sys.exit(0 if len(a)==1 and b==[] else 1)"
+    ]
+  },
+  "filed_in": "clone-0ea70e5c"
+}
