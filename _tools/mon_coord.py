@@ -41,6 +41,7 @@ ASKS_KEPT = 20  # open asks in the data, the oldest first
 ASKS_READ = 3  # open asks whose question is read (the needs-you line names three of a kind)
 ASK_CHARS = 60  # characters of a question in the data, after redaction
 UNREACHABLE = "cannot reach"  # what coord.py prints when it cannot connect to a --url
+WAIT_KEYS = "wait/"  # the leases of a blocking `coord.py wait`: the sessions panel's waits, no claims
 
 _children = set()
 
@@ -288,7 +289,7 @@ def collect(ctx):
     out = fetch(conn)
     now = time.time()
     rows = json.loads(out["list"])
-    claims = [claim_of(r, now) for r in rows if r.get("holder")]
+    claims = [claim_of(r, now) for r in rows if r.get("holder") and not str(r.get("key")).startswith(WAIT_KEYS)]
     every = json.loads(out["wait"])["events"]
     events = every[-EVENTS_KEPT:]
     asks = open_asks(every)
