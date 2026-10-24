@@ -1,0 +1,28 @@
+{
+  "id": "BG-yjntpldp",
+  "kind": "bug",
+  "title": "mods.md says the mock clock moves when the test calls settle(), while the test page says settle() runs due timers without moving the time",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/public/claude/mods.md says the mock clock moves only on clock.advance(ms) and clock.set(ms), and that clock.settle() runs the timers already due without moving the time (S-kppz7qns)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\nt = open(\"kb/public/claude/mods.md\", encoding=\"utf-8\").read()\ni = t.find(\"moves only when the test\")\nbad = i >= 0 and \"settle\" in t[i:i + 200]\nprint(\"mods.md says the mock clock moves when the test calls settle():\", bad)\nsys.exit(1 if bad else 0)"
+    ]
+  },
+  "repro_reason": "the defect is a sentence of a kb article that disagrees with its cited page; the repro reads the sentence",
+  "touches": [
+    "kb/public/claude/mods.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-f2o3aqm2 review"
+  ],
+  "notes": "Review gap (S4) of SP-f2o3aqm2, fresh-context reviewer 2026-10-24; parked, no fitness test or user report names it.",
+  "filed_in": "clone-0ea70e5c"
+}
