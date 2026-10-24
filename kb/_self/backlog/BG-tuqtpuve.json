@@ -36,7 +36,11 @@
         "host and repository path only: user, port, scheme, host case, slashes and a .git suffix ignored; path case kept": "BG-tuqtpuve",
         "host, port and repository path: a different port is a different repository": "BG-tuqtpuve"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "host and repository path only: user, port, scheme, host case, slashes and a .git suffix ignored; path case kept",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
