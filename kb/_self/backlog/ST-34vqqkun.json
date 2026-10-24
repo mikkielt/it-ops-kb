@@ -42,6 +42,27 @@
   "depends_on": [
     "BG-a6t6tcuz"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does fast_forward_start treat untracked files in the checkout land started on?",
+      "options": [
+        "tracked-only: test tracked changes only (git status --untracked-files=no), let git merge --ff-only decide, name the colliding paths git prints",
+        "keep refusing any untracked file"
+      ],
+      "recommendation": "tracked-only: test tracked changes only (git status --untracked-files=no), let git merge --ff-only decide, name the colliding paths git prints",
+      "do": {
+        "tracked-only: test tracked changes only (git status --untracked-files=no), let git merge --ff-only decide, name the colliding paths git prints": "ST-34vqqkun",
+        "keep refusing any untracked file": "ST-34vqqkun"
+      },
+      "class": "agents-rule",
+      "answer": "tracked-only: test tracked changes only (git status --untracked-files=no), let git merge --ff-only decide, name the colliding paths git prints",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-47w4ngr6 review"
   ],
