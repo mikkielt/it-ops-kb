@@ -52,18 +52,15 @@ def hooks_path_is_ours(cur):
 
 def to_integration(remote, url=None):
     """Whether a push to REMOTE (a remote name or a url; URL is the url git pushes to, when known) reaches the
-    integration remote: by its name, or by a url equal to one of its fetch or push urls (the way kbpublic.is_public
-    reads the public home), so a push by url or through another remote name pointing at it is judged like `origin`."""
+    integration remote: by its name, or by a url that names the same repository as one of its fetch or push urls
+    (kbpublic.reaches, the way is_public and is_upstream read theirs), so a push by url, written another way, or
+    through another remote name pointing at it is judged like `origin`."""
     named = kbpublic.integration_remote(KB)
     if remote == named:
         return True
     if url is None:
         url = (git("remote", "get-url", remote) or "").strip() or remote
-    urls = set()
-    for flags in ((), ("--push",)):
-        urls |= {u.strip() for u in (git("remote", "get-url", "--all", *flags, named) or "").splitlines()}
-    urls.discard("")
-    return bool(urls & {url, remote})
+    return kbpublic.reaches(named, (url, remote), KB)
 
 
 def new_lanes(spec):
