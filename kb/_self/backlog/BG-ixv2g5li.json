@@ -2,7 +2,8 @@
   "id": "BG-ixv2g5li",
   "kind": "bug",
   "title": "kbmon sessions panel ignores the coord hook state files of a workspace that installs the plugin",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-ymnz7b4n",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
@@ -15,7 +16,13 @@
     ]
   },
   "touches": [
-    "_tools/mon_sessions.py"
+    "_tools/mon_sessions.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
   ],
+  "depends_on": [
+    "ST-5pu4bs4p"
+  ],
+  "notes": "Planned into SP-ymnz7b4n, 2026-10-24 day run. Precheck: repro fails on the base.",
   "filed_in": "clone-0ea70e5c"
 }
