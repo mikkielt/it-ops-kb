@@ -20,5 +20,9 @@
     "_tools/bench_repro.py",
     "kb/_self/benchmarks.md"
   ],
+  "links": [
+    "parked: SP-uhcjxayq review"
+  ],
+  "notes": "Found by the SP-uhcjxayq review (design gap): BG-iy5qjr4r's goal lets a row none at the start and none at the end pass without the answer (its matrix row ('none','none',False) is True), and an unknown start verdict ranks as none. Whether that stays is a design choice (the first answer of BG-qztas5u4's gate g1 kept 'ranks at least the start verdict'): a gate before any code.",
   "filed_in": "clone-0ea70e5c"
 }
