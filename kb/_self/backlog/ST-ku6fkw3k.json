@@ -2,7 +2,7 @@
   "id": "ST-ku6fkw3k",
   "kind": "story",
   "title": "Review sprint: Two guards that fail open after today's changes: the leak scan's EC key body, the permission guard's deny value, the observer's git commands",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-jopt2c3z",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,7 @@
       ]
     }
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
