@@ -2,7 +2,7 @@
   "id": "ST-czgocppq",
   "kind": "story",
   "title": "kbmon's needs-you line and sprint panel show each item's run state and a blocked item's gate on its work branch",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-nij36lt7",
   "sprint": "SP-d6gbc3tq",
   "priority": "P2",
@@ -103,6 +103,37 @@
   ],
   "notes": "Premise: in a planted clone with a blocking gate committed on the worker's work/<id> branch, kbmon.py --status all --json gives the needs-you line 'needs you: SP-... gate start': the branch gate is invisible, since the sprint panel reads the item files of origin/main or the checkout only (kb/_self/monitoring.md:97,202). The kbmon-pane mod's terminal notification on a needs-you change is a later story of this epic (epic notes). Plan 2026-10-24 (SP-d6gbc3tq): ST-oazktatz (blocked move with the gate id) is done on the main branch, so the dependency is met; ordered after ST-3vn4t2h6 for the shared mon_status.py. Premise reproduced on base by precheck. Checks added: 1 = a failed run and a refused landing with step=rebase name the item and the step in the needs-you line; 2 = the sprint panel row carries the run state and an age key (run_age, age, since or run_since) and --status sprints names the state. Planned into SP-d6gbc3tq on 2026-10-24 (night run). Sprint SP-d6gbc3tq started 2026-10-24.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "4a8f19bedc27287d802e2d1317164078fcf00521",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\ndef plant(status):\n    for f in glob.glob(T + '/kb/_self/backlog/*.json'):\n        d = json.load(open(f, encoding='utf-8'))\n        if d['id'] == sp: d['status'] = 'active'\n        if d['id'] == iid: d['status'] = status; d['sprint'] = sp\n        json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\n    g('add', '-A'); g('commit', '-q', '-m', 'planted ' + status)\ndef walk(*states): return [c('transition', 'run/' + iid, '--to', s).returncode for s in states]\nplant('doing')\nwalk('claimed', 'working')\nwt = os.path.join(T, '.claude', 'worktrees', 'agent-' + iid)\ng('worktree', 'add', '-q', wt, '-b', 'work/' + iid)\ngate = subprocess.run([sys.executable, R + '/_tools/backlog.py', '--root', wt, 'gate', 'add', iid, '--question', 'Which default?',\n                       '--option', 'a', '--option', 'b', '--recommendation', 'a'], capture_output=True, text=True, env=env, cwd=wt)\nsubprocess.run(['git', '-c', 'user.email=a@b', '-c', 'user.name=n', 'commit', '-qam', 'gate on the work branch'], cwd=wt, env=env)\nr = subprocess.run([sys.executable, R + '/_tools/kbmon.py', '--status', 'all', '--json', '--root', T, '--store', S],\n                   capture_output=True, text=True, env=env)\ntry:\n    first = json.loads(r.stdout)['lines'][0]\nexcept (ValueError, KeyError, IndexError):\n    first = ''\nok = gate.returncode == 0 and r.returncode == 0 and iid in first and 'g1' in first\nprint('gate on branch', gate.returncode, '| needs line:', first[:160])\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "9d349d69f1d7d56e"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\ndef plant(status):\n    for f in glob.glob(T + '/kb/_self/backlog/*.json'):\n        d = json.load(open(f, encoding='utf-8'))\n        if d['id'] == sp: d['status'] = 'active'\n        if d['id'] == iid: d['status'] = status; d['sprint'] = sp\n        json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\n    g('add', '-A'); g('commit', '-q', '-m', 'planted ' + status)\ndef walk(*states): return [c('transition', 'run/' + iid, '--to', s).returncode for s in states]\nplant('doing')\nwalk('claimed', 'working', 'failed')\ndef need():\n    r = subprocess.run([sys.executable, R + '/_tools/kbmon.py', '--status', 'all', '--json', '--root', T, '--store', S], capture_output=True, text=True, env=env)\n    try:\n        return json.loads(r.stdout)['lines'][0]\n    except (ValueError, KeyError, IndexError):\n        return ''\nfailed = need()\nc('transition', 'run/' + iid, '--to', 'working'); walk('returned', 'landing')\nc('transition', 'run/' + iid, '--to', 'refused', '--field', 'step=rebase')\nrefused = need()\nok = iid in failed and iid in refused and 'rebase' in refused\nprint('failed run:', failed[:120], '| refused landing:', refused[:120])\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "772051ca66dd9867"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\ndef plant(status):\n    for f in glob.glob(T + '/kb/_self/backlog/*.json'):\n        d = json.load(open(f, encoding='utf-8'))\n        if d['id'] == sp: d['status'] = 'active'\n        if d['id'] == iid: d['status'] = status; d['sprint'] = sp\n        json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\n    g('add', '-A'); g('commit', '-q', '-m', 'planted ' + status)\ndef walk(*states): return [c('transition', 'run/' + iid, '--to', s).returncode for s in states]\nplant('doing')\nwalk('claimed', 'working')\nk = lambda *x: subprocess.run([sys.executable, R + '/_tools/kbmon.py', *x, '--root', T, '--store', S], capture_output=True, text=True, env=env)\ntry:\n    panel = json.loads(k('--json', '--panel', 'sprint').stdout)['panels']['sprint']['data']['sprints']\nexcept (ValueError, KeyError):\n    panel = []\nrows = [row for s in panel for row in s.get('open', []) if row.get('id') == iid]\ntext = k('--status', 'sprints').stdout\nok = bool(rows) and 'working' in rows[0].values() and any(x in rows[0] for x in ('run_age', 'age', 'since', 'run_since')) and 'working' in text\nprint('sprint row', rows[0] if rows else None, '| --status sprints names the run state', 'working' in text)\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "d53737de69581139"
+      }
+    ]
+  }
 }
