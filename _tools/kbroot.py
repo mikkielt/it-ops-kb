@@ -478,7 +478,14 @@ def cmd_fetch(a):
                 if not ok:
                     failed += 1
                     print(f"pin failed: {p.name}: {commit}", file=sys.stderr)
-                elif write_pin(p, commit):
+                    continue
+                try:
+                    written = write_pin(p, commit)
+                except OSError as e:
+                    failed += 1
+                    print(f"pin failed: {p.name}: the pointer is not written ({os_reason(e)})", file=sys.stderr)
+                    continue
+                if written:
                     print(f"pinned {p.name} at {commit}")
                     try:
                         record_fetch(p._replace(pin=commit), "")
