@@ -2,7 +2,7 @@
   "id": "BG-7mxo4k6p",
   "kind": "bug",
   "title": "The leak scan flags the EC armor label quoted before a repository path that has a digit or an upper-case letter",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4ppjbh4k",
   "priority": "P3",
   "rank": 0,
@@ -42,6 +42,28 @@
   ],
   "notes": "Found by the SP-swavez3g review (S3) of BG-ok4itunr: the path rule covers only lowercase paths with no digit (the gate option taken provisionally). Three 8+ letter prose lines after the label are flagged too; decide whether that is wanted. Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. The pin check passes before the work by design: it holds behaviour the fix must keep. Same file as BG-q7lcd6od, so it runs after it.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "52f82cf115f86bd47b6a7aa9775d6f0d4bc93878",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport sys\nsys.path.insert(0, \"_tools\")\nimport kbcommon\nd = \"-\" * 5\narm = d + \"BEGIN EC PRIVATE KEY\" + d\nhit = lambda t: any(k == \"secret\" for k, _ in kbcommon.leak_hits(t))\nassert hit(arm + \"\\nAb12Cd34\\nZy98Wx76\\nQw45Er67\"), \"a narrow-wrapped EC key body with no // is no longer flagged\"\nassert not hit(arm + \"\\nkb/public/a/b.md\"), \"the EC armor label quoted before a plain repository path is flagged\"\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport sys\nsys.path.insert(0, \"_tools\")\nimport kbcommon\nd = \"-\" * 5\narm = d + \"BEGIN EC PRIVATE KEY\" + d\nhit = lambda t: any(k == \"secret\" for k, _ in kbcommon.leak_hits(t))\npaths = [\"kb/public/mecm/sql2022-views.md\", \"kb/public/Intune/Apps/Win32.md\"]\nflagged = [p for p in paths if hit(arm + \"\\n\" + p)]\nprint(\"armor label quoted before a repository path that is flagged:\", flagged)\nsys.exit(1 if flagged else 0)"
+        ],
+        "exit": 0,
+        "sha256": "ead9d48056799dcb"
+      }
+    ]
+  }
 }
