@@ -2,7 +2,7 @@
   "id": "ST-3bmmg73g",
   "kind": "story",
   "title": "kbmon --events exports an item's run as a kb.item span with kb.worker and kb.landing children, built from its progress events",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-nij36lt7",
   "sprint": "SP-d6gbc3tq",
   "priority": "P2",
@@ -72,6 +72,37 @@
   ],
   "notes": "Premise: with the run key walked claimed to landed, kbmon --events gives no kb.item span (the check prints 'kb.item 0'). Today a landing becomes a span only once its land.end row exists (kb/_self/monitoring.md:76) and a headless worker gives none. Building finished spans with explicit times and a known parent is what the SDK supports (kb/public/logs/otel-python-sdk.md:83-84, DER). A kb.sprint root span over a sprint's kb.item spans is left for refinement: the SP's own start and close are commits, not run keys. Plan 2026-10-24 (SP-d6gbc3tq): premise reproduced on base by precheck (kb.item 0). Checks added: 1 = a failed and a refused run give error statuses, the sprint attribute and the same ids twice; 2 = the adapter run on a loopback receiver posts a trace holding kb.item, kb.worker and kb.landing (reads the goal's adapter clause; kbmon_otel.py already sends every span of --events, so it may need no change). The kb.landing child of a run needs the landing move of ST-tb6tzrxa to exist in real runs; the planted checks write the moves with coord.py transition. Planned into SP-d6gbc3tq on 2026-10-24 (night run). Sprint SP-d6gbc3tq started 2026-10-24.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "ba009a467a608a5333e4c41f58501920b1909f7e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\ndef plant(status):\n    for f in glob.glob(T + '/kb/_self/backlog/*.json'):\n        d = json.load(open(f, encoding='utf-8'))\n        if d['id'] == sp: d['status'] = 'active'\n        if d['id'] == iid: d['status'] = status; d['sprint'] = sp\n        json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\n    g('add', '-A'); g('commit', '-q', '-m', 'planted ' + status)\ndef walk(*states): return [c('transition', 'run/' + iid, '--to', s).returncode for s in states]\nplant('doing')\nwalk('claimed', 'working', 'returned', 'landing', 'landed')\nr = subprocess.run([sys.executable, R + '/_tools/kbmon.py', '--events', '--root', T, '--store', S],\n                   capture_output=True, text=True, env=env)\ntry:\n    spans = json.loads(r.stdout)['spans']\nexcept (ValueError, KeyError):\n    spans = []\nitem = [s for s in spans if s['name'] == 'kb.item' and s['attributes'].get('item') == iid]\nkids = {s['name'] for s in spans if item and s.get('parent') == item[0]['id']}\nok = len(item) == 1 and {'kb.worker', 'kb.landing'} <= kids and item[0]['start'] < item[0]['end']\nprint('kb.item', len(item), 'children', sorted(kids))\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "29c213c8bbbbc48d"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\ndef plant(status):\n    for f in glob.glob(T + '/kb/_self/backlog/*.json'):\n        d = json.load(open(f, encoding='utf-8'))\n        if d['id'] == sp: d['status'] = 'active'\n        if d['id'] == iid: d['status'] = status; d['sprint'] = sp\n        json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\n    g('add', '-A'); g('commit', '-q', '-m', 'planted ' + status)\ndef walk(*states): return [c('transition', 'run/' + iid, '--to', s).returncode for s in states]\nplant('doing')\nwalk('claimed', 'working', 'failed', 'working', 'returned', 'landing', 'refused')\nev = lambda: subprocess.run([sys.executable, R + '/_tools/kbmon.py', '--events', '--root', T, '--store', S], capture_output=True, text=True, env=env)\nr1, r2 = ev(), ev()\ndef spans_of(r):\n    try:\n        return json.loads(r.stdout)['spans']\n    except (ValueError, KeyError):\n        return []\nmine = [s for s in spans_of(r1) if s['attributes'].get('item') == iid]\nby = lambda n: [s for s in mine if s['name'] == n]\nitem, workers, landings = by('kb.item'), by('kb.worker'), by('kb.landing')\nsame = [s['id'] for s in spans_of(r1)] == [s['id'] for s in spans_of(r2)]\nok = (len(item) == 1 and item[0]['status'] == 'error' and item[0]['attributes'].get('sprint') == sp\n      and sorted(w['status'] for w in workers) == ['error', 'ok'] and len(landings) == 1 and landings[0]['status'] == 'error'\n      and same and all(s['trace'] == item[0]['trace'] for s in workers + landings))\nprint('kb.item', [(s['status'], s['attributes'].get('sprint')) for s in item], 'workers', [w['status'] for w in workers],\n      'landings', [s['status'] for s in landings], 'same ids twice', same)\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "debc4549774ce16c"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\ndef plant(status):\n    for f in glob.glob(T + '/kb/_self/backlog/*.json'):\n        d = json.load(open(f, encoding='utf-8'))\n        if d['id'] == sp: d['status'] = 'active'\n        if d['id'] == iid: d['status'] = status; d['sprint'] = sp\n        json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\n    g('add', '-A'); g('commit', '-q', '-m', 'planted ' + status)\ndef walk(*states): return [c('transition', 'run/' + iid, '--to', s).returncode for s in states]\nimport threading, http.server\nplant('doing')\nwalk('claimed', 'working', 'returned', 'landing', 'landed')\ngot = []\nclass H(http.server.BaseHTTPRequestHandler):\n    def do_POST(self):\n        got.append((self.path, self.rfile.read(int(self.headers.get('Content-Length') or 0))))\n        self.send_response(200); self.send_header('Content-Length', '0'); self.end_headers()\n    def log_message(self, *a): pass\nsrv = http.server.HTTPServer(('127.0.0.1', 0), H); threading.Thread(target=srv.serve_forever, daemon=True).start()\ne = dict(env, OTEL_EXPORTER_OTLP_TRACES_ENDPOINT='http://127.0.0.1:%d/v1/traces' % srv.server_port)\na = subprocess.run(['uv', 'run', '--frozen', '--project', 'otel', 'python', 'otel/kbmon_otel.py', '--once', '--root', T, '--store', S],\n                   capture_output=True, text=True, env=e, cwd=R, timeout=300)\nsrv.shutdown()\nhit = [p for p, b in got if p.endswith('/v1/traces') and b'kb.item' in b and b'kb.worker' in b and b'kb.landing' in b]\nprint('adapter', a.returncode, 'posts', len(got), 'trace posts holding kb.item, kb.worker and kb.landing', len(hit))\nsys.exit(0 if a.returncode == 0 and hit else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "dd36e9165f2bf42b"
+      }
+    ]
+  }
 }
