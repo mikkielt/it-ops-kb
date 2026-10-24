@@ -1,0 +1,22 @@
+{
+  "id": "SP-rin4kkoj",
+  "kind": "sprint",
+  "title": "The kbmon mod tells the operator only what changed in what waits, and never holds its refresh for a notification",
+  "status": "planned",
+  "goal": "the kbmon mod compares the needs-you line without the ages mon_needs.line appends to a run, overlap or orphan entry and without the not-read suffix, so it calls $.ui.notify only when an entry appears, goes or changes its kind; the mod does not hold its refresh while a $.ui.notify call is out",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
