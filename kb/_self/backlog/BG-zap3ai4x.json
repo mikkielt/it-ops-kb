@@ -17,7 +17,9 @@
     ]
   },
   "touches": [
-    "_tools/check.py"
+    "_tools/check.py",
+    "kb/_self/content-rules.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "BG-e4sepxng"
