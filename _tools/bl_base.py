@@ -21,7 +21,7 @@ CONFIG_NAME = "backlog.json"  # at the repository root
 CONFIG_ENV = "KB_BACKLOG_CONFIG"  # a path in the environment: read from there instead of the root's file
 KIND_NAMES = ("epic", "story", "task", "subtask", "bug", "sprint")
 TRACKER_NAME_RE = re.compile(r"[a-z][a-z0-9_-]*")  # a tracker's name in backlog.json's trackers and an item's external
-HOOK_NAMES = ("horizon", "intake")  # the SessionStart hooks of the plugin that a project's `hooks` setting turns on
+HOOK_NAMES = ("horizon", "intake", "coord")  # the hooks of the plugin that a project's `hooks` setting turns on
 # One place lists the settings: key -> (type, the default). A type is a TYPES name; a key not here is refused in
 # backlog.json, and a key the file leaves out takes its value from here (the kb's own file names the keys whose value
 # differs from the default: item_dir, always_in_scope, review_checks, research_checks, land_stale, land_eval, land_lint,
@@ -58,9 +58,9 @@ SETTINGS = {
     # `mr_title` and `trailer` filled from the item (NAMING_FIELDS); a template left out keeps the kb's own
     # (NAMING_DEFAULTS); {} = all three
     "naming": ("naming", {}),
-    # the plugin's SessionStart hook entries (`horizon --hook --opt-in`, `intake --file --hook --opt-in`) that run in
-    # this project: they do nothing unless their command is named here; [] = none (the kb's own settings.json entries
-    # run without the flag)
+    # the plugin's hook entries (`horizon --hook --opt-in`, `intake --file --hook --opt-in`, the coord hook with
+    # `--opt-in`) that run in this project: they do nothing unless their name is listed here; [] = none (the kb's own
+    # settings.json entries run without the flag)
     "hooks": ("hooks", []),
 }
 NAMING_FIELDS = ("id", "task", "nn", "mm", "title", "slug")  # the placeholders a `naming` template may hold

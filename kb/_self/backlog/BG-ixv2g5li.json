@@ -1,0 +1,21 @@
+{
+  "id": "BG-ixv2g5li",
+  "kind": "bug",
+  "title": "kbmon sessions panel ignores the coord hook state files of a workspace that installs the plugin",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "mon_sessions.hook_sessions reads the coord hook's state files of a project that is not the clone that holds the script, which the hook keeps in the hook directory beside the project's store (ST-omimwr5q), as it reads _cache/coord_hook of a checkout, so kbmon --root WS binds a workspace session to its checkout",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,os,tempfile,subprocess;sys.path.insert(0,'_tools');import mon_sessions as m;W=tempfile.mkdtemp();subprocess.run(['git','init','-q',W]);d=os.path.join(W,'.git','kb-coord','hook');os.makedirs(d);sid='-'.join(c*n for c,n in zip('12345',(8,4,4,4,12)));open(os.path.join(d,sid+'.json'),'w').write('{}');sys.exit(0 if sid in m.hook_sessions(W) else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/mon_sessions.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

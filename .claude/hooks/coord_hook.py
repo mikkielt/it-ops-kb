@@ -2,7 +2,9 @@
 """SessionStart, SessionEnd, PreToolUse and UserPromptExpansion hook: announce a session's work through coord.py and show overlapping
 sessions, leaving the choice to the operator (stdlib only).
 
-Registered in .claude/settings.json only, so it runs in a clone of this repository and never in a host project. It is
+Registered in this clone's .claude/settings.json, where it runs always, and in the plugin's manifest with `--opt-in`, where
+it runs in a project only when that project's backlog.json `hooks` list names `coord` (as `horizon` and `intake` are
+turned on); a project's sessions then announce themselves in the project's own store, not the plugin's copy. It is
 one client of the coordination protocol (`kb/_self/tools.md`, coord.py): every call to the store is a `coord.py`
 command, and the hook adds no state of its own beyond the lease token coord.py shows only once.
 
@@ -11,6 +13,7 @@ command, and the hook adds no state of its own beyond the lease token coord.py s
                   session claimed earlier; the operator id `kbwho.operator()` gives, left out when it has none; not again
                   after /compact), then prints one line that names the session's own id and how to read, answer and send
                   asks (INTRO), then the `coord.py digest` lines for those items
+  PreToolUse Edit, Write  only renew the lease when it is due, as any other Bash command does
   PreToolUse Bash a command that runs `backlog.py claim ID` (text that only holds the words, as a commit message, an
                   echo, a grep pattern or a heredoc does, is no claim): the digest lines for ID, then an intent for ID
                   (topic backlog-claim, which the worker dispatched on `work/ID` skips at its SessionStart; it carries the
@@ -41,14 +44,17 @@ proceed, and the asks add a heading and up to five lines, and a SessionStart add
 (Claude's context). Only a SessionStart prints with no other session overlapping and no ask open (the INTRO line); any other event prints nothing then. No hook blocks or exits 2: an overlap
 informs, the operator decides; a missing store, an unreadable payload or any error ends in silence and exit 0.
 
-The store is coord.py's own: `KB_COORD_STORE`, else `kb-coord/coord.sqlite` in the clone's common git directory, which
-the clone's worktrees share. The lease token, items and ask cursor of a session sit in `_cache/coord_hook/<session id>.json` until its end.
+The store is coord.py's own: `KB_COORD_STORE`, else `kb-coord/coord.sqlite` in the common git directory of the project
+(`CLAUDE_PROJECT_DIR`) when that is not the clone that holds this script, else of this clone, which its worktrees share. The lease token, items and ask
+cursor of a session sit in `_cache/coord_hook/<session id>.json` of this clone until its end; for another project, in the
+`hook` directory beside that project's store, so nothing is written into the plugin's copy.
 """
 import json, os, re, subprocess, sys, time
 
 HOME = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 COORD = os.path.join(HOME, "_tools", "coord.py")
 STATE = os.path.join(HOME, "_cache", "coord_hook")  # one file per session: its lease token and items
+FOREIGN = []  # [the state directory of a project that is not this clone], once looked up; [None] when the project is this clone
 LEASE_SECONDS = 6 * 3600  # a session that ends without SessionEnd (a crash) drops out of `list` after this
 RETRY_SECONDS = 60  # after a renew that could not run, the next tool event waits this long
 SHOWN = 8  # digest lines shown: with the first and last line, ten in all
@@ -178,8 +184,33 @@ def coord(*args):
     return p.returncode, p.stdout
 
 
+def state_dir():
+    """Where the session state files sit: STATE, else, when the project is not the clone that holds this script (the
+    plugin's copy serving a project), the `hook` directory beside the store the project's sessions use."""
+    if not FOREIGN:
+        found = None
+        try:
+            sys.path.insert(0, os.path.join(HOME, "_tools"))
+            import coord
+            store = coord.project_store()
+            if store:
+                found = os.path.join(os.path.dirname(os.environ.get("KB_COORD_STORE") or store), "hook")
+        except Exception:
+            pass
+        FOREIGN.append(found)
+    return FOREIGN[0] or STATE
+
+
+def opted_in(payload):
+    """Whether the project's backlog.json `hooks` list names `coord`: the project is CLAUDE_PROJECT_DIR, else the event's cwd."""
+    sys.path.insert(0, os.path.join(HOME, "_tools"))
+    import bl_base
+    project = os.environ.get("CLAUDE_PROJECT_DIR") or payload.get("cwd") or os.getcwd()
+    return "coord" in bl_base.read_settings(project)[0]["hooks"]
+
+
 def state_path(sid):
-    return os.path.join(STATE, safe(sid)[:80].replace("/", "_") + ".json")
+    return os.path.join(state_dir(), safe(sid)[:80].replace("/", "_") + ".json")
 
 
 def load(sid):
@@ -192,7 +223,7 @@ def load(sid):
 
 
 def save(sid, state):
-    os.makedirs(STATE, exist_ok=True)
+    os.makedirs(state_dir(), exist_ok=True)
     path = state_path(sid)
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)  # the lease token: owner-only
     os.chmod(path, 0o600)  # a file an earlier version made keeps its mode through the open
@@ -393,11 +424,11 @@ def retry_releases(own):
     so its intents leave other sessions' digests once the store is free. The first release that cannot run ends the
     pass; a file older than the lease holds nothing and is removed."""
     try:
-        names = sorted(os.listdir(STATE))
+        names = sorted(os.listdir(state_dir()))
     except OSError:
         return
     for name in names:
-        path = os.path.join(STATE, name)
+        path = os.path.join(state_dir(), name)
         if path == state_path(own) or not name.endswith(".json"):
             continue
         try:
@@ -417,8 +448,8 @@ def retry_releases(own):
 
 def pre_tool_use(payload, sid):
     tool, given = payload.get("tool_name"), payload.get("tool_input") or {}
-    if tool == "Bash":
-        claimed = claimed_item(given.get("command") or "")
+    if tool in ("Bash", "Edit", "Write"):
+        claimed = claimed_item(given.get("command") or "") if tool == "Bash" else None
         state = load(sid)
         if not claimed:
             renew_if_due(sid, state)
@@ -462,7 +493,7 @@ def main():
         payload = json.load(sys.stdin)
         sid = safe(payload.get("session_id") or "")
         event = payload.get("hook_event_name")
-        if not sid:
+        if not sid or ("--opt-in" in sys.argv[1:] and not opted_in(payload)):
             return 0
         if event == "SessionStart":
             session_start(payload, sid)

@@ -29,7 +29,7 @@
                                         and `tidy --json` to run) that advises remove or keep for each; its result is
                                         posted as the answer of one ask to `kb-observer`
 
-  --store PATH | --url URL --key-file PATH [--plain-http]   the coord store or server (as coord.py's; default: coord.py's)
+  --store PATH | --url URL --key-file PATH [--plain-http]   the coord store or server (as coord.py's; default: the project's store when it is not this clone's, else coord.py's)
 
 The text is never printed back, except by `summary --wait`, which prints the answer. Exit codes: 0 done; 1 the claim is held, or a value moved on; 2 a bad argument, no `claude`
 on PATH, or a coord command that failed.
@@ -124,12 +124,17 @@ class Stop(Exception):
 
 
 def connection(args):
-    """coord.py's global connection arguments: --url and --key-file, else --store (else coord.py's own default)."""
+    """coord.py's global connection arguments: --url and --key-file, else --store, else (with no KB_COORD_STORE) the store of
+    the project when that is not the clone this script is in, so a session kbask starts for it sees that store too (else
+    coord.py's own default)."""
     if args.url or args.key_file:
         if not (args.url and args.key_file):
             raise Stop("--url and --key-file go together")
         return ["--url", args.url, "--key-file", args.key_file] + (["--plain-http"] if args.plain_http else [])
-    return ["--store", args.store] if args.store else []
+    if args.store:
+        return ["--store", args.store]
+    project = None if os.environ.get("KB_COORD_STORE") else coord.project_store()
+    return ["--store", project] if project else []
 
 
 def run_coord(conn, *cmd):
