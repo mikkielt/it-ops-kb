@@ -1,0 +1,22 @@
+{
+  "id": "BG-z7fvy7bw",
+  "kind": "bug",
+  "title": "kb/_self/monitoring.md still says the items of a sprint share the trace of the kb.sprint root span, while each kb.item has its own trace",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "the Spans paragraph of kb/_self/monitoring.md says each kb.item span has a trace of its own and how the kb.sprint root span relates to it, as mon_events exports them",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re, sys\nt = open('kb/_self/monitoring.md', encoding='utf-8').read()\nstale = 'items of a sprint share the trace of its `kb.sprint` root span' in t\nprint('monitoring.md still says the items of a sprint share the trace of the kb.sprint root span:', stale)\nsys.exit(1 if stale else 0)\n"
+    ]
+  },
+  "repro_reason": "the defect is a sentence of a doc that disagrees with the exported spans; the repro reads the sentence",
+  "touches": [
+    "kb/_self/monitoring.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
