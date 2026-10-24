@@ -2,7 +2,7 @@
   "id": "BG-4dj74rml",
   "kind": "bug",
   "title": "kbroot.fetch_env keeps GIT_ASKPASS and SSH_ASKPASS, so a fetch can show a credential prompt",
-  "status": "draft",
+  "status": "doing",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-c6w5hjmc",
   "priority": "P2",
@@ -48,5 +48,7 @@
   ],
   "links": [
     "parked: SP-s2svf5a6 review"
-  ]
+  ],
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
