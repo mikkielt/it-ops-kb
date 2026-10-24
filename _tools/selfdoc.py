@@ -13,7 +13,9 @@
                                    or sprint cannot fail; exit 1 when any
   selfdoc.py map PATH [PATH ...]   the docs that describe these paths
   selfdoc.py check                 map rows naming a missing doc or matching no file, kb/_self/*.md docs with no row,
-                                   and dead section references; exit 1 when any
+                                   dead section references, and a line of the coordination doc's Settings section
+                                   that no longer holds the key, default and allowed values `kbsettings.py check`
+                                   reads at the line number its table keeps; exit 1 when any
   selfdoc.py section DOC HEADING [DOC HEADING ...]
                                    the section under each heading, down to the next heading of the same or a higher
                                    level, each line with its line number; exit 1 when a heading matches none, naming
@@ -59,6 +61,7 @@ import argparse, ast, csv, functools, io, os, pathlib, re, subprocess, sys, toke
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kbcommon  # noqa: E402
+import kbsettings  # noqa: E402
 import kbtools  # noqa: E402
 
 KB = kbcommon.HOME  # this repository
@@ -220,7 +223,8 @@ def stale(root=KB, since=None, work=None):
 
 def check(root=KB):
     """Problems with the map: missing docs, patterns that match no file, top-level _self docs with no row, dead section
-    references and command-line tools whose docstring lacks the `Answers:` or `Use:` line."""
+    references, command-line tools whose docstring lacks the `Answers:` or `Use:` line and, where the repository holds
+    the coordination doc, `kbsettings.check` of its Settings lines."""
     docs = load_map(root)
     files = set(lines(git(root, "ls-files"))) | set(lines(git(root, "ls-files", "--others", "--exclude-standard")))
     problems = []
@@ -236,6 +240,9 @@ def check(root=KB):
     problems += dead_section_refs(root, files)
     problems += [f"_tools/{e['tool']}: a command-line tool whose module docstring lacks the {', '.join(k + ':' for k in e['missing'])} "
                  f"line (kbtools.py reads them)" for e in kbtools.tool_entries(root) if e["missing"]]
+    settings_doc = pathlib.Path(root, kbsettings.DOC)
+    if settings_doc.is_file():
+        problems += kbsettings.check(settings_doc.read_text(encoding="utf-8"))
     return problems
 
 

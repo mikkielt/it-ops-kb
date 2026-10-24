@@ -42,6 +42,42 @@
     "ST-wwdfdigd",
     "BG-ekyfn2ou"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does kbsettings.py check run: inside selfdoc.py check (kb-verify, stage-back), or as a step of the sync gate (kg_sync.py, outside the touches)?",
+      "options": [
+        "selfdoc.py check runs it",
+        "a sync gate step in kg_sync.py runs it"
+      ],
+      "recommendation": "selfdoc.py check runs it",
+      "do": {
+        "selfdoc.py check runs it": "BG-vbkdm7vw",
+        "a sync gate step in kg_sync.py runs it": "BG-vbkdm7vw"
+      },
+      "class": "design",
+      "answer": "selfdoc.py check runs it",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How much of the settings path is made relative: only explain's source, or also the settings file named in every SettingsError message (which the kb_settings tool returns too)?",
+      "options": [
+        "source and error messages relative to the workspace root",
+        "source only"
+      ],
+      "recommendation": "source and error messages relative to the workspace root",
+      "do": {
+        "source and error messages relative to the workspace root": "BG-vbkdm7vw",
+        "source only": "BG-vbkdm7vw"
+      },
+      "class": "design",
+      "answer": "source and error messages relative to the workspace root",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-sucr3kfg review"
   ],
