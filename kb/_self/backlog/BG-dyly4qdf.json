@@ -2,7 +2,7 @@
   "id": "BG-dyly4qdf",
   "kind": "bug",
   "title": "repro pick falls back to each instance's own areas when one instance finished no area",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-uhcjxayq",
   "priority": "P2",
   "rank": 0,
@@ -64,6 +64,37 @@
     "parked: SP-75hdeqld review"
   ],
   "notes": "Premise run 2026-10-24 on base f160727aa: repro fails (standings common set empty, so pick compares on own areas). The original goal's clause that a planted standings table in the bench test file proves it is reworded to the checks of this item: that test file is gone since the 2026-10-16 decision to keep tests for critical parts only, so the planted tables live in checks 0 (an instance whose every area failed, with a high eval_passed and no errors, is ranked last and not picked: fails on base, picked instance-3) and 1 (a fence: all instances finished the same areas, passed sums unchanged: passes on base by design); the repro reads the common set. Touches: kb/_self/benchmarks.md (the repro pick section says how standings takes the common areas and what ranks last) replaces kb/_self/tools.md, which holds no word about standings or pick; the code-map warning for kb/_self/tools.md is met by naming it in Self-Reviewed when read and still correct, so the claim does not wait on the sessions that hold tools.md. Order: runs beside the kbtools.py chain; BG-iy5qjr4r runs after this item (same file, same doc). Check 1 (all instances finished the same areas) passes before the work: it pins behaviour that must stay. Planned into the sprint on 2026-10-24 (day run).",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "6dc5669ff46d12d9103cc39451af71b50df22c37",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv, sys, tempfile, pathlib\nsys.path.insert(0, '_tools')\nimport bench_repro as b\n\ndef row(scen, n, case, metric, value):\n    return {'scenario': scen, 'record': 'r', 'date': '2026-10-24', 'arm': f'instance-{n}', 'case': case, 'metric': metric, 'value': str(value)}\n\nrows = []\nfor n, errors in ((1, 5), (2, 4)):\n    rows += [row('repro-compare', n, a, 'eval_passed', 0) for a in 'ab'] + [row('repro-compare', n, 'all', 'check_errors', errors), row('repro-compare', n, 'all', 'lint_errors', 0)]\nrows += [row('repro-compare', 3, a, 'eval_passed', 50) for a in 'ab'] + [row('repro', 3, a, 'failure', 'boom') for a in 'ab']\nrows += [row('repro-compare', 3, 'all', 'check_errors', 0), row('repro-compare', 3, 'all', 'lint_errors', 0)]\nwith tempfile.TemporaryDirectory() as d:\n    f = pathlib.Path(d, 'res.csv')\n    with open(f, 'w', newline='') as fh:\n        w = csv.DictWriter(fh, fieldnames=['scenario', 'record', 'date', 'commit', 'claude_code', 'kb_topics', 'case', 'arm', 'model', 'metric', 'value', 'runs', 'note'], restval='')\n        w.writeheader()\n        w.writerows(rows)\n    lines = []\n    rc = b.pick(str(f), out=lines.append)\norder = [l.split(':')[0] for l in lines if l.startswith('instance-')]\nprint(rc, order, lines[-1])\nsys.exit(0 if rc == 0 and order[-1] == 'instance-3' and lines[-1].startswith('picked: instance-2') else 1)"
+        ],
+        "exit": 0,
+        "sha256": "1388ae5a8f96c03f"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bench_repro as b;r=lambda n,a,m,v:{'scenario':'repro-compare','record':'r','date':'d','arm':f'instance-{n}','case':a,'metric':m,'value':str(v)};rows=[r(n,a,'eval_passed',n) for n in (1,2) for a in 'ab'];c=b.standings(rows);print(c[3],{n:d['passed'] for n,d in c[2].items()});sys.exit(0 if c[3]=={'a','b'} and c[2][2]['passed']==4 and c[2][1]['passed']==2 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "99667121a835c17a"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bench_repro as b;r=lambda n,a,m,v:{'scenario':'repro-compare','record':'r','date':'d','arm':f'instance-{n}','case':a,'metric':m,'value':str(v)};rows=[r(1,a,'eval_passed',10) for a in 'abc']+[r(2,a,'eval_passed',10) for a in 'ab']+[r(3,'all','check_errors',0)];c=b.standings(rows)[3];print(c);sys.exit(0 if c=={'a','b'} else 1)"
+        ],
+        "exit": 0,
+        "sha256": "c8cb9ddccb78689f"
+      }
+    ]
+  }
 }
