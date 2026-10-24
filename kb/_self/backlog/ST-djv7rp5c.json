@@ -1,0 +1,26 @@
+{
+  "id": "ST-djv7rp5c",
+  "kind": "story",
+  "title": "Research sprint goal: Fail-open and privacy bugs the reviews parked: monitor overlap age and disk line, dispatch resource entries, kbroot fetch, selfcheck skills, sync gate pool base, coord hook announce",
+  "status": "draft",
+  "sprint": "SP-yisvj7vd",
+  "goal_research": true,
+  "priority": "P1",
+  "rank": 0,
+  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "researched",
+        "ST-djv7rp5c"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ],
+  "notes": "No outside facts: the sprint goal is eight fixes in the kb's own tools (kbmon, dispatch, kbroot, selfcheck, the sync gate, the coord hook), each with a failing repro on the base; it asks no question the kb or the live docs answer. Planned 2026-10-24 for the day run.",
+  "filed_in": "clone-0ea70e5c"
+}
