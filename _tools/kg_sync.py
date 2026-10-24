@@ -4,7 +4,7 @@ git in KB, the repository directory kg_base names, and the `kbgit.py` and checks
 message of the fix commit, whether the commit hooks are installed) comes in as a `Host` the facade builds, since this
 module imports no facade. Standard library only; kbgit.py imports it.
 """
-import csv, datetime, json, os, re, shlex, subprocess, sys, time
+import csv, datetime, json, os, re, shlex, subprocess, sys, tarfile, tempfile, time
 from collections import namedtuple
 from pathlib import Path
 
@@ -409,6 +409,7 @@ def artifact_paths():
 
 
 TEST_FILE = re.compile(r"_tools/test_[^/]*\.py")
+POOL_INPUTS = ("bench_pool.csv", "bench_scenarios.csv", "_gaps.md")  # what `benchmarks.py pool check` judges besides the kb: the pool, its scenarios, a gap row's entry
 
 
 def gate_needs(paths):
@@ -416,7 +417,7 @@ def gate_needs(paths):
     known paths (None) every check runs."""
     if paths is None:
         return {k: "no base to compare with" for k in ("check", "fetch", "doc2query", "selfdoc", "backlog", "querylog",
-                                                       "dropped", "selectors")}
+                                                       "dropped", "selectors", "pool")}
     ps = {p.replace("\\", "/") for p in paths}
     kb = {p for p in ps if p.startswith("kb/")}
     tools = {p for p in ps if p.startswith("_tools/")}
@@ -427,6 +428,7 @@ def gate_needs(paths):
 
     def why(hit, what):
         return f"{what} changed: {sorted(hit)[0]}" + (f" (+{len(hit) - 1})" if len(hit) > 1 else "") if hit else None
+    pool = {p for p in kb if p.rsplit("/", 1)[-1] in POOL_INPUTS}
     root = {p for p in ps if "/" not in p}  # README.md, AGENTS.md: check.py validates their citations too
     gone = {p for p in ps if not os.path.lexists(os.path.join(KB, p))}  # deleted, or the old path of a rename: an item's touches may name it
     return {"check": why(content | tools | root, "kb content, a root file or a tool"),
@@ -438,7 +440,8 @@ def gate_needs(paths):
             "backlog": why(items | ({"_tools/backlog.py"} & ps) | gone, "a backlog item or a deleted or renamed file"),
             "querylog": why(store, "the query log store"),
             "dropped": why(ps & {"_tools/test_ids_dropped.txt", "_tools/perfcheck.py"}, "the dropped test ids"),
-            "selectors": why({p for p in tools if TEST_FILE.fullmatch(p)}, "a test file")}  # a deleted or renamed one too
+            "selectors": why({p for p in tools if TEST_FILE.fullmatch(p)}, "a test file"),  # a deleted or renamed one too
+            "pool": why(pool, "a pool input")}
 
 
 EVAL_SETS = ("lookup_eval.csv", "lookup_heldout.csv")  # the tuned eval set and the held-out one beside it
@@ -479,6 +482,66 @@ def heldout_checks(paths):
                 root = "/".join(p.split("/")[:2])
                 add(f"{root}/{kbcommon.DATA_DIR}", FROZEN_SETS, f"an article changed: {p}")
     return [(p, why) for p, why in sorted(found.items()) if Path(KB, p).is_file()]
+
+
+POOL_PREFIX = "pool check: "
+POOL_ROUTE = re.compile(r"(expected route \S+) but the pack prints .*")
+
+
+def pool_problems(out):
+    """The defect lines of a `benchmarks.py pool check` output, without their prefix and without its warnings."""
+    return [ln[len(POOL_PREFIX):] for ln in out.splitlines() if ln.startswith(POOL_PREFIX) and ": warning: " not in ln]
+
+
+def pool_key(line):
+    """A defect line as the same defect before and after a landing: the route the pack prints is left out, since a row
+    that expected `web` and printed `split` is the same defect when it prints `good`."""
+    return POOL_ROUTE.sub(r"\1", line)
+
+
+def base_tool(rev, name, *args):
+    """(exit code, output) of a kb tool as REV had it: REV's kb/ and _tools/ exported to a temporary directory (git
+    archive read as a tar stream, no worktree, no stash), the tool run there, the directory removed after. The tool
+    reads its tree from where its own file stands, so it judges REV and not the working tree."""
+    with tempfile.TemporaryDirectory(prefix="kb-sync-base-") as tmp:
+        try:
+            p = subprocess.Popen(["git", "archive", "--format=tar", rev, "kb", "_tools"], cwd=KB, stdout=subprocess.PIPE,
+                                 stderr=subprocess.DEVNULL)
+            with tarfile.open(fileobj=p.stdout, mode="r|") as t:
+                if hasattr(tarfile, "data_filter"):
+                    t.extractall(tmp, filter="data")
+                else:
+                    t.extractall(tmp)
+            if p.wait():
+                return p.returncode, f"git archive {rev} failed"
+        except (OSError, tarfile.TarError) as e:
+            return 127, f"could not export {rev}: {e}"
+        base = {k: v for k, v in os.environ.items() if k not in (REEXEC_ENV, SIDES_ENV)}
+        q = subprocess.run([sys.executable, os.path.join(tmp, "_tools", name), *args], cwd=tmp, capture_output=True,
+                           text=True, encoding="utf-8", errors="replace", env=base)
+        return q.returncode, q.stdout + q.stderr
+
+
+def pool_gate(code, out, rev):
+    """(exit code, output) of the gate's `benchmarks.py pool check`, which fails on the pool's old defects too (a row
+    the model must redraw, a paid run): CODE and OUT are its run on the working tree; the same check runs on REV (the
+    commit the landing is judged against), and only a defect line the working tree has and REV lacks refuses, the
+    landing that closes an entry a gap row names, or adds a row with a defect. The old defects are printed, not
+    refused. With no REV (a new branch) nothing can be told apart: the problems are printed and nothing is refused."""
+    now = pool_problems(out)
+    if not code or not now:
+        return code, out
+    if not rev:
+        return 0, out + "\npool check: no base to compare with, nothing refused"
+    bcode, bout = base_tool(rev, "benchmarks.py", "pool", "check")
+    old = {pool_key(ln) for ln in pool_problems(bout)}
+    if bcode and not old:
+        why = ([ln for ln in bout.splitlines() if ln.strip()] or [""])[-1][:100]
+        return 0, out + f"\npool check: could not run the check on {short(rev)}, nothing refused: {why}"
+    added = [ln for ln in now if pool_key(ln) not in old]
+    return int(bool(added)), out + "\n" + "\n".join(
+        [f"pool check: refused, added by the landing: {ln}" for ln in added]
+        + [f"pool check: refused={len(added)} old={len(now) - len(added)} (old defects of {short(rev)} are printed, not refused)"])
 
 
 GATE_NOTE = re.compile(r"tests\.py --changed \S+: (no test can be affected by the changed paths"
@@ -639,8 +702,9 @@ def gate(r, up, host, fix_check=False, since=None):
     article or its expansions, selfdoc.py stale --since UP for a file kb/_self describes (a `Self-Reviewed:` trailer
     clears a doc), backlog.py check for backlog items or a deleted or renamed tracked file, backlog.py selectors for a changed, deleted or renamed
     _tools/test_*.py file (selector_gate: refused for a done item whose check selects no test), querylog.py check for the
-    query log store, rag.py eval --file on the lookup_heldout.csv beside a changed lookup_eval.csv, lookup_heldout.csv
-    or doc2query/expansions.csv, or of the root of a changed article (heldout_checks: refused for a REWORD line), and tests.py
+    query log store, benchmarks.py pool check for a bench_pool.csv, bench_scenarios.csv or _gaps.md (pool_gate: refused
+    only for a defect line the base lacks, the pool's old defects being printed), rag.py eval --file on the
+    lookup_heldout.csv beside a changed lookup_eval.csv, lookup_heldout.csv or doc2query/expansions.csv, or of the root of a changed article (heldout_checks: refused for a REWORD line), and tests.py
     --changed UP (KB_TESTS_FAST=1: nothing for backlog items and the query log store, the suite without the git
     scenarios for kb content only, the whole suite for any other path).
     `fix_check` (the pre-push hook) adds `fix --check` and build_index.py --check first; sync runs fix itself, which
@@ -664,7 +728,9 @@ def gate(r, up, host, fix_check=False, since=None):
                ("doc2query.py stale", "doc2query.py", ["stale"], None, need["doc2query"]),
                ("backlog.py check", "backlog.py", ["check"], None, need["backlog"]),
                ("backlog.py selectors", "backlog.py", ["selectors"], None, need["selectors"]),
-               ("querylog.py check", "querylog.py", ["check"], None, need["querylog"])]
+               ("querylog.py check", "querylog.py", ["check"], None, need["querylog"]),
+               ("benchmarks.py pool check", "benchmarks.py", ["pool", "check"], None, need["pool"])]
+    base_rev = since or ((git("merge-base", up, "HEAD") or "").strip() if up else None)  # what the pool check is judged against
     heldout = heldout_checks(paths)
     for rel, why in heldout or [(None, None)]:  # --min 1: a held-out row that fails to answer is the measurement, not a refusal
         checks.append((f"rag.py eval --file {rel}" if rel else "rag.py eval (held-out reword check)", "rag.py",
@@ -690,6 +756,8 @@ def gate(r, up, host, fix_check=False, since=None):
         code, out = tool(name, *args, env=env)
         if args[:1] == ["selectors"] and not code:
             code, out = selector_gate(out)
+        if args[:1] == ["pool"]:
+            code, out = pool_gate(code, out, base_rev)
         gate_mark(r, label, code=code, since=t0)
         if name == "tests.py":
             gate_scope(r, None, out)

@@ -23,6 +23,14 @@
         "-c",
         "import sys; sys.path.insert(0, \"_tools\"); import kg_sync as k; paths = (\"kb/public/_gaps.md\", \"kb/public/_retrieval/bench_pool.csv\", \"kb/public/_retrieval/bench_scenarios.csv\"); missing = [p for p in paths if not k.gate_needs({p}).get(\"pool\")]; extra = k.gate_needs({\"_tools/kg_sync.py\"}).get(\"pool\"); print(\"pool gate missing for:\", missing, \"| runs for an unrelated path:\", bool(extra)); sys.exit(1 if missing or extra else 0)"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_pool_gate_refuses_only_the_defects_a_landing_adds"
+      ]
     }
   ],
   "touches": [
@@ -56,12 +64,33 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does the sync gate tell the problems a landing adds from the pool's old defects? Recommended: run pool check also on the merge base exported with git archive to a temporary directory and refuse the defect lines the working tree prints and the base does not (the printed route left out of a line's identity); with no base, print and refuse nothing.",
+      "options": [
+        "Export the base and compare defect lines",
+        "Compare only gap rows against the base _gaps.md text, no second run",
+        "Keep a file of accepted old defects"
+      ],
+      "recommendation": "Export the base and compare defect lines",
+      "do": {
+        "Export the base and compare defect lines": "BG-2mdkl622",
+        "Compare only gap rows against the base _gaps.md text, no second run": "BG-2mdkl622",
+        "Keep a file of accepted old defects": "BG-2mdkl622"
+      },
+      "class": "push",
+      "answer": "Export the base and compare defect lines",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
     "parked: SP-honlhzdc review"
   ],
-  "notes": "Found by the SP-honlhzdc review (S2): BG-viwywxml's goal clause 'the landing that closes an entry fails a check while a row still names it' is not delivered: gap_problems is right, but no gate (sync gate, land_stale/eval/lint, review_checks) runs pool check, and test_bench.py calls check_problems on fixtures only. The repro reads kg_sync's gate table; planning adds a check that drives a landing which closes a named gap entry. Plan 2026-10-17 (SP-4cc36epy, not committed): benchmarks.py pool check exits 1 on origin/main b871374b4 (BP-0181112b: its answer regex matches no line of the pack for its question), so a sync gate that runs it would refuse every landing that changes a _gaps.md now; the pool row is a benchmark matter (operator), so this waits until that row passes or the operator decides. Worker ST-fsh6rqnc 2026-10-23: pool check on the pool file as it stands still fails: gap rows BP-1676858d and BP-0ea743f9 name _gaps.md entries no longer open (0a9e79d0, 32b6021a), BP-d5867677 (sc_absent) expects route web and gets split, BP-0181112b's answer regex matches no pack line; warnings on BP-23c08131 and BP-3d01d974. A paid pool run over every kind would measure those rows wrongly. Plan 2026-10-24: premise reproduces (precheck). g1 answered with its recommendation, refuse only what the landing adds (pre-approved by the operator for the 2026-10-24 day run). The worker plants the second case (a closed entry fails, an old defect passes) and records it with set --add-check.",
+  "notes": "Found by the SP-honlhzdc review (S2): BG-viwywxml's goal clause 'the landing that closes an entry fails a check while a row still names it' is not delivered: gap_problems is right, but no gate (sync gate, land_stale/eval/lint, review_checks) runs pool check, and test_bench.py calls check_problems on fixtures only. The repro reads kg_sync's gate table; planning adds a check that drives a landing which closes a named gap entry. Plan 2026-10-17 (SP-4cc36epy, not committed): benchmarks.py pool check exits 1 on origin/main b871374b4 (BP-0181112b: its answer regex matches no line of the pack for its question), so a sync gate that runs it would refuse every landing that changes a _gaps.md now; the pool row is a benchmark matter (operator), so this waits until that row passes or the operator decides. Worker ST-fsh6rqnc 2026-10-23: pool check on the pool file as it stands still fails: gap rows BP-1676858d and BP-0ea743f9 name _gaps.md entries no longer open (0a9e79d0, 32b6021a), BP-d5867677 (sc_absent) expects route web and gets split, BP-0181112b's answer regex matches no pack line; warnings on BP-23c08131 and BP-3d01d974. A paid pool run over every kind would measure those rows wrongly. Plan 2026-10-24: premise reproduces (precheck). g1 answered with its recommendation, refuse only what the landing adds (pre-approved by the operator for the 2026-10-24 day run). The worker plants the second case (a closed entry fails, an old defect passes) and records it with set --add-check. g2 (push) answered with its recommendation, pre-approved by the operator for the 2026-10-24 day run.",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }
