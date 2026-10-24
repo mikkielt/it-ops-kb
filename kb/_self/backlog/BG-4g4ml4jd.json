@@ -1,0 +1,27 @@
+{
+  "id": "BG-4g4ml4jd",
+  "kind": "bug",
+  "title": "kbmon --events exports a sprint's kb.sprint span after its first batch of items has landed and again with a later end when the next batch lands",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kbmon --events exports the kb.sprint span of a sprint once, after the last item the sprint has claimed or is doing has ended its run, not when the items claimed so far have landed",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\ndef story(title): return re.search(r'ST-\\w+', bl('new', 'story', '--title', title, '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\na, b, lone = story('A'), story('B'), story('Lone')\ndef plant(**sprints):\n    for f in glob.glob(T + '/kb/_self/backlog/*.json'):\n        d = json.load(open(f, encoding='utf-8'))\n        if d['id'] == sp: d['status'] = 'active'\n        if d['id'] in sprints:\n            d['status'] = 'doing'\n            if sprints[d['id']]: d['sprint'] = sprints[d['id']]\n        json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\n    g('add', '-A'); g('commit', '-q', '-m', 'planted')\ndef walk(item, *states): return [c('transition', 'run/' + item, '--to', s).returncode for s in states]\ndef events(*extra):\n    doc = {'spans': [], 'cursor': '', 'problems': ['not run']}\n    for _ in range(4):\n        r = subprocess.run([sys.executable, R + '/_tools/kbmon.py', '--events', '--root', T, '--store', S, *extra], capture_output=True, text=True, env=env)\n        try:\n            doc = json.loads(r.stdout)\n        except ValueError:\n            doc = {'spans': [], 'cursor': '', 'problems': ['not json']}\n        if not doc.get('problems'):\n            break\n    return doc\ndef spans(doc, name): return [s for s in doc['spans'] if s['name'] == name]\nRUN = ('claimed', 'working', 'returned', 'landing', 'landed')\nplant(**{a: sp, b: sp})\nwalk(a, *RUN)\nfirst = events()\nwalk(b, *RUN)\nsecond = events('--since', first['cursor'])\nearly, later = spans(first, 'kb.sprint'), spans(second, 'kb.sprint')\nends = [s['end'] for s in spans(second, 'kb.item')]\nok = not early and len(later) == 1 and later[0]['end'] >= max(ends or [0])\nprint('kb.sprint in the export after A landed (B still doing, no move yet):', len(early), '; after B landed:', [(s['id'], s['end']) for s in later])\nsys.exit(0 if ok else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/mon_events.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-hja7yu5k review"
+  ],
+  "notes": "Found by the review of SP-hja7yu5k (mon_events.py:190-205). Items with no run key are ignored, so the span goes out when every claimed item has landed and the same id is exported again with a later end when the next batch (the skill claims up to four at a time) lands. The repro plants A landed and B an item the backlog has as doing with no move yet. Options for the fix: treat an item of the sprint that is doing or todo-and-claimed as open, and end the sprint at the last landed or released move after the review story is done (runs --reconcile gives it a landed move).",
+  "filed_in": "clone-0ea70e5c"
+}
