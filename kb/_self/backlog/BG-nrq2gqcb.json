@@ -2,7 +2,7 @@
   "id": "BG-nrq2gqcb",
   "kind": "bug",
   "title": "kb_ask.py --route sends a docs question that holds a tool, command or script word to kind=tools instead of its pack route",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5mp6pwnn",
   "sprint": "SP-x6eqtsid",
   "priority": "P1",
@@ -43,6 +43,19 @@
   ],
   "notes": "Found by the sprint review (a fresh reviewer session, 2026-10-24): kb_ask.py's tools() returns None only when the catalog has no entry, and kbtools.search matches any shared word, so the cue words (tool, command, script) and words the entry descriptions hold (Intune, Microsoft, Claude) match: 22 docs questions all printed kind=tools. It contradicts ST-e6xp5h3u's gate g3 (no catalog entry: the question goes on to the pack); that story's check 2 planted docs questions that held no tool word, so it passed. Fix direction, the worker's call: drop the cue words from the words that match, score on a tool's name and its Answers: text, and route to tools only above a floor that the 11 docs questions of the repro fall under and its 4 tool questions rise over; the answer text and the kb_tools MCP text stay kbtools.py's lines; the status route stays first. The kb_ask.py docstring, tools.md and token-efficiency.md must say what the code does. AGENTS.md, code.md and design.md map to these files: read them and name them in Self-Reviewed.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "6dddfbd0fcc4580951e53fd1ae7493c09e41df60",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, subprocess, sys\n\ncrashed = []\n\ndef route(question):\n    r = subprocess.run([sys.executable, '_tools/kb_ask.py', '--route', question], capture_output=True, text=True,\n                       env={**os.environ, 'KB_NO_REVALIDATE': '1'}, timeout=120)\n    if r.returncode != 0:\n        crashed.append(question)\n    return (r.stdout.splitlines() or [''])[0]\n\ndocs = ['Which tool does Intune use to deploy Win32 apps to devices?',\n        'Which Claude Code command compacts the conversation?',\n        'What command line tool installs a Win32 app in ConfigMgr?',\n        'Which script runs a proactive remediation in Intune?',\n        'How do I find the tool that exports Entra ID sign-in logs?',\n        'Which PowerShell command lists Autopilot devices?',\n        'What tool shows Group Policy results on a client?',\n        'Which Defender command line tool updates the signatures?',\n        'Which Ansible tool manages Windows hosts?',\n        'What command runs a ConfigMgr client health check?',\n        'Which tool converts an app to the intunewin format?']\ntools = ['which tool shows how long each landing step took',\n         'which command prints what a sprint item cost',\n         'how do I find the command that lists the stalled backlog items',\n         'which command checks that every _tools command-line tool has Answers lines']\nstatus = 'which sessions are stalled, which tool shows it?'\nhijacked = [q for q in docs if route(q).startswith('kind=tools')]\nmissed = [q for q in tools if not route(q).startswith('kind=tools')]\nfirst = route(status)\nprint('docs questions routed to kind=tools:', len(hijacked), 'of', len(docs), hijacked[:3], '| tool questions that missed:', missed,\n      '| status question:', first[:40], '| runs that exited non-zero:', len(crashed))\nsys.exit(0 if not hijacked and not missed and not crashed and first.startswith('kind=status') else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "abf3025685c4ddc4"
+      }
+    ]
+  }
 }
