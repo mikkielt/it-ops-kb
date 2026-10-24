@@ -4,6 +4,7 @@
   "title": "The kbmon mod awaits $.ui.notify inside its refresh, so a slow Notification hook freezes the pane, the receipt and the resize refresh",
   "status": "draft",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-rin4kkoj",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -15,13 +16,22 @@
       "import os, shutil, subprocess, sys, tempfile\nR = os.getcwd()\nmod = os.path.join(tempfile.mkdtemp(), 'mod')\nshutil.copytree(R + '/.claude/skills/kbmon-pane', mod)\nTEST = r\"\"\"import { expect, mock, test } from 'claude-code/testing'\n\ntest('a slow ui.notify does not stop the pane from refreshing', async ($, on) => {\n  const clock = mock.clock(on)\n  let needs = 'nothing'\n  let refreshes = 0\n  const run = (stdout: string) => ({ value: { exitCode: 0, stdout, stderr: '' } })\n  on('process.run', ($, e) => {\n    const argv = e.argv as string[]\n    if (argv.includes('--receipt')) {\n      return run(JSON.stringify({ line: 'kbmon: no alert on querylog; needs you: 0', fingerprint: 'f1' }))\n    }\n    if (argv.includes('--status')) {\n      return run(`needs you: ${needs}\\nsessions: none\\n`)\n    }\n    refreshes += 1\n\n    return run(`kbmon · 2026-10-24 10:00\\nneeds you: ${needs}\\n\\nkb: 1 root\\n`)\n  })\n  on('ui.notify', async () => {\n    // the user's Notification hooks can take a while\n    await clock.sleep(3600000)\n\n    return { value: { isSent: true, channel: 'terminal_bell' } }\n  })\n  on('ui.toast', () => ({ value: undefined }))\n  on('ui.open', () => ({ value: { isPlaced: true } }))\n  on('command.register', () => ({ value: undefined }))\n  on('session.start', () => ({ cwd: '/work' }))\n\n  await $.session.start({ surface: 'terminal', isInteractive: true, cwd: '/work' })\n  await clock.advance(2000)\n  await clock.settle()\n\n  needs = 'SP-aaaaaaaa gate start'\n  await clock.advance(60000)\n  await clock.settle()\n  const before = refreshes\n\n  await clock.advance(180000)\n  await clock.settle()\n  // three more minutes while the notification call is still out: the pane went on refreshing\n  expect(refreshes).toBeGreaterThan(before)\n})\n\"\"\"\nopen(os.path.join(mod, 'planted.test.ts'), 'w', encoding='utf-8').write(TEST)\ndef claude(*args):\n    for d in os.environ.get('PATH', '').split(os.pathsep):\n        p = os.path.join(d, 'claude')\n        if os.path.isfile(p) and os.access(p, os.X_OK):\n            r = subprocess.run([p, *args], capture_output=True, text=True, timeout=240)\n            if 'not run from this spelling' not in r.stdout + r.stderr:\n                return r\n    print('no claude binary that runs plugin test')\n    sys.exit(1)\nr = claude('plugin', 'test', mod)\nprint((r.stdout + r.stderr)[-1500:])\nbad = r.returncode != 0\n\nsys.exit(1 if bad else 0)\n"
     ]
   },
+  "clauses": [
+    {
+      "clause": "the kbmon mod does not hold its refresh (the inFlight flag) while a $.ui.notify call is out, so the pane, the receipt and a resize refresh go on",
+      "check": 0
+    }
+  ],
   "touches": [
     ".claude/skills/kbmon-pane/hooks/register.tsx",
     "kb/_self/monitoring.md"
   ],
+  "depends_on": [
+    "BG-jkdw723s"
+  ],
   "links": [
     "parked: SP-hja7yu5k review"
   ],
-  "notes": "Found by the review of SP-hja7yu5k (register.tsx:90). Live docs (code.claude.com/docs/en/plugins/mods/api, ui.notify): the user's Notification hooks run first and can take a while. The fix is a notify call outside the inFlight stretch (not awaited, its rejection caught). The repro stubs ui.notify to answer after an hour on the mock clock.",
+  "notes": "Found by the review of SP-hja7yu5k (register.tsx:90). Live docs (code.claude.com/docs/en/plugins/mods/api, ui.notify): the user's Notification hooks run first and can take a while. The fix is a notify call outside the inFlight stretch (not awaited, its rejection caught). The repro stubs ui.notify to answer after an hour on the mock clock. Planned in SP-rin4kkoj (2026-10-24 night run, manager approval). Premise run on main b950692a97: the repro fails (the refresh count stays at 2 while the notify call is out). Same function as BG-jkdw723s, so it runs after it (depends_on) and builds on its code; the first bug lands first and its checks must still pass after this one (the call is still made, only not awaited, its rejection caught). Check: the repro plants a ui.notify that answers after an hour on the mock clock and asserts the pane goes on refreshing.",
   "filed_in": "clone-0ea70e5c"
 }
