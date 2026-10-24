@@ -83,7 +83,13 @@ def test_upstream_push_refused(world):
     assert not kbpublic.is_upstream(sibling.path, c.path) and not kbpublic.is_upstream(stem + "2", c.path)
     c.git("remote", "set-url", "up", "https://example.com/org/repo.git")  # git connects before it runs the hook
     for target in ("git@example.com:org/repo.git", "https://example.com/org/repo", "ssh://git@example.com/org/repo.git",
-                   "http://EXAMPLE.com/org/repo.git/", "deploy@example.com:org/repo"):  # so the guard is asked directly
+                   "http://EXAMPLE.com/org/repo.git/", "deploy@example.com:org/repo", "git@example.com:/org/repo.git",
+                   "example.com:/org/repo"):  # so the guard is asked directly
         assert kbpublic.guard_upstream(target, target, [("refs/heads/main", "")], c.path), target
+    assert kbpublic.location("C:/work/repo", c.path)[0] == "path" and kbpublic.location("c:\\work\\repo", c.path)[0] == "path"
+    bad = "https://[::1/x"  # urllib cannot parse it: the text stands for it, so the hook still judges the push
+    assert kbpublic.location(bad, c.path) == ("text", bad) and not kbpublic.is_upstream(bad, c.path)
+    c.git("remote", "set-url", "up", bad)
+    assert kbpublic.guard_upstream(bad, bad, [("refs/heads/main", "")], c.path)
     assert not kbpublic.is_upstream("https://example.com/org/repo2.git", c.path)
     assert not kbpublic.is_upstream("git@example.com:org2/repo.git", c.path)

@@ -139,25 +139,30 @@ def upstream_remote(cwd):
     return out(["config", "--get", UPSTREAM_KEY], cwd) or None
 
 
-SCP_RX = re.compile(r"^(?:[^@/\\]*@)?(\[[^\]]*\]|[^:/\\]+):(?![/\\])(.*)$")  # git's scp-like [user@]host:path
+SCP_RX = re.compile(r"^(?:[^@/\\]*@)?(\[[^\]]*\]|[^:/\\]+):(.*)$")  # git's scp-like [user@]host:path
 
 
 def location(url, cwd):
     """URL as the repository it names, comparable by same_repository: ("path", [candidates]) for a local path (a path
     relative to CWD, an absolute one or a file:// url), the three places git tries for it (path, path.git, path/.git),
     each as a real path; ("url", host, repository path) for a remote url of any scheme (https, http, ssh, git) or an
-    scp-like [user@]host:path, with the user, port, host case, a trailing slash and a .git suffix left out."""
-    if url.startswith("file://"):
-        parsed = urllib.parse.urlparse(url)
-        if parsed.netloc in ("", "localhost"):
-            url = urllib.request.url2pathname(parsed.path)
-    elif re.match(r"^[A-Za-z][A-Za-z0-9+.-]*://", url):
-        parsed = urllib.parse.urlparse(url)
-        return ("url", (parsed.hostname or "").lower(), _repo_path(urllib.parse.unquote(parsed.path)))
-    else:
-        scp = SCP_RX.match(url)
-        if scp:
-            return ("url", scp.group(1).strip("[]").lower(), _repo_path(scp.group(2)))
+    scp-like [user@]host:path (its path may start with a slash; a one-letter host before a slash is a Windows drive),
+    with the user, port, host case, a trailing slash and a .git suffix left out; ("text", url) for a url urllib cannot
+    parse, which matches only the same text."""
+    try:
+        if url.startswith("file://"):
+            parsed = urllib.parse.urlparse(url)
+            if parsed.netloc in ("", "localhost"):
+                url = urllib.request.url2pathname(parsed.path)
+        elif re.match(r"^[A-Za-z][A-Za-z0-9+.-]*://", url):
+            parsed = urllib.parse.urlparse(url)
+            return ("url", (parsed.hostname or "").lower(), _repo_path(urllib.parse.unquote(parsed.path)))
+        else:
+            scp = SCP_RX.match(url)
+            if scp and not (len(scp.group(1)) == 1 and scp.group(2)[:1] in ("/", "\\")):
+                return ("url", scp.group(1).strip("[]").lower(), _repo_path(scp.group(2)))
+    except ValueError:
+        return ("text", url)
     base = os.path.join(cwd, url).rstrip("/\\") or os.sep
     return ("path", [os.path.realpath(base + suffix) for suffix in ("", ".git", "/.git")])
 
@@ -169,11 +174,13 @@ def _repo_path(path):
 
 
 def same_repository(a, b):
-    """Whether the locations A and B (location) reach one repository: equal host and repository path, or a local
-    candidate of one that is the other's (os.path.samefile, so a case-insensitive filesystem's spelling or a link does
-    not tell them apart; a path that does not exist compares by its real path)."""
+    """Whether the locations A and B (location) reach one repository: equal host and repository path, equal text for
+    an unparseable url, or a local candidate of one that is the other's (os.path.samefile, so a case-insensitive
+    filesystem's spelling or a link does not tell them apart; a path that does not exist compares by its real path)."""
     if a[0] != b[0]:
         return False
+    if a[0] == "text":
+        return a == b
     if a[0] == "url":
         return a[1:] == b[1:] and bool(a[1] and a[2])
     if set(a[1]) & set(b[1]):

@@ -20,6 +20,23 @@
     "_tools/test_prepush_e2e.py",
     "kb/_self/git.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does location represent a url urllib cannot parse, and how is a scp-like host:/path told from a Windows drive?",
+      "options": [
+        "('text', url) variant matching only the same text; a one-letter host before a slash is a drive",
+        "fall back to a local ('path') location of the url text"
+      ],
+      "recommendation": "('text', url) variant matching only the same text; a one-letter host before a slash is a drive",
+      "do": {
+        "('text', url) variant matching only the same text; a one-letter host before a slash is a drive": "BG-l7bkxjx6",
+        "fall back to a local ('path') location of the url text": "BG-l7bkxjx6"
+      },
+      "class": "push"
+    }
+  ],
   "notes": "Found 2026-10-24 by the third SP-3trnelzv review (on 35938e315): SCP_RX's (?![/\\\\]) lookahead after the colon rejects git@host:/path, so location reads it as a local path; a public-home push spelled that way with a kb/_querylog commit exited 0 through the pre-push hook. The fix excludes only a one-letter drive. S1 by the backlog table (a gate lets a bad push through), so it joins the sprint.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-92aeeb3c",
