@@ -2,7 +2,7 @@
   "id": "BG-cxgdnyq6",
   "kind": "bug",
   "title": "backlog.py done --dry-run records a done.refused ops row, which ops and the retrospective read as a real refusal",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,
@@ -26,6 +26,19 @@
     "parked: SP-qh2j24z2 close"
   ],
   "notes": "SP-qh2j24z2 retrospective: the orchestrator ran BG-ko4sdvxy's repro with done --dry-run (backlog.py has no repro command, and the error names done --dry-run as the way), and ops SP then listed a done.refused row reasons=no-work-commit for it. Planner 2026-10-24: kb/_self/map.csv maps _tools/bl_land.py to kb/_self/backlog.md and kb/_self/tools.md (and code.md), outside the touches. The landed sibling BG-r7c7dxia named backlog.md, code.md and tools.md in a Self-Reviewed trailer. backlog.md says a done --dry-run records no item commit; if a doc line about done.refused rows and dry runs is wrong after your change, stop and report so the doc is added to the touches. Planner 2026-10-24: landing stopped at the stale step; the worker found kb/_self/tools.md line 76 (the done row: each refusal appends a done.refused ops row) wrong after the change, so the doc is added to the touches and the worker rewords that sentence (a done --dry-run appends none).",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "8fff14f9328a314f2798986ae3285f8e820d7ede",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,subprocess,sys,tempfile;H=tempfile.mkdtemp();E=dict(os.environ,CLAUDE_PLUGIN_DATA=H,CLAUDE_PLUGIN_ROOT=os.getcwd());subprocess.run([sys.executable,'_tools/backlog.py','done','ST-3zvgcv3n','--dry-run'],capture_output=True,env=E);hits=[os.path.join(r,f) for r,_,fs in os.walk(H) for f in fs if 'done.refused' in open(os.path.join(r,f),errors='replace').read()];print('done.refused rows written by a dry run:',hits);sys.exit(1 if hits else 0)"
+        ],
+        "exit": 0,
+        "sha256": "c4b1df499084b073"
+      }
+    ]
+  }
 }
