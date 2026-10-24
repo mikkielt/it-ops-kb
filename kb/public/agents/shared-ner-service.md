@@ -3,7 +3,7 @@ topic: agents/shared-ner-service
 priority: P1
 applies_to: "Presidio 2.2.364 (main, data-privacy-stack), Azure AI Language PII detection (Foundry Tools, 2026-08 docs), Amazon Comprehend, Google Sensitive Data Protection, GLiNER ONNX exports"
 retrieved_utc: 2026-09-27
-sources: [S2086, S2087, S2088, S2090, S2091, S2092, S2093, S2094, S2095, S2096, S2097, S2098, S2099, S2100, S2101, S2102, S2105, S2106, S2107, S2108, S2111, S2112, S-tks3v5p5, S-g33kybfp, S-gpnrqpjt, S-hocpkynn, S-azdam24d, S-blcom642, S-clgh6hxa, S-ulqlpnc5, S-alyohfil, S-hfymbj4j, S-5gpkixnx, S830, S-g6nzyems]
+sources: [S2086, S2087, S2088, S2090, S2091, S2092, S2093, S2094, S2095, S2096, S2097, S2098, S2099, S2100, S2101, S2102, S2105, S2106, S2107, S2108, S838, S2112, S-tks3v5p5, S-g33kybfp, S-gpnrqpjt, S-hocpkynn, S-azdam24d, S-blcom642, S-clgh6hxa, S-ulqlpnc5, S-alyohfil, S-hfymbj4j, S-5gpkixnx, S830, S-g6nzyems]
 status: complete
 ---
 
@@ -141,11 +141,13 @@ choice (Presidio + spaCy `en_core_web_lg`, in-process) is not itself re-argued h
   inference runtime (ONNX Runtime, Rust engine, etc.), unlike Presidio or Azure's pre-built containers.
   [DER from S2102, S-hocpkynn: only model artifacts found, no first-party server image]
 - **Model/version pinning across consumers.** Presidio's own evaluation tooling
-  (`presidio-evaluator`/`presidio-research`, MIT) computes precision/recall/F-β for a recognizer or NER
-  model and is the documented method for comparing detection quality between versions or between
-  deployments, but the fetched docs describe single-run evaluation, not a continuous drift-monitoring
-  pipeline between multiple independent consumers of one shared endpoint; the evaluation page recommends
-  F-beta with β=2 because recall usually matters more than precision in PII detection. [DOC S-gpnrqpjt, S2105, S2111]
+  (`presidio-evaluator`/`presidio-research`, MIT) evaluates Presidio as a system, an NER model or a specific
+  recognizer for precision, recall and error analysis, and the evaluation page presents the metrics as a way to
+  decide which recognizers and models to use and how to configure them; the page recommends F-beta with β=2
+  because recall usually matters more than precision in PII detection. [DOC S-gpnrqpjt, S2105, S838]
+- Whether that tooling is the documented method for comparing detection quality between versions or between
+  deployments is not stated: the fetched docs describe single-run evaluation, not a continuous drift-monitoring
+  pipeline between multiple independent consumers of one shared endpoint. [UNK: noted 2026-10-24; the live pages read (S-gpnrqpjt, S2105) state neither, and the PyPI page of `presidio-evaluator` (S2111) is recorded gone by the 2026-10-21 census]
 
 ## Reference
 | Option | On-prem/offline container | Fail mode on connectivity loss | Per-call payload limit | Licence |

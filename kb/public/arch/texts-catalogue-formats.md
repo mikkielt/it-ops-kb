@@ -3,7 +3,7 @@ topic: arch/texts-catalogue-formats
 priority: P1
 applies_to: [fluent, gettext, powershell, power-bi]
 retrieved_utc: 2026-09-28
-sources: [S1709, S1710, S1711, S1712, S1713, S1714, S1715, S1716, S1717, S-7sn3nxho, S-zqoo6bqj, S-u6o4ef53, S-r4s5o7eh]
+sources: [S-c7rozbcf, S-55hcwqiq, S-kbuu6q7c, S1710, S1711, S1712, S1713, S1714, S1715, S1716, S1717, S-7sn3nxho, S-zqoo6bqj, S-u6o4ef53, S-r4s5o7eh]
 status: complete
 ---
 
@@ -19,8 +19,7 @@ label catalogues at report-render time. gettext (.po/.mo) has first-class Python
 is the closest thing to a format with tooling on more than one of the four consumers.
 
 ## Facts
-- `fluent.runtime` (PyPI) is the official Python implementation of Fluent, currently at 0.4.0,
-  installed via `pip install fluent.runtime`, and supporting Fluent spec 1.0. [DOC S1709]
+- `fluent.runtime` is Project Fluent's Python implementation (the homepage lists Python among the client- and server-side implementations); its stable documentation is for version 0.4.0, it installs with `pip install fluent.runtime`, and its 0.2 release added support for Fluent spec 1.0. [DOC S-c7rozbcf, S-55hcwqiq, S-kbuu6q7c]
 - The usage page names `FluentLocalization` as the main entrypoint of an application, built from locales, resource ids and a `FluentResourceLoader`; the class name has no form without the Fluent prefix (see [fluent-rust-typescript.md](fluent-rust-typescript.md)). [DOC S1710]
 - Fluent (FTL) syntax supports terms (`-term-name`), attributes (`.tooltip`), message references, and
   selector expressions for plurals/gender — features a real, multi-consumer label catalogue would want.

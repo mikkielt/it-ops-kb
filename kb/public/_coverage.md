@@ -74,7 +74,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `arch/kerberos-linux-containers` | P1 | complete | `arch/kerberos-linux-containers.md` | 7 |
 | `arch/python-single-package-extras` | P1 | complete | `arch/python-single-package-extras.md` | 6 |
 | `arch/sql-auth-containers` | P1 | complete | `arch/sql-auth-containers.md` | 9 |
-| `arch/texts-catalogue-formats` | P1 | complete | `arch/texts-catalogue-formats.md` | 13 |
+| `arch/texts-catalogue-formats` | P1 | complete | `arch/texts-catalogue-formats.md` | 15 |
 | `arch/twelve-factor-readiness` | P1 | complete | `arch/twelve-factor-readiness.md` | 12 |
 | `arch/workload-identity-onprem-k8s` | P1 | complete | `arch/workload-identity-onprem-k8s.md` | 6 |
 | `arch/buildkit-build-secrets` | P3 | complete | `arch/buildkit-build-secrets.md` | 3 |

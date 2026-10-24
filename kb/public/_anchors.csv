@@ -3346,6 +3346,9 @@ ffa5d042f10d,agents/security-copilot-endpoint.md,S-meh6fmlt,located,Model Contex
 15587638aab1,agents/shared-ner-service.md,S-ulqlpnc5,unlocated:no-match,,,,,2026-10-21
 194078761843,agents/shared-ner-service.md,S2094,located,Use Docker containers in disconnected environments - Foundry Tools | Microsoft Learn > Purchase a commitment plan to use containers in disconnected environments,calendar;chang;during;full;pro;unit;period;charg,74fb5382ce680f04,"Commitment plans for disconnected containers have a calendar year commitment period. When you purchase a plan, you are charged the full price immediately. During the",2026-10-21
 1db989262a65,agents/shared-ner-service.md,S2091,located,Use personally identifiable information (PII) detection Docker containers on-premises - Foundry Tools | Microsoft Learn > Billing,analyz;such;customer;being;send;text;data;don,9bb6cab431c92873,"Foundry Tools containers don't send customer data, such as the image or text that's being analyzed, to Microsoft.",2026-10-21
+1e0766495df1,agents/shared-ner-service.md,S838,located,,detection;evaluat;evaluation;model;specific;system;pii;recognizer,b2f72144e827e2c8,"It is used for the evaluation of the entire system, as well as for evaluating specific PII recognizers or PII detection models."",",2026-10-24
+1e0766495df1,agents/shared-ner-service.md,S2105,located,Presidio-research > 3. PII models evaluation,error;precision;recall;system;presidio-evaluator;specific;ner;recognizer,8132cd48154129d1,"The presidio-evaluator framework allows you to evaluate Presidio as a system, a NER model, or a specific PII recognizer for precision, recall, and error analysis.",2026-10-24
+1e0766495df1,agents/shared-ner-service.md,S-gpnrqpjt,located,Evaluating PII detection with Presidio > Common evaluation metrics,recommend;recall,062a95e74ec83a63,we recommend to use the β=2 score,2026-10-24
 1e11b4cb683f,agents/shared-ner-service.md,S2106,located,"Data, privacy, and security for Azure Language in Foundry Tools - Foundry Tools | Microsoft Learn > How is data retained and what customer controls are available?",asynchronous;catastrophic;debug;engineer;failur;hour;may;prevent,00d6d75942e27b03,Data sent in synchronous or asynchronous calls may be temporarily stored by Language for up to 48 hours only and is purged thereafter. This data,2026-10-10
 1ebfd18b4117,agents/shared-ner-service.md,S2100,located,,built;built-in;protection;detector;sensitiv;data;info;infotyp,99bef31051119df7,"The Sensitive Data Protection team releases new infoType detectors and groups periodically. To get the latest list of built-in infoTypes, call the",2026-10-10
 1ebfd18b4117,agents/shared-ner-service.md,S2108,located,Sensitive Data Protection documentation,built;built-in;over;detector;infotyp;info;type;protection,ba837d43d5d56e0f,"Sensitive Data Protection includes: Over 200 built-in information type (or ""infoType"") detectors.",2026-10-10
@@ -3383,9 +3386,6 @@ bbb8576becce,agents/shared-ner-service.md,S-g6nzyems,unlocated:no-match,,,,,2026
 bdf90517471a,agents/shared-ner-service.md,S-blcom642,located,LICENSE > File metadata and controls,contributor;mit;presidio;copyright,7375fea32549f72b,The MIT License (MIT) Copyright (c) Presidio Contributors.,2026-10-10
 c5432a565719,agents/shared-ner-service.md,S2097,unlocated:no-match,,,,,2026-10-10
 c5432a565719,agents/shared-ner-service.md,S2107,located,"Amazon Comprehend detects and redacts 14 new PII entity types across the U.S., U.K., Canada, and India",category;credit;e.g;financial;localiz;name;passport;password,88aa51f3a2c6d1f8,"Previously, Amazon Comprehend supported 22 PII entities across multiple categories, including Financial (e.g., credit card number, bank account number), Personal (e.g., name, email, age), Technical",2026-10-10
-c813b0702738,agents/shared-ner-service.md,S2105,unlocated:no-match,,,,,2026-10-10
-c813b0702738,agents/shared-ner-service.md,S2111,unlocated:no-match,,,,,2026-10-10
-c813b0702738,agents/shared-ner-service.md,S-gpnrqpjt,unlocated:no-match,,,,,2026-10-10
 cc0cd3101560,agents/shared-ner-service.md,S2088,located,Deploy presidio services to an Azure App Service,demo;team;uses;environment;azur;presidio;app;servic,b966e74894232e7a,The presidio team uses Azure App Service for both its development environment and the presidio demo website.,2026-10-22
 cc0cd3101560,agents/shared-ner-service.md,S-g33kybfp,unlocated:no-match,,,,,2026-10-22
 d4f0fe9abacc,agents/shared-ner-service.md,S-g33kybfp,unlocated:no-match,,,,,2026-10-10
@@ -4729,7 +4729,6 @@ fb6ba572f107,arch/sql-auth-containers.md,S-z74feu7u,unlocated:no-match,,,,,2026-
 c052521050fc,arch/sse-last-event-id-cursors.md,S-6r5cdtdk,unlocated:no-match,,,,,2026-10-21
 d3e834d4f75d,arch/sse-last-event-id-cursors.md,S-6r5cdtdk,unlocated:no-match,,,,,2026-10-21
 dc343154affd,arch/sse-last-event-id-cursors.md,S-6r5cdtdk,unlocated:no-match,,,,,2026-10-21
-16903281c4b3,arch/texts-catalogue-formats.md,S1709,located,,install;pip;fluent.runtim;0.4.0;runtim;fluent,f78aa50bea55fdc0,fluent.runtime 0.4.0 Localization library for expressive translations. pip install fluent.runtime,2026-10-14
 21f2ef299372,arch/texts-catalogue-formats.md,S1717,unlocated:no-match,,,,,2026-10-10
 22e03167ccff,arch/texts-catalogue-formats.md,S-zqoo6bqj,located,Tabular Model Definition Language (TMDL) | Microsoft Learn > TMDL folder structure,schema;linguistic;cultur;each;one;file,dda3797ab83a7c91,One file for each culture linguistic schema.,2026-10-21
 2f05c60428d4,arch/texts-catalogue-formats.md,S1712,located,,power;shell;powershell,c4978804d8d7e1b9,aboutScriptInternationalization - PowerShell | Microsoft Learn,2026-10-21
@@ -4752,6 +4751,9 @@ be4df8b6bf28,arch/texts-catalogue-formats.md,S1712,unlocated:no-match,,,,,2026-1
 be4df8b6bf28,arch/texts-catalogue-formats.md,S1714,unlocated:no-match,,,,,2026-10-21
 d5e93e91af11,arch/texts-catalogue-formats.md,S-r4s5o7eh,unlocated:no-match,,,,,2026-10-21
 d5e93e91af11,arch/texts-catalogue-formats.md,S-u6o4ef53,unlocated:no-match,,,,,2026-10-21
+e4f7bb148685,arch/texts-catalogue-formats.md,S-55hcwqiq,located,Installation¶,install;pip;fluent.runtim;runtim;fluent,66bba2e8ca0a0127,fluent.runtime can be installed with pip: $ pip install fluent.runtime,2026-10-24
+e4f7bb148685,arch/texts-catalogue-formats.md,S-c7rozbcf,located,Open Source,1.0;client;fluent;implementation;python;server;server-sid;side,a62da25da9c98067,"Fluent Syntax 1.0 was released in April 2019. Client- and server-side implementations in JS, Python, and Rust.",2026-10-24
+e4f7bb148685,arch/texts-catalogue-formats.md,S-kbuu6q7c,located,"Changelog¶ > fluent.runtime 0.2 (September 10, 2019)¶",1.0;spec;support;fluent,7a0b7099ab81fd63,Support for Fluent spec 1.0 (fluent.syntax 0.17),2026-10-24
 ef3466008502,arch/texts-catalogue-formats.md,S-r4s5o7eh,unlocated:no-match,,,,,2026-10-21
 0117bcad6754,arch/twelve-factor-readiness.md,S1728,unlocated:no-match,,,,,2026-10-10
 17c6056760b4,arch/twelve-factor-readiness.md,S1724,located,The Twelve-Factor App > XII. Admin processes > Run admin/management tasks as one-off processes,codebas;config;identical;long-run;against;environment;script;e.g,e77acebd20f5db3e,Running one-time scripts committed into the app's repo (e.g. php scripts/fixbadrecords.php). One-off admin processes should be run in an identical environment as the regular long-running,2026-10-10
@@ -13868,7 +13870,6 @@ f1995846b7b3,privacy/morfeusz-polish-lemmatisation.md,S-ohpwxaqx,unlocated:no-ma
 f607d305e635,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-22
 f6ce7405723c,privacy/morfeusz-polish-lemmatisation.md,S-ohpwxaqx,unlocated:no-match,,,,,2026-10-22
 fc6e819ea1f0,privacy/morfeusz-polish-lemmatisation.md,S-caclcxya,located,,macosx;macosx_11_0_universal2;universal;1.99.15;abi3;cp310;packag;morfeusz2,4fe3355ef900c673,"""url"": ""https://files.pythonhosted.org/packages/a3/cf/87a496f0632b2c7d97bfbbf5f38000510d16c9b2e7c5d6ea8ffe11eebe07/morfeusz2-1.99.15-20260601-cp310-abi3-macosx110universal2.whl"",",2026-10-22
-0515845f4b26,privacy/nist-sp800-38g.md,S869,unlocated:gone,,,,,2026-10-10
 11d11c51f622,privacy/nist-sp800-38g.md,S866,unlocated:no-match,,,,,2026-10-10
 11d11c51f622,privacy/nist-sp800-38g.md,S867,unlocated:no-match,,,,,2026-10-10
 11d11c51f622,privacy/nist-sp800-38g.md,S868,unlocated:no-match,,,,,2026-10-10

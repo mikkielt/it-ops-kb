@@ -637,7 +637,7 @@ _Agent: security_
 - MCP stdio forbids non-protocol output on stdout, so logs go to stderr. [DOC S705]
 
 ## QR5. Which localization-catalogue format fits a Python + PowerShell + BI stack?
-- Fluent has a Python runtime (`fluent.runtime` 0.4.0) but no PowerShell or Power BI runtime was found; PowerShell's native mechanism is `.psd1` with `Import-LocalizedData`; Power BI translations cover model metadata per culture. [DOC S1709, S1712, S1713, S1714; UNK for the absence]
+- Fluent has a Python runtime (`fluent.runtime` 0.4.0) but no PowerShell or Power BI runtime was found; PowerShell's native mechanism is `.psd1` with `Import-LocalizedData`; Power BI translations cover model metadata per culture. [DOC S-c7rozbcf, S-55hcwqiq, S1712, S1713, S1714; UNK for the absence]
 - With one locale and code-only script output, a plain YAML catalogue can serve Python and docs, and a SQL `label` table can serve a BI tool. [DER]
 
 ## QG1. Which runtimes run an agent unattended on a schedule, and with what permissions, limits and costs?
@@ -1568,8 +1568,8 @@ _Agent: agents-ner_
   and marks entity types such as Password, ZipCode and Airport as preview, which an older-pinned caller would not receive —
   the concrete mechanism behind "recognizer drift between copies" in QG32. [DOC S2096]
 - Presidio's own `presidio-evaluator`/`presidio-research` (MIT) computes precision/recall for a
-  recognizer or model version and is the documented tool for measuring such drift, though only as a
-  point-in-time comparison, not a continuous cross-consumer monitor. [DOC S-gpnrqpjt, S2105, S2111]
+  recognizer or NER model. [DOC S-gpnrqpjt, S2105, S838]
+- Whether it is the documented tool for measuring recognizer drift between copies is not stated; the live pages read describe point-in-time evaluation, not a continuous cross-consumer monitor. [UNK: noted 2026-10-24; S2111, the PyPI page, is recorded gone by the 2026-10-21 census]
 
 _Agent: agents-ner_
 
@@ -1646,7 +1646,7 @@ _Agent: agents-ner_
   recommendation): number of consumer teams/agents that would call the shared endpoint (not measured by
   any source found — a project-internal count, not a vendor fact); recognizer/version drift between
   independent Presidio (or other) deployments, measurable today with `presidio-evaluator`'s published
-  precision/recall method [DOC S-gpnrqpjt, S2105, S2111]; detection-quality gaps against a fixed test set,
+  precision/recall method [DOC S-gpnrqpjt, S2105]; detection-quality gaps against a fixed test set,
   the same tool's stated purpose ("evaluate Presidio as a system, a NER model, or a specific PII
   recognizer for precision, recall, and error analysis") [DOC S-gpnrqpjt]; and duplicated maintenance hours
   across teams each running their own Presidio/spaCy stack, which is an organizational measurement no
