@@ -13,7 +13,7 @@ nothing at load, `mon_sessions` (its age text) and `mon_status` (`short_name`) w
                   `announce.needs_you_after_min` minutes old, `overlap ST-… (s-…) with ST-… (s-…), undecided for 12m`),
                   `blocked` (an active sprint with items left, none ready and
                   none in progress), `delivery` (the query log's last delivery was refused, with the gate that failed),
-                  `orphan` (each process of class `orphan`, oldest first), `disk` (under LOW_DISK_PCT percent free) and
+                  `orphan` (each process of class `orphan`, oldest first), `disk` (under LOW_DISK_PCT percent free, from the byte counts as the host alert reads them; none for a total of 0 bytes) and
                   `fast-forward` (the checkout is behind `origin/main` and cannot fast-forward, with the panel's why)
   unread(snap)    the panels the list reads (sprint, querylog, sessions, host) that the snapshot lacks or holds not `ok`, and
                   the coord panel when the snapshot holds it in state `timeout` or `error` (a snapshot without it, or with
@@ -139,9 +139,16 @@ def orphan_entries(data):
 
 def disk_entries(data):
     disk = data.get("disk") if isinstance(data.get("disk"), dict) else {}
-    pct = disk.get("free_pct")
+    free, total = disk.get("free_bytes"), disk.get("total_bytes")
+    if all(isinstance(n, (int, float)) and not isinstance(n, bool) for n in (free, total)):
+        if total <= 0:
+            return []
+        pct = free * 100 / total
+    else:
+        pct = disk.get("free_pct")
     if not isinstance(pct, (int, float)) or isinstance(pct, bool) or pct >= LOW_DISK_PCT:
         return []
+    pct = round(pct, 2)
     return [{"kind": "disk", "text": f"disk {pct:g}% free", "free_pct": pct}]
 
 
