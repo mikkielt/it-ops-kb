@@ -1,17 +1,18 @@
 {
   "id": "BG-tuqtpuve",
   "kind": "bug",
-  "title": "The integration-remote and public-home push guards match url strings only, as the upstream guard did",
-  "status": "draft",
-  "priority": "P2",
+  "title": "The upstream, integration-remote and public-home push guards miss the same repository written another way",
+  "status": "todo",
+  "sprint": "SP-3trnelzv",
+  "priority": "P1",
   "rank": 0,
-  "severity": "S3",
-  "goal": "kg_hooks.to_integration and kbpublic.is_public recognise their remote however a push names it (a relative or absolute path, a trailing slash, file://, a ../ detour), by the resolved-location comparison BG-lxjtp2xz gave kbpublic.is_upstream, so the lane refusal and the public-home guard cannot be passed by spelling the url differently",
+  "severity": "S2",
+  "goal": "kbpublic.is_upstream, kbpublic.is_public and kg_hooks.to_integration judge a push by the repository it reaches, not the url as written: a local path compared by os.path.samefile over the candidates git tries (path, path.git, path/.git) so a guessed suffix or a case-insensitive filesystem's spelling is caught, and a remote url compared by host and repository path whatever its scheme (https, http, ssh, scp-like user@host:path), user part, host case, trailing slash or .git suffix; a different repository that only shares a prefix is not refused",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import inspect,sys;sys.path.insert(0,'_tools');import kg_hooks;s=inspect.getsource(kg_hooks.to_integration);sys.exit(1 if 'urls & {url, remote}' in s else 0)"
+      "import os,subprocess,sys,tempfile;sys.path.insert(0,'_tools');import kbpublic;t=tempfile.mkdtemp();up=os.path.join(t,'up.git');c=os.path.join(t,'clone');g=lambda *a,cwd=None:subprocess.run(['git',*a],cwd=cwd,capture_output=True,text=True);g('init','-q','--bare',up);g('init','-q',c);g('remote','add','upstream',os.path.realpath(up),cwd=c);g('config','kb.upstreamRemote','upstream',cwd=c);r=os.path.realpath(up);forms=[r[:-4]];g('remote','set-url','upstream','https://example.com/org/repo.git',cwd=c);forms2=['git@example.com:org/repo.git','https://example.com/org/repo','ssh://git@example.com/org/repo.git'];m=[f for f in forms2 if not kbpublic.is_upstream(f,c,url=f)];g('remote','set-url','upstream',r,cwd=c);m+=[f for f in forms if not kbpublic.is_upstream(f,c,url=f)];print('same-repository forms not refused:',m);sys.exit(1 if m else 0)"
     ]
   },
   "repro_reason": "a planted push needs a throwaway clone whose integration remote is a local path; the repro marks the string-equality comparison the fix replaces, and the fix's check must plant the url forms BG-lxjtp2xz's repro plants",
@@ -24,6 +25,6 @@
   "links": [
     "parked: SP-3trnelzv work"
   ],
-  "notes": "Found 2026-10-24 by BG-lxjtp2xz's worker (kb/_self/git.md:55 names the string match).",
+  "notes": "Found 2026-10-24 by BG-lxjtp2xz's worker (kb/_self/git.md:55 names the string match). 2026-10-24: moved into SP-3trnelzv and widened after the sprint's second review (on eeb12dd27) found is_upstream still misses a git-guessed local path (/x/up for /x/up.git, /x/up/.git), a case-insensitive spelling, and every other spelling of a remote url; is_public and to_integration have the same string match. Operator pre-approved the night's fixes.",
   "filed_in": "clone-0ea70e5c"
 }
