@@ -214,6 +214,12 @@ def sessions(r):
     rows = [s for s in data.get("sessions") or [] if isinstance(s, dict)]
     lines += [("  " + mon_sessions.session_line(s, r.now)) for s in rows[:ROWS]] \
         + [("  " + x) for x in more(len(rows) - ROWS, "sessions")]
+    overlaps = [o for o in data.get("overlaps") or [] if isinstance(o, dict)]
+    facts["overlaps"] = len(overlaps)
+    if overlaps:
+        lines.append(f"  {len(overlaps)} overlap{'' if len(overlaps) == 1 else 's'} between live sessions:")
+        lines += [("  " + mon_sessions.overlap_text(o)) for o in overlaps[:ROWS]] \
+            + [("  " + x) for x in more(len(overlaps) - ROWS, "overlaps")]
     if stalled:
         lines.append(f"  {len(stalled)} stalled item{'' if len(stalled) == 1 else 's'}:")
         lines += [f"  {r.item(s.get('item'), True)}: {', '.join(str(x) for x in s.get('signals') or []) or 'no signal named'}"
