@@ -10,10 +10,12 @@ newer than a cursor. Standard library only; imports `mon_log` (its readers of th
                          rows of that millisecond, the time of the delivery and the newest coord sequence read; text, whose
                          form a caller does not read
   render(ctx, since)     that object as JSON text with every string redacted, what `kbmon.py --events` prints
+  worker_ids(events, item)  (trace, span id) of the `kb.worker` span of the item's run that is working now, from the coord
+                         progress events; what `backlog.py dispatch` hands the worker as its TRACEPARENT
 
 An event is `{name, time, attributes}` (`severity` `warn` on a `done.refused` row and a refused delivery); a span is `{name, id,
 trace, parent, start, end, status, attributes}` (`status` `error` on a row with an `exit` and on a refused delivery), times in
-Unix nanoseconds, `parent` left out of a root, `trace` the id of the root. Ids are 16 hex characters taken from the ops row's own id, so a record has the same id on every call. A landing is a
+Unix nanoseconds, `parent` left out of a root, `trace` the id of the root (32 hex characters for a run of an item, so a worker's TRACEPARENT carries it). Ids are 16 hex characters taken from the ops row's own id, so a record has the same id on every call. A landing is a
 span only once its `land.end` row is in the log, and then with the steps of its item the rows hold; a step with no `land.end`
 is never exported. An attribute is kept only when it is a number, a flag or an identifier `redact.redact` leaves as it is (a
 list of them as `name_n` and `name_1`..), never a `holder`; the other attributes of a record are left out, the record stays.
@@ -139,11 +141,16 @@ def run_span(name, first, last, end, trace, parent, extra):
     return out, end
 
 
-def run_records(ctx, events, after):
-    """The spans of the runs the progress EVENTS (every coord event, oldest first) hold, those finished above sequence AFTER.
+def trace_id(first):
+    """32 hex characters, the trace of the run whose first progress move is FIRST (W3C Trace Context's width, so a worker's
+    TRACEPARENT can carry it)."""
+    return hashlib.sha256(f"kb.item-{first['seq']}".encode("utf-8")).hexdigest()[:32]
+
+
+def item_runs(events):
+    """[(item id, moves)] of the progress EVENTS (every coord event, oldest first), a move being `{seq, ns, state, fields}`.
     A run of an item is cut where it ends (`landed`, `refused`, `released`; one that follows `refused` starts at its next
-    move) into a `kb.item` span from its first move to its last, a `kb.worker` child for each `working` to `returned`,
-    `failed` or `blocked` stretch and a `kb.landing` child for each `landing` to `landed` or `refused`."""
+    move)."""
     moves = {}
     for e in events:
         fields = e.get("fields") if isinstance(e.get("fields"), dict) else {}
@@ -151,7 +158,7 @@ def run_records(ctx, events, after):
         if e.get("kind") == "progress" and at is not None and isinstance(fields.get("item"), str) \
                 and isinstance(fields.get("state"), str):
             moves.setdefault(fields["item"], []).append({"seq": e["seq"], "ns": at, "state": fields["state"], "fields": fields})
-    runs, done = [], []
+    runs = []
     for item, rows in moves.items():
         run = []
         for m in rows:
@@ -161,27 +168,43 @@ def run_records(ctx, events, after):
                 run = []
         if run:
             runs.append((item, run))
+    return runs
+
+
+def worker_ids(events, item):
+    """(trace, span) ids, as `--events` gives them, of the `kb.worker` span of ITEM's run that is working now: its newest
+    `working` move when it is the run's last move; None when the item has no run or its run is not working."""
+    runs = [run for name, run in item_runs(events) if name == item]
+    if not runs or runs[-1][-1]["state"] != "working":
+        return None
+    return trace_id(runs[-1][0]), span_id(f"kb.worker-{runs[-1][-1]['seq']}")
+
+
+def run_records(ctx, events, after):
+    """The spans of the runs the progress EVENTS (every coord event, oldest first) hold, those finished above sequence AFTER.
+    A run of an item (`item_runs`) becomes a `kb.item` span from its first move to its last, a `kb.worker` child for each
+    `working` to `returned`, `failed` or `blocked` stretch and a `kb.landing` child for each `landing` to `landed` or
+    `refused`."""
+    runs, done = item_runs(events), []
     sprints = sprint_of(ctx, {item for item, run in runs if any(m["seq"] > after for m in run)})
     for item, run in runs:
         first = run[0]
-        trace = span_id(f"kb.item-{first['seq']}")
+        trace, root = trace_id(first), span_id(f"kb.item-{first['seq']}")
         extra = {"item": item, "sprint": sprints.get(item)}
         mark = None
         for m in run:
             if m["state"] == "working":
                 mark = m
             elif mark and m["state"] in ("returned", "failed", "blocked"):
-                done.append(run_span("kb.worker", mark, m, m["seq"], trace, trace, extra))
+                done.append(run_span("kb.worker", mark, m, m["seq"], trace, root, extra))
                 mark = None
             elif m["state"] == "landing":
                 mark = m
             elif mark and m["state"] in ("landed", "refused") and mark["state"] == "landing":
-                done.append(run_span("kb.landing", mark, m, m["seq"], trace, trace, extra))
+                done.append(run_span("kb.landing", mark, m, m["seq"], trace, root, extra))
                 mark = None
         if run[-1]["state"] in ("landed", "refused", "released"):
-            root, seq = run_span("kb.item", first, run[-1], run[-1]["seq"], trace, None, extra)
-            root["id"] = trace
-            done.append((root, seq))
+            done.append(run_span("kb.item", first, run[-1], run[-1]["seq"], trace, None, extra))
     return [s for s, seq in done if seq > after]
 
 
@@ -290,4 +313,8 @@ def collect(ctx, since=None):
 
 
 def render(ctx, since=None):
-    return json.dumps(mon_view.scrub(collect(ctx, since)), ensure_ascii=False, indent=1)
+    got = collect(ctx, since)
+    out = mon_view.scrub(got)
+    for kept, span in zip(out["spans"], got["spans"]):  # redact reads 32 bare hex characters as a GUID; a trace is our hash
+        kept["trace"] = span["trace"]
+    return json.dumps(out, ensure_ascii=False, indent=1)
