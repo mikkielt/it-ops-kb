@@ -96,27 +96,49 @@ TOKEN_IDENT = re.compile(r"\b(?:[A-Z0-9]+_)+TOKENS(?:_[A-Z0-9]+)*\b(?!\.\w)")
 CRED_INSIDE = re.compile(rf"\b(?:{CRED_WORDS}|deploy)\b", re.I)
 CRED_PART = re.compile(rf"^(?:{CRED_WORDS}|(?:secret|password|passphrase|private|key|credential|pat|ssh)s?)$", re.I)
 # `tokens` as one of the unit nouns of a list (`units, points, tokens, requests, calls`): a run of three or more list
-# elements that holds `tokens` and at least two other unit nouns, with no credential word right before `tokens`. A bare
-# `tokens` or `tokens, rows` and a credential sense (`API tokens, units, points`) keep the class.
+# elements that holds `tokens` and at least two other unit nouns, with no credential qualifier of `tokens`. A bare
+# `tokens` or `tokens, rows` and a credential sense keep the class: a credential word right before the list (`API
+# tokens, units, points`, `API  tokens`, `API's tokens`), any other word right before a list that starts with `tokens`
+# (`service tokens, units, points`, `Slack tokens, rows, lines`) unless it is a word that leads into a list (an article,
+# a preposition, a verb such as `print`), and a credential noun in the question beside a list in an option (`for the
+# API`, an option `tokens, units, points`).
 UNIT_NOUN = r"(?:units|points|requests|calls|rows|bytes|lines|words)"
 LIST_ELEMENT = rf"(?:{UNIT_NOUN}|tokens)"
 LIST_SEP = r"(?:[ \t]*,[ \t]*(?:(?:and|or)[ \t]+)?|[ \t]+(?:and|or)[ \t]+)"
 UNIT_LIST = re.compile(rf"(?<![\w-])\b{LIST_ELEMENT}(?:{LIST_SEP}{LIST_ELEMENT}){{2,}}\b", re.I)
-CRED_BEFORE = re.compile(rf"\b(?:{CRED_WORDS})[-_ ]$", re.I)
+CRED_BEFORE = re.compile(rf"\b(?:{CRED_WORDS})(?:['\u2019]s)?[-_ \t]+$", re.I)
+WORD_BEFORE = re.compile(r"\b([a-z]+)(?:['\u2019]s)?[ \t]+$", re.I)
+LIST_LEAD = frozenset((
+    "a an the of in on at to by for from with per as and or nor but if that this these those which what how whether "
+    "all any both each every no our its their his her is are be was were does do did can may should would will "
+    "print prints show shows report reports log logs count counts name names list lists record records emit emits "
+    "include includes sum sums use uses track tracks measure store return returns write add display give gives "
+    "mean means only just also plus minus many total").split())
+QUESTION_CRED = re.compile(r"\b(?:api|oauth|bearer|jwt|csrf|auth|ssh|pat|deploy)\b", re.I)
 
 
-def unit_list_without_credential(text, m):
-    """Whether the UNIT_LIST match `m` in `text` lists `tokens` among two or more other unit nouns and no credential
-    word stands right before the list (`API tokens, units, points`)."""
+def unit_list_without_credential(text, m, question_cred=False):
+    """Whether the UNIT_LIST match `m` in `text` lists `tokens` among two or more other unit nouns and carries no
+    credential qualifier: no credential word right before the list (`API tokens, units, points`), no other
+    qualifying word right before a list that starts with `tokens` (`service tokens, units, points`), and no credential
+    noun in the question (`question_cred`)."""
     words = re.findall(r"[a-z]+", m.group(0).lower())
     others = [w for w in words if w not in ("tokens", "and", "or")]
-    return "tokens" in words and len(others) >= 2 and not CRED_BEFORE.search(text[:m.start()])
+    if "tokens" not in words or len(others) < 2 or question_cred:
+        return False
+    before = text[:m.start()]
+    if CRED_BEFORE.search(before):
+        return False
+    lead = WORD_BEFORE.search(before)
+    return not (words[0] == "tokens" and lead and lead.group(1).lower() not in LIST_LEAD)
 
 
-def without_unit_lists(text):
+def without_unit_lists(text, question_cred=False):
     """The text with each list that names `tokens` among unit nouns replaced by a space. `text` is one option or the
-    question alone: `class_reasons` calls it for each of them, so a list never runs across the join of two."""
-    return UNIT_LIST.sub(lambda m: " " if unit_list_without_credential(text, m) else m.group(0), text)
+    question alone: `class_reasons` calls it for each of them, so a list never runs across the join of two.
+    `question_cred`: the question names a credential owner, so no list is blanked."""
+    return UNIT_LIST.sub(
+        lambda m: " " if unit_list_without_credential(text, m, question_cred) else m.group(0), text)
 
 
 def without_token_counts(text):
@@ -305,8 +327,9 @@ def class_reasons(item, gate):
                                   kb_content_only(item)),
         without_benign_push_words(commands)))
     # a unit-noun list is read within the question or one option, never across the join of two texts
+    question_cred = bool(QUESTION_CRED.search(str(gate.get("question", ""))))
     secrets_text = without_token_counts(" ".join(
-        without_unit_lists(str(p)) for p in [gate.get("question", ""), *options, command_words(gate)]))
+        without_unit_lists(str(p), question_cred) for p in [gate.get("question", ""), *options, command_words(gate)]))
     for cls, rx in QUESTION_WORDS.items():
         m = rx.search(secrets_text if cls == "secrets" else push_text if cls == "push" else text)
         if m:
