@@ -1,7 +1,7 @@
 """kbmon's event and span records (kb/_self/monitoring.md): the coord events, `done.refused` rows and the query log's apply
 outcome as events, and each landing (with a child span per `land.step`), `agent.run`, `test.run`, timed delivery and each
 finished run of an item (a `kb.item` span with `kb.worker` and `kb.landing` children, from its progress events) as spans,
-and each sprint whose items have all ended their runs (a `kb.sprint` root over its `kb.item` spans),
+and each sprint whose claimed items have all ended their runs (a `kb.sprint` root over its `kb.item` spans),
 newer than a cursor. Standard library only; imports `mon_log` (its readers of the coord store and the ops rows) and
 `mon_export` (its attribute rules), and `mon_view`, `mon_sprint` (the sprint of a run's item), `bl_stall`, `ql_base` and
 `ql_report` where it reads them.
@@ -120,14 +120,26 @@ def span(name, row, end, trace=None, parent=None):
     return out
 
 
-def sprint_of(ctx, items):
-    """{item id: its sprint's id} of ITEMS, from the backlog `mon_sprint.backlog_at` reads; {} where it cannot be read."""
+def backlog_items(ctx):
+    """{item id: item} of the backlog `mon_sprint.backlog_at` reads; {} where it cannot be read."""
     import mon_sprint
     try:
-        bl = mon_sprint.backlog_at(ctx.root)[0]
+        return mon_sprint.backlog_at(ctx.root)[0].items
     except Exception:  # noqa: BLE001 - no backlog: the spans keep no sprint attribute
         return {}
-    return {i: bl.items[i]["sprint"] for i in items if isinstance(bl.items.get(i), dict) and bl.items[i].get("sprint")}
+
+
+def sprint_of(backlog, items):
+    """{item id: its sprint's id} of ITEMS, from the BACKLOG's items (`backlog_items`)."""
+    return {i: backlog[i]["sprint"] for i in items if isinstance(backlog.get(i), dict) and backlog[i].get("sprint")}
+
+
+def open_of(backlog):
+    """{item id: its sprint's id} of the BACKLOG's items that a sprint has claimed or is doing: `doing`, or `todo` with a
+    claim, whatever their runs."""
+    return {i: d["sprint"] for i, d in backlog.items()
+            if isinstance(d, dict) and d.get("sprint") and (d.get("status") == "doing"
+                                                          or (d.get("status") == "todo" and d.get("claimed_by")))}
 
 
 def run_span(name, first, last, end, trace, parent, extra):
@@ -187,10 +199,11 @@ def worker_ids(events, item, sprint=None):
     return trace_id(runs[-1][0], sprint), span_id(f"kb.worker-{runs[-1][-1]['seq']}")
 
 
-def sprint_records(runs, sprints):
-    """[(`kb.sprint` span, sequence of its last move)] of the sprints whose items with a run have all ended it: for each
+def sprint_records(runs, sprints, held=None):
+    """[(`kb.sprint` span, sequence of its last move)] of the sprints whose claimed items have all ended their runs: for each
     sprint of SPRINTS ({item: sprint}) the RUNS ((item, moves) as `item_runs` gives them) of its items, once the last move of
-    every item is `landed` or `released`. The span runs from the first move of the first run to the last move of the last,
+    every item is `landed` or `released` and no item of HELD ({item: sprint} of the items the sprint has claimed or is doing,
+    `open_of`) is without an ended run. The span runs from the first move of the first run to the last move of the last,
     its id and trace derived from the sprint id."""
     by = {}
     for item, run in runs:
@@ -199,6 +212,8 @@ def sprint_records(runs, sprints):
     out = []
     for sprint, items in by.items():
         if any(rs[-1][-1]["state"] not in ("landed", "released") for rs in items.values()):
+            continue
+        if any(s == sprint and i not in items for i, s in (held or {}).items()):
             continue
         every = [run for rs in items.values() for run in rs]
         out.append(({"name": "kb.sprint", "id": sprint_span_id(sprint), "trace": trace_id(None, sprint),
@@ -215,8 +230,9 @@ def run_records(ctx, events, after):
     `refused`. An item with a sprint takes the sprint's trace and the `kb.sprint` span (`sprint_records`) as the parent of
     its `kb.item` span."""
     runs = item_runs(events)
-    sprints = sprint_of(ctx, {item for item, run in runs})
-    done = sprint_records(runs, sprints)
+    backlog = backlog_items(ctx)
+    sprints = sprint_of(backlog, {item for item, run in runs})
+    done = sprint_records(runs, sprints, open_of(backlog))
     for item, run in runs:
         first = run[0]
         trace, root = trace_id(first, sprints.get(item)), span_id(f"kb.item-{first['seq']}")
