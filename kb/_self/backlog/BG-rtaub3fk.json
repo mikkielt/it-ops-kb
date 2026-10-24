@@ -1,0 +1,28 @@
+{
+  "id": "BG-rtaub3fk",
+  "kind": "bug",
+  "title": "kbtools.py lists the kb MCP tools by the environment of the run and misses docs_search and docs_fetch",
+  "status": "draft",
+  "parent": "EP-5mp6pwnn",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kbtools.py lists every kb MCP tool the server can serve, whatever the environment of the run (live-docs, coord and backlog-write tools included), so two runs in two environments print the same catalog",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os, subprocess, sys\n\ndef catalog(extra):\n    env = {k: v for k, v in os.environ.items() if k not in ('KB_COORD_TOOLS', 'KB_BACKLOG_WRITE_TOOLS')}\n    env.update(extra)\n    r = subprocess.run([sys.executable, '_tools/kbtools.py'], capture_output=True, text=True, env=env)\n    return r.returncode, r.stdout\n\nrc0, plain = catalog({})\nrc1, gated = catalog({'KB_COORD_TOOLS': '1', 'KB_BACKLOG_WRITE_TOOLS': '1'})\nlive = [n for n in ('docs_search', 'docs_fetch') if n not in plain]\nprint('exit', rc0, rc1, '| live-docs tools missing from the catalog:', live, '| same catalog with the gated tools switched on:', plain == gated)\nsys.exit(0 if rc0 == 0 and rc1 == 0 and not live and plain == gated else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/kbtools.py",
+    "_tools/kb_mcp.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-x6eqtsid review"
+  ],
+  "notes": "Parked by the review of SP-x6eqtsid (reviewer, 2026-10-24; S2). kbtools.mcp_entries imports kb_mcp and calls tools/list in a bare process: LIVE_ON is set only by kb_mcp.main(), so docs_search and docs_fetch never show, and the coord and backlog-write tools show only when KB_COORD_TOOLS or KB_BACKLOG_WRITE_TOOLS is set in the shell (24 MCP lines with it, 16 with another variable). The kb_tools MCP child inherits the same. Goal clauses of ST-w6pz5emu and ST-e6xp5h3u: the catalog lists the kb MCP tools and kb_tools returns its lines.",
+  "filed_in": "clone-0ea70e5c"
+}
