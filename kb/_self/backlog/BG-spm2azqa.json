@@ -8,7 +8,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "a kb/_roots pointer saved with CRLF line endings (git on Windows with core.autocrlf) is read as the root it names, and kbroot.py fetch --pin writes its pin keeping the file's line endings (SP-s2svf5a6 review gap 11, wider than the review saw: the CRLF pointer is not a fetch root at all)",
+  "goal": "a root pointer file saved with CRLF line endings (git on Windows with core.autocrlf) is read as the root it names, and kbroot.py fetch --pin writes its pin keeping the file's line endings (SP-s2svf5a6 review gap 11, wider than the review saw: the CRLF pointer is not a fetch root at all)",
   "repro": {
     "run": [
       "python3",
@@ -18,7 +18,9 @@
   },
   "touches": [
     "_tools/kbroot.py",
-    "_tools/kbcommon.py"
+    "_tools/kbcommon.py",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "BG-osk7hyua"
