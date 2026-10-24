@@ -102,7 +102,11 @@
         "rarity-weighted word match, at most 8": "ST-w6pz5emu",
         "plain shared-word count": "ST-w6pz5emu"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "rarity-weighted word match, at most 8 (pre-approved by the operator for the 2026-10-24 night run)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
