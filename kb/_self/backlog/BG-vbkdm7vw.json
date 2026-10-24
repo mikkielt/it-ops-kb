@@ -4,6 +4,7 @@
   "title": "kbsettings.py explain returns the settings file's absolute path as source, and nothing runs kbsettings.py check",
   "status": "draft",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-3i7hcb6i",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -15,16 +16,34 @@
       "import subprocess, tempfile, os, sys, json\nT = tempfile.mkdtemp()\nsubprocess.run(['git', 'init', '-q', T])\nos.makedirs(os.path.join(T, 'kb', 'team'))\njson.dump({'coordination': {'strategy': {'working': 'after'}}}, open(os.path.join(T, 'kb', 'team', 'settings.json'), 'w', encoding='utf-8'))\nr = subprocess.run([sys.executable, '_tools/kbsettings.py', 'explain', 'strategy.working', '--root', T, '--kb-root', 'team', '--json'], capture_output=True, text=True)\ntry:\n    src = json.loads(r.stdout).get('source', '')\nexcept ValueError:\n    src = ''\ngated = any('kbsettings' in open(p, encoding='utf-8').read() for p in ('_tools/selfdoc.py', '_tools/kg_sync.py') if os.path.exists(p))\nok = r.returncode == 0 and bool(src) and not os.path.isabs(src) and T not in src and gated\nprint('explain exit', r.returncode, '| source', src[:70], '| kbsettings.py check wired into selfdoc or the sync gate', gated)\nsys.exit(0 if ok else 1)\n"
     ]
   },
+  "clauses": [
+    {
+      "clause": "kbsettings.py explain gives source as a path relative to the workspace root (no user home path reaches the kb_settings tool's transcript)",
+      "check": 0
+    },
+    {
+      "clause": "kbsettings.py check runs in the doc checks (selfdoc or the sync gate) so the SETTINGS table's doc line numbers cannot drift unnoticed",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kbsettings.py",
     "_tools/kb_mcp.py",
     "_tools/selfdoc.py",
     "kb/_self/coordination.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/embedding.md",
+    "kb/_self/git.md",
+    "kb/_self/README.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-wwdfdigd"
   ],
   "links": [
     "parked: SP-sucr3kfg review"
   ],
-  "notes": "Found by the SP-sucr3kfg review. redact.redact leaves /Users/<name>/ and C:\\Users\\<name>\\ paths unchanged, so the kb_settings tool returns the home path of the user. The review does not confirm gate g2 of ST-vopsopkg (the table holds the line numbers and check compares them): nothing calls check, and the goal named selfdoc's check. A wiring into selfdoc or kg_sync may need a test file in touches: check the ceiling room first (kb/_self/code.md).",
+  "notes": "Found by the SP-sucr3kfg review. redact.redact leaves /Users/<name>/ and C:\\Users\\<name>\\ paths unchanged, so the kb_settings tool returns the home path of the user. The review does not confirm gate g2 of ST-vopsopkg (the table holds the line numbers and check compares them): nothing calls check, and the goal named selfdoc's check. A wiring into selfdoc or kg_sync may need a test file in touches: check the ceiling room first (kb/_self/code.md). Plan 2026-10-24 (day run): premise reproduced on base (repro: explain returns the absolute settings path, nothing runs kbsettings.py check). The repro reads clause 2 by text only: wire the check so a SETTINGS line number that no longer holds its key fails the gate you wire (run it once on a planted shifted doc text and say so in the done report). Absolute paths: relative to the workspace root, also for the kb root layer (kb/NAME/settings.json). Planned into SP-3i7hcb6i on 2026-10-24.",
   "filed_in": "clone-0ea70e5c"
 }
