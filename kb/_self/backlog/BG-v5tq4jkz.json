@@ -1,0 +1,22 @@
+{
+  "id": "BG-v5tq4jkz",
+  "kind": "bug",
+  "title": "The leak scan flags the EC armor label quoted before a repository path that has a segment longer than 16 characters, which passed before BG-nx6jzvop's path lookahead",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbcommon.leak_hits does not flag the EC armor label quoted directly before a repository path whose segment is longer than 16 letters or digits, such as the ConfigurationProfiles.md page or the ConditionalAccessPolicies-and-more.md page, and still flags a single-line EC key body of 78 characters that a period, an underscore or a hyphen follows",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\nsys.path.insert(0, \"_tools\")\nimport kbcommon\nd = \"-\" * 5\narm = d + \"BEGIN EC PRIVATE KEY\" + d\nhit = lambda t: any(k == \"secret\" for k, _ in kbcommon.leak_hits(t))\npaths = [\"kb/public/Intune/ConfigurationProfiles.md page\", \"kb/public/Entra/ConditionalAccessPolicies-and-more.md page\", \"kb/public/AutopilotDeployment/Profile2.json page\"]\nfalse = [p for p in paths if hit(arm + \" \" + p)]\nbody = \"MHcCAQEEIGtq3xaH5wq7CUAKmJdZ0PY4RnXqPIYV1S2qt1NWOEHJoAoGCCqGSM49AwEHoUQDQgAE\"\nmiss = [s for s in (\".\", \"_x\", \"-x\", \".pem\") if not hit(arm + \" \" + body + s)]\nprint(\"path flagged:\", false, \"78-character body not flagged:\", miss)\nsys.exit(1 if false or miss else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kbcommon.py",
+    "_tools/test_leaks.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
