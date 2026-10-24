@@ -1141,10 +1141,13 @@ FOUND_CHECKS = ("path", "text", "regex")  # the failed checks of a `rag.py eval`
 
 def frozen_pass(start_verdict, verdict, found):
     """Whether a frozen row passes: its `expect_re`, `expect_text` or `expect_paths` is `found` in the pack, else the
-    verdict ranks (none, weak, good) at least the one measured at the start commit, not the row's `expect_verdict`. The
-    row's own verdict check is no part of it: research that answers a row that was `none` at the start raises the
-    figure, and one that lifts a `weak` to `good` keeps it."""
-    return bool(found) or VERDICT_RANK.get(verdict, -1) >= VERDICT_RANK.get(start_verdict, 0)
+    verdict ranks (none, weak, good) at least the one measured at the start commit, not the row's `expect_verdict`,
+    and is not `good`: a `good` verdict without the answer found is a false good, so a row that was `good` at the
+    start and stays so, or turns `good` from `none` or `weak`, passes only by the answer. The row's own verdict check
+    is no part of it: research that answers a row raises the figure, and an answer-less `good` does not."""
+    if found:
+        return True
+    return verdict != "good" and VERDICT_RANK.get(verdict, -1) >= VERDICT_RANK.get(start_verdict, 0)
 
 
 def eval_rows(checkout, questions, env):
