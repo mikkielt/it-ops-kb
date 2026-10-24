@@ -2,8 +2,9 @@
   "id": "BG-bd2lai7q",
   "kind": "bug",
   "title": "The kbmon mod parses a needs-you row cut at the pane width as a whole line when --status all answers without a needs-you line, so a cut suffix reads as an entry",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-ymnz7b4n",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -19,9 +20,12 @@
     ".claude/skills/kbmon-pane/hooks/register.tsx",
     "kb/_self/monitoring.md"
   ],
+  "depends_on": [
+    "BG-eavxydjq"
+  ],
   "links": [
     "parked: SP-rin4kkoj review"
   ],
-  "notes": "Found by the review of SP-rin4kkoj (2026-10-24, S3), not triggered by the reviewer; the planted repro reaches it with a --status all that answers without a needs-you line. register.tsx notifyNeeds falls back to the pane row, which may end in an ellipsis; entriesOf then reads a cut part such as `not r…` as an entry of a complete line. Fix: skip the reading (leave the row unread, as a failed --status all does) when the row is cut and the whole line is missing.",
+  "notes": "Found by the review of SP-rin4kkoj (2026-10-24, S3), not triggered by the reviewer; the planted repro reaches it with a --status all that answers without a needs-you line. register.tsx notifyNeeds falls back to the pane row, which may end in an ellipsis; entriesOf then reads a cut part such as `not r…` as an entry of a complete line. Fix: skip the reading (leave the row unread, as a failed --status all does) when the row is cut and the whole line is missing. Planned into SP-ymnz7b4n, 2026-10-24 day run. Precheck: repro fails on the base.",
   "filed_in": "clone-0ea70e5c"
 }
