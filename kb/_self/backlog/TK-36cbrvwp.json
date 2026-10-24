@@ -41,6 +41,25 @@
     "kb/public/_anchors.csv",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "A fact whose only source is an endpoint the census fact diff records gone (HTTP 404) but this host's curl reads on 2026-10-24 (the Learn search API, the Learn sitemap index and an intune sitemap, the Learn MCP endpoint, the Claude Code docs MCP endpoint, the MCP docs endpoint): re-tag it DER citing the same row with the dated read, or retag it UNK with a dated note? The claims a Learn page states (endpoint, no authentication, three tools) are re-sourced to DOC on two new rows either way.",
+      "options": [
+        "DER with a dated read",
+        "UNK with a dated note"
+      ],
+      "recommendation": "DER with a dated read",
+      "do": {
+        "DER with a dated read": "TK-36cbrvwp",
+        "UNK with a dated note": "TK-36cbrvwp"
+      },
+      "class": "design",
+      "answer": "DER with a dated read",
+      "by": "agent"
+    }
+  ],
   "notes": "Premise run on base 39abe92bb: check 0 fails with 14 DOC tags citing the seven gone ids (agents/doc-change-detection.md:61, 62, 67-69, 172; doc-lookup-sources.md:24, 25, 28, 82; _answers.md:1800, 1801, 1803, 2034). check.py passes before the work on purpose: it pins that the kb stays valid after the edits. doc-lookup-sources.csv cites S2177 too (anchor row unlocated:fetch-error): re-source or drop its mention with the article. Lines may have moved; find tags by the ids.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",

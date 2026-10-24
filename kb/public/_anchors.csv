@@ -1707,7 +1707,6 @@ fb236feed15a,agents/declarative-agent-manifest.csv,S-gum2njhe,unlocated:no-match
 0f87db96e894,agents/doc-change-detection.md,S-4e2arcjz,unlocated:no-match,,,,,2026-10-17
 0f87db96e894,agents/doc-change-detection.md,S-inrmedim,unlocated:no-match,,,,,2026-10-17
 1161b96c0360,agents/doc-change-detection.md,S2177,unlocated:gone,,,,,2026-10-22
-124aa0d4379a,agents/doc-change-detection.md,S-7ivxsp4z,located,,api;link;local;next;nextlink;top;search;com,0f96067b1589adf1,"""nextLink"": ""https://learn.microsoft.com/api/Search?search=device%20identity%20overview&locale=en-us&$top=3&accept=text%2Fmarkdown&$skip=3"",",2026-10-13
 1314c7621883,agents/doc-change-detection.md,S-o6lmrcgh,unlocated:no-match,,,,,2026-10-12
 157417510f93,agents/doc-change-detection.md,S-ggcghqgu,unlocated:no-match,,,,,2026-10-12
 157417510f93,agents/doc-change-detection.md,S-phkss6q3,unlocated:no-match,,,,,2026-10-12
@@ -1725,7 +1724,6 @@ fb236feed15a,agents/declarative-agent-manifest.csv,S-gum2njhe,unlocated:no-match
 1f02bbd83b34,agents/doc-change-detection.md,S-j4ksai6m,unlocated:no-match,,,,,2026-10-22
 1f02bbd83b34,agents/doc-change-detection.md,S-qdfwoaa7,unlocated:no-match,,,,,2026-10-22
 1f02bbd83b34,agents/doc-change-detection.md,S-xmqy75h7,unlocated:no-match,,,,,2026-10-22
-2086710e4899,agents/doc-change-detection.md,S-lldnrkhv,unlocated:no-match,,,,,2026-10-12
 2099abdbac9a,agents/doc-change-detection.md,S-ecrpwvoh,located,Contributing instructions | Microsoft Learn > Editing an existing article,clarification;fixe;grammar;major;ms.dat;date;spell;format,53b9d929e8be75c8,"ms.date: Update the date if you're adding major content to the page, but not for fixes like clarification, formatting, grammar, or spelling.",2026-10-21
 22954d65204f,agents/doc-change-detection.md,S-ghq236rx,located,Detect Website Changes Automatically — Monitor Web Page Changes in Real Time > AI-powered website change detection — smart alerts and plain-language summaries,english;evaluat;plain-english;rule;against;intent;plain;dif,db00751a6ffbc86b,"AI change detection rules - write a plain-English intent once: ""notify me only when the price drops below $50"", ""alert me when the item comes",2026-10-21
 22efdfc5141d,agents/doc-change-detection.md,S-xmqy75h7,unlocated:no-match,,,,,2026-10-22
@@ -1759,14 +1757,15 @@ fb236feed15a,agents/declarative-agent-manifest.csv,S-gum2njhe,unlocated:no-match
 38da540d792a,agents/doc-change-detection.md,S-hgu2bdgi,located,FEVER: a Large-scale Dataset for Fact Extraction and VERification > Correct Metadata for > Abstract > Export citation,page;against;new;fact;claim;fever,0446c1520a79371d,"pages = ""809--819"", abstract = ""In this paper we introduce a new publicly available dataset for verification against textual sources, FEVER: Fact Extraction and VERification.",2026-10-12
 38da540d792a,agents/doc-change-detection.md,S-wkj4aa2g,unlocated:no-match,,,,,2026-10-12
 3ae5b0cb1d19,agents/doc-change-detection.md,S-xc4ibwg4,unlocated:not-text,,,,,2026-10-13
+3ea4a43aa2fa,agents/doc-change-detection.md,S-7jumyiid,unlocated:no-match,,,,,2026-10-24
+3ea4a43aa2fa,agents/doc-change-detection.md,S-lldnrkhv,unlocated:gone,,,,,2026-10-24
 3eaa967c3192,agents/doc-change-detection.md,S-7uckhkxr,unlocated:no-match,,,,,2026-10-12
 3eaa967c3192,agents/doc-change-detection.md,S-ods72iyh,unlocated:no-match,,,,,2026-10-12
-4085a15a308e,agents/doc-change-detection.md,S-7jumyiid,unlocated:no-match,,,,,2026-10-21
-4085a15a308e,agents/doc-change-detection.md,S-lldnrkhv,unlocated:no-match,,,,,2026-10-12
 41425439fc61,agents/doc-change-detection.md,S-o6lmrcgh,unlocated:no-match,,,,,2026-10-12
 417168cc3e1a,agents/doc-change-detection.md,S2176,located,Microsoft Learn MCP Server release notes | Microsoft Learn > 2025,convert;markdown;page;fetch;tool,21f79db0a8824898,This release adds the Fetch tool that fetches and converts a page into markdown.,2026-10-22
 417168cc3e1a,agents/doc-change-detection.md,S-lylm4eqz,located,Use the Microsoft Learn CLI | Microsoft Learn > Use CLI commands,markdown;markdown-friendly;page;friendly;output;return;url;fetch,45255863f5cc85a3,fetch <url> fetches a Learn page as Markdown-friendly output. fetch <url> --section <heading> returns a single section.,2026-10-22
 41b515741a2f,agents/doc-change-detection.md,S-setpfkdd,unlocated:fetch-error,,,,,2026-10-13
+4704a1e45284,agents/doc-change-detection.md,S-lldnrkhv,unlocated:gone,,,,,2026-10-24
 4b1a6d22c32b,agents/doc-change-detection.md,S-stitrqhm,unlocated:no-match,,,,,2026-10-12
 4b1a6d22c32b,agents/doc-change-detection.md,S-u2afup7q,unlocated:no-match,,,,,2026-10-21
 4b1a6d22c32b,agents/doc-change-detection.md,S-ybuoluc4,unlocated:no-match,,,,,2026-10-12
@@ -1819,7 +1818,9 @@ fb236feed15a,agents/declarative-agent-manifest.csv,S-gum2njhe,unlocated:no-match
 8e296c1a853a,agents/doc-change-detection.md,S-zb3jd525,unlocated:gone,,,,,2026-10-22
 909dd83cd532,agents/doc-change-detection.md,S1217,unlocated:no-match,,,,,2026-10-13
 9179240daafb,agents/doc-change-detection.md,S-ny2cx7aq,unlocated:gone,,,,,2026-10-22
-96eebf1662fb,agents/doc-change-detection.md,S-zb3jd525,located,,intune_en;intune_en-us_1.xml;intun;us_1;_sitemap;com;learn;learn.microsoft.com,095eee3433ce25f5,<loc>https://learn.microsoft.com/sitemaps/intuneen-us1.xml</loc>,2026-10-12
+9419b8375d32,agents/doc-change-detection.md,S2177,unlocated:gone,,,,,2026-10-24
+9419b8375d32,agents/doc-change-detection.md,S2180,unlocated:gone,,,,,2026-10-24
+9419b8375d32,agents/doc-change-detection.md,S2181,unlocated:gone,,,,,2026-10-24
 98465666b107,agents/doc-change-detection.md,S-stitrqhm,located,,chang;metadata;ms.author;ms.servic;servic;move;bulk;updat,25e94a94479f928a,"""message"": ""[BULK UPDATE] Metadata: Move author/ms.author/ms.service/ms.subservice/manager to folder level (3/5)\n\nFolders: identity/devices, identity/monitoring-health\n\nChanges to docfx.json:\n- author/ms.author: Added folder entries for identity/devices, identity/monitoring-health\n- ms.service: Added identity/devices=entra-id, identity/monitoring-health=entra-id\n-",2026-10-12
 98465666b107,agents/doc-change-detection.md,S-ybuoluc4,unlocated:no-match,,,,,2026-10-12
 99990cb6f20a,agents/doc-change-detection.md,S-xc4ibwg4,unlocated:not-text,,,,,2026-10-13
@@ -1833,8 +1834,6 @@ a62ee5778718,agents/doc-change-detection.md,S-ggcghqgu,unlocated:no-match,,,,,20
 a6f91df3ded5,agents/doc-change-detection.md,S-inrmedim,located,HTML > 4 The elements of HTML > 4.2 Document metadata > 4.2.5 The meta > 4.2.5.1 Standard metadata names,bookmark;instanc;browser;need;label;algorithm;page;name,3978046cdcc16a78,"This algorithm would be used by a browser when it needs a name for the page, for instance, to label a bookmark.",2026-10-20
 a83720ac44a2,agents/doc-change-detection.md,S-7ivxsp4z,unlocated:no-match,,,,,2026-10-13
 a83720ac44a2,agents/doc-change-detection.md,S-7n65j7bo,unlocated:no-match,,,,,2026-10-12
-aa79c1d5ade6,agents/doc-change-detection.md,S-7ivxsp4z,located,,date;last;lastupdateddat;updat,09e0842d2b7a8ee7,"""lastUpdatedDate"": ""2026-10-09T17:41:00+00:00"",",2026-10-13
-aa79c1d5ade6,agents/doc-change-detection.md,S-7n65j7bo,unlocated:no-match,,,,,2026-10-12
 aaa88f7580d0,agents/doc-change-detection.md,S-7uckhkxr,unlocated:no-match,,,,,2026-10-12
 aaa88f7580d0,agents/doc-change-detection.md,S-m7xkty3c,unlocated:no-match,,,,,2026-10-12
 aaa88f7580d0,agents/doc-change-detection.md,S-ods72iyh,unlocated:no-match,,,,,2026-10-12
@@ -1870,6 +1869,8 @@ bcd869aab2b2,agents/doc-change-detection.md,S-y23orbo7,unlocated:gone,,,,,2026-1
 be855cafc63a,agents/doc-change-detection.md,S-xv7jeuvk,located,,manage-group-based-licensing-error;error;licen;based;admin;group;microsoft;manag,853be7c891ad4855,"""sourcepathfromroot"": ""/docs/fundamentals/licensing-groups-resolve-problems.md"", ""redirecturl"": ""/microsoft-365/admin/manage/manage-group-licenses?view=o365-worldwide&preserve-view=true#manage-group-based-licensing-errors"",",2026-10-12
 bf004c167f86,agents/doc-change-detection.md,S-wcrrjfwh,unlocated:no-match,,,,,2026-10-12
 bfa9b9e06087,agents/doc-change-detection.md,S-jj4lbdze,located,ARIA in HTML > 4.,complementary;recommend;allow,2e6b9c0ef1d8ec4a,"complementary is also allowed, but NOT RECOMMENDED.",2026-10-21
+c07c519c9b42,agents/doc-change-detection.md,S-7ivxsp4z,unlocated:gone,,,,,2026-10-24
+c07c519c9b42,agents/doc-change-detection.md,S-7n65j7bo,unlocated:no-match,,,,,2026-10-24
 c111db35dca3,agents/doc-change-detection.md,S-ghhbd6g6,unlocated:no-match,,,,,2026-10-13
 c111db35dca3,agents/doc-change-detection.md,S-may2otwt,unlocated:gone,,,,,2026-10-13
 c211c11b0cd6,agents/doc-change-detection.md,S-a76fjdhb,located,Rate limit errors > `404 Not Found` for an existing resource,existenc;avoid;privat;forbidden;instead;confirm;found;repository,00d89c49c030bfae,"If you make a request to access a private resource and your request isn't properly authenticated, you will receive a 404 Not Found response. {%",2026-10-12
@@ -1884,6 +1885,7 @@ ccf9e285650b,agents/doc-change-detection.md,S-niqtbnmc,unlocated:no-match,,,,,20
 cf0730c38941,agents/doc-change-detection.md,S-7jumyiid,unlocated:no-match,,,,,2026-10-21
 cf94f1842d5e,agents/doc-change-detection.md,S-tyedhnrz,located,Circuit Breaker Pattern - Azure Architecture Center | Microsoft Learn > Solution,exce;expir;start;proxy;period;timer;number;threshold,18e8368f46a8f4d4,"If the number of recent failures exceeds a specified threshold within a given time period, the proxy is placed into the Open state and starts",2026-10-21
 d04214dad566,agents/doc-change-detection.md,S-ghq236rx,located,Detect Website Changes Automatically — Monitor Web Page Changes in Real Time > AI-powered website change detection — smart alerts and plain-language summaries > Example use cases > Key Features,expression;regular;remov;css;ignor;element;trigger;xpath,29d5610eda0172ea,"Lots of trigger filters, such as ""Trigger on text"", ""Remove text by selector"", ""Ignore text"", ""Extract text"", also using regular-expressions! Target elements with xPath 1",2026-10-21
+d06751e1d3b2,agents/doc-change-detection.md,S-7ivxsp4z,unlocated:gone,,,,,2026-10-24
 d0dcb443f677,agents/doc-change-detection.md,S-ods72iyh,unlocated:no-match,,,,,2026-10-12
 d0dcb443f677,agents/doc-change-detection.md,S-wcrrjfwh,unlocated:no-match,,,,,2026-10-12
 d0de9a65dd25,agents/doc-change-detection.md,S-wze42rd7,located,Viewing wiki history,commit;messag;user;made;history;chang;wiki,1149162a878c6a8e,Wiki history includes: The user who made the change The commit message they provided,2026-10-12
@@ -1895,9 +1897,6 @@ d61085528514,agents/doc-change-detection.md,S-g3ciqhyh,unlocated:no-match,,,,,20
 d61085528514,agents/doc-change-detection.md,S-oqvrq2wq,unlocated:no-match,,,,,2026-10-12
 d69e224c37a3,agents/doc-change-detection.md,S-5lkuonr6,unlocated:no-match,,,,,2026-10-13
 d69e224c37a3,agents/doc-change-detection.md,S-7tff4woa,unlocated:no-match,,,,,2026-10-12
-d8f317e28bed,agents/doc-change-detection.md,S2177,unlocated:gone,,,,,2026-10-22
-d8f317e28bed,agents/doc-change-detection.md,S2180,unlocated:gone,,,,,2026-10-13
-d8f317e28bed,agents/doc-change-detection.md,S2181,unlocated:gone,,,,,2026-10-13
 da02e97fa67e,agents/doc-change-detection.md,S-xv7jeuvk,unlocated:no-match,,,,,2026-10-12
 e1f12c53a849,agents/doc-change-detection.md,S-km6slvii,unlocated:no-match,,,,,2026-10-12
 e1f12c53a849,agents/doc-change-detection.md,S-oo5kmppv,unlocated:no-match,,,,,2026-10-12
@@ -1913,6 +1912,7 @@ eaa325a6632d,agents/doc-change-detection.md,S-a6bblnnl,located,,old;time;new;ret
 efd9db787fae,agents/doc-change-detection.md,S-4e2arcjz,located,The Open Graph protocol > Basic Metadata > Optional Metadata,larger;overall;part;display;site_nam;site;name;imdb,bd7bddc0f2aa9c64,"If your object is part of a larger web site, the name which should be displayed for the overall site.",2026-10-21
 f13e2588bbd9,agents/doc-change-detection.md,S-s6xjctzu,unlocated:no-match,,,,,2026-10-12
 f14b56b45fb6,agents/doc-change-detection.md,S-uq2hafxi,located,Resources > Capabilities,two;featur;listchang;capability;support;optional;chang;list,86ea85c4ff93d301,The capability supports two optional features: listChanged: whether the server will emit notifications when the list of available,2026-10-21
+f225e1d065e8,agents/doc-change-detection.md,S-zb3jd525,unlocated:gone,,,,,2026-10-24
 f2446aa821ac,agents/doc-change-detection.md,S-yvdwutca,unlocated:no-match,,,,,2026-10-12
 f43b69e95281,agents/doc-change-detection.md,S-km6slvii,located,Wayback Machine APIs > Wayback Availability JSON API,singl;accessibl;currently;closest;return;archived_snapshot;availabl;snapshot,3f91f1efbe19d3a6,"At this time, archivedsnapshots just returns a single closest snapshot, but additional snapshots may be added in the future. If the url is not available",2026-10-12
 f477b0605eb8,agents/doc-change-detection.md,S-shha3est,unlocated:no-match,,,,,2026-10-12
@@ -1946,7 +1946,6 @@ b792d07750cd,agents/doc-lookup-sources.csv,S2180,unlocated:gone,,,,,2026-10-12
 f8da2e743152,agents/doc-lookup-sources.csv,S2188,unlocated:no-match,,,,,2026-10-12
 fa01deebc8f2,agents/doc-lookup-sources.csv,S2183,located,Additional resources > Resources for AI ingestion,index;llm;llm-optimiz;llms;llms.txt;page;txt;documentation,e5f93227628cc304,llms.txt LLM-optimized documentation index. Was this page helpful?,2026-10-12
 fa01deebc8f2,agents/doc-lookup-sources.csv,S2184,unlocated:no-match,,,,,2026-10-13
-005f48ae3c59,agents/doc-lookup-sources.md,S2180,unlocated:gone,,,,,2026-10-14
 00719a946a97,agents/doc-lookup-sources.md,S-3yod3u7q,located,Tools reference > WebFetch tool behavior,character;page;webfetch;call;fetch;web;read,00e32b4fa6846cf0,"WebFetch reads up to 100,000 characters of a page's content per call.",2026-10-21
 0751092baf08,agents/doc-lookup-sources.md,S-y6wauqrp,located,Introduction > API policies > API Preference,deprecation;integration;new;plan;rpc;xml;xml-rpc;json,fd5e15c79fa45976,No new integrations should use the XML-RPC APIs as they are planned for deprecation. Existing consumers should migrate to JSON/RSS/Index APIs.,2026-10-13
 07799601f49b,agents/doc-lookup-sources.md,S1809,unlocated:no-match,,,,,2026-10-21
@@ -1981,7 +1980,6 @@ fa01deebc8f2,agents/doc-lookup-sources.csv,S2184,unlocated:no-match,,,,,2026-10-
 3e4f1b3ee401,agents/doc-lookup-sources.md,S-fvspfpxd,unlocated:no-match,,,,,2026-10-21
 3e4f1b3ee401,agents/doc-lookup-sources.md,S-u5diy2cr,unlocated:no-match,,,,,2026-10-13
 3f2397abff99,agents/doc-lookup-sources.md,S-fvspfpxd,located,Legal and compliance > Security and trust > Security vulnerability reporting,pbc;reserv;right;applicabl;subject;term;servic;anthropic,f1a02cd2329d44a8,© Anthropic PBC. All rights reserved. Use is subject to applicable Anthropic Terms of Service.,2026-10-21
-4477a6a94659,agents/doc-lookup-sources.md,S2177,unlocated:fetch-error,,,,,2026-10-14
 45f406ccb916,agents/doc-lookup-sources.md,S1809,unlocated:no-match,,,,,2026-10-21
 45f406ccb916,agents/doc-lookup-sources.md,S2193,located,DeepWiki MCP,authentication;free;remot;repository;deep;wiki;server;deepwiki,6522a4b8209c5c95,"The DeepWiki MCP server is a free, remote, no-authentication-required service that provides access to public repositories.",2026-10-21
 4aa87d9d9a9c,agents/doc-lookup-sources.md,S745,located,Environment variables > Variables,refill;2.1.290;page;non-interactiv;interactiv;terminal;non;turn,b8e28866f7d91809,"CLAUDECODEWEBFETCHDEADLINEMS | Upper bound in milliseconds on how long WebFetch waits for a page to download, including any redirects it follows. A download that hasn't",2026-10-23
@@ -2033,9 +2031,10 @@ bec910351606,agents/doc-lookup-sources.md,S2186,located,Setting up the GitHub MC
 bec910351606,agents/doc-lookup-sources.md,S2187,located,Remote GitHub MCP Server 🚀 > Remote MCP Toolsets,repo;repository;sourc;git;hub;api;github;read-only,7a771600ae6e0e90,repos | GitHub Repository related tools | https://api.githubcopilot.com/mcp/x/repos | Install | read-only,2026-10-21
 bec910351606,agents/doc-lookup-sources.md,S2189,located,GitLab MCP server,data;lab;git;gitlab,6f66e570127ecf6a,Access GitLab project information. Retrieve issue and merge request data. Interact with GitLab APIs securely.,2026-10-20
 c574b2f599b6,agents/doc-lookup-sources.md,S452,located,,4.0;by-sa;doc;git;gitlab;lab;repository;under,fdc53a323342d84a,"Copyright (c) 2011-present GitLab Inc. Portions of this software are licensed as follows: All content residing under the ""doc/"" directory of this repository is licensed",2026-10-12
-ca00d0a346b8,agents/doc-lookup-sources.md,S2177,unlocated:fetch-error,,,,,2026-10-14
 ccdbabeacc80,agents/doc-lookup-sources.md,S-7ppiqh3x,unlocated:no-match,,,,,2026-10-13
 ce4c00bda3f1,agents/doc-lookup-sources.md,S2185,located,,generally;availabl;remot;server;mcp;git;github;hub,3ec343be24457800,Remote GitHub MCP Server is now generally available,2026-10-21
+cf8f3e54e8a5,agents/doc-lookup-sources.md,S-jrhw5coa,located,Microsoft Learn MCP Server overview | Microsoft Learn > How the Learn MCP Server works,api;com;learn.microsoft.com;endpoint;remot;streamabl;http;microsoft,e03d97e287083900,Learn MCP Server is a remote MCP server that uses streamable http. Compatible client apps like GitHub Copilot can connect with the endpoint. https://learn.microsoft.com/api/mcp,2026-10-24
+cf8f3e54e8a5,agents/doc-lookup-sources.md,S-yxobfgv4,located,Microsoft Learn MCP Server developer reference documentation | Microsoft Learn > Tools,code;fetch;microsoft_code_sample_search;microsoft_docs_fetch;microsoft_docs_search;sampl;search;docs,34f81b292ad85bae,"microsoftdocssearch microsoftdocsfetch microsoftcodesamplesearch For details, see the repository",2026-10-24
 d201a8b0ed67,agents/doc-lookup-sources.md,S-7ppiqh3x,located,Terms of Use for arXiv APIs > Limitations > Rate limits,connection;every;one;second;singl;thre;legacy;time,1beed283a2df64f0,"When using the legacy APIs (including OAI-PMH, RSS, and the arXiv API), make no more than one request every three seconds, and limit requests to",2026-10-13
 d5fef84b6dc7,agents/doc-lookup-sources.md,S2179,located,Connect to MCP servers > Troubleshooting,github;hub;git;check;connect;add;mcp;server,43f370d5dac9aa72,"Use the browser sign-in in Connect a server that requires sign-in, or for servers that take a token instead, like GitHub's, pass it with --header",2026-10-21
 d5fef84b6dc7,agents/doc-lookup-sources.md,S2187,located,Remote GitHub MCP Server 🚀 > Remote MCP Toolsets > Additional _Remote_ Server Toolsets,search;git;hub;github;read-only;read;mcp,69883813a01f2dd9,"<picture><source media=""(prefers-color-scheme: dark)"" srcset=""../pkg/octicons/icons/book-dark.png""><source media=""(prefers-color-scheme: light)"" srcset=""../pkg/octicons/icons/book-light.png""><img src=""../pkg/octicons/icons/book-light.png"" width=""20"" height=""20"" alt=""book""></picture><br>githubsupportdocssearch | Retrieve documentation to answer GitHub product and support questions. Topics include: GitHub Actions",2026-10-21

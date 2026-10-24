@@ -34,7 +34,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/coordination-messages` | P2 | complete | `agents/coordination-messages.md` | 7 |
 | `agents/copilot-studio-mcp-client` | P2 | partial | `agents/copilot-studio-mcp-client.md` | 15 |
 | `agents/dataverse-mcp-server` | P2 | complete | `agents/dataverse-mcp-server.md` | 7 |
-| `agents/doc-lookup-sources` | P2 | complete | `agents/doc-lookup-sources.md`, `agents/doc-lookup-sources.csv` | 68 |
+| `agents/doc-lookup-sources` | P2 | complete | `agents/doc-lookup-sources.md`, `agents/doc-lookup-sources.csv` | 70 |
 | `agents/docs-maintenance-agents` | P2 | complete | `agents/docs-maintenance-agents.md` | 30 |
 | `agents/genai-telemetry` | P2 | complete | `agents/genai-telemetry.md` | 5 |
 | `agents/github-copilot-admin` | P2 | complete | `agents/github-copilot-admin.md` | 12 |

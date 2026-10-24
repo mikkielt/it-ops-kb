@@ -3,7 +3,7 @@ topic: agents/doc-lookup-sources
 priority: P2
 applies_to: "stable (GA) MCP servers and public APIs that return current official documentation for this kb's domains, as of 2026-09-25"
 retrieved_utc: 2026-10-23
-sources: [S2176, S2177, S2178, S2179, S2180, S2181, S2182, S2183, S2184, S2185, S2186, S2187, S2188, S2189, S2190, S2191, S2192, S2193, S2194, S2195, S2197, S-vbtxqsbj, S-sr6eoeoc, S1809, S-el34o4bb, S-eutmp4xp, S-j7xzzcxj, S-u2afup7q, S-rgpijsmb, S2196, S-yuwxbqz3, S-xmqy75h7, S-b6tooge2, S-ybuoluc4, S-rgy4dvjf, S452, S717, S-fvspfpxd, S-pxvdwitn, S-gupervu4, S-ke227men, S-fqi6xbbc, S-autbwi4y, S-eluaxz73, S-ekcs6zhr, S-3yod3u7q, S742, S745, S1824, S-soqo5xvt, S-cig7twfc, S-7ppiqh3x, S-u5diy2cr, S-45xg3ykb, S-4tyfe45l, S-ezhoiiyb, S-t36jnjsm, S-y6wauqrp, S-mz6tic2a, S-5uo7eb2c, S-jkl2kuth, S-ywdbre2n, S-yftp4qw3, S-4yvdwu5c, S2006, S1002, S-5lkuonr6, S1811]
+sources: [S2176, S2177, S-jrhw5coa, S-yxobfgv4, S2178, S2179, S2180, S2181, S2182, S2183, S2184, S2185, S2186, S2187, S2188, S2189, S2190, S2191, S2192, S2193, S2194, S2195, S2197, S-vbtxqsbj, S-sr6eoeoc, S1809, S-el34o4bb, S-eutmp4xp, S-j7xzzcxj, S-u2afup7q, S-rgpijsmb, S2196, S-yuwxbqz3, S-xmqy75h7, S-b6tooge2, S-ybuoluc4, S-rgy4dvjf, S452, S717, S-fvspfpxd, S-pxvdwitn, S-gupervu4, S-ke227men, S-fqi6xbbc, S-autbwi4y, S-eluaxz73, S-ekcs6zhr, S-3yod3u7q, S742, S745, S1824, S-soqo5xvt, S-cig7twfc, S-7ppiqh3x, S-u5diy2cr, S-45xg3ykb, S-4tyfe45l, S-ezhoiiyb, S-t36jnjsm, S-y6wauqrp, S-mz6tic2a, S-5uo7eb2c, S-jkl2kuth, S-ywdbre2n, S-yftp4qw3, S-4yvdwu5c, S2006, S1002, S-5lkuonr6, S1811]
 status: complete
 ---
 
@@ -21,11 +21,12 @@ reading the current page.
 
 ## Facts
 - Microsoft's Learn MCP release notes record general availability on 2025-11-07, removing the preview disclaimers. [DOC S2176]
-- `https://learn.microsoft.com/api/mcp` answered `initialize` as "Microsoft Learn MCP Server" 1.0.0 without authentication and lists three tools: `microsoft_docs_search`, `microsoft_docs_fetch` (page as markdown) and `microsoft_code_sample_search`. [DOC S2177]
-- `microsoft_docs_search` returns up to 10 content chunks per query, per its tool description. [DOC S2177]
+- `https://learn.microsoft.com/api/mcp` is the Learn MCP server endpoint, a remote Streamable HTTP server that needs no authentication; its tools are `microsoft_docs_search`, `microsoft_docs_fetch` and `microsoft_code_sample_search`. [DOC S-jrhw5coa, S-yxobfgv4]
+- An `initialize` POST to that endpoint on 2026-10-24 answered "Microsoft Learn MCP Server" 1.0.0 without authentication, with instructions that name the same three tools and describe `microsoft_docs_fetch` as converting a page to markdown. [DER S2177: the response read; the census records a page fetch of the endpoint as `404`]
+- `microsoft_docs_search` returns up to 10 content chunks per query, per the instructions of that `initialize` response. [DER S2177: the instructions text read 2026-10-24]
 - The npm package `@microsoft/learn-cli` has dist-tag `latest` = 1.0.0 (published 2026-09-10); a separate `preview` dist-tag also exists and is not the stable line. [DOC S2178]
 - Anthropic's Claude Code MCP quickstart uses the Claude Code documentation MCP server as its example: a hosted server with full-text search over the docs that needs no authentication. [DOC S2179]
-- `https://code.claude.com/docs/mcp` lists `search_claude_code_docs`, `query_docs_filesystem_claude_code_docs` (read-only queries over a virtual docs filesystem) and `submit_feedback`, which sends a report to the docs team. [DOC S2180]
+- `https://code.claude.com/docs/mcp` answered a `tools/list` POST on 2026-10-24 with `search_claude_code_docs`, `query_docs_filesystem_claude_code_docs` (read-only queries over a virtual docs filesystem) and `submit_feedback`, which sends a report to the docs team; Mintlify documents the same three-tool shape for its generated servers. [DER S2180, S2182: the response read; the census records a page fetch of the endpoint as `404`]
 - `https://modelcontextprotocol.io/mcp` lists `search_model_context_protocol`, `query_docs_filesystem_model_context_protocol` and `submit_feedback`. [DOC S2181]
 - Mintlify generates an MCP server for each hosted docs site and rate-limits it to 5,000 requests per hour per user IP address. [DOC S2182]
 - The Claude Code Docs and MCP docs servers are Mintlify-generated; an agent should not call their `submit_feedback` tool unasked, because it publishes text outside the kb. [DER S2180, S2181, S2182]
@@ -79,7 +80,7 @@ reading the current page.
 
 ### Live search tools a routed lookup can call (checked 2026-09-29)
 - Mintlify's generated MCP server has three tools: search (snippets with titles and links), query-docs-filesystem (shell-style reads of the site's virtual filesystem, including reads of several pages in one call) and submit-feedback; search takes optional `version` and `language` filters, and the skill.md files are exposed as MCP resources. [DOC S2182]
-- Microsoft Learn's `microsoft_docs_search` returns up to 10 chunks of at most 500 tokens each with title, url and excerpt, `microsoft_code_sample_search` up to 20 samples (optional `language` filter), and `microsoft_docs_fetch` a whole page as Markdown. [DOC S2177]
+- Microsoft Learn's `microsoft_docs_search` returns up to 10 chunks of at most 500 tokens each with title, url and excerpt, `microsoft_code_sample_search` up to 20 samples (optional `language` filter), and `microsoft_docs_fetch` a whole page as Markdown. [DER S2177: the instructions text of the `initialize` response read 2026-10-24]
 - A Learn search therefore adds at most about 5,000 tokens of tool result. [DER S2177: 10 x 500 tokens]
 - Claude Code's `WebSearch` tool runs a query on Anthropic's web search backend and returns titles and urls only; it does not fetch the pages, so reading one takes a `WebFetch` call. One call may issue up to eight backend searches. [DOC S-3yod3u7q]
 - An interactive terminal session has a limit of 200 `WebSearch` calls, counted across the main conversation and its subagents; at the limit a search does nothing and Claude is told to continue with what it has gathered or ask for more. `CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION` raises the cap (a positive whole number; the cap cannot be turned off), and from v2.1.290 that session's limit refills at about 100 calls per hour, which `CLAUDE_CODE_WEB_SEARCH_REFILLS_PER_HOUR` changes. [DOC S-3yod3u7q]
