@@ -256,9 +256,20 @@ def run_bounded(args, cwd, timeout):
     return subprocess.CompletedProcess(argv, proc.returncode, out, err)
 
 
+ABS_PATH_QUOTED = re.compile(r"\s*'(?:/|[A-Za-z]:[\\/]|\\\\)[^']*'")
+ABS_PATH_BARE = re.compile(r"(?<![\w/.\\])(?:/|[A-Za-z]:[\\/]|\\\\)\S+")
+
+
+def without_paths(line):
+    """`line` without the absolute paths it names (git reports the directory it could not create in quotes): the
+    home directory of the user never reaches a session."""
+    return ABS_PATH_BARE.sub("a path", ABS_PATH_QUOTED.sub("", line))
+
+
 def git(args, p, cwd=None, timeout=FETCH_TIMEOUT_S):
     """Run git with `args`; (True, '') or (False, the line of its stderr that gives the reason, without
-    the pointer's url: the `! [rejected]` line of a refused push, else the last line that is no `hint:`)."""
+    the pointer's url or an absolute path: the `! [rejected]` line of a refused push, else the last line that is no
+    `hint:`)."""
     try:
         r = run_bounded(args, cwd, timeout)
     except subprocess.TimeoutExpired:
@@ -271,7 +282,8 @@ def git(args, p, cwd=None, timeout=FETCH_TIMEOUT_S):
     lines = [ln for ln in lines if not ln.startswith("hint:")]
     # a refused push names its reason on the `! [rejected] HEAD -> main (fetch first)` line, above git's summary line
     refused = [ln for ln in lines if ln.startswith("!") and "rejected" in ln]
-    return False, (refused[-1] if refused else lines[-1] if lines else f"git {args[0]} exited {r.returncode}").replace(p.url, "the url")
+    reason = (refused[-1] if refused else lines[-1] if lines else f"git {args[0]} exited {r.returncode}").replace(p.url, "the url")
+    return False, without_paths(reason)
 
 
 def git_out(args, p, cwd):
@@ -419,7 +431,7 @@ def cmd_fetch_hook():
             if why:
                 print(f"fetch failed: {p.name}: {why}")
     except Exception as e:  # a hook never fails a session
-        print(f"fetch failed: {e.__class__.__name__}: {os_reason(e) if isinstance(e, OSError) else e}")
+        print(f"fetch failed: {e.__class__.__name__}: {os_reason(e) if isinstance(e, OSError) else without_paths(str(e))}")
     return 0
 
 
