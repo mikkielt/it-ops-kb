@@ -24,6 +24,23 @@
     "kb/_self/coordination.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What counts as a claim another tree holds, for the released drift of runs --reconcile?",
+      "options": [
+        "a claims-ledger record or item file status doing in another working tree of the repository, or an own/ record of coord naming the item",
+        "only the claims-ledger record or item file status doing of this working tree (as before)"
+      ],
+      "recommendation": "a claims-ledger record or item file status doing in another working tree of the repository, or an own/ record of coord naming the item",
+      "do": {
+        "a claims-ledger record or item file status doing in another working tree of the repository, or an own/ record of coord naming the item": "BG-hujj5ldb",
+        "only the claims-ledger record or item file status doing of this working tree (as before)": "BG-hujj5ldb"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "notes": "Found by the SP-sucr3kfg review (ST-66wvfkyu). bl_runs.collect reads the claims ledger of this working tree's git dir, but a run key is shared by every tree and clone: a session in another tree reads the live items of other sessions as drift (the review listed ST-54y7al4z and ST-n5vf55qk as working with the worker pid gone), and runs --reconcile writes failed over them, or released, which is terminal. ST-oazktatz already reads the worker's pid from the coord process record first, then the ledger: runs should use the same source, and dispatch must record the pid there. The check of ST-pmxnissq (a working state with no worker recorded anywhere reconciles to failed) must keep passing. Gate g1 of ST-pmxnissq (a claims-ledger record or item file status doing counts as claimed) needs a second look for the claimed-to-released drift: an item claimed in another tree and not yet fetched here reads as unclaimed.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
