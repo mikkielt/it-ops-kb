@@ -22,5 +22,6 @@
   "links": [
     "parked: SP-ky7xz6d2 review"
   ],
+  "notes": "Review gap 9 (S3, read), left as an open design question for the operator: nothing reads announce.operator (default terminal, kbmon omits needs_you) yet kbmon always adds the overlap entry to the needs-you line, and overlap_entries does not filter by operator on a shared --url store, so this operator is told of undecided overlaps between two other operators' sessions. SP-ky7xz6d2 review.",
   "filed_in": "clone-0ea70e5c"
 }
