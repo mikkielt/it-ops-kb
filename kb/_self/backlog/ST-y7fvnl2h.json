@@ -2,7 +2,7 @@
   "id": "ST-y7fvnl2h",
   "kind": "story",
   "title": "The Jaeger facts that rest on the bundled all-in-one configuration are CODE facts, not DOC",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-f2o3aqm2",
   "priority": "P3",
@@ -40,5 +40,7 @@
     "parked: SP-r7e7jcep review"
   ],
   "notes": "Review finding S3 (fresh-context reviewer, 2026-10-24): otel-collector-otlp-pipeline.md lines 77 and 80 cite S-fsi2wdg7 (all-in-one.yaml at v2.22.0) under a DOC tag; the docs page alone does not say the bundled config sets max_traces 100000 or writes localhost. Premise: the check fails on main now (lines 77 and 80). Plan 2026-10-24: premise runs on base (exit 1: lines 77 and 80 are DOC and cite S-fsi2wdg7, the all-in-one.yaml at v2.22.0). The old check passed once the two sentences were reworded or deleted; rewritten to require the CODE facts (localhost binding, max_traces 100000), no DOC fact citing S-fsi2wdg7, and the DOC facts kept (unlimited by default; the JAEGER_LISTEN_HOST snippet from the docs page, S-i2u4iabe). Line 80 holds both a docs part and a code part, so it is split into two facts. Check the source row of S-fsi2wdg7 names the tag it pins (v2.22.0). Runs after ST-btrrxobq and before ST-5ul27zl3 (same article, source rows, anchors and doc2query rows).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
