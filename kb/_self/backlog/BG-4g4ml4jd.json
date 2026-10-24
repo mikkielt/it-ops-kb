@@ -2,8 +2,9 @@
   "id": "BG-4g4ml4jd",
   "kind": "bug",
   "title": "kbmon --events exports a sprint's kb.sprint span after its first batch of items has landed and again with a later end when the next batch lands",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-ymnz7b4n",
   "priority": "P3",
   "rank": 0,
   "severity": "S2",
@@ -17,11 +18,12 @@
   },
   "touches": [
     "_tools/mon_events.py",
-    "kb/_self/monitoring.md"
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-hja7yu5k review"
   ],
-  "notes": "Found by the review of SP-hja7yu5k (mon_events.py:190-205). Items with no run key are ignored, so the span goes out when every claimed item has landed and the same id is exported again with a later end when the next batch (the skill claims up to four at a time) lands. The repro plants A landed and B an item the backlog has as doing with no move yet. Options for the fix: treat an item of the sprint that is doing or todo-and-claimed as open, and end the sprint at the last landed or released move after the review story is done (runs --reconcile gives it a landed move).",
+  "notes": "Found by the review of SP-hja7yu5k (mon_events.py:190-205). Items with no run key are ignored, so the span goes out when every claimed item has landed and the same id is exported again with a later end when the next batch (the skill claims up to four at a time) lands. The repro plants A landed and B an item the backlog has as doing with no move yet. Options for the fix: treat an item of the sprint that is doing or todo-and-claimed as open, and end the sprint at the last landed or released move after the review story is done (runs --reconcile gives it a landed move). Planned into SP-ymnz7b4n, 2026-10-24 day run. Precheck: repro fails on the base.",
   "filed_in": "clone-0ea70e5c"
 }
