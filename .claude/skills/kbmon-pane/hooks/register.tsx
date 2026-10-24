@@ -62,10 +62,12 @@ function needsRowOf(text: string): string | null {
 }
 
 // The entries of a needs-you line: split at `; `, without the age mon_needs.line appends to a run, overlap or orphan
-// entry and without the `not read: PANELS` suffix, so only an entry that appears, goes or changes its kind differs.
+// entry, without the figure of a disk entry (`disk 9.4% free`) or of a delivery or fast-forward cause, and without the
+// `not read: PANELS` suffix, so only an entry that appears, goes or changes its kind differs.
 // `complete` is false for a line with the suffix: the panel it names says nothing about what waits.
 const AGE = String.raw`\d+[dhms](?:\d+[hms])?`
 const NOT_READ = 'not read: '
+const CAUSE = /^(query-log delivery refused: |checkout cannot fast-forward to origin\/main: )(.*)$/
 
 function entriesOf(line: string): { entries: Set<string>; complete: boolean } {
   const parts = (line.startsWith(NEEDS) ? line.slice(NEEDS.length) : line).split('; ')
@@ -81,7 +83,9 @@ function entriesOf(line: string): { entries: Set<string>; complete: boolean } {
           where === undefined ? pid : `${pid} in ${where}`,
         )
         .replace(new RegExp(`^(overlap .* undecided) for ${AGE}$`), '$1')
-        .replace(new RegExp(`^(\\S+ (?:blocked(?: on gates? .*)?|run failed.*|landing refused.*)), ${AGE}$`), '$1'),
+        .replace(new RegExp(`^(\\S+ (?:blocked(?: on gates? .*)?|run failed.*|landing refused.*)), ${AGE}$`), '$1')
+        .replace(/^disk [\d.]+% free$/, 'disk free')
+        .replace(CAUSE, (_, head: string, why: string) => `${head}${why.replace(/\d+(?:\.\d+)?/g, '#')}`),
     )
   }
 
