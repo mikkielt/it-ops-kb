@@ -102,7 +102,11 @@
         "four keys (announce.when, strategy.decide, landing, working), detect by explain source default, kb-setup step 8": "ST-ct2dpjgz",
         "all ten keys asked, detect by explain source default, kb-setup step 3": "ST-ct2dpjgz"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "four keys (announce.when, strategy.decide, landing, working), detect by explain source default, kb-setup step 8",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Plan 2026-10-24: premise reproduced on base (precheck: kbsettings.py init exits 2). Second check added for the kept keys and the defaults when init is given only some --set values, and for the skills' one-batch AskUserQuestion beside kbsettings.py init. After ST-omimwr5q (it makes coord a valid hooks name), ST-vopsopkg (shared kbsettings.py) and ST-tb6tzrxa (shared skills/sprint/SKILL.md). Touches .claude/skills/kb-setup/SKILL.md, which sprint SP-3trnelzv may still hold: claim only after held --overlaps is clear and the manager says SP-3trnelzv closed. Planned into SP-sucr3kfg on 2026-10-24. Sprint started 2026-10-24.",
