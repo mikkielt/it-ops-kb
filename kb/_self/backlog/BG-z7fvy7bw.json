@@ -18,5 +18,9 @@
   "touches": [
     "kb/_self/monitoring.md"
   ],
+  "links": [
+    "parked: SP-ymnz7b4n review"
+  ],
+  "notes": "Found by the review of SP-ymnz7b4n (2026-10-24, S3): ST-k4napiev gave each kb.item its own trace; line 57 of the doc still says the items share the kb.sprint root span's trace. Also the kb.sprint span is then in another trace than its items.",
   "filed_in": "clone-0ea70e5c"
 }
