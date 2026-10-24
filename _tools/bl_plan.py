@@ -9,9 +9,11 @@ Standard library only; imports `bl_base`, `bl_authority` (the class of a gate, w
 `bl_cli` (and `kbpublic`, where `history_ref` reads the integration remote's name) and
 never `backlog` or `bl_check`: `bl_check` imports this module for the rules `check` runs, so the two form no cycle. It registers `start` with `bl_cli` itself when imported, and `backlog.py`'s USAGE puts it in
 the usage order."""
+import os
 import re
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import bl_cli
@@ -23,6 +25,7 @@ from bl_base import (
 )
 
 OPEN_STATUSES = OPEN  # the statuses of an item still to do
+PROBE_ENV = "KB_BACKLOG_PROBE"  # set while `orchestrator_lands` runs a story's checks: a nested next or brief runs none
 
 
 def start_approved(sp):
@@ -607,13 +610,26 @@ def orchestrator_lands(bl, iid):
     """True when the orchestrator finishes story `iid` itself: it is an open story with checks, it has child items
     and every one of its descendants is done or dropped, and each of its checks passes in this checkout (the current
     main, once fetched and fast-forwarded). A worker session for it would only run those checks again. Runs the
-    checks, so callers ask only of a story that is ready."""
+    checks, so callers ask only of a story that is ready. It does not re-enter itself: a check that runs `next` or
+    `brief` runs under PROBE_ENV, where this returns False without running a check, so a call runs each check once; and
+    a `tests.py` run inside a check writes its `test.run` row into a temporary directory (KB_TEST_RUN_HOME), so a read
+    command adds no row to the clone's spool."""
     it = bl.items[iid]
     kids = bl.descendants(iid)
     if it.get("kind") != "story" or it.get("status") not in ("todo", "doing") or not it.get("checks") or not kids \
-            or any(bl.items[k].get("status") not in ("done", "dropped") for k in kids):
+            or any(bl.items[k].get("status") not in ("done", "dropped") for k in kids) or os.environ.get(PROBE_ENV):
         return False
-    return all(run_check(bl.root, c)[0] for c in it["checks"])
+    saved = {k: os.environ.get(k) for k in (PROBE_ENV, "KB_TEST_RUN_HOME")}
+    with tempfile.TemporaryDirectory(prefix="kb-probe-", ignore_cleanup_errors=True) as home:
+        os.environ[PROBE_ENV], os.environ["KB_TEST_RUN_HOME"] = "1", home
+        try:
+            return all(run_check(bl.root, c)[0] for c in it["checks"])
+        finally:
+            for k, v in saved.items():
+                if v is None:
+                    os.environ.pop(k, None)
+                else:
+                    os.environ[k] = v
 
 
 def land_line(bl, iid):

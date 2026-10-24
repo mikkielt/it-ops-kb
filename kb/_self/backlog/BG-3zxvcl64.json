@@ -44,9 +44,31 @@
   "depends_on": [
     "BG-omnjri7u"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does a read command avoid re-entering next/brief and writing a test.run row when it runs a story's checks for the no-worker line?",
+      "options": [
+        "Env guard",
+        "Never run checks from next or brief"
+      ],
+      "recommendation": "Env guard",
+      "do": {
+        "Env guard": "BG-3zxvcl64",
+        "Never run checks from next or brief": "BG-3zxvcl64"
+      },
+      "class": "agents-rule",
+      "answer": "Env guard",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-v64egscn review"
   ],
+  "notes": "g1 (agents-rule) answered with its recommendation, pre-approved by the operator for the 2026-10-24 day run.",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }
