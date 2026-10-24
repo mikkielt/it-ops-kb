@@ -2,7 +2,7 @@
   "id": "ST-ghvyvfbd",
   "kind": "story",
   "title": "Review sprint: Coord core: run-state transitions, a filtered wait, coordination settings and a landing worktree",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-47w4ngr6",
   "review": true,
   "priority": "P1",
@@ -25,6 +25,27 @@
   ],
   "notes": "Planned in SP-47w4ngr6 on 2026-10-24. Sprint SP-47w4ngr6 started 2026-10-24.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "2b5752f195398dcbc49820b3711ec8e267ced52f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "14222ffb3b61be9e"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "79d1c02019849cd5"
+      }
+    ]
+  }
 }
