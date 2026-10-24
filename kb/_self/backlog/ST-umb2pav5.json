@@ -2,7 +2,7 @@
   "id": "ST-umb2pav5",
   "kind": "story",
   "title": "Review sprint: Landings and run states heal themselves: stale landing worktrees, refused-step names, release and done moves, killed stage-backs",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-dx76osrn",
   "review": true,
   "priority": "P1",
@@ -22,6 +22,9 @@
         "_tools/tests.py"
       ]
     }
+  ],
+  "links": [
+    "planned: SP-dx76osrn started 2026-10-24"
   ],
   "filed_in": "clone-0ea70e5c"
 }
