@@ -1,0 +1,28 @@
+{
+  "id": "BG-2yqkripi",
+  "kind": "bug",
+  "title": "The Jaeger article says JAEGER_LISTEN_HOST is meant to be 0.0.0.0 in a container and makes a snippet default the listening endpoints default, where the docs say it is useful when the container needs 0.0.0.0",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/public/logs/otel-collector-otlp-pipeline.md says what the Jaeger configuration page says about JAEGER_LISTEN_HOST: the snippet's hostname is localhost by default, overwritten via the variable, which is useful when a container needs 0.0.0.0, and does not say it is meant to be 0.0.0.0",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re, sys\nlines = open(\"kb/public/logs/otel-collector-otlp-pipeline.md\", encoding=\"utf-8\").read().splitlines()\nbad = [n for n, l in enumerate(lines, 1) if l.startswith(\"- \") and \"[DOC\" in l and \"JAEGER_LISTEN_HOST\" in l and re.search(r\"meant to be\", l)]\nprint(\"DOC lines saying JAEGER_LISTEN_HOST is meant to be 0.0.0.0:\", bad or \"none\")\nsys.exit(1 if bad else 0)"
+    ]
+  },
+  "repro_reason": "the defect is a sentence of a kb article that is stronger than its cited page; the repro reads the sentence",
+  "touches": [
+    "kb/public/logs/otel-collector-otlp-pipeline.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-f2o3aqm2 review"
+  ],
+  "notes": "Review gap (S4) of SP-f2o3aqm2, fresh-context reviewer 2026-10-24; parked, no fitness test or user report names it.",
+  "filed_in": "clone-0ea70e5c"
+}
