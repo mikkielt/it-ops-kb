@@ -9,6 +9,7 @@ const SETTLE_MS = 1_000
 const FIRST_MS = 1_500
 const RUN_MS = 120_000
 const DEFAULT_COLUMNS = 80
+const NEEDS = 'needs you: '
 const LAUNCHERS = [['python3'], ['python'], ['py', '-3']]
 
 const view = atom({ plugin: 'kbmon-pane', key: 'view' } as const, null)
@@ -19,6 +20,8 @@ let columns = DEFAULT_COLUMNS
 let inFlight = false
 let isStale = false
 let lastAlerts: string | null = null
+let lastRow: string | null = null
+let lastNeeds: string | null = null
 let settle: Timer | undefined
 
 // The text of the alert rows above kbmon's header, without the time each is "since": it changes when the alert set
@@ -32,11 +35,11 @@ function alertsOf(text: string): string {
 }
 
 // One kbmon.py run, with Python found as python3, python or py -3; the stdout, or the reason it gave none.
-async function kbmon($: EngineInterface, flag: string, width: number): Promise<string> {
+async function kbmon($: EngineInterface, flags: string[], width: number): Promise<string> {
   let reason = 'no Python found (python3, python, py -3)'
   for (let step = 0; step < LAUNCHERS.length; step += 1) {
     const which = (launcher + step) % LAUNCHERS.length
-    const argv = [...LAUNCHERS[which], '_tools/kbmon.py', flag]
+    const argv = [...LAUNCHERS[which], '_tools/kbmon.py', ...flags]
     try {
       const ran = await $.process.run(argv, { env: { COLUMNS: String(width) }, timeoutMs: RUN_MS })
       // kbmon exits 1 while an alert is on; a missing or stub Python gives no output.
@@ -53,6 +56,43 @@ async function kbmon($: EngineInterface, flag: string, width: number): Promise<s
   throw new Error(reason)
 }
 
+// The row of the text that starts with kbmon's needs-you line, or null.
+function needsRowOf(text: string): string | null {
+  return text.split('\n').find(line => line.startsWith(NEEDS)) ?? null
+}
+
+// Tells the person when the needs-you line changed and names something. The first reading is the baseline, an
+// unchanged line and `nothing` are not told. The pane's row is cut at its width, so the whole line comes from
+// `--status all`, asked for when the row changed or was cut. A call that rejects or answers `isSent: false` is no
+// error: the pane and the receipt go on, and the next change is tried again.
+async function notifyNeeds($: EngineInterface, text: string, width: number): Promise<void> {
+  const row = needsRowOf(text)
+  if (row === null || (row === lastRow && lastNeeds !== null && !row.endsWith('\u2026'))) {
+    return
+  }
+  let line = row
+  try {
+    const first = (await kbmon($, ['--status', 'all'], width)).split('\n')[0]
+    if (first.startsWith(NEEDS)) {
+      line = first
+    }
+  } catch {
+    // The row stays unread, so the next refresh asks again.
+    return
+  }
+  const before = lastNeeds
+  lastRow = row
+  lastNeeds = line
+  if (before === null || line === before || line === `${NEEDS}nothing`) {
+    return
+  }
+  try {
+    await $.ui.notify(line)
+  } catch {
+    // Another mod's hook denied it or the terminal write failed.
+  }
+}
+
 async function refresh($: EngineInterface): Promise<void> {
   // The last run is still going: never start another; the width it ran at is checked when it ends.
   if (inFlight) {
@@ -64,15 +104,16 @@ async function refresh($: EngineInterface): Promise<void> {
   isStale = false
   const width = columns
   try {
-    const text = await kbmon($, '--once', width)
+    const text = await kbmon($, ['--once'], width)
     await update($, view, () => ({ text, columns: width }) as KbmonView)
+    await notifyNeeds($, text, width)
     const alerts = alertsOf(text)
     if (alerts === lastAlerts) {
       return
     }
     lastAlerts = alerts
 
-    const receipt = JSON.parse(await kbmon($, '--receipt', width)) as { line: string; fingerprint: string }
+    const receipt = JSON.parse(await kbmon($, ['--receipt'], width)) as { line: string; fingerprint: string }
     const before = await read($, fingerprint)
     if (before === receipt.fingerprint) {
       return
