@@ -87,7 +87,11 @@
         "touch = the chooser's intent paths that the intents naming OTHER also list (left out when none); chooser = the newest live session intent naming ITEM, a backlog-claim intent only when no other exists": "ST-wqqpspwl",
         "touch = all of the chooser's intent paths; chooser = any live intent naming ITEM": "ST-wqqpspwl"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "touch = the chooser's intent paths that the intents naming OTHER also list (left out when none); chooser = the newest live session intent naming ITEM, a backlog-claim intent only when no other exists (pre-approved by the operator for the 2026-10-24 night run)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
