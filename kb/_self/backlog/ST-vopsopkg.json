@@ -88,7 +88,9 @@
       },
       "class": "design",
       "answer": "the SETTINGS table holds the line numbers and a kbsettings.py check subcommand compares each doc line with the table",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
