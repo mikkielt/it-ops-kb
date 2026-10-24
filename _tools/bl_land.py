@@ -32,8 +32,8 @@ from bl_base import (  # run_check lives below bl_land, so bl_ci reaches it with
 from bl_check import HOST_BOUND_GATE, host_bound_accepted, is_test_run, noop_output, trivial_command
 from bl_close import (  # the worker's worktree and the repositories' leftovers `land` shares with close and tidy
     AGENT_BRANCH, WORK_PREFIX, delete_landed_branch, detached_workers, gone_checks, has_ref, land_stop,
-    add_landing_worktree, landing_lock, own_checkout_drafts, release_worker_worktree, remove_landing_worktree,
-    repo_worktree, set_aside_drafts, worktree_entries,
+    add_landing_worktree, landing_lock, landing_worktree_path, own_checkout_drafts, release_worker_worktree,
+    remove_landing_worktree, repo_worktree, set_aside_drafts, worktree_entries,
 )
 from bl_close import (  # noqa: F401 - bl_items and bl_dispatch read them as bl_land.NAME
     REOPENED_REFS, RESEARCH_DEFAULT_GOAL, WORKER_NAME, cleanup_gate_do, clauses_left_behind, prune_reopened_refs,
@@ -1877,6 +1877,9 @@ def land_locked(bl, a):
     if not has_ref(root, f"refs/heads/{branch}"):
         raise land_stop("branch", f"no local branch {branch} (--branch names another)")
     repos = land_repositories(bl, iid)  # a multi-repository item: each repository's request merged, worktrees removed
+    leftover = landing_worktree_path(root, iid)  # an earlier killed landing's (the lock is ours): it may hold the branch
+    if leftover.exists() and leftover.resolve() != Path(git(root, "rev-parse", "--show-toplevel").strip()).resolve():
+        remove_landing_worktree(root, leftover)
     other = checked_out_elsewhere(root, branch)
     agent_branch = None
     released = []  # the worker worktrees this run removed: a stop after that names how to check the branch out again
