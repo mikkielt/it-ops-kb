@@ -1,0 +1,24 @@
+{
+  "id": "ST-al6rvds7",
+  "kind": "story",
+  "title": "A released run key can be claimed again, so an item released and later reclaimed moves through coord without a manual put",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "coord.py transition accepts released to claimed (and states the reclaim in the table), so a released item is claimed again without a manual put on its run key",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, tempfile, os, sys, json\nS = os.path.join(tempfile.mkdtemp(), \"c.sqlite\")\ndef c(*a): return subprocess.run([sys.executable, \"_tools/coord.py\", \"--store\", S, *a], capture_output=True, text=True)\nfirst = [c(\"transition\", \"run/ST-00000000\", \"--to\", s).returncode for s in (\"claimed\", \"released\")]\nagain = c(\"transition\", \"run/ST-00000000\", \"--to\", \"claimed\").returncode\nprint(\"claim, release\", first, \"claim again\", again)\nsys.exit(0 if first == [0, 0] and again == 0 else 1)\n"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-47w4ngr6 review"
+  ],
+  "notes": "Found by the SP-47w4ngr6 review (S3); parked, no fitness test or user report names it.",
+  "filed_in": "clone-0ea70e5c"
+}
