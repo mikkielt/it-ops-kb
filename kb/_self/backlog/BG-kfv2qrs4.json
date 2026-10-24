@@ -1,0 +1,27 @@
+{
+  "id": "BG-kfv2qrs4",
+  "kind": "bug",
+  "title": "kbtools.py ranks the wrong entry first for the needs query log and how long landing steps take",
+  "status": "draft",
+  "parent": "EP-5mp6pwnn",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbtools.py NEED puts querylog.py first for query log and backlog.py first for how long landing steps take: a name of several words (querylog) matches the words of a need, and a word in a description that names no need (long in long research) does not outrank a command that answers it",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json, subprocess, sys\n\ndef first(need):\n    r = subprocess.run([sys.executable, '_tools/kbtools.py', need, '--json'], capture_output=True, text=True)\n    try:\n        return json.loads(r.stdout)['entries'][0]['tool']\n    except (ValueError, KeyError, IndexError, TypeError):\n        return None\n\ncases = {'query log': 'querylog.py', 'how long landing steps take': 'backlog.py'}\ngot = {need: first(need) for need in cases}\nprint('first entry for each need:', got, '| wanted:', cases)\nsys.exit(0 if got == cases else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/kbtools.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-x6eqtsid review"
+  ],
+  "notes": "Parked by the review of SP-x6eqtsid (reviewer, 2026-10-24; S3). kbtools.words() splits a name only at _, so the name querylog never matches the words query and log (kbmon.py first, querylog.py second for query log); how long landing steps take puts the kb-lookup agent first because Long it-ops-kb research matches long, backlog.py second. Five of thirteen needs the reviewer tried were right first; the kb coverage need left kb_audit out of the first four. The S1 bug BG-nrq2gqcb changes the same matching: take this one after it.",
+  "filed_in": "clone-0ea70e5c"
+}
