@@ -25,6 +25,16 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kbroot.py fetch --hook counts a fetch root as stale when its clone is missing, whatever its NAME.fetched stamp says, so a deleted clone is fetched again at the next session start and not reported missing for up to 24 hours (found by the SP-mguax5m3 review",
+      "check": 1
+    },
+    {
+      "clause": "a changed pointer url, ref or pin is the same case)",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kbroot.py",
     "kb/_self/tools.md"
