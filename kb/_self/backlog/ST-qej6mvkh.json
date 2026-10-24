@@ -2,7 +2,7 @@
   "id": "ST-qej6mvkh",
   "kind": "story",
   "title": "Research sprint goal: Sessions announce overlaps: who else works on the same items or files, the suggested and the chosen strategy, shown in kbmon",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ky7xz6d2",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,7 @@
     "kb/public/**"
   ],
   "notes": "No outside facts: the sprint's open questions are answered by kb facts already: a PreToolUse hook on Write and Edit reads tool_input.file_path, always absolute, and a matcher Edit|Write runs it for both (kb/public/claude/hooks.md:203-204, DOC S743); systemMessage and additionalContext are delivered and capped at 10,000 characters (hooks.md:84-85); a hook canceled at its timeout has its output discarded (hooks.md:86, 197); the coord store, intents, digest and kbsettings are documented in kb/_self/coordination.md. Checked with kb_pack on 2026-10-24: coverage good for all three questions. Sprint SP-ky7xz6d2 started 2026-10-24 on the operator's standing approval for the night run.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
