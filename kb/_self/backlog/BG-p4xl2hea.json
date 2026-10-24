@@ -19,5 +19,9 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
+  "links": [
+    "parked: SP-ymnz7b4n review"
+  ],
+  "notes": "Found by the review of SP-ymnz7b4n (2026-10-24, S3): compact_lines gives one line per sprint but the all answer trims each topic to four lines, so with five or more sprints the later ones lose their run-state rows; ST-wdjdbxl4's check plants four sprints.",
   "filed_in": "clone-0ea70e5c"
 }
