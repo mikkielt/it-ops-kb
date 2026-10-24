@@ -1,0 +1,27 @@
+{
+  "id": "ST-65v5zhnu",
+  "kind": "story",
+  "title": "The sprint skill's plan step asks for each planted check to run in the landing's check environment against a prototype of the fix",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the plan step of skills/sprint/SKILL.md says a planted check that reads query-log, spool or workspace state is run once through bl_base.run_check (its isolated CLAUDE_PLUGIN_DATA home) against a prototype of the fix before the start gate",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys;t=open('skills/sprint/SKILL.md',encoding='utf-8').read();m=re.search(r'\\n## plan.*?\\n## start',t,re.S);sys.exit(0 if m and 'run_check' in m.group(0) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-hja7yu5k close"
+  ],
+  "notes": "Retrospective of SP-hja7yu5k: the span story's check 1 passed from a shell and failed twice at the landing (step checks) because the landing runs checks with an empty CLAUDE_PLUGIN_DATA home, where kbmon --events printed the cursor 1.0.N.0 and the redaction rewrote it to 192.0.2.10 (a real bug, fixed in the sprint). Run through bl_base.run_check, the check shows it at plan time. The check reads the plan section for the word; a planned item adds the command form.",
+  "filed_in": "clone-0ea70e5c"
+}
