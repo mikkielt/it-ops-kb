@@ -2,7 +2,7 @@
   "id": "BG-z422vlfi",
   "kind": "bug",
   "title": "mon_eta.kind_of counts a paid bench item whose goal does not say paid as content",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ymnz7b4n",
   "priority": "P2",
   "rank": 0,
@@ -43,6 +43,19 @@
     "parked: SP-yjfiemha review"
   ],
   "notes": "SP-yjfiemha review, 2026-10-19: ST-ix3lknus touches kb/_self/reports/benchmarks.csv and its goal names --max-usd and 75 USD but not the word paid (only its title does), so kind_of gives content (3-11 min) while the bench kind's p75 is 190 min; the live view showed SP-p46hofrg ETA 38-83 min, high confidence. Even as bench it is pooled today (n=3 under POOL_MIN). The repro reads a live item file: replace it with a planted item if ST-ix3lknus closes first. Planned into SP-ymnz7b4n, 2026-10-24 day run. Precheck: repro fails on the base.",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "51a9e46ea3fe01a1ecc03a3a5643d45342c5fd5d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,json;sys.path.insert(0,\"_tools\");import mon_eta;k=mon_eta.kind_of({\"kind\":\"story\",\"title\":\"A paid multi run measures research dedup within 75 USD\",\"goal\":\"multi run research runs twice with --max-usd 12 per run; multi record writes its rows\",\"touches\":[\"kb/_self/reports/benchmarks.csv\"]});print(k);sys.exit(0 if k==\"bench\" else 1)"
+        ],
+        "exit": 0,
+        "sha256": "4b974ca0ce5be5e0"
+      }
+    ]
+  }
 }
