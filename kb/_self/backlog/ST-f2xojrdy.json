@@ -2,7 +2,7 @@
   "id": "ST-f2xojrdy",
   "kind": "story",
   "title": "Research sprint goal: kbmon tells what is true: overlap ages and decisions, claim-only overlaps, stall alerts, span exports, the mod's baseline and cut rows",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ymnz7b4n",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,7 @@
     "kb/public/**"
   ],
   "notes": "No outside facts: the goal concerns kbmon's own code and its _self doc (kb/_self/monitoring.md), which the items' touches and the _self pack already cover (kb/_self/monitoring.md:181,194,98 on overlaps and the needs-you line); no item depends on a vendor or standard fact the kb lacks (Alertmanager webhook v4 and the OTLP trace/span ids are read by the items' workers from the live docs where needed). Planned into SP-ymnz7b4n, 2026-10-24 day run.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
