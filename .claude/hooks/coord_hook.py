@@ -12,7 +12,7 @@ command, and the hook adds no state of its own beyond the lease token coord.py s
                   `intent` with fields session, item, touch and operator (the item of a `work/<id>` branch and the items this
                   session claimed earlier; touch the paths their item files list in this workspace, whole paths only, as
                   many as fit the field's 120 characters; the operator id `kbwho.operator()` gives, left out when it has
-                  none; not again after /compact), then prints one line that names the session's own id and how to read,
+                  none; not again after /compact; not at all when announce.to_other_sessions is false), then prints one line that names the session's own id and how to read,
                   answer and send asks (INTRO), then, when announce.when names start, the overlaps of those items and touches
   PreToolUse Edit, Write  renew the lease when it is due, as any other Bash command does, and, when announce.when names edit,
                   the overlaps of the edited file with other live sessions' touches
@@ -20,7 +20,7 @@ command, and the hook adds no state of its own beyond the lease token coord.py s
                   echo, a grep pattern or a heredoc does, is no claim): when announce.when names claim the overlaps of ID
                   and its touches, then an intent for ID with its touch field
                   (topic backlog-claim, which the worker dispatched on `work/ID` skips at its SessionStart; it carries the
-                  operator field too), so the session's claimed items are announced too; any other command renews the lease when it
+                  operator field too), so the session's claimed items are announced too (not when announce.to_other_sessions is false); any other command renews the lease when it
                   is due (below) and, when announce.when names midrun, shows the overlaps of the session's items and touches
                   (the first at once, then at most every MID_SECONDS)
   PreToolUse Skill a `/kb-research` start Claude made: the overlaps of this session's items; any other skill is a Bash
@@ -697,9 +697,9 @@ def session_start(payload, sid):
     state.pop("lease_until", None)
     save(sid, state)  # before announce and overlaps: a hook killed at its timeout keeps the token the store accepted
     touch = touches_of(ws, items)
-    if payload.get("source") != "compact":
-        announce(sid, items, touch=touch_field(touch))
     announce_cfg, strategy = settings(ws)
+    if payload.get("source") != "compact" and announce_cfg.get("to_other_sessions", True):
+        announce(sid, items, touch=touch_field(touch))
     lines = overlap_block(sid, ws, items, items + touch, touch, strategy, branch) if "start" in announce_cfg["when"] else []
     show("SessionStart", new_coordinates(payload, sid, (ws, branch)) + lines, new_asks(sid, True), intro(sid))
 
@@ -803,7 +803,7 @@ def pre_tool_use(payload, sid):
         lease(sid, state)
         state.pop("lease_until", None)
         save(sid, state)
-        if first:
+        if first and announce_cfg.get("to_other_sessions", True):
             announce(sid, [claimed], CLAIM_TOPIC, touch_field(touch))
         lines = overlap_block(sid, ws, [claimed, *mine], [claimed, *touch], touch, strategy, branch) \
             if "claim" in announce_cfg["when"] else []
