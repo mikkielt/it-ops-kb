@@ -80,7 +80,11 @@
         "move the run state to working before the session starts and derive the ids from that event": "ST-zlzvqz2w",
         "start the session first and pass only the item context, with no TRACEPARENT": "ST-zlzvqz2w"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "move the run state to working before the session starts and derive the ids from that event",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
