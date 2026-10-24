@@ -200,21 +200,23 @@ def maker_names_allowed(root, policy=None):
 # whitespace follows) or a table `|` may sit between the lines or the cells, and a space may be all there is). Key
 # material is 20 base64 characters in a row with an upper-case letter, a digit or a `+` among them (a lower-case
 # repository path such as `kb/public/security/x` is none), or three lines (or cells) of at least 8 base64 characters,
-# each ending its line, for a body wrapped under 20 characters. A header value
+# each ending its line, for a body wrapped under 20 characters (a gap before such a line may leave a `//` or `///` to the
+# line, as `/` is base64, so `//8x89Kh` is a line of 8). A header value
 # is free text up to the first gap (those characters, whitespace, an escaped newline, a pipe) that a header or the
 # base64 run follows, never past a real newline and never into the next armor line: a pipe or `C:\new` inside it
 # stays in the value. Every part is possessive, so each character has one reading and a row of
 # `| Key: value` cells, a run of backslashes or a line of armor labels scans linearly. The lookahead keeps the match
 # to the armor line, so a hit never prints the key; either label quoted alone in prose passes.
 _GAP = r"(?:\s|\\+[nrt]|[>#|]|[*-](?=\s)|//[/!]?)++"
+_GAPS = r"(?:" + _GAP + r"|(?:\s|\\+[nrt]|[>#|]|[*-](?=\s))++)"
 _NEXT = r"(?:[A-Za-z][\w-]*+:|[A-Za-z0-9+/]{20}|[A-Za-z0-9+/]{8,}+\\+[nrt])"
 _VALUE = (r"(?:(?!" + _GAP + _NEXT + r")(?:(?:[^\S\r\n]|\\+[nrt]|[>#|]|[*-](?=\s)|//[/!]?)++|[^\s\\|>#/-]++|\\++|/|-(?!----BEGIN )))*+")
 _LINE = r"[A-Za-z0-9+/]{8,}+(?=[^\S\r\n]*+(?:[\r\n|]|\\+[nrt]|$))"
-_KEY = r"(?:(?=[A-Za-z0-9+/]{0,19}[A-Z0-9+])[A-Za-z0-9+/]{20}|" + _LINE + r"(?:" + _GAP + _LINE + r"){2})"
+_KEY = r"(?:(?=[A-Za-z0-9+/]{0,19}[A-Z0-9+])[A-Za-z0-9+/]{20}|" + _LINE + r"(?:" + _GAPS + _LINE + r"){2})"
 SECRETS = (
     r"-----BEGIN (?:(?:RSA |OPENSSH |DSA |PGP |ENCRYPTED )?PRIVATE KEY-----"
     r"|(?:EC PRIVATE KEY|PGP PRIVATE KEY BLOCK)-----"
-    r"(?=(?:" + _GAP + r")?(?:[A-Za-z][\w-]*+:" + _VALUE + _GAP + r")*" + _KEY + r"))",
+    r"(?=(?:" + _GAPS + r")?(?:[A-Za-z][\w-]*+:" + _VALUE + _GAPS + r")*" + _KEY + r"))",
     r"\bAKIA[0-9A-Z]{16}\b",
     r"\bgh[pousr]_[A-Za-z0-9]{36}\b", r"\bgithub_pat_[A-Za-z0-9_]{22,}\b",
     r"\bglpat-[A-Za-z0-9_-]{20,}\b", r"\bglrt-[A-Za-z0-9_-]{20,}\b",
