@@ -55,7 +55,11 @@
         "Refuse every stray KB-* or Self-Reviewed line": "BG-vvszkzuj",
         "Refuse only a stray KB-Work line": "BG-vvszkzuj"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "Refuse every stray KB-* or Self-Reviewed line",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
