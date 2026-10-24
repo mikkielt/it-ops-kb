@@ -1,0 +1,26 @@
+{
+  "id": "BG-7mxo4k6p",
+  "kind": "bug",
+  "title": "The leak scan flags the EC armor label quoted before a repository path that has a digit or an upper-case letter",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbcommon.leak_hits does not flag the EC armor label quoted alone with a repository path on the next line when the path holds a digit or an upper-case letter (kb/public/mecm/sql2022-views.md, kb/public/Intune/Apps/Win32.md), as it does not for kb/public/a/b.md",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport sys\nsys.path.insert(0, \"_tools\")\nimport kbcommon\nd = \"-\" * 5\narm = d + \"BEGIN EC PRIVATE KEY\" + d\nhit = lambda t: any(k == \"secret\" for k, _ in kbcommon.leak_hits(t))\npaths = [\"kb/public/mecm/sql2022-views.md\", \"kb/public/Intune/Apps/Win32.md\"]\nflagged = [p for p in paths if hit(arm + \"\\n\" + p)]\nprint(\"armor label quoted before a repository path that is flagged:\", flagged)\nsys.exit(1 if flagged else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kbcommon.py",
+    "_tools/test_leaks.py"
+  ],
+  "links": [
+    "parked: SP-swavez3g review"
+  ],
+  "notes": "Found by the SP-swavez3g review (S3) of BG-ok4itunr: the path rule covers only lowercase paths with no digit (the gate option taken provisionally). Three 8+ letter prose lines after the label are flagged too; decide whether that is wanted.",
+  "filed_in": "clone-0ea70e5c"
+}
