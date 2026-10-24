@@ -2,8 +2,9 @@
   "id": "BG-uxizizva",
   "kind": "bug",
   "title": "The kbmon mod tells a disk entry again each time its free percentage moves, so a disk filling under the low-free threshold notifies on nearly every refresh",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-ymnz7b4n",
   "priority": "P3",
   "rank": 0,
   "severity": "S2",
@@ -19,9 +20,12 @@
     ".claude/skills/kbmon-pane/hooks/register.tsx",
     "kb/_self/monitoring.md"
   ],
+  "depends_on": [
+    "BG-bd2lai7q"
+  ],
   "links": [
     "parked: SP-rin4kkoj review"
   ],
-  "notes": "Found by the review of SP-rin4kkoj (2026-10-24, S2). mon_host rounds free_pct to one decimal and mon_needs writes `disk 9.4% free`; register.tsx entriesOf keeps that text, so 9.4 then 9.3 reads as one entry gone and one new. The same goes for any cause text that carries a number (fast-forward or delivery `why`). Decision for the operator: strip the percentage from the entry key (this repro), or say in kb/_self/monitoring.md that a moved figure is news.",
+  "notes": "Found by the review of SP-rin4kkoj (2026-10-24, S2). mon_host rounds free_pct to one decimal and mon_needs writes `disk 9.4% free`; register.tsx entriesOf keeps that text, so 9.4 then 9.3 reads as one entry gone and one new. The same goes for any cause text that carries a number (fast-forward or delivery `why`). Decision for the operator: strip the percentage from the entry key (this repro), or say in kb/_self/monitoring.md that a moved figure is news. Plan 2026-10-24 (day run, pre-approved by the operator): the open choice takes the easy-to-reverse option: strip the numbers from the compared entry (the percentage and any figure in a cause text) in register.tsx entriesOf, so a moved figure is not news; say so in kb/_self/monitoring.md (The notification). No gate. Planned into SP-ymnz7b4n, 2026-10-24 day run. Precheck: repro fails on the base.",
   "filed_in": "clone-0ea70e5c"
 }
