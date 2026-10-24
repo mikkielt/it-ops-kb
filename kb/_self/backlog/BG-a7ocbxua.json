@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "A writer that renamed a live feedback.ids lock away leaves a window with no lock, so a third writer gets in and the first holder's lock is lost",
   "status": "draft",
+  "sprint": "SP-4ppjbh4k",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -14,12 +15,27 @@
       "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, pathlib, sys, tempfile, time\nsys.path.insert(0, \"_tools\")\nimport ql_capture as q\nd = pathlib.Path(tempfile.mkdtemp())\nlock = d / \"feedback.ids.lock\"\nlock.write_text(\"\")\nold = time.time() - 3600\nos.utime(lock, (old, old))\nq.FEEDBACK_IDS_LOCK_WAIT_S = 0.3\nrename, link, fired = os.rename, os.link, []\ndef fake_rename(a, b, *r, **k):\n    if not fired and str(a) == str(lock):\n        fired.append(1)\n        os.unlink(a)\n        lock.write_text(\"B\")  # another writer took the stale lock over and holds a live one\n    return rename(a, b, *r, **k)\ndef fake_link(a, b, *r, **k):\n    if not pathlib.Path(b).exists():\n        pathlib.Path(b).write_text(\"C\")  # a third writer finds no lock in the window and creates its own\n    return link(a, b, *r, **k)\nos.rename, os.link = fake_rename, fake_link\ntry:\n    q._take_ids_lock(lock, \"A\")\nfinally:\n    os.rename, os.link = rename, link\nassert fired, \"the check never saw the writer rename the lock\"\nassert lock.exists() and lock.read_text() == \"B\", (\"a live lock another writer holds was removed and a third writer holds a new one\", lock.read_text() if lock.exists() else None)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, pathlib, sys, tempfile, time\nsys.path.insert(0, \"_tools\")\nimport ql_capture as q\nd = pathlib.Path(tempfile.mkdtemp())\nq.FEEDBACK_IDS_LOCK_WAIT_S = 0.3\nlock = d / \"a.lock\"\nlock.write_text(\"\")\nold = time.time() - 3600\nos.utime(lock, (old, old))\nassert q._take_ids_lock(lock, \"A\") is True and lock.read_text() == \"A\", \"a stale lock is no longer taken over\"\nlive = d / \"b.lock\"\nlive.write_text(\"B\")\nassert q._take_ids_lock(live, \"C\") is False and live.read_text() == \"B\", \"a live lock was taken over or removed\"\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the feedback.ids takeover never removes the lock path while a live lock stands: it takes a stale lock over in one step that leaves a live lock in place, so no third writer can create a lock beside the live one",
+      "check": 1
+    }
+  ],
   "touches": [
     "_tools/ql_capture.py"
   ],
   "links": [
     "parked: SP-swavez3g review"
   ],
-  "notes": "Found by the SP-swavez3g review (S3) of BG-7efq3pqt: the stale takeover renames the lock first and checks it after; a live lock renamed away is put back with os.link, and a lock created in between makes the link fail and the live lock is deleted. If the token write fails, an empty lock stays until it goes stale.",
+  "notes": "Found by the SP-swavez3g review (S3) of BG-7efq3pqt: the stale takeover renames the lock first and checks it after; a live lock renamed away is put back with os.link, and a lock created in between makes the link fail and the live lock is deleted. If the token write fails, an empty lock stays until it goes stale. Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. The pin check passes before the work by design: it holds behaviour the fix must keep.",
   "filed_in": "clone-0ea70e5c"
 }

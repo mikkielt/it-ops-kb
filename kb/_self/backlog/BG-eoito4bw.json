@@ -4,10 +4,11 @@
   "title": "kbtools.py ranks a command above the skill whose description says it answers install the commit hook and find stale docs, since a description word is capped at 0.6 of a tool word",
   "status": "draft",
   "parent": "EP-5mp6pwnn",
+  "sprint": "SP-4ppjbh4k",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "kbtools.py NEED puts kb-setup first for install the commit hook and kb-self first for find stale docs, as before the description cap, while querylog.py stays first for query log and backlog.py for how long landing steps take",
+  "goal": "kbtools.py NEED puts kb-setup first for install the commit hook and kb-self first for find stale docs, as before the description cap; querylog.py stays first for query log and backlog.py for how long landing steps take",
   "repro": {
     "run": [
       "python3",
@@ -15,13 +16,31 @@
       "import json\nimport subprocess\nimport sys\n\ncases = {'install the commit hook': 'kb-setup', 'find stale docs': 'kb-self'}\ngot = {}\nfor need in cases:\n    r = subprocess.run([sys.executable, '_tools/kbtools.py', need, '--json'], capture_output=True, text=True)\n    got[need] = json.loads(r.stdout)['entries'][0]['tool'] if r.returncode == 0 and json.loads(r.stdout)['entries'] else None\nprint('first entry per need:', got, '| wanted:', cases)\nsys.exit(0 if got == cases else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport json, subprocess, sys\nwant = {\"query log\": \"querylog.py\", \"how long landing steps take\": \"backlog.py\"}\ngot = {}\nfor need in want:\n    r = subprocess.run([sys.executable, \"_tools/kbtools.py\", need, \"--json\"], capture_output=True, text=True)\n    es = json.loads(r.stdout)[\"entries\"] if r.returncode == 0 else []\n    got[need] = es[0][\"tool\"] if es else None\nassert got == want, (\"a need no longer ranks the tool that answers it first\", got, want)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbtools.py NEED puts kb-setup first for install the commit hook and kb-self first for find stale docs, as before the description cap",
+      "check": 1
+    },
+    {
+      "clause": "querylog.py stays first for query log and backlog.py for how long landing steps take",
+      "check": 0
+    }
+  ],
   "touches": [
-    "_tools/kbtools.py",
-    "kb/_self/tools.md"
+    "_tools/kbtools.py"
   ],
   "links": [
     "parked: SP-uhcjxayq review"
   ],
-  "notes": "Found by the SP-uhcjxayq review (S3): after BG-kfv2qrs4 the description cap lets an unrelated command beat the skill that answers: install the commit hook puts install_wezterm.py first (6.2) over kb-setup (4.65); find stale docs puts doc2query.py first and kb-self third; land a change lists no skill in the first four. The reviewer compared with the base catalog; check the same needs on the base file (git show f160727aa:_tools/kbtools.py) before the fix.",
+  "notes": "Found by the SP-uhcjxayq review (S3): after BG-kfv2qrs4 the description cap lets an unrelated command beat the skill that answers: install the commit hook puts install_wezterm.py first (6.2) over kb-setup (4.65); find stale docs puts doc2query.py first and kb-self third; land a change lists no skill in the first four. The reviewer compared with the base catalog; check the same needs on the base file (git show f160727aa:_tools/kbtools.py) before the fix. Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. The pin check passes before the work by design: it holds behaviour the fix must keep. The reviewer's base for comparison is f160727aa (git show f160727aa:_tools/kbtools.py).",
   "filed_in": "clone-0ea70e5c"
 }

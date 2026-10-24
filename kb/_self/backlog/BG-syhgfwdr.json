@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kb_mcp.bash_denied reads a settings file whose permissions is an empty list, false, 0 or an empty string as holding no deny rule",
   "status": "draft",
+  "sprint": "SP-4ppjbh4k",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -14,12 +15,31 @@
       "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, json, tempfile\nsys.path.insert(0, \"_tools\")\nimport kbcommon, kb_mcp\nbad = []\nfor v in ([], False, 0, \"\"):\n    T = tempfile.mkdtemp()\n    os.makedirs(os.path.join(T, \".claude\"))\n    json.dump({\"permissions\": v}, open(os.path.join(T, \".claude\", \"settings.local.json\"), \"w\"))\n    kbcommon.HOME = type(kbcommon.HOME)(T)\n    if kb_mcp.bash_denied(\"rm -rf x\") is None:\n        bad.append(v)\nprint(\"permissions values read as holding no deny rule:\", bad)\nsys.exit(1 if bad else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, json, tempfile\nsys.path.insert(0, \"_tools\")\nimport kbcommon, kb_mcp\nfor name in ({}, {\"permissions\": {}}):\n    T = tempfile.mkdtemp()\n    os.makedirs(os.path.join(T, \".claude\"))\n    json.dump(name, open(os.path.join(T, \".claude\", \"settings.local.json\"), \"w\"))\n    kbcommon.HOME = type(kbcommon.HOME)(T)\n    r = kb_mcp.bash_denied(\"rm -rf x\")\n    assert r is None, (\"a settings file with no permissions key or an empty object holds no deny rule, but bash_denied refused\", name, r)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "bash_denied treats a permissions value that is not an object (an empty list, false, 0, an empty string) as a settings file that cannot be read, so it denies every call, as it does for a truthy non-object",
+      "check": 1
+    },
+    {
+      "clause": "a missing permissions key and an empty object still hold no deny rule",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kb_mcp.py"
   ],
   "links": [
     "parked: SP-swavez3g review"
   ],
-  "notes": "Found by the SP-swavez3g review (S3) of BG-i4y5n5kt: `(settings.get(\"permissions\") or {})` turns a falsy non-object into an empty object.",
+  "notes": "Found by the SP-swavez3g review (S3) of BG-i4y5n5kt: `(settings.get(\"permissions\") or {})` turns a falsy non-object into an empty object. Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. The pin check passes before the work by design: it holds behaviour the fix must keep.",
   "filed_in": "clone-0ea70e5c"
 }

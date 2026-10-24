@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kbmon's disk alert message says 10% free for a share just under 10 percent",
   "status": "draft",
+  "sprint": "SP-4ppjbh4k",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -14,12 +15,18 @@
       "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport sys\nsys.path.insert(0, \"_tools\")\nimport mon_host as m\na = m.alerts({\"disk\": {\"free_pct\": 10.0, \"free_bytes\": 9999, \"total_bytes\": 100000}})\nmsg = a[0][\"message\"] if a else \"\"\nprint(msg)\nsys.exit(1 if \"disk low: 10% free\" in msg else 0)"
     ]
   },
+  "clauses": [
+    {
+      "clause": "mon_host.alerts words the message with enough decimals that a share under 10 percent (9.999) never reads 10% free",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/mon_host.py"
   ],
   "links": [
     "parked: SP-swavez3g review"
   ],
-  "notes": "Found by the SP-swavez3g review (S3) of BG-g6ctcsew: the message formats the share with %g at two decimals.",
+  "notes": "Found by the SP-swavez3g review (S3) of BG-g6ctcsew: the message formats the share with %g at two decimals. Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise.",
   "filed_in": "clone-0ea70e5c"
 }

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "tests.py read_profile crashes with TypeError on a host.json profile that is not a string",
   "status": "draft",
+  "sprint": "SP-4ppjbh4k",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -11,14 +12,37 @@
     "run": [
       "python3",
       "-c",
-      "import json,os,sys,tempfile;sys.path.insert(0,'_tools');import tests;t=tempfile.mkdtemp();os.makedirs(os.path.join(t,'_private'));open(os.path.join(t,'_private','host.json'),'w').write(json.dumps({'profile':['busy']}));p=tests.read_profile(home=t);print(p);sys.exit(0 if p=='usual' else 1)"
+      "import json, os, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport tests\nt = tempfile.mkdtemp()\nos.makedirs(os.path.join(t, \"_private\"))\nopen(os.path.join(t, \"_private\", \"host.json\"), \"w\").write(json.dumps({\"profile\": [\"busy\"]}))\ntry:\n    p = tests.read_profile(home=t)\nexcept Exception as e:\n    print(\"read_profile raised\", type(e).__name__, e)\n    sys.exit(1)\nprint(p)\nsys.exit(0 if p == \"usual\" else 1)\n"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport json, os, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport tests\ndef prof(v):\n    t = tempfile.mkdtemp()\n    os.makedirs(os.path.join(t, \"_private\"))\n    open(os.path.join(t, \"_private\", \"host.json\"), \"w\").write(json.dumps({\"profile\": v}))\n    return tests.read_profile(home=t)\ngot = {}\nfor v in ([\"busy\"], 3, None, 1.5, {\"a\": 1}, True):\n    try:\n        got[repr(v)] = prof(v)\n    except Exception as e:\n        got[repr(v)] = type(e).__name__\nbad = {k: g for k, g in got.items() if g != \"usual\"}\nassert not bad, (\"a host.json profile that is not a string is not read as usual\", bad)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport json, os, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport tests\ndef prof(v):\n    t = tempfile.mkdtemp()\n    os.makedirs(os.path.join(t, \"_private\"))\n    open(os.path.join(t, \"_private\", \"host.json\"), \"w\").write(json.dumps({\"profile\": v}))\n    return tests.read_profile(home=t)\nassert prof(\"busy\") == \"busy\" and prof(\"usual\") == \"usual\" and prof(\"other\") == \"usual\", \"a string profile is no longer read as before\"\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "tests.read_profile reads any host.json whose profile is not usual or busy (a list, a number, null) as usual, as the operator's answer says for a bad file, instead of raising",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/tests.py"
   ],
   "links": [
     "parked: SP-3trnelzv review"
   ],
+  "notes": "Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. Check 0 plants a list, a number, null, a float, an object and a boolean; check 1 pins the string profiles and passes before the work.",
   "filed_in": "clone-0ea70e5c"
 }

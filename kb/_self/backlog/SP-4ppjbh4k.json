@@ -1,0 +1,23 @@
+{
+  "id": "SP-4ppjbh4k",
+  "kind": "sprint",
+  "title": "S3 bugs the first triage left: fail-open guards, leak scan, gate class, feedback lock, census confirm, tool ranking, close links, a kb citation",
+  "status": "planned",
+  "goal": "bash_denied denies every call when a settings file's permissions is not an object; kb_pack, kb_search and kb_audit name a missing root with its reason instead of raising; no Bash rule kbask gives the observer admits a git command that writes a file; the leak scan flags a narrow-wrapped EC key body whose first lines include one that starts with //; the leak scan passes the EC armor label quoted before a repository path with a digit or an upper-case letter; the feedback.ids takeover never removes the lock path while a live lock stands; the secrets gate class holds for a .md name that holds token beside a secrets word; the secrets gate class holds for a unit-noun list whose tokens carry a credential qualifier; tests.py read_profile reads a host.json profile that is not a string as usual; kbmon's disk alert message never reads 10% free for a share under 10 percent; census.py confirm dates the sources it still knows and names the ones deleted from _sources.csv; kbtools.py puts kb-setup first for install the commit hook and kb-self first for find stale docs; backlog.py close leaves every item that arrived from the upstream main unchanged; no DOC tag in kb/public cites a source the 2026-10-21 census records gone while a live source states the claim; factdiff.madeup_text keeps only a 200, 404 or 410 answer of the made-up sibling",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "notes": "Triage 2026-10-24 (day run, read-only until planning): every draft S3 bug with a repro, 95 of them (the 32 free and 42 held ones SP-swavez3g left, plus bugs filed since), was run once on the base ff0fdad94 with bl_base.run_check. All 95 repros still fail, so none was dropped as already fixed. PICKED 15 by value (a guard that fails open, operator-facing wrong output, a false message, a lost link): BG-syhgfwdr and BG-jche37b7 (kb_mcp.py, one after the other), BG-ylrx5zt7, BG-q7lcd6od then BG-7mxo4k6p (kbcommon.py), BG-a7ocbxua, BG-2uki2c73 then BG-owfgwtyl (bl_authority.py), BG-tcfxsbly, BG-rpiyercp, BG-i355rfzc, BG-eoito4bw, BG-wuugkjuj, BG-6ski25jl, BG-2ksqvskp. SKIPPED for paths held by running sprints: BG-poaoxavw, BG-sk244uly, BG-xudww2ij, BG-mf7vzxwx, BG-yjtgqblf, BG-tgzeramh, BG-beorvghl, BG-3ui3szcq (SP-yisvj7vd, planned) and BG-ijytcujj, BG-orxlqhtn, BG-z7fvy7bw, BG-babligrm (SP-f2o3aqm2, active); BG-jche37b7 and BG-syhgfwdr touch kb_mcp.py, which BG-ijytcujj also touches, so they wait for its landing if it is claimed first. LEFT for the next triage: BG-d3b2wx43, BG-kcfbcll2, BG-jsuvjayf, BG-po7cc5zi, BG-sqmvvtiy, BG-4x5qp2jh, BG-hxp3f73q, BG-p4xl2hea, BG-sbxvmwmz, BG-agossgpb, BG-2naamm5z, BG-tj3k7mk6, BG-vbxfbk4q, BG-v6bpucd2, BG-zcbcjilf, BG-z4jhxlyx, BG-imuczrcz, BG-ivir5ulw, BG-nkmrgats; BG-dlp3mui2 needs a landing fixture for a planted run; operator choice BG-6gpjcsg6 and BG-pqthn333; broken repro BG-ax6e6rzc. Docs: the docs map sends every code file of the picks to kb/_self docs that no item's touches hold (check warns for each, as for the earlier sprint); a worker names each such doc in Self-Reviewed after reading it, and a doc that needs an edit stops its item with a report. Pins that pass before the work are named in each item's notes.",
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}

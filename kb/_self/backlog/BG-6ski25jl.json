@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "A DOC tag that wraps over two lines in kb/public still cites a census-gone source, which the per-line scan of the sprint check cannot see",
   "status": "draft",
+  "sprint": "SP-4ppjbh4k",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -15,14 +16,24 @@
     ]
   },
   "repro_reason": "the defect is a tag shape in kb text and the census log decides which ids are gone, so the repro scans the text with a multi-line pattern",
+  "clauses": [
+    {
+      "clause": "No DOC tag in kb/public, one that wraps over two lines included, cites a source the 2026-10-21 census records gone unless a live source in the same tag states the claim and the gone id is dropped",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/public/_answers.md",
     "kb/public/_anchors.csv",
-    "kb/public/_retrieval/doc2query/expansions.csv"
+    "kb/public/_retrieval/doc2query/expansions.csv",
+    "kb/public/_sources.csv"
+  ],
+  "depends_on": [
+    "ST-ako2dypu"
   ],
   "links": [
     "parked: SP-6t3z4q54 review"
   ],
-  "notes": "Found by the sprint review 2026-10-24: kb/public/_answers.md:1599 (QG31) reads '[DOC S873, S870 - reused, see privacy/gdpr-pseudonymisation.md; not re-fetched]' wrapped over two lines; S870 (EUR-Lex GDPR text) is gone in the census (HTTP 202 from this host, a bot-block rather than a missing page) while S873 (EDPB news) states the claim. The sprint's own check scans line by line and misses a tag that wraps. Several census gone ids are EUR-Lex HTTP 202 answers: the census tool may need to read them another way before they count as gone. Parked, not in a sprint: S3 per the sprint review, so no fix in the sprint that found it.",
+  "notes": "Found by the sprint review 2026-10-24: kb/public/_answers.md:1599 (QG31) reads '[DOC S873, S870 - reused, see privacy/gdpr-pseudonymisation.md; not re-fetched]' wrapped over two lines; S870 (EUR-Lex GDPR text) is gone in the census (HTTP 202 from this host, a bot-block rather than a missing page) while S873 (EDPB news) states the claim. The sprint's own check scans line by line and misses a tag that wraps. Several census gone ids are EUR-Lex HTTP 202 answers: the census tool may need to read them another way before they count as gone. Parked, not in a sprint: S3 per the sprint review, so no fix in the sprint that found it. Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. Content item: drop the census-gone S870 from QG31's DOC tag in kb/public/_answers.md, keeping S873 which states the claim; the 202 answers of EUR-Lex are a bot block, so do not re-judge other gone ids.",
   "filed_in": "clone-0ea70e5c"
 }
