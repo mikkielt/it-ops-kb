@@ -2,7 +2,8 @@
   "id": "BG-3zxvcl64",
   "kind": "bug",
   "title": "backlog.py next and brief run a ready story's checks with no recursion guard, so a check that runs next recurses",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-s5k72bhd",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -14,10 +15,34 @@
       "import sys, json, tempfile, subprocess, pathlib, os\nt = pathlib.Path(tempfile.mkdtemp()); d = t / '_backlog'; d.mkdir()\nc = t / 'count'\ndef w(o): (d / (o['id'] + '.json')).write_text(json.dumps(o))\nw({'id': 'SP-aaaaaaaa', 'kind': 'sprint', 'title': 's', 'status': 'active', 'goal': 'g'})\ninner = (\"import os,subprocess,sys;p=os.environ['RC'];n=len(open(p).read()) if os.path.exists(p) else 0;open(p,'a').write('x');\"\n         \"n<3 and subprocess.run([sys.executable,os.environ['RB'],'--root',os.environ['RR'],'next','--all'],capture_output=True)\")\nw({'id': 'ST-ggggggg2', 'kind': 'story', 'title': 'story', 'status': 'todo', 'sprint': 'SP-aaaaaaaa', 'priority': 'P3', 'rank': 0,\n   'goal': 'g', 'checks': [{'run': ['python3', '-c', inner]}]})\nw({'id': 'TK-gggggga1', 'kind': 'task', 'title': 'task', 'status': 'done', 'parent': 'ST-ggggggg2', 'priority': 'P3', 'rank': 0, 'goal': 'g'})\nenv = dict(os.environ, RC=str(c), RR=str(t), RB=os.path.abspath('_tools/backlog.py'))\nsubprocess.run([sys.executable, '_tools/backlog.py', '--root', str(t), 'next', '--all'], capture_output=True, env=env, timeout=300)\nn = len(c.read_text()) if c.exists() else 0\nprint('check runs of one next call:', n); sys.exit(0 if n <= 1 else 1)\n"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport json, os, pathlib, subprocess, sys, tempfile\ntools = os.path.abspath(\"_tools\")\nt = pathlib.Path(tempfile.mkdtemp()); d = t / \"_backlog\"; d.mkdir()\nq = pathlib.Path(tempfile.mkdtemp())\nw = lambda o: (d / (o[\"id\"] + \".json\")).write_text(json.dumps(o))\nw({\"id\": \"SP-aaaaaaaa\", \"kind\": \"sprint\", \"title\": \"s\", \"status\": \"active\", \"goal\": \"g\"})\ninner = \"import sys; sys.path.insert(0, \" + json.dumps(tools) + \"); import tests; tests.record_run(\\\"keyword\\\", {\\\"exit\\\": 0, \\\"ms\\\": 1, \\\"files\\\": {}}, [])\"\nw({\"id\": \"ST-ggggggg2\", \"kind\": \"story\", \"title\": \"story\", \"status\": \"todo\", \"sprint\": \"SP-aaaaaaaa\", \"priority\": \"P3\", \"rank\": 0, \"goal\": \"g\", \"checks\": [{\"run\": [\"python3\", \"-c\", inner]}]})\nw({\"id\": \"TK-gggggga1\", \"kind\": \"task\", \"title\": \"task\", \"status\": \"done\", \"parent\": \"ST-ggggggg2\", \"priority\": \"P3\", \"rank\": 0, \"goal\": \"g\"})\n(q / \"config.json\").write_text(json.dumps({\"mode\": \"local\"}))\nenv = dict(os.environ, KB_TEST_RUN_HOME=str(q))\nenv.pop(\"PYTEST_CURRENT_TEST\", None)\nr = subprocess.run([sys.executable, os.path.join(tools, \"backlog.py\"), \"--root\", str(t), \"next\", \"--all\"], capture_output=True, text=True, env=env, timeout=300)\nrows = [p for p in q.rglob(\"*\") if p.is_file() and \"test.run\" in p.read_text(errors=\"replace\")]\nprint(\"test.run rows written by one next call:\", len(rows), \"| exit\", r.returncode)\nsys.exit(1 if rows or r.returncode else 0)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "backlog.py next and brief judge the no-worker line without re-entering themselves: a story check that runs next or brief is run at most once per call (or not at all from a read command)",
+      "check": 1
+    },
+    {
+      "clause": "a read command writes no test.run row for it",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/bl_plan.py",
     "_tools/bl_view.py",
-    "_tools/bl_dispatch.py"
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-omnjri7u"
   ],
   "links": [
     "parked: SP-v64egscn review"

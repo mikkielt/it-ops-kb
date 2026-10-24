@@ -2,7 +2,7 @@
   "id": "ST-lca7hefm",
   "kind": "story",
   "title": "Review sprint: Gates and guards hold: leak-scan regex without backtracking, noreply checks, pool check at landing, recursion guards, query-log delivery text",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-s5k72bhd",
   "review": true,
   "priority": "P1",

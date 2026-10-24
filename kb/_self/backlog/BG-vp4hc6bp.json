@@ -2,7 +2,8 @@
   "id": "BG-vp4hc6bp",
   "kind": "bug",
   "title": "The KB-Teams trailer names only a root's new team: a commit that drops or changes a root's team leaves the old one out",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-s5k72bhd",
   "priority": "P3",
   "rank": 0,
   "severity": "S2",
@@ -15,7 +16,8 @@
     ]
   },
   "touches": [
-    "_tools/kg_trailers.py"
+    "_tools/kg_trailers.py",
+    "kb/_self/git.md"
   ],
   "links": [
     "parked: SP-46k7sw57 review"

@@ -2,8 +2,9 @@
   "id": "BG-mkg3jvew",
   "kind": "bug",
   "title": "census.py brief re-packs a group's parts silently when its kept layout cannot be used, so --part N names other rows",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
+  "sprint": "SP-s5k72bhd",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -15,13 +16,38 @@
       "import os, sys, tempfile\nsys.path.insert(0, '_tools')\nimport census\ncensus.DISPATCH_DIR = tempfile.mkdtemp()\ncensus.BRIEF_CHARS = 200\ncensus.row_block = lambda r, *a: 'x' * 120\ncensus.brief_head = lambda *a: 'h'\ncensus.owned_files = census.foreign_files = lambda *a: []\nctx = {'date': '2026-10-21', 'flog': 'f', 'log': 'l'}\nmk = lambda i, o='': ({'id': i, 'outcome': o}, None, None)\nids = lambda packed: [[m[0]['id'] for m, _ in p] for p in packed]\nfirst = ids(census.brief_packs('g1', [mk('S-a'), mk('S-c')], ctx)[0])\nlater = ids(census.brief_packs('g1', [mk('S-a', 'confirmed'), mk('S-b'), mk('S-c')], ctx)[0])\nprint('before', first, 'after part 1 applied and S-b added', later)\nsys.exit(0 if later[:2] == first and any('S-b' in p for p in later[2:]) else 1)\n"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport contextlib, io, os, sys, tempfile, types\nsys.path.insert(0, \"_tools\")\nimport census\ncensus.DISPATCH_DIR = tempfile.mkdtemp()\ncensus.BRIEF_CHARS = 200\ncensus.row_block = lambda r, *a: \"x\" * 120\ncensus.brief_head = lambda *a: \"h\"\ncensus.owned_files = census.foreign_files = lambda *a: []\nmk = lambda i, o=\"\": ({\"id\": i, \"outcome\": o}, None, None)\nctx = {\"date\": \"2026-10-21\", \"flog\": \"f\", \"log\": \"l\", \"members\": {\"g1\": [mk(\"S-a\", \"confirmed\"), mk(\"S-b\")]}, \"groups\": [\"g1\"]}\ncensus.phase2_args = lambda a: ([], \"\")\ncensus.phase2_context = lambda rows, log, factdiff, group: ctx\npath = census.parts_file(\"g1\", ctx)\nos.makedirs(os.path.dirname(path), exist_ok=True)\nopen(path, \"w\").write(\"not json\")\na = types.SimpleNamespace(log=\"l\", factdiff=None, group=\"g1\", part=1)\nout = io.StringIO()\nwith contextlib.redirect_stdout(out):\n    code = census.cmd_brief(a, None)\ntext = out.getvalue().strip()\nprint(\"exit\", code, \"| refusal text:\", text[:120])\nsys.exit(0 if code == 2 and \"parts.json\" in text else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "once a part of a group is applied, brief and dispatch keep every earlier part's rows under its number: a row the kept layout does not name goes to a new part after the last",
+      "check": 1
+    },
+    {
+      "clause": "a group with no usable layout is refused with exit 2 naming why",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/census.py",
     "kb/_self/web-sources.md",
-    ".claude/skills/kb-census/SKILL.md"
+    ".claude/skills/kb-census/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-dwcjaspf"
   ],
   "links": [
     "parked: SP-gavrmuvx review"
   ],
-  "notes": "SP-gavrmuvx review of ST-bh3yjx7o, 2026-10-21 (headless reviewer, read-only; verified by the manager by reading census.py brief_packs). Premise: the repro fails on eb35aff07 (S-c moves from part 2 to part 3). Same review, to settle in this item: (a) the layout is written only while no member has an outcome, so a group first seen with a held row never gets one; (b) brief_packs writes parts.json from groups, brief and dispatch --dry-run, which web-sources.md calls read-only and 'changes nothing'; (c) web-sources.md says an applied row is 'printed as already applied' but part_text leaves it out; (d) ST-bh3yjx7o's check mocked brief_parts, so the layout code never ran under it. A fresh census is not affected: groups writes every layout before any apply."
+  "notes": "SP-gavrmuvx review of ST-bh3yjx7o, 2026-10-21 (headless reviewer, read-only; verified by the manager by reading census.py brief_packs). Premise: the repro fails on eb35aff07 (S-c moves from part 2 to part 3). Same review, to settle in this item: (a) the layout is written only while no member has an outcome, so a group first seen with a held row never gets one; (b) brief_packs writes parts.json from groups, brief and dispatch --dry-run, which web-sources.md calls read-only and 'changes nothing'; (c) web-sources.md says an applied row is 'printed as already applied' but part_text leaves it out; (d) ST-bh3yjx7o's check mocked brief_parts, so the layout code never ran under it. A fresh census is not affected: groups writes every layout before any apply. Plan 2026-10-24: premise reproduces (repro and check 0 fail on the base). Check 0 reads clause 2 as: parts.json exists but cannot be read while a member holds an outcome, so brief exits 2 naming parts.json; a missing file is written fresh from the current rows (review point a), so a group first seen with a held row gets a layout."
 }

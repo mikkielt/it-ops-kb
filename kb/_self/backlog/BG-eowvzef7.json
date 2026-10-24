@@ -2,7 +2,8 @@
   "id": "BG-eowvzef7",
   "kind": "bug",
   "title": "ql_apply.tool_question takes a product question about domains or roots for a kb count question, so gap_decision drops a real gap with no pack",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-s5k72bhd",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -14,11 +15,27 @@
       "import sys;sys.path.insert(0,'_tools');import ql_apply as a;qs=['list the domains and root domains in an AD forest','how many domains can a Microsoft Entra tenant verify, and how many root domains','number of domains a DNS root zone can have'];bad=[q for q in qs if a.tool_question(q)];print('taken as kb count questions:',bad);sys.exit(1 if bad else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport sys\nsys.path.insert(0, \"_tools\")\nimport ql_apply as a\nqs = [\"how many articles does the kb hold in the intune domain\", \"list the sources the knowledge base cites for entra\", \"number of topics in the kb\", \"count the facts of the knowledge base\"]\nlost = [q for q in qs if not a.tool_question(q)]\nprint(\"kb count or list questions no longer taken:\", lost)\nsys.exit(1 if lost else 0)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "tool_question matches only a count or list question about the kb itself (the kb, knowledge base, its articles, sources or topics), so a product question such as 'list the domains and root domains in an AD forest' still gets a pack and a keep or reject decision",
+      "check": 1
+    }
+  ],
   "touches": [
     "_tools/ql_apply.py",
     "kb/_self/querylog.md"
   ],
   "links": [
     "parked: SP-vx6eufpj review"
-  ]
+  ],
+  "notes": "Plan 2026-10-24: premise reproduces (repro fails on the base). The added check passes before the work by design: it pins the kb count and list questions the tool still takes."
 }

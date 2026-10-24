@@ -2,8 +2,9 @@
   "id": "BG-cwitx4zn",
   "kind": "bug",
   "title": "The kb's own clone reads ${CLAUDE_PLUGIN_ROOT} unsubstituted in its linked sprint skills and worker file, and the absolute commands it then writes match no allow rule",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4fawjprq",
+  "sprint": "SP-s5k72bhd",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -24,6 +25,28 @@
         "\nimport glob, json, os, re, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport bl_selfcheck as sc\ntexts = glob.glob(\"skills/*/SKILL.md\") + [\"agents/worker.md\"]\nunrelative = []\nfor path in texts:\n    for line in open(path, encoding=\"utf-8\").read().splitlines():\n        if \"is the directory that holds the tool scripts\" in line and \"python3 _tools/\" not in line:\n            unrelative.append(path)\nroot = tempfile.mkdtemp()\nrules = [\"Bash(%s)\" % c for c in sc.SKILL_COMMANDS] + list(sc.SKILL_TOOLS)\nos.makedirs(os.path.join(root, \".claude\"))\nwith open(os.path.join(root, \".claude\", \"settings.json\"), \"w\", encoding=\"utf-8\") as f:\n    json.dump(dict(permissions=dict(allow=rules)), f)\nbody = \"---\\ndescription: x\\n---\\nRun `python3 ${CLAUDE_PLUGIN_ROOT}/_tools/unlisted_tool.py go` first.\\n\"\nfor d in (\"skills\", os.path.join(\".claude\", \"skills\")):\n    os.makedirs(os.path.join(root, d, \"s\"))\n    with open(os.path.join(root, d, \"s\", \"SKILL.md\"), \"w\", encoding=\"utf-8\") as f:\n        f.write(body)\nres = sc.check_allow(root)\nreads_text = res[\"state\"] == \"fail\" and \"unlisted_tool\" in res[\"detail\"]\nprint(\"variable lines without the relative form:\", unrelative, \"| selfcheck reads skill text:\", reads_text, file=sys.stderr)\nsys.exit(0 if not unrelative and reads_text else 1)\n"
       ]
     }
+  ],
+  "clauses": [
+    {
+      "clause": "In a kb clone without the plugin, the sprint, item and backlog skills and the worker role file give commands its .claude/settings.json allow rules match (the relative python3 _tools/... form where the variable is not substituted)",
+      "check": 0
+    },
+    {
+      "clause": "selfcheck allow-rules reads the text the skills hold",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "skills/backlog/SKILL.md",
+    "skills/item/SKILL.md",
+    "skills/sprint/SKILL.md",
+    "agents/worker.md",
+    "_tools/bl_selfcheck.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-dwcjaspf"
   ],
   "links": [
     "parked: SP-ciqk6gt6 review"
