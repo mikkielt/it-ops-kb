@@ -2,7 +2,7 @@
   "id": "ST-hbxnf2l3",
   "kind": "story",
   "title": "Research: Alertmanager's route, receivers and webhook payload, and Prometheus's alerting block, are kb facts",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-nij36lt7",
   "sprint": "SP-r7e7jcep",
   "priority": "P2",
@@ -69,6 +69,19 @@
   ],
   "notes": "Planning 2026-10-24: last clause corrected. The old text said a resolved alert is sent only with send_resolved; the Alertmanager configuration docs (docs/configuration.md, webhook_config) give send_resolved default = true, so the clause now asks what send_resolved does and its default. The goal is split into five clauses, each read by cases of the one check. Premise: the check fails on the base (precheck). Planned 2026-10-24 into SP-r7e7jcep: fourth in the run order (after ST-l6fw46gd), since the five research stories share the source, anchor and expansions files. Worker 2026-10-24: the check case for --web.listen-address now tests tag CODE (was DOC). No official Alertmanager doc names the flag or its default (the configuration page only says to run alertmanager -h; the README gives port 9093 for a container); the flag and its default :9093 are in cmd/alertmanager/main.go (webflag.AddFlags with :9093) at v0.34.1 and the flag name in exporter-toolkit v0.17.1 web/kingpinflag/flag.go. Same clause, same terms (web.listen-address, 9093); recorded as gate g1.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "94cd0b4928ad92f7f1aa2a0a0f5d728df123cad1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, sys\nART = 'kb/public/logs/prometheus-retention-exposition.md'\nCASES = [\n    ('How is Prometheus configured to send firing alerts to an Alertmanager?', 'DOC', ['alertmanagers', 'static_configs']),\n    ('Which path prefix setting does the Prometheus alertmanagers block take?', 'DOC', ['alertmanagers', 'path_prefix']),\n    ('What do the group_wait and group_interval of an Alertmanager route control?', 'DOC', ['group_wait', 'group_interval']),\n    ('What does an Alertmanager route repeat_interval control?', 'DOC', ['repeat_interval']),\n    ('How does Alertmanager send an alert to a webhook receiver?', 'DOC', ['webhook_configs', 'url']),\n    ('Can an Alertmanager webhook url or credential be read from a file?', 'DOC', ['webhook', 'url_file']),\n    ('What JSON body does an Alertmanager webhook receiver get?', 'DOC', ['groupLabels', 'fingerprint']),\n    ('What is the Alertmanager web.listen-address flag and its default port?', 'CODE', ['web.listen-address', '9093']),\n    ('What does the send_resolved setting of an Alertmanager webhook receiver do and what is its default?', 'DOC', ['send_resolved', 'true']),\n]\nmiss = []\nfor q, tag, terms in CASES:\n    out = subprocess.run([sys.executable, '_tools/rag.py', 'pack', q, '--root', 'public', '--budget', '2500'],\n                         capture_output=True, text=True).stdout\n    hit = [l for l in out.splitlines() if l.startswith('- ' + ART[len('kb/'):] + ':') and '[' + tag in l\n           and all(t.lower() in l.lower() for t in terms)]\n    if not hit:\n        miss.append((q, terms))\nprint('missing:', miss if miss else 'none')\nsys.exit(1 if miss else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "a4d424a9f2f7792e"
+      }
+    ]
+  }
 }
