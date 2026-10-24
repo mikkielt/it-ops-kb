@@ -38,13 +38,15 @@
       },
       "class": "design",
       "answer": "exit 1 with no event (no fallback to the newest session)",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
     "parked: SP-ky7xz6d2 review"
   ],
-  "notes": "Plan 2026-10-24 (day run): repro fails on base (exit 2: kbask.py coordinate has no --session). Add --session ID (the session that chose) and keep the newest live session on ITEM as the default; docs: coordination.md and tools.md (kbask usage), monitoring.md if it names the command. Planned into SP-3i7hcb6i on 2026-10-24. Sprint started 2026-10-24.",
+  "notes": "Plan 2026-10-24 (day run): repro fails on base (exit 2: kbask.py coordinate has no --session). Add --session ID (the session that chose) and keep the newest live session on ITEM as the default; docs: coordination.md and tools.md (kbask usage), monitoring.md if it names the command. Planned into SP-3i7hcb6i on 2026-10-24. Sprint started 2026-10-24. Provisional gate g1 confirmed 2026-10-24 by the runner on the operator's standing approval after the sprint review (confirm).",
   "filed_in": "clone-0ea70e5c",
   "operator": "op-f618a13e",
   "evidence": {
