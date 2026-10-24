@@ -2,7 +2,7 @@
   "id": "ST-pmxnissq",
   "kind": "story",
   "title": "backlog.py runs shows each item's run state beside its item file, work branch gates and worker pid, and --reconcile makes coord follow git",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-sucr3kfg",
   "priority": "P2",
@@ -64,5 +64,7 @@
     "ST-yrilvcbx"
   ],
   "notes": "Premise: backlog.py runs does not exist (exit 2 in the check). Run state in coord and lifecycle in git can disagree after a crash, a killed landing or an unreachable store (the gate on ST-3ru7f4to); this command is the reconcile step the coord-authority shape needs. A new bl_ module registers itself through bl_cli and gets its map.csv row and code.md layout line. Plan 2026-10-24: premise reproduced on base (precheck: runs exits 2, no such command). Second check added for the other two drift kinds (a run key of an unclaimed item to released, a working state with no worker to failed) and the reconcile step field. The per-item line's content (item file status, work branch gates, pid) is not read by a check; implement it as the goal says. Planned into SP-sucr3kfg on 2026-10-24. Sprint started 2026-10-24.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
