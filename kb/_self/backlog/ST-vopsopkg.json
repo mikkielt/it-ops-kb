@@ -107,7 +107,9 @@
       },
       "class": "design",
       "answer": "one object for a KEY and a list of objects without one; a name such as ../x is refused as a bad setting (exit 2)",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Plan 2026-10-24: premise reproduced on base (precheck: explain exits 2, kb_mcp.py has no kb_settings tool). Second check added for the goal's no-model-call, no-extra-file-read clause: it runs explain under an audit hook and fails on any subprocess, socket or file open other than modules and the two settings files; a check that turns out too strict for a correct implementation is rewritten to test the same clause, with the reason in these notes. The kb_settings tool itself is only text-checked; run it through the kb MCP server to prove it. Planned into SP-sucr3kfg on 2026-10-24. Sprint started 2026-10-24.",
