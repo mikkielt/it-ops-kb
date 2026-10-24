@@ -2,7 +2,7 @@
   "id": "BG-5bo3yki7",
   "kind": "bug",
   "title": "kbroot.py fetch --hook prints an exception with an absolute path and no root name when a stamp write fails",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-c6w5hjmc",
   "priority": "P3",
@@ -43,5 +43,6 @@
   ],
   "links": [
     "parked: SP-mguax5m3 review"
-  ]
+  ],
+  "notes": "Premise 2026-10-24: repro fails on the base (precheck). Sprint SP-c6w5hjmc started on the operator's standing approval for the day run."
 }
