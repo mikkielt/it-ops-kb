@@ -2,7 +2,7 @@
   "id": "ST-xxkocw2l",
   "kind": "story",
   "title": "Research sprint goal: No fact rests only on a source the census found gone",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-6t3z4q54",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,7 @@
     "kb/public/**"
   ],
   "notes": "No outside facts: the sprint goal's one question, which DOC tags cite a source the 2026-10-21 census records gone, is answered by the census log and the story's checks; each task researches its own sources in its articles.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
