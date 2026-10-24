@@ -5,7 +5,8 @@
 
 A path is content when it is written by the kb's own routine work, and code otherwise:
 
-  content  kb/<name>/** for a name not starting with `_` (a root), kb/_querylog/**, a backlog item
+  content  kb/<name>/** for a name not starting with `_` (a root; kb/<name> itself is a submodule root's gitlink),
+           kb/_querylog/**, a backlog item
            (kb/_self/backlog/*.json), a process doc directly in kb/_self/ (kb/_self/*.md), _tools/aliases.csv and
            _tools/lint_baseline.txt
   code     everything else: _tools/, .claude/, .claude-plugin/, .githooks/, the CI file, AGENTS.md, README.md, the
@@ -34,7 +35,7 @@ from pathlib import Path
 CONTENT, CODE = "content", "code"
 _ITEM = re.compile(r"kb/_self/backlog/[^/]+\.json")
 _SELF_DOC = re.compile(r"kb/_self/[^/]+\.md")
-_ROOT = re.compile(r"kb/[^/_][^/]*/.+")
+_ROOT = re.compile(r"kb/[^/_][^/]*(/.+)?")  # a path below the root, or the root's own path: a submodule root's gitlink
 _FILES = frozenset({"_tools/aliases.csv", "_tools/lint_baseline.txt"})
 
 
