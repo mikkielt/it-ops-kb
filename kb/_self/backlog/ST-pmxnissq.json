@@ -2,7 +2,7 @@
   "id": "ST-pmxnissq",
   "kind": "story",
   "title": "backlog.py runs shows each item's run state beside its item file, work branch gates and worker pid, and --reconcile makes coord follow git",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-nij36lt7",
   "sprint": "SP-sucr3kfg",
   "priority": "P2",
@@ -105,6 +105,28 @@
   ],
   "notes": "Premise: backlog.py runs does not exist (exit 2 in the check). Run state in coord and lifecycle in git can disagree after a crash, a killed landing or an unreachable store (the gate on ST-3ru7f4to); this command is the reconcile step the coord-authority shape needs. A new bl_ module registers itself through bl_cli and gets its map.csv row and code.md layout line. Plan 2026-10-24: premise reproduced on base (precheck: runs exits 2, no such command). Second check added for the other two drift kinds (a run key of an unclaimed item to released, a working state with no worker to failed) and the reconcile step field. The per-item line's content (item file status, work branch gates, pid) is not read by a check; implement it as the goal says. Planned into SP-sucr3kfg on 2026-10-24. Sprint started 2026-10-24. Gates g1 and g2 answered by the sprint runner with their recommendations, on the operator's standing approval for the 2026-10-24 night run (pre-approved by the operator for the 2026-10-24 night run).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "cf0724160f0c0b8f9973c3afffbf263e6e82fad5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\ndef plant(status):\n    for f in glob.glob(T + '/kb/_self/backlog/*.json'):\n        d = json.load(open(f, encoding='utf-8'))\n        if d['id'] == sp: d['status'] = 'active'\n        if d['id'] == iid: d['status'] = status; d['sprint'] = sp\n        json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\n    g('add', '-A'); g('commit', '-q', '-m', 'planted ' + status)\ndef walk(*states): return [c('transition', 'run/' + iid, '--to', s).returncode for s in states]\nplant('done')\nwalk('claimed', 'working')\nbefore = bl('runs', iid)\nfix = bl('runs', iid, '--reconcile')\nafter = bl('runs', iid)\nok = (before.returncode == 1 and 'drift' in before.stdout and fix.returncode == 0\n      and 'landed' in c('get', 'run/' + iid).stdout and after.returncode == 0)\nprint('before', before.returncode, before.stdout.strip()[-120:], '| reconcile', fix.returncode, '| after', after.returncode)\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "d14c1e4bea647837"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\nids = {n: re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted ' + n, '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\n       for n in ('idle', 'lost')}\nstatus = {ids['idle']: 'todo', ids['lost']: 'doing'}\nfor f in glob.glob(T + '/kb/_self/backlog/*.json'):\n    d = json.load(open(f, encoding='utf-8'))\n    if d['id'] == sp: d['status'] = 'active'\n    if d['id'] in status: d['status'] = status[d['id']]; d['sprint'] = sp\n    json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\ng('add', '-A'); g('commit', '-q', '-m', 'planted')\nc('transition', 'run/' + ids['idle'], '--to', 'claimed')\nfor s in ('claimed', 'working'): c('transition', 'run/' + ids['lost'], '--to', s)\nbefore = bl('runs', sp)\nfix = bl('runs', sp, '--reconcile')\nafter = bl('runs', sp)\ntry:\n    ev = json.loads(c('wait', '--since', '0', '--timeout', '0').stdout)['events']\nexcept ValueError:\n    ev = []\nrec = {e['fields'].get('item'): e['fields'] for e in ev if e['kind'] == 'progress' and e['fields'].get('step') == 'reconcile'}\nok = (before.returncode == 1 and before.stdout.count('drift') >= 2 and fix.returncode == 0 and after.returncode == 0\n      and 'released' in c('get', 'run/' + ids['idle']).stdout and 'failed' in c('get', 'run/' + ids['lost']).stdout\n      and rec.get(ids['idle'], {}).get('state') == 'released' and rec.get(ids['lost'], {}).get('state') == 'failed')\nprint('before', before.returncode, '| reconcile', fix.returncode, '| after', after.returncode, '| reconcile events', sorted((k, v.get('state')) for k, v in rec.items()))\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "0eb880e77de39920"
+      }
+    ]
+  }
 }
