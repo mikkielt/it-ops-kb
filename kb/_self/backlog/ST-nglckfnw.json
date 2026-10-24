@@ -2,7 +2,7 @@
   "id": "ST-nglckfnw",
   "kind": "story",
   "title": "The kb-sprint run step orders runs --reconcile before the review and gives the Bash timeout its 540-second wait needs",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-nij36lt7",
   "sprint": "SP-f2o3aqm2",
   "priority": "P3",
@@ -25,6 +25,19 @@
   ],
   "notes": "Found by the review of SP-hja7yu5k (SKILL.md:56): 'runs SP shows no drift line at the sprint's end' is false after a release or a story finished with done (BG fix pending); until then the run step needs `runs SP --reconcile`. The wait paragraph says S 540 ends under the Bash tool's 10-minute limit but not to pass timeout 600000 (the default is 120000, so a foreground wait is killed after 2 minutes; a background wait takes timeout up to 7200000). Plan 2026-10-24: premise runs on base (exit 1: no backlog.py runs SP --reconcile command in the run step, and the wait paragraph gives no timeout 600000). Goal reworded: its parenthesis said release and a done without a landing move no run state, which is no longer true on the main branch (coordination.md Who moves it: release moves the key to released, done moves a key still at claimed to landed; bl_items.cmd_release, bl_land.cmd_done); the check never read the parenthesis, so it is unchanged. The worker puts the command as one backtick span with the full path form python3 ${CLAUDE_PLUGIN_ROOT}/_tools/backlog.py runs SP --reconcile in the run step's closing step 6, before 'Stop when', and the timeout 600000 in the wait paragraph (S 540 ends under the 10-minute limit only with it: the default is 120000, a background command takes up to 7200000). Docs mapped to the skill: backlog.md, maintaining.md (AGENTS.md has a 4 KB cap, not touched): read, Self-Reviewed if still correct.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "f1d23dc682e0235e5a9b3a7fa152ef8bdbea7add",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, re, shlex, shutil, subprocess, sys, tempfile\nR = os.getcwd()\ntext = open('skills/sprint/SKILL.md', encoding='utf-8').read()\nm = re.search(r'\\n## run \\[SP\\]\\n(.*?)\\n## review SP\\n', text, re.S)\nrun = m.group(1) if m else ''\nbad = []\ncmds = [c for c in re.findall(r'`([^`\\n]+)`', run) if re.search(r'backlog\\.py runs\\b[^`\\n]*--reconcile', c)]\nif not cmds:\n    bad.append('the run step gives no backlog.py runs SP --reconcile command before the sprint ends')\nelse:\n    T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\n    env = dict(os.environ, KB_COORD_STORE=S)\n    def sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\n    g = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\n    g('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\n    shutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\n    sp = re.search(r'SP-\\w+', sh(sys.executable, R + '/_tools/backlog.py', '--root', T, 'new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\n    argv = shlex.split(cmds[0].replace('${CLAUDE_PLUGIN_ROOT}', R))\n    at = next(i for i, a in enumerate(argv) if a.endswith('backlog.py'))\n    argv[at + 1:at + 1] = ['--root', T]\n    r = sh(*[sp if a == 'SP' else a for a in argv])\n    if r.returncode != 0:\n        bad.append('the runs --reconcile command of the run step exits %d: %s' % (r.returncode, (r.stdout + r.stderr)[-160:]))\nif not re.search(r'timeout[^\\n]{0,40}600000', run[run.find('coord.py wait'):][:1500] if 'coord.py wait' in run else ''):\n    bad.append('the wait paragraph does not give the Bash timeout 600000 its S 540 relies on')\nprint('; '.join(bad) or 'ok')\nsys.exit(1 if bad else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "dc51b8c96c2d745d"
+      }
+    ]
+  }
 }
