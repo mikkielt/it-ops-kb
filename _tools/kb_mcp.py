@@ -1499,6 +1499,18 @@ def coord_enabled():
     return not limited() and os.environ.get("KB_COORD_TOOLS") == "1"
 
 
+def tool_list(every=False):
+    """The tools this server lists. With `every`, every tool it can serve, whatever its environment (the feedback,
+    monitor, settings, backlog, query-log, docs and tools facades and the live-docs, coord and backlog-write tools):
+    the catalog of kbtools.py reads it, so two runs in two environments print the same one."""
+    own = not limited() or every
+    return (TOOL_LIST + ([FEEDBACK_TOOL] + MONITOR_TOOL_LIST + SETTINGS_TOOL_LIST + BACKLOG_TOOL_LIST
+                         + QUERYLOG_TOOL_LIST + DOCS_TOOL_LIST + TOOLS_TOOL_LIST if own else [])
+            + (COORD_TOOL_LIST if every or coord_enabled() else [])
+            + (BACKLOG_WRITE_TOOL_LIST if every or backlog_write_enabled() else [])
+            + (LIVE_TOOL_LIST if every or live_enabled() else []))
+
+
 # ---------------------------------------------------------------- protocol
 
 def result(msg_id, res):
@@ -1548,11 +1560,7 @@ def handle(msg):
     if method == "ping":
         return result(msg_id, {})
     if method == "tools/list":
-        return result(msg_id, {"tools": TOOL_LIST + ([] if limited() else [FEEDBACK_TOOL] + MONITOR_TOOL_LIST + SETTINGS_TOOL_LIST + BACKLOG_TOOL_LIST
-                               + QUERYLOG_TOOL_LIST + DOCS_TOOL_LIST + TOOLS_TOOL_LIST)
-                               + (COORD_TOOL_LIST if coord_enabled() else [])
-                               + (BACKLOG_WRITE_TOOL_LIST if backlog_write_enabled() else [])
-                               + (LIVE_TOOL_LIST if live_enabled() else []), "ttlMs": 3600000, "cacheScope": "public"})
+        return result(msg_id, {"tools": tool_list(), "ttlMs": 3600000, "cacheScope": "public"})
     if method == "tools/call":
         name, args = params.get("name"), params.get("arguments") or {}
         handlers = {**HANDLERS, **LIVE_HANDLERS} if live_enabled() else dict(HANDLERS)
