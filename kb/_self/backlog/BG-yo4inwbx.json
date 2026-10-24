@@ -2,7 +2,7 @@
   "id": "BG-yo4inwbx",
   "kind": "bug",
   "title": "runs lists no drift for an item whose file is done on main and whose run state is none",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-dx76osrn",
   "priority": "P2",
@@ -39,5 +39,7 @@
     "parked: SP-sucr3kfg review"
   ],
   "notes": "Found by the SP-sucr3kfg review. bl_runs.drift_of returns no drift when the state is none, but none on a done item is what an unreachable coord at claim, dispatch or land leaves, the case --reconcile is for; the sprint's own ST-3ru7f4to, ST-pmxnissq, ST-vopsopkg and ST-fzczb63u show it. Decide whether an old done item with no run key is noise: a key-less item done before the run states existed would then be listed once. Planning 2026-10-24: premise ran on today's base: the repro prints 'runs: 1 item(s), 0 drifted' for a done item with run none (exit 0). Open question of the note taken as recommended: a done item with no run key is drift (git shows landed), listed once and repaired by --reconcile; the default scope of runs (the active sprints' items and items with a key) keeps the old done items out, and close deletes a sprint's items. drift_of keeps returning none for an item that is not done. Planned into SP-dx76osrn on 2026-10-24, eighth in the order. Sprint SP-dx76osrn started 2026-10-24 on the standing approval; ready once ST-34vqqkun is done.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
