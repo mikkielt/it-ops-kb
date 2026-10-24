@@ -4,6 +4,7 @@
   "title": "kbroot.py add-remote and check.py accept a pointer url with embedded credentials",
   "status": "draft",
   "parent": "EP-eocmyqdx",
+  "sprint": "SP-c6w5hjmc",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -18,7 +19,11 @@
   "touches": [
     "_tools/kbroot.py",
     "_tools/kbcommon.py",
-    "kb/_self/content-rules.md"
+    "kb/_self/content-rules.md",
+    "_tools/check.py"
+  ],
+  "depends_on": [
+    "BG-4dj74rml"
   ],
   "links": [
     "parked: SP-s2svf5a6 review"
