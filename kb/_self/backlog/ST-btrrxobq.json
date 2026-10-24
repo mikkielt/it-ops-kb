@@ -2,7 +2,7 @@
   "id": "ST-btrrxobq",
   "kind": "story",
   "title": "kb/public/claude/mods.md holds a mod's import rules and its test kit: claude plugin test, the stubs it needs and the validate rule on passing $",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-f2o3aqm2",
   "priority": "P3",
@@ -40,5 +40,7 @@
     "parked: SP-hja7yu5k research"
   ],
   "notes": "Found by the goal research of SP-hja7yu5k (2026-10-24): the facts were read in the live docs (code.claude.com/docs/en/plugins/mods/create 'Check what Claude Code reads from your mod', /reference 'Files', /test 'Stub what Claude Code would answer', 'Test a timer'), not in the kb. The check reads the facts command's stdout and its words, so a rewrite that proves the exit code too is the first step. Research item: use /kb-research, one source row per page. Plan 2026-10-24: premise runs on base (exit 1, none of the three facts is in mods.md). The old check read the stdout words 'plugin test' and 'relative path' of rag.py facts anywhere; rewritten to read the three facts themselves: a DOC-tagged fact for each, whose source ids all have a row in kb/public/_sources.csv, plus the facts command exiting 0. Touches named kb/public/claude/_sources.csv, which does not exist (sources are one file, kb/public/_sources.csv): corrected. Sources: the live pages named above; S-kppz7qns (test) and S-mvuodgli (reference) have rows already; the create page (Check what Claude Code reads from your mod) needs a new row if cited. Run /kb-research for the facts, then python3 _tools/factdiff.py anchor --file for the anchors and the doc2query prune.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
