@@ -20,5 +20,9 @@
     "kb/_self/backlog.md",
     "kb/_self/coordination.md"
   ],
+  "links": [
+    "parked: SP-sucr3kfg review"
+  ],
+  "notes": "Found by the SP-sucr3kfg review. bl_runs.drift_of returns no drift when the state is none, but none on a done item is what an unreachable coord at claim, dispatch or land leaves, the case --reconcile is for; the sprint's own ST-3ru7f4to, ST-pmxnissq, ST-vopsopkg and ST-fzczb63u show it. Decide whether an old done item with no run key is noise: a key-less item done before the run states existed would then be listed once.",
   "filed_in": "clone-0ea70e5c"
 }
