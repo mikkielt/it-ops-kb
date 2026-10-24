@@ -794,6 +794,8 @@ def check_logs(root, owner, known):
     rows = read_table(base / LOGS, name, LOG_COLS) or []
     field = lambda r, k: (r.get(k) or "").strip()  # noqa: E731
     ids = [field(r, "id") for r in rows]
+    own = {i.lower() for i in known.get(root.name, ())} if root is not None and root.visibility == "internal" else set()
+    allow = {"private-id": own}  # an internal root's log cites its own sources; every other private name is refused
     for n, r in enumerate(rows, start=2):
         lid, status, bad = field(r, "id"), field(r, "status"), []
         if not LOG_ID.fullmatch(lid):
@@ -810,7 +812,7 @@ def check_logs(root, owner, known):
                 bad.append(f"{col} is longer than {LOG_TEXT_MAX} characters: a row holds an aggregate, not raw event text")
             bad.extend(f"{col} holds {what}: a row never carries raw event text" for rx, what in RAW_EVENT if rx.search(text))
             bad.extend(f"{col} has a leak-scan hit ({kind}): a row never carries raw event text"
-                       for kind in sorted({k for k, _ in kbcommon.leak_hits(text)}))
+                       for kind in sorted({k for k, _ in kbcommon.leak_hits(text, allow)}))
         runs = kbcommon.split_list(r.get("source_run_ids"))
         if not runs:
             bad.append("no source_run_ids: a row names the runs of the query log's store it was derived from")
