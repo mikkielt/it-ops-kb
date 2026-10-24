@@ -52,7 +52,11 @@
         "Skip init in the kb clone and write nothing": "ST-wwdfdigd",
         "Change init to skip backlog.json when it is tracked": "ST-wwdfdigd"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Run init, then undo the coord entry in backlog.json with git restore",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
