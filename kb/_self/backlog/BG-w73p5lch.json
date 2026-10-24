@@ -22,6 +22,25 @@
   "depends_on": [
     "BG-spm2azqa"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "When kbroot.py fetch cannot write the NAME.fetched stamp after a fetch that worked, is the root counted as failed?",
+      "options": [
+        "warn",
+        "fail"
+      ],
+      "recommendation": "warn",
+      "do": {
+        "warn": "BG-w73p5lch",
+        "fail": "BG-w73p5lch"
+      },
+      "class": "design",
+      "answer": "warn",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-s2svf5a6 review"
   ],

@@ -334,6 +334,11 @@ def fetch_one(p, bound=None):
     return ""
 
 
+def os_reason(e):
+    """Why OSError `e` happened, without the path it names."""
+    return getattr(e, "strerror", None) or e.__class__.__name__
+
+
 def fetched_stamp(name):
     """The file whose mtime is when root `name` was last fetched without failing (beside its clone)."""
     return os.path.join(kbcommon.roots_cache_dir(), name + ".fetched")
@@ -413,8 +418,17 @@ def cmd_fetch(a):
         fetchable = [by_name[n] for n in dict.fromkeys(a.names)]
     failed = 0
     for p in fetchable:
-        why = fetch_one(p)
-        record_fetch(p, why)
+        try:
+            why = fetch_one(p)
+        except OSError as e:
+            why = f"the clone directory is not usable ({os_reason(e)})"
+        try:
+            record_fetch(p, why)
+        except OSError as e:
+            if why:
+                why += f"; the failure is not recorded ({os_reason(e)})"
+            else:
+                print(f"fetch not recorded: {p.name}: {os_reason(e)}", file=sys.stderr)
         if why:
             failed += 1
             print(f"fetch failed: {p.name}: {why}", file=sys.stderr)
