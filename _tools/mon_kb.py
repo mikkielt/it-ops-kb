@@ -1,12 +1,13 @@
 """kbmon's kb panel (kb/_self/monitoring.md): the roots with their articles and facts by tag, the open gaps and conflicts,
-the newest refresh and census dates, the last recorded lookup-eval outcome and the age of the pack index.
+the newest refresh and census dates, the last recorded lookup-eval outcome, the age of the pack index and the command-line
+tools the catalog of `kbtools.py` lists, with those whose module docstring lacks its `Answers:` or `Use:` line.
 
 The counts are `rag.py audit`'s (`kbfacts.audit`'s rows without the gap and conflict entries it links to each article,
 which the panel does not show and which take most of its time), read in this process and read again only when a file of a
 root changed (its name, time or size). The panel reads and writes nothing: it builds no index (KB_INDEX=0 for the rest of the
 process, so the fingerprint memo is not written either), runs no eval (the outcome is the newest `land.step` row of
-`rag.py-eval` in the ops rows) and starts no network request. Imports `mon_base`; `kbfacts`, `kbcommon` and `bl_stall`
-where it reads them.
+`rag.py-eval` in the ops rows) and starts no network request. Imports `mon_base`; `kbfacts`, `kbcommon`, `bl_stall`
+and `kbtools` where it reads them.
 """
 import collections
 import os
@@ -74,6 +75,13 @@ def last_eval(root):
     return {"state": "passed" if last.get("exit") == 0 else "failed", "when": last.get("ts")}
 
 
+def tool_counts(root):
+    """{"count": the command-line tools of `_tools/`, "missing": the names of those lacking the `Answers:` or `Use:` line}."""
+    import kbtools
+    entries = kbtools.tool_entries(root)
+    return {"count": len(entries), "missing": sorted(e["tool"] for e in entries if e["missing"])}
+
+
 def alerts(data):
     """The alerts of the panel's data: one `eval` alert (id `kb.eval`) while the newest recorded lookup eval at a landing
     failed; none while it passed or none is recorded."""
@@ -139,7 +147,7 @@ def collect(ctx):
     roots, refreshed = counts(kbfacts, kbcommon)
     return {"roots": roots, "gaps": open_entries(kbfacts, kbcommon.GAPS), "conflicts": open_entries(kbfacts, kbcommon.CONFLICTS),
             "refreshed": refreshed, "census": census_date(kbcommon), "census_tag": census_tag(ctx.root),
-            "eval": last_eval(ctx.root), "index_age_s": age}
+            "eval": last_eval(ctx.root), "index_age_s": age, "tools": tool_counts(ctx.root)}
 
 
 def lines(data):
@@ -154,4 +162,8 @@ def lines(data):
     age = data.get("index_age_s")
     out.append(f"refreshed {data.get('refreshed') or '-'}; census {data.get('census') or '-'} "
                f"({data.get('census_tag') or 'no tag'}); eval {ev_text}; index {f'{age}s old' if age is not None else 'none'}")
+    tools = data.get("tools")
+    if tools:
+        names = f": {', '.join(tools['missing'][:3])}{', ...' if len(tools['missing']) > 3 else ''}" if tools["missing"] else ""
+        out.append(f"tools: {tools['count']} cataloged, {len(tools['missing'])} missing their Answers:/Use: lines{names}")
     return out

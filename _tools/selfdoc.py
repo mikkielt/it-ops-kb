@@ -59,6 +59,7 @@ import argparse, ast, csv, functools, io, os, pathlib, re, subprocess, sys, toke
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kbcommon  # noqa: E402
+import kbtools  # noqa: E402
 
 KB = kbcommon.HOME  # this repository
 SELF_REL = kbcommon.repo_rel(kbcommon.SELF)  # the kb's own docs, relative to the repository (`_self`)
@@ -218,7 +219,8 @@ def stale(root=KB, since=None, work=None):
 
 
 def check(root=KB):
-    """Problems with the map: missing docs, patterns that match no file, top-level _self docs with no row."""
+    """Problems with the map: missing docs, patterns that match no file, top-level _self docs with no row, dead section
+    references and command-line tools whose docstring lacks the `Answers:` or `Use:` line."""
     docs = load_map(root)
     files = set(lines(git(root, "ls-files"))) | set(lines(git(root, "ls-files", "--others", "--exclude-standard")))
     problems = []
@@ -232,6 +234,8 @@ def check(root=KB):
         if f.startswith(SELF_REL + "/") and "/" not in f[len(SELF_REL) + 1:] and f.endswith(".md") and f not in docs:
             problems.append(f"{f}: no row in {MAP} (pattern - if it describes no file)")
     problems += dead_section_refs(root, files)
+    problems += [f"_tools/{e['tool']}: a command-line tool whose module docstring lacks the {', '.join(k + ':' for k in e['missing'])} "
+                 f"line (kbtools.py reads them)" for e in kbtools.tool_entries(root) if e["missing"]]
     return problems
 
 

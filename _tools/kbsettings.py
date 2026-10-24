@@ -33,6 +33,10 @@ strategy (what a session does when another item is in the state the key names):
   same_item                             another session already holds the same item
   each one of wait, ask, after, join, proceed
   decide               operator or claude: who picks the strategy when none of the above settles it
+
+Answers: how coordination is set up here: each setting, the file that set it and what it means
+Use: python3 _tools/kbsettings.py show|explain|init|check --root WS
+MCP: kb_settings explains the effective settings
 """
 import argparse, json, re, sys
 from pathlib import Path

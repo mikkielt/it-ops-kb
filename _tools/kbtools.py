@@ -66,11 +66,11 @@ def cli_files(root=ROOT):
 
 
 def tail_fields(doc):
-    """{"Answers": [...], "Use": [...], "MCP": [...]} read from the first `Answers:` line of a docstring to its end; an
-    indented line goes on the line above it. All three are empty when the docstring has no `Answers:` line."""
+    """{"Answers": [...], "Use": [...], "MCP": [...]} read from the first `Answers:` or `Use:` line of a docstring to its
+    end; an indented line goes on the line above it. All three are empty when the docstring has neither line."""
     out = {k: [] for k in KEYS}
     lines = doc.splitlines()
-    start = next((i for i, line in enumerate(lines) if line.strip().startswith("Answers:")), None)
+    start = next((i for i, line in enumerate(lines) if line.strip().startswith(("Answers:", "Use:"))), None)
     last = None
     for line in lines[start:] if start is not None else []:
         m = KEY_LINE.match(line)
