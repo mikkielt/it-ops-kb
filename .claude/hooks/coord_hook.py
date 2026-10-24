@@ -76,6 +76,7 @@ FOREIGN = []  # [the state directory of a project that is not this clone], once 
 LEASE_SECONDS = 6 * 3600  # a session that ends without SessionEnd (a crash) drops out of `list` after this
 RETRY_SECONDS = 60  # after a renew that could not run, the next tool event waits this long
 OVERLAPS_SHOWN = 4  # overlaps shown, two lines each: with the first and last line, ten in all
+DIGEST_LINES = 200  # digest lines read, before this session's own intents are dropped (the width kbmon's sessions panel reads)
 SHOWN_KEPT = 100  # overlaps the state file remembers as shown
 MID_SECONDS = 10  # a midrun check runs at most this often, the first one at once
 TOUCH_CHARS = 120  # the width of an intent's touch field
@@ -422,7 +423,7 @@ def overlaps(sid, keys, dispatched=None):
     session made for that item are no overlap."""
     if not keys:
         return []
-    args = ["digest", "--lines", "10"] + [a for k in keys[:30] for a in ("--key", k)]
+    args = ["digest", "--lines", str(DIGEST_LINES)] +[a for k in keys[:30] for a in ("--key", k)]
     found, by_session = [], {}
     for line in coord(*args)[1].splitlines():
         words = line.split()
