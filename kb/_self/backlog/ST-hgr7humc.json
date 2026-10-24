@@ -2,7 +2,7 @@
   "id": "ST-hgr7humc",
   "kind": "story",
   "title": "Review sprint: Team roots fetch and push safely: no credential prompts or urls, bounded transports, CRLF pointers, gitlink bumps on the right lane",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-c6w5hjmc",
   "review": true,
   "priority": "P1",
@@ -25,6 +25,27 @@
   ],
   "notes": "Review story of SP-c6w5hjmc; ready once every other item is done.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "5c3d75beee5cb422f19f4f269385c6bff2b152dc",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "4df12dff012c9a30"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "b3d3eec4c7b3cc05"
+      }
+    ]
+  }
 }
