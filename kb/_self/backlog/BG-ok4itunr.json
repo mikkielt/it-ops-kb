@@ -35,6 +35,25 @@
   "depends_on": [
     "BG-6bm6fhgg"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the leak scan tell narrow-wrapped key material and a repository path from prose?",
+      "options": [
+        "Wrapped body is 3 lines of 8+ base64 characters each ending its line, and a 20-character run needs an upper-case letter, digit or plus",
+        "Wrapped body is any 3 lines of 4+ base64 characters, and the 20-character run keeps no path rule"
+      ],
+      "recommendation": "Wrapped body is 3 lines of 8+ base64 characters each ending its line, and a 20-character run needs an upper-case letter, digit or plus",
+      "do": {
+        "Wrapped body is 3 lines of 8+ base64 characters each ending its line, and a 20-character run needs an upper-case letter, digit or plus": "BG-ok4itunr",
+        "Wrapped body is any 3 lines of 4+ base64 characters, and the 20-character run keeps no path rule": "BG-ok4itunr"
+      },
+      "class": "design",
+      "answer": "Wrapped body is 3 lines of 8+ base64 characters each ending its line, and a 20-character run needs an upper-case letter, digit or plus",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-tsb23kev review"
   ],
