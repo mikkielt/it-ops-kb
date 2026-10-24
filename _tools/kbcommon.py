@@ -381,7 +381,7 @@ class RootError(Exception):
 
 def _meta(text):
     """`key: value` pairs of a ROOT_FILE's front matter."""
-    lines = (text or "").lstrip("\ufeff").split("\n")
+    lines = (text or "").lstrip("\ufeff").replace("\r\n", "\n").split("\n")
     if lines[:1] != ["---"] or "---" not in lines[1:]:
         return {}
     out = {}
