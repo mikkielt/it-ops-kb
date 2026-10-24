@@ -314,7 +314,7 @@ def root_of(args):
     name = str(args.get("root") or "").strip()
     if name == kbfacts.SELF_ROOT and not limited():
         return name
-    if name and name not in {r.name for r in kbcommon.roots()}:
+    if name and name not in {r.name for r in kbcommon.roots()} | {m.name for m in kbcommon.missing_roots()}:
         raise ToolError(f"no root {name!r}; roots: {', '.join(r.name for r in kbcommon.roots())}")
     return name or None
 
@@ -417,6 +417,8 @@ def kb_audit(args):
     with guarded():
         rows = kbfacts.audit(args.get("prefix") or None, args.get("status") or None, root_of(args))
     if not rows:
+        if str(args.get("root") or "").strip() in {m.name for m in kbcommon.missing_roots()}:  # as a pack and a search say
+            return "no article matches\n" + kbcommon.missing_note()
         raise ToolError("no article matches")
     with guarded():
         conflicts = rag.format_decision_conflicts(kbfacts.decision_conflicts(args.get("prefix") or None, root_of(args)))
