@@ -1,0 +1,23 @@
+{
+  "id": "BG-eoito4bw",
+  "kind": "bug",
+  "title": "kbtools.py ranks a command above the skill whose description says it answers install the commit hook and find stale docs, since a description word is capped at 0.6 of a tool word",
+  "status": "draft",
+  "parent": "EP-5mp6pwnn",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbtools.py NEED puts kb-setup first for install the commit hook and kb-self first for find stale docs, as before the description cap, while querylog.py stays first for query log and backlog.py for how long landing steps take",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json\nimport subprocess\nimport sys\n\ncases = {'install the commit hook': 'kb-setup', 'find stale docs': 'kb-self'}\ngot = {}\nfor need in cases:\n    r = subprocess.run([sys.executable, '_tools/kbtools.py', need, '--json'], capture_output=True, text=True)\n    got[need] = json.loads(r.stdout)['entries'][0]['tool'] if r.returncode == 0 and json.loads(r.stdout)['entries'] else None\nprint('first entry per need:', got, '| wanted:', cases)\nsys.exit(0 if got == cases else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/kbtools.py",
+    "kb/_self/tools.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
