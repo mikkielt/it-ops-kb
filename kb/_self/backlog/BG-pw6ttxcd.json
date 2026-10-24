@@ -2,7 +2,7 @@
   "id": "BG-pw6ttxcd",
   "kind": "bug",
   "title": "KbmonRunStalled fires on any worker alive for an hour, because a working run posts one progress event and the silence it measures never ends while the worker lives",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ymnz7b4n",
   "priority": "P3",
   "rank": 0,
@@ -66,6 +66,28 @@
   ],
   "notes": "Review gap (S2) of SP-d6gbc3tq: otel/kbmon.rules.yml:39 with ST-54y7al4z gate g2 (3600 s, provisional): a working run posts only the move to working, so the rule fires for any worker alive past an hour (ETA history in this clone: bug items p75 58 min, bench items p75 108 min). Needs either the pid test of this bug or a longer threshold. Planned into SP-ymnz7b4n, 2026-10-24 day run. Precheck: both checks fail on the base; the behaviour check plants a live and a dead worker pid with backlog.py own --class process. Fix may read the coord own/process records in mon_coord.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "6275d908a9cfa00aebdde4f3eb52e0414c7c7d08",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, tempfile, os, sys, json, sqlite3, time\nR = os.getcwd(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite'); T = tempfile.mkdtemp()\nenv = dict(os.environ, KB_COORD_STORE=S)\nsubprocess.run(['git', 'init', '-q', T])\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True, env=env)\ndef silent(item, pid):\n    c('transition', 'run/' + item, '--to', 'claimed'); c('transition', 'run/' + item, '--to', 'working')\n    subprocess.run([sys.executable, R + '/_tools/backlog.py', '--root', T, 'own', str(pid), '--class', 'process', '--item', item], capture_output=True, text=True, env=env)\nLIVE = subprocess.Popen(['sleep', '120'])\nDEAD = subprocess.Popen(['true']); DEAD.wait()\nsilent('ST-aaaaaaaa', LIVE.pid)\ncon = sqlite3.connect(S); con.execute('UPDATE events SET at = at - 7200'); con.commit(); con.close()\ndef metric():\n    r = subprocess.run([sys.executable, R + '/_tools/kbmon.py', '--metrics', '--panel', 'coord', '--root', T, '--store', S], capture_output=True, text=True, env=env)\n    try:\n        pts = json.loads(r.stdout)['points']\n    except (ValueError, KeyError):\n        return None\n    return next((p['value'] for p in pts if p['name'] == 'kbmon.coord.run.working_silent'), None)\nalive = metric()\nLIVE.terminate()\nLIVE.wait()\ndead = metric()\nprint('silent seconds with the worker alive:', alive, '| after it died:', dead)\nsys.exit(0 if alive == 0 and dead is not None and dead >= 7000 else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "1b12b8449bcace03"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re, sys; t = open('_tools/mon_export.py', encoding='utf-8').read(); m = re.search(r'working_silent.{0,2000}', t, re.S); sys.exit(0 if m and not re.search(r'pid|alive|proc', m.group(0)) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
