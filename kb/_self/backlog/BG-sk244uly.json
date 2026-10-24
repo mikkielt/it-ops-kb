@@ -20,6 +20,25 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the overlap age keep only the intent events the live intents still name?",
+      "options": [
+        "Cut each event to its live items and paths, drop an empty one, then pair",
+        "Keep a whole event when any of its items or paths is live"
+      ],
+      "recommendation": "Cut each event to its live items and paths, drop an empty one, then pair",
+      "do": {
+        "Cut each event to its live items and paths, drop an empty one, then pair": "BG-sk244uly",
+        "Keep a whole event when any of its items or paths is live": "BG-sk244uly"
+      },
+      "class": "design",
+      "answer": "Cut each event to its live items and paths, drop an empty one, then pair",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ymnz7b4n review"
   ],
