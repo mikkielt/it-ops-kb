@@ -1,0 +1,22 @@
+{
+  "id": "BG-nx6jzvop",
+  "kind": "bug",
+  "title": "The leak scan passes a single-line EC key body that a period, underscore or hyphen follows, which the scan before BG-7mxo4k6p flagged",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbcommon.leak_hits flags a single-line EC key body of 20 or more base64 characters that a period, an underscore or a hyphen follows, and still does not flag the EC armor label quoted before a repository path such as the sql2022-views.md page or the Win32.md page",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport sys\nsys.path.insert(0, \"_tools\")\nimport kbcommon\nd = \"-\" * 5\narm = d + \"BEGIN EC PRIVATE KEY\" + d\nbody = \"MHcCAQEEIGtq3xaH5wq7CUAKmJdZ0PY4RnXqPIYV1S2qt1NWOEHJoAoGCCqGSM49AwEHoUQDQgAE\"\nhit = lambda t: any(k == \"secret\" for k, _ in kbcommon.leak_hits(t))\nmiss = [s for s in (\".\", \"_x\", \"-x\", \".pem\") if not hit(arm + \" \" + body + s)]\nassert not miss, (\"a single-line EC key body followed by this text is not flagged\", miss)\n"
+    ]
+  },
+  "touches": [
+    "_tools/kbcommon.py",
+    "_tools/test_leaks.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
