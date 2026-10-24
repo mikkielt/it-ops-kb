@@ -1319,7 +1319,9 @@ def bash_denied(command_line):
             rules = settings.get("permissions", {}).get("deny", [])
         except (OSError, ValueError, AttributeError):
             return f"{name} (unreadable)"
-        for rule in rules if isinstance(rules, list) else []:
+        if not isinstance(rules, list):  # a deny that is not a list cannot be read as holding no rule
+            return f"{name} (unreadable)"
+        for rule in rules:
             if not isinstance(rule, str):
                 continue
             if rule == "Bash":
