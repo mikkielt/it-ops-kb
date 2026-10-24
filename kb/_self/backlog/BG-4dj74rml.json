@@ -2,7 +2,7 @@
   "id": "BG-4dj74rml",
   "kind": "bug",
   "title": "kbroot.fetch_env keeps GIT_ASKPASS and SSH_ASKPASS, so a fetch can show a credential prompt",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-c6w5hjmc",
   "priority": "P2",
@@ -68,6 +68,37 @@
   "links": [
     "parked: SP-s2svf5a6 review"
   ],
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "ce2595d79c2eb7f3e7355bb3a173c9b9fce285cf",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport os, sys, tempfile\nsys.path.insert(0, \"_tools\")\nd = tempfile.mkdtemp(); cfg = os.path.join(d, \"gitconfig\")\nopen(cfg, \"w\").write(\"[core]\\n\\taskPass = /x/askpass\\n\")\nos.environ.update(GIT_CONFIG_GLOBAL=cfg, GIT_ASKPASS=\"/x/askpass\", SSH_ASKPASS=\"/x/askpass\")\nimport kbroot\ne = kbroot.fetch_env()\nleft = [k for k in (\"GIT_ASKPASS\", \"SSH_ASKPASS\") if e.get(k)]\nclass P: url = \"https://git.corp.example.com/team-a/kb.git\"\nok, out = kbroot.git_out([\"config\", \"--get\", \"core.askPass\"], P(), d)\nprint(\"askpass left in fetch_env:\", left, \"| core.askPass seen by a fetch's git:\", repr(out))\nsys.exit(1 if left or out == \"/x/askpass\" else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "5decda15f2a52a11"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "row = [l for l in open(\"kb/_self/tools.md\").read().splitlines() if l.startswith(\"| `python3 _tools/kbroot.py list`\")][0]\n\nmiss = [w for w in (\"GIT_ASKPASS\", \"SSH_ASKPASS\", \"GCM_INTERACTIVE\") if w not in row]\nprint(\"the kbroot row of tools.md does not name:\", miss)\nraise SystemExit(1 if miss else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "d5c9d874184034b0"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, sys\nsys.path.insert(0, \"_tools\")\nos.environ[\"GIT_ASKPASS\"] = \"/x/askpass\"; os.environ[\"SSH_ASKPASS\"] = \"/x/askpass\"\nimport kbroot\ne = kbroot.fetch_env()\nleft = [k for k in (\"GIT_ASKPASS\", \"SSH_ASKPASS\") if e.get(k)]\nprint(\"askpass left in fetch_env:\", left)\nsys.exit(1 if left else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "7ac8c7d516bd6332"
+      }
+    ]
+  }
 }
