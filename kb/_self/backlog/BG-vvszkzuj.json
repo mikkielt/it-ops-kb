@@ -61,7 +61,7 @@
   "links": [
     "parked: SP-kbrxa4c4 review"
   ],
-  "notes": "Review 2026-10-18: in a scratch repo with the hook, `git commit -m $'feat: x\\n\\nKB-Work: ST-cccccccc\\n\\nbody'` returns 0, then `python3 _tools/kbgit.py check-trailers HEAD` returns 1. Found by the SP-kbrxa4c4 review (S3, ST-3mfjrjom). Planner 2026-10-24: provenance moved out of the goal; clause 2 is read by a check on the KB-Work bullet of git.md (the sentence that a stray KB-* line is only warned of at commit time).",
+  "notes": "Review 2026-10-18: in a scratch repo with the hook, `git commit -m $'feat: x\\n\\nKB-Work: ST-cccccccc\\n\\nbody'` returns 0, then `python3 _tools/kbgit.py check-trailers HEAD` returns 1. Found by the SP-kbrxa4c4 review (S3, ST-3mfjrjom). Planner 2026-10-24: provenance moved out of the goal; clause 2 is read by a check on the KB-Work bullet of git.md (the sentence that a stray KB-* line is only warned of at commit time). Gate g1 (class push, set by the word refuse in a hook design question): answered with its recommendation, refuse every stray KB-* or Self-Reviewed line (pre-approved by the operator for the 2026-10-24 day run); reason: the hook then refuses exactly what check-trailers refuses for every trailer key, so it never prints a refusal and exits 0, and one commit-msg change is easy to revert.",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }
