@@ -88,8 +88,8 @@ function entriesOf(line: string): { entries: Set<string>; complete: boolean } {
   return { entries, complete }
 }
 
-// Tells the person when an entry of the needs-you line appears, goes or changes its kind. The first reading is the
-// baseline. A line with a not-read suffix tells only the entries new to the baseline and never lowers it, so a panel
+// Tells the person when an entry of the needs-you line appears, goes or changes its kind. The first complete reading is
+// the baseline, and a line with the not-read suffix before it tells nothing. A line with a not-read suffix tells only the entries new to the baseline and never lowers it, so a panel
 // that timed out and the entries returning are no news; a complete line replaces the baseline, and `nothing` is not
 // told. The pane's row is cut at its width, so the whole line comes from `--status all`, asked for when the row changed
 // or was cut. The call is not awaited, so a slow Notification hook holds no refresh. A call that rejects or answers
@@ -113,7 +113,8 @@ async function notifyNeeds($: EngineInterface, text: string, width: number): Pro
   const { entries, complete } = entriesOf(line)
   lastRow = row
   if (before === null) {
-    lastNeeds = entries
+    // A first line with the suffix says nothing of what waited before: the baseline waits for a complete line.
+    lastNeeds = complete ? entries : null
     return
   }
   const isNew = [...entries].some(entry => !before.has(entry))

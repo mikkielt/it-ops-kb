@@ -20,10 +20,31 @@
     ".claude/skills/kbmon-pane/hooks/register.tsx",
     "kb/_self/monitoring.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "The item's repro first reads 'nothing' at the mod's 1.5 s first refresh (a complete baseline), so step 2's 'disk 9.4% free' is rightly news and no fix that keeps the goal can pass it; how is the done check fixed?",
+      "options": [
+        "Repro starts with a not-read first line",
+        "Leave the repro as it is"
+      ],
+      "recommendation": "Repro starts with a not-read first line",
+      "do": {
+        "Repro starts with a not-read first line": "BG-eavxydjq",
+        "Leave the repro as it is": "BG-eavxydjq"
+      },
+      "class": "agents-rule",
+      "answer": "Repro starts with a not-read first line",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-rin4kkoj review"
   ],
-  "notes": "Found by the review of SP-rin4kkoj (2026-10-24, S3). register.tsx notifyNeeds sets lastNeeds from the first reading whatever its suffix; a first line `nothing; not read: host` is then followed by `disk 9.4% free` and the mod notifies. Fix: hold the baseline until a complete line, and say so in kb/_self/monitoring.md (The notification). Planned into SP-ymnz7b4n, 2026-10-24 day run. Precheck: repro fails on the base.",
+  "notes": "Found by the review of SP-rin4kkoj (2026-10-24, S3). register.tsx notifyNeeds sets lastNeeds from the first reading whatever its suffix; a first line `nothing; not read: host` is then followed by `disk 9.4% free` and the mod notifies. Fix: hold the baseline until a complete line, and say so in kb/_self/monitoring.md (The notification). Planned into SP-ymnz7b4n, 2026-10-24 day run. Precheck: repro fails on the base. Gate g1 answered by the day-run runner with its recommendation (pre-approved by the operator for the 2026-10-24 day run). Reason: the planted repro let the mod's first refresh read 'nothing' (a complete baseline) before its not-read line, so the repro is rewritten to start with the not-read line; same goal clause.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
