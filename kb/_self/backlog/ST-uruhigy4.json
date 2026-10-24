@@ -39,5 +39,5 @@
   "links": [
     "parked: housekeeping plan 2026-10-19 (operator gate)"
   ],
-  "notes": "housekeeping batch 2026-10-19, coord ask A275e35646a: a change to AGENTS.md's rules is the operator's. The H sprint switches the skills, briefs and observer."
+  "notes": "housekeeping batch 2026-10-19, coord ask A275e35646a: a change to AGENTS.md's rules is the operator's. The H sprint switches the skills, briefs and observer. From the 2026-10-24 telemetry and query-log analysis: evidence that routing text alone will not move behaviour. In 7 days managers ran 1,148 of the 1,290 Bash backlog reads (show 611, next 212, horizon 143, ops 125, cost 122, selectors 90, list 53, stalled 48) and 872 selfdoc and rag-eval docs commands, against 1 kb_backlog call (a worker's) and 0 kb_docs calls. The worker brief has named kb_backlog first since 2026-10-20 (bl_dispatch.py:154) and only 7 worker sessions began after it (2 Bash reads, 0 tool calls, 0 tool-search calls). No session ran a tool search for a kb_backlog, kb_docs, kb_querylog or kb_monitor_status schema: the tools are deferred (names only). Output size is the same either way, so the case is exit status and schema checks, not tokens. See EP-fgtlhyo4."
 }
