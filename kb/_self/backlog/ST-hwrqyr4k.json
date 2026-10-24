@@ -2,7 +2,7 @@
   "id": "ST-hwrqyr4k",
   "kind": "story",
   "title": "Review sprint: No fact rests only on a source the census found gone",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6t3z4q54",
   "review": true,
   "priority": "P1",
@@ -25,6 +25,27 @@
   ],
   "notes": "Review 2026-10-24: a fresh-context headless reviewer read the three content commits against the goal; it found 2 gaps and confirmed all three provisional answers. S1 gap (QG32 in _answers.md kept a DOC tag on a drift-measurement claim the cited pages do not state) was fixed in the sprint as BG-fltgucjv and landed. S3 gap (a DOC tag wrapped over two lines, _answers.md:1599, still cites census-gone S870) is parked as the draft bug BG-6ski25jl, link 'parked: SP-6t3z4q54 review'. Provisional gates TK-hxz47zul g1, TK-e2khbdmj g1 and TK-36cbrvwp g1 confirmed with --confirm --by operator on the standing approval for the 2026-10-24 day run (pre-approved by the operator for the 2026-10-24 day run); the reviewer's caveat on TK-36cbrvwp g1: DER tags with a dated read still cite census-gone rows (S2177, S2180, S-zb3jd525, S-lldnrkhv, S-7ivxsp4z) because this host reads those endpoints that the census fact diff records as 404, which departs from the goal's wording 're-sourced or UNK' for DOC tags only; left as is for the operator to see.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "597e4731a96b59828145a7642e015b7fd0f0a670",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "f6fa1449fbad52dc"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "e4d28eb9853917f6"
+      }
+    ]
+  }
 }
