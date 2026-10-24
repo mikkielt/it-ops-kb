@@ -2,7 +2,7 @@
   "id": "BG-56mb4uhs",
   "kind": "bug",
   "title": "kbwho --otel-attributes keeps an email in OTEL_SERVICE_NAME and in an OTEL_RESOURCE_ATTRIBUTES key",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ymnz7b4n",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,7 @@
   "links": [
     "parked: SP-yjugq5c2 review"
   ],
-  "notes": "Planned into SP-ymnz7b4n, 2026-10-24 day run. Precheck: repro fails on the base."
+  "notes": "Planned into SP-ymnz7b4n, 2026-10-24 day run. Precheck: repro fails on the base.",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
