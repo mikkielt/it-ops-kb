@@ -23,6 +23,23 @@
   "depends_on": [
     "BG-usjnwgqx"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does land keep the failed push step's gate output file after the landing worktree is removed?",
+      "options": [
+        "copy",
+        "run-in-checkout"
+      ],
+      "recommendation": "copy",
+      "do": {
+        "copy": "BG-oz5vudfu",
+        "run-in-checkout": "BG-oz5vudfu"
+      },
+      "class": "push"
+    }
+  ],
   "links": [
     "parked: SP-47w4ngr6 review"
   ],
