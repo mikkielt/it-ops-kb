@@ -245,11 +245,32 @@ def run_state_of(iid):
     return str(body.get("value") or "") if code == 0 and isinstance(body, dict) else ""
 
 
-def worker_running(bl, iid):
-    """Whether the worker `dispatch` started for the item still runs: its pid from the coord `own/` process record of the
-    item (the store a worker's worktree shares), else from this working tree's claims ledger, alive and, where the record
-    holds its start time, the same process."""
-    found = []
+def coord_owners():
+    """The live coord `own/` records, as `bl_clean.coord_state` gives them; [] when coord cannot be read."""
+    try:
+        return bl_clean.coord_state()["owners"]
+    except (bl_clean.CoordLocked, Rejected):
+        return []
+
+
+def coord_workers(owners=None):
+    """{item id: [(pid, start)]} of the coord `own/` process records (OWNERS, as `coord_owners` gives them, read when
+    None), which every tree and clone sharing the store sees: `dispatch` writes one for the worker it starts."""
+    found = {}
+    for r in coord_owners() if owners is None else owners:
+        if r.get("class") == bl_clean.PROCESS and r.get("item"):
+            found.setdefault(r["item"], []).append((r.get("pid"), r.get("start")))
+    return found
+
+
+def worker_of(bl, iid, coord=None, table=None):
+    """(pid, whether it runs) of the worker `dispatch` started for the item: the pids of the coord `own/` process records
+    of the item (COORD, as `coord_workers` gives it, read when None; the store a worker's worktree and every other tree
+    shares), then the pid of this working tree's claims ledger record. A pid runs when the host's process TABLE
+    (`bl_clean.host_table`, read when None; it leaves out a zombie) holds it and, where its record holds the start time,
+    the same process; a host whose table cannot be read asks the pid itself. Gives the first pid that runs, else the
+    first one recorded, else (None, False)."""
+    found = list((coord if coord is not None else coord_workers()).get(iid, ()))
     try:
         ledger = claims_ledger(bl.root)[1]
         rec = json.loads(ledger.read_text(encoding="utf-8")).get(iid) if ledger else None
@@ -257,17 +278,23 @@ def worker_running(bl, iid):
             found.append((rec.get("worker_pid"), None))
     except (OSError, ValueError):
         pass
-    try:
-        found += [(r.get("pid"), r.get("start")) for r in bl_clean.coord_state()["owners"]
-                  if r.get("class") == bl_clean.PROCESS and r.get("item") == iid]
-    except (bl_clean.CoordLocked, Rejected):
-        pass
-    table = bl_clean.host_table(bl.root) or {}
+    found = [(p, s) for p, s in found if isinstance(p, int) and not isinstance(p, bool) and p > 0]
+    table = table if table is not None else bl_clean.host_table(bl.root)
     for pid, start in found:
-        seen = table.get(pid) if isinstance(pid, int) else None  # the table leaves out a zombie
+        if table is None:
+            import tests as tests_py
+            if tests_py.pid_alive(pid):
+                return pid, True
+            continue
+        seen = table.get(pid)
         if seen is not None and (start is None or seen[1] == start):
-            return True
-    return False
+            return pid, True
+    return (found[0][0] if found else None), False
+
+
+def worker_running(bl, iid):
+    """Whether the worker `dispatch` started for the item still runs (`worker_of`)."""
+    return worker_of(bl, iid)[1]
 
 
 def gate_blocked(bl, iid, it):
