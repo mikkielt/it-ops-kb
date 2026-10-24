@@ -2,7 +2,7 @@
   "id": "ST-34vqqkun",
   "kind": "story",
   "title": "land fast-forwards the invoking checkout past an unrelated untracked file, which git merge --ff-only accepts",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
   "sprint": "SP-dx76osrn",
   "priority": "P3",
@@ -45,6 +45,6 @@
   "links": [
     "parked: SP-47w4ngr6 review"
   ],
-  "notes": "Found by the SP-47w4ngr6 review (S3); parked, no fitness test or user report names it. Planning 2026-10-24: premise ran on today's base: check 0 fails (land exit 0, landed, checkout not fast-forwarded past an untracked file); check 1 fails (a colliding untracked file leaves the checkout behind with the reason 'uncommitted changes', not naming the file). Plan: fast_forward_start tests tracked changes only (git status --porcelain --untracked-files=no), lets git merge --ff-only decide on untracked files, and names the colliding paths git prints in the said reason. Planned into SP-dx76osrn on 2026-10-24, seventh in the order.",
+  "notes": "Found by the SP-47w4ngr6 review (S3); parked, no fitness test or user report names it. Planning 2026-10-24: premise ran on today's base: check 0 fails (land exit 0, landed, checkout not fast-forwarded past an untracked file); check 1 fails (a colliding untracked file leaves the checkout behind with the reason 'uncommitted changes', not naming the file). Plan: fast_forward_start tests tracked changes only (git status --porcelain --untracked-files=no), lets git merge --ff-only decide on untracked files, and names the colliding paths git prints in the said reason. Planned into SP-dx76osrn on 2026-10-24, seventh in the order. Sprint SP-dx76osrn started 2026-10-24 on the standing approval; ready once BG-a6t6tcuz is done.",
   "filed_in": "clone-0ea70e5c"
 }
