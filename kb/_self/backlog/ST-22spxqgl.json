@@ -2,7 +2,7 @@
   "id": "ST-22spxqgl",
   "kind": "story",
   "title": "Research sprint goal: kbmon and OpenTelemetry show the run states: spans, needs-you, landing queue, drift, worker trace context and alerts",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-d6gbc3tq",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,7 @@
     "kb/public/**"
   ],
   "notes": "Plan 2026-10-24: the earlier research sprint SP-r7e7jcep landed the OpenTelemetry, Prometheus and Alertmanager facts (kb/public/logs/otel-python-sdk.md:83, prometheus-retention-exposition.md:55). Left for this story: (1) Claude Code's own telemetry join: TRACEPARENT and TRACESTATE read from the environment of -p sessions, OTEL_RESOURCE_ATTRIBUTES on every event, traces beta flags (live docs code.claude.com/docs/en/monitoring-usage read 2026-10-24 by ST-zlzvqz2w; kb has kb/public/claude/otel-monitoring.md for events only): add them as DOC facts with a source row, or Narrowed gap note if the page lacks one; (2) the Alertmanager webhook payload (version 4 JSON: status, alerts[].labels, annotations, startsAt, fingerprint) a stdlib loopback receiver would read, and webhook_configs keys: check the kb with rag.py pack first, add only what is missing. Write facts only into the article that fits and its _sources.csv; if the kb already holds both, close with a note 'No outside facts: <reason>' naming the lines. Planned into SP-d6gbc3tq on 2026-10-24 (night run). Sprint SP-d6gbc3tq started 2026-10-24 on the operator's standing approval for the night run.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
