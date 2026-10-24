@@ -4,6 +4,7 @@
   "title": "A pointer file with CRLF line endings is not read as a fetch root, and fetch --pin drops its carriage returns",
   "status": "draft",
   "parent": "EP-eocmyqdx",
+  "sprint": "SP-c6w5hjmc",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -18,6 +19,9 @@
   "touches": [
     "_tools/kbroot.py",
     "_tools/kbcommon.py"
+  ],
+  "depends_on": [
+    "BG-osk7hyua"
   ],
   "links": [
     "parked: SP-s2svf5a6 review"
