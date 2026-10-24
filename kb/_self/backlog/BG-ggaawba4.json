@@ -2,7 +2,7 @@
   "id": "BG-ggaawba4",
   "kind": "bug",
   "title": "A run's trace id in kbmon --events depends on when the export ran: the items of a closed sprint export with their own trace and no parent",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-ymnz7b4n",
   "priority": "P3",
@@ -28,5 +28,7 @@
     "parked: SP-hja7yu5k review"
   ],
   "notes": "Found by the review of SP-hja7yu5k (mon_events.py:123-130): the sprint of an item is read from the backlog files, which close deletes. An adapter restarted after close exports the items under another trace and drops the root. The fix reads the sprint from the item's claim move (a `sprint` field of the claimed progress event) or from the closed sprint's commit. Planned into SP-ymnz7b4n, 2026-10-24 day run. Precheck: repro fails on the base.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
