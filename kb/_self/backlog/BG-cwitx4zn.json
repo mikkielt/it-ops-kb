@@ -48,6 +48,42 @@
   "depends_on": [
     "BG-dwcjaspf"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does selfcheck allow-rules read the skill text: which files, and what counts as allowed?",
+      "options": [
+        "Scan the sprint, item and backlog skills and the worker file; a script is allowed when a rule covers the bare command or one listed command of it",
+        "Scan every skill under .claude/skills too, and require each full command to be covered"
+      ],
+      "recommendation": "Scan the sprint, item and backlog skills and the worker file; a script is allowed when a rule covers the bare command or one listed command of it",
+      "do": {
+        "Scan the sprint, item and backlog skills and the worker file; a script is allowed when a rule covers the bare command or one listed command of it": "BG-cwitx4zn",
+        "Scan every skill under .claude/skills too, and require each full command to be covered": "BG-cwitx4zn"
+      },
+      "class": "agents-rule",
+      "answer": "Scan the sprint, item and backlog skills and the worker file; a script is allowed when a rule covers the bare command or one listed command of it",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Selfcheck now fails on this clone for five scripts its skills run and settings.json does not allow (coord, doc2query, factdiff, kbask, kbsettings): allow them or leave the failure?",
+      "options": [
+        "Operator adds one Bash allow rule per script to .claude/settings.json",
+        "Leave the rules, selfcheck stays failed until they are added"
+      ],
+      "recommendation": "Operator adds one Bash allow rule per script to .claude/settings.json",
+      "do": {
+        "Operator adds one Bash allow rule per script to .claude/settings.json": "BG-cwitx4zn",
+        "Leave the rules, selfcheck stays failed until they are added": "BG-cwitx4zn"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-ciqk6gt6 review"
   ],
