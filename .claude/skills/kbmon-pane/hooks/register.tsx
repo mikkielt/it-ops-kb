@@ -92,7 +92,7 @@ function entriesOf(line: string): { entries: Set<string>; complete: boolean } {
 // the baseline, and a line with the not-read suffix before it tells nothing. A line with a not-read suffix tells only the entries new to the baseline and never lowers it, so a panel
 // that timed out and the entries returning are no news; a complete line replaces the baseline, and `nothing` is not
 // told. The pane's row is cut at its width, so the whole line comes from `--status all`, asked for when the row changed
-// or was cut. The call is not awaited, so a slow Notification hook holds no refresh. A call that rejects or answers
+// or was cut; a cut row with no whole line from it is left unread. The call is not awaited, so a slow Notification hook holds no refresh. A call that rejects or answers
 // `isSent: false` is no error: the pane and the receipt go on, and the next change is tried again.
 async function notifyNeeds($: EngineInterface, text: string, width: number): Promise<void> {
   const row = needsRowOf(text)
@@ -104,6 +104,9 @@ async function notifyNeeds($: EngineInterface, text: string, width: number): Pro
     const first = (await kbmon($, ['--status', 'all'], width)).split('\n')[0]
     if (first.startsWith(NEEDS)) {
       line = first
+    } else if (row.endsWith('…')) {
+      // No whole line for a cut row: its last part is a cut entry, not an entry, so the row stays unread.
+      return
     }
   } catch {
     // The row stays unread, so the next refresh asks again.
