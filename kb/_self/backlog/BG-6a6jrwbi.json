@@ -2,7 +2,7 @@
   "id": "BG-6a6jrwbi",
   "kind": "bug",
   "title": "kbgit.py publish lets a noreply or no-reply local part at any domain, and any host whose first label is noreply, through its message guard",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-s5k72bhd",
   "priority": "P2",
   "rank": 0,
@@ -45,5 +45,7 @@
   "links": [
     "parked: SP-yjugq5c2 review"
   ],
-  "notes": "Plan 2026-10-24: premise reproduces (repro fails on the base). Check 0 passes before the work by design: it pins the named and placeholder domains that must stay allowed. The leak scan's EMAIL_OK (kbcommon) also lets any host whose first label is noreply through, so the worker keeps the scan's other callers right."
+  "notes": "Plan 2026-10-24: premise reproduces (repro fails on the base). Check 0 passes before the work by design: it pins the named and placeholder domains that must stay allowed. The leak scan's EMAIL_OK (kbcommon) also lets any host whose first label is noreply through, so the worker keeps the scan's other callers right.",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
