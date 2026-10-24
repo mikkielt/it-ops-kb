@@ -1016,10 +1016,14 @@ COORD_TOOL_LIST = [
      "annotations": {"title": "Digest of live intents and claims", **READ_ONLY}},
     {"name": "coord_wait", "title": "Wait for events",
      "description": COORD_DOCS + f"Events after sequence `since`, blocking up to `timeout` seconds (at most "
-                    f"{COORD_WAIT_MAX_S}) until one arrives. Returns events, last (pass it as the next since) and timed_out.",
+                    f"{COORD_WAIT_MAX_S}) until one arrives; `kind` and `item` keep only the events of that kind "
+                    "whose item field is one of the ids, and others do not end the wait. Returns events, last (the "
+                    "newest sequence scanned: pass it as the next since) and timed_out.",
      "inputSchema": {"type": "object", "properties": {
          "since": {"type": "integer", "minimum": 0, "description": "the highest sequence already seen (0: all)"},
-         "timeout": {"type": "number", "minimum": 0, "maximum": COORD_WAIT_MAX_S, "description": "seconds to block"}},
+         "timeout": {"type": "number", "minimum": 0, "maximum": COORD_WAIT_MAX_S, "description": "seconds to block"},
+         "kind": {"type": "string", "description": "return only events of this kind, e.g. progress"},
+         "item": {"type": "string", "description": "return only events whose item field is one of these ids (comma-separated)"}},
          "required": ["since", "timeout"], "additionalProperties": False},
      "annotations": {"title": "Wait for events", **READ_ONLY}},
 ]
@@ -1126,12 +1130,13 @@ def coord_digest(args):
 
 def coord_wait(args):
     timeout = args.get("timeout")
+    argv = coord_argv("wait", args, ("since", "timeout", "kind", "item"),
+                      {"since": "--since", "timeout": "--timeout", "kind": "--kind", "item": "--item"})
     if timeout is None:
-        return coord_run(coord_argv("wait", args, ("since", "timeout"), {"since": "--since", "timeout": "--timeout"}))
+        return coord_run(argv)
     if isinstance(timeout, bool) or not isinstance(timeout, (int, float)) or not 0 <= timeout <= COORD_WAIT_MAX_S:
         raise ToolError(f"timeout is a number of seconds from 0 to {COORD_WAIT_MAX_S}: wait again with the returned last")
-    return coord_run(coord_argv("wait", args, ("since", "timeout"), {"since": "--since", "timeout": "--timeout"}),
-                     wait_s=int(timeout))
+    return coord_run(argv, wait_s=int(timeout))
 
 
 COORD_HANDLERS = {"coord_claim": coord_claim, "coord_renew": coord_renew, "coord_release": coord_release,

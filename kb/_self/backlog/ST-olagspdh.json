@@ -62,6 +62,42 @@
   "depends_on": [
     "ST-yrilvcbx"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does --item match an event whose item field is a comma-separated list (an intent)?",
+      "options": [
+        "match when the list holds any of IDS",
+        "match only when the whole field equals one id"
+      ],
+      "recommendation": "match when the list holds any of IDS",
+      "do": {
+        "match when the list holds any of IDS": "ST-olagspdh",
+        "match only when the whole field equals one id": "ST-olagspdh"
+      },
+      "class": "design",
+      "answer": "match when the list holds any of IDS",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What does wait --kind do with a kind off the closed list?",
+      "options": [
+        "refuse it with exit 2 naming the kinds",
+        "accept it and match no event"
+      ],
+      "recommendation": "refuse it with exit 2 naming the kinds",
+      "do": {
+        "refuse it with exit 2 naming the kinds": "ST-olagspdh",
+        "accept it and match no event": "ST-olagspdh"
+      },
+      "class": "design",
+      "answer": "refuse it with exit 2 naming the kinds",
+      "by": "agent"
+    }
+  ],
   "notes": "Premise: coord.py wait --since 0 --timeout 0 --kind progress --item ST-00000000 exits 2 (unrecognized arguments). Today an orchestrator waits on a worker with a background loop over its pid and reads result.json by hand (.claude/skills/kb-sprint/SKILL.md:48); this filter is the one wait verb the operator chose, used from a background command or a Monitor watch. The kb-sprint run step and the plugin copy are rewritten to it in a later story, once ST-3ru7f4to and ST-oazktatz post the events. Planned 2026-10-24 (SP-47w4ngr6): premise reproduces on base (check 0: wait --kind exits 2, unrecognized arguments). Check 0 now posts state=returned where it posted state=done: ST-yrilvcbx, which this story depends on, widens the progress states and the choice about done is the worker's there, so a check on the wait filter must not depend on it (same clause, same assertions). Checks 1 and 2 added: 1 reads a comma-separated IDS list, kind alone, item alone, and last as the newest sequence scanned (a wait that scanned only filtered-out events reports last = that sequence, timed_out true); 2 reads the coord_wait tool (schema lists kind and item; the kb_mcp handler returns only the matching events). Docs: coord.py and kb_mcp.py map to coordination.md, monitoring.md, tools.md, plugin.md, token-efficiency.md and embedding.md (selfdoc map); they are in touches so the code commit carries them. Planned in SP-47w4ngr6 on 2026-10-24. Sprint SP-47w4ngr6 started 2026-10-24.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",

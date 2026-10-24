@@ -26,8 +26,10 @@
                                                      naming the state and the states it may move to, and writes nothing
   coord.py digest --key K ... --lines N              print at most N lines (plain text, not JSON), newest first, of the
                                                      live intents and claims that overlap a key K (repeatable)
-  coord.py wait --since N --timeout S                print the events after sequence N, blocking until one arrives or
-                                                     S seconds pass
+  coord.py wait --since N --timeout S [--kind KIND] [--item IDS]
+                                                     print the events after sequence N, blocking until one arrives or
+                                                     S seconds pass; --kind keeps one kind, --item the events whose
+                                                     item field is one of IDS (comma-separated)
   coord.py dedup QUESTION [--holder NAME] [--topic PATH] [--token T] [--ttl S]
                                                      claim the question's lack terms that no overlapping live claim
                                                      covers (local store only, not through --url)
@@ -54,8 +56,11 @@ An event is a kind from a closed list (claim, release, dedup, fact_added, gap_op
 eight fields, each NAME=VALUE: an event carries references only, so a VALUE is an id of at most 120 characters of
 letters, digits and `_ . : / # @ -` (a source id, a `path:line` fact key, a QK answer id, a backlog item id, a pack
 handle) and free text is refused. `post` numbers events 1, 2, 3 ... in the store; `wait` polls the store every 50 ms
-for events past N and prints `events`, `last` (the highest sequence it returned, else N) and `timed_out`; a wait whose
+for events past N and prints `events`, `last` (the newest sequence it scanned, else N) and `timed_out`; a wait whose
 S passes with no event exits 0 with `timed_out` true, and a post from any other process on the same store wakes it.
+With `--kind` and `--item` the wait returns only the events of that kind whose `item` field is one of IDS (an intent's
+comma-separated `item` list matches when it holds one of them); an event of another kind or item does not end the wait,
+and `last` is the newest sequence scanned, filtered-out events included, so the next `--since` skips them.
 
 Two kinds carry a session's plan: `intent` (fields session, item, topic, touch, operator; at least one of item, topic and touch;
 item and topic hold a comma-separated list of ids, touch of globs with * and ?, up to 120 characters; operator is the id of
@@ -568,13 +573,21 @@ def wait(args, _clock):
     caller's token still names its operator: asked about once a second and before any reply, and a revoked caller
     gets Revoked, not an event."""
     recheck = getattr(args, "recheck", None)
+    kind, items = getattr(args, "kind", None), getattr(args, "item", None)
     deadline = time.monotonic() + args.timeout
     next_recheck = time.monotonic() + RECHECK_SECONDS
+    scanned = args.since
     con = connect(args.store)
     try:
         con.execute(EVENTS_SCHEMA)
         while True:
-            rows = con.execute("SELECT * FROM events WHERE seq > ? ORDER BY seq", (args.since,)).fetchall()
+            rows = con.execute("SELECT * FROM events WHERE seq > ? ORDER BY seq", (scanned,)).fetchall()
+            if rows:
+                scanned = rows[-1]["seq"]
+                if kind is not None:
+                    rows = [r for r in rows if r["kind"] == kind]
+                if items is not None:
+                    rows = [r for r in rows if items & set(json.loads(r["fields"]).get("item", "").split(","))]
             if rows or time.monotonic() >= deadline:
                 break
             if recheck and time.monotonic() >= next_recheck:
@@ -586,7 +599,7 @@ def wait(args, _clock):
         con.close()
     if recheck and not recheck():
         raise Revoked
-    return {"ok": True, "since": args.since, "last": rows[-1]["seq"] if rows else args.since,
+    return {"ok": True, "since": args.since, "last": scanned,
             "events": [event_json(r) for r in rows], "timed_out": not rows}
 
 
@@ -803,6 +816,20 @@ def seconds(text):
     return value
 
 
+def kind_name(text):
+    if text not in KINDS:
+        raise argparse.ArgumentTypeError(f"must be one of {', '.join(KINDS)}")
+    return text
+
+
+def item_ids(text):
+    """A --item list as a set of ids: comma-separated, each an id of 1 to 120 characters."""
+    ids = text.split(",")
+    if not all(FIELD_VALUE.fullmatch(i) and "," not in i for i in ids):
+        raise argparse.ArgumentTypeError("must be a comma-separated list of ids of 1 to 120 characters of letters, digits and _ . : / # @ -")
+    return set(ids)
+
+
 def token(text):
     if not text or not text.isascii() or not text.isprintable() or " " in text:
         raise argparse.ArgumentTypeError("must be one line of printable ASCII, no spaces")
@@ -871,6 +898,9 @@ def build_parser(parser_class=argparse.ArgumentParser, remote=False):
     p = sub.add_parser("wait", parents=parents)
     p.add_argument("--since", type=not_negative, required=True, help="the highest sequence the caller has seen (0: all)")
     p.add_argument("--timeout", type=seconds, required=True, help="seconds to block when no event is past SINCE")
+    p.add_argument("--kind", type=kind_name, help="return only events of this kind; others do not end the wait")
+    p.add_argument("--item", type=item_ids, metavar="IDS", help="return only events whose item field is one of these ids "
+                   "(comma-separated); others do not end the wait")
     if not remote:
         p = sub.add_parser("dedup", parents=parents)
         p.add_argument("question")
