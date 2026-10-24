@@ -1,0 +1,28 @@
+{
+  "id": "ST-g6krzeq5",
+  "kind": "story",
+  "title": "Review sprint: kbmon tells what is true: overlap ages and decisions, claim-only overlaps, stall alerts, span exports, the mod's baseline and cut rows",
+  "status": "todo",
+  "sprint": "SP-ymnz7b4n",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ],
+  "notes": "Planned into SP-ymnz7b4n, 2026-10-24 day run.",
+  "filed_in": "clone-0ea70e5c"
+}
