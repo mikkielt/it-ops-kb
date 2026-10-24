@@ -184,11 +184,20 @@ def disk(root):
 
 def alerts(data):
     """The alerts of the panel's data: one `disk` alert (id `host.disk`) while the clone's file system has under LOW_DISK_PCT
-    percent free."""
+    percent free, from the byte counts (the unrounded share); a file system that reports a total of 0 bytes gives none."""
     d = data.get("disk")
-    pct = d.get("free_pct") if isinstance(d, dict) else None
+    if not isinstance(d, dict):
+        return []
+    free, total = d.get("free_bytes"), d.get("total_bytes")
+    if all(isinstance(n, (int, float)) and not isinstance(n, bool) for n in (free, total)):
+        if total <= 0:
+            return []
+        pct = free * 100 / total
+    else:
+        pct = d.get("free_pct")
     if not isinstance(pct, (int, float)) or isinstance(pct, bool) or pct >= LOW_DISK_PCT:
         return []
+    pct = round(pct, 2)
     return [{"kind": "disk", "id": "host.disk", "panel": "host", "since": "",
              "message": f"disk low: {pct:g}% free ({gigabytes(d.get('free_bytes'))} of {gigabytes(d.get('total_bytes'))})"}]
 
