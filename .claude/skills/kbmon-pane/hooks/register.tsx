@@ -92,8 +92,8 @@ function entriesOf(line: string): { entries: Set<string>; complete: boolean } {
 // baseline. A line with a not-read suffix tells only the entries new to the baseline and never lowers it, so a panel
 // that timed out and the entries returning are no news; a complete line replaces the baseline, and `nothing` is not
 // told. The pane's row is cut at its width, so the whole line comes from `--status all`, asked for when the row changed
-// or was cut. A call that rejects or answers `isSent: false` is no error: the pane and the receipt go on, and the next
-// change is tried again.
+// or was cut. The call is not awaited, so a slow Notification hook holds no refresh. A call that rejects or answers
+// `isSent: false` is no error: the pane and the receipt go on, and the next change is tried again.
 async function notifyNeeds($: EngineInterface, text: string, width: number): Promise<void> {
   const row = needsRowOf(text)
   if (row === null || (row === lastRow && lastNeeds !== null && !row.endsWith('\u2026'))) {
@@ -122,11 +122,14 @@ async function notifyNeeds($: EngineInterface, text: string, width: number): Pro
   if (entries.size === 0 || !(isNew || (complete && isGone))) {
     return
   }
-  try {
-    await $.ui.notify(line)
-  } catch {
-    // Another mod's hook denied it or the terminal write failed.
-  }
+  // Not awaited: the user's Notification hooks run first and can take long, and the refresh holds `inFlight` until it ends.
+  void (async () => {
+    try {
+      await $.ui.notify(line)
+    } catch {
+      // Another mod's hook denied it or the terminal write failed.
+    }
+  })()
 }
 
 async function refresh($: EngineInterface): Promise<void> {
