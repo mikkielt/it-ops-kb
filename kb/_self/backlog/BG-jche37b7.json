@@ -38,6 +38,25 @@
   "depends_on": [
     "BG-syhgfwdr"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does kb_audit answer root=<missing root> (no article matches)?",
+      "options": [
+        "text",
+        "error"
+      ],
+      "recommendation": "text",
+      "do": {
+        "text": "BG-jche37b7",
+        "error": "BG-jche37b7"
+      },
+      "class": "design",
+      "answer": "text",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-s2svf5a6 review"
   ],
