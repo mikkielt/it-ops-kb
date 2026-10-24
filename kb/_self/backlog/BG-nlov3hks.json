@@ -60,7 +60,9 @@
       },
       "class": "design",
       "answer": "one wait --kind per kind (intent, coordinate, progress); an unreadable digest or event leaves overlaps out and sets overlaps_unread, shown as a '! overlaps not read: REASON' row",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
