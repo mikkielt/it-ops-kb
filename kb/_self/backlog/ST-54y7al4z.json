@@ -2,7 +2,7 @@
   "id": "ST-54y7al4z",
   "kind": "story",
   "title": "Prometheus alerts on a waiting gate, a stalled run and a failed run, and sends them to a local Alertmanager",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-d6gbc3tq",
   "priority": "P3",
@@ -88,5 +88,7 @@
     }
   ],
   "notes": "Premise: otel/kbmon.rules.yml holds three rules on the kb's health (eval, any alert, an orphan) and none on a sprint run; otel/prometheus.yml has no alerting block and the repository no Alertmanager config (the check prints rules [], alerting False, alertmanager.yml False). Prometheus only evaluates alerts; notifying is a separate Alertmanager (kb/public/logs/prometheus-retention-exposition.md:55, DOC). As for Prometheus itself, the operator installs Alertmanager outside the clone; the repository holds config files only. Plan 2026-10-24 (SP-d6gbc3tq): check 1 (--check-rules) already passes before the work: it pins that every kbmon_ name in the rules file, the three new rules included, is served by /metrics, so it must keep passing. Checks added: 2 = run points for the blocked, failed and working states plus two seconds points; 3 = alertmanager.yml holds a loopback webhook and neither file holds a credential-like key. Gate g1 (webhook receiver) is answered, the receiver itself is not in the goal: filed as the parked draft ST-i4ejksl2; until it exists the webhook url points at nothing, said in kb/_self/monitoring.md. Planned into SP-d6gbc3tq on 2026-10-24 (night run). Sprint SP-d6gbc3tq started 2026-10-24.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
