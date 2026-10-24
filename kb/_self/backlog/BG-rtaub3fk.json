@@ -76,7 +76,9 @@
       },
       "class": "design",
       "answer": "tool_list(every): one function in kb_mcp.py, called by the tools/list handler and by kbtools",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
