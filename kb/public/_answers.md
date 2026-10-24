@@ -4498,3 +4498,13 @@ _Agent: kb-research_
 - See gitlab/repository-mirroring.md.
 
 _Agent: kb-research_
+
+## QK-git-committed-lf-text-file-windows. What does git do to a committed LF text file in a Windows checkout (core.autocrlf, core.eol, the text and eol attributes), and what does subprocess.run(timeout=) kill on expiry versus the children of the child?
+- A file marked `text` is normalized to LF in the index and may be converted to CRLF at checkout by the `eol` attribute, `core.autocrlf` or `core.eol`; `-text` and `eol=lf` keep LF; with `text` set and neither variable set the default is `eol=crlf` on Windows; `core.autocrlf=true` equals `text=auto` plus `core.eol=crlf`, and `core.eol` is ignored when `core.autocrlf` is `true` or `input`. [DOC S-vmz33l7n, S-zflhytlw]
+- In the code `core.autocrlf` starts as false, so with no config and no attributes nothing is converted; a Python text-mode read with the default `newline` returns `\n` for `\r\n`, a binary or `newline=''` read keeps the `\r`. [DER S-zpfwc342, S-ntbllsvy: the `auto_crlf` default and the `newline` rule]
+- `subprocess.run(timeout=)` kills the child it started (`Popen.kill`: SIGKILL to the child on POSIX, `TerminateProcess` on Windows), waits for it and re-raises `TimeoutExpired`; `communicate` and `wait` with a timeout kill nothing. `os.killpg` signals a process group, Unix only. [DOC S-dabwnzz5, S-ew7mucsg]
+- Conclusion: a file read in a checkout has the line endings of the reader's host unless `.gitattributes` pins them with `eol=lf`, so a parser of a committed pointer file reads text mode or strips `\r\n`. A `run` timeout does not end the child's own children (a macOS probe left a `sleep` grandchild alive, also with `capture_output`); on POSIX the whole tree is ended by starting the child with `start_new_session=True` and calling `os.killpg(child.pid, SIGKILL)`, which misses a descendant that made its own group. [DER S-vmz33l7n, S-zflhytlw, S-ntbllsvy, S-dabwnzz5, S-ew7mucsg]
+- Open: whether a Windows install of git sets `core.autocrlf` at system level; the Windows equivalent of ending a whole process tree on a timeout was not researched. [UNK]
+- See gitlab/multi-repository-layouts.md, python/process-orphans-and-cwd.md, python/stdlib-windows-portability.md.
+
+_Agent: kb-research_

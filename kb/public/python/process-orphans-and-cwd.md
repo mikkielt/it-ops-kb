@@ -2,8 +2,8 @@
 topic: python/process-orphans-and-cwd
 priority: P3
 applies_to: "POSIX.1-2024 process model (orphaned process group, parent id after exit, setsid, ps ppid and pgid); Linux man-pages 6.19 (getppid, setsid, subreaper, /proc/PID/cwd); macOS reading of a process's working directory through lsof 4.99.5's manual and the xnu-12377.1.9 libproc headers"
-retrieved_utc: 2026-10-21
-sources: [S-w6stdctp, S-xp4b2g5v, S-tldzr3mf, S-dwwfdbtg, S-fcdwaly4, S-6xelj6je, S-vvqjpqvl, S-ppkjvumt, S-ifgjakdt, S-4qybivhq, S-dabwnzz5]
+retrieved_utc: 2026-10-24
+sources: [S-w6stdctp, S-xp4b2g5v, S-tldzr3mf, S-dwwfdbtg, S-fcdwaly4, S-6xelj6je, S-vvqjpqvl, S-ppkjvumt, S-ifgjakdt, S-4qybivhq, S-dabwnzz5, S-ew7mucsg, S-k33hyj3s]
 status: partial
 ---
 
@@ -49,6 +49,15 @@ a ptrace check), a `cwd` file descriptor line of `lsof`, or a `proc_pidinfo` fla
   and shares its group with nobody until it forks; a leftover process in the group of a parent that ended has a
   group id that is not its pid. [DER S-dwwfdbtg, S-dabwnzz5, S-tldzr3mf: the `setsid` effect, the Python flag and
   the `pgid` name]
+
+### Stopping a child at a timeout, and the processes it started
+- `subprocess.run(timeout=...)` passes the timeout to `Popen.communicate`; "If the timeout expires, the child process will be killed and waited for", and `TimeoutExpired` is re-raised after the child has terminated. [DOC S-dabwnzz5]
+- `Popen.communicate(timeout=...)` and `Popen.wait(timeout=...)` raise `TimeoutExpired` but do not stop the child: the page says "The child process is not killed if the timeout expires", and its example calls `proc.kill()` then `communicate()`. [DOC S-dabwnzz5]
+- `Popen.kill()` "sends SIGKILL to the child" on POSIX and is an alias for `terminate()` on Windows, which calls `TerminateProcess`; `Popen.terminate()` sends SIGTERM to the child on POSIX. The page names the child only and says nothing about the child's own children. [DOC S-dabwnzz5]
+- In `run`, on `TimeoutExpired` the code calls `process.kill()`, then `process.wait()` on POSIX (on Windows `process.communicate()` to collect the output the reader threads hold), then re-raises; any other exception, `KeyboardInterrupt` included, also reaches `process.kill()`. The kill is one call on the one `Popen` object, with no process-group call. [CODE S-k33hyj3s: Lib/subprocess.py#run]
+- `os.killpg(pgid, sig)` sends the signal `sig` to the process group `pgid`; it is Unix only (not WASI, not iOS). [DOC S-ew7mucsg]
+- One run on macOS 26.5.2 (arm64, Python 3.13.2, 2026-10-24), `sh -c 'sleep 30 & echo $! > file; wait'` as the child: `subprocess.run(..., timeout=2)` raised `TimeoutExpired` after 2.0 s and the `sleep` grandchild was still alive, also with `capture_output=True` (run returned at 2.0 s although the grandchild held the pipes). With `start_new_session=True`, the child's group id and the grandchild's both equalled the child's pid, and `os.killpg(child.pid, signal.SIGKILL)` after a 1-second `wait(timeout=1)` ended both (child return code -9, grandchild gone). The run covered POSIX `sh` on one host: not Linux, not Windows, not a grandchild that called `setsid` or `setpgid` itself. [DER S-dabwnzz5, S-ew7mucsg: one run of a script against throwaway `sleep` processes, read against the kill and group facts above]
+- So a timeout on `run` ends the process it started and not what that process started: a command run through a shell or a wrapper script leaves its own children alive as orphans (parent id 1 or a subreaper), and in a timeout with `capture_output` the call does not wait for them. A caller that must end the whole tree on POSIX starts the child with `start_new_session=True` (its group id is its own pid, shared with nobody until it forks), catches `TimeoutExpired` from `Popen.communicate` or `wait`, and calls `os.killpg(child.pid, signal.SIGKILL)`; a descendant that left the group with its own `setsid` or `setpgid` is outside that call. On Windows `os.killpg` does not exist and `kill` is `TerminateProcess` on the one process. [DER S-dabwnzz5, S-ew7mucsg, S-dwwfdbtg, S-k33hyj3s: the documented kill, the group call, the `setsid` effect and the probe above]
 
 ### Linux: where an orphan goes
 - `getppid()` returns the creator's id, or, if the creator has ended, the id of the process the caller was

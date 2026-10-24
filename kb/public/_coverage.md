@@ -216,7 +216,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `gitlab/jira-issue-keys-in-commits` | P3 | partial | `gitlab/jira-issue-keys-in-commits.md` | 3 |
 | `gitlab/job-log-timestamps` | P3 | complete | `gitlab/job-log-timestamps.md` | 6 |
 | `gitlab/multi-project-pipelines` | P3 | complete | `gitlab/multi-project-pipelines.md` | 5 |
-| `gitlab/multi-repository-layouts` | P3 | partial | `gitlab/multi-repository-layouts.md` | 47 |
+| `gitlab/multi-repository-layouts` | P3 | partial | `gitlab/multi-repository-layouts.md` | 50 |
 | `gitlab/package-registries` | P3 | partial | `gitlab/package-registries.md` | 11 |
 | `gitlab/project-settings-api` | P3 | complete | `gitlab/project-settings-api.md` | 7 |
 | `gitlab/repository-mirroring` | P3 | partial | `gitlab/repository-mirroring.md` | 10 |
@@ -337,7 +337,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `python/maturin-pyo3-wheels` | P3 | partial | `python/maturin-pyo3-wheels.md` | 14 |
 | `python/mypy-strict` | P3 | partial | `python/mypy-strict.md` | 8 |
 | `python/percentile-nearest-rank` | P3 | partial | `python/percentile-nearest-rank.md` | 6 |
-| `python/process-orphans-and-cwd` | P3 | partial | `python/process-orphans-and-cwd.md` | 11 |
+| `python/process-orphans-and-cwd` | P3 | partial | `python/process-orphans-and-cwd.md` | 13 |
 | `python/ps-process-cpu` | P3 | partial | `python/ps-process-cpu.md` | 9 |
 | `python/sqlalchemy-asyncio-asyncpg` | P3 | complete | `python/sqlalchemy-asyncio-asyncpg.md` | 8 |
 | `python/stdlib-archive-read-errors` | P3 | partial | `python/stdlib-archive-read-errors.md` | 2 |
