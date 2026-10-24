@@ -4,6 +4,7 @@
   "title": "A released run key can be claimed again, so an item released and later reclaimed moves through coord without a manual put",
   "status": "draft",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-dx76osrn",
   "priority": "P3",
   "rank": 0,
   "goal": "coord.py transition accepts released to claimed (and states the reclaim in the table), so a released item is claimed again without a manual put on its run key",
@@ -16,9 +17,15 @@
       ]
     }
   ],
+  "touches": [
+    "_tools/coord.py",
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md",
+    "kb/_self/monitoring.md"
+  ],
   "links": [
     "parked: SP-47w4ngr6 review"
   ],
-  "notes": "Found by the SP-47w4ngr6 review (S3); parked, no fitness test or user report names it.",
+  "notes": "Found by the SP-47w4ngr6 review (S3); parked, no fitness test or user report names it. Planning 2026-10-24 (day-land runner): premise ran on today's base: claim, release, claim again exits 1 (precheck). Design call taken as recommended: add released to claimed to TRANSITIONS in _tools/coord.py and to the table sentence of kb/_self/coordination.md (and monitoring.md where it lists the table). Runs first of the sprint: BG-xn4jrmn7 also edits the table (claimed to landed) and rebases on it. Planned into SP-dx76osrn on 2026-10-24; runs first, then BG-q4riyq6i, BG-xn4jrmn7 and the bl_land.py bugs in order.",
   "filed_in": "clone-0ea70e5c"
 }
