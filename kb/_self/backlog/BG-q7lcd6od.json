@@ -2,7 +2,7 @@
   "id": "BG-q7lcd6od",
   "kind": "bug",
   "title": "The leak scan misses a narrow-wrapped EC key body whose first line starts with //",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4ppjbh4k",
   "priority": "P3",
   "rank": 0,
@@ -58,6 +58,28 @@
   ],
   "notes": "Found by the SP-swavez3g review (S3) of BG-ok4itunr: the gap between the armor line and the body eats the // as a comment prefix and the line drops under 8 characters; 3 of 4000 random 8-character bodies were missed. Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. The pin check passes before the work by design: it holds behaviour the fix must keep.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "55b7189a14bb42583763dff6f4e88fe4d6572118",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport sys\nsys.path.insert(0, \"_tools\")\nimport kbcommon\nd = \"-\" * 5\narm = d + \"BEGIN EC PRIVATE KEY\" + d\nhit = lambda t: any(k == \"secret\" for k, _ in kbcommon.leak_hits(t))\nassert hit(arm + \"\\nAb12Cd34\\nZy98Wx76\\nQw45Er67\"), \"a narrow-wrapped EC key body with no // is no longer flagged\"\nassert not hit(arm + \"\\nkb/public/a/b.md\"), \"the EC armor label quoted before a plain repository path is flagged\"\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport sys\nsys.path.insert(0, \"_tools\")\nimport kbcommon\nd = \"-\" * 5\narm = d + \"BEGIN EC PRIVATE KEY\" + d\nhit = lambda t: any(k == \"secret\" for k, _ in kbcommon.leak_hits(t))\ncases = {\"slash_first\": arm + \"\\n//8x89Kh\\nAb12Cd34\\nZy98Wx76\", \"slash_nine\": arm + \"\\n//8x89Khm\\nAb12Cd34\\nZy98Wx76\"}\nmiss = [k for k, v in cases.items() if not hit(v)]\nprint(\"narrow-wrapped bodies with a // first line that pass:\", miss)\nsys.exit(1 if miss else 0)"
+        ],
+        "exit": 0,
+        "sha256": "482c8124176580b2"
+      }
+    ]
+  }
 }
