@@ -2,7 +2,7 @@
   "id": "ST-lca7hefm",
   "kind": "story",
   "title": "Review sprint: Gates and guards hold: leak-scan regex without backtracking, noreply checks, pool check at landing, recursion guards, query-log delivery text",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-s5k72bhd",
   "review": true,
   "priority": "P1",
@@ -24,6 +24,27 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "f9bb145e3dccb97e86b050902ac77c361bdbcd90",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "216bebaf446767ba"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "c2e7b17d7fbe2659"
+      }
+    ]
+  }
 }
