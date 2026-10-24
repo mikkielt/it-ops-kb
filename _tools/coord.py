@@ -35,8 +35,9 @@
                                                      covers (local store only, not through --url)
 
 The store is one SQLite file: `--store PATH` (before or after the command), else the environment variable
-KB_COORD_STORE, else `kb-coord/coord.sqlite` in the common git directory of the clone that holds this script (shared by
-its worktrees, and the store the coord hook uses; read from `.git` where git cannot run); a script in no git clone with neither is refused (exit 2). Every command prints one JSON object on stdout with
+KB_COORD_STORE, else `kb-coord/coord.sqlite` in the common git directory of the project (CLAUDE_PROJECT_DIR, else the
+working directory's clone) when that is not the clone that holds this script, else of the clone that holds this script (shared by
+its worktrees, and the store the coord hook uses; read from `.git` where git cannot run); a script in no git clone with neither, run outside a git clone, is refused (exit 2). Every command prints one JSON object on stdout with
 sorted keys. A claimed key is a row with a holder, a token, a ttl and an expiry; `put` writes the row's value and
 raises its revision by one (a claim of an absent key starts at revision 1). The end of a lease, a `release` or an expiry,
 clears the row's holder, token and expiry and keeps its value and revision: `get` and `list` show the key with no
@@ -852,7 +853,7 @@ class QuietParser(argparse.ArgumentParser):
 def build_parser(parser_class=argparse.ArgumentParser, remote=False):
     """The command line; remote leaves out what a request must not carry (--store, serve, --url, --key-file)."""
     store = argparse.ArgumentParser(add_help=False)
-    store.add_argument("--store", default=argparse.SUPPRESS, help="the SQLite file (else KB_COORD_STORE, else the clone's common git directory)")
+    store.add_argument("--store", default=argparse.SUPPRESS, help="the SQLite file (else KB_COORD_STORE, else the project's or the clone's common git directory)")
     parents = [] if remote else [store]
     parser = parser_class(prog="coord.py", description=__doc__.split("\n", 1)[0], parents=parents,
                          epilog="post --kind: " + ", ".join(KINDS) + ". ask takes id, to, ref; answer takes id, state, ref "
@@ -1239,10 +1240,27 @@ def store_of(root):
     return str(common / "kb-coord" / "coord.sqlite") if common else None
 
 
-def default_store():
-    """kb-coord/coord.sqlite in the common git directory of the clone that holds this script, which its worktrees share
-    (the store the coord hook uses); None when the script is in no git clone."""
+def own_store():
+    """kb-coord/coord.sqlite in the common git directory of the clone that holds this script, which its worktrees share;
+    None when the script is in no git clone (the plugin's installed copy, often)."""
     return store_of(HERE.parent)
+
+
+def project_store():
+    """The store of the project this process serves, when that is not the script's own clone: the clone of
+    CLAUDE_PROJECT_DIR (set in a hook), else the one of the working directory. None when no such clone exists, or when
+    it is the script's own (its worktrees share the common git directory)."""
+    project = os.environ.get("CLAUDE_PROJECT_DIR")
+    store = store_of(project if project and Path(project).is_dir() else Path.cwd())
+    own = own_store()
+    return store if store and (not own or os.path.realpath(store) != os.path.realpath(own)) else None
+
+
+def default_store():
+    """The store a command without --store or KB_COORD_STORE uses: the project's own store (`project_store`, so each
+    workspace that installs the plugin has one and no project writes into the plugin's copy), else the script's own
+    clone's (the store the coord hook uses there)."""
+    return project_store() or own_store()
 
 
 def main(argv=None):
@@ -1271,8 +1289,8 @@ def main(argv=None):
         args.holder = os.environ.get(HOLDER_ENV)
     args.store = getattr(args, "store", None) or os.environ.get("KB_COORD_STORE") or default_store()
     if not args.store:
-        print("coord.py: no store: pass --store PATH or set KB_COORD_STORE (this script's directory is in no git "
-              "clone, which would hold the default)", file=sys.stderr)
+        print("coord.py: no store: pass --store PATH or set KB_COORD_STORE (neither the project nor this script's directory is in "
+              "a git clone, which would hold the default)", file=sys.stderr)
         return 2
     if args.command == "serve":
         return serve(args)

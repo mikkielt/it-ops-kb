@@ -62,6 +62,55 @@
     "kb/_self/backlog.md",
     "kb/_self/querylog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does the coord hook keep a session's state file when the project is not the clone that holds the script (inside .git beside the project's store keeps the project's tree clean and the plugin's copy unwritten)?",
+      "options": [
+        "hook directory beside the project's store",
+        "_cache/coord_hook under the project",
+        "_cache/coord_hook in the plugin's copy"
+      ],
+      "recommendation": "hook directory beside the project's store",
+      "do": {
+        "hook directory beside the project's store": "ST-omimwr5q",
+        "_cache/coord_hook under the project": "ST-omimwr5q",
+        "_cache/coord_hook in the plugin's copy": "ST-omimwr5q"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Which project does a coord.py run without --store or KB_COORD_STORE serve when it is not the clone that holds the script (CLAUDE_PROJECT_DIR set in a hook; none set in a shell)?",
+      "options": [
+        "CLAUDE_PROJECT_DIR, else the working directory's clone, when it differs from the script's clone",
+        "CLAUDE_PROJECT_DIR only"
+      ],
+      "recommendation": "CLAUDE_PROJECT_DIR, else the working directory's clone, when it differs from the script's clone",
+      "do": {
+        "CLAUDE_PROJECT_DIR, else the working directory's clone, when it differs from the script's clone": "ST-omimwr5q",
+        "CLAUDE_PROJECT_DIR only": "ST-omimwr5q"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "What does the coord hook do on a PreToolUse event of the Edit or Write tool, which the plugin entry now registers?",
+      "options": [
+        "only renew the presence lease when it is due, like a Bash command that is no claim",
+        "nothing"
+      ],
+      "recommendation": "only renew the presence lease when it is due, like a Bash command that is no claim",
+      "do": {
+        "only renew the presence lease when it is due, like a Bash command that is no claim": "ST-omimwr5q",
+        "nothing": "ST-omimwr5q"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "notes": "Plan 2026-10-24: premise reproduced on base (precheck: coord.py list with CLAUDE_PROJECT_DIR set makes no workspace store, the manifest names no coord hook). Second check added: it runs .claude/hooks/coord_hook.py --opt-in (the flag the plugin's entry passes, as horizon and intake take --opt-in) in three planted workspaces: hooks without coord (no output, no store), hooks with coord (workspace store holds the session lease, no state file under this clone's _cache), KB_COORD_STORE set (wins). bl_base.HOOK_NAMES accepts only horizon and intake today, so a hooks list naming coord is refused by backlog.py config and check: this item adds coord there (touches widened with _tools/bl_base.py and kb/_self/backlog.md) before ST-ct2dpjgz, whose kbsettings.py init writes it. Not read by any check: kbmon --root WS panels and the kbask resolution; implement them as the goal says. Planned into SP-sucr3kfg on 2026-10-24. Sprint started 2026-10-24.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
