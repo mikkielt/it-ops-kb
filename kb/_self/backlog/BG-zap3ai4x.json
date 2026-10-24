@@ -2,7 +2,7 @@
   "id": "BG-zap3ai4x",
   "kind": "bug",
   "title": "check.py's own-log rule refuses an internal root's own source id in its _logs.csv context, since leak_hits now holds the private names",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-c6w5hjmc",
   "priority": "P2",
@@ -36,5 +36,7 @@
   "links": [
     "parked: SP-qinvdomv review"
   ],
-  "notes": "Check 0 (a public root's log still refuses a private name) passes before the work by design: it pins behaviour that must stay while the repro (internal root's own source id accepted) fails now. Extra planted checks of this sprint were written by the planner from the shared repro prelude (clause maps record which reads which). Premise 2026-10-24: repro fails on the base (precheck)."
+  "notes": "Check 0 (a public root's log still refuses a private name) passes before the work by design: it pins behaviour that must stay while the repro (internal root's own source id accepted) fails now. Extra planted checks of this sprint were written by the planner from the shared repro prelude (clause maps record which reads which). Premise 2026-10-24: repro fails on the base (precheck).",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
