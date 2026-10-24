@@ -2,7 +2,7 @@
   "id": "BG-beorvghl",
   "kind": "bug",
   "title": "dispatch's OTEL_RESOURCE_ATTRIBUTES keeps an entry whose key holds an email address",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-yisvj7vd",
   "priority": "P2",
   "rank": 0,
@@ -25,6 +25,19 @@
   ],
   "notes": "Premise run 2026-10-24 on the day-run base: repro exits 1 (output jan%40corp-mail.test=1,kb.item.id=BG-x). Touches added at planning: _tools/bl_dispatch.py plus kb/_self/tools.md and kb/_self/backlog.md, whose dispatch text says an entry whose value holds an email address is dropped; reword to key or value. kbwho.otel_attributes already drops by key or value. Planned into SP-yisvj7vd, 2026-10-24. Sprint started 2026-10-24. 2026-10-24: BG-orxlqhtn of the docs sprint still holds _tools/bl_dispatch.py, but its code is already on the main branch (c02f382e6) and only its done commit waits in the landing queue, so the claim goes ahead (nothing left to merge in that file).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "8f880f6917640e99d3e46a5108ff7bf03436512d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, \"_tools\"); import bl_dispatch; em = \"jan\" + chr(64) + \"corp-mail.test\"; out = bl_dispatch.resource_entries(em.replace(chr(64), \"%40\") + \"=1\", \"BG-x\", None); print(out); sys.exit(1 if (\"%40\" in out or em in out) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "d9351fcd2a0250eb"
+      }
+    ]
+  }
 }
