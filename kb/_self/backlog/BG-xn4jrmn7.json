@@ -2,7 +2,7 @@
   "id": "BG-xn4jrmn7",
   "kind": "bug",
   "title": "backlog.py release leaves the run key at claimed, so runs SP shows drift for a released item and kbmon alerts 'run claimed, git shows released'",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
   "sprint": "SP-dx76osrn",
   "priority": "P3",
@@ -50,6 +50,6 @@
   "links": [
     "parked: SP-hja7yu5k review"
   ],
-  "notes": "Found by the review of SP-hja7yu5k: cmd_release (bl_items.py:389) and done write no run state. Live: runs SP-hja7yu5k exits 1 with `drift: ST-cac2ahg5 ... run is claimed; git shows landed` for the goal research story finished with done; kbmon lists nine 'run claimed, git shows released' rows. Related: BG-yo4inwbx and ST-al6rvds7 in EP-nij36lt7. The repro covers release; the done half (claimed to landed for an item done without land) is in the goal. Planning 2026-10-24: premise ran on today's base: the repro (release leaves claimed) and the added check (a done --commit of an item whose key is claimed leaves it claimed) both fail. Recommended design: cmd_release moves claimed to released (move_run, a warning never stops it); cmd_done, once the item file is done and the key still holds claimed (no worker, no landing: the orchestrator finished it), moves it to landed, which needs claimed to landed in coord.py TRANSITIONS (ST-al6rvds7 edits the same table first). A key at working or landing is left to dispatch and land: a worker's done in its own worktree and land's done --commit must not end the key early. Check index 0 reads the done clause, the repro (index 1) the release clause. Planned into SP-dx76osrn on 2026-10-24, third in the order.",
+  "notes": "Found by the review of SP-hja7yu5k: cmd_release (bl_items.py:389) and done write no run state. Live: runs SP-hja7yu5k exits 1 with `drift: ST-cac2ahg5 ... run is claimed; git shows landed` for the goal research story finished with done; kbmon lists nine 'run claimed, git shows released' rows. Related: BG-yo4inwbx and ST-al6rvds7 in EP-nij36lt7. The repro covers release; the done half (claimed to landed for an item done without land) is in the goal. Planning 2026-10-24: premise ran on today's base: the repro (release leaves claimed) and the added check (a done --commit of an item whose key is claimed leaves it claimed) both fail. Recommended design: cmd_release moves claimed to released (move_run, a warning never stops it); cmd_done, once the item file is done and the key still holds claimed (no worker, no landing: the orchestrator finished it), moves it to landed, which needs claimed to landed in coord.py TRANSITIONS (ST-al6rvds7 edits the same table first). A key at working or landing is left to dispatch and land: a worker's done in its own worktree and land's done --commit must not end the key early. Check index 0 reads the done clause, the repro (index 1) the release clause. Planned into SP-dx76osrn on 2026-10-24, third in the order. Sprint SP-dx76osrn started 2026-10-24 on the standing approval; ready once BG-q4riyq6i is done.",
   "filed_in": "clone-0ea70e5c"
 }
