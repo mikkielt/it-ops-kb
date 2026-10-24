@@ -2,7 +2,7 @@
   "id": "ST-nglckfnw",
   "kind": "story",
   "title": "The kb-sprint run step orders runs --reconcile before the review and gives the Bash timeout its 540-second wait needs",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-f2o3aqm2",
   "priority": "P3",
@@ -24,5 +24,7 @@
     "parked: SP-hja7yu5k review"
   ],
   "notes": "Found by the review of SP-hja7yu5k (SKILL.md:56): 'runs SP shows no drift line at the sprint's end' is false after a release or a story finished with done (BG fix pending); until then the run step needs `runs SP --reconcile`. The wait paragraph says S 540 ends under the Bash tool's 10-minute limit but not to pass timeout 600000 (the default is 120000, so a foreground wait is killed after 2 minutes; a background wait takes timeout up to 7200000). Plan 2026-10-24: premise runs on base (exit 1: no backlog.py runs SP --reconcile command in the run step, and the wait paragraph gives no timeout 600000). Goal reworded: its parenthesis said release and a done without a landing move no run state, which is no longer true on the main branch (coordination.md Who moves it: release moves the key to released, done moves a key still at claimed to landed; bl_items.cmd_release, bl_land.cmd_done); the check never read the parenthesis, so it is unchanged. The worker puts the command as one backtick span with the full path form python3 ${CLAUDE_PLUGIN_ROOT}/_tools/backlog.py runs SP --reconcile in the run step's closing step 6, before 'Stop when', and the timeout 600000 in the wait paragraph (S 540 ends under the 10-minute limit only with it: the default is 120000, a background command takes up to 7200000). Docs mapped to the skill: backlog.md, maintaining.md (AGENTS.md has a 4 KB cap, not touched): read, Self-Reviewed if still correct.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
