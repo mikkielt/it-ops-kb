@@ -1,0 +1,24 @@
+{
+  "id": "BG-yo4inwbx",
+  "kind": "bug",
+  "title": "runs lists no drift for an item whose file is done on main and whose run state is none",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "backlog.py runs prints a drift line for an item done on main whose run state is none, as for any state other than landed, and --reconcile writes landed and exits 0 once none is left",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\nfor f in glob.glob(T + '/kb/_self/backlog/*.json'):\n    d = json.load(open(f, encoding='utf-8'))\n    if d['id'] == sp: d['status'] = 'active'\n    if d['id'] == iid: d['status'] = 'done'; d['sprint'] = sp\n    json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\ng('add', '-A'); g('commit', '-q', '-m', 'planted done')\nbefore = bl('runs', iid)\nfix = bl('runs', iid, '--reconcile')\nafter = bl('runs', iid)\nok = before.returncode == 1 and 'drift' in before.stdout and fix.returncode == 0 and 'landed' in c('get', 'run/' + iid).stdout and after.returncode == 0\nprint('before', before.returncode, before.stdout.strip()[-100:], '| reconcile', fix.returncode, '| after', after.returncode)\nsys.exit(0 if ok else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/bl_runs.py",
+    "kb/_self/backlog.md",
+    "kb/_self/coordination.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
