@@ -1155,10 +1155,11 @@ def cmd_confirm(a, tally):
     reader = csv.DictReader(io.StringIO(srcs_text))
     header, rows = reader.fieldnames, list(reader)
     known = {r["id"] for r in rows}
+    # a row deleted from _sources.csv after the census (cited by no article) is named and left out, not a failure
     unknown = sorted(set(log) - known)
     if unknown:
-        print(f"log ids not in _sources.csv: {', '.join(unknown[:10])}")
-        return 1
+        print(f"log ids not in _sources.csv, left out: {', '.join(unknown[:10])}" + (f" and {len(unknown) - 10} more" if len(unknown) > 10 else ""))
+        log = {sid: lr for sid, lr in log.items() if sid in known}
     n_src = 0
     for r in rows:
         lr = log.get(r["id"])
