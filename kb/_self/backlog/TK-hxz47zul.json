@@ -57,7 +57,9 @@
       },
       "class": "design",
       "answer": "Retag the NIST 404 observation UNK, re-source the fluent.runtime fact to the python-fluent installation and changelog pages and the Project Fluent homepage, and keep the presidio-evaluator DOC fact on the live evaluation page, README and repo licence row with the claim only the PyPI page backed split into a separate UNK fact",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Premise run on base 39abe92bb: check 0 fails with 6 DOC tags citing the three gone ids (privacy/nist-sp800-38g.md:23, arch/texts-catalogue-formats.md:23, agents/shared-ner-service.md:148, _answers.md:640, 1572, 1649). S869 is the csrc.nist.gov SP 800-38G rev 1 final page (HTTP 404), S1709 pypi fluent.runtime and S2111 pypi presidio-evaluator (both soft-404 by fact diff, so check whether the pypi page really reads before treating it as gone: a page that reads is a census false gone, still not citable by this check, so re-source to a live page of the same fact or retag UNK). check.py passes before the work on purpose: it pins that the kb stays valid after the edits.",
