@@ -57,7 +57,7 @@
   "links": [
     "parked: SP-s2svf5a6 review"
   ],
-  "notes": "Premise 2026-10-24: repro fails on the base (precheck). Sprint SP-c6w5hjmc started on the operator's standing approval for the day run.",
+  "notes": "Premise 2026-10-24: repro fails on the base (precheck). Sprint SP-c6w5hjmc started on the operator's standing approval for the day run. Repro rewritten (gate g1): the planned repro opened the pointer for write before reading it (open(pp,'w').write(open(pp).read())), truncating the file, so it failed on an empty pointer and could never pass. The rewrite reads first, then writes the CRLF copy, and asserts the same goal clauses (CRLF pointer fetched with --pin; pin keeps the file's line endings); it fails on the base for the CRLF defect (pin line written with LF).",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }
