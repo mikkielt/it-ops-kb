@@ -2,7 +2,7 @@
   "id": "BG-iy5qjr4r",
   "kind": "bug",
   "title": "repro compare's frozen_pass passes a row that is good without the answer, so eval_passed rewards no answer",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-uhcjxayq",
   "priority": "P2",
   "rank": 0,
@@ -40,5 +40,7 @@
   "links": [
     "parked: SP-75hdeqld review"
   ],
-  "notes": "Premise run 2026-10-24 on base f160727aa: repro fails (frozen_pass('good','good',False) and ('none','good',False) both True). The original goal's clause that the compare part of the bench test file proves it is reworded to check 0: that test file is gone since the 2026-10-16 decision to keep tests for critical parts only, so a planted matrix of ten (start verdict, end verdict, found) rows runs the function (fails on base on three rows). Touches: kb/_self/benchmarks.md (the repro compare and repro pick sections say how frozen_pass reads a row) replaces kb/_self/tools.md, which holds no word about frozen_pass or pick; the code-map warning for kb/_self/tools.md is met by naming it in Self-Reviewed when read and still correct. bench_multi.frozen_counts (bench_multi.py:2525) reads the same function and its docstring says 'passing as bench_repro.frozen_pass reads them' (still true, outside touches, not edited). Order: after BG-dyly4qdf (same file, same doc). Planned into the sprint on 2026-10-24 (day run). Sprint started 2026-10-24; todo."
+  "notes": "Premise run 2026-10-24 on base f160727aa: repro fails (frozen_pass('good','good',False) and ('none','good',False) both True). The original goal's clause that the compare part of the bench test file proves it is reworded to check 0: that test file is gone since the 2026-10-16 decision to keep tests for critical parts only, so a planted matrix of ten (start verdict, end verdict, found) rows runs the function (fails on base on three rows). Touches: kb/_self/benchmarks.md (the repro compare and repro pick sections say how frozen_pass reads a row) replaces kb/_self/tools.md, which holds no word about frozen_pass or pick; the code-map warning for kb/_self/tools.md is met by naming it in Self-Reviewed when read and still correct. bench_multi.frozen_counts (bench_multi.py:2525) reads the same function and its docstring says 'passing as bench_repro.frozen_pass reads them' (still true, outside touches, not edited). Order: after BG-dyly4qdf (same file, same doc). Planned into the sprint on 2026-10-24 (day run). Sprint started 2026-10-24; todo.",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
