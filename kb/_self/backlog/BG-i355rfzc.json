@@ -2,7 +2,7 @@
   "id": "BG-i355rfzc",
   "kind": "bug",
   "title": "census.py confirm exits 1 on a census log that names a source row since deleted from _sources.csv",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4ppjbh4k",
   "priority": "P2",
   "rank": 0,
@@ -37,5 +37,7 @@
   "touches": [
     "_tools/census.py"
   ],
-  "notes": "Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. The repro runs confirm on this clone's real 2026-10-21 census log; check 0 plants a temporary root and log with one known and one deleted source, so a hand edit of the real log cannot satisfy it."
+  "notes": "Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. The repro runs confirm on this clone's real 2026-10-21 census log; check 0 plants a temporary root and log with one known and one deleted source, so a hand edit of the real log cannot satisfy it.",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
