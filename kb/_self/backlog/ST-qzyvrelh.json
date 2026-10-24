@@ -42,7 +42,9 @@
       },
       "class": "design",
       "answer": "No: kb.item is exported only when the run lands or is released",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
