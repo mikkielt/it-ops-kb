@@ -2,7 +2,7 @@
   "id": "ST-4bodutuc",
   "kind": "story",
   "title": "Review sprint: S3 bugs the first triage left: fail-open guards, leak scan, gate class, feedback lock, census confirm, tool ranking, close links, a kb citation",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4ppjbh4k",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,7 @@
       ]
     }
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
