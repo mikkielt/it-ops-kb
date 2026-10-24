@@ -2,7 +2,7 @@
   "id": "ST-qzyvrelh",
   "kind": "story",
   "title": "A refused landing and the rework after it stay one kb.item span until the run lands or is released",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-nij36lt7",
   "sprint": "SP-ymnz7b4n",
   "priority": "P3",
@@ -50,6 +50,19 @@
   ],
   "notes": "Review gap (S2) of SP-d6gbc3tq: ST-3bmmg73g gate g1 (provisional, kept: it matches the goal text 'claimed to landed, refused or released') ends kb.item at each refused, so a rework worker starts a new trace and a kb.sprint root span closing 'when every item has ended' would close early. This story replaces that answer if the operator takes it. Plan 2026-10-24 (day run, pre-approved by the operator): take the reviewer's choice in these notes: the refused landing and the rework stay one kb.item span (one trace, kb.landing children, kb.worker child), replacing the provisional answer g1 of ST-3bmmg73g that ended kb.item at each refused. The code does not argue otherwise. No gate. Premise (plan 2026-10-24): the story's check fails on today's base (precheck); reproduces. Planned into SP-ymnz7b4n, 2026-10-24 day run.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "282a21df2731b7b90a77c80cb5f00b9e79db36df",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\ndef plant(status):\n    for f in glob.glob(T + '/kb/_self/backlog/*.json'):\n        d = json.load(open(f, encoding='utf-8'))\n        if d['id'] == sp: d['status'] = 'active'\n        if d['id'] == iid: d['status'] = status; d['sprint'] = sp\n        json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\n    g('add', '-A'); g('commit', '-q', '-m', 'planted ' + status)\ndef walk(*states): return [c('transition', 'run/' + iid, '--to', s).returncode for s in states]\nplant('doing')\nwalk('claimed', 'working', 'returned', 'landing', 'refused', 'working', 'returned', 'landing', 'landed')\nr = subprocess.run([sys.executable, R + '/_tools/kbmon.py', '--events', '--root', T, '--store', S], capture_output=True, text=True, env=env)\ntry:\n    spans = [s for s in json.loads(r.stdout)['spans'] if s['attributes'].get('item') == iid]\nexcept (ValueError, KeyError):\n    spans = []\nitems = [s for s in spans if s['name'] == 'kb.item']\nkids = [s for s in spans if s['name'] != 'kb.item']\nok = len(items) == 1 and len(kids) >= 4 and all(k.get('parent') == items[0]['id'] and k['trace'] == items[0]['trace'] for k in kids)\nprint('kb.item spans', len(items), 'children', len(kids))\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "87fb2aa6cb4d8477"
+      }
+    ]
+  }
 }
