@@ -18,5 +18,12 @@
   "touches": [
     "kb/_self/coordination.md"
   ],
+  "relates_to": [
+    "BG-5p3bfm4u"
+  ],
+  "links": [
+    "parked: SP-jopt2c3z review"
+  ],
+  "notes": "SP-jopt2c3z review (S3, other): kb/_self/coordination.md line 98 is made false by the narrowed role of BG-5p3bfm4u; selfdoc.py check does not read the claim (problems=0). The same line says 'a command outside the allow list is denied in a remediate or summary session', which stays true.",
   "filed_in": "clone-0ea70e5c"
 }
