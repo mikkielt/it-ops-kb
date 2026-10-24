@@ -2,7 +2,7 @@
   "id": "ST-65v5zhnu",
   "kind": "story",
   "title": "The sprint skill's plan step asks for each planted check to run in the landing's check environment against a prototype of the fix",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-f2o3aqm2",
   "priority": "P3",
@@ -27,5 +27,7 @@
     "parked: SP-hja7yu5k close"
   ],
   "notes": "Retrospective of SP-hja7yu5k: the span story's check 1 passed from a shell and failed twice at the landing (step checks) because the landing runs checks with an empty CLAUDE_PLUGIN_DATA home, where kbmon --events printed the cursor 1.0.N.0 and the redaction rewrote it to 192.0.2.10 (a real bug, fixed in the sprint). Run through bl_base.run_check, the check shows it at plan time. The check reads the plan section for the word; a planned item adds the command form. Plan 2026-10-24: premise runs on base (exit 1: the plan section has no run_check and no command). The old check read only the word run_check in the plan section; it passed on a skill text whose rule gives no command. Rewritten as the plan rule for a rule that tells an agent to run a command: the plan section must name run_check and give the command form, which the check runs on a planted sprint (exit 0). Command form for the worker to write into plan step 6, as one backtick span: python3 ${CLAUDE_PLUGIN_ROOT}/_tools/backlog.py --root PROTOTYPE precheck SP, run from a worktree of the base with a prototype of the fix applied: precheck runs each committed item check through bl_base.run_check, the runner of the landing (isolated CLAUDE_PLUGIN_DATA home, colourless env), so a check that reads query-log, spool or workspace state shows there what the landing will see. Evidence: SP-hja7yu5k check 1 passed from a shell and failed twice at the landing. Docs mapped to the skill (AGENTS.md has a 4 KB cap and is not touched): backlog.md, maintaining.md read, Self-Reviewed if still correct.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
