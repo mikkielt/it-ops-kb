@@ -4,6 +4,7 @@
   "title": "kbroot.py fetch ends in a traceback and skips the other roots when the roots cache cannot be written",
   "status": "draft",
   "parent": "EP-eocmyqdx",
+  "sprint": "SP-c6w5hjmc",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -17,6 +18,9 @@
   },
   "touches": [
     "_tools/kbroot.py"
+  ],
+  "depends_on": [
+    "BG-spm2azqa"
   ],
   "links": [
     "parked: SP-s2svf5a6 review"
