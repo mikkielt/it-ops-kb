@@ -66,6 +66,10 @@
     "kb/_self/tools.md",
     "kb/_self/plugin.md"
   ],
+  "depends_on": [
+    "ST-lll4a6p6",
+    "ST-a7vyewfu"
+  ],
   "relates_to": [
     "ST-24aav43q",
     "ST-yyup6d62",
