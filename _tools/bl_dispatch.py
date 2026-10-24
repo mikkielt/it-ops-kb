@@ -865,7 +865,7 @@ def cmd_stage_back(bl, a):
     if bl_land.run_state(iid) == "landing":
         raise Refused(f"stage-back: the run state of {bl.label(iid)} is landing: a land is running on its branch; wait "
                       f"for it to end (it moves the state to landed or refused), or, when it died, run "
-                      f"python3 _tools/coord.py transition run/{iid} --to refused; nothing was changed")
+                      f"python3 _tools/backlog.py runs --reconcile (it moves the state to refused); nothing was changed")
     wt, scratch = worktree_path(bl.root, iid), scratch_path(bl.root, iid)
     if not wt.is_dir():
         raise Refused(f"stage-back: {bl.label(iid)} has no worktree at {wt}: dispatch makes it")
@@ -887,7 +887,15 @@ def cmd_stage_back(bl, a):
             raise Refused(f"stage-back: {top} has uncommitted changes, which a copy-in must not mix with the copies:"
                           f"\n{dirty}")
     originals = {}
-    staging = bl_land.move_run(iid, "staging", "stage-back")  # land refuses the item while its copies are in
+    recorded = bl_land.note_run_process(iid)  # first: a key at staging with no live record is one a rerun takes over
+    try:
+        entered, refusal = bl_land.enter_run(iid, "staging", "stage-back")  # land refuses the item while its copies are in
+    except BaseException:
+        bl_land.drop_run_process(iid, recorded)
+        raise
+    if refusal:
+        bl_land.drop_run_process(iid, recorded)
+        raise Refused(f"stage-back: {refusal}")
     try:
         for _, copy, target, _ in copies:
             originals[target] = target.read_bytes() if target.is_file() else None
@@ -920,8 +928,9 @@ def cmd_stage_back(bl, a):
         return 0
     finally:
         restore_originals(originals)  # a refusal or an error leaves the worktree as it was
-        if staging:
+        if entered:
             bl_land.move_run(iid, "returned", "stage-back")
+        bl_land.drop_run_process(iid, recorded)
 
 
 def cmd_brief(bl, a):
