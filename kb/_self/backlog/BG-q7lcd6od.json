@@ -50,7 +50,9 @@
       },
       "class": "design",
       "answer": "Alternative gap",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
