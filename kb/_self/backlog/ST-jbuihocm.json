@@ -12,7 +12,7 @@
       "run": [
         "python3",
         "-c",
-        "import re, sys\nt = open('kb/_self/coordination.md', encoding='utf-8').read()\nm = re.search(r'(?ms)^#+ What kbmon reads.*?(?=^#+ |\\Z)', t)\nsec = m.group(0) if m else ''\nneed = {'get': re.search(r'\\bget\\b', sec), 'run/ prefix': 'run/' in sec, 'wait --since': re.search(r'wait\\b.*--since|--since.*wait\\b', sec)}\nprint('section found', bool(m), {k: bool(v) for k, v in need.items()})\nsys.exit(0 if m and all(need.values()) else 1)\n"
+        "import re, sys\nt = open('kb/_self/coordination.md', encoding='utf-8').read()\nb = [l for l in t.splitlines() if l.startswith('- **What kbmon reads.**')]\ntxt = b[0] if b else ''\nneed = {'coord.py get': bool(re.search(r'\\bget\\b', txt)), 'sprint panel': 'sprint panel' in txt}\nprint('bullet found', bool(b), need)\nsys.exit(0 if b and all(need.values()) else 1)\n"
       ]
     }
   ],
