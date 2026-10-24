@@ -24,6 +24,25 @@
   "touches": [
     "_tools/mon_host.py"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does mon_host.alerts word a share that rounds to the threshold: truncate to two decimals only where rounding reaches 10, or always truncate?",
+      "options": [
+        "Round to two decimals, truncate only where the rounded value reaches 10",
+        "Always truncate to two decimals"
+      ],
+      "recommendation": "Round to two decimals, truncate only where the rounded value reaches 10",
+      "do": {
+        "Round to two decimals, truncate only where the rounded value reaches 10": "BG-rpiyercp",
+        "Always truncate to two decimals": "BG-rpiyercp"
+      },
+      "class": "design",
+      "answer": "Round to two decimals, truncate only where the rounded value reaches 10",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-swavez3g review"
   ],
