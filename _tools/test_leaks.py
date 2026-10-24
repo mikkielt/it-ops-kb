@@ -150,6 +150,13 @@ def test_scan_reports_each_planted_leak_and_honours_the_allowlist_and_webfetch_h
         assert kbcommon.leak_hits(wrapped, allowlist()) == [("secret", head)], kind
         path = kbcommon.leak_hits(head + "\nkb/public/security/secret-shapes-in-text.md\n", allowlist())
         assert path == ([] if kind in ("EC ", "PGP BLOCK ") else [("secret", head)]), kind
+        # a repository path right after the label passes; a single-line body that a `.`, `_` or `-` follows is key material
+        for ref in ("kb/public/mecm/sql2022-views.md", "kb/public/Intune/Apps/Win32.md"):
+            assert kbcommon.leak_hits(head + " " + ref + " page", allowlist()) == \
+                ([] if kind in ("EC ", "PGP BLOCK ") else [("secret", head)]), (kind, ref)
+        for body in ("MIIBVAIBADANBgkqhkiG9w0BAQEFAASC", "MIIBVAIBADANBgkqhkiG9w0BAQEF/AASC+BKcwggSjAgEAAoIB"):
+            for suffix in (".", "_x", "-x", ".pem"):
+                assert kbcommon.leak_hits(head + " " + body + suffix, allowlist()) == [("secret", head)], (kind, body, suffix)
     # the placeholders pass, an allowlisted value passes
     ok = "jan.kowalski t@example.com 00000000-0000-0000-0000-000000000000 192.0.2.7"
     assert kbpublic.file_hits("notes.md", ok, {}) == []
