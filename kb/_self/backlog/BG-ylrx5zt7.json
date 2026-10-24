@@ -2,7 +2,7 @@
   "id": "BG-ylrx5zt7",
   "kind": "bug",
   "title": "kbask's observer allow rules admit git log and git show with --output, which writes a file",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4ppjbh4k",
   "priority": "P3",
   "rank": 0,
@@ -58,6 +58,28 @@
     "parked: SP-w6amecjt review"
   ],
   "notes": "SP-w6amecjt review: stays a hole after BG-jpzlj4gi's settings fix unless that fix drops Bash. Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. The pin check passes before the work by design: it holds behaviour the fix must keep. The allow list cannot exclude a flag, so the fix drops git log and git show from it or pins them to exact commands; the role file .claude/agents/kb-observer.md lists them too and is a protected path (BG-5p3bfm4u is the parked bug for it): leave it and say so in the report. Touches widened by the orchestrator after the worker reported coordination.md line 94 and tools.md line 59 now state the old allow rules; the manager said shared doc rows are no hold (day run 2026-10-24).",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "130e0392e1daae6ffe0d6dade243bb1391b2f1f3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport sys\nsys.path.insert(0, \"_tools\")\nimport kbask\nt = kbask.ALLOWED_TOOLS\nassert \"Read\" in t and \"Grep\" in t and \"Bash(python3 _tools/kbmon.py --json *)\" in t, (\"the observer lost a read tool or its kbmon rule\", t)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "def admits(rule,cmd):\n    if not (rule.startswith('Bash(') and rule.endswith(')')): return False\n    r=rule[5:-1]\n    for suf in (':*',' *','*'):\n        if r.endswith(suf): r=r[:-len(suf)];return cmd==r or cmd.startswith(r+' ')\n    return cmd==r\nimport sys\nsys.path.insert(0,'_tools');import kbask\nbad=[c for c in ('git log --output=x','git show --output=x HEAD') if any(admits(r,c) for r in kbask.ALLOWED_TOOLS)]\nprint('admitted writes:',bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "b1d82a82393248c6"
+      }
+    ]
+  }
 }
