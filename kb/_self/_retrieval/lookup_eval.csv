@@ -430,5 +430,5 @@ SQ-branch-kbgit-py-sync-push-push,which branch does kbgit.py sync --push push fr
 SQ-give-another-operator-key-file-coordination,how do I give another operator a key file for the coordination server,coordination.md,good,yes,function `authenticate` decides who,
 EV-coordination-strategy-working-another-item,which coordination strategy does a session suggest when another item touching the same files is working,coordination.md,good,no,what a session suggests when another item that touches the same files is working,
 EV-coordination-settings-explain-command,how do I see how coordination is set up here with each setting's value and source file,coordination.md,good,yes,explain [KEY] --root WS,
-EV-coordination-needs-you-after-min,how long does an open question wait before it shows as needing the operator,coordination.md,good,yes,the whole minutes an open question waits,
+EV-coordination-needs-you-after-min,what does announce.needs_you_after_min delay before the needs-you line names it,coordination.md,good,yes,the whole minutes an undecided overlap of two live sessions is old,
 SQ-census-gone-sources,census gone sources,web-sources.md,good,yes,mechanical verdict per source,
