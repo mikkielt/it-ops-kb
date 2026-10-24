@@ -799,7 +799,7 @@ def research_start(payload, sid, event, name, asks=False):
     state.pop("lease_until", None)
     save(sid, {**state, "items": items})
     touch = touches_of(ws, items)
-    lines = overlap_block(sid, ws, items, items + touch, touch, settings(ws)[1]) if items else []
+    lines = overlap_block(sid, ws, items, items + touch, touch, settings(ws)[1], branch) if items else []
     show(event, (new_coordinates(payload, sid) if asks else []) + lines, new_asks(sid) if asks else ())
     return True
 
