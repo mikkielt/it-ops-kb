@@ -1,0 +1,22 @@
+{
+  "id": "BG-d3zzxcdc",
+  "kind": "bug",
+  "title": "With announce.to_other_sessions false in a settings.json that is not valid JSON, the coord hook posts the session's intent",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "the coord hook posts no intent when the workspace's settings.json sets announce.to_other_sessions to false, also when the file has a syntax error such as a trailing comma",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess, tempfile, os, sys, json, uuid, glob\nREAL = os.getcwd()\nS = os.path.join(tempfile.mkdtemp(), \"c.sqlite\")\nsid = str(uuid.uuid4())\nd = os.path.realpath(tempfile.mkdtemp())\nfor a in ([\"init\", \"-q\", \"-b\", \"work/ST-ef56gh78\"], [\"commit\", \"-q\", \"--allow-empty\", \"-m\", \"x\"]):\n    subprocess.run([\"git\", \"-c\", \"user.email=a@b.c\", \"-c\", \"user.name=x\", \"-C\", d] + a, capture_output=True)\nos.makedirs(os.path.join(d, \"_backlog\"))\njson.dump({\"id\": \"ST-ef56gh78\", \"title\": \"t\", \"touches\": [\"a.py\"]}, open(os.path.join(d, \"_backlog\", \"ST-ef56gh78.json\"), \"w\"))\nopen(os.path.join(d, \"settings.json\"), \"w\").write(json.dumps({\"coordination\": {\"announce\": {\"to_other_sessions\": False}}}).replace(\"false}\", \"false,}\"))\nr = subprocess.run([sys.executable, \".claude/hooks/coord_hook.py\"], input=json.dumps(dict(hook_event_name=\"SessionStart\", session_id=sid, cwd=d, source=\"startup\")), capture_output=True, text=True, env=dict(os.environ, KB_COORD_STORE=S, KB_OPERATOR=\"op-aaaa\"), cwd=REAL)\nw = subprocess.run([sys.executable, \"_tools/coord.py\", \"--store\", S, \"wait\", \"--since\", \"0\", \"--timeout\", \"0\"], capture_output=True, text=True)\nn = [e for e in json.loads(w.stdout)[\"events\"] if e[\"kind\"] == \"intent\" and e[\"fields\"].get(\"session\") == sid]\nfor f in glob.glob(os.path.join(REAL, \"_cache\", \"coord_hook\", sid + \"*\")):\n    os.remove(f)\nprint(\"exit\", r.returncode, \"| intents posted with to_other_sessions false in a settings file that is not valid JSON:\", len(n))\nsys.exit(0 if r.returncode == 0 and not n else 1)"
+    ]
+  },
+  "touches": [
+    ".claude/hooks/coord_hook.py",
+    "kb/_self/coordination.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
