@@ -1235,7 +1235,8 @@ def args_dispatch(p):
 
 bl_cli.register("brief", cmd_brief, args_brief, help="print the worker's brief for an item")
 bl_cli.register("dispatch", cmd_dispatch, args_dispatch,
-                help="make the worker's worktree and scratch, write its brief and start the headless session")
+                help="make the worker's worktree and scratch, write its brief and start the headless session; "
+                     "--resume ID --message FILE sends a returned worker back")
 
 
 def args_stage_back(p):
