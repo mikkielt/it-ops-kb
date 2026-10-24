@@ -2,7 +2,7 @@
   "id": "ST-ct2dpjgz",
   "kind": "story",
   "title": "kb-setup and the plugin's sprint skill ask the operator for the coordination settings and write them with kbsettings.py init, which also turns on the coord hook",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
   "sprint": "SP-sucr3kfg",
   "priority": "P2",
@@ -70,6 +70,6 @@
     "ST-tb6tzrxa",
     "ST-omimwr5q"
   ],
-  "notes": "Plan 2026-10-24: premise reproduced on base (precheck: kbsettings.py init exits 2). Second check added for the kept keys and the defaults when init is given only some --set values, and for the skills' one-batch AskUserQuestion beside kbsettings.py init. After ST-omimwr5q (it makes coord a valid hooks name), ST-vopsopkg (shared kbsettings.py) and ST-tb6tzrxa (shared skills/sprint/SKILL.md). Touches .claude/skills/kb-setup/SKILL.md, which sprint SP-3trnelzv may still hold: claim only after held --overlaps is clear and the manager says SP-3trnelzv closed. Planned into SP-sucr3kfg on 2026-10-24.",
+  "notes": "Plan 2026-10-24: premise reproduced on base (precheck: kbsettings.py init exits 2). Second check added for the kept keys and the defaults when init is given only some --set values, and for the skills' one-batch AskUserQuestion beside kbsettings.py init. After ST-omimwr5q (it makes coord a valid hooks name), ST-vopsopkg (shared kbsettings.py) and ST-tb6tzrxa (shared skills/sprint/SKILL.md). Touches .claude/skills/kb-setup/SKILL.md, which sprint SP-3trnelzv may still hold: claim only after held --overlaps is clear and the manager says SP-3trnelzv closed. Planned into SP-sucr3kfg on 2026-10-24. Sprint started 2026-10-24.",
   "filed_in": "clone-0ea70e5c"
 }
