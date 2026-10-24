@@ -23,6 +23,27 @@
   "depends_on": [
     "BG-bd2lai7q"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the mod ignore a moved figure in a needs-you entry: strip it from the compared entry, or leave the key and say in the docs that a moved figure is news?",
+      "options": [
+        "strip the figures from the compared entry",
+        "keep the entry text as the key and document that a moved figure is news"
+      ],
+      "recommendation": "strip the figures from the compared entry",
+      "do": {
+        "strip the figures from the compared entry": "BG-uxizizva",
+        "keep the entry text as the key and document that a moved figure is news": "BG-uxizizva"
+      },
+      "class": "agents-rule",
+      "answer": "strip the figures from the compared entry",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-rin4kkoj review"
   ],
