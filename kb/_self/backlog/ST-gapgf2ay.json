@@ -2,7 +2,7 @@
   "id": "ST-gapgf2ay",
   "kind": "story",
   "title": "The coord hook's SessionStart line in a plugin workspace names paths that exist only in the kb clone",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-3i7hcb6i",
   "priority": "P2",
@@ -30,5 +30,7 @@
     "parked: SP-sucr3kfg review"
   ],
   "notes": "Found by the SP-sucr3kfg review. INTRO tells the session to run python3 _tools/coord.py wait and python3 _tools/kbask.py, relative paths a plugin workspace does not have (the tools sit under CLAUDE_PLUGIN_ROOT). The review also read show(..., new_asks(sid)) on the Edit and Write path (coord_hook.py near line 451) against gate g3 of ST-omimwr5q: the check below only reads INTRO, so the planner adds a planted hook run for the Edit event. Plan 2026-10-24 (day run, pre-approved): premise of clause 1 reproduced on base (new planted check: the INTRO of a SessionStart in a plugin workspace names _tools/coord.py and _tools/kbask.py, which that workspace lacks; the old check crashed on FOOTER, a name the hook does not have, and was replaced). Clause 2 (an Edit or Write event only renews the lease) dropped from the goal: gate g3 of ST-omimwr5q answered the lease question for the plugin entry, and the hook since gained documented Edit/Write behaviour: coordination.md:73 (overlaps when announce.when names edit), coordination.md:80 (asks reach a session at its next Bash, Skill, Edit or Write call) and token-efficiency.md:48 (an Edit or Write prints nothing unless an ask or coordinate event is new or announce.when names edit); with default announce.when and no new ask the Edit path prints nothing today, so nothing is left to fix. Change the INTRO only: how() keeps its relative commands (BG-lrho25jh's repro reads them). Hint for the path: the plugin root is HOME of the hook (COORD is HOME/_tools/coord.py); relative _tools/ stays right when the project is the clone itself (state_dir()/FOREIGN knows which). Planned into SP-3i7hcb6i on 2026-10-24. Sprint started 2026-10-24.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
