@@ -159,6 +159,10 @@ def cmd_add_remote(a):
         if "\n" in v or "\r" in v or (required and not v.strip()):
             print(f"refused: {what} must be one {'non-empty ' if required else ''}line")
             return 2
+    if kbcommon.url_holds_credential(a.url):  # refused before anything is written, and the url is not echoed
+        print("refused: url holds a credential (a user:password@ or token@ part); give the repository's url without it "
+              "and let git's credential helper or an ssh key supply it")
+        return 2
     try:
         roots = kbcommon.roots()
     except kbcommon.RootError as e:
