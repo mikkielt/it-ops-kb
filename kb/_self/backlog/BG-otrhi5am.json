@@ -21,6 +21,25 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which moment does an overlap's age count from when the two sessions met?",
+      "options": [
+        "oldest meeting",
+        "newest meeting"
+      ],
+      "recommendation": "oldest meeting",
+      "do": {
+        "oldest meeting": "BG-otrhi5am",
+        "newest meeting": "BG-otrhi5am"
+      },
+      "class": "design",
+      "answer": "oldest meeting",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ky7xz6d2 review"
   ],
