@@ -2,7 +2,7 @@
   "id": "BG-usjnwgqx",
   "kind": "bug",
   "title": "A land-<id> worktree left by a killed landing blocks every later landing of that item at step branch",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-dx76osrn",
   "priority": "P3",
   "rank": 0,
@@ -26,6 +26,6 @@
   "links": [
     "parked: SP-47w4ngr6 review"
   ],
-  "notes": "Found by the SP-47w4ngr6 review (S2): bl_land.py land_once runs checked_out_elsewhere before add_landing_worktree can remove the leftover, so the leftover land-<id> worktree that still holds work/<id> stops the landing at step branch until it is removed by hand. The repro plants that leftover in a clone with a local bare remote. Planning 2026-10-24: premise ran on today's base: the repro stops at step branch (land exit 1, landed False). Plan: land_once removes a leftover land-<id> worktree (add_landing_worktree's own cleanup) before checked_out_elsewhere looks for another worktree holding work/<id>; a worktree that is a worker's, not a land-<id> one, still stops the landing. Read the landed commits of SP-47w4ngr6 (ec9e9a5ab) first. Planned into SP-dx76osrn on 2026-10-24, fourth in the order.",
+  "notes": "Found by the SP-47w4ngr6 review (S2): bl_land.py land_once runs checked_out_elsewhere before add_landing_worktree can remove the leftover, so the leftover land-<id> worktree that still holds work/<id> stops the landing at step branch until it is removed by hand. The repro plants that leftover in a clone with a local bare remote. Planning 2026-10-24: premise ran on today's base: the repro stops at step branch (land exit 1, landed False). Plan: land_once removes a leftover land-<id> worktree (add_landing_worktree's own cleanup) before checked_out_elsewhere looks for another worktree holding work/<id>; a worktree that is a worker's, not a land-<id> one, still stops the landing. Read the landed commits of SP-47w4ngr6 (ec9e9a5ab) first. Planned into SP-dx76osrn on 2026-10-24, fourth in the order. Sprint SP-dx76osrn started 2026-10-24 on the standing approval; ready once BG-xn4jrmn7 is done.",
   "filed_in": "clone-0ea70e5c"
 }
