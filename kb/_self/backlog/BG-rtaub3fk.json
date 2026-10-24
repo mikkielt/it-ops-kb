@@ -60,6 +60,25 @@
   "depends_on": [
     "BG-esbdxtad"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does kbtools list every tool the server can serve from one place in kb_mcp.py?",
+      "options": [
+        "tool_list(every): one function in kb_mcp.py, called by the tools/list handler and by kbtools",
+        "a second constant ALL_TOOLS beside the gated lists"
+      ],
+      "recommendation": "tool_list(every): one function in kb_mcp.py, called by the tools/list handler and by kbtools",
+      "do": {
+        "tool_list(every): one function in kb_mcp.py, called by the tools/list handler and by kbtools": "BG-rtaub3fk",
+        "a second constant ALL_TOOLS beside the gated lists": "BG-rtaub3fk"
+      },
+      "class": "design",
+      "answer": "tool_list(every): one function in kb_mcp.py, called by the tools/list handler and by kbtools",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-x6eqtsid review"
   ],
