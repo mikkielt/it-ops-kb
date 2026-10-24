@@ -2,7 +2,7 @@
   "id": "BG-osk7hyua",
   "kind": "bug",
   "title": "kbroot.py fetch --hook leaves the git transport process running after its time bound",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-c6w5hjmc",
   "priority": "P2",
@@ -25,5 +25,6 @@
   ],
   "links": [
     "parked: SP-mguax5m3 review"
-  ]
+  ],
+  "notes": "Premise 2026-10-24: repro fails on the base (precheck). Sprint SP-c6w5hjmc started on the operator's standing approval for the day run."
 }
