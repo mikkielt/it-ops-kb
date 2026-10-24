@@ -2,7 +2,7 @@
   "id": "BG-g66y3jyy",
   "kind": "bug",
   "title": "selfdoc.py check fails on main: kb/_self/coordination.md cites a Needs you line that is no heading of monitoring.md, so stage-back of any protected-path item is refused",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-jopt2c3z",
   "priority": "P2",
   "rank": 0,
@@ -18,5 +18,7 @@
   "touches": [
     "kb/_self/coordination.md"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
