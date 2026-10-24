@@ -26,9 +26,7 @@
   ],
   "depends_on": [
     "ST-3ru7f4to",
-    "ST-3bmmg73g",
-    "ST-e2ijqjsr",
-    "ST-l6fw46gd"
+    "ST-3bmmg73g"
   ],
   "gates": [
     {

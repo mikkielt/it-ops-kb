@@ -32,8 +32,7 @@
     "kb/_self/tools.md"
   ],
   "depends_on": [
-    "ST-yrilvcbx",
-    "ST-hbxnf2l3"
+    "ST-yrilvcbx"
   ],
   "gates": [
     {
