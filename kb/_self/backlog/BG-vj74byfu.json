@@ -2,7 +2,7 @@
   "id": "BG-vj74byfu",
   "kind": "bug",
   "title": "The kbmon mod keeps the age of a blocked run entry that names no gate, so the entry changes every minute and the operator is notified once a minute",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-rin4kkoj",
   "priority": "P1",
@@ -27,5 +27,7 @@
     "kb/_self/monitoring.md"
   ],
   "notes": "Found by the fresh-context review of SP-rin4kkoj (2026-10-24), rated S2 there and taken as S1 here: it is the sprint goal unmet for a run entry (the same once-a-minute notification the sprint exists to stop), and the fix is one pattern. mon_needs.run_entries writes `ST-x blocked, 5m` when the blocked event named no gate (mon_coord gives [] for a missing gates field); the entry pattern in register.tsx entriesOf only strips an age after `blocked on gate(s) ...`. A failed run or refused landing with no step (`ST-x run failed, 5m`) already strips (the `run failed.*` branch); the repro also guards those. Premise run on main 98342d007a..bc6311212: the repro fails (2 notifications where 1 is told). Fix: match a bare `blocked` too, e.g. `blocked(?: on gates? .*)?`. No doc change expected (kb/_self/monitoring.md already says ages are removed); reread the bullet.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
