@@ -1,0 +1,29 @@
+{
+  "id": "BG-pw6ttxcd",
+  "kind": "bug",
+  "title": "KbmonRunStalled fires on any worker alive for an hour, because a working run posts one progress event and the silence it measures never ends while the worker lives",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "the seconds a working run has been silent count only while its worker process is gone or has been silent in the transcript, so a worker that runs longer than the stalled threshold does not raise KbmonRunStalled, and a worker that died does",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re, sys; t = open('_tools/mon_export.py', encoding='utf-8').read(); m = re.search(r'working_silent.{0,2000}', t, re.S); sys.exit(0 if m and not re.search(r'pid|alive|proc', m.group(0)) else 1)"
+    ]
+  },
+  "repro_reason": "The false alert needs a Prometheus evaluating the rule over an hour of a live worker; what can be read here is that the silence point is computed from progress events alone, with no worker liveness.",
+  "touches": [
+    "otel/kbmon.rules.yml",
+    "_tools/mon_export.py",
+    "_tools/mon_coord.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-d6gbc3tq review"
+  ],
+  "notes": "Review gap (S2) of SP-d6gbc3tq: otel/kbmon.rules.yml:39 with ST-54y7al4z gate g2 (3600 s, provisional): a working run posts only the move to working, so the rule fires for any worker alive past an hour (ETA history in this clone: bug items p75 58 min, bench items p75 108 min). Needs either the pid test of this bug or a longer threshold.",
+  "filed_in": "clone-0ea70e5c"
+}
