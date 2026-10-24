@@ -1,0 +1,28 @@
+{
+  "id": "ST-wdjdbxl4",
+  "kind": "story",
+  "title": "kbmon.py --status all shows the run-state row of every active sprint, not only the first rows of the sprints topic",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "--status all names, for each active sprint, the open items' run states that --status sprints names, within the topic's line budget",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\ndef plant(status):\n    for f in glob.glob(T + '/kb/_self/backlog/*.json'):\n        d = json.load(open(f, encoding='utf-8'))\n        if d['id'] == sp: d['status'] = 'active'\n        if d['id'] == iid: d['status'] = status; d['sprint'] = sp\n        json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\n    g('add', '-A'); g('commit', '-q', '-m', 'planted ' + status)\ndef walk(*states): return [c('transition', 'run/' + iid, '--to', s).returncode for s in states]\nplant('doing')\nwalk('claimed', 'working')\nextra = []\nfor n in range(3):\n    s2 = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'Extra %d' % n, '--goal', 'g').stdout).group(0)\n    i2 = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Extra item %d' % n, '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\n    extra.append((s2, i2))\nfor f in glob.glob(T + '/kb/_self/backlog/*.json'):\n    d = json.load(open(f, encoding='utf-8'))\n    for s2, i2 in extra:\n        if d['id'] == s2: d['status'] = 'active'\n        if d['id'] == i2: d['status'] = 'doing'; d['sprint'] = s2\n    json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\ng('add', '-A'); g('commit', '-q', '-m', 'planted sprints')\nfor s2, i2 in extra:\n    for st in ('claimed', 'working'): c('transition', 'run/' + i2, '--to', st)\nr = subprocess.run([sys.executable, R + '/_tools/kbmon.py', '--status', 'all', '--root', T, '--store', S], capture_output=True, text=True, env=env)\nn = r.stdout.count('working')\nprint('--status all names the working state', n, 'times for 4 working runs')\nsys.exit(0 if n >= 4 else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/mon_status.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-d6gbc3tq review"
+  ],
+  "notes": "Review gap (S2) of SP-d6gbc3tq: mon_status.py:564 cuts each topic to four lines, so with several sprints --status all shows two sprint rows and '+N more' and no run-state row; --status sprints shows them.",
+  "filed_in": "clone-0ea70e5c"
+}
