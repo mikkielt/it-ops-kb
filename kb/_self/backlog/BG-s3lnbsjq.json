@@ -2,7 +2,8 @@
   "id": "BG-s3lnbsjq",
   "kind": "bug",
   "title": "kb_mcp.bash_denied reads a settings file whose permissions.deny is not a list as holding no deny rule",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-jopt2c3z",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -11,12 +12,22 @@
     "run": [
       "python3",
       "-c",
-      "import sys, os, json, tempfile; sys.path.insert(0, \"_tools\"); import kbcommon, kb_mcp; bad = []; exec(\"for v in (\\\"Bash\\\", {}, False, 0):\\n T = tempfile.mkdtemp()\\n os.makedirs(os.path.join(T, \\\".claude\\\"))\\n json.dump({\\\"permissions\\\": {\\\"deny\\\": v}}, open(os.path.join(T, \\\".claude\\\", \\\"settings.local.json\\\"), \\\"w\\\"))\\n kbcommon.HOME = type(kbcommon.HOME)(T)\\n if kb_mcp.bash_denied(\\\"rm -rf x\\\") is None: bad.append(v)\"); print(bad); sys.exit(1 if bad else 0)"
+      "import sys, os, json, tempfile\nsys.path.insert(0, \"_tools\")\nimport kbcommon, kb_mcp\ndef denied(v, key=True):\n    T = tempfile.mkdtemp()\n    os.makedirs(os.path.join(T, \".claude\"))\n    perm = {\"deny\": v} if key else {}\n    json.dump({\"permissions\": perm}, open(os.path.join(T, \".claude\", \"settings.local.json\"), \"w\"))\n    kbcommon.HOME = type(kbcommon.HOME)(T)\n    return kb_mcp.bash_denied(\"rm -rf x\")\nbad = [repr(v) for v in (\"Bash\", {}, False, 0, None) if denied(v) is None]\nwrong = [n for n, got in [(\"missing key\", denied(None, False)), (\"empty list\", denied([]))] if got is not None]\nprint(\"not-a-list read as no rule:\", bad, \"wrongly denied:\", wrong)\nsys.exit(1 if bad or wrong else 0)"
     ]
   },
+  "clauses": [
+    {
+      "clause": "bash_denied treats a permissions.deny value that is not a list (a string, an object, false, 0, null) as a settings file that cannot be read, so it denies every call",
+      "check": 0
+    },
+    {
+      "clause": "a missing deny key and an empty list still hold no deny rule",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kb_mcp.py"
   ],
-  "notes": "Found while fixing BG-syhgfwdr: bash_denied ends with 'for rule in rules if isinstance(rules, list) else []', so a permissions.deny that is a string, an object, false, 0 or null holds no deny rule instead of denying as an unreadable file does.",
+  "notes": "Found while fixing BG-syhgfwdr: bash_denied ends with 'for rule in rules if isinstance(rules, list) else []', so a permissions.deny that is a string, an object, false, 0 or null holds no deny rule instead of denying as an unreadable file does. Planned in SP-jopt2c3z (2026-10-24 day run). Premise run on base: the repro exits 1 (a deny that is a string, object, false, 0 or null reads as no rule; the missing-key and empty-list cases already hold no rule). Fix sits at the tail of bash_denied: read the deny value with a missing key as [] and any other non-list as the unreadable-file denial. No test file covers bash_denied today; the check is the planted repro (tests only for critical components, kb/_self/code.md).",
   "filed_in": "clone-0ea70e5c"
 }

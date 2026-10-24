@@ -2,18 +2,29 @@
   "id": "BG-nx6jzvop",
   "kind": "bug",
   "title": "The leak scan passes a single-line EC key body that a period, underscore or hyphen follows, which the scan before BG-7mxo4k6p flagged",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-jopt2c3z",
   "priority": "P2",
   "rank": 0,
-  "severity": "S3",
+  "severity": "S2",
   "goal": "kbcommon.leak_hits flags a single-line EC key body of 20 or more base64 characters that a period, an underscore or a hyphen follows, and still does not flag the EC armor label quoted before a repository path such as the sql2022-views.md page or the Win32.md page",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport sys\nsys.path.insert(0, \"_tools\")\nimport kbcommon\nd = \"-\" * 5\narm = d + \"BEGIN EC PRIVATE KEY\" + d\nbody = \"MHcCAQEEIGtq3xaH5wq7CUAKmJdZ0PY4RnXqPIYV1S2qt1NWOEHJoAoGCCqGSM49AwEHoUQDQgAE\"\nhit = lambda t: any(k == \"secret\" for k, _ in kbcommon.leak_hits(t))\nmiss = [s for s in (\".\", \"_x\", \"-x\", \".pem\") if not hit(arm + \" \" + body + s)]\nassert not miss, (\"a single-line EC key body followed by this text is not flagged\", miss)\n"
+      "import sys\nsys.path.insert(0, \"_tools\")\nimport kbcommon\nd = \"-\" * 5\narm = d + \"BEGIN EC PRIVATE KEY\" + d\nhit = lambda t: any(k == \"secret\" for k, _ in kbcommon.leak_hits(t))\nbodies = {\"plain\": \"MHcCAQEEIGtq3xaH5wq7CUAKmJdZ0PY4RnXqPIYV1S2qt1NWOEHJoAoGCCqGSM49AwEHoUQDQgAE\", \"slashy\": \"MHcCAQEEIGtq3xaH5wq7CU/AKmJdZ0PY4RnXq+IYV1S2qt1NWOEHJoAoGCCqGSM49AwEHoUQ/QgAE\", \"short\": \"MHcCAQEEIGtq3xaH5wq7CUAK\"}\nmiss = [(n, s) for n, b in bodies.items() for s in (\".\", \"_x\", \"-x\", \".pem\") if not hit(arm + \" \" + b + s)]\npaths = [\"the kb/public/mecm/sql2022-views.md page\", \"the kb/public/Intune/Apps/Win32.md page\"]\nfalse = [p for p in paths if hit(arm + \" \" + p)]\nprint(\"key body not flagged:\", miss, \"path flagged:\", false)\nsys.exit(1 if miss or false else 0)"
     ]
   },
+  "clauses": [
+    {
+      "clause": "kbcommon.leak_hits flags a single-line EC key body of 20 or more base64 characters that a period, an underscore or a hyphen follows",
+      "check": 0
+    },
+    {
+      "clause": "still does not flag the EC armor label quoted before a repository path such as the sql2022-views.md page or the Win32.md page",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kbcommon.py",
     "_tools/test_leaks.py"
@@ -21,5 +32,6 @@
   "links": [
     "parked: SP-4ppjbh4k review"
   ],
+  "notes": "Planned in SP-jopt2c3z (2026-10-24 day run). Premise run on base: the repro exits 1 (every suffix of the plain, slash-containing and 24-character bodies passes the scan). Feasibility: in a scratch copy of _tools, replacing the (?![_.]|-(?!----)) lookahead of _KEY by a start lookahead (?!(?:[A-Za-z0-9]{1,16}/)+[A-Za-z0-9]{1,16}[._-]) (a run that is short slash-separated segments before a dot, underscore or hyphen is a repository path) makes the repro exit 0; roughly 70 percent of real 78-character bodies hold a slash, so a no-slash rule would leave most real bodies unflagged. The worker may choose another rule that keeps the repro green. Tests: extend the planted case in an existing test_leaks.py function (the leak scan is a critical component); add no new test id. Severity raised S3 to S2 on the operator's brief (a leak-scan regression).",
   "filed_in": "clone-0ea70e5c"
 }

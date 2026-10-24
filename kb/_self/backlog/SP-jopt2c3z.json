@@ -2,7 +2,7 @@
   "id": "SP-jopt2c3z",
   "kind": "sprint",
   "title": "Two guards that fail open after today's changes: the leak scan's EC key body, the permission guard's deny value, the observer's git commands",
-  "status": "planned",
+  "status": "active",
   "goal": "the leak scan flags a single-line EC key body that a period, underscore or hyphen follows and still passes the EC armor label quoted before a repository path; the kb_mcp permission guard denies every call when permissions.deny is not a list; the kb-observer role names only commands its kbask allow rules admit",
   "gates": [
     {

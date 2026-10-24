@@ -2,7 +2,7 @@
   "id": "ST-7hxlwnw6",
   "kind": "story",
   "title": "Research sprint goal: Two guards that fail open after today's changes: the leak scan's EC key body, the permission guard's deny value, the observer's git commands",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-jopt2c3z",
   "goal_research": true,
   "priority": "P1",
