@@ -1,0 +1,30 @@
+{
+  "id": "ST-btrrxobq",
+  "kind": "story",
+  "title": "kb/public/claude/mods.md holds a mod's import rules and its test kit: claude plugin test, the stubs it needs and the validate rule on passing $",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/public/claude/mods.md states, as DOC facts with a source row, that a hooks module imports only its own files by relative path, that passing $ to a function imported from another file fails claude plugin validate, and that claude plugin test runs every *.test.ts of the mod with stubs for the mods API calls (process.run, ui.notify, the clock)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;o=subprocess.run(['python3','_tools/rag.py','facts','public/claude/mods.md'],capture_output=True,text=True).stdout;sys.exit(0 if 'plugin test' in o and 'relative path' in o else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/claude/mods.md",
+    "kb/public/claude/_sources.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv",
+    "kb/public/_anchors.csv"
+  ],
+  "links": [
+    "parked: SP-hja7yu5k research"
+  ],
+  "notes": "Found by the goal research of SP-hja7yu5k (2026-10-24): the facts were read in the live docs (code.claude.com/docs/en/plugins/mods/create 'Check what Claude Code reads from your mod', /reference 'Files', /test 'Stub what Claude Code would answer', 'Test a timer'), not in the kb. The check reads the facts command's stdout and its words, so a rewrite that proves the exit code too is the first step. Research item: use /kb-research, one source row per page.",
+  "filed_in": "clone-0ea70e5c"
+}
