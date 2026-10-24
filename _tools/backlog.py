@@ -321,6 +321,13 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           land.end, done.refused with its reasons and agent.run, from the spool and
                                           the committed ops sidecars, read only; an id with no item file or that is
                                           no sprint is refused, exit 2
+  backlog.py runs [SP|ID] [--reconcile]     one line per item: its coord run state, item file status, open gates on its
+                                          work branch and whether its recorded worker pid runs (bl_runs.py), then a
+                                          drift line for each item whose run state contradicts git (done on main and
+                                          not landed, working with no live worker, a run key no claim holds), exit 1
+                                          when any; --reconcile writes each such key the state git shows (landed,
+                                          failed, released) outside the state table, with a progress event whose step
+                                          is reconcile, exit 0 once none is left
   backlog.py landings                       one line per landing step (and land.end, whole landings): count, failures,
                                           median and 95th percentile ms, slowest median first, from every ops row of
                                           this clone (bl_ops.py), read only
@@ -409,6 +416,7 @@ import bl_dispatch  # noqa: F401 - registers `brief`, `dispatch` and `stage-back
 import bl_procs  # noqa: F401 - registers procs
 import bl_stall  # noqa: F401 - registers stalled
 import bl_ops  # noqa: F401 - registers `ops`
+import bl_runs  # noqa: F401 - registers `runs`
 import bl_selfcheck  # noqa: F401 - registers `selfcheck`
 
 # `config` reads the settings bl_base holds, which imports no bl_cli: the handler is bl_base's, registered here
@@ -418,7 +426,7 @@ bl_cli.register("config", cmd_config, help="print the project settings with each
 USAGE = ("new", "similar", "check", "fmt", "selectors", "list", "tree", "find", "show", "next", "held", "claim",
          "release", "answer", "set", "move", "reopen", "gate", "fire", "done", "researched", "land", "merge", "drop", "start", "precheck",
          "host-check", "close", "tidy", "horizon", "goal", "brief", "dispatch", "stage-back", "referrers", "cost", "red-pipeline", "intake", "procs", "stalled", "ops",
-         "landings", "own", "selfcheck", "upstream-report", "upstream-import", "config")
+         "runs", "landings", "own", "selfcheck", "upstream-report", "upstream-import", "config")
 bl_cli.order(USAGE)
 
 # The commands that write an item or a sprint file and refuse one that arrived from the upstream main: bl_base's
