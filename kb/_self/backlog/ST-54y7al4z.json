@@ -143,7 +143,9 @@
       },
       "class": "design",
       "answer": "one point each: the most seconds over the blocked runs, the most over the working runs, 0 with none",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g5",
