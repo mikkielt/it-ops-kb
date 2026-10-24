@@ -1,0 +1,34 @@
+{
+  "id": "ST-wtw2ri44",
+  "kind": "story",
+  "title": "factdiff.py anchor --file F --lines N --propose prints the proposals for those lines",
+  "status": "draft",
+  "parent": "EP-iowijan3",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "factdiff.py anchor with --file, --lines and --propose is not refused as a usage error and writes nothing",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess as s,sys\np=s.run([sys.executable,\"_tools/factdiff.py\",\"anchor\",\"--file\",\"kb/public/auth/enrolment-tokens.md\",\"--lines\",\"18\",\"--propose\"],capture_output=True,text=True,timeout=300)\no=p.stdout+p.stderr;print(p.returncode,o[-200:])\nsys.exit(0 if \"no --propose\" not in o and p.returncode in (0,1) else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "factdiff.py anchor with --file, --lines and --propose is not refused as a usage error and writes nothing",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "kb/_self/tools.md"
+  ],
+  "relates_to": [
+    "ST-jtui2erv"
+  ],
+  "notes": "From the 2026-10-24 telemetry and query-log analysis: factdiff.py anchor --file ... --lines N --propose was refused 11 times in 7 days, all by research workers (last 2026-10-24T12:41Z), each with the usage dump '--lines needs exactly one --file and no other selector and no --propose' (factdiff.py:2691); all 11 usage errors of anchor have this message. The parser help already says --lines anchors only the facts on those lines and --propose prints the passages, so a worker combines them. Goal for the worker: --propose with --lines prints the line,source,quote rows of those lines only. The planted run reads the cached documents of the cited sources (network when they are missing), so it accepts exit 0 or 1 and fails only on the refusal.",
+  "filed_in": "clone-0ea70e5c"
+}
