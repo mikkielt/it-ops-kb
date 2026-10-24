@@ -1,0 +1,27 @@
+{
+  "id": "ST-ux3lubfw",
+  "kind": "story",
+  "title": "A stage-back or land killed without its finally leaves staging or landing, and a rerun or runs --reconcile heals it; land and stage-back cannot both start on one item",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py runs lists a run key left at staging or landing with no stage-back or land running as drift and --reconcile moves it to returned or refused; a stage-back rerun at staging closes with the move to returned; land and stage-back take the state in one transition, so the second to start is refused when the first's move is refused",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\nids = {n: re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted ' + n, '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\n       for n in ('staging', 'landing')}\nfor f in glob.glob(T + '/kb/_self/backlog/*.json'):\n    d = json.load(open(f, encoding='utf-8'))\n    if d['id'] == sp: d['status'] = 'active'\n    if d['id'] in ids.values(): d['status'] = 'doing'; d['sprint'] = sp\n    json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\ng('add', '-A'); g('commit', '-q', '-m', 'planted doing')\nfor s in ('claimed', 'working', 'returned', 'staging'): c('transition', 'run/' + ids['staging'], '--to', s)\nfor s in ('claimed', 'working', 'returned', 'landing'): c('transition', 'run/' + ids['landing'], '--to', s)\nbefore = bl('runs', sp)\nfix = bl('runs', sp, '--reconcile')\nafter = bl('runs', sp)\nok = (before.returncode == 1 and before.stdout.count('drift:') >= 2 and fix.returncode == 0 and after.returncode == 0\n      and 'returned' in c('get', 'run/' + ids['staging']).stdout and 'refused' in c('get', 'run/' + ids['landing']).stdout)\nprint('before', before.returncode, '| reconcile', fix.returncode, '| after', after.returncode, '| drift lines', before.stdout.count('drift:'))\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_runs.py",
+    "_tools/bl_land.py",
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md",
+    "kb/_self/coordination.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
