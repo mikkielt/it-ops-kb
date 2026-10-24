@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: the goal needs only what the kb already holds (kb/public/claude/mods.md:113-115 on how $.ui.notify answers and rejects and that the user Notification hooks run first; the age formats of mon_needs.line from _tools/bl_procs.py age_text) and the planted claude plugin test of the two bugs; no new source or gap entry. Claim and done this story first; it needs no worker.",
   "filed_in": "clone-0ea70e5c"
 }
