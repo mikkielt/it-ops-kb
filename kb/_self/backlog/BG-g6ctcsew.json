@@ -4,6 +4,7 @@
   "title": "kbmon's disk alert compares the rounded free_pct, so 9.96% free gives no alert and a 0-byte total gives a false one",
   "status": "draft",
   "parent": "EP-wqgicmmj",
+  "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -15,6 +16,25 @@
       "import sys;sys.path.insert(0,'_tools');import mon_host as m;a=m.alerts({'disk':{'free_pct':round(996*100/10000,1),'free_bytes':996,'total_bytes':10000}});b=m.alerts({'disk':{'free_pct':0.0,'free_bytes':0,'total_bytes':0}});print(a,b);sys.exit(0 if len(a)==1 and b==[] else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys, types\nsys.path.insert(0, \"_tools\")\nimport mon_host as m\nm.shutil.disk_usage = lambda r: types.SimpleNamespace(total=10000, used=8766, free=1234)\nd = m.disk(\".\")\nassert d[\"free_pct\"] == 12.3 and d[\"total_bytes\"] == 10000 and d[\"free_bytes\"] == 1234, d"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "mon_host.alerts raises host.disk when the unrounded free share is under 10% and never for a file system that reports a total of 0 bytes",
+      "check": 1
+    },
+    {
+      "clause": "the displayed free_pct keeps one decimal",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/mon_host.py"
   ],

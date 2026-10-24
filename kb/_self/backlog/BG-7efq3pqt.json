@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "remember_feedback_id's stale-lock takeover can let two writers in, and its finally unlinks a lock another writer holds",
   "status": "draft",
+  "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -11,14 +12,33 @@
     "run": [
       "python3",
       "-c",
-      "import sys;s=open('_tools/ql_capture.py').read();i=s.find('def remember_feedback_id');b=s[i:s.find(chr(10)+'def ',i+10)];sys.exit(1 if 'lock.unlink(missing_ok=True)' in b else 0)"
+      "import os, pathlib, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport ql_capture as q\nd = pathlib.Path(tempfile.mkdtemp())\n(d / \"spool\").mkdir()\nspool = d / \"spool\" / \"tools-2026-10-24.jsonl\"\nlock = spool.parent / (q.FEEDBACK_IDS_NAME + \".lock\")\nreal, fired = os.replace, []\ndef replace(a, b, *r, **k):\n    if not fired:\n        fired.append(1)\n        os.unlink(lock)\n        lock.write_text(\"other\")  # this writer stalled past the stale age: another writer holds the lock now\n    return real(a, b, *r, **k)\nos.replace = replace\ntry:\n    q.remember_feedback_id(spool, \"FB-0123abcd\")\nfinally:\n    os.replace = real\nassert fired, \"the check never saw the writer replace the record under its lock\"\nassert lock.exists() and lock.read_text() == \"other\", (\"a writer released the lock another writer holds\", lock.exists())"
     ]
   },
-  "repro_reason": "the race needs a holder stalled past FEEDBACK_IDS_LOCK_STALE_S (30 s) and two takers at once; the unconditional unlink in the finally is the line the fix changes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, pathlib, sys, tempfile, time\nsys.path.insert(0, \"_tools\")\nimport ql_capture as q\nd = pathlib.Path(tempfile.mkdtemp())\nlock = d / \"feedback.ids.lock\"\nlock.write_text(\"\")\nold = time.time() - 3600\nos.utime(lock, (old, old))\nq.FEEDBACK_IDS_LOCK_WAIT_S = 0.3\nreal, fired = os.stat, []\ndef stat(p, *a, **k):\n    r = real(p, *a, **k)\n    if str(p) == str(lock) and not fired:\n        fired.append(1)\n        os.unlink(lock)\n        lock.write_text(\"\")  # another writer took the stale lock over: the file there is a live lock now\n    return r\nos.stat = stat\ntry:\n    got = q._take_ids_lock(lock)\nfinally:\n    os.stat = real\nassert fired, \"the check never saw the writer read the stale lock\"\nassert got is False, (\"a writer that saw a stale lock took over the live lock another writer holds now\", got)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "a writer takes over a stale feedback.ids lock only when the lock it renames is the stale one it saw",
+      "check": 0
+    },
+    {
+      "clause": "releases only a lock it holds, so no id is lost when a holder stalls past the stale age",
+      "check": 1
+    }
+  ],
   "touches": [
     "_tools/ql_capture.py"
   ],
   "links": [
     "parked: SP-vx6eufpj review"
-  ]
+  ],
+  "notes": "Planner 2026-10-24: the text repro (lock.unlink(missing_ok=True) absent from the function) is replaced by two planted runs: check 0 makes a second writer take over the stale lock between the first writer's stat and rename, the repro makes the lock change hands while the first writer holds it."
 }

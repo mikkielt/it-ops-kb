@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The leak scan passes a key block whose lines carry a /// or //! comment prefix",
   "status": "draft",
+  "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -20,6 +21,9 @@
     "kb/_self/tools.md",
     "kb/_self/plugin.md",
     "kb/_self/content-rules.md"
+  ],
+  "depends_on": [
+    "BG-ok4itunr"
   ],
   "links": [
     "parked: SP-evq2flqc review"

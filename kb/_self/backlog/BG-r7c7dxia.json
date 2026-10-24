@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "done's ledger check does not see a source id the goal writes joined by a hyphen, such as S100-related or S100-S120",
   "status": "draft",
+  "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -11,13 +12,17 @@
     "run": [
       "python3",
       "-c",
-      "import sys;sys.path.insert(0,'_tools');import bl_land;sys.exit(0 if 'S100' in bl_land.TOKEN_RE.findall('Refresh S100-related facts') else 1)"
+      "import sys\nsys.path.insert(0, \"_tools\")\nimport bl_land\nw = bl_land.cited_tokens(\".\", {}, [\"Refresh S100-related facts\", \"Keep the S200-S220 rows\", \"Rows of S300_old\"])\nmiss = sorted({\"S100\", \"S200\", \"S220\", \"S300\"} - w)\nprint(\"goal tokens missing:\", miss)\nsys.exit(1 if miss else 0)"
     ]
   },
   "touches": [
     "_tools/bl_land.py"
   ],
+  "depends_on": [
+    "BG-erzl74n6"
+  ],
   "links": [
     "parked: SP-7nv2ffr2 review"
-  ]
+  ],
+  "notes": "Planner 2026-10-24: repro rewritten to read the goal clause through cited_tokens, the function that builds the goal's tokens, with a hyphen range and an underscore case; the first version read TOKEN_RE.findall for one phrase."
 }

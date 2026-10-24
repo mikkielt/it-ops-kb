@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "secret-shapes-in-text.md's two DER facts on key-block paragraphs and nested-JSON scanners claim more than their sources",
   "status": "draft",
+  "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -15,6 +16,16 @@
     ]
   },
   "repro_reason": "the defect is the wording of two article facts against their cited sources; a fact is text, so reading the article is the behaviour",
+  "clauses": [
+    {
+      "clause": "kb/public/security/secret-shapes-in-text.md's DER facts on a key block's blank lines (line 59) and on a scanner missing the second JSON escape level (line 64) say only what RFC 7468, RFC 8259 and lines 45 and 49 of the article support: PGP armor and an encrypted PEM hold a blank line after their headers",
+      "check": 0
+    },
+    {
+      "clause": "only a pattern anchored right after the armor line misses a doubled backslash",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/public/security/secret-shapes-in-text.md",
     "kb/public/_anchors.csv",
