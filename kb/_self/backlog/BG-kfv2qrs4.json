@@ -28,7 +28,7 @@
       "run": [
         "python3",
         "-c",
-        "import json,subprocess,sys; cases={'land a backlog item':'backlog.py','run a sprint':'kb-sprint','search the kb facts':'kb_search','redact a secret':'redact.py','publish to the public repository':'kbpublic.py','refresh a stale source':'kb-refresh'}; got={}\\nfor n in cases:\\n    r=subprocess.run([sys.executable,'_tools/kbtools.py',n,'--json'],capture_output=True,text=True); got[n]=json.loads(r.stdout)['entries'][0]['tool'] if r.returncode==0 else None\\nprint('first entry per need:',got); sys.exit(0 if got==cases else 1)"
+        "import json\nimport subprocess\nimport sys\n\ncases = {'land a backlog item': 'backlog.py', 'run a sprint': 'kb-sprint', 'search the kb facts': 'kb_search', 'redact a secret': 'redact.py',\n         'publish to the public repository': 'kbpublic.py', 'refresh a stale source': 'kb-refresh'}\ngot = {}\nfor need in cases:\n    r = subprocess.run([sys.executable, '_tools/kbtools.py', need, '--json'], capture_output=True, text=True)\n    got[need] = json.loads(r.stdout)['entries'][0]['tool'] if r.returncode == 0 and json.loads(r.stdout)['entries'] else None\nprint('first entry per need:', got)\nsys.exit(0 if got == cases else 1)\n"
       ]
     },
     {
@@ -56,10 +56,31 @@
   "depends_on": [
     "BG-rtaub3fk"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does kbtools weigh the words of a skill's, agent's or MCP tool's description against a tool's own Answers: lines, and does answering share the name rule?",
+      "options": [
+        "Cap a description word at 0.6 of a tool word and weigh it less beyond 16 words; name of several words read as its words in search and answering",
+        "Leave descriptions at full weight and fix only the name rule"
+      ],
+      "recommendation": "Cap a description word at 0.6 of a tool word and weigh it less beyond 16 words; name of several words read as its words in search and answering",
+      "do": {
+        "Cap a description word at 0.6 of a tool word and weigh it less beyond 16 words; name of several words read as its words in search and answering": "BG-kfv2qrs4",
+        "Leave descriptions at full weight and fix only the name rule": "BG-kfv2qrs4"
+      },
+      "class": "agents-rule",
+      "answer": "Cap a description word at 0.6 of a tool word and weigh it less beyond 16 words; name of several words read as its words in search and answering",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-x6eqtsid review"
   ],
-  "notes": "Parked by the review of SP-x6eqtsid (reviewer, 2026-10-24; S3). kbtools.words() splits a name only at _, so the name querylog never matches the words query and log (kbmon.py first, querylog.py second for query log); how long landing steps take puts the kb-lookup agent first because Long it-ops-kb research matches long, backlog.py second. The kb coverage need left kb_audit out of the first four. BG-nrq2gqcb (the S1 to take first) is done.\nPremise run 2026-10-24: repro fails on base f160727aa. Check 0 is a planted catalog for both clauses (fails on base). Check 1 fences six needs whose first entry is right: it passed on base f160727aa, but BG-rtaub3fk's landing (docs_search, docs_fetch, coord_* joined the catalog) made 'search the kb facts' put docs_search first (its description says 'not kb facts' and holds search, kb and facts) and 'how long landing steps take' list no backlog.py at all (coord_post, kb-lookup only): the fix must make check 1 pass again with all six cases. Check 2 (the docstring fence: every tool entry has Answers: and Use:) passes before the work: it pins behaviour that must stay; selfdoc.py check itself is red on main for another sprint's line numbers, so it is not a check here.\nThe fix is a general matching rule (a name of several words read as its words, a word held by a description that names no tool weighed against the words an entry holds), never a special case. kbtools.answering (kb_ask.py routes by it) shares the weighing: keep its behaviour or change it on purpose and say so in the report. Order: after BG-rtaub3fk (landed; same file). Planned 2026-10-24 (day run).",
+  "notes": "Parked by the review of SP-x6eqtsid (reviewer, 2026-10-24; S3). kbtools.words() splits a name only at _, so the name querylog never matches the words query and log (kbmon.py first, querylog.py second for query log); how long landing steps take puts the kb-lookup agent first because Long it-ops-kb research matches long, backlog.py second. The kb coverage need left kb_audit out of the first four. BG-nrq2gqcb (the S1 to take first) is done.\nPremise run 2026-10-24: repro fails on base f160727aa. Check 0 is a planted catalog for both clauses (fails on base). Check 1 fences six needs whose first entry is right: it passed on base f160727aa, but BG-rtaub3fk's landing (docs_search, docs_fetch, coord_* joined the catalog) made 'search the kb facts' put docs_search first (its description says 'not kb facts' and holds search, kb and facts) and 'how long landing steps take' list no backlog.py at all (coord_post, kb-lookup only): the fix must make check 1 pass again with all six cases. Check 2 (the docstring fence: every tool entry has Answers: and Use:) passes before the work: it pins behaviour that must stay; selfdoc.py check itself is red on main for another sprint's line numbers, so it is not a check here.\nThe fix is a general matching rule (a name of several words read as its words, a word held by a description that names no tool weighed against the words an entry holds), never a special case. kbtools.answering (kb_ask.py routes by it) shares the weighing: keep its behaviour or change it on purpose and say so in the report. Order: after BG-rtaub3fk (landed; same file). Planned 2026-10-24 (day run). Gate g1 answered with its recommendation on the operator's standing approval (pre-approved by the operator for the 2026-10-24 day run). Check 1 rewritten at the first landing: it held a literal backslash-n in its -c string (a SyntaxError), now a plain script; it still reads the six needs, same goal clause.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"

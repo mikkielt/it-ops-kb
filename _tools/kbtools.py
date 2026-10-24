@@ -10,7 +10,9 @@ entry is its frontmatter `description:`, a kb MCP tool's its listed description.
 `kbmon.py` read the same block through `tool_entries` and `missing_lines`.
 
 A need is matched by words: lower-case words with their endings cut, the common ones dropped, each weighed by how few
-entries hold it, a word of an entry's name counting double. The same need always gives the same entries, best first.
+entries hold it, a word of an entry's name counting double (a name of several words, `querylog.py`, holds the words of
+the need that spell it, `query log`) and a word of a skill's, agent's or kb MCP tool's description counting less, the
+longer the description is. The same need always gives the same entries, best first.
 `answering` is the stricter read `kb_ask.py` routes by: it leaves the words that only ask for a tool (CUES) out of the
 need, reads a tool's name and its own text (summary and `Answers:` lines) and the name alone of a skill, an agent or a kb
 MCP tool (their descriptions list the products the kb covers), and reports how much of the need the catalog holds.
@@ -43,6 +45,8 @@ might must not no so if about into onto over under up out all any each some""".s
 LIMIT = 8
 CUES = frozenset("tool command script line find show list print give tell get run use".split())  # asks for a tool, names none
 KIND_ORDER = {"tool": 0, "skill": 1, "agent": 2, "mcp": 3}
+DESC_CAP = 0.6  # most a word of a skill's, agent's or kb MCP tool's description counts, against 1 for a tool's own text
+DESC_REF = 16  # words of such a description from which each of its words counts less
 WIDTH = 150  # characters of what an entry answers on a catalog line
 BOILERPLATE = re.compile(r"^(Documentation facts from it-ops-kb \(not live device or directory data\)\.\s*)")
 
@@ -172,20 +176,49 @@ def words(text):
     return {stem(w) for w in WORD.findall(text.lower().replace("_", " ")) if w not in STOP and len(w) > 1}
 
 
-def search(need, entries):
-    """The entries that share a word with NEED, best first: the sum of each shared word's weight (rarer in the catalog
-    weighs more, in an entry's name twice), ties broken by kind and name; entries under a third of the best score drop."""
-    want = words(need)
-    docs = [(e, words(e["tool"]), words(" ".join([e["summary"], *e["answers"]]))) for e in entries]
+def name_words(name, need):
+    """The words of an entry's name, and the words of NEED that spell a name of several words together: the name
+    `querylog.py` holds `query` and `log` for the need `query log`, as `query_log` holds `querylog` for that need."""
+    named, asked = WORD.findall(name.lower()), WORD.findall(need.lower())
+    out = words(name)
+    for size in (2, 3):
+        for i in range(len(asked) - size + 1):
+            if "".join(asked[i:i + size]) in named:
+                out |= words(" ".join(asked[i:i + size]))
+        for i in range(len(named) - size + 1):
+            if "".join(named[i:i + size]) in asked:
+                out |= words(" ".join(named[i:i + size]))
+    return out
+
+
+def text_weight(entry, text):
+    """How much a word of an entry's own text counts: in full for a tool, whose `Answers:` lines list the needs it answers;
+    for a skill, an agent or a kb MCP tool at most DESC_CAP, and less for each word of a description beyond DESC_REF
+    words: it says when to use the entry and names whatever it mentions (long in `Long it-ops-kb research`)."""
+    return 1.0 if entry["kind"] == "tool" else min(DESC_CAP, DESC_REF / max(len(text), 1))
+
+
+def rank(need, want, docs):
+    """The entries of `docs` ((entry, name words, text words) for each) that share a word of WANT, best first: the sum of
+    each shared word's weight (rarer in the catalog weighs more; in an entry's name twice, in its text as text_weight
+    says), ties broken by kind and name; entries under a third of the best score drop."""
+    docs = [(e, name_words(e["tool"], need), text) for e, _, text in docs]
     df = {w: sum(1 for _, n, t in docs if w in n or w in t) for w in want}
     scored = []
     for e, name, text in docs:
-        score = sum(math.log(1 + len(docs) / df[w]) * (2 if w in name else 1) for w in want if w in name or w in text)
+        weight = text_weight(e, text)
+        score = sum(math.log(1 + len(docs) / df[w]) * (2 if w in name else weight) for w in want if w in name or w in text)
         if score > 0:
             scored.append((-score, KIND_ORDER[e["kind"]], e["tool"], e))
     scored.sort(key=lambda x: x[:3])
     best = -scored[0][0] if scored else 0
-    return [dict(e, score=round(-s, 3)) for s, _, _, e in scored if -s * 3 >= best][:LIMIT]
+    return [dict(e, score=round(-s, 3)) for s, _, _, e in scored if -s * 3 >= best][:LIMIT], df
+
+
+def search(need, entries):
+    """The entries that share a word with NEED, best first (`rank`)."""
+    docs = [(e, words(e["tool"]), words(" ".join([e["summary"], *e["answers"]]))) for e in entries]
+    return rank(need, words(need), docs)[0]
 
 
 def answering(need, entries):
@@ -196,15 +229,7 @@ def answering(need, entries):
     want = words(need) - {stem(c) for c in CUES}
     docs = [(e, words(e["tool"]), words(" ".join([e["summary"], *e["answers"]])) if e["kind"] == "tool" else set())
             for e in entries]
-    df = {w: sum(1 for _, n, t in docs if w in n or w in t) for w in want}
-    scored = []
-    for e, name, text in docs:
-        score = sum(math.log(1 + len(docs) / df[w]) * (2 if w in name else 1) for w in want if w in name or w in text)
-        if score > 0:
-            scored.append((-score, KIND_ORDER[e["kind"]], e["tool"], e))
-    scored.sort(key=lambda x: x[:3])
-    best = -scored[0][0] if scored else 0
-    found = [dict(e, score=round(-s, 3)) for s, _, _, e in scored if -s * 3 >= best][:LIMIT]
+    found, df = rank(need, want, docs)
     return found, sum(1 for w in want if df[w]), len(want)
 
 
