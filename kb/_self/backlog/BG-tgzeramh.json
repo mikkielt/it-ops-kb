@@ -2,7 +2,7 @@
   "id": "BG-tgzeramh",
   "kind": "bug",
   "title": "The sync gate's pool check on a retry after a rejected push judges the rebased tree against the landing itself, so upstream pool defects refuse the landing",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yisvj7vd",
   "priority": "P3",
   "rank": 0,
@@ -33,5 +33,7 @@
     "parked: SP-s5k72bhd review"
   ],
   "notes": "Found by the SP-s5k72bhd review of BG-2mdkl622 (headless reviewer session 1b63a864; read from the code, not reproduced as a two-clone retry). It can only refuse falsely, never pass falsely: attempt 1 already passed. The first attempt uses the merge base of the upstream and HEAD, which is also the right base after a rebase. Premise run 2026-10-24 on the day-run base: repro exits 1 (base_rev line starts with since or). A planted check was added at planning: kg_sync.gate run with since set and its collaborators replaced, asserting the base pool_gate receives is the merge base; it fails on the base (prints the since commit). The fix lives in the base_rev line only. Planned into SP-yisvj7vd, 2026-10-24. Sprint started 2026-10-24.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
