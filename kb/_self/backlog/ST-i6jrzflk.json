@@ -2,7 +2,7 @@
   "id": "ST-i6jrzflk",
   "kind": "story",
   "title": "coordination.md and monitoring.md say the same about whether an open ask waits announce.needs_you_after_min minutes before it enters the needs-you line",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-nij36lt7",
   "sprint": "SP-f2o3aqm2",
   "priority": "P3",
@@ -30,6 +30,19 @@
   ],
   "notes": "Review gap (S2) of SP-d6gbc3tq: coordination.md:173 says the setting delays any open question, monitoring.md:98 and mon_needs.py apply it to an undecided overlap only (ST-n5vf55qk gate g1: asks are named with no delay). If the operator wants the delay for asks, change the code and gate g1 instead. Plan 2026-10-24: premise runs on base (exit 1: the setting line says an open question waits). The old check passed once the words 'open question' were dropped; tightened to also require the bullet to name the overlap and say an ask is named at once (monitoring.md Needs you line, mon_needs.ask_entries). Failure-modes bullet 'An ask nobody answers. Nothing alerts.' (coordination.md) is the same topic: the worker reads it against the Needs you line and fixes it in the same edit if it contradicts it. Noticed, out of this item: _tools/kbsettings.py lines 30 and 91 (SETTINGS meaning, shown by explain and the kb_settings tool) say the same stale 'an open question waits'; filed as a separate draft bug. Landing 1 stopped at step rag.py eval: row EV-coordination-needs-you-after-min of kb/_self/_retrieval/lookup_eval.csv anchored on the reworded stale sentence; the file (a code-lane path) added to touches and the worker sent back once to update the row.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "4ab7be637b6e7f380434932b538946665b5b5738",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re, sys\nt = open(\"kb/_self/coordination.md\", encoding=\"utf-8\").read()\nline = [l for l in t.splitlines() if l.startswith(\"- **`announce.needs_you_after_min`**\")]\nl = line[0] if line else \"\"\nwaits = bool(re.search(r\"open (question|ask)s? (may |will )?wait\", l))\nsays_overlap = \"overlap\" in l\nsays_ask_at_once = bool(re.search(r\"\\bask\", l)) and \"at once\" in l\nprint(\"setting line:\", l[:200], \"| says an open question waits:\", waits, \"| names the overlap:\", says_overlap, \"| says an ask is named at once:\", says_ask_at_once)\nsys.exit(0 if line and not waits and says_overlap and says_ask_at_once else 1)"
+        ],
+        "exit": 0,
+        "sha256": "0bd8fed6fb5b0811"
+      }
+    ]
+  }
 }
