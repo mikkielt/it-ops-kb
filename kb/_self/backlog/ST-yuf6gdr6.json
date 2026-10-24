@@ -50,6 +50,9 @@
     "kb/_self/backlog.md",
     "agents/worker.md"
   ],
+  "depends_on": [
+    "ST-44md64ps"
+  ],
   "relates_to": [
     "ST-44otcmeo",
     "ST-wkyzbcfj"
