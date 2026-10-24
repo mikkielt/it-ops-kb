@@ -2170,15 +2170,29 @@ def parts_file(group, ctx):
     return os.path.join(DISPATCH_DIR, ctx["date"], group, "parts.json")
 
 
-def kept_layout(path, members):
-    """[[row id]] the layout at `path` holds, or None when there is none or it leaves a source to read out of every part."""
+class LayoutError(Exception):
+    """A group's kept brief layout cannot be used while a source of the group already has an outcome: the parts it numbered
+    cannot be rebuilt from the rows, so `--part N` would name other rows (the message names the file and why)."""
+
+
+def kept_layout(path):
+    """[[row id]] the layout at `path` holds, or None when there is no file; raises LayoutError for a file that cannot be
+    read as a list of parts, each a list of row ids."""
     try:
         with open(path, encoding="utf-8") as f:
             layout = json.load(f)["parts"]
-    except (OSError, ValueError, KeyError, TypeError):
+    except FileNotFoundError:
         return None
-    named = {i for part in layout for i in part}
-    return layout if all(m[0]["id"] in named for m in unread(members)) else None
+    except (OSError, ValueError, KeyError, TypeError) as e:
+        raise LayoutError(f"the layout of this group's brief parts, {kbcommon.repo_rel(path)}, cannot be read "
+                          f"({type(e).__name__}) and a source of the group already has an outcome, so its parts cannot "
+                          "be numbered as before: restore the file, or run `census.py groups` on a fresh log") from e
+    if not isinstance(layout, list) or not all(isinstance(part, list) and all(isinstance(i, str) for i in part)
+                                               for part in layout):
+        raise LayoutError(f"the layout of this group's brief parts, {kbcommon.repo_rel(path)}, is not a list of parts of "
+                          "row ids and a source of the group already has an outcome, so its parts cannot be numbered "
+                          "as before: restore the file, or run `census.py groups` on a fresh log")
+    return layout
 
 
 def keep_layout(path, layout):
@@ -2193,15 +2207,9 @@ def keep_layout(path, layout):
         pass
 
 
-def brief_packs(group, members, ctx):
-    """(packed, rules): the group's `members` packed into parts of at most BRIEF_CHARS (a source alone over it is a part
-    of its own), each a list of (member, its block's text) in id order, and the rules text every part ends with. The
-    parts are numbered once, while no member has an outcome (`parts.json`, `parts_file`): once an earlier part is applied
-    the members that hold an outcome keep their part, so `--part N` names the same sources as before."""
-    rules = BRIEF_RULES.format(flog=ctx["flog"], schema=SCHEMA_REL, log=ctx["log"], group=group)
-    blocks = [(m, row_block(m[0], m[1], m[2], group, ctx)) for m in members]
-    fixed = len(brief_head(group, 99, 99, owned_files(group, members), foreign_files(group, members), ctx, 999)) \
-        + len(rules) + 4
+def pack_blocks(blocks, fixed):
+    """`blocks` ((member, text) pairs) in order, cut into parts that stay within BRIEF_CHARS beside the `fixed` size of
+    a part's head and rules (a block alone over it is a part of its own)."""
     packed, cur, size = [], [], fixed
     for b in blocks:
         if cur and size + len(b[1]) + 2 > BRIEF_CHARS:
@@ -2210,14 +2218,32 @@ def brief_packs(group, members, ctx):
         cur.append(b)
         size += len(b[1]) + 2
     packed.append(cur)
+    return packed
+
+
+def brief_packs(group, members, ctx):
+    """(packed, rules): the group's `members` packed into parts of at most BRIEF_CHARS (a source alone over it is a part
+    of its own), each a list of (member, its block's text) in id order, and the rules text every part ends with. The
+    parts are numbered once (`parts.json`, `parts_file`), and the layout is rewritten whenever it changes: once a member
+    holds an outcome, every part keeps its rows under its number and a row the layout does not name goes to new parts
+    after the last, so `--part N` names the same sources as before. Raises LayoutError when a member holds an outcome and
+    the layout file exists but cannot be read; with no file the layout is made from the rows as they stand."""
+    rules = BRIEF_RULES.format(flog=ctx["flog"], schema=SCHEMA_REL, log=ctx["log"], group=group)
+    blocks = [(m, row_block(m[0], m[1], m[2], group, ctx)) for m in members]
+    fixed = len(brief_head(group, 99, 99, owned_files(group, members), foreign_files(group, members), ctx, 999)) \
+        + len(rules) + 4
     path = parts_file(group, ctx)
-    if len(unread(members)) == len(members):
-        keep_layout(path, [[m[0]["id"] for m, _ in part] for part in packed])
+    layout = kept_layout(path) if len(unread(members)) < len(members) else None
+    if layout is None:
+        packed = pack_blocks(blocks, fixed)
     else:
-        layout = kept_layout(path, members)
-        if layout:
-            by_id = {m[0]["id"]: (m, text) for m, text in blocks}
-            packed = [[by_id[i] for i in part if i in by_id] for part in layout]
+        by_id = {m[0]["id"]: (m, text) for m, text in blocks}
+        named = {i for part in layout for i in part}
+        packed = [[by_id[i] for i in part if i in by_id] for part in layout]
+        extra = [b for b in blocks if b[0][0]["id"] not in named]
+        if extra:
+            packed += pack_blocks(extra, fixed)
+    keep_layout(path, [[m[0]["id"] for m, _ in part] for part in packed])
     return packed, rules
 
 
@@ -2270,9 +2296,14 @@ def cmd_groups(a, tally):
         print(err)
         return 2
     ctx = phase2_context(rows, a.log, a.factdiff)
+    try:
+        groups = group_records(ctx)
+    except LayoutError as e:
+        print(e)
+        return 2
     print(json.dumps({"log": os.path.relpath(os.path.abspath(a.log), kbcommon.HOME).replace(os.sep, "/"),
                       "date": ctx["date"], "root": ctx["root"], "brief_chars": BRIEF_CHARS,
-                      "rows": sum(len(unread(m)) for m in ctx["members"].values()), "groups": group_records(ctx)}, indent=1))
+                      "rows": sum(len(unread(m)) for m in ctx["members"].values()), "groups": groups}, indent=1))
     return 0
 
 
@@ -2285,7 +2316,11 @@ def cmd_brief(a, tally):
     if a.group not in ctx["members"]:
         print(f"no group {a.group!r} in the queue of {a.log}; groups: " + (", ".join(ctx["groups"]) or "none"))
         return 2
-    parts = brief_parts(a.group, ctx["members"][a.group], ctx)
+    try:
+        parts = brief_parts(a.group, ctx["members"][a.group], ctx)
+    except LayoutError as e:
+        print(e)
+        return 2
     if not 1 <= a.part <= len(parts):
         print(f"group {a.group} has {len(parts)} part(s); --part {a.part} is out of range")
         return 2
@@ -3282,7 +3317,11 @@ def cmd_dispatch(a, tally):
     if a.group not in ctx["members"]:
         print(f"no group {a.group!r} in the queue of {a.log}; groups: " + (", ".join(ctx["groups"]) or "none"))
         return 2
-    packed, rules = brief_packs(a.group, ctx["members"][a.group], ctx)
+    try:
+        packed, rules = brief_packs(a.group, ctx["members"][a.group], ctx)
+    except LayoutError as e:
+        print(e)
+        return 2
     if not 1 <= a.part <= len(packed):
         print(f"group {a.group} has {len(packed)} part(s); --part {a.part} is out of range")
         return 2
