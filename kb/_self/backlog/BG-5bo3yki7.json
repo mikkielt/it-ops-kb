@@ -25,6 +25,16 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "Every line kbroot.py fetch --hook prints is `fetch failed: NAME: reason` with no absolute path, also when writing the NAME.fetched stamp fails",
+      "check": 1
+    },
+    {
+      "clause": "the other roots are still fetched (found by the SP-mguax5m3 review: a read-only roots directory printed a PermissionError with the full path)",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kbroot.py"
   ],
