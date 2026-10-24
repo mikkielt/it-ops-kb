@@ -2,7 +2,7 @@
   "id": "ST-7hxlwnw6",
   "kind": "story",
   "title": "Research sprint goal: Two guards that fail open after today's changes: the leak scan's EC key body, the permission guard's deny value, the observer's git commands",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-jopt2c3z",
   "goal_research": true,
   "priority": "P1",
@@ -21,7 +21,22 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: the sprint fixes three guards against their own contracts (a leak-scan regex, a deny-rule reader whose input is an array of rule strings, and a role file's command list against kbask.ALLOWED_TOOLS); kb pack on the Claude Code permissions.deny format found the kb already states it (public/claude/settings-and-scopes.md:88-95) and no goal question needs a new kb fact or gap entry.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "21b9c25def78ed935d4fd5790d7a7e6384031b18",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-7hxlwnw6"
+        ],
+        "exit": 0,
+        "sha256": "4481c5cba52f4990"
+      }
+    ]
+  }
 }
