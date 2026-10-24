@@ -70,7 +70,11 @@
         "Cap a description word at 0.6 of a tool word and weigh it less beyond 16 words; name of several words read as its words in search and answering": "BG-kfv2qrs4",
         "Leave descriptions at full weight and fix only the name rule": "BG-kfv2qrs4"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Cap a description word at 0.6 of a tool word and weigh it less beyond 16 words; name of several words read as its words in search and answering",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
