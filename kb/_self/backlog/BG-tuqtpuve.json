@@ -22,6 +22,27 @@
     "_tools/test_prepush_e2e.py",
     "kb/_self/git.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the shared location helper compare remote urls: which parts of a url count as the repository? (the safe error is refusing a push, and one repository is reached over https and ssh on different ports)",
+      "options": [
+        "host and repository path only: user, port, scheme, host case, slashes and a .git suffix ignored; path case kept",
+        "host, port and repository path: a different port is a different repository"
+      ],
+      "recommendation": "host and repository path only: user, port, scheme, host case, slashes and a .git suffix ignored; path case kept",
+      "do": {
+        "host and repository path only: user, port, scheme, host case, slashes and a .git suffix ignored; path case kept": "BG-tuqtpuve",
+        "host, port and repository path: a different port is a different repository": "BG-tuqtpuve"
+      },
+      "class": "secrets",
+      "answer": "host and repository path only: user, port, scheme, host case, slashes and a .git suffix ignored; path case kept",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-3trnelzv work"
   ],

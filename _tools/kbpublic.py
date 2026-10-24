@@ -125,7 +125,7 @@ def is_public(remote, cwd, url=None):
         return True
     if url is None:
         url = out(["remote", "get-url", remote], cwd) or remote
-    return url == out(["remote", "get-url", named], cwd)
+    return reaches(named, (url, remote), cwd)
 
 
 def clone_scope(cwd):
@@ -139,22 +139,68 @@ def upstream_remote(cwd):
     return out(["config", "--get", UPSTREAM_KEY], cwd) or None
 
 
+SCP_RX = re.compile(r"^(?:[^@/\\]*@)?(\[[^\]]*\]|[^:/\\]+):(?![/\\])(.*)$")  # git's scp-like [user@]host:path
+
+
 def location(url, cwd):
-    """URL as a comparable location: a local path (a path relative to CWD, an absolute one or a file:// url) resolved to
-    its real path, so a trailing slash, a ../ detour or a symlink does not tell two names of one repository apart; any
-    other url as written, less a trailing slash."""
+    """URL as the repository it names, comparable by same_repository: ("path", [candidates]) for a local path (a path
+    relative to CWD, an absolute one or a file:// url), the three places git tries for it (path, path.git, path/.git),
+    each as a real path; ("url", host, repository path) for a remote url of any scheme (https, http, ssh, git) or an
+    scp-like [user@]host:path, with the user, port, host case, a trailing slash and a .git suffix left out."""
     if url.startswith("file://"):
         parsed = urllib.parse.urlparse(url)
         if parsed.netloc in ("", "localhost"):
             url = urllib.request.url2pathname(parsed.path)
-    elif re.match(r"^[A-Za-z][A-Za-z0-9+.-]*://", url) or re.match(r"^[^/\\]+@?[^/\\]*:(?![/\\])", url):
-        return url.rstrip("/")  # a remote url, or an scp-like host:path
-    return os.path.realpath(os.path.join(cwd, url))
+    elif re.match(r"^[A-Za-z][A-Za-z0-9+.-]*://", url):
+        parsed = urllib.parse.urlparse(url)
+        return ("url", (parsed.hostname or "").lower(), _repo_path(urllib.parse.unquote(parsed.path)))
+    else:
+        scp = SCP_RX.match(url)
+        if scp:
+            return ("url", scp.group(1).strip("[]").lower(), _repo_path(scp.group(2)))
+    base = os.path.join(cwd, url).rstrip("/\\") or os.sep
+    return ("path", [os.path.realpath(base + suffix) for suffix in ("", ".git", "/.git")])
+
+
+def _repo_path(path):
+    """PATH of a remote url without its leading and trailing slashes and its .git suffix."""
+    path = path.strip("/")
+    return path[:-4].rstrip("/") if path.endswith(".git") else path
+
+
+def same_repository(a, b):
+    """Whether the locations A and B (location) reach one repository: equal host and repository path, or a local
+    candidate of one that is the other's (os.path.samefile, so a case-insensitive filesystem's spelling or a link does
+    not tell them apart; a path that does not exist compares by its real path)."""
+    if a[0] != b[0]:
+        return False
+    if a[0] == "url":
+        return a[1:] == b[1:] and bool(a[1] and a[2])
+    if set(a[1]) & set(b[1]):
+        return True
+    for x in a[1]:
+        for y in b[1]:
+            try:
+                if os.path.samefile(x, y):
+                    return True
+            except OSError:
+                pass
+    return False
+
+
+def reaches(named, targets, cwd):
+    """Whether any of TARGETS (urls or paths) names the same repository as one of the fetch or push urls of the remote
+    NAMED (same_repository)."""
+    urls = set()
+    for flags in ([], ["--push"]):
+        urls |= set((out(["remote", "get-url", "--all", *flags, named], cwd) or "").splitlines())
+    urls.discard("")
+    return any(same_repository(location(u, cwd), location(t, cwd)) for u in urls for t in targets)
 
 
 def is_upstream(remote, cwd, url=None):
     """Whether pushing to REMOTE (a remote name or a url; URL is its url when known) reaches the upstream remote: by its
-    name, or by a url that names the same location as one of its fetch or push urls (location). False in a clone
+    name, or by a url that names the same repository as one of its fetch or push urls (reaches). False in a clone
     without one."""
     named = upstream_remote(cwd)
     if not named:
@@ -163,11 +209,7 @@ def is_upstream(remote, cwd, url=None):
         return True
     if url is None:
         url = out(["remote", "get-url", remote], cwd) or remote
-    urls = set()
-    for flags in ([], ["--push"]):
-        urls |= set((out(["remote", "get-url", "--all", *flags, named], cwd) or "").splitlines())
-    urls.discard("")
-    return bool({location(u, cwd) for u in urls} & {location(u, cwd) for u in (url, remote)})
+    return reaches(named, (url, remote), cwd)
 
 
 def guard_upstream(remote, url, refs, cwd):

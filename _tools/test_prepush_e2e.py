@@ -2,6 +2,8 @@
 
 The lane guard (a code-lane commit straight to main) and the public-home guard (a history that holds kb/_querylog/).
 The clone is built once; each case starts from a hard reset to origin/main."""
+import os
+
 import pytest
 from conftest import Scenario, git_env, requires_git
 
@@ -61,15 +63,27 @@ def test_public_home_refuses_a_history_with_the_query_log(world):
 def test_upstream_push_refused(world):
     sc, c = world
     fresh(c)
-    up = sc.bare("upstream.git")
+    up = sc.bare("fetchonly.git")
     before = up.rev("main")
     c.git("remote", "add", "up", up.path)
     c.git("config", kbpublic.UPSTREAM_KEY, "up")
     c.write("kb/_self/zz_upstream_probe.md", "probe\n")
     c.commit("docs: a content file", "kb/_self/zz_upstream_probe.md")
-    for target in ("up", up.path, up.path + "/", "file://" + up.path):  # by name and by each way to write its url
-        p = push_main(c, target)
-        assert p.returncode != 0 and "upstream remote" in p.stderr, p.stdout + p.stderr
+    stem = up.path[:-len(".git")]
+    spellings = ["up", up.path, up.path + "/", "file://" + up.path, stem, stem + "/"]
+    if os.path.exists(up.path.swapcase()):  # a case-insensitive filesystem
+        spellings.append(up.path.swapcase())
+    for target in spellings:
+        p = push_main(c, target)  # by name and by each way git reaches the repository: a guessed .git, a case spelling
+        assert p.returncode != 0 and "upstream remote" in p.stderr, target + p.stdout + p.stderr
     assert up.rev("main") == before
     sync = c.kbgit("sync", "--remote", "up")
     assert sync.returncode == 2 and "only fetched from" in sync.stdout, sync.stdout + sync.stderr
+    sibling = sc.bare("fetchonly2.git")  # a different repository sharing the prefix is not the upstream
+    assert not kbpublic.is_upstream(sibling.path, c.path) and not kbpublic.is_upstream(stem + "2", c.path)
+    c.git("remote", "set-url", "up", "https://example.com/org/repo.git")  # git connects before it runs the hook
+    for target in ("git@example.com:org/repo.git", "https://example.com/org/repo", "ssh://git@example.com/org/repo.git",
+                   "http://EXAMPLE.com/org/repo.git/", "deploy@example.com:org/repo"):  # so the guard is asked directly
+        assert kbpublic.guard_upstream(target, target, [("refs/heads/main", "")], c.path), target
+    assert not kbpublic.is_upstream("https://example.com/org/repo2.git", c.path)
+    assert not kbpublic.is_upstream("git@example.com:org2/repo.git", c.path)
