@@ -216,7 +216,8 @@ def host_commands(root):
     return list(dict.fromkeys(commands))
 
 
-SKILL_TEXT_GLOBS = ("skills/*/SKILL.md", "agents/worker.md")  # the text the sprint, item and backlog skills and the worker hold
+SKILL_TEXT_FILES = ("skills/sprint/SKILL.md", "skills/item/SKILL.md", "skills/backlog/SKILL.md",
+                    "agents/worker.md")  # the text the plugin's sprint, item and backlog skills and its worker hold; a host's own skills/ stay unread
 SKILL_TEXT_SCRIPT = re.compile(r"python3 (?:\$\{CLAUDE_PLUGIN_ROOT\}/)?(_tools/[a-z0-9_]+\.py)")
 
 
@@ -224,13 +225,12 @@ def skill_text_scripts(root):
     """The `_tools` scripts the skills' text under ROOT runs as `python3 SCRIPT` (with or without the plugin
     variable, which a clone without the plugin never substitutes), each once and in text order."""
     scripts = {}
-    for pattern in SKILL_TEXT_GLOBS:
-        for path in sorted(Path(root).glob(pattern)):
-            try:
-                text = path.read_text(encoding="utf-8")
-            except (OSError, UnicodeError):
-                continue
-            scripts.update(dict.fromkeys(SKILL_TEXT_SCRIPT.findall(text)))
+    for name in SKILL_TEXT_FILES:
+        try:
+            text = (Path(root) / name).read_text(encoding="utf-8")
+        except (OSError, UnicodeError):
+            continue
+        scripts.update(dict.fromkeys(SKILL_TEXT_SCRIPT.findall(text)))
     return list(scripts)
 
 
