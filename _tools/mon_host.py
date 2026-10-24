@@ -6,7 +6,11 @@ no such call); the locks are the files `tests.py` and `kg_lock.py` write in the 
 readers (`tests.read_holder`, `tests.pid_alive`, `kg_lock.holder_step`): a holder whose pid no longer runs is none. A
 holder's clone is `this` (the clone the panel reads) or `other`, never a path. The ceiling is `tests.read_ceiling`'s, the
 suite's files the `test_*.py` of the clone, and its ids and the seconds of the last full run the newest passing `test.run`
-row of mode `full` that ran pytest, from the ops rows. The CPU groups come from one `ps -A -o pid=,pcpu=,args=` listing: each
+row of mode `full` that ran pytest, from the ops rows. `land_lock` is the clone's landing lock (`bl_close.landing_lock_path`,
+read through the same readers): when a live process holds it, {item, title, step (the newest `land.step` of the item's
+landing in the ops rows, null before its first), since, pid, clone, queue}, `queue` being the other items whose coord run
+state is `landing` as {id, title} in id order, each title that of the clone's item file; null while no live process holds
+it. The CPU groups come from one `ps -A -o pid=,pcpu=,args=` listing: each
 command line is matched against fixed patterns in memory and only its kind, clone, CPU and count are kept (`unsupported`
 where there is no `ps`). Imports `mon_base`; `tests`, `kg_lock` and `bl_stall` where it reads them.
 """
@@ -106,6 +110,33 @@ def holder(path, root):
     return out
 
 
+def land_lock(ctx):
+    """The landing lock's holder as `collect` describes `land_lock`, or None when no live process holds it (or the clone
+    has no landing lock path)."""
+    import bl_close
+    import mon_sessions
+    import tests
+    try:
+        path = bl_close.landing_lock_path(ctx.root)
+    except Exception:  # noqa: BLE001 - a directory git cannot read has no landing lock
+        return None
+    text = tests.read_lock(str(path))
+    rec = tests.parse_holder(text) if text is not None else None
+    if rec is None or not tests.pid_alive(rec["pid"]):
+        return None
+    item = bl_close.landing_holder_item(text)
+    bl = mon_sessions.backlog(ctx.root)
+
+    def title(ident):
+        return None if bl is None or ident in bl.withheld else (bl.items.get(ident) or {}).get("title")
+
+    states = mon_sessions.run_states(ctx) or {}
+    queue = [{"id": i, "title": title(i)} for i in sorted(states) if states[i] == "landing" and i != item]
+    same = os.path.realpath(rec["clone"]) == os.path.realpath(ctx.root)
+    return {"item": item, "title": title(item), "step": mon_sessions.landing_steps(ctx.root).get(item), "since": rec["started"],
+            "pid": rec["pid"], "clone": "this" if same else "other", "queue": queue}
+
+
 def last_full_run(root):
     """(ids, seconds) of the newest passing full `test.run` row that ran pytest, or (None, None)."""
     try:
@@ -174,7 +205,7 @@ def collect(ctx):
     return {"load": load(), "cores": cores if isinstance(cores, int) else None,
             "suite_lock": holder(os.path.join(base, tests.HOST_LOCK_NAME), ctx.root),
             "main_lock": holder(os.path.join(base, kg_lock.LOCK_NAME), ctx.root),
-            "ceiling": ceiling(ctx.root), "disk": disk(ctx.root), "groups": groups(ctx.root),
+            "land_lock": land_lock(ctx), "ceiling": ceiling(ctx.root), "disk": disk(ctx.root), "groups": groups(ctx.root),
             "cpu_basis": "recent" if sys.platform == "darwin" else "lifetime"}
 
 
@@ -211,6 +242,19 @@ def lock_row(label, rec):
     return label.ljust(LABEL) + " · ".join(parts)
 
 
+def land_row(rec):
+    """The landing lock's row: `landing` and the item (its title, else its id), its step, since when, and the titles of the
+    items queued behind it (a title cut to 30 characters); `none` while no live process holds the lock."""
+    if not isinstance(rec, dict):
+        return "landing".ljust(LABEL) + "none"
+    parts = [str(rec.get("title") or rec.get("item")), f"step {rec.get('step') or '-'}", f"since {since(rec.get('since'))}"]
+    queue = [q for q in rec.get("queue") or [] if isinstance(q, dict)]
+    if queue:
+        names = [str(q.get("title") or q.get("id"))[:30] for q in queue[:3]]
+        parts.append(f"{len(queue)} queued: " + ", ".join(names) + (f", +{len(queue) - 3} more" if len(queue) > 3 else ""))
+    return "landing".ljust(LABEL) + " · ".join(parts)
+
+
 def ceiling_rows(c, width):
     """The ceiling's three measures: `ids`, `files` and `last run` (named with the clone's profile when it is not
     `usual`), as one row of the worst gutter where the joined row fits WIDTH columns, else three aligned rows each with
@@ -235,10 +279,10 @@ def ceiling_rows(c, width):
 
 
 def lines(data, width=80):
-    """The body rows: the load with the cores, the two locks' holders, then the ceiling's bars (`! ` from 80%, `!!` at 100%)."""
+    """The body rows: the load with the cores, the two locks' holders, the landing lock's holder with its queue, then the ceiling's bars (`! ` from 80%, `!!` at 100%)."""
     ld = data.get("load")
     shown = "unsupported" if ld == UNSUPPORTED or not isinstance(ld, list) else " · ".join(f"{x:.2f}" for x in ld)
     cores = data.get("cores")
     rows = ["load".ljust(LABEL) + shown + (f" · {cores} cores" if cores else "")]
-    rows += [lock_row("suite", data.get("suite_lock")), lock_row("main", data.get("main_lock"))]
+    rows += [lock_row("suite", data.get("suite_lock")), lock_row("main", data.get("main_lock")), land_row(data.get("land_lock"))]
     return rows + ceiling_rows(data.get("ceiling") or {"error": "no ceiling"}, width)

@@ -29,15 +29,23 @@ directories (no `/proc` and no `lsof`) gives no processes and `procs_unreadable`
 intents still show. Windows exposes no working directory, so the processes are `bl_procs.windows_snapshot`'s: those whose
 command line names a checkout of the clone (matched and dropped, never kept), and `procs_limit` says what Windows cannot
 show; a PowerShell that does not answer gives `procs_unreadable`. A root with no backlog items has no `stalled` key. `session_line` turns one `sessions` entry into the one line the view and
-`mon_status` print. Imports `mon_base` and `mon_view`; `bl_procs`,
+`mon_status` print. `waits` lists, for each process that holds `wait/<pid>/<item>` keys (a blocking `coord.py wait --kind
+progress --item`, `list --prefix wait/`), the session it runs under (the label of the `sessions` entry whose process is its
+ancestor, else null) and the items it waits on as {id, title}, a process that no longer runs left out; it is left out with
+`intents`. `drift` is `backlog.py runs`' answer for the active sprints' items and every item with a run key: `count`, the `oldest`
+item id (by its newest progress event) and `items`, each {item, title, state (the run state), git (the state git shows), why,
+age_s}; it is left out where the store is a url, `runs` cannot read coord or the root has no backlog items. `alerts` raises
+`sessions.orphan` and, while `drift` counts one, `runs.drift` (kind `drift`). Imports `mon_base` and `mon_view`; `bl_procs`,
 `bl_stall`, `bl_base`, `bl_cost`, `ql_base`, `ql_distill` and `ql_report` where it reads them.
 """
+import contextlib
 import datetime
 import json
 import os
 import re
 import subprocess
 import sys
+import threading
 import time
 from pathlib import Path
 
@@ -72,6 +80,13 @@ BARE_DIR = "bare"  # the sandbox directory of a benchmark's bare twins (`bench_m
 AGENT_DIR = re.compile(r"agent\d+")
 MULTI_DIR = re.compile(r"multi-[0-9a-f]{8}")  # `bench_multi.clone_path`: `<scratch>/multi-<hash>/agentN`
 PLAN_KINDS = ("epic", "sprint")  # the items a planner works on
+WAIT_KEYS = "wait/"  # the keys a blocking `coord.py wait --kind progress --item` holds: wait/<pid>/<item id>
+WAITS_KEPT = 20  # waiting sessions in the data
+WAITS_SHOWN = 4  # waiting sessions in the text view
+DRIFT_KEPT = 20  # drifted run states in the data
+DRIFT_SHOWN = 3  # drifted run states in the text view
+ANCESTORS = 64  # process generations climbed from a wait to the Claude Code process that ran it
+STORE_LOCK = threading.Lock()  # one panel run at a time points the environment's coord store at the clone's
 WINDOWS_LIMIT = ("Windows shows no working directory: a process is listed when its command line names a checkout of "
                  "the clone, so one that names none, an orphan told by working directory, is not shown")
 ROLES = ("worker", "sprint runner", "planner", "reviewer", "interactive", "benchmark agent", "bare twin", "observer",
@@ -173,8 +188,9 @@ def stalled(root, bl=None):
 
 
 def read_events(conn):
-    """({session id: time of its first intent event}, [(item, other, strategy)] of the `coordinate` events, newest first)
-    from `coord.py wait` over the connection arguments CONN; empty where the events cannot be read."""
+    """({session id: time of its first intent event}, [(item, other, strategy)] of the `coordinate` events, newest first,
+    {item: time of its newest `progress` event}) from `coord.py wait` over the connection arguments CONN; empty where the
+    events cannot be read."""
     import mon_coord
     try:
         p = subprocess.run([sys.executable, str(mon_coord.COORD), *conn, "wait", "--since", "0", "--timeout", "0"],
@@ -182,32 +198,53 @@ def read_events(conn):
                            stdin=subprocess.DEVNULL)
         events = json.loads(p.stdout)["events"] if p.returncode == 0 else []
     except (OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError):
-        return {}, []
-    first, chosen = {}, []
+        return {}, [], {}
+    first, chosen, moved = {}, [], {}
     for e in events if isinstance(events, list) else []:
         fields = e.get("fields") if isinstance(e, dict) and isinstance(e.get("fields"), dict) else {}
         if e.get("kind") == "intent" and isinstance(fields.get("session"), str) and isinstance(e.get("at"), (int, float)):
             first.setdefault(fields["session"], e["at"])
         elif e.get("kind") == "coordinate" and fields.get("item") and fields.get("other") and fields.get("strategy"):
             chosen.insert(0, (fields["item"], fields["other"], fields["strategy"]))
-    return first, chosen
+        elif e.get("kind") == "progress" and isinstance(fields.get("item"), str) and isinstance(e.get("at"), (int, float)):
+            moved[fields["item"]] = e["at"]
+    return first, chosen, moved
+
+
+def coord_conn(ctx):
+    """coord.py's connection arguments for the url or the local store of CTX, None when the store is not there or the url
+    has no key file."""
+    import mon_coord
+    if ctx.url:
+        return ["--url", ctx.url, "--key-file", ctx.key_file] if ctx.key_file else None
+    store = mon_coord.local_store(ctx)
+    return ["--store", store] if store and Path(store).is_file() else None
+
+
+def coord_list(ctx, prefix):
+    """The rows `coord.py list --prefix PREFIX` prints for the coord store of CTX; None when it does not answer."""
+    import mon_coord
+    conn = coord_conn(ctx)
+    if conn is None:
+        return None
+    try:
+        p = subprocess.run([sys.executable, str(mon_coord.COORD), *conn, "list", "--prefix", prefix], capture_output=True,
+                           text=True, encoding="utf-8", errors="replace", timeout=COORD_SECONDS, stdin=subprocess.DEVNULL)
+        rows = json.loads(p.stdout) if p.returncode == 0 else None
+    except (OSError, subprocess.SubprocessError, ValueError):
+        return None
+    return [r for r in rows if isinstance(r, dict)] if isinstance(rows, list) else None
 
 
 def read_coord(ctx):
-    """{intents: [fields], leases: {session id: seconds left}, claims: [(key, seconds left)], intent_at, coordinate} of the
-    live leases and intents in the coord store (`coord.py digest`), the intents newest first, as coord.py prints them (a
-    raw session id, never printed by this module); `intent_at` and `coordinate` are `read_events`' answer. None when the
-    store is not there, is not reachable or does not answer."""
+    """{intents: [fields], leases: {session id: seconds left}, claims: [(key, seconds left)], intent_at, coordinate,
+    moved} of the live leases and intents in the coord store (`coord.py digest`), the intents newest first, as coord.py
+    prints them (a raw session id, never printed by this module); `intent_at`, `coordinate` and `moved` are `read_events`'
+    answer. None when the store is not there, is not reachable or does not answer."""
     import mon_coord
-    if ctx.url:
-        if not ctx.key_file:
-            return None
-        conn = ["--url", ctx.url, "--key-file", ctx.key_file]
-    else:
-        store = mon_coord.local_store(ctx)
-        if not store or not Path(store).is_file():
-            return None
-        conn = ["--store", store]
+    conn = coord_conn(ctx)
+    if conn is None:
+        return None
     try:
         p = subprocess.run([sys.executable, str(mon_coord.COORD), *conn, "digest", "--key", "*", "--lines", str(DIGEST_LINES)],
                            capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=COORD_SECONDS,
@@ -216,8 +253,8 @@ def read_coord(ctx):
         return None
     if p.returncode != 0:
         return None
-    found = {"intents": [], "leases": {}, "claims": [], "intent_at": {}, "coordinate": []}
-    found["intent_at"], found["coordinate"] = read_events(conn)
+    found = {"intents": [], "leases": {}, "claims": [], "intent_at": {}, "coordinate": [], "moved": {}}
+    found["intent_at"], found["coordinate"], found["moved"] = read_events(conn)
     for line in p.stdout.splitlines():
         words = line.split()
         fields = dict(w.split("=", 1) for w in words[1:] if "=" in w)
@@ -230,6 +267,95 @@ def read_coord(ctx):
             if words[1].startswith("session/"):
                 found["leases"][words[1][len("session/"):]] = left
     return found
+
+
+def run_states(ctx):
+    """{item id: run state} of the `run/` keys of the coord store of CTX; None when the store does not answer."""
+    rows = coord_list(ctx, "run/")
+    return None if rows is None else {r["key"][len("run/"):]: r["value"] for r in rows if r.get("value")}
+
+
+def ancestor_session(pid, table, by_pid):
+    """The `sessions` entry whose process is an ancestor of PID in the process TABLE ({pid: (ppid, start, comm)}), else None."""
+    for _ in range(ANCESTORS):
+        if pid in by_pid:
+            return by_pid[pid]
+        entry = table.get(pid)
+        if not entry or not entry[0] or entry[0] == pid:
+            return None
+        pid = entry[0]
+    return None
+
+
+def wait_rows(ctx, sessions, bl):
+    """[{session, pid, items: [{id, title}]}] of the processes that hold `wait/<pid>/<item>` keys in the coord store (the
+    waits of `coord.py wait --kind progress --item`), WAITS_KEPT at most; `session` the label of the entry of SESSIONS whose
+    process runs the wait (null when none does or the host cannot tell). A pid that no longer runs, where the host can tell,
+    is left out. None where the store does not answer."""
+    import bl_procs
+    rows = coord_list(ctx, WAIT_KEYS)
+    if rows is None:
+        return None
+    waits = {}
+    for r in rows:
+        pid, _, item = str(r.get("key"))[len(WAIT_KEYS):].partition("/")
+        if r.get("holder") is None or not pid.isdigit() or not item:
+            continue
+        waits.setdefault(int(pid), []).append(item)
+    if os.name != "nt":
+        waits = {pid: items for pid, items in waits.items() if bl_procs.running(pid)}
+    table = bl_procs.process_table() if waits and os.name != "nt" else None
+    by_pid = {s["pid"]: s for s in sessions if s.get("pid")}
+    titles = {}
+    for item in {i for items in waits.values() for i in items}:
+        shown = bl is not None and item in bl.items and item not in bl.withheld
+        titles[item] = bl.items[item].get("title") if shown else None
+    out = []
+    for pid, items in sorted(waits.items()):
+        owner = ancestor_session(pid, table, by_pid) if table else None
+        out.append({"session": owner.get("label") if owner else None, "pid": pid,
+                    "items": [{"id": i, "title": titles[i]} for i in sorted(items)]})
+    return out[:WAITS_KEPT]
+
+
+@contextlib.contextmanager
+def coord_store(ctx):
+    """The environment's coord store (`KB_COORD_STORE`, which the backlog tools' coord calls read) set to the store of CTX for
+    the length of the block, one block at a time."""
+    import mon_coord
+    with STORE_LOCK:
+        before = os.environ.get("KB_COORD_STORE")
+        os.environ["KB_COORD_STORE"] = mon_coord.local_store(ctx) or ""
+        try:
+            yield
+        finally:
+            if before is None:
+                os.environ.pop("KB_COORD_STORE", None)
+            else:
+                os.environ["KB_COORD_STORE"] = before
+
+
+def drift_data(ctx, bl, found, now):
+    """{count, oldest, items: [{item, title, state, git, why, age_s}]} of the run states `backlog.py runs` finds drifted
+    from git (`bl_runs.collect` over the default scope), the oldest first (by the item's newest progress event in FOUND;
+    one that has none after the others), DRIFT_KEPT at most; `oldest` is the first item's id, null without drift.
+    None where the store is a url or not there, the root has no backlog items or coord cannot be read."""
+    import bl_base
+    import bl_runs
+    if bl is None or ctx.url or coord_conn(ctx) is None:
+        return None
+    try:
+        with coord_store(ctx):
+            states = bl_runs.run_states()
+            rows = bl_runs.collect(bl, states, bl_runs.scope_of(bl, states, None))
+    except bl_base.Refused:
+        return None
+    moved = (found or {}).get("moved", {})
+    drifted = sorted((r for r in rows if r["drift"]), key=lambda r: (r["id"] not in moved, moved.get(r["id"], 0), r["id"]))
+    items = [{"item": r["id"], "title": None if r["id"] in bl.withheld else (bl.items.get(r["id"]) or {}).get("title"),
+              "state": r["state"], "git": r["drift"][0], "why": r["drift"][1],
+              "age_s": max(0, int(now - moved[r["id"]])) if r["id"] in moved else None} for r in drifted]
+    return {"count": len(items), "oldest": items[0]["item"] if items else None, "items": items[:DRIFT_KEPT]}
 
 
 def intent_rows(found):
@@ -600,6 +726,12 @@ def collect(ctx):
     data["dispatch"] = dispatch_runs(ctx.root)
     bl = backlog(ctx.root)
     data["sessions"] = session_rows(ctx, procs or [], placed, by_path, found, bl, names)
+    waits = wait_rows(ctx, data["sessions"], bl)
+    if waits is not None:
+        data["waits"] = waits
+    drift = drift_data(ctx, bl, found, now)
+    if drift is not None:
+        data["drift"] = drift
     items = stalled(ctx.root, bl)
     if items is not None:
         data["stalled"] = items
@@ -607,15 +739,37 @@ def collect(ctx):
 
 
 def alerts(data):
-    """The alerts of the panel's data: one `orphan` alert (id `sessions.orphan`) while a process of class `orphan` is listed;
-    its message counts them and names the oldest one's pid."""
+    """The alerts of the panel's data: one `orphan` alert (id `sessions.orphan`) while a process of class `orphan` is listed,
+    its message counting them and naming the oldest one's pid, and one `drift` alert (id `runs.drift`) while the `drift` data
+    counts a run state that differs from git, its message counting them and naming the oldest item."""
+    out = []
     orphans = [p for p in data.get("procs") or [] if isinstance(p, dict) and p.get("class") == "orphan"]
-    if not orphans:
-        return []
-    oldest = max(orphans, key=lambda p: p.get("age_s") or 0)
-    return [{"kind": "orphan", "id": "sessions.orphan", "panel": "sessions", "since": "",
-             "message": f"{len(orphans)} orphan process{'' if len(orphans) == 1 else 'es'}, the oldest pid {oldest.get('pid')} "
-                        f"for {age_text(oldest.get('age_s') or 0)}"}]
+    if orphans:
+        oldest = max(orphans, key=lambda p: p.get("age_s") or 0)
+        out.append({"kind": "orphan", "id": "sessions.orphan", "panel": "sessions", "since": "",
+                    "message": f"{len(orphans)} orphan process{'' if len(orphans) == 1 else 'es'}, the oldest pid "
+                               f"{oldest.get('pid')} for {age_text(oldest.get('age_s') or 0)}"})
+    drift = data.get("drift")
+    items = [i for i in (drift.get("items") if isinstance(drift, dict) else None) or [] if isinstance(i, dict)]
+    count = drift.get("count") if isinstance(drift, dict) else None
+    if items and isinstance(count, int) and not isinstance(count, bool) and count > 0:
+        out.append({"kind": "drift", "id": "runs.drift", "panel": "sessions", "since": "",
+                    "message": f"{count} run state{' differs' if count == 1 else 's differ'} from git, the oldest {drift_text(items[0])}"
+                               "; `backlog.py runs --reconcile` makes coord follow git"})
+    return out
+
+
+def drift_text(i):
+    """One drifted run state as words: `ST-… Title (run working, git shows landed, 3h00m)`."""
+    age = i.get("age_s")
+    return (f"{i.get('item')}" + (f" {clipped(i['title'], TITLE_CHARS)}" if i.get("title") else "")
+            + f" (run {i.get('state')}, git shows {i.get('git')}" + (f", {age_text(age)} since its last move" if isinstance(age, int) else "") + ")")
+
+
+def waits_text(w):
+    """One wait as words: `s-1a2b3c waits on Title, Title`; the id where a title is not known."""
+    names = ", ".join(clipped(i.get("title") or str(i.get("id")), TITLE_CHARS) for i in w.get("items") or [] if isinstance(i, dict))
+    return f"{w.get('session') or '-'} waits on {names or '-'}"
 
 
 def age_text(seconds):
@@ -719,6 +873,18 @@ def lines(data, width=80, taken=None):
             parts.append(f"+{len(intents) - len(shown_intents)} more")
         rows += joined("intents", parts, width - 2)
     rows += session_lines(data.get("sessions") or [], width, taken)
+    waits = [w for w in data.get("waits") or [] if isinstance(w, dict)]
+    if waits:
+        parts = [waits_text(w) for w in waits[:WAITS_SHOWN]]
+        if len(waits) > WAITS_SHOWN:
+            parts.append(f"+{len(waits) - WAITS_SHOWN} more")
+        rows += joined("waits", parts, width - 2)
+    drift = data.get("drift") if isinstance(data.get("drift"), dict) else {}
+    drifted = [i for i in drift.get("items") or [] if isinstance(i, dict)]
+    for n, i in enumerate(drifted[:DRIFT_SHOWN]):
+        rows.append("! " + ("drift".ljust(LABEL - 2) if n == 0 else " " * (LABEL - 2)) + clipped(drift_text(i), width - 2 - LABEL))
+    if len(drifted) > DRIFT_SHOWN:
+        rows.append(" " * LABEL + f"+{len(drifted) - DRIFT_SHOWN} more")
     found = [o for o in data.get("overlaps") or [] if isinstance(o, dict)]
     if found:
         parts = [overlap_text(o) for o in found[:OVERLAPS_SHOWN]]
