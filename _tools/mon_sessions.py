@@ -21,7 +21,8 @@ names the session's id), `role` (the first row of `ROLES` that fits), `item` and
 usage rows of the session's own spool file, null without one). `overlaps` lists each pair of live sessions whose
 intents' items or touches meet, with the shared `files` and the `strategy` (`undecided`, else the one a `coordinate` event
 between their items announced), and `needs_you_after_min` is the setting `mon_needs` ages an undecided one against (`overlap_rows`,
-`after_minutes`; both left out with `intents`). A session's id is read from a dispatch record of a claims
+`after_minutes`; both left out with `intents`, and left out with `overlaps_unread`, the reason, where a coord store is there
+but its digest or events do not read, so no age reads 0 for want of events). A session's id is read from a dispatch record of a claims
 ledger (the pid, then the session), the claim records of its checkout's ledger, the coord intents and leases and the
 hook's per-session state file names under its checkout, never from a command line or an environment; a raw id leaves
 this module as its label only. A host that cannot list working
@@ -187,21 +188,29 @@ def stalled(root, bl=None):
     return [{"item": r["id"], "signals": r["signals"]} for r in report["items"] if r["signals"]]
 
 
+EVENT_KINDS = ("intent", "coordinate", "progress")  # the event kinds the panel reads, one `coord.py wait --kind` each
+
+
 def read_events(conn):
     """({session id: [(time, items, touch paths, claim)] of its intent events, oldest first, `claim` whether the intent is a
     `backlog-claim` one}, [(item, other, strategy, session id, time)] of the `coordinate` events, newest first,
-    {item: time of its newest `progress` event}) from `coord.py wait` over the connection arguments CONN; empty where the
-    events cannot be read."""
+    {item: time of its newest `progress` event}) from one `coord.py wait --kind K` of each of EVENT_KINDS over the connection
+    arguments CONN; None where any of them cannot be read."""
     import mon_coord
-    try:
-        p = subprocess.run([sys.executable, str(mon_coord.COORD), *conn, "wait", "--since", "0", "--timeout", "0"],
-                           capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=COORD_SECONDS,
-                           stdin=subprocess.DEVNULL)
-        events = json.loads(p.stdout)["events"] if p.returncode == 0 else []
-    except (OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError):
-        return {}, [], {}
+    events = []
+    for kind in EVENT_KINDS:
+        try:
+            p = subprocess.run([sys.executable, str(mon_coord.COORD), *conn, "wait", "--since", "0", "--timeout", "0",
+                                "--kind", kind], capture_output=True, text=True, encoding="utf-8", errors="replace",
+                               timeout=COORD_SECONDS, stdin=subprocess.DEVNULL)
+            got = json.loads(p.stdout)["events"] if p.returncode == 0 else None
+        except (OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError):
+            return None
+        if not isinstance(got, list):
+            return None
+        events += got
     first, chosen, moved = {}, [], {}
-    for e in events if isinstance(events, list) else []:
+    for e in events:
         fields = e.get("fields") if isinstance(e, dict) and isinstance(e.get("fields"), dict) else {}
         if e.get("kind") == "intent" and isinstance(fields.get("session"), str) and isinstance(e.get("at"), (int, float)):
             first.setdefault(fields["session"], []).append((e["at"], split_list(fields.get("item")),
@@ -247,7 +256,8 @@ def read_coord(ctx):
     """{intents: [fields], leases: {session id: seconds left}, claims: [(key, seconds left)], dispatched: {items with a
     dispatch record in the claims ledger}, intent_at, coordinate, moved} of the live leases and intents in the coord store (`coord.py digest`), the intents newest first, as coord.py
     prints them (a raw session id, never printed by this module); `intent_at`, `coordinate` and `moved` are `read_events`'
-    answer. None when the store is not there, is not reachable or does not answer."""
+    answer, empty and `events_unread` true where it is None. None when the store is not there, is not reachable or does not
+    answer."""
     import mon_coord
     conn = coord_conn(ctx)
     if conn is None:
@@ -262,7 +272,11 @@ def read_coord(ctx):
         return None
     found = {"intents": [], "leases": {}, "claims": [], "dispatched": {i for i, r in ledger_records(ctx.root).items() if any(worker_of(r))},
              "intent_at": {}, "coordinate": [], "moved": {}}
-    found["intent_at"], found["coordinate"], found["moved"] = read_events(conn)
+    read = read_events(conn)
+    if read is None:
+        found["events_unread"] = True
+    else:
+        found["intent_at"], found["coordinate"], found["moved"] = read
     for line in p.stdout.splitlines():
         words = line.split()
         fields = dict(w.split("=", 1) for w in words[1:] if "=" in w)
@@ -435,14 +449,15 @@ def meeting_time(ea, eb):
 
 
 def overlap_rows(found, now=None):
-    """[{a, b, files, strategy, age_s}] of the pairs of live sessions in FOUND (`read_coord`'s answer; None gives None)
+    """[{a, b, files, strategy, age_s}] of the pairs of live sessions in FOUND (`read_coord`'s answer; None gives None, as
+    does one whose events were not read: every age would read 0)
     whose intents' items or touches meet, OVERLAPS_KEPT at most, longest first. `a` and `b` are {session (the label),
     operator, item} (the session's first item); `files` the touch paths of either that meet a path of the other; `strategy`
     `undecided`, else the one the newest `coordinate` event between an item of each announced, posted by one of the two
     sessions at or after the moment they met (an older event, or one of a session outside the pair, decides nothing); `age_s` the seconds since
     the oldest moment an intent of each met an intent of the other (the newer of the two intents), the later of the two
     sessions' first intent where no event pair meets."""
-    if found is None:
+    if found is None or found.get("events_unread"):
         return None
     import coord
     now = time.time() if now is None else now
@@ -765,6 +780,8 @@ def collect(ctx):
     if overlaps is not None:
         data["overlaps"] = overlaps
         data["needs_you_after_min"] = after_minutes(ctx.root)
+    elif coord_conn(ctx) is not None:
+        data["overlaps_unread"] = "the coord store does not answer" if found is None else "its events do not read"
     data["dispatch"] = dispatch_runs(ctx.root)
     bl = backlog(ctx.root)
     data["sessions"] = session_rows(ctx, procs or [], placed, by_path, found, bl, names)
@@ -928,6 +945,8 @@ def lines(data, width=80, taken=None):
     if len(drifted) > DRIFT_SHOWN:
         rows.append(" " * LABEL + f"+{len(drifted) - DRIFT_SHOWN} more")
     found = [o for o in data.get("overlaps") or [] if isinstance(o, dict)]
+    if data.get("overlaps_unread"):
+        rows.append("! " + clipped("overlaps not read: " + str(data["overlaps_unread"]), width - 2 - 2))
     if found:
         parts = [overlap_text(o) for o in found[:OVERLAPS_SHOWN]]
         if len(found) > OVERLAPS_SHOWN:
