@@ -1645,8 +1645,10 @@ _Agent: agents-ner_
 - What a team would have to measure first, stated as facts about what tooling exists (not a
   recommendation): number of consumer teams/agents that would call the shared endpoint (not measured by
   any source found — a project-internal count, not a vendor fact); recognizer/version drift between
-  independent Presidio (or other) deployments, measurable today with `presidio-evaluator`'s published
-  precision/recall method [DOC S-gpnrqpjt, S2105]; detection-quality gaps against a fixed test set,
+  independent Presidio (or other) deployments, for which no source read names `presidio-evaluator` or any
+  other tool as the measuring method [UNK: noted 2026-10-24; the evaluation page and the presidio-research
+  README state evaluation of Presidio as a system, an NER model or a recognizer, not drift between deployments
+  or versions]; detection-quality gaps against a fixed test set,
   the same tool's stated purpose ("evaluate Presidio as a system, a NER model, or a specific PII
   recognizer for precision, recall, and error analysis") [DOC S-gpnrqpjt]; and duplicated maintenance hours
   across teams each running their own Presidio/spaCy stack, which is an organizational measurement no
