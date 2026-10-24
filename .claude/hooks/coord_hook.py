@@ -482,11 +482,23 @@ def suggestion(entry, mine, strategy):
     return strategy.get(group, "ask")
 
 
+def newest_seq():
+    """The sequence number of the newest event in the store (`last` of a `wait --since 0 --timeout 0` reply); 0 when coord
+    cannot run."""
+    rc, out = coord("wait", "--since", "0", "--timeout", "0")
+    try:
+        return int(json.loads(out)["last"]) if rc == 0 else 0
+    except (ValueError, KeyError, TypeError):
+        return 0
+
+
 def how(name, other, own):
     """The command (or, for join and proceed, the words) that carries strategy name out against item other (None: any
-    item) from item own (None: a placeholder)."""
+    item) from item own (None: a placeholder). The wait starts after the newest event the store holds now, so it holds
+    for the item's next progress event instead of returning on the earlier ones."""
     if name == "wait":
-        return "python3 _tools/coord.py wait --kind progress" + (f" --item {other}" if other else "") + " --since 0 --timeout 600"
+        return ("python3 _tools/coord.py wait --kind progress" + (f" --item {other}" if other else "")
+                + f" --since {newest_seq()} --timeout 600")
     if name == "ask":
         return f"python3 _tools/kbask.py ask {other or 'any'} QUESTION"
     if name == "after":
