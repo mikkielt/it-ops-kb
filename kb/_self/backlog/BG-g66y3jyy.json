@@ -1,0 +1,22 @@
+{
+  "id": "BG-g66y3jyy",
+  "kind": "bug",
+  "title": "selfdoc.py check fails on main: kb/_self/coordination.md cites a Needs you line that is no heading of monitoring.md, so stage-back of any protected-path item is refused",
+  "status": "todo",
+  "sprint": "SP-jopt2c3z",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "python3 _tools/selfdoc.py check exits 0: the section reference in kb/_self/coordination.md names a heading of kb/_self/monitoring.md (Layout holds the Needs you line bullet)",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/selfdoc.py",
+      "check"
+    ]
+  },
+  "touches": [
+    "kb/_self/coordination.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
