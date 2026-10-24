@@ -17,7 +17,7 @@ import mon_needs
 MAX_LINE = 200
 NAMED = 2  # alert messages the line names
 FINGERPRINT_CHARS = 12
-DEFAULT_PANELS = ("querylog", "sessions", "host", "sprint")  # the alert panels and the sprint panel the count reads
+DEFAULT_PANELS = ("querylog", "sessions", "host", "sprint", "coord")  # the alert panels and the panels the count reads
 ALERT_PANELS = ("querylog", "sessions", "host")  # the panels of the line's alert part
 COMMAND = "python3 _tools/kbmon.py --once --panel "
 NEEDS_COMMAND = "python3 _tools/kbmon.py --status all"
