@@ -24,6 +24,25 @@
   "depends_on": [
     "BG-otrhi5am"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "A coordinate event with no session field (kbask.py coordinate always writes one, a hand-posted event may not): does it decide an overlap?",
+      "options": [
+        "No: only an event whose session is one of the two decides",
+        "Yes: an event with no session decides when it is newer than the meeting"
+      ],
+      "recommendation": "No: only an event whose session is one of the two decides",
+      "do": {
+        "No: only an event whose session is one of the two decides": "BG-rjuqeegj",
+        "Yes: an event with no session decides when it is newer than the meeting": "BG-rjuqeegj"
+      },
+      "class": "design",
+      "answer": "No: only an event whose session is one of the two decides",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ky7xz6d2 review"
   ],
