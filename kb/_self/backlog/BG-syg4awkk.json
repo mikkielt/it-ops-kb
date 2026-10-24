@@ -43,10 +43,27 @@
   "depends_on": [
     "BG-w73p5lch"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "In a plugin host, does kbroot.py add-remote refuse with exit 2 for either access, or for --access submodule only (add and push refuse in both cases)?",
+      "options": [
+        "refuse either access",
+        "refuse submodule only"
+      ],
+      "recommendation": "refuse either access",
+      "do": {
+        "refuse either access": "BG-syg4awkk",
+        "refuse submodule only": "BG-syg4awkk"
+      },
+      "class": "push"
+    }
+  ],
   "links": [
     "parked: SP-mguax5m3 review"
   ],
-  "notes": "Premise 2026-10-24: repro fails on the base (precheck). Sprint SP-c6w5hjmc started on the operator's standing approval for the day run.",
+  "notes": "Premise 2026-10-24: repro fails on the base (precheck). Sprint SP-c6w5hjmc started on the operator's standing approval for the day run. Gate g1 answered with its recommendation by the sprint runner (pre-approved by the operator for the 2026-10-24 day run): add-remote refuses with exit 2 in a plugin host for either access; reason: the pointer file lands in the plugin copy for both accesses, which no tool writes, and the goal says add and add-remote have the same hole.",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }
