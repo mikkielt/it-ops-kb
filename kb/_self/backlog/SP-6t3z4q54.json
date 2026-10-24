@@ -1,0 +1,22 @@
+{
+  "id": "SP-6t3z4q54",
+  "kind": "sprint",
+  "title": "No fact rests only on a source the census found gone",
+  "status": "planned",
+  "goal": "every DOC tag in kb/public whose cited sources the 2026-10-21 census all records gone is re-sourced to a page this host reads or re-tagged UNK with a dated note, and a DOC tag that mixes a gone source with live ones keeps it only where a live source states the claim",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
