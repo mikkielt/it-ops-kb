@@ -19,5 +19,9 @@
     "_tools/kbtools.py",
     "kb/_self/tools.md"
   ],
+  "links": [
+    "parked: SP-uhcjxayq review"
+  ],
+  "notes": "Found by the SP-uhcjxayq review (S3): after BG-kfv2qrs4 the description cap lets an unrelated command beat the skill that answers: install the commit hook puts install_wezterm.py first (6.2) over kb-setup (4.65); find stale docs puts doc2query.py first and kb-self third; land a change lists no skill in the first four. The reviewer compared with the base catalog; check the same needs on the base file (git show f160727aa:_tools/kbtools.py) before the fix.",
   "filed_in": "clone-0ea70e5c"
 }
