@@ -3,7 +3,7 @@ topic: gitlab/issue-closing-patterns
 priority: P3
 applies_to: "GitLab (GitLab.com, Self-Managed, Dedicated; Free, Premium, Ultimate): doc/ of gitlab-org/gitlab master at a9490a0e (2026-10-10), the pages Manage issues, Crosslinking issues, Issue closing pattern and GitLab Flavored Markdown; the pattern checks were run with Python 3.13.2's re module on macOS"
 retrieved_utc: 2026-10-10
-sources: [S-qxksc6ah, S-a57i2q6g, S-xdfirawc, S-ww5ecjfc, S-pnktrw4x]
+sources: [S-qxksc6ah, S-a57i2q6g, S-lmmcnd2c, S-ww5ecjfc, S-pnktrw4x]
 status: complete
 ---
 
@@ -25,11 +25,11 @@ A commit message or a merge request description closes an issue only when it hol
 - An issue can be linked to a merge request for closing without a closing pattern, through the GraphQL API or the merge request's **Work items** widget; the permission is checked when the link is created, and the link persists even if the user later loses access to the issue's project. [DOC S-qxksc6ah]
 - When auto-merge is turned on for a merge request, the list of issues it closes can no longer be changed. [DOC S-qxksc6ah]
 - Automatic issue closing is turned off per project under **Settings** > **Repository** > **Branch defaults** (checkbox **Auto-close referenced issues on default branch**; Maintainer or Owner role); it applies only to issues of that project, whose merge requests and commits can still close another project's issues. [DOC S-qxksc6ah]
-- Only an administrator of a GitLab Self-Managed or Dedicated instance can change the default closing pattern: `gitlab_rails['gitlab_issue_closing_pattern']` (Linux package, Docker), `global.appConfig.issueClosingPattern` (Helm chart) or `issue_closing_pattern` in `gitlab.yml` (self-compiled). [DOC S-xdfirawc, S-qxksc6ah]
-- The documented default regular expression contains `%{issue_ref}` for the issue reference and a second alternative `([A-Z][A-Z0-9_]+-\d+)`; to test a pattern with Rubular, the admin page says to replace `%{issue_ref}` with `#\d+`, which matches local references only. [DOC S-qxksc6ah, S-xdfirawc]
+- Only an administrator of a GitLab Self-Managed or Dedicated instance can change the default closing pattern: `gitlab_rails['gitlab_issue_closing_pattern']` (Linux package, Docker), `global.appConfig.issueClosingPattern` (Helm chart) or `issue_closing_pattern` in `gitlab.yml` (self-compiled). [DOC S-lmmcnd2c, S-qxksc6ah]
+- The documented default regular expression contains `%{issue_ref}` for the issue reference and a second alternative `([A-Z][A-Z0-9_]+-\d+)`; to test a pattern with Rubular, the admin page says to replace `%{issue_ref}` with `#\d+`, which matches local references only. [DOC S-qxksc6ah, S-lmmcnd2c]
 - A keyword followed by a key of the form `PROJ-123` (letters, hyphen, digits) matches the default pattern, so `Closes PROJ-7` is a closing text for GitLab as well as the form its Jira integration documents. [DER S-qxksc6ah, S-pnktrw4x: the second alternative of the regex; the Jira page lists `Closes PROJECT-1` as a trigger]
-- A line that holds a reference but no keyword, such as `KB-Ref: #12`, `KB-Ref: PROJ-123` or `Related to #17`, matches nothing, and a keyword with an all-caps spelling (`CLOSES #3`) is not in the documented list and did not match. [DER S-qxksc6ah, S-xdfirawc: the default regex with `%{issue_ref}` replaced by `#\d+`, run with Python 3.13.2's `re` on macOS, 2026-10-10]
-- The match is on the text, not its sense: `this does not fix #12` contains the matched text `fix #12`, so a description or commit that mentions a keyword and a reference in a negation still matches. [DER S-qxksc6ah, S-xdfirawc: same run of the default regex]
+- A line that holds a reference but no keyword, such as `KB-Ref: #12`, `KB-Ref: PROJ-123` or `Related to #17`, matches nothing, and a keyword with an all-caps spelling (`CLOSES #3`) is not in the documented list and did not match. [DER S-qxksc6ah, S-lmmcnd2c: the default regex with `%{issue_ref}` replaced by `#\d+`, run with Python 3.13.2's `re` on macOS, 2026-10-10]
+- The match is on the text, not its sense: `this does not fix #12` contains the matched text `fix #12`, so a description or commit that mentions a keyword and a reference in a negation still matches. [DER S-qxksc6ah, S-lmmcnd2c: same run of the default regex]
 - Mentioning an issue in a commit message creates a link between the issue and the first commit that mentions it: `#xxx` in the same project, `projectname#xxx` in the same group, and the full issue URL otherwise. [DOC S-a57i2q6g]
 - A commit message cannot usually begin with `#`, so the alternative notation `GL-xxx` (for example `GL-12: message`) is accepted for a local issue. [DOC S-a57i2q6g]
 - For performance, GitLab turns only the first 1,000 full URLs of a commit message into links. [DOC S-a57i2q6g]
@@ -48,7 +48,7 @@ A commit message or a merge request description closes an issue only when it hol
 | reference a merge request in another project | `group/project!45` | no | S-ww5ecjfc |
 | link by branch name | branch `123-short-name` | no | S-a57i2q6g |
 | switch auto-close off | **Settings** > **Repository** > **Branch defaults** | none | S-qxksc6ah |
-| change the pattern | `gitlab_rails['gitlab_issue_closing_pattern']` (administrator) | n/a | S-xdfirawc |
+| change the pattern | `gitlab_rails['gitlab_issue_closing_pattern']` (administrator) | n/a | S-lmmcnd2c |
 
 See also `gitlab/jira-issue-keys-in-commits.md` (Jira keys in commits and merge requests), `gitlab/automated-merge-requests.md` (opening and merging merge requests from automation, `merge_request.description` push option) and `gitlab/git-trailers-and-hooks.md` (trailer lines).
 

@@ -39,6 +39,27 @@
     "kb/public/_anchors.csv",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How are the 15 DOC tags (and the DER tags beside them) that cite the four census-gone GitLab pins re-sourced: new source rows for the same files at commit a1faf261a899 (which this host reads, every claim read against it), UNK with a dated note, or the facts removed?",
+      "options": [
+        "re-pin to a1faf261a899",
+        "retag UNK",
+        "remove facts"
+      ],
+      "recommendation": "re-pin to a1faf261a899",
+      "do": {
+        "re-pin to a1faf261a899": "TK-e2khbdmj",
+        "retag UNK": "TK-e2khbdmj",
+        "remove facts": "TK-e2khbdmj"
+      },
+      "class": "design",
+      "answer": "re-pin to a1faf261a899",
+      "by": "agent"
+    }
+  ],
   "notes": "Premise run on base 39abe92bb: check 0 fails with 15 DOC tags citing the four gone ids (gitlab work-items-planning.md:25-28, detecting-mr-merges-in-ci.md:21, automated-merge-requests.md:39, commit-signing-and-provenance.md:20 and :47, issue-closing-patterns.md:28-29, _answers.md:1879, 1937, 2092, 2648, 3643). check.py passes before the work on purpose: it pins that the kb stays valid after the edits. Census says the four sources 'file deleted upstream (not at HEAD)': a pinned raw url may still read; the census outcome decides, so re-source to the current docs page of the same content or retag UNK with a dated note, or remove the fact.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",

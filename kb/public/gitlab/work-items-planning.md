@@ -3,7 +3,7 @@ topic: gitlab/work-items-planning
 priority: P3
 applies_to: "GitLab 19.x planning docs (gitlab-org/gitlab master @56c82a97, VERSION 19.5.0-pre): work items, child and linked items, status, weight, epics, iterations, milestones, scoped labels, health status; GitLab handbook issue triage (content-sites/handbook main @0f00de8e); read 2026-09-28"
 retrieved_utc: 2026-09-28
-sources: [S-cl4h4f7i, S-v2ztgtdn, S-evjlv5hf, S-il7kjbdz, S-nonpog4d, S-tyuv57qu, S-v53altt3, S-ntqzc5fg, S-kl7x7kl6, S-t7fbkn25, S-25zwwcdx]
+sources: [S-cl4h4f7i, S-v2ztgtdn, S-evjlv5hf, S-nonpog4d, S-tyuv57qu, S-v53altt3, S-ntqzc5fg, S-kl7x7kl6, S-t7fbkn25, S-25zwwcdx, S-evchgweo]
 status: complete
 ---
 
@@ -22,10 +22,10 @@ GitLab plans work as work items: epics, issues, tasks, objectives and key result
 - An epic is the parent of one or more issues and, in Ultimate, of child epics; an epic may take issues from a different group hierarchy. [DOC S-tyuv57qu]
 - Linked items are bi-directional relationships between work items, of three types: **Relates to** (a general relationship), **Blocks** (this item prevents progress on another) and **Is blocked by** (this item cannot proceed until another is resolved). [DOC S-evjlv5hf]
 - Blocking links (tracking dependencies) are Premium and Ultimate; with them GitLab warns when an item with open blockers is closed. Linking epics is Ultimate. [DOC S-evjlv5hf]
-- Work item status is Premium and Ultimate, GA in GitLab 18.4 (introduced in 18.2 behind `work_item_status_feature_flag`); statuses replace labels for managing a work item's lifecycle. [DOC S-il7kjbdz]
-- The default statuses, which cannot be modified, are To do, In progress, Done, Won't do and Duplicate. [DOC S-il7kjbdz]
-- Each status belongs to one of five categories: Triage (new or unprocessed), To do (ready to be started), In progress, Done and Canceled. Done and Canceled close the work item; every other category keeps it open. [DOC S-il7kjbdz]
-- A lifecycle is a reusable set of statuses applied to a work item type, with default transition statuses such as the one applied when an item is marked duplicate, moved or promoted (GA in 18.6). [DOC S-il7kjbdz]
+- Work item status is Premium and Ultimate, GA in GitLab 18.4 (introduced in 18.2 behind `work_item_status_feature_flag`); statuses replace labels for managing a work item's lifecycle. [DOC S-evchgweo]
+- The default statuses, which cannot be modified, are To do, In progress, Done, Won't do and Duplicate. [DOC S-evchgweo]
+- Each status belongs to one of five categories: Triage (new or unprocessed), To do (ready to be started), In progress, Done and Canceled. Done and Canceled close the work item; every other category keeps it open. [DOC S-evchgweo]
+- A lifecycle is a reusable set of statuses applied to a work item type, with default transition statuses such as the one applied when an item is marked duplicate, moved or promoted (GA in 18.6). [DOC S-evchgweo]
 - Weight is Premium and Ultimate: a number representing a work item's estimated effort, value or complexity; lists sort by it, and a milestone page sums the weights of its items. Weights for epics came in 18.11. [DOC S-nonpog4d]
 - An iteration (Premium and Ultimate, groups only) is a time box that groups issues for a period, usually 1 to 3 weeks; teams use iterations to track velocity and volatility. [DOC S-v53altt3]
 - Iterations belong to iteration cadences, need both a start and an end date, and must not overlap within one cadence. [DOC S-v53altt3]
@@ -40,7 +40,7 @@ GitLab plans work as work items: epics, issues, tasks, objectives and key result
 - Severity sets the bug resolution target: within 30 days for `severity::1`, the next release (60 days) for `severity::2`, the next 3 releases (about 90 days) for `severity::3`, and beyond that (more than a quarter) for `severity::4`. For availability bugs, `severity::1` and `severity::2` allow only `priority::1`. [DOC S-25zwwcdx]
 - Triage in the handbook: a bug gets a type label and a severity label, and its severity comes with a note explaining the choice; an issue counts as completely triaged once it also has a milestone and, if it is a bug, a priority label. [DOC S-25zwwcdx]
 - Severity and priority are separate axes in GitLab's process: severity states the impact of a bug, and priority states when it will be scheduled, set from impact, product direction and team capacity. [DER S-25zwwcdx: the two labels' definitions and the severity-to-priority tables]
-- For a repository tracked without a GitLab plan (Free tier, or a tracker kept as files), the Free-tier parts are the epic/issue/task hierarchy, relates-to links and milestones. Blocking links, status, weight, iterations and scoped labels would each need Premium, so a file tracker has to carry its own `blocks`, status, priority and severity fields. [DER S-cl4h4f7i, S-evjlv5hf, S-il7kjbdz, S-nonpog4d, S-v53altt3, S-kl7x7kl6: tiers stated on each page]
+- For a repository tracked without a GitLab plan (Free tier, or a tracker kept as files), the Free-tier parts are the epic/issue/task hierarchy, relates-to links and milestones. Blocking links, status, weight, iterations and scoped labels would each need Premium, so a file tracker has to carry its own `blocks`, status, priority and severity fields. [DER S-cl4h4f7i, S-evjlv5hf, S-evchgweo, S-nonpog4d, S-v53altt3, S-kl7x7kl6: tiers stated on each page]
 
 ## Reference
 | Feature | Tier | Since |
