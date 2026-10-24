@@ -63,6 +63,9 @@
     "skills/sprint/SKILL.md",
     "kb/_self/backlog.md"
   ],
+  "depends_on": [
+    "ST-ekb5b7ic"
+  ],
   "relates_to": [
     "EP-nij36lt7"
   ],
