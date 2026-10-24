@@ -41,7 +41,9 @@
       },
       "class": "design",
       "answer": "mon_sessions swaps bl_runs/bl_items' claims_ledger for a .git-entry reader and branch_gates for a no-op during the read",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
