@@ -2,7 +2,7 @@
   "id": "BG-ijytcujj",
   "kind": "bug",
   "title": "kb_settings MCP tool description still says the explain doc reference is a line number (kb/_self/coordination.md:N)",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-f2o3aqm2",
   "priority": "P2",
   "rank": 0,
@@ -38,5 +38,7 @@
     "parked: SP-ymnz7b4n review"
   ],
   "notes": "Plan 2026-10-24: premise runs on base (exit 1, four defects). The repro read only the tool description; kbsettings.explain returns the doc, its section and the bullet for the key, no line (kbsettings.explain docstring), and the same stale words sit in the kb_mcp.py module docstring (line 63) and kb/_self/plugin.md (kb_settings entry: the coordination.md line that states it), so the goal and the repro now read all three. Docs mapped to kb_mcp.py: plugin.md is edited; tools.md (kbsettings row already says no line number), embedding.md and token-efficiency.md need no change unless the worker finds one: read, Self-Reviewed. Do not state byte or token sizes in docs. A test that pins the tool list text, if any, is the worker's to run (tests.py --changed). Touches narrowed after planning: plugin.md is edited; tools.md (kbsettings row already says no line number), embedding.md and token-efficiency.md are read and named in Self-Reviewed at done unless the worker finds an edit is needed (then stop with a report). Orders after ST-vyazepym (plugin.md).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
