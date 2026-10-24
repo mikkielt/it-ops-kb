@@ -21,10 +21,27 @@
   "depends_on": [
     "BG-erzl74n6"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does cited_tokens name a source id joined by a hyphen or underscore: add the parts of every token split at - and _, or match source-id shapes (S plus digits) inside tokens?",
+      "options": [
+        "split every token at hyphen and underscore",
+        "match only source-id shapes inside tokens"
+      ],
+      "recommendation": "split every token at hyphen and underscore",
+      "do": {
+        "split every token at hyphen and underscore": "BG-r7c7dxia",
+        "match only source-id shapes inside tokens": "BG-r7c7dxia"
+      },
+      "class": "secrets"
+    }
+  ],
   "links": [
     "parked: SP-7nv2ffr2 review"
   ],
-  "notes": "Planner 2026-10-24: repro rewritten to read the goal clause through cited_tokens, the function that builds the goal's tokens, with a hyphen range and an underscore case; the first version read TOKEN_RE.findall for one phrase. Planner 2026-10-24: kb/_self/map.csv maps _tools/bl_land.py to kb/_self/backlog.md and tools.md, outside the touches. Read the part of each that describes done's ledger check; if still correct, name each in a Self-Reviewed trailer of your commit (land stops at the stale step otherwise); if one needs an edit, stop and report.",
+  "notes": "Planner 2026-10-24: repro rewritten to read the goal clause through cited_tokens, the function that builds the goal's tokens, with a hyphen range and an underscore case; the first version read TOKEN_RE.findall for one phrase. Planner 2026-10-24: kb/_self/map.csv maps _tools/bl_land.py to kb/_self/backlog.md and tools.md, outside the touches. Read the part of each that describes done's ledger check; if still correct, name each in a Self-Reviewed trailer of your commit (land stops at the stale step otherwise); if one needs an edit, stop and report. Gate g1 (class secrets, set by the word tokens in the identifier cited_tokens, the false class of BG-sqmvvtiy): answered with its recommendation, split every token at hyphen and underscore (pre-approved by the operator for the 2026-10-24 day run); reason: it covers every source id shape, including prefixed ones, with no list to keep, and is easy to reverse.",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }
