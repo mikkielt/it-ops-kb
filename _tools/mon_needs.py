@@ -3,11 +3,15 @@
 nothing at load, `mon_sessions` (its age text) and `mon_status` (`short_name`) where they are used.
 
   entries(snap)   [{kind, text, ...}] in this order: `gate` (each open blocking gate of an active, approved or planned sprint
-                  or of one of its open items, `SP-… gate NAME`), `blocked` (an active sprint with items left, none ready and
+                  or of one of its open items, `SP-… gate NAME`), `ask` (each ask addressed to `operator` that no closing
+                  answer has ended, from the coord panel: `ask ID since DATE TIME: the first words of the question`, redacted;
+                  an Alertmanager alert, a cleanup verdict or a session's question posted as an ask shows here), `blocked` (an active sprint with items left, none ready and
                   none in progress), `delivery` (the query log's last delivery was refused, with the gate that failed),
                   `orphan` (each process of class `orphan`, oldest first), `disk` (under LOW_DISK_PCT percent free) and
                   `fast-forward` (the checkout is behind `origin/main` and cannot fast-forward, with the panel's why)
-  unread(snap)    the panels the list reads (sprint, querylog, sessions, host) that the snapshot lacks or holds not `ok`
+  unread(snap)    the panels the list reads (sprint, querylog, sessions, host) that the snapshot lacks or holds not `ok`, and
+                  the coord panel when the snapshot holds it in state `timeout` or `error` (a snapshot without it, or with
+                  no coord store, has no asks to read)
   line(snap)      `needs you: ` and the entries joined with `; ` (at most SHOWN of a kind, then `+N more KINDs`), `nothing`
                   when there are none, then `; not read: PANELS` for the panels `unread` names
 
@@ -15,8 +19,9 @@ The list reads only the panels' data, so a saved snapshot gives the same line. I
 """
 
 PANELS = ("sprint", "querylog", "sessions", "host")
-KINDS = ("gate", "blocked", "delivery", "orphan", "disk", "fast-forward")
-MANY = {"gate": "gates", "blocked": "blocked sprints", "delivery": "deliveries", "orphan": "orphans", "disk": "disk",
+COORD_PANEL = "coord"
+KINDS = ("gate", "ask", "blocked", "delivery", "orphan", "disk", "fast-forward")
+MANY = {"gate": "gates", "ask": "asks", "blocked": "blocked sprints", "delivery": "deliveries", "orphan": "orphans", "disk": "disk",
         "fast-forward": "fast-forward"}  # the noun after `+N more`
 LOW_DISK_PCT = 10  # the host panel's alert threshold
 SHOWN = 3  # entries of one kind the line names before it counts the rest
@@ -37,7 +42,8 @@ def data_of(snap, name):
 
 
 def unread(snap):
-    return [n for n in PANELS if data_of(snap, n) is None]
+    failed = ((snap.get("panels") or {}).get(COORD_PANEL) or {}).get("state") in ("timeout", "error")
+    return [n for n in PANELS if data_of(snap, n) is None] + ([COORD_PANEL] if failed else [])
 
 
 def cause(text):
@@ -60,6 +66,17 @@ def sprint_entries(data):
             blocked.append({"kind": "blocked", "text": f"{s.get('id')} blocked: {left} item{'' if left == 1 else 's'} left, none ready",
                             "sprint": s.get("id"), "left": left})
     return gates + blocked
+
+
+def ask_entries(data):
+    out = []
+    for a in data.get("asks") or []:
+        if not isinstance(a, dict) or not a.get("id"):
+            continue
+        since = str(a.get("since") or "")[:16].replace("T", " ")
+        out.append({"kind": "ask", "text": f"ask {a['id']}" + (f" since {since}" if since else "")
+                    + (f": {' '.join(str(a['text']).split())}" if a.get("text") else ""), "ask": a["id"]})
+    return out
 
 
 def delivery_entries(data):
@@ -101,7 +118,7 @@ def fast_forward_entries(data):
 def entries(snap):
     """The list of what waits on the operator, from the `ok` panels of SNAP (see the module docstring)."""
     out = []
-    for name, found in (("sprint", sprint_entries), ("querylog", delivery_entries), ("sessions", orphan_entries),
+    for name, found in (("sprint", sprint_entries), (COORD_PANEL, ask_entries), ("querylog", delivery_entries), ("sessions", orphan_entries),
                         ("host", disk_entries), ("sprint", fast_forward_entries)):
         data = data_of(snap, name)
         if data is not None:

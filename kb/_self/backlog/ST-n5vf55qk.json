@@ -56,6 +56,61 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Does the needs-you line wait announce.needs_you_after_min minutes before it names an open ask to the operator?",
+      "options": [
+        "no delay",
+        "delay by the setting"
+      ],
+      "recommendation": "no delay",
+      "do": {
+        "no delay": "ST-n5vf55qk",
+        "delay by the setting": "ST-n5vf55qk"
+      },
+      "class": "design",
+      "answer": "no delay",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which kb root's settings.json does the coord panel read beside the workspace's settings.json?",
+      "options": [
+        "the only kb root that has one, else none",
+        "always one named root such as _self",
+        "every kb root, merged"
+      ],
+      "recommendation": "the only kb root that has one, else none",
+      "do": {
+        "the only kb root that has one, else none": "ST-n5vf55qk",
+        "always one named root such as _self": "ST-n5vf55qk",
+        "every kb root, merged": "ST-n5vf55qk"
+      },
+      "class": "design",
+      "answer": "the only kb root that has one, else none",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "How much of an ask does the panel carry and the line show?",
+      "options": [
+        "20 open asks, the question of the first 3 read, cut to 60 characters",
+        "all open asks and every question in full"
+      ],
+      "recommendation": "20 open asks, the question of the first 3 read, cut to 60 characters",
+      "do": {
+        "20 open asks, the question of the first 3 read, cut to 60 characters": "ST-n5vf55qk",
+        "all open asks and every question in full": "ST-n5vf55qk"
+      },
+      "class": "design",
+      "answer": "20 open asks, the question of the first 3 read, cut to 60 characters",
+      "by": "agent"
+    }
+  ],
   "notes": "Plan 2026-10-24 (SP-d6gbc3tq): premise reproduced on base by precheck (the needs-you line shows only 'gate start', no settings in the coord panel). Checks added: 1 = an ask to operator with fake secrets of each redact shape shows with its id in the first lines, nothing of the secrets, and goes once answered; 2 = --status coord names settings.json and the key. Runs after ST-pja652lj is not required, but the two share mon_needs.py and mon_status.py: claim only when held shows no overlap. Planned into SP-d6gbc3tq on 2026-10-24 (night run). Sprint SP-d6gbc3tq started 2026-10-24.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
