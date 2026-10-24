@@ -83,7 +83,11 @@
         "create it; comma-separated": "ST-ct2dpjgz",
         "refuse; repeated --set": "ST-ct2dpjgz"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "create it; comma-separated",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
