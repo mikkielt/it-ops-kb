@@ -41,6 +41,25 @@
     "_tools/bench_repro.py",
     "kb/_self/benchmarks.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does pick rank an instance that finished no area, and does it say so?",
+      "options": [
+        "leading key element and a ranked-last line",
+        "leave the key as is"
+      ],
+      "recommendation": "leading key element and a ranked-last line",
+      "do": {
+        "leading key element and a ranked-last line": "BG-dyly4qdf",
+        "leave the key as is": "BG-dyly4qdf"
+      },
+      "class": "design",
+      "answer": "leading key element and a ranked-last line",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-75hdeqld review"
   ],
