@@ -2,7 +2,7 @@
   "id": "ST-5pu4bs4p",
   "kind": "story",
   "title": "The run-state drift read of the sessions panel runs a bounded number of git processes however many run keys the store holds",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-ymnz7b4n",
   "priority": "P3",
@@ -29,5 +29,7 @@
     "parked: SP-d6gbc3tq review"
   ],
   "notes": "Review gap (S2) of SP-d6gbc3tq: drift_data took 1.8 s of a 3.1 s sessions panel (154 subprocesses, 36 run keys, about 98 worktrees); past kbmon's 10 s timeout the panel's orphans, sessions and waits are all lost and --status all printed 'not read: sprint, sessions'. Run keys are never removed. Premise (plan 2026-10-24): the story's check fails on today's base (precheck: git process count above 25 for 12 run keys); reproduces. Planned into SP-ymnz7b4n, 2026-10-24 day run.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
