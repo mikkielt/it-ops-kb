@@ -4,6 +4,7 @@
   "title": "kbask.py coordinate posts as the newest live session on the item, so with two sessions on one item the event carries the wrong chooser",
   "status": "draft",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-3i7hcb6i",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -18,10 +19,12 @@
   "touches": [
     "_tools/kbask.py",
     "kb/_self/coordination.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/monitoring.md"
   ],
   "links": [
     "parked: SP-ky7xz6d2 review"
   ],
+  "notes": "Plan 2026-10-24 (day run): repro fails on base (exit 2: kbask.py coordinate has no --session). Add --session ID (the session that chose) and keep the newest live session on ITEM as the default; docs: coordination.md and tools.md (kbask usage), monitoring.md if it names the command. Planned into SP-3i7hcb6i on 2026-10-24.",
   "filed_in": "clone-0ea70e5c"
 }
