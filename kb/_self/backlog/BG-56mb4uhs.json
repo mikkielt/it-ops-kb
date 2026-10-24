@@ -22,6 +22,25 @@
     "kb/_self/tools.md",
     "kb/_self/design.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "An email-shaped OTEL_SERVICE_NAME: fall back straight to kbmon, or treat it as unset and use a clean service.name entry of OTEL_RESOURCE_ATTRIBUTES first?",
+      "options": [
+        "treat as unset: the clean service.name entry, else kbmon",
+        "straight to kbmon"
+      ],
+      "recommendation": "treat as unset: the clean service.name entry, else kbmon",
+      "do": {
+        "treat as unset: the clean service.name entry, else kbmon": "BG-56mb4uhs",
+        "straight to kbmon": "BG-56mb4uhs"
+      },
+      "class": "design",
+      "answer": "treat as unset: the clean service.name entry, else kbmon",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-yjugq5c2 review"
   ],

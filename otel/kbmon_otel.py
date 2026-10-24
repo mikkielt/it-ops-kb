@@ -30,7 +30,7 @@ import sys
 import time
 from pathlib import Path
 from typing import Callable, NamedTuple
-from urllib.parse import urlsplit
+from urllib.parse import unquote, urlsplit
 
 import otel_logs
 import otel_prom
@@ -114,8 +114,9 @@ class Scrub(logging.Filter):
 
 def otel_attributes() -> dict:
     """The resource attributes of the export, from `kbwho.py --otel-attributes`: the operator id as kb.operator.id and no
-    email-shaped value. When kbwho gives none, service.name alone."""
-    fallback = {"service.name": os.environ.get("OTEL_SERVICE_NAME", "").strip() or "kbmon"}
+    email-shaped key or value. When kbwho gives none, service.name alone, kbmon when OTEL_SERVICE_NAME holds an email."""
+    name = os.environ.get("OTEL_SERVICE_NAME", "").strip()
+    fallback = {"service.name": "kbmon" if "@" in unquote(name) else name or "kbmon"}
     try:
         proc = subprocess.run([sys.executable, str(KBWHO), "--otel-attributes"], capture_output=True, text=True,
                               encoding="utf-8", timeout=30, stdin=subprocess.DEVNULL)

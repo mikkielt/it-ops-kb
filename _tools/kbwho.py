@@ -109,17 +109,23 @@ def operator():
     return {"id": oid, "source": source, "role": role}
 
 
+def _has_email(text):
+    return bool(EMAIL_RX.search(text) or EMAIL_RX.search(urllib.parse.unquote(text)))
+
+
 def otel_attributes():
     """kbmon's OpenTelemetry resource as a dict: service.name (OTEL_SERVICE_NAME, else the entry of
-    OTEL_RESOURCE_ATTRIBUTES, else kbmon), kb.operator.id with the operator id (left out when there is none) and every
-    other OTEL_RESOURCE_ATTRIBUTES entry except user.email and one whose value holds an email address."""
+    OTEL_RESOURCE_ATTRIBUTES, else kbmon; a name that holds an email address counts as unset), kb.operator.id with the
+    operator id (left out when there is none) and every other OTEL_RESOURCE_ATTRIBUTES entry except user.email and one
+    whose key or value holds an email address."""
     attrs = {}
     for pair in os.environ.get("OTEL_RESOURCE_ATTRIBUTES", "").split(","):
         key, sep, value = pair.partition("=")
-        key, value = key.strip(), urllib.parse.unquote(value.strip())
-        if sep and key and key.lower() != "user.email" and not EMAIL_RX.search(value):
+        key, value = urllib.parse.unquote(key.strip()), urllib.parse.unquote(value.strip())
+        if sep and key and key.lower() != "user.email" and not _has_email(key) and not _has_email(value):
             attrs[key] = value
-    attrs["service.name"] = os.environ.get("OTEL_SERVICE_NAME", "").strip() or attrs.get("service.name") or "kbmon"
+    name = os.environ.get("OTEL_SERVICE_NAME", "").strip()
+    attrs["service.name"] = (name if not _has_email(name) else "") or attrs.get("service.name") or "kbmon"
     oid = operator()["id"]
     if oid:
         attrs["kb.operator.id"] = oid
