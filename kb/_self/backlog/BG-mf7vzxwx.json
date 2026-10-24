@@ -2,7 +2,7 @@
   "id": "BG-mf7vzxwx",
   "kind": "bug",
   "title": "kbroot.py fetch --hook marks a root with a changed pointer url as stale but fetches the old remote",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-yisvj7vd",
   "priority": "P2",
@@ -27,5 +27,7 @@
     "parked: SP-c6w5hjmc review"
   ],
   "notes": "Premise run 2026-10-24 on the day-run base: repro exits 1 (a changed pointer url is not followed by fetch --hook; the clone's origin stays the old url). Depends on BG-yjtgqblf, same file. Planned into SP-yisvj7vd, 2026-10-24. Sprint started 2026-10-24.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
