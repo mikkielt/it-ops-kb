@@ -38,7 +38,7 @@
   "links": [
     "parked: SP-tsb23kev review"
   ],
-  "notes": "Found by the SP-tsb23kev focused review of BG-3vnu37rq (reviewer session a419aba4) on origin/main 902e961a9; repro fails there.",
+  "notes": "Found by the SP-tsb23kev focused review of BG-3vnu37rq (reviewer session a419aba4) on origin/main 902e961a9; repro fails there. Planner 2026-10-24: kb/_self/map.csv also maps kbcommon.py to kb/_self/plugin.md and .claude/skills/kb-ingest/SKILL.md, outside the touches. Read the part of each that describes the leak scan; if still correct, name each in a Self-Reviewed trailer of your commit (land stops at the stale step otherwise); if one needs an edit, stop and report.",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }
