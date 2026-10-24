@@ -221,8 +221,8 @@ def sprint_span_id(sprint):
 
 def item_runs(events):
     """[(item id, moves)] of the progress EVENTS (every coord event, oldest first), a move being `{seq, ns, state, fields}`.
-    A run of an item is cut where it ends (`landed`, `refused`, `released`; one that follows `refused` starts at its next
-    move)."""
+    A run of an item is cut where it ends (`landed`, `released`); a `refused` landing and the rework after it stay in the
+    run."""
     moves = {}
     for e in events:
         fields = e.get("fields") if isinstance(e.get("fields"), dict) else {}
@@ -235,7 +235,7 @@ def item_runs(events):
         run = []
         for m in rows:
             run.append(m)
-            if m["state"] in ("landed", "refused", "released"):
+            if m["state"] in ("landed", "released"):
                 runs.append((item, run))
                 run = []
         if run:
@@ -304,7 +304,7 @@ def run_records(ctx, events, after):
             elif mark and m["state"] in ("landed", "refused") and mark["state"] == "landing":
                 done.append(run_span("kb.landing", mark, m, m["seq"], trace, root, extra))
                 mark = None
-        if run[-1]["state"] in ("landed", "refused", "released"):
+        if run[-1]["state"] in ("landed", "released"):
             done.append(run_span("kb.item", first, run[-1], run[-1]["seq"], trace,
                                  sprint_span_id(sprints[item]) if sprints.get(item) else None, extra))
     return [s for s, seq in done if seq > after]

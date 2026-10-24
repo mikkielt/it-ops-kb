@@ -26,6 +26,25 @@
   "depends_on": [
     "ST-k4napiev"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Is a run last refused (no rework yet) exported as a kb.item span?",
+      "options": [
+        "No: kb.item is exported only when the run lands or is released",
+        "Yes: export kb.item at each refused too and again, longer, when the run goes on"
+      ],
+      "recommendation": "No: kb.item is exported only when the run lands or is released",
+      "do": {
+        "No: kb.item is exported only when the run lands or is released": "ST-qzyvrelh",
+        "Yes: export kb.item at each refused too and again, longer, when the run goes on": "ST-qzyvrelh"
+      },
+      "class": "design",
+      "answer": "No: kb.item is exported only when the run lands or is released",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-d6gbc3tq review"
   ],
