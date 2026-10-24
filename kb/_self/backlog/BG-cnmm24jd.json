@@ -2,7 +2,7 @@
   "id": "BG-cnmm24jd",
   "kind": "bug",
   "title": "ql_capture, ql_learn, ql_research and ql_store still import each other in a cycle through function-level imports",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-s5k72bhd",
   "priority": "P3",
   "rank": 0,
@@ -37,5 +37,7 @@
   "links": [
     "parked: SP-jplczvj2 review"
   ],
-  "notes": "Plan 2026-10-24: premise reproduces (repro fails on the base). The added import check passes before the work by design: it pins that the four modules still import and ql_capture.record stays."
+  "notes": "Plan 2026-10-24: premise reproduces (repro fails on the base). The added import check passes before the work by design: it pins that the four modules still import and ql_capture.record stays.",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
