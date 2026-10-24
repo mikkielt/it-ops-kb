@@ -1,0 +1,18 @@
+{
+  "id": "BG-bgtz46xo",
+  "kind": "bug",
+  "title": "mon_coord.settings_of cuts a kb root's settings source to settings.json, since kbsettings.explain now gives it relative to the root",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "mon_coord.settings_of reports the source of a kb root's setting as kb/NAME/settings.json: its source() helper takes the relative path kbsettings.explain now gives (BG-vbkdm7vw) as it took the absolute one, and no longer cuts it to the file name",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys, tempfile, os, json; sys.path.insert(0, '_tools'); import mon_coord; T = tempfile.mkdtemp(); os.makedirs(os.path.join(T, 'kb', 'team')); json.dump({'coordination': {'strategy': {'working': 'after'}}}, open(os.path.join(T, 'kb', 'team', 'settings.json'), 'w')); s, _ = mon_coord.settings_of(T); sys.exit(0 if s['strategy.working']['source'] == 'kb/team/settings.json' else 1)"
+    ]
+  },
+  "filed_in": "clone-0ea70e5c"
+}
