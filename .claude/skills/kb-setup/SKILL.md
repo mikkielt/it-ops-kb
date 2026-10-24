@@ -91,11 +91,11 @@ WezTerm is an optional terminal that shows `kbmon` live in a pane beside the cha
 
 ## 8. Coordination settings (ask)
 Only when the repository root's `settings.json` holds no `coordination` object (`python3 _tools/kbsettings.py explain announce.when --root .` prints `source: default`): a clone that has one shows it with `python3 _tools/kbsettings.py show --root .` and is asked nothing. Ask the operator for the coordination settings in one AskUserQuestion batch of four questions, the default first in each (`kb/_self/coordination.md`, Coordination settings):
-- `announce.when`, when a session announces its work: `start,claim,midrun,edit` (default offered), `start,claim`, `start,claim,midrun`.
+- `announce.when`, when a session announces its work: `start,claim` (offered first, as `kbsettings.py` has it built in), `start,claim,midrun`, `start,claim,midrun,edit`.
 - `strategy.decide`, who picks the strategy when no key settles it: `operator` (default offered), `claude`.
 - `strategy.landing`, what a session suggests when another item that touches the same files is being landed: `wait` (default offered), `ask`, `after`, `proceed`.
 - `strategy.working`, the same when that item is being worked: `ask` (default offered), `wait`, `after`, `proceed`.
-Run `python3 _tools/kbsettings.py init --root . --set KEY=VALUE` with one `--set` for each answer. It writes the whole `coordination` object of `settings.json` (the other keys take their defaults) and adds `coord` to the `hooks` list of `backlog.json`, which turns the coord hook on. Both files are the clone's own: report them as changed and commit nothing. No answer (a headless run): run nothing and report that the defaults apply.
+Run `python3 _tools/kbsettings.py init --root . --set KEY=VALUE` with one `--set` for each answer. It writes the whole `coordination` object of `settings.json` (the other keys take their defaults) and adds `coord` to the `hooks` list of `backlog.json`, which turns the coord hook on. Both files are the clone's own: report them as changed and commit nothing. In the kb clone itself `backlog.json` is tracked and the clone's `.claude/settings.json` already runs the coord hook without the opt-in, so the `coord` entry `init` adds there is not needed: leave `backlog.json` as it is (when `git diff --stat backlog.json` shows it changed, undo it with `git restore backlog.json`) and report only `settings.json` as changed. No answer (a headless run): run nothing and report that the defaults apply.
 
 ## 9. Do not
 - Run `fetch.py --diff` without a selection, or `--verify`/`--refresh`. They are long network jobs that write state. A first baseline is the user's decision.
