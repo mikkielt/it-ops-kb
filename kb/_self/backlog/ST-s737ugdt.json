@@ -1,0 +1,24 @@
+{
+  "id": "ST-s737ugdt",
+  "kind": "story",
+  "title": "coordination.md and tools.md say what reads kbsettings.effective today, not what will",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the docs name as readers of kbsettings.effective only the tools that import it, and name the coord hook, kbmon and the explain command once each of them does",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re, glob, sys\ndoc = open(\"kb/_self/coordination.md\", encoding=\"utf-8\").read()\nclaims = [l for l in doc.splitlines() if \"kbsettings.effective\" in l and re.search(r\"coord hook|kbmon|explain\", l)]\nreaders = [f for f in glob.glob(\"_tools/*.py\") if not f.endswith((\"kbsettings.py\", \"test_kbsettings.py\")) and \"kbsettings\" in open(f, encoding=\"utf-8\").read()]\nprint(\"doc lines naming readers\", len(claims), \"| tools that import kbsettings\", len(readers))\nsys.exit(0 if not claims or readers else 1)\n"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-47w4ngr6 review"
+  ],
+  "notes": "Found by the SP-47w4ngr6 review (S3); parked, no fitness test or user report names it.",
+  "filed_in": "clone-0ea70e5c"
+}
