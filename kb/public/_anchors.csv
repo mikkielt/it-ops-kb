@@ -15868,6 +15868,10 @@ edf3ba9209a3,security/script-and-code-signing.md,S-5kvx24wm,unlocated:no-match,,
 41f1a4387b98,security/secret-shapes-in-text.md,S-bs6jgunr,unlocated:no-match,,,,,2026-10-17
 46a08d1263cf,security/secret-shapes-in-text.md,S-jkdywrys,located,baz,separat;destination;must;tabs;titl;spac;link,968642a6a392dbc7,which if it is present must be separated from the link destination by spaces or tabs.,2026-10-21
 4cba6ea46a4a,security/secret-shapes-in-text.md,S-4rjxcq6v,unlocated:no-match,,,,,2026-10-23
+4e4e98a4fcd0,security/secret-shapes-in-text.md,S-4tr3garn,unlocated:no-match,,,,,2026-10-24
+4e4e98a4fcd0,security/secret-shapes-in-text.md,S-jkdywrys,unlocated:no-match,,,,,2026-10-24
+4e4e98a4fcd0,security/secret-shapes-in-text.md,S-kskf5yv7,unlocated:no-match,,,,,2026-10-24
+4e4e98a4fcd0,security/secret-shapes-in-text.md,S-vstqd426,unlocated:no-match,,,,,2026-10-24
 5875c771d231,security/secret-shapes-in-text.md,S-4rjxcq6v,unlocated:no-match,,,,,2026-10-17
 5d78692cf954,security/secret-shapes-in-text.md,S-vstqd426,located,,dek;dek-info;proc;proc-typ;between;pem;type;info,8337da30ac8775f6,"PEM encoding the DER-encoded ECPrivateKey is common; ""Proc-Type:"" and ""DEK-INFO:"" fields [RFC1421] followed by the DER-encoded ECPrivateKey are sandwiched between:",2026-10-21
 5fbf88bd0dd0,security/secret-shapes-in-text.md,S-4rjxcq6v,located,,10fff;x20-21;x23;x23-5b;x5d-10fff;unescap;x20;x5d,8f09f8117603b4f2,unescaped = %x20-21 / %x23-5B / %x5D-10FFFF,2026-10-17
@@ -15902,7 +15906,6 @@ b5005434c2d0,security/secret-shapes-in-text.md,S-cbxnheng,unlocated:no-match,,,,
 b5005434c2d0,security/secret-shapes-in-text.md,S-kskf5yv7,unlocated:no-match,,,,,2026-10-23
 b921e1af2599,security/secret-shapes-in-text.md,S-kskf5yv7,located,,legacy;armor;unlik;openpgp;pgp;open;pem;encod,d4a778a4e0d6f1b5,"Unlike legacy PEM encoding [RFC1421], OpenPGP ASCII armor, and the",2026-10-21
 ba510a81180a,security/secret-shapes-in-text.md,S-jkdywrys,unlocated:no-match,,,,,2026-10-18
-ba9ccc8caff9,security/secret-shapes-in-text.md,S-4rjxcq6v,unlocated:no-match,,,,,2026-10-23
 beb91fb29e51,security/secret-shapes-in-text.md,S-3mhhoprh,located,,separat;first;colon;user-id;password;user,2f6993932f32ff30,the first colon in a user-pass string separates user-id and password,2026-10-21
 c03b6db41e0d,security/secret-shapes-in-text.md,S-jkdywrys,located,baz,omit;destination;may,d2ece81cde0a6706,The link destination may not be omitted,2026-10-21
 c040c2172f40,security/secret-shapes-in-text.md,S-jkdywrys,located,baz,further;occur;may;character,8207f386ef1cfb91,No further character may occur.,2026-10-21
@@ -15912,8 +15915,6 @@ c8a65d388a02,security/secret-shapes-in-text.md,S-xnlryf7y,located,SqlConnection.
 cf62ff529a1b,security/secret-shapes-in-text.md,S-spzetxhy,unlocated:no-match,,,,,2026-10-17
 d67e80c3c5a2,security/secret-shapes-in-text.md,S-bs6jgunr,located,,pchar;pct;pct-encod;sub;sub-delim;delim;unreserv;encod,4d391ff96d154632,"pchar = unreserved / pct-encoded / sub-delims / "":"" / ""@""",2026-10-21
 d886d27ba5f5,security/secret-shapes-in-text.md,S-k57sryj7,located,SQL Server connection string entity definition | Microsoft Learn > Pattern,7-128;aren;forward;slash;combination;isn;mark;quotation,b5c4ac867e4a0238,"any character that isn't a dollar sign ($), percent symbol (%), greater than symbol (&gt;), at symbol (@), quotation mark (""), semicolon (;), left brace([),",2026-10-21
-dc037e644d3c,security/secret-shapes-in-text.md,S-jkdywrys,unlocated:no-match,,,,,2026-10-23
-dc037e644d3c,security/secret-shapes-in-text.md,S-kskf5yv7,unlocated:no-match,,,,,2026-10-23
 dc10a17cddac,security/secret-shapes-in-text.md,S-xnlryf7y,located,SqlConnection.ConnectionString Property > Remarks,pair;separat;semicolon;keyword;valu;string;connection,420d581252d925c6,The basic format of a connection string includes a series of keyword/value pairs separated by semicolons.,2026-10-21
 dceb8a288fb2,security/secret-shapes-in-text.md,S-neu52zjd,unlocated:no-match,,,,,2026-10-18
 dceb8a288fb2,security/secret-shapes-in-text.md,S-wct3uoax,unlocated:no-match,,,,,2026-10-18
@@ -15930,6 +15931,7 @@ e32a6e54677a,security/secret-shapes-in-text.md,S-vstqd426,unlocated:no-match,,,,
 e3a31ddf92c9,security/secret-shapes-in-text.md,S-jkdywrys,located,Inlines > Code spans,fold;lead;strip;trail;unicod;case,905a4dc6185f6084,perform the Unicode case fold,2026-10-21
 eb02f630315a,security/secret-shapes-in-text.md,S-k57sryj7,unlocated:no-match,,,,,2026-10-18
 eb91dfb2c4e1,security/secret-shapes-in-text.md,S-bs6jgunr,located,,deprecat;password;userinfo;user,eb7754875181d9f0,"Use of the format ""user:password"" in the userinfo field is deprecated",2026-10-21
+ee9dd166913f,security/secret-shapes-in-text.md,S-4rjxcq6v,unlocated:no-match,,,,,2026-10-24
 f00450897f1a,security/secret-shapes-in-text.md,S-jkdywrys,located,baz,interrupt;cannot;definition;paragraph,3ca0d7ea9eff3295,A link reference definition cannot interrupt a paragraph.,2026-10-21
 f0e30ccd16ed,security/secret-shapes-in-text.md,S-wct3uoax,located,,token68,192408c803e484f7,The token68 syntax allows the 66 unreserved URI characters,2026-10-17
 f0fe1c511c69,security/secret-shapes-in-text.md,S-vstqd426,located,,begin;privat;key,97b15364089fb494,BEGIN EC PRIVATE KEY,2026-10-21
