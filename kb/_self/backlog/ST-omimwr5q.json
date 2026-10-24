@@ -2,7 +2,7 @@
   "id": "ST-omimwr5q",
   "kind": "story",
   "title": "A workspace that installs the plugin gets the coord hook and a coord store of its own, so its sessions coordinate as the clone's do",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-sucr3kfg",
   "priority": "P2",
@@ -63,5 +63,7 @@
     "kb/_self/querylog.md"
   ],
   "notes": "Plan 2026-10-24: premise reproduced on base (precheck: coord.py list with CLAUDE_PROJECT_DIR set makes no workspace store, the manifest names no coord hook). Second check added: it runs .claude/hooks/coord_hook.py --opt-in (the flag the plugin's entry passes, as horizon and intake take --opt-in) in three planted workspaces: hooks without coord (no output, no store), hooks with coord (workspace store holds the session lease, no state file under this clone's _cache), KB_COORD_STORE set (wins). bl_base.HOOK_NAMES accepts only horizon and intake today, so a hooks list naming coord is refused by backlog.py config and check: this item adds coord there (touches widened with _tools/bl_base.py and kb/_self/backlog.md) before ST-ct2dpjgz, whose kbsettings.py init writes it. Not read by any check: kbmon --root WS panels and the kbask resolution; implement them as the goal says. Planned into SP-sucr3kfg on 2026-10-24. Sprint started 2026-10-24.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
