@@ -19,5 +19,6 @@
     "kb/_self/backlog.md",
     "_tools/mon_events.py"
   ],
+  "notes": "Seen 2026-10-24 by BG-z7fvy7bw: kb/_self/backlog.md line 345 (dispatch paragraph) still says the run's kb.worker span has 'its sprint's trace for a sprint's item'; monitoring.md line 77 says the kb.item keeps the trace of its run and the kb.sprint span is its parent.",
   "filed_in": "clone-0ea70e5c"
 }
