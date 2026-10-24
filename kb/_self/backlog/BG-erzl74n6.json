@@ -16,6 +16,15 @@
     ]
   },
   "repro_reason": "the warning branch runs only on a csv or git failure inside done, which needs a planted broken clone; the read names the branch the fix replaces with a refusal",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import argparse,sys;sys.path.insert(0,'_tools');import bl_land;from bl_base import Backlog,Refused;exec('def boom(*a,**k):\\n raise OSError(\\'planted: _fetch_state.csv unreadable\\')\\ndef refuse(i,t,r,m,c=()):\\n raise Refused(m)');bl_land.unrelated_baselines=boom;bl_land.refuse_done=refuse;exec('try:\\n bl_land.cmd_done(Backlog(\\'.\\'),argparse.Namespace(id=\\'BG-erzl74n6\\',dry_run=True,commit=False,trailer=None))\\nexcept Refused as e:\\n sys.exit(0 if \\'ledger rows\\' in str(e) and \\'planted: _fetch_state.csv unreadable\\' in str(e) else 1)\\nsys.exit(1)')"
+      ]
+    }
+  ],
   "touches": [
     "_tools/bl_land.py"
   ],

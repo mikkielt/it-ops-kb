@@ -605,9 +605,11 @@ def cmd_done(bl, a):
                               "Self-Reviewed: trailer of a commit of the item)")
         try:
             unrelated = unrelated_baselines(bl, iid, bl.root, commits)
-        except Exception as e:  # noqa: BLE001 - a ledger or git error is said, not raised
+        except Exception as e:  # noqa: BLE001 - a ledger or git error refuses done, naming it, never passes it unchecked
             unrelated = []
-            say(f"warning: the ledger rows check could not run: {e}")
+            reasons.append("outside-touches")
+            problems.append(f"ledger rows: reading _fetch_state.csv, _anchors.csv or their git history failed ({e}); "
+                            "repair the ledger, then run done again")
         if unrelated:
             reasons.append("outside-touches")
             problems.append("ledger rows of sources the goal and the facts the item touched do not name: "
