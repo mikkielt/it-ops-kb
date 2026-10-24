@@ -25,6 +25,42 @@
   "depends_on": [
     "BG-ggaawba4"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "The check wants two items of one sprint to have different traces, so the sprint-shared trace of kb.item spans goes: what trace does a kb.item span of a sprint item carry?",
+      "options": [
+        "own-trace",
+        "sprint-trace"
+      ],
+      "recommendation": "own-trace",
+      "do": {
+        "own-trace": "ST-k4napiev",
+        "sprint-trace": "ST-k4napiev"
+      },
+      "class": "design",
+      "answer": "own-trace",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "worker_ids no longer needs its sprint argument and bl_dispatch (outside the touches) still passes it: keep the argument unused or drop it?",
+      "options": [
+        "keep-unused",
+        "drop-it"
+      ],
+      "recommendation": "keep-unused",
+      "do": {
+        "keep-unused": "ST-k4napiev",
+        "drop-it": "ST-k4napiev"
+      },
+      "class": "design",
+      "answer": "keep-unused",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-d6gbc3tq review"
   ],
