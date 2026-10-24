@@ -151,8 +151,7 @@ def trailers_from(paths, old, new):
     """{key: sorted values} for a change of `paths` (repository paths); old(rel)/new(rel) give a file's text
     before/after (None: absent). Every root under kb/ counts; topics are qualified (`public/intune/win32-apps`),
     source ids are bare (unique by their root's prefix), answer ids are `<root>:<id>` outside the public root, teams
-    are the `team` of each root a path lies in. A
-    commit from before the kb moved (a flat tree with `_sources.csv` at the top) is the public root's."""
+    are the `team` of each root a path lies in, at either end of the diff. A commit from before the kb moved (a flat tree with `_sources.csv` at the top) is the public root's."""
     groups = {}  # root name -> (repository prefix of the root, [content paths in the root])
     for p in paths:
         name, rel = content_rel(p)
@@ -206,9 +205,10 @@ def trailers_from(paths, old, new):
         out["KB-Answers"] = sorted(set(out["KB-Answers"]))
     teams = set()  # the `team` of each root a changed path lies in (its _root.md at either end of the diff)
     for name in {n for n, _ in map(root_of_path, paths) if n}:
-        meta = kbcommon._meta(new(f"{KB_DIR_REL}/{name}/{kbcommon.ROOT_FILE}") or old(f"{KB_DIR_REL}/{name}/{kbcommon.ROOT_FILE}"))
-        if kbcommon.TEAM.fullmatch(meta.get("team", "")):
-            teams.add(meta["team"])
+        for at in (new, old):
+            meta = kbcommon._meta(at(f"{KB_DIR_REL}/{name}/{kbcommon.ROOT_FILE}"))
+            if kbcommon.TEAM.fullmatch(meta.get("team", "")):
+                teams.add(meta["team"])
     if teams:
         out["KB-Teams"] = sorted(teams)
     return {k: out[k] for k in KEYS if out.get(k)}
