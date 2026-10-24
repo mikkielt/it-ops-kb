@@ -83,7 +83,6 @@
     "kb/_self/code.md"
   ],
   "depends_on": [
-    "ST-pmxnissq",
     "ST-n5vf55qk"
   ],
   "notes": "Plan 2026-10-24 (SP-d6gbc3tq): premise reproduced on base by precheck (no land_lock, no waits, no runs.drift). Goal reworded at plan so its clauses split cleanly; touches gained kb/_self/coordination.md for the docs map. Ordered after ST-n5vf55qk (shared mon_status.py). Queue design from ST-tb6tzrxa's goal: land moves the run state to landing before its first step, so the items queued behind the lock holder are the other items in run state landing; the landing lock file names the holder (bl_close.landing_lock: pid, clone, started, item). Checks added: 1 = land_lock with the holder, step, since and the queued title; 2 = a blocked coord.py wait shows in the sessions panel waits by item title; 3 = the drift alert names the item and goes after runs --reconcile; 4 = --status sprints and --status coord say drift. Planned into SP-d6gbc3tq on 2026-10-24 (night run). Sprint SP-d6gbc3tq started 2026-10-24.",
