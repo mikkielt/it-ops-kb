@@ -7,13 +7,20 @@
   "sprint": "SP-vxdacfpl",
   "priority": "P2",
   "rank": 0,
-  "goal": "brief ID prints the text of the 'Conduct for changes' section that selfdoc.py section maintaining prints, and its hint line says the section is already included",
+  "goal": "brief ID prints the text of the 'Conduct for changes' section that selfdoc.py section maintaining prints, and its hint line says the section is already included; brief ID also prints the tested rule lines of rag.py pack --root _self --set kb-worker, and the worker role file no longer asks the worker to fetch them",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import subprocess as s,sys\np=s.run([sys.executable,\"_tools/backlog.py\",\"brief\",\"ST-uruhigy4\"],capture_output=True,text=True)\nprint(p.returncode,len(p.stdout))\nsys.exit(0 if p.returncode==0 and \"Real misses feed the eval set, every time\" in p.stdout and \"already included\" in p.stdout else 1)\n"
+        "\nimport subprocess as s,sys\np=s.run([sys.executable,\"_tools/backlog.py\",\"brief\",\"ST-uruhigy4\"],capture_output=True,text=True)\nprint(p.returncode,len(p.stdout))\nsys.exit(0 if p.returncode==0 and \"Real misses feed the eval set, every time\" in p.stdout and \"already included\" in p.stdout else 1)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport subprocess as s,sys\nq=[x for x in s.run([sys.executable,\"_tools/rag.py\",\"pack\",\"--root\",\"_self\",\"--set\",\"kb-worker\"],capture_output=True,text=True).stdout.splitlines() if x.startswith(\"# \")]\nb=s.run([sys.executable,\"_tools/backlog.py\",\"brief\",\"ST-uruhigy4\"],capture_output=True,text=True)\nw=open(\"agents/worker.md\",encoding=\"utf-8\").read()\nmiss=[x for x in q if x not in b.stdout]\nprint(len(q),b.returncode,len(miss),\"--set kb-worker` before the first step\" in w)\nsys.exit(0 if q and b.returncode==0 and not miss and \"--set kb-worker` before the first step\" not in w else 1)\n"
       ]
     }
   ],
@@ -25,6 +32,14 @@
     {
       "clause": "its hint line says the section is already included",
       "check": 0
+    },
+    {
+      "clause": "brief ID also prints the tested rule lines of rag.py pack --root _self --set kb-worker",
+      "check": 1
+    },
+    {
+      "clause": "the worker role file no longer asks the worker to fetch them",
+      "check": 1
     }
   ],
   "touches": [
