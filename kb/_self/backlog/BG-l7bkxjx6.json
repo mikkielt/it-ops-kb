@@ -2,7 +2,7 @@
   "id": "BG-l7bkxjx6",
   "kind": "bug",
   "title": "An scp-like url with an absolute path escapes the public-home, integration and upstream guards, and an unparseable url crashes the pre-push hook",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3trnelzv",
   "priority": "P1",
   "rank": 0,
@@ -21,5 +21,7 @@
     "kb/_self/git.md"
   ],
   "notes": "Found 2026-10-24 by the third SP-3trnelzv review (on 35938e315): SCP_RX's (?![/\\\\]) lookahead after the colon rejects git@host:/path, so location reads it as a local path; a public-home push spelled that way with a kb/_querylog commit exited 0 through the pre-push hook. The fix excludes only a one-letter drive. S1 by the backlog table (a gate lets a bad push through), so it joins the sprint.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
