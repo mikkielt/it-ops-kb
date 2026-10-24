@@ -2,7 +2,7 @@
   "id": "ST-e6xp5h3u",
   "kind": "story",
   "title": "The kb_tools MCP tool, one AGENTS.md line and kb_ask.py's routing send a which-tool question to the catalog",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-5mp6pwnn",
   "sprint": "SP-x6eqtsid",
   "priority": "P2",
@@ -118,5 +118,7 @@
     }
   ],
   "notes": "Premise (run 2026-10-24 on the base): kb_ask.py --route 'which tool shows how long each landing step took' prints kind=split verdict=weak model=sonnet although backlog.py landings answers it. What the checks read: tools/list holds kb_tools with readOnlyHint, an optional need and a closed schema, and its text holds kbtools.py's lines for a need and for none; the AGENTS.md line holds a runnable python3 _tools/kbtools.py command (a placeholder in angle or square brackets, or in capitals, is replaced by a need) and says what it is for, within 4096 bytes (gate g1 cut the routing parenthetical of the kb_ask.py line); --route plans kind=tools for which-tool, which-command and how-do-I-find-the-command questions and never for the three docs questions of check 2, the kbmon status route stays first, and the answer is lines of the catalog kbtools.py prints with no model (check 2 puts a fake claude first on PATH and asserts it is never run). The kb hook's own routing is not part of this item. Docs outside the touches that other items hold: read each, name it in Self-Reviewed. Check 2 rewritten 2026-10-24 after BG-nrq2gqcb (the review's S1: docs questions that held a tool word went to kind=tools): its first version asked the answer to hold the first line of kbtools.py NEED, which over-reads the clause 'answers it with kbtools.py'; the fix answers with the entries that hold the question's content words, a narrower list of the same catalog lines and the better answer (it names backlog.py alone for the landing-step question). Check 2 now asks every answer line to be a line of the catalog and one of them to name backlog.py.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
