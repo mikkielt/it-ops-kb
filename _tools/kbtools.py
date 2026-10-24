@@ -10,6 +10,9 @@ entry is its frontmatter `description:`, a kb MCP tool's its listed description.
 
 A need is matched by words: lower-case words with their endings cut, the common ones dropped, each weighed by how few
 entries hold it, a word of an entry's name counting double. The same need always gives the same entries, best first.
+`answering` is the stricter read `kb_ask.py` routes by: it leaves the words that only ask for a tool (CUES) out of the
+need, reads a tool's name and its own text (summary and `Answers:` lines) and the name alone of a skill, an agent or a kb
+MCP tool (their descriptions list the products the kb covers), and reports how much of the need the catalog holds.
 
   kbtools.py [--json]            the catalog, one line for each entry: its name, its command and what it answers
   kbtools.py NEED [--json]       the best entries for NEED (at most 8, none for a need no entry shares a word with);
@@ -36,6 +39,7 @@ STOP = frozenset("""a an the of to in on for and or is are was be been am it its
 that this these those there then than what which who whom whose when where why how do does did can could should would will may
 might must not no so if about into onto over under up out all any each some""".split())
 LIMIT = 8
+CUES = frozenset("tool command script line find show list print give tell get run use".split())  # asks for a tool, names none
 KIND_ORDER = {"tool": 0, "skill": 1, "agent": 2, "mcp": 3}
 WIDTH = 150  # characters of what an entry answers on a catalog line
 BOILERPLATE = re.compile(r"^(Documentation facts from it-ops-kb \(not live device or directory data\)\.\s*)")
@@ -180,6 +184,26 @@ def search(need, entries):
     scored.sort(key=lambda x: x[:3])
     best = -scored[0][0] if scored else 0
     return [dict(e, score=round(-s, 3)) for s, _, _, e in scored if -s * 3 >= best][:LIMIT]
+
+
+def answering(need, entries):
+    """(entries, held, total): the entries that answer NEED by its content words, and how many of its content words (the
+    words that remain once the CUES that only ask for a tool are left out) the catalog holds in an entry's name or own text.
+    A tool is read by its name, summary and `Answers:` lines, a skill, an agent or a kb MCP tool by its name alone: their
+    descriptions hold the names of the products the kb covers, which answer nothing about a tool. Ranked as `search` does."""
+    want = words(need) - {stem(c) for c in CUES}
+    docs = [(e, words(e["tool"]), words(" ".join([e["summary"], *e["answers"]])) if e["kind"] == "tool" else set())
+            for e in entries]
+    df = {w: sum(1 for _, n, t in docs if w in n or w in t) for w in want}
+    scored = []
+    for e, name, text in docs:
+        score = sum(math.log(1 + len(docs) / df[w]) * (2 if w in name else 1) for w in want if w in name or w in text)
+        if score > 0:
+            scored.append((-score, KIND_ORDER[e["kind"]], e["tool"], e))
+    scored.sort(key=lambda x: x[:3])
+    best = -scored[0][0] if scored else 0
+    found = [dict(e, score=round(-s, 3)) for s, _, _, e in scored if -s * 3 >= best][:LIMIT]
+    return found, sum(1 for w in want if df[w]), len(want)
 
 
 def as_json(entry):

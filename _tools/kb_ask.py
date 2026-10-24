@@ -9,9 +9,15 @@
                                         a question that asks which tool, command or script answers a need (tools_need:
                                         fixed cue words, a word naming a tool beside one that asks for it, as
                                         mon_status.CUES pairs a named thing with a state; a docs question that holds
-                                        only `tool` or `how` is none) is answered next, before any pack or model, by
+                                        only `tool` or `how` is none) is answered next, before any model, by
                                         the lines of `kbtools.py QUESTION` (--route prints `kind=tools`), no query log
-                                        row; a catalog with no entry for it leaves the question to the steps below;
+                                        row. An entry answers it by the question's content words (kbtools.answering: the
+                                        cue words `tool`, `command`, `script` and the like never count; a tool is read by
+                                        its name and own text, a skill, agent or MCP tool by its name only), and the
+                                        catalog answers alone when it holds three quarters of those words; holding fewer,
+                                        it answers only when the question's pack is not good, so a docs question that
+                                        shares a word or two with a tool keeps its pack route; no such entry leaves the
+                                        question to the steps below;
                                      1. a question of a kind a tool decides (a count or list of articles, a decision
                                         id, which sources disagree, a topic a gaps entry records, which files cite a
                                         source id: kbfacts.routed) is answered by that tool, with path:line: no model;
@@ -154,11 +160,17 @@ def tools_need(question):
     return " ".join(str(question).split()) if named else None
 
 
-def tools(question, route):
-    """A which-tool question: the lines of `kbtools.py QUESTION` (kbtools.search), no pack and no model; with `route` the plan
-    line only. None where the catalog holds no entry for it: the question goes on to the pack."""
-    entries = kbtools.search(question, kbtools.catalog())
-    if not entries:
+HELD = 0.75  # the share of a question's content words the catalog must hold for the catalog alone to answer it
+
+
+def tools(question, route, pack_verdict):
+    """A which-tool question: the lines of `kbtools.py QUESTION` for the entries that answer it (kbtools.answering: the
+    question's content words, not the cue words, read in a tool's name and own text), no model; with `route` the plan line
+    only. None where no entry does: the question goes on to the pack. The catalog answers alone when it holds HELD of the
+    content words; with fewer it answers only a question whose pack is not good (`pack_verdict()`), so a docs question
+    that shares a word or two with a tool keeps its pack route."""
+    entries, held, total = kbtools.answering(question, kbtools.catalog())
+    if not entries or (held < total * HELD and pack_verdict() == "good"):
         return None
     line = "kind=tools (kbtools.py, no model)"
     log(line)
@@ -548,7 +560,8 @@ def run(row):
         row.pop("question")
         return status(topic, a.route)
     need = tools_need(q) if len(split_parts(q)) == 1 else None
-    if need and (code := tools(need, a.route)) is not None:  # the catalog is no kb lookup either: no pack, no model, no row
+    verdict = lambda: kbfacts.pack_many([need], revalidate=False)["verdict"]  # noqa: E731 - read only for a partly held question
+    if need and (code := tools(need, a.route, verdict)) is not None:  # the catalog is no kb lookup either: no model, no row
         row.pop("question")
         return code
     res = kbfacts.routed(q) if len(split_parts(q)) == 1 else None  # parts are routed one by one, in their pack
