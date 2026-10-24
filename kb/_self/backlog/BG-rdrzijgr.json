@@ -2,7 +2,7 @@
   "id": "BG-rdrzijgr",
   "kind": "bug",
   "title": "A rejected kbroot.py push reports git's hint line instead of the rejection reason",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-c6w5hjmc",
   "priority": "P3",
@@ -47,6 +47,19 @@
     "parked: SP-mguax5m3 review"
   ],
   "notes": "Premise 2026-10-24: repro fails on the base (precheck). Sprint SP-c6w5hjmc started on the operator's standing approval for the day run. Gate g1 answered with its recommendation by the sprint runner (pre-approved by the operator for the 2026-10-24 day run): drop hint: lines and prefer git's '! [rejected]' status line, else the last remaining line; reason: the rejection line names the reason (fetch first, non-fast-forward) that the goal asks for.",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "d02d465267a27b6995530803eec33f0730d1ca80",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, shutil, subprocess, tempfile, json\nT = tempfile.mkdtemp()\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_\", \"CLAUDE\"))}\nENV.update(GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\", KB_LIVE_DOCS=\"0\", KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"),\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\ndef run(*a, env=None, cwd=None):\n    return subprocess.run([sys.executable, *a], capture_output=True, text=True, env=env or ENV, cwd=cwd, timeout=300)\ndef art(root_dir, rel, title, fact, sid):\n    p = os.path.join(root_dir, rel); os.makedirs(os.path.dirname(p), exist_ok=True)\n    topic = rel[:-3]\n    open(p, \"w\").write(f\"---\\ntopic: {topic}\\npriority: P3\\napplies_to: \\\"x\\\"\\nretrieved_utc: 2026-10-19\\nsources: [{sid}]\\nstatus: complete\\n---\\n\\n# {title}\\n\\n## Summary\\n{fact}\\n\\n## Facts\\n- {fact} [DOC {sid}]\\n\\n## Reference\\n\\n## Examples\\n\")\ndef make_root(path, name, prefix, vis, sid, rel, title, fact):\n    os.makedirs(path, exist_ok=True)\n    open(os.path.join(path, \"_root.md\"), \"w\").write(f\"---\\nroot: {name}\\nid_prefix: {prefix}\\nvisibility: {vis}\\ndescription: {name}\\n---\\n\\n# {name}\\n\")\n    open(os.path.join(path, \"_sources.csv\"), \"w\").write(\"id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by\\n\"\n        f\"{sid},https://example.com/{name},{name} doc,Example,MIT,copy,2026-10-19,v1,,,\\n\")\n    art(path, rel, title, fact, sid)\n# C: a throwaway clone made of this checkout's tools and a planted kb with a public root\nC = os.path.join(T, \"clone\")\nshutil.copytree(\"_tools\", os.path.join(C, \"_tools\"), ignore=shutil.ignore_patterns(\"__pycache__\", \"*.pyc\", \"fixtures\"))\nmake_root(os.path.join(C, \"kb\", \"public\"), \"public\", \"S\", \"public\", \"S-aaaaaaaa\", \"planted/win32-packaging.md\", \"Win32 apps\",\n          \"Intune deploys Win32 apps packaged with the content prep tool\")\nos.makedirs(os.path.join(C, \"kb\", \"_self\"), exist_ok=True)\ng(\"init\", \"-q\", \"-b\", \"main\", C, cwd=T); g(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C)\n# O: a team's knowledge repository as a local bare repository\nTS, O = os.path.join(T, \"team-src\"), os.path.join(T, \"team-a.git\")\nmake_root(TS, \"team-a\", \"TA\", \"internal\", \"TA-aaaaaaaa\", \"mdm/enrolment.md\", \"Enrolment runbook\",\n          \"Team A enrols kiosks through the PL-SRV-0042 enrolment profile\")\ng(\"init\", \"-q\", \"-b\", \"main\", TS, cwd=T); g(\"add\", \"-A\", cwd=TS); g(\"commit\", \"-qm\", \"team\", cwd=TS)\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T); g(\"push\", \"-q\", O, \"main\", cwd=TS)\nTOOLS = os.path.join(C, \"_tools\")\ndef pointer(name, prefix, url, access=\"fetch\", vis=\"internal\", team=None, pin=\"\", ref=\"main\"):\n    os.makedirs(os.path.join(C, \"kb\", \"_roots\"), exist_ok=True)\n    open(os.path.join(C, \"kb\", \"_roots\", name + \".md\"), \"w\").write(\n        f\"---\\nroot: {name}\\nid_prefix: {prefix}\\nvisibility: {vis}\\nteam: {team or name}\\nurl: {url}\\nref: {ref}\\npin: {pin}\\naccess: {access}\\ndescription: {name}\\n---\\n\")\ndef team_commit(text, msg):\n    art(TS, \"mdm/enrolment.md\", \"Enrolment runbook\", text, \"TA-aaaaaaaa\")\n    g(\"commit\", \"-qam\", msg, cwd=TS); g(\"push\", \"-q\", O, \"main\", cwd=TS)\n    return g(\"rev-parse\", \"HEAD\", cwd=TS).strip()\nFILEOK = dict(ENV, GIT_CONFIG_COUNT=\"1\", GIT_CONFIG_KEY_0=\"protocol.file.allow\", GIT_CONFIG_VALUE_0=\"always\")\nPACK = lambda q, env=None: run(os.path.join(TOOLS, \"rag.py\"), \"pack\", q, env=env)\nKQ = \"team a enrols kiosks enrolment profile\"\n\nr = run(os.path.join(TOOLS, \"kbroot.py\"), \"add-remote\", \"team-a\", \"--url\", O, \"--prefix\", \"TA\", \"--team\", \"team-a\", \"--access\", \"submodule\", env=FILEOK, cwd=C)\nassert r.returncode == 0, (\"add-remote --access submodule\", r.stderr[-300:])\ng(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"team-a root\", cwd=C)\nSM = os.path.join(C, \"kb\", \"team-a\")\nart(SM, \"mdm/kiosk.md\", \"Kiosk runbook\", \"Team A resets kiosks nightly\", \"TA-aaaaaaaa\")\ng(\"add\", \"-A\", cwd=SM); g(\"commit\", \"-qm\", \"kiosk\", cwd=SM)\nteam_commit(\"Team A enrols kiosks through the new profile\", \"moved on\")\nr = run(os.path.join(TOOLS, \"kbroot.py\"), \"push\", \"team-a\", env=FILEOK, cwd=C)\nassert r.returncode == 1, (\"a rejected kbroot.py push\", r.returncode, r.stderr[-300:])\nassert \"hint:\" not in r.stdout + r.stderr, (\"a rejected kbroot.py push reports a git hint line as its reason\", r.stderr[-300:])\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
