@@ -22,7 +22,7 @@ the commits the checkout is behind it, the duration history) and the host panel'
 snapshot gives the same answer; its ETA is a range from `mon_eta.estimate` taken at the snapshot's time. The
 sprints and coord answers also say whether the run states in coord follow git (the sessions panel's `drift`, as the
 `runs.drift` alert), and the sprints answer names the item that holds the landing lock with its step and the items queued
-behind it (the host panel's `land_lock`); the sessions answer names each session that waits on items (its `waits`). The
+behind it (the host panel's `land_lock`) and the run state of each open item of a sprint (the sprint panel's `run`, `run_age`); the sessions answer names each session that waits on items (its `waits`). The
 load answer also gives the host panel's CPU groups with a fixed cause and remedy each (GROUP_TEXT), as lines and as a
 top-level `groups` list. It calls no model and writes no file (`run` starts `kbmon.py`, which writes none). Imports `mon_base`, `mon_eta`, `mon_needs`, `mon_querylog` (the key of usage outside a sprint), `mon_sessions` (its
 age text and `session_line`) and `mon_view`; `bl_base` where it reads titles.
@@ -435,6 +435,18 @@ def sprint_lines(r, s, facts, hist, source="origin/main"):
     return lines
 
 
+def run_lines(r, s, facts):
+    """The lines of the run states of the open items of the sprint row S (coord's `run/<item>`, from the sprint panel): each
+    item by its title, with its id where it is blocked, failed or refused (the operator acts), its state and the time since its
+    newest progress event; ROWS at most. Adds them to `facts["runs"]` as {item, state, age_s}."""
+    running = [x for x in s.get("open") or [] if isinstance(x, dict) and x.get("run")]
+    shown = facts.setdefault("runs", [])
+    shown += [{"item": x.get("id"), "state": x["run"], "age_s": x.get("run_age")} for x in running]
+    lines = [f"    run {x['run']}: {short_name(r.item(x.get('id'), x['run'] in mon_needs.STOPPED))}"
+             + (f" ({mon_sessions.age_text(number(x['run_age']))})" if isinstance(x.get("run_age"), int) else "") for x in running[:ROWS]]
+    return lines + ["    " + x for x in more(len(running) - ROWS, "runs")]
+
+
 def sprints(r):
     data, why = r.data("sprint")
     if data is None:
@@ -462,6 +474,7 @@ def sprints(r):
         waiting = [w for w in s.get("waiting") or [] if isinstance(w, dict) and not (w.get("item") == s.get("id") and w.get("gate") == "start")]
         lines += [f"    your answer is needed: gate {w.get('gate')} of {r.item(w.get('item'), True)}" for w in waiting[:2]]
         lines += ["    " + x for x in more(len(waiting) - 2, "gates waiting")]
+        lines += run_lines(r, s, facts)
     lines += ["  " + x for x in more(len(rows) - ROWS, "sprints")]
     lines += [f"  landing {x['title']}, at step {x.get('step')}{ago(r.now, x.get('last'))}" for x in landing[:ROWS]]
     host, hwhy = r.data("host")

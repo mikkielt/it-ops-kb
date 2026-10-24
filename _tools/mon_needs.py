@@ -3,7 +3,10 @@
 nothing at load, `mon_sessions` (its age text) and `mon_status` (`short_name`) where they are used.
 
   entries(snap)   [{kind, text, ...}] in this order: `gate` (each open blocking gate of an active, approved or planned sprint
-                  or of one of its open items, `SP-… gate NAME`), `ask` (each ask addressed to `operator` that no closing
+                  or of one of its open items, `SP-… gate NAME`), `run` (each open item whose coord run state is `blocked`, with
+                  the ids of its gates, `failed` or `refused`, with the step that stopped it, from the sprint panel's `runs`:
+                  `ST-… blocked on gates g1, g2, 5m`, `ST-… run failed at step X, 5m`, `ST-… landing refused at step rebase,
+                  5m`; a gate it names is left out of the `gate` entries), `ask` (each ask addressed to `operator` that no closing
                   answer has ended, from the coord panel: `ask ID since DATE TIME: the first words of the question`, redacted;
                   an Alertmanager alert, a cleanup verdict or a session's question posted as an ask shows here), `overlap` (each
                   overlap of two live sessions in the sessions panel that no coordinate event decided and that is
@@ -23,8 +26,8 @@ The list reads only the panels' data, so a saved snapshot gives the same line. I
 
 PANELS = ("sprint", "querylog", "sessions", "host")
 COORD_PANEL = "coord"
-KINDS = ("gate", "ask", "overlap", "blocked", "delivery", "orphan", "disk", "fast-forward")
-MANY = {"gate": "gates", "ask": "asks", "overlap": "overlaps", "blocked": "blocked sprints", "delivery": "deliveries", "orphan": "orphans", "disk": "disk",
+KINDS = ("gate", "run", "ask", "overlap", "blocked", "delivery", "orphan", "disk", "fast-forward")
+MANY = {"gate": "gates", "run": "runs", "ask": "asks", "overlap": "overlaps", "blocked": "blocked sprints", "delivery": "deliveries", "orphan": "orphans", "disk": "disk",
         "fast-forward": "fast-forward"}  # the noun after `+N more`
 LOW_DISK_PCT = 10  # the host panel's alert threshold
 SHOWN = 3  # entries of one kind the line names before it counts the rest
@@ -54,13 +57,32 @@ def cause(text):
     return mon_status.short_name(text, WHY_CHARS)
 
 
+STOPPED = {"blocked": "blocked", "failed": "run failed", "refused": "landing refused"}  # the run states the line names
+
+
+def run_entries(data):
+    """The `run` entries of the sprint panel's DATA: an open item whose run state is blocked, failed or refused."""
+    import mon_sessions
+    out = []
+    for r in data.get("runs") or []:
+        if not isinstance(r, dict) or r.get("state") not in STOPPED or not r.get("item"):
+            continue
+        gates = [str(g) for g in r.get("gates") or []] if r["state"] == "blocked" else []
+        at = f" at step {cause(str(r['step']))}" if r["state"] != "blocked" and r.get("step") else ""
+        age = f", {mon_sessions.age_text(number(r['age_s']))}" if isinstance(r.get("age_s"), int) else ""
+        out.append({"kind": "run", "text": f"{r['item']} {STOPPED[r['state']]}" + (f" on gate{'' if len(gates) == 1 else 's'} {', '.join(gates)}" if gates else "")
+                    + at + age, "item": r["item"], "state": r["state"], "gates": gates, "step": r.get("step")})
+    return out
+
+
 def sprint_entries(data):
     gates, blocked = [], []
+    named = {(e["item"], g) for e in run_entries(data) for g in e["gates"]}  # a gate a blocked run names shows once
     for s in data.get("sprints") or []:
         if not isinstance(s, dict):
             continue
         for w in s.get("waiting") or []:
-            if isinstance(w, dict) and w.get("gate"):
+            if isinstance(w, dict) and w.get("gate") and (w.get("item"), w["gate"]) not in named:
                 gates.append({"kind": "gate", "text": f"{s.get('id')} gate {w['gate']}", "sprint": s.get("id"),
                               "item": w.get("item"), "gate": w["gate"]})
         counts = s.get("items") if isinstance(s.get("items"), dict) else {}
@@ -68,7 +90,7 @@ def sprint_entries(data):
         if s.get("state") == "active" and left and not s.get("next") and not number(counts.get("doing")):
             blocked.append({"kind": "blocked", "text": f"{s.get('id')} blocked: {left} item{'' if left == 1 else 's'} left, none ready",
                             "sprint": s.get("id"), "left": left})
-    return gates + blocked
+    return gates + run_entries(data) + blocked
 
 
 def ask_entries(data):

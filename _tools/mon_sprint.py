@@ -1,7 +1,8 @@
 """kbmon's sprint panel (kb/_self/monitoring.md): every sprint of the backlog with its state, its items' counts by status, its
 next item, its open items (each with its kind, the time of its last claim commit and the open items it follows), the time its
-review story was done and its waiting gates, the duration history of `mon_eta.py`, and each landing in progress. The text
-view writes on an active sprint's row the range `mon_eta.estimate` gives at the snapshot's taken time.
+review story was done and its waiting gates, the duration history of `mon_eta.py`, each landing in progress and the run
+state of each open item. The text view writes on an active sprint's row the range `mon_eta.estimate` gives at the snapshot's
+taken time.
 
 The sprints are the backlog's items of kind `sprint` whose status is `active` or `planned`, read through `bl_base.Backlog`
 and `bl_view.ready` from the item files of the local `origin/main` ref (`bl_view.items_at`, no fetch; the checkout's own
@@ -10,8 +11,12 @@ files where the ref cannot be read), with the count of commits the checkout is b
 `backlog.py next` offers (an active sprint only); `waiting` is each open blocking gate of the sprint or of one of its
 open items, `{item, gate}`. A landing in progress is an item still open in the backlog (not done or dropped, and in it) whose
 newest `land.step` row has no later `land.end` row in the ops rows: `{item, title, step, since, last}`, the item's title, the last step recorded, the time of the landing's first step and the time of the last. A root with no backlog
-has no sprints. The panel writes nothing and makes no request. Imports no sibling at load; `bl_base`, `bl_view`, `bl_plan`,
-`bl_stall`, `mon_eta`, `mon_status` (the range's text) and `mon_log` (`in_spool_order`) where it reads them.
+has no sprints. A run state is the `run/<item>` key of the coord store the coord panel reads (`mon_coord.run_rows`, none where
+there is no store): an open item with a state other than `landed` or `released` is a row of `runs`, `{item, title, state,
+age_s, step, gates}` (the seconds since its newest progress event, the step and the gate ids of the event that moved it
+there), and its row under `open` carries `run` and `run_age`. The panel writes nothing and makes no request. Imports no
+sibling at load; `bl_base`, `bl_view`, `bl_plan`, `bl_stall`, `mon_eta`, `mon_status` (the range's text), `mon_coord` (the run
+rows) and `mon_log` (`in_spool_order`) where it reads them.
 """
 import re
 from datetime import datetime, timezone
@@ -25,6 +30,8 @@ SPRINT_ROWS = 12  # sprints in the text view
 LANDING_ROWS = 6  # landings in the text view
 WAITING_ROWS = 2  # waiting gates under a sprint in the text view
 PATHS_KEPT = 3  # paths `fast_forward`'s why names
+RUN_ROWS = 3  # run states under a sprint in the text view
+SETTLED_RUNS = ("landed", "released")  # the run states of an item that is no longer worked on
 
 
 def sprint_state(sp, approved):
@@ -146,7 +153,16 @@ def follows(bl, left, meet):
     return out
 
 
-def sprint_row(bl, sid, state, done, claimed, meet):
+def open_runs(bl, rows):
+    """[{item, title, state, age_s, step, gates}] of ROWS (`mon_coord.run_rows`, None gives []) for the items BL holds not done
+    or dropped whose run state is not a settled one, in id order."""
+    found = [r for r in rows or [] if r["item"] in bl.items and bl.items[r["item"]].get("status") not in ("done", "dropped")
+             and r["state"] not in SETTLED_RUNS]
+    return [{"item": r["item"], "title": str(bl.items[r["item"]].get("title") or ""), "state": r["state"], "age_s": r["age_s"],
+             "step": r["step"], "gates": r["gates"]} for r in sorted(found, key=lambda r: r["item"])]
+
+
+def sprint_row(bl, sid, state, done, claimed, meet, runs=None):
     import bl_base
     import bl_view
     import mon_eta
@@ -160,17 +176,21 @@ def sprint_row(bl, sid, state, done, claimed, meet):
     nxt = bl_view.ready(bl, sid) if state == "active" else []
     left = sorted((i for i in items if bl.items[i].get("status") not in ("done", "dropped")), key=bl.order_key)
     after = follows(bl, left, meet)
+    runs = runs or {}
     open_items = [{"id": i, "title": str(bl.items[i].get("title") or ""), "status": str(bl.items[i].get("status")),
-                   "kind": mon_eta.kind_of(bl.items[i]), "claimed": claimed.get(i), "after": after[i]} for i in left[:OPEN_KEPT]]
+                   "kind": mon_eta.kind_of(bl.items[i]), "claimed": claimed.get(i), "after": after[i],
+                   "run": runs[i]["state"] if i in runs else None, "run_age": runs[i]["age_s"] if i in runs else None}
+                  for i in left[:OPEN_KEPT]]
     review = sorted(t for t in (done(i) for i in items if bl.items[i].get("review") and bl.items[i].get("status") == "done") if t)
     return {"id": sid, "title": str(bl.items[sid].get("title") or ""), "state": state, "items": counts,
             "next": nxt[0] if nxt else None, "next_title": str(bl.items[nxt[0]].get("title") or "") if nxt else None,
             "open": open_items, "review_done": review[-1] if review else None, "waiting": waiting}
 
 
-def sprints(root, backlog=None):
+def sprints(root, backlog=None, runs=None):
     """{sprints, source, behind}: the sprint rows, `origin/main` or `checkout` as the source of the items, and the commits
-    the checkout is behind `origin/main` (None where unknown). BACKLOG is `backlog_at(root)` when the caller has it."""
+    the checkout is behind `origin/main` (None where unknown). BACKLOG is `backlog_at(root)` when the caller has it; RUNS is
+    `open_runs` of it, the run states the open items' rows carry."""
     import bl_plan
     import mon_eta
     bl, source, behind = backlog or backlog_at(root)
@@ -188,7 +208,7 @@ def sprints(root, backlog=None):
     for sid, sp in sorted(bl.items.items()):
         state = sprint_state(sp, bl_plan.start_approved) if sp.get("kind") == "sprint" else None
         if state:
-            rows.append(sprint_row(bl, sid, state, done, eta["claimed"], meet))
+            rows.append(sprint_row(bl, sid, state, done, eta["claimed"], meet, {r["item"]: r for r in runs or []}))
     rows.sort(key=lambda r: SPRINT_STATES.index(r["state"]))  # stable: ids stay in order within a state
     return {"sprints": rows, "source": source, "behind": behind, "fast_forward": fast_forward(root, behind),
             "history": eta["history"]}
@@ -218,15 +238,18 @@ def landings(root, bl):
 
 
 def collect(ctx):
+    import mon_coord
     backlog = backlog_at(ctx.root)
-    return {**sprints(ctx.root, backlog), "landings": landings(ctx.root, backlog[0])}
+    runs = open_runs(backlog[0], mon_coord.run_rows(ctx))
+    return {**sprints(ctx.root, backlog, runs), "landings": landings(ctx.root, backlog[0]), "runs": runs}
 
 
 def lines(data, width=None, taken=None):
     """The body rows: where the items were read from (and how far the checkout is behind it), a row for each sprint (the one
-    `mon_status.sprint_row` writes for `--status sprints`) with its first waiting gates under it, then `landing` rows (item, last step, since). TAKEN is the snapshot's taken time, the `now` of each active
+    `mon_status.sprint_row` writes for `--status sprints`) with its first waiting gates and the run states of its open items under it, then `landing` rows (item, last step, since). TAKEN is the snapshot's taken time, the `now` of each active
     sprint's estimate (WIDTH is unused)."""
     import mon_eta
+    import mon_sessions
     import mon_status
     now = mon_eta.seconds_of(taken)
     rows = []
@@ -246,6 +269,11 @@ def lines(data, width=None, taken=None):
             rows.append(f"    waiting  {w['item']}/{w['gate']}")
         if len(waiting) > WAITING_ROWS:
             rows.append(f"    +{len(waiting) - WAITING_ROWS} more waiting")
+        running = [x for x in sp.get("open", []) if x.get("run")]
+        for x in running[:RUN_ROWS]:
+            rows.append(f"    run  {x['id']}  {x['run']}" + (f"  {mon_sessions.age_text(x['run_age'])}" if isinstance(x.get("run_age"), int) else ""))
+        if len(running) > RUN_ROWS:
+            rows.append(f"    +{len(running) - RUN_ROWS} more runs")
     if len(data.get("sprints", [])) > len(shown):
         rows.append(f"+{len(data['sprints']) - len(shown)} more sprints")
     if not data.get("sprints"):

@@ -65,6 +65,42 @@
   "depends_on": [
     "ST-3vn4t2h6"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does the needs-you line read a gate committed on a worker's work branch from?",
+      "options": [
+        "the blocked run state's gates field in coord (gate add moves the run to blocked with the gate ids)",
+        "also read the item file of each work/<id> branch with git show on every refresh"
+      ],
+      "recommendation": "the blocked run state's gates field in coord (gate add moves the run to blocked with the gate ids)",
+      "do": {
+        "the blocked run state's gates field in coord (gate add moves the run to blocked with the gate ids)": "ST-czgocppq",
+        "also read the item file of each work/<id> branch with git show on every refresh": "ST-czgocppq"
+      },
+      "class": "design",
+      "answer": "the blocked run state's gates field in coord (gate add moves the run to blocked with the gate ids)",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which time is a run state's age, and which items does the panel list?",
+      "options": [
+        "age since the item's newest progress event; open items whose state is not landed or released",
+        "age since the event that moved the run to its state; every item with a run key"
+      ],
+      "recommendation": "age since the item's newest progress event; open items whose state is not landed or released",
+      "do": {
+        "age since the item's newest progress event; open items whose state is not landed or released": "ST-czgocppq",
+        "age since the event that moved the run to its state; every item with a run key": "ST-czgocppq"
+      },
+      "class": "design",
+      "answer": "age since the item's newest progress event; open items whose state is not landed or released",
+      "by": "agent"
+    }
+  ],
   "notes": "Premise: in a planted clone with a blocking gate committed on the worker's work/<id> branch, kbmon.py --status all --json gives the needs-you line 'needs you: SP-... gate start': the branch gate is invisible, since the sprint panel reads the item files of origin/main or the checkout only (kb/_self/monitoring.md:97,202). The kbmon-pane mod's terminal notification on a needs-you change is a later story of this epic (epic notes). Plan 2026-10-24 (SP-d6gbc3tq): ST-oazktatz (blocked move with the gate id) is done on the main branch, so the dependency is met; ordered after ST-3vn4t2h6 for the shared mon_status.py. Premise reproduced on base by precheck. Checks added: 1 = a failed run and a refused landing with step=rebase name the item and the step in the needs-you line; 2 = the sprint panel row carries the run state and an age key (run_age, age, since or run_since) and --status sprints names the state. Planned into SP-d6gbc3tq on 2026-10-24 (night run). Sprint SP-d6gbc3tq started 2026-10-24.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
