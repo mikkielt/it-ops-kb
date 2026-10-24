@@ -59,7 +59,7 @@
   "links": [
     "parked: SP-ky7xz6d2 review"
   ],
-  "notes": "Plan 2026-10-24 (day run): premise reproduced on base by the second check (a SessionStart against a coord.py that never answers runs both its calls to the 8 second limit, over 16 s in all, past the hook's 10 s kill). The repro reads text only: build the deadline so the planted run ends under 9.5 s (a total deadline of about 8 s that every coord call's timeout is cut to), and write the state file to a temp file in its directory, then os.replace it over the final name (keep the 0600 mode). Planned into SP-3i7hcb6i on 2026-10-24. Sprint started 2026-10-24.",
+  "notes": "Plan 2026-10-24 (day run): premise reproduced on base by the second check (a SessionStart against a coord.py that never answers runs both its calls to the 8 second limit, over 16 s in all, past the hook's 10 s kill). The repro reads text only: build the deadline so the planted run ends under 9.5 s (a total deadline of about 8 s that every coord call's timeout is cut to), and write the state file to a temp file in its directory, then os.replace it over the final name (keep the 0600 mode). Planned into SP-3i7hcb6i on 2026-10-24. Sprint started 2026-10-24. Gate g1 answered by the runner on the operator's standing approval: the worker's recommendation (8 seconds total deadline) (pre-approved by the operator for the 2026-10-24 day run).",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
