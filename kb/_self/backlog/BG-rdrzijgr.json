@@ -42,7 +42,7 @@
   "links": [
     "parked: SP-mguax5m3 review"
   ],
-  "notes": "Premise 2026-10-24: repro fails on the base (precheck). Sprint SP-c6w5hjmc started on the operator's standing approval for the day run.",
+  "notes": "Premise 2026-10-24: repro fails on the base (precheck). Sprint SP-c6w5hjmc started on the operator's standing approval for the day run. Gate g1 answered with its recommendation by the sprint runner (pre-approved by the operator for the 2026-10-24 day run): drop hint: lines and prefer git's '! [rejected]' status line, else the last remaining line; reason: the rejection line names the reason (fetch first, non-fast-forward) that the goal asks for.",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }
