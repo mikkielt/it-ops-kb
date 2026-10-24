@@ -2,7 +2,7 @@
   "id": "ST-n5vf55qk",
   "kind": "story",
   "title": "kbmon's needs-you line names open asks to the operator, and the coord panel shows the effective coordination settings with the file that set each",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
   "sprint": "SP-d6gbc3tq",
   "priority": "P2",
@@ -56,6 +56,6 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
-  "notes": "Plan 2026-10-24 (SP-d6gbc3tq): premise reproduced on base by precheck (the needs-you line shows only 'gate start', no settings in the coord panel). Checks added: 1 = an ask to operator with fake secrets of each redact shape shows with its id in the first lines, nothing of the secrets, and goes once answered; 2 = --status coord names settings.json and the key. Runs after ST-pja652lj is not required, but the two share mon_needs.py and mon_status.py: claim only when held shows no overlap. Planned into SP-d6gbc3tq on 2026-10-24 (night run).",
+  "notes": "Plan 2026-10-24 (SP-d6gbc3tq): premise reproduced on base by precheck (the needs-you line shows only 'gate start', no settings in the coord panel). Checks added: 1 = an ask to operator with fake secrets of each redact shape shows with its id in the first lines, nothing of the secrets, and goes once answered; 2 = --status coord names settings.json and the key. Runs after ST-pja652lj is not required, but the two share mon_needs.py and mon_status.py: claim only when held shows no overlap. Planned into SP-d6gbc3tq on 2026-10-24 (night run). Sprint SP-d6gbc3tq started 2026-10-24.",
   "filed_in": "clone-0ea70e5c"
 }
