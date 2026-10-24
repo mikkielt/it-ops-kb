@@ -6,6 +6,12 @@
                                         the new ID and the key as JSON
   kbask.py answer ID TEXT [--state S]   the same for an answer: the value answer/ID and an `answer` event with the state
                                         (working, input-required, completed, failed or rejected; default completed)
+  kbask.py coordinate ITEM OTHER STRATEGY
+                                        post a `coordinate` event for the session that chose: the live session whose intent
+                                        names ITEM, with the operator id kbwho gives and the touch paths its intent shares
+                                        with those of the sessions working on OTHER. STRATEGY is wait, ask, after, join or
+                                        proceed. The session that holds OTHER sees it once at its next hook event; exit 1
+                                        when no live session announced ITEM. Prints the event as JSON
   kbask.py remediate ALERT              claim the coord key remediate/ALERT for the run, ask `kb-observer` to diagnose the
                                         alert, and start one detached `claude -p --agent kb-observer` session (the caps,
                                         the read-only tool list below, and no settings source or hook); when it ends,
@@ -205,6 +211,55 @@ def check_id(value, what, pattern=ASK_ID):
         raise Stop(f"kbask: {what} is an id of 1 to 100 characters of letters, digits and _ . : # @ - "
                    + ("/ " if pattern is ALERT_ID else "") + f"(no spaces), not {value[:40]!r}")
     return value
+
+
+def live_intents(conn, *keys):
+    """The live intents `coord.py digest` lists for keys, newest first, each as its NAME=VALUE fields (items and touch as lists)."""
+    try:
+        p = subprocess.run([sys.executable, str(COORD), *conn, "digest", "--lines", "50", *[x for k in keys for x in ("--key", k)]],
+                           capture_output=True, text=True, encoding="utf-8", stdin=subprocess.DEVNULL, timeout=COORD_SECONDS)
+    except (OSError, subprocess.SubprocessError) as error:
+        raise Stop(f"kbask: coord.py did not run: {error.__class__.__name__}")
+    if p.returncode != 0:
+        raise Stop(f"kbask: cannot read the live intents: coord.py exited {p.returncode}")
+    found = []
+    for line in p.stdout.splitlines():
+        words = line.split()
+        if words[:1] != ["intent"]:
+            continue
+        fields = dict(w.split("=", 1) for w in words[1:] if "=" in w)
+        for name in ("item", "touch"):
+            fields[name] = [x for x in fields.get(name, "").split(",") if x]
+        found.append(fields)
+    return found
+
+
+def cmd_coordinate(args):
+    conn = connection(args)
+    item, other = check_id(args.item, "ITEM"), check_id(args.other, "OTHER")
+    if item == other:
+        raise Stop("kbask: ITEM and OTHER are two items")
+    intents = live_intents(conn, item, other)
+    mine = [i for i in intents if item in i["item"] and i.get("session")]
+    mine = [i for i in mine if i.get("topic") != "backlog-claim"] or mine  # a session's own intent over the claim intent a dispatcher left
+    if not mine:
+        raise Stop(f"kbask: no live session announced {item}: its intent is posted at a session's start or a backlog.py claim", 1)
+    chooser = mine[0]
+    theirs = [t for i in intents if other in i["item"] and i.get("session") != chooser["session"] for t in i["touch"]]
+    shared, size = [], 0
+    for path in chooser["touch"]:
+        if any(coord.overlaps(path, t) for t in theirs) and size + len(path) + bool(shared) <= 120:
+            size += len(path) + bool(shared)
+            shared.append(path)
+    fields = {"item": item, "other": other, "strategy": args.strategy, "session": chooser["session"]}
+    if shared:
+        fields["touch"] = ",".join(shared)
+    import kbwho
+    operator = kbwho.operator().get("id")
+    if operator and coord.OPERATOR_NAME.fullmatch(operator):
+        fields["operator"] = operator
+    event = post(conn, "coordinate", **fields)
+    return {"ok": True, "seq": event.get("seq"), "fields": fields}
 
 
 def check_text(text):
@@ -470,6 +525,10 @@ def build_parser():
     p.add_argument("id")
     p.add_argument("text")
     p.add_argument("--state", choices=coord.ANSWER_STATES, default="completed")
+    p = sub.add_parser("coordinate", parents=[conn], help="tell the session that holds OTHER what the session of ITEM will do")
+    p.add_argument("item")
+    p.add_argument("other")
+    p.add_argument("strategy", choices=coord.STRATEGIES)
     p = sub.add_parser("remediate", parents=[conn], help="start one capped read-only diagnosis of ALERT")
     p.add_argument("alert")
     p = sub.add_parser("summary", parents=[conn], help="start one capped read-only summary of the monitored work")
@@ -482,7 +541,7 @@ def build_parser():
     return parser
 
 
-COMMANDS = {"ask": cmd_ask, "answer": cmd_answer, "remediate": cmd_remediate, "summary": cmd_summary, "cleanup": cmd_cleanup, "_watch": cmd_watch}
+COMMANDS = {"ask": cmd_ask, "answer": cmd_answer, "coordinate": cmd_coordinate, "remediate": cmd_remediate, "summary": cmd_summary, "cleanup": cmd_cleanup, "_watch": cmd_watch}
 
 
 def main(argv=None):
