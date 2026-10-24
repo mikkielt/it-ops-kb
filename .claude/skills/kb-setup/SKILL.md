@@ -5,7 +5,7 @@ description: Use when the it-ops-kb clone is fresh, a check or MCP server fails 
 
 # Set up it-ops-kb
 
-Work from the repository root. Change no kb content (the only changes are the local git setting in step 3, the local-scope MCP servers in step 4, the per-user query log file in step 5 and the optional per-user WezTerm in step 7). Do every step even if an earlier one fails, then report.
+Work from the repository root. Change no kb content (the only changes are the local git setting in step 3, the local-scope MCP servers in step 4, the per-user query log file in step 5, the optional per-user WezTerm in step 7 and the coordination settings in step 8). Do every step even if an earlier one fails, then report.
 
 Read this section of the `kb/_self/` docs first, not the whole doc (`selfdoc.py section` prints the section under a heading with its line numbers). Nothing is committed and no kb content is written, so no other section is needed; the commands are spelled out in the steps below:
 - `python3 _tools/selfdoc.py section maintaining "Setup (first session in a fresh clone)"`
@@ -89,9 +89,17 @@ WezTerm is an optional terminal that shows `kbmon` live in a pane beside the cha
 - Yes: run `python3 _tools/install_wezterm.py --yes`. It downloads the pinned release for this OS, refuses a file whose SHA-256 is not the pin (exit 1, nothing installed), installs it for this user only and prints the path to start it by; it changes no PATH and no shell profile. Exit 3: a WezTerm is already at the target and nothing changed; rerun with `--replace` only on their answer. Exit 2: this OS or CPU has no pinned file; report it and go on.
 - No, or no answer (a headless run): install nothing and quote the saved text, word for word, from `python3 _tools/install_wezterm.py --declined`. Report the step as SKIPPED, not FAIL.
 
-## 8. Do not
+## 8. Coordination settings (ask)
+Only when the repository root's `settings.json` holds no `coordination` object (`python3 _tools/kbsettings.py explain announce.when --root .` prints `source: default`): a clone that has one shows it with `python3 _tools/kbsettings.py show --root .` and is asked nothing. Ask the operator for the coordination settings in one AskUserQuestion batch of four questions, the default first in each (`kb/_self/coordination.md`, Coordination settings):
+- `announce.when`, when a session announces its work: `start,claim,midrun,edit` (default offered), `start,claim`, `start,claim,midrun`.
+- `strategy.decide`, who picks the strategy when no key settles it: `operator` (default offered), `claude`.
+- `strategy.landing`, what a session suggests when another item that touches the same files is being landed: `wait` (default offered), `ask`, `after`, `proceed`.
+- `strategy.working`, the same when that item is being worked: `ask` (default offered), `wait`, `after`, `proceed`.
+Run `python3 _tools/kbsettings.py init --root . --set KEY=VALUE` with one `--set` for each answer. It writes the whole `coordination` object of `settings.json` (the other keys take their defaults) and adds `coord` to the `hooks` list of `backlog.json`, which turns the coord hook on. Both files are the clone's own: report them as changed and commit nothing. No answer (a headless run): run nothing and report that the defaults apply.
+
+## 9. Do not
 - Run `fetch.py --diff` without a selection, or `--verify`/`--refresh`. They are long network jobs that write state. A first baseline is the user's decision.
 - Commit anything.
 
-## 9. Report
-End with a short table: step, result (PASS/FAIL/SKIPPED), evidence (last output line or error). Include the query log's mode and research setting as the person chose them, and whether WezTerm was installed or declined. Then list what the user must do (e.g. approve servers, install Python). Then point to the other skills: `/kb-lookup`, `/kb-review-workspace`, `/kb-gap`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-census`, `/kb-verify`, `/kb-git-sync`.
+## 10. Report
+End with a short table: step, result (PASS/FAIL/SKIPPED), evidence (last output line or error). Include the query log's mode and research setting as the person chose them, and whether WezTerm was installed or declined, and the coordination settings written. Then list what the user must do (e.g. approve servers, install Python). Then point to the other skills: `/kb-lookup`, `/kb-review-workspace`, `/kb-gap`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-census`, `/kb-verify`, `/kb-git-sync`.
