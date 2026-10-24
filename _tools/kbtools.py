@@ -21,6 +21,7 @@ MCP tool (their descriptions list the products the kb covers), and reports how m
 Answers: which tool, skill, agent or kb MCP tool answers a need, in plain words
 Answers: what the kb's command-line tools are and what each one answers
 Use: python3 _tools/kbtools.py [NEED] [--json]
+MCP: kb_tools names the tools, skills and agents that answer a need
 """
 import argparse
 import ast

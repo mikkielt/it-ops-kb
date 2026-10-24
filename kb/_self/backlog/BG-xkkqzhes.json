@@ -1,0 +1,19 @@
+{
+  "id": "BG-xkkqzhes",
+  "kind": "bug",
+  "title": "selfdoc.py check fails on origin/main: kbsettings.SETTINGS doc line numbers 170-179 are one line above their coordination.md lines 171-180",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "python3 _tools/selfdoc.py check exits 0: each SETTINGS line number in kbsettings.py points at the line of kb/_self/coordination.md that holds its key",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/selfdoc.py",
+      "check"
+    ]
+  },
+  "notes": "Found 2026-10-24 by the BG-esbdxtad worker: on a tree equal to origin/main plus a docstring line in kbtools.py, selfdoc.py check prints 10 PROBLEM lines (coordination.md:170-179, the line for announce.when ... strategy.decide lacks its key). kbsettings.SETTINGS numbers 170-179; the keys now stand on coordination.md lines 171-180 after ce1c1bfd2 (webhook commit) added a line above. Fix: renumber SETTINGS to 171-180 (touches _tools/kbsettings.py). It blocks check 0 of BG-esbdxtad and every item that runs selfdoc.py check.",
+  "filed_in": "clone-0ea70e5c"
+}
