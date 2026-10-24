@@ -56,6 +56,27 @@
   "depends_on": [
     "BG-yo4inwbx"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How is a stage-back or land known to run, for drift and for a rerun taking over a dead holder?",
+      "options": [
+        "process record",
+        "marker key"
+      ],
+      "recommendation": "process record",
+      "do": {
+        "process record": "ST-ux3lubfw",
+        "marker key": "ST-ux3lubfw"
+      },
+      "class": "agents-rule",
+      "answer": "process record",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-sucr3kfg review",
     "planned: SP-dx76osrn started 2026-10-24"
