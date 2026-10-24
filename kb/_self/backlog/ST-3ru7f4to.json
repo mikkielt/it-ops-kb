@@ -70,7 +70,11 @@
         "the unanswered blocking gates (open_gates' default), the ones that stop the landing": "ST-3ru7f4to",
         "every unanswered gate, provisional ones included": "ST-3ru7f4to"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "the unanswered blocking gates (open_gates' default), the ones that stop the landing",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Premise: in a planted clone with an active sprint and a stub claude, claim exits 0 and dispatch exits 0 (stub ok) or 1 (stub error) and the coord store holds no progress event and no run key (the check prints both runs' states as []). Today dispatch records the worker only in the claims ledger and its scratch directory (_tools/bl_dispatch.py:968,984), and a headless worker has no ops row or span: agent.run comes only from Agent-tool subagents after distill (_tools/ql_distill.py:257). Plan 2026-10-24: premise reproduced on base (precheck: ok and bad runs both print no progress events, run key absent). The check reads the state sequence per run; the goal's exit field on every move and the gates field on returned are not read by it, so implement them as the goal says (the review reads the diff). Runs before ST-oazktatz and ST-tb6tzrxa (shared bl_items.py, bl_dispatch.py). Planned into SP-sucr3kfg on 2026-10-24. Sprint started 2026-10-24.",
