@@ -2,7 +2,7 @@
   "id": "ST-i4ejksl2",
   "kind": "story",
   "title": "A loopback webhook receiver posts each Alertmanager alert as a coord ask to the operator, so a firing alert reaches kbmon's needs-you line",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-nij36lt7",
   "sprint": "SP-ymnz7b4n",
   "priority": "P3",
@@ -73,6 +73,28 @@
   ],
   "notes": "Filed at the plan of SP-d6gbc3tq (2026-10-24, night run): gate g1 of ST-54y7al4z chose a stdlib loopback webhook receiver that posts each alert as a coord ask to operator; that story ships the rules, the Alertmanager config and the webhook url, and ST-n5vf55qk shows an unanswered ask in the needs-you line, but no story writes the receiver itself. Not in the sprint: outside the night run's listed items. Until it exists a firing alert is dropped by Alertmanager at the webhook url. Parked draft, in no sprint. Premise (plan 2026-10-24): both checks fail on today's base (kbask.py has no webhook subcommand); reproduces. Day run: pulled out of parking by the operator's standing approval. Planned into SP-ymnz7b4n, 2026-10-24 day run. Check 0 rewritten at the first landing (2026-10-24 day run): the filed check carried literal backslash-n sequences in one line and died with a SyntaxError before it tested anything, so it failed on the base for the wrong reason. The new check 0 tests the same clause (a firing alert posts one ask to the operator naming the alert, item and sprint, no other label value) as real multi-line code. Check 1 and the clause mapping are unchanged.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "171ea78f448f6dfb04df1a8d8bcd2aed853db606",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, sys, os, json, socket, tempfile, time, urllib.request\nR = os.getcwd(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\ns = socket.socket(); s.bind(('127.0.0.1', 0)); port = s.getsockname()[1]; s.close()\np = subprocess.Popen([sys.executable, R + '/_tools/kbask.py', '--store', S, 'webhook', '--port', str(port)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)\ntime.sleep(2)\nlabels = {'alertname': 'KbmonGateWaiting', 'item': 'ST-ab12cd34', 'sprint': 'SP-ef56gh78', 'instance': 'LEAK-label-value'}\nbody = json.dumps({'version': '4', 'status': 'firing', 'alerts': [{'status': 'firing', 'labels': labels, 'annotations': {}}]}).encode()\ncode = 0\ntry:\n    urllib.request.urlopen(urllib.request.Request('http://127.0.0.1:%d/alert' % port, body, {'Content-Type': 'application/json'}), timeout=10)\nexcept Exception as e:\n    code = str(e)\np.terminate()\nev = subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, 'wait', '--since', '0', '--timeout', '0', '--kind', 'ask'], capture_output=True, text=True).stdout\ntext = subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, 'list', '--prefix', 'ask/'], capture_output=True, text=True).stdout\nprint('post', code, ev[:200], text[:300])\nsys.exit(0 if code == 0 and 'operator' in ev and all(x in text for x in ('KbmonGateWaiting', 'ST-ab12cd34', 'SP-ef56gh78')) and 'LEAK' not in text else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "45bdb7c511bd85e4"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, sys, os, json, socket, tempfile, time, shutil, urllib.request, urllib.error\nR = os.getcwd(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\ns = socket.socket(); s.bind(('127.0.0.1', 0)); port = s.getsockname()[1]; s.close()\np = subprocess.Popen([sys.executable, R + '/_tools/kbask.py', '--store', S, 'webhook', '--port', str(port)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)\ntime.sleep(2)\ndef post(doc):\n    try:\n        urllib.request.urlopen(urllib.request.Request('http://127.0.0.1:%d/alert' % port, json.dumps(doc).encode(), {'Content-Type': 'application/json'}), timeout=10)\n    except urllib.error.HTTPError:\n        pass\n    except OSError:\n        return False\n    return True\ndef alert(status, **labels):\n    return {'version': '4', 'status': status, 'alerts': [{'status': status, 'labels': dict({'alertname': 'KbmonGateWaiting', 'item': 'ST-00000000'}, **labels), 'annotations': {}}]}\nreached = post(alert('resolved')) and post({'hello': 'world'}) and post(alert('firing', instance='LEAKME-label-value'))\nlisten = ''\nfor cmd in (['lsof', '-nP', '-iTCP:%d' % port, '-sTCP:LISTEN'], ['ss', '-ltnH', 'sport = :%d' % port]):\n    if shutil.which(cmd[0]):\n        listen = subprocess.run(cmd, capture_output=True, text=True).stdout\n        break\np.terminate(); p.wait()\nasks = subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, 'wait', '--since', '0', '--timeout', '0', '--kind', 'ask'], capture_output=True, text=True).stdout\ntry:\n    n = len(json.loads(asks)['events'])\nexcept ValueError:\n    n = -1\nhelptext = subprocess.run([sys.executable, R + '/_tools/kbask.py', 'webhook', '--help'], capture_output=True, text=True).stdout\nyml = open(R + '/otel/alertmanager.yml', encoding='utf-8').read()\nloopback = ('127.0.0.1:%d' % port in listen or '[::1]:%d' % port in listen) and '*:%d' % port not in listen and '0.0.0.0:%d' % port not in listen\nprint('reached', reached, '| asks', n, '| leaked label', 'LEAKME' in asks, '| loopback', loopback, '| port 9095 in help and yml', '9095' in helptext, '9095' in yml)\nsys.exit(0 if reached and n == 1 and 'LEAKME' not in asks and loopback and '9095' in helptext and 'http://127.0.0.1:9095/alert' in yml else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "1d76baa30745eba8"
+      }
+    ]
+  }
 }
