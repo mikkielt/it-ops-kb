@@ -552,14 +552,15 @@ def compose_brief(bl, iid, known=(), probe=None, turns=None, known_suite=(), bud
 
 def resource_entries(raw, iid, sprint):
     """The `OTEL_RESOURCE_ATTRIBUTES` text RAW with `kb.item.id` IID and `kb.sprint.id` SPRINT (none: left out) added: its
-    other entries as they are (their values stay percent-encoded), except `user.email`, one whose decoded value holds an
-    email address and an earlier `kb.item.id` or `kb.sprint.id`."""
+    other entries as they are (their values stay percent-encoded), except `user.email`, one whose decoded key or value
+    holds an email address and an earlier `kb.item.id` or `kb.sprint.id`."""
     import kbwho
     kept = []
     for pair in raw.split(","):
         key, sep, value = pair.partition("=")
         key = key.strip()
         if sep and key and key.lower() not in ("user.email", "kb.item.id", "kb.sprint.id") \
+                and not kbwho.EMAIL_RX.search(urllib.parse.unquote(key)) \
                 and not kbwho.EMAIL_RX.search(urllib.parse.unquote(value)):
             kept.append(f"{key}={value.strip()}")
     for key, value in (("kb.item.id", iid), ("kb.sprint.id", sprint)):
