@@ -1596,7 +1596,7 @@ _Agent: agents-ner_
 - Consistent pseudonyms across teams (a shared vault/key vs per-team keys) is a linkability question:
   `privacy/gdpr-pseudonymisation.md` already records that EDPB Guidelines 01/2025 were adopted
   2025-01-16 only "as a version for public consultation," with no final version found as of 2026-09-23 —
-  so no adopted EDPB text was available this session to test a shared-key design against. [DOC S873, S870
+  so no adopted EDPB text was available this session to test a shared-key design against. [DOC S873
   — reused, see `privacy/gdpr-pseudonymisation.md`; not re-fetched]
 - Multi-tenant recognizer configuration (one shared endpoint serving several teams' recognizer sets) is a
   real operational split documented for Presidio only as "customize the recognizer registry from a file"
