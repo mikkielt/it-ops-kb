@@ -25,6 +25,16 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "With CLAUDE_PLUGIN_ROOT naming this copy and CLAUDE_PLUGIN_DATA set, kbroot.py push NAME refuses with exit 2 before any git call, as fetch --pin does, so the read-only plugin copy is never committed to (found by the SP-mguax5m3 review",
+      "check": 1
+    },
+    {
+      "clause": "add and add-remote have the same hole)",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kbroot.py",
     "kb/_self/tools.md",
