@@ -3,16 +3,34 @@
   "kind": "story",
   "title": "backlog.py next --batch prints the ready items that can run together by the overlap rule",
   "status": "draft",
+  "sprint": "SP-vxdacfpl",
   "priority": "P3",
   "rank": 0,
-  "goal": "next --sprint SP --batch prints up to four ready items whose touches do not overlap by bl_plan's rule (a shared kb/_self doc or a merge=union ledger is no overlap), so an orchestrator dispatches them together instead of reading touches by hand, and the sprint skill's run step 2 names the command",
+  "goal": "next --sprint SP --batch prints, in next order, up to four ready items whose touches meet neither each other nor a claimed item's touches by bl_plan's rule (a kb/_self doc is no overlap) and exits 0; the sprint skill's run step 2 names the command",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import subprocess,sys\np=subprocess.run([sys.executable,'_tools/backlog.py','next','--all','--batch'],capture_output=True,text=True)\nprint(p.returncode,(p.stdout+p.stderr)[-200:]);sys.exit(p.returncode)"
+        "\nimport json,os,subprocess as s,sys,tempfile,pathlib as P\nT=os.path.abspath(\"_tools/backlog.py\");r=P.Path(tempfile.mkdtemp())\ng=lambda *a:s.run([\"git\",\"-C\",str(r),*a],check=True,capture_output=True,text=True).stdout.strip()\ng(\"init\",\"-q\");(r/\"backlog.json\").write_text(json.dumps({\"item_dir\":\"items\",\"scratch_dir\":\"_cache/scratch\"}));(r/\"items\").mkdir()\ndef item(i,**k):\n d=dict(id=i,kind=\"story\",title=\"t\",status=\"todo\",priority=\"P3\",goal=\"g\",touches=[\"x.txt\"],checks=[{\"run\":[\"python3\",\"-c\",\"pass\"]}]);d.update(k)\n (r/\"items\"/(i+\".json\")).write_text(json.dumps(d,indent=2)+\"\\n\")\ndef commit():g(\"add\",\"-A\");g(\"-c\",\"user.name=x\",\"-c\",\"user.email=x@x\",\"commit\",\"-qm\",\"i\")\nenv=dict(os.environ,CLAUDE_CODE_SESSION_ID=\"chk\");env.pop(\"KB_BACKLOG_CONFIG\",None)\ndef run(*a):return s.run([sys.executable,T,\"--root\",str(r),*a],capture_output=True,text=True,env=env,timeout=120)\n\n(r/\"items\"/\"SP-cccccccc.json\").write_text(json.dumps({\"id\":\"SP-cccccccc\",\"kind\":\"sprint\",\"title\":\"s\",\"status\":\"active\",\"goal\":\"g\"}))\nS=\"SP-cccccccc\"\nitem(\"ST-aaaaaaaa\",sprint=S,priority=\"P1\",touches=[\"x.txt\"])\nitem(\"ST-bbbbbbbb\",sprint=S,priority=\"P2\",touches=[\"x.txt\"])\nitem(\"ST-cccccccc\",sprint=S,priority=\"P2\",touches=[\"kb/_self/d.md\"])\nitem(\"ST-dddddddd\",sprint=S,priority=\"P2\",touches=[\"kb/_self/d.md\"])\nitem(\"ST-eeeeeeee\",sprint=S,priority=\"P2\",touches=[\"y.txt\"])\nitem(\"ST-ffffffff\",sprint=S,priority=\"P3\",touches=[\"z.txt\"])\nitem(\"ST-gggggggg\",sprint=S,status=\"doing\",claimed_by=\"other\",priority=\"P1\",touches=[\"w.txt\"])\nitem(\"ST-hhhhhhhh\",sprint=S,priority=\"P1\",touches=[\"w.txt\"])\ncommit()\np=run(\"next\",\"--sprint\",S,\"--batch\");o=p.stdout\nprint(p.returncode,o[-500:],p.stderr[-300:])\nwant=(\"ST-aaaaaaaa\",\"ST-cccccccc\",\"ST-dddddddd\",\"ST-eeeeeeee\");skip=(\"ST-bbbbbbbb\",\"ST-ffffffff\",\"ST-gggggggg\",\"ST-hhhhhhhh\")\nsys.exit(0 if p.returncode==0 and all(x in o for x in want) and not any(x in o for x in skip) else 1)\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport sys\nt=open(\"skills/sprint/SKILL.md\",encoding=\"utf-8\").read()\ni=t.find(\"## run\");j=t.find(\"## review\")\nprint(i,j)\nsys.exit(0 if 0<=i<j and \"next --sprint SP --batch\" in t[i:j] else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "next --sprint SP --batch prints, in next order, up to four ready items whose touches meet neither each other nor a claimed item's touches by bl_plan's rule (a kb/_self doc is no overlap) and exits 0",
+      "check": 0
+    },
+    {
+      "clause": "the sprint skill's run step 2 names the command",
+      "check": 1
     }
   ],
   "touches": [
@@ -24,7 +42,7 @@
     "kb/_self/backlog.md"
   ],
   "links": [
-    "parked: SP-5gph7fh6 close"
+    "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],
   "notes": "SP-5gph7fh6 close: the orchestrator ran ST-o2tr2ry4, ST-q4qqiw2w and ST-jokdpvsi one after another because all three named kb/_self/monitoring.md, which shared_doc in _tools/bl_plan.py exempts; about three worker rounds where one would do."
 }
