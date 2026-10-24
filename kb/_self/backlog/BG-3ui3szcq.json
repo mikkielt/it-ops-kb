@@ -1,0 +1,26 @@
+{
+  "id": "BG-3ui3szcq",
+  "kind": "bug",
+  "title": "selfcheck allow-rules reads every skill under the root's skills/ directory, so a host project's own skill scripts fail it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "skill_text_scripts reads only the kb's sprint, item and backlog skills and the worker file, so a host project's own skills/ directory adds no allow-rules failure",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "\nimport os, sys, tempfile, json\nsys.path.insert(0, \"_tools\")\nimport bl_selfcheck as sc\nroot = tempfile.mkdtemp()\nos.makedirs(os.path.join(root, \"skills\", \"mine\")); os.makedirs(os.path.join(root, \".claude\"))\nopen(os.path.join(root, \"skills\", \"mine\", \"SKILL.md\"), \"w\").write(\"Run python3 _tools/myown.py go first.\\n\")\njson.dump({\"permissions\": {\"allow\": [\"Bash(git status)\"]}}, open(os.path.join(root, \".claude\", \"settings.json\"), \"w\"))\nres = sc.check_allow(root, commands=[], tools=())\nprint(res[\"state\"], res.get(\"detail\"))\nsys.exit(1 if \"myown\" in str(res.get(\"detail\")) else 0)\n"
+    ]
+  },
+  "touches": [
+    "_tools/bl_selfcheck.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-s5k72bhd review"
+  ],
+  "notes": "Found by the SP-s5k72bhd review of BG-cwitx4zn (headless reviewer session 1b63a864, verified by the reviewer with the repro). In the kb's own clone skills/ holds only backlog, item and sprint, so nothing shows there.",
+  "filed_in": "clone-0ea70e5c"
+}
