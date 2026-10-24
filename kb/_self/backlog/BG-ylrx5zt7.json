@@ -33,6 +33,25 @@
   "touches": [
     "_tools/kbask.py"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does kbask stop the observer's git log and git show rules admitting --output=FILE?",
+      "options": [
+        "Pin git log and git show to exact commands (git log --oneline -20, git log -1, git show --stat HEAD, git show HEAD)",
+        "Drop the git log and git show rules from the allow list"
+      ],
+      "recommendation": "Pin git log and git show to exact commands (git log --oneline -20, git log -1, git show --stat HEAD, git show HEAD)",
+      "do": {
+        "Pin git log and git show to exact commands (git log --oneline -20, git log -1, git show --stat HEAD, git show HEAD)": "BG-ylrx5zt7",
+        "Drop the git log and git show rules from the allow list": "BG-ylrx5zt7"
+      },
+      "class": "design",
+      "answer": "Pin git log and git show to exact commands (git log --oneline -20, git log -1, git show --stat HEAD, git show HEAD)",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-w6amecjt review"
   ],

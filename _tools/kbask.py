@@ -94,7 +94,8 @@ ALLOWED_TOOLS = (
     "Bash(python3 _tools/backlog.py horizon *)",
     "Bash(python3 _tools/coord.py get *)", "Bash(python3 _tools/coord.py list *)",
     "Bash(python3 _tools/coord.py wait *)", "Bash(python3 _tools/coord.py digest *)",
-    "Bash(git log *)", "Bash(git status *)", "Bash(git show *)",
+    # git log and git show take --output=FILE, which writes, and a rule cannot exclude a flag: only these exact commands
+    "Bash(git log --oneline -20)", "Bash(git log -1)", "Bash(git status *)", "Bash(git show --stat HEAD)", "Bash(git show HEAD)",
 )
 PROMPT = ("Diagnose the alert whose id is {alert}. Run `python3 _tools/kbmon.py --json`, find the entry of `alerts` with that "
           "id and follow your role: say what is wrong, since when and what it blocks, and end with at most one proposed "
