@@ -18,5 +18,13 @@
     "_tools/kbcommon.py",
     "_tools/test_leaks.py"
   ],
+  "relates_to": [
+    "BG-v5tq4jkz",
+    "BG-nx6jzvop"
+  ],
+  "links": [
+    "parked: SP-jopt2c3z review"
+  ],
+  "notes": "SP-jopt2c3z review (S3, other): BG-nx6jzvop's start lookahead calls a run a path when every slash piece is at most 16 letters or digits, no plus, and a dot, underscore or hyphen follows. Random real-looking bodies of 20 to 40 characters with one slash pass in 6 to 14 percent of cases for 20 to 30 characters and 1 percent at 40; none at 78 or more. Real SEC1 and PKCS8 EC bodies are over 100 characters, so this is a theoretical case. Also: the end line of an armor block counts as a path suffix for a body under about 33 characters. Tension with BG-v5tq4jkz: the fix must separate a path from a body without a fixed segment length.",
   "filed_in": "clone-0ea70e5c"
 }
