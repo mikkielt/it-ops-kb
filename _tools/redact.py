@@ -85,12 +85,15 @@ SECRETS = [re.compile(f"(?i:{p[4:]})" if p.startswith("(?i)") else p) for p in k
 # key may close its quote behind backslashes (JSON inside a JSON string, \"key\": \"v\") or a bracket (cfg['key'] = 'v'), a
 # quoted value may hold an escaped quote ("a\"b"), and an escaped-quote value (\"v\") ends at the escaped quote whose
 # backslash run is as long as the opening one; a longer run before a quote (\\\" inside \"...\") is a nested escaped quote.
+# One with a nested escaped quote and no closing quote (a JSON string cut off mid-value) runs to the end of the line.
 _SECRET_NAME = r"(?:password|passwd|pwd|secret|api[_-]?key|access[_-]?key)"
 ASSIGNMENT = re.compile(
     r"""(?i)((?:\[\\*["'][\w.-]*?""" + _SECRET_NAME + r"""\\*["']\]|(?<![\w.-])[\w.-]*?""" + _SECRET_NAME
     + r"""(?:\\*["'])?)[ \t]*[:=](?![=>])[ \t]*)"""
     r"""((?P<bd>\\+)"(?:[^"\\\n]|\\+(?![\\"])|(?P=bd)\\+")*(?P=bd)"|(?P<bs>\\+)'(?:[^'\\\n]|\\+(?![\\'])|(?P=bs)\\+')*(?P=bs)'"""
-    r"""|"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|\\*["']?[^\s&;"']+)""")
+    r"""|"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'"""
+    r"""|(?P<bu>\\+)"(?:[^"\\\n]|\\+(?![\\"]))*(?P=bu)\\+"(?:[^"\\\n]|\\+(?![\\"])|(?P=bu)\\+")*"""
+    r"""|\\*["']?[^\s&;"']+)""")
 ASSIGNED_PLACEHOLDER = re.compile(r"<[^<>\s]*>|\$\{[^}\s]*\}|%\w+%|\*{3}")  # a value that is not a secret
 # Nine English function words: a bare word of this list after a secret key name or an Authorization scheme is prose ("LAPS
 # password: where stored", "use Authorization: Bearer in Graph"), not a value. No other word is kept, a quoted word

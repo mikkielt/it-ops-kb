@@ -20,6 +20,25 @@
     "kb/_self/querylog.md",
     "_tools/test_redact.py"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How far does redaction of a cut-off escaped-quote value reach?",
+      "options": [
+        "End of line, only with a nested escaped quote",
+        "Also without a nested escaped quote"
+      ],
+      "recommendation": "End of line, only with a nested escaped quote",
+      "do": {
+        "End of line, only with a nested escaped quote": "BG-kgxtn54i",
+        "Also without a nested escaped quote": "BG-kgxtn54i"
+      },
+      "class": "querylog",
+      "answer": "End of line, only with a nested escaped quote",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-5xnbspyp review"
   ],
