@@ -1,0 +1,36 @@
+{
+  "id": "ST-6ckwz7zq",
+  "kind": "story",
+  "title": "kbtools.py names the backlog.py subcommand that answers a which-tool question, such as the landing step durations",
+  "status": "draft",
+  "parent": "EP-sqt62vj2",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbtools.py 'which tool shows how long each landing step took' names backlog.py landings among its first three lines",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess as s,sys\np=s.run([sys.executable,\"_tools/kbtools.py\",\"which tool shows how long each landing step took\"],capture_output=True,text=True)\ntop=p.stdout.splitlines()[:3];print(p.returncode,top)\nsys.exit(0 if p.returncode==0 and any(\"backlog.py landings\" in x for x in top) else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbtools.py 'which tool shows how long each landing step took' names backlog.py landings among its first three lines",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/kbtools.py",
+    "_tools/backlog.py",
+    "kb/_self/tools.md"
+  ],
+  "relates_to": [
+    "EP-5mp6pwnn",
+    "EP-jqjlwiar"
+  ],
+  "notes": "From the 2026-10-24 telemetry and query-log analysis: the query log judged 'which tool shows how long each landing step took' missed this week (1 of 3 which-tool questions in 7 days; kbtools.py is called 140 times a week): kb_ask --route sends it to kind tools, but kbtools.py prints kb-lookup, kb_show and kb-sprint first and no line names backlog.py landings. backlog.py has 48 subcommands and one catalog line; in a probe that used each of 13 subcommands' own help text as the question, 11 (brief, dispatch, stage-back, procs, ops, landings, own, selfcheck, upstream-report, upstream-import, config) did not bring backlog.py into the top three lines (biased: some are answered by a skill or an MCP tool). Saves a few turns a week and a model lookup per miss. The subcommand-level gap of EP-5mp6pwnn (an agent finds the deterministic tool from one entry point); the ranking bugs BG-il5fgxps and BG-mqhzivkk are different. Also wanted: every subcommand named in a tool's usage block is findable by two of its own help words.",
+  "filed_in": "clone-0ea70e5c"
+}
