@@ -1,0 +1,22 @@
+{
+  "id": "SP-vxdacfpl",
+  "kind": "sprint",
+  "title": "The orchestrator reads, waits and starts workers with one call each",
+  "status": "planned",
+  "goal": "show prints an item's chosen fields or its version at a git ref as plain JSON; report prints a returned worker's outcome, commits and gates in one call; the worker brief carries the Conduct for changes section; a coord wait ends when a watched worker process has ended; next --batch prints the ready items that can run together; begin claims, pushes the claims and detaches the dispatch of items in one call",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
