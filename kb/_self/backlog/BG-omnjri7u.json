@@ -2,7 +2,7 @@
   "id": "BG-omnjri7u",
   "kind": "bug",
   "title": "horizon --hook advises git merge --ff-only on a branch that is both ahead of and behind origin/main, where the fast-forward refuses",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-s5k72bhd",
   "priority": "P2",
   "rank": 0,
@@ -54,6 +54,28 @@
     "parked: SP-tsb23kev review"
   ],
   "notes": "Plan 2026-10-24: premise reproduces (repro fails on the base). The added check passes before the work by design: it pins the fast-forward line of a branch that is only behind. g1 (agents-rule) answered with its recommendation, pre-approved by the operator for the 2026-10-24 day run.",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "93ece446cdaf813efb3d49540eda379c3e002423",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport subprocess, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport bl_view\nd = tempfile.mkdtemp()\ng = lambda *a: subprocess.run([\"git\", \"-C\", d, \"-c\", \"user.name=t\", \"-c\", \"user.email=t@example.com\", *a], capture_output=True, text=True, check=True).stdout.strip()\ng(\"init\", \"-q\"); g(\"commit\", \"-q\", \"--allow-empty\", \"-m\", \"c0\"); base = g(\"rev-parse\", \"HEAD\")\ng(\"commit\", \"-q\", \"--allow-empty\", \"-m\", \"c1\"); g(\"update-ref\", \"refs/remotes/origin/main\", \"HEAD\")\ng(\"reset\", \"-q\", \"--hard\", base)\nline = bl_view.lag_line(d)\nprint(repr(line))\nsys.exit(0 if \"--ff-only\" in line else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "ae2b91744e58e0f6"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, subprocess, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport bl_view\nd = tempfile.mkdtemp()\ng = lambda *a: subprocess.run([\"git\", \"-C\", d, \"-c\", \"user.name=t\", \"-c\", \"user.email=t@example.com\", *a], capture_output=True, text=True, check=True).stdout.strip()\ng(\"init\", \"-q\"); g(\"commit\", \"-q\", \"--allow-empty\", \"-m\", \"c0\"); base = g(\"rev-parse\", \"HEAD\")\ng(\"commit\", \"-q\", \"--allow-empty\", \"-m\", \"c1\"); g(\"update-ref\", \"refs/remotes/origin/main\", \"HEAD\")\ng(\"reset\", \"-q\", \"--hard\", base); g(\"commit\", \"-q\", \"--allow-empty\", \"-m\", \"c2\")\nline = bl_view.lag_line(d)\nprint(repr(line))\nsys.exit(1 if \"--ff-only\" in line else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "73cd1b82fa60d154"
+      }
+    ]
+  }
 }
