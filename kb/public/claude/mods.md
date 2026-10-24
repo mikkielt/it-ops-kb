@@ -3,7 +3,7 @@ topic: claude/mods
 priority: P3
 applies_to: "Claude Code mods (function hooks in a plugin), docs pages dateModified 2026-10-08 to 2026-10-17, read 2026-10-18; mods on by default from Claude Code 2.1.287 (Desktop 2.1.286)"
 retrieved_utc: 2026-10-24
-sources: [S-oawin5n2, S-y5j64svc, S-sao3dfcq, S-mvuodgli, S-kppz7qns, S-ho47nrnt, S-4vxgduip, S-toe7z3kj, S-3peuisvr, S-hvuk3dqt]
+sources: [S-oawin5n2, S-y5j64svc, S-sao3dfcq, S-mvuodgli, S-kppz7qns, S-ho47nrnt, S-4vxgduip, S-toe7z3kj, S-3peuisvr, S-hvuk3dqt, S-jgbv7by2]
 status: partial
 ---
 
@@ -65,6 +65,33 @@ route for text only the model reads is a `prompt.submit` hook's `context` (see t
 - `--plugin-dir <directory>` loads a plugin directory for one session and reloads its hooks module when the file is
   saved; `CLAUDE_CODE_PLUGIN_DIRS` loads directories for apps that take no flag (`:` separated, `;` on Windows).
   [DOC S-mvuodgli]
+
+### Import rules, validate and the test kit
+- A hooks module imports only files inside the plugin directory, by relative path, with `import` declarations at the top
+  of the file (`import { name } from './file.js'`); the one bare import allowed is `claude-code`, for types and a few
+  helpers. A dynamic `import()` fails validation with `a dynamic import(); a hooks module imports its own files with an
+  import declaration`, and every file is an ES module (`import`, not `require`). [DOC S-jgbv7by2]
+- `claude plugin validate` runs on the hooks module's source the same static analysis Claude Code runs when it loads a
+  mod. Each mods API call is written in full (`$.store.get('notes')`); `$` may be passed to a function declared at the
+  top level of the same file (the `calls:` line then reads `$.store.get (via loadNotes)`), but passing `$` to a method, to
+  a function defined inside the hook or to a function imported from another of the mod's files fails validation. The
+  `read` and `update` functions that `$.state` uses are the imports that can take `$`. `const ui = $.ui` fails with
+  `$.ui is used as a value`. [DOC S-jgbv7by2]
+- `claude plugin test [directory]` runs every file under the directory (the current directory when none is given) whose
+  name ends in `.test.ts` or `.test.tsx` and exits with status 1 when a test fails; each file imports the test kit from
+  `claude-code/testing`, needs at least one `test()` (else `declares no test(): nothing ran`) and may import the mod's own
+  files and sibling `.ts` helpers. A test runs no model, store or tool, so every mods API call the mod makes needs a stub
+  passed to `on` under the call's name, which answers in Claude Code's place: `on('process.run', ...)` returning
+  `{ value: { exitCode: 0, stdout: '...', stderr: '' } }` for `$.process.run` (`e.argv` is the argument list, `e.init`
+  holds `cwd` and `timeoutMs`), `on('ui.notify', ...)` returning `{ value: { isSent: true, channel: 'terminal_bell' } }`
+  for `$.ui.notify`, and `mock.clock(on)` for the clock (`$.clock`). A stub that returns a bare value fails the test
+  (`returned neither { value } nor { deny }`), a call with no stub fails with `no implementation for` the call's name, and
+  `{ deny: 'the reason' }` makes the call reject in the mod; the kit itself answers `$.ui.invalidate`, `$.state` and
+  `$.session.append` calls. [DOC S-mvuodgli, S-kppz7qns]
+- `mock.clock(on)` answers `$.clock` from a mock clock that starts at `0` (or at `{ now }`) and moves only when the test
+  calls `await clock.advance(ms)`, `clock.set(ms)` or `clock.settle()`, so a test of a `$.clock.every` timer does not wait;
+  without it a mod's `$.clock.now()` fails with `no implementation for clock.now`. `mock.store`, `mock.env` and
+  `mock.session` are the ready-made mocks for the store, environment variables and appended rows. [DOC S-kppz7qns]
 
 ### Pane and band
 - A pane is a sidebar beside the transcript in a wide fullscreen terminal, or a framed region above the prompt
@@ -143,6 +170,7 @@ route for text only the model reads is a `prompt.submit` hook's `context` (see t
 - Use the mods API: https://code.claude.com/docs/en/plugins/mods/api
 - React to events: https://code.claude.com/docs/en/plugins/mods/events
 - Mods reference (limits, render sites): https://code.claude.com/docs/en/plugins/mods/reference
+- Create a mod: https://code.claude.com/docs/en/plugins/mods/create
 - Test a mod: https://code.claude.com/docs/en/plugins/mods/test
 - Manage mods for your organization: https://code.claude.com/docs/en/plugins/mods/admin
 - Related articles: [plugins.md](plugins.md), [hooks.md](hooks.md), [statusline.md](statusline.md),

@@ -164,7 +164,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `claude/large-codebases` | P3 | complete | `claude/large-codebases.md` | 7 |
 | `claude/mcp-install-scopes` | P3 | partial | `claude/mcp-install-scopes.md` | 6 |
 | `claude/mcp-tool-search` | P3 | complete | `claude/mcp-tool-search.md` | 5 |
-| `claude/mods` | P3 | partial | `claude/mods.md` | 10 |
+| `claude/mods` | P3 | partial | `claude/mods.md` | 11 |
 | `claude/parallel-sessions` | P3 | partial | `claude/parallel-sessions.md` | 11 |
 | `claude/powershell-tool` | P3 | partial | `claude/powershell-tool.md` | 6 |
 | `claude/statusline` | P3 | complete | `claude/statusline.md` | 3 |
