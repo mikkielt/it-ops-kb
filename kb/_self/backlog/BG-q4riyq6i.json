@@ -1,0 +1,21 @@
+{
+  "id": "BG-q4riyq6i",
+  "kind": "bug",
+  "title": "bl_items.move_run and bl_land.move_run are the same function twice",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "bl_items.move_run is bl_land.move_run: the run-state move lives in bl_land (ST-tb6tzrxa put it there because bl_land cannot import bl_items without a cycle) and bl_items, which already imports bl_land, reads it from there, so one function moves the state",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '_tools'); import bl_items, bl_land; assert bl_items.move_run is bl_land.move_run"
+    ]
+  },
+  "touches": [
+    "_tools/bl_items.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
