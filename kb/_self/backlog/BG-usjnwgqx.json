@@ -23,6 +23,27 @@
   "depends_on": [
     "BG-xn4jrmn7"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does land remove a leftover land-<id> worktree before it looks for another worktree holding work/<id>?",
+      "options": [
+        "remove it in land_locked just before checked_out_elsewhere",
+        "make checked_out_elsewhere skip land-<id> worktrees"
+      ],
+      "recommendation": "remove it in land_locked just before checked_out_elsewhere",
+      "do": {
+        "remove it in land_locked just before checked_out_elsewhere": "BG-usjnwgqx",
+        "make checked_out_elsewhere skip land-<id> worktrees": "BG-usjnwgqx"
+      },
+      "class": "agents-rule",
+      "answer": "remove it in land_locked just before checked_out_elsewhere",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-47w4ngr6 review"
   ],
