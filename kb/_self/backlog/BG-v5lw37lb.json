@@ -1,0 +1,22 @@
+{
+  "id": "BG-v5lw37lb",
+  "kind": "bug",
+  "title": "tools.md's bl_authority.py row leaves out the DOC_SECRET exception to the token-named Markdown docs it blanks",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "the bl_authority.py row of kb/_self/tools.md says a token-named Markdown doc is blanked from the secrets search except one with bearer, ssh, passphrase or PAT in its name, as kb/_self/backlog.md says",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport sys\nrow = next(l for l in open(\"kb/_self/tools.md\", encoding=\"utf-8\") if l.startswith(\"| `_tools/bl_authority.py`\"))\nprint(\"tools.md bl_authority row names the DOC_SECRET exception:\", \"DOC_SECRET\" in row or \"bearer-token.md\" in row)\nsys.exit(0 if (\"DOC_SECRET\" in row or \"bearer-token.md\" in row) else 1)\n"
+    ]
+  },
+  "repro_reason": "the claim is a sentence of a doc row; the only run is a read of that row's text",
+  "touches": [
+    "kb/_self/tools.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
