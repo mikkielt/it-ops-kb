@@ -41,6 +41,8 @@ root is not on disk as `missing` and exits 0; `add` refuses a name or prefix a p
 
 Exit: 0 done (always, for `fetch --hook`), 1 a fetch, a submodule add or a push failed (stderr names the root), 2 refused (bad name or prefix, taken, the directory exists,
 a name that is no fetch root, or for `push` a fetch root, a root not checked out, or one with uncommitted changes).
+Where this copy runs as the plugin (kbcommon.plugin_hosted: the copy is read-only), `add`, `add-remote`, `push` and
+`fetch --pin` are refused, exit 2, before any git call or write: they write the plugin copy.
 
 Answers: which roots the kb has, their id prefix, visibility and size, and how to add or fetch one
 Use: python3 _tools/kbroot.py list|add|add-remote|fetch|push [ARGS]
@@ -102,7 +104,18 @@ def cmd_list():
     return 0
 
 
+def plugin_refusal(writes):
+    """The refusal (exit 2) of a command whose `writes` land in the plugin copy, read-only here; 0 where this copy is not run as the plugin."""
+    if not kbcommon.plugin_hosted():
+        return 0
+    print(f"refused: {writes}, which is in the plugin copy, read-only here; run it in a clone of the team's repository")
+    return 2
+
+
 def cmd_add(a):
+    refused = plugin_refusal("`add` creates kb/NAME/")
+    if refused:
+        return refused
     name, prefix = a.name, a.prefix
     if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", name) or name == "kb":
         print(f"refused: root name {name!r} must be lowercase letters, digits and -")
@@ -146,6 +159,9 @@ def pointer_md(name, prefix, visibility, team, url, ref, access, description):
 
 
 def cmd_add_remote(a):
+    refused = plugin_refusal("`add-remote` writes the pointer file kb/_roots/NAME.md")
+    if refused:
+        return refused
     name, prefix = a.name, a.prefix
     if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", name) or name == "kb":
         print(f"refused: root name {name!r} must be lowercase letters, digits and -")
@@ -404,10 +420,10 @@ def write_pin(p, commit):
 def cmd_fetch(a):
     if a.hook:
         return cmd_fetch_hook()
-    if a.pin and kbcommon.plugin_hosted():
-        print("refused: --pin writes the pointer file kb/_roots/NAME.md, which is in the plugin copy, read-only here; "
-              "pin in a clone of the team's repository")
-        return 2
+    if a.pin:
+        refused = plugin_refusal("--pin writes the pointer file kb/_roots/NAME.md")
+        if refused:
+            return refused
     fetchable = [p for p in kbcommon.pointers() if p.access == "fetch"]
     by_name = {p.name: p for p in fetchable}
     if a.names:
@@ -446,6 +462,9 @@ def cmd_fetch(a):
 
 
 def cmd_push(a):
+    refused = plugin_refusal("`push` commits the gitlink bump of kb/NAME")
+    if refused:
+        return refused
     by_name = {p.name: p for p in kbcommon.pointers()}
     p = by_name.get(a.name)
     if p is None:
