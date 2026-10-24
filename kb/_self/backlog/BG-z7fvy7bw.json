@@ -2,7 +2,7 @@
   "id": "BG-z7fvy7bw",
   "kind": "bug",
   "title": "kb/_self/monitoring.md still says the items of a sprint share the trace of the kb.sprint root span, while each kb.item has its own trace",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-f2o3aqm2",
   "priority": "P3",
   "rank": 0,
@@ -27,6 +27,19 @@
   ],
   "notes": "Found by the review of SP-ymnz7b4n (2026-10-24, S3): ST-k4napiev gave each kb.item its own trace; line 57 of the doc still says the items share the kb.sprint root span's trace. Also the kb.sprint span is then in another trace than its items. Plan 2026-10-24: premise runs on base (exit 1: the Spans paragraph says the items share the sprint trace). Repro tightened to read the whole goal: the stale sentence is gone, and the paragraph says a kb.item has a trace of its own and the kb.sprint span is its parent (mon_events.run_records: kb.item keeps the trace of its run, parent is the kb.sprint span of the sprints own trace, sent once every claimed items run has ended). Also the paragraph cites the section The event and span records: the worker checks that section for the same sentence.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "9e562459d370cadd188b579585e730b49bc94131",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re, sys\nt = open(\"kb/_self/monitoring.md\", encoding=\"utf-8\").read()\np = next((l for l in t.splitlines() if l.startswith(\"- **Spans.**\")), \"\")\nstale = bool(re.search(r\"items of a sprint share the trace|share the trace of its `kb.sprint`\", p))\nown = bool(re.search(r\"trace of (its|their) own|its own trace|their own traces?|own trace\", p))\nparent = bool(re.search(r\"kb\\.sprint[^.]*\\bparent|\\bparent[^.]*kb\\.sprint\", p))\nprint(\"Spans paragraph found:\", bool(p), \"| still says the items share the sprint trace:\", stale, \"| says a kb.item has a trace of its own:\", own, \"| says the kb.sprint span is the parent of a kb.item:\", parent)\nsys.exit(0 if p and not stale and own and parent else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e29a0d40bec2b60b"
+      }
+    ]
+  }
 }
