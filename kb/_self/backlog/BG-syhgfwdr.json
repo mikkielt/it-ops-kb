@@ -2,7 +2,7 @@
   "id": "BG-syhgfwdr",
   "kind": "bug",
   "title": "kb_mcp.bash_denied reads a settings file whose permissions is an empty list, false, 0 or an empty string as holding no deny rule",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4ppjbh4k",
   "priority": "P3",
   "rank": 0,
@@ -61,6 +61,28 @@
   ],
   "notes": "Found by the SP-swavez3g review (S3) of BG-i4y5n5kt: `(settings.get(\"permissions\") or {})` turns a falsy non-object into an empty object. Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. The pin check passes before the work by design: it holds behaviour the fix must keep.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "e74c25e9fe50eeec4b33bbcda74fdf110fbbba46",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, json, tempfile\nsys.path.insert(0, \"_tools\")\nimport kbcommon, kb_mcp\nfor name in ({}, {\"permissions\": {}}):\n    T = tempfile.mkdtemp()\n    os.makedirs(os.path.join(T, \".claude\"))\n    json.dump(name, open(os.path.join(T, \".claude\", \"settings.local.json\"), \"w\"))\n    kbcommon.HOME = type(kbcommon.HOME)(T)\n    r = kb_mcp.bash_denied(\"rm -rf x\")\n    assert r is None, (\"a settings file with no permissions key or an empty object holds no deny rule, but bash_denied refused\", name, r)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, json, tempfile\nsys.path.insert(0, \"_tools\")\nimport kbcommon, kb_mcp\nbad = []\nfor v in ([], False, 0, \"\"):\n    T = tempfile.mkdtemp()\n    os.makedirs(os.path.join(T, \".claude\"))\n    json.dump({\"permissions\": v}, open(os.path.join(T, \".claude\", \"settings.local.json\"), \"w\"))\n    kbcommon.HOME = type(kbcommon.HOME)(T)\n    if kb_mcp.bash_denied(\"rm -rf x\") is None:\n        bad.append(v)\nprint(\"permissions values read as holding no deny rule:\", bad)\nsys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "de27962c12e8350d"
+      }
+    ]
+  }
 }
