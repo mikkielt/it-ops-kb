@@ -2,7 +2,7 @@
   "id": "ST-qzyvrelh",
   "kind": "story",
   "title": "A refused landing and the rework after it stay one kb.item span until the run lands or is released",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-ymnz7b4n",
   "priority": "P3",
@@ -30,5 +30,7 @@
     "parked: SP-d6gbc3tq review"
   ],
   "notes": "Review gap (S2) of SP-d6gbc3tq: ST-3bmmg73g gate g1 (provisional, kept: it matches the goal text 'claimed to landed, refused or released') ends kb.item at each refused, so a rework worker starts a new trace and a kb.sprint root span closing 'when every item has ended' would close early. This story replaces that answer if the operator takes it. Plan 2026-10-24 (day run, pre-approved by the operator): take the reviewer's choice in these notes: the refused landing and the rework stay one kb.item span (one trace, kb.landing children, kb.worker child), replacing the provisional answer g1 of ST-3bmmg73g that ended kb.item at each refused. The code does not argue otherwise. No gate. Premise (plan 2026-10-24): the story's check fails on today's base (precheck); reproduces. Planned into SP-ymnz7b4n, 2026-10-24 day run.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
