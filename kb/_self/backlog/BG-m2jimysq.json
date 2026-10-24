@@ -2,7 +2,7 @@
   "id": "BG-m2jimysq",
   "kind": "bug",
   "title": "kbroot.py fetch --pin fails on a pointer that starts with a byte order mark and prints the commit as the reason",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-swavez3g",
   "priority": "P3",
@@ -42,5 +42,7 @@
     "parked: SP-c6w5hjmc review"
   ],
   "notes": "Planner 2026-10-24: repro also asserts the pointer keeps its byte order mark and CRLF endings and holds the pin; clause 2 (a failed pin write names its reason, never the commit hash) is read by a second check that makes write_pin fail.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
