@@ -2,7 +2,7 @@
   "id": "ST-pja652lj",
   "kind": "story",
   "title": "kbmon's sessions panel lists each overlap between live sessions with its announced strategy, and an undecided overlap enters the needs-you line",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
   "sprint": "SP-ky7xz6d2",
   "priority": "P2",
@@ -54,6 +54,6 @@
     "ST-wqqpspwl",
     "ST-t2loi3od"
   ],
-  "notes": "Premise (run 2026-10-24 on the main branch at 5b032a3f5): both checks fail today: the sessions panel data has no overlaps key and the needs-you line reads 'needs you: nothing' with two live sessions whose intents share a touch. Plan: the earlier single check kept; one check added for the clause the first did not read (an overlap younger than needs_you_after_min, or decided by a coordinate event, is no needs-you entry), and the first now also reads the text view, both labels and operator ids, the shared files and the receipt count. The shape the checks pin: each overlap is an object with a and b (session label, operator, item), files and strategy (undecided or the announced one). Shares mon_needs.py and mon_status.py with the kbmon sprint's ST-czgocppq and ST-n5vf55qk: held --overlaps orders the claims. Waits for ST-wqqpspwl (the coordinate event).",
+  "notes": "Premise (run 2026-10-24 on the main branch at 5b032a3f5): both checks fail today: the sessions panel data has no overlaps key and the needs-you line reads 'needs you: nothing' with two live sessions whose intents share a touch. Plan: the earlier single check kept; one check added for the clause the first did not read (an overlap younger than needs_you_after_min, or decided by a coordinate event, is no needs-you entry), and the first now also reads the text view, both labels and operator ids, the shared files and the receipt count. The shape the checks pin: each overlap is an object with a and b (session label, operator, item), files and strategy (undecided or the announced one). Shares mon_needs.py and mon_status.py with the kbmon sprint's ST-czgocppq and ST-n5vf55qk: held --overlaps orders the claims. Waits for ST-wqqpspwl (the coordinate event). Sprint SP-ky7xz6d2 started 2026-10-24 on the operator's standing approval for the night run.",
   "filed_in": "clone-0ea70e5c"
 }
