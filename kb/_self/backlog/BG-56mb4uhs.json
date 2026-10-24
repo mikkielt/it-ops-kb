@@ -2,7 +2,7 @@
   "id": "BG-56mb4uhs",
   "kind": "bug",
   "title": "kbwho --otel-attributes keeps an email in OTEL_SERVICE_NAME and in an OTEL_RESOURCE_ATTRIBUTES key",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ymnz7b4n",
   "priority": "P2",
   "rank": 0,
@@ -45,6 +45,19 @@
     "parked: SP-yjugq5c2 review"
   ],
   "notes": "Planned into SP-ymnz7b4n, 2026-10-24 day run. Precheck: repro fails on the base.",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "3c5f2e7c9f561228fa21656f177d89e207a64827",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, subprocess, sys\nem = \"jan\" + chr(64) + \"corp-mail.test\"\nr = subprocess.run([sys.executable, \"_tools/kbwho.py\", \"--otel-attributes\"], env=dict(os.environ, OTEL_SERVICE_NAME=em, OTEL_RESOURCE_ATTRIBUTES=em.replace(chr(64), \"%40\") + \"=1\"), capture_output=True, text=True)\nleak = r.returncode != 0 or em in r.stdout or \"%40\" in r.stdout\nprint(\"kbwho failed or an email reaches the resource\" if leak else \"ok\"); sys.exit(1 if leak else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "dc51b8c96c2d745d"
+      }
+    ]
+  }
 }
