@@ -2,7 +2,7 @@
   "id": "BG-nlov3hks",
   "kind": "bug",
   "title": "kbmon's sessions panel reads every coord event on each collect, so a slow store times out and every overlap then reads as age 0",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-ymnz7b4n",
   "priority": "P2",
@@ -48,5 +48,7 @@
     "parked: SP-ky7xz6d2 review"
   ],
   "notes": "Planned into SP-ymnz7b4n, 2026-10-24 day run. Precheck: repro fails on the base; a behaviour check was added for the unreadable-store clause.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
