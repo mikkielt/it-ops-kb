@@ -25,6 +25,16 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kbroot.py add-remote refuses a url that holds a user:password@ part and writes no pointer",
+      "check": 1
+    },
+    {
+      "clause": "check.py names a pointer whose url holds one, so no credential is committed in a root pointer file (SP-s2svf5a6 review gap 8)",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kbroot.py",
     "_tools/kbcommon.py",
