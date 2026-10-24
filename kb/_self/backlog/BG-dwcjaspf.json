@@ -2,7 +2,7 @@
   "id": "BG-dwcjaspf",
   "kind": "bug",
   "title": "The sprint reviewer's brief names pool build --ask as paid but not --redo ID, which also asks the model",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-s5k72bhd",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,7 @@
   ],
   "links": [
     "parked: SP-honlhzdc review"
-  ]
+  ],
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
