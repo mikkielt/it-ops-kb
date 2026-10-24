@@ -36,7 +36,8 @@
     }
   ],
   "touches": [
-    "_tools/mon_host.py"
+    "_tools/mon_host.py",
+    "kb/_self/monitoring.md"
   ],
   "gates": [
     {
@@ -60,7 +61,7 @@
   "links": [
     "parked: SP-3hgirkur review"
   ],
-  "notes": "Planner 2026-10-24: check 0 passes before the work on purpose: it pins that the displayed free_pct keeps one decimal (clause 2) while the alert is changed to read the unrounded share (clause 1, the repro).",
+  "notes": "Planner 2026-10-24: check 0 passes before the work on purpose: it pins that the displayed free_pct keeps one decimal (clause 2) while the alert is changed to read the unrounded share (clause 1, the repro). Planner 2026-10-24: landing stopped at the stale step; the worker found kb/_self/monitoring.md line 241 (host panel, Alert) wrong after the change, so the doc is added to the touches and the worker rewords that line (the alert reads the byte share under 10 percent, none for a total of 0 bytes).",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }
