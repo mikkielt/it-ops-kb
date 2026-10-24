@@ -23,6 +23,25 @@
   "depends_on": [
     "ST-5pu4bs4p"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which directories does hook_sessions read for a checkout: both _cache/coord_hook and the hook directory beside the store, or the one the hook would use?",
+      "options": [
+        "both directories, the store's common git directory found without running git (coord.git_dir_of)",
+        "only the directory the hook uses for that project, decided with coord.project_store (runs git)"
+      ],
+      "recommendation": "both directories, the store's common git directory found without running git (coord.git_dir_of)",
+      "do": {
+        "both directories, the store's common git directory found without running git (coord.git_dir_of)": "BG-ixv2g5li",
+        "only the directory the hook uses for that project, decided with coord.project_store (runs git)": "BG-ixv2g5li"
+      },
+      "class": "design",
+      "answer": "both directories, the store's common git directory found without running git (coord.git_dir_of)",
+      "by": "agent"
+    }
+  ],
   "notes": "Planned into SP-ymnz7b4n, 2026-10-24 day run. Precheck: repro fails on the base.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",

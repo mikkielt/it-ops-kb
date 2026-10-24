@@ -575,13 +575,20 @@ def iso(epoch):
 
 
 def hook_sessions(base):
-    """The session ids the coord hook left a state file for in the checkout BASE (`_cache/coord_hook/<id>.json`): the
-    sessions that started there and did not end. Only the file names are read, never a file."""
-    try:
-        names = os.listdir(os.path.join(base, *HOOK_STATE))
-    except OSError:
-        return set()
-    return {n[:-len(".json")] for n in names if n.endswith(".json") and guid(n[:-len(".json")])}
+    """The session ids the coord hook left a state file for in the checkout BASE: the sessions that started there and did
+    not end. The hook keeps the file in `_cache/coord_hook/<id>.json` of the clone that holds its script, else (a project
+    the plugin serves) in the `hook` directory beside the project's store (`kb-coord/hook` of its common git directory,
+    found without running git); both are read. Only the file names are read, never a file."""
+    import coord
+    git_dir = coord.git_dir_of(base)
+    found = set()
+    for where in (os.path.join(base, *HOOK_STATE), os.path.join(git_dir, "kb-coord", "hook") if git_dir else None):
+        try:
+            names = os.listdir(where) if where else []
+        except OSError:
+            continue
+        found |= {n[:-len(".json")] for n in names if n.endswith(".json") and guid(n[:-len(".json")])}
+    return found
 
 
 def spool_figures(session):
