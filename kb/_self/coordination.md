@@ -156,7 +156,7 @@ Steer a session by its session id or item id, never `any`, so only the session m
 
 ## Coordination settings
 
-`_tools/kbsettings.py` holds the settings of how sessions announce their work and what they do when another session's item is in a given state. `kbsettings.effective(root, kb_root=None)` is the one reader, so the coord hook, kbmon and the explain command ask it and never open a settings file; `python3 _tools/kbsettings.py show --root WS [--kb-root NAME] [--json]` prints its answer (`{"coordination": {"announce": {...}, "strategy": {...}}}` with `--json`).
+`_tools/kbsettings.py` holds the settings of how sessions announce their work and what they do when another session's item is in a given state. `kbsettings.effective(root, kb_root=None)` is the one reader of the merged settings, so the coord hook and kbmon ask it and never open a settings file (`explain` reads the layers itself, to name the file that set each value); `python3 _tools/kbsettings.py show --root WS [--kb-root NAME] [--json]` prints its answer (`{"coordination": {"announce": {...}, "strategy": {...}}}` with `--json`).
 
 - **Layers.** The built-in defaults (`DEFAULTS`), then the `coordination` object of `<WS>/settings.json`, then that of `<WS>/kb/<NAME>/settings.json` when a kb root is named, merged key by key: a layer that names one key leaves the others as the layer below has them. A missing file is no error, and a kb root that does not exist gives the workspace's answer. Another top-level key of a settings file is not read.
 - **`announce`.** `when`: a list of `start`, `claim`, `midrun`, `edit`; `to_other_sessions`: true or false; `operator`: a list of `terminal`, `kbmon`, `needs_you`; `needs_you_after_min`: whole minutes, 0 or more.
