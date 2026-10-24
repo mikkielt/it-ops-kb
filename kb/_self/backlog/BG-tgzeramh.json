@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The sync gate's pool check on a retry after a rejected push judges the rebased tree against the landing itself, so upstream pool defects refuse the landing",
   "status": "draft",
+  "sprint": "SP-yisvj7vd",
   "priority": "P3",
   "rank": 0,
   "severity": "S2",
@@ -15,6 +16,15 @@
     ]
   },
   "repro_reason": "a retry after a rejected push needs two clones and an upstream delta that changes a pool input and adds a pool defect; the line that picks the base is the reading",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0, \"_tools\"); import kg_sync as k; seen = {}; pool = \"kb/public/_retrieval/bench_pool.csv\"; k.dirty_paths = lambda: ([], []); k.names = lambda *a: [pool]; k.git = lambda *a: \"MERGEBASE\\n\" if a[:1] == (\"merge-base\",) else \"\"; k.tool = lambda name, *a, env=None: (0, \"\"); k.pool_gate = lambda code, out, base: (seen.setdefault(\"base\", base), (code, out))[1]; k.heldout_checks = lambda paths: []; k.gate_paths = lambda up: {pool}; host = type(\"H\", (), {\"audit\": lambda s, rng, quiet=False: (0, 0, [])})(); k.gate({\"target\": \"main\"}, \"origin/main\", host, since=\"GATEDSHA\"); print(\"pool check base on a retry:\", seen.get(\"base\")); sys.exit(0 if seen.get(\"base\") == \"MERGEBASE\" else 1)"
+      ]
+    }
+  ],
   "touches": [
     "_tools/kg_sync.py",
     "kb/_self/git.md"
@@ -22,6 +32,6 @@
   "links": [
     "parked: SP-s5k72bhd review"
   ],
-  "notes": "Found by the SP-s5k72bhd review of BG-2mdkl622 (headless reviewer session 1b63a864; read from the code, not reproduced as a two-clone retry). It can only refuse falsely, never pass falsely: attempt 1 already passed. The first attempt uses the merge base of the upstream and HEAD, which is also the right base after a rebase.",
+  "notes": "Found by the SP-s5k72bhd review of BG-2mdkl622 (headless reviewer session 1b63a864; read from the code, not reproduced as a two-clone retry). It can only refuse falsely, never pass falsely: attempt 1 already passed. The first attempt uses the merge base of the upstream and HEAD, which is also the right base after a rebase. Premise run 2026-10-24 on the day-run base: repro exits 1 (base_rev line starts with since or). A planted check was added at planning: kg_sync.gate run with since set and its collaborators replaced, asserting the base pool_gate receives is the merge base; it fails on the base (prints the since commit). The fix lives in the base_rev line only. Planned into SP-yisvj7vd, 2026-10-24.",
   "filed_in": "clone-0ea70e5c"
 }
