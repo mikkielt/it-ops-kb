@@ -2,8 +2,9 @@
   "id": "ST-s737ugdt",
   "kind": "story",
   "title": "coordination.md and tools.md say what reads kbsettings.effective today, not what will",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-f2o3aqm2",
   "priority": "P3",
   "rank": 0,
   "goal": "the docs name as readers of kbsettings.effective only the tools that import it, and name the coord hook, kbmon and the explain command once each of them does",
@@ -12,13 +13,30 @@
       "run": [
         "python3",
         "-c",
-        "import re, glob, sys\ndoc = open(\"kb/_self/coordination.md\", encoding=\"utf-8\").read()\nclaims = [l for l in doc.splitlines() if \"kbsettings.effective\" in l and re.search(r\"coord hook|kbmon|explain\", l)]\nreaders = [f for f in glob.glob(\"_tools/*.py\") if not f.endswith((\"kbsettings.py\", \"test_kbsettings.py\")) and \"kbsettings\" in open(f, encoding=\"utf-8\").read()]\nprint(\"doc lines naming readers\", len(claims), \"| tools that import kbsettings\", len(readers))\nsys.exit(0 if not claims or readers else 1)\n"
+        "import glob, re, sys\nsrc = lambda p: open(p, encoding=\"utf-8\").read()\nks = src(\"_tools/kbsettings.py\")\nm = re.search(r\"\\ndef explain\\(.*?(?=\\ndef |\\Z)\", ks, re.S)\nreads = {\n    \"coord hook\": \"kbsettings.effective(\" in src(\".claude/hooks/coord_hook.py\"),\n    \"kbmon\": any(\"kbsettings.effective(\" in src(f) for f in glob.glob(\"_tools/mon_*.py\")),\n    \"explain command\": bool(m and re.search(r\"\\beffective\\(\", m.group(0))),\n}\nlines = [l for p in (\"kb/_self/coordination.md\", \"kb/_self/tools.md\") for l in src(p).splitlines() if \"kbsettings.effective\" in l]\nwrong = [n for n, r in reads.items() if not r and any(n in l for l in lines)]\nmissing = [n for n, r in reads.items() if r and not any(n in l for l in lines)]\nprint(\"code reads effective:\", reads, \"| docs name a non-reader:\", wrong, \"| docs omit a reader:\", missing)\nsys.exit(1 if wrong or missing else 0)"
       ]
     }
+  ],
+  "clauses": [
+    {
+      "clause": "the docs name as readers of kbsettings.effective only the tools that import it",
+      "check": 0
+    },
+    {
+      "clause": "name the coord hook, kbmon and the explain command once each of them does",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-i6jrzflk"
   ],
   "links": [
     "parked: SP-47w4ngr6 review"
   ],
-  "notes": "Found by the SP-47w4ngr6 review (S3); parked, no fitness test or user report names it.",
+  "notes": "Found by the SP-47w4ngr6 review (S3); parked, no fitness test or user report names it. Plan 2026-10-24: the old check passed on base (any tool importing kbsettings satisfied it) and proved nothing; rewritten to read the same goal clauses from the code: it finds which of the coord hook, kbmon and the explain command call kbsettings.effective( (hook: coord_hook.py, kbmon: mon_sessions.py needs_you_after_min; the explain command does not, kbsettings.explain reads the layers itself) and fails while coordination.md or tools.md names a non-reader on a kbsettings.effective line or omits a reader. Premise runs on base: exit 1, docs name 'explain command' as an effective reader. Touches were empty; set to the two docs.",
   "filed_in": "clone-0ea70e5c"
 }

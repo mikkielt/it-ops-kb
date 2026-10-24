@@ -2,8 +2,9 @@
   "id": "ST-i6jrzflk",
   "kind": "story",
   "title": "coordination.md and monitoring.md say the same about whether an open ask waits announce.needs_you_after_min minutes before it enters the needs-you line",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-f2o3aqm2",
   "priority": "P3",
   "rank": 0,
   "goal": "kb/_self/coordination.md's description of announce.needs_you_after_min says what kbmon does with an open ask to the operator, the same as kb/_self/monitoring.md and _tools/mon_needs.py do (an ask is named at once, the setting delays an undecided overlap only)",
@@ -12,7 +13,7 @@
       "run": [
         "python3",
         "-c",
-        "import re, sys\nt = open('kb/_self/coordination.md', encoding='utf-8').read()\nline = [l for l in t.splitlines() if l.startswith('- **`announce.needs_you_after_min`**')]\nbad = bool(line) and bool(re.search(r'open (question|ask)', line[0]))\nprint('setting line', line[:1] and line[0][:140], '| says an open question waits', bad)\nsys.exit(1 if bad or not line else 0)\n"
+        "import re, sys\nt = open(\"kb/_self/coordination.md\", encoding=\"utf-8\").read()\nline = [l for l in t.splitlines() if l.startswith(\"- **`announce.needs_you_after_min`**\")]\nl = line[0] if line else \"\"\nwaits = bool(re.search(r\"open (question|ask)s? (may |will )?wait\", l))\nsays_overlap = \"overlap\" in l\nsays_ask_at_once = bool(re.search(r\"\\bask\", l)) and \"at once\" in l\nprint(\"setting line:\", l[:200], \"| says an open question waits:\", waits, \"| names the overlap:\", says_overlap, \"| says an ask is named at once:\", says_ask_at_once)\nsys.exit(0 if line and not waits and says_overlap and says_ask_at_once else 1)"
       ]
     }
   ],
@@ -20,9 +21,12 @@
     "kb/_self/coordination.md",
     "kb/_self/monitoring.md"
   ],
+  "depends_on": [
+    "ST-jbuihocm"
+  ],
   "links": [
     "parked: SP-d6gbc3tq review"
   ],
-  "notes": "Review gap (S2) of SP-d6gbc3tq: coordination.md:173 says the setting delays any open question, monitoring.md:98 and mon_needs.py apply it to an undecided overlap only (ST-n5vf55qk gate g1: asks are named with no delay). If the operator wants the delay for asks, change the code and gate g1 instead.",
+  "notes": "Review gap (S2) of SP-d6gbc3tq: coordination.md:173 says the setting delays any open question, monitoring.md:98 and mon_needs.py apply it to an undecided overlap only (ST-n5vf55qk gate g1: asks are named with no delay). If the operator wants the delay for asks, change the code and gate g1 instead. Plan 2026-10-24: premise runs on base (exit 1: the setting line says an open question waits). The old check passed once the words 'open question' were dropped; tightened to also require the bullet to name the overlap and say an ask is named at once (monitoring.md Needs you line, mon_needs.ask_entries). Failure-modes bullet 'An ask nobody answers. Nothing alerts.' (coordination.md) is the same topic: the worker reads it against the Needs you line and fixes it in the same edit if it contradicts it. Noticed, out of this item: _tools/kbsettings.py lines 30 and 91 (SETTINGS meaning, shown by explain and the kb_settings tool) say the same stale 'an open question waits'; filed as a separate draft bug.",
   "filed_in": "clone-0ea70e5c"
 }

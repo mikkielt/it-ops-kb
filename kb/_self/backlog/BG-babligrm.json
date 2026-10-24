@@ -2,8 +2,9 @@
   "id": "BG-babligrm",
   "kind": "bug",
   "title": "The coord.py module docstring still says claimed moves to working or released, while TRANSITIONS also allows landed",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-f2o3aqm2",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
@@ -19,8 +20,12 @@
   "touches": [
     "_tools/coord.py"
   ],
+  "depends_on": [
+    "ST-s737ugdt"
+  ],
   "links": [
     "parked: SP-dx76osrn review"
   ],
+  "notes": "Plan 2026-10-24: premise runs on base (exit 1: the coord.py table sentence says claimed to working or released). TRANSITIONS allows ('working', 'released', 'landed') from claimed and coordination.md already says so (The table). Docstring only; coordination.md, monitoring.md and tools.md (docs mapped to coord.py) are read and expected correct: Self-Reviewed. They sit in touches because sibling items edit them; this item runs after those. Touches narrowed after planning: the docs mapped to coord.py need no edit, so they are not in touches and Self-Reviewed names them at done; the check warning about them is expected. Orders after ST-s737ugdt so the docs it names are settled first.",
   "filed_in": "clone-0ea70e5c"
 }

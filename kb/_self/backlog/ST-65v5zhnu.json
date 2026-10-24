@@ -2,8 +2,9 @@
   "id": "ST-65v5zhnu",
   "kind": "story",
   "title": "The sprint skill's plan step asks for each planted check to run in the landing's check environment against a prototype of the fix",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-f2o3aqm2",
   "priority": "P3",
   "rank": 0,
   "goal": "the plan step of skills/sprint/SKILL.md says a planted check that reads query-log, spool or workspace state is run once through bl_base.run_check (its isolated CLAUDE_PLUGIN_DATA home) against a prototype of the fix before the start gate",
@@ -12,16 +13,19 @@
       "run": [
         "python3",
         "-c",
-        "import re,sys;t=open('skills/sprint/SKILL.md',encoding='utf-8').read();m=re.search(r'\\n## plan.*?\\n## start',t,re.S);sys.exit(0 if m and 'run_check' in m.group(0) else 1)"
+        "import os, re, shlex, shutil, subprocess, sys, tempfile\nR = os.getcwd()\ntext = open(\"skills/sprint/SKILL.md\", encoding=\"utf-8\").read()\nm = re.search(r\"\\n## plan.*?\\n## start\", text, re.S)\nplan = m.group(0) if m else \"\"\nbad = []\nif \"run_check\" not in plan:\n    bad.append(\"the plan step does not name bl_base.run_check\")\ncmds = [c for c in re.findall(r\"`([^`\\n]+)`\", plan) if re.search(r\"backlog\\.py\\s+--root\\s+\\S+\\s+precheck\\s+SP\\b\", c)]\nif not cmds:\n    bad.append(\"the plan step gives no backlog.py --root PROTOTYPE precheck SP command\")\nelse:\n    T = tempfile.mkdtemp()\n    env = dict(os.environ, KB_COORD_STORE=os.path.join(tempfile.mkdtemp(), \"c.sqlite\"))\n    def sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\n    g = lambda *a: sh(\"git\", \"-c\", \"user.email=a@b\", \"-c\", \"user.name=n\", *a)\n    g(\"init\", \"-q\", \".\"); g(\"commit\", \"-q\", \"--allow-empty\", \"-m\", \"init\")\n    shutil.copy(R + \"/backlog.json\", T); os.makedirs(T + \"/kb/_self/backlog\")\n    sp = re.search(r\"SP-\\w+\", sh(sys.executable, R + \"/_tools/backlog.py\", \"--root\", T, \"new\", \"sprint\", \"--title\", \"S\", \"--goal\", \"g\").stdout).group(0)\n    argv = shlex.split(cmds[0].replace(\"${CLAUDE_PLUGIN_ROOT}\", R))\n    at = argv.index(\"--root\")\n    argv[at + 1] = T\n    r = sh(*[sp if a == \"SP\" else a for a in argv])\n    if r.returncode != 0:\n        bad.append(\"the precheck command of the plan step exits %d: %s\" % (r.returncode, (r.stdout + r.stderr)[-160:]))\nprint(\"; \".join(bad) or \"ok\")\nsys.exit(1 if bad else 0)"
       ]
     }
   ],
   "touches": [
     "skills/sprint/SKILL.md"
   ],
+  "depends_on": [
+    "ST-nglckfnw"
+  ],
   "links": [
     "parked: SP-hja7yu5k close"
   ],
-  "notes": "Retrospective of SP-hja7yu5k: the span story's check 1 passed from a shell and failed twice at the landing (step checks) because the landing runs checks with an empty CLAUDE_PLUGIN_DATA home, where kbmon --events printed the cursor 1.0.N.0 and the redaction rewrote it to 192.0.2.10 (a real bug, fixed in the sprint). Run through bl_base.run_check, the check shows it at plan time. The check reads the plan section for the word; a planned item adds the command form.",
+  "notes": "Retrospective of SP-hja7yu5k: the span story's check 1 passed from a shell and failed twice at the landing (step checks) because the landing runs checks with an empty CLAUDE_PLUGIN_DATA home, where kbmon --events printed the cursor 1.0.N.0 and the redaction rewrote it to 192.0.2.10 (a real bug, fixed in the sprint). Run through bl_base.run_check, the check shows it at plan time. The check reads the plan section for the word; a planned item adds the command form. Plan 2026-10-24: premise runs on base (exit 1: the plan section has no run_check and no command). The old check read only the word run_check in the plan section; it passed on a skill text whose rule gives no command. Rewritten as the plan rule for a rule that tells an agent to run a command: the plan section must name run_check and give the command form, which the check runs on a planted sprint (exit 0). Command form for the worker to write into plan step 6, as one backtick span: python3 ${CLAUDE_PLUGIN_ROOT}/_tools/backlog.py --root PROTOTYPE precheck SP, run from a worktree of the base with a prototype of the fix applied: precheck runs each committed item check through bl_base.run_check, the runner of the landing (isolated CLAUDE_PLUGIN_DATA home, colourless env), so a check that reads query-log, spool or workspace state shows there what the landing will see. Evidence: SP-hja7yu5k check 1 passed from a shell and failed twice at the landing. Docs mapped to the skill (AGENTS.md has a 4 KB cap and is not touched): backlog.md, maintaining.md read, Self-Reviewed if still correct.",
   "filed_in": "clone-0ea70e5c"
 }

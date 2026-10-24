@@ -2,8 +2,9 @@
   "id": "ST-jbuihocm",
   "kind": "story",
   "title": "kb/_self/coordination.md's list of what kbmon reads names every coord read the coord, sprint and sessions panels make",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-f2o3aqm2",
   "priority": "P3",
   "rank": 0,
   "goal": "the section 'What kbmon reads' of kb/_self/coordination.md names the coord.py get of the first open asks' questions, the sprint panel's list --prefix run/ read and the sessions panel's wait --since 0 read",
@@ -12,7 +13,7 @@
       "run": [
         "python3",
         "-c",
-        "import re, sys\nt = open('kb/_self/coordination.md', encoding='utf-8').read()\nb = [l for l in t.splitlines() if l.startswith('- **What kbmon reads.**')]\ntxt = b[0] if b else ''\nneed = {'coord.py get': bool(re.search(r'\\bget\\b', txt)), 'sprint panel': 'sprint panel' in txt}\nprint('bullet found', bool(b), need)\nsys.exit(0 if b and all(need.values()) else 1)\n"
+        "import re, sys\nt = open(\"kb/_self/coordination.md\", encoding=\"utf-8\").read()\nb = [l for l in t.splitlines() if l.startswith(\"- **What kbmon reads.**\")]\ntxt = b[0] if b else \"\"\nneed = {\n    \"get of the open asks\": bool(re.search(r\"\\bget\\b[^;.]*\\bask\", txt)),\n    \"sprint panel list --prefix run/\": bool(re.search(r\"sprint panel[^;.]*list --prefix run/|list --prefix run/[^;.]*sprint panel\", txt)),\n    \"sessions panel wait --since 0\": bool(re.search(r\"sessions panel[^;.]*wait --since 0|wait --since 0[^;.]*sessions panel\", txt)),\n}\nprint(\"bullet found\", bool(b), need)\nsys.exit(0 if b and all(need.values()) else 1)"
       ]
     }
   ],
@@ -22,6 +23,6 @@
   "links": [
     "parked: SP-d6gbc3tq review"
   ],
-  "notes": "Review gap (S2) of SP-d6gbc3tq: coordination.md:154 omits coord.py get of the first 3 open asks' questions, the sprint panel's own list --prefix run/ read and the sessions panel's wait --since 0 read.",
+  "notes": "Review gap (S2) of SP-d6gbc3tq: coordination.md:154 omits coord.py get of the first 3 open asks' questions, the sprint panel's own list --prefix run/ read and the sessions panel's wait --since 0 read. Plan 2026-10-24: premise runs on base (exit 1, none of the three reads is named). The old check passed a bullet that only held the words 'get' and 'sprint panel' anywhere; tightened to require each read next to its panel: coord.py get of the first open asks' questions (mon_coord.ask_texts, ASKS_READ), the sprint panel's list --prefix run/ with one wait --since 0 (mon_coord.run_rows), the sessions panel's wait --since 0 --kind K reads (mon_sessions, intent, coordinate, progress). The worker reads the three call sites in _tools/mon_coord.py and _tools/mon_sessions.py and writes what they do, not the check's words.",
   "filed_in": "clone-0ea70e5c"
 }

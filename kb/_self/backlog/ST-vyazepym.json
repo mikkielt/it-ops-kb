@@ -2,8 +2,9 @@
   "id": "ST-vyazepym",
   "kind": "story",
   "title": "The kbroot docs say what the code does after this sprint: the reason line, and the hook's triggers",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-eocmyqdx",
+  "sprint": "SP-f2o3aqm2",
   "priority": "P3",
   "rank": 0,
   "goal": "kb/_self/tools.md, plugin.md and the kbroot.py docstring say that a failed git command reports its reason line (the ! [rejected] line of a refused push, hint: lines left out), and that fetch --hook fetches a root with no clone, or an old stamp, or a changed url, ref or pin (any of them, not all) (SP-c6w5hjmc review gap 5)",
@@ -12,8 +13,18 @@
       "run": [
         "python3",
         "-c",
-        "row = [l for l in open(\"kb/_self/tools.md\").read().splitlines() if l.startswith(\"| `python3 _tools/kbroot.py list`\")][0]\n\nmiss = []\nif \"git's last line\" in row: miss.append(\"tools.md kbroot row still says git's last line\")\nprint(miss)\nraise SystemExit(1 if miss else 0)\n"
+        "import os, re, sys, tempfile, time, types\nsys.path.insert(0, \"_tools\")\nimport kbcommon, kbroot\nbad = []\n# behaviour: a refused push reports the rejected line, not the last line of git output; hint lines are left out\np = types.SimpleNamespace(url=\"https://example.invalid/r.git\", name=\"r\")\nerr = \"hint: Updates were rejected\\n! [rejected]        HEAD -> main (fetch first)\\nerror: failed to push some refs to https://example.invalid/r.git\\nhint: pull first\\n\"\nkbroot.run_bounded = lambda args, cwd, timeout: types.SimpleNamespace(returncode=1, stderr=err, stdout=\"\")\nok, why = kbroot.git([\"push\"], p)\nif ok or \"[rejected]\" not in why or \"hint\" in why:\n    bad.append(\"git() gave the reason \" + repr(why))\n# behaviour: fetch --hook fetches a root with no clone, or an old stamp, or a changed url, ref or pin\nd = tempfile.mkdtemp()\nkbcommon.pointer_root_dir = lambda q: os.path.join(d, \"clone\")\nkbcommon.roots_cache_dir = lambda: d\nos.makedirs(os.path.join(d, \"clone\"))\nq = types.SimpleNamespace(name=\"r\", url=\"u\", ref=\"main\", pin=\"\")\nnow = time.time()\nif not kbroot.stale(q, now):\n    bad.append(\"a root with no root file counts as fetched\")\nopen(os.path.join(d, \"clone\", kbcommon.ROOT_FILE), \"w\").write(\"x\")\nopen(os.path.join(d, \"r.fetched\"), \"w\").write(kbroot.fingerprint(q))\nif kbroot.stale(q, now):\n    bad.append(\"a fresh stamp of the same pointer counts as stale\")\nfor field, value in ((\"url\", \"u2\"), (\"ref\", \"dev\"), (\"pin\", \"abc\")):\n    r = types.SimpleNamespace(**{**vars(q), field: value})\n    if not kbroot.stale(r, now):\n        bad.append(\"a changed \" + field + \" is not stale\")\nif not kbroot.stale(q, now + kbroot.HOOK_MAX_AGE_S + 60):\n    bad.append(\"an old stamp is not stale\")\n# docs: the reason line, and the triggers as any one of them\ntools_row = next((l for l in open(\"kb/_self/tools.md\", encoding=\"utf-8\").read().splitlines() if l.startswith(\"| `python3 _tools/kbroot.py list`\")), \"\")\nplugin_hook = next((l for l in open(\"kb/_self/plugin.md\", encoding=\"utf-8\").read().splitlines() if \"kbroot.py fetch --hook\" in l), \"\")\ndoc = kbroot.__doc__ or \"\"\nwindows = {\n    \"tools.md\": tools_row[tools_row.find(\"`fetch --hook` is\"):][:700],\n    \"plugin.md\": plugin_hook,\n    \"kbroot.py\": doc[doc.find(\"kbroot.py fetch --hook\"):][:700],\n}\nif \"last line\" in tools_row or \"rejected\" not in tools_row:\n    bad.append(\"tools.md kbroot row does not give the reason line\")\nif \"rejected\" not in doc:\n    bad.append(\"the kbroot.py docstring does not give the reason line\")\nfor name, text in windows.items():\n    if not (re.search(r\"no clone\", text) and re.search(r\"\\burl\\b\", text) and re.search(r\"\\bpin\\b\", text) and re.search(r\"\\b(any|one) of\\b\", text)):\n        bad.append(name + \" does not say the hook fetches a root with no clone, an old stamp, or a changed url, ref or pin, any one of them\")\nprint(\"; \".join(bad) or \"ok\")\nsys.exit(1 if bad else 0)"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/_self/tools.md, plugin.md and the kbroot.py docstring say that a failed git command reports its reason line (the ! [rejected] line of a refused push, hint: lines left out)",
+      "check": 0
+    },
+    {
+      "clause": "that fetch --hook fetches a root with no clone, or an old stamp, or a changed url, ref or pin (any of them, not all) (SP-c6w5hjmc review gap 5)",
+      "check": 0
     }
   ],
   "touches": [
@@ -21,8 +32,12 @@
     "kb/_self/plugin.md",
     "_tools/kbroot.py"
   ],
+  "depends_on": [
+    "ST-s737ugdt"
+  ],
   "links": [
     "parked: SP-c6w5hjmc review"
   ],
+  "notes": "Plan 2026-10-24: premise runs on base (exit 1: tools.md still says git's last line; no doc or docstring gives the reason line; none of the three says the hook's triggers are any one of no clone, an old stamp, a changed url, ref or pin). The old check read the tools.md row for the words git's last line only and passed a row that dropped them; rewritten to run the code the docs describe on planted input (kbroot.git with a stubbed git run: the rejected line comes back, hint lines left out; kbroot.stale on a planted clone and stamp: no clone, an old stamp, a changed url, ref or pin are each stale, a fresh stamp is not) and to read the three texts: the tools.md row, the plugin.md hook entry, the kbroot.py module docstring. The check finds the tools.md hook sentence by its head, `fetch --hook` is, so keep that head. Code: only the docstring changes (kbroot.git and kbroot.stale already do this). Orders after ST-s737ugdt: both edit kb/_self/tools.md, and the doc-only item comes first (the sync gate's selfdoc stale needs code and its docs in one range).",
   "filed_in": "clone-0ea70e5c"
 }

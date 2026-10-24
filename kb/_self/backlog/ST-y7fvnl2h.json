@@ -2,8 +2,9 @@
   "id": "ST-y7fvnl2h",
   "kind": "story",
   "title": "The Jaeger facts that rest on the bundled all-in-one configuration are CODE facts, not DOC",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-f2o3aqm2",
   "priority": "P3",
   "rank": 0,
   "goal": "kb/public/logs/otel-collector-otlp-pipeline.md tags the facts that rest on Jaeger's bundled all-in-one.yaml (it binds each receiver to the JAEGER_LISTEN_HOST default localhost, it sets max_traces 100000) as CODE at the pinned release, and keeps the docs-only parts (unlimited by default, the JAEGER_LISTEN_HOST snippet) as DOC",
@@ -12,8 +13,18 @@
       "run": [
         "python3",
         "-c",
-        "import sys\nART = 'kb/public/logs/otel-collector-otlp-pipeline.md'\nlines = open(ART, encoding='utf-8').read().splitlines()\nbad = [n for n, l in enumerate(lines, 1) if '[DOC' in l and ('bundled all-in-one configuration sets' in l or 'bundled all-in-one configuration binds' in l)]\nprint('DOC lines that rest on the bundled config:', bad if bad else 'none')\nsys.exit(1 if bad else 0)\n"
+        "import re, sys\nlines = open(\"kb/public/logs/otel-collector-otlp-pipeline.md\", encoding=\"utf-8\").read().splitlines()\nitems = [l for l in lines if l.startswith(\"- \")]\ndef tag(l):\n    m = re.search(r\"\\[(DOC|CODE|DER|UNK|COMMUNITY)\\b[^\\]]*\\]\\s*$\", l)\n    return m.group(1) if m else \"\"\ncode_bind = any(tag(l) == \"CODE\" and \"JAEGER_LISTEN_HOST\" in l and \"localhost\" in l for l in items)\ncode_max = any(tag(l) == \"CODE\" and \"max_traces\" in l and \"100000\" in l for l in items)\ndoc_cites_yaml = [n for n, l in enumerate(lines, 1) if l.startswith(\"- \") and tag(l) == \"DOC\" and \"S-fsi2wdg7\" in l]\ndoc_unlimited = any(tag(l) == \"DOC\" and \"unlimited\" in l and \"100000\" not in l for l in items)\ndoc_listen = any(tag(l) == \"DOC\" and \"JAEGER_LISTEN_HOST\" in l and \"S-fsi2wdg7\" not in l for l in items)\nprint(\"CODE fact for the localhost binding:\", code_bind, \"| CODE fact for max_traces 100000:\", code_max, \"| DOC facts citing the all-in-one.yaml source:\", doc_cites_yaml or \"none\", \"| DOC fact kept for unlimited by default:\", doc_unlimited, \"| DOC fact kept for the JAEGER_LISTEN_HOST snippet:\", doc_listen)\nsys.exit(0 if code_bind and code_max and not doc_cites_yaml and doc_unlimited and doc_listen else 1)"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/public/logs/otel-collector-otlp-pipeline.md tags the facts that rest on Jaeger's bundled all-in-one.yaml (it binds each receiver to the JAEGER_LISTEN_HOST default localhost, it sets max_traces 100000) as CODE at the pinned release",
+      "check": 0
+    },
+    {
+      "clause": "keeps the docs-only parts (unlimited by default, the JAEGER_LISTEN_HOST snippet) as DOC",
+      "check": 0
     }
   ],
   "touches": [
@@ -22,9 +33,12 @@
     "kb/public/_anchors.csv",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "depends_on": [
+    "ST-btrrxobq"
+  ],
   "links": [
     "parked: SP-r7e7jcep review"
   ],
-  "notes": "Review finding S3 (fresh-context reviewer, 2026-10-24): otel-collector-otlp-pipeline.md lines 77 and 80 cite S-fsi2wdg7 (all-in-one.yaml at v2.22.0) under a DOC tag; the docs page alone does not say the bundled config sets max_traces 100000 or writes localhost. Premise: the check fails on main now (lines 77 and 80).",
+  "notes": "Review finding S3 (fresh-context reviewer, 2026-10-24): otel-collector-otlp-pipeline.md lines 77 and 80 cite S-fsi2wdg7 (all-in-one.yaml at v2.22.0) under a DOC tag; the docs page alone does not say the bundled config sets max_traces 100000 or writes localhost. Premise: the check fails on main now (lines 77 and 80). Plan 2026-10-24: premise runs on base (exit 1: lines 77 and 80 are DOC and cite S-fsi2wdg7, the all-in-one.yaml at v2.22.0). The old check passed once the two sentences were reworded or deleted; rewritten to require the CODE facts (localhost binding, max_traces 100000), no DOC fact citing S-fsi2wdg7, and the DOC facts kept (unlimited by default; the JAEGER_LISTEN_HOST snippet from the docs page, S-i2u4iabe). Line 80 holds both a docs part and a code part, so it is split into two facts. Check the source row of S-fsi2wdg7 names the tag it pins (v2.22.0). Runs after ST-btrrxobq and before ST-5ul27zl3 (same article, source rows, anchors and doc2query rows).",
   "filed_in": "clone-0ea70e5c"
 }
