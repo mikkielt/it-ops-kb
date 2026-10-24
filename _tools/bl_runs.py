@@ -11,7 +11,7 @@
   runs [SP|ID] --reconcile  write the state git shows to each drifted run key and exit 0 once none is left
 
 A run state contradicts git in three ways, checked in this order and each item named once, with the state `--reconcile` writes:
-the item file is `done` and the run state is not `landed` (writes `landed`); the run state is `working` and the worker pid is
+the item file is `done` and the run state is not `landed`, `none` included (writes `landed`); the run state is `working` and the worker pid is
 gone or was never recorded anywhere (`failed`); the run state is none of `landed`, `released` or `none` and no claim holds the
 item, that is neither a record in its claims ledger nor the status `doing` of its item file, which a claim sets, nor the same in
 another working tree of the repository, nor an `own/` record of coord that names the item (`released`). `--reconcile` writes the key with `put` at the
@@ -111,10 +111,10 @@ def branch_gates(root, iid):
 
 def drift_of(state, status, alive, claimed):
     """(the state git shows, why) for a run key that contradicts git, else None."""
-    if state == NONE:
-        return None
     if status == "done" and state != "landed":
         return "landed", f"the item file is done and the run state is {state}"
+    if state == NONE:
+        return None
     if state == "working" and not alive:
         return "failed", "the run state is working and its worker pid is gone"
     if state not in SETTLED and not claimed:
