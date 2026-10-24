@@ -44,6 +44,23 @@
     "ST-yrilvcbx",
     "ST-3ru7f4to"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does answering the last blocking gate find out whether the worker still runs, and how is a second blocking gate on an already blocked item announced?",
+      "options": [
+        "pid from the coord process record of the item (else the claims ledger worker_pid), checked against the host process table; a second gate posts a progress event with the longer gates list",
+        "pid from the claims ledger of this working tree only; a second gate is not announced"
+      ],
+      "recommendation": "pid from the coord process record of the item (else the claims ledger worker_pid), checked against the host process table; a second gate posts a progress event with the longer gates list",
+      "do": {
+        "pid from the coord process record of the item (else the claims ledger worker_pid), checked against the host process table; a second gate posts a progress event with the longer gates list": "ST-oazktatz",
+        "pid from the claims ledger of this working tree only; a second gate is not announced": "ST-oazktatz"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "notes": "Premise: gate add of a blocking gate exits 0 and posts nothing to coord (the check finds no progress event). A worker's gate lives only in the item file on work/<id> (kb/_self/backlog.md:333) and reaches the orchestrator when it reads the branch after the worker returns (.claude/skills/kb-sprint/SKILL.md:55); on 2026-10-23 such gates reached the operator only through chat questions after each worker finished. Plan 2026-10-24: premise reproduced on base (precheck: gate add exits 0, last progress event is still working). Second check added for the answer move back (returned when no worker pid is recorded). The branch where the recorded worker pid runs (back to working) and the gate add run in a worker's worktree on work/<id> are not read by a check; implement them as the goal says. After ST-3ru7f4to (shared bl_items.py). Planned into SP-sucr3kfg on 2026-10-24. Sprint started 2026-10-24.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
