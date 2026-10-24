@@ -2,7 +2,7 @@
   "id": "SP-d6gbc3tq",
   "kind": "sprint",
   "title": "kbmon and OpenTelemetry show the run states: spans, needs-you, landing queue, drift, worker trace context and alerts",
-  "status": "planned",
+  "status": "active",
   "goal": "kbmon --events exports an item's run as a kb.item span with kb.worker and kb.landing children; the needs-you line names open asks to the operator and a blocked, failed or refused run with its gate or step; the coord panel shows the effective coordination settings with the file that set each; the sprint panel shows each open item's run state; kbmon shows the landing lock and its queue, which session waits on which items, and alerts while coord's run states drift from git; dispatch starts a worker with TRACEPARENT and OTEL_RESOURCE_ATTRIBUTES; Prometheus alerts on a waiting gate, a stalled run and a failed run, to a local Alertmanager",
   "gates": [
     {
@@ -14,7 +14,11 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Planned 2026-10-24 for the night run: six items of EP-nij36lt7 in dependency order (ST-3bmmg73g, ST-n5vf55qk, ST-3vn4t2h6, ST-czgocppq share mon files one after the other; ST-zlzvqz2w after ST-3bmmg73g; ST-54y7al4z apart).",
