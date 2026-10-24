@@ -2,7 +2,7 @@
   "id": "ST-wqqpspwl",
   "kind": "story",
   "title": "The strategy a session chose is posted as a coord event and shown once to the other session, so both know who waits for whom",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
   "sprint": "SP-ky7xz6d2",
   "priority": "P2",
@@ -73,6 +73,6 @@
   "depends_on": [
     "ST-56yln2to"
   ],
-  "notes": "Premise (run 2026-10-24 on the main branch at 5b032a3f5): all four checks fail today: coord.py post refuses the kind coordinate (exit 2), kbask.py has no coordinate subcommand, no hook line reaches the other session, and kbmon has no coordinate row because no such event can be posted. Plan: the earlier single check seeded the hook's private state file and posted no session or operator field; the checks now start the sessions through the hook and post the fields the goal names, reading the same goal clauses. The coordinate line must show at the next event of the session that holds OTHER, so the lookup is not paced by the asks' 10 second interval (the check posts the event right after that session's start). kbask.py coordinate finds the chooser as the live session whose intent names ITEM; operator is KB_OPERATOR / kbwho. kbmon needs no new code (mon_log and mon_events show any coord kind) so monitoring.md only documents the row. _tools/kb_mcp.py was dropped from touches: nothing in the goal changes the MCP server. Protected path .claude/hooks/coord_hook.py goes through a staging copy and stage-back. Waits for ST-56yln2to (same hook file).",
+  "notes": "Premise (run 2026-10-24 on the main branch at 5b032a3f5): all four checks fail today: coord.py post refuses the kind coordinate (exit 2), kbask.py has no coordinate subcommand, no hook line reaches the other session, and kbmon has no coordinate row because no such event can be posted. Plan: the earlier single check seeded the hook's private state file and posted no session or operator field; the checks now start the sessions through the hook and post the fields the goal names, reading the same goal clauses. The coordinate line must show at the next event of the session that holds OTHER, so the lookup is not paced by the asks' 10 second interval (the check posts the event right after that session's start). kbask.py coordinate finds the chooser as the live session whose intent names ITEM; operator is KB_OPERATOR / kbwho. kbmon needs no new code (mon_log and mon_events show any coord kind) so monitoring.md only documents the row. _tools/kb_mcp.py was dropped from touches: nothing in the goal changes the MCP server. Protected path .claude/hooks/coord_hook.py goes through a staging copy and stage-back. Waits for ST-56yln2to (same hook file). Sprint SP-ky7xz6d2 started 2026-10-24 on the operator's standing approval for the night run.",
   "filed_in": "clone-0ea70e5c"
 }
