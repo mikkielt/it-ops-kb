@@ -2,7 +2,7 @@
   "id": "BG-3mzc5wb3",
   "kind": "bug",
   "title": "A worker dispatched on work/ID that starts /kb-research sees its dispatcher's claim of the item as an overlap",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
   "sprint": "SP-3i7hcb6i",
   "priority": "P2",
@@ -28,6 +28,6 @@
   "links": [
     "parked: SP-ky7xz6d2 review"
   ],
-  "notes": "Plan 2026-10-24 (day run): repro fails on base (exit 0 | dispatcher shown True). Runs after BG-5bzkpe2b (same function, overlap_block / overlaps in the hook): its landing changes how the digest is read, so read the tree it leaves. The /kb-research path (research_start) calls overlap_block without the worker's branch item, which the SessionStart path passes as dispatched. Planned into SP-3i7hcb6i on 2026-10-24.",
+  "notes": "Plan 2026-10-24 (day run): repro fails on base (exit 0 | dispatcher shown True). Runs after BG-5bzkpe2b (same function, overlap_block / overlaps in the hook): its landing changes how the digest is read, so read the tree it leaves. The /kb-research path (research_start) calls overlap_block without the worker's branch item, which the SessionStart path passes as dispatched. Planned into SP-3i7hcb6i on 2026-10-24. Sprint started 2026-10-24.",
   "filed_in": "clone-0ea70e5c"
 }
