@@ -2,7 +2,7 @@
   "id": "ST-jvbadsz6",
   "kind": "story",
   "title": "Research sprint goal: An agent finds the deterministic tool that answers a question from one entry point",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-x6eqtsid",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: the sprint goal is about the kb's own tools (a tool catalog read from docstrings, a kb MCP tool, one AGENTS.md line, kb_ask.py's routing); the code and the _self docs answer every question it holds, and the public kb's tool-search facts (agents/foundry-agent-service.md) are background that no item relies on.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "11e5945dac7945109f7b2386249c62d12ef2255f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-jvbadsz6"
+        ],
+        "exit": 0,
+        "sha256": "e84de764359f5d24"
+      }
+    ]
+  }
 }
