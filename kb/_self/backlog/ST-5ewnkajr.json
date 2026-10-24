@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: the sprint goal concerns this repository's own tools (kbtools.py, kb_mcp.py, bench_repro.py) and their rules in kb/_self; rag.py pack --root _self on its three questions (which MCP tools kbtools.py lists and what gates them, how repro pick takes the common areas, how frozen_pass reads a frozen row) leads with the lines that answer them (kb/_self/tools.md:29, kb/_self/benchmarks.md:96 and :104), and no official source says more about them. Pre-approved by the operator for the 2026-10-24 day run (research with no outside facts). Planned into the sprint on 2026-10-24 (day run).",
   "filed_in": "clone-0ea70e5c"
 }
