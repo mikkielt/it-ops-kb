@@ -1,9 +1,9 @@
 ---
 topic: logs/otel-collector-otlp-pipeline
 priority: P3
-applies_to: "OpenTelemetry Collector core v0.162.0 (modules v1.68.0, 2026-09-28) and contrib v0.162.0; OTLP specification (opentelemetry-proto v1.11.1); Prometheus v3.15.0; Loki v3.7.8; Tempo v3.1.0"
-retrieved_utc: 2026-10-21
-sources: [S-2k6jmt4p, S-42ulxlwb, S-iylg5wv4, S-idpr2htc, S-4efsem2g, S-oodxsnls, S-ixy3elbb, S-tb2kr6j6, S-v4swo5wh, S-ypu7twsm, S-zgo6e6dk, S-gkgmlv5b, S-ix5z63av, S-h52nhp55, S-jdyoyfwa, S-p23y4jgk, S-2blrcu72, S-j5eil3ej, S-o36nadfz, S-e4bf6k75, S-hbpi7gg6, S-a6ldut5r, S-vnjcetlc, S-r3lv4n27, S-ina32am5, S-xvaz44vc, S-v2wnj4qk, S-5tvo6y34, S-one7nth5, S-j7chz4co, S-n4qvimrb, S-wpvglutf, S-su2aihea, S-f2cwt6i6]
+applies_to: "OpenTelemetry Collector core v0.162.0 (modules v1.68.0, 2026-09-28) and contrib v0.162.0; OTLP specification (opentelemetry-proto v1.11.1); Prometheus v3.15.0; Loki v3.7.8; Tempo v3.1.0; Jaeger v2.22.0"
+retrieved_utc: 2026-10-24
+sources: [S-2k6jmt4p, S-42ulxlwb, S-iylg5wv4, S-idpr2htc, S-4efsem2g, S-oodxsnls, S-ixy3elbb, S-tb2kr6j6, S-v4swo5wh, S-ypu7twsm, S-zgo6e6dk, S-gkgmlv5b, S-ix5z63av, S-h52nhp55, S-jdyoyfwa, S-p23y4jgk, S-2blrcu72, S-j5eil3ej, S-o36nadfz, S-e4bf6k75, S-hbpi7gg6, S-a6ldut5r, S-vnjcetlc, S-r3lv4n27, S-ina32am5, S-xvaz44vc, S-v2wnj4qk, S-5tvo6y34, S-one7nth5, S-j7chz4co, S-n4qvimrb, S-wpvglutf, S-su2aihea, S-f2cwt6i6, S-imufoeiy, S-cm7aiqxz, S-i2u4iabe, S-a5zkjjzc, S-mtfqmwhw, S-73ipisos, S-fsi2wdg7, S-m4oys26j]
 status: partial
 ---
 
@@ -68,6 +68,20 @@ The Collector's own telemetry is Prometheus metrics on port 8888 and logs on std
 - Logs and traces for a self-hosted Loki and Tempo go through one OTLP HTTP exporter and one OTLP exporter on a single Collector; no Loki-specific exporter is needed, since the Loki exporter was removed and Loki has a native endpoint. [DER S-j7chz4co, S-su2aihea, S-a6ldut5r: native OTLP endpoints on both, Loki exporter removed in v0.131.0]
 - A pinned binary is possible because the distribution manifests pin every component to one version and `ocb` assembles a custom set from Go modules (with Go needed at build time); component type names have been renamed (`otlp` to `otlp_grpc`), so a configuration is only checked against the version it was written for. [DER S-r3lv4n27, S-iylg5wv4, S-tb2kr6j6: manifest pins, ocb build, deprecated aliases]
 - JSON logs on stdout need `encoding: json` and `output_paths: [stdout]` together, since the stated default destination is stderr; this was not run here. [DER S-42ulxlwb, S-p23y4jgk, S-2blrcu72: documented defaults plus the zap stream rule]
+
+### Local traces backend: Jaeger all-in-one (v2.22.0)
+- Jaeger v2.22.0 (GitHub release published 2026-10-06) is the current Jaeger line; the download page says Jaeger v1 reached end-of-life on 31 December 2025. [DOC S-73ipisos, S-m4oys26j]
+- Jaeger's all-in-one role is the collector and query roles in one process; started with no `--config` (the container run on the getting-started page), it uses a bundled configuration; any other role needs a `--config` file. [DOC S-mtfqmwhw, S-imufoeiy, S-i2u4iabe]
+- Jaeger all-in-one receives OTLP on port 4317 (gRPC) and 4318 (HTTP, `/v1/traces`, protobuf or JSON); its default-ports table also lists 6831 and 6832 (UDP) and 9411 (Zipkin), and the ports can be changed by configuration. [DOC S-cm7aiqxz]
+- Jaeger serves its UI at `http://localhost:16686` in the getting-started run; port 16686 also serves the query HTTP API (`/api/v3/*`), and the gRPC query API is on 16685. [DOC S-imufoeiy, S-cm7aiqxz]
+- Jaeger's bundled all-in-one configuration binds each receiver to `${env:JAEGER_LISTEN_HOST:-localhost}:PORT` (4317 and 4318 for OTLP); it writes `localhost`, not `127.0.0.1`, and `JAEGER_LISTEN_HOST` is meant to be set to `0.0.0.0` in a container. [DOC S-i2u4iabe, S-fsi2wdg7]
+- A Jaeger OTLP endpoint is overridden on the command line with `--set=receivers.otlp.protocols.grpc.endpoint=0.0.0.0:4317`, which the docs call handy for the all-in-one role that relies on a built-in config. [DOC S-i2u4iabe]
+- Jaeger all-in-one with in-memory storage suits development and testing and is not recommended for production, since the data is lost on restarts; the memory page adds that data is lost once the process exits. [DOC S-mtfqmwhw, S-a5zkjjzc]
+- Jaeger's memory backend stores unlimited traces by default; `max_traces` caps the count, and the bundled all-in-one configuration sets `max_traces: 100000`. [DOC S-a5zkjjzc, S-fsi2wdg7]
+- Jaeger installs without a container as a release binary for macOS, Linux or Windows from the GitHub releases page; v2.22.0 has `jaeger-2.22.0-<os>-<arch>.tar.gz` archives, a `.zip` for windows-amd64, and `.sha256sum.txt` and `.asc` files. [DOC S-73ipisos, S-m4oys26j]
+- The pages read show the container command for the all-in-one run and no command line for starting the `jaeger` binary itself without a container; whether it also starts all-in-one without `--config` is not stated there. [UNK]
+- Jaeger all-in-one and Tempo's distributor both default to `localhost:4317` and `localhost:4318`, so one host cannot run both with defaults; the choice is Jaeger (in-memory storage, data lost on restart, UI on 16686, a binary for Windows) or Tempo (see the Tempo fact above). [DER S-cm7aiqxz, S-i2u4iabe, S-su2aihea: shared default OTLP ports on localhost]
+- Pinning Jaeger's OTLP receivers to loopback on a Windows or macOS workstation needs no override, because the default is `localhost`; setting `JAEGER_LISTEN_HOST=127.0.0.1` makes it explicit, and `0.0.0.0` is only for a container. [DER S-i2u4iabe, S-fsi2wdg7: the default host and the documented `JAEGER_LISTEN_HOST` override]
 
 ## Reference
 - Receivers for files and the Windows Event Log: `logs/otel-collector-receivers`. Log data model: `logs/otel-log-data-model`. Claude Code's own OTLP export: `claude/otel-monitoring`. A Python process sending OTLP/HTTP, observable gauges and a Prometheus reader: `logs/otel-python-sdk`.
