@@ -1,12 +1,18 @@
 """kbmon's coord panel (kb/_self/monitoring.md): the live claims with their holder, seconds left and budget beside spend,
-the newest events with their sequence numbers, and the live intent and progress digest.
+the newest events with their sequence numbers, the live intent and progress digest, the asks addressed to the operator
+that no closing answer has ended, and the effective coordination settings with the file that set each.
 
 The panel runs `coord.py list`, `coord.py wait --since 0 --timeout 0` and `coord.py digest` as three child processes at
-once, on the local store (`--store`, else `KB_COORD_STORE`, else the default of the clone at `--root`) or on a `coord.py serve` server
+once, then `coord.py get` of the question of each of the first open asks to the operator, on the local store (`--store`, else `KB_COORD_STORE`, else the default of the clone at `--root`) or on a `coord.py serve` server
 (`--url` with `--key-file`, which coord.py reads: the panel never opens the key file). A local store that is not there
 is `absent` and is not created. A server that cannot be reached, or that answers no command within `CHILD_SECONDS`, is
 `timeout`. A session id (a holder, a `session/` key, an event's session fields) shows as its label
-(`mon_view.session_label`). Imports `mon_base` and `mon_view`; `coord` only to name the clone's store.
+(`mon_view.session_label`). An ask is open when an `ask` event names `operator` and no `answer` event of its id has a
+closing state (`CLOSED`, the coord hook's); its question is redacted before it is cut to `ASK_CHARS`. The settings are
+`kbsettings.explain` of the clone at `--root` (its settings.json, and the one `kb/NAME/settings.json` when exactly one
+root has one): each key with its value and its source, `default` or the file relative to the clone; a settings file that
+cannot be read gives `settings_error` and no settings. Imports `mon_base` and `mon_view`; `coord` only to name
+the clone's store, `kbsettings` and `redact` where they are used.
 """
 import atexit
 import json
@@ -29,6 +35,11 @@ SIDE_COLUMN = 50  # where they start in a body row: column 52 less the two gutte
 MIN_KEY = 8
 SUBJECTS = ("key", "item", "topic", "touch", "path", "fact", "session")
 WHOS = ("holder", "operator", "session")
+OPERATOR = "operator"  # the target of the asks the needs-you line names
+CLOSED = ("completed", "failed", "rejected")  # the answer states that end an ask (the coord hook's)
+ASKS_KEPT = 20  # open asks in the data, the oldest first
+ASKS_READ = 3  # open asks whose question is read (the needs-you line names three of a kind)
+ASK_CHARS = 60  # characters of a question in the data, after redaction
 UNREACHABLE = "cannot reach"  # what coord.py prints when it cannot connect to a --url
 
 _children = set()
@@ -78,10 +89,10 @@ def last_line(text):
     return lines[-1].removeprefix("coord.py: ") if lines else ""
 
 
-def fetch(conn):
-    """The output of list, wait and digest, started together and each read until CHILD_SECONDS after the start."""
-    commands = {"list": ["list"], "wait": ["wait", "--since", "0", "--timeout", "0"],
-                "digest": ["digest", "--key", "*", "--lines", str(DIGEST_LINES)]}
+def run_all(conn, commands, strict=True):
+    """{name: output} of the coord.py COMMANDS ({name: argv}), started together and each read until CHILD_SECONDS after the
+    start. A command that exits non-zero raises (a RuntimeError, a Timeout where the server cannot be reached); with
+    `strict` False its output is None."""
     children = {name: start(conn + argv) for name, argv in commands.items()}
     deadline = time.monotonic() + CHILD_SECONDS
     out = {}
@@ -95,7 +106,9 @@ def fetch(conn):
                 why = last_line(err) or f"exit {child.returncode}"
                 if UNREACHABLE in why:
                     raise mon_base.Timeout(why)
-                raise RuntimeError(f"coord.py {name}: {why}")
+                if strict:
+                    raise RuntimeError(f"coord.py {name}: {why}")
+                text = None
             out[name] = text
     finally:
         for child in children.values():
@@ -106,6 +119,70 @@ def fetch(conn):
                 pipe.close()
             _children.discard(child)
     return out
+
+
+def fetch(conn):
+    """The output of list, wait and digest."""
+    return run_all(conn, {"list": ["list"], "wait": ["wait", "--since", "0", "--timeout", "0"],
+                          "digest": ["digest", "--key", "*", "--lines", str(DIGEST_LINES)]})
+
+
+def open_asks(events):
+    """[{id, since, ref}] of the asks to the operator in EVENTS (coord's, oldest first) that no closing answer ended, the
+    oldest first; `since` is the ask's time as `2026-10-24T14:02:36Z`."""
+    closed = {e["fields"].get("id") for e in events if e["kind"] == "answer" and e["fields"].get("state") in CLOSED}
+    found, seen = [], set()
+    for e in events:
+        f = e["fields"]
+        if e["kind"] != "ask" or f.get("to") != OPERATOR or not f.get("id") or f["id"] in closed or f["id"] in seen:
+            continue
+        seen.add(f["id"])
+        at = e.get("at")
+        found.append({"id": f["id"], "since": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(at)) if isinstance(at, (int, float)) else "",
+                      "ref": f.get("ref")})
+    return found
+
+
+def ask_texts(conn, asks):
+    """ASKS ({id, since, ref}) as {id, since, text}: the question of each of the first ASKS_READ read with `coord.py
+    get`, redacted and cut to ASK_CHARS words-wise, "" for the rest and for a question that cannot be read."""
+    import redact
+    from mon_status import short_name
+    shown = asks[:ASKS_READ]
+    got = run_all(conn, {a["id"]: ["get", a["ref"]] for a in shown if a.get("ref")}, strict=False) if shown else {}
+    out = []
+    for a in asks:
+        try:
+            value = json.loads(got.get(a["id"]) or "{}").get("value")
+        except ValueError:
+            value = None
+        text = redact.redact(" ".join(str(value or "").split())) if value else ""
+        out.append({"id": a["id"], "since": a["since"], "text": short_name(text, ASK_CHARS)})
+    return out
+
+
+def kb_root_of(root):
+    """The name of the one kb root under ROOT/kb that has a settings.json, else None (none has one, or several do)."""
+    found = sorted(p.parent.name for p in Path(root).glob("kb/*/settings.json") if p.is_file())
+    return found[0] if len(found) == 1 else None
+
+
+def settings_of(root):
+    """({key: {value, source}}, the error text or None): the effective coordination settings of the clone at ROOT, each
+    key with its source, `default` or the settings file relative to ROOT."""
+    import kbsettings
+    try:
+        rows = kbsettings.explain(root, kb_root_of(root))
+    except kbsettings.SettingsError as e:
+        return {}, " ".join(str(e).replace(str(root) + os.sep, "").split())
+    def source(text):
+        if text == "default":
+            return text
+        try:
+            return Path(text).relative_to(root).as_posix()
+        except ValueError:
+            return Path(text).name
+    return {r["key"]: {"value": r["value"], "source": source(r["source"])} for r in rows}, None
 
 
 def claim_of(row, now):
@@ -126,10 +203,17 @@ def collect(ctx):
     out = fetch(conn)
     now = time.time()
     claims = [claim_of(r, now) for r in json.loads(out["list"]) if r.get("holder")]
-    events = json.loads(out["wait"])["events"][-EVENTS_KEPT:]
-    return {"source": source, "claims": claims,
+    every = json.loads(out["wait"])["events"]
+    events = every[-EVENTS_KEPT:]
+    asks = open_asks(every)
+    settings, bad = settings_of(ctx.root)
+    data = {"source": source, "claims": claims,
             "events": [{"seq": e["seq"], "kind": e["kind"], "fields": event_fields(e)} for e in reversed(events)],
-            "digest": [mon_view.session_text(x) for x in out["digest"].splitlines() if x.strip()]}
+            "digest": [mon_view.session_text(x) for x in out["digest"].splitlines() if x.strip()],
+            "asks": ask_texts(conn, asks[:ASKS_KEPT]), "asks_open": len(asks), "settings": settings}
+    if bad:
+        data["settings_error"] = bad
+    return data
 
 
 def usd(value):
@@ -170,9 +254,27 @@ def event_text(event):
     return f"#{event['seq']}  {kind}{subject}" + (f"  {who}" if who and who != subject else "")
 
 
+def non_default(data):
+    """{key: {value, source}} of the settings whose source is a file."""
+    found = data.get("settings") if isinstance(data.get("settings"), dict) else {}
+    return {k: v for k, v in found.items() if isinstance(v, dict) and v.get("source") not in (None, "default")}
+
+
+def value_text(value):
+    return value if isinstance(value, str) else json.dumps(value)
+
+
+def settings_text(data):
+    """`strategy.working=after (settings.json), …` for the settings a file sets, `all default` for none."""
+    found = non_default(data)
+    return ", ".join(f"{k}={value_text(v.get('value'))} ({v.get('source')})" for k, v in sorted(found.items())) or "all default"
+
+
 def lines(data, width=80):
     """The body rows: the claims table (a row over budget starts `! `) with the newest events beside it from column 52 at
-    100 columns or more, else under it, then two lines of the intent digest."""
+    100 columns or more, else under it, then two lines of the intent digest, the one-row summary of the settings a file
+    sets (`settings  all default` where none does; `settings  not read: …` for a file that cannot be read) and, where
+    asks to the operator are open, their count."""
     claims, events = data.get("claims", []), data.get("events", [])[:EVENTS_SHOWN]
     side = width >= SIDE_WIDTH
     left = table(claims, SIDE_COLUMN - 2 if side else width - 2) if claims else [(False, "claims    none")]
@@ -187,4 +289,7 @@ def lines(data, width=80):
     intents = [x for x in data.get("digest", []) if x.startswith("intent ")][:2]
     rows.append("intents   " + (intents[0] if intents else "none"))
     rows += ["          " + x for x in intents[1:]]
+    if data.get("asks_open"):
+        rows.append(f"asks      {data['asks_open']} open to the operator")
+    rows.append("settings  " + (f"not read: {data['settings_error']}" if data.get("settings_error") else settings_text(data)))
     return rows

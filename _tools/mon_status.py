@@ -7,7 +7,7 @@ from one snapshot of the panels the topic needs (stdlib only).
                          {"schema": 1, "topic", "taken", "lines", "facts"} from a scrubbed snapshot (`mon_view.scrub`)
                          that holds those panels; `root` is the clone whose backlog gives an item its title; `detail`
                          gives the sprints answer its full lines in place of one row for each sprint; the `all` answer
-                         starts with the `needs you` line of `mon_needs.line` and holds its entries as `facts["needs"]`
+                         starts with the `needs you` line of `mon_needs.line` and holds its entries as `facts["needs"]`; the coord answer names the open asks to the operator and the settings a file sets, with that file
   short_name(text)       TEXT cut after a whole word to at most NAME_CHARS characters, ending in an ellipsis where cut:
                          the name of a sprint or an item in a row, shared with the sprint panel
   topic_of(question)     the topic a plain question about the monitored work asks, by fixed cue words (CUES), `all` where it
@@ -24,6 +24,7 @@ load answer also gives the host panel's CPU groups with a fixed cause and remedy
 top-level `groups` list. It calls no model and writes no file (`run` starts `kbmon.py`, which writes none). Imports `mon_base`, `mon_eta`, `mon_needs`, `mon_querylog` (the key of usage outside a sprint), `mon_sessions` (its
 age text and `session_line`) and `mon_view`; `bl_base` where it reads titles.
 """
+import json
 import os
 import re
 import subprocess
@@ -281,6 +282,21 @@ def querylog(r):
     return lines, facts
 
 
+def settings_facts(data):
+    """({key: {value, source}} of the settings a file sets, the lines that say so): `Settings: all default`, or each key with
+    its value and the file that set it, or that the settings files cannot be read."""
+    if data.get("settings_error"):
+        return {}, [f"  Settings: not read ({data['settings_error']})."]
+    found = {k: v for k, v in (data.get("settings") or {}).items()
+             if isinstance(v, dict) and v.get("source") not in (None, "default")}
+    if not found:
+        return {}, ["  Settings: all default (no settings file sets a coordination key)."]
+    shown = sorted(found.items())
+    text = ", ".join(f"{k} = {v.get('value') if isinstance(v.get('value'), str) else json.dumps(v.get('value'))} "
+                     f"(set by {v.get('source')})" for k, v in shown[:ROWS])
+    return found, [f"  Settings set by a file: {text}" + (f", +{len(shown) - ROWS} more" if len(shown) > ROWS else "") + "."]
+
+
 def coord(r):
     data, why = r.data("coord")
     if data is None:
@@ -288,15 +304,20 @@ def coord(r):
     claims = [c for c in data.get("claims") or [] if isinstance(c, dict)]
     claims.sort(key=lambda c: not str(c.get("key")).startswith(mon_view.SESSION_KEY))  # the sessions first: stable
     over =[c for c in claims if c.get("over_budget")]
-    facts = {"claims": len(claims), "over_budget": len(over), "keys": [str(c.get("key")) for c in claims]}
+    asks = [a for a in data.get("asks") or [] if isinstance(a, dict)]
+    changed, setting_lines = settings_facts(data)
+    facts = {"claims": len(claims), "over_budget": len(over), "keys": [str(c.get("key")) for c in claims],
+             "asks_to_operator": number(data.get("asks_open"), len(asks)), "settings": changed}
+    ask_line = [f"  {facts['asks_to_operator']} open ask{'' if facts['asks_to_operator'] == 1 else 's'} to the operator: "
+                + "; ".join(f"{a.get('id')}" for a in asks[:ROWS]) + "."] if facts["asks_to_operator"] else []
     if not claims:
-        return ["Coord: no live claim."], facts
+        return ["Coord: no live claim."] + ask_line + setting_lines, facts
     lines = [f"Coord: {len(claims)} live claim{'' if len(claims) == 1 else 's'}" + (f", {len(over)} over budget:" if over else ":")]
     lines += [f"  {c.get('key')}: {mon_sessions.age_text(number(c.get('left_s')))} left, "
               + ("no budget" if c.get("budget_usd") is None else f"budget {usd(c.get('budget_usd'))}")
               + (f", spent {usd(c.get('spend_usd'))}" if c.get("spend_usd") is not None else "")
               + (" (over budget)" if c.get("over_budget") else "") for c in claims[:ROWS]]
-    return lines + ["  " + x for x in more(len(claims) - ROWS, "claims")], facts
+    return lines + ["  " + x for x in more(len(claims) - ROWS, "claims")] + ask_line + setting_lines, facts
 
 
 def minutes(n):
