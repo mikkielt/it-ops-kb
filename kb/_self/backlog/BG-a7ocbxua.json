@@ -33,10 +33,46 @@
   "touches": [
     "_tools/ql_capture.py"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the stale takeover keep a lock in place: replace the lock by a file holding the taker's token in one atomic step, or take a guard file named for the stale lock first and replace under it?",
+      "options": [
+        "replace in one step",
+        "guard file then replace"
+      ],
+      "recommendation": "replace in one step",
+      "do": {
+        "replace in one step": "BG-a7ocbxua",
+        "guard file then replace": "BG-a7ocbxua"
+      },
+      "class": "secrets",
+      "answer": "replace in one step",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "The repro asserts the writer calls os.rename on the lock path, which the goal forbids (a rename vacates the path), so no fix that meets the goal can pass it. Replace the repro with one that fails when any call vacates the lock path during a takeover?",
+      "options": [
+        "replace the repro",
+        "keep the repro and the rename"
+      ],
+      "recommendation": "replace the repro",
+      "do": {
+        "replace the repro": "BG-a7ocbxua",
+        "keep the repro and the rename": "BG-a7ocbxua"
+      },
+      "class": "design"
+    }
+  ],
   "links": [
     "parked: SP-swavez3g review"
   ],
-  "notes": "Found by the SP-swavez3g review (S3) of BG-7efq3pqt: the stale takeover renames the lock first and checks it after; a live lock renamed away is put back with os.link, and a lock created in between makes the link fail and the live lock is deleted. If the token write fails, an empty lock stays until it goes stale. Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. The pin check passes before the work by design: it holds behaviour the fix must keep.",
+  "notes": "Found by the SP-swavez3g review (S3) of BG-7efq3pqt: the stale takeover renames the lock first and checks it after; a live lock renamed away is put back with os.link, and a lock created in between makes the link fail and the live lock is deleted. If the token write fails, an empty lock stays until it goes stale. Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. The pin check passes before the work by design: it holds behaviour the fix must keep. Gates g1 (secrets class by the word token; replace in one step) and g2 (replace the repro, whose os.rename assertion contradicts the goal) answered with their recommendations (pre-approved by the operator for the 2026-10-24 day run); the replaced repro must test the same goal clause: no call vacates the lock path while a live lock stands.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
