@@ -427,7 +427,7 @@ def write_pin(p, commit):
     """Set `pin` in the front matter of Pointer `p`'s file to `commit`; False when the file has no front matter."""
     with open(p.path, encoding="utf-8", newline="") as f:
         text = f.read()
-    m = re.match(r"(---\r?\n)(.*?)(\r?\n---)", text, re.S)
+    m = re.match(r"\ufeff?(---\r?\n)(.*?)(\r?\n---)", text, re.S)
     if not m:
         return False
     head, eol = m.group(2), m.group(1)[3:]
@@ -475,7 +475,10 @@ def cmd_fetch(a):
             print(f"fetched {p.name}")
             if a.pin:
                 ok, commit = git_out(["rev-parse", "HEAD"], p, kbcommon.pointer_root_dir(p))
-                if ok and write_pin(p, commit):
+                if not ok:
+                    failed += 1
+                    print(f"pin failed: {p.name}: {commit}", file=sys.stderr)
+                elif write_pin(p, commit):
                     print(f"pinned {p.name} at {commit}")
                     try:
                         record_fetch(p._replace(pin=commit), "")
@@ -483,7 +486,7 @@ def cmd_fetch(a):
                         print(f"fetch not recorded: {p.name}: {os_reason(e)}", file=sys.stderr)
                 else:
                     failed += 1
-                    print(f"pin failed: {p.name}: {commit or 'the pointer has no front matter'}", file=sys.stderr)
+                    print(f"pin failed: {p.name}: the pointer has no front matter", file=sys.stderr)
     print(f"fetch roots={len(fetchable)} failed={failed}")
     return 1 if failed else 0
 
