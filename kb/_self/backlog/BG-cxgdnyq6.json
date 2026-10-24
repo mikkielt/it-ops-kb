@@ -2,7 +2,7 @@
   "id": "BG-cxgdnyq6",
   "kind": "bug",
   "title": "backlog.py done --dry-run records a done.refused ops row, which ops and the retrospective read as a real refusal",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,
@@ -24,5 +24,7 @@
   "links": [
     "parked: SP-qh2j24z2 close"
   ],
-  "notes": "SP-qh2j24z2 retrospective: the orchestrator ran BG-ko4sdvxy's repro with done --dry-run (backlog.py has no repro command, and the error names done --dry-run as the way), and ops SP then listed a done.refused row reasons=no-work-commit for it."
+  "notes": "SP-qh2j24z2 retrospective: the orchestrator ran BG-ko4sdvxy's repro with done --dry-run (backlog.py has no repro command, and the error names done --dry-run as the way), and ops SP then listed a done.refused row reasons=no-work-commit for it.",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
