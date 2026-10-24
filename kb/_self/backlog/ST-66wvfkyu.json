@@ -2,7 +2,7 @@
   "id": "ST-66wvfkyu",
   "kind": "story",
   "title": "Review sprint: The tools move the run states: claim, dispatch, gates, land and stage-back, runs and reconcile, settings explain, the plugin's coord",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-sucr3kfg",
   "review": true,
   "priority": "P1",
@@ -24,5 +24,7 @@
     }
   ],
   "notes": "Planned into SP-sucr3kfg on 2026-10-24. Sprint started 2026-10-24.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
