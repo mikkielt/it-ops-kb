@@ -4,6 +4,7 @@
   "title": "kbroot.py push in a plugin host commits the gitlink bump in the plugin copy",
   "status": "draft",
   "parent": "EP-eocmyqdx",
+  "sprint": "SP-c6w5hjmc",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -19,6 +20,9 @@
     "_tools/kbroot.py",
     "kb/_self/tools.md",
     "kb/_self/plugin.md"
+  ],
+  "depends_on": [
+    "BG-w73p5lch"
   ],
   "links": [
     "parked: SP-mguax5m3 review"
