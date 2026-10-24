@@ -2,7 +2,7 @@
   "id": "ST-ako2dypu",
   "kind": "story",
   "title": "Research sprint goal: S3 bugs the first triage left: fail-open guards, leak scan, gate class, feedback lock, census confirm, tool ranking, close links, a kb citation",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4ppjbh4k",
   "goal_research": true,
   "priority": "P1",
@@ -18,8 +18,8 @@
       ]
     }
   ],
-  "touches": [
-    "kb/public/**"
-  ],
-  "filed_in": "clone-0ea70e5c"
+  "notes": "No outside facts: every pick is a defect in this repository's own tools (Python code, its tests and one citation tag), read from the code and the repros on the base; the live docs and the kb articles hold nothing the work needs. Touches cleared so the story meets no running sprint's kb/public paths.",
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
