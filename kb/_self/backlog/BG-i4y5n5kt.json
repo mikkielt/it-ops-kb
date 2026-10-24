@@ -2,7 +2,7 @@
   "id": "BG-i4y5n5kt",
   "kind": "bug",
   "title": "kb_backlog_write refuses every call when a settings file has no permissions key, though it holds no deny rule",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,
@@ -31,5 +31,7 @@
   "links": [
     "parked: SP-rrqlgiff review"
   ],
-  "notes": "Planner 2026-10-24: repro also asserts a settings file that cannot be parsed still denies every call (clause 2)."
+  "notes": "Planner 2026-10-24: repro also asserts a settings file that cannot be parsed still denies every call (clause 2).",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
