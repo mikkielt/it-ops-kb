@@ -63,6 +63,11 @@ what it did); the asks add a heading and up to five lines, the coordinate events
 (Claude's context). Only a SessionStart prints with no other session overlapping, no ask open and no coordinate event (the INTRO line); any other event prints nothing then. No hook blocks or exits 2: an overlap
 informs; a missing store, an unreadable payload or any error ends in silence and exit 0.
 
+Every `coord.py` call has the limit CALL_SECONDS, and all the calls of one run together have DEADLINE_SECONDS from the
+hook's start: past it no call starts and one running is cut to the time left, so a locked store ends the hook under its 10 second
+kill (the calls that did not run count as a store that could not be reached). The state file is written whole to a temporary
+file beside it and renamed over it (`os.replace`, mode 0600), so a hook running at the same time never reads half a file.
+
 The store is coord.py's own: `KB_COORD_STORE`, else `kb-coord/coord.sqlite` in the common git directory of the project
 (`CLAUDE_PROJECT_DIR`) when that is not the clone that holds this script, else of this clone, which its worktrees share. The lease token, items and ask
 cursor of a session sit in `_cache/coord_hook/<session id>.json` of this clone until its end; for another project, in the
@@ -70,14 +75,18 @@ cursor of a session sit in `_cache/coord_hook/<session id>.json` of this clone u
 """
 import hashlib, json, os, re, subprocess, sys, time
 
+STARTED = time.monotonic()  # the hook's clock for DEADLINE_SECONDS
 HOME =os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 COORD = os.path.join(HOME, "_tools", "coord.py")
 STATE = os.path.join(HOME, "_cache", "coord_hook")  # one file per session: its lease token and items
 FOREIGN = []  # [the state directory of a project that is not this clone], once looked up; [None] when the project is this clone
+CALL_SECONDS = 8  # the limit of one coord.py call
+DEADLINE_SECONDS = 8  # all coord.py calls of one hook run together: past it none starts and a running one is cut to the time left, under the 10 second kill
 LEASE_SECONDS = 6 * 3600  # a session that ends without SessionEnd (a crash) drops out of `list` after this
 RETRY_SECONDS = 60  # after a renew that could not run, the next tool event waits this long
 OVERLAPS_SHOWN = 4  # overlaps shown, two lines each: with the first and last line, ten in all
 DIGEST_LINES = 200  # digest lines read, before this session's own intents are dropped (the width kbmon's sessions panel reads)
+TMP_SUFFIX = ".tmp"  # a state file's copy in the making; not a `.json`, so retry_releases leaves it alone while it is fresh
 SHOWN_KEPT = 100  # overlaps the state file remembers as shown
 MID_SECONDS = 10  # a midrun check runs at most this often, the first one at once
 TOUCH_CHARS = 120  # the width of an intent's touch field
@@ -209,10 +218,14 @@ def claimed_item(text, depth=0):
 
 
 def coord(*args):
-    """(exit code, stdout) of one coord.py command; (None, "") when it cannot run."""
+    """(exit code, stdout) of one coord.py command; (None, "") when it cannot run or DEADLINE_SECONDS since the hook's start
+    have passed. The call's limit is CALL_SECONDS, cut to the time the deadline leaves."""
+    left = min(CALL_SECONDS, DEADLINE_SECONDS - (time.monotonic() - STARTED))
+    if left <= 0:
+        return None, ""
     try:
         p = subprocess.run([sys.executable, COORD, *args], capture_output=True, text=True, encoding="utf-8",
-                           errors="replace", timeout=8)
+                           errors="replace", timeout=left)
     except (OSError, subprocess.TimeoutExpired):
         return None, ""
     return p.returncode, p.stdout
@@ -259,10 +272,16 @@ def load(sid):
 def save(sid, state):
     os.makedirs(state_dir(), exist_ok=True)
     path = state_path(sid)
-    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)  # the lease token: owner-only
-    os.chmod(path, 0o600)  # a file an earlier version made keeps its mode through the open
-    with open(fd, "w", encoding="utf-8", newline="\n") as f:
-        json.dump(state, f)
+    tmp = f"{path}.{os.getpid()}{TMP_SUFFIX}"  # written whole beside the state file, then renamed over it: a reader never sees half of it
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)  # the lease token: owner-only
+    try:
+        os.chmod(tmp, 0o600)  # a leftover of this pid keeps its mode through the open
+        with open(fd, "w", encoding="utf-8", newline="\n") as f:
+            json.dump(state, f)
+        os.replace(tmp, path)
+    except BaseException:
+        forget(tmp)
+        raise
 
 
 def where(cwd):
@@ -739,6 +758,13 @@ def retry_releases(own):
         return
     for name in names:
         path = os.path.join(state_dir(), name)
+        if name.endswith(TMP_SUFFIX):  # a copy a killed hook left
+            try:
+                if time.time() - os.path.getmtime(path) > LEASE_SECONDS:
+                    forget(path)
+            except OSError:
+                pass
+            continue
         if path == state_path(own) or not name.endswith(".json"):
             continue
         try:
