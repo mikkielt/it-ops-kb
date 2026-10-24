@@ -2,7 +2,7 @@
   "id": "BG-jkdw723s",
   "kind": "bug",
   "title": "The kbmon mod notifies every refresh while a run waits, because the needs-you line it compares carries ages and a not-read suffix",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
   "sprint": "SP-rin4kkoj",
   "priority": "P3",

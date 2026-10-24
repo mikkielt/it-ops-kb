@@ -2,7 +2,7 @@
   "id": "ST-yocsfwlz",
   "kind": "story",
   "title": "Research sprint goal: The kbmon mod tells the operator only what changed in what waits, and never holds its refresh for a notification",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-rin4kkoj",
   "goal_research": true,
   "priority": "P1",

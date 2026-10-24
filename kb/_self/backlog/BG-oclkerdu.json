@@ -2,7 +2,7 @@
   "id": "BG-oclkerdu",
   "kind": "bug",
   "title": "The kbmon mod awaits $.ui.notify inside its refresh, so a slow Notification hook freezes the pane, the receipt and the resize refresh",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
   "sprint": "SP-rin4kkoj",
   "priority": "P3",
