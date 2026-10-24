@@ -391,12 +391,18 @@ def cmd_fetch_hook():
             left = HOOK_BUDGET_S - (time.monotonic() - start)
             if left < 1:
                 break
-            why = fetch_one(p, min(HOOK_FETCH_BOUND_S, left))
-            record_fetch(p, why)
+            try:
+                why = fetch_one(p, min(HOOK_FETCH_BOUND_S, left))
+            except OSError as e:
+                why = f"the clone directory is not usable ({os_reason(e)})"
+            try:
+                record_fetch(p, why)
+            except OSError as e:
+                why = (why + "; " if why else "") + f"the result is not recorded ({os_reason(e)})"
             if why:
                 print(f"fetch failed: {p.name}: {why}")
     except Exception as e:  # a hook never fails a session
-        print(f"fetch failed: {e.__class__.__name__}: {e}")
+        print(f"fetch failed: {e.__class__.__name__}: {os_reason(e) if isinstance(e, OSError) else e}")
     return 0
 
 
