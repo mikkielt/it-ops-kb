@@ -68,7 +68,9 @@
       },
       "class": "design",
       "answer": "Cite the docs changelog (existing source S746) for v2.1.212 and v2.1.214 beside S744",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Planning 2026-10-24: goal reworded into six clauses so each maps to one case of the check (the old last clause 'each fact keeps the Claude Code version the page names' is now the version assertion on the event-record fact, the one the page versions: before v2.1.212). Premise: the check fails on the base (precheck). Planned 2026-10-24 into SP-r7e7jcep: second in the run order (after ST-a6ypqjuy), since the five research stories share the source, anchor and expansions files. Worker 2026-10-24: the live monitoring-usage page no longer names v2.1.212 for event records; it names v2.1.268 for parent.source and v2.1.152 (env-vars) for CLAUDE_CODE_PROPAGATE_TRACEPARENT. The fact for trace_id/span_id cites the docs changelog (S746) for v2.1.212 and v2.1.214 and says the page names none. Check case unchanged.",
