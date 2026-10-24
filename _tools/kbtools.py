@@ -12,7 +12,8 @@ entry is its frontmatter `description:`, a kb MCP tool's its listed description.
 A need is matched by words: lower-case words with their endings cut, the common ones dropped, each weighed by how few
 entries hold it, a word of an entry's name counting double (a name of several words, `querylog.py`, holds the words of
 the need that spell it, `query log`) and a word of a skill's, agent's or kb MCP tool's description counting less, the
-longer the description is. The same need always gives the same entries, best first.
+longer the description is, unless a short one holds several words of the need. The same need always gives the same
+entries, best first.
 `answering` is the stricter read `kb_ask.py` routes by: it leaves the words that only ask for a tool (CUES) out of the
 need, reads a tool's name and its own text (summary and `Answers:` lines) and the name alone of a skill, an agent or a kb
 MCP tool (their descriptions list the products the kb covers), and reports how much of the need the catalog holds.
@@ -47,6 +48,8 @@ CUES = frozenset("tool command script line find show list print give tell get ru
 KIND_ORDER = {"tool": 0, "skill": 1, "agent": 2, "mcp": 3}
 DESC_CAP = 0.6  # most a word of a skill's, agent's or kb MCP tool's description counts, against 1 for a tool's own text
 DESC_REF = 16  # words of such a description from which each of its words counts less
+DESC_MULTI = 2  # words of the need that a short such description holds, from which each of its words counts in full
+DESC_FULL = 32  # words of such a description up to which it is short
 WIDTH = 150  # characters of what an entry answers on a catalog line
 BOILERPLATE = re.compile(r"^(Documentation facts from it-ops-kb \(not live device or directory data\)\.\s*)")
 
@@ -191,11 +194,17 @@ def name_words(name, need):
     return out
 
 
-def text_weight(entry, text):
+def text_weight(entry, text, want):
     """How much a word of an entry's own text counts: in full for a tool, whose `Answers:` lines list the needs it answers;
     for a skill, an agent or a kb MCP tool at most DESC_CAP, and less for each word of a description beyond DESC_REF
-    words: it says when to use the entry and names whatever it mentions (long in `Long it-ops-kb research`)."""
-    return 1.0 if entry["kind"] == "tool" else min(DESC_CAP, DESC_REF / max(len(text), 1))
+    words, when it holds one word of WANT only: it says when to use the entry and names whatever it mentions (long in
+    `Long it-ops-kb research`). A description of DESC_FULL words or fewer that holds DESC_MULTI words of WANT or more says
+    what the entry does, and its words count in full."""
+    if entry["kind"] == "tool":
+        return 1.0
+    if len(want & text) >= DESC_MULTI and len(text) <= DESC_FULL:
+        return 1.0
+    return min(DESC_CAP, DESC_REF / max(len(text), 1))
 
 
 def rank(need, want, docs):
@@ -206,7 +215,7 @@ def rank(need, want, docs):
     df = {w: sum(1 for _, n, t in docs if w in n or w in t) for w in want}
     scored = []
     for e, name, text in docs:
-        weight = text_weight(e, text)
+        weight = text_weight(e, text, want)
         score = sum(math.log(1 + len(docs) / df[w]) * (2 if w in name else weight) for w in want if w in name or w in text)
         if score > 0:
             scored.append((-score, KIND_ORDER[e["kind"]], e["tool"], e))
