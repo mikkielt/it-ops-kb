@@ -1,0 +1,52 @@
+{
+  "id": "ST-44md64ps",
+  "kind": "story",
+  "title": "backlog.py begin ID... starts the next ready items in one call: overlap check, claim, claim push and detached dispatch",
+  "status": "draft",
+  "parent": "EP-sqt62vj2",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "begin ID... --by NAME --dry-run prints one line per item, the claim and dispatch it would make or the refusal, and writes nothing; an item whose touches overlap an earlier item of the batch or a held claim is refused with the overlap named and the others are still planned, with exit 1 when any item was refused",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile,pathlib as P\nT=os.path.abspath(\"_tools/backlog.py\");r=P.Path(tempfile.mkdtemp())\ng=lambda *a:s.run([\"git\",\"-C\",str(r),*a],check=True,capture_output=True,text=True).stdout.strip()\ng(\"init\",\"-q\");(r/\"backlog.json\").write_text(json.dumps({\"item_dir\":\"items\",\"scratch_dir\":\"_cache/scratch\"}));(r/\"items\").mkdir()\ndef item(i,**k):\n d=dict(id=i,kind=\"story\",title=\"t\",status=\"todo\",priority=\"P3\",goal=\"g\",touches=[\"x.txt\"],checks=[{\"run\":[\"python3\",\"-c\",\"pass\"]}]);d.update(k)\n (r/\"items\"/(i+\".json\")).write_text(json.dumps(d,indent=2)+\"\\n\")\ndef commit():g(\"add\",\"-A\");g(\"-c\",\"user.name=x\",\"-c\",\"user.email=x@x\",\"commit\",\"-qm\",\"i\")\nenv=dict(os.environ,CLAUDE_CODE_SESSION_ID=\"chk\");env.pop(\"KB_BACKLOG_CONFIG\",None)\ndef run(*a):return s.run([sys.executable,T,\"--root\",str(r),*a],capture_output=True,text=True,env=env)\n(r/\"items\"/\"SP-cccccccc.json\").write_text(json.dumps({\"id\":\"SP-cccccccc\",\"kind\":\"sprint\",\"title\":\"s\",\"status\":\"active\",\"goal\":\"g\"}))\nitem(\"ST-aaaaaaaa\",sprint=\"SP-cccccccc\");item(\"ST-bbbbbbbb\",sprint=\"SP-cccccccc\");item(\"ST-cccccccc\",sprint=\"SP-cccccccc\",touches=[\"y.txt\"]);commit()\np=run(\"begin\",\"ST-aaaaaaaa\",\"ST-bbbbbbbb\",\"ST-cccccccc\",\"--by\",\"claude-chk\",\"--dry-run\")\no=p.stdout+p.stderr;bl=[x for x in o.splitlines() if \"ST-bbbbbbbb\" in x]\nprint(p.returncode,o[-400:])\nok=p.returncode==1 and bl and \"overlap\" in bl[0] and \"ST-cccccccc\" in o and not g(\"status\",\"--porcelain\")\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "begin ID... --by NAME --dry-run prints one line per item, the claim and dispatch it would make or the refusal",
+      "check": 0
+    },
+    {
+      "clause": "writes nothing",
+      "check": 0
+    },
+    {
+      "clause": "an item whose touches overlap an earlier item of the batch or a held claim is refused with the overlap named and the others are still planned, with exit 1 when any item was refused",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/bl_dispatch.py",
+    "_tools/bl_view.py",
+    "_tools/bl_plan.py",
+    "_tools/bl_land.py",
+    "_tools/backlog.py",
+    "_tools/bl_cli.py",
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "relates_to": [
+    "ST-pueudigl",
+    "ST-hs26y4qr",
+    "EP-nij36lt7"
+  ],
+  "notes": "From the 2026-10-24 telemetry and query-log analysis: 356 dispatches in 72 orchestrating sessions, each preceded by the same chain: git fetch, held --overlaps ID --ref origin/main, claim, kbgit.py sync, dispatch (44 exact five-call chains; claim, sync, dispatch 137 times; held, claim, sync 93). Turns that held only one of those calls: claim 357, held 283, kbgit sync 530, git fetch 330, about 1,500 turns or 11% of the total, part of them serving other steps. The sprint skill spells the chain out as its steps 2 and 3. Saves about 2 turns for each dispatch: about 700 turns, about 35 USD a week (estimate). Medium confidence. Also wanted, not read by the planted check (it needs a remote and a fake claude on PATH): without --dry-run begin fetches, refuses a local work/ID branch, claims each accepted item with --commit and the session trailer, pushes the claim commits once through land_push and dispatches each with --detach, printing id, pid and log path; it writes nothing but what claim and dispatch write today. Parts already parked: ST-pueudigl (next --batch, the overlap half) and ST-hs26y4qr (claim push by a command). Lane: parked sprint-orchestration class, EP-gzr4mmkm.",
+  "filed_in": "clone-0ea70e5c"
+}
