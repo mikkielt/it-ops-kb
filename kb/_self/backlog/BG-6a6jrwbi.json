@@ -42,10 +42,31 @@
     "kb/_self/tools.md",
     "_tools/test_publish_e2e.py"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which domain and local parts does the publish message guard name for a noreply address?",
+      "options": [
+        "noreply and no-reply at anthropic.com",
+        "only noreply at anthropic.com"
+      ],
+      "recommendation": "noreply and no-reply at anthropic.com",
+      "do": {
+        "noreply and no-reply at anthropic.com": "BG-6a6jrwbi",
+        "only noreply at anthropic.com": "BG-6a6jrwbi"
+      },
+      "class": "push",
+      "answer": "noreply and no-reply at anthropic.com",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-yjugq5c2 review"
   ],
-  "notes": "Plan 2026-10-24: premise reproduces (repro fails on the base). Check 0 passes before the work by design: it pins the named and placeholder domains that must stay allowed. The leak scan's EMAIL_OK (kbcommon) also lets any host whose first label is noreply through, so the worker keeps the scan's other callers right.",
+  "notes": "Plan 2026-10-24: premise reproduces (repro fails on the base). Check 0 passes before the work by design: it pins the named and placeholder domains that must stay allowed. The leak scan's EMAIL_OK (kbcommon) also lets any host whose first label is noreply through, so the worker keeps the scan's other callers right. g1 (push) answered with its recommendation, pre-approved by the operator for the 2026-10-24 day run.",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }

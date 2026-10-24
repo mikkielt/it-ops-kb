@@ -39,7 +39,7 @@ the same `main`, so the public home gets a projection of it:
               CI verdict of the source commit (ql_deliver.ci_pipeline on the source remote's url) is not `ok`: red, pending,
               unverified, none, or skip when glab or gh cannot read it.
               A commit whose message or trailers hold an email address of the leak scan's shape that is not a noreply or
-              no-reply local part or an allowed placeholder is refused too (message_refusals), named, its address never. Content is refused, never filtered.
+              no-reply local part at a domain the kb names, a placeholder or a users.noreply.github.com one is refused too (message_refusals), named, its address never. Content is refused, never filtered.
               Each commit's leak verdict is cached in _cache/publish/ per public tip, projection allowlist and pinned artifacts, so a
               range is scanned once; `publish --hook` leaves a range with more than HOOK_BOUND uncached commits to a
               publish by hand (one line, exit 0, nothing checked or pushed).
@@ -89,7 +89,7 @@ ALLOWLIST_PATH = "_tools/tests_allowlist.txt"
 URL_RX = re.compile(r"(?:https?|ssh|git)://\S+|(?<![\w.%+-])git@[\w.-]+:[\w./~-]+|\bssh(?:\s+-\w+)*\s+git@[\w.-]+")
 CACHE_DIR = ("_cache", "publish")  # the per-clone scan cache under the repository, never committed (its own .gitignore)
 PROJECTION_FORM = 1  # the projection's form: a change to how commits are projected bumps it, so no older cache is read
-SCAN_FORM = 3  # the leak scan's form (file_hits): a change to what it flags bumps it, so no verdict cached under an older rule is read
+SCAN_FORM = 4 # the leak scan's form (file_hits): a change to what it flags bumps it, so no verdict cached under an older rule is read
 HOOK_BOUND = 150  # uncached commits publish --hook checks at most; a longer range is left to a publish by hand (git.md)
 CI_RUN = None  # a command runner (argv -> (code, stdout, stderr)) for the CI check; None: ql_base.run_cmd. Tests stub it.
 
@@ -818,12 +818,20 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None):
 
 TRAILER_RX = re.compile(r"[A-Za-z][\w-]*:[ \t]\S")
 NOREPLY_LOCALS = ("noreply", "no-reply")  # local parts of an address that names no one
+NOREPLY_DOMAINS = ("anthropic.com",)  # where those local parts pass: the Claude Code trailer's domain (the scan allows the rest)
+
+
+def named_noreply(addr):
+    """Whether ADDR is a noreply or no-reply local part at a domain the kb names (NOREPLY_DOMAINS)."""
+    local, _, domain = addr.lower().rpartition("@")
+    return local in NOREPLY_LOCALS and domain in NOREPLY_DOMAINS
 
 
 def message_refusals(proj, tip, final, cwd, sources=None):
     """Causes: a commit of TIP..PROJ (all of PROJ's history when TIP is None) whose message holds an email address of the
     leak scan's shape (kbcommon.leak_hits, kind email, allowing FINAL, the projection's allowlist) that is neither a
-    noreply or no-reply local part nor a placeholder domain the scan allows. A cause names the commit and the field
+    noreply or no-reply local part at a domain the kb names (named_noreply) nor an address the scan allows (a
+    placeholder domain, users.noreply.github.com). A cause names the commit and the field
     (the message, or a trailer of its last paragraph), never the address. Raises RuntimeError on a git error."""
     import kbcommon
     # --no-patch: git 2.50 prints a merge's first-parent patch for --diff-merges, which is not its message
@@ -838,7 +846,7 @@ def message_refusals(proj, tip, final, cwd, sources=None):
         last = paras[-1].splitlines() if len(paras) > 1 else []
         fields = set()
         for ln in msg.splitlines():
-            if "@" in ln and any(h[0] == "email" and h[1].rsplit("@", 1)[0].lower() not in NOREPLY_LOCALS
+            if "@" in ln and any(h[0] == "email" and not named_noreply(h[1])
                    for h in kbcommon.leak_hits(ln, final)):
                 trailer = ln in last and all(TRAILER_RX.match(x) or x.startswith((" ", "\t")) for x in last)
                 fields.add("a trailer" if trailer else "the message")
