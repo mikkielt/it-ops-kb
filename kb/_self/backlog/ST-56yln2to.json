@@ -135,7 +135,11 @@
         "coord.py digest gains age= on an intent line, the seconds since the newest progress event that moved its items": "ST-56yln2to",
         "the hook asks coord.py wait for the item's progress events and reads their times": "ST-56yln2to"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "coord.py digest gains age= on an intent line, the seconds since the newest progress event that moved its items (pre-approved by the operator for the 2026-10-24 night run)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
