@@ -24,7 +24,7 @@
   ],
   "touches": [
     "_tools/kbtools.py",
-    "_tools/backlog.py",
+    "_tools/bl_ops.py",
     "kb/_self/tools.md"
   ],
   "relates_to": [
