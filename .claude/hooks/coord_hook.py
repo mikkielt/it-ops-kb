@@ -56,7 +56,8 @@ workspace of the event's cwd (its git top-level): announce.when names the moment
 leaves out stays silent) and strategy the suggestion for the other item's run state. An overlap is two lines: the other
 session by its label (`mon_view.session_label`, never the raw id) with its operator id, its item and the title the item file
 gives in this workspace, its run state with its age and the files the two share; then the strategy the settings suggest, with its command,
-and the other strategies. The output is at most ten lines: a first line, up to four overlaps of two lines, and a line
+and the other strategies, all passed through `redact.redact` line by line before they print (no overlap shown when redact
+cannot load). The output is at most ten lines: a first line, up to four overlaps of two lines, and a line
 telling Claude who decides (strategy.decide operator: tell the operator and ask which; claude: follow the suggestion and say
 what it did); the asks add a heading and up to five lines, the coordinate events up to four lines, and a SessionStart adds the one INTRO line; as one JSON object, its `systemMessage` (the operator's terminal) and `hookSpecificOutput.additionalContext`
 (Claude's context). Only a SessionStart prints with no other session overlapping, no ask open and no coordinate event (the INTRO line); any other event prints nothing then. No hook blocks or exits 2: an overlap
@@ -507,6 +508,19 @@ def shown_title(value):
         return ""
 
 
+def redacted_lines(lines):
+    """The overlap lines after redact.redact, one by one (the shared files, the item ids, the operator ids and the
+    strategy lines: an email address or a secret-shaped string in an intent's touch field never reaches the terminal or
+    Claude); empty when redact cannot load, so nothing unredacted is shown and the overlap stays unshown."""
+    try:
+        sys.path.insert(0, os.path.join(HOME, "_tools"))
+        import redact
+        known = redact.scan_known([])
+        return [redact.redact(line, known) for line in lines]
+    except Exception:
+        return []
+
+
 def entry_lines(entry, ws, mine, mine_touch, strategy):
     """The two lines of one overlap: who works on what in which run state, sharing which files; the suggested strategy
     with its command, then the others."""
@@ -541,11 +555,14 @@ def overlap_block(sid, ws, mine, keys, mine_touch, strategy, dispatched=None):
     fresh = [e for e in entries if e["id"] not in shown][:OVERLAPS_SHOWN]
     if not fresh:
         return []
-    state["shown"] = (shown + [e["id"] for e in fresh])[-SHOWN_KEPT:]
-    save(sid, state)
     lines = [f"coord: other sessions overlap this session's work ({', '.join(keys)[:80]}), newest first:"]
     for entry in fresh:
         lines += entry_lines(entry, ws, mine, mine_touch, strategy)
+    lines = redacted_lines(lines)
+    if not lines:
+        return []
+    state["shown"] = (shown + [e["id"] for e in fresh])[-SHOWN_KEPT:]
+    save(sid, state)
     return lines + [DECIDE.get(strategy.get("decide"), DECIDE["operator"])]
 
 
