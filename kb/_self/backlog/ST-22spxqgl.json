@@ -2,7 +2,7 @@
   "id": "ST-22spxqgl",
   "kind": "story",
   "title": "Research sprint goal: kbmon and OpenTelemetry show the run states: spans, needs-you, landing queue, drift, worker trace context and alerts",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-d6gbc3tq",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "Plan 2026-10-24: the earlier research sprint SP-r7e7jcep landed the OpenTelemetry, Prometheus and Alertmanager facts (kb/public/logs/otel-python-sdk.md:83, prometheus-retention-exposition.md:55). Left for this story: (1) Claude Code's own telemetry join: TRACEPARENT and TRACESTATE read from the environment of -p sessions, OTEL_RESOURCE_ATTRIBUTES on every event, traces beta flags (live docs code.claude.com/docs/en/monitoring-usage read 2026-10-24 by ST-zlzvqz2w; kb has kb/public/claude/otel-monitoring.md for events only): add them as DOC facts with a source row, or Narrowed gap note if the page lacks one; (2) the Alertmanager webhook payload (version 4 JSON: status, alerts[].labels, annotations, startsAt, fingerprint) a stdlib loopback receiver would read, and webhook_configs keys: check the kb with rag.py pack first, add only what is missing. Write facts only into the article that fits and its _sources.csv; if the kb already holds both, close with a note 'No outside facts: <reason>' naming the lines. Planned into SP-d6gbc3tq on 2026-10-24 (night run). Sprint SP-d6gbc3tq started 2026-10-24 on the operator's standing approval for the night run. No outside facts: kb holds both (checked 2026-10-24, rag.py pack good). (1) kb/public/claude/otel-monitoring.md:61-65 traces beta flags, :66 TRACEPARENT/TRACESTATE in -p sessions, :67-71 parent.source, trace_id/span_id, subprocess propagation, :72-73 OTEL_RESOURCE_ATTRIBUTES on every datapoint and event. (2) kb/public/logs/prometheus-retention-exposition.md:103,108,110 webhook_configs keys, :111-112 version 4 body (status, alerts[].labels, annotations, startsAt, endsAt, fingerprint). Remark: pack flags otel-monitoring.md:50,57 [source changed]; refresh is a separate item.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "19c4b446ac875052b3d772d81273df36a26d6f24",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-22spxqgl"
+        ],
+        "exit": 0,
+        "sha256": "bb84033c57ccb8f2"
+      }
+    ]
+  }
 }
