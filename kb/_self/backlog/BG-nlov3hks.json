@@ -44,6 +44,25 @@
   "depends_on": [
     "BG-xypznigg"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the sessions panel ask coord.py for its events, given wait --kind takes one kind, and how does it say the overlaps were not read?",
+      "options": [
+        "one wait --kind per kind (intent, coordinate, progress); an unreadable digest or event leaves overlaps out and sets overlaps_unread, shown as a '! overlaps not read: REASON' row",
+        "one unfiltered wait as before, with the failure flagged only"
+      ],
+      "recommendation": "one wait --kind per kind (intent, coordinate, progress); an unreadable digest or event leaves overlaps out and sets overlaps_unread, shown as a '! overlaps not read: REASON' row",
+      "do": {
+        "one wait --kind per kind (intent, coordinate, progress); an unreadable digest or event leaves overlaps out and sets overlaps_unread, shown as a '! overlaps not read: REASON' row": "BG-nlov3hks",
+        "one unfiltered wait as before, with the failure flagged only": "BG-nlov3hks"
+      },
+      "class": "design",
+      "answer": "one wait --kind per kind (intent, coordinate, progress); an unreadable digest or event leaves overlaps out and sets overlaps_unread, shown as a '! overlaps not read: REASON' row",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ky7xz6d2 review"
   ],
