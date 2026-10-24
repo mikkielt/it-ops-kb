@@ -5,7 +5,10 @@ nothing at load, `mon_sessions` (its age text) and `mon_status` (`short_name`) w
   entries(snap)   [{kind, text, ...}] in this order: `gate` (each open blocking gate of an active, approved or planned sprint
                   or of one of its open items, `SP-… gate NAME`), `ask` (each ask addressed to `operator` that no closing
                   answer has ended, from the coord panel: `ask ID since DATE TIME: the first words of the question`, redacted;
-                  an Alertmanager alert, a cleanup verdict or a session's question posted as an ask shows here), `blocked` (an active sprint with items left, none ready and
+                  an Alertmanager alert, a cleanup verdict or a session's question posted as an ask shows here), `overlap` (each
+                  overlap of two live sessions in the sessions panel that no coordinate event decided and that is
+                  `announce.needs_you_after_min` minutes old, `overlap ST-… (s-…) with ST-… (s-…), undecided for 12m`),
+                  `blocked` (an active sprint with items left, none ready and
                   none in progress), `delivery` (the query log's last delivery was refused, with the gate that failed),
                   `orphan` (each process of class `orphan`, oldest first), `disk` (under LOW_DISK_PCT percent free) and
                   `fast-forward` (the checkout is behind `origin/main` and cannot fast-forward, with the panel's why)
@@ -20,8 +23,8 @@ The list reads only the panels' data, so a saved snapshot gives the same line. I
 
 PANELS = ("sprint", "querylog", "sessions", "host")
 COORD_PANEL = "coord"
-KINDS = ("gate", "ask", "blocked", "delivery", "orphan", "disk", "fast-forward")
-MANY = {"gate": "gates", "ask": "asks", "blocked": "blocked sprints", "delivery": "deliveries", "orphan": "orphans", "disk": "disk",
+KINDS = ("gate", "ask", "overlap", "blocked", "delivery", "orphan", "disk", "fast-forward")
+MANY = {"gate": "gates", "ask": "asks", "overlap": "overlaps", "blocked": "blocked sprints", "delivery": "deliveries", "orphan": "orphans", "disk": "disk",
         "fast-forward": "fast-forward"}  # the noun after `+N more`
 LOW_DISK_PCT = 10  # the host panel's alert threshold
 SHOWN = 3  # entries of one kind the line names before it counts the rest
@@ -79,6 +82,20 @@ def ask_entries(data):
     return out
 
 
+def overlap_entries(data):
+    import mon_sessions
+    after = number(data.get("needs_you_after_min"), 10) * 60
+    out = []
+    for o in data.get("overlaps") or []:
+        if not isinstance(o, dict) or o.get("strategy") != mon_sessions.UNDECIDED or number(o.get("age_s")) < after:
+            continue
+        a, b = (o.get(x) if isinstance(o.get(x), dict) else {} for x in ("a", "b"))
+        name = [f"{s.get('item') or '-'} ({s.get('session') or '-'})" for s in (a, b)]
+        out.append({"kind": "overlap", "text": f"overlap {name[0]} with {name[1]}, undecided for "
+                    + mon_sessions.age_text(number(o.get("age_s"))), "a": a, "b": b})
+    return out
+
+
 def delivery_entries(data):
     last = data.get("last_delivery")
     if not isinstance(last, dict) or last.get("outcome") != "refused":
@@ -118,7 +135,8 @@ def fast_forward_entries(data):
 def entries(snap):
     """The list of what waits on the operator, from the `ok` panels of SNAP (see the module docstring)."""
     out = []
-    for name, found in (("sprint", sprint_entries), (COORD_PANEL, ask_entries), ("querylog", delivery_entries), ("sessions", orphan_entries),
+    for name, found in (("sprint", sprint_entries), (COORD_PANEL, ask_entries), ("sessions", overlap_entries), ("querylog", delivery_entries),
+                        ("sessions", orphan_entries),
                         ("host", disk_entries), ("sprint", fast_forward_entries)):
         data = data_of(snap, name)
         if data is not None:
