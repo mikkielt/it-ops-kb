@@ -97,7 +97,11 @@
         "CLAUDE_PROJECT_DIR, else the working directory's clone, when it differs from the script's clone": "ST-omimwr5q",
         "CLAUDE_PROJECT_DIR only": "ST-omimwr5q"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "CLAUDE_PROJECT_DIR, else the working directory's clone, when it differs from the script's clone",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
