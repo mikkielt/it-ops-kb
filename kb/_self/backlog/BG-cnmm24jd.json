@@ -2,7 +2,7 @@
   "id": "BG-cnmm24jd",
   "kind": "bug",
   "title": "ql_capture, ql_learn, ql_research and ql_store still import each other in a cycle through function-level imports",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-s5k72bhd",
   "priority": "P3",
   "rank": 0,
@@ -59,6 +59,28 @@
     "parked: SP-jplczvj2 review"
   ],
   "notes": "Plan 2026-10-24: premise reproduces (repro fails on the base). The added import check passes before the work by design: it pins that the four modules still import and ql_capture.record stays.",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "25cb908317fbe175d4b01c6f0b12473df6800853",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, \"_tools\"); import ql_store, ql_learn, ql_research, ql_capture; from ql_capture import record; print(\"imports ok\")"
+        ],
+        "exit": 0,
+        "sha256": "4683ed95f8f9ece6"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import ast, glob, os, sys\nmods = {os.path.basename(f)[:-3] for f in glob.glob(\"_tools/*.py\")}\ng = {}\nfor f in glob.glob(\"_tools/ql_*.py\") + glob.glob(\"_tools/bl_*.py\"):\n    m = os.path.basename(f)[:-3]\n    s = set()\n    for n in ast.walk(ast.parse(open(f, encoding=\"utf-8\").read())):\n        if isinstance(n, ast.Import): s |= {a.name for a in n.names if a.name in mods}\n        elif isinstance(n, ast.ImportFrom) and n.module in mods: s.add(n.module)\n    g[m] = {x for x in s if x[:3] == m[:3] and x != m}\ndef reach(a):\n    seen, todo = set(), [a]\n    while todo:\n        for y in g.get(todo.pop(), ()):\n            if y not in seen: seen.add(y); todo.append(y)\n    return seen\ncyc = sorted(m for m in g if m in reach(m))\nprint(\"bl_/ql_ modules in an import cycle (function-level imports included):\", cyc)\nsys.exit(1 if cyc else 0)"
+        ],
+        "exit": 0,
+        "sha256": "bd651b7a49539226"
+      }
+    ]
+  }
 }
