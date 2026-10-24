@@ -1,0 +1,19 @@
+{
+  "id": "BG-wrlrde6m",
+  "kind": "bug",
+  "title": "kbsettings.py module docstring names the explain command as a caller of effective, while explain reads the layers itself",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "the module docstring of _tools/kbsettings.py names as callers of effective only the coord hook and kbmon",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re,sys; t=open(\"_tools/kbsettings.py\",encoding=\"utf-8\").read(); sys.exit(1 if re.search(r\"coord hook, kbmon and the explain command call it\", t) else 0)"
+    ]
+  },
+  "repro_reason": "a docstring defect: only its text can show it",
+  "filed_in": "clone-0ea70e5c"
+}
