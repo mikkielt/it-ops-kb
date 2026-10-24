@@ -2,7 +2,7 @@
   "id": "SP-hja7yu5k",
   "kind": "sprint",
   "title": "The sprint skill's run step, the kbmon mod and the sprint span use the run states",
-  "status": "planned",
+  "status": "active",
   "goal": "the kb-sprint run step waits with coord.py wait, names the run states each tool moves and lands in a landing worktree; the kbmon mod calls $.ui.notify when the needs-you line changes and names something; kbmon --events exports a kb.sprint root span over a sprint's kb.item spans",
   "gates": [
     {
