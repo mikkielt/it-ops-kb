@@ -1,0 +1,26 @@
+{
+  "id": "BG-vbkdm7vw",
+  "kind": "bug",
+  "title": "kbsettings.py explain returns the settings file's absolute path as source, and nothing runs kbsettings.py check",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbsettings.py explain gives source as a path relative to the workspace root (no user home path reaches the kb_settings tool's transcript), and kbsettings.py check runs in the doc checks (selfdoc or the sync gate) so the SETTINGS table's doc line numbers cannot drift unnoticed",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess, tempfile, os, sys, json\nT = tempfile.mkdtemp()\nsubprocess.run(['git', 'init', '-q', T])\nos.makedirs(os.path.join(T, 'kb', 'team'))\njson.dump({'coordination': {'strategy': {'working': 'after'}}}, open(os.path.join(T, 'kb', 'team', 'settings.json'), 'w', encoding='utf-8'))\nr = subprocess.run([sys.executable, '_tools/kbsettings.py', 'explain', 'strategy.working', '--root', T, '--kb-root', 'team', '--json'], capture_output=True, text=True)\ntry:\n    src = json.loads(r.stdout).get('source', '')\nexcept ValueError:\n    src = ''\ngated = any('kbsettings' in open(p, encoding='utf-8').read() for p in ('_tools/selfdoc.py', '_tools/kg_sync.py') if os.path.exists(p))\nok = r.returncode == 0 and bool(src) and not os.path.isabs(src) and T not in src and gated\nprint('explain exit', r.returncode, '| source', src[:70], '| kbsettings.py check wired into selfdoc or the sync gate', gated)\nsys.exit(0 if ok else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/kbsettings.py",
+    "_tools/kb_mcp.py",
+    "_tools/selfdoc.py",
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
