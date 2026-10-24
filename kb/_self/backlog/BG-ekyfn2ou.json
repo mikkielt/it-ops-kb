@@ -1,0 +1,24 @@
+{
+  "id": "BG-ekyfn2ou",
+  "kind": "bug",
+  "title": "The coord hook rewrites its state file in place and has no total deadline, so parallel tool calls can read a half-written state and a locked store runs each call to the 10 second kill",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "the coord hook writes its state file by replacing it whole and stops its coord calls once a total deadline under its 10 second budget has passed",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "\nimport re\ntext = open('.claude/hooks/coord_hook.py', encoding='utf-8').read()\natomic = 'os.replace' in text\ndeadline = bool(re.search(r'DEADLINE|deadline', text))\nprint('state replaced whole:', atomic, '| total deadline:', deadline)\nimport sys\nsys.exit(0 if atomic and deadline else 1)\n"
+    ]
+  },
+  "repro_reason": "a torn read needs two hook processes inside one write; a locked store needs a held write lock past the call limits",
+  "touches": [
+    ".claude/hooks/coord_hook.py",
+    "kb/_self/coordination.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
