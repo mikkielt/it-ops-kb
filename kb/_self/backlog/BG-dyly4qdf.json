@@ -2,7 +2,7 @@
   "id": "BG-dyly4qdf",
   "kind": "bug",
   "title": "repro pick falls back to each instance's own areas when one instance finished no area",
-  "status": "draft",
+  "status": "doing",
   "sprint": "SP-uhcjxayq",
   "priority": "P2",
   "rank": 0,
@@ -44,5 +44,7 @@
   "links": [
     "parked: SP-75hdeqld review"
   ],
-  "notes": "Premise run 2026-10-24 on base f160727aa: repro fails (standings common set empty, so pick compares on own areas). The original goal's clause that a planted standings table in the bench test file proves it is reworded to the checks of this item: that test file is gone since the 2026-10-16 decision to keep tests for critical parts only, so the planted tables live in checks 0 (an instance whose every area failed, with a high eval_passed and no errors, is ranked last and not picked: fails on base, picked instance-3) and 1 (a fence: all instances finished the same areas, passed sums unchanged: passes on base by design); the repro reads the common set. Touches: kb/_self/benchmarks.md (the repro pick section says how standings takes the common areas and what ranks last) replaces kb/_self/tools.md, which holds no word about standings or pick; the code-map warning for kb/_self/tools.md is met by naming it in Self-Reviewed when read and still correct, so the claim does not wait on the sessions that hold tools.md. Order: runs beside the kbtools.py chain; BG-iy5qjr4r runs after this item (same file, same doc). Check 1 (all instances finished the same areas) passes before the work: it pins behaviour that must stay. Planned into the sprint on 2026-10-24 (day run)."
+  "notes": "Premise run 2026-10-24 on base f160727aa: repro fails (standings common set empty, so pick compares on own areas). The original goal's clause that a planted standings table in the bench test file proves it is reworded to the checks of this item: that test file is gone since the 2026-10-16 decision to keep tests for critical parts only, so the planted tables live in checks 0 (an instance whose every area failed, with a high eval_passed and no errors, is ranked last and not picked: fails on base, picked instance-3) and 1 (a fence: all instances finished the same areas, passed sums unchanged: passes on base by design); the repro reads the common set. Touches: kb/_self/benchmarks.md (the repro pick section says how standings takes the common areas and what ranks last) replaces kb/_self/tools.md, which holds no word about standings or pick; the code-map warning for kb/_self/tools.md is met by naming it in Self-Reviewed when read and still correct, so the claim does not wait on the sessions that hold tools.md. Order: runs beside the kbtools.py chain; BG-iy5qjr4r runs after this item (same file, same doc). Check 1 (all instances finished the same areas) passes before the work: it pins behaviour that must stay. Planned into the sprint on 2026-10-24 (day run).",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
