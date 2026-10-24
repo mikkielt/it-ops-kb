@@ -1,0 +1,25 @@
+{
+  "id": "ST-7hxlwnw6",
+  "kind": "story",
+  "title": "Research sprint goal: Two guards that fail open after today's changes: the leak scan's EC key body, the permission guard's deny value, the observer's git commands",
+  "status": "draft",
+  "sprint": "SP-jopt2c3z",
+  "goal_research": true,
+  "priority": "P1",
+  "rank": 0,
+  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "researched",
+        "ST-7hxlwnw6"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
