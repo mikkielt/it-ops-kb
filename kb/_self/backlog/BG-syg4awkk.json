@@ -57,7 +57,11 @@
         "refuse either access": "BG-syg4awkk",
         "refuse submodule only": "BG-syg4awkk"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "refuse either access",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
