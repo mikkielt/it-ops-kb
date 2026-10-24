@@ -2,7 +2,7 @@
   "id": "ST-i4ejksl2",
   "kind": "story",
   "title": "A loopback webhook receiver posts each Alertmanager alert as a coord ask to the operator, so a firing alert reaches kbmon's needs-you line",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-ymnz7b4n",
   "priority": "P3",
@@ -53,5 +53,7 @@
     "parked: SP-d6gbc3tq plan"
   ],
   "notes": "Filed at the plan of SP-d6gbc3tq (2026-10-24, night run): gate g1 of ST-54y7al4z chose a stdlib loopback webhook receiver that posts each alert as a coord ask to operator; that story ships the rules, the Alertmanager config and the webhook url, and ST-n5vf55qk shows an unanswered ask in the needs-you line, but no story writes the receiver itself. Not in the sprint: outside the night run's listed items. Until it exists a firing alert is dropped by Alertmanager at the webhook url. Parked draft, in no sprint. Premise (plan 2026-10-24): both checks fail on today's base (kbask.py has no webhook subcommand); reproduces. Day run: pulled out of parking by the operator's standing approval. Planned into SP-ymnz7b4n, 2026-10-24 day run.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
