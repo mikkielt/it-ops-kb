@@ -14,7 +14,7 @@ The names the other modules read as `bl_land.NAME` stay importable from here. `b
 commits is named by `kg_lane.lane_plan`, the one helper sync uses. It registers `done`, `land` and `merge` with `bl_cli`
 itself when imported (`backlog.py`'s USAGE puts each in its usage position), and `host-check` and the repro rules there
 call `run_check` from here."""
-import argparse, csv, hashlib, importlib, io, json, os, re, shlex, subprocess, sys, time
+import argparse, csv, hashlib, importlib, io, json, os, re, shlex, shutil, subprocess, sys, time
 from collections import namedtuple
 from pathlib import Path
 
@@ -948,10 +948,34 @@ def ops_land(handler):
     return wrapped
 
 
-def land_run(root, step, argv, whole=False, program=False):
+GATE_KEPT_PATH = re.compile(r"\S+/_cache/gate/[^/\s]+")  # a gate's kept whole-output file, as a failed step names it
+
+
+def keep_gate_outputs(root, keep_to, out):
+    """OUT, the output of a failed landing step run in the landing worktree ROOT, with each kept gate output file it
+    names under ROOT's `_cache/gate` copied to the same directory of KEEP_TO (the invoking checkout, which outlives
+    the landing worktree) and its path there. A copy, not a move: a retry reads the same name. A path that is no file
+    under ROOT's `_cache/gate`, or cannot be copied, stays as the step printed it."""
+    gate = (Path(root) / "_cache" / "gate").resolve()
+    keep = Path(keep_to) / "_cache" / "gate"
+
+    def copy(m):
+        src = Path(m[0])
+        try:
+            if not src.is_file() or src.resolve().parent != gate or keep.resolve() == gate:
+                return m[0]
+            keep.mkdir(parents=True, exist_ok=True)
+            return str(Path(shutil.copy2(src, keep / src.name)))
+        except OSError:
+            return m[0]
+    return GATE_KEPT_PATH.sub(copy, out)
+
+
+def land_run(root, step, argv, whole=False, program=False, keep_to=None):
     """Run one landing step; its output (the tail of it, unless WHOLE or it failed) goes through say(). The steps
     are Python scripts run under this interpreter; with PROGRAM an ARGV whose first element does not end in `.py` is
-    the program to run itself (the push step's `git push ...`)."""
+    the program to run itself (the push step's `git push ...`). A step that failed in ROOT, a landing worktree that
+    goes with the run, has its kept gate output files copied to KEEP_TO's `_cache/gate` and named there."""
     say(f"land: {step}")
     ops_mark(step)
     own = not program or argv[0].endswith(".py")
@@ -961,6 +985,8 @@ def land_run(root, step, argv, whole=False, program=False):
         code, out = p.returncode, ANSI_RE.sub("", (p.stdout or "") + (p.stderr or "")).rstrip()
     except OSError as e:
         code, out = None, f"cannot start: {e}"
+    if code and keep_to is not None:
+        out = keep_gate_outputs(root, keep_to, out)
     lines = out.splitlines()
     shown = lines if whole or code else lines[-LAND_TAIL:]
     if shown:
@@ -1988,7 +2014,7 @@ def land_locked(bl, a):
             if articles and lint[1]:
                 land_run(lroot, lint[0], [*lint[1], *articles])
         name_unpushed(root, remote, start, start_ref, upstream, branch)
-        land_run(lroot, *land_push(), whole=True, program=True)
+        land_run(lroot, *land_push(), whole=True, program=True, keep_to=root)
         if late:
             # the request sync opened by push options: this pass's one read of it
             describe_merge_request(bl, iid, read_code_request(lroot, code_branch))
