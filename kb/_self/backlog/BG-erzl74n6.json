@@ -2,7 +2,7 @@
   "id": "BG-erzl74n6",
   "kind": "bug",
   "title": "done's ledger check turns any error reading the ledgers into a warning and lets the item through with the check off",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,
@@ -32,6 +32,28 @@
     "parked: SP-7nv2ffr2 review"
   ],
   "notes": "Planner 2026-10-24: the repro reads source text only (the warning string is absent). The worker adds one planted-run check with set --add-check that drives the ledger read error into done and asserts the refusal names it, and keeps the repro passing.",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "137fa154024e9cbc7aecc43704524341709d3ac0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import argparse,sys;sys.path.insert(0,'_tools');import bl_land;from bl_base import Backlog,Refused;exec('def boom(*a,**k):\\n raise OSError(\\'planted: _fetch_state.csv unreadable\\')\\ndef refuse(i,t,r,m,c=()):\\n raise Refused(m)');bl_land.unrelated_baselines=boom;bl_land.refuse_done=refuse;exec('try:\\n bl_land.cmd_done(Backlog(\\'.\\'),argparse.Namespace(id=\\'BG-erzl74n6\\',dry_run=True,commit=False,trailer=None))\\nexcept Refused as e:\\n sys.exit(0 if \\'ledger rows\\' in str(e) and \\'planted: _fetch_state.csv unreadable\\' in str(e) else 1)\\nsys.exit(1)')"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.exit('the ledger rows check could not run' in open('_tools/bl_land.py').read())"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
