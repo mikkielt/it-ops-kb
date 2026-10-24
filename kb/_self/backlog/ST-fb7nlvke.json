@@ -97,7 +97,11 @@
         "separate seed for the trace": "ST-fb7nlvke",
         "one seed for both": "ST-fb7nlvke"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "separate seed for the trace",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Premise: two items of one sprint walked claimed to landed with coord.py transition give two kb.item spans (sprint attribute set) and no kb.sprint span (check 0 prints 'kb.sprint [] kb.item 2'). Builds on ST-3bmmg73g's run spans (done) and ST-zlzvqz2w (done): mon_events.trace_id(first) and worker_ids(events, item) give a run's 32-hex trace and the kb.worker span id that bl_dispatch.worker_traceparent(iid) hands a worker as TRACEPARENT (bl_dispatch.py:1013). A sprint's items take the sprint's trace (derived from the sprint id), so the interface is fixed for check 4: trace_id and worker_ids take the item's sprint as an optional last argument and worker_traceparent(iid, sprint=None) passes it (dispatch passes it.get('sprint')). Choices made in place of the operator, 2026-10-24 night run: (1) the kb.sprint span is emitted in the export that emits the last kb.item span of the sprint, when each item of the sprint with a run key has a last move of landed or released (items with no run key, such as the review and research stories, are ignored; after runs --reconcile their landed moves count and the span's end is the last of them); an export after close has no sprint attribute, as for kb.item today. (2) The span's trace is shared with its kb.item spans, its status is ok, its attributes are sprint and items (the number of kb.item spans). (3) A run cut at refused that continues is one more kb.item span with the same parent. The adapter (otel/kbmon_otel.py) sends every span of --events, so check 3 may pass without a change there. Filed 2026-10-24 (night run) as one of the three later stories EP-nij36lt7 names; approved by the operator.",
