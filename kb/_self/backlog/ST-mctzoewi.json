@@ -2,7 +2,7 @@
   "id": "ST-mctzoewi",
   "kind": "story",
   "title": "Research: a local traces backend for the operator's machine (Jaeger all-in-one beside Tempo monolithic) is kb facts",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-nij36lt7",
   "sprint": "SP-r7e7jcep",
   "priority": "P3",
@@ -47,6 +47,19 @@
   ],
   "notes": "Planning 2026-10-24: goal reworded into one clause (the install fact and the Tempo comparison no longer split it), read by five cases of the one check (OTLP ports, loopback bind, in-memory restart loss, UI port, binary install). The Tempo monolithic facts already in the article stay. Premise: the check fails on the base (precheck). Planned 2026-10-24 into SP-r7e7jcep: last in the run order (after ST-hbxnf2l3), P3, since the five research stories share the source, anchor and expansions files. Worker 2026-10-24: Jaeger v2.22.0 docs and the bundled all-in-one.yaml bind OTLP to localhost (JAEGER_LISTEN_HOST default) and never write 127.0.0.1; the check case is met by the DOC line saying so and a DER line for the explicit 127.0.0.1 bind (gate g1). The pages read show no command line for starting the jaeger binary without a container; left as an UNK fact.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "b172ef6c6cc7ac5434687159694cdfcb134972bf",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, sys\nART = 'kb/public/logs/otel-collector-otlp-pipeline.md'\nCASES = [\n    ('Which ports does Jaeger all-in-one listen on for OTLP and its UI?', ['all-in-one', '4318']),\n    ('How is the Jaeger all-in-one OTLP receiver bound to loopback?', ['Jaeger', '127.0.0.1']),\n    ('What does Jaeger all-in-one in-memory storage lose on a restart?', ['Jaeger', 'memory', 'restart']),\n    ('Which port serves the Jaeger UI?', ['Jaeger', '16686']),\n    ('How is Jaeger installed without a container?', ['Jaeger', 'binary']),\n]\nmiss = []\nfor q, terms in CASES:\n    out = subprocess.run([sys.executable, '_tools/rag.py', 'pack', q, '--root', 'public', '--budget', '2500'],\n                         capture_output=True, text=True).stdout\n    hit = [l for l in out.splitlines() if l.startswith('- ' + ART[len('kb/'):] + ':') and '[DOC' in l\n           and all(t.lower() in l.lower() for t in terms)]\n    if not hit:\n        miss.append((q, terms))\nprint('missing:', miss if miss else 'none')\nsys.exit(1 if miss else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "a4d424a9f2f7792e"
+      }
+    ]
+  }
 }
