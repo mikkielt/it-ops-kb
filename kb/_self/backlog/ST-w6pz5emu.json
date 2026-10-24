@@ -2,7 +2,7 @@
   "id": "ST-w6pz5emu",
   "kind": "story",
   "title": "kbtools.py prints the catalog of the kb's tools and the few that answer a need, read from each tool's Answers: and Use: docstring lines and the skills', agents' and MCP tools' descriptions",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-5mp6pwnn",
   "sprint": "SP-x6eqtsid",
   "priority": "P2",
@@ -89,5 +89,7 @@
     "kb/_self/embedding.md"
   ],
   "notes": "Premise run 2026-10-24 on the base: 37 of 37 _tools command-line tools lack the trailing Answers:/Use: lines (check 0 prints the count) and _tools/kbtools.py does not exist: reproduces. Worker scope: change only the module docstrings of the existing tools (trailing Answers:/Use:/MCP: lines), so the merge with other sprints' code stays clean; new code goes in kbtools.py (or one module it shares with selfdoc.py and mon_kb.py, split per kb/_self/code.md), the selfdoc.py check and mon_kb.py. What the checks read: a command-line tool is a _tools/*.py with an if __name__ == '__main__' guard; the docstring's trailing block (first Answers: line to the end) holds only Answers:/Use:/MCP: lines and indented continuations; backlog.py, check.py, coord.py, kbmon.py, kbsettings.py, querylog.py, rag.py and selfdoc.py carry an MCP: line naming a kb MCP tool of kb_mcp.py; kbtools.py NEED --json prints {entries: [{tool: NAME, ...}]}, tool the file name (backlog.py) for a command-line tool and the skill, agent or MCP tool name otherwise, at most 10 entries, none for a nonsense need; the catalog has a line per entry holding its name and, for a tool, the start of its Use: command, and reads the clone it sits in (check 5 plants a tool whose import leaves a marker); selfdoc.check(root) flags each command-line tool missing either line, by file name; the kbmon kb panel prints one line with the words tools and missing: the count of command-line tools and the count missing their lines. Docs mapped to the code but held by other items (backlog.md, coordination.md, maintaining.md, ...) or by none (.claude/skills/kb-ingest/SKILL.md): a docstring-only change needs no edit, so read each and name it in Self-Reviewed. AGENTS.md is ST-e6xp5h3u's. Waits for held to clear on _tools/*.py (the claimed items of the other sprint).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
