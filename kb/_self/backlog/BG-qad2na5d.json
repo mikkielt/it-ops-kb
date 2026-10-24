@@ -2,7 +2,7 @@
   "id": "BG-qad2na5d",
   "kind": "bug",
   "title": "secret-shapes-in-text.md's two DER facts on key-block paragraphs and nested-JSON scanners claim more than their sources",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,
@@ -33,5 +33,7 @@
   ],
   "links": [
     "parked: SP-evq2flqc review"
-  ]
+  ],
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
