@@ -77,7 +77,11 @@
         "a claims-ledger record or item file status doing": "ST-pmxnissq",
         "a claims-ledger record or a claimed_by in the item file": "ST-pmxnissq"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "a claims-ledger record or item file status doing",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
