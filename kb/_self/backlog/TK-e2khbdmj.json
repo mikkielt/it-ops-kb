@@ -2,7 +2,7 @@
   "id": "TK-e2khbdmj",
   "kind": "task",
   "title": "GitLab docs articles and answers cite no source the 2026-10-21 census records gone",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-cbi2ah5y",
   "priority": "P1",
   "rank": 0,
@@ -62,6 +62,27 @@
   ],
   "notes": "Premise run on base 39abe92bb: check 0 fails with 15 DOC tags citing the four gone ids (gitlab work-items-planning.md:25-28, detecting-mr-merges-in-ci.md:21, automated-merge-requests.md:39, commit-signing-and-provenance.md:20 and :47, issue-closing-patterns.md:28-29, _answers.md:1879, 1937, 2092, 2648, 3643). check.py passes before the work on purpose: it pins that the kb stays valid after the edits. Census says the four sources 'file deleted upstream (not at HEAD)': a pinned raw url may still read; the census outcome decides, so re-source to the current docs page of the same content or retag UNK with a dated note, or remove the fact.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "39c92f392c9dd48d124984f5b7e1c6351b36a0e7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,pathlib,sys;ids={'S-il7kjbdz','S-ijtwicvp','S-wyjdebjb','S-xdfirawc'};bad=[str(p)+':'+str(n) for p in pathlib.Path('kb/public').rglob('*.md') for n,l in enumerate(p.read_text(encoding='utf-8').splitlines(),1) for t in re.findall(r'\\[DOC ([^\\]]+)\\]',l) if ids&set(re.findall(r'S-?[a-z0-9]+',t.split(':')[0]))];print(len(bad),'DOC tags cite a gone source');print(bad[:20]);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "311d9bf44dbd1c98"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "702fe62bff6c38d0"
+      }
+    ]
+  }
 }
