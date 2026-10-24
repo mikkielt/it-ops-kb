@@ -2,7 +2,7 @@
   "id": "ST-3zmirmqb",
   "kind": "story",
   "title": "Review sprint: Docs, skill and kb facts say what the code does: coordination and monitoring docs, the sprint skill's reconcile and plan steps, mod and Jaeger facts",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-f2o3aqm2",
   "review": true,
   "priority": "P1",
@@ -24,6 +24,27 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "e8581cb1e0b6a4bd3f68a07d561c0347afe25977",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "8f013885e1f4c181"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "cab974a18bcfbd4d"
+      }
+    ]
+  }
 }
