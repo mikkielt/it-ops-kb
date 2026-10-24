@@ -4,6 +4,7 @@
   "title": "kb_backlog serves the read-only commands managers run most (held, referrers, find, similar, tree, config, landings, runs, procs, check, report), and a finding's exit 1 returns as text",
   "status": "draft",
   "parent": "EP-fgtlhyo4",
+  "sprint": "SP-fkep6hjx",
   "priority": "P2",
   "rank": 0,
   "goal": "kb_backlog accepts held, referrers, find, similar, tree, config, landings, runs, procs, check and report and refuses runs --reconcile; an exit 1 of find, held or report that carries its finding in stdout returns as text ending (exit 1), not as a tool error",
