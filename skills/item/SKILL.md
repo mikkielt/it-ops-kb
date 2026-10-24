@@ -5,7 +5,7 @@ argument-hint: "[ID | next]"
 
 # Work one backlog item
 
-`${CLAUDE_PLUGIN_ROOT}` is the directory that holds the tool scripts: the plugin's, or, where this text runs from a clone's own copy and still shows the variable, that clone's top directory. The Bash tool does not set it: write the path where a command below shows it.
+`${CLAUDE_PLUGIN_ROOT}` is the directory that holds the tool scripts: the plugin's, or, where this text runs from a clone's own copy and still shows the variable, that clone's top directory, and there write each command in the relative form `python3 _tools/SCRIPT.py` from that directory, which its `.claude/settings.json` allow rules match (an absolute path matches none). The Bash tool does not set it: write the path where a command below shows it.
 
 The project's `backlog.json` names the steps only some projects have (`python3 ${CLAUDE_PLUGIN_ROOT}/_tools/backlog.py config` prints each setting). A step that depends on one (`kb_root`, `docs_map`, `land_stale`, `land_eval`, `land_lint`, `lane_module`) runs when the setting is set and is skipped, said so in one line, when it is empty or `[]`. When `kb_root` is set, rules are asked for, not read up front: `python3 ${CLAUDE_PLUGIN_ROOT}/_tools/rag.py pack --root KB_ROOT --set <name>` prints a step's tested rule questions, with the sets `kb-item:claim` (before step 1 and 2), `kb-item:work` (before step 5), `kb-item:done` (before step 6) and `kb-item:land` (before step 7); once the item is claimed, `python3 ${CLAUDE_PLUGIN_ROOT}/_tools/rag.py pack --root KB_ROOT --item ID --budget 600` prints the rules of the docs its touches map to. A rule you needed and no set gave you is a miss: say so in your report, with the question as you asked it.
 

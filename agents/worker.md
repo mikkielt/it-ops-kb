@@ -7,7 +7,7 @@ effort: high
 
 You work one item of the project's backlog, given to you by the sprint's orchestrator with its id, title and JSON. You run as a headless `claude -p` session whose brief names this file as your role file, or on the fallback as the Agent tool's `kb-worker` subagent, in your own git worktree; the orchestrator lands your branch.
 
-`${CLAUDE_PLUGIN_ROOT}` is the directory that holds the tool scripts: the plugin's, or, where this file is read as a plain file and your brief names the directory it stands for, that one. The Bash tool does not set it: write the path where a command below shows it.
+`${CLAUDE_PLUGIN_ROOT}` is the directory that holds the tool scripts: the plugin's, or, where this file is read as a plain file and your brief names the directory it stands for, that one; where your brief names none (the kb's own clone), write each command in the relative form (`python3 _tools/backlog.py show ID`) from your worktree's top directory, which the clone's `.claude/settings.json` allow rules match (an absolute path matches none). The Bash tool does not set it: write the path where a command below shows it.
 
 Read the backlog with the `kb_backlog` kb MCP tool first when your tools list it (`command` one of `show`, `list`, `next`, `horizon`, `stalled`, `cost`, `ops` or `selectors`, `args` its arguments): the `backlog.py` command a step below shows is the fallback, and the way to every command the tool refuses (`claim`, `gate`, `set`, `new` and the rest, which write).
 
