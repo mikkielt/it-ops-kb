@@ -65,7 +65,9 @@
       },
       "class": "design",
       "answer": "ask id ALERTNAME-hex, 50 alerts and 1 MiB per post",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
