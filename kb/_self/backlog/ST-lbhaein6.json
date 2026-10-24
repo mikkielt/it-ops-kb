@@ -1,0 +1,24 @@
+{
+  "id": "ST-lbhaein6",
+  "kind": "story",
+  "title": "repro compare's eval_passed counts a frozen row that was none at the start and is still none with no answer found as passed, so an instance that found nothing ties one that found every answer",
+  "status": "draft",
+  "parent": "EP-5mp6pwnn",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bench_repro.frozen_pass passes a frozen row whose answer is not found only when its verdict gained on the start commit's, so a row none at the start and none at the end, and a row with an unknown start verdict, no longer pass, and eval_passed reads only the answers gained",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport bench_repro as b\n\nrows = {('none', 'none', False): b.frozen_pass('none', 'none', False), ('bogus', 'none', False): b.frozen_pass('bogus', 'none', False)}\nprint('rows that pass with no answer found:', rows)\nsys.exit(0 if not any(rows.values()) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_repro.py",
+    "kb/_self/benchmarks.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
