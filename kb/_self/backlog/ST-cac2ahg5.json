@@ -21,6 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: the sprint rests on facts the kb already holds. ui.notify: kb/public/claude/mods.md:113-115 (DOC S-sao3dfcq, landed by the earlier research story). Run states, the wait verb and the landing worktree: kb/_self/coordination.md (Run state: transition) and kb/_self/backlog.md (Landing worktree and landing lock; The land command). The span export: kb/_self/monitoring.md and kb/public/logs/otel-python-sdk.md:83-84 (DER). Left as a parked gap, not an item fact: a mod's import rules and test kit (live docs, code.claude.com/docs/en/plugins/mods/create and /test, read 2026-10-24: relative imports only, $ passed to an imported function fails validate, claude plugin test with stubs for process.run, ui.notify and the clock) are used by ST-fn2jmvud's check and are named in its notes; a draft story files them as kb facts.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
