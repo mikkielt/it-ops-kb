@@ -2,7 +2,7 @@
   "id": "BG-dwcjaspf",
   "kind": "bug",
   "title": "The sprint reviewer's brief names pool build --ask as paid but not --redo ID, which also asks the model",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-s5k72bhd",
   "priority": "P2",
   "rank": 0,
@@ -24,6 +24,19 @@
   "links": [
     "parked: SP-honlhzdc review"
   ],
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "f967dac1e218b965762b847afe9b24844ec889ad",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;a=[l for l in open('skills/sprint/SKILL.md',encoding='utf-8') if 'fresh-context reviewer' in l and 'paid' in l];b=[l for l in open('kb/_self/backlog.md',encoding='utf-8') if 'no paid model call' in l];ok=bool(a) and bool(b) and all('--redo' in l for l in a+b);print(len(a),len(b),ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a61b035eb56edccb"
+      }
+    ]
+  }
 }
