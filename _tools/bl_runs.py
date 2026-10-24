@@ -10,9 +10,11 @@
                             item; neither: the items of the active sprints and every item that holds a run key
   runs [SP|ID] --reconcile  write the state git shows to each drifted run key and exit 0 once none is left
 
-A run state contradicts git in three ways, checked in this order and each item named once, with the state `--reconcile` writes:
+A run state contradicts git in four ways, checked in this order and each item named once, with the state `--reconcile` writes:
 the item file is `done` and the run state is not `landed`, `none` included (writes `landed`); the run state is `working` and the worker pid is
-gone or was never recorded anywhere (`failed`); the run state is none of `landed`, `released` or `none` and no claim holds the
+gone or was never recorded anywhere (`failed`); the run state is `staging` or `landing` and no process record of the item
+(coord `own/`, which a stage-back and a land write for their run) names a pid that runs (`returned`, `refused`: a stage-back or land
+killed before its last move); the run state is none of `landed`, `released` or `none` and no claim holds the
 item, that is neither a record in its claims ledger nor the status `doing` of its item file, which a claim sets, nor the same in
 another working tree of the repository, nor an `own/` record of coord that names the item (`released`). `--reconcile` writes the key with `put` at the
 revision it read, outside the state table (the table has no move from `working` to `landed`: the point is to follow a
@@ -36,6 +38,7 @@ NONE = "none"
 SETTLED = ("landed", "released", NONE)  # the run states from which no claim is needed
 GATE_KINDS = ("blocking", "provisional")
 TRIES = 3
+HELD = {"staging": ("returned", "stage-back"), "landing": ("refused", "land")}  # state a tool holds while it runs: (where a key none runs goes, the tool); as bl_land.RUN_TOOLS and RUN_HEALED
 
 
 def run_states():
@@ -117,6 +120,8 @@ def drift_of(state, status, alive, claimed):
         return None
     if state == "working" and not alive:
         return "failed", "the run state is working and its worker pid is gone"
+    if state in HELD and not alive:
+        return HELD[state][0], f"the run state is {state} and no {HELD[state][1]} of the item runs"
     if state not in SETTLED and not claimed:
         return "released", f"the run state is {state} and no claim holds the item"
     return None
