@@ -2,7 +2,7 @@
   "id": "BG-6ski25jl",
   "kind": "bug",
   "title": "A DOC tag that wraps over two lines in kb/public still cites a census-gone source, which the per-line scan of the sprint check cannot see",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4ppjbh4k",
   "priority": "P2",
   "rank": 0,
@@ -35,5 +35,7 @@
     "parked: SP-6t3z4q54 review"
   ],
   "notes": "Found by the sprint review 2026-10-24: kb/public/_answers.md:1599 (QG31) reads '[DOC S873, S870 - reused, see privacy/gdpr-pseudonymisation.md; not re-fetched]' wrapped over two lines; S870 (EUR-Lex GDPR text) is gone in the census (HTTP 202 from this host, a bot-block rather than a missing page) while S873 (EDPB news) states the claim. The sprint's own check scans line by line and misses a tag that wraps. Several census gone ids are EUR-Lex HTTP 202 answers: the census tool may need to read them another way before they count as gone. Parked, not in a sprint: S3 per the sprint review, so no fix in the sprint that found it. Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. Content item: drop the census-gone S870 from QG31's DOC tag in kb/public/_answers.md, keeping S873 which states the claim; the 202 answers of EUR-Lex are a bot block, so do not re-judge other gone ids.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
