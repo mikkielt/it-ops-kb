@@ -17,6 +17,7 @@
       "recommendation": "approve"
     }
   ],
+  "notes": "Start gate answered approve by the sprint runner on the standing approval of the operator for the 2026-10-24 day run (pre-approved by the operator for the 2026-10-24 day run). Premises: all 11 bug repros fail on the base (precheck 2026-10-24); extra planted checks cover clauses the repros do not read. Left out: BG-jche37b7, BG-3j62tr6e, BG-nn3wzysr (S3, other files than kbroot.py).",
   "creator": "op-f618a13e",
   "filed_in": "clone-0ea70e5c"
 }
