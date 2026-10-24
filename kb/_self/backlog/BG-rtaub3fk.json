@@ -4,6 +4,7 @@
   "title": "kbtools.py lists the kb MCP tools by the environment of the run and misses docs_search and docs_fetch",
   "status": "draft",
   "parent": "EP-5mp6pwnn",
+  "sprint": "SP-uhcjxayq",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -15,14 +16,53 @@
       "import os, subprocess, sys\n\ndef catalog(extra):\n    env = {k: v for k, v in os.environ.items() if k not in ('KB_COORD_TOOLS', 'KB_BACKLOG_WRITE_TOOLS')}\n    env.update(extra)\n    r = subprocess.run([sys.executable, '_tools/kbtools.py'], capture_output=True, text=True, env=env)\n    return r.returncode, r.stdout\n\nrc0, plain = catalog({})\nrc1, gated = catalog({'KB_COORD_TOOLS': '1', 'KB_BACKLOG_WRITE_TOOLS': '1'})\nlive = [n for n in ('docs_search', 'docs_fetch') if n not in plain]\nprint('exit', rc0, rc1, '| live-docs tools missing from the catalog:', live, '| same catalog with the gated tools switched on:', plain == gated)\nsys.exit(0 if rc0 == 0 and rc1 == 0 and not live and plain == gated else 1)\n"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess,sys; env={k:v for k,v in os.environ.items() if k not in ('KB_COORD_TOOLS','KB_BACKLOG_WRITE_TOOLS')}; env['KB_LIVE_DOCS']='0'; r=subprocess.run([sys.executable,'_tools/kbtools.py','--json'],capture_output=True,text=True,env=env); names={e['tool'] for e in json.loads(r.stdout)['entries'] if e['kind']=='mcp'}; want={'docs_search','docs_fetch','kb_backlog_write','coord_claim','coord_wait','kb_pack','kb_tools'}; miss=sorted(want-names); print('exit',r.returncode,'| missing from the catalog of a run with the gates off and KB_LIVE_DOCS=0:',miss); sys.exit(0 if r.returncode==0 and not miss else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,sys; [os.environ.pop(k,None) for k in ('KB_COORD_TOOLS','KB_BACKLOG_WRITE_TOOLS')]; sys.path.insert(0,'_tools'); import kb_mcp; names=[t['name'] for t in kb_mcp.handle({'jsonrpc':'2.0','id':1,'method':'tools/list'})['result']['tools']]; bad=[n for n in names if n.startswith('coord_') or n in ('kb_backlog_write','docs_search','docs_fetch')]; print('a default server lists:',bad); sys.exit(0 if not bad and 'kb_pack' in names else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys; r=subprocess.run([sys.executable,'_tools/kb_ask.py','--route','how do I enrol a Windows device in Intune with Autopilot'],capture_output=True,text=True); print(r.stdout.splitlines()[:1]); sys.exit(0 if r.returncode==0 and 'kind=tools' not in r.stdout else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbtools.py lists every kb MCP tool the server can serve, whatever the environment of the run (live-docs, coord and backlog-write tools included), so two runs in two environments print the same catalog",
+      "check": 4
+    }
+  ],
   "touches": [
     "_tools/kbtools.py",
     "_tools/kb_mcp.py",
     "kb/_self/tools.md"
   ],
+  "depends_on": [
+    "BG-esbdxtad"
+  ],
   "links": [
     "parked: SP-x6eqtsid review"
   ],
-  "notes": "Parked by the review of SP-x6eqtsid (reviewer, 2026-10-24; S2). kbtools.mcp_entries imports kb_mcp and calls tools/list in a bare process: LIVE_ON is set only by kb_mcp.main(), so docs_search and docs_fetch never show, and the coord and backlog-write tools show only when KB_COORD_TOOLS or KB_BACKLOG_WRITE_TOOLS is set in the shell (24 MCP lines with it, 16 with another variable). The kb_tools MCP child inherits the same. Goal clauses of ST-w6pz5emu and ST-e6xp5h3u: the catalog lists the kb MCP tools and kb_tools returns its lines.",
+  "notes": "Parked by the review of SP-x6eqtsid (reviewer, 2026-10-24; S2). kbtools.mcp_entries imports kb_mcp and calls tools/list in a bare process: LIVE_ON is set only by kb_mcp.main(), so docs_search and docs_fetch never show, and the coord and backlog-write tools show only when KB_COORD_TOOLS or KB_BACKLOG_WRITE_TOOLS is set in the shell. The kb_tools MCP child inherits the same. Goal clauses of ST-w6pz5emu and ST-e6xp5h3u: the catalog lists the kb MCP tools and kb_tools returns its lines.\nPremise run 2026-10-24 on base f160727aa: repro fails (docs_search and docs_fetch missing, catalog differs with the gated tools on). Check 0 is a gates-off, KB_LIVE_DOCS=0 run that must list every gated name (fails on base). Checks 1 (a default server's tools/list stays unchanged), 2 (kb_ask --route of a docs question stays off kind=tools, since coord_* names join the entries kbtools.answering reads) and 3 (selfdoc.py check) pass before the work: they pin behaviour that must stay. The fix lists every tool the server can serve from one place in kb_mcp.py (one list function the tools/list handler and kbtools.mcp_entries both read), never by setting the gate variables in kbtools.\nDocs: the map names embedding.md, plugin.md and token-efficiency.md for kb_mcp.py beside tools.md (in touches); the server's own listing does not change, so those three are named in Self-Reviewed when still correct; the kbtools.py row of tools.md is edited to say every tool the server can serve. tools.md is held by other sessions' items: claim only when held --overlaps is clear. Order: after BG-esbdxtad, before BG-kfv2qrs4 (same file). Planned into the sprint on 2026-10-24 (day run).",
   "filed_in": "clone-0ea70e5c"
 }
