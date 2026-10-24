@@ -4,6 +4,7 @@
   "title": "kbroot.py fetch --hook leaves the git transport process running after its time bound",
   "status": "draft",
   "parent": "EP-eocmyqdx",
+  "sprint": "SP-c6w5hjmc",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -18,6 +19,9 @@
   "touches": [
     "_tools/kbroot.py",
     "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-e4sepxng"
   ],
   "links": [
     "parked: SP-mguax5m3 review"
