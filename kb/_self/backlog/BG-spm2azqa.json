@@ -2,7 +2,7 @@
   "id": "BG-spm2azqa",
   "kind": "bug",
   "title": "A pointer file with CRLF line endings is not read as a fetch root, and fetch --pin drops its carriage returns",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-c6w5hjmc",
   "priority": "P2",
@@ -37,5 +37,6 @@
   ],
   "links": [
     "parked: SP-s2svf5a6 review"
-  ]
+  ],
+  "notes": "Premise 2026-10-24: repro fails on the base (precheck). Sprint SP-c6w5hjmc started on the operator's standing approval for the day run."
 }
