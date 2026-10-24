@@ -386,11 +386,11 @@ def write_pin(p, commit):
     m = re.match(r"(---\r?\n)(.*?)(\r?\n---)", text, re.S)
     if not m:
         return False
-    head = m.group(2)
-    if re.search(r"^pin:.*$", head, re.M):
-        head = re.sub(r"^pin:.*$", lambda _: f"pin: {commit}", head, count=1, flags=re.M)
+    head, eol = m.group(2), m.group(1)[3:]
+    if re.search(r"^pin:[^\r\n]*", head, re.M):
+        head = re.sub(r"^pin:[^\r\n]*", lambda _: f"pin: {commit}", head, count=1, flags=re.M)
     else:
-        head += f"\npin: {commit}"
+        head += f"{eol}pin: {commit}"
     with open(p.path, "w", encoding="utf-8", newline="") as f:
         f.write(text[:m.start(2)] + head + text[m.end(2):])
     return True
