@@ -16,7 +16,8 @@
     ]
   },
   "touches": [
-    "_tools/bl_land.py"
+    "_tools/bl_land.py",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "BG-r7c7dxia"
@@ -24,7 +25,7 @@
   "links": [
     "parked: SP-qh2j24z2 close"
   ],
-  "notes": "SP-qh2j24z2 retrospective: the orchestrator ran BG-ko4sdvxy's repro with done --dry-run (backlog.py has no repro command, and the error names done --dry-run as the way), and ops SP then listed a done.refused row reasons=no-work-commit for it. Planner 2026-10-24: kb/_self/map.csv maps _tools/bl_land.py to kb/_self/backlog.md and kb/_self/tools.md (and code.md), outside the touches. The landed sibling BG-r7c7dxia named backlog.md, code.md and tools.md in a Self-Reviewed trailer. backlog.md says a done --dry-run records no item commit; if a doc line about done.refused rows and dry runs is wrong after your change, stop and report so the doc is added to the touches.",
+  "notes": "SP-qh2j24z2 retrospective: the orchestrator ran BG-ko4sdvxy's repro with done --dry-run (backlog.py has no repro command, and the error names done --dry-run as the way), and ops SP then listed a done.refused row reasons=no-work-commit for it. Planner 2026-10-24: kb/_self/map.csv maps _tools/bl_land.py to kb/_self/backlog.md and kb/_self/tools.md (and code.md), outside the touches. The landed sibling BG-r7c7dxia named backlog.md, code.md and tools.md in a Self-Reviewed trailer. backlog.md says a done --dry-run records no item commit; if a doc line about done.refused rows and dry runs is wrong after your change, stop and report so the doc is added to the touches. Planner 2026-10-24: landing stopped at the stale step; the worker found kb/_self/tools.md line 76 (the done row: each refusal appends a done.refused ops row) wrong after the change, so the doc is added to the touches and the worker rewords that sentence (a done --dry-run appends none).",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }
