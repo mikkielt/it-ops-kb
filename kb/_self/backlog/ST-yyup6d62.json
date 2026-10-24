@@ -20,8 +20,11 @@
     "_tools/bl_cost.py",
     "kb/_self/backlog.md"
   ],
+  "relates_to": [
+    "ST-ejmb5aqn"
+  ],
   "links": [
     "parked: SP-p46hofrg close"
   ],
-  "notes": "check to tighten at planning: the command given only proves the tool runs"
+  "notes": "check to tighten at planning: the command given only proves the tool runs Planning 2026-10-24: left parked; ST-ejmb5aqn's report prints each worker's total_cost_usd, and the runbook's cost view reports tokens, no prices, so a sprint USD total is the operator's choice."
 }
