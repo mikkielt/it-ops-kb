@@ -1,0 +1,24 @@
+{
+  "id": "BG-nhobxloq",
+  "kind": "bug",
+  "title": "selfdoc.py check fails on main: kbsettings keeps a fixed doc line number per setting, so one line added above the settings list in coordination.md breaks it",
+  "status": "todo",
+  "sprint": "SP-ymnz7b4n",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "selfdoc.py check passes on main, and each setting's line in kb/_self/coordination.md is found by its key, so a line added above the settings list cannot break the check again",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/selfdoc.py",
+      "check"
+    ]
+  },
+  "touches": [
+    "_tools/kbsettings.py",
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
