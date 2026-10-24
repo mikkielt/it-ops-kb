@@ -39,7 +39,11 @@
         "At the two call sites (SessionStart, claim scan), from the announce settings already loaded there": "BG-fder3unh",
         "Inside announce(), loading the settings again from the workspace": "BG-fder3unh"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "At the two call sites (SessionStart, claim scan), from the announce settings already loaded there",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
