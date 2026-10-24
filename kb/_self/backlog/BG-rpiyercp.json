@@ -2,7 +2,7 @@
   "id": "BG-rpiyercp",
   "kind": "bug",
   "title": "kbmon's disk alert message says 10% free for a share just under 10 percent",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4ppjbh4k",
   "priority": "P3",
   "rank": 0,
@@ -28,5 +28,7 @@
     "parked: SP-swavez3g review"
   ],
   "notes": "Found by the SP-swavez3g review (S3) of BG-g6ctcsew: the message formats the share with %g at two decimals. Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
