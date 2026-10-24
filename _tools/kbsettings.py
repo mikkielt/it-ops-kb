@@ -82,24 +82,24 @@ DOC = "kb/_self/coordination.md"
 # the allowed values of each line).
 SETTINGS = {
     "announce.when": ("The moments a session tells the other sessions and the operator what it is working on: when it "
-                      "starts, when it claims an item, in the middle of a run, or on each edit.", 168),
+                      "starts, when it claims an item, in the middle of a run, or on each edit.", 170),
     "announce.to_other_sessions": ("Whether a session announces its work to the other sessions on the clone, so they "
-                                   "can see it before they touch the same item or files.", 169),
+                                   "can see it before they touch the same item or files.", 171),
     "announce.operator": ("Where the operator is told about a session's work: in the terminal, on the kbmon panels, "
-                          "or as a needs-you alert.", 170),
+                          "or as a needs-you alert.", 172),
     "announce.needs_you_after_min": ("How many whole minutes an open question may wait before it shows as needing "
-                                     "the operator.", 171),
+                                     "the operator.", 173),
     "strategy.same_item": ("What a session suggests when another session already holds the item it was about to take.",
-                           172),
+                           174),
     "strategy.working": ("What a session suggests when another item that touches the same files is in the run state "
-                         "working (a worker is running it).", 173),
-    "strategy.landing": ("What a session suggests when another item that touches the same files is being landed.", 174),
+                         "working (a worker is running it).", 175),
+    "strategy.landing": ("What a session suggests when another item that touches the same files is being landed.", 176),
     "strategy.blocked": ("What a session suggests when another item that touches the same files is blocked on a gate.",
-                         175),
+                         177),
     "strategy.returned": ("What a session suggests when another item that touches the same files has returned from its "
-                          "worker and waits to land.", 176),
+                          "worker and waits to land.", 178),
     "strategy.decide": ("Who picks the strategy when none of the keys above settles it: the operator or the "
-                        "session itself.", 177),
+                        "session itself.", 179),
 }
 
 
@@ -126,46 +126,49 @@ def _allowed(kind):
     return ("a list of " if kind[0] == "list" else "one of ") + ", ".join(kind[1])
 
 
-def _read(path):
-    """The validated `coordination` object of PATH; empty when the file is missing."""
+def _read(path, root):
+    """The validated `coordination` object of PATH; empty when the file is missing. A message names PATH relative to
+    the workspace ROOT, so no home directory reaches a caller."""
+    shown = path.relative_to(root).as_posix()
     try:
         text = path.read_text(encoding="utf-8")
     except FileNotFoundError:
         return {}
     except OSError as e:
-        raise SettingsError(f"{path}: cannot read: {e}")
+        raise SettingsError(f"{shown}: cannot read: {e.strerror or type(e).__name__}")
     try:
         data = json.loads(text)
     except ValueError as e:
-        raise SettingsError(f"{path}: not JSON: {e}")
+        raise SettingsError(f"{shown}: not JSON: {e}")
     if not isinstance(data, dict):
-        raise SettingsError(f"{path}: the file must hold a JSON object")
+        raise SettingsError(f"{shown}: the file must hold a JSON object")
     coord = data.get("coordination", {})
     if not isinstance(coord, dict):
-        raise SettingsError(f"{path}: key coordination must be an object")
+        raise SettingsError(f"{shown}: key coordination must be an object")
     for group, body in coord.items():
         if group not in SCHEMA:
-            raise SettingsError(f"{path}: unknown key coordination.{group}; allowed: {', '.join(SCHEMA)}")
+            raise SettingsError(f"{shown}: unknown key coordination.{group}; allowed: {', '.join(SCHEMA)}")
         if not isinstance(body, dict):
-            raise SettingsError(f"{path}: key coordination.{group} must be an object")
+            raise SettingsError(f"{shown}: key coordination.{group} must be an object")
         for key, value in body.items():
             kind = SCHEMA[group].get(key)
             if kind is None:
-                raise SettingsError(f"{path}: unknown key coordination.{group}.{key}; allowed: "
+                raise SettingsError(f"{shown}: unknown key coordination.{group}.{key}; allowed: "
                                     f"{', '.join(SCHEMA[group])}")
             if not _valid(kind, value):
-                raise SettingsError(f"{path}: key coordination.{group}.{key} has value {json.dumps(value)}; "
+                raise SettingsError(f"{shown}: key coordination.{group}.{key} has value {json.dumps(value)}; "
                                     f"allowed: {_allowed(kind)}")
     return coord
 
 
 def _layers(root, kb_root=None):
-    """[(path, coordination object)] for the workspace file, then the kb root's, validated; a missing file is {}."""
+    """[(path, coordination object)] for the workspace file, then the kb root's, validated; a missing file is {}. Each
+    path is ROOT joined with the file's place in the workspace."""
     root = Path(root)
     if kb_root is not None and not re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9_.-]*", str(kb_root)):
         raise SettingsError(f"kb root name {str(kb_root)!r}: a plain directory name is expected")
     files = [root / "settings.json"] + ([root / "kb" / kb_root / "settings.json"] if kb_root else [])
-    return [(path, _read(path)) for path in files]
+    return [(path, _read(path, root)) for path in files]
 
 
 def effective(root, kb_root=None):
@@ -179,9 +182,11 @@ def effective(root, kb_root=None):
 
 def explain(root, kb_root=None, key=None):
     """[{key, value, source, meaning, doc}] for each setting of `effective`, or for KEY alone (`group.name`): source is
-    the file whose layer set the value last, or "default"; doc is `kb/_self/coordination.md:LINE`."""
+    the file whose layer set the value last as a path relative to ROOT (`kb/NAME/settings.json`), or "default"; doc is
+    `kb/_self/coordination.md:LINE`."""
     if key is not None and key not in SETTINGS:
         raise SettingsError(f"unknown key {key}; allowed: {', '.join(SETTINGS)}")
+    root = Path(root)
     value, source = {}, {}
     for group, body in DEFAULTS.items():
         for name, v in body.items():
@@ -189,7 +194,7 @@ def explain(root, kb_root=None, key=None):
     for path, coord in _layers(root, kb_root):
         for group, body in coord.items():
             for name, v in body.items():
-                value[f"{group}.{name}"], source[f"{group}.{name}"] = v, str(path)
+                value[f"{group}.{name}"], source[f"{group}.{name}"] = v, path.relative_to(root).as_posix()
     return [{"key": k, "value": value[k], "source": source[k], "meaning": SETTINGS[k][0],
              "doc": f"{DOC}:{SETTINGS[k][1]}"} for k in SETTINGS if key in (None, k)]
 
@@ -254,7 +259,7 @@ def init(root, sets=()):
     root = Path(root)
     changes = [_parse_set(item) for item in sets]
     path, hooks_path = root / "settings.json", root / "backlog.json"
-    held = _read(path)
+    held = _read(path, root)
     section = json.loads(json.dumps(DEFAULTS))
     for group, body in held.items():
         section[group].update(body)
@@ -264,10 +269,10 @@ def init(root, sets=()):
     try:
         hooks_doc = json.loads(hooks_path.read_text(encoding="utf-8")) if hooks_path.exists() else {}
     except (OSError, ValueError) as e:
-        raise SettingsError(f"{hooks_path}: cannot read as JSON: {e}")
+        raise SettingsError(f"{hooks_path.name}: cannot read as JSON: {e}")
     hooks = hooks_doc.get("hooks", []) if isinstance(hooks_doc, dict) else None
     if not isinstance(hooks, list):
-        raise SettingsError(f"{hooks_path}: the file must hold an object whose key hooks is a list")
+        raise SettingsError(f"{hooks_path.name}: the file must hold an object whose key hooks is a list")
     written = []
     if doc.get("coordination") != section:
         doc["coordination"] = section
