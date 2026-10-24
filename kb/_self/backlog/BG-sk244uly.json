@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kbmon ages an overlap from an older meeting of the same two sessions on intents they no longer announce, so a fresh overlap on new files enters needs-you at once",
   "status": "draft",
+  "sprint": "SP-yisvj7vd",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -22,6 +23,6 @@
   "links": [
     "parked: SP-ymnz7b4n review"
   ],
-  "notes": "Found by the review of SP-ymnz7b4n (2026-10-24, S2): meeting_time pairs every past intent event of the two sessions, including intents of items or files they no longer announce, so a fresh overlap is aged from the first time the sessions ever met. BG-rjuqeegj's decision filter starts from the same moment. Fix: pair only the intent events that the live intents of each session still name.",
+  "notes": "Found by the review of SP-ymnz7b4n (2026-10-24, S2): meeting_time pairs every past intent event of the two sessions, including intents of items or files they no longer announce, so a fresh overlap is aged from the first time the sessions ever met. BG-rjuqeegj's decision filter starts from the same moment. Fix: pair only the intent events that the live intents of each session still name. Premise run 2026-10-24 on the day-run base: repro exits 1 (overlaps 1, age_s 10790). Planned in SP-yisvj7vd. Docs outside touches that mention mon_sessions (kb/_self/code.md) are read and named in Self-Reviewed if still correct. Planned into SP-yisvj7vd, 2026-10-24.",
   "filed_in": "clone-0ea70e5c"
 }
