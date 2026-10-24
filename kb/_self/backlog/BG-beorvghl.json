@@ -1,0 +1,18 @@
+{
+  "id": "BG-beorvghl",
+  "kind": "bug",
+  "title": "dispatch's OTEL_RESOURCE_ATTRIBUTES keeps an entry whose key holds an email address",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "bl_dispatch.resource_entries drops an OTEL_RESOURCE_ATTRIBUTES entry whose key holds an email address (plain or percent-encoded), as it drops one whose value does",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, \"_tools\"); import bl_dispatch; em = \"jan\" + chr(64) + \"corp-mail.test\"; out = bl_dispatch.resource_entries(em.replace(chr(64), \"%40\") + \"=1\", \"BG-x\", None); print(out); sys.exit(1 if (\"%40\" in out or em in out) else 0)"
+    ]
+  },
+  "filed_in": "clone-0ea70e5c"
+}
