@@ -677,8 +677,11 @@ class Pusher:
             problems = [(o + e).strip()[-300:] or f"querylog.py check exit {code}"]
         problems += leak_problems(store, [rel for _, rel, _ in new])
         if problems:
+            notes = [p for p in problems if p.startswith("note:")]
+            shown = [p for p in problems if not p.startswith("note:")]
+            more = [f"... and {len(shown) - 10} more"] if len(shown) > 10 else []
             self.say("refused: the store gates fail on the local store's files; nothing committed or pushed\n  " +
-                     "\n  ".join(problems[:10]))
+                     "\n  ".join(shown[:10] + more + notes))
             return 1
         return 0
 
