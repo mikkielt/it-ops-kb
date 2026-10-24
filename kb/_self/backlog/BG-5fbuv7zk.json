@@ -1,0 +1,27 @@
+{
+  "id": "BG-5fbuv7zk",
+  "kind": "bug",
+  "title": "The kbsettings.py meaning of announce.needs_you_after_min still says an open question waits, while kbmon names an ask at once and delays only an undecided overlap",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The SETTINGS meaning and the module docstring of _tools/kbsettings.py for announce.needs_you_after_min say the setting delays an undecided overlap only, as mon_needs.py does, so explain and the kb_settings tool tell the same as monitoring.md",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, \"_tools\"); import kbsettings; m = kbsettings.SETTINGS[\"announce.needs_you_after_min\"]; sys.exit(1 if \"open question\" in m or \"open question\" in (kbsettings.__doc__ or \"\") else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kbsettings.py",
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-f2o3aqm2 plan"
+  ],
+  "notes": "Found while planning SP-f2o3aqm2 (2026-10-24) for ST-i6jrzflk: kbsettings.py lines for the setting (module docstring and the SETTINGS meaning that explain and the kb_settings tool print) carry the same stale claim as the coordination.md bullet. Code item (code lane); the docs it maps to are coordination.md and tools.md. Not in the sprint: outside the listed items.",
+  "filed_in": "clone-0ea70e5c"
+}
