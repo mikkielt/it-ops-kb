@@ -2,7 +2,7 @@
   "id": "ST-s737ugdt",
   "kind": "story",
   "title": "coordination.md and tools.md say what reads kbsettings.effective today, not what will",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-f2o3aqm2",
   "priority": "P3",
@@ -38,5 +38,7 @@
     "parked: SP-47w4ngr6 review"
   ],
   "notes": "Found by the SP-47w4ngr6 review (S3); parked, no fitness test or user report names it. Plan 2026-10-24: the old check passed on base (any tool importing kbsettings satisfied it) and proved nothing; rewritten to read the same goal clauses from the code: it finds which of the coord hook, kbmon and the explain command call kbsettings.effective( (hook: coord_hook.py, kbmon: mon_sessions.py needs_you_after_min; the explain command does not, kbsettings.explain reads the layers itself) and fails while coordination.md or tools.md names a non-reader on a kbsettings.effective line or omits a reader. Premise runs on base: exit 1, docs name 'explain command' as an effective reader. Touches were empty; set to the two docs.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
