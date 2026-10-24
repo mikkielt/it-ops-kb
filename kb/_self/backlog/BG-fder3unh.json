@@ -2,7 +2,7 @@
   "id": "BG-fder3unh",
   "kind": "bug",
   "title": "announce.to_other_sessions does not stop the coord hook from announcing the session's intent to the other sessions",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-3i7hcb6i",
   "priority": "P2",
@@ -29,5 +29,7 @@
     "parked: SP-ky7xz6d2 review"
   ],
   "notes": "Review gap 9 (S3, read), left as an open design question for the operator: nothing reads announce.operator (default terminal, kbmon omits needs_you) yet kbmon always adds the overlap entry to the needs-you line, and overlap_entries does not filter by operator on a shared --url store, so this operator is told of undecided overlaps between two other operators' sessions. SP-ky7xz6d2 review. Plan 2026-10-24 (day run): repro fails on base (exit 0 | intents posted 1). Scope: the goal only (no intent posted with announce.to_other_sessions false, for the SessionStart and the claim announce). The announce.operator question above is a separate design question: nothing in this goal builds or changes it; if the worker sees a cheap, easy-to-reverse reading it records a provisional gate with the recommendation, otherwise it is left to the review as a parked draft. Planned into SP-3i7hcb6i on 2026-10-24. Sprint started 2026-10-24.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
