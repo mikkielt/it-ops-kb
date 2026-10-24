@@ -1,0 +1,27 @@
+{
+  "id": "SP-ymnz7b4n",
+  "kind": "sprint",
+  "title": "kbmon tells what is true: overlap ages and decisions, claim-only overlaps, stall alerts, span exports, the mod's baseline and cut rows",
+  "status": "active",
+  "goal": "kbmon's sessions panel, exports and mod report what is true: an overlap's age counts from the newest intent, a coordinate event decides it only when its sessions posted it after it began, and claim-only overlaps show; the sessions panel reads only the coord kinds it needs, binds a workspace hook's state files and starts a bounded number of git processes; KbmonRunStalled fires only for a dead or silent worker, kb.sprint is exported once, a run's trace id does not depend on the export time, kb.item ids do not collide across stores and a refused landing with its rework is one kb.item span; wait/ leases are not claims and --status all shows every active sprint's run-state row; the mod tells a disk entry once, takes its baseline from the first complete reading and tells nothing for a cut row; kbwho --otel-attributes drops an email in the service name, mon_eta counts a paid bench item as bench, and a loopback receiver posts each Alertmanager alert as a coord ask",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
+  "notes": "Start gate approved by the day-run runner on the operator's standing pre-approval for 2026-10-24 (get bugs and other fixes from the backlog, plan them into sprints and run them; pre-approved by the operator; same regime as the overnight run). Answered by the runner session, not in a terminal by the operator. Planned 2026-10-24 (day run): 19 items from parking, start gate approved on the operator's standing pre-approval.",
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
