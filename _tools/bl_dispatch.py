@@ -967,6 +967,7 @@ def cmd_dispatch(bl, a):
                                 env=worker_env(oid))
         record_worker(bl.root, iid, worker_pid=proc.pid, role=WORKER_ROLE, **({"operator": oid} if oid else {}))
         own_made(bl, iid, "process", proc.pid)
+        bl_items.move_run(iid, "working", "dispatch")
         say(f"dispatched {bl.label(iid)}: pid {proc.pid}, brief {brief}, output {result}")
         sys.stdout.flush()
         code = proc.wait()
@@ -982,6 +983,8 @@ def cmd_dispatch(bl, a):
         failed = True
     if session:
         record_worker(bl.root, iid, worker_session=session)
+    gates = bl_items.open_gate_ids(bl, iid) if not failed else ""
+    bl_items.move_run(iid, "failed" if failed else "returned", "dispatch", exit=code, **({"gates": gates} if gates else {}))
     say(f"worker of {iid} exited {code}: session {session or 'unknown'} (resume it with `claude -p --resume "
         f"<session>`), output {result}, stderr {errlog}")
     say(rows_line(bl.root, iid, session))

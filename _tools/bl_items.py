@@ -5,15 +5,16 @@ changed_items and the shared refusals, so they live together; importing this mod
 bl_cli. backlog.py, the facade, keeps the usage text, the usage order and main's dispatch.
 
 Standard library only; imports the bl_ modules and never backlog."""
-import argparse, contextlib, copy, re, shlex, subprocess, sys
+import argparse, contextlib, copy, json, re, shlex, subprocess, sys
 from pathlib import Path
 
 import bl_authority
+import bl_clean
 import bl_cli
 from bl_base import (
     IN_SPRINT, PRIORITIES, RESEARCH_ID, Refused, Rejected, SEVERITIES, START_GATE, TEXT_MAX, canonical,
     claims_ledger, clone_id, commit_message, commit_written, external_problems, git, in_scope, item_file, kinds, ledger_lock, need,
-    new_id, operator_problem, operator_who, rel_dir, research_checks, research_in_planned, review_checks, say, scope,
+    new_id, open_gates, operator_problem, operator_who, rel_dir, research_checks, research_in_planned, review_checks, say, scope,
     trailer_problem, waits, withhold, write_ledger,
 )
 from bl_check import (
@@ -209,6 +210,35 @@ def cmd_fmt(bl, a):
     return 0
 
 
+def move_run(iid, state, who, **fields):
+    """Move the item's run state (the coord key run/<id>) to STATE with `coord.py transition`, which posts the move's
+    progress event with it; FIELDS are the event's exit, gates and step. A coord that does not take the move, or a
+    state the table does not allow it from, is said and never stops the step WHO runs: `backlog.py runs --reconcile`
+    repairs the state later. True when the state moved."""
+    argv = ["transition", f"run/{iid}", "--to", state]
+    for name, value in fields.items():
+        argv += ["--field", f"{name}={value}"]
+    code, body, err = bl_clean.run_coord(*argv)
+    if code == 0:
+        return True
+    if not (isinstance(body, dict) and body.get("state") == state):  # a move to the state the key holds is no news
+        why = (body.get("error") if isinstance(body, dict) else None) or err or f"coord.py exited {code}"
+        say(f"{who}: run state of {iid} not moved to {state}: {why} (backlog.py runs --reconcile repairs it)")
+    return False
+
+
+def open_gate_ids(bl, iid):
+    """The ids of the open gates the item file on the branch work/<id> holds, comma-separated; '' when it holds none or
+    the branch or file cannot be read."""
+    p = subprocess.run(["git", "-C", str(bl.root), "show", f"work/{iid}:{rel_dir()}/{iid}.json"], capture_output=True,
+                       text=True, encoding="utf-8", errors="replace")
+    try:
+        item = json.loads(p.stdout) if p.returncode == 0 else {}
+    except ValueError:
+        item = {}
+    return ",".join(str(g["id"]) for g in open_gates(item if isinstance(item, dict) else {}) if g.get("id"))
+
+
 def cmd_claim(bl, a):
     iid = need(bl, a.id)
     it = bl.items[iid]
@@ -224,7 +254,6 @@ def cmd_claim(bl, a):
     # it: CLAUDE_CODE_SESSION_ID, which Claude Code sets in every Bash subprocess, else the claimer's name. A claim
     # from another session while one of its claims is still doing here is refused before anything is written, so no
     # claim commit lands on another session's branch; one session (an orchestrator) claims for several names freely
-    import json
     import os
     session = os.environ.get("CLAUDE_CODE_SESSION_ID") or f"by:{a.by}"
     top, ledger = claims_ledger(bl.root)
@@ -270,6 +299,7 @@ def cmd_claim(bl, a):
         except OSError:
             pass  # the record guards the next claim; a checkout it cannot be written in is not refused for it
     say(f"claimed {bl.label(iid)} for {a.by}")
+    move_run(iid, "claimed", "claim")
     commit_written(bl, a, "claim", iid)
     return 0
 
