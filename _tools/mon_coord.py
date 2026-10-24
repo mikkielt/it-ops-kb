@@ -191,6 +191,25 @@ def claim_of(row, now):
             "over_budget": bool(row.get("over_budget"))}
 
 
+def runs_of(rows, events, now):
+    """[{item, state, age_s}] of the run states: each `run/<item>` row of `coord.py list` with a state `coord.RUN_STATES` names,
+    and the seconds since the item's newest progress event (None when it has none)."""
+    import coord
+    newest = {}
+    for e in events:
+        fields = e.get("fields") if isinstance(e.get("fields"), dict) else {}
+        if e.get("kind") == "progress" and isinstance(fields.get("item"), str) and isinstance(e.get("at"), (int, float)):
+            newest[fields["item"]] = e["at"]
+    out = []
+    for r in rows:
+        key, state = str(r.get("key")), r.get("value")
+        if key.startswith(coord.RUN_KEYS) and state in coord.RUN_STATES:
+            item = key[len(coord.RUN_KEYS):]
+            at = newest.get(item)
+            out.append({"item": item, "state": state, "age_s": None if at is None else max(0, int(now - at))})
+    return out
+
+
 def event_fields(event):
     """The fields of a coord event with its session ids labelled (`mon_view.session_fields`) and its key's."""
     fields = event.get("fields") if isinstance(event.get("fields"), dict) else {}
@@ -202,12 +221,13 @@ def collect(ctx):
     conn, source = connection(ctx)
     out = fetch(conn)
     now = time.time()
-    claims = [claim_of(r, now) for r in json.loads(out["list"]) if r.get("holder")]
+    rows = json.loads(out["list"])
+    claims = [claim_of(r, now) for r in rows if r.get("holder")]
     every = json.loads(out["wait"])["events"]
     events = every[-EVENTS_KEPT:]
     asks = open_asks(every)
     settings, bad = settings_of(ctx.root)
-    data = {"source": source, "claims": claims,
+    data = {"source": source, "claims": claims, "runs": runs_of(rows, every, now),
             "events": [{"seq": e["seq"], "kind": e["kind"], "fields": event_fields(e)} for e in reversed(events)],
             "digest": [mon_view.session_text(x) for x in out["digest"].splitlines() if x.strip()],
             "asks": ask_texts(conn, asks[:ASKS_KEPT]), "asks_open": len(asks), "settings": settings}
