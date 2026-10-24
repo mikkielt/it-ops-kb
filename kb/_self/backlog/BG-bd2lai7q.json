@@ -2,7 +2,7 @@
   "id": "BG-bd2lai7q",
   "kind": "bug",
   "title": "The kbmon mod parses a needs-you row cut at the pane width as a whole line when --status all answers without a needs-you line, so a cut suffix reads as an entry",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-nij36lt7",
   "sprint": "SP-ymnz7b4n",
   "priority": "P3",
@@ -28,6 +28,19 @@
   ],
   "notes": "Found by the review of SP-rin4kkoj (2026-10-24, S3), not triggered by the reviewer; the planted repro reaches it with a --status all that answers without a needs-you line. register.tsx notifyNeeds falls back to the pane row, which may end in an ellipsis; entriesOf then reads a cut part such as `not r…` as an entry of a complete line. Fix: skip the reading (leave the row unread, as a failed --status all does) when the row is cut and the whole line is missing. Planned into SP-ymnz7b4n, 2026-10-24 day run. Precheck: repro fails on the base. Plan note 2026-10-24 (day run): the repro's first step expects 0 told, but the mod's first refresh reads 'nothing' as its baseline, so 'SP-aaaaaaaa gate start' is rightly news (1); the same flaw BG-eavxydjq g1 found. Rewrite the planted test (set --repro) so step 1 expects 1 and step 2 (the cut row, no whole line) still expects 1; same goal clause; note the reason. No gate needed (pre-approved by the operator for the 2026-10-24 day run). Repro rewritten by the worker (2026-10-24): the planted test expected 0 told at step 1, but the mod first refresh reads nothing as its baseline, so the entry of step 1 is rightly news (1); step 2 (cut row, no whole line) still expects 1. Same goal clause. Reason: the same flaw BG-eavxydjq g1 found.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "6c47dff5145f76578fe4a6c288110343194d461b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, shutil, subprocess, sys, tempfile\nR = os.getcwd()\nmod = os.path.join(tempfile.mkdtemp(), 'mod')\nshutil.copytree(R + '/.claude/skills/kbmon-pane', mod)\nTEST = r\"\"\"import { expect, mock, test } from 'claude-code/testing'\n\ntest('a needs-you row cut at the pane width is no news when --status all gives no line', async ($, on) => {\n  const clock = mock.clock(on)\n  let needs = 'nothing'\n  let onceRow = 'nothing'\n  let broken = false\n  const notified: string[] = []\n  const run = (stdout: string) => ({ value: { exitCode: 0, stdout, stderr: '' } })\n  on('process.run', ($, e) => {\n    const argv = e.argv as string[]\n    if (argv.includes('--receipt')) {\n      return run(JSON.stringify({ line: 'kbmon: no alert on querylog; needs you: 1', fingerprint: 'f1' }))\n    }\n    if (argv.includes('--status')) {\n      return run(broken ? 'sessions: none\\n' : `needs you: ${needs}\\nsessions: none\\n`)\n    }\n    return run(`kbmon · 2026-10-24 10:00\\nneeds you: ${broken ? onceRow : needs}\\n\\nkb: 1 root\\n`)\n  })\n  on('ui.notify', ($, e) => {\n    notified.push(e.text)\n\n    return { value: { isSent: true, channel: 'terminal_bell' } }\n  })\n  on('ui.toast', () => ({ value: undefined }))\n  on('ui.open', () => ({ value: { isPlaced: true } }))\n  on('command.register', () => ({ value: undefined }))\n  on('session.start', () => ({ cwd: '/work' }))\n\n  const step = async (line: string, told: number) => {\n    needs = line\n    await clock.advance(60000)\n    await clock.settle()\n    expect(notified.length).toBe(told)\n  }\n\n  await $.session.start({ surface: 'terminal', isInteractive: true, cwd: '/work' })\n  await clock.advance(2000)\n  await clock.settle()\n\n  // the first refresh read 'nothing' as the baseline, so the entry that shows now is news\n  await step('SP-aaaaaaaa gate start', 1)\n  // --status all answers without a needs-you line, so the mod falls back to the pane row, cut at the width\n  broken = true\n  onceRow = 'needs you: SP-aaaaaaaa gate start; not r…'\n  await step('SP-aaaaaaaa gate start', 1)\n})\n\"\"\"\nopen(os.path.join(mod, 'planted.test.ts'), 'w', encoding='utf-8').write(TEST)\ndef claude(*args):\n    for d in os.environ.get('PATH', '').split(os.pathsep):\n        p = os.path.join(d, 'claude')\n        if os.path.isfile(p) and os.access(p, os.X_OK):\n            r = subprocess.run([p, *args], capture_output=True, text=True, timeout=240)\n            if 'not run from this spelling' not in r.stdout + r.stderr:\n                return r\n    print('no claude binary that runs plugin test')\n    sys.exit(1)\nr = claude('plugin', 'test', mod)\nprint((r.stdout + r.stderr)[-1500:])\nsys.exit(1 if r.returncode != 0 else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "01b0e6e8e00c894d"
+      }
+    ]
+  }
 }
