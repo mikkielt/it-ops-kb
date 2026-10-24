@@ -60,9 +60,6 @@
     "kb/_self/code.md",
     "kb/_self/coordination.md"
   ],
-  "depends_on": [
-    "ST-yrilvcbx"
-  ],
   "gates": [
     {
       "id": "g1",

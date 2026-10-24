@@ -21,9 +21,6 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
-  "depends_on": [
-    "ST-yrilvcbx"
-  ],
   "notes": "Premise: with the run key walked claimed to landed, kbmon --events gives no kb.item span (the check prints 'kb.item 0'). Today a landing becomes a span only once its land.end row exists (kb/_self/monitoring.md:76) and a headless worker gives none. Building finished spans with explicit times and a known parent is what the SDK supports (kb/public/logs/otel-python-sdk.md:83-84, DER). A kb.sprint root span over a sprint's kb.item spans is left for refinement: the SP's own start and close are commits, not run keys.",
   "filed_in": "clone-0ea70e5c"
 }
