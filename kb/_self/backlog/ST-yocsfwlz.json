@@ -2,7 +2,7 @@
   "id": "ST-yocsfwlz",
   "kind": "story",
   "title": "Research sprint goal: The kbmon mod tells the operator only what changed in what waits, and never holds its refresh for a notification",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rin4kkoj",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,7 @@
     "kb/public/**"
   ],
   "notes": "No outside facts: the goal needs only what the kb already holds (kb/public/claude/mods.md:113-115 on how $.ui.notify answers and rejects and that the user Notification hooks run first; the age formats of mon_needs.line from _tools/bl_procs.py age_text) and the planted claude plugin test of the two bugs; no new source or gap entry. Claim and done this story first; it needs no worker.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
