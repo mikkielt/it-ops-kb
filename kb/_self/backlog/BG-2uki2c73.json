@@ -2,7 +2,7 @@
   "id": "BG-2uki2c73",
   "kind": "bug",
   "title": "A token-named .md path with bearer, ssh, passphrase or PAT in its name is blanked by TOKEN_DOC and classed design, and test_authority plants no doc-name shape",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4ppjbh4k",
   "priority": "P2",
   "rank": 0,
@@ -49,5 +49,7 @@
   "links": [
     "parked: SP-hlt2tdel review"
   ],
-  "notes": "Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. Check 0 reads the planted shapes of the test function the goal names; check 1 pins token-efficiency.md as design. Planner 2026-10-24: check 1 (token-efficiency.md stays design) passes before the work by design: it holds behaviour the fix must keep."
+  "notes": "Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. Check 0 reads the planted shapes of the test function the goal names; check 1 pins token-efficiency.md as design. Planner 2026-10-24: check 1 (token-efficiency.md stays design) passes before the work by design: it holds behaviour the fix must keep.",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
