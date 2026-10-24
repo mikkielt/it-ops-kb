@@ -2,7 +2,7 @@
   "id": "BG-ok4itunr",
   "kind": "bug",
   "title": "Narrow-wrapped, colon-without-space and tab-escaped EC keys pass the leak scan, and the quoted EC label followed by a path is flagged",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,
@@ -58,6 +58,19 @@
     "parked: SP-tsb23kev review"
   ],
   "notes": "Found by the SP-tsb23kev focused review of BG-3vnu37rq (reviewer session a419aba4) on origin/main 902e961a9; repro fails there. Planner 2026-10-24: kb/_self/map.csv also maps kbcommon.py to kb/_self/plugin.md and .claude/skills/kb-ingest/SKILL.md, outside the touches. Read the part of each that describes the leak scan; if still correct, name each in a Self-Reviewed trailer of your commit (land stops at the stale step otherwise); if one needs an edit, stop and report.",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "fa09a528307ebd0d6cf7fbc9939a0d7f704e3386",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import base64, os, sys, time\nsys.path.insert(0, \"_tools\")\nimport kbcommon\nd = \"-\" * 5\narm = d + \"BEGIN EC PRIVATE KEY\" + d\nb = base64.b64encode(os.urandom(96)).decode()\nhit = lambda t: any(k == \"secret\" for k, _ in kbcommon.leak_hits(t))\ncases = {\"wrap16\": arm + \"\\n\" + \"\\n\".join(b[i:i+16] for i in range(0, 96, 16)), \"hdr_nospace\": arm + \"\\nProc-Type:4,ENCRYPTED\\n\" + b[:64], \"tab_escape\": arm + chr(92) + \"t\" + b[:64]}\nmiss = [k for k, v in cases.items() if not hit(v)]\nfp = hit(arm + \"\\nkb/public/security/secret-shapes-in-text.md\")\nprint(\"passing:\", miss, \"| label+path flagged:\", fp)\nsys.exit(1 if miss or fp else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "49fde9f06014015f"
+      }
+    ]
+  }
 }
