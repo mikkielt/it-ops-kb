@@ -19,8 +19,7 @@
     "_tools/test_leaks.py"
   ],
   "relates_to": [
-    "BG-w4af2tix",
-    "BG-nx6jzvop"
+    "BG-w4af2tix"
   ],
   "links": [
     "parked: SP-jopt2c3z review"

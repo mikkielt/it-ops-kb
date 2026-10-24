@@ -19,8 +19,7 @@
     "_tools/test_leaks.py"
   ],
   "relates_to": [
-    "BG-v5tq4jkz",
-    "BG-nx6jzvop"
+    "BG-v5tq4jkz"
   ],
   "links": [
     "parked: SP-jopt2c3z review"
