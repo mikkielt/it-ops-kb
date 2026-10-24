@@ -2,7 +2,7 @@
   "id": "BG-oclkerdu",
   "kind": "bug",
   "title": "The kbmon mod awaits $.ui.notify inside its refresh, so a slow Notification hook freezes the pane, the receipt and the resize refresh",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-rin4kkoj",
   "priority": "P3",
@@ -33,5 +33,7 @@
     "parked: SP-hja7yu5k review"
   ],
   "notes": "Found by the review of SP-hja7yu5k (register.tsx:90). Live docs (code.claude.com/docs/en/plugins/mods/api, ui.notify): the user's Notification hooks run first and can take a while. The fix is a notify call outside the inFlight stretch (not awaited, its rejection caught). The repro stubs ui.notify to answer after an hour on the mock clock. Planned in SP-rin4kkoj (2026-10-24 night run, manager approval). Premise run on main b950692a97: the repro fails (the refresh count stays at 2 while the notify call is out). Same function as BG-jkdw723s, so it runs after it (depends_on) and builds on its code; the first bug lands first and its checks must still pass after this one (the call is still made, only not awaited, its rejection caught). Check: the repro plants a ui.notify that answers after an hour on the mock clock and asserts the pane goes on refreshing.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
