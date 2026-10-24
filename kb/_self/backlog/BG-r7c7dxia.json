@@ -24,7 +24,7 @@
   "links": [
     "parked: SP-7nv2ffr2 review"
   ],
-  "notes": "Planner 2026-10-24: repro rewritten to read the goal clause through cited_tokens, the function that builds the goal's tokens, with a hyphen range and an underscore case; the first version read TOKEN_RE.findall for one phrase.",
+  "notes": "Planner 2026-10-24: repro rewritten to read the goal clause through cited_tokens, the function that builds the goal's tokens, with a hyphen range and an underscore case; the first version read TOKEN_RE.findall for one phrase. Planner 2026-10-24: kb/_self/map.csv maps _tools/bl_land.py to kb/_self/backlog.md and tools.md, outside the touches. Read the part of each that describes done's ledger check; if still correct, name each in a Self-Reviewed trailer of your commit (land stops at the stale step otherwise); if one needs an edit, stop and report.",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }
