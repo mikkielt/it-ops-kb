@@ -1,0 +1,26 @@
+{
+  "id": "ST-5ul27zl3",
+  "kind": "story",
+  "title": "The Jaeger article's comparison with Tempo points at the Tempo monolithic facts and states no unsourced contrast",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/public/logs/otel-collector-otlp-pipeline.md compares Jaeger all-in-one with Tempo monolithic by pointing at logs/loki-tempo-grafana-retention, where the Tempo monolithic facts are, and states no contrast its cited sources do not hold (no a binary for Windows against Tempo; the 0.0.0.0 note says only what the Jaeger docs say)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nART = 'kb/public/logs/otel-collector-otlp-pipeline.md'\nlines = open(ART, encoding='utf-8').read().splitlines()\ncmp_lines = [l for l in lines if 'Tempo' in l and 'Jaeger' in l and 'distributor' in l]\nok = bool(cmp_lines) and all('loki-tempo-grafana-retention' in l and 'a binary for Windows' not in l for l in cmp_lines)\nprint('comparison lines:', len(cmp_lines), 'ok' if ok else 'missing the pointer or holds the unsourced contrast')\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/logs/otel-collector-otlp-pipeline.md",
+    "kb/public/_sources.csv",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
