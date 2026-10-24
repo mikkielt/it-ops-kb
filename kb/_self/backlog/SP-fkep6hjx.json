@@ -1,0 +1,22 @@
+{
+  "id": "SP-fkep6hjx",
+  "kind": "sprint",
+  "title": "The kb MCP server serves the read commands sessions repeat",
+  "status": "planned",
+  "goal": "kb_backlog serves held, referrers, find, similar, tree, config, landings, runs, procs, check and report and returns an exit 1 finding as text; kb_backlog usage returns a verb's arguments; kb_monitor_status returns one panel as JSON; the sprint skill, the worker role file and the worker brief name each command kb_backlog serves",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
