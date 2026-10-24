@@ -29,6 +29,25 @@
     "_tools/ql_deliver.py",
     "kb/_self/querylog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the refusal text keep check's redact note when check prints more than ten problem lines?",
+      "options": [
+        "Show the first ten problem lines, a count of the rest, then every note: line",
+        "Raise the slice to all problem lines"
+      ],
+      "recommendation": "Show the first ten problem lines, a count of the rest, then every note: line",
+      "do": {
+        "Show the first ten problem lines, a count of the rest, then every note: line": "BG-mso7kfjq",
+        "Raise the slice to all problem lines": "BG-mso7kfjq"
+      },
+      "class": "querylog",
+      "answer": "Show the first ten problem lines, a count of the rest, then every note: line",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-vx6eufpj review"
   ],
