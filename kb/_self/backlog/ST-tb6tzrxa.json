@@ -4,6 +4,7 @@
   "title": "land and stage-back move the run state and refuse each other: land refuses an item that is staging, stage-back one that is landing",
   "status": "draft",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-sucr3kfg",
   "priority": "P2",
   "rank": 0,
   "goal": "stage-back moves run/<id> from returned to staging while it copies, checks and commits, and back to returned when it ends; land moves it to landing before its first step, to landed once verify finds the done commit on main, and to refused with the step's name when it stops; land of an item whose run state is staging stops at a run state step naming that state before any other step, and stage-back of an item whose run state is landing refuses naming it, changing nothing",
@@ -14,6 +15,31 @@
         "-c",
         "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\ndef plant(status):\n    for f in glob.glob(T + '/kb/_self/backlog/*.json'):\n        d = json.load(open(f, encoding='utf-8'))\n        if d['id'] == sp: d['status'] = 'active'\n        if d['id'] == iid: d['status'] = status; d['sprint'] = sp\n        json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\n    g('add', '-A'); g('commit', '-q', '-m', 'planted ' + status)\ndef walk(*states): return [c('transition', 'run/' + iid, '--to', s).returncode for s in states]\nplant('doing')\nwalk('claimed', 'working', 'returned', 'staging')\nland = bl('land', iid)\nwalk('returned', 'landing')\nback = bl('stage-back', iid)\nlo, bo = land.stdout + land.stderr, back.stdout + back.stderr\nok = (land.returncode == 1 and 'run state' in lo and 'staging' in lo and back.returncode != 0 and 'landing' in bo)\nprint('land', land.returncode, lo.strip().splitlines()[-1:] if lo.strip() else '', '| stage-back', back.returncode, bo.strip().splitlines()[-1:] if bo.strip() else '')\nsys.exit(0 if ok else 1)\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\nfor f in glob.glob(T + '/kb/_self/backlog/*.json'):\n    d = json.load(open(f, encoding='utf-8'))\n    if d['id'] == sp: d['status'] = 'active'\n    if d['id'] == iid: d['status'] = 'doing'; d['sprint'] = sp\n    json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\ng('add', '-A'); g('commit', '-q', '-m', 'planted doing')\nfor s in ('claimed', 'working', 'returned'): c('transition', 'run/' + iid, '--to', s)\nland = bl('land', iid)\nout = land.stdout + land.stderr\nstep = re.search(r'land stopped at step ([^:\\n]+):', out)\ntry:\n    ev = json.loads(c('wait', '--since', '0', '--timeout', '0').stdout)['events']\nexcept ValueError:\n    ev = []\nprog = [e['fields'] for e in ev if e['kind'] == 'progress' and e['fields'].get('item') == iid]\nstates = [p.get('state') for p in prog]\nlast = prog[-1] if prog else {}\nok = (land.returncode == 1 and step is not None and states[-2:] == ['landing', 'refused']\n      and last.get('step') == step.group(1).strip() and 'refused' in c('get', 'run/' + iid).stdout)\nprint('land', land.returncode, 'stopped at', step.group(1) if step else None, '| progress states', states, '| last step field', last.get('step'))\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "land moves it to landing before its first step, to landed once verify finds the done commit on main",
+      "check": 1
+    },
+    {
+      "clause": "to refused with the step's name when it stops",
+      "check": 1
+    },
+    {
+      "clause": "land of an item whose run state is staging stops at a run state step naming that state before any other step",
+      "check": 0
+    },
+    {
+      "clause": "stage-back of an item whose run state is landing refuses naming it, changing nothing",
+      "check": 0
     }
   ],
   "touches": [
@@ -25,7 +51,8 @@
     "skills/sprint/SKILL.md"
   ],
   "depends_on": [
-    "ST-yrilvcbx"
+    "ST-yrilvcbx",
+    "ST-3ru7f4to"
   ],
   "gates": [
     {
@@ -44,6 +71,6 @@
       "role": "interactive"
     }
   ],
-  "notes": "Premise: with the run state planted as staging, land stops at step branch, not at a run state step, and stage-back refuses for a missing worktree without naming landing; nothing today relates the two commands (kb/_self/backlog.md:330, no lock). The case it answers: BG-3brdh3kd in SP-c7oav2vn, landed before its stage-back and then once more in parallel with it, refused at done twice.",
+  "notes": "Premise: with the run state planted as staging, land stops at step branch, not at a run state step, and stage-back refuses for a missing worktree without naming landing; nothing today relates the two commands (kb/_self/backlog.md:330, no lock). The case it answers: BG-3brdh3kd in SP-c7oav2vn, landed before its stage-back and then once more in parallel with it, refused at done twice. Plan 2026-10-24: premise reproduced on base (precheck: land stops at step branch, stage-back refuses for a missing worktree, neither names the run state). Second check added for the landing and refused moves with the step field. Not read by any check: stage-back's staging and back-to-returned moves, and land's landed move once verify finds the done commit (no fixture without a worktree and a main remote); implement them as the goal says, the review reads the diff. After ST-3ru7f4to (shared bl_dispatch.py) and before ST-ct2dpjgz (shared skills/sprint/SKILL.md). Planned into SP-sucr3kfg on 2026-10-24.",
   "filed_in": "clone-0ea70e5c"
 }
