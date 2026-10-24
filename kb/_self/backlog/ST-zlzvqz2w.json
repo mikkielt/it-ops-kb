@@ -2,7 +2,7 @@
   "id": "ST-zlzvqz2w",
   "kind": "story",
   "title": "dispatch starts a worker with TRACEPARENT of its kb.worker span and OTEL_RESOURCE_ATTRIBUTES naming its item and sprint, so the worker's own Claude Code telemetry joins the item's trace",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
   "sprint": "SP-d6gbc3tq",
   "priority": "P3",
@@ -68,6 +68,6 @@
       "role": "interactive"
     }
   ],
-  "notes": "Premise: a stub claude started by dispatch sees no TRACEPARENT and no OTEL_RESOURCE_ATTRIBUTES (the check prints both empty). Live docs, not in the kb (code.claude.com/docs/en/monitoring-usage, read 2026-10-24): in -p and Agent SDK sessions Claude Code reads TRACEPARENT and TRACESTATE from its environment and makes claude_code.interaction a child of that span; its OTLP event records carry that trace_id and span_id even with no traces exporter; traces are beta (CLAUDE_CODE_ENABLE_TELEMETRY=1, CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1, OTEL_TRACES_EXPORTER); OTEL_RESOURCE_ATTRIBUTES keys go on every metric point and event, values percent-encoded. kbotel.py serve takes /v1/logs only (its EVENT_KEYS allowlist), so a loopback trace receiver is new work if the gate picks it. The span id dispatch passes is computed from the working move's event, so kbmon's kb.worker span gets the same id. Plan 2026-10-24 (SP-d6gbc3tq): gate g1 answered by the operator earlier (pass the context only). Check 1 added: a dispatch env holding team, service.name and a percent-encoded user.email keeps the first two, drops the email entry and adds kb.item.id and kb.sprint.id. Depends on ST-3bmmg73g in this sprint. Planned into SP-d6gbc3tq on 2026-10-24 (night run).",
+  "notes": "Premise: a stub claude started by dispatch sees no TRACEPARENT and no OTEL_RESOURCE_ATTRIBUTES (the check prints both empty). Live docs, not in the kb (code.claude.com/docs/en/monitoring-usage, read 2026-10-24): in -p and Agent SDK sessions Claude Code reads TRACEPARENT and TRACESTATE from its environment and makes claude_code.interaction a child of that span; its OTLP event records carry that trace_id and span_id even with no traces exporter; traces are beta (CLAUDE_CODE_ENABLE_TELEMETRY=1, CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1, OTEL_TRACES_EXPORTER); OTEL_RESOURCE_ATTRIBUTES keys go on every metric point and event, values percent-encoded. kbotel.py serve takes /v1/logs only (its EVENT_KEYS allowlist), so a loopback trace receiver is new work if the gate picks it. The span id dispatch passes is computed from the working move's event, so kbmon's kb.worker span gets the same id. Plan 2026-10-24 (SP-d6gbc3tq): gate g1 answered by the operator earlier (pass the context only). Check 1 added: a dispatch env holding team, service.name and a percent-encoded user.email keeps the first two, drops the email entry and adds kb.item.id and kb.sprint.id. Depends on ST-3bmmg73g in this sprint. Planned into SP-d6gbc3tq on 2026-10-24 (night run). Sprint SP-d6gbc3tq started 2026-10-24.",
   "filed_in": "clone-0ea70e5c"
 }
