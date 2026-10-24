@@ -96,7 +96,11 @@
         "the items of active sprints plus every item holding a run key; done, then working-without-worker, then unclaimed": "ST-pmxnissq",
         "only the items holding a run key; done, then unclaimed, then working-without-worker": "ST-pmxnissq"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "the items of active sprints plus every item holding a run key; done, then working-without-worker, then unclaimed",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Premise: backlog.py runs does not exist (exit 2 in the check). Run state in coord and lifecycle in git can disagree after a crash, a killed landing or an unreachable store (the gate on ST-3ru7f4to); this command is the reconcile step the coord-authority shape needs. A new bl_ module registers itself through bl_cli and gets its map.csv row and code.md layout line. Plan 2026-10-24: premise reproduced on base (precheck: runs exits 2, no such command). Second check added for the other two drift kinds (a run key of an unclaimed item to released, a working state with no worker to failed) and the reconcile step field. The per-item line's content (item file status, work branch gates, pid) is not read by a check; implement it as the goal says. Planned into SP-sucr3kfg on 2026-10-24. Sprint started 2026-10-24.",
