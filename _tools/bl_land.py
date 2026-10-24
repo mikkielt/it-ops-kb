@@ -32,7 +32,8 @@ from bl_base import (  # run_check lives below bl_land, so bl_ci reaches it with
 from bl_check import HOST_BOUND_GATE, host_bound_accepted, is_test_run, noop_output, trivial_command
 from bl_close import (  # the worker's worktree and the repositories' leftovers `land` shares with close and tidy
     AGENT_BRANCH, WORK_PREFIX, delete_landed_branch, detached_workers, gone_checks, has_ref, land_stop,
-    own_checkout_drafts, release_worker_worktree, repo_worktree, set_aside_drafts, worktree_entries,
+    add_landing_worktree, landing_lock, own_checkout_drafts, release_worker_worktree, remove_landing_worktree,
+    repo_worktree, set_aside_drafts, worktree_entries,
 )
 from bl_close import (  # noqa: F401 - bl_items and bl_dispatch read them as bl_land.NAME
     REOPENED_REFS, RESEARCH_DEFAULT_GOAL, WORKER_NAME, cleanup_gate_do, clauses_left_behind, prune_reopened_refs,
@@ -1833,13 +1834,25 @@ def worktree_back(root, released, branch, iid):
 
 
 def land_once(bl, a):
+    """Land a finished item's branch under the clone's landing lock (`bl_close.landing_lock`: landings of one clone run
+    one at a time, a second one says which item holds the lock and waits): `land_locked`."""
+    need(bl, a.id)
+    with landing_lock(bl.root, a.id):
+        return land_locked(bl, a)
+
+
+def land_locked(bl, a):
     """Land a finished item's branch: rebase it on the integration main, then by lane. Content: done --commit, the
     heavy checks when _tools/ changed (else the lookup eval when any file under a kb root changed, and the lint on
     the changed articles), sync --push. Code not yet on the integration main: the item's checks and
     a bug's repro, the heavy checks, sync --push (a code/<id> merge request; main does not move), and a re-run once
-    it has merged finishes it as content does. Stops at the first failing step, naming it. Every run and every stop ends
-    on the branch (or the detached commit) it started on: the rebase switches to the landed branch, and a claim
-    --commit made after land must not ride on it into its merge request."""
+    it has merged finishes it as content does. Stops at the first failing step, naming it. The fetch, the rebase, done, the checks and the push run in a landing
+    worktree of land's own (`bl_close.add_landing_worktree`, `land-<id>` under the worker directory, made detached at
+    the commit the checkout land was started in has), removed at every end: the checkout land was started in is never
+    switched or read for its working tree, so an untracked or modified file there does not stop a landing. A landing
+    from the checkout that has the item's branch itself checked out (or of a multi-repository item) runs in that
+    checkout as ever: it must be clean, and every run and every stop ends on the branch (or the detached commit) it
+    started on, as a claim --commit made after land must not ride on the landed branch into its merge request."""
     import kbpublic
     import kg_lock  # the host's main lock: the fetch and rebase hold it, the sync --push it runs takes it itself
     iid = need(bl, a.id)
@@ -1853,7 +1866,11 @@ def land_once(bl, a):
     for _, dest in set_aside_drafts(root, root, drafts):  # the checkout's own SessionStart hook filed them
         say(f"land: moved the untracked intake draft {dest.name} out of this checkout to {dest.parent} "
             "(copy it back to kb/_self/backlog/ to triage it)")
-    if git(root, "status", "--porcelain").strip():
+    start = git(root, "rev-parse", "HEAD").strip()
+    start_ref = subprocess.run(["git", "symbolic-ref", "-q", "HEAD"], cwd=root, capture_output=True, text=True,
+                               encoding="utf-8", errors="replace").stdout.strip()
+    in_place = start_ref == f"refs/heads/{branch}" or bool(item_repos(bl.items[iid]))
+    if in_place and git(root, "status", "--porcelain").strip():
         raise land_stop("clean tree", "uncommitted changes: commit or stash them first (git status --short)")
     if not has_ref(root, f"refs/heads/{branch}"):
         raise land_stop("branch", f"no local branch {branch} (--branch names another)")
@@ -1876,44 +1893,45 @@ def land_once(bl, a):
             else:
                 agent_branch = AGENT_BRANCH + path.name
                 released.append(path)
-    start = git(root, "rev-parse", "HEAD").strip()
-    start_ref = subprocess.run(["git", "symbolic-ref", "-q", "HEAD"], cwd=root, capture_output=True, text=True,
-                               encoding="utf-8", errors="replace").stdout.strip()
+    lroot, landing = root, None  # where the landing runs: a landing worktree of its own, else this checkout
     try:
+        if not in_place:
+            landing = lroot = add_landing_worktree(root, iid, start)
+            bl = Backlog(lroot)
         with kg_lock.guarded("backlog.py land: fetch and rebase", "backlog.py", clone=str(root)):
             say(f"land: fetch {remote} main")
             ops_mark("fetch")
-            land_git(root, "fetch", "fetch", "--quiet", remote, f"+refs/heads/main:{upstream}")
+            land_git(lroot, "fetch", "fetch", "--quiet", remote, f"+refs/heads/main:{upstream}")
             say(f"land: rebase {branch} on {remote}/main")
             ops_mark("rebase")
-            claims = missing_claims(root, [iid] + bl.descendants(iid), start, upstream, branch)
+            claims = missing_claims(lroot, [iid] + bl.descendants(iid), start, upstream, branch)
             if claims:  # claimed after the branch was cut, or never pushed: the claim goes under the worker's commits
                 say(f"land: carry the claim commit(s) {', '.join(c[:10] for c in claims)} under {branch}")
-                p = carry_claims(root, claims, upstream, branch)
+                p = carry_claims(lroot, claims, upstream, branch)
             else:
-                p = rebase_merging_doc_rows(root, upstream, branch)
+                p = rebase_merging_doc_rows(lroot, upstream, branch)
         if p.returncode:
-            subprocess.run(["git", "rebase", "--abort"], cwd=root, capture_output=True)
+            subprocess.run(["git", "rebase", "--abort"], cwd=lroot, capture_output=True)
             raise land_stop("rebase", f"{branch} does not rebase cleanly on {remote}/main (rebase aborted, nothing "
                                       f"changed): rebase it by hand, then run land again\n"
                                       f"{(p.stderr or p.stdout).strip()}")
-        bl = Backlog(root)  # the item files as the rebased branch has them
+        bl = Backlog(lroot)  # the item files as the rebased branch has them
         need(bl, iid)
         family = [iid] + bl.descendants(iid)
-        late, _, owners = unlanded_code(root, family)
+        late, _, owners = unlanded_code(lroot, family)
         LAND_OPS["lane"] = "code" if late else "content"
         if late == ["(no such ref)"]:
             raise land_stop("fetch", f"{upstream} does not exist after the fetch")
         if late:
-            code_branch = sync_code_branch(root, upstream, owners, iid)  # the branch sync --push opens for this range
+            code_branch = sync_code_branch(lroot, upstream, owners, iid)  # the branch sync --push opens for this range
             tracking = f"refs/remotes/{remote}/{code_branch}"
-            fetched = land_git_network(root, "fetch", "fetch", "--quiet", remote,
+            fetched = land_git_network(lroot, "fetch", "fetch", "--quiet", remote,
                                        f"+refs/heads/{code_branch}:{tracking}").returncode == 0
-            if fetched and git(root, "rev-parse", f"{tracking}^{{tree}}") == git(root, "rev-parse", "HEAD^{tree}"):
+            if fetched and git(lroot, "rev-parse", f"{tracking}^{{tree}}") == git(lroot, "rev-parse", "HEAD^{tree}"):
                 say(f"land: {bl.label(iid)} waits for its merge request (branch {code_branch} on {remote}, already "
                     f"pushed with this content): merge it, then run backlog.py land {iid} again")
-                LAND_OPS["pending"] = ([git(root, "rev-parse", tracking).strip()], code_branch)
-                request = read_code_request(root, code_branch)  # the pass's one read of the request
+                LAND_OPS["pending"] = ([git(lroot, "rev-parse", tracking).strip()], code_branch)
+                request = read_code_request(lroot, code_branch)  # the pass's one read of the request
                 describe_merge_request(bl, iid, request)
                 stuck = stuck_merge_request(request, code_branch)
                 if stuck:
@@ -1922,7 +1940,7 @@ def land_once(bl, a):
         if not late:
             if bl.items[iid].get("status") == "done":
                 say(f"land: done: {bl.label(iid)} is done already")
-            elif restore_done(root, iid):  # a run before this one made the done commit and the branch lost it
+            elif restore_done(lroot, iid):  # a run before this one made the done commit and the branch lost it
                 say(f"land: done: {bl.label(iid)} has its done commit from the last run ({LAND_REF}/{iid}), "
                     "not run again")
             else:
@@ -1934,7 +1952,7 @@ def land_once(bl, a):
                                                     repositories=repo_evidence(repos)))
                 except Refused as e:
                     raise land_stop("done", str(e)) from None
-                land_git(root, "done", "update-ref", f"{LAND_REF}/{iid}", "HEAD")
+                land_git(lroot, "done", "update-ref", f"{LAND_REF}/{iid}", "HEAD")
         if late:  # the code lane pushes an auto-merging merge request: its proof runs before that, not after
             if not getattr(a, "wait_merge", None):  # a two-pass landing is read before its push, not after it
                 say(f"land: {bl.label(iid)} goes through the code lane: this run pushes the merge request of branch "
@@ -1942,7 +1960,7 @@ def land_once(bl, a):
                     f"(reading {remote}/main every {WAIT_POLL} s until the merge request has merged) run "
                     f"backlog.py land {iid} with --wait-merge SECONDS above 0, else run backlog.py land {iid} again "
                     "once it has merged")
-            stray =out_of_scope(root, item_commits(root, family), own_globs(scope(bl, iid)))
+            stray =out_of_scope(lroot, item_commits(lroot, family), own_globs(scope(bl, iid)))
             if stray:  # done's scope rule, read before the merge request opens rather than after it merged
                 raise land_stop("scope", f"{bl.label(iid)}'s commits change files outside its touches, so done would "
                                          "refuse it once the merge request merged; nothing was pushed: "
@@ -1950,33 +1968,33 @@ def land_once(bl, a):
                                 + " (revert it, or widen touches: backlog.py set ID --add-touch PATH)")
             land_checks(bl, iid)
             land_siblings(bl, iid)
-        changed =git(root, "diff", "--name-only", upstream, "HEAD").splitlines()
+        changed =git(lroot, "diff", "--name-only", upstream, "HEAD").splitlines()
         if any(p.startswith("_tools/") for p in changed):
             stale = land_stale()
             if stale[1]:
-                land_run(root, stale[0], [*stale[1], upstream])  # a missing Self-Reviewed fails in seconds
+                land_run(lroot, stale[0], [*stale[1], upstream])  # a missing Self-Reviewed fails in seconds
             for step, argv in land_heavy():
-                land_run(root, step, argv)
+                land_run(lroot, step, argv)
         else:  # lint.py takes qualified article paths: the changed articles only, before sync --push
             articles = changed_articles(changed)
             lint = land_lint()
             if changes_kb(changed) and land_eval()[1]:  # a fact can turn an off-kb eval row into a good answer
-                land_run(root, *land_eval())
+                land_run(lroot, *land_eval())
             if articles and lint[1]:
-                land_run(root, lint[0], [*lint[1], *articles])
+                land_run(lroot, lint[0], [*lint[1], *articles])
         name_unpushed(root, remote, start, start_ref, upstream, branch)
-        land_run(root, *land_push(), whole=True, program=True)
+        land_run(lroot, *land_push(), whole=True, program=True)
         if late:
             # the request sync opened by push options: this pass's one read of it
-            describe_merge_request(bl, iid, read_code_request(root, code_branch))
-            tip = pushed_tip(root, remote, code_branch)
+            describe_merge_request(bl, iid, read_code_request(lroot, code_branch))
+            tip = pushed_tip(lroot, remote, code_branch)
             LAND_OPS["pending"] = (tip, code_branch) if tip else None
             say(f"land: {bl.label(iid)} is not done yet: its code goes as the merge request of branch {code_branch}; "
                 f"once it has merged, run backlog.py land {iid} again (fetch, rebase, done --commit, sync --push)")
             pushed = True
         else:
-            verify_landed(root, remote, upstream, iid)
-            subprocess.run(["git", "update-ref", "-d", f"{LAND_REF}/{iid}"], cwd=root, capture_output=True)
+            verify_landed(lroot, remote, upstream, iid)
+            subprocess.run(["git", "update-ref", "-d", f"{LAND_REF}/{iid}"], cwd=lroot, capture_output=True)
             say(f"land: {bl.label(iid)} landed")
             landed = pushed = True
         return 0
@@ -1986,14 +2004,19 @@ def land_once(bl, a):
         if released:
             raise Refused(str(e) + worktree_back(root, released, branch, iid)) from None
         raise
-    finally:  # back to where land started, whatever happened after the rebase switched to BRANCH
-        back = (["switch", "-q", start_ref[len("refs/heads/"):]] if start_ref.startswith("refs/heads/")
-                else ["switch", "-q", "--detach", start])
-        p = subprocess.run(["git", *back], cwd=root, capture_output=True, text=True, encoding="utf-8",
-                           errors="replace")
-        if p.returncode:
-            say(f"land: could not return to {start_ref or start[:10]}: {(p.stderr or p.stdout).strip()}")
+    finally:  # the landing worktree goes, whatever happened; an in-place landing is back where land started
+        returned = True
+        if landing is not None:
+            remove_landing_worktree(root, landing)
         else:
+            back = (["switch", "-q", start_ref[len("refs/heads/"):]] if start_ref.startswith("refs/heads/")
+                    else ["switch", "-q", "--detach", start])
+            p = subprocess.run(["git", *back], cwd=root, capture_output=True, text=True, encoding="utf-8",
+                               errors="replace")
+            returned = not p.returncode
+            if p.returncode:
+                say(f"land: could not return to {start_ref or start[:10]}: {(p.stderr or p.stdout).strip()}")
+        if returned:
             if pushed:  # a refusal is said and changes no exit status
                 fast_forward_start(root, remote, start_ref, upstream)
             if landed:  # the worker's branches, landed: never the one land runs on
@@ -2002,7 +2025,7 @@ def land_once(bl, a):
                         delete_landed_branch(root, done_branch, upstream)
                 if repos:
                     delete_repo_branches(repos, iid, repo_branch(bl.items[iid], iid))
-                land_cleanup(bl, iid)
+                land_cleanup(Backlog(root), iid)
 
 
 def land_cleanup(bl, iid):
