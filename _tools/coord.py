@@ -82,7 +82,8 @@ field like every event. `digest` is the one command that prints text, not JSON:
 one line per live intent (posted within a day, its items not all done, landed or released by a later progress event, and, when it names a
 session, that session's presence lease `session/<id>` still held: a release or an expiry drops the session's intents) or
 live claim (a held lease) with a value that overlaps a key (equal, a directory-style prefix either way, or a glob match either
-way), newest first, cut at N lines; with nothing to show it prints nothing.
+way), newest first, cut at N lines; an intent line ends with `state=` and `age=` (seconds since the newest of those moves) when a
+later progress event moved its items; with nothing to show it prints nothing.
 
 A `claim` of a research key (`research:TOPIC:TERM`) or a backlog item id leaves a `claim` event (fields key, holder), its `release`
 a `release` event and a claim the store refuses a `dup_of` event (key, holder of the refused claim, held_by); a session's presence
@@ -629,7 +630,7 @@ def digest(args, clock):
     for row in events:
         fields = json.loads(row["fields"])
         if row["kind"] == "progress":
-            state[fields.get("item")] = (row["seq"], fields.get("state"))
+            state[fields.get("item")] = (row["seq"], fields.get("state"), row["at"])
             continue
         if now - row["at"] > INTENT_SECONDS:
             continue
@@ -646,8 +647,9 @@ def digest(args, clock):
         if not any(overlaps(v, k) for v in values for k in args.key):
             continue
         text = "intent " + " ".join(f"{n}={fields[n]}" for n in KIND_FIELDS["intent"] if n in fields)
-        now_states = sorted({state[i][1] for i in items if i in state and state[i][0] > seq})
-        lines.append((at, text + (f" state={'/'.join(now_states)}" if now_states else "")))
+        moves = [state[i] for i in items if i in state and state[i][0] > seq]
+        now_states = sorted({move[1] for move in moves})
+        lines.append((at, text + (f" state={'/'.join(now_states)} age={int(now - max(move[2] for move in moves))}s" if moves else "")))
     for row in claims:
         if any(overlaps(row["key"], k) for k in args.key):
             cost = budget_view(row["key"], row["budget"])

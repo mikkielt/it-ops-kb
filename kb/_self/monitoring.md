@@ -149,7 +149,7 @@ The panel reads the clone the script is in; `--root` naming another clone makes 
 | `source` | `local` (the store) or `url` (a `coord.py serve` server) |
 | `claims` | per live claim, in key order: `key`, `holder`, `left_s` (whole seconds left of the lease), `budget_usd`, `spend_usd` (null for a claim with no budget) and `over_budget` |
 | `events` | the newest 10 events, newest first: `seq`, `kind` and `fields` |
-| `digest` | the lines of `coord.py digest`: the live intents and claims, with the progress state of an intent's items |
+| `digest` | the lines of `coord.py digest`: the live intents and claims, with the progress state of an intent's items and its age |
 
 - **Read through coord.py.** The panel runs `coord.py list`, `wait --since 0 --timeout 0` and `digest --key '*'` as three child processes at once, so it opens no SQLite file and no key file itself. The lease tokens `list` and `digest` leave out are never in the data, and the key file's content is never read or printed by kbmon.
 - **Where it reads.** With `--url` (and `--key-file`, which coord.py reads) from the server, else from the store `--store` names, else `KB_COORD_STORE`, else the store of the clone at `--root` (a workspace that installs the plugin has one of its own, so `--root WORKSPACE` shows that workspace's coord, sessions and sprint panels), found with `git rev-parse --git-common-dir` and, where git cannot run, from `ROOT/.git` (a directory, or a `gitdir:` file and that directory's `commondir`); a store that is not there is `absent` with the path it looked at.

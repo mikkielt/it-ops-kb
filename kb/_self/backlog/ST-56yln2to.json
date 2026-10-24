@@ -102,6 +102,65 @@
     "kb/_self/monitoring.md",
     "kb/_self/token-efficiency.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What identifies an overlap so the coord hook shows it once?",
+      "options": [
+        "one overlap per other session and its items, whatever its run state",
+        "one overlap per other session, its items and its run state, so a move of the state shows again"
+      ],
+      "recommendation": "one overlap per other session and its items, whatever its run state",
+      "do": {
+        "one overlap per other session and its items, whatever its run state": "ST-56yln2to",
+        "one overlap per other session, its items and its run state, so a move of the state shows again": "ST-56yln2to"
+      },
+      "class": "agents-rule",
+      "answer": "one overlap per other session and its items, whatever its run state (pre-approved by the operator for the 2026-10-24 night run)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Where does the age of a run state in the overlap come from?",
+      "options": [
+        "coord.py digest gains age= on an intent line, the seconds since the newest progress event that moved its items",
+        "the hook asks coord.py wait for the item's progress events and reads their times"
+      ],
+      "recommendation": "coord.py digest gains age= on an intent line, the seconds since the newest progress event that moved its items",
+      "do": {
+        "coord.py digest gains age= on an intent line, the seconds since the newest progress event that moved its items": "ST-56yln2to",
+        "the hook asks coord.py wait for the item's progress events and reads their times": "ST-56yln2to"
+      },
+      "class": "agents-rule",
+      "answer": "coord.py digest gains age= on an intent line, the seconds since the newest progress event that moved its items (pre-approved by the operator for the 2026-10-24 night run)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "How does the overlap map a run state to a strategy key and word the strategies' commands?",
+      "options": [
+        "claimed and working use strategy.working, returned, staging, failed and refused use strategy.returned, a state none is known uses working; wait is coord.py wait --kind progress --item ID --since 0 --timeout 600, ask targets the other item id, join and proceed are words",
+        "only working, landing, blocked and returned map, any other state or none is left to strategy.decide"
+      ],
+      "recommendation": "claimed and working use strategy.working, returned, staging, failed and refused use strategy.returned, a state none is known uses working; wait is coord.py wait --kind progress --item ID --since 0 --timeout 600, ask targets the other item id, join and proceed are words",
+      "do": {
+        "claimed and working use strategy.working, returned, staging, failed and refused use strategy.returned, a state none is known uses working; wait is coord.py wait --kind progress --item ID --since 0 --timeout 600, ask targets the other item id, join and proceed are words": "ST-56yln2to",
+        "only working, landing, blocked and returned map, any other state or none is left to strategy.decide": "ST-56yln2to"
+      },
+      "class": "agents-rule",
+      "answer": "claimed and working use strategy.working, returned, staging, failed and refused use strategy.returned, a state none is known uses working; wait is coord.py wait --kind progress --item ID --since 0 --timeout 600, ask targets the other item id, join and proceed are words (pre-approved by the operator for the 2026-10-24 night run)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "notes": "Premise (run 2026-10-24 on the main branch at 5b032a3f5): all four checks fail today. At SessionStart the second session's message holds only the INTRO line (an intent carries no touch field, so two items that share a file do not meet); an Edit event prints nothing; a claim of an item whose file the working session also lists prints nothing; with strategy.decide claude the line still says the operator decides. Plan: check 2 replaces the earlier single check, which ran in the real clone whose settings leave announce.when at start and claim, so edit never fired; it now plants a temp workspace with a settings.json naming edit and reads the same goal clause. kbsettings defaults stay (start, claim): midrun and edit are opt-in. Design the checks pin: the workspace is the git top-level of the event's cwd (its settings.json, its item_dir, default _backlog); an item file gives the title and touches; the other session's label is mon_view.session_label of its id and its operator id comes from its intent's operator field; the hook state file keeps what was shown, so each overlap shows once; the coordinate-less strategy line is advice only. Protected paths .claude/hooks/coord_hook.py and .claude/settings.json go through staging copies and stage-back; settings.json gains a PreToolUse matcher for Edit and Write (kb/public/claude/hooks.md:203-204). Docs: coordination.md, monitoring.md, tools.md, maintaining.md, token-efficiency.md are in touches as the docs map asks. Sprint SP-ky7xz6d2 started 2026-10-24 on the operator's standing approval for the night run.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
