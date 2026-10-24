@@ -2,7 +2,7 @@
   "id": "BG-np2p76e6",
   "kind": "bug",
   "title": "The coord hook prints the shared files and item ids of an overlap without redact, so an email address in a touch field reaches the operator and Claude",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
   "sprint": "SP-3i7hcb6i",
   "priority": "P2",
@@ -28,6 +28,6 @@
   "links": [
     "parked: SP-ky7xz6d2 review"
   ],
-  "notes": "Plan 2026-10-24 (day run): repro fails on base (exit 0 | overlap shown True | address in the output True). Redact the whole overlap text (the shared files, the item ids, the operator id and the lines the strategy adds) once, before it is printed, the way shown_title and the ask text are; a plain path and an item id must come through unchanged. Planned into SP-3i7hcb6i on 2026-10-24.",
+  "notes": "Plan 2026-10-24 (day run): repro fails on base (exit 0 | overlap shown True | address in the output True). Redact the whole overlap text (the shared files, the item ids, the operator id and the lines the strategy adds) once, before it is printed, the way shown_title and the ask text are; a plain path and an item id must come through unchanged. Planned into SP-3i7hcb6i on 2026-10-24. Sprint started 2026-10-24.",
   "filed_in": "clone-0ea70e5c"
 }
