@@ -18,5 +18,13 @@
     "_tools/kbcommon.py",
     "_tools/test_leaks.py"
   ],
+  "relates_to": [
+    "BG-w4af2tix",
+    "BG-nx6jzvop"
+  ],
+  "links": [
+    "parked: SP-jopt2c3z review"
+  ],
+  "notes": "SP-jopt2c3z review (S3, other): the path lookahead of BG-nx6jzvop caps a segment at 16 characters, so the label quoted directly before kb/public/Intune/ConfigurationProfiles.md is flagged, which BG-7mxo4k6p's rule let pass. Only the label-then-path text is affected; the tracked-file scan passes today. The worker's extended test_leaks.py case covers the two named paths. Note: the sprint's planted check for BG-nx6jzvop put 'the ' before its path, so its negative half never reached the path rule; this bug's repro puts the path directly after the label.",
   "filed_in": "clone-0ea70e5c"
 }
