@@ -1,0 +1,14 @@
+{
+  "id": "EP-iowijan3",
+  "kind": "epic",
+  "title": "Fixes the telemetry shows (2026-10-24 analysis)",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The failures and waste of the last week's telemetry are fixed at their cause: a gate that holds the host lock for minutes, a delivery that one entry stops, a panel that times out, refusals that every worker retries and ops rows that are not real",
+  "relates_to": [
+    "EP-6iiony54"
+  ],
+  "notes": "From the 2026-10-24 telemetry and query-log analysis: window 2026-10-17 to 24 (the ops store holds 74k rows since 10-16): call.tool 55k (3.3k errors), land.step 8.9k, land.end 800, sync.gate 2,746, test.run 2,350, done.refused 64, census.phase 2,336, permission.request 82 (11 denied), ci.pipeline 950; 347 session transcripts (31k tool calls, 1.5k failed Bash); the coord event log (2,483 events); 1,361 query-log prompt entries. Seen and not proposed (no cause shown, or by design): done.refused polling by review items, the census retry burst of 10-22 (the refusal text is not in the telemetry), git index.lock collisions in 5 worker worktrees, transient publickey refusals on 7 land fetches, 804 of 1,000 tests.py -k runs selecting nothing (planted repro runs that must fail). Already filed: ST-m6pyyyw6 (cost of distilled sessions has no sprint), ST-yh5ivly4 (merge request stuck in preparing), BG-i6vjrbng (lane label of a code item's first land.end), BG-jc53l3qa (redact note). Not filed, for the operator: a policy flag for runner and manager sessions that poll at 230-470k tokens of context (the 4 Opus managers read 1.28G of 4.7G cache tokens; kbmon's sessions panel reads no per-request token figure today, so the source of the figure and the handover size are open); and a reason token on the 16 of 29 failed sync.gate rows that name no failing check.",
+  "filed_in": "clone-0ea70e5c"
+}
