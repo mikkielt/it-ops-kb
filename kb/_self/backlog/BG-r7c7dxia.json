@@ -35,7 +35,11 @@
         "split every token at hyphen and underscore": "BG-r7c7dxia",
         "match only source-id shapes inside tokens": "BG-r7c7dxia"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "split every token at hyphen and underscore",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
