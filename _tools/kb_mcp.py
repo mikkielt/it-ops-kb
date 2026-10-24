@@ -1314,7 +1314,7 @@ def bash_denied(command_line):
             continue
         try:
             settings = json.loads(path.read_text(encoding="utf-8"))
-            rules = (settings.get("permissions") or {}).get("deny", [])
+            rules = settings.get("permissions", {}).get("deny", [])
         except (OSError, ValueError, AttributeError):
             return f"{name} (unreadable)"
         for rule in rules if isinstance(rules, list) else []:
