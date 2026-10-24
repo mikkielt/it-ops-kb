@@ -2,7 +2,7 @@
   "id": "ST-olagspdh",
   "kind": "story",
   "title": "coord.py wait filters by event kind and item, so an orchestrator waits for its own items' progress in one blocking command",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-nij36lt7",
   "sprint": "SP-47w4ngr6",
   "priority": "P2",
@@ -100,6 +100,37 @@
   ],
   "notes": "Premise: coord.py wait --since 0 --timeout 0 --kind progress --item ST-00000000 exits 2 (unrecognized arguments). Today an orchestrator waits on a worker with a background loop over its pid and reads result.json by hand (.claude/skills/kb-sprint/SKILL.md:48); this filter is the one wait verb the operator chose, used from a background command or a Monitor watch. The kb-sprint run step and the plugin copy are rewritten to it in a later story, once ST-3ru7f4to and ST-oazktatz post the events. Planned 2026-10-24 (SP-47w4ngr6): premise reproduces on base (check 0: wait --kind exits 2, unrecognized arguments). Check 0 now posts state=returned where it posted state=done: ST-yrilvcbx, which this story depends on, widens the progress states and the choice about done is the worker's there, so a check on the wait filter must not depend on it (same clause, same assertions). Checks 1 and 2 added: 1 reads a comma-separated IDS list, kind alone, item alone, and last as the newest sequence scanned (a wait that scanned only filtered-out events reports last = that sequence, timed_out true); 2 reads the coord_wait tool (schema lists kind and item; the kb_mcp handler returns only the matching events). Docs: coord.py and kb_mcp.py map to coordination.md, monitoring.md, tools.md, plugin.md, token-efficiency.md and embedding.md (selfdoc map); they are in touches so the code commit carries them. Planned in SP-47w4ngr6 on 2026-10-24. Sprint SP-47w4ngr6 started 2026-10-24.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "5efeb10aa6fd0f1e7d9308949a218aea9dea428e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, tempfile, os, sys, json, time\nS = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\ndef c(*a): return subprocess.run([sys.executable, '_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nA, B = 'ST-aaaaaaaa', 'ST-bbbbbbbb'\nc('post', '--kind', 'progress', '--field', 'item=' + A, '--field', 'state=working')\nc('post', '--kind', 'progress', '--field', 'item=' + B, '--field', 'state=working')\nc('post', '--kind', 'intent', '--field', 'item=' + A)\nnow = c('wait', '--since', '0', '--timeout', '0', '--kind', 'progress', '--item', A)\ntry:\n    got = json.loads(now.stdout)\nexcept ValueError:\n    got = {'events': [], 'last': 0}\nlisted = [(e['kind'], e['fields'].get('item')) for e in got['events']]\nw = subprocess.Popen([sys.executable, '_tools/coord.py', '--store', S, 'wait', '--since', str(got.get('last', 0)),\n                      '--timeout', '30', '--kind', 'progress', '--item', A], stdout=subprocess.PIPE, text=True)\ntime.sleep(1)\nc('post', '--kind', 'progress', '--field', 'item=' + B, '--field', 'state=returned')\ntime.sleep(1)\nearly = w.poll()\nc('post', '--kind', 'progress', '--field', 'item=' + A, '--field', 'state=returned')\ntry:\n    out, _ = w.communicate(timeout=20)\n    woke = [(e['kind'], e['fields'].get('item'), e['fields'].get('state')) for e in json.loads(out)['events']]\nexcept (ValueError, subprocess.TimeoutExpired):\n    w.kill(); woke = []\nok = now.returncode == 0 and listed == [('progress', A)] and early is None and woke == [('progress', A, 'returned')]\nprint('listed', listed, 'woke early', early, 'woke on', woke)\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "db4f7d5a4f54a449"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, tempfile, os, sys, json\nS = os.path.join(tempfile.mkdtemp(), \"c.sqlite\")\ndef c(*a): return subprocess.run([sys.executable, \"_tools/coord.py\", \"--store\", S, *a], capture_output=True, text=True)\nA, B, C = \"ST-aaaaaaaa\", \"ST-bbbbbbbb\", \"ST-cccccccc\"\nfor item in (A, B, C):\n    c(\"post\", \"--kind\", \"progress\", \"--field\", \"item=\" + item, \"--field\", \"state=working\")\nc(\"post\", \"--kind\", \"intent\", \"--field\", \"item=\" + A); c(\"post\", \"--kind\", \"intent\", \"--field\", \"item=\" + B)\ndef w(since, *f):\n    r = c(\"wait\", \"--since\", str(since), \"--timeout\", \"0\", *f)\n    try:\n        j = json.loads(r.stdout)\n    except ValueError:\n        j = {\"events\": [], \"last\": None, \"timed_out\": None}\n    return r.returncode, [(e[\"kind\"], e[\"fields\"].get(\"item\")) for e in j[\"events\"]], j.get(\"last\"), j.get(\"timed_out\")\nboth = w(0, \"--kind\", \"progress\", \"--item\", A + \",\" + B)\nkind = w(0, \"--kind\", \"progress\")\nitem = w(0, \"--item\", A)\nnone = w(5, \"--kind\", \"progress\", \"--item\", A + \",\" + B)\nc(\"post\", \"--kind\", \"progress\", \"--field\", \"item=\" + C, \"--field\", \"state=returned\")\nscanned = w(5, \"--kind\", \"progress\", \"--item\", A)\nok = (both == (0, [(\"progress\", A), (\"progress\", B)], 5, False) and kind[1] == [(\"progress\", x) for x in (A, B, C)]\n      and item[1] == [(\"progress\", A), (\"intent\", A)] and none == (0, [], 5, True) and scanned == (0, [], 6, True))\nprint(\"A,B\", both, \"| kind only\", kind[1], \"| item only\", item[1], \"| none new\", none, \"| only filtered out\", scanned)\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "d8ccd17c05ca66c5"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, tempfile, os, sys, json\nS = os.path.join(tempfile.mkdtemp(), \"c.sqlite\")\ndef c(*a): return subprocess.run([sys.executable, \"_tools/coord.py\", \"--store\", S, *a], capture_output=True, text=True)\nA, B = \"ST-aaaaaaaa\", \"ST-bbbbbbbb\"\nc(\"post\", \"--kind\", \"progress\", \"--field\", \"item=\" + A, \"--field\", \"state=working\")\nc(\"post\", \"--kind\", \"progress\", \"--field\", \"item=\" + B, \"--field\", \"state=working\")\nc(\"post\", \"--kind\", \"intent\", \"--field\", \"item=\" + A)\nsys.path.insert(0, \"_tools\"); os.environ[\"KB_COORD_STORE\"] = S\nimport kb_mcp\ntool = next(t for t in kb_mcp.COORD_TOOL_LIST if t[\"name\"] == \"coord_wait\")\nprops = tool[\"inputSchema\"][\"properties\"]\ntry:\n    got = json.loads(kb_mcp.COORD_HANDLERS[\"coord_wait\"]({\"since\": 0, \"timeout\": 0, \"kind\": \"progress\", \"item\": A}))\n    listed = [(e[\"kind\"], e[\"fields\"].get(\"item\")) for e in got[\"events\"]]\nexcept (kb_mcp.ToolError, ValueError, KeyError):\n    listed = None\nok = \"kind\" in props and \"item\" in props and listed == [(\"progress\", A)]\nprint(\"tool takes kind and item\", \"kind\" in props and \"item\" in props, \"| tool returned\", listed)\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "1b519f75dad9e415"
+      }
+    ]
+  }
 }
