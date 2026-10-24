@@ -22,5 +22,9 @@
     "kb/public/_anchors.csv",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "links": [
+    "parked: SP-r7e7jcep review"
+  ],
+  "notes": "Review finding S3 (fresh-context reviewer, 2026-10-24): otel-collector-otlp-pipeline.md lines 77 and 80 cite S-fsi2wdg7 (all-in-one.yaml at v2.22.0) under a DOC tag; the docs page alone does not say the bundled config sets max_traces 100000 or writes localhost. Premise: the check fails on main now (lines 77 and 80).",
   "filed_in": "clone-0ea70e5c"
 }
