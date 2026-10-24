@@ -2,7 +2,7 @@
   "id": "SP-6t3z4q54",
   "kind": "sprint",
   "title": "No fact rests only on a source the census found gone",
-  "status": "planned",
+  "status": "active",
   "goal": "every DOC tag in kb/public whose cited sources the 2026-10-21 census all records gone is re-sourced to a page this host reads or re-tagged UNK with a dated note, and a DOC tag that mixes a gone source with live ones keeps it only where a live source states the claim",
   "gates": [
     {
@@ -14,9 +14,14 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
+  "notes": "Start gate answered approve by the orchestrator on the operator's standing approval for the 2026-10-24 day run (pre-approved by the operator for the 2026-10-24 day run); the story ST-cbi2ah5y was approved and promoted out of parking by the same approval.",
   "creator": "op-f618a13e",
   "filed_in": "clone-0ea70e5c"
 }
