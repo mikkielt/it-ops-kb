@@ -2,7 +2,8 @@
   "id": "BG-56mb4uhs",
   "kind": "bug",
   "title": "kbwho --otel-attributes keeps an email in OTEL_SERVICE_NAME and in an OTEL_RESOURCE_ATTRIBUTES key",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-ymnz7b4n",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -17,9 +18,12 @@
   "touches": [
     "_tools/kbwho.py",
     "otel/kbmon_otel.py",
-    "kb/_self/monitoring.md"
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md",
+    "kb/_self/design.md"
   ],
   "links": [
     "parked: SP-yjugq5c2 review"
-  ]
+  ],
+  "notes": "Planned into SP-ymnz7b4n, 2026-10-24 day run. Precheck: repro fails on the base."
 }
