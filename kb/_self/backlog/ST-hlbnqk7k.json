@@ -54,6 +54,9 @@
     "kb/_self/monitoring.md",
     "kb/_self/backlog.md"
   ],
+  "depends_on": [
+    "ST-fblg3yso"
+  ],
   "relates_to": [
     "EP-nij36lt7"
   ],
