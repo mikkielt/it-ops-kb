@@ -33,9 +33,31 @@
   "depends_on": [
     "ST-ux3lubfw"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does a resumed run write the session's JSON and stderr: over result.json and stderr.log of the last dispatch, or to files of their own?",
+      "options": [
+        "overwrite result.json and stderr.log",
+        "write resume-result.json and resume-stderr.log beside them"
+      ],
+      "recommendation": "overwrite result.json and stderr.log",
+      "do": {
+        "overwrite result.json and stderr.log": "ST-po3pgvrj",
+        "write resume-result.json and resume-stderr.log beside them": "ST-po3pgvrj"
+      },
+      "class": "agents-rule",
+      "answer": "overwrite result.json and stderr.log",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-hja7yu5k close",
-    "planned: SP-dx76osrn started 2026-10-24"
+    "planned: SP-dx76osrn started 2026-10-24",
+    "gate g1 answered overwrite result.json (recommendation) by the runner, pre-approved by the operator for the 2026-10-24 day run"
   ],
   "notes": "Retrospective of SP-hja7yu5k: ST-fb7nlvke's landing stopped at checks, the orchestrator resumed the worker with a hand-built claude -p --resume (env KB_ROLE and KB_OPERATOR, caps, detached Popen) and moved the run key with coord.py transition (refused to working, then returned) because only dispatch moves it. The check only reads the help text for the flag: a planned item adds a planted run with a stub claude. Planning 2026-10-24: premise ran on today's base: the help-text check and the added planted check (a stub claude on PATH; dispatch --resume ID --message FILE) both fail (--resume unrecognized). Plan: dispatch --resume reads the session of the last dispatch (worker_session of the claims ledger, else result.json in the scratch directory), runs claude -p --resume SESSION in the item's worktree with the message file on stdin, the worker env (KB_ROLE worker, KB_OPERATOR) and the same caps, moves the key to working and then returned or failed, and works with --detach. kb-sprint skill text (skills/sprint/SKILL.md, shown as .claude/skills/kb-sprint/SKILL.md, protected: staging copy and stage-back) tells the orchestrator to resume with dispatch --resume instead of a hand-built claude -p --resume. The stub in the check also answers 'claude auth status', which dispatch calls for the operator id. Correction: skills/sprint/SKILL.md is the real file (.claude/skills/kb-sprint/SKILL.md is a link to it), so its change needs no staging copy. Planned into SP-dx76osrn on 2026-10-24, last in the order.",
   "filed_in": "clone-0ea70e5c",

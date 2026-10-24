@@ -13,6 +13,9 @@ record, runs `selfdoc.py check`, the docs `selfdoc.py stale --since HEAD` lists 
 the copies alone with `KB-Work`; `--check` runs the docs check only and puts the worktree back as it was, and the
 brief's staging part names it, so a worker's report states its `problems=` count for what it staged.
 
+`backlog.py dispatch --resume ID --message FILE` sends the worker session of the item's last dispatch back with the text of
+FILE (`claude -p --resume`, in the item's worktree, the same environment and caps) and moves the run state as a dispatch does.
+
 The brief is the item's JSON and goal text, its external tracker ids with their urls, the worker's role file, its
 worktree and scratch directory, the in-flight sibling items with the files their touches change, the known failing
 tests and whole-suite failures that are no test the orchestrator names, the fixed worker rules and the rules of the project's own docs (`rules_section`, the
@@ -55,6 +58,7 @@ PLUGIN_ROLE_FILE = "agents/worker.md"  # the plugin's, under PLUGIN_ROOT (the di
 BRIEF_NAME = "brief.md"
 RESULT_NAME = "result.json"  # the session's --output-format json output
 STDERR_NAME = "stderr.log"
+RESUME_MESSAGE_NAME = "resume-message.md"  # `--resume --detach`: the message file as it was when the detached resume started
 DETACH_LOG_NAME = "dispatch.log"  # `--detach`: what the detached dispatch prints (the pid line, the exit line, a refusal)
 STAGING = "staging"  # under the scratch directory: copies of the `.claude/` files the item's touches name
 BASES_NAME = "staging-bases.json"  # beside it: the digest of each worktree file when its copy was made (stage-back)
@@ -621,15 +625,16 @@ def budget_line(budget):
             f"--max-turns (set it with {BUDGET_FLAG} USD or {BUDGET_ENV})")
 
 
-def claude_argv(bl, iid, model=None, turns=None, budget=None):
+def claude_argv(bl, iid, model=None, turns=None, budget=None, resume=None):
     """The headless session's argument list: the brief goes on stdin, never as a trailing prompt argument, which
     `--add-dir` swallows (it takes several paths: the scratch directory and, for an item with required repositories,
     the directory of their worktrees), and the plugin root when the brief names the plugin's role file (`role_file_line`:
-    the project has none), which the session could not read else. BUDGET (`budget_usd`) adds the spend cap."""
+    the project has none), which the session could not read else. BUDGET (`budget_usd`) adds the spend cap; RESUME, a
+    session id, makes the run `claude -p --resume RESUME` (the message goes on stdin in place of the brief)."""
     dirs = [scratch_path(bl.root, iid)] + ([repos_dir(bl.root, iid)] if repo_checkouts(bl, iid) else [])
     if not (Path(bl.root) / ROLE_FILE).is_file():
         dirs.append(PLUGIN_ROOT)
-    return ["claude", "-p", "--model", model or DEFAULT_MODEL, "--effort", EFFORT, "--output-format", "json",
+    return ["claude", "-p", *(["--resume", resume] if resume else []), "--model", model or DEFAULT_MODEL, "--effort", EFFORT, "--output-format", "json",
             "--add-dir", *map(str, dirs), "--max-turns", str(turns or max_turns(bl, iid)),
             *([BUDGET_FLAG, budget] if budget else [])]
 
@@ -942,9 +947,11 @@ def cmd_brief(bl, a):
     return 0
 
 
-def detached_argv(bl, a):
-    """The argument list that runs this dispatch again without `--detach`, with the same flags."""
-    argv = [sys.executable, "-u", str(Path(__file__).with_name("backlog.py")), "--root", str(bl.root), "dispatch", a.id]
+def detached_argv(bl, a, message=None):
+    """The argument list that runs this dispatch again without `--detach`, with the same flags; a `--resume` one names
+    the MESSAGE file it reads (the copy in the scratch directory)."""
+    argv = [sys.executable, "-u", str(Path(__file__).with_name("backlog.py")), "--root", str(bl.root), "dispatch"]
+    argv += ["--resume", a.resume, "--message", str(message)] if a.resume else [a.id]
     if a.model:
         argv += ["--model", a.model]
     if a.max_turns:
@@ -962,20 +969,138 @@ def detached_argv(bl, a):
 def start_detached(bl, a, iid, scratch):
     """Start this dispatch as a process of its own: a new session, stdin closed, what it prints in `DETACH_LOG_NAME`
     of the scratch directory. It makes the worktree, runs the worker and ends once the worker has exited and its
-    leftovers are ended, so its pid is the one to wait on; this call prints the pid and the log and returns."""
+    leftovers are ended, so its pid is the one to wait on; this call prints the pid and the log and returns. A resume
+    keeps its message file as it is now in the scratch directory (`RESUME_MESSAGE_NAME`), so the orchestrator may remove
+    its own."""
     scratch.mkdir(parents=True, exist_ok=True)
     log = scratch / DETACH_LOG_NAME
+    message = None
+    if a.resume:
+        message = scratch / RESUME_MESSAGE_NAME
+        write_text(message, Path(a.message).read_text(encoding="utf-8"))
     where = ({"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS}
              if sys.platform == "win32" else {"start_new_session": True})
     with open(log, "w", encoding="utf-8", newline="\n") as out:
-        proc = subprocess.Popen(detached_argv(bl, a), cwd=str(bl.root), stdin=subprocess.DEVNULL, stdout=out,
+        proc = subprocess.Popen(detached_argv(bl, a, message), cwd=str(bl.root), stdin=subprocess.DEVNULL, stdout=out,
                                 stderr=subprocess.STDOUT, **where)
     say(f"dispatching {bl.label(iid)} detached: pid {proc.pid}, log {log} (its last line, `worker of {iid} exited`, "
         f"ends it; the session's JSON is in {scratch / RESULT_NAME}); wait for the pid to end")
     return 0
 
 
+def run_worker(bl, iid, argv, wt, stdin_path, scratch, started, source):
+    """Run the headless session ARGV in the worktree WT with the file STDIN_PATH on stdin and the session's JSON and
+    stderr in SCRATCH, and move the item's run state: `working` first, then, once the session has exited and the
+    processes it left in the worktrees are ended, `returned` (exit 0 and no `is_error` result; `gates` the open
+    gates of the item file) or `failed`. Records the session's pid and, when its JSON names one, its session id on the
+    item's claim. STARTED (`dispatched`, `resumed`) and SOURCE (`brief PATH`, `message PATH`) are what the first line says. The exit code: 1 when the run failed."""
+    it = bl.items[iid]
+    oid, _ = operator_who()
+    result, errlog = scratch / RESULT_NAME, scratch / STDERR_NAME
+    with open(stdin_path, encoding="utf-8") as stdin, open(result, "w", encoding="utf-8", newline="\n") as out, \
+            open(errlog, "w", encoding="utf-8", newline="\n") as err:
+        bl_items.move_run(iid, "working", "dispatch")  # first: the worker span's ids come from this move
+        traceparent = worker_traceparent(iid, it.get("sprint"))
+        try:
+            proc = subprocess.Popen(argv, cwd=str(wt), stdin=stdin, stdout=out, stderr=err,
+                                    env=worker_env(oid, iid, it.get("sprint"), traceparent))
+        except OSError:
+            bl_items.move_run(iid, "failed", "dispatch")
+            raise
+        record_worker(bl.root, iid, worker_pid=proc.pid, role=WORKER_ROLE, **({"operator": oid} if oid else {}))
+        own_made(bl, iid, "process", proc.pid)
+        say(f"{started} {bl.label(iid)}: pid {proc.pid}, {source}, output {result}")
+        sys.stdout.flush()
+        code = proc.wait()
+    for where in [wt] + [repo_worktree_path(bl.root, iid, n) for n, _ in repo_checkouts(bl, iid)]:
+        for pid, comm in bl_procs.end_orphans(where):
+            say(f"ended pid {pid} ({comm}), left running in {where.name} by the worker's session")
+    session, failed = None, code != 0
+    try:
+        data = json.loads(result.read_text(encoding="utf-8"))
+        session = data.get("session_id") if isinstance(data, dict) else None
+        failed = failed or bool(isinstance(data, dict) and data.get("is_error"))
+    except (OSError, ValueError):
+        failed = True
+    if session:
+        record_worker(bl.root, iid, worker_session=session)
+    gates = bl_items.open_gate_ids(bl, iid) if not failed else ""
+    bl_items.move_run(iid, "failed" if failed else "returned", "dispatch", exit=code, **({"gates": gates} if gates else {}))
+    say(f"worker of {iid} exited {code}: session {session or 'unknown'} (send it back with `backlog.py dispatch --resume "
+        f"{iid} --message FILE`), output {result}, stderr {errlog}")
+    say(rows_line(bl.root, iid, session))
+    return 1 if failed else 0
+
+
+def last_session(root, iid, scratch):
+    """The session id of the item's last dispatch: the `worker_session` of its record in the claims ledger, else the
+    `session_id` of the session's JSON (`RESULT_NAME`) in SCRATCH; Refused when neither names one."""
+    try:
+        rec = json.loads(ledger_path(root).read_text(encoding="utf-8")).get(iid)
+    except (OSError, ValueError, AttributeError, Refused):
+        rec = None
+    if isinstance(rec, dict) and rec.get("worker_session"):
+        return str(rec["worker_session"])
+    try:
+        data = json.loads((scratch / RESULT_NAME).read_text(encoding="utf-8"))
+        if isinstance(data, dict) and data.get("session_id"):
+            return str(data["session_id"])
+    except (OSError, ValueError):
+        pass
+    raise Refused(f"no session to resume for {iid}: its claim records no worker session and {scratch / RESULT_NAME} "
+                  "holds none; dispatch it first")
+
+
+def cmd_resume(bl, a):
+    """`dispatch --resume ID --message FILE`: send the worker session of the item's last dispatch back with the text
+    of FILE as its next prompt (`claude -p --resume SESSION`, the worker's environment, caps and worktree, as
+    `cmd_dispatch` starts a session), and move the run state as dispatch does."""
+    iid = need(bl, a.resume)
+    if a.id and a.id != iid:
+        raise Rejected(f"dispatch: --resume {a.resume} and the item {a.id} differ")
+    if a.known or a.known_suite or a.probe:
+        raise Rejected("dispatch: --known, --known-suite and --probe belong to a new brief, which --resume does not write")
+    if not a.message:
+        raise Rejected("dispatch: --resume needs --message FILE, the text the worker is sent back with")
+    message = Path(a.message)
+    if not message.is_file():
+        raise Rejected(f"dispatch: --message {message} is not a file")
+    turns = a.max_turns or max_turns(bl, iid)
+    wt, scratch = worktree_path(bl.root, iid), scratch_path(bl.root, iid)
+    if not wt.is_dir():
+        raise Refused(f"{bl.label(iid)} has no worktree at {wt}: dispatch it first")
+    session = last_session(bl.root, iid, scratch)
+    argv = claude_argv(bl, iid, a.model, turns, budget_usd(a.max_budget_usd), resume=session)
+    if a.dry_run:
+        say(f"dispatch --resume {bl.label(iid)} (dry run: nothing written or started)")
+        say(f"session: {session}")
+        say(f"message: {message} (stdin)")
+        say(f"cwd: {wt}")
+        say("argv: " + shlex.join(argv))
+        return 0
+    if (status := bl.items[iid].get("status")) != "doing":
+        raise Refused(f"{bl.label(iid)} is {status}, not doing: only a claimed item's worker is sent back")
+    if shutil.which(argv[0]) is None:
+        raise Rejected(f"dispatch: {argv[0]} is not on PATH")
+    try:
+        pid = json.loads(ledger_path(bl.root).read_text(encoding="utf-8"))[iid].get("worker_pid")
+    except (OSError, ValueError, KeyError, AttributeError, Refused):
+        pid = None
+    if isinstance(pid, int) and bl_procs.alive(pid):
+        raise Refused(f"the worker of {iid} still runs (pid {pid}): wait for it, or steer it with an ask")
+    say(budget_line(budget_usd(a.max_budget_usd)))
+    if a.detach:
+        return start_detached(bl, a, iid, scratch)
+    return run_worker(bl, iid, argv, wt, message, scratch, "resumed", f"message {message}")
+
+
 def cmd_dispatch(bl, a):
+    if a.resume:
+        return cmd_resume(bl, a)
+    if not a.id:
+        raise Rejected("dispatch: give the item id, or --resume ID --message FILE")
+    if a.message:
+        raise Rejected("dispatch: --message belongs to --resume")
     iid = need(bl, a.id)
     it = bl.items[iid]
     turns = a.max_turns or max_turns(bl, iid)
@@ -1006,7 +1131,6 @@ def cmd_dispatch(bl, a):
     if a.detach:
         return start_detached(bl, a, iid, scratch)
     text = compose_brief(bl, iid, a.known, a.probe, turns, a.known_suite, budget)
-    oid, _ = operator_who()
     defaults = repo_defaults(bl, iid)  # a repository whose fetch fails refuses the dispatch before anything is made
     make_worktree(bl.root, iid, wt)
     for n, co in repo_checkouts(bl, iid):
@@ -1017,40 +1141,7 @@ def cmd_dispatch(bl, a):
     own_made(bl, iid, "scratch", scratch)
     stage_copies(bl, iid, wt)
     write_text(brief, text)  # the worker needs the paths as they are: no name guard
-    result, errlog = scratch / RESULT_NAME, scratch / STDERR_NAME
-    with open(brief, encoding="utf-8") as stdin, open(result, "w", encoding="utf-8", newline="\n") as out, \
-            open(errlog, "w", encoding="utf-8", newline="\n") as err:
-        bl_items.move_run(iid, "working", "dispatch")  # first: the worker span's ids come from this move
-        traceparent = worker_traceparent(iid, it.get("sprint"))
-        try:
-            proc = subprocess.Popen(argv, cwd=str(wt), stdin=stdin, stdout=out, stderr=err,
-                                    env=worker_env(oid, iid, it.get("sprint"), traceparent))
-        except OSError:
-            bl_items.move_run(iid, "failed", "dispatch")
-            raise
-        record_worker(bl.root, iid, worker_pid=proc.pid, role=WORKER_ROLE, **({"operator": oid} if oid else {}))
-        own_made(bl, iid, "process", proc.pid)
-        say(f"dispatched {bl.label(iid)}: pid {proc.pid}, brief {brief}, output {result}")
-        sys.stdout.flush()
-        code = proc.wait()
-    for where in [wt] + [repo_worktree_path(bl.root, iid, n) for n, _ in repo_checkouts(bl, iid)]:
-        for pid, comm in bl_procs.end_orphans(where):
-            say(f"ended pid {pid} ({comm}), left running in {where.name} by the worker's session")
-    session, failed = None, code != 0
-    try:
-        data = json.loads(result.read_text(encoding="utf-8"))
-        session = data.get("session_id") if isinstance(data, dict) else None
-        failed = failed or bool(isinstance(data, dict) and data.get("is_error"))
-    except (OSError, ValueError):
-        failed = True
-    if session:
-        record_worker(bl.root, iid, worker_session=session)
-    gates = bl_items.open_gate_ids(bl, iid) if not failed else ""
-    bl_items.move_run(iid, "failed" if failed else "returned", "dispatch", exit=code, **({"gates": gates} if gates else {}))
-    say(f"worker of {iid} exited {code}: session {session or 'unknown'} (resume it with `claude -p --resume "
-        f"<session>`), output {result}, stderr {errlog}")
-    say(rows_line(bl.root, iid, session))
-    return 1 if failed else 0
+    return run_worker(bl, iid, argv, wt, brief, scratch, "dispatched", f"brief {brief}")
 
 
 def other_spools(read):
@@ -1115,8 +1206,8 @@ def rows_line(root, iid, session):
         return f"rows of {iid}: not searched ({type(e).__name__}: {e})"
 
 
-def args_brief(p):
-    p.add_argument("id")
+def args_brief(p, optional_id=False):
+    p.add_argument("id", **({"nargs": "?"} if optional_id else {}))
     p.add_argument("--known", action="append", default=[], metavar="TEST=BUG",
                    help="a test known to fail on this host and the bug filed for it (repeatable)")
     p.add_argument("--known-suite", action="append", default=[], metavar="TEXT=BUG",
@@ -1128,12 +1219,16 @@ def args_brief(p):
 
 
 def args_dispatch(p):
-    args_brief(p)
+    args_brief(p, optional_id=True)
+    p.add_argument("--resume", metavar="ID", help="instead of a new brief, send the worker session of the item's last "
+                   "dispatch back (claude -p --resume) with the text of --message on stdin, in the item's worktree, with "
+                   "the worker's environment and caps; the run state moves to working, then returned or failed")
+    p.add_argument("--message", metavar="FILE", help="with --resume: the file whose text is the worker's next prompt")
     p.add_argument("--dry-run", action="store_true",
                    help="print the worktree, scratch, brief path and argv; make, write and start nothing")
     p.add_argument("--detach", action="store_true",
                    help=f"run the dispatch in a new session with stdin closed and its output in SCRATCH/{DETACH_LOG_NAME}; "
-                        "print its pid and the log and return at once: wait on the pid")
+                        "print its pid and the log and return at once: wait on the pid (with --resume too)")
     p.add_argument("--model", metavar="NAME", help=f"another model than {DEFAULT_MODEL}, only when the operator asks")
     p.add_argument("--max-turns", type=int, metavar="N", help="instead of the cap of the item's kind")
 
