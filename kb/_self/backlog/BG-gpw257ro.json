@@ -1,0 +1,22 @@
+{
+  "id": "BG-gpw257ro",
+  "kind": "bug",
+  "title": "kbmon's Needs-you disk line shows a share just under 10% as 10%, where the host alert shows it as 9.99%",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "mon_needs.disk_entries rounds a free share just under 10% down to two decimals, as mon_host.alerts does, so the line never says 10% for a share under 10%",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\nsys.path.insert(0, \"_tools\")\nimport mon_needs as m\nrows = m.disk_entries({\"disk\": {\"free_pct\": 10.0, \"free_bytes\": 99996, \"total_bytes\": 1000000}})\ntext = rows[0][\"text\"] if rows else \"\"\nprint(text)\nsys.exit(0 if text == \"disk 9.99% free\" else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/mon_needs.py",
+    "kb/_self/monitoring.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
