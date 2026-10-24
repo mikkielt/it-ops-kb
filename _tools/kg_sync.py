@@ -735,7 +735,7 @@ def gate(r, up, host, fix_check=False, since=None):
                ("backlog.py selectors", "backlog.py", ["selectors"], None, need["selectors"]),
                ("querylog.py check", "querylog.py", ["check"], None, need["querylog"]),
                ("benchmarks.py pool check", "benchmarks.py", ["pool", "check"], None, need["pool"])]
-    base_rev = since or ((git("merge-base", up, "HEAD") or "").strip() if up else None)  # what the pool check is judged against
+    base_rev = (git("merge-base", up, "HEAD") or "").strip() if up else None  # what the pool check is judged against, on a retry too
     heldout = heldout_checks(paths)
     for rel, why in heldout or [(None, None)]:  # --min 1: a held-out row that fails to answer is the measurement, not a refusal
         checks.append((f"rag.py eval --file {rel}" if rel else "rag.py eval (held-out reword check)", "rag.py",
