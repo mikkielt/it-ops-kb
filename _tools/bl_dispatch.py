@@ -36,6 +36,7 @@ from pathlib import Path
 import bl_clean
 import bl_cli
 import bl_items
+import bl_land
 import bl_procs
 from bl_base import (RESEARCH_KINDS, ROOT as PLUGIN_ROOT, Refused, Rejected, always_in_scope, canonical, claims_ledger, commit_message,
                      external_lines, git, id_re, item_repos, link_target, name_for, need, repo_branch, repositories, research_touches,
@@ -821,6 +822,10 @@ def cmd_stage_back(bl, a):
     """`stage-back ID`: copy the item's staging copies into its worker's worktree, check them there and commit them
     alone on `work/ID`, or with `--check` check them and put the worktree back as it was."""
     iid = need(bl, a.id)
+    if bl_land.run_state(iid) == "landing":
+        raise Refused(f"stage-back: the run state of {bl.label(iid)} is landing: a land is running on its branch; wait "
+                      f"for it to end (it moves the state to landed or refused), or, when it died, run "
+                      f"python3 _tools/coord.py transition run/{iid} --to refused; nothing was changed")
     wt, scratch = worktree_path(bl.root, iid), scratch_path(bl.root, iid)
     if not wt.is_dir():
         raise Refused(f"stage-back: {bl.label(iid)} has no worktree at {wt}: dispatch makes it")
@@ -842,6 +847,7 @@ def cmd_stage_back(bl, a):
             raise Refused(f"stage-back: {top} has uncommitted changes, which a copy-in must not mix with the copies:"
                           f"\n{dirty}")
     originals = {}
+    staging = bl_land.move_run(iid, "staging", "stage-back")  # land refuses the item while its copies are in
     try:
         for _, copy, target, _ in copies:
             originals[target] = target.read_bytes() if target.is_file() else None
@@ -874,6 +880,8 @@ def cmd_stage_back(bl, a):
         return 0
     finally:
         restore_originals(originals)  # a refusal or an error leaves the worktree as it was
+        if staging:
+            bl_land.move_run(iid, "returned", "stage-back")
 
 
 def cmd_brief(bl, a):
