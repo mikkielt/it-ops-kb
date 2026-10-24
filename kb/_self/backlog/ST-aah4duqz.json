@@ -2,7 +2,7 @@
   "id": "ST-aah4duqz",
   "kind": "story",
   "title": "Research sprint goal: Gates and guards hold: leak-scan regex without backtracking, noreply checks, pool check at landing, recursion guards, query-log delivery text",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-s5k72bhd",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: the sprint's items fix this repository's own tools and docs (leak and publish guards, sync gate, backlog and query-log tools, skills), so no outside source is read.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "f091bc23716632e5aa47f8522c38cad5b3b6cf04",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-aah4duqz"
+        ],
+        "exit": 0,
+        "sha256": "946c3aa7af8ceb2c"
+      }
+    ]
+  }
 }
