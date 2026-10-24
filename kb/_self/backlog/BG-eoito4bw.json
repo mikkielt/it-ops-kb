@@ -38,6 +38,23 @@
   "touches": [
     "_tools/kbtools.py"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does kbtools rank a skill, agent or MCP description that holds several words of the need, so install the commit hook ranks kb-setup first and find stale docs kb-self first without lifting a long description that names a few of the need's words (coord_post for how long landing steps take)?",
+      "options": [
+        "A description of 32 words or fewer that holds 2 or more words of the need counts its words in full; every other description keeps the 0.6 cap and length decay",
+        "Raise DESC_CAP for every description"
+      ],
+      "recommendation": "A description of 32 words or fewer that holds 2 or more words of the need counts its words in full; every other description keeps the 0.6 cap and length decay",
+      "do": {
+        "A description of 32 words or fewer that holds 2 or more words of the need counts its words in full; every other description keeps the 0.6 cap and length decay": "BG-eoito4bw",
+        "Raise DESC_CAP for every description": "BG-eoito4bw"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-uhcjxayq review"
   ],
