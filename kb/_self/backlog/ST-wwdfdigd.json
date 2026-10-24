@@ -2,7 +2,7 @@
   "id": "ST-wwdfdigd",
   "kind": "story",
   "title": "kbsettings.py init and the first-run question disagree about the default of announce.when, and kb-setup's step writes a tracked backlog.json in the kb clone",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-3i7hcb6i",
   "priority": "P2",
@@ -40,5 +40,7 @@
     "parked: SP-sucr3kfg review"
   ],
   "notes": "Found by the SP-sucr3kfg review. The offered first option for announce.when is start,claim,midrun,edit and is called the default, while kbsettings.DEFAULTS and the doc say start,claim, so a headless run that says the defaults apply writes another value. In the kb clone, kb-setup step 8 runs init, which writes hooks coord into the tracked backlog.json and leaves it dirty, though the clone's .claude/settings.json already runs the hook without the opt-in. Plan 2026-10-24 (day run): premise reproduced on base (declared default start,claim; kb-setup SKILL.md calls start,claim,midrun,edit the default; its coordination step says nothing of the kb clone). Text edits to .claude/skills/kb-setup/SKILL.md go through staging copies and stage-back. skills/sprint/SKILL.md line 43 offers start,claim,midrun,edit first: make start,claim the first (default) option there too. Keep init's behaviour as documented unless the clone needs it; the goal is satisfied by the kb-setup step saying what happens in the kb clone. Planned into SP-3i7hcb6i on 2026-10-24. Sprint started 2026-10-24.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
