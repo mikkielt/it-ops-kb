@@ -142,7 +142,9 @@
       },
       "class": "design",
       "answer": "a comma-separated list of ids (g1,g2)",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
