@@ -1,0 +1,22 @@
+{
+  "id": "BG-iwd2ovag",
+  "kind": "bug",
+  "title": "coordination.md still says the kb-observer role's command list is longer than the session's allowed tools, which the narrowed role no longer is",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/_self/coordination.md no longer claims that the kb-observer role names commands outside the session's allowed tools (kbmon.py --once, backlog.py find, rag.py, git diff and the rest): the role names only the forms kbask.ALLOWED_TOOLS admits",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\nt = open(\"kb/_self/coordination.md\", encoding=\"utf-8\").read()\nstale = \"Its command list is longer than the session\"\nprint(\"stale sentence present:\", stale in t)\nsys.exit(1 if stale in t else 0)"
+    ]
+  },
+  "repro_reason": "the stale claim is prose in the doc; the behaviour it describes (the role's command list against kbask.ALLOWED_TOOLS) is BG-5p3bfm4u's repro, which passes now",
+  "touches": [
+    "kb/_self/coordination.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
