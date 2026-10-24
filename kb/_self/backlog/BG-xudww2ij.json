@@ -2,7 +2,7 @@
   "id": "BG-xudww2ij",
   "kind": "bug",
   "title": "With announce.to_other_sessions false and one invalid key elsewhere in the coordination settings, the coord hook falls back to the defaults and posts the session's intent",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
   "sprint": "SP-yisvj7vd",
   "priority": "P2",
@@ -23,6 +23,6 @@
   "links": [
     "parked: SP-3i7hcb6i review"
   ],
-  "notes": "Review gap (S3) of SP-3i7hcb6i, found by the fresh-context reviewer: coord_hook.settings() falls back to kbsettings.DEFAULTS on a SettingsError, so a typo elsewhere in the coordination object turns announce.to_other_sessions=false (BG-fder3unh) into the default true. Repro fails on today's main (intents posted 1). Fix options for whoever takes it: read to_other_sessions alone from the layers when the whole object is invalid, or treat an unreadable settings file as not announcing. Premise run 2026-10-24 on the day-run base: repro exits 1 (1 intent posted). Protected path .claude/hooks/coord_hook.py: staging copy plus stage-back. kb/_self/maintaining.md and kb/_self/token-efficiency.md only list the hook: read them and name them in Self-Reviewed. Planned into SP-yisvj7vd, 2026-10-24.",
+  "notes": "Review gap (S3) of SP-3i7hcb6i, found by the fresh-context reviewer: coord_hook.settings() falls back to kbsettings.DEFAULTS on a SettingsError, so a typo elsewhere in the coordination object turns announce.to_other_sessions=false (BG-fder3unh) into the default true. Repro fails on today's main (intents posted 1). Fix options for whoever takes it: read to_other_sessions alone from the layers when the whole object is invalid, or treat an unreadable settings file as not announcing. Premise run 2026-10-24 on the day-run base: repro exits 1 (1 intent posted). Protected path .claude/hooks/coord_hook.py: staging copy plus stage-back. kb/_self/maintaining.md and kb/_self/token-efficiency.md only list the hook: read them and name them in Self-Reviewed. Planned into SP-yisvj7vd, 2026-10-24. Sprint started 2026-10-24.",
   "filed_in": "clone-0ea70e5c"
 }
