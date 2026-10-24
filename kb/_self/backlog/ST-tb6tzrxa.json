@@ -2,7 +2,7 @@
   "id": "ST-tb6tzrxa",
   "kind": "story",
   "title": "land and stage-back move the run state and refuse each other: land refuses an item that is staging, stage-back one that is landing",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
   "sprint": "SP-sucr3kfg",
   "priority": "P2",
@@ -71,6 +71,6 @@
       "role": "interactive"
     }
   ],
-  "notes": "Premise: with the run state planted as staging, land stops at step branch, not at a run state step, and stage-back refuses for a missing worktree without naming landing; nothing today relates the two commands (kb/_self/backlog.md:330, no lock). The case it answers: BG-3brdh3kd in SP-c7oav2vn, landed before its stage-back and then once more in parallel with it, refused at done twice. Plan 2026-10-24: premise reproduced on base (precheck: land stops at step branch, stage-back refuses for a missing worktree, neither names the run state). Second check added for the landing and refused moves with the step field. Not read by any check: stage-back's staging and back-to-returned moves, and land's landed move once verify finds the done commit (no fixture without a worktree and a main remote); implement them as the goal says, the review reads the diff. After ST-3ru7f4to (shared bl_dispatch.py) and before ST-ct2dpjgz (shared skills/sprint/SKILL.md). Planned into SP-sucr3kfg on 2026-10-24.",
+  "notes": "Premise: with the run state planted as staging, land stops at step branch, not at a run state step, and stage-back refuses for a missing worktree without naming landing; nothing today relates the two commands (kb/_self/backlog.md:330, no lock). The case it answers: BG-3brdh3kd in SP-c7oav2vn, landed before its stage-back and then once more in parallel with it, refused at done twice. Plan 2026-10-24: premise reproduced on base (precheck: land stops at step branch, stage-back refuses for a missing worktree, neither names the run state). Second check added for the landing and refused moves with the step field. Not read by any check: stage-back's staging and back-to-returned moves, and land's landed move once verify finds the done commit (no fixture without a worktree and a main remote); implement them as the goal says, the review reads the diff. After ST-3ru7f4to (shared bl_dispatch.py) and before ST-ct2dpjgz (shared skills/sprint/SKILL.md). Planned into SP-sucr3kfg on 2026-10-24. Sprint started 2026-10-24.",
   "filed_in": "clone-0ea70e5c"
 }
