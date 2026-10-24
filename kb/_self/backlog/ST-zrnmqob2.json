@@ -1,7 +1,7 @@
 {
   "id": "ST-zrnmqob2",
   "kind": "story",
-  "title": "kb_backlog serves the read-only commands managers run most (held, referrers, find, similar, tree, config, landings, runs, procs, check), and a finding's exit 1 returns as text",
+  "title": "kb_backlog serves the read-only commands managers run most (held, referrers, find, similar, tree, config, landings, runs, procs, check, report), and a finding's exit 1 returns as text",
   "status": "draft",
   "parent": "EP-fgtlhyo4",
   "sprint": "SP-e3qyajjv",
