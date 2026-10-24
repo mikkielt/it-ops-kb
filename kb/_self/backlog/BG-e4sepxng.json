@@ -8,7 +8,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "kbroot.py add-remote refuses a url that holds a user:password@ part and writes no pointer, and check.py names a pointer whose url holds one, so no credential is committed in kb/_roots (SP-s2svf5a6 review gap 8)",
+  "goal": "kbroot.py add-remote refuses a url that holds a user:password@ part and writes no pointer, and check.py names a pointer whose url holds one, so no credential is committed in a root pointer file (SP-s2svf5a6 review gap 8)",
   "repro": {
     "run": [
       "python3",
@@ -20,7 +20,9 @@
     "_tools/kbroot.py",
     "_tools/kbcommon.py",
     "kb/_self/content-rules.md",
-    "_tools/check.py"
+    "_tools/check.py",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "BG-4dj74rml"
