@@ -2,7 +2,7 @@
   "id": "BG-wuugkjuj",
   "kind": "bug",
   "title": "close of a clone's own sprint can rewrite an upstream item's relates_to or depends_on link to a deleted item",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4ppjbh4k",
   "priority": "P2",
   "rank": 0,
@@ -31,6 +31,19 @@
   ],
   "notes": "Found 2026-10-24 by BG-wojfmyzp's worker; left out of that fix because workhorse's ST-55ueywel held _tools/bl_close.py. Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. The old repro read the source text for is_upstream; it is replaced by a planted run: an upstream item that links an own sprint's item, then close of that sprint (the fixture of BG-wojfmyzp's check).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "3b88391310569d1cebe1294fbf1c2f3c43382900",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport json, os, subprocess as S, sys, tempfile\nfrom pathlib import Path\nsys.path.insert(0, \"_tools\")\nimport backlog\nT = Path(backlog.__file__).resolve().parent\nt = Path(tempfile.mkdtemp())\ne = dict(os.environ, GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ng = lambda *a, cwd: S.run([\"git\", *a], cwd=cwd, capture_output=True, text=True, env=e)\nb = lambda r, *a: (lambda p: (p.returncode, p.stdout + p.stderr))(S.run([sys.executable, str(T / \"backlog.py\"), \"--root\", str(r), *a], cwd=r, capture_output=True, text=True, env=e))\nu = t / \"up\"\nu.mkdir()\ng(\"init\", \"-q\", \"-b\", \"main\", cwd=u)\n(u / \"backlog.json\").write_text(json.dumps({\"item_dir\": \"items\", \"id_prefixes\": {\"story\": \"ST\", \"bug\": \"BG\", \"sprint\": \"SP\"}}))\nup = b(u, \"new\", \"story\", \"--title\", \"upstream item\", \"--touch\", \"x\", \"--goal\", \"g\")[1].split()[2]\nf = u / \"items\" / (up + \".json\")\nd = json.loads(f.read_text())\nd[\"relates_to\"], d[\"depends_on\"] = [\"ST-aaaaaaaa\"], [\"ST-aaaaaaaa\"]\nf.write_text(json.dumps(d, indent=2) + \"\\n\")\ng(\"add\", \"-A\", cwd=u)\ng(\"commit\", \"-qm\", \"p\", cwd=u)\nc = t / \"clone\"\ng(\"clone\", \"-q\", \"-o\", \"upstream\", str(u), str(c), cwd=t)\ng(\"config\", \"kb.upstreamRemote\", \"upstream\", cwd=c)\nsp = b(c, \"new\", \"sprint\", \"--title\", \"own sprint\", \"--goal\", \"g\")[1].split()[2]\nown = {\"id\": \"ST-aaaaaaaa\", \"kind\": \"story\", \"title\": \"own item\", \"status\": \"done\", \"sprint\": sp, \"priority\": \"P3\", \"rank\": 0, \"goal\": \"g\", \"touches\": [\"x\"]}\n(c / \"items\" / \"ST-aaaaaaaa.json\").write_text(json.dumps(own, indent=2) + \"\\n\")\nbefore = (c / \"items\" / (up + \".json\")).read_bytes()\n# the story and sprint review items of the own sprint are done as well\nfor p in (c / \"items\").glob(\"*.json\"):\n    j = json.loads(p.read_text())\n    if j.get(\"sprint\") == sp and j[\"id\"] != sp and j.get(\"status\") != \"done\":\n        j[\"status\"] = \"done\"\n        p.write_text(json.dumps(j, indent=2) + \"\\n\")\nrc, out = b(c, \"close\", sp)\nafter = (c / \"items\" / (up + \".json\")).read_bytes()\nassert \"closed\" in out, (\"close did not run to its end\", rc, out[-400:])\nassert after == before, (\"close rewrote the link of an item that arrived from the upstream main\", json.loads(after).get(\"relates_to\"), json.loads(after).get(\"depends_on\"))\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
