@@ -138,6 +138,21 @@
       "class": "design",
       "answer": "one point each: the most seconds over the blocked runs, the most over the working runs, 0 with none",
       "by": "agent"
+    },
+    {
+      "id": "g5",
+      "kind": "blocking",
+      "question": "The coord panel (_tools/mon_coord.py) gives no run states or event times, so the run points are empty and --check-rules fails; how does the panel get a runs list?",
+      "options": [
+        "add _tools/mon_coord.py to this item's touches and apply the staged change (runs_of and a runs key in collect), after the sibling that edits that file lands",
+        "file a separate story for the runs list in the coord panel and land this item after it"
+      ],
+      "recommendation": "file a separate story for the runs list in the coord panel and land this item after it",
+      "do": {
+        "add _tools/mon_coord.py to this item's touches and apply the staged change (runs_of and a runs key in collect), after the sibling that edits that file lands": "ST-54y7al4z",
+        "file a separate story for the runs list in the coord panel and land this item after it": "ST-54y7al4z"
+      },
+      "class": "design"
     }
   ],
   "notes": "Premise: otel/kbmon.rules.yml holds three rules on the kb's health (eval, any alert, an orphan) and none on a sprint run; otel/prometheus.yml has no alerting block and the repository no Alertmanager config (the check prints rules [], alerting False, alertmanager.yml False). Prometheus only evaluates alerts; notifying is a separate Alertmanager (kb/public/logs/prometheus-retention-exposition.md:55, DOC). As for Prometheus itself, the operator installs Alertmanager outside the clone; the repository holds config files only. Plan 2026-10-24 (SP-d6gbc3tq): check 1 (--check-rules) already passes before the work: it pins that every kbmon_ name in the rules file, the three new rules included, is served by /metrics, so it must keep passing. Checks added: 2 = run points for the blocked, failed and working states plus two seconds points; 3 = alertmanager.yml holds a loopback webhook and neither file holds a credential-like key. Gate g1 (webhook receiver) is answered, the receiver itself is not in the goal: filed as the parked draft ST-i4ejksl2; until it exists the webhook url points at nothing, said in kb/_self/monitoring.md. Planned into SP-d6gbc3tq on 2026-10-24 (night run). Sprint SP-d6gbc3tq started 2026-10-24.",
