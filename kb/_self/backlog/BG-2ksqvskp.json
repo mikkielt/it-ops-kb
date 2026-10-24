@@ -2,7 +2,7 @@
   "id": "BG-2ksqvskp",
   "kind": "bug",
   "title": "madeup_text caches a 429, 500 or 503 answer of the made-up sibling as a real 404, turning off soft-404 detection for the host",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4ppjbh4k",
   "priority": "P3",
   "rank": 0,
@@ -40,5 +40,7 @@
   "links": [
     "parked: SP-vk3wf746 review"
   ],
-  "notes": "Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. The pin check passes before the work by design: it holds behaviour the fix must keep."
+  "notes": "Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. The pin check passes before the work by design: it holds behaviour the fix must keep.",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
