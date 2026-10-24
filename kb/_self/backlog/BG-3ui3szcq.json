@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "selfcheck allow-rules reads every skill under the root's skills/ directory, so a host project's own skill scripts fail it",
   "status": "draft",
+  "sprint": "SP-yisvj7vd",
   "priority": "P3",
   "rank": 0,
   "severity": "S2",
@@ -16,11 +17,12 @@
   },
   "touches": [
     "_tools/bl_selfcheck.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-s5k72bhd review"
   ],
-  "notes": "Found by the SP-s5k72bhd review of BG-cwitx4zn (headless reviewer session 1b63a864, verified by the reviewer with the repro). In the kb's own clone skills/ holds only backlog, item and sprint, so nothing shows there.",
+  "notes": "Found by the SP-s5k72bhd review of BG-cwitx4zn (headless reviewer session 1b63a864, verified by the reviewer with the repro). In the kb's own clone skills/ holds only backlog, item and sprint, so nothing shows there. Premise run 2026-10-24 on the day-run base: repro exits 1 (fail 1 of 1 not covered: python3 _tools/myown.py). kb/_self/tools.md added to touches at planning for the selfcheck row; if its text stays correct, edit nothing there. Planned into SP-yisvj7vd, 2026-10-24.",
   "filed_in": "clone-0ea70e5c"
 }
