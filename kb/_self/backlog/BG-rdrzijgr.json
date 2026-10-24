@@ -4,6 +4,7 @@
   "title": "A rejected kbroot.py push reports git's hint line instead of the rejection reason",
   "status": "draft",
   "parent": "EP-eocmyqdx",
+  "sprint": "SP-c6w5hjmc",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -17,6 +18,9 @@
   },
   "touches": [
     "_tools/kbroot.py"
+  ],
+  "depends_on": [
+    "BG-mejqc3wt"
   ],
   "links": [
     "parked: SP-mguax5m3 review"
