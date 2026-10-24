@@ -1,0 +1,22 @@
+{
+  "id": "SP-c6w5hjmc",
+  "kind": "sprint",
+  "title": "Team roots fetch and push safely: no credential prompts or urls, bounded transports, CRLF pointers, gitlink bumps on the right lane",
+  "status": "planned",
+  "goal": "kbroot.py fetch and push never prompt for or show a credential, bound and kill their git transport, read CRLF pointers, report an unwritable roots cache per root; the gitlink bump of a submodule root lands as content from the right copy; check.py accepts an internal root's own source id in its log",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
