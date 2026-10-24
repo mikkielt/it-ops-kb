@@ -25,6 +25,25 @@
   "depends_on": [
     "BG-nlov3hks"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the drift read bound its git processes, given bl_runs.py and bl_items.py are outside the touches?",
+      "options": [
+        "mon_sessions swaps bl_runs/bl_items' claims_ledger for a .git-entry reader and branch_gates for a no-op during the read",
+        "mon_sessions reimplements bl_runs.collect and worker_of"
+      ],
+      "recommendation": "mon_sessions swaps bl_runs/bl_items' claims_ledger for a .git-entry reader and branch_gates for a no-op during the read",
+      "do": {
+        "mon_sessions swaps bl_runs/bl_items' claims_ledger for a .git-entry reader and branch_gates for a no-op during the read": "ST-5pu4bs4p",
+        "mon_sessions reimplements bl_runs.collect and worker_of": "ST-5pu4bs4p"
+      },
+      "class": "design",
+      "answer": "mon_sessions swaps bl_runs/bl_items' claims_ledger for a .git-entry reader and branch_gates for a no-op during the read",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-d6gbc3tq review"
   ],
