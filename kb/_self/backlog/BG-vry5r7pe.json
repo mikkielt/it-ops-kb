@@ -1,0 +1,21 @@
+{
+  "id": "BG-vry5r7pe",
+  "kind": "bug",
+  "title": "A stale feedback.ids lock taken by two writers that both saw it stale can be held by both",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "_take_ids_lock lets one of two takers that saw the same stale lock win: the other's read-back of the lock fails, as the rename path before BG-a7ocbxua did, so no feedback id is lost to two writers in the window",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, pathlib, sys, tempfile, time\nsys.path.insert(0, \"_tools\")\nimport ql_capture as q\nd = pathlib.Path(tempfile.mkdtemp())\nlock = d / \"feedback.ids.lock\"\nlock.write_text(\"\")\nold = time.time() - 3600\nos.utime(lock, (old, old))\nq.FEEDBACK_IDS_LOCK_WAIT_S = 0.3\nreal, fired, got = os.replace, [], {}\ndef replace(a, b, *r, **k):\n    if not fired:\n        fired.append(1)\n        got[\"B\"] = q._take_ids_lock(lock, \"tokB\")  # a second taker saw the same stale lock and took it first\n    return real(a, b, *r, **k)\nos.replace = replace\ntry:\n    got[\"A\"] = q._take_ids_lock(lock, \"tokA\")\nfinally:\n    os.replace = real\nassert fired, \"the check never saw the first taker replace the lock\"\nassert not (got.get(\"A\") and got.get(\"B\")), (\"two takers that saw the same stale lock both hold it\", got, lock.read_text())\n"
+    ]
+  },
+  "touches": [
+    "_tools/ql_capture.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
