@@ -483,26 +483,45 @@ def written_feedback_ids(spool):
     return [i for i in text.split() if FEEDBACK_ID.fullmatch(i)]
 
 
-def _take_ids_lock(path):
-    """Create the lock file `path` (O_EXCL, so one writer at a time on every OS); True once held, False when another
-    writer kept it for FEEDBACK_IDS_LOCK_WAIT_S. A lock file older than FEEDBACK_IDS_LOCK_STALE_S is a dead writer's."""
+def _take_ids_lock(path, token=""):
+    """Create the lock file `path` (O_EXCL, so one writer at a time on every OS) holding `token`; True once held,
+    False when another writer kept it for FEEDBACK_IDS_LOCK_WAIT_S. A lock file older than FEEDBACK_IDS_LOCK_STALE_S
+    is a dead writer's: it is renamed away, and when the file renamed is not the stale one seen (another writer took
+    the stale lock over between the read and the rename) it is put back."""
     end = time.monotonic() + FEEDBACK_IDS_LOCK_WAIT_S
     while True:
         try:
-            os.close(os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY))
+            fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
+                f.write(token)
             return True
         except FileExistsError:
             try:
                 if time.time() - path.stat().st_mtime > FEEDBACK_IDS_LOCK_STALE_S:
                     stale = path.with_name(f"{path.name}.stale-{uuid.uuid4().hex[:8]}")
                     os.rename(path, stale)  # atomic: of two takers, one wins
-                    stale.unlink()
-                    continue
+                    if time.time() - stale.stat().st_mtime > FEEDBACK_IDS_LOCK_STALE_S:
+                        stale.unlink()
+                        continue
+                    try:
+                        os.link(stale, path)  # a live lock was renamed: give it back, never replacing a newer one
+                    finally:
+                        stale.unlink()
             except OSError:
                 pass
         if time.monotonic() >= end:
             return False
         time.sleep(0.005)
+
+
+def _drop_ids_lock(path, token):
+    """Remove the lock file `path` only while it still holds `token`: one taken over after this writer stalled past
+    FEEDBACK_IDS_LOCK_STALE_S is another writer's."""
+    try:
+        if path.read_text(encoding="utf-8") == token:
+            path.unlink()
+    except OSError:
+        pass
 
 
 def remember_feedback_id(spool, fb):
@@ -512,8 +531,9 @@ def remember_feedback_id(spool, fb):
     path = spool.parent / FEEDBACK_IDS_NAME
     lock = path.with_name(FEEDBACK_IDS_NAME + ".lock")
     tmp = path.with_name(f"{FEEDBACK_IDS_NAME}.tmp-{uuid.uuid4().hex[:8]}")
+    token = uuid.uuid4().hex
     try:
-        if not _take_ids_lock(lock):
+        if not _take_ids_lock(lock, token):
             return
         try:
             ids = [*written_feedback_ids(spool), fb][-FEEDBACK_IDS_MAX:]
@@ -521,7 +541,7 @@ def remember_feedback_id(spool, fb):
             os.replace(tmp, path)
         finally:
             tmp.unlink(missing_ok=True)
-            lock.unlink(missing_ok=True)
+            _drop_ids_lock(lock, token)
     except OSError:
         pass
 
