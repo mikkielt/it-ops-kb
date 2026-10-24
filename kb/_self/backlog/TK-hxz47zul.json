@@ -2,7 +2,7 @@
   "id": "TK-hxz47zul",
   "kind": "task",
   "title": "NIST SP 800-38G, texts-catalogue and shared-NER articles and answers cite no source the census records gone",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-cbi2ah5y",
   "priority": "P1",
   "rank": 0,
@@ -42,5 +42,7 @@
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
   "notes": "Premise run on base 39abe92bb: check 0 fails with 6 DOC tags citing the three gone ids (privacy/nist-sp800-38g.md:23, arch/texts-catalogue-formats.md:23, agents/shared-ner-service.md:148, _answers.md:640, 1572, 1649). S869 is the csrc.nist.gov SP 800-38G rev 1 final page (HTTP 404), S1709 pypi fluent.runtime and S2111 pypi presidio-evaluator (both soft-404 by fact diff, so check whether the pypi page really reads before treating it as gone: a page that reads is a census false gone, still not citable by this check, so re-source to a live page of the same fact or retag UNK). check.py passes before the work on purpose: it pins that the kb stays valid after the edits.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
