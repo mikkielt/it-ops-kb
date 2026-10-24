@@ -4,6 +4,7 @@
   "title": "land's refused move names a step with spaces, which coord transition refuses, so a stop at clean tree, fetch and rebase, rag.py eval, the push or merge request leaves the run key at landing",
   "status": "draft",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-dx76osrn",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -18,11 +19,15 @@
   "touches": [
     "_tools/bl_land.py",
     "kb/_self/coordination.md",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-oz5vudfu"
   ],
   "links": [
     "parked: SP-sucr3kfg review"
   ],
-  "notes": "Found by the SP-sucr3kfg review. coord.py transition takes a --field value only as an id with no spaces (kb/_self/coordination.md:46); bl_land.land_refused_step passes the step as the stop names it, and the move is refused with a warning. The check of ST-tb6tzrxa used the one-word step branch. The merge request step that gate g2 of ST-tb6tzrxa fixes for --wait-merge 0 has the same problem. Either map the name or widen what transition takes.",
+  "notes": "Found by the SP-sucr3kfg review. coord.py transition takes a --field value only as an id with no spaces (kb/_self/coordination.md:46); bl_land.land_refused_step passes the step as the stop names it, and the move is refused with a warning. The check of ST-tb6tzrxa used the one-word step branch. The merge request step that gate g2 of ST-tb6tzrxa fixes for --wait-merge 0 has the same problem. Either map the name or widen what transition takes. Planning 2026-10-24: premise ran on today's base: the repro stops at step 'clean tree' and the run key stays landing. Recommended (of the note's two options): map the name, keep coord's closed id set: land_move_run passes ops_token(step) (clean-tree, rag.py-eval, merge-request) as the step field, the stop message keeps the readable name. The repro keeps a space in the message's step name, so it reads the field only through the final key state refused. Planned into SP-dx76osrn on 2026-10-24, sixth in the order.",
   "filed_in": "clone-0ea70e5c"
 }
