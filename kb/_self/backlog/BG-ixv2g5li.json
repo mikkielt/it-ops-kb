@@ -2,7 +2,7 @@
   "id": "BG-ixv2g5li",
   "kind": "bug",
   "title": "kbmon sessions panel ignores the coord hook state files of a workspace that installs the plugin",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ymnz7b4n",
   "priority": "P2",
   "rank": 0,
@@ -44,6 +44,19 @@
   ],
   "notes": "Planned into SP-ymnz7b4n, 2026-10-24 day run. Precheck: repro fails on the base.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "b3a4ef8aebf94bdb5a0288cab0687904cb738eb4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,tempfile,subprocess;sys.path.insert(0,'_tools');import mon_sessions as m;W=tempfile.mkdtemp();subprocess.run(['git','init','-q',W]);d=os.path.join(W,'.git','kb-coord','hook');os.makedirs(d);sid='-'.join(c*n for c,n in zip('12345',(8,4,4,4,12)));open(os.path.join(d,sid+'.json'),'w').write('{}');sys.exit(0 if sid in m.hook_sessions(W) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
