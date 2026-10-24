@@ -16,6 +16,15 @@
       "import os, sys\nsys.path.insert(0, \"_tools\")\nos.environ[\"GIT_ASKPASS\"] = \"/x/askpass\"; os.environ[\"SSH_ASKPASS\"] = \"/x/askpass\"\nimport kbroot\ne = kbroot.fetch_env()\nleft = [k for k in (\"GIT_ASKPASS\", \"SSH_ASKPASS\") if e.get(k)]\nprint(\"askpass left in fetch_env:\", left)\nsys.exit(1 if left else 0)\n"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport os, sys, tempfile\nsys.path.insert(0, \"_tools\")\nd = tempfile.mkdtemp(); cfg = os.path.join(d, \"gitconfig\")\nopen(cfg, \"w\").write(\"[core]\\n\\taskPass = /x/askpass\\n\")\nos.environ.update(GIT_CONFIG_GLOBAL=cfg, GIT_ASKPASS=\"/x/askpass\", SSH_ASKPASS=\"/x/askpass\")\nimport kbroot\ne = kbroot.fetch_env()\nleft = [k for k in (\"GIT_ASKPASS\", \"SSH_ASKPASS\") if e.get(k)]\nclass P: url = \"https://git.corp.example.com/team-a/kb.git\"\nok, out = kbroot.git_out([\"config\", \"--get\", \"core.askPass\"], P(), d)\nprint(\"askpass left in fetch_env:\", left, \"| core.askPass seen by a fetch's git:\", repr(out))\nsys.exit(1 if left or out == \"/x/askpass\" else 0)\n"
+      ]
+    }
+  ],
   "touches": [
     "_tools/kbroot.py",
     "kb/_self/tools.md"
