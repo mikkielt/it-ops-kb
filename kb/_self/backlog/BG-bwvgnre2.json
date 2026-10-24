@@ -2,7 +2,7 @@
   "id": "BG-bwvgnre2",
   "kind": "bug",
   "title": "selector_gate waives a done item's selector whose -k term a dropped id of another test file holds",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-swavez3g",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,7 @@
   "links": [
     "parked: SP-noqsd4hj review"
   ],
-  "notes": "Review gap of SP-noqsd4hj, rated S3 by the sprint's reviewer."
+  "notes": "Review gap of SP-noqsd4hj, rated S3 by the sprint's reviewer.",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
