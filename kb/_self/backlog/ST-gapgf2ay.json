@@ -1,0 +1,24 @@
+{
+  "id": "ST-gapgf2ay",
+  "kind": "story",
+  "title": "The coord hook's SessionStart line in a plugin workspace names paths that exist only in the kb clone, and an Edit or Write event shows asks",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the hook's SessionStart line names commands that run in a plugin workspace (the plugin root's coord.py and kbask.py), and a PreToolUse event of Edit or Write only renews the presence lease, as gate g3 of ST-omimwr5q and kb/_self/coordination.md say",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re, sys\nsrc = open('.claude/hooks/coord_hook.py', encoding='utf-8').read()\nintro = src[src.index('INTRO = ('):src.index('FOOTER = (')]\npre = src[src.index('def pre_tool'):] if 'def pre_tool' in src else src\npaths_ok = 'CLAUDE_PLUGIN_ROOT' in intro or '{coord}' in intro or '{tools}' in intro or 'python3 _tools/' not in intro\nedit_quiet = not re.search(r'Edit\\W{0,6}Write[^\\n]{0,200}\\n[^\\n]{0,200}show\\(', src)\nprint('INTRO names a path that exists in a plugin workspace:', paths_ok, '| Edit or Write event shows no asks:', edit_quiet)\nsys.exit(0 if paths_ok and edit_quiet else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/hooks/coord_hook.py",
+    "kb/_self/coordination.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
