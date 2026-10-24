@@ -1,0 +1,43 @@
+{
+  "id": "ST-hlbnqk7k",
+  "kind": "story",
+  "title": "A manager ends an unattended headless runner whose report is written and whose process stays, with one command instead of a hand-written monitor script",
+  "status": "draft",
+  "parent": "EP-sqt62vj2",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py runner watch --pid PID --report FILE --stale SECONDS ends a process whose report file is older than the bound while the process lives and exits 0, and exits 0 without signalling when the process ends by itself",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,subprocess as s,sys,tempfile,time\nd=tempfile.mkdtemp();rep=os.path.join(d,\"report.md\")\npid=int(s.run([\"sh\",\"-c\",\"echo done > \"+rep+\"; sleep 120 >/dev/null 2>&1 & echo $!\"],capture_output=True,text=True).stdout)\ntime.sleep(2);p=s.run([sys.executable,\"_tools/backlog.py\",\"runner\",\"watch\",\"--pid\",str(pid),\"--report\",rep,\"--stale\",\"1\"],capture_output=True,text=True,timeout=60)\ntime.sleep(1)\ntry:os.kill(pid,0);alive=True\nexcept OSError:alive=False\nif alive:os.kill(pid,15)\nprint(p.returncode,alive,p.stdout[-150:],p.stderr[-150:])\nsys.exit(0 if p.returncode==0 and not alive else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "backlog.py runner watch --pid PID --report FILE --stale SECONDS ends a process whose report file is older than the bound while the process lives and exits 0",
+      "check": 0
+    },
+    {
+      "clause": "exits 0 without signalling when the process ends by itself",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/bl_cli.py",
+    "_tools/bl_procs.py",
+    "skills/sprint/SKILL.md",
+    "kb/_self/coordination.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/backlog.md"
+  ],
+  "relates_to": [
+    "EP-nij36lt7"
+  ],
+  "notes": "From the 2026-10-24 telemetry and query-log analysis: 159 Monitor tool calls in the orchestrating sessions, each a hand-written script (96 'tail -F chain.log | grep ... & while true; do r=...report.md; if [ -f $r ] && [ $(( $(date +%s) - $(stat -f %m $r) )) -gt 600 ] && pgrep -f \"kb-sprint run SP-...\"; then echo HUNG', 35 'L=<scratch>...'; median 567 characters of shell) and 76 ScheduleWakeup calls (median 1800 s). The hang is a known case: a runner writes its report and its process stays, the manager's notes call for a watchdog and a SIGTERM of the own pid; no tool does it (backlog.py find watchdog, headless and runner found no item). Low confidence and manager-only: the turns are in the wait story; the hang case costs hours. The command name and flags are a proposal; the planted check ends a planted sleeping process. Also wanted: a start form that launches a runner with a fixed session id and its brief on stdin and prints the pid. Lane: parked sprint-orchestration class, EP-gzr4mmkm.",
+  "filed_in": "clone-0ea70e5c"
+}
