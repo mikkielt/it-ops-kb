@@ -2,7 +2,7 @@
   "id": "ST-gx3xok46",
   "kind": "story",
   "title": "Review sprint: The kbmon mod tells the operator only what changed in what waits, and never holds its refresh for a notification",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-rin4kkoj",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,27 @@
       ]
     }
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "evidence": {
+    "commit": "c5560d52b8589902c42be1ce1f1f7d2106bff52c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "38aa60b66e6c8005"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "0dc2cb14bf1fba67"
+      }
+    ]
+  }
 }
