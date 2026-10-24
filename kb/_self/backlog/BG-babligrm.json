@@ -1,0 +1,23 @@
+{
+  "id": "BG-babligrm",
+  "kind": "bug",
+  "title": "The coord.py module docstring still says claimed moves to working or released, while TRANSITIONS also allows landed",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "the table sentence of the coord.py module docstring names claimed to working, released or landed, as TRANSITIONS and coordination.md do",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; s = open('_tools/coord.py', encoding='utf-8').read(); i = s.index('`transition` moves'); sys.exit(0 if 'claimed to working, released or landed' in s[i:i + 900] else 1)"
+    ]
+  },
+  "repro_reason": "the docstring is documentation text: the behaviour it describes (the table) is read by the check of ST-al6rvds7 and BG-xn4jrmn7, so only the sentence can be checked",
+  "touches": [
+    "_tools/coord.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
