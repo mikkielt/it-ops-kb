@@ -2,7 +2,7 @@
   "id": "ST-6xfq3kxx",
   "kind": "story",
   "title": "Review sprint: Research for the coord run states: tracing, traceparent, Alertmanager, Claude Code hooks and a local traces backend",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-r7e7jcep",
   "review": true,
   "priority": "P1",
@@ -24,5 +24,7 @@
     }
   ],
   "notes": "Planned 2026-10-24: the review of a content-only research sprint; its checks are the project review_checks (backlog check, whole suite).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
