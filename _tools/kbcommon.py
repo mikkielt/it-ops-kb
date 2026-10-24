@@ -225,7 +225,7 @@ HOME_GENERIC = ("public", "default", "all users", "username", "user", "administr
 LEAK_IPV4 = (r"(?<![\w.])(?:10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}"
              r"\.\d{1,3})(?![\w.])")
 LEAK_EMAIL = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}\b"
-EMAIL_OK = re.compile(r"(?i)@([\w-]+\.)*example\.(com|org|net)$|@noreply\.|@users\.noreply\.github\.com$")
+EMAIL_OK = re.compile(r"(?i)@([\w-]+\.)*example\.(com|org|net)$|@users\.noreply\.github\.com$")
 LEAK_GUID = r"\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b"
 GUID_OK = re.compile(r"0{8}-0{4}-0{4}-0{4}-0{8}[0-9a-f]{4}")  # the tenant placeholder and its numbered siblings
 
