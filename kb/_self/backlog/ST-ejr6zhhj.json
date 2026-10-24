@@ -1,0 +1,28 @@
+{
+  "id": "ST-ejr6zhhj",
+  "kind": "story",
+  "title": "Review sprint: An agent finds the deterministic tool that answers a question from one entry point",
+  "status": "draft",
+  "sprint": "SP-x6eqtsid",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ],
+  "notes": "Reviewer: read each story's checks as planted runs (copies of _tools, fake claude on PATH); the one blocking gate (ST-e6xp5h3u g1, the AGENTS.md cut) was answered with its recommendation under the operator's standing approval for the 2026-10-24 night run.",
+  "filed_in": "clone-0ea70e5c"
+}
