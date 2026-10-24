@@ -197,7 +197,10 @@ def alerts(data):
         pct = d.get("free_pct")
     if not isinstance(pct, (int, float)) or isinstance(pct, bool) or pct >= LOW_DISK_PCT:
         return []
-    pct = round(pct, 2)
+    shown = round(pct, 2)
+    if shown >= LOW_DISK_PCT:  # a share just under the threshold must not round up to it
+        shown = int(pct * 100) / 100
+    pct = shown
     return [{"kind": "disk", "id": "host.disk", "panel": "host", "since": "",
              "message": f"disk low: {pct:g}% free ({gigabytes(d.get('free_bytes'))} of {gigabytes(d.get('total_bytes'))})"}]
 
