@@ -17,6 +17,7 @@
       "recommendation": "approve"
     }
   ],
+  "notes": "Operator request 2026-10-24: plan telemetry and query-log derived items and stage them in todo state, focus on model work to deterministic tools, bash to deterministic, and the MCP server. This request promotes these items; the report story they build on belongs to the parked sprint-orchestration class (EP-gzr4mmkm). Items stay draft while the sprint is planned and become todo at start. Order: kb_backlog read commands, usage, kbmon panel (all edit kb_mcp.py and its test), then the story that makes the skill, role file and brief name the commands. The first waits on report (SP-vxdacfpl); the last waits on the last item of SP-f7kaebel (the skill and the brief are edited there). Adoption is the open risk of EP-fgtlhyo4: managers ran 1,148 of 1,290 Bash backlog reads against one kb_backlog call, and the tool schemas are deferred, so a session must load them first.",
   "creator": "op-f618a13e",
   "filed_in": "clone-0ea70e5c"
 }
