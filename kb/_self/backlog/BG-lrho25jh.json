@@ -2,7 +2,7 @@
   "id": "BG-lrho25jh",
   "kind": "bug",
   "title": "The coord hook's suggested wait command uses --since 0, so it returns at once on the item's earlier progress events and never waits for the landing",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
   "sprint": "SP-3i7hcb6i",
   "priority": "P2",
@@ -28,6 +28,6 @@
   "links": [
     "parked: SP-ky7xz6d2 review"
   ],
-  "notes": "Plan 2026-10-24 (day run): repro fails on base (the suggested wait command returns at once, took 0.0 s). The repro finds the command by the pattern 'python3 _tools/coord.py wait --kind progress --item ID' up to the next parenthesis and rewrites only --timeout: keep that shape and make --since the newest event seq the hook has seen (a coord wait --since 0 --timeout 0 reply's last, or the store's newest seq). Planned into SP-3i7hcb6i on 2026-10-24.",
+  "notes": "Plan 2026-10-24 (day run): repro fails on base (the suggested wait command returns at once, took 0.0 s). The repro finds the command by the pattern 'python3 _tools/coord.py wait --kind progress --item ID' up to the next parenthesis and rewrites only --timeout: keep that shape and make --since the newest event seq the hook has seen (a coord wait --since 0 --timeout 0 reply's last, or the store's newest seq). Planned into SP-3i7hcb6i on 2026-10-24. Sprint started 2026-10-24.",
   "filed_in": "clone-0ea70e5c"
 }
