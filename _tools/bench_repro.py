@@ -1397,10 +1397,11 @@ def standings(rows):
     """(record, date, {n: {"passed", "errors", "cost", "unanchored", "areas", "seen"}}, common) of the newest `repro-compare`
     record of `rows` (the greatest date, the later row on a tie). `seen` is the set of areas the record holds a row of the
     instance for, `areas` the set it finished: a seen one whose `repro` `failure` row, when it has one, is `none`. `common` is the set of
-    areas every instance finished; per instance the sum of its eval_passed, the sum of its unanchored (None when no common
+    areas every instance that finished at least one area finished; per instance the sum of its eval_passed, the sum of its unanchored (None when no common
     area has the row) and the sum of the cost rows of the scenario `repro` of the same record (None when there is none)
     are over the common areas only, so an instance that finished fewer areas is not ranked by a lower cost. When no area
-    is common the sums are over each instance's own finished areas. check_errors plus lint_errors (None when either is not
+    is common the sums are over each instance's own finished areas. An instance that finished no area has no sums and
+    does not narrow `common`. check_errors plus lint_errors (None when either is not
     there) are the instance's own. (None, None, {}, set()) when no row names an instance."""
     mine = [(k, r) for k, r in enumerate(rows) if r.get("scenario") == COMPARE_SCENARIO and INSTANCE_ARM.fullmatch(r.get("arm", ""))]
     if not mine:
@@ -1429,9 +1430,10 @@ def standings(rows):
             per[(n, area, metric)] = per.get((n, area, metric), 0.0) + v
             seen.setdefault(n, set()).add(area)
     finished = {n: {a for a in seen.get(n, set()) if (n, a) not in failed} for n in found}
-    common = set.intersection(*finished.values()) if finished else set()
+    some = [a for a in finished.values() if a]
+    common = set.intersection(*some) if some else set()
     for n, d in found.items():
-        use = common or finished[n]
+        use = (common or finished[n]) if finished[n] else set()
         for metric, key in (("eval_passed", "passed"), ("unanchored", "unanchored"), ("cost", "cost")):
             vals = [per[(n, a, metric)] for a in use if (n, a, metric) in per]
             if vals:
@@ -1443,15 +1445,16 @@ def standings(rows):
 
 
 def pick_key(d):
-    """The landing rule as a sort key, smallest first: most eval_passed, then fewest errors, then lowest cost; a number
-    that was not recorded ranks after every recorded one."""
+    """The landing rule as a sort key, smallest first: an instance that finished an area before one that finished none,
+    then most eval_passed, then fewest errors, then lowest cost; a number that was not recorded ranks after every recorded
+    one."""
     inf = float("inf")
-    return (-d["passed"], inf if d["errors"] is None else d["errors"], inf if d["cost"] is None else d["cost"])
+    return (not d["areas"], -d["passed"], inf if d["errors"] is None else d["errors"], inf if d["cost"] is None else d["cost"])
 
 
 def pick(file=None, out=print):
     """`repro pick`: print, per instance of the newest `repro-compare` record of the results file `file` (default
-    kb/_self/reports/benchmarks.csv), the numbers the landing rule reads over the areas every instance finished and the
+    kb/_self/reports/benchmarks.csv), the numbers the landing rule reads over the areas every instance that finished one finished and the
     unanchored DOC facts it does not rank by, the areas left out of that comparison, then the instance it picks
     (standings). Returns 0, or 1 when the file holds no instance's row. Reads one file and nothing else."""
     target = Path(file) if file else BENCH_RESULTS
@@ -1463,9 +1466,12 @@ def pick(file=None, out=print):
     out(f"repro pick: record {record} ({date or 'no date'}), {len(found)} instance(s) in {target}")
     left = sorted(set().union(*(d["seen"] for d in found.values())) - common)
     if common:
-        out(f"compared on {len(common)} area(s) every instance finished: {', '.join(sorted(common))}")
+        out(f"compared on {len(common)} area(s) every instance that finished an area finished: {', '.join(sorted(common))}")
     else:
         out("no area every instance finished: each instance is compared on its own finished areas")
+    for n in sorted(found):
+        if not found[n]["areas"]:
+            out(f"ranked last: instance-{n} finished no area")
     for a in left:
         who = [str(n) for n in sorted(found) if a in found[n]["areas"]]
         out(f"left out of the comparison: area {a}, finished by " + (f"instance {', '.join(who)} only" if who else "no instance"))
@@ -1478,8 +1484,8 @@ def pick(file=None, out=print):
     why = "the only instance"
     if len(order) > 1:
         a, b = pick_key(found[best]), pick_key(found[order[1]])
-        why = next((f"{('most eval_passed', 'fewest errors', 'lowest cost')[i]} over instance-{order[1]}"
-                    for i in range(3) if a[i] != b[i]), f"a tie with instance-{order[1]}, the lowest number wins")
+        why = next((f"{('an area finished', 'most eval_passed', 'fewest errors', 'lowest cost')[i]} over instance-{order[1]}"
+                    for i in range(4) if a[i] != b[i]), f"a tie with instance-{order[1]}, the lowest number wins")
     out(f"picked: instance-{best} ({why})")
     return 0
 
