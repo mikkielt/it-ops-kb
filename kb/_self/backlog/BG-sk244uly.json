@@ -36,7 +36,9 @@
       },
       "class": "design",
       "answer": "Cut each event to its live items and paths, drop an empty one, then pair",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
