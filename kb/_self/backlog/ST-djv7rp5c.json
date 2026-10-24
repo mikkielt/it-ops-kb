@@ -2,7 +2,7 @@
   "id": "ST-djv7rp5c",
   "kind": "story",
   "title": "Research sprint goal: Fail-open and privacy bugs the reviews parked: monitor overlap age and disk line, dispatch resource entries, kbroot fetch, selfcheck skills, sync gate pool base, coord hook announce",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yisvj7vd",
   "goal_research": true,
   "priority": "P1",
@@ -21,6 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "No outside facts: the sprint goal is eight fixes in the kb's own tools (kbmon, dispatch, kbroot, selfcheck, the sync gate, the coord hook), each with a failing repro on the base; it asks no question the kb or the live docs answer. Planned 2026-10-24 for the day run.",
+  "notes": "No outside facts: the sprint goal is eight fixes in the kb's own tools (kbmon, dispatch, kbroot, selfcheck, the sync gate, the coord hook), each with a failing repro on the base; it asks no question the kb or the live docs answer. Planned 2026-10-24 for the day run. Sprint started 2026-10-24.",
   "filed_in": "clone-0ea70e5c"
 }
