@@ -53,7 +53,7 @@ item and its descendants, read through `bl_cost.spend_usd`, the reader `backlog.
 `bench_core.PRICE`; null without a budget) and `over_budget` (true when the spend is above the budget), and `digest`
 adds `over budget` to the line of such a claim. Nothing is stopped: the claim, its renewals and its holder go on.
 
-An event is a kind from a closed list (claim, release, dedup, fact_added, gap_opened, dup_of, lesson, heartbeat, ask, answer) and up to
+An event is a kind from a closed list (claim, release, dedup, fact_added, gap_opened, dup_of, lesson, heartbeat, intent, progress, ask, answer, coordinate) and up to
 eight fields, each NAME=VALUE: an event carries references only, so a VALUE is an id of at most 120 characters of
 letters, digits and `_ . : / # @ -` (a source id, a `path:line` fact key, a QK answer id, a backlog item id, a pack
 handle) and free text is refused. `post` numbers events 1, 2, 3 ... in the store; `wait` polls the store every 50 ms
@@ -178,9 +178,11 @@ EVENTS_SCHEMA = (
     "CREATE TABLE IF NOT EXISTS events ("
     "seq INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, fields TEXT NOT NULL, at REAL NOT NULL)"
 )
-KINDS = ("claim", "release", "dedup", "fact_added", "gap_opened", "dup_of", "lesson", "heartbeat", "intent", "progress", "ask", "answer")
+KINDS = ("claim", "release", "dedup", "fact_added", "gap_opened", "dup_of", "lesson", "heartbeat", "intent", "progress", "ask", "answer", "coordinate")
 KIND_FIELDS = {"intent": ("session", "item", "topic", "touch", "operator"), "progress": ("item", "state", "exit", "gates", "step"),
-               "ask": ("id", "to", "ref"), "answer": ("id", "state", "ref")}
+               "ask": ("id", "to", "ref"), "answer": ("id", "state", "ref"),
+               "coordinate": ("item", "other", "strategy", "touch", "session", "operator")}
+STRATEGIES = ("wait", "ask", "after", "join", "proceed")  # what a coordinate event says its session will do about the other item
 RUN_STATES = ("claimed", "working", "blocked", "returned", "failed", "staging", "landing", "landed", "refused", "released")
 TRANSITIONS = {"none": ("claimed",), "claimed": ("working", "released"), "working": ("returned", "failed", "blocked"),
                "blocked": ("working", "returned", "failed"), "returned": ("staging", "landing", "working", "released"),
@@ -196,7 +198,7 @@ FIELD_VALUE = re.compile(r"[A-Za-z0-9_.:/#@-]{1,120}")
 ID_LIST = re.compile(r"(?=.{1,120}$)[A-Za-z0-9_.:/#@-]+(,[A-Za-z0-9_.:/#@-]+)*")
 GLOB_LIST = re.compile(r"(?=.{1,120}$)[A-Za-z0-9_.:/#@*?-]+(,[A-Za-z0-9_.:/#@*?-]+)*")
 LIST_VALUES = {("intent", "item"): ID_LIST, ("intent", "topic"): ID_LIST, ("intent", "touch"): GLOB_LIST,
-               ("progress", "gates"): ID_LIST}
+               ("progress", "gates"): ID_LIST, ("coordinate", "touch"): GLOB_LIST}
 INTENT_SECONDS = 86400
 TEAM_KEYS = "team/"  # a team's keys: team/<team>/<name>, written by that team's operators alone behind `serve`
 SESSION_LEASE = "session/"  # the presence lease of a session: key session/<id>, held while the session lives
@@ -510,7 +512,7 @@ def parse_fields(pairs, kind=""):
 
 
 def check_kind(kind, fields):
-    """The closed field names (and the closed states) of the intent, progress, ask and answer kinds."""
+    """The closed field names (and the closed states) of the intent, progress, ask, answer and coordinate kinds."""
     names = KIND_FIELDS.get(kind)
     if names is None:
         return
@@ -523,6 +525,10 @@ def check_kind(kind, fields):
         if "item" not in fields or fields.get("state") not in STATES:
             raise Refused({"ok": False, "error": f"progress takes item and state (one of {', '.join(STATES)}) and optionally "
                                                  f"{', '.join(STEP_FIELDS)}"}, 2)
+    if kind == "coordinate" and (not {"item", "other"} <= set(fields) or fields.get("strategy") not in STRATEGIES):
+        raise Refused({"ok": False, "error": "a coordinate takes item (the item of the session that chose), other (the item it coordinates "
+                                             "with) and strategy (one of " + ", ".join(STRATEGIES) + "), and optionally touch, session "
+                                             "and operator"}, 2)
     if kind == "ask" and not {"id", "to", "ref"} <= set(fields):
         raise Refused({"ok": False, "error": "an ask takes id, to (a session, item or agent id, or any) and ref (the key whose value holds the question)"}, 2)
     if kind == "answer" and ("id" not in fields or "ref" not in fields or fields.get("state") not in ANSWER_STATES):
@@ -871,7 +877,8 @@ def build_parser(parser_class=argparse.ArgumentParser, remote=False):
     parents = [] if remote else [store]
     parser = parser_class(prog="coord.py", description=__doc__.split("\n", 1)[0], parents=parents,
                          epilog="post --kind: " + ", ".join(KINDS) + ". ask takes id, to, ref; answer takes id, state, ref "
-                                "(state: " + ", ".join(ANSWER_STATES) + ")")
+                                "(state: " + ", ".join(ANSWER_STATES) + "); coordinate takes item, other, strategy (" + ", ".join(STRATEGIES)
+                                + ") and optionally touch, session, operator")
     if not remote:
         parser.add_argument("--url", help="send the command to the server at URL (with --key-file) instead of a local store")
         parser.add_argument("--key-file", help="the file holding this operator's token for --url")
