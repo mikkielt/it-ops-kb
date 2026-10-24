@@ -315,6 +315,10 @@ Paid scenarios (each a `claude -p` per case): headless, subagents, models, route
 files-headless, host-lookups, new-model, always-on, kb-lookup-agent, retrieval and doc2query (their blind questions), research,
 ingest, host-roots, navigation (three prompts per arm), querylog-pipeline (one real Haiku batch). The rest run no
 model.
+
+Answers: how fast and how costly each kb measurement is, and how to run a benchmark scenario again
+Answers: which benchmark scenarios there are and which report section holds each
+Use: python3 _tools/benchmarks.py list | run [SCENARIO ...] [--dry-run]
 """
 import argparse, sys, time
 from pathlib import Path

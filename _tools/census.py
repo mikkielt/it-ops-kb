@@ -222,6 +222,10 @@ commit (exit 2); nothing is ever pushed. --dry-run prints each step's argv and r
 Exit: 0 ok; 1 check could not write, confirm/record found an unknown id, or repin could not re-point a fact; 2 bad
 arguments, a missing log, or run/finish/apply refused;
 run, finish and apply: the exit code of the step that failed.
+
+Answers: whether every source of a root is still current, phase by phase of a census
+Answers: how many sources changed, how many are left to read and which hosts blocked the check
+Use: python3 _tools/census.py check|summary|judge|groups|brief|dispatch|apply|confirm LOG
 """
 import argparse, concurrent.futures as cf, csv, datetime, functools, hashlib, io, json, os, random, re, shlex, shutil, ssl, subprocess, sys
 import socket, tempfile, threading, time, types

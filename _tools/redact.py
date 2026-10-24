@@ -19,6 +19,9 @@ documentation ranges and names (192.0.2.0/24, 2001:db8::/32, example.com), and t
 redact(redact(x)) == redact(x). A user is matched both as a UPN or e-mail and as a down-level `DOMAIN\\name`, with no
 suffix allowlist: an explicit UPN suffix need not be the DNS domain (reuse/pseudonymization-tokenization.md:43-48, DOC
 and DER S-h2cmbqvf, S-dcjdn73r).
+
+Answers: how a text is redacted to kb placeholders and whether it still leaks an identifier
+Use: python3 _tools/redact.py [--scan] [FILE]
 """
 import collections, functools, ipaddress, json, math, re, shutil, sys
 from pathlib import Path

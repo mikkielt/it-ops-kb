@@ -33,6 +33,10 @@
 
 The text is never printed back, except by `summary --wait`, which prints the answer. Exit codes: 0 done; 1 the claim is held, or a value moved on; 2 a bad argument, no `claude`
 on PATH, or a coord command that failed.
+
+Answers: how a session asks another session, an item or the observer a question, and how an ask is answered
+Answers: how an alert of the monitor gets a capped read-only diagnosis
+Use: python3 _tools/kbask.py ask TARGET QUESTION | answer ID TEXT | remediate ALERT | summary ID
 """
 import argparse
 import json

@@ -106,6 +106,10 @@ more until the window is over: under down_window(), gated_request() (the request
 candidate page, a made-up sibling and a pinned url's repository) reads and records it for the host each request went to, and follows no redirect hop into a host in its window.
 lifetimes() gives each source a freshness lifetime with no request (the section "freshness lifetime"): the factdiff
 revalidation at question time and fetch.py --status read it.
+
+Answers: which documentation host serves a source and how cheaply its changes are detected
+Answers: what a documentation page says in its provider's raw form
+Use: python3 _tools/provider.py list|show|probe|read|search [ARGS]
 """
 import argparse, calendar, collections, contextlib, csv, datetime, email.utils, hashlib, html.parser, io, json, math, os, random, re, socket, ssl, string, subprocess, sys, threading, time
 import urllib.error, urllib.parse, urllib.request, zlib

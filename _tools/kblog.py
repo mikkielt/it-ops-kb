@@ -58,6 +58,10 @@ same runs and days is the row already there (any status, an invalidated one incl
 only the operator confirms (`confirm --by operator`), `propose` never activates. Exit 0 also when it proposes nothing.
 
 Exit: 0 done, 2 refused (a rule above, an unknown root or id, or a file that cannot be read) or bad arguments.
+
+Answers: which observed signals (LOG rows) a root or the kb's own docs record
+Answers: how an agent records a signal and how the operator confirms it
+Use: python3 _tools/kblog.py record|propose|confirm|list [ARGS]
 """
 import argparse, re, subprocess, sys
 from pathlib import Path

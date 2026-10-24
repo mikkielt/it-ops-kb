@@ -26,6 +26,10 @@ model ids, or None when the transcript cannot be read or holds no request of the
 `work/<id>` branch is counted under `routed`, by that item id, not under `sub`. find_transcript(session_id) and
 transcript_ended(path) are what the launcher uses to close a session whose SessionEnd never ran: the newest transcript
 of a session id, and whether the session has exited.
+
+Answers: how many tokens one prompt of a Claude Code session used, read from its transcript
+Answers: which tools and files a session's tool results held, in calls and characters
+Use: python3 _tools/kbusage.py TRANSCRIPT [--prompt ID] | tree PATH
 """
 import argparse, getpass, json, os, re, shlex, socket, sys, time
 from datetime import datetime

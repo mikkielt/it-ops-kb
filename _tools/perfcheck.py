@@ -30,6 +30,10 @@ the same class and name still exists in a file the baseline already held stays M
 
 Exit codes: 0 no id lost (or the run was within its bound); 1 an id is missing and not allowed, or a run was over its
 bound or failed; 2 it could not do what was asked (bad arguments, an unreadable file, a failed collection, not a clone).
+
+Answers: whether a test-suite speed-up lost a test, by comparing the collected test ids
+Answers: whether a suite run stayed within a time bound
+Use: python3 _tools/perfcheck.py ids [--write FILE|--against FILE|--base REV]
 """
 import argparse, os, re, shutil, subprocess, sys, tempfile, time
 from pathlib import Path

@@ -61,6 +61,10 @@ is unchanged without a read.
 
 Answer ids. New research answers in _answers.md are headed `## QK-<slug>. <question>`: lowercase words
 joined by hyphens. Existing Q/QA/QS/QR/QG/R headings stay.
+
+Answers: which source id, answer id or eval id a url or a question gets in a root
+Answers: how to add a source row to a root's _sources.csv without an id clash
+Use: python3 _tools/kbid.py url|answer|eval|add [ARGS]
 """
 import argparse, base64, collections, contextlib, csv, datetime, functools, hashlib, os, re, sys, time, urllib.parse
 import kbcommon

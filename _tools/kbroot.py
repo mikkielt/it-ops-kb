@@ -41,6 +41,9 @@ root is not on disk as `missing` and exits 0; `add` refuses a name or prefix a p
 
 Exit: 0 done (always, for `fetch --hook`), 1 a fetch, a submodule add or a push failed (stderr names the root), 2 refused (bad name or prefix, taken, the directory exists,
 a name that is no fetch root, or for `push` a fetch root, a root not checked out, or one with uncommitted changes).
+
+Answers: which roots the kb has, their id prefix, visibility and size, and how to add or fetch one
+Use: python3 _tools/kbroot.py list|add|add-remote|fetch|push [ARGS]
 """
 import argparse, os, re, shutil, subprocess, sys, time
 

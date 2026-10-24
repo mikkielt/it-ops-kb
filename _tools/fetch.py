@@ -59,6 +59,10 @@ A failed download is reported as `unknown`, never as a match.
 
 Every request writes one query log spool row (kb/_self/querylog.md, Capture): host, path and outcome class, never the
 query string or the body.
+
+Answers: whether the kb's downloaded artifacts still match their sources and their hashes
+Answers: how fresh each source is, and how to download an artifact again
+Use: python3 _tools/fetch.py --verify|--refresh|--offline|--status
 """
 import argparse, datetime, difflib, hashlib, html.parser, http.client, io, json, lzma, os, re, shutil, subprocess, sys, tarfile, tempfile, time, zlib
 import urllib.error, urllib.parse, urllib.request, zipfile

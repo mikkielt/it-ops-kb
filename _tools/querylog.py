@@ -174,6 +174,12 @@ session: `tools-<yyyy-mm-dd>.jsonl`), the config file `_private/querylog.json` a
 written when the mode is `off` (or the config file cannot be read: fail closed), when the DISABLED marker exists, or
 when Claude Code does not run the hooks (`--settings '{"disableAllHooks": true}'`, which every `claude -p` the pipeline
 starts carries).
+
+Answers: how the query log captures, distils, learns from and delivers the kb lookups
+Answers: what the digest of the query log shows, and which lookups missed
+Use: python3 _tools/querylog.py capture|launch|distill|learn|apply|digest|status|show|where|queue [ARGS]
+MCP: kb_querylog reads the log
+MCP: kb_feedback records how a lookup went
 """
 import argparse, datetime, re, sys
 

@@ -135,6 +135,7 @@ Without `--json` and `--once`, kbmon shows a frame every `--interval` seconds (1
 | `census`, `census_tag` | the newest date of a `_census/YYYY-MM-DD.csv` file and the newest `census-*` tag of the clone, or null |
 | `eval` | `{state, when}` of the newest recorded lookup eval at a landing (the `land.step` ops row of `rag.py-eval`: `passed` for exit 0, else `failed`), or null; the panel never runs the eval, and the row holds no count of passed rows |
 | `index_age_s` | seconds since the newest pack index file was written or last used, or null when there is none |
+| `tools` | `{count, missing}`: the command-line tools of `_tools/` that `kbtools.py` catalogs, and the names of those whose module docstring lacks its `Answers:` or `Use:` line (the text view prints one `tools:` line with both counts) |
 
 The panel reads the clone the script is in; `--root` naming another clone makes it `unsupported`.
 

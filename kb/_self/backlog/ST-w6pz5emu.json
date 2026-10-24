@@ -88,6 +88,46 @@
     "kb/_self/doc2query.md",
     "kb/_self/embedding.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does kbtools.py NEED rank entries (and how many does it print)? Word match with endings cut, common words dropped, rarer words weighing more, a name word twice, at most 8 entries and none under a third of the best score; or a plain count of shared words",
+      "options": [
+        "rarity-weighted word match, at most 8",
+        "plain shared-word count"
+      ],
+      "recommendation": "rarity-weighted word match, at most 8",
+      "do": {
+        "rarity-weighted word match, at most 8": "ST-w6pz5emu",
+        "plain shared-word count": "ST-w6pz5emu"
+      },
+      "class": "push",
+      "answer": "rarity-weighted word match, at most 8 (pre-approved by the operator for the 2026-10-24 night run)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Where does kbtools.py read the kb MCP tools and their descriptions? From the tools/list answer of kb_mcp.handle (imported when the catalog is built), or from the source text of kb_mcp.py",
+      "options": [
+        "kb_mcp tools/list answer",
+        "kb_mcp.py source text"
+      ],
+      "recommendation": "kb_mcp tools/list answer",
+      "do": {
+        "kb_mcp tools/list answer": "ST-w6pz5emu",
+        "kb_mcp.py source text": "ST-w6pz5emu"
+      },
+      "class": "push",
+      "answer": "kb_mcp tools/list answer (pre-approved by the operator for the 2026-10-24 night run)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "notes": "Premise run 2026-10-24 on the base: 37 of 37 _tools command-line tools lack the trailing Answers:/Use: lines (check 0 prints the count); _tools/kbtools.py does not exist: reproduces. Worker scope: change only module docstrings of existing tools (trailing Answers:/Use:/MCP: lines), so the merge with other sprints' code stays clean; edit the docstrings of modules other sessions hold (backlog.py held --ref origin/main: coord.py, kbsettings.py, ...) last, after git fetch and a rebase on origin/main. New code: kbtools.py (or one module it shares with selfdoc.py and mon_kb.py, split per kb/_self/code.md), the selfdoc.py check, mon_kb.py. What the checks read: a command-line tool is a _tools/*.py with an if __name__ == '__main__' guard; the docstring's trailing block (first Answers: line to the end) holds only Answers:/Use:/MCP: lines and indented continuations; backlog.py, check.py, coord.py, kbmon.py, kbsettings.py, querylog.py, rag.py and selfdoc.py carry an MCP: line naming a kb MCP tool of kb_mcp.py; kbtools.py NEED --json prints {entries: [{tool: NAME, ...}]}, tool the file name (backlog.py) for a command-line tool and the skill, agent or MCP tool name otherwise, at most 10 entries, none for a nonsense need; the catalog has a line per entry holding its name and, for a tool, the start of its Use: command, and reads the clone it sits in (check 5 plants a tool whose import leaves a marker); selfdoc.check(root) flags each command-line tool missing either line, by file name; the kbmon kb panel prints one line with the words tools and missing: the count of command-line tools and the count missing their lines. Docs mapped to the code but held by other items or none (backlog.md, coordination.md, maintaining.md, .claude/skills/kb-ingest/SKILL.md, ...): a docstring-only change needs no edit, so read each and name it in Self-Reviewed. AGENTS.md is ST-e6xp5h3u's.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",

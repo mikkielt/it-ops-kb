@@ -71,6 +71,10 @@ the same.
       the review row; --dry-run prints the batches and the estimated tokens and USD and calls nothing.
       `census.py judge` applies it to a census log's queue and confirms a source whose every fact is supported.
 Exit: 0 ok; 1 anchors --stale found stale anchors or anchors --min found the located share below it; 2 bad arguments.
+
+Answers: which facts of an article still hold when a source page changed, which changed and which are gone
+Answers: where on its source page a fact is anchored
+Use: python3 _tools/factdiff.py anchor|anchors|snapshot|calibrate|review [ARGS]
 """
 import argparse, collections, concurrent.futures as cf, csv, datetime, hashlib, json, math, os, re, shutil, subprocess, sys, tempfile
 import threading, time, unicodedata, urllib.parse

@@ -74,6 +74,9 @@ or a path from the request.
 
 Exit codes: 0 after an interrupt, 1 when the address cannot be bound, 2 for a bad option (a non-loopback --bind
 without --bind-any, and a --roots name that is no root, among them).
+
+Answers: how to serve the read-only kb MCP server over HTTP on a local port
+Use: python3 _tools/kb_http.py [--port N] [--bind ADDR]
 """
 import argparse, ipaddress, json, re, socket, sys, threading, time
 from http import HTTPStatus

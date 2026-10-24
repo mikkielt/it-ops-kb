@@ -24,6 +24,9 @@ check_lanes lists the code-lane commits of a range that no merged merge request 
 forge's commit association endpoint (gitlab_associate, github_associate; urllib only). A merge commit is not judged
 itself: the commits it brings in are in the range and are. An association that cannot be read raises ForgeError, so a
 check never passes on a failed call.
+
+Answers: whether a commit is content-lane or code-lane, and which paths decided it
+Use: python3 _tools/kblane.py [A..B | REV]
 """
 import argparse, json, re, subprocess, sys, urllib.error, urllib.parse, urllib.request
 from pathlib import Path

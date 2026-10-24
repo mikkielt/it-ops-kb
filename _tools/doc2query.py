@@ -29,6 +29,10 @@ articles by their path inside the root.
 
 A key is the first 12 hex digits of sha256 over the fact text with whitespace collapsed: stable when lines move,
 new when the text changes. kbfacts.pack reads expansions.csv when it exists and KB_DOC2QUERY is not "0".
+
+Answers: which facts need generated questions so that a differently worded question finds them
+Answers: whether the question expansions are stale or can be pruned
+Use: python3 _tools/doc2query.py split|batch|ingest|evaluate|stale|prune
 """
 import argparse, collections, csv, json, os, random, sys
 

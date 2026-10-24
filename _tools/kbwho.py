@@ -20,6 +20,9 @@ it, a random alias cannot. The email itself appears only in `_private/operators.
 `operator()` gives other tools the same answer as a dict `{"id", "source", "role"}`; it never raises (an alias file
 that cannot be written leaves `id` None). `otel_attributes()` (and `--otel-attributes`, one JSON object) gives the resource
 kbmon's OpenTelemetry export carries: the operator id as `kb.operator.id`, never an email. Exit 0 whatever the source; 2 for a bad argument.
+
+Answers: who the operator of this session is and which role the session has
+Use: python3 _tools/kbwho.py [--json]
 """
 import argparse, json, os, re, secrets, subprocess, sys, urllib.parse
 

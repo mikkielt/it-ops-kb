@@ -21,6 +21,9 @@ three assets' `.sha256` files.
 
 Exit codes: 0 installed (or --plan, --declined), 1 download, checksum or extraction error, 2 a bad argument or an OS or
 CPU with no pinned file, 3 the target exists (nothing changed).
+
+Answers: how to install the pinned WezTerm release that shows the kbmon live view in a pane
+Use: python3 _tools/install_wezterm.py --plan|--declined|--yes
 """
 import argparse
 import hashlib

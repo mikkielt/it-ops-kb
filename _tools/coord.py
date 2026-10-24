@@ -130,6 +130,18 @@ Without `--holder`, `claim` and `dedup` take the holder from the environment var
 
 Exit codes: 0 done; 1 the command's condition failed (key held, wrong or expired token, revision moved, key
 absent); 2 a bad argument, no store, or a server that refuses (401) or cannot be reached.
+
+Answers: who holds an item, a key or a file right now, and what other sessions posted
+Answers: how to claim, renew, release, wait for an event or write a value only while its revision holds
+Use: python3 _tools/coord.py claim|renew|release|get|put|list|post|digest|wait|dedup [ARGS]
+MCP: coord_claim claims a key
+MCP: coord_renew renews a claim
+MCP: coord_release releases a claim
+MCP: coord_post posts an event
+MCP: coord_get reads a value
+MCP: coord_put writes an ask's or answer's text
+MCP: coord_digest lists live intents and claims
+MCP: coord_wait waits for events
 """
 import argparse
 import csv

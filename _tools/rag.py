@@ -54,6 +54,18 @@ Summary, Reference and Examples lines and untagged data rows, printed with `(no 
 Add --json (before the command) for machine output. artifacts/ directories are not indexed. search skips the
 index files (README.md, each root's _answers.md, _gaps.md, _conflicts.md, _coverage.csv) and the kb's own docs
 (kb/_self/) unless --index; pack never sees them.
+
+Answers: what the kb says about a question, as cited fact lines with their coverage
+Answers: which kb articles, facts or sources match some words, and how many there are
+Answers: how to read lines of a kb file or resolve a source id
+Use: python3 _tools/rag.py pack|search|show|facts|audit|src|topics|topics-for|eval [ARGS]
+MCP: kb_pack answers a question
+MCP: kb_search searches every line
+MCP: kb_show reads lines
+MCP: kb_facts lists fact lines
+MCP: kb_audit counts per article
+MCP: kb_source resolves source ids
+MCP: kb_topics_for maps code to topics
 """
 import argparse, csv, difflib, json, os, re, sys
 from collections import Counter, defaultdict

@@ -28,6 +28,9 @@ _sources.csv used_in: the sorted `;`-joined content files of the root whose text
   artifact that does not cite its source is linked to it by _artifacts.csv, not by used_in. Every other column and the row order are kept.
 Output is deterministic: `\\n` line endings, no BOM, stable order. Running it twice changes nothing.
 Exit 0 up to date (or written), 1 out of date (--check), 2 cannot build (unreadable ledger, missing table markers).
+
+Answers: whether the generated coverage and index files are out of date, and how to rebuild them
+Use: python3 _tools/build_index.py [--check] [--root NAME]
 """
 import argparse, csv, io, os, sys
 
