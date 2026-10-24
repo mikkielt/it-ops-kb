@@ -20,7 +20,7 @@
       "run": [
         "python3",
         "-c",
-        "import sys, pathlib; sys.path.insert(0, '_tools'); import kbsettings; t = pathlib.Path('kb/_self/coordination.md').read_text(encoding='utf-8'); bad = kbsettings.check('a line added above the list\\n' + t) if False else kbsettings.check('a line added above the list' + chr(10) + t); print('problems with one line added above the list:', len(bad)); sys.exit(1 if bad else 0)"
+        "import sys, pathlib; sys.path.insert(0, '_tools'); import kbsettings; t = pathlib.Path('kb/_self/coordination.md').read_text(encoding='utf-8'); bad = kbsettings.check('a line added above the list' + chr(10) + t); print('problems with one line added above the list:', len(bad)); sys.exit(1 if bad else 0)"
       ]
     }
   ],
