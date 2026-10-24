@@ -2,7 +2,7 @@
   "id": "BG-xudww2ij",
   "kind": "bug",
   "title": "With announce.to_other_sessions false and one invalid key elsewhere in the coordination settings, the coord hook falls back to the defaults and posts the session's intent",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-nij36lt7",
   "sprint": "SP-yisvj7vd",
   "priority": "P2",
@@ -46,6 +46,19 @@
   ],
   "notes": "Review gap (S3) of SP-3i7hcb6i, found by the fresh-context reviewer: coord_hook.settings() falls back to kbsettings.DEFAULTS on a SettingsError, so a typo elsewhere in the coordination object turns announce.to_other_sessions=false (BG-fder3unh) into the default true. Repro fails on today's main (intents posted 1). Fix options for whoever takes it: read to_other_sessions alone from the layers when the whole object is invalid, or treat an unreadable settings file as not announcing. Premise run 2026-10-24 on the day-run base: repro exits 1 (1 intent posted). Protected path .claude/hooks/coord_hook.py: staging copy plus stage-back. kb/_self/maintaining.md and kb/_self/token-efficiency.md only list the hook: read them and name them in Self-Reviewed. Planned into SP-yisvj7vd, 2026-10-24. Sprint started 2026-10-24. Claimed and released 2026-10-24 before dispatch: ST-jbuihocm of the docs sprint holds kb/_self/coordination.md; claim again once it has landed. 2026-10-24 overlap: the docs sprint's ST-i6jrzflk is working on kb/_self/coordination.md too. Strategy taken: proceed (easy to reverse; the docs item may land first). Edit coordination.md only where the text of announce.to_other_sessions or the hook's fallback goes wrong, in that sentence alone; a rebase conflict there is resolved at land. Gate g1 (class agents-rule) answered by the day-run runner with its recommendation, read the flag alone: it keeps the operator's explicit false honoured, narrower than silencing every unreadable settings file (pre-approved by the operator for the 2026-10-24 day run).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "addb951dfb0a6889826fb31ed9b58aa6e0fc2432",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport subprocess, tempfile, os, sys, json, uuid, glob\nREAL = os.getcwd()\nS = os.path.join(tempfile.mkdtemp(), \"c.sqlite\")\nsid = str(uuid.uuid4())\nd = os.path.realpath(tempfile.mkdtemp())\nfor a in ([\"init\", \"-q\", \"-b\", \"work/ST-ef56gh78\"], [\"commit\", \"-q\", \"--allow-empty\", \"-m\", \"x\"]):\n    subprocess.run([\"git\", \"-c\", \"user.email=a@b.c\", \"-c\", \"user.name=x\", \"-C\", d] + a, capture_output=True)\nos.makedirs(os.path.join(d, \"_backlog\"))\njson.dump({\"id\": \"ST-ef56gh78\", \"title\": \"t\", \"touches\": [\"a.py\"]}, open(os.path.join(d, \"_backlog\", \"ST-ef56gh78.json\"), \"w\"))\njson.dump({\"coordination\": {\"announce\": {\"to_other_sessions\": False, \"when\": [\"bogus\"]}}}, open(os.path.join(d, \"settings.json\"), \"w\"))\nr = subprocess.run([sys.executable, \".claude/hooks/coord_hook.py\"], input=json.dumps(dict(hook_event_name=\"SessionStart\", session_id=sid, cwd=d, source=\"startup\")), capture_output=True, text=True, env=dict(os.environ, KB_COORD_STORE=S, KB_OPERATOR=\"op-aaaa\"), cwd=REAL)\nw = subprocess.run([sys.executable, \"_tools/coord.py\", \"--store\", S, \"wait\", \"--since\", \"0\", \"--timeout\", \"0\"], capture_output=True, text=True)\nn = [e for e in json.loads(w.stdout)[\"events\"] if e[\"kind\"] == \"intent\" and e[\"fields\"].get(\"session\") == sid]\nfor f in glob.glob(os.path.join(REAL, \"_cache\", \"coord_hook\", sid + \"*\")):\n    os.remove(f)\nprint(\"exit\", r.returncode, \"| intents posted with to_other_sessions false and an invalid when key:\", len(n))\nsys.exit(0 if r.returncode == 0 and not n else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "d9487e0f0ea13749"
+      }
+    ]
+  }
 }
