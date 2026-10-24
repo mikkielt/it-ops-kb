@@ -26,6 +26,27 @@
   "depends_on": [
     "BG-fder3unh"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the hook's SessionStart line decide between relative _tools/ commands and the plugin root's absolute ones?",
+      "options": [
+        "project holds _tools/coord.py",
+        "state_dir FOREIGN names a foreign store"
+      ],
+      "recommendation": "project holds _tools/coord.py",
+      "do": {
+        "project holds _tools/coord.py": "ST-gapgf2ay",
+        "state_dir FOREIGN names a foreign store": "ST-gapgf2ay"
+      },
+      "class": "agents-rule",
+      "answer": "project holds _tools/coord.py",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-sucr3kfg review"
   ],
