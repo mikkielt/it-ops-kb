@@ -2,7 +2,7 @@
   "id": "ST-m6ut3yek",
   "kind": "story",
   "title": "The coord panel's live claims and the claims metric leave out the wait/ leases a blocked coord.py wait holds",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-ymnz7b4n",
   "priority": "P3",
@@ -47,5 +47,7 @@
     "parked: SP-d6gbc3tq review"
   ],
   "notes": "Review gap (S2) of SP-d6gbc3tq: ST-3vn4t2h6's wait/PID/ITEM leases carry a holder, so mon_coord.py:241 lists them as claims and kbmon_coord_claims{state=live} counts them. Premise (plan 2026-10-24): both checks fail on today's base (precheck: wait/ lease listed as a live claim and counted in kbmon.coord.claims live); reproduces. Planned into SP-ymnz7b4n, 2026-10-24 day run.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
