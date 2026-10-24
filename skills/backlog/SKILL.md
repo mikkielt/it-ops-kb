@@ -5,7 +5,7 @@ argument-hint: "[epic \"<outcome>\" | \"<what to plan>\" | bug \"<defect>\" | tr
 
 # Plan the backlog
 
-`${CLAUDE_PLUGIN_ROOT}` is the directory that holds the tool scripts: the plugin's, or, where this text runs from a clone's own copy and still shows the variable, that clone's top directory. The Bash tool does not set it: write the path where a command below shows it.
+`${CLAUDE_PLUGIN_ROOT}` is the directory that holds the tool scripts: the plugin's, or, where this text runs from a clone's own copy and still shows the variable, that clone's top directory, and there write each command in the relative form `python3 _tools/SCRIPT.py` from that directory, which its `.claude/settings.json` allow rules match (an absolute path matches none). The Bash tool does not set it: write the path where a command below shows it.
 
 The project's `backlog.json` names the steps only some projects have (`python3 ${CLAUDE_PLUGIN_ROOT}/_tools/backlog.py config` prints each setting). A step that depends on one (`kb_root`, `docs_map`) runs when the setting is set and is skipped, said so in one line, when it is empty. When `kb_root` is set, rules are asked for, not read up front: `python3 ${CLAUDE_PLUGIN_ROOT}/_tools/rag.py pack --root KB_ROOT --set <name>` prints a step's tested rule questions, with the sets `kb-backlog:plan` (before the Plan steps, also the Epic steps), `kb-backlog:bug`, `kb-backlog:triage` and `kb-backlog:finish`. A rule you needed and no set gave you is a miss: say so in your report.
 

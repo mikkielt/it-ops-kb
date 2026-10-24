@@ -5,7 +5,7 @@ argument-hint: "plan \"<goal>\" | start SP-... | run [SP-...] | review SP-... | 
 
 # Run a sprint
 
-`${CLAUDE_PLUGIN_ROOT}` is the directory that holds the tool scripts: the plugin's, or, where this text runs from a clone's own copy and still shows the variable, that clone's top directory. The Bash tool does not set it: write the path where a command below shows it.
+`${CLAUDE_PLUGIN_ROOT}` is the directory that holds the tool scripts: the plugin's, or, where this text runs from a clone's own copy and still shows the variable, that clone's top directory, and there write each command in the relative form `python3 _tools/SCRIPT.py` from that directory, which its `.claude/settings.json` allow rules match (an absolute path matches none). The Bash tool does not set it: write the path where a command below shows it.
 
 Read the backlog with the `kb_backlog` kb MCP tool first when your tools list it (`command` one of `show`, `list`, `next`, `horizon`, `stalled`, `cost`, `ops` or `selectors`, `args` its arguments); the `backlog.py` command a step below shows is the fallback, and the way to every command the tool refuses (`claim`, `brief`, `land`, `done` and the rest, which write).
 

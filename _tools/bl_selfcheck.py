@@ -216,6 +216,32 @@ def host_commands(root):
     return list(dict.fromkeys(commands))
 
 
+SKILL_TEXT_GLOBS = ("skills/*/SKILL.md", "agents/worker.md")  # the text the sprint, item and backlog skills and the worker hold
+SKILL_TEXT_SCRIPT = re.compile(r"python3 (?:\$\{CLAUDE_PLUGIN_ROOT\}/)?(_tools/[a-z0-9_]+\.py)")
+
+
+def skill_text_scripts(root):
+    """The `_tools` scripts the skills' text under ROOT runs as `python3 SCRIPT` (with or without the plugin
+    variable, which a clone without the plugin never substitutes), each once and in text order."""
+    scripts = {}
+    for pattern in SKILL_TEXT_GLOBS:
+        for path in sorted(Path(root).glob(pattern)):
+            try:
+                text = path.read_text(encoding="utf-8")
+            except (OSError, UnicodeError):
+                continue
+            scripts.update(dict.fromkeys(SKILL_TEXT_SCRIPT.findall(text)))
+    return list(scripts)
+
+
+def script_allowed(script, commands, rules):
+    """Whether some allow rule lets `python3 SCRIPT` run: it covers the bare command, or covers a command of COMMANDS
+    that runs the script (a rule listing one subcommand is the operator's choice, the script is then allowed)."""
+    head = f"python3 {script}"
+    return any(rule_covers(r, head) for r in rules) or any(
+        c.startswith(head + " ") and any(rule_covers(r, c) for r in rules) for c in commands)
+
+
 def check_allow(root, commands=None, tools=SKILL_TOOLS):
     host = not own_checkout(root)
     if commands is None:
@@ -223,7 +249,11 @@ def check_allow(root, commands=None, tools=SKILL_TOOLS):
     rules, why = read_allow(root)
     if rules is None:
         return result("allow-rules", "unknown" if host else "fail", why, REMEDY["allow-rules"])
+    commands = list(commands)
     missing = [c for c in commands if not any(rule_covers(r, c) for r in rules)]
+    text_scripts = [s for s in skill_text_scripts(root) if not script_allowed(s, commands, rules)]
+    missing += [f"python3 {s} (skill text)" for s in text_scripts]
+    commands += [f"python3 {s}" for s in text_scripts]
     missing += [f"tool {t}" for t in tools if t not in rules and f"{t}(*)" not in rules]
     if missing:
         return result("allow-rules", "fail", f"{len(missing)} of {len(commands) + len(tools)} not covered: "
