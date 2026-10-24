@@ -2,7 +2,7 @@
   "id": "ST-n5vf55qk",
   "kind": "story",
   "title": "kbmon's needs-you line names open asks to the operator, and the coord panel shows the effective coordination settings with the file that set each",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-nij36lt7",
   "sprint": "SP-d6gbc3tq",
   "priority": "P2",
@@ -114,6 +114,37 @@
   ],
   "notes": "Plan 2026-10-24 (SP-d6gbc3tq): premise reproduced on base by precheck (the needs-you line shows only 'gate start', no settings in the coord panel). Checks added: 1 = an ask to operator with fake secrets of each redact shape shows with its id in the first lines, nothing of the secrets, and goes once answered; 2 = --status coord names settings.json and the key. Runs after ST-pja652lj is not required, but the two share mon_needs.py and mon_status.py: claim only when held shows no overlap. Planned into SP-d6gbc3tq on 2026-10-24 (night run). Sprint SP-d6gbc3tq started 2026-10-24.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "ddea75f16e48a8715afaddc540e2d83bbd22746a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\ndef plant(status):\n    for f in glob.glob(T + '/kb/_self/backlog/*.json'):\n        d = json.load(open(f, encoding='utf-8'))\n        if d['id'] == sp: d['status'] = 'active'\n        if d['id'] == iid: d['status'] = status; d['sprint'] = sp\n        json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\n    g('add', '-A'); g('commit', '-q', '-m', 'planted ' + status)\ndef walk(*states): return [c('transition', 'run/' + iid, '--to', s).returncode for s in states]\njson.dump({'coordination': {'strategy': {'working': 'after'}}}, open(os.path.join(T, 'settings.json'), 'w', encoding='utf-8'))\na = subprocess.run([sys.executable, R + '/_tools/kbask.py', '--store', S, 'ask', 'operator', 'KbmonGateWaiting fired for ST-00000000'],\n                   capture_output=True, text=True, env=env)\nk = lambda *x: subprocess.run([sys.executable, R + '/_tools/kbmon.py', *x, '--root', T, '--store', S], capture_output=True, text=True, env=env)\nst, snap = k('--status', 'all', '--json'), k('--json', '--panel', 'coord')\ntry:\n    first = json.loads(st.stdout)['lines'][0]\n    co = json.loads(snap.stdout)['panels']['coord']['data']\nexcept (ValueError, KeyError, IndexError):\n    first, co = '', {}\ns = co.get('settings') or {}\nok = a.returncode == 0 and 'ask' in first and s.get('strategy.working', {}).get('value') == 'after' and s.get('strategy.working', {}).get('source') == 'settings.json'\nprint('ask', a.returncode, '| needs line:', first[:140], '| coord settings', s.get('strategy.working'))\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "5c5b395bbe438280"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\ndef plant(status):\n    for f in glob.glob(T + '/kb/_self/backlog/*.json'):\n        d = json.load(open(f, encoding='utf-8'))\n        if d['id'] == sp: d['status'] = 'active'\n        if d['id'] == iid: d['status'] = status; d['sprint'] = sp\n        json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\n    g('add', '-A'); g('commit', '-q', '-m', 'planted ' + status)\ndef walk(*states): return [c('transition', 'run/' + iid, '--to', s).returncode for s in states]\nplant('doing')\nfake = ['AK' + 'IA' + 'ABCDEFGHIJKLMNOP', 'gh' + 'p_' + 'a' * 36, 'gl' + 'pat-' + 'b' * 24, 'sk-' + 'ant-' + 'c' * 24, 'api_' + 'key = \"' + 'd' * 10 + '\"']\ntext = 'KbmonGateWaiting ' + ' '.join(fake) + ' waits'\na = subprocess.run([sys.executable, R + '/_tools/kbask.py', '--store', S, 'ask', 'operator', text], capture_output=True, text=True, env=env)\ntry:\n    aid = json.loads(a.stdout)['id']\nexcept (ValueError, KeyError):\n    aid = 'none'\ndef first_line():\n    r = subprocess.run([sys.executable, R + '/_tools/kbmon.py', '--status', 'all', '--json', '--root', T, '--store', S], capture_output=True, text=True, env=env)\n    try:\n        return '\\n'.join(json.loads(r.stdout)['lines'][:3])\n    except (ValueError, KeyError):\n        return ''\nshown = first_line()\nsubprocess.run([sys.executable, R + '/_tools/kbask.py', '--store', S, 'answer', aid, 'seen'], capture_output=True, text=True, env=env)\nafter = first_line()\nleak = [x[:12] for x in fake + ['d' * 10] if x[:12] in shown]\nok = 'KbmonGateWaiting' in shown and aid in shown and not leak and 'KbmonGateWaiting' not in after\nprint('ask shown', 'KbmonGateWaiting' in shown, 'with its id', aid in shown, 'leaked', leak, 'gone once answered', 'KbmonGateWaiting' not in after)\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "dac82ef78ed0d0e6"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\ndef plant(status):\n    for f in glob.glob(T + '/kb/_self/backlog/*.json'):\n        d = json.load(open(f, encoding='utf-8'))\n        if d['id'] == sp: d['status'] = 'active'\n        if d['id'] == iid: d['status'] = status; d['sprint'] = sp\n        json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\n    g('add', '-A'); g('commit', '-q', '-m', 'planted ' + status)\ndef walk(*states): return [c('transition', 'run/' + iid, '--to', s).returncode for s in states]\nplant('doing')\nwalk('claimed', 'working')\njson.dump({'coordination': {'strategy': {'working': 'after'}}}, open(os.path.join(T, 'settings.json'), 'w', encoding='utf-8'))\nr = subprocess.run([sys.executable, R + '/_tools/kbmon.py', '--status', 'coord', '--root', T, '--store', S], capture_output=True, text=True, env=env)\nok = r.returncode == 0 and 'settings.json' in r.stdout and 'strategy.working' in r.stdout\nprint('status coord', r.returncode, '|', r.stdout.strip()[:240])\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "abdc396bda8b7888"
+      }
+    ]
+  }
 }
