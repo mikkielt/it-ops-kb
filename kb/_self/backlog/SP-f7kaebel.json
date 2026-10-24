@@ -1,0 +1,22 @@
+{
+  "id": "SP-f7kaebel",
+  "kind": "sprint",
+  "title": "Fewer retried commands: answer, set, gate add, factdiff, fetch, kbtools and a hung runner",
+  "status": "planned",
+  "goal": "answer takes an option number or the gate's recommendation; set applies its options to several items in one call; gate add stores a recommendation that is an option plus its reason; factdiff anchor accepts --lines with --propose; fetch text --grep accepts -i; kbtools names backlog.py landings for the landing-duration question; runner watch ends a runner whose report is written and whose process stays",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
