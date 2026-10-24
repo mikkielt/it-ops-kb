@@ -94,7 +94,9 @@
       },
       "class": "design",
       "answer": "the only kb root that has one, else none",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
