@@ -25,6 +25,23 @@
   "depends_on": [
     "BG-np2p76e6"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which event seq does the hook's suggested wait start after?",
+      "options": [
+        "store newest seq",
+        "item newest progress seq"
+      ],
+      "recommendation": "store newest seq",
+      "do": {
+        "store newest seq": "BG-lrho25jh",
+        "item newest progress seq": "BG-lrho25jh"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-ky7xz6d2 review"
   ],
