@@ -2,7 +2,7 @@
   "id": "ST-xvy5uen7",
   "kind": "story",
   "title": "Review sprint: Fail-open and privacy bugs the reviews parked: monitor overlap age and disk line, dispatch resource entries, kbroot fetch, selfcheck skills, sync gate pool base, coord hook announce",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yisvj7vd",
   "review": true,
   "priority": "P1",
@@ -23,6 +23,6 @@
       ]
     }
   ],
-  "notes": "Planned 2026-10-24 for the day run.",
+  "notes": "Planned 2026-10-24 for the day run. Sprint started 2026-10-24.",
   "filed_in": "clone-0ea70e5c"
 }
