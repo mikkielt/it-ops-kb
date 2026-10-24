@@ -1225,12 +1225,13 @@ def search_lost(failed, used):
 
 
 def madeup_text(url):
-    """The text a made-up sibling url of `url` returns with 200 (None for a real 404), once per host and run; an answer
-    with no HTTP status is not kept, so a network failure leaves soft-404 detection on for the host's other sources."""
+    """The text a made-up sibling url of `url` returns with 200 (None for a real 404 or 410), once per host and run; any
+    other answer (no HTTP status, a 429 or a 5xx) is not kept, so a failed request leaves soft-404 detection on for the
+    host's other sources."""
     host = urllib.parse.urlsplit(url).netloc
     if host not in _madeup:
         r = provider.gated_request(provider._sibling(url))
-        if not r["status"]:
+        if r["status"] not in (200, 404, 410):
             return None  # no answer is no 404: a later source of the host asks again
         _madeup[host] = provider.doc_text(r["body"], r["headers"].get("content-type", ""), url) if r["status"] == 200 else None
     return _madeup[host]
