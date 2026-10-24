@@ -306,16 +306,21 @@ LAG_REF = "origin/main"  # the integration main the hook compares the checkout's
 
 
 def lag_line(root):
-    """The hook's line naming how many commits the checkout's branch is behind LAG_REF and the fast-forward to ask the
-    operator about, or "" when it is level or ahead, or git cannot say (no repository, no such ref, no network used)."""
+    """The hook's line naming how many commits the checkout's branch is behind LAG_REF and what to ask the operator
+    about: the fast-forward when it is only behind, a rebase or merge when it is also ahead (the fast-forward refuses
+    there); "" when it is level or ahead, or git cannot say (no repository, no such ref, no network used)."""
     try:
-        p = subprocess.run(["git", "-C", str(root), "rev-list", "--count", f"HEAD..{LAG_REF}"], capture_output=True,
-                           text=True, encoding="utf-8", errors="replace", timeout=10)
+        p = subprocess.run(["git", "-C", str(root), "rev-list", "--left-right", "--count", f"HEAD...{LAG_REF}"],
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=10)
     except (OSError, subprocess.SubprocessError):
         return ""
-    n = int(p.stdout) if p.returncode == 0 and p.stdout.strip().isdigit() else 0
-    if not n:
+    ahead, _, behind = p.stdout.partition("\t") if p.returncode == 0 else ("", "", "")
+    if not (ahead.strip().isdigit() and behind.strip().isdigit()) or not int(behind):
         return ""
+    n = int(behind)
+    if int(ahead):
+        return (f"checkout is {n} commit(s) behind and {int(ahead)} ahead of {LAG_REF}, so its hooks run old code and "
+                f"a fast-forward refuses: ask the operator about a rebase or merge onto {LAG_REF}")
     return (f"checkout is {n} commit(s) behind {LAG_REF}, so its hooks run old code: ask the operator about "
             f"git merge --ff-only {LAG_REF}")
 
