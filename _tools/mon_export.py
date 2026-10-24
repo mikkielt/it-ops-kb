@@ -92,9 +92,25 @@ def coord_points(data):
             out += [point("kbmon.coord.claim.left", "s", "gauge", c.get("left_s"), item=key),
                     point("kbmon.coord.claim.budget", "USD", "gauge", c.get("budget_usd"), item=key),
                     point("kbmon.coord.claim.spend", "USD", "gauge", c.get("spend_usd"), item=key)]
+    out += run_points(data.get("runs"))
     seqs = [e.get("seq") for e in data.get("events", []) if isinstance(e, dict) and number(e.get("seq"))]
     if seqs:
         out.append(point("kbmon.coord.event_seq", "{event}", "sum", max(seqs)))
+    return out
+
+
+def run_points(runs):
+    """The run states of the items: every state's count, the seconds the oldest blocked run has waited and the most seconds a
+    working run has gone with no progress event (0 for none); nothing where the coord data holds no `runs` list."""
+    if not isinstance(runs, list):
+        return []
+    import coord
+    runs = [r for r in runs if isinstance(r, dict)]
+    out = [point("kbmon.coord.runs", "{run}", "gauge", sum(1 for r in runs if r.get("state") == state), state=state)
+           for state in coord.RUN_STATES]
+    for name, state in (("blocked_wait", "blocked"), ("working_silent", "working")):
+        ages = [r["age_s"] for r in runs if r.get("state") == state and number(r.get("age_s"))]
+        out.append(point(f"kbmon.coord.run.{name}", "s", "gauge", max(ages, default=0)))
     return out
 
 

@@ -1,11 +1,17 @@
 # A local Prometheus for the adapter's /metrics (kb/_self/monitoring.md, "A local Prometheus"). Start the adapter with
-# `--prometheus-port 9464`, then start Prometheus with `--config.file` pointing at this file.
+# `--prometheus-port 9464`, then start Prometheus with `--config.file` pointing at this file. Firing alerts go to the
+# Alertmanager on loopback that otel/alertmanager.yml configures.
 global:
   scrape_interval: 60s
   evaluation_interval: 60s
 
 rule_files:
   - kbmon.rules.yml
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["127.0.0.1:9093"]
 
 scrape_configs:
   - job_name: kbmon
