@@ -1313,8 +1313,9 @@ def bash_denied(command_line):
         if not path.is_file():
             continue
         try:
-            rules = json.loads(path.read_text(encoding="utf-8"))["permissions"].get("deny", [])
-        except (OSError, ValueError, KeyError, AttributeError):
+            settings = json.loads(path.read_text(encoding="utf-8"))
+            rules = (settings.get("permissions") or {}).get("deny", [])
+        except (OSError, ValueError, AttributeError):
             return f"{name} (unreadable)"
         for rule in rules if isinstance(rules, list) else []:
             if not isinstance(rule, str):
