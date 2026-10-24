@@ -1,0 +1,23 @@
+{
+  "id": "BG-beym5b55",
+  "kind": "bug",
+  "title": "kblane.path_lane classes any top-level file kb/<file> as content, not only a submodule root's gitlink",
+  "status": "draft",
+  "parent": "EP-eocmyqdx",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kblane.py classes the gitlink of a submodule root as content and a plain top-level file of kb/ (kb/foo.md, kb/.gitignore) as code, reading the entry's git mode (160000) where the path alone cannot tell (SP-c6w5hjmc review gap 8; the gate answer of BG-qgulx5sj chose the bare path and this narrows it)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "\nimport sys\nsys.path.insert(0, \"_tools\")\nimport kblane\nlane = kblane.path_lane(\"kb/foo.md\")\nprint(\"lane of a top-level file kb/foo.md:\", lane)\nsys.exit(0 if lane == \"code\" else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/kblane.py",
+    "kb/_self/git.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
