@@ -2,7 +2,7 @@
   "id": "BG-6bm6fhgg",
   "kind": "bug",
   "title": "The leak scan misses a key block behind a list-bullet prefix or with a header that has no space after its colon",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,
@@ -38,5 +38,7 @@
   "links": [
     "parked: SP-evq2flqc review"
   ],
-  "notes": "Found 2026-10-23 by the third SP-evq2flqc fresh review on 86d646801; not checked against the earlier shapes. Same gap list as BG-h6y5s45w (/// and //! prefixes): one fix may cover both."
+  "notes": "Found 2026-10-23 by the third SP-evq2flqc fresh review on 86d646801; not checked against the earlier shapes. Same gap list as BG-h6y5s45w (/// and //! prefixes): one fix may cover both.",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
