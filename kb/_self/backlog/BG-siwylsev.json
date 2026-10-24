@@ -2,7 +2,7 @@
   "id": "BG-siwylsev",
   "kind": "bug",
   "title": "kbroot.py fetch --pin ends in a traceback on a pointer file it cannot write and skips the later roots",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-swavez3g",
   "priority": "P3",
@@ -26,5 +26,7 @@
     "parked: SP-c6w5hjmc review"
   ],
   "notes": "Planner 2026-10-24: repro also asserts exit 1 and that the output names the root and no path.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
