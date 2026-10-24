@@ -33,6 +33,27 @@
   "depends_on": [
     "ST-ux3lubfw"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does a resumed run write the session's JSON and stderr: over result.json and stderr.log of the last dispatch, or to files of their own?",
+      "options": [
+        "overwrite result.json and stderr.log",
+        "write resume-result.json and resume-stderr.log beside them"
+      ],
+      "recommendation": "overwrite result.json and stderr.log",
+      "do": {
+        "overwrite result.json and stderr.log": "ST-po3pgvrj",
+        "write resume-result.json and resume-stderr.log beside them": "ST-po3pgvrj"
+      },
+      "class": "agents-rule",
+      "answer": "overwrite result.json and stderr.log",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-hja7yu5k close",
     "planned: SP-dx76osrn started 2026-10-24"
