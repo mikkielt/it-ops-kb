@@ -4,6 +4,7 @@
   "title": "fetch.py text --grep takes -i, so a case-insensitive census read is not refused with the usage text",
   "status": "draft",
   "parent": "EP-iowijan3",
+  "sprint": "SP-f7kaebel",
   "priority": "P3",
   "rank": 0,
   "goal": "fetch.py text URL --grep PATTERN -i prints the lines that match case-insensitively and exits 1 when no line matches",
@@ -28,6 +29,9 @@
   ],
   "relates_to": [
     "EP-mkzkd7in"
+  ],
+  "links": [
+    "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],
   "notes": "From the 2026-10-24 telemetry and query-log analysis: fetch.py text URL --grep -i \"licen|...\" exited 2 with the usage text 6 times in one afternoon (10-23 14:35) of 117 fetch.py text calls; fetch.py:631 gives text its own parser with only --timeout, --grep and --header, and argparse reads -i as an unrecognized argument. Cheap fix. The planted run serves a local page and needs no network.",
   "filed_in": "clone-0ea70e5c"
