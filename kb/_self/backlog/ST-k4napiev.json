@@ -2,7 +2,7 @@
   "id": "ST-k4napiev",
   "kind": "story",
   "title": "kbmon --events gives two different items in two coord stores different trace and span ids for their kb.item spans",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-ymnz7b4n",
   "priority": "P3",
@@ -29,5 +29,7 @@
     "parked: SP-d6gbc3tq review"
   ],
   "notes": "Review gap (S2) of SP-d6gbc3tq: mon_events.py:147 hashes only the coord event sequence. A recreated store or two clones can give two items the same trace and span ids; ST-zlzvqz2w passes the same ids as TRACEPARENT, so the join to Claude Code telemetry would merge two runs. Premise (plan 2026-10-24): the story's check fails on today's base (precheck); reproduces. Planned into SP-ymnz7b4n, 2026-10-24 day run.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
