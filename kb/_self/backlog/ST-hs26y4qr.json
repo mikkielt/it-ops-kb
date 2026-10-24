@@ -1,7 +1,7 @@
 {
   "id": "ST-hs26y4qr",
   "kind": "story",
-  "title": "The claim sync and the close commit of a host project are pushed by a backlog.py command, not by hand (second-project run)",
+  "title": "The close commit of a host project is pushed by a backlog.py command, not by hand (second-project run)",
   "status": "draft",
   "parent": "EP-4fawjprq",
   "priority": "P2",
