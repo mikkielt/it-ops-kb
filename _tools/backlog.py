@@ -242,6 +242,12 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           then read the log's last line. --dry-run
                                           prints the worktree, scratch, brief path and argv and makes, writes and
                                           starts nothing; --model names another model than sonnet only when given
+                                          dispatch --resume ID --message FILE [--detach] [--dry-run] [--model NAME]
+                                          [--max-turns N] sends the worker session of the item's last dispatch back
+                                          (`claude -p --resume`, in the item's worktree, the same environment and
+                                          caps) with the text of FILE on stdin instead of a new brief; --known,
+                                          --known-suite and --probe are refused; the run state moves as a dispatch
+                                          moves it
   backlog.py stage-back ID [--check] [--self-reviewed DOC]... [--trailer 'Key: value']...
                                           copy the item's staging copies (SCRATCH/staging/, the `.claude/` files
                                           dispatch named) that differ from the worktree's file into its worktree,
