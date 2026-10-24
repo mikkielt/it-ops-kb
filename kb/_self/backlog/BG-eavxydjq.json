@@ -2,8 +2,9 @@
   "id": "BG-eavxydjq",
   "kind": "bug",
   "title": "The kbmon mod takes a first reading with a not-read suffix as its baseline, so the entries of the panel that comes back later are told as new although they waited all along",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-ymnz7b4n",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -22,6 +23,6 @@
   "links": [
     "parked: SP-rin4kkoj review"
   ],
-  "notes": "Found by the review of SP-rin4kkoj (2026-10-24, S3). register.tsx notifyNeeds sets lastNeeds from the first reading whatever its suffix; a first line `nothing; not read: host` is then followed by `disk 9.4% free` and the mod notifies. Fix: hold the baseline until a complete line, and say so in kb/_self/monitoring.md (The notification).",
+  "notes": "Found by the review of SP-rin4kkoj (2026-10-24, S3). register.tsx notifyNeeds sets lastNeeds from the first reading whatever its suffix; a first line `nothing; not read: host` is then followed by `disk 9.4% free` and the mod notifies. Fix: hold the baseline until a complete line, and say so in kb/_self/monitoring.md (The notification). Planned into SP-ymnz7b4n, 2026-10-24 day run. Precheck: repro fails on the base.",
   "filed_in": "clone-0ea70e5c"
 }
