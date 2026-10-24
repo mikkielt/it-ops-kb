@@ -29,6 +29,25 @@
     "kb/_self/coordination.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What does kbsettings explain give as the doc reference once the table keeps no line number, and how does check find a key's bullet?",
+      "options": [
+        "name the section and bullet; check finds the bullet that starts with its key",
+        "explain reads the doc and prints the found line number"
+      ],
+      "recommendation": "name the section and bullet; check finds the bullet that starts with its key",
+      "do": {
+        "name the section and bullet; check finds the bullet that starts with its key": "BG-nhobxloq",
+        "explain reads the doc and prints the found line number": "BG-nhobxloq"
+      },
+      "class": "design",
+      "answer": "name the section and bullet; check finds the bullet that starts with its key",
+      "by": "agent"
+    }
+  ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
