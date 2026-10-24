@@ -2,7 +2,7 @@
   "id": "BG-jkdw723s",
   "kind": "bug",
   "title": "The kbmon mod notifies every refresh while a run waits, because the needs-you line it compares carries ages and a not-read suffix",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-rin4kkoj",
   "priority": "P3",
@@ -43,5 +43,7 @@
     "parked: SP-hja7yu5k review"
   ],
   "notes": "Found by the review of SP-hja7yu5k (2026-10-24, fresh-context reviewer, register.tsx:70-90). mon_needs.line renders `ST-x blocked on gate g1, 5m` and a minute later `6m`; `alertsOf` strips ` — since ...` but notifyNeeds does not, so a stuck run notifies once a minute; `needs you: nothing; not read: host` (a panel timed out on a loaded host) is told as news. The repro is a planted claude plugin test (real claude binary, not the PATH wrapper). Planned in SP-rin4kkoj (2026-10-24 night run, manager approval). Premise run on main b950692a97: the repro and the added check (appears, goes, kind change, ages, not-read suffix) both fail. Ages in the line (mon_needs.line, age_text): `, 5m` ends a run entry, `undecided for 12m` an overlap, `(1h05m, in CHECKOUT)` an orphan; formats 5s, 5m, 1h05m, 1d03h. Design to keep: compare the entries (the line split at `; `, ages and the `; not read: PANELS` suffix removed). A line with a not-read suffix tells only entries new to the baseline and never lowers it, so a panel timing out and the entries returning is no news; a complete line replaces the baseline. The last entry going (`nothing`) tells nothing, as before. The ask entry keeps its `since DATE TIME`: a fixed time, not an age. Doc: kb/_self/monitoring.md, The notification. Checks: the added check plants the appear, go, kind-change, age and not-read cases; the repro plants the two no-news cases.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
