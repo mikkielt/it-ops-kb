@@ -2,7 +2,7 @@
   "id": "BG-7efq3pqt",
   "kind": "bug",
   "title": "remember_feedback_id's stale-lock takeover can let two writers in, and its finally unlinks a lock another writer holds",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,
@@ -40,5 +40,7 @@
   "links": [
     "parked: SP-vx6eufpj review"
   ],
-  "notes": "Planner 2026-10-24: the text repro (lock.unlink(missing_ok=True) absent from the function) is replaced by two planted runs: check 0 makes a second writer take over the stale lock between the first writer's stat and rename, the repro makes the lock change hands while the first writer holds it."
+  "notes": "Planner 2026-10-24: the text repro (lock.unlink(missing_ok=True) absent from the function) is replaced by two planted runs: check 0 makes a second writer take over the stale lock between the first writer's stat and rename, the repro makes the lock change hands while the first writer holds it.",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
