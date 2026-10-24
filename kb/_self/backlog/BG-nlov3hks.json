@@ -2,7 +2,7 @@
   "id": "BG-nlov3hks",
   "kind": "bug",
   "title": "kbmon's sessions panel reads every coord event on each collect, so a slow store times out and every overlap then reads as age 0",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-nij36lt7",
   "sprint": "SP-ymnz7b4n",
   "priority": "P2",
@@ -68,6 +68,28 @@
   ],
   "notes": "Planned into SP-ymnz7b4n, 2026-10-24 day run. Precheck: repro fails on the base; a behaviour check was added for the unreadable-store clause.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "9cadcebcd563f87d5cc260daef2944d89b885a1b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, tempfile, os, sys, re\nR = os.getcwd(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite'); T = tempfile.mkdtemp()\nsubprocess.run(['git', 'init', '-q', T])\nopen(S, 'w').write('not a database')\nr = subprocess.run([sys.executable, R + '/_tools/kbmon.py', '--once', '--panel', 'sessions', '--root', T, '--store', S], capture_output=True, text=True, env=dict(os.environ, KB_COORD_STORE=S))\ntext = r.stdout\nsaid = re.search(r'overlap.*not read|not read.*overlap', text, re.I) is not None\nprint('exit', r.returncode, '| the sessions panel says its overlaps were not read:', said)\nsys.exit(0 if r.returncode == 0 and said else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "f0081ab4552fc481"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport re, sys\ntext = open('_tools/mon_sessions.py', encoding='utf-8').read()\nm = re.search(r'def read_events.*?(?=\\ndef )', text, re.S)\nbody = m.group(0) if m else ''\nprint('read_events asks for a kind:', '--kind' in body)\nsys.exit(0 if '--kind' in body else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "fc482c4901db6aec"
+      }
+    ]
+  }
 }
