@@ -4,6 +4,7 @@
   "title": "A wait for workers ends when a watched worker process has ended, so a background wait costs the orchestrator no turn until something moved",
   "status": "draft",
   "parent": "EP-sqt62vj2",
+  "sprint": "SP-vxdacfpl",
   "priority": "P2",
   "rank": 0,
   "goal": "coord.py wait takes --pid PID (repeatable) and returns with exit 0, naming the pid, as soon as a watched process has ended; a watched process that is alive and no event keep the wait going until --timeout",
@@ -36,6 +37,9 @@
   ],
   "relates_to": [
     "EP-nij36lt7"
+  ],
+  "links": [
+    "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],
   "notes": "From the 2026-10-24 telemetry and query-log analysis: coord.py wait ran 741 times in 19 runner and orchestrator sessions; 724 turns had it as their only call (5.4% of turns, 208M cache-read tokens) and about 550 of the 727 single-call waits returned under 200 characters, the reply {events: [], timed_out: true}. Only 18 of the 746 waits ran in the background: the sprint skill sets --timeout 540 with a Bash timeout of 600000, so the session wakes every nine minutes, where a background command lives up to 7200000 ms and re-invokes the session when it exits. Hand-written pid waits beside it: 838 'while kill -0 PID' or 'until grep -q' loops, 342 turns that were nothing else (49M cache-read tokens), 810 sleep calls, because dispatch --detach prints a pid and tells the reader to wait for it (bl_dispatch.py:988). Saves about 900 turns, about 45 USD a week (estimate). coord wait --item already returns on a matching event and --timeout takes any length; what is missing is the dead worker (no event) and the skill's text. Also wanted, not read by the planted check: the sprint skill's waiting paragraph runs the wait as a background command (run_in_background) and names no pid loop, and dispatch --detach's message no longer says to wait for the pid. The consumer side of EP-nij36lt7, whose goal names one wait instead of polling pids. Lane: parked sprint-orchestration class, EP-gzr4mmkm.",
   "filed_in": "clone-0ea70e5c"
