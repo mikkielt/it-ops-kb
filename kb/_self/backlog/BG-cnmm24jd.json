@@ -34,6 +34,27 @@
     "kb/_self/querylog.md",
     "kb/_self/usage.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does public_url, the url gate ql_capture.read_user_report needs, live so ql_capture imports no sibling?",
+      "options": [
+        "ql_capture holds public_url with HOSTNAME and PRIVATE_TLDS; ql_store imports them",
+        "ql_base holds them; ql_capture and ql_store import them",
+        "ql_capture keeps a copy of the gate beside ql_store's"
+      ],
+      "recommendation": "ql_capture holds public_url with HOSTNAME and PRIVATE_TLDS; ql_store imports them",
+      "do": {
+        "ql_capture holds public_url with HOSTNAME and PRIVATE_TLDS; ql_store imports them": "BG-cnmm24jd",
+        "ql_base holds them; ql_capture and ql_store import them": "BG-cnmm24jd",
+        "ql_capture keeps a copy of the gate beside ql_store's": "BG-cnmm24jd"
+      },
+      "class": "design",
+      "answer": "ql_capture holds public_url with HOSTNAME and PRIVATE_TLDS; ql_store imports them",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-jplczvj2 review"
   ],

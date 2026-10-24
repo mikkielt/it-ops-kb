@@ -18,7 +18,8 @@ from urllib.parse import urlsplit, urlunsplit
 
 from ql_base import HOME, PIPELINE_VERSION, STORE, json_lines, write_text
 from ql_capture import (ARG_MAX_CHARS, FEEDBACK, FEEDBACK_ISSUES, FEEDBACK_JUDGES, FEEDBACK_LINES_MAX, FEEDBACK_OUTCOMES,
-                        FEEDBACK_TOOL_ISSUES, OPS, OPS_COUNT_MAX, OPS_EVENTS, TAGS, VERDICTS, WORK_ITEM, ops_problems)
+                        FEEDBACK_TOOL_ISSUES, HOSTNAME, OPS, OPS_COUNT_MAX, OPS_EVENTS, PRIVATE_TLDS, TAGS, VERDICTS,
+                        WORK_ITEM, ops_problems, public_url)
 
 HEADER_KEYS = ("run", "pipeline", "retrieval", "kb_commit", "counts")
 COUNT_KEYS = ("entries", "dropped", "waiting")
@@ -59,10 +60,7 @@ COMMIT = re.compile(r"[0-9a-f]{7,64}")
 NAME = re.compile(r"[A-Za-z0-9_.-]{1,80}")  # a tool or fetcher name: never command text
 ARTICLE = re.compile(r"[\w-]+(?:/[\w.-]+)+")
 CITATION = re.compile(r"[\w-]+(?:/[\w.-]+)+:[1-9]\d*")  # root/path:line
-HOSTNAME = re.compile(r"(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z][a-z0-9-]{0,61}[a-z0-9]")
 URL_PATH = re.compile(r"/[^\s?#]{0,%d}" % (ARG_MAX_CHARS - 1))
-PRIVATE_TLDS = ("local", "lan", "corp", "internal", "intra", "home", "localdomain", "arpa", "localhost", "test",
-                "invalid", "example")
 
 FINDINGS = "findings"
 FINDING_KINDS = ("eval", "alias", "expansion", "gap", "source", "rules", "conflict")
@@ -105,20 +103,6 @@ OPS_TS = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?Z")  # th
 
 
 # ---------------------------------------------------------------- reading
-
-def public_url(url):
-    """Whether `url` is an http(s) page on a public DNS name, the url gate of a research candidate
-    (ql_research.candidate_problems) and of a kb_feedback report: no user part, a DNS name, its last label no private
-    one (PRIVATE_TLDS)."""
-    try:
-        u = urlsplit(str(url).strip())
-        host = (u.hostname or "").lower()
-        user = u.username
-    except ValueError:
-        return False
-    return u.scheme in ("http", "https") and not user and bool(HOSTNAME.fullmatch(host)) \
-        and host.rsplit(".", 1)[-1] not in PRIVATE_TLDS
-
 
 def bare_url(url):
     """`url` with scheme, host and path only: its query and fragment, where free text can ride, dropped. What a

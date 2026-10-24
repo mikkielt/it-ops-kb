@@ -358,6 +358,25 @@ def host_path(url):
     return host.lower(), (u.path or "/")[:ARG_MAX_CHARS]
 
 
+HOSTNAME = re.compile(r"(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z][a-z0-9-]{0,61}[a-z0-9]")
+PRIVATE_TLDS = ("local", "lan", "corp", "internal", "intra", "home", "localdomain", "arpa", "localhost", "test",
+                "invalid", "example")
+
+
+def public_url(url):
+    """Whether `url` is an http(s) page on a public DNS name, the url gate of a research candidate
+    (ql_research.candidate_problems) and of a kb_feedback report: no user part, a DNS name, its last label no private
+    one (PRIVATE_TLDS)."""
+    try:
+        u = urlsplit(str(url).strip())
+        host = (u.hostname or "").lower()
+        user = u.username
+    except ValueError:
+        return False
+    return u.scheme in ("http", "https") and not user and bool(HOSTNAME.fullmatch(host)) \
+        and host.rsplit(".", 1)[-1] not in PRIVATE_TLDS
+
+
 def request_outcome(status=None, error=None, body_len=None, url=None, final_url=None, limit=None):
     """The outcome class of one HTTP request made by a tool: facts only (querylog.md, Surfaces)."""
     if error is not None:
@@ -535,7 +554,7 @@ def read_user_report(text, valid=None):
     passes), and `comment`, the rest rule-redacted (cut to FEEDBACK_COMMENT_MAX_CHARS, dropped when the leak scan
     still flags it) with `class` FEEDBACK_UNCLASSIFIED. Fields with no value are left out; nothing here reads the
     network."""
-    import redact, ql_research
+    import redact
     said = {w for w, rx in USER_WORDS.items()
             if any(not USER_NEGATION.search(text[:m.start()]) for m in rx.finditer(text))}
     issue = "wrong" if "wrong" in said else "stale" if "stale" in said else None
@@ -555,7 +574,7 @@ def read_user_report(text, valid=None):
     url = ""
     for m in URL.finditer(rest):
         cand = m.group(0).rstrip(".,:!?")
-        if len(cand) <= ARG_MAX_CHARS and ql_research.public_url(cand) and not redact.scan(cand, k):
+        if len(cand) <= ARG_MAX_CHARS and public_url(cand) and not redact.scan(cand, k):
             url = cand
             rest = rest.replace(m.group(0), "", 1)
             break
