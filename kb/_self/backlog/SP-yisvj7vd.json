@@ -2,7 +2,7 @@
   "id": "SP-yisvj7vd",
   "kind": "sprint",
   "title": "Fail-open and privacy bugs the reviews parked: monitor overlap age and disk line, dispatch resource entries, kbroot fetch, selfcheck skills, sync gate pool base, coord hook announce",
-  "status": "planned",
+  "status": "active",
   "goal": "kbmon ages an overlap from the moment the two sessions met on the intents they announce now; kbmon lists the disk line from the unrounded free share and never for a zero total; dispatch drops an OTEL_RESOURCE_ATTRIBUTES entry whose key holds an email address; kbroot fetch prints no absolute path in a failure line; kbroot fetch follows a changed pointer url; selfcheck allow-rules reads only the kb's own skills; the sync gate's pool check judges a retry against the merge base; the coord hook posts no intent when announce.to_other_sessions is false even with an invalid key elsewhere",
   "gates": [
     {
@@ -14,10 +14,14 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
-  "notes": "Planned 2026-10-24 for the day run: eight parked bugs, each repro failing on the base.",
+  "notes": "Planned 2026-10-24 for the day run: eight parked bugs, each repro failing on the base. Start gate answered approve by the day-run runner under the operator's standing approval of 2026-10-24 (pre-approved by the operator for the 2026-10-24 day run).",
   "creator": "op-f618a13e",
   "filed_in": "clone-0ea70e5c"
 }
