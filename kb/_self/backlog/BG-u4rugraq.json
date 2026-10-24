@@ -2,7 +2,7 @@
   "id": "BG-u4rugraq",
   "kind": "bug",
   "title": "kbmon --receipt counts no open ask to the operator, so the pane that reads only the receipt shows needs you: 0 while --status all names the ask",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-d6gbc3tq",
   "priority": "P2",
   "rank": 0,
@@ -22,6 +22,19 @@
     "kb/_self/code.md"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "67da6267618621565c16e956544759de843d259e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, sys, os, tempfile, json; R = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite'); env = dict(os.environ, KB_COORD_STORE=S); subprocess.run(['git', 'init', '-q', '.'], cwd=T); subprocess.run(['git', '-c', 'user.email=a@b', '-c', 'user.name=n', 'commit', '-q', '--allow-empty', '-m', 'init'], cwd=T); a = subprocess.run([sys.executable, R + '/_tools/kbask.py', '--store', S, 'ask', 'operator', 'Is the sky blue'], capture_output=True, text=True, env=env); r = subprocess.run([sys.executable, R + '/_tools/kbmon.py', '--receipt', '--root', T, '--store', S], capture_output=True, text=True, env=env); line = (json.loads(r.stdout).get('line') if r.returncode == 0 and r.stdout.strip().startswith('{') else ''); print(a.returncode, r.returncode, line); sys.exit(0 if a.returncode == 0 and r.returncode == 0 and 'needs you: 1' in line else 1)"
+        ],
+        "exit": 0,
+        "sha256": "c44324f99f3c7716"
+      }
+    ]
+  }
 }
