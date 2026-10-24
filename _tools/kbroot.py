@@ -345,8 +345,17 @@ def fetch_one(p, bound=None):
     d = kbcommon.pointer_root_dir(p)
     os.makedirs(os.path.dirname(d), exist_ok=True)
     if os.path.isdir(os.path.join(d, ".git")):
+        # a pointer whose url moved: the clone follows it, and goes back to its old url when the fetch fails
+        known, old_url = git_out(["config", "--get", "remote.origin.url"], p, d)
+        moved = not known or old_url != p.url
+        if moved:
+            ok, why = run(["remote", "set-url", "origin", "--", p.url], d)
+            if not ok:
+                return why
         ok, why = run(["fetch", "--quiet", "--tags", "--force", "origin", "+refs/heads/*:refs/remotes/origin/*"], d)
         if not ok:
+            if moved and known:
+                git(["remote", "set-url", "origin", "--", old_url], p, d)
             return why
     else:
         tmp = d + ".part"
