@@ -2,7 +2,7 @@
   "id": "BG-5bzkpe2b",
   "kind": "bug",
   "title": "The coord hook's overlap read cuts the digest at 10 lines before it drops the session's own intents, so a session with many claims sees no other session",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-3i7hcb6i",
   "priority": "P2",
@@ -26,5 +26,7 @@
     "parked: SP-ky7xz6d2 review"
   ],
   "notes": "Plan 2026-10-24 (day run): repro fails on base (exit 0 | other session shown: False). Fix in the hook: the digest read cuts at 10 lines before the session's own intents are dropped; widen the read so the cut applies after the drop (the shown overlaps stay capped by OVERLAPS_SHOWN). If the fix cannot be done without a change to _tools/coord.py (not in touches), stop and report it instead of widening. Planned into SP-3i7hcb6i on 2026-10-24. Sprint started 2026-10-24.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
