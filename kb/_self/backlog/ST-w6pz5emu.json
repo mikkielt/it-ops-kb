@@ -4,6 +4,7 @@
   "title": "kbtools.py prints the catalog of the kb's tools and the few that answer a need, read from each tool's Answers: and Use: docstring lines and the skills', agents' and MCP tools' descriptions",
   "status": "draft",
   "parent": "EP-5mp6pwnn",
+  "sprint": "SP-x6eqtsid",
   "priority": "P2",
   "rank": 0,
   "goal": "each _tools command-line tool's module docstring ends with Answers: lines (the questions it answers, in plain words), a Use: line (its command) and an MCP: line when a kb MCP tool runs it, read with ast and never imported; kbtools.py with no argument prints the catalog (one line each: tool, command, what it answers) of those tools, the skills and agents by their frontmatter descriptions and the kb MCP tools by their descriptions; kbtools.py NEED [--json] prints the best entries for NEED by word match, deterministic; selfdoc.py check fails a command-line tool with no Answers: or Use: line, naming it; kbmon's kb panel counts the cataloged tools and those missing their lines",
@@ -12,8 +13,69 @@
       "run": [
         "python3",
         "-c",
-        "import ast, glob, subprocess, sys, json\nclis = [f for f in sorted(glob.glob('_tools/*.py')) if \"__name__ == '__main__'\" in open(f, encoding='utf-8').read().replace('\"', \"'\")]\ndef lines(f):\n    doc = ast.get_docstring(ast.parse(open(f, encoding='utf-8').read())) or ''\n    return {k for k in ('Answers:', 'Use:') if any(l.strip().startswith(k) for l in doc.splitlines())}\nbare = [f for f in clis if lines(f) != {'Answers:', 'Use:'}]\ndef top(need):\n    r = subprocess.run([sys.executable, '_tools/kbtools.py', need, '--json'], capture_output=True, text=True)\n    try:\n        return [e.get('tool') for e in json.loads(r.stdout)['entries']][:3]\n    except (ValueError, KeyError):\n        return []\ncases = {'what a sprint item cost in tokens and dollars': 'backlog.py', 'which sessions are running and what is stalled': 'kbmon.py',\n         'which docs describe a file I am changing': 'selfdoc.py'}\ngot = {need: top(need) for need in cases}\nok = not bare and all(cases[n] in got[n] for n in cases)\nprint('CLIs without Answers:/Use: lines', len(bare), 'of', len(clis), '| top entries', got)\nsys.exit(0 if ok else 1)\n"
+        "import ast, glob, re, sys\n\ndef doc(f):\n    return ast.get_docstring(ast.parse(open(f, encoding='utf-8').read())) or ''\n\nclis = [f for f in sorted(glob.glob('_tools/*.py')) if \"__name__ == '__main__'\" in open(f, encoding='utf-8').read().replace('\"', \"'\")]\nKEY = re.compile(r'\\s*(Answers|Use|MCP):')\n\ndef bad(f):\n    lines = doc(f).splitlines()\n    first = next((i for i, l in enumerate(lines) if l.strip().startswith('Answers:')), None)\n    if first is None:\n        return 'no Answers: line'\n    tail = lines[first:]\n    if not any(l.strip().startswith('Use:') for l in tail):\n        return 'no Use: line at the end'\n    prose = [l for l in tail if l.strip() and not KEY.match(l) and not l[:1].isspace()]\n    return f'prose after the first Answers: line: {prose[0][:40]!r}' if prose else ''\n\nproblems = {f: bad(f) for f in clis}\nproblems = {f: p for f, p in problems.items() if p}\n\n# a kb MCP tool runs these scripts (kb_mcp.py's facade, coord and settings calls): their docstrings name the tool\nsrc = open('_tools/kb_mcp.py', encoding='utf-8').read()\ntools = set(re.findall(r'\"name\": \"((?:kb|docs|coord)_\\w+)\"', src))\nruns = ['backlog.py', 'check.py', 'coord.py', 'kbmon.py', 'kbsettings.py', 'querylog.py', 'rag.py', 'selfdoc.py']\nfor name in runs:\n    f = f'_tools/{name}'\n    mcp = [l.strip()[4:] for l in doc(f).splitlines() if l.strip().startswith('MCP:')]\n    if not any(t in line for line in mcp for t in tools):\n        problems[f] = problems.get(f, '') + ' no MCP: line naming a kb MCP tool'\nfor f, p in sorted(problems.items()):\n    print(f, '-', p.strip())\nprint('command-line tools', len(clis), '| without the trailing Answers:/Use: lines or the MCP: line', len(problems))\nsys.exit(1 if problems else 0)\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import glob, re, subprocess, sys\n\nsys.path.insert(0, '_tools')\nimport kb_mcp\n\ndef run(*args):\n    return subprocess.run([sys.executable, '_tools/kbtools.py', *args], capture_output=True, text=True)\n\ndef doc(f):\n    import ast\n    return ast.get_docstring(ast.parse(open(f, encoding='utf-8').read())) or ''\n\ndef front(path):\n    m = re.match(r'---\\n(.*?)\\n---', open(path, encoding='utf-8').read(), re.S)\n    name = re.search(r'^name:\\s*(\\S+)', m.group(1), re.M) if m else None\n    return name.group(1) if name else None\n\nclis = [f for f in sorted(glob.glob('_tools/*.py')) if \"__name__ == '__main__'\" in open(f, encoding='utf-8').read().replace('\"', \"'\")]\nskills = [n for n in (front(p) for p in sorted(glob.glob('.claude/skills/*/SKILL.md'))) if n]\nagents = [n for n in (front(p) for p in sorted(glob.glob('.claude/agents/*.md'))) if n]\nlisted = kb_mcp.handle({'jsonrpc': '2.0', 'id': 1, 'method': 'tools/list'})['result']['tools']\nmcp = [t['name'] for t in listed]\n\nr = run()\nlines = [l for l in r.stdout.splitlines() if l.strip()]\n\ndef named(name):\n    rx = re.compile(r'(?<![\\w.-])' + re.escape(name) + r'(?![\\w-])')\n    return [l for l in lines if rx.search(l)]\n\nmissing = []\nfor f in clis:\n    name = f.split('/')[-1]\n    use = next((l.strip()[4:].strip() for l in doc(f).splitlines() if l.strip().startswith('Use:')), '')\n    use = use[len('python3 '):] if use.startswith('python3 ') else use\n    hit = named(name)\n    if not hit or (use and not any(use[:20] in ' '.join(l.split()) for l in hit)):\n        missing.append(name)\nmissing += [n for n in skills + agents + mcp if not named(n)]\ntotal = len(clis) + len(skills) + len(agents) + len(mcp)\nprint('exit', r.returncode, '| catalog lines', len(lines), 'for', total, 'entries (tools, skills, agents, MCP tools) | not in the catalog:', missing[:8], len(missing))\nsys.exit(0 if r.returncode == 0 and not missing and len(lines) >= total else 1)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json, subprocess, sys\n\ndef run(*args):\n    return subprocess.run([sys.executable, '_tools/kbtools.py', *args], capture_output=True, text=True)\n\ndef top(need, n):\n    r = run(need, '--json')\n    try:\n        return [e.get('tool') for e in json.loads(r.stdout)['entries']][:n]\n    except (ValueError, KeyError, TypeError):\n        return []\n\ncli = {'what a sprint item cost in tokens and dollars': 'backlog.py',\n       'which sessions are running and what is stalled': 'kbmon.py',\n       'which docs describe a file I am changing': 'selfdoc.py'}\nother = {'plan and run a sprint of the backlog': 'kb-sprint',\n         'read the backlog without writing to it': 'kb_backlog',\n         'review a workspace against the kb facts': 'kb-reviewer'}\ngot = {need: top(need, 3) for need in cli}\ngot.update({need: top(need, 5) for need in other})\nok = all(want in got[need] for need, want in {**cli, **other}.items())\nneed = next(iter(cli))\na, b = run(need, '--json'), run(need, '--json')\nsame = a.returncode == 0 and a.stdout == b.stdout and run(need).stdout == run(need).stdout\nfew = 0 < len(json.loads(a.stdout)['entries']) <= 10 if a.stdout.strip().startswith('{') else False\nplain = run(need)\nshows = plain.returncode == 0 and 'backlog.py' in plain.stdout\nnothing = run('zqxv wlkj nmbp qrtz', '--json')\ntry:\n    empty = json.loads(nothing.stdout)['entries'] == []\nexcept (ValueError, KeyError, TypeError):\n    empty = False\nprint('top entries', got, '| deterministic', same, '| a few entries', few, '| plain text names the tool', shows, '| nonsense matches nothing', empty)\nsys.exit(0 if ok and same and few and shows and empty else 1)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, shutil, subprocess, sys, tempfile\n\nsys.path.insert(0, '_tools')\nimport selfdoc\n\nCLI = '\\nif __name__ == \"__main__\":\\n    pass\\n'\nfiles = {\n    '_tools/good_cli.py': '\"\"\"A tool.\\n\\nAnswers: how many things there are\\nUse: python3 _tools/good_cli.py\"\"\"' + CLI,\n    '_tools/bare_cli.py': '\"\"\"A tool with no catalog lines.\"\"\"' + CLI,\n    '_tools/no_use_cli.py': '\"\"\"A tool.\\n\\nAnswers: how many things there are\"\"\"' + CLI,\n    '_tools/no_answers_cli.py': '\"\"\"A tool.\\n\\nUse: python3 _tools/no_answers_cli.py\"\"\"' + CLI,\n    '_tools/lib_mod.py': '\"\"\"A library module: no command line, no catalog lines.\"\"\"\\n',\n}\nd = tempfile.mkdtemp(prefix='selfdoc-plant-')\ntry:\n    env = dict(os.environ, GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_SYSTEM=os.devnull)\n    subprocess.run(['git', 'init', '-q', d], check=True, env=env)\n    os.makedirs(os.path.join(d, 'kb', '_self'))\n    open(os.path.join(d, 'kb', '_self', 'map.csv'), 'w', encoding='utf-8').write('doc,pattern\\n')\n    os.makedirs(os.path.join(d, '_tools'))\n    for rel, text in files.items():\n        open(os.path.join(d, rel), 'w', encoding='utf-8').write(text)\n    problems = selfdoc.check(d)\nfinally:\n    shutil.rmtree(d, ignore_errors=True)\nflagged = {n for n in files if any(n.split('/')[-1] in p for p in problems)}\nwant = {'_tools/bare_cli.py', '_tools/no_use_cli.py', '_tools/no_answers_cli.py'}\nreal = subprocess.run([sys.executable, '_tools/selfdoc.py', 'check'], capture_output=True, text=True)\nprint('planted problems', problems, '| flagged', sorted(flagged), '| real tree', real.stdout.strip().splitlines()[-1:])\nsys.exit(0 if flagged == want and real.returncode == 0 else 1)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import glob, os, re, shutil, subprocess, sys, tempfile\n\nd = tempfile.mkdtemp(prefix='kbmon-plant-')\n\ndef panel():\n    env = {k: v for k, v in os.environ.items() if k != 'KB_ROOT'}\n    r = subprocess.run([sys.executable, '_tools/kbmon.py', '--panel', 'kb', '--once'], cwd=d, capture_output=True, text=True, env=env)\n    lines = [l for l in r.stdout.splitlines() if re.search(r'(?i)\\btools?\\b', l) and 'missing' in l.lower()]\n    return r.returncode, lines\n\ntry:\n    shutil.copytree('_tools', os.path.join(d, '_tools'), ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))\n    for sub in ('skills', 'agents'):\n        if os.path.isdir(f'.claude/{sub}'):\n            shutil.copytree(f'.claude/{sub}', os.path.join(d, '.claude', sub))\n    os.makedirs(os.path.join(d, 'kb', 'public'))\n    os.makedirs(os.path.join(d, 'kb', '_self'))\n    env = dict(os.environ, GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_SYSTEM=os.devnull)\n    subprocess.run(['git', 'init', '-q', d], check=True, env=env)\n\n    def count():\n        return sum(1 for f in glob.glob(os.path.join(d, '_tools', '*.py'))\n                   if \"__name__ == '__main__'\" in open(f, encoding='utf-8').read().replace('\"', \"'\"))\n\n    n = count()\n    rc1, one = panel()\n    ints1 = [int(x) for x in re.findall(r'\\d+', one[0])] if len(one) == 1 else []\n    open(os.path.join(d, '_tools', 'zz_bare_cli.py'), 'w', encoding='utf-8').write(\n        '\"\"\"A tool with no catalog lines.\"\"\"\\nif __name__ == \"__main__\":\\n    pass\\n')\n    rc2, two = panel()\n    ints2 = [int(x) for x in re.findall(r'\\d+', two[0])] if len(two) == 1 else []\nfinally:\n    shutil.rmtree(d, ignore_errors=True)\nok = (rc1 == 0 and rc2 == 0 and n in ints1 and 0 in ints1 and 1 in ints2 and (n in ints2 or n + 1 in ints2) and one != two)\nprint('command-line tools', n, '| panel line', one, '| after a tool with no lines is added', two)\nsys.exit(0 if ok else 1)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, shutil, subprocess, sys, tempfile\n\nd = tempfile.mkdtemp(prefix='kbtools-plant-')\nmarker = os.path.join(d, 'imported')\ntry:\n    shutil.copytree('_tools', os.path.join(d, '_tools'), ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))\n    for sub in ('skills', 'agents'):\n        if os.path.isdir(f'.claude/{sub}'):\n            shutil.copytree(f'.claude/{sub}', os.path.join(d, '.claude', sub))\n    # a planted tool whose import would leave a marker: the catalog reads its docstring with ast and never imports it\n    open(os.path.join(d, '_tools', 'zz_probe_cli.py'), 'w', encoding='utf-8').write(\n        '\"\"\"A planted tool.\\n\\nAnswers: how many zebras the planted tool counts\\n'\n        'Use: python3 _tools/zz_probe_cli.py --count\"\"\"\\n'\n        f'open({marker!r}, \"w\").write(\"imported\")\\nif __name__ == \"__main__\":\\n    pass\\n')\n    script = os.path.join(d, '_tools', 'kbtools.py')\n    run = lambda *a: subprocess.run([sys.executable, script, *a], capture_output=True, text=True, cwd=d)\n    whole, need = run(), run('zebras counted by the planted tool', '--json')\n    imported = os.path.exists(marker)\nfinally:\n    shutil.rmtree(d, ignore_errors=True)\nprint('exit', whole.returncode, need.returncode, '| planted tool in the catalog', 'zz_probe_cli.py' in whole.stdout,\n      '| found by a need', 'zz_probe_cli.py' in need.stdout, '| imported', imported)\nsys.exit(0 if whole.returncode == 0 and need.returncode == 0 and 'zz_probe_cli.py' in whole.stdout\n         and 'zz_probe_cli.py' in need.stdout and not imported else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "each _tools command-line tool's module docstring ends with Answers: lines (the questions it answers, in plain words), a Use: line (its command) and an MCP: line when a kb MCP tool runs it, read with ast and never imported",
+      "check": 0
+    },
+    {
+      "clause": "each _tools command-line tool's module docstring ends with Answers: lines (the questions it answers, in plain words), a Use: line (its command) and an MCP: line when a kb MCP tool runs it, read with ast and never imported",
+      "check": 5
+    },
+    {
+      "clause": "kbtools.py with no argument prints the catalog (one line each: tool, command, what it answers) of those tools, the skills and agents by their frontmatter descriptions and the kb MCP tools by their descriptions",
+      "check": 1
+    },
+    {
+      "clause": "kbtools.py NEED [--json] prints the best entries for NEED by word match, deterministic",
+      "check": 2
+    },
+    {
+      "clause": "selfdoc.py check fails a command-line tool with no Answers: or Use: line, naming it",
+      "check": 3
+    },
+    {
+      "clause": "kbmon's kb panel counts the cataloged tools and those missing their lines",
+      "check": 4
     }
   ],
   "touches": [
@@ -22,7 +84,10 @@
     "kb/_self/tools.md",
     "kb/_self/code.md",
     "_tools/mon_kb.py",
-    "kb/_self/monitoring.md"
+    "kb/_self/monitoring.md",
+    "kb/_self/doc2query.md",
+    "kb/_self/embedding.md"
   ],
+  "notes": "Premise run 2026-10-24 on the base: 37 of 37 _tools command-line tools lack the trailing Answers:/Use: lines (check 0 prints the count) and _tools/kbtools.py does not exist: reproduces. Worker scope: change only the module docstrings of the existing tools (trailing Answers:/Use:/MCP: lines), so the merge with other sprints' code stays clean; new code goes in kbtools.py (or one module it shares with selfdoc.py and mon_kb.py, split per kb/_self/code.md), the selfdoc.py check and mon_kb.py. What the checks read: a command-line tool is a _tools/*.py with an if __name__ == '__main__' guard; the docstring's trailing block (first Answers: line to the end) holds only Answers:/Use:/MCP: lines and indented continuations; backlog.py, check.py, coord.py, kbmon.py, kbsettings.py, querylog.py, rag.py and selfdoc.py carry an MCP: line naming a kb MCP tool of kb_mcp.py; kbtools.py NEED --json prints {entries: [{tool: NAME, ...}]}, tool the file name (backlog.py) for a command-line tool and the skill, agent or MCP tool name otherwise, at most 10 entries, none for a nonsense need; the catalog has a line per entry holding its name and, for a tool, the start of its Use: command, and reads the clone it sits in (check 5 plants a tool whose import leaves a marker); selfdoc.check(root) flags each command-line tool missing either line, by file name; the kbmon kb panel prints one line with the words tools and missing: the count of command-line tools and the count missing their lines. Docs mapped to the code but held by other items (backlog.md, coordination.md, maintaining.md, ...) or by none (.claude/skills/kb-ingest/SKILL.md): a docstring-only change needs no edit, so read each and name it in Self-Reviewed. AGENTS.md is ST-e6xp5h3u's.",
   "filed_in": "clone-0ea70e5c"
 }
