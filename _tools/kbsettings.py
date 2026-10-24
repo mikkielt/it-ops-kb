@@ -3,7 +3,7 @@
 
   kbsettings.py show --root WS [--kb-root NAME] [--json]            print the effective coordination settings
   kbsettings.py explain [KEY] --root WS [--kb-root NAME] [--json]   each setting (or KEY) with its value, the file that
-                                                                    set it, its meaning and the doc line that states it
+                                                                    set it, its meaning and the doc bullet that states it
   kbsettings.py init --root WS [--set KEY=VALUE]...                 write the coordination section of <WS>/settings.json
                                                                     and turn the coord hook on in <WS>/backlog.json
   kbsettings.py check                                               exit 1 when the table below and the doc disagree
@@ -15,7 +15,7 @@ files. It merges key by key, later over earlier: DEFAULTS, then `<WS>/settings.j
 or a value outside its closed set, raises `SettingsError` (a ValueError whose message names the file, the key and the
 allowed values); `show` and `explain` print it on stderr and exit 2. Exit 0 printed; 1 `check` found a mismatch; 2 a
 bad setting or argument. `explain` reads the settings files and the SETTINGS table and nothing else: no model, no
-subprocess, no network, and not the doc, whose line numbers the table holds and `check` verifies.
+subprocess, no network, and not the doc, whose bullet for each key `check` finds by the key and verifies.
 
 `init` writes the whole `coordination` section: each key the file already holds keeps its value, each `--set KEY=VALUE`
 (KEY as `group.name`; a list as comma-separated values, `start,claim`) sets one, and a key neither names takes its
@@ -77,29 +77,28 @@ SCHEMA = {
 
 
 DOC = "kb/_self/coordination.md"
-# key -> (meaning in plain words, line of DOC that states the rule). The one place the meaning text lives: `explain`
-# prints it and the doc's Settings section says the same in its own words (`check` compares the key, the default and
-# the allowed values of each line).
+DOC_SECTION = "Settings, key by key"
+# key -> meaning in plain words. The one place the meaning text lives: `explain` prints it and the doc's Settings
+# section says the same in its own words, one bullet per key that starts with the key in backticks (`check` finds each
+# bullet by that key and compares the key, the default and the allowed values of its line).
 SETTINGS = {
-    "announce.when": ("The moments a session tells the other sessions and the operator what it is working on: when it "
-                      "starts, when it claims an item, in the middle of a run, or on each edit.", 170),
-    "announce.to_other_sessions": ("Whether a session announces its work to the other sessions on the clone, so they "
-                                   "can see it before they touch the same item or files.", 171),
-    "announce.operator": ("Where the operator is told about a session's work: in the terminal, on the kbmon panels, "
-                          "or as a needs-you alert.", 172),
-    "announce.needs_you_after_min": ("How many whole minutes an open question may wait before it shows as needing "
-                                     "the operator.", 173),
-    "strategy.same_item": ("What a session suggests when another session already holds the item it was about to take.",
-                           174),
-    "strategy.working": ("What a session suggests when another item that touches the same files is in the run state "
-                         "working (a worker is running it).", 175),
-    "strategy.landing": ("What a session suggests when another item that touches the same files is being landed.", 176),
-    "strategy.blocked": ("What a session suggests when another item that touches the same files is blocked on a gate.",
-                         177),
-    "strategy.returned": ("What a session suggests when another item that touches the same files has returned from its "
-                          "worker and waits to land.", 178),
-    "strategy.decide": ("Who picks the strategy when none of the keys above settles it: the operator or the "
-                        "session itself.", 179),
+    "announce.when": "The moments a session tells the other sessions and the operator what it is working on: when it "
+                     "starts, when it claims an item, in the middle of a run, or on each edit.",
+    "announce.to_other_sessions": "Whether a session announces its work to the other sessions on the clone, so they "
+                                  "can see it before they touch the same item or files.",
+    "announce.operator": "Where the operator is told about a session's work: in the terminal, on the kbmon panels, "
+                         "or as a needs-you alert.",
+    "announce.needs_you_after_min": "How many whole minutes an open question may wait before it shows as needing "
+                                    "the operator.",
+    "strategy.same_item": "What a session suggests when another session already holds the item it was about to take.",
+    "strategy.working": "What a session suggests when another item that touches the same files is in the run state "
+                        "working (a worker is running it).",
+    "strategy.landing": "What a session suggests when another item that touches the same files is being landed.",
+    "strategy.blocked": "What a session suggests when another item that touches the same files is blocked on a gate.",
+    "strategy.returned": "What a session suggests when another item that touches the same files has returned from its "
+                         "worker and waits to land.",
+    "strategy.decide": "Who picks the strategy when none of the keys above settles it: the operator or the "
+                       "session itself.",
 }
 
 
@@ -183,7 +182,7 @@ def effective(root, kb_root=None):
 def explain(root, kb_root=None, key=None):
     """[{key, value, source, meaning, doc}] for each setting of `effective`, or for KEY alone (`group.name`): source is
     the file whose layer set the value last as a path relative to ROOT (`kb/NAME/settings.json`), or "default"; doc is
-    `kb/_self/coordination.md:LINE`."""
+    the doc, its section and the bullet for the key, which names no line, so a line added to the doc moves nothing."""
     if key is not None and key not in SETTINGS:
         raise SettingsError(f"unknown key {key}; allowed: {', '.join(SETTINGS)}")
     root = Path(root)
@@ -195,12 +194,12 @@ def explain(root, kb_root=None, key=None):
         for group, body in coord.items():
             for name, v in body.items():
                 value[f"{group}.{name}"], source[f"{group}.{name}"] = v, path.relative_to(root).as_posix()
-    return [{"key": k, "value": value[k], "source": source[k], "meaning": SETTINGS[k][0],
-             "doc": f"{DOC}:{SETTINGS[k][1]}"} for k in SETTINGS if key in (None, k)]
+    return [{"key": k, "value": value[k], "source": source[k], "meaning": SETTINGS[k],
+             "doc": f"{DOC}, {DOC_SECTION}, the bullet for `{k}`"} for k in SETTINGS if key in (None, k)]
 
 
 def explain_text(rows):
-    """ROWS of `explain` as lines: key = value (source), the meaning, the doc line."""
+    """ROWS of `explain` as lines: key = value (source), the meaning, the doc bullet."""
     out = []
     for r in rows:
         value = r["value"] if isinstance(r["value"], str) else json.dumps(r["value"])
@@ -209,14 +208,18 @@ def explain_text(rows):
 
 
 def check(doc_text):
-    """Problems between SETTINGS and the text of DOC: each key's line must hold the key, the words "Default:" and the
-    default, and every allowed value of its closed set; one message per mismatch, empty when they agree."""
+    """Problems between SETTINGS and the text of DOC: each key's bullet (the line that starts with the key in
+    backticks, in bold, after "- ") must hold the key, the words "Default:" and the default, and every allowed value of
+    its closed set; one message per mismatch, empty when they agree."""
     lines, problems = doc_text.splitlines(), []
     if set(SETTINGS) != {f"{g}.{k}" for g, body in SCHEMA.items() for k in body}:
         problems.append("SETTINGS and SCHEMA do not name the same keys")
-    for key, (_, number) in SETTINGS.items():
+    for key in SETTINGS:
         group, name = key.split(".")
-        line = lines[number - 1] if 0 < number <= len(lines) else ""
+        number, line = next(((n, x) for n, x in enumerate(lines, 1) if x.startswith(f"- **`{key}`**")), (0, ""))
+        if not number:
+            problems.append(f"{DOC}: no line starts with - **`{key}`**")
+            continue
         kind, default = SCHEMA[group][name], DEFAULTS[group][name]
         shown = ", ".join(default) if isinstance(default, list) else json.dumps(default).strip('"')
         wants = [f"`{key}`", f"Default: `{shown}`"] + [f"`{v}`" for v in (kind[1] if len(kind) > 1 else ())]
@@ -298,7 +301,7 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description="The coordination settings: defaults, workspace and kb root files.")
     sub = ap.add_subparsers(dest="cmd", required=True)
     for name, help_ in (("show", "print the effective coordination settings"),
-                        ("explain", "print each setting (or KEY) with its value, source, meaning and doc line")):
+                        ("explain", "print each setting (or KEY) with its value, source, meaning and doc bullet")):
         sp = sub.add_parser(name, help=help_)
         if name == "explain":
             sp.add_argument("key", nargs="?", help="one setting, e.g. strategy.working (default: all)")
