@@ -2,7 +2,7 @@
   "id": "BG-poaoxavw",
   "kind": "bug",
   "title": "kbmon's Needs-you disk line compares the rounded free_pct, so 9.96% free shows no line and a 0-byte total shows a false one",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yisvj7vd",
   "priority": "P2",
   "rank": 0,
@@ -20,6 +20,6 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
-  "notes": "Premise run 2026-10-24 on the day-run base: repro exits 1. Touches added at planning: _tools/mon_needs.py, kb/_self/monitoring.md (the Needs you line text) and kb/_self/tools.md (the kbmon row); edit tools.md only if its text goes wrong. Same threshold and zero-total rule as mon_host.alerts. Planned into SP-yisvj7vd, 2026-10-24.",
+  "notes": "Premise run 2026-10-24 on the day-run base: repro exits 1. Touches added at planning: _tools/mon_needs.py, kb/_self/monitoring.md (the Needs you line text) and kb/_self/tools.md (the kbmon row); edit tools.md only if its text goes wrong. Same threshold and zero-total rule as mon_host.alerts. Planned into SP-yisvj7vd, 2026-10-24. Sprint started 2026-10-24.",
   "filed_in": "clone-0ea70e5c"
 }
