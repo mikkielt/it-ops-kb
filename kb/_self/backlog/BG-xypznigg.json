@@ -24,6 +24,25 @@
   "depends_on": [
     "BG-rjuqeegj"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the sessions panel tell a claim intent is a dispatching session's?",
+      "options": [
+        "an item with a dispatch record in the claims ledger, or one a worker's own intent of another session names",
+        "the ledger record only"
+      ],
+      "recommendation": "an item with a dispatch record in the claims ledger, or one a worker's own intent of another session names",
+      "do": {
+        "an item with a dispatch record in the claims ledger, or one a worker's own intent of another session names": "BG-xypznigg",
+        "the ledger record only": "BG-xypznigg"
+      },
+      "class": "design",
+      "answer": "an item with a dispatch record in the claims ledger, or one a worker's own intent of another session names",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ky7xz6d2 review"
   ],

@@ -188,8 +188,8 @@ def stalled(root, bl=None):
 
 
 def read_events(conn):
-    """({session id: [(time, items, touch paths)] of its intent events, oldest first, a dispatching session's `backlog-claim`
-    ones left out}, [(item, other, strategy, session id, time)] of the `coordinate` events, newest first,
+    """({session id: [(time, items, touch paths, claim)] of its intent events, oldest first, `claim` whether the intent is a
+    `backlog-claim` one}, [(item, other, strategy, session id, time)] of the `coordinate` events, newest first,
     {item: time of its newest `progress` event}) from `coord.py wait` over the connection arguments CONN; empty where the
     events cannot be read."""
     import mon_coord
@@ -204,9 +204,8 @@ def read_events(conn):
     for e in events if isinstance(events, list) else []:
         fields = e.get("fields") if isinstance(e, dict) and isinstance(e.get("fields"), dict) else {}
         if e.get("kind") == "intent" and isinstance(fields.get("session"), str) and isinstance(e.get("at"), (int, float)):
-            if fields.get("topic") != CLAIM_TOPIC:
-                first.setdefault(fields["session"], []).append((e["at"], split_list(fields.get("item")),
-                                                                split_list(fields.get("touch"))))
+            first.setdefault(fields["session"], []).append((e["at"], split_list(fields.get("item")),
+                                                            split_list(fields.get("touch")), fields.get("topic") == CLAIM_TOPIC))
         elif e.get("kind") == "coordinate" and fields.get("item") and fields.get("other") and fields.get("strategy"):
             chosen.insert(0, (fields["item"], fields["other"], fields["strategy"], fields.get("session"), e.get("at")))
         elif e.get("kind") == "progress" and isinstance(fields.get("item"), str) and isinstance(e.get("at"), (int, float)):
@@ -245,8 +244,8 @@ def coord_list(ctx, prefix):
 
 
 def read_coord(ctx):
-    """{intents: [fields], leases: {session id: seconds left}, claims: [(key, seconds left)], intent_at, coordinate,
-    moved} of the live leases and intents in the coord store (`coord.py digest`), the intents newest first, as coord.py
+    """{intents: [fields], leases: {session id: seconds left}, claims: [(key, seconds left)], dispatched: {items with a
+    dispatch record in the claims ledger}, intent_at, coordinate, moved} of the live leases and intents in the coord store (`coord.py digest`), the intents newest first, as coord.py
     prints them (a raw session id, never printed by this module); `intent_at`, `coordinate` and `moved` are `read_events`'
     answer. None when the store is not there, is not reachable or does not answer."""
     import mon_coord
@@ -261,7 +260,8 @@ def read_coord(ctx):
         return None
     if p.returncode != 0:
         return None
-    found = {"intents": [], "leases": {}, "claims": [], "intent_at": {}, "coordinate": [], "moved": {}}
+    found = {"intents": [], "leases": {}, "claims": [], "dispatched": {i for i, r in ledger_records(ctx.root).items() if any(worker_of(r))},
+             "intent_at": {}, "coordinate": [], "moved": {}}
     found["intent_at"], found["coordinate"], found["moved"] = read_events(conn)
     for line in p.stdout.splitlines():
         words = line.split()
@@ -391,13 +391,24 @@ def after_minutes(root):
         return kbsettings.DEFAULTS["announce"]["needs_you_after_min"]
 
 
+def dispatching(found, session, items):
+    """Whether a `backlog-claim` intent of SESSION on ITEMS is a dispatching session's: one of the items has a dispatch
+    record in the claims ledger, or an intent of another session without the claim topic (a worker's own) names it. An
+    interactive session's claim is neither, and stays an intent of that session."""
+    items = set(items)
+    if items & found.get("dispatched", set()):
+        return True
+    return any(f.get("topic") != CLAIM_TOPIC and f.get("session") != session and items & set(split_list(f.get("item")))
+               for f in found["intents"])
+
+
 def merged_intents(found):
     """{session id: {items, touch, operator}} of the live intents in FOUND that a session announced for itself (the claim
-    topic's intent of a dispatching session is left out), each session's intents merged."""
+    topic's intent of a session that dispatched a worker on its item is left out), each session's intents merged."""
     out = {}
     for f in found["intents"]:
         who = f.get("session")
-        if not who or f.get("topic") == CLAIM_TOPIC:
+        if not who or (f.get("topic") == CLAIM_TOPIC and dispatching(found, who, split_list(f.get("item")))):
             continue
         s = out.setdefault(who, {"items": [], "touch": [], "operator": None})
         s["items"] += [i for i in f.get("item", "").split(",") if i and i not in s["items"]]
@@ -406,8 +417,15 @@ def merged_intents(found):
     return out
 
 
+def met_events(found, session):
+    """The intent events of SESSION in FOUND (`read_events`' list), without the claim ones of a dispatching session, as
+    (time, items, touch paths)."""
+    return [(t, i, p) for t, i, p, claim in found.get("intent_at", {}).get(session, [])
+            if not (claim and dispatching(found, session, i))]
+
+
 def meeting_time(ea, eb):
-    """The time of the oldest moment two sessions met, from the intent events EA and EB of each (`read_events`' lists): the
+    """The time of the oldest moment two sessions met, from the intent events EA and EB of each (`met_events`' lists): the
     smallest, over the pairs of an intent of each whose items or touch paths meet, of the newer intent of the pair; None
     where no pair meets."""
     import coord
@@ -438,10 +456,10 @@ def overlap_rows(found, now=None):
                            | {u for u in sb["touch"] if any(coord.overlaps(t, u) for t in sa["touch"])})
             if not files and not set(sa["items"]) & set(sb["items"]):
                 continue
-            at = found.get("intent_at", {})
-            since = meeting_time(at.get(ida, []), at.get(idb, []))
+            ea, eb = met_events(found, ida), met_events(found, idb)
+            since = meeting_time(ea, eb)
             if since is None:
-                since = max(at.get(ida, [(now,)])[0][0], at.get(idb, [(now,)])[0][0])
+                since = max((ea or [(now,)])[0][0], (eb or [(now,)])[0][0])
             strategy = next((s for i, o, s, who, t in found.get("coordinate", [])
                              if who in (ida, idb) and isinstance(t, (int, float)) and t >= since
                              and ((i in sa["items"] and o in sb["items"]) or (i in sb["items"] and o in sa["items"]))), UNDECIDED)
