@@ -22,5 +22,9 @@
     "skills/sprint/SKILL.md",
     "kb/_self/coordination.md"
   ],
+  "links": [
+    "parked: SP-sucr3kfg review"
+  ],
+  "notes": "Found by the SP-sucr3kfg review. The offered first option for announce.when is start,claim,midrun,edit and is called the default, while kbsettings.DEFAULTS and the doc say start,claim, so a headless run that says the defaults apply writes another value. In the kb clone, kb-setup step 8 runs init, which writes hooks coord into the tracked backlog.json and leaves it dirty, though the clone's .claude/settings.json already runs the hook without the opt-in.",
   "filed_in": "clone-0ea70e5c"
 }
