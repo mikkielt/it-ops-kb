@@ -2,7 +2,7 @@
   "id": "BG-tuqtpuve",
   "kind": "bug",
   "title": "The upstream, integration-remote and public-home push guards miss the same repository written another way",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3trnelzv",
   "priority": "P1",
   "rank": 0,
@@ -26,5 +26,7 @@
     "parked: SP-3trnelzv work"
   ],
   "notes": "Found 2026-10-24 by BG-lxjtp2xz's worker (kb/_self/git.md:55 names the string match). 2026-10-24: moved into SP-3trnelzv and widened after the sprint's second review (on eeb12dd27) found is_upstream still misses a git-guessed local path (/x/up for /x/up.git, /x/up/.git), a case-insensitive spelling, and every other spelling of a remote url; is_public and to_integration have the same string match. Operator pre-approved the night's fixes.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-92aeeb3c",
+  "operator": "op-f618a13e"
 }
