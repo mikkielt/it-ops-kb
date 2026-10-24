@@ -9,7 +9,8 @@
   "relates_to": [
     "EP-gzr4mmkm",
     "EP-ajw3oywi",
-    "EP-wqgicmmj"
+    "EP-wqgicmmj",
+    "EP-sqt62vj2"
   ],
   "notes": "Why: orchestrators run sprint loops by hand (pid polling, idle checkout per landing, worker gates seen late, no progress in coord); each story's premise cites the code. Operator's choices at planning: coord is the run-state authority between claim and done, reconciled to git (gates answered 2026-10-24); one wait verb; a landing worktree; sessions announce overlaps by items and files at start, claim, mid-run and edits, with who, run state and a suggested strategy, the operator deciding, and the chosen strategy posted back; settings in <workspace>/settings.json overridden by kb/<root>/settings.json, asked at kb-setup and plugin setup, explained by kbsettings.py explain and kb_settings (a command and MCP tool, not a skill); it all works in a plugin workspace; feedback by kbmon (every change has a panel, needs-you, alert or --events row), the mod's notify, phone push, Prometheus with Alertmanager, a traces backend. Not chosen: events with no authority; a backlog.py run loop (plannable later on these states). EP-gzr4mmkm: serves its second fitness test, so items stay drafts until promoted. Later stories: kb-sprint run step and skills/sprint on these states; mod $.ui.notify on a needs-you change; phone push at blocked or failed; a kb.sprint root span; the traces backend setup after ST-mctzoewi; event-log retention; run keys behind coord.py serve. Fold in: ST-ns3oyl37, ST-vbwxcncr, ST-d7l2rlal, ST-zpcvcyqs, ST-ejx3u3ci, ST-pueudigl, ST-qd4immwv. Out: channels, a status page, the Agent SDK. Checks are planted runs, no new test ids; the ceiling is not raised. Proof: a real sprint's backlog.py runs SP shows no drift at close and its retrospective names no hand-written wait loop and no landing that waited on the checkout.",
   "filed_in": "clone-0ea70e5c"
