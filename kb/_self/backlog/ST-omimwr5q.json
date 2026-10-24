@@ -78,7 +78,11 @@
         "_cache/coord_hook under the project": "ST-omimwr5q",
         "_cache/coord_hook in the plugin's copy": "ST-omimwr5q"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "hook directory beside the project's store",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
