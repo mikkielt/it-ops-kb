@@ -21,7 +21,7 @@ let inFlight = false
 let isStale = false
 let lastAlerts: string | null = null
 let lastRow: string | null = null
-let lastNeeds: string | null = null
+let lastNeeds: Set<string> | null = null
 let settle: Timer | undefined
 
 // The text of the alert rows above kbmon's header, without the time each is "since": it changes when the alert set
@@ -61,10 +61,39 @@ function needsRowOf(text: string): string | null {
   return text.split('\n').find(line => line.startsWith(NEEDS)) ?? null
 }
 
-// Tells the person when the needs-you line changed and names something. The first reading is the baseline, an
-// unchanged line and `nothing` are not told. The pane's row is cut at its width, so the whole line comes from
-// `--status all`, asked for when the row changed or was cut. A call that rejects or answers `isSent: false` is no
-// error: the pane and the receipt go on, and the next change is tried again.
+// The entries of a needs-you line: split at `; `, without the age mon_needs.line appends to a run, overlap or orphan
+// entry and without the `not read: PANELS` suffix, so only an entry that appears, goes or changes its kind differs.
+// `complete` is false for a line with the suffix: the panel it names says nothing about what waits.
+const AGE = String.raw`\d+[dhms](?:\d+[hms])?`
+const NOT_READ = 'not read: '
+
+function entriesOf(line: string): { entries: Set<string>; complete: boolean } {
+  const parts = (line.startsWith(NEEDS) ? line.slice(NEEDS.length) : line).split('; ')
+  const complete = !parts[parts.length - 1].startsWith(NOT_READ)
+  const entries = new Set<string>()
+  for (const part of parts) {
+    if (part === 'nothing' || part.startsWith(NOT_READ)) {
+      continue
+    }
+    entries.add(
+      part
+        .replace(new RegExp(`^(orphan pid \\S+) \\(${AGE}(?:, in (.*))?\\)$`), (_, pid: string, where?: string) =>
+          where === undefined ? pid : `${pid} in ${where}`,
+        )
+        .replace(new RegExp(`^(overlap .* undecided) for ${AGE}$`), '$1')
+        .replace(new RegExp(`^(\\S+ (?:blocked on gates? .*|run failed.*|landing refused.*)), ${AGE}$`), '$1'),
+    )
+  }
+
+  return { entries, complete }
+}
+
+// Tells the person when an entry of the needs-you line appears, goes or changes its kind. The first reading is the
+// baseline. A line with a not-read suffix tells only the entries new to the baseline and never lowers it, so a panel
+// that timed out and the entries returning are no news; a complete line replaces the baseline, and `nothing` is not
+// told. The pane's row is cut at its width, so the whole line comes from `--status all`, asked for when the row changed
+// or was cut. A call that rejects or answers `isSent: false` is no error: the pane and the receipt go on, and the next
+// change is tried again.
 async function notifyNeeds($: EngineInterface, text: string, width: number): Promise<void> {
   const row = needsRowOf(text)
   if (row === null || (row === lastRow && lastNeeds !== null && !row.endsWith('\u2026'))) {
@@ -81,9 +110,16 @@ async function notifyNeeds($: EngineInterface, text: string, width: number): Pro
     return
   }
   const before = lastNeeds
+  const { entries, complete } = entriesOf(line)
   lastRow = row
-  lastNeeds = line
-  if (before === null || line === before || line === `${NEEDS}nothing`) {
+  if (before === null) {
+    lastNeeds = entries
+    return
+  }
+  const isNew = [...entries].some(entry => !before.has(entry))
+  const isGone = [...before].some(entry => !entries.has(entry))
+  lastNeeds = complete ? entries : new Set([...before, ...entries])
+  if (entries.size === 0 || !(isNew || (complete && isGone))) {
     return
   }
   try {
