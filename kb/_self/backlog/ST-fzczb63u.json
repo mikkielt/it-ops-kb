@@ -2,7 +2,7 @@
   "id": "ST-fzczb63u",
   "kind": "story",
   "title": "Research sprint goal: The tools move the run states: claim, dispatch, gates, land and stage-back, runs and reconcile, settings explain, the plugin's coord",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-sucr3kfg",
   "goal_research": true,
   "priority": "P1",
@@ -21,6 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Planned into SP-sucr3kfg on 2026-10-24.",
+  "notes": "Planned into SP-sucr3kfg on 2026-10-24. Sprint started 2026-10-24.",
   "filed_in": "clone-0ea70e5c"
 }
