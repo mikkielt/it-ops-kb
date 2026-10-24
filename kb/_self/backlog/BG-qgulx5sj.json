@@ -2,7 +2,7 @@
   "id": "BG-qgulx5sj",
   "kind": "bug",
   "title": "kbroot.py push's gitlink bump is classed a code-lane commit, so a submodule root's ingest cannot reach main as content",
-  "status": "draft",
+  "status": "doing",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-c6w5hjmc",
   "priority": "P2",
@@ -22,5 +22,7 @@
   ],
   "links": [
     "parked: SP-mguax5m3 review"
-  ]
+  ],
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
