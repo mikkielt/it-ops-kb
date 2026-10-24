@@ -1,0 +1,26 @@
+{
+  "id": "BG-q7lcd6od",
+  "kind": "bug",
+  "title": "The leak scan misses a narrow-wrapped EC key body whose first line starts with //",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbcommon.leak_hits flags a narrow-wrapped (8 to 19 characters per line) EC key body whose first three lines include one that starts with //, as it flags the same body without the //",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport sys\nsys.path.insert(0, \"_tools\")\nimport kbcommon\nd = \"-\" * 5\narm = d + \"BEGIN EC PRIVATE KEY\" + d\nhit = lambda t: any(k == \"secret\" for k, _ in kbcommon.leak_hits(t))\ncases = {\"slash_first\": arm + \"\\n//8x89Kh\\nAb12Cd34\\nZy98Wx76\", \"slash_nine\": arm + \"\\n//8x89Khm\\nAb12Cd34\\nZy98Wx76\"}\nmiss = [k for k, v in cases.items() if not hit(v)]\nprint(\"narrow-wrapped bodies with a // first line that pass:\", miss)\nsys.exit(1 if miss else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kbcommon.py",
+    "_tools/test_leaks.py"
+  ],
+  "links": [
+    "parked: SP-swavez3g review"
+  ],
+  "notes": "Found by the SP-swavez3g review (S3) of BG-ok4itunr: the gap between the armor line and the body eats the // as a comment prefix and the line drops under 8 characters; 3 of 4000 random 8-character bodies were missed.",
+  "filed_in": "clone-0ea70e5c"
+}
