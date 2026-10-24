@@ -41,7 +41,9 @@
       },
       "class": "design",
       "answer": "own-trace",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
