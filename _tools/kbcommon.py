@@ -196,7 +196,7 @@ def maker_names_allowed(root, policy=None):
 # the EC line (quoted in the secret-shapes article) and the OpenPGP block line (`PGP PRIVATE KEY BLOCK`, RFC 9580
 # 6.2.1) only when key material follows it: optional `Name: value` header lines (the space after the colon is optional),
 # then a run of base64 (a blank line, a newline or an escaped `\n`, `\r` or `\t` apart, however many times escaped:
-# `\\n` is JSON inside a JSON string; a Markdown quote `>`, a `#` or `//` comment prefix, a `*` or `-` list bullet (one a
+# `\\n` is JSON inside a JSON string; a Markdown quote `>`, a `#`, `//`, `///` or `//!` comment prefix, a `*` or `-` list bullet (one a
 # whitespace follows) or a table `|` may sit between the lines or the cells, and a space may be all there is). Key
 # material is 20 base64 characters in a row with an upper-case letter, a digit or a `+` among them (a lower-case
 # repository path such as `kb/public/security/x` is none), or three lines (or cells) of at least 8 base64 characters,
@@ -206,9 +206,9 @@ def maker_names_allowed(root, policy=None):
 # stays in the value. Every part is possessive, so each character has one reading and a row of
 # `| Key: value` cells, a run of backslashes or a line of armor labels scans linearly. The lookahead keeps the match
 # to the armor line, so a hit never prints the key; either label quoted alone in prose passes.
-_GAP = r"(?:\s|\\+[nrt]|[>#|]|[*-](?=\s)|//)++"
+_GAP = r"(?:\s|\\+[nrt]|[>#|]|[*-](?=\s)|//[/!]?)++"
 _NEXT = r"(?:[A-Za-z][\w-]*+:|[A-Za-z0-9+/]{20}|[A-Za-z0-9+/]{8,}+\\+[nrt])"
-_VALUE = (r"(?:(?!" + _GAP + _NEXT + r")(?:(?:[^\S\r\n]|\\+[nrt]|[>#|]|[*-](?=\s)|//)++|[^\s\\|>#/-]++|\\++|/|-(?!----BEGIN )))*+")
+_VALUE = (r"(?:(?!" + _GAP + _NEXT + r")(?:(?:[^\S\r\n]|\\+[nrt]|[>#|]|[*-](?=\s)|//[/!]?)++|[^\s\\|>#/-]++|\\++|/|-(?!----BEGIN )))*+")
 _LINE = r"[A-Za-z0-9+/]{8,}+(?=[^\S\r\n]*+(?:[\r\n|]|\\+[nrt]|$))"
 _KEY = r"(?:(?=[A-Za-z0-9+/]{0,19}[A-Z0-9+])[A-Za-z0-9+/]{20}|" + _LINE + r"(?:" + _GAP + _LINE + r"){2})"
 SECRETS = (
