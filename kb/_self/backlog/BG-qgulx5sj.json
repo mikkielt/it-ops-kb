@@ -34,7 +34,11 @@
         "Bare path kb/<name> counts as a root path": "BG-qgulx5sj",
         "Read the git mode 160000 and classify only gitlinks": "BG-qgulx5sj"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "Bare path kb/<name> counts as a root path",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
