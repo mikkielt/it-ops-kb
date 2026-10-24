@@ -1,0 +1,22 @@
+{
+  "id": "SP-f2o3aqm2",
+  "kind": "sprint",
+  "title": "Docs, skill and kb facts say what the code does: coordination and monitoring docs, the sprint skill's reconcile and plan steps, mod and Jaeger facts",
+  "status": "planned",
+  "goal": "the coordination and monitoring docs name only what the code reads and does today; the kb-sprint run step orders runs --reconcile before the review and gives the wait its Bash timeout; the plan step runs planted checks through the landing's check runner; the kbroot rows, hook trigger wording and usage texts match the code; kb/public/claude/mods.md holds a mod's import rules and test kit; the Jaeger facts resting on the bundled config are CODE facts and the Tempo comparison points at the Tempo facts",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
