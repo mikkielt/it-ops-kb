@@ -140,12 +140,16 @@ def test_scan_reports_each_planted_leak_and_honours_the_allowlist_and_webfetch_h
         head, tail = "-----BEGIN " + label + "-----", "-----END " + label + "-----"
         for lead in ("\n", "\r\n", "\\n", "\\\\n", "\nProc-Type: 4,ENCRYPTED\nDEK-Info: AES-128-CBC,0123ABCD\n\n",
                      "\nComment: Alice | work\n\n", "\nComment: C:\\new\n\n", " Comment: x ",
-                     "\n> ", "\n# ", "\n// ", " | ", "\n* ", "\n- ", "\nComment:Alice\n\n", "\n- Comment: a\n- ",
+                     "\n> ", "\n# ", "\n// ", " | ", "\n* ", "\n- ", "\nComment:Alice\n\n", "\n- Comment: a\n- ", "\\t", "\nProc-Type:4,ENCRYPTED\n",
                      "\n> Proc-Type: 4,ENCRYPTED\n> DEK-Info: AES-128-CBC,0123ABCD\n> \n> "):
             assert kbcommon.leak_hits(head + lead + "MIIBVAIBADANBgkqhkiG9w0BAQEFAASC" + "\n" + tail, allowlist()) == \
                 [("secret", head)], (kind, lead)
         alone = kbcommon.leak_hits(f"the line `{head}` and `{tail}` name it, as does {head}\n{tail}\n", allowlist())
         assert alone == ([] if kind in ("EC ", "PGP BLOCK ") else [("secret", head)] * 2), kind
+        wrapped = head + "\n" + "\n".join(["MIIBVAIBADANBgkq", "hkiG9w0BAQEFAASC", "BKcwggSjAgEAAoIB"]) + "\n" + tail
+        assert kbcommon.leak_hits(wrapped, allowlist()) == [("secret", head)], kind
+        path = kbcommon.leak_hits(head + "\nkb/public/security/secret-shapes-in-text.md\n", allowlist())
+        assert path == ([] if kind in ("EC ", "PGP BLOCK ") else [("secret", head)]), kind
     # the placeholders pass, an allowlisted value passes
     ok = "jan.kowalski t@example.com 00000000-0000-0000-0000-000000000000 192.0.2.7"
     assert kbpublic.file_hits("notes.md", ok, {}) == []
