@@ -26,7 +26,8 @@
   "touches": [
     "_tools/kbtools.py",
     "_tools/bl_ops.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
   ],
   "relates_to": [
     "EP-5mp6pwnn",
