@@ -20,6 +20,25 @@
     ".claude/hooks/coord_hook.py",
     "kb/_self/coordination.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "When redact cannot load, what does the overlap show in place of the other item's title?",
+      "options": [
+        "leave the title out",
+        "show the title unredacted"
+      ],
+      "recommendation": "leave the title out",
+      "do": {
+        "leave the title out": "BG-dljpizgd",
+        "show the title unredacted": "BG-dljpizgd"
+      },
+      "class": "querylog",
+      "answer": "leave the title out",
+      "by": "agent"
+    }
+  ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
