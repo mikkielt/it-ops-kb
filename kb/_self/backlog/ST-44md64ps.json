@@ -73,6 +73,23 @@
     "ST-hs26y4qr",
     "EP-nij36lt7"
   ],
+  "gates": [
+    {
+      "id": "cap",
+      "kind": "blocking",
+      "question": "How many items may one begin call start? The sprint skill's run step 2 takes up to four items whose touches do not overlap.",
+      "options": [
+        "up to four; more ids are refused naming the limit",
+        "no limit; the caller chooses"
+      ],
+      "recommendation": "up to four; more ids are refused naming the limit",
+      "do": {
+        "up to four; more ids are refused naming the limit": "ST-44md64ps",
+        "no limit; the caller chooses": "ST-44md64ps"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],
