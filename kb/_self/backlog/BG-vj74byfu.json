@@ -1,0 +1,31 @@
+{
+  "id": "BG-vj74byfu",
+  "kind": "bug",
+  "title": "The kbmon mod keeps the age of a blocked run entry that names no gate, so the entry changes every minute and the operator is notified once a minute",
+  "status": "todo",
+  "parent": "EP-nij36lt7",
+  "sprint": "SP-rin4kkoj",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "the kbmon mod strips the age from a blocked run entry that names no gate, as it does from one that names gates, so a stopped run whose line reads `ST-x blocked, 5m` and a minute later `6m` is told once",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os, shutil, subprocess, sys, tempfile\nR = os.getcwd()\nmod = os.path.join(tempfile.mkdtemp(), 'mod')\nshutil.copytree(R + '/.claude/skills/kbmon-pane', mod)\nTEST = r\"\"\"import { expect, mock, test } from 'claude-code/testing'\n\ntest('a stopped run that names no gate or step is no news when only its age moves', async ($, on) => {\n  const clock = mock.clock(on)\n  let needs = 'nothing'\n  const notified: string[] = []\n  const run = (stdout: string) => ({ value: { exitCode: 0, stdout, stderr: '' } })\n  on('process.run', ($, e) => {\n    const argv = e.argv as string[]\n    if (argv.includes('--receipt')) {\n      return run(JSON.stringify({ line: 'kbmon: no alert on querylog; needs you: 1', fingerprint: 'f1' }))\n    }\n    if (argv.includes('--status')) {\n      return run(`needs you: ${needs}\\nsessions: none\\n`)\n    }\n    return run(`kbmon · 2026-10-24 10:00\\nneeds you: ${needs}\\n\\nkb: 1 root\\n`)\n  })\n  on('ui.notify', ($, e) => {\n    notified.push(e.text)\n\n    return { value: { isSent: true, channel: 'terminal_bell' } }\n  })\n  on('ui.toast', () => ({ value: undefined }))\n  on('ui.open', () => ({ value: { isPlaced: true } }))\n  on('command.register', () => ({ value: undefined }))\n  on('session.start', () => ({ cwd: '/work' }))\n\n  const step = async (line: string, told: number) => {\n    needs = line\n    await clock.advance(60000)\n    await clock.settle()\n    expect(notified.length).toBe(told)\n  }\n\n  await $.session.start({ surface: 'terminal', isInteractive: true, cwd: '/work' })\n  await clock.advance(2000)\n  await clock.settle()\n\n  // mon_needs.line writes `ST-x blocked, 5m` for a blocked run whose event named no gate\n  await step('ST-aaaaaaaa blocked, 5m', 1)\n  await step('ST-aaaaaaaa blocked, 6m', 1)\n  await step('ST-aaaaaaaa blocked, 1h05m', 1)\n  // a failed run and a refused landing that name no step\n  await step('ST-aaaaaaaa blocked, 1h06m; ST-bbbbbbbb run failed, 2m', 2)\n  await step('ST-aaaaaaaa blocked, 1h07m; ST-bbbbbbbb run failed, 3m', 2)\n  await step('ST-aaaaaaaa blocked, 1h08m; ST-bbbbbbbb run failed, 4m; ST-cccccccc landing refused, 1m', 3)\n  await step('ST-aaaaaaaa blocked, 1h09m; ST-bbbbbbbb run failed, 5m; ST-cccccccc landing refused, 2m', 3)\n})\n\"\"\"\nopen(os.path.join(mod, 'planted.test.ts'), 'w', encoding='utf-8').write(TEST)\ndef claude(*args):\n    for d in os.environ.get('PATH', '').split(os.pathsep):\n        p = os.path.join(d, 'claude')\n        if os.path.isfile(p) and os.access(p, os.X_OK):\n            r = subprocess.run([p, *args], capture_output=True, text=True, timeout=240)\n            if 'not run from this spelling' not in r.stdout + r.stderr:\n                return r\n    print('no claude binary that runs plugin test')\n    sys.exit(1)\nr = claude('plugin', 'test', mod)\nprint((r.stdout + r.stderr)[-1500:])\nsys.exit(1 if r.returncode != 0 else 0)\n"
+    ]
+  },
+  "clauses": [
+    {
+      "clause": "the kbmon mod strips the age from a blocked run entry that names no gate, as it does from one that names gates, so a stopped run whose line reads `ST-x blocked, 5m` and a minute later `6m` is told once",
+      "check": 0
+    }
+  ],
+  "touches": [
+    ".claude/skills/kbmon-pane/hooks/register.tsx",
+    "kb/_self/monitoring.md"
+  ],
+  "notes": "Found by the fresh-context review of SP-rin4kkoj (2026-10-24), rated S2 there and taken as S1 here: it is the sprint goal unmet for a run entry (the same once-a-minute notification the sprint exists to stop), and the fix is one pattern. mon_needs.run_entries writes `ST-x blocked, 5m` when the blocked event named no gate (mon_coord gives [] for a missing gates field); the entry pattern in register.tsx entriesOf only strips an age after `blocked on gate(s) ...`. A failed run or refused landing with no step (`ST-x run failed, 5m`) already strips (the `run failed.*` branch); the repro also guards those. Premise run on main 98342d007a..bc6311212: the repro fails (2 notifications where 1 is told). Fix: match a bare `blocked` too, e.g. `blocked(?: on gates? .*)?`. No doc change expected (kb/_self/monitoring.md already says ages are removed); reread the bullet.",
+  "filed_in": "clone-0ea70e5c"
+}
