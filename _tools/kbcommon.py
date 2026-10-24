@@ -451,11 +451,24 @@ def _pointer_stem(path):
     return os.path.basename(path)[:-len(".md")]
 
 
+def url_holds_credential(url):
+    """Whether a repository `url` carries a secret: a `user:password@` part, or, for http and https, any `user@` part
+    (a bare token is the credential). `ssh://git@host` and `git@host:path` hold none."""
+    m = re.match(r"([a-z][a-z0-9+.-]*)://([^/?#]*)", url.strip(), re.I)
+    if not m:
+        return bool(re.match(r"[^/@\s]*:[^/@\s]*@", url.strip()))  # scp-style `user:password@host:path`
+    if "@" not in m.group(2):
+        return False
+    userinfo = m.group(2).rsplit("@", 1)[0]
+    return ":" in userinfo or (m.group(1).lower() in ("http", "https") and bool(userinfo))
+
+
 def pointer_problems(path):
     """What is wrong with the pointer file at `path`, one message each ([] when it is sound; it never raises):
     unreadable, no front matter, a `root` that is not the file's name, a bad or reserved `id_prefix`, a `visibility`
-    other than public or internal, a `team` that is no lowercase name, a `url` missing, an `access` other than submodule or fetch, a `pin` that is no
-    commit hash."""
+    other than public or internal, a `team` that is no lowercase name, a `url` missing or holding a credential
+    (url_holds_credential; the message never repeats the url), an `access` other than submodule or fetch, a `pin`
+    that is no commit hash."""
     try:
         with open(path, encoding="utf-8") as f:
             text = f.read()
@@ -478,6 +491,9 @@ def pointer_problems(path):
         out.append(f"malformed pointer: `visibility` must be public or internal, got {vis!r}")
     if not meta.get("url"):
         out.append("malformed pointer: `url` (the root's repository) is missing")
+    elif url_holds_credential(meta["url"]):
+        out.append("malformed pointer: `url` holds a credential (a user:password@ or token@ part); name the repository "
+                   "without it and let git's credential helper or an ssh key supply it")
     access = meta.get("access", "")
     if access not in ACCESS:
         out.append(f"`access` must be {' or '.join(ACCESS)}, got {access!r}")
