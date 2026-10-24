@@ -1,0 +1,27 @@
+{
+  "id": "BG-jkdw723s",
+  "kind": "bug",
+  "title": "The kbmon mod notifies every refresh while a run waits, because the needs-you line it compares carries ages and a not-read suffix",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "the kbmon mod compares the needs-you line without the ages mon_needs.line appends to a run, overlap or orphan entry and without the `; not read: PANELS` suffix, and calls $.ui.notify only for a change of what waits",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os, shutil, subprocess, sys, tempfile\nR = os.getcwd()\nmod = os.path.join(tempfile.mkdtemp(), 'mod')\nshutil.copytree(R + '/.claude/skills/kbmon-pane', mod)\nTEST = r\"\"\"import { expect, mock, test } from 'claude-code/testing'\n\ntest('a line that differs only by ages or by a not-read suffix is no news', async ($, on) => {\n  const clock = mock.clock(on)\n  let needs = 'ST-aaaaaaaa blocked on gate g1, 5m'\n  const notified: string[] = []\n  const run = (stdout: string) => ({ value: { exitCode: 0, stdout, stderr: '' } })\n  on('process.run', ($, e) => {\n    const argv = e.argv as string[]\n    if (argv.includes('--receipt')) {\n      return run(JSON.stringify({ line: 'kbmon: no alert on querylog; needs you: 1', fingerprint: 'f1' }))\n    }\n    if (argv.includes('--status')) {\n      return run(`needs you: ${needs}\\nsessions: none\\n`)\n    }\n    return run(`kbmon · 2026-10-24 10:00\\nneeds you: ${needs}\\n\\nkb: 1 root\\n`)\n  })\n  on('ui.notify', ($, e) => {\n    notified.push(e.text)\n\n    return { value: { isSent: true, channel: 'terminal_bell' } }\n  })\n  on('ui.toast', () => ({ value: undefined }))\n  on('ui.open', () => ({ value: { isPlaced: true } }))\n  on('command.register', () => ({ value: undefined }))\n  on('session.start', () => ({ cwd: '/work' }))\n\n  await $.session.start({ surface: 'terminal', isInteractive: true, cwd: '/work' })\n  await clock.advance(2000)\n  await clock.settle()\n\n  // the same run one minute older: the age moved, the news did not\n  needs = 'ST-aaaaaaaa blocked on gate g1, 6m'\n  await clock.advance(60000)\n  await clock.settle()\n  expect(notified.length).toBe(0)\n\n  // a panel that was not read says nothing about what waits\n  needs = 'nothing; not read: host'\n  await clock.advance(60000)\n  await clock.settle()\n  expect(notified.length).toBe(0)\n})\n\"\"\"\nopen(os.path.join(mod, 'planted.test.ts'), 'w', encoding='utf-8').write(TEST)\ndef claude(*args):\n    for d in os.environ.get('PATH', '').split(os.pathsep):\n        p = os.path.join(d, 'claude')\n        if os.path.isfile(p) and os.access(p, os.X_OK):\n            r = subprocess.run([p, *args], capture_output=True, text=True, timeout=240)\n            if 'not run from this spelling' not in r.stdout + r.stderr:\n                return r\n    print('no claude binary that runs plugin test')\n    sys.exit(1)\nr = claude('plugin', 'test', mod)\nprint((r.stdout + r.stderr)[-1500:])\nbad = r.returncode != 0\n\nsys.exit(1 if bad else 0)\n"
+    ]
+  },
+  "touches": [
+    ".claude/skills/kbmon-pane/hooks/register.tsx",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-hja7yu5k review"
+  ],
+  "notes": "Found by the review of SP-hja7yu5k (2026-10-24, fresh-context reviewer, register.tsx:70-90). mon_needs.line renders `ST-x blocked on gate g1, 5m` and a minute later `6m`; `alertsOf` strips ` — since ...` but notifyNeeds does not, so a stuck run notifies once a minute; `needs you: nothing; not read: host` (a panel timed out on a loaded host) is told as news. The repro is a planted claude plugin test (real claude binary, not the PATH wrapper).",
+  "filed_in": "clone-0ea70e5c"
+}
