@@ -198,9 +198,9 @@ def maker_names_allowed(root, policy=None):
 # then a run of base64 (a blank line, a newline or an escaped `\n`, `\r` or `\t` apart, however many times escaped:
 # `\\n` is JSON inside a JSON string; a Markdown quote `>`, a `#`, `//`, `///` or `//!` comment prefix, a `*` or `-` list bullet (one a
 # whitespace follows) or a table `|` may sit between the lines or the cells, and a space may be all there is). Key
-# material is 20 base64 characters in a row with an upper-case letter, a digit or a `+` among them, the run ending at
-# a character base64 lacks that is no `.`, `_` or lone `-` (a repository path such as `kb/public/mecm/sql2022-views.md`
-# is none, as it runs on into its `-` or `.`), or three lines (or cells) of at least 8 base64 characters,
+# material is 20 base64 characters in a row with an upper-case letter, a digit or a `+` among them, the run not being
+# a repository path (slash-separated segments of at most 16 letters or digits, the last followed by a `.`, `_` or `-`,
+# as in `kb/public/mecm/sql2022-views.md`), or three lines (or cells) of at least 8 base64 characters,
 # each ending its line, for a body wrapped under 20 characters (a gap before such a line may leave a `//` or `///` to the
 # line, as `/` is base64, so `//8x89Kh` is a line of 8). A header value
 # is free text up to the first gap (those characters, whitespace, an escaped newline, a pipe) that a header or the
@@ -213,7 +213,7 @@ _GAPS = r"(?:" + _GAP + r"|(?:\s|\\+[nrt]|[>#|]|[*-](?=\s))++)"
 _NEXT = r"(?:[A-Za-z][\w-]*+:|[A-Za-z0-9+/]{20}|[A-Za-z0-9+/]{8,}+\\+[nrt])"
 _VALUE = (r"(?:(?!" + _GAP + _NEXT + r")(?:(?:[^\S\r\n]|\\+[nrt]|[>#|]|[*-](?=\s)|//[/!]?)++|[^\s\\|>#/-]++|\\++|/|-(?!----BEGIN )))*+")
 _LINE = r"[A-Za-z0-9+/]{8,}+(?=[^\S\r\n]*+(?:[\r\n|]|\\+[nrt]|$))"
-_KEY = r"(?:(?=[A-Za-z0-9+/]{0,19}[A-Z0-9+])[A-Za-z0-9+/]{20}[A-Za-z0-9+/]*+(?![_.]|-(?!----))|" +_LINE + r"(?:" + _GAPS + _LINE + r"){2})"
+_KEY = r"(?:(?!(?:[A-Za-z0-9]{1,16}/)+[A-Za-z0-9]{1,16}[._-])(?=[A-Za-z0-9+/]{0,19}[A-Z0-9+])[A-Za-z0-9+/]{20}[A-Za-z0-9+/]*+|" +_LINE + r"(?:" + _GAPS + _LINE + r"){2})"
 SECRETS = (
     r"-----BEGIN (?:(?:RSA |OPENSSH |DSA |PGP |ENCRYPTED )?PRIVATE KEY-----"
     r"|(?:EC PRIVATE KEY|PGP PRIVATE KEY BLOCK)-----"
