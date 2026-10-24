@@ -2,7 +2,7 @@
   "id": "BG-wuugkjuj",
   "kind": "bug",
   "title": "close of a clone's own sprint can rewrite an upstream item's relates_to or depends_on link to a deleted item",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4ppjbh4k",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,7 @@
     "parked: SP-3trnelzv work"
   ],
   "notes": "Found 2026-10-24 by BG-wojfmyzp's worker; left out of that fix because workhorse's ST-55ueywel held _tools/bl_close.py. Planner 2026-10-24 (day triage, SP-4ppjbh4k): the repro was run once on the base ff0fdad94 and fails for the premise. The old repro read the source text for is_upstream; it is replaced by a planted run: an upstream item that links an own sprint's item, then close of that sprint (the fixture of BG-wojfmyzp's check).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
