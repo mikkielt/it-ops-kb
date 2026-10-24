@@ -4,6 +4,7 @@
   "title": "backlog.py report ID prints a returned worker's outcome in one call: its session result, the branch's commits and diffstat, and the gates on the branch",
   "status": "draft",
   "parent": "EP-sqt62vj2",
+  "sprint": "SP-vxdacfpl",
   "priority": "P2",
   "rank": 0,
   "goal": "report ID prints the scratch result.json's subtype, num_turns, total_cost_usd and session_id with the tail of its result text, then the commits of work/ID ahead of origin/main with the diffstat and each gate of the item on that branch with its id, options and recommendation; an item with no result.json or no work branch prints which one is missing and exits 1, and report writes nothing",
@@ -47,6 +48,9 @@
     "ST-24aav43q",
     "ST-yyup6d62",
     "EP-nij36lt7"
+  ],
+  "links": [
+    "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],
   "notes": "From the 2026-10-24 telemetry and query-log analysis: in 7 days the 72 orchestrating sessions made 383 turns whose only call parsed a worker's result.json (540 result.json reads in 57 sessions overall), 143 turns that tailed a dispatch log and 421 turns of git log, diff or show on work/ID; together 947 of 13,429 turns (7.1%, 156M cache-read tokens). The sequences recur: dispatch, wait on the pid, read the result 48 times; read the result, git show the item file, answer 39 times. One call leaves about a quarter of that: about 700 turns and about 35 USD a week (estimate). Today dispatch's closing output holds the exit line and rows_line only (bl_dispatch.py:1030-1033 and :1165), and the sprint skill and kb/_self/backlog.md prescribe the manual read. Also wanted, not read by the planted check: dispatch's closing output ends with the first two lines of the report, a changed protected path that needs stage-back is flagged, and kb_backlog serves report read-only (BACKLOG_COMMANDS; name _tools/test_redact.py). Parked parts of this: ST-24aav43q (dispatch's return warns on an unrecorded choice) and ST-yyup6d62 (cost from result.json by hand). Lane: parked sprint-orchestration class, EP-gzr4mmkm.",
   "filed_in": "clone-0ea70e5c"
