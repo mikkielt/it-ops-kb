@@ -51,7 +51,9 @@
       },
       "class": "design",
       "answer": "Pin git log and git show to exact commands (git log --oneline -20, git log -1, git show --stat HEAD, git show HEAD)",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
