@@ -35,12 +35,9 @@
     "_tools/bl_view.py",
     "_tools/backlog.py",
     "_tools/bl_cli.py",
-    "_tools/kb_mcp.py",
-    "_tools/test_redact.py",
     "skills/sprint/SKILL.md",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md",
-    "kb/_self/plugin.md"
+    "kb/_self/tools.md"
   ],
   "relates_to": [
     "EP-nij36lt7",
@@ -49,6 +46,6 @@
   "links": [
     "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],
-  "notes": "From the 2026-10-24 telemetry and query-log analysis (three analysts found it independently): 843 python one-offs read backlog item JSON in 146 sessions (1.5 MB of results; fields read: gates 361, kind 202, checks 153, status 131, touches 108, goal 94); 325 of them are 'git show work/ID:kb/_self/backlog/ID.json | python3 -c' (322 at a work branch, 50 sessions); show was run 534 to 611 times at 2.7 KB of text each, with no flag (usage: show [-h] id); show --json or --checks was tried 58 times in 57 sessions and 43 failed (38 exit 2 with the 50-name usage dump); about 20 more 'show | python3 json.load' pipelines broke because show prints the JSON and then parent, sprint, child and waits-on lines (bl_view.py:120-137; 41 brace-index hacks, 9 of 57 pipelines failed). Saves about 350 orchestrating turns, about 92k generated tokens and about 17 USD a week (estimate). The split of the one-offs: 560 interactive and skill-launched sessions, 145 runner, 98 worker, 22 reviewer, so it also serves reviewers and triage. Also wanted, not read by the planted check: a gates listing prints each gate's id, state, class, options and recommendation, and kb_backlog (which already allows show) lists the flags in its description and returns the same JSON (name _tools/test_redact.py). Lane: parked sprint-orchestration class, EP-gzr4mmkm.",
+  "notes": "From the 2026-10-24 telemetry and query-log analysis (three analysts found it independently): 843 python one-offs read backlog item JSON in 146 sessions (1.5 MB of results; fields read: gates 361, kind 202, checks 153, status 131, touches 108, goal 94); 325 of them are 'git show work/ID:kb/_self/backlog/ID.json | python3 -c' (322 at a work branch, 50 sessions); show was run 534 to 611 times at 2.7 KB of text each, with no flag (usage: show [-h] id); show --json or --checks was tried 58 times in 57 sessions and 43 failed (38 exit 2 with the 50-name usage dump); about 20 more 'show | python3 json.load' pipelines broke because show prints the JSON and then parent, sprint, child and waits-on lines (bl_view.py:120-137; 41 brace-index hacks, 9 of 57 pipelines failed). Saves about 350 orchestrating turns, about 92k generated tokens and about 17 USD a week (estimate). The split of the one-offs: 560 interactive and skill-launched sessions, 145 runner, 98 worker, 22 reviewer, so it also serves reviewers and triage. Also wanted, not read by the planted check: a gates listing prints each gate's id, state, class, options and recommendation, and kb_backlog (which already allows show) lists the flags in its description and returns the same JSON (name _tools/test_redact.py). Lane: parked sprint-orchestration class, EP-gzr4mmkm. Planning 2026-10-24: kb_mcp.py, test_redact.py and plugin.md moved out of touches to ST-zrnmqob2 and ST-lp72x5cr (sprint 3): kb_backlog already passes show's arguments, and kb_backlog usage lists the flags.",
   "filed_in": "clone-0ea70e5c"
 }
