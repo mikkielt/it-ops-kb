@@ -1,0 +1,22 @@
+{
+  "id": "BG-w4af2tix",
+  "kind": "bug",
+  "title": "The leak scan passes a short real EC key body with a slash that a period, underscore or hyphen follows, because the path lookahead calls any run of short slash-separated pieces a repository path",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbcommon.leak_hits flags the EC armor label before a single-line body of 20 to 40 base64 characters that holds a slash and that a period, an underscore or a hyphen follows, and still does not flag the label before a repository path",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\nsys.path.insert(0, \"_tools\")\nimport kbcommon\nd = \"-\" * 5\narm = d + \"BEGIN EC PRIVATE KEY\" + d\nmiss = [s for s in (\".\", \"_x\", \"-x\", \".pem\") if not any(k == \"secret\" for k, _ in kbcommon.leak_hits(arm + \" CwgQj8C/nbil1bW34cYU\" + s))]\nprint(\"short slash-containing body not flagged before:\", miss)\nsys.exit(1 if miss else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kbcommon.py",
+    "_tools/test_leaks.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
