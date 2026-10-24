@@ -4,6 +4,8 @@
   kbsettings.py show --root WS [--kb-root NAME] [--json]            print the effective coordination settings
   kbsettings.py explain [KEY] --root WS [--kb-root NAME] [--json]   each setting (or KEY) with its value, the file that
                                                                     set it, its meaning and the doc line that states it
+  kbsettings.py init --root WS [--set KEY=VALUE]...                 write the coordination section of <WS>/settings.json
+                                                                    and turn the coord hook on in <WS>/backlog.json
   kbsettings.py check                                               exit 1 when the table below and the doc disagree
 
 `effective(root, kb_root=None)` is the one reader: the coord hook, kbmon and the explain command call it, never the
@@ -14,6 +16,12 @@ or a value outside its closed set, raises `SettingsError` (a ValueError whose me
 allowed values); `show` and `explain` print it on stderr and exit 2. Exit 0 printed; 1 `check` found a mismatch; 2 a
 bad setting or argument. `explain` reads the settings files and the SETTINGS table and nothing else: no model, no
 subprocess, no network, and not the doc, whose line numbers the table holds and `check` verifies.
+
+`init` writes the whole `coordination` section: each key the file already holds keeps its value, each `--set KEY=VALUE`
+(KEY as `group.name`; a list as comma-separated values, `start,claim`) sets one, and a key neither names takes its
+default. Another top-level key of `settings.json` is kept. It adds `coord` to the `hooks` list of `<WS>/backlog.json`
+(made with that list alone when the file is missing). A file whose content would not change is not written, so a second
+run with the same values changes nothing.
 
 announce (what a session says about its work):
   when                 list of start, claim, midrun, edit: the moments a session announces itself
@@ -70,24 +78,24 @@ DOC = "kb/_self/coordination.md"
 # the allowed values of each line).
 SETTINGS = {
     "announce.when": ("The moments a session tells the other sessions and the operator what it is working on: when it "
-                      "starts, when it claims an item, in the middle of a run, or on each edit.", 165),
+                      "starts, when it claims an item, in the middle of a run, or on each edit.", 168),
     "announce.to_other_sessions": ("Whether a session announces its work to the other sessions on the clone, so they "
-                                   "can see it before they touch the same item or files.", 166),
+                                   "can see it before they touch the same item or files.", 169),
     "announce.operator": ("Where the operator is told about a session's work: in the terminal, on the kbmon panels, "
-                          "or as a needs-you alert.", 167),
+                          "or as a needs-you alert.", 170),
     "announce.needs_you_after_min": ("How many whole minutes an open question may wait before it shows as needing "
-                                     "the operator.", 168),
+                                     "the operator.", 171),
     "strategy.same_item": ("What a session suggests when another session already holds the item it was about to take.",
-                           169),
+                           172),
     "strategy.working": ("What a session suggests when another item that touches the same files is in the run state "
-                         "working (a worker is running it).", 170),
-    "strategy.landing": ("What a session suggests when another item that touches the same files is being landed.", 171),
+                         "working (a worker is running it).", 173),
+    "strategy.landing": ("What a session suggests when another item that touches the same files is being landed.", 174),
     "strategy.blocked": ("What a session suggests when another item that touches the same files is blocked on a gate.",
-                         172),
+                         175),
     "strategy.returned": ("What a session suggests when another item that touches the same files has returned from its "
-                          "worker and waits to land.", 173),
+                          "worker and waits to land.", 176),
     "strategy.decide": ("Who picks the strategy when none of the keys above settles it: the operator or the "
-                        "session itself.", 174),
+                        "session itself.", 177),
 }
 
 
@@ -209,6 +217,65 @@ def check(doc_text):
     return problems
 
 
+def _parse_set(item):
+    """(group, name, value) of one `group.name=VALUE` argument; a list takes comma-separated values."""
+    key, eq, raw = item.partition("=")
+    group, dot, name = key.partition(".")
+    kind = SCHEMA.get(group, {}).get(name) if dot else None
+    if not eq or kind is None:
+        raise SettingsError(f"--set {item!r}: expected KEY=VALUE with KEY one of {', '.join(SETTINGS)}")
+    if kind[0] == "bool":
+        value = {"true": True, "false": False}.get(raw.lower(), raw)
+    elif kind[0] == "minutes":
+        value = int(raw) if re.fullmatch(r"\d+", raw) else raw
+    elif kind[0] == "list":
+        value = [v for v in raw.split(",") if v] if raw else []
+    else:
+        value = raw
+    if not _valid(kind, value):
+        raise SettingsError(f"--set {item!r}: key coordination.{group}.{name} allows {_allowed(kind)}")
+    return group, name, value
+
+
+def _write_json(path, doc):
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        f.write(json.dumps(doc, indent=2, ensure_ascii=False) + "\n")
+
+
+def init(root, sets=()):
+    """Write the whole coordination section of `<ROOT>/settings.json` (each key the file holds keeps its value, SETS
+    (`group.name=VALUE`) set theirs, the rest take their defaults) and add `coord` to the `hooks` list of
+    `<ROOT>/backlog.json`. Returns the names of the files it changed; a file whose content would not change is not
+    written."""
+    root = Path(root)
+    changes = [_parse_set(item) for item in sets]
+    path, hooks_path = root / "settings.json", root / "backlog.json"
+    held = _read(path)
+    section = json.loads(json.dumps(DEFAULTS))
+    for group, body in held.items():
+        section[group].update(body)
+    for group, name, value in changes:
+        section[group][name] = value
+    doc = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    try:
+        hooks_doc = json.loads(hooks_path.read_text(encoding="utf-8")) if hooks_path.exists() else {}
+    except (OSError, ValueError) as e:
+        raise SettingsError(f"{hooks_path}: cannot read as JSON: {e}")
+    hooks = hooks_doc.get("hooks", []) if isinstance(hooks_doc, dict) else None
+    if not isinstance(hooks, list):
+        raise SettingsError(f"{hooks_path}: the file must hold an object whose key hooks is a list")
+    written = []
+    if doc.get("coordination") != section:
+        doc["coordination"] = section
+        _write_json(path, doc)
+        written.append(path.name)
+    if "coord" not in hooks:
+        hooks_doc["hooks"] = hooks + ["coord"]
+        _write_json(hooks_path, hooks_doc)
+        written.append(hooks_path.name)
+    return written
+
+
 def _text(settings):
     lines = []
     for group, body in settings["coordination"].items():
@@ -229,6 +296,10 @@ def main(argv=None):
         sp.add_argument("--root", required=True, help="the workspace directory (holds settings.json and kb/)")
         sp.add_argument("--kb-root", help="a kb root's name: kb/NAME/settings.json overrides the workspace's")
         sp.add_argument("--json", action="store_true", help="print JSON")
+    sp = sub.add_parser("init", help="write the coordination section of settings.json and turn the coord hook on")
+    sp.add_argument("--root", required=True, help="the workspace directory (holds settings.json and backlog.json)")
+    sp.add_argument("--set", action="append", default=[], metavar="KEY=VALUE",
+                    help="one setting, e.g. strategy.working=ask or announce.when=start,claim (repeatable)")
     sub.add_parser("check", help="exit 1 when the SETTINGS table and the doc's Settings section disagree")
     args = ap.parse_args(argv)
     if args.cmd == "check":
@@ -239,6 +310,10 @@ def main(argv=None):
         print("\n".join(problems) if problems else "kbsettings: the table and the doc agree")
         return 1 if problems else 0
     try:
+        if args.cmd == "init":
+            written = init(args.root, args.set)
+            print(f"kbsettings: wrote {', '.join(written)}" if written else "kbsettings: nothing to change")
+            return 0
         if args.cmd == "explain":
             rows = explain(args.root, args.kb_root, args.key)
             out = (json.dumps(rows[0] if args.key else rows, indent=2, sort_keys=True) if args.json
