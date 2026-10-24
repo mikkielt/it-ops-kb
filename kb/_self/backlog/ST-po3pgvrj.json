@@ -1,0 +1,29 @@
+{
+  "id": "ST-po3pgvrj",
+  "kind": "story",
+  "title": "backlog.py dispatch --resume ID sends a stopped or returned worker back with a message and moves its run state, so no orchestrator resumes a session by hand",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py dispatch --resume ID --message FILE resumes the worker session of the item's last dispatch (claude -p --resume, detached, the worker env and caps) and moves the run key to working and then to returned or failed as dispatch does",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/backlog.py','dispatch','-h'],capture_output=True,text=True);sys.exit(0 if r.returncode==0 and '--resume' in r.stdout else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-hja7yu5k close"
+  ],
+  "notes": "Retrospective of SP-hja7yu5k: ST-fb7nlvke's landing stopped at checks, the orchestrator resumed the worker with a hand-built claude -p --resume (env KB_ROLE and KB_OPERATOR, caps, detached Popen) and moved the run key with coord.py transition (refused to working, then returned) because only dispatch moves it. The check only reads the help text for the flag: a planned item adds a planted run with a stub claude.",
+  "filed_in": "clone-0ea70e5c"
+}
