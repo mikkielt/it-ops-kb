@@ -100,7 +100,9 @@
       },
       "class": "design",
       "answer": "age since the item's newest progress event; open items whose state is not landed or released",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Premise: in a planted clone with a blocking gate committed on the worker's work/<id> branch, kbmon.py --status all --json gives the needs-you line 'needs you: SP-... gate start': the branch gate is invisible, since the sprint panel reads the item files of origin/main or the checkout only (kb/_self/monitoring.md:97,202). The kbmon-pane mod's terminal notification on a needs-you change is a later story of this epic (epic notes). Plan 2026-10-24 (SP-d6gbc3tq): ST-oazktatz (blocked move with the gate id) is done on the main branch, so the dependency is met; ordered after ST-3vn4t2h6 for the shared mon_status.py. Premise reproduced on base by precheck. Checks added: 1 = a failed run and a refused landing with step=rebase name the item and the step in the needs-you line; 2 = the sprint panel row carries the run state and an age key (run_age, age, since or run_since) and --status sprints names the state. Planned into SP-d6gbc3tq on 2026-10-24 (night run). Sprint SP-d6gbc3tq started 2026-10-24.",
