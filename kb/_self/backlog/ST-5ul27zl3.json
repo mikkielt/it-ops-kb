@@ -22,5 +22,9 @@
     "kb/public/_anchors.csv",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "links": [
+    "parked: SP-r7e7jcep review"
+  ],
+  "notes": "Review finding S3 (fresh-context reviewer, 2026-10-24): otel-collector-otlp-pipeline.md line 83 lists a binary for Windows as a Jaeger advantage over Tempo with no source, and has no pointer to logs/loki-tempo-grafana-retention:46-49, where the Tempo monolithic facts are (the article has none); line 84 says 0.0.0.0 is only for a container, stronger than the docs. Premise: the check fails on main now (line 83).",
   "filed_in": "clone-0ea70e5c"
 }
