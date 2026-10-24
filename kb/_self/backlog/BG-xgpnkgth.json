@@ -1,0 +1,40 @@
+{
+  "id": "BG-xgpnkgth",
+  "kind": "bug",
+  "title": "kbmon's cleanup panel answers inside its 10-second limit, because backlog.py tidy's plan reads git state with a fixed number of git processes",
+  "status": "draft",
+  "parent": "EP-iowijan3",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbmon.py --once --panel cleanup reports its state in under 10 seconds with this clone's leftover worktrees and branches, and backlog.py tidy without --apply finishes in under 5 seconds on the same clone",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess as s,sys\np=s.run([sys.executable,\"_tools/kbmon.py\",\"--once\",\"--panel\",\"cleanup\"],capture_output=True,text=True,timeout=120)\no=p.stdout+p.stderr;print(o.strip()[-160:])\nsys.exit(1 if \"timeout\" in o or p.returncode!=0 else 0)\n"
+    ]
+  },
+  "clauses": [
+    {
+      "clause": "kbmon.py --once --panel cleanup reports its state in under 10 seconds with this clone's leftover worktrees and branches",
+      "check": 0
+    },
+    {
+      "clause": "backlog.py tidy without --apply finishes in under 5 seconds on the same clone",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/bl_clean.py",
+    "_tools/mon_clean.py",
+    "_tools/bl_selfcheck.py",
+    "kb/_self/monitoring.md"
+  ],
+  "relates_to": [
+    "ST-hgicbqm3",
+    "BG-ayamhfdy"
+  ],
+  "notes": "From the 2026-10-24 telemetry and query-log analysis: python3 _tools/kbmon.py --once --panel cleanup (run twice, 14:34 and 14:35 on 10-24) answers 'cleanup timeout 10.0s - no answer in time'; kbmon.py --metrics shows kbmon.panel.up{panel=cleanup}=0 and kbmon.panel.seconds=10.0 (sessions 8.6 s and log 9.0 s are the next slowest), so 7 of 9 panels answer. cProfile of backlog.py tidy: 13.3 s, 118 subprocess runs = 11.4 s; bl_clean.safe_to_remove was called 198 times (11.3 s) from plan() (12.9 s) with 120 worktrees (21 removable, 2.7 GiB) and 73 branches, one git process each (status, merged_into, log time). mon_clean.py:46 collect() calls bl_selfcheck.leftovers, which shares that plan; BYTES_BUDGET_S bounds only the size walk, not the git reads. Goal for the worker: plan reads worktree, branch and ancestry state with a fixed number of git processes (one worktree list --porcelain, one for-each-ref, one branch --merged), however many candidates there are. The repro runs this clone's state: it stops failing once the leftovers are tidied (backlog.py tidy --apply) without a fix, so plant 60 recorded worktrees and branches and count git processes (a git wrapper on PATH) for the check that proves the fix.",
+  "filed_in": "clone-0ea70e5c"
+}
