@@ -27,3 +27,27 @@ groups:
           severity: warning
         annotations:
           summary: An orphan process is listed
+
+      - alert: KbmonGateWaiting
+        expr: kbmon_coord_run_blocked_wait_seconds > 900
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: A run has waited on a gate for more than 15 minutes
+
+      - alert: KbmonRunStalled
+        expr: kbmon_coord_run_working_silent_seconds > 3600
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: A working run has posted no progress event for more than an hour
+
+      - alert: KbmonRunFailed
+        expr: kbmon_coord_runs{state="failed"} > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: A run is in the failed state

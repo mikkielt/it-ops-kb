@@ -85,6 +85,59 @@
       "operator": "op-f618a13e",
       "role": "interactive",
       "host_unchecked": "The repository ships only config files (otel/alertmanager.yml, prometheus.yml, rules); Alertmanager and the webhook receiver are installed by the operator outside the clone, and the item's checks read the files and run --check-rules, so no host command proves a running service (decided at the 2026-10-24 night-run plan)."
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "At what level do the three run alerts fire?",
+      "options": [
+        "gate waiting over 900 seconds, no progress event for a working run over 3600 seconds, any failed run, each after 5 minutes",
+        "tighter: 300 and 1800 seconds",
+        "looser: 3600 and 10800 seconds"
+      ],
+      "recommendation": "gate waiting over 900 seconds, no progress event for a working run over 3600 seconds, any failed run, each after 5 minutes",
+      "do": {
+        "gate waiting over 900 seconds, no progress event for a working run over 3600 seconds, any failed run, each after 5 minutes": "ST-54y7al4z",
+        "tighter: 300 and 1800 seconds": "ST-54y7al4z",
+        "looser: 3600 and 10800 seconds": "ST-54y7al4z"
+      },
+      "class": "design",
+      "answer": "gate waiting over 900 seconds, no progress event for a working run over 3600 seconds, any failed run, each after 5 minutes",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Which loopback ports do the Alertmanager and its webhook receiver use?",
+      "options": [
+        "Alertmanager 127.0.0.1:9093 (its default), webhook at 127.0.0.1:9095/alert",
+        "Alertmanager 127.0.0.1:9093, webhook at 127.0.0.1:9094/alert"
+      ],
+      "recommendation": "Alertmanager 127.0.0.1:9093 (its default), webhook at 127.0.0.1:9095/alert",
+      "do": {
+        "Alertmanager 127.0.0.1:9093 (its default), webhook at 127.0.0.1:9095/alert": "ST-54y7al4z",
+        "Alertmanager 127.0.0.1:9093, webhook at 127.0.0.1:9094/alert": "ST-54y7al4z"
+      },
+      "class": "design",
+      "answer": "Alertmanager 127.0.0.1:9093 (its default), webhook at 127.0.0.1:9095/alert",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "How are the waiting and silent seconds exported?",
+      "options": [
+        "one point each: the most seconds over the blocked runs, the most over the working runs, 0 with none",
+        "one point for each run, with its item id as an attribute"
+      ],
+      "recommendation": "one point each: the most seconds over the blocked runs, the most over the working runs, 0 with none",
+      "do": {
+        "one point each: the most seconds over the blocked runs, the most over the working runs, 0 with none": "ST-54y7al4z",
+        "one point for each run, with its item id as an attribute": "ST-54y7al4z"
+      },
+      "class": "design",
+      "answer": "one point each: the most seconds over the blocked runs, the most over the working runs, 0 with none",
+      "by": "agent"
     }
   ],
   "notes": "Premise: otel/kbmon.rules.yml holds three rules on the kb's health (eval, any alert, an orphan) and none on a sprint run; otel/prometheus.yml has no alerting block and the repository no Alertmanager config (the check prints rules [], alerting False, alertmanager.yml False). Prometheus only evaluates alerts; notifying is a separate Alertmanager (kb/public/logs/prometheus-retention-exposition.md:55, DOC). As for Prometheus itself, the operator installs Alertmanager outside the clone; the repository holds config files only. Plan 2026-10-24 (SP-d6gbc3tq): check 1 (--check-rules) already passes before the work: it pins that every kbmon_ name in the rules file, the three new rules included, is served by /metrics, so it must keep passing. Checks added: 2 = run points for the blocked, failed and working states plus two seconds points; 3 = alertmanager.yml holds a loopback webhook and neither file holds a credential-like key. Gate g1 (webhook receiver) is answered, the receiver itself is not in the goal: filed as the parked draft ST-i4ejksl2; until it exists the webhook url points at nothing, said in kb/_self/monitoring.md. Planned into SP-d6gbc3tq on 2026-10-24 (night run). Sprint SP-d6gbc3tq started 2026-10-24.",

@@ -1,0 +1,16 @@
+# A local Alertmanager for the alerts otel/prometheus.yml sends (kb/_self/monitoring.md, "A local Prometheus"). Start it with
+# `--config.file` pointing at this file; it listens on 127.0.0.1:9093 (`--web.listen-address=127.0.0.1:9093`).
+# Every alert goes to one webhook receiver on loopback. The file holds no credential: a receiver that needs one is not
+# configured here.
+route:
+  receiver: operator
+  group_by: [alertname]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+
+receivers:
+  - name: operator
+    webhook_configs:
+      - url: http://127.0.0.1:9095/alert
+        send_resolved: true
