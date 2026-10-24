@@ -78,7 +78,9 @@
       },
       "class": "design",
       "answer": "match when the list holds any of IDS",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
