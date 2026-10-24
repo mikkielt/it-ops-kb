@@ -305,16 +305,29 @@ def tools_path():
         sys.path.insert(0, path)
 
 
+def own_flag(ws):
+    """The announce.to_other_sessions the workspace's settings.json holds when it is a boolean there, whatever else the
+    file holds, else True: a bad key elsewhere in the file leaves a false as it is."""
+    try:
+        with open(os.path.join(ws, "settings.json"), encoding="utf-8") as f:
+            flag = json.load(f)["coordination"]["announce"]["to_other_sessions"]
+        return flag if isinstance(flag, bool) else True
+    except Exception:
+        return True
+
+
 def settings(ws):
     """(announce, strategy) of the coordination settings for workspace ws, from `kbsettings.effective`: the defaults when
-    ws is unknown or its settings files are bad, no moment at all when kbsettings cannot load."""
+    ws is unknown or its settings files are bad (announce.to_other_sessions then as the workspace's settings.json has it
+    when that holds a boolean), no moment at all when kbsettings cannot load."""
     try:
         tools_path()
         import kbsettings
         try:
             found = kbsettings.effective(ws)["coordination"] if ws else kbsettings.DEFAULTS
         except kbsettings.SettingsError:
-            found = kbsettings.DEFAULTS
+            found = json.loads(json.dumps(kbsettings.DEFAULTS))
+            found["announce"]["to_other_sessions"] = own_flag(ws)
         return found["announce"], found["strategy"]
     except Exception:
         return {"when": []}, {}
