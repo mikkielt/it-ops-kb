@@ -2,7 +2,7 @@
   "id": "ST-oazktatz",
   "kind": "story",
   "title": "A blocking gate added on an item moves its run state to blocked with the gate's id, so the orchestrator and the operator learn of it before the worker returns",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-nij36lt7",
   "sprint": "SP-sucr3kfg",
   "priority": "P2",
@@ -66,6 +66,28 @@
   ],
   "notes": "Premise: gate add of a blocking gate exits 0 and posts nothing to coord (the check finds no progress event). A worker's gate lives only in the item file on work/<id> (kb/_self/backlog.md:333) and reaches the orchestrator when it reads the branch after the worker returns (.claude/skills/kb-sprint/SKILL.md:55); on 2026-10-23 such gates reached the operator only through chat questions after each worker finished. Plan 2026-10-24: premise reproduced on base (precheck: gate add exits 0, last progress event is still working). Second check added for the answer move back (returned when no worker pid is recorded). The branch where the recorded worker pid runs (back to working) and the gate add run in a worker's worktree on work/<id> are not read by a check; implement them as the goal says. After ST-3ru7f4to (shared bl_items.py). Planned into SP-sucr3kfg on 2026-10-24. Sprint started 2026-10-24. Gate g1 answered by the sprint runner with its recommendation, on the operator's standing approval for the 2026-10-24 night run (pre-approved by the operator for the 2026-10-24 night run).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "9d00c4378736229d13b12407ecc24c6a5e03c338",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\ndef plant(status):\n    for f in glob.glob(T + '/kb/_self/backlog/*.json'):\n        d = json.load(open(f, encoding='utf-8'))\n        if d['id'] == sp: d['status'] = 'active'\n        if d['id'] == iid: d['status'] = status; d['sprint'] = sp\n        json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\n    g('add', '-A'); g('commit', '-q', '-m', 'planted ' + status)\ndef walk(*states): return [c('transition', 'run/' + iid, '--to', s).returncode for s in states]\nplant('doing')\nwalk('claimed', 'working')\nr = bl('gate', 'add', iid, '--question', 'Which default?', '--option', 'a', '--option', 'b', '--recommendation', 'a', '--kind', 'blocking')\ntry:\n    ev = json.loads(c('wait', '--since', '0', '--timeout', '0').stdout)['events']\nexcept ValueError:\n    ev = []\nlast = [e['fields'] for e in ev if e['kind'] == 'progress' and e['fields'].get('item') == iid][-1:]\nok = r.returncode == 0 and 'blocked' in c('get', 'run/' + iid).stdout and last and last[0].get('state') == 'blocked' and last[0].get('gates') == 'g1'\nprint('gate add', r.returncode, 'last progress', last)\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "ae5d68e974153d60"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = tempfile.mkdtemp(); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\nfor f in glob.glob(T + '/kb/_self/backlog/*.json'):\n    d = json.load(open(f, encoding='utf-8'))\n    if d['id'] == sp: d['status'] = 'active'\n    if d['id'] == iid: d['status'] = 'doing'; d['sprint'] = sp\n    json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\ng('add', '-A'); g('commit', '-q', '-m', 'planted doing')\nfor s in ('claimed', 'working'): c('transition', 'run/' + iid, '--to', s)\nbl('gate', 'add', iid, '--question', 'Which default?', '--option', 'a', '--option', 'b', '--recommendation', 'a', '--kind', 'blocking')\ng('add', '-A'); g('commit', '-q', '-m', 'gate added')\nans = bl('answer', iid, 'g1', '--answer', 'a', '--by', 'operator')\ntry:\n    ev = json.loads(c('wait', '--since', '0', '--timeout', '0').stdout)['events']\nexcept ValueError:\n    ev = []\nstates = [e['fields'].get('state') for e in ev if e['kind'] == 'progress' and e['fields'].get('item') == iid]\nok = ans.returncode == 0 and states[-2:] == ['blocked', 'returned'] and 'returned' in c('get', 'run/' + iid).stdout\nprint('answer', ans.returncode, '| progress states', states, '|', (ans.stdout + ans.stderr).strip()[-120:])\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "0204a3fe11c0d778"
+      }
+    ]
+  }
 }
