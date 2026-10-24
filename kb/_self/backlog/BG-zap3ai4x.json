@@ -4,6 +4,7 @@
   "title": "check.py's own-log rule refuses an internal root's own source id in its _logs.csv context, since leak_hits now holds the private names",
   "status": "draft",
   "parent": "EP-eocmyqdx",
+  "sprint": "SP-c6w5hjmc",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -17,6 +18,9 @@
   },
   "touches": [
     "_tools/check.py"
+  ],
+  "depends_on": [
+    "BG-e4sepxng"
   ],
   "links": [
     "parked: SP-qinvdomv review"
