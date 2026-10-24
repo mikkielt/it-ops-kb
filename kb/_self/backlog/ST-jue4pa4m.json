@@ -2,7 +2,7 @@
   "id": "ST-jue4pa4m",
   "kind": "story",
   "title": "Review sprint: The coord hook announces right: own intents kept out of the cut, a wait that waits, redacted overlaps, a bounded run",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-3i7hcb6i",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,6 @@
       ]
     }
   ],
+  "notes": "Sprint started 2026-10-24.",
   "filed_in": "clone-0ea70e5c"
 }
