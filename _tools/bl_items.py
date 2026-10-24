@@ -379,6 +379,7 @@ def cmd_release(bl, a):
     it.pop("operator", None)
     bl.save(it)
     say(f"released {bl.label(iid)}")
+    move_run(iid, "released", "release")
     return 0
 
 

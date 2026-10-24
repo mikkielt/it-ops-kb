@@ -188,7 +188,7 @@ KIND_FIELDS = {"intent": ("session", "item", "topic", "touch", "operator"), "pro
                "coordinate": ("item", "other", "strategy", "touch", "session", "operator")}
 STRATEGIES = ("wait", "ask", "after", "join", "proceed")  # what a coordinate event says its session will do about the other item
 RUN_STATES = ("claimed", "working", "blocked", "returned", "failed", "staging", "landing", "landed", "refused", "released")
-TRANSITIONS = {"none": ("claimed",), "claimed": ("working", "released"), "working": ("returned", "failed", "blocked"),
+TRANSITIONS = {"none": ("claimed",), "claimed": ("working", "released", "landed"), "working": ("returned", "failed", "blocked"),
                "blocked": ("working", "returned", "failed"), "returned": ("staging", "landing", "working", "released"),
                "failed": ("working", "released"), "staging": ("returned",), "landing": ("landed", "refused"),
                "refused": ("working", "landing", "released"), "landed": (), "released": ("claimed",)}  # none: a run key no move has written
