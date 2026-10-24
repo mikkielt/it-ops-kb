@@ -75,8 +75,8 @@ done, and the optional fields exit, gates (a comma-separated list of ids) and st
 value of the key `run/ITEM` (an absent key holds `none`), by this table, and posts the progress event of the move; the item file
 keeps todo, doing and done, so `done` is no run state: none to claimed; claimed to working or released; working to returned,
 failed or blocked; blocked to working, returned or failed; returned to staging, landing, working or released; failed to working
-or released; staging to returned; landing to landed or refused; refused to working, landing or released; landed and released
-move nowhere. Two kinds carry a question and its reply between
+or released; staging to returned; landing to landed or refused; refused to working, landing or released; released to claimed
+(a released item is claimed again); landed moves nowhere. Two kinds carry a question and its reply between
 agents: `ask` (fields id, to, ref: to is a session, item or agent id, or `any`; ref is the coord key whose `put` value
 holds the question) and `answer` (fields id, state, ref: state is one of working, input-required, completed, failed,
 rejected, the names A2A gives its task states; ref is the key whose `put` value holds the answer text). An event keeps
@@ -191,7 +191,7 @@ RUN_STATES = ("claimed", "working", "blocked", "returned", "failed", "staging", 
 TRANSITIONS = {"none": ("claimed",), "claimed": ("working", "released"), "working": ("returned", "failed", "blocked"),
                "blocked": ("working", "returned", "failed"), "returned": ("staging", "landing", "working", "released"),
                "failed": ("working", "released"), "staging": ("returned",), "landing": ("landed", "refused"),
-               "refused": ("working", "landing", "released"), "landed": (), "released": ()}  # none: a run key no move has written
+               "refused": ("working", "landing", "released"), "landed": (), "released": ("claimed",)}  # none: a run key no move has written
 STATES = RUN_STATES + ("done",)  # what a progress event may carry; `done` is the item file's own, no run state moves to it
 FINISHED = ("done", "landed", "released")  # the states after which a digest no longer shows an intent
 RUN_KEYS = "run/"  # an item's run state: key run/<item id>, its value the state's name
