@@ -36,7 +36,11 @@
         "Drop hint: lines; prefer the '! [rejected]' status line, else the last remaining line": "BG-rdrzijgr",
         "Drop hint: lines only; report the last remaining line (error: failed to push some refs)": "BG-rdrzijgr"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "Drop hint: lines; prefer the '! [rejected]' status line, else the last remaining line",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
