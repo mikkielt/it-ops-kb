@@ -2,7 +2,7 @@
   "id": "ST-gtdnix3z",
   "kind": "story",
   "title": "Research sprint goal: S3 bugs that give wrong output or fail open: landing ledger check, kbroot fetch, leak scan, redact, disk alert, settings guard",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-swavez3g",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: the sprint's 15 items fix tool behaviour that the repros and the code define (the landing ledger check, kbroot fetch --pin, the leak scan, redact, the feedback id lock, the settings guard, the disk alert) and reword two kb article facts against sources the article already cites; no item needs a fact from an outside source. (Planner 2026-10-24.) Touches narrowed from kb/public/** to the gaps ledger: no outside facts are written, and the wide glob met SP-6t3z4q54's census items (TK-36cbrvwp, TK-e2khbdmj) on the 2026-10-24 claim check.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "7482b50c741b221cb89f98a131f8a353b79bca50",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-gtdnix3z"
+        ],
+        "exit": 0,
+        "sha256": "f865a219f0528cc0"
+      }
+    ]
+  }
 }
