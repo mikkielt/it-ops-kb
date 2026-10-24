@@ -1801,7 +1801,8 @@ def rebase_local(root, remote, name, behind, upstream):
 
 def fast_forward_start(root, remote, start_ref, upstream):
     """After a pushed landing, bring the checkout `land` started on level with the integration main: `git merge
-    --ff-only` when it is on a branch whose `@{upstream}` is REMOTE/main and has no uncommitted changes; a checkout
+    --ff-only` when it is on a branch whose `@{upstream}` is REMOTE/main and has no change to a tracked file (untracked
+    files are git's to judge: they stay, and one the merge would overwrite is named in the said reason); a checkout
     that has diverged because it holds commits of its own that change item files only is rebased on it
     (`rebase_local`). Anything else is left alone and said, and the exit status never depends on it: the next `claim
     --commit` must start from the pushed main, and a refusal here only costs a manual fast-forward."""
@@ -1816,7 +1817,7 @@ def fast_forward_start(root, remote, start_ref, upstream):
                             text=True, encoding="utf-8", errors="replace").stdout.strip()
     if behind in ("", "0"):
         return
-    if git(root, "status", "--porcelain").strip():
+    if git(root, "status", "--porcelain", "--untracked-files=no").strip():
         say(f"land: left {name} {behind} commit(s) behind {remote}/main: it has uncommitted changes "
             f"(git merge --ff-only {remote}/main once they are committed)")
         return
@@ -1827,7 +1828,16 @@ def fast_forward_start(root, remote, start_ref, upstream):
     elif git(root, "rev-list", "--count", f"{upstream}..HEAD").strip() != "0":
         rebase_local(root, remote, name, behind, upstream)
     else:
-        why = ((p.stderr or p.stdout).strip().splitlines() or ["diverged"])[-1]
+        lines = (p.stderr or p.stdout).strip().splitlines()
+        colliding = []
+        if any("untracked working tree files would be overwritten" in ln for ln in lines):
+            colliding = [ln.strip() for ln in lines if ln.startswith(("\t", " ")) and ln.strip()]
+        if colliding:
+            why = (f"untracked file(s) it would overwrite: {', '.join(colliding[:5])}"
+                   f"{f' and {len(colliding) - 5} more' if len(colliding) > 5 else ''}; "
+                   f"move them, then git merge --ff-only {remote}/main")
+        else:
+            why = (lines or ["diverged"])[-1]
         say(f"land: left {name} {behind} commit(s) behind {remote}/main: it cannot fast-forward ({why})")
 
 
