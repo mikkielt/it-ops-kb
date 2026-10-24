@@ -32,6 +32,16 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kbroot.fetch_env drops GIT_ASKPASS and SSH_ASKPASS and git runs with core.askPass empty and the GCM non-interactive value the kb's fact names, so a fetch never prompts for a credential",
+      "check": 0
+    },
+    {
+      "clause": "kb/_self/tools.md's kbroot row says only what the code does (SP-s2svf5a6 review gaps 5 and 13)",
+      "check": 1
+    }
+  ],
   "touches": [
     "_tools/kbroot.py",
     "kb/_self/tools.md"
