@@ -2,7 +2,7 @@
   "id": "BG-q4riyq6i",
   "kind": "bug",
   "title": "bl_items.move_run and bl_land.move_run are the same function twice",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-dx76osrn",
   "priority": "P2",
   "rank": 0,
@@ -24,6 +24,6 @@
   "depends_on": [
     "ST-al6rvds7"
   ],
-  "notes": "Planning 2026-10-24: premise ran on today's base: the repro's assert fails (bl_items.move_run is not bl_land.move_run). Plan: delete bl_items.move_run and read it from bl_land (bl_items already imports from bl_land); bl_dispatch calls both names, which then resolve to the one function; kb/_self/coordination.md and tools.md name bl_items.move_run and are reworded to bl_land.move_run. Runs after ST-al6rvds7 and before BG-xn4jrmn7 (cmd_release moves the state through it). Planned into SP-dx76osrn on 2026-10-24, second in the order.",
+  "notes": "Planning 2026-10-24: premise ran on today's base: the repro's assert fails (bl_items.move_run is not bl_land.move_run). Plan: delete bl_items.move_run and read it from bl_land (bl_items already imports from bl_land); bl_dispatch calls both names, which then resolve to the one function; kb/_self/coordination.md and tools.md name bl_items.move_run and are reworded to bl_land.move_run. Runs after ST-al6rvds7 and before BG-xn4jrmn7 (cmd_release moves the state through it). Planned into SP-dx76osrn on 2026-10-24, second in the order. Sprint SP-dx76osrn started 2026-10-24 on the standing approval; ready once ST-al6rvds7 is done.",
   "filed_in": "clone-0ea70e5c"
 }
