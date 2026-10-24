@@ -564,14 +564,16 @@ def resource_entries(raw, iid, sprint):
     return ",".join(kept)
 
 
-def worker_traceparent(iid):
+def worker_traceparent(iid, sprint=None):
     """The W3C `traceparent` (version 00, sampled) of the `kb.worker` span that the `working` move of the run state of IID
-    gives in `kbmon.py --events` (`mon_events.worker_ids`), None when coord cannot be read or the item is not working."""
+    gives in `kbmon.py --events` (`mon_events.worker_ids`), in the trace of the `kb.sprint` span of its SPRINT; None when
+    coord cannot be read or the item is not working."""
     import mon_events
     code, body, _err = bl_clean.run_coord("wait", "--since", "0", "--timeout", "0")
     if code != 0 or not isinstance(body, dict) or not isinstance(body.get("events"), list):
         return None
-    ids = mon_events.worker_ids([e for e in body["events"] if isinstance(e, dict) and isinstance(e.get("seq"), int)], iid)
+    ids = mon_events.worker_ids([e for e in body["events"] if isinstance(e, dict) and isinstance(e.get("seq"), int)], iid,
+                                 sprint)
     return f"00-{ids[0]}-{ids[1]}-01" if ids else None
 
 
@@ -1010,7 +1012,7 @@ def cmd_dispatch(bl, a):
     with open(brief, encoding="utf-8") as stdin, open(result, "w", encoding="utf-8", newline="\n") as out, \
             open(errlog, "w", encoding="utf-8", newline="\n") as err:
         bl_items.move_run(iid, "working", "dispatch")  # first: the worker span's ids come from this move
-        traceparent = worker_traceparent(iid)
+        traceparent = worker_traceparent(iid, it.get("sprint"))
         try:
             proc = subprocess.Popen(argv, cwd=str(wt), stdin=stdin, stdout=out, stderr=err,
                                     env=worker_env(oid, iid, it.get("sprint"), traceparent))

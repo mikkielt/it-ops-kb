@@ -1,6 +1,7 @@
 """kbmon's event and span records (kb/_self/monitoring.md): the coord events, `done.refused` rows and the query log's apply
 outcome as events, and each landing (with a child span per `land.step`), `agent.run`, `test.run`, timed delivery and each
 finished run of an item (a `kb.item` span with `kb.worker` and `kb.landing` children, from its progress events) as spans,
+and each sprint whose items have all ended their runs (a `kb.sprint` root over its `kb.item` spans),
 newer than a cursor. Standard library only; imports `mon_log` (its readers of the coord store and the ops rows) and
 `mon_export` (its attribute rules), and `mon_view`, `mon_sprint` (the sprint of a run's item), `bl_stall`, `ql_base` and
 `ql_report` where it reads them.
@@ -10,12 +11,12 @@ newer than a cursor. Standard library only; imports `mon_log` (its readers of th
                          rows of that millisecond, the time of the delivery and the newest coord sequence read; text, whose
                          form a caller does not read
   render(ctx, since)     that object as JSON text with every string redacted, what `kbmon.py --events` prints
-  worker_ids(events, item)  (trace, span id) of the `kb.worker` span of the item's run that is working now, from the coord
+  worker_ids(events, item, sprint=None)  (trace, span id) of the `kb.worker` span of the item's run that is working now, from the coord
                          progress events; what `backlog.py dispatch` hands the worker as its TRACEPARENT
 
 An event is `{name, time, attributes}` (`severity` `warn` on a `done.refused` row and a refused delivery); a span is `{name, id,
 trace, parent, start, end, status, attributes}` (`status` `error` on a row with an `exit` and on a refused delivery), times in
-Unix nanoseconds, `parent` left out of a root, `trace` the id of the root (32 hex characters for a run of an item, so a worker's TRACEPARENT carries it). Ids are 16 hex characters taken from the ops row's own id, so a record has the same id on every call. A landing is a
+Unix nanoseconds, `parent` left out of a root, `trace` the id of the root (32 hex characters for a run of an item or a sprint, so a worker's TRACEPARENT carries it). Ids are 16 hex characters taken from the ops row's own id, so a record has the same id on every call. A landing is a
 span only once its `land.end` row is in the log, and then with the steps of its item the rows hold; a step with no `land.end`
 is never exported. An attribute is kept only when it is a number, a flag or an identifier `redact.redact` leaves as it is (a
 list of them as `name_n` and `name_1`..), never a `holder`; the other attributes of a record are left out, the record stays.
@@ -141,10 +142,15 @@ def run_span(name, first, last, end, trace, parent, extra):
     return out, end
 
 
-def trace_id(first):
+def trace_id(first, sprint=None):
     """32 hex characters, the trace of the run whose first progress move is FIRST (W3C Trace Context's width, so a worker's
-    TRACEPARENT can carry it)."""
-    return hashlib.sha256(f"kb.item-{first['seq']}".encode("utf-8")).hexdigest()[:32]
+    TRACEPARENT can carry it); that of the `kb.sprint` span of SPRINT, derived from its id, when the item has one."""
+    seed = f"kb.sprint-trace-{sprint}" if sprint else f"kb.item-{first['seq']}"
+    return hashlib.sha256(seed.encode("utf-8")).hexdigest()[:32]
+
+
+def sprint_span_id(sprint):
+    return span_id(f"kb.sprint-{sprint}")
 
 
 def item_runs(events):
@@ -171,25 +177,49 @@ def item_runs(events):
     return runs
 
 
-def worker_ids(events, item):
+def worker_ids(events, item, sprint=None):
     """(trace, span) ids, as `--events` gives them, of the `kb.worker` span of ITEM's run that is working now: its newest
-    `working` move when it is the run's last move; None when the item has no run or its run is not working."""
+    `working` move when it is the run's last move; None when the item has no run or its run is not working. The trace is
+    the `kb.sprint` span's when ITEM has a SPRINT."""
     runs = [run for name, run in item_runs(events) if name == item]
     if not runs or runs[-1][-1]["state"] != "working":
         return None
-    return trace_id(runs[-1][0]), span_id(f"kb.worker-{runs[-1][-1]['seq']}")
+    return trace_id(runs[-1][0], sprint), span_id(f"kb.worker-{runs[-1][-1]['seq']}")
+
+
+def sprint_records(runs, sprints):
+    """[(`kb.sprint` span, sequence of its last move)] of the sprints whose items with a run have all ended it: for each
+    sprint of SPRINTS ({item: sprint}) the RUNS ((item, moves) as `item_runs` gives them) of its items, once the last move of
+    every item is `landed` or `released`. The span runs from the first move of the first run to the last move of the last,
+    its id and trace derived from the sprint id."""
+    by = {}
+    for item, run in runs:
+        if sprints.get(item):
+            by.setdefault(sprints[item], {}).setdefault(item, []).append(run)
+    out = []
+    for sprint, items in by.items():
+        if any(rs[-1][-1]["state"] not in ("landed", "released") for rs in items.values()):
+            continue
+        every = [run for rs in items.values() for run in rs]
+        out.append(({"name": "kb.sprint", "id": sprint_span_id(sprint), "trace": trace_id(None, sprint),
+                     "start": min(r[0]["ns"] for r in every), "end": max(r[-1]["ns"] for r in every), "status": "ok",
+                     "attributes": attributes({"sprint": sprint, "items": len(every)})},
+                    max(r[-1]["seq"] for r in every)))
+    return out
 
 
 def run_records(ctx, events, after):
     """The spans of the runs the progress EVENTS (every coord event, oldest first) hold, those finished above sequence AFTER.
     A run of an item (`item_runs`) becomes a `kb.item` span from its first move to its last, a `kb.worker` child for each
     `working` to `returned`, `failed` or `blocked` stretch and a `kb.landing` child for each `landing` to `landed` or
-    `refused`."""
-    runs, done = item_runs(events), []
-    sprints = sprint_of(ctx, {item for item, run in runs if any(m["seq"] > after for m in run)})
+    `refused`. An item with a sprint takes the sprint's trace and the `kb.sprint` span (`sprint_records`) as the parent of
+    its `kb.item` span."""
+    runs = item_runs(events)
+    sprints = sprint_of(ctx, {item for item, run in runs})
+    done = sprint_records(runs, sprints)
     for item, run in runs:
         first = run[0]
-        trace, root = trace_id(first), span_id(f"kb.item-{first['seq']}")
+        trace, root = trace_id(first, sprints.get(item)), span_id(f"kb.item-{first['seq']}")
         extra = {"item": item, "sprint": sprints.get(item)}
         mark = None
         for m in run:
@@ -204,7 +234,8 @@ def run_records(ctx, events, after):
                 done.append(run_span("kb.landing", mark, m, m["seq"], trace, root, extra))
                 mark = None
         if run[-1]["state"] in ("landed", "refused", "released"):
-            done.append(run_span("kb.item", first, run[-1], run[-1]["seq"], trace, None, extra))
+            done.append(run_span("kb.item", first, run[-1], run[-1]["seq"], trace,
+                                 sprint_span_id(sprints[item]) if sprints.get(item) else None, extra))
     return [s for s, seq in done if seq > after]
 
 
@@ -317,4 +348,5 @@ def render(ctx, since=None):
     out = mon_view.scrub(got)
     for kept, span in zip(out["spans"], got["spans"]):  # redact reads 32 bare hex characters as a GUID; a trace is our hash
         kept["trace"] = span["trace"]
+    out["cursor"] = got["cursor"]  # digits and hex, never a secret; redact reads `1.0.N.0` as an IPv4 address
     return json.dumps(out, ensure_ascii=False, indent=1)
