@@ -81,7 +81,7 @@ function entriesOf(line: string): { entries: Set<string>; complete: boolean } {
           where === undefined ? pid : `${pid} in ${where}`,
         )
         .replace(new RegExp(`^(overlap .* undecided) for ${AGE}$`), '$1')
-        .replace(new RegExp(`^(\\S+ (?:blocked on gates? .*|run failed.*|landing refused.*)), ${AGE}$`), '$1'),
+        .replace(new RegExp(`^(\\S+ (?:blocked(?: on gates? .*)?|run failed.*|landing refused.*)), ${AGE}$`), '$1'),
     )
   }
 
