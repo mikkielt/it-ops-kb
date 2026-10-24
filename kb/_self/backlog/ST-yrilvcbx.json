@@ -161,7 +161,9 @@
       },
       "class": "design",
       "answer": "yes: post accepts done, and the digest hides an intent whose items are all done, landed or released",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",
