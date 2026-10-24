@@ -2,7 +2,7 @@
   "id": "BG-dljpizgd",
   "kind": "bug",
   "title": "The coord hook prints another session's item title without redact, so an email or a secret in a title reaches the operator and Claude",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-ky7xz6d2",
   "priority": "P2",
@@ -20,5 +20,7 @@
     ".claude/hooks/coord_hook.py",
     "kb/_self/coordination.md"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
