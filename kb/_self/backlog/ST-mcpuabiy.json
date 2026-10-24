@@ -2,7 +2,7 @@
   "id": "ST-mcpuabiy",
   "kind": "story",
   "title": "Review sprint: The tool catalog and the repro bench score right: complete MCP entries, better ranking, honest repro passes",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-uhcjxayq",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,6 @@
       ]
     }
   ],
+  "notes": "Sprint started 2026-10-24; todo.",
   "filed_in": "clone-0ea70e5c"
 }
