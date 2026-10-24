@@ -1,0 +1,26 @@
+{
+  "id": "ST-y7fvnl2h",
+  "kind": "story",
+  "title": "The Jaeger facts that rest on the bundled all-in-one configuration are CODE facts, not DOC",
+  "status": "draft",
+  "parent": "EP-nij36lt7",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/public/logs/otel-collector-otlp-pipeline.md tags the facts that rest on Jaeger's bundled all-in-one.yaml (it binds each receiver to the JAEGER_LISTEN_HOST default localhost, it sets max_traces 100000) as CODE at the pinned release, and keeps the docs-only parts (unlimited by default, the JAEGER_LISTEN_HOST snippet) as DOC",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nART = 'kb/public/logs/otel-collector-otlp-pipeline.md'\nlines = open(ART, encoding='utf-8').read().splitlines()\nbad = [n for n, l in enumerate(lines, 1) if '[DOC' in l and ('bundled all-in-one configuration sets' in l or 'bundled all-in-one configuration binds' in l)]\nprint('DOC lines that rest on the bundled config:', bad if bad else 'none')\nsys.exit(1 if bad else 0)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/logs/otel-collector-otlp-pipeline.md",
+    "kb/public/_sources.csv",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
