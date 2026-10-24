@@ -63,6 +63,9 @@ Why (kb/_self/reports/benchmarks.md, "Routing by verdict"): a Haiku session cost
 Opus one with the same answers, but a Haiku manager told to hand work to Sonnet did so once in four runs. The kb's
 verdict and a one-line INSUFFICIENT reply cannot ignore the rule. A `claude -p` start carries about 30k tokens of
 Claude Code context; skipping user plugins and MCP servers takes it to 25k, and no tools to 10k.
+
+Answers: how to ask the kb a question from a shell or a script at the lowest cost, without a model where a tool decides
+Use: python3 _tools/kb_ask.py "QUESTION" [--route] [--no-model]
 """
 import argparse, json, os, re, shutil, subprocess, sys
 

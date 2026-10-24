@@ -107,6 +107,9 @@ version it asked for when this server knows it (else 2025-11-25), then `tools/li
 client's `server/discover` gets supportedVersions, and each modern request's `_meta` protocol version is checked
 (-32022 UnsupportedProtocolVersionError otherwise). Every result carries `resultType: "complete"`, which 2026-07-28
 requires. Only JSON-RPC messages go to stdout; the server exits on EOF.
+
+Answers: how the kb MCP server runs over stdio, which tools it lists and how to register it
+Use: python3 _tools/kb_mcp.py [--status] [--roots NAME[,NAME]] [--register-local]
 """
 import contextlib, csv, hashlib, http.client, io, json, os, re, subprocess, sys, threading, time
 import urllib.error, urllib.request

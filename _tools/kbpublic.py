@@ -62,6 +62,10 @@ only fetches from, so a push of any ref to it or its url is refused by the pre-p
 `publish` as a target. Exit (publish): 0 published or nothing to do, 1 refused (not a fast-forward, or the projection still
 carries a PRIVATE path) or the push failed, 2 bad arguments, no source, or a git error. Exit (check-public): 0 clean,
 1 a PRIVATE path found, 2 a git error.
+
+Answers: which paths never reach the public home, and whether a revision carries one
+Answers: how the history is published to the public home and bridged
+Use: python3 _tools/kbgit.py publish | check-public | bridge BRANCH
 """
 import csv, hashlib, io, json, os, re, subprocess, sys, tempfile, urllib.parse, urllib.request
 from pathlib import Path

@@ -27,6 +27,10 @@ Every `claude -p` it starts runs with hooks off (`--settings '{"disableAllHooks"
 run is captured, distilled or pushed by the query log of the clone or of a plugin. The kb arms run in this clone with
 the `kb` server registered at local scope for it; _tools/benchmarks.py runs this file from a throwaway clone whose
 query log is off and whose origin is a local bare repository. Results: kb/_self/reports/benchmarks.md.
+
+Answers: what a kb lookup costs an agent in tokens and dollars, per model and configuration
+Answers: whether a Haiku, Sonnet or Opus agent answers a kb question right and in how many turns
+Use: python3 _tools/agent_bench.py OUT.jsonl CONFIG[,CONFIG] SCENARIO[,SCENARIO] [REPS]
 """
 import json, os, re, shutil, subprocess, sys, time
 from collections import Counter

@@ -70,6 +70,9 @@ explicit -n in the arguments wins.
 pytest is run as `uv run --frozen python -m pytest` (uv creates .venv from uv.lock on first use), or with this Python
 when uv is missing but pytest and pytest-xdist are importable; otherwise exit 2 with how to install them. The tools
 under test stay stdlib-only. Shared fixtures and helpers are in conftest.py.
+
+Answers: whether the kb's tests pass within the suite's ceiling, and which tests a change needs
+Use: python3 _tools/tests.py [--changed [REV]] [-k NAME] [PATH ...]
 """
 import contextlib, csv, datetime, hashlib, json, os, pathlib, re, shlex, shutil, signal, subprocess, sys, tempfile, time, warnings
 import xml.etree.ElementTree as ET

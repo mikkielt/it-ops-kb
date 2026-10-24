@@ -173,6 +173,11 @@ still in the index: the definitions the base (:1:) lacks and ours (:2:) or their
 or assigned name, a class's method or attribute as `Class.name`) that the working-tree file lacks, one `lost: NAME`
 line each. Exit: 0 none lost; 1 a definition lost or the resolution does not parse; 2 FILE unreadable or not conflicted
 (no :2: or :3: stage).
+
+Answers: how to commit, sync and push the kb through its gate, and why a sync stopped
+Answers: whether the KB-* trailers, lanes and ledgers of commits are right, and who changed a line when
+Answers: how a change reaches the public home or the integration remote
+Use: python3 _tools/kbgit.py sync [--push] | fix | fmt | trailers | lane | log | blame | publish
 """
 import argparse, os, sys
 

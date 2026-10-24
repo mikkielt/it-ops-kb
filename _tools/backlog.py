@@ -380,6 +380,15 @@ stored, and no part of readiness. An item without `knowledge` costs nothing: the
 
 Every line that names an item prints its id and its title together, except a title check found holding a piece of
 this host's computer or user name, which is withheld.
+
+Answers: what to work on next, which items are ready, blocked or waiting on a gate
+Answers: what a sprint item cost in tokens and dollars
+Answers: which items are claimed, stalled or running, and which run states differ from git
+Answers: how to file, claim, answer a gate, land or close a backlog item or sprint
+Answers: what an item's goal, checks and commits are
+Use: python3 _tools/backlog.py COMMAND [ARGS]
+MCP: kb_backlog runs the read-only commands
+MCP: kb_backlog_write claims, releases and answers
 """
 import subprocess  # noqa: F401 - tests patch backlog.subprocess
 import sys

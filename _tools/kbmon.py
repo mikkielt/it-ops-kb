@@ -55,6 +55,12 @@ A run reads and writes nothing: no index is built, no eval is run, no file of th
 is written. Every string printed passes `redact.redact`, a saved snapshot's too (not the command `--split` prints, which
 must run as printed). Exit codes: 0 shown (also `--receipt`, with or without an alert, and `--split` in every case), 1 shown and an alert is in the snapshot, 2 a bad argument or an unreadable snapshot. Each panel is `mon_<name>.py` (`mon_base.py` holds the
 run, `mon_view.py` the output, `mon_export.py` the metric points, `mon_events.py` the event and span records).
+
+Answers: which sessions are running and what is stalled or waiting on the operator
+Answers: what state the kb, coord, the query log, the host and the sprint are in
+Answers: how a sprint, the load or the cost stands, in plain words
+Use: python3 _tools/kbmon.py [--once|--json|--status TOPIC|--metrics|--events]
+MCP: kb_monitor_status prints the plain-words status
 """
 import argparse
 import contextlib

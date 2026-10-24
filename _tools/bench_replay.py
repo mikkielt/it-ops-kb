@@ -26,6 +26,9 @@ event with the planted `--usage` (the four token counts and the turns) and `--co
 the exit is 1 and the event an error when a command failed. The harness (bench_multi.py) reads the event as it reads a
 session's and lands the code item itself. This module imports nothing of the project: it runs from the checkout that
 started the benchmark, in the sandbox's clones.
+
+Answers: how the scripted stand-in for claude plays one agent role of the multi-agent benchmark without a model
+Use: python3 _tools/bench_replay.py ROLE [--usage JSON] [--cost USD] [--question Q]...
 """
 import argparse, json, os, re, shlex, subprocess, sys, time
 from pathlib import Path

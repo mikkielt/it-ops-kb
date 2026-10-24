@@ -55,6 +55,9 @@ hook would answer, for a check from a shell (no query log row). It runs on every
 plugin, so a prompt without the prefix returns before kbfacts (and the kb) is loaded. A `kb:` or `kb+:` prompt also
 writes one query log spool row (querylog.record: the question, the verdict, the articles and the kb lines
 (path:line, tag, verdict) the pack returned, whether the hook answered it), after the answer is printed.
+
+Answers: how a prompt starting with kb: or status: is answered from the kb without the model
+Use: python3 _tools/kb_hook.py (the UserPromptSubmit hook reads the prompt as JSON on stdin)
 """
 import json, os, re, subprocess, sys
 

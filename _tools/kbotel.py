@@ -15,7 +15,10 @@ OpenTelemetry events; kb/_self/tools.md). Standard library only.
       whose request_id the transcript holds, and the tool results whose tool_use_id it holds. Read only; exit 0,
       2 for an unreadable file.
 
-The event names, attributes and the OTLP JSON encoding are in kb/public/claude/otel-monitoring.md."""
+The event names, attributes and the OTLP JSON encoding are in kb/public/claude/otel-monitoring.md.
+
+Answers: how to receive Claude Code's OpenTelemetry events locally and join them to a transcript
+Use: python3 _tools/kbotel.py serve [--out FILE] [--port N]"""
 import argparse, json, os, re, sys, threading, time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path

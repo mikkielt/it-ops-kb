@@ -49,6 +49,11 @@ order given, so a skill that reads several sections names them in one command. I
 function or method of a `test_*.py` file). A file that does not parse is one `unparsed` line. `path:line` is the line of
 the `def` or `class` keyword (a decorator line is not it), so `sed -n 'LINE,+30p' path` reads the symbol. It lists the
 symbols so that a session reads the one it needs, not a whole tool.
+
+Answers: which docs describe a file I am changing, and which docs are behind the files they describe
+Answers: what a doc section says, and which functions, methods and tests a tool file holds
+Use: python3 _tools/selfdoc.py stale|map|check|section|map-tools [ARGS]
+MCP: kb_docs reads the docs and their checks
 """
 import argparse, ast, csv, functools, io, os, pathlib, re, subprocess, sys, tokenize, warnings
 

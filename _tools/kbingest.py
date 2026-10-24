@@ -76,6 +76,10 @@ needs --forge; another forge gets no url (`url` refuses; the skill says what to 
 Exit: 0 done (`drift`: no finding), 1 `map` could not create its worktree or `drift` printed findings, 2 refused (not a
 git repository, an unknown REV, `url` with no pinned url form, `map` with an unknown language or an --out under kb/,
 `drift` with an unknown --root or a repository with no remote and no --remote).
+
+Answers: what a git repository holds before its knowledge goes into a kb root: files kept, left out and secrets
+Answers: whether a root's pinned code sources drifted from the repository
+Use: python3 _tools/kbingest.py survey REPO | map | drift | url
 """
 import argparse, contextlib, getpass, json, os, posixpath, re, shutil, signal, socket, subprocess, sys, tempfile
 from pathlib import Path

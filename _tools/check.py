@@ -54,6 +54,11 @@
 - no path git tracks in this repository is longer than TRACKED_PATH_MAX (a Windows clone's worker worktree prefix and the
   260-character MAX_PATH leave that many characters; git for Windows without core.longpaths fails past it).
 Messages name files by their qualified path `<root>/<path>`, or by their path in this repository outside the roots.
+
+Answers: whether the kb is consistent: sources, artifacts, ledgers, front matter and paths
+Answers: which file or row breaks a kb contract
+Use: python3 _tools/check.py [--root NAME]
+MCP: kb_docs runs the check
 """
 import argparse, csv, datetime, os, re, subprocess, sys
 from collections import Counter

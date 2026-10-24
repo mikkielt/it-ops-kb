@@ -104,6 +104,10 @@ the store.
     error is undone and refused. Refusals before a root's first decision go through `policy_refusal`.
 
 Exit: 0 done, 2 refused (a rule above, an unknown root or id, or a file that cannot be read) or bad arguments.
+
+Answers: which decisions the operator has made, proposed or invalidated for a root or the kb's own docs
+Answers: how an agent proposes a decision and how the operator confirms it
+Use: python3 _tools/kbdecide.py propose|confirm|record|list|digest [ARGS]
 """
 import argparse, base64, datetime, difflib, hashlib, json, re, subprocess, sys
 from pathlib import Path
