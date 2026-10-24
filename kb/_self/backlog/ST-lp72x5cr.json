@@ -4,6 +4,7 @@
   "title": "kb_backlog usage returns a backlog.py verb's arguments, so a session reads them without 436 --help runs",
   "status": "draft",
   "parent": "EP-fgtlhyo4",
+  "sprint": "SP-e3qyajjv",
   "priority": "P3",
   "rank": 0,
   "goal": "kb_backlog usage with no argument returns the verb list with one line each, and usage gate add returns gate add's argument list with --recommendation; usage writes no file and runs no item",
@@ -14,12 +15,19 @@
         "-c",
         "import sys\nsys.path.insert(0,\"_tools\");import kb_mcp\ndef call(a):\n try:return str(kb_mcp.kb_backlog({\"command\":\"usage\",\"args\":a}))\n except Exception as e:return \"ERR \"+str(e)[:150]\na=call([\"gate\",\"add\"]);b=call([])\nprint(a[:120],\"|\",b[:120])\nsys.exit(0 if \"--recommendation\" in a and \"dispatch\" in b and not b.startswith(\"ERR\") else 1)\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport hashlib,subprocess as s,sys\nsys.path.insert(0,\"_tools\");import kb_mcp\ndef call(a):\n try:return str(kb_mcp.kb_backlog({\"command\":\"usage\",\"args\":a}))\n except Exception as e:return \"ERR \"+str(e)[:150]\nf=\"kb/_self/backlog/ST-uruhigy4.json\"\nst=lambda:(hashlib.sha256(open(f,\"rb\").read()).hexdigest(),s.run([\"git\",\"status\",\"--porcelain\"],capture_output=True,text=True).stdout)\na=st();v=call([]);outs=[call([\"claim\",\"ST-uruhigy4\"]),call([\"done\",\"ST-uruhigy4\"]),call([\"dispatch\"])];b=st()\nlines=[x for x in v.splitlines() if x.strip()]\nprint(len(lines),a==b,[o[:60] for o in outs])\nsys.exit(0 if len(lines)>=40 and a==b and all(\"--\" in o or \"usage\" in o.lower() for o in outs) and not any(o.startswith(\"claimed\") for o in outs) else 1)\n"
+      ]
     }
   ],
   "clauses": [
     {
       "clause": "kb_backlog usage with no argument returns the verb list with one line each",
-      "check": 0
+      "check": 1
     },
     {
       "clause": "usage gate add returns gate add's argument list with --recommendation",
@@ -27,7 +35,7 @@
     },
     {
       "clause": "usage writes no file and runs no item",
-      "check": 0
+      "check": 1
     }
   ],
   "touches": [
@@ -36,8 +44,14 @@
     "kb/_self/plugin.md",
     "kb/_self/tools.md"
   ],
+  "depends_on": [
+    "ST-zrnmqob2"
+  ],
   "relates_to": [
     "ST-pntfa6ry"
+  ],
+  "links": [
+    "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],
   "notes": "From the 2026-10-24 telemetry and query-log analysis: backlog.py --help or SUBCOMMAND --help ran 436 times in 121 sessions in 7 days (149k tokens of help text, average 1.36k characters, 28 in one session): new 94, set 87, close 53, gate 53, start 21, dispatch 19, tidy 19, answer 18; managers 398, workers 38. All tools together 615 calls in 149 sessions. kbgit.py publish --help is denied by a Bash rule (4 calls) and has no other route; kb_backlog refuses 'set --help' today because set is not in its list. Same argparse text, no new information: it saves the Bash round trip and the first-try mistakes they precede. Near ST-pntfa6ry (usage text of a changed verb).",
   "filed_in": "clone-0ea70e5c"
