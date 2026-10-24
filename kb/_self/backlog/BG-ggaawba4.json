@@ -40,7 +40,9 @@
       },
       "class": "delete",
       "answer": "git history",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
