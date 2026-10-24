@@ -660,12 +660,17 @@ def dropped_test_ids():
 
 def selects_only_dropped(ln):
     """True when the `-k` selector of the NONE row LN names terms and every one is a substring (as pytest's `-k` matches,
-    a full name and a name prefix alike) of a test id recorded as dropped."""
+    a full name and a name prefix alike) of a test id recorded as dropped. Where the selector names test files (or a
+    directory) before `-k`, only the dropped ids of those paths count, since pytest collects nothing from another."""
     m = SELECTOR_TESTS.match(ln)
     if not m or "-k " not in m["sel"]:
         return False
-    terms = [n.strip().lower() for n in m["sel"].split("-k ", 1)[1].split(" or ")]
-    dropped = dropped_test_ids()
+    before, after = m["sel"].lower().split("-k ", 1)
+    terms = [n.strip() for n in after.split(" -m ", 1)[0].split(" or ")]
+    paths = [t.split("::")[0] for t in before.split() if not t.startswith("-")]
+    dropped = [i for i in dropped_test_ids()
+               if not paths or any(i.split("::")[0] == p or i.split("::")[0].endswith("/" + p)
+                                   or i.startswith(p.rstrip("/") + "/") for p in paths)]
     return all(t and any(t in i for i in dropped) for t in terms)
 
 
