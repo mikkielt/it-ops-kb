@@ -2,7 +2,7 @@
   "id": "BG-vvszkzuj",
   "kind": "bug",
   "title": "The commit-msg hook prints that check-trailers refuses a stray KB-Work line but lets the commit through",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-swavez3g",
   "priority": "P3",
   "rank": 0,
@@ -66,6 +66,28 @@
     "parked: SP-kbrxa4c4 review"
   ],
   "notes": "Review 2026-10-18: in a scratch repo with the hook, `git commit -m $'feat: x\\n\\nKB-Work: ST-cccccccc\\n\\nbody'` returns 0, then `python3 _tools/kbgit.py check-trailers HEAD` returns 1. Found by the SP-kbrxa4c4 review (S3, ST-3mfjrjom). Planner 2026-10-24: provenance moved out of the goal; clause 2 is read by a check on the KB-Work bullet of git.md (the sentence that a stray KB-* line is only warned of at commit time). Gate g1 (class push, set by the word refuse in a hook design question): answered with its recommendation, refuse every stray KB-* or Self-Reviewed line (pre-approved by the operator for the 2026-10-24 day run); reason: the hook then refuses exactly what check-trailers refuses for every trailer key, so it never prints a refusal and exits 0, and one commit-msg change is easy to revert.",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "fcca54addc39475c2edf6e8d97bda53bd920100a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nt = open(\"kb/_self/git.md\", encoding=\"utf-8\").read()\ni = t.index(\"- `KB-Work: <id>[, <id>]`\")\nb = t[i:t.index(chr(10) + \"- \", i + 5)]\nbad = \"A stray `KB-*` line is still only warned of at commit time\" in b\nprint(\"git.md still says a stray KB-* line is only warned of:\", bad)\nsys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "15066631fd9918a5"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,sys,tempfile\nsys.path.insert(0,'_tools')\nimport kg_trailers as k\nf=tempfile.NamedTemporaryFile('w',delete=False,suffix='.txt');f.write('feat: x\\n\\nKB-Work: ST-cccccccc\\n\\nbody\\n');f.close()\nr=k.refuse_commit_msg(f.name,None);os.unlink(f.name)\nprint('stray KB-Work line refused',r==k.REFUSED);sys.exit(0 if r==k.REFUSED else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e7b09f5402ecc66f"
+      }
+    ]
+  }
 }
