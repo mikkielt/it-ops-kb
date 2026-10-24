@@ -1,0 +1,15 @@
+{
+  "id": "EP-fgtlhyo4",
+  "kind": "epic",
+  "title": "The kb MCP server serves the actions sessions repeat (2026-10-24 analysis)",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb_backlog and kb_monitor_status serve the read-only commands sessions run most through Bash today, an exit 1 that is a finding returns as text and a verb's arguments are readable without --help",
+  "relates_to": [
+    "EP-5mp6pwnn",
+    "ST-uruhigy4"
+  ],
+  "notes": "From the 2026-10-24 telemetry and query-log analysis: 38,200 tool calls in 347 transcripts of the last 7 days; Bash carries 33.5k. kb MCP calls in the window: kb_pack 33, docs_fetch 18, docs_search 4, kb_search 2, kb_show 2, kb_backlog 1, kb_status 1, and none of kb_docs, kb_querylog, kb_monitor_status, kb_settings, kb_tools. The kb tools are deferred (names only) and no session ran a tool search for kb_backlog, kb_docs, kb_querylog or kb_monitor_status. Caveat from ST-uruhigy4's evidence: output size is the same either way, so the case for moving a command is uniform access, exit status and schema checks, not tokens, and adoption needs more than the tool existing (managers ran 1,148 of 1,290 Bash backlog reads against 1 kb_backlog call). Every tool change also names _tools/test_redact.py (ST-dbjwje2n) and updates kb/_self/plugin.md and tools.md. Considered and not filed as tools: coord wait (540 s waits, the server answers one request at a time), tests.py (median 25 s), kbgit sync --push (the operator's class), provider read and fetch text, generic git, typed write commands for gate add, new and close (kb_backlog_write is not served and its claim and answer tools were used 0 times against 592 and 628 Bash calls; the gate add refusals are fixed at their cause in the fixes epic).",
+  "filed_in": "clone-0ea70e5c"
+}
