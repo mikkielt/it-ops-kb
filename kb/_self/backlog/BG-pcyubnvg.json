@@ -1,0 +1,23 @@
+{
+  "id": "BG-pcyubnvg",
+  "kind": "bug",
+  "title": "bl_dispatch.worker_traceparent's docstring and backlog.md's dispatch paragraph say the worker's trace is its sprint's, but mon_events.worker_ids gives the run's own trace",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "the docstring of bl_dispatch.worker_traceparent, the dispatch paragraph of kb/_self/backlog.md and the unused sprint argument of worker_ids and worker_traceparent match the trace the run's kb.worker span has: the run's own, hashed from the item id and its first move",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '_tools'); import inspect, bl_dispatch; sys.exit(1 if 'span of its SPRINT' in inspect.getdoc(bl_dispatch.worker_traceparent) else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md",
+    "_tools/mon_events.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

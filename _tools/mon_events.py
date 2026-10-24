@@ -187,9 +187,9 @@ def open_of(backlog):
 
 
 def run_span(name, first, last, end, trace, parent, extra):
-    """A span of the progress events FIRST to LAST: its id the hash of FIRST's sequence and NAME, `error` when LAST is
-    `failed` or `refused`; END the sequence its export waits for."""
-    out = {"name": name, "id": span_id(f"{name}-{first['seq']}"), "trace": trace, "start": first["ns"], "end": last["ns"],
+    """A span of the progress events FIRST to LAST: its id the hash of NAME, the item (EXTRA's `item`) and FIRST's sequence,
+    `error` when LAST is `failed` or `refused`; END the sequence its export waits for."""
+    out = {"name": name, "id": run_span_id(name, extra["item"], first), "trace": trace, "start": first["ns"], "end": last["ns"],
            "status": "error" if last["state"] in ("failed", "refused") else "ok",
            "attributes": attributes({**extra, "state": last["state"], "exit": last["fields"].get("exit"),
                                      **id_list({"gates": last["fields"].get("gates")})})}
@@ -198,11 +198,21 @@ def run_span(name, first, last, end, trace, parent, extra):
     return out, end
 
 
-def trace_id(first, sprint=None):
-    """32 hex characters, the trace of the run whose first progress move is FIRST (W3C Trace Context's width, so a worker's
-    TRACEPARENT can carry it); that of the `kb.sprint` span of SPRINT, derived from its id, when the item has one."""
-    seed = f"kb.sprint-trace-{sprint}" if sprint else f"kb.item-{first['seq']}"
-    return hashlib.sha256(seed.encode("utf-8")).hexdigest()[:32]
+def run_span_id(name, item, first):
+    """The id of the span NAME of ITEM's run whose first progress move is FIRST: a hash of the item and the sequence, so two
+    items whose first moves have the same sequence (in two stores) have two ids."""
+    return span_id(f"{name}-{item}-{first['seq']}")
+
+
+def trace_id(item, first):
+    """32 hex characters, the trace of ITEM's run whose first progress move is FIRST (W3C Trace Context's width, so a worker's
+    TRACEPARENT can carry it): a hash of the item and the sequence."""
+    return hashlib.sha256(f"kb.item-{item}-{first['seq']}".encode("utf-8")).hexdigest()[:32]
+
+
+def sprint_trace_id(sprint):
+    """The trace of the `kb.sprint` span of SPRINT, a hash of its id."""
+    return hashlib.sha256(f"kb.sprint-trace-{sprint}".encode("utf-8")).hexdigest()[:32]
 
 
 def sprint_span_id(sprint):
@@ -235,12 +245,12 @@ def item_runs(events):
 
 def worker_ids(events, item, sprint=None):
     """(trace, span) ids, as `--events` gives them, of the `kb.worker` span of ITEM's run that is working now: its newest
-    `working` move when it is the run's last move; None when the item has no run or its run is not working. The trace is
-    the `kb.sprint` span's when ITEM has a SPRINT."""
+    `working` move when it is the run's last move; None when the item has no run or its run is not working. SPRINT is
+    accepted for the callers that pass it and changes nothing: the trace is the run's own."""
     runs = [run for name, run in item_runs(events) if name == item]
     if not runs or runs[-1][-1]["state"] != "working":
         return None
-    return trace_id(runs[-1][0], sprint), span_id(f"kb.worker-{runs[-1][-1]['seq']}")
+    return trace_id(item, runs[-1][0]), run_span_id("kb.worker", item, runs[-1][-1])
 
 
 def sprint_records(runs, sprints, held=None):
@@ -260,7 +270,7 @@ def sprint_records(runs, sprints, held=None):
         if any(s == sprint and i not in items for i, s in (held or {}).items()):
             continue
         every = [run for rs in items.values() for run in rs]
-        out.append(({"name": "kb.sprint", "id": sprint_span_id(sprint), "trace": trace_id(None, sprint),
+        out.append(({"name": "kb.sprint", "id": sprint_span_id(sprint), "trace": sprint_trace_id(sprint),
                      "start": min(r[0]["ns"] for r in every), "end": max(r[-1]["ns"] for r in every), "status": "ok",
                      "attributes": attributes({"sprint": sprint, "items": len(every)})},
                     max(r[-1]["seq"] for r in every)))
@@ -271,8 +281,8 @@ def run_records(ctx, events, after):
     """The spans of the runs the progress EVENTS (every coord event, oldest first) hold, those finished above sequence AFTER.
     A run of an item (`item_runs`) becomes a `kb.item` span from its first move to its last, a `kb.worker` child for each
     `working` to `returned`, `failed` or `blocked` stretch and a `kb.landing` child for each `landing` to `landed` or
-    `refused`. An item with a sprint takes the sprint's trace and the `kb.sprint` span (`sprint_records`) as the parent of
-    its `kb.item` span."""
+    `refused`. An item with a sprint has the `kb.sprint` span (`sprint_records`) as the parent of its `kb.item` span, which
+    keeps the trace of its own run."""
     runs = item_runs(events)
     backlog = backlog_items(ctx)
     ids = {item for item, run in runs}
@@ -280,7 +290,7 @@ def run_records(ctx, events, after):
     done = sprint_records(runs, sprints, open_of(backlog))
     for item, run in runs:
         first = run[0]
-        trace, root = trace_id(first, sprints.get(item)), span_id(f"kb.item-{first['seq']}")
+        trace, root = trace_id(item, first), run_span_id("kb.item", item, first)
         extra = {"item": item, "sprint": sprints.get(item)}
         mark = None
         for m in run:
