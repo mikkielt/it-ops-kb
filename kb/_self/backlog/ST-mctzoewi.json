@@ -2,7 +2,7 @@
   "id": "ST-mctzoewi",
   "kind": "story",
   "title": "Research: a local traces backend for the operator's machine (Jaeger all-in-one beside Tempo monolithic) is kb facts",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-r7e7jcep",
   "priority": "P3",
@@ -27,5 +27,7 @@
     "ST-hbxnf2l3"
   ],
   "notes": "Planning 2026-10-24: goal reworded into one clause (the install fact and the Tempo comparison no longer split it), read by five cases of the one check (OTLP ports, loopback bind, in-memory restart loss, UI port, binary install). The Tempo monolithic facts already in the article stay. Premise: the check fails on the base (precheck). Planned 2026-10-24 into SP-r7e7jcep: last in the run order (after ST-hbxnf2l3), P3, since the five research stories share the source, anchor and expansions files.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
