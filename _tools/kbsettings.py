@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
 """The coordination settings (stdlib only): defaults, a workspace's settings.json, a kb root's settings.json.
 
-  kbsettings.py show --root WS [--kb-root NAME] [--json]   print the effective coordination settings
+  kbsettings.py show --root WS [--kb-root NAME] [--json]            print the effective coordination settings
+  kbsettings.py explain [KEY] --root WS [--kb-root NAME] [--json]   each setting (or KEY) with its value, the file that
+                                                                    set it, its meaning and the doc line that states it
+  kbsettings.py check                                               exit 1 when the table below and the doc disagree
 
 `effective(root, kb_root=None)` is the one reader: the coord hook, kbmon and the explain command call it, never the
 files. It merges key by key, later over earlier: DEFAULTS, then `<WS>/settings.json`, then
 `<WS>/kb/<NAME>/settings.json` when a kb root is named. A file holds `{"coordination": {"announce": {...},
 "strategy": {...}}}`; a missing file is no error, and a key of another top-level object is not read. An unknown key,
 or a value outside its closed set, raises `SettingsError` (a ValueError whose message names the file, the key and the
-allowed values); `show` prints it on stderr and exits 2. Exit 0 printed; 2 a bad setting or argument.
+allowed values); `show` and `explain` print it on stderr and exit 2. Exit 0 printed; 1 `check` found a mismatch; 2 a
+bad setting or argument. `explain` reads the settings files and the SETTINGS table and nothing else: no model, no
+subprocess, no network, and not the doc, whose line numbers the table holds and `check` verifies.
 
 announce (what a session says about its work):
   when                 list of start, claim, midrun, edit: the moments a session announces itself
@@ -21,7 +26,7 @@ strategy (what a session does when another item is in the state the key names):
   each one of wait, ask, after, join, proceed
   decide               operator or claude: who picks the strategy when none of the above settles it
 """
-import argparse, json, sys
+import argparse, json, re, sys
 from pathlib import Path
 
 STRATEGIES = ("wait", "ask", "after", "join", "proceed")
@@ -56,6 +61,33 @@ SCHEMA = {
         **{k: ("one", STRATEGIES) for k in ("same_item", *RUN_STATES)},
         "decide": ("one", ("operator", "claude")),
     },
+}
+
+
+DOC = "kb/_self/coordination.md"
+# key -> (meaning in plain words, line of DOC that states the rule). The one place the meaning text lives: `explain`
+# prints it and the doc's Settings section says the same in its own words (`check` compares the key, the default and
+# the allowed values of each line).
+SETTINGS = {
+    "announce.when": ("The moments a session tells the other sessions and the operator what it is working on: when it "
+                      "starts, when it claims an item, in the middle of a run, or on each edit.", 165),
+    "announce.to_other_sessions": ("Whether a session announces its work to the other sessions on the clone, so they "
+                                   "can see it before they touch the same item or files.", 166),
+    "announce.operator": ("Where the operator is told about a session's work: in the terminal, on the kbmon panels, "
+                          "or as a needs-you alert.", 167),
+    "announce.needs_you_after_min": ("How many whole minutes an open question may wait before it shows as needing "
+                                     "the operator.", 168),
+    "strategy.same_item": ("What a session suggests when another session already holds the item it was about to take.",
+                           169),
+    "strategy.working": ("What a session suggests when another item that touches the same files is in the run state "
+                         "working (a worker is running it).", 170),
+    "strategy.landing": ("What a session suggests when another item that touches the same files is being landed.", 171),
+    "strategy.blocked": ("What a session suggests when another item that touches the same files is blocked on a gate.",
+                         172),
+    "strategy.returned": ("What a session suggests when another item that touches the same files has returned from its "
+                          "worker and waits to land.", 173),
+    "strategy.decide": ("Who picks the strategy when none of the keys above settles it: the operator or the "
+                        "session itself.", 174),
 }
 
 
@@ -115,15 +147,66 @@ def _read(path):
     return coord
 
 
+def _layers(root, kb_root=None):
+    """[(path, coordination object)] for the workspace file, then the kb root's, validated; a missing file is {}."""
+    root = Path(root)
+    if kb_root is not None and not re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9_.-]*", str(kb_root)):
+        raise SettingsError(f"kb root name {str(kb_root)!r}: a plain directory name is expected")
+    files = [root / "settings.json"] + ([root / "kb" / kb_root / "settings.json"] if kb_root else [])
+    return [(path, _read(path)) for path in files]
+
+
 def effective(root, kb_root=None):
     """`{"coordination": {"announce": {...}, "strategy": {...}}}` for workspace ROOT and the kb root named KB_ROOT."""
-    root = Path(root)
-    files = [root / "settings.json"] + ([root / "kb" / kb_root / "settings.json"] if kb_root else [])
     merged = json.loads(json.dumps(DEFAULTS))
-    for path in files:
-        for group, body in _read(path).items():
+    for _, coord in _layers(root, kb_root):
+        for group, body in coord.items():
             merged[group].update(body)
     return {"coordination": merged}
+
+
+def explain(root, kb_root=None, key=None):
+    """[{key, value, source, meaning, doc}] for each setting of `effective`, or for KEY alone (`group.name`): source is
+    the file whose layer set the value last, or "default"; doc is `kb/_self/coordination.md:LINE`."""
+    if key is not None and key not in SETTINGS:
+        raise SettingsError(f"unknown key {key}; allowed: {', '.join(SETTINGS)}")
+    value, source = {}, {}
+    for group, body in DEFAULTS.items():
+        for name, v in body.items():
+            value[f"{group}.{name}"], source[f"{group}.{name}"] = json.loads(json.dumps(v)), "default"
+    for path, coord in _layers(root, kb_root):
+        for group, body in coord.items():
+            for name, v in body.items():
+                value[f"{group}.{name}"], source[f"{group}.{name}"] = v, str(path)
+    return [{"key": k, "value": value[k], "source": source[k], "meaning": SETTINGS[k][0],
+             "doc": f"{DOC}:{SETTINGS[k][1]}"} for k in SETTINGS if key in (None, k)]
+
+
+def explain_text(rows):
+    """ROWS of `explain` as lines: key = value (source), the meaning, the doc line."""
+    out = []
+    for r in rows:
+        value = r["value"] if isinstance(r["value"], str) else json.dumps(r["value"])
+        out += [f"{r['key']} = {value}  (source: {r['source']})", f"  {r['meaning']}", f"  doc: {r['doc']}"]
+    return "\n".join(out)
+
+
+def check(doc_text):
+    """Problems between SETTINGS and the text of DOC: each key's line must hold the key, the words "Default:" and the
+    default, and every allowed value of its closed set; one message per mismatch, empty when they agree."""
+    lines, problems = doc_text.splitlines(), []
+    if set(SETTINGS) != {f"{g}.{k}" for g, body in SCHEMA.items() for k in body}:
+        problems.append("SETTINGS and SCHEMA do not name the same keys")
+    for key, (_, number) in SETTINGS.items():
+        group, name = key.split(".")
+        line = lines[number - 1] if 0 < number <= len(lines) else ""
+        kind, default = SCHEMA[group][name], DEFAULTS[group][name]
+        shown = ", ".join(default) if isinstance(default, list) else json.dumps(default).strip('"')
+        wants = [f"`{key}`", f"Default: `{shown}`"] + [f"`{v}`" for v in (kind[1] if len(kind) > 1 else ())]
+        missing = [w for w in wants if w not in line]
+        if missing:
+            problems.append(f"{DOC}:{number}: the line for {key} lacks {', '.join(missing)}")
+    return problems
 
 
 def _text(settings):
@@ -138,17 +221,35 @@ def _text(settings):
 def main(argv=None):
     ap = argparse.ArgumentParser(description="The coordination settings: defaults, workspace and kb root files.")
     sub = ap.add_subparsers(dest="cmd", required=True)
-    sh = sub.add_parser("show", help="print the effective coordination settings")
-    sh.add_argument("--root", required=True, help="the workspace directory (holds settings.json and kb/)")
-    sh.add_argument("--kb-root", help="a kb root's name: kb/NAME/settings.json overrides the workspace's")
-    sh.add_argument("--json", action="store_true", help="print one JSON object")
+    for name, help_ in (("show", "print the effective coordination settings"),
+                        ("explain", "print each setting (or KEY) with its value, source, meaning and doc line")):
+        sp = sub.add_parser(name, help=help_)
+        if name == "explain":
+            sp.add_argument("key", nargs="?", help="one setting, e.g. strategy.working (default: all)")
+        sp.add_argument("--root", required=True, help="the workspace directory (holds settings.json and kb/)")
+        sp.add_argument("--kb-root", help="a kb root's name: kb/NAME/settings.json overrides the workspace's")
+        sp.add_argument("--json", action="store_true", help="print JSON")
+    sub.add_parser("check", help="exit 1 when the SETTINGS table and the doc's Settings section disagree")
     args = ap.parse_args(argv)
+    if args.cmd == "check":
+        try:
+            problems = check(Path(__file__).resolve().parent.parent.joinpath(DOC).read_text(encoding="utf-8"))
+        except OSError as e:
+            problems = [f"{DOC}: cannot read: {e}"]
+        print("\n".join(problems) if problems else "kbsettings: the table and the doc agree")
+        return 1 if problems else 0
     try:
-        settings = effective(args.root, args.kb_root)
+        if args.cmd == "explain":
+            rows = explain(args.root, args.kb_root, args.key)
+            out = (json.dumps(rows[0] if args.key else rows, indent=2, sort_keys=True) if args.json
+                   else explain_text(rows))
+        else:
+            settings = effective(args.root, args.kb_root)
+            out = json.dumps(settings, indent=2, sort_keys=True) if args.json else _text(settings)
     except SettingsError as e:
         print(f"kbsettings: {e}", file=sys.stderr)
         return 2
-    print(json.dumps(settings, indent=2, sort_keys=True) if args.json else _text(settings))
+    print(out)
     return 0
 
 

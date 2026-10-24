@@ -428,3 +428,6 @@ EV-see-stuck-coord-claim-failed-ask,how do I see a stuck coord claim or a failed
 EV-sprint-plan-same-function-checks-behaviour-not-shape,"what kind of checks do stories that change the same function get when a sprint is planned",backlog.md,good,yes,"checks on its behaviour, not its internal shape",kb-sprint:plan
 SQ-branch-kbgit-py-sync-push-push,which branch does kbgit.py sync --push push from a branch other than main,git.md,good,yes,3 conflict needs `/kb-git-sync,
 SQ-give-another-operator-key-file-coordination,how do I give another operator a key file for the coordination server,coordination.md,good,yes,function `authenticate` decides who,
+EV-coordination-strategy-working-another-item,which coordination strategy does a session suggest when another item touching the same files is working,coordination.md,good,no,what a session suggests when another item that touches the same files is working,
+EV-coordination-settings-explain-command,how do I see how coordination is set up here with each setting's value and source file,coordination.md,good,yes,explain [KEY] --root WS,
+EV-coordination-needs-you-after-min,how long does an open question wait before it shows as needing the operator,coordination.md,good,yes,the whole minutes an open question waits,

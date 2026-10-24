@@ -58,6 +58,10 @@ asks and, unasked, for a source past its freshness lifetime):
   kb_monitor_status  (the team's own server only: off under --roots, and kb_http.py never serves it) the lines of
              `kbmon.py --status TOPIC --json` as text: topic sessions, cost, querylog, coord, sprints, load or all (default),
              at most 25 lines; each panel is bound by kbmon's --timeout (10 seconds), and no model is called
+  kb_settings  (the team's own server only, as kb_monitor_status) the effective coordination settings of the host project
+             (CLAUDE_PROJECT_DIR, else the cwd), like `kbsettings.py explain [KEY] [--kb-root NAME]`: each setting with its
+             value, the file that set it (or default), its meaning and the doc line that states it; reads the settings
+             files and the table of kbsettings.py only, and no model is called
   kb_backlog, kb_querylog, kb_docs  (the team's own server only, as kb_monitor_status) the read-only commands of backlog.py,
              querylog.py (digest, status, show) and selfdoc.py, check.py and rag.py eval (stale, section, map, check, eval) as
              `command` and `args`, answering the text the script prints through redact.redact (kb_docs ends it with
@@ -1188,6 +1192,40 @@ def kb_monitor_status(args):
 MONITOR_HANDLERS = {"kb_monitor_status": kb_monitor_status}
 
 
+# ---------------------------------------------------------------- coordination settings
+
+SETTINGS_TOOL_LIST = [
+    {"name": "kb_settings", "title": "Coordination settings",
+     "description": "How coordination is set up here (kbsettings.py explain; not kb facts, not live device data): each "
+                    "setting with its value, the file that set it or default, its meaning and the doc line "
+                    "(kb/_self/coordination.md:N) that states the rule. Reads the project's settings files only; no "
+                    "model call. Use for what a session announces or suggests when another item is working.",
+     "inputSchema": {"type": "object", "properties": {
+         "key": {"type": "string", "description": "one setting, e.g. strategy.working; left out: all of them"},
+         "kb_root": {"type": "string", "description": "a kb root's name: kb/NAME/settings.json overrides the workspace's"}},
+         "additionalProperties": False},
+     "annotations": {"title": "Coordination settings", **READ_ONLY}},
+]
+
+
+def kb_settings(args):
+    extra = sorted(set(args) - {"key", "kb_root"})
+    if extra:
+        raise ToolError(f"unknown argument(s): {', '.join(extra)}")
+    key, kb_root = args.get("key") or None, args.get("kb_root") or None
+    if not all(v is None or isinstance(v, str) for v in (key, kb_root)):
+        raise ToolError("key and kb_root are strings")
+    import kbsettings, redact
+    try:
+        rows = kbsettings.explain(os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd(), kb_root, key)
+    except kbsettings.SettingsError as e:
+        raise ToolError(redact.redact(str(e))[-2000:])
+    return redact.redact(kbsettings.explain_text(rows))
+
+
+SETTINGS_HANDLERS = {"kb_settings": kb_settings}
+
+
 # ---------------------------------------------------------------- backlog commands
 
 # the commands of backlog.py that write nothing (precheck, claim, done and every other that writes a file or runs an
@@ -1481,7 +1519,7 @@ def handle(msg):
     if method == "ping":
         return result(msg_id, {})
     if method == "tools/list":
-        return result(msg_id, {"tools": TOOL_LIST + ([] if limited() else [FEEDBACK_TOOL] + MONITOR_TOOL_LIST + BACKLOG_TOOL_LIST
+        return result(msg_id, {"tools": TOOL_LIST + ([] if limited() else [FEEDBACK_TOOL] + MONITOR_TOOL_LIST + SETTINGS_TOOL_LIST + BACKLOG_TOOL_LIST
                                + QUERYLOG_TOOL_LIST + DOCS_TOOL_LIST)
                                + (COORD_TOOL_LIST if coord_enabled() else [])
                                + (BACKLOG_WRITE_TOOL_LIST if backlog_write_enabled() else [])
@@ -1492,6 +1530,7 @@ def handle(msg):
         if not limited():
             handlers["kb_feedback"] = kb_feedback
             handlers.update(MONITOR_HANDLERS)
+            handlers.update(SETTINGS_HANDLERS)
             handlers.update(BACKLOG_HANDLERS)
             handlers.update(FACADE_HANDLERS)
         if coord_enabled():
