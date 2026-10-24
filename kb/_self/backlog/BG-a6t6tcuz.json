@@ -20,5 +20,9 @@
     "kb/_self/coordination.md",
     "kb/_self/backlog.md"
   ],
+  "links": [
+    "parked: SP-sucr3kfg review"
+  ],
+  "notes": "Found by the SP-sucr3kfg review. coord.py transition takes a --field value only as an id with no spaces (kb/_self/coordination.md:46); bl_land.land_refused_step passes the step as the stop names it, and the move is refused with a warning. The check of ST-tb6tzrxa used the one-word step branch. The merge request step that gate g2 of ST-tb6tzrxa fixes for --wait-merge 0 has the same problem. Either map the name or widen what transition takes.",
   "filed_in": "clone-0ea70e5c"
 }
