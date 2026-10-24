@@ -2,7 +2,7 @@
   "id": "BG-nrq2gqcb",
   "kind": "bug",
   "title": "kb_ask.py --route sends a docs question that holds a tool, command or script word to kind=tools instead of its pack route",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-5mp6pwnn",
   "sprint": "SP-x6eqtsid",
   "priority": "P1",
@@ -23,5 +23,7 @@
     "kb/_self/token-efficiency.md"
   ],
   "notes": "Found by the sprint review (a fresh reviewer session, 2026-10-24): kb_ask.py's tools() returns None only when the catalog has no entry, and kbtools.search matches any shared word, so the cue words (tool, command, script) and words the entry descriptions hold (Intune, Microsoft, Claude) match: 22 docs questions all printed kind=tools. It contradicts ST-e6xp5h3u's gate g3 (no catalog entry: the question goes on to the pack); that story's check 2 planted docs questions that held no tool word, so it passed. Fix direction, the worker's call: drop the cue words from the words that match, score on a tool's name and its Answers: text, and route to tools only above a floor that the 11 docs questions of the repro fall under and its 4 tool questions rise over; the answer text and the kb_tools MCP text stay kbtools.py's lines; the status route stays first. The kb_ask.py docstring, tools.md and token-efficiency.md must say what the code does. AGENTS.md, code.md and design.md map to these files: read them and name them in Self-Reviewed.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
