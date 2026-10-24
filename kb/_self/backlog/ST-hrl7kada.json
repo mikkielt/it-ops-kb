@@ -4,7 +4,6 @@
   "title": "kb_monitor_status returns one panel as JSON, as kbmon.py --json --panel does",
   "status": "draft",
   "parent": "EP-fgtlhyo4",
-  "sprint": "SP-e3qyajjv",
   "priority": "P3",
   "rank": 0,
   "goal": "kb_monitor_status with panel NAME returns that panel's JSON and an unknown panel is refused naming the valid ones",

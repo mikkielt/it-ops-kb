@@ -4,7 +4,6 @@
   "title": "kb_backlog usage returns a backlog.py verb's arguments, so a session reads them without 436 --help runs",
   "status": "draft",
   "parent": "EP-fgtlhyo4",
-  "sprint": "SP-e3qyajjv",
   "priority": "P3",
   "rank": 0,
   "goal": "kb_backlog usage with no argument returns the verb list with one line each, and usage gate add returns gate add's argument list with --recommendation; usage writes no file and runs no item",
