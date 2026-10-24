@@ -1,0 +1,21 @@
+{
+  "id": "BG-il5fgxps",
+  "kind": "bug",
+  "title": "kbtools.py no longer puts kb_search first for search the kb for a fact since a short multi-match description counts in full",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbtools.py NEED puts kb_search first for search the kb for a fact, as before BG-eoito4bw, and keeps backlog.py among the entries for plan a sprint and kb-sprint in the first three for sprint status, with the four needs of BG-eoito4bw unchanged",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport json, subprocess, sys\nwant = {\"search the kb for a fact\": \"kb_search\"}\ngot = {}\nfor need in want:\n    r = subprocess.run([sys.executable, \"_tools/kbtools.py\", need, \"--json\"], capture_output=True, text=True)\n    es = json.loads(r.stdout)[\"entries\"] if r.returncode == 0 else []\n    got[need] = es[0][\"tool\"] if es else None\nassert got == want, (\"a need no longer ranks the tool that answers it first\", got, want)\n"
+    ]
+  },
+  "touches": [
+    "_tools/kbtools.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
