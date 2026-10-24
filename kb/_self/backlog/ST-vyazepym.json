@@ -2,7 +2,7 @@
   "id": "ST-vyazepym",
   "kind": "story",
   "title": "The kbroot docs say what the code does after this sprint: the reason line, and the hook's triggers",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-f2o3aqm2",
   "priority": "P3",
@@ -39,5 +39,7 @@
     "parked: SP-c6w5hjmc review"
   ],
   "notes": "Plan 2026-10-24: premise runs on base (exit 1: tools.md still says git's last line; no doc or docstring gives the reason line; none of the three says the hook's triggers are any one of no clone, an old stamp, a changed url, ref or pin). The old check read the tools.md row for the words git's last line only and passed a row that dropped them; rewritten to run the code the docs describe on planted input (kbroot.git with a stubbed git run: the rejected line comes back, hint lines left out; kbroot.stale on a planted clone and stamp: no clone, an old stamp, a changed url, ref or pin are each stale, a fresh stamp is not) and to read the three texts: the tools.md row, the plugin.md hook entry, the kbroot.py module docstring. The check finds the tools.md hook sentence by its head, `fetch --hook` is, so keep that head. Code: only the docstring changes (kbroot.git and kbroot.stale already do this). Orders after ST-s737ugdt: both edit kb/_self/tools.md, and the doc-only item comes first (the sync gate's selfdoc stale needs code and its docs in one range).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
