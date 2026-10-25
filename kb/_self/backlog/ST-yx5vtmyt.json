@@ -2,7 +2,7 @@
   "id": "ST-yx5vtmyt",
   "kind": "story",
   "title": "Research sprint goal: Fixes for the new orchestration tools: wait cursor, run-state store, runner guard and usage texts",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-lhpvwh6l",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: every item of this sprint changes this repo's own tools and usage texts (dispatch/begin wait line, run_coord store, runner watch guard, backlog.py usage block, item and backlog skills); the goal names no question about outside products. Checked 2026-10-25 with kbtools.py and the code (bl_dispatch.py, bl_clean.py, bl_procs.py).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "dcadc9e4c1a53cdabf571e0fae068db835b8df45",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-yx5vtmyt"
+        ],
+        "exit": 0,
+        "sha256": "b8d2e5a8cff38fc3"
+      }
+    ]
+  }
 }
