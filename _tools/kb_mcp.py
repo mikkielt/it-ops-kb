@@ -1293,6 +1293,8 @@ BACKLOG_VERB_LINES = {
     "horizon": "how far each active sprint can go without the operator",
     "goal": "a /goal condition for an item: its end state, checks and scope",
     "brief": "print the worker's brief for an item",
+    "begin": "claim up to four ready items, push the claims once and dispatch each detached",
+    "runner": "runner watch: end an unattended headless runner whose report is written and whose process stays",
     "dispatch": "make a worker's worktree and scratch, write its brief and start its headless session",
     "report": "a returned worker's outcome: result, commits, diffstat, gates",
     "stage-back": "copy a worker's staging copies into its worktree and commit them",
