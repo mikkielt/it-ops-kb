@@ -2,7 +2,8 @@
   "id": "BG-4mt5m5bj",
   "kind": "bug",
   "title": "begin runs a land_push whose program is a .py file directly, so the kb's own land_push fails with Permission denied",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-vxdacfpl",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -17,6 +18,6 @@
   "touches": [
     "_tools/bl_dispatch.py"
   ],
-  "notes": "Found 2026-10-25 by the SP-f7kaebel runner: begin ST-ekb5b7ic claimed, then raised PermissionError on _tools/kbgit.py (traceback from bl_dispatch.begin_push). bl_land.land_push names the program by its basename and land_run(program=True) runs it; begin_push passes argv to subprocess.run unchanged. The claim was pushed and dispatched by hand. Belongs to the begin story of SP-vxdacfpl (ST-44md64ps, landed).",
+  "notes": "Found 2026-10-25 by the SP-f7kaebel runner: begin ST-ekb5b7ic claimed, then raised PermissionError on _tools/kbgit.py (traceback from bl_dispatch.begin_push). bl_land.land_push names the program by its basename and land_run(program=True) runs it; begin_push passes argv to subprocess.run unchanged. The claim was pushed and dispatched by hand. Belongs to the begin story of SP-vxdacfpl (ST-44md64ps, landed). Taken into SP-vxdacfpl 2026-10-25 at the manager's request: it breaks the begin story's goal clause (claim pushed through land_push) on this repo's own land_push.",
   "filed_in": "clone-0ea70e5c"
 }
