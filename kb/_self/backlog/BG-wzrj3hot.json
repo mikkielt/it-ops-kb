@@ -6,7 +6,7 @@
   "sprint": "SP-lhpvwh6l",
   "priority": "P3",
   "rank": 0,
-  "severity": "S3",
+  "severity": "S2",
   "goal": "runner watch ends only a process whose program (the first word of its command line, or the interpreter's script word) is named claude, so a process that merely has a CLAUDE.md or claude.json argument is refused with exit 2",
   "repro": {
     "run": [
@@ -21,6 +21,6 @@
   "links": [
     "parked: SP-f7kaebel review"
   ],
-  "notes": "Found by the SP-f7kaebel review (S3): bl_procs.names_claude takes any argv word whose basename starts with claude, case-insensitively; the gate answer recorded for ST-hlbnqk7k chose that rule against a plain substring, but a word CLAUDE.md still matches. Runs as the agent s guard only; the repro fails on the base.",
+  "notes": "Found by the SP-f7kaebel review (S3): bl_procs.names_claude takes any argv word whose basename starts with claude, case-insensitively; the gate answer recorded for ST-hlbnqk7k chose that rule against a plain substring, but a word CLAUDE.md still matches. Runs as the agent s guard only; the repro fails on the base. Raised to S2 by the 2026-10-25 run brief: the guard decides which process gets SIGTERM.",
   "filed_in": "clone-0ea70e5c"
 }
