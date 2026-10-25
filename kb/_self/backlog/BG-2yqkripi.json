@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The Jaeger article says JAEGER_LISTEN_HOST is meant to be 0.0.0.0 in a container and makes a snippet default the listening endpoints default, where the docs say it is useful when the container needs 0.0.0.0",
   "status": "draft",
+  "sprint": "SP-v4fvjr2g",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",

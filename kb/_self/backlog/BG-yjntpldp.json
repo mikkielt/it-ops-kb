@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "mods.md says the mock clock moves when the test calls settle(), while the test page says settle() runs due timers without moving the time",
   "status": "draft",
+  "sprint": "SP-v4fvjr2g",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kb_facts given the name of a missing root says nothing about the root being missing",
   "status": "draft",
+  "sprint": "SP-v4fvjr2g",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

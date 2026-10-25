@@ -4,6 +4,7 @@
   "title": "kbtools.py ranks kbmon.py above querylog.py for the plural need query logs, since the several-word name rule joins the need's raw words",
   "status": "draft",
   "parent": "EP-5mp6pwnn",
+  "sprint": "SP-v4fvjr2g",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",

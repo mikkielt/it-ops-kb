@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "A fresh sprint reviewer writes its gap list to a report file the orchestrator reads, not only to its session's last message",
   "status": "draft",
+  "sprint": "SP-v4fvjr2g",
   "priority": "P2",
   "rank": 0,
   "goal": "the kb-sprint skill's review step starts the read-only reviewer with a brief that names a report file in its scratch directory, and the reviewer writes its final gap list there, so the orchestrator reads the report even when the session's last message is a short follow-up (claude -p's result holds only the last turn)",

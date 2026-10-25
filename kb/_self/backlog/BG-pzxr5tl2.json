@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "QS12 in _answers.md says the EU AI Act applies from 2024-08-01, the date it entered into force",
   "status": "draft",
+  "sprint": "SP-v4fvjr2g",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The applies_to range of mods.md ends at 2026-10-17 and 2026-10-18, while the create page it now cites is dated 2026-10-20 and was read 2026-10-24",
   "status": "draft",
+  "sprint": "SP-v4fvjr2g",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",

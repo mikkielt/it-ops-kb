@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kbtools.py no longer puts kb_search first for search the kb for a fact since a short multi-match description counts in full",
   "status": "draft",
+  "sprint": "SP-v4fvjr2g",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
