@@ -248,6 +248,14 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           caps) with the text of FILE on stdin instead of a new brief; --known,
                                           --known-suite and --probe are refused; the run state moves as a dispatch
                                           moves it
+  backlog.py report ID                      a returned worker's outcome in one call, read only: the session's
+                                          SCRATCH/result.json (subtype, num_turns, total_cost_usd, session_id), a
+                                          warning line for each line of its result text that says a gate was not
+                                          recorded, the tail of the result text, the commits of work/ID ahead of the
+                                          integration main with the diffstat and the item's gates on that branch
+                                          (id, options, recommendation); exit 1 naming what is missing when there is
+                                          no result.json or no work branch. dispatch's closing output ends with its
+                                          first line and its warning lines
   backlog.py stage-back ID [--check] [--self-reviewed DOC]... [--trailer 'Key: value']...
                                           copy the item's staging copies (SCRATCH/staging/, the `.claude/` files
                                           dispatch named) that differ from the worktree's file into its worktree,
@@ -440,7 +448,7 @@ bl_cli.register("config", cmd_config, help="print the project settings with each
 # The usage order of the subcommands: each module registers its own when imported, and this puts them in order.
 USAGE = ("new", "similar", "check", "fmt", "selectors", "list", "tree", "find", "show", "next", "held", "claim",
          "release", "answer", "set", "move", "reopen", "gate", "fire", "done", "researched", "land", "merge", "drop", "start", "precheck",
-         "host-check", "close", "tidy", "horizon", "goal", "brief", "dispatch", "stage-back", "referrers", "cost", "red-pipeline", "intake", "procs", "stalled", "ops",
+         "host-check", "close", "tidy", "horizon", "goal", "brief", "dispatch", "report", "stage-back", "referrers", "cost", "red-pipeline", "intake", "procs", "stalled", "ops",
          "runs", "landings", "own", "selfcheck", "upstream-report", "upstream-import", "config")
 bl_cli.order(USAGE)
 
