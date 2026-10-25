@@ -2,7 +2,7 @@
   "id": "ST-c5ibk7sj",
   "kind": "story",
   "title": "The backlog.py usage block shows set taking several ids and which options a batch refuses, as set --help does",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-lhpvwh6l",
   "priority": "P3",
   "rank": 1,
@@ -36,6 +36,28 @@
   ],
   "notes": "Found by the SP-f7kaebel review (S3): _tools/backlog.py:86 still reads `set ID [...]`; ST-fblg3yso updated tools.md and the argparse help, not this usage block, which kbtools.py reads for its backlog.py set entry. Check fails on the base today.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "2db99bfeef411d13f0aa28cf5bc71c29741b0071",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport sys,re\nt=open(\"_tools/backlog.py\",encoding=\"utf-8\").read()\ni=t.find(\"  backlog.py set ID\")\nblk=t[i:i+1800]\nok=bool(re.search(r\"backlog\\.py set ID(\\s|\\.|\\[)*ID\\.\\.\\.|set ID ID\", blk)) and \"one item\" in blk\nprint(ok)\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "a9ac0c3ac83c40e1"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport json,re,subprocess,sys\no=json.loads(subprocess.run([sys.executable,\"_tools/kbtools.py\",\"--json\",\"backlog set change an item\"],capture_output=True,text=True).stdout)\ne=[x for x in o[\"entries\"] if x[\"tool\"]==\"backlog.py set\"]\nt=\" \".join(e[0][\"answers\"]) if e else \"\"\nok=bool(e) and bool(re.search(r\"several|more than one\",t))\nprint(ok)\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "a9ac0c3ac83c40e1"
+      }
+    ]
+  }
 }
