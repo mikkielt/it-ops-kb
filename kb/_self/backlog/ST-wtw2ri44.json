@@ -2,7 +2,7 @@
   "id": "ST-wtw2ri44",
   "kind": "story",
   "title": "factdiff.py anchor --file F --lines N --propose prints the proposals for those lines",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-iowijan3",
   "sprint": "SP-f7kaebel",
   "priority": "P3",
@@ -66,6 +66,28 @@
   ],
   "notes": "From the 2026-10-24 telemetry and query-log analysis: factdiff.py anchor --file ... --lines N --propose was refused 11 times in 7 days, all by research workers (last 2026-10-24T12:41Z), each with the usage dump '--lines needs exactly one --file and no other selector and no --propose' (factdiff.py:2691); all 11 usage errors of anchor have this message. The parser help already says --lines anchors only the facts on those lines and --propose prints the passages, so a worker combines them. Goal for the worker: --propose with --lines prints the line,source,quote rows of those lines only. The planted run reads the cached documents of the cited sources (network when they are missing), so it accepts exit 0 or 1 and fails only on the refusal.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "466204dab8ba7a5ff7b15417d244504b67510a23",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess as s,sys\np=s.run([sys.executable,\"_tools/factdiff.py\",\"anchor\",\"--file\",\"kb/public/auth/enrolment-tokens.md\",\"--lines\",\"18\",\"--propose\"],capture_output=True,text=True,timeout=300)\no=p.stdout+p.stderr;print(p.returncode,o[-200:])\nsys.exit(0 if \"no --propose\" not in o and p.returncode in (0,1) else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "44e52cca824825b9"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport csv,io,subprocess as s,sys\nst=lambda:s.run([\"git\",\"status\",\"--porcelain\"],capture_output=True,text=True).stdout\na=st();p=s.run([sys.executable,\"_tools/factdiff.py\",\"anchor\",\"--file\",\"kb/public/auth/enrolment-tokens.md\",\"--lines\",\"18\",\"--propose\"],capture_output=True,text=True,timeout=300);b=st()\no=p.stdout;i=o.find(\"line,source,quote\")\nrows=list(csv.reader(io.StringIO(o[i:])))[1:] if i>=0 else []\nlines={r[0] for r in rows}\nprint(p.returncode,len(rows),sorted(lines),a==b,(p.stdout+p.stderr)[-120:])\nsys.exit(0 if a==b and \"no --propose\" not in p.stdout+p.stderr and ((i<0 and p.returncode==1) or (i>=0 and rows and lines=={\"18\"})) else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "bc11dadbc35d7917"
+      }
+    ]
+  }
 }
