@@ -14,10 +14,22 @@
         "-c",
         "\nimport sys,re\nt=open(\"_tools/backlog.py\",encoding=\"utf-8\").read()\ni=t.find(\"  backlog.py set ID\")\nblk=t[i:i+1800]\nok=bool(re.search(r\"backlog\\.py set ID(\\s|\\.|\\[)*ID\\.\\.\\.|set ID ID\", blk)) and \"one item\" in blk\nprint(ok)\nsys.exit(0 if ok else 1)\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport json,re,subprocess,sys\no=json.loads(subprocess.run([sys.executable,\"_tools/kbtools.py\",\"--json\",\"backlog set change an item\"],capture_output=True,text=True).stdout)\ne=[x for x in o[\"entries\"] if x[\"tool\"]==\"backlog.py set\"]\nt=\" \".join(e[0][\"answers\"]) if e else \"\"\nok=bool(e) and bool(re.search(r\"several|more than one\",t))\nprint(ok)\nsys.exit(0 if ok else 1)\n"
+      ]
     }
   ],
   "touches": [
-    "_tools/backlog.py"
+    "_tools/backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-nxgi6cl3"
   ],
   "links": [
     "parked: SP-f7kaebel review"
