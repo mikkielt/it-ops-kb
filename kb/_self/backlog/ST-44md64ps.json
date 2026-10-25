@@ -106,7 +106,11 @@
         "no: it reads the integration main as last fetched and writes nothing": "ST-44md64ps",
         "yes: it fetches first, as the real run does": "ST-44md64ps"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "no: it reads the integration main as last fetched and writes nothing",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
