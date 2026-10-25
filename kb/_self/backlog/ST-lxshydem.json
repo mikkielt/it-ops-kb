@@ -31,6 +31,25 @@
   "relates_to": [
     "EP-mkzkd7in"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What spelling does fetch.py text take for case-insensitive --grep?",
+      "options": [
+        "-i and --ignore-case",
+        "-i only"
+      ],
+      "recommendation": "-i and --ignore-case",
+      "do": {
+        "-i and --ignore-case": "ST-lxshydem",
+        "-i only": "ST-lxshydem"
+      },
+      "class": "design",
+      "answer": "-i and --ignore-case",
+      "by": "agent"
+    }
+  ],
   "links": [
     "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],

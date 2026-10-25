@@ -50,10 +50,11 @@ archive as its decompressed text; a response sent with Content-Encoding gzip dec
 and --diff hash the bytes as sent); a spreadsheet's (.xlsx) shared strings; a JSON body on one line one value per line.
 A cap that cuts the text puts a `[cut at ...]` line in it. Exit 2 when it cannot read the body in full (undecodable,
 truncated, a failed read).
-`--grep PATTERN` prints only the lines that match the regular expression (exit 1 when none do, 2 when none do in a text
-that was cut, and each cut line goes to stderr), so a long document is read without a pipe; `--header 'Name: value'`
-(repeatable, before `--grep`: a `--header` after it is refused, so a permission rule that allows a line up to `--grep`
-lets a session add no header) sends a request header beside the kb User-Agent.
+`--grep PATTERN` prints only the lines that match the regular expression (`-i` or `--ignore-case`: ignoring case; exit 1
+when none do, 2 when none do in a text that was cut, and each cut line goes to stderr), so a long document is read
+without a pipe; `--header 'Name: value'` (repeatable, before `--grep`: a `--header` after it is refused, so a
+permission rule that allows a line up to `--grep` lets a session add no header) sends a request header beside the kb
+User-Agent.
 
 A failed download is reported as `unknown`, never as a match.
 
@@ -435,13 +436,14 @@ def read_text(url, body, ctype):
 
 
 def text_cmd(a):
-    """`text URL [--grep PATTERN] [--header 'Name: value']`: print the text of the page, PDF, archive or spreadsheet at
-    URL, or only its lines that match the regular expression PATTERN (exit 1 when none do, as grep). A cap that cuts
-    the text puts a `[cut at ...]` line in it (on stderr with `--grep`); exit 2 when the body cannot be read in full:
-    undecodable, truncated, or no match in a text that was cut, which proves nothing about the part not read."""
+    """`text URL [--grep PATTERN [-i]] [--header 'Name: value']`: print the text of the page, PDF, archive or spreadsheet
+    at URL, or only its lines that match the regular expression PATTERN (`-i`: ignoring case; exit 1 when none do, as
+    grep). A cap that cuts the text puts a `[cut at ...]` line in it (on stderr with `--grep`); exit 2 when the body
+    cannot be read in full: undecodable, truncated, or no match in a text that was cut, which proves nothing about the
+    part not read."""
     del _cuts[:]
     try:
-        pattern = re.compile(a.grep) if a.grep is not None else None
+        pattern = re.compile(a.grep, re.IGNORECASE if a.ignore_case else 0) if a.grep is not None else None
         body, ctype = fetch(a.url, {k.strip(): v.strip() for k, _, v in (h.partition(":") for h in a.header)})
         text = read_text(a.url, body, ctype)
     except (OSError, ValueError, re.error, zipfile.BadZipFile, zipfile.LargeZipFile, tarfile.TarError, ElementTree.ParseError,
@@ -634,6 +636,7 @@ def main():
         tp.add_argument("--timeout", type=float, default=60, help="per-request timeout in seconds (default 60)")
         tp.add_argument("--grep", metavar="PATTERN", help="print only the lines of the text that match this regular "
                         "expression (exit 1 when none do)")
+        tp.add_argument("-i", "--ignore-case", action="store_true", help="with --grep: match the pattern case-insensitively")
         tp.add_argument("--header", action="append", default=[], metavar="'NAME: VALUE'",
                         help="send this request header beside the User-Agent (repeatable)")
         rest = sys.argv[2:]
