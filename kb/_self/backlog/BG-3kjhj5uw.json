@@ -20,5 +20,6 @@
   "links": [
     "parked: SP-lhpvwh6l review"
   ],
+  "notes": "Found by the SP-lhpvwh6l review (S4): _tools/backlog.py:255-258 says 60 task or subtask, 100 bug or story with no tasks; bl_dispatch.TURNS has task, subtask and bug 100, story, epic and sprint 150, research 200; kbtools repeats the wrong caps. The filing tool warns that the repro reads the tool's printed output: that is the point, the text is what kbtools prints.",
   "filed_in": "clone-0ea70e5c"
 }
