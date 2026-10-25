@@ -43,10 +43,10 @@ import bl_items
 import bl_land
 import bl_procs
 from bl_base import (RESEARCH_KINDS, ROOT as PLUGIN_ROOT, Refused, Rejected, always_in_scope, canonical, claims_ledger, commit_message,
-                     external_lines, git, id_re, item_repos, link_target, name_for, need, repo_branch, repositories, research_touches,
+                     external_lines, git, git_text, id_re, item_repos, link_target, name_for, need, repo_branch, repositories, research_touches,
                      resolved_touch,
                      run_check, say, scope, scratch_dir, setting, split_touch, touches_overlap, trailer_problem, withhold,
-                     operator_who, worker_dir, ledger_lock, write_ledger)
+                     operator_who, rel_dir, worker_dir, ledger_lock, write_ledger)
 from bl_land import WORK_PREFIX, WORKER_NAME
 from bl_plan import land_line, shared_doc
 from ql_base import same_dir
@@ -59,6 +59,7 @@ BRIEF_NAME = "brief.md"
 RESULT_NAME = "result.json"  # the session's --output-format json output
 STDERR_NAME = "stderr.log"
 RESUME_MESSAGE_NAME = "resume-message.md"  # `--resume --detach`: the message file as it was when the detached resume started
+REPORT_TAIL = 15  # lines of the result text `report` prints
 DETACH_LOG_NAME = "dispatch.log"  # `--detach`: what the detached dispatch prints (the pid line, the exit line, a refusal)
 STAGING = "staging"  # under the scratch directory: copies of the `.claude/` files the item's touches name
 BASES_NAME = "staging-bases.json"  # beside it: the digest of each worktree file when its copy was made (stage-back)
@@ -1052,6 +1053,9 @@ def run_worker(bl, iid, argv, wt, stdin_path, scratch, started, source):
     say(f"worker of {iid} exited {code}: session {session or 'unknown'} (send it back with `backlog.py dispatch --resume "
         f"{iid} --message FILE`), output {result}, stderr {errlog}")
     say(rows_line(bl.root, iid, session))
+    with contextlib.suppress(Refused):  # a failed run may leave no result or branch to report: its exit line says so
+        for ln in report_lines(bl, iid)[0]:
+            say(ln)
     return 1 if failed else 0
 
 
@@ -1229,6 +1233,76 @@ def rows_line(root, iid, session):
         return f"rows of {iid}: not searched ({type(e).__name__}: {e})"
 
 
+def unrecorded_gate_lines(text):
+    """The lines of a worker's result text that say a gate was not recorded (the word gate and a `not ... recorded`)."""
+    return [ln.strip() for ln in text.splitlines()
+            if re.search(r"\bgates?\b", ln, re.I) and re.search(r"\bnot\b[^.\n]*\brecorded\b", ln, re.I)]
+
+
+def branch_item(root, iid):
+    """The item file of IID as its work branch holds it, a dict; Refused when the branch or the file is not there."""
+    return json.loads(git(root, "show", f"{worker_branch(iid)}:{rel_dir()}/{iid}.json"))
+
+
+def gate_lines(gate):
+    state = "answered" if "answer" in gate else "open"
+    options = " | ".join(str(o) for o in gate.get("options", []))
+    return [f"  gate {gate.get('id')} ({gate.get('kind')}, {state}): {gate.get('question', '')}",
+            f"    options: {options}", f"    recommendation: {gate.get('recommendation', '')}"]
+
+
+def report_lines(bl, iid):
+    """What `report ID` prints, as ([first line, warning lines], [the other lines]): the scratch `result.json`'s
+    subtype, num_turns, total_cost_usd and session_id, the warnings, the tail of its result text, the commits of the
+    work branch ahead of the integration main with the diffstat and the gates of the item file on that branch. Refused,
+    naming what is missing, when the scratch directory holds no `result.json` or there is no work branch. Reads only."""
+    import kbpublic
+    branch, result = worker_branch(iid), scratch_path(bl.root, iid) / RESULT_NAME
+    missing = []
+    try:
+        data = json.loads(result.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            raise ValueError("not an object")
+    except (OSError, ValueError) as e:
+        data = {}
+        missing.append(f"no readable {RESULT_NAME} at {result} ({type(e).__name__})")
+    base = f"refs/remotes/{kbpublic.integration_remote(bl.root)}/main"
+    commits = git_text(bl.root, "log", "--format=%h %s", f"{base}..{branch}")
+    if commits is None:
+        missing.append(f"no work branch {branch} (or no {base} to compare with)")
+    if missing:
+        raise Refused(f"report {iid}: " + "; ".join(missing))
+    text = str(data.get("result") or "")
+    head = (f"report {iid}: subtype {data.get('subtype')}, {data.get('num_turns')} turns, "
+            f"{data.get('total_cost_usd')} USD, session {data.get('session_id')}")
+    warnings = [f"warning: the result of {iid} says a gate was not recorded: {ln}" for ln in unrecorded_gate_lines(text)]
+    lines = [f"result (last {min(REPORT_TAIL, len(text.splitlines()))} line(s)):"]
+    lines += ["  " + ln for ln in text.splitlines()[-REPORT_TAIL:]]
+    lines.append(f"commits of {branch} ahead of {base}:")
+    lines += ["  " + ln for ln in commits.splitlines()] or ["  none"]
+    lines.append(git(bl.root, "diff", "--stat", f"{base}...{branch}").rstrip() or "  no changed file")
+    try:
+        gates = branch_item(bl.root, iid).get("gates", [])
+    except (Refused, ValueError, AttributeError):
+        gates = []
+    lines.append(f"gates of {iid} on {branch}: " + ("none" if not gates else str(len(gates))))
+    for g in gates:
+        lines += gate_lines(g)
+    return [head, *warnings], lines
+
+
+def cmd_report(bl, a):
+    iid = need(bl, a.id)
+    top, rest = report_lines(bl, iid)
+    for ln in [*top, *rest]:
+        say(ln)
+    return 0
+
+
+def args_report(p):
+    p.add_argument("id")
+
+
 def args_brief(p, optional_id=False):
     p.add_argument("id", **({"nargs": "?"} if optional_id else {}))
     p.add_argument("--known", action="append", default=[], metavar="TEST=BUG",
@@ -1272,5 +1346,7 @@ def args_stage_back(p):
                    help="a trailer of the session's own after KB-Work in the commit (repeatable)")
 
 
+bl_cli.register("report", cmd_report, args_report,
+                help="a returned worker's outcome: its result.json, the branch's commits and diffstat, its gates")
 bl_cli.register("stage-back", cmd_stage_back, args_stage_back,
                 help="copy a worker's staging copies into its worktree, check them there and commit them alone")
