@@ -1,0 +1,22 @@
+{
+  "id": "BG-vgnnlwgw",
+  "kind": "bug",
+  "title": "backlog.py show ID --field F on a deleted item accepts an unknown field and prints {}, where a live item exits 2",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "show ID --field F for a deleted item exits 2 naming the allowed fields when F is unknown, as it does for a live item",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess as s,sys,tempfile,pathlib as P\nT=os.path.abspath(\"_tools/backlog.py\");r=P.Path(tempfile.mkdtemp(dir=\"/tmp\"))\ng=lambda *a:s.run([\"git\",\"-C\",str(r),*a],check=True,capture_output=True,text=True)\ng(\"init\",\"-q\");(r/\"backlog.json\").write_text(json.dumps({\"item_dir\":\"items\"}));(r/\"items\").mkdir()\nf=r/\"items\"/\"ST-aaaaaaaa.json\"\nf.write_text(json.dumps(dict(id=\"ST-aaaaaaaa\",kind=\"story\",title=\"t\",status=\"done\",priority=\"P3\",goal=\"g\"),indent=2)+\"\\n\")\nc=lambda m:(g(\"add\",\"-A\"),g(\"-c\",\"user.name=x\",\"-c\",\"user.email=x@x\",\"commit\",\"-qm\",m))\nc(\"a\");f.unlink();c(\"d\")\np=s.run([sys.executable,T,\"--root\",str(r),\"show\",\"ST-aaaaaaaa\",\"--field\",\"bogus\"],capture_output=True,text=True)\nprint(p.returncode,p.stdout.strip()[-80:],p.stderr.strip()[-80:])\nsys.exit(0 if p.returncode==2 else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/bl_view.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
