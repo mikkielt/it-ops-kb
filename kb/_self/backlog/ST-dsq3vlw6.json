@@ -2,7 +2,7 @@
   "id": "ST-dsq3vlw6",
   "kind": "story",
   "title": "Research sprint goal: The orchestrator reads, waits and starts workers with one call each",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vxdacfpl",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,7 @@
     "kb/public/**"
   ],
   "notes": "Sprint SP-vxdacfpl started 2026-10-25 (unattended run). Waits on ST-2i5jnnn3 (SP-f7kaebel research story), which holds kb/public/**.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
