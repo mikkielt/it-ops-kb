@@ -44,7 +44,11 @@
         "program word named claude or claude.exe, interpreters skipped": "BG-wzrj3hot",
         "any word starting with claude (unchanged)": "BG-wzrj3hot"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "program word named claude or claude.exe, interpreters skipped",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
