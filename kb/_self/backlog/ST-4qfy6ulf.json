@@ -29,5 +29,6 @@
   ],
   "links": [
     "parked: SP-czs3jk57 review"
-  ]
+  ],
+  "notes": "Premise: the check fails on the base: an address-shaped alias in the operators file comes back as the operator id 'Jan K / Team'."
 }

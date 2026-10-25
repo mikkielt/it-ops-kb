@@ -33,5 +33,6 @@
   ],
   "links": [
     "parked: SP-s2svf5a6 close"
-  ]
+  ],
+  "notes": "Premise: the check fails on the base: backlog.py new bug prints only the new id and title, not the repro's output."
 }

@@ -39,5 +39,6 @@
   ],
   "links": [
     "parked: SP-c7oav2vn close"
-  ]
+  ],
+  "notes": "Premise: check 0 fails on the base: kg_sync.gate_needs gives the querylog check no reason for a change to a public article. The committed store passes its gates today (querylog.py check: problems=0), so the new refusal does not fire on main now; it costs the check's run time per content gate, which BG-24kutvrd cuts first."
 }

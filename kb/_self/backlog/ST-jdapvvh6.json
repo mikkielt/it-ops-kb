@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: the sprint goal names no open question for the kb, and each committed item carries its own repro or check.",
   "filed_in": "clone-0ea70e5c"
 }

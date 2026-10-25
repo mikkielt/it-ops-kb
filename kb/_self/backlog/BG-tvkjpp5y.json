@@ -12,7 +12,7 @@
     "run": [
       "python3",
       "-c",
-      "import sys; sys.path.insert(0,'_tools'); import census; leak='tenant '+'-'.join(['7f3c2a10','5b6d','4e8f','9a1b','2c3d4e5f6a7b']); r=census.leak_problems({'outcomes':[],'gaps':[],'conflicts':[],'new_rows':[{'url':'https://x.example.com/a','title':leak}]}); assert r, r"
+      "import sys\nsys.path.insert(0,\"_tools\")\nimport census\nleak=\"tenant \"+\"-\".join([\"7f3c2a10\",\"5b6d\",\"4e8f\",\"9a1b\",\"2c3d4e5f6a7b\"])\nr=census.leak_problems({\"outcomes\":[],\"gaps\":[],\"conflicts\":[],\"new_rows\":[{\"url\":\"https://x.example.com/a\",\"title\":leak}]})\nprint(\"leak_problems of a new row whose title holds a tenant id:\",r)\nsys.exit(0 if r else 1)\n"
     ]
   },
   "checks": [

@@ -35,5 +35,6 @@
   "links": [
     "parked: SP-3trnelzv close"
   ],
+  "notes": "Premise: the check fails on the base: the review step names no report file in the reviewer's scratch directory and does not say the reviewer writes its gap list there.",
   "filed_in": "clone-0ea70e5c"
 }

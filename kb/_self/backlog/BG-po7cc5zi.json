@@ -47,5 +47,5 @@
   "links": [
     "parked: SP-evq2flqc review"
   ],
-  "notes": "Found 2026-10-23 by the third SP-evq2flqc fresh review on 86d646801: the boundary header value now crosses a pipe, so a 24-character identifier cell counts as the base64 run. Check 0 (the test_leaks.py selection) passes before the work: it holds the key blocks the reviews planted, which must stay flagged. Check 1 is the repro."
+  "notes": "Found 2026-10-23 by the third SP-evq2flqc fresh review on 86d646801: the boundary header value now crosses a pipe, so a 24-character identifier cell counts as the base64 run. Check 0 (the test_leaks.py selection) passes before the work: it holds the key blocks the reviews planted, which must stay flagged. Check 1 is the repro. Add cases inside an existing test function of the touched test file: the test-id ceiling is hard, so no new test id."
 }

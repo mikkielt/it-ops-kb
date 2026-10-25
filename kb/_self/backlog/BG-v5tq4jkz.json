@@ -40,6 +40,6 @@
   "links": [
     "parked: SP-jopt2c3z review"
   ],
-  "notes": "SP-jopt2c3z review (S3, other): the path lookahead of BG-nx6jzvop caps a segment at 16 characters, so the label quoted directly before kb/public/Intune/ConfigurationProfiles.md is flagged, which BG-7mxo4k6p's rule let pass. Only the label-then-path text is affected; the tracked-file scan passes today. The worker's extended test_leaks.py case covers the two named paths. Note: the sprint's planted check for BG-nx6jzvop put 'the ' before its path, so its negative half never reached the path rule; this bug's repro puts the path directly after the label.",
+  "notes": "SP-jopt2c3z review (S3, other): the path lookahead of BG-nx6jzvop caps a segment at 16 characters, so the label quoted directly before kb/public/Intune/ConfigurationProfiles.md is flagged, which BG-7mxo4k6p's rule let pass. Only the label-then-path text is affected; the tracked-file scan passes today. The worker's extended test_leaks.py case covers the two named paths. Note: the sprint's planted check for BG-nx6jzvop put 'the ' before its path, so its negative half never reached the path rule; this bug's repro puts the path directly after the label. Add cases inside an existing test function of the touched test file: the test-id ceiling is hard, so no new test id.",
   "filed_in": "clone-0ea70e5c"
 }

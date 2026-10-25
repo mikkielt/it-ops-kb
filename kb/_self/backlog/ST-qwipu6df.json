@@ -51,5 +51,5 @@
   "links": [
     "parked: SP-noqsd4hj review"
   ],
-  "notes": "Review gap of SP-noqsd4hj, rated S3 by the sprint's reviewer."
+  "notes": "Review gap of SP-noqsd4hj, rated S3 by the sprint's reviewer. Premise: the check fails on the base: git.md says nothing of a content-only change and the tuned lookup eval. The gate on this item settles which way the text and, if chosen, kg_sync.py go."
 }
