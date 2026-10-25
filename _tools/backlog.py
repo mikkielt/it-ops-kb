@@ -258,9 +258,10 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           Refuses an item that is not doing (exit 1), a missing `claude` (exit 2);
                                           exit 1 when the session exits non-zero or reports is_error. --detach runs
                                           that dispatch in a new session with stdin closed and what it prints in
-                                          SCRATCH/dispatch.log, prints its pid and the log and returns at once
-                                          (exit 0; the pid ends when the worker has exited): wait on the pid,
-                                          then read the log's last line. --dry-run
+                                          SCRATCH/dispatch.log, prints its pid, the log and the command
+                                          coord.py wait --kind progress --item ID --pid PID that watches it, and
+                                          returns at once (exit 0; the pid ends when the worker has exited): run
+                                          that wait, then read the log's last line. --dry-run
                                           prints the worktree, scratch, brief path and argv and makes, writes and
                                           starts nothing; --model names another model than sonnet only when given
                                           dispatch --resume ID --message FILE [--detach] [--dry-run] [--model NAME]
