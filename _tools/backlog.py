@@ -121,7 +121,7 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           reason is printed, never written to the item
   backlog.py gate add ID --question Q --option O... --recommendation R [--kind blocking|provisional] [--id GATE]
                                           add a gate (kind blocking unless given; two or more options, the
-                                          recommendation one of them; a gate about a capped file (AGENTS.md,
+                                          recommendation an option, alone or followed by its reason; a gate about a capped file (AGENTS.md,
                                           README.md) needs each option to state the file's measured size, as
                                           'N bytes'; the id defaults to g1, g2, ...), validated as
                                           check does; the same gate again changes nothing, a different gate with an
