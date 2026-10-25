@@ -4,6 +4,7 @@
   "title": "A land or pipeline ops row written by a probe run in a temporary clone reaches no real spool",
   "status": "draft",
   "parent": "EP-iowijan3",
+  "sprint": "SP-vmtfnkim",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

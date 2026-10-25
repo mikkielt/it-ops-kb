@@ -4,6 +4,7 @@
   "title": "querylog.py check scans each distinct value of an ops sidecar once, so a gate that touches the query-log store no longer holds the host lock for minutes",
   "status": "draft",
   "parent": "EP-iowijan3",
+  "sprint": "SP-vmtfnkim",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",

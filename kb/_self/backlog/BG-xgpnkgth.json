@@ -4,6 +4,7 @@
   "title": "kbmon's cleanup panel answers inside its 10-second limit, because backlog.py tidy's plan reads git state with a fixed number of git processes",
   "status": "draft",
   "parent": "EP-iowijan3",
+  "sprint": "SP-vmtfnkim",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

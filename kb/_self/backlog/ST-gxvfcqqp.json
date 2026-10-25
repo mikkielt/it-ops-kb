@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "A backlog check's benchmark sandboxes are removed with its run: check_env points BENCH_SCRATCH into the check's home",
   "status": "draft",
+  "sprint": "SP-vmtfnkim",
   "priority": "P2",
   "rank": 0,
   "goal": "bl_base.check_env sets BENCH_SCRATCH under the temporary home it deletes after the run, so a check or repro that makes multi sandboxes (about 1.3 GB per agent clone) leaves none under the host's temp dir",

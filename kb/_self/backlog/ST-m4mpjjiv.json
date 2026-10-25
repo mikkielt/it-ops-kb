@@ -4,6 +4,7 @@
   "title": "One query-log entry that fails the store gates stays in the local store while the rest of the batch is delivered",
   "status": "draft",
   "parent": "EP-iowijan3",
+  "sprint": "SP-vmtfnkim",
   "priority": "P2",
   "rank": 0,
   "goal": "a store file that fails the leak scan at delivery stays in the local store, undelivered, and the batch's other files are copied into the delivery; the delivery log names how many files are held back with the first problem line of each",

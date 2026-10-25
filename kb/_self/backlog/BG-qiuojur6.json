@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "backlog.py in the kb's own checkout starts one git process, not several, to find its root",
   "status": "draft",
+  "sprint": "SP-vmtfnkim",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
