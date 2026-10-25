@@ -26,10 +26,11 @@
                                                      naming the state and the states it may move to, and writes nothing
   coord.py digest --key K ... --lines N              print at most N lines (plain text, not JSON), newest first, of the
                                                      live intents and claims that overlap a key K (repeatable)
-  coord.py wait --since N --timeout S [--kind KIND] [--item IDS]
+  coord.py wait --since N --timeout S [--kind KIND] [--item IDS] [--pid PID ...]
                                                      print the events after sequence N, blocking until one arrives or
                                                      S seconds pass; --kind keeps one kind, --item the events whose
-                                                     item field is one of IDS (comma-separated)
+                                                     item field is one of IDS (comma-separated); --pid (repeatable,
+                                                     local store only) also ends the wait when that process has ended
   coord.py dedup QUESTION [--holder NAME] [--topic PATH] [--token T] [--ttl S]
                                                      claim the question's lack terms that no overlapping live claim
                                                      covers (local store only, not through --url)
@@ -66,6 +67,9 @@ A local `wait --kind progress --item IDS` that blocks (a `--timeout` above 0) ho
 each id, PID being its own process id, for its `--timeout` and five seconds more, with the holder KB_COORD_HOLDER (else `anonymous`),
 and ends the leases when it returns: `list --prefix wait/` shows who waits on which item, which `kbmon` reads. A wait that is
 killed leaves its keys until the lease ends; a wait behind `serve` holds none.
+`wait --pid PID` (repeatable, local only: a process id means nothing to a server) also returns, with exit 0 and `timed_out`
+false, as soon as a watched process no longer runs, and names each such pid in `ended`; with every watched process alive and
+no event it goes on until `--timeout`. A pid that has ended before the wait starts ends it at once.
 
 Two kinds carry a session's plan: `intent` (fields session, item, topic, touch, operator; at least one of item, topic and touch;
 item and topic hold a comma-separated list of ids, touch of globs with * and ?, up to 120 characters; operator is the id of
@@ -625,12 +629,34 @@ def drop_wait(args, keys):
         pass
 
 
+def process_runs(pid):
+    """Whether process PID exists. POSIX asks with signal 0 (a process of another user runs); Windows opens it, as signal 0
+    would end it there."""
+    if os.name == "posix":
+        try:
+            os.kill(pid, 0)
+        except ProcessLookupError:
+            return False
+        except PermissionError:
+            return True
+        return True
+    import ctypes
+    handle = ctypes.windll.kernel32.OpenProcess(0x00100000, False, pid)  # SYNCHRONIZE
+    if not handle:
+        return False
+    alive = ctypes.windll.kernel32.WaitForSingleObject(handle, 0) == 0x102  # WAIT_TIMEOUT
+    ctypes.windll.kernel32.CloseHandle(handle)
+    return alive
+
+
 def wait(args, _clock):
     """Events after --since, held until one arrives or --timeout passes. Behind `serve`, args.recheck says whether the
     caller's token still names its operator: asked about once a second and before any reply, and a revoked caller
     gets Revoked, not an event."""
     recheck = getattr(args, "recheck", None)
     kind, items = getattr(args, "kind", None), getattr(args, "item", None)
+    pids = getattr(args, "pid", None) or []
+    ended = []
     deadline = time.monotonic() + args.timeout
     next_recheck = time.monotonic() + RECHECK_SECONDS
     scanned = args.since
@@ -646,7 +672,8 @@ def wait(args, _clock):
                     rows = [r for r in rows if r["kind"] == kind]
                 if items is not None:
                     rows = [r for r in rows if items & set(json.loads(r["fields"]).get("item", "").split(","))]
-            if rows or time.monotonic() >= deadline:
+            ended = [p for p in pids if not process_runs(p)]
+            if rows or ended or time.monotonic() >= deadline:
                 break
             if recheck and time.monotonic() >= next_recheck:
                 if not recheck():
@@ -658,8 +685,11 @@ def wait(args, _clock):
         drop_wait(args, keys)
     if recheck and not recheck():
         raise Revoked
-    return {"ok": True, "since": args.since, "last": scanned,
-            "events": [event_json(r) for r in rows], "timed_out": not rows}
+    body = {"ok": True, "since": args.since, "last": scanned,
+            "events": [event_json(r) for r in rows], "timed_out": not rows and not ended}
+    if pids:
+        body["ended"] = ended
+    return body
 
 
 def overlaps(a, b):
@@ -890,6 +920,13 @@ def item_ids(text):
     return set(ids)
 
 
+def process_id(text):
+    value = int(text)
+    if value < 1 or value > SQLITE_MAX_INT:
+        raise argparse.ArgumentTypeError("must be a process id above 0")
+    return value
+
+
 def token(text):
     if not text or not text.isascii() or not text.isprintable() or " " in text:
         raise argparse.ArgumentTypeError("must be one line of printable ASCII, no spaces")
@@ -963,6 +1000,8 @@ def build_parser(parser_class=argparse.ArgumentParser, remote=False):
     p.add_argument("--item", type=item_ids, metavar="IDS", help="return only events whose item field is one of these ids "
                    "(comma-separated); others do not end the wait")
     if not remote:
+        p.add_argument("--pid", type=process_id, action="append", metavar="PID", help="also return as soon as this process has "
+                       "ended (repeatable; not through --url)")
         p = sub.add_parser("dedup", parents=parents)
         p.add_argument("question")
         p.add_argument("--holder", help=f"name shown to a later question that overlaps this one (else {HOLDER_ENV}, else anonymous)")

@@ -993,7 +993,8 @@ def detached_argv(bl, a, message=None):
 def start_detached(bl, a, iid, scratch):
     """Start this dispatch as a process of its own: a new session, stdin closed, what it prints in `DETACH_LOG_NAME`
     of the scratch directory. It makes the worktree, runs the worker and ends once the worker has exited and its
-    leftovers are ended, so its pid is the one to wait on; this call prints the pid and the log and returns. A resume
+    leftovers are ended, so its pid is the one `coord.py wait --pid` watches; this call prints the pid, the log and that
+    wait command and returns. A resume
     keeps its message file as it is now in the scratch directory (`RESUME_MESSAGE_NAME`), so the orchestrator may remove
     its own."""
     scratch.mkdir(parents=True, exist_ok=True)
@@ -1008,7 +1009,8 @@ def start_detached(bl, a, iid, scratch):
         proc = subprocess.Popen(detached_argv(bl, a, message), cwd=str(bl.root), stdin=subprocess.DEVNULL, stdout=out,
                                 stderr=subprocess.STDOUT, **where)
     say(f"dispatching {bl.label(iid)} detached: pid {proc.pid}, log {log} (its last line, `worker of {iid} exited`, "
-        f"ends it; the session's JSON is in {scratch / RESULT_NAME}); wait for the pid to end")
+        f"ends it; the session's JSON is in {scratch / RESULT_NAME}); wait in the background with "
+        f"`python3 {shlex.quote(str(bl_clean.COORD))} wait --since 0 --timeout 3600 --kind progress --item {iid} --pid {proc.pid}`")
     return 0
 
 
@@ -1325,7 +1327,7 @@ def args_dispatch(p):
                    help="print the worktree, scratch, brief path and argv; make, write and start nothing")
     p.add_argument("--detach", action="store_true",
                    help=f"run the dispatch in a new session with stdin closed and its output in SCRATCH/{DETACH_LOG_NAME}; "
-                        "print its pid and the log and return at once: wait on the pid (with --resume too)")
+                        "print its pid, the log and the `coord.py wait --pid` command and return at once (with --resume too)")
     p.add_argument("--model", metavar="NAME", help=f"another model than {DEFAULT_MODEL}, only when the operator asks")
     p.add_argument("--max-turns", type=int, metavar="N", help="instead of the cap of the item's kind")
 
