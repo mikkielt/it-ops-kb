@@ -58,6 +58,7 @@ Items describe the present, never a history: no dated logs, no "tried X on Monda
 - `git log --grep "KB-Work: <id>"` lists the commits that worked on an item;
 - `git log --all -- kb/_self/backlog/<id>.json` lists the versions of its file;
 - `git show <commit>^:kb/_self/backlog/<id>.json` prints its last text before deletion.
+- `backlog.py show ID --json`, `--field F` (repeatable) and `--ref REF` print the item file's JSON, or only chosen fields, or the item as a git ref (`work/<id>`) has it, with no line after the JSON, so no session pipes `git show` into a script.
 
 ## Item commands
 

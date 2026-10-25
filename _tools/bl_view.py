@@ -10,7 +10,7 @@ import json, re, subprocess
 
 import bl_cli
 from bl_base import (
-    IN_SPRINT, OPEN, SIMILAR_MIN, SIMILAR_SHOWN, SIMILAR_WORDS, STARTS, START_GATE, STOP_WORDS, Backlog,
+    FIELDS, IN_SPRINT, OPEN, ORDER, SIMILAR_MIN, SIMILAR_SHOWN, SIMILAR_WORDS, STARTS, START_GATE, STOP_WORDS, Backlog,
     Refused, Rejected, canonical, external_lines, external_refs, git, kinds, line, need, open_gates, rel_dir, say, scope,
     waits, withhold,
 )
@@ -117,7 +117,30 @@ def cmd_tree(bl, a):
     return 0
 
 
+def item_at_ref(root, iid, ref):
+    """The item file IID as git REF has it (a `work/<id>` branch holds the worker's version). Exit 1 (Refused) naming
+    REF for a ref that is unreadable or holds no such file or a file that is not a JSON object."""
+    p = subprocess.run(["git", "show", f"{ref}:{rel_dir()}/{iid}.json"], cwd=root, capture_output=True)
+    try:
+        item = json.loads(p.stdout.decode("utf-8")) if p.returncode == 0 else None
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        item = None
+    if not isinstance(item, dict):
+        raise Refused(f"show --ref {ref}: {ref} holds no item file {rel_dir()}/{iid}.json")
+    return item
+
+
 def cmd_show(bl, a):
+    fields = a.field or []
+    ref = a.ref
+    if fields or a.json or ref:  # plain JSON only: the whole object, or the chosen fields of it
+        iid = a.id
+        item = item_at_ref(bl.root, iid, ref) if ref else bl.items[need(bl, iid)]
+        unknown = [f for f in fields if f not in FIELDS and f not in item]
+        if unknown:
+            raise Rejected(f"show: unknown field {', '.join(unknown)}; the fields are {', '.join(ORDER)}")
+        say(canonical({k: item[k] for k in item if k in fields} if fields else item).rstrip())
+        return 0
     iid = need(bl, a.id)
     say(canonical(bl.items[iid]).rstrip())
     for p in bl.ancestors(iid):
@@ -449,6 +472,11 @@ def args_find(p):
 
 def args_show(p):
     p.add_argument("id")
+    p.add_argument("--json", action="store_true",
+                   help="print only the item file's JSON object, no parent, sprint, child or waits-on lines")
+    p.add_argument("--field", action="append", metavar="F",
+                   help="print a JSON object of only this field (repeatable); an unknown field exits 2")
+    p.add_argument("--ref", help="read the item file as this git ref has it (work/ID, origin/main); prints JSON only")
 
 
 def args_next(p):
