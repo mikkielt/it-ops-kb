@@ -85,7 +85,11 @@
         "ended-key": "ST-4vu4qvd6",
         "events-entry": "ST-4vu4qvd6"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "ended-key",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
