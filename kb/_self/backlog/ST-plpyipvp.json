@@ -32,7 +32,6 @@
   ],
   "depends_on": [
     "ST-lp72x5cr",
-    "ST-hlbnqk7k",
     "ST-zrnmqob2"
   ],
   "notes": "Started 2026-10-25 with SP-fkep6hjx on the operator approval \"start them\" (unattended run).",
