@@ -28,7 +28,7 @@ Whenever you name an item (in chat, a question, a commit), give its id and its t
    - Change only files matching `touches`. If the work needs another file, widen `touches` with `python3 ${CLAUDE_PLUGIN_ROOT}/_tools/backlog.py set ID --add-touch PATH` and say so in the commit body.
    - A defect outside the item becomes a bug (`python3 ${CLAUDE_PLUGIN_ROOT}/_tools/backlog.py new bug --title T --severity S --repro CMD --goal G`), not a fix.
    - Before any code: a choice the goal leaves open on an item whose touches guard a rule is a blocking operator gate, added and asked before any code is written, never settled by the worker and held after the work.
-   - A question only the operator can settle becomes a gate: `python3 ${CLAUDE_PLUGIN_ROOT}/_tools/backlog.py gate add ID --question Q --option O --option O --recommendation R [--kind blocking|provisional]`, the recommendation one of the options:
+   - A question only the operator can settle becomes a gate: `python3 ${CLAUDE_PLUGIN_ROOT}/_tools/backlog.py gate add ID --question Q --option O --option O --recommendation R [--kind blocking|provisional]`, the recommendation an option, alone or followed by its reason:
      - blocking: stop this item and pick the next;
      - provisional: `python3 ${CLAUDE_PLUGIN_ROOT}/_tools/backlog.py answer ID GATE --provisional` and go on.
      In an interactive session, ask the operator at once as well.
