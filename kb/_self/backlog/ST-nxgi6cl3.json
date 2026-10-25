@@ -14,12 +14,24 @@
         "-c",
         "\nimport sys\nbad=[f for f,p in ((\"_tools/backlog.py\",\"recommendation one of them\"),(\"skills/item/SKILL.md\",\"recommendation one of the options\"),(\"skills/backlog/SKILL.md\",\"recommendation one of the options\")) if p in open(f,encoding=\"utf-8\").read()]\nprint(bad)\nsys.exit(1 if bad else 0)\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport json,re,subprocess,sys\no=json.loads(subprocess.run([sys.executable,\"_tools/kbtools.py\",\"--json\",\"backlog gate add recommendation option\"],capture_output=True,text=True).stdout)\ne=[x for x in o[\"entries\"] if x[\"tool\"]==\"backlog.py gate\"]\nt=\" \".join(e[0][\"answers\"]) if e else \"\"\nok=bool(e) and \"recommendation one of them\" not in t and bool(re.search(r\"recommendation[^;)]*\\breason\",t))\nprint(ok)\nsys.exit(0 if ok else 1)\n"
+      ]
     }
   ],
   "touches": [
     "_tools/backlog.py",
     "skills/item/SKILL.md",
-    "skills/backlog/SKILL.md"
+    "skills/backlog/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-7g7tk2o7"
   ],
   "links": [
     "parked: SP-f7kaebel review"
