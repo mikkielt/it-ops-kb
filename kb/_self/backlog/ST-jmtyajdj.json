@@ -1,0 +1,22 @@
+{
+  "id": "ST-jmtyajdj",
+  "kind": "story",
+  "title": "The token-efficiency doc's kb_backlog paragraph holds no measured size or command count that went stale",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/token-efficiency.md section MCP tools for commands names no kb_backlog size in characters and no backlog.py command count, which the code outgrew",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport re, sys\nt = open(\"kb/_self/token-efficiency.md\", encoding=\"utf-8\").read()\nsec = t.split(\"## MCP tools for commands\", 1)[1].split(\"\\n## \", 1)[0]\nhits = [m for m in (\"1,198\", \"44 commands\") if m in sec]\nprint(\"stale figures in the section:\", hits)\nsys.exit(1 if hits else 0)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/token-efficiency.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
