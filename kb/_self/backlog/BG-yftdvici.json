@@ -1,0 +1,26 @@
+{
+  "id": "BG-yftdvici",
+  "kind": "bug",
+  "title": "kb_backlog returns an exit 1 with output of every command it serves as text ending (exit 1), not only held, referrers, find, check and report",
+  "status": "todo",
+  "parent": "EP-fgtlhyo4",
+  "sprint": "SP-fkep6hjx",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "kb_backlog returns an exit 1 with output of every command it serves (a runs drift, a next with nothing ready, an ops or landings that cannot read the log) as text ending (exit 1), so the session reads it whole instead of a tool error cut to its last 2000 characters; an exit 2 stays a tool error; the tool description, plugin.md, tools.md and backlog.md name the rule",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "\nimport sys\nsys.path.insert(0,\"_tools\")\nimport kb_mcp, backlog\ndef run(code):\n    def fake(argv):\n        print(\"planted output\")\n        return code\n    backlog.main = fake\n    one, two = [], []\n    for c in kb_mcp.BACKLOG_COMMANDS:\n        if c == \"usage\":\n            continue\n        try:\n            r = kb_mcp.kb_backlog({\"command\": c, \"args\": []})\n            if code == 1 and not r.endswith(\"(exit 1)\"):\n                one.append(c)\n            if code == 2:\n                two.append(c)\n        except kb_mcp.ToolError:\n            if code == 1:\n                one.append(c)\n    return one, two\na, _ = run(1)\n_, b = run(2)\nprint(\"exit 1 not text:\", a, \"exit 2 not an error:\", b)\nsys.exit(1 if a or b else 0)\n"
+    ]
+  },
+  "touches": [
+    "_tools/kb_mcp.py",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
