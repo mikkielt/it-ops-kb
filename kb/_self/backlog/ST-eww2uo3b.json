@@ -2,7 +2,8 @@
   "id": "ST-eww2uo3b",
   "kind": "story",
   "title": "kb_backlog usage gives every backlog.py command a line, begin and runner included",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-lhpvwh6l",
   "priority": "P3",
   "rank": 0,
   "goal": "kb_backlog usage with no argument prints a one-line description for every command the backlog.py parser offers",
@@ -18,8 +19,12 @@
   "touches": [
     "_tools/kb_mcp.py"
   ],
+  "depends_on": [
+    "BG-54tplq4n"
+  ],
   "links": [
     "parked: SP-fkep6hjx review"
   ],
+  "notes": "Plan 2026-10-25, added to SP-lhpvwh6l at the manager's ask. Premise: the check prints the verbs without a BACKLOG_VERB_LINES entry on today's base (begin, runner among them). Ordered after BG-54tplq4n: both change _tools/kb_mcp.py.",
   "filed_in": "clone-0ea70e5c"
 }
