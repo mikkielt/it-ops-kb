@@ -2,7 +2,7 @@
   "id": "ST-zrnmqob2",
   "kind": "story",
   "title": "kb_backlog serves the read-only commands managers run most (held, referrers, find, similar, tree, config, landings, runs, procs, check, report), and a finding's exit 1 returns as text",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-fgtlhyo4",
   "sprint": "SP-fkep6hjx",
   "priority": "P2",
@@ -76,6 +76,28 @@
   ],
   "notes": "From the 2026-10-24 telemetry and query-log analysis: 1,537 Bash calls in 231 sessions in 7 days: held 551 (70 sessions, nearly all 'held --overlaps ID --ref origin/main'), check 414 (123 sessions, median 4.3 s), referrers 191 (132 sessions, 81 exit 1 = strays found), find 126 (42 exit 1 = no hit), config 108, runs 87, tree 35, procs 29, landings 11, similar 5; by role: manager and main 853, orchestrators 430, workers 254. kb_backlog allows only show, list, next, horizon, stalled, cost, ops and selectors (kb_mcp.py:1241), so a call of held, referrers or find is refused as 'not read-only here'; it also turns any non-zero exit into a tool error (kb_mcp.py:1276-1277) where facade_run keeps an exit-1 finding as text (kb_mcp.py:1443-1448): 137 'Exit code 1' banners in the week were findings. Each of the ten is read-only in code (bl_view.cmd_held, find, tree, similar; bl_items.cmd_referrers; bl_base.cmd_config; bl_ops.cmd_landings; bl_check.cmd_check; bl_runs.cmd_runs without --reconcile, which writes coord; bl_procs.cmd_procs); host-check, precheck, researched and selfcheck run item checks or write and stay off. No output tokens are saved: the value is uniform access and an honest exit status. Caveat: check (4.3 s median) and referrers (3.1 s) run in the one-request server process (ST-qeespjim). Adoption is the open risk (ST-uruhigy4). Planning 2026-10-24: report joins the list (ST-ejmb5aqn, sprint 1, moved its kb_backlog serving here); the skill, role file and brief that list the commands are one story of this sprint (the route consumers). Started 2026-10-25 with SP-fkep6hjx on the operator approval \"start them\" (unattended run).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "d510043b85469c33f9d86da6ea040a0feb330421",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0,\"_tools\");import kb_mcp\ndef call(c,a):\n try:return str(kb_mcp.kb_backlog({\"command\":c,\"args\":a}))\n except Exception as e:return \"ERR \"+str(e)[:150]\na=call(\"held\",[\"--overlaps\",\"ST-uruhigy4\",\"--ref\",\"HEAD\"]);b=call(\"find\",[\"zzzznomatchzzzz\"]);c=call(\"runs\",[\"--reconcile\"])\nprint(a[:120],\"|\",b[:120],\"|\",c[:120])\nsys.exit(0 if not a.startswith(\"ERR\") and not b.startswith(\"ERR\") and \"exit 1\" in b and c.startswith(\"ERR\") else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "3e75589507d52709"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport sys\nsys.path.insert(0,\"_tools\");import kb_mcp\ndef call(c,a):\n try:return str(kb_mcp.kb_backlog({\"command\":c,\"args\":a}))\n except Exception as e:return \"ERR \"+str(e)[:150]\nnames=[\"held\",\"referrers\",\"find\",\"similar\",\"tree\",\"config\",\"landings\",\"runs\",\"procs\",\"check\",\"report\"]\nbad=[c for c in names if call(c,[\"--help\"]).startswith(\"ERR\")]\nr=call(\"report\",[\"ST-uruhigy4\"]);x=call(\"runs\",[\"--reconcile\"])\nprint(bad,r[:120],\"|\",x[:80])\nsys.exit(0 if not bad and not r.startswith(\"ERR\") and \"result.json\" in r and \"exit 1\" in r and x.startswith(\"ERR\") else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "21e2564f11f978d3"
+      }
+    ]
+  }
 }
