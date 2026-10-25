@@ -58,7 +58,11 @@
         "wrap-next": "ST-pueudigl",
         "edit-bl-view": "ST-pueudigl"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "wrap-next",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
