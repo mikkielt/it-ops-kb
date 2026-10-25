@@ -57,7 +57,11 @@
         "ref alone prints the whole item JSON only; an allowed field the item lacks is left out": "ST-lll4a6p6",
         "ref alone prints the full text view from the ref; a missing allowed field prints null": "ST-lll4a6p6"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "ref alone prints the whole item JSON only; an allowed field the item lacks is left out",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
