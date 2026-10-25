@@ -55,7 +55,7 @@
   "links": [
     "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],
-  "notes": "From the 2026-10-24 telemetry and query-log analysis: fetch.py text URL --grep -i \"licen|...\" exited 2 with the usage text 6 times in one afternoon (10-23 14:35) of 117 fetch.py text calls; fetch.py:631 gives text its own parser with only --timeout, --grep and --header, and argparse reads -i as an unrecognized argument. Cheap fix. The planted run serves a local page and needs no network.",
+  "notes": "From the 2026-10-24 telemetry and query-log analysis: fetch.py text URL --grep -i \"licen|...\" exited 2 with the usage text 6 times in one afternoon (10-23 14:35) of 117 fetch.py text calls; fetch.py:631 gives text its own parser with only --timeout, --grep and --header, and argparse reads -i as an unrecognized argument. Cheap fix. The planted run serves a local page and needs no network. Provisional gate g1 confirmed after the review report (pre-approved by the operator for the 2026-10-25 run); the reviewer found the answer correct and the better choice.",
   "filed_in": "clone-0ea70e5c",
   "operator": "op-f618a13e",
   "evidence": {
