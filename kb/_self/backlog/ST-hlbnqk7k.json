@@ -2,7 +2,7 @@
   "id": "ST-hlbnqk7k",
   "kind": "story",
   "title": "A manager ends an unattended headless runner whose report is written and whose process stays, with one command instead of a hand-written monitor script",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-sqt62vj2",
   "sprint": "SP-f7kaebel",
   "priority": "P3",
@@ -64,6 +64,6 @@
   "links": [
     "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],
-  "notes": "From the 2026-10-24 telemetry and query-log analysis: 159 Monitor tool calls in the orchestrating sessions, each a hand-written script (96 'tail -F chain.log | grep ... & while true; do r=...report.md; if [ -f $r ] && [ $(( $(date +%s) - $(stat -f %m $r) )) -gt 600 ] && pgrep -f \"kb-sprint run SP-...\"; then echo HUNG', 35 'L=<scratch>...'; median 567 characters of shell) and 76 ScheduleWakeup calls (median 1800 s). The hang is a known case: a runner writes its report and its process stays, the manager's notes call for a watchdog and a SIGTERM of the own pid; no tool does it (backlog.py find watchdog, headless and runner found no item). Low confidence and manager-only: the turns are in the wait story; the hang case costs hours. The command name and flags are a proposal; the planted check ends a planted sleeping process. Also wanted: a start form that launches a runner with a fixed session id and its brief on stdin and prints the pid. Lane: parked sprint-orchestration class, EP-gzr4mmkm. Planning 2026-10-24: the planted runners are python processes whose command line names claude (the first draft's check ended a plain sleep); the guard keeps the command from signalling any other process. The command waits, so a manager starts it as a background command.",
+  "notes": "From the 2026-10-24 telemetry and query-log analysis: 159 Monitor tool calls in the orchestrating sessions, each a hand-written script (96 'tail -F chain.log | grep ... & while true; do r=...report.md; if [ -f $r ] && [ $(( $(date +%s) - $(stat -f %m $r) )) -gt 600 ] && pgrep -f \"kb-sprint run SP-...\"; then echo HUNG', 35 'L=<scratch>...'; median 567 characters of shell) and 76 ScheduleWakeup calls (median 1800 s). The hang is a known case: a runner writes its report and its process stays, the manager's notes call for a watchdog and a SIGTERM of the own pid; no tool does it (backlog.py find watchdog, headless and runner found no item). Low confidence and manager-only: the turns are in the wait story; the hang case costs hours. The command name and flags are a proposal; the planted check ends a planted sleeping process. Also wanted: a start form that launches a runner with a fixed session id and its brief on stdin and prints the pid. Lane: parked sprint-orchestration class, EP-gzr4mmkm. Planning 2026-10-24: the planted runners are python processes whose command line names claude (the first draft's check ended a plain sleep); the guard keeps the command from signalling any other process. The command waits, so a manager starts it as a background command. Run 2026-10-25 (unattended, SP-f7kaebel): sprint start gate approved by operator; item turned todo at start.",
   "filed_in": "clone-0ea70e5c"
 }
