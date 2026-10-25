@@ -2,7 +2,7 @@
   "id": "ST-wx5kmyzc",
   "kind": "story",
   "title": "Review sprint: The kb MCP server serves the read commands sessions repeat",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-fkep6hjx",
   "review": true,
   "priority": "P1",
@@ -25,6 +25,27 @@
   ],
   "notes": "Started 2026-10-25 with SP-fkep6hjx on the operator approval \"start them\" (unattended run).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "4b23021e532f5817ae6022c324c9866f06c12d9f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "bdd524e53627377a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "1fa9ecab8f795bff"
+      }
+    ]
+  }
 }
