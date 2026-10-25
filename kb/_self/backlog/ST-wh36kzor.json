@@ -2,7 +2,7 @@
   "id": "ST-wh36kzor",
   "kind": "story",
   "title": "Review sprint: The orchestrator reads, waits and starts workers with one call each",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-vxdacfpl",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,6 @@
       ]
     }
   ],
+  "notes": "Sprint SP-vxdacfpl started 2026-10-25 (unattended run).",
   "filed_in": "clone-0ea70e5c"
 }
