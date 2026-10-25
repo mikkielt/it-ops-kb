@@ -2,7 +2,7 @@
   "id": "BG-yftdvici",
   "kind": "bug",
   "title": "kb_backlog returns an exit 1 with output of every command it serves as text ending (exit 1), not only held, referrers, find, check and report",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-fgtlhyo4",
   "sprint": "SP-fkep6hjx",
   "priority": "P2",
@@ -24,5 +24,7 @@
     "kb/_self/embedding.md",
     "kb/_self/token-efficiency.md"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
