@@ -68,7 +68,9 @@
       },
       "class": "design",
       "answer": "A table in kb_mcp.py, and refused commands included with a note",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
