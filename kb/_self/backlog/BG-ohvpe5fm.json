@@ -2,7 +2,7 @@
   "id": "BG-ohvpe5fm",
   "kind": "bug",
   "title": "dispatch --detach and begin print a coord wait command with --since 0, which returns at once on the item's earlier claimed and working events",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lhpvwh6l",
   "priority": "P3",
   "rank": 1,
@@ -28,5 +28,7 @@
     "parked: SP-vxdacfpl review"
   ],
   "notes": "Plan 2026-10-25: premise reproduced (the repro prints 0 1 False on today's base: begin returns, the printed wait returns at once with one event). Hint: coord_hook.newest_seq() (.claude/hooks/coord_hook.py) reads the newest sequence as last of coord.py wait --since 0 --timeout 0; bl_clean.run_coord does the same for bl_dispatch. Both begin and dispatch --detach print through bl_dispatch.detached_line; after the fix the wait must not return on the claimed and working events already posted when the line is printed.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
