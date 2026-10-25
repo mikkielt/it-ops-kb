@@ -52,6 +52,25 @@
   "relates_to": [
     "ST-pntfa6ry"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does kb_backlog usage take the one line of each backlog.py command, and does it print the argument list of a command the tool refuses?",
+      "options": [
+        "A table in kb_mcp.py, and refused commands included with a note",
+        "The registry's help text, and only the commands the tool runs"
+      ],
+      "recommendation": "A table in kb_mcp.py, and refused commands included with a note",
+      "do": {
+        "A table in kb_mcp.py, and refused commands included with a note": "ST-lp72x5cr",
+        "The registry's help text, and only the commands the tool runs": "ST-lp72x5cr"
+      },
+      "class": "design",
+      "answer": "A table in kb_mcp.py, and refused commands included with a note",
+      "by": "agent"
+    }
+  ],
   "links": [
     "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],

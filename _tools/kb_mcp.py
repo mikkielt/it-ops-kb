@@ -65,7 +65,9 @@ asks and, unasked, for a source past its freshness lifetime):
   kb_backlog, kb_querylog, kb_docs  (the team's own server only, as kb_monitor_status) the read-only commands of backlog.py,
              querylog.py (digest, status, show) and selfdoc.py, check.py and rag.py eval (stale, section, map, check, eval) as
              `command` and `args`, answering the text the script prints through redact.redact (kb_docs ends it with
-             `(exit 1)` when the command found something, kb_backlog for held, referrers, find, check and report); a
+             `(exit 1)` when the command found something, kb_backlog for held, referrers, find, check and report;
+             kb_backlog `usage [COMMAND [SUBCOMMAND]]` answers the command list or a command's argument list, any
+             command's, and runs none); a
              command or option outside each tool's closed list (runs --reconcile among them) is a tool error
   kb_tools   (the team's own server only, as kb_monitor_status) the lines of `kbtools.py [NEED]`: the kb's tools, skills,
              agents and MCP tools that answer `need` (all of them when it is left out), each with its command and what it
@@ -1241,7 +1243,60 @@ SETTINGS_HANDLERS = {"kb_settings": kb_settings}
 # that writes a file or runs an item's checks stay off the tool); the closed list is what keeps a tool annotated
 # read-only read-only
 BACKLOG_COMMANDS = ["show", "list", "next", "horizon", "stalled", "cost", "ops", "selectors", "held", "referrers", "find",
-                    "similar", "tree", "config", "landings", "runs", "procs", "check", "report"]
+                    "similar", "tree", "config", "landings", "runs", "procs", "check", "report", "usage"]
+# `usage` prints the argument list of any verb of backlog.py, the ones the tool runs and the ones it refuses: the parser
+# renders its help and no handler runs; these are the one-line meanings its verb list shows
+BACKLOG_VERB_LINES = {
+    "new": "file an item (epic, story, task, subtask, bug, sprint); prints its id",
+    "similar": "open items ranked by word overlap with a title",
+    "check": "validate every item",
+    "fmt": "rewrite every item in canonical form",
+    "selectors": "tests.py -k selectors in open items' checks, and how many tests each finds",
+    "list": "one line per item: id, kind, status, priority, title",
+    "tree": "the hierarchy under an item, a sprint or everything",
+    "find": "open items whose title, goal or external ids hold every word",
+    "show": "one item with its parent chain, children and waits",
+    "next": "the ready item to work on first",
+    "held": "the paths claimed items hold, or the claimed items that overlap one item's touches",
+    "claim": "status doing, claimed by NAME",
+    "release": "a claimed item back to todo",
+    "answer": "answer or confirm an item's gate",
+    "set": "change an item's notes, links, touches, checks, depends, priority and the rest",
+    "move": "set a story's or bug's sprint",
+    "reopen": "a done item back to work, with the reason",
+    "gate": "gate add, gate remove or gate host-unchecked: an item's questions to the operator",
+    "fire": "mark an item's external trigger as fired",
+    "done": "run the item's checks at a clean HEAD and record it done",
+    "researched": "a research story's check: exit 0 once its research is written",
+    "land": "land a finished item's branch",
+    "merge": "merge the item's code merge request on the integration remote",
+    "drop": "status dropped, with the reason",
+    "start": "activate a sprint whose start gate the operator answered",
+    "precheck": "run each committed item's checks of a sprint once before any work",
+    "host-check": "run the host check of each answered gate of a sprint's open items",
+    "close": "delete a finished sprint, its items and the epics they finished",
+    "tidy": "list or remove the recorded leftovers (worktrees, sandboxes, scratch directories)",
+    "horizon": "how far each active sprint can go without the operator",
+    "goal": "a /goal condition for an item: its end state, checks and scope",
+    "brief": "print the worker's brief for an item",
+    "dispatch": "make a worker's worktree and scratch, write its brief and start its headless session",
+    "report": "a returned worker's outcome: result, commits, diffstat, gates",
+    "stage-back": "copy a worker's staging copies into its worktree and commit them",
+    "referrers": "every tracked file that names a file or symbol",
+    "cost": "an item's or sprint's tokens and dollars",
+    "red-pipeline": "the newest red pipeline of the integration remote's main, filed as a bug",
+    "intake": "file or list drafts that sessions left, or check a fingerprint",
+    "procs": "the processes left in this clone's checkouts, orphans named",
+    "stalled": "claimed or ready items that show a stall signal",
+    "ops": "the operational rows of a sprint's items",
+    "runs": "each item's coord run state beside its item file, work branch gates and worker pid",
+    "landings": "each landing step's count, failures and duration",
+    "own": "record a worktree, sandbox, scratch directory or process the tools made",
+    "selfcheck": "check the orchestrator's tools, rules, hooks and host",
+    "upstream-report": "write this clone's items as an upstream issue body",
+    "upstream-import": "file the user stories of a saved upstream-report issue as drafts",
+    "config": "the project settings with each value's source",
+}
 BACKLOG_REFUSED_OPTIONS = {"runs": ["--reconcile"]}  # the one option of a listed command that writes (coord run keys)
 BACKLOG_FINDINGS_EXIT = {"held", "referrers", "find", "check", "report"}  # an exit 1 with output is a finding, not a failure
 BACKLOG_TOOL_LIST = [
@@ -1249,7 +1304,9 @@ BACKLOG_TOOL_LIST = [
      "description": "The project's backlog, read-only (backlog.py; not kb facts, not live device data): the same text "
                     "the command prints. show ID; list [--kind K --status S --sprint ID]; next; horizon; stalled; cost; "
                     "ops SPRINT; selectors; held [--overlaps ID --ref REF]; referrers TERM [--item ID]; find WORDS; "
-                    "similar TITLE; tree [ID]; config; landings; runs [SP|ID]; procs; check; report ID. The text ends "
+                    "similar TITLE; tree [ID]; config; landings; runs [SP|ID]; procs; check; report ID; usage [COMMAND "
+                    "[SUBCOMMAND]] (no argument: every backlog.py command with a line each; with one: that command's "
+                    "arguments, a refused one's too, and nothing runs). The text ends "
                     "`(exit 1)` when held, referrers, find, check or report found something. Any other command, and "
                     "runs --reconcile, is refused: run backlog.py for it.",
      "inputSchema": {"type": "object", "properties": {
@@ -1258,6 +1315,33 @@ BACKLOG_TOOL_LIST = [
          "required": ["command"], "additionalProperties": False},
      "annotations": {"title": "Read the backlog", **READ_ONLY}},
 ]
+
+
+def backlog_usage(words):
+    """`usage [VERB [SUBVERB]]`: the verb list with a line each, or the argument list argparse holds for a verb (its
+    sub-verb too: `gate add`); the parser renders it and no handler runs, so nothing is written."""
+    import argparse, backlog, bl_cli, redact
+    backlog.load_settings(bl_cli.default_root(backlog.ROOT))  # the parser offers the project's kinds
+    ap = bl_cli.build_parser(backlog.__doc__.split("\n\n")[0], backlog.ROOT)
+    def verbs(parser):  # the sub-verbs a parser takes (none for a leaf)
+        return next((a.choices for a in parser._actions if isinstance(a, argparse._SubParsersAction)), {})
+    node, path = ap, []
+    for w in (w for w in words if not w.startswith("-")):
+        if w not in verbs(node):
+            if not path:
+                raise ToolError(f"{w!r} is no backlog.py command; usage with no argument lists them")
+            break
+        node = verbs(node)[w]
+        path.append(w)
+    if path:
+        text = node.format_help().replace(f"usage: {ap.prog} ", "usage: backlog.py ", 1)  # the prog is argv[0]
+        if path[0] not in BACKLOG_COMMANDS:  # the tool refuses it: say where it runs
+            text += f"\n(kb_backlog does not run {path[0]}: run backlog.py {' '.join(path)})"
+        return redact.redact(text.rstrip("\n"))
+    lines = [f"backlog.py commands (usage COMMAND [SUBCOMMAND] prints one's arguments; {len(verbs(ap))} commands):"]
+    for name in verbs(ap):
+        lines.append(f"  {name:<16}{BACKLOG_VERB_LINES.get(name, '')}".rstrip())
+    return "\n".join(lines)
 
 
 def kb_backlog(args):
@@ -1275,6 +1359,8 @@ def kb_backlog(args):
         for refused in BACKLOG_REFUSED_OPTIONS.get(command, ()):
             if len(flag) > 2 and flag.startswith("--") and refused.startswith(flag):
                 raise ToolError(f"{refused} writes: not offered here; run backlog.py {command} {refused}")
+    if command == "usage":
+        return backlog_usage(rest)
     import backlog, redact
     out, err = io.TextIOWrapper(io.BytesIO(), encoding="utf-8"), io.TextIOWrapper(io.BytesIO(), encoding="utf-8")
     try:
