@@ -125,7 +125,11 @@
         "yes: up to 60 seconds, then it names the dispatch log's end and exits 1": "ST-44md64ps",
         "no: it returns after printing each pid": "ST-44md64ps"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "yes: up to 60 seconds, then it names the dispatch log's end and exits 1",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
