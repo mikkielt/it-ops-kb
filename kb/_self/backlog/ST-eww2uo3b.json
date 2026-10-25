@@ -2,7 +2,7 @@
   "id": "ST-eww2uo3b",
   "kind": "story",
   "title": "kb_backlog usage gives every backlog.py command a line, begin and runner included",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-lhpvwh6l",
   "priority": "P3",
   "rank": 0,
@@ -31,6 +31,19 @@
   ],
   "notes": "Plan 2026-10-25, added to SP-lhpvwh6l at the manager's ask. Premise: the check prints the verbs without a BACKLOG_VERB_LINES entry on today's base (begin, runner among them). Ordered after BG-54tplq4n: both change _tools/kb_mcp.py.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "ae8a54832bf8ac287dc78d30b669005bf16ca766",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport sys, argparse\nsys.path.insert(0,\"_tools\")\nimport backlog, bl_cli, kb_mcp\nbacklog.load_settings(bl_cli.default_root(backlog.ROOT))\nap = bl_cli.build_parser(backlog.__doc__.split(\"\\n\\n\")[0], backlog.ROOT)\nverbs = next(a.choices for a in ap._actions if isinstance(a, argparse._SubParsersAction))\nmissing = [v for v in verbs if not kb_mcp.BACKLOG_VERB_LINES.get(v)]\nprint(\"no line:\", missing)\nsys.exit(1 if missing else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "7bb09bccdbe42b34"
+      }
+    ]
+  }
 }
