@@ -16,8 +16,8 @@ record also holds its `start` time when the host's process table gives one. The 
 hex digits of the sha256 of the normalised path or of the pid's decimal text, so one directory is one key however it was
 spelled (`norm_path`: realpath of its parents, then no `\\\\?\\` prefix, normcase, one case for a drive letter), on every
 platform; a symlink at its end is not followed, so a link's record is the link's own path. The
-coord store is the one `coord.py` finds (`--store`, else KB_COORD_STORE, else the clone's common git directory), shared by
-the clone's worktrees. coord keeps no delete: `--drop` writes an empty value, which readers skip (`recorded`).
+coord store is the one `coord.py` finds (`--store`, else KB_COORD_STORE, else the common git directory of the clone
+`--root` names, whatever the working directory), shared by the clone's worktrees. coord keeps no delete: `--drop` writes an empty value, which readers skip (`recorded`).
 
 `record_owner` is the one writer: `dispatch` records the worker's worktree, scratch directory and pid through it, `bench
 multi` its sandbox, and the sprint skill's run and review steps their worktrees with the `own` command. A record is a claim of
@@ -86,7 +86,7 @@ import bl_authority
 import bl_cli
 import bl_close
 import bl_procs
-from bl_base import Refused, Rejected, git, run, say, scratch_dir
+from bl_base import OUTPUT_ROOT, Refused, Rejected, git, run, say, scratch_dir
 from bl_close import AGENT_BRANCH, WORK_PREFIX, WORKER_NAME
 
 COORD = Path(__file__).resolve().parent / "coord.py"
@@ -171,10 +171,14 @@ def owner_key(cls, ident):
 
 
 def run_coord(*args):
-    """(exit code, the JSON object coord.py printed or None, its last stderr line) of one coord.py command."""
+    """(exit code, the JSON object coord.py printed or None, its last stderr line) of one coord.py command, run in the
+    clone `--root` names (the script's own where none) so its default store is that clone's, whatever the working
+    directory."""
+    root = str(OUTPUT_ROOT[0])
     try:
         p = subprocess.run([sys.executable, str(COORD), *args], capture_output=True, text=True, encoding="utf-8",
-                           stdin=subprocess.DEVNULL, timeout=COORD_SECONDS)
+                           stdin=subprocess.DEVNULL, timeout=COORD_SECONDS, cwd=root,
+                           env={**os.environ, "CLAUDE_PROJECT_DIR": root})
     except (OSError, subprocess.SubprocessError) as error:
         return 2, None, f"coord.py did not run: {error.__class__.__name__}"
     try:
