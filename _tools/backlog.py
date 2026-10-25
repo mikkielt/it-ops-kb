@@ -83,7 +83,7 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           row (no KB-Work), so the tree is clean for the next kbgit.py sync;
                                           an answer --by operator also records the answering session's operator id
                                           and role (interactive, orchestrator or worker) on the gate beside by
-  backlog.py set ID [--notes TEXT] [--link T]... [--touch GLOB]... [--check CMD]... [--depends ID]...
+  backlog.py set ID [ID...] [--notes TEXT] [--link T]... [--touch GLOB]... [--check CMD]... [--depends ID]...
                  [--relates ID]... [--repos NAME]... [--repos-if-needed NAME]... [--priority P1|P2|P3] [--rank N]
                  [--sprint ID] [--title T] [--goal T]
                  [--repro CMD] [--repro-reason T] [--severity S1..S4] [--parent ID]
@@ -91,7 +91,10 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                  [--add-check CMD]... [--add-depends ID]... [--add-relates ID]... [--add-repos NAME]...
                  [--add-repos-if-needed NAME]... [--external TRACKER=ID]...
                  [--add-external TRACKER=ID]... [--clause CLAUSE=N]... [--add-clause CLAUSE=N]... [--clear FIELD]...
-                                          change an item after new: each list option replaces its list, and its
+                                          change an item after new, or several at once with more than one ID (a
+                                          batch refuses the options naming one item: --title, --goal, --notes,
+                                          --repro, --repro-reason, --parent, --clause, --check, exit 2); each
+                                          list option replaces its list, and its
                                           --add-<option> twin appends what is missing to it, so a second run changes
                                           nothing (--add-notes appends the text unless the notes hold it); a call
                                           that names both for one field is refused, naming it. --clear FIELD
