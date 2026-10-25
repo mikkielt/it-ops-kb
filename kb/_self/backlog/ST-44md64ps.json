@@ -92,12 +92,42 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Does begin --dry-run fetch the integration remote before it plans?",
+      "options": [
+        "no: it reads the integration main as last fetched and writes nothing",
+        "yes: it fetches first, as the real run does"
+      ],
+      "recommendation": "no: it reads the integration main as last fetched and writes nothing",
+      "do": {
+        "no: it reads the integration main as last fetched and writes nothing": "ST-44md64ps",
+        "yes: it fetches first, as the real run does": "ST-44md64ps"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Does begin wait for each detached dispatch to make its work branch before it returns?",
+      "options": [
+        "yes: up to 60 seconds, then it names the dispatch log's end and exits 1",
+        "no: it returns after printing each pid"
+      ],
+      "recommendation": "yes: up to 60 seconds, then it names the dispatch log's end and exits 1",
+      "do": {
+        "yes: up to 60 seconds, then it names the dispatch log's end and exits 1": "ST-44md64ps",
+        "no: it returns after printing each pid": "ST-44md64ps"
+      },
+      "class": "agents-rule"
     }
   ],
   "links": [
     "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],
-  "notes": "From the 2026-10-24 telemetry and query-log analysis: 356 dispatches in 72 orchestrating sessions, each preceded by the same chain: git fetch, held --overlaps ID --ref origin/main, claim, kbgit.py sync, dispatch (44 exact five-call chains; claim, sync, dispatch 137 times; held, claim, sync 93). Turns that held only one of those calls: claim 357, held 283, kbgit sync 530, git fetch 330, about 1,500 turns or 11% of the total, part of them serving other steps. The sprint skill spells the chain out as its steps 2 and 3. Saves about 2 turns for each dispatch: about 700 turns, about 35 USD a week (estimate). Medium confidence. Also wanted, not read by the planted check (it needs a remote and a fake claude on PATH): without --dry-run begin fetches, refuses a local work/ID branch, claims each accepted item with --commit and the session trailer, pushes the claim commits once through land_push and dispatches each with --detach, printing id, pid and log path; it writes nothing but what claim and dispatch write today. Parts already parked: ST-pueudigl (next --batch, the overlap half) and ST-hs26y4qr (claim push by a command). Lane: parked sprint-orchestration class, EP-gzr4mmkm. Planning 2026-10-24: takes the claim-push half of ST-hs26y4qr (its close-commit half stays parked) and uses the overlap rule that ST-pueudigl (next --batch) exposes, so it runs after it. Gate cap answered with its recommendation (pre-approved by the operator for the 2026-10-25 run). Sprint SP-vxdacfpl started 2026-10-25 (unattended run).",
+  "notes": "From the 2026-10-24 telemetry and query-log analysis: 356 dispatches in 72 orchestrating sessions, each preceded by the same chain: git fetch, held --overlaps ID --ref origin/main, claim, kbgit.py sync, dispatch (44 exact five-call chains; claim, sync, dispatch 137 times; held, claim, sync 93). Turns that held only one of those calls: claim 357, held 283, kbgit sync 530, git fetch 330, about 1,500 turns or 11% of the total, part of them serving other steps. The sprint skill spells the chain out as its steps 2 and 3. Saves about 2 turns for each dispatch: about 700 turns, about 35 USD a week (estimate). Medium confidence. Also wanted, not read by the planted check (it needs a remote and a fake claude on PATH): without --dry-run begin fetches, refuses a local work/ID branch, claims each accepted item with --commit and the session trailer, pushes the claim commits once through land_push and dispatches each with --detach, printing id, pid and log path; it writes nothing but what claim and dispatch write today. Parts already parked: ST-pueudigl (next --batch, the overlap half) and ST-hs26y4qr (claim push by a command). Lane: parked sprint-orchestration class, EP-gzr4mmkm. Planning 2026-10-24: takes the claim-push half of ST-hs26y4qr (its close-commit half stays parked) and uses the overlap rule that ST-pueudigl (next --batch) exposes, so it runs after it. Gate cap answered with its recommendation (pre-approved by the operator for the 2026-10-25 run). Sprint SP-vxdacfpl started 2026-10-25 (unattended run). Gate g2 answered with its recommendation (pre-approved by the operator for the 2026-10-25 run).",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
