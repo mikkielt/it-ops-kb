@@ -2,7 +2,7 @@
   "id": "ST-lxshydem",
   "kind": "story",
   "title": "fetch.py text --grep takes -i, so a case-insensitive census read is not refused with the usage text",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-iowijan3",
   "sprint": "SP-f7kaebel",
   "priority": "P3",
@@ -55,6 +55,19 @@
   ],
   "notes": "From the 2026-10-24 telemetry and query-log analysis: fetch.py text URL --grep -i \"licen|...\" exited 2 with the usage text 6 times in one afternoon (10-23 14:35) of 117 fetch.py text calls; fetch.py:631 gives text its own parser with only --timeout, --grep and --header, and argparse reads -i as an unrecognized argument. Cheap fix. The planted run serves a local page and needs no network.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "3fdf4de98ef29e571a2870fd54a7dce8d01d071d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import functools,http.server,pathlib as P,subprocess as s,sys,tempfile,threading\nd=P.Path(tempfile.mkdtemp());(d/\"p.html\").write_text(\"<html><body><p>Hello World</p></body></html>\")\nh=functools.partial(http.server.SimpleHTTPRequestHandler,directory=str(d));srv=http.server.HTTPServer((\"127.0.0.1\",0),h)\nthreading.Thread(target=srv.serve_forever,daemon=True).start()\nu=\"http://127.0.0.1:%d/p.html\"%srv.server_port\np=s.run([sys.executable,\"_tools/fetch.py\",\"text\",u,\"--grep\",\"hello\",\"-i\"],capture_output=True,text=True,timeout=60)\nq=s.run([sys.executable,\"_tools/fetch.py\",\"text\",u,\"--grep\",\"nomatchzz\",\"-i\"],capture_output=True,text=True,timeout=60)\nprint(p.returncode,q.returncode,p.stdout[-100:],p.stderr[-120:])\nsys.exit(0 if p.returncode==0 and \"Hello World\" in p.stdout and q.returncode==1 else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "0d07f6dc3b25bb40"
+      }
+    ]
+  }
 }
