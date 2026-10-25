@@ -15,8 +15,19 @@
       "\nimport os,subprocess,sys,tempfile,pathlib as P\nd=P.Path(tempfile.mkdtemp());r=d/\"r.txt\";r.write_text(\"x\");os.utime(r,(1,1))\np=subprocess.Popen([sys.executable,\"-c\",\"import time;time.sleep(60)\",\"CLAUDE.md\"])\ntry:\n    a=subprocess.run([sys.executable,\"_tools/backlog.py\",\"runner\",\"watch\",\"--pid\",str(p.pid),\"--report\",str(r),\"--stale\",\"0\"],capture_output=True,text=True,timeout=90)\n    ok=a.returncode==2\nfinally:\n    p.kill()\nprint(a.returncode,a.stderr[-200:])\nsys.exit(0 if ok else 1)\n"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport os,stat,subprocess,sys,tempfile,time,pathlib as P\nd=P.Path(tempfile.mkdtemp());c=d/\"claude\";c.write_text(\"#!/bin/sh\\nsleep 60\\n\");c.chmod(0o755)\nr=d/\"r.txt\";r.write_text(\"x\");os.utime(r,(1,1))\np=subprocess.Popen([\"/bin/sh\",str(c)])\ntry:\n    time.sleep(1)\n    a=subprocess.run([sys.executable,\"_tools/backlog.py\",\"runner\",\"watch\",\"--pid\",str(p.pid),\"--report\",str(r),\"--stale\",\"0\"],capture_output=True,text=True,timeout=90)\n    time.sleep(1)\n    ok=a.returncode==0 and \"sent SIGTERM\" in a.stdout and p.poll() is not None\nfinally:\n    if p.poll() is None: p.kill()\nprint(ok,a.returncode,a.stdout[-200:])\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
   "touches": [
-    "_tools/bl_procs.py"
+    "_tools/bl_procs.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-f7kaebel review"
