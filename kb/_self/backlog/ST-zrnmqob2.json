@@ -43,9 +43,6 @@
     "kb/_self/embedding.md",
     "kb/_self/token-efficiency.md"
   ],
-  "depends_on": [
-    "ST-ejmb5aqn"
-  ],
   "relates_to": [
     "ST-zq4plb3d",
     "ST-q3kj4iwe",

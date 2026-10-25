@@ -51,9 +51,6 @@
     "agents/worker.md",
     "kb/_self/tools.md"
   ],
-  "depends_on": [
-    "ST-44md64ps"
-  ],
   "relates_to": [
     "ST-44otcmeo",
     "ST-wkyzbcfj"
