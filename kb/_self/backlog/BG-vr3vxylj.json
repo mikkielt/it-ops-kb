@@ -23,5 +23,6 @@
   "links": [
     "parked: SP-lhpvwh6l review"
   ],
+  "notes": "Found by the SP-lhpvwh6l review (S3): bl_dispatch.py coord_cursor scans from sequence 0, so a working event left by an earlier dispatch of the item ends begin's 10 s hold at once and the cursor is read before the new worker posts working. Fix hint from the reviewer: take the newest sequence before spawn_detached and count only working events above it. The repro is a fixture (bare remote, clone, fake claude, KB_COORD_STORE) that posts an old working event first; it fails on main today.",
   "filed_in": "clone-0ea70e5c"
 }
