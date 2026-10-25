@@ -2,7 +2,7 @@
   "id": "ST-2i5jnnn3",
   "kind": "story",
   "title": "Research sprint goal: Fewer retried commands: answer, set, gate add, factdiff, fetch, kbtools and a hung runner",
-  "status": "draft",
+  "status": "doing",
   "sprint": "SP-f7kaebel",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
