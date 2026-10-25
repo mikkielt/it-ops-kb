@@ -2,7 +2,7 @@
   "id": "BG-2x3pq6ve",
   "kind": "bug",
   "title": "backlog.py --root DIR writes a run state to the coord store of the cwd's clone, so a fixture check reaches the host's real store",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lhpvwh6l",
   "priority": "P3",
   "rank": 1,
@@ -24,5 +24,7 @@
     "parked: SP-vxdacfpl review"
   ],
   "notes": "Effect seen 2026-10-25 at the close of SP-vxdacfpl: tidy --class worktree lists about 20 own records of fixture worktrees (agent-ST-aaaaaaaa, agent-ST-cccccccc in temp clones) whose directories are gone, and run/ST-aaaaaaaa stays returned in the real coord store. Plan 2026-10-25: premise reproduced (the repro prints in the root clone store: False | in the cwd clone store: True on today's base). Every run-state write and read of the backlog tools goes through bl_clean.run_coord, which starts coord.py with the cwd of the process; bl_base.OUTPUT_ROOT[0] holds the --root main() resolved. bl_base.py stays out of scope: read it, do not change it.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
