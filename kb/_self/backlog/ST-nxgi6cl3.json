@@ -2,7 +2,7 @@
   "id": "ST-nxgi6cl3",
   "kind": "story",
   "title": "The gate add usage lines in backlog.py and the item and backlog skills say the recommendation is one of the options, though it may be an option followed by its reason",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lhpvwh6l",
   "priority": "P3",
   "rank": 1,
@@ -37,5 +37,7 @@
     "parked: SP-f7kaebel review"
   ],
   "notes": "Found by the SP-f7kaebel review (S3): the gate add usage at _tools/backlog.py:124 and the gate add lines of skills/item/SKILL.md:31 and skills/backlog/SKILL.md:33 still say \"the recommendation one of them/the options\"; ST-yuf6gdr6 landed the option-plus-reason form without these files in its touches.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
