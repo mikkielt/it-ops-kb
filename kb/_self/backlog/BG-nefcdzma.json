@@ -21,5 +21,6 @@
   "links": [
     "parked: SP-lhpvwh6l review"
   ],
+  "notes": "Found by the SP-lhpvwh6l review (S4): the usage block in backlog.py is right, but the kbtools excerpt reads 'a batch refuses the options naming one item: --title, --goal, --notes, list option replaces its list...'. The reviewer did not locate the cut in kbtools.py (subcommand_blocks and the description join): keep the continuation lines whole, or put the refused-options sentence on lines the excerpt keeps. Sibling of the landed ST-c5ibk7sj.",
   "filed_in": "clone-0ea70e5c"
 }
