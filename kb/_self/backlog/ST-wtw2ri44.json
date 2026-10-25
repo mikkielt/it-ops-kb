@@ -2,7 +2,7 @@
   "id": "ST-wtw2ri44",
   "kind": "story",
   "title": "factdiff.py anchor --file F --lines N --propose prints the proposals for those lines",
-  "status": "draft",
+  "status": "doing",
   "parent": "EP-iowijan3",
   "sprint": "SP-f7kaebel",
   "priority": "P3",
@@ -46,5 +46,7 @@
     "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],
   "notes": "From the 2026-10-24 telemetry and query-log analysis: factdiff.py anchor --file ... --lines N --propose was refused 11 times in 7 days, all by research workers (last 2026-10-24T12:41Z), each with the usage dump '--lines needs exactly one --file and no other selector and no --propose' (factdiff.py:2691); all 11 usage errors of anchor have this message. The parser help already says --lines anchors only the facts on those lines and --propose prints the passages, so a worker combines them. Goal for the worker: --propose with --lines prints the line,source,quote rows of those lines only. The planted run reads the cached documents of the cited sources (network when they are missing), so it accepts exit 0 or 1 and fails only on the refusal.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
