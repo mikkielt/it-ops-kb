@@ -60,7 +60,7 @@ Answers: which sessions are running and what is stalled or waiting on the operat
 Answers: what state the kb, coord, the query log, the host and the sprint are in
 Answers: how a sprint, the load or the cost stands, in plain words
 Use: python3 _tools/kbmon.py [--once|--json|--status TOPIC|--metrics|--events]
-MCP: kb_monitor_status prints the plain-words status
+MCP: kb_monitor_status prints the plain-words status, or with panel NAME that panel's --json
 """
 import argparse
 import contextlib

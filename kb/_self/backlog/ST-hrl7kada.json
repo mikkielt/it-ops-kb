@@ -39,6 +39,25 @@
   "relates_to": [
     "ST-7k2popo6"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does kb_monitor_status take a panel, and does it also take events true (the export kbmon.py --events prints)?",
+      "options": [
+        "panel argument only: returns kbmon.py --json --panel output, events left out",
+        "panel argument and events argument"
+      ],
+      "recommendation": "panel argument only: returns kbmon.py --json --panel output, events left out",
+      "do": {
+        "panel argument only: returns kbmon.py --json --panel output, events left out": "ST-hrl7kada",
+        "panel argument and events argument": "ST-hrl7kada"
+      },
+      "class": "design",
+      "answer": "panel argument only: returns kbmon.py --json --panel output, events left out",
+      "by": "agent"
+    }
+  ],
   "links": [
     "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],
