@@ -22,5 +22,6 @@
   "links": [
     "parked: SP-lhpvwh6l review"
   ],
+  "notes": "Found by the SP-lhpvwh6l review (S3): bl_procs.program takes the first non-option word after an interpreter as the script, so python3 -X claude -c ..., env -u claude /bin/ls, node -r claude x.js, bash --rcfile claude and bash -lc claude pass names_claude; python3 -W ignore /x/claude, a real script, is refused. Reviewer fix hint: after an interpreter accept only argv[1] when it is not an option, or skip a short allow-list of flags without an argument and treat a short-option cluster holding c or e as code. Sibling of the landed BG-wzrj3hot.",
   "filed_in": "clone-0ea70e5c"
 }
