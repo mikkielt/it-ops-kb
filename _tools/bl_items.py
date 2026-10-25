@@ -438,6 +438,23 @@ def cmd_answer(bl, a):
     g = next((g for g in it.get("gates", []) if g.get("id") == a.gate), None)
     if g is None:
         raise Refused(f"{bl.label(iid)} has no gate {a.gate}")
+    chosen = None  # the option --option N or --recommended names: what the equal --answer TEXT would carry
+    number, take_rec = getattr(a, "option", None), getattr(a, "recommended", False)
+    if number is not None or take_rec:
+        if (number is not None and take_rec) or a.answer or getattr(a, "free", False) or a.confirm:
+            raise Rejected("--option N and --recommended are each an alternative to --answer TEXT: pass one of them, "
+                           "never with --answer, --free or --confirm")
+        options = [o for o in g.get("options") or [] if isinstance(o, str)]
+        if number is not None:
+            if not 1 <= number <= len(options):
+                raise Rejected(f"gate {a.gate} of {bl.label(iid)}: --option {number} is outside its {len(options)} "
+                               f"option(s) ({'; '.join(f'{n}: {o!r}' for n, o in enumerate(options, 1))})")
+            chosen = options[number - 1]
+        else:
+            chosen = g.get("recommendation")
+            if not isinstance(chosen, str) or not chosen:
+                raise Rejected(f"gate {a.gate} of {bl.label(iid)} has no recommendation: --option N answers it")
+        a.answer = chosen
     if a.record and (a.provisional or a.confirm or a.by != "operator" or not a.answer):
         raise Rejected("--record keeps the operator's answer as a decision: --answer TEXT --by operator, never "
                        "--provisional or --confirm")
@@ -489,7 +506,7 @@ def cmd_answer(bl, a):
     elif a.provisional:
         if g["kind"] != "provisional":
             raise Refused(f"gate {a.gate} of {bl.label(iid)} is blocking: only the operator answers it")
-        g.update(answer=g["recommendation"], by="agent")
+        g.update(answer=chosen or g["recommendation"], by="agent")
     else:
         if not a.answer or not a.by:
             raise Refused("--answer TEXT and --by operator|agent")
@@ -1297,6 +1314,12 @@ def args_answer(p):
     p.add_argument("id")
     p.add_argument("gate")
     p.add_argument("--answer")
+    p.add_argument("--option", type=int, metavar="N",
+                   help="answer with the Nth option of the gate (from 1), as --answer with that option's text; "
+                        "with --provisional it is the agent's answer")
+    p.add_argument("--recommended", action="store_true",
+                   help="answer with the gate's recommendation, as --answer with its text; with --provisional the "
+                        "agent's answer")
     p.add_argument("--free", action="store_true",
                    help="with --answer TEXT: a text that is none of the gate's options is meant (else exit 2)")
     p.add_argument("--by", metavar="operator|agent|delegate:NAME",

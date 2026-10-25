@@ -66,7 +66,10 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
   backlog.py answer ID GATE (--answer TEXT --by operator|agent [--record] | --provisional | --confirm
                             --by operator|delegate:NAME)
                                           record a gate's answer: --provisional takes the recommendation as the
-                                          agent's answer (provisional gates only); --confirm --by operator makes an
+                                          agent's answer (provisional gates only); --option N (from 1) or
+                                          --recommended stands for --answer with that option's or the
+                                          recommendation's text, with --provisional it is the agent's answer, a
+                                          number outside the options exits 2; --confirm --by operator makes an
                                           agent's answer the operator's (no --by: exit 2); --by delegate:NAME
                                           confirms only under an operator grant on the sprint (set SP
                                           --delegate NAME --by operator), recorded as that delegate;
