@@ -2477,3 +2477,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## intune/compliance-policies
 
 - **How do I find the Intune policy that blocks USB storage?** The kb was asked this in a logged lookup of 2026-10-24, and no article answered it (query log finding F-39116ece4366). Looked in the kb 2026-10-24: `rag.py pack` gives `good`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: intune/compliance-policies)
+
+## agents/agent-planning-and-done
+
+- **backlog.py start commit sprint start planning commit items todo** The kb was asked this in a logged lookup of 2026-10-25, and no article answered it (query log finding F-615800bc569e). Looked in the kb 2026-10-25: `rag.py pack` gives `good`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: agents/agent-planning-and-done)
