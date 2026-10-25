@@ -1,0 +1,22 @@
+{
+  "id": "BG-nefcdzma",
+  "kind": "bug",
+  "title": "the kbtools entry for backlog.py set cuts the list of options a batch refuses after --notes and runs into the next fragment",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "the kbtools entry for backlog.py set names every option a batch of several ids refuses: --title, --goal, --notes, --repro, --repro-reason, --parent, --clause and --check",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,subprocess,sys\nout=subprocess.run([sys.executable,\"_tools/kbtools.py\",\"--json\",\"backlog.py set several ids\"],capture_output=True,text=True).stdout\nb=\" \".join(next(e for e in json.loads(out)[\"entries\"] if e[\"tool\"]==\"backlog.py set\")[\"answers\"])\ni=b.find(\"a batch refuses\"); print(b[i:i+140])\nsys.exit(0 if all(x in b for x in (\"--repro-reason\",\"--parent\",\"--clause\",\"--check\")) else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/kbtools.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
