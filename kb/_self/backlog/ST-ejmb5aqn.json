@@ -85,7 +85,11 @@
         "last 15 lines": "ST-ejmb5aqn",
         "the whole text": "ST-ejmb5aqn"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "last 15 lines",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
