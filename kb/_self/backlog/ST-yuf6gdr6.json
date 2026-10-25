@@ -58,6 +58,28 @@
     "ST-44otcmeo",
     "ST-wkyzbcfj"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does gate add read a recommendation that begins with an option, and where does the rest go?",
+      "options": [
+        "Longest option the text starts with, ending at the text's end or before a non-alphanumeric character; the rest stored as the gate's reason field",
+        "Longest option the text starts with by plain prefix, as --do reads it; the rest dropped"
+      ],
+      "recommendation": "Longest option the text starts with, ending at the text's end or before a non-alphanumeric character; the rest stored as the gate's reason field",
+      "reason": "since a plain prefix would read Approve later as option A and a dropped reason loses the worker's rationale",
+      "do": {
+        "Longest option the text starts with, ending at the text's end or before a non-alphanumeric character; the rest stored as the gate's reason field": "ST-yuf6gdr6",
+        "Longest option the text starts with by plain prefix, as --do reads it; the rest dropped": "ST-yuf6gdr6"
+      },
+      "class": "agents-rule",
+      "answer": "Longest option the text starts with, ending at the text's end or before a non-alphanumeric character; the rest stored as the gate's reason field",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],
