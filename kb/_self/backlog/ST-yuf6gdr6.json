@@ -58,10 +58,32 @@
     "ST-44otcmeo",
     "ST-wkyzbcfj"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does gate add read a recommendation that begins with an option, and where does the rest go?",
+      "options": [
+        "Longest option the text starts with, ending at the text's end or before a non-alphanumeric character; the rest stored as the gate's reason field",
+        "Longest option the text starts with by plain prefix, as --do reads it; the rest dropped"
+      ],
+      "recommendation": "Longest option the text starts with, ending at the text's end or before a non-alphanumeric character; the rest stored as the gate's reason field",
+      "reason": "since a plain prefix would read Approve later as option A and a dropped reason loses the worker's rationale",
+      "do": {
+        "Longest option the text starts with, ending at the text's end or before a non-alphanumeric character; the rest stored as the gate's reason field": "ST-yuf6gdr6",
+        "Longest option the text starts with by plain prefix, as --do reads it; the rest dropped": "ST-yuf6gdr6"
+      },
+      "class": "agents-rule",
+      "answer": "Longest option the text starts with, ending at the text's end or before a non-alphanumeric character; the rest stored as the gate's reason field",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],
-  "notes": "From the 2026-10-24 telemetry and query-log analysis: transcripts of 10-17 to 10-24 hold 354 backlog.py gate add calls; 100 failed, 96 of them with 'gate add: --recommendation must be one of the --option values' (bl_items.py:994 needs the recommendation to equal an option's text exactly), one per worker session, each retried successfully (27% of calls; last 2026-10-24T07:10Z). The visible samples start the recommendation with the full option text and continue with a reason; the refusal does not list the options. Every worker that files a gate pays one failed call and one retry. Also wanted, not read by the planted check: gate add --help says the recommendation is one of the options. This removes the cause that a typed kb_backlog_write gate_add would only have moved. Run 2026-10-25 (unattended, SP-f7kaebel): sprint start gate approved by operator on their approval \"start them\"; item turned todo at start. Waits on ST-44md64ps (SP-vxdacfpl begin).",
+  "notes": "From the 2026-10-24 telemetry and query-log analysis: transcripts of 10-17 to 10-24 hold 354 backlog.py gate add calls; 100 failed, 96 of them with 'gate add: --recommendation must be one of the --option values' (bl_items.py:994 needs the recommendation to equal an option's text exactly), one per worker session, each retried successfully (27% of calls; last 2026-10-24T07:10Z). The visible samples start the recommendation with the full option text and continue with a reason; the refusal does not list the options. Every worker that files a gate pays one failed call and one retry. Also wanted, not read by the planted check: gate add --help says the recommendation is one of the options. This removes the cause that a typed kb_backlog_write gate_add would only have moved. Run 2026-10-25 (unattended, SP-f7kaebel): sprint start gate approved by operator on their approval \"start them\"; item turned todo at start. Waits on ST-44md64ps (SP-vxdacfpl begin). Gate g1 (agents-rule) answered with its recommendation (pre-approved by the operator for the 2026-10-25 run).",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"

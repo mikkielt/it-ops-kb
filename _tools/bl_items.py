@@ -987,6 +987,18 @@ def split_do(text, options):
     return None, ""
 
 
+def split_recommendation(text, options):
+    """(option, reason) of a `--recommendation` that is an option's text, alone or followed by its reason.
+
+    The longest option the text starts with, as `split_do` reads its option, ends at the text's end or before a
+    character that is not a letter or a digit, so `Approve later` is not option `A` with a reason; none is None."""
+    text = text.strip()
+    for opt in sorted(options, key=len, reverse=True):
+        if text.startswith(opt) and not (text[len(opt):len(opt) + 1].isalnum()):
+            return opt, text[len(opt):].lstrip(" \t,;:.-\u2013\u2014").strip()
+    return None, ""
+
+
 def gate_add(bl, a):
     """gate add: a gate with its question, options and recommendation."""
     iid = need(bl, a.id)
@@ -996,8 +1008,10 @@ def gate_add(bl, a):
     options = [o.strip() for o in a.option]
     if len(options) < 2 or len(set(options)) != len(options) or not all(options):
         raise Rejected("gate add: --option twice or more, each different and not empty")
-    if a.recommendation.strip() not in options:
-        raise Rejected("gate add: --recommendation must be one of the --option values")
+    rec, reason = split_recommendation(a.recommendation, options)
+    if rec is None:
+        raise Rejected("gate add: --recommendation must begin with one of the --option values (then its reason, if "
+                       f"any), and begins with none of: {'; '.join(options)}")
     about = " ".join([a.question, *options])
     if CAPPED_FILE_RE.search(about) and SIZE_WORD_RE.search(about):
         bare = [o for o in options if not MEASURED_SIZE_RE.search(o)]
@@ -1010,7 +1024,9 @@ def gate_add(bl, a):
         raise Rejected(f"gate add: the gate id {gid!r} must be lowercase letters, digits and hyphens (at most 40), "
                        f"and not {START_GATE!r}, the sprint's own")
     gate = {"id": gid, "kind": a.kind, "question": a.question.strip(), "options": options,
-            "recommendation": a.recommendation.strip()}
+            "recommendation": rec}
+    if reason:
+        gate["reason"] = reason
     if a.do:
         gate["do"] = {}
         for d in a.do:
@@ -1356,7 +1372,8 @@ def args_gate(p):
     p.add_argument("id")
     p.add_argument("--question", required=True)
     p.add_argument("--option", action="append", required=True, help="an answer the operator may give (repeatable)")
-    p.add_argument("--recommendation", required=True, help="the option the agent recommends")
+    p.add_argument("--recommendation", required=True, help="the option the agent recommends, alone or followed by its reason: the longest "
+                   "--option the text begins with is the option, the rest its reason")
     p.add_argument("--kind", default="blocking", help="blocking (default) or provisional")
     p.add_argument("--id", dest="gate_id", help="the gate's id (default g1, g2, ...)")
     p.add_argument("--do", action="append", metavar="OPTION=CMD|ID",
