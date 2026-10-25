@@ -2,7 +2,7 @@
   "id": "BG-wzrj3hot",
   "kind": "bug",
   "title": "runner watch accepts a process whose command line only names a file called CLAUDE.md, so the claude guard admits a pid that is no claude session",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-lhpvwh6l",
   "priority": "P3",
   "rank": 1,
@@ -56,6 +56,28 @@
   ],
   "notes": "Found by the SP-f7kaebel review (S3): bl_procs.names_claude takes any argv word whose basename starts with claude, case-insensitively; the gate answer recorded for ST-hlbnqk7k chose that rule against a plain substring, but a word CLAUDE.md still matches. Runs as the agent s guard only; the repro fails on the base. Raised to S2 by the 2026-10-25 run brief: the guard decides which process gets SIGTERM. Plan 2026-10-25: premise reproduced (the repro exits 0 on today's base, expected 2). The second check, a planted /bin/sh script named claude that runner watch must still end with SIGTERM, passes before the work on purpose: it pins the behaviour the fix must keep. Fix sketch: names_claude accepts the first word of the command line when its basename is claude (claude.exe too), or the first non-option word after an interpreter word; never a later argument. Gate g1 (class agents-rule) answered with its recommendation (option 1), pre-approved by the operator for the 2026-10-25 run; answered by the sprint runner for the operator.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "0ba0bb73642e8fafa28d2183ff6f5fbf5cfeb48e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport os,stat,subprocess,sys,tempfile,time,pathlib as P\nd=P.Path(tempfile.mkdtemp());c=d/\"claude\";c.write_text(\"#!/bin/sh\\nsleep 60\\n\");c.chmod(0o755)\nr=d/\"r.txt\";r.write_text(\"x\");os.utime(r,(1,1))\np=subprocess.Popen([\"/bin/sh\",str(c)])\ntry:\n    time.sleep(1)\n    a=subprocess.run([sys.executable,\"_tools/backlog.py\",\"runner\",\"watch\",\"--pid\",str(p.pid),\"--report\",str(r),\"--stale\",\"0\"],capture_output=True,text=True,timeout=90)\n    time.sleep(1)\n    ok=a.returncode==0 and \"sent SIGTERM\" in a.stdout and p.poll() is not None\nfinally:\n    if p.poll() is None: p.kill()\nprint(ok,a.returncode,a.stdout[-200:])\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "da52fbe5b99dff9f"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport os,subprocess,sys,tempfile,pathlib as P\nd=P.Path(tempfile.mkdtemp());r=d/\"r.txt\";r.write_text(\"x\");os.utime(r,(1,1))\np=subprocess.Popen([sys.executable,\"-c\",\"import time;time.sleep(60)\",\"CLAUDE.md\"])\ntry:\n    a=subprocess.run([sys.executable,\"_tools/backlog.py\",\"runner\",\"watch\",\"--pid\",str(p.pid),\"--report\",str(r),\"--stale\",\"0\"],capture_output=True,text=True,timeout=90)\n    ok=a.returncode==2\nfinally:\n    p.kill()\nprint(a.returncode,a.stderr[-200:])\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "037b816d1e14d24b"
+      }
+    ]
+  }
 }
