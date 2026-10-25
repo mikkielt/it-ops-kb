@@ -4,7 +4,7 @@
   "title": "A stage-back rerun after a kill in the middle of its copy-in stops at the dirty tracked file the dead run copied, so the worktree needs a hand reset",
   "status": "draft",
   "parent": "EP-nij36lt7",
-  "sprint": "SP-r37ubrt4",
+  "sprint": "SP-42b2cjm3",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -16,8 +16,23 @@
       "import subprocess, tempfile, os, shutil, re, sys, json, glob, hashlib\nR = os.getcwd(); T = os.path.realpath(tempfile.mkdtemp()); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\nsys.path.insert(0, R + '/_tools')\nimport bl_dispatch\ndef sh(*a, cwd=None): return subprocess.run(a, cwd=cwd or T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '-b', 'main', '.'); shutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--touch', '.claude/staged.txt', '--touch', '.claude/staged2.txt',\n                              '--check', 'python3 -c pass').stdout).group(0)\nfor f in glob.glob(T + '/kb/_self/backlog/*.json'):\n    d = json.load(open(f, encoding='utf-8'))\n    if d['id'] == sp: d['status'] = 'active'\n    if d['id'] == iid: d['status'] = 'doing'; d['sprint'] = sp\n    json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\nos.makedirs(T + '/.claude'); open(T + '/.claude/staged.txt', 'w').write('base\\n'); open(T + '/.claude/staged2.txt', 'w').write('base\\n')\nopen(T + '/.gitignore', 'w').write('.claude/worktrees/\\n_cache/\\n')\ng('add', '-A'); g('commit', '-q', '-m', 'planted')\nwt, scratch = str(bl_dispatch.worktree_path(T, iid)), bl_dispatch.scratch_path(T, iid)\ng('worktree', 'add', '-q', '-b', 'work/' + iid, wt)\nfor name in ('staged.txt', 'staged2.txt'):\n    copy = scratch / bl_dispatch.STAGING / '.claude' / name\n    copy.parent.mkdir(parents=True, exist_ok=True); copy.write_text('edited\\n')\nopen(wt + '/.claude/staged.txt', 'w').write('edited\\n')  # the first copy-in was done when the stage-back was killed\n(scratch / bl_dispatch.BASES_NAME).write_text(json.dumps({'.claude/staged.txt': hashlib.sha256(b'base\\n').hexdigest(), '.claude/staged2.txt': hashlib.sha256(b'base\\n').hexdigest()}))\nfor s in ('claimed', 'working', 'returned', 'staging'): c('transition', 'run/' + iid, '--to', s)  # the dead stage-back's key\nr = bl('stage-back', iid, '--check')\nstate = c('get', 'run/' + iid).stdout\nprint('stage-back rerun after a kill mid-copy', r.returncode, (r.stdout + r.stderr).strip()[-200:], '| run key', state.strip()[-40:])\nsys.exit(0 if r.returncode == 0 and '\"returned\"' in state else 1)\n"
     ]
   },
+  "clauses": [
+    {
+      "clause": "a stage-back rerun at staging whose worktree holds the dead run's half-done copy-in takes the run over: the files it copied in are not refused as uncommitted changes",
+      "check": 0
+    },
+    {
+      "clause": "the key ends at returned",
+      "check": 0
+    }
+  ],
   "touches": [
-    "_tools/bl_dispatch.py"
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-2voko77q"
   ],
   "links": [
     "parked: SP-dx76osrn review"

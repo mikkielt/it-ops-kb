@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "kbcommon.leak_hits does not flag a same-line table row that holds an armor label, a Name: value cell and a 20-or-more-character identifier cell but no key material, as c927cb22e did not, while every key block the SP-evq2flqc reviews planted is still flagged",
+  "goal": "kbcommon.leak_hits does not flag a same-line table row that holds an armor label, a Name: value cell and a 20-or-more-character identifier cell but no key material, as c927cb22e did not; every key block the SP-evq2flqc reviews planted is still flagged",
   "repro": {
     "run": [
       "python3",
@@ -15,6 +15,25 @@
       "import sys;sys.path.insert(0,'_tools');import kbcommon;d='-'*5;t='| '+d+'BEGIN EC PRIVATE KEY'+d+' | Note: PEM label | PrivateKeyInfoStructureXX |';h=any(k=='secret' for k,_ in kbcommon.leak_hits(t));print('label row flagged:',h);sys.exit(1 if h else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_leaks.py"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbcommon.leak_hits does not flag a same-line table row that holds an armor label, a Name: value cell and a 20-or-more-character identifier cell but no key material, as c927cb22e did not",
+      "check": 1
+    },
+    {
+      "clause": "every key block the SP-evq2flqc reviews planted is still flagged",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kbcommon.py",
     "_tools/test_leaks.py",
@@ -22,8 +41,11 @@
     "kb/_self/plugin.md",
     "kb/_self/content-rules.md"
   ],
+  "depends_on": [
+    "BG-v5tq4jkz"
+  ],
   "links": [
     "parked: SP-evq2flqc review"
   ],
-  "notes": "Found 2026-10-23 by the third SP-evq2flqc fresh review on 86d646801: the boundary header value now crosses a pipe, so a 24-character identifier cell counts as the base64 run."
+  "notes": "Found 2026-10-23 by the third SP-evq2flqc fresh review on 86d646801: the boundary header value now crosses a pipe, so a 24-character identifier cell counts as the base64 run. Check 0 (the test_leaks.py selection) passes before the work: it holds the key blocks the reviews planted, which must stay flagged. Check 1 is the repro."
 }

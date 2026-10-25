@@ -15,6 +15,21 @@
       "import sys; sys.path.insert(0,'_tools'); import census; leak='tenant '+'-'.join(['7f3c2a10','5b6d','4e8f','9a1b','2c3d4e5f6a7b']); r=census.leak_problems({'outcomes':[],'gaps':[],'conflicts':[],'new_rows':[{'url':'https://x.example.com/a','title':leak}]}); assert r, r"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0,\"_tools\")\nimport census\nguid=\"-\".join([\"7f3c2a10\",\"5b6d\",\"4e8f\",\"9a1b\",\"2c3d4e5f6a7b\"])\nmail=\"jan.kowalski\"+chr(64)+\"corp-mail.test\"\nmiss=[];shown=[]\nfor f in (\"url\",\"title\",\"publisher\",\"licence\",\"version_or_date\",\"used_in\"):\n    for what in (\"tenant \"+guid,mail):\n        row={\"url\":\"https://x.example.com/a\",\"title\":\"t\"}\n        row[f]=(\"https://x.example.com/\"+what) if f==\"url\" else what\n        r=census.leak_problems({\"outcomes\":[],\"gaps\":[],\"conflicts\":[],\"new_rows\":[row]})\n        txt=\"\\n\".join(map(str,r))\n        if not r or f not in txt:miss.append(f)\n        if guid in txt or mail in txt:shown.append(f)\nprint(\"fields whose planted leak is not reported by name:\",sorted(set(miss)),\"| fields whose value is printed:\",sorted(set(shown)))\nsys.exit(1 if miss or shown else 0)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "census.leak_problems also scans the string fields of each new_rows entry (url, title, publisher, licence, version_or_date, used_in), naming the field and the kinds but never the value, so a tenant id or email planted in a new source row fails apply and not only the sync gate",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/census.py",
     "kb/_self/tools.md",

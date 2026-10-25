@@ -15,9 +15,30 @@
       "import sys\nsys.path.insert(0, \"_tools\")\nimport kbcommon\nd = \"-\" * 5\narm = d + \"BEGIN EC PRIVATE KEY\" + d\nmiss = [s for s in (\".\", \"_x\", \"-x\", \".pem\") if not any(k == \"secret\" for k, _ in kbcommon.leak_hits(arm + \" CwgQj8C/nbil1bW34cYU\" + s))]\nprint(\"short slash-containing body not flagged before:\", miss)\nsys.exit(1 if miss else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import random,sys\nsys.path.insert(0,\"_tools\")\nimport kbcommon\nd=\"-\"*5;arm=d+\"BEGIN EC PRIVATE KEY\"+d\nhit=lambda t:any(k==\"secret\" for k,_ in kbcommon.leak_hits(t))\nrnd=random.Random(7);al=\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+\"\nmiss=[];total=0\nfor n in range(20,41,4):\n    for suf in (\".\",\"_x\",\"-x\",\".pem\"):\n        for _ in range(5):\n            k=rnd.randint(3,n-4);body=\"\".join(rnd.choice(al) for _ in range(n-1));body=body[:k]+\"/\"+body[k:]\n            total+=1\n            if not hit(arm+\" \"+body+suf):miss.append(n)\npaths=[\"kb/public/intune/profiles.md page\",\"_tools/kbcommon.py in the repo\",\"kb/_self/backlog/BG-aaaaaaaa.json item\"]\nfalse=[p for p in paths if hit(arm+\" \"+p)]\nprint(\"short slash bodies not flagged:\",len(miss),\"of\",total,\"| repository paths flagged:\",false)\nsys.exit(1 if miss or false else 0)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbcommon.leak_hits flags the EC armor label before a single-line body of 20 to 40 base64 characters that holds a slash and that a period, an underscore or a hyphen follows",
+      "check": 0
+    },
+    {
+      "clause": "still does not flag the label before a repository path",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kbcommon.py",
-    "_tools/test_leaks.py"
+    "_tools/test_leaks.py",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md"
   ],
   "relates_to": [
     "BG-v5tq4jkz"

@@ -15,6 +15,21 @@
       "import sys;sys.path.insert(0,'_tools');import redact;o=redact.redact('open https://ci7.qzvx-internal.net/x');print(o);sys.exit(1 if 'qzvx' in o else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0,\"_tools\")\nimport redact\nbare=redact.redact(\"ci7.qzvx-internal.net\")\na=redact.redact(\"open https://ci7.qzvx-internal.net/x\")\nb=redact.redact(\"open http://ci7.qzvx-internal.net:8080/x?y=1\")\nkept=redact.redact(\"see https://learn.microsoft.com/en-us/graph/overview\")\nprint(\"bare host ->\",bare,\"| https url ->\",a,\"| http url with port ->\",b,\"| public host url ->\",kept)\nok=\"qzvx\" not in a and \"qzvx\" not in b and bare in a and bare in b and \"learn.microsoft.com\" in kept\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "redact.redact rewrites the host of an http or https url to the host placeholder when the public root never names it, as it does a bare host, keeping url hosts the public root names, as querylog.md's table says an FQDN becomes corp.example.com",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/redact.py",
     "_tools/test_redact.py",

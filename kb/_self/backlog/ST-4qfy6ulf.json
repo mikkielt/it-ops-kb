@@ -16,9 +16,16 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kbwho.py applies the KB_OPERATOR id rule (letters, digits, dot, underscore, hyphen, at most 64) to an alias read from _private/operators.json and warns and gives no id for one that breaks it, so a claim never writes an operator that backlog.py check refuses and no address-shaped alias reaches coord or kbmon",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kbwho.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/design.md"
   ],
   "links": [
     "parked: SP-czs3jk57 review"

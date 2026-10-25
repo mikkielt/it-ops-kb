@@ -4,7 +4,7 @@
   "title": "kbtools.py ranks kbmon.py above querylog.py for the plural need query logs, since the several-word name rule joins the need's raw words",
   "status": "draft",
   "parent": "EP-5mp6pwnn",
-  "sprint": "SP-v4fvjr2g",
+  "sprint": "SP-sgfucsn6",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
@@ -16,6 +16,12 @@
       "import json\nimport subprocess\nimport sys\n\nr = subprocess.run([sys.executable, '_tools/kbtools.py', 'query logs', '--json'], capture_output=True, text=True)\nfirst = json.loads(r.stdout)['entries'][0]['tool'] if r.returncode == 0 else None\nprint('first entry for query logs:', first)\nsys.exit(0 if first == 'querylog.py' else 1)"
     ]
   },
+  "clauses": [
+    {
+      "clause": "kbtools.py NEED puts querylog.py first for the need query logs as for query log: a name of several words matches the words of a need whatever their endings",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kbtools.py",
     "kb/_self/tools.md"

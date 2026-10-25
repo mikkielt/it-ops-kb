@@ -16,9 +16,23 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kbwho.py refuses to rewrite a _private/operators.json that exists but does not parse (it warns and leaves the id None) instead of replacing every alias with one new entry",
+      "check": 0
+    },
+    {
+      "clause": "writes the file mode 0600",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kbwho.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/design.md"
+  ],
+  "depends_on": [
+    "ST-4qfy6ulf"
   ],
   "links": [
     "parked: SP-czs3jk57 review"

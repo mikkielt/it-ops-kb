@@ -15,9 +15,25 @@
       "import sys; sys.path.insert(0,\"_tools\"); import bl_authority as a; c,r=a.class_reasons({\"touches\":[]},{\"id\":\"g1\",\"question\":\"Gate and bare_token move to ql_learn; def_tokens is left with no caller\",\"options\":[\"move them\",\"keep them\"]}); print(\"class:\",c,r); sys.exit(1 if c==\"secrets\" else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0,\"_tools\")\nimport bl_authority as a\ndef cl(q,t=None):return a.class_reasons({\"touches\":t or []},{\"id\":\"g1\",\"question\":q,\"options\":[\"one\",\"two\"]})[0]\nident=[cl(\"Gate and bare_token move to ql_learn; def_tokens is left with no caller\"),cl(\"Does the helper bare_token stay in kbcommon?\")]\nreal=[cl(q) for q in (\"Rotate the API token of the service account?\",\"Where is the GITLAB_TOKEN kept?\",\"Store the credential file in _private?\",\"Should the secret be kept in a vault?\")]\nprint(\"code identifier gates:\",ident,\"| token, secret and credential gates:\",real)\nsys.exit(0 if \"secrets\" not in ident and all(r==\"secrets\" for r in real) else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "a gate whose only secrets word sits inside a code identifier (bare_token, def_tokens) classes design, while a question that names a token, secret or credential still classes secrets",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/bl_authority.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-jplczvj2 close"

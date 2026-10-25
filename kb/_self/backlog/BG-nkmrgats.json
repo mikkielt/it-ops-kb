@@ -3,7 +3,6 @@
   "kind": "bug",
   "title": "Three census leftovers: a capture date that differs between article and census log, stale source-row titles, and an inferred AI Act date tagged DOC",
   "status": "draft",
-  "sprint": "SP-v4fvjr2g",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

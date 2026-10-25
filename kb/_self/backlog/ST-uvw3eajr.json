@@ -6,8 +6,15 @@
   "sprint": "SP-vmtfnkim",
   "priority": "P2",
   "rank": 0,
-  "goal": "kbgit.py sync's gate runs the query-log store gates (ql_store.store_problems over the committed store) for a change to kb/public text, so a cleanup that drops the last mention of a host a store row names is refused before it lands rather than stalling delivery",
+  "goal": "kbgit.py sync's gate runs querylog.py check (ql_store.store_problems over the committed store) for a change to the public root's articles and ledgers, as it does for a change to the store, so a cleanup that drops the last mention of a host a store row names is refused before it lands rather than stalling delivery",
   "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import kg_sync\nneed=kg_sync.gate_needs([\"kb/public/security/baselines-catalog.md\"])[\"querylog\"]\nquiet=kg_sync.gate_needs([\"kb/_self/backlog/BG-aaaaaaaa.json\"])[\"querylog\"]\nprint(\"querylog check needed for a public article:\",need,\"| for one item file:\",quiet)\nsys.exit(0 if need and not quiet else 1)\n"
+      ]
+    },
     {
       "run": [
         "python3",
@@ -16,10 +23,19 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kbgit.py sync's gate runs querylog.py check (ql_store.store_problems over the committed store) for a change to the public root's articles and ledgers, as it does for a change to the store, so a cleanup that drops the last mention of a host a store row names is refused before it lands rather than stalling delivery",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kg_sync.py",
     "kb/_self/git.md",
     "kb/_self/querylog.md"
+  ],
+  "depends_on": [
+    "BG-24kutvrd"
   ],
   "links": [
     "parked: SP-c7oav2vn close"

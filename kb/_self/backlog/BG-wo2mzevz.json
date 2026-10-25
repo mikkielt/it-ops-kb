@@ -4,7 +4,7 @@
   "title": "backlog.py runs names the process record of a running land or stage-back as the item's worker pid",
   "status": "draft",
   "parent": "EP-nij36lt7",
-  "sprint": "SP-r37ubrt4",
+  "sprint": "SP-42b2cjm3",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
@@ -16,9 +16,17 @@
       "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = os.path.realpath(tempfile.mkdtemp()); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\nsys.path.insert(0, R + '/_tools')\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '-b', 'main', '.'); g('commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--check', 'python3 -c pass').stdout).group(0)\nfor f in glob.glob(T + '/kb/_self/backlog/*.json'):\n    d = json.load(open(f, encoding='utf-8'))\n    if d['id'] == sp: d['status'] = 'active'\n    if d['id'] == iid: d['status'] = 'doing'; d['sprint'] = sp\n    json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\ng('add', '-A'); g('commit', '-q', '-m', 'planted doing')\nfor s in ('claimed', 'working', 'returned', 'landing'): c('transition', 'run/' + iid, '--to', s)  # a land is running on the item\nholder = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)'])  # the land's process, with its own/ record\nos.environ['KB_COORD_STORE'] = S\nimport bl_clean\ncode = bl_clean.record_owner('process', holder.pid, item=iid)\nr = bl('runs', iid)\nholder.kill()\nprint('runs line of an item with a land running:', r.stdout.strip().splitlines()[:1])\nsys.exit(0 if 'worker pid' not in r.stdout else 1)\n"
     ]
   },
+  "clauses": [
+    {
+      "clause": "runs names a land or stage-back that holds the item's key by what it is, not as the worker pid of the item",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/bl_runs.py",
-    "_tools/bl_items.py"
+    "_tools/bl_items.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-dx76osrn review"

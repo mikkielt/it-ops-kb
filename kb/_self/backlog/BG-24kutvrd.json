@@ -8,7 +8,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "ql_store.leak_problems calls redact.scan once per distinct string value of a store file, whatever the number of rows, and querylog.py check on the committed store finishes in under 60 seconds on this host",
+  "goal": "ql_store.leak_problems calls redact.scan once per distinct string value of a store file, whatever the number of rows, and querylog.py check on the committed store, run without a profiler, finishes in under 60 seconds on this host",
   "repro": {
     "run": [
       "python3",
@@ -16,13 +16,22 @@
       "import sys,json,tempfile,pathlib as P\nsys.path.insert(0,\"_tools\");import ql_store,redact\nd=P.Path(tempfile.mkdtemp());f=d/\"ops\"/\"2026-10\"/\"20261024T000000Z-abcdef12.jsonl\";f.parent.mkdir(parents=True)\nrows=[{\"id\":\"r%d\"%i,\"ts\":\"2026-10-24T00:00:00Z\",\"event\":\"call.tool\",\"tool\":[\"Bash\",\"Read\",\"Edit\",\"Write\",\"Grep\",\"Glob\"][i%6],\"state\":[\"ok\",\"error\",\"denied\"][i%3]} for i in range(5000)]\nf.write_text(json.dumps({\"run\":f.stem,\"counts\":{\"rows\":len(rows)}})+\"\\n\"+\"\".join(json.dumps(x)+\"\\n\" for x in rows))\nn=[0];orig=redact.scan\ndef counted(v,k=None):\n n[0]+=1;return orig(v,k)\nredact.scan=counted\nql_store.leak_problems(d,[f.relative_to(d).as_posix()])\nprint(\"redact.scan calls for 5000 rows with 11 distinct values:\",n[0])\nsys.exit(0 if n[0]<=60 else 1)\n"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys\ntry:\n    p=subprocess.run([sys.executable,\"_tools/querylog.py\",\"check\"],capture_output=True,text=True,timeout=60)\nexcept subprocess.TimeoutExpired:\n    print(\"querylog.py check on the committed store took more than 60 seconds\");sys.exit(1)\nprint(p.stdout.strip()[-200:]);sys.exit(p.returncode)\n"
+      ]
+    }
+  ],
   "clauses": [
     {
       "clause": "ql_store.leak_problems calls redact.scan once per distinct string value of a store file, whatever the number of rows",
-      "check": 0
+      "check": 1
     },
     {
-      "clause": "querylog.py check on the committed store finishes in under 60 seconds on this host",
+      "clause": "querylog.py check on the committed store, run without a profiler, finishes in under 60 seconds on this host",
       "check": 0
     }
   ],
@@ -32,7 +41,11 @@
     "_tools/kbcommon.py",
     "_tools/kg_sync.py",
     "_tools/ql_deliver.py",
-    "kb/_self/querylog.md"
+    "kb/_self/querylog.md",
+    "kb/_self/git.md",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md",
+    "kb/_self/usage.md"
   ],
   "relates_to": [
     "EP-6iiony54"

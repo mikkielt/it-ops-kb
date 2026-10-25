@@ -8,21 +8,17 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "kbmon.py --once --panel cleanup reports its state in under 10 seconds with this clone's leftover worktrees and branches, and backlog.py tidy without --apply finishes in under 5 seconds on the same clone",
+  "goal": "backlog.py tidy without --apply and kbmon.py --once --panel cleanup each read the state of 30 recorded leftover worktrees and branches with at most 40 git processes, a fixed number however many leftovers there are, so the cleanup panel answers inside its 10-second limit",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import subprocess as s,sys\np=s.run([sys.executable,\"_tools/kbmon.py\",\"--once\",\"--panel\",\"cleanup\"],capture_output=True,text=True,timeout=120)\no=p.stdout+p.stderr;print(o.strip()[-160:])\nsys.exit(1 if \"timeout\" in o or p.returncode!=0 else 0)\n"
+      "import os,shutil,subprocess as s,sys,tempfile,pathlib as P\nN=30\nt=P.Path(tempfile.mkdtemp());c=t/\"clone\";c.mkdir()\nshutil.copytree(\"_tools\",c/\"_tools\",ignore=shutil.ignore_patterns(\"__pycache__\",\"test_*\"))\nshutil.copy(\"backlog.json\",c/\"backlog.json\")\n(c/\"kb/_self/backlog\").mkdir(parents=True);(c/\"kb/_self/backlog/.keep\").write_text(\"\")\ndef g(*a):return s.run([\"git\",*a],cwd=c,check=True,capture_output=True)\ng(\"init\",\"-q\",\"-b\",\"main\");g(\"config\",\"user.email\",\"a@b.c\");g(\"config\",\"user.name\",\"t\");g(\"add\",\"-A\");g(\"commit\",\"-q\",\"-m\",\"base\")\nfor i in range(N):\n    iid=\"ST-p%07d\"%i\n    g(\"worktree\",\"add\",\"-q\",\"-b\",\"work/\"+iid,\".claude/worktrees/agent-\"+iid,\"HEAD\")\n    s.run([sys.executable,\"_tools/backlog.py\",\"own\",str(c/\".claude/worktrees\"/(\"agent-\"+iid)),\"--class\",\"worktree\",\"--item\",iid],cwd=c,capture_output=True,check=True)\nd=t/\"bin\";d.mkdir();log=d/\"n\";w=d/\"git\"\nw.write_text(\"#!/bin/sh\\necho x >> %s\\nexec %s \\\"$@\\\"\\n\"%(log,shutil.which(\"git\")));w.chmod(0o755)\nenv=dict(os.environ,PATH=str(d)+os.pathsep+os.environ[\"PATH\"])\nbad=[]\nfor name,argv in ((\"backlog.py tidy\",[\"_tools/backlog.py\",\"tidy\"]),(\"kbmon.py cleanup panel\",[\"_tools/kbmon.py\",\"--once\",\"--panel\",\"cleanup\"])):\n    log.write_text(\"\")\n    p=s.run([sys.executable]+argv,cwd=c,env=env,capture_output=True,text=True)\n    n=len(log.read_text().split())\n    print(name,\"started\",n,\"git processes for\",N,\"recorded worktrees and branches (exit\",p.returncode,\")\")\n    if p.returncode or n>40:bad.append(name)\nsys.exit(1 if bad else 0)\n"
     ]
   },
   "clauses": [
     {
-      "clause": "kbmon.py --once --panel cleanup reports its state in under 10 seconds with this clone's leftover worktrees and branches",
-      "check": 0
-    },
-    {
-      "clause": "backlog.py tidy without --apply finishes in under 5 seconds on the same clone",
+      "clause": "backlog.py tidy without --apply and kbmon.py --once --panel cleanup each read the state of 30 recorded leftover worktrees and branches with at most 40 git processes, a fixed number however many leftovers there are, so the cleanup panel answers inside its 10-second limit",
       "check": 0
     }
   ],
@@ -30,7 +26,9 @@
     "_tools/bl_clean.py",
     "_tools/mon_clean.py",
     "_tools/bl_selfcheck.py",
-    "kb/_self/monitoring.md"
+    "kb/_self/monitoring.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ],
   "relates_to": [
     "ST-hgicbqm3",

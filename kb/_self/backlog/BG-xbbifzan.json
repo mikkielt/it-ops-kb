@@ -3,7 +3,7 @@
   "kind": "bug",
   "title": "The applies_to range of mods.md ends at 2026-10-17 and 2026-10-18, while the create page it now cites is dated 2026-10-20 and was read 2026-10-24",
   "status": "draft",
-  "sprint": "SP-v4fvjr2g",
+  "sprint": "SP-sgfucsn6",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
@@ -16,8 +16,27 @@
     ]
   },
   "repro_reason": "the defect is a front matter line of a kb article; the repro reads the line",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys\nt=open(\"kb/public/claude/mods.md\",encoding=\"utf-8\").read()\nline=re.search(r\"^applies_to:.*$\",t,re.M).group(0)\nok=\"2026-10-20\" in line and \"2026-10-24\" in line and \"2026-10-08 to 2026-10-17\" not in line\nprint(\"applies_to:\",line[:220],\"| names the create page's dateModified 2026-10-20 and read date 2026-10-24:\",ok)\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "The applies_to front matter of kb/public/claude/mods.md gives the dateModified range and the read date of every page the article cites, the create page included",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/public/claude/mods.md"
+  ],
+  "depends_on": [
+    "BG-yjntpldp",
+    "ST-qmnfhs7o"
   ],
   "links": [
     "parked: SP-f2o3aqm2 review"

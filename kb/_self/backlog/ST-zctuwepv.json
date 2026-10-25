@@ -3,10 +3,10 @@
   "kind": "story",
   "title": "backlog.py new bug prints the repro's last output lines, so the filer sees the failure is the defect it names",
   "status": "draft",
-  "sprint": "SP-v4fvjr2g",
+  "sprint": "SP-sgfucsn6",
   "priority": "P2",
   "rank": 0,
-  "goal": "backlog.py new bug runs the repro once (it already must fail now) and prints its last output lines beside the new id, so a worker sees a repro that fails for another reason before it hands back (SP-s2svf5a6 close: BG-y5r5a3ht's repro copied only _tools, failed on kbcommon listdir(KB_DIR) instead of the missing kb/_self it named, and was dropped once ST-pdtcxbap fixed the real defect)",
+  "goal": "backlog.py new bug runs the repro once, as it already must fail now, and prints its last output lines beside the new id, so a filer sees a repro that fails for another reason than the defect it names",
   "checks": [
     {
       "run": [
@@ -16,9 +16,20 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "backlog.py new bug runs the repro once, as it already must fail now",
+      "check": 0
+    },
+    {
+      "clause": "prints its last output lines beside the new id, so a filer sees a repro that fails for another reason than the defect it names",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/bl_items.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-s2svf5a6 close"

@@ -15,6 +15,16 @@
       "import subprocess as s,sys,tempfile,time,pathlib as P,shutil\nd=tempfile.mkdtemp(); rep=P.Path(d)/\"report\"; rep.write_text(\"\")\np=s.Popen([sys.executable,\"-X\",\"claude\",\"-c\",\"import time;time.sleep(30)\"])\ntime.sleep(1)\nw=s.run([sys.executable,\"_tools/backlog.py\",\"runner\",\"watch\",\"--pid\",str(p.pid),\"--report\",str(rep),\"--stale\",\"0.5\"],capture_output=True,text=True,timeout=30)\ntime.sleep(0.5); alive=p.poll() is None\np.kill(); p.wait(); shutil.rmtree(d)\nprint(\"rc\",w.returncode,\"alive\",alive,w.stdout.strip(),w.stderr.strip())\nsys.exit(0 if w.returncode==2 and alive else 1)\n"
     ]
   },
+  "clauses": [
+    {
+      "clause": "runner watch refuses with exit 2 a process whose only claude word is the value of an interpreter option",
+      "check": 0
+    },
+    {
+      "clause": "signals nothing",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/bl_procs.py",
     "kb/_self/backlog.md",

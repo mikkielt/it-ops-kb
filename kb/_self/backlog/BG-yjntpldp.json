@@ -3,7 +3,7 @@
   "kind": "bug",
   "title": "mods.md says the mock clock moves when the test calls settle(), while the test page says settle() runs due timers without moving the time",
   "status": "draft",
-  "sprint": "SP-v4fvjr2g",
+  "sprint": "SP-sgfucsn6",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
@@ -16,10 +16,33 @@
     ]
   },
   "repro_reason": "the defect is a sentence of a kb article that disagrees with its cited page; the repro reads the sentence",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys\nt=open(\"kb/public/claude/mods.md\",encoding=\"utf-8\").read()\ni=t.index(\"mock.clock(on)\");s=t[i:i+900]\nm=re.search(r\"moves only(.*?)(?:so a test|;)\",s,re.S)\nmovers=m.group(1) if m else s[s.index(\"moves only\"):][:200]\nlisted_settle=\"settle\" in movers\nsettle_says=bool(re.search(r\"settle\\(\\)`?[^;]{0,200}(already due|without moving)\",s))\nok=\"clock.advance\" in s and \"clock.set\" in s and not listed_settle and settle_says\nprint(\"settle listed among the movers:\",listed_settle,\"| settle described as running due timers without moving the time:\",settle_says)\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/public/claude/mods.md says the mock clock moves only on clock.advance(ms) and clock.set(ms)",
+      "check": 0
+    },
+    {
+      "clause": "that clock.settle() runs the timers already due without moving the time (S-kppz7qns)",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/public/claude/mods.md",
     "kb/public/_anchors.csv",
     "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "depends_on": [
+    "ST-qmnfhs7o",
+    "BG-2yqkripi"
   ],
   "links": [
     "parked: SP-f2o3aqm2 review"

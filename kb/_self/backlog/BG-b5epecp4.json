@@ -3,7 +3,7 @@
   "kind": "bug",
   "title": "backlog.py --root DIR with a DIR that is no git clone leaves run states in the coord store of the tool's own clone, the host's real store",
   "status": "draft",
-  "sprint": "SP-r37ubrt4",
+  "sprint": "SP-42b2cjm3",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -15,10 +15,34 @@
       "import sys,os,tempfile,shutil,pathlib as P\nT=os.path.abspath(\"_tools\"); sys.path.insert(0,T)\nd=tempfile.mkdtemp()\nstub=P.Path(d)/\"stub.py\"\nstub.write_text(\"import sys,json\\nsys.path.insert(0,%r)\\nimport coord\\nprint(json.dumps({'store':coord.default_store()}))\\n\"%T)\nos.environ.pop(\"KB_COORD_STORE\",None)\nimport bl_base, bl_clean\nbl_base.OUTPUT_ROOT[0]=P.Path(d)\nbl_clean.COORD=stub\ncode,body,err=bl_clean.run_coord()\nstore=(body or {}).get(\"store\")\ninside=bool(store) and os.path.realpath(store).startswith(os.path.realpath(d))\nshutil.rmtree(d)\nprint(\"code\",code,\"store\",store,\"inside root\",inside)\nsys.exit(0 if (code!=0 or inside) else 1)\n"
     ]
   },
+  "clauses": [
+    {
+      "clause": "a backlog.py --root DIR command never reads or writes a run state in the coord store of a clone other than the one at DIR: where DIR has no store it refuses or uses one under DIR",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/bl_clean.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "When a backlog.py --root DIR names a directory that is no clone and holds no coord store, what do the commands that read or write a run state do?",
+      "options": [
+        "They use a coord store under DIR",
+        "They refuse with exit 2, naming the missing store"
+      ],
+      "recommendation": "They use a coord store under DIR",
+      "reason": "read-only commands and fixtures keep working, and the host's own store is never touched",
+      "do": {
+        "They use a coord store under DIR": "BG-b5epecp4",
+        "They refuse with exit 2, naming the missing store": "BG-b5epecp4"
+      },
+      "class": "agents-rule"
+    }
   ],
   "links": [
     "parked: SP-lhpvwh6l review"

@@ -3,7 +3,7 @@
   "kind": "bug",
   "title": "dispatch --detach reads the wait cursor right after the spawn, so the printed wait returns once on the worker's own working event while the worker still runs",
   "status": "draft",
-  "sprint": "SP-r37ubrt4",
+  "sprint": "SP-42b2cjm3",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -16,12 +16,21 @@
       "dispatch"
     ]
   },
+  "clauses": [
+    {
+      "clause": "the wait that dispatch --detach prints ends only at its timeout or when the worker process has ended, not on the worker's own working event",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/bl_dispatch.py",
     "skills/sprint/SKILL.md",
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     "kb/_self/coordination.md"
+  ],
+  "depends_on": [
+    "BG-vr3vxylj"
   ],
   "links": [
     "parked: SP-lhpvwh6l review"

@@ -3,7 +3,7 @@
   "kind": "story",
   "title": "A fresh sprint reviewer writes its gap list to a report file the orchestrator reads, not only to its session's last message",
   "status": "draft",
-  "sprint": "SP-v4fvjr2g",
+  "sprint": "SP-sgfucsn6",
   "priority": "P2",
   "rank": 0,
   "goal": "the kb-sprint skill's review step starts the read-only reviewer with a brief that names a report file in its scratch directory, and the reviewer writes its final gap list there, so the orchestrator reads the report even when the session's last message is a short follow-up (claude -p's result holds only the last turn)",
@@ -12,14 +12,25 @@
       "run": [
         "python3",
         "-c",
-        "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();i=t.find('## review');s=t[i:i+4000];sys.exit(0 if 'report file' in s or 'report.md' in s else 1)"
+        "import re,sys\nt=open(\".claude/skills/kb-sprint/SKILL.md\",encoding=\"utf-8\").read()\ni=t.index(\"## review SP\");j=t.find(\"\\n## \",i+5);s=t[i:j if j>0 else len(t)]\nbrief=bool(re.search(r\"report file[^.]{0,200}scratch|scratch[^.]{0,200}report file\",s))\nwrites=bool(re.search(r\"gap list[^.]{0,200}report file|report file[^.]{0,200}gap list\",s))\nprint(\"review step names a report file in the reviewer's scratch directory:\",brief,\"| the reviewer writes its gap list there:\",writes)\nsys.exit(0 if brief and writes else 1)\n"
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "the kb-sprint skill's review step starts the read-only reviewer with a brief that names a report file in its scratch directory",
+      "check": 0
+    },
+    {
+      "clause": "the reviewer writes its final gap list there, so the orchestrator reads the report even when the session's last message is a short follow-up (claude -p's result holds only the last turn)",
+      "check": 0
+    }
+  ],
   "touches": [
-    ".claude/skills/kb-sprint/SKILL.md",
     "skills/sprint/SKILL.md",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
   ],
   "links": [
     "parked: SP-3trnelzv close"

@@ -3,7 +3,7 @@
   "kind": "bug",
   "title": "QS12 in _answers.md says the EU AI Act applies from 2024-08-01, the date it entered into force",
   "status": "draft",
-  "sprint": "SP-v4fvjr2g",
+  "sprint": "SP-sgfucsn6",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -16,10 +16,28 @@
     ]
   },
   "repro_reason": "the defect is one sentence in a kb answer (applies from versus entered into force), so the repro reads that sentence",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open(\"kb/public/_answers.md\",encoding=\"utf-8\").read()\ni=t.index(\"## QS12.\");j=t.find(\"\\n## \",i+5);s=t[i:j if j>0 else len(t)]\nok=\"entered into force\" in s and \"2024-08-01\" in s and \"The Act applies from 2024-08-01\" not in s\nprint(\"QS12 says the Act entered into force on 2024-08-01 and not that it applies from then:\",ok)\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "QS12 in kb/public/_answers.md says the EU AI Act entered into force on 2024-08-01 with staggered dates of application, instead of saying it applies from that date",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/public/_answers.md",
     "kb/public/_anchors.csv",
     "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "depends_on": [
+    "ST-qmnfhs7o"
   ],
   "links": [
     "parked: SP-xznmaurz review"

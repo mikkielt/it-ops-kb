@@ -7,7 +7,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
-  "goal": "SP-aoiqmnc6 review G3 (BG-hngdvqyy): TOKENIZE_WORD clears only a bare tokenize, tokenizer or tokenizing, so a gate naming the module's own functions (tokenize.generate_tokens, tokenize.tokenize(f.readline), tokenize.TokenInfo) still matches token and classes secrets; it fails closed. A gate whose only secret word is a name of the tokenize module's API is classed by its other words, and a gate naming an API token, GITLAB_TOKEN or a credential file stays secrets.",
+  "goal": "A gate whose only secret word is a name of the tokenize module's API (tokenize.generate_tokens, tokenize.tokenize(f.readline), tokenize.TokenInfo) is classed by its other words, and a gate naming an API token, GITLAB_TOKEN or a credential file stays secrets",
   "repro": {
     "run": [
       "python3",
@@ -15,6 +15,33 @@
       "import sys;sys.path.insert(0,'_tools');import bl_authority as a\nit={'touches':['_tools/bl_check.py']}\nqs=['Use tokenize.generate_tokens to find comments?','Does tokenize.tokenize(f.readline) read bytes?']\nr=[a.class_reasons(it,dict(id='g1',question=q,options=['one','two']))[0] for q in qs]\nprint(r);sys.exit(0 if r==['design','design'] else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0,\"_tools\")\nimport bl_authority as a\ndef cl(q,t):return a.class_reasons({\"touches\":t},{\"id\":\"g1\",\"question\":q,\"options\":[\"one\",\"two\"]})[0]\nmod=[cl(q,[\"_tools/bl_check.py\"]) for q in (\"Use tokenize.generate_tokens to find comments?\",\"Does tokenize.tokenize(f.readline) read bytes?\",\"Keep tokenize.TokenInfo in the scan?\")]\nreal=[cl(q,[\"_tools/bl_check.py\"]) for q in (\"Rotate the API token of the service account?\",\"Where is the GITLAB_TOKEN kept?\",\"Store the credential file in _private?\")]\nprint(\"tokenize module gates:\",mod,\"| API token and credential gates:\",real)\nsys.exit(0 if \"secrets\" not in mod and all(r==\"secrets\" for r in real) else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "A gate whose only secret word is a name of the tokenize module's API (tokenize.generate_tokens, tokenize.tokenize(f.readline), tokenize.TokenInfo) is classed by its other words",
+      "check": 0
+    },
+    {
+      "clause": "a gate naming an API token, GITLAB_TOKEN or a credential file stays secrets",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-ohawboem"
+  ],
   "links": [
     "parked: SP-aoiqmnc6 review"
   ]

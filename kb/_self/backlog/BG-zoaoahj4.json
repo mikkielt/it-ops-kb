@@ -16,6 +16,15 @@
       "import os,shutil,subprocess as s,sys,tempfile,pathlib as P\nt1=P.Path(tempfile.mkdtemp());t2=P.Path(tempfile.mkdtemp())\nshutil.copytree(\"_tools\",t1/\"_tools\",ignore=shutil.ignore_patterns(\"__pycache__\",\"test_*\"))\nfor d in (t1,t2):s.run([\"git\",\"-C\",str(d),\"init\",\"-q\"],check=True)\nenv={k:v for k,v in os.environ.items() if k not in (\"PYTEST_CURRENT_TEST\",\"CLAUDE_PLUGIN_DATA\",\"CLAUDE_PLUGIN_ROOT\",\"CLAUDE_PROJECT_DIR\")}\ncode=\"import sys;sys.path.insert(0,%r);import bl_land;bl_land.ops_write(event='land.step',item='ST-ggggggg2',step='probe',exit=1,ms=5)\"%str(t1/\"_tools\")\np=s.run([sys.executable,\"-c\",code],cwd=t2,env=env,capture_output=True,text=True)\nrows=list((t1/\"_cache\").rglob(\"*.jsonl\"))\nprint(p.returncode,len(rows),\"spool row(s) written by a probe in another working directory\")\nsys.exit(1 if rows else 0)\n"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,shutil,subprocess as s,sys,tempfile,pathlib as P\nt1=P.Path(tempfile.mkdtemp());t2=P.Path(tempfile.mkdtemp());home=P.Path(tempfile.mkdtemp())\nshutil.copytree(\"_tools\",t1/\"_tools\",ignore=shutil.ignore_patterns(\"__pycache__\",\"test_*\"))\nfor d in (t1,t2):s.run([\"git\",\"-C\",str(d),\"init\",\"-q\"],check=True)\nbase={k:v for k,v in os.environ.items() if k not in (\"PYTEST_CURRENT_TEST\",\"CLAUDE_PLUGIN_DATA\",\"CLAUDE_PLUGIN_ROOT\",\"CLAUDE_PROJECT_DIR\")}\ncode=\"import sys;sys.path.insert(0,%r);import bl_land;bl_land.ops_write(event='land.step',item='ST-ggggggg2',step='probe',exit=1,ms=5)\"%str(t1/\"_tools\")\ns.run([sys.executable,\"-c\",code],cwd=t2,env=base,capture_output=True,text=True)\nstray=list((t1/\"_cache\").rglob(\"*.jsonl\"))\nown=dict(base,CLAUDE_PLUGIN_DATA=str(home),CLAUDE_PLUGIN_ROOT=str(t1))\ns.run([sys.executable,\"-c\",code],cwd=t2,env=own,capture_output=True,text=True)\nnamed=list(home.rglob(\"*.jsonl\"))\nprint(\"rows a probe from another directory left in the owning clone's spool:\",len(stray),\"| rows it wrote to a query-log home it named:\",len(named))\nsys.exit(0 if not stray and named else 1)\n"
+      ]
+    }
+  ],
   "clauses": [
     {
       "clause": "an ops row written by a probe whose working directory is not a checkout of the clone that owns the spool is not appended to that clone's spool, unless the caller names its own query-log home",
@@ -27,7 +36,13 @@
     "_tools/bl_land.py",
     "_tools/ql_capture.py",
     "_tools/ql_base.py",
-    "kb/_self/querylog.md"
+    "kb/_self/querylog.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/usage.md"
+  ],
+  "depends_on": [
+    "ST-m4mpjjiv"
   ],
   "relates_to": [
     "ST-6vyzk4oi",

@@ -3,7 +3,7 @@
   "kind": "story",
   "title": "The operator decides whether a content-only push runs the tuned lookup eval now that test_live_kb.py is gone",
   "status": "draft",
-  "sprint": "SP-v4fvjr2g",
+  "sprint": "SP-sgfucsn6",
   "priority": "P2",
   "rank": 0,
   "goal": "kb/_self/git.md's sync gate text says whether a content-only push runs the tuned lookup eval (rag.py eval on lookup_eval.csv): before ST-wfrfy3mp the suite's test_lookup_eval_passes_on_the_live_kb ran it on the content scope, now only the held-out and bench files run in the gate (kg_sync.heldout_checks) and land runs it for _tools/ landings; a gate records the operator's choice (add the eval to the gate, or accept the gap) and the text follows it",
@@ -16,9 +16,37 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kb/_self/git.md's sync gate text says whether a content-only push runs the tuned lookup eval (rag.py eval on lookup_eval.csv): before ST-wfrfy3mp the suite's test_lookup_eval_passes_on_the_live_kb ran it on the content scope, now only the held-out and bench files run in the gate (kg_sync.heldout_checks) and land runs it for _tools/ landings",
+      "check": 0
+    },
+    {
+      "clause": "a gate records the operator's choice (add the eval to the gate, or accept the gap) and the text follows it",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/_self/git.md",
     "_tools/kg_sync.py"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Does the sync gate run the tuned lookup eval (rag.py eval on lookup_eval.csv) for a content-only change?",
+      "options": [
+        "Yes: add the tuned lookup eval to the sync gate for a content-only change",
+        "No: accept the gap, the gate runs only the held-out and bench files for a content-only change, and git.md says so"
+      ],
+      "recommendation": "No: accept the gap, the gate runs only the held-out and bench files for a content-only change, and git.md says so",
+      "reason": "those files are the probe tuning has not seen, and the tuned eval would add its run time to every content gate",
+      "do": {
+        "Yes: add the tuned lookup eval to the sync gate for a content-only change": "ST-qwipu6df",
+        "No: accept the gap, the gate runs only the held-out and bench files for a content-only change, and git.md says so": "ST-qwipu6df"
+      },
+      "class": "push"
+    }
   ],
   "links": [
     "parked: SP-noqsd4hj review"
