@@ -2,7 +2,7 @@
   "id": "ST-yuf6gdr6",
   "kind": "story",
   "title": "gate add takes a recommendation that is an option's text followed by its reason, and a refusal lists the options",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-iowijan3",
   "sprint": "SP-f7kaebel",
   "priority": "P2",
@@ -85,6 +85,37 @@
   ],
   "notes": "From the 2026-10-24 telemetry and query-log analysis: transcripts of 10-17 to 10-24 hold 354 backlog.py gate add calls; 100 failed, 96 of them with 'gate add: --recommendation must be one of the --option values' (bl_items.py:994 needs the recommendation to equal an option's text exactly), one per worker session, each retried successfully (27% of calls; last 2026-10-24T07:10Z). The visible samples start the recommendation with the full option text and continue with a reason; the refusal does not list the options. Every worker that files a gate pays one failed call and one retry. Also wanted, not read by the planted check: gate add --help says the recommendation is one of the options. This removes the cause that a typed kb_backlog_write gate_add would only have moved. Run 2026-10-25 (unattended, SP-f7kaebel): sprint start gate approved by operator on their approval \"start them\"; item turned todo at start. Waits on ST-44md64ps (SP-vxdacfpl begin). Gate g1 (agents-rule) answered with its recommendation (pre-approved by the operator for the 2026-10-25 run).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "c683f1cb1a83ed1dc78d558a02a3c4176de8563b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,pathlib as P\nT=os.path.abspath(\"_tools/backlog.py\");r=P.Path(tempfile.mkdtemp())\ng=lambda *a:s.run([\"git\",\"-C\",str(r),*a],check=True,capture_output=True,text=True).stdout.strip()\ng(\"init\",\"-q\");(r/\"backlog.json\").write_text(json.dumps({\"item_dir\":\"items\",\"scratch_dir\":\"_cache/scratch\"}));(r/\"items\").mkdir()\ndef item(i,**k):\n d=dict(id=i,kind=\"story\",title=\"t\",status=\"todo\",priority=\"P3\",goal=\"g\",touches=[\"x.txt\"],checks=[{\"run\":[\"python3\",\"-c\",\"pass\"]}]);d.update(k)\n (r/\"items\"/(i+\".json\")).write_text(json.dumps(d,indent=2)+\"\\n\")\ndef commit():g(\"add\",\"-A\");g(\"-c\",\"user.name=x\",\"-c\",\"user.email=x@x\",\"commit\",\"-qm\",\"i\")\nenv=dict(os.environ,CLAUDE_CODE_SESSION_ID=\"chk\");env.pop(\"KB_BACKLOG_CONFIG\",None)\ndef run(*a):return s.run([sys.executable,T,\"--root\",str(r),*a],capture_output=True,text=True,env=env)\nitem(\"ST-aaaaaaaa\");commit()\ndef add(q,rec):return run(\"gate\",\"add\",\"ST-aaaaaaaa\",\"--question\",q,\"--option\",\"A one\",\"--option\",\"B two\",\"--recommendation\",rec,\"--kind\",\"provisional\")\na=add(\"Q1\",\"A one, since C\");b=add(\"Q2\",\"Z nothing\")\ngs=json.loads((r/\"items\"/\"ST-aaaaaaaa.json\").read_text()).get(\"gates\",[])\nprint(a.returncode,b.returncode,(b.stdout+b.stderr)[-200:],[x.get(\"recommendation\") for x in gs])\nok=a.returncode==0 and gs and gs[0].get(\"recommendation\")==\"A one\"\nsys.exit(0 if ok and b.returncode==2 and \"A one\" in b.stdout+b.stderr and \"B two\" in b.stdout+b.stderr else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "75ed267d85289c08"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport json,os,subprocess as s,sys,tempfile,pathlib as P\nT=os.path.abspath(\"_tools/backlog.py\");r=P.Path(tempfile.mkdtemp())\ng=lambda *a:s.run([\"git\",\"-C\",str(r),*a],check=True,capture_output=True,text=True).stdout.strip()\ng(\"init\",\"-q\");(r/\"backlog.json\").write_text(json.dumps({\"item_dir\":\"items\",\"scratch_dir\":\"_cache/scratch\"}));(r/\"items\").mkdir()\ndef item(i,**k):\n d=dict(id=i,kind=\"story\",title=\"t\",status=\"todo\",priority=\"P3\",goal=\"g\",touches=[\"x.txt\"],checks=[{\"run\":[\"python3\",\"-c\",\"pass\"]}]);d.update(k)\n (r/\"items\"/(i+\".json\")).write_text(json.dumps(d,indent=2)+\"\\n\")\ndef commit():g(\"add\",\"-A\");g(\"-c\",\"user.name=x\",\"-c\",\"user.email=x@x\",\"commit\",\"-qm\",\"i\")\nenv=dict(os.environ,CLAUDE_CODE_SESSION_ID=\"chk\");env.pop(\"KB_BACKLOG_CONFIG\",None)\ndef run(*a):return s.run([sys.executable,T,\"--root\",str(r),*a],capture_output=True,text=True,env=env,timeout=120)\n\nitem(\"ST-aaaaaaaa\");commit()\na=run(\"gate\",\"add\",\"ST-aaaaaaaa\",\"--question\",\"Q1\",\"--option\",\"A\",\"--option\",\"A one\",\"--option\",\"B two\",\"--recommendation\",\"A one, since C\",\"--kind\",\"provisional\")\ngs=json.loads((r/\"items\"/\"ST-aaaaaaaa.json\").read_text()).get(\"gates\",[])\ntxt=json.dumps(gs[0]) if gs else \"\"\nprint(a.returncode,(a.stdout+a.stderr)[-200:],txt[-200:])\nsys.exit(0 if a.returncode==0 and gs and gs[0].get(\"recommendation\")==\"A one\" and \"since C\" in txt else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "c3c5c2a263bb30ec"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport subprocess as s,sys\np=s.run([sys.executable,\"_tools/backlog.py\",\"gate\",\"add\",\"--help\"],capture_output=True,text=True)\nt=\" \".join(p.stdout.split())\nprint(p.returncode,t[-300:])\nsys.exit(0 if p.returncode==0 and \"reason\" in t.lower() else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "6e65c0f5497d85c2"
+      }
+    ]
+  }
 }
