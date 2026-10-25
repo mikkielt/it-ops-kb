@@ -507,9 +507,12 @@ def main(argv=None):
         iid = e.args[0]
         old = bl_cost.history_items(bl.root, [iid]).get(iid) if isinstance(iid, str) else None
         if old is not None and a.cmd == "show" and getattr(a, "id", None) == iid:
-            print(withhold(f"{iid}: no item file (deleted, as a closed sprint's items are); its last version in git "
-                           "history:"))
-            print(withhold(canonical(old)), end="")
+            plain = a.json or a.field  # JSON only: the header line would break a pipe into a JSON reader
+            if not plain:
+                print(withhold(f"{iid}: no item file (deleted, as a closed sprint's items are); its last version in "
+                               "git history:"))
+            keep = {k: old[k] for k in old if k in a.field} if a.field else old
+            print(withhold(canonical(keep)), end="")
             return 0
         print(withhold(f"no item {iid}: its file was deleted (a closed sprint's item); `backlog.py show {iid}` prints "
                        "its last version" if old is not None else
