@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "The backlog.py usage block shows set taking several ids and which options a batch refuses, as set --help does",
   "status": "draft",
+  "sprint": "SP-lhpvwh6l",
   "priority": "P3",
   "rank": 0,
   "goal": "the module usage block of _tools/backlog.py shows backlog.py set ID [ID...] and says the per-item options are refused with several ids, so kbtools.py's entry for backlog.py set tells the same",

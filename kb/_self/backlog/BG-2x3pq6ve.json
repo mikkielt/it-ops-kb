@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "backlog.py --root DIR writes a run state to the coord store of the cwd's clone, so a fixture check reaches the host's real store",
   "status": "draft",
+  "sprint": "SP-lhpvwh6l",
   "priority": "P3",
   "rank": 0,
   "severity": "S2",

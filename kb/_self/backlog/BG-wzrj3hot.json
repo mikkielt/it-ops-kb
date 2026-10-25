@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "runner watch accepts a process whose command line only names a file called CLAUDE.md, so the claude guard admits a pid that is no claude session",
   "status": "draft",
+  "sprint": "SP-lhpvwh6l",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

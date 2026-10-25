@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "dispatch --detach and begin print a coord wait command with --since 0, which returns at once on the item's earlier claimed and working events",
   "status": "draft",
+  "sprint": "SP-lhpvwh6l",
   "priority": "P3",
   "rank": 0,
   "severity": "S2",
