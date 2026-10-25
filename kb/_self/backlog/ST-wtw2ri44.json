@@ -42,6 +42,25 @@
   "relates_to": [
     "ST-jtui2erv"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "With --lines and --propose, which facts of those lines get a proposal?",
+      "options": [
+        "Only those lines' facts that hold no located anchor, as --propose alone does",
+        "Every fact on those lines, located or not"
+      ],
+      "recommendation": "Only those lines' facts that hold no located anchor, as --propose alone does",
+      "do": {
+        "Only those lines' facts that hold no located anchor, as --propose alone does": "ST-wtw2ri44",
+        "Every fact on those lines, located or not": "ST-wtw2ri44"
+      },
+      "class": "design",
+      "answer": "Only those lines' facts that hold no located anchor, as --propose alone does",
+      "by": "agent"
+    }
+  ],
   "links": [
     "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],
