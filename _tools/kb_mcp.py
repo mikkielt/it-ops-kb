@@ -123,7 +123,7 @@ from pathlib import Path
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, TOOLS)
-import rag, kbcommon, kbfacts, kbpublic  # noqa: E402
+import rag, kbcommon, kbfacts, kbpublic, mon_base  # noqa: E402
 
 NAME, VERSION = "kb", "1.7.0"
 MODERN = "2026-07-28"
@@ -1163,38 +1163,51 @@ COORD_HANDLERS = {"coord_claim": coord_claim, "coord_renew": coord_renew, "coord
 
 KBMON = Path(TOOLS, "kbmon.py")
 MONITOR_TOPICS = ["sessions", "cost", "querylog", "coord", "sprints", "load", "all"]
+MONITOR_PANELS = list(mon_base.PANELS)
 MONITOR_TIMEOUT_S = 10  # kbmon.py --timeout: the seconds each panel may take
 MONITOR_RUN_S = 6 * MONITOR_TIMEOUT_S  # the whole run: the panels of one topic, then the answer
 MONITOR_TOOL_LIST = [
     {"name": "kb_monitor_status", "title": "Monitor status",
      "description": "Status of this clone's work in plain words (kbmon.py --status; not kb facts, not live device data): "
                     "running sessions, today's cost, the query log, coord claims, sprints and the host's load, at most 25 "
-                    "lines. Reads local files and the coord store; no model call. Use for a status question before "
+                    "lines. With panel NAME it returns that panel's JSON instead, as kbmon.py --json --panel NAME does. "
+                    "Reads local files and the coord store; no model call. Use for a status question before "
                     "reading any state by hand.",
      "inputSchema": {"type": "object", "properties": {
          "topic": {"type": "string", "enum": MONITOR_TOPICS, "default": "all",
-                   "description": "what to report: sessions, cost, querylog, coord, sprints, load or all"}},
+                   "description": "what to report: sessions, cost, querylog, coord, sprints, load or all"},
+         "panel": {"type": "string", "enum": MONITOR_PANELS,
+                   "description": "one panel's snapshot as JSON (kbmon.py --json --panel), in place of the status lines; "
+                                  "topic is then ignored"}},
          "additionalProperties": False},
      "annotations": {"title": "Monitor status", **READ_ONLY}},
 ]
 
 
 def kb_monitor_status(args):
-    extra = sorted(set(args) - {"topic"})
+    extra = sorted(set(args) - {"topic", "panel"})
     if extra:
         raise ToolError(f"unknown argument(s): {', '.join(extra)}")
     topic = args.get("topic", "all")
     if topic not in MONITOR_TOPICS:
         raise ToolError(f"topic must be one of {', '.join(MONITOR_TOPICS)}")
+    panel = args.get("panel")
+    if panel is not None and panel not in MONITOR_PANELS:
+        raise ToolError(f"panel must be one of {', '.join(MONITOR_PANELS)}")
+    argv = ["--json", "--panel", panel] if panel else ["--status", topic, "--json"]
     try:
-        p = subprocess.run([sys.executable, str(KBMON), "--status", topic, "--json", "--timeout", str(MONITOR_TIMEOUT_S)],
+        p = subprocess.run([sys.executable, str(KBMON), *argv, "--timeout", str(MONITOR_TIMEOUT_S)],
                            capture_output=True, text=True, encoding="utf-8", timeout=MONITOR_RUN_S, stdin=subprocess.DEVNULL)
     except (OSError, subprocess.SubprocessError) as e:
         raise ToolError(f"kbmon.py did not run: {e.__class__.__name__}")
-    if p.returncode != 0:
+    if p.returncode not in (0, 1 if panel else 0):  # a panel snapshot exits 1 while an alert is in it
         raise ToolError(p.stderr.strip()[-500:] or f"kbmon.py exited {p.returncode}")
     try:
-        lines = json.loads(p.stdout)["lines"]
+        doc = json.loads(p.stdout)
+        if panel:
+            doc["panels"][panel]
+            return p.stdout.strip()
+        lines = doc["lines"]
     except (ValueError, KeyError, TypeError):
         raise ToolError("kbmon.py printed no status object")
     return "\n".join(str(line) for line in lines)
