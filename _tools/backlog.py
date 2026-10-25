@@ -222,6 +222,22 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           worker rules and the rules of the docs the item's touches map to
                                           (`rag.py pack --root _self --item ID`, or a line saying it is absent);
                                           writes nothing, starts nothing, exit 0
+  backlog.py begin ID... --by NAME [--trailer 'KEY: VALUE']... [--dry-run] [--known TEST=BUG]... [--known-suite TEXT=BUG]...
+                 [--probe TEXT] [--max-budget-usd USD] [--model NAME] [--max-turns N]
+                                          start up to four ready items in one call, the chain of the sprint skill's run
+                                          steps 2 and 3: git fetch of the integration remote, then for each id in order
+                                          an item that arrived from the upstream main, has a local work/ID branch,
+                                          is not ready to claim, is claimed by another on the integration main, or whose
+                                          touches meet an earlier item of the call or a held claim (`held --overlaps`,
+                                          on this checkout and the integration main) is refused with the reason named
+                                          and the others go on; then `claim --commit` with each --trailer, one run of
+                                          the `land_push` command for the claim commits, and `dispatch --detach` of
+                                          each claimed item, printing its id, pid and dispatch.log path once its work
+                                          branch exists. More than four ids are refused, naming the limit. --dry-run
+                                          prints one line for each item, the claim and dispatch it would make or its
+                                          refusal, and fetches, writes and starts nothing (held claims are read from the
+                                          integration main as last fetched). Exit 1 when any item was refused or a
+                                          claim, the push or a dispatch failed, 2 for bad arguments
   backlog.py dispatch ID [--dry-run] [--detach] [--model NAME] [--max-turns N] [--known TEST=BUG]...
                                           [--known-suite TEXT=BUG]... [--probe TEXT]
                                           start the item's headless worker: make its worktree
@@ -452,7 +468,7 @@ bl_cli.register("config", cmd_config, help="print the project settings with each
 # The usage order of the subcommands: each module registers its own when imported, and this puts them in order.
 USAGE = ("new", "similar", "check", "fmt", "selectors", "list", "tree", "find", "show", "next", "held", "claim",
          "release", "answer", "set", "move", "reopen", "gate", "fire", "done", "researched", "land", "merge", "drop", "start", "precheck",
-         "host-check", "close", "tidy", "horizon", "goal", "brief", "dispatch", "report", "stage-back", "referrers", "cost", "red-pipeline", "intake", "procs", "stalled", "ops",
+         "host-check", "close", "tidy", "horizon", "goal", "brief", "begin", "dispatch", "report", "stage-back", "referrers", "cost", "red-pipeline", "intake", "procs", "stalled", "ops",
          "runs", "landings", "own", "selfcheck", "upstream-report", "upstream-import", "config")
 bl_cli.order(USAGE)
 
@@ -503,7 +519,7 @@ def main(argv=None):
     try:
         if getattr(a, "opt_in", False) and not a.hook:
             raise Refused("--opt-in goes with --hook")
-        if a.cmd in COMMITS + ("land",):  # before the command writes anything
+        if a.cmd in COMMITS + ("land", "begin"):  # before the command writes anything
             if a.trailer and not getattr(a, "commit", True):
                 raise Refused("--trailer goes with --commit")
             why = next(filter(None, map(trailer_problem, a.trailer)), None)
