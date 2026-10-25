@@ -2,7 +2,7 @@
   "id": "ST-wx5kmyzc",
   "kind": "story",
   "title": "Review sprint: The kb MCP server serves the read commands sessions repeat",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-fkep6hjx",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,6 @@
       ]
     }
   ],
+  "notes": "Started 2026-10-25 with SP-fkep6hjx on the operator approval \"start them\" (unattended run).",
   "filed_in": "clone-0ea70e5c"
 }
