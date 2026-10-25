@@ -15,6 +15,15 @@
       "\nimport sys, json, types\nsys.path.insert(0,\"_tools\")\nimport kb_mcp\nsecret = \"gl\" + \"pat-\" + \"A1b2C3d4E5f6G7h8I9j0\"\ndoc = json.dumps({\"panels\": {\"kb\": {\"note\": secret}}})\nkb_mcp.subprocess.run = lambda *a, **k: types.SimpleNamespace(returncode=0, stdout=doc, stderr=\"\")\nout = kb_mcp.kb_monitor_status({\"panel\": \"kb\"})\nprint(\"secret survives:\", secret in out)\nsys.exit(1 if secret in out else 0)\n"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys, json, types\nsys.path.insert(0, \"_tools\")\nimport kb_mcp\nneedles = [\n    \"gh\" + \"p_\" + \"A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8\",\n    \"AK\" + \"IA\" + \"ABCDEFGHIJKLMNOP\",\n    \"gl\" + \"pat-\" + \"A1b2C3d4E5f6G7h8I9j0\",\n    \"xo\" + \"xb-\" + \"1234567890-abcdefghij\",\n    \"sk-\" + \"ant-\" + \"A1b2C3d4E5f6G7h8I9j0K1\",\n    \"ey\" + \"J\" + \"abcdefghij1234\" + \".ey\" + \"J\" + \"abcdefghij1234\" + \".abcdefghij1234\",\n    \"Zq9xW7vT5rE3\",\n]\ntext = \" \".join(needles[:-1]) + \" password = \" + chr(34) + needles[-1] + chr(34)\ndoc = json.dumps({\"panels\": {\"kb\": {\"note\": text}}})\nkb_mcp.subprocess.run = lambda *a, **k: types.SimpleNamespace(returncode=0, stdout=doc, stderr=\"\")\nout = kb_mcp.kb_monitor_status({\"panel\": \"kb\"})\nleft = [s for s in needles if s in out]\nprint(\"secrets surviving:\", len(left), \"of\", len(needles))\nsys.exit(1 if left else 0)\n"
+      ]
+    }
+  ],
   "touches": [
     "_tools/kb_mcp.py",
     "kb/_self/plugin.md",
