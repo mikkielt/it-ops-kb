@@ -495,15 +495,36 @@ def command_line(pid):
     if os.name == "nt":
         for r in windows_rows() or []:
             if r.get("ProcessId") == pid and isinstance(r.get("CommandLine"), str):
-                return r["CommandLine"].split()
+                return [w.strip('"') for w in re.findall(r'"[^"]*"|\S+', r["CommandLine"])]
         return None
     text = run_quiet(["ps", "-o", "command=", "-p", str(pid)])
     return text.split() if text and text.strip() else None
 
 
+INTERPRETER = re.compile(r"(python[\d.]*|pythonw|node|nodejs|bun|deno|ruby|perl|env|sh|bash|dash|zsh|ksh)(\.exe)?")
+CODE_OPTIONS = ("-c", "-e", "-m", "--eval")  # an interpreter option whose next word is code or a module, not a script
+
+
+def program(argv):
+    """The program ARGV runs: its first word, or, when that is an interpreter, the script word after it (the first word
+    that is no option and no NAME=value); None when the interpreter runs code or a module instead of a script."""
+    if not argv:
+        return None
+    if not INTERPRETER.fullmatch(command_name(argv[0]).lower()):
+        return argv[0]
+    for w in argv[1:]:
+        if w in CODE_OPTIONS:
+            return None
+        if not w.startswith("-") and "=" not in w:
+            return w
+    return None
+
+
 def names_claude(argv):
-    """True when a word of ARGV, taken as a path, is named `claude…` (the `claude` binary, or a script of that name)."""
-    return any(command_name(w).lower().startswith("claude") for w in argv)
+    """True when the program of ARGV (`program`), taken as a path, is named `claude` (the binary, or a script of that
+    name): a later argument such as `CLAUDE.md` never counts."""
+    prog = program(argv)
+    return prog is not None and command_name(prog).lower() in ("claude", "claude.exe")
 
 
 def started(pid):

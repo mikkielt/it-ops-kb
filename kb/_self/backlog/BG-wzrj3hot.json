@@ -29,6 +29,24 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does names_claude decide a pid is a claude session: which word and which names?",
+      "options": [
+        "program word named claude or claude.exe, interpreters skipped",
+        "any word starting with claude (unchanged)"
+      ],
+      "recommendation": "program word named claude or claude.exe, interpreters skipped",
+      "reason": "first word of the command line, or the script word after sh, bash, node, python and the like; code options -c -e -m refuse",
+      "do": {
+        "program word named claude or claude.exe, interpreters skipped": "BG-wzrj3hot",
+        "any word starting with claude (unchanged)": "BG-wzrj3hot"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-f7kaebel review"
   ],
