@@ -2,7 +2,7 @@
   "id": "ST-cyq4pbbz",
   "kind": "story",
   "title": "Review sprint: Fewer retried commands: answer, set, gate add, factdiff, fetch, kbtools and a hung runner",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-f7kaebel",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,6 @@
       ]
     }
   ],
+  "notes": "Run 2026-10-25 (unattended, SP-f7kaebel): sprint start gate approved by operator; item turned todo at start.",
   "filed_in": "clone-0ea70e5c"
 }
