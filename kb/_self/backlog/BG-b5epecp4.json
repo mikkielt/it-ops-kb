@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "backlog.py --root DIR with a DIR that is no git clone leaves run states in the coord store of the tool's own clone, the host's real store",
   "status": "draft",
+  "sprint": "SP-r37ubrt4",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

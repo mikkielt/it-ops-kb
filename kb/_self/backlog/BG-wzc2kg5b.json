@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "dispatch --detach reads the wait cursor right after the spawn, so the printed wait returns once on the worker's own working event while the worker still runs",
   "status": "draft",
+  "sprint": "SP-r37ubrt4",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

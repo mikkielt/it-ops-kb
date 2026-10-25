@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "begin counts any earlier working event of the item as the new worker's, so after a re-dispatch the printed wait returns on the new worker's own working event",
   "status": "draft",
+  "sprint": "SP-r37ubrt4",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

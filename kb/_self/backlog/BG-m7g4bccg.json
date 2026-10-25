@@ -4,6 +4,7 @@
   "title": "A stage-back rerun after a kill in the middle of its copy-in stops at the dirty tracked file the dead run copied, so the worktree needs a hand reset",
   "status": "draft",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-r37ubrt4",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

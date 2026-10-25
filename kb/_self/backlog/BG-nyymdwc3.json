@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "coord.py wait --pid counts an exited but unreaped process as running, and has no guard against a reused pid",
   "status": "draft",
+  "sprint": "SP-r37ubrt4",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",

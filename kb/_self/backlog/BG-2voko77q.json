@@ -4,6 +4,7 @@
   "title": "A stage-back of an item at refused does not take the run state, so a land started during its copy-in is not refused",
   "status": "draft",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-r37ubrt4",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

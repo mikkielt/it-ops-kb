@@ -4,6 +4,7 @@
   "title": "dispatch --resume starts the worker session while a land or stage-back holds the run key, and the worker's own moves are then refused",
   "status": "draft",
   "parent": "EP-nij36lt7",
+  "sprint": "SP-r37ubrt4",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

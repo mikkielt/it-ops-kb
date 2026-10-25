@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "backlog.py begin takes a story that next marks no worker, and would claim it and start a paid worker",
   "status": "draft",
+  "sprint": "SP-r37ubrt4",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
