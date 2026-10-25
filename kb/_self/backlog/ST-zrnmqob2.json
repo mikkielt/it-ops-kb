@@ -65,7 +65,9 @@
       },
       "class": "design",
       "answer": "also referrers and check, and a refusal of these five printed on stderr",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
