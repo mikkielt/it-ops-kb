@@ -33,6 +33,42 @@
     "EP-5mp6pwnn",
     "EP-jqjlwiar"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does kbtools.py find a backlog.py subcommand for a which-tool need?",
+      "options": [
+        "Usage block text of the tool's docstring",
+        "Argparse help of the bl_cli registrations"
+      ],
+      "recommendation": "Usage block text of the tool's docstring",
+      "do": {
+        "Usage block text of the tool's docstring": "ST-6ckwz7zq",
+        "Argparse help of the bl_cli registrations": "ST-6ckwz7zq"
+      },
+      "class": "agents-rule",
+      "answer": "Usage block text of the tool's docstring",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Which stem rule makes the need word landing match the entry word landings?",
+      "options": [
+        "Cut the plural s of a word ending in ings before the usual suffix cut",
+        "Cut ing after any s or es cut for every word"
+      ],
+      "recommendation": "Cut the plural s of a word ending in ings before the usual suffix cut",
+      "do": {
+        "Cut the plural s of a word ending in ings before the usual suffix cut": "ST-6ckwz7zq",
+        "Cut ing after any s or es cut for every word": "ST-6ckwz7zq"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],
