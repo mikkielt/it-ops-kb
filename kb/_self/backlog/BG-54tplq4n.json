@@ -2,10 +2,11 @@
   "id": "BG-54tplq4n",
   "kind": "bug",
   "title": "kb_monitor_status with a panel returns the panel JSON without redact.redact",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-lhpvwh6l",
   "priority": "P3",
   "rank": 0,
-  "severity": "S3",
+  "severity": "S2",
   "goal": "kb_monitor_status with panel NAME passes the panel JSON through redact.redact like every other kb tool output, and the tool description no longer says at most 25 lines for it",
   "repro": {
     "run": [
@@ -20,10 +21,12 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md",
     "kb/_self/embedding.md",
-    "kb/_self/token-efficiency.md"
+    "kb/_self/token-efficiency.md",
+    "kb/_self/backlog.md"
   ],
   "links": [
     "parked: SP-fkep6hjx review"
   ],
+  "notes": "Plan 2026-10-25, added to SP-lhpvwh6l at the manager's ask (S2: the new MCP output path must redact like the others). Premise reproduced: the repro prints secret survives: True on today's base. The second check plants one fake secret of each shape kbcommon.SECRETS handles plus a key=value assignment, built at run time.",
   "filed_in": "clone-0ea70e5c"
 }
