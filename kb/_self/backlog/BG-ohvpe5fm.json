@@ -24,10 +24,28 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the printed wait start after the item's earlier events?",
+      "options": [
+        "cursor at print time; begin prints its line after the branch exists and holds up to 10 s for the working event",
+        "cursor at print time only, begin prints its line first"
+      ],
+      "recommendation": "cursor at print time; begin prints its line after the branch exists and holds up to 10 s for the working event",
+      "reason": "the worker posts working after it makes the branch, so a cursor taken sooner still returns on it",
+      "do": {
+        "cursor at print time; begin prints its line after the branch exists and holds up to 10 s for the working event": "BG-ohvpe5fm",
+        "cursor at print time only, begin prints its line first": "BG-ohvpe5fm"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-vxdacfpl review"
   ],
-  "notes": "Plan 2026-10-25: premise reproduced (the repro prints 0 1 False on today's base: begin returns, the printed wait returns at once with one event). Hint: coord_hook.newest_seq() (.claude/hooks/coord_hook.py) reads the newest sequence as last of coord.py wait --since 0 --timeout 0; bl_clean.run_coord does the same for bl_dispatch. Both begin and dispatch --detach print through bl_dispatch.detached_line; after the fix the wait must not return on the claimed and working events already posted when the line is printed.",
+  "notes": "Plan 2026-10-25: premise reproduced (the repro prints 0 1 False on today's base: begin returns, the printed wait returns at once with one event). Hint: coord_hook.newest_seq() (.claude/hooks/coord_hook.py) reads the newest sequence as last of coord.py wait --since 0 --timeout 0; bl_clean.run_coord does the same for bl_dispatch. Both begin and dispatch --detach print through bl_dispatch.detached_line; after the fix the wait must not return on the claimed and working events already posted when the line is printed. Gate g1 (class agents-rule) answered with its recommendation (option 1), pre-approved by the operator for the 2026-10-25 run; answered by the sprint runner for the operator.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
