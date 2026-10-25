@@ -1,0 +1,22 @@
+{
+  "id": "BG-2x3pq6ve",
+  "kind": "bug",
+  "title": "backlog.py --root DIR writes a run state to the coord store of the cwd's clone, so a fixture check reaches the host's real store",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "A backlog.py --root DIR command that moves a run state writes that state to the coord store of the clone at DIR, whatever the working directory, so a check that plants a fixture clone leaves the host's store untouched",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess as s,sys,tempfile,pathlib as P\nT=os.path.abspath(\"_tools/backlog.py\");C=os.path.abspath(\"_tools/coord.py\");d=P.Path(tempfile.mkdtemp(dir=\"/tmp\"))\nfor n in (\"clone\",\"other\"):\n    (d/n).mkdir();s.run([\"git\",\"-C\",str(d/n),\"init\",\"-q\"],check=True)\nr=d/\"clone\";(r/\"backlog.json\").write_text(json.dumps({\"item_dir\":\"items\"}));(r/\"items\").mkdir()\n(r/\"items\"/\"ST-aaaaaaaa.json\").write_text(json.dumps(dict(id=\"ST-aaaaaaaa\",kind=\"story\",title=\"t\",status=\"todo\",priority=\"P3\",goal=\"g\",touches=[\"x.txt\"],checks=[{\"run\":[\"python3\",\"-c\",\"pass\"]}]),indent=2)+\"\\n\")\nenv=dict(os.environ,CLAUDE_CODE_SESSION_ID=\"chk\");[env.pop(k,None) for k in (\"KB_COORD_STORE\",\"CLAUDE_PROJECT_DIR\")]\ns.run([sys.executable,T,\"--root\",str(r),\"claim\",\"ST-aaaaaaaa\",\"--by\",\"claude-chk\"],cwd=d/\"other\",env=env,capture_output=True,text=True)  # run from another clone, as a host session may\nhas=lambda n:\"run/ST-aaaaaaaa\" in s.run([sys.executable,C,\"--store\",str(d/n/\".git/kb-coord/coord.sqlite\"),\"list\",\"--prefix\",\"run/\"],capture_output=True,text=True).stdout\nprint(\"in the root clone store:\",has(\"clone\"),\"| in the cwd clone store:\",has(\"other\"))\nsys.exit(0 if has(\"clone\") and not has(\"other\") else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_clean.py",
+    "kb/_self/backlog.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
