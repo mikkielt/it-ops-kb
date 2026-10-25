@@ -66,7 +66,11 @@
         "Inside the rules part, whole outputs verbatim": "ST-a7vyewfu",
         "Separate brief parts, set trimmed to its # question lines": "ST-a7vyewfu"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Inside the rules part, whole outputs verbatim",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
