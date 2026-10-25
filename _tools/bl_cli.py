@@ -26,6 +26,23 @@ def register(name, handler, add_arguments=None, help=None, registry=None):
     registry[name] = (handler, add_arguments, help)
 
 
+def extend(name, wrap, add_arguments, registry=None):
+    """Add options to the registered subcommand `name`: `add_arguments(parser)` gives its parser the extra arguments
+    after its own, and `wrap(handler)` returns the handler that runs in its place (it calls `handler` for the
+    original behaviour). A command that is not registered is refused."""
+    registry = COMMANDS if registry is None else registry
+    if name not in registry:
+        raise ValueError(f"subcommand {name!r} is not registered")
+    handler, own, help = registry[name]
+
+    def both(p):
+        if own:
+            own(p)
+        add_arguments(p)
+
+    registry[name] = (wrap(handler), both, help)
+
+
 def order(names, registry=None):
     """Put the registry in the usage order `names` (backlog.py's USAGE), which must name each registered command once:
     the modules register at import, in import order, and the usage text keeps its own order."""

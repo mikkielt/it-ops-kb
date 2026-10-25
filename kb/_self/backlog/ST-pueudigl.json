@@ -44,10 +44,31 @@
   "depends_on": [
     "ST-4vu4qvd6"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does next --batch live, given cmd_next is in _tools/bl_view.py, outside this item's touches? Claims are read from the checkout, the limit is a fixed four, and none able to start exits 1 with a line, as next does for nothing ready.",
+      "options": [
+        "wrap-next",
+        "edit-bl-view"
+      ],
+      "recommendation": "wrap-next",
+      "do": {
+        "wrap-next": "ST-pueudigl",
+        "edit-bl-view": "ST-pueudigl"
+      },
+      "class": "agents-rule",
+      "answer": "wrap-next",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],
-  "notes": "SP-5gph7fh6 close: the orchestrator ran ST-o2tr2ry4, ST-q4qqiw2w and ST-jokdpvsi one after another because all three named kb/_self/monitoring.md, which shared_doc in _tools/bl_plan.py exempts; about three worker rounds where one would do. Sprint SP-vxdacfpl started 2026-10-25 (unattended run).",
+  "notes": "SP-5gph7fh6 close: the orchestrator ran ST-o2tr2ry4, ST-q4qqiw2w and ST-jokdpvsi one after another because all three named kb/_self/monitoring.md, which shared_doc in _tools/bl_plan.py exempts; about three worker rounds where one would do. Sprint SP-vxdacfpl started 2026-10-25 (unattended run). Gate g1 answered with its recommendation, wrap-next (pre-approved by the operator for the 2026-10-25 run).",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }

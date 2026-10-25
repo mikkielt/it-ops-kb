@@ -45,9 +45,11 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           for each external id, the knowledge state of each ask and ref of its
                                           `knowledge` and what it waits on; an item whose file was
                                           deleted (a closed sprint's) prints its last version from git history
-  backlog.py next [--sprint ID] [--any] [--all]   the ready item to work on first (--all: every ready item in
-                                          order; --any: items outside an active sprint too, for single-item work),
-                                          with the knowledge state of each of its asks and refs
+  backlog.py next [--sprint ID] [--any] [--all] [--batch]   the ready item to work on first (--all: every ready
+                                          item in order; --any: items outside an active sprint too, for
+                                          single-item work; --batch: up to four ready items whose touches meet
+                                          neither each other nor a claimed item's), with the knowledge state of
+                                          each of its asks and refs
   backlog.py held [--overlaps ID] [--ref REF]   the paths other sessions hold: one line per touches glob of each
                                           claimed (doing) item, with the item, its claimer and its sprint; --ref
                                           reads the item files as REF has them (origin/main after git fetch, where
@@ -441,6 +443,8 @@ import bl_stall  # noqa: F401 - registers stalled
 import bl_ops  # noqa: F401 - registers `ops`
 import bl_runs  # noqa: F401 - registers `runs`
 import bl_selfcheck  # noqa: F401 - registers `selfcheck`
+
+bl_cli.extend("next", bl_plan.next_batch, bl_plan.args_next_batch)  # `next --batch`: bl_plan holds the overlap rule
 
 # `config` reads the settings bl_base holds, which imports no bl_cli: the handler is bl_base's, registered here
 bl_cli.register("config", cmd_config, help="print the project settings with each value's source")
