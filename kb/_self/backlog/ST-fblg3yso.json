@@ -85,7 +85,11 @@
         "ids as extra positionals after the first id (set ID ID... --sprint SP), one commit with subject chore(backlog): set ID ID and KB-Work listing each id": "ST-fblg3yso",
         "a repeatable --id flag per item, one commit per id": "ST-fblg3yso"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "ids as extra positionals after the first id (set ID ID... --sprint SP), one commit with subject chore(backlog): set ID ID and KB-Work listing each id",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
