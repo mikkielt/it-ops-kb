@@ -2,7 +2,7 @@
   "id": "ST-dsq3vlw6",
   "kind": "story",
   "title": "Research sprint goal: The orchestrator reads, waits and starts workers with one call each",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vxdacfpl",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "Sprint SP-vxdacfpl started 2026-10-25 (unattended run). Waits on ST-2i5jnnn3 (SP-f7kaebel research story), which holds kb/public/**. No outside facts: every item of this sprint changes this repo's own tools (show, report, brief, coord wait, next --batch, begin); the goal names no question about outside products, and the outside behaviour they lean on (git revision spelling for a file at a ref, detached process groups, claude -p result output) is already in the kb with pack coverage good.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "04f048e01cc5f9b2e0e629fb524db4266bc6a03a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-dsq3vlw6"
+        ],
+        "exit": 0,
+        "sha256": "1b7d6c45f1bcc6ca"
+      }
+    ]
+  }
 }
