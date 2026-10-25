@@ -104,7 +104,11 @@
         "a line with the word gate and 'not ... recorded' in one sentence": "ST-ejmb5aqn",
         "any line with 'not recorded' or 'unrecorded'": "ST-ejmb5aqn"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "a line with the word gate and 'not ... recorded' in one sentence",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
