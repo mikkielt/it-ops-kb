@@ -65,7 +65,7 @@ asks and, unasked, for a source past its freshness lifetime):
   kb_backlog, kb_querylog, kb_docs  (the team's own server only, as kb_monitor_status) the read-only commands of backlog.py,
              querylog.py (digest, status, show) and selfdoc.py, check.py and rag.py eval (stale, section, map, check, eval) as
              `command` and `args`, answering the text the script prints through redact.redact (kb_docs ends it with
-             `(exit 1)` when the command found something, kb_backlog for held, referrers, find, check and report;
+             `(exit 1)` when the command found something, kb_backlog for any command that exits 1 with output;
              kb_backlog `usage [COMMAND [SUBCOMMAND]]` answers the command list or a command's argument list, any
              command's, and runs none); a
              command or option outside each tool's closed list (runs --reconcile among them) is a tool error
@@ -1311,7 +1311,6 @@ BACKLOG_VERB_LINES = {
     "config": "the project settings with each value's source",
 }
 BACKLOG_REFUSED_OPTIONS = {"runs": ["--reconcile"]}  # the one option of a listed command that writes (coord run keys)
-BACKLOG_FINDINGS_EXIT = {"held", "referrers", "find", "check", "report"}  # an exit 1 with output is a finding, not a failure
 BACKLOG_TOOL_LIST = [
     {"name": "kb_backlog", "title": "Read the backlog",
      "description": "The project's backlog, read-only (backlog.py; not kb facts, not live device data): the same text "
@@ -1320,8 +1319,9 @@ BACKLOG_TOOL_LIST = [
                     "similar TITLE; tree [ID]; config; landings; runs [SP|ID]; procs; check; report ID; usage [COMMAND "
                     "[SUBCOMMAND]] (no argument: every backlog.py command with a line each; with one: that command's "
                     "arguments, a refused one's too, and nothing runs). The text ends "
-                    "`(exit 1)` when held, referrers, find, check or report found something. Any other command, and "
-                    "runs --reconcile, is refused: run backlog.py for it.",
+                    "`(exit 1)` when the command exits 1 with output (a finding, a drift, nothing ready, an unreadable "
+                    "log); an exit 2 is a tool error. Any other command, and runs --reconcile, is refused: run "
+                    "backlog.py for it.",
      "inputSchema": {"type": "object", "properties": {
          "command": {"type": "string", "enum": BACKLOG_COMMANDS, "description": "the backlog.py command"},
          "args": {"type": "array", "items": {"type": "string"}, "description": "its id and options, e.g. ['ST-xxxxxxxx'] or ['--kind', 'sprint']"}},
@@ -1384,7 +1384,7 @@ def kb_backlog(args):
     for stream in (out, err):
         stream.seek(0)
     text, refusal = out.read().rstrip("\n"), err.read().strip()
-    if code == 1 and (text or refusal) and command in BACKLOG_FINDINGS_EXIT:  # a refusal (exit 1) is printed on stderr
+    if code == 1 and (text or refusal):  # an exit 1 is read whole as text; a refusal (exit 1) is printed on stderr
         return redact.redact(text or refusal) + "\n(exit 1)"
     if code:
         raise ToolError(redact.redact(refusal or text or f"backlog.py {command} exited {code}")[-2000:])
