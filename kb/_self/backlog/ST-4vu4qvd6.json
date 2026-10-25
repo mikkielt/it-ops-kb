@@ -2,7 +2,7 @@
   "id": "ST-4vu4qvd6",
   "kind": "story",
   "title": "A wait for workers ends when a watched worker process has ended, so a background wait costs the orchestrator no turn until something moved",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-sqt62vj2",
   "sprint": "SP-vxdacfpl",
   "priority": "P2",
@@ -97,6 +97,46 @@
   ],
   "notes": "From the 2026-10-24 telemetry and query-log analysis: coord.py wait ran 741 times in 19 runner and orchestrator sessions; 724 turns had it as their only call (5.4% of turns, 208M cache-read tokens) and about 550 of the 727 single-call waits returned under 200 characters, the reply {events: [], timed_out: true}. Only 18 of the 746 waits ran in the background: the sprint skill sets --timeout 540 with a Bash timeout of 600000, so the session wakes every nine minutes, where a background command lives up to 7200000 ms and re-invokes the session when it exits. Hand-written pid waits beside it: 838 'while kill -0 PID' or 'until grep -q' loops, 342 turns that were nothing else (49M cache-read tokens), 810 sleep calls, because dispatch --detach prints a pid and tells the reader to wait for it (bl_dispatch.py:988). Saves about 900 turns, about 45 USD a week (estimate). coord wait --item already returns on a matching event and --timeout takes any length; what is missing is the dead worker (no event) and the skill's text. Also wanted, not read by the planted check: the sprint skill's waiting paragraph runs the wait as a background command (run_in_background) and names no pid loop, and dispatch --detach's message no longer says to wait for the pid. The consumer side of EP-nij36lt7, whose goal names one wait instead of polling pids. Lane: parked sprint-orchestration class, EP-gzr4mmkm. Sprint SP-vxdacfpl started 2026-10-25 (unattended run). Gate g1 answered with its recommendation, ended-key (pre-approved by the operator for the 2026-10-25 run).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "cbc5b275ba53fe057ebd9e2ec0940ea2638d9e14",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,subprocess as s,sys,tempfile,time\nd=tempfile.mkdtemp();st=os.path.join(d,\"c.sqlite\")\ndef w(pid,t):return s.run([sys.executable,\"_tools/coord.py\",\"--store\",st,\"wait\",\"--since\",\"0\",\"--timeout\",str(t),\"--pid\",str(pid)],capture_output=True,text=True,timeout=60)\ngone=int(s.run([\"sh\",\"-c\",\"sleep 3 >/dev/null 2>&1 & echo $!\"],capture_output=True,text=True).stdout)\nt=time.time();a=w(gone,40);dt=time.time()-t;b=w(os.getpid(),2)\nprint(a.returncode,round(dt,1),a.stdout[-200:],a.stderr[-150:],b.returncode,b.stdout[-120:])\nsys.exit(0 if a.returncode==0 and dt<30 and str(gone) in a.stdout and b.returncode==0 and \"true\" in b.stdout.lower() else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "f7995826c62e682f"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport os,re,subprocess as s,sys,tempfile,time\nd=tempfile.mkdtemp();st=os.path.join(d,\"c.sqlite\")\nlive=int(s.run([\"sh\",\"-c\",\"sleep 90 >/dev/null 2>&1 & echo $!\"],capture_output=True,text=True).stdout)\ngone=int(s.run([\"sh\",\"-c\",\"sleep 3 >/dev/null 2>&1 & echo $!\"],capture_output=True,text=True).stdout)\nt=time.time()\np=s.run([sys.executable,\"_tools/coord.py\",\"--store\",st,\"wait\",\"--since\",\"0\",\"--timeout\",\"40\",\"--kind\",\"progress\",\"--item\",\"ST-aaaaaaaa\",\"--pid\",str(live),\"--pid\",str(gone)],capture_output=True,text=True,timeout=60)\ndt=time.time()-t\ntry:os.kill(live,15)\nexcept OSError:pass\nhas=lambda n:re.search(r\"(?<![\\d.])%d(?![\\d.])\"%n,p.stdout) is not None\nprint(p.returncode,round(dt,1),p.stdout[-200:],p.stderr[-150:])\nsys.exit(0 if p.returncode==0 and dt<30 and has(gone) and not has(live) else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "30f691c9efa97bc5"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport json,os,shutil,subprocess as s,sys,tempfile,pathlib as P\nT=os.path.abspath(\"_tools/backlog.py\");d=P.Path(tempfile.mkdtemp());rem=d/\"remote.git\"\ns.run([\"git\",\"init\",\"-q\",\"--bare\",\"-b\",\"main\",str(rem)],check=True);r=d/\"clone\"\ns.run([\"git\",\"clone\",\"-q\",str(rem),str(r)],check=True,capture_output=True)\ng=lambda *a:s.run([\"git\",\"-C\",str(r),*a],check=True,capture_output=True,text=True).stdout.strip()\n(r/\"backlog.json\").write_text(json.dumps({\"item_dir\":\"items\",\"scratch_dir\":\"_cache/scratch\",\"worktree_dir\":\"wt\",\"land_push\":[\"git\",\"push\",\"origin\",\"HEAD:main\"]}))\n(r/\"items\").mkdir();(r/\".gitignore\").write_text(\"_cache/\\nwt/\\n\")\ndef item(i,**k):\n x=dict(id=i,kind=\"story\",title=\"t\",status=\"todo\",priority=\"P3\",goal=\"g\",touches=[\"x.txt\"],checks=[{\"run\":[\"python3\",\"-c\",\"pass\"]}]);x.update(k)\n (r/\"items\"/(i+\".json\")).write_text(json.dumps(x,indent=2)+\"\\n\")\ndef commit():g(\"add\",\"-A\");g(\"-c\",\"user.name=x\",\"-c\",\"user.email=x@x\",\"commit\",\"-qm\",\"i\")\n(r/\"items\"/\"SP-cccccccc.json\").write_text(json.dumps({\"id\":\"SP-cccccccc\",\"kind\":\"sprint\",\"title\":\"s\",\"status\":\"active\",\"goal\":\"g\"}))\nbind=d/\"bin\";bind.mkdir()\ndef fake_claude(result):\n (bind/\"claude\").write_text(\"#!/bin/sh\\ncat >/dev/null\\necho '\"+json.dumps({\"subtype\":\"success\",\"num_turns\":3,\"total_cost_usd\":0.25,\"session_id\":\"s1\",\"result\":result}).replace(\"'\",\"\")+\"'\\n\");os.chmod(bind/\"claude\",0o755)\nenv=dict(os.environ,CLAUDE_CODE_SESSION_ID=\"chk\",PATH=str(bind)+os.pathsep+os.environ[\"PATH\"],GIT_AUTHOR_NAME=\"x\",GIT_AUTHOR_EMAIL=\"x@x\",GIT_COMMITTER_NAME=\"x\",GIT_COMMITTER_EMAIL=\"x@x\");env.pop(\"KB_BACKLOG_CONFIG\",None)\ndef run(*a):return s.run([sys.executable,T,\"--root\",str(r),*a],capture_output=True,text=True,env=env,timeout=120)\ndef publish():commit();g(\"push\",\"-q\",\"origin\",\"HEAD:main\");g(\"fetch\",\"-q\",\"origin\")\n\nimport re\nitem(\"ST-aaaaaaaa\",sprint=\"SP-cccccccc\");(r/\"x.txt\").write_text(\"x\");publish()\nfake_claude(\"done\")\nc=run(\"claim\",\"ST-aaaaaaaa\",\"--by\",\"claude-chk\",\"--commit\");g(\"push\",\"-q\",\"origin\",\"HEAD:main\");g(\"fetch\",\"-q\",\"origin\")\ndd=run(\"dispatch\",\"ST-aaaaaaaa\",\"--detach\");o=dd.stdout\nm=re.search(r\"pid (\\d+)\",o)\nprint(c.returncode,dd.returncode,o[-400:],dd.stderr[-200:])\nshutil.rmtree(d,ignore_errors=True)\nsys.exit(0 if dd.returncode==0 and m and \"wait for the pid\" not in o and re.search(r\"coord\\.py wait[^\\n]*--pid \"+m.group(1),o) else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "b7091a5450919ceb"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport sys\nt=open(\"skills/sprint/SKILL.md\",encoding=\"utf-8\").read()\ni=t.find(\"**Waiting and the run states.**\");j=t.find(\"4. When the wait shows\",i)\np=t[i:j]\nprint(i,j,len(p))\nsys.exit(0 if 0<=i<j and \"--pid\" in p and \"background\" in p else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "6f1b2646f262a281"
+      }
+    ]
+  }
 }
