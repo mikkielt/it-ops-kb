@@ -2,7 +2,7 @@
   "id": "ST-plpyipvp",
   "kind": "story",
   "title": "The sprint skill, the worker role file and the worker brief name each command kb_backlog serves",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-fgtlhyo4",
   "sprint": "SP-fkep6hjx",
   "priority": "P3",
@@ -36,5 +36,6 @@
     "ST-44md64ps",
     "ST-zrnmqob2"
   ],
+  "notes": "Started 2026-10-25 with SP-fkep6hjx on the operator approval \"start them\" (unattended run).",
   "filed_in": "clone-0ea70e5c"
 }
