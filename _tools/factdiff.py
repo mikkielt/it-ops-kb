@@ -16,7 +16,7 @@
       lines the quote CSV names are anchored, the rows of other facts and files are kept and _fetch_state.csv is not
       written; --lines N[,N...] (needs one --file F and no other selector) keeps that to the facts on those lines of F, so
       that the rows of facts the caller did not write stay out of its commit, and a line that holds no tagged fact of F
-      is refused, exit 2, nothing written
+      is refused, exit 2, nothing written; with --propose it keeps the printed lines to those of F
   factdiff.py [--root NAME] snapshot [SELECTION] [--refetch] [--max-age DAYS] [--dry-run]
       write the normalized text of the root's live copy sources, with attribution, to <root>/_snapshots/<id>.txt
   factdiff.py [--root NAME] calibrate history --repo DIR [--path P] [--since D] [--pairs N] | soft404 [--hosts N]
@@ -739,11 +739,13 @@ def propose_quote(d, fact, win):
     return q if q and not LEAKY.search(q) and d.locate_quote(q) is not None else ""
 
 
-def cmd_propose(a, srcs, facts, anchors, rel):
-    """`anchor --file F --propose`: a `line,source,quote` CSV on stdout of the passage each cited page holds of each fact
-    of F that has no located anchor; what finds none is named on stderr. Writes no ledger and no state."""
+def cmd_propose(a, srcs, facts, anchors, rel, lines=()):
+    """`anchor --file F [--lines N,...] --propose`: a `line,source,quote` CSV on stdout of the passage each cited page holds
+    of each fact of F (of those lines only, given `lines`) that has no located anchor; what finds none is named on stderr.
+    Writes no ledger and no state."""
     cites = cite_counts(facts)
-    todo = {sid: [f for f in fs if f[1] == rel and (anchors.get((f[0], f[1], sid)) or {}).get("status") != "located"]
+    todo = {sid: [f for f in fs if f[1] == rel and (not lines or f[2] in lines)
+                  and (anchors.get((f[0], f[1], sid)) or {}).get("status") != "located"]
             for sid, fs in facts.items() if sid in srcs}
     ids = [i for i, fs in todo.items() if fs]
     docs = fetch_all(ids, srcs, a.max_age, a.refetch)
@@ -800,7 +802,7 @@ def cmd_anchor(a):
         if not any(f[1] == rel for fs in facts.values() for f in fs):
             print(f"anchor: {rel} holds no tagged fact", file=sys.stderr)
             return 2
-        return cmd_propose(a, srcs, facts, read_anchors(), rel)
+        return cmd_propose(a, srcs, facts, read_anchors(), rel, lines)
     if getattr(a, "quotes", None):
         quotes, bad = read_quotes(a.quotes, rel, facts)
         if bad:
@@ -2620,8 +2622,8 @@ def main():
     an.add_argument("--dry-run", action="store_true")
     an.add_argument("--quotes", metavar="CSV", help=f"the quote each new fact of the one --file rests on, at most {QUOTE_WORDS} "
                                                      "words, as a CSV of `line,quote` or, for a fact that cites several sources, `line,source,quote`")
-    an.add_argument("--lines", metavar="N[,N...]", type=line_list, help="anchor only the facts on these lines of the one --file "
-                                                                        "(a line that holds no tagged fact: exit 2)")
+    an.add_argument("--lines", metavar="N[,N...]", type=line_list, help="anchor (or, with --propose, print the proposals of) only the facts "
+                                                                        "on these lines of the one --file (a line that holds no tagged fact: exit 2)")
     an.add_argument("--propose", action="store_true", help="print, for each fact of the one --file that holds no located anchor, the "
                                                            "passage of each cited page that best holds it as a `line,source,quote` "
                                                            "CSV line; writes nothing")
@@ -2687,8 +2689,8 @@ def main():
     kbcommon.KB = ROOT.path
     if a.cmd == "anchor" and (a.quotes or a.propose) and len(a.file) != 1:
         ap.error(f"{'--quotes' if a.quotes else '--propose'} needs exactly one --file: its lines are that file's")
-    if a.cmd == "anchor" and a.lines and (len(a.file) != 1 or a.topic or a.dir or a.source or a.propose):
-        ap.error("--lines needs exactly one --file and no other selector and no --propose: its lines are that file's")
+    if a.cmd == "anchor" and a.lines and (len(a.file) != 1 or a.topic or a.dir or a.source):
+        ap.error("--lines needs exactly one --file and no other selector: its lines are that file's")
     if a.cmd == "anchor" and a.propose and (a.quotes or a.topic or a.dir or a.source):
         ap.error("--propose takes one --file and no other selector and no --quotes")
     if a.cmd == "anchors" and a.min is not None and (a.min < 0 or a.min != a.min or a.stale or a.unlocated or a.breakdown):
