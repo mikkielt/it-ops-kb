@@ -2,7 +2,7 @@
   "id": "BG-7g7tk2o7",
   "kind": "bug",
   "title": "backlog.py module usage text still says to wait on the pid after dispatch --detach prints the coord.py wait --pid command",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lhpvwh6l",
   "priority": "P2",
   "rank": 1,
@@ -33,5 +33,7 @@
   "links": [
     "parked: SP-vxdacfpl review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
