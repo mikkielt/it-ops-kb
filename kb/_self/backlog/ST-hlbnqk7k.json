@@ -96,7 +96,11 @@
         "SIGKILL after bl_procs.END_WAIT_S": "ST-hlbnqk7k",
         "SIGTERM only": "ST-hlbnqk7k"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "SIGKILL after bl_procs.END_WAIT_S",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
