@@ -1,0 +1,26 @@
+{
+  "id": "ST-c5ibk7sj",
+  "kind": "story",
+  "title": "The backlog.py usage block shows set taking several ids and which options a batch refuses, as set --help does",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the module usage block of _tools/backlog.py shows backlog.py set ID [ID...] and says the per-item options are refused with several ids, so kbtools.py's entry for backlog.py set tells the same",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport sys,re\nt=open(\"_tools/backlog.py\",encoding=\"utf-8\").read()\ni=t.find(\"  backlog.py set ID\")\nblk=t[i:i+1800]\nok=bool(re.search(r\"backlog\\.py set ID(\\s|\\.|\\[)*ID\\.\\.\\.|set ID ID\", blk)) and \"one item\" in blk\nprint(ok)\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py"
+  ],
+  "links": [
+    "parked: SP-f7kaebel review"
+  ],
+  "notes": "Found by the SP-f7kaebel review (S3): _tools/backlog.py:86 still reads `set ID [...]`; ST-fblg3yso updated tools.md and the argparse help, not this usage block, which kbtools.py reads for its backlog.py set entry. Check fails on the base today.",
+  "filed_in": "clone-0ea70e5c"
+}
