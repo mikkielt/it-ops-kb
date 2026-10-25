@@ -2,7 +2,7 @@
   "id": "ST-cyq4pbbz",
   "kind": "story",
   "title": "Review sprint: Fewer retried commands: answer, set, gate add, factdiff, fetch, kbtools and a hung runner",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-f7kaebel",
   "review": true,
   "priority": "P1",
@@ -25,6 +25,27 @@
   ],
   "notes": "Run 2026-10-25 (unattended, SP-f7kaebel): sprint start gate approved by operator; item turned todo at start.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "d08361952b0744f50250f6cc11a8afa400016819",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "ea5ccab524028e79"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "9edb0e9187f73ce1"
+      }
+    ]
+  }
 }
