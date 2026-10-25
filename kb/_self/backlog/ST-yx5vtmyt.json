@@ -21,6 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: every item of this sprint changes this repo's own tools and usage texts (dispatch/begin wait line, run_coord store, runner watch guard, backlog.py usage block, item and backlog skills); the goal names no question about outside products. Checked 2026-10-25 with kbtools.py and the code (bl_dispatch.py, bl_clean.py, bl_procs.py).",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
