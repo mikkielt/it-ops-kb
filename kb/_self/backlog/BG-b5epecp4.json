@@ -1,0 +1,23 @@
+{
+  "id": "BG-b5epecp4",
+  "kind": "bug",
+  "title": "backlog.py --root DIR with a DIR that is no git clone leaves run states in the coord store of the tool's own clone, the host's real store",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "a backlog.py --root DIR command never reads or writes a run state in the coord store of a clone other than the one at DIR: where DIR has no store it refuses or uses one under DIR",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,os,tempfile,shutil,pathlib as P\nT=os.path.abspath(\"_tools\"); sys.path.insert(0,T)\nd=tempfile.mkdtemp()\nstub=P.Path(d)/\"stub.py\"\nstub.write_text(\"import sys,json\\nsys.path.insert(0,%r)\\nimport coord\\nprint(json.dumps({'store':coord.default_store()}))\\n\"%T)\nos.environ.pop(\"KB_COORD_STORE\",None)\nimport bl_base, bl_clean\nbl_base.OUTPUT_ROOT[0]=P.Path(d)\nbl_clean.COORD=stub\ncode,body,err=bl_clean.run_coord()\nstore=(body or {}).get(\"store\")\ninside=bool(store) and os.path.realpath(store).startswith(os.path.realpath(d))\nshutil.rmtree(d)\nprint(\"code\",code,\"store\",store,\"inside root\",inside)\nsys.exit(0 if (code!=0 or inside) else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/bl_clean.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
