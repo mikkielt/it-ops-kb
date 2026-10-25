@@ -1,0 +1,22 @@
+{
+  "id": "BG-nyymdwc3",
+  "kind": "bug",
+  "title": "coord.py wait --pid counts an exited but unreaped process as running, and has no guard against a reused pid",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "coord.py wait --pid P reports P in ended when P has exited and not been reaped; a reused pid is not mistaken for the watched process",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess as s,sys,tempfile,time\nd=tempfile.mkdtemp(dir=\"/tmp\");st=os.path.join(d,\"c.sqlite\")\nz=s.Popen([\"true\"]);time.sleep(1)  # exited, not waited for: a zombie\np=s.run([sys.executable,\"_tools/coord.py\",\"--store\",st,\"wait\",\"--since\",\"0\",\"--timeout\",\"4\",\"--pid\",str(z.pid)],capture_output=True,text=True)\nz.wait();out=json.loads(p.stdout)\nprint(p.returncode,out[\"ended\"],out[\"timed_out\"])\nsys.exit(0 if z.pid in out[\"ended\"] else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/coord.py",
+    "kb/_self/coordination.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
