@@ -1,0 +1,23 @@
+{
+  "id": "ST-epjl2t6y",
+  "kind": "story",
+  "title": "The kb-observer agent file lists every command kb_backlog serves",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the kb-observer agent file's read-only commands step lists held, referrers, find, similar, tree, config, landings, runs, procs, check, report and usage beside the commands it already lists as served by kb_backlog",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport sys\nt = open(\".claude/agents/kb-observer.md\", encoding=\"utf-8\").read()\ni = t.find(\"Read-only commands you may run\")\nseg = t[i:i + 900] if i >= 0 else \"\"\nnames = [\"held\", \"referrers\", \"find\", \"similar\", \"tree\", \"config\", \"landings\", \"runs\", \"procs\", \"check\", \"report\", \"usage\"]\nmiss = [n for n in names if \"`\" + n + \"`\" not in seg]\nprint(\"missing:\", miss)\nsys.exit(1 if miss or not seg else 0)\n"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/agents/kb-observer.md",
+    "kb/_self/plugin.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
