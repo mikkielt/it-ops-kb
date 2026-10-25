@@ -70,6 +70,24 @@
   "relates_to": [
     "EP-nij36lt7"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does set take several ids, and what does the batch commit look like?",
+      "options": [
+        "ids as extra positionals after the first id (set ID ID... --sprint SP), one commit with subject chore(backlog): set ID ID and KB-Work listing each id",
+        "a repeatable --id flag per item, one commit per id"
+      ],
+      "recommendation": "ids as extra positionals after the first id (set ID ID... --sprint SP), one commit with subject chore(backlog): set ID ID and KB-Work listing each id",
+      "reason": "it is the form the goal and checks name",
+      "do": {
+        "ids as extra positionals after the first id (set ID ID... --sprint SP), one commit with subject chore(backlog): set ID ID and KB-Work listing each id": "ST-fblg3yso",
+        "a repeatable --id flag per item, one commit per id": "ST-fblg3yso"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],

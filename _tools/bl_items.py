@@ -645,8 +645,14 @@ def reclass_gate(item, gate):
         gate["kind"] = "blocking"
 
 
-def cmd_set(bl, a):
-    iid = need(bl, a.id)
+# what names one item and so is refused with several ids, each with its flag
+SET_ONE_ITEM = {"title": "--title", "goal": "--goal", "notes": "--notes", "repro": "--repro",
+                "repro_reason": "--repro-reason", "parent": "--parent", "clauses": "--clause", "checks": "--check"}
+
+
+def plan_set(bl, a, iid):
+    """The checks `set` makes of one item and its change: (edits for changed_items, the names of the fields it
+    changes). Raises before anything is written."""
     it = bl.items[iid]
     for f in SET_REFUSED:
         if getattr(a, "no_" + f, None) is not None:
@@ -790,17 +796,45 @@ def cmd_set(bl, a):
             def edit_child(new):
                 new["status"] = "todo" if state == "active" else "draft"
             edits.update({c: edit_child for c in bl.descendants(iid) if bl.items[c].get("status") in ("draft", "todo")})
+    return edits, named
+
+
+def cmd_set(bl, a):
+    """set: the options on one item, or on every id given (one write and one --commit for the batch: an id set
+    refuses leaves every item unchanged)."""
+    ids = list(dict.fromkeys([a.id] + a.more_ids))
+    for iid in ids:
+        need(bl, iid)
+    if len(ids) > 1:
+        named = [flag for f, flag in SET_ONE_ITEM.items() if getattr(a, f, None) is not None]
+        if named:
+            raise Rejected(f"set refuses {', '.join(named)} with several ids: it names one item, so set one id at a "
+                           "time")
+        for iid in ids:
+            if bl.is_upstream(iid):
+                raise Refused(f"{bl.label(iid)} arrived from the upstream main (git config kb.upstreamRemote) and is "
+                              "read-only in this clone: set refuses it")
     if a.trailer:
         if not a.commit:
             raise Refused("--trailer goes with --commit")
         why = next(filter(None, map(trailer_problem, a.trailer)), None)
         if why:
             raise Refused(why)
+    edits, named = {}, []
+    for iid in ids:
+        try:
+            one, named = plan_set(bl, a, iid)
+        except (Rejected, Refused) as e:
+            if len(ids) == 1:
+                raise
+            raise type(e)(f"{e}\n(no item changed: {', '.join(ids)})") from e
+        edits.update(one)
+    labels = ", ".join(bl.label(i) for i in ids)
     if changed_items(bl, edits):
-        say(f"set {bl.label(iid)}: {', '.join(named)}")
+        say(f"set {labels}: {', '.join(named)}")
     else:
-        say(f"set {bl.label(iid)}: unchanged")
-    commit_written(bl, a, "set", iid)
+        say(f"set {labels}: unchanged")
+    commit_written(bl, a, "set", " ".join(ids), ids=ids)
     return 0
 
 
@@ -1336,6 +1370,8 @@ def args_answer(p):
 
 def args_set(p):
     p.add_argument("id")
+    p.add_argument("more_ids", nargs="*", metavar="ID", help="more items: every option but those naming one item "
+                   "(--title, --goal, --notes, --repro, --repro-reason, --parent, --clause, --check) applies to each")
     p.add_argument("--notes")
     p.add_argument("--link", dest="links", action="append")
     p.add_argument("--touch", dest="touches", action="append")
@@ -1372,7 +1408,7 @@ def args_set(p):
                        help=f"append to {f} (repeatable; refused beside {replace_flag(f)})")
     p.add_argument("--clear", action="append", default=[], metavar="FIELD", help="remove a field (repeatable)")
     p.add_argument("--commit", action="store_true",
-                   help="commit the item file this set wrote, alone, with a fixed subject and KB-Work")
+                   help="commit the item files this set wrote, alone, with a fixed subject and KB-Work")
     p.add_argument("--trailer", action="append", default=[], metavar="'KEY: VALUE'",
                    help="a trailer of the session's own after KB-Work in the --commit commit (repeatable)")
     for f in SET_REFUSED:  # accepted only to be refused with the rule that applies
