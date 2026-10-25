@@ -15,5 +15,8 @@
     ]
   },
   "repro_reason": "the text is the module docstring of _tools/backlog.py, which no command prints, so only a read of the file shows it",
+  "links": [
+    "parked: SP-vxdacfpl review"
+  ],
   "filed_in": "clone-0ea70e5c"
 }
