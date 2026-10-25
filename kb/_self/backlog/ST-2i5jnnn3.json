@@ -2,7 +2,7 @@
   "id": "ST-2i5jnnn3",
   "kind": "story",
   "title": "Research sprint goal: Fewer retried commands: answer, set, gate add, factdiff, fetch, kbtools and a hung runner",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-f7kaebel",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: every item of this sprint changes this repo's own tools (gate add, answer, set, runner watch, factdiff, fetch, kbtools); the goal names no question about outside products, and the behaviour each change needs is in the code and kb/_self/backlog.md, not in public documentation.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "5aa4ee3f74b1850dd66a8a5e3d048282f61cf5fe",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-2i5jnnn3"
+        ],
+        "exit": 0,
+        "sha256": "4ad85e2abb9cca9a"
+      }
+    ]
+  }
 }
