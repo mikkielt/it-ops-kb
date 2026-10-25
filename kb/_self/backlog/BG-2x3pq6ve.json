@@ -2,10 +2,10 @@
   "id": "BG-2x3pq6ve",
   "kind": "bug",
   "title": "backlog.py --root DIR writes a run state to the coord store of the cwd's clone, so a fixture check reaches the host's real store",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-lhpvwh6l",
   "priority": "P3",
-  "rank": 0,
+  "rank": 1,
   "severity": "S2",
   "goal": "A backlog.py --root DIR command that moves a run state writes that state to the coord store of the clone at DIR, whatever the working directory, so a check that plants a fixture clone leaves the host's store untouched",
   "repro": {

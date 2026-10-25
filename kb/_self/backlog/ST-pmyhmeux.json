@@ -2,11 +2,11 @@
   "id": "ST-pmyhmeux",
   "kind": "story",
   "title": "Review sprint: Fixes for the new orchestration tools: wait cursor, run-state store, runner guard and usage texts",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-lhpvwh6l",
   "review": true,
   "priority": "P1",
-  "rank": 999999,
+  "rank": 1,
   "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
   "checks": [
     {

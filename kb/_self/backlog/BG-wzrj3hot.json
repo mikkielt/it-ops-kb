@@ -2,10 +2,10 @@
   "id": "BG-wzrj3hot",
   "kind": "bug",
   "title": "runner watch accepts a process whose command line only names a file called CLAUDE.md, so the claude guard admits a pid that is no claude session",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-lhpvwh6l",
   "priority": "P3",
-  "rank": 0,
+  "rank": 1,
   "severity": "S2",
   "goal": "runner watch ends only a process whose program (the first word of its command line, or the interpreter's script word) is named claude, so a process that merely has a CLAUDE.md or claude.json argument is refused with exit 2",
   "repro": {

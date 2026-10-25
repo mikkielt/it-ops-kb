@@ -2,10 +2,10 @@
   "id": "BG-ohvpe5fm",
   "kind": "bug",
   "title": "dispatch --detach and begin print a coord wait command with --since 0, which returns at once on the item's earlier claimed and working events",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-lhpvwh6l",
   "priority": "P3",
-  "rank": 0,
+  "rank": 1,
   "severity": "S2",
   "goal": "The wait command that dispatch --detach and begin print starts after the events already posted for the item, so with a live worker and no new event it ends only at its timeout or when the worker process has ended",
   "repro": {
