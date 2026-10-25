@@ -21,5 +21,6 @@
   "links": [
     "parked: SP-vxdacfpl review"
   ],
+  "notes": "Effect seen 2026-10-25 at the close of SP-vxdacfpl: tidy --class worktree lists about 20 own records of fixture worktrees (agent-ST-aaaaaaaa, agent-ST-cccccccc in temp clones) whose directories are gone, and run/ST-aaaaaaaa stays returned in the real coord store.",
   "filed_in": "clone-0ea70e5c"
 }
