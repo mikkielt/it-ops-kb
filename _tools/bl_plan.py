@@ -20,7 +20,7 @@ import bl_cli
 from bl_authority import derived_class
 from bl_base import (
     APPROVALS, CHECK_TIMEOUT_S, KB_CONTENT_RE, OPEN, RECURRING_MIN, Refused, START_GATE, WORKSPACE, commit_written,
-    glob_re, id_re, in_scope, link_target, need, repositories, resolved_touch, run_check, say, scope,
+    glob_re, id_re, in_scope, line, link_target, need, repositories, resolved_touch, run_check, say, scope,
     split_touch, within_repository,
 )
 
@@ -638,6 +638,64 @@ def land_line(bl, iid):
         return ""
     return (f"  no worker: every task of {iid} is done and its checks pass here; claim it, then land it yourself "
             f"with python3 _tools/backlog.py land {iid} (kb-sprint run, step 3)")
+
+
+BATCH_MAX = 4  # items `next --batch` prints
+
+
+def batch(bl, ids, limit=BATCH_MAX):
+    """The first LIMIT of IDS (ready items in `next` order, claimed ones left out) that can run together: an item is
+    taken when its scope (its touches and its descendants') meets, by touches_meet, neither the scope of an item
+    taken before it nor the touches of a claimed (doing) item of the backlog; a kb/_self doc meets nothing."""
+    claimed = [t for i, it in bl.items.items() if it.get("status") == "doing" and it.get("claimed_by")
+               and it.get("kind") != "sprint" for t in it.get("touches", []) or [] if isinstance(t, str) and t]
+    files = touch_files(bl.root)
+    taken, held = [], list(claimed)
+    for i in ids:
+        if len(taken) >= limit:
+            break
+        if bl.items[i].get("claimed_by"):
+            continue
+        own = [t for t in scope(bl, i) if isinstance(t, str) and t]
+        if any(touches_meet(m, h, files) for m in own for h in held):
+            continue
+        taken.append(i)
+        held += own
+    return taken
+
+
+def next_batch(inner):
+    """`next`'s handler with --batch: the ready items (the same ids `next --all` lists) that batch() takes, each printed
+    as `next` prints it; exit 1 when none is ready, as `next` does."""
+    def handler(bl, a):
+        if not a.batch:
+            return inner(bl, a)
+        from bl_check import knowledge_lines
+        from bl_view import ready
+        ids = ready(bl, a.sprint, a.any, a.upstream)
+        if not ids:
+            say("nothing ready" + (f" in {bl.label(a.sprint)}" if a.sprint else "") + ": python3 _tools/backlog.py horizon")
+            return 1
+        taken = batch(bl, ids)
+        if not taken:
+            say("nothing to start: every ready item is claimed or meets a claimed item's touches"
+                ": python3 _tools/backlog.py held")
+            return 1
+        for i in taken:
+            say(line(bl, i))
+            if note := land_line(bl, i):
+                say(note)
+            for x in knowledge_lines(bl, i):
+                say(x)
+        return 0
+
+    return handler
+
+
+def args_next_batch(p):
+    p.add_argument("--batch", action="store_true",
+                   help=f"print up to {BATCH_MAX} ready items, in next order, whose touches meet neither each other "
+                        "nor a claimed item's (a kb/_self doc meets nothing)")
 
 
 def args_start(p):
