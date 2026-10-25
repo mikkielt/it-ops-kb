@@ -2,7 +2,7 @@
   "id": "ST-nxgi6cl3",
   "kind": "story",
   "title": "The gate add usage lines in backlog.py and the item and backlog skills say the recommendation is one of the options, though it may be an option followed by its reason",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-lhpvwh6l",
   "priority": "P3",
   "rank": 1,
@@ -38,6 +38,28 @@
   ],
   "notes": "Found by the SP-f7kaebel review (S3): the gate add usage at _tools/backlog.py:124 and the gate add lines of skills/item/SKILL.md:31 and skills/backlog/SKILL.md:33 still say \"the recommendation one of them/the options\"; ST-yuf6gdr6 landed the option-plus-reason form without these files in its touches.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "ace93ea5dccc4976a1fc3c5dfba1d2b81bdacf66",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport sys\nbad=[f for f,p in ((\"_tools/backlog.py\",\"recommendation one of them\"),(\"skills/item/SKILL.md\",\"recommendation one of the options\"),(\"skills/backlog/SKILL.md\",\"recommendation one of the options\")) if p in open(f,encoding=\"utf-8\").read()]\nprint(bad)\nsys.exit(1 if bad else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport json,re,subprocess,sys\no=json.loads(subprocess.run([sys.executable,\"_tools/kbtools.py\",\"--json\",\"backlog gate add recommendation option\"],capture_output=True,text=True).stdout)\ne=[x for x in o[\"entries\"] if x[\"tool\"]==\"backlog.py gate\"]\nt=\" \".join(e[0][\"answers\"]) if e else \"\"\nok=bool(e) and \"recommendation one of them\" not in t and bool(re.search(r\"recommendation[^;)]*\\breason\",t))\nprint(ok)\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "a9ac0c3ac83c40e1"
+      }
+    ]
+  }
 }
