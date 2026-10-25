@@ -2,7 +2,7 @@
   "id": "ST-lp72x5cr",
   "kind": "story",
   "title": "kb_backlog usage returns a backlog.py verb's arguments, so a session reads them without 436 --help runs",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-fgtlhyo4",
   "sprint": "SP-fkep6hjx",
   "priority": "P3",
@@ -55,6 +55,6 @@
   "links": [
     "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],
-  "notes": "From the 2026-10-24 telemetry and query-log analysis: backlog.py --help or SUBCOMMAND --help ran 436 times in 121 sessions in 7 days (149k tokens of help text, average 1.36k characters, 28 in one session): new 94, set 87, close 53, gate 53, start 21, dispatch 19, tidy 19, answer 18; managers 398, workers 38. All tools together 615 calls in 149 sessions. kbgit.py publish --help is denied by a Bash rule (4 calls) and has no other route; kb_backlog refuses 'set --help' today because set is not in its list. Same argparse text, no new information: it saves the Bash round trip and the first-try mistakes they precede. Near ST-pntfa6ry (usage text of a changed verb).",
+  "notes": "From the 2026-10-24 telemetry and query-log analysis: backlog.py --help or SUBCOMMAND --help ran 436 times in 121 sessions in 7 days (149k tokens of help text, average 1.36k characters, 28 in one session): new 94, set 87, close 53, gate 53, start 21, dispatch 19, tidy 19, answer 18; managers 398, workers 38. All tools together 615 calls in 149 sessions. kbgit.py publish --help is denied by a Bash rule (4 calls) and has no other route; kb_backlog refuses 'set --help' today because set is not in its list. Same argparse text, no new information: it saves the Bash round trip and the first-try mistakes they precede. Near ST-pntfa6ry (usage text of a changed verb). Started 2026-10-25 with SP-fkep6hjx on the operator approval \"start them\" (unattended run).",
   "filed_in": "clone-0ea70e5c"
 }
