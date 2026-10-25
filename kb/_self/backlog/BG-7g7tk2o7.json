@@ -1,0 +1,19 @@
+{
+  "id": "BG-7g7tk2o7",
+  "kind": "bug",
+  "title": "backlog.py module usage text still says to wait on the pid after dispatch --detach prints the coord.py wait --pid command",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "The --detach paragraph of the module docstring of _tools/backlog.py names the coord.py wait --pid command that dispatch --detach prints and no longer says to wait on the pid",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.exit(1 if 'wait on the pid' in open('_tools/backlog.py',encoding='utf-8').read() else 0)"
+    ]
+  },
+  "repro_reason": "the text is the module docstring of _tools/backlog.py, which no command prints, so only a read of the file shows it",
+  "filed_in": "clone-0ea70e5c"
+}
