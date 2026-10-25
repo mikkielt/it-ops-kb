@@ -2,7 +2,7 @@
   "id": "ST-c5ibk7sj",
   "kind": "story",
   "title": "The backlog.py usage block shows set taking several ids and which options a batch refuses, as set --help does",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lhpvwh6l",
   "priority": "P3",
   "rank": 1,
@@ -35,5 +35,7 @@
     "parked: SP-f7kaebel review"
   ],
   "notes": "Found by the SP-f7kaebel review (S3): _tools/backlog.py:86 still reads `set ID [...]`; ST-fblg3yso updated tools.md and the argparse help, not this usage block, which kbtools.py reads for its backlog.py set entry. Check fails on the base today.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
