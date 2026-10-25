@@ -2,7 +2,7 @@
   "id": "ST-hrl7kada",
   "kind": "story",
   "title": "kb_monitor_status returns one panel as JSON, as kbmon.py --json --panel does",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-fgtlhyo4",
   "sprint": "SP-fkep6hjx",
   "priority": "P3",
@@ -42,6 +42,6 @@
   "links": [
     "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],
-  "notes": "From the 2026-10-24 telemetry and query-log analysis: kbmon.py --json or --once --panel ran 43 times in 20 sessions in 7 days (4 exit 1), --events or --metrics 15 times in 9 sessions; --status, 74 calls in 20 sessions, is the only form kb_monitor_status serves (kb_mcp.py:1161-1197) and the tool was called 0 times; it takes no panel and refuses extra arguments (kb_mcp.py:1180-1182). Small: 58 Bash calls a week. Also wanted: events true returns the event export that kbmon.py --events prints. Near ST-7k2popo6 (panel reasons in --status), a different surface.",
+  "notes": "From the 2026-10-24 telemetry and query-log analysis: kbmon.py --json or --once --panel ran 43 times in 20 sessions in 7 days (4 exit 1), --events or --metrics 15 times in 9 sessions; --status, 74 calls in 20 sessions, is the only form kb_monitor_status serves (kb_mcp.py:1161-1197) and the tool was called 0 times; it takes no panel and refuses extra arguments (kb_mcp.py:1180-1182). Small: 58 Bash calls a week. Also wanted: events true returns the event export that kbmon.py --events prints. Near ST-7k2popo6 (panel reasons in --status), a different surface. Started 2026-10-25 with SP-fkep6hjx on the operator approval \"start them\" (unattended run).",
   "filed_in": "clone-0ea70e5c"
 }
