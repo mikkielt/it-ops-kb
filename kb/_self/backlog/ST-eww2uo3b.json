@@ -1,0 +1,22 @@
+{
+  "id": "ST-eww2uo3b",
+  "kind": "story",
+  "title": "kb_backlog usage gives every backlog.py command a line, begin and runner included",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb_backlog usage with no argument prints a one-line description for every command the backlog.py parser offers",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport sys, argparse\nsys.path.insert(0,\"_tools\")\nimport backlog, bl_cli, kb_mcp\nbacklog.load_settings(bl_cli.default_root(backlog.ROOT))\nap = bl_cli.build_parser(backlog.__doc__.split(\"\\n\\n\")[0], backlog.ROOT)\nverbs = next(a.choices for a in ap._actions if isinstance(a, argparse._SubParsersAction))\nmissing = [v for v in verbs if not kb_mcp.BACKLOG_VERB_LINES.get(v)]\nprint(\"no line:\", missing)\nsys.exit(1 if missing else 0)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
