@@ -2,7 +2,7 @@
   "id": "BG-54tplq4n",
   "kind": "bug",
   "title": "kb_monitor_status with a panel returns the panel JSON without redact.redact",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lhpvwh6l",
   "priority": "P3",
   "rank": 0,
@@ -37,5 +37,7 @@
     "parked: SP-fkep6hjx review"
   ],
   "notes": "Plan 2026-10-25, added to SP-lhpvwh6l at the manager's ask (S2: the new MCP output path must redact like the others). Premise reproduced: the repro prints secret survives: True on today's base. The second check plants one fake secret of each shape kbcommon.SECRETS handles plus a key=value assignment, built at run time.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
