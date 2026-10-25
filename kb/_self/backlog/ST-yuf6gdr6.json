@@ -2,7 +2,7 @@
   "id": "ST-yuf6gdr6",
   "kind": "story",
   "title": "gate add takes a recommendation that is an option's text followed by its reason, and a refusal lists the options",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-iowijan3",
   "sprint": "SP-f7kaebel",
   "priority": "P2",
@@ -62,5 +62,7 @@
     "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],
   "notes": "From the 2026-10-24 telemetry and query-log analysis: transcripts of 10-17 to 10-24 hold 354 backlog.py gate add calls; 100 failed, 96 of them with 'gate add: --recommendation must be one of the --option values' (bl_items.py:994 needs the recommendation to equal an option's text exactly), one per worker session, each retried successfully (27% of calls; last 2026-10-24T07:10Z). The visible samples start the recommendation with the full option text and continue with a reason; the refusal does not list the options. Every worker that files a gate pays one failed call and one retry. Also wanted, not read by the planted check: gate add --help says the recommendation is one of the options. This removes the cause that a typed kb_backlog_write gate_add would only have moved. Run 2026-10-25 (unattended, SP-f7kaebel): sprint start gate approved by operator on their approval \"start them\"; item turned todo at start. Waits on ST-44md64ps (SP-vxdacfpl begin).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
