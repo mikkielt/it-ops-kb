@@ -43,6 +43,23 @@
     "EP-nij36lt7",
     "ST-pntfa6ry"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What does show print with --ref alone, and for an allowed field the item lacks?",
+      "options": [
+        "ref alone prints the whole item JSON only; an allowed field the item lacks is left out",
+        "ref alone prints the full text view from the ref; a missing allowed field prints null"
+      ],
+      "recommendation": "ref alone prints the whole item JSON only; an allowed field the item lacks is left out",
+      "do": {
+        "ref alone prints the whole item JSON only; an allowed field the item lacks is left out": "ST-lll4a6p6",
+        "ref alone prints the full text view from the ref; a missing allowed field prints null": "ST-lll4a6p6"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],
