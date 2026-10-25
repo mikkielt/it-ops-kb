@@ -19,7 +19,8 @@ need, reads a tool's name and its own text (summary and `Answers:` lines) and th
 MCP tool (their descriptions list the products the kb covers), and reports how much of the need the catalog holds.
 
   kbtools.py [--json]            the catalog, one line for each entry: its name, its command and what it answers
-  kbtools.py NEED [--json]       the best entries for NEED (at most 8, none for a need no entry shares a word with);
+  kbtools.py NEED [--json]       the best entries for NEED (at most 8, none for a need no entry shares a word with; a
+                                 subcommand a tool's usage block names, `backlog.py landings`, is an entry of its own);
                                  --json prints {"need", "entries": [{"tool", "kind", "command", "answers", "mcp"}]}
 
 Answers: which tool, skill, agent or kb MCP tool answers a need, in plain words
@@ -118,6 +119,43 @@ def tool_entries(root=ROOT):
     return out
 
 
+SUB_LINE = re.compile(r"^ {2}(?P<tool>[a-z0-9_]+\.py) (?P<sub>[a-z][a-z-]+)(?P<rest>.*)$")
+SUB_GAP = re.compile(r"\s{2,}(?P<text>\S.*)$")
+
+
+def subcommand_blocks(doc):
+    """{(tool file, subcommand): description text} read from the usage block of a docstring: a line `  tool.py SUB ARGS`
+    starts a block, the text after two or more spaces on it and the indented lines below it that do not start an option
+    (`[` or `--`) are its description, and the block ends at the first line indented by two spaces or less. A second block
+    of one subcommand (`gate add`, `gate remove`) adds its text to the first."""
+    out, key = {}, None
+    for line in doc.splitlines():
+        m = SUB_LINE.match(line)
+        if m:
+            key = (m.group("tool"), m.group("sub"))
+            gap = SUB_GAP.search(m.group("rest"))
+            out[key] = " ".join(filter(None, [out.get(key, ""), gap.group("text") if gap else ""]))
+        elif key and line[:3] == "   " and line.strip():
+            if not line.strip().startswith(("[", "--")):
+                out[key] = f"{out[key]} {line.strip()}".strip()
+        else:
+            key = None
+    return out
+
+
+def subcommand_entries(root=ROOT):
+    """One entry for each subcommand a tool's usage block names (`subcommand_blocks`), read from the module docstring of
+    the tool, found by its own words: `named` is the subcommand alone, so the tool's name counts for the tool's entry only.
+    Not in `catalog`, which has one line for each tool."""
+    out = []
+    for p in cli_files(root):
+        for (tool, sub), text in subcommand_blocks(module_doc(p)).items():
+            if tool == p.name and text:
+                out.append({"tool": f"{tool} {sub}", "named": sub, "kind": "tool", "command": f"python3 _tools/{tool} {sub}",
+                            "answers": [text], "mcp": [], "summary": ""})
+    return out
+
+
 def front(path):
     """The single-line `key: value` pairs of a Markdown file's front matter."""
     m = re.match(r"---\n(.*?)\n---", read(path), re.S)
@@ -166,6 +204,8 @@ def line_of(entry):
 
 
 def stem(word):
+    if word.endswith("ings") and len(word) > 6:  # `landings` and `landing` share a stem
+        word = word[:-1]
     for suffix in ("ing", "ed", "es", "s"):
         if word.endswith(suffix) and len(word) - len(suffix) >= 3:
             word = word[:-len(suffix)]
@@ -211,7 +251,7 @@ def rank(need, want, docs):
     """The entries of `docs` ((entry, name words, text words) for each) that share a word of WANT, best first: the sum of
     each shared word's weight (rarer in the catalog weighs more; in an entry's name twice, in its text as text_weight
     says), ties broken by kind and name; entries under a third of the best score drop."""
-    docs = [(e, name_words(e["tool"], need), text) for e, _, text in docs]
+    docs = [(e, name_words(e.get("named", e["tool"]), need), text) for e, _, text in docs]
     df = {w: sum(1 for _, n, t in docs if w in n or w in t) for w in want}
     scored = []
     for e, name, text in docs:
@@ -256,7 +296,7 @@ def main(argv=None):
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8")
     need = " ".join(args.need).strip()
-    entries = search(need, catalog()) if need else catalog()
+    entries = search(need, catalog() + subcommand_entries()) if need else catalog()
     if args.json:
         print(json.dumps({"need": need, "entries": [as_json(e) for e in entries]}, indent=2, ensure_ascii=False))
     elif entries:
