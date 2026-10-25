@@ -2,7 +2,7 @@
   "id": "ST-ekb5b7ic",
   "kind": "story",
   "title": "A gate is answered by its option number or its recommendation, not by the option text retyped",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-sqt62vj2",
   "sprint": "SP-f7kaebel",
   "priority": "P3",
@@ -55,6 +55,6 @@
   "links": [
     "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],
-  "notes": "From the 2026-10-24 telemetry and query-log analysis: 624 backlog.py answer calls in 146 sessions: 294 '--answer \"<option text>\" --by operator', 186 '--confirm --by operator' (the second call of the provisional flow), 93 '--provisional'; 256 orchestrating turns had an answer as their only call, with 107K output tokens in them. A runner loop was written by hand to read each gate's recommendation and pass it back as --answer. answer takes only the option's exact text (bl_items.py:429), so a retyped text that differs by a character is refused and costs another turn. Saves about 200 turns, about 100K output tokens and about 10 USD a week (estimate). Medium confidence. Gate handling stays the operator's: the change removes retyping, not the authority (the same --by rules, no new right to answer). Different from ST-ecohnugl (answer warns on a pick other than the recommendation) and ST-tvnxvfjp (relayed answers need --free). Lane: parked sprint-orchestration class, EP-gzr4mmkm.",
+  "notes": "From the 2026-10-24 telemetry and query-log analysis: 624 backlog.py answer calls in 146 sessions: 294 '--answer \"<option text>\" --by operator', 186 '--confirm --by operator' (the second call of the provisional flow), 93 '--provisional'; 256 orchestrating turns had an answer as their only call, with 107K output tokens in them. A runner loop was written by hand to read each gate's recommendation and pass it back as --answer. answer takes only the option's exact text (bl_items.py:429), so a retyped text that differs by a character is refused and costs another turn. Saves about 200 turns, about 100K output tokens and about 10 USD a week (estimate). Medium confidence. Gate handling stays the operator's: the change removes retyping, not the authority (the same --by rules, no new right to answer). Different from ST-ecohnugl (answer warns on a pick other than the recommendation) and ST-tvnxvfjp (relayed answers need --free). Lane: parked sprint-orchestration class, EP-gzr4mmkm. Run 2026-10-25 (unattended, SP-f7kaebel): sprint start gate approved by operator; item turned todo at start.",
   "filed_in": "clone-0ea70e5c"
 }
