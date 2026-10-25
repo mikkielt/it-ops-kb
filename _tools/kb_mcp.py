@@ -57,7 +57,7 @@ asks and, unasked, for a source past its freshness lifetime):
              kb_status and that line then name no local path and no update command (behind_note).
   kb_monitor_status  (the team's own server only: off under --roots, and kb_http.py never serves it) the lines of
              `kbmon.py --status TOPIC --json` as text: topic sessions, cost, querylog, coord, sprints, load or all (default),
-             at most 25 lines; each panel is bound by kbmon's --timeout (10 seconds), and no model is called
+             at most 25 lines, or with `panel` NAME that panel's JSON through redact.redact; each panel is bound by kbmon's --timeout (10 seconds), and no model is called
   kb_settings  (the team's own server only, as kb_monitor_status) the effective coordination settings of the host project
              (CLAUDE_PROJECT_DIR, else the cwd), like `kbsettings.py explain [KEY] [--kb-root NAME]`: each setting with its
              value, the file that set it (or default), its meaning and the doc section and the key's bullet that state it; reads the settings
@@ -1170,9 +1170,9 @@ MONITOR_TOOL_LIST = [
     {"name": "kb_monitor_status", "title": "Monitor status",
      "description": "Status of this clone's work in plain words (kbmon.py --status; not kb facts, not live device data): "
                     "running sessions, today's cost, the query log, coord claims, sprints and the host's load, at most 25 "
-                    "lines. With panel NAME it returns that panel's JSON instead, as kbmon.py --json --panel NAME does. "
-                    "Reads local files and the coord store; no model call. Use for a status question before "
-                    "reading any state by hand.",
+                    "lines. With panel NAME it returns that panel's JSON instead (redacted, not limited to 25 lines), as "
+                    "kbmon.py --json --panel NAME does. Reads local files and the coord store; no model call. Use for "
+                    "a status question before reading any state by hand.",
      "inputSchema": {"type": "object", "properties": {
          "topic": {"type": "string", "enum": MONITOR_TOPICS, "default": "all",
                    "description": "what to report: sessions, cost, querylog, coord, sprints, load or all"},
@@ -1206,7 +1206,8 @@ def kb_monitor_status(args):
         doc = json.loads(p.stdout)
         if panel:
             doc["panels"][panel]
-            return p.stdout.strip()
+            import redact
+            return redact.redact(p.stdout.strip())
         lines = doc["lines"]
     except (ValueError, KeyError, TypeError):
         raise ToolError("kbmon.py printed no status object")
