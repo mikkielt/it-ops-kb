@@ -52,6 +52,25 @@
     "ST-qeespjim",
     "ST-ajv4jrp5"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which commands of kb_backlog return an exit 1 with output as text ending (exit 1); the goal names find, held and report, and report's refusal prints on stderr?",
+      "options": [
+        "find, held and report only",
+        "also referrers and check, and a refusal of these five printed on stderr"
+      ],
+      "recommendation": "also referrers and check, and a refusal of these five printed on stderr",
+      "do": {
+        "find, held and report only": "ST-zrnmqob2",
+        "also referrers and check, and a refusal of these five printed on stderr": "ST-zrnmqob2"
+      },
+      "class": "design",
+      "answer": "also referrers and check, and a refusal of these five printed on stderr",
+      "by": "agent"
+    }
+  ],
   "links": [
     "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],

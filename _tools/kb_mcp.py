@@ -65,7 +65,8 @@ asks and, unasked, for a source past its freshness lifetime):
   kb_backlog, kb_querylog, kb_docs  (the team's own server only, as kb_monitor_status) the read-only commands of backlog.py,
              querylog.py (digest, status, show) and selfdoc.py, check.py and rag.py eval (stale, section, map, check, eval) as
              `command` and `args`, answering the text the script prints through redact.redact (kb_docs ends it with
-             `(exit 1)` when the command found something); a command or option outside each tool's closed list is a tool error
+             `(exit 1)` when the command found something, kb_backlog for held, referrers, find, check and report); a
+             command or option outside each tool's closed list (runs --reconcile among them) is a tool error
   kb_tools   (the team's own server only, as kb_monitor_status) the lines of `kbtools.py [NEED]`: the kb's tools, skills,
              agents and MCP tools that answer `need` (all of them when it is left out), each with its command and what it
              answers, through redact.redact; no model is called, an argument other than `need` is a tool error
@@ -1236,15 +1237,21 @@ SETTINGS_HANDLERS = {"kb_settings": kb_settings}
 
 # ---------------------------------------------------------------- backlog commands
 
-# the commands of backlog.py that write nothing (precheck, claim, done and every other that writes a file or runs an
-# item's checks stay off the tool); the closed list is what keeps a tool annotated read-only read-only
-BACKLOG_COMMANDS = ["show", "list", "next", "horizon", "stalled", "cost", "ops", "selectors"]
+# the commands of backlog.py that write nothing (precheck, host-check, researched, selfcheck, claim, done and every other
+# that writes a file or runs an item's checks stay off the tool); the closed list is what keeps a tool annotated
+# read-only read-only
+BACKLOG_COMMANDS = ["show", "list", "next", "horizon", "stalled", "cost", "ops", "selectors", "held", "referrers", "find",
+                    "similar", "tree", "config", "landings", "runs", "procs", "check", "report"]
+BACKLOG_REFUSED_OPTIONS = {"runs": ["--reconcile"]}  # the one option of a listed command that writes (coord run keys)
+BACKLOG_FINDINGS_EXIT = {"held", "referrers", "find", "check", "report"}  # an exit 1 with output is a finding, not a failure
 BACKLOG_TOOL_LIST = [
     {"name": "kb_backlog", "title": "Read the backlog",
      "description": "The project's backlog, read-only (backlog.py; not kb facts, not live device data): the same text "
-                    "the command prints. show ID: one item; list: items (--kind K --status S --sprint ID); next: the "
-                    "ready items; horizon: the sprint's next one; stalled; cost; ops SPRINT; selectors. Any other "
-                    "command is refused: run backlog.py for it.",
+                    "the command prints. show ID; list [--kind K --status S --sprint ID]; next; horizon; stalled; cost; "
+                    "ops SPRINT; selectors; held [--overlaps ID --ref REF]; referrers TERM [--item ID]; find WORDS; "
+                    "similar TITLE; tree [ID]; config; landings; runs [SP|ID]; procs; check; report ID. The text ends "
+                    "`(exit 1)` when held, referrers, find, check or report found something. Any other command, and "
+                    "runs --reconcile, is refused: run backlog.py for it.",
      "inputSchema": {"type": "object", "properties": {
          "command": {"type": "string", "enum": BACKLOG_COMMANDS, "description": "the backlog.py command"},
          "args": {"type": "array", "items": {"type": "string"}, "description": "its id and options, e.g. ['ST-xxxxxxxx'] or ['--kind', 'sprint']"}},
@@ -1263,6 +1270,11 @@ def kb_backlog(args):
                         "run backlog.py for it")
     if not isinstance(rest, list) or not all(isinstance(a, str) for a in rest):
         raise ToolError("args is a list of strings")
+    for a in rest:  # argparse takes any prefix of a long option, so a prefix of a refused one is refused too
+        flag = a.partition("=")[0]
+        for refused in BACKLOG_REFUSED_OPTIONS.get(command, ()):
+            if len(flag) > 2 and flag.startswith("--") and refused.startswith(flag):
+                raise ToolError(f"{refused} writes: not offered here; run backlog.py {command} {refused}")
     import backlog, redact
     out, err = io.TextIOWrapper(io.BytesIO(), encoding="utf-8"), io.TextIOWrapper(io.BytesIO(), encoding="utf-8")
     try:
@@ -1273,6 +1285,8 @@ def kb_backlog(args):
     for stream in (out, err):
         stream.seek(0)
     text, refusal = out.read().rstrip("\n"), err.read().strip()
+    if code == 1 and (text or refusal) and command in BACKLOG_FINDINGS_EXIT:  # a refusal (exit 1) is printed on stderr
+        return redact.redact(text or refusal) + "\n(exit 1)"
     if code:
         raise ToolError(redact.redact(refusal or text or f"backlog.py {command} exited {code}")[-2000:])
     return redact.redact(text)
