@@ -52,6 +52,28 @@
     "ST-ecohnugl",
     "ST-tvnxvfjp"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does --option N count, and may --option or --recommended go with --provisional?",
+      "options": [
+        "N counts from 1, and with --provisional they record the agent's answer",
+        "N counts from 0, and --provisional ignores them"
+      ],
+      "recommendation": "N counts from 1, and with --provisional they record the agent's answer",
+      "reason": "because the item's check passes --option 1 --provisional and the options are shown to people as a numbered list",
+      "do": {
+        "N counts from 1, and with --provisional they record the agent's answer": "ST-ekb5b7ic",
+        "N counts from 0, and --provisional ignores them": "ST-ekb5b7ic"
+      },
+      "class": "agents-rule",
+      "answer": "N counts from 1, and with --provisional they record the agent's answer",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],
