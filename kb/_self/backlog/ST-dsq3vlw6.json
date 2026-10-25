@@ -21,7 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Sprint SP-vxdacfpl started 2026-10-25 (unattended run). Waits on ST-2i5jnnn3 (SP-f7kaebel research story), which holds kb/public/**.",
+  "notes": "Sprint SP-vxdacfpl started 2026-10-25 (unattended run). Waits on ST-2i5jnnn3 (SP-f7kaebel research story), which holds kb/public/**. No outside facts: every item of this sprint changes this repo's own tools (show, report, brief, coord wait, next --batch, begin); the goal names no question about outside products, and the outside behaviour they lean on (git revision spelling for a file at a ref, detached process groups, claude -p result output) is already in the kb with pack coverage good.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
