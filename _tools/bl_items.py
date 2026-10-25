@@ -304,12 +304,18 @@ def gate_answered(bl, iid, it):
     move_run(iid, "working" if worker_running(bl, iid) else "returned", "answer")
 
 
+def claim_waits(bl, iid, by):
+    """What keeps `claim` from taking item IID for BY: the lines of `waits` less the ones a claim accepts, an item
+    already doing and, for a research item of a planned sprint, one still draft; [] when it can be claimed."""
+    ok = ("status doing", "status draft") if research_in_planned(bl, iid) else ("status doing",)
+    return [x for x in waits(bl, iid, any_sprint=True, by=by) if not x.startswith(ok)]
+
+
 def cmd_claim(bl, a):
     iid = need(bl, a.id)
     it = bl.items[iid]
     # a research item of a planned sprint is claimed from draft: its kb content lands before the sprint starts
-    ok = ("status doing", "status draft") if research_in_planned(bl, iid) else ("status doing",)
-    w = [x for x in waits(bl, iid, any_sprint=True, by=a.by) if not x.startswith(ok)]
+    w = claim_waits(bl, iid, a.by)
     if w:
         raise Refused(f"{bl.label(iid)} is not ready:\n  " + "\n  ".join(w))
     if it.get("status") == "doing" and it.get("claimed_by") != a.by:

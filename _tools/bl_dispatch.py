@@ -13,6 +13,9 @@ record, runs `selfdoc.py check`, the docs `selfdoc.py stale --since HEAD` lists 
 the copies alone with `KB-Work`; `--check` runs the docs check only and puts the worktree back as it was, and the
 brief's staging part names it, so a worker's report states its `problems=` count for what it staged.
 
+`backlog.py begin ID... --by NAME` starts up to four ready items in one call (`cmd_begin`): the overlap and local-branch
+checks (`begin_plan`), `claim --commit`, one `land_push` run for the claim commits and `dispatch --detach` of each.
+
 `backlog.py dispatch --resume ID --message FILE` sends the worker session of the item's last dispatch back with the text of
 FILE (`claude -p --resume`, in the item's worktree, the same environment and caps) and moves the run state as a dispatch does.
 
@@ -21,7 +24,7 @@ worktree and scratch directory, the in-flight sibling items with the files their
 tests and whole-suite failures that are no test the orchestrator names, the fixed worker rules and the rules of the project's own docs (`rules_section`, the
 one function that builds that part: backlog.json's `kb_root` gives the cited fact lines of a kb root, its `docs_map`
 the docs and `##` headings the item's touches map to). Standard library only; imports `bl_base`, `bl_cli`,
-`bl_items` (for the `goal` text), `bl_land` (the worker's branch and worktree names) and `bl_clean` (the `own/` records), never `backlog`."""
+`bl_items` (for the `goal` text and `claim`), `bl_land` (the worker's branch and worktree names), `bl_plan` and `bl_view` (the overlap rule and the held claims `begin` reads) and `bl_clean` (the `own/` records), never `backlog`."""
 import argparse
 import contextlib
 import csv
@@ -34,6 +37,7 @@ import shlex
 import shutil
 import subprocess
 import sys
+import time
 import urllib.parse
 from pathlib import Path
 
@@ -41,14 +45,16 @@ import bl_clean
 import bl_cli
 import bl_items
 import bl_land
+import bl_plan
 import bl_procs
-from bl_base import (RESEARCH_KINDS, ROOT as PLUGIN_ROOT, Refused, Rejected, always_in_scope, canonical, claims_ledger, commit_message,
+import bl_view
+from bl_base import (RESEARCH_KINDS, Backlog, colourless_env, ROOT as PLUGIN_ROOT, Refused, Rejected, always_in_scope, canonical, claims_ledger, commit_message,
                      external_lines, git, git_text, id_re, item_repos, link_target, name_for, need, repo_branch, repositories, research_touches,
                      resolved_touch,
                      run_check, say, scope, scratch_dir, setting, split_touch, touches_overlap, trailer_problem, withhold,
                      operator_who, rel_dir, worker_dir, ledger_lock, write_ledger)
 from bl_land import WORK_PREFIX, WORKER_NAME
-from bl_plan import land_line, shared_doc
+from bl_plan import land_line, shared_doc, touch_files, touches_meet
 from ql_base import same_dir
 
 WORKER_ROLE = "worker"  # KB_ROLE of every dispatched session, whatever role the dispatching one has
@@ -990,13 +996,12 @@ def detached_argv(bl, a, message=None):
     return argv
 
 
-def start_detached(bl, a, iid, scratch):
+def spawn_detached(bl, a, iid, scratch):
     """Start this dispatch as a process of its own: a new session, stdin closed, what it prints in `DETACH_LOG_NAME`
     of the scratch directory. It makes the worktree, runs the worker and ends once the worker has exited and its
-    leftovers are ended, so its pid is the one `coord.py wait --pid` watches; this call prints the pid, the log and that
-    wait command and returns. A resume
-    keeps its message file as it is now in the scratch directory (`RESUME_MESSAGE_NAME`), so the orchestrator may remove
-    its own."""
+    leftovers are ended, so its pid is the one `coord.py wait --pid` watches. Returns (the process, the log path)
+    and prints nothing. A resume keeps its message file as it is now in the scratch directory
+    (`RESUME_MESSAGE_NAME`), so the orchestrator may remove its own."""
     scratch.mkdir(parents=True, exist_ok=True)
     log = scratch / DETACH_LOG_NAME
     message = None
@@ -1008,9 +1013,21 @@ def start_detached(bl, a, iid, scratch):
     with open(log, "w", encoding="utf-8", newline="\n") as out:
         proc = subprocess.Popen(detached_argv(bl, a, message), cwd=str(bl.root), stdin=subprocess.DEVNULL, stdout=out,
                                 stderr=subprocess.STDOUT, **where)
-    say(f"dispatching {bl.label(iid)} detached: pid {proc.pid}, log {log} (its last line, `worker of {iid} exited`, "
-        f"ends it; the session's JSON is in {scratch / RESULT_NAME}); wait in the background with "
-        f"`python3 {shlex.quote(str(bl_clean.COORD))} wait --since 0 --timeout 3600 --kind progress --item {iid} --pid {proc.pid}`")
+    return proc, log
+
+
+def detached_line(bl, iid, proc, log, scratch):
+    """The line a detached dispatch prints: the item, the pid, the log and the wait command."""
+    return (f"dispatching {bl.label(iid)} detached: pid {proc.pid}, log {log} (its last line, `worker of {iid} exited`, "
+            f"ends it; the session's JSON is in {scratch / RESULT_NAME}); wait in the background with "
+            f"`python3 {shlex.quote(str(bl_clean.COORD))} wait --since 0 --timeout 3600 --kind progress --item {iid} --pid {proc.pid}`")
+
+
+def start_detached(bl, a, iid, scratch):
+    """Start the dispatch with `spawn_detached`, print its pid, the log and the `coord.py wait --pid` command and
+    return at once."""
+    proc, log = spawn_detached(bl, a, iid, scratch)
+    say(detached_line(bl, iid, proc, log, scratch))
     return 0
 
 
@@ -1173,6 +1190,159 @@ def cmd_dispatch(bl, a):
     return run_worker(bl, iid, argv, wt, brief, scratch, "dispatched", f"brief {brief}")
 
 
+BEGIN_WAIT_S = 60  # seconds `begin` waits for a detached dispatch to make its work branch
+
+
+def begin_plan(bl, a, ref):
+    """[(id, why)] for the ids of `begin`, in the order given: why is None for an item that is taken and else the
+    refusal. An item is refused when it arrived from the upstream main, has a local work branch, is not ready to
+    claim, is claimed by another on REF (the integration main as fetched, or None), or meets by touches the scope of
+    an item taken before it (bl_plan.touches_meet) or a claimed item of this checkout or REF (`held --overlaps`)."""
+    other = None
+    if ref:
+        other = Backlog(bl.root)
+        other.items, other.raw = bl_view.items_at(bl.root, ref), {}
+    files = touch_files(bl.root)
+    taken, rows = [], []
+    for iid in a.ids:
+        rows.append((iid, begin_refusal(bl, iid, a.by, other, ref, taken, files)))
+        if rows[-1][1] is None:
+            taken.append(iid)
+    return rows
+
+
+def begin_refusal(bl, iid, by, other, ref, taken, files):
+    """Why `begin` leaves item IID out, or None."""
+    if bl.is_upstream(iid):
+        return "arrived from the upstream main (git config kb.upstreamRemote) and is read-only in this clone"
+    if bl_land.has_ref(bl.root, f"refs/heads/{worker_branch(iid)}"):
+        return f"a local branch {worker_branch(iid)} exists: dispatch it again, or remove the branch"
+    if w := bl_items.claim_waits(bl, iid, by):
+        return "not ready: " + "; ".join(w)
+    mine = other.items.get(iid, {}) if other else {}
+    if mine.get("status") == "doing" and mine.get("claimed_by") not in (None, by):
+        return f"claimed by {mine['claimed_by']} on {ref}"
+    own = [t for t in scope(bl, iid) if isinstance(t, str) and t]
+    for j in taken:
+        for m in own:
+            for h in (t for t in scope(bl, j) if isinstance(t, str) and t):
+                if touches_meet(m, h, files):
+                    return f"touches overlap {bl.label(j)} of this batch: {m} meets {h}"
+    hits = bl_view.held_hits(bl, bl, iid) + (bl_view.held_hits(other, bl, iid) if other else [])
+    if hits:
+        return "touches overlap a held claim: " + hits[0] + (f" (+{len(hits) - 1} more: `held --overlaps {iid}`)"
+                                                             if len(hits) > 1 else "")
+    return None
+
+
+def begin_push(bl):
+    """Send the claim commits once with the argument list `land_push` names, run from the project's root. Refused,
+    naming the key or the command's last lines, when there is none or it exits non-zero."""
+    argv = setting("land_push")
+    if not argv:
+        raise Refused("begin: the project's backlog.json names no `land_push` (the argument list of the command that "
+                      "sends the claim commits to the integration main); the claims are committed, not pushed")
+    p = subprocess.run(argv, cwd=bl.root, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                       env=colourless_env())
+    if p.returncode:
+        tail = "\n".join(((p.stdout or "") + (p.stderr or "")).strip().splitlines()[-8:])
+        raise Refused(f"begin: {shlex.join(argv)} exited {p.returncode}; the claims are committed, not pushed, and "
+                      f"nothing is dispatched:\n{tail}")
+
+
+def begin_dispatch(bl, d):
+    """Start the detached dispatch D (a namespace like `dispatch --detach`'s) and print its line; None once the item's
+    work branch exists, else the reason it does not, with the end of the dispatch log."""
+    iid = d.id
+    scratch = scratch_path(bl.root, iid)
+    say(budget_line(budget_usd(d.max_budget_usd)))
+    proc, log = spawn_detached(bl, d, iid, scratch)
+    say(detached_line(bl, iid, proc, log, scratch))
+    if begin_wait(bl, iid, proc.pid):
+        return None
+    try:
+        tail = " | ".join(log.read_text(encoding="utf-8", errors="replace").strip().splitlines()[-3:])
+    except OSError:
+        tail = "no log"
+    return f"dispatch started (pid {proc.pid}) but made no {worker_branch(iid)} branch; its log {log} ends: {tail}"
+
+
+def begin_wait(bl, iid, pid):
+    """True once the detached dispatch of IID has made its work branch, False when its process ended without one or
+    BEGIN_WAIT_S passed first."""
+    deadline = time.monotonic() + BEGIN_WAIT_S
+    while time.monotonic() < deadline:
+        if bl_land.has_ref(bl.root, f"refs/heads/{worker_branch(iid)}"):
+            return True
+        if not bl_procs.alive(pid):
+            return bl_land.has_ref(bl.root, f"refs/heads/{worker_branch(iid)}")
+        time.sleep(0.1)
+    return False
+
+
+def cmd_begin(bl, a):
+    """`begin ID... --by NAME`: for each id, in order, the chain a sprint's run steps 2 and 3 spell out: fetch, the
+    overlap check, `claim --commit` with the --trailer lines, one `land_push` of the claim commits and `dispatch
+    --detach`, which prints the item's id, pid and log. An item refused by begin_plan is named with its reason and the
+    others go on; the exit is 1 when any was refused. --dry-run prints each line and writes, fetches and starts
+    nothing (the held claims are read from the integration main as last fetched)."""
+    if len(a.ids) > bl_plan.BATCH_MAX:
+        raise Refused(f"begin takes up to {bl_plan.BATCH_MAX} items in one call, {len(a.ids)} given: start the rest "
+                      "in a later call")
+    if len(set(a.ids)) != len(a.ids):
+        raise Rejected("begin: an id is given twice")
+    for iid in a.ids:
+        need(bl, iid)
+    import kbpublic
+    remote = kbpublic.integration_remote(bl.root)
+    ref = f"{remote}/main" if bl_land.has_ref(bl.root, f"refs/remotes/{remote}/main") else None
+    if not a.dry_run and git_text(bl.root, "remote", "get-url", remote) is not None:
+        p = subprocess.run(["git", "fetch", remote], cwd=bl.root, capture_output=True, text=True, encoding="utf-8",
+                           errors="replace")
+        if p.returncode:
+            raise Refused(f"begin: git fetch {remote} failed: {(p.stderr or p.stdout).strip()}")
+        ref = f"{remote}/main" if bl_land.has_ref(bl.root, f"refs/remotes/{remote}/main") else None
+    rows = begin_plan(bl, a, ref)
+    take = [i for i, why in rows if why is None]
+    for iid, why in rows:
+        log = scratch_path(bl.root, iid) / DETACH_LOG_NAME
+        if why:
+            say(f"{bl.label(iid)}: refused: {why}")
+        elif a.dry_run:
+            say(f"{bl.label(iid)}: would claim for {a.by} (--commit" + (f", {len(a.trailer)} trailer(s)" if a.trailer else "")
+                + f"), push the claim, then dispatch --detach (log {log})")
+    refused = len(take) < len(rows)
+    if a.dry_run:
+        say(f"begin (dry run: nothing fetched, claimed or started): {len(take)} to start, {len(rows) - len(take)} refused")
+        return 1 if refused else 0
+    if not take:
+        say("begin: nothing to start")
+        return 1
+    argv = claude_argv(bl, take[0], a.model, None, budget_usd(a.max_budget_usd))
+    if shutil.which(argv[0]) is None:
+        raise Rejected(f"begin: {argv[0]} is not on PATH; nothing claimed")
+    claimed = []
+    for iid in take:
+        bl.written = []
+        try:
+            bl_items.cmd_claim(bl, argparse.Namespace(id=iid, by=a.by, commit=True, trailer=list(a.trailer)))
+            claimed.append(iid)
+        except Refused as e:
+            say(f"{bl.label(iid)}: claim refused: {e}")
+            refused = True
+    if not claimed:
+        return 1
+    begin_push(bl)
+    for iid in claimed:
+        d = argparse.Namespace(id=iid, resume=None, message=None, known=a.known, known_suite=a.known_suite,
+                               probe=a.probe, max_budget_usd=a.max_budget_usd, dry_run=False, detach=True,
+                               model=a.model, max_turns=a.max_turns)
+        if (why := begin_dispatch(bl, d)) is not None:
+            say(f"{bl.label(iid)}: {why}")
+            refused = True
+    return 1 if refused else 0
+
+
 def other_spools(read):
     """The query-log spools of this host that `land` and `cost` do not read (READ: `bl_cost.spool_dirs`): the plugin
     data spool the environment names (`CLAUDE_PLUGIN_DATA`, where a session running the plugin's hooks writes) and the
@@ -1332,6 +1502,22 @@ def args_dispatch(p):
     p.add_argument("--max-turns", type=int, metavar="N", help="instead of the cap of the item's kind")
 
 
+def args_begin(p):
+    p.add_argument("ids", nargs="+", metavar="ID")
+    p.add_argument("--by", required=True, metavar="NAME", help="the name the items are claimed for")
+    p.add_argument("--trailer", action="append", default=[], metavar="'KEY: VALUE'",
+                   help="a trailer of the session's own after KB-Work in each claim commit (repeatable)")
+    p.add_argument("--dry-run", action="store_true",
+                   help="print each item's claim and dispatch or its refusal; fetch, claim, push and start nothing")
+    p.add_argument("--known", action="append", default=[], metavar="TEST=BUG",
+                   help="as dispatch's: a test known to fail on this host and its bug (repeatable)")
+    p.add_argument("--known-suite", action="append", default=[], metavar="TEXT=BUG", help="as dispatch's (repeatable)")
+    p.add_argument("--probe", metavar="TEXT", help="as dispatch's")
+    p.add_argument("--max-budget-usd", metavar="USD", help="as dispatch's")
+    p.add_argument("--model", metavar="NAME", help=f"another model than {DEFAULT_MODEL}, only when the operator asks")
+    p.add_argument("--max-turns", type=int, metavar="N", help="instead of the cap of each item's kind")
+
+
 bl_cli.register("brief", cmd_brief, args_brief, help="print the worker's brief for an item")
 bl_cli.register("dispatch", cmd_dispatch, args_dispatch,
                 help="make the worker's worktree and scratch, write its brief and start the headless session; "
@@ -1352,3 +1538,5 @@ bl_cli.register("report", cmd_report, args_report,
                 help="a returned worker's outcome: its result.json, the branch's commits and diffstat, its gates")
 bl_cli.register("stage-back", cmd_stage_back, args_stage_back,
                 help="copy a worker's staging copies into its worktree, check them there and commit them alone")
+bl_cli.register("begin", cmd_begin, args_begin,
+                help="claim up to four ready items, push the claims once and dispatch each detached")

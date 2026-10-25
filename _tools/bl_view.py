@@ -229,22 +229,30 @@ def cmd_held(bl, a):
         return 0
     src = mine if a.overlaps in mine.items else bl
     iid = need(src, a.overlaps)
+    hits = held_hits(bl, src, iid)
+    for x in hits:
+        say(x)
+    if not hits:
+        say(f"held: no claimed item's touches overlap {src.label(iid)}")
+    return 1 if hits else 0
+
+
+def held_hits(bl, src, iid):
+    """The sorted `held --overlaps` lines of item IID (of SRC, a Backlog that holds it): the claimed (doing) items of
+    BL outside IID's chain whose touches meet IID's scope, each line naming the glob of IID's it meets."""
     chain = {iid, *src.ancestors(iid), *src.descendants(iid)}
     own = [t for t in scope(src, iid) if isinstance(t, str) and t]
     files = touch_files(bl.root)
     hits = []
-    for i in doing:
+    for i in sorted(i for i, it in bl.items.items() if it.get("status") == "doing" and it.get("claimed_by")
+                    and it.get("kind") != "sprint"):
         if i in chain:
             continue
         for t in bl.items[i].get("touches", []) or []:
             met = [m for m in own if isinstance(t, str) and t and touches_meet(m, t, files)]
             if met:
                 hits.append(f"{held_line(bl, i, t)}  meets {', '.join(met)}")
-    for x in sorted(hits):
-        say(x)
-    if not hits:
-        say(f"held: no claimed item's touches overlap {src.label(iid)}")
-    return 1 if hits else 0
+    return sorted(hits)
 
 
 def horizon(bl, sid, upstream=False):
