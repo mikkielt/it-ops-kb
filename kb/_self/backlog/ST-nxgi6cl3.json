@@ -1,0 +1,28 @@
+{
+  "id": "ST-nxgi6cl3",
+  "kind": "story",
+  "title": "The gate add usage lines in backlog.py and the item and backlog skills say the recommendation is one of the options, though it may be an option followed by its reason",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the gate add usage text of _tools/backlog.py and the gate add lines of skills/item/SKILL.md and skills/backlog/SKILL.md say the recommendation may be an option followed by its reason, as gate add --help does",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport sys\nbad=[f for f,p in ((\"_tools/backlog.py\",\"recommendation one of them\"),(\"skills/item/SKILL.md\",\"recommendation one of the options\"),(\"skills/backlog/SKILL.md\",\"recommendation one of the options\")) if p in open(f,encoding=\"utf-8\").read()]\nprint(bad)\nsys.exit(1 if bad else 0)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "skills/item/SKILL.md",
+    "skills/backlog/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-f7kaebel review"
+  ],
+  "notes": "Found by the SP-f7kaebel review (S3): the gate add usage at _tools/backlog.py:124 and the gate add lines of skills/item/SKILL.md:31 and skills/backlog/SKILL.md:33 still say \"the recommendation one of them/the options\"; ST-yuf6gdr6 landed the option-plus-reason form without these files in its touches.",
+  "filed_in": "clone-0ea70e5c"
+}
