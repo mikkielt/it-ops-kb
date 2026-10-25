@@ -1,0 +1,23 @@
+{
+  "id": "BG-oivnxvw6",
+  "kind": "bug",
+  "title": "runner watch takes the value of an interpreter option such as python3 -X claude as the script word, so a process with claude as an option value passes the claude guard and is signalled",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "runner watch refuses with exit 2 a process whose only claude word is the value of an interpreter option, and signals nothing",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess as s,sys,tempfile,time,pathlib as P,shutil\nd=tempfile.mkdtemp(); rep=P.Path(d)/\"report\"; rep.write_text(\"\")\np=s.Popen([sys.executable,\"-X\",\"claude\",\"-c\",\"import time;time.sleep(30)\"])\ntime.sleep(1)\nw=s.run([sys.executable,\"_tools/backlog.py\",\"runner\",\"watch\",\"--pid\",str(p.pid),\"--report\",str(rep),\"--stale\",\"0.5\"],capture_output=True,text=True,timeout=30)\ntime.sleep(0.5); alive=p.poll() is None\np.kill(); p.wait(); shutil.rmtree(d)\nprint(\"rc\",w.returncode,\"alive\",alive,w.stdout.strip(),w.stderr.strip())\nsys.exit(0 if w.returncode==2 and alive else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/bl_procs.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
