@@ -124,7 +124,7 @@ An orchestrator session (a person's, or a sprint's) has a planning session runni
 4. The orchestrator reads the reply with `python3 _tools/coord.py get answer/A0000000001`, or `python3 _tools/coord.py wait --since SEQ --timeout 60` for the `answer` event. In the case this is built from the planner answered when the step it was in ended, about forty minutes after the ask: an ask is not an interrupt.
 5. A second ask to the same session queues behind the first: the hook shows each open ask once, up to five at an event, and the session answers each by its own id. A session learns that it can be steered, and can steer, from the id line the hook prints at its start.
 
-Steer a session by its session id or item id, never `any`, so only the session meant to act sees the ask. To stop a session that must stop, use its pid (`backlog.py procs`), not an ask.
+Steer a session by its session id or item id, never `any`, so only the session meant to act sees the ask. To stop a session that must stop, use its pid (`backlog.py procs`), not an ask. A headless runner that writes its report and stays is ended by `backlog.py runner watch --pid PID --report FILE --stale SECONDS` (`kb/_self/backlog.md`, "A runner that stays after its report").
 
 ## What the cleanup tooling reads from coord
 

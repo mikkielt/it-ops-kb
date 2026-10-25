@@ -350,6 +350,13 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           INTAKE_HOOK_BUDGET_S and files what the finished ones found, as uncommitted
                                           drafts, never commits or pushes. --opt-in (the plugin's entry): nothing
                                           runs unless backlog.json's `hooks` names intake
+  backlog.py runner watch --pid PID --report FILE --stale SECONDS
+                                          wait on one headless runner a manager started: when FILE is older than
+                                          SECONDS while the process runs, end it (SIGTERM, SIGKILL after
+                                          bl_procs.END_WAIT_S) and exit 0; exit 0 without a signal when the process
+                                          ends by itself or is not running; a pid whose command line does not name
+                                          claude is refused, nothing signalled (exit 2). It waits: start it as a
+                                          background command
   backlog.py stalled [--json]               each claimed or ready item with its stall signals (bl_stall.py), read
                                           only
   backlog.py ops SP                         the ops rows that name one of the sprint's items (bl_ops.py): land.step,
@@ -471,7 +478,7 @@ bl_cli.register("config", cmd_config, help="print the project settings with each
 # The usage order of the subcommands: each module registers its own when imported, and this puts them in order.
 USAGE = ("new", "similar", "check", "fmt", "selectors", "list", "tree", "find", "show", "next", "held", "claim",
          "release", "answer", "set", "move", "reopen", "gate", "fire", "done", "researched", "land", "merge", "drop", "start", "precheck",
-         "host-check", "close", "tidy", "horizon", "goal", "brief", "begin", "dispatch", "report", "stage-back", "referrers", "cost", "red-pipeline", "intake", "procs", "stalled", "ops",
+         "host-check", "close", "tidy", "horizon", "goal", "brief", "begin", "dispatch", "report", "stage-back", "referrers", "cost", "red-pipeline", "intake", "procs", "runner", "stalled", "ops",
          "runs", "landings", "own", "selfcheck", "upstream-report", "upstream-import", "config")
 bl_cli.order(USAGE)
 
