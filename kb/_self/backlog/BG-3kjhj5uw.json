@@ -1,0 +1,21 @@
+{
+  "id": "BG-3kjhj5uw",
+  "kind": "bug",
+  "title": "the dispatch usage text in backlog.py gives the turn caps 60, 100 and 200 where the code and the sprint skill have 100, 150 and 200",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "the dispatch paragraph of the backlog.py usage text gives the same turn caps by kind as bl_dispatch.TURNS and the sprint skill: 100 for a task, subtask or bug, 150 for a story, epic or sprint, 200 for research",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,subprocess,sys\nout=subprocess.run([sys.executable,\"_tools/kbtools.py\",\"--json\",\"backlog.py dispatch detach wait\"],capture_output=True,text=True).stdout\na=\" \".join(next(e for e in json.loads(out)[\"entries\"] if e[\"tool\"]==\"backlog.py dispatch\")[\"answers\"])\ni=a.find(\"N by kind\"); print(a[i:i+90])\nsys.exit(1 if \"60 task or subtask\" in a else 0)\n"
+    ]
+  },
+  "touches": [
+    "_tools/backlog.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
