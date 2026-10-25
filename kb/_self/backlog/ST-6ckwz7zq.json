@@ -2,7 +2,7 @@
   "id": "ST-6ckwz7zq",
   "kind": "story",
   "title": "kbtools.py names the backlog.py subcommand that answers a which-tool question, such as the landing step durations",
-  "status": "draft",
+  "status": "doing",
   "parent": "EP-sqt62vj2",
   "sprint": "SP-f7kaebel",
   "priority": "P3",
@@ -37,5 +37,7 @@
     "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],
   "notes": "From the 2026-10-24 telemetry and query-log analysis: the query log judged 'which tool shows how long each landing step took' missed this week (1 of 3 which-tool questions in 7 days; kbtools.py is called 140 times a week): kb_ask --route sends it to kind tools, but kbtools.py prints kb-lookup, kb_show and kb-sprint first and no line names backlog.py landings. backlog.py has 48 subcommands and one catalog line; in a probe that used each of 13 subcommands' own help text as the question, 11 (brief, dispatch, stage-back, procs, ops, landings, own, selfcheck, upstream-report, upstream-import, config) did not bring backlog.py into the top three lines (biased: some are answered by a skill or an MCP tool). Saves a few turns a week and a model lookup per miss. The subcommand-level gap of EP-5mp6pwnn (an agent finds the deterministic tool from one entry point); the ranking bugs BG-il5fgxps and BG-mqhzivkk are different. Also wanted: every subcommand named in a tool's usage block is findable by two of its own help words.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
