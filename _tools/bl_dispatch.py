@@ -1242,7 +1242,8 @@ def begin_push(bl):
     if not argv:
         raise Refused("begin: the project's backlog.json names no `land_push` (the argument list of the command that "
                       "sends the claim commits to the integration main); the claims are committed, not pushed")
-    p = subprocess.run(argv, cwd=bl.root, capture_output=True, text=True, encoding="utf-8", errors="replace",
+    run = [sys.executable, *argv] if argv[0].endswith(".py") else argv  # as land runs it: a script under this interpreter
+    p = subprocess.run(run, cwd=bl.root, capture_output=True, text=True, encoding="utf-8", errors="replace",
                        env=colourless_env())
     if p.returncode:
         tail = "\n".join(((p.stdout or "") + (p.stderr or "")).strip().splitlines()[-8:])
