@@ -1,0 +1,22 @@
+{
+  "id": "SP-r37ubrt4",
+  "kind": "sprint",
+  "title": "Orchestration tools: run states, landing, begin and wait",
+  "status": "planned",
+  "goal": "a stage-back of a refused item takes the run state, and a stage-back rerun after a kill takes the dead run's copy-in over; dispatch --resume is refused while a land or stage-back holds the run key; done leaves a claimed run key at claimed until the done commit is on the integration main; runs names a land or stage-back by what it is and not as the worker pid; backlog.py --root DIR with a DIR that is no clone never reads or writes the host's coord store; begin refuses a story that next marks no worker; the wait that begin and dispatch --detach print starts after the new worker's own working event; coord wait --pid does not count an exited process as running; the last line of dispatch.log says how the worker exited",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
