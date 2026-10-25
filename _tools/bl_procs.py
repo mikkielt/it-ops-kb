@@ -14,9 +14,13 @@ while the distill lock records its pid, or while it is younger than USAGE_LOCK_W
 when it is theirs, and `backlog.py selfcheck` fails while one runs. Two callers signal, through `end_pids` (SIGTERM, then
 SIGKILL after END_WAIT_S): `end_orphans(worktree)`, which `dispatch` calls once the worker has exited, to end the orphans in
 the worker's worktree (the MCP servers its session started), and prints each pid and command name it ended, and `bl_clean`'s
-`tidy --class process --apply` for a process an own record names. A hook in flight is named with its age and fails
+`tidy --class process --apply` for a process an own record names. The third signaller is `runner watch --pid PID --report
+FILE --stale SECONDS` (below the scan, `cmd_runner_watch`): it waits on one headless runner a manager started and, when
+the report file is older than SECONDS while the process still runs, ends it the same way and exits 0; it exits 0 without
+a signal when the process ends by itself, and refuses (exit 2, nothing signalled) a pid whose command line does not name
+claude, the one place a command line is read, for that test only. A hook in flight is named with its age and fails
 nothing, and a distill run past both is a stuck one, an orphan. HOOK_GRACE_S is the shorter wait `land` makes. A
-process's command line and environment are never read: only its command name is printed, and a hook is told by the file
+process's environment is never read, nor its command line by `procs` or the scan: only its command name is printed, and a hook is told by the file
 its standard output is. Where a host cannot list working directories (Windows) it says so. The one exception is
 `windows_snapshot`, which kbmon's sessions panel reads on Windows: the host's process table through PowerShell
 (`Get-CimInstance Win32_Process`: pid, parent, start, command name and command line as JSON) places a process in the
@@ -472,3 +476,88 @@ def cmd_procs(bl, a):
 
 
 bl_cli.register("procs", cmd_procs, args_procs, help="list the processes left in this clone's checkouts, orphans named")
+
+
+# ---------------------------------------------------------------- runner watch
+
+WATCH_POLL_S = 2  # how often `runner watch` looks at the process and its report
+
+
+def command_line(pid):
+    """The argument list of PID as the host gives it (/proc, `ps`, PowerShell on Windows), or None when it cannot be read
+    or the process is gone. Read only to tell whether the process is a claude session, never printed."""
+    try:
+        raw = Path(f"/proc/{pid}/cmdline").read_bytes()
+    except OSError:
+        raw = None
+    if raw:
+        return [w for w in raw.decode("utf-8", errors="replace").split("\0") if w]
+    if os.name == "nt":
+        for r in windows_rows() or []:
+            if r.get("ProcessId") == pid and isinstance(r.get("CommandLine"), str):
+                return r["CommandLine"].split()
+        return None
+    text = run_quiet(["ps", "-o", "command=", "-p", str(pid)])
+    return text.split() if text and text.strip() else None
+
+
+def names_claude(argv):
+    """True when a word of ARGV, taken as a path, is named `claude…` (the `claude` binary, or a script of that name)."""
+    return any(command_name(w).lower().startswith("claude") for w in argv)
+
+
+def started(pid):
+    """The start time the process table gives PID, or None when it does not run: a pid reused by another process has
+    another one."""
+    tab = process_table()
+    return tab[pid][1] if tab and pid in tab else None
+
+
+def cmd_runner_watch(bl, a):
+    """Wait on the process A.pid; when it runs on and the file A.report is older than A.stale seconds, end it
+    (`end_pids`) and return 0. Return 0 without a signal when it ends by itself. A pid whose command line does not name
+    claude is refused (Rejected, exit 2) before anything is signalled."""
+    pid, report, stale = a.pid, Path(a.report), a.stale
+    if stale < 0 or pid <= 1 or pid == os.getpid():
+        raise bl_base.Rejected(f"runner watch: --pid {pid} --stale {stale:g} is not a runner to watch")
+    argv = command_line(pid)
+    if argv is None:
+        say(f"runner watch: pid {pid} is not running; nothing to do")
+        return 0
+    if not names_claude(argv):
+        raise bl_base.Rejected(f"runner watch: pid {pid}'s command line does not name claude; refused, nothing signalled")
+    begun = started(pid)
+    if begun is None:
+        say(f"runner watch: pid {pid} is not running; nothing to do")
+        return 0
+    say(f"runner watch: pid {pid}, report {report}, ended when the report is older than {stale:g}s while the process runs")
+    while True:
+        if started(pid) != begun:
+            say(f"runner watch: pid {pid} ended by itself; nothing signalled")
+            return 0
+        try:
+            age = time.time() - report.stat().st_mtime
+        except OSError:  # not written yet: the runner is still at work
+            age = None
+        if age is not None and age > stale:
+            if not names_claude(command_line(pid) or []):
+                say(f"runner watch: pid {pid} ended by itself; nothing signalled")
+                return 0
+            ended = end_pids([pid])
+            say(f"runner watch: the report is {age:.0f}s old and pid {pid} still runs: " +
+                ("sent SIGTERM" if ended else "it was gone before the signal"))
+            return 0
+        time.sleep(WATCH_POLL_S)
+
+
+def args_runner(p):
+    rsub = p.add_subparsers(dest="verb", required=True)
+    p = rsub.add_parser("watch", help="end a runner whose report is written and whose process stays")
+    p.add_argument("--pid", type=int, required=True, help="the runner's process id: its command line must name claude")
+    p.add_argument("--report", required=True, help="the file the runner writes its report to")
+    p.add_argument("--stale", type=float, required=True, metavar="SECONDS",
+                   help="how old the report may get while the process still runs")
+
+
+bl_cli.register("runner", cmd_runner_watch, args_runner,
+                help="watch an unattended headless runner: `runner watch` ends one that stays after its report")
