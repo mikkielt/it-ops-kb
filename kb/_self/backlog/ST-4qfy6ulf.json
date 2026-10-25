@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "kbwho takes an alias from the operators file only when it is an operator id",
   "status": "draft",
+  "sprint": "SP-mk6ikval",
   "priority": "P2",
   "rank": 0,
   "goal": "kbwho.py applies the KB_OPERATOR id rule (letters, digits, dot, underscore, hyphen, at most 64) to an alias read from _private/operators.json and warns and gives no id for one that breaks it, so a claim never writes an operator that backlog.py check refuses and no address-shaped alias reaches coord or kbmon",

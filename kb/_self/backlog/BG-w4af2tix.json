@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The leak scan passes a short real EC key body with a slash that a period, underscore or hyphen follows, because the path lookahead calls any run of short slash-separated pieces a repository path",
   "status": "draft",
+  "sprint": "SP-mk6ikval",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "gate add classes a gate secrets when its question names a code identifier such as bare_token or def_tokens",
   "status": "draft",
+  "sprint": "SP-mk6ikval",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

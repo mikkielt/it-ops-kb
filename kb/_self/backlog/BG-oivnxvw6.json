@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "runner watch takes the value of an interpreter option such as python3 -X claude as the script word, so a process with claude as an option value passes the claude guard and is signalled",
   "status": "draft",
+  "sprint": "SP-mk6ikval",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

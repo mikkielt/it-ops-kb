@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "A gate naming a tokenize module function (tokenize.generate_tokens, tokenize.tokenize) is still classed secrets",
   "status": "draft",
+  "sprint": "SP-mk6ikval",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",

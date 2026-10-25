@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "kbwho never overwrites an operators file it cannot parse, and writes it readable by its owner only",
   "status": "draft",
+  "sprint": "SP-mk6ikval",
   "priority": "P2",
   "rank": 0,
   "goal": "kbwho.py refuses to rewrite a _private/operators.json that exists but does not parse (it warns and leaves the id None) instead of replacing every alias with one new entry, and writes the file mode 0600",

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The leak scan flags a table row whose label cell is followed by a header-like cell and a long identifier, with no key material",
   "status": "draft",
+  "sprint": "SP-mk6ikval",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

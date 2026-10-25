@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "redact leaves a host inside a url unchanged, so an internal url in a question passes the spool, kbmon output and coord asks",
   "status": "draft",
+  "sprint": "SP-mk6ikval",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

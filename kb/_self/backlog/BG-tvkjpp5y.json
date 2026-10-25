@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "census leak_problems scans the new_rows fields",
   "status": "draft",
+  "sprint": "SP-mk6ikval",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

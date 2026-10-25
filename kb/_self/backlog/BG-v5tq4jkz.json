@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The leak scan flags the EC armor label quoted before a repository path that has a segment longer than 16 characters, which passed before BG-nx6jzvop's path lookahead",
   "status": "draft",
+  "sprint": "SP-mk6ikval",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
