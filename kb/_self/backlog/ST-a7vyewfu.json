@@ -52,6 +52,23 @@
     "ST-hkvvbd4o",
     "ST-4mq6w3lx"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the brief carry the Conduct section and the kb-worker set: inside the existing rules part (under its hint line, section text first, then the whole set output, then the item pack), or as parts of their own?",
+      "options": [
+        "Inside the rules part, whole outputs verbatim",
+        "Separate brief parts, set trimmed to its # question lines"
+      ],
+      "recommendation": "Inside the rules part, whole outputs verbatim",
+      "do": {
+        "Inside the rules part, whole outputs verbatim": "ST-a7vyewfu",
+        "Separate brief parts, set trimmed to its # question lines": "ST-a7vyewfu"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],

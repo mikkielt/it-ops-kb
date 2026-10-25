@@ -74,6 +74,7 @@ INVESTIGATION_RE = re.compile(r"investigat", re.I)  # a bug whose title or goal 
 PACK_TIMEOUT_S = 120
 SELF_ROOT = "_self"  # the kb root of the kb's own rule docs: the one `rag.py pack --item` serves
 PACK_BUDGET = "600"
+CONDUCT_HEADING = "Conduct for changes"  # the section of kb/_self/maintaining.md that the brief carries as text
 RULES_DOCS_MAX = 12  # a mapped project's rules section names this many docs, then counts the rest
 RULES_HEADINGS_MAX = 30  # ... and this many `##` headings of one doc
 
@@ -363,30 +364,51 @@ def rag_tool(root, kb_root):
     return here if kb_root != SELF_ROOT and here.is_file() else None
 
 
-def pack_lines(bl, iid, tool, kb_root):
-    """The cited fact lines (`path:line`, tag) of KB_ROOT for the item, as lines: `rag.py pack --root _self --item
-    ID` for the kb's own rule docs, else `pack --root ROOT` on the item's title and goal (`--item` serves `_self`
-    only). A tool that fails gives one line naming why: the brief is still written."""
-    item = bl.items[iid]
-    shown = "_tools/rag.py" if Path(tool) == Path(bl.root) / "_tools" / "rag.py" else str(tool)
-    ask = f"python3 {shown} pack --root {kb_root}"
-    if kb_root == SELF_ROOT:
-        argv_tail, again = ["--item", iid], f"{ask} --item {iid} --budget {PACK_BUDGET}"
-        hint = (f"(`{ask} --set kb-worker` before the first step; any other rule: `{ask} \"<question>\"`.)")
-    else:
-        argv_tail, again = [f"{item.get('title', '')}. {item.get('goal', '')}".strip()], f"{ask} \"<question>\""
-        hint = f"(the cited fact lines of the kb root `{kb_root}` for this item; any other rule: `{again}`.)"
-    argv = [sys.executable, str(tool), "pack", "--root", kb_root, "--budget", PACK_BUDGET, *argv_tail]
+def tool_lines(bl, argv, what, again, empty):
+    """The output lines of the tool run ARGV from the project's root. A tool that fails gives one line naming WHAT
+    failed and AGAIN, the command to ask for it by hand, and one that prints nothing the line EMPTY: the brief is still
+    written."""
     try:
         p = subprocess.run(argv, cwd=str(bl.root), capture_output=True, text=True, encoding="utf-8",
                            errors="replace", timeout=PACK_TIMEOUT_S)
     except (OSError, subprocess.SubprocessError) as e:
-        return [hint, f"The rules pack could not run ({e}): ask for it with `{again}`."]
+        return [f"{what} could not run ({e}): ask for it with `{again}`."]
     if p.returncode:
         why = (p.stderr or p.stdout).strip().splitlines()[:1]
-        return [hint, f"The rules pack exited {p.returncode}" + (f" ({why[0]})" if why else "")
-                + f": ask for it with `{again}`."]
-    return [hint, *(p.stdout.rstrip("\n").splitlines() or ["The rules pack printed nothing for this item."])]
+        return [f"{what} exited {p.returncode}" + (f" ({why[0]})" if why else "") + f": ask for it with `{again}`."]
+    return p.stdout.rstrip("\n").splitlines() or [empty]
+
+
+def pack_lines(bl, iid, tool, kb_root):
+    """The cited fact lines (`path:line`, tag) of KB_ROOT for the item, as lines: `rag.py pack --root _self --item
+    ID` for the kb's own rule docs, else `pack --root ROOT` on the item's title and goal (`--item` serves `_self`
+    only). For `_self` the lines open with the text of the section "Conduct for changes" (`selfdoc.py section
+    maintaining`, where the project has `selfdoc.py`) and the tested rule lines of the `kb-worker` set, so the worker
+    asks for neither. A tool that fails gives one line naming why: the brief is still written."""
+    item = bl.items[iid]
+    shown = "_tools/rag.py" if Path(tool) == Path(bl.root) / "_tools" / "rag.py" else str(tool)
+    ask = f"python3 {shown} pack --root {kb_root}"
+    pre = []
+    if kb_root == SELF_ROOT:
+        argv_tail, again = ["--item", iid], f"{ask} --item {iid} --budget {PACK_BUDGET}"
+        included = "The `kb-worker` rule set is"
+        set_lines = tool_lines(bl, [sys.executable, str(tool), "pack", "--root", kb_root, "--set", "kb-worker"],
+                               "The `kb-worker` rule set", f"{ask} --set kb-worker", "The `kb-worker` set printed nothing.")
+        pre = ["", "The `kb-worker` rule set (the tested rule questions, each with the line that answers it):", *set_lines]
+        if has_tool(bl.root, "selfdoc.py"):
+            section = f"python3 _tools/selfdoc.py section maintaining \"{CONDUCT_HEADING}\""
+            included = f"The section \"{CONDUCT_HEADING}\" and the `kb-worker` rule set are"
+            pre = ["", f"The section \"{CONDUCT_HEADING}\" of `kb/_self/maintaining.md`:",
+                   *tool_lines(bl, [sys.executable, str(Path(bl.root) / "_tools" / "selfdoc.py"), "section", "maintaining",
+                                    CONDUCT_HEADING], "The conduct section", section, "The conduct section is empty."), *pre]
+        hint = (f"({included} already included below, so ask for neither; the rules of the docs your touches map to "
+                f"follow them; any other rule: `{ask} \"<question>\"`.)")
+    else:
+        argv_tail, again = [f"{item.get('title', '')}. {item.get('goal', '')}".strip()], f"{ask} \"<question>\""
+        hint = f"(the cited fact lines of the kb root `{kb_root}` for this item; any other rule: `{again}`.)"
+    argv = [sys.executable, str(tool), "pack", "--root", kb_root, "--budget", PACK_BUDGET, *argv_tail]
+    return [hint, *pre, *(["", "The rules of the docs your touches map to:"] if pre else []),
+            *tool_lines(bl, argv, "The rules pack", again, "The rules pack printed nothing for this item.")]
 
 
 def doc_headings(path):
