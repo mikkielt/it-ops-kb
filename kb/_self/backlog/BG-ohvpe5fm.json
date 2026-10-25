@@ -39,7 +39,11 @@
         "cursor at print time; begin prints its line after the branch exists and holds up to 10 s for the working event": "BG-ohvpe5fm",
         "cursor at print time only, begin prints its line first": "BG-ohvpe5fm"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "cursor at print time; begin prints its line after the branch exists and holds up to 10 s for the working event",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
