@@ -32,6 +32,6 @@
   "links": [
     "parked: SP-f7kaebel review"
   ],
-  "notes": "Found by the SP-f7kaebel review (S3): bl_procs.names_claude takes any argv word whose basename starts with claude, case-insensitively; the gate answer recorded for ST-hlbnqk7k chose that rule against a plain substring, but a word CLAUDE.md still matches. Runs as the agent s guard only; the repro fails on the base. Raised to S2 by the 2026-10-25 run brief: the guard decides which process gets SIGTERM.",
+  "notes": "Found by the SP-f7kaebel review (S3): bl_procs.names_claude takes any argv word whose basename starts with claude, case-insensitively; the gate answer recorded for ST-hlbnqk7k chose that rule against a plain substring, but a word CLAUDE.md still matches. Runs as the agent s guard only; the repro fails on the base. Raised to S2 by the 2026-10-25 run brief: the guard decides which process gets SIGTERM. Plan 2026-10-25: premise reproduced (the repro exits 0 on today's base, expected 2). The second check, a planted /bin/sh script named claude that runner watch must still end with SIGTERM, passes before the work on purpose: it pins the behaviour the fix must keep. Fix sketch: names_claude accepts the first word of the command line when its basename is claude (claude.exe too), or the first non-option word after an interpreter word; never a later argument.",
   "filed_in": "clone-0ea70e5c"
 }
