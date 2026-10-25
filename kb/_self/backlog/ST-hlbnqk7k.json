@@ -61,6 +61,28 @@
   "relates_to": [
     "EP-nij36lt7"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does runner watch decide that a pid's command line names claude?",
+      "options": [
+        "a word of the command line, taken as a path, whose name starts with claude",
+        "the text claude anywhere in the command line"
+      ],
+      "recommendation": "a word of the command line, taken as a path, whose name starts with claude",
+      "reason": "a plain substring would also match an editor open on a file called claude.md",
+      "do": {
+        "a word of the command line, taken as a path, whose name starts with claude": "ST-hlbnqk7k",
+        "the text claude anywhere in the command line": "ST-hlbnqk7k"
+      },
+      "class": "agents-rule",
+      "answer": "a word of the command line, taken as a path, whose name starts with claude",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "promoted: operator request 2026-10-24 (plan telemetry-derived items)"
   ],
