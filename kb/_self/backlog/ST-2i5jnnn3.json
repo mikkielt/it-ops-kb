@@ -21,6 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: every item of this sprint changes this repo's own tools (gate add, answer, set, runner watch, factdiff, fetch, kbtools); the goal names no question about outside products, and the behaviour each change needs is in the code and kb/_self/backlog.md, not in public documentation.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
