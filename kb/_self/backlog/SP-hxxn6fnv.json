@@ -3,7 +3,7 @@
   "kind": "sprint",
   "title": "Session state and cost: blocked, finished, silent, and spend by topic",
   "status": "active",
-  "goal": "every live session gets a silence measure; workers start through a launcher the operator sets and kbmon reads agent states from an external source through a JSON contract",
+  "goal": "every live session gets a silence measure",
   "gates": [
     {
       "id": "start",
