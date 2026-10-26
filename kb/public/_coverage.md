@@ -49,7 +49,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/agent-planning-and-done` | P3 | complete | `agents/agent-planning-and-done.md` | 7 |
 | `agents/agent-sandboxes` | P3 | partial | `agents/agent-sandboxes.md` | 18 |
 | `agents/agent-troubleshooting-method` | P3 | complete | `agents/agent-troubleshooting-method.md` | 15 |
-| `agents/codebase-mapping` | P3 | complete | `agents/codebase-mapping.md`, `agents/codebase-mapping.csv` | 112 |
+| `agents/codebase-mapping` | P3 | complete | `agents/codebase-mapping.md`, `agents/codebase-mapping.csv` | 114 |
 | `agents/coding-agent-codebase-context` | P3 | complete | `agents/coding-agent-codebase-context.md` | 20 |
 | `agents/decision-records` | P3 | partial | `agents/decision-records.md`, `agents/decision-records.csv` | 11 |
 | `agents/doc-change-detection` | P3 | complete | `agents/doc-change-detection.md` | 90 |

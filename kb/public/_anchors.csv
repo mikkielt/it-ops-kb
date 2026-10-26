@@ -968,6 +968,7 @@ fca2957f5e7e,agents/codebase-mapping.csv,S-j2laoer5,unlocated:no-match,,,,,2026-
 066b81211e7d,agents/codebase-mapping.md,S-5qhrejbl,unlocated:no-match,,,,,2026-10-13
 066b81211e7d,agents/codebase-mapping.md,S-l7o6het5,unlocated:no-match,,,,,2026-10-10
 080f8a9a9ff6,agents/codebase-mapping.md,S-5gm7nwzj,unlocated:no-match,,,,,2026-10-10
+08b6622a1c84,agents/codebase-mapping.md,S-ci5jq2sq,located,"type: (int, int) -> int",delet;referenc;new;variabl;assign;load;valu,5b6268a44aeeb40c,"Variable references can be used to load the value of a variable, to assign a new value to it, or to delete it.",2026-10-26
 0b42288d4c86,agents/codebase-mapping.md,S-hvxiebin,located,Overrides,away;further;current;rust-toolchain.toml;toml;rust;directory;file,fd67773093e5d8f4,"the directory tree toward the filesystem root, and a rust-toolchain.toml file that is closer to the current directory will be preferred over a directory override",2026-10-10
 0d350a990ffc,agents/codebase-mapping.md,S-73rwtmys,unlocated:no-match,,,,,2026-10-10
 0e38204feeb2,agents/codebase-mapping.md,S-2u4dktv3,unlocated:no-match,,,,,2026-10-10
@@ -1011,6 +1012,7 @@ fca2957f5e7e,agents/codebase-mapping.csv,S-j2laoer5,unlocated:no-match,,,,,2026-
 29e7181af9a6,agents/codebase-mapping.md,S-42ml7nxg,located,,hostfxr_resolve_sdk2;start;global;json;resolv;hostfxr;directory;sdk,62ddeefa252514e3,"Interop.Windows.hostfxrresolvesdk2(dotnetExeDirectory, globalJsonStartDirectory, flags, result.Initialize)",2026-10-10
 2cb6e0825ee9,agents/codebase-mapping.md,S-a7wduz2b,located,Tooling API > Querying tooling models with build actions > getModel/findModel versus fetch,evaluat;request;script;configuration;target;fail;project;model,602ba5249a5cff74,or throws an exception if the model cannot be built - for example because the target project's configuration script fails to evaluate.,2026-10-20
 31532b332d4c,agents/codebase-mapping.md,S-j7sjakc5,unlocated:no-match,,,,,2026-10-10
+33e9e42c282f,agents/codebase-mapping.md,S-gcxnhiij,located,,block;return;symbol,4ba3765d3423aebb,Return True if the symbol is used in its block.,2026-10-26
 35040eaa69de,agents/codebase-mapping.md,S-223vfyli,located,Dev Container Metadata Reference > Scenario specific properties > Image or Dockerfile specific properties,registry;name;imag;dev;devcontainer.json;json;devcontainer;container,f91238d2d4ab6bb2,"image | string | Required when using an image. The name of an image in a container registry (DockerHub, GitHub Container Registry, Azure Container Registry)",2026-10-10
 35040eaa69de,agents/codebase-mapping.md,S-4xsjlwlt,unlocated:no-match,,,,,2026-10-10
 35cbd6387308,agents/codebase-mapping.md,S-e2zwkzvw,located,Corepack,distribut;longer;start;v25;node;node.j;corepack,5380d95da603e7f9,Corepack will no longer be distributed starting with Node.js v25.,2026-10-10
@@ -1056,6 +1058,7 @@ fca2957f5e7e,agents/codebase-mapping.csv,S-j2laoer5,unlocated:no-match,,,,,2026-
 697f1a20df91,agents/codebase-mapping.md,S-afgd57ln,unlocated:no-match,,,,,2026-10-10
 697f1a20df91,agents/codebase-mapping.md,S-cfzsrdwh,located,,commandlin;dll;line;nuget.commandline.xplat.dll;plat;xplat;nuget;command,a76569b41b781b86,"private const string snugetExeName = ""NuGet.CommandLine.XPlat.dll"";",2026-10-13
 70ce92ed98bb,agents/codebase-mapping.md,S-qv43j5uv,located,dotnet msbuild command - .NET CLI | Microsoft Learn > Description,client;sdk-styl;styl;command-lin;line;option;sdk;command,03895beb478875a0,The command has the exact same capabilities as the existing MSBuild command-line client for SDK-style projects only. The options are all the same.,2026-10-10
+70d438eeef8e,agents/codebase-mapping.md,S-zhmvdb3z,located,,function;def;col_offset;lineno;col;offset,415698fc60e8a8df,"functiondef->lineno, functiondef->coloffset,",2026-10-26
 725b0db80e7a,agents/codebase-mapping.md,S-kyv336v3,located,MSBuild Response Files - MSBuild | Microsoft Learn > Directory.Build.rsp,15.6;parent;search;argument;default;project;directory.build.rsp;command-lin,2dd99077da28c025,"In version 15.6 and later, MSBuild searches parent directories of the project for a file named Directory.Build.rsp. This file can be helpful in a source",2026-10-10
 731cfe7a7735,agents/codebase-mapping.md,S-3yod3u7q,located,Tools reference,intelligenc;warn;definition;lsp;referenc;type;each;server,034dc7aa511f7598,"LSP | Code intelligence via language servers: jump to definitions, find references, report type errors and warnings. See LSP tool behavior | No Monitor |",2026-10-21
 731cfe7a7735,agents/codebase-mapping.md,S-cgtbvuug,located,Code intelligence plugins,definition;referenc;each;symbol;type;edit;error;intelligenc,7eac36dcd4a16d46,"A code intelligence plugin gives Claude the live diagnostics and go-to-definition that your editor has, so Claude catches type errors and missing imports that its",2026-10-12
@@ -1145,6 +1148,7 @@ b5d2614ccab3,agents/codebase-mapping.md,S-hbmr57xf,unlocated:no-match,,,,,2026-1
 b5d2614ccab3,agents/codebase-mapping.md,S-za45gi6s,unlocated:no-match,,,,,2026-10-10
 b9c5c565170f,agents/codebase-mapping.md,S-mrtq3wwm,unlocated:no-match,,,,,2026-10-10
 b9c5c565170f,agents/codebase-mapping.md,S-xmboehyd,located,dotnet package list command - .NET CLI | Microsoft Learn > Description,framework;referenc;version;project;packag,0e4229ebaf6457b1,The Resolved column lists the version that the project is currently using and is always a single value. The packages displaying an (A) right next,2026-10-10
+c13a627f4df4,agents/codebase-mapping.md,S-ci5jq2sq,located,"type: (int, int) -> int",assignment;stor;target;ctx,0be564ac70ae8d9c,ctx is :class:Store if the container is an assignment target,2026-10-26
 c1b1d4d47538,agents/codebase-mapping.md,S-j645b5a2,unlocated:no-match,,,,,2026-10-10
 c39e5757fae8,agents/codebase-mapping.md,S-6k54ouks,unlocated:no-match,,,,,2026-10-10
 cab8ac3c9012,agents/codebase-mapping.md,S-hssujrgr,unlocated:no-match,,,,,2026-10-10
@@ -1164,6 +1168,7 @@ d7af09b3bab3,agents/codebase-mapping.md,S-st5dilla,unlocated:no-match,,,,,2026-1
 db93af16f1b9,agents/codebase-mapping.md,S-43wwsm7t,located,Language Server Protocol Specification - 3.18 > Language Server Protocol > Window Features > Meta Model,3.17;3.18;lsp;specification,f971d77c3f8a8700,Since 3.17 there is a meta model describing the LSP protocol: metaModel.json: The actual meta model for the LSP 3.18 specification,2026-10-10
 db93af16f1b9,agents/codebase-mapping.md,S-j2laoer5,located,LSP / LSIF,3.18;3.17;previous;current,78492326ebe496e7,3.18 (Current) 3.19 (Upcoming) 3.17 (Previous),2026-10-10
 e1136873a90d,agents/codebase-mapping.md,S-orgevefw,unlocated:no-match,,,,,2026-10-10
+e175e2fdd17b,agents/codebase-mapping.md,S-ya6ao6xv,located,use an alternative implementation or warn the user,frozenset;library;standard;name;modul,291e1b7a18d5ec5e,A frozenset of strings containing the names of standard library modules.,2026-10-26
 e223b3fd2a49,agents/codebase-mapping.md,S-zihpu7lj,located,global.json overview - .NET CLI | Microsoft Learn > global.json schema > Comments in global.json,java;javascript;script;styl;comment;global;global.json;json,1656f1582108d5cc,Comments in global.json files are supported using JavaScript or C# style comments.,2026-10-10
 e274ff0f9bc4,agents/codebase-mapping.md,S-dxri4xet,unlocated:no-match,,,,,2026-10-10
 e274ff0f9bc4,agents/codebase-mapping.md,S-ebazgtwi,unlocated:no-match,,,,,2026-10-10
@@ -1172,6 +1177,7 @@ e274ff0f9bc4,agents/codebase-mapping.md,S-z35np3zd,unlocated:no-match,,,,,2026-1
 e36331e27cfc,agents/codebase-mapping.md,S-zihpu7lj,located,global.json overview - .NET CLI | Microsoft Learn,muxer;two;component;search;directory;dotnet;global;global.json,a5d606c2457ca7e8,You rely on two components in the .NET SDK to search for a global.json file. Each component starts from a different location and searches up,2026-10-10
 e699ba148b15,agents/codebase-mapping.md,S-gmmkbalr,unlocated:no-match,,,,,2026-10-10
 e6ae1e209438,agents/codebase-mapping.md,S-vstmwlcx,unlocated:no-match,,,,,2026-10-10
+e6c4879e464a,agents/codebase-mapping.md,S-ya6ao6xv,located,use an alternative implementation or warn the user,email;main;packag;list,3e383d6e2995b58a,"For packages, only the main package is listed: sub-packages and sub-modules are not listed.",2026-10-26
 e761ff9421d7,agents/codebase-mapping.md,S-e54zbsgw,unlocated:no-match,,,,,2026-10-10
 e8fd451cddf7,agents/codebase-mapping.md,S-4qptrwkx,unlocated:no-match,,,,,2026-10-10
 e8fd451cddf7,agents/codebase-mapping.md,S-hvxiebin,unlocated:no-match,,,,,2026-10-10

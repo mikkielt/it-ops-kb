@@ -2144,7 +2144,7 @@ _Agent: kb-research_
 - Raw-read hint: `PreToolUse` gets `tool_input.command` for Bash, and `additionalContext` reaches Claude without a block; `shlex` with `punctuation_chars=True` splits `&&`, `;` and `|` into their own tokens but is not a full shell parser. [DOC S743, S-npnkw4t2]
 - Live-docs cache: the three docs endpoints answer a plain POST `initialize` with SSE, forbid storing their responses in `Cache-Control`, and (Learn) issue a session id that later requests did not need; the spec's cache metadata covers `tools/list` only, and a legacy client sends `initialize`, `notifications/initialized`, `MCP-Session-Id` and `MCP-Protocol-Version`. [DOC S-cm7rkvrx, S-iw3x3th7] [DER S2177, S2180, S2181, S708]
 - Conclusion: none of the four items needs a further external source; the cache's lifetime and key are the project's own choice, because no cache lifetime for `tools/call` results exists in the spec or the response headers. [DER S708, S2177, S2180, S2181]
-- Open: whether `lineno` of a decorated function is its decorator line or its `def` line is not stated on the `ast` page. [UNK]
+- Open: whether `lineno` of a decorated function is its decorator line or its `def` line is not stated on the `ast` page; settled from the parser code on 2026-10-26: the `def` line (see `agents/codebase-mapping.md`). [UNK]
 - See agents/codebase-mapping.md, claude/hooks.md, mcp/transports-streamable-http.md, agents/doc-lookup-sources.md, claude/tool-output-limits.md.
 
 _Agent: kb-research_
@@ -4521,5 +4521,16 @@ _Agent: kb-research_
 - Conclusion: `ru_maxrss` is KiB on Linux and bytes on macOS (one macOS run of our own agrees), so a benchmark converts per platform; and a per-process-class count from an `fs_usage` capture groups by the process name, never by the number after it, which is a thread id. [DER S-d3vrqlxp, S-l7f6hp46, S-iezgwy2f, S-bj2723hr]
 - Open: the Linux unit was not run; no `fs_usage` capture was run (it needs root), and whether `sh` and `zsh` operands bring back lines the default exclusions drop is unknown. [UNK]
 - See python/rusage-maxrss-units.md, python/macos-fs-usage-output.md.
+
+_Agent: kb-research_
+
+## QK-code-map-tell-reference-definition-import. How does a code map built from Python's `ast` tell a reference from a definition, an import's origin and where a decorated function starts?
+- `Name`, `Attribute`, `Subscript`, `Starred`, `List` and `Tuple` carry a `ctx` of `Load`, `Store` or `Del`; a definition's name (`FunctionDef`, `ClassDef`, an import `alias`) and an `Attribute`'s `attr` are strings, not `Name` nodes. [DOC S-ci5jq2sq]
+- `symtable` decides the scope of a name per block (`is_referenced`, `is_assigned`, `is_imported`, `is_global`, `is_local`, `is_free`) and gives a line only for a block. [DOC S-gcxnhiij]
+- `sys.stdlib_module_names` (3.10+) lists the standard library's main packages only, the same on all platforms. [DOC S-ya6ao6xv]
+- At CPython v3.14.7 a decorated `FunctionDef`, `AsyncFunctionDef` or `ClassDef` takes the position of the undecorated node, so it starts at `def` or `class`, and one run on 3.13.2 agrees. [CODE S-zhmvdb3z: Parser/action_helpers.c#_PyPegen_function_def_decorators]
+- Conclusion: a reference scan keeps `Name` nodes with `Load` and `Attribute` nodes by `attr`, takes definitions from the definition nodes, sorts an import by the first dotted component against `sys.stdlib_module_names` and the repository's own modules, and takes a definition's start from the node and its decorators' lines. [DER S-ci5jq2sq, S-gcxnhiij, S-ya6ao6xv, S-zhmvdb3z]
+- Open: the `ast` page does not document the decorated node's `lineno` (the answer rests on the parser code and one run); whether `symtable` is worth its cost over the tree alone for a whole repository was not measured. [UNK]
+- See agents/codebase-mapping.md.
 
 _Agent: kb-research_
