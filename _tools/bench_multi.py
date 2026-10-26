@@ -1863,6 +1863,17 @@ def claim_windows(path):
     return out + [(key, holder, at, float("inf")) for (key, holder), at in begun.items()]
 
 
+def term_in_text(term, text):
+    """True when the lack term of a research key is in a fact's text. A key holds a term id (`coord.term_id`: the term lowercased,
+    each run of characters outside letters, digits and `_ . -` a `-`, and a `-` and 6 hex digits of a hash after it when that
+    changed the term), a fact the words as written, so the text is read in the id's form too and the hash is left out."""
+    text = text.lower()
+    if term in text:
+        return True
+    slugged = re.sub(r"[^a-z0-9_.-]+", "-", text)
+    return term in slugged or bool(re.fullmatch(r".+-[0-9a-f]{6}", term)) and term[:-7] in slugged
+
+
 def duplicate_research(root, manifest, lines):
     """The duplicate research of the run: for each two agents that added a fact of one claim (bench_repro.match_facts, as
     `repro compare` matches them) on the article of a research key `research:TOPIC:TERM`, with TERM in the fact, a line naming
@@ -1885,7 +1896,7 @@ def duplicate_research(root, manifest, lines):
                 owner = int(m.group(1)) if m else None
                 for adder, fact in ((y, added[y][j]), (x, added[x][i])):
                     if (owner in (x, y) and owner != adder and (x, y, key) not in named and fact["path"] == topic + ".md"
-                            and term in fact["text"].lower() and start - 1 <= fact["at"] <= end + 1):
+                            and term_in_text(term, fact["text"]) and start - 1 <= fact["at"] <= end + 1):
                         named.add((x, y, key))
                         out.append(f"duplicate research: {who[adder]} added a fact for {term!r} on {topic} while {who[owner]} held the "
                                    f"dedup claim {key}, and {who[owner]} wrote it too")
@@ -2438,7 +2449,7 @@ def worked_key(root, manifest, key, n, agent, workers):
     `research:TOPIC:TERM` a fact it added to the article of TOPIC that holds TERM (any fact for `*`)."""
     if key.startswith(RESEARCH):
         topic, _, term = key[len(RESEARCH):].partition(":")
-        return any(f["path"] == topic + ".md" and (term == "*" or term in f["text"].lower())
+        return any(f["path"] == topic + ".md" and (term == "*" or term_in_text(term, f["text"]))
                    for f in added_facts(origin_path(root), manifest["base"], agent_email(n)))
     return agent in workers.get(key, [])
 
