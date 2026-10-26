@@ -75,7 +75,9 @@
       },
       "class": "design",
       "answer": "List them by default; KB_COORD_TOOLS=0 turns them off",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -92,7 +94,9 @@
       },
       "class": "design",
       "answer": "Yes, a dedup without --holder sends KB_COORD_HOLDER like a claim",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Plan check 2026-10-26: check 0 reads the tools/list order, check 1 calls coord_dedup over MCP twice on a temp store (KB_COORD_STORE) and reads the fields and the second holder's overlap, check 2 starts coord.py serve on a free loopback port with two planted operator keys and runs dedup through --url twice. On the base: no coord_dedup tool (checks 0-1) and serve refuses dedup as an invalid choice (check 2): premise reproduced.",

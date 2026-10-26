@@ -49,7 +49,9 @@
       },
       "class": "design",
       "answer": "Same article and live claim window only",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

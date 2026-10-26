@@ -38,7 +38,9 @@
       },
       "class": "design",
       "answer": "state of the items that overlap the asked key (all items when none does)",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
