@@ -1,0 +1,26 @@
+{
+  "id": "BG-huguh6sn",
+  "kind": "bug",
+  "title": "A gate option that names a token budget floor ('a 200-token floor per question') is classed secrets",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_authority reads a hyphenated count of tokens used as a budget (a 200-token floor, a 600-token budget) as a model's token count, so a gate that names one stays design; a credential token keeps secrets. Seen on ST-6n5xrkbt gate g2 during SP-n7f53pgv.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import bl_authority as a\nit={\"touches\":[\"kb/_self/tools.md\"]}\ng={\"id\":\"g2\",\"question\":\"How does a task's text become pack questions and share the budget?\",\"options\":[\"title plus each body sentence or list item, at most 6, budget split evenly with a 200-token floor per question, later questions left out with a line saying so\",\"one question for the whole text\"]}\nc=a.derived_class(it,g);print(c,a.class_reasons(it,g));sys.exit(0 if c==\"design\" else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_authority.py",
+    "_tools/test_authority.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "found during: SP-n7f53pgv"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
