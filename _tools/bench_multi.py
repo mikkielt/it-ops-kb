@@ -1876,9 +1876,10 @@ def term_in_text(term, text):
 
 def duplicate_research(root, manifest, lines):
     """The duplicate research of the run: for each two agents that added a fact of one claim (bench_repro.match_facts, as
-    `repro compare` matches them) on the article of a research key `research:TOPIC:TERM`, with TERM in the fact, a line naming
-    the agent whose fact was committed while the other agent's claim of that key was live (a second between the clock of
-    the store and the commit's whole seconds is allowed), once for each pair and key."""
+    `repro compare` matches them) on the article of a research key `research:TOPIC:TERM`, a line naming the agent whose fact
+    was committed while the other agent's claim of that key was live (a second between the clock of the store and the
+    commit's whole seconds is allowed), once for each pair and key. The fact need not hold TERM: a lack term is free text
+    that agents word differently, so two matched facts on the claimed article count as one claim's duplicate."""
     who = {r["n"]: r["agent"] for r in lines if r.get("n")}
     bare = origin_path(root)
     added = {n: added_facts(bare, manifest["base"], agent_email(n)) for n in who}
@@ -1896,7 +1897,7 @@ def duplicate_research(root, manifest, lines):
                 owner = int(m.group(1)) if m else None
                 for adder, fact in ((y, added[y][j]), (x, added[x][i])):
                     if (owner in (x, y) and owner != adder and (x, y, key) not in named and fact["path"] == topic + ".md"
-                            and term_in_text(term, fact["text"]) and start - 1 <= fact["at"] <= end + 1):
+                            and start - 1 <= fact["at"] <= end + 1):
                         named.add((x, y, key))
                         out.append(f"duplicate research: {who[adder]} added a fact for {term!r} on {topic} while {who[owner]} held the "
                                    f"dedup claim {key}, and {who[owner]} wrote it too")

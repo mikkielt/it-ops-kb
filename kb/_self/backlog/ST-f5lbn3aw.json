@@ -32,6 +32,26 @@
   "depends_on": [
     "BG-3rhpom4d"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does duplicate_research tie two matched facts to a claimed research key once the term's text is not required?",
+      "options": [
+        "Same article and live claim window only",
+        "Also require a word of the term or a fuzzy match in the fact"
+      ],
+      "recommendation": "Same article and live claim window only",
+      "reason": "bench_repro.match_facts already pairs the facts as one claim, and a free-text lack term is worded differently by each agent",
+      "do": {
+        "Same article and live claim window only": "ST-f5lbn3aw",
+        "Also require a word of the term or a fuzzy match in the fact": "ST-f5lbn3aw"
+      },
+      "class": "design",
+      "answer": "Same article and live claim window only",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-7s6uubs7 review"
   ],
