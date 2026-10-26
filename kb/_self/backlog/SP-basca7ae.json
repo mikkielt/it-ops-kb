@@ -3,7 +3,7 @@
   "kind": "sprint",
   "title": "Sessions plan with each other",
   "status": "active",
-  "goal": "a planner runs backlog.py peers and sees every other live session's plans, files and sprints with the files it shares with them; putting items in a sprint announces the plan in coord; precheck warns of a shared file until an order settles it; peers shows each peer's liveness and open asks and an ask to an ended session is refused; the planning skills and the session-start line point at peers and settle an overlap by asking the other session; a landing stopped at rebase names the conflicting file and the item that changed it",
+  "goal": "a landing stopped at rebase names the conflicting file and the item that changed it; the sprint goal's research on how sessions message and plan with each other is recorded in the kb",
   "gates": [
     {
       "id": "start",

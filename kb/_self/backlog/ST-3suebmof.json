@@ -2,9 +2,8 @@
   "id": "ST-3suebmof",
   "kind": "story",
   "title": "Putting items in a sprint posts the session's plan to coord, so other sessions see it before any claim",
-  "status": "todo",
+  "status": "draft",
   "parent": "EP-zv3duelo",
-  "sprint": "SP-basca7ae",
   "priority": "P1",
   "rank": 0,
   "goal": "`backlog.py set ID... --sprint SP` and `backlog.py new KIND ... --sprint SP` post a coord intent of the session (`CLAUDE_CODE_SESSION_ID`) with topic `plan`, the sprint as its item and the files of the sprint's items as its touch; another session's `backlog.py peers` names that plan and each file it shares",
@@ -37,6 +36,9 @@
   "depends_on": [
     "ST-hjl7dhyh"
   ],
-  "notes": "The coord hook announces only at start and claim (`announce.when`); this posts from the tool itself, honouring `announce.to_other_sessions`. A run with no session id posts nothing. A coord intent's touch field holds at most 120 characters of ids (coord.py refuses more): a sprint whose items' files exceed it posts several plan intents, one per chunk, as the planner did by hand for SP-basca7ae on 2026-10-26. Plan check 2026-10-26: the check now plants both forms the goal names, set --sprint and new --sprint, each with its own case. On the base neither posts a plan intent and peers does not exist (premise reproduced).",
+  "links": [
+    "moved out: SP-basca7ae"
+  ],
+  "notes": "The coord hook announces only at start and claim (`announce.when`); this posts from the tool itself, honouring `announce.to_other_sessions`. A run with no session id posts nothing. A coord intent's touch field holds at most 120 characters of ids (coord.py refuses more): a sprint whose items' files exceed it posts several plan intents, one per chunk, as the planner did by hand for SP-basca7ae on 2026-10-26. Plan check 2026-10-26: the check now plants both forms the goal names, set --sprint and new --sprint, each with its own case. On the base neither posts a plan intent and peers does not exist (premise reproduced). Moved out of SP-basca7ae by the unattended orchestrator 2026-10-26: builds on ST-hjl7dhyh (backlog.py peers, bl_peers.py), whose gates g1 and g2 (class agents-rule) wait on the operator.",
   "filed_in": "clone-0ea70e5c"
 }

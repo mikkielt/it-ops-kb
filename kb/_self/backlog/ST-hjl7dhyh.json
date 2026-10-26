@@ -2,9 +2,8 @@
   "id": "ST-hjl7dhyh",
   "kind": "story",
   "title": "backlog.py peers lists the other live sessions' plans, files and sprints and names each file a plan shares with them",
-  "status": "doing",
+  "status": "draft",
   "parent": "EP-zv3duelo",
-  "sprint": "SP-basca7ae",
   "priority": "P1",
   "rank": 0,
   "goal": "`backlog.py peers [--sprint SP | --item ID | --touch GLOB...]` lists, read-only and with no model call, every other live Claude session of the clone with its label, topic, items and files from its coord intents, the active and planned sprints on the integration main with their items' files, and the held claims; with a sprint, item or touch it names each file that work shares with them, a shared `kb/_self` doc as `doc` and any other file as `overlap`, exiting 1 when an overlap is found and 0 otherwise; it prints no raw session id and leaves this session's own intents out",
@@ -43,8 +42,9 @@
     "kb/_self/tools.md",
     "kb/_self/coordination.md"
   ],
-  "notes": "Reuse, no parallel reader: the live sessions come from `mon_sessions.live_sessions(root)` (ST-bngriclp), the intents from `coord.py digest`, the sprints and claims from `bl_view` held and `bl_plan.touches_meet` / `shared_doc`. A shared doc never orders items; it is shown so the planner sees the landing order. kb/_self/map.csv is shared with the session-load benchmark's ST-7nuaruwn (claimed by session c5ef8aa4 on 2026-10-26): this story lands after it, told through a coord ask. Plan check 2026-10-26: the check now also plants a held claim (an active sprint item claimed and pushed) and asks peers to name it, so the clause \"the held claims\" has its own case. On the base it fails: backlog.py has no peers command (premise reproduced).",
-  "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "links": [
+    "moved out: SP-basca7ae"
+  ],
+  "notes": "Reuse, no parallel reader: the live sessions come from `mon_sessions.live_sessions(root)` (ST-bngriclp), the intents from `coord.py digest`, the sprints and claims from `bl_view` held and `bl_plan.touches_meet` / `shared_doc`. A shared doc never orders items; it is shown so the planner sees the landing order. kb/_self/map.csv is shared with the session-load benchmark's ST-7nuaruwn (claimed by session c5ef8aa4 on 2026-10-26): this story lands after it, told through a coord ask. Plan check 2026-10-26: the check now also plants a held claim (an active sprint item claimed and pushed) and asks peers to name it, so the clause \"the held claims\" has its own case. On the base it fails: backlog.py has no peers command (premise reproduced). Moved out of SP-basca7ae by the unattended orchestrator 2026-10-26: the worker ($1.15) raised two gates of class agents-rule (the item touches backlog.py and bl_peers.py): g1 which sessions and plans peers lists besides live processes and main sprints (recommended: also a session with a live lease and intent but no process; leave the work own sprint out), g2 how many holders a shared-file line names (recommended: six, then and N more). They wait on the operator; the work is on branch work/ST-hjl7dhyh.",
+  "filed_in": "clone-0ea70e5c"
 }
