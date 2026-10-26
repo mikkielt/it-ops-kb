@@ -2,7 +2,7 @@
   "id": "ST-cqcmpo72",
   "kind": "story",
   "title": "precheck shows conflict predictions from any external predictor beside its own file overlaps",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-zv3duelo",
   "sprint": "SP-n7f53pgv",
   "priority": "P3",
@@ -57,5 +57,7 @@
     "skills/sprint/SKILL.md"
   ],
   "notes": "Plan check 2026-10-26: checks 0-1 plant a backlog of their own (backlog.py --root on a temp git repo: a sprint of two stories with failing checks and one story outside it). Check 0 runs precheck --conflicts with a predicted conflict between the two sprint stories and one with the outside story; check 1 passes before the work on purpose: it pins that precheck without --conflicts prints its two failing checks and summary line and no conflict line; check 2 reads the backlog.md paragraphs naming --conflicts for both kinds and no product. The goal names the JSON fields. On the base: --conflicts is an unrecognized argument: premise reproduced.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
