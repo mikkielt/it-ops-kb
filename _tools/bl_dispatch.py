@@ -923,6 +923,7 @@ def cmd_stage_back(bl, a):
             raise Refused(f"stage-back: {top} has uncommitted changes, which a copy-in must not mix with the copies:"
                           f"\n{dirty}")
     originals = {}
+    back = "refused" if bl_land.run_state(iid) == "refused" else "returned"  # a land that stopped at checks stays refused
     recorded = bl_land.note_run_process(iid)  # first: a key at staging with no live record is one a rerun takes over
     try:
         entered, refusal = bl_land.enter_run(iid, "staging", "stage-back")  # land refuses the item while its copies are in
@@ -965,7 +966,7 @@ def cmd_stage_back(bl, a):
     finally:
         restore_originals(originals)  # a refusal or an error leaves the worktree as it was
         if entered:
-            bl_land.move_run(iid, "returned", "stage-back")
+            bl_land.move_run(iid, back, "stage-back")
         bl_land.drop_run_process(iid, recorded)
 
 
