@@ -2,7 +2,7 @@
   "id": "BG-v5lw37lb",
   "kind": "bug",
   "title": "tools.md's bl_authority.py row leaves out the DOC_SECRET exception to the token-named Markdown docs it blanks",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-sgfucsn6",
   "priority": "P2",
   "rank": 0,
@@ -39,6 +39,28 @@
   ],
   "notes": "Sprint start gate answered approve by the runner on the operator's behalf (pre-approved by the operator for the 2026-10-26 run).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "c0bdfb0ec75cf3b99be36d7bde5bea0634a213cf",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nrow=next(l for l in open(\"kb/_self/tools.md\",encoding=\"utf-8\") if l.startswith(\"| `_tools/bl_authority.py`\"))\nneed=[w for w in (\"bearer\",\"ssh\",\"passphrase\",\"PAT\") if w not in row]\nprint(\"words of the DOC_SECRET exception missing from the bl_authority.py row:\",need)\nsys.exit(1 if need else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "92a120e0dc1db3ea"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e)\n        sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport sys\nrow = next(l for l in open(\"kb/_self/tools.md\", encoding=\"utf-8\") if l.startswith(\"| `_tools/bl_authority.py`\"))\nprint(\"tools.md bl_authority row names the DOC_SECRET exception:\", \"DOC_SECRET\" in row or \"bearer-token.md\" in row)\nsys.exit(0 if (\"DOC_SECRET\" in row or \"bearer-token.md\" in row) else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "3b2fa7c8c8798a42"
+      }
+    ]
+  }
 }
