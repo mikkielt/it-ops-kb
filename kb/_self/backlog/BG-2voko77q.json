@@ -2,7 +2,7 @@
   "id": "BG-2voko77q",
   "kind": "bug",
   "title": "A stage-back of an item at refused does not take the run state, so a land started during its copy-in is not refused",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-42b2cjm3",
   "priority": "P2",
@@ -51,5 +51,7 @@
     "parked: SP-dx76osrn review"
   ],
   "notes": "Sprint started 2026-10-26 on the operator's approval for the unattended run.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
