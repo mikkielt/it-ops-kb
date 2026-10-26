@@ -89,8 +89,9 @@ route for text only the model reads is a `prompt.submit` hook's `context` (see t
   `{ deny: 'the reason' }` makes the call reject in the mod; the kit itself answers `$.ui.invalidate`, `$.state` and
   `$.session.append` calls. [DOC S-mvuodgli, S-kppz7qns]
 - `mock.clock(on)` answers `$.clock` from a mock clock that starts at `0` (or at `{ now }`) and moves only when the test
-  calls `await clock.advance(ms)`, `clock.set(ms)` or `clock.settle()`, so a test of a `$.clock.every` timer does not wait;
-  without it a mod's `$.clock.now()` fails with `no implementation for clock.now`. `mock.store`, `mock.env` and
+  calls `await clock.advance(ms)` or `clock.set(ms)`, so a test of a `$.clock.every` timer does not wait; without it a
+  mod's `$.clock.now()` fails with `no implementation for clock.now`; `await clock.settle()` runs the timers already due,
+  such as a chain of zero-delay `$.clock.after` calls, without moving the time. `mock.store`, `mock.env` and
   `mock.session` are the ready-made mocks for the store, environment variables and appended rows. [DOC S-kppz7qns]
 
 ### Pane and band
