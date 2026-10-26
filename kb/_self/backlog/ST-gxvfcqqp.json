@@ -22,10 +22,32 @@
     "kb/_self/querylog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "check_env: when the environment already holds BENCH_SCRATCH, which wins?",
+      "options": [
+        "always HOME/bench, the inherited value dropped",
+        "keep an inherited BENCH_SCRATCH"
+      ],
+      "recommendation": "always HOME/bench, the inherited value dropped",
+      "reason": "a kept value would send a check's sandboxes outside the directory removed after the run, the leak this item closes",
+      "do": {
+        "always HOME/bench, the inherited value dropped": "ST-gxvfcqqp",
+        "keep an inherited BENCH_SCRATCH": "ST-gxvfcqqp"
+      },
+      "class": "agents-rule",
+      "answer": "always HOME/bench, the inherited value dropped",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-7s6uubs7 close"
   ],
-  "notes": "SP-7s6uubs7 close: every landing of a multi story left about 20 multi-* sandboxes (precheck 3, a landing's checks, sibling checks and done about 20) because the committed checks call multi run and never multi remove; the orchestrator removed them by hand after each step. Premise: the check fails on the base: a check run keeps BENCH_SCRATCH outside its temporary home. Sprint SP-vmtfnkim started 2026-10-26: start gate answered approve by operator (pre-approved by the operator for the 2026-10-26 run).",
+  "notes": "SP-7s6uubs7 close: every landing of a multi story left about 20 multi-* sandboxes (precheck 3, a landing's checks, sibling checks and done about 20) because the committed checks call multi run and never multi remove; the orchestrator removed them by hand after each step. Premise: the check fails on the base: a check run keeps BENCH_SCRATCH outside its temporary home. Sprint SP-vmtfnkim started 2026-10-26: start gate answered approve by operator (pre-approved by the operator for the 2026-10-26 run). Gate g1 (class agents-rule) answered with its recommendation (always HOME/bench, the inherited value dropped) by operator (pre-approved by the operator for the 2026-10-26 run).",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }
