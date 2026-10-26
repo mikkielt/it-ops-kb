@@ -98,6 +98,9 @@ def test_redact_replaces_every_class_of_value_leaves_ordinary_text_and_a_second_
     assert "sunshine" not in redact.redact("password: sunshine") and VALUE not in redact.redact("password: " + VALUE)
     assert all("<secret>" in redact.redact("password: " + w) for w in ("stored", "where?", "are"))  # only the nine words, bare
     assert "<secret>" in redact.redact('password: "where"') and "<secret>" in redact.redact("postgres://fakeuser:in@db.example.com/app")
+    urls = redact.redact("open https://ci7.qzvx-internal.net/x or http://ci7.qzvx-internal.net:8080/x?y=1")
+    assert urls == "open https://corp.example.com/x or http://corp.example.com:8080/x?y=1"  # an unnamed url host goes as a bare host does
+    assert redact.redact("see https://learn.microsoft.com/en-us/graph/overview") == "see https://learn.microsoft.com/en-us/graph/overview"
     f = tmp_path / "in.txt"
     f.write_text(TEXT, encoding="utf-8", newline="\n")
     assert redact.main(["--scan", str(f)]) == 1
