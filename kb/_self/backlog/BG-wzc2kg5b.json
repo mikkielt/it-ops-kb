@@ -32,10 +32,31 @@
   "depends_on": [
     "BG-vr3vxylj"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does dispatch --detach start its printed wait after the worker's own working event?",
+      "options": [
+        "hold up to BEGIN_SETTLE_S seconds for the working event, as begin does",
+        "wait for the work branch first, then settle"
+      ],
+      "recommendation": "hold up to BEGIN_SETTLE_S seconds for the working event, as begin does",
+      "do": {
+        "hold up to BEGIN_SETTLE_S seconds for the working event, as begin does": "BG-wzc2kg5b",
+        "wait for the work branch first, then settle": "BG-wzc2kg5b"
+      },
+      "class": "agents-rule",
+      "answer": "hold up to BEGIN_SETTLE_S seconds for the working event, as begin does",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-lhpvwh6l review"
   ],
-  "notes": "Found by the SP-lhpvwh6l review (S3): start_detached in _tools/bl_dispatch.py calls coord_cursor with no settle, so the cursor precedes the worker's working event and the printed wait returns on it after about 10 s with the worker alive. skills/sprint/SKILL.md and kb/_self/tools.md say the wait returns on the next event: keep that wording only if the cursor skips working, else reword to the next move after working. Same fixture as BG-vr3vxylj, mode dispatch. Sprint started 2026-10-26 on the operator's approval for the unattended run.",
+  "notes": "Found by the SP-lhpvwh6l review (S3): start_detached in _tools/bl_dispatch.py calls coord_cursor with no settle, so the cursor precedes the worker's working event and the printed wait returns on it after about 10 s with the worker alive. skills/sprint/SKILL.md and kb/_self/tools.md say the wait returns on the next event: keep that wording only if the cursor skips working, else reword to the next move after working. Same fixture as BG-vr3vxylj, mode dispatch. Sprint started 2026-10-26 on the operator's approval for the unattended run. Gate g1 answered with its recommendation by operator (pre-approved by the operator for the 2026-10-26 run).",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
