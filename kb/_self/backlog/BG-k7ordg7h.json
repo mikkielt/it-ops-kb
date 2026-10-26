@@ -1,0 +1,26 @@
+{
+  "id": "BG-k7ordg7h",
+  "kind": "bug",
+  "title": "kbtail.py drops a coord change that comes less than 5 s after a rescan, so a new session waits for the 30 s timer",
+  "status": "draft",
+  "parent": "EP-booflukv",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbtail.py rescans for sessions within 5 seconds of a coord change also when the change comes less than 5 s after the last rescan, so a session that starts then is shown within 12 seconds",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json, os, random, shutil, string, subprocess, sys, tempfile, time, uuid\nif os.name == \"nt\":\n    print(\"check skipped: a fake claude process needs a POSIX host\"); sys.exit(0)\nR = os.getcwd(); T = os.path.realpath(tempfile.mkdtemp()); C = os.path.join(T, \"cfg\"); S = os.path.join(T, \"coord.sqlite\")\nenv = {k: v for k, v in os.environ.items() if not k.startswith(\"GIT_\")}\nenv.update(CLAUDE_CONFIG_DIR=C, COLUMNS=\"200\", KB_COORD_STORE=S)\ndef sh(*a, cwd=T):\n    return subprocess.run(a, cwd=cwd, env=env, capture_output=True, text=True, timeout=120)\nK = os.path.join(T, \"clone\"); os.makedirs(K)\nsh(\"git\", \"init\", \"-q\", \".\", cwd=K)\nsh(\"git\", \"-c\", \"user.email=a@example.com\", \"-c\", \"user.name=n\", \"commit\", \"-q\", \"--allow-empty\", \"-m\", \"i\", cwd=K)\nshutil.copy(os.path.join(R, \"backlog.json\"), K); os.makedirs(os.path.join(K, \"kb\", \"_self\", \"backlog\"))\nos.makedirs(os.path.join(T, \"bin\")); FAKE = os.path.join(T, \"bin\", \"claude\"); os.symlink(\"/bin/sleep\", FAKE)\nprocs = []\ndef transcript(base, sid, text):\n    pdir = os.path.join(C, \"projects\", \"\".join(c if c.isalnum() else \"-\" for c in base)); os.makedirs(pdir, exist_ok=True)\n    with open(os.path.join(pdir, sid + \".jsonl\"), \"w\") as f:\n        f.write(json.dumps({\"type\": \"user\", \"cwd\": base, \"sessionId\": sid, \"timestamp\": \"2026-10-26T10:00:00Z\",\n                            \"message\": {\"role\": \"user\", \"content\": text}}) + \"\\n\")\ndef session(base, text):\n    sid = str(uuid.uuid4())\n    os.makedirs(os.path.join(base, \"_cache\", \"coord_hook\"), exist_ok=True)\n    with open(os.path.join(base, \"_cache\", \"coord_hook\", sid + \".json\"), \"w\") as f:\n        json.dump({\"items\": [], \"lease_until\": time.time() + 600, \"token\": \"t\"}, f)\n    sh(sys.executable, os.path.join(R, \"_tools\", \"coord.py\"), \"--store\", S, \"claim\", \"session/\" + sid, \"--ttl\", \"600\", \"--holder\", \"h\")\n    transcript(base, sid, text)\n    procs.append(subprocess.Popen([FAKE, \"120\"], cwd=base))\n    return sid, procs[-1].pid\ndef kbtail(*a):\n    return sh(sys.executable, os.path.join(R, \"_tools\", \"kbtail.py\"), \"--root\", K, *a)\nimport threading\ndef follow(*a, e=None):\n    p = subprocess.Popen([sys.executable, os.path.join(R, \"_tools\", \"kbtail.py\"), \"--root\", K, *a], cwd=T, env=e or env,\n                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)\n    lines = []\n    threading.Thread(target=lambda: [lines.append(x) for x in p.stdout], daemon=True).start()\n    return p, lines\ndef until(pred, s):\n    end = time.monotonic() + s\n    while time.monotonic() < end and not pred():\n        time.sleep(0.1)\n    return pred()\nWT = os.path.join(K, \".claude\", \"worktrees\", \"agent-ST-aaaaaaaa\")\nsh(\"git\", \"worktree\", \"add\", \"-q\", \"-b\", \"work/ST-aaaaaaaa\", WT, cwd=K)\nWT2 = os.path.join(K, \".claude\", \"worktrees\", \"agent-ST-bbbbbbbb\")\nsh(\"git\", \"worktree\", \"add\", \"-q\", \"-b\", \"work/ST-bbbbbbbb\", WT2, cwd=K)\ntry:\n    session(WT, \"planted-first-line\")\n    p, lines = follow()\n    if not until(lambda: any(\"planted-first-line\" in x for x in lines), 15):\n        print(\"check broken: the first session is not shown\"); sys.exit(2)\n    time.sleep(1.0)\n    session(WT2, \"planted-late-line\")\n    t0 = time.monotonic()\n    seen = until(lambda: any(\"planted-late-line\" in x for x in lines), 12)\n    took = time.monotonic() - t0\n    p.terminate(); p.wait(5)\nfinally:\n    for q in procs: q.kill()\nok = seen and took <= 12\nprint(\"ok (%.1f s)\" % took if ok else \"a session that starts just after a rescan is shown only after %.1f s (limit 12 s; the 30 s timer finds it)\" % took)\nsys.exit(0 if ok else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/kbtail.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-7ba3r4ec review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

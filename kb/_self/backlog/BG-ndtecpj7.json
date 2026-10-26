@@ -1,0 +1,26 @@
+{
+  "id": "BG-ndtecpj7",
+  "kind": "bug",
+  "title": "kbtail.py --root another clone watches the script's own clone's coord store, so new sessions there wait for the 30 s timer",
+  "status": "draft",
+  "parent": "EP-booflukv",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kbtail.py --root DIR wakes on the coord store of DIR, the store live_sessions reads, so a session that starts there is shown within 12 seconds",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json, os, random, shutil, string, subprocess, sys, tempfile, time, uuid\nif os.name == \"nt\":\n    print(\"check skipped: a fake claude process needs a POSIX host\"); sys.exit(0)\nR = os.getcwd(); T = os.path.realpath(tempfile.mkdtemp()); C = os.path.join(T, \"cfg\"); S = os.path.join(T, \"coord.sqlite\")\nenv = {k: v for k, v in os.environ.items() if not k.startswith(\"GIT_\")}\nenv.update(CLAUDE_CONFIG_DIR=C, COLUMNS=\"200\", KB_COORD_STORE=S)\ndef sh(*a, cwd=T):\n    return subprocess.run(a, cwd=cwd, env=env, capture_output=True, text=True, timeout=120)\nK = os.path.join(T, \"clone\"); os.makedirs(K)\nsh(\"git\", \"init\", \"-q\", \".\", cwd=K)\nsh(\"git\", \"-c\", \"user.email=a@example.com\", \"-c\", \"user.name=n\", \"commit\", \"-q\", \"--allow-empty\", \"-m\", \"i\", cwd=K)\nshutil.copy(os.path.join(R, \"backlog.json\"), K); os.makedirs(os.path.join(K, \"kb\", \"_self\", \"backlog\"))\nos.makedirs(os.path.join(T, \"bin\")); FAKE = os.path.join(T, \"bin\", \"claude\"); os.symlink(\"/bin/sleep\", FAKE)\nprocs = []\ndef transcript(base, sid, text):\n    pdir = os.path.join(C, \"projects\", \"\".join(c if c.isalnum() else \"-\" for c in base)); os.makedirs(pdir, exist_ok=True)\n    with open(os.path.join(pdir, sid + \".jsonl\"), \"w\") as f:\n        f.write(json.dumps({\"type\": \"user\", \"cwd\": base, \"sessionId\": sid, \"timestamp\": \"2026-10-26T10:00:00Z\",\n                            \"message\": {\"role\": \"user\", \"content\": text}}) + \"\\n\")\ndef session(base, text):\n    sid = str(uuid.uuid4())\n    os.makedirs(os.path.join(base, \"_cache\", \"coord_hook\"), exist_ok=True)\n    with open(os.path.join(base, \"_cache\", \"coord_hook\", sid + \".json\"), \"w\") as f:\n        json.dump({\"items\": [], \"lease_until\": time.time() + 600, \"token\": \"t\"}, f)\n    sh(sys.executable, os.path.join(R, \"_tools\", \"coord.py\"), \"--store\", S, \"claim\", \"session/\" + sid, \"--ttl\", \"600\", \"--holder\", \"h\")\n    transcript(base, sid, text)\n    procs.append(subprocess.Popen([FAKE, \"120\"], cwd=base))\n    return sid, procs[-1].pid\ndef kbtail(*a):\n    return sh(sys.executable, os.path.join(R, \"_tools\", \"kbtail.py\"), \"--root\", K, *a)\nimport threading\ndef follow(*a, e=None):\n    p = subprocess.Popen([sys.executable, os.path.join(R, \"_tools\", \"kbtail.py\"), \"--root\", K, *a], cwd=T, env=e or env,\n                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)\n    lines = []\n    threading.Thread(target=lambda: [lines.append(x) for x in p.stdout], daemon=True).start()\n    return p, lines\ndef until(pred, s):\n    end = time.monotonic() + s\n    while time.monotonic() < end and not pred():\n        time.sleep(0.1)\n    return pred()\ne2 = dict(env); e2.pop(\"KB_COORD_STORE\", None)\nS = os.path.join(sh(\"git\", \"-C\", K, \"rev-parse\", \"--absolute-git-dir\").stdout.strip(), \"kb-coord\", \"coord.sqlite\")\nos.makedirs(os.path.dirname(S), exist_ok=True)\nenv = e2\nWT = os.path.join(K, \".claude\", \"worktrees\", \"agent-ST-aaaaaaaa\")\nsh(\"git\", \"worktree\", \"add\", \"-q\", \"-b\", \"work/ST-aaaaaaaa\", WT, cwd=K)\nWT2 = os.path.join(K, \".claude\", \"worktrees\", \"agent-ST-bbbbbbbb\")\nsh(\"git\", \"worktree\", \"add\", \"-q\", \"-b\", \"work/ST-bbbbbbbb\", WT2, cwd=K)\ntry:\n    session(WT, \"planted-first-line\")\n    p, lines = follow(e=e2)\n    if not until(lambda: any(\"planted-first-line\" in x for x in lines), 15):\n        print(\"check broken: the first session is not shown with the --root clone's own store\"); sys.exit(2)\n    time.sleep(6.0)\n    session(WT2, \"planted-late-line\")\n    t0 = time.monotonic()\n    seen = until(lambda: any(\"planted-late-line\" in x for x in lines), 12)\n    took = time.monotonic() - t0\n    p.terminate(); p.wait(5)\nfinally:\n    for q in procs: q.kill()\nprint(\"ok (%.1f s)\" % took if seen else \"with --root another clone, a new session is not shown within 12 s: the wake watches the script's own clone's store\")\nsys.exit(0 if seen else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/kbtail.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-7ba3r4ec review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

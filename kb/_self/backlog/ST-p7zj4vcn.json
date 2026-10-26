@@ -1,0 +1,28 @@
+{
+  "id": "ST-p7zj4vcn",
+  "kind": "story",
+  "title": "kbtail.py's follow loop bounds its passes under store churn, retries a failed history read and prints a resumed session's history once",
+  "status": "draft",
+  "parent": "EP-booflukv",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbtail.py's follow loop makes at most one pass a second whatever the coord store's write rate, and reads a followed file's head only when its size or inode changed; a transcript whose history read fails is retried at the next pass; a session resumed with the same id prints no history a second time",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json, os, random, shutil, string, subprocess, sys, tempfile, time, uuid\nif os.name == \"nt\":\n    print(\"check skipped: a fake claude process needs a POSIX host\"); sys.exit(0)\nR = os.getcwd(); T = os.path.realpath(tempfile.mkdtemp()); C = os.path.join(T, \"cfg\"); S = os.path.join(T, \"coord.sqlite\")\nenv = {k: v for k, v in os.environ.items() if not k.startswith(\"GIT_\")}\nenv.update(CLAUDE_CONFIG_DIR=C, COLUMNS=\"200\", KB_COORD_STORE=S)\ndef sh(*a, cwd=T):\n    return subprocess.run(a, cwd=cwd, env=env, capture_output=True, text=True, timeout=120)\nK = os.path.join(T, \"clone\"); os.makedirs(K)\nsh(\"git\", \"init\", \"-q\", \".\", cwd=K)\nsh(\"git\", \"-c\", \"user.email=a@example.com\", \"-c\", \"user.name=n\", \"commit\", \"-q\", \"--allow-empty\", \"-m\", \"i\", cwd=K)\nshutil.copy(os.path.join(R, \"backlog.json\"), K); os.makedirs(os.path.join(K, \"kb\", \"_self\", \"backlog\"))\nos.makedirs(os.path.join(T, \"bin\")); FAKE = os.path.join(T, \"bin\", \"claude\"); os.symlink(\"/bin/sleep\", FAKE)\nprocs = []\ndef transcript(base, sid, text):\n    pdir = os.path.join(C, \"projects\", \"\".join(c if c.isalnum() else \"-\" for c in base)); os.makedirs(pdir, exist_ok=True)\n    with open(os.path.join(pdir, sid + \".jsonl\"), \"w\") as f:\n        f.write(json.dumps({\"type\": \"user\", \"cwd\": base, \"sessionId\": sid, \"timestamp\": \"2026-10-26T10:00:00Z\",\n                            \"message\": {\"role\": \"user\", \"content\": text}}) + \"\\n\")\ndef session(base, text):\n    sid = str(uuid.uuid4())\n    os.makedirs(os.path.join(base, \"_cache\", \"coord_hook\"), exist_ok=True)\n    with open(os.path.join(base, \"_cache\", \"coord_hook\", sid + \".json\"), \"w\") as f:\n        json.dump({\"items\": [], \"lease_until\": time.time() + 600, \"token\": \"t\"}, f)\n    sh(sys.executable, os.path.join(R, \"_tools\", \"coord.py\"), \"--store\", S, \"claim\", \"session/\" + sid, \"--ttl\", \"600\", \"--holder\", \"h\")\n    transcript(base, sid, text)\n    procs.append(subprocess.Popen([FAKE, \"120\"], cwd=base))\n    return sid, procs[-1].pid\ndef kbtail(*a):\n    return sh(sys.executable, os.path.join(R, \"_tools\", \"kbtail.py\"), \"--root\", K, *a)\nimport threading\ndef follow(*a, e=None):\n    p = subprocess.Popen([sys.executable, os.path.join(R, \"_tools\", \"kbtail.py\"), \"--root\", K, *a], cwd=T, env=e or env,\n                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)\n    lines = []\n    threading.Thread(target=lambda: [lines.append(x) for x in p.stdout], daemon=True).start()\n    return p, lines\ndef until(pred, s):\n    end = time.monotonic() + s\n    while time.monotonic() < end and not pred():\n        time.sleep(0.1)\n    return pred()\nWT = os.path.join(K, \".claude\", \"worktrees\", \"agent-ST-aaaaaaaa\")\nsh(\"git\", \"worktree\", \"add\", \"-q\", \"-b\", \"work/ST-aaaaaaaa\", WT, cwd=K)\ntry:\n    sid, _ = session(WT, \"planted-start\")\n    pdir = os.path.join(C, \"projects\", \"\".join(c if c.isalnum() else \"-\" for c in WT)); path = os.path.join(pdir, sid + \".jsonl\")\n    def ent(text):\n        return json.dumps({\"type\": \"user\", \"cwd\": WT, \"sessionId\": sid, \"timestamp\": \"2026-10-26T10:00:00Z\",\n                           \"message\": {\"role\": \"user\", \"content\": text + \" \" + \"x\" * 200}}) + \"\\n\"\n    head = \"\".join(ent(\"pad%d\" % i) for i in range(10))\n    with open(path, \"w\") as f:\n        f.write(head + \"\".join(ent(\"old%d\" % i) for i in range(5)))\n    p, lines = follow(\"--history\", \"2\")\n    if not until(lambda: any(\"old4\" in x for x in lines), 15):\n        print(\"check broken: the transcript is not followed\"); sys.exit(2)\n    with open(path, \"r+\") as f:\n        f.seek(0); f.write(head + \"\".join(ent(\"new%d\" % i) for i in range(12))); f.truncate()\n    until(lambda: any(\"new11\" in x for x in lines), 6)\n    p.terminate(); p.wait(5)\nfinally:\n    for q in procs: q.kill()\nimport re as _re\nshown = {int(n) for n in _re.findall(r\"\\bnew(\\d+)\\b\", \"\".join(lines))}\nok = {10, 11} <= shown and (shown == set(range(12)) or shown <= {10, 11} or min(shown) == 0)\nprint(\"ok\" if ok else \"a transcript rewritten in place with the same first KB is read from the old offset: new lines shown %s\" % sorted(shown))\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbtail.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-7ba3r4ec review"
+  ],
+  "notes": "From the fresh review of SP-7ba3r4ec (S4 gaps on the follow loop: 27 ms, 1472 stats and 496 opens a pass with 16 sessions x 31 files, half a core at a store write every 50 ms; the OSError skip at kbtail.py scan; the resumed session's history printed twice). Its check is the in-place rewrite case for now; the planner of the slice that takes it writes a check for each clause before the start gate.",
+  "filed_in": "clone-0ea70e5c"
+}
