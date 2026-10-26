@@ -44,6 +44,26 @@
     "kb/_self/content-rules.md",
     "kb/_self/token-efficiency.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does a kf_ stage imported first get the facade loaded without a circular ImportError?",
+      "options": [
+        "guard: stage drops itself from sys.modules and imports kbfacts",
+        "move the ground into a new module the stages import"
+      ],
+      "recommendation": "guard: stage drops itself from sys.modules and imports kbfacts",
+      "reason": "the new module is outside the touches",
+      "do": {
+        "guard: stage drops itself from sys.modules and imports kbfacts": "BG-dgnrn4jy",
+        "move the ground into a new module the stages import": "BG-dgnrn4jy"
+      },
+      "class": "design",
+      "answer": "guard: stage drops itself from sys.modules and imports kbfacts",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-jplczvj2 review"
   ],
