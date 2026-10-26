@@ -30,6 +30,23 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does program() find the script word after an interpreter whose options may carry a value?",
+      "options": [
+        "per-interpreter option tables for python and node (known flags skipped, values of -W/-X/-r skipped, -c/-m/-e code), any unknown option or other interpreter's option leaves no script word",
+        "accept only argv[1] when it is no option"
+      ],
+      "recommendation": "per-interpreter option tables for python and node (known flags skipped, values of -W/-X/-r skipped, -c/-m/-e code), any unknown option or other interpreter's option leaves no script word",
+      "do": {
+        "per-interpreter option tables for python and node (known flags skipped, values of -W/-X/-r skipped, -c/-m/-e code), any unknown option or other interpreter's option leaves no script word": "BG-oivnxvw6",
+        "accept only argv[1] when it is no option": "BG-oivnxvw6"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-lhpvwh6l review"
   ],

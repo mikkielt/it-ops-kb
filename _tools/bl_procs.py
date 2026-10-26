@@ -502,21 +502,62 @@ def command_line(pid):
 
 
 INTERPRETER = re.compile(r"(python[\d.]*|pythonw|node|nodejs|bun|deno|ruby|perl|env|sh|bash|dash|zsh|ksh)(\.exe)?")
-CODE_OPTIONS = ("-c", "-e", "-m", "--eval")  # an interpreter option whose next word is code or a module, not a script
+# The options `program` knows per interpreter, as (letters of short options without a value, letters of short options that
+# take a value, letters that make the next word code or a module, long options without a value, long options with one);
+# any other option leaves the script word unknown, so the process is refused.
+OPTIONS = {
+    "python": ("BbdEIOPqRsSuvx", "WX", "cm", (), ()),
+    "node": ("", "r", "ep", ("--no-warnings", "--harmony", "--trace-warnings", "--enable-source-maps"),
+             ("--require", "--import", "--loader", "--experimental-loader")),
+}
+
+
+def option_family(name):
+    return "node" if re.fullmatch(r"(node|nodejs)(\.exe)?", name) else "python" if name.startswith("python") else None
+
+
+def skip_options(argv, family):
+    """The index in ARGV of the first word after the interpreter's options (the script word or a NAME=value), or None when
+    an option is unknown or runs code or a module."""
+    plain, valued, code, long_plain, long_valued = OPTIONS.get(family, ("", "", "", (), ()))
+    i = 1
+    while i < len(argv):
+        w = argv[i]
+        if w == "--":
+            return i + 1
+        if w in long_plain:
+            i += 1
+        elif w in long_valued:
+            i += 2
+        elif w.startswith("--") or w == "-" or not w.startswith("-"):
+            return None if w.startswith("--") else i
+        else:
+            i += 1
+            for k, c in enumerate(w[1:], 1):
+                if c in code:
+                    return None
+                if c in valued:
+                    i += 1 if k == len(w) - 1 else 0
+                    break
+                if c not in plain:
+                    return None
+    return i
 
 
 def program(argv):
-    """The program ARGV runs: its first word, or, when that is an interpreter, the script word after it (the first word
-    that is no option and no NAME=value); None when the interpreter runs code or a module instead of a script."""
+    """The program ARGV runs: its first word, or, when that is an interpreter, the script word after its options and the
+    values of the options that take one (the first word that is no NAME=value); None when the interpreter runs code or a
+    module instead of a script, or has an option this tool does not know."""
     if not argv:
         return None
-    if not INTERPRETER.fullmatch(command_name(argv[0]).lower()):
+    name = command_name(argv[0]).lower()
+    if not INTERPRETER.fullmatch(name):
         return argv[0]
-    for w in argv[1:]:
-        if w in CODE_OPTIONS:
-            return None
-        if not w.startswith("-") and "=" not in w:
-            return w
+    i = skip_options(argv, option_family(name))
+    while i is not None and i < len(argv):
+        if "=" not in argv[i]:
+            return argv[i]
+        i += 1
     return None
 
 
