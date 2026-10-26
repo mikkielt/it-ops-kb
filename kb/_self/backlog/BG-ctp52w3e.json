@@ -2,8 +2,7 @@
   "id": "BG-ctp52w3e",
   "kind": "bug",
   "title": "coord dedup still claims a whole-topic key with a * and keys over 120 characters for a long topic, and drops non-ASCII letters from term ids",
-  "status": "doing",
-  "sprint": "SP-n7f53pgv",
+  "status": "draft",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -52,9 +51,8 @@
     "kb/_self/web-sources.md"
   ],
   "links": [
-    "parked: SP-c7oav2vn review"
+    "parked: SP-c7oav2vn review",
+    "moved out: SP-n7f53pgv"
   ],
-  "notes": "Plan check 2026-10-26: check 0 plants four fingerprints (a whole-topic key, a 110-character topic whole and with terms, a non-ASCII term) and fails on the base: every whole-topic key holds a * past FIELD_VALUE, the long topic's keys pass 120 characters and the non-ASCII term keeps no readable form. Check 1 reads the kb-research skill's description of uncovered (now \"the terms you research\"; it holds term ids). The repro reads the whole-topic key only.",
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "notes": "Plan check 2026-10-26: check 0 plants four fingerprints (a whole-topic key, a 110-character topic whole and with terms, a non-ASCII term) and fails on the base: every whole-topic key holds a * past FIELD_VALUE, the long topic's keys pass 120 characters and the non-ASCII term keeps no readable form. Check 1 reads the kb-research skill's description of uncovered (now \"the terms you research\"; it holds term ids). The repro reads the whole-topic key only. Moved out of SP-n7f53pgv by the unattended orchestrator 2026-10-26: the worker ($0.67) raised gate g1 of class agents-rule (the item touches the kb-research skill and AGENTS.md): \"What term names a whole-topic research claim, and how is a topic over 80 characters held in a key?\" (recommended: a WHOLE term, topic cut to 73 characters plus a hash). It waits on the operator; work is on branch work/BG-ctp52w3e."
 }

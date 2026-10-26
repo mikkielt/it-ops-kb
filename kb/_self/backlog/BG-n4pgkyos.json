@@ -21,9 +21,6 @@
     "kb/_self/coordination.md",
     "kb/_self/monitoring.md"
   ],
-  "depends_on": [
-    "BG-ctp52w3e"
-  ],
   "links": [
     "parked: SP-fp3hxl6q review"
   ]
