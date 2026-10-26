@@ -5,7 +5,9 @@
   runs [SP|ID]              one line per item: its coord run state (the value of `run/<id>`, `none` when no move wrote it),
                             its item file status, the open gates of the item file on its work branch (`work/<id>`) and
                             whether its worker pid runs (the pid of the coord process record `dispatch` writes, which every
-                            tree and clone sees, else the one of this tree's claims-ledger record); then one `drift` line for each item
+                            tree and clone sees, else the one of this tree's claims-ledger record; at the run state `staging`
+                            or `landing` the pid is named `stage-back pid` or `land pid`, since the process record is the one
+                            that run wrote); then one `drift` line for each item
                             whose run state contradicts git, exit 1 when any is listed. SP: the sprint's items; ID: that
                             item; neither: the items of the active sprints and every item that holds a run key
   runs [SP|ID] --reconcile  write the state git shows to each drifted run key and exit 0 once none is left
@@ -169,8 +171,9 @@ def scope_of(bl, states, target):
 
 def line_of(row):
     gates = "no work branch" if row["gates"] is None else f"{row['gates']} open gate(s)"
-    worker = ("no worker pid" if row["pid"] is None
-              else f"worker pid {row['pid']} {'runs' if row['alive'] else 'gone'}")
+    tool = HELD[row["state"]][1] if row["state"] in HELD else None  # a key at staging or landing is held by that tool's process record
+    who = f"{tool} pid" if tool else "worker pid"
+    worker = f"no {who}" if row["pid"] is None else f"{who} {row['pid']} {'runs' if row['alive'] else 'gone'}"
     return f"{row['id']}  run {row['state']}  file {row['status'] or 'no item file'}  {gates}  {worker}"
 
 
