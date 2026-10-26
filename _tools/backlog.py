@@ -204,11 +204,13 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           (--summary: only list each of them with its status and the commit done
                                           recorded, the close commit's body, and change nothing; with --commit
                                           refused)
-  backlog.py tidy [--apply] [--json] [--older-than HOURS] [--disk-free-gb GB]
+  backlog.py tidy [--apply] [--json] [--older-than HOURS] [--disk-free-gb GB] [--path PATH]
                                           list each recorded worktree, local branch, bench sandbox and scratch
                                           directory with bl_clean.safe_to_remove's verdict (remove or keep), its
                                           reason and the bytes it frees, one summary line a class (--json: the
-                                          rows); --apply removes the remove rows (never --force); exit 1 a removal
+                                          rows); --apply removes the remove rows (never --force); --path (repeatable)
+                                          keeps only the recorded leftovers at those paths, a path no record
+                                          names exits 2; exit 1 a removal
                                           failed, 2 a refusal, 3 the coord store stayed locked
   backlog.py horizon [--sprint ID] [--hook [--opt-in]]   how far each active sprint can go without the operator: reachable
                                           items, what waits on which gate or trigger, the critical path, the
