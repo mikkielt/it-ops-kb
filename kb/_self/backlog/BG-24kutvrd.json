@@ -2,7 +2,7 @@
   "id": "BG-24kutvrd",
   "kind": "bug",
   "title": "querylog.py check scans each distinct value of an ops sidecar once, so a gate that touches the query-log store no longer holds the host lock for minutes",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-iowijan3",
   "sprint": "SP-vmtfnkim",
   "priority": "P2",
@@ -94,6 +94,28 @@
   ],
   "notes": "From the 2026-10-24 telemetry and query-log analysis: sync.gate rows 2026-10-16 to 24: 2,746 gates, 726 ran querylog.py check; median 112 s, p90 172 s, max 572 s, 25.2 of 32.7 gate-hours, all under the host main lock (kg_sync.py:1039 runs the whole sync_rounds inside kg_lock.guarded); 42 transcript lines show a push waiting on 'the host main lock held by ... kbgit.py sync --push'. The per-day median grew from 88 s (10-16) to 174 s (10-24) with the store. Direct run today: querylog.py check = 185 s wall, one core, problems=0. cProfile of ql_store.store_problems: 198 s, ops_sidecar_problems 187 s, leak_problems 184 s, redact.scan called 1,438,233 times (153 s own time), each call also stats the pointer-file directories (kbcommon._pointer_files, _private_patterns: 1.44M isdir calls). ql_deliver.py:672 runs the same check again before the sync that runs it a second time. land.step kbgit.py-sync-push: 156 of 1,162 steps took over 60 s (6.1 h). Saves about 25 of the 33 hours of sync-gate time a week (77%), roughly 3 minutes per gate that touches the store. Also in the item's scope, not read by the repro: the gate and the delivery's bring() run the store check once per delivery, not twice, and redact.scan does not stat the private-pattern directories on every call (cache them per process); a planted run file is cheap, a timing on the committed store is host-load dependent. Gate g1 answered with its recommendation (keep both runs, each now cheap) by operator (pre-approved by the operator for the 2026-10-26 run). Gate g2 answered with its recommendation (cache the private-pattern lookup only while leak_problems runs) by operator (pre-approved by the operator for the 2026-10-26 run).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "518f9f01398d1bc3cc7990316785dd6d1657867a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys\ntry:\n    p=subprocess.run([sys.executable,\"_tools/querylog.py\",\"check\"],capture_output=True,text=True,timeout=60)\nexcept subprocess.TimeoutExpired:\n    print(\"querylog.py check on the committed store took more than 60 seconds\");sys.exit(1)\nprint(p.stdout.strip()[-200:]);sys.exit(p.returncode)\n"
+        ],
+        "exit": 0,
+        "sha256": "ca69e22a961e6b9a"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,json,tempfile,pathlib as P\nsys.path.insert(0,\"_tools\");import ql_store,redact\nd=P.Path(tempfile.mkdtemp());f=d/\"ops\"/\"2026-10\"/\"20261024T000000Z-abcdef12.jsonl\";f.parent.mkdir(parents=True)\nrows=[{\"id\":\"r%d\"%i,\"ts\":\"2026-10-24T00:00:00Z\",\"event\":\"call.tool\",\"tool\":[\"Bash\",\"Read\",\"Edit\",\"Write\",\"Grep\",\"Glob\"][i%6],\"state\":[\"ok\",\"error\",\"denied\"][i%3]} for i in range(5000)]\nf.write_text(json.dumps({\"run\":f.stem,\"counts\":{\"rows\":len(rows)}})+\"\\n\"+\"\".join(json.dumps(x)+\"\\n\" for x in rows))\nn=[0];orig=redact.scan\ndef counted(v,k=None):\n n[0]+=1;return orig(v,k)\nredact.scan=counted\nql_store.leak_problems(d,[f.relative_to(d).as_posix()])\nprint(\"redact.scan calls for 5000 rows with 11 distinct values:\",n[0])\nsys.exit(0 if n[0]<=60 else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "6675c627303eb721"
+      }
+    ]
+  }
 }
