@@ -2,7 +2,7 @@
   "id": "BG-mqhzivkk",
   "kind": "bug",
   "title": "kbtools.py ranks kbmon.py above querylog.py for the plural need query logs, since the several-word name rule joins the need's raw words",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5mp6pwnn",
   "sprint": "SP-sgfucsn6",
   "priority": "P2",
@@ -31,6 +31,19 @@
   ],
   "notes": "Found by the SP-uhcjxayq review (S4): kbtools.name_words joins the need's raw words, so a plural does not spell a several-word name. Sprint start gate answered approve by the runner on the operator's behalf (pre-approved by the operator for the 2026-10-26 run).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "d6ca9325342436591aa26d14decdf7daaddf74ae",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json\nimport subprocess\nimport sys\n\nr = subprocess.run([sys.executable, '_tools/kbtools.py', 'query logs', '--json'], capture_output=True, text=True)\nfirst = json.loads(r.stdout)['entries'][0]['tool'] if r.returncode == 0 else None\nprint('first entry for query logs:', first)\nsys.exit(0 if first == 'querylog.py' else 1)"
+        ],
+        "exit": 0,
+        "sha256": "96123fb97d129f5f"
+      }
+    ]
+  }
 }
