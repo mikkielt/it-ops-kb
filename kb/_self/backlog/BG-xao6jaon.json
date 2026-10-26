@@ -2,7 +2,7 @@
   "id": "BG-xao6jaon",
   "kind": "bug",
   "title": "kbtail.py stops printing appended lines while another process holds the coord store's write lock, up to 30 s",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-booflukv",
   "sprint": "SP-7ba3r4ec",
   "priority": "P2",

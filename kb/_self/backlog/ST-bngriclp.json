@@ -2,7 +2,7 @@
   "id": "ST-bngriclp",
   "kind": "story",
   "title": "kbtail.py follows every live session of the clone and its worktrees, labelled by role and item, with subagents",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-booflukv",
   "sprint": "SP-7ba3r4ec",
   "priority": "P2",

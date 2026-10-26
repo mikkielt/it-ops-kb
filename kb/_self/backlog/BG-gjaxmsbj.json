@@ -2,7 +2,7 @@
   "id": "BG-gjaxmsbj",
   "kind": "bug",
   "title": "kbtail.py prints a tool call's name without redaction, so a secret-shaped MCP tool name reaches the terminal",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-booflukv",
   "sprint": "SP-7ba3r4ec",
   "priority": "P2",
