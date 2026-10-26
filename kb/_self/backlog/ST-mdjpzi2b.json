@@ -21,6 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "No outside facts: the kb answers each question (public/claude/cross-session-messaging.md for ListAgents and SendMessage and held messages; kb/_self/coordination.md and coord.py's usage for the intent and coordinate kinds); the epic keeps coord asks, which do not depend on Claude Code's permission mode, as the channel.",
+  "notes": "No outside facts: the kb answers each question (public/claude/cross-session-messaging.md for ListAgents and SendMessage and held messages; kb/_self/coordination.md and coord.py's usage for the intent and coordinate kinds); the epic keeps coord asks, which do not depend on Claude Code's permission mode, as the channel. Plan check 2026-10-26: where the findings go: dated ledger notes and answer entries that cite the existing kb facts named above; no new article fact or source row is planned, since the kb already answers each question. A fact the worker finds missing goes to a gap note.",
   "filed_in": "clone-0ea70e5c"
 }

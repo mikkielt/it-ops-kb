@@ -32,13 +32,14 @@
     "skills/sprint/SKILL.md",
     "skills/backlog/SKILL.md",
     "kb/_self/backlog.md",
-    "kb/_self/coordination.md"
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "ST-hjl7dhyh",
     "ST-3suebmof",
     "ST-tq6yo2si"
   ],
-  "notes": "skills/sprint/SKILL.md is also in the touches of ST-qqpcgqe7 (the session-load benchmark's lean hooks) and the three parked process stories ST-mhto5pkz, ST-72wajowg, ST-367rldvi: whichever is planned second orders after the other. The operator settled the design choices (2026-10-26).",
+  "notes": "skills/sprint/SKILL.md is also in the touches of ST-qqpcgqe7 (the session-load benchmark's lean hooks) and the three parked process stories ST-mhto5pkz, ST-72wajowg, ST-367rldvi: whichever is planned second orders after the other. The operator settled the design choices (2026-10-26). Plan check 2026-10-26: on the base the session-start horizon --hook line names no live peer and no peers command, /kb-sprint plan step 2 does not run peers and still says it never messages, and /kb-backlog Plan step 1 does not run peers (premise reproduced). The hook case runs the code path; the skill-step reads sit beside it.",
   "filed_in": "clone-0ea70e5c"
 }

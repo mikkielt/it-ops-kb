@@ -33,7 +33,9 @@
   ],
   "touches": [
     "_tools/bl_land.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ],
+  "notes": "Plan check 2026-10-26: the planted land of a branch whose kb/_self/tools.md conflicts with a KB-Work commit on main stops at rebase on the base without naming the conflicting doc (premise reproduced); the same check then reads the item, the dispatch --resume remedy and a clean checkout.",
   "filed_in": "clone-0ea70e5c"
 }
