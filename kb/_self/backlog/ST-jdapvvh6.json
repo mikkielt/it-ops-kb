@@ -2,7 +2,7 @@
   "id": "ST-jdapvvh6",
   "kind": "story",
   "title": "Research sprint goal: Query-log delivery and gate speed: a store check in seconds, one bad entry holds back one file, no fixture rows in the spool",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vmtfnkim",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: the sprint goal names no open question for the kb, and each committed item carries its own repro or check. Sprint SP-vmtfnkim started 2026-10-26: start gate answered approve by operator (pre-approved by the operator for the 2026-10-26 run).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "3ebce96a04f25ebe95552075be91c9963266b3af",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-jdapvvh6"
+        ],
+        "exit": 0,
+        "sha256": "899d0cbd83118349"
+      }
+    ]
+  }
 }
