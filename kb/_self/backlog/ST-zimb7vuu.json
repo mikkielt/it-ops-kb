@@ -95,6 +95,56 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "What is the default FINISHED_ALIVE_GRACE_S, the seconds a worker's process may run after its work is recorded as done before it is flagged and, with stop_finished, stopped?",
+      "options": [
+        "300 seconds",
+        "60 seconds",
+        "900 seconds"
+      ],
+      "recommendation": "300 seconds",
+      "reason": "long enough for a session to flush its output and exit by itself, short enough that a stalled chain waits minutes, not an hour",
+      "do": {
+        "300 seconds": "ST-zimb7vuu",
+        "60 seconds": "ST-zimb7vuu",
+        "900 seconds": "ST-zimb7vuu"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Which ops row records the stop of a finished-alive worker?",
+      "options": [
+        "agent.run, group stop-finished, ms the time it ran on after its result",
+        "stall.remedy, a past event, revived in ql_capture (outside this item's touches)"
+      ],
+      "recommendation": "agent.run, group stop-finished, ms the time it ran on after its result",
+      "reason": "it needs no change to the ops registry's code, which this item's touches do not name",
+      "do": {
+        "agent.run, group stop-finished, ms the time it ran on after its result": "ST-zimb7vuu",
+        "stall.remedy, a past event, revived in ql_capture (outside this item's touches)": "ST-zimb7vuu"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "After dispatch stops a finished worker, does it still end the orphan processes the session left in the worktree?",
+      "options": [
+        "no: only the recorded pid is signalled, procs lists the rest",
+        "yes: end_orphans runs as after any exit"
+      ],
+      "recommendation": "no: only the recorded pid is signalled, procs lists the rest",
+      "reason": "as the goal says no other process is ever signalled",
+      "do": {
+        "no: only the recorded pid is signalled, procs lists the rest": "ST-zimb7vuu",
+        "yes: end_orphans runs as after any exit": "ST-zimb7vuu"
+      },
+      "class": "agents-rule"
     }
   ],
   "links": [

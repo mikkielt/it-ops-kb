@@ -62,6 +62,9 @@ SETTINGS = {
     # `--opt-in`) that run in this project: they do nothing unless their name is listed here; [] = none (the kb's own
     # settings.json entries run without the flag)
     "hooks": ("hooks", []),
+    # whether `dispatch`'s wait sends SIGTERM to a worker's own recorded pid once its result is written and the pid still
+    # runs past `bl_stall.FINISHED_ALIVE_GRACE_S`; false = the worker is only flagged (`stalled`: finished-alive)
+    "stop_finished": ("bool", False),
 }
 NAMING_FIELDS = ("id", "task", "nn", "mm", "title", "slug")  # the placeholders a `naming` template may hold
 NAMING_DEFAULTS = {"branch": "work/{id}", "mr_title": "{id}: {title}", "trailer": ""}  # "" = the brief names no trailer
@@ -74,6 +77,8 @@ def _type_problem(kind, v):
         return isinstance(x, list) and all(isinstance(s, str) for s in x)
     if kind == "str":
         return None if isinstance(v, str) else "a string"
+    if kind == "bool":
+        return None if isinstance(v, bool) else "true or false"
     if kind == "forge":
         return None if v in ("", "gitlab", "github") else '"gitlab", "github" or "" (the project has no forge)'
     if kind == "path":

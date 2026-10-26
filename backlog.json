@@ -60,6 +60,7 @@
   "scratch_dir": "_cache/scratch",
   "forge": "gitlab",
   "forge_project": "",
+  "stop_finished": false,
   "trackers": {},
   "docs_map": "kb/_self/map.csv",
   "kb_root": "_self",
