@@ -90,7 +90,9 @@
       },
       "class": "design",
       "answer": "Any gate problem line that starts with a copied file's path (leak scan, entry gates, sidecar and findings gates), the gates re-run over the rest until none names a copied file; a problem naming no copied file still refuses",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
