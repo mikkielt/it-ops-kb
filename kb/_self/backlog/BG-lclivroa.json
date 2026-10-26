@@ -2,7 +2,7 @@
   "id": "BG-lclivroa",
   "kind": "bug",
   "title": "kbtail.py replays a replaced smaller transcript whole and reads a replaced larger one from the old byte offset",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-booflukv",
   "sprint": "SP-7ba3r4ec",
   "priority": "P2",
@@ -49,6 +49,19 @@
     "parked: SP-wurbmsid review"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-6c439ca9",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "6ea7d6acdf778e5307fb3592a15aba071282fc51",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json, os, subprocess, sys, tempfile, threading, time, uuid\nR = os.getcwd(); T = tempfile.mkdtemp(); C = os.path.join(T, \"cfg\")\nsid = str(uuid.uuid4())\npdir = os.path.join(C, \"projects\", \"-planted-project\"); os.makedirs(pdir)\nP = os.path.join(pdir, sid + \".jsonl\")\nenv = dict(os.environ, CLAUDE_CONFIG_DIR=C, COLUMNS=\"200\", KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"))\ndef ent(text, **kw):\n    return json.dumps(dict({\"type\": \"assistant\", \"cwd\": T, \"sessionId\": sid, \"timestamp\": \"2026-10-26T10:00:00Z\",\n                            \"message\": {\"role\": \"assistant\", \"content\": [{\"type\": \"text\", \"text\": text}]}}, **kw)) + \"\\n\"\ndef tail(*a, path=None):\n    return subprocess.run([sys.executable, \"_tools/kbtail.py\", *a, path or P], cwd=R, env=env, capture_output=True, text=True, timeout=60)\ndef follow(path=None):\n    p = subprocess.Popen([sys.executable, \"_tools/kbtail.py\", \"--history\", \"2\", path or P], cwd=R, env=env,\n                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)\n    lines = []\n    threading.Thread(target=lambda: [lines.append(x) for x in p.stdout], daemon=True).start()\n    return p, lines\ndef until(pred, s):\n    end = time.monotonic() + s\n    while time.monotonic() < end and not pred():\n        time.sleep(0.05)\n    return pred()\nwith open(P, \"w\") as f:\n    for i in range(30):\n        f.write(ent(\"old%d\" % i))\np, lines = follow()\nuntil(lambda: any(\"old29\" in x for x in lines), 10)\nnew = P + \".new\"\nwith open(new, \"w\") as f:\n    for i in range(60):\n        f.write(ent(\"big%d\" % i))\nos.replace(new, P)\nuntil(lambda: any(\"big59\" in x for x in lines), 5)\nsmall = P + \".small\"\nwith open(small, \"w\") as f:\n    for i in range(30):\n        f.write(ent(\"small%d\" % i))\nos.replace(small, P)\nuntil(lambda: any(\"small29\" in x for x in lines), 5)\np.terminate(); p.wait(5)\nout = \"\".join(lines)\nimport re as _re\nnums = lambda w: {int(n) for n in _re.findall(r\"\\b\" + w + r\"(\\d+)\\b\", out)}\nsmall_shown = len(nums(\"small\"))\nproblems = []\nif not {58, 59} <= nums(\"big\"):\n    problems.append(\"the replacing larger file's last lines are not shown\")\nif small_shown > 2:\n    problems.append(\"the replacing smaller file is replayed whole (%d lines, --history 2)\" % small_shown)\nprint(\"\\n\".join(problems) or \"ok\")\nsys.exit(1 if problems else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "dc51b8c96c2d745d"
+      }
+    ]
+  }
 }
