@@ -2,7 +2,7 @@
   "id": "ST-no5nfdiu",
   "kind": "story",
   "title": "The alternatives doc compares multi-agent coordination, task tracking and agent runtime tools, and says where the kb plugs into each",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-66qfpegm",
   "sprint": "SP-n7f53pgv",
   "priority": "P3",
@@ -49,5 +49,7 @@
     "kb/_self/alternatives.md"
   ],
   "notes": "Plan check 2026-10-26: check 0 (selfdoc check) passes before the work on purpose: it pins that the docs stay consistent. Check 1 reads the new ### section of alternatives.md for its columns (tool, licence, overlap, difference, adapter or contract), at least three rows and a source for each row; check 2 runs the _self pack of the clause's question and needs a cited line inside that section. The old section check named a heading the doc has no reason to hold. On the base: no such section: premise reproduced.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
