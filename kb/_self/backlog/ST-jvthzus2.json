@@ -18,6 +18,23 @@
         "code-lookups",
         "--dry-run"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,subprocess as s,sys;r=[x for x in csv.DictReader(open('kb/_self/reports/benchmarks.csv',encoding='utf-8')) if 'code' in x['case'] and x['scenario']=='multi'];arms={x['arm'] for x in r};print(len(r),sorted(arms));p=s.run([sys.executable,'_tools/benchmarks.py','report','--check'],capture_output=True,text=True,timeout=600);print(p.stdout[-300:]);t=open('kb/_self/token-efficiency.md',encoding='utf-8').read();sys.exit(0 if len(arms)>=2 and p.returncode==0 and 'code-lookups' in t else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "The lookup benchmark has a pool of code questions about this repository (where a symbol is defined, who calls it, which docs describe a file), run with the kb tools including the code-map call against tools=files, recorded under a spend cap the operator's gate names",
+      "check": 0
+    },
+    {
+      "clause": "the report and token-efficiency.md state tokens and USD per right answer for both arms with their spread",
+      "check": 1
     }
   ],
   "touches": [
@@ -58,5 +75,6 @@
       "role": "interactive"
     }
   ],
+  "notes": "Spend: the operator set a 150 USD cap (gate g1). No dry-run estimate exists at planning: multi run code-lookups --dry-run exits 2 until this story adds the scenario, so the worker prints the dry-run estimate first and stops at a gate if it exceeds 150 USD.",
   "filed_in": "clone-0ea70e5c"
 }

@@ -7,7 +7,7 @@
   "sprint": "SP-acysfnxr",
   "priority": "P1",
   "rank": 0,
-  "goal": "kbingest.py map adds a symbols section to its JSON map: for each definition its name, kind, path and line, and for each its references (path and line) within the repository, Python read with ast as now and another language through its mapper's read-only commands or a language server's symbol and reference requests where one is installed, a language with neither left as a note; the map stays under _cache, never under kb/, and keeps its format version raised by one.",
+  "goal": "kbingest.py map adds a symbols section to its JSON map, read with ast for Python: for each definition its name, kind, path and line, and for each its references (path and line) within the repository; the map is written under _cache by default, never under kb/, and its format is 2.",
   "checks": [
     {
       "run": [
@@ -15,6 +15,31 @@
         "-c",
         "import json,os,subprocess as s,sys,tempfile;o=os.path.join(tempfile.mkdtemp(),'m.json');s.run([sys.executable,'_tools/kbingest.py','map','.','--lang','python','--out',o],capture_output=True,text=True,timeout=900,check=True);m=json.load(open(o));y=m.get('symbols') or [];hit=[x for x in y if x.get('name')=='pack' and x.get('path','').startswith('_tools/')];print(len(y),hit[:2]);sys.exit(0 if hit and hit[0].get('references') else 1)"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import glob,json,os,subprocess as s,sys;b=set(s.run(['git','status','--porcelain','--','kb'],capture_output=True,text=True).stdout.splitlines());p=s.run([sys.executable,'_tools/kbingest.py','map','.','--lang','python'],capture_output=True,text=True,timeout=900,check=True);a=set(s.run(['git','status','--porcelain','--','kb'],capture_output=True,text=True).stdout.splitlines());f=max(glob.glob('_cache/ingest/*.json'),key=os.path.getmtime);m=json.load(open(f));print(f,m.get('format'),a-b);sys.exit(0 if m.get('format')==2 and 'symbols' in m and not a-b else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbingest.py map adds a symbols section to its JSON map, read with ast for Python: for each definition its name, kind, path and line",
+      "check": 0
+    },
+    {
+      "clause": "for each its references (path and line) within the repository",
+      "check": 0
+    },
+    {
+      "clause": "the map is written under _cache by default, never under kb/",
+      "check": 1
+    },
+    {
+      "clause": "its format is 2",
+      "check": 1
     }
   ],
   "touches": [

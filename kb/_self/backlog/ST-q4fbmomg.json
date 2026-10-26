@@ -12,12 +12,59 @@
     {
       "run": [
         "python3",
-        "_tools/kbingest.py",
-        "where",
-        "pack",
-        "--repo",
-        "."
+        "-c",
+        "import subprocess as s,sys;p=s.run([sys.executable,'_tools/kbingest.py','where','referrers_of','--repo','.'],capture_output=True,text=True,timeout=900);print(p.stdout[:800]);sys.exit(0 if p.returncode==0 and '_tools/bl_items.py:' in p.stdout and '/raw' in p.stdout else 1)"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess as s,sys;p=s.run([sys.executable,'_tools/kbingest.py','where','subprocess','--repo','.'],capture_output=True,text=True,timeout=900);print(p.stdout[:800]);sys.exit(0 if p.returncode==0 and sum('_tools/' in l for l in p.stdout.splitlines())>=3 else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,subprocess as s,sys;m=[{'jsonrpc':'2.0','id':0,'method':'initialize','params':{'protocolVersion':'2025-11-25','capabilities':{},'clientInfo':{'name':'chk','version':'1'}}},{'jsonrpc':'2.0','method':'notifications/initialized'},{'jsonrpc':'2.0','id':1,'method':'tools/call','params':{'name':'kb_code','arguments':{'name':'referrers_of','repo':'.'}}}];p=s.run([sys.executable,'_tools/kb_mcp.py'],input=chr(10).join(json.dumps(x) for x in m)+chr(10),capture_output=True,text=True,timeout=900,check=True);r=[json.loads(l) for l in p.stdout.splitlines() if l.strip()];t=[c['text'] for x in r if x.get('id')==1 for c in (x.get('result') or {}).get('content',[])];print(t[:1]);sys.exit(0 if t and '_tools/bl_items.py:' in t[0] else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess as s,sys;p=s.run([sys.executable,'_tools/kbingest.py','where','referers_of','--repo','.'],capture_output=True,text=True,timeout=900);print(p.returncode,p.stdout[:400],p.stderr[:400]);sys.exit(0 if p.returncode==1 and 'referrers_of' in p.stdout+p.stderr else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,subprocess as s,sys,tempfile;d=tempfile.mkdtemp();g=lambda *a:s.run(['git','-C',d]+list(a),capture_output=True,check=True);g('init','-q');open(os.path.join(d,'a.py'),'w').write('def helper():'+chr(10)+'    return 1'+chr(10));open(os.path.join(d,'b.py'),'w').write('from a import helper'+chr(10)+'x = helper()'+chr(10));g('add','.');g('-c','user.name=chk','-c','user.email=chk@example.com','commit','-qm','init');p=s.run([sys.executable,'_tools/kbingest.py','where','helper','--repo',d],capture_output=True,text=True,timeout=300);print(p.stdout,p.stderr[-300:]);sys.exit(0 if p.returncode==0 and 'a.py:1' in p.stdout and 'b.py' in p.stdout else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbingest.py where NAME [--map FILE|--repo REPO --rev REV] prints the definitions of NAME with path:line and pinned url, its references grouped by file",
+      "check": 0
+    },
+    {
+      "clause": "for a package name the files and modules that import it, within a line budget, reading only the map",
+      "check": 1
+    },
+    {
+      "clause": "the kb MCP server serves the same as kb_code",
+      "check": 2
+    },
+    {
+      "clause": "a name the map lacks exits 1 naming the nearest names, never guessing",
+      "check": 3
+    },
+    {
+      "clause": "it works on a map of this repository and of an ingested one",
+      "check": 4
     }
   ],
   "touches": [

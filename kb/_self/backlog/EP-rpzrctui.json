@@ -6,5 +6,6 @@
   "priority": "P1",
   "rank": 0,
   "goal": "kbingest's map records each symbol's definition and references at a pinned commit; one call (CLI and kb MCP server) answers where a symbol is defined, who uses it and what depends on a package without reading files; and one call names, for a change since a revision, the docs a docs map ties to the changed files and the kb CODE facts that cite them, in this repository and in a project that installs the plugin; code-question lookups answered from the map are measured against reading files.",
+  "notes": "Later, unrefined: symbols and references for languages other than Python through each language's read-only mapper commands (kb/public/agents/codebase-mapping.csv) or a language server's documentSymbol and references requests where one is installed, a language with neither left as a note in the map.",
   "filed_in": "clone-0ea70e5c"
 }
