@@ -68,9 +68,6 @@
     "AGENTS.md",
     "kb/_self/content-rules.md"
   ],
-  "depends_on": [
-    "ST-wu4lbbjs"
-  ],
   "notes": "Plan check 2026-10-26: goal narrowed: the code locations at an ingested repository's pinned commit are left out, since they need the code map of ST-q4fbmomg, which left SP-acysfnxr with its gate ST-teivhsxq g1 (agents-rule) open; the dependency on ST-q4fbmomg is dropped and a later item adds the code locations. Check 0 runs rag.py task on stdin and on a file (same output, a fact line, the coverage line first, a smaller --budget gives less), check 1 a task with one kb part and one unknown part (kb has / kb lacks), check 2 kb_task_context over MCP against the CLI's cited lines, check 3 the help and the tool description for a tracker name. On the base: no task subcommand and no kb_task_context: premise reproduced.",
   "filed_in": "clone-0ea70e5c"
 }

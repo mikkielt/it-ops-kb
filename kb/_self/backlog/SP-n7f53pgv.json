@@ -3,7 +3,7 @@
   "kind": "sprint",
   "title": "Coordination any agent can use, and whether it pays",
   "status": "active",
-  "goal": "Any MCP client dedups a research question against live claims; coord exchanges claims with any external coordination service through a JSON-lines contract; one call turns a task's text into a context pack; the alternatives doc says where the kb plugs into coordination, task-tracking and runtime tools; research at no, partial and full overlap shows whether a shared coord store cuts duplicate facts or tokens beyond the spread",
+  "goal": "Any MCP client dedups a research question against live claims; one call turns a task's text into a context pack; the alternatives doc says where the kb plugs into coordination, task-tracking and runtime tools; research at no, partial and full overlap shows whether a shared coord store cuts duplicate facts or tokens beyond the spread",
   "gates": [
     {
       "id": "start",
