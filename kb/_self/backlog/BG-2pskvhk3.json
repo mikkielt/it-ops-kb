@@ -1,0 +1,25 @@
+{
+  "id": "BG-2pskvhk3",
+  "kind": "bug",
+  "title": "An ops row of a census phase or of the sync gate written by a probe in another working directory still reaches the owning clone's spool",
+  "status": "draft",
+  "parent": "EP-iowijan3",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "the guard against a probe's ops row covers every ops row the clone's tools write (ql_capture.record for the ops surface), not only ops_row and record_pipeline, unless the caller names its own query-log home",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os, shutil, subprocess as s, sys, tempfile, pathlib as P\nt1 = P.Path(tempfile.mkdtemp()); t2 = P.Path(tempfile.mkdtemp())\nshutil.copytree(\"_tools\", t1 / \"_tools\", ignore=shutil.ignore_patterns(\"__pycache__\", \"test_*\"))\nfor d in (t1, t2):\n    s.run([\"git\", \"-C\", str(d), \"init\", \"-q\"], check=True)\nbase = {k: v for k, v in os.environ.items() if k not in (\"PYTEST_CURRENT_TEST\", \"CLAUDE_PLUGIN_DATA\", \"CLAUDE_PLUGIN_ROOT\", \"CLAUDE_PROJECT_DIR\")}\ncode = \"import sys;sys.path.insert(0,%r);import ql_capture;ql_capture.census_phase('verify',lambda t:0,'2026-10-26')\" % str(t1 / \"_tools\")\nr = s.run([sys.executable, \"-c\", code], cwd=t2, env=base, capture_output=True, text=True)\nstray = list((t1 / \"_cache\").rglob(\"*.jsonl\"))\nprint(\"rows a census phase run from another directory left in the owning clone's spool:\", len(stray), r.stderr[-200:])\nsys.exit(0 if not stray else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/ql_capture.py",
+    "_tools/ql_deliver.py",
+    "_tools/ql_base.py",
+    "kb/_self/querylog.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
