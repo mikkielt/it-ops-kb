@@ -1,0 +1,31 @@
+{
+  "id": "ST-j7zmbbvs",
+  "kind": "story",
+  "title": "The session-load docs say arm B leaves out the pane's --receipt run, so it understates the pane",
+  "status": "draft",
+  "parent": "EP-nxb7hjwd",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/benchmarks.md and the session-load section of kb/_self/reports/benchmarks.md say, in their arm B paragraphs, that the kbmon-pane mod's first refresh also runs kbmon.py --receipt (about as costly as --once) and arm B does not, so arm B's kbmon figures understate the mod's by about one --once-sized run in a 150 s window, and that arm B's kbmon reads an empty coord store and query log; no arm B paragraph calls a pane run the heavier refresh",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport re\nfor path in ('kb/_self/benchmarks.md', 'kb/_self/reports/benchmarks.md'):\n    text = open(path, encoding='utf-8').read()\n    paras = [p for p in re.split(r'\\n\\s*\\n', text) if 'arm B' in p or 'Arm B' in p]\n    assert paras, ('no arm B paragraph', path)\n    for p in paras:\n        assert 'heavier refresh' not in p, ('an arm B paragraph still calls the pane run the heavier refresh', path)\n    assert any('--receipt' in p for p in paras), ('no arm B paragraph says the mod also runs --receipt and arm B does not', path)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/benchmarks.md",
+    "kb/_self/reports/benchmarks.md"
+  ],
+  "relates_to": [
+    "ST-rodj5ltd"
+  ],
+  "links": [
+    "parked: SP-3qowbedb review"
+  ],
+  "notes": "Found by the fresh-context review of SP-3qowbedb (gap report in the sprint's review scratch); the operator chose to park it under EP-nxb7hjwd. Fix before the paid session-load record (ST-rodj5ltd) where it changes a figure.",
+  "filed_in": "clone-0ea70e5c"
+}

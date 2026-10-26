@@ -1,0 +1,36 @@
+{
+  "id": "ST-nejgzptp",
+  "kind": "story",
+  "title": "session-load's rows say what they count: child classes' CPU sits in their parent, arm B is per window, the record names commits on main",
+  "status": "draft",
+  "parent": "EP-nxb7hjwd",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Each '<phase> <class> cpu_s' row of a class whose processes are only children of hook commands (git, lsof) says in its note that their CPU is charged to the hook that started them; each arm B cpu_s, rss_peak_mb and rss_mean_mb row says it is over the pane window; and every session-load row of kb/_self/reports/benchmarks.csv names a commit that is an ancestor of main, the report naming each commit a record mixes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport csv, os, shutil, subprocess, tempfile\nT = tempfile.mkdtemp()\nB = os.path.join(T, 'bin'); os.mkdir(B)\nopen(os.path.join(B, 'claude'), 'w').write('#!/bin/sh\\nexit 1\\n')\nos.chmod(os.path.join(B, 'claude'), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ['PATH'])\nout = os.path.join(T, 'out.csv')\np = subprocess.run([sys.executable, '_tools/benchmarks.py', 'run', 'session-load', '--arms', 'A,B', '--reps', '1',\n                    '--window', '12', '--pane-every', '5', '--out', out], capture_output=True, text=True, env=ENV, timeout=1800)\nrows = list(csv.DictReader(open(out, encoding='utf-8'))) if os.path.exists(out) else []\nshutil.rmtree(T, ignore_errors=True)\nassert p.returncode == 0, ('run session-load exit', p.returncode, p.stderr[-400:])\nrows = [r for r in rows if r['scenario'] == 'session-load']\ngit_cpu = [r for r in rows if r['case'].endswith(' git') and r['metric'] == 'cpu_s']\nassert git_cpu and all('parent' in r['note'] for r in git_cpu), 'a git cpu_s row does not say its CPU is charged to the hook that started it'\nb_rows = [r for r in rows if r['arm'] == 'B' and r['metric'] in ('cpu_s', 'rss_peak_mb', 'rss_mean_mb')]\nassert b_rows and all('window' in r['note'] for r in b_rows), 'an arm B cpu_s or rss row does not say it is over the pane window'\nrec = [r for r in csv.DictReader(open('kb/_self/reports/benchmarks.csv', encoding='utf-8')) if r['scenario'] == 'session-load']\nfor c in sorted({r['commit'] for r in rec}):\n    q = subprocess.run(['git', 'merge-base', '--is-ancestor', c, 'HEAD'], capture_output=True)\n    assert q.returncode == 0, ('a session-load record row names a commit that is not on this branch', c)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_load.py",
+    "_tools/benchmarks.py",
+    "kb/_self/benchmarks.md",
+    "kb/_self/reports/benchmarks.md",
+    "kb/_self/reports/benchmarks.csv",
+    "README.md",
+    "kb/_self/tools.md"
+  ],
+  "relates_to": [
+    "ST-rodj5ltd"
+  ],
+  "links": [
+    "parked: SP-3qowbedb review"
+  ],
+  "notes": "Found by the fresh-context review of SP-3qowbedb (gap report in the sprint's review scratch); the operator chose to park it under EP-nxb7hjwd. Fix before the paid session-load record (ST-rodj5ltd) where it changes a figure.",
+  "filed_in": "clone-0ea70e5c"
+}

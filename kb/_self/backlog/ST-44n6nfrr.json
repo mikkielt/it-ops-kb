@@ -71,7 +71,9 @@
       },
       "class": "design",
       "answer": "B runs only when --arms names it",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -90,7 +92,9 @@
       },
       "class": "design",
       "answer": "150 s: runs at 1.5 s, 60 s and 120 s of the mod's schedule",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
@@ -110,7 +114,9 @@
       },
       "class": "design",
       "answer": "benchmarks.py keeps the session-load rows of the arms the run did not run",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",
@@ -128,7 +134,9 @@
       },
       "class": "design",
       "answer": "The pane's CPU and memory are those of the window, and its starts per minute of the window plus the hooks' per minute of the session",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g5",
@@ -146,7 +154,9 @@
       },
       "class": "design",
       "answer": "Each pane run is kbmon.py --once then --status all",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "filed_in": "clone-0ea70e5c",

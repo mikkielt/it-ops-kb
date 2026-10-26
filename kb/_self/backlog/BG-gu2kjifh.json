@@ -1,0 +1,34 @@
+{
+  "id": "BG-gu2kjifh",
+  "kind": "bug",
+  "title": "session-load's rss_mean_mb averages each class over only the samples it was alive in, so means are not comparable across classes and arms",
+  "status": "draft",
+  "parent": "EP-nxb7hjwd",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "Every rss_mean_mb row of session-load is the mean over all sampler ticks of its phase (or arm B's window), a tick with no process of the class counting as 0, so a class's mean never exceeds the 'all' mean of the same phase and arm, and arms can be compared; the docs say what the mean is over",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport csv, os, shutil, subprocess, tempfile\nT = tempfile.mkdtemp()\nB = os.path.join(T, 'bin'); os.mkdir(B)\nopen(os.path.join(B, 'claude'), 'w').write('#!/bin/sh\\nexit 1\\n')\nos.chmod(os.path.join(B, 'claude'), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ['PATH'])\nout = os.path.join(T, 'out.csv')\np = subprocess.run([sys.executable, '_tools/benchmarks.py', 'run', 'session-load', '--arms', 'A,B', '--reps', '1',\n                    '--out', out], capture_output=True, text=True, env=ENV, timeout=1800)\nrows = list(csv.DictReader(open(out, encoding='utf-8'))) if os.path.exists(out) else []\nshutil.rmtree(T, ignore_errors=True)\nassert p.returncode == 0, ('run session-load exit', p.returncode, p.stderr[-400:])\nmean = {(r['case'], r['arm']): float(r['value']) for r in rows if r['scenario'] == 'session-load' and r['metric'] == 'rss_mean_mb'}\nfor (case, arm), v in mean.items():\n    phase, cls = case.split(' ', 1)\n    if cls == 'all' or ' ' in cls:\n        continue\n    whole = mean.get((phase + ' all', arm))\n    assert whole is not None and v <= whole + 1e-6, ('a class mean exceeds the all mean of its phase and arm: the means are over different samples', case, arm, v, whole)\n"
+    ]
+  },
+  "touches": [
+    "_tools/bench_load.py",
+    "kb/_self/benchmarks.md",
+    "kb/_self/reports/benchmarks.md",
+    "kb/_self/reports/benchmarks.csv",
+    "README.md",
+    "kb/_self/tools.md"
+  ],
+  "relates_to": [
+    "ST-rodj5ltd"
+  ],
+  "links": [
+    "parked: SP-3qowbedb review"
+  ],
+  "notes": "Found by the fresh-context review of SP-3qowbedb (gap report in the sprint's review scratch); the operator chose to park it under EP-nxb7hjwd. Fix before the paid session-load record (ST-rodj5ltd) where it changes a figure.",
+  "filed_in": "clone-0ea70e5c"
+}

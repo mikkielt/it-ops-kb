@@ -75,7 +75,9 @@
       },
       "class": "design",
       "answer": "the seconds of session a phase stands for, 60 idle and 300 working, the same for every arm",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -93,7 +95,9 @@
       },
       "class": "design",
       "answer": "an audit hook in a sitecustomize on PYTHONPATH logs each process a Python program starts, so the count is exact for Python and misses a program that is not Python",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
@@ -111,7 +115,9 @@
       },
       "class": "design",
       "answer": "the synchronous ones one after another in file order, the async ones at once and not waited for",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",
@@ -129,7 +135,9 @@
       },
       "class": "design",
       "answer": "the class of the hook command's own command line, its children's starts and memory counted under their own classes",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g5",
@@ -147,7 +155,9 @@
       },
       "class": "design",
       "answer": "remove the cursor before each replay, so every replay scans the same items",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g6",
@@ -165,7 +175,9 @@
       },
       "class": "design",
       "answer": "each scenario takes the names it knows (A, C, D for session-load), and pool named with only session-load arms is refused",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g7",
@@ -183,7 +195,9 @@
       },
       "class": "design",
       "answer": "one unmeasured replay of arm A first, then the median of the reps for each row, every arm and phase once per rep",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g8",
@@ -203,7 +217,9 @@
       },
       "class": "design",
       "answer": "one commit in the replay clone changes the mode of each item file, so no item is eligible and the scan runs no check; the real hook's cost with checks is not measured",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "filed_in": "clone-0ea70e5c",

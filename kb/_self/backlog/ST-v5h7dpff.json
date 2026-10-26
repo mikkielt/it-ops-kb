@@ -72,7 +72,9 @@
       },
       "class": "design",
       "answer": "capture",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -90,7 +92,9 @@
       },
       "class": "design",
       "answer": "any python name is kb-tools",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
@@ -108,7 +112,9 @@
       },
       "class": "design",
       "answer": "write 0 rows, count failed opens",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",
@@ -126,7 +132,9 @@
       },
       "class": "design",
       "answer": "session-load alone, else exit 2",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "filed_in": "clone-0ea70e5c",
