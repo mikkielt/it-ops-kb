@@ -2,7 +2,7 @@
   "id": "BG-vr3vxylj",
   "kind": "bug",
   "title": "begin counts any earlier working event of the item as the new worker's, so after a re-dispatch the printed wait returns on the new worker's own working event",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-42b2cjm3",
   "priority": "P3",
   "rank": 0,
@@ -31,5 +31,7 @@
     "parked: SP-lhpvwh6l review"
   ],
   "notes": "Found by the SP-lhpvwh6l review (S3): bl_dispatch.py coord_cursor scans from sequence 0, so a working event left by an earlier dispatch of the item ends begin's 10 s hold at once and the cursor is read before the new worker posts working. Fix hint from the reviewer: take the newest sequence before spawn_detached and count only working events above it. The repro is a fixture (bare remote, clone, fake claude, KB_COORD_STORE) that posts an old working event first; it fails on main today. Sprint started 2026-10-26 on the operator's approval for the unattended run.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
