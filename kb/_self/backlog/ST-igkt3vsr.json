@@ -18,5 +18,9 @@
   "touches": [
     "_tools/bl_land.py"
   ],
+  "links": [
+    "parked: SP-mk6ikval close"
+  ],
+  "notes": "Retrospective finding of the 2026-10-26 run of SP-mk6ikval. The check reads source text only and is a placeholder: the planner should replace it with a planted run (a fixture item whose repro passes; a fixture landing that waits for the lock past the bound).",
   "filed_in": "clone-0ea70e5c"
 }
