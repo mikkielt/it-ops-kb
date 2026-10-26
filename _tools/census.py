@@ -2847,7 +2847,8 @@ def leak_problems(res):
     licence, version_or_date, used_in) that holds a value the leak scan flags (the scan of tracked files,
     `kbpublic.file_hits`, with the clone's `_tools/tests_allowlist.txt`), naming the field and the kinds, never the
     value: a note is written to the log, a gap or conflict text to a ledger and a new row to `_sources.csv`, all tracked.
-    A url is scanned as `file_hits` scans it (urls stripped) plus an email address anywhere in it."""
+    A url is scanned as `file_hits` scans it (urls stripped) plus an email address anywhere in it and a
+    `user:password@` part (`kbcommon.url_holds_credential`, kind `url-credential`)."""
     import kbpublic
     path = os.path.join(kbcommon.HOME, kbpublic.ALLOWLIST_PATH)
     try:
@@ -2865,6 +2866,8 @@ def leak_problems(res):
         hits = kbpublic.file_hits("census-result.json", text, allow)
         if field.endswith(" url"):  # file_hits strips urls; an address in a source url is still a leak
             hits += [h for h in kbcommon.leak_hits(text, allow) if h[0] == "email"]
+            if kbcommon.url_holds_credential(text):
+                hits.append(("url-credential", ""))
         kinds = sorted({k for k, _ in hits})
         if kinds:
             out.append(f"{field} has a leak-scan hit ({', '.join(kinds)}; value not printed): write a placeholder instead")
