@@ -1,0 +1,22 @@
+{
+  "id": "ST-mgyxvh6l",
+  "kind": "story",
+  "title": "begin refuses an item whose check or repro already passes on the base, so no worker starts for an item an earlier landing fixed",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py begin runs each item's checks and repro once on the base it dispatches from, refuses one that already passes naming the earlier item that delivered it (git log --grep KB-Work), and starts no worker for it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open(\"_tools/bl_dispatch.py\").read();s=t.split(\"def begin_plan\")[1].split(\"def begin_push\")[0];sys.exit(0 if \"already pass\" in s else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
