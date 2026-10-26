@@ -2,7 +2,7 @@
   "id": "BG-dgnrn4jy",
   "kind": "bug",
   "title": "Importing kf_route, kf_index or kf_fresh before kbfacts raises ImportError",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vlfcgmbu",
   "priority": "P3",
   "rank": 0,
@@ -47,5 +47,7 @@
   "links": [
     "parked: SP-jplczvj2 review"
   ],
-  "notes": "Plan check 2026-10-26: check 0 passes before the work on purpose: it pins that every name other modules read from kbfacts (132 today) still resolves after the split. The repro reads the first clause."
+  "notes": "Plan check 2026-10-26: check 0 passes before the work on purpose: it pins that every name other modules read from kbfacts (132 today) still resolves after the split. The repro reads the first clause.",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
