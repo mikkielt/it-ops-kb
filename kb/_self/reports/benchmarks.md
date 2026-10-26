@@ -1405,6 +1405,72 @@ What it shows: the fork's server over stdio packs both roots with `coverage: goo
 
 What it shows: `sh _tools/kbpy` adds 3.5 ms at the median to a Python start of 9.6 ms on macOS (13.1 ms against 9.6 ms). On Windows it probes each interpreter before running it, which this machine cannot measure.
 
+### What one session costs the host
+
+**Setup:** `python3 _tools/benchmarks.py run session-load`: no model. The hook events of one session replayed through this clone's own hook commands (`.claude/settings.json`) in a throwaway clone, its query log in mode `local` under a scratch plugin data directory (`CLAUDE_PLUGIN_DATA` and `CLAUDE_PLUGIN_ROOT` both set), a `claude` that fails at once, a coord store of its own. Arm `A` runs every hook, arm `C` leaves out the commands of `coord_hook.py` and `querylog.py`, arm `D` runs none; each in the phase `idle` (SessionStart, SessionEnd) and `working` (three prompts between them, each with two tool calls and a Stop). Every hook command is measured by `os.wait4` (CPU seconds of the command and the children it waited for, peak memory), a sampler of `ps` follows the processes under it, and the processes a Python program starts are logged by an audit hook; the classes are the host panel's (`kbmon`, `fseventsd`, `tests`, `kb-tools`, `claude`, `other`) and `git`. A hook command's CPU is charged to its own class, the starts and the memory of its children to theirs. `spawns_per_min` is the starts of a session of 60 s (idle) or 300 s (working), the same for every arm; the replay waits for async hooks to exit, which Claude Code does not. The `cpu_s` notes give the host's cores, its load and whether the caches were warm.
+
+<!-- bench:records session-load -->
+| record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
+|---|---|---|---|---|---|---|
+| 2026-10-26 | 2026-10-26 | 9a27827 | 2.1.310 | 434 | 5 | - |
+<!-- /bench -->
+
+<!-- bench:table session-load metrics=cpu_s,rss_peak_mb,rss_mean_mb,spawns_per_min cases=idle all,working all -->
+| case | arm | cpu_s | rss_peak_mb | rss_mean_mb | spawns_per_min |
+|---|---|---|---|---|---|
+| idle all | A | 52.10 s | 334.484 | 177.13 | 725 |
+| working all | A | 54.23 s | 374.672 | 178.977 | 155.2 |
+| idle all | C | 49.31 s | 321.406 | 182.789 | 698 |
+| working all | C | 50.65 s | 350.484 | 183.621 | 143.4 |
+| idle all | D | 0.00 s | 0 | 0 | 0 |
+| working all | D | 0.00 s | 0 | 0 | 0 |
+<!-- /bench -->
+
+<!-- bench:table session-load metrics=sync_ms,async_ms -->
+| case | arm | sync_ms | async_ms |
+|---|---|---|---|
+| SessionStart --notice | A | 7.7 ms | - |
+| SessionStart .claude/hooks/session_start.py | A | 205.2 ms | - |
+| SessionStart .claude/hooks/coord_hook.py | A | 376.8 ms | - |
+| SessionStart _tools/querylog.py launch | A | - | 48.2 ms |
+| SessionStart _tools/querylog.py digest --hook | A | 2208.5 ms | - |
+| SessionStart _tools/backlog.py red-pipeline --hook | A | - | 1201.6 ms |
+| SessionStart _tools/backlog.py intake --file --hook | A | - | 50116.9 ms |
+| SessionStart _tools/kbgit.py publish --hook | A | - | 87.8 ms |
+| SessionStart _tools/kbroot.py fetch --hook | A | - | 44.5 ms |
+| SessionStart _tools/backlog.py horizon --hook | A | 194.4 ms | - |
+| SessionEnd _tools/querylog.py launch | A | 52.0 ms | - |
+| SessionEnd .claude/hooks/coord_hook.py | A | 157.0 ms | - |
+| UserPromptSubmit _tools/kb_hook.py | A | 440.5 ms | - |
+| UserPromptSubmit .claude/hooks/kb_change_router.py | A | 23.7 ms | - |
+| UserPromptSubmit _tools/querylog.py capture | A | - | 47.1 ms |
+| PostToolUse _tools/querylog.py capture (mcp__plugin_it-ops-kb_kb__kb_pack) | A | - | 48.5 ms |
+| PreToolUse _tools/kb_hook.py (Bash) | A | 29.0 ms | - |
+| PreToolUse .claude/hooks/coord_hook.py (Bash) | A | 189.8 ms | - |
+| PostToolUse _tools/querylog.py capture (Bash) | A | - | 48.9 ms |
+| Stop _tools/querylog.py capture | A | - | 43.0 ms |
+| PreToolUse .claude/hooks/coord_hook.py (Edit) | A | 162.0 ms | - |
+| PreToolUse _tools/kb_hook.py (WebFetch) | A | 42.9 ms | - |
+| PostToolUse _tools/querylog.py capture (WebFetch) | A | - | 46.8 ms |
+| PreToolUse .claude/hooks/coord_hook.py (Skill) | A | 160.4 ms | - |
+| SessionStart --notice | C | 7.4 ms | - |
+| SessionStart .claude/hooks/session_start.py | C | 212.7 ms | - |
+| SessionStart _tools/backlog.py red-pipeline --hook | C | - | 1191.2 ms |
+| SessionStart _tools/backlog.py intake --file --hook | C | - | 50116.7 ms |
+| SessionStart _tools/kbgit.py publish --hook | C | - | 88.2 ms |
+| SessionStart _tools/kbroot.py fetch --hook | C | - | 44.8 ms |
+| SessionStart _tools/backlog.py horizon --hook | C | 187.8 ms | - |
+| UserPromptSubmit _tools/kb_hook.py | C | 480.5 ms | - |
+| UserPromptSubmit .claude/hooks/kb_change_router.py | C | 24.6 ms | - |
+| PreToolUse _tools/kb_hook.py (Bash) | C | 30.2 ms | - |
+| PreToolUse _tools/kb_hook.py (WebFetch) | C | 46.0 ms | - |
+<!-- /bench -->
+
+What it shows (macOS, 14 cores, a load of 7.6 at the start of the reps, caches warm, one record of 5 reps):
+- **The intake hook is most of a session's hook cost.** `backlog.py intake --file --hook` runs async at SessionStart and, in the replay, takes about 50 s and about 50 CPU seconds in arms `A` and `C` alike, with about 700 `git` starts (about 650 of them `git log -1`): its drift scan runs the checks of open items up to its 30 s budget (`DRIFT_BUDGET_S`). Arm `A` is 52 CPU seconds idle and 54 working, arm `C` 49 and 51, so the `coord_hook.py` and `querylog.py` commands add about 3 CPU seconds in either phase and 27 starts in the idle phase and 59 in the working one; arm `D` starts nothing.
+- **The synchronous hooks are a few hundred milliseconds each, the digest hook excepted.** `coord_hook.py` takes 157-377 ms per event, `kb_hook.py` 440 ms on a prompt and 29-43 ms on a tool call, the change router 24 ms; `querylog.py digest --hook` takes 2.2 s at SessionStart because the replay's query log home has no digest of the week yet, which a real session meets once a week. The async `capture` takes 43-49 ms per event.
+- **The replay waits for async hooks, a session does not.** Claude Code does not await them (`kb/public/claude/hooks.md`), so the 50 s of the intake hook is CPU a session spends beside its work, not time it waits; in a `-p` run it is killed at teardown. The starts counted are those of Python programs (the audit hook), the CPU of a hook command is charged to its own class (so `git` shows starts and memory, no CPU), and the memory columns are the largest process and the largest sampled sum of a class, not the host's.
+
 ## The code
 
 ### Finding the code
