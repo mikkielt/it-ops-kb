@@ -18,7 +18,8 @@ a ledger that is not there or does not read gives an empty list. `sessions` list
 entry for each `claude` process in a checkout of the clone, with its `label` (`mon_view.session_label`, null when nothing
 names the session's id), `role` (the first row of `ROLES` that fits), `item` and `item_title`, `sprint` and
 `sprint_title`, `step`, `started` (the process's start), `last_activity` and `spend_usd` (the newest row and the priced
-usage rows of the session's own spool file, null without one). `overlaps` lists each pair of live sessions whose
+usage rows of the session's own spool file, null without one) and `silent_s` (the seconds since the newest write to the
+session's transcript, `mon_coord.transcript_age`; null where nothing binds the session or it has no transcript). `overlaps` lists each pair of live sessions whose
 intents' items or touches meet, with the shared `files` and the `strategy` (`undecided`, else the one a `coordinate` event
 between their items announced), and `needs_you_after_min` is the setting `mon_needs` ages an undecided one against (`overlap_rows`,
 `after_minutes`; both left out with `intents`, and left out with `overlaps_unread`, the reason, where a coord store is there
@@ -77,6 +78,7 @@ UNDECIDED = "undecided"  # the strategy of an overlap no coordinate event decide
 TITLE_CHARS = 40  # characters of an item title in a session line
 SPRINT_CHARS = 20  # characters of a sprint's title in a session line
 LINE_CHARS = 120  # characters of a session line at most
+SILENT_SHOWN_S = 600  # seconds of silence from which a session line names it (`silent 15m`)
 CLAIM_TOPIC = "backlog-claim"  # the topic of the intent a `backlog.py claim` posts (the dispatching session's, not the worker's)
 REMEDIATE = "remediate/"  # the coord key `kbask.py remediate` claims while its observer session runs
 HOOK_STATE = ("_cache", "coord_hook")  # under a checkout: the hook's `<session id>.json` of each session it announced
@@ -749,7 +751,7 @@ def bind_sessions(claude, placed, by_path, ledgers, found):
 
 
 def session_rows(ctx, procs, placed, by_path, found, bl, names):
-    """[{label, role, item, item_title, sprint, sprint_title, step, started, last_activity, spend_usd, pid, checkout}] of
+    """[{label, role, item, item_title, sprint, sprint_title, step, started, last_activity, silent_s, spend_usd, pid, checkout}] of
     the Claude Code processes PROCS placed in a checkout (PLACED), oldest first, SESSIONS_KEPT at most; FOUND is
     `read_coord`'s answer (None without one), BL the root's `backlog` (None without items) and NAMES the checkouts as
     shown (`bind_sessions` says how a process gets its session id, a process nothing binds has no label). A dispatch record whose pid
@@ -778,6 +780,8 @@ def session_entries(ctx, procs, placed, by_path, found, bl, names, light=False):
     claude.sort(key=lambda p: (p["start"] is None, p["start"] or 0, p["pid"]))
     if not claude:
         return []
+    import mon_coord
+    now = time.time()
     bound = bind_sessions(claude, placed, by_path, ledgers, found)
     landing = landing_steps(ctx.root) if bl is not None and not light else {}
     remediating = any(key.startswith(REMEDIATE) for key, _ in (found or {}).get("claims", []))
@@ -804,11 +808,12 @@ def session_entries(ctx, procs, placed, by_path, found, bl, names, light=False):
         item = items[0] if len(items) == 1 else None
         sprint = sprints.pop() if len(sprints) == 1 else None
         stamp, spend = spool_figures(sid) if sid is not None and not light else (None, None)
+        silent = mon_coord.transcript_age([sid], now) if sid is not None and not light else None
         step = step_of(role, items + [i for i in dispatched if runner and i not in items], bl, landing, live_workers) \
             if bl is not None and not light else None
         out.append({"label": mon_view.session_label(sid) if sid else None, "role": role, "item": item,
                     "item_title": title(item), "sprint": sprint, "sprint_title": title(sprint), "step": step,
-                    "started": iso(p["start"]) if p["start"] is not None else None, "last_activity": stamp, "spend_usd": spend, "pid": p["pid"],
+                    "started": iso(p["start"]) if p["start"] is not None else None, "last_activity": stamp, "silent_s": silent, "spend_usd": spend, "pid": p["pid"],
                     "checkout": names.get(base, "."), "session": sid, "base": base})
     return out
 
@@ -1003,19 +1008,22 @@ def clipped(text, n):
 
 def session_line(s, now=None, width=LINE_CHARS):
     """One session entry as one line of at most WIDTH (LINE_CHARS at most) characters, the one function the sessions panel
-    and `kbmon.py --status sessions` print an entry with: `label  role  sprint  item title  step  up 1h00m  last 20m ago  $1.25`.
+    and `kbmon.py --status sessions` print an entry with: `label  role  sprint  item title  step  up 1h00m  last 20m ago  silent 15m  $1.25`.
     The sprint is its title cut to SPRINT_CHARS, the item title to the room the other fields leave (TITLE_CHARS at most; the
-    id where the title is not known); a field the entry does not know is left out. NOW is the time the elapsed and last
+    id where the title is not known); a field the entry does not know is left out, `silent` too below SILENT_SHOWN_S. NOW is the time the elapsed and last
     activity are taken at (epoch seconds; the snapshot's taken time, else the clock)."""
     now = time.time() if now is None else now
     width = min(width, LINE_CHARS)
     started, last = epoch(s.get("started")), epoch(s.get("last_activity"))
     spend = s.get("spend_usd")
+    silent = s.get("silent_s")
     sprint = s.get("sprint_title") or s.get("sprint")
     title = s.get("item_title") or s.get("item") or ""
     before = [s.get("label") or "-", s.get("role") or "unknown"] + ([clipped(sprint, SPRINT_CHARS)] if sprint else [])
     after = ([s["step"]] if s.get("step") else []) + ([f"up {age_text(now - started)}"] if started is not None else []) \
         + ([f"last {age_text(now - last)} ago"] if last is not None else []) \
+        + ([f"silent {age_text(silent)}"] if isinstance(silent, (int, float)) and not isinstance(silent, bool)
+           and silent >= SILENT_SHOWN_S else []) \
         + ([f"${spend:.2f}"] if isinstance(spend, (int, float)) and not isinstance(spend, bool) else [])
     room = min(TITLE_CHARS, width - len("  ".join(before + after)) - 2)
     mid = [clipped(title, room)] if title and room > 1 else []

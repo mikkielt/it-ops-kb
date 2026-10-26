@@ -109,6 +109,9 @@ def sessions_points(data):
         out.append(point("kbmon.sessions.worktrees", "{worktree}", "gauge", len(data["worktrees"])))
     if isinstance(data.get("stalled"), list):
         out.append(point("kbmon.sessions.stalled", "{item}", "gauge", len(data["stalled"])))
+    if isinstance(data.get("sessions"), list):  # the most `silent_s` of a live session, 0 with none
+        secs = [s["silent_s"] for s in data["sessions"] if isinstance(s, dict) and number(s.get("silent_s"))]
+        out.append(point("kbmon.sessions.silent", "s", "gauge", max(secs, default=0)))
     return out
 
 
