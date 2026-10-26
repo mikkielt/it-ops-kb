@@ -2,7 +2,7 @@
   "id": "ST-z4k5jpug",
   "kind": "story",
   "title": "Review sprint: Fixes for today's regressions and leaks: credential-named gates, url passwords, the land push token",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-w57bnhhx",
   "review": true,
   "priority": "P1",
@@ -24,6 +24,27 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "e21805354301e9ec3dcf084ab908958994f1b2e8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "c35873b7cf86573e"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "72ab973decf130ca"
+      }
+    ]
+  }
 }
