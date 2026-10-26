@@ -4,6 +4,7 @@
   "title": "precheck warns of each committed item's file that another live session or sprint also plans, until an order settles it",
   "status": "draft",
   "parent": "EP-zv3duelo",
+  "sprint": "SP-basca7ae",
   "priority": "P1",
   "rank": 0,
   "goal": "`backlog.py precheck SP` warns, for each committed item whose touches share a file other than a `kb/_self` doc with another live session's intent or another active or planned sprint's item, naming the item, the file and the other work as undecided; a `depends_on` between the two items or a `coordinate` event between them settles it and the warning goes",

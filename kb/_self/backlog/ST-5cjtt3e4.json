@@ -4,6 +4,7 @@
   "title": "peers shows each peer's liveness and open asks, and kbask refuses an ask to a session that has ended",
   "status": "draft",
   "parent": "EP-zv3duelo",
+  "sprint": "SP-basca7ae",
   "priority": "P1",
   "rank": 0,
   "goal": "`backlog.py peers` marks each peer live or ended by its process and shows the open asks between it and this session; `kbask.py ask` to a session id whose process has ended exits 1 saying it ended and naming the live session that works on the same item, when there is one",

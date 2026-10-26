@@ -4,6 +4,7 @@
   "title": "A land stopped at rebase names each conflicting file, the item that changed it on main and the resume remedy",
   "status": "draft",
   "parent": "EP-zv3duelo",
+  "sprint": "SP-basca7ae",
   "priority": "P1",
   "rank": 0,
   "goal": "when `backlog.py land` stops at step rebase, its stop names each conflicting path and, for each, the item whose `KB-Work` commit last changed it on the integration main, and the `dispatch --resume ID --message FILE` remedy; the checkout is left unchanged",

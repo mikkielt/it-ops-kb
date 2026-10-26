@@ -4,6 +4,7 @@
   "title": "Putting items in a sprint posts the session's plan to coord, so other sessions see it before any claim",
   "status": "draft",
   "parent": "EP-zv3duelo",
+  "sprint": "SP-basca7ae",
   "priority": "P1",
   "rank": 0,
   "goal": "`backlog.py set ID... --sprint SP` and `backlog.py new KIND ... --sprint SP` post a coord intent of the session (`CLAUDE_CODE_SESSION_ID`) with topic `plan`, the sprint as its item and the files of the sprint's items as its touch; another session's `backlog.py peers` names that plan and each file it shares",
