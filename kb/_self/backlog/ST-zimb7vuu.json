@@ -1,0 +1,54 @@
+{
+  "id": "ST-zimb7vuu",
+  "kind": "story",
+  "title": "A session whose work is recorded as done but whose process stays alive is flagged, and stopped after a grace period when the operator's policy allows",
+  "status": "draft",
+  "parent": "EP-wqgicmmj",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py stalled lists a finished-alive signal for an item whose dispatched worker wrote its result, or whose run is returned or landed, while that worker's own recorded pid still runs past a grace period named as a constant; kbmon's sessions panel and needs-you line show it; when the backlog.json setting the operator's gate names allows it (off by default), dispatch's wait sends SIGTERM to that recorded pid only and records the stop as an ops row; no other process is ever signalled.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "stalled",
+        "--json"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_stall.py",
+    "_tools/bl_dispatch.py",
+    "_tools/bl_base.py",
+    "_tools/mon_sessions.py",
+    "_tools/mon_needs.py",
+    "backlog.json",
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What happens to a worker whose work is recorded as done but whose process is still alive after the grace period?",
+      "options": [
+        "flag it only; the orchestrator or the operator stops it",
+        "SIGTERM its own recorded pid when a backlog.json setting allows it, off by default",
+        "always SIGTERM its own recorded pid"
+      ],
+      "recommendation": "SIGTERM its own recorded pid when a backlog.json setting allows it, off by default",
+      "reason": "the result is already written, and only the recorded pid is ever signalled",
+      "do": {
+        "flag it only; the orchestrator or the operator stops it": "ST-zimb7vuu",
+        "SIGTERM its own recorded pid when a backlog.json setting allows it, off by default": "ST-zimb7vuu",
+        "always SIGTERM its own recorded pid": "ST-zimb7vuu"
+      },
+      "class": "agents-rule"
+    }
+  ],
+  "notes": "Premise: python3 _tools/backlog.py stalled -h lists no signal for a worker that finished and stays alive; headless claude -p sprint sessions have written their report and final message and then not exited, stalling the next step until stopped by hand. Its JSON output is written on SIGTERM, so stopping the recorded pid loses nothing. Relates to ST-qqeojkym, which counts a worker's cost as closed once its process exits.",
+  "filed_in": "clone-0ea70e5c"
+}

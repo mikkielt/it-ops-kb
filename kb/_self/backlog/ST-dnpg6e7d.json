@@ -1,0 +1,39 @@
+{
+  "id": "ST-dnpg6e7d",
+  "kind": "story",
+  "title": "pack answers as of a date or a release, with the facts valid then, and says which it left out",
+  "status": "draft",
+  "parent": "EP-lrmcc2uf",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "rag.py pack --as-of DATE|REV and kb_pack's as_of argument rank only the facts whose validity window holds the date, or for CODE facts whose commit range holds the revision, print one line naming how many matching facts were left out as not yet or no longer valid, and keep the verdict rule; with no as-of a pack prints facts whose window has ended under a no-longer-valid mark instead of as current.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "pack",
+        "--as-of",
+        "2024-01-01",
+        "Exchange",
+        "Online",
+        "basic",
+        "authentication",
+        "retirement"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/rag.py",
+    "_tools/kf_*.py",
+    "_tools/kb_mcp.py",
+    "_tools/test_redact.py",
+    "kb/_self/tools.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/embedding.md"
+  ],
+  "depends_on": [
+    "ST-mp4pjor2"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

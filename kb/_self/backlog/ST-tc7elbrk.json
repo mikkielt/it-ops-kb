@@ -1,0 +1,26 @@
+{
+  "id": "ST-tc7elbrk",
+  "kind": "story",
+  "title": "An agent of any vendor looks facts up through AGENTS.md and the kb MCP server alone, with no Claude Code feature",
+  "status": "draft",
+  "parent": "EP-5mp6pwnn",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A generic MCP client that knows only AGENTS.md and the kb MCP server initializes at the current protocol version, lists the tools and gets a pack with a verdict, fact lines and url footer from kb_pack; nothing the lookup needs lives only in a Claude Code hook, skill or setting; plugin.md says how another vendor's agent registers the server; the check drives kb_mcp.py over stdio as such a client.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,subprocess as s,sys;m=[{'jsonrpc':'2.0','id':0,'method':'initialize','params':{'protocolVersion':'2025-11-25','capabilities':{},'clientInfo':{'name':'generic-client','version':'1'}}},{'jsonrpc':'2.0','method':'notifications/initialized'},{'jsonrpc':'2.0','id':1,'method':'tools/call','params':{'name':'kb_pack','arguments':{'question':'Autopilot pre-provisioning requirements'}}}];p=s.run([sys.executable,'_tools/kb_mcp.py'],input=chr(10).join(json.dumps(x) for x in m)+chr(10),capture_output=True,text=True,timeout=180,check=True);r=[json.loads(l) for l in p.stdout.splitlines() if l.strip()];t=[c['text'] for x in r if x.get('id')==1 for c in x['result']['content']];print(t[0][:400] if t else r);sys.exit(0 if t and 'coverage:' in t[0] else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "AGENTS.md",
+    "_tools/kb_mcp.py",
+    "kb/_self/plugin.md",
+    "kb/_self/embedding.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

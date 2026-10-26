@@ -1,0 +1,26 @@
+{
+  "id": "ST-teivhsxq",
+  "kind": "story",
+  "title": "kbingest map records each symbol's definition and its references, file by file, at the pinned commit",
+  "status": "draft",
+  "parent": "EP-rpzrctui",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "kbingest.py map adds a symbols section to its JSON map: for each definition its name, kind, path and line, and for each its references (path and line) within the repository, Python read with ast as now and another language through its mapper's read-only commands or a language server's symbol and reference requests where one is installed, a language with neither left as a note; the map stays under _cache, never under kb/, and keeps its format version raised by one.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile;o=os.path.join(tempfile.mkdtemp(),'m.json');s.run([sys.executable,'_tools/kbingest.py','map','.','--lang','python','--out',o],capture_output=True,text=True,timeout=900,check=True);m=json.load(open(o));y=m.get('symbols') or [];hit=[x for x in y if x.get('name')=='pack' and x.get('path','').startswith('_tools/')];print(len(y),hit[:2]);sys.exit(0 if hit and hit[0].get('references') else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbingest.py",
+    "kb/_self/tools.md",
+    ".claude/skills/kb-ingest/SKILL.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

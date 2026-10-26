@@ -1,0 +1,36 @@
+{
+  "id": "ST-q4fbmomg",
+  "kind": "story",
+  "title": "One call answers where a symbol is defined, who uses it and what depends on a package, from the pinned map, without reading files",
+  "status": "draft",
+  "parent": "EP-rpzrctui",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "kbingest.py where NAME [--map FILE|--repo REPO --rev REV] prints the definitions of NAME with path:line and pinned url, its references grouped by file, and for a package name the files and modules that import it, within a line budget, reading only the map; the kb MCP server serves the same as kb_code; a name the map lacks exits 1 naming the nearest names, never guessing; it works on a map of this repository and of an ingested one.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/kbingest.py",
+        "where",
+        "pack",
+        "--repo",
+        "."
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbingest.py",
+    "_tools/kb_mcp.py",
+    "_tools/test_redact.py",
+    "kb/_self/tools.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/embedding.md",
+    "kb/_self/plugin.md",
+    ".claude/skills/kb-ingest/SKILL.md"
+  ],
+  "depends_on": [
+    "ST-teivhsxq"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

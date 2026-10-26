@@ -1,0 +1,10 @@
+{
+  "id": "EP-lrmcc2uf",
+  "kind": "epic",
+  "title": "Facts say when they were true, and a pack answers as of a date or a release",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A fact line can carry a validity window (true from, true until) beside its tag, and a CODE fact the commit range it holds for; rag.py pack and kb_pack take an as-of date and answer with the facts valid then, saying which they left out; a refresh closes a changed fact with an end date and adds the new one instead of rewriting it, so the kb's history stays answerable without re-research.",
+  "filed_in": "clone-0ea70e5c"
+}

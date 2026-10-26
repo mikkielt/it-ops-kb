@@ -1,0 +1,57 @@
+{
+  "id": "ST-mp4pjor2",
+  "kind": "story",
+  "title": "The content rules and the lint accept a validity window on a fact line and a commit range on a CODE fact",
+  "status": "draft",
+  "parent": "EP-lrmcc2uf",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "content-rules.md defines how a fact states when it became true and when it stopped (dates for DOC and DER facts, a commit range for CODE facts) in the form the operator's gate names; the contract lint accepts a well-formed window and rejects a malformed one, an end before a start or a range on an unpinned source; the index and rag.py audit read the window, and a fact with none is valid from its retrieval date with no end, so every existing fact stays valid unchanged.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess as s,sys;p=s.run([sys.executable,'.claude/skills/kb-verify/lint.py'],capture_output=True,text=True,timeout=600);print(p.stdout[-800:],p.stderr[-400:]);sys.exit(p.returncode)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "audit",
+        "--status",
+        "partial"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/content-rules.md",
+    ".claude/skills/kb-verify/lint.py",
+    "_tools/kbfacts.py",
+    "_tools/build_index.py",
+    "_tools/kf_*.py",
+    "kb/_self/tools.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does a fact line carry its validity window?",
+      "options": [
+        "a marker before the tag, such as (valid 2024-03-01..2025-09-30)",
+        "fields inside the tag, such as [DOC S12 valid=2024-03-01..2025-09-30]",
+        "a sidecar csv keyed by the fact's anchor, the line itself unchanged"
+      ],
+      "recommendation": "a marker before the tag, such as (valid 2024-03-01..2025-09-30)",
+      "reason": "every tag parser stays as it is and a reader sees the window on the line",
+      "do": {
+        "a marker before the tag, such as (valid 2024-03-01..2025-09-30)": "ST-mp4pjor2",
+        "fields inside the tag, such as [DOC S12 valid=2024-03-01..2025-09-30]": "ST-mp4pjor2",
+        "a sidecar csv keyed by the fact's anchor, the line itself unchanged": "ST-mp4pjor2"
+      },
+      "class": "agents-rule"
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

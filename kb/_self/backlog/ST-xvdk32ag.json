@@ -1,0 +1,26 @@
+{
+  "id": "ST-xvdk32ag",
+  "kind": "story",
+  "title": "Every live session gets a silence measure, with or without a backlog item",
+  "status": "draft",
+  "parent": "EP-wqgicmmj",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbmon's sessions panel gives each live Claude Code session of the clone a silent_s (the seconds since the newest write to its transcript), not only working runs in the coord panel; the metrics export carries it and the alert rules file in otel/ alerts on a session silent past a threshold it names; the panel's text names a silent session by its line, as it does now.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,subprocess as s,sys;p=s.run([sys.executable,'_tools/kbmon.py','--json','--panel','sessions'],capture_output=True,text=True,timeout=120,check=True);d=json.loads(p.stdout);t=json.dumps(d['panels']);print(t[:400]);sys.exit(0 if 'silent_s' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/mon_sessions.py",
+    "_tools/mon_export.py",
+    "otel/kbmon.rules.yml",
+    "kb/_self/monitoring.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

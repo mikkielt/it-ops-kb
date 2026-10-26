@@ -1,0 +1,34 @@
+{
+  "id": "ST-zhpor7fy",
+  "kind": "story",
+  "title": "A change since a revision names the docs and the kb CODE facts it makes stale, in any repository with a docs map",
+  "status": "draft",
+  "parent": "EP-rpzrctui",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbingest.py impact REPO --since REV lists the docs a docs map (the repository's own doc,pattern csv, or this repository's selfdoc map) ties to the files changed since REV, and the kb CODE facts whose cited path or symbol changed, as drift reports them, with no model; it runs in a project that installs the plugin against that project's own map, and here gives the same docs selfdoc.py stale --since REV gives.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/kbingest.py",
+        "impact",
+        ".",
+        "--since",
+        "HEAD~1"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbingest.py",
+    "_tools/selfdoc.py",
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md",
+    ".claude/skills/kb-ingest/SKILL.md",
+    ".claude/skills/kb-self/SKILL.md"
+  ],
+  "depends_on": [
+    "ST-teivhsxq"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

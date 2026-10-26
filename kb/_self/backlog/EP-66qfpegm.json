@@ -1,0 +1,10 @@
+{
+  "id": "EP-66qfpegm",
+  "kind": "epic",
+  "title": "Work in any task tracker starts with the kb facts and code locations it rests on, and its claims meet coord's",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A tracker-neutral call turns any task's text into a context pack (the cited fact lines, the code locations it names at a pinned commit, and what the kb lacks) for an agent of any vendor, over the CLI and the kb MCP server; and coord exchanges claims with any external coordination service through a documented JSON-lines contract: live intents and touches go out, external reservations come in as overlaps. No product is named in code or docs, no dependency is added, and coord's own claims, dedup, run states and budgets stay as they are.",
+  "filed_in": "clone-0ea70e5c"
+}

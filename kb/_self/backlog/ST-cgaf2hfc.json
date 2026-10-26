@@ -1,0 +1,30 @@
+{
+  "id": "ST-cgaf2hfc",
+  "kind": "story",
+  "title": "Workers start through a launcher command the operator sets, and kbmon reads agent states from an external source through a JSON contract",
+  "status": "draft",
+  "parent": "EP-wqgicmmj",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.json takes a launcher (an argv template with the worker's directory and command) that dispatch uses in place of its own detached start, the current start staying the default; kbmon takes an agent-states command whose JSON lines give a pid or session id and a state (working, blocked, idle, done) and shows that state beside the presence lease; both contracts are documented with no product named, so a terminal workspace manager or any other runtime can host the workers and report their states; backlog.py config prints both settings.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess as s,sys;p=s.run([sys.executable,'_tools/backlog.py','config'],capture_output=True,text=True,timeout=60,check=True);print(p.stdout);sys.exit(0 if 'launcher' in p.stdout and 'agent_states' in p.stdout else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/bl_base.py",
+    "backlog.json",
+    "_tools/mon_sessions.py",
+    "_tools/kbmon.py",
+    "kb/_self/backlog.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

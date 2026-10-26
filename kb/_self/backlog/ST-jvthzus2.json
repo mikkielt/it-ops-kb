@@ -1,0 +1,56 @@
+{
+  "id": "ST-jvthzus2",
+  "kind": "story",
+  "title": "Code questions answered from the map are measured against reading files, per right answer",
+  "status": "draft",
+  "parent": "EP-rpzrctui",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The lookup benchmark has a pool of code questions about this repository (where a symbol is defined, who calls it, which docs describe a file), run with the kb tools including the code-map call against tools=files, recorded under a spend cap the operator's gate names; the report and token-efficiency.md state tokens and USD per right answer for both arms with their spread.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "multi",
+        "run",
+        "code-lookups",
+        "--dry-run"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_multi.py",
+    "_tools/bench_pool.py",
+    "kb/_self/reports/multi_bench.csv",
+    "kb/_self/reports/benchmarks.md",
+    "kb/_self/reports/benchmarks.csv",
+    "kb/_self/benchmarks.md",
+    "kb/_self/token-efficiency.md",
+    "README.md"
+  ],
+  "depends_on": [
+    "ST-q4fbmomg"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What is the spend cap for the paid code-lookup runs (both arms, all records)?",
+      "options": [
+        "size from a dry-run plan first",
+        "50 USD",
+        "150 USD"
+      ],
+      "recommendation": "size from a dry-run plan first",
+      "reason": "the pool's size and the model set the cost, and the dry run prints the estimate",
+      "do": {
+        "size from a dry-run plan first": "ST-jvthzus2",
+        "50 USD": "ST-jvthzus2",
+        "150 USD": "ST-jvthzus2"
+      },
+      "class": "design"
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

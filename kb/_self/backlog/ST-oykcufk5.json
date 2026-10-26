@@ -1,0 +1,51 @@
+{
+  "id": "ST-oykcufk5",
+  "kind": "story",
+  "title": "A session waiting on a permission prompt or a question shows as blocked within seconds, apart from a silent one",
+  "status": "draft",
+  "parent": "EP-wqgicmmj",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The coord hook runs on the permission-request and notification hook events and records the session as blocked through an event of a closed kind, cleared at its next tool event; kbmon's sessions panel shows that session as blocked on a prompt and the needs-you line names it, within one snapshot; a session that is only silent keeps its silent measure; a planted permission-request event on a temp store leaves a blocked record that coord.py wait returns.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile;t=os.path.join(tempfile.mkdtemp(),'c.sqlite');e=dict(os.environ,KB_COORD_STORE=t);ev={'hook_event_name':'PermissionRequest','session_id':'chk-blocked-1','cwd':os.getcwd(),'tool_name':'Bash','tool_input':{'command':'true'}};a=s.run([sys.executable,'.claude/hooks/coord_hook.py'],input=json.dumps(ev),capture_output=True,text=True,env=e,timeout=60);b=s.run([sys.executable,'_tools/coord.py','wait','--since','0','--timeout','0','--store',t],capture_output=True,text=True,timeout=60);print(a.stdout,a.stderr,b.stdout[:600]);sys.exit(0 if a.returncode==0 and b.returncode==0 and 'blocked' in b.stdout and 'chk-blocked-1' in b.stdout else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/hooks/coord_hook.py",
+    ".claude/settings.json",
+    ".claude-plugin/plugin.json",
+    "_tools/coord.py",
+    "_tools/mon_sessions.py",
+    "_tools/mon_needs.py",
+    "_tools/mon_status.py",
+    "kb/_self/coordination.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/plugin.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which hook events mark a session blocked?",
+      "options": [
+        "permission requests and notifications that wait on the person",
+        "permission requests only"
+      ],
+      "recommendation": "permission requests and notifications that wait on the person",
+      "reason": "a question to the operator blocks as surely as a permission prompt",
+      "do": {
+        "permission requests and notifications that wait on the person": "ST-oykcufk5",
+        "permission requests only": "ST-oykcufk5"
+      },
+      "class": "agents-rule"
+    }
+  ],
+  "notes": "Premise: python3 -c \"import json;print([h['command'] for e in json.load(open('.claude/settings.json'))['hooks']['PermissionRequest'] for h in e['hooks']])\" shows the permission-request event runs only the query log capture, so coord learns nothing of a session waiting on a prompt and kbmon shows it as silent until the KbmonRunStalled threshold. The check plants one permission-request event into coord_hook.py on a temp store. Compatible by design with any runtime that reads coord or kbmon: no runtime is named.",
+  "filed_in": "clone-0ea70e5c"
+}

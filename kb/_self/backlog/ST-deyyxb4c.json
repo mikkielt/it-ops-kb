@@ -1,0 +1,27 @@
+{
+  "id": "ST-deyyxb4c",
+  "kind": "story",
+  "title": "Code questions are claimed like research: a claim names a repository, path and symbol, and a second agent mapping the same code sees the overlap and gets the results",
+  "status": "draft",
+  "parent": "EP-fxrzbuza",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "coord.py dedup --code REPO:PATH[#SYMBOL] (repeatable) claims code targets under keys of their own beside the research terms; a claim on a path covers its symbols; another holder's dedup of a covered target lists it in overlaps and claims only the rest; the holder posts each code fact or map entry it adds as an event of a closed kind, so a waiting agent reads those instead of reading the code; on a temp store a second holder's dedup of the same path reports the first holder's overlap.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile;t=os.path.join(tempfile.mkdtemp(),'c.sqlite');run=lambda h:json.loads(s.run([sys.executable,'_tools/coord.py','dedup','where is pack defined and who calls it','--store',t,'--code','it-ops-kb:_tools/rag.py#pack','--holder',h],capture_output=True,text=True,timeout=300,check=True).stdout);a=run('chk-a');b=run('chk-b');print(a,b);sys.exit(0 if a.get('claimed') and b.get('overlaps') else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/coord.py",
+    "_tools/kb_mcp.py",
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md",
+    ".claude/skills/kb-ingest/SKILL.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

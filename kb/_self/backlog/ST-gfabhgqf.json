@@ -1,0 +1,31 @@
+{
+  "id": "ST-gfabhgqf",
+  "kind": "story",
+  "title": "A refresh closes a changed fact with an end date and adds the new one, instead of rewriting it",
+  "status": "draft",
+  "parent": "EP-lrmcc2uf",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "When the fact diff finds a fact's passage changed so the fact no longer holds, /kb-refresh ends the old line's validity window at the source's change date (or the commit for a CODE fact) and adds the new fact with a window starting there, both citing their sources; doc2query rows follow the new line; a pack with no as-of shows the new fact as current, and an as-of before the change shows the old one.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/factdiff.py",
+        "anchors",
+        "--stale"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-refresh/SKILL.md",
+    "_tools/factdiff.py",
+    "kb/_self/content-rules.md",
+    "kb/_self/doc2query.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-mp4pjor2"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

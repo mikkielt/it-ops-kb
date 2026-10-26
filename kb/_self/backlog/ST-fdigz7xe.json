@@ -1,0 +1,73 @@
+{
+  "id": "ST-fdigz7xe",
+  "kind": "story",
+  "title": "Research at no, partial and full overlap shows whether a shared coord store cuts duplicate facts or tokens beyond the spread",
+  "status": "draft",
+  "parent": "EP-giqleoy2",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "multi has research scenarios at no overlap (three distinct areas, e.g. pip, rust, sops) and partial overlap (e.g. pip, uv, python) beside the full-overlap research scenario (pip three times), each runnable with coord=shared and coord=isolated; a paid run within the operator's spend cap records as many records per arm and level as the spend gate sized, and the report and token-efficiency.md (Concurrent agents) state per overlap level dup_facts, dedup_hits and tokens and USD per verified fact as ranges, and whether shared differs from isolated beyond the spread at each level",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "multi",
+        "run",
+        "research-none",
+        "--dry-run",
+        "--coord",
+        "isolated"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "multi",
+        "run",
+        "research-partial",
+        "--dry-run",
+        "--coord",
+        "shared"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_multi.py",
+    "_tools/benchmarks.py",
+    "_tools/bench_replay.py",
+    "kb/_self/reports/multi_bench.csv",
+    "kb/_self/reports/benchmarks.md",
+    "kb/_self/benchmarks.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md",
+    "README.md"
+  ],
+  "relates_to": [
+    "ST-y7rnd2tw",
+    "ST-f5lbn3aw"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What is the spend cap for the paid graded-overlap runs (all levels, both arms, all records)?",
+      "options": [
+        "150 USD",
+        "50 USD",
+        "size from a dry-run plan first"
+      ],
+      "recommendation": "150 USD",
+      "reason": "the operator's choice when the story was filed",
+      "class": "design",
+      "answer": "150 USD",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
+  "notes": "Premise: python3 _tools/rag.py show kb/_self/token-efficiency.md:152 -n 1 shows record 00cb019, two records per arm, shared and isolated token ranges overlapping and dup_facts not lower under shared. kb/_self/reports/multi_bench.csv already runs research at full overlap (research-1..3 all on pip) and coord at partial (pip, uv), so overlap alone was not missing: the levels and the records per arm are. Areas must be bench_repro briefs (pip, uv, python, rust, sops and the rest of load_briefs). Model and records per arm are sized under the spend gate; Haiku research ran at about 3.40-6.21 USD per record, the Sonnet research dry run estimates 8.48 USD per scenario run.",
+  "filed_in": "clone-0ea70e5c"
+}
