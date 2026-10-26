@@ -2,7 +2,7 @@
   "id": "SP-wurbmsid",
   "kind": "sprint",
   "title": "Live agent view, first slice: follow one session's transcript in a terminal",
-  "status": "planned",
+  "status": "active",
   "goal": "kbtail.py follows one Claude Code session's transcript live in a terminal, redacted and cut, with no model call and no file written, and kbmon.py --follow runs it",
   "gates": [
     {
@@ -14,7 +14,11 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "creator": "op-f618a13e",

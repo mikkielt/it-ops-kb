@@ -2,7 +2,7 @@
   "id": "ST-zbyvpunj",
   "kind": "story",
   "title": "kbtail.py follows one session's transcript live in a terminal, redacted and cut, and kbmon.py --follow runs it",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-booflukv",
   "sprint": "SP-wurbmsid",
   "priority": "P2",
