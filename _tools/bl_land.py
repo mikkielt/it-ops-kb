@@ -964,7 +964,9 @@ def ops_land(handler):
     return wrapped
 
 
-GATE_KEPT_PATH = re.compile(r"\S+/_cache/gate/[^/\s]+")  # a gate's kept whole-output file, as a failed step names it
+# a gate's kept whole-output file, as a failed step names it: an absolute path after `: ` (it may hold spaces, and
+# backslashes under Windows), else any one word
+GATE_KEPT_PATH = re.compile(r"(?<=: )(?:/|[A-Za-z]:[\\/])[^\n]*?[\\/]_cache[\\/]gate[\\/][^\\/\s]+|\S+[\\/]_cache[\\/]gate[\\/][^\\/\s]+")
 
 
 def keep_gate_outputs(root, keep_to, out):
