@@ -2,7 +2,7 @@
   "id": "ST-extdpx4x",
   "kind": "story",
   "title": "Review sprint: Orchestration tools: run states, landing, begin and wait",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-42b2cjm3",
   "review": true,
   "priority": "P1",
@@ -25,6 +25,27 @@
   ],
   "notes": "Sprint started 2026-10-26 on the operator's approval for the unattended run.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "71d181b75e1e384d660fbc259a7b2d5f6147fcdc",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "2fdced0ac297d3a7"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "6dca8b2e4eadf36d"
+      }
+    ]
+  }
 }
