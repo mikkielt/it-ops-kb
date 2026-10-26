@@ -2,7 +2,7 @@
   "id": "BG-ohawboem",
   "kind": "bug",
   "title": "A gate about the token counts of a model run (tokens per correct answer, input and output tokens) is classed secrets",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mk6ikval",
   "priority": "P2",
   "rank": 0,
@@ -41,5 +41,7 @@
   "links": [
     "parked: SP-v64egscn close"
   ],
-  "notes": "SP-v64egscn close (2026-10-20): seen again. ST-c3d3rijw's gate g1 ('How does the digest show tokens by model') was classed secrets and made blocking; the orchestrator answered it with its recommendation as a layout choice. bl_authority.gate_class still returns secrets for that planted gate today. A duplicate retro draft was folded into this bug instead of filed. Sprint SP-mk6ikval started 2026-10-26; item moved from draft to todo."
+  "notes": "SP-v64egscn close (2026-10-20): seen again. ST-c3d3rijw's gate g1 ('How does the digest show tokens by model') was classed secrets and made blocking; the orchestrator answered it with its recommendation as a layout choice. bl_authority.gate_class still returns secrets for that planted gate today. A duplicate retro draft was folded into this bug instead of filed. Sprint SP-mk6ikval started 2026-10-26; item moved from draft to todo.",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
