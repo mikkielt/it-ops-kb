@@ -58,7 +58,7 @@
   "links": [
     "parked: SP-s2svf5a6 close"
   ],
-  "notes": "Premise: the check fails on the base: backlog.py new bug prints only the new id and title, not the repro's output. Sprint start gate answered approve by the runner on the operator's behalf (pre-approved by the operator for the 2026-10-26 run).",
+  "notes": "Premise: the check fails on the base: backlog.py new bug prints only the new id and title, not the repro's output. Sprint start gate answered approve by the runner on the operator's behalf (pre-approved by the operator for the 2026-10-26 run). Gate g1 answered with its recommendation (5 non-empty lines, each cut to 200 characters) by the runner on the operator's behalf (pre-approved by the operator for the 2026-10-26 run).",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }
