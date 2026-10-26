@@ -56,6 +56,20 @@ Tools that do part of what this kb does, what each overlaps with, how it differs
 | Security Copilot in Intune (agents and the Copilot features) | proprietary; needs Security Copilot enabled with security compute units (SCU) | natural-language help on Intune policies, settings, devices; agents for policy configuration, offboarding and vulnerability remediation | reads the tenant's live data and acts on it; no ConfigMgr, AD or GPO depth outside Intune; answers are not cited facts with source dates; billed per SCU |
 | Intune Endpoint Management Skills (`imabdk/Intune-Endpoint-Management-Skills`) | MIT | agent skills for the Intune Endpoint security nodes, sourced from Microsoft Learn | procedures for GitHub Copilot in VS Code that send the agent to the Learn MCP server for facts; one Intune node so far, no stored facts, retrieval or upkeep tools |
 
+### Tools that coordinate parallel agents, track their tasks or host their sessions
+
+Surveyed 2026-10-26 the same way (the repository's `license` field and `LICENSE` file, the README). These tools do work the kb does not claim: they carry messages and file leases between agents, keep a dependency graph of tasks, or keep agent sessions running and report their state. The kb's own part is smaller: `coord.py` leases, events and asks and the `backlog.py` tracker for this clone's work (`kb/_self/coordination.md`, `kb/_self/backlog.md`), and cited facts that any of these tools' agents can ask for. The last column names the surface through which the kb meets each tool today; where no adapter exists the cell says so.
+
+| tool | licence | overlap | difference | adapter or contract |
+|---|---|---|---|---|
+| MCP Agent Mail (`github.com/Dicklesworthstone/mcp_agent_mail`, and its Rust rewrite `mcp_agent_mail_rust`), coordination | MIT with an OpenAI/Anthropic rider: no rights go to OpenAI, L.L.C., Anthropic, PBC, their affiliates or anyone acting for them, and any distribution must carry the rider unmodified (the GitHub `license` field reads `NOASSERTION`); the Python repository is marked deprecated in favour of the Rust one | agent identities, inboxes and threads, and advisory file reservations between agents over MCP, with a Git archive and SQLite | a messaging and reservation layer for agents of any vendor, not a tracker or a store of facts. The kb's coord store covers one clone's sessions, with leases, asks and a dedup of research by meaning | none exists. Both sides print JSON or serve MCP (`coord.py list` and `digest`, the `coord_*` tools of the kb MCP server with `KB_COORD_TOOLS=1`, Agent Mail's MCP tools and robot CLI), so a bridge would sit between those surfaces and copy no code of either; read the rider's text before any use by a party it names |
+| Beads (`github.com/gastownhall/beads`, the `bd` command), task tracking | MIT | a dependency-aware task graph for agents with ready-work detection, claims, hash-based ids and JSON output | a general issue tracker on Dolt that gives agents long-horizon memory; the kb's `backlog.py` is a file-per-item tracker whose items carry checks, gates and a landing, and which is tied to this project's rules | none needed on the kb side: an agent reads an issue with `bd show` and asks `kb_pack` about its words; neither tool imports the other's items |
+| Gas Town (`github.com/gastownhall/gastown`), coordination and runtime | MIT | a workspace manager for many agents (Claude Code, Copilot, Codex, Gemini): a coordinating Mayor, worker agents, mailboxes, work state in git-backed hooks and a Beads ledger | runs and supervises the agents themselves; the kb's sprint runner starts headless Claude Code workers in worktrees and lands them one at a time after the item's checks | none exists. Agents Gas Town starts can use the kb MCP server (`kb_pack`, `kb_facts`) like any MCP client |
+| Herdr (`github.com/herdrdev/herdr`), runtime | Apache-2.0 | keeps agents running in terminal panes that survive a closed client, and reports each pane as idle, working or blocked | a terminal runtime, not a tracker or a store of facts; it wraps and replaces no agent | the kb records Herdr's JSON socket API and its agent states (`kb/public/agents/herdr-agent-state.md`) as an external agent-state source a monitor can read; no kb tool reads it today |
+| Claude Code agent teams (`code.claude.com/docs/en/agent-teams`), coordination | part of Claude Code, under that product's terms (not surveyed here); experimental and off by default | a lead session that plans, assigns and supervises teammate sessions with a shared task list and messages between them (`kb/public/claude/parallel-sessions.md`) | one team per session and no worktree per teammate, so work is split by file set; the kb's workers each get a worktree and a branch and land after their checks | a teammate loads the project's context, MCP servers and skills like any session, so the kb's skills and MCP server work there unchanged |
+
+What the licences mean is in Licensing compared, and where each tool fits is in When another tool fits better.
+
 ## Differences by capability
 
 | capability | this kb | nearest alternatives |
@@ -72,8 +86,9 @@ Tools that do part of what this kb does, what each overlaps with, how it differs
 
 ## Licensing compared
 
-- **Permissive, reusable in any setting:** this kb's code (Apache-2.0), GitMCP and RAGFlow (Apache-2.0), qmd, knowledge-rag, AnythingLLM, docs-mcp-server, the Intune skills (MIT), knowledge-base-mcp-server (Unlicense).
+- **Permissive, reusable in any setting:** this kb's code (Apache-2.0), GitMCP, RAGFlow and Herdr (Apache-2.0), Beads and Gas Town (MIT), qmd, knowledge-rag, AnythingLLM, docs-mcp-server, the Intune skills (MIT), knowledge-base-mcp-server (Unlicense).
 - **Permissive client, closed service:** Context7 and Ref (MIT MCP servers in front of private backends), DeepWiki (closed, free for public repositories), Microsoft Learn MCP (repository CC-BY-4.0, service run by Microsoft).
+- **Permissive with a named-party rider:** MCP Agent Mail (MIT plus a rider that grants nothing to OpenAI, Anthropic, their affiliates or anyone acting for them, and travels with every copy; GitHub's licence field cannot name it and reads `NOASSERTION`).
 - **Open core:** Onyx (MIT outside `ee/`, the Onyx Enterprise License inside).
 - **Copyleft:** Basic Memory (AGPL-3.0: a modified version offered over a network must publish its source).
 - **Proprietary:** Security Copilot.
@@ -95,10 +110,12 @@ Tools that do part of what this kb does, what each overlaps with, how it differs
 - **Library and framework APIs for coding:** Context7, Ref, GitMCP or docs-mcp-server.
 - **Understanding an unfamiliar public repository:** DeepWiki.
 - **A tenant's live state or acting on it:** Security Copilot in Intune, or Graph through its own tools; this kb holds documentation facts, not device or directory data.
+- **Messages and file reservations between agents of several vendors:** MCP Agent Mail, subject to its rider; **a dependency graph of tasks for agents:** Beads; **many agents run and supervised from one workspace:** Gas Town, or Herdr for terminal panes and their states; **a lead session directing teammates inside Claude Code:** its agent teams. The kb sits beside them as the source of cited facts and as this clone's own tracker and coord store.
 - **Semantic search over a large pile of unreviewed notes or PDFs:** qmd, knowledge-rag, AnythingLLM, RAGFlow or Onyx; the kb only holds facts someone researched and tagged.
 
 ## Sources
 
 - GitHub repositories (licence field, `LICENSE`, README): `github.com/upstash/context7`, `github.com/MicrosoftDocs/mcp`, `github.com/ref-tools/ref-tools-mcp`, `github.com/idosal/git-mcp`, `github.com/AsyncFuncAI/deepwiki-open`, `github.com/arabold/docs-mcp-server`, `github.com/docfork/docfork`, `github.com/tobi/qmd`, `github.com/lyonzin/knowledge-rag`, `github.com/jeanibarz/knowledge-base-mcp-server`, `github.com/basicmachines-co/basic-memory`, `github.com/onyx-dot-app/onyx`, `github.com/Mintplex-Labs/anything-llm`, `github.com/infiniflow/ragflow`, `github.com/imabdk/Intune-Endpoint-Management-Skills`.
+- Coordination, task and runtime tools (read 2026-10-26): `github.com/Dicklesworthstone/mcp_agent_mail`, `github.com/Dicklesworthstone/mcp_agent_mail_rust`, `github.com/gastownhall/beads`, `github.com/gastownhall/gastown`, `github.com/herdrdev/herdr`; the Claude Code agent teams page `code.claude.com/docs/en/agent-teams`, as the kb records it in `kb/public/claude/parallel-sessions.md`.
 - Pricing and service terms: `docs.ref.tools/usage/pricing`, `context7.com/docs/plans-pricing`, `docs.devin.ai/work-with-devin/deepwiki-mcp`.
 - Microsoft: `learn.microsoft.com/en-us/intune/copilot/`, `learn.microsoft.com/en-us/intune/copilot/agents/`.

@@ -48,6 +48,25 @@
   "touches": [
     "kb/_self/alternatives.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which tools does the coordination section of the alternatives doc compare, and what does its adapter column say where no adapter exists?",
+      "options": [
+        "Five tools (MCP Agent Mail, Beads, Gas Town, Herdr, Claude Code agent teams), the column naming only the surfaces that exist today and saying none exists where it does not",
+        "Also name the planned contracts of open backlog items in the column"
+      ],
+      "recommendation": "Five tools (MCP Agent Mail, Beads, Gas Town, Herdr, Claude Code agent teams), the column naming only the surfaces that exist today and saying none exists where it does not",
+      "do": {
+        "Five tools (MCP Agent Mail, Beads, Gas Town, Herdr, Claude Code agent teams), the column naming only the surfaces that exist today and saying none exists where it does not": "ST-no5nfdiu",
+        "Also name the planned contracts of open backlog items in the column": "ST-no5nfdiu"
+      },
+      "class": "design",
+      "answer": "Five tools (MCP Agent Mail, Beads, Gas Town, Herdr, Claude Code agent teams), the column naming only the surfaces that exist today and saying none exists where it does not",
+      "by": "agent"
+    }
+  ],
   "notes": "Plan check 2026-10-26: check 0 (selfdoc check) passes before the work on purpose: it pins that the docs stay consistent. Check 1 reads the new ### section of alternatives.md for its columns (tool, licence, overlap, difference, adapter or contract), at least three rows and a source for each row; check 2 runs the _self pack of the clause's question and needs a cited line inside that section. The old section check named a heading the doc has no reason to hold. On the base: no such section: premise reproduced.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-775f1f5d",
