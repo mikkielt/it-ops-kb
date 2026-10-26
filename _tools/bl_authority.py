@@ -74,6 +74,10 @@ def names_secret(touch):
 # as a credential (`API token counts` is a count of API tokens), a singular identifier (`GITLAB_TOKEN`) and a token file
 # keep the class: the classifier fails closed.
 TOKENIZE_WORD = re.compile(r"(?<![\w.-])tokeni[sz](?:e|es|ed|er|ers|ing|ation)(?![\w-])", re.I)
+# An attribute of the `tokenize` module (`tokenize.generate_tokens`, `tokenize.tokenize(f.readline)`,
+# `tokenize.TokenInfo`): the name of the module's API, no credential. One with a credential, secret or service part among
+# its `_` parts (`tokenize.api_token`) is kept, so only the module's own word is blanked in it.
+TOKENIZE_ATTR = re.compile(r"(?<![\w.-])tokenize\.(\w+)", re.I)
 TOKEN_DOC = re.compile(r"[\w./\\-]*token[\w./\\-]*\.md\b", re.I)
 # A secrets word beside `token` in a doc name (`docs/bearer-token.md`, `ssh-token.md`, `passphrase-token-store.md`,
 # `PAT-token.md`): the doc is about that credential, so its name keeps the class (`path` holds no `PAT`).
@@ -151,10 +155,14 @@ def without_unit_lists(text, question_cred=False):
 
 def without_token_counts(text):
     """The text with each token-count phrase, each upper-case identifier of token counts, each snake_case code
-    identifier such as `bare_token`, each Markdown doc name that holds `token` and each word of the Python `tokenize` module replaced by a space: what the `secrets` words are
+    identifier such as `bare_token`, each Markdown doc name that holds `token` and each word of the Python `tokenize` module and each
+    attribute of it (`tokenize.generate_tokens`) replaced by a space: what the `secrets` words are
     searched in, so a model's token counts, a constant such as `DISPATCH_BASE_TOKENS`, the ops-row `phase token`, a doc
     such as `token-efficiency.md` and `the tokenize module` are no secret. A doc name that holds a secrets word beside
     `token` (`bearer-token.md`, `ssh-token.md`) is kept."""
+    text = TOKENIZE_ATTR.sub(
+        lambda m: m.group(0) if any(CRED_PART.match(q) or SERVICE_PART.match(q.lower()) for q in m.group(1).split("_"))
+        else " ", text)
     text = TOKENIZE_WORD.sub(" ", text)
     text = TOKEN_DOC.sub(
         lambda m: m.group(0) if names_secret(m.group(0)) or DOC_SECRET.search(m.group(0)) else " ", text)
