@@ -12,7 +12,7 @@
     "run": [
       "python3",
       "-c",
-      "import sys;sys.path.insert(0,'_tools');import bl_authority as a\nit={'touches':['_tools/bl_check.py']}\nqs=['Use tokenize.generate_tokens to find comments?','Does tokenize.tokenize(f.readline) read bytes?']\nr=[a.class_reasons(it,dict(id='g1',question=q,options=['one','two']))[0] for q in qs]\nprint(r);sys.exit(0 if r==['design','design'] else 1)"
+      "import sys;sys.path.insert(0,'_tools');import bl_authority as a\nit={'touches':['_tools/kbtools.py']}\nqs=['Use tokenize.generate_tokens to find comments?','Does tokenize.tokenize(f.readline) read bytes?']\nr=[a.class_reasons(it,dict(id='g1',question=q,options=['one','two']))[0] for q in qs]\nprint(r);sys.exit(0 if r==['design','design'] else 1)"
     ]
   },
   "checks": [
@@ -41,6 +41,28 @@
   ],
   "depends_on": [
     "BG-ohawboem"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which names of the tokenize module stop counting as a secret word, and what replaces the bug's repro whose touch cannot reach design?",
+      "options": [
+        "Blank each tokenize.NAME attribute unless NAME holds a credential part; repro touches _tools/kbtools.py",
+        "Blank only the three named attributes; keep the repro"
+      ],
+      "recommendation": "Blank each tokenize.NAME attribute unless NAME holds a credential part; repro touches _tools/kbtools.py",
+      "reason": "the repro's touch _tools/bl_check.py is rule-guarding, so its class is agents-rule whatever the words say",
+      "do": {
+        "Blank each tokenize.NAME attribute unless NAME holds a credential part; repro touches _tools/kbtools.py": "BG-dry4luf6",
+        "Blank only the three named attributes; keep the repro": "BG-dry4luf6"
+      },
+      "class": "secrets",
+      "answer": "Blank each tokenize.NAME attribute unless NAME holds a credential part; repro touches _tools/kbtools.py",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
   ],
   "links": [
     "parked: SP-aoiqmnc6 review"
