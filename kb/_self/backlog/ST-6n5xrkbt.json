@@ -4,6 +4,7 @@
   "title": "One call turns a task's title and body into a context pack: the cited fact lines, the code locations it names at a pinned commit, and what the kb lacks",
   "status": "draft",
   "parent": "EP-66qfpegm",
+  "sprint": "SP-n7f53pgv",
   "priority": "P2",
   "rank": 0,
   "goal": "rag.py task FILE|- reads a task's text (any tracker's title and body, plain text or Markdown) and prints, within a token budget (default 1200), the pack's verdict and fact lines for the questions the text raises, the code locations its paths or symbols name at the pinned commit of an ingested repository, and the kb has / kb lacks lines; the kb MCP server serves the same as kb_task_context; nothing in the code or docs names a tracker product.",

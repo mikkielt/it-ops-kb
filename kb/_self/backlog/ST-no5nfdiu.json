@@ -4,6 +4,7 @@
   "title": "The alternatives doc compares multi-agent coordination, task tracking and agent runtime tools, and says where the kb plugs into each",
   "status": "draft",
   "parent": "EP-66qfpegm",
+  "sprint": "SP-n7f53pgv",
   "priority": "P3",
   "rank": 0,
   "goal": "kb/_self/alternatives.md has a section on tools that coordinate parallel agents, track their tasks or host their sessions, each with what it overlaps with, how it differs, its licence (a rider that bars some parties named as such) and the adapter or contract through which the kb complements it; its sources are cited as the doc's others are, and selfdoc.py check passes.",

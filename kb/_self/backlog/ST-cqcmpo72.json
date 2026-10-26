@@ -4,6 +4,7 @@
   "title": "precheck shows conflict predictions from any external predictor beside its own file overlaps",
   "status": "draft",
   "parent": "EP-zv3duelo",
+  "sprint": "SP-n7f53pgv",
   "priority": "P3",
   "rank": 0,
   "goal": "backlog.py precheck SP --conflicts FILE|- reads JSON lines of two branches or items, a path and a kind (textual or semantic) from any conflict predictor and prints each beside precheck's own overlap of planned files, naming the items by title and id; a line naming an item outside the sprint is listed apart; the contract is documented in backlog.md with no product named; precheck without --conflicts prints what it prints now.",

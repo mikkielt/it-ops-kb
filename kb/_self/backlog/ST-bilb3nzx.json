@@ -4,6 +4,7 @@
   "title": "Any MCP client checks a research question against live claims before it starts: the kb MCP server lists coord_dedup and coord.py serve answers dedup",
   "status": "draft",
   "parent": "EP-fxrzbuza",
+  "sprint": "SP-n7f53pgv",
   "priority": "P2",
   "rank": 0,
   "goal": "The kb MCP server lists a coord_dedup tool right after coord_wait that runs coord.py dedup with the same id-only fields (question, holder, topic, token, ttl) and returns its topic, terms, uncovered, overlaps, held, claimed and token; coord.py serve accepts dedup, so agents of any vendor on other hosts dedup against one store; a second holder's dedup of the same question on a temp store reports the first holder's overlap.",

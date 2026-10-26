@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "coord.py digest labels a two-item intent state=done when only one of its items is done",
   "status": "draft",
+  "sprint": "SP-n7f53pgv",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",

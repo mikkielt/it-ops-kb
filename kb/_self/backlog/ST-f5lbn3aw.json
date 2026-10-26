@@ -4,6 +4,7 @@
   "title": "Duplicate research is found for a paraphrased fact, not only one whose text holds the exact claimed term",
   "status": "draft",
   "parent": "EP-giqleoy2",
+  "sprint": "SP-n7f53pgv",
   "priority": "P3",
   "rank": 0,
   "goal": "duplicate_research matches two agents' facts for one claimed term without requiring the term's exact text in the fact, so a real kb lacks: phrase paraphrased by both agents is found",

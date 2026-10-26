@@ -4,6 +4,7 @@
   "title": "Research at no, partial and full overlap shows whether a shared coord store cuts duplicate facts or tokens beyond the spread",
   "status": "draft",
   "parent": "EP-giqleoy2",
+  "sprint": "SP-n7f53pgv",
   "priority": "P2",
   "rank": 0,
   "goal": "multi has research scenarios at no overlap (three distinct areas, e.g. pip, rust, sops) and partial overlap (e.g. pip, uv, python) beside the full-overlap research scenario (pip three times), each runnable with coord=shared and coord=isolated; a paid run within the operator's spend cap records as many records per arm and level as the spend gate sized, and the report and token-efficiency.md (Concurrent agents) state per overlap level dup_facts, dedup_hits and tokens and USD per verified fact as ranges, and whether shared differs from isolated beyond the spread at each level",

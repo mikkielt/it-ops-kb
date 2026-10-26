@@ -4,6 +4,7 @@
   "title": "coord exchanges claims with any external coordination service through a JSON-lines contract: live intents and touches out, external reservations in as overlaps",
   "status": "draft",
   "parent": "EP-66qfpegm",
+  "sprint": "SP-n7f53pgv",
   "priority": "P2",
   "rank": 0,
   "goal": "coord.py export-intents prints each live intent with its session, items and touch globs as JSON lines; coord.py import-reservations FILE|- takes JSON lines of holder, path globs, expiry and source and stores them as leases of their own that expire on their own; digest and the coord hook show an imported reservation that meets a session's touches as an overlap, as they show a session's; the contract is documented in coordination.md with no product named; on a temp store an imported reservation's holder appears in the digest.",
@@ -38,7 +39,11 @@
         "only show as an overlap, like a session's touches": "ST-wu4lbbjs",
         "refuse a claim whose touches it covers until it expires": "ST-wu4lbbjs"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "only show as an overlap, like a session's touches",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "filed_in": "clone-0ea70e5c"
