@@ -281,7 +281,8 @@ def window_sections(anchor, doc, prev):
     `heading` section unless the window starts at a heading line, where that is the parent's; so does the current text
     holding it (a section hash of the parent, with intro text under it, cannot tell an edit of that text from a heading
     added beside the window). Else (an anchor placed on an earlier text) the window is not: the `heading` section is required only where it holds a body unit (a window can
-    start there), and optional are every section below it in the current text and those of the SPAN - 1 units that
+    start there) that differs between the two texts (with the same body units in both, a change of that section is a
+    heading line added, renamed or removed beside the window, which its own section tells), and optional are every section below it in the current text and those of the SPAN - 1 units that
     follow a unit of that path, which holds any section the window can enter (a window that runs from a body into the
     next heading and its body); a following unit under an ancestor of that path is a sibling's heading line or the
     parent's body, left out, as the section of the sibling's body that the window then enters names the sibling by its
@@ -298,12 +299,18 @@ def window_sections(anchor, doc, prev):
     have = {section_key(p) for p, _ in us}
     req = {section_key(head)}
     opt = set()
+    body = [norm(u) for (p, u), o in zip(us, own) if o is None and p[:200] == head]
+    kept = bool(body) and prev is not None and body == [norm(u) for (p, u), o in zip(prev.units, prev.own)
+                                                         if o is None and p[:200] == head]
     for i, (p, _) in enumerate(us):
         if not head or p[:200] == head or p[:200].startswith(head + " > "):
-            opt.add(_unit_key(p, own[i], have))
+            if not (kept and own[i] is None and p[:200] == head):
+                opt.add(_unit_key(p, own[i], have))
         if p[:200] == head:
             opt.update(_unit_key(q, own[j], have) for j, (q, _) in enumerate(us[i + 1:i + SPAN], i + 1)
-                       if not _ancestor(q[:200], head))
+                       if not _ancestor(q[:200], head) and not (kept and own[j] is None and q[:200] == head))
+    if kept:
+        req = set()  # the body units of the section are the same in both texts: the window is among the heading lines
     if section_key(head) in have and all(own[i] is not None for i, (p, _) in enumerate(us) if p[:200] == head):
         req = set()  # the section holds heading lines only: a window there starts at one of them
     return req, opt - req
