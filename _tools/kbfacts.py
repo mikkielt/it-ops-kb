@@ -1180,34 +1180,6 @@ def git_log_day(path):
     return time.strftime("%Y-%m-%d") if dirty else (commits[0][1] if commits else "")
 
 
-def line_holds(path, n, day):
-    """Whether line `n` of the kb file `path` (qualified) still holds the text it held when the report of `day` was
-    made, so the report still names its fact. The reference is the file as of the start of `day` (its last commit
-    on an earlier day), since a report carries a day and no time; the current text is the working tree's, so an
-    uncommitted edit counts. True when the file did not change since an earlier day or git cannot tell; a file with
-    no commit before `day` keeps the report when it last changed on or before `day`."""
-    changed = git_log_day(path)
-    if not day or not changed or changed < day:
-        return True
-    commits, _ = git_history(path)
-    base = next((c for c, d in commits if d < day), None)
-    if base is None:
-        return changed <= day
-    full = kbcommon.path_of(path)
-    if (path, base) not in _BASED:
-        out = _git_out(os.path.dirname(full), "show", f"{base}:./{os.path.basename(full)}", strip=False)
-        _BASED[(path, base)] = None if out is None else out.split("\n")
-    then = _BASED[(path, base)]
-    try:
-        with open(full, encoding="utf-8", errors="replace", newline="") as f:
-            now = f.read().replace("\r\n", "\n").split("\n")
-    except OSError:
-        return True
-    if then is None or n > len(then):
-        return True
-    return n <= len(now) and then[n - 1].strip() == now[n - 1].strip()
-
-
 def feedback_flags():
     """{qualified path: {line: {issue: [reports, first day]}}} of the lines that a feedback report of the committed
     query-log store (ql_base.STORE, read at the call) names with an issue of FLAG_ISSUES: the entries' `feedback`
@@ -1245,6 +1217,34 @@ def feedback_flags():
         hit[0] += 1
         hit[1] = min(hit[1], day) if hit[1] else day
     return out
+
+
+def line_holds(path, n, day):
+    """Whether line `n` of the kb file `path` (qualified) still holds the text it held when the report of `day` was
+    made, so the report still names its fact. The reference is the file as of the start of `day` (its last commit
+    on an earlier day), since a report carries a day and no time; the current text is the working tree's, so an
+    uncommitted edit counts. True when the file did not change since an earlier day or git cannot tell; a file with
+    no commit before `day` keeps the report when it last changed on or before `day`."""
+    changed = git_log_day(path)
+    if not day or not changed or changed < day:
+        return True
+    commits, _ = git_history(path)
+    base = next((c for c, d in commits if d < day), None)
+    if base is None:
+        return changed <= day
+    full = kbcommon.path_of(path)
+    if (path, base) not in _BASED:
+        out = _git_out(os.path.dirname(full), "show", f"{base}:./{os.path.basename(full)}", strip=False)
+        _BASED[(path, base)] = None if out is None else out.split("\n")
+    then = _BASED[(path, base)]
+    try:
+        with open(full, encoding="utf-8", errors="replace", newline="") as f:
+            now = f.read().replace("\r\n", "\n").split("\n")
+    except OSError:
+        return True
+    if then is None or n > len(then):
+        return True
+    return n <= len(now) and then[n - 1].strip() == now[n - 1].strip()
 
 
 def flag_line(path, n, issues):
