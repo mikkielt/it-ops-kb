@@ -72,7 +72,7 @@
   "links": [
     "parked: SP-evq2flqc review"
   ],
-  "notes": "Found 2026-10-23 by the third SP-evq2flqc fresh review on 86d646801: the boundary header value now crosses a pipe, so a 24-character identifier cell counts as the base64 run. Check 0 (the test_leaks.py selection) passes before the work: it holds the key blocks the reviews planted, which must stay flagged. Check 1 is the repro. Add cases inside an existing test function of the touched test file: the test-id ceiling is hard, so no new test id. Sprint SP-mk6ikval started 2026-10-26; item moved from draft to todo. BG-v5tq4jkz dropped as already fixed by BG-w4af2tix (its repro passes on the main branch); this item now follows BG-w4af2tix directly.",
+  "notes": "Found 2026-10-23 by the third SP-evq2flqc fresh review on 86d646801: the boundary header value now crosses a pipe, so a 24-character identifier cell counts as the base64 run. Check 0 (the test_leaks.py selection) passes before the work: it holds the key blocks the reviews planted, which must stay flagged. Check 1 is the repro. Add cases inside an existing test function of the touched test file: the test-id ceiling is hard, so no new test id. Sprint SP-mk6ikval started 2026-10-26; item moved from draft to todo. BG-v5tq4jkz dropped as already fixed by BG-w4af2tix (its repro passes on the main branch); this item now follows BG-w4af2tix directly. Provisional gate g1 confirmed by the orchestrator on the operator behalf (pre-approved by the operator for the 2026-10-26 run) after the review report; consequences the reviewer found are parked as drafts: BG-c3vnscx7 (BG-w4af2tix), BG-fwdpzee4 (BG-po7cc5zi), BG-kz7v6ise (BG-tvkjpp5y).",
   "operator": "op-f618a13e",
   "evidence": {
     "commit": "696a8da389e0120c4ba1ba9bd8f8f19c09abda26",
