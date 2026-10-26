@@ -2,7 +2,7 @@
   "id": "ST-wokfooaa",
   "kind": "story",
   "title": "Review sprint: Query-log delivery and gate speed: a store check in seconds, one bad entry holds back one file, no fixture rows in the spool",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-vmtfnkim",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,6 @@
       ]
     }
   ],
+  "notes": "Sprint SP-vmtfnkim started 2026-10-26: start gate answered approve by operator (pre-approved by the operator for the 2026-10-26 run).",
   "filed_in": "clone-0ea70e5c"
 }

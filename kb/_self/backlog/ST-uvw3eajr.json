@@ -2,7 +2,7 @@
   "id": "ST-uvw3eajr",
   "kind": "story",
   "title": "A kb/public change that stops the query-log store passing its gates is refused at the sync gate",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-vmtfnkim",
   "priority": "P2",
   "rank": 0,
@@ -40,5 +40,5 @@
   "links": [
     "parked: SP-c7oav2vn close"
   ],
-  "notes": "Premise: check 0 fails on the base: kg_sync.gate_needs gives the querylog check no reason for a change to a public article. The committed store passes its gates today (querylog.py check: problems=0), so the new refusal does not fire on main now; it costs the check's run time per content gate, which BG-24kutvrd cuts first."
+  "notes": "Premise: check 0 fails on the base: kg_sync.gate_needs gives the querylog check no reason for a change to a public article. The committed store passes its gates today (querylog.py check: problems=0), so the new refusal does not fire on main now; it costs the check's run time per content gate, which BG-24kutvrd cuts first. Sprint SP-vmtfnkim started 2026-10-26: start gate answered approve by operator (pre-approved by the operator for the 2026-10-26 run)."
 }
