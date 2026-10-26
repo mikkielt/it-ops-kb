@@ -39,6 +39,26 @@
     "kb/_self/tools.md",
     "kb/_self/content-rules.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does window_sections keep BG-hxp3f73q's case and fix the body-window and gone-section cases?",
+      "options": [
+        "Relax the parent section only where it holds heading lines, and read optional sections from the previous text too",
+        "Hash a section's body units apart from its heading lines in sections()"
+      ],
+      "recommendation": "Relax the parent section only where it holds heading lines, and read optional sections from the previous text too",
+      "reason": "it keeps the stored sections format and every consumer of sections() unchanged",
+      "do": {
+        "Relax the parent section only where it holds heading lines, and read optional sections from the previous text too": "BG-wdyjtfl7",
+        "Hash a section's body units apart from its heading lines in sections()": "BG-wdyjtfl7"
+      },
+      "class": "design",
+      "answer": "Relax the parent section only where it holds heading lines, and read optional sections from the previous text too",
+      "by": "agent"
+    }
+  ],
   "notes": "Check 0 is BG-hxp3f73q's repro and passes before the work on purpose: it pins that the fix keeps that case. The repro reads both clauses with four planted Doc texts.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-775f1f5d",
