@@ -44,8 +44,9 @@
     "kb/_self/coordination.md"
   ],
   "depends_on": [
-    "ST-bngriclp"
+    "ST-bngriclp",
+    "ST-7nuaruwn"
   ],
-  "notes": "Reuse, no parallel reader: the live sessions come from `mon_sessions.live_sessions(root)` (ST-bngriclp), the intents from `coord.py digest`, the sprints and claims from `bl_view` held and `bl_plan.touches_meet` / `shared_doc`. A shared doc never orders items; it is shown so the planner sees the landing order.",
+  "notes": "Reuse, no parallel reader: the live sessions come from `mon_sessions.live_sessions(root)` (ST-bngriclp), the intents from `coord.py digest`, the sprints and claims from `bl_view` held and `bl_plan.touches_meet` / `shared_doc`. A shared doc never orders items; it is shown so the planner sees the landing order. kb/_self/map.csv is shared with the session-load benchmark's ST-7nuaruwn (claimed by session c5ef8aa4 on 2026-10-26): this story lands after it, told through a coord ask.",
   "filed_in": "clone-0ea70e5c"
 }

@@ -34,7 +34,8 @@
     "kb/_self/monitoring.md"
   ],
   "depends_on": [
-    "ST-hjl7dhyh"
+    "ST-hjl7dhyh",
+    "ST-tq6yo2si"
   ],
   "notes": "Half of the 40 coord asks so far went unanswered, many to ended sessions.",
   "filed_in": "clone-0ea70e5c"

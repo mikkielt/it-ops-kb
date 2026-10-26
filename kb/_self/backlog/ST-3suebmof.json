@@ -36,6 +36,6 @@
   "depends_on": [
     "ST-hjl7dhyh"
   ],
-  "notes": "The coord hook announces only at start and claim (`announce.when`); this posts from the tool itself, honouring `announce.to_other_sessions`. A run with no session id posts nothing.",
+  "notes": "The coord hook announces only at start and claim (`announce.when`); this posts from the tool itself, honouring `announce.to_other_sessions`. A run with no session id posts nothing. A coord intent's touch field holds at most 120 characters of ids (coord.py refuses more): a sprint whose items' files exceed it posts several plan intents, one per chunk, as the planner did by hand for SP-basca7ae on 2026-10-26.",
   "filed_in": "clone-0ea70e5c"
 }
