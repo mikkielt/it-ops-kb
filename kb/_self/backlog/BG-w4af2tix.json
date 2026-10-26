@@ -2,7 +2,7 @@
   "id": "BG-w4af2tix",
   "kind": "bug",
   "title": "The leak scan passes a short real EC key body with a slash that a period, underscore or hyphen follows, because the path lookahead calls any run of short slash-separated pieces a repository path",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-mk6ikval",
   "priority": "P3",
   "rank": 0,
@@ -67,6 +67,28 @@
   ],
   "notes": "SP-jopt2c3z review (S3, other): BG-nx6jzvop's start lookahead calls a run a path when every slash piece is at most 16 letters or digits, no plus, and a dot, underscore or hyphen follows. Random real-looking bodies of 20 to 40 characters with one slash pass in 6 to 14 percent of cases for 20 to 30 characters and 1 percent at 40; none at 78 or more. Real SEC1 and PKCS8 EC bodies are over 100 characters, so this is a theoretical case. Also: the end line of an armor block counts as a path suffix for a body under about 33 characters. Tension with BG-v5tq4jkz: the fix must separate a path from a body without a fixed segment length. Add cases inside an existing test function of the touched test file: the test-id ceiling is hard, so no new test id.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "e261b5d877ef1b32ad03e468e061ad4bcaa32e7c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import random,sys\nsys.path.insert(0,\"_tools\")\nimport kbcommon\nd=\"-\"*5;arm=d+\"BEGIN EC PRIVATE KEY\"+d\nhit=lambda t:any(k==\"secret\" for k,_ in kbcommon.leak_hits(t))\nrnd=random.Random(7);al=\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+\"\nmiss=[];total=0\nfor n in range(20,41,4):\n    for suf in (\".\",\"_x\",\"-x\",\".pem\"):\n        for _ in range(5):\n            k=rnd.randint(3,n-4);body=\"\".join(rnd.choice(al) for _ in range(n-1));body=body[:k]+\"/\"+body[k:]\n            total+=1\n            if not hit(arm+\" \"+body+suf):miss.append(n)\npaths=[\"kb/public/intune/profiles.md page\",\"_tools/kbcommon.py in the repo\",\"kb/_self/backlog/BG-aaaaaaaa.json item\"]\nfalse=[p for p in paths if hit(arm+\" \"+p)]\nprint(\"short slash bodies not flagged:\",len(miss),\"of\",total,\"| repository paths flagged:\",false)\nsys.exit(1 if miss or false else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "6b56f97078953554"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0, \"_tools\")\nimport kbcommon\nd = \"-\" * 5\narm = d + \"BEGIN EC PRIVATE KEY\" + d\nmiss = [s for s in (\".\", \"_x\", \"-x\", \".pem\") if not any(k == \"secret\" for k, _ in kbcommon.leak_hits(arm + \" CwgQj8C/nbil1bW34cYU\" + s))]\nprint(\"short slash-containing body not flagged before:\", miss)\nsys.exit(1 if miss else 0)"
+        ],
+        "exit": 0,
+        "sha256": "b95dcc28441d98cf"
+      }
+    ]
+  }
 }
