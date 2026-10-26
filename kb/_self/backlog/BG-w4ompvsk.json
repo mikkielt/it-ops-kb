@@ -46,6 +46,26 @@
     "kb/_self/plugin.md",
     "kb/_self/usage.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does feedback_flags tell that a reported line no longer holds the fact the report named?",
+      "options": [
+        "line text at the start of the report's day from git against the working tree, no store change",
+        "fact-text hash stored with each reported line"
+      ],
+      "recommendation": "line text at the start of the report's day from git against the working tree, no store change",
+      "reason": "the checks plant reports with no hash, a hash only covers new reports, and a report carries a day and no time",
+      "do": {
+        "line text at the start of the report's day from git against the working tree, no store change": "BG-w4ompvsk",
+        "fact-text hash stored with each reported line": "BG-w4ompvsk"
+      },
+      "class": "design",
+      "answer": "line text at the start of the report's day from git against the working tree, no store change",
+      "by": "agent"
+    }
+  ],
   "notes": "Premise reproduced 2026-10-26 on main after BG-4x5qp2jh: the repro plants a git-tracked root and a store report; a same-day committed shift and an uncommitted shift after a report of today both keep the flag on line 14, which now holds another fact; check 0 commits an appended fact on a later day and the flag is gone. Fixing both likely needs the other option of BG-4x5qp2jh gate g1 (a fact-text hash kept with each reported line), a store format change: record it as a gate.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-775f1f5d",

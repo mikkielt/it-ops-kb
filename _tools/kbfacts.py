@@ -1137,44 +1137,56 @@ FLAG_LABEL = "flagged (feedback, not a fact):"  # what a line a feedback report 
 FLAG_ISSUES = ("wrong", "stale")  # the issue classes of a report's line that flag it (ql_capture.FEEDBACK_ISSUES)
 MAX_FLAGS = 3  # flagged lines one pack or show prints
 _FLAGS = [None, []]  # [signature of the store's run files, [(path, line, issue, day)] of every report line]
-_CHANGED = {}  # {(path, mtime_ns, size): day of the file's last change, "" when git cannot tell}
+_CHANGED = {}  # {(path, mtime_ns, size): ([(commit, day)] newest first, whether the working tree differs)}
+_BASED = {}  # {(path, commit): the file's lines at that commit, None when git cannot show it}
 
 
-def git_log_day(path):
-    """The day (YYYY-MM-DD) the kb file `path` (qualified) last changed: its last commit's date in its own git
-    repository, today when the working tree differs from that commit; "" when git cannot tell (no repository, an
-    untracked file). Kept per the file's time and size."""
+def _git_out(cwd, *args, strip=True):
+    """Stdout of `git -C cwd ARGS`, None on a non-zero exit or a git that cannot run."""
+    env = {**os.environ, "GIT_OPTIONAL_LOCKS": "0"}
+    try:
+        p = subprocess.run(["git", "-C", cwd, *args], capture_output=True, text=True, encoding="utf-8",
+                           errors="replace", timeout=60, env=env)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if p.returncode != 0:
+        return None
+    return p.stdout.strip() if strip else p.stdout
+
+
+def git_history(path):
+    """([(commit, day)], dirty) of the kb file `path` (qualified) in its own git repository: its commits that changed
+    it, newest first, each with its committer day (YYYY-MM-DD), and whether the working tree differs from the last
+    one; ([], False) when git cannot tell (no repository, an untracked file). Kept per the file's time and size."""
     full = kbcommon.path_of(path)
     try:
         st = os.stat(full)
     except OSError:
-        return ""
+        return [], False
     key = (path, st.st_mtime_ns, st.st_size)
     if key not in _CHANGED:
         cwd, name = os.path.dirname(full), os.path.basename(full)
-        env = {**os.environ, "GIT_OPTIONAL_LOCKS": "0"}
-
-        def git(*args):
-            try:
-                p = subprocess.run(["git", "-C", cwd, *args], capture_output=True, text=True, encoding="utf-8",
-                                   timeout=60, env=env)
-            except (OSError, subprocess.SubprocessError):
-                return None
-            return p.stdout.strip() if p.returncode == 0 else None
-
-        day = git("log", "-1", "--format=%cs", "--", name) or ""
-        dirty = git("status", "--porcelain", "--untracked-files=no", "--", name) if day else None
-        _CHANGED[key] = time.strftime("%Y-%m-%d") if dirty else day
+        log = _git_out(cwd, "log", "--format=%H %cs", "--", name) or ""
+        commits = [tuple(x.split()) for x in log.splitlines() if len(x.split()) == 2]
+        dirty = bool(commits) and bool(_git_out(cwd, "status", "--porcelain", "--untracked-files=no", "--", name))
+        _CHANGED[key] = (commits, dirty)
     return _CHANGED[key]
+
+
+def git_log_day(path):
+    """The day (YYYY-MM-DD) the kb file `path` (qualified) last changed: its last commit's date in its own git
+    repository, today when the working tree differs from that commit; "" when git cannot tell."""
+    commits, dirty = git_history(path)
+    return time.strftime("%Y-%m-%d") if dirty else (commits[0][1] if commits else "")
 
 
 def feedback_flags():
     """{qualified path: {line: {issue: [reports, first day]}}} of the lines that a feedback report of the committed
     query-log store (ql_base.STORE, read at the call) names with an issue of FLAG_ISSUES: the entries' `feedback`
-    lines, each report counted once per line it names. A report is dropped when its article changed after the day of
-    the report (git_log_day): its line number may now hold another fact. A report still in a spool is in no run
-    file and shows nowhere. Read again when a run file's time or size, or a flagged article's, changes; {} for a
-    store with none."""
+    lines, each report counted once per line it names. A report is dropped when its line no longer holds the text it
+    held at the start of the report's day (line_holds), also after an edit of that day or an uncommitted one, and
+    kept after an edit that left the line alone. A report still in a spool is in no run file and shows nowhere.
+    Read again when a run file's time or size, or a flagged article's, changes; {} for a store with none."""
     import ql_base
     store = ql_base.STORE
     if not os.path.isdir(store):
@@ -1199,13 +1211,40 @@ def feedback_flags():
         _FLAGS[:] = [sig, reps]
     out = {}
     for path, n, issue, day in _FLAGS[1]:
-        changed = git_log_day(path)
-        if day and changed and changed > day:
+        if not line_holds(path, n, day):
             continue
         hit = out.setdefault(path, {}).setdefault(n, {}).setdefault(issue, [0, ""])
         hit[0] += 1
         hit[1] = min(hit[1], day) if hit[1] else day
     return out
+
+
+def line_holds(path, n, day):
+    """Whether line `n` of the kb file `path` (qualified) still holds the text it held when the report of `day` was
+    made, so the report still names its fact. The reference is the file as of the start of `day` (its last commit
+    on an earlier day), since a report carries a day and no time; the current text is the working tree's, so an
+    uncommitted edit counts. True when the file did not change since an earlier day or git cannot tell; a file with
+    no commit before `day` keeps the report when it last changed on or before `day`."""
+    changed = git_log_day(path)
+    if not day or not changed or changed < day:
+        return True
+    commits, _ = git_history(path)
+    base = next((c for c, d in commits if d < day), None)
+    if base is None:
+        return changed <= day
+    full = kbcommon.path_of(path)
+    if (path, base) not in _BASED:
+        out = _git_out(os.path.dirname(full), "show", f"{base}:./{os.path.basename(full)}", strip=False)
+        _BASED[(path, base)] = None if out is None else out.split("\n")
+    then = _BASED[(path, base)]
+    try:
+        with open(full, encoding="utf-8", errors="replace", newline="") as f:
+            now = f.read().replace("\r\n", "\n").split("\n")
+    except OSError:
+        return True
+    if then is None or n > len(then):
+        return True
+    return n <= len(now) and then[n - 1].strip() == now[n - 1].strip()
 
 
 def flag_line(path, n, issues):
