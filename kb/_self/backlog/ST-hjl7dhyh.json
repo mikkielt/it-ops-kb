@@ -2,7 +2,7 @@
   "id": "ST-hjl7dhyh",
   "kind": "story",
   "title": "backlog.py peers lists the other live sessions' plans, files and sprints and names each file a plan shares with them",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-zv3duelo",
   "sprint": "SP-basca7ae",
   "priority": "P1",
@@ -44,5 +44,7 @@
     "kb/_self/coordination.md"
   ],
   "notes": "Reuse, no parallel reader: the live sessions come from `mon_sessions.live_sessions(root)` (ST-bngriclp), the intents from `coord.py digest`, the sprints and claims from `bl_view` held and `bl_plan.touches_meet` / `shared_doc`. A shared doc never orders items; it is shown so the planner sees the landing order. kb/_self/map.csv is shared with the session-load benchmark's ST-7nuaruwn (claimed by session c5ef8aa4 on 2026-10-26): this story lands after it, told through a coord ask. Plan check 2026-10-26: the check now also plants a held claim (an active sprint item claimed and pushed) and asks peers to name it, so the clause \"the held claims\" has its own case. On the base it fails: backlog.py has no peers command (premise reproduced).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
