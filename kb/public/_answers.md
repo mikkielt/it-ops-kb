@@ -520,7 +520,7 @@ _Agent: security_
 _Agent: security_
 
 ## QS12. EU AI Act classification and timeline for an internal IT-ops assistant
-- The Act applies from 2024-08-01 with staggered dates: AI literacy/prohibited practices from 2025-02-02;
+- The Act (Regulation (EU) 2024/1689) entered into force on 2024-08-01, with staggered dates of application: AI literacy/prohibited practices from 2025-02-02;
   GPAI-model obligations from 2025-08-02; most remaining obligations (including Annex III high-risk) originally
   from 2026-08-02. [DOC S-nnq2ftfq, S1557]
 - The Digital Omnibus on AI (in force 2026-07-27) defers high-risk Annex III
