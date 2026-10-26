@@ -7,18 +7,25 @@ events of one session through the hook commands of the throwaway clone's own .cl
 Code starts them (`sh -c`, the event as JSON on stdin, CLAUDE_PROJECT_DIR set), and measures every process it starts with
 `os.wait4` (CPU and peak memory, which include the children the process waited for) and, for the processes those start,
 with a sampler of `ps` (their memory) and a `sitecustomize` audit hook that logs each process a Python program starts
-(their number and programs). This module imports no facade; `mon_host` is imported where a process is given its class.
+(their number and programs). Arm B adds the commands the kbmon-pane mod runs in an interactive session, on the mod's schedule.
+This module imports no facade; `mon_host` is imported where a process is given its class.
 """
 import json, os, re, shutil, statistics, subprocess, sys, threading, time, uuid
 from pathlib import Path
 
 from bench_core import Skip, git, need_sh, no_plugin_env, shim_dir
 
-ARMS = ("A", "C", "D")  # A: every hook; C: coord_hook.py and the querylog.py hooks left out; D: no hook
+ARMS = ("A", "B", "C", "D")  # A: every hook; B: A and the kbmon pane's commands; C: coord_hook.py and querylog.py left out; D: none
+DEFAULT_ARMS = ("A", "C", "D")  # B runs only when named: it adds WINDOW_S seconds to each phase
 PHASES = ("idle", "working")  # idle: SessionStart then SessionEnd; working: a fixed script of events between them
-LEFT_OUT = {"A": (), "C": ("coord_hook.py", "querylog.py"), "D": None}  # a hook command naming one of these is not run
+LEFT_OUT = {"A": (), "B": (), "C": ("coord_hook.py", "querylog.py"), "D": None}  # a hook command naming one of these is not run
 NOMINAL_S = {"idle": 60, "working": 300}  # the seconds of session a replay stands for: the divisor of spawns_per_min
 CLASSES = ("kbmon", "fseventsd", "tests", "kb-tools", "claude", "other", "git", "lsof")  # mon_host's, then two more
+PANE_ARMS = ("B",)  # the arms that run the kbmon pane's commands
+PANE_MOD = ".claude/skills/kbmon-pane/hooks/register.tsx"  # the mod whose FIRST_MS and REFRESH_MS the pane commands follow
+PANE_COMMANDS = (("--once",), ("--status", "all"))  # what the mod's refresh runs, in order, as `python3 _tools/kbmon.py ...`
+PANE_COLUMNS = "80"  # the mod's DEFAULT_COLUMNS: COLUMNS of a pane run
+WINDOW_S = 150  # seconds of a phase of arm B: the pane's first run at FIRST_MS and then one every REFRESH_MS, so three runs
 SAMPLE_S = 0.02  # the sampler's pause between two `ps` listings
 SETTLE_S = 30  # seconds a replay waits for the processes it left running in the clone
 SITE = '''# logs each process a Python program starts (the audit events of subprocess.Popen, os.posix_spawn and os.system) to the
@@ -113,6 +120,15 @@ def label(command):
 def maxrss_mb(ru):
     """ru_maxrss in MiB: bytes on macOS, KiB on Linux (kb/public/python/rusage-maxrss-units.md)."""
     return ru.ru_maxrss / (1048576 if sys.platform == "darwin" else 1024)
+
+
+def pane_schedule(clone):
+    """(first_s, refresh_s) of the kbmon-pane mod in `clone`: its FIRST_MS and REFRESH_MS in seconds."""
+    text = (Path(clone) / PANE_MOD).read_text(encoding="utf-8")
+    got = {k: re.search(rf"^const {k} = ([\d_]+)$", text, re.M) for k in ("FIRST_MS", "REFRESH_MS")}
+    if not all(got.values()):
+        raise RuntimeError(f"{PANE_MOD}: no FIRST_MS and REFRESH_MS constant to take the pane's schedule from")
+    return tuple(int(got[k].group(1).replace("_", "")) / 1000 for k in ("FIRST_MS", "REFRESH_MS"))
 
 
 def process_class(args, clone):
@@ -215,9 +231,12 @@ def reset(clone):
 class Replay:
     """One replay of a session's events in `clone`: the hook processes it started and the sampler's view of their children."""
 
-    def __init__(self, clone, env, hooks):
+    def __init__(self, clone, env, hooks, pane=None):
         self.clone, self.env, self.hooks = Path(clone), env, hooks
+        self.pane = pane  # None, or (first_s, every_s, window_s): the kbmon pane's schedule
         self.roots, self.threads = [], []  # one dict per hook command run
+        self.panes = []  # one dict per pane command run (a pane run is each of PANE_COMMANDS once)
+        self.pane_runs = 0
 
     def start(self, name, target, payload, command, is_async, sampler):
         cmd = command.replace("${CLAUDE_PROJECT_DIR}", str(self.clone))
@@ -242,6 +261,31 @@ class Replay:
         th.start()
         self.threads.append(th)
 
+    def pane_command(self, flags, sampler):
+        """One run of `python3 _tools/kbmon.py FLAGS` as the mod starts it (an argument list, COLUMNS set, in the clone)."""
+        argv = ["python3", "_tools/kbmon.py", *flags]
+        rec = {"label": " ".join(argv[1:]), "class": process_class(" ".join(argv), self.clone)}
+        rec["log"] = Path(self.env["BENCH_STARTS_DIR"]) / f"pane{len(self.panes)}.log"
+        t0 = time.perf_counter()
+        p = subprocess.Popen(argv, cwd=str(self.clone), env={**self.env, "COLUMNS": PANE_COLUMNS, "BENCH_STARTS_LOG": str(rec["log"])},
+                             stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        sampler.add(p.pid, rec["class"])
+        self.panes.append(rec)
+        self.reap(p, rec, t0, sampler)
+
+    def run_pane(self, sampler, t0):
+        """The mod's schedule: a refresh at `first_s` of the window and then at every multiple of `every_s`; a tick that
+        falls while a refresh runs does nothing (the mod never starts a second one), so the next is the first multiple
+        after the refresh ended. A refresh that starts before the window ends is waited for."""
+        first_s, every_s, window_s = self.pane
+        due = first_s
+        while due < window_s:
+            time.sleep(max(0.0, t0 + due - time.perf_counter()))
+            for flags in PANE_COMMANDS:
+                self.pane_command(flags, sampler)
+            self.pane_runs += 1
+            due = (int((time.perf_counter() - t0) // every_s) + 1) * every_s
+
     @staticmethod
     def reap(p, rec, t0, sampler):
         _, status, ru = os.wait4(p.pid, 0)
@@ -255,12 +299,18 @@ class Replay:
         if self.hooks:
             sampler.start()
         t0 = time.perf_counter()
+        if self.pane:
+            pane = threading.Thread(target=self.run_pane, args=(sampler, t0))
+            pane.start()
+            self.threads.append(pane)
         for name, target, payload in events(phase, self.clone, sid):
             for ev, matcher, is_async, command in self.hooks:
                 if ev == name and matches(matcher, target):
                     self.start(name, target, payload, command, is_async, sampler)
         for th in self.threads:
             th.join()
+        if self.pane:  # the window is the phase's length, whether or not the hooks and the pane used it
+            time.sleep(max(0.0, t0 + self.pane[2] - time.perf_counter()))
         wall = time.perf_counter() - t0
         sampler.stop.set()
         if self.hooks:
@@ -274,37 +324,41 @@ class Replay:
         return [" ".join(r.split("\x1f")) for r in text.split("\x1e") if r]
 
     def summary(self, sampler, wall):
-        """{class: {cpu_s, spawns, peak, rss_mean_mb}} with `all`, the hook commands' timings and the failed ones. A hook
-        command is one start and the processes the Python programs of the tree started the rest; the peak memory is the
-        largest of the processes' own peaks and of the sampled sums, the mean the sampled sums' mean."""
+        """{class: {cpu_s, spawns, pane_spawns, peak, rss_mean_mb}} with `all`, the hook commands' timings and the failed
+        ones. A command is one start and the processes the Python programs of the tree started the rest (a pane command's
+        are `pane_spawns`, since the pane's rate is per window and a hook's per session); the peak memory is the largest of
+        the processes' own peaks and of the sampled sums, the mean the sampled sums' mean."""
         per = {}
 
         def cell(c):
-            return per.setdefault(c, {"cpu_s": 0.0, "spawns": 0, "peak": 0.0, "mean": []})
-        for r in self.roots:
+            return per.setdefault(c, {"cpu_s": 0.0, "spawns": 0, "pane_spawns": 0, "peak": 0.0, "mean": []})
+        for r in self.roots + self.panes:
             c = cell(r["class"])
             c["cpu_s"] += r["cpu_s"]
-            c["spawns"] += 1
+            c["pane_spawns" if r in self.panes else "spawns"] += 1
             c["peak"] = max(c["peak"], r["maxrss_mb"])
-        for r in self.roots:
+        for r in self.roots + self.panes:
             r["children"] = self.started(r)
             for args in r["children"]:
-                cell(process_class(args, self.clone))["spawns"] += 1
+                cell(process_class(args, self.clone))["pane_spawns" if r in self.panes else "spawns"] += 1
         for cls, kb in sampler.seen.values():
             cell(cls)["peak"] = max(cell(cls)["peak"], kb / 1024)
         for tick in sampler.ticks:
             for cls, kb in tick.items():
                 cell(cls)["mean"].append(kb / 1024)
                 cell(cls)["peak"] = max(cell(cls)["peak"], kb / 1024)
+        procs = self.roots + self.panes
         per["all"] = {"cpu_s": sum(c["cpu_s"] for c in per.values()), "spawns": sum(c["spawns"] for c in per.values()),
-                      "peak": max([r["maxrss_mb"] for r in self.roots] + [sum(t.values()) / 1024 for t in sampler.ticks] + [0.0]),
+                      "pane_spawns": sum(c["pane_spawns"] for c in per.values()),
+                      "peak": max([r["maxrss_mb"] for r in procs] + [sum(t.values()) / 1024 for t in sampler.ticks] + [0.0]),
                       "mean": [sum(t.values()) / 1024 for t in sampler.ticks]}
         for c in per.values():
             if not c["mean"]:  # nothing sampled: the processes' own peaks stand for their size
                 c["mean"] = [c["peak"]]
             c["rss_mean_mb"] = statistics.mean(c["mean"])
-        return {"classes": per, "wall_s": wall, "hooks": self.roots,
-                "failed": [r for r in self.roots if r.get("rc") not in (0, None)]}
+        return {"classes": per, "wall_s": wall, "hooks": self.roots, "pane_runs": self.pane_runs,
+                "failed": [r for r in self.roots if r.get("rc") not in (0, None)],
+                "pane_failed": [r for r in self.panes if r.get("rc") not in (0, 1)]}  # kbmon exits 1 while an alert is on
 
 
 def plant(b, clone, name):
@@ -328,11 +382,11 @@ def plant(b, clone, name):
                           "PATH": f"{fail}{os.pathsep}{os.environ.get('PATH', '')}"})
 
 
-def replay(b, clone, hooks, arm, phase, name):
+def replay(b, clone, hooks, arm, phase, name, pane=None):
     reset(clone)
     env = plant(b, clone, name)
     load = os.getloadavg()[0] if hasattr(os, "getloadavg") else 0.0
-    out = Replay(clone, env, arm_hooks(hooks, arm)).run(phase, str(uuid.uuid4()))
+    out = Replay(clone, env, arm_hooks(hooks, arm), pane if arm in PANE_ARMS else None).run(phase, str(uuid.uuid4()))
     out["load"] = load
     return out
 
@@ -343,28 +397,47 @@ def host_note(loads):
             "unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command")
 
 
+def warm_pane(b, clone):
+    """One unmeasured run of each pane command, so the first measured run of arm B finds the caches warm as a long
+    session's does."""
+    env = {**plant(b, clone, "warm-pane"), "COLUMNS": PANE_COLUMNS}
+    for flags in PANE_COMMANDS:
+        subprocess.run(["python3", "_tools/kbmon.py", *flags], cwd=str(clone), env=env, stdin=subprocess.DEVNULL,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
 def s_session_load(b):
     """One session's hook cost on the host, no model: the hook events of a session replayed through this clone's own hook
     commands in a throwaway clone (query log in mode `local` under a scratch plugin data directory, a `claude` that fails
-    at once), in arm A (every hook), C (coord_hook.py and the querylog.py hooks left out) and D (no hook), each in an idle
-    phase (SessionStart, SessionEnd) and a working phase (the events of WORKING between them). Per phase, arm and process
-    class: the CPU seconds, peak and mean resident memory in MiB and the starts per minute of a session of NOMINAL_S; per
-    synchronous hook command its median milliseconds (a run of an async hook is `async_ms`: Claude Code does not wait for
-    it). Each rep runs every arm and phase once, the medians of the reps are the rows."""
+    at once), in arm A (every hook), B (A and the commands of the kbmon-pane mod), C (coord_hook.py and the querylog.py
+    hooks left out) and D (no hook), each in an idle phase (SessionStart, SessionEnd) and a working phase (the events of
+    WORKING between them). Arm B runs, over a window of `b.window` seconds per phase, the pane's commands the mod's way:
+    the first after its FIRST_MS and then one every `b.pane_every` seconds (default its REFRESH_MS). Per phase, arm and
+    process class: the CPU seconds, peak and mean resident memory in MiB and the starts per minute of a session of
+    NOMINAL_S (the pane's own starts per minute of the window); per synchronous hook command its median milliseconds (a
+    run of an async hook is `async_ms`: Claude Code does not wait for it). Each rep runs every arm and phase once, the
+    medians of the reps are the rows."""
     if not hasattr(os, "wait4"):
         raise Skip("no os.wait4 (Windows): run it on macOS or Linux")
     need_sh()
-    arms = list(getattr(b, "load_arms", None) or ARMS)
+    arms = list(getattr(b, "load_arms", None) or DEFAULT_ARMS)
     clone = b.clone("session-load", "local")
     pin_drift(clone)
     hooks = hook_commands(clone)
+    first_s, refresh_s = pane_schedule(clone)
+    window = getattr(b, "window", None) or WINDOW_S
+    every = getattr(b, "pane_every", None) or refresh_s
+    pane = (first_s, every, window)
     replay(b, clone, hooks, "A", "working", "warm")  # the caches of Python, the pack index and git, not measured
+    if any(arm in PANE_ARMS for arm in arms):
+        warm_pane(b, clone)
     got = {(arm, phase): [] for arm in arms for phase in PHASES}
     for rep in range(max(1, b.reps)):
         for arm in arms:
             for phase in PHASES:
-                got[(arm, phase)].append(replay(b, clone, hooks, arm, phase, f"{arm}-{phase}-{rep}"))
-    seen = [c for c in CLASSES if any(r["classes"].get(c, {}).get("spawns") for rs in got.values() for r in rs)]
+                got[(arm, phase)].append(replay(b, clone, hooks, arm, phase, f"{arm}-{phase}-{rep}", pane))
+    seen = [c for c in CLASSES if any(r["classes"].get(c, {}).get(k) for rs in got.values() for r in rs
+                                      for k in ("spawns", "pane_spawns"))]
     for (arm, phase), reps in got.items():
         note = host_note([r["load"] for r in reps])
         med = lambda cls, key: statistics.median(r["classes"].get(cls, {}).get(key, 0.0) for r in reps)  # noqa: E731
@@ -373,11 +446,21 @@ def s_session_load(b):
             b.row("session-load", case, arm, "cpu_s", med(cls, "cpu_s"), len(reps), note=note)
             b.row("session-load", case, arm, "rss_peak_mb", med(cls, "peak"), len(reps))
             b.row("session-load", case, arm, "rss_mean_mb", med(cls, "rss_mean_mb"), len(reps))
-            b.row("session-load", case, arm, "spawns_per_min", med(cls, "spawns") / (NOMINAL_S[phase] / 60), len(reps),
-                  note=f"a session of {NOMINAL_S[phase]} s")
+            rate = statistics.median(r["classes"].get(cls, {}).get("spawns", 0) / (NOMINAL_S[phase] / 60)
+                                     + r["classes"].get(cls, {}).get("pane_spawns", 0) / (window / 60) for r in reps)
+            b.row("session-load", case, arm, "spawns_per_min", rate, len(reps),
+                  note=f"a session of {NOMINAL_S[phase]} s" + (f", the pane's starts per minute of its {window:g} s window"
+                                                               if arm in PANE_ARMS else ""))
+        if arm in PANE_ARMS:
+            b.row("session-load", f"{phase} all", arm, "pane_runs", statistics.median(r["pane_runs"] for r in reps), len(reps),
+                  note=f"{PANE_COMMANDS[0][0]} then {' '.join(PANE_COMMANDS[1])}, the first after {first_s:g} s, then every "
+                  f"{every:g} s over a window of {window:g} s; a tick that falls during a run does nothing")
         b.row("session-load", f"{phase} replay", arm, "wall_s", statistics.median(r["wall_s"] for r in reps), len(reps))
         b.row("session-load", f"{phase} replay", arm, "hook_failures", statistics.median(len(r["failed"]) for r in reps),
               len(reps), note="hook commands that exited non-zero")
+        if arm in PANE_ARMS:
+            b.row("session-load", f"{phase} replay", arm, "pane_failures", statistics.median(len(r["pane_failed"]) for r in reps),
+                  len(reps), note="pane commands that exited with 2 or more")
     starts = {}
     for (arm, phase), reps in got.items():
         for i, r in enumerate(reps):
