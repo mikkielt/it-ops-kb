@@ -21,6 +21,25 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where do the coordination-tool facts live, and is the shared-store statistics question answered or only logged as a gap?",
+      "options": [
+        "a new topic agents/coordination-tools plus a gap for the statistics method",
+        "extend agents/herdr-agent-state and research the statistics method now"
+      ],
+      "recommendation": "a new topic agents/coordination-tools plus a gap for the statistics method",
+      "do": {
+        "a new topic agents/coordination-tools plus a gap for the statistics method": "ST-7edw3k3l",
+        "extend agents/herdr-agent-state and research the statistics method now": "ST-7edw3k3l"
+      },
+      "class": "design",
+      "answer": "a new topic agents/coordination-tools plus a gap for the statistics method",
+      "by": "agent"
+    }
+  ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-775f1f5d",
   "operator": "op-f618a13e"
