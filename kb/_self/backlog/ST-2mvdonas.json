@@ -2,7 +2,7 @@
   "id": "ST-2mvdonas",
   "kind": "story",
   "title": "Research sprint goal: Guards and redaction: leak scan, redact, gate classes, operator ids",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-mk6ikval",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: the sprint goal names no open question for the kb, and each committed item carries its own repro or check. Sprint SP-mk6ikval started 2026-10-26; item moved from draft to todo.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "505cf528639bd5ae3c8896a39b1b4e1f296491b1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-2mvdonas"
+        ],
+        "exit": 0,
+        "sha256": "17961a6dc5762497"
+      }
+    ]
+  }
 }
