@@ -93,6 +93,16 @@ def merged_external(old, added):
     return out
 
 
+REPRO_TAIL_LINES = 5  # the last non-empty lines of a new bug's repro output that `new` prints
+REPRO_TAIL_WIDTH = 200
+
+
+def repro_tail(out):
+    """The last REPRO_TAIL_LINES non-empty lines of a repro's output OUT, each cut to REPRO_TAIL_WIDTH characters."""
+    lines = [ln.rstrip() for ln in out.splitlines() if ln.strip()]
+    return [ln[:REPRO_TAIL_WIDTH] for ln in lines[-REPRO_TAIL_LINES:]]
+
+
 # ------------------------------------------------------------------ commands
 
 def cmd_new(bl, a):
@@ -187,6 +197,8 @@ def cmd_new(bl, a):
     bl.save(it)
     errs = [x for x in validate(bl) if x.startswith(it["id"])]
     say(f"new {kind} {bl.label(it['id'])}")
+    for ln in repro_tail(out) if kind == "bug" else []:
+        say(f"  repro output: {ln}")
     for x in errs:
         say(f"  to fill in: {x.split(': ', 1)[1]}")
     for x in warns:
