@@ -1,0 +1,27 @@
+{
+  "id": "BG-k5mgppjq",
+  "kind": "bug",
+  "title": "kbtail.py dies with a RecursionError on a deeply nested JSON line in a transcript, where it should skip and count it",
+  "status": "draft",
+  "parent": "EP-booflukv",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbtail.py skips and counts a transcript line whose JSON nesting is too deep to decode, as any line that is not JSON, and prints the lines around it",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json, os, subprocess, sys, tempfile, threading, time, uuid\nR = os.getcwd(); T = tempfile.mkdtemp(); C = os.path.join(T, \"cfg\")\nsid = str(uuid.uuid4())\npdir = os.path.join(C, \"projects\", \"-planted-project\"); os.makedirs(pdir)\nP = os.path.join(pdir, sid + \".jsonl\")\nenv = dict(os.environ, CLAUDE_CONFIG_DIR=C, COLUMNS=\"200\", KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"))\ndef ent(text, **kw):\n    return json.dumps(dict({\"type\": \"assistant\", \"cwd\": T, \"sessionId\": sid, \"timestamp\": \"2026-10-26T10:00:00Z\",\n                            \"message\": {\"role\": \"assistant\", \"content\": [{\"type\": \"text\", \"text\": text}]}}, **kw)) + \"\\n\"\ndef tail(*a, path=None):\n    return subprocess.run([sys.executable, \"_tools/kbtail.py\", *a, path or P], cwd=R, env=env, capture_output=True, text=True, timeout=60)\ndef follow(path=None):\n    p = subprocess.Popen([sys.executable, \"_tools/kbtail.py\", \"--history\", \"2\", path or P], cwd=R, env=env,\n                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)\n    lines = []\n    threading.Thread(target=lambda: [lines.append(x) for x in p.stdout], daemon=True).start()\n    return p, lines\ndef until(pred, s):\n    end = time.monotonic() + s\n    while time.monotonic() < end and not pred():\n        time.sleep(0.05)\n    return pred()\nwith open(P, \"w\") as f:\n    f.write(ent(\"planted-before\"))\n    f.write(\"[\" * 100000 + \"\\n\")\n    f.write(ent(\"planted-after\"))\nr = tail(\"--once\")\nok = r.returncode == 0 and \"planted-before\" in r.stdout and \"planted-after\" in r.stdout and \"kbtail: skipped 1\" in r.stderr\nprint(\"exit\", r.returncode, r.stderr[-200:])\nsys.exit(0 if ok else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/kbtail.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-wurbmsid review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

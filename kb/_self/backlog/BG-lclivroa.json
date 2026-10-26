@@ -1,0 +1,27 @@
+{
+  "id": "BG-lclivroa",
+  "kind": "bug",
+  "title": "kbtail.py replays a replaced smaller transcript whole and reads a replaced larger one from the old byte offset",
+  "status": "draft",
+  "parent": "EP-booflukv",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbtail.py notices a followed transcript replaced by another file (smaller or larger) and shows the new file's last --history lines and what is appended after, losing no line and replaying none",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json, os, subprocess, sys, tempfile, threading, time, uuid\nR = os.getcwd(); T = tempfile.mkdtemp(); C = os.path.join(T, \"cfg\")\nsid = str(uuid.uuid4())\npdir = os.path.join(C, \"projects\", \"-planted-project\"); os.makedirs(pdir)\nP = os.path.join(pdir, sid + \".jsonl\")\nenv = dict(os.environ, CLAUDE_CONFIG_DIR=C, COLUMNS=\"200\", KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"))\ndef ent(text, **kw):\n    return json.dumps(dict({\"type\": \"assistant\", \"cwd\": T, \"sessionId\": sid, \"timestamp\": \"2026-10-26T10:00:00Z\",\n                            \"message\": {\"role\": \"assistant\", \"content\": [{\"type\": \"text\", \"text\": text}]}}, **kw)) + \"\\n\"\ndef tail(*a, path=None):\n    return subprocess.run([sys.executable, \"_tools/kbtail.py\", *a, path or P], cwd=R, env=env, capture_output=True, text=True, timeout=60)\ndef follow(path=None):\n    p = subprocess.Popen([sys.executable, \"_tools/kbtail.py\", \"--history\", \"2\", path or P], cwd=R, env=env,\n                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)\n    lines = []\n    threading.Thread(target=lambda: [lines.append(x) for x in p.stdout], daemon=True).start()\n    return p, lines\ndef until(pred, s):\n    end = time.monotonic() + s\n    while time.monotonic() < end and not pred():\n        time.sleep(0.05)\n    return pred()\nwith open(P, \"w\") as f:\n    for i in range(30):\n        f.write(ent(\"old%d\" % i))\np, lines = follow()\nuntil(lambda: any(\"old29\" in x for x in lines), 10)\nnew = P + \".new\"\nwith open(new, \"w\") as f:\n    for i in range(60):\n        f.write(ent(\"big%d\" % i))\nos.replace(new, P)\nuntil(lambda: any(\"big59\" in x for x in lines), 5)\nsmall = P + \".small\"\nwith open(small, \"w\") as f:\n    for i in range(30):\n        f.write(ent(\"small%d\" % i))\nos.replace(small, P)\nuntil(lambda: any(\"small29\" in x for x in lines), 5)\np.terminate(); p.wait(5)\nout = \"\".join(lines)\nbig = [i for i in range(60) if \"big%d\\n\" % i in out or \"big%d \" % i in out]\nsmall_shown = sum(1 for i in range(30) if (\"small%d\" % i) in out)\nproblems = []\nif \"big59\" not in out or \"big58\" not in out:\n    problems.append(\"the replacing larger file's last lines are not shown\")\nif small_shown > 2:\n    problems.append(\"the replacing smaller file is replayed whole (%d lines, --history 2)\" % small_shown)\nif \"big0\" in out and \"big58\" in out and \"big3\" in out and \"big2\" not in out:\n    problems.append(\"lines of the replacing file are lost at the old offset\")\nprint(\"\\n\".join(problems) or \"ok\")\nsys.exit(1 if problems else 0)\n"
+    ]
+  },
+  "touches": [
+    "_tools/kbtail.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-wurbmsid review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
