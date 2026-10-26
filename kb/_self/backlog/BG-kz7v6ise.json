@@ -2,7 +2,7 @@
   "id": "BG-kz7v6ise",
   "kind": "bug",
   "title": "census leak_problems passes a new source row whose url carries user:password@, because kbpublic.file_hits strips urls and only an email is checked in the raw url",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-w57bnhhx",
   "priority": "P2",
   "rank": 0,
@@ -39,5 +39,7 @@
     "parked: SP-mk6ikval review"
   ],
   "notes": "Planner 2026-10-26: repro and check 0 fail on main (https://deploy:<pw>@example.org/a gives no problem; the same with a corp host is reported only as an email hit, by the email rule, not as a url credential). kbcommon.url_holds_credential(url) already says whether a repository url carries user:password@ (and, for http and https, a bare user@ part); reuse it in the url branch of leak_problems with its own kind name. Check 0 also asserts the value is never printed and a clean url gives none. Planned into SP-w57bnhhx on 2026-10-26 with a planted check that fails on main; the sprint start is pre-approved by the operator for the 2026-10-26 run.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
