@@ -1238,7 +1238,9 @@ def check_env(root, home):
     the plugin data's, else the clone's own _cache/querylog, the main worktree's for a linked one), unless capture is
     off there: tests.py writes the `test.run` row of a run the check makes into that directory's spool, so the digest's
     ops block counts it; every other capture of the check stays in HOME. A value the environment already holds stays: a
-    check that itself runs a check runs in an isolated home, and its run still names the clone's."""
+    check that itself runs a check runs in an isolated home, and its run still names the clone's. BENCH_SCRATCH is
+    HOME/bench, always (the inherited one is dropped): the benchmarks' sandboxes (benchmarks.py multi, about 1.3 GB per
+    agent clone) a check or repro makes go with HOME when the run ends, none left under the host's temp directory."""
     env = colourless_env()
     data = env.get("CLAUDE_PLUGIN_DATA")
     env["KB_INDEX"] = env.get("KB_INDEX") or data or os.path.join(main_worktree(root), "_cache")
@@ -1249,6 +1251,7 @@ def check_env(root, home):
         if not ql_base.logging_off(qdir, cfg):
             env["KB_TEST_RUN_HOME"] = str(qdir)
     env["CLAUDE_PLUGIN_DATA"], env["CLAUDE_PLUGIN_ROOT"] = str(home), root
+    env["BENCH_SCRATCH"] = os.path.join(str(home), "bench")
     return env
 
 
