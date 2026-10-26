@@ -2,7 +2,7 @@
   "id": "BG-3rhpom4d",
   "kind": "bug",
   "title": "bench_multi matches a research key's term in a fact's text, but dedup keys now hold term ids with a hash",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-n7f53pgv",
   "priority": "P2",
   "rank": 0,
@@ -30,6 +30,19 @@
     "parked: SP-c7oav2vn work"
   ],
   "notes": "Orchestrator 2026-10-23: filed by BG-v53e2pef's worker; its repro (term_id of 'batch size' equals the raw term) can never pass once BG-v53e2pef's slug-plus-hash ids landed, so it needs a repro that runs bench_multi.duplicate_research on a planted fact before it is planned. Plan check 2026-10-26: the repro is now a planted run: worked_key and duplicate_research on stubbed facts that hold \"batch size\" under the dedup key research:public/x/y:batch-size-d2bd91 (coord.term_id), with the store and git reads stubbed; both miss the fact on the base, and the same stubs with the raw term key find it (sanity run at planning).",
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "87e8f992a489c9379400df183dde8313e3dd177d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0,'_tools')\nimport bench_multi as B,coord\ntid=coord.term_id('batch size',60);key='research:public/x/y:'+tid\nfact=lambda n:{'path':'public/x/y.md','text':'Set the export batch size to 512 records (agent %d).'%n,'at':100.0}\nB.origin_path=lambda root:'bare';B.agent_email=lambda n:'a%d@example.com'%n\nB.added_facts=lambda bare,base,email:[fact(1 if email.startswith('a1') else 2)]\nB.claim_windows=lambda store:[(key,'multi-agent1',90.0,200.0)]\nB.bench_repro.match_facts=lambda a,b:[(0,0)]\nw=B.worked_key('root',{'base':'b'},key,1,'agent-1',{})\nd=B.duplicate_research('root',{'base':'b','agents':[{'coord_store':'s'}]},[{'n':1,'agent':'agent-1'},{'n':2,'agent':'agent-2'}])\nprint('key',key,'worked',w,'duplicates',d);sys.exit(0 if w and d else 1)\n\n"
+        ],
+        "exit": 0,
+        "sha256": "240fa73140a02fa6"
+      }
+    ]
+  }
 }
