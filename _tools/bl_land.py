@@ -706,13 +706,13 @@ def land_heavy():
 
 
 def land_push():
-    """The push step: the project's `land_push` command, named by its program (`kbgit.py sync --push` for the kb). A
-    project that names none stops the landing here, naming the key."""
+    """The push step: the project's `land_push` command, named by its program (`kbgit.py sync --push` for the kb), an
+    absolute path in it cut to its last part. A project that names none stops the landing here, naming the key."""
     argv = setting("land_push")
     if not argv:
         raise land_stop("push", "the project's backlog.json names no `land_push` (the argument list of the command that "
                                 'sends the landed work to the integration main, e.g. ["git", "push", "origin", "HEAD:main"])')
-    return (" ".join([Path(argv[0]).name, *argv[1:]]), argv)
+    return (" ".join(Path(a).name if os.path.isabs(a) else a for a in argv), argv)
 
 
 LAND_TAIL = 30  # output lines shown of a step that passed (sync's report is shown whole)
@@ -731,8 +731,8 @@ def ops_token(label):
 
 
 def ops_write(**fields):
-    """Append a land ops row (`ql_deliver.ops_row`: nothing inside a test run, so a fixture's landing never reaches the
-    clone's spool); a landing never fails for its log."""
+    """Append a land ops row (`ql_deliver.ops_row`: nothing inside a test run or in a probe from another working
+    directory, so a fixture's landing never reaches the clone's spool); a landing never fails for its log."""
     try:
         from ql_deliver import ops_row
         ops_row(fields.pop("event"), **fields)

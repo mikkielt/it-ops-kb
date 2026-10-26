@@ -11,8 +11,8 @@ from urllib.parse import urlsplit
 
 import kbcommon
 import kbpublic
-from ql_base import (BRANCH, DISABLED_NAME, HOME, STORE_REL, acquire, json_lines, now, places, plugin_data, read_json,
-                     release, run_cmd, write_text)
+from ql_base import (BRANCH, DISABLED_NAME, HOME, STORE_REL, acquire, cwd_in_clone, json_lines, now, places,
+                     plugin_data, read_json, release, run_cmd, write_text)
 from ql_distill import LOG_MAX_BYTES, LOG_NAME, spool_delivered
 from ql_research import edit_problems
 from ql_store import (APPLY_FAILED, FINDINGS, LEARN_STATES, OPS, USAGE, WORK, finding_states, findings_files,
@@ -291,12 +291,20 @@ def inside_test():
     return bool(os.environ.get("PYTEST_CURRENT_TEST")) and not own_test_spool()
 
 
+def foreign_probe():
+    """True in a run whose working directory is no checkout of the clone that owns the spool and that names no query
+    log home of its own (`plugin_data()` is None): a probe of a temporary clone's tools, whose rows would land in a
+    spool they do not belong to."""
+    return plugin_data() is None and not cwd_in_clone()
+
+
 def ops_row(event, **fields):
     """Append one ops row (`ql_capture.record("ops", ...)`, which writes only a closed event with its closed keys) and
     return it; None when capture is off, when the row breaks its shape, inside a test run (its rows never reach the
-    clone's own spool, as `tests.record_run`) or on any error: a tool never fails or waits for its log."""
+    clone's own spool, as `tests.record_run`), in a probe from another working directory (foreign_probe) or on any
+    error: a tool never fails or waits for its log."""
     try:
-        if inside_test():
+        if inside_test() or foreign_probe():
             return None
         import ql_capture
         return ql_capture.record("ops", event=event, **fields)
@@ -307,11 +315,11 @@ def ops_row(event, **fields):
 def record_pipeline(pid, state, calls, sha=None):
     """Append the `ci.pipeline` ops row of pipeline `pid` read in `state` (`red`, `pending`, `green` or `unverified`; `ok`
     is `green`) with the `calls` it made for job lists, only when `pid` was last recorded in another state or never
-    (the file CI_STATE_FILE beside the spool keeps the last CI_STATES_KEPT). Nothing when capture is off or inside a
-    test run; never raises."""
+    (the file CI_STATE_FILE beside the spool keeps the last CI_STATES_KEPT). Nothing when capture is off, inside a
+    test run or in a probe from another working directory (foreign_probe); never raises."""
     try:
         state = "green" if state == "ok" else state
-        if inside_test() or pid is None or state not in CI_ROW_STATES:
+        if inside_test() or foreign_probe() or pid is None or state not in CI_ROW_STATES:
             return None
         import ql_capture
         spool = ql_capture.spool_dir()
