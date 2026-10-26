@@ -25,6 +25,6 @@
   "depends_on": [
     "ST-5fakffyb"
   ],
-  "notes": "Reads the live sessions through the in-process reader ST-bngriclp adds to _tools/mon_sessions.py (pid, session id, checkout, role, item), agreed with that epic's session through coord; it adds no second reader. A kbtail follower shows as its own process class.",
+  "notes": "Reads the live sessions through the in-process reader ST-bngriclp adds to _tools/mon_sessions.py (pid, session id, checkout, role, item), agreed with that epic's session through coord; it adds no second reader. A kbtail follower shows as its own process class. mon_sessions.live_sessions(root) (landed with ST-bngriclp) gives a worker's item as the raw suffix of its work/ branch when that is no backlog item id: keep only item ids or pass the text through redact.redact, as kbtail does since BG-lagjhkzn.",
   "filed_in": "clone-0ea70e5c"
 }
