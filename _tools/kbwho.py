@@ -12,13 +12,13 @@ The id, in this order:
 The role is KB_ROLE, `interactive` when unset.
 
 An email is never the id: it is mapped to an alias in `_private/operators.json` (uncommitted, gitignored; in the main
-worktree of the clone, so its linked worktrees share it), a JSON object of lowercase email to alias. The first use of an email writes `op-` and 8 random hex digits; the operator may
+worktree of the clone, so its linked worktrees share it), a JSON object of lowercase email to alias. The first use of an email writes `op-` and 8 random hex digits (the file mode 0600; a file that exists but does not parse is never rewritten: a warning, no id); the operator may
 edit the alias, but only to an id (the KB_OPERATOR rule: letters, digits, . _ -, at most 64): any other alias warns and gives no id. A plain hash of an address could be reversed by guessing
 it, a random alias cannot. The email itself appears only in `_private/operators.json` and in the output of
 `--show-email`; `operator()` and the default output carry the alias only.
 
 `operator()` gives other tools the same answer as a dict `{"id", "source", "role"}`; it never raises (an alias file
-that cannot be written leaves `id` None). `otel_attributes()` (and `--otel-attributes`, one JSON object) gives the resource
+that cannot be written or read leaves `id` None). `otel_attributes()` (and `--otel-attributes`, one JSON object) gives the resource
 kbmon's OpenTelemetry export carries: the operator id as `kb.operator.id`, never an email. Exit 0 whatever the source; 2 for a bad argument.
 
 Answers: who the operator of this session is and which role the session has
@@ -41,15 +41,21 @@ def aliases_path():
 
 
 def _read_aliases(path):
+    """The table of the operators file: {} when there is none; ValueError when it exists and cannot be used."""
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
+    except FileNotFoundError:
         return {}
-    return {str(k): str(v) for k, v in data.items()} if isinstance(data, dict) else {}
+    except (OSError, ValueError) as e:
+        raise ValueError(f"{type(e).__name__}") from None
+    if not isinstance(data, dict):
+        raise ValueError("not a JSON object")
+    return {str(k): str(v) for k, v in data.items()}
 
 
 def alias_of(email, path=None):
-    """The alias of EMAIL in the operators file, written as op- and 8 random hex digits on first use."""
+    """The alias of EMAIL in the operators file, written (mode 0600) as op- and 8 random hex digits on first use;
+    ValueError when the file exists and does not parse, which it leaves as it is."""
     path = path or aliases_path()
     key = email.strip().lower()
     got = _read_aliases(path).get(key)
@@ -60,7 +66,9 @@ def alias_of(email, path=None):
     if not table.get(key):
         table[key] = "op-" + secrets.token_hex(4)
         tmp = path.with_name(f"{path.name}.{os.getpid()}.tmp")
-        tmp.write_text(json.dumps(table, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
+        fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
+            f.write(json.dumps(table, indent=2, sort_keys=True) + "\n")
         os.replace(tmp, path)
     return table[key]
 
@@ -99,6 +107,9 @@ def resolve():
                 alias = alias_of(email)
             except OSError as e:
                 print(f"kbwho: cannot write {aliases_path()}: {e}", file=sys.stderr)
+                return None, source, role, email
+            except ValueError as e:
+                print(f"kbwho: {aliases_path()} does not parse ({e}): left as it is, no id", file=sys.stderr)
                 return None, source, role, email
             if not ID_RX.fullmatch(alias):  # the alias is not echoed: an edited one may be address-shaped
                 print(f"kbwho: the alias in {aliases_path()} is not an id (letters, digits, . _ -, at most 64): no id",
