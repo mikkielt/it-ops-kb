@@ -2,7 +2,7 @@
   "id": "BG-xao6jaon",
   "kind": "bug",
   "title": "kbtail.py stops printing appended lines while another process holds the coord store's write lock, up to 30 s",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-booflukv",
   "sprint": "SP-7ba3r4ec",
   "priority": "P2",
@@ -28,5 +28,7 @@
     "parked: SP-wurbmsid review"
   ],
   "notes": "Same root: coord.wait polls the events table every 50 ms (about 20 reads a second per follower, CPU near 0) and coord.connect waits up to BUSY_SECONDS=30 on a locked store; the reviewer measured both.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-6c439ca9",
+  "operator": "op-f618a13e"
 }
