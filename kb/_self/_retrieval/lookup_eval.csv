@@ -433,3 +433,4 @@ EV-coordination-settings-explain-command,how do I see how coordination is set up
 EV-coordination-needs-you-after-min,what does announce.needs_you_after_min delay before the needs-you line names it,coordination.md,good,yes,the whole minutes an undecided overlap of two live sessions is old,
 SQ-census-gone-sources,census gone sources,web-sources.md,good,yes,mechanical verdict per source,
 SQ-item-whose-repro-already-passes-base,an item whose repro already passes on the base: how is it closed or dropped,tools.md,good,yes,sprint's open committed items,
+SQ-goal-research-story-fill-each-committed,how does the goal research story fill each committed item's knowledge field and what does backlog.py researched check,tools.md,good,yes,goal research story (`bl_base.research_checks,
