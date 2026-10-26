@@ -4534,3 +4534,13 @@ _Agent: kb-research_
 - See agents/codebase-mapping.md.
 
 _Agent: kb-research_
+
+## QK-stores-changing-facts-mark-fact-was. How do stores of changing facts mark when a fact was true, and what does that mean for a kb fact line with a validity window?
+- SQL Server temporal tables keep each version with a start and an end column, the end set to the transaction time of the change, and the `AS OF` test is `ValidFrom <= t AND ValidTo > t`. [DOC S-fircu2ge]
+- Graphiti keeps an invalidated fact, with `valid_at` and `invalid_at` for when it held and `created_at` and `expired_at` for when the store knew; a contradicting newer fact closes the older at its own `valid_at`. [CODE S-jew5vvlr: graphiti_core/edges.py#EntityEdge]
+- Git's `r1..r2` excludes `r1` and includes `r2`, and a short commit id is unique only within the repository and for some time. [DOC S-x44tjiek, S-zflhytlw]
+- Conclusion: a window that closes one fact and opens the next on the same date is unambiguous only with one exclusive bound, which both stores choose (the end); a commit-range marker needs its own statement of which end it includes, and a check without the repository can test the form of a commit id and a date, not whether a revision lies in the range. [DER S-fircu2ge, S-ybdqnjmp, S-x44tjiek, S-zflhytlw: closed-open tests, git range definition, repository-relative abbreviation]
+- Open: no source read marks a window in a Markdown documentation store, and Graphiti's own as-of query was not read. [UNK]
+- See prior-art/fact-validity-windows.md, python/stdlib-datetime-iso-week.md.
+
+_Agent: kb-research_

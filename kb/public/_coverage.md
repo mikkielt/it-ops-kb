@@ -311,6 +311,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `prior-art/pseudonymization-tokenization` | P2 | complete | `prior-art/pseudonymization-tokenization.md` | 6 |
 | `prior-art/secret-vault-encryption` | P2 | complete | `prior-art/secret-vault-encryption.md` | 12 |
 | `prior-art/tiered-approval-ops` | P2 | complete | `prior-art/tiered-approval-ops.md` | 10 |
+| `prior-art/fact-validity-windows` | P3 | partial | `prior-art/fact-validity-windows.md` | 8 |
 | `privacy/gdpr-pseudonymisation` | P0 | complete | `privacy/gdpr-pseudonymisation.md` | 9 |
 | `privacy/gliner-models` | P0 | complete | `privacy/gliner-models.md`, `privacy/gliner-models.csv` | 8 |
 | `privacy/nist-sp800-38g` | P0 | complete | `privacy/nist-sp800-38g.md` | 5 |
