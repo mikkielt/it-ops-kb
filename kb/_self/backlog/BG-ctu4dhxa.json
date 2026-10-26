@@ -2,7 +2,7 @@
   "id": "BG-ctu4dhxa",
   "kind": "bug",
   "title": "redact keeps the host of an http or https url that carries user:password@, because the password is rewritten to a placeholder before the host rule runs",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-w57bnhhx",
   "priority": "P2",
   "rank": 0,
@@ -45,5 +45,7 @@
     "parked: SP-mk6ikval review"
   ],
   "notes": "Planner 2026-10-26: repro and check 0 fail on main (the host stays after https://deploy:<secret>@srv01.corp.contoso.com). Cause: redact rewrites the password to the placeholder <secret> first, and URL_HOST excludes < and > from its user part, so the host rule no longer matches; the fix is in URL_HOST (or the order of the two rules) and keeps known hosts, example hosts and idempotence, which check 0 asserts. The leak scan and the query log run redact, so this keeps real host names out of the store. The check \"tests.py _tools/test_redact.py\" passes before the work by design: it guards the leak component's existing tests (no new test; the planted check 0 is the one that fails on main). Planned into SP-w57bnhhx on 2026-10-26 with a planted check that fails on main; the sprint start is pre-approved by the operator for the 2026-10-26 run.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
