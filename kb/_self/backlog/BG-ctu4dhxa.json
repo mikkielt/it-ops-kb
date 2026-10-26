@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "redact keeps the host of an http or https url that carries user:password@, because the password is rewritten to a placeholder before the host rule runs",
   "status": "draft",
+  "sprint": "SP-w57bnhhx",
   "priority": "P3",
   "rank": 0,
   "severity": "S2",

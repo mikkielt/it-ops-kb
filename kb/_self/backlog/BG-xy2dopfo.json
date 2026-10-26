@@ -4,6 +4,7 @@
   "title": "The land push step of the kb is named _tools/kbgit.py sync --push, so its land.step token is no longer kbgit.py-sync-push",
   "status": "draft",
   "parent": "EP-iowijan3",
+  "sprint": "SP-w57bnhhx",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
