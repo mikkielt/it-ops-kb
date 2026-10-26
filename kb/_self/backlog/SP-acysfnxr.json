@@ -2,7 +2,7 @@
   "id": "SP-acysfnxr",
   "kind": "sprint",
   "title": "Code questions from a pinned code map, used by planning too",
-  "status": "planned",
+  "status": "active",
   "goal": "kbingest's map records each symbol's definition and references at the pinned commit; one call answers where a symbol is defined, who uses it and what depends on a package from the map, over the CLI and the kb MCP server; a change since a revision names the docs and kb CODE facts it makes stale; planning's referrers reads the map and tells code references from text mentions; code questions answered from the map are measured against reading files",
   "gates": [
     {
@@ -14,7 +14,11 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "creator": "op-f618a13e",

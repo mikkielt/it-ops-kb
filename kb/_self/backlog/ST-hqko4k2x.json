@@ -2,7 +2,7 @@
   "id": "ST-hqko4k2x",
   "kind": "story",
   "title": "Planning reads the code map: referrers lists a symbol's code references from the pinned map apart from its text mentions",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-rpzrctui",
   "sprint": "SP-acysfnxr",
   "priority": "P1",
@@ -59,12 +59,10 @@
   "touches": [
     "_tools/bl_items.py",
     "_tools/bl_cli.py",
-    "_tools/kbingest.py",
     "skills/backlog/SKILL.md",
     "skills/sprint/SKILL.md",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md",
-    ".claude/skills/kb-ingest/SKILL.md"
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "ST-q4fbmomg",
