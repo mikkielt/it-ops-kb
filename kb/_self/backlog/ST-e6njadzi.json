@@ -2,7 +2,7 @@
   "id": "ST-e6njadzi",
   "kind": "story",
   "title": "Review sprint: tidy --path: a session removes its own worktree",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-eyhift2n",
   "review": true,
   "priority": "P1",
@@ -24,6 +24,27 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-6c439ca9",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "5a9d3134b8f7e5575aea7ece1e336b2b31fb7e5b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "b95652a86cbba4f4"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "d5f910bad655fd56"
+      }
+    ]
+  }
 }
