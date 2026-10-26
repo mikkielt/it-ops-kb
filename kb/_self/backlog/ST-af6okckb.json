@@ -2,7 +2,7 @@
   "id": "ST-af6okckb",
   "kind": "story",
   "title": "Spend is attributed to the item and to the kb topic or code module it served, ranked by topic, and exported to OpenTelemetry",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-hxxn6fnv",
   "priority": "P2",
@@ -77,5 +77,7 @@
     "ST-xvdk32ag"
   ],
   "notes": "Plan check 2026-10-26: the old checks (cost --by topic|module) read the committed query-log store, which a landing cannot change; the new checks plant two transcripts (kb_show of intune/enrollment.md and a Read of _tools/kbusage.py with 90000 output tokens; kb_pack, kb_facts dsc/cli-reference and a Grep of _tools/kbmon.py with 50), take their usage records from kbusage.py, write them as usage sidecars of a temp store (ql_base.STORE set before backlog.py imports, so bl_cost must read the store through ql_base at call time) and of a temp CLAUDE_PLUGIN_DATA query log for kbmon --metrics; all fail on the base (no articles or files in the record, no --by, no USD point). Narrowed: --by item is left out (cost ID already ranks an item) and kb_pack, whose articles are in its result and not its input, is not read for topics. The store's closed usage shape (ql_store.usage_line) has to keep the new fields, so ql_store.py, ql_report.py and mon_querylog.py are in the touches.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
