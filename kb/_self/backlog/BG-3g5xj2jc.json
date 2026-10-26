@@ -2,7 +2,7 @@
   "id": "BG-3g5xj2jc",
   "kind": "bug",
   "title": "A gate whose question names a credential as a lower-case snake_case identifier outside the closed credential-part list (registration_token, ci_job_token, vault_token) is classed design, not secrets",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-w57bnhhx",
   "priority": "P2",
   "rank": 0,
@@ -46,5 +46,7 @@
     "parked: SP-mk6ikval review"
   ],
   "notes": "Planner 2026-10-26: repro and check 0 fail on main (4 of the 5 planted credential identifiers class design). Design decided in the plan, no open choice: SNAKE_TOKEN_IDENT blanks a lower-case snake_case identifier ending in token or tokens only when every part before the ending is on a closed list of code words (bare, def, read: the shapes the BG-sqmvvtiy comment names); any other part, a credential, secret or service part included, keeps the secrets class, so the rule fails closed. The model token counts (output_tokens, token counts) and tokenize.NAME stay handled by TOKEN_COUNT and TOKENIZE_ATTR, which run beside it; check 0 holds the planted cases of BG-sqmvvtiy, BG-ohawboem and BG-dry4luf6. Docs: backlog.md and tools.md name the identifier rule and are updated in the item. Pre-approved by the operator for the 2026-10-26 run. The check \"tests.py _tools/test_authority.py\" passes before the work by design: it guards the critical component's existing tests (no new test; the planted check 0 is the one that fails on main). Planned into SP-w57bnhhx on 2026-10-26 with a planted check that fails on main; the sprint start is pre-approved by the operator for the 2026-10-26 run.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
