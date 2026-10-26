@@ -2,7 +2,7 @@
   "id": "ST-ittt27lq",
   "kind": "story",
   "title": "backlog.py tidy --path removes one recorded leftover, so a session can remove its own worktree without tidying every other session's",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-eyhift2n",
   "priority": "P2",
   "rank": 0,
@@ -33,5 +33,7 @@
     "kb/_self/tools.md"
   ],
   "notes": "Operator request 2026-10-26: `.claude/settings.json` denies `git worktree remove` to agents (kept), and `tidy --apply` removes every safe leftover of every session at once, so a session could not remove its own reviewer worktree. The deny stays; the remedy is this filter on the tool route with all of tidy's checks. The close's kept line is in bl_close.py (`left for tidy --apply`). No suite test: the check is a planted run.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-6c439ca9",
+  "operator": "op-f618a13e"
 }
