@@ -1,0 +1,30 @@
+{
+  "id": "BG-okrkeohe",
+  "kind": "bug",
+  "title": "The sync push gate judges a pushed range by its tip, so a commit that adds a leak-scan shape and a later one that removes it passes the gate and then blocks publish for good",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kbgit.py sync --push refuses a range up..HEAD in which any commit adds a leak-scan hit (the verdict publish gives each commit, kbpublic.leak_verdicts with the allowlist of the commit and of HEAD), naming the commit and the file and never the value, even when a later commit of the range removes the hit; a range with no such commit pushes as before",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os, shutil, subprocess, sys, tempfile\ndef sh(*a, cwd=None, env=None):\n    return subprocess.run(a, cwd=cwd, env=env, capture_output=True, text=True)\nt = tempfile.mkdtemp()\nc, o = t + \"/c\", t + \"/o.git\"\nos.mkdir(c)\ntar = subprocess.run([\"git\", \"archive\", \"HEAD\"], capture_output=True, check=True).stdout\nsubprocess.run([\"tar\", \"-x\", \"-C\", c], input=tar, check=True)\nenv = dict(os.environ, KB_SYNC_NO_TESTS=\"1\", GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\nfor cmd in ([\"init\", \"-q\", \"-b\", \"main\"], [\"add\", \"-A\"], [\"commit\", \"-q\", \"-m\", \"base\", \"--no-verify\"]):\n    sh(\"git\", *cmd, cwd=c, env=env)\nsh(\"git\", \"init\", \"-q\", \"--bare\", o)\nsh(\"git\", \"fetch\", \"-q\", c, \"main:main\", cwd=o)\nfor cmd in ([\"remote\", \"add\", \"origin\", o], [\"fetch\", \"-q\", \"origin\"], [\"branch\", \"-q\", \"--set-upstream-to=origin/main\", \"main\"]):\n    sh(\"git\", *cmd, cwd=c, env=env)\nd = c + \"/kb/_self/backlog\"\nname = sorted(x for x in os.listdir(d) if x.endswith(\".json\"))[0]\npath, iid = d + \"/\" + name, name[:-5]\nwith open(path, encoding=\"utf-8\") as f:\n    clean = f.read()\nhome = \"/\".join((\"\", \"Users\", \"realperson\", \"docs\"))\nbad = clean.replace(\"\\\"goal\\\": \\\"\", \"\\\"goal\\\": \\\"\" + home + \" \", 1)\nfor text in (bad, clean):\n    with open(path, \"w\", encoding=\"utf-8\") as f:\n        f.write(text)\n    sh(\"git\", \"commit\", \"-q\", \"-am\", \"chore(backlog): plant\\n\\nKB-Work: \" + iid, \"--no-verify\", cwd=c, env=env)\ntip = sh(\"git\", \"rev-parse\", \"origin/main\", cwd=c, env=env).stdout.strip()\nlook = sh(sys.executable, \"-I\", \"-c\", \"import sys; sys.path.insert(0, \\\"_tools\\\"); import kbpublic as k; print(k.history_refusals(\\\"HEAD\\\", sys.argv[1], k.tree_files(\\\"HEAD\\\", \\\".\\\"), \\\".\\\")[1])\", tip, cwd=c, env=env)\nr = sh(sys.executable, \"_tools/kbgit.py\", \"sync\", \"--push\", cwd=c, env=env)\nrefused = r.returncode != 0 and \"leak\" in (r.stdout + r.stderr).lower()\nprint(\"publish check of the range:\", look.stdout.strip()[:140])\nprint(\"sync --push exit\", r.returncode, \"| refused for a leak:\", refused)\nshutil.rmtree(t, ignore_errors=True)\nsys.exit(0 if refused else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/kg_sync.py",
+    "_tools/kbpublic.py",
+    "_tools/test_sync_e2e.py",
+    "kb/_self/git.md"
+  ],
+  "relates_to": [
+    "BG-zexhpoqi",
+    "ST-w6vnsox3",
+    "ST-6qplip34"
+  ],
+  "notes": "Premise (run 2026-10-26 on a planted clone): commit bc14f216937a filed BG-23wnhrgc and d8609788f9 reworded it 18 s later; both were pushed in one sync, whose gate (backlog.py check, tests.py) reads the pushed tip's tree only, so it passed; kbgit.py publish scans the lines each commit adds against its parent (kbpublic.history_refusals, leak_verdicts) and refuses bc14f216937a for good, which stops every newer commit reaching the public home. The scan did not widen: kbcommon.LEAK_HOME is unchanged since 2026-09-28. Fix shape: the gate gets a range check beside check-trailers (kg_sync.gate, up..HEAD) that calls the publish verdict code, not a second implementation; it runs in every clone (cheap: only added lines, verdicts cached under _cache/publish/), not only where kb.publishRemote is set. Test: a push gate and a leak guard are critical (kb/_self/code.md), so one planted case goes into an existing scenario (test_sync_e2e.py), no new file or test id, within _tools/tests_ceiling.json, never a raise. No claim or coord note on _tools/kg_sync.py or _tools/kbpublic.py at planning (backlog.py held, coord digest). Related: ST-w6vnsox3 unblocks the commit already on main; BG-zexhpoqi stops the usual source.",
+  "filed_in": "clone-0ea70e5c"
+}
