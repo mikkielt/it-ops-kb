@@ -72,6 +72,38 @@
     "BG-oez5e2ua",
     "ST-zimb7vuu"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does dispatch follow a session that a launcher starts, when the launcher may return at once?",
+      "options": [
+        "The command line writes its shell's pid and the session's exit code to files in the scratch directory, which dispatch polls",
+        "Dispatch waits for the launcher process to exit and reads the session's exit from it"
+      ],
+      "recommendation": "The command line writes its shell's pid and the session's exit code to files in the scratch directory, which dispatch polls",
+      "do": {
+        "The command line writes its shell's pid and the session's exit code to files in the scratch directory, which dispatch polls": "ST-cgaf2hfc",
+        "Dispatch waits for the launcher process to exit and reads the session's exit from it": "ST-cgaf2hfc"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does kbmon run the agent_states command and bind its lines to sessions?",
+      "options": [
+        "Once per snapshot with a 5 second limit; a line gives pid or session, the pid wins, and the state shows as agent_state after the role",
+        "Cached between snapshots and bound by session id only"
+      ],
+      "recommendation": "Once per snapshot with a 5 second limit; a line gives pid or session, the pid wins, and the state shows as agent_state after the role",
+      "do": {
+        "Once per snapshot with a 5 second limit; a line gives pid or session, the pid wins, and the state shows as agent_state after the role": "ST-cgaf2hfc",
+        "Cached between snapshots and bound by session id only": "ST-cgaf2hfc"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "moved out: SP-hxxn6fnv"
   ],

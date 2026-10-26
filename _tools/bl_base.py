@@ -65,6 +65,12 @@ SETTINGS = {
     # whether `dispatch`'s wait sends SIGTERM to a worker's own recorded pid once its result is written and the pid still
     # runs past `bl_stall.FINISHED_ALIVE_GRACE_S`; false = the worker is only flagged (`stalled`: finished-alive)
     "stop_finished": ("bool", False),
+    # the argv of a command that starts a worker's session where the operator's runtime wants it: `{dir}` in an element is
+    # the worker's worktree, `{command}` the session's command as one shell line; [] = dispatch starts the session itself
+    "launcher": ("launcher", []),
+    # the argv of a command whose stdout is JSON lines {"pid" or "session": ..., "state": working|blocked|idle|done}, the
+    # states of the agents some runtime hosts, which kbmon shows on a session's row; [] = none
+    "agent_states": ("argv", []),
 }
 NAMING_FIELDS = ("id", "task", "nn", "mm", "title", "slug")  # the placeholders a `naming` template may hold
 NAMING_DEFAULTS = {"branch": "work/{id}", "mr_title": "{id}: {title}", "trailer": ""}  # "" = the brief names no trailer
@@ -96,6 +102,9 @@ def _type_problem(kind, v):
         return None if strs(v) else "a list of strings"
     if kind == "argv":
         return None if strs(v) else "a list of strings (the command's arguments; [] for no step)"
+    if kind == "launcher":
+        ok = strs(v) and (v == [] or any("{command}" in x for x in v))
+        return None if ok else 'a list of strings with `{command}` in one of them ([] for dispatch\'s own start)'
     if kind == "hooks":
         ok = strs(v) and set(v) <= set(HOOK_NAMES)
         return None if ok else "a list of hook names, each " + " or ".join(f'"{n}"' for n in HOOK_NAMES) + " ([] for none)"

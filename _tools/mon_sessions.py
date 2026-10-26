@@ -20,7 +20,9 @@ names the session's id), `role` (the first row of `ROLES` that fits), `item` and
 `sprint_title`, `step`, `started` (the process's start), `last_activity` and `spend_usd` (the newest row and the priced
 usage rows of the session's own spool file, null without one) and `silent_s` (the seconds since the newest write to the
 session's transcript or its subagents' transcripts, `mon_coord.transcript_age`; with none found, since the newer of its newest spool row
-and its process's start, `silence`; null only where none is known). `overlaps` lists each pair of live sessions whose
+and its process's start, `silence`; null only where none is known) and
+`agent_state` (the state the project's `agent_states` command gives the session's pid, else its session id: `working`,
+`blocked`, `idle` or `done`; null for neither, and the panel's `agent_states_unread` says why a command gave none). `overlaps` lists each pair of live sessions whose
 intents' items or touches meet, with the shared `files` and the `strategy` (`undecided`, else the one a `coordinate` event
 between their items announced), and `needs_you_after_min` is the setting `mon_needs` ages an undecided one against (`overlap_rows`,
 `after_minutes`; both left out with `intents`, and left out with `overlaps_unread`, the reason, where a coord store is there
@@ -98,6 +100,8 @@ STORE_LOCK = threading.Lock()  # one panel run at a time points the environment'
 WINDOWS_LIMIT = ("Windows shows no working directory: a process is listed when its command line names a checkout of "
                  "the clone, so one that names none, an orphan told by working directory, is not shown")
 RAW_KEYS = ("session", "base")  # the keys of a `session_entries` entry that the panel's data never holds
+AGENT_STATES = ("working", "blocked", "idle", "done")  # the states an `agent_states` line may give
+AGENT_STATES_SECONDS = 5  # the longest the `agent_states` command may take
 ROLES = ("worker", "sprint runner", "planner", "reviewer", "interactive", "benchmark agent", "bare twin", "observer",
          "unknown")  # the roles `role_of` gives
 
@@ -448,6 +452,39 @@ def after_minutes(root):
         return kbsettings.DEFAULTS["announce"]["needs_you_after_min"]
 
 
+def agent_states(root):
+    """(({pid: state}, {session id: state}), why) from the `agent_states` setting of the project at ROOT: the command's
+    stdout is JSON lines, each an object with a `pid` (a positive integer) or a `session` (a string) and a `state`, one of
+    AGENT_STATES; a line that is none of that is skipped, a later line for the same pid or session wins. The command runs in
+    ROOT with stdin closed and at most AGENT_STATES_SECONDS. With no setting, the maps are empty and WHY is None; a command
+    that does not start, ends non-zero or takes too long gives empty maps and WHY, the reason."""
+    import bl_base
+    argv = bl_base.read_settings(root)[0]["agent_states"]
+    pids, sessions = {}, {}
+    if not argv:
+        return (pids, sessions), None
+    try:
+        p = subprocess.run(argv, cwd=str(root), stdin=subprocess.DEVNULL, capture_output=True, text=True, encoding="utf-8",
+                           errors="replace", timeout=AGENT_STATES_SECONDS)
+    except (OSError, subprocess.SubprocessError) as e:
+        return (pids, sessions), f"the agent_states command did not run: {type(e).__name__}"
+    if p.returncode:
+        return (pids, sessions), f"the agent_states command exited {p.returncode}"
+    for line in p.stdout.splitlines():
+        try:
+            row = json.loads(line)
+        except ValueError:
+            continue
+        if not isinstance(row, dict) or row.get("state") not in AGENT_STATES:
+            continue
+        pid, session = row.get("pid"), row.get("session")
+        if isinstance(pid, int) and not isinstance(pid, bool) and pid > 0:
+            pids[pid] = row["state"]
+        elif isinstance(session, str) and session:
+            sessions[session] = row["state"]
+    return (pids, sessions), None
+
+
 def dispatching(found, session, items):
     """Whether a `backlog-claim` intent of SESSION on ITEMS is a dispatching session's: one of the items has a dispatch
     record in the claims ledger, or an intent of another session without the claim topic (a worker's own) names it. An
@@ -763,20 +800,21 @@ def bind_sessions(claude, placed, by_path, ledgers, found):
     return bound
 
 
-def session_rows(ctx, procs, placed, by_path, found, bl, names):
-    """[{label, role, item, item_title, sprint, sprint_title, step, started, last_activity, silent_s, spend_usd, pid, checkout}] of
+def session_rows(ctx, procs, placed, by_path, found, bl, names, states=None):
+    """[{label, role, item, item_title, sprint, sprint_title, step, started, last_activity, silent_s, spend_usd, agent_state, pid, checkout}] of
     the Claude Code processes PROCS placed in a checkout (PLACED), oldest first, SESSIONS_KEPT at most; FOUND is
     `read_coord`'s answer (None without one), BL the root's `backlog` (None without items) and NAMES the checkouts as
     shown (`bind_sessions` says how a process gets its session id, a process nothing binds has no label). A dispatch record whose pid
     still runs and that the process table does not list gives a session too, its `started` null."""
-    rows = session_entries(ctx, procs, placed, by_path, found, bl, names)[:SESSIONS_KEPT]
+    rows = session_entries(ctx, procs, placed, by_path, found, bl, names, states=states)[:SESSIONS_KEPT]
     return [{k: v for k, v in r.items() if k not in RAW_KEYS} for r in rows]
 
 
-def session_entries(ctx, procs, placed, by_path, found, bl, names, light=False):
+def session_entries(ctx, procs, placed, by_path, found, bl, names, light=False, states=None):
     """`session_rows`' entries, all of them, each with the raw `session` id (null where nothing binds it) and the absolute
     `base` of its checkout besides: for `live_sessions`, never for the panel's data. LIGHT leaves out what costs a read of
-    the ops rows or a spool file: `step`, `last_activity` and `spend_usd` are null."""
+    the ops rows or a spool file: `step`, `last_activity` and `spend_usd` are null. STATES is `agent_states`' pair of maps (None
+    without them): a session's `agent_state` is the state its pid has there, else its session id, null for neither."""
     import bl_procs
     claude = [p for p in procs if p["comm"] == CLAUDE and placed.get(p["pid"])]
     ledgers = {b: ledger_records(b) for b in sorted({placed[p["pid"]] for p in claude} | {os.path.realpath(ctx.root)})}
@@ -825,7 +863,8 @@ def session_entries(ctx, procs, placed, by_path, found, bl, names, light=False):
             if bl is not None and not light else None
         out.append({"label": mon_view.session_label(sid) if sid else None, "role": role, "item": item,
                     "item_title": title(item), "sprint": sprint, "sprint_title": title(sprint), "step": step,
-                    "started": iso(p["start"]) if p["start"] is not None else None, "last_activity": stamp, "silent_s": silent, "spend_usd": spend, "pid": p["pid"],
+                    "started": iso(p["start"]) if p["start"] is not None else None, "last_activity": stamp, "silent_s": silent, "spend_usd": spend,
+                    "agent_state": (states[0].get(p["pid"]) or states[1].get(sid)) if states else None, "pid": p["pid"],
                     "checkout": names.get(base, "."), "session": sid, "base": base})
     return out
 
@@ -920,7 +959,10 @@ def collect(ctx):
         data["overlaps_unread"] = "the coord store does not answer" if found is None else "its events do not read"
     data["dispatch"] = dispatch_runs(ctx.root)
     bl = backlog(ctx.root)
-    data["sessions"] = session_rows(ctx, procs or [], placed, by_path, found, bl, names)
+    states, why_states = agent_states(ctx.root)
+    if why_states:
+        data["agent_states_unread"] = why_states
+    data["sessions"] = session_rows(ctx, procs or [], placed, by_path, found, bl, names, states)
     waits = wait_rows(ctx, data["sessions"], bl)
     if waits is not None:
         data["waits"] = waits
@@ -1020,7 +1062,7 @@ def clipped(text, n):
 
 def session_line(s, now=None, width=LINE_CHARS):
     """One session entry as one line of at most WIDTH (LINE_CHARS at most) characters, the one function the sessions panel
-    and `kbmon.py --status sessions` print an entry with: `label  role  sprint  item title  step  up 1h00m  last 20m ago  silent 15m  $1.25`.
+    and `kbmon.py --status sessions` print an entry with: `label  role  agent state  sprint  item title  step  up 1h00m  last 20m ago  silent 15m  $1.25`.
     The sprint is its title cut to SPRINT_CHARS, the item title to the room the other fields leave (TITLE_CHARS at most; the
     id where the title is not known); a field the entry does not know is left out, `silent` too below SILENT_SHOWN_S. NOW is the time the elapsed and last
     activity are taken at (epoch seconds; the snapshot's taken time, else the clock)."""
@@ -1031,7 +1073,9 @@ def session_line(s, now=None, width=LINE_CHARS):
     silent = s.get("silent_s")
     sprint = s.get("sprint_title") or s.get("sprint")
     title = s.get("item_title") or s.get("item") or ""
-    before = [s.get("label") or "-", s.get("role") or "unknown"] + ([clipped(sprint, SPRINT_CHARS)] if sprint else [])
+    state = s.get("agent_state")
+    before = [s.get("label") or "-", s.get("role") or "unknown"] + ([state] if isinstance(state, str) and state else []) \
+        + ([clipped(sprint, SPRINT_CHARS)] if sprint else [])
     after = ([s["step"]] if s.get("step") else []) + ([f"up {age_text(now - started)}"] if started is not None else []) \
         + ([f"last {age_text(now - last)} ago"] if last is not None else []) \
         + ([f"silent {age_text(silent)}"] if isinstance(silent, (int, float)) and not isinstance(silent, bool)
