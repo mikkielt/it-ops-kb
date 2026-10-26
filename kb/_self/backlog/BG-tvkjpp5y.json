@@ -36,6 +36,28 @@
     "kb/_self/web-sources.md",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does leak_problems scan a new row's url, which kbpublic.file_hits strips before scanning?",
+      "options": [
+        "url scanned as file_hits scans it plus an email address anywhere in the raw url",
+        "url scanned as file_hits scans it only",
+        "url scanned in full with every leak shape including guid"
+      ],
+      "recommendation": "url scanned as file_hits scans it plus an email address anywhere in the raw url",
+      "reason": "because 19 existing source urls hold a guid legitimately and a full scan would refuse them",
+      "do": {
+        "url scanned as file_hits scans it plus an email address anywhere in the raw url": "BG-tvkjpp5y",
+        "url scanned as file_hits scans it only": "BG-tvkjpp5y",
+        "url scanned in full with every leak shape including guid": "BG-tvkjpp5y"
+      },
+      "class": "design",
+      "answer": "url scanned as file_hits scans it plus an email address anywhere in the raw url",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ovwzbc7u review"
   ],
