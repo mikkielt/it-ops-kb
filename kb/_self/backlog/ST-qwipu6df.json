@@ -2,7 +2,7 @@
   "id": "ST-qwipu6df",
   "kind": "story",
   "title": "The operator decides whether a content-only push runs the tuned lookup eval now that test_live_kb.py is gone",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-sgfucsn6",
   "priority": "P2",
   "rank": 0,
@@ -55,5 +55,7 @@
   "links": [
     "parked: SP-noqsd4hj review"
   ],
-  "notes": "Review gap of SP-noqsd4hj, rated S3 by the sprint's reviewer. Premise: the check fails on the base: git.md says nothing of a content-only change and the tuned lookup eval. The gate on this item settles which way the text and, if chosen, kg_sync.py go. Gate g1 answered with its recommendation (no, accept the gap) by the runner on the operator's behalf (pre-approved by the operator for the 2026-10-26 run). Sprint start gate answered approve by the runner on the operator's behalf (pre-approved by the operator for the 2026-10-26 run)."
+  "notes": "Review gap of SP-noqsd4hj, rated S3 by the sprint's reviewer. Premise: the check fails on the base: git.md says nothing of a content-only change and the tuned lookup eval. The gate on this item settles which way the text and, if chosen, kg_sync.py go. Gate g1 answered with its recommendation (no, accept the gap) by the runner on the operator's behalf (pre-approved by the operator for the 2026-10-26 run). Sprint start gate answered approve by the runner on the operator's behalf (pre-approved by the operator for the 2026-10-26 run).",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
