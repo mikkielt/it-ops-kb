@@ -35,9 +35,32 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which lower-case snake_case identifiers does the gate classifier blank from the text it searches for the class?",
+      "options": [
+        "those ending in the singular or plural word after one part or more, except with a credential, secret or service name among their parts or after a credential word",
+        "those ending in the singular or plural word after one part or more, with no exception"
+      ],
+      "recommendation": "those ending in the singular or plural word after one part or more, except with a credential, secret or service name among their parts or after a credential word",
+      "reason": "fail closed, so gitlab_token and API bare_token keep the class",
+      "do": {
+        "those ending in the singular or plural word after one part or more, except with a credential, secret or service name among their parts or after a credential word": "BG-sqmvvtiy",
+        "those ending in the singular or plural word after one part or more, with no exception": "BG-sqmvvtiy"
+      },
+      "class": "secrets",
+      "answer": "those ending in the singular or plural word after one part or more, except with a credential, secret or service name among their parts or after a credential word",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-jplczvj2 close"
   ],
+  "notes": "Gate g1 (class secrets) answered with its recommendation by the orchestrator on the operator behalf (pre-approved by the operator for the 2026-10-26 run): fail closed, so gitlab_token and API bare_token keep the class.",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }
