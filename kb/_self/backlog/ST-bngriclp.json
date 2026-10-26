@@ -121,7 +121,9 @@
       },
       "class": "design",
       "answer": "role and item words (worker ST-xxxxxxxx), the sessions label added only when two sessions have the same words",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "mon_sessions keeps raw session ids inside the module: add an in-process reader (pid, raw id, checkout, role, item, sprint, label) for kbtail that the panel's data and text never print. The session list is read again only when the coord store changes, a followed pid ends (the wait's --pid) or 30 s pass, using the light part of the panel (processes, hook state, coord digest), never git or the stall signals. At most 16 sessions are followed, the rest named in one line. Agreed 2026-10-26 with the session-load benchmark session (coord ask Af9188b1205): this story lands the one live-session reader first; ST-57o3hmbo depends on it and calls it instead of adding a second one. The row keys are that contract: pid, session, checkout, role, item, sprint, label. A `--sprint SP` filter (the sessions of the sprint's items) is wanted too; this story's checks do not prove it, so it waits for a later slice.",
