@@ -32,7 +32,8 @@ An entry of an unknown type, or a line that is not a JSON object, is skipped and
 that are no conversation (attachment, mode, system, summary and the like) are ignored uncounted. `--once` ends with
 `kbtail: skipped N` on stderr. While following, the process waits on the stat of coord's store file (a store that exists:
 KB_COORD_STORE, else the project's; it opens no connection, so a lock another process holds does not delay a read) and
-otherwise sleeps; either way it reads only the bytes appended since its last read. It writes no file. Exit codes: 0 done (also an interrupt), 2 a bad argument or a TARGET with no transcript.
+otherwise sleeps; either way it reads only the bytes appended since its last read. A file replaced by another (a new
+identity, a smaller size or other first bytes) shows its last `--history` lines, and what is appended after them. It writes no file. Exit codes: 0 done (also an interrupt), 2 a bad argument or a TARGET with no transcript.
 `kbmon.py --follow ARGS` runs it with ARGS.
 
 Answers: what a session, or every live session of the clone, is doing right now, as a redacted line for each tool call, result and message
@@ -57,7 +58,8 @@ import redact
 HISTORY = 20  # lines printed before following
 WAKE_S = 1.0  # longest wait between two reads of a followed file
 STORE_POLL_S = 0.05  # seconds between two looks at the coord store file's stat
-MAX_SESSIONS = 16  # sessions followed at once; the rest are named in one line
+HEAD_BYTES = 1024  # first bytes of a followed file kept to tell a replacement from an append
+MAX_SESSIONS = 16 # sessions followed at once; the rest are named in one line
 SCAN_S = 30  # seconds after which the live sessions are listed again
 SCAN_MIN_S = 5  # the least seconds between two lists a change of the coord store asks for
 SUBAGENTS_SHOWN = 4  # the newest subagent files of a session whose history is printed
@@ -244,12 +246,46 @@ def coord_store():
     return str(path) if path and Path(path).is_file() else None
 
 
-def read_new(path, offset, rest):
-    """([lines to print], offset, rest): what the whole lines appended to PATH after OFFSET show; REST holds the bytes of a
-    half-written last line. A file that shrank was replaced and is read from its start."""
+def identify(path):
+    """(identity, first bytes) of the file at PATH, as they tell a later read that the file was replaced, not appended to;
+    taken before the file is read, so a replacement between that read and the next one is seen."""
+    try:
+        st = path.stat()
+        with open(path, "rb") as f:
+            return (st.st_dev, st.st_ino), f.read(HEAD_BYTES)
+    except OSError:
+        return None, b""
+
+
+def mark(offset, known):
+    """The read position at OFFSET of the file `identify` returned KNOWN for: [offset, rest of a half-written line, identity,
+    first bytes]."""
+    return [offset, b"", known[0], known[1][:offset]]
+
+
+def replaced(path, state, size):
+    """Whether PATH is no longer the file STATE was read from: another identity, a smaller size, or other first bytes."""
+    offset, _, ident, head = state
+    st = path.stat()
+    if size < offset or (ident is not None and ident != (st.st_dev, st.st_ino)):
+        return True
+    if not head:
+        return False
+    with open(path, "rb") as f:
+        return f.read(len(head)) != head
+
+
+def read_new(path, state, count):
+    """[lines to print]: what the whole lines appended to PATH after the position STATE holds show (STATE is updated; its
+    rest holds the bytes of a half-written last line). A file that was replaced by another, smaller or larger, shows its last
+    COUNT lines, as at the start, and following goes on after them."""
     size = path.stat().st_size
-    if size < offset:
-        offset, rest = 0, b""
+    if replaced(path, state, size):
+        known = identify(path)
+        lines, _, end = history(path, count)
+        state[:] = mark(end, known)
+        return lines
+    offset, rest = state[0], state[1]
     lines = []
     if size > offset:
         with open(path, "rb") as f:
@@ -263,17 +299,19 @@ def read_new(path, offset, rest):
             for raw in whole.split(b"\n"):
                 if raw.strip():
                     lines += parse(raw.decode("utf-8", "replace"))[0]
-    return lines, offset, rest
+        if len(state[3]) < HEAD_BYTES:
+            state[3] = identify(path)[1][:offset]
+    state[0], state[1] = offset, rest
+    return lines
 
 
-def follow(path, offset, columns, out):
-    """Print the lines appended after `offset` as they become whole, until interrupted."""
+def follow(path, state, columns, out, count=HISTORY):
+    """Print the lines appended after the read position STATE (`mark`'s) as they become whole, until interrupted."""
     store = coord_store()
     since = wake(0, store, 0)
-    rest = b""
     while True:
         try:
-            lines, offset, rest = read_new(path, offset, rest)
+            lines = read_new(path, state, count)
             for line in lines:
                 out.write(fit(line, columns) + "\n")
             if lines:
@@ -365,26 +403,28 @@ def scan(root, item, role, followed, count):
         subs = subagent_files(transcript)
         for path, sub in [(transcript, False)] + [(p, True) for p in subs]:
             keep = count if not sub or path in subs[-SUBAGENTS_SHOWN:] else 0
+            known = identify(path)
             try:
                 lines, bad, end = history(path, keep)
             except OSError:
                 continue
-            f.files[path] = [end, b""]
+            f.files[path] = mark(end, known)
             skipped += bad
             shown += [(line[:8], row["pid"], sub, line) for line in lines]
     return sorted(shown, key=lambda x: x[0]), skipped, over
 
 
-def drain(followed, pid):
+def drain(followed, pid, count=HISTORY):
     """[(pid, subagent, line)] appended to the files of the followed session PID since the last read, new subagent files
-    included (read from their start)."""
+    included (read from their start); a file replaced by another shows its last COUNT lines."""
     f = followed[pid]
     for path in subagent_files(f.transcript):
-        f.files.setdefault(path, [0, b""])
+        if path not in f.files:
+            f.files[path] = mark(0, identify(path))
     out = []
     for path, state in list(f.files.items()):
         try:
-            lines, state[0], state[1] = read_new(path, *state)
+            lines = read_new(path, state, count)
         except OSError:
             continue
         out += [(pid, path != f.transcript, line) for line in lines]
@@ -417,10 +457,10 @@ def follow_all(a, columns, out):
             show(followed, shown, over if over != over_shown else [], columns, out)
             over_shown = over
         for pid in list(followed):
-            for who, sub, line in drain(followed, pid):
+            for who, sub, line in drain(followed, pid, a.history):
                 out.write(prefixed(followed, who, sub, line, columns) + "\n")
         for pid in [p for p in followed if not alive(p)]:
-            for who, sub, line in drain(followed, pid):
+            for who, sub, line in drain(followed, pid, a.history):
                 out.write(prefixed(followed, who, sub, line, columns) + "\n")
             out.write(prefixed(followed, pid, False, f"{time.strftime('%H:%M:%S')} ended", columns) + "\n")
             del followed[pid]
@@ -487,6 +527,7 @@ def main(argv=None, out=None, err=None):
         return 2
     columns = shutil.get_terminal_size().columns
     try:
+        known = identify(path)
         lines, skipped, end = history(path, a.history)
         for line in lines:
             out.write(fit(line, columns) + "\n")
@@ -494,7 +535,7 @@ def main(argv=None, out=None, err=None):
         if a.once:
             print(f"kbtail: skipped {skipped}", file=err)
             return 0
-        follow(path, end, columns, out)
+        follow(path, mark(end, known), columns, out, a.history)
     except BrokenPipeError:
         return 0
     except OSError as e:
