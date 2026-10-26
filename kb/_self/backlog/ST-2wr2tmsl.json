@@ -21,6 +21,26 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where do the Herdr agent-state findings live in the kb?",
+      "options": [
+        "a new topic agents/herdr-agent-state",
+        "extend agents/coordination-messages"
+      ],
+      "recommendation": "a new topic agents/herdr-agent-state",
+      "reason": "Herdr is a distinct product with its own documentation and more than five DOC facts",
+      "do": {
+        "a new topic agents/herdr-agent-state": "ST-2wr2tmsl",
+        "extend agents/coordination-messages": "ST-2wr2tmsl"
+      },
+      "class": "design",
+      "answer": "a new topic agents/herdr-agent-state",
+      "by": "agent"
+    }
+  ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-775f1f5d",
   "operator": "op-f618a13e"

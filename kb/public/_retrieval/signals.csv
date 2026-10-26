@@ -951,3 +951,8 @@ GIT_SUBMODULE_STRATEGY,gitlab/multi-repository-layouts
 ENABLE_TOOL_SEARCH,claude/mcp-tool-search
 anthropic/alwaysLoad,claude/mcp-tool-search
 ToolSearch,claude/mcp-tool-search
+HERDR_SOCKET_PATH,agents/herdr-agent-state
+HERDR_BIN_PATH,agents/herdr-agent-state
+pane.report_agent,agents/herdr-agent-state
+pane.agent_status_changed,agents/herdr-agent-state
+herdr agent wait,agents/herdr-agent-state

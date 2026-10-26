@@ -2,7 +2,7 @@
 topic: claude/ci-and-headless
 priority: P2
 applies_to: "Claude Code v2.1.x (code.claude.com docs, retrieved 2026-09-26)"
-retrieved_utc: 2026-10-24
+retrieved_utc: 2026-10-26
 sources: [S1800, S1801, S1802, S-32ilsmsf, S-l6l42j6e, S-pilcrlei, S1824, S-isqfh6pr, S-fmj24q2u, S-fksbud2r, S-ezqg74ki, S-eu3n3hyf, S2131, S-ehhvgjky, S2130, S1864, S2157, S-e5rrs4ee, S-fzkqxhmg, S-wf2dmtu6, S-frvnva4f, S743, S745, S-rkp4qc7b, S744, S-hvuk3dqt, S-gu5aqnrl, S-6qjf3y2l, S-n4ujkcj7, S-hobjhakf]
 status: partial
 ---
@@ -145,6 +145,15 @@ article's `claude -p` exit-code/`--output-format` summary or its runtime-compari
 ### Background work at the end of a `claude -p` run
 - A `claude -p` run waits for these kinds of background work: background commands, background subagents and workflows, Monitor watches and pending `/loop` wakeups; the 10-minute idle cap is changed with `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS`, and a background subagent or workflow keeps the run open until it completes. [DOC S1800]
 - While a `claude -p` run waits for background work and stderr is a terminal, it prints a line starting `Waiting for background work to finish` to stderr after five seconds; with `json` or `stream-json` output the line prints only when stdout is not a terminal, so the JSON a script reads never carries it. [DOC S1800]
+
+### Session state, liveness and silence in a `claude -p` run
+- `CLAUDE_CODE_EMIT_SESSION_STATE_EVENTS=1` adds `session_state_changed` messages carrying the session's state to the message stream; it needs the Agent SDK, or `--print` with `--output-format stream-json` and `--verbose`. [DOC S745]
+- A `session_state_changed` message (`type` `system`, `subtype` `session_state_changed`, with `state`, `uuid` and `session_id`) has `state` `running` (working), `idle` (waiting for the next prompt) or `requires_action` (blocked on an answer to a request it sent the host, such as a permission prompt); the same state can arrive more than once, so a reader takes it as the current state, not a transition, and a turn's `idle` message and its `result` message can arrive in either order. [DOC S-fmj24q2u]
+- By default a non-interactive session keeps reporting `running` past the end of a turn while background work such as a background agent or a workflow run is live; `CLAUDE_CODE_BG_TASKS_REPORT_RUNNING=0` makes it report `idle` at every turn end even while that work lives, so a host that treats `idle` as finished reads a different moment under each setting. [DOC S745]
+- The stream idle watchdog closes a connection whose response stops streaming; it is on by default for all providers, and `CLAUDE_STREAM_IDLE_TIMEOUT_MS` (default 300000) is clamped up to 300000 ms (five minutes) when set lower, to absorb extended-thinking pauses and proxy buffering. [DOC S745, S-fksbud2r]
+- `CLAUDE_ASYNC_AGENT_STALL_TIMEOUT_MS` is the stall watchdog for subagents (also workflow agents from v2.1.286): default 600000 ms, raised with `CLAUDE_STREAM_IDLE_TIMEOUT_MS` while the stream watchdog is on, reset on each stream event; on a stall Claude Code aborts the subagent, reports it to the parent and marks a background subagent's task failed with any partial result. [DOC S745, S-fksbud2r]
+- Behind a gateway that holds a response open with keep-alive pings, a host that sets `include_partial_messages` keeps receiving `ping` stream events, which the page tells the reader to treat as liveness "rather than timing the session out on silence". [DOC S-fksbud2r]
+- No pages read give a session a last-activity timestamp: the `session_state_changed` message has no time field, and `claude agents --json` has only `startedAt` (`claude/parallel-sessions.md`), so the silence of a `claude -p` worker comes from the host's own clock over the lines it reads from the stream (messages, pings, hook events with `--include-hook-events`) and, given the stream watchdog's five-minute floor, a request may stay silent that long before Claude Code itself gives up, so a shorter quiet period is no sign of a hang. [DER S-fmj24q2u, S-fksbud2r, S745: the message shape and the watchdog floor; the missing field is absence in the pages read]
 
 ## Reference
 
