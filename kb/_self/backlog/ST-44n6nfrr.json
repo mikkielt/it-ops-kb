@@ -54,6 +54,101 @@
   "depends_on": [
     "ST-7nuaruwn"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Is arm B part of the default arms of session-load?",
+      "options": [
+        "B runs only when --arms names it",
+        "B is a default arm"
+      ],
+      "recommendation": "B runs only when --arms names it",
+      "reason": "a default run adds 2 x WINDOW_S seconds per rep, and arms A, C and D and their default run stay as they were",
+      "do": {
+        "B runs only when --arms names it": "ST-44n6nfrr",
+        "B is a default arm": "ST-44n6nfrr"
+      },
+      "class": "design",
+      "answer": "B runs only when --arms names it",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What default --window does arm B use per phase, which holds the pane runs?",
+      "options": [
+        "150 s: runs at 1.5 s, 60 s and 120 s of the mod's schedule",
+        "60 s",
+        "300 s"
+      ],
+      "recommendation": "150 s: runs at 1.5 s, 60 s and 120 s of the mod's schedule",
+      "do": {
+        "150 s: runs at 1.5 s, 60 s and 120 s of the mod's schedule": "ST-44n6nfrr",
+        "60 s": "ST-44n6nfrr",
+        "300 s": "ST-44n6nfrr"
+      },
+      "class": "design",
+      "answer": "150 s: runs at 1.5 s, 60 s and 120 s of the mod's schedule",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "How does a same-day run of arm B leave the rows of arms A, C and D in the results file?",
+      "options": [
+        "benchmarks.py keeps the session-load rows of the arms the run did not run",
+        "session-load joins SLOTTED in bench_core.py",
+        "record all four arms in one run"
+      ],
+      "recommendation": "benchmarks.py keeps the session-load rows of the arms the run did not run",
+      "reason": "bench_core.py is outside the touches and a rerun of A, C and D would change their rows",
+      "do": {
+        "benchmarks.py keeps the session-load rows of the arms the run did not run": "ST-44n6nfrr",
+        "session-load joins SLOTTED in bench_core.py": "ST-44n6nfrr",
+        "record all four arms in one run": "ST-44n6nfrr"
+      },
+      "class": "design",
+      "answer": "benchmarks.py keeps the session-load rows of the arms the run did not run",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "What do arm B's rows count: the pane's cost per window or per session of NOMINAL_S?",
+      "options": [
+        "The pane's CPU and memory are those of the window, and its starts per minute of the window plus the hooks' per minute of the session",
+        "Scale the pane's figures to a session of NOMINAL_S"
+      ],
+      "recommendation": "The pane's CPU and memory are those of the window, and its starts per minute of the window plus the hooks' per minute of the session",
+      "reason": "the pane runs on a period, so a session of 60 s or 300 s would hold a different number of runs",
+      "do": {
+        "The pane's CPU and memory are those of the window, and its starts per minute of the window plus the hooks' per minute of the session": "ST-44n6nfrr",
+        "Scale the pane's figures to a session of NOMINAL_S": "ST-44n6nfrr"
+      },
+      "class": "design",
+      "answer": "The pane's CPU and memory are those of the window, and its starts per minute of the window plus the hooks' per minute of the session",
+      "by": "agent"
+    },
+    {
+      "id": "g5",
+      "kind": "provisional",
+      "question": "Does each pane run ask --status all, or only when the needs-you row changed as the mod does?",
+      "options": [
+        "Each pane run is kbmon.py --once then --status all",
+        "--status all only when the row changes"
+      ],
+      "recommendation": "Each pane run is kbmon.py --once then --status all",
+      "reason": "the goal names that order, and it measures the mod's heaviest refresh",
+      "do": {
+        "Each pane run is kbmon.py --once then --status all": "ST-44n6nfrr",
+        "--status all only when the row changes": "ST-44n6nfrr"
+      },
+      "class": "design",
+      "answer": "Each pane run is kbmon.py --once then --status all",
+      "by": "agent"
+    }
+  ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-c5ef8aa4",
   "operator": "op-f618a13e"
