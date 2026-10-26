@@ -2,7 +2,7 @@
   "id": "BG-lagjhkzn",
   "kind": "bug",
   "title": "kbtail.py prints a worktree's work/ branch name as the item without redaction, so a secret-shaped branch name reaches every line",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-booflukv",
   "sprint": "SP-7ba3r4ec",
   "priority": "P1",
@@ -23,6 +23,19 @@
   ],
   "notes": "Fresh review of SP-7ba3r4ec, gap 1 (S2, raised to S1 by the operator): mon_sessions.py WORK_BRANCH gives item = the raw branch suffix, kbtail prints it in every line, ended line and the 'not followed' line. live_sessions is a contract other tools read (ST-57o3hmbo): keep its keys.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-6c439ca9",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "b2c7985fd9e6d3e5d06cdd1a4b2aac7c0bc59254",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json, os, random, shutil, string, subprocess, sys, tempfile, time, uuid\nif os.name == \"nt\":\n    print(\"check skipped: a fake claude process needs a POSIX host\"); sys.exit(0)\nR = os.getcwd(); T = os.path.realpath(tempfile.mkdtemp()); C = os.path.join(T, \"cfg\"); S = os.path.join(T, \"coord.sqlite\")\nenv = {k: v for k, v in os.environ.items() if not k.startswith(\"GIT_\")}\nenv.update(CLAUDE_CONFIG_DIR=C, COLUMNS=\"200\", KB_COORD_STORE=S)\ndef sh(*a, cwd=T):\n    return subprocess.run(a, cwd=cwd, env=env, capture_output=True, text=True, timeout=120)\nK = os.path.join(T, \"clone\"); os.makedirs(K)\nsh(\"git\", \"init\", \"-q\", \".\", cwd=K)\nsh(\"git\", \"-c\", \"user.email=a@example.com\", \"-c\", \"user.name=n\", \"commit\", \"-q\", \"--allow-empty\", \"-m\", \"i\", cwd=K)\nshutil.copy(os.path.join(R, \"backlog.json\"), K); os.makedirs(os.path.join(K, \"kb\", \"_self\", \"backlog\"))\nos.makedirs(os.path.join(T, \"bin\")); FAKE = os.path.join(T, \"bin\", \"claude\"); os.symlink(\"/bin/sleep\", FAKE)\nprocs = []\ndef transcript(base, sid, text):\n    pdir = os.path.join(C, \"projects\", \"\".join(c if c.isalnum() else \"-\" for c in base)); os.makedirs(pdir, exist_ok=True)\n    with open(os.path.join(pdir, sid + \".jsonl\"), \"w\") as f:\n        f.write(json.dumps({\"type\": \"user\", \"cwd\": base, \"sessionId\": sid, \"timestamp\": \"2026-10-26T10:00:00Z\",\n                            \"message\": {\"role\": \"user\", \"content\": text}}) + \"\\n\")\ndef session(base, text):\n    sid = str(uuid.uuid4())\n    os.makedirs(os.path.join(base, \"_cache\", \"coord_hook\"), exist_ok=True)\n    with open(os.path.join(base, \"_cache\", \"coord_hook\", sid + \".json\"), \"w\") as f:\n        json.dump({\"items\": [], \"lease_until\": time.time() + 600, \"token\": \"t\"}, f)\n    sh(sys.executable, os.path.join(R, \"_tools\", \"coord.py\"), \"--store\", S, \"claim\", \"session/\" + sid, \"--ttl\", \"600\", \"--holder\", \"h\")\n    transcript(base, sid, text)\n    procs.append(subprocess.Popen([FAKE, \"120\"], cwd=base))\n    return sid, procs[-1].pid\ndef kbtail(*a):\n    return sh(sys.executable, os.path.join(R, \"_tools\", \"kbtail.py\"), \"--root\", K, *a)\nkey = \"gh\" + \"p_\" + \"\".join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(36))\nWT = os.path.join(K, \".claude\", \"worktrees\", \"agent-planted\")\nsh(\"git\", \"worktree\", \"add\", \"-q\", \"-b\", \"work/\" + key, WT, cwd=K)\ntry:\n    session(WT, \"planted-branch-line\")\n    time.sleep(0.5)\n    r = kbtail(\"--once\")\n    problems = []\n    if \"planted-branch-line\" not in r.stdout:\n        problems.append(\"check broken: the planted worker is not followed: %s %s\" % (r.stdout[-200:], r.stderr[-200:]))\n    if key[3:23] in r.stdout or key[3:23] in r.stderr:\n        problems.append(\"a secret-shaped work/ branch name is printed as the item\")\nfinally:\n    for p in procs: p.kill()\nprint(\"\\n\".join(problems) or \"ok\")\nsys.exit(2 if problems and problems[0].startswith(\"check broken\") else (1 if problems else 0))\n"
+        ],
+        "exit": 0,
+        "sha256": "dc51b8c96c2d745d"
+      }
+    ]
+  }
 }
