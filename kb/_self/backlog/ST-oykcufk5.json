@@ -70,9 +70,6 @@
     "kb/_self/token-efficiency.md",
     "kb/_self/tools.md"
   ],
-  "depends_on": [
-    "BG-5w2rka2h"
-  ],
   "gates": [
     {
       "id": "g1",

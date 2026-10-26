@@ -68,9 +68,6 @@
     "kb/_self/tools.md",
     "kb/_self/querylog.md"
   ],
-  "depends_on": [
-    "ST-xvdk32ag"
-  ],
   "gates": [
     {
       "id": "g1",

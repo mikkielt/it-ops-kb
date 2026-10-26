@@ -72,9 +72,6 @@
     "_tools/ql_report.py",
     "_tools/mon_querylog.py"
   ],
-  "depends_on": [
-    "ST-xvdk32ag"
-  ],
   "links": [
     "moved out: SP-hxxn6fnv"
   ],
