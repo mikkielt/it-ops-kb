@@ -780,20 +780,23 @@ def ops_line_leaks(line, k=None):
 
 def leak_problems(store, rels, k=None):
     """The leak scan (redact.scan: kbcommon.leak_hits with what the public root contains allowed) over every value of
-    the store files `rels`, the ids that name runs, entries and findings aside: one problem per hit."""
-    import redact
+    the store files `rels`, the ids that name runs, entries and findings aside: one problem per hit. The scan reads
+    each distinct string once, whatever the number of rows that hold it."""
+    import kbcommon, redact
     out = []
-    values = _values
+    kinds = {}  # string -> the kinds the leak scan flags in it
 
-    for rel in rels:
-        try:
-            objs = load_run(Path(store) / rel)
-        except (OSError, ValueError):
-            continue  # `check` reports a file that is not JSON lines
-        for n, obj in objs:
-            for v in values({key: val for key, val in obj.items() if key not in ("id", "entry", "run", "kb_commit")}):
-                for kind, _ in redact.scan(v, k):
-                    out.append(f"{rel}:{n}: the leak scan flags an identifier ({kind})")
+    with kbcommon.private_patterns_frozen():
+        for rel in rels:
+            try:
+                objs = load_run(Path(store) / rel)
+            except (OSError, ValueError):
+                continue  # `check` reports a file that is not JSON lines
+            for n, obj in objs:
+                for v in _values({key: val for key, val in obj.items() if key not in REREDACT_SKIP}):
+                    if v not in kinds:
+                        kinds[v] = [kind for kind, _ in redact.scan(v, k)]
+                    out += [f"{rel}:{n}: the leak scan flags an identifier ({kind})" for kind in kinds[v]]
     return out
 
 

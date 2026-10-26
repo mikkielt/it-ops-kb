@@ -65,7 +65,7 @@ Layout. The paths below are the only place that says where knowledge sits in thi
 _tools/, the roots in KB_DIR, the kb's own docs in SELF. KB is the public root, the default of the tools that work on
 one root.
 """
-import csv, datetime, io, os, re, sys
+import contextlib, csv, datetime, io, os, re, sys
 
 
 def utf8_stdio():
@@ -781,11 +781,30 @@ def _raw_internal_roots():
     return out
 
 
+_FROZEN = []  # [patterns] while private_patterns_frozen() is active
+
+
+@contextlib.contextmanager
+def private_patterns_frozen():
+    """Within the block, `private_hits` reads the registry and the pointer files once instead of on every text: a
+    scan of many texts that cannot change them (the query log store check) skips the directory stats per text."""
+    if _FROZEN:
+        yield
+        return
+    _FROZEN.append(_private_patterns())
+    try:
+        yield
+    finally:
+        _FROZEN.clear()
+
+
 def _private_patterns():
     """[(kind, compiled pattern)] for the internal roots and pointers the registry holds (served, missing or unsound):
     their source ids by prefix, the hosts and paths of their pointers' urls, and their qualified paths. A registry
     that does not load (RootError: two roots share a prefix) is replaced by the roots' ROOT_FILEs read directly, so
     the scan never passes a name for want of a registry; none of it raises."""
+    if _FROZEN:
+        return _FROZEN[0]
     internal = set()
     try:
         _load()
