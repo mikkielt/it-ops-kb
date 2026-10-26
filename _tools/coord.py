@@ -68,7 +68,7 @@ each id, PID being its own process id, for its `--timeout` and five seconds more
 and ends the leases when it returns: `list --prefix wait/` shows who waits on which item, which `kbmon` reads. A wait that is
 killed leaves its keys until the lease ends; a wait behind `serve` holds none.
 `wait --pid PID` (repeatable, local only: a process id means nothing to a server) also returns, with exit 0 and `timed_out`
-false, as soon as a watched process no longer runs, and names each such pid in `ended`; with every watched process alive and
+false, as soon as a watched process no longer runs (one that has exited and not been reaped no longer runs), and names each such pid in `ended`; with every watched process alive and
 no event it goes on until `--timeout`. A pid that has ended before the wait starts ends it at once.
 
 Two kinds carry a session's plan: `intent` (fields session, item, topic, touch, operator; at least one of item, topic and touch;
@@ -630,8 +630,8 @@ def drop_wait(args, keys):
 
 
 def process_runs(pid):
-    """Whether process PID exists. POSIX asks with signal 0 (a process of another user runs); Windows opens it, as signal 0
-    would end it there."""
+    """Whether process PID runs. POSIX asks with signal 0 (a process of another user runs), and a process that has exited
+    but not been reaped (a zombie, state Z in `ps`) does not run; Windows opens it, as signal 0 would end it there."""
     if os.name == "posix":
         try:
             os.kill(pid, 0)
@@ -639,7 +639,11 @@ def process_runs(pid):
             return False
         except PermissionError:
             return True
-        return True
+        try:
+            state = subprocess.run(["ps", "-o", "stat=", "-p", str(pid)], capture_output=True, text=True, timeout=5).stdout
+        except (OSError, subprocess.SubprocessError):
+            return True
+        return not state.strip().startswith("Z")
     import ctypes
     handle = ctypes.windll.kernel32.OpenProcess(0x00100000, False, pid)  # SYNCHRONIZE
     if not handle:
