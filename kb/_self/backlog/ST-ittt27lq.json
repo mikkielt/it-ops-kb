@@ -2,7 +2,7 @@
   "id": "ST-ittt27lq",
   "kind": "story",
   "title": "backlog.py tidy --path removes one recorded leftover, so a session can remove its own worktree without tidying every other session's",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-eyhift2n",
   "priority": "P2",
   "rank": 0,

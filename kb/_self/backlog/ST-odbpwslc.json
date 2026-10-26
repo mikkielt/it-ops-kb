@@ -2,7 +2,7 @@
   "id": "ST-odbpwslc",
   "kind": "story",
   "title": "Research sprint goal: tidy --path: a session removes its own worktree",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-eyhift2n",
   "goal_research": true,
   "priority": "P1",
