@@ -86,7 +86,9 @@ TOKEN_COUNT = re.compile(
     r"\btokens?[-_ ](?:counts?|usage|budgets?|limits?|costs?|efficiency|estimates?)\b|"
     r"\btokens?[-_ ]overlaps?\b|\boverlaps? of (?:\w+[ ]){0,3}tokens\b|\bwords?[ ]+(?:or|and)[ ]+tokens\b|"
     r"\btokens[ ]+(?:or|and)[ ]+words\b|\bword[-_ ]tokens?\b|"
-    r"\b(?:counts?|number|numbers) of tokens\b|\btokens per (?:second|minute|request|run)\b)", re.I)
+    r"\b(?:counts?|number|numbers) of tokens\b|\btokens per (?:second|minute|request|run)\b|"
+    r"\btokens (?:per|by) (?:(?:correct|right|wrong|failed) )?(?:answers?|questions?|tasks?|calls?|queries|turns?|models?)\b)",
+    re.I)
 # An upper-case constant name with `TOKENS` in the plural as one of its parts, at least one other part before it, not
 # the stem of a file name (`LIMIT_TOKENS.json`); one with a credential word (`API_TOKENS`) or a secret word
 # (`SECRET_TOKENS`, `PRIVATE_TOKENS`, `KEY_TOKENS`) among its parts is no count, so it stays in the text searched.

@@ -38,10 +38,32 @@
   "depends_on": [
     "BG-sqmvvtiy"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which wording does the token-count rule add for tokens per answer: only 'tokens per/by' plus answer, question, task, call, query, turn or model (with correct, right, wrong, failed before answer), or any word after 'tokens per'?",
+      "options": [
+        "Fixed list of unit nouns after tokens per or by",
+        "Any word after tokens per"
+      ],
+      "recommendation": "Fixed list of unit nouns after tokens per or by",
+      "reason": "a bare tokens per user stays classed by its token word, so the rule fails closed",
+      "do": {
+        "Fixed list of unit nouns after tokens per or by": "BG-ohawboem",
+        "Any word after tokens per": "BG-ohawboem"
+      },
+      "class": "secrets",
+      "answer": "Fixed list of unit nouns after tokens per or by",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-v64egscn close"
   ],
-  "notes": "SP-v64egscn close (2026-10-20): seen again. ST-c3d3rijw's gate g1 ('How does the digest show tokens by model') was classed secrets and made blocking; the orchestrator answered it with its recommendation as a layout choice. bl_authority.gate_class still returns secrets for that planted gate today. A duplicate retro draft was folded into this bug instead of filed. Sprint SP-mk6ikval started 2026-10-26; item moved from draft to todo.",
+  "notes": "SP-v64egscn close (2026-10-20): seen again. ST-c3d3rijw's gate g1 ('How does the digest show tokens by model') was classed secrets and made blocking; the orchestrator answered it with its recommendation as a layout choice. bl_authority.gate_class still returns secrets for that planted gate today. A duplicate retro draft was folded into this bug instead of filed. Sprint SP-mk6ikval started 2026-10-26; item moved from draft to todo. Gate g1 (class secrets) answered with its recommendation by the orchestrator on the operator behalf (pre-approved by the operator for the 2026-10-26 run): a fixed list of unit nouns fails closed, so a bare tokens per user keeps the class.",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }
