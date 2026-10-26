@@ -393,6 +393,9 @@ def main(argv=None):
                    + f"{bench_load.WINDOW_S})")
     r.add_argument("--pane-every", type=float, metavar="SECONDS",
                    help="`session-load` arm B: the seconds between two pane runs (default: the kbmon-pane mod's REFRESH_MS)")
+    r.add_argument("--fs-usage", metavar="FILE",
+                   help="`session-load` alone: count the file reads per process class in this capture of `fs_usage -w -f filesys` "
+                   "and start no replay and no model (without it the scenario prints the `sudo fs_usage` command to run by hand)")
     r.add_argument("--kinds", help="the pool kinds `pool` runs, comma separated (default: every kind; the opus-5-5 arm: its sanity subset, "
                    + "+".join(bench_pool.SUBSET_KINDS["opus-5-5"]) + ")")
     r.add_argument("--effort", help="the effort levels of the kb arms of `pool`, comma separated (default: "
@@ -652,8 +655,17 @@ def main(argv=None):
         problems.append("--sample needs 1 or more")
     if any(x is not None and x <= 0 for x in (a.window, a.pane_every)):
         problems.append("--window and --pane-every need more than 0 seconds")
+    capture = None
+    if a.fs_usage:
+        if names != ["session-load"]:
+            problems.append("--fs-usage: name `session-load` alone, as the other scenarios would run")
+        else:
+            try:
+                capture = bench_load.read_capture(a.fs_usage)
+            except (OSError, ValueError) as e:
+                problems.append(f"--fs-usage: {e}")
     if not problems:
-        by_shape = bench_pool.arms_by_shape(arms, shapes)
+        by_shape =bench_pool.arms_by_shape(arms, shapes)
         problems = (bench_pool.unrun_problems("--arm-reps", arm_reps, by_shape)
                     + bench_pool.unrun_problems("--arm-kinds", arm_kinds, by_shape))
     if problems:
@@ -662,7 +674,7 @@ def main(argv=None):
     b = Bench(scratch_dir(), a.reps)
     b.arm = a.arm
     b.arms, b.efforts, b.dry, b.shape, b.seed = arms, efforts, a.dry_run, a.shape, a.seed
-    b.load_arms, b.window, b.pane_every = load_arms, a.window, a.pane_every
+    b.load_arms, b.window, b.pane_every, b.capture = load_arms, a.window, a.pane_every, capture
     b.jobs, b.max_usd, b.sample = a.jobs, a.max_usd, a.sample
     b.kinds, b.arm_reps, b.arm_kinds = kinds, arm_reps, arm_kinds
     out = Path(a.out) if a.out else RESULTS

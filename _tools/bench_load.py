@@ -26,6 +26,11 @@ PANE_MOD = ".claude/skills/kbmon-pane/hooks/register.tsx"  # the mod whose FIRST
 PANE_COMMANDS = (("--once",), ("--status", "all"))  # what the mod's refresh runs, in order, as `python3 _tools/kbmon.py ...`
 PANE_COLUMNS = "80"  # the mod's DEFAULT_COLUMNS: COLUMNS of a pane run
 WINDOW_S = 150  # seconds of a phase of arm B: the pane's first run at FIRST_MS and then one every REFRESH_MS, so three runs
+CAPTURE_CLASSES = ("kb-tools", "git", "lsof", "claude", "fseventsd", "other")  # the classes of an fs_usage capture, by process name
+FS_COMMAND = "sudo fs_usage -w -f filesys > fs_usage.txt"  # what the operator runs by hand; no check or run of the tool calls sudo
+READ_CALLS = ("read", "readv", "pread", "preadv", "RdData")  # descriptor reads and physical reads
+OPEN_CALLS = ("open", "open_extended", "open_dprotected_np", "openat")  # a read when the mode string starts with R
+FS_LINE = re.compile(r"^\s*\d\d:\d\d:\d\d(?:\.\d+)?\s+(\S+)\s*(.*?)\s+\d+\.\d+(?:\s+W)?\s+(\S.*?)\.\d+\s*$")  # call, fields and path, process
 SAMPLE_S = 0.02  # the sampler's pause between two `ps` listings
 SETTLE_S = 30  # seconds a replay waits for the processes it left running in the clone
 SITE = '''# logs each process a Python program starts (the audit events of subprocess.Popen, os.posix_spawn and os.system) to the
@@ -406,6 +411,56 @@ def warm_pane(b, clone):
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
+def capture_class(name):
+    """The class of an fs_usage process name (the part before the thread id): every Python program is `kb-tools`."""
+    n = name.lower()
+    if re.fullmatch(r"python[\d.]*", n):
+        return "kb-tools"
+    return n if n in CAPTURE_CLASSES else "other"
+
+
+def read_capture(path):
+    """Count the file reads of a capture of `fs_usage -w -f filesys` per process class (kb/public/python/macos-fs-usage-output.md).
+    A read is an open whose mode string starts with R, a read, readv, pread or preadv, or an RdData; a write, a WrData and
+    any other call is left out. Returns {"classes": {class: [reads, set of paths]}, "paths": set, "lines": n, "unread": n};
+    raises ValueError when no line of the file has the shape of a wide fs_usage line."""
+    per, every, lines, unread = {c: [0, set()] for c in CAPTURE_CLASSES}, set(), 0, 0
+    with open(path, encoding="utf-8", errors="replace") as f:
+        for ln in f:
+            m = FS_LINE.match(ln)
+            if not m:
+                unread += bool(ln.strip())
+                continue
+            lines += 1
+            call = re.sub(r"(?:_nocancel)?(?:\[[^\]]*\])?$", "", m.group(1))
+            mid = m.group(2)
+            mode = re.search(r"\(([^)\s]*)\)", mid)
+            if not (call in READ_CALLS or (call in OPEN_CALLS and mode and mode.group(1)[:1] == "R")):
+                continue
+            cell = per[capture_class(m.group(3))]
+            cell[0] += 1
+            where = re.sub(r"^(?:(?:[A-Z]=\S+|\([^)\s]*\)|\[[^\]]*\])\s*)+", "", mid)
+            if call == "RdData":
+                where = re.sub(r"^/dev/\S+\s+", "", where)
+            if where:
+                cell[1].add(where.strip())
+                every.add(where.strip())
+    if not lines:
+        raise ValueError(f"{path}: no line of a wide fs_usage capture (a timestamp, the call, the fields, the time and process.thread)")
+    return {"classes": per, "paths": every, "lines": lines, "unread": unread}
+
+
+def capture_rows(b):
+    """The rows of `run session-load --fs-usage FILE`: per process class and for all, `file_reads` and `distinct_paths`."""
+    got = b.capture
+    note = (f"open for reading (mode starts R), read, readv, pread, preadv and RdData lines of a capture of fs_usage -w -f filesys, "
+            f"writes left out; {got['lines']} lines read, {got['unread']} not of that shape; a path is the last 28 bytes fs_usage prints")
+    for cls in (*CAPTURE_CLASSES, "all"):
+        reads, paths = (sum(c[0] for c in got["classes"].values()), got["paths"]) if cls == "all" else got["classes"][cls]
+        b.row("session-load", f"capture {cls}", "capture", "file_reads", reads, 1, note=note if cls == "all" else "")
+        b.row("session-load", f"capture {cls}", "capture", "distinct_paths", len(paths), 1)
+
+
 def s_session_load(b):
     """One session's hook cost on the host, no model: the hook events of a session replayed through this clone's own hook
     commands in a throwaway clone (query log in mode `local` under a scratch plugin data directory, a `claude` that fails
@@ -416,11 +471,16 @@ def s_session_load(b):
     process class: the CPU seconds, peak and mean resident memory in MiB and the starts per minute of a session of
     NOMINAL_S (the pane's own starts per minute of the window); per synchronous hook command its median milliseconds (a
     run of an async hook is `async_ms`: Claude Code does not wait for it). Each rep runs every arm and phase once, the
-    medians of the reps are the rows."""
+    medians of the reps are the rows. With `b.capture` (run --fs-usage FILE) it only writes the file reads of that capture;
+    otherwise it prints the `sudo fs_usage` command the operator runs by hand, which this tool never runs."""
+    if getattr(b, "capture", None):  # --fs-usage FILE: count a capture, start no replay
+        return capture_rows(b)
     if not hasattr(os, "wait4"):
         raise Skip("no os.wait4 (Windows): run it on macOS or Linux")
     need_sh()
-    arms = list(getattr(b, "load_arms", None) or DEFAULT_ARMS)
+    print(f"session-load: for the file reads of a session, run `{FS_COMMAND}` by hand beside it (macOS, needs root; stop it with "
+          "Ctrl-C), then `python3 _tools/benchmarks.py run session-load --fs-usage fs_usage.txt`", flush=True)
+    arms =list(getattr(b, "load_arms", None) or DEFAULT_ARMS)
     clone = b.clone("session-load", "local")
     pin_drift(clone)
     hooks = hook_commands(clone)
