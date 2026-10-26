@@ -2,7 +2,7 @@
   "id": "ST-uteqllfw",
   "kind": "story",
   "title": "Review sprint: Session state and cost: blocked, finished, silent, and spend by topic",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-hxxn6fnv",
   "review": true,
   "priority": "P1",
@@ -24,6 +24,27 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "43b54094d0784615afba7599fbca1ba2fde84963",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "c79692d9811229b3"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "be578c8c58a8591e"
+      }
+    ]
+  }
 }
