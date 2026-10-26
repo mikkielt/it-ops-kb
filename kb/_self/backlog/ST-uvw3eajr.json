@@ -37,10 +37,31 @@
   "depends_on": [
     "BG-24kutvrd"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which public-root paths run querylog.py check at the sync gate?",
+      "options": [
+        "every path under kb/public/ (redact.known reads every text file of the root)",
+        "only articles (.md) and root-level ledgers"
+      ],
+      "recommendation": "every path under kb/public/ (redact.known reads every text file of the root)",
+      "do": {
+        "every path under kb/public/ (redact.known reads every text file of the root)": "ST-uvw3eajr",
+        "only articles (.md) and root-level ledgers": "ST-uvw3eajr"
+      },
+      "class": "push",
+      "answer": "every path under kb/public/ (redact.known reads every text file of the root)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-c7oav2vn close"
   ],
-  "notes": "Premise: check 0 fails on the base: kg_sync.gate_needs gives the querylog check no reason for a change to a public article. The committed store passes its gates today (querylog.py check: problems=0), so the new refusal does not fire on main now; it costs the check's run time per content gate, which BG-24kutvrd cuts first. Sprint SP-vmtfnkim started 2026-10-26: start gate answered approve by operator (pre-approved by the operator for the 2026-10-26 run).",
+  "notes": "Premise: check 0 fails on the base: kg_sync.gate_needs gives the querylog check no reason for a change to a public article. The committed store passes its gates today (querylog.py check: problems=0), so the new refusal does not fire on main now; it costs the check's run time per content gate, which BG-24kutvrd cuts first. Sprint SP-vmtfnkim started 2026-10-26: start gate answered approve by operator (pre-approved by the operator for the 2026-10-26 run). Gate g1 answered with its recommendation (every path under kb/public/ runs the store check at the sync gate) by operator (pre-approved by the operator for the 2026-10-26 run).",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }

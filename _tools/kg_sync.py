@@ -423,6 +423,7 @@ def gate_needs(paths):
     tools = {p for p in ps if p.startswith("_tools/")}
     items = {p for p in kb if p.startswith(kbcommon.repo_rel(kbcommon.SELF) + "/backlog/")}
     store = {p for p in kb if p.startswith("kb/_querylog/")}
+    public = {p for p in kb if p.startswith(kbcommon.repo_rel(kbcommon.PUBLIC) + "/")}  # redact.known reads every text file of it
     content = kb - items - store
     arts = artifact_paths()
 
@@ -438,7 +439,7 @@ def gate_needs(paths):
                              "an article or its expansions"),
             "selfdoc": why(ps - content - items - store, "a file kb/_self describes"),
             "backlog": why(items | ({"_tools/backlog.py"} & ps) | gone, "a backlog item or a deleted or renamed file"),
-            "querylog": why(store, "the query log store"),
+            "querylog": why(store | public, "the query log store or the public root, which the store gates read"),
             "dropped": why(ps & {"_tools/test_ids_dropped.txt", "_tools/perfcheck.py"}, "the dropped test ids"),
             "selectors": why({p for p in tools if TEST_FILE.fullmatch(p)}, "a test file"),  # a deleted or renamed one too
             "pool": why(pool, "a pool input")}
@@ -707,7 +708,7 @@ def gate(r, up, host, fix_check=False, since=None):
     article or its expansions, selfdoc.py stale --since UP for a file kb/_self describes (a `Self-Reviewed:` trailer
     clears a doc), backlog.py check for backlog items or a deleted or renamed tracked file, backlog.py selectors for a changed, deleted or renamed
     _tools/test_*.py file (selector_gate: refused for a done item whose check selects no test), querylog.py check for the
-    query log store, benchmarks.py pool check for a bench_pool.csv, bench_scenarios.csv or _gaps.md (pool_gate: refused
+    query log store or a file of the public root (redact.known reads it), benchmarks.py pool check for a bench_pool.csv, bench_scenarios.csv or _gaps.md (pool_gate: refused
     only for a defect line the base lacks, the pool's old defects being printed), rag.py eval --file on the
     lookup_heldout.csv beside a changed lookup_eval.csv, lookup_heldout.csv or doc2query/expansions.csv, or of the root of a changed article (heldout_checks: refused for a REWORD line), and tests.py
     --changed UP (KB_TESTS_FAST=1: nothing for backlog items and the query log store, the suite without the git
