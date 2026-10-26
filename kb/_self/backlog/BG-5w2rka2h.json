@@ -2,7 +2,7 @@
   "id": "BG-5w2rka2h",
   "kind": "bug",
   "title": "kbtail.py drops a live claude process that has no session id without saying so",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-booflukv",
   "sprint": "SP-hxxn6fnv",
   "priority": "P2",

@@ -2,7 +2,7 @@
   "id": "BG-6epmljwc",
   "kind": "bug",
   "title": "mon_sessions.live_sessions starts a git process per checkout and three worktree listings on every call, against its docstring",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-booflukv",
   "sprint": "SP-hxxn6fnv",
   "priority": "P3",

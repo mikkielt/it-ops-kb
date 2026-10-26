@@ -2,7 +2,7 @@
   "id": "ST-oykcufk5",
   "kind": "story",
   "title": "A session waiting on a permission prompt or a question shows as blocked within seconds, apart from a silent one",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-hxxn6fnv",
   "priority": "P2",

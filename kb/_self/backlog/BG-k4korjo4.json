@@ -2,7 +2,7 @@
   "id": "BG-k4korjo4",
   "kind": "bug",
   "title": "dispatch accepts a spend cap that prints as 0 USD",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-hxxn6fnv",
   "priority": "P3",
   "rank": 0,
