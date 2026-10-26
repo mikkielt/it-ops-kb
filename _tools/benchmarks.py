@@ -325,6 +325,7 @@ from pathlib import Path
 
 TOOLS = Path(__file__).resolve().parent
 sys.path.insert(0, str(TOOLS))
+import bench_load  # noqa: E402
 import bench_multi  # noqa: E402
 import bench_pool  # noqa: E402
 import bench_repro  # noqa: E402
@@ -367,6 +368,7 @@ SCENARIOS = {  # name: (report section, function)
     "ingest": ("/kb-ingest on a sample repository", s_ingest),
     "host-roots": ("A host plugin with team roots", s_host_roots),
     "kbpy": ("Hook launcher start-up", s_kbpy),
+    "session-load": ("What one session costs the host", bench_load.s_session_load),
     "new-model": ("A new model against the one it replaces", s_new_model),
     "navigation": ("Finding the code", s_navigation),
     "pool": ("A question pool over the kb, router, hook and web arms", bench_pool.s_pool),
@@ -384,7 +386,7 @@ def main(argv=None):
     r.add_argument("--arm", default="current", help="the arm of the navigation scenario's rows (default: current)")
     r.add_argument("--out")
     r.add_argument("--arms", help="the arms of `pool`, comma separated (default: " + ",".join(bench_pool.DEFAULT_ARMS) + "; also "
-                   + ",".join(bench_pool.OPT_IN) + ", named here only)")
+                   + ",".join(bench_pool.OPT_IN) + ", named here only), and of `session-load` (default: " + ",".join(bench_load.ARMS) + ")")
     r.add_argument("--kinds", help="the pool kinds `pool` runs, comma separated (default: every kind; the opus-5-5 arm: its sanity subset, "
                    + "+".join(bench_pool.SUBSET_KINDS["opus-5-5"]) + ")")
     r.add_argument("--effort", help="the effort levels of the kb arms of `pool`, comma separated (default: "
@@ -620,12 +622,21 @@ def main(argv=None):
         print("--jobs needs 1 or more, --max-usd more than 0", file=sys.stderr)
         return 2
     arms, efforts = (x.split(",") if x else None for x in (a.arms, a.effort))
+    load_arms, arm_problems = None, []
+    if arms and "session-load" in names:  # its arms (A, C, D) are no pool arms: each scenario takes its own
+        load_arms = [x for x in arms if x in bench_load.ARMS]
+        arms = [x for x in arms if x not in bench_load.ARMS] or None
+        if arms and "pool" not in names:
+            arm_problems.append(f"--arms: unknown {', '.join(arms)} (session-load: {', '.join(bench_load.ARMS)})")
+            arms = None
+        elif "pool" in names and not arms:
+            arm_problems.append("--arms names only session-load arms, so `pool` would run its default arms: name its arms too")
     shapes = bench_pool.shapes_of(a.shape)
     kinds = a.kinds.split(",") if a.kinds else None
     arm_reps, bad_reps = bench_pool.parse_arm_map(a.arm_reps, "--arm-reps", bench_pool.reps_value)
     arm_kinds, bad_kinds = bench_pool.parse_arm_map(a.arm_kinds, "--arm-kinds", bench_pool.kinds_value)
     problems = [f"--shape: unknown {s} (one of {', '.join(bench_pool.SHAPES)}, or both, comma separated)"
-                for s in shapes if s not in bench_pool.SHAPES] + bad_reps + bad_kinds
+                for s in shapes if s not in bench_pool.SHAPES] + bad_reps + bad_kinds + arm_problems
     for flag, got, known in (("--arms", arms, bench_pool.ARMS if "fresh" in shapes else bench_pool.SESSION_ARMS),
                              ("--effort", efforts, bench_pool.EFFORTS), ("--kinds", kinds, bench_pool.KINDS)):
         bad = [x for x in got or [] if x not in known]
@@ -643,6 +654,7 @@ def main(argv=None):
     b = Bench(scratch_dir(), a.reps)
     b.arm = a.arm
     b.arms, b.efforts, b.dry, b.shape, b.seed = arms, efforts, a.dry_run, a.shape, a.seed
+    b.load_arms = load_arms
     b.jobs, b.max_usd, b.sample = a.jobs, a.max_usd, a.sample
     b.kinds, b.arm_reps, b.arm_kinds = kinds, arm_reps, arm_kinds
     out = Path(a.out) if a.out else RESULTS
