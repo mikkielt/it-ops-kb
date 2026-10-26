@@ -2,7 +2,7 @@
   "id": "ST-7nuaruwn",
   "kind": "story",
   "title": "A no-model session-load benchmark replays one session's hooks and records each process class's CPU, memory and starts",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-3qowbedb",
   "priority": "P2",

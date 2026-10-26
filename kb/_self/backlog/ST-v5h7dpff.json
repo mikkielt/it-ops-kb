@@ -2,7 +2,7 @@
   "id": "ST-v5h7dpff",
   "kind": "story",
   "title": "session-load counts file reads per process class from an fs_usage capture the operator makes",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-3qowbedb",
   "priority": "P2",

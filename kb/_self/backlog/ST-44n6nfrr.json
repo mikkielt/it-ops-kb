@@ -2,7 +2,7 @@
   "id": "ST-44n6nfrr",
   "kind": "story",
   "title": "session-load's arm B adds the kbmon pane's own commands on the pane's schedule, so the monitor's share is measured",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-3qowbedb",
   "priority": "P2",
