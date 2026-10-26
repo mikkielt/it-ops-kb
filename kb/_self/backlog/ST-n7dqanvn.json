@@ -32,9 +32,6 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
-  "depends_on": [
-    "ST-bngriclp"
-  ],
   "gates": [
     {
       "id": "g1",
