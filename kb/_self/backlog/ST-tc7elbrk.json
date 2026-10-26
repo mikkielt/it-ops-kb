@@ -4,6 +4,7 @@
   "title": "An agent of any vendor looks facts up through AGENTS.md and the kb MCP server alone, with no Claude Code feature",
   "status": "draft",
   "parent": "EP-5mp6pwnn",
+  "sprint": "SP-acysfnxr",
   "priority": "P2",
   "rank": 0,
   "goal": "A generic MCP client that knows only AGENTS.md and the kb MCP server initializes at the current protocol version, lists the tools and gets a pack with a verdict, fact lines and url footer from kb_pack; nothing the lookup needs lives only in a Claude Code hook, skill or setting; plugin.md says how another vendor's agent registers the server; the check drives kb_mcp.py over stdio as such a client.",

@@ -4,6 +4,7 @@
   "title": "Code questions answered from the map are measured against reading files, per right answer",
   "status": "draft",
   "parent": "EP-rpzrctui",
+  "sprint": "SP-acysfnxr",
   "priority": "P2",
   "rank": 0,
   "goal": "The lookup benchmark has a pool of code questions about this repository (where a symbol is defined, who calls it, which docs describe a file), run with the kb tools including the code-map call against tools=files, recorded under a spend cap the operator's gate names; the report and token-efficiency.md state tokens and USD per right answer for both arms with their spread.",
@@ -49,7 +50,11 @@
         "50 USD": "ST-jvthzus2",
         "150 USD": "ST-jvthzus2"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "150 USD",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "filed_in": "clone-0ea70e5c"

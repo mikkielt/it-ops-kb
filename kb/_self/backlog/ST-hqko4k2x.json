@@ -1,0 +1,34 @@
+{
+  "id": "ST-hqko4k2x",
+  "kind": "story",
+  "title": "Planning reads the code map: referrers lists a symbol's code references from the pinned map apart from its text mentions, and check's docs warning comes from the change-impact call",
+  "status": "draft",
+  "parent": "EP-rpzrctui",
+  "sprint": "SP-acysfnxr",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "backlog.py referrers TERM reads the code map of this clone's HEAD when one is current, else builds it, and prints each file that references a symbol in code (kind=ref, from the map's references) apart from each file that only names it in text (kind=text, from the scan it runs now), with --item still marking files outside the item's scope; check's docs warning for an item's code touches takes the docs from the same docs map the change-impact call reads; the planning skills say to read referrers' kind=ref lines for touches.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess as s,sys;p=s.run([sys.executable,'_tools/backlog.py','referrers','referrers_of'],capture_output=True,text=True,timeout=600);print(p.stdout,p.stderr[-300:]);sys.exit(0 if p.returncode==0 and any('_tools/bl_items.py' in l and 'kind=ref' in l for l in p.stdout.splitlines()) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/bl_plan.py",
+    "_tools/bl_cli.py",
+    "skills/backlog/SKILL.md",
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-q4fbmomg",
+    "ST-zhpor7fy"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
