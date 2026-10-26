@@ -1,0 +1,21 @@
+{
+  "id": "BG-kz7v6ise",
+  "kind": "bug",
+  "title": "census leak_problems passes a new source row whose url carries user:password@, because kbpublic.file_hits strips urls and only an email is checked in the raw url",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "census.leak_problems reports a new_rows url that carries a user:password@ part, naming the field and never the value",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import census;u=\"https://deploy:\"+\"Hunter2\"*2+\"@example.org/a\";r=census.leak_problems({\"outcomes\":[],\"gaps\":[],\"conflicts\":[],\"new_rows\":[{\"url\":u,\"title\":\"t\",\"publisher\":\"p\",\"licence\":\"l\"}]});print(\"problems:\",r);sys.exit(0 if r else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/census.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
