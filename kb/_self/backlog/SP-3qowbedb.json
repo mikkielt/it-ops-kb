@@ -1,0 +1,22 @@
+{
+  "id": "SP-3qowbedb",
+  "kind": "sprint",
+  "title": "One session's host cost, measured without a model",
+  "status": "planned",
+  "goal": "python3 _tools/benchmarks.py run session-load records, with no model, the CPU, memory and process starts of one session's hooks per process class with the project hooks all on, coord and query-log hooks off, and all off; arm B adds the kbmon pane's own commands on its schedule; and the scenario counts file reads per process class from an fs_usage capture the operator makes",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
