@@ -2,7 +2,7 @@
   "id": "ST-bjpqsxyo",
   "kind": "story",
   "title": "Review sprint: Live agent view, second slice: follow every live session, and a sturdier follow loop",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-7ba3r4ec",
   "review": true,
   "priority": "P1",
@@ -24,6 +24,27 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-6c439ca9",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "3965583fde18075ec6ed65244b365879b7d8acb3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "d313d9b8768db132"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "abcb5817cae990d1"
+      }
+    ]
+  }
 }
