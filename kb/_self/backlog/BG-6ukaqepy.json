@@ -2,7 +2,7 @@
   "id": "BG-6ukaqepy",
   "kind": "bug",
   "title": "backlog.py begin takes a story that next marks no worker, and would claim it and start a paid worker",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-42b2cjm3",
   "priority": "P3",
   "rank": 0,
@@ -47,5 +47,7 @@
     "parked: SP-vxdacfpl review"
   ],
   "notes": "Sprint started 2026-10-26 on the operator's approval for the unattended run.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
