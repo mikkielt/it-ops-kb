@@ -13,7 +13,7 @@ The role is KB_ROLE, `interactive` when unset.
 
 An email is never the id: it is mapped to an alias in `_private/operators.json` (uncommitted, gitignored; in the main
 worktree of the clone, so its linked worktrees share it), a JSON object of lowercase email to alias. The first use of an email writes `op-` and 8 random hex digits; the operator may
-edit the alias, and a tool takes whatever the file holds. A plain hash of an address could be reversed by guessing
+edit the alias, but only to an id (the KB_OPERATOR rule: letters, digits, . _ -, at most 64): any other alias warns and gives no id. A plain hash of an address could be reversed by guessing
 it, a random alias cannot. The email itself appears only in `_private/operators.json` and in the output of
 `--show-email`; `operator()` and the default output carry the alias only.
 
@@ -96,10 +96,15 @@ def resolve():
     for source, email in (("auth-status", _auth_email()), ("git", _git_email())):
         if email:
             try:
-                return alias_of(email), source, role, email
+                alias = alias_of(email)
             except OSError as e:
                 print(f"kbwho: cannot write {aliases_path()}: {e}", file=sys.stderr)
                 return None, source, role, email
+            if not ID_RX.fullmatch(alias):  # the alias is not echoed: an edited one may be address-shaped
+                print(f"kbwho: the alias in {aliases_path()} is not an id (letters, digits, . _ -, at most 64): no id",
+                      file=sys.stderr)
+                return None, source, role, email
+            return alias, source, role, email
     return None, "none", role, ""
 
 
