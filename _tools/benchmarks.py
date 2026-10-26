@@ -386,7 +386,13 @@ def main(argv=None):
     r.add_argument("--arm", default="current", help="the arm of the navigation scenario's rows (default: current)")
     r.add_argument("--out")
     r.add_argument("--arms", help="the arms of `pool`, comma separated (default: " + ",".join(bench_pool.DEFAULT_ARMS) + "; also "
-                   + ",".join(bench_pool.OPT_IN) + ", named here only), and of `session-load` (default: " + ",".join(bench_load.ARMS) + ")")
+                   + ",".join(bench_pool.OPT_IN) + ", named here only), and of `session-load` (default: " + ",".join(bench_load.DEFAULT_ARMS)
+                   + "; also B, named here only)")
+    r.add_argument("--window", type=float, metavar="SECONDS",
+                   help="`session-load` arm B: the seconds of each phase the kbmon pane's commands run over (default: "
+                   + f"{bench_load.WINDOW_S})")
+    r.add_argument("--pane-every", type=float, metavar="SECONDS",
+                   help="`session-load` arm B: the seconds between two pane runs (default: the kbmon-pane mod's REFRESH_MS)")
     r.add_argument("--kinds", help="the pool kinds `pool` runs, comma separated (default: every kind; the opus-5-5 arm: its sanity subset, "
                    + "+".join(bench_pool.SUBSET_KINDS["opus-5-5"]) + ")")
     r.add_argument("--effort", help="the effort levels of the kb arms of `pool`, comma separated (default: "
@@ -644,6 +650,8 @@ def main(argv=None):
             problems.append(f"{flag}: unknown {', '.join(bad)} (one of {', '.join(known)})")
     if a.sample is not None and a.sample < 1:
         problems.append("--sample needs 1 or more")
+    if any(x is not None and x <= 0 for x in (a.window, a.pane_every)):
+        problems.append("--window and --pane-every need more than 0 seconds")
     if not problems:
         by_shape = bench_pool.arms_by_shape(arms, shapes)
         problems = (bench_pool.unrun_problems("--arm-reps", arm_reps, by_shape)
@@ -654,7 +662,7 @@ def main(argv=None):
     b = Bench(scratch_dir(), a.reps)
     b.arm = a.arm
     b.arms, b.efforts, b.dry, b.shape, b.seed = arms, efforts, a.dry_run, a.shape, a.seed
-    b.load_arms = load_arms
+    b.load_arms, b.window, b.pane_every = load_arms, a.window, a.pane_every
     b.jobs, b.max_usd, b.sample = a.jobs, a.max_usd, a.sample
     b.kinds, b.arm_reps, b.arm_kinds = kinds, arm_reps, arm_kinds
     out = Path(a.out) if a.out else RESULTS
@@ -682,7 +690,12 @@ def main(argv=None):
             print(f"{n}: {len(mine)} rows, ${SPEND['usd']:.2f} in {SPEND['runs']} paid runs, "
                   f"{time.time() - t:.0f} s", flush=True)
             SPEND.update(usd=0.0, input=0, out=0, runs=0)
-            merged = merge_rows(read_rows(out), mine)
+            old = read_rows(out)
+            if n == "session-load":  # a same-day run of some arms keeps the rows of the arms it did not run
+                ran, records = {r["arm"] for r in mine if r["arm"]}, {r["record"] for r in mine}
+                mine = [r for r in old if r["scenario"] == n and r["record"] in records and r["arm"]
+                        and r["arm"] not in ran] + mine
+            merged = merge_rows(old, mine)
             if n == "pool":  # a same-day run of arm labels takes their runs out of an earlier spend row that counted them
                 for record in dict.fromkeys(r["record"] for r in mine):
                     merged, lines = bench_pool.settle_spend(merged, record)
