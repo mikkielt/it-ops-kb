@@ -57,6 +57,38 @@ def clone_home():
     return HOME
 
 
+def common_git_dir(top):
+    """The git directory the checkout at TOP shares with its linked worktrees: its `.git` directory, or, for a `.git`
+    file naming `<common dir>/worktrees/<name>`, that common directory; None when TOP holds no `.git`."""
+    git = Path(top) / ".git"
+    if git.is_dir():
+        return git
+    try:
+        text = git.read_text(encoding="utf-8").strip()
+    except OSError:
+        return None
+    if not text.startswith("gitdir:"):
+        return None
+    gitdir = Path(os.path.normpath(Path(top) / text[len("gitdir:"):].strip()))
+    return gitdir.parent.parent if gitdir.parent.name == "worktrees" else gitdir
+
+
+def cwd_in_clone():
+    """True when the working directory lies in a checkout of the clone that owns this copy's spool: the clone's main
+    worktree or one of its linked worktrees. A probe started from another directory (a temporary clone's tools run
+    from a scratch directory) is not."""
+    owner = common_git_dir(clone_home())
+    try:
+        here = Path.cwd().resolve()
+    except OSError:
+        return False
+    for top in (here, *here.parents):
+        found = common_git_dir(top)
+        if found is not None:
+            return owner is not None and same_dir(found, owner)
+    return False
+
+
 def launch_places():
     """(entry script, working directory) a detached distill starts with: the clone's main checkout, never a linked
     worktree HOME is. A worker's session-end distill outlives its session and waits for the lock, so a working
