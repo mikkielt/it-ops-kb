@@ -2,7 +2,7 @@
   "id": "BG-hxp3f73q",
   "kind": "bug",
   "title": "A revalidation window whose passage is in neither the previous nor the current text still fails section_unchanged on an unrelated added H2",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vlfcgmbu",
   "priority": "P3",
   "rank": 0,
@@ -23,5 +23,7 @@
   "links": [
     "parked: SP-3g3egfll review"
   ],
-  "notes": "BG-j5lfhsyf gate g1 was confirmed at the review (its code is correct for a passage in the current text); the reviewer proposed option 2 (drop the parent section when the window may start at a heading line), which the worker rejected because an intro edit would pass: the repro asks for both."
+  "notes": "BG-j5lfhsyf gate g1 was confirmed at the review (its code is correct for a passage in the current text); the reviewer proposed option 2 (drop the parent section when the window may start at a heading line), which the worker rejected because an intro edit would pass: the repro asks for both.",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
