@@ -34,6 +34,9 @@ asks and, unasked, for a source past its freshness lifetime):
              Left out, it asks only the cited sources past their freshness lifetime (provider.lifetimes), whose
              footer line carries a `[stale: ...]` stamp first; `false` never asks, as does KB_NO_REVALIDATE=1.
              Always loaded (`anthropic/alwaysLoad`): the first lookup needs no tool-search round trip.
+  kb_task_context  the pack for a task's text, like `rag.py task`: its title and body (plain text or Markdown) become up to 6
+             questions (the title, then each sentence or list item), one pack part each with its verdict, fact lines and `kb
+             has:` / `kb lacks:` lines, the parts sharing `budget` tokens; offline, never asks a source's page
   kb_search  line search on the pack index, like `rag.py search -u`: hits with path:line, heading and text, one footer of the cited
              source ids and their urls, and rag.py's notes ("not found anywhere", "weak match")
   kb_facts   fact lines under a path prefix, optionally only some tag kinds, like `rag.py facts`
@@ -173,6 +176,19 @@ TOOL_LIST = [
          "additionalProperties": False},
      "annotations": {**READ_ONLY, "openWorldHint": True},  # `revalidate` asks the cited sources' hosts
      "_meta": {"anthropic/alwaysLoad": True}},
+    {"name": "kb_task_context", "title": "Evidence pack for a task",
+     "description": DOCS + "Give a task's text (its title, then its body, plain text or Markdown): returns the evidence "
+                    "pack for the questions it raises, a verdict, the cited fact lines (path:line, tag) and the "
+                    "`kb has:` / `kb lacks:` lines per question, within the token budget. Call it when starting work on a task.",
+     "inputSchema": {"type": "object", "properties": {
+         "text": {"type": "string", "minLength": 1, "description": "the task's title on the first line, then its body"},
+         "budget": {"type": "integer", "minimum": 200, "maximum": 6000, "default": 1200,
+                    "description": "tokens for all the questions together"},
+         "domain": {"type": "string", "description": "one domain, e.g. 'auth'"},
+         "root": ROOT,
+         "response_format": {**FORMAT, "default": "detailed"}},
+         "required": ["text"], "additionalProperties": False},
+     "annotations": {"title": "Evidence pack for a task", **READ_ONLY}},
     {"name": "kb_facts", "title": "Fact lines by prefix and tag",
      "description": DOCS + "Every fact line under a path prefix (a domain like 'agents', a topic like 'auth/kerberos', or "
                     "a file), optionally only facts carrying some tag kinds (e.g. UNK, COMMUNITY).",
@@ -366,6 +382,20 @@ def kb_pack(args):
         text = kbcommon.with_missing_note(text)
     note = behind_note()
     return f"{note}\n\n{text}" if note else text
+
+
+def kb_task_context(args):
+    text = str(args.get("text") or "")
+    if not text.strip():
+        raise ToolError("text is empty")
+    budget = min(max(int(args.get("budget") or 1200), 200), 6000)
+    with guarded():
+        res = rag.task_pack(text, budget, domain_of(args), fmt_of(args, "detailed"), root_of(args))
+        if res is None:
+            raise ToolError("the text holds no question")
+        out = kbcommon.with_missing_note(res["text"])
+    note = behind_note()
+    return f"{note}\n\n{out}" if note else out
 
 
 def behind_note():
@@ -730,7 +760,7 @@ def kb_feedback(args):
     return f"recorded {fb}"
 
 
-HANDLERS = {"kb_pack": kb_pack, "kb_facts": kb_facts, "kb_audit": kb_audit, "kb_search": kb_search, "kb_show": kb_show, "kb_source": kb_source, "kb_status": kb_status,
+HANDLERS = {"kb_pack": kb_pack, "kb_task_context": kb_task_context, "kb_facts": kb_facts, "kb_audit": kb_audit, "kb_search": kb_search, "kb_show": kb_show, "kb_source": kb_source, "kb_status": kb_status,
             "kb_topics_for": kb_topics_for}
 
 
