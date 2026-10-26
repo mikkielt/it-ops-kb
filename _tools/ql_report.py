@@ -11,7 +11,7 @@ from ql_deliver import BRANCH, CONFLICT_BRANCH_PREFIX, REMOTE, auto_log, forge_l
 from ql_learn import FAILED, feedback_reports, host_fetches, is_miss
 from ql_store import (DAY, ENTRY_KEYS, FETCH_KEYS, FINDING_KINDS, FINDING_STATES, JUDGED, ROW_SURFACES, RULES_ROOT,
                       RUN_ID, SURFACES, USAGE, add_models, finding_id, finding_states, findings_files, load_run, records,
-                      resolve_id, run_files, run_ids, store_entries, usage_counts, usage_files, usage_records, work_files,
+                      resolve_id, run_files, run_ids, served_models, store_entries, usage_counts, usage_files, usage_records, work_files,
                       work_line_problems, ops_files, ops_line_problems)
 from ql_capture import FEEDBACK_ISSUES, FEEDBACK_OUTCOMES, FEEDBACK_TOOL_ISSUES, VERDICTS
 
@@ -825,7 +825,7 @@ def last_pushed(qdir=None, run=None):
 
 
 def usage_today(qdir=None, today=None):
-    """{rows, models, by_session, by_sprint} of the usage the query log holds for the UTC day `today` (default: now): the spool's `usage`
+    """{rows, models, by_session, by_sprint, by_topic} of the usage the query log holds for the UTC day `today` (default: now): the spool's `usage`
     rows stamped that day (a prompt's last row of the current reader, as distill reads it) and the usage sidecars of
     the local store's runs of that day for the prompts no such row stands for. A sidecar line stands for a spool
     prompt when its entry id is the id of one of that prompt's rows (an entry takes its first row's id), else when
@@ -835,7 +835,9 @@ def usage_today(qdir=None, today=None):
     leave: the rows' prompts and replies are not read. `by_session` is {session id: models} and `by_sprint` {sprint id:
     models}, the same counts split by the spool session that wrote the prompt and by the sprint of the item its work
     window names (`work_windows`, `sprint_finder`; None for a prompt outside a window or in the windows of several
-    sprints); a prompt only a sidecar line stands for has no session in the spool, so its key is None in both."""
+    sprints); a prompt only a sidecar line stands for has no session in the spool, so its key is None in both.
+    `by_topic` is {kb article: models}: each prompt's counts shared evenly over the articles its record names
+    (`topics`, `served_models`); a prompt that names none is in no group."""
     import ql_distill
     qdir = Path(qdir or places()[0])
     today = today or datetime.datetime.now(datetime.timezone.utc).date()
@@ -854,27 +856,32 @@ def usage_today(qdir=None, today=None):
                 session_of[r["prompt_id"]] = r.get("session_id") if isinstance(r.get("session_id"), str) else None
                 sprints = {sprint_of(i) for i in inside.get(r["prompt_id"], ())}
                 sprint_at[r["prompt_id"]] = next(iter(sprints)) if len(sprints) == 1 else None
-    models, rows, by_session, by_sprint = {}, 0, {}, {}
+    models, rows, by_session, by_sprint, by_topic = {}, 0, {}, {}, {}
     spool = {}  # {prompt id: counts} of the spool's prompts, which no sidecar line has matched yet
     for pid, rs in by_prompt.items():
-        counts = usage_counts(ql_distill.usage_of(rs))
+        usage = ql_distill.usage_of(rs)
+        counts = usage_counts(usage)
         if counts:
             rows += 1
             spool[pid] = counts
             for into in (models, by_session.setdefault(session_of[pid], {}), by_sprint.setdefault(sprint_at[pid], {})):
                 add_usage_models(into, counts)
+            add_topic_models(by_topic, usage)
     local = qdir / "store"
-    lines = [(u.get("id"), usage_counts({k: v for k, v in u.items() if k != "id"}))
-             for p, objs in records([f for f in usage_files(local) if run_day(f.stem) == today]) for _, u in objs]
+    lines = []
+    for p, objs in records([f for f in usage_files(local) if run_day(f.stem) == today]):
+        for _, u in objs:
+            usage = {k: v for k, v in u.items() if k != "id"}
+            lines.append((u.get("id"), usage_counts(usage), usage))
     rest = []
-    for eid, counts in lines:
+    for eid, counts, usage in lines:
         if counts:
             pid = next((q for q in spool if eid in row_ids.get(q, ())), None)
             if pid is None:
-                rest.append(counts)
+                rest.append((counts, usage))
             else:
                 del spool[pid]
-    for counts in rest:
+    for counts, usage in rest:
         pid = next((q for q, c in spool.items() if c == counts), None)
         if pid is not None:
             del spool[pid]
@@ -882,7 +889,14 @@ def usage_today(qdir=None, today=None):
             rows += 1
             for into in (models, by_session.setdefault(None, {}), by_sprint.setdefault(None, {})):
                 add_usage_models(into, counts)
-    return {"rows": rows, "models": models, "by_session": by_session, "by_sprint": by_sprint}
+            add_topic_models(by_topic, usage)
+    return {"rows": rows, "models": models, "by_session": by_session, "by_sprint": by_sprint, "by_topic": by_topic}
+
+
+def add_topic_models(by_topic, usage):
+    """The counts of one usage record shared over its topics (`served_models`) added into `by_topic`, {topic: models}."""
+    for topic, models in served_models(usage, "topics").items():
+        add_models(by_topic.setdefault(topic, {}), models)
 
 
 def add_usage_models(into, counts):

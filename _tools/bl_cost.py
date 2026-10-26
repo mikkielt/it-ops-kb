@@ -866,7 +866,67 @@ def cost_open_text(o, view):
     return out + ["  " + x for x in cost_split_text(o["split"], view)]
 
 
+# `cost --by topic|module`: the usage sidecars of the query log's store (not the work sidecars above) keep, per lookup
+# or work prompt, the kb articles its kb_show and kb_facts calls named (`topics`) and the repository files its Read, Edit
+# and Grep calls took (`files`); the prompt's counts are shared evenly over the ones it named (`ql_store.served_models`),
+# summed per name, priced as above and ranked. The costliest few are the next research (kb article) or mapping
+# (repository file) targets.
+BY_KINDS = {"topic": ("topics", "kb article", "research"), "module": ("files", "repository file", "mapping")}
+NEXT_TARGETS = 3
+TOP_DEFAULT = 10
+
+
+def served_ranking(store, key):
+    """([{name, usd, tokens, prompts}], [model with no price]) of the usage lines of `store`'s sidecars that name
+    something under `key` (`topics` or `files`), costliest first, then most tokens, then by name. `prompts` counts the
+    lines that named it; the figures of all names add up to those lines'."""
+    import ql_store
+    shared = {}
+    for u in ql_store.usage_records(store).values():
+        for name, models in ql_store.served_models({k: v for k, v in u.items() if k != "id"}, key).items():
+            one = shared.setdefault(name, {"models": {}, "prompts": 0})
+            ql_store.add_models(one["models"], models)
+            one["prompts"] += 1
+    rows, unpriced = [], set()
+    for name, one in shared.items():
+        usd, missing = price_usd(one["models"])
+        unpriced.update(missing)
+        rows.append({"name": name, "usd": round(usd, 6), "tokens": round(cost_tokens(one["models"])),
+                     "prompts": one["prompts"]})
+    rows.sort(key=lambda r: (-r["usd"], -r["tokens"], r["name"]))
+    return rows, sorted(unpriced)
+
+
+def cmd_cost_by(bl, a):
+    if a.id or a.runs or a.rework or a.research:
+        raise Rejected("cost --by ranks the whole query log's store: it takes no ID, no --runs, no --rework and no --research")
+    import ql_base
+    key, noun, verb = BY_KINDS[a.by]
+    rows, unpriced = served_ranking(ql_base.STORE, key)
+    top = rows if a.top == 0 else rows[:a.top]
+    nxt = rows[:NEXT_TARGETS]
+    if a.format == "json":
+        say(json.dumps({"by": a.by, "ranking": top, "total": len(rows), "next": [r["name"] for r in nxt],
+                        "unpriced": unpriced}, sort_keys=True, indent=2))
+        return 0
+    say(f"cost by {a.by}: {len(rows)} {noun}(s) in the query log's usage sidecars; each prompt's cost is shared evenly "
+        f"over the {noun}s it named")
+    for i, r in enumerate(top, 1):
+        say(f"  {i}. {r['name']}  ${r['usd']:.4f}  {r['tokens']} tokens  {r['prompts']} prompt(s)")
+    if len(top) < len(rows):
+        say(f"  ... {len(rows) - len(top)} more (--top 0 shows all)")
+    if unpriced:
+        say(f"no price for {', '.join(unpriced)}: their tokens add nothing to the dollars")
+    if not rows:
+        say(f"no usage line names a {noun} yet")
+    for r in nxt:
+        say(f"next {verb} target: {r['name']}  (${r['usd']:.4f}, {r['tokens']} tokens)")
+    return 0
+
+
 def cmd_cost(bl, a):
+    if a.by:
+        return cmd_cost_by(bl, a)
     if a.research:
         if a.id or a.runs or a.rework:
             raise Rejected("cost --research lists every research item: it takes no ID, no --runs and no --rework")
@@ -945,6 +1005,10 @@ def args_cost(p):
                    help="also split the work from the rework after an item's first refused done")
     p.add_argument("--research", action="store_true",
                    help="instead of an ID: every research item's tokens against the gap findings its commits closed")
+    p.add_argument("--by", choices=tuple(BY_KINDS),
+                   help="instead of an ID: the kb articles (topic) or repository files (module) ranked by the spend of "
+                        "the prompts that named them, the costliest as the next research or mapping targets")
+    p.add_argument("--top", type=int, default=TOP_DEFAULT, help="with --by: the rows shown (0: all)")
     p.add_argument("--format", choices=("text", "json"), default="text")
 
 

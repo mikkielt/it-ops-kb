@@ -23,11 +23,13 @@ What a kb lookup costs in tokens, read from what Claude Code already recorded an
 | per model: `requests`, `in`, `cw`, `cw1h`, `cr`, `out` | tool inputs (commands, urls, questions) and tool results |
 | agent groups: `general-purpose`, `Explore`, `Plan`, `kb-lookup`, `kb-reviewer`, `kb-worker`, else `other` | agent names and descriptions, other agent types |
 | tool groups: a kb tool's name (`kb_pack`, ...), `docs:<server>` for the three documentation servers, a built-in tool's name, `mcp:other` for any other MCP tool, else `other` | other MCP servers' and tools' names |
-| per step: tool group, `ok`, `chars`, `grow` | file paths, the transcript path, `requestId`, uuids, session, user and organisation ids, `cwd`, git branch |
+| per step: tool group, `ok`, `chars`, `grow` | the transcript path, `requestId`, uuids, session, user and organisation ids, `cwd`, git branch |
+| `topics`: the kb articles the prompt's `kb_show` (its path) and `kb_facts` (its prefix) calls named, without line suffix or `.md`; `files`: the repository files its `Read`, `Edit`, `MultiEdit` and `Grep` calls took, relative to the working directory (`kbusage.served`; `SERVED_MAX` of each, first named first, the subagents routed to an item left out) | a path outside the working directory, under `_cache` or `_private`, or with a character a path name lacks; `kb_pack`'s articles, which its result names, not its input; the calls' other inputs and results |
 | `routed`: the item id of a subagent's `work/<id>` branch or of the one `.claude/worktrees/<id>` its commands name, with its counts | the branch string, any other branch, the worktree path, the commands |
 
 - **The transcript is read where it is, never copied.** A hook gets `transcript_path` in its input; the query log reads each kb prompt's records in memory and writes one `usage` spool row of the record. The path is written to no file: the `SessionEnd` launcher passes it to the distill it starts as a command-line argument.
 - **At most `STEPS_MAX` steps** per record; `cut` counts the steps left out.
+- **Spend by topic and module.** The usage sidecar keeps `topics` and `files` beside the counts (`ql_store.USAGE_KEYS`, gated by `usage_line_problems`), so `backlog.py cost --by topic|module` (`kb/_self/backlog.md`, Cost of work) ranks each kb article and each repository file by the spend of the prompts that named it: a prompt's counts are shared evenly over the names it has (`ql_store.served_models`), so the ranking adds up to the prompts' cost. The same share gives the querylog panel's `by_topic` (below), the topic attribute of the day's cost points. The reader version stays: a record written before the fields has none and counts in no ranking.
 
 ## `kbusage.py`
 

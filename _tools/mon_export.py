@@ -9,7 +9,8 @@
 The names are `kbmon.<panel>.<measure>`. An attribute value is a number, a flag or an identifier (letters, digits and
 `_ . : / # @ -`, 120 characters at most) that `redact.redact` leaves as it is; a point with any other attribute value is
 left out whole, so the export never carries free text, a path or a host name. An attribute named `holder` is never set:
-claims are counted by state, and a claim's key is an attribute only when it is a backlog item id.
+claims are counted by state, and a claim's key is an attribute only when it is a backlog item id; a topic, a kb article's
+path, is one on the day's cost points.
 """
 import json
 import math
@@ -17,7 +18,7 @@ import re
 
 import mon_base
 
-ID_VALUE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:/#@-]{0,119}")
+ID_VALUE = re.compile(r"[A-Za-z0-9_][A-Za-z0-9_.:/#@-]{0,119}")
 ITEM_ID = re.compile(r"[A-Z]{2}-[0-9a-z]{8}")  # a backlog item id, the one claim key an attribute may carry
 FORBIDDEN = frozenset({"holder"})
 
@@ -142,7 +143,21 @@ def run_points(runs):
     return out
 
 
-EXPORTERS = {"kb": kb_points, "coord": coord_points, "sessions": sessions_points, "cleanup": cleanup_points}
+def querylog_points(data):
+    """The UTC day's cost in USD (`usage_today`): the day's total, and one point for each topic (a kb article, the
+    costliest first) that the day's prompts named, whose cost is shared evenly over the topics a prompt named; the
+    claim spend points carry the item. A topic that is no stable identifier leaves its point out."""
+    u = data.get("usage_today")
+    if not isinstance(u, dict):
+        return []
+    out = [point("kbmon.querylog.cost", "USD", "gauge", u.get("usd"))]
+    for topic, usd in (u.get("by_topic") or {}).items():
+        out.append(point("kbmon.querylog.cost", "USD", "gauge", usd, topic=topic))
+    return out
+
+
+EXPORTERS = {"kb": kb_points, "coord": coord_points, "sessions": sessions_points, "cleanup": cleanup_points,
+             "querylog": querylog_points}
 
 
 def points(snap):

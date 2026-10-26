@@ -14,6 +14,7 @@ import ql_base
 import ql_report
 
 REFRESH_S = 30  # seconds the live view serves the last result: the spool and the store are read whole
+TOPICS_MAX = 20  # topics the day's by_topic keeps, the costliest first: a metric attribute's values stay few
 SHOWN_KINDS = 4  # spool kinds the text row names, most rows first, before it counts the rest
 HASH_CHARS = 7
 NO_SESSION = "distilled"  # the by_session key of usage only a distilled sidecar line stands for: the spool no longer holds its session
@@ -91,7 +92,8 @@ def collect(ctx):
     import mon_view
     split = {"by_model": split_usd({m: {m: c} for m, c in models["models"].items()}),
              "by_session": split_usd(models["by_session"], lambda k: NO_SESSION if k is None else mon_view.session_label(k)),
-             "by_sprint": split_usd(models["by_sprint"], lambda k: NO_SPRINT if k is None else k)}
+             "by_sprint": split_usd(models["by_sprint"], lambda k: NO_SPRINT if k is None else k),
+             "by_topic": dict(list(split_usd(models["by_topic"]).items())[:TOPICS_MAX])}
     waiting = ql_report.undelivered(qdir, cfg)
     return {"mode": ql_base.read_mode(cfg), "disabled": (qdir / ql_base.DISABLED_NAME).exists(),
             "spool": ql_report.spool_state(qdir / "spool"),
