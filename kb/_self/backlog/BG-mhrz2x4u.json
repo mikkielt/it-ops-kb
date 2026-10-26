@@ -2,7 +2,7 @@
   "id": "BG-mhrz2x4u",
   "kind": "bug",
   "title": "land copies out no kept gate output file whose path has a space in it, so a push stop under such a clone still names the removed worktree's file",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-42b2cjm3",
   "priority": "P2",
   "rank": 0,
@@ -37,5 +37,7 @@
     "parked: SP-dx76osrn review"
   ],
   "notes": "Sprint started 2026-10-26 on the operator's approval for the unattended run.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
