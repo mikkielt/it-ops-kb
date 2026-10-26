@@ -2,7 +2,7 @@
   "id": "BG-v5tq4jkz",
   "kind": "bug",
   "title": "The leak scan flags the EC armor label quoted before a repository path that has a segment longer than 16 characters, which passed before BG-nx6jzvop's path lookahead",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mk6ikval",
   "priority": "P3",
   "rank": 0,
@@ -41,5 +41,7 @@
     "parked: SP-jopt2c3z review"
   ],
   "notes": "SP-jopt2c3z review (S3, other): the path lookahead of BG-nx6jzvop caps a segment at 16 characters, so the label quoted directly before kb/public/Intune/ConfigurationProfiles.md is flagged, which BG-7mxo4k6p's rule let pass. Only the label-then-path text is affected; the tracked-file scan passes today. The worker's extended test_leaks.py case covers the two named paths. Note: the sprint's planted check for BG-nx6jzvop put 'the ' before its path, so its negative half never reached the path rule; this bug's repro puts the path directly after the label. Add cases inside an existing test function of the touched test file: the test-id ceiling is hard, so no new test id. Sprint SP-mk6ikval started 2026-10-26; item moved from draft to todo.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
