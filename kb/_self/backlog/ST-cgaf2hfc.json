@@ -2,7 +2,7 @@
   "id": "ST-cgaf2hfc",
   "kind": "story",
   "title": "Workers start through a launcher command the operator sets, and kbmon reads agent states from an external source through a JSON contract",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-hxxn6fnv",
   "priority": "P3",
@@ -68,5 +68,7 @@
     "kb/_self/querylog.md"
   ],
   "notes": "Plan check 2026-10-26: check 0 dispatches a fake claude in a temp clone with a launcher that records its argv and runs the command, and once with none; check 1 plants two sessions and an agent_states command naming one by pid (idle) and one by session id (done) and reads kbmon --root; both fail on the base (the launcher is never called, no state on a row). The goal now names the placeholders {dir} and {command} and narrows \"beside the presence lease\" to the session's row of the sessions panel.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
