@@ -21,6 +21,25 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does kbtail.py redact without the 9 s read of the public root's names?",
+      "options": [
+        "No names allowed: redact with an empty Known, so a host, GUID, path segment or long name the kb uses may print as its placeholder",
+        "Read only the public root's words in the background, costing about 1 s of CPU in the follow loop"
+      ],
+      "recommendation": "No names allowed: redact with an empty Known, so a host, GUID, path segment or long name the kb uses may print as its placeholder",
+      "do": {
+        "No names allowed: redact with an empty Known, so a host, GUID, path segment or long name the kb uses may print as its placeholder": "BG-nm2cebb4",
+        "Read only the public root's words in the background, costing about 1 s of CPU in the follow loop": "BG-nm2cebb4"
+      },
+      "class": "querylog",
+      "answer": "No names allowed: redact with an empty Known, so a host, GUID, path segment or long name the kb uses may print as its placeholder",
+      "by": "agent"
+    }
+  ],
   "links": [
     "review: _cache/scratch/review-SP-wurbmsid/gaps-report (local, not committed)"
   ],

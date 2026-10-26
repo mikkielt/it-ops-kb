@@ -12,7 +12,8 @@ A line is the time (local, HH:MM:SS), a kind and a text:
   reply    an assistant text's first line
   tool     a tool call's name and key input: a Bash command's first line, a path relative to the session's cwd (or `~`)
   result   a tool result's first non-empty line, after `!` when the call failed
-Thinking is never shown. Every text passes `redact.redact`; a text that the leak scan (`kbcommon.leak_hits`) still hits
+Thinking is never shown. Every text passes `redact.redact` with none of the public root's names allowed (reading them takes seconds), so it redacts
+more than the query log does; a text that the leak scan (`kbcommon.leak_hits`) still hits
 after it prints as `[withheld: KIND]`. Control characters are dropped, a command is cut at 100 characters, a result at 80,
 and each line at the terminal's columns less one (COLUMNS, else the terminal's size, else 80), as kbmon's view does.
 
@@ -38,7 +39,6 @@ from pathlib import Path
 
 import kbcommon
 import kbusage
-import mon_view
 import ql_capture
 import redact
 
@@ -47,7 +47,7 @@ WAKE_S = 1.0  # longest wait between two reads of a followed file
 COMMAND_CUT = 100  # characters of a tool call's key input
 RESULT_CUT = 80  # characters of a tool result's line
 READ_CAP = 4000  # characters of a text that are redacted; its first line is within them
-KNOWN = mon_view.LazyKnown()  # the public root is read only when a rule needs it (some seconds), not at the first line
+KNOWN = redact.scan_known(())  # nothing of the public root is read (some seconds of CPU): a display may redact more than the query log
 DISPLAYED = ("user", "assistant")
 IGNORED = frozenset(("attachment", "mode", "permission-mode", "last-prompt", "ai-title", "file-history-snapshot",
                      "system", "summary", "cost-state", "atis-latch"))
