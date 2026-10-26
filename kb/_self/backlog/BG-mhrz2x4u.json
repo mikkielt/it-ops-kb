@@ -2,7 +2,7 @@
   "id": "BG-mhrz2x4u",
   "kind": "bug",
   "title": "land copies out no kept gate output file whose path has a space in it, so a push stop under such a clone still names the removed worktree's file",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-42b2cjm3",
   "priority": "P2",
   "rank": 0,
@@ -38,6 +38,19 @@
   ],
   "notes": "Sprint started 2026-10-26 on the operator's approval for the unattended run.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "5fc493e48ff6f9d61609aee3f5863e02857e864a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, tempfile, os, shutil, re, sys, time, json\nHOLD = 0\nR = os.getcwd(); D = os.path.realpath(tempfile.mkdtemp(prefix=\"gate dir \")); T = D + \"/clone\"; B = D + \"/origin.git\"\nG = [\"git\", \"-c\", \"user.email=a@b\", \"-c\", \"user.name=n\"]\ndef sh(*a, cwd=None): return subprocess.run(a, cwd=cwd or T, capture_output=True, text=True)\ndef bl(*a): return subprocess.run([sys.executable, R + \"/_tools/backlog.py\", \"--root\", T, *a], cwd=T, capture_output=True, text=True)\nsh(*G, \"init\", \"-q\", \"--bare\", \"-b\", \"main\", B, cwd=D)\nos.makedirs(T + \"/kb/_self/backlog\"); sh(\"git\", \"init\", \"-q\", \"-b\", \"main\", \".\")\ncfg = json.load(open(R + \"/backlog.json\", encoding=\"utf-8\")); cfg.update(land_push=[\"git\", \"push\", \"origin\", \"HEAD:main\"], land_eval=[], land_lint=[], land_stale=[])\njson.dump(cfg, open(T + \"/backlog.json\", \"w\", encoding=\"utf-8\"))\nsp = re.search(r\"SP-\\w+\", bl(\"new\", \"sprint\", \"--title\", \"S\", \"--goal\", \"g\").stdout).group(0)\nids = []\nfor n in \"ab\":\n    ids.append(re.search(r\"ST-\\w+\", bl(\"new\", \"story\", \"--title\", \"Land \" + n, \"--goal\", \"g\", \"--touch\", \"kb/public/work-*.txt\",\n                                      \"--check\", \"python3 -c 'import os, sys, time\\nif \\\"\" + n + \"\\\" == \\\"a\\\" and \" + str(HOLD) + \":\\n    open(\\\"\" + D + \"/held\\\", \\\"w\\\").close(); time.sleep(\" + str(HOLD) + \")\\nsys.exit(0 if os.path.exists(\\\"kb/public/work-\" + n + \".txt\\\") else 1)'\",\n                                      \"--sprint\", sp).stdout).group(0))\nbl(\"answer\", sp, \"start\", \"--answer\", \"approve\", \"--by\", \"operator\"); bl(\"start\", sp)\nopen(T + \"/.gitignore\", \"w\").write(\".claude/worktrees/\\n_cache/\\n\")\nsh(\"git\", \"add\", \"-A\"); sh(*G, \"commit\", \"-q\", \"-m\", \"items\"); sh(\"git\", \"remote\", \"add\", \"origin\", B)\nfor i in ids:\n    bl(\"claim\", i, \"--by\", \"tester\", \"--commit\")\nsh(\"git\", \"push\", \"-q\", \"-u\", \"origin\", \"main\")\nfor n, i in zip(\"ab\", ids):\n    sh(\"git\", \"switch\", \"-q\", \"-c\", \"work/\" + i); os.makedirs(T + \"/kb/public\", exist_ok=True); open(T + \"/kb/public/work-\" + n + \".txt\", \"w\").write(i); sh(\"git\", \"add\", \"-A\")\n    sh(*G, \"commit\", \"-q\", \"-m\", \"work \" + i + \"\\n\\nKB-Work: \" + i); sh(\"git\", \"switch\", \"-q\", \"main\")\nopen(T + \"/next.txt\", \"w\").write(\"n\"); sh(\"git\", \"add\", \"-A\"); sh(*G, \"commit\", \"-q\", \"-m\", \"main moves\"); sh(\"git\", \"push\", \"-q\", \"origin\", \"main\"); sh(\"git\", \"reset\", \"-q\", \"--hard\", \"HEAD~1\")\ndef hook():\n    p = T + \"/.git/hooks/pre-rebase\"\n    open(p, \"w\").write(\"#!/bin/sh\\npwd >> \" + D + \"/rebase-cwd.txt\\nexit 0\\n\")\n    os.chmod(p, 0o755)\ndef step_of(r):\n    m = re.search(r\"land stopped at step ([\\w -]+?)(?::|$)\", r.stdout + r.stderr, re.M)\n    return m.group(1).strip() if m else None\nhook()\nimport os\nP = D + \"/pushfail.py\"\nopen(P, \"w\").write(\"import os, sys\\nos.makedirs(\\\"_cache/gate\\\", exist_ok=True)\\nf = os.path.abspath(\\\"_cache/gate/gate-1.txt\\\")\\nopen(f, \\\"w\\\").write(\\\"ERROR gate failed\\\\n\\\")\\nprint(\\\"  gate tests.py whole output: \\\" + f + \\\" (3 test ids)\\\")\\nsys.exit(1)\\n\")\ncfg = json.load(open(T + \"/backlog.json\")); cfg[\"land_push\"] = [sys.executable, P]; json.dump(cfg, open(T + \"/backlog.json\", \"w\"))\nsh(\"git\", \"add\", \"-A\"); sh(*G, \"commit\", \"-q\", \"-m\", \"push stub\")\nsh(\"git\", \"push\", \"-q\", \"origin\", \"main\")\nr = bl(\"land\", ids[0]); out = r.stdout + r.stderr\nnamed = re.findall(r\": (/[^\\n]*?_cache/gate/gate-1\\.txt)\", out)\nprint(\"land exit\", r.returncode, \"step\", step_of(r), \"| named\", named[:1], \"| exists after the stop\", bool(named) and os.path.exists(named[0]))\nsys.exit(0 if r.returncode != 0 and named and os.path.exists(named[0]) else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "71157a454ea42d40"
+      }
+    ]
+  }
 }
