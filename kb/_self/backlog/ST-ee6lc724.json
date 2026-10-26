@@ -1,0 +1,23 @@
+{
+  "id": "ST-ee6lc724",
+  "kind": "story",
+  "title": "The sprint start step commits the sprint's item files, so the first claim push is not refused for a dirty tree",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the kb-sprint skill text of the start step names `backlog.py start SP --commit`, and start --commit also commits the item files that moved from draft to todo, so `begin` and `kbgit.py sync --push` find a clean tree",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,re;t=open(\".claude/skills/kb-sprint/SKILL.md\").read();s=t.split(\"## start SP\")[1].split(\"## run\")[0];sys.exit(0 if \"start SP --commit\" in s else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "_tools/bl_sprint.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
