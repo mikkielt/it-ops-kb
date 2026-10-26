@@ -2,7 +2,7 @@
   "id": "BG-jsuvjayf",
   "kind": "bug",
   "title": "done moves a claimed run key to landed at the done commit, before it is on the integration main, and a later land then never holds landing",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-42b2cjm3",
   "priority": "P2",
@@ -57,5 +57,7 @@
     "parked: SP-dx76osrn review"
   ],
   "notes": "Gate g1 answered with its recommendation by operator (pre-approved by the operator for the 2026-10-26 run).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
