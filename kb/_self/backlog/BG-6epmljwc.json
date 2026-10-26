@@ -2,7 +2,7 @@
   "id": "BG-6epmljwc",
   "kind": "bug",
   "title": "mon_sessions.live_sessions starts a git process per checkout and three worktree listings on every call, against its docstring",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-booflukv",
   "sprint": "SP-hxxn6fnv",
   "priority": "P3",
@@ -44,5 +44,7 @@
     "parked: SP-7ba3r4ec review"
   ],
   "notes": "Plan check 2026-10-26: check 0 reads the docstring clause (its git process count), the repro the first clause.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
