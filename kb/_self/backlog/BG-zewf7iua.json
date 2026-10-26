@@ -1,0 +1,25 @@
+{
+  "id": "BG-zewf7iua",
+  "kind": "bug",
+  "title": "backlog.py tidy starts one git status per removable worktree, so its git processes grow with the number of leftovers",
+  "status": "draft",
+  "parent": "EP-iowijan3",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "backlog.py tidy without --apply reads the state of 60 recorded leftover worktrees that every other check leaves removable with at most 40 git processes, a fixed number however many leftovers there are",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,shutil,subprocess as s,sys,tempfile,pathlib as P\nN=60\nt=P.Path(tempfile.mkdtemp());c=t/\"clone\";c.mkdir()\nshutil.copytree(\"_tools\",c/\"_tools\",ignore=shutil.ignore_patterns(\"__pycache__\",\"test_*\"))\nshutil.copy(\"backlog.json\",c/\"backlog.json\")\n(c/\"kb/_self/backlog\").mkdir(parents=True);(c/\"kb/_self/backlog/.keep\").write_text(\"\")\ndef g(*a):return s.run([\"git\",*a],cwd=c,check=True,capture_output=True)\ng(\"init\",\"-q\",\"-b\",\"main\");g(\"config\",\"user.email\",\"a@b.c\");g(\"config\",\"user.name\",\"t\");g(\"add\",\"-A\");g(\"commit\",\"-q\",\"-m\",\"base\")\nfor i in range(N):\n    iid=\"ST-p%07d\"%i\n    (c/\"kb/_self/backlog\"/(iid+\".json\")).write_text('{\"id\": \"%s\", \"kind\": \"story\", \"title\": \"x\", \"status\": \"done\"}' % iid)\n    g(\"worktree\",\"add\",\"-q\",\"-b\",\"work/\"+iid,\".claude/worktrees/agent-\"+iid,\"HEAD\")\n    s.run([sys.executable,\"_tools/backlog.py\",\"own\",str(c/\".claude/worktrees\"/(\"agent-\"+iid)),\"--class\",\"worktree\",\"--item\",iid],cwd=c,capture_output=True,check=True)\nd=t/\"bin\";d.mkdir();log=d/\"n\";w=d/\"git\"\nw.write_text(\"#!/bin/sh\\necho x >> %s\\nexec %s \\\"$@\\\"\\n\"%(log,shutil.which(\"git\")));w.chmod(0o755)\nenv=dict(os.environ,PATH=str(d)+os.pathsep+os.environ[\"PATH\"])\nbad=[]\nfor name,argv in ((\"backlog.py tidy\",[\"_tools/backlog.py\",\"tidy\",\"--older-than\",\"0\"]),(\"kbmon.py cleanup panel\",[\"_tools/kbmon.py\",\"--once\",\"--panel\",\"cleanup\"])):\n    log.write_text(\"\")\n    p=s.run([sys.executable]+argv,cwd=c,env=env,capture_output=True,text=True)\n    n=len(log.read_text().split())\n    print(name,\"started\",n,\"git processes for\",N,\"recorded worktrees and branches (exit\",p.returncode,\")\")\n    if p.returncode or n>40:bad.append(name)\nsys.exit(1 if bad else 0)\n"
+    ]
+  },
+  "touches": [
+    "_tools/bl_clean.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/monitoring.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
