@@ -2,7 +2,7 @@
   "id": "BG-n4pgkyos",
   "kind": "bug",
   "title": "coord.py digest labels a two-item intent state=done when only one of its items is done",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-n7f53pgv",
   "priority": "P3",
   "rank": 0,
@@ -44,6 +44,19 @@
   "links": [
     "parked: SP-fp3hxl6q review"
   ],
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "afb12141ad28b040d5454e16bcc25dc2de63a162",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,sys,tempfile,types\nsys.path.insert(0,'_tools')\nimport coord\nD=tempfile.mkdtemp();st=os.path.join(D,'c.sqlite');t=[1000.0];clock=lambda:t[0]\nA=lambda **k:types.SimpleNamespace(store=st,**k)\ndef post(kind,**f):\n    t[0]+=1;return coord.run(A(command='post',kind=kind,field=[f'{a}={b}' for a,b in f.items()]),clock)[0]\ncoord.run(A(command='claim',key='session/s1',ttl=21600,holder='s1',budget=None),clock)\npost('intent',session='s1',item='BG-aaaaaaaa,BG-bbbbbbbb');post('progress',item='BG-aaaaaaaa',state='done')\nd=repr(coord.run(A(command='digest',key=['BG-bbbbbbbb'],lines=10),clock)[0]);print(d)\nsys.exit(0 if 'BG-bbbbbbbb' in d and 'state=done' not in d else 1)"
+        ],
+        "exit": 0,
+        "sha256": "29e8089a9ef8b470"
+      }
+    ]
+  }
 }
