@@ -81,7 +81,9 @@
       },
       "class": "design",
       "answer": "share session_entries with the panel, a light flag leaving out the ops rows, spool and events",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
