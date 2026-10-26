@@ -60,6 +60,7 @@
   "links": [
     "parked: SP-jplczvj2 close"
   ],
+  "notes": "Gate g1 (class secrets) answered with its recommendation by the orchestrator on the operator behalf (pre-approved by the operator for the 2026-10-26 run): fail closed, so gitlab_token and API bare_token keep the class.",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }
