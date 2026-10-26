@@ -2,7 +2,7 @@
   "id": "ST-6arwj6sy",
   "kind": "story",
   "title": "Research sprint goal: Live agent view, second slice: follow every live session, and a sturdier follow loop",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-7ba3r4ec",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,7 @@
     "kb/public/**"
   ],
   "notes": "No outside facts: the kb answers each question with coverage good (public/claude/hooks.md:51 subagents/agent-<id>.jsonl under the session's folder; hooks.md:105-108 a plain resume appends to the original transcript, a fork gets a new session id and file; public/python/stdlib-sqlite3-csv.md, the sqlite3 busy timeout and locking), checked by rag.py pack on 2026-10-26.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-6c439ca9",
+  "operator": "op-f618a13e"
 }
