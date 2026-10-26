@@ -2,7 +2,7 @@
   "id": "ST-mp4pjor2",
   "kind": "story",
   "title": "The content rules and the lint accept a validity window on a fact line and a commit range on a CODE fact",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-lrmcc2uf",
   "sprint": "SP-vlfcgmbu",
   "priority": "P2",
@@ -94,5 +94,7 @@
     }
   ],
   "notes": "Plan check 2026-10-26: check 0 (the whole kb lints clean) passes before the work on purpose: it pins that every existing fact stays valid. Checks 1-2 plant a temporary root (KB_ROOTS) and fail on the base: lint draws no window ERROR for a malformed date, an end before a start or a commit range on an unpinned source; audit has no ended-window column. Goal narrowed from \"the index and rag.py audit read the window\" to the audit count: ST-dnpg6e7d carries the index read through pack --as-of.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
