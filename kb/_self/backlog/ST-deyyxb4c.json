@@ -2,7 +2,7 @@
   "id": "ST-deyyxb4c",
   "kind": "story",
   "title": "Code questions are claimed like research: a claim names a repository, path and symbol, and a second agent mapping the same code sees the overlap and gets the results",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-fxrzbuza",
   "sprint": "SP-n7f53pgv",
   "priority": "P2",
@@ -70,5 +70,7 @@
     "ST-bilb3nzx"
   ],
   "notes": "Plan check 2026-10-26: the old check ran dedup --code with check=True and failed on a traceback; check 0 dedups --code twice on a temp store (a code key beside a research key, the second holder's overlap), check 1 claims a path and dedups a symbol under it plus another path (overlap for the covered one, a claim for the rest), check 2 posts a code_added event and reads it with wait --kind code_added and refuses an unknown kind. The goal now names the event kind and its fields so a check can read them. On the base: --code unknown and code_added an unknown kind: premise reproduced.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
