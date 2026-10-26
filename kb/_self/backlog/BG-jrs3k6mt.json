@@ -2,7 +2,7 @@
   "id": "BG-jrs3k6mt",
   "kind": "bug",
   "title": "The coord hook posts no intent for a claim run as backlog.py --root X claim ID or behind a wrapper such as timeout",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-n7f53pgv",
   "priority": "P3",
   "rank": 0,
@@ -45,6 +45,28 @@
     "parked: SP-fp3hxl6q review"
   ],
   "notes": "Plan check 2026-10-26: the goal's brace-group example held a \"; \" that split the clause list mid-command, so it is worded as a brace group. Check 0 passes before the work on purpose: it pins that five text forms (two commit messages, an echo, a heredoc, a grep pattern) still post nothing. The repro reads the three wrapper forms and fails on the base.",
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "5c345f77dc2173d5b5fb841fb76f3ff60e18995f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import importlib.util as u,sys\ns=u.spec_from_file_location('h','.claude/hooks/coord_hook.py');h=u.module_from_spec(s);s.loader.exec_module(h)\nn=chr(10)\ntexts=['git commit -m \"backlog.py claim BG-abcd1234\"','echo python3 _tools/backlog.py claim BG-abcd1234','cat <<EOF'+n+'python3 _tools/backlog.py claim BG-abcd1234'+n+'EOF','grep \"backlog.py claim BG-abcd1234\" notes.txt','git commit -m \"run timeout 60 python3 _tools/backlog.py claim BG-abcd1234\"']\ngot=[h.claimed_item(t) for t in texts];print(got);sys.exit(0 if all(g is None for g in got) else 1)\n\n"
+        ],
+        "exit": 0,
+        "sha256": "14c040132b7a7545"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import importlib.util as u,sys\ns=u.spec_from_file_location('h','.claude/hooks/coord_hook.py');h=u.module_from_spec(s);s.loader.exec_module(h)\nforms=['python3 _tools/backlog.py --root X claim BG-abcd1234','timeout 60 python3 _tools/backlog.py claim BG-abcd1234','{ python3 _tools/backlog.py claim BG-abcd1234; }']\ngot=[h.claimed_item(f) for f in forms];text=h.claimed_item('git commit -m \"backlog.py claim BG-abcd1234\"')\nprint(got,text);sys.exit(0 if got==['BG-abcd1234']*3 and text is None else 1)"
+        ],
+        "exit": 0,
+        "sha256": "0d1ab7cdac59d806"
+      }
+    ]
+  }
 }
