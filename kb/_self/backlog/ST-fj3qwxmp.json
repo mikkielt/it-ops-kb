@@ -1,0 +1,28 @@
+{
+  "id": "ST-fj3qwxmp",
+  "kind": "story",
+  "title": "The code-map stories' open questions are packs with good coverage before they restart",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Each question the moved-out code-map stories need (where a symbol is defined and who uses it, what imports a package, how map answers compare with reading files per right answer) packs with good coverage, so the goal research of the sprint that takes them up reads what the kb already holds. Found by the SP-acysfnxr review (gap 5: its research story's goal named no question, so researched read no coverage).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess as s,sys\nqs=[\"how does a code map find where a Python symbol is defined and its references with ast\",\"which modules import a package, read from a pinned code map\",\"how do code-map answers compare with reading files per right answer\"]\nweak=[]\nfor q in qs:\n    p=s.run([sys.executable,\"_tools/rag.py\",\"pack\",q],capture_output=True,text=True)\n    if p.returncode or not p.stdout.startswith(\"coverage: good\"):weak.append(q)\nprint(\"not good:\",weak);sys.exit(1 if weak else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/agents/codebase-mapping.md",
+    "kb/public/_sources.csv",
+    "kb/public/_anchors.csv",
+    "kb/public/_gaps.md"
+  ],
+  "links": [
+    "parked: SP-acysfnxr review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

@@ -1,0 +1,29 @@
+{
+  "id": "ST-5gomzcam",
+  "kind": "story",
+  "title": "check.py's lexical code scan is checked against ast and tokenize on the f-string and docstring forms its fixes named",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A planted case of each form BG-v6bpucd2 and BG-zcbcjilf named (a nested-quote f-string with a comment after it, a # inside an f-string, a comment in a replacement field, a docstring after a backslash-continued header, a parenthesized docstring, a docstring followed by a continuation) gives the comment and docstring lines ast and tokenize give. Found by the SP-acysfnxr review (gaps 3 and 4: those items' checks read none of these clauses).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,sys,tempfile;sys.path.insert(0,\"_tools\");import check,ast,io,tokenize\nn=chr(10);bs=chr(92)\ncases=['x = f\"{d[\"k\"]}\"  # c'+n,'x = f\"{\"#\"}\"'+n+'# c'+n,'x = f\"{x # c1'+n+'}\"'+n,'def f(a,'+bs+n+'      b):'+n+'    \"doc\"'+n,'def f():'+n+'    \"doc\" '+bs+n+n+'    x = 1'+n,'def f():'+n+'    (\"doc\")'+n]\ndef ref(src):\n    out=set(t.start[0] for t in tokenize.generate_tokens(io.StringIO(src).readline) if t.type==tokenize.COMMENT)\n    for nd in ast.walk(ast.parse(src)):\n        if isinstance(nd,(ast.Module,ast.FunctionDef,ast.AsyncFunctionDef,ast.ClassDef)) and nd.body and isinstance(nd.body[0],ast.Expr) and isinstance(nd.body[0].value,ast.Constant) and isinstance(nd.body[0].value.value,str):\n            out.update(range(nd.body[0].value.lineno,nd.body[0].value.end_lineno+1))\n    return sorted(out)\nbad=[]\nfor c in cases:\n    p=os.path.join(tempfile.mkdtemp(),\"x.py\");open(p,\"w\").write(c)\n    got=sorted(k for k,_ in check.code_comment_lines(p))\n    if got!=ref(c):bad.append((c,got,ref(c)))\nprint(bad);sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/check.py"
+  ],
+  "depends_on": [
+    "BG-thpla3gw",
+    "BG-6pjogxeg"
+  ],
+  "links": [
+    "parked: SP-acysfnxr review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

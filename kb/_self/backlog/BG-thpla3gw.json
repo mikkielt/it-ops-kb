@@ -1,0 +1,26 @@
+{
+  "id": "BG-thpla3gw",
+  "kind": "bug",
+  "title": "check.py's lexical code scan skips a comment inside an f-string replacement field",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "code_comment_lines records a comment inside a multi-line f-string's replacement field as a comment line, as tokenize does, so a citation there is checked. Found by the SP-acysfnxr review (BG-v6bpucd2 gap 1).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,sys,tempfile;sys.path.insert(0,\"_tools\");import check;n=chr(10);p=os.path.join(tempfile.mkdtemp(),\"x.py\");open(p,\"w\").write(\"x = f\\\"{x # c1\"+n+\"}\\\"\"+n+\"# c\"+n);got=sorted(k for k,_ in check.code_comment_lines(p));print(\"comment lines\",got,\"want [1, 3]\");sys.exit(0 if got==[1,3] else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/check.py",
+    "kb/_self/content-rules.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-acysfnxr review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
