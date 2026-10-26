@@ -2,7 +2,7 @@
   "id": "ST-pfqmqc45",
   "kind": "story",
   "title": "A fresh sprint reviewer writes its gap list to a report file the orchestrator reads, not only to its session's last message",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-sgfucsn6",
   "priority": "P2",
   "rank": 0,
@@ -37,6 +37,19 @@
   ],
   "notes": "Premise: the check fails on the base: the review step names no report file in the reviewer's scratch directory and does not say the reviewer writes its gap list there. Sprint start gate answered approve by the runner on the operator's behalf (pre-approved by the operator for the 2026-10-26 run).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "ec7823f8bc72220170562c0233436874e0072cba",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys\nt=open(\".claude/skills/kb-sprint/SKILL.md\",encoding=\"utf-8\").read()\ni=t.index(\"## review SP\");j=t.find(\"\\n## \",i+5);s=t[i:j if j>0 else len(t)]\nbrief=bool(re.search(r\"report file[^.]{0,200}scratch|scratch[^.]{0,200}report file\",s))\nwrites=bool(re.search(r\"gap list[^.]{0,200}report file|report file[^.]{0,200}gap list\",s))\nprint(\"review step names a report file in the reviewer's scratch directory:\",brief,\"| the reviewer writes its gap list there:\",writes)\nsys.exit(0 if brief and writes else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "feabea6e6a18d84e"
+      }
+    ]
+  }
 }
