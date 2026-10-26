@@ -145,7 +145,8 @@ def default_root(tool_root, cwd=None):
     """The root a command runs on when `--root` is not given: the git toplevel of the working directory, which is
     the project, unless the tool's own checkout is a git working tree (the kb's clone, or a worktree of it) and the
     working directory is in that clone or one of its worktrees, where it is the tool's own checkout; TOOL_ROOT when
-    the working directory is no repository."""
+    the working directory is no repository. A working directory whose nearest `.git` is the tool's own checkout needs
+    no git process, which the hooks that start `backlog.py` on every session rely on."""
     def git(*args, at):
         try:
             p = subprocess.run(["git", *args], cwd=at, capture_output=True, text=True, encoding="utf-8",
@@ -154,15 +155,22 @@ def default_root(tool_root, cwd=None):
             return ""
         return p.stdout.strip() if p.returncode == 0 else ""
 
+    own = (Path(tool_root) / ".git").exists()
+    if own and not os.environ.get("GIT_DIR") and not os.environ.get("GIT_WORK_TREE"):
+        here = Path(os.path.realpath(cwd or os.getcwd()))
+        nearest = next((p for p in (here, *here.parents) if (p / ".git").exists()), None)
+        if nearest is not None and nearest == Path(os.path.realpath(tool_root)):
+            return str(tool_root)
     top = git("rev-parse", "--show-toplevel", at=cwd)
     if not top:
         return str(tool_root)
-    if (Path(tool_root) / ".git").exists():
+    if own:
         def common(at):
             d = git("rev-parse", "--git-common-dir", at=at)
             return os.path.realpath(os.path.join(at, d)) if d else ""
 
-        if not common(tool_root) or common(top) == common(tool_root):
+        own_common = common(tool_root)
+        if not own_common or common(top) == own_common:
             return str(tool_root)
     return top
 
