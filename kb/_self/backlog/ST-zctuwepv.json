@@ -2,7 +2,7 @@
   "id": "ST-zctuwepv",
   "kind": "story",
   "title": "backlog.py new bug prints the repro's last output lines, so the filer sees the failure is the defect it names",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-sgfucsn6",
   "priority": "P2",
   "rank": 0,
@@ -59,6 +59,19 @@
     "parked: SP-s2svf5a6 close"
   ],
   "notes": "Premise: the check fails on the base: backlog.py new bug prints only the new id and title, not the repro's output. Sprint start gate answered approve by the runner on the operator's behalf (pre-approved by the operator for the 2026-10-26 run). Gate g1 answered with its recommendation (5 non-empty lines, each cut to 200 characters) by the runner on the operator's behalf (pre-approved by the operator for the 2026-10-26 run).",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "84a1a1697ffbea4e65dc3a17ac92369bd224c81f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, subprocess, sys, tempfile\nd = tempfile.mkdtemp()\np = subprocess.run([sys.executable, \"_tools/backlog.py\", \"--root\", d, \"new\", \"bug\", \"--title\", \"t\", \"--goal\", \"g\", \"--severity\", \"S3\", \"--repro\", \"python3 -c 'import sys; print(\\\"FileNotFoundError: kb\\\", file=sys.stderr); sys.exit(1)'\"], capture_output=True, text=True)\nout = p.stdout + p.stderr\nprint(out[-400:])\nsys.exit(0 if \"FileNotFoundError: kb\" in out else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "b156852f4cd73fd4"
+      }
+    ]
+  }
 }
