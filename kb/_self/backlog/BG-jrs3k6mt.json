@@ -2,7 +2,7 @@
   "id": "BG-jrs3k6mt",
   "kind": "bug",
   "title": "The coord hook posts no intent for a claim run as backlog.py --root X claim ID or behind a wrapper such as timeout",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-n7f53pgv",
   "priority": "P3",
   "rank": 0,
@@ -44,5 +44,7 @@
   "links": [
     "parked: SP-fp3hxl6q review"
   ],
-  "notes": "Plan check 2026-10-26: the goal's brace-group example held a \"; \" that split the clause list mid-command, so it is worded as a brace group. Check 0 passes before the work on purpose: it pins that five text forms (two commit messages, an echo, a heredoc, a grep pattern) still post nothing. The repro reads the three wrapper forms and fails on the base."
+  "notes": "Plan check 2026-10-26: the goal's brace-group example held a \"; \" that split the clause list mid-command, so it is worded as a brace group. Check 0 passes before the work on purpose: it pins that five text forms (two commit messages, an echo, a heredoc, a grep pattern) still post nothing. The repro reads the three wrapper forms and fails on the base.",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
