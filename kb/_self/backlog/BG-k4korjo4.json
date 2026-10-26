@@ -2,7 +2,7 @@
   "id": "BG-k4korjo4",
   "kind": "bug",
   "title": "dispatch accepts a spend cap that prints as 0 USD",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-hxxn6fnv",
   "priority": "P3",
   "rank": 0,
@@ -22,5 +22,7 @@
   ],
   "links": [
     "parked: SP-v64egscn review"
-  ]
+  ],
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
