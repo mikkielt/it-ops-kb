@@ -40,6 +40,26 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does live_sessions share one worktree listing when bl_procs.snapshot and bl_procs.checkouts (outside the touches) each start their own?",
+      "options": [
+        "mon_sessions swaps bl_procs.worktrees and bl_stall.worktrees for a cached reader for the length of one placement, under a lock",
+        "add a listing parameter to bl_procs.snapshot, windows_snapshot and checkouts"
+      ],
+      "recommendation": "mon_sessions swaps bl_procs.worktrees and bl_stall.worktrees for a cached reader for the length of one placement, under a lock",
+      "reason": "the change stays in the touches and bounded_git already patches bl_runs the same way",
+      "do": {
+        "mon_sessions swaps bl_procs.worktrees and bl_stall.worktrees for a cached reader for the length of one placement, under a lock": "BG-6epmljwc",
+        "add a listing parameter to bl_procs.snapshot, windows_snapshot and checkouts": "BG-6epmljwc"
+      },
+      "class": "design",
+      "answer": "mon_sessions swaps bl_procs.worktrees and bl_stall.worktrees for a cached reader for the length of one placement, under a lock",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-7ba3r4ec review"
   ],
