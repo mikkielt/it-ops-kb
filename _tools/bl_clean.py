@@ -17,7 +17,7 @@ hex digits of the sha256 of the normalised path or of the pid's decimal text, so
 spelled (`norm_path`: realpath of its parents, then no `\\\\?\\` prefix, normcase, one case for a drive letter), on every
 platform; a symlink at its end is not followed, so a link's record is the link's own path. The
 coord store is the one `coord.py` finds (`--store`, else KB_COORD_STORE, else the common git directory of the clone
-`--root` names, whatever the working directory), shared by the clone's worktrees. coord keeps no delete: `--drop` writes an empty value, which readers skip (`recorded`).
+`--root` names, whatever the working directory; `kb-coord-home` under `--root` where that is no git clone), shared by the clone's worktrees. coord keeps no delete: `--drop` writes an empty value, which readers skip (`recorded`).
 
 `record_owner` is the one writer: `dispatch` records the worker's worktree, scratch directory and pid through it, `bench
 multi` its sandbox, and the sprint skill's run and review steps their worktrees with the `own` command. A record is a claim of
@@ -89,7 +89,7 @@ import bl_authority
 import bl_cli
 import bl_close
 import bl_procs
-from bl_base import OUTPUT_ROOT, Refused, Rejected, git, run, say, scratch_dir
+from bl_base import OUTPUT_ROOT, Refused, Rejected, git, git_text, run, say, scratch_dir
 from bl_close import AGENT_BRANCH, WORK_PREFIX, WORKER_NAME
 
 COORD = Path(__file__).resolve().parent / "coord.py"
@@ -174,15 +174,31 @@ def owner_key(cls, ident):
     return f"{PREFIX}{cls}/{hashlib.sha256(ident.encode('utf-8')).hexdigest()[:DIGEST_LENGTH]}"
 
 
+def in_clone(root):
+    """Whether ROOT is in a git clone (what `coord.store_of` asks: git answers, else a `.git` in ROOT)."""
+    if git_text(root, "rev-parse", "--git-dir"):
+        return True
+    return Path(root, ".git").exists()
+
+
 def run_coord(*args):
     """(exit code, the JSON object coord.py printed or None, its last stderr line) of one coord.py command, run in the
     clone `--root` names (the script's own where none) so its default store is that clone's, whatever the working
-    directory."""
+    directory. A `--root` that is no git clone has no store of its own, and coord.py would fall back to the script's own
+    clone's, so there the project coord.py serves is `kb-coord-home` under the root, whose `.git` directory marks it a
+    clone and holds `kb-coord/coord.sqlite` (KB_COORD_STORE and `--store` still win)."""
     root = str(OUTPUT_ROOT[0])
+    project = root
+    if not os.environ.get("KB_COORD_STORE") and "--store" not in args and not in_clone(root):
+        project = str(Path(root, "kb-coord-home"))
+        try:
+            Path(project, ".git").mkdir(parents=True, exist_ok=True)
+        except OSError as error:
+            return 2, None, f"no coord store under the root: {error.__class__.__name__}"
+    env = {**os.environ, "CLAUDE_PROJECT_DIR": project}
     try:
         p = subprocess.run([sys.executable, str(COORD), *args], capture_output=True, text=True, encoding="utf-8",
-                           stdin=subprocess.DEVNULL, timeout=COORD_SECONDS, cwd=root,
-                           env={**os.environ, "CLAUDE_PROJECT_DIR": root})
+                           stdin=subprocess.DEVNULL, timeout=COORD_SECONDS, cwd=root, env=env)
     except (OSError, subprocess.SubprocessError) as error:
         return 2, None, f"coord.py did not run: {error.__class__.__name__}"
     try:
