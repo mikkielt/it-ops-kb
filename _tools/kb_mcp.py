@@ -413,7 +413,10 @@ def kb_facts(args):
     with guarded():
         us = [u for u in kbfacts.units(kbfacts.scope(prefix, root_of(args)))
               if u["tags"] and (not kinds or kinds & set(kbfacts.kinds_of(u["tags"])))]
-    return rag.format_facts(us, fmt, limit=400)
+    text = rag.format_facts(us, fmt, limit=400)
+    if not us and str(args.get("root") or "").strip() in {m.name for m in kbcommon.missing_roots()}:  # as a pack and a search say
+        text += "\n" + kbcommon.missing_note()
+    return text
 
 
 def kb_audit(args):
