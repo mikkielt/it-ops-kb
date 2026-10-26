@@ -1,0 +1,23 @@
+{
+  "id": "BG-oqnz2vve",
+  "kind": "bug",
+  "title": "kbmon's held-back count reads 0 after a delivery run that waited on CI or found the lock taken",
+  "status": "draft",
+  "parent": "EP-iowijan3",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "mon_querylog.held_back skips the outcomes of a delivery run that tried no delivery (ql_report.NO_DELIVERY) when it finds the last delivery's held-back line, so the panel keeps showing the files still held back",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,os,tempfile; sys.path.insert(0,'_tools'); import mon_querylog as m, ql_distill; d=tempfile.mkdtemp(); open(os.path.join(d,ql_distill.LOG_NAME),'w').write('apply --push: 1 file(s) held back in the local store, undelivered, retried at the next delivery:\\n  x:1: y\\napply --push: pushed abc\\napply --push: CI of the last automatic commit is pending\\n'); sys.exit(1 if m.held_back(d)==0 else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/mon_querylog.py",
+    "kb/_self/monitoring.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
