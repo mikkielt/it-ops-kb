@@ -151,10 +151,12 @@ def test_scan_reports_each_planted_leak_and_honours_the_allowlist_and_webfetch_h
         path = kbcommon.leak_hits(head + "\nkb/public/security/secret-shapes-in-text.md\n", allowlist())
         assert path == ([] if kind in ("EC ", "PGP BLOCK ") else [("secret", head)]), kind
         # a repository path right after the label passes; a single-line body that a `.`, `_` or `-` follows is key material
-        for ref in ("kb/public/mecm/sql2022-views.md", "kb/public/Intune/Apps/Win32.md"):
+        for ref in ("kb/public/mecm/sql2022-views.md", "kb/public/Intune/Apps/Win32.md",
+                    "kb/public/Intune/ConfigurationProfiles.md", "kb/public/Entra/ConditionalAccessPolicies-and-more.md"):
             assert kbcommon.leak_hits(head + " " + ref + " page", allowlist()) == \
                 ([] if kind in ("EC ", "PGP BLOCK ") else [("secret", head)]), (kind, ref)
-        for body in ("MIIBVAIBADANBgkqhkiG9w0BAQEFAASC", "MIIBVAIBADANBgkqhkiG9w0BAQEF/AASC+BKcwggSjAgEAAoIB"):
+        for body in ("MIIBVAIBADANBgkqhkiG9w0BAQEFAASC", "MIIBVAIBADANBgkqhkiG9w0BAQEF/AASC+BKcwggSjAgEAAoIB",
+                     "CwgQj8C/nbil1bW34cYU", "XGjtEk/DnNfribxUdl7d"):
             for suffix in (".", "_x", "-x", ".pem"):
                 assert kbcommon.leak_hits(head + " " + body + suffix, allowlist()) == [("secret", head)], (kind, body, suffix)
     # the placeholders pass, an allowlisted value passes
