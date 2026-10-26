@@ -32,6 +32,23 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which options does tidy --path combine with?",
+      "options": [
+        "--path refuses --report, --class process, --remote and --decide (exit 2); --json, --apply and --class worktree|branch|sandbox|scratch combine",
+        "--path combines with every option"
+      ],
+      "recommendation": "--path refuses --report, --class process, --remote and --decide (exit 2); --json, --apply and --class worktree|branch|sandbox|scratch combine",
+      "do": {
+        "--path refuses --report, --class process, --remote and --decide (exit 2); --json, --apply and --class worktree|branch|sandbox|scratch combine": "ST-ittt27lq",
+        "--path combines with every option": "ST-ittt27lq"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "notes": "Operator request 2026-10-26: `.claude/settings.json` denies `git worktree remove` to agents (kept), and `tidy --apply` removes every safe leftover of every session at once, so a session could not remove its own reviewer worktree. The deny stays; the remedy is this filter on the tool route with all of tidy's checks. The close's kept line is in bl_close.py (`left for tidy --apply`). No suite test: the check is a planted run.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-6c439ca9",
