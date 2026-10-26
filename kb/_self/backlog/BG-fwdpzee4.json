@@ -1,0 +1,21 @@
+{
+  "id": "BG-fwdpzee4",
+  "kind": "bug",
+  "title": "The leak scan flags a table row whose identifier cell is lower-camel or holds digits (deviceManagementConfigurationPolicy, Win32LobAppAssignmentSettings), because the exemption covers only three capitalised words",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbcommon.leak_hits does not flag a same-line table row with an armor label, a Name: value cell and a lower-camel or digit-bearing identifier cell of 20 or more characters that holds no key material, and still flags every key block planted by earlier reviews",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import kbcommon;L=\"-\"*5+\"BEGIN EC PRIVATE KEY\"+\"-\"*5;bad=[i for i in (\"deviceManagementConfigurationPolicy\",\"windowsAutopilotDeploymentProfile\",\"Win32LobAppAssignmentSettings\") if any(k==\"secret\" for k,_ in kbcommon.leak_hits(\"| \"+L+\" | Note: PEM label | \"+i+\" |\"))];print(\"rows flagged:\",bad);sys.exit(1 if bad else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kbcommon.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
