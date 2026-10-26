@@ -4,6 +4,7 @@
   "title": "The content rules and the lint accept a validity window on a fact line and a commit range on a CODE fact",
   "status": "draft",
   "parent": "EP-lrmcc2uf",
+  "sprint": "SP-vlfcgmbu",
   "priority": "P2",
   "rank": 0,
   "goal": "content-rules.md defines how a fact states when it became true and when it stopped (dates for DOC and DER facts, a commit range for CODE facts) in the form the operator's gate names; the contract lint accepts a well-formed window and rejects a malformed one, an end before a start or a range on an unpinned source; the index and rag.py audit read the window, and a fact with none is valid from its retrieval date with no end, so every existing fact stays valid unchanged.",
@@ -50,7 +51,11 @@
         "fields inside the tag, such as [DOC S12 valid=2024-03-01..2025-09-30]": "ST-mp4pjor2",
         "a sidecar csv keyed by the fact's anchor, the line itself unchanged": "ST-mp4pjor2"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "a marker before the tag, such as (valid 2024-03-01..2025-09-30)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "filed_in": "clone-0ea70e5c"

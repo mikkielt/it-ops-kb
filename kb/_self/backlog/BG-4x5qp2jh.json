@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "A feedback flag stays on its reported line number after the article is edited, so it lands on another fact",
   "status": "draft",
+  "sprint": "SP-vlfcgmbu",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "Importing kf_route, kf_index or kf_fresh before kbfacts raises ImportError",
   "status": "draft",
+  "sprint": "SP-vlfcgmbu",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

@@ -4,6 +4,7 @@
   "title": "pack answers as of a date or a release, with the facts valid then, and says which it left out",
   "status": "draft",
   "parent": "EP-lrmcc2uf",
+  "sprint": "SP-vlfcgmbu",
   "priority": "P2",
   "rank": 0,
   "goal": "rag.py pack --as-of DATE|REV and kb_pack's as_of argument rank only the facts whose validity window holds the date, or for CODE facts whose commit range holds the revision, print one line naming how many matching facts were left out as not yet or no longer valid, and keep the verdict rule; with no as-of a pack prints facts whose window has ended under a no-longer-valid mark instead of as current.",

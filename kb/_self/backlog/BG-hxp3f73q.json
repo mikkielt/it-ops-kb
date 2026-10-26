@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "A revalidation window whose passage is in neither the previous nor the current text still fails section_unchanged on an unrelated added H2",
   "status": "draft",
+  "sprint": "SP-vlfcgmbu",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
