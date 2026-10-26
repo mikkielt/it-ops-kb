@@ -1017,10 +1017,11 @@ def spawn_detached(bl, a, iid, scratch):
     return proc, log
 
 
-def coord_cursor(iid, pid=None, settle_s=0):
+def coord_cursor(iid, pid=None, settle_s=0, after=0):
     """The newest event sequence in coord, the `--since` of a wait that starts after the events posted so far; 0 when
     coord cannot be read. With SETTLE_S, first holds up to that many seconds for the `working` move of the run state of
-    IID (the detached worker posts it a moment after it makes its branch), or until PID has ended."""
+    IID posted after the sequence AFTER (the detached worker posts it a moment after it makes its branch; an earlier
+    dispatch of the item left its own), or until PID has ended."""
     deadline = time.monotonic() + settle_s
     while True:
         code, body, _err = bl_clean.run_coord("wait", "--since", "0", "--timeout", "0")
@@ -1028,7 +1029,8 @@ def coord_cursor(iid, pid=None, settle_s=0):
             return 0
         events = body.get("events") if isinstance(body.get("events"), list) else []
         moved = any(isinstance(e, dict) and isinstance(e.get("fields"), dict) and e["fields"].get("item") == iid
-                    and e["fields"].get("state") == "working" for e in events)
+                    and e["fields"].get("state") == "working" and isinstance(e.get("seq"), int) and e["seq"] > after
+                    for e in events)
         if moved or time.monotonic() >= deadline or (pid and not bl_procs.alive(pid)):
             return body["last"]
         time.sleep(0.2)
@@ -1278,9 +1280,10 @@ def begin_dispatch(bl, d):
     iid = d.id
     scratch = scratch_path(bl.root, iid)
     say(budget_line(budget_usd(d.max_budget_usd)))
+    before = coord_cursor(iid)  # a `working` event at or below it is an earlier dispatch's, not this worker's
     proc, log = spawn_detached(bl, d, iid, scratch)
     if begin_wait(bl, iid, proc.pid):
-        say(detached_line(bl, iid, proc, log, scratch, coord_cursor(iid, proc.pid, BEGIN_SETTLE_S)))
+        say(detached_line(bl, iid, proc, log, scratch, coord_cursor(iid, proc.pid, BEGIN_SETTLE_S, before)))
         return None
     try:
         tail = " | ".join(log.read_text(encoding="utf-8", errors="replace").strip().splitlines()[-3:])
