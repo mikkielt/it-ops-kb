@@ -840,6 +840,24 @@ def stage_back_copies(bl, iid, wt, scratch):
     return out
 
 
+def half_copied(bl, iid, wt, scratch):
+    """[(path, copy, worktree file, git root, the file at HEAD)] of the staging copies a stage-back that died already
+    copied in: the worktree's file equals its copy, differs from HEAD, and HEAD's file is the one the copy was made
+    from (its digest is the recorded base). `stage_back_copies` skips these, since they equal their copy."""
+    bases, out = read_bases(scratch), []
+    for p in staged_files(bl, iid):
+        copy = scratch.joinpath(STAGING, *p.split("/"))
+        top, target, _ = staged_places(bl, iid, wt, p)
+        if not (copy.is_file() and target.is_file() and target.read_bytes() == copy.read_bytes() and bases.get(p)):
+            continue
+        head = subprocess.run(["git", "-C", str(top), "show", f"HEAD:{target.relative_to(top).as_posix()}"],
+                              capture_output=True)
+        if head.returncode == 0 and head.stdout != copy.read_bytes() \
+                and hashlib.sha256(head.stdout).hexdigest() == bases[p]:
+            out.append((p, copy, target, top, head.stdout))
+    return out
+
+
 def restore_originals(originals):
     """Put each TARGET back as it was ({path: bytes, or None for a file there was none of}), removing the directories
     the copy made that are empty again."""
@@ -913,15 +931,23 @@ def cmd_stage_back(bl, a):
     if branch != worker_branch(iid):
         raise Refused(f"stage-back: {wt} is on {branch or 'no branch'}, not {worker_branch(iid)}")
     copies = stage_back_copies(bl, iid, wt, scratch)
-    if not copies:
+    # a rerun at staging with no live process record takes a dead stage-back over: the files it copied in before it
+    # died are this copy-in's, not uncommitted changes (the check at HEAD puts them back if it ends on a refusal)
+    taken = bl_land.run_state(iid) == "staging" and not bl_land.run_holder(iid)
+    half = half_copied(bl, iid, wt, scratch) if taken else []
+    if not copies and not half:
         say(f"stage-back {bl.label(iid)}: no staging copy under {scratch / STAGING} differs from the worktree's "
             "file; nothing copied, nothing committed")
         return 0
-    for top in dict.fromkeys(c[3] for c in copies):
-        dirty = git_in(top, "status", "--porcelain", "--untracked-files=no").stdout.strip()
+    mine = {(h[3], h[2].relative_to(h[3]).as_posix()) for h in half}
+    for top in dict.fromkeys(c[3] for c in copies + half):
+        dirty = "\n".join(line for line in git_in(top, "status", "--porcelain", "--untracked-files=no").stdout.splitlines()
+                          if (top, line[3:]) not in mine)
         if dirty:
             raise Refused(f"stage-back: {top} has uncommitted changes, which a copy-in must not mix with the copies:"
                           f"\n{dirty}")
+    heads = {h[2]: h[4] for h in half}
+    copies = copies + [h[:4] for h in half]
     originals = {}
     back = "refused" if bl_land.run_state(iid) == "refused" else "returned"  # a land that stopped at checks stays refused
     recorded = bl_land.note_run_process(iid)  # first: a key at staging with no live record is one a rerun takes over
@@ -935,7 +961,7 @@ def cmd_stage_back(bl, a):
         raise Refused(f"stage-back: {refusal}")
     try:
         for _, copy, target, _ in copies:
-            originals[target] = target.read_bytes() if target.is_file() else None
+            originals[target] = heads[target] if target in heads else target.read_bytes() if target.is_file() else None
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(copy, target)
         ok, lines = stage_back_checks(bl, iid, wt, a.check, set(a.self_reviewed))
