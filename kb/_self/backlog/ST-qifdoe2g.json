@@ -2,7 +2,7 @@
   "id": "ST-qifdoe2g",
   "kind": "story",
   "title": "Research sprint goal: Code questions from a pinned code map, used by planning too",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-acysfnxr",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
