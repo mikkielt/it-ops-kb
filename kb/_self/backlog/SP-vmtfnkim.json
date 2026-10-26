@@ -2,7 +2,7 @@
   "id": "SP-vmtfnkim",
   "kind": "sprint",
   "title": "Query-log delivery and gate speed: a store check in seconds, one bad entry holds back one file, no fixture rows in the spool",
-  "status": "planned",
+  "status": "active",
   "goal": "querylog.py check scans each distinct value of a store file once and finishes on the committed store in under 60 seconds; a store file that fails the leak scan stays local while the other files of the batch are delivered; a kb/public change that stops the store passing its gates is refused at the sync gate; a probe run in a temporary clone writes no ops row to a real spool; kbmon's cleanup panel and backlog.py tidy read git state with a fixed number of git processes; a backlog check's benchmark sandboxes are removed with its run; backlog.py in the kb's own checkout starts one git process to find its root",
   "gates": [
     {
@@ -14,7 +14,11 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "creator": "op-f618a13e",
