@@ -2,7 +2,7 @@
   "id": "ST-wu4lbbjs",
   "kind": "story",
   "title": "coord exchanges claims with any external coordination service through a JSON-lines contract: live intents and touches out, external reservations in as overlaps",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-66qfpegm",
   "sprint": "SP-n7f53pgv",
   "priority": "P2",
@@ -98,5 +98,7 @@
     }
   ],
   "notes": "Plan check 2026-10-26: the old check called digest without --key and --lines, which exits 2 whatever the work. Check 0 posts a live intent and reads export-intents; check 1 imports a 600 s and a 1 s reservation, waits 3 s and reads the digest of a path under them (the first shown, the expired one gone); check 2 reads the coord hook's overlaps() for that path; check 3 reads the contract paragraphs of coordination.md for a product name. The goal names the field names the old check used. On the base: export-intents and import-reservations are invalid choices: premise reproduced. Gate g1 (agents-rule) stands as the operator answered it.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
