@@ -1,0 +1,21 @@
+{
+  "id": "BG-airpdmok",
+  "kind": "bug",
+  "title": "A stage-back rerun after a kill leaves a new file the dead run copied in untracked and out of the commit",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "a stage-back rerun after a kill takes over a new file (one the worktree had none of at dispatch) that the dead run copied in, and commits it with the other copies",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,subprocess,sys,tempfile,json\nsys.path.insert(0,os.path.abspath(\"_tools\"))\nimport bl_dispatch as D\nt=tempfile.mkdtemp(); wt=t+\"/wt\"; sc=t+\"/scratch\"\nsubprocess.run([\"git\",\"init\",\"-q\",wt],check=True)\nsubprocess.run([\"git\",\"-C\",wt,\"-c\",\"user.email=a@b\",\"-c\",\"user.name=n\",\"commit\",\"-q\",\"--allow-empty\",\"-m\",\"base\"],check=True)\np=\".claude/new.md\"\nos.makedirs(sc+\"/staging/.claude\"); open(sc+\"/staging/\"+p,\"w\").write(\"new\\n\")\nos.makedirs(wt+\"/.claude\"); open(wt+\"/\"+p,\"w\").write(\"new\\n\")        # a dead stage-back had copied it in: untracked, equal to its copy\njson.dump({p:None},open(sc+\"/\"+D.BASES_NAME,\"w\"))                    # dispatch records None as the base of a file the worktree had none of\nD.staged_files=lambda bl,iid:[p]\nfrom pathlib import Path\nD.staged_places=lambda bl,iid,w,x:(Path(wt),Path(wt)/x,Path(t)/x)\ngot=D.half_copied(None,\"ST-x\",Path(wt),Path(sc))\nprint(\"half_copied found\",[g[0] for g in got],\"(a stage-back rerun leaves the new file untracked and out of the commit)\")\nsys.exit(0 if got else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_dispatch.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
