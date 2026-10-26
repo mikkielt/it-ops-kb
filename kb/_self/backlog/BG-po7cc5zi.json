@@ -47,6 +47,26 @@
   "relates_to": [
     "BG-w4af2tix"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the leak scan tell an identifier cell from key material in a label row?",
+      "options": [
+        "A run of 20 or more characters that starts with three capitalised words of three letters or more is no key material",
+        "A table row's header value that crosses a pipe must be followed by a newline before key material counts"
+      ],
+      "recommendation": "A run of 20 or more characters that starts with three capitalised words of three letters or more is no key material",
+      "reason": "one lookahead in the key shape, no table-specific state",
+      "do": {
+        "A run of 20 or more characters that starts with three capitalised words of three letters or more is no key material": "BG-po7cc5zi",
+        "A table row's header value that crosses a pipe must be followed by a newline before key material counts": "BG-po7cc5zi"
+      },
+      "class": "design",
+      "answer": "A run of 20 or more characters that starts with three capitalised words of three letters or more is no key material",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-evq2flqc review"
   ],

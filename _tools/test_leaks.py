@@ -155,6 +155,9 @@ def test_scan_reports_each_planted_leak_and_honours_the_allowlist_and_webfetch_h
                     "kb/public/Intune/ConfigurationProfiles.md", "kb/public/Entra/ConditionalAccessPolicies-and-more.md"):
             assert kbcommon.leak_hits(head + " " + ref + " page", allowlist()) == \
                 ([] if kind in ("EC ", "PGP BLOCK ") else [("secret", head)]), (kind, ref)
+        # a table row of the label, a `Name: value` cell and an identifier cell holds no key material
+        row = kbcommon.leak_hits(f"| {head} | Note: PEM label | PrivateKeyInfoStructureXX |", allowlist())
+        assert row == ([] if kind in ("EC ", "PGP BLOCK ") else [("secret", head)]), kind
         for body in ("MIIBVAIBADANBgkqhkiG9w0BAQEFAASC", "MIIBVAIBADANBgkqhkiG9w0BAQEF/AASC+BKcwggSjAgEAAoIB",
                      "CwgQj8C/nbil1bW34cYU", "XGjtEk/DnNfribxUdl7d"):
             for suffix in (".", "_x", "-x", ".pem"):
