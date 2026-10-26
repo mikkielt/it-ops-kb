@@ -44,6 +44,14 @@ groups:
         annotations:
           summary: A working run has shown no sign of life for more than an hour
 
+      - alert: KbmonSessionSilent
+        expr: kbmon_sessions_silent_seconds > 3600
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: A live Claude Code session has written no transcript line for more than an hour
+
       - alert: KbmonRunFailed
         expr: kbmon_coord_runs{state="failed"} > 0
         for: 5m
