@@ -2,7 +2,7 @@
   "id": "ST-viygvkrl",
   "kind": "story",
   "title": "Review sprint: Code questions from a pinned code map, used by planning too",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-acysfnxr",
   "review": true,
   "priority": "P1",
@@ -24,6 +24,27 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "24d7ae63fd0fd6929200b0abff74703470de115d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "a263fcf4fdff48a8"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "daa03d39ec7e243d"
+      }
+    ]
+  }
 }
