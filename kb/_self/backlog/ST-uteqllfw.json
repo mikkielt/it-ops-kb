@@ -2,7 +2,7 @@
   "id": "ST-uteqllfw",
   "kind": "story",
   "title": "Review sprint: Session state and cost: blocked, finished, silent, and spend by topic",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-hxxn6fnv",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,7 @@
       ]
     }
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
