@@ -61,7 +61,9 @@
       },
       "class": "design",
       "answer": "guard: stage drops itself from sys.modules and imports kbfacts",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

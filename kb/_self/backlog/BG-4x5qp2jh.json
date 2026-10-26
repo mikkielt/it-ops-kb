@@ -57,7 +57,9 @@
       },
       "class": "design",
       "answer": "git log day of the article, flag dropped when later than the report's day",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

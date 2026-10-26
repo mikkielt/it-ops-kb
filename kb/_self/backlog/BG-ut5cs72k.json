@@ -1,0 +1,27 @@
+{
+  "id": "BG-ut5cs72k",
+  "kind": "bug",
+  "title": "fact-validity-windows.md states Graphiti's created_at and expired_at beyond what the pinned code says",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The two Graphiti CODE facts of kb/public/prior-art/fact-validity-windows.md say only what the pinned edges.py and edge_operations.py hold: created_at is a field of the base Edge, expired_at is described as when the node was invalidated, and an existing expired_at is kept, not overwritten. Found by the SP-vlfcgmbu review (gap 5).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;L=open(\"kb/public/prior-art/fact-validity-windows.md\").read().splitlines();bad=[i+1 for i,l in enumerate(L) if \"EntityEdge\" in l and \"when the store knew\" in l]+[i+1 for i,l in enumerate(L) if \"fills its `expired_at` with the current time\" in l];print(\"lines still worded beyond the code:\",bad);sys.exit(1 if bad else 0)"
+    ]
+  },
+  "repro_reason": "the defect is the wording of two kb fact lines against a pinned source; the behaviour is the text itself, so the repro reads those lines for the overstated phrases",
+  "touches": [
+    "kb/public/prior-art/fact-validity-windows.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-vlfcgmbu review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
