@@ -2,7 +2,7 @@
   "id": "ST-6n5xrkbt",
   "kind": "story",
   "title": "One call turns a task's title and body into a context pack: the cited fact lines and what the kb lacks",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-66qfpegm",
   "sprint": "SP-n7f53pgv",
   "priority": "P2",
@@ -69,5 +69,7 @@
     "kb/_self/content-rules.md"
   ],
   "notes": "Plan check 2026-10-26: goal narrowed: the code locations at an ingested repository's pinned commit are left out, since they need the code map of ST-q4fbmomg, which left SP-acysfnxr with its gate ST-teivhsxq g1 (agents-rule) open; the dependency on ST-q4fbmomg is dropped and a later item adds the code locations. Check 0 runs rag.py task on stdin and on a file (same output, a fact line, the coverage line first, a smaller --budget gives less), check 1 a task with one kb part and one unknown part (kb has / kb lacks), check 2 kb_task_context over MCP against the CLI's cited lines, check 3 the help and the tool description for a tracker name. On the base: no task subcommand and no kb_task_context: premise reproduced.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
