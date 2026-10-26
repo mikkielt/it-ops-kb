@@ -569,7 +569,7 @@ def worker_of(rec):
 def dispatch_runs(root):
     """[{item, pid, session, alive}] of the dispatch runs in the claims ledger of ROOT's git dir: a record with a
     `worker_pid` or a `worker_session` (`bl_dispatch.record_worker`), live workers first, then by item, DISPATCH_KEPT at
-    most. `session` is the session's label, never its id, and null before the session ended; `alive` is whether the pid
+    most. `session` is the session's label, never its id, and null while the pid runs (a re-dispatched worker's record still holds the last run's session); `alive` is whether the pid
     still runs, null where the host cannot tell (Windows, where `os.kill` ends a process) or the record has no pid. A ledger
     that is not there or does not read gives []."""
     import bl_procs
@@ -579,7 +579,7 @@ def dispatch_runs(root):
         if pid is None and session is None:
             continue
         alive = bl_procs.running(pid) if pid is not None and os.name != "nt" else None
-        out.append({"item": item, "pid": pid, "session": mon_view.session_label(session), "alive": alive})
+        out.append({"item": item, "pid": pid, "session": None if alive else mon_view.session_label(session), "alive": alive})
     out.sort(key=lambda r: (r["alive"] is not True, r["item"]))
     return out[:DISPATCH_KEPT]
 
@@ -708,8 +708,8 @@ def intent_session(found, item, taken, own):
 
 def bind_sessions(claude, placed, by_path, ledgers, found):
     """{pid: [session id or None, [item ids], worker]} for the processes CLAUDE (oldest first). A process is bound to a
-    session id in this order: the dispatch record that names its pid (its `worker_session`), the one session that made the
-    claims of its checkout's ledger, the one intent of its item that is not a claim's (a worker's), the one hook session of
+    session id in this order: the one session that made the claims of its checkout's ledger (not for a process a dispatch
+    record names: its `worker_session` is the previous run's, written when that run exited), the one intent of its item that is not a claim's (a worker's), the one hook session of
     its checkout that holds a coord lease; an id binds to one process, the oldest first. `worker` is a dispatch record
     naming the pid or a checkout on a `work/<id>` branch, which then gives the item."""
     dispatch = {}
@@ -721,8 +721,8 @@ def bind_sessions(claude, placed, by_path, ledgers, found):
     taken, bound = set(), {}
     for p in claude:  # the ledgers name a session
         found_rec = dispatch.get(p["pid"])
-        if found_rec:
-            sid, items = guid(worker_of(found_rec[1])[1]), [found_rec[0]]
+        if found_rec:  # `worker_session` is written when a run exits: for a pid that still runs it is the last run's
+            sid, items = None, [found_rec[0]]
         else:
             claimed = {i: guid(r.get("session")) for i, r in ledgers[placed[p["pid"]]].items() if guid(r.get("session"))}
             sid = next(iter(claimed.values())) if len(set(claimed.values())) == 1 else None
