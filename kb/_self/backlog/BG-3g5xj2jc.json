@@ -1,0 +1,21 @@
+{
+  "id": "BG-3g5xj2jc",
+  "kind": "bug",
+  "title": "A gate whose question names a credential as a lower-case snake_case identifier outside the closed credential-part list (registration_token, ci_job_token, vault_token) is classed design, not secrets",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "a gate whose question names registration_token, ci_job_token, vault_token, trigger_token or another credential token as a snake_case identifier is classed secrets, while bare_token and def_tokens stay classed by their other words",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import bl_authority as a;bad=[q for q in (\"Should the worker print the registration_token in the log?\",\"Do we rotate the vault_token each week?\",\"Should the ci_job_token reach the job env?\") if a.class_reasons({\"touches\":[\"_tools/x.py\"]},{\"id\":\"g1\",\"question\":q,\"options\":[\"one\",\"two\"]})[0]!=\"secrets\"];print(bad);sys.exit(1 if bad else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_authority.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
