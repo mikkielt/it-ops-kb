@@ -636,7 +636,8 @@ def worker_env(oid, iid=None, sprint=None, traceparent=None):
 def budget_usd(flag=None, env=None):
     """The worker's spend cap in USD as text, or None for none: the `--max-budget-usd` FLAG, else the `BUDGET_ENV`
     variable of ENV (default: the environment), else none. Subagent work does not count against `--max-turns`, so the
-    cap is what bounds a worker that fans out. A value that is no positive number is refused."""
+    cap is what bounds a worker that fans out. A value that is no positive number, or one whose printed amount
+    (six decimals, `1e-7` prints as 0) is not positive, is refused."""
     given = flag if flag is not None else (os.environ if env is None else env).get(BUDGET_ENV, "").strip() or None
     if given is None:
         return None
@@ -644,9 +645,10 @@ def budget_usd(flag=None, env=None):
         usd = float(given)
     except ValueError:
         usd = 0.0
-    if not usd > 0 or usd == float("inf"):
+    text = format(usd, "f").rstrip("0").rstrip(".") if usd > 0 and usd != float("inf") else ""
+    if not text or text == "0":
         raise Rejected(f"dispatch: the spend cap {given!r} ({BUDGET_FLAG} or {BUDGET_ENV}) is no positive number of USD")
-    return format(usd, "f").rstrip("0").rstrip(".")
+    return text
 
 
 def budget_line(budget):
