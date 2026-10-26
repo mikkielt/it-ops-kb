@@ -221,13 +221,15 @@ def words(text):
 
 def name_words(name, need):
     """The words of an entry's name, and the words of NEED that spell a name of several words together: the name
-    `querylog.py` holds `query` and `log` for the need `query log`, as `query_log` holds `querylog` for that need."""
+    `querylog.py` holds `query` and `log` for the need `query log` or `query logs` (the last word of the run is stemmed, so
+    its ending does not matter), as `query_log` holds `querylog` for that need."""
     named, asked = WORD.findall(name.lower()), WORD.findall(need.lower())
     out = words(name)
     for size in (2, 3):
         for i in range(len(asked) - size + 1):
-            if "".join(asked[i:i + size]) in named:
-                out |= words(" ".join(asked[i:i + size]))
+            run = asked[i:i + size]
+            if {"".join(run), "".join(run[:-1]) + stem(run[-1])} & set(named):
+                out |= words(" ".join(run))
         for i in range(len(named) - size + 1):
             if "".join(named[i:i + size]) in asked:
                 out |= words(" ".join(named[i:i + size]))
