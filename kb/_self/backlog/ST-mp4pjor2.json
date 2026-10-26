@@ -64,10 +64,6 @@
     "kb/_self/tools.md",
     "kb/_self/token-efficiency.md"
   ],
-  "depends_on": [
-    "BG-dgnrn4jy",
-    "BG-4x5qp2jh"
-  ],
   "gates": [
     {
       "id": "g1",
