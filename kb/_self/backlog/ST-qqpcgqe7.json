@@ -4,9 +4,10 @@
   "title": "Sessions no person watches skip the hooks only a person reads, keeping the lease, asks and query-log rows",
   "status": "draft",
   "parent": "EP-nxb7hjwd",
+  "sprint": "SP-wpttdu7u",
   "priority": "P3",
   "rank": 0,
-  "goal": "A session started by backlog.py dispatch or begin, or a headless sprint runner started by the line the kb-sprint skill gives, runs as the operator's answer to the switch gate says; under the recommended answer the hooks a person reads (kb_hook, the change router, the session-start notices, the digest, horizon and intake hooks) exit at once in a session whose environment marks it unwatched, while coord_hook and the querylog capture and launch hooks run as before, so python3 _tools/benchmarks.py run session-load --arms A,worker shows the worker arm (arm A's hooks under bl_dispatch.worker_env's environment) starting fewer processes than arm A and still writing its coord session lease and query-log work rows",
+  "goal": "A session whose environment holds KB_UNWATCHED=1 (set by bl_dispatch.worker_env for every worker of backlog.py dispatch and begin, and by the headless runner launch line the kb-sprint skill gives) runs the lean hook set the operator chose: the launcher _tools/kbpy, given --person before the script, exits 0 at once with no output there, and .claude/settings.json and .claude-plugin/plugin.json mark with --person every hook a person reads (the session-start notice and session_start.py, the digest, horizon, intake, publish, root fetch and red-pipeline hooks, the change router, and kb_hook on UserPromptSubmit) while coord_hook, the querylog capture and launch hooks and kb_hook before WebFetch, Bash and PowerShell (the agent guards) stay unmarked; and python3 _tools/benchmarks.py run session-load --arms A,worker shows the worker arm (arm A under bl_dispatch.worker_env's environment) starting fewer processes than arm A and still writing its coord session lease and query-log work rows",
   "checks": [
     {
       "run": [
@@ -14,25 +15,33 @@
         "-c",
         "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport csv, os, shutil, subprocess, tempfile\nT = tempfile.mkdtemp()\nB = os.path.join(T, 'bin'); os.mkdir(B)\nopen(os.path.join(B, 'claude'), 'w').write('#!/bin/sh\\nexit 1\\n')\nos.chmod(os.path.join(B, 'claude'), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ['PATH'])\nout = os.path.join(T, 'out.csv')\np = subprocess.run([sys.executable, '_tools/benchmarks.py', 'run', 'session-load', '--arms', 'A,worker', '--reps', '1', '--out', out],\n                   capture_output=True, text=True, env=ENV, timeout=1800)\nrows = list(csv.DictReader(open(out, encoding='utf-8'))) if os.path.exists(out) else []\nshutil.rmtree(T, ignore_errors=True)\nassert p.returncode == 0, ('run session-load --arms A,worker exit', p.returncode, p.stderr[-400:])\nval = {(r['case'], r['arm'], r['metric']): float(r['value']) for r in rows if r['scenario'] == 'session-load'}\nfor case in ('idle all', 'working all'):\n    w, a = val.get((case, 'worker', 'spawns_per_min')), val.get((case, 'A', 'spawns_per_min'))\n    assert w is not None and a is not None and w < a, ('a worker session starts no fewer processes than arm A', case, w, a)\nassert val.get(('working all', 'worker', 'lease_written')) == 1, 'the worker session wrote no coord session lease'\nassert val.get(('working all', 'worker', 'work_rows'), 0) > 0, 'the worker session wrote no query-log work rows'\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport json, os, subprocess, time\nsys.path.insert(0, '_tools')\nimport bl_dispatch\nenv = bl_dispatch.worker_env('op-00000000')\nassert env.get('KB_UNWATCHED') == '1', 'bl_dispatch.worker_env does not mark a worker unwatched'\nE = dict(os.environ, KB_UNWATCHED='1')\nt = time.perf_counter()\np = subprocess.run(['sh', '_tools/kbpy', '--person', '_tools/querylog.py', 'digest', '--hook'], input='{}', capture_output=True, text=True, env=E, timeout=60)\ndt = time.perf_counter() - t\nassert p.returncode == 0 and not p.stdout.strip() and dt < 0.5, ('a person-only hook in an unwatched session does not exit at once', p.returncode, p.stdout[:200], round(dt, 2))\nev = json.dumps({'hook_event_name': 'PreToolUse', 'tool_name': 'WebFetch', 'tool_input': {'url': 'https://example.com/'}})\nq = subprocess.run(['sh', '_tools/kbpy', '_tools/kb_hook.py'], input=ev, capture_output=True, text=True, env=E, timeout=60)\nassert q.returncode == 0, ('kb_hook on a WebFetch call in an unwatched session', q.returncode, q.stderr[-200:])\ns = json.load(open('.claude/settings.json', encoding='utf-8'))\ncmds = [(ev, g.get('matcher', ''), h['command']) for ev, gs in s['hooks'].items() for g in gs for h in g['hooks'] if 'kbpy' in h['command']]\nkeep = ('coord_hook.py', 'querylog.py capture', 'querylog.py launch')\nfor ev, m, c in cmds:\n    if any(k in c for k in keep) or (ev == 'PreToolUse' and 'kb_hook.py' in c):\n        assert '--person' not in c, ('a hook unwatched sessions keep is marked person-only', ev, m, c)\n    else:\n        assert '--person' in c, ('a person-only hook is not marked', ev, m, c)\n"
+      ]
     }
   ],
   "touches": [
-    "_tools/kb_hook.py",
-    ".claude/hooks/kb_change_router.py",
-    ".claude/hooks/session_start.py",
+    ".claude/settings.json",
+    ".claude-plugin/plugin.json",
+    "_tools/kbpy",
     "_tools/bl_dispatch.py",
     "skills/sprint/SKILL.md",
     "_tools/bench_load.py",
-    "AGENTS.md",
     "kb/_self/maintaining.md",
-    "kb/_self/token-efficiency.md",
     "kb/_self/plugin.md",
     "kb/_self/tools.md",
+    "kb/_self/token-efficiency.md",
     "kb/_self/backlog.md",
-    "kb/_self/benchmarks.md"
+    "kb/_self/benchmarks.md",
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md"
   ],
   "depends_on": [
-    "ST-rodj5ltd"
+    "ST-x2ayo2yk"
   ],
   "gates": [
     {
@@ -60,8 +69,13 @@
         "Lean plus coord and capture off": "ST-qqpcgqe7",
         "All hooks off (disableAllHooks)": "ST-qqpcgqe7"
       },
-      "class": "querylog"
+      "class": "querylog",
+      "answer": "Lean: person-only hooks exit, coord and query-log hooks kept",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
+  "notes": "Operator, 2026-10-26: lean switch decided now; kb_hook stays on tool calls in unwatched sessions (WebFetch deny, read nudge), only its prompt hook is person-only.",
   "filed_in": "clone-0ea70e5c"
 }
