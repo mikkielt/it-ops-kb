@@ -2,7 +2,7 @@
   "id": "BG-xl2pyj3x",
   "kind": "bug",
   "title": "A re-dispatched worker is bound to its previous run's finished session, so kbtail shows the old transcript and nothing of the live run",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-booflukv",
   "sprint": "SP-7ba3r4ec",
   "priority": "P1",
@@ -27,5 +27,7 @@
     "BG-lagjhkzn"
   ],
   "notes": "Fresh review of SP-7ba3r4ec, gap 2 (S2, raised to S1 by the operator): bind_sessions prefers the ledger's dispatch record; bl_dispatch records worker_session only when a worker exits, so the record holds the last run's session while the new pid runs. Fix in the binding (a leased hook session of the checkout that is newer than the record's) or in dispatch (clear worker_session when it records worker_pid).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-6c439ca9",
+  "operator": "op-f618a13e"
 }
