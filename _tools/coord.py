@@ -33,7 +33,7 @@
                                                      local store only) also ends the wait when that process has ended
   coord.py dedup QUESTION [--holder NAME] [--topic PATH] [--token T] [--ttl S]
                                                      claim the question's lack terms that no overlapping live claim
-                                                     covers (local store only, not through --url)
+                                                     covers (through --url too: the server runs the pack on its own kb)
 
 The store is one SQLite file: `--store PATH` (before or after the command), else the environment variable
 KB_COORD_STORE, else `kb-coord/coord.sqlite` in the common git directory of the project (CLAUDE_PROJECT_DIR, else the
@@ -1008,12 +1008,13 @@ def build_parser(parser_class=argparse.ArgumentParser, remote=False):
     if not remote:
         p.add_argument("--pid", type=process_id, action="append", metavar="PID", help="also return as soon as this process has "
                        "ended (repeatable; not through --url)")
-        p = sub.add_parser("dedup", parents=parents)
-        p.add_argument("question")
-        p.add_argument("--holder", help=f"name shown to a later question that overlaps this one (else {HOLDER_ENV}, else anonymous)")
-        p.add_argument("--topic", type=topic_path, help="the article path to anchor the claim on, instead of the pack's first article")
-        p.add_argument("--token", type=token, help="the token an earlier dedup printed: its claims under --holder are yours, not an overlap")
-        p.add_argument("--ttl", type=positive, default=DEDUP_SECONDS, help=f"lease length in seconds (default {DEDUP_SECONDS})")
+    p = sub.add_parser("dedup", parents=parents)
+    p.add_argument("question")
+    p.add_argument("--holder", help=f"name shown to a later question that overlaps this one (else {HOLDER_ENV}, else anonymous)")
+    p.add_argument("--topic", type=topic_path, help="the article path to anchor the claim on, instead of the pack's first article")
+    p.add_argument("--token", type=token, help="the token an earlier dedup printed: its claims under --holder are yours, not an overlap")
+    p.add_argument("--ttl", type=positive, default=DEDUP_SECONDS, help=f"lease length in seconds (default {DEDUP_SECONDS})")
+    if not remote:
         p = sub.add_parser("serve", parents=parents)
         p.add_argument("--bind", required=True, metavar="[HOST:]PORT", help="host (default 127.0.0.1) and port (0: a free one)")
         p.add_argument("--keys", required=True, metavar="DIR", help="one file per operator, named for it, holding its token")
@@ -1274,7 +1275,7 @@ def send(url, key_file, argv, plain_http=False):
     except ValueError:
         print(f"coord.py: --url port is 0 to 65535, not {parts.netloc.rpartition(':')[2][:20]!r}", file=sys.stderr)
         return 2
-    seconds_to_wait = REQUEST_SECONDS + (parsed.timeout if parsed.command == "wait" else 0)
+    seconds_to_wait = REQUEST_SECONDS + (parsed.timeout if parsed.command == "wait" else PACK_SECONDS if parsed.command == "dedup" else 0)
     try:
         with socket.socket() as probe:
             probe.settimeout(seconds_to_wait)
@@ -1386,7 +1387,7 @@ def main(argv=None):
             sent = build_parser(QuietParser, True).parse_args(rest)
         except Refused:
             sent = None
-        if sent is not None and sent.command == "claim" and not sent.holder and os.environ.get(HOLDER_ENV):
+        if sent is not None and sent.command in ("claim", "dedup") and not sent.holder and os.environ.get(HOLDER_ENV):
             rest = [*rest, "--holder", os.environ[HOLDER_ENV]]
         return send(named.url, named.key_file, rest, named.plain_http)
     args = build_parser().parse_args(argv)

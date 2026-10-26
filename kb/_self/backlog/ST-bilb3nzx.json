@@ -59,6 +59,42 @@
   "depends_on": [
     "BG-n4pgkyos"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Does the default kb MCP server list the coord_ tools (so the item's own checks, which start it without KB_COORD_TOOLS, see coord_wait and coord_dedup)?",
+      "options": [
+        "List them by default; KB_COORD_TOOLS=0 turns them off",
+        "Keep them opt-in with KB_COORD_TOOLS=1 (the checks then pass only where that variable is set)"
+      ],
+      "recommendation": "List them by default; KB_COORD_TOOLS=0 turns them off",
+      "do": {
+        "List them by default; KB_COORD_TOOLS=0 turns them off": "ST-bilb3nzx",
+        "Keep them opt-in with KB_COORD_TOOLS=1 (the checks then pass only where that variable is set)": "ST-bilb3nzx"
+      },
+      "class": "design",
+      "answer": "List them by default; KB_COORD_TOOLS=0 turns them off",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Does a --url client send its own KB_COORD_HOLDER with a dedup, as it does with a claim?",
+      "options": [
+        "Yes, a dedup without --holder sends KB_COORD_HOLDER like a claim",
+        "No, a dedup through --url without --holder is anonymous"
+      ],
+      "recommendation": "Yes, a dedup without --holder sends KB_COORD_HOLDER like a claim",
+      "do": {
+        "Yes, a dedup without --holder sends KB_COORD_HOLDER like a claim": "ST-bilb3nzx",
+        "No, a dedup through --url without --holder is anonymous": "ST-bilb3nzx"
+      },
+      "class": "design",
+      "answer": "Yes, a dedup without --holder sends KB_COORD_HOLDER like a claim",
+      "by": "agent"
+    }
+  ],
   "notes": "Plan check 2026-10-26: check 0 reads the tools/list order, check 1 calls coord_dedup over MCP twice on a temp store (KB_COORD_STORE) and reads the fields and the second holder's overlap, check 2 starts coord.py serve on a free loopback port with two planted operator keys and runs dedup through --url twice. On the base: no coord_dedup tool (checks 0-1) and serve refuses dedup as an invalid choice (check 2): premise reproduced.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-775f1f5d",
