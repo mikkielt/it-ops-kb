@@ -2,7 +2,7 @@
   "id": "ST-4qfy6ulf",
   "kind": "story",
   "title": "kbwho takes an alias from the operators file only when it is an operator id",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mk6ikval",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,7 @@
   "links": [
     "parked: SP-czs3jk57 review"
   ],
-  "notes": "Premise: the check fails on the base: an address-shaped alias in the operators file comes back as the operator id 'Jan K / Team'. Sprint SP-mk6ikval started 2026-10-26; item moved from draft to todo."
+  "notes": "Premise: the check fails on the base: an address-shaped alias in the operators file comes back as the operator id 'Jan K / Team'. Sprint SP-mk6ikval started 2026-10-26; item moved from draft to todo.",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
