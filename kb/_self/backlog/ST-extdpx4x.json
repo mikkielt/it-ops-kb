@@ -2,7 +2,7 @@
   "id": "ST-extdpx4x",
   "kind": "story",
   "title": "Review sprint: Orchestration tools: run states, landing, begin and wait",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-42b2cjm3",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,6 @@
       ]
     }
   ],
+  "notes": "Sprint started 2026-10-26 on the operator's approval for the unattended run.",
   "filed_in": "clone-0ea70e5c"
 }

@@ -2,7 +2,7 @@
   "id": "BG-wo2mzevz",
   "kind": "bug",
   "title": "backlog.py runs names the process record of a running land or stage-back as the item's worker pid",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
   "sprint": "SP-42b2cjm3",
   "priority": "P2",
@@ -31,5 +31,6 @@
   "links": [
     "parked: SP-dx76osrn review"
   ],
+  "notes": "Sprint started 2026-10-26 on the operator's approval for the unattended run.",
   "filed_in": "clone-0ea70e5c"
 }

@@ -2,7 +2,7 @@
   "id": "BG-wzc2kg5b",
   "kind": "bug",
   "title": "dispatch --detach reads the wait cursor right after the spawn, so the printed wait returns once on the worker's own working event while the worker still runs",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-42b2cjm3",
   "priority": "P3",
   "rank": 0,
@@ -35,6 +35,6 @@
   "links": [
     "parked: SP-lhpvwh6l review"
   ],
-  "notes": "Found by the SP-lhpvwh6l review (S3): start_detached in _tools/bl_dispatch.py calls coord_cursor with no settle, so the cursor precedes the worker's working event and the printed wait returns on it after about 10 s with the worker alive. skills/sprint/SKILL.md and kb/_self/tools.md say the wait returns on the next event: keep that wording only if the cursor skips working, else reword to the next move after working. Same fixture as BG-vr3vxylj, mode dispatch.",
+  "notes": "Found by the SP-lhpvwh6l review (S3): start_detached in _tools/bl_dispatch.py calls coord_cursor with no settle, so the cursor precedes the worker's working event and the printed wait returns on it after about 10 s with the worker alive. skills/sprint/SKILL.md and kb/_self/tools.md say the wait returns on the next event: keep that wording only if the cursor skips working, else reword to the next move after working. Same fixture as BG-vr3vxylj, mode dispatch. Sprint started 2026-10-26 on the operator's approval for the unattended run.",
   "filed_in": "clone-0ea70e5c"
 }

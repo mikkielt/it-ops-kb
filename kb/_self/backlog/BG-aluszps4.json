@@ -2,7 +2,7 @@
   "id": "BG-aluszps4",
   "kind": "bug",
   "title": "dispatch --resume starts the worker session while a land or stage-back holds the run key, and the worker's own moves are then refused",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
   "sprint": "SP-42b2cjm3",
   "priority": "P2",
@@ -33,5 +33,6 @@
   "links": [
     "parked: SP-dx76osrn review"
   ],
+  "notes": "Sprint started 2026-10-26 on the operator's approval for the unattended run.",
   "filed_in": "clone-0ea70e5c"
 }

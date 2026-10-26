@@ -2,7 +2,7 @@
   "id": "BG-nyymdwc3",
   "kind": "bug",
   "title": "coord.py wait --pid counts an exited but unreaped process as running",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-42b2cjm3",
   "priority": "P3",
   "rank": 0,
@@ -33,5 +33,6 @@
   "links": [
     "parked: SP-vxdacfpl review"
   ],
+  "notes": "Sprint started 2026-10-26 on the operator's approval for the unattended run.",
   "filed_in": "clone-0ea70e5c"
 }
