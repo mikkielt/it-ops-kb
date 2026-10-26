@@ -7,7 +7,7 @@
   "sprint": "SP-wpttdu7u",
   "priority": "P2",
   "rank": 0,
-  "goal": "In the session-load replay, arm A's synchronous UserPromptSubmit hook _tools/kb_hook.py takes at most 200 ms (median of 3 reps; 438 ms at load about 6 before), its answers to kb:, status: and other prefixed prompts unchanged; the worker measures the figure's run-to-run spread before relying on the bound",
+  "goal": "In the session-load replay, arm A's synchronous UserPromptSubmit hook _tools/kb_hook.py takes at most 200 ms (median of 3 reps; 438 ms at load about 6 before), a kb: prompt still answered from a pack and a prompt without a prefix still getting no output",
   "checks": [
     {
       "run": [
@@ -15,6 +15,23 @@
         "-c",
         "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport csv, os, shutil, subprocess, tempfile\nCASE, BOUND_MS = 'UserPromptSubmit _tools/kb_hook.py', 200\nT = tempfile.mkdtemp()\nB = os.path.join(T, 'bin'); os.mkdir(B)\nopen(os.path.join(B, 'claude'), 'w').write('#!/bin/sh\\nexit 1\\n')\nos.chmod(os.path.join(B, 'claude'), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ['PATH'])\nout = os.path.join(T, 'out.csv')\np = subprocess.run([sys.executable, '_tools/benchmarks.py', 'run', 'session-load', '--arms', 'A', '--reps', '3', '--out', out],\n                   capture_output=True, text=True, env=ENV, timeout=1800)\nrows = list(csv.DictReader(open(out, encoding='utf-8'))) if os.path.exists(out) else []\nshutil.rmtree(T, ignore_errors=True)\nassert p.returncode == 0, ('run session-load exit', p.returncode, p.stderr[-400:])\ngot = [float(r['value']) for r in rows if r['scenario'] == 'session-load' and r['arm'] == 'A' and r['metric'] == 'sync_ms' and r['case'] == CASE]\nassert got, ('no sync_ms row for', CASE)\nassert got[0] <= BOUND_MS, (CASE, 'sync_ms', got[0], 'over', BOUND_MS)\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport json, subprocess\ndef ask(text):\n    p = subprocess.run([sys.executable, '_tools/kb_hook.py', '--test', text], capture_output=True, text=True, timeout=300)\n    assert p.returncode == 0, ('kb_hook --test', text, p.returncode, p.stderr[-300:])\n    return p.stdout.strip()\nkb = json.loads(ask('kb: how often does an Intune device check in'))\nassert kb.get('decision') == 'block' and 'coverage:' in kb.get('reason', '') and 'pack: P-' in kb['reason'], ('a kb: prompt is no longer answered from a pack', str(kb)[:300])\nplain = ask('please rename the variable in this function')\nassert plain in ('', 'null'), ('a prompt without a prefix now gets output from kb_hook', plain[:200])\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "In the session-load replay, arm A's synchronous UserPromptSubmit hook _tools/kb_hook.py takes at most 200 ms (median of 3 reps",
+      "check": 0
+    },
+    {
+      "clause": "438 ms at load about 6 before), a kb: prompt still answered from a pack and a prompt without a prefix still getting no output",
+      "check": 1
     }
   ],
   "touches": [
@@ -24,5 +41,6 @@
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md"
   ],
+  "notes": "Check 1 passes before the work by design: it pins kb_hook's answers so the speed-up cannot drop them. The worker measures the sync_ms figure's run-to-run spread before relying on the 200 ms bound (the planning rule ST-7qait5zh files).",
   "filed_in": "clone-0ea70e5c"
 }

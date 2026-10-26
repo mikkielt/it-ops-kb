@@ -7,7 +7,7 @@
   "sprint": "SP-wpttdu7u",
   "priority": "P2",
   "rank": 0,
-  "goal": "In the session-load replay, arm A's synchronous PreToolUse hook .claude/hooks/coord_hook.py for a Bash call takes at most 80 ms (median of 3 reps; about 180 ms at load about 6 before), while it still posts and delivers what it does today: the session lease, intents, overlap notices and asks addressed to the session; the worker measures the figure's run-to-run spread before relying on the bound",
+  "goal": "In the session-load replay, arm A's synchronous PreToolUse hook .claude/hooks/coord_hook.py for a Bash call takes at most 80 ms (median of 3 reps; about 180 ms at load about 6 before), and it still delivers an ask addressed to the session on its next tool call",
   "checks": [
     {
       "run": [
@@ -15,6 +15,27 @@
         "-c",
         "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport csv, os, shutil, subprocess, tempfile\nCASE, BOUND_MS = 'PreToolUse .claude/hooks/coord_hook.py (Bash)', 80\nT = tempfile.mkdtemp()\nB = os.path.join(T, 'bin'); os.mkdir(B)\nopen(os.path.join(B, 'claude'), 'w').write('#!/bin/sh\\nexit 1\\n')\nos.chmod(os.path.join(B, 'claude'), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ['PATH'])\nout = os.path.join(T, 'out.csv')\np = subprocess.run([sys.executable, '_tools/benchmarks.py', 'run', 'session-load', '--arms', 'A', '--reps', '3', '--out', out],\n                   capture_output=True, text=True, env=ENV, timeout=1800)\nrows = list(csv.DictReader(open(out, encoding='utf-8'))) if os.path.exists(out) else []\nshutil.rmtree(T, ignore_errors=True)\nassert p.returncode == 0, ('run session-load exit', p.returncode, p.stderr[-400:])\ngot = [float(r['value']) for r in rows if r['scenario'] == 'session-load' and r['arm'] == 'A' and r['metric'] == 'sync_ms' and r['case'] == CASE]\nassert got, ('no sync_ms row for', CASE)\nassert got[0] <= BOUND_MS, (CASE, 'sync_ms', got[0], 'over', BOUND_MS)\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport json, os, shutil, subprocess, tempfile\nT = tempfile.mkdtemp()\nE = dict(os.environ, KB_COORD_STORE=os.path.join(T, 'coord.sqlite'))\nsid = '00000000-0000-0000-0000-00000000c0de'\ntry:\n    a = subprocess.run([sys.executable, '_tools/kbask.py', 'ask', sid, 'planted question for the coord hook check'],\n                       capture_output=True, text=True, env=E, timeout=120)\n    assert a.returncode == 0, ('kbask ask on a planted store', a.returncode, a.stderr[-300:])\n    ev = {'session_id': sid, 'hook_event_name': 'PreToolUse', 'tool_name': 'Bash', 'tool_input': {'command': 'true'}, 'cwd': os.getcwd()}\n    p = subprocess.run(['sh', '_tools/kbpy', '.claude/hooks/coord_hook.py'], input=json.dumps(ev), capture_output=True, text=True, env=E, timeout=120)\nfinally:\n    shutil.rmtree(T, ignore_errors=True)\nassert p.returncode == 0, ('coord_hook PreToolUse', p.returncode, p.stderr[-300:])\nassert 'planted question for the coord hook check' in p.stdout, ('coord_hook did not deliver an ask addressed to the session', p.stdout[-300:])\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "In the session-load replay, arm A's synchronous PreToolUse hook .claude/hooks/coord_hook.py for a Bash call takes at most 80 ms (median of 3 reps",
+      "check": 0
+    },
+    {
+      "clause": "about 180 ms at load about 6 before)",
+      "check": 0
+    },
+    {
+      "clause": "it still delivers an ask addressed to the session on its next tool call",
+      "check": 1
     }
   ],
   "touches": [
@@ -26,5 +47,6 @@
     "kb/_self/tools.md",
     "kb/_self/monitoring.md"
   ],
+  "notes": "Check 1 passes before the work by design: it pins ask delivery from a planted coord store. The session lease, intents and overlap notices stay as they are (the sprint review reads the diff). The worker measures the sync_ms figure's run-to-run spread before relying on the 80 ms bound.",
   "filed_in": "clone-0ea70e5c"
 }

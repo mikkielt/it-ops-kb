@@ -7,7 +7,7 @@
   "sprint": "SP-wv3ob5vy",
   "priority": "P3",
   "rank": 0,
-  "goal": "python3 _tools/benchmarks.py run session-load --live samples for --window seconds the process trees of the running Claude Code sessions in this clone (interactive and headless told apart, as kbmon's sessions panel does) or of the roots --live-pids names, and writes arm live rows per process class (case 'live <class>', 'all' for their sum: cpu_s, rss_peak_mb, rss_mean_mb, spawns_per_min); its per-sample snapshot goes under _cache/ only, its path printed, and nothing it writes holds a session's prompt or a path outside the clone",
+  "goal": "python3 _tools/benchmarks.py run session-load --live samples for --window seconds the process trees of the running Claude Code sessions in this clone (interactive and headless told apart, as kbmon's sessions panel does) or of the roots --live-pids names, and writes arm live rows per process class (case 'live <class>', 'all' for their sum: cpu_s, rss_peak_mb, rss_mean_mb, spawns_per_min); its per-sample snapshot goes under _cache/ only, its path printed",
   "checks": [
     {
       "run": [
@@ -15,6 +15,20 @@
         "-c",
         "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport csv, os, shutil, subprocess, tempfile\nT = tempfile.mkdtemp()\nout = os.path.join(T, 'out.csv')\nchild = 'import time; t = time.time()\\nwhile time.time() - t < 6: pass'\nparent = ('import subprocess, sys\\n'\n          'c = subprocess.Popen([sys.executable, \"-c\", ' + repr(child) + ', \"kbmon.py\", \"--once\"])\\n'\n          'import time; time.sleep(20); c.kill()')\nroot = subprocess.Popen([sys.executable, '-c', parent])\ntry:\n    p = subprocess.run([sys.executable, '_tools/benchmarks.py', 'run', 'session-load', '--live', '--live-pids', str(root.pid),\n                        '--window', '5', '--out', out], capture_output=True, text=True, timeout=600)\nfinally:\n    root.kill()\nrows = list(csv.DictReader(open(out, encoding='utf-8'))) if os.path.exists(out) else []\nshutil.rmtree(T, ignore_errors=True)\nassert p.returncode == 0, ('run session-load --live exit', p.returncode, p.stderr[-400:])\nval = {(r['case'], r['metric']): float(r['value']) for r in rows if r['scenario'] == 'session-load' and r['arm'] == 'live'}\nassert val.get(('live kbmon', 'cpu_s'), 0) > 1, ('the busy kbmon-named child is not attributed', val.get(('live kbmon', 'cpu_s')))\nassert ('live all', 'rss_peak_mb') in val, 'no live all rss_peak_mb row'\nsnap = [ln for ln in p.stdout.splitlines() if 'snapshot' in ln]\nassert snap and all('_cache/' in ln for ln in snap), ('the snapshot is not written under _cache/', snap)\n"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "python3 _tools/benchmarks.py run session-load --live samples for --window seconds the process trees of the running Claude Code sessions in this clone (interactive and headless told apart, as kbmon's sessions panel does) or of the roots --live-pids names",
+      "check": 0
+    },
+    {
+      "clause": "writes arm live rows per process class (case 'live <class>', 'all' for their sum: cpu_s, rss_peak_mb, rss_mean_mb, spawns_per_min)",
+      "check": 0
+    },
+    {
+      "clause": "its per-sample snapshot goes under _cache/ only, its path printed",
+      "check": 0
     }
   ],
   "touches": [
@@ -26,6 +40,6 @@
   "depends_on": [
     "ST-5fakffyb"
   ],
-  "notes": "Reads the live sessions through the in-process reader ST-bngriclp adds to _tools/mon_sessions.py (pid, session id, checkout, role, item), agreed with that epic's session through coord; it adds no second reader. A kbtail follower shows as its own process class. mon_sessions.live_sessions(root) (landed with ST-bngriclp) gives a worker's item as the raw suffix of its work/ branch when that is no backlog item id: keep only item ids or pass the text through redact.redact, as kbtail does since BG-lagjhkzn.",
+  "notes": "Reads the live sessions through the in-process reader ST-bngriclp adds to _tools/mon_sessions.py (pid, session id, checkout, role, item), agreed with that epic's session through coord; it adds no second reader. A kbtail follower shows as its own process class. mon_sessions.live_sessions(root) (landed with ST-bngriclp) gives a worker's item as the raw suffix of its work/ branch when that is no backlog item id: keep only item ids or pass the text through redact.redact, as kbtail does since BG-lagjhkzn. Nothing it writes holds a session's prompt or a path outside the clone; the review reads the rows and snapshot it writes for that.",
   "filed_in": "clone-0ea70e5c"
 }

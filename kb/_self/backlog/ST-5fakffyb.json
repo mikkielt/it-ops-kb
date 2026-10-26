@@ -17,6 +17,16 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "python3 _tools/benchmarks.py run session-load --sessions N,N... replays N sessions of each arm at once (default 1), each with its own session id and throwaway clone",
+      "check": 0
+    },
+    {
+      "clause": "writes for N above 1 the same rows with case '<phase> <class> xN' and a load_peak row, the host's 1-minute load at its highest during the run",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/bench_load.py",
     "_tools/benchmarks.py",

@@ -20,8 +20,30 @@
       "run": [
         "python3",
         "-c",
-        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport json, os, subprocess, time\nsys.path.insert(0, '_tools')\nimport bl_dispatch\nenv = bl_dispatch.worker_env('op-00000000')\nassert env.get('KB_UNWATCHED') == '1', 'bl_dispatch.worker_env does not mark a worker unwatched'\nE = dict(os.environ, KB_UNWATCHED='1')\nt = time.perf_counter()\np = subprocess.run(['sh', '_tools/kbpy', '--person', '_tools/querylog.py', 'digest', '--hook'], input='{}', capture_output=True, text=True, env=E, timeout=60)\ndt = time.perf_counter() - t\nassert p.returncode == 0 and not p.stdout.strip() and dt < 0.5, ('a person-only hook in an unwatched session does not exit at once', p.returncode, p.stdout[:200], round(dt, 2))\nev = json.dumps({'hook_event_name': 'PreToolUse', 'tool_name': 'WebFetch', 'tool_input': {'url': 'https://example.com/'}})\nq = subprocess.run(['sh', '_tools/kbpy', '_tools/kb_hook.py'], input=ev, capture_output=True, text=True, env=E, timeout=60)\nassert q.returncode == 0, ('kb_hook on a WebFetch call in an unwatched session', q.returncode, q.stderr[-200:])\ns = json.load(open('.claude/settings.json', encoding='utf-8'))\ncmds = [(ev, g.get('matcher', ''), h['command']) for ev, gs in s['hooks'].items() for g in gs for h in g['hooks'] if 'kbpy' in h['command']]\nkeep = ('coord_hook.py', 'querylog.py capture', 'querylog.py launch')\nfor ev, m, c in cmds:\n    if any(k in c for k in keep) or (ev == 'PreToolUse' and 'kb_hook.py' in c):\n        assert '--person' not in c, ('a hook unwatched sessions keep is marked person-only', ev, m, c)\n    else:\n        assert '--person' in c, ('a person-only hook is not marked', ev, m, c)\n"
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport json, os, subprocess, time\nsys.path.insert(0, '_tools')\nimport bl_dispatch\nenv = bl_dispatch.worker_env('op-00000000')\nassert env.get('KB_UNWATCHED') == '1', 'bl_dispatch.worker_env does not mark a worker unwatched'\nE = dict(os.environ, KB_UNWATCHED='1')\nt = time.perf_counter()\np = subprocess.run(['sh', '_tools/kbpy', '--person', '_tools/querylog.py', 'digest', '--hook'], input='{}', capture_output=True, text=True, env=E, timeout=60)\ndt = time.perf_counter() - t\nassert p.returncode == 0 and not p.stdout.strip() and dt < 0.5, ('a person-only hook in an unwatched session does not exit at once', p.returncode, p.stdout[:200], round(dt, 2))\nev = json.dumps({'hook_event_name': 'PreToolUse', 'tool_name': 'WebFetch', 'tool_input': {'url': 'https://example.com/'}})\nq = subprocess.run(['sh', '_tools/kbpy', '_tools/kb_hook.py'], input=ev, capture_output=True, text=True, env=E, timeout=60)\nassert q.returncode == 0, ('kb_hook on a WebFetch call in an unwatched session', q.returncode, q.stderr[-200:])\ns = json.load(open('.claude/settings.json', encoding='utf-8'))\ncmds = [(ev, g.get('matcher', ''), h['command']) for ev, gs in s['hooks'].items() for g in gs for h in g['hooks'] if 'kbpy' in h['command']]\nkeep = ('coord_hook.py', 'querylog.py capture', 'querylog.py launch')\nfor ev, m, c in cmds:\n    if any(k in c for k in keep) or (ev == 'PreToolUse' and 'kb_hook.py' in c):\n        assert '--person' not in c, ('a hook unwatched sessions keep is marked person-only', ev, m, c)\n    else:\n        assert '--person' in c, ('a person-only hook is not marked', ev, m, c)\nskill = open('skills/sprint/SKILL.md', encoding='utf-8').read()\nassert [ln for ln in skill.splitlines() if 'KB_UNWATCHED=1' in ln and 'claude -p' in ln], 'the kb-sprint skill gives no headless runner launch line that sets KB_UNWATCHED=1'\n"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "A session whose environment holds KB_UNWATCHED=1 (set by bl_dispatch.worker_env for every worker of backlog.py dispatch and begin",
+      "check": 1
+    },
+    {
+      "clause": "by the headless runner launch line the kb-sprint skill gives) runs the lean hook set the operator chose: the launcher _tools/kbpy, given --person before the script, exits 0 at once with no output there",
+      "check": 1
+    },
+    {
+      "clause": "claude/settings.json and .claude-plugin/plugin.json mark with --person every hook a person reads (the session-start notice and session_start.py, the digest, horizon, intake, publish, root fetch and red-pipeline hooks, the change router",
+      "check": 1
+    },
+    {
+      "clause": "kb_hook on UserPromptSubmit) while coord_hook, the querylog capture and launch hooks and kb_hook before WebFetch, Bash and PowerShell (the agent guards) stay unmarked",
+      "check": 1
+    },
+    {
+      "clause": "and python3 _tools/benchmarks.py run session-load --arms A,worker shows the worker arm (arm A under bl_dispatch.worker_env's environment) starting fewer processes than arm A and still writing its coord session lease and query-log work rows",
+      "check": 0
     }
   ],
   "touches": [

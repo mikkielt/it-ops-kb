@@ -17,6 +17,16 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kb/_self/reports/benchmarks.csv holds a session-load record of paid Haiku 5.5 runs, arms A, C, D and the lean worker arm, phases idle and working, at 1, 4 and 8 sessions at once, 3 reps each, its spend under the cap the operator gave, with the file_reads rows of an fs_usage capture the operator made during one of its runs",
+      "check": 0
+    },
+    {
+      "clause": "its table in kb/_self/reports/benchmarks.md",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/_self/reports/benchmarks.csv",
     "kb/_self/reports/benchmarks.md",
