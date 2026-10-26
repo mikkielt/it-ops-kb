@@ -4,6 +4,7 @@
   "title": "kbtail.py follows every live session of the clone and its worktrees, labelled by role and item, with subagents",
   "status": "draft",
   "parent": "EP-booflukv",
+  "sprint": "SP-7ba3r4ec",
   "priority": "P2",
   "rank": 0,
   "goal": "`kbtail.py` with no TARGET follows every live Claude Code session in a checkout of the clone (`--root DIR`), the main checkout and each worktree, as `mon_sessions` finds and binds them; each line names its session's role and item, never a raw session id; a subagent's lines (`<session>/subagents/agent-*.jsonl`) are indented under its session; TARGET may be an item id, and `--item`, `--sprint` and `--role` keep the matching sessions only; a followed session whose process ends gets an `ended` line within 5 seconds and kbtail goes on",

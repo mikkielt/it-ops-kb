@@ -4,6 +4,7 @@
   "title": "kbtail.py stops printing appended lines while another process holds the coord store's write lock, up to 30 s",
   "status": "draft",
   "parent": "EP-booflukv",
+  "sprint": "SP-7ba3r4ec",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
