@@ -2,7 +2,7 @@
   "id": "BG-nm2cebb4",
   "kind": "bug",
   "title": "kbtail.py prints the first line holding an IPv4 or a home path about 9 s late, while redaction loads the public kb's names",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-booflukv",
   "sprint": "SP-wurbmsid",
   "priority": "P1",
@@ -25,5 +25,7 @@
     "review: _cache/scratch/review-SP-wurbmsid/gaps-report (local, not committed)"
   ],
   "notes": "Found by the fresh review of SP-wurbmsid (S2 there; the operator raised it to S1 on 2026-10-26). Cause: the first text that needs the public root's names (an IPv4, a /Users/<name> path, probably a host) makes redact.redact load them through mon_view.LazyKnown, about 9 s of full CPU once per process, and the follow loop is blocked meanwhile. A display may redact more than the query log does: over-redaction is acceptable here, a leak is not. Every displayed string still passes redaction and the leak scan. _tools/redact.py is held by another sprint's item (BG-6gpjcsg6): a fix that needs it stops with a gate.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-6c439ca9",
+  "operator": "op-f618a13e"
 }
