@@ -55,6 +55,80 @@
   "depends_on": [
     "ST-44n6nfrr"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which arm label do the rows of a capture carry (the goal names the case 'capture <class>' only)?",
+      "options": [
+        "capture",
+        "empty arm"
+      ],
+      "recommendation": "capture",
+      "reason": "an empty arm would make a same-day run of the replay arms (or of a capture) replace the other's rows of the record",
+      "do": {
+        "capture": "ST-v5h7dpff",
+        "empty arm": "ST-v5h7dpff"
+      },
+      "class": "design",
+      "answer": "capture",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How is a process name classed: any python is kb-tools, exact git, lsof, claude, fseventsd, else other?",
+      "options": [
+        "any python name is kb-tools",
+        "only python3 is kb-tools"
+      ],
+      "recommendation": "any python name is kb-tools",
+      "reason": "macOS runs the interpreter as python3, Python or python3.N, and the name carries no script to tell kb-tools from other Python",
+      "do": {
+        "any python name is kb-tools": "ST-v5h7dpff",
+        "only python3 is kb-tools": "ST-v5h7dpff"
+      },
+      "class": "design",
+      "answer": "any python name is kb-tools",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Are rows written for a class that has no line in the capture, and does an open that failed (errno) count as a read?",
+      "options": [
+        "write 0 rows, count failed opens",
+        "write no row, skip failed opens"
+      ],
+      "recommendation": "write 0 rows, count failed opens",
+      "reason": "a fixed row set per capture shows a class that read nothing, and the goal counts open lines for reading by mode",
+      "do": {
+        "write 0 rows, count failed opens": "ST-v5h7dpff",
+        "write no row, skip failed opens": "ST-v5h7dpff"
+      },
+      "class": "design",
+      "answer": "write 0 rows, count failed opens",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "Where does --fs-usage run: with session-load named alone (else exit 2), or beside other scenarios?",
+      "options": [
+        "session-load alone, else exit 2",
+        "any scenarios, the others run as usual"
+      ],
+      "recommendation": "session-load alone, else exit 2",
+      "reason": "the flag must start no replay and no model, and another scenario named would start paid runs",
+      "do": {
+        "session-load alone, else exit 2": "ST-v5h7dpff",
+        "any scenarios, the others run as usual": "ST-v5h7dpff"
+      },
+      "class": "design",
+      "answer": "session-load alone, else exit 2",
+      "by": "agent"
+    }
+  ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-c5ef8aa4",
   "operator": "op-f618a13e"
