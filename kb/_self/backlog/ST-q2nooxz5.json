@@ -2,7 +2,7 @@
   "id": "ST-q2nooxz5",
   "kind": "story",
   "title": "Research sprint goal: Orchestration tools: run states, landing, begin and wait",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-42b2cjm3",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,7 @@
     "kb/public/**"
   ],
   "notes": "No outside facts: the sprint goal names no open question for the kb, and each committed item carries its own repro or check. Sprint started 2026-10-26 on the operator's approval for the unattended run.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
