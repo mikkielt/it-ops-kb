@@ -47,6 +47,28 @@
   "depends_on": [
     "BG-6ukaqepy"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does a stage-back of an item at refused leave the run state when it ends, and does a dead one heal to the same place?",
+      "options": [
+        "Back to refused; a dead stage-back still heals to returned",
+        "Back to refused; a dead stage-back heals to refused for an item that was refused"
+      ],
+      "recommendation": "Back to refused; a dead stage-back still heals to returned",
+      "reason": "the key at staging does not record where it came from, and returned moves on to landing as refused does",
+      "do": {
+        "Back to refused; a dead stage-back still heals to returned": "BG-2voko77q",
+        "Back to refused; a dead stage-back heals to refused for an item that was refused": "BG-2voko77q"
+      },
+      "class": "agents-rule",
+      "answer": "Back to refused; a dead stage-back still heals to returned",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-dx76osrn review"
   ],
