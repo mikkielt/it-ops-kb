@@ -2,7 +2,7 @@
   "id": "BG-2voko77q",
   "kind": "bug",
   "title": "A stage-back of an item at refused does not take the run state, so a land started during its copy-in is not refused",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-nij36lt7",
   "sprint": "SP-42b2cjm3",
   "priority": "P2",
@@ -74,6 +74,28 @@
   ],
   "notes": "Sprint started 2026-10-26 on the operator's approval for the unattended run. Gate g1 answered with its recommendation by operator (pre-approved by the operator for the 2026-10-26 run).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "301c9db51b77f36208de7a9e183ddcc80b0fa659",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, tempfile, os, shutil, re, sys, json, glob, hashlib\nR = os.getcwd(); T = os.path.realpath(tempfile.mkdtemp()); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\nsys.path.insert(0, R + '/_tools')\nimport bl_dispatch\ndef sh(*a, cwd=None): return subprocess.run(a, cwd=cwd or T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '-b', 'main', '.'); shutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--touch', '.claude/staged.txt',\n                              '--check', 'python3 -c pass').stdout).group(0)\nfor f in glob.glob(T + '/kb/_self/backlog/*.json'):\n    d = json.load(open(f, encoding='utf-8'))\n    if d['id'] == sp: d['status'] = 'active'\n    if d['id'] == iid: d['status'] = 'doing'; d['sprint'] = sp\n    json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\nos.makedirs(T + '/.claude'); open(T + '/.claude/staged.txt', 'w').write('base\\n')\nopen(T + '/.gitignore', 'w').write('.claude/worktrees/\\n_cache/\\n')\ng('add', '-A'); g('commit', '-q', '-m', 'planted')\nwt, scratch = str(bl_dispatch.worktree_path(T, iid)), bl_dispatch.scratch_path(T, iid)\ng('worktree', 'add', '-q', '-b', 'work/' + iid, wt)\ncopy = scratch / bl_dispatch.STAGING / '.claude' / 'staged.txt'\ncopy.parent.mkdir(parents=True); copy.write_text('edited\\n')\n(scratch / bl_dispatch.BASES_NAME).write_text(json.dumps({'.claude/staged.txt': hashlib.sha256(b'base\\n').hexdigest()}))\nfor s in ('claimed', 'working', 'returned', 'landing', 'refused'): c('transition', 'run/' + iid, '--to', s)  # land stopped at checks\nr = bl('stage-back', iid, '--check')\nstates = [e['fields'].get('state') for e in json.loads(c('wait', '--since', '0', '--timeout', '0', '--kind', 'progress', '--item', iid).stdout)['events']]\nprint('stage-back of a refused item', r.returncode, '| states', states)\nfinal = c('get', 'run/' + iid).stdout\nprint('key after the stage-back', final.strip()[-40:])\nsys.exit(0 if r.returncode == 0 and 'staging' in states[states.index('refused'):] and '\"refused\"' in final else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "f1cd440192488d44"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, tempfile, os, shutil, re, sys, json, glob, hashlib\nR = os.getcwd(); T = os.path.realpath(tempfile.mkdtemp()); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\nsys.path.insert(0, R + '/_tools')\nimport bl_dispatch\ndef sh(*a, cwd=None): return subprocess.run(a, cwd=cwd or T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\ng('init', '-q', '-b', 'main', '.'); shutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--touch', '.claude/staged.txt',\n                              '--check', 'python3 -c pass').stdout).group(0)\nfor f in glob.glob(T + '/kb/_self/backlog/*.json'):\n    d = json.load(open(f, encoding='utf-8'))\n    if d['id'] == sp: d['status'] = 'active'\n    if d['id'] == iid: d['status'] = 'doing'; d['sprint'] = sp\n    json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\nos.makedirs(T + '/.claude'); open(T + '/.claude/staged.txt', 'w').write('base\\n')\nopen(T + '/.gitignore', 'w').write('.claude/worktrees/\\n_cache/\\n')\ng('add', '-A'); g('commit', '-q', '-m', 'planted')\nwt, scratch = str(bl_dispatch.worktree_path(T, iid)), bl_dispatch.scratch_path(T, iid)\ng('worktree', 'add', '-q', '-b', 'work/' + iid, wt)\ncopy = scratch / bl_dispatch.STAGING / '.claude' / 'staged.txt'\ncopy.parent.mkdir(parents=True); copy.write_text('edited\\n')\n(scratch / bl_dispatch.BASES_NAME).write_text(json.dumps({'.claude/staged.txt': hashlib.sha256(b'base\\n').hexdigest()}))\nfor s in ('claimed', 'working', 'returned', 'landing', 'refused'): c('transition', 'run/' + iid, '--to', s)  # land stopped at checks\nr = bl('stage-back', iid, '--check')\nstates = [e['fields'].get('state') for e in json.loads(c('wait', '--since', '0', '--timeout', '0', '--kind', 'progress', '--item', iid).stdout)['events']]\nprint('stage-back of a refused item', r.returncode, '| states', states)\nsys.exit(0 if r.returncode == 0 and 'staging' in states[states.index('refused'):] else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "27e5de2f083f4c4d"
+      }
+    ]
+  }
 }
