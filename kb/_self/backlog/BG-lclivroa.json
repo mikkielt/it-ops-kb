@@ -2,7 +2,7 @@
   "id": "BG-lclivroa",
   "kind": "bug",
   "title": "kbtail.py replays a replaced smaller transcript whole and reads a replaced larger one from the old byte offset",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-booflukv",
   "sprint": "SP-7ba3r4ec",
   "priority": "P2",
@@ -27,5 +27,7 @@
   "links": [
     "parked: SP-wurbmsid review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-6c439ca9",
+  "operator": "op-f618a13e"
 }
