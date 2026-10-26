@@ -2,7 +2,7 @@
   "id": "BG-xbbifzan",
   "kind": "bug",
   "title": "The applies_to range of mods.md ends at 2026-10-17 and 2026-10-18, while the create page it now cites is dated 2026-10-20 and was read 2026-10-24",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-sgfucsn6",
   "priority": "P3",
   "rank": 0,
@@ -41,6 +41,6 @@
   "links": [
     "parked: SP-f2o3aqm2 review"
   ],
-  "notes": "Review gap (S4) of SP-f2o3aqm2, fresh-context reviewer 2026-10-24; parked, no fitness test or user report names it.",
+  "notes": "Review gap (S4) of SP-f2o3aqm2, fresh-context reviewer 2026-10-24; parked, no fitness test or user report names it. Sprint start gate answered approve by the runner on the operator's behalf (pre-approved by the operator for the 2026-10-26 run).",
   "filed_in": "clone-0ea70e5c"
 }

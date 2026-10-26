@@ -2,7 +2,7 @@
   "id": "BG-mqhzivkk",
   "kind": "bug",
   "title": "kbtools.py ranks kbmon.py above querylog.py for the plural need query logs, since the several-word name rule joins the need's raw words",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-5mp6pwnn",
   "sprint": "SP-sgfucsn6",
   "priority": "P2",
@@ -29,6 +29,6 @@
   "links": [
     "parked: SP-uhcjxayq review"
   ],
-  "notes": "Found by the SP-uhcjxayq review (S4): kbtools.name_words joins the need's raw words, so a plural does not spell a several-word name.",
+  "notes": "Found by the SP-uhcjxayq review (S4): kbtools.name_words joins the need's raw words, so a plural does not spell a several-word name. Sprint start gate answered approve by the runner on the operator's behalf (pre-approved by the operator for the 2026-10-26 run).",
   "filed_in": "clone-0ea70e5c"
 }

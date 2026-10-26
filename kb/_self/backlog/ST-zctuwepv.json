@@ -2,7 +2,7 @@
   "id": "ST-zctuwepv",
   "kind": "story",
   "title": "backlog.py new bug prints the repro's last output lines, so the filer sees the failure is the defect it names",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-sgfucsn6",
   "priority": "P2",
   "rank": 0,
@@ -34,5 +34,5 @@
   "links": [
     "parked: SP-s2svf5a6 close"
   ],
-  "notes": "Premise: the check fails on the base: backlog.py new bug prints only the new id and title, not the repro's output."
+  "notes": "Premise: the check fails on the base: backlog.py new bug prints only the new id and title, not the repro's output. Sprint start gate answered approve by the runner on the operator's behalf (pre-approved by the operator for the 2026-10-26 run)."
 }

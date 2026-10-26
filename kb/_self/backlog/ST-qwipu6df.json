@@ -2,7 +2,7 @@
   "id": "ST-qwipu6df",
   "kind": "story",
   "title": "The operator decides whether a content-only push runs the tuned lookup eval now that test_live_kb.py is gone",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-sgfucsn6",
   "priority": "P2",
   "rank": 0,
@@ -45,11 +45,15 @@
         "Yes: add the tuned lookup eval to the sync gate for a content-only change": "ST-qwipu6df",
         "No: accept the gap, the gate runs only the held-out and bench files for a content-only change, and git.md says so": "ST-qwipu6df"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "No: accept the gap, the gate runs only the held-out and bench files for a content-only change, and git.md says so",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
     "parked: SP-noqsd4hj review"
   ],
-  "notes": "Review gap of SP-noqsd4hj, rated S3 by the sprint's reviewer. Premise: the check fails on the base: git.md says nothing of a content-only change and the tuned lookup eval. The gate on this item settles which way the text and, if chosen, kg_sync.py go."
+  "notes": "Review gap of SP-noqsd4hj, rated S3 by the sprint's reviewer. Premise: the check fails on the base: git.md says nothing of a content-only change and the tuned lookup eval. The gate on this item settles which way the text and, if chosen, kg_sync.py go. Gate g1 answered with its recommendation (no, accept the gap) by the runner on the operator's behalf (pre-approved by the operator for the 2026-10-26 run). Sprint start gate answered approve by the runner on the operator's behalf (pre-approved by the operator for the 2026-10-26 run)."
 }

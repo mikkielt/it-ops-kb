@@ -2,7 +2,7 @@
   "id": "BG-pzxr5tl2",
   "kind": "bug",
   "title": "QS12 in _answers.md says the EU AI Act applies from 2024-08-01, the date it entered into force",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-sgfucsn6",
   "priority": "P2",
   "rank": 0,
@@ -42,6 +42,6 @@
   "links": [
     "parked: SP-xznmaurz review"
   ],
-  "notes": "Carried over from the notes of the closed story ST-cbi2ah5y (kept in git history: git log --grep 'KB-Work: ST-cbi2ah5y'): the second SP-xznmaurz review named _answers.md QS12 'applies from' versus 'entered into force' (Regulation 2024/1689 entered into force 2024-08-01 and applies generally from 2026-08-02 with earlier dates for some parts). The same notes named two more S3s in security/baselines-catalog that this item does not cover: the csv rows 14-15 (plain cells that rested on the gone ACSC hardening PDF S-uzuvf3vo; the cells already read UNK with a 2026-10-23 note) and the Summary sentences at baselines-catalog.md:21-23. S-uzuvf3vo is a cyber.gov.au HTTP 406 bot-block, which the census counts as gone. Parked, not in a sprint.",
+  "notes": "Carried over from the notes of the closed story ST-cbi2ah5y (kept in git history: git log --grep 'KB-Work: ST-cbi2ah5y'): the second SP-xznmaurz review named _answers.md QS12 'applies from' versus 'entered into force' (Regulation 2024/1689 entered into force 2024-08-01 and applies generally from 2026-08-02 with earlier dates for some parts). The same notes named two more S3s in security/baselines-catalog that this item does not cover: the csv rows 14-15 (plain cells that rested on the gone ACSC hardening PDF S-uzuvf3vo; the cells already read UNK with a 2026-10-23 note) and the Summary sentences at baselines-catalog.md:21-23. S-uzuvf3vo is a cyber.gov.au HTTP 406 bot-block, which the census counts as gone. Parked, not in a sprint. Sprint start gate answered approve by the runner on the operator's behalf (pre-approved by the operator for the 2026-10-26 run).",
   "filed_in": "clone-0ea70e5c"
 }
