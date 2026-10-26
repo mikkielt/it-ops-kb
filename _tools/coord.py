@@ -91,7 +91,8 @@ one line per live intent (posted within a day, its items not all done, landed or
 session, that session's presence lease `session/<id>` still held: a release or an expiry drops the session's intents) or
 live claim (a held lease) with a value that overlaps a key (equal, a directory-style prefix either way, or a glob match either
 way), newest first, cut at N lines; an intent line ends with `state=` and `age=` (seconds since the newest of those moves) when a
-later progress event moved its items; with nothing to show it prints nothing.
+later progress event moved its items, those of its items that overlap a key when any do (an intent for A,B read for B shows B's
+state, not A's), else all of them; with nothing to show it prints nothing.
 
 A `claim` of a research key (`research:TOPIC:TERM`) or a backlog item id leaves a `claim` event (fields key, holder), its `release`
 a `release` event and a claim the store refuses a `dup_of` event (key, holder of the refused claim, held_by); a session's presence
@@ -738,7 +739,8 @@ def digest(args, clock):
         if not any(overlaps(v, k) for v in values for k in args.key):
             continue
         text = "intent " + " ".join(f"{n}={fields[n]}" for n in KIND_FIELDS["intent"] if n in fields)
-        moves = [state[i] for i in items if i in state and state[i][0] > seq]
+        asked = [i for i in items if any(overlaps(i, k) for k in args.key)] or items
+        moves = [state[i] for i in asked if i in state and state[i][0] > seq]
         now_states = sorted({move[1] for move in moves})
         lines.append((at, text + (f" state={'/'.join(now_states)} age={int(now - max(move[2] for move in moves))}s" if moves else "")))
     for row in claims:
