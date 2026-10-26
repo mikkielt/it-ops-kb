@@ -2,7 +2,7 @@
   "id": "ST-4p5za5uh",
   "kind": "story",
   "title": "Review sprint: Live agent view, first slice: follow one session's transcript in a terminal",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-wurbmsid",
   "review": true,
   "priority": "P1",
@@ -24,6 +24,27 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-6c439ca9",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "63a123850d9051ebb4e634bb613f724224a713ce",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "0e0e38f839d2f9c8"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "1333b7cbfa77fb7c"
+      }
+    ]
+  }
 }
