@@ -2,7 +2,7 @@
   "id": "ST-3sad5hey",
   "kind": "story",
   "title": "Review sprint: One session's host cost, measured without a model",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3qowbedb",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,7 @@
       ]
     }
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-c5ef8aa4",
+  "operator": "op-f618a13e"
 }
