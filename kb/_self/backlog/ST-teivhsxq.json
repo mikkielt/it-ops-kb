@@ -21,7 +21,10 @@
     "_tools/kbingest.py",
     "kb/_self/tools.md",
     ".claude/skills/kb-ingest/SKILL.md",
-    "kb/_self/token-efficiency.md"
+    "kb/_self/token-efficiency.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/plugin.md"
   ],
   "filed_in": "clone-0ea70e5c"
 }

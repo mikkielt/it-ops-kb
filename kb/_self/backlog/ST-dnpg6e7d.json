@@ -31,7 +31,10 @@
     "_tools/test_redact.py",
     "kb/_self/tools.md",
     "kb/_self/token-efficiency.md",
-    "kb/_self/embedding.md"
+    "kb/_self/embedding.md",
+    "AGENTS.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/plugin.md"
   ],
   "depends_on": [
     "ST-mp4pjor2"

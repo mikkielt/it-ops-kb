@@ -22,7 +22,16 @@
     "_tools/kb_mcp.py",
     "kb/_self/coordination.md",
     "kb/_self/tools.md",
-    ".claude/skills/kb-ingest/SKILL.md"
+    ".claude/skills/kb-ingest/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/embedding.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-bilb3nzx"
   ],
   "filed_in": "clone-0ea70e5c"
 }

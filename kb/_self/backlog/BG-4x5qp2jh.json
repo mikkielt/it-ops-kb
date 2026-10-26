@@ -18,7 +18,12 @@
   "repro_reason": "the drift needs a committed store report plus an article edit between report and read; planting both is the fix's own work, so the repro reads that feedback_flags keeps no fact-text hash or change check yet",
   "touches": [
     "_tools/kbfacts.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "BG-dgnrn4jy"
   ],
   "links": [
     "parked: SP-ficl7pxl review"

@@ -22,7 +22,16 @@
     ".claude/hooks/coord_hook.py",
     "_tools/kb_mcp.py",
     "kb/_self/coordination.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/embedding.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-deyyxb4c",
+    "BG-jrs3k6mt"
   ],
   "gates": [
     {

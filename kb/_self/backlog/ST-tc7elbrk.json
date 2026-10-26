@@ -21,7 +21,13 @@
     "AGENTS.md",
     "_tools/kb_mcp.py",
     "kb/_self/plugin.md",
-    "kb/_self/embedding.md"
+    "kb/_self/embedding.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-q4fbmomg",
+    "ST-zhpor7fy"
   ],
   "filed_in": "clone-0ea70e5c"
 }

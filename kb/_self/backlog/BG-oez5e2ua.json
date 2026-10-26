@@ -16,7 +16,12 @@
     ]
   },
   "touches": [
-    "_tools/bl_dispatch.py"
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-hh3lvb5z"
   ],
   "links": [
     "parked: SP-42b2cjm3 review"

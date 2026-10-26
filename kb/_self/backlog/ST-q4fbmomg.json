@@ -28,7 +28,9 @@
     "kb/_self/token-efficiency.md",
     "kb/_self/embedding.md",
     "kb/_self/plugin.md",
-    ".claude/skills/kb-ingest/SKILL.md"
+    ".claude/skills/kb-ingest/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
   ],
   "depends_on": [
     "ST-teivhsxq"

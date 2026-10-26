@@ -26,10 +26,14 @@
     "kb/_self/tools.md",
     "kb/_self/plugin.md",
     ".claude/skills/kb-ingest/SKILL.md",
-    ".claude/skills/kb-self/SKILL.md"
+    ".claude/skills/kb-self/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/README.md",
+    "kb/_self/maintaining.md"
   ],
   "depends_on": [
-    "ST-teivhsxq"
+    "ST-teivhsxq",
+    "ST-q4fbmomg"
   ],
   "filed_in": "clone-0ea70e5c"
 }

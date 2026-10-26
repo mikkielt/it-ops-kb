@@ -20,7 +20,8 @@
   "touches": [
     "_tools/bench_multi.py",
     "_tools/benchmarks.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/benchmarks.md"
   ],
   "links": [
     "parked: SP-7s6uubs7 review"

@@ -23,10 +23,14 @@
     "_tools/factdiff.py",
     "kb/_self/content-rules.md",
     "kb/_self/doc2query.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
   ],
   "depends_on": [
-    "ST-mp4pjor2"
+    "ST-mp4pjor2",
+    "BG-hxp3f73q",
+    "ST-dnpg6e7d"
   ],
   "filed_in": "clone-0ea70e5c"
 }

@@ -19,7 +19,8 @@
     ".claude/hooks/coord_hook.py",
     "kb/_self/tools.md",
     "kb/_self/maintaining.md",
-    "kb/_self/token-efficiency.md"
+    "kb/_self/token-efficiency.md",
+    "kb/_self/coordination.md"
   ],
   "links": [
     "parked: SP-fp3hxl6q review"

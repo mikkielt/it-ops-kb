@@ -28,7 +28,8 @@
     "kb/_self/reports/benchmarks.csv",
     "kb/_self/benchmarks.md",
     "kb/_self/token-efficiency.md",
-    "README.md"
+    "README.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "ST-q4fbmomg"
