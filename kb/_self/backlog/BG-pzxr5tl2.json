@@ -2,7 +2,7 @@
   "id": "BG-pzxr5tl2",
   "kind": "bug",
   "title": "QS12 in _answers.md says the EU AI Act applies from 2024-08-01, the date it entered into force",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-sgfucsn6",
   "priority": "P2",
   "rank": 0,
@@ -44,6 +44,28 @@
   ],
   "notes": "Carried over from the notes of the closed story ST-cbi2ah5y (kept in git history: git log --grep 'KB-Work: ST-cbi2ah5y'): the second SP-xznmaurz review named _answers.md QS12 'applies from' versus 'entered into force' (Regulation 2024/1689 entered into force 2024-08-01 and applies generally from 2026-08-02 with earlier dates for some parts). The same notes named two more S3s in security/baselines-catalog that this item does not cover: the csv rows 14-15 (plain cells that rested on the gone ACSC hardening PDF S-uzuvf3vo; the cells already read UNK with a 2026-10-23 note) and the Summary sentences at baselines-catalog.md:21-23. S-uzuvf3vo is a cyber.gov.au HTTP 406 bot-block, which the census counts as gone. Parked, not in a sprint. Sprint start gate answered approve by the runner on the operator's behalf (pre-approved by the operator for the 2026-10-26 run).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "494f95833108a41e3789e3fb9e41e22b6b9db3ff",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nt=open(\"kb/public/_answers.md\",encoding=\"utf-8\").read()\ni=t.index(\"## QS12.\");j=t.find(\"\\n## \",i+5);s=t[i:j if j>0 else len(t)]\nok=\"entered into force\" in s and \"2024-08-01\" in s and \"The Act applies from 2024-08-01\" not in s\nprint(\"QS12 says the Act entered into force on 2024-08-01 and not that it applies from then:\",ok)\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "4332740b1e17fe40"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('kb/public/_answers.md',encoding='utf-8').read();sys.exit(1 if 'The Act applies from 2024-08-01' in t else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
