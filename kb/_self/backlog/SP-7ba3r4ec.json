@@ -1,0 +1,22 @@
+{
+  "id": "SP-7ba3r4ec",
+  "kind": "sprint",
+  "title": "Live agent view, second slice: follow every live session, and a sturdier follow loop",
+  "status": "planned",
+  "goal": "kbtail.py follows every live Claude Code session of the clone and its worktrees, labelled by role and item, through one session reader in mon_sessions.py that other tools can call; it keeps printing while the coord store is locked, follows a replaced transcript without losing or replaying lines, and redacts a tool call's name",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
