@@ -944,3 +944,4 @@ e196c0820480,How often is the statusLine script executed?
 85fa437fc791,Can the status line show whether the prompt cache is still warm?
 0b94b2374f64,"What does the Claude Code status line command receive as input, such as cost, context window use and session id?"
 a28622318a7e,bug severity table S1 S2 definitions
+5eab535124be,ru_maxrss unit in resource.getrusage and os.wait4 on macOS and Linux
