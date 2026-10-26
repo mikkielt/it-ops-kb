@@ -1,0 +1,28 @@
+{
+  "id": "ST-oritaqxy",
+  "kind": "story",
+  "title": "Planning maps each goal clause to a check that reads every part of it, its isolation parts included",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/backlog.md's sprint Plan rules and the kb-sprint skill's plan step say that a check mapped to a goal clause reads every part of that clause (each named class, row, arm, and an isolation part such as a scratch home or no forge call), and that a part no check reads is split into its own clause with its own check before the start gate; the rule is a tested question of the kb-sprint:plan set",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport subprocess\np = subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', '_self', '--set', 'kb-sprint:plan'], capture_output=True, text=True, timeout=300)\nassert p.returncode == 0, ('rag.py pack --set kb-sprint:plan', p.returncode, p.stderr[-300:])\nlines = [ln for ln in p.stdout.splitlines() if 'clause' in ln and 'every part' in ln]\nassert lines, 'the kb-sprint:plan rule set holds no tested rule that a check mapped to a clause reads every part of that clause, the scratch or isolation parts included'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    "skills/sprint/SKILL.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "links": [
+    "parked: SP-3qowbedb close"
+  ],
+  "notes": "From the retrospective of SP-3qowbedb; the operator accepted it at the close.",
+  "filed_in": "clone-0ea70e5c"
+}

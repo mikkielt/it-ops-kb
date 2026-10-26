@@ -1,0 +1,28 @@
+{
+  "id": "ST-7qait5zh",
+  "kind": "story",
+  "title": "Planning states a check's margin against the measured run-to-run spread when it orders measured figures",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/backlog.md's sprint Plan rules and the kb-sprint skill's plan step say that a check which orders or bounds measured figures (timings, starts, memory) is written after the planner has measured the figures' run-to-run spread on the base or a prototype, and states its margin against that spread or asserts an exact difference the code makes by construction; the rule is a tested question of the kb-sprint:plan set",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport subprocess\np = subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', '_self', '--set', 'kb-sprint:plan'], capture_output=True, text=True, timeout=300)\nassert p.returncode == 0, ('rag.py pack --set kb-sprint:plan', p.returncode, p.stderr[-300:])\nlines = [ln for ln in p.stdout.splitlines() if 'spread' in ln and 'margin' in ln]\nassert lines, 'the kb-sprint:plan rule set holds no tested rule that a check ordering measured figures states its margin against a measured run-to-run spread'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    "skills/sprint/SKILL.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "links": [
+    "parked: SP-3qowbedb close"
+  ],
+  "notes": "From the retrospective of SP-3qowbedb; the operator accepted it at the close.",
+  "filed_in": "clone-0ea70e5c"
+}

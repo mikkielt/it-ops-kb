@@ -1,0 +1,28 @@
+{
+  "id": "ST-5uhzyvrd",
+  "kind": "story",
+  "title": "land says a worker's work rows are late, not missing, while a distill is taking its session",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "When a landing finds no work rows of the item while a distill holds the lock of a spool land reads (the worker's session-end distill has taken its spool file and not yet delivered the sidecar), bl_land.ops_work_rows prints a 'land:' line that its rows are late and names the distill in flight, not 'warning: ... missing'",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, shutil, tempfile\nT = tempfile.mkdtemp()\nos.environ['CLAUDE_PLUGIN_DATA'] = T\nos.environ['CLAUDE_PLUGIN_ROOT'] = os.getcwd()\nsys.path.insert(0, '_tools')\nimport ql_base, bl_land\nq = os.path.join(T, 'querylog')\nos.makedirs(os.path.join(q, 'spool'))\nlock = ql_base.acquire(q)\ntry:\n    assert lock is not None, 'could not plant a held distill lock'\n    out = bl_land.ops_work_rows('.', 'ST-wg27eqbp')\nfinally:\n    if lock is not None:\n        ql_base.release(lock)\n    shutil.rmtree(T, ignore_errors=True)\nassert out and out[0].startswith('land:') and 'late' in out[0] and 'distill' in out[0], ('a landing while distill holds the lock warns of missing rows instead of saying they are late', out)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-3qowbedb close"
+  ],
+  "notes": "From the retrospective of SP-3qowbedb; the operator accepted it at the close.",
+  "filed_in": "clone-0ea70e5c"
+}
