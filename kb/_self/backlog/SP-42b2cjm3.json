@@ -2,7 +2,7 @@
   "id": "SP-42b2cjm3",
   "kind": "sprint",
   "title": "Orchestration tools: run states, landing, begin and wait",
-  "status": "planned",
+  "status": "active",
   "goal": "the wait that begin and dispatch --detach print skips the new worker's own working event; begin refuses a story that next marks no worker and still plans the other ids; a stage-back of a refused item takes the run state and gives it back; a stage-back rerun after a kill takes the dead run's copy-in over; dispatch --resume is refused while a land or stage-back holds the run key; done leaves a claimed run key at claimed until the done commit is on the integration main; land copies a kept gate output file under a path with spaces out of the landing worktree; runs names a land or stage-back by what it is and not as the worker pid; a backlog.py --root DIR with a DIR that is no clone never reads or writes the host's coord store; coord wait --pid reports an exited process that was not reaped as ended",
   "gates": [
     {
@@ -14,7 +14,11 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "creator": "op-f618a13e",
