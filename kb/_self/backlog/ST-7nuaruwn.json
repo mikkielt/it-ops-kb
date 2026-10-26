@@ -58,6 +58,154 @@
     "kb/_self/reports/benchmarks.csv",
     "README.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What divides the starts of a replay into spawns_per_min?",
+      "options": [
+        "the seconds of session a phase stands for, 60 idle and 300 working, the same for every arm",
+        "the replay's own wall time"
+      ],
+      "recommendation": "the seconds of session a phase stands for, 60 idle and 300 working, the same for every arm",
+      "reason": "the wall time of an arm with fewer hooks is shorter, so the rate would not fall with the starts",
+      "do": {
+        "the seconds of session a phase stands for, 60 idle and 300 working, the same for every arm": "ST-7nuaruwn",
+        "the replay's own wall time": "ST-7nuaruwn"
+      },
+      "class": "design",
+      "answer": "the seconds of session a phase stands for, 60 idle and 300 working, the same for every arm",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How are the processes a hook command starts counted?",
+      "options": [
+        "an audit hook in a sitecustomize on PYTHONPATH logs each process a Python program starts, so the count is exact for Python and misses a program that is not Python",
+        "the ps sampler's sightings only"
+      ],
+      "recommendation": "an audit hook in a sitecustomize on PYTHONPATH logs each process a Python program starts, so the count is exact for Python and misses a program that is not Python",
+      "reason": "the sampler misses processes shorter than a listing, so its count moves with the host's speed",
+      "do": {
+        "an audit hook in a sitecustomize on PYTHONPATH logs each process a Python program starts, so the count is exact for Python and misses a program that is not Python": "ST-7nuaruwn",
+        "the ps sampler's sightings only": "ST-7nuaruwn"
+      },
+      "class": "design",
+      "answer": "an audit hook in a sitecustomize on PYTHONPATH logs each process a Python program starts, so the count is exact for Python and misses a program that is not Python",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "In what order does a replay run the hook commands of one event?",
+      "options": [
+        "the synchronous ones one after another in file order, the async ones at once and not waited for",
+        "every hook of the event at once"
+      ],
+      "recommendation": "the synchronous ones one after another in file order, the async ones at once and not waited for",
+      "reason": "each sync_ms is then the command's own time, not slowed by its siblings",
+      "do": {
+        "the synchronous ones one after another in file order, the async ones at once and not waited for": "ST-7nuaruwn",
+        "every hook of the event at once": "ST-7nuaruwn"
+      },
+      "class": "design",
+      "answer": "the synchronous ones one after another in file order, the async ones at once and not waited for",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "To which class is the CPU of a hook command's process tree charged?",
+      "options": [
+        "the class of the hook command's own command line, its children's starts and memory counted under their own classes",
+        "split among the classes by the share of ps samples"
+      ],
+      "recommendation": "the class of the hook command's own command line, its children's starts and memory counted under their own classes",
+      "reason": "os.wait4 gives the tree's CPU exactly and no per-process CPU of a child that ends within a listing exists to split it by",
+      "do": {
+        "the class of the hook command's own command line, its children's starts and memory counted under their own classes": "ST-7nuaruwn",
+        "split among the classes by the share of ps samples": "ST-7nuaruwn"
+      },
+      "class": "design",
+      "answer": "the class of the hook command's own command line, its children's starts and memory counted under their own classes",
+      "by": "agent"
+    },
+    {
+      "id": "g5",
+      "kind": "provisional",
+      "question": "How does the replay treat the intake hook's drift cursor, which moves a scan to new items each run?",
+      "options": [
+        "remove the cursor before each replay, so every replay scans the same items",
+        "leave it, so successive replays scan different items"
+      ],
+      "recommendation": "remove the cursor before each replay, so every replay scans the same items",
+      "reason": "the starts of arm A and C then differ by the hooks left out, not by the items the scan reached",
+      "do": {
+        "remove the cursor before each replay, so every replay scans the same items": "ST-7nuaruwn",
+        "leave it, so successive replays scan different items": "ST-7nuaruwn"
+      },
+      "class": "design",
+      "answer": "remove the cursor before each replay, so every replay scans the same items",
+      "by": "agent"
+    },
+    {
+      "id": "g6",
+      "kind": "provisional",
+      "question": "How does --arms name the arms of session-load next to the arms of pool?",
+      "options": [
+        "each scenario takes the names it knows (A, C, D for session-load), and pool named with only session-load arms is refused",
+        "a separate flag for session-load"
+      ],
+      "recommendation": "each scenario takes the names it knows (A, C, D for session-load), and pool named with only session-load arms is refused",
+      "reason": "the goal runs session-load --arms A,C,D, and a refusal keeps pool from running its paid default arms",
+      "do": {
+        "each scenario takes the names it knows (A, C, D for session-load), and pool named with only session-load arms is refused": "ST-7nuaruwn",
+        "a separate flag for session-load": "ST-7nuaruwn"
+      },
+      "class": "design",
+      "answer": "each scenario takes the names it knows (A, C, D for session-load), and pool named with only session-load arms is refused",
+      "by": "agent"
+    },
+    {
+      "id": "g7",
+      "kind": "provisional",
+      "question": "How is one rep's figure warm and how do the reps become a row?",
+      "options": [
+        "one unmeasured replay of arm A first, then the median of the reps for each row, every arm and phase once per rep",
+        "no warm-up and the mean of the reps"
+      ],
+      "recommendation": "one unmeasured replay of arm A first, then the median of the reps for each row, every arm and phase once per rep",
+      "reason": "the caches are warm for every measured rep, and one rep disturbed by other work on the host does not move the row",
+      "do": {
+        "one unmeasured replay of arm A first, then the median of the reps for each row, every arm and phase once per rep": "ST-7nuaruwn",
+        "no warm-up and the mean of the reps": "ST-7nuaruwn"
+      },
+      "class": "design",
+      "answer": "one unmeasured replay of arm A first, then the median of the reps for each row, every arm and phase once per rep",
+      "by": "agent"
+    },
+    {
+      "id": "g8",
+      "kind": "provisional",
+      "question": "How is the intake hook's start count pinned, since its drift scan runs item checks within a wall-clock budget and starts as many processes as fit?",
+      "options": [
+        "one commit in the replay clone changes the mode of each item file, so no item is eligible and the scan runs no check; the real hook's cost with checks is not measured",
+        "changed-path filters in the clone's commit graph, so the scan is faster, but the checks it then runs still end at the budget",
+        "leave the clone as it is, the starts of both arms then move with the host's speed"
+      ],
+      "recommendation": "one commit in the replay clone changes the mode of each item file, so no item is eligible and the scan runs no check; the real hook's cost with checks is not measured",
+      "reason": "measured over three replays of each arm, the filters left the intake hook between 950 and 974 starts and this leaves it at 944 in every replay, so A minus C is the hooks C leaves out by construction",
+      "do": {
+        "one commit in the replay clone changes the mode of each item file, so no item is eligible and the scan runs no check; the real hook's cost with checks is not measured": "ST-7nuaruwn",
+        "changed-path filters in the clone's commit graph, so the scan is faster, but the checks it then runs still end at the budget": "ST-7nuaruwn",
+        "leave the clone as it is, the starts of both arms then move with the host's speed": "ST-7nuaruwn"
+      },
+      "class": "design",
+      "answer": "one commit in the replay clone changes the mode of each item file, so no item is eligible and the scan runs no check; the real hook's cost with checks is not measured",
+      "by": "agent"
+    }
+  ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-c5ef8aa4",
   "operator": "op-f618a13e"
