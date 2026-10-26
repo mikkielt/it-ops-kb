@@ -4,6 +4,7 @@
   "title": "session-load measures the intake hook's real cost at session start, its drift scan running item checks",
   "status": "draft",
   "parent": "EP-nxb7hjwd",
+  "sprint": "SP-m5m67goe",
   "priority": "P2",
   "rank": 0,
   "goal": "python3 _tools/benchmarks.py run session-load --intake-real replays arm A's SessionStart intake hook in a replay clone left as the checkout is (no pin of the item files), so its drift scan runs item checks up to its wall-clock budget as in a session in the main checkout, and writes for it the rows cpu_s, wall_s and spawns with case 'idle hook intake real', its cpu_s note naming the scan budget; the pinned arm comparison stays as it is; and kb/_self/reports/benchmarks.csv holds a 5-rep record of it",
@@ -24,6 +25,9 @@
     "kb/_self/reports/benchmarks.md",
     "kb/_self/reports/benchmarks.csv",
     "README.md"
+  ],
+  "depends_on": [
+    "ST-wg27eqbp"
   ],
   "relates_to": [
     "ST-qqpcgqe7"

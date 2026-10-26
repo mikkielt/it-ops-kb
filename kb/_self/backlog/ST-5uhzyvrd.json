@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "land says a worker's work rows are late, not missing, while a distill is taking its session",
   "status": "draft",
+  "sprint": "SP-m5m67goe",
   "priority": "P3",
   "rank": 0,
   "goal": "When a landing finds no work rows of the item while a distill holds the lock of a spool land reads (the worker's session-end distill has taken its spool file and not yet delivered the sidecar), bl_land.ops_work_rows prints a 'land:' line that its rows are late and names the distill in flight, not 'warning: ... missing'",

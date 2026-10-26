@@ -1,0 +1,24 @@
+{
+  "id": "ST-mbb47xlf",
+  "kind": "story",
+  "title": "The project settings allow the five scripts the skills tell agents to run, so headless workers are not refused",
+  "status": "draft",
+  "sprint": "SP-m5m67goe",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The project's .claude/settings.json allows Bash(python3 _tools/factdiff.py *), Bash(python3 _tools/kbsettings.py *), Bash(python3 _tools/kbask.py *), Bash(python3 _tools/coord.py *) and Bash(python3 _tools/doc2query.py *) as their skill texts run them, so python3 _tools/backlog.py selfcheck's allow-rules check passes; no other rule changes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport json, subprocess\np = subprocess.run([sys.executable, '_tools/backlog.py', 'selfcheck', '--json'], capture_output=True, text=True, timeout=600)\nassert p.returncode in (0, 1) and p.stdout.strip(), ('selfcheck --json', p.returncode, p.stderr[-300:])\nchecks = {c['name']: c for c in json.loads(p.stdout)['checks']}\nassert checks['allow-rules']['state'] == 'ok', ('selfcheck allow-rules', checks['allow-rules']['detail'])\n"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/settings.json",
+    "kb/_self/maintaining.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

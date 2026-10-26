@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "Planning maps each goal clause to a check that reads every part of it, its isolation parts included",
   "status": "draft",
+  "sprint": "SP-m5m67goe",
   "priority": "P3",
   "rank": 0,
   "goal": "kb/_self/backlog.md's sprint Plan rules and the kb-sprint skill's plan step say that a check mapped to a goal clause reads every part of that clause (each named class, row, arm, and an isolation part such as a scratch home or no forge call), and that a part no check reads is split into its own clause with its own check before the start gate; the rule is a tested question of the kb-sprint:plan set",
@@ -19,6 +20,9 @@
     "kb/_self/backlog.md",
     "skills/sprint/SKILL.md",
     "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "depends_on": [
+    "ST-7qait5zh"
   ],
   "links": [
     "parked: SP-3qowbedb close"

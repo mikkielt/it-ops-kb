@@ -4,6 +4,7 @@
   "title": "session-load's replays make no forge call: the red-pipeline hook reads a planted pipeline answer, not gitlab.com",
   "status": "draft",
   "parent": "EP-nxb7hjwd",
+  "sprint": "SP-m5m67goe",
   "priority": "P2",
   "rank": 0,
   "goal": "A session-load replay starts no glab or gh process and makes no network request: the red-pipeline hook (and any hook that reads the forge) gets a planted answer in the replay clone, so its sync_ms and starts do not move with the network or the operator's sign-in, and kb/_self/benchmarks.md says how the forge is isolated",
@@ -23,6 +24,9 @@
     "kb/_self/reports/benchmarks.csv",
     "README.md",
     "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-nejgzptp"
   ],
   "relates_to": [
     "ST-rodj5ltd"

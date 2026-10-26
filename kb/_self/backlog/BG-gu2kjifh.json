@@ -4,6 +4,7 @@
   "title": "session-load's rss_mean_mb averages each class over only the samples it was alive in, so means are not comparable across classes and arms",
   "status": "draft",
   "parent": "EP-nxb7hjwd",
+  "sprint": "SP-m5m67goe",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",

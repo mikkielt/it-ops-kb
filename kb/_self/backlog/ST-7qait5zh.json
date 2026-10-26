@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "Planning states a check's margin against the measured run-to-run spread when it orders measured figures",
   "status": "draft",
+  "sprint": "SP-m5m67goe",
   "priority": "P3",
   "rank": 0,
   "goal": "kb/_self/backlog.md's sprint Plan rules and the kb-sprint skill's plan step say that a check which orders or bounds measured figures (timings, starts, memory) is written after the planner has measured the figures' run-to-run spread on the base or a prototype, and states its margin against that spread or asserts an exact difference the code makes by construction; the rule is a tested question of the kb-sprint:plan set",
@@ -19,6 +20,9 @@
     "kb/_self/backlog.md",
     "skills/sprint/SKILL.md",
     "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "depends_on": [
+    "ST-x2ayo2yk"
   ],
   "links": [
     "parked: SP-3qowbedb close"
