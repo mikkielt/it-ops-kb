@@ -2,7 +2,7 @@
   "id": "BG-hxp3f73q",
   "kind": "bug",
   "title": "A revalidation window whose passage is in neither the previous nor the current text still fails section_unchanged on an unrelated added H2",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vlfcgmbu",
   "priority": "P3",
   "rank": 0,
@@ -44,6 +44,19 @@
     "parked: SP-3g3egfll review"
   ],
   "notes": "BG-j5lfhsyf gate g1 was confirmed at the review (its code is correct for a passage in the current text); the reviewer proposed option 2 (drop the parent section when the window may start at a heading line), which the worker rejected because an intro edit would pass: the repro asks for both.",
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "ebc52f74fc42466df1485c7b34af6bf1d20a9007",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import factdiff as F\nb='# Title\\n\\nIntro.\\n\\n## Alpha\\n\\nAlpha body NEW.\\n\\n## Beta\\n\\nBeta body.\\n';o=b.replace('NEW','OLD')\nd=F.Doc(o);a={'heading':d.units[2][0],'sha':F.sha(d.window(2,2))}\nv=b.replace('## Beta','## Gamma\\n\\nG.\\n\\n## Beta');r=F.section_unchanged(F.window_sections(a,F.Doc(v),F.Doc(b)),F.sections(b),F.sections(v))\ni=b.replace('Intro.','Intro, edited.');s=F.section_unchanged(F.window_sections(a,F.Doc(i),F.Doc(b)),F.sections(b),F.sections(i))\nprint('unrelated H2 passes:',r,'intro edit passes:',s);sys.exit(0 if r and not s else 1)"
+        ],
+        "exit": 0,
+        "sha256": "69935b37cac4e839"
+      }
+    ]
+  }
 }
