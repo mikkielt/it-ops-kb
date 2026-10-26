@@ -2,7 +2,7 @@
   "id": "BG-ctu4dhxa",
   "kind": "bug",
   "title": "redact keeps the host of an http or https url that carries user:password@, because the password is rewritten to a placeholder before the host rule runs",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-w57bnhhx",
   "priority": "P2",
   "rank": 0,
@@ -46,6 +46,37 @@
   ],
   "notes": "Planner 2026-10-26: repro and check 0 fail on main (the host stays after https://deploy:<secret>@srv01.corp.contoso.com). Cause: redact rewrites the password to the placeholder <secret> first, and URL_HOST excludes < and > from its user part, so the host rule no longer matches; the fix is in URL_HOST (or the order of the two rules) and keeps known hosts, example hosts and idempotence, which check 0 asserts. The leak scan and the query log run redact, so this keeps real host names out of the store. The check \"tests.py _tools/test_redact.py\" passes before the work by design: it guards the leak component's existing tests (no new test; the planted check 0 is the one that fails on main). Planned into SP-w57bnhhx on 2026-10-26 with a planted check that fails on main; the sprint start is pre-approved by the operator for the 2026-10-26 run.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "ee201e4a7fc55f7b00ca547871cc7ff79c14ff6b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0,\"_tools\")\nimport redact\nk=redact.known()\npw=\"Hunter2\"*2\ndef r(u):return redact.redact(u,k)\nbad=[]\nfor scheme in (\"https\",\"http\"):\n    o=r(scheme+\"://deploy:\"+pw+\"@srv01.corp.contoso.com/r.git\")\n    if \"srv01.corp.contoso.com\" in o or pw in o:bad.append(o)\no=r(\"https://deploy@srv01.corp.contoso.com/r.git\")\nif \"srv01.corp.contoso.com\" in o:bad.append(o)\no=r(\"https://deploy:\"+pw+\"@learn.microsoft.com/r.git\")\nif \"learn.microsoft.com\" not in o or pw in o:bad.append(o)\no=r(\"https://deploy:\"+pw+\"@example.org/r.git\")\nif \"example.org\" not in o or pw in o:bad.append(o)\nonce=r(\"https://deploy:\"+pw+\"@srv01.corp.contoso.com/r.git\")\nif r(once)!=once:bad.append(once)\nprint(bad)\nsys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_redact.py"
+        ],
+        "exit": 0,
+        "sha256": "fd8c0e3c35c73833"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import redact;k=redact.known();u=\"https://deploy:\"+\"Hunter2\"*2+\"@srv01.corp.contoso.com/r.git\";r=redact.redact(u,k);print(r);sys.exit(1 if \"srv01.corp.contoso.com\" in r else 0)"
+        ],
+        "exit": 0,
+        "sha256": "249e1e8580bcea9d"
+      }
+    ]
+  }
 }
