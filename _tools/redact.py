@@ -243,11 +243,17 @@ def _ip(m, k):
     return s if ip in ipaddress.ip_network("2001:db8::/32") else PLACEHOLDERS["ipv6"]
 
 
-def _host(m, k):
-    s = m.group(0)
+def _host(m, k, group=0):
+    s = m.group(group)
     if PASCAL.search(s) or s.lower() in k.hosts or EXAMPLE_HOST.search(s):
         return s
     return PLACEHOLDERS["host"]
+
+
+def _url_host(m, k):
+    """The host of an http or https url as _host treats a bare host; the scheme, user part and the rest stay."""
+    a, b = m.start(1) - m.start(0), m.end(1) - m.start(0)
+    return m.group(0)[:a] + _host(m, k, 1) + m.group(0)[b:]
 
 
 def _computer(m, k):
@@ -294,6 +300,7 @@ def redact(text, k=None):
                          or not re.search(r"[1-9a-f]", m.group(0).lower()) else PLACEHOLDERS["guid_bare"], text)
     text = IPV6.sub(lambda m: _ip(m, k), text)
     text = IPV4.sub(lambda m: _ip(m, k), text)
+    text = URL_HOST.sub(lambda m: _url_host(m, k), text)
     text = HOST.sub(lambda m: _host(m, k), text)
     text = COMPUTER.sub(lambda m: _computer(m, k), text)
     return TOKEN.sub(lambda m: _token(m, k), text)
