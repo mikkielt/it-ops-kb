@@ -302,8 +302,20 @@ def redact(text, k=None):
 def scan(text, k=None):
     """The leak scan (kbcommon.leak_hits) with what the public root contains allowed: [(kind, value)]."""
     k = k or known()
-    allow = {"guid": {f"{g[:8]}-{g[8:12]}-{g[12:16]}-{g[16:20]}-{g[20:]}" for g in k.guids}, "email": k.emails}
-    return kbcommon.leak_hits(text, allow)
+    return kbcommon.leak_hits(text, _scan_allow(k))
+
+
+_ALLOW = {}  # id(known) -> (known, sizes it was built at, allow map): scan builds it once per process, not per text
+
+
+def _scan_allow(k):
+    """The `allow` map scan hands to kbcommon.leak_hits: the public root's GUIDs in dashed form and its emails."""
+    sizes = (len(k.guids), len(k.emails))
+    hit = _ALLOW.get(id(k))
+    if hit is None or hit[0] is not k or hit[1] != sizes:
+        allow = {"guid": {f"{g[:8]}-{g[8:12]}-{g[12:16]}-{g[16:20]}-{g[20:]}" for g in k.guids}, "email": k.emails}
+        hit = _ALLOW[id(k)] = (k, sizes, allow)
+    return hit[2]
 
 
 def finish(text, k=None):
