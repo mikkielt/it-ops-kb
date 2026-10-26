@@ -2,7 +2,7 @@
   "id": "BG-kz7v6ise",
   "kind": "bug",
   "title": "census leak_problems passes a new source row whose url carries user:password@, because kbpublic.file_hits strips urls and only an email is checked in the raw url",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-w57bnhhx",
   "priority": "P2",
   "rank": 0,
@@ -40,6 +40,28 @@
   ],
   "notes": "Planner 2026-10-26: repro and check 0 fail on main (https://deploy:<pw>@example.org/a gives no problem; the same with a corp host is reported only as an email hit, by the email rule, not as a url credential). kbcommon.url_holds_credential(url) already says whether a repository url carries user:password@ (and, for http and https, a bare user@ part); reuse it in the url branch of leak_problems with its own kind name. Check 0 also asserts the value is never printed and a clean url gives none. Planned into SP-w57bnhhx on 2026-10-26 with a planted check that fails on main; the sprint start is pre-approved by the operator for the 2026-10-26 run.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "75466015664f9c6b5f04cf61d5ce3f906195c16a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0,\"_tools\")\nimport census\npw=\"Hunter2\"*2\ndef probs(u):return census.leak_problems({\"outcomes\":[],\"gaps\":[],\"conflicts\":[],\"new_rows\":[{\"url\":u,\"title\":\"t\",\"publisher\":\"p\",\"licence\":\"l\"}]})\na=probs(\"https://deploy:\"+pw+\"@example.org/a\")\nb=probs(\"http://deploy:\"+pw+\"@srv01.corp.contoso.com/a\")\nc=probs(\"https://learn.microsoft.com/en-us/graph/overview\")\nprint(\"password urls:\",a,b,\"| clean url:\",c)\nsys.exit(0 if a and b and not c and \"new_rows[0] url\" in a[0] and \"new_rows[0] url\" in b[0] and pw not in \" \".join(a+b) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "6edfb5250b61d7d9"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import census;u=\"https://deploy:\"+\"Hunter2\"*2+\"@example.org/a\";r=census.leak_problems({\"outcomes\":[],\"gaps\":[],\"conflicts\":[],\"new_rows\":[{\"url\":u,\"title\":\"t\",\"publisher\":\"p\",\"licence\":\"l\"}]});print(\"problems:\",r);sys.exit(0 if r else 1)"
+        ],
+        "exit": 0,
+        "sha256": "3aba2a25daef6652"
+      }
+    ]
+  }
 }
