@@ -25,7 +25,7 @@ between their items announced), and `needs_you_after_min` is the setting `mon_ne
 but its digest or events do not read, so no age reads 0 for want of events). A session's id is read from a dispatch record of a claims
 ledger (the pid, then the session), the claim records of its checkout's ledger, the coord intents and leases and the
 hook's per-session state file names under its checkout, never from a command line or an environment; a raw id leaves
-this module as its label only. A host that cannot list working
+this module as its label only, `live_sessions` apart (a return value for another tool in this process). A host that cannot list working
 directories (no `/proc` and no `lsof`) gives no processes and `procs_unreadable`, the reason, so the operator and the
 intents still show. Windows exposes no working directory, so the processes are `bl_procs.windows_snapshot`'s: those whose
 command line names a checkout of the clone (matched and dropped, never kept), and `procs_limit` says what Windows cannot
@@ -35,7 +35,10 @@ progress --item`, `list --prefix wait/`), the session it runs under (the label o
 ancestor, else null) and the items it waits on as {id, title}, a process that no longer runs left out; it is left out with
 `intents`. `drift` is `backlog.py runs`' answer for the active sprints' items and every item with a run key: `count`, the `oldest`
 item id (by its newest progress event) and `items`, each {item, title, state (the run state), git (the state git shows), why,
-age_s}; it is left out where the store is a url, `runs` cannot read coord or the root has no backlog items. `alerts` raises
+age_s}; it is left out where the store is a url, `runs` cannot read coord or the root has no backlog items. `live_sessions(root)` gives a
+tool in this process one row for each live session with the raw `session` id, the absolute `checkout` and the `pid` besides
+the `label`, `role`, `item` and `sprint` (the `sessions` binding, read light: no git beyond the worktree list, no stall
+signal, ops row or spool); the panel never holds the first two. `alerts` raises
 `sessions.orphan` and, while `drift` counts one, `runs.drift` (kind `drift`). Imports `mon_base` and `mon_view`; `bl_procs`,
 `bl_stall`, `bl_base`, `bl_runs`, `bl_items`, `bl_cost`, `ql_base`, `ql_distill` and `ql_report` where it reads them.
 """
@@ -90,6 +93,7 @@ ANCESTORS = 64  # process generations climbed from a wait to the Claude Code pro
 STORE_LOCK = threading.Lock()  # one panel run at a time points the environment's coord store at the clone's
 WINDOWS_LIMIT = ("Windows shows no working directory: a process is listed when its command line names a checkout of "
                  "the clone, so one that names none, an orphan told by working directory, is not shown")
+RAW_KEYS = ("session", "base")  # the keys of a `session_entries` entry that the panel's data never holds
 ROLES = ("worker", "sprint runner", "planner", "reviewer", "interactive", "benchmark agent", "bare twin", "observer",
          "unknown")  # the roles `role_of` gives
 
@@ -252,12 +256,12 @@ def coord_list(ctx, prefix):
     return [r for r in rows if isinstance(r, dict)] if isinstance(rows, list) else None
 
 
-def read_coord(ctx):
+def read_coord(ctx, events=True):
     """{intents: [fields], leases: {session id: seconds left}, claims: [(key, seconds left)], dispatched: {items with a
     dispatch record in the claims ledger}, intent_at, coordinate, moved} of the live leases and intents in the coord store (`coord.py digest`), the intents newest first, as coord.py
     prints them (a raw session id, never printed by this module); `intent_at`, `coordinate` and `moved` are `read_events`'
-    answer, empty and `events_unread` true where it is None. None when the store is not there, is not reachable or does not
-    answer."""
+    answer, empty and `events_unread` true where it is None; with EVENTS false they are not read (four processes fewer) and
+    are empty without `events_unread`. None when the store is not there, is not reachable or does not answer."""
     import mon_coord
     conn = coord_conn(ctx)
     if conn is None:
@@ -272,7 +276,7 @@ def read_coord(ctx):
         return None
     found = {"intents": [], "leases": {}, "claims": [], "dispatched": {i for i, r in ledger_records(ctx.root).items() if any(worker_of(r))},
              "intent_at": {}, "coordinate": [], "moved": {}}
-    read = read_events(conn)
+    read = read_events(conn) if events else (found["intent_at"], found["coordinate"], found["moved"])
     if read is None:
         found["events_unread"] = True
     else:
@@ -750,6 +754,14 @@ def session_rows(ctx, procs, placed, by_path, found, bl, names):
     `read_coord`'s answer (None without one), BL the root's `backlog` (None without items) and NAMES the checkouts as
     shown (`bind_sessions` says how a process gets its session id, a process nothing binds has no label). A dispatch record whose pid
     still runs and that the process table does not list gives a session too, its `started` null."""
+    rows = session_entries(ctx, procs, placed, by_path, found, bl, names)[:SESSIONS_KEPT]
+    return [{k: v for k, v in r.items() if k not in RAW_KEYS} for r in rows]
+
+
+def session_entries(ctx, procs, placed, by_path, found, bl, names, light=False):
+    """`session_rows`' entries, all of them, each with the raw `session` id (null where nothing binds it) and the absolute
+    `base` of its checkout besides: for `live_sessions`, never for the panel's data. LIGHT leaves out what costs a read of
+    the ops rows or a spool file: `step`, `last_activity` and `spend_usd` are null."""
     import bl_procs
     claude = [p for p in procs if p["comm"] == CLAUDE and placed.get(p["pid"])]
     ledgers = {b: ledger_records(b) for b in sorted({placed[p["pid"]] for p in claude} | {os.path.realpath(ctx.root)})}
@@ -767,7 +779,7 @@ def session_rows(ctx, procs, placed, by_path, found, bl, names):
     if not claude:
         return []
     bound = bind_sessions(claude, placed, by_path, ledgers, found)
-    landing = landing_steps(ctx.root) if bl is not None else {}
+    landing = landing_steps(ctx.root) if bl is not None and not light else {}
     remediating = any(key.startswith(REMEDIATE) for key, _ in (found or {}).get("claims", []))
     items_of = bl.items if bl is not None else {}
 
@@ -785,35 +797,57 @@ def session_rows(ctx, procs, placed, by_path, found, bl, names):
             items = [i for i in items or intents_of(found, sid) if (items_of.get(i) or {}).get("status") in ("todo", "doing")]
         known = [items_of[i] for i in items if i in items_of]
         sprints = {it.get("sprint") for it in known}
-        live_workers = os.name != "nt" and any(bl_procs.running(w) for w in (worker_of(r)[0] for r in records.values()) if w is not None)
+        live_workers = os.name != "nt" and not light and any(bl_procs.running(w) for w in (worker_of(r)[0] for r in records.values()) if w is not None)
         role = role_of(base, worker, any(it.get("review") for it in known), runner,
                        bool(known) and all(it.get("kind") in PLAN_KINDS for it in known),
                        sid is None and not hook_sessions(base) and remediating, base in by_path)
         item = items[0] if len(items) == 1 else None
         sprint = sprints.pop() if len(sprints) == 1 else None
-        stamp, spend = spool_figures(sid) if sid is not None else (None, None)
+        stamp, spend = spool_figures(sid) if sid is not None and not light else (None, None)
         step = step_of(role, items + [i for i in dispatched if runner and i not in items], bl, landing, live_workers) \
-            if bl is not None else None
+            if bl is not None and not light else None
         out.append({"label": mon_view.session_label(sid) if sid else None, "role": role, "item": item,
                     "item_title": title(item), "sprint": sprint, "sprint_title": title(sprint), "step": step,
                     "started": iso(p["start"]) if p["start"] is not None else None, "last_activity": stamp, "spend_usd": spend, "pid": p["pid"],
-                    "checkout": names.get(base, ".")})
-    return out[:SESSIONS_KEPT]
+                    "checkout": names.get(base, "."), "session": sid, "base": base})
+    return out
 
 
-def collect(ctx):
+def placement(ctx):
+    """(procs, why, blind, worktree rows, {real path: branch}, names, placed): the processes in a checkout of the clone
+    (`bl_procs.snapshot`, on Windows `windows_snapshot`; `procs` None and `why` the reason where the host cannot list them,
+    `blind` the Windows count of processes with no command line, else None), the worktrees with their branches, the checkouts
+    as `display_names` shows them and the real path each process is placed in."""
     import bl_procs
-    import kbwho
     blind = None
     if os.name == "nt":
         procs, _, why, blind = bl_procs.windows_snapshot(str(ctx.root))
     else:
         procs, _, why = bl_procs.snapshot(str(ctx.root))
-    now = time.time()
     rows, by_path = branches(ctx.root)
     bases = bl_procs.checkouts(str(ctx.root)) if procs is not None else []
-    names = display_names(ctx.root, bases)
-    placed = checkout_paths(procs or [], bases)
+    return procs, why, blind, rows, by_path, display_names(ctx.root, bases), checkout_paths(procs or [], bases)
+
+
+def live_sessions(root):
+    """[{pid, session, checkout, role, item, sprint, label}] of the live Claude Code sessions of the clone at ROOT, one for
+    each `claude` process in a checkout of it, oldest first, for a tool to follow: `session` is the raw session id (null
+    where nothing binds the process to one), `checkout` the absolute real path, `label` the label `mon_view.session_label`
+    gives. It is the sessions panel's binding and roles (`session_entries`) read without git beyond the worktree list,
+    the stall signals, the ops rows and the spool, so a caller can ask again every few seconds; the raw id and the path stay
+    in this process, the panel's data and text never hold them. [] where the host lists no process."""
+    ctx = mon_base.Ctx(Path(root).resolve())
+    procs, _, _, _, by_path, names, placed = placement(ctx)
+    found = read_coord(ctx, events=False)
+    rows = session_entries(ctx, procs or [], placed, by_path, found, backlog(ctx.root), names, light=True)
+    return [{"pid": r["pid"], "session": r["session"], "checkout": r["base"], "role": r["role"], "item": r["item"],
+             "sprint": r["sprint"], "label": r["label"]} for r in rows]
+
+
+def collect(ctx):
+    import kbwho
+    procs, why, blind, rows, by_path, names, placed = placement(ctx)
+    now = time.time()
     out = []
     for p in procs or []:
         base = placed.get(p["pid"])

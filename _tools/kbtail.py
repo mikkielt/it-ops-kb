@@ -1,11 +1,22 @@
 #!/usr/bin/env python3
-"""kbtail: follow one Claude Code session's transcript live in a terminal, redacted and cut (stdlib only).
+"""kbtail: follow Claude Code sessions' transcripts live in a terminal, redacted and cut (stdlib only).
 
   kbtail.py [--history N] [--once] TARGET
+  kbtail.py [--history N] [--once] [--root DIR] [--item ID] [--role ROLE] [ITEM]
 
 TARGET is a transcript path, or a session id: the newest `<id>.jsonl` under the Claude config directory's projects
 (`kbusage.find_transcript`). It prints the last N lines (default 20) and, unless `--once`, each line appended later within
 2 seconds of its write until interrupted; a half-written last line is read once its newline is there.
+
+With no TARGET, or an item id (ITEM, as `--item` keeps), it follows every live Claude Code session of the clone at `--root`
+(default: the one this script is in), its main checkout and each worktree, as `mon_sessions.live_sessions` finds and binds them.
+Each line starts with the session's role and item (`worker ST-3k2m5n7q`, `interactive`; the sessions' label is added when two
+sessions have the same words, never a raw session id) in a column as wide as the longest; a subagent's lines
+(`<session>/subagents/agent-*.jsonl`) are indented under its session's. `--item ID` and `--role ROLE` keep the matching
+sessions only. A followed session whose process ends gets a line `HH:MM:SS ended` within 2 seconds and the others go on. The
+session list is read again when the coord store has changed (5 seconds apart at most), after a session ended and every 30
+seconds, for sessions that began since. At most 16 sessions are followed, the rest named in one line. `--history N` is each
+file's.
 
 A line is the time (local, HH:MM:SS), a kind and a text:
   prompt   a user prompt's first line
@@ -24,8 +35,8 @@ KB_COORD_STORE, else the project's) and otherwise sleeps; either way it reads on
 read. It writes no file. Exit codes: 0 done (also an interrupt), 2 a bad argument or a TARGET with no transcript.
 `kbmon.py --follow ARGS` runs it with ARGS.
 
-Answers: what a session is doing right now, as a redacted line for each tool call, result and message
-Use: python3 _tools/kbtail.py [--history N] [--once] TARGET
+Answers: what a session, or every live session of the clone, is doing right now, as a redacted line for each tool call, result and message
+Use: python3 _tools/kbtail.py [--history N] [--once] [--root DIR] [--item ID] [--role ROLE] [TARGET]
 """
 import argparse
 import json
@@ -34,6 +45,7 @@ import re
 import shutil
 import sys
 import time
+from collections import Counter
 from datetime import datetime
 from pathlib import Path
 
@@ -44,6 +56,12 @@ import redact
 
 HISTORY = 20  # lines printed before following
 WAKE_S = 1.0  # longest wait between two reads of a followed file
+MAX_SESSIONS = 16  # sessions followed at once; the rest are named in one line
+SCAN_S = 30  # seconds after which the live sessions are listed again
+SCAN_MIN_S = 5  # the least seconds between two lists a change of the coord store asks for
+SUBAGENTS_SHOWN = 4  # the newest subagent files of a session whose history is printed
+INDENT = "  "  # a subagent's lines are indented by this under its session's
+ITEM_ID = re.compile(r"[A-Z]{2}-[a-z2-7]{8}")
 COMMAND_CUT = 100  # characters of a tool call's key input
 RESULT_CUT = 80  # characters of a tool result's line
 READ_CAP = 4000  # characters of a text that are redacted; its first line is within them
@@ -213,6 +231,28 @@ def coord_store():
     return str(path) if path and Path(path).is_file() else None
 
 
+def read_new(path, offset, rest):
+    """([lines to print], offset, rest): what the whole lines appended to PATH after OFFSET show; REST holds the bytes of a
+    half-written last line. A file that shrank was replaced and is read from its start."""
+    size = path.stat().st_size
+    if size < offset:
+        offset, rest = 0, b""
+    lines = []
+    if size > offset:
+        with open(path, "rb") as f:
+            f.seek(offset)
+            data = f.read(size - offset)
+        offset += len(data)
+        rest += data
+        cut_at = rest.rfind(b"\n")
+        if cut_at >= 0:
+            whole, rest = rest[:cut_at + 1], rest[cut_at + 1:]
+            for raw in whole.split(b"\n"):
+                if raw.strip():
+                    lines += parse(raw.decode("utf-8", "replace"))[0]
+    return lines, offset, rest
+
+
 def follow(path, offset, columns, out):
     """Print the lines appended after `offset` as they become whole, until interrupted."""
     store = coord_store()
@@ -220,23 +260,11 @@ def follow(path, offset, columns, out):
     rest = b""
     while True:
         try:
-            size = path.stat().st_size
-            if size < offset:  # the file was replaced
-                offset, rest = 0, b""
-            if size > offset:
-                with open(path, "rb") as f:
-                    f.seek(offset)
-                    data = f.read(size - offset)
-                offset += len(data)
-                rest += data
-                cut_at = rest.rfind(b"\n")
-                if cut_at >= 0:
-                    whole, rest = rest[:cut_at + 1], rest[cut_at + 1:]
-                    for raw in whole.split(b"\n"):
-                        if raw.strip():
-                            for line in parse(raw.decode("utf-8", "replace"))[0]:
-                                out.write(fit(line, columns) + "\n")
-                    out.flush()
+            lines, offset, rest = read_new(path, offset, rest)
+            for line in lines:
+                out.write(fit(line, columns) + "\n")
+            if lines:
+                out.flush()
         except OSError:
             pass
         since = wake(since, store)
@@ -251,6 +279,146 @@ def resolve(target):
     return None
 
 
+class Followed:
+    """A live session being followed: its `live_sessions` row, its transcript and, for that and each subagent's, the read
+    position {path: [offset, rest]}."""
+
+    def __init__(self, row, transcript):
+        self.row = row
+        self.transcript = transcript
+        self.files = {}
+
+
+def subagent_files(transcript):
+    """The subagent transcripts of the session whose transcript is TRANSCRIPT: `<session>/subagents/agent-*.jsonl`, oldest
+    first."""
+    try:
+        found = list(transcript.with_suffix("").joinpath("subagents").glob("agent-*.jsonl"))
+        return sorted(found, key=lambda p: (p.stat().st_mtime, str(p)))
+    except OSError:
+        return []
+
+
+def tags(followed):
+    """{pid: the words that name a session}: its role and item, with its label (else its pid) added when another followed
+    session has the same words, never a raw session id."""
+    words = {pid: " ".join(w for w in (f.row["role"], f.row["item"]) if w) for pid, f in followed.items()}
+    same = Counter(words.values())
+    return {pid: w if same[w] == 1 else f"{w} {followed[pid].row['label'] or 'pid ' + str(pid)}" for pid, w in words.items()}
+
+
+def prefixed(followed, pid, subagent, line, columns):
+    """LINE of the followed session PID behind its tag (as wide as the longest), a subagent's indented, within COLUMNS."""
+    names = tags(followed)
+    width = max(len(n) for n in names.values())
+    return fit(f"{names[pid]:<{width}}  {INDENT if subagent else ''}{line}", columns)
+
+
+def alive(pid):
+    """Whether process PID runs (a cheap signal-0 test where the host has one)."""
+    import coord
+    if os.name != "posix":
+        return coord.process_runs(pid)
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        pass
+    return True
+
+
+def wanted(root, item, role):
+    """The `live_sessions` rows of the clone at ROOT that have a session id and match ITEM and ROLE (None keeps all)."""
+    import mon_sessions
+    return [r for r in mon_sessions.live_sessions(root)
+            if r["session"] and item in (None, r["item"]) and role in (None, r["role"])]
+
+
+def scan(root, item, role, followed, count):
+    """Follow the live sessions that began since the last scan, up to MAX_SESSIONS: ([(time, pid, subagent, line)] of the
+    history of each new session's files, how many lines were skipped, the tags of those left out)."""
+    shown, skipped, over = [], 0, []
+    for row in wanted(root, item, role):
+        if row["pid"] in followed:
+            continue
+        transcript = kbusage.find_transcript(row["session"])
+        if transcript is None:
+            continue
+        if len(followed) >= MAX_SESSIONS:
+            over.append(" ".join(w for w in (row["role"], row["item"]) if w))
+            continue
+        f = followed[row["pid"]] = Followed(row, transcript)
+        subs = subagent_files(transcript)
+        for path, sub in [(transcript, False)] + [(p, True) for p in subs]:
+            keep = count if not sub or path in subs[-SUBAGENTS_SHOWN:] else 0
+            try:
+                lines, bad, end = history(path, keep)
+            except OSError:
+                continue
+            f.files[path] = [end, b""]
+            skipped += bad
+            shown += [(line[:8], row["pid"], sub, line) for line in lines]
+    return sorted(shown, key=lambda x: x[0]), skipped, over
+
+
+def drain(followed, pid):
+    """[(pid, subagent, line)] appended to the files of the followed session PID since the last read, new subagent files
+    included (read from their start)."""
+    f = followed[pid]
+    for path in subagent_files(f.transcript):
+        f.files.setdefault(path, [0, b""])
+    out = []
+    for path, state in list(f.files.items()):
+        try:
+            lines, state[0], state[1] = read_new(path, *state)
+        except OSError:
+            continue
+        out += [(pid, path != f.transcript, line) for line in lines]
+    return out
+
+
+def show(followed, shown, over, columns, out):
+    """Write the history lines SHOWN (`scan`'s list) and one line naming the sessions OVER the limit."""
+    for _, pid, sub, line in shown:
+        out.write(prefixed(followed, pid, sub, line, columns) + "\n")
+    if over:
+        out.write(fit(f"kbtail: {len(over)} more sessions not followed: {', '.join(over)}", columns) + "\n")
+
+
+def follow_all(a, columns, out):
+    """Print the history, then follow the live sessions of the clone at a.root until interrupted (the module doc says how)."""
+    followed, last, over_shown = {}, None, []
+    store = coord_store()
+    since = wake(0, store, 0)
+    rescan = True
+    while True:
+        now = time.monotonic()
+        if rescan or now - last >= SCAN_S:
+            rescan = False
+            try:
+                shown, _, over = scan(a.root, a.item, a.role, followed, a.history)
+            except Exception:  # noqa: BLE001 - a list that fails once is tried again at the next scan
+                shown, over = [], over_shown
+            last = time.monotonic()
+            show(followed, shown, over if over != over_shown else [], columns, out)
+            over_shown = over
+        for pid in list(followed):
+            for who, sub, line in drain(followed, pid):
+                out.write(prefixed(followed, who, sub, line, columns) + "\n")
+        for pid in [p for p in followed if not alive(p)]:
+            for who, sub, line in drain(followed, pid):
+                out.write(prefixed(followed, who, sub, line, columns) + "\n")
+            out.write(prefixed(followed, pid, False, f"{time.strftime('%H:%M:%S')} ended", columns) + "\n")
+            del followed[pid]
+            rescan = True
+        out.flush()
+        moved = wake(since, store)
+        if moved != since and time.monotonic() - last >= SCAN_MIN_S:
+            rescan = True
+        since = moved
+
+
 def count(text):
     value = int(text)
     if value < 0:
@@ -258,13 +426,48 @@ def count(text):
     return value
 
 
+def main_all(a, out, err):
+    """Follow every live session of the clone (a.root) that a.item and a.role keep; 0 or 2."""
+    columns = shutil.get_terminal_size().columns
+    try:
+        if a.once:
+            followed = {}
+            shown, skipped, over = scan(a.root, a.item, a.role, followed, a.history)
+            show(followed, shown, over, columns, out)
+            out.flush()
+            print(f"kbtail: skipped {skipped}", file=err)
+            return 0
+        follow_all(a, columns, out)
+    except BrokenPipeError:
+        return 0
+    except OSError as e:
+        print(f"kbtail: {type(e).__name__}", file=err)
+        return 2
+    except KeyboardInterrupt:
+        pass
+    return 0
+
+
 def main(argv=None, out=None, err=None):
     out, err = out or sys.stdout, err or sys.stderr
     ap = argparse.ArgumentParser(prog="kbtail.py", description=__doc__.split("\n\n")[0].splitlines()[0])
-    ap.add_argument("target", metavar="TARGET", help="a transcript path or a session id")
+    ap.add_argument("target", metavar="TARGET", nargs="?", help="a transcript path or a session id; an item id as --item; none: every live session")
     ap.add_argument("--history", type=count, default=HISTORY, metavar="N", help="lines printed first (default %d)" % HISTORY)
     ap.add_argument("--once", action="store_true", help="print the history and stop")
+    ap.add_argument("--root", type=Path, default=Path(__file__).resolve().parent.parent, metavar="DIR",
+                    help="the clone whose live sessions are followed (default: the one this script is in)")
+    ap.add_argument("--item", metavar="ID", help="keep the sessions working on this item")
+    ap.add_argument("--role", metavar="ROLE", help="keep the sessions of this role (worker, interactive, ...)")
     a = ap.parse_args(argv)
+    if a.target is None or (ITEM_ID.fullmatch(a.target) and not Path(a.target).is_file()):
+        if a.target and a.item not in (None, a.target):
+            print(f"kbtail: {a.target} and --item {a.item} name different items", file=err)
+            return 2
+        a.item = a.target or a.item
+        return main_all(a, out, err)
+    if a.item or a.role:
+        print("kbtail: --item and --role keep live sessions: give no TARGET, or an item id", file=err)
+        return 2
     path = resolve(a.target)
     if path is None:
         print(f"kbtail: no transcript for {a.target}", file=err)
