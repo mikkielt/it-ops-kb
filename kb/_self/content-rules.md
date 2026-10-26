@@ -32,6 +32,13 @@ What a fact, an article, a source row and a ledger entry look like, and how to a
   - what the run did not cover (another mode, OS or version) is said in the fact or kept as an `UNK` fact, never folded into a general claim.
 
   The failure it answers: a job-object fact (`kb/public/python/stdlib-windows-portability.md`) first turned one headless probe into a claim about every session; it now names Claude Code 2.1.285, headless and interactive. The kb-verify lint warns on a `DER` Facts bullet (not a `SNIPPET:`) that says it rests on a run (`observed` or `measured` followed by `on`, `in`, `by`, `with`, `against`, `at`, `when`, `running` or `:`; `probed`; `the same probe against`, `a probe of`; `in the headless runs`, `in two runs`; not `in the long run` or `in a pipeline run`) and names no version (a dotted number such as `2.1.285` or `3.3`, `version N` or `vN`; a measurement such as `2.5 s` or `TLS 1.2` is no version). A live service with no version still warns: name the date and endpoint and judge the warning.
+- A fact says when it became true and when it stopped with a validity window, the marker `(valid START..END)` before its tag:
+  - a `DOC` or `DER` fact gives dates, `(valid 2024-03-01..2025-09-30)`; a `CODE` fact gives short commit ids, `(valid 0123abc..4567def)` (7 to 40 lowercase hex digits), read as the pinned commits between which the code did this;
+  - an open end is nothing after the two dots, `(valid 2024-03-01..)`: the fact still holds; the start is always written;
+  - a fact with no window is valid from its source's retrieval date with no end, so every fact written before windows stays valid unchanged; a window is written only where a source dates a change;
+  - the marker is one token with no space inside it, and a parenthesis of prose (`(valid signature, ...)`) is none;
+  - `kbfacts.windows_in` reads it and `kbfacts.window_ended` says whether it has ended (a date end before today, or any commit end); `rag.py audit` counts those facts per article as `ended`;
+  - the kb-verify lint reports as an error a window that is neither dates nor commit ids, a date that does not exist, an end before the start, a second window on a fact, a window after the tag, a commit range on a fact with no `CODE` tag or whose cited source is not pinned (`CODE`, below), and a date range on a fact tagged only `CODE`.
 
 ## CODE: what the implementation does
 
