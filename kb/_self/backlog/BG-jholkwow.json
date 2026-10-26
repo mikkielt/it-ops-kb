@@ -1,0 +1,24 @@
+{
+  "id": "BG-jholkwow",
+  "kind": "bug",
+  "title": "coord.py digest labels a two-item intent state=done when asked by its touch or topic key and only one item is done",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "digest asked for a multi-item intent's touch or topic key gives no done label while one of its items is live. Found by the SP-n7f53pgv review (S3 on BG-n4pgkyos's fallback to all items).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,sys,tempfile,types,shutil\nsys.path.insert(0,'_tools');import coord\nbad=[]\nfor intent,key in ((dict(item='BG-aaaaaaaa,BG-bbbbbbbb',touch='_tools/x.py'),'_tools/x.py'),(dict(item='BG-aaaaaaaa,BG-bbbbbbbb',topic='public/x/y'),'public/x/y')):\n    D=tempfile.mkdtemp();st=os.path.join(D,'c.sqlite');t=[1000.0];clock=lambda:t[0]\n    A=lambda **k:types.SimpleNamespace(store=st,**k)\n    def post(kind,**f):\n        t[0]+=1;return coord.run(A(command='post',kind=kind,field=[f'{a}={b}' for a,b in f.items()]),clock)[0]\n    coord.run(A(command='claim',key='session/s1',ttl=21600,holder='s1',budget=None),clock)\n    post('intent',session='s1',**intent);post('progress',item='BG-aaaaaaaa',state='done')\n    out=repr(coord.run(A(command='digest',key=[key],lines=10),clock)[0]);print(key,'->',out)\n    if 'state=done' in out: bad.append(key)\n    shutil.rmtree(D,ignore_errors=True)\nsys.exit(1 if bad else 0)\n"
+    ]
+  },
+  "touches": [
+    "_tools/coord.py"
+  ],
+  "links": [
+    "parked: SP-n7f53pgv review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
