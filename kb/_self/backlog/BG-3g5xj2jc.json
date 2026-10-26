@@ -2,7 +2,7 @@
   "id": "BG-3g5xj2jc",
   "kind": "bug",
   "title": "A gate whose question names a credential as a lower-case snake_case identifier outside the closed credential-part list (registration_token, ci_job_token, vault_token) is classed design, not secrets",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-w57bnhhx",
   "priority": "P2",
   "rank": 0,

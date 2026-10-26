@@ -2,7 +2,7 @@
   "id": "SP-w57bnhhx",
   "kind": "sprint",
   "title": "Fixes for today's regressions and leaks: credential-named gates, url passwords, the land push token",
-  "status": "planned",
+  "status": "active",
   "goal": "a gate naming registration_token, ci_job_token, vault_token or trigger_token as a snake_case identifier is classed secrets while bare_token and def_tokens stay classed by their other words; redact rewrites the host of an http or https url that carries a user:password@ part; census.leak_problems reports a new-row url that carries a user:password@ part; the land push step of the kb is labelled kbgit.py-sync-push again in the ops rows written and read by backlog.py ops, landings and kbmon",
   "gates": [
     {
@@ -14,7 +14,11 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "creator": "op-f618a13e",

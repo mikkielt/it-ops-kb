@@ -2,7 +2,7 @@
   "id": "ST-naf6rzrr",
   "kind": "story",
   "title": "Research sprint goal: Fixes for today's regressions and leaks: credential-named gates, url passwords, the land push token",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-w57bnhhx",
   "goal_research": true,
   "priority": "P1",

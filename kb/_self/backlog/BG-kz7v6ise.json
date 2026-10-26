@@ -2,7 +2,7 @@
   "id": "BG-kz7v6ise",
   "kind": "bug",
   "title": "census leak_problems passes a new source row whose url carries user:password@, because kbpublic.file_hits strips urls and only an email is checked in the raw url",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-w57bnhhx",
   "priority": "P2",
   "rank": 0,

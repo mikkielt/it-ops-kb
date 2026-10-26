@@ -2,7 +2,7 @@
   "id": "BG-xy2dopfo",
   "kind": "bug",
   "title": "The land push step of the kb is named _tools/kbgit.py sync --push, so its land.step token is no longer kbgit.py-sync-push",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-iowijan3",
   "sprint": "SP-w57bnhhx",
   "priority": "P2",
