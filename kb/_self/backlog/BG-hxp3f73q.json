@@ -20,6 +20,26 @@
     "kb/_self/tools.md",
     "kb/_self/content-rules.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does window_sections tell an intro edit from a sibling heading added when the parent section's hash holds both?",
+      "options": [
+        "compare the section's body units of the previous and the current text in window_sections",
+        "hash body units and heading lines apart in sections()"
+      ],
+      "recommendation": "compare the section's body units of the previous and the current text in window_sections",
+      "reason": "no change to the stored sections column",
+      "do": {
+        "compare the section's body units of the previous and the current text in window_sections": "BG-hxp3f73q",
+        "hash body units and heading lines apart in sections()": "BG-hxp3f73q"
+      },
+      "class": "design",
+      "answer": "compare the section's body units of the previous and the current text in window_sections",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-3g3egfll review"
   ],
