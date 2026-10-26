@@ -43,6 +43,25 @@
   "relates_to": [
     "BG-v5tq4jkz"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the EC armor lookahead tell a repository path from a short key body with a slash?",
+      "options": [
+        "case-flip tells: a piece is no path piece with a lower-case letter or digit then an upper-case letter that no lower-case follows, or a one- or two-letter hump after a lower-case letter, and the 16-character cap is dropped",
+        "keep the 16-character cap and add only the case-flip tells"
+      ],
+      "recommendation": "case-flip tells: a piece is no path piece with a lower-case letter or digit then an upper-case letter that no lower-case follows, or a one- or two-letter hump after a lower-case letter, and the 16-character cap is dropped",
+      "do": {
+        "case-flip tells: a piece is no path piece with a lower-case letter or digit then an upper-case letter that no lower-case follows, or a one- or two-letter hump after a lower-case letter, and the 16-character cap is dropped": "BG-w4af2tix",
+        "keep the 16-character cap and add only the case-flip tells": "BG-w4af2tix"
+      },
+      "class": "design",
+      "answer": "case-flip tells: a piece is no path piece with a lower-case letter or digit then an upper-case letter that no lower-case follows, or a one- or two-letter hump after a lower-case letter, and the 16-character cap is dropped",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-jopt2c3z review"
   ],
