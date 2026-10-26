@@ -1,0 +1,25 @@
+{
+  "id": "BG-uohwp2dy",
+  "kind": "bug",
+  "title": "census leak_problems passes a url with user:password@ in an outcome note, gap text, conflict text or a new row field other than url",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "census.leak_problems reports a url that carries a user:password@ part in an outcome note, a gap or conflict text and a new row title or publisher, naming the field and never the value",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,\"_tools\"); import census; pw=\"Hunter2\"*2; u=\"https://deploy:\"+pw+\"@example.org/a\"; r=census.leak_problems({\"outcomes\":[{\"note\":\"see \"+u}],\"gaps\":[],\"conflicts\":[],\"new_rows\":[]}); print(\"problems:\",r); sys.exit(0 if r and pw not in \" \".join(r) else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/census.py"
+  ],
+  "links": [
+    "parked: SP-w57bnhhx review"
+  ],
+  "notes": "Found by the SP-w57bnhhx review on 2026-10-26 (fresh-context reviewer, probed on the tip of the main branch); not S1, so parked as a draft in no sprint.",
+  "filed_in": "clone-0ea70e5c"
+}

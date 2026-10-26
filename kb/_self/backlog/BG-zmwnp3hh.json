@@ -1,0 +1,25 @@
+{
+  "id": "BG-zmwnp3hh",
+  "kind": "bug",
+  "title": "A credential word glued by a hyphen, dot, slash or colon to a code identifier (vault-read_token) leaves the gate classed design, not secrets",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "a gate naming vault-read_token, registration-def_token, gitlab-bare_token, vault.read_token or vault/read_token is classed secrets, while bare_token after a space or a backtick stays classed by its other words",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,\"_tools\"); import bl_authority as b; bad=[w for w in (\"vault-read_token\",\"registration-def_token\",\"gitlab-bare_token\",\"vault.read_token\",\"vault/read_token\") if b.class_reasons({\"touches\":[]},{\"id\":\"g1\",\"question\":\"Rotate \"+w+\" now?\",\"options\":[\"one\",\"two\"]})[0]!=\"secrets\"]; print(\"design:\",bad); sys.exit(1 if bad else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_authority.py"
+  ],
+  "links": [
+    "parked: SP-w57bnhhx review"
+  ],
+  "notes": "Found by the SP-w57bnhhx review on 2026-10-26 (fresh-context reviewer, probed on the tip of the main branch); not S1, so parked as a draft in no sprint.",
+  "filed_in": "clone-0ea70e5c"
+}

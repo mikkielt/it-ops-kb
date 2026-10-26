@@ -1,0 +1,25 @@
+{
+  "id": "BG-4wjar4pn",
+  "kind": "bug",
+  "title": "bl_land.ops_token gives a token that starts with an underscore or a digit, which ql_capture refuses, so the land.step row of a project whose push program starts that way is dropped",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "bl_land.ops_token returns a token that ql_capture.ops_problems accepts for a label that starts with an underscore or a digit",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,\"_tools\"); import bl_land, ql_capture; bad=[(a, ql_capture.ops_problems({\"event\":\"land.step\",\"item\":\"BG-aaaaaaaa\",\"step\":bl_land.ops_token(a),\"exit\":0,\"ms\":1})) for a in (\"_x.py sync --push\",\"2tool sync --push\")]; bad=[b for b in bad if b[1]]; print(bad); sys.exit(1 if bad else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py"
+  ],
+  "links": [
+    "parked: SP-w57bnhhx review"
+  ],
+  "notes": "Found by the SP-w57bnhhx review on 2026-10-26 (fresh-context reviewer, probed on the tip of the main branch); not S1, so parked as a draft in no sprint.",
+  "filed_in": "clone-0ea70e5c"
+}

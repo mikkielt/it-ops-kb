@@ -1,0 +1,25 @@
+{
+  "id": "BG-5dcfyrks",
+  "kind": "bug",
+  "title": "redact keeps the start of a url password that holds an angle bracket, because the password class of URL_USERINFO excludes < and >",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "redact.redact leaves no character of a url password that holds an angle bracket in its output",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,\"_tools\"); import redact; k=redact.known(); pw=\"a<b>\"+\"c\"*6; r=redact.redact(\"https://jan:\"+pw+\"@srv01.corp.contoso.com/x\",k); print(r); sys.exit(1 if \"a<b>\" in r else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/redact.py"
+  ],
+  "links": [
+    "parked: SP-w57bnhhx review"
+  ],
+  "notes": "Found by the SP-w57bnhhx review on 2026-10-26 (fresh-context reviewer, probed on the tip of the main branch); not S1, so parked as a draft in no sprint.",
+  "filed_in": "clone-0ea70e5c"
+}

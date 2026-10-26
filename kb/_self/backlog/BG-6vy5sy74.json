@@ -1,0 +1,25 @@
+{
+  "id": "BG-6vy5sy74",
+  "kind": "bug",
+  "title": "A gate whose question names a model usage field (cache_read_input_tokens, cache_creation_input_tokens) or a token-count function is classed secrets since the closed code-parts list",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "a gate naming cache_read_input_tokens or cache_creation_input_tokens as an identifier is classed by its other words, while registration_token, vault_token and my_token stay secrets",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,\"_tools\"); import bl_authority as b; c=b.class_reasons({\"touches\":[]},{\"id\":\"g1\",\"question\":\"Why does cache_read_input_tokens differ?\",\"options\":[\"one\",\"two\"]})[0]; print(\"class\",c); sys.exit(0 if c==\"design\" else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_authority.py"
+  ],
+  "links": [
+    "parked: SP-w57bnhhx review"
+  ],
+  "notes": "Found by the SP-w57bnhhx review on 2026-10-26 (fresh-context reviewer, probed on the tip of the main branch); not S1, so parked as a draft in no sprint.",
+  "filed_in": "clone-0ea70e5c"
+}
