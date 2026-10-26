@@ -1,0 +1,22 @@
+{
+  "id": "ST-igkt3vsr",
+  "kind": "story",
+  "title": "land --wait-merge does not count the time a landing waits for the landing lock, so a merged request is not reported as a timeout",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the wait-merge bound of backlog.py land starts after the landing holds the landing lock for its second pass, so a landing whose merge request merged during the queue is not refused at step wait-merge after 1800 seconds",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open(\"_tools/bl_land.py\").read();s=t.split(\"def wait_merge\")[1][:1500];sys.exit(0 if \"landing lock\" in s else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
