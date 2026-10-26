@@ -1388,7 +1388,8 @@ def main(argv=None):
         except Refused:
             sent = None
         if sent is not None and sent.command in ("claim", "dedup") and not sent.holder and os.environ.get(HOLDER_ENV):
-            rest = [*rest, "--holder", os.environ[HOLDER_ENV]]
+            cut = rest.index("--") if "--" in rest else len(rest)
+            rest = [*rest[:cut], "--holder", os.environ[HOLDER_ENV], *rest[cut:]]
         return send(named.url, named.key_file, rest, named.plain_http)
     args = build_parser().parse_args(argv)
     if args.command in ("claim", "dedup") and not args.holder:
