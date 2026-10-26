@@ -8,7 +8,10 @@ nothing at load, `mon_sessions` (its age text) and `mon_status` (`short_name`) w
                   `ST-… blocked on gates g1, g2, 5m`, `ST-… run failed at step X, 5m`, `ST-… landing refused at step rebase,
                   5m`; a gate it names is left out of the `gate` entries), `ask` (each ask addressed to `operator` that no closing
                   answer has ended, from the coord panel: `ask ID since DATE TIME: the first words of the question`, redacted;
-                  an Alertmanager alert, a cleanup verdict or a session's question posted as an ask shows here), `overlap` (each
+                  an Alertmanager alert, a cleanup verdict or a session's question posted as an ask shows here), `prompt` (each
+                  session of the sessions panel that carries `blocked`, the coord hook's record of a permission request or a
+                  question that waits on the person, longest first: `s-… worker ST-… blocked on a permission prompt, 2m`; a
+                  session that is only silent has none), `overlap` (each
                   overlap of two live sessions in the sessions panel that no coordinate event decided and that is
                   `announce.needs_you_after_min` minutes old, `overlap ST-… (s-…) with ST-… (s-…), undecided for 12m`),
                   `finished` (each item of the sessions panel's `stalled` list with the `finished-alive` signal: its worker's work is
@@ -28,8 +31,8 @@ The list reads only the panels' data, so a saved snapshot gives the same line. I
 
 PANELS = ("sprint", "querylog", "sessions", "host")
 COORD_PANEL = "coord"
-KINDS = ("gate", "run", "ask", "overlap", "finished", "blocked", "delivery", "orphan", "disk", "fast-forward")
-MANY = {"gate": "gates", "run": "runs", "ask": "asks", "overlap": "overlaps", "finished": "finished workers", "blocked": "blocked sprints", "delivery": "deliveries", "orphan": "orphans", "disk": "disk",
+KINDS = ("gate", "run", "ask", "prompt", "overlap", "finished", "blocked", "delivery", "orphan", "disk", "fast-forward")
+MANY = {"gate": "gates", "run": "runs", "ask": "asks", "prompt": "prompts", "overlap": "overlaps", "finished": "finished workers", "blocked": "blocked sprints", "delivery": "deliveries", "orphan": "orphans", "disk": "disk",
         "fast-forward": "fast-forward"}  # the noun after `+N more`
 LOW_DISK_PCT = 10  # the host panel's alert threshold
 SHOWN = 3  # entries of one kind the line names before it counts the rest
@@ -106,6 +109,22 @@ def ask_entries(data):
     return out
 
 
+WAITS_ON = {"permission": "a permission prompt", "question": "a question"}  # what a blocked session's `on` says in the line
+
+
+def prompt_entries(data):
+    import mon_sessions
+    found = [s for s in data.get("sessions") or [] if isinstance(s, dict) and isinstance(s.get("blocked"), dict)]
+    out = []
+    for s in sorted(found, key=lambda s: -number(s["blocked"].get("age_s"))):
+        b = s["blocked"]
+        name = " ".join(str(w) for w in (s.get("label") or "-", s.get("role"), s.get("item")) if w)
+        out.append({"kind": "prompt", "text": f"{name} blocked on {WAITS_ON.get(b.get('on'), 'the person')}"
+                    + (f", {mon_sessions.age_text(number(b['age_s']))}" if isinstance(b.get("age_s"), int) else ""),
+                    "session": s.get("label"), "item": s.get("item"), "on": b.get("on")})
+    return out
+
+
 def overlap_entries(data):
     import mon_sessions
     after = number(data.get("needs_you_after_min"), 10) * 60
@@ -173,7 +192,7 @@ def fast_forward_entries(data):
 def entries(snap):
     """The list of what waits on the operator, from the `ok` panels of SNAP (see the module docstring)."""
     out = []
-    for name, found in (("sprint", sprint_entries), (COORD_PANEL, ask_entries), ("sessions", overlap_entries), ("sessions", finished_entries), ("querylog", delivery_entries),
+    for name, found in (("sprint", sprint_entries), (COORD_PANEL, ask_entries), ("sessions", prompt_entries), ("sessions", overlap_entries), ("sessions", finished_entries), ("querylog", delivery_entries),
                         ("sessions", orphan_entries),
                         ("host", disk_entries), ("sprint", fast_forward_entries)):
         data = data_of(snap, name)

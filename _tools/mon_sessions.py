@@ -22,7 +22,10 @@ usage rows of the session's own spool file, null without one) and `silent_s` (th
 session's transcript or its subagents' transcripts, `mon_coord.transcript_age`; with none found, since the newer of its newest spool row
 and its process's start, `silence`; null only where none is known) and
 `agent_state` (the state the project's `agent_states` command gives the session's pid, else its session id: `working`,
-`blocked`, `idle` or `done`; null for neither, and the panel's `agent_states_unread` says why a command gave none). `overlaps` lists each pair of live sessions whose
+`blocked`, `idle` or `done`; null for neither, and the panel's `agent_states_unread` says why a command gave none) and, only while the session waits on the person, `blocked`:
+{`on` (`permission` or `question`), `since`, `age_s`}, from the session's newest `blocked` event of the coord store (the coord
+hook posts it at a permission request or a notification that waits on the person and clears it at the session's next tool
+event; a session that is only silent has no such key). `overlaps` lists each pair of live sessions whose
 intents' items or touches meet, with the shared `files` and the `strategy` (`undecided`, else the one a `coordinate` event
 between their items announced), and `needs_you_after_min` is the setting `mon_needs` ages an undecided one against (`overlap_rows`,
 `after_minutes`; both left out with `intents`, and left out with `overlaps_unread`, the reason, where a coord store is there
@@ -200,13 +203,14 @@ def stalled(root, bl=None):
     return [{"item": r["id"], "signals": r["signals"]} for r in report["items"] if r["signals"]]
 
 
-EVENT_KINDS = ("intent", "coordinate", "progress")  # the event kinds the panel reads, one `coord.py wait --kind` each
+EVENT_KINDS = ("intent", "coordinate", "progress", "blocked")  # the event kinds the panel reads, one `coord.py wait --kind` each
 
 
 def read_events(conn):
     """({session id: [(time, items, touch paths, claim)] of its intent events, oldest first, `claim` whether the intent is a
     `backlog-claim` one}, [(item, other, strategy, session id, time)] of the `coordinate` events, newest first,
-    {item: time of its newest `progress` event}) from one `coord.py wait --kind K` of each of EVENT_KINDS over the connection
+    {item: time of its newest `progress` event}, {session id: (what it waits on, time)} of the sessions whose newest `blocked`
+    event says waiting) from one `coord.py wait --kind K` of each of EVENT_KINDS over the connection
     arguments CONN; None where any of them cannot be read."""
     import mon_coord
     events = []
@@ -221,7 +225,7 @@ def read_events(conn):
         if not isinstance(got, list):
             return None
         events += got
-    first, chosen, moved = {}, [], {}
+    first, chosen, moved, blocked = {}, [], {}, {}
     for e in events:
         fields = e.get("fields") if isinstance(e, dict) and isinstance(e.get("fields"), dict) else {}
         if e.get("kind") == "intent" and isinstance(fields.get("session"), str) and isinstance(e.get("at"), (int, float)):
@@ -231,7 +235,12 @@ def read_events(conn):
             chosen.insert(0, (fields["item"], fields["other"], fields["strategy"], fields.get("session"), e.get("at")))
         elif e.get("kind") == "progress" and isinstance(fields.get("item"), str) and isinstance(e.get("at"), (int, float)):
             moved[fields["item"]] = e["at"]
-    return first, chosen, moved
+        elif e.get("kind") == "blocked" and isinstance(fields.get("session"), str) and isinstance(e.get("at"), (int, float)):
+            if fields.get("state") == "waiting":
+                blocked[fields["session"]] = (fields.get("on") or "permission", e["at"])
+            else:
+                blocked.pop(fields["session"], None)
+    return first, chosen, moved, blocked
 
 
 def split_list(value):
@@ -266,8 +275,8 @@ def coord_list(ctx, prefix):
 
 def read_coord(ctx, events=True):
     """{intents: [fields], leases: {session id: seconds left}, claims: [(key, seconds left)], dispatched: {items with a
-    dispatch record in the claims ledger}, intent_at, coordinate, moved} of the live leases and intents in the coord store (`coord.py digest`), the intents newest first, as coord.py
-    prints them (a raw session id, never printed by this module); `intent_at`, `coordinate` and `moved` are `read_events`'
+    dispatch record in the claims ledger}, intent_at, coordinate, moved, blocked} of the live leases and intents in the coord store (`coord.py digest`), the intents newest first, as coord.py
+    prints them (a raw session id, never printed by this module); `intent_at`, `coordinate`, `moved` and `blocked` are `read_events`'
     answer, empty and `events_unread` true where it is None; with EVENTS false they are not read (four processes fewer) and
     are empty without `events_unread`. None when the store is not there, is not reachable or does not answer."""
     import mon_coord
@@ -283,12 +292,12 @@ def read_coord(ctx, events=True):
     if p.returncode != 0:
         return None
     found = {"intents": [], "leases": {}, "claims": [], "dispatched": {i for i, r in ledger_records(ctx.root).items() if any(worker_of(r))},
-             "intent_at": {}, "coordinate": [], "moved": {}}
-    read = read_events(conn) if events else (found["intent_at"], found["coordinate"], found["moved"])
+             "intent_at": {}, "coordinate": [], "moved": {}, "blocked": {}}
+    read = read_events(conn) if events else (found["intent_at"], found["coordinate"], found["moved"], found["blocked"])
     if read is None:
         found["events_unread"] = True
     else:
-        found["intent_at"], found["coordinate"], found["moved"] = read
+        found["intent_at"], found["coordinate"], found["moved"], found["blocked"] = read
     for line in p.stdout.splitlines():
         words = line.split()
         fields = dict(w.split("=", 1) for w in words[1:] if "=" in w)
@@ -866,6 +875,9 @@ def session_entries(ctx, procs, placed, by_path, found, bl, names, light=False, 
                     "started": iso(p["start"]) if p["start"] is not None else None, "last_activity": stamp, "silent_s": silent, "spend_usd": spend,
                     "agent_state": (states[0].get(p["pid"]) or states[1].get(sid)) if states else None, "pid": p["pid"],
                     "checkout": names.get(base, "."), "session": sid, "base": base})
+        waits_on = ((found or {}).get("blocked") or {}).get(sid) if sid is not None and not light else None
+        if waits_on:  # only a blocked session has the key: a silent one shows no blocked field
+            out[-1]["blocked"] = {"on": waits_on[0], "since": iso(waits_on[1]), "age_s": max(0, int(time.time() - waits_on[1]))}
     return out
 
 
@@ -1062,7 +1074,7 @@ def clipped(text, n):
 
 def session_line(s, now=None, width=LINE_CHARS):
     """One session entry as one line of at most WIDTH (LINE_CHARS at most) characters, the one function the sessions panel
-    and `kbmon.py --status sessions` print an entry with: `label  role  agent state  sprint  item title  step  up 1h00m  last 20m ago  silent 15m  $1.25`.
+    and `kbmon.py --status sessions` print an entry with: `label  role  agent state  sprint  item title  step  blocked on permission 2m  up 1h00m  last 20m ago  silent 15m  $1.25` (the `blocked on` part only for a session that waits on the person).
     The sprint is its title cut to SPRINT_CHARS, the item title to the room the other fields leave (TITLE_CHARS at most; the
     id where the title is not known); a field the entry does not know is left out, `silent` too below SILENT_SHOWN_S. NOW is the time the elapsed and last
     activity are taken at (epoch seconds; the snapshot's taken time, else the clock)."""
@@ -1074,9 +1086,12 @@ def session_line(s, now=None, width=LINE_CHARS):
     sprint = s.get("sprint_title") or s.get("sprint")
     title = s.get("item_title") or s.get("item") or ""
     state = s.get("agent_state")
+    blocked = s.get("blocked") if isinstance(s.get("blocked"), dict) else None
     before = [s.get("label") or "-", s.get("role") or "unknown"] + ([state] if isinstance(state, str) and state else []) \
         + ([clipped(sprint, SPRINT_CHARS)] if sprint else [])
-    after = ([s["step"]] if s.get("step") else []) + ([f"up {age_text(now - started)}"] if started is not None else []) \
+    after = ([s["step"]] if s.get("step") else []) \
+        + ([f"blocked on {blocked.get('on') or 'permission'} {age_text(blocked['age_s'])}"] if blocked and isinstance(blocked.get("age_s"), int) else []) \
+        + ([f"up {age_text(now - started)}"] if started is not None else []) \
         + ([f"last {age_text(now - last)} ago"] if last is not None else []) \
         + ([f"silent {age_text(silent)}"] if isinstance(silent, (int, float)) and not isinstance(silent, bool)
            and silent >= SILENT_SHOWN_S else []) \
