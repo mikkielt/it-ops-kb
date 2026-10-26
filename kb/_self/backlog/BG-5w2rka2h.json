@@ -41,7 +41,9 @@
       },
       "class": "design",
       "answer": "one line 'kbtail: N live sessions have no session id, not followed', counting rows the --item and --role filters keep, printed again while following only when N changes",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

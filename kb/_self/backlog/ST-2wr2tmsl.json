@@ -38,7 +38,9 @@
       },
       "class": "design",
       "answer": "a new topic agents/herdr-agent-state",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "filed_in": "clone-0ea70e5c",

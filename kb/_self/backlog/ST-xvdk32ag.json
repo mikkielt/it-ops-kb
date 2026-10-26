@@ -69,7 +69,9 @@
       },
       "class": "design",
       "answer": "line 600 s, alert 3600 s",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -87,7 +89,9 @@
       },
       "class": "design",
       "answer": "one point, the most of all sessions (0 with none)",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Plan check 2026-10-26: the old check read kbmon of this clone, which a hand run can satisfy; the new checks plant a temp clone with a session whose transcript is 900 s old and no item and a fresh worker session, and fail on the base: no silent_s on a session row, no session silence metric or alert rule, the text line shows only \"up\".",

@@ -57,7 +57,9 @@
       },
       "class": "design",
       "answer": "mon_sessions swaps bl_procs.worktrees and bl_stall.worktrees for a cached reader for the length of one placement, under a lock",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
