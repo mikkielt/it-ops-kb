@@ -2,7 +2,7 @@
   "id": "BG-oez5e2ua",
   "kind": "bug",
   "title": "dispatch --resume --detach prints a wait that starts before the resumed worker's own working event when its process is slow to post it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-hxxn6fnv",
   "priority": "P3",
   "rank": 0,
@@ -23,5 +23,7 @@
   "links": [
     "parked: SP-42b2cjm3 review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
