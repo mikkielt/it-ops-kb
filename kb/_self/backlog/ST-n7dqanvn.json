@@ -1,0 +1,54 @@
+{
+  "id": "ST-n7dqanvn",
+  "kind": "story",
+  "title": "A kbtail pane in the kbmon-pane mod follows agents beside the chat from one kbtail.py --jsonl process",
+  "status": "draft",
+  "parent": "EP-booflukv",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "`kbtail.py --jsonl` prints each line as one JSON object of time, kind, text, depth, label, role and item, redacted as the text lines are; the kbmon-pane mod registers a `kbtail` command that opens a follow pane running one `kbtail.py --jsonl` process through `$.process.spawn`, drawing the newest lines that fit and ending the process when the pane or the session closes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json, os, random, string, subprocess, sys, tempfile\nR = os.getcwd(); T = tempfile.mkdtemp(); C = os.path.join(T, \"cfg\"); W = os.path.join(T, \"wt\")\nos.makedirs(W)\nimport uuid\nsid = str(uuid.uuid4())\npdir = os.path.join(C, \"projects\", \"-planted-project\"); os.makedirs(pdir)\nP = os.path.join(pdir, sid + \".jsonl\")\nsecret = \"sk-\" + \"\".join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(40))\nbase = {\"cwd\": W, \"sessionId\": sid, \"isSidechain\": False, \"timestamp\": \"2026-10-26T10:00:00.000Z\"}\ndef ent(kind, content, **kw):\n    return dict(base, type=kind, message={\"role\": kind, \"content\": content}, **kw)\ndef tool(i, name, inp):\n    return ent(\"assistant\", [{\"type\": \"tool_use\", \"id\": \"toolu_%d\" % i, \"name\": name, \"input\": inp}])\nrows = [ent(\"user\", \"planted-prompt-line\\nplanted-prompt-second\"),\n        ent(\"assistant\", [{\"type\": \"thinking\", \"thinking\": \"planted-thinking\", \"signature\": \"x\"}]),\n        ent(\"assistant\", [{\"type\": \"text\", \"text\": \"planted-assistant-line\\nplanted-second-line\"}]),\n        tool(1, \"Bash\", {\"command\": \"echo planted-bash \" + secret + \" \" + \"x\" * 300}),\n        ent(\"user\", [{\"type\": \"tool_result\", \"tool_use_id\": \"toolu_1\", \"is_error\": True, \"content\": \"\\n  planted-error-line\\nmore\"}]),\n        tool(2, \"Read\", {\"file_path\": os.path.join(W, \"kb\", \"_self\", \"code.md\")}),\n        {\"type\": \"zz-planted-future\", \"sessionId\": sid}]\nwith open(P, \"w\") as f:\n    for r in rows:\n        f.write(json.dumps(r) + \"\\n\")\n    f.write(\"{not json\\n\")\nbefore = sorted(os.path.join(d, n) for d, _, ns in os.walk(C) for n in ns)\nenv = dict(os.environ, CLAUDE_CONFIG_DIR=C, COLUMNS=\"120\", KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"))\ndef run(*a):\n    return subprocess.run([sys.executable, *a], cwd=R, env=env, capture_output=True, text=True, timeout=60)\nif not os.path.exists(\"_tools/kbtail.py\"):\n    print(\"check failed: _tools/kbtail.py does not exist\"); sys.exit(1)\nproblems = []\ndef need(cond, what):\n    if not cond:\n        problems.append(what)\nr = run(\"_tools/kbtail.py\", \"--once\", \"--jsonl\", P)\nneed(r.returncode == 0, \"exit %d: %s\" % (r.returncode, r.stderr[-300:]))\nobjs = []\nfor x in r.stdout.splitlines():\n    try:\n        objs.append(json.loads(x))\n    except ValueError:\n        need(False, \"a line that is not JSON: \" + x[:120])\nneed(objs and all({\"time\", \"kind\", \"text\", \"depth\", \"label\", \"role\", \"item\"} <= set(o) for o in objs), \"an object without time, kind, text, depth, label, role and item\")\ntexts = \" \".join(str(o.get(\"text\")) for o in objs)\nneed(\"planted-bash\" in texts and \"planted-assistant-line\" in texts, \"the jsonl lines miss the planted entries\")\nneed(secret[-20:] not in r.stdout and \"planted-thinking\" not in r.stdout, \"the jsonl lines show the secret or thinking\")\nimport shutil as _sh\nclaude = _sh.which(\"claude\")\nif claude is None:\n    print(\"check failed: no claude on PATH to validate the mod\"); sys.exit(1)\nv = subprocess.run([claude, \"plugin\", \"validate\", \".claude/skills/kbmon-pane\"], cwd=R, capture_output=True, text=True, timeout=120)\ncalls = [x for x in v.stdout.splitlines() if \" calls: \" in x]\nhooks = [x for x in v.stdout.splitlines() if \" hooks: \" in x]\nneed(v.returncode == 0, \"plugin validate exit %d\" % v.returncode)\nneed(any(\"$.process.spawn\" in x for x in calls), \"the mod calls no $.process.spawn: %s\" % calls)\nneed(any(\"command=kbtail\" in x for x in hooks), \"the mod handles no kbtail command: %s\" % hooks)\nprint(\"\\n\".join(problems) or \"ok\")\nsys.exit(1 if problems else 0)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "`kbtail.py --jsonl` prints each line as one JSON object of time, kind, text, depth, label, role and item, redacted as the text lines are",
+      "check": 0
+    },
+    {
+      "clause": "the kbmon-pane mod registers a `kbtail` command that opens a follow pane running one `kbtail.py --jsonl` process through `$.process.spawn`, drawing the newest lines that fit and ending the process when the pane or the session closes",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/kbtail.py",
+    ".claude/skills/kbmon-pane/**",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-bngriclp"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does the follow pane live: in the existing kbmon-pane mod or in a new mod of its own?",
+      "options": [
+        "extend kbmon-pane",
+        "a new mod"
+      ],
+      "recommendation": "extend kbmon-pane",
+      "reason": "one mod, one launcher and Python lookup, the check validates that directory",
+      "class": "agents-rule"
+    }
+  ],
+  "notes": "Research before work: whether the mods test kit can stand in for `$.process.spawn` (kb public/claude/mods.md lists process.run stubs); the pane's drawing is proven by operator feedback, no mod test file. The mod opens the pane only from the command (a pane a mod opens by itself needs 144 columns).",
+  "filed_in": "clone-0ea70e5c"
+}

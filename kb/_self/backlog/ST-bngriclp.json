@@ -1,0 +1,53 @@
+{
+  "id": "ST-bngriclp",
+  "kind": "story",
+  "title": "kbtail.py follows every live session of the clone and its worktrees, labelled by role and item, with subagents",
+  "status": "draft",
+  "parent": "EP-booflukv",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "`kbtail.py` with no TARGET follows every live Claude Code session in a checkout of the clone (`--root DIR`), the main checkout and each worktree, as `mon_sessions` finds and binds them; each line names its session's role and item, never a raw session id; a subagent's lines (`<session>/subagents/agent-*.jsonl`) are indented under its session; TARGET may be an item id, and `--item`, `--sprint` and `--role` keep the matching sessions only; a followed session whose process ends gets an `ended` line within 5 seconds and kbtail goes on",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json, os, shutil, subprocess, sys, tempfile, threading, time\nif os.name == \"nt\":\n    print(\"check skipped: a fake claude process needs a POSIX host\"); sys.exit(0)\nR = os.getcwd(); T = os.path.realpath(tempfile.mkdtemp()); C = os.path.join(T, \"cfg\"); S = os.path.join(T, \"coord.sqlite\")\nenv = dict(os.environ, CLAUDE_CONFIG_DIR=C, COLUMNS=\"160\", KB_COORD_STORE=S)\nfor k in (\"GIT_DIR\", \"GIT_WORK_TREE\", \"GIT_INDEX_FILE\"):\n    env.pop(k, None)\ndef sh(*a, cwd=T):\n    return subprocess.run(a, cwd=cwd, env=env, capture_output=True, text=True, timeout=60)\nK = os.path.join(T, \"clone\"); os.makedirs(K)\nsh(\"git\", \"init\", \"-q\", \".\", cwd=K)\nsh(\"git\", \"-c\", \"user.email=a@b\", \"-c\", \"user.name=n\", \"commit\", \"-q\", \"--allow-empty\", \"-m\", \"i\", cwd=K)\nshutil.copy(os.path.join(R, \"backlog.json\"), K); os.makedirs(os.path.join(K, \"kb\", \"_self\", \"backlog\"))\nWT = os.path.join(K, \".claude\", \"worktrees\", \"agent-ST-aaaaaaaa\")\nsh(\"git\", \"worktree\", \"add\", \"-q\", \"-b\", \"work/ST-aaaaaaaa\", WT, cwd=K)\nos.makedirs(os.path.join(T, \"bin\")); fake = os.path.join(T, \"bin\", \"claude\"); os.symlink(\"/bin/sleep\", fake)\nimport uuid\nsids = {\"worker\": str(uuid.uuid4()), \"main\": str(uuid.uuid4())}\nhomes = {\"worker\": WT, \"main\": K}\nprocs = {}\nfor who, sid in sids.items():\n    base = homes[who]\n    os.makedirs(os.path.join(base, \"_cache\", \"coord_hook\"), exist_ok=True)\n    with open(os.path.join(base, \"_cache\", \"coord_hook\", sid + \".json\"), \"w\") as f:\n        json.dump({\"items\": [], \"lease_until\": time.time() + 600, \"token\": \"t\"}, f)\n    sh(sys.executable, os.path.join(R, \"_tools\", \"coord.py\"), \"--store\", S, \"claim\", \"session/\" + sid, \"--ttl\", \"600\", \"--holder\", \"h\")\n    pdir = os.path.join(C, \"projects\", \"\".join(c if c.isalnum() else \"-\" for c in base)); os.makedirs(pdir, exist_ok=True)\n    rec = {\"type\": \"assistant\", \"cwd\": base, \"sessionId\": sid, \"timestamp\": \"2026-10-26T10:00:00Z\", \"isSidechain\": False,\n           \"message\": {\"role\": \"assistant\", \"content\": [{\"type\": \"text\", \"text\": \"planted-%s-line\" % who}]}}\n    with open(os.path.join(pdir, sid + \".jsonl\"), \"w\") as f:\n        f.write(json.dumps(rec) + \"\\n\")\n    if who == \"worker\":\n        os.makedirs(os.path.join(pdir, sid, \"subagents\"))\n        sub = dict(rec, isSidechain=True, agentId=\"a1\", message={\"role\": \"assistant\", \"content\": [{\"type\": \"text\", \"text\": \"planted-sub-line\"}]})\n        with open(os.path.join(pdir, sid, \"subagents\", \"agent-a1.jsonl\"), \"w\") as f:\n            f.write(json.dumps(sub) + \"\\n\")\n    procs[who] = subprocess.Popen([fake, \"120\"], cwd=base)\nproblems = []\ndef need(cond, what):\n    if not cond:\n        problems.append(what)\ntry:\n    time.sleep(0.5)\n    snap = json.loads(sh(sys.executable, os.path.join(R, \"_tools\", \"kbmon.py\"), \"--root\", K, \"--json\", \"--panel\", \"sessions\").stdout or \"{}\")\n    rows = ((snap.get(\"panels\") or {}).get(\"sessions\") or {}).get(\"data\", {}).get(\"sessions\") or []\n    if sum(1 for r in rows if r.get(\"label\")) < 2:\n        print(\"check broken: kbmon does not bind both planted sessions:\", json.dumps(rows)[:600]); sys.exit(2)\n    if not os.path.exists(os.path.join(R, \"_tools\", \"kbtail.py\")):\n        print(\"check failed: _tools/kbtail.py does not exist\"); sys.exit(1)\n    tail = lambda *a: sh(sys.executable, os.path.join(R, \"_tools\", \"kbtail.py\"), \"--root\", K, *a)\n    r = tail(\"--once\"); out = r.stdout\n    need(r.returncode == 0, \"exit %d: %s\" % (r.returncode, r.stderr[-300:]))\n    wl = [x for x in out.splitlines() if \"planted-worker-line\" in x]\n    need(wl and \"worker\" in wl[0] and \"ST-aaaaaaaa\" in wl[0], \"worker line without its role and item: %s\" % wl)\n    need(any(\"planted-main-line\" in x and \"interactive\" in x for x in out.splitlines()), \"no interactive line of the main checkout\")\n    sl = [x for x in out.splitlines() if \"planted-sub-line\" in x]\n    need(sl and wl and sl[0].find(\"planted-sub-line\") > wl[0].find(\"planted-worker-line\"),\n         \"subagent line not indented under its session: %s\" % sl)\n    for sid in sids.values():\n        need(sid not in out and sid[:8] not in out, \"a raw session id is printed\")\n    ri = tail(\"--once\", \"--item\", \"ST-aaaaaaaa\").stdout\n    need(\"planted-worker-line\" in ri and \"planted-main-line\" not in ri, \"--item keeps other sessions\")\n    rr = tail(\"--once\", \"--role\", \"interactive\").stdout\n    need(\"planted-main-line\" in rr and \"planted-worker-line\" not in rr, \"--role keeps other sessions\")\n    rt = tail(\"--once\", \"ST-aaaaaaaa\").stdout\n    need(\"planted-worker-line\" in rt and \"planted-main-line\" not in rt, \"an item id target does not pick its session\")\n    p = subprocess.Popen([sys.executable, os.path.join(R, \"_tools\", \"kbtail.py\"), \"--root\", K], cwd=T, env=env,\n                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)\n    lines = []\n    threading.Thread(target=lambda: [lines.append(x) for x in p.stdout], daemon=True).start()\n    end = time.monotonic() + 10\n    while time.monotonic() < end and not any(\"planted-worker-line\" in x for x in lines):\n        time.sleep(0.1)\n    procs[\"worker\"].kill(); procs[\"worker\"].wait()\n    end = time.monotonic() + 5\n    while time.monotonic() < end and not any(\"ended\" in x and \"ST-aaaaaaaa\" in x for x in lines):\n        time.sleep(0.1)\n    need(any(\"ended\" in x and \"ST-aaaaaaaa\" in x for x in lines), \"no ended line within 5 s of the worker's end\")\n    need(p.poll() is None, \"kbtail exited while sessions still run\")\n    p.terminate(); p.wait(5)\nfinally:\n    for q in procs.values():\n        q.kill()\nprint(\"\\n\".join(problems) or \"ok\", \"\\n--- output\\n\" + (out[-1200:] if \"out\" in dir() else \"\"))\nsys.exit(1 if problems else 0)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "`kbtail.py` with no TARGET follows every live Claude Code session in a checkout of the clone (`--root DIR`), the main checkout and each worktree, as `mon_sessions` finds and binds them",
+      "check": 0
+    },
+    {
+      "clause": "each line names its session's role and item, never a raw session id",
+      "check": 0
+    },
+    {
+      "clause": "a subagent's lines (`<session>/subagents/agent-*.jsonl`) are indented under its session",
+      "check": 0
+    },
+    {
+      "clause": "TARGET may be an item id",
+      "check": 0
+    },
+    {
+      "clause": "`--item`, `--sprint` and `--role` keep the matching sessions only",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/kbtail.py",
+    "_tools/mon_sessions.py",
+    "kb/_self/code.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-zbyvpunj"
+  ],
+  "notes": "mon_sessions keeps raw session ids inside the module: add an in-process reader (pid, raw id, checkout, role, item, sprint, label) for kbtail that the panel's data and text never print. The session list is read again only when the coord store changes, a followed pid ends (the wait's --pid) or 30 s pass, using the light part of the panel (processes, hook state, coord digest), never git or the stall signals. At most 16 sessions are followed, the rest named in one line.",
+  "filed_in": "clone-0ea70e5c"
+}

@@ -1,0 +1,54 @@
+{
+  "id": "ST-2nysbcgx",
+  "kind": "story",
+  "title": "kbtail.py shows a followed item's run state moves, asks and answers from coord among its tool lines",
+  "status": "draft",
+  "parent": "EP-booflukv",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "`kbtail.py` shows among a followed session's lines the coord events of its item within 3 seconds of their post: each run state move with its step and gates; each ask addressed to its item or session with the question text from its key; the answer to such an ask with its text; an ask to another item is not shown; every text passes the same redaction and cut; `--once` shows the item's events since the session started",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json, os, shutil, subprocess, sys, tempfile, threading, time\nif os.name == \"nt\":\n    print(\"check skipped: a fake claude process needs a POSIX host\"); sys.exit(0)\nR = os.getcwd(); T = os.path.realpath(tempfile.mkdtemp()); C = os.path.join(T, \"cfg\"); S = os.path.join(T, \"coord.sqlite\")\nenv = dict(os.environ, CLAUDE_CONFIG_DIR=C, COLUMNS=\"160\", KB_COORD_STORE=S)\nfor k in (\"GIT_DIR\", \"GIT_WORK_TREE\", \"GIT_INDEX_FILE\"):\n    env.pop(k, None)\ndef sh(*a, cwd=T):\n    return subprocess.run(a, cwd=cwd, env=env, capture_output=True, text=True, timeout=60)\nK = os.path.join(T, \"clone\"); os.makedirs(K)\nsh(\"git\", \"init\", \"-q\", \".\", cwd=K)\nsh(\"git\", \"-c\", \"user.email=a@b\", \"-c\", \"user.name=n\", \"commit\", \"-q\", \"--allow-empty\", \"-m\", \"i\", cwd=K)\nshutil.copy(os.path.join(R, \"backlog.json\"), K); os.makedirs(os.path.join(K, \"kb\", \"_self\", \"backlog\"))\nWT = os.path.join(K, \".claude\", \"worktrees\", \"agent-ST-aaaaaaaa\")\nsh(\"git\", \"worktree\", \"add\", \"-q\", \"-b\", \"work/ST-aaaaaaaa\", WT, cwd=K)\nos.makedirs(os.path.join(T, \"bin\")); fake = os.path.join(T, \"bin\", \"claude\"); os.symlink(\"/bin/sleep\", fake)\nimport uuid\nsids = {\"worker\": str(uuid.uuid4())}\nhomes = {\"worker\": WT, \"main\": K}\nprocs = {}\nfor who, sid in sids.items():\n    base = homes[who]\n    os.makedirs(os.path.join(base, \"_cache\", \"coord_hook\"), exist_ok=True)\n    with open(os.path.join(base, \"_cache\", \"coord_hook\", sid + \".json\"), \"w\") as f:\n        json.dump({\"items\": [], \"lease_until\": time.time() + 600, \"token\": \"t\"}, f)\n    sh(sys.executable, os.path.join(R, \"_tools\", \"coord.py\"), \"--store\", S, \"claim\", \"session/\" + sid, \"--ttl\", \"600\", \"--holder\", \"h\")\n    pdir = os.path.join(C, \"projects\", \"\".join(c if c.isalnum() else \"-\" for c in base)); os.makedirs(pdir, exist_ok=True)\n    rec = {\"type\": \"assistant\", \"cwd\": base, \"sessionId\": sid, \"timestamp\": \"2026-10-26T10:00:00Z\", \"isSidechain\": False,\n           \"message\": {\"role\": \"assistant\", \"content\": [{\"type\": \"text\", \"text\": \"planted-%s-line\" % who}]}}\n    with open(os.path.join(pdir, sid + \".jsonl\"), \"w\") as f:\n        f.write(json.dumps(rec) + \"\\n\")\n    if who == \"worker\":\n        os.makedirs(os.path.join(pdir, sid, \"subagents\"))\n        sub = dict(rec, isSidechain=True, agentId=\"a1\", message={\"role\": \"assistant\", \"content\": [{\"type\": \"text\", \"text\": \"planted-sub-line\"}]})\n        with open(os.path.join(pdir, sid, \"subagents\", \"agent-a1.jsonl\"), \"w\") as f:\n            f.write(json.dumps(sub) + \"\\n\")\n    procs[who] = subprocess.Popen([fake, \"120\"], cwd=base)\nimport random, string\nsecret = \"sk-\" + \"\".join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(40))\nproblems = []\ndef need(cond, what):\n    if not cond:\n        problems.append(what)\nco = lambda *a: sh(sys.executable, os.path.join(R, \"_tools\", \"coord.py\"), \"--store\", S, *a)\ntry:\n    time.sleep(0.5)\n    if not os.path.exists(os.path.join(R, \"_tools\", \"kbtail.py\")):\n        print(\"check failed: _tools/kbtail.py does not exist\"); sys.exit(1)\n    p = subprocess.Popen([sys.executable, os.path.join(R, \"_tools\", \"kbtail.py\"), \"--root\", K, \"ST-aaaaaaaa\"], cwd=T, env=env,\n                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)\n    lines = []\n    threading.Thread(target=lambda: [lines.append(x) for x in p.stdout], daemon=True).start()\n    end = time.monotonic() + 10\n    while time.monotonic() < end and not any(\"planted-worker-line\" in x for x in lines):\n        time.sleep(0.1)\n    need(any(\"planted-worker-line\" in x for x in lines), \"the worker's history is not printed\")\n    co(\"transition\", \"run/ST-aaaaaaaa\", \"--to\", \"claimed\")\n    co(\"transition\", \"run/ST-aaaaaaaa\", \"--to\", \"working\", \"--field\", \"step=planted-step\")\n    co(\"put\", \"ask/q1\", \"--value\", \"planted-ask-text \" + secret, \"--revision\", \"0\")\n    co(\"post\", \"--kind\", \"ask\", \"--field\", \"id=q1\", \"--field\", \"to=ST-aaaaaaaa\", \"--field\", \"ref=ask/q1\")\n    co(\"put\", \"ask/q2\", \"--value\", \"planted-other-ask\", \"--revision\", \"0\")\n    co(\"post\", \"--kind\", \"ask\", \"--field\", \"id=q2\", \"--field\", \"to=ST-bbbbbbbb\", \"--field\", \"ref=ask/q2\")\n    co(\"put\", \"answer/q1\", \"--value\", \"planted-answer-text\", \"--revision\", \"0\")\n    co(\"post\", \"--kind\", \"answer\", \"--field\", \"id=q1\", \"--field\", \"state=completed\", \"--field\", \"ref=answer/q1\")\n    end = time.monotonic() + 3\n    want = (\"working\", \"planted-ask-text\", \"planted-answer-text\")\n    while time.monotonic() < end and not all(any(w in x for x in lines) for w in want):\n        time.sleep(0.1)\n    live = \"\".join(lines)\n    for w in want:\n        need(w in live, \"%s not shown within 3 s of its post\" % w)\n    need(\"planted-other-ask\" not in live, \"an ask to another item is shown\")\n    need(secret[-20:] not in live, \"the ask's secret is shown\")\n    p.terminate(); p.wait(5)\n    ro = sh(sys.executable, os.path.join(R, \"_tools\", \"kbtail.py\"), \"--root\", K, \"--once\", \"ST-aaaaaaaa\")\n    need(ro.returncode == 0, \"--once exit %d: %s\" % (ro.returncode, ro.stderr[-300:]))\n    once = ro.stdout\n    for w in want:\n        need(w in once, \"--once does not show \" + w)\n    need(secret[-20:] not in once, \"--once shows the ask's secret\")\nfinally:\n    for q in procs.values():\n        q.kill()\nprint(\"\\n\".join(problems) or \"ok\", \"\\n--- output\\n\" + \"\".join(lines)[-1200:] if \"lines\" in dir() else \"\")\nsys.exit(1 if problems else 0)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "`kbtail.py` shows among a followed session's lines the coord events of its item within 3 seconds of their post: each run state move with its step and gates",
+      "check": 0
+    },
+    {
+      "clause": "each ask addressed to its item or session with the question text from its key",
+      "check": 0
+    },
+    {
+      "clause": "the answer to such an ask with its text",
+      "check": 0
+    },
+    {
+      "clause": "an ask to another item is not shown",
+      "check": 0
+    },
+    {
+      "clause": "every text passes the same redaction and cut",
+      "check": 0
+    },
+    {
+      "clause": "`--once` shows the item's events since the session started",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/kbtail.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-bngriclp"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

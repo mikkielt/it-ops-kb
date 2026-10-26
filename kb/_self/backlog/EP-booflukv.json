@@ -1,0 +1,14 @@
+{
+  "id": "EP-booflukv",
+  "kind": "epic",
+  "title": "Every agent in the clone can be watched live: a redacted transcript per agent in a terminal and a pane",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "every Claude Code agent working in this clone (interactive sessions, sprint runners and workers in any worktree) can be watched live, one line per tool call, result, assistant text, run state move, gate and ask, in a terminal (`kbtail.py`, `kbmon.py --follow`) and in a pane beside the chat; the lines are read from the session transcripts and the coord store, redacted and cut, with no model call, no file written, one process for all agents and no change to the sessions watched",
+  "relates_to": [
+    "EP-wqgicmmj"
+  ],
+  "notes": "Design (operator, 2026-10-26): source = the transcripts (`<config>/projects/<slug>/<session>.jsonl` and `<session>/subagents/agent-*.jsonl`, read from the last offset) for tool calls, results and text, plus coord events (progress, ask, answer) matched by item; no hook posts per tool call and no switch of runners or workers to stream-json, so the watched sessions are unchanged. Discovery = mon_sessions' live sessions and their bound session ids. View = a standalone `_tools/kbtail.py` that `kbmon.py --follow` runs; then a pane in the kbmon-pane mod. Content = short lines, redact.redact and the leak scan before display, thinking never shown, nothing stored (no cache). Wake = a blocking coord wait of 2 s (no --kind/--item, so no wait/ leases; --pid of the followed sessions), then a read of the bytes appended since the last read. Checks = planted python3 -c runs over a temporary config dir, coord store and clone, a fake `claude` process a symlink to /bin/sleep; no tests.py test. The transcript entry format is internal to Claude Code (kb public/claude/hooks.md:54): unknown entry types are skipped and counted, never fatal.",
+  "filed_in": "clone-0ea70e5c"
+}
