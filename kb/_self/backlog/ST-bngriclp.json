@@ -45,9 +45,6 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
-  "depends_on": [
-    "ST-zbyvpunj"
-  ],
   "notes": "mon_sessions keeps raw session ids inside the module: add an in-process reader (pid, raw id, checkout, role, item, sprint, label) for kbtail that the panel's data and text never print. The session list is read again only when the coord store changes, a followed pid ends (the wait's --pid) or 30 s pass, using the light part of the panel (processes, hook state, coord digest), never git or the stall signals. At most 16 sessions are followed, the rest named in one line.",
   "filed_in": "clone-0ea70e5c"
 }
