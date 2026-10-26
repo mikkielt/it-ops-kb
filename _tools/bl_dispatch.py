@@ -1221,7 +1221,8 @@ BEGIN_SETTLE_S = 10  # seconds `begin` and `dispatch --detach` hold for the work
 def begin_plan(bl, a, ref):
     """[(id, why)] for the ids of `begin`, in the order given: why is None for an item that is taken and else the
     refusal. An item is refused when it arrived from the upstream main, has a local work branch, is not ready to
-    claim, is claimed by another on REF (the integration main as fetched, or None), or meets by touches the scope of
+    claim, is claimed by another on REF (the integration main as fetched, or None), is a story `next` marks "no
+    worker" (bl_plan.orchestrator_lands: the orchestrator lands it), or meets by touches the scope of
     an item taken before it (bl_plan.touches_meet) or a claimed item of this checkout or REF (`held --overlaps`)."""
     other = None
     if ref:
@@ -1247,7 +1248,10 @@ def begin_refusal(bl, iid, by, other, ref, taken, files):
     mine = other.items.get(iid, {}) if other else {}
     if mine.get("status") == "doing" and mine.get("claimed_by") not in (None, by):
         return f"claimed by {mine['claimed_by']} on {ref}"
-    own = [t for t in scope(bl, iid) if isinstance(t, str) and t]
+    if bl_plan.orchestrator_lands(bl, iid):
+        return (f"no worker: every task is done and its checks pass here; claim it, then land it yourself with "
+                f"python3 _tools/backlog.py land {iid}")
+    own =[t for t in scope(bl, iid) if isinstance(t, str) and t]
     for j in taken:
         for m in own:
             for h in (t for t in scope(bl, j) if isinstance(t, str) and t):
