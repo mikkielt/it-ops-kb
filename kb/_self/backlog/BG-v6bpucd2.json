@@ -2,7 +2,7 @@
   "id": "BG-v6bpucd2",
   "kind": "bug",
   "title": "check.py's lexical code scan drops every citation of a file that holds a nested-quote f-string",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-acysfnxr",
   "priority": "P3",
   "rank": 0,
@@ -22,5 +22,7 @@
   ],
   "links": [
     "parked: SP-j65ihctq review"
-  ]
+  ],
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
