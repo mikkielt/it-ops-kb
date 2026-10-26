@@ -2,7 +2,7 @@
   "id": "BG-6epmljwc",
   "kind": "bug",
   "title": "mon_sessions.live_sessions starts a git process per checkout and three worktree listings on every call, against its docstring",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-booflukv",
   "sprint": "SP-hxxn6fnv",
   "priority": "P3",
@@ -65,6 +65,28 @@
   ],
   "notes": "Plan check 2026-10-26: check 0 reads the docstring clause (its git process count), the repro the first clause.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "8c2acb90a21da362005c16054b056516b76767fb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys;sys.path.insert(0,'_tools');import mon_sessions as m;t=m.live_sessions.__doc__ or '';print(t[:300]);sys.exit(0 if re.search(r'(two|2|at most \\w+) git process',t) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "13bb76a3d6bc27af"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json, os, random, shutil, string, subprocess, sys, tempfile, time, uuid\nif os.name == \"nt\":\n    print(\"check skipped: a fake claude process needs a POSIX host\"); sys.exit(0)\nR = os.getcwd(); T = os.path.realpath(tempfile.mkdtemp()); C = os.path.join(T, \"cfg\"); S = os.path.join(T, \"coord.sqlite\")\nenv = {k: v for k, v in os.environ.items() if not k.startswith(\"GIT_\")}\nenv.update(CLAUDE_CONFIG_DIR=C, COLUMNS=\"200\", KB_COORD_STORE=S)\ndef sh(*a, cwd=T):\n    return subprocess.run(a, cwd=cwd, env=env, capture_output=True, text=True, timeout=120)\nK = os.path.join(T, \"clone\"); os.makedirs(K)\nsh(\"git\", \"init\", \"-q\", \".\", cwd=K)\nsh(\"git\", \"-c\", \"user.email=a@example.com\", \"-c\", \"user.name=n\", \"commit\", \"-q\", \"--allow-empty\", \"-m\", \"i\", cwd=K)\nshutil.copy(os.path.join(R, \"backlog.json\"), K); os.makedirs(os.path.join(K, \"kb\", \"_self\", \"backlog\"))\nos.makedirs(os.path.join(T, \"bin\")); FAKE = os.path.join(T, \"bin\", \"claude\"); os.symlink(\"/bin/sleep\", FAKE)\nprocs = []\ndef transcript(base, sid, text):\n    pdir = os.path.join(C, \"projects\", \"\".join(c if c.isalnum() else \"-\" for c in base)); os.makedirs(pdir, exist_ok=True)\n    with open(os.path.join(pdir, sid + \".jsonl\"), \"w\") as f:\n        f.write(json.dumps({\"type\": \"user\", \"cwd\": base, \"sessionId\": sid, \"timestamp\": \"2026-10-26T10:00:00Z\",\n                            \"message\": {\"role\": \"user\", \"content\": text}}) + \"\\n\")\ndef session(base, text):\n    sid = str(uuid.uuid4())\n    os.makedirs(os.path.join(base, \"_cache\", \"coord_hook\"), exist_ok=True)\n    with open(os.path.join(base, \"_cache\", \"coord_hook\", sid + \".json\"), \"w\") as f:\n        json.dump({\"items\": [], \"lease_until\": time.time() + 600, \"token\": \"t\"}, f)\n    sh(sys.executable, os.path.join(R, \"_tools\", \"coord.py\"), \"--store\", S, \"claim\", \"session/\" + sid, \"--ttl\", \"600\", \"--holder\", \"h\")\n    transcript(base, sid, text)\n    procs.append(subprocess.Popen([FAKE, \"120\"], cwd=base))\n    return sid, procs[-1].pid\ndef kbtail(*a):\n    return sh(sys.executable, os.path.join(R, \"_tools\", \"kbtail.py\"), \"--root\", K, *a)\nfor n in (\"a\", \"b\", \"c\"):\n    W = os.path.join(K, \".claude\", \"worktrees\", \"agent-ST-%s\" % (n * 8))\n    sh(\"git\", \"worktree\", \"add\", \"-q\", \"-b\", \"work/ST-%s\" % (n * 8), W, cwd=K)\n    session(W, \"planted-\" + n)\ntime.sleep(0.5)\ncode = (\"import os,subprocess,sys,json;sys.path.insert(0,sys.argv[1]);n=[];P=subprocess.Popen\\n\"\n        \"class W(P):\\n    def __init__(s,a,*k,**kw):\\n        n.append(os.path.basename(str(a[0])) if isinstance(a,(list,tuple)) else str(a).split()[0]);super().__init__(a,*k,**kw)\\n\"\n        \"subprocess.Popen=W\\nimport mon_sessions\\nmon_sessions.live_sessions(sys.argv[2])\\nprint(json.dumps(n))\")\ntry:\n    r = sh(sys.executable, \"-c\", code, os.path.join(R, \"_tools\"), K)\nfinally:\n    for p in procs: p.kill()\nnames = json.loads(r.stdout or \"[]\")\ngit = sum(1 for x in names if x == \"git\")\nprint(\"git processes per live_sessions call with 4 checkouts:\", git, \"of\", len(names), \"processes\")\nsys.exit(0 if r.returncode == 0 and git <= 2 else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "05c53711bd2d250d"
+      }
+    ]
+  }
 }
