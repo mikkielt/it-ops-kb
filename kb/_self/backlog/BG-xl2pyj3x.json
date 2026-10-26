@@ -2,7 +2,7 @@
   "id": "BG-xl2pyj3x",
   "kind": "bug",
   "title": "A re-dispatched worker is bound to its previous run's finished session, so kbtail shows the old transcript and nothing of the live run",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-booflukv",
   "sprint": "SP-7ba3r4ec",
   "priority": "P1",
@@ -50,6 +50,19 @@
   ],
   "notes": "Fresh review of SP-7ba3r4ec, gap 2 (S2, raised to S1 by the operator): bind_sessions prefers the ledger's dispatch record; bl_dispatch records worker_session only when a worker exits, so the record holds the last run's session while the new pid runs. Fix in the binding (a leased hook session of the checkout that is newer than the record's) or in dispatch (clear worker_session when it records worker_pid).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-6c439ca9",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "11866d5aafc002f07265b7bff5f266b85213c719",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json, os, random, shutil, string, subprocess, sys, tempfile, time, uuid\nif os.name == \"nt\":\n    print(\"check skipped: a fake claude process needs a POSIX host\"); sys.exit(0)\nR = os.getcwd(); T = os.path.realpath(tempfile.mkdtemp()); C = os.path.join(T, \"cfg\"); S = os.path.join(T, \"coord.sqlite\")\nenv = {k: v for k, v in os.environ.items() if not k.startswith(\"GIT_\")}\nenv.update(CLAUDE_CONFIG_DIR=C, COLUMNS=\"200\", KB_COORD_STORE=S)\ndef sh(*a, cwd=T):\n    return subprocess.run(a, cwd=cwd, env=env, capture_output=True, text=True, timeout=120)\nK = os.path.join(T, \"clone\"); os.makedirs(K)\nsh(\"git\", \"init\", \"-q\", \".\", cwd=K)\nsh(\"git\", \"-c\", \"user.email=a@example.com\", \"-c\", \"user.name=n\", \"commit\", \"-q\", \"--allow-empty\", \"-m\", \"i\", cwd=K)\nshutil.copy(os.path.join(R, \"backlog.json\"), K); os.makedirs(os.path.join(K, \"kb\", \"_self\", \"backlog\"))\nos.makedirs(os.path.join(T, \"bin\")); FAKE = os.path.join(T, \"bin\", \"claude\"); os.symlink(\"/bin/sleep\", FAKE)\nprocs = []\ndef transcript(base, sid, text):\n    pdir = os.path.join(C, \"projects\", \"\".join(c if c.isalnum() else \"-\" for c in base)); os.makedirs(pdir, exist_ok=True)\n    with open(os.path.join(pdir, sid + \".jsonl\"), \"w\") as f:\n        f.write(json.dumps({\"type\": \"user\", \"cwd\": base, \"sessionId\": sid, \"timestamp\": \"2026-10-26T10:00:00Z\",\n                            \"message\": {\"role\": \"user\", \"content\": text}}) + \"\\n\")\ndef session(base, text):\n    sid = str(uuid.uuid4())\n    os.makedirs(os.path.join(base, \"_cache\", \"coord_hook\"), exist_ok=True)\n    with open(os.path.join(base, \"_cache\", \"coord_hook\", sid + \".json\"), \"w\") as f:\n        json.dump({\"items\": [], \"lease_until\": time.time() + 600, \"token\": \"t\"}, f)\n    sh(sys.executable, os.path.join(R, \"_tools\", \"coord.py\"), \"--store\", S, \"claim\", \"session/\" + sid, \"--ttl\", \"600\", \"--holder\", \"h\")\n    transcript(base, sid, text)\n    procs.append(subprocess.Popen([FAKE, \"120\"], cwd=base))\n    return sid, procs[-1].pid\ndef kbtail(*a):\n    return sh(sys.executable, os.path.join(R, \"_tools\", \"kbtail.py\"), \"--root\", K, *a)\nWT = os.path.join(K, \".claude\", \"worktrees\", \"agent-ST-aaaaaaaa\")\nsh(\"git\", \"worktree\", \"add\", \"-q\", \"-b\", \"work/ST-aaaaaaaa\", WT, cwd=K)\ntry:\n    live, pid = session(WT, \"planted-live-run\")\n    old = str(uuid.uuid4())\n    transcript(WT, old, \"planted-old-run\")\n    gd = sh(\"git\", \"-C\", WT, \"rev-parse\", \"--absolute-git-dir\").stdout.strip()\n    with open(os.path.join(gd, \"kb-backlog-claims.json\"), \"w\") as f:\n        json.dump({\"ST-aaaaaaaa\": {\"worker_pid\": pid, \"worker_session\": old}}, f)\n    time.sleep(0.5)\n    r = kbtail(\"--once\")\n    problems = []\n    if \"planted-live-run\" not in r.stdout:\n        problems.append(\"the re-dispatched worker's live session is not shown: %s\" % r.stdout[-200:])\n    if \"planted-old-run\" in r.stdout:\n        problems.append(\"the previous run's finished transcript is shown for the live worker\")\nfinally:\n    for p in procs: p.kill()\nprint(\"\\n\".join(problems) or \"ok\")\nsys.exit(1 if problems else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "dc51b8c96c2d745d"
+      }
+    ]
+  }
 }
