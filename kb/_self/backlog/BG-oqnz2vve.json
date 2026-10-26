@@ -19,5 +19,9 @@
     "_tools/mon_querylog.py",
     "kb/_self/monitoring.md"
   ],
+  "links": [
+    "parked: SP-vmtfnkim review"
+  ],
+  "notes": "Found by the SP-vmtfnkim review on 2026-10-26 (ST-m4mpjjiv's panel count): held_back takes the last line that starts an APPLY_OUTCOMES outcome as the run's end, including waiting and locked runs that never reach bring; the delivery that held files is then the previous run and the panel shows none held back while they are still held (the next delivery retries them). ql_report.last_pushed already skips those outcomes.",
   "filed_in": "clone-0ea70e5c"
 }
