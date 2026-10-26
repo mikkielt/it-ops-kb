@@ -432,3 +432,4 @@ EV-coordination-strategy-working-another-item,which coordination strategy does a
 EV-coordination-settings-explain-command,how do I see how coordination is set up here with each setting's value and source file,coordination.md,good,yes,explain [KEY] --root WS,
 EV-coordination-needs-you-after-min,what does announce.needs_you_after_min delay before the needs-you line names it,coordination.md,good,yes,the whole minutes an undecided overlap of two live sessions is old,
 SQ-census-gone-sources,census gone sources,web-sources.md,good,yes,mechanical verdict per source,
+SQ-item-whose-repro-already-passes-base,an item whose repro already passes on the base: how is it closed or dropped,tools.md,good,yes,sprint's open committed items,
