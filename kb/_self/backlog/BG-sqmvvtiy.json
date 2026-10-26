@@ -50,7 +50,11 @@
         "those ending in the singular or plural word after one part or more, except with a credential, secret or service name among their parts or after a credential word": "BG-sqmvvtiy",
         "those ending in the singular or plural word after one part or more, with no exception": "BG-sqmvvtiy"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "those ending in the singular or plural word after one part or more, except with a credential, secret or service name among their parts or after a credential word",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
