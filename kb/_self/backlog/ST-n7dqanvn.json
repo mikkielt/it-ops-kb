@@ -46,7 +46,11 @@
       ],
       "recommendation": "extend kbmon-pane",
       "reason": "one mod, one launcher and Python lookup, the check validates that directory",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "extend kbmon-pane",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Research before work: whether the mods test kit can stand in for `$.process.spawn` (kb public/claude/mods.md lists process.run stubs); the pane's drawing is proven by operator feedback, no mod test file. The mod opens the pane only from the command (a pane a mod opens by itself needs 144 columns).",
