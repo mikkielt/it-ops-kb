@@ -4556,3 +4556,15 @@ _Agent: kb-research_
 - See claude/parallel-sessions.md, claude/ci-and-headless.md, claude/otel-monitoring.md, agents/herdr-agent-state.md.
 
 _Agent: kb-research_
+
+## QK-listagents-sendmessage-two-sessions-held. Can two Claude Code sessions message each other with ListAgents and SendMessage, and when is a cross-session message held?
+- Yes: `ListAgents` (`/list-agents`, alias `/peers`) lists the other local sessions that bound an inbox socket, and `SendMessage` sends one plain-text message to one of them by name or short identifier; it is on from v2.1.224 on macOS, Linux and WSL 2 (v2.1.239 is the safe floor on native Windows) with nothing to enable, and a `claude -p` session binds an inbox like an interactive one while a bare-mode session does not and is not listed. (`claude/cross-session-messaging.md`) [DOC S-sdxhnx3i, S-3yod3u7q, S746]
+- The receiver reads a delivered message between tool calls, or starts a turn when idle; it is told the text is from another session, so it cannot approve a prompt or change configuration and its own prompts still fire. (`claude/cross-session-messaging.md`) [DOC S-sdxhnx3i]
+- Held by setting: `crossSessionInbound` `hold` shows a notice without delivering and releases the message if an `accept` later applies; it never expires. `refuse` drops. (`claude/cross-session-messaging.md`) [DOC S-sdxhnx3i]
+- Held by default (no `crossSessionInbound` value anywhere): a receiver that prompts for permissions delivers unless the sender says it bypasses; a receiver that bypasses permission prompts holds every message unless the sender also bypasses. Auto, `acceptEdits` and `dontAsk` count as prompting. A message verified to come from the receiver's own child process (a hook or Bash command) is delivered. (`claude/cross-session-messaging.md`) [DOC S-sdxhnx3i]
+- How long it is held: an interactive receiver opens an approval dialog (Approve delivers one message, Deny or dismiss drops it) that closes and drops the message at `dialogExpiry` (default five minutes, `"never"` keeps it until the session ends); at most 100 held messages are kept, oldest dropped first. A `-p` receiver has no dialog: a default-held message waits up to `dialogExpiry`, then is dropped and reported expired to a reachable sender. (`claude/cross-session-messaging.md`) [DOC S-sdxhnx3i, S-wzatkg4o]
+- Conclusion: two sessions of one user can message each other, and a message is held only by an explicit `hold` or by the default when the receiver bypasses permission prompts and the sender does not say it does; an unattended `-p` worker that must receive gets `crossSessionInbound: "accept"` in its own `--settings`, never in user settings. The channel therefore depends on the receiver's permission mode unless that setting is passed. [DER S-sdxhnx3i, S746]
+- Live docs, not in the kb (2026-10-26, https://code.claude.com/docs/en/cross-session-messaging): the page also says plan mode counts as bypassing in interactive terminal sessions with bypass permissions available; the article does not state it yet (gap noted). [DOC S-sdxhnx3i]
+- See claude/cross-session-messaging.md, claude/ci-and-headless.md.
+
+_Agent: kb-research_
