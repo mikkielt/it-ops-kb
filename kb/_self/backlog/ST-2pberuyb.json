@@ -2,7 +2,7 @@
   "id": "ST-2pberuyb",
   "kind": "story",
   "title": "A land stopped at rebase names each conflicting file, the item that changed it on main and the resume remedy",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-zv3duelo",
   "sprint": "SP-basca7ae",
   "priority": "P1",
@@ -37,5 +37,7 @@
     "kb/_self/tools.md"
   ],
   "notes": "Plan check 2026-10-26: the planted land of a branch whose kb/_self/tools.md conflicts with a KB-Work commit on main stops at rebase on the base without naming the conflicting doc (premise reproduced); the same check then reads the item, the dispatch --resume remedy and a clean checkout.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
