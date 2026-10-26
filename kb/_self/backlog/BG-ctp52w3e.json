@@ -2,7 +2,7 @@
   "id": "BG-ctp52w3e",
   "kind": "bug",
   "title": "coord dedup still claims a whole-topic key with a * and keys over 120 characters for a long topic, and drops non-ASCII letters from term ids",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-n7f53pgv",
   "priority": "P3",
   "rank": 0,
@@ -54,5 +54,7 @@
   "links": [
     "parked: SP-c7oav2vn review"
   ],
-  "notes": "Plan check 2026-10-26: check 0 plants four fingerprints (a whole-topic key, a 110-character topic whole and with terms, a non-ASCII term) and fails on the base: every whole-topic key holds a * past FIELD_VALUE, the long topic's keys pass 120 characters and the non-ASCII term keeps no readable form. Check 1 reads the kb-research skill's description of uncovered (now \"the terms you research\"; it holds term ids). The repro reads the whole-topic key only."
+  "notes": "Plan check 2026-10-26: check 0 plants four fingerprints (a whole-topic key, a 110-character topic whole and with terms, a non-ASCII term) and fails on the base: every whole-topic key holds a * past FIELD_VALUE, the long topic's keys pass 120 characters and the non-ASCII term keeps no readable form. Check 1 reads the kb-research skill's description of uncovered (now \"the terms you research\"; it holds term ids). The repro reads the whole-topic key only.",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
