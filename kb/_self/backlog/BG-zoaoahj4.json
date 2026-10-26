@@ -2,7 +2,7 @@
   "id": "BG-zoaoahj4",
   "kind": "bug",
   "title": "A land or pipeline ops row written by a probe run in a temporary clone reaches no real spool",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-iowijan3",
   "sprint": "SP-vmtfnkim",
   "priority": "P3",
@@ -49,5 +49,7 @@
     "ST-mi5cjppl"
   ],
   "notes": "From the 2026-10-24 telemetry and query-log analysis: ops rows of 10-17 to 24 for item ids that exist in no backlog history of this repository: 43 land.end rows (27 with exit 1) and 127 land.step rows over 25 ids (9 failures), e.g. ST-ggggggg2; four land.step rows are named python3-private-var-folders-nr-3tgqljkx7 (the step label is a temp path, exit 1), written by probes whose clone is under the system temp directory. So 27 of the week's 143 failed land.end rows (19%) are fixture landings; a ci.pipeline row of 2026-10-24T00:03Z has state red and sha aaaaaaaaaaaa (not a commit), which the red-pipeline intake reads and could turn into a filed bug. ql_deliver.ops_row and record_pipeline skip rows only when PYTEST_CURRENT_TEST is set (ql_deliver.py:287-325) and bl_land.ops_write (bl_land.py:733) has no other guard, so a probe script run outside pytest writes to the spool of the clone whose tools it imports (the repro copies the tools to a temporary 'real clone' and runs the probe from another directory; nothing real is written). Honest failure figures are the gain. Partly covered by ST-6vyzk4oi (tells workers to set CLAUDE_PLUGIN_DATA and CLAUDE_PLUGIN_ROOT in sample runs: docs only, no code guard). Medium confidence: the guard must not stop a landing run from a linked worktree of the owning clone or the plugin copy (CLAUDE_PLUGIN_DATA set). Also wanted: land.step labels are built from the program's name, never from an absolute path. Sprint SP-vmtfnkim started 2026-10-26: start gate answered approve by operator (pre-approved by the operator for the 2026-10-26 run).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
