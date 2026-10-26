@@ -37,6 +37,27 @@
   "depends_on": [
     "BG-24kutvrd"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which public-root paths run querylog.py check at the sync gate?",
+      "options": [
+        "every path under kb/public/ (redact.known reads every text file of the root)",
+        "only articles (.md) and root-level ledgers"
+      ],
+      "recommendation": "every path under kb/public/ (redact.known reads every text file of the root)",
+      "do": {
+        "every path under kb/public/ (redact.known reads every text file of the root)": "ST-uvw3eajr",
+        "only articles (.md) and root-level ledgers": "ST-uvw3eajr"
+      },
+      "class": "push",
+      "answer": "every path under kb/public/ (redact.known reads every text file of the root)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-c7oav2vn close"
   ],
