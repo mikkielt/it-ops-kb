@@ -2,7 +2,7 @@
   "id": "ST-bilb3nzx",
   "kind": "story",
   "title": "Any MCP client checks a research question against live claims before it starts: the kb MCP server lists coord_dedup and coord.py serve answers dedup",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-fxrzbuza",
   "sprint": "SP-n7f53pgv",
   "priority": "P2",
@@ -60,5 +60,7 @@
     "BG-n4pgkyos"
   ],
   "notes": "Plan check 2026-10-26: check 0 reads the tools/list order, check 1 calls coord_dedup over MCP twice on a temp store (KB_COORD_STORE) and reads the fields and the second holder's overlap, check 2 starts coord.py serve on a free loopback port with two planted operator keys and runs dedup through --url twice. On the base: no coord_dedup tool (checks 0-1) and serve refuses dedup as an invalid choice (check 2): premise reproduced.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
