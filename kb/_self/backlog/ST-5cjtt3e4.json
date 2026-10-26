@@ -2,7 +2,7 @@
   "id": "ST-5cjtt3e4",
   "kind": "story",
   "title": "peers shows each peer's liveness and open asks, and kbask refuses an ask to a session that has ended",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-zv3duelo",
   "sprint": "SP-basca7ae",
   "priority": "P1",
