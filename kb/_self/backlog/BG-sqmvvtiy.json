@@ -2,7 +2,7 @@
   "id": "BG-sqmvvtiy",
   "kind": "bug",
   "title": "gate add classes a gate secrets when its question names a code identifier such as bare_token or def_tokens",
-  "status": "draft",
+  "status": "doing",
   "sprint": "SP-mk6ikval",
   "priority": "P3",
   "rank": 0,
@@ -37,5 +37,7 @@
   ],
   "links": [
     "parked: SP-jplczvj2 close"
-  ]
+  ],
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
