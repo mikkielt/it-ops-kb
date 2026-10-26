@@ -2,7 +2,7 @@
   "id": "BG-po7cc5zi",
   "kind": "bug",
   "title": "The leak scan flags a table row whose label cell is followed by a header-like cell and a long identifier, with no key material",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-mk6ikval",
   "priority": "P3",
   "rank": 0,
@@ -71,6 +71,28 @@
     "parked: SP-evq2flqc review"
   ],
   "notes": "Found 2026-10-23 by the third SP-evq2flqc fresh review on 86d646801: the boundary header value now crosses a pipe, so a 24-character identifier cell counts as the base64 run. Check 0 (the test_leaks.py selection) passes before the work: it holds the key blocks the reviews planted, which must stay flagged. Check 1 is the repro. Add cases inside an existing test function of the touched test file: the test-id ceiling is hard, so no new test id. Sprint SP-mk6ikval started 2026-10-26; item moved from draft to todo. BG-v5tq4jkz dropped as already fixed by BG-w4af2tix (its repro passes on the main branch); this item now follows BG-w4af2tix directly.",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "696a8da389e0120c4ba1ba9bd8f8f19c09abda26",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_leaks.py"
+        ],
+        "exit": 0,
+        "sha256": "3722042be10610d1"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kbcommon;d='-'*5;t='| '+d+'BEGIN EC PRIVATE KEY'+d+' | Note: PEM label | PrivateKeyInfoStructureXX |';h=any(k=='secret' for k,_ in kbcommon.leak_hits(t));print('label row flagged:',h);sys.exit(1 if h else 0)"
+        ],
+        "exit": 0,
+        "sha256": "826019335918ee80"
+      }
+    ]
+  }
 }
