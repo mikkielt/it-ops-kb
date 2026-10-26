@@ -2,7 +2,7 @@
   "id": "BG-dry4luf6",
   "kind": "bug",
   "title": "A gate naming a tokenize module function (tokenize.generate_tokens, tokenize.tokenize) is still classed secrets",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-mk6ikval",
   "priority": "P2",
   "rank": 0,
@@ -68,6 +68,28 @@
     "parked: SP-aoiqmnc6 review"
   ],
   "notes": "Sprint SP-mk6ikval started 2026-10-26; item moved from draft to todo. Gate g1 (class secrets) answered with its recommendation by the orchestrator on the operator behalf (pre-approved by the operator for the 2026-10-26 run): every tokenize.NAME attribute is blanked unless NAME holds a credential part, so the class stays closed for credential names; the check is rewritten to test the same goal clause with a touch that can reach design, because the original touch is rule-guarding and classes agents-rule whatever the words say.",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "fae84d0c12b208d5ed20bcfd51a901a54e16e393",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0,\"_tools\")\nimport bl_authority as a\ndef cl(q,t):return a.class_reasons({\"touches\":t},{\"id\":\"g1\",\"question\":q,\"options\":[\"one\",\"two\"]})[0]\nmod=[cl(q,[\"_tools/bl_check.py\"]) for q in (\"Use tokenize.generate_tokens to find comments?\",\"Does tokenize.tokenize(f.readline) read bytes?\",\"Keep tokenize.TokenInfo in the scan?\")]\nreal=[cl(q,[\"_tools/bl_check.py\"]) for q in (\"Rotate the API token of the service account?\",\"Where is the GITLAB_TOKEN kept?\",\"Store the credential file in _private?\")]\nprint(\"tokenize module gates:\",mod,\"| API token and credential gates:\",real)\nsys.exit(0 if \"secrets\" not in mod and all(r==\"secrets\" for r in real) else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "00c915527b83b0ff"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_authority as a\nit={'touches':['_tools/kbtools.py']}\nqs=['Use tokenize.generate_tokens to find comments?','Does tokenize.tokenize(f.readline) read bytes?']\nr=[a.class_reasons(it,dict(id='g1',question=q,options=['one','two']))[0] for q in qs]\nprint(r);sys.exit(0 if r==['design','design'] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "307d74bb218f15d8"
+      }
+    ]
+  }
 }
