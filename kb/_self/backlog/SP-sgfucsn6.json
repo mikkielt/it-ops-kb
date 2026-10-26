@@ -2,7 +2,7 @@
   "id": "SP-sgfucsn6",
   "kind": "sprint",
   "title": "Right answers: wrong kb facts fixed, lookup tools name what they do, review gaps filed with a repro that fails for its defect",
-  "status": "planned",
+  "status": "active",
   "goal": "QS12 of _answers.md says the EU AI Act entered into force on 2024-08-01 and not that it applies from then; the Jaeger article and mods.md say what their pages say; the bl_authority.py row of tools.md names the DOC_SECRET exception; kb_facts names a root it does not hold; kbtools puts querylog.py first for the need query logs; backlog.py new bug prints the last output lines of the repro it ran; the review step has the reviewer write its gap list to a report file the orchestrator reads; the sync gate text says whether a content-only change runs the tuned lookup eval",
   "gates": [
     {
@@ -14,7 +14,11 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "creator": "op-f618a13e",
