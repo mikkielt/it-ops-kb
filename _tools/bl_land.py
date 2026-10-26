@@ -1427,6 +1427,7 @@ def rebase_merging_doc_rows(root, upstream, branch, onto=None):
             fixed[name] = result
         if not files or len(fixed) < len(files):
             git_run("rebase", "--abort")
+            p.conflicts = files  # the paths that clashed, for the stop's message (the abort has cleared them)
             return p
         for name, (text, lines) in fixed.items():
             (Path(root) / name).write_text(text, encoding="utf-8", newline="\n")
@@ -1435,6 +1436,41 @@ def rebase_merging_doc_rows(root, upstream, branch, onto=None):
                 say(f"land: merged the line of {name} word by word, both sides kept: {line}")
         p = git_run("rebase", "--continue")
     return p
+
+
+def conflict_owners(root, upstream, branch, files):
+    """[(path, ids of the `KB-Work` commit that last changed it on UPSTREAM since the branch's merge base, its short
+    sha)] for each of FILES; ids and sha are empty when no such commit changed it."""
+    out = subprocess.run(["git", "merge-base", upstream, branch], cwd=root, capture_output=True, text=True,
+                         encoding="utf-8", errors="replace")
+    span = f"{out.stdout.strip()}..{upstream}" if out.returncode == 0 and out.stdout.strip() else upstream
+    owners = []
+    for name in files:
+        log = subprocess.run(["git", "log", "--format=%x1e%h%x1f%(trailers:key=KB-Work,valueonly,separator=%x2c)",
+                              span, "--", name], cwd=root, capture_output=True, text=True, encoding="utf-8",
+                             errors="replace")
+        found = ("", "")
+        for record in log.stdout.split("\x1e"):
+            sha, _, ids = record.partition("\x1f")
+            ids = ", ".join(i.strip() for i in ids.replace("\n", ",").split(",") if i.strip())
+            if sha.strip() and ids:
+                found = (ids, sha.strip())
+                break
+        owners.append((name, *found))
+    return owners
+
+
+def rebase_conflict_text(root, upstream, branch, iid, remote, files):
+    """The lines a rebase stop adds: each conflicting path with the item that last changed it on the integration
+    main, and the remedy that sends the worker back."""
+    lines = []
+    for name, ids, sha in conflict_owners(root, upstream, branch, files):
+        lines.append(f"  {name}: last changed on {remote}/main by {ids} (commit {sha})" if ids else
+                     f"  {name}: no KB-Work commit on {remote}/main changed it since {branch} was cut")
+    head = "conflicting file(s):\n" + "\n".join(lines) + "\n" if lines else ""
+    return (f"{head}remedy: write the conflict to a file as the message (the paths above, what {remote}/main changed "
+            f"in them), then `backlog.py dispatch --resume {iid} --message FILE` sends the worker back to rebase "
+            f"{branch} on {remote}/main and resolve it, then run land again\n")
 
 
 def item_state(root, rev, iid):
@@ -1973,7 +2009,8 @@ def land_locked(bl, a):
         if p.returncode:
             subprocess.run(["git", "rebase", "--abort"], cwd=lroot, capture_output=True)
             raise land_stop("rebase", f"{branch} does not rebase cleanly on {remote}/main (rebase aborted, nothing "
-                                      f"changed): rebase it by hand, then run land again\n"
+                                      f"changed)\n"
+                                      f"{rebase_conflict_text(lroot, upstream, branch, iid, remote, getattr(p, 'conflicts', []))}"
                                       f"{(p.stderr or p.stdout).strip()}")
         bl = Backlog(lroot)  # the item files as the rebased branch has them
         need(bl, iid)
