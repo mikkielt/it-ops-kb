@@ -2,7 +2,7 @@
   "id": "ST-7edw3k3l",
   "kind": "story",
   "title": "Research sprint goal: Coordination any agent can use, and whether it pays",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-n7f53pgv",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
