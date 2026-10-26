@@ -30,7 +30,10 @@ session), no live process has it as its working directory, its item is done, dro
 clean and every commit of it is on the integration main (`git cherry`), and its last activity is older than --older-than
 hours; a recorded scratch or sandbox directory also lies in its class's own directories (`own_dirs`), is no symlink and
 holds no worktree of this repository (`misplaced`); the main checkout, the worktree tidy runs in and
-`_cache/querylog/worktree` always stay, and so does everything no record names. `--apply` looks at a path again with lstat
+`_cache/querylog/worktree` always stay, and so does everything no record names. A plan reads the commit time of every
+worktree head and branch tip, and whether the integration main lacks it, with two git processes (`prime`; one more a
+`BATCH` of commits), however many candidates there are; only a commit it lacks is judged by `git cherry`, and `git status`
+runs for a worktree only once every other check leaves it removable. `--apply` looks at a path again with lstat
 (`is_recorded_dir`) and never removes a symlink's target. `tidy` lists each recorded worktree, local branch, bench sandbox and scratch directory with that verdict, its
 reason and the bytes it frees (a walk of at most `BYTES_SECONDS` a candidate, `approximate` past it), one summary line a class;
 --json prints the rows. Under disk pressure (free space below --disk-free-gb) the bench sandboxes come first and their age
@@ -99,6 +102,7 @@ EXTENDED_UNC = EXTENDED + "UNC\\"
 DRIVE = re.compile(r"[A-Za-z]:")
 AGE_HOURS = 4  # --older-than: how long a leftover's last activity must be past
 DISK_FREE_GB = 20  # --disk-free-gb: free space below it is disk pressure
+BATCH = 400  # commit ids one batched git read takes (`prime`): the command line stays short on every host
 BYTES_SECONDS = 2  # the longest walk that measures what one candidate frees
 REPORT_SECONDS = 4  # the longest walk that measures what all the candidates of `tidy --report` free
 TIDY_PREFIXES = (WORK_PREFIX, AGENT_BRANCH + WORKER_NAME, "orch/")  # the local branches tidy lists
@@ -349,6 +353,46 @@ def git_time(path, *args):
     return int(word) if word.isdigit() else None
 
 
+def prime(snap, revs):
+    """Read, for all of REVS (commit ids), the commit time and whether the integration main lacks the commit into SNAP,
+    with two git processes per BATCH commits however many REVS there are: `commit_time` and `merged` then answer from SNAP.
+    A rev git cannot read is left out, and those two functions ask git for it one at a time."""
+    seen = snap.setdefault("batched", set())
+    todo = sorted({r for r in revs if r and r not in seen})
+    when, ahead = snap.setdefault("when", {}), snap.setdefault("ahead", set())
+    for i in range(0, len(todo), BATCH):
+        part = todo[i:i + BATCH]
+        code, out, _ = run(["git", "--no-optional-locks", "log", "--no-walk=unsorted", "--format=%H %ct", *part, "--"],
+                           cwd=snap["root"])
+        if code:
+            continue
+        code2, lacks, _ = run(["git", "--no-optional-locks", "rev-list", "--no-walk=unsorted", *part, "--not",
+                               snap["upstream"], "--"], cwd=snap["root"])
+        if code2:
+            continue
+        for ln in out.splitlines():
+            rev, _, word = ln.partition(" ")
+            if word.isdigit():
+                when[rev] = int(word)
+        ahead.update(lacks.split())
+        seen.update(part)
+
+
+def commit_time(snap, path, rev):
+    """The commit time (an int) of REV, from `prime`, else asked of git in PATH; None when git cannot tell."""
+    if rev in snap.get("when", {}):
+        return snap["when"][rev]
+    return git_time(path, "log", "-1", "--format=%ct", rev)
+
+
+def merged(snap, rev):
+    """Whether every commit of REV is on the integration main: a commit `prime` found on it is, a commit it found off it
+    is judged by `bl_close.merged_into` (a rebased landing counts), and a rev it did not read is asked of git."""
+    if rev in snap.get("batched", ()) and rev not in snap["ahead"]:
+        return True
+    return bl_close.merged_into(snap["root"], rev, snap["upstream"])
+
+
 def integration_main(root):
     """The integration main's ref of the clone ROOT (`refs/remotes/<remote>/main`, else `refs/heads/main`), or None."""
     import kbpublic
@@ -593,18 +637,10 @@ def safe_to_remove(cand, snap, state):
             return KEEP, why
         asking = f"its item {item_of(cand)} is still claimed and no live coord lease names it"
     waived = None
-    if cls == "worktree":
-        code, out, err = run(["git", "--no-optional-locks", "status", "--porcelain"], cwd=path)
-        if code or out.strip():
-            return KEEP, "it has uncommitted changes" if not code else f"git status failed: {err.strip()}"
+    rev = None
     if cls in ("worktree", "branch"):
-        rev = entry["head"] if cls == "worktree" else f"refs/heads/{cand['branch']}"
-        if not bl_close.merged_into(snap["root"], rev, snap["upstream"]):
-            return KEEP, f"it has commits {snap['upstream']} lacks"
-        if cls == "worktree":
-            last = git_time(path, "log", "-g", "-1", "--format=%ct", "HEAD") or git_time(path, "log", "-1", "--format=%ct", "HEAD")
-        else:
-            last = git_time(snap["root"], "log", "-1", "--format=%ct", rev)
+        rev = entry["head"] if cls == "worktree" else cand.get("tip") or f"refs/heads/{cand['branch']}"
+        last = commit_time(snap, path if cls == "worktree" else snap["root"], rev)
     else:
         last = dir_activity(path)
         if cls == "sandbox":
@@ -615,6 +651,12 @@ def safe_to_remove(cand, snap, state):
     ok, why = idle_reason(last, snap, waived)
     if not ok:
         return KEEP, why
+    if rev is not None and not merged(snap, rev):
+        return KEEP, f"it has commits {snap['upstream']} lacks"
+    if cls == "worktree":
+        code, out, err = run(["git", "--no-optional-locks", "status", "--porcelain"], cwd=path)
+        if code or out.strip():
+            return KEEP, "it has uncommitted changes" if not code else f"git status failed: {err.strip()}"
     done = {"worktree": f"owned, item finished, clean, on {snap['upstream']}, idle",
             "branch": f"owned, item finished, on {snap['upstream']}, idle",
             "sandbox": "owned, nothing runs in it, idle", "scratch": "owned, item finished, nothing runs in it, idle"}[cls]
@@ -674,6 +716,7 @@ def candidates(snap, state, classes=TIDY_CLASSES):
         rec = branch_rec.get(branch) or (by_item.get(branch[len(WORK_PREFIX):]) if branch.startswith(WORK_PREFIX) else None)
         out["branch"].append({"class": "branch", "branch": branch, "tip": tip, "record": rec,
                               "checked_out": [norm_path(e["path"]) for e in snap["entries"] if e["branch"] == branch]})
+    prime(snap, [e["head"] for e in snap["entries"]] + [c["tip"] for c in out["branch"]])
     if PROCESS in classes:
         out[PROCESS] = process_candidates(snap, state)
     return out
