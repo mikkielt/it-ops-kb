@@ -2,7 +2,7 @@
   "id": "ST-iw6ov5fe",
   "kind": "story",
   "title": "Review sprint: Guards and redaction: leak scan, redact, gate classes, operator ids",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-mk6ikval",
   "review": true,
   "priority": "P1",
@@ -24,5 +24,27 @@
     }
   ],
   "notes": "Sprint SP-mk6ikval started 2026-10-26; item moved from draft to todo.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "evidence": {
+    "commit": "271beefe4443554e8faece8caf78a63088556d74",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "fbdc001de8eaacc5"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "7f3f0883c0dfde6f"
+      }
+    ]
+  }
 }
