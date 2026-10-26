@@ -24,6 +24,28 @@
   "depends_on": [
     "BG-gjaxmsbj"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does kbtail wake while following: a blocking coord wait, or the coord store file's stat?",
+      "options": [
+        "stat of the store file and its WAL each second, no connection",
+        "coord wait with a short lock timeout and a sleep when busy"
+      ],
+      "recommendation": "stat of the store file and its WAL each second, no connection",
+      "reason": "it cannot block on a lock and drops the 20 store reads a second",
+      "do": {
+        "stat of the store file and its WAL each second, no connection": "BG-xao6jaon",
+        "coord wait with a short lock timeout and a sleep when busy": "BG-xao6jaon"
+      },
+      "class": "design",
+      "answer": "stat of the store file and its WAL each second, no connection",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-wurbmsid review"
   ],
