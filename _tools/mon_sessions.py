@@ -37,7 +37,7 @@ ancestor, else null) and the items it waits on as {id, title}, a process that no
 item id (by its newest progress event) and `items`, each {item, title, state (the run state), git (the state git shows), why,
 age_s}; it is left out where the store is a url, `runs` cannot read coord or the root has no backlog items. `live_sessions(root)` gives a
 tool in this process one row for each live session with the raw `session` id, the absolute `checkout` and the `pid` besides
-the `label`, `role`, `item` and `sprint` (the `sessions` binding, read light: no git beyond the worktree list, no stall
+the `label`, `role`, `item` and `sprint` (the `sessions` binding, read light: at most two git processes, no stall
 signal, ops row or spool); the panel never holds the first two. `alerts` raises
 `sessions.orphan` and, while `drift` counts one, `runs.drift` (kind `drift`). Imports `mon_base` and `mon_view`; `bl_procs`,
 `bl_stall`, `bl_base`, `bl_runs`, `bl_items`, `bl_cost`, `ql_base`, `ql_distill` and `ql_report` where it reads them.
@@ -90,6 +90,7 @@ WAITS_SHOWN = 4  # waiting sessions in the text view
 DRIFT_KEPT = 20  # drifted run states in the data
 DRIFT_SHOWN = 3  # drifted run states in the text view
 ANCESTORS = 64  # process generations climbed from a wait to the Claude Code process that ran it
+PLACEMENT_LOCK = threading.Lock()  # one placement at a time shares a single worktree listing
 STORE_LOCK = threading.Lock()  # one panel run at a time points the environment's coord store at the clone's
 WINDOWS_LIMIT = ("Windows shows no working directory: a process is listed when its command line names a checkout of "
                  "the clone, so one that names none, an orphan told by working directory, is not shown")
@@ -547,10 +548,9 @@ def overlap_text(o):
 
 
 def ledger_records(root):
-    """{item: record} of the claims ledger in the git dir of the checkout ROOT (`bl_base.claims_ledger`), the records that
-    are objects; {} where the ledger is not there or does not read."""
-    import bl_base
-    ledger = bl_base.claims_ledger(root)[1]
+    """{item: record} of the claims ledger in the git dir of the checkout ROOT (`tree_ledger`, no git process), the records
+    that are objects; {} where the ledger is not there or does not read."""
+    ledger = tree_ledger(root)[1]
     try:
         records = json.loads(Path(ledger).read_text(encoding="utf-8")) if ledger else {}
     except (OSError, ValueError):
@@ -813,6 +813,30 @@ def session_entries(ctx, procs, placed, by_path, found, bl, names, light=False):
     return out
 
 
+@contextlib.contextmanager
+def one_listing():
+    """`bl_procs.worktrees` and `bl_stall.worktrees` answering from one `git worktree list` for each checkout asked about,
+    so a placement starts one listing however many of its reads ask for the worktrees. Held under PLACEMENT_LOCK by the
+    caller, one block at a time."""
+    import bl_procs
+    import bl_stall
+    saved = (bl_procs.worktrees, bl_stall.worktrees)
+    listed = {}
+
+    def worktrees(path):
+        key = os.path.realpath(path)
+        if key not in listed:
+            listed[key] = saved[1](str(path))
+        return listed[key]
+
+    bl_stall.worktrees = worktrees
+    bl_procs.worktrees = lambda path: [os.path.realpath(p) for p, _ in worktrees(path) or []]
+    try:
+        yield
+    finally:
+        bl_procs.worktrees, bl_stall.worktrees = saved
+
+
 def placement(ctx):
     """(procs, why, blind, worktree rows, {real path: branch}, names, placed): the processes in a checkout of the clone
     (`bl_procs.snapshot`, on Windows `windows_snapshot`; `procs` None and `why` the reason where the host cannot list them,
@@ -820,12 +844,13 @@ def placement(ctx):
     as `display_names` shows them and the real path each process is placed in."""
     import bl_procs
     blind = None
-    if os.name == "nt":
-        procs, _, why, blind = bl_procs.windows_snapshot(str(ctx.root))
-    else:
-        procs, _, why = bl_procs.snapshot(str(ctx.root))
-    rows, by_path = branches(ctx.root)
-    bases = bl_procs.checkouts(str(ctx.root)) if procs is not None else []
+    with PLACEMENT_LOCK, one_listing():
+        if os.name == "nt":
+            procs, _, why, blind = bl_procs.windows_snapshot(str(ctx.root))
+        else:
+            procs, _, why = bl_procs.snapshot(str(ctx.root))
+        rows, by_path = branches(ctx.root)
+        bases = bl_procs.checkouts(str(ctx.root)) if procs is not None else []
     return procs, why, blind, rows, by_path, display_names(ctx.root, bases), checkout_paths(procs or [], bases)
 
 
@@ -833,9 +858,12 @@ def live_sessions(root):
     """[{pid, session, checkout, role, item, sprint, label}] of the live Claude Code sessions of the clone at ROOT, one for
     each `claude` process in a checkout of it, oldest first, for a tool to follow: `session` is the raw session id (null
     where nothing binds the process to one), `checkout` the absolute real path, `label` the label `mon_view.session_label`
-    gives. It is the sessions panel's binding and roles (`session_entries`) read without git beyond the worktree list,
-    the stall signals, the ops rows and the spool, so a caller can ask again every few seconds; the raw id and the path stay
-    in this process, the panel's data and text never hold them. [] where the host lists no process."""
+    gives. It is the sessions panel's binding and roles (`session_entries`) read without the stall signals, the ops rows
+    and the spool, so a caller can ask again every few seconds. It starts at most two git processes however many checkouts
+    the clone has: the one `git worktree list` that every read of the worktrees shares (one more for each repository of
+    a `repositories` map), and a `rev-parse` only for a checkout whose `.git` entry names no git dir; each checkout's
+    claims ledger is read from its `.git` entry, not by a git call. The raw id and the path stay in this process, the
+    panel's data and text never hold them. [] where the host lists no process."""
     ctx = mon_base.Ctx(Path(root).resolve())
     procs, _, _, _, by_path, names, placed = placement(ctx)
     found = read_coord(ctx, events=False)
