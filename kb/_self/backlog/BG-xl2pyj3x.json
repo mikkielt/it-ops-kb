@@ -41,7 +41,11 @@
         "in the readers: a pid that still runs never takes the record's worker_session": "BG-xl2pyj3x",
         "in dispatch: clear worker_session when worker_pid is recorded": "BG-xl2pyj3x"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "in the readers: a pid that still runs never takes the record's worker_session",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Fresh review of SP-7ba3r4ec, gap 2 (S2, raised to S1 by the operator): bind_sessions prefers the ledger's dispatch record; bl_dispatch records worker_session only when a worker exits, so the record holds the last run's session while the new pid runs. Fix in the binding (a leased hook session of the checkout that is newer than the record's) or in dispatch (clear worker_session when it records worker_pid).",
