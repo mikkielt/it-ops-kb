@@ -2,7 +2,7 @@
   "id": "BG-wdyjtfl7",
   "kind": "bug",
   "title": "window_sections fails an unchanged body window and passes a removed or renamed heading window since BG-hxp3f73q",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vlfcgmbu",
   "priority": "P1",
   "rank": 0,
@@ -40,5 +40,7 @@
     "kb/_self/content-rules.md"
   ],
   "notes": "Check 0 is BG-hxp3f73q's repro and passes before the work on purpose: it pins that the fix keeps that case. The repro reads both clauses with four planted Doc texts.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
