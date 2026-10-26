@@ -21,6 +21,8 @@
                                set, WezTerm where WEZTERM_PANE is set, Windows Terminal where WT_SESSION is set; elsewhere
                                print the command to run in a second terminal; --dry-run prints the command it would run
                                and runs nothing; --root, --panel, --store, --url and --key-file go to the live view
+  kbmon.py --follow ARGS       run `kbtail.py ARGS` and print what it prints: one session's transcript followed live in a
+                               terminal, redacted and cut (ARGS: TARGET, --history N, --once; `--follow` comes first)
   kbmon.py --status [TOPIC]    print a short plain-words answer (at most 25 lines) for TOPIC: sessions, cost, querylog, coord,
                                sprints, load or all (the default), from one snapshot of the panels the topic needs; with
                                --json an object of schema 1, topic, taken, lines and facts; a claim's holder is never named;
@@ -117,6 +119,7 @@ def parser():
     mode.add_argument("--receipt", action="store_true", help="print the agent's one-line receipt and an alert fingerprint as JSON")
     mode.add_argument("--events", action="store_true", help="print events and spans newer than --since as JSON")
     mode.add_argument("--split", action="store_true", help="open the live view in a pane beside the session")
+    mode.add_argument("--follow", action="store_true", help="run kbtail.py with the arguments after --follow (it comes first)")
     ap.add_argument("--status", nargs="?", const="all", choices=mon_status.TOPICS, metavar="TOPIC",
                     help="print a short plain-words answer for TOPIC (%s; default all); with --json an object" % ", ".join(mon_status.TOPICS))
     ap.add_argument("--backtest", type=int, metavar="N", help="with --status sprints: replay the sprint estimate over the last N closed sprints")
@@ -242,10 +245,16 @@ def backtest(a, out):
 
 def main(argv=None, out=None):
     out = out or sys.stdout
+    args = sys.argv[1:] if argv is None else list(argv)
+    if args[:1] == ["--follow"]:
+        import kbtail
+        return kbtail.main(args[1:], out)
     ap = parser()
-    a = ap.parse_args(argv)
+    a = ap.parse_args(args)
+    if a.follow:
+        ap.error("--follow comes first: kbmon.py --follow [--history N] [--once] TARGET")
     if a.status is not None:
-        if a.once or a.metrics or a.receipt or a.events or a.split:
+        if a.once or a.metrics or a.receipt or a.events or a.split or a.follow:
             ap.error("--status takes only --json beside the snapshot's own options")
         if a.panel:
             ap.error("--status reads the panels its topic needs and takes no --panel")
