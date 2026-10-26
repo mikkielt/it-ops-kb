@@ -1,0 +1,40 @@
+{
+  "id": "ST-44n6nfrr",
+  "kind": "story",
+  "title": "session-load's arm B adds the kbmon pane's own commands on the pane's schedule, so the monitor's share is measured",
+  "status": "draft",
+  "parent": "EP-nxb7hjwd",
+  "sprint": "SP-3qowbedb",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "python3 _tools/benchmarks.py run session-load --arms B runs arm A plus the commands the kbmon-pane mod runs in an interactive session (kbmon.py --once, then --status all, as .claude/skills/kbmon-pane/hooks/register.tsx does), the first after FIRST_MS and then every --pane-every seconds (default the mod's REFRESH_MS) over a --window of seconds per phase, and writes per phase a pane_runs row and the kbmon class's cpu_s, rss_peak_mb, rss_mean_mb and spawns_per_min beside arm A's; arm A runs no pane command; and kb/_self/reports/benchmarks.csv holds a 5-rep record of arm B at the default schedule",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport csv, os, shutil, subprocess, tempfile\nT = tempfile.mkdtemp()\nB = os.path.join(T, 'bin'); os.mkdir(B)\nopen(os.path.join(B, 'claude'), 'w').write('#!/bin/sh\\nexit 1\\n')\nos.chmod(os.path.join(B, 'claude'), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ['PATH'])\nout = os.path.join(T, 'out.csv')\np = subprocess.run([sys.executable, '_tools/benchmarks.py', 'run', 'session-load', '--arms', 'A,B', '--reps', '1',\n                    '--window', '12', '--pane-every', '5', '--out', out], capture_output=True, text=True, env=ENV, timeout=1800)\nrows = list(csv.DictReader(open(out, encoding='utf-8'))) if os.path.exists(out) else []\nshutil.rmtree(T, ignore_errors=True)\nassert p.returncode == 0, ('run session-load --arms A,B exit', p.returncode, p.stderr[-400:])\nrows = [r for r in rows if r['scenario'] == 'session-load']\nassert not [r for r in rows if r['metric'] in ('errors', 'spend_usd')], 'an errors or spend row'\nval = {(r['case'], r['arm'], r['metric']): float(r['value']) for r in rows}\nfor case in ('idle', 'working'):\n    assert val.get((case + ' all', 'B', 'pane_runs'), 0) >= 2, ('fewer than 2 pane runs in a 12 s window every 5 s', case)\n    assert val.get((case + ' kbmon', 'B', 'cpu_s'), 0) > 0, ('no kbmon cpu_s in arm B', case)\n    assert (case + ' kbmon', 'A', 'cpu_s') not in val or val[(case + ' kbmon', 'A', 'cpu_s')] == 0, ('arm A ran the pane', case)\n    assert val[(case + ' all', 'B', 'cpu_s')] > val[(case + ' all', 'A', 'cpu_s')], ('arm B costs no more than A', case)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport csv\nrows = [r for r in csv.DictReader(open('kb/_self/reports/benchmarks.csv', encoding='utf-8')) if r['scenario'] == 'session-load']\nfor case in ('idle kbmon', 'working kbmon'):\n    assert [r for r in rows if r['arm'] == 'B' and r['case'] == case and r['metric'] == 'cpu_s' and r['runs'] == '5'], ('no 5-run arm B record row', case)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_load.py",
+    "_tools/benchmarks.py",
+    "kb/_self/benchmarks.md",
+    "kb/_self/tools.md",
+    "kb/_self/reports/benchmarks.md",
+    "kb/_self/reports/benchmarks.csv",
+    "README.md"
+  ],
+  "depends_on": [
+    "ST-7nuaruwn"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

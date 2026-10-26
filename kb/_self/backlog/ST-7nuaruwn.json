@@ -1,0 +1,40 @@
+{
+  "id": "ST-7nuaruwn",
+  "kind": "story",
+  "title": "A no-model session-load benchmark replays one session's hooks and records each process class's CPU, memory and starts",
+  "status": "draft",
+  "parent": "EP-nxb7hjwd",
+  "sprint": "SP-3qowbedb",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "python3 _tools/benchmarks.py run session-load replays, with no model, the hook events of one Claude Code session through this clone's own hook commands (.claude/settings.json) in a throwaway clone with a scratch query log home (CLAUDE_PLUGIN_DATA and CLAUDE_PLUGIN_ROOT both set), in arm A (every hook), arm C (coord_hook and the querylog hooks left out) and arm D (no hook), each in phase idle (SessionStart, then SessionEnd) and phase working (with a fixed script of prompt and tool events between), measures every process it starts by os.wait4 rusage and samples, grouped by the host panel's process classes, and writes per phase, arm and class (case '<phase> <class>', 'all' for their sum) the rows cpu_s, rss_peak_mb, rss_mean_mb and spawns_per_min, and per synchronous hook command a sync_ms row, coord_hook's among them; each cpu_s row's note names host cores, load, Claude Code version and warm or cold; and kb/_self/reports/benchmarks.csv holds a 5-rep record of arms A, C and D with its table in kb/_self/reports/benchmarks.md",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport csv, os, shutil, subprocess, tempfile\nT = tempfile.mkdtemp()\nB = os.path.join(T, 'bin'); os.mkdir(B)\nopen(os.path.join(B, 'claude'), 'w').write('#!/bin/sh\\nexit 1\\n')\nos.chmod(os.path.join(B, 'claude'), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ['PATH'])\nout = os.path.join(T, 'out.csv')\np = subprocess.run([sys.executable, '_tools/benchmarks.py', 'run', 'session-load', '--arms', 'A,C,D', '--reps', '1', '--out', out],\n                   capture_output=True, text=True, env=ENV, timeout=1800)\nrows = list(csv.DictReader(open(out, encoding='utf-8'))) if os.path.exists(out) else []\nshutil.rmtree(T, ignore_errors=True)\nassert p.returncode == 0, ('run session-load exit', p.returncode, p.stderr[-400:])\nrows = [r for r in rows if r['scenario'] == 'session-load']\nassert not [r for r in rows if r['metric'] in ('errors', 'spend_usd')], 'an errors or spend row: a model ran or a replay failed'\nval = {(r['case'], r['arm'], r['metric']): float(r['value']) for r in rows}\nfor case in ('idle all', 'working all'):\n    for arm in 'ACD':\n        for m in ('cpu_s', 'rss_peak_mb', 'rss_mean_mb', 'spawns_per_min'):\n            assert (case, arm, m) in val, ('no row', case, arm, m)\n    assert val[(case, 'D', 'spawns_per_min')] < val[(case, 'C', 'spawns_per_min')] < val[(case, 'A', 'spawns_per_min')], ('spawns not D < C < A', case)\nassert [k for k in val if k[1] == 'A' and 'coord_hook' in k[0] and k[2] == 'sync_ms'], 'no sync_ms row for coord_hook in arm A'\nassert all('cores' in r['note'] and 'load' in r['note'] for r in rows if r['metric'] == 'cpu_s'), 'a cpu_s row note lacks host cores and load'\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport csv, subprocess\np = subprocess.run([sys.executable, '_tools/benchmarks.py', 'report', '--check'], capture_output=True, text=True, timeout=600)\nassert p.returncode == 0, ('report --check', p.returncode, p.stdout[-400:])\nrows = [r for r in csv.DictReader(open('kb/_self/reports/benchmarks.csv', encoding='utf-8')) if r['scenario'] == 'session-load']\nfor arm in 'ACD':\n    for case in ('idle all', 'working all'):\n        assert [r for r in rows if r['arm'] == arm and r['case'] == case and r['metric'] == 'cpu_s' and r['runs'] == '5'], ('no 5-run record row', arm, case)\nassert '<!-- bench:records session-load -->' in open('kb/_self/reports/benchmarks.md', encoding='utf-8').read(), 'the report has no session-load records table'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_load.py",
+    "_tools/benchmarks.py",
+    "kb/_self/benchmarks.md",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/map.csv",
+    "kb/_self/reports/modules.md",
+    "kb/_self/reports/benchmarks.md",
+    "kb/_self/reports/benchmarks.csv",
+    "README.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
