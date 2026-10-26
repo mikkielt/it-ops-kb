@@ -37,7 +37,9 @@
       },
       "class": "querylog",
       "answer": "No names allowed: redact with an empty Known, so a host, GUID, path segment or long name the kb uses may print as its placeholder",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
