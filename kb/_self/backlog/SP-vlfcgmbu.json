@@ -1,0 +1,22 @@
+{
+  "id": "SP-vlfcgmbu",
+  "kind": "sprint",
+  "title": "Facts know when they were true",
+  "status": "planned",
+  "goal": "A fact line carries its validity window as a marker before its tag and a CODE fact its commit range, accepted by the content rules and the lint; pack and kb_pack answer as of a date or a release with the facts valid then and say which they left out; a refresh closes a changed fact with an end date and adds the new one instead of rewriting it",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
