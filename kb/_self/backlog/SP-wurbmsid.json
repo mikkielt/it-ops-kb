@@ -1,0 +1,22 @@
+{
+  "id": "SP-wurbmsid",
+  "kind": "sprint",
+  "title": "Live agent view, first slice: follow one session's transcript in a terminal",
+  "status": "planned",
+  "goal": "kbtail.py follows one Claude Code session's transcript live in a terminal, redacted and cut, with no model call and no file written, and kbmon.py --follow runs it",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
