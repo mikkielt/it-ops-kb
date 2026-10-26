@@ -2,7 +2,7 @@
   "id": "ST-37tvnyon",
   "kind": "story",
   "title": "Review sprint: Right answers: wrong kb facts fixed, lookup tools name what they do, review gaps filed with a repro that fails for its defect",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-sgfucsn6",
   "review": true,
   "priority": "P1",
@@ -24,5 +24,7 @@
     }
   ],
   "notes": "Sprint start gate answered approve by the runner on the operator's behalf (pre-approved by the operator for the 2026-10-26 run).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
