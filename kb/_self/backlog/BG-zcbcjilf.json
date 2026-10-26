@@ -2,7 +2,7 @@
   "id": "BG-zcbcjilf",
   "kind": "bug",
   "title": "check.py's lexical code scan misses a parenthesized docstring and one after a backslash-continued header",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-acysfnxr",
   "priority": "P3",
   "rank": 0,
@@ -26,6 +26,19 @@
   "links": [
     "parked: SP-j65ihctq review"
   ],
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "70323fd6f2d220a0acea815c50fa1eac79de7035",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,tempfile,os;sys.path.insert(0,'_tools');import check;p=os.path.join(tempfile.mkdtemp(),'x.py');open(p,'w').write('def f():\\n    (\\x22doc\\x22)\\n');sys.exit(0 if [n for n,_ in check.code_comment_lines(p)]==[2] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
