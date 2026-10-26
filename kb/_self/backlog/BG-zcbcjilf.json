@@ -2,7 +2,7 @@
   "id": "BG-zcbcjilf",
   "kind": "bug",
   "title": "check.py's lexical code scan misses a parenthesized docstring and one after a backslash-continued header",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-acysfnxr",
   "priority": "P3",
   "rank": 0,
@@ -25,5 +25,7 @@
   ],
   "links": [
     "parked: SP-j65ihctq review"
-  ]
+  ],
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
