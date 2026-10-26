@@ -106,7 +106,8 @@ ITEM_WORD = re.compile(ITEM)
 ASSIGN = re.compile(r"[A-Za-z_][A-Za-z0-9_]*=")
 PYTHON = re.compile(r"python[0-9.]*(\.exe)?|py", re.I)
 SHELL = ("sh", "bash", "zsh", "dash")
-PREFIX = ("env", "time", "nohup", "command", "exec", "if", "then", "else", "elif", "do", "while", "until", "!")
+PREFIX = ("env", "time", "nohup", "command", "exec", "if", "then", "else", "elif", "do", "while", "until", "!", "{")
+WRAPPER = {"timeout": (("-s", "--signal", "-k", "--kill-after"), 1), "nice": (("-n", "--adjustment"), 0)}  # command -> (options that take a value, positional words before the wrapped command)
 WORK_BRANCH = re.compile(r"work/(" + ITEM + r")")
 CLAIM_TOPIC = "backlog-claim"  # the topic of the intent posted at a `backlog.py claim`, which a dispatched worker skips
 UNSAFE = re.compile(r"[^A-Za-z0-9_.:/#@-]")  # what a coord.py field value may not hold
@@ -191,12 +192,22 @@ def commands(text):
 
 def claimed_item(text, depth=0):
     """The item id of the first `backlog.py claim ID` that text runs as a command (also as `python3 backlog.py ...`,
-    after variable assignments, `env`, `time` and the like, and in a `sh -c` text), else None; the words inside a
-    quoted argument of another command, a heredoc or a comment run nothing."""
+    after variable assignments, `env`, `time`, `timeout`, `{` and the like, with `--root X` before `claim`, and in a
+    `sh -c` text), else None; the words inside a quoted argument of another command, a heredoc or a comment run
+    nothing."""
     for argv in commands(text):
         k = 0
-        while k < len(argv) and (ASSIGN.match(argv[k]) or argv[k] in PREFIX):
-            k += 1
+        while k < len(argv):
+            if ASSIGN.match(argv[k]) or argv[k] in PREFIX:
+                k += 1
+            elif os.path.basename(argv[k]) in WRAPPER:
+                valued, positional = WRAPPER[os.path.basename(argv[k])]
+                k += 1
+                while k < len(argv) and argv[k].startswith("-"):
+                    k += 2 if argv[k] in valued else 1
+                k += positional
+            else:
+                break
         argv = argv[k:]
         if not argv:
             continue
@@ -212,8 +223,12 @@ def claimed_item(text, depth=0):
             while k < len(argv) and argv[k].startswith("-"):
                 k += 1
             argv = argv[k:]
-        if len(argv) > 2 and os.path.basename(argv[0]) == "backlog.py" and argv[1] == "claim" and ITEM_WORD.fullmatch(argv[2]):
-            return argv[2]
+        if argv and os.path.basename(argv[0]) == "backlog.py":
+            k = 1
+            while k < len(argv) and argv[k].startswith("--root"):
+                k += 2 if argv[k] == "--root" else 1  # a global option stands before the subcommand
+            if len(argv) > k + 1 and argv[k] == "claim" and ITEM_WORD.fullmatch(argv[k + 1]):
+                return argv[k + 1]
     return None
 
 
