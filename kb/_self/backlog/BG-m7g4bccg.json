@@ -2,7 +2,7 @@
   "id": "BG-m7g4bccg",
   "kind": "bug",
   "title": "A stage-back rerun after a kill in the middle of its copy-in stops at the dirty tracked file the dead run copied, so the worktree needs a hand reset",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nij36lt7",
   "sprint": "SP-42b2cjm3",
   "priority": "P2",
@@ -38,5 +38,7 @@
     "parked: SP-dx76osrn review"
   ],
   "notes": "Sprint started 2026-10-26 on the operator's approval for the unattended run.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
