@@ -1,0 +1,21 @@
+{
+  "id": "BG-ctu4dhxa",
+  "kind": "bug",
+  "title": "redact keeps the host of an http or https url that carries user:password@, because the password is rewritten to a placeholder before the host rule runs",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "redact.redact rewrites the host of an http or https url that carries a user:password@ part to the host placeholder when the public root never names it, as it does for a url without a password",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import redact;k=redact.known();u=\"https://deploy:\"+\"Hunter2\"*2+\"@srv01.corp.contoso.com/r.git\";r=redact.redact(u,k);print(r);sys.exit(1 if \"srv01.corp.contoso.com\" in r else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/redact.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
