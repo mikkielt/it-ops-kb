@@ -2,9 +2,8 @@
   "id": "ST-oykcufk5",
   "kind": "story",
   "title": "A session waiting on a permission prompt or a question shows as blocked within seconds, apart from a silent one",
-  "status": "doing",
+  "status": "draft",
   "parent": "EP-wqgicmmj",
-  "sprint": "SP-hxxn6fnv",
   "priority": "P2",
   "rank": 0,
   "goal": "The coord hook runs on the permission-request and notification hook events and records the session as blocked through an event of a closed kind, cleared at its next tool event; kbmon's sessions panel shows that session as blocked on a prompt and the needs-you line names it, within one snapshot; a session that is only silent is not shown as blocked and the needs-you line does not name it; a planted permission-request event on a temp store leaves a blocked record that coord.py wait returns.",
@@ -96,8 +95,9 @@
       "role": "interactive"
     }
   ],
-  "notes": "Premise: python3 -c \"import json;print([h['command'] for e in json.load(open('.claude/settings.json'))['hooks']['PermissionRequest'] for h in e['hooks']])\" shows the permission-request event runs only the query log capture, so coord learns nothing of a session waiting on a prompt and kbmon shows it as silent until the KbmonRunStalled threshold. The check plants one permission-request event into coord_hook.py on a temp store. Compatible by design with any runtime that reads coord or kbmon: no runtime is named. Plan check 2026-10-26: checks 1-3 plant a temporary clone with fake claude processes (a symlink to sleep) bound to planted sessions, fire coord_hook.py events at a temp store and read kbmon --root of that clone; all fail on the base: no hook event marks a session blocked, the settings register coord_hook.py for neither PermissionRequest nor Notification, and kbmon shows nothing blocked. Clause \"a session that is only silent keeps its silent measure\" narrowed to \"is not shown as blocked and the needs-you line does not name it\": the per-session silent measure is ST-xvdk32ag's, which depends on this item.",
-  "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "links": [
+    "moved out: SP-hxxn6fnv"
+  ],
+  "notes": "Premise: python3 -c \"import json;print([h['command'] for e in json.load(open('.claude/settings.json'))['hooks']['PermissionRequest'] for h in e['hooks']])\" shows the permission-request event runs only the query log capture, so coord learns nothing of a session waiting on a prompt and kbmon shows it as silent until the KbmonRunStalled threshold. The check plants one permission-request event into coord_hook.py on a temp store. Compatible by design with any runtime that reads coord or kbmon: no runtime is named. Plan check 2026-10-26: checks 1-3 plant a temporary clone with fake claude processes (a symlink to sleep) bound to planted sessions, fire coord_hook.py events at a temp store and read kbmon --root of that clone; all fail on the base: no hook event marks a session blocked, the settings register coord_hook.py for neither PermissionRequest nor Notification, and kbmon shows nothing blocked. Clause \"a session that is only silent keeps its silent measure\" narrowed to \"is not shown as blocked and the needs-you line does not name it\": the per-session silent measure is ST-xvdk32ag's, which depends on this item. Moved out of SP-hxxn6fnv by the unattended orchestrator 2026-10-26: the worker ($1.80) raised gates g2 \"Which closed event kind records a blocked session, and which tool events clear it?\" and g3 \"Which notification types mark a session blocked, and where does the needs-you line name it?\", class agents-rule (the item touches .claude/hooks and .claude/settings.json). They wait on the operator; the work for both recommendations is on branch work/ST-oykcufk5.",
+  "filed_in": "clone-0ea70e5c"
 }

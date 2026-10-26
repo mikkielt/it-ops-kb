@@ -3,7 +3,7 @@
   "kind": "sprint",
   "title": "Session state and cost: blocked, finished, silent, and spend by topic",
   "status": "active",
-  "goal": "A session waiting on a permission prompt or a question shows as blocked within seconds; a worker whose work is done but whose process stays alive is flagged and stopped after a grace period when a setting allows; every live session gets a silence measure; workers start through a launcher the operator sets and kbmon reads agent states from an external source through a JSON contract; spend is attributed to the item and to the kb topic or code module and exported to OpenTelemetry",
+  "goal": "a worker whose work is done but whose process stays alive is flagged and stopped after a grace period when a setting allows; every live session gets a silence measure; workers start through a launcher the operator sets and kbmon reads agent states from an external source through a JSON contract; spend is attributed to the item and to the kb topic or code module and exported to OpenTelemetry",
   "gates": [
     {
       "id": "start",

@@ -52,9 +52,6 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
-  "depends_on": [
-    "ST-oykcufk5"
-  ],
   "notes": "Plan check 2026-10-26: the old check read kbmon of this clone, which a hand run can satisfy; the new checks plant a temp clone with a session whose transcript is 900 s old and no item and a fresh worker session, and fail on the base: no silent_s on a session row, no session silence metric or alert rule, the text line shows only \"up\".",
   "filed_in": "clone-0ea70e5c"
 }
