@@ -2,9 +2,8 @@
   "id": "ST-hqko4k2x",
   "kind": "story",
   "title": "Planning reads the code map: referrers lists a symbol's code references from the pinned map apart from its text mentions",
-  "status": "todo",
+  "status": "draft",
   "parent": "EP-rpzrctui",
-  "sprint": "SP-acysfnxr",
   "priority": "P1",
   "rank": 0,
   "goal": "backlog.py referrers TERM reads the code map of this clone's HEAD when one is current, else builds it under _cache; it prints each file that references a symbol in code with kind=ref, from the map's references, apart from each file that only names it in text with kind=text, from the scan it runs now, and --item still marks the files outside the item's scope; the planning skills say to take an item's touches from referrers' kind=ref lines and to read its kind=text lines for docs.",
@@ -68,5 +67,9 @@
     "ST-q4fbmomg",
     "ST-zhpor7fy"
   ],
+  "links": [
+    "moved out: SP-acysfnxr"
+  ],
+  "notes": "Moved out of SP-acysfnxr by the unattended orchestrator 2026-10-26: depends on ST-teivhsxq, whose gate g1 (class agents-rule) waits on the operator.",
   "filed_in": "clone-0ea70e5c"
 }
