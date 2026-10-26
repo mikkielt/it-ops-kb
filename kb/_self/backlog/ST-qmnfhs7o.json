@@ -2,7 +2,7 @@
   "id": "ST-qmnfhs7o",
   "kind": "story",
   "title": "Research sprint goal: Right answers: wrong kb facts fixed, lookup tools name what they do, review gaps filed with a repro that fails for its defect",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-sgfucsn6",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: the sprint goal names no open question for the kb, and each committed item carries its own repro or check.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "3ebce96a04f25ebe95552075be91c9963266b3af",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-qmnfhs7o"
+        ],
+        "exit": 0,
+        "sha256": "3a486bf463848f0a"
+      }
+    ]
+  }
 }
