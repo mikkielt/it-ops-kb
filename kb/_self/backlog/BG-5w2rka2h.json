@@ -4,6 +4,7 @@
   "title": "kbtail.py drops a live claude process that has no session id without saying so",
   "status": "draft",
   "parent": "EP-booflukv",
+  "sprint": "SP-hxxn6fnv",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

@@ -4,6 +4,7 @@
   "title": "A session waiting on a permission prompt or a question shows as blocked within seconds, apart from a silent one",
   "status": "draft",
   "parent": "EP-wqgicmmj",
+  "sprint": "SP-hxxn6fnv",
   "priority": "P2",
   "rank": 0,
   "goal": "The coord hook runs on the permission-request and notification hook events and records the session as blocked through an event of a closed kind, cleared at its next tool event; kbmon's sessions panel shows that session as blocked on a prompt and the needs-you line names it, within one snapshot; a session that is only silent keeps its silent measure; a planted permission-request event on a temp store leaves a blocked record that coord.py wait returns.",
@@ -43,7 +44,11 @@
         "permission requests and notifications that wait on the person": "ST-oykcufk5",
         "permission requests only": "ST-oykcufk5"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "permission requests and notifications that wait on the person",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Premise: python3 -c \"import json;print([h['command'] for e in json.load(open('.claude/settings.json'))['hooks']['PermissionRequest'] for h in e['hooks']])\" shows the permission-request event runs only the query log capture, so coord learns nothing of a session waiting on a prompt and kbmon shows it as silent until the KbmonRunStalled threshold. The check plants one permission-request event into coord_hook.py on a temp store. Compatible by design with any runtime that reads coord or kbmon: no runtime is named.",

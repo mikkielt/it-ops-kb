@@ -4,6 +4,7 @@
   "title": "A session whose work is recorded as done but whose process stays alive is flagged, and stopped after a grace period when the operator's policy allows",
   "status": "draft",
   "parent": "EP-wqgicmmj",
+  "sprint": "SP-hxxn6fnv",
   "priority": "P2",
   "rank": 0,
   "goal": "backlog.py stalled lists a finished-alive signal for an item whose dispatched worker wrote its result, or whose run is returned or landed, while that worker's own recorded pid still runs past a grace period named as a constant; kbmon's sessions panel and needs-you line show it; when the backlog.json setting the operator's gate names allows it (off by default), dispatch's wait sends SIGTERM to that recorded pid only and records the stop as an ops row; no other process is ever signalled.",
@@ -46,7 +47,11 @@
         "SIGTERM its own recorded pid when a backlog.json setting allows it, off by default": "ST-zimb7vuu",
         "always SIGTERM its own recorded pid": "ST-zimb7vuu"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "SIGTERM its own recorded pid when a backlog.json setting allows it, off by default",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Premise: python3 _tools/backlog.py stalled -h lists no signal for a worker that finished and stays alive; headless claude -p sprint sessions have written their report and final message and then not exited, stalling the next step until stopped by hand. Its JSON output is written on SIGTERM, so stopping the recorded pid loses nothing. Relates to ST-qqeojkym, which counts a worker's cost as closed once its process exits.",

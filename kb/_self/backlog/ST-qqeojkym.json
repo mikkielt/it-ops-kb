@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "A dispatched worker's session counts as closed for cost once its claude -p process has exited",
   "status": "draft",
+  "sprint": "SP-hxxn6fnv",
   "priority": "P3",
   "rank": 0,
   "goal": "backlog.py cost and land read a worker session that dispatch started as closed once the worker process has exited (its result.json written), so cost --rework at the close shows each worker's figures rather than 'work rows are late'. SP-vk3wf746 close: land called each of the five workers' sessions still open right after its claude -p exited, and the close's cost --rework read figures for one worker item only.",

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "dispatch accepts a spend cap that prints as 0 USD",
   "status": "draft",
+  "sprint": "SP-hxxn6fnv",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

@@ -4,6 +4,7 @@
   "title": "Every live session gets a silence measure, with or without a backlog item",
   "status": "draft",
   "parent": "EP-wqgicmmj",
+  "sprint": "SP-hxxn6fnv",
   "priority": "P3",
   "rank": 0,
   "goal": "kbmon's sessions panel gives each live Claude Code session of the clone a silent_s (the seconds since the newest write to its transcript), not only working runs in the coord panel; the metrics export carries it and the alert rules file in otel/ alerts on a session silent past a threshold it names; the panel's text names a silent session by its line, as it does now.",

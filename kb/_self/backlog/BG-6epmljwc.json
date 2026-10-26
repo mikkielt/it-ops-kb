@@ -4,6 +4,7 @@
   "title": "mon_sessions.live_sessions starts a git process per checkout and three worktree listings on every call, against its docstring",
   "status": "draft",
   "parent": "EP-booflukv",
+  "sprint": "SP-hxxn6fnv",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",

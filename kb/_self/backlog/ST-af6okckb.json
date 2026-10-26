@@ -4,6 +4,7 @@
   "title": "Spend is attributed to the item and to the kb topic or code module it served, ranked by topic, and exported to OpenTelemetry",
   "status": "draft",
   "parent": "EP-wqgicmmj",
+  "sprint": "SP-hxxn6fnv",
   "priority": "P2",
   "rank": 0,
   "goal": "A usage record carries, beside its item, the kb articles and the ingested repository modules its lookups, shows and research touched; backlog.py cost --by topic|module|item ranks spend and tokens per answer for each, from the query log's usage sidecars; the metrics export adds item and topic attributes to the cost points, so any OpenTelemetry backend shows cost per item and per topic; the ranking names the costliest topics and modules as the next research or mapping targets.",

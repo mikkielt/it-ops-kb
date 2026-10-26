@@ -4,6 +4,7 @@
   "title": "Workers start through a launcher command the operator sets, and kbmon reads agent states from an external source through a JSON contract",
   "status": "draft",
   "parent": "EP-wqgicmmj",
+  "sprint": "SP-hxxn6fnv",
   "priority": "P3",
   "rank": 0,
   "goal": "backlog.json takes a launcher (an argv template with the worker's directory and command) that dispatch uses in place of its own detached start, the current start staying the default; kbmon takes an agent-states command whose JSON lines give a pid or session id and a state (working, blocked, idle, done) and shows that state beside the presence lease; both contracts are documented with no product named, so a terminal workspace manager or any other runtime can host the workers and report their states; backlog.py config prints both settings.",
