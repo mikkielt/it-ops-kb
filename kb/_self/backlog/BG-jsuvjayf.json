@@ -2,7 +2,7 @@
   "id": "BG-jsuvjayf",
   "kind": "bug",
   "title": "done moves a claimed run key to landed at the done commit, before it is on the integration main, and a later land then never holds landing",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nij36lt7",
   "sprint": "SP-42b2cjm3",
   "priority": "P2",
@@ -46,11 +46,16 @@
         "done leaves the key at claimed and land moves it to landed once the done commit is on the integration main": "BG-jsuvjayf",
         "done moves the key to landed as it does now, and land accepts a landed key whose done commit is not yet on the integration main and still holds landing": "BG-jsuvjayf"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "done leaves the key at claimed and land moves it to landed once the done commit is on the integration main",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
     "parked: SP-dx76osrn review"
   ],
+  "notes": "Gate g1 answered with its recommendation by operator (pre-approved by the operator for the 2026-10-26 run).",
   "filed_in": "clone-0ea70e5c"
 }
