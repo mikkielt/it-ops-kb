@@ -2,7 +2,7 @@
   "id": "BG-3g5xj2jc",
   "kind": "bug",
   "title": "A gate whose question names a credential as a lower-case snake_case identifier outside the closed credential-part list (registration_token, ci_job_token, vault_token) is classed design, not secrets",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-w57bnhhx",
   "priority": "P2",
   "rank": 0,
@@ -47,6 +47,37 @@
   ],
   "notes": "Planner 2026-10-26: repro and check 0 fail on main (4 of the 5 planted credential identifiers class design). Design decided in the plan, no open choice: SNAKE_TOKEN_IDENT blanks a lower-case snake_case identifier ending in token or tokens only when every part before the ending is on a closed list of code words (bare, def, read: the shapes the BG-sqmvvtiy comment names); any other part, a credential, secret or service part included, keeps the secrets class, so the rule fails closed. The model token counts (output_tokens, token counts) and tokenize.NAME stay handled by TOKEN_COUNT and TOKENIZE_ATTR, which run beside it; check 0 holds the planted cases of BG-sqmvvtiy, BG-ohawboem and BG-dry4luf6. Docs: backlog.md and tools.md name the identifier rule and are updated in the item. Pre-approved by the operator for the 2026-10-26 run. The check \"tests.py _tools/test_authority.py\" passes before the work by design: it guards the critical component's existing tests (no new test; the planted check 0 is the one that fails on main). Planned into SP-w57bnhhx on 2026-10-26 with a planted check that fails on main; the sprint start is pre-approved by the operator for the 2026-10-26 run.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "3ccc12062e2c07b28309020bb0396fa0a99d61b5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0,\"_tools\")\nimport bl_authority as a\ndef cl(q,t=None):return a.class_reasons({\"touches\":t or []},{\"id\":\"g1\",\"question\":q,\"options\":[\"one\",\"two\"]})[0]\ncred=[q for q in (\"Should the worker print the registration_token in the log?\",\"Do we rotate the vault_token each week?\",\"Should the ci_job_token reach the job env?\",\"Is the trigger_token kept in the project settings?\",\"Does the webhook_tokens list reach the log?\") if cl(q)!=\"secrets\"]\nreal=[q for q in (\"Rotate the API token of the service account?\",\"Where is the GITLAB_TOKEN kept?\",\"Store the credential file in _private?\",\"Should the secret be kept in a vault?\") if cl(q)!=\"secrets\"]\nident=[q for q in (\"Gate and bare_token move to ql_learn; def_tokens is left with no caller\",\"Does the helper bare_token stay in kbcommon?\",\"Does read_token keep its signature?\") if cl(q)==\"secrets\"]\ncounts=[q for q in (\"Show tokens per correct answer in the report?\",\"Sum input, output and cache tokens in the multi table?\",\"Is a token budget per run kept in the report?\",\"Show cache tokens beside the input tokens?\") if cl(q,[\"_tools/bench_report.py\"])==\"secrets\"]\nmod=[q for q in (\"Use tokenize.generate_tokens to find comments?\",\"Does tokenize.tokenize(f.readline) read bytes?\",\"Keep tokenize.TokenInfo in the scan?\") if cl(q,[\"_tools/bl_check.py\"])==\"secrets\"]\nprint(\"credential identifiers not secrets:\",cred,\"| real:\",real,\"| code identifiers secrets:\",ident,counts,mod)\nsys.exit(1 if cred or real or ident or counts or mod else 0)"
+        ],
+        "exit": 0,
+        "sha256": "7ca7a00b77eec756"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_authority.py"
+        ],
+        "exit": 0,
+        "sha256": "6a44fc7395f75374"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import bl_authority as a;bad=[q for q in (\"Should the worker print the registration_token in the log?\",\"Do we rotate the vault_token each week?\",\"Should the ci_job_token reach the job env?\") if a.class_reasons({\"touches\":[\"_tools/x.py\"]},{\"id\":\"g1\",\"question\":q,\"options\":[\"one\",\"two\"]})[0]!=\"secrets\"];print(bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
