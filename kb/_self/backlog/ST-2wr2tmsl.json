@@ -2,7 +2,7 @@
   "id": "ST-2wr2tmsl",
   "kind": "story",
   "title": "Research sprint goal: Session state and cost: blocked, finished, silent, and spend by topic",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-hxxn6fnv",
   "goal_research": true,
   "priority": "P1",
@@ -42,6 +42,20 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "736eec8446552e9f33551891731bec9d0c4c510d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-2wr2tmsl"
+        ],
+        "exit": 0,
+        "sha256": "a14a25feaecc09c0"
+      }
+    ]
+  }
 }
