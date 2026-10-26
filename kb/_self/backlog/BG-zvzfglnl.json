@@ -1,0 +1,28 @@
+{
+  "id": "BG-zvzfglnl",
+  "kind": "bug",
+  "title": "A query-log delivery refused by its sync logs no reason, and kbmon raises REFUSED though another run delivered the rows",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "When kbgit.py sync exits 2 under ql_deliver.deliver, the distill log names the refusal's reason (dirty tree, an operation in progress, another sync's lock) even when the sync printed a pushed: line, and a refusal that a concurrent run's push made moot (its rows already on origin/main) does not raise kbmon's REFUSED alert. Seen 5 times in this clone's distill.log on 2026-10-26, each right after another run's successful push; noted by the unattended orchestrator during SP-hxxn6fnv.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,sys;p=os.path.expanduser(\"~/it-ops-kb/_cache/querylog/distill.log\")\nL=open(p).read().splitlines() if os.path.exists(p) else []\nbad=[i for i,l in enumerate(L) if \"sync exit 2: nothing pushed\" in l and i>0 and L[i-1].strip()==\"pushed: no\"]\nprint(\"refusals logged with no reason:\",len(bad));sys.exit(1 if bad else 0)"
+    ]
+  },
+  "repro_reason": "the refusal happens only when two session-end distill runs overlap on the shared query-log worktree, a race no planted input reproduces on demand; the repro reads this clone's distill.log for a refusal logged without its reason",
+  "touches": [
+    "_tools/ql_deliver.py",
+    "_tools/mon_querylog.py",
+    "kb/_self/querylog.md",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "found during: SP-hxxn6fnv"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
