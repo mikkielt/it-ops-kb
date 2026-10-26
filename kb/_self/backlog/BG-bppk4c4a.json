@@ -61,7 +61,9 @@
       },
       "class": "design",
       "answer": "the newer of the newest spool row and the process start",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "The repro plants a temp clone with fake claude processes (a symlink to sleep), killed in a finally block; it ran on main 2026-10-26 and all three cases failed. Check 0 reads the monitoring.md alert count against the rules file (seven now, the doc says six).",
