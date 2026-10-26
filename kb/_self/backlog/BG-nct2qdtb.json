@@ -2,7 +2,7 @@
   "id": "BG-nct2qdtb",
   "kind": "bug",
   "title": "coord_dedup over MCP fails against coord.py serve when the holder comes from KB_COORD_HOLDER: --holder lands after the question's --",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-n7f53pgv",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,7 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
