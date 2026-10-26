@@ -40,6 +40,26 @@
   "depends_on": [
     "BG-dgnrn4jy"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does feedback_flags tell that a report's article changed after the report?",
+      "options": [
+        "git log day of the article, flag dropped when later than the report's day",
+        "fact-text hash stored with each reported line"
+      ],
+      "recommendation": "git log day of the article, flag dropped when later than the report's day",
+      "reason": "the store keeps no fact text, so a hash would need a store format change; same-day edits keep the flag and an uncommitted edit counts as today",
+      "do": {
+        "git log day of the article, flag dropped when later than the report's day": "BG-4x5qp2jh",
+        "fact-text hash stored with each reported line": "BG-4x5qp2jh"
+      },
+      "class": "design",
+      "answer": "git log day of the article, flag dropped when later than the report's day",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ficl7pxl review"
   ],

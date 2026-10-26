@@ -1136,14 +1136,45 @@ def logs_for(arts, us):
 FLAG_LABEL = "flagged (feedback, not a fact):"  # what a line a feedback report names opens with
 FLAG_ISSUES = ("wrong", "stale")  # the issue classes of a report's line that flag it (ql_capture.FEEDBACK_ISSUES)
 MAX_FLAGS = 3  # flagged lines one pack or show prints
-_FLAGS = [None, {}]  # [signature of the store's run files, {path: {line: {issue: [reports, first day]}}}]
+_FLAGS = [None, []]  # [signature of the store's run files, [(path, line, issue, day)] of every report line]
+_CHANGED = {}  # {(path, mtime_ns, size): day of the file's last change, "" when git cannot tell}
+
+
+def git_log_day(path):
+    """The day (YYYY-MM-DD) the kb file `path` (qualified) last changed: its last commit's date in its own git
+    repository, today when the working tree differs from that commit; "" when git cannot tell (no repository, an
+    untracked file). Kept per the file's time and size."""
+    full = kbcommon.path_of(path)
+    try:
+        st = os.stat(full)
+    except OSError:
+        return ""
+    key = (path, st.st_mtime_ns, st.st_size)
+    if key not in _CHANGED:
+        cwd, name = os.path.dirname(full), os.path.basename(full)
+        env = {**os.environ, "GIT_OPTIONAL_LOCKS": "0"}
+
+        def git(*args):
+            try:
+                p = subprocess.run(["git", "-C", cwd, *args], capture_output=True, text=True, encoding="utf-8",
+                                   timeout=60, env=env)
+            except (OSError, subprocess.SubprocessError):
+                return None
+            return p.stdout.strip() if p.returncode == 0 else None
+
+        day = git("log", "-1", "--format=%cs", "--", name) or ""
+        dirty = git("status", "--porcelain", "--untracked-files=no", "--", name) if day else None
+        _CHANGED[key] = time.strftime("%Y-%m-%d") if dirty else day
+    return _CHANGED[key]
 
 
 def feedback_flags():
     """{qualified path: {line: {issue: [reports, first day]}}} of the lines that a feedback report of the committed
     query-log store (ql_base.STORE, read at the call) names with an issue of FLAG_ISSUES: the entries' `feedback`
-    lines, each report counted once per line it names. A report still in a spool is in no run file and shows nowhere.
-    Read again when a run file's time or size changes; {} for a store with none."""
+    lines, each report counted once per line it names. A report is dropped when its article changed after the day of
+    the report (git_log_day): its line number may now hold another fact. A report still in a spool is in no run
+    file and shows nowhere. Read again when a run file's time or size, or a flagged article's, changes; {} for a
+    store with none."""
     import ql_base
     store = ql_base.STORE
     if not os.path.isdir(store):
@@ -1158,17 +1189,23 @@ def feedback_flags():
         except OSError:
             continue
     if _FLAGS[0] != sig:
-        out = {}
+        reps = []
         for _, e in ql_store.store_entries(store):
             for rep in e.get("feedback") or []:
                 for x in rep.get("lines") or []:
                     path, _, n = str(x.get("line", "")).rpartition(":")
                     if x.get("issue") in FLAG_ISSUES and path and n.isdigit():
-                        hit = out.setdefault(path, {}).setdefault(int(n), {}).setdefault(x["issue"], [0, ""])
-                        hit[0] += 1
-                        hit[1] = min(hit[1], e.get("day") or "") if hit[1] else (e.get("day") or "")
-        _FLAGS[:] = [sig, out]
-    return _FLAGS[1]
+                        reps.append((path, int(n), x["issue"], e.get("day") or ""))
+        _FLAGS[:] = [sig, reps]
+    out = {}
+    for path, n, issue, day in _FLAGS[1]:
+        changed = git_log_day(path)
+        if day and changed and changed > day:
+            continue
+        hit = out.setdefault(path, {}).setdefault(n, {}).setdefault(issue, [0, ""])
+        hit[0] += 1
+        hit[1] = min(hit[1], day) if hit[1] else day
+    return out
 
 
 def flag_line(path, n, issues):
