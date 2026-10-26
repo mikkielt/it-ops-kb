@@ -2,7 +2,7 @@
   "id": "BG-dgnrn4jy",
   "kind": "bug",
   "title": "Importing kf_route, kf_index or kf_fresh before kbfacts raises ImportError",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vlfcgmbu",
   "priority": "P3",
   "rank": 0,
@@ -68,6 +68,28 @@
     "parked: SP-jplczvj2 review"
   ],
   "notes": "Plan check 2026-10-26: check 0 passes before the work on purpose: it pins that every name other modules read from kbfacts (132 today) still resolves after the split. The repro reads the first clause.",
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "3355a3510bd7b32c6136196373dec57252b19907",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import glob,re,subprocess as s,sys\nnames=set()\nfor f in glob.glob('_tools/*.py')+glob.glob('.claude/skills/*/*.py'):\n    t=open(f).read()\n    if f.endswith('kbfacts.py'):continue\n    names|=set(re.findall(r'\\bkbfacts\\.([A-Za-z_]\\w*)\\b(?!\\.py)',t))-{'py'}\n    for m in re.findall(r'from kbfacts import (\\([^)]*\\)|[^\\n]+)',t):m=m.strip('()');names|={x.strip().split(' as ')[0] for x in m.replace(chr(10),',').split(',') if x.strip() and not x.strip().startswith('#')}\ncode='import sys;sys.path.insert(0,\"_tools\");import kbfacts;miss=[x for x in sys.argv[1:] if not hasattr(kbfacts,x)];print(\"missing:\",miss);sys.exit(1 if miss else 0)'\np=s.run([sys.executable,'-c',code,*sorted(names)],capture_output=True,text=True);print(len(names),'names',p.stdout,p.stderr[-300:]);sys.exit(p.returncode)\n"
+        ],
+        "exit": 0,
+        "sha256": "6d4c76a849df664c"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys; bad=[m for m in (\"kf_route\",\"kf_index\",\"kf_fresh\") if subprocess.run([sys.executable,\"-c\",\"import \"+m],cwd=\"_tools\",capture_output=True).returncode]; print(\"kf_ modules that fail when imported first:\",bad); sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "fff89c014c2fe1b5"
+      }
+    ]
+  }
 }
