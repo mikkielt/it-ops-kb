@@ -61,7 +61,7 @@
   "links": [
     "parked: SP-c7oav2vn close"
   ],
-  "notes": "Premise: check 0 fails on the base: kg_sync.gate_needs gives the querylog check no reason for a change to a public article. The committed store passes its gates today (querylog.py check: problems=0), so the new refusal does not fire on main now; it costs the check's run time per content gate, which BG-24kutvrd cuts first. Sprint SP-vmtfnkim started 2026-10-26: start gate answered approve by operator (pre-approved by the operator for the 2026-10-26 run).",
+  "notes": "Premise: check 0 fails on the base: kg_sync.gate_needs gives the querylog check no reason for a change to a public article. The committed store passes its gates today (querylog.py check: problems=0), so the new refusal does not fire on main now; it costs the check's run time per content gate, which BG-24kutvrd cuts first. Sprint SP-vmtfnkim started 2026-10-26: start gate answered approve by operator (pre-approved by the operator for the 2026-10-26 run). Gate g1 answered with its recommendation (every path under kb/public/ runs the store check at the sync gate) by operator (pre-approved by the operator for the 2026-10-26 run).",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }
