@@ -8,6 +8,8 @@ text of the spool or the store. Cost is priced as `backlog.py cost` prices it (`
 `ql_report`; `bl_cost` only when it prices. `alerts(data)` is the panel's judgement of its data (a refused delivery), which
 `mon_view.judged` adds to the snapshot's `alerts`.
 """
+import re
+
 import ql_base
 import ql_report
 
@@ -60,6 +62,27 @@ def delivery_of(outcome, qdir):
     return {"outcome": kind, "why": why, "when": when}
 
 
+HELD_LINE = re.compile(r"apply --push: (\d+) file\(s\) held back")
+
+
+def held_back(qdir):
+    """How many store files the last delivery run held back in the local store (the `N file(s) held back` line of
+    the distill.log, which `ql_deliver.Pusher.bring` writes before the run's outcome line); 0 when that run held none or
+    the log has no run."""
+    lines, _ = ql_report.log_tail(qdir)
+    start = None
+    for i in range(len(lines) - 1, -1, -1):
+        outcome = lines[i].startswith("apply --push: ") and any(lines[i][len("apply --push: "):].startswith(o)
+                                                                for o, _ in ql_report.APPLY_OUTCOMES)
+        if outcome and start is None:
+            start = i
+        elif outcome:
+            break
+        elif start is not None and (m := HELD_LINE.match(lines[i])):
+            return int(m.group(1))
+    return 0
+
+
 def collect(ctx):
     qdir, cfg = ql_base.places()
     outcomes = ql_report.last_outcomes(qdir)
@@ -75,7 +98,7 @@ def collect(ctx):
             "undelivered": waiting["entries"], "undelivered_runs": waiting["runs"],
             "undelivered_since": waiting["since"], "delivery_ref": waiting["ref"],
             "last_distill": outcomes["distill"], "last_delivery": delivery_of(outcomes["apply"], qdir),
-            "last_pushed": ql_report.last_pushed(qdir),
+            "last_pushed": ql_report.last_pushed(qdir), "held_back": held_back(qdir),
             "usage_today": {"rows": models["rows"], "tokens": tokens(models["models"]), "usd": usd, "unpriced": unpriced, **split}}
 
 
@@ -101,7 +124,7 @@ def delivery_rows(data):
     if last and last.get("outcome") == "refused":
         return ["!!delivery  REFUSED " + (last.get("why") or "no gate named") + (f" · since {when(since)}" if since else "")
                 + f" · undelivered {n}"]
-    row = f"delivery  undelivered {n}"
+    row = f"delivery  undelivered {n}" + (f" · {data['held_back']} file(s) held back" if data.get("held_back") else "")
     row += f" · last pushed {pushed['commit'][:HASH_CHARS]} {when(pushed['when'])}" if pushed else " · nothing pushed yet"
     if last:
         row += f" · apply {last['outcome']}"

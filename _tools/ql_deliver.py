@@ -654,8 +654,11 @@ class Pusher:
 
     def bring(self, new, kept):
         """The local files `new` copied into the worktree's store, then the worktree's `querylog.py check` and the
-        leak scan over them, before learn and apply run: the run's one commit holds them. 0, or 1 when a gate fails
-        (nothing committed or pushed)."""
+        leak scan over them, before learn and apply run: the run's one commit holds them. A copied file that a store
+        gate flags (a problem line that starts with its path) is taken out of the worktree and out of the list `new`
+        and stays in the local store, held back for the next delivery; the gates run again over the rest, until no
+        copied file is flagged. 0, or 1 when a gate fails on something no copied file is named for (nothing committed
+        or pushed)."""
         store, local = self.wt / STORE_REL, self.qdir / "store"
         stayed = 0
         for src, rel, _ in new:
@@ -671,11 +674,27 @@ class Pusher:
         if kept:
             self.say(f"{len(kept)} local findings file(s) stay local (apply's outcomes, or findings "
                      f"{self.remote}/{BRANCH} already records)")
-        code, o, e = self.tool("querylog.py", "check", str(store))
-        problems = [ln for ln in o.splitlines() if ln.strip() and not ln.startswith("querylog check:")] if code else []
-        if code and not problems:
-            problems = [(o + e).strip()[-300:] or f"querylog.py check exit {code}"]
-        problems += leak_problems(store, [rel for _, rel, _ in new])
+        held = {}  # published path -> the first problem line of the file held back
+        while True:
+            code, o, e = self.tool("querylog.py", "check", str(store))
+            problems = [ln for ln in o.splitlines() if ln.strip() and not ln.startswith("querylog check:")] if code else []
+            if code and not problems:
+                problems = [(o + e).strip()[-300:] or f"querylog.py check exit {code}"]
+            problems += leak_problems(store, [rel for _, rel, _ in new])
+            flagged = {}
+            for rel in (rel for _, rel, _ in new):
+                first = next((p for p in problems if p.startswith(rel + ":")), None)
+                if first:
+                    flagged[rel] = first
+            if not flagged:
+                break
+            for rel, first in flagged.items():
+                (store / rel).unlink(missing_ok=True)
+                held[rel] = first
+            new[:] = [f for f in new if f[1] not in flagged]
+        if held:
+            self.say(f"{len(held)} file(s) held back in the local store, undelivered, retried at the next delivery:\n  " +
+                     "\n  ".join(held.values()))
         if problems:
             notes = [p for p in problems if p.startswith("note:")]
             shown = [p for p in problems if not p.startswith("note:")]
