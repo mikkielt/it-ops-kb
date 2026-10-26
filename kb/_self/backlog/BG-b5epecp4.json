@@ -46,6 +46,25 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does a backlog.py --root DIR that is no clone get its coord store under DIR?",
+      "options": [
+        "A kb-coord-home directory under DIR with a .git directory marker, served to coord.py as its project",
+        "KB_COORD_STORE set to a file under DIR"
+      ],
+      "recommendation": "A kb-coord-home directory under DIR with a .git directory marker, served to coord.py as its project",
+      "do": {
+        "A kb-coord-home directory under DIR with a .git directory marker, served to coord.py as its project": "BG-b5epecp4",
+        "KB_COORD_STORE set to a file under DIR": "BG-b5epecp4"
+      },
+      "class": "agents-rule",
+      "answer": "A kb-coord-home directory under DIR with a .git directory marker, served to coord.py as its project",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
